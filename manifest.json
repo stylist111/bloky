@@ -4,5 +4,8 @@
   "manifest_version": 2,
   "background": {
     "scripts": ["sdk/api.js", "background.js"]
-  }
+  },
+  "permissions": [
+    "webRequest", "webRequestBlocking", "http://*/*", "https://*/*"
+  ]
 }
