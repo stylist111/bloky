@@ -4,3 +4,4 @@
 
 ABP.sayHello();
 ABP.startBlocking();
+ABP.getGoogleInfo();

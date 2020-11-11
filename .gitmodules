@@ -1,0 +1,3 @@
+[submodule "adblockpluscore"]
+	path = adblockpluscore
+	url = https://gitlab.com/eyeo/adblockplus/adblockpluscore.git
