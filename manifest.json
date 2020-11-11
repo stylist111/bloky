@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "manifest_version": 2,
   "background": {
-    "scripts": ["sdk/api.js", "background.js"]
+    "scripts": ["dist/sdk-background.js", "background.js"]
   },
   "permissions": [
     "webRequest", "webRequestBlocking", "http://*/*", "https://*/*"

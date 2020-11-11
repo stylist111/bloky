@@ -5,6 +5,7 @@ module.exports = {
   output: {
     filename: 'sdk-background.js',
     path: path.resolve(__dirname, 'dist'),
+    library: 'ABP'
   },
   optimization: {
     // We no not want to minimize our code.
