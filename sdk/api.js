@@ -1,8 +1,8 @@
-function sayHello() {
+export function sayHello() {
     console.log("Hello from the api");
 }
 
-function startBlocking() {
+export function startBlocking() {
   chrome.webRequest.onBeforeRequest.addListener(details => {
     if (details.type == "image" && details.url.endsWith("/dynamic.png"))
       return {cancel: true};
