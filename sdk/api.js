@@ -3,9 +3,17 @@ import {parseURL} from "../adblockpluscore/lib/url.js";
 import {contentTypes} from "../adblockpluscore/lib/contentTypes.js";
 import {defaultMatcher} from "../adblockpluscore/lib/matcher.js";
 import browser from "webextension-polyfill";
+import {IO} from "io";
+
+export async function testIOImport()
+{
+  /* eslint-disable-next-line no-console */
+  console.log(IO);
+}
 
 export async function testBrowserPolyfill()
 {
+  /* eslint-disable-next-line no-console */
   console.log(await browser.runtime.getPlatformInfo());
 }
 
