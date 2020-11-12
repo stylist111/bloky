@@ -2,6 +2,12 @@ import {BlockingFilter} from "../adblockpluscore/lib/filterClasses.js";
 import {parseURL} from "../adblockpluscore/lib/url.js";
 import {contentTypes} from "../adblockpluscore/lib/contentTypes.js";
 import {defaultMatcher} from "../adblockpluscore/lib/matcher.js";
+import browser from "webextension-polyfill";
+
+export async function testBrowserPolyfill()
+{
+  console.log(await browser.runtime.getPlatformInfo());
+}
 
 export function sayHello()
 {
