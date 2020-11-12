@@ -1,10 +1,14 @@
+import {BlockingFilter} from "../adblockpluscore/lib/filterClasses.js";
 import {parseURL} from "../adblockpluscore/lib/url.js";
 import {contentTypes} from "../adblockpluscore/lib/contentTypes.js";
+import {defaultMatcher} from "../adblockpluscore/lib/matcher.js";
 
 export function sayHello()
 {
   console.log("Hello from the api"); // eslint-disable-line no-console
 }
+
+const extensionProtocol = new URL(chrome.runtime.getURL("")).protocol;
 
 // Map of content types reported by the browser to the respecitve content types
 // used by Adblock Plus. Other content types are simply mapped to OTHER.
@@ -50,19 +54,27 @@ export function startBlocking()
                       originUrl.protocol == "chrome:"))
       return;
 
-    // We are looking for the frame that contains the element which
-    // has triggered this request. For most requests (e.g. images) we
-    // can just use the request's frame ID, but for subdocument requests
-    // (e.g. iframes) we must instead use the request's parent frame ID.
-    let frameId = details.type == "sub_frame" ? details.parentFrameId :
-                                                details.frameId;
-
     let type = resourceTypes.get(details.type) || "OTHER";
+    let filter = defaultMatcher.match(details.url, contentTypes[type],
+                                      originUrl.hostname, null, false);
 
-    if (details.type == "image" && details.url.endsWith("/dynamic.png"))
-      return {cancel: true};
+    if (filter instanceof BlockingFilter)
+    {
+      if (typeof filter.rewrite == "string")
+      {
+        let rewrittenUrl = filter.rewriteUrl(details.url);
+        // If no rewrite happened (error, different origin), we'll
+        // return undefined in order to avoid an "infinite" loop.
+        if (rewrittenUrl != details.url)
+          return {redirectUrl: rewrittenUrl};
+      }
+      else
+      {
+        return {cancel: true};
+      }
+    }
   }, {
-    urls: ["http://*/*", "https://*/*", "ws:/*/*", "wss://*/*"]
+    urls: ["http://*/*", "https://*/*", "ws://*/*", "wss://*/*"]
   }, ["blocking"]);
 }
 
