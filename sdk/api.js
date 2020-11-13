@@ -22,7 +22,7 @@ export function sayHello()
   console.log("Hello from the api"); // eslint-disable-line no-console
 }
 
-const extensionProtocol = new URL(chrome.runtime.getURL("")).protocol;
+const EXTENSION_PROTOCOL = new URL(browser.runtime.getURL("")).protocol;
 
 // Map of content types reported by the browser to the respecitve content types
 // used by Adblock Plus. Other content types are simply mapped to OTHER.
@@ -46,7 +46,7 @@ let resourceTypes = new Map(function*()
 
 export function startBlocking()
 {
-  chrome.webRequest.onBeforeRequest.addListener(details =>
+  browser.webRequest.onBeforeRequest.addListener(details =>
   {
     // Firefox provides us with the full origin URL, while Chromium (>=63)
     // provides only the protocol + host of the (top-level) document which
@@ -64,7 +64,7 @@ export function startBlocking()
     //   on Chromium >=63 with an "initiator" starting with "chrome-extension:".
     // * On Firefox, requests that don't relate to any document or extension are
     //   indicated with an "originUrl" starting with "chrome:".
-    if (originUrl && (originUrl.protocol == extensionProtocol ||
+    if (originUrl && (originUrl.protocol == EXTENSION_PROTOCOL ||
                       originUrl.protocol == "chrome:"))
       return;
 
