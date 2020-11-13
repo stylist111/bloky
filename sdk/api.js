@@ -88,6 +88,8 @@ export function startBlocking()
       }
     }
   }, {
+    types: Object.values(browser.webRequest.ResourceType)
+                 .filter(type => type != "main_frame"),
     urls: ["http://*/*", "https://*/*", "ws://*/*", "wss://*/*"]
   }, ["blocking"]);
 }
