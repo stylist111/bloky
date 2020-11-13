@@ -2,27 +2,9 @@
   "extends": "eslint-config-eyeo",
   "root": true,
   "env": {
-    "browser": true,
-    "webextensions": true
-  },
-  "parserOptions": {
-    "ecmaVersion": 11
+    "es2021": true
   },
   "rules": {
     "curly": ["error", "multi-or-nest", "consistent"]
-  },
-  "overrides": [
-    {
-      "files": ["./sdk/*"],
-      "parserOptions": {
-        "sourceType": "module"
-      }
-    },
-    {
-      "files": ["webpack.config.js"],
-      "env": {
-        "node": true
-      }
-    }
-  ]
+  }
 }
