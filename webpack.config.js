@@ -3,12 +3,16 @@
 const path = require("path");
 
 module.exports = {
-  entry: "./sdk/api.js",
+  entry: {
+    api: {
+      import: "./sdk/api.js",
+      library: {name: "ABP", type: "umd"}
+    },
+    content: "./sdk/content.js"
+  },
   output: {
-    filename: "sdk-background.js",
-    path: path.resolve(__dirname, "dist"),
-    library: "ABP",
-    libraryTarget: "umd"
+    filename: "abp-[name].js",
+    path: path.resolve(__dirname, "dist")
   },
   optimization: {
     // We no not want to minimize our code.
