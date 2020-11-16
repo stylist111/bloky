@@ -1,0 +1,19 @@
+image: node:latest
+
+variables:
+  GIT_SUBMODULE_STRATEGY: "recursive"
+
+cache:
+  paths:
+    - node_modules/
+
+build:
+  script:
+    - npm install
+    - npx eslint .
+    - npx webpack
+
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 month
