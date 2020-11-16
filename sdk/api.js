@@ -11,23 +11,13 @@ const EXTENSION_PROTOCOL = new URL(browser.runtime.getURL("")).protocol;
 
 // Map of content types reported by the browser to the respecitve content types
 // used by Adblock Plus. Other content types are simply mapped to OTHER.
-let resourceTypes = new Map(function*()
-{
-  for (let type in contentTypes)
-    yield [type.toLowerCase(), type];
-
-  yield ["sub_frame", "SUBDOCUMENT"];
-
-  // Treat navigator.sendBeacon() the same as <a ping>, it's essentially the
-  // same concept - merely generalized.
-  yield ["beacon", "PING"];
-
-  // Treat <img srcset> and <picture> the same as other images.
-  yield ["imageset", "IMAGE"];
-
-  // Treat requests sent by plugins the same as <object> or <embed>.
-  yield ["object_subrequest", "OBJECT"];
-}());
+let resourceTypes = new Map();
+for (let type in contentTypes)
+  resourceTypes.set(type.toLowerCase(), type);
+resourceTypes.set("sub_frame", "SUBDOCUMENT");
+resourceTypes.set("beacon", "PING");
+resourceTypes.set("imageset", "IMAGE");
+resourceTypes.set("object_subrequest", "OBJECT");
 
 async function initializeFilters()
 {
