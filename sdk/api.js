@@ -4,6 +4,9 @@ import {contentTypes} from "../adblockpluscore/lib/contentTypes.js";
 import {defaultMatcher} from "../adblockpluscore/lib/matcher.js";
 import browser from "webextension-polyfill";
 import {IO} from "io";
+import {filterEngine} from "../adblockpluscore/lib/filterEngine.js";
+import {synchronizer} from "../adblockpluscore/lib/synchronizer.js";
+import {Filter} from "../adblockpluscore/lib/filterClasses.js";
 
 export async function testIOImport()
 {
@@ -46,6 +49,14 @@ let resourceTypes = new Map(function*()
 
 export function startBlocking()
 {
+  filterEngine.initialize().then(() => synchronizer.start()).then(() =>
+  {
+    /* eslint-disable-next-line no-console */
+    console.log("filterEngine initialized");
+
+    filterEngine.add(Filter.fromText("$image"));
+  });
+
   browser.webRequest.onBeforeRequest.addListener(details =>
   {
     // Firefox provides us with the full origin URL, while Chromium (>=63)

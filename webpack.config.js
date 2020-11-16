@@ -25,7 +25,9 @@ module.exports = {
   },
   resolve: {
     alias: {
-      io$: path.resolve(__dirname, "./sdk/io.js")
+      io$: path.resolve(__dirname, "./sdk/io.js"),
+      prefs$: path.resolve(__dirname, "./sdk/prefs.js"),
+      info$: path.resolve(__dirname, "./sdk/info.js")
     }
   },
   module: {
