@@ -3,27 +3,9 @@ import {parseURL} from "../adblockpluscore/lib/url.js";
 import {contentTypes} from "../adblockpluscore/lib/contentTypes.js";
 import {defaultMatcher} from "../adblockpluscore/lib/matcher.js";
 import browser from "webextension-polyfill";
-import {IO} from "io";
 import {filterEngine} from "../adblockpluscore/lib/filterEngine.js";
 import {synchronizer} from "../adblockpluscore/lib/synchronizer.js";
 import {Filter} from "../adblockpluscore/lib/filterClasses.js";
-
-export async function testIOImport()
-{
-  /* eslint-disable-next-line no-console */
-  console.log(IO);
-}
-
-export async function testBrowserPolyfill()
-{
-  /* eslint-disable-next-line no-console */
-  console.log(await browser.runtime.getPlatformInfo());
-}
-
-export function sayHello()
-{
-  console.log("Hello from the api"); // eslint-disable-line no-console
-}
 
 const EXTENSION_PROTOCOL = new URL(browser.runtime.getURL("")).protocol;
 
@@ -47,15 +29,17 @@ let resourceTypes = new Map(function*()
   yield ["object_subrequest", "OBJECT"];
 }());
 
+async function initializeFilters()
+{
+  await filterEngine.initialize();
+  await synchronizer.start();
+
+  filterEngine.add(Filter.fromText("$image"));
+}
+
 export function startBlocking()
 {
-  filterEngine.initialize().then(() => synchronizer.start()).then(() =>
-  {
-    /* eslint-disable-next-line no-console */
-    console.log("filterEngine initialized");
-
-    filterEngine.add(Filter.fromText("$image"));
-  });
+  initializeFilters();
 
   browser.webRequest.onBeforeRequest.addListener(details =>
   {
@@ -103,10 +87,4 @@ export function startBlocking()
                  .filter(type => type != "main_frame"),
     urls: ["http://*/*", "https://*/*", "ws://*/*", "wss://*/*"]
   }, ["blocking"]);
-}
-
-export function getGoogleInfo()
-{
-  let url = "https://www.google.com";
-  console.log(parseURL(url)); // eslint-disable-line no-console
 }
