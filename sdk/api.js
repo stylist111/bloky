@@ -6,6 +6,9 @@ import browser from "webextension-polyfill";
 import {filterEngine} from "../adblockpluscore/lib/filterEngine.js";
 import {synchronizer} from "../adblockpluscore/lib/synchronizer.js";
 import {Filter} from "../adblockpluscore/lib/filterClasses.js";
+import {filterStorage} from "../adblockpluscore/lib/filterStorage.js";
+import {Subscription, DownloadableSubscription}
+  from "../adblockpluscore/lib/subscriptionClasses.js";
 
 const EXTENSION_PROTOCOL = new URL(browser.runtime.getURL("")).protocol;
 
@@ -23,8 +26,21 @@ async function initializeFilters()
 {
   await filterEngine.initialize();
   await synchronizer.start();
+}
 
+export function addFilterExample()
+{
   filterEngine.add(Filter.fromText("$image"));
+}
+
+export function addSubscription(url)
+{
+  let subscription = Subscription.fromURL(url);
+
+  filterStorage.addSubscription(subscription);
+  if (subscription instanceof DownloadableSubscription &&
+      !subscription.lastDownload)
+    synchronizer.execute(subscription);
 }
 
 export function startBlocking()
