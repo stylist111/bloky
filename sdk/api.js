@@ -9,6 +9,7 @@ import {Filter} from "../adblockpluscore/lib/filterClasses.js";
 import {filterStorage} from "../adblockpluscore/lib/filterStorage.js";
 import {Subscription, DownloadableSubscription}
   from "../adblockpluscore/lib/subscriptionClasses.js";
+import {recommendations} from "../adblockpluscore/lib/recommendations.js";
 
 const EXTENSION_PROTOCOL = new URL(browser.runtime.getURL("")).protocol;
 
@@ -33,6 +34,59 @@ async function initializeFilters()
 {
   await filterEngine.initialize();
   await synchronizer.start();
+  configureDefaultSubscriptions();
+}
+
+function configureDefaultSubscriptions()
+{
+  for (let {url, title, homepage} of chooseFilterSubscriptions())
+  {
+    let subscription = Subscription.fromURL(url);
+    subscription.disabled = false;
+    subscription.title = title;
+    subscription.homepage = homepage;
+
+    filterStorage.addSubscription(subscription);
+    if (!subscription.lastDownload)
+      synchronizer.execute(subscription);
+  }
+}
+
+function chooseFilterSubscriptions()
+{
+  let currentLang = browser.i18n.getUILanguage().split("-")[0];
+  let defaultLang = (browser.runtime.getManifest().default_locale ||
+                     "en_US").split("_")[0];
+
+  let adSubscriptions = [];
+  let adSubscriptionsDefaultLang = [];
+  let chosenSubscriptions = [];
+
+  for (let subscription of recommendations())
+  {
+    switch (subscription.type)
+    {
+      case "ads":
+        if (subscription.languages.includes(currentLang))
+          adSubscriptions.push(subscription);
+        if (subscription.languages.includes(defaultLang))
+          adSubscriptionsDefaultLang.push(subscription);
+        break;
+
+      case "circumvention":
+        chosenSubscriptions.push(subscription);
+        break;
+    }
+  }
+
+  if (adSubscriptions.length > 0 || (adSubscriptions =
+                                     adSubscriptionsDefaultLang).length > 0)
+  {
+    let randomIndex = Math.floor(Math.random() * adSubscriptions.length);
+    chosenSubscriptions.unshift(adSubscriptions[randomIndex]);
+  }
+
+  return chosenSubscriptions;
 }
 
 export function addFilterExample()
