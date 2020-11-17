@@ -22,6 +22,13 @@ resourceTypes.set("beacon", "PING");
 resourceTypes.set("imageset", "IMAGE");
 resourceTypes.set("object_subrequest", "OBJECT");
 
+let typeSelectors = new Map([
+  ["IMAGE", "img,input"],
+  ["MEDIA", "audio,video"],
+  ["SUBDOCUMENT", "frame,iframe,object,embed"],
+  ["OBJECT", "object,embed"]
+]);
+
 async function initializeFilters()
 {
   await filterEngine.initialize();
@@ -41,6 +48,17 @@ export function addSubscription(url)
   if (subscription instanceof DownloadableSubscription &&
       !subscription.lastDownload)
     synchronizer.execute(subscription);
+}
+
+async function collapse(tabId, frameId, type, url)
+{
+  let selector = typeSelectors.get(type);
+  if (selector && frameId != -1)
+  {
+      await browser.tabs.sendMessage(
+        tabId, {type: "filters.collapse", selector, url}, {frameId}
+      );
+  }
 }
 
 export function startBlocking()
@@ -69,6 +87,13 @@ export function startBlocking()
                       originUrl.protocol == "chrome:"))
       return;
 
+    // We are looking for the frame that contains the element which
+    // has triggered this request. For most requests (e.g. images) we
+    // can just use the request's frame ID, but for subdocument requests
+    // (e.g. iframes) we must instead use the request's parent frame ID.
+    let frameId = details.type == "sub_frame" ? details.parentFrameId :
+                                                details.frameId;
+
     let type = resourceTypes.get(details.type) || "OTHER";
     let filter = defaultMatcher.match(details.url, contentTypes[type],
                                       originUrl.hostname, null, false);
@@ -85,6 +110,7 @@ export function startBlocking()
       }
       else
       {
+        collapse(details.tabId, frameId, type, details.url);
         return {cancel: true};
       }
     }
