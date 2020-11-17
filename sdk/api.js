@@ -55,9 +55,9 @@ async function collapse(tabId, frameId, type, url)
   let selector = typeSelectors.get(type);
   if (selector && frameId != -1)
   {
-      await browser.tabs.sendMessage(
-        tabId, {type: "filters.collapse", selector, url}, {frameId}
-      );
+    await browser.tabs.sendMessage(
+      tabId, {type: "abp:collapse", selector, url}, {frameId}
+    );
   }
 }
 
