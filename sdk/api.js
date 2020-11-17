@@ -39,7 +39,7 @@ async function initializeFilters()
 
 function configureDefaultSubscriptions()
 {
-  for (let {url, title, homepage} of chooseFilterSubscriptions())
+  for (let {url, title, homepage} of getDefaultSubscriptions())
   {
     let subscription = Subscription.fromURL(url);
     subscription.disabled = false;
@@ -52,7 +52,7 @@ function configureDefaultSubscriptions()
   }
 }
 
-function chooseFilterSubscriptions()
+function getDefaultSubscriptions()
 {
   let currentLang = browser.i18n.getUILanguage().split("-")[0];
   let defaultLang = (browser.runtime.getManifest().default_locale ||
