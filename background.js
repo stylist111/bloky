@@ -3,4 +3,4 @@
 /* global ABP */
 
 ABP.startBlocking();
-//ABP.addSubscription("https://testpages.adblockplus.org/en/abp-testcase-subscription.txt");
+// ABP.addSubscription("https://testpages.adblockplus.org/en/abp-testcase-subscription.txt");
