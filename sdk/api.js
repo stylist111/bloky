@@ -1,7 +1,6 @@
 import browser from "webextension-polyfill";
 
 import {BlockingFilter} from "../adblockpluscore/lib/filterClasses.js";
-import {parseURL} from "../adblockpluscore/lib/url.js";
 import {contentTypes} from "../adblockpluscore/lib/contentTypes.js";
 import {defaultMatcher} from "../adblockpluscore/lib/matcher.js";
 import {filterEngine} from "../adblockpluscore/lib/filterEngine.js";
@@ -135,19 +134,19 @@ export function startBlocking()
     // the request originates from through the "initiator" property.
     let originUrl = null;
     if (details.originUrl)
-      originUrl = parseURL(details.originUrl);
+      originUrl = details.originUrl;
     else if (details.initiator && details.initiator != "null")
-      originUrl = parseURL(details.initiator);
+      originUrl = details.initiator;
 
     // Ignore requests sent by extensions or by Firefox itself:
     // * Firefox intercepts requests sent by any extensions, indicated with
-    //   an "originURL" starting with "moz-extension:".
+    //   an "originUrl" starting with "moz-extension:".
     // * Chromium intercepts requests sent by this extension only, indicated
     //   on Chromium >=63 with an "initiator" starting with "chrome-extension:".
     // * On Firefox, requests that don't relate to any document or extension are
     //   indicated with an "originUrl" starting with "chrome:".
-    if (originUrl && (originUrl.protocol == EXTENSION_PROTOCOL ||
-                      originUrl.protocol == "chrome:"))
+    if (originUrl && (originUrl.startsWith(EXTENSION_PROTOCOL) ||
+                      originUrl.startsWith("chrome:")))
       return;
 
     // We are looking for the frame that contains the element which
@@ -157,13 +156,13 @@ export function startBlocking()
     let frameId = details.type == "sub_frame" ? details.parentFrameId :
                                                 details.frameId;
 
-    if (isAllowlisted(details.tabId, frameId))
+    if (isAllowlisted(details.tabId, frameId, originUrl))
       return;
 
     let type = resourceTypes.get(details.type) || "OTHER";
+    let docDomain = getDocumentDomain(details.tabId, frameId, originUrl);
     let filter = defaultMatcher.match(details.url, contentTypes[type],
-                                      getDocumentDomain(details.tabId, frameId),
-                                      null, false);
+                                      docDomain, null, false);
 
     if (filter instanceof BlockingFilter)
     {

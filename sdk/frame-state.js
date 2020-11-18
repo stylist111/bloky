@@ -46,19 +46,27 @@ export function startRecordingFrames()
   });
 }
 
-function* getFrameAncestors(tabId, frameId)
+function* getFrameAncestors(tabId, frameId, originUrl)
 {
   let frames = tabs.get(tabId);
-  if (!frames)
-    return;
+  if (frames)
+  {
+    for (let frame; frame = frames.get(frameId); frameId = frame.parentFrameId)
+    {
+      yield frame;
 
-  for (let frame; frame = frames.get(frameId); frameId = frame.parentFrameId)
-    yield frame;
+      if (frameId == 0)
+        return;
+    }
+  }
+
+  if (originUrl)
+    yield {parentFrameId: -1, url: originUrl};
 }
 
-export function getDocumentDomain(tabId, frameId)
+export function getDocumentDomain(tabId, frameId, originUrl)
 {
-  for (let {url} of getFrameAncestors(tabId, frameId))
+  for (let {url} of getFrameAncestors(tabId, frameId, originUrl))
   {
     let {hostname} = parseURL(url);
     if (hostname)
@@ -67,11 +75,11 @@ export function getDocumentDomain(tabId, frameId)
   return "";
 }
 
-export function isAllowlisted(tabId, frameId)
+export function isAllowlisted(tabId, frameId, originUrl)
 {
-  for (let frame of getFrameAncestors(tabId, frameId))
+  for (let frame of getFrameAncestors(tabId, frameId, originUrl))
   {
-    let docDomain = getDocumentDomain(tabId, frame.parentFrameId);
+    let docDomain = getDocumentDomain(tabId, frame.parentFrameId, originUrl);
     let filter = defaultMatcher.match(frame.url, contentTypes.DOCUMENT,
                                       docDomain, null, false);
     if (filter)
