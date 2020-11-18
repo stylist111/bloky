@@ -1,4 +1,5 @@
 import browser from "webextension-polyfill";
+import {parseURL} from "../adblockpluscore/lib/url.js";
 import {defaultMatcher} from "../adblockpluscore/lib/matcher.js";
 import {contentTypes} from "../adblockpluscore/lib/contentTypes.js";
 
@@ -50,13 +51,21 @@ function getFrameDetails(tabId, frameId)
   let frames = tabs.get(tabId);
   return frames && frames.get(frameId);
 }
+
 export function isAllowlisted(tabId, frameId)
 {
-  let frameDetails = getFrameDetails(tabId, frameId);
-  if (!frameDetails)
-    return false;
+  let frame = getFrameDetails(tabId, frameId);
 
-  let parentFrameDetails = getFrameDetails(tabId, frameId);
-  let filter = defaultMatcher.match(frameDetails.url, contentTypes.DOCUMENT,
-                                    originUrl.hostname, null, false);
+  while (frame)
+  {
+    let parentFrame = getFrameDetails(tabId, frame.parentFrameId);
+    let docDomain = parentFrame ? parseURL(parentFrame.url).hostname : "";
+    let filter = defaultMatcher.match(frame.url, contentTypes.DOCUMENT,
+                                      docDomain, null, false);
+    if (filter)
+      return true;
+    frame = parentFrame;
+  }
+
+  return false;
 }
