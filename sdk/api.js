@@ -12,7 +12,7 @@ import {Subscription, DownloadableSubscription}
   from "../adblockpluscore/lib/subscriptionClasses.js";
 import {recommendations} from "../adblockpluscore/lib/recommendations.js";
 
-import {isAllowlisted} from "./frame-state.js";
+import {isAllowlisted, startRecordingFrames} from "./frame-state.js";
 
 const EXTENSION_PROTOCOL = new URL(browser.runtime.getURL("")).protocol;
 
@@ -37,7 +37,7 @@ async function initializeFilters()
 {
   await filterEngine.initialize();
   await synchronizer.start();
-  configureDefaultSubscriptions();
+  // configureDefaultSubscriptions();
 }
 
 function configureDefaultSubscriptions()
@@ -125,6 +125,7 @@ async function collapse(tabId, frameId, type, url)
 export function startBlocking()
 {
   initializeFilters();
+  startRecordingFrames();
 
   browser.webRequest.onBeforeRequest.addListener(details =>
   {
