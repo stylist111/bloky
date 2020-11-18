@@ -1,8 +1,9 @@
+import browser from "webextension-polyfill";
+
 import {BlockingFilter} from "../adblockpluscore/lib/filterClasses.js";
 import {parseURL} from "../adblockpluscore/lib/url.js";
 import {contentTypes} from "../adblockpluscore/lib/contentTypes.js";
 import {defaultMatcher} from "../adblockpluscore/lib/matcher.js";
-import browser from "webextension-polyfill";
 import {filterEngine} from "../adblockpluscore/lib/filterEngine.js";
 import {synchronizer} from "../adblockpluscore/lib/synchronizer.js";
 import {Filter} from "../adblockpluscore/lib/filterClasses.js";
@@ -10,6 +11,8 @@ import {filterStorage} from "../adblockpluscore/lib/filterStorage.js";
 import {Subscription, DownloadableSubscription}
   from "../adblockpluscore/lib/subscriptionClasses.js";
 import {recommendations} from "../adblockpluscore/lib/recommendations.js";
+
+import {isAllowlisted} from "./frame-state.js";
 
 const EXTENSION_PROTOCOL = new URL(browser.runtime.getURL("")).protocol;
 
@@ -89,9 +92,9 @@ function getDefaultSubscriptions()
   return chosenSubscriptions;
 }
 
-export function addFilterExample()
+export function addFilter(filter)
 {
-  filterEngine.add(Filter.fromText("$image"));
+  filterEngine.add(Filter.fromText(filter));
 }
 
 export function addSubscription(url)
@@ -109,9 +112,13 @@ async function collapse(tabId, frameId, type, url)
   let selector = typeSelectors.get(type);
   if (selector && frameId != -1)
   {
-    await browser.tabs.sendMessage(
-      tabId, {type: "abp:collapse", selector, url}, {frameId}
-    );
+    try
+    {
+      await browser.tabs.sendMessage(
+        tabId, {type: "abp:collapse", selector, url}, {frameId}
+      );
+    }
+    catch (e) {}
   }
 }
 
@@ -147,6 +154,9 @@ export function startBlocking()
     // (e.g. iframes) we must instead use the request's parent frame ID.
     let frameId = details.type == "sub_frame" ? details.parentFrameId :
                                                 details.frameId;
+
+    if (isAllowlisted(details.tabId, frameId))
+      return;
 
     let type = resourceTypes.get(details.type) || "OTHER";
     let filter = defaultMatcher.match(details.url, contentTypes[type],
