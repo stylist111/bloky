@@ -46,26 +46,36 @@ export function startRecordingFrames()
   });
 }
 
-function getFrameDetails(tabId, frameId)
+function* getFrameAncestors(tabId, frameId)
 {
   let frames = tabs.get(tabId);
-  return frames && frames.get(frameId);
+  if (!frames)
+    return;
+
+  for (let frame; frame = frames.get(frameId); frameId = frame.parentFrameId)
+    yield frame;
+}
+
+export function getDocumentDomain(tabId, frameId)
+{
+  for (let {url} of getFrameAncestors(tabId, frameId))
+  {
+    let {hostname} = parseURL(url);
+    if (hostname)
+      return hostname;
+  }
+  return "";
 }
 
 export function isAllowlisted(tabId, frameId)
 {
-  let frame = getFrameDetails(tabId, frameId);
-
-  while (frame)
+  for (let frame of getFrameAncestors(tabId, frameId))
   {
-    let parentFrame = getFrameDetails(tabId, frame.parentFrameId);
-    let docDomain = parentFrame ? parseURL(parentFrame.url).hostname : "";
+    let docDomain = getDocumentDomain(tabId, frame.parentFrameId);
     let filter = defaultMatcher.match(frame.url, contentTypes.DOCUMENT,
                                       docDomain, null, false);
     if (filter)
       return true;
-    frame = parentFrame;
   }
-
   return false;
 }

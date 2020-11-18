@@ -12,7 +12,8 @@ import {Subscription, DownloadableSubscription}
   from "../adblockpluscore/lib/subscriptionClasses.js";
 import {recommendations} from "../adblockpluscore/lib/recommendations.js";
 
-import {isAllowlisted, startRecordingFrames} from "./frame-state.js";
+import {isAllowlisted, getDocumentDomain,
+        startRecordingFrames} from "./frame-state.js";
 
 const EXTENSION_PROTOCOL = new URL(browser.runtime.getURL("")).protocol;
 
@@ -161,7 +162,8 @@ export function startBlocking()
 
     let type = resourceTypes.get(details.type) || "OTHER";
     let filter = defaultMatcher.match(details.url, contentTypes[type],
-                                      originUrl.hostname, null, false);
+                                      getDocumentDomain(details.tabId, frameId),
+                                      null, false);
 
     if (filter instanceof BlockingFilter)
     {
