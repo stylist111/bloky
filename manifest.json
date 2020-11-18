@@ -20,6 +20,12 @@
     }
   ],
   "permissions": [
-    "webRequest", "webRequestBlocking", "storage", "unlimitedStorage", "http://*/*", "https://*/*"
+    "webNavigation",
+    "webRequest",
+    "webRequestBlocking",
+    "storage",
+    "unlimitedStorage",
+    "http://*/*",
+    "https://*/*"
   ]
 }
