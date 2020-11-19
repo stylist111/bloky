@@ -46,26 +46,44 @@ export function startRecordingFrames()
   });
 }
 
-function getFrameDetails(tabId, frameId)
+function* getFrameAncestors(tabId, frameId, originUrl)
 {
   let frames = tabs.get(tabId);
-  return frames && frames.get(frameId);
+  if (frames)
+  {
+    for (let frame; frame = frames.get(frameId); frameId = frame.parentFrameId)
+    {
+      yield frame;
+
+      if (frameId == 0)
+        return;
+    }
+  }
+
+  if (originUrl)
+    yield {parentFrameId: -1, url: originUrl};
 }
 
-export function isAllowlisted(tabId, frameId)
+export function getDocumentDomain(tabId, frameId, originUrl)
 {
-  let frame = getFrameDetails(tabId, frameId);
-
-  while (frame)
+  for (let {url} of getFrameAncestors(tabId, frameId, originUrl))
   {
-    let parentFrame = getFrameDetails(tabId, frame.parentFrameId);
-    let docDomain = parentFrame ? parseURL(parentFrame.url).hostname : "";
+    let {hostname} = parseURL(url);
+    if (hostname)
+      return hostname;
+  }
+  return "";
+}
+
+export function isAllowlisted(tabId, frameId, originUrl)
+{
+  for (let frame of getFrameAncestors(tabId, frameId, originUrl))
+  {
+    let docDomain = getDocumentDomain(tabId, frame.parentFrameId, originUrl);
     let filter = defaultMatcher.match(frame.url, contentTypes.DOCUMENT,
                                       docDomain, null, false);
     if (filter)
       return true;
-    frame = parentFrame;
   }
-
   return false;
 }
