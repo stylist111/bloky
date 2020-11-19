@@ -3,52 +3,73 @@ import {parseURL} from "../adblockpluscore/lib/url.js";
 import {defaultMatcher} from "../adblockpluscore/lib/matcher.js";
 import {contentTypes} from "../adblockpluscore/lib/contentTypes.js";
 
-let tabs = new Map();
+let state = new Map();
+let startupPromise;
 
 async function discoverExistingFrames()
 {
-  for (let tab of await browser.tabs.query({}))
-  {
-    let tabId = tab.id;
+  let tabs = await browser.tabs.query({});
+  await Promise.all(tabs.map(({id: tabId}) =>
     browser.webNavigation.getAllFrames({tabId}).then(frames =>
     {
-      tabs.set(tabId, new Map(frames.map(
+      if (!startupPromise)
+        return;
+
+      state.set(tabId, new Map(frames.map(
         ({frameId, parentFrameId, url}) => [frameId, {parentFrameId, url}]
       )));
-    });
-  }
+    })
+  ));
 }
 
-export function startRecordingFrames()
+function onCommitted({tabId, frameId, parentFrameId, url})
 {
-  discoverExistingFrames();
-
-  browser.webNavigation.onCommitted.addListener(({tabId, frameId,
-                                                  parentFrameId, url}) =>
+  let frames;
+  if (frameId == 0 || !(frames = state.get(tabId)))
   {
-    let frames;
-    if (frameId == 0 || !(frames = tabs.get(tabId)))
-    {
-      frames = new Map();
-      tabs.set(tabId, frames);
-    }
-    frames.set(frameId, {parentFrameId, url});
-  });
+    frames = new Map();
+    state.set(tabId, frames);
+  }
+  frames.set(frameId, {parentFrameId, url});
+}
 
-  browser.tabs.onRemoved.addListener(tabId =>
-  {
-    tabs.delete(tabId);
-  });
+function onRemoved(tabId)
+{
+  state.delete(tabId);
+}
 
-  browser.tabs.onReplaced.addListener((addedTabId, removedTabId) =>
+function onReplaced(addedTabId, removedTabId)
+{
+  state.delete(removedTabId);
+}
+
+export async function startRecordingFrames()
+{
+  if (!startupPromise)
   {
-    tabs.delete(removedTabId);
-  });
+    startupPromise = discoverExistingFrames();
+
+    browser.webNavigation.onCommitted.addListener(onCommitted);
+    browser.tabs.onRemoved.addListener(onRemoved);
+    browser.tabs.onReplaced.addListener(onReplaced);
+  }
+
+  await startupPromise;
+}
+
+export function stopRecordingFrames()
+{
+  startupPromise = null;
+  state.clear();
+
+  browser.webNavigation.onCommitted.removeListener(onCommitted);
+  browser.tabs.onRemoved.removeListener(onRemoved);
+  browser.tabs.onReplaced.removeListener(onReplaced);
 }
 
 function* getFrameAncestors(tabId, frameId, originUrl)
 {
-  let frames = tabs.get(tabId);
+  let frames = state.get(tabId);
   if (frames)
   {
     for (let frame; frame = frames.get(frameId); frameId = frame.parentFrameId)

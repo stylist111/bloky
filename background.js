@@ -2,5 +2,5 @@
 
 /* global ABP */
 
-ABP.startBlocking();
+ABP.start();
 // ABP.addSubscription("https://testpages.adblockplus.org/en/abp-testcase-subscription.txt");
