@@ -74,7 +74,7 @@ function* getFrameAncestors(tabId, frameId, originUrl)
   {
     for (let frame; frame = frames.get(frameId); frameId = frame.parentFrameId)
     {
-      yield frame;
+      yield frame.url;
 
       if (frameId == 0)
         return;
@@ -82,12 +82,12 @@ function* getFrameAncestors(tabId, frameId, originUrl)
   }
 
   if (originUrl)
-    yield {parentFrameId: -1, url: originUrl};
+    yield originUrl;
 }
 
-export function getDocumentDomain(tabId, frameId, originUrl)
+function getClosestDocumentDomain(urls)
 {
-  for (let {url} of getFrameAncestors(tabId, frameId, originUrl))
+  for (let url of urls)
   {
     let {hostname} = parseURL(url);
     if (hostname)
@@ -98,13 +98,19 @@ export function getDocumentDomain(tabId, frameId, originUrl)
 
 export function isAllowlisted(tabId, frameId, originUrl)
 {
-  for (let frame of getFrameAncestors(tabId, frameId, originUrl))
+  let ancestors = Array.from(getFrameAncestors(tabId, frameId, originUrl));
+  for (let i = 0; i < ancestors.length; i++)
   {
-    let docDomain = getDocumentDomain(tabId, frame.parentFrameId, originUrl);
-    let filter = defaultMatcher.match(frame.url, contentTypes.DOCUMENT,
+    let docDomain = getClosestDocumentDomain(ancestors.slice(i + 1));
+    let filter = defaultMatcher.match(ancestors[i], contentTypes.DOCUMENT,
                                       docDomain, null, false);
     if (filter)
       return true;
   }
   return false;
+}
+
+export function getDocumentDomain(tabId, frameId, originUrl)
+{
+  return getClosestDocumentDomain(getFrameAncestors(tabId, frameId, originUrl));
 }
