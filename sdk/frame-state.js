@@ -26,7 +26,7 @@ function onCommitted({tabId, frameId, parentFrameId, url})
 {
   let frames = state.get(tabId);
   let frame = frames && frames.get(frameId);
-  let sitekey = frame && frame.sitekey;
+  let sitekey = frame && frame.pendingSitekey || null;
   if (frameId == 0 || !frames)
   {
     frames = new Map();
@@ -45,26 +45,32 @@ function onReplaced(addedTabId, removedTabId)
   state.delete(removedTabId);
 }
 
-function onHeadersReceived(details)
+function onHeadersReceived({tabId, frameId, responseHeaders})
 {
-  for (let header of details.responseHeaders)
+  let pendingSitekey = null;
+  for (let header of responseHeaders)
   {
     if (header.name.toLowerCase() == "x-adblock-key" && header.value)
     {
-      let frames = state.get(details.tabId);
-      if (!frames)
-      {
-        frames = new Map();
-        state.set(details.tabId, frames);
-      }
-      let frame = frames.get(details.frameId);
-      if (!frame)
-      {
-        frame = {};
-        frames.set(details.frameId, frame);
-      }
-      frame.sitekey = header.value;
+      pendingSitekey = header.value;
+      break;
     }
+  }
+
+  let frames = state.get(tabId);
+  let frame = frames && frames.get(frameId);
+  if (frame)
+  {
+    frame.pendingSitekey = pendingSitekey;
+  }
+  else if (pendingSitekey)
+  {
+    if (!frames)
+    {
+      frames = new Map();
+      state.set(tabId, frames);
+    }
+    frames.set(frameId, {pendingSitekey});
   }
 }
 
