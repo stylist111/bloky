@@ -3,7 +3,7 @@ import {parseURL} from "../adblockpluscore/lib/url.js";
 import {defaultMatcher} from "../adblockpluscore/lib/matcher.js";
 import {contentTypes} from "../adblockpluscore/lib/contentTypes.js";
 
-let state = new Map();
+export let state = new Map(); // remove export
 let startupPromise;
 
 async function discoverExistingFrames()
@@ -24,13 +24,15 @@ async function discoverExistingFrames()
 
 function onCommitted({tabId, frameId, parentFrameId, url})
 {
-  let frames;
-  if (frameId == 0 || !(frames = state.get(tabId)))
+  let frames = state.get(tabId);
+  let frame = frames && frames.get(frameId);
+  let sitekey = frame && frame.sitekey;
+  if (frameId == 0 || !frames)
   {
     frames = new Map();
     state.set(tabId, frames);
   }
-  frames.set(frameId, {parentFrameId, url});
+  frames.set(frameId, {parentFrameId, url, sitekey});
 }
 
 function onRemoved(tabId)
@@ -43,12 +45,43 @@ function onReplaced(addedTabId, removedTabId)
   state.delete(removedTabId);
 }
 
+function onHeadersReceived(details)
+{
+  for (let header of details.responseHeaders)
+  {
+    if (header.name.toLowerCase() == "x-adblock-key" && header.value)
+    {
+      let frames = state.get(details.tabId);
+      if (!frames)
+      {
+        frames = new Map();
+        state.set(details.tabId, frames);
+      }
+      let frame = frames.get(details.frameId);
+      if (!frame)
+      {
+        frame = {};
+        frames.set(details.frameId, frame);
+      }
+      frame.sitekey = header.value;
+    }
+  }
+}
+
 export async function startRecordingFrames()
 {
   if (!startupPromise)
   {
     startupPromise = discoverExistingFrames();
 
+    browser.webRequest.onHeadersReceived.addListener(
+      onHeadersReceived,
+      {
+        urls: ["http://*/*", "https://*/*"],
+        types: ["main_frame", "sub_frame"]
+      },
+      ["responseHeaders"]
+    );
     browser.webNavigation.onCommitted.addListener(onCommitted);
     browser.tabs.onRemoved.addListener(onRemoved);
     browser.tabs.onReplaced.addListener(onReplaced);
@@ -62,6 +95,7 @@ export function stopRecordingFrames()
   startupPromise = null;
   state.clear();
 
+  browser.webRequest.onHeadersReceived.removeListener(onHeadersReceived);
   browser.webNavigation.onCommitted.removeListener(onCommitted);
   browser.tabs.onRemoved.removeListener(onRemoved);
   browser.tabs.onReplaced.removeListener(onReplaced);
