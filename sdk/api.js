@@ -11,8 +11,6 @@ import {recommendations} from "../adblockpluscore/lib/recommendations.js";
 import {startRecordingFrames, stopRecordingFrames} from "./frame-state.js";
 import {startBlocking, stopBlocking} from "./request-blocking.js";
 
-export {state} from "./frame-state.js";
-
 export function configureDefaultSubscriptions()
 {
   for (let {url, title, homepage} of getDefaultSubscriptions())

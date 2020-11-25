@@ -4,7 +4,7 @@ import {defaultMatcher} from "../adblockpluscore/lib/matcher.js";
 import {contentTypes} from "../adblockpluscore/lib/contentTypes.js";
 import {verifySignature} from "../adblockpluscore/lib/rsa.js";
 
-export let state = new Map(); // remove export
+let state = new Map();
 let startupPromise;
 
 async function discoverExistingFrames()
