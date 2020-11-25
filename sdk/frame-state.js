@@ -107,22 +107,14 @@ export function stopRecordingFrames()
   browser.tabs.onReplaced.removeListener(onReplaced);
 }
 
-function* getFrameAncestors(tabId, frameId, originUrl)
+function* getFrameAncestors(tabId, frameId)
 {
   let frames = state.get(tabId);
-  if (frames)
-  {
-    for (let frame; frame = frames.get(frameId); frameId = frame.parentFrameId)
-    {
-      yield frame.url;
+  if (!frames)
+    return;
 
-      if (frameId == 0)
-        return;
-    }
-  }
-
-  if (originUrl)
-    yield originUrl;
+  for (let frame; frame = frames.get(frameId); frameId = frame.parentFrameId)
+    yield frame.url;
 }
 
 function getClosestDocumentDomain(urls)
@@ -136,9 +128,9 @@ function getClosestDocumentDomain(urls)
   return "";
 }
 
-export function isAllowlisted(tabId, frameId, originUrl)
+export function isAllowlisted(tabId, frameId)
 {
-  let ancestors = Array.from(getFrameAncestors(tabId, frameId, originUrl));
+  let ancestors = Array.from(getFrameAncestors(tabId, frameId));
   for (let i = 0; i < ancestors.length; i++)
   {
     let docDomain = getClosestDocumentDomain(ancestors.slice(i + 1));
@@ -150,7 +142,7 @@ export function isAllowlisted(tabId, frameId, originUrl)
   return false;
 }
 
-export function getDocumentDomain(tabId, frameId, originUrl)
+export function getDocumentDomain(tabId, frameId)
 {
-  return getClosestDocumentDomain(getFrameAncestors(tabId, frameId, originUrl));
+  return getClosestDocumentDomain(getFrameAncestors(tabId, frameId));
 }

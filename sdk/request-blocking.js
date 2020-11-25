@@ -69,11 +69,11 @@ function onBeforeRequest(details)
   let frameId = details.type == "sub_frame" ? details.parentFrameId :
                                               details.frameId;
 
-  if (isAllowlisted(details.tabId, frameId, originUrl))
+  if (isAllowlisted(details.tabId, frameId))
     return;
 
   let type = resourceTypes.get(details.type) || "OTHER";
-  let docDomain = getDocumentDomain(details.tabId, frameId, originUrl);
+  let docDomain = getDocumentDomain(details.tabId, frameId);
   let filter = defaultMatcher.match(details.url, contentTypes[type],
                                     docDomain, null, false);
 
