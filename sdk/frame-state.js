@@ -46,19 +46,19 @@ function onReplaced(addedTabId, removedTabId)
   state.delete(removedTabId);
 }
 
-function checkKey(token, url)
+function verifyAndExtractSitekey(token, url)
 {
   let parts = token.split("_");
   if (parts.length < 2)
-    return false;
+    return null;
 
   let key = parts[0].replace(/=/g, "");
   let signature = parts[1];
-  let data = url.pathname + url.search + "\0" +
-             url.host + "\0" +
+  let urlObj = new URL(url);
+  let data = `${urlObj.pathname}${urlObj.search}\0${urlObj.host}\0` +
              self.navigator.userAgent;
   if (!verifySignature(key, signature, data))
-    return false;
+    return null;
 
   return key;
 }
@@ -70,8 +70,9 @@ function onHeadersReceived({tabId, frameId, responseHeaders, url})
   {
     if (header.name.toLowerCase() == "x-adblock-key" && header.value)
     {
-      pendingSitekey = checkKey(header.value, new URL(url)) || null;
-      break;
+      pendingSitekey = verifyAndExtractSitekey(header.value, url);
+      if (pendingSitekey)
+        break;
     }
   }
 

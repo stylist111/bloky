@@ -2,7 +2,8 @@
 
 /* global ABP */
 
-ABP.start().then(() => {
+ABP.start().then(() =>
+{
   ABP.addFilter("testpages.adblockplus.org##.testcase-sitekey-eh");
   ABP.addFilter("||testpages.adblockplus.org/testfiles/sitekey/outofframe.png");
   ABP.addFilter("||testpages.adblockplus.org/testfiles/sitekey/inframe.png");
