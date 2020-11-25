@@ -4,7 +4,7 @@ import {BlockingFilter} from "../adblockpluscore/lib/filterClasses.js";
 import {contentTypes} from "../adblockpluscore/lib/contentTypes.js";
 import {defaultMatcher} from "../adblockpluscore/lib/matcher.js";
 
-import {isAllowlisted, getDocumentDomain} from "./frame-state.js";
+import {isAllowlisted, getMatchContext} from "./frame-state.js";
 
 const EXTENSION_PROTOCOL = new URL(browser.runtime.getURL("")).protocol;
 
@@ -73,9 +73,9 @@ function onBeforeRequest(details)
     return;
 
   let type = resourceTypes.get(details.type) || "OTHER";
-  let docDomain = getDocumentDomain(details.tabId, frameId);
+  let {docDomain, sitekey} = getMatchContext(details.tabId, frameId);
   let filter = defaultMatcher.match(details.url, contentTypes[type],
-                                    docDomain, null, false);
+                                    docDomain, sitekey, false);
 
   if (filter instanceof BlockingFilter)
   {

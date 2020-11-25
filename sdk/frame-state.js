@@ -114,18 +114,24 @@ function* getFrameAncestors(tabId, frameId)
     return;
 
   for (let frame; frame = frames.get(frameId); frameId = frame.parentFrameId)
-    yield frame.url;
+    yield frame;
 }
 
-function getClosestDocumentDomain(urls)
+function findMatchContext(frameAncestors, frameIsParent)
 {
-  for (let url of urls)
+  let docDomain = null;
+  let sitekey = null;
+
+  for (let frame of frameAncestors)
   {
-    let {hostname} = parseURL(url);
-    if (hostname)
-      return hostname;
+    if (!docDomain && frameIsParent)
+      docDomain = parseURL(frame.url).hostname;
+    if (!sitekey)
+      sitekey = frame.sitekey;
+    frameIsParent = true;
   }
-  return "";
+
+  return {docDomain, sitekey};
 }
 
 export function isAllowlisted(tabId, frameId)
@@ -133,16 +139,16 @@ export function isAllowlisted(tabId, frameId)
   let ancestors = Array.from(getFrameAncestors(tabId, frameId));
   for (let i = 0; i < ancestors.length; i++)
   {
-    let docDomain = getClosestDocumentDomain(ancestors.slice(i + 1));
-    let filter = defaultMatcher.match(ancestors[i], contentTypes.DOCUMENT,
-                                      docDomain, null, false);
+    let {docDomain, sitekey} = findMatchContext(ancestors.slice(i), false);
+    let filter = defaultMatcher.match(ancestors[i].url, contentTypes.DOCUMENT,
+                                      docDomain, sitekey, false);
     if (filter)
       return true;
   }
   return false;
 }
 
-export function getDocumentDomain(tabId, frameId)
+export function getMatchContext(tabId, frameId)
 {
-  return getClosestDocumentDomain(getFrameAncestors(tabId, frameId));
+  return findMatchContext(getFrameAncestors(tabId, frameId), true);
 }
