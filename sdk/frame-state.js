@@ -70,7 +70,7 @@ function onHeadersReceived({tabId, frameId, responseHeaders, url})
   {
     if (header.name.toLowerCase() == "x-adblock-key" && header.value)
     {
-      pendingSitekey = checkKey(header.value, url) || null;
+      pendingSitekey = checkKey(header.value, new URL(url)) || null;
       break;
     }
   }
