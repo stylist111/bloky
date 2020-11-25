@@ -2,6 +2,7 @@ import browser from "webextension-polyfill";
 import {parseURL} from "../adblockpluscore/lib/url.js";
 import {defaultMatcher} from "../adblockpluscore/lib/matcher.js";
 import {contentTypes} from "../adblockpluscore/lib/contentTypes.js";
+import {verifySignature} from "../adblockpluscore/lib/rsa.js";
 
 export let state = new Map(); // remove export
 let startupPromise;
@@ -45,14 +46,31 @@ function onReplaced(addedTabId, removedTabId)
   state.delete(removedTabId);
 }
 
-function onHeadersReceived({tabId, frameId, responseHeaders})
+function checkKey(token, url)
+{
+  let parts = token.split("_");
+  if (parts.length < 2)
+    return false;
+
+  let key = parts[0].replace(/=/g, "");
+  let signature = parts[1];
+  let data = url.pathname + url.search + "\0" +
+             url.host + "\0" +
+             self.navigator.userAgent;
+  if (!verifySignature(key, signature, data))
+    return false;
+
+  return key;
+}
+
+function onHeadersReceived({tabId, frameId, responseHeaders, url})
 {
   let pendingSitekey = null;
   for (let header of responseHeaders)
   {
     if (header.name.toLowerCase() == "x-adblock-key" && header.value)
     {
-      pendingSitekey = header.value;
+      pendingSitekey = checkKey(header.value, url) || null;
       break;
     }
   }
