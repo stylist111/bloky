@@ -4,6 +4,7 @@ import {ElemHideEmulation}
   from "../adblockpluscore/lib/content/elemHideEmulation.js";
 
 import {ignoreNoConnectionError} from "./errors.js";
+import {handleSubscribeLinks} from "./subscribe-links.js";
 
 function getURLFromElement(element)
 {
@@ -93,3 +94,4 @@ async function applyContentFilters()
 
 startElementCollapsing();
 applyContentFilters();
+handleSubscribeLinks();

@@ -14,6 +14,9 @@ import * as requestBlocker from "./request-blocker.js";
 import * as contentFilter from "./content-filter.js";
 import * as popupBlocker from "./popup-blocker.js";
 import * as csp from "./csp.js";
+import * as subscriptions from "./subscriptions.js";
+
+export let onSubscribeLinkClicked = subscriptions.onSubscribeLinkClicked;
 
 export function configureDefaultSubscriptions()
 {
@@ -106,6 +109,7 @@ export async function start()
     popupBlocker.start();
     contentFilter.start();
     csp.start();
+    subscriptions.start();
   }
 }
 
