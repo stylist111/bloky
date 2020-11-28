@@ -27,9 +27,7 @@ module.exports = {
     alias: {
       io$: path.resolve(__dirname, "./sdk/io.js"),
       prefs$: path.resolve(__dirname, "./sdk/prefs.js"),
-      info$: path.resolve(__dirname, "./sdk/info.js"),
-      jsbn$: path.resolve(__dirname, "./adblockpluscore/lib/jsbn.js"),
-      rusha$: path.resolve(__dirname, "./adblockpluscore/lib/rusha.js")
+      info$: path.resolve(__dirname, "./sdk/info.js")
     }
   },
   module: {
@@ -45,5 +43,8 @@ module.exports = {
         type: "javascript/esm"
       }
     ]
+  },
+  externals: {
+    perf_hooks: "self"
   }
 };
