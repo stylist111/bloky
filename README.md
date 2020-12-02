@@ -19,4 +19,6 @@
 ### Automated run
 
 - start the test pages server `node test/start-server.js`
-- run `node test/runner.js`
+- run the tests:
+  - Chromium: `node test/runner.js chromium`
+  - Firefox: `node test/runner.js firefox`

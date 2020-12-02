@@ -1,7 +1,16 @@
-image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node12-no-python
+default:
+  image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node12-no-python
+  interruptible: true
+
+stages:
+  - build
+  - test
 
 variables:
   GIT_SUBMODULE_STRATEGY: "recursive"
+  npm_config_audit: "false"
+  npm_config_fund: "false"
+  npm_config_prefer_offline: "true"
 
 cache:
   paths:
@@ -9,14 +18,31 @@ cache:
     - adblockpluscore/*-snapshots/download-cache/
 
 build:
+  stage: build
   script:
     - npm install
     - npm run lint
     - npm run bundle -- --env release
-    - node test/start-server.js &
-    - xvfb-run -a node test/runner.js
   artifacts:
     paths:
       - dist/
     expire_in: 1 month
-  interruptible: true
+
+.test:
+  stage: test
+  before_script:
+    - npm install
+    - node test/start-server.js &
+  needs:
+    - job: build
+      artifacts: true
+
+test:chromium:
+  extends: .test
+  script:
+    - xvfb-run -a node test/runner.js chromium
+
+test:firefox:
+  extends: .test
+  script:
+    - node test/runner.js firefox

@@ -3,9 +3,15 @@
 /* eslint-env browser, webextensions */
 /* global ABP */
 
-ABP.start();
+ABP.start().then(() =>
+{
+  let openTest = () => chrome.tabs.create({url: "/test/index.html"});
 
-chrome.tabs.create({url: "/test/index.html"});
+  if (typeof netscape != "undefined")
+    setTimeout(openTest, 1000);
+  else
+    openTest();
+});
 
 ABP.onSubscribeLinkClicked.addListener(subscription =>
 {
