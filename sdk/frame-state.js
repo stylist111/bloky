@@ -153,13 +153,13 @@ function findMatchContext(frameAncestors, frameIsParent)
   return {docDomain, sitekey};
 }
 
-export function isAllowlisted(tabId, frameId)
+export function isAllowlisted(tabId, frameId, typeMask = contentTypes.DOCUMENT)
 {
   let ancestors = Array.from(getFrameAncestors(tabId, frameId));
   for (let i = 0; i < ancestors.length; i++)
   {
     let {docDomain, sitekey} = findMatchContext(ancestors.slice(i), false);
-    let filter = defaultMatcher.match(ancestors[i].url, contentTypes.DOCUMENT,
+    let filter = defaultMatcher.match(ancestors[i].url, typeMask,
                                       docDomain, sitekey, false);
     if (filter)
       return true;

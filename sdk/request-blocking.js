@@ -74,8 +74,11 @@ function onBeforeRequest(details)
 
   let type = resourceTypes.get(details.type) || "OTHER";
   let {docDomain, sitekey} = getMatchContext(details.tabId, frameId);
+  let specificOnly = isAllowlisted(details.tabId,
+                                   frameId, contentTypes.GENERICBLOCK);
+
   let filter = defaultMatcher.match(details.url, contentTypes[type],
-                                    docDomain, sitekey, false);
+                                    docDomain, sitekey, specificOnly);
 
   if (filter instanceof BlockingFilter)
   {
