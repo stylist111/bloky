@@ -17,8 +17,13 @@ browser.runtime.onMessage.addListener((message, sender) =>
   let {docDomain} = getMatchContext(sender.tab.id, sender.frameId);
   let specificOnly = isAllowlisted(sender.tab.id, sender.frameId,
                                    contentTypes.GENERICHIDE);
-  let styleSheet = elemHide.getStyleSheet(docDomain, specificOnly);
+  let {code} = elemHide.getStyleSheet(docDomain, specificOnly);
 
-  /* eslint-disable-next-line no-console */
-  console.log(styleSheet);
+  browser.tabs.insertCSS(sender.tab.id, {
+    code,
+    cssOrigin: "user",
+    frameId: sender.frameId,
+    matchAboutBlank: true,
+    runAt: "document_start"
+  });
 });
