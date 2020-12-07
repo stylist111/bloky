@@ -72,3 +72,7 @@ function startElementCollapsing()
 }
 
 startElementCollapsing();
+
+browser.runtime.sendMessage({
+  type: "abp:apply-content-filters"
+});

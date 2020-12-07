@@ -10,6 +10,7 @@ import {recommendations} from "../adblockpluscore/lib/recommendations.js";
 
 import {startRecordingFrames, stopRecordingFrames} from "./frame-state.js";
 import {startBlocking, stopBlocking} from "./request-blocking.js";
+import "./content-filtering.js";
 
 export function configureDefaultSubscriptions()
 {
