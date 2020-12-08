@@ -12,6 +12,7 @@ import {startRecordingFrames, stopRecordingFrames} from "./frame-state.js";
 import {startBlocking, stopBlocking} from "./request-blocking.js";
 import {startContentFiltering, stopContentFiltering}
   from "./content-filtering.js";
+import "./popup-blocker.js";
 
 export function configureDefaultSubscriptions()
 {
