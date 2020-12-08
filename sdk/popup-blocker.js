@@ -21,19 +21,11 @@ function forgetPopup(tabId)
   }
 }
 
-function checkPotentialPopup(tabId, popup)
+function checkPotentialPopup(tabId, url, context)
 {
-  let url = popup.url || "about:blank";
-  let {docDomain, sitekey} = getMatchContext(tabId, popup.sourceFrameId);
-
-  let specificOnly = isAllowlisted(
-    popup.sourceTabId, popup.sourceFrameId,
-    contentTypes.GENERICBLOCK
-  );
-
   let filter = defaultMatcher.match(
-    url, contentTypes.POPUP,
-    docDomain, sitekey, specificOnly
+    url || "about:blank", contentTypes.POPUP,
+    context.docDomain, context.sitekey, context.specificOnly
   );
 
   if (filter instanceof BlockingFilter)
@@ -45,13 +37,9 @@ function onPopupURLChanged(details)
   if (details.frameId != 0)
     return;
 
-  let popup = loadingPopups.get(details.tabId);
-  if (popup)
-  {
-    popup.url = details.url;
-    if (popup.sourceFrameId != -1)
-      checkPotentialPopup(details.tabId, popup);
-  }
+  let context = loadingPopups.get(details.tabId);
+  if (context)
+    checkPotentialPopup(details.tabId, details.url, context);
 }
 
 function onCompleted(details)
@@ -62,6 +50,13 @@ function onCompleted(details)
 
 function onPopupCreated(tabId, url, sourceTabId, sourceFrameId)
 {
+  if (isAllowlisted(sourceTabId, sourceFrameId))
+    return;
+
+  let context = getMatchContext(sourceTabId, sourceFrameId);
+  context.specificOnly = isAllowlisted(sourceTabId, sourceFrameId,
+                                       contentTypes.GENERICBLOCK);
+
   if (loadingPopups.size == 0)
   {
     browser.webRequest.onBeforeRequest.addListener(
@@ -76,23 +71,8 @@ function onPopupCreated(tabId, url, sourceTabId, sourceFrameId)
     browser.tabs.onRemoved.addListener(forgetPopup);
   }
 
-  let popup = {
-    url,
-    sourceTabId,
-    sourceFrameId
-  };
-
-  loadingPopups.set(tabId, popup);
-
-  if (isAllowlisted(popup.sourceTabId, sourceFrameId))
-  {
-    forgetPopup(tabId);
-  }
-  else
-  {
-    popup.sourceFrameId = sourceFrameId;
-    checkPotentialPopup(tabId, popup);
-  }
+  loadingPopups.set(tabId, context);
+  checkPotentialPopup(tabId, url, context);
 }
 
 browser.webNavigation.onCreatedNavigationTarget.addListener(details =>
