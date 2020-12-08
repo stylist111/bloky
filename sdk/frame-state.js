@@ -16,6 +16,10 @@ async function discoverExistingFrames()
       if (!startupPromise)
         return;
 
+      // On Firefox at least, for suspended tabs frames is null here.
+      if (!frames)
+        return;
+
       state.set(tabId, new Map(frames.map(
         ({frameId, parentFrameId, url}) => [frameId, {parentFrameId, url}]
       )));
