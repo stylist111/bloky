@@ -19,13 +19,16 @@ function onMessage(message, sender)
                                    contentTypes.GENERICHIDE);
   let {code} = elemHide.getStyleSheet(docDomain, specificOnly);
 
-  browser.tabs.insertCSS(sender.tab.id, {
-    code,
-    cssOrigin: "user",
-    frameId: sender.frameId,
-    matchAboutBlank: true,
-    runAt: "document_start"
-  });
+  browser.tabs.insertCSS(
+    sender.tab.id,
+    {
+      code,
+      cssOrigin: "user",
+      frameId: sender.frameId,
+      matchAboutBlank: true,
+      runAt: "document_start"
+    }
+  ).catch(() => {});  // Fails if tab or frame no longer exists
 }
 
 export function startContentFiltering()
