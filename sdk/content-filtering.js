@@ -5,7 +5,7 @@ import {contentTypes} from "../adblockpluscore/lib/contentTypes.js";
 
 import {isAllowlisted, getMatchContext} from "./frame-state.js";
 
-browser.runtime.onMessage.addListener((message, sender) =>
+function onMessage(message, sender)
 {
   if (typeof message != "object" || message.type != "abp:apply-content-filters")
     return;
@@ -26,4 +26,14 @@ browser.runtime.onMessage.addListener((message, sender) =>
     matchAboutBlank: true,
     runAt: "document_start"
   });
-});
+}
+
+export function startContentFiltering()
+{
+  browser.runtime.onMessage.addListener(onMessage);
+}
+
+export function stopContentFiltering()
+{
+  browser.runtime.onMessage.removeListener(onMessage);
+}
