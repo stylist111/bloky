@@ -106,18 +106,16 @@ browser.webNavigation.onCreatedNavigationTarget.addListener(details =>
 // "noopener" is implied by default). But on Chrome, opening a new empty tab
 // emits the tabs.onCreated event with openerTabId set. So the code below would
 // cause new tabs created by the user to be considered popups too, on Chrome.
-// if (info.platform == "gecko")
-// IMPLEMENT LATER: Once info is implemented, look at the below
-// if (info.platform == "gecko")
-// {
-//   browser.tabs.onCreated.addListener(details =>
-//   {
-//     // We only care about tabs created by another tab.
-//     // e.g. clicking on a link with target=_blank.
-//     if (typeof details.openerTabId == "undefined")
-//       return;
+if (typeof netscape != "undefined")
+{
+  browser.tabs.onCreated.addListener(details =>
+  {
+    // We only care about tabs created by another tab.
+    // e.g. clicking on a link with target=_blank.
+    if (typeof details.openerTabId == "undefined")
+      return;
 
-//     // onCreated doesn't provide the frameId of the opener.
-//     onPopupCreated(details.id, details.url, details.openerTabId, 0);
-//   });
-// }
+    // onCreated doesn't provide the frameId of the opener.
+    onPopupCreated(details.id, details.url, details.openerTabId, 0);
+  });
+}
