@@ -5,6 +5,7 @@ import {contentTypes} from "../adblockpluscore/lib/contentTypes.js";
 import {defaultMatcher} from "../adblockpluscore/lib/matcher.js";
 
 import {isAllowlisted, getMatchContext} from "./frame-state.js";
+import {ignoreNoConnectionError} from "./errors.js";
 
 const EXTENSION_PROTOCOL = new URL(browser.runtime.getURL("")).protocol;
 
@@ -25,18 +26,14 @@ let typeSelectors = new Map([
   ["OBJECT", "object,embed"]
 ]);
 
-async function collapse(tabId, frameId, type, url)
+function collapse(tabId, frameId, type, url)
 {
   let selector = typeSelectors.get(type);
   if (selector && frameId != -1)
   {
-    try
-    {
-      await browser.tabs.sendMessage(
-        tabId, {type: "abp:collapse", selector, url}, {frameId}
-      );
-    }
-    catch (e) {}
+    ignoreNoConnectionError(browser.tabs.sendMessage(
+      tabId, {type: "abp:collapse", selector, url}, {frameId}
+    ));
   }
 }
 

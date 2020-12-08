@@ -10,7 +10,8 @@ import {recommendations} from "../adblockpluscore/lib/recommendations.js";
 
 import {startRecordingFrames, stopRecordingFrames} from "./frame-state.js";
 import {startBlocking, stopBlocking} from "./request-blocking.js";
-import "./content-filtering.js";
+import {startContentFiltering, stopContentFiltering}
+  from "./content-filtering.js";
 
 export function configureDefaultSubscriptions()
 {
@@ -95,7 +96,10 @@ export async function start()
   ]);
 
   if (!stopped)
+  {
     startBlocking();
+    startContentFiltering();
+  }
 }
 
 export function stop()
@@ -104,4 +108,5 @@ export function stop()
   synchronizer.stop();
   stopRecordingFrames();
   stopBlocking();
+  stopContentFiltering();
 }

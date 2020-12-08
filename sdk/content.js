@@ -1,4 +1,5 @@
 import browser from "webextension-polyfill";
+import {ignoreNoConnectionError} from "./errors.js";
 
 function getURLFromElement(element)
 {
@@ -71,8 +72,12 @@ function startElementCollapsing()
   });
 }
 
-startElementCollapsing();
+function applyContentFilters()
+{
+  ignoreNoConnectionError(
+    browser.runtime.sendMessage({type: "abp:apply-content-filters"})
+  );
+}
 
-browser.runtime.sendMessage({
-  type: "abp:apply-content-filters"
-});
+startElementCollapsing();
+applyContentFilters();
