@@ -31,12 +31,12 @@ function onMessage(message, sender)
   ).catch(() => {});  // Fails if tab or frame no longer exists
 }
 
-export function startContentFiltering()
+export function start()
 {
   browser.runtime.onMessage.addListener(onMessage);
 }
 
-export function stopContentFiltering()
+export function stop()
 {
   browser.runtime.onMessage.removeListener(onMessage);
 }
