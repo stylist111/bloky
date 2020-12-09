@@ -8,10 +8,9 @@ import {Subscription, DownloadableSubscription}
   from "../adblockpluscore/lib/subscriptionClasses.js";
 import {recommendations} from "../adblockpluscore/lib/recommendations.js";
 
-import {startRecordingFrames, stopRecordingFrames} from "./frame-state.js";
-import {startBlocking, stopBlocking} from "./request-blocking.js";
-import {startContentFiltering, stopContentFiltering}
-  from "./content-filtering.js";
+import * as frameState from "./frame-state.js";
+import * as requestBlocker from "./request-blocker.js";
+import * as contentFilter from "./content-filter.js";
 import * as popupBlocker from "./popup-blocker.js";
 
 export function configureDefaultSubscriptions()
@@ -93,14 +92,14 @@ export async function start()
       if (!stopped)
         synchronizer.start();
     }),
-    startRecordingFrames()
+    frameState.start()
   ]);
 
   if (!stopped)
   {
-    startBlocking();
-    startContentFiltering();
+    requestBlocker.start();
     popupBlocker.start();
+    contentFilter.start();
   }
 }
 
@@ -108,8 +107,8 @@ export function stop()
 {
   stopped = true;
   synchronizer.stop();
-  stopRecordingFrames();
-  stopBlocking();
-  stopContentFiltering();
+  frameState.stop();
+  requestBlocker.stop();
   popupBlocker.stop();
+  contentFilter.stop();
 }

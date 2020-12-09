@@ -97,7 +97,7 @@ function onHeadersReceived({tabId, frameId, responseHeaders, url})
   }
 }
 
-export async function startRecordingFrames()
+export async function start()
 {
   if (!startupPromise)
   {
@@ -119,7 +119,7 @@ export async function startRecordingFrames()
   await startupPromise;
 }
 
-export function stopRecordingFrames()
+export function stop()
 {
   startupPromise = null;
   state.clear();

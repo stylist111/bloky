@@ -95,7 +95,7 @@ function onBeforeRequest(details)
   }
 }
 
-export function startBlocking()
+export function start()
 {
   if (browser.webRequest.onBeforeRequest.hasListener(onBeforeRequest))
     return;
@@ -111,7 +111,7 @@ export function startBlocking()
   );
 }
 
-export function stopBlocking()
+export function stop()
 {
   browser.webRequest.onBeforeRequest.removeListener(onBeforeRequest);
 }
