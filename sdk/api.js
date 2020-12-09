@@ -12,7 +12,7 @@ import {startRecordingFrames, stopRecordingFrames} from "./frame-state.js";
 import {startBlocking, stopBlocking} from "./request-blocking.js";
 import {startContentFiltering, stopContentFiltering}
   from "./content-filtering.js";
-import "./popup-blocker.js";
+import * as popupBlocker from "./popup-blocker.js";
 
 export function configureDefaultSubscriptions()
 {
@@ -100,6 +100,7 @@ export async function start()
   {
     startBlocking();
     startContentFiltering();
+    popupBlocker.start();
   }
 }
 
@@ -110,4 +111,5 @@ export function stop()
   stopRecordingFrames();
   stopBlocking();
   stopContentFiltering();
+  popupBlocker.stop();
 }
