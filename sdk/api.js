@@ -12,6 +12,7 @@ import * as frameState from "./frame-state.js";
 import * as requestBlocker from "./request-blocker.js";
 import * as contentFilter from "./content-filter.js";
 import * as popupBlocker from "./popup-blocker.js";
+import * as csp from "./csp.js";
 
 export function configureDefaultSubscriptions()
 {
@@ -100,6 +101,7 @@ export async function start()
     requestBlocker.start();
     popupBlocker.start();
     contentFilter.start();
+    csp.start();
   }
 }
 
@@ -111,4 +113,5 @@ export function stop()
   requestBlocker.stop();
   popupBlocker.stop();
   contentFilter.stop();
+  csp.stop();
 }
