@@ -7,6 +7,7 @@ import {filterStorage} from "../adblockpluscore/lib/filterStorage.js";
 import {Subscription, DownloadableSubscription}
   from "../adblockpluscore/lib/subscriptionClasses.js";
 import {recommendations} from "../adblockpluscore/lib/recommendations.js";
+import {notifications} from "../adblockpluscore/lib/notifications.js";
 
 import * as frameState from "./frame-state.js";
 import * as requestBlocker from "./request-blocker.js";
@@ -102,6 +103,7 @@ export async function start()
     popupBlocker.start();
     contentFilter.start();
     csp.start();
+    notifications.start();
   }
 }
 
@@ -114,4 +116,5 @@ export function stop()
   popupBlocker.stop();
   contentFilter.stop();
   csp.stop();
+  notifications.stop();
 }
