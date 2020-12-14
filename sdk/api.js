@@ -88,6 +88,9 @@ export async function start()
 {
   stopped = false;
 
+  notifications.locale = browser.i18n.getUILanguage();
+  notifications.start();
+
   await Promise.all([
     filterEngine.initialize().then(() =>
     {
@@ -103,7 +106,6 @@ export async function start()
     popupBlocker.start();
     contentFilter.start();
     csp.start();
-    notifications.start();
   }
 }
 
