@@ -15,6 +15,7 @@
   "devDependencies": {
     "eslint": "^7.13.0",
     "eslint-config-eyeo": "^3.2.0",
+    "raw-loader": "^4.0.2",
     "source-map-loader": "^1.1.2",
     "webextension-polyfill": "^0.7.0",
     "webpack": "^5.4.0",
