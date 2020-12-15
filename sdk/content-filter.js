@@ -1,6 +1,7 @@
 import browser from "webextension-polyfill";
 
 import {elemHide} from "../adblockpluscore/lib/elemHide.js";
+import {elemHideEmulation} from "../adblockpluscore/lib/elemHideEmulation.js";
 import {contentTypes} from "../adblockpluscore/lib/contentTypes.js";
 
 import {isAllowlisted, getMatchContext} from "./frame-state.js";
@@ -10,25 +11,32 @@ function onMessage(message, sender)
   if (typeof message != "object" || message.type != "abp:apply-content-filters")
     return;
 
-  if (isAllowlisted(sender.tab.id, sender.frameId,
-                    contentTypes.DOCUMENT | contentTypes.ELEMHIDE))
-    return;
+  let response = {emulatedPatterns: []};
 
-  let {docDomain} = getMatchContext(sender.tab.id, sender.frameId);
-  let specificOnly = isAllowlisted(sender.tab.id, sender.frameId,
-                                   contentTypes.GENERICHIDE);
-  let {code} = elemHide.getStyleSheet(docDomain, specificOnly);
+  if (!isAllowlisted(sender.tab.id, sender.frameId,
+                     contentTypes.DOCUMENT | contentTypes.ELEMHIDE))
+  {
+    let {docDomain} = getMatchContext(sender.tab.id, sender.frameId);
+    let specificOnly = isAllowlisted(sender.tab.id, sender.frameId,
+                                     contentTypes.GENERICHIDE);
+    let {code} = elemHide.getStyleSheet(docDomain, specificOnly);
 
-  browser.tabs.insertCSS(
-    sender.tab.id,
-    {
-      code,
-      cssOrigin: "user",
-      frameId: sender.frameId,
-      matchAboutBlank: true,
-      runAt: "document_start"
-    }
-  ).catch(() => {});  // Fails if tab or frame no longer exists
+    browser.tabs.insertCSS(
+      sender.tab.id,
+      {
+        code,
+        cssOrigin: "user",
+        frameId: sender.frameId,
+        matchAboutBlank: true,
+        runAt: "document_start"
+      }
+    ).catch(() => {});  // Fails if tab or frame no longer exists
+
+    for (let {selector, text} of elemHideEmulation.getFilters(docDomain))
+      response.emulatedPatterns.push({selector, text});
+  }
+
+  return Promise.resolve(response);
 }
 
 export function start()

@@ -1,4 +1,8 @@
 import browser from "webextension-polyfill";
+
+import {ElemHideEmulation}
+  from "../adblockpluscore/lib/content/elemHideEmulation.js";
+
 import {ignoreNoConnectionError} from "./errors.js";
 
 function getURLFromElement(element)
@@ -72,11 +76,19 @@ function startElementCollapsing()
   });
 }
 
-function applyContentFilters()
+async function applyContentFilters()
 {
-  ignoreNoConnectionError(
+  let response = await ignoreNoConnectionError(
     browser.runtime.sendMessage({type: "abp:apply-content-filters"})
   );
+
+  if (response && response.emulatedPatterns.length > 0)
+  {
+    let elemHideEmulation = new ElemHideEmulation(
+      elements => { elements.forEach(hideElement); }
+    );
+    elemHideEmulation.apply(response.emulatedPatterns);
+  }
 }
 
 startElementCollapsing();
