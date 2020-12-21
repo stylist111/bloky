@@ -67,19 +67,23 @@ function verifyAndExtractSitekey(token, url)
   return key;
 }
 
-function onHeadersReceived({tabId, frameId, responseHeaders, url})
+export function getSitekeyFromHeaders(headers, url)
 {
-  let pendingSitekey = null;
-  for (let header of responseHeaders)
+  for (let header of headers)
   {
     if (header.name.toLowerCase() == "x-adblock-key" && header.value)
     {
-      pendingSitekey = verifyAndExtractSitekey(header.value, url);
-      if (pendingSitekey)
-        break;
+      let sitekey = verifyAndExtractSitekey(header.value, url);
+      if (sitekey)
+        return sitekey;
     }
   }
+  return null;
+}
 
+function onHeadersReceived({tabId, frameId, responseHeaders, url})
+{
+  let pendingSitekey = getSitekeyFromHeaders(responseHeaders, url);
   let frames = state.get(tabId);
   let frame = frames && frames.get(frameId);
   if (frame)
