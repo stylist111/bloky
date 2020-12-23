@@ -10,7 +10,7 @@ module.exports = {
       import: "./sdk/api.js",
       library: {name: "ABP", type: "umd"}
     },
-    content: "./sdk/content.js"
+    content: "./sdk/content/index.js"
   },
   output: {
     filename: "abp-[name].js",

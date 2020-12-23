@@ -15,7 +15,7 @@ import * as messageResponder from "./message-responder.js";
 import * as popupBlocker from "./popup-blocker.js";
 import * as csp from "./csp.js";
 
-export {onSubscribeLinkClicked} from "./subscriptions.js";
+export {onSubscribeLinkClicked} from "./subscribe-links.js";
 
 export function configureDefaultSubscriptions()
 {

@@ -1,7 +1,8 @@
 import browser from "webextension-polyfill";
 
 import {applyContentFilters} from "./content-filter.js";
-import {subscribeLinkClicked, subscribeLinksEnabled} from "./subscriptions.js";
+import {subscribeLinkClicked, subscribeLinksEnabled}
+  from "./subscribe-links.js";
 
 function onMessage(message, sender)
 {
