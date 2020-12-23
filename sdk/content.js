@@ -77,21 +77,26 @@ function startElementCollapsing()
   });
 }
 
-async function applyContentFilters()
+async function initContentFeatures()
 {
   let response = await ignoreNoConnectionError(
-    browser.runtime.sendMessage({type: "abp:apply-content-filters"})
+    browser.runtime.sendMessage({type: "abp:content-hello"})
   );
 
-  if (response && response.emulatedPatterns.length > 0)
+  if (!response)
+    return;
+
+  if (response.emulatedPatterns.length > 0)
   {
     let elemHideEmulation = new ElemHideEmulation(
       elements => { elements.forEach(hideElement); }
     );
     elemHideEmulation.apply(response.emulatedPatterns);
   }
+
+  if (response.subscribeLinks)
+    handleSubscribeLinks();
 }
 
 startElementCollapsing();
-applyContentFilters();
-handleSubscribeLinks();
+initContentFeatures();

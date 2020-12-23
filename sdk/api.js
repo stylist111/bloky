@@ -11,12 +11,11 @@ import {notifications} from "../adblockpluscore/lib/notifications.js";
 
 import * as frameState from "./frame-state.js";
 import * as requestBlocker from "./request-blocker.js";
-import * as contentFilter from "./content-filter.js";
+import * as messageResponder from "./message-responder.js";
 import * as popupBlocker from "./popup-blocker.js";
 import * as csp from "./csp.js";
-import * as subscriptions from "./subscriptions.js";
 
-export let onSubscribeLinkClicked = subscriptions.onSubscribeLinkClicked;
+export {onSubscribeLinkClicked} from "./subscriptions.js";
 
 export function configureDefaultSubscriptions()
 {
@@ -107,9 +106,8 @@ export async function start()
   {
     requestBlocker.start();
     popupBlocker.start();
-    contentFilter.start();
+    messageResponder.start();
     csp.start();
-    subscriptions.start();
   }
 }
 
@@ -120,7 +118,7 @@ export function stop()
   frameState.stop();
   requestBlocker.stop();
   popupBlocker.stop();
-  contentFilter.stop();
+  messageResponder.stop();
   csp.stop();
   notifications.stop();
 }

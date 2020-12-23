@@ -9,25 +9,22 @@ import snippetsLibrarySource
 
 import {isAllowlisted, getMatchContext} from "./frame-state.js";
 
-function onMessage(message, sender)
+export function applyContentFilters(tabId, frameId)
 {
-  if (typeof message != "object" || message.type != "abp:apply-content-filters")
-    return;
+  let emulatedPatterns = [];
 
-  let response = {emulatedPatterns: []};
-
-  if (!isAllowlisted(sender.tab.id, sender.frameId))
+  if (!isAllowlisted(tabId, frameId))
   {
-    let {docDomain} = getMatchContext(sender.tab.id, sender.frameId);
+    let {docDomain} = getMatchContext(tabId, frameId);
     let filters = snippets.getFilters(docDomain);
 
     if (filters.length > 0)
     {
       let scripts = filters.filter(ok => ok).map(({script}) => script);
       browser.tabs.executeScript(
-        sender.tab.id,
+        tabId,
         {
-          frameId: sender.frameId,
+          frameId,
           code: compileScript(scripts, [snippetsLibrarySource]),
           matchAboutBlank: true,
           runAt: "document_start"
@@ -35,37 +32,27 @@ function onMessage(message, sender)
       ).catch(() => {});
     }
 
-    if (!isAllowlisted(sender.tab.id, sender.frameId, contentTypes.ELEMHIDE))
+    if (!isAllowlisted(tabId, frameId, contentTypes.ELEMHIDE))
     {
-      let specificOnly = isAllowlisted(sender.tab.id, sender.frameId,
+      let specificOnly = isAllowlisted(tabId, frameId,
                                        contentTypes.GENERICHIDE);
       let {code} = elemHide.getStyleSheet(docDomain, specificOnly);
 
       browser.tabs.insertCSS(
-        sender.tab.id,
+        tabId,
         {
           code,
           cssOrigin: "user",
-          frameId: sender.frameId,
+          frameId,
           matchAboutBlank: true,
           runAt: "document_start"
         }
       ).catch(() => {});  // Fails if tab or frame no longer exists
 
       for (let {selector, text} of elemHideEmulation.getFilters(docDomain))
-        response.emulatedPatterns.push({selector, text});
+        emulatedPatterns.push({selector, text});
     }
   }
 
-  return Promise.resolve(response);
-}
-
-export function start()
-{
-  browser.runtime.onMessage.addListener(onMessage);
-}
-
-export function stop()
-{
-  browser.runtime.onMessage.removeListener(onMessage);
+  return emulatedPatterns;
 }

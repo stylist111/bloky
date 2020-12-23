@@ -1,28 +1,71 @@
-import browser from "webextension-polyfill";
 import {EventDispatcher} from "./events.js";
+
+const ALLOWED_DOMAINS = new Set([
+  "abpchina.org",
+  "abpindo.blogspot.com",
+  "abpvn.com",
+  "adblock.ee",
+  "adblock.gardar.net",
+  "adblockplus.me",
+  "adblockplus.org",
+  "easylist.to",
+  "eyeo.com",
+  "fanboy.co.nz",
+  "filterlists.com",
+  "forums.lanik.us",
+  "github.com",
+  "github.io",
+  "gitlab.com",
+  "gitlab.io",
+  "gurud.ee",
+  "i-dont-care-about-cookies.eu",
+  "spam404.com",
+  "stanev.org",
+  "void.gr",
+  "xfiles.noads.it",
+  "zoso.ro"
+]);
 
 let dispatchFunction;
 
-function onMessage(message)
+function isDomainAllowed(domain)
 {
-  if (typeof message != "object" ||
-      message.type != "abp:subscribe-link-clicked")
-    return;
+  if (domain.endsWith("."))
+    domain = domain.substring(0, domain.length - 1);
 
-  dispatchFunction({title: message.title, url: message.url});
+  while (true)
+  {
+    if (ALLOWED_DOMAINS.has(domain))
+      return true;
+    let index = domain.indexOf(".");
+    if (index == -1)
+      return false;
+    domain = domain.substr(index + 1);
+  }
 }
 
-export let onSubscribeLinkClicked = new EventDispatcher(dispatch =>
+export function subscribeLinksEnabled(url)
 {
-  dispatchFunction = dispatch;
-});
+  if (!dispatchFunction)
+    return false;
 
-export function start()
-{
-  browser.runtime.onMessage.addListener(onMessage);
+  let urlObj = new URL(url);
+  return urlObj.protocol == "https:" && isDomainAllowed(urlObj.hostname);
 }
 
-export function stop()
+export function subscribeLinkClicked(url, title)
 {
-  browser.runtime.onMessage.removeListener(onMessage);
+  if (dispatchFunction)
+    dispatchFunction({url, title});
 }
+
+export let onSubscribeLinkClicked = new EventDispatcher(
+  dispatch =>
+  {
+    dispatchFunction = dispatch;
+  },
+  () =>
+  {
+    dispatchFunction = null;
+  }
+);
