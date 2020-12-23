@@ -1,11 +1,12 @@
 import browser from "webextension-polyfill";
 
-import {elemHide} from "../adblockpluscore/lib/elemHide.js";
-import {elemHideEmulation} from "../adblockpluscore/lib/elemHideEmulation.js";
-import {contentTypes} from "../adblockpluscore/lib/contentTypes.js";
-import {snippets, compileScript} from "../adblockpluscore/lib/snippets.js";
+import {elemHide} from "../../adblockpluscore/lib/elemHide.js";
+import {elemHideEmulation}
+  from "../../adblockpluscore/lib/elemHideEmulation.js";
+import {contentTypes} from "../../adblockpluscore/lib/contentTypes.js";
+import {snippets, compileScript} from "../../adblockpluscore/lib/snippets.js";
 import snippetsLibrarySource
-  from "raw-loader!../adblockpluscore/lib/content/snippets.js";
+  from "raw-loader!../../adblockpluscore/lib/content/snippets.js";
 
 import {isAllowlisted, getMatchContext} from "./frame-state.js";
 

@@ -1,11 +1,11 @@
 import browser from "webextension-polyfill";
 
-import {BlockingFilter} from "../adblockpluscore/lib/filterClasses.js";
-import {contentTypes} from "../adblockpluscore/lib/contentTypes.js";
-import {defaultMatcher} from "../adblockpluscore/lib/matcher.js";
+import {BlockingFilter} from "../../adblockpluscore/lib/filterClasses.js";
+import {contentTypes} from "../../adblockpluscore/lib/contentTypes.js";
+import {defaultMatcher} from "../../adblockpluscore/lib/matcher.js";
 
 import {isAllowlisted, getMatchContext} from "./frame-state.js";
-import {ignoreNoConnectionError} from "./errors.js";
+import {ignoreNoConnectionError} from "../errors.js";
 
 const EXTENSION_PROTOCOL = new URL(browser.runtime.getURL("")).protocol;
 

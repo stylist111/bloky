@@ -1,8 +1,8 @@
 import browser from "webextension-polyfill";
-import {parseURL} from "../adblockpluscore/lib/url.js";
-import {defaultMatcher} from "../adblockpluscore/lib/matcher.js";
-import {contentTypes} from "../adblockpluscore/lib/contentTypes.js";
-import {verifySignature} from "../adblockpluscore/lib/rsa.js";
+import {parseURL} from "../../adblockpluscore/lib/url.js";
+import {defaultMatcher} from "../../adblockpluscore/lib/matcher.js";
+import {contentTypes} from "../../adblockpluscore/lib/contentTypes.js";
+import {verifySignature} from "../../adblockpluscore/lib/rsa.js";
 
 let state = new Map();
 let startupPromise;

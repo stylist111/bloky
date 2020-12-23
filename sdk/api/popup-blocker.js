@@ -1,8 +1,8 @@
 import browser from "webextension-polyfill";
 
-import {defaultMatcher} from "../adblockpluscore/lib/matcher.js";
-import {BlockingFilter} from "../adblockpluscore/lib/filterClasses.js";
-import {contentTypes} from "../adblockpluscore/lib/contentTypes.js";
+import {defaultMatcher} from "../../adblockpluscore/lib/matcher.js";
+import {BlockingFilter} from "../../adblockpluscore/lib/filterClasses.js";
+import {contentTypes} from "../../adblockpluscore/lib/contentTypes.js";
 
 import {getMatchContext, isAllowlisted} from "./frame-state.js";
 

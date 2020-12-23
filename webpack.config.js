@@ -7,7 +7,7 @@ const path = require("path");
 module.exports = {
   entry: {
     api: {
-      import: "./sdk/api.js",
+      import: "./sdk/api/index.js",
       library: {name: "ABP", type: "umd"}
     },
     content: "./sdk/content/index.js"
@@ -25,9 +25,9 @@ module.exports = {
   },
   resolve: {
     alias: {
-      io$: path.resolve(__dirname, "./sdk/io.js"),
-      prefs$: path.resolve(__dirname, "./sdk/prefs.js"),
-      info$: path.resolve(__dirname, "./sdk/info.js")
+      io$: path.resolve(__dirname, "./sdk/api/io.js"),
+      prefs$: path.resolve(__dirname, "./sdk/api/prefs.js"),
+      info$: path.resolve(__dirname, "./sdk/api/info.js")
     }
   },
   module: {
