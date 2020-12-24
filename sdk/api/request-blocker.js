@@ -3,6 +3,7 @@ import browser from "webextension-polyfill";
 import {BlockingFilter} from "../../adblockpluscore/lib/filterClasses.js";
 import {contentTypes} from "../../adblockpluscore/lib/contentTypes.js";
 import {defaultMatcher} from "../../adblockpluscore/lib/matcher.js";
+import {filterNotifier} from "../../adblockpluscore/lib/filterNotifier.js";
 
 import {isAllowlisted, getMatchContext} from "./frame-state.js";
 import {ignoreNoConnectionError} from "../errors.js";
@@ -95,6 +96,25 @@ function onBeforeRequest(details)
   }
 }
 
+function onBeforeNavigate()
+{
+  browser.webNavigation.onBeforeNavigate.removeListener(onBeforeNavigate);
+  browser.webRequest.handlerBehaviorChanged();
+}
+
+function onFilterChange()
+{
+  browser.webNavigation.onBeforeNavigate.addListener(onBeforeNavigate);
+}
+
+const FILTER_EVENTS = ["subscription.added",
+                       "subscription.removed",
+                       "subscription.updated",
+                       "subscription.disabled",
+                       "filter.added",
+                       "filter.removed",
+                       "filterState.enabled"];
+
 export function start()
 {
   if (browser.webRequest.onBeforeRequest.hasListener(onBeforeRequest))
@@ -109,9 +129,15 @@ export function start()
     },
     ["blocking"]
   );
+
+  for (let event of FILTER_EVENTS)
+    filterNotifier.on(event, onFilterChange);
 }
 
 export function stop()
 {
   browser.webRequest.onBeforeRequest.removeListener(onBeforeRequest);
+
+  for (let event of FILTER_EVENTS)
+    filterNotifier.off(event, onFilterChange);
 }

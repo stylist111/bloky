@@ -71,7 +71,7 @@ function getDefaultSubscriptions()
 
 export function addFilter(filter)
 {
-  filterEngine.add(Filter.fromText(filter));
+  filterStorage.addFilter(Filter.fromText(filter));
 }
 
 export function addSubscription(url)
