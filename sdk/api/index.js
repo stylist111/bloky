@@ -10,10 +10,9 @@ import {recommendations} from "../../adblockpluscore/lib/recommendations.js";
 import {notifications} from "../../adblockpluscore/lib/notifications.js";
 
 import * as frameState from "./frame-state.js";
-import * as requestBlocker from "./request-blocker.js";
+import * as requestFilter from "./request-filter.js";
 import * as messageResponder from "./message-responder.js";
 import * as popupBlocker from "./popup-blocker.js";
-import * as csp from "./csp.js";
 
 export {onSubscribeLinkClicked} from "./subscribe-links.js";
 
@@ -104,10 +103,9 @@ export async function start()
 
   if (!stopped)
   {
-    requestBlocker.start();
+    requestFilter.start();
     popupBlocker.start();
     messageResponder.start();
-    csp.start();
   }
 }
 
@@ -116,9 +114,8 @@ export function stop()
   stopped = true;
   synchronizer.stop();
   frameState.stop();
-  requestBlocker.stop();
+  requestFilter.stop();
   popupBlocker.stop();
   messageResponder.stop();
-  csp.stop();
   notifications.stop();
 }

@@ -5,7 +5,8 @@ import {contentTypes} from "../../adblockpluscore/lib/contentTypes.js";
 import {defaultMatcher} from "../../adblockpluscore/lib/matcher.js";
 import {filterNotifier} from "../../adblockpluscore/lib/filterNotifier.js";
 
-import {isAllowlisted, getMatchContext} from "./frame-state.js";
+import {isAllowlisted, getMatchContext, getSitekeyFromHeaders}
+  from "./frame-state.js";
 import {ignoreNoConnectionError} from "../errors.js";
 
 const EXTENSION_PROTOCOL = new URL(browser.runtime.getURL("")).protocol;
@@ -96,6 +97,37 @@ function onBeforeRequest(details)
   }
 }
 
+function isRequestAllowlisted(request, typeMask, docDomain, sitekey)
+{
+  return !!defaultMatcher.match(request.url, typeMask, docDomain, sitekey) ||
+         isAllowlisted(request.tabId, request.parentFrameId, typeMask);
+}
+
+function onHeadersReceived(details)
+{
+  let {sitekey: parentSitekey,
+       docDomain} = getMatchContext(details.tabId, details.parentFrameId);
+  let sitekey = getSitekeyFromHeaders(details.responseHeaders,
+                                      details.url) || parentSitekey;
+
+  if (!(defaultMatcher.match(details.url, contentTypes.CSP, docDomain,
+                             sitekey, false) instanceof BlockingFilter))
+    return;
+
+  if (isRequestAllowlisted(details, contentTypes.DOCUMENT, docDomain, sitekey))
+    return;
+
+  let specificOnly = isRequestAllowlisted(details, contentTypes.GENERICBLOCK,
+                                          docDomain, sitekey);
+  let matches = defaultMatcher.search(details.url, contentTypes.CSP, docDomain,
+                                      sitekey, specificOnly, "blocking");
+
+  for (let {csp} of matches.blocking)
+    details.responseHeaders.push({name: "Content-Security-Policy", value: csp});
+
+  return {responseHeaders: details.responseHeaders};
+}
+
 function onBeforeNavigate()
 {
   browser.webNavigation.onBeforeNavigate.removeListener(onBeforeNavigate);
@@ -117,26 +149,42 @@ const FILTER_EVENTS = ["subscription.added",
 
 export function start()
 {
-  if (browser.webRequest.onBeforeRequest.hasListener(onBeforeRequest))
-    return;
+  if (!browser.webRequest.onBeforeRequest.hasListener(onBeforeRequest))
+  {
+    browser.webRequest.onBeforeRequest.addListener(
+      onBeforeRequest,
+      {
+        types: Object.values(browser.webRequest.ResourceType)
+                     .filter(type => type != "main_frame"),
+        urls: ["http://*/*", "https://*/*", "ws://*/*", "wss://*/*"]
+      },
+      ["blocking"]
+    );
+  }
 
-  browser.webRequest.onBeforeRequest.addListener(
-    onBeforeRequest,
-    {
-      types: Object.values(browser.webRequest.ResourceType)
-                   .filter(type => type != "main_frame"),
-      urls: ["http://*/*", "https://*/*", "ws://*/*", "wss://*/*"]
-    },
-    ["blocking"]
-  );
+  if (!browser.webRequest.onHeadersReceived.hasListener(onHeadersReceived))
+  {
+    browser.webRequest.onHeadersReceived.addListener(
+      onHeadersReceived,
+      {
+        urls: ["http://*/*", "https://*/*"],
+        types: ["main_frame", "sub_frame"]
+      },
+      ["blocking", "responseHeaders"]
+    );
+  }
 
   for (let event of FILTER_EVENTS)
-    filterNotifier.on(event, onFilterChange);
+  {
+    if (!filterNotifier.listeners(event).includes(onFilterChange))
+      filterNotifier.on(event, onFilterChange);
+  }
 }
 
 export function stop()
 {
   browser.webRequest.onBeforeRequest.removeListener(onBeforeRequest);
+  browser.webRequest.onHeadersReceived.removeListener(onHeadersReceived);
 
   for (let event of FILTER_EVENTS)
     filterNotifier.off(event, onFilterChange);
