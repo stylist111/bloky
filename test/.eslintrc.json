@@ -1,0 +1,13 @@
+{
+  "env": {
+    "browser": true,
+    "mocha": true,
+    "webextensions": true
+  },
+  "parserOptions": {
+    "sourceType": "module"
+  },
+  "globals": {
+    "expect": "readonly"
+  }
+}
