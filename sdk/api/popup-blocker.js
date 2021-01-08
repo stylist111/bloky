@@ -1,10 +1,10 @@
 import browser from "webextension-polyfill";
 
-import {defaultMatcher} from "../../adblockpluscore/lib/matcher.js";
+import {defaultMatcher as matcher} from "../../adblockpluscore/lib/matcher.js";
 import {BlockingFilter} from "../../adblockpluscore/lib/filterClasses.js";
 import {contentTypes} from "../../adblockpluscore/lib/contentTypes.js";
 
-import {getMatchContext, isAllowlisted} from "./frame-state.js";
+import {getFrameInfo} from "./frame-state.js";
 
 let loadingPopups = new Map();
 
@@ -21,11 +21,12 @@ function forgetPopup(tabId)
   }
 }
 
-function checkPotentialPopup(tabId, url, context)
+function checkPotentialPopup(tabId, url, frame)
 {
-  let filter = defaultMatcher.match(
+  let specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) != 0;
+  let filter = matcher.match(
     url || "about:blank", contentTypes.POPUP,
-    context.docDomain, context.sitekey, context.specificOnly
+    frame.hostname, frame.sitekey, specificOnly
   );
 
   if (filter instanceof BlockingFilter)
@@ -37,9 +38,9 @@ function onPopupURLChanged(details)
   if (details.frameId != 0)
     return;
 
-  let context = loadingPopups.get(details.tabId);
-  if (context)
-    checkPotentialPopup(details.tabId, details.url, context);
+  let frame = loadingPopups.get(details.tabId);
+  if (frame)
+    checkPotentialPopup(details.tabId, details.url, frame);
 }
 
 function onCompleted(details)
@@ -50,12 +51,10 @@ function onCompleted(details)
 
 function onPopup({tabId, url, sourceTabId, sourceFrameId})
 {
-  if (isAllowlisted(sourceTabId, sourceFrameId))
-    return;
+  let frame = getFrameInfo(sourceTabId, sourceFrameId);
 
-  let context = getMatchContext(sourceTabId, sourceFrameId);
-  context.specificOnly = isAllowlisted(sourceTabId, sourceFrameId,
-                                       contentTypes.GENERICBLOCK);
+  if (frame.allowlisted & contentTypes.DOCUMENT)
+    return;
 
   if (loadingPopups.size == 0)
   {
@@ -71,8 +70,8 @@ function onPopup({tabId, url, sourceTabId, sourceFrameId})
     browser.tabs.onRemoved.addListener(forgetPopup);
   }
 
-  loadingPopups.set(tabId, context);
-  checkPotentialPopup(tabId, url, context);
+  loadingPopups.set(tabId, frame);
+  checkPotentialPopup(tabId, url, frame);
 }
 
 function onTabCreated({id, url, openerTabId})

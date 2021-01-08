@@ -91,22 +91,20 @@ export async function start()
 
   notifications.locale = browser.i18n.getUILanguage();
   notifications.start();
+  await filterEngine.initialize();
 
-  await Promise.all([
-    filterEngine.initialize().then(() =>
-    {
-      if (!stopped)
-        synchronizer.start();
-    }),
-    frameState.start()
-  ]);
+  if (stopped)
+    return;
 
-  if (!stopped)
-  {
-    requestFilter.start();
-    popupBlocker.start();
-    messageResponder.start();
-  }
+  synchronizer.start();
+  await frameState.start();
+
+  if (stopped)
+    return;
+
+  requestFilter.start();
+  popupBlocker.start();
+  messageResponder.start();
 }
 
 export function stop()

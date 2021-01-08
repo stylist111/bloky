@@ -1,43 +1,139 @@
 import browser from "webextension-polyfill";
+
 import {parseURL} from "../../adblockpluscore/lib/url.js";
-import {defaultMatcher} from "../../adblockpluscore/lib/matcher.js";
-import {contentTypes} from "../../adblockpluscore/lib/contentTypes.js";
+import {defaultMatcher as matcher} from "../../adblockpluscore/lib/matcher.js";
+import {ALLOWING_TYPES} from "../../adblockpluscore/lib/contentTypes.js";
 import {verifySignature} from "../../adblockpluscore/lib/rsa.js";
 
 let state = new Map();
 let startupPromise;
 
+class FrameInfo
+{
+  constructor(parent, url, pending)
+  {
+    let hostname;
+    let sitekey;
+    let allowlisted = 0;
+    let urlInfo = parseURL(url);
+
+    if (pending && pending.url != url)
+      pending = null;
+
+    if (!pending && (urlInfo.protocol == "http:" ||
+                     urlInfo.protocol == "https:"))
+      pending = new PendingFrameInfo(parent, url);
+
+    if (pending)
+    {
+      ({hostname} = urlInfo);
+      ({sitekey, allowlisted} = pending);
+    }
+    else if (parent)
+    {
+      ({hostname, sitekey, allowlisted} = parent);
+    }
+
+    this.hostname = hostname;
+    this.sitekey = sitekey;
+    this.allowlisted = allowlisted;
+    this.pending = null;
+  }
+}
+
+class PendingFrameInfo
+{
+  constructor(parent, url, sitekey)
+  {
+    let allowlisted = 0;
+    let hostname;
+
+    if (parent)
+    {
+      ({allowlisted, hostname} = parent);
+
+      if (!sitekey)
+        ({sitekey} = parent);
+    }
+
+    while (true)
+    {
+      let typeMask = ~allowlisted & ALLOWING_TYPES;
+      let filter = matcher.match(url, typeMask, hostname, sitekey);
+
+      if (!filter)
+        break;
+
+      allowlisted |= filter.contentType & ALLOWING_TYPES;
+    }
+
+    this.url = url;
+    this.sitekey = sitekey;
+    this.allowlisted = allowlisted;
+  }
+}
+
 async function discoverExistingFrames()
 {
   let tabs = await browser.tabs.query({});
   await Promise.all(tabs.map(({id: tabId}) =>
-    browser.webNavigation.getAllFrames({tabId}).then(frames =>
+    browser.webNavigation.getAllFrames({tabId}).then(rawFrames =>
     {
-      if (!startupPromise)
+      if (!rawFrames || !startupPromise)
         return;
 
-      // On Firefox at least, for suspended tabs frames is null here.
-      if (!frames)
-        return;
+      rawFrames.sort((a, b) => a.frameId - b.frameId);
 
-      state.set(tabId, new Map(frames.map(
-        ({frameId, parentFrameId, url}) => [frameId, {parentFrameId, url}]
-      )));
+      let frames = new Map();
+      state.set(tabId, frames);
+
+      for (let {frameId, parentFrameId, url} of rawFrames)
+        frames.set(frameId, new FrameInfo(frames.get(parentFrameId), url));
     })
   ));
+}
+
+function onHeadersReceived(details)
+{
+  let frames = state.get(details.tabId);
+  if (!frames)
+  {
+    frames = new Map();
+    state.set(details.tabId, frames);
+  }
+
+  let frame = frames.get(details.frameId);
+  let parent = frames.get(details.parentFrameId);
+  if (!frame)
+  {
+    frame = new FrameInfo(parent, "about:blank");
+    frames.set(details.frameId, frame);
+  }
+
+  let sitekey = getSitekeyFromHeaders(details.responseHeaders, details.url);
+  frame.pending = new PendingFrameInfo(parent, details.url, sitekey);
 }
 
 function onCommitted({tabId, frameId, parentFrameId, url})
 {
   let frames = state.get(tabId);
-  let frame = frames && frames.get(frameId);
-  let sitekey = frame && frame.pendingSitekey || null;
+  let pending;
+  let parent;
+
+  if (frames)
+  {
+    let frame = frames.get(frameId);
+    pending = frame && frame.pending;
+    parent = frames.get(parentFrameId);
+  }
+
   if (frameId == 0 || !frames)
   {
     frames = new Map();
     state.set(tabId, frames);
   }
-  frames.set(frameId, {parentFrameId, url, sitekey});
+
+  frames.set(frameId, new FrameInfo(parent, url, pending));
 }
 
 function onRemoved(tabId)
@@ -67,7 +163,7 @@ function verifyAndExtractSitekey(token, url)
   return key;
 }
 
-export function getSitekeyFromHeaders(headers, url)
+function getSitekeyFromHeaders(headers, url)
 {
   for (let header of headers)
   {
@@ -81,24 +177,10 @@ export function getSitekeyFromHeaders(headers, url)
   return null;
 }
 
-function onHeadersReceived({tabId, frameId, responseHeaders, url})
+export function getFrameInfo(tabId, frameId)
 {
-  let pendingSitekey = getSitekeyFromHeaders(responseHeaders, url);
   let frames = state.get(tabId);
-  let frame = frames && frames.get(frameId);
-  if (frame)
-  {
-    frame.pendingSitekey = pendingSitekey;
-  }
-  else if (pendingSitekey)
-  {
-    if (!frames)
-    {
-      frames = new Map();
-      state.set(tabId, frames);
-    }
-    frames.set(frameId, {pendingSitekey});
-  }
+  return frames && frames.get(frameId);
 }
 
 export async function start()
@@ -132,50 +214,4 @@ export function stop()
   browser.webNavigation.onCommitted.removeListener(onCommitted);
   browser.tabs.onRemoved.removeListener(onRemoved);
   browser.tabs.onReplaced.removeListener(onReplaced);
-}
-
-function* getFrameAncestors(tabId, frameId)
-{
-  let frames = state.get(tabId);
-  if (!frames)
-    return;
-
-  for (let frame; frame = frames.get(frameId); frameId = frame.parentFrameId)
-    yield frame;
-}
-
-function findMatchContext(frameAncestors, frameIsParent)
-{
-  let docDomain = null;
-  let sitekey = null;
-
-  for (let frame of frameAncestors)
-  {
-    if (!docDomain && frameIsParent)
-      docDomain = parseURL(frame.url).hostname;
-    if (!sitekey)
-      sitekey = frame.sitekey;
-    frameIsParent = true;
-  }
-
-  return {docDomain, sitekey};
-}
-
-export function isAllowlisted(tabId, frameId, typeMask = contentTypes.DOCUMENT)
-{
-  let ancestors = Array.from(getFrameAncestors(tabId, frameId));
-  for (let i = 0; i < ancestors.length; i++)
-  {
-    let {docDomain, sitekey} = findMatchContext(ancestors.slice(i), false);
-    let filter = defaultMatcher.match(ancestors[i].url, typeMask,
-                                      docDomain, sitekey, false);
-    if (filter)
-      return true;
-  }
-  return false;
-}
-
-export function getMatchContext(tabId, frameId)
-{
-  return findMatchContext(getFrameAncestors(tabId, frameId), true);
 }

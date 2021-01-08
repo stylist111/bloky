@@ -2,11 +2,10 @@ import browser from "webextension-polyfill";
 
 import {BlockingFilter} from "../../adblockpluscore/lib/filterClasses.js";
 import {contentTypes} from "../../adblockpluscore/lib/contentTypes.js";
-import {defaultMatcher} from "../../adblockpluscore/lib/matcher.js";
+import {defaultMatcher as matcher} from "../../adblockpluscore/lib/matcher.js";
 import {filterNotifier} from "../../adblockpluscore/lib/filterNotifier.js";
 
-import {isAllowlisted, getMatchContext, getSitekeyFromHeaders}
-  from "./frame-state.js";
+import {getFrameInfo} from "./frame-state.js";
 import {ignoreNoConnectionError} from "../errors.js";
 
 const EXTENSION_PROTOCOL = new URL(browser.runtime.getURL("")).protocol;
@@ -68,16 +67,14 @@ function onBeforeRequest(details)
   let frameId = details.type == "sub_frame" ? details.parentFrameId :
                                               details.frameId;
 
-  if (isAllowlisted(details.tabId, frameId))
+  let frame = getFrameInfo(details.tabId, frameId);
+  if (frame.allowlisted & contentTypes.DOCUMENT)
     return;
 
   let type = resourceTypes.get(details.type) || "OTHER";
-  let {docDomain, sitekey} = getMatchContext(details.tabId, frameId);
-  let specificOnly = isAllowlisted(details.tabId,
-                                   frameId, contentTypes.GENERICBLOCK);
-
-  let filter = defaultMatcher.match(details.url, contentTypes[type],
-                                    docDomain, sitekey, specificOnly);
+  let specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) != 0;
+  let filter = matcher.match(details.url, contentTypes[type],
+                             frame.hostname, frame.sitekey, specificOnly);
 
   if (filter instanceof BlockingFilter)
   {
@@ -97,30 +94,19 @@ function onBeforeRequest(details)
   }
 }
 
-function isRequestAllowlisted(request, typeMask, docDomain, sitekey)
-{
-  return !!defaultMatcher.match(request.url, typeMask, docDomain, sitekey) ||
-         isAllowlisted(request.tabId, request.parentFrameId, typeMask);
-}
 
 function onHeadersReceived(details)
 {
-  let {sitekey: parentSitekey,
-       docDomain} = getMatchContext(details.tabId, details.parentFrameId);
-  let sitekey = getSitekeyFromHeaders(details.responseHeaders,
-                                      details.url) || parentSitekey;
+  let frame = getFrameInfo(details.tabId, details.frameId).pending;
 
-  if (!(defaultMatcher.match(details.url, contentTypes.CSP, docDomain,
-                             sitekey, false) instanceof BlockingFilter))
+  if (frame.allowlisted & contentTypes.DOCUMENT)
     return;
 
-  if (isRequestAllowlisted(details, contentTypes.DOCUMENT, docDomain, sitekey))
-    return;
-
-  let specificOnly = isRequestAllowlisted(details, contentTypes.GENERICBLOCK,
-                                          docDomain, sitekey);
-  let matches = defaultMatcher.search(details.url, contentTypes.CSP, docDomain,
-                                      sitekey, specificOnly, "blocking");
+  let parentFrame = getFrameInfo(details.tabId, details.parentFrameId);
+  let specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) != 0;
+  let matches = matcher.search(details.url, contentTypes.CSP,
+                               parentFrame && parentFrame.hostname,
+                               frame.sitekey, specificOnly, "blocking");
 
   for (let {csp} of matches.blocking)
     details.responseHeaders.push({name: "Content-Security-Policy", value: csp});

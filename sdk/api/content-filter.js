@@ -8,16 +8,16 @@ import {snippets, compileScript} from "../../adblockpluscore/lib/snippets.js";
 import snippetsLibrarySource
   from "raw-loader!../../adblockpluscore/lib/content/snippets.js";
 
-import {isAllowlisted, getMatchContext} from "./frame-state.js";
+import {getFrameInfo} from "./frame-state.js";
 
 export function applyContentFilters(tabId, frameId)
 {
   let emulatedPatterns = [];
+  let frame = getFrameInfo(tabId, frameId);
 
-  if (!isAllowlisted(tabId, frameId))
+  if (!(frame.allowlisted & contentTypes.DOCUMENT))
   {
-    let {docDomain} = getMatchContext(tabId, frameId);
-    let filters = snippets.getFilters(docDomain);
+    let filters = snippets.getFilters(frame.hostname);
 
     if (filters.length > 0)
     {
@@ -33,11 +33,10 @@ export function applyContentFilters(tabId, frameId)
       ).catch(() => {});
     }
 
-    if (!isAllowlisted(tabId, frameId, contentTypes.ELEMHIDE))
+    if (!(frame.allowlisted & contentTypes.ELEMHIDE))
     {
-      let specificOnly = isAllowlisted(tabId, frameId,
-                                       contentTypes.GENERICHIDE);
-      let {code} = elemHide.getStyleSheet(docDomain, specificOnly);
+      let specificOnly = (frame.allowlisted & contentTypes.GENERICHIDE) != 0;
+      let {code} = elemHide.getStyleSheet(frame.hostname, specificOnly);
 
       browser.tabs.insertCSS(
         tabId,
@@ -50,7 +49,7 @@ export function applyContentFilters(tabId, frameId)
         }
       ).catch(() => {});  // Fails if tab or frame no longer exists
 
-      for (let {selector, text} of elemHideEmulation.getFilters(docDomain))
+      for (let {selector, text} of elemHideEmulation.getFilters(frame.hostname))
         emulatedPatterns.push({selector, text});
     }
   }
