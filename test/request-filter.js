@@ -1,60 +1,82 @@
+const TEST_PAGES_URL = "http://localhost:3000";
 
 describe("Blocking", () =>
 {
-  before(function(done)
+  let page;
+  let ABP;
+
+  function onErrorOccurred(details)
+  {
+    if (page && page.tabId == details.tabId)
+      page.error = details;
+  }
+
+  function onCompleted(details)
+  {
+    if (page && details.tabId == page.tabId && details.frameId == 0)
+      page.resolve(page.error);
+  }
+
+  function openTestPage(path)
+  {
+    return new Promise(resolve =>
+    {
+      let url = `${TEST_PAGES_URL}/${path}`;
+      chrome.tabs.create({url, active: false}, tab =>
+      {
+        page = {tabId: tab.id, resolve, error: null};
+      });
+    });
+  }
+
+  before(done =>
   {
     chrome.runtime.getBackgroundPage(background =>
     {
-      this.ABP = background.ABP;
-
-      background.ABP.stop();
-
-      (background.browser ||
-       background.chrome).webRequest.onBeforeRequest.addListener = listener =>
-      {
-        this.onBeforeRequest = listener;
-      };
-      background.ABP.start().then(done, done);
+      ({ABP} = background);
+      done();
     });
+
+    chrome.webRequest.onErrorOccurred.addListener(
+      onErrorOccurred, {urls: ["<all_urls>"]}
+    );
+    chrome.webNavigation.onCompleted.addListener(onCompleted);
   });
 
-  it("blocks an image request", function()
+  after(() =>
   {
-    this.ABP.addFilter(
-      "||testpages.adblockplus.org/testfiles/image/static/$image"
-    );
-
-    let details = {
-      tabId: 1,
-      frameId: 0,
-      type: "image",
-      url: "https://testpages.adblockplus.org/testfiles/image/static/static.png"
-    };
-    let result = this.onBeforeRequest(details);
-
-    expect(result).toEqual({cancel: true});
+    chrome.webRequest.onErrorOccurred.removeListener(onErrorOccurred);
+    chrome.webNavigation.onCompleted.removeListener(onCompleted);
   });
 
-  it("does not block an image request when allowlisted", function()
+  afterEach(() =>
   {
-    this.ABP.addFilter(
-      "||testpages.adblockplus.org/testfiles/image/static/$image"
-    );
+    if (page)
+    {
+      chrome.tabs.remove(page.tabId);
+      page = null;
+    }
+  });
 
-    // negate the above rule by allowlisting the same image.
-    this.ABP.addFilter(
-      "@@testpages.adblockplus.org/testfiles/image/static/$image");
+  it("blocks an image request", async() =>
+  {
+    ABP.addFilter("/image.png^$image");
 
-    let details = {
-      tabId: 1,
-      frameId: 0,
-      type: "image",
-      url: "https://testpages.adblockplus.org/testfiles/image/static/static.png"
-    };
-    let result = this.onBeforeRequest(details);
+    let error = await openTestPage("test.html");
 
-    expect(result).not.toEqual(expect.objectContaining({
-      cancel: true
+    expect(error).toEqual(expect.objectContaining({
+      error: expect.stringMatching(/^net::ERR_BLOCKED_BY_CLIENT|NS_ERROR_ABORT$/),
+      url: `${TEST_PAGES_URL}/image.png`
     }));
+  });
+
+  it("does not block an image request when allowlisted", async() =>
+  {
+    ABP.addFilter("/image.png^$image");
+    ABP.addFilter("@@/image.png^$image");
+
+    let error = await openTestPage("test.html");
+
+    expect(error).toBeNull();
   });
 });

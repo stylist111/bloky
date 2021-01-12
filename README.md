@@ -10,6 +10,7 @@
 
 ## How to run unit tests
 
+- start the test pages server `node test/start-server.mjs`
 - run `npx webpack`
 - reload the extension
 - navigate to: `chrome-extension://{EXTENSION_ID}/test/index.html`
