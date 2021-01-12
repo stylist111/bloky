@@ -4,6 +4,7 @@ describe("Blocking", () =>
 {
   let page;
   let ABP;
+  let restoreSubscriptions;
 
   function onErrorOccurred(details)
   {
@@ -34,6 +35,7 @@ describe("Blocking", () =>
     chrome.runtime.getBackgroundPage(background =>
     {
       ({ABP} = background);
+      restoreSubscriptions = ABP.clearSubscriptions();
       done();
     });
 
@@ -47,6 +49,9 @@ describe("Blocking", () =>
   {
     chrome.webRequest.onErrorOccurred.removeListener(onErrorOccurred);
     chrome.webNavigation.onCompleted.removeListener(onCompleted);
+
+    if (restoreSubscriptions)
+      restoreSubscriptions();
   });
 
   afterEach(() =>
@@ -56,6 +61,8 @@ describe("Blocking", () =>
       chrome.tabs.remove(page.tabId);
       page = null;
     }
+
+    ABP.clearSubscriptions();
   });
 
   it("blocks an image request", async() =>

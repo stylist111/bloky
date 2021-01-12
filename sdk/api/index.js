@@ -83,6 +83,25 @@ export function addSubscription(url)
     synchronizer.execute(subscription);
 }
 
+export function clearSubscriptions()
+{
+  let subscriptions = [];
+
+  for (let subscription of filterStorage.subscriptions())
+  {
+    subscriptions.push(subscription);
+    filterStorage.removeSubscription(subscription);
+  }
+
+  return () =>
+  {
+    clearSubscriptions();
+
+    for (let subscription of subscriptions)
+      filterStorage.addSubscription(subscription);
+  };
+}
+
 let stopped = true;
 
 export async function start()
