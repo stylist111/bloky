@@ -4,7 +4,7 @@
 
 - Update the sub modules: `git submodule update --init`
 - Install: `npm i`
-- Lint: `npx eslint .`
+- Lint: `npm run lint`
 - Bundle: `npx webpack`
   - To debug the source code rather than the generated code add the `-d inline-source-map` option.
 

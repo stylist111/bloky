@@ -4,6 +4,9 @@
   "env": {
     "es2021": true
   },
+  "plugins": [
+    "eslint-plugin-html"
+  ],
   "rules": {
     "curly": [
       "error",

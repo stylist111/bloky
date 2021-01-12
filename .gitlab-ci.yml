@@ -10,7 +10,7 @@ cache:
 build:
   script:
     - npm install
-    - npx eslint .
+    - npm run lint
     - npx webpack
 
   artifacts:
