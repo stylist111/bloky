@@ -103,9 +103,14 @@ function onHeadersReceived(details)
     return;
 
   let parentFrame = getFrameInfo(details.tabId, details.parentFrameId);
+  let docDomain = parentFrame && parentFrame.hostname;
   let specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) != 0;
-  let matches = matcher.search(details.url, contentTypes.CSP,
-                               parentFrame && parentFrame.hostname,
+
+  if (!(matcher.match(details.url, contentTypes.CSP, docDomain,
+                      frame.sitekey, specificOnly) instanceof BlockingFilter))
+    return;
+
+  let matches = matcher.search(details.url, contentTypes.CSP, docDomain,
                                frame.sitekey, specificOnly, "blocking");
 
   for (let {csp} of matches.blocking)

@@ -15,7 +15,7 @@ describe("Blocking", () =>
   function onCompleted(details)
   {
     if (page && details.tabId == page.tabId && details.frameId == 0)
-      page.resolve(page.error);
+      page.resolve({tabId: page.tabId, error: page.error});
   }
 
   function openTestPage(path)
@@ -38,7 +38,7 @@ describe("Blocking", () =>
 
   async function expectBlockedRequest(path, resource)
   {
-    let error = await openTestPage(path);
+    let {error} = await openTestPage(path);
     expect(error).toEqual(expect.objectContaining({
       error: expect.stringMatching(/^net::ERR_BLOCKED_BY_CLIENT|NS_ERROR_ABORT$/),
       url: `${TEST_PAGES_URL}/${resource}`
@@ -90,7 +90,7 @@ describe("Blocking", () =>
   {
     ABP.addFilter("/image.png^$image");
     ABP.addFilter("@@/image.png^$image");
-    expect(await openTestPage("image.html")).toBeNull();
+    expect((await openTestPage("image.html")).error).toBeNull();
   });
 
   it("handles rewritten srcdoc frames", async() =>
@@ -98,6 +98,41 @@ describe("Blocking", () =>
     ABP.addFilter(`|${TEST_PAGES_URL}/image.png^`);
     await expectBlockedRequest("srcdoc.html", "image.png");
     ABP.addFilter(`@@|${TEST_PAGES_URL}/srcdoc.html^$document`);
-    expect(await openTestPage("srcdoc.html")).toBeNull();
+    expect((await openTestPage("srcdoc.html")).error).toBeNull();
+  });
+
+  describe("Content-Security-Policy", () =>
+  {
+    async function checkViolatedDirective()
+    {
+      let {tabId} = await openTestPage("csp.html");
+      return new Promise(resolve =>
+        chrome.tabs.executeScript(
+          tabId,
+          {code: "document.documentElement.dataset.violatedDirective"},
+          results => resolve(results[0])
+        )
+      );
+    }
+
+    it("gets injected", async() =>
+    {
+      ABP.addFilter("*$csp=img-src 'none'");
+      expect(await checkViolatedDirective()).toEqual("img-src");
+    });
+
+    it("does not get injected when allowlisted", async() =>
+    {
+      ABP.addFilter("*$csp=img-src 'none'");
+      ABP.addFilter(`@@|${TEST_PAGES_URL}/csp.html^$csp`);
+      expect(await checkViolatedDirective()).toEqual("unset");
+    });
+
+    it("does not get injected when document is allowlisted", async() =>
+    {
+      ABP.addFilter("*$csp=img-src 'none'");
+      ABP.addFilter(`@@|${TEST_PAGES_URL}/csp.html^$document`);
+      expect(await checkViolatedDirective()).toEqual("unset");
+    });
   });
 });
