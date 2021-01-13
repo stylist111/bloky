@@ -39,7 +39,7 @@ function startElementCollapsing()
 
   browser.runtime.onMessage.addListener((message, sender) =>
   {
-    if (typeof message != "object" || message.type != "abp:collapse")
+    if (!message || message.type != "abp:collapse")
       return;
 
     if (document.readyState == "loading")

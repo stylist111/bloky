@@ -6,7 +6,7 @@ import {subscribeLinkClicked, subscribeLinksEnabled}
 
 function onMessage(message, sender)
 {
-  if (typeof message != "object")
+  if (typeof message != "object" || message == null)
     return;
 
   switch (message.type)
