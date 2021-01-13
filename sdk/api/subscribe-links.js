@@ -13,6 +13,8 @@ const ALLOWED_DOMAINS = new Set([
   "fanboy.co.nz",
   "filterlists.com",
   "forums.lanik.us",
+  "gitee.com",
+  "gitee.io",
   "github.com",
   "github.io",
   "gitlab.com",
