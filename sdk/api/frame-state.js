@@ -114,7 +114,7 @@ function onHeadersReceived(details)
   frame.pending = new PendingFrameInfo(parent, details.url, sitekey);
 }
 
-function onCommitted({tabId, frameId, parentFrameId, url})
+function recordFrameFromNavigationEvent({tabId, frameId, parentFrameId, url})
 {
   let frames = state.get(tabId);
   let pending;
@@ -134,6 +134,17 @@ function onCommitted({tabId, frameId, parentFrameId, url})
   }
 
   frames.set(frameId, new FrameInfo(parent, url, pending));
+}
+
+function onBeforeNavigate(details)
+{
+  if (details.url == "about:srcdoc")
+    recordFrameFromNavigationEvent(details);
+}
+
+function onCommitted(details)
+{
+  recordFrameFromNavigationEvent(details);
 }
 
 function onRemoved(tabId)
@@ -197,6 +208,7 @@ export async function start()
       },
       ["responseHeaders"]
     );
+    browser.webNavigation.onBeforeNavigate.addListener(onBeforeNavigate);
     browser.webNavigation.onCommitted.addListener(onCommitted);
     browser.tabs.onRemoved.addListener(onRemoved);
     browser.tabs.onReplaced.addListener(onReplaced);
@@ -211,6 +223,7 @@ export function stop()
   state.clear();
 
   browser.webRequest.onHeadersReceived.removeListener(onHeadersReceived);
+  browser.webNavigation.onBeforeNavigate.removeListener(onBeforeNavigate);
   browser.webNavigation.onCommitted.removeListener(onCommitted);
   browser.tabs.onRemoved.removeListener(onRemoved);
   browser.tabs.onReplaced.removeListener(onReplaced);

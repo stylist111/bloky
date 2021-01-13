@@ -20,6 +20,12 @@ describe("Blocking", () =>
 
   function openTestPage(path)
   {
+    if (page)
+    {
+      chrome.tabs.remove(page.tabId);
+      page = null;
+    }
+
     return new Promise(resolve =>
     {
       let url = `${TEST_PAGES_URL}/${path}`;
@@ -28,6 +34,15 @@ describe("Blocking", () =>
         page = {tabId: tab.id, resolve, error: null};
       });
     });
+  }
+
+  async function expectBlockedRequest(path, resource)
+  {
+    let error = await openTestPage(path);
+    expect(error).toEqual(expect.objectContaining({
+      error: expect.stringMatching(/^net::ERR_BLOCKED_BY_CLIENT|NS_ERROR_ABORT$/),
+      url: `${TEST_PAGES_URL}/${resource}`
+    }));
   }
 
   before(done =>
@@ -68,22 +83,21 @@ describe("Blocking", () =>
   it("blocks an image request", async() =>
   {
     ABP.addFilter("/image.png^$image");
-
-    let error = await openTestPage("test.html");
-
-    expect(error).toEqual(expect.objectContaining({
-      error: expect.stringMatching(/^net::ERR_BLOCKED_BY_CLIENT|NS_ERROR_ABORT$/),
-      url: `${TEST_PAGES_URL}/image.png`
-    }));
+    await expectBlockedRequest("image.html", "image.png");
   });
 
   it("does not block an image request when allowlisted", async() =>
   {
     ABP.addFilter("/image.png^$image");
     ABP.addFilter("@@/image.png^$image");
+    expect(await openTestPage("image.html")).toBeNull();
+  });
 
-    let error = await openTestPage("test.html");
-
-    expect(error).toBeNull();
+  it("handles rewritten srcdoc frames", async() =>
+  {
+    ABP.addFilter(`|${TEST_PAGES_URL}/image.png^`);
+    await expectBlockedRequest("srcdoc.html", "image.png");
+    ABP.addFilter(`@@|${TEST_PAGES_URL}/srcdoc.html^$document`);
+    expect(await openTestPage("srcdoc.html")).toBeNull();
   });
 });
