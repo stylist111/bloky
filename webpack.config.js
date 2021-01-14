@@ -38,11 +38,6 @@ export default {
         test: /\.js$/,
         enforce: "pre",
         use: ["source-map-loader"]
-      },
-      {
-        test: /\.js$/,
-        include: [path.resolve(dirname, "sdk")],
-        type: "javascript/esm"
       }
     ]
   },

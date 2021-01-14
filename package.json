@@ -12,6 +12,7 @@
   "engines": {
     "npm": ">=6"
   },
+  "type": "module",
   "devDependencies": {
     "babel-eslint": "^10.1.0",
     "cross-env": "^7.0.3",
@@ -30,6 +31,6 @@
   },
   "scripts": {
     "bundle": "cross-env DISABLE_V8_COMPILE_CACHE=1 webpack",
-    "lint": "eslint --ext js,mjs,html ."
+    "lint": "eslint --ext js,html ."
   }
 }

@@ -10,7 +10,7 @@
 
 ## How to run unit tests
 
-- start the test pages server `node test/start-server.mjs`
+- start the test pages server `node test/start-server.js`
 - run `npm run bundle`
 - reload the extension
 - navigate to: `chrome-extension://{EXTENSION_ID}/test/index.html`

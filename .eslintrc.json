@@ -14,14 +14,17 @@
       "consistent"
     ]
   },
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "sourceType": "module"
+  },
   "overrides": [
     {
       "files": [
-        "*.mjs"
+        "background.js"
       ],
-      "parser": "babel-eslint",
       "parserOptions": {
-        "sourceType": "module"
+        "sourceType": "script"
       }
     }
   ]
