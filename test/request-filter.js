@@ -40,7 +40,7 @@ describe("Blocking", () =>
   {
     let {error} = await openTestPage(path);
     expect(error).toEqual(expect.objectContaining({
-      error: expect.stringMatching(/^net::ERR_BLOCKED_BY_CLIENT|NS_ERROR_ABORT$/),
+      error: expect.stringMatching(/^(net::ERR_BLOCKED_BY_CLIENT|NS_ERROR_ABORT)$/),
       url: `${TEST_PAGES_URL}/${resource}`
     }));
   }
