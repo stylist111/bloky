@@ -20,19 +20,15 @@ describe("Blocking", () =>
 
   function openTestPage(path)
   {
-    if (page)
-    {
-      chrome.tabs.remove(page.tabId);
-      page = null;
-    }
-
-    return new Promise(resolve =>
+    return new Promise((resolve, reject) =>
     {
       let url = `${TEST_PAGES_URL}/${path}`;
-      chrome.tabs.create({url, active: false}, tab =>
+      browser.tabs.create({url, active: false}).then(tab =>
       {
+        if (page)
+          browser.tabs.remove(page.tabId);
         page = {tabId: tab.id, resolve, error: null};
-      });
+      }, reject);
     });
   }
 
@@ -45,25 +41,21 @@ describe("Blocking", () =>
     }));
   }
 
-  before(done =>
+  before(async() =>
   {
-    chrome.runtime.getBackgroundPage(background =>
-    {
-      ({ABP} = background);
-      restoreSubscriptions = ABP.clearSubscriptions();
-      done();
-    });
+    ({ABP} = await browser.runtime.getBackgroundPage());
+    restoreSubscriptions = ABP.clearSubscriptions();
 
-    chrome.webRequest.onErrorOccurred.addListener(
+    browser.webRequest.onErrorOccurred.addListener(
       onErrorOccurred, {urls: ["<all_urls>"]}
     );
-    chrome.webNavigation.onCompleted.addListener(onCompleted);
+    browser.webNavigation.onCompleted.addListener(onCompleted);
   });
 
   after(() =>
   {
-    chrome.webRequest.onErrorOccurred.removeListener(onErrorOccurred);
-    chrome.webNavigation.onCompleted.removeListener(onCompleted);
+    browser.webRequest.onErrorOccurred.removeListener(onErrorOccurred);
+    browser.webNavigation.onCompleted.removeListener(onCompleted);
 
     if (restoreSubscriptions)
       restoreSubscriptions();
@@ -73,7 +65,7 @@ describe("Blocking", () =>
   {
     if (page)
     {
-      chrome.tabs.remove(page.tabId);
+      browser.tabs.remove(page.tabId);
       page = null;
     }
 
@@ -106,13 +98,8 @@ describe("Blocking", () =>
     async function checkViolatedDirective()
     {
       let {tabId} = await openTestPage("csp.html");
-      return new Promise(resolve =>
-        chrome.tabs.executeScript(
-          tabId,
-          {code: "document.documentElement.dataset.violatedDirective"},
-          results => resolve(results[0])
-        )
-      );
+      let code = "document.documentElement.dataset.violatedDirective";
+      return (await browser.tabs.executeScript(tabId, {code}))[0];
     }
 
     it("gets injected", async() =>
