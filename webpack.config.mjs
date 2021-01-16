@@ -1,10 +1,11 @@
-"use strict";
-
 /* eslint-env node */
 
-const path = require("path");
+import path from "path";
+import url from "url";
 
-module.exports = {
+let dirname = path.dirname(url.fileURLToPath(import.meta.url));
+
+export default {
   entry: {
     api: {
       import: "./sdk/api/index.js",
@@ -14,8 +15,9 @@ module.exports = {
   },
   output: {
     filename: "abp-[name].js",
-    path: path.resolve(__dirname, "dist")
+    path: path.resolve(dirname, "dist")
   },
+  mode: "production",
   optimization: {
     // We no not want to minimize our code.
     minimize: false
@@ -25,9 +27,9 @@ module.exports = {
   },
   resolve: {
     alias: {
-      io$: path.resolve(__dirname, "./sdk/api/io.js"),
-      prefs$: path.resolve(__dirname, "./sdk/api/prefs.js"),
-      info$: path.resolve(__dirname, "./sdk/api/info.js")
+      io$: path.resolve(dirname, "./sdk/api/io.js"),
+      prefs$: path.resolve(dirname, "./sdk/api/prefs.js"),
+      info$: path.resolve(dirname, "./sdk/api/info.js")
     }
   },
   module: {
@@ -39,7 +41,7 @@ module.exports = {
       },
       {
         test: /\.js$/,
-        include: [path.resolve(__dirname, "sdk")],
+        include: [path.resolve(dirname, "sdk")],
         type: "javascript/esm"
       }
     ]
