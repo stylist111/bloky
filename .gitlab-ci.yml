@@ -12,8 +12,8 @@ build:
     - npm install
     - npm run lint
     - npx webpack
-
   artifacts:
     paths:
       - dist/
     expire_in: 1 month
+  interruptible: true
