@@ -6,7 +6,6 @@
 - Install: `npm i`
 - Lint: `npm run lint`
 - Bundle: `npm run bundle`
-  - To debug the source code rather than the generated code run `npm run bundle -- -d inline-source-map`.
 
 ## How to run unit tests
 

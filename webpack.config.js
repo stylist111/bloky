@@ -5,7 +5,7 @@ import url from "url";
 
 let dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-export default {
+export default (env = {}) => ({
   entry: {
     api: {
       import: "./sdk/api/index.js",
@@ -17,11 +17,11 @@ export default {
     filename: "abp-[name].js",
     path: path.resolve(dirname, "dist")
   },
-  mode: "production",
+  mode: env.release ? "production" : "development",
   optimization: {
-    // We no not want to minimize our code.
-    minimize: false
+    minimize: !!env.release
   },
+  devtool: env.release ? "source-map" : "inline-source-map",
   performance: {
     hints: false
   },
@@ -44,4 +44,4 @@ export default {
   externals: {
     perf_hooks: "self"
   }
-};
+});
