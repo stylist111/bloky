@@ -93,6 +93,12 @@ describe("Blocking", () =>
     expect((await openTestPage("srcdoc.html")).error).toBeNull();
   });
 
+  it("does not block request sent by extension", async() =>
+  {
+    ABP.addFilter(`|${TEST_PAGES_URL}/image.png^`);
+    await fetch(`${TEST_PAGES_URL}/image.png`);
+  });
+
   describe("Content-Security-Policy", () =>
   {
     async function checkViolatedDirective()

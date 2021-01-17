@@ -40,24 +40,7 @@ function collapse(tabId, frameId, type, url)
 
 function onBeforeRequest(details)
 {
-  // Firefox provides us with the full origin URL, while Chromium (>=63)
-  // provides only the protocol + host of the (top-level) document which
-  // the request originates from through the "initiator" property.
-  let originUrl = null;
-  if (details.originUrl)
-    originUrl = details.originUrl;
-  else if (details.initiator && details.initiator != "null")
-    originUrl = details.initiator;
-
-  // Ignore requests sent by extensions or by Firefox itself:
-  // * Firefox intercepts requests sent by any extensions, indicated with
-  //   an "originUrl" starting with "moz-extension:".
-  // * Chromium intercepts requests sent by this extension only, indicated
-  //   on Chromium >=63 with an "initiator" starting with "chrome-extension:".
-  // * On Firefox, requests that don't relate to any document or extension are
-  //   indicated with an "originUrl" starting with "chrome:".
-  if (originUrl && (originUrl.startsWith(EXTENSION_PROTOCOL) ||
-                    originUrl.startsWith("chrome:")))
+  if ((details.initiator || details.documentUrl).startsWith(EXTENSION_PROTOCOL))
     return;
 
   // We are looking for the frame that contains the element which
