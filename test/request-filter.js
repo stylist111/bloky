@@ -75,28 +75,27 @@ describe("Blocking", () =>
     ABP.clearSubscriptions();
   });
 
-  it("blocks an image request", async() =>
+  it("blocks a request", async() =>
   {
     ABP.addFilter("/image.png^$image");
     await expectBlockedRequest("image.html", "image.png");
   });
 
-  it("does not block an image request when allowlisted", async() =>
+  it("does not block an allowlisted request", async() =>
   {
     ABP.addFilter("/image.png^$image");
     ABP.addFilter("@@/image.png^$image");
     expect((await openTestPage("image.html")).error).toBeNull();
   });
 
-  it("does not block request when allowlisted with sitekey", async() =>
+  it("does not block a request allowlisted by sitekey", async() =>
   {
     ABP.addFilter("/image.png^$image");
     ABP.addFilter(`@@$sitekey=${SITEKEY}`);
     expect((await openTestPage("image.html?sitekey=1")).error).toBeNull();
   });
 
-  it("does not block request when document is allowlisted " +
-     "with sitekey", async() =>
+  it("does not block a request from document allowlisted by sitekey", async() =>
   {
     ABP.addFilter("/image.png^$image");
     ABP.addFilter(`@@$document,sitekey=${SITEKEY}`);
@@ -111,7 +110,7 @@ describe("Blocking", () =>
     expect((await openTestPage("srcdoc.html")).error).toBeNull();
   });
 
-  it("does not block request sent by extension", async() =>
+  it("does not block a request sent by the extension", async() =>
   {
     ABP.addFilter(`|${TEST_PAGES_URL}/image.png^`);
     await fetch(`${TEST_PAGES_URL}/image.png`);
@@ -132,21 +131,21 @@ describe("Blocking", () =>
       expect(await checkViolatedDirective()).toEqual("img-src");
     });
 
-    it("does not inject header when allowlisted", async() =>
+    it("does not inject header for allowlisted requests", async() =>
     {
       ABP.addFilter("*$csp=img-src 'none'");
       ABP.addFilter(`@@|${TEST_PAGES_URL}/csp.html^$csp`);
       expect(await checkViolatedDirective()).toEqual("unset");
     });
 
-    it("does not inject header when document is allowlisted", async() =>
+    it("does not inject header for allowlisted requests by document", async() =>
     {
       ABP.addFilter("*$csp=img-src 'none'");
       ABP.addFilter(`@@|${TEST_PAGES_URL}/csp.html^$document`);
       expect(await checkViolatedDirective()).toEqual("unset");
     });
 
-    it("does not inject header when allowlisted with sitekey", async() =>
+    it("does not inject header for allowlisted requests by sitekey", async() =>
     {
       ABP.addFilter("*$csp=img-src 'none'");
       ABP.addFilter(`@@$csp,sitekey=${SITEKEY}`);
