@@ -1,4 +1,4 @@
-image: node:latest
+image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node12-no-python
 
 variables:
   GIT_SUBMODULE_STRATEGY: "recursive"
@@ -6,13 +6,15 @@ variables:
 cache:
   paths:
     - node_modules/
+    - adblockpluscore/*-snapshots/download-cache/
 
 build:
   script:
     - npm install
     - npm run lint
     - npm run bundle -- --env release
-
+    - node test/start-server.js &
+    - xvfb-run -a node test/runner.js
   artifacts:
     paths:
       - dist/

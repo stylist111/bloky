@@ -7,9 +7,16 @@
 - Lint: `npm run lint`
 - Bundle: `npm run bundle`
 
-## How to run unit tests
+## Unit tests
+
+### Manual run
 
 - start the test pages server `node test/start-server.js`
 - run `npm run bundle`
 - reload the extension
 - navigate to: `chrome-extension://{EXTENSION_ID}/test/index.html`
+
+### Automated run
+
+- start the test pages server `node test/start-server.js`
+- run `node test/runner.js`
