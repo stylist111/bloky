@@ -116,6 +116,11 @@ describe("Blocking", () =>
     await fetch(`${TEST_PAGES_URL}/image.png`);
   });
 
+  it("does not block requests with no filters", async() =>
+  {
+    expect((await openTestPage("image.html")).error).toBeNull();
+  });
+
   describe("Content-Security-Policy", () =>
   {
     async function checkViolatedDirective(query = "")
