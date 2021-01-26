@@ -1,13 +1,11 @@
 import browser from "webextension-polyfill";
 
+import {recommendations} from "../../adblockpluscore/lib/recommendations.js";
 import {filterEngine} from "../../adblockpluscore/lib/filterEngine.js";
 import {synchronizer} from "../../adblockpluscore/lib/synchronizer.js";
-import {Filter} from "../../adblockpluscore/lib/filterClasses.js";
-import {filterStorage} from "../../adblockpluscore/lib/filterStorage.js";
-import {Subscription, DownloadableSubscription}
-  from "../../adblockpluscore/lib/subscriptionClasses.js";
-import {recommendations} from "../../adblockpluscore/lib/recommendations.js";
 import {notifications} from "../../adblockpluscore/lib/notifications.js";
+import {Subscription} from "../../adblockpluscore/lib/subscriptionClasses.js";
+import {filterStorage} from "../../adblockpluscore/lib/filterStorage.js";
 
 import * as frameState from "./frame-state.js";
 import * as requestFilter from "./request-filter.js";
@@ -15,6 +13,8 @@ import * as messageResponder from "./message-responder.js";
 import * as popupBlocker from "./popup-blocker.js";
 
 export {onSubscribeLinkClicked} from "./subscribe-links.js";
+export {default as subscriptions} from "./subscriptions.js";
+export {default as filters} from "./filters.js";
 
 export function configureDefaultSubscriptions()
 {
@@ -66,40 +66,6 @@ function getDefaultSubscriptions()
   }
 
   return chosenSubscriptions;
-}
-
-export function addFilter(filter)
-{
-  filterStorage.addFilter(Filter.fromText(filter));
-}
-
-export function addSubscription(url)
-{
-  let subscription = Subscription.fromURL(url);
-
-  filterStorage.addSubscription(subscription);
-  if (subscription instanceof DownloadableSubscription &&
-      !subscription.lastDownload)
-    synchronizer.execute(subscription);
-}
-
-export function clearSubscriptions()
-{
-  let subscriptions = [];
-
-  for (let subscription of filterStorage.subscriptions())
-  {
-    subscriptions.push(subscription);
-    filterStorage.removeSubscription(subscription);
-  }
-
-  return () =>
-  {
-    clearSubscriptions();
-
-    for (let subscription of subscriptions)
-      filterStorage.addSubscription(subscription);
-  };
 }
 
 let stopped = true;

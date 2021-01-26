@@ -47,7 +47,7 @@ describe("Blocking", () =>
   before(async() =>
   {
     ({ABP} = await browser.runtime.getBackgroundPage());
-    restoreSubscriptions = ABP.clearSubscriptions();
+    restoreSubscriptions = ABP.subscriptions.removeAll();
 
     browser.webRequest.onErrorOccurred.addListener(
       onErrorOccurred, {urls: ["<all_urls>"]}
@@ -72,47 +72,47 @@ describe("Blocking", () =>
       page = null;
     }
 
-    ABP.clearSubscriptions();
+    ABP.subscriptions.removeAll();
   });
 
   it("blocks a request", async() =>
   {
-    ABP.addFilter("/image.png^$image");
+    ABP.filters.add("/image.png^$image");
     await expectBlockedRequest("image.html", "image.png");
   });
 
   it("does not block an allowlisted request", async() =>
   {
-    ABP.addFilter("/image.png^$image");
-    ABP.addFilter("@@/image.png^$image");
+    ABP.filters.add("/image.png^$image");
+    ABP.filters.add("@@/image.png^$image");
     expect((await openTestPage("image.html")).error).toBeNull();
   });
 
   it("does not block a request allowlisted by sitekey", async() =>
   {
-    ABP.addFilter("/image.png^$image");
-    ABP.addFilter(`@@$sitekey=${SITEKEY}`);
+    ABP.filters.add("/image.png^$image");
+    ABP.filters.add(`@@$sitekey=${SITEKEY}`);
     expect((await openTestPage("image.html?sitekey=1")).error).toBeNull();
   });
 
   it("does not block a request from document allowlisted by sitekey", async() =>
   {
-    ABP.addFilter("/image.png^$image");
-    ABP.addFilter(`@@$document,sitekey=${SITEKEY}`);
+    ABP.filters.add("/image.png^$image");
+    ABP.filters.add(`@@$document,sitekey=${SITEKEY}`);
     expect((await openTestPage("image.html?sitekey=1")).error).toBeNull();
   });
 
   it("handles rewritten srcdoc frames", async() =>
   {
-    ABP.addFilter(`|${TEST_PAGES_URL}/image.png^`);
+    ABP.filters.add(`|${TEST_PAGES_URL}/image.png^`);
     await expectBlockedRequest("srcdoc.html", "image.png");
-    ABP.addFilter(`@@|${TEST_PAGES_URL}/srcdoc.html^$document`);
+    ABP.filters.add(`@@|${TEST_PAGES_URL}/srcdoc.html^$document`);
     expect((await openTestPage("srcdoc.html")).error).toBeNull();
   });
 
   it("does not block a request sent by the extension", async() =>
   {
-    ABP.addFilter(`|${TEST_PAGES_URL}/image.png^`);
+    ABP.filters.add(`|${TEST_PAGES_URL}/image.png^`);
     await fetch(`${TEST_PAGES_URL}/image.png`);
   });
 
@@ -132,28 +132,28 @@ describe("Blocking", () =>
 
     it("injects header", async() =>
     {
-      ABP.addFilter("*$csp=img-src 'none'");
+      ABP.filters.add("*$csp=img-src 'none'");
       expect(await checkViolatedDirective()).toEqual("img-src");
     });
 
     it("does not inject header for allowlisted requests", async() =>
     {
-      ABP.addFilter("*$csp=img-src 'none'");
-      ABP.addFilter(`@@|${TEST_PAGES_URL}/csp.html^$csp`);
+      ABP.filters.add("*$csp=img-src 'none'");
+      ABP.filters.add(`@@|${TEST_PAGES_URL}/csp.html^$csp`);
       expect(await checkViolatedDirective()).toEqual("unset");
     });
 
     it("does not inject header for allowlisted requests by document", async() =>
     {
-      ABP.addFilter("*$csp=img-src 'none'");
-      ABP.addFilter(`@@|${TEST_PAGES_URL}/csp.html^$document`);
+      ABP.filters.add("*$csp=img-src 'none'");
+      ABP.filters.add(`@@|${TEST_PAGES_URL}/csp.html^$document`);
       expect(await checkViolatedDirective()).toEqual("unset");
     });
 
     it("does not inject header for allowlisted requests by sitekey", async() =>
     {
-      ABP.addFilter("*$csp=img-src 'none'");
-      ABP.addFilter(`@@$csp,sitekey=${SITEKEY}`);
+      ABP.filters.add("*$csp=img-src 'none'");
+      ABP.filters.add(`@@$csp,sitekey=${SITEKEY}`);
       expect(await checkViolatedDirective("?sitekey=1")).toEqual("unset");
     });
   });
