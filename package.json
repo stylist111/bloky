@@ -15,9 +15,10 @@
   "type": "module",
   "devDependencies": {
     "babel-eslint": "^10.1.0",
-    "cross-env": "^7.0.3",
     "chromedriver": "^87.0.4",
+    "cross-env": "^7.0.3",
     "dmg": "0.1.0",
+    "documentation": "^13.1.1",
     "eslint": "^7.13.0",
     "eslint-config-eyeo": "^3.2.0",
     "eslint-plugin-html": "^6.1.1",
@@ -37,6 +38,7 @@
   },
   "scripts": {
     "bundle": "cross-env DISABLE_V8_COMPILE_CACHE=1 webpack",
-    "lint": "eslint --ext js,html ."
+    "lint": "eslint --ext js,html .",
+    "docs": "documentation build --document-exported -f html -o docs sdk/api/index.js sdk/api/events.js"
   }
 }

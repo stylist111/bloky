@@ -6,6 +6,7 @@
 - Install: `npm i`
 - Lint: `npm run lint`
 - Bundle: `npm run bundle`
+- Generate docs: `npm run docs`
 
 ## Unit tests
 
