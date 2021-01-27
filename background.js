@@ -6,12 +6,7 @@
 
 ABP.start().then(() =>
 {
-  let openTest = () => chrome.tabs.create({url: "/test/index.html"});
-
-  if (typeof netscape != "undefined")
-    setTimeout(openTest, 1000);
-  else
-    openTest();
+  chrome.tabs.create({url: "/test/index.html"});
 });
 
 ABP.onSubscribeLinkClicked.addListener(subscription =>

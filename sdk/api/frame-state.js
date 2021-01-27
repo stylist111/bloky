@@ -188,8 +188,11 @@ function getSitekeyFromHeaders(headers, url)
   return null;
 }
 
-export function getFrameInfo(tabId, frameId)
+export function getFrameInfo(tabId, frameId, initiator)
 {
+  if (initiator && tabId == -1) // check for service worker scenario
+    return new FrameInfo(null, initiator);
+
   let frames = state.get(tabId);
   return frames && frames.get(frameId);
 }

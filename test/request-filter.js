@@ -5,43 +5,67 @@ const SITEKEY = "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANGtTstne7" +
 
 describe("Blocking", () =>
 {
-  let page;
+  let currentPage;
+  let currentResource;
   let ABP;
   let restoreSubscriptions;
 
   function onErrorOccurred(details)
   {
-    if (page && page.tabId == details.tabId)
-      page.error = details;
+    if (currentResource && currentResource.url == details.url)
+      currentResource.onRequestFinished(details);
   }
 
   function onCompleted(details)
   {
-    if (page && details.tabId == page.tabId && details.frameId == 0)
-      page.resolve({tabId: page.tabId, error: page.error});
+    if (currentResource && currentResource.url == details.url)
+      currentResource.onRequestFinished();
   }
 
-  function openTestPage(path)
+  class Page
   {
-    return new Promise((resolve, reject) =>
+    constructor(url)
     {
-      let url = `${TEST_PAGES_URL}/${path}`;
-      browser.tabs.create({url, active: false}).then(tab =>
+      this.created = new Promise(resolve =>
       {
-        if (page)
-          browser.tabs.remove(page.tabId);
-        page = {tabId: tab.id, resolve, error: null};
-      }, reject);
-    });
+        browser.tabs.create({url: `${TEST_PAGES_URL}/${url}`,
+                             active: false}).then(tab =>
+        {
+          if (currentPage)
+            browser.tabs.remove(currentPage.tabId);
+
+          this.tabId = tab.id;
+          currentPage = this;
+          resolve(this);
+        });
+      });
+    }
   }
 
-  async function expectBlockedRequest(path, resource)
+  class Resource
   {
-    let {error} = await openTestPage(path);
-    expect(error).toEqual(expect.objectContaining({
-      error: expect.stringMatching(/^(net::ERR_BLOCKED_BY_CLIENT|NS_ERROR_ABORT)$/),
-      url: `${TEST_PAGES_URL}/${resource}`
-    }));
+    constructor(url)
+    {
+      this.url = `${TEST_PAGES_URL}/${url}`;
+      this.error = new Promise(resolve =>
+      {
+        this.onRequestFinished = resolve;
+      });
+
+      currentResource = this;
+    }
+
+    async expectToBeBlocked()
+    {
+      expect(await this.error).toEqual(expect.objectContaining({
+        error: expect.stringMatching(/^(net::ERR_BLOCKED_BY_CLIENT|NS_ERROR_ABORT)$/)
+      }));
+    }
+
+    async expectToBeLoaded()
+    {
+      expect(await this.error).toBeUndefined();
+    }
   }
 
   before(async() =>
@@ -49,16 +73,15 @@ describe("Blocking", () =>
     ({ABP} = await browser.runtime.getBackgroundPage());
     restoreSubscriptions = ABP.subscriptions.removeAll();
 
-    browser.webRequest.onErrorOccurred.addListener(
-      onErrorOccurred, {urls: ["<all_urls>"]}
-    );
-    browser.webNavigation.onCompleted.addListener(onCompleted);
+    let filter = {urls: ["<all_urls>"]};
+    browser.webRequest.onErrorOccurred.addListener(onErrorOccurred, filter);
+    browser.webRequest.onCompleted.addListener(onCompleted, filter);
   });
 
   after(() =>
   {
     browser.webRequest.onErrorOccurred.removeListener(onErrorOccurred);
-    browser.webNavigation.onCompleted.removeListener(onCompleted);
+    browser.webRequest.onCompleted.removeListener(onCompleted);
 
     if (restoreSubscriptions)
       restoreSubscriptions();
@@ -66,10 +89,10 @@ describe("Blocking", () =>
 
   afterEach(() =>
   {
-    if (page)
+    if (currentPage)
     {
-      browser.tabs.remove(page.tabId);
-      page = null;
+      browser.tabs.remove(currentPage.tabId);
+      currentPage = null;
     }
 
     ABP.subscriptions.removeAll();
@@ -78,36 +101,52 @@ describe("Blocking", () =>
   it("blocks a request", async() =>
   {
     ABP.filters.add("/image.png^$image");
-    await expectBlockedRequest("image.html", "image.png");
+    new Page("image.html");
+    await new Resource("image.png").expectToBeBlocked();
   });
 
   it("does not block an allowlisted request", async() =>
   {
     ABP.filters.add("/image.png^$image");
     ABP.filters.add("@@/image.png^$image");
-    expect((await openTestPage("image.html")).error).toBeNull();
+    new Page("image.html");
+    await new Resource("image.png").expectToBeLoaded();
   });
 
   it("does not block a request allowlisted by sitekey", async() =>
   {
     ABP.filters.add("/image.png^$image");
     ABP.filters.add(`@@$sitekey=${SITEKEY}`);
-    expect((await openTestPage("image.html?sitekey=1")).error).toBeNull();
+    new Page("image.html?sitekey=1");
+    await new Resource("image.png").expectToBeLoaded();
   });
 
   it("does not block a request from document allowlisted by sitekey", async() =>
   {
     ABP.filters.add("/image.png^$image");
     ABP.filters.add(`@@$document,sitekey=${SITEKEY}`);
-    expect((await openTestPage("image.html?sitekey=1")).error).toBeNull();
+    new Page("image.html?sitekey=1");
+    await new Resource("image.png").expectToBeLoaded();
   });
 
   it("handles rewritten srcdoc frames", async() =>
   {
     ABP.filters.add(`|${TEST_PAGES_URL}/image.png^`);
-    await expectBlockedRequest("srcdoc.html", "image.png");
+    new Page("srcdoc.html");
+    await new Resource("image.png").expectToBeBlocked();
     ABP.filters.add(`@@|${TEST_PAGES_URL}/srcdoc.html^$document`);
-    expect((await openTestPage("srcdoc.html")).error).toBeNull();
+    new Page("srcdoc.html");
+    await new Resource("image.png").expectToBeLoaded();
+  });
+
+  it("handles requests from service workers", async() =>
+  {
+    ABP.filters.add(`|${TEST_PAGES_URL}/image.png^`);
+    new Page("service-worker.html");
+    await new Resource("image.png").expectToBeBlocked();
+    ABP.filters.add(`@@|${TEST_PAGES_URL}^$document`);
+    new Page("service-worker.html");
+    await new Resource("image.png").expectToBeLoaded();
   });
 
   it("does not block a request sent by the extension", async() =>
@@ -118,16 +157,23 @@ describe("Blocking", () =>
 
   it("does not block requests with no filters", async() =>
   {
-    expect((await openTestPage("image.html")).error).toBeNull();
+    new Page("image.html");
+    await new Resource("image.png").expectToBeLoaded();
   });
 
   describe("Content-Security-Policy", () =>
   {
     async function checkViolatedDirective(query = "")
     {
-      let {tabId} = await openTestPage(`csp.html${query}`);
+      let {tabId} = await new Page(`csp.html${query}`).created;
       let code = "document.documentElement.dataset.violatedDirective";
-      return (await browser.tabs.executeScript(tabId, {code}))[0];
+
+      while (true)
+      {
+        let result = (await browser.tabs.executeScript(tabId, {code}))[0];
+        if (result)
+          return result;
+      }
     }
 
     it("injects header", async() =>

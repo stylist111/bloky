@@ -40,7 +40,8 @@ function collapse(tabId, frameId, type, url)
 
 function onBeforeRequest(details)
 {
-  if ((details.initiator || details.documentUrl).startsWith(EXTENSION_PROTOCOL))
+  let initiator = details.initiator || details.documentUrl;
+  if (initiator.startsWith(EXTENSION_PROTOCOL))
     return;
 
   // We are looking for the frame that contains the element which
@@ -50,7 +51,7 @@ function onBeforeRequest(details)
   let frameId = details.type == "sub_frame" ? details.parentFrameId :
                                               details.frameId;
 
-  let frame = getFrameInfo(details.tabId, frameId);
+  let frame = getFrameInfo(details.tabId, frameId, initiator);
   if (frame.allowlisted & contentTypes.DOCUMENT)
     return;
 
@@ -76,7 +77,6 @@ function onBeforeRequest(details)
     }
   }
 }
-
 
 function onHeadersReceived(details)
 {

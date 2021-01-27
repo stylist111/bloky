@@ -1,9 +1,12 @@
-<html data-violated-directive="unset">
 <script>
   document.addEventListener("securitypolicyviolation", e =>
   {
     document.documentElement.dataset.violatedDirective = e.violatedDirective;
   });
+
+  window.addEventListener("load", () =>
+  {
+    document.documentElement.dataset.violatedDirective ||= "unset";
+  });
 </script>
 <img src="image.png">
-</html>
