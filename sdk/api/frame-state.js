@@ -190,11 +190,16 @@ function getSitekeyFromHeaders(headers, url)
 
 export function getFrameInfo(tabId, frameId, initiator)
 {
-  if (initiator && tabId == -1) // check for service worker scenario
-    return new FrameInfo(null, initiator);
-
   let frames = state.get(tabId);
-  return frames && frames.get(frameId);
+  if (frames)
+  {
+    let frame = frames.get(frameId);
+    if (frame)
+      return frame;
+  }
+
+  if (initiator)
+    return new FrameInfo(null, initiator);
 }
 
 export async function start()
