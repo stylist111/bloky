@@ -48,3 +48,21 @@ test:firefox:
   extends: .test
   script:
     - node test/runner.js firefox
+
+test:edge:
+  extends: .test
+  variables:
+    NODE_OPTIONS: --experimental-modules
+  before_script:
+    - choco install -y microsoft-edge --version=79.0.309.71
+    - npm install
+  script:
+    - $server_process = (Start-Process -NoNewWindow "node" -ArgumentList "test/start-server.js" -PassThru)
+    - $test_process = (Start-Process -NoNewWindow "node" -ArgumentList "test/runner.js edge" -PassThru -Wait)
+    - Stop-Process $server_process.Id -Force -PassThru
+    - Exit($test_process.ExitCode)
+  tags:
+    - shared-windows
+    - windows
+    - windows-1809
+  cache: {}

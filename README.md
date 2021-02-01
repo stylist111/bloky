@@ -23,3 +23,4 @@
 - run the tests:
   - Chromium: `node test/runner.js chromium`
   - Firefox: `node test/runner.js firefox`
+  - Edge: `node test/runner.js edge`

@@ -1,5 +1,9 @@
 /* eslint-env node */
 
+import path from "path";
+import {exec, execFile} from "child_process";
+import {promisify} from "util";
+
 import got from "got";
 import webdriver from "selenium-webdriver";
 import chrome from "selenium-webdriver/chrome.js";
@@ -11,9 +15,13 @@ import {ensureChromium}
 import {ensureFirefox}
   from "../adblockpluscore/test/runners/firefox_download.mjs";
 
-// Windows needs this to start the driver
+// Required to start the driver on some platforms (e.g. Windows).
 import "chromedriver";
 import "geckodriver";
+import "msedgedriver";
+
+const MACOS_EDGE_BINARY =
+  "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge";
 
 class Chromium
 {
@@ -42,13 +50,10 @@ class Chromium
     return base;
   }
 
-  async ensureBrowser(version)
+  async getDriver()
   {
-    return ensureChromium(version);
-  }
+    let binary = await ensureChromium(await this.getLatestVersion());
 
-  getDriver(binary)
-  {
     let options = new chrome.Options();
     options.addArguments("no-sandbox", `load-extension=${process.cwd()}`);
     options.setChromeBinaryPath(binary);
@@ -69,13 +74,10 @@ class Firefox
     return data.LATEST_FIREFOX_VERSION;
   }
 
-  async ensureBrowser(version)
+  async getDriver()
   {
-    return ensureFirefox(version);
-  }
+    let binary = await ensureFirefox(await this.getLatestVersion());
 
-  async getDriver(binary)
-  {
     let options = new firefox.Options();
     options.headless();
     options.setBinary(binary);
@@ -94,11 +96,61 @@ class Firefox
   }
 }
 
+class Edge
+{
+  async installDriver()
+  {
+    let version;
+    if (process.platform == "win32")
+    {
+      let cmd = "(Get-ItemProperty ${Env:ProgramFiles(x86)}\\Microsoft\\" +
+                "Edge\\Application\\msedge.exe).VersionInfo.ProductVersion";
+      let {stdout} = await promisify(exec)(cmd, {shell: "powershell.exe"});
+      version = stdout.trim();
+    }
+    else if (process.platform == "darwin")
+    {
+      let {stdout} =
+        await promisify(execFile)(MACOS_EDGE_BINARY, ["--version"]);
+      version = stdout.trim().replace(/.*\s/, "");
+    }
+
+    if (!version)
+      throw new Error("Edge is not installed");
+
+    await promisify(execFile)(
+      process.execPath,
+      [path.join("node_modules", "msedgedriver", "install.js")],
+      {env: {...process.env, EDGECHROMIUMDRIVER_VERSION: version,
+             npm_config_edgechromiumdriver_skip_download: false}}
+    );
+  }
+
+  async getDriver()
+  {
+    await this.installDriver();
+
+    let builder = new webdriver.Builder();
+    builder.forBrowser("MicrosoftEdge");
+    builder.withCapabilities({
+      "browserName": "MicrosoftEdge",
+      "ms:edgeChromium": true,
+      "ms:edgeOptions": {args: [`load-extension=${process.cwd()}`]}
+    });
+
+    return builder.build();
+  }
+}
+
+const BROWSERS = {
+  chromium: new Chromium(),
+  firefox: new Firefox(),
+  edge: new Edge()
+};
+
 (async() =>
 {
-  let browser = process.argv[2] == "firefox" ? new Firefox() : new Chromium();
-  let binary = await browser.ensureBrowser(await browser.getLatestVersion());
-  let driver = await browser.getDriver(binary);
+  let driver = await BROWSERS[process.argv[2]].getDriver();
   let passed;
   let failed;
   let log;

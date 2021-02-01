@@ -6,7 +6,8 @@
 
   window.addEventListener("load", () =>
   {
-    document.documentElement.dataset.violatedDirective ||= "unset";
+    if (!document.documentElement.dataset.violatedDirective)
+      document.documentElement.dataset.violatedDirective = "unset";
   });
 </script>
 <img src="image.png">
