@@ -1,2 +1,2 @@
 mocha.setup("bdd");
-mocha.timeout(5000);
+mocha.timeout(8000);
