@@ -65,7 +65,11 @@ test:edge:
   variables:
     NODE_OPTIONS: --experimental-modules
   before_script:
-    - choco install -y microsoft-edge --version=79.0.309.71
+    - Invoke-WebRequest
+        -Uri "${Env:CI_API_V4_URL}/projects/${Env:CI_PROJECT_ID}/packages/generic/microsoft-edge/79.0.309/MicrosoftEdgeEnterpriseX64.msi"
+        -Headers @{'JOB-TOKEN' = $Env:CI_JOB_TOKEN}
+        -OutFile 'MicrosoftEdgeEnterpriseX64.msi'
+    - msiexec /i MicrosoftEdgeEnterpriseX64.msi /norestart /qn
     - npm install
   script:
     - $server_process = (Start-Process -NoNewWindow "node" -ArgumentList "test/start-server.js" -PassThru)
