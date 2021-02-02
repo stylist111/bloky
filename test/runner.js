@@ -25,6 +25,12 @@ const MACOS_EDGE_BINARY =
 
 class Chromium
 {
+  async getBranchBasePosition(version)
+  {
+    let data = await got(`https://omahaproxy.appspot.com/deps.json?version=${version}`).json();
+    return data.chromium_base_position;
+  }
+
   async getLatestVersion()
   {
     let os = process.platform;
@@ -34,25 +40,46 @@ class Chromium
       os = "mac";
 
     let data = await got(`https://omahaproxy.appspot.com/all.json?os=${os}`).json();
-    let version = data[0].versions.find(ver => ver.channel == "stable");
-    let base = version.branch_base_position;
+    let release = data[0].versions.find(ver => ver.channel == "stable");
+    let {current_version: version, branch_base_position: base} = release;
 
-    if (version.true_branch && version.true_branch.includes("_"))
+    if (release.true_branch && release.true_branch.includes("_"))
     {
       // A wrong base may be caused by a mini-branch (patched) release
       // In that case, the base is taken from the unpatched version
-      let cv = version.current_version.split(".");
-      let unpatched = `${cv[0]}.${cv[1]}.${cv[2]}.0`;
-      let unpatchedVersion = await got(`https://omahaproxy.appspot.com/deps.json?version=${unpatched}`).json();
-      base = unpatchedVersion.chromium_base_position;
+      version = [...version.split(".").slice(0, 3), "0"].join(".");
+      base = await this.getBranchBasePosition(version);
     }
 
-    return base;
+    return {version, base};
   }
 
-  async getDriver()
+  async installDriver(version)
   {
-    let binary = await ensureChromium(await this.getLatestVersion());
+    await promisify(execFile)(
+      process.execPath,
+      [path.join("node_modules", "chromedriver", "install.js")],
+      {env: {
+        ...process.env,
+        npm_config_chromedriver_skip_download: false,
+        npm_config_tmp: path.resolve("adblockpluscore",
+                                     "chromium-snapshots",
+                                     "chromedriver"),
+        CHROMEDRIVER_VERSION: `LATEST_${version}`
+      }}
+    );
+  }
+
+  async getDriver(version)
+  {
+    let base;
+    if (version)
+      base = await this.getBranchBasePosition(version);
+    else
+      ({version, base} = await this.getLatestVersion());
+
+    let binary = await ensureChromium(base);
+    await this.installDriver(version);
 
     let options = new chrome.Options();
     options.addArguments("no-sandbox", `load-extension=${process.cwd()}`);
@@ -74,9 +101,9 @@ class Firefox
     return data.LATEST_FIREFOX_VERSION;
   }
 
-  async getDriver()
+  async getDriver(version)
   {
-    let binary = await ensureFirefox(await this.getLatestVersion());
+    let binary = await ensureFirefox(version || await this.getLatestVersion());
 
     let options = new firefox.Options();
     options.headless();
@@ -150,10 +177,8 @@ const BROWSERS = {
 
 (async() =>
 {
-  let driver = await BROWSERS[process.argv[2]].getDriver();
-  let passed;
-  let failed;
-  let log;
+  let driver = await BROWSERS[process.argv[2]].getDriver(process.argv[3]);
+  let result;
 
   try
   {
@@ -177,16 +202,16 @@ const BROWSERS = {
       return false;
     }, 2000, "unit tests page did not open");
 
-    ({passed, failed, log} = await driver.executeScript("return done;"));
+    result = await driver.executeScript("return done;");
   }
   finally
   {
     await driver.quit();
   }
 
-  for (let args of log)
+  for (let args of result.log)
     console.log(...args); // eslint-disable-line no-console
 
-  if (failed > 0 || passed == 0)
+  if (result.failed > 0 || result.passed == 0)
     process.exit(1);
 })();
