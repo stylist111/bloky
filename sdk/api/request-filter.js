@@ -10,97 +10,192 @@ import {ignoreNoConnectionError} from "../errors.js";
 
 const EXTENSION_PROTOCOL = new URL(browser.runtime.getURL("")).protocol;
 
-// Map of content types reported by the browser to the respecitve content types
-// used by Adblock Plus. Other content types are simply mapped to OTHER.
 let resourceTypes = new Map();
 for (let type in contentTypes)
-  resourceTypes.set(type.toLowerCase(), type);
-resourceTypes.set("sub_frame", "SUBDOCUMENT");
-resourceTypes.set("beacon", "PING");
-resourceTypes.set("imageset", "IMAGE");
-resourceTypes.set("object_subrequest", "OBJECT");
+  resourceTypes.set(type.toLowerCase(), contentTypes[type]);
+resourceTypes.set("sub_frame", contentTypes.SUBDOCUMENT);
+resourceTypes.set("beacon", contentTypes.PING);
+resourceTypes.set("imageset", contentTypes.IMAGE);
+resourceTypes.set("object_subrequest", contentTypes.OBJECT);
 
 let typeSelectors = new Map([
-  ["IMAGE", "img,input"],
-  ["MEDIA", "audio,video"],
-  ["SUBDOCUMENT", "frame,iframe,object,embed"],
-  ["OBJECT", "object,embed"]
+  [contentTypes.IMAGE, "img,input"],
+  [contentTypes.MEDIA, "audio,video"],
+  [contentTypes.SUBDOCUMENT, "frame,iframe,object,embed"],
+  [contentTypes.OBJECT, "object,embed"]
 ]);
 
-function collapse(tabId, frameId, type, url)
+class RequestFilter
 {
-  let selector = typeSelectors.get(type);
-  if (selector && frameId != -1)
+  register()
   {
-    ignoreNoConnectionError(browser.tabs.sendMessage(
-      tabId, {type: "abp:collapse", selector, url}, {frameId}
-    ));
+    if (!this.listener)
+    {
+      this.listener = this.filter.bind(this);
+      this.event.addListener(this.listener, ...this.eventArgs);
+    }
   }
-}
 
-function onBeforeRequest(details)
-{
-  let initiator = details.initiator || details.documentUrl;
-  if (initiator.startsWith(EXTENSION_PROTOCOL))
-    return;
+  unregister()
+  {
+    if (this.listener)
+    {
+      this.event.removeListener(this.listener);
+      this.listener = null;
+    }
+  }
 
-  // We are looking for the frame that contains the element which
-  // has triggered this request. For most requests (e.g. images) we
-  // can just use the request's frame ID, but for subdocument requests
-  // (e.g. iframes) we must instead use the request's parent frame ID.
-  let frameId = details.type == "sub_frame" ? details.parentFrameId :
-                                              details.frameId;
+  getFrameId(details)
+  {
+    return details.type == "sub_frame" ? details.parentFrameId :
+                                         details.frameId;
+  }
 
-  let frame = getFrameInfo(details.tabId, frameId, initiator);
-  if (frame.allowlisted & contentTypes.DOCUMENT)
-    return;
+  getFrameInfo(details, initiator)
+  {
+    return getFrameInfo(details.tabId, this.getFrameId(details), initiator);
+  }
 
-  let type = resourceTypes.get(details.type) || "OTHER";
-  let specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) != 0;
-  let filter = matcher.match(details.url, contentTypes[type],
-                             frame.hostname, frame.sitekey, specificOnly);
+  getContentType(details)
+  {
+    return resourceTypes.get(details.type) || contentTypes.OTHER;
+  }
 
-  if (filter instanceof BlockingFilter)
+  collapse(details)
+  {
+    let selector = typeSelectors.get(this.getContentType(details));
+    let frameId = this.getFrameId(details);
+
+    if (selector && frameId != -1)
+    {
+      ignoreNoConnectionError(browser.tabs.sendMessage(
+        details.tabId,
+        {type: "abp:collapse", selector, url: details.url}, {frameId}
+      ));
+    }
+  }
+
+  block(details, filter)
   {
     if (typeof filter.rewrite == "string")
     {
-      let rewrittenUrl = filter.rewriteUrl(details.url);
+      let redirectUrl = filter.rewriteUrl(details.url);
       // If no rewrite happened (error, different origin), we'll
       // return undefined in order to avoid an "infinite" loop.
-      if (rewrittenUrl != details.url)
-        return {redirectUrl: rewrittenUrl};
+      if (redirectUrl != details.url)
+        return {redirectUrl};
     }
     else
     {
-      collapse(details.tabId, frameId, type, details.url);
+      this.collapse(details);
       return {cancel: true};
+    }
+  }
+
+  match(details, frame, specificOnly)
+  {
+    let filter = matcher.match(details.url, this.getContentType(details),
+                               frame.hostname, frame.sitekey, specificOnly);
+
+    if (filter instanceof BlockingFilter)
+      return this.block(details, filter);
+  }
+
+  filter(details)
+  {
+    let initiator = details.initiator || details.documentUrl;
+    if (initiator && initiator.startsWith(EXTENSION_PROTOCOL))
+      return;
+
+    let frame = this.getFrameInfo(details, initiator);
+    if (frame.allowlisted & contentTypes.DOCUMENT)
+      return;
+
+    let specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) != 0;
+    return this.match(details, frame, specificOnly);
+  }
+}
+
+RequestFilter.prototype.event = browser.webRequest.onBeforeRequest;
+RequestFilter.prototype.eventArgs = [
+  {
+    types: Object.values(browser.webRequest.ResourceType)
+                 .filter(type => type != "main_frame"),
+    urls: ["http://*/*", "https://*/*", "ws://*/*", "wss://*/*"]
+  },
+  ["blocking"]
+];
+
+class HeaderFilter extends RequestFilter
+{
+  match(details, frame, specificOnly)
+  {
+    if (!(matcher.match(details.url,
+                        contentTypes.HEADER | this.getContentType(details),
+                        frame.hostname,
+                        frame.sitekey,
+                        specificOnly) instanceof BlockingFilter))
+      return;
+
+    let matches = matcher.search(details.url, contentTypes.HEADER,
+                                 frame.hostname, frame.sitekey,
+                                 specificOnly, "blocking");
+
+    for (let filter of matches.blocking)
+    {
+      if (filter.filterHeaders(details.responseHeaders))
+        return this.block(details, filter);
     }
   }
 }
 
-function onHeadersReceived(details)
+HeaderFilter.prototype.event = browser.webRequest.onHeadersReceived;
+HeaderFilter.prototype.eventArgs = [
+  {
+    types: Object.values(browser.webRequest.ResourceType)
+                 .filter(type => type != "main_frame"),
+    urls: ["http://*/*", "https://*/*"]
+  },
+  ["blocking", "responseHeaders"]
+];
+
+class CSPFilter extends RequestFilter
 {
-  let frame = getFrameInfo(details.tabId, details.frameId).pending;
+  getFrameInfo(details)
+  {
+    return getFrameInfo(details.tabId, details.frameId).pending;
+  }
 
-  if (frame.allowlisted & contentTypes.DOCUMENT)
-    return;
+  match(details, frame, specificOnly)
+  {
+    let parentFrame = getFrameInfo(details.tabId, details.parentFrameId);
+    let docDomain = parentFrame && parentFrame.hostname;
 
-  let parentFrame = getFrameInfo(details.tabId, details.parentFrameId);
-  let docDomain = parentFrame && parentFrame.hostname;
-  let specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) != 0;
+    if (!(matcher.match(details.url, contentTypes.CSP, docDomain,
+                        frame.sitekey, specificOnly) instanceof BlockingFilter))
+      return;
 
-  if (!(matcher.match(details.url, contentTypes.CSP, docDomain,
-                      frame.sitekey, specificOnly) instanceof BlockingFilter))
-    return;
+    let {responseHeaders} = details;
+    let matches = matcher.search(details.url, contentTypes.CSP, docDomain,
+                                 frame.sitekey, specificOnly, "blocking");
 
-  let matches = matcher.search(details.url, contentTypes.CSP, docDomain,
-                               frame.sitekey, specificOnly, "blocking");
+    for (let {csp} of matches.blocking)
+      responseHeaders.push({name: "Content-Security-Policy", value: csp});
 
-  for (let {csp} of matches.blocking)
-    details.responseHeaders.push({name: "Content-Security-Policy", value: csp});
-
-  return {responseHeaders: details.responseHeaders};
+    return {responseHeaders};
+  }
 }
+
+CSPFilter.prototype.event = browser.webRequest.onHeadersReceived;
+CSPFilter.prototype.eventArgs = [
+  {
+    types: ["main_frame", "sub_frame"],
+    urls: ["http://*/*", "https://*/*"]
+  },
+  ["blocking", "responseHeaders"]
+];
+
+let filters = [new RequestFilter(), new HeaderFilter(), new CSPFilter()];
 
 function onBeforeNavigate()
 {
@@ -123,30 +218,8 @@ const FILTER_EVENTS = ["subscription.added",
 
 export function start()
 {
-  if (!browser.webRequest.onBeforeRequest.hasListener(onBeforeRequest))
-  {
-    browser.webRequest.onBeforeRequest.addListener(
-      onBeforeRequest,
-      {
-        types: Object.values(browser.webRequest.ResourceType)
-                     .filter(type => type != "main_frame"),
-        urls: ["http://*/*", "https://*/*", "ws://*/*", "wss://*/*"]
-      },
-      ["blocking"]
-    );
-  }
-
-  if (!browser.webRequest.onHeadersReceived.hasListener(onHeadersReceived))
-  {
-    browser.webRequest.onHeadersReceived.addListener(
-      onHeadersReceived,
-      {
-        urls: ["http://*/*", "https://*/*"],
-        types: ["main_frame", "sub_frame"]
-      },
-      ["blocking", "responseHeaders"]
-    );
-  }
+  for (let filter of filters)
+    filter.register();
 
   for (let event of FILTER_EVENTS)
   {
@@ -157,8 +230,8 @@ export function start()
 
 export function stop()
 {
-  browser.webRequest.onBeforeRequest.removeListener(onBeforeRequest);
-  browser.webRequest.onHeadersReceived.removeListener(onHeadersReceived);
+  for (let filter of filters)
+    filter.unregister();
 
   for (let event of FILTER_EVENTS)
     filterNotifier.off(event, onFilterChange);

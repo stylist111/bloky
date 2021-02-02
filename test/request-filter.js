@@ -12,13 +12,13 @@ describe("Blocking", () =>
 
   function onErrorOccurred(details)
   {
-    if (currentResource && currentResource.url == details.url)
+    if (currentResource && currentResource.matches(details))
       currentResource.onRequestFinished(details);
   }
 
   function onCompleted(details)
   {
-    if (currentResource && currentResource.url == details.url)
+    if (currentResource && currentResource.matches(details))
       currentResource.onRequestFinished();
   }
 
@@ -40,19 +40,47 @@ describe("Blocking", () =>
         });
       });
     }
+
+    expectResource(path)
+    {
+      let resource = new Resource(path, this);
+
+      return {
+        toBeBlocked()
+        {
+          return resource.expectToBeBlocked();
+        },
+        toBeLoaded()
+        {
+          return resource.expectToBeLoaded();
+        }
+      };
+    }
   }
 
   class Resource
   {
-    constructor(url)
+    constructor(path, page)
     {
-      this.url = `${TEST_PAGES_URL}/${url}`;
+      this.url = `${TEST_PAGES_URL}/${path}`;
+      this.page = page;
       this.error = new Promise(resolve =>
       {
         this.onRequestFinished = resolve;
       });
 
       currentResource = this;
+    }
+
+    matches(details)
+    {
+      if (!this.page || this.page.tabId == details.tabId)
+      {
+        let url = new URL(details.url);
+        if (url.origin + url.pathname == this.url)
+          return true;
+      }
+      return false;
     }
 
     async expectToBeBlocked()
@@ -101,42 +129,38 @@ describe("Blocking", () =>
   it("blocks a request", async() =>
   {
     ABP.filters.add("/image.png^$image");
-    new Page("image.html");
-    await new Resource("image.png").expectToBeBlocked();
+    await new Page("image.html").expectResource("image.png").toBeBlocked();
   });
 
   it("does not block an allowlisted request", async() =>
   {
     ABP.filters.add("/image.png^$image");
     ABP.filters.add("@@/image.png^$image");
-    new Page("image.html");
-    await new Resource("image.png").expectToBeLoaded();
+    await new Page("image.html").expectResource("image.png").toBeLoaded();
   });
 
   it("does not block a request allowlisted by sitekey", async() =>
   {
     ABP.filters.add("/image.png^$image");
     ABP.filters.add(`@@$sitekey=${SITEKEY}`);
-    new Page("image.html?sitekey=1");
-    await new Resource("image.png").expectToBeLoaded();
+    let page = new Page("image.html?sitekey=1");
+    await page.expectResource("image.png").toBeLoaded();
   });
 
   it("does not block a request from document allowlisted by sitekey", async() =>
   {
     ABP.filters.add("/image.png^$image");
     ABP.filters.add(`@@$document,sitekey=${SITEKEY}`);
-    new Page("image.html?sitekey=1");
-    await new Resource("image.png").expectToBeLoaded();
+    let page = new Page("image.html?sitekey=1");
+    await page.expectResource("image.png").toBeLoaded();
   });
 
   it("handles rewritten srcdoc frames", async() =>
   {
     ABP.filters.add(`|${TEST_PAGES_URL}/image.png^`);
-    new Page("srcdoc.html");
-    await new Resource("image.png").expectToBeBlocked();
+    await new Page("srcdoc.html").expectResource("image.png").toBeBlocked();
     ABP.filters.add(`@@|${TEST_PAGES_URL}/srcdoc.html^$document`);
-    new Page("srcdoc.html");
-    await new Resource("image.png").expectToBeLoaded();
+    await new Page("srcdoc.html").expectResource("image.png").toBeLoaded();
   });
 
   it("handles requests from service workers", async() =>
@@ -157,8 +181,7 @@ describe("Blocking", () =>
 
   it("does not block requests with no filters", async() =>
   {
-    new Page("image.html");
-    await new Resource("image.png").expectToBeLoaded();
+    await new Page("image.html").expectResource("image.png").toBeLoaded();
   });
 
   describe("Content-Security-Policy", () =>
@@ -201,6 +224,36 @@ describe("Blocking", () =>
       ABP.filters.add("*$csp=img-src 'none'");
       ABP.filters.add(`@@$csp,sitekey=${SITEKEY}`);
       expect(await checkViolatedDirective("?sitekey=1")).toEqual("unset");
+    });
+  });
+
+  describe("Header-based filtering", () =>
+  {
+    it("blocks a request", async() =>
+    {
+      ABP.filters.add(`|${TEST_PAGES_URL}^$header=x-header=whatever`);
+      await new Page("header.html").expectResource("image.png").toBeBlocked();
+    });
+
+    it("does not block an allowlisted request", async() =>
+    {
+      ABP.filters.add(`|${TEST_PAGES_URL}^$header=x-header=whatever`);
+      ABP.filters.add(`@@|${TEST_PAGES_URL}/image.png^`);
+      await new Page("header.html").expectResource("image.png").toBeLoaded();
+    });
+
+    it("does not block a request allowlisted by header", async() =>
+    {
+      ABP.filters.add(`|${TEST_PAGES_URL}^$header=x-header=whatever`);
+      ABP.filters.add(`@@|${TEST_PAGES_URL}/image.png^$header`);
+      await new Page("header.html").expectResource("image.png").toBeLoaded();
+    });
+
+    it("does not block a request from allowlisted document", async() =>
+    {
+      ABP.filters.add(`|${TEST_PAGES_URL}^$header=x-header=whatever`);
+      ABP.filters.add(`@@|${TEST_PAGES_URL}^$document`);
+      await new Page("header.html").expectResource("image.png").toBeLoaded();
     });
   });
 });

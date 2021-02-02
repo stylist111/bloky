@@ -45,8 +45,19 @@ async function sitekeyHeader(req, res, next)
   next();
 }
 
+function testHeader(req, res, next)
+{
+  let header = req.query["header-name"];
+
+  if (header)
+    res.header(header, req.query["header-value"] || "");
+
+  next();
+}
+
 app.use(bypassCache);
 app.use(sitekeyHeader);
+app.use(testHeader);
 app.use(express.static(path.join(dirname, "pages")));
 
 app.listen(PORT, "localhost", () =>
