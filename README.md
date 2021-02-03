@@ -5,7 +5,7 @@
 - Update the sub modules: `git submodule update --init`
 - Install: `npm i`
 - Lint: `npm run lint`
-- Bundle: `npm run bundle`
+- Bundle: `npx webpack`
 - Generate docs: `npm run docs`
 
 ## Unit tests
