@@ -1,2 +1,5 @@
 mocha.setup("bdd");
-mocha.timeout(6000);
+
+let timeout = new URLSearchParams(document.location.search).get("timeout");
+if (timeout)
+  mocha.timeout(parseInt(timeout, 10));

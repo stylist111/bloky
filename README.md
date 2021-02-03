@@ -20,4 +20,6 @@
 ### Automated run
 
 - start the test pages server `node test/start-server.js`
-- run the tests: `node test/runner.js {chromium|firefox|edge} [<version>]`
+- run the tests: `node test/runner.js {chromium|firefox|edge} [version] [options]`
+  - The `--timeout` option overrides the per-test timeout.
+  - The `--grep` option filters the tests to run with a regexp.

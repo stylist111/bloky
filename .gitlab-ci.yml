@@ -73,7 +73,7 @@ test:edge:
     - npm install
     - Start-Process "node" -ArgumentList "test/start-server.js" -PassThru
   script:
-    - node test/runner.js edge
+    - node test/runner.js edge --timeout=10000
   tags:
     - shared-windows
     - windows

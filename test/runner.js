@@ -3,8 +3,10 @@
 import path from "path";
 import {exec, execFile} from "child_process";
 import {promisify} from "util";
+import querystring from "querystring";
 
 import got from "got";
+import yargs from "yargs";
 import webdriver from "selenium-webdriver";
 import chrome from "selenium-webdriver/chrome.js";
 import firefox from "selenium-webdriver/firefox.js";
@@ -175,9 +177,35 @@ const BROWSERS = {
   edge: new Edge()
 };
 
+function parseArguments()
+{
+  let parser = yargs(process.argv.slice(2));
+  parser.version(false);
+  parser.strict();
+  parser.command("$0 <browser> [version]", "", subparser =>
+  {
+    subparser.positional("browser", {choices: Object.keys(BROWSERS)});
+    subparser.positional("version", {type: "string"});
+  });
+  parser.option("timeout");
+  parser.option("grep");
+
+  let {argv} = parser;
+  let params;
+  for (let param of ["timeout", "grep"])
+  {
+    let value = argv[param];
+    if (value)
+      (params || (params = {}))[param] = value;
+  }
+
+  return {browser: argv.browser, version: argv.version, params};
+}
+
 async function run()
 {
-  let driver = await BROWSERS[process.argv[2]].getDriver(process.argv[3]);
+  let {browser, version, params} = parseArguments();
+  let driver = await BROWSERS[browser].getDriver(version);
   let result;
 
   try
@@ -186,6 +214,7 @@ async function run()
     // eslint-disable-next-line no-console
     console.log(`Browser: ${cap.getBrowserName()} ${cap.getBrowserVersion()}`);
 
+    let url;
     await driver.wait(async() =>
     {
       for (let handle of await driver.getAllWindowHandles())
@@ -193,14 +222,20 @@ async function run()
         try
         {
           await driver.switchTo().window(handle);
-          let url = await driver.getCurrentUrl();
-          if (new URL(url).pathname == "/test/index.html")
+          url = new URL(await driver.getCurrentUrl());
+          if (url.pathname == "/test/index.html")
             return true;
         }
         catch (e) {}
       }
       return false;
     }, 2000, "unit tests page did not open");
+
+    if (params)
+    {
+      url.search = querystring.encode(params);
+      await driver.navigate().to(url.href);
+    }
 
     result = await driver.executeScript("return done;");
   }
