@@ -71,11 +71,9 @@ test:edge:
         -OutFile 'MicrosoftEdgeEnterpriseX64.msi'
     - msiexec /i MicrosoftEdgeEnterpriseX64.msi /norestart /qn
     - npm install
+    - Start-Process "node" -ArgumentList "test/start-server.js" -PassThru
   script:
-    - $server_process = (Start-Process -NoNewWindow "node" -ArgumentList "test/start-server.js" -PassThru)
-    - $test_process = (Start-Process -NoNewWindow "node" -ArgumentList "test/runner.js edge" -PassThru -Wait)
-    - Stop-Process $server_process.Id -Force -PassThru
-    - Exit($test_process.ExitCode)
+    - node test/runner.js edge
   tags:
     - shared-windows
     - windows
