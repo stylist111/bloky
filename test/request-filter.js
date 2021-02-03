@@ -24,21 +24,27 @@ describe("Blocking", () =>
 
   class Page
   {
-    constructor(url)
+    constructor(path)
     {
-      this.created = new Promise(resolve =>
+      this.created = (async() =>
       {
-        browser.tabs.create({url: `${TEST_PAGES_URL}/${url}`,
-                             active: false}).then(tab =>
-        {
-          if (currentPage)
-            browser.tabs.remove(currentPage.tabId);
+        let url = `${TEST_PAGES_URL}/${path}`;
+        let tabId;
 
-          this.tabId = tab.id;
-          currentPage = this;
-          resolve(this);
-        });
-      });
+        if (currentPage)
+        {
+          ({tabId} = await currentPage.created);
+          await browser.tabs.update(tabId, {url});
+        }
+        else
+        {
+          tabId = (await browser.tabs.create({url, active: false})).id;
+        }
+
+        this.tabId = tabId;
+        currentPage = this;
+        return this;
+      })();
     }
 
     expectResource(path)
