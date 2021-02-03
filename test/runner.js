@@ -175,7 +175,7 @@ const BROWSERS = {
   edge: new Edge()
 };
 
-(async() =>
+async function run()
 {
   let driver = await BROWSERS[process.argv[2]].getDriver(process.argv[3]);
   let result;
@@ -214,4 +214,10 @@ const BROWSERS = {
 
   if (result.failed > 0 || result.passed == 0)
     process.exit(1);
-})();
+}
+
+run().catch(err =>
+{
+  console.error(err instanceof Error ? err.stack : `Error: ${err}`);
+  process.exit(1);
+});
