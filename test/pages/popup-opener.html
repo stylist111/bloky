@@ -1,6 +1,7 @@
 <a href="popup.html" target="_blank" id="link">Link-based popup</a>
 <a href="#" id="script-tab">Script-based tab</a>
 <a href="#" id="script-window">Script-based window</a>
+<a href="#" id="script-deferred">Script-based deferred navigation</a>
 <script>
   document.getElementById("script-tab").addEventListener("click", () =>
   {
@@ -10,5 +11,14 @@
   document.getElementById("script-window").addEventListener("click", () =>
   {
     window.open("popup.html", "some-popup", "resizable");
+  });
+
+  document.getElementById("script-deferred").addEventListener("click", () =>
+  {
+    let popup = window.open("about:blank");
+    setTimeout(() =>
+    {
+      popup.location = new URL("popup.html", document.baseURI);
+    }, 200);
   });
 </script>

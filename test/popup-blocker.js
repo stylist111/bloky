@@ -65,7 +65,9 @@ describe("Pop-up blocking", () =>
 
       onCompleted = details =>
       {
-        if (details.tabId == popupTabId && details.frameId == 0)
+        if (details.tabId == popupTabId &&
+            details.frameId == 0 &&
+            details.url != "about:blank")
           resolve(false);
       };
 
@@ -103,6 +105,12 @@ describe("Pop-up blocking", () =>
   {
     ABP.filters.add(`|${TEST_PAGES_URL}/popup.html^$popup`);
     expect(await checkPopup("script-window")).toBeTruthy();
+  });
+
+  it("blocks a script-based popup with deferred navigation", async() =>
+  {
+    ABP.filters.add(`|${TEST_PAGES_URL}/popup.html^$popup`);
+    expect(await checkPopup("script-deferred")).toBeTruthy();
   });
 
   it("doesn't block an allowlisted popup", async() =>
