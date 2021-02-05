@@ -1,134 +1,29 @@
-const TEST_PAGES_URL = "http://localhost:3000";
+import {Page, Resource, TEST_PAGES_URL} from "./utils.js";
+
 const SITEKEY = "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANGtTstne7" +
                 "e8MbmDHDiMFkGbcuBgXmiVesGOG3gtYeM1EkrzVhBj" +
                 "GUvKXYE4GLFwqty3v5MuWWbvItUWBTYoVVsCAwEAAQ";
 
 describe("Blocking", () =>
 {
-  let currentPage;
-  let currentResource;
   let ABP;
   let restoreSubscriptions;
-
-  function onErrorOccurred(details)
-  {
-    if (currentResource && currentResource.matches(details))
-      currentResource.onRequestFinished(details);
-  }
-
-  function onCompleted(details)
-  {
-    if (currentResource && currentResource.matches(details))
-      currentResource.onRequestFinished();
-  }
-
-  class Page
-  {
-    constructor(path)
-    {
-      this.created = (async() =>
-      {
-        let url = `${TEST_PAGES_URL}/${path}`;
-        let tabId;
-
-        if (currentPage)
-        {
-          ({tabId} = await currentPage.created);
-          await browser.tabs.update(tabId, {url});
-        }
-        else
-        {
-          tabId = (await browser.tabs.create({url, active: false})).id;
-        }
-
-        this.tabId = tabId;
-        currentPage = this;
-        return this;
-      })();
-    }
-
-    expectResource(path)
-    {
-      let resource = new Resource(path, this);
-
-      return {
-        toBeBlocked()
-        {
-          return resource.expectToBeBlocked();
-        },
-        toBeLoaded()
-        {
-          return resource.expectToBeLoaded();
-        }
-      };
-    }
-  }
-
-  class Resource
-  {
-    constructor(path, page)
-    {
-      this.url = `${TEST_PAGES_URL}/${path}`;
-      this.page = page;
-      this.error = new Promise(resolve =>
-      {
-        this.onRequestFinished = resolve;
-      });
-
-      currentResource = this;
-    }
-
-    matches(details)
-    {
-      if (!this.page || this.page.tabId == details.tabId)
-      {
-        let url = new URL(details.url);
-        if (url.origin + url.pathname == this.url)
-          return true;
-      }
-      return false;
-    }
-
-    async expectToBeBlocked()
-    {
-      expect(await this.error).toEqual(expect.objectContaining({
-        error: expect.stringMatching(/^(net::ERR_BLOCKED_BY_CLIENT|NS_ERROR_ABORT)$/)
-      }));
-    }
-
-    async expectToBeLoaded()
-    {
-      expect(await this.error).toBeUndefined();
-    }
-  }
 
   before(async() =>
   {
     ({ABP} = await browser.runtime.getBackgroundPage());
     restoreSubscriptions = ABP.subscriptions.removeAll();
-
-    let filter = {urls: ["<all_urls>"]};
-    browser.webRequest.onErrorOccurred.addListener(onErrorOccurred, filter);
-    browser.webRequest.onCompleted.addListener(onCompleted, filter);
   });
 
   after(() =>
   {
-    browser.webRequest.onErrorOccurred.removeListener(onErrorOccurred);
-    browser.webRequest.onCompleted.removeListener(onCompleted);
-
     if (restoreSubscriptions)
       restoreSubscriptions();
   });
 
   afterEach(() =>
   {
-    if (currentPage)
-    {
-      browser.tabs.remove(currentPage.tabId);
-      currentPage = null;
-    }
-
+    Page.removeCurrent();
     ABP.subscriptions.removeAll();
   });
 
@@ -194,7 +89,7 @@ describe("Blocking", () =>
   {
     async function checkViolatedDirective(query = "")
     {
-      let {tabId} = await new Page(`csp.html${query}`).created;
+      let tabId = await new Page(`csp.html${query}`).created;
       let code = "document.documentElement.dataset.violatedDirective";
 
       while (true)
