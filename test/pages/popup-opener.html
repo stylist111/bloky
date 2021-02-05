@@ -1,0 +1,14 @@
+<a href="popup.html" target="_blank" id="link">Link-based popup</a>
+<a href="#" id="script-tab">Script-based tab</a>
+<a href="#" id="script-window">Script-based window</a>
+<script>
+  document.getElementById("script-tab").addEventListener("click", () =>
+  {
+    window.open("popup.html");
+  });
+
+  document.getElementById("script-window").addEventListener("click", () =>
+  {
+    window.open("popup.html", "some-popup", "resizable");
+  });
+</script>

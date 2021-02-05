@@ -13,9 +13,11 @@
 ### Manual run
 
 - start the test pages server `node test/start-server.js`
-- run `npm run bundle`
-- reload the extension
-- navigate to: `chrome-extension://{EXTENSION_ID}/test/index.html`
+- run `npx webpack`
+- load the extension
+
+Note: For the popup tests to work when running the tests manually,
+you have to disable the browser's built-in popup blocking on `localhost`.
 
 ### Automated run
 
