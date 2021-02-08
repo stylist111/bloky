@@ -191,12 +191,12 @@ function parseArguments()
   parser.option("grep");
 
   let {argv} = parser;
-  let params = {};
+  let params;
   for (let param of ["timeout", "grep"])
   {
     let value = argv[param];
     if (value)
-      params[param] = value;
+      (params || (params = {}))[param] = value;
   }
 
   return {browser: argv.browser, version: argv.version, params};
@@ -231,9 +231,20 @@ async function run()
       return false;
     }, 2000, "unit tests page did not open");
 
-    url.search = querystring.encode(params);
-    await driver.navigate().to(url.href);
-    result = await driver.executeScript("return done;");
+    if (params)
+    {
+      url.search = querystring.encode(params);
+      await driver.navigate().to(url.href);
+    }
+
+    result = await driver.executeScript(`
+      return new Promise(resolve =>
+      {
+        if (document.readyState == "complete")
+          resolve(done);
+        else
+          window.addEventListener("load", () => resolve(done));
+      });`);
   }
   finally
   {
