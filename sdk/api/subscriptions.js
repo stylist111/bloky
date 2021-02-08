@@ -65,7 +65,7 @@ export default {
   {
     let subscription = getSubscription(url);
 
-    if (subscription)
+    if (!subscription)
       throw new Error(`Subscription does not exist: ${url}`);
 
     if ("disabled" in properties)
