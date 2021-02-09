@@ -70,6 +70,10 @@ function getDefaultSubscriptions()
 
 let stopped = true;
 
+/**
+ * Intializes filter engine and starts blocking content.
+ * @return {Promise.<undefined>}
+ */
 export async function start()
 {
   stopped = false;
@@ -92,6 +96,10 @@ export async function start()
   messageResponder.start();
 }
 
+/**
+ * Stops blocking any content.
+ * @return {undefined}
+ */
 export function stop()
 {
   stopped = true;

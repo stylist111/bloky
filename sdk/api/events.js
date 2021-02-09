@@ -1,3 +1,11 @@
+
+/**
+ * The EventDispatcher class allows users to listen to
+ * certain events that are emitted.
+ * @hideconstructor
+ * @param {function} initializer
+ * @param {function} [finalizer]
+ */
 export class EventDispatcher
 {
   constructor(initializer, finalizer)
@@ -15,6 +23,11 @@ export class EventDispatcher
     this._finalize = finalizer && finalizer.bind(null, dispatch);
   }
 
+  /**
+   * Attaches a listener function to an event defined by our api.
+   * @param {function} listener The user defined function that will be called
+   *                            once the specified event is emitted
+   */
   addListener(listener)
   {
     if (!this._initialized)
@@ -26,6 +39,11 @@ export class EventDispatcher
     this._listeners.add(listener);
   }
 
+  /**
+   * Removes the added function from an api event.
+   * The listener will no longer be called by the event.
+   * @param {function} listener The user defined function to be removed.
+   */
   removeListener(listener)
   {
     this._listeners.delete(listener);

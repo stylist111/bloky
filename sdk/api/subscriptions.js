@@ -36,6 +36,40 @@ function makeListener(dispatch)
 }
 
 export default {
+  /**
+   * A resource downloaded and updated over the network that
+   * provides a list of filters that decide what to block.
+   * @typedef {Object} Subscription
+   * @property {boolean} disabled Indicates whether this subscription will
+   *                              be applied.
+   * @property {?string} downloadStatus The status code of the most recent
+   *                                    download attempt. The value
+   *                                    "synchronize_ok" indicates a successful
+   *                                    download, other string values indicate
+   *                                    different errors. While the initial
+   *                                    download hasn't completed yet it's null.
+   * @property {string} downloading Indicates whether the subscription is
+   *                                currently downloading.
+   * @property {number} expires
+   * @property {?string} homepage Website of the project that manages
+   *                              this filter list
+   * @property {number} lastDownload Epoch time when the subscription
+   *                                 was last downloaded to your machine.
+   * @property {number} lastSuccess Epoch time when this subscription was last
+   *                                successfully downloaded.
+   * @property {number} softExpiration
+   * @property {string} title The display name of the subscription.
+   *                          If not provided, falls back to the URL.
+   * @property {string} url Where the subscription can be found in plain text.
+   *                        Used a the identifier.
+   * @property {string} version The version provided by the subscription's
+   *                            metadata. Defaults to '0' if not provided.
+   */
+
+  /**
+   * Creates a new subscription from a given URL.
+   * @param {string} url The URL of the subscription to be added.
+   */
   add(url)
   {
     if (!Subscription.isValidURL(url))
@@ -48,6 +82,10 @@ export default {
       synchronizer.execute(subscription);
   },
 
+  /**
+   * Returns an array of subscription objects that have been added.
+   * @return {Array.<Subscription>}
+   */
   getAll()
   {
     let result = [];
@@ -61,6 +99,15 @@ export default {
     return result;
   },
 
+  /**
+   * Changes the given properties of the subscription with the given URL.
+   * @param {string} url The URL of the subscription to be updated.
+   * @param {object} properties An object with the properties to be updated
+   *                            and their respective new values. Only `disabled`
+   *                            and `title` can be updated. Other properties
+   *                            (if given) are ignored.
+   * @return {undefined}
+   */
   update(url, properties)
   {
     let subscription = getSubscription(url);
@@ -74,6 +121,12 @@ export default {
       subscription.title = properties.title;
   },
 
+  /**
+   * Removes the subscription for the given URL.
+   * It will no longer have any effect.
+   * @param {string} url The URL of the subscription to be removed.
+   * @return {undefined}
+   */
   remove(url)
   {
     let subscription = getSubscription(url);
@@ -82,6 +135,13 @@ export default {
       filterStorage.removeSubscription(subscription);
   },
 
+  /**
+   * Forces a new version of a subscription with the
+   * given URL to be downloaded immediately.
+   * @param {string} [url] The URL of the subscription to be synchronized.
+   *                       If omitted, all subscriptions will be synchronized.
+   * @return {undefined}
+   */
   sync(url)
   {
     let subscriptions = [];
@@ -107,6 +167,12 @@ export default {
       synchronizer.execute(subscription, true);
   },
 
+  /**
+   * Clears all subscriptions and filters.
+   * @return {function} A function that can be called to
+   *                    restore the removed subscriptions and filters.
+   * @private
+   */
   removeAll()
   {
     let subscriptions = [];
@@ -126,17 +192,32 @@ export default {
     };
   },
 
+  /**
+   * Emitted when a new subscription is added.
+   * @event
+   * @type {EventDispatcher.<Subscription>}
+   */
   onAdded: new EventDispatcher(dispatch =>
   {
     filterNotifier.on("subscription.added", makeListener(dispatch));
   }),
 
+  /**
+   * Emitted when a subscription is updated or disabled.
+   * @event
+   * @type {EventDispatcher.<Subscription>}
+   */
   onChanged: new EventDispatcher(dispatch =>
   {
     filterNotifier.on("subscription.disabled", makeListener(dispatch));
     filterNotifier.on("subscription.updated", makeListener(dispatch));
   }),
 
+  /**
+   * Emitted when a subscription is removed.
+   * @event
+   * @type {EventDispatcher.<Subscription>}
+   */
   onRemoved: new EventDispatcher(dispatch =>
   {
     filterNotifier.on("subscription.removed", makeListener(dispatch));

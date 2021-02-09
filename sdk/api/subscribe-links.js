@@ -67,6 +67,19 @@ export function subscribeLinkClicked(url, title)
     dispatchFunction({url, title});
 }
 
+/**
+ * Emitted when a subscribe link is clicked on a web page.
+ *
+ * A subscribe link has a URL pointing to `https://subscribe.adblockplus.org/`
+ * or starting with `abp:subscribe` (deprecated), followed by a query string
+ * with a `location` parameter, and optionally a `title` parameter. Subscribe
+ * links can only be used on certain trusted domains (including `localhost`).
+ * @example
+ * <a href="https://subscribe.adblockplus.org?location=http%3A%2F%2Flocalhost%2Flist.txt&title=Example">Example</a>
+ * <a href="abp:subscribe?location=location=http%3A%2F%2Flocalhost%2Flist.txt&title=Example">Example (deprecated)</a>
+ * @event
+ * @type {EventDispatcher.<{url: string, title: string}>}
+ */
 export let onSubscribeLinkClicked = new EventDispatcher(
   dispatch =>
   {

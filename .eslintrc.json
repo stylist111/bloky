@@ -12,6 +12,14 @@
       "error",
       "multi-or-nest",
       "consistent"
+    ],
+    "max-len": [
+      "error",
+      {
+        "ignoreUrls": true,
+        "ignoreRegExpLiterals": true,
+        "ignorePattern": "abp:subscribe"
+      }
     ]
   },
   "parser": "babel-eslint",
