@@ -1,4 +1,4 @@
-import {TEST_PAGES_URL, Popup, Page} from "./utils.js";
+import {Page, Popup, TEST_PAGES_URL, SITEKEY} from "./utils.js";
 
 describe("Pop-up blocking", () =>
 {
@@ -51,10 +51,27 @@ describe("Pop-up blocking", () =>
     expect(await new Popup("script-deferred", opener).blocked).toBeTruthy();
   });
 
-  it("doesn't block an allowlisted popup", async() =>
+  it("does not block an allowlisted popup", async() =>
   {
     ABP.filters.add(`|${TEST_PAGES_URL}/popup.html^$popup`);
     ABP.filters.add(`@@|${TEST_PAGES_URL}/popup.html^$popup`);
     expect(await new Popup("link", opener).blocked).toBeFalsy();
+  });
+
+  it("does not block a popup allowlisted by sitekey", async() =>
+  {
+    ABP.filters.add(`|${TEST_PAGES_URL}/popup.html^$popup`);
+    ABP.filters.add(`@@$popup,sitekey=${SITEKEY}`);
+    let popup = new Popup("link", new Page("popup-opener.html?sitekey=1"));
+    expect(await popup.blocked).toBeFalsy();
+  });
+
+  it("does not block a popup opened by " +
+     "a document allowlisted by sitekey", async() =>
+  {
+    ABP.filters.add(`|${TEST_PAGES_URL}/popup.html^$popup`);
+    ABP.filters.add(`@@$document,sitekey=${SITEKEY}`);
+    let popup = new Popup("link", new Page("popup-opener.html?sitekey=1"));
+    expect(await popup.blocked).toBeFalsy();
   });
 });

@@ -1,8 +1,4 @@
-import {Page, Resource, TEST_PAGES_URL} from "./utils.js";
-
-const SITEKEY = "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANGtTstne7" +
-                "e8MbmDHDiMFkGbcuBgXmiVesGOG3gtYeM1EkrzVhBj" +
-                "GUvKXYE4GLFwqty3v5MuWWbvItUWBTYoVVsCAwEAAQ";
+import {Page, Resource, TEST_PAGES_URL, SITEKEY} from "./utils.js";
 
 describe("Blocking", () =>
 {

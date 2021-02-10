@@ -1,4 +1,7 @@
 export const TEST_PAGES_URL = "http://localhost:3000";
+export const SITEKEY = "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANGtTstne7" +
+                       "e8MbmDHDiMFkGbcuBgXmiVesGOG3gtYeM1EkrzVhBj" +
+                       "GUvKXYE4GLFwqty3v5MuWWbvItUWBTYoVVsCAwEAAQ";
 
 export class Page
 {
@@ -6,20 +9,11 @@ export class Page
   {
     this.created = (async() =>
     {
-      let url = `${TEST_PAGES_URL}/${path}`;
-      let tabId;
-
       if (Page.current)
-      {
-        tabId = await Page.current.created;
-        await browser.tabs.update(tabId, {url});
-      }
-      else
-      {
-        tabId = (await browser.tabs.create({url, active: false})).id;
-      }
+        await browser.tabs.remove(await Page.current.created);
 
-      return tabId;
+      let url = `${TEST_PAGES_URL}/${path}`;
+      return (await browser.tabs.create({url, active: false})).id;
     })();
 
     Page.current = this;
