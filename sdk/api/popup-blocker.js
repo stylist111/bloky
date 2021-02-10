@@ -4,6 +4,7 @@ import {defaultMatcher as matcher} from "../../adblockpluscore/lib/matcher.js";
 import {BlockingFilter} from "../../adblockpluscore/lib/filterClasses.js";
 import {contentTypes} from "../../adblockpluscore/lib/contentTypes.js";
 
+import {logItem} from "./diagnostics.js";
 import {getFrameInfo} from "./frame-state.js";
 
 let loadingPopups = new Map();
@@ -29,8 +30,13 @@ function checkPotentialPopup(tabId, url, frame)
     frame.hostname, frame.sitekey, specificOnly
   );
 
-  if (filter instanceof BlockingFilter)
-    browser.tabs.remove(tabId).catch(() => {});
+  if (filter)
+  {
+    logItem(null, filter);
+
+    if (filter instanceof BlockingFilter)
+      browser.tabs.remove(tabId).catch(() => {});
+  }
 }
 
 function onPopupURLChanged(details)

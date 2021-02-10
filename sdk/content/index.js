@@ -4,6 +4,7 @@ import {ElemHideEmulation}
   from "../../adblockpluscore/lib/content/elemHideEmulation.js";
 
 import {ignoreNoConnectionError} from "../errors.js";
+import {ElementHidingTracer} from "./element-hiding-tracer.js";
 import {handleSubscribeLinks} from "./subscribe-links.js";
 
 function getURLFromElement(element)
@@ -86,11 +87,20 @@ async function initContentFeatures()
   if (!response)
     return;
 
+  let tracer;
+  if (response.tracedSelectors)
+    tracer = new ElementHidingTracer(response.tracedSelectors);
+
   if (response.emulatedPatterns.length > 0)
   {
-    let elemHideEmulation = new ElemHideEmulation(
-      elements => { elements.forEach(hideElement); }
-    );
+    let elemHideEmulation = new ElemHideEmulation((elements, filters) =>
+    {
+      for (let element of elements)
+        hideElement(element);
+
+      if (tracer)
+        tracer.log(filters);
+    });
     elemHideEmulation.apply(response.emulatedPatterns);
   }
 

@@ -9,11 +9,13 @@ import snippetsLibrarySource
   from "raw-loader!../../adblockpluscore/lib/content/snippets.js";
 
 import {getFrameInfo} from "./frame-state.js";
+import {logItem, tracingEnabled} from "./diagnostics.js";
 
 export function applyContentFilters(tabId, frameId)
 {
-  let emulatedPatterns = [];
   let frame = getFrameInfo(tabId, frameId);
+  let emulatedPatterns = [];
+  let tracedSelectors;
 
   if (!(frame.allowlisted & contentTypes.DOCUMENT))
   {
@@ -21,7 +23,7 @@ export function applyContentFilters(tabId, frameId)
 
     if (filters.length > 0)
     {
-      let scripts = filters.filter(ok => ok).map(({script}) => script);
+      let scripts = filters.map(({script}) => script);
       browser.tabs.executeScript(
         tabId,
         {
@@ -30,18 +32,21 @@ export function applyContentFilters(tabId, frameId)
           matchAboutBlank: true,
           runAt: "document_start"
         }
-      ).catch(() => {});
+      ).then(() => filters.forEach(filter => logItem(null, filter)),
+             () => {});
     }
 
     if (!(frame.allowlisted & contentTypes.ELEMHIDE))
     {
       let specificOnly = (frame.allowlisted & contentTypes.GENERICHIDE) != 0;
-      let {code} = elemHide.getStyleSheet(frame.hostname, specificOnly);
+      let trace = tracingEnabled();
+      let styleSheet = elemHide.getStyleSheet(frame.hostname,
+                                              specificOnly, trace, trace);
 
       browser.tabs.insertCSS(
         tabId,
         {
-          code,
+          code: styleSheet.code,
           cssOrigin: "user",
           frameId,
           matchAboutBlank: true,
@@ -51,8 +56,17 @@ export function applyContentFilters(tabId, frameId)
 
       for (let {selector, text} of elemHideEmulation.getFilters(frame.hostname))
         emulatedPatterns.push({selector, text});
+
+      if (trace)
+      {
+        tracedSelectors = [];
+        for (let selector of styleSheet.selectors)
+          tracedSelectors.push([selector, null]);
+        for (let exception of styleSheet.exceptions)
+          tracedSelectors.push([exception.selector, exception.text]);
+      }
     }
   }
 
-  return emulatedPatterns;
+  return {emulatedPatterns, tracedSelectors};
 }

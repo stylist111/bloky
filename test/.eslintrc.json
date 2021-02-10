@@ -5,6 +5,7 @@
     "webextensions": true
   },
   "globals": {
-    "expect": "readonly"
+    "expect": "readonly",
+    "sinon": "readonly"
   }
 }

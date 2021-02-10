@@ -15,6 +15,7 @@ import * as popupBlocker from "./popup-blocker.js";
 export {onSubscribeLinkClicked} from "./subscribe-links.js";
 export {default as subscriptions} from "./subscriptions.js";
 export {default as filters} from "./filters.js";
+export {onFilterMatch} from "./diagnostics.js";
 
 export function configureDefaultSubscriptions()
 {

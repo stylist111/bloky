@@ -7,6 +7,7 @@ import {filterNotifier} from "../../adblockpluscore/lib/filterNotifier.js";
 
 import {getFrameInfo} from "./frame-state.js";
 import {ignoreNoConnectionError} from "../errors.js";
+import {logItem} from "./diagnostics.js";
 
 const EXTENSION_PROTOCOL = new URL(browser.runtime.getURL("")).protocol;
 
@@ -75,8 +76,22 @@ class RequestFilter
     }
   }
 
+  isBlocking(details, filter)
+  {
+    if (filter)
+    {
+      if (filter instanceof BlockingFilter)
+        return true;
+
+      logItem(details, filter);
+    }
+    return false;
+  }
+
   block(details, filter)
   {
+    logItem(details, filter);
+
     if (typeof filter.rewrite == "string")
     {
       let redirectUrl = filter.rewriteUrl(details.url);
@@ -97,7 +112,7 @@ class RequestFilter
     let filter = matcher.match(details.url, this.getContentType(details),
                                frame.hostname, frame.sitekey, specificOnly);
 
-    if (filter instanceof BlockingFilter)
+    if (this.isBlocking(details, filter))
       return this.block(details, filter);
   }
 
@@ -130,11 +145,10 @@ class HeaderFilter extends RequestFilter
 {
   match(details, frame, specificOnly)
   {
-    if (!(matcher.match(details.url,
-                        contentTypes.HEADER | this.getContentType(details),
-                        frame.hostname,
-                        frame.sitekey,
-                        specificOnly) instanceof BlockingFilter))
+    let typeMask = contentTypes.HEADER | this.getContentType(details);
+    if (!this.isBlocking(details, matcher.match(details.url, typeMask,
+                                                frame.hostname, frame.sitekey,
+                                                specificOnly)))
       return;
 
     let matches = matcher.search(details.url, contentTypes.HEADER,
@@ -171,16 +185,22 @@ class CSPFilter extends RequestFilter
     let parentFrame = getFrameInfo(details.tabId, details.parentFrameId);
     let docDomain = parentFrame && parentFrame.hostname;
 
-    if (!(matcher.match(details.url, contentTypes.CSP, docDomain,
-                        frame.sitekey, specificOnly) instanceof BlockingFilter))
+    if (!this.isBlocking(details, matcher.match(details.url, contentTypes.CSP,
+                                                docDomain, frame.sitekey,
+                                                specificOnly)))
       return;
 
     let {responseHeaders} = details;
     let matches = matcher.search(details.url, contentTypes.CSP, docDomain,
                                  frame.sitekey, specificOnly, "blocking");
 
-    for (let {csp} of matches.blocking)
-      responseHeaders.push({name: "Content-Security-Policy", value: csp});
+    for (let filter of matches.blocking)
+    {
+      logItem(details, filter);
+      responseHeaders.push(
+        {name: "Content-Security-Policy", value: filter.csp}
+      );
+    }
 
     return {responseHeaders};
   }

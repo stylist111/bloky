@@ -98,3 +98,82 @@ export class Resource
     expect(await this.error).toBeUndefined();
   }
 }
+
+export class PopupOpener
+{
+  constructor()
+  {
+    this.created = new Page("popup-opener.html").created;
+  }
+
+  async openPopup(id)
+  {
+    let tabId = await this.created;
+    let blocked = this.isPopupBlocked();
+    let code = `document.getElementById("${id}").click()`;
+    await browser.tabs.executeScript(tabId, {code});
+    return blocked;
+  }
+
+  async isPopupBlocked()
+  {
+    let onTabCreated;
+    let onNavTarget;
+    let onTabRemoved;
+    let onCompleted;
+
+    this.popupTabId = await new Promise(resolve =>
+    {
+      onTabCreated = tab => resolve(tab.id);
+      onNavTarget = details => resolve(details.tabId);
+
+      browser.tabs.onCreated.addListener(onTabCreated);
+      browser.webNavigation.onCreatedNavigationTarget.addListener(onNavTarget);
+    });
+
+    browser.tabs.onCreated.removeListener(onTabCreated);
+    browser.webNavigation.onCreatedNavigationTarget.removeListener(onNavTarget);
+
+    let blocked = await new Promise(resolve =>
+    {
+      onTabRemoved = tabId =>
+      {
+        if (tabId == this.popupTabId)
+        {
+          this.popupTabId = null;
+          resolve(true);
+        }
+      };
+
+      onCompleted = details =>
+      {
+        if (details.tabId == this.popupTabId &&
+          details.frameId == 0 &&
+          details.url != "about:blank")
+          resolve(false);
+      };
+
+      browser.tabs.onRemoved.addListener(onTabRemoved);
+      browser.webNavigation.onCompleted.addListener(onCompleted);
+    });
+
+    browser.tabs.onRemoved.removeListener(onTabRemoved);
+    browser.webNavigation.onCompleted.removeListener(onCompleted);
+
+    return blocked;
+  }
+
+  close()
+  {
+    Page.removeCurrent();
+  }
+
+  closePopup()
+  {
+    if (this.popupTabId)
+    {
+      browser.tabs.remove(this.popupTabId);
+      this.popupTabId = null;
+    }
+  }
+}
