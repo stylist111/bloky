@@ -15,18 +15,24 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-self.done = new Promise(resolve =>
+let emit = () => {};
+let done = false;
+let log = [];
+let runner = mocha.run();
+
+runner.on("end", () => { done = true; emit(); });
+
+mocha.Mocha.reporters.Base.useColors = true;
+mocha.Mocha.reporters.Base.consoleLog = (...arg) => { log.push(arg); emit(); };
+new mocha.Mocha.reporters.Spec(runner);
+
+self.poll = async function()
 {
-  let passed = 0;
-  let failed = 0;
-  let log = [];
-  let runner = mocha.run();
+  if (!done && log.length == 0)
+    await new Promise(resolve => { emit = resolve; });
 
-  runner.on("pass", () => passed++);
-  runner.on("fail", () => failed++);
-  runner.on("end", () => resolve({passed, failed, log}));
+  let unreadLog = log;
+  log = [];
 
-  mocha.Mocha.reporters.Base.useColors = true;
-  mocha.Mocha.reporters.Base.consoleLog = (...args) => { log.push(args); };
-  new mocha.Mocha.reporters.Spec(runner);
-});
+  return {done, total: runner.total, failures: runner.failures, log: unreadLog};
+};

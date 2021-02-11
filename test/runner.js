@@ -254,24 +254,26 @@ async function run()
       await driver.navigate().to(url.href);
     }
 
-    result = await driver.executeScript(`
-      return new Promise(resolve =>
-      {
+    do
+    {
+      result = await driver.executeAsyncScript(`
+        let callback = arguments[0];
         if (document.readyState == "complete")
-          resolve(done);
+          callback(poll());
         else
-          window.addEventListener("load", () => resolve(done));
-      });`);
+          window.addEventListener("load", () => callback(poll()));`);
+
+      for (let args of result.log)
+        console.log(...args); // eslint-disable-line no-console
+    }
+    while (!result.done);
   }
   finally
   {
     await driver.quit();
   }
 
-  for (let args of result.log)
-    console.log(...args); // eslint-disable-line no-console
-
-  if (result.failed > 0 || result.passed == 0)
+  if (result.failures > 0 || result.total == 0)
     process.exit(1);
 }
 
