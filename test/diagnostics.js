@@ -1,4 +1,4 @@
-import {Page, PopupOpener} from "./utils.js";
+import {Page, Popup} from "./utils.js";
 
 describe("Diagnostics", () =>
 {
@@ -20,6 +20,8 @@ describe("Diagnostics", () =>
   afterEach(() =>
   {
     ABP.subscriptions.removeAll();
+    Page.removeCurrent();
+    Popup.removeCurrent();
   });
 
   async function checkLogging(filter, callback)
@@ -42,90 +44,75 @@ describe("Diagnostics", () =>
     expect(fake.firstArg).toEqual({details: expect.any(Object), filter});
   }
 
-  describe("request filter logging", () =>
+  function checkRequestLogging(page, filter)
   {
-    afterEach(() => Page.removeCurrent());
-
-    function checkRequestLogging(page, filter)
+    return checkLogging(filter, async() =>
     {
-      return checkLogging(filter, async() =>
+      let tabId = await new Page(page).created;
+
+      await new Promise(resolve =>
       {
-        let tabId = await new Page(page).created;
-
-        await new Promise(resolve =>
+        function onCompleted(details)
         {
-          function onCompleted(details)
+          if (details.tabId == tabId && details.frameId == 0)
           {
-            if (details.tabId == tabId && details.frameId == 0)
-            {
-              browser.webNavigation.onCompleted.removeListener(onCompleted);
-              resolve();
-            }
+            browser.webNavigation.onCompleted.removeListener(onCompleted);
+            resolve();
           }
-          browser.webNavigation.onCompleted.addListener(onCompleted);
-        });
+        }
+        browser.webNavigation.onCompleted.addListener(onCompleted);
       });
-    }
-
-    it("logs blocking request filter", async() =>
-    {
-      await checkRequestLogging("image.html", "/image.png^$image");
     });
+  }
 
-    it("logs allowlisting request filter", async() =>
-    {
-      ABP.filters.add("/image.png^$image");
-      await checkRequestLogging("image.html", "@@$image");
-    });
-
-    it("logs blocking $header filter", async() =>
-    {
-      await checkRequestLogging("header.html", "*$header=x-header=whatever");
-    });
-
-    it("logs allowlisting $header filter", async() =>
-    {
-      ABP.filters.add("*$header=x-header=whatever");
-      await checkRequestLogging("header.html", "@@$header");
-    });
-
-    it("logs blocking $csp filter", async() =>
-    {
-      await checkRequestLogging("csp.html", "*$csp=img-src 'none'");
-    });
-
-    it("logs allowlisting $csp filter", async() =>
-    {
-      ABP.filters.add("*$csp=img-src 'none'");
-      await checkRequestLogging("csp.html", "@@$csp");
-    });
+  it("logs blocking request filter", async() =>
+  {
+    await checkRequestLogging("image.html", "/image.png^$image");
   });
 
-  describe("popup filter logging", () =>
+  it("logs allowlisting request filter", async() =>
   {
-    let popupOpener;
+    ABP.filters.add("/image.png^$image");
+    await checkRequestLogging("image.html", "@@$image");
+  });
 
-    before(() => { popupOpener = new PopupOpener(); });
-    after(() => popupOpener.close());
-    afterEach(() => popupOpener.closePopup());
+  it("logs blocking $header filter", async() =>
+  {
+    await checkRequestLogging("header.html", "*$header=x-header=whatever");
+  });
 
-    function checkPopupLogging(filter)
-    {
-      return checkLogging(filter, async() =>
-      {
-        await popupOpener.openPopup("link");
-      });
-    }
+  it("logs allowlisting $header filter", async() =>
+  {
+    ABP.filters.add("*$header=x-header=whatever");
+    await checkRequestLogging("header.html", "@@$header");
+  });
 
-    it("logs blocking popup filter", async() =>
-    {
-      await checkPopupLogging("*popup.html^$popup");
-    });
+  it("logs blocking $csp filter", async() =>
+  {
+    await checkRequestLogging("csp.html", "*$csp=img-src 'none'");
+  });
 
-    it("logs allowlisting popup filter", async() =>
-    {
-      ABP.filters.add("*popup.html^$popup");
-      await checkPopupLogging("@@$popup");
-    });
+  it("logs allowlisting $csp filter", async() =>
+  {
+    ABP.filters.add("*$csp=img-src 'none'");
+    await checkRequestLogging("csp.html", "@@$csp");
+  });
+
+  function checkPopupLogging(filter)
+  {
+    return checkLogging(filter, () =>
+      new Popup("link", new Page("popup-opener.html")).blocked
+    );
+  }
+
+  it("logs blocking popup filter", async() =>
+  {
+    await checkPopupLogging("*popup.html^$popup");
+  });
+
+  it("logs allowlisting popup filter", async() =>
+  {
+    ABP.filters.add("*popup.html^$popup");
+    await checkPopupLogging("@@$popup");
   });
 });

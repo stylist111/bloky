@@ -99,81 +99,91 @@ export class Resource
   }
 }
 
-export class PopupOpener
+export class Popup
 {
-  constructor()
+  constructor(id, opener)
   {
-    this.created = new Page("popup-opener.html").created;
-  }
-
-  async openPopup(id)
-  {
-    let tabId = await this.created;
-    let blocked = this.isPopupBlocked();
-    let code = `document.getElementById("${id}").click()`;
-    await browser.tabs.executeScript(tabId, {code});
-    return blocked;
-  }
-
-  async isPopupBlocked()
-  {
-    let onTabCreated;
-    let onNavTarget;
-    let onTabRemoved;
-    let onCompleted;
-
-    this.popupTabId = await new Promise(resolve =>
+    this.created = new Promise((resolve, reject) =>
     {
-      onTabCreated = tab => resolve(tab.id);
-      onNavTarget = details => resolve(details.tabId);
-
-      browser.tabs.onCreated.addListener(onTabCreated);
-      browser.webNavigation.onCreatedNavigationTarget.addListener(onNavTarget);
-    });
-
-    browser.tabs.onCreated.removeListener(onTabCreated);
-    browser.webNavigation.onCreatedNavigationTarget.removeListener(onNavTarget);
-
-    let blocked = await new Promise(resolve =>
-    {
-      onTabRemoved = tabId =>
+      opener.created.then(openerTabId =>
       {
-        if (tabId == this.popupTabId)
+        let {onCreatedNavigationTarget} = browser.webNavigation;
+
+        function removeListeners()
         {
-          this.popupTabId = null;
-          resolve(true);
+          browser.tabs.onCreated.removeListener(onTabCreated);
+          onCreatedNavigationTarget.removeListener(onNavigationTarget);
         }
-      };
 
-      onCompleted = details =>
-      {
-        if (details.tabId == this.popupTabId &&
-          details.frameId == 0 &&
-          details.url != "about:blank")
-          resolve(false);
-      };
+        function onTabCreated(tab)
+        {
+          removeListeners();
+          resolve(tab.id);
+        }
 
-      browser.tabs.onRemoved.addListener(onTabRemoved);
-      browser.webNavigation.onCompleted.addListener(onCompleted);
+        function onNavigationTarget(details)
+        {
+          removeListeners();
+          resolve(details.tabId);
+        }
+
+        let code = `document.getElementById("${id}").click()`;
+        browser.tabs.executeScript(openerTabId, {code}).catch(err =>
+        {
+          removeListeners();
+          reject(err);
+        });
+
+        browser.tabs.onCreated.addListener(onTabCreated);
+        onCreatedNavigationTarget.addListener(onNavigationTarget);
+      }, reject);
     });
 
-    browser.tabs.onRemoved.removeListener(onTabRemoved);
-    browser.webNavigation.onCompleted.removeListener(onCompleted);
-
-    return blocked;
-  }
-
-  close()
-  {
-    Page.removeCurrent();
-  }
-
-  closePopup()
-  {
-    if (this.popupTabId)
+    this.blocked = new Promise((resolve, reject) =>
     {
-      browser.tabs.remove(this.popupTabId);
-      this.popupTabId = null;
+      this.created.then(popupTabId =>
+      {
+        function removeListeners()
+        {
+          browser.tabs.onRemoved.removeListener(onTabRemoved);
+          browser.webNavigation.onCompleted.removeListener(onCompleted);
+        }
+
+        function onTabRemoved(tabId)
+        {
+          if (tabId == popupTabId)
+          {
+            removeListeners();
+            Popup.current = null;
+            resolve(true);
+          }
+        }
+
+        function onCompleted(details)
+        {
+          if (details.tabId == popupTabId &&
+              details.frameId == 0 &&
+              details.url != "about:blank")
+          {
+            removeListeners();
+            resolve(false);
+          }
+        }
+
+        browser.tabs.onRemoved.addListener(onTabRemoved);
+        browser.webNavigation.onCompleted.addListener(onCompleted);
+      }, reject);
+    });
+
+    Popup.current = this;
+  }
+
+  static removeCurrent()
+  {
+    if (Popup.current)
+    {
+      Popup.current.created.then(browser.tabs.remove);
+      Popup.current = null;
     }
   }
 }
