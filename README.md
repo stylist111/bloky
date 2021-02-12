@@ -1,27 +1,146 @@
-# ABP SDK project
+# Ad Blocking Web Extension SDK
 
-## Useful commands
+This is a library that provides integration of eyeo's [Ad Blocking Core][abpcore]
+for Chromium and Firefox extensions (like [Adblock Plus][abpui]).
 
-- Update the sub modules: `git submodule update --init`
-- Install: `npm i`
-- Lint: `npm run lint`
-- Bundle: `npx webpack`
-- Generate docs: `npm run docs`
+## Table of contents
 
-## Unit tests
+* [Getting started](#getting-started)
+  * [Module bundlers (optional)](#module-bundlers-optional)
+* [Development](#development)
+  * [Installing/Updating dependencies](#installing-updating-dependencies)
+  * [Building the library](#building-the-library)
+  * [Building the documentation](#building-the-documentation)
+  * [Linting the code](#linting-the-code)
+* [Testing](#testing)
+  * [Serving the test pages](#serving-the-test-pages)
+  * [Using the test extension](#using-the-test-extension)
+  * [Using the test runner](#using-the-test-runner)
 
-### Manual run
+## Getting started
 
-- start the test pages server `node test/start-server.js`
-- run `npx webpack`
-- load the extension
+The library comes in two parts, `abp-api.js` to be included in the extension's
+background page, and `abp-content.js` to be loaded as a content script. Please
+download the [latest build][builds] (or [build the library yourself](#development)).
 
-Note: For the popup tests to work when running the tests manually,
-you have to disable the browser's built-in popup blocking on `localhost`.
+The extension's `manifest.json` is required to include the following configuration:
 
-### Automated run
+```json
+{
+  "manifest_version": 2,
+  "background": {
+    "scripts": [
+      "abp-api.js"
+    ]
+  },
+  "content_scripts": [
+    {
+      "all_frames": true,
+      "js": [
+        "abp-content.js"
+      ],
+      "match_about_blank": true,
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "run_at": "document_start"
+    }
+  ],
+  "permissions": [
+    "webNavigation",
+    "webRequest",
+    "webRequestBlocking",
+    "storage",
+    "unlimitedStorage",
+    "http://*/*",
+    "https://*/*"
+  ]
+}
+```
 
-- start the test pages server `node test/start-server.js`
-- run the tests: `node test/runner.js {chromium|firefox|edge} [version] [options]`
-  - The `--timeout` option overrides the per-test timeout.
-  - The `--grep` option filters the tests to run with a regexp.
+The API will be available in your own background scripts through the
+global `ABP` object. Please call `ABP.start()` to start blocking ads.
+
+For more information, please refer to the [API documention][docs].
+
+### Module bundlers (optional)
+
+`abp-api.js` is built as a UMD module (Universal Module Definition),
+and so it can also be used with module bundlers.
+
+If using a module bundler **do not** add `abp-api.js` to your `manifest.json`.
+Consequently, there won't be a global `ABP` object.
+
+#### CommonJS
+
+```javascript
+const ABP = require("./abp-api.js");
+ABP.start();
+```
+
+#### ESM
+
+```javascript
+import * as ABP from "./abp-api.js";
+ABP.start();
+```
+
+## Development
+
+### Installing/Updating dependencies
+
+    git submodule update --init
+    npm install
+
+### Building the library
+
+    npx webpack
+
+#### Release builds
+
+By default, debug builds are created. If building the library to be used
+in another project you would want to create a release build.
+
+     npx webpack --env release
+
+### Building the documentation
+
+    npm run docs
+
+### Linting the code
+
+    npm run lint
+
+## Testing
+
+### Serving the test pages
+
+Regardless of whether you're manually loading the test extension, or using
+the test runner, the test suite requires locally served test pages.
+
+    node test/start-server.js
+
+### Using the test extension
+
+You can load the project root as an unpacked extension under `chrome://extensions`
+in Chromium-based browsers, and under `about:debugging` in Firefox.
+Once the extension is loaded, it opens the test suite in a new tab.
+
+Note: For the popup tests to work, you have to disable the browser's
+built-in popup blocking (on `localhost`).
+
+You can also inspect the extension's background page to manually test the API
+through the global `ABP` object.
+
+### Using the test runner
+
+    node test/runner.js {chromium|firefox|edge} [version] [options]
+  
+- The `--timeout` option overrides the per-test timeout in milliseconds.
+- The `--grep` option filters the tests to run with a regular expression.
+
+[abpcore]: https://gitlab.com/eyeo/adblockplus/adblockpluscore
+[abpui]: https://gitlab.com/eyeo/adblockplus/abpui/adblockplusui
+[builds]: https://gitlab.com/eyeo/sandbox/webext-sdk/-/jobs/artifacts/master/browse/dist?job=build
+[docs]: https://gitlab.com/eyeo/sandbox/webext-sdk/-/jobs/artifacts/master/file/docs/index.html?job=build
