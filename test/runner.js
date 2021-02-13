@@ -219,6 +219,26 @@ function parseArguments()
   return {browser: argv.browser, version: argv.version, params};
 }
 
+async function switchToHandle(driver, testFn)
+{
+  for (let handle of await driver.getAllWindowHandles())
+  {
+    let url;
+    try
+    {
+      await driver.switchTo().window(handle);
+      url = await driver.getCurrentUrl();
+    }
+    catch (e)
+    {
+      continue;
+    }
+
+    if (testFn(url))
+      return handle;
+  }
+}
+
 async function run()
 {
   let {browser, version, params} = parseArguments();
@@ -232,21 +252,11 @@ async function run()
     console.log(`Browser: ${cap.getBrowserName()} ${cap.getBrowserVersion()}`);
 
     let url;
-    await driver.wait(async() =>
+    let handle = await driver.wait(() => switchToHandle(driver, handleUrl =>
     {
-      for (let handle of await driver.getAllWindowHandles())
-      {
-        try
-        {
-          await driver.switchTo().window(handle);
-          url = new URL(await driver.getCurrentUrl());
-          if (url.pathname == "/test/index.html")
-            return true;
-        }
-        catch (e) {}
-      }
-      return false;
-    }, 2000, "unit tests page did not open");
+      url = new URL(handleUrl);
+      return url.pathname == "/test/index.html";
+    }), 2000, "unit tests page did not open");
 
     if (params)
     {
@@ -254,19 +264,35 @@ async function run()
       await driver.navigate().to(url.href);
     }
 
-    do
+    while (!result)
     {
-      result = await driver.executeAsyncScript(`
+      let messages = await driver.executeAsyncScript(`
         let callback = arguments[0];
         if (document.readyState == "complete")
           callback(poll());
         else
           window.addEventListener("load", () => callback(poll()));`);
 
-      for (let args of result.log)
-        console.log(...args); // eslint-disable-line no-console
+      for (let [id, arg] of messages)
+      {
+        switch (id)
+        {
+          case "log":
+            console.log(...arg); // eslint-disable-line no-console
+            break;
+
+          case "click":
+            await switchToHandle(driver, handleUrl => handleUrl == arg.url);
+            await driver.findElement(webdriver.By.css(arg.selector)).click();
+            await driver.switchTo().window(handle);
+            break;
+
+          case "end":
+            result = arg;
+            break;
+        }
+      }
     }
-    while (!result.done);
   }
   finally
   {

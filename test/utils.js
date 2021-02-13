@@ -24,16 +24,34 @@ export class Page
 {
   constructor(path)
   {
+    this.url = `${TEST_PAGES_URL}/${path}`;
     this.created = (async() =>
     {
       if (Page.current)
         await browser.tabs.remove(await Page.current.created);
 
-      let url = `${TEST_PAGES_URL}/${path}`;
-      return (await browser.tabs.create({url, active: false})).id;
+      return (await browser.tabs.create({url: this.url, active: false})).id;
     })();
 
     Page.current = this;
+  }
+
+  async loaded()
+  {
+    let tabId = await this.created;
+
+    return new Promise(resolve =>
+    {
+      function onCompleted(details)
+      {
+        if (details.tabId == tabId && details.frameId == 0)
+        {
+          browser.webNavigation.onCompleted.removeListener(onCompleted);
+          resolve(tabId);
+        }
+      }
+      browser.webNavigation.onCompleted.addListener(onCompleted);
+    });
   }
 
   expectResource(path)

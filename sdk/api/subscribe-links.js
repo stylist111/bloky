@@ -74,8 +74,9 @@ export function subscribeLinksEnabled(url)
   if (!dispatchFunction)
     return false;
 
-  let urlObj = new URL(url);
-  return urlObj.protocol == "https:" && isDomainAllowed(urlObj.hostname);
+  let {protocol, hostname} = new URL(url);
+  return hostname == "localhost" ||
+         protocol == "https:" && isDomainAllowed(hostname);
 }
 
 export function subscribeLinkClicked(url, title)

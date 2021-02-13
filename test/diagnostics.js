@@ -63,23 +63,7 @@ describe("Diagnostics", () =>
 
   function checkRequestLogging(page, filter)
   {
-    return checkLogging(filter, async() =>
-    {
-      let tabId = await new Page(page).created;
-
-      await new Promise(resolve =>
-      {
-        function onCompleted(details)
-        {
-          if (details.tabId == tabId && details.frameId == 0)
-          {
-            browser.webNavigation.onCompleted.removeListener(onCompleted);
-            resolve();
-          }
-        }
-        browser.webNavigation.onCompleted.addListener(onCompleted);
-      });
-    });
+    return checkLogging(filter, () => new Page(page).loaded());
   }
 
   it("logs blocking request filter", async() =>
