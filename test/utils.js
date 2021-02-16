@@ -15,7 +15,8 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export const TEST_PAGES_URL = "http://localhost:3000";
+export const TEST_PAGES_DOMAIN = "localhost";
+export const TEST_PAGES_URL = `http://${TEST_PAGES_DOMAIN}:3000`;
 export const SITEKEY = "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANGtTstne7" +
                        "e8MbmDHDiMFkGbcuBgXmiVesGOG3gtYeM1EkrzVhBj" +
                        "GUvKXYE4GLFwqty3v5MuWWbvItUWBTYoVVsCAwEAAQ";

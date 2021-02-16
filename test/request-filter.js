@@ -15,7 +15,8 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Page, Resource, TEST_PAGES_URL, SITEKEY} from "./utils.js";
+import {Page, Resource, TEST_PAGES_URL, TEST_PAGES_DOMAIN, SITEKEY}
+  from "./utils.js";
 
 describe("Blocking", () =>
 {
@@ -66,6 +67,22 @@ describe("Blocking", () =>
     ABP.filters.add(`@@|${TEST_PAGES_URL}^$document`);
     new Page("service-worker.html");
     await new Resource("image.png").expectToBeLoaded();
+  });
+
+  it("handles $rewrite requests", async() =>
+  {
+    ABP.filters.add(
+      `*.js$rewrite=abp-resource:blank-js,domain=${TEST_PAGES_DOMAIN}`);
+    let tabId = await new Page("script.html").loaded();
+    let code = "document.documentElement.dataset.setByScript;";
+    expect((await browser.tabs.executeScript(tabId, {code}))[0]).toBeFalsy();
+  });
+
+  it("handles $genericblock requests", async() =>
+  {
+    ABP.filters.add(`/image.png$domain=${TEST_PAGES_DOMAIN}`);
+    ABP.filters.add(`@@|${TEST_PAGES_URL}/*.html$genericblock`);
+    await new Page("image.html").expectResource("image.png").toBeBlocked();
   });
 
   it("does not block a request sent by the extension", async() =>
