@@ -21,6 +21,7 @@ import {parseURL} from "../../adblockpluscore/lib/url.js";
 import {defaultMatcher as matcher} from "../../adblockpluscore/lib/matcher.js";
 import {ALLOWING_TYPES} from "../../adblockpluscore/lib/contentTypes.js";
 import {verifySignature} from "../../adblockpluscore/lib/rsa.js";
+import {logItem} from "./diagnostics.js";
 
 let state = new Map();
 let startupPromise;
@@ -82,6 +83,8 @@ class PendingFrameInfo
         break;
 
       allowlisted |= filter.contentType & ALLOWING_TYPES;
+
+      logItem(null, filter);
     }
 
     this.url = url;

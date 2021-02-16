@@ -99,6 +99,14 @@ describe("Diagnostics", () =>
     await checkRequestLogging("csp.html", "@@$csp");
   });
 
+  for (let option of ["$document", "$elemhide",
+                      "$genericblock", "$generichide"])
+  {
+    it(`logs allowlisting ${option} filter`, () =>
+      checkRequestLogging("image.html", `@@${option}`)
+    );
+  }
+
   function checkPopupLogging(filter)
   {
     return checkLogging(filter, () =>
