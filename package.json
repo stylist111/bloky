@@ -4,7 +4,7 @@
   "description": "",
   "repository": {
     "type": "git",
-    "url": "git@gitlab.com:eyeo/sandbox/webext-sdk.git"
+    "url": "https://gitlab.com/eyeo/adblockplus/webext-sdk"
   },
   "author": "",
   "private": true,
