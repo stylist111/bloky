@@ -18,5 +18,21 @@
 mocha.setup("bdd");
 
 let timeout = new URLSearchParams(document.location.search).get("timeout");
+let restoreSubscriptions;
+
 if (timeout)
   mocha.timeout(parseInt(timeout, 10));
+
+before(async() =>
+{
+  self.ABP = (await browser.runtime.getBackgroundPage()).ABP;
+  restoreSubscriptions = ABP.subscriptions.removeAll();
+});
+
+after(() =>
+{
+  if (restoreSubscriptions)
+    restoreSubscriptions();
+});
+
+afterEach(() => ABP.subscriptions.removeAll());

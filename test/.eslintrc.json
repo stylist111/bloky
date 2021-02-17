@@ -5,6 +5,7 @@
     "webextensions": true
   },
   "globals": {
+    "ABP": "readonly",
     "expect": "readonly",
     "sinon": "readonly"
   }

@@ -19,30 +19,11 @@ import {Page, Popup, TEST_PAGES_URL, SITEKEY} from "./utils.js";
 
 describe("Pop-up blocking", () =>
 {
-  let ABP;
-  let restoreSubscriptions;
   let opener;
 
-  before(async() =>
-  {
-    ({ABP} = await browser.runtime.getBackgroundPage());
-    restoreSubscriptions = ABP.subscriptions.removeAll();
-    opener = new Page("popup-opener.html");
-  });
-
-  after(() =>
-  {
-    if (restoreSubscriptions)
-      restoreSubscriptions();
-
-    Page.removeCurrent();
-  });
-
-  afterEach(() =>
-  {
-    ABP.subscriptions.removeAll();
-    Popup.removeCurrent();
-  });
+  before(() => { opener = new Page("popup-opener.html"); });
+  after(() => Page.removeCurrent());
+  afterEach(() => Popup.removeCurrent());
 
   it("blocks a link-based popup", async() =>
   {

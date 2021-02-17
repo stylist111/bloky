@@ -20,26 +20,6 @@ const INVALID_URL = "invalidUrl";
 
 describe("Subscriptions API", () =>
 {
-  let ABP;
-  let restoreSubscriptions;
-
-  before(async() =>
-  {
-    ({ABP} = await browser.runtime.getBackgroundPage());
-    restoreSubscriptions = ABP.subscriptions.removeAll();
-  });
-
-  after(() =>
-  {
-    if (restoreSubscriptions)
-      restoreSubscriptions();
-  });
-
-  afterEach(() =>
-  {
-    ABP.subscriptions.removeAll();
-  });
-
   it("adds a subscription", () =>
   {
     ABP.subscriptions.add(VALID_URL);

@@ -20,7 +20,6 @@ import * as runner from "./mocha/mocha-runner.js";
 
 describe("Subscribe links (runner only)", () =>
 {
-  let ABP;
   let page;
   let callback;
 
@@ -34,7 +33,6 @@ describe("Subscribe links (runner only)", () =>
     if (!await runner.isConnected())
       this.skip();
 
-    ({ABP} = await browser.runtime.getBackgroundPage());
     ABP.onSubscribeLinkClicked.addListener(onSubscribeLinkClicked);
 
     page = new Page("subscribe.html");
@@ -43,9 +41,7 @@ describe("Subscribe links (runner only)", () =>
 
   after(() =>
   {
-    if (ABP)
-      ABP.onSubscribeLinkClicked.removeListener(onSubscribeLinkClicked);
-
+    ABP.onSubscribeLinkClicked.removeListener(onSubscribeLinkClicked);
     Page.removeCurrent();
   });
 

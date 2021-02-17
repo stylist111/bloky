@@ -19,26 +19,7 @@ import {Page, Resource, TEST_PAGES_URL, SITEKEY} from "./utils.js";
 
 describe("Blocking", () =>
 {
-  let ABP;
-  let restoreSubscriptions;
-
-  before(async() =>
-  {
-    ({ABP} = await browser.runtime.getBackgroundPage());
-    restoreSubscriptions = ABP.subscriptions.removeAll();
-  });
-
-  after(() =>
-  {
-    if (restoreSubscriptions)
-      restoreSubscriptions();
-  });
-
-  afterEach(() =>
-  {
-    Page.removeCurrent();
-    ABP.subscriptions.removeAll();
-  });
+  afterEach(() => Page.removeCurrent());
 
   it("blocks a request", async() =>
   {

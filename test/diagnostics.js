@@ -19,24 +19,8 @@ import {Page, Popup} from "./utils.js";
 
 describe("Diagnostics", () =>
 {
-  let ABP;
-  let restoreSubscriptions;
-
-  before(async() =>
-  {
-    ({ABP} = await browser.runtime.getBackgroundPage());
-    restoreSubscriptions = ABP.subscriptions.removeAll();
-  });
-
-  after(() =>
-  {
-    if (restoreSubscriptions)
-      restoreSubscriptions();
-  });
-
   afterEach(() =>
   {
-    ABP.subscriptions.removeAll();
     Page.removeCurrent();
     Popup.removeCurrent();
   });
