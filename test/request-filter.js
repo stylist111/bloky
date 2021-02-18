@@ -83,15 +83,9 @@ describe("Blocking", () =>
   {
     async function checkViolatedDirective(query = "")
     {
-      let tabId = await new Page(`csp.html${query}`).created;
+      let tabId = await new Page(`csp.html${query}`).loaded();
       let code = "document.documentElement.dataset.violatedDirective";
-
-      while (true)
-      {
-        let result = (await browser.tabs.executeScript(tabId, {code}))[0];
-        if (result)
-          return result;
-      }
+      return (await browser.tabs.executeScript(tabId, {code}))[0];
     }
 
     it("injects header", async() =>
@@ -104,21 +98,21 @@ describe("Blocking", () =>
     {
       ABP.filters.add("*$csp=img-src 'none'");
       ABP.filters.add(`@@|${TEST_PAGES_URL}/csp.html^$csp`);
-      expect(await checkViolatedDirective()).toEqual("unset");
+      expect(await checkViolatedDirective()).toBeFalsy();
     });
 
     it("does not inject header for allowlisted requests by document", async() =>
     {
       ABP.filters.add("*$csp=img-src 'none'");
       ABP.filters.add(`@@|${TEST_PAGES_URL}/csp.html^$document`);
-      expect(await checkViolatedDirective()).toEqual("unset");
+      expect(await checkViolatedDirective()).toBeFalsy();
     });
 
     it("does not inject header for allowlisted requests by sitekey", async() =>
     {
       ABP.filters.add("*$csp=img-src 'none'");
       ABP.filters.add(`@@$csp,sitekey=${SITEKEY}`);
-      expect(await checkViolatedDirective("?sitekey=1")).toEqual("unset");
+      expect(await checkViolatedDirective("?sitekey=1")).toBeFalsy();
     });
   });
 
