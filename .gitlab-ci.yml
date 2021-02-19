@@ -69,7 +69,8 @@ test:edge:
         -Uri "${Env:CI_API_V4_URL}/projects/${Env:CI_PROJECT_ID}/packages/generic/microsoft-edge/79.0.309/MicrosoftEdgeEnterpriseX64.msi"
         -Headers @{'JOB-TOKEN' = $Env:CI_JOB_TOKEN}
         -OutFile 'MicrosoftEdgeEnterpriseX64.msi'
-    - msiexec /i MicrosoftEdgeEnterpriseX64.msi /norestart /qn
+    - Start-Process msiexec
+        -ArgumentList "/i MicrosoftEdgeEnterpriseX64.msi /norestart /qn" -Wait
     - npm install
     - Start-Process "node" -ArgumentList "test/start-server.js" -PassThru
   script:

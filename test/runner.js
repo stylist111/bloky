@@ -254,6 +254,9 @@ async function run()
     let url;
     let handle = await driver.wait(() => switchToHandle(driver, handleUrl =>
     {
+      if (!handleUrl)
+        return false;
+
       url = new URL(handleUrl);
       return url.pathname == "/test/index.html";
     }), 2000, "unit tests page did not open");
