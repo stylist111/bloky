@@ -7,6 +7,7 @@ for Chromium and Firefox extensions (like [Adblock Plus][abpui]).
 
 * [Getting started](#getting-started)
   * [Module bundlers (optional)](#module-bundlers-optional)
+* [Documentation](#documentation)
 * [Development](#development)
   * [Installing/Updating dependencies](#installing-updating-dependencies)
   * [Building the library](#building-the-library)
@@ -62,8 +63,6 @@ The extension's `manifest.json` is required to include the following configurati
 The API will be available in your own background scripts through the
 global `ABP` object. Please call `ABP.start()` to start blocking ads.
 
-For more information, please refer to the [API documention][docs].
-
 ### Module bundlers (optional)
 
 `abp-api.js` is built as a UMD module (Universal Module Definition),
@@ -85,6 +84,10 @@ ABP.start();
 import * as ABP from "./abp-api.js";
 ABP.start();
 ```
+
+## Documentation
+
+For more information, please refer to the [API documention][docs].
 
 ## Development
 
