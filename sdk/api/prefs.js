@@ -30,6 +30,7 @@ let defaults = new Map([
   ["blocked_total", 0],
   ["show_statsinpopup", true],
   ["notificationurl", "https://notification.adblockplus.org/notification.json"],
+  ["subscriptions_exceptionsurl", "https://easylist-downloads.adblockplus.org/exceptionrules.txt"],
   ["notifications_ignoredcategories", []]
 ]);
 

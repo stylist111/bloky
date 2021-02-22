@@ -233,4 +233,31 @@ describe("API", () =>
       expect(fake.firstArg).toEqual({...VALID_FILTER, disabled: true});
     });
   });
+
+  describe("Initialization", () =>
+  {
+    it("configures default subscriptions", async function()
+    {
+      if (browser.i18n.getUILanguage().split("-")[0] != "en")
+        this.skip();
+
+      await ABP.start();
+
+      let subscriptions = ABP.subscriptions.getAll();
+      expect(subscriptions).toEqual([
+        expect.objectContaining({
+          disabled: false,
+          url: "https://easylist-downloads.adblockplus.org/exceptionrules.txt"
+        }),
+        expect.objectContaining({
+          disabled: false,
+          url: "https://easylist-downloads.adblockplus.org/easylist.txt"
+        }),
+        expect.objectContaining({
+          disabled: false,
+          url: "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt"
+        })
+      ]);
+    });
+  });
 });
