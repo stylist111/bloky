@@ -153,6 +153,6 @@ through the global `ABP` object.
 
 [abpcore]: https://gitlab.com/eyeo/adblockplus/adblockpluscore
 [abpui]: https://gitlab.com/eyeo/adblockplus/abpui/adblockplusui
-[builds]: https://gitlab.com/eyeo/sandbox/webext-sdk/-/jobs/artifacts/master/browse/dist?job=build
-[docs]: https://gitlab.com/eyeo/sandbox/webext-sdk/-/jobs/artifacts/master/file/docs/index.html?job=build
+[builds]: https://gitlab.com/eyeo/adblockplus/webext-sdk/-/jobs/artifacts/master/browse/dist?job=build
+[docs]: https://gitlab.com/eyeo/adblockplus/webext-sdk/-/jobs/artifacts/master/file/docs/index.html?job=build
 [dev]: https://gitlab.com/eyeo/adblockplus/webext-sdk#development
