@@ -24,6 +24,12 @@ import {EventDispatcher} from "./events.js";
 
 let dispatchFunction;
 
+/**
+ * Emitted when any filter is matched.
+ *
+ * @event
+ * @type {EventDispatcher.<{details: object, filter: string}>}
+ */
 export let onFilterMatch = new EventDispatcher(
   dispatch =>
   {

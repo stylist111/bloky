@@ -1,0 +1,25 @@
+toc:
+  - name: README
+    file: README.md
+  - name: APIs
+    description: |
+      <style>
+        #readme, .no-docs {
+          display: none;
+        }
+        h1 {
+          margin-top: 0;
+        }
+        a.caps {
+          letter-spacing: .0em;
+          text-transform: none;
+        }
+      </style>
+    children:
+      - filters
+      - subscriptions
+  - name: Objects
+    children:
+      - Subscription
+      - Filter
+      - EventDispatcher

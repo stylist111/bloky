@@ -3,6 +3,8 @@
 This is a library that provides integration of eyeo's [Ad Blocking Core][abpcore]
 for Chromium and Firefox extensions (like [Adblock Plus][abpui]).
 
+<div class="no-docs">
+
 ## Table of contents
 
 * [Getting started](#getting-started)
@@ -18,11 +20,13 @@ for Chromium and Firefox extensions (like [Adblock Plus][abpui]).
   * [Using the test extension](#using-the-test-extension)
   * [Using the test runner](#using-the-test-runner)
 
+</div>
+
 ## Getting started
 
 The library comes in two parts, `abp-api.js` to be included in the extension's
 background page, and `abp-content.js` to be loaded as a content script. Please
-download the [latest build][builds] (or [build the library yourself](#development)).
+download the [latest build][builds] (or [build the library yourself][dev]).
 
 The extension's `manifest.json` is required to include the following configuration:
 
@@ -85,6 +89,8 @@ import * as ABP from "./abp-api.js";
 ABP.start();
 ```
 
+<div class="no-docs">
+
 ## Documentation
 
 For more information, please refer to the [API documention][docs].
@@ -143,7 +149,10 @@ through the global `ABP` object.
 - The `--timeout` option overrides the per-test timeout in milliseconds.
 - The `--grep` option filters the tests to run with a regular expression.
 
+</div>
+
 [abpcore]: https://gitlab.com/eyeo/adblockplus/adblockpluscore
 [abpui]: https://gitlab.com/eyeo/adblockplus/abpui/adblockplusui
-[builds]: https://gitlab.com/eyeo/adblockplus/webext-sdk/-/jobs/artifacts/master/browse/dist?job=build
-[docs]: https://gitlab.com/eyeo/adblockplus/webext-sdk/-/jobs/artifacts/master/file/docs/index.html?job=build
+[builds]: https://gitlab.com/eyeo/sandbox/webext-sdk/-/jobs/artifacts/master/browse/dist?job=build
+[docs]: https://gitlab.com/eyeo/sandbox/webext-sdk/-/jobs/artifacts/master/file/docs/index.html?job=build
+[dev]: https://gitlab.com/eyeo/adblockplus/webext-sdk#development
