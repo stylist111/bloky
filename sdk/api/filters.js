@@ -163,7 +163,10 @@ export default {
    */
   onChanged: new EventDispatcher(dispatch =>
   {
-    filterNotifier.on("filterState.enabled", makeFilterListener(dispatch));
+    filterNotifier.on("filterState.enabled", (text, enabled) =>
+    {
+      dispatch({...convertFilter(Filter.fromText(text)), disabled: !enabled});
+    });
   }),
 
   /**
