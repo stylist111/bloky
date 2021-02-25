@@ -78,6 +78,30 @@ describe("Blocking", () =>
     expect((await browser.tabs.executeScript(tabId, {code}))[0]).toBeFalsy();
   });
 
+  it("handles $script requests", async() =>
+  {
+    ABP.filters.add(`|${TEST_PAGES_URL}/*.js$script`);
+    await new Page("script.html").expectResource("script.js").toBeBlocked();
+    ABP.filters.add(`@@|${TEST_PAGES_URL}/script.js$script`);
+    await new Page("script.html").expectResource("script.js").toBeLoaded();
+  });
+
+  it("handles $stylesheet requests", async() =>
+  {
+    ABP.filters.add(`|${TEST_PAGES_URL}/*.css$stylesheet`);
+    await new Page("style.html").expectResource("style.css").toBeBlocked();
+    ABP.filters.add(`@@|${TEST_PAGES_URL}/style.css$stylesheet`);
+    await new Page("style.html").expectResource("style.css").toBeLoaded();
+  });
+
+  it("handles $subdocument requests", async() =>
+  {
+    ABP.filters.add(`|${TEST_PAGES_URL}/*.html$subdocument`);
+    await new Page("iframe.html").expectResource("image.html").toBeBlocked();
+    ABP.filters.add(`@@|${TEST_PAGES_URL}/image.html$subdocument`);
+    await new Page("iframe.html").expectResource("image.html").toBeLoaded();
+  });
+
   it("handles $genericblock requests", async() =>
   {
     ABP.filters.add(`/image.png$domain=${TEST_PAGES_DOMAIN}`);
