@@ -15,8 +15,8 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Page, Resource, TEST_PAGES_URL, TEST_PAGES_DOMAIN, SITEKEY}
-  from "./utils.js";
+import {Page, Resource, waitForInvisibleElement, setMinTimeout, TEST_PAGES_URL,
+        TEST_PAGES_DOMAIN, SITEKEY} from "./utils.js";
 
 describe("Blocking", () =>
 {
@@ -253,6 +253,42 @@ describe("Blocking", () =>
       ABP.filters.add(`|${TEST_PAGES_URL}^$header=x-header=whatever`);
       ABP.filters.add(`@@|${TEST_PAGES_URL}^$document`);
       await new Page("header.html").expectResource("image.png").toBeLoaded();
+    });
+  });
+
+  describe("Snippets", function()
+  {
+    if (typeof netscape != "undefined")
+      setMinTimeout(this, 3000);
+
+    async function waitForBlocked(page, snippet)
+    {
+      let tabId = await new Page(page).loaded();
+
+      let code = "document.documentElement.dataset.blocked;";
+      let blocked = null;
+      while (blocked == null)
+        blocked = (await browser.tabs.executeScript(tabId, {code}))[0];
+
+      return {blocked, tabId};
+    }
+
+    it("applies blocking snippets", async() =>
+    {
+      let snippet = "abort-current-inline-script";
+      ABP.filters.add(
+        `${TEST_PAGES_DOMAIN}#$#${snippet} document.abortCurrentInlineScript`);
+      let {blocked} = await waitForBlocked("snippets-blocking.html", snippet);
+      expect(blocked).toBe("true");
+    });
+
+    it("applies hiding element snippets", async() =>
+    {
+      let snippet = "hide-if-contains";
+      ABP.filters.add(`${TEST_PAGES_DOMAIN}#$#${snippet} Target div`);
+
+      let {tabId} = await waitForBlocked("snippets-hiding.html", snippet);
+      await waitForInvisibleElement(tabId, snippet);
     });
   });
 });

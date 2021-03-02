@@ -15,7 +15,8 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Page, TEST_PAGES_DOMAIN, TEST_PAGES_URL} from "./utils.js";
+import {Page, waitForInvisibleElement, TEST_PAGES_DOMAIN, TEST_PAGES_URL}
+  from "./utils.js";
 
 describe("Element Hiding", () =>
 {
@@ -97,14 +98,7 @@ describe("Element Hiding", () =>
       ABP.filters.add("/image.png^$image");
 
       let tabId = await new Page("element-hiding.html").loaded();
-      // Wait for element to be collapsed.
-      let visible;
-      do
-      {
-        let code = `var el = document.getElementById("elem-hide-img-request");
-                    el.offsetParent ? el.outerHTML : null`;
-        visible = (await browser.tabs.executeScript(tabId, {code}))[0];
-      } while (visible !== null);
+      await waitForInvisibleElement(tabId, "elem-hide-img-request");
     });
   });
 });

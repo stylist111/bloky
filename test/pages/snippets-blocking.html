@@ -1,0 +1,17 @@
+<body>
+<script>
+  setTimeout(() =>
+  {
+    document.abortCurrentInlineScript = function()
+    {
+      document.documentElement.dataset.blocked = false;
+    };
+
+    document.documentElement.dataset.blocked = true;
+
+    let elem = document.createElement("script");
+    elem.textContent = "document.abortCurrentInlineScript();";
+    document.body.appendChild(elem);
+  }, 100);
+</script>
+</body>

@@ -223,3 +223,14 @@ export function setMinTimeout(runnable, timeout)
   if (runnable.timeout() < timeout)
     runnable.timeout(timeout);
 }
+
+export async function waitForInvisibleElement(tabId, id)
+{
+  let visible;
+  do
+  {
+    let code = `var el = document.getElementById("${id}");
+                el.offsetParent ? el.outerHTML : null`;
+    visible = (await browser.tabs.executeScript(tabId, {code}))[0];
+  } while (visible != null);
+}
