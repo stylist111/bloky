@@ -17,11 +17,11 @@
 
 import browser from "webextension-polyfill";
 
-const keyPrefix = "file:";
+const KEY_PREFIX = "abp:file:";
 
 function fileToKey(fileName)
 {
-  return keyPrefix + fileName;
+  return KEY_PREFIX + fileName;
 }
 
 async function loadFile(fileName)
