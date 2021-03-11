@@ -31,7 +31,7 @@ function convertFilter(filter)
 {
   return {
     text: filter.text,
-    disabled: filter.disabled,
+    enabled: !filter.disabled,
     slow: isSlowFilter(filter)
   };
 }
@@ -60,8 +60,8 @@ export default {
    * @property {string} text A {@link https://help.eyeo.com/adblockplus/how-to-write-filters|filter}
    *                         rule that specifies what content
    *                         to block or to allow. Used to identify a filter.
-   * @property {boolean} disabled Indicates whether this filter would
-   *                              be applied. Filters are enabled by default.
+   * @property {boolean} enabled Indicates whether this filter would
+   *                             be applied. Filters are enabled by default.
    * @property {boolean} slow Indicates that this filter is not subject to an
    *                          internal optimization. Filters that are
    *                          considered slow should be avoided.
@@ -165,7 +165,7 @@ export default {
   {
     filterNotifier.on("filterState.enabled", (text, enabled) =>
     {
-      dispatch({...convertFilter(Filter.fromText(text)), disabled: !enabled});
+      dispatch({...convertFilter(Filter.fromText(text)), enabled});
     });
   }),
 

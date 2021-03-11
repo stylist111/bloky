@@ -19,7 +19,7 @@ const VALID_SUBSCRIPTION_URL = "https://testpages.adblockplus.org/en/abp-testcas
 const INVALID_SUBSCRIPTION_URL = "invalidUrl";
 
 const VALID_FILTER_TEXT = "$image";
-const VALID_FILTER = {text: VALID_FILTER_TEXT, disabled: false, slow: true};
+const VALID_FILTER = {text: VALID_FILTER_TEXT, enabled: true, slow: true};
 const INVALID_FILTER_TEXT = "/foo/$rewrite=";
 
 describe("API", () =>
@@ -33,7 +33,7 @@ describe("API", () =>
       let subscriptions = ABP.subscriptions.getAll();
       expect(subscriptions).toEqual([expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
-        disabled: false,
+        enabled: true,
         title: VALID_SUBSCRIPTION_URL,
         homepage: null
       })]);
@@ -49,7 +49,7 @@ describe("API", () =>
       let subscriptions = ABP.subscriptions.getAll();
       expect(subscriptions).toEqual([expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
-        disabled: false,
+        enabled: true,
         title,
         homepage
       })]);
@@ -81,7 +81,7 @@ describe("API", () =>
       let subscriptions = ABP.subscriptions.getAll();
       expect(subscriptions).toEqual([expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
-        disabled: true
+        enabled: false
       })]);
     });
 
@@ -94,7 +94,7 @@ describe("API", () =>
       let subscriptions = ABP.subscriptions.getAll();
       expect(subscriptions).toEqual([expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
-        disabled: false
+        enabled: true
       })]);
     });
 
@@ -106,7 +106,7 @@ describe("API", () =>
       let subscriptions = ABP.subscriptions.getAll();
       expect(subscriptions).toEqual([expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
-        disabled: false
+        enabled: true
       })]);
     });
 
@@ -140,7 +140,7 @@ describe("API", () =>
       expect(fake.callCount).toBe(1);
       expect(fake.firstArg).toEqual(expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
-        disabled: false,
+        enabled: true,
         title: VALID_SUBSCRIPTION_URL
       }));
     });
@@ -157,7 +157,7 @@ describe("API", () =>
       expect(fake.callCount).toBe(1);
       expect(fake.firstArg).toEqual(expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
-        disabled: true
+        enabled: false
       }));
     });
 
@@ -211,7 +211,7 @@ describe("API", () =>
       ABP.filters.disable(VALID_FILTER_TEXT);
 
       let filters = ABP.filters.getAll();
-      expect(filters).toEqual([{...VALID_FILTER, disabled: true}]);
+      expect(filters).toEqual([{...VALID_FILTER, enabled: false}]);
     });
 
     it("enables an existing filter", () =>
@@ -263,7 +263,7 @@ describe("API", () =>
       ABP.filters.onChanged.removeListener(fake);
 
       expect(fake.callCount).toBe(1);
-      expect(fake.firstArg).toEqual({...VALID_FILTER, disabled: true});
+      expect(fake.firstArg).toEqual({...VALID_FILTER, enabled: false});
     });
 
     it("listens to onRemoved events", () =>
@@ -276,7 +276,7 @@ describe("API", () =>
       ABP.filters.onRemoved.removeListener(fake);
 
       expect(fake.callCount).toBe(1);
-      expect(fake.firstArg).toEqual({...VALID_FILTER, disabled: true});
+      expect(fake.firstArg).toEqual({...VALID_FILTER, enabled: false});
     });
   });
 
@@ -292,15 +292,15 @@ describe("API", () =>
       let subscriptions = ABP.subscriptions.getAll();
       expect(subscriptions).toEqual([
         expect.objectContaining({
-          disabled: false,
+          enabled: true,
           url: "https://easylist-downloads.adblockplus.org/exceptionrules.txt"
         }),
         expect.objectContaining({
-          disabled: false,
+          enabled: true,
           url: "https://easylist-downloads.adblockplus.org/easylist.txt"
         }),
         expect.objectContaining({
-          disabled: false,
+          enabled: true,
           url: "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt"
         })
       ]);

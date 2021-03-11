@@ -27,7 +27,7 @@ function convertSubscription({disabled, downloadStatus, homepage,
                               version, lastDownload, lastSuccess,
                               softExpiration, expires, title, url})
 {
-  return {disabled, downloading: synchronizer.isExecuting(url),
+  return {enabled: !disabled, downloading: synchronizer.isExecuting(url),
           downloadStatus, homepage, version, lastDownload, lastSuccess,
           softExpiration, expires, title, url};
 }
@@ -57,8 +57,8 @@ export default {
    * A resource downloaded and updated over the network that
    * provides a list of filters that decide what to block.
    * @typedef {Object} Subscription
-   * @property {boolean} disabled Indicates whether this subscription will
-   *                              be applied.
+   * @property {boolean} enabled Indicates whether this subscription will
+   *                             be applied.
    * @property {?string} downloadStatus The status code of the most recent
    *                                    download attempt. The value
    *                                    "synchronize_ok" indicates a successful
