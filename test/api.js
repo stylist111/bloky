@@ -15,13 +15,12 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-const VALID_URL = "https://testpages.adblockplus.org/en/abp-testcase-subscription.txt";
-const INVALID_URL = "invalidUrl";
+const VALID_SUBSCRIPTION_URL = "https://testpages.adblockplus.org/en/abp-testcase-subscription.txt";
+const INVALID_SUBSCRIPTION_URL = "invalidUrl";
 
 const VALID_FILTER_TEXT = "$image";
 const VALID_FILTER = {text: VALID_FILTER_TEXT, disabled: false, slow: true};
-
-const INVALID_FILTER = "/foo/$rewrite=";
+const INVALID_FILTER_TEXT = "/foo/$rewrite=";
 
 describe("API", () =>
 {
@@ -29,58 +28,103 @@ describe("API", () =>
   {
     it("adds a subscription", () =>
     {
-      ABP.subscriptions.add(VALID_URL);
+      ABP.subscriptions.add(VALID_SUBSCRIPTION_URL);
 
       let subscriptions = ABP.subscriptions.getAll();
       expect(subscriptions).toEqual([expect.objectContaining({
-        url: VALID_URL,
+        url: VALID_SUBSCRIPTION_URL,
         disabled: false,
-        title: VALID_URL
+        title: VALID_SUBSCRIPTION_URL,
+        homepage: null
+      })]);
+    });
+
+    it("adds a subscription with properties", () =>
+    {
+      let title = "testTitle";
+      let homepage = "testHomePage";
+
+      ABP.subscriptions.add(VALID_SUBSCRIPTION_URL, {title, homepage});
+
+      let subscriptions = ABP.subscriptions.getAll();
+      expect(subscriptions).toEqual([expect.objectContaining({
+        url: VALID_SUBSCRIPTION_URL,
+        disabled: false,
+        title,
+        homepage
       })]);
     });
 
     it("does not add an invalid subscription", () =>
     {
-      expect(() => ABP.subscriptions.add(INVALID_URL))
+      expect(() => ABP.subscriptions.add(INVALID_SUBSCRIPTION_URL))
         .toThrowError("Invalid subscription URL");
     });
 
     it("adds multiple subscriptions", () =>
     {
-      ABP.subscriptions.add(VALID_URL);
-      ABP.subscriptions.add(VALID_URL + "?2");
+      ABP.subscriptions.add(VALID_SUBSCRIPTION_URL);
+      ABP.subscriptions.add(VALID_SUBSCRIPTION_URL + "?2");
 
       let subscriptions = ABP.subscriptions.getAll();
       expect(subscriptions).toEqual([
-        expect.objectContaining({url: VALID_URL}),
-        expect.objectContaining({url: VALID_URL + "?2"})
+        expect.objectContaining({url: VALID_SUBSCRIPTION_URL}),
+        expect.objectContaining({url: VALID_SUBSCRIPTION_URL + "?2"})
       ]);
     });
 
-    it("updates an existing subscription", () =>
+    it("disables an existing subscription", () =>
     {
-      ABP.subscriptions.add(VALID_URL);
-      ABP.subscriptions.update(VALID_URL, {disabled: true, title: "test"});
+      ABP.subscriptions.add(VALID_SUBSCRIPTION_URL);
+      ABP.subscriptions.disable(VALID_SUBSCRIPTION_URL);
 
       let subscriptions = ABP.subscriptions.getAll();
       expect(subscriptions).toEqual([expect.objectContaining({
-        url: VALID_URL,
-        disabled: true,
-        title: "test"
+        url: VALID_SUBSCRIPTION_URL,
+        disabled: true
       })]);
     });
 
-    it("fails updating a nonexistent subscription", () =>
+    it("enables an existing subscription", () =>
+    {
+      ABP.subscriptions.add(VALID_SUBSCRIPTION_URL);
+      ABP.subscriptions.disable(VALID_SUBSCRIPTION_URL);
+      ABP.subscriptions.enable(VALID_SUBSCRIPTION_URL);
+
+      let subscriptions = ABP.subscriptions.getAll();
+      expect(subscriptions).toEqual([expect.objectContaining({
+        url: VALID_SUBSCRIPTION_URL,
+        disabled: false
+      })]);
+    });
+
+    it("enables a subscription that is already enabled.", () =>
+    {
+      ABP.subscriptions.add(VALID_SUBSCRIPTION_URL);
+      ABP.subscriptions.enable(VALID_SUBSCRIPTION_URL);
+
+      let subscriptions = ABP.subscriptions.getAll();
+      expect(subscriptions).toEqual([expect.objectContaining({
+        url: VALID_SUBSCRIPTION_URL,
+        disabled: false
+      })]);
+    });
+
+    it("fails enabling/disabling a nonexistent subscription", () =>
     {
       expect(
-        () => ABP.subscriptions.update("DoesNotExist", {disabled: true})
+        () => ABP.subscriptions.enable("DoesNotExist")
+      ).toThrowError("Subscription does not exist");
+
+      expect(
+        () => ABP.subscriptions.disable("DoesNotExist")
       ).toThrowError("Subscription does not exist");
     });
 
     it("removes a subscription", () =>
     {
-      ABP.subscriptions.add(VALID_URL);
-      ABP.subscriptions.remove(VALID_URL);
+      ABP.subscriptions.add(VALID_SUBSCRIPTION_URL);
+      ABP.subscriptions.remove(VALID_SUBSCRIPTION_URL);
 
       expect(ABP.subscriptions.getAll()).toEqual([]);
     });
@@ -90,14 +134,14 @@ describe("API", () =>
       let fake = sinon.fake();
 
       ABP.subscriptions.onAdded.addListener(fake);
-      ABP.subscriptions.add(VALID_URL);
+      ABP.subscriptions.add(VALID_SUBSCRIPTION_URL);
       ABP.subscriptions.onAdded.removeListener(fake);
 
       expect(fake.callCount).toBe(1);
       expect(fake.firstArg).toEqual(expect.objectContaining({
-        url: VALID_URL,
+        url: VALID_SUBSCRIPTION_URL,
         disabled: false,
-        title: VALID_URL
+        title: VALID_SUBSCRIPTION_URL
       }));
     });
 
@@ -106,13 +150,13 @@ describe("API", () =>
       let fake = sinon.fake();
 
       ABP.subscriptions.onChanged.addListener(fake);
-      ABP.subscriptions.add(VALID_URL);
-      ABP.subscriptions.update(VALID_URL, {disabled: true});
+      ABP.subscriptions.add(VALID_SUBSCRIPTION_URL);
+      ABP.subscriptions.disable(VALID_SUBSCRIPTION_URL);
       ABP.subscriptions.onChanged.removeListener(fake);
 
       expect(fake.callCount).toBe(1);
       expect(fake.firstArg).toEqual(expect.objectContaining({
-        url: VALID_URL,
+        url: VALID_SUBSCRIPTION_URL,
         disabled: true
       }));
     });
@@ -122,12 +166,14 @@ describe("API", () =>
       let fake = sinon.fake();
 
       ABP.subscriptions.onRemoved.addListener(fake);
-      ABP.subscriptions.add(VALID_URL);
-      ABP.subscriptions.remove(VALID_URL);
+      ABP.subscriptions.add(VALID_SUBSCRIPTION_URL);
+      ABP.subscriptions.remove(VALID_SUBSCRIPTION_URL);
       ABP.subscriptions.onRemoved.removeListener(fake);
 
       expect(fake.callCount).toBe(1);
-      expect(fake.firstArg).toEqual(expect.objectContaining({url: VALID_URL}));
+      expect(fake.firstArg).toEqual(
+        expect.objectContaining({url: VALID_SUBSCRIPTION_URL})
+      );
     });
   });
 
@@ -143,7 +189,7 @@ describe("API", () =>
 
     it("does not add an invalid filter", () =>
     {
-      expect(() => ABP.filters.add(INVALID_FILTER))
+      expect(() => ABP.filters.add(INVALID_FILTER_TEXT))
         .toThrowError("Invalid filter");
     });
 

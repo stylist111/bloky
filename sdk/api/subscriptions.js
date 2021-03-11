@@ -69,7 +69,7 @@ export default {
    *                                currently downloading.
    * @property {number} expires
    * @property {?string} homepage Website of the project that manages
-   *                              this filter list
+   *                              this filter list.
    * @property {number} lastDownload Epoch time when the subscription
    *                                 was last downloaded to your machine.
    * @property {number} lastSuccess Epoch time when this subscription was last
@@ -86,14 +86,25 @@ export default {
   /**
    * Creates a new subscription from a given URL.
    * @param {string} url The URL of the subscription to be added.
+   * @param {object} [properties] An object containing properties to be
+   *                              set on the new subscription.
+   * @param {string} [properties.title] The display name of the subscription.
+   *                                    If not provided, falls back to the URL.
+   * @param {string} [properties.homepage] Website of the project that
+   *                                       manages this filter list.
    */
-  add(url)
+  add(url, properties = {})
   {
     if (!Subscription.isValidURL(url))
       throw new Error(`Invalid subscription URL provided: ${url}`);
 
     let subscription = Subscription.fromURL(url);
     filterStorage.addSubscription(subscription);
+
+    if ("title" in properties)
+      subscription.title = properties.title;
+    if ("homepage" in properties)
+      subscription.homepage = properties.homepage;
 
     if (!subscription.lastDownload)
       synchronizer.execute(subscription);
@@ -117,25 +128,36 @@ export default {
   },
 
   /**
-   * Changes the given properties of the subscription with the given URL.
-   * @param {string} url The URL of the subscription to be updated.
-   * @param {object} properties An object with the properties to be updated
-   *                            and their respective new values. Only `disabled`
-   *                            and `title` can be updated. Other properties
-   *                            (if given) are ignored.
+   * Enables a previously disabled subscription. Has no effect otherwise.
+   * @param {string} url The URL of the subscription to be enabled.
+   * @throws {Error} Subscription does not exist
    * @return {undefined}
    */
-  update(url, properties)
+  enable(url)
   {
     let subscription = getSubscription(url);
 
     if (!subscription)
       throw new Error(`Subscription does not exist: ${url}`);
 
-    if ("disabled" in properties)
-      subscription.disabled = properties.disabled;
-    if ("title" in properties)
-      subscription.title = properties.title;
+    subscription.disabled = false;
+  },
+
+  /**
+   * Disables a subscription so that it doesn't have any
+   * effect until it gets enabled again.
+   * @param {string} url The URL of the subscription to be disabled.
+   * @throws {Error} Subscription does not exist
+   * @return {undefined}
+   */
+  disable(url)
+  {
+    let subscription = getSubscription(url);
+
+    if (!subscription)
+      throw new Error(`Subscription does not exist: ${url}`);
+
+    subscription.disabled = true;
   },
 
   /**
@@ -220,7 +242,7 @@ export default {
   }),
 
   /**
-   * Emitted when a subscription is updated or disabled.
+   * Emitted when any property of the subscription has changed.
    * @event
    * @type {EventDispatcher.<Subscription>}
    */
