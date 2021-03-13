@@ -15,9 +15,19 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* eslint-env webextensions, browser */
+/* global ABP */
+
 "use strict";
 
-/* eslint-env webextensions */
-/* global ABP */
+function mockGetUILanguage(api)
+{
+  let {getUILanguage} = api.i18n;
+  api.i18n.getUILanguage = () => self.uiLanguageOverride || getUILanguage();
+}
+
+mockGetUILanguage(chrome);
+if (typeof browser != "undefined")
+  mockGetUILanguage(browser);
 
 ABP.start().then(() => chrome.tabs.create({url: "/test/index.html"}));

@@ -282,28 +282,47 @@ describe("API", () =>
 
   describe("Initialization", () =>
   {
-    it("configures default subscriptions", async function()
+    let background;
+
+    before(async() =>
     {
-      if (browser.i18n.getUILanguage().split("-")[0] != "en")
-        this.skip();
-
-      await ABP.start();
-
-      let subscriptions = ABP.subscriptions.getAll();
-      expect(subscriptions).toEqual([
-        expect.objectContaining({
-          enabled: true,
-          url: "https://easylist-downloads.adblockplus.org/exceptionrules.txt"
-        }),
-        expect.objectContaining({
-          enabled: true,
-          url: "https://easylist-downloads.adblockplus.org/easylist.txt"
-        }),
-        expect.objectContaining({
-          enabled: true,
-          url: "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt"
-        })
-      ]);
+      background = await browser.runtime.getBackgroundPage();
     });
+
+    after(() =>
+    {
+      delete background.uiLanguageOverride;
+    });
+
+    for (let [language, subscriptionUrl] of [
+      ["en", "https://easylist-downloads.adblockplus.org/easylist.txt"],
+      ["de", "https://easylist-downloads.adblockplus.org/easylistgermany+easylist.txt"]
+    ])
+    {
+      it(`configures default subscriptions for ${language}`, async() =>
+      {
+        background.uiLanguageOverride = language;
+
+        await ABP.start();
+
+        let subscriptions = ABP.subscriptions.getAll();
+        let urls = [
+          subscriptionUrl,
+          "https://easylist-downloads.adblockplus.org/exceptionrules.txt",
+          "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt"
+        ];
+
+        expect(subscriptions).toEqual(expect.arrayContaining(urls.map(
+          url => expect.objectContaining({url, enabled: true})
+        )));
+
+        for (let subscription of subscriptions)
+        {
+          expect(urls).toContain(subscription.url);
+          expect(subscription.downloading ||
+                 subscription.lastDownload).toBeTruthy();
+        }
+      });
+    }
   });
 });
