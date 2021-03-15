@@ -199,7 +199,7 @@ export default {
       for (let subscription of filterStorage.subscriptions())
       {
         if (subscription instanceof DownloadableSubscription)
-          subscriptions.push(subscriptions);
+          subscriptions.push(subscription);
       }
     }
     for (let subscription of subscriptions)

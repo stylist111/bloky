@@ -175,6 +175,57 @@ describe("API", () =>
         expect.objectContaining({url: VALID_SUBSCRIPTION_URL})
       );
     });
+
+    it("syncs subscriptions", async function()
+    {
+      this.timeout(5000);
+
+      let previousDownload = 0;
+      let syncedOne = false;
+      let syncedAll = false;
+
+      ABP.subscriptions.add(VALID_SUBSCRIPTION_URL);
+
+      await new Promise((resolve, reject) =>
+      {
+        async function onChanged(subscription)
+        {
+          try
+          {
+            if (subscription.url != VALID_SUBSCRIPTION_URL)
+              return;
+
+            expect(subscription.lastDownload).toBeGreaterThan(previousDownload);
+            previousDownload = subscription.lastDownload;
+
+            if (!syncedOne)
+            {
+              syncedOne = true;
+              await new Promise(elapsed => setTimeout(elapsed, 1000));
+              ABP.subscriptions.sync(VALID_SUBSCRIPTION_URL);
+            }
+            else if (!syncedAll)
+            {
+              syncedAll = true;
+              await new Promise(elapsed => setTimeout(elapsed, 1000));
+              ABP.subscriptions.sync();
+            }
+            else
+            {
+              ABP.subscriptions.onChanged.removeListener(onChanged);
+              resolve();
+            }
+          }
+          catch (err)
+          {
+            ABP.subscriptions.onChanged.removeListener(onChanged);
+            reject(err);
+          }
+        }
+
+        ABP.subscriptions.onChanged.addListener(onChanged);
+      });
+    });
   });
 
   describe("Filters", () =>
