@@ -19,7 +19,8 @@ import browser from "webextension-polyfill";
 
 import {filterEngine} from "../../adblockpluscore/lib/filterEngine.js";
 import {synchronizer} from "../../adblockpluscore/lib/synchronizer.js";
-import {notifications} from "../../adblockpluscore/lib/notifications.js";
+import {notifications as _notifications}
+  from "../../adblockpluscore/lib/notifications.js";
 
 import * as frameState from "./frame-state.js";
 import * as requestFilter from "./request-filter.js";
@@ -32,10 +33,19 @@ export {default as subscriptions} from "./subscriptions.js";
 export {default as filters} from "./filters.js";
 export {onFilterMatch} from "./diagnostics.js";
 
+/**
+ * The notifications API (only used by Adblock Plus).
+ * @see {@link https://eyeo.gitlab.io/adblockplus/adblockpluscore/master/docs/module-notifications.html|Adblock Plus core notifications documentation}
+ * @external
+ */
+// Workaround for documentation.js to parse the JSDocs above
+// https://github.com/documentationjs/documentation/issues/1363
+export let notifications = _notifications;
+
 let stopped = true;
 
 /**
- * Intializes filter engine and starts blocking content.
+ * Initializes the filter engine and starts blocking content.
  * @return {Promise.<undefined>}
  */
 export async function start()
