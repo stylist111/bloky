@@ -17,8 +17,10 @@
 
 import {Page, Popup, TEST_PAGES_URL, SITEKEY} from "./utils.js";
 
-describe("Pop-up blocking", () =>
+describe("Pop-up blocking", function()
 {
+  this.timeout(3000);
+
   let opener;
 
   before(() => { opener = new Page("popup-opener.html"); });
@@ -53,6 +55,11 @@ describe("Pop-up blocking", () =>
   {
     ABP.filters.add(`|${TEST_PAGES_URL}/popup.html^$popup`);
     ABP.filters.add(`@@|${TEST_PAGES_URL}/popup.html^$popup`);
+    if (typeof netscape != "undefined")
+    {
+      Page.removeCurrent();
+      opener = new Page("popup-opener.html");
+    }
     expect(await new Popup("link", opener).blocked).toBeFalsy();
   });
 
