@@ -30,4 +30,14 @@ mockGetUILanguage(chrome);
 if (typeof browser != "undefined")
   mockGetUILanguage(browser);
 
-ABP.start().then(() => chrome.tabs.create({url: "/test/index.html"}));
+ABP.start().then(async() =>
+{
+  if (typeof netscape != "undefined")
+  {
+    let version = /\brv:([^;)]+)/.exec(navigator.userAgent)[1];
+    if (parseInt(version, 10) < 86)
+      await new Promise(resolve => setTimeout(resolve, 2000));
+  }
+
+  chrome.tabs.create({url: "/test/index.html"});
+});

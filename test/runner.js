@@ -259,7 +259,7 @@ async function run()
 
       url = new URL(handleUrl);
       return url.pathname == "/test/index.html";
-    }), 2000, "unit tests page did not open");
+    }), 4000, "unit tests page did not open");
 
     if (params)
     {
