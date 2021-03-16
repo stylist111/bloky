@@ -15,11 +15,11 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Page, Popup, TEST_PAGES_URL, SITEKEY} from "./utils.js";
+import {Page, Popup, TEST_PAGES_URL, SITEKEY, setMinTimeout} from "./utils.js";
 
 describe("Pop-up blocking", function()
 {
-  this.timeout(3000);
+  setMinTimeout(this, 3000);
 
   let opener;
 

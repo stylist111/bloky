@@ -217,3 +217,9 @@ export class Popup
     }
   }
 }
+
+export function setMinTimeout(runnable, timeout)
+{
+  if (runnable.timeout() < timeout)
+    runnable.timeout(timeout);
+}

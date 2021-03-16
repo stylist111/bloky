@@ -15,6 +15,8 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import {setMinTimeout} from "./utils.js";
+
 const VALID_SUBSCRIPTION_URL = "https://testpages.adblockplus.org/en/abp-testcase-subscription.txt";
 const INVALID_SUBSCRIPTION_URL = "invalidUrl";
 
@@ -178,7 +180,7 @@ describe("API", () =>
 
     it("syncs subscriptions", async function()
     {
-      this.timeout(5000);
+      setMinTimeout(this, 5000);
 
       let previousDownload = 0;
       let syncedOne = false;
