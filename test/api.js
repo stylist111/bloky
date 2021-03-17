@@ -575,5 +575,23 @@ describe("API", () =>
         await checkPopupLogging("@@$popup");
       });
     });
+
+    describe("Notifications", () =>
+    {
+      it("supports notifications", () =>
+      {
+        let notification = {id: "test"};
+        let fake = sinon.fake();
+
+        ABP.notifications.addNotification(notification);
+        ABP.notifications.addShowListener(fake);
+        ABP.notifications.showNext();
+        ABP.notifications.removeShowListener(fake);
+        ABP.notifications.removeNotification(notification);
+
+        expect(fake.callCount).toBe(1);
+        expect(fake.firstArg).toEqual(notification);
+      });
+    });
   });
 });
