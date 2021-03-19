@@ -53,6 +53,21 @@ function makeSubListener(dispatch)
   };
 }
 
+function validateFilter(filter)
+{
+  if (filter instanceof InvalidFilter)
+    return new Error(`Invalid filter: ${filter.reason}`);
+
+  if (isActiveFilter(filter) && filter.domains)
+  {
+    for (let domain of filter.domains.keys())
+    {
+      if (domain && !isValidHostname(domain))
+        return new Error(`Invalid domain for filter: ${domain}`);
+    }
+  }
+}
+
 export default {
   /**
    * Represents a single filter rule and its state.
@@ -77,18 +92,10 @@ export default {
   add(text)
   {
     let filter = Filter.fromText(text);
+    let error = validateFilter(filter);
 
-    if (filter instanceof InvalidFilter)
-      throw new Error(`Invalid filter: ${filter.reason}`);
-
-    if (isActiveFilter(filter) && filter.domains)
-    {
-      for (let domain of filter.domains.keys())
-      {
-        if (domain && !isValidHostname(domain))
-          throw new Error(`Invalid domain for filter: ${domain}`);
-      }
-    }
+    if (error)
+      throw error;
 
     filterStorage.addFilter(filter);
   },
@@ -143,6 +150,16 @@ export default {
   remove(text)
   {
     filterStorage.removeFilter(Filter.fromText(text));
+  },
+
+  /**
+   * Validates a list of filters.
+   * @param {string} text Filter to be validated
+   * @return {undefined|Error}
+   */
+  validate(text)
+  {
+    return validateFilter(Filter.fromText(text));
   },
 
   /**

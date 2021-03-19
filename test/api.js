@@ -294,6 +294,21 @@ describe("API", () =>
       expect(ABP.filters.getAll()).toEqual([]);
     });
 
+    it("validates a filter", () =>
+    {
+      expect(ABP.filters.validate(INVALID_FILTER_TEXT)).toEqual(
+        expect.objectContaining(
+          {message: "Invalid filter: filter_invalid_rewrite"}
+        )
+      );
+      expect(ABP.filters.validate("/image.png$domain=http://foo")).toEqual(
+        expect.objectContaining(
+          {message: "Invalid domain for filter: http://foo"}
+        )
+      );
+      expect(ABP.filters.validate(VALID_FILTER_TEXT)).toBeUndefined();
+    });
+
     it("listens to onAdded events", () =>
     {
       let fake = sinon.fake();
