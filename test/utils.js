@@ -88,7 +88,7 @@ export class Resource
     this.error = (async() =>
     {
       let tabId = page && await page.created;
-      let url = `${TEST_PAGES_URL}/${path}`;
+      let url = new URL(path, TEST_PAGES_URL).href;
       let onErrorOccurred;
       let onCompleted;
 

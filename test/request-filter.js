@@ -78,6 +78,34 @@ describe("Blocking", () =>
     expect((await browser.tabs.executeScript(tabId, {code}))[0]).toBeFalsy();
   });
 
+  it("blocks $domain requests", async() =>
+  {
+    ABP.filters.add(`/image.png$domain=${TEST_PAGES_DOMAIN}`);
+    await new Page("image.html").expectResource("image.png").toBeBlocked();
+  });
+
+  it("handles $match-case requests", async() =>
+  {
+    ABP.filters.add(`|${TEST_PAGES_URL}/IMAGE.png$match-case`);
+    await new Page("image.html").expectResource("image.png").toBeLoaded();
+    ABP.filters.add(`|${TEST_PAGES_URL}/image.png$match-case`);
+    await new Page("image.html").expectResource("image.png").toBeBlocked();
+  });
+
+  it("blocks $other requests", async() =>
+  {
+    ABP.filters.add(`$other,domain=${TEST_PAGES_DOMAIN}`);
+    await new Page("other.html").expectResource("image.png").toBeBlocked();
+  });
+
+  it("handles $third-party requests", async() =>
+  {
+    ABP.filters.add("image.png$third-party");
+    let page = new Page("third-party.html");
+    await page.expectResource("http://127.0.0.1:3000/image.png").toBeBlocked();
+    await new Page("image.html").expectResource("image.png").toBeLoaded();
+  });
+
   it("handles $script requests", async() =>
   {
     ABP.filters.add(`|${TEST_PAGES_URL}/*.js$script`);
