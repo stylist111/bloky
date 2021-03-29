@@ -20,6 +20,7 @@ import {Subscription, DownloadableSubscription}
 import {filterStorage} from "../../adblockpluscore/lib/filterStorage.js";
 import {synchronizer} from "../../adblockpluscore/lib/synchronizer.js";
 import {filterNotifier} from "../../adblockpluscore/lib/filterNotifier.js";
+import {recommendations} from "../../adblockpluscore/lib/recommendations.js";
 
 import {EventDispatcher} from "./events.js";
 
@@ -30,6 +31,11 @@ function convertSubscription({disabled, downloadStatus, homepage,
   return {enabled: !disabled, downloading: synchronizer.isExecuting(url),
           downloadStatus, homepage, version, lastDownload, lastSuccess,
           softExpiration, expires, title, url};
+}
+
+function convertRecommendation({languages, title, type, url})
+{
+  return {languages, title, type, url};
 }
 
 function getSubscription(url)
@@ -204,6 +210,27 @@ export default {
     }
     for (let subscription of subscriptions)
       synchronizer.execute(subscription, true);
+  },
+
+  /**
+   * Defines the recommended filter subscriptions per language.
+   * @typedef {Object} Recommendation
+   * @property {Array.<string>} languages The languages that this recommendation
+   *                                      would match to.
+   * @property {string} title The display name of the recommended subscription.
+   * @property {string} type The kind of content targeted by this
+   *                         recommended subscription.
+   * @property {string} url Where the recommended subscription can be found
+   *                        in plain text.
+   */
+
+  /**
+   * Returns an array of all recommended subscriptions.
+   * @return {Array.<Recommendation>}
+   */
+  getRecommendations()
+  {
+    return Array.from(recommendations(), convertRecommendation);
   },
 
   /**

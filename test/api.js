@@ -131,6 +131,33 @@ describe("API", () =>
       expect(ABP.subscriptions.getAll()).toEqual([]);
     });
 
+    it("gets recommendations", () =>
+    {
+      let recommendations = ABP.subscriptions.getRecommendations();
+
+      expect(recommendations).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          languages: ["en"],
+          title: "EasyList",
+          type: "ads",
+          url: "https://easylist-downloads.adblockplus.org/easylist.txt"
+        })
+      ]));
+
+      for (let item of recommendations)
+      {
+        expect(item).toEqual({
+          languages: expect.any(Object),
+          title: expect.any(String),
+          type: expect.any(String),
+          url: expect.any(String)
+        });
+
+        for (let language of item.languages)
+          expect(language).toEqual(expect.any(String));
+      }
+    });
+
     it("listens to onAdded events", () =>
     {
       let fake = sinon.fake();
