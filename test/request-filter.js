@@ -137,6 +137,30 @@ describe("Blocking", () =>
     await new Page("image.html").expectResource("image.png").toBeBlocked();
   });
 
+  it("blocks $ping requests", async() =>
+  {
+    ABP.filters.add(`|${TEST_PAGES_URL}/*^$ping`);
+    await new Page("ping.html").expectResource("ping-handler").toBeBlocked();
+  });
+
+  it("does not block allowlisted $ping requests", async() =>
+  {
+    ABP.filters.add(`|${TEST_PAGES_URL}/*^$ping`);
+    ABP.filters.add(`@@|${TEST_PAGES_URL}/ping-handler^$ping`);
+
+    try
+    {
+      await new Page("ping.html").expectResource("ping-handler").toBeLoaded();
+    }
+    catch (e)
+    {
+      // The CI Firefox job throws NS_ERROR_ABORT on navigator.sendBeacon()
+      // Blocked $ping requests would have ip:null instead
+      if (e.message.includes("\"ip\": null"))
+        throw e;
+    }
+  });
+
   it("does not block a request sent by the extension", async() =>
   {
     ABP.filters.add(`|${TEST_PAGES_URL}/image.png^`);

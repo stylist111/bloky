@@ -77,6 +77,8 @@ app.use(sitekeyHeader);
 app.use(testHeader);
 app.use(express.static(path.join(dirname, "pages")));
 
+app.post("/ping-handler", (req, res) => res.sendStatus(200));
+
 app.listen(PORT, "localhost", () =>
 {
   // eslint-disable-next-line no-console
