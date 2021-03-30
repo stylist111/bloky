@@ -25,7 +25,7 @@ import {isSlowFilter} from "../../adblockpluscore/lib/matcher.js";
 import {filterNotifier} from "../../adblockpluscore/lib/filterNotifier.js";
 import {filterState} from "../../adblockpluscore/lib/filterState.js";
 
-import {EventDispatcher} from "./events.js";
+import {EventDispatcher, FilterError} from "./types.js";
 
 function convertFilter(filter)
 {
@@ -56,14 +56,14 @@ function makeSubListener(dispatch)
 function validateFilter(filter)
 {
   if (filter instanceof InvalidFilter)
-    return new Error(`Invalid filter: ${filter.reason}`);
+    return new FilterError("invalid_filter", filter.reason, filter.option);
 
   if (isActiveFilter(filter) && filter.domains)
   {
     for (let domain of filter.domains.keys())
     {
       if (domain && !isValidHostname(domain))
-        return new Error(`Invalid domain for filter: ${domain}`);
+        return new FilterError("invalid_domain", domain);
     }
   }
 }
@@ -85,8 +85,7 @@ export default {
   /**
    * Adds a filter from text.
    * @param {string} text The filter rule to be added.
-   * @throws {Error} Invalid filter provided.
-   * @throws {Error} Invalid domain for filter provided.
+   * @throws {FilterError}
    * @return {undefined}
    */
   add(text)

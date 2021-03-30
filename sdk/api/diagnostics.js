@@ -20,7 +20,7 @@ import {Filter, ElemHideFilter}
   from "../../adblockpluscore/lib/filterClasses.js";
 import {parseURL} from "../../adblockpluscore/lib/url.js";
 
-import {EventDispatcher} from "./events.js";
+import {EventDispatcher} from "./types.js";
 
 let dispatchFunction;
 

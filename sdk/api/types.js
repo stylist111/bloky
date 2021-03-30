@@ -71,3 +71,25 @@ export class EventDispatcher
     }
   }
 }
+
+/**
+ * The result of parsing an invalid filter.
+ * @property {string} type Either `invalid_filter` or `invalid_domain`.
+ * @property {string} reason The reason why the filter is invalid.
+ * @property {string?} option The filter option that made the filter invalid.
+ * @param {string} type
+ * @param {string} reason
+ * @param {string?} option
+ * @hideconstructor
+ */
+export class FilterError extends Error
+{
+  constructor(type, reason, option = null)
+  {
+    super(JSON.stringify({type, reason, option}));
+    this.name = "FilterError";
+    this.type = type;
+    this.reason = reason;
+    this.option = option;
+  }
+}

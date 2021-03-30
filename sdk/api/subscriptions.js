@@ -22,7 +22,7 @@ import {synchronizer} from "../../adblockpluscore/lib/synchronizer.js";
 import {filterNotifier} from "../../adblockpluscore/lib/filterNotifier.js";
 import {recommendations} from "../../adblockpluscore/lib/recommendations.js";
 
-import {EventDispatcher} from "./events.js";
+import {EventDispatcher} from "./types.js";
 
 function convertSubscription({disabled, downloadStatus, homepage,
                               version, lastDownload, lastSuccess,

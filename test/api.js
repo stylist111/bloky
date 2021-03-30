@@ -269,8 +269,13 @@ describe("API", () =>
 
     it("does not add an invalid filter", () =>
     {
-      expect(() => ABP.filters.add(INVALID_FILTER_TEXT))
-        .toThrowError("Invalid filter");
+      expect(() => ABP.filters.add(INVALID_FILTER_TEXT)).toThrowError(
+        JSON.stringify({
+          type: "invalid_filter",
+          reason: "filter_invalid_rewrite",
+          option: null
+        })
+      );
     });
 
     it("adds multiple filters", () =>
@@ -321,19 +326,35 @@ describe("API", () =>
       expect(ABP.filters.getAll()).toEqual([]);
     });
 
-    it("validates a filter", () =>
+    it("validates a valid filter", () =>
     {
-      expect(ABP.filters.validate(INVALID_FILTER_TEXT)).toEqual(
-        expect.objectContaining(
-          {message: "Invalid filter: filter_invalid_rewrite"}
-        )
-      );
-      expect(ABP.filters.validate("/image.png$domain=http://foo")).toEqual(
-        expect.objectContaining(
-          {message: "Invalid domain for filter: http://foo"}
-        )
-      );
       expect(ABP.filters.validate(VALID_FILTER_TEXT)).toBeUndefined();
+    });
+
+    it("validates a filter with unknown option", () =>
+    {
+      let props = {
+        type: "invalid_filter",
+        reason: "filter_unknown_option",
+        option: "foo"
+      };
+
+      let error = ABP.filters.validate("@@||example.com^$foo");
+      expect(error).toEqual(expect.objectContaining(props));
+      expect(error.toString()).toEqual(`FilterError: ${JSON.stringify(props)}`);
+    });
+
+    it("validates a filter with an invalid domain", () =>
+    {
+      let props = {
+        type: "invalid_domain",
+        reason: "http://foo",
+        option: null
+      };
+
+      let error = ABP.filters.validate("/image.png$domain=http://foo");
+      expect(error).toEqual(expect.objectContaining(props));
+      expect(error.toString()).toEqual(`FilterError: ${JSON.stringify(props)}`);
     });
 
     it("listens to onAdded events", () =>

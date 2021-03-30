@@ -23,5 +23,6 @@ toc:
     children:
       - Subscription
       - Filter
+      - FilterError
       - EventDispatcher
       - Recommendation

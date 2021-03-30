@@ -40,6 +40,6 @@
   },
   "scripts": {
     "lint": "eslint --ext js,html .",
-    "docs": "documentation build --document-exported -f html -o docs --config documentation.yml sdk/api/index.js sdk/api/events.js"
+    "docs": "documentation build --document-exported -f html -o docs --config documentation.yml sdk/api/index.js sdk/api/types.js"
   }
 }

@@ -15,7 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {EventDispatcher} from "./events.js";
+import {EventDispatcher} from "./types.js";
 
 const ALLOWED_DOMAINS = new Set([
   "abpchina.org",
