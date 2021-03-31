@@ -161,6 +161,23 @@ describe("Blocking", () =>
     }
   });
 
+  it("handles $websocket requests", async() =>
+  {
+    let url = `ws://${TEST_PAGES_DOMAIN}:3001/`;
+    ABP.filters.add(`$websocket,domain=${TEST_PAGES_DOMAIN}`);
+    await new Page("websocket.html").expectResource(url).toBeBlocked();
+    ABP.filters.add(`@@$websocket,domain=${TEST_PAGES_DOMAIN}`);
+    await new Page("websocket.html").expectResource(url).toBeLoaded();
+  });
+
+  it("handles $xmlhttprequest requests", async() =>
+  {
+    ABP.filters.add(`|${TEST_PAGES_URL}/*.png$xmlhttprequest`);
+    await new Page("fetch.html").expectResource("image.png").toBeBlocked();
+    ABP.filters.add(`@@|${TEST_PAGES_URL}/image.png$xmlhttprequest`);
+    await new Page("fetch.html").expectResource("image.png").toBeLoaded();
+  });
+
   it("does not block a request sent by the extension", async() =>
   {
     ABP.filters.add(`|${TEST_PAGES_URL}/image.png^`);

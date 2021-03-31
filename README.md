@@ -58,8 +58,7 @@ The extension's `manifest.json` is required to include the following configurati
     "webRequestBlocking",
     "storage",
     "unlimitedStorage",
-    "http://*/*",
-    "https://*/*"
+    "<all_urls>"
   ]
 }
 ```
