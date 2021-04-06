@@ -109,6 +109,13 @@ describe("API", () =>
       )]));
     });
 
+    it("checks if a subscription has been added", () =>
+    {
+      expect(ABP.subscriptions.has(VALID_SUBSCRIPTION_URL)).toBeFalsy();
+      ABP.subscriptions.add(VALID_SUBSCRIPTION_URL);
+      expect(ABP.subscriptions.has(VALID_SUBSCRIPTION_URL)).toBeTruthy();
+    });
+
     it("disables an existing subscription", () =>
     {
       ABP.subscriptions.add(VALID_SUBSCRIPTION_URL);

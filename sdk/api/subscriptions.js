@@ -171,6 +171,17 @@ export default {
   },
 
   /**
+   * Checks if a subscription has been added.
+   * @param {string} url The URL of the subscription to be checked.
+   * @return {boolean} True if a subscription has been added.
+   * @throws {TypeError} Invalid url provided.
+   */
+  has(url)
+  {
+    return getSubscription(new URL(url).href) != null;
+  },
+
+  /**
    * Enables a previously disabled subscription. Has no effect otherwise.
    * @param {string} url The URL of the subscription to be enabled.
    * @throws {Error} Subscription does not exist
