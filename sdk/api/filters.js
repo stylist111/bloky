@@ -32,7 +32,8 @@ export function convertFilter(filter)
   return {
     text: filter.text,
     enabled: !filter.disabled,
-    slow: isSlowFilter(filter)
+    slow: isSlowFilter(filter),
+    type: filter.type
   };
 }
 
@@ -80,6 +81,7 @@ export default {
    * @property {boolean} slow Indicates that this filter is not subject to an
    *                          internal optimization. Filters that are
    *                          considered slow should be avoided.
+   * @property {string} type The filter {@link https://eyeo.gitlab.io/adblockplus/adblockpluscore/next/docs/module-filterClasses.Filter.html#type|type}
    */
 
   /**

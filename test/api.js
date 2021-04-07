@@ -22,7 +22,8 @@ const VALID_SUBSCRIPTION_URL = "https://testpages.adblockplus.org/en/abp-testcas
 const INVALID_SUBSCRIPTION_URL = "invalidUrl";
 
 const VALID_FILTER_TEXT = "$image";
-const VALID_FILTER = {text: VALID_FILTER_TEXT, enabled: true, slow: true};
+const VALID_FILTER =
+  {text: VALID_FILTER_TEXT, enabled: true, slow: true, type: "blocking"};
 const INVALID_FILTER_TEXT = "/foo/$rewrite=";
 
 describe("API", () =>
