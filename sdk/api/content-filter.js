@@ -60,16 +60,7 @@ export function applyContentFilters(tabId, frameId)
       let styleSheet = elemHide.getStyleSheet(frame.hostname,
                                               specificOnly, trace, trace);
 
-      browser.tabs.insertCSS(
-        tabId,
-        {
-          code: styleSheet.code,
-          cssOrigin: "user",
-          frameId,
-          matchAboutBlank: true,
-          runAt: "document_start"
-        }
-      ).catch(() => {});  // Fails if tab or frame no longer exists
+      injectCSS(tabId, frameId, styleSheet.code);
 
       for (let {selector, text} of elemHideEmulation.getFilters(frame.hostname))
         emulatedPatterns.push({selector, text});
@@ -86,4 +77,18 @@ export function applyContentFilters(tabId, frameId)
   }
 
   return {emulatedPatterns, tracedSelectors};
+}
+
+export function injectCSS(tabId, frameId, code)
+{
+  browser.tabs.insertCSS(
+    tabId,
+    {
+      code,
+      cssOrigin: "user",
+      frameId,
+      matchAboutBlank: true,
+      runAt: "document_start"
+    }
+  ).catch(() => {}); // Fails if tab or frame no longer exists
 }

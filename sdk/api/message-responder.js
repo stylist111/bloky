@@ -17,7 +17,9 @@
 
 import browser from "webextension-polyfill";
 
-import {applyContentFilters} from "./content-filter.js";
+import {applyContentFilters, injectCSS} from "./content-filter.js";
+import {createStyleSheet}
+  from "../../adblockpluscore/lib/elemHide.js";
 import {subscribeLinkClicked, subscribeLinksEnabled}
   from "./subscribe-links.js";
 import {logHiddenElements} from "./diagnostics.js";
@@ -42,6 +44,10 @@ function onMessage(message, sender)
       break;
     case "abp:trace-elem-hide":
       logHiddenElements(message.selectors, message.filters, sender.url);
+      break;
+    case "abp:inject-css":
+      let styleSheet = createStyleSheet([message.selector]);
+      injectCSS(sender.tab.id, sender.frameId, styleSheet);
       break;
   }
 }
