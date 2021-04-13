@@ -24,13 +24,16 @@ import {recommendations} from "../../adblockpluscore/lib/recommendations.js";
 
 import {EventDispatcher} from "./types.js";
 
-function convertSubscription({disabled, downloadStatus, homepage,
-                              version, lastDownload, lastSuccess,
-                              softExpiration, expires, title, url})
+function convertSubscription(subscription)
 {
+  let {disabled, downloadStatus, homepage,
+       version, lastDownload, lastSuccess,
+       softExpiration, expires, title, url} = subscription;
+
   return {enabled: !disabled, downloading: synchronizer.isExecuting(url),
           downloadStatus, homepage, version, lastDownload, lastSuccess,
-          softExpiration, expires, title, url};
+          softExpiration, expires, title, url,
+          downloadable: subscription instanceof DownloadableSubscription};
 }
 
 function convertRecommendation({languages, title, type, url})
@@ -60,8 +63,7 @@ function makeListener(dispatch)
 
 export default {
   /**
-   * A resource downloaded and updated over the network that
-   * provides a list of filters that decide what to block.
+   * A resource that provides a list of filters that decide what to block.
    * @typedef {Object} Subscription
    * @property {boolean} enabled Indicates whether this subscription will
    *                             be applied.
@@ -87,6 +89,10 @@ export default {
    *                        Used a the identifier.
    * @property {string} version The version provided by the subscription's
    *                            metadata. Defaults to '0' if not provided.
+   * @property {boolean} downloadable Indicates whether this subscription is
+   *                                  downloaded and updated over the network.
+   *                                  If `false` the subscription is merely
+   *                                  a container for user-defined filters.
    */
 
   /**
@@ -117,10 +123,11 @@ export default {
   },
 
   /**
-   * Returns an array of subscription objects that have been added.
+   * Returns an array of subscription objects for all subscriptions that are
+   * downloaded and updated over the network.
    * @return {Array.<Subscription>}
    */
-  getAll()
+  getDownloadable()
   {
     let result = [];
 
@@ -131,6 +138,16 @@ export default {
     }
 
     return result;
+  },
+
+  /**
+   * Returns an array of subscription objects for a given filter.
+   * @param {string} text The filter rule for which to look.
+   * @return {Array.<Subscription>}
+   */
+  getForFilter(text)
+  {
+    return Array.from(filterStorage.subscriptions(text), convertSubscription);
   },
 
   /**

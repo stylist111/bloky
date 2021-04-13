@@ -32,12 +32,13 @@ describe("API", () =>
     {
       ABP.subscriptions.add(VALID_SUBSCRIPTION_URL);
 
-      let subscriptions = ABP.subscriptions.getAll();
+      let subscriptions = ABP.subscriptions.getDownloadable();
       expect(subscriptions).toEqual([expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
         enabled: true,
         title: VALID_SUBSCRIPTION_URL,
-        homepage: null
+        homepage: null,
+        downloadable: true
       })]);
     });
 
@@ -48,12 +49,13 @@ describe("API", () =>
 
       ABP.subscriptions.add(VALID_SUBSCRIPTION_URL, {title, homepage});
 
-      let subscriptions = ABP.subscriptions.getAll();
+      let subscriptions = ABP.subscriptions.getDownloadable();
       expect(subscriptions).toEqual([expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
         enabled: true,
         title,
-        homepage
+        homepage,
+        downloadable: true
       })]);
     });
 
@@ -68,10 +70,19 @@ describe("API", () =>
       ABP.subscriptions.add(VALID_SUBSCRIPTION_URL);
       ABP.subscriptions.add(VALID_SUBSCRIPTION_URL + "?2");
 
-      let subscriptions = ABP.subscriptions.getAll();
+      let subscriptions = ABP.subscriptions.getDownloadable();
       expect(subscriptions).toEqual([
         expect.objectContaining({url: VALID_SUBSCRIPTION_URL}),
         expect.objectContaining({url: VALID_SUBSCRIPTION_URL + "?2"})
+      ]);
+    });
+
+    it("gets subscriptions for a filter", () =>
+    {
+      ABP.filters.add(VALID_FILTER_TEXT);
+
+      expect(ABP.subscriptions.getForFilter(VALID_FILTER_TEXT)).toEqual([
+        expect.objectContaining({downloadable: false})
       ]);
     });
 
@@ -80,7 +91,7 @@ describe("API", () =>
       ABP.subscriptions.add(VALID_SUBSCRIPTION_URL);
       ABP.subscriptions.disable(VALID_SUBSCRIPTION_URL);
 
-      let subscriptions = ABP.subscriptions.getAll();
+      let subscriptions = ABP.subscriptions.getDownloadable();
       expect(subscriptions).toEqual([expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
         enabled: false
@@ -93,7 +104,7 @@ describe("API", () =>
       ABP.subscriptions.disable(VALID_SUBSCRIPTION_URL);
       ABP.subscriptions.enable(VALID_SUBSCRIPTION_URL);
 
-      let subscriptions = ABP.subscriptions.getAll();
+      let subscriptions = ABP.subscriptions.getDownloadable();
       expect(subscriptions).toEqual([expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
         enabled: true
@@ -105,7 +116,7 @@ describe("API", () =>
       ABP.subscriptions.add(VALID_SUBSCRIPTION_URL);
       ABP.subscriptions.enable(VALID_SUBSCRIPTION_URL);
 
-      let subscriptions = ABP.subscriptions.getAll();
+      let subscriptions = ABP.subscriptions.getDownloadable();
       expect(subscriptions).toEqual([expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
         enabled: true
@@ -128,7 +139,7 @@ describe("API", () =>
       ABP.subscriptions.add(VALID_SUBSCRIPTION_URL);
       ABP.subscriptions.remove(VALID_SUBSCRIPTION_URL);
 
-      expect(ABP.subscriptions.getAll()).toEqual([]);
+      expect(ABP.subscriptions.getDownloadable()).toEqual([]);
     });
 
     it("gets recommendations", () =>
@@ -421,7 +432,7 @@ describe("API", () =>
 
         await ABP.start();
 
-        let subscriptions = ABP.subscriptions.getAll();
+        let subscriptions = ABP.subscriptions.getDownloadable();
         let urls = [
           subscriptionUrl,
           "https://easylist-downloads.adblockplus.org/exceptionrules.txt",
