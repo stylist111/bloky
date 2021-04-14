@@ -147,7 +147,8 @@ export default {
    */
   getForFilter(text)
   {
-    return Array.from(filterStorage.subscriptions(text), convertSubscription);
+    return text ? Array.from(filterStorage.subscriptions(text),
+                             convertSubscription) : [];
   },
 
   /**
