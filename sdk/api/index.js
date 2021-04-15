@@ -31,7 +31,7 @@ import {configureDefaultSubscriptions} from "./default-subscriptions.js";
 export {onSubscribeLinkClicked} from "./subscribe-links.js";
 export {default as subscriptions} from "./subscriptions.js";
 export {default as filters} from "./filters.js";
-export {onFilterMatch} from "./diagnostics.js";
+export {default as reporting} from "./reporting.js";
 
 /**
  * The notifications API (only used by Adblock Plus).

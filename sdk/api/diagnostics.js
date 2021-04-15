@@ -20,31 +20,17 @@ import {Filter, ElemHideFilter}
   from "../../adblockpluscore/lib/filterClasses.js";
 import {parseURL} from "../../adblockpluscore/lib/url.js";
 
-import {EventDispatcher} from "./types.js";
+let logFunction;
 
-let dispatchFunction;
-
-/**
- * Emitted when any filter is matched.
- *
- * @event
- * @type {EventDispatcher.<{details: object, filter: string}>}
- */
-export let onFilterMatch = new EventDispatcher(
-  dispatch =>
-  {
-    dispatchFunction = dispatch;
-  },
-  () =>
-  {
-    dispatchFunction = null;
-  }
-);
+export function setLogFunction(func)
+{
+  logFunction = func;
+}
 
 export function logItem(details, filter)
 {
-  if (dispatchFunction)
-    dispatchFunction({details, filter: filter.text});
+  if (logFunction)
+    logFunction({details, filter: filter.text});
 }
 
 export function logHiddenElements(selectors, filters, url)
@@ -76,5 +62,5 @@ export function logHiddenElements(selectors, filters, url)
 
 export function tracingEnabled()
 {
-  return !!dispatchFunction;
+  return !!logFunction;
 }

@@ -19,6 +19,7 @@ toc:
       - filters
       - subscriptions
       - notifications
+      - reporting
   - name: Objects
     children:
       - Subscription

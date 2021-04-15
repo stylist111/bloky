@@ -15,7 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {setMinTimeout} from "./utils.js";
+import {Page, Popup, TEST_PAGES_URL, setMinTimeout} from "./utils.js";
 
 const VALID_SUBSCRIPTION_URL = "https://testpages.adblockplus.org/en/abp-testcase-subscription.txt";
 const INVALID_SUBSCRIPTION_URL = "invalidUrl";
@@ -26,6 +26,12 @@ const INVALID_FILTER_TEXT = "/foo/$rewrite=";
 
 describe("API", () =>
 {
+  afterEach(() =>
+  {
+    Page.removeCurrent();
+    Popup.removeCurrent();
+  });
+
   describe("Subscriptions", () =>
   {
     it("adds a subscription", () =>
@@ -451,5 +457,113 @@ describe("API", () =>
         }
       });
     }
+  });
+
+  describe("Reporting", () =>
+  {
+    describe("Allowlisting", () =>
+    {
+      it("detects allowlisted tabs", async() =>
+      {
+        ABP.filters.add(`|${TEST_PAGES_URL}/image.png^`);
+        ABP.filters.add(`@@|${TEST_PAGES_URL}/image.html^$document`);
+
+        let tabId = await new Page("image.html").loaded();
+        expect(ABP.reporting.isAllowlisted(tabId)).toBeTruthy();
+      });
+
+      it("detects non-allowlisted tabs", async() =>
+      {
+        let tabId = await new Page("image.html").loaded();
+        expect(ABP.reporting.isAllowlisted(tabId)).toBeFalsy();
+      });
+    });
+
+    describe("Diagnostics", () =>
+    {
+      async function checkLogging(filter, callback)
+      {
+        let fake = sinon.fake();
+
+        ABP.reporting.onFilterMatch.addListener(fake);
+        ABP.filters.add(filter);
+
+        try
+        {
+          await callback();
+        }
+        finally
+        {
+          ABP.reporting.onFilterMatch.removeListener(fake);
+        }
+
+        expect(fake.called).toBeTruthy();
+        expect(fake.firstArg).toEqual({details: expect.any(Object), filter});
+      }
+
+      function checkRequestLogging(page, filter)
+      {
+        return checkLogging(filter, () => new Page(page).loaded());
+      }
+
+      it("logs blocking request filter", async() =>
+      {
+        await checkRequestLogging("image.html", "/image.png^$image");
+      });
+
+      it("logs allowlisting request filter", async() =>
+      {
+        ABP.filters.add("/image.png^$image");
+        await checkRequestLogging("image.html", "@@$image");
+      });
+
+      it("logs blocking $header filter", async() =>
+      {
+        await checkRequestLogging("header.html", "*$header=x-header=whatever");
+      });
+
+      it("logs allowlisting $header filter", async() =>
+      {
+        ABP.filters.add("*$header=x-header=whatever");
+        await checkRequestLogging("header.html", "@@$header");
+      });
+
+      it("logs blocking $csp filter", async() =>
+      {
+        await checkRequestLogging("csp.html", "*$csp=img-src 'none'");
+      });
+
+      it("logs allowlisting $csp filter", async() =>
+      {
+        ABP.filters.add("*$csp=img-src 'none'");
+        await checkRequestLogging("csp.html", "@@$csp");
+      });
+
+      for (let option of ["$document", "$elemhide",
+                          "$genericblock", "$generichide"])
+      {
+        it(`logs allowlisting ${option} filter`, () =>
+          checkRequestLogging("image.html", `@@${option}`)
+        );
+      }
+
+      function checkPopupLogging(filter)
+      {
+        return checkLogging(filter, () =>
+          new Popup("link", new Page("popup-opener.html")).blocked
+        );
+      }
+
+      it("logs blocking popup filter", async() =>
+      {
+        await checkPopupLogging("*popup.html^$popup");
+      });
+
+      it("logs allowlisting popup filter", async() =>
+      {
+        ABP.filters.add("*popup.html^$popup");
+        await checkPopupLogging("@@$popup");
+      });
+    });
   });
 });
