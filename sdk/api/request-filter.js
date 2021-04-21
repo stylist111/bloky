@@ -84,12 +84,19 @@ class RequestFilter
     let selector = typeSelectors.get(this.getContentType(details));
     let frameId = this.getFrameId(details);
 
-    if (selector && frameId != -1)
+    let sendCollapseMessage = () =>
     {
-      ignoreNoConnectionError(browser.tabs.sendMessage(
+      return browser.tabs.sendMessage(
         details.tabId,
         {type: "abp:collapse", selector, url: details.url}, {frameId}
-      ));
+      );
+    };
+
+    if (selector && frameId != -1)
+    {
+      // Retriying to fix a connection error on Chromium 90
+      sendCollapseMessage()
+        .catch(() => ignoreNoConnectionError(sendCollapseMessage()));
     }
   }
 
