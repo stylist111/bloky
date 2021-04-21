@@ -18,6 +18,7 @@
 mocha.setup("bdd");
 
 let timeout = new URLSearchParams(document.location.search).get("timeout");
+let background;
 let restoreSubscriptions;
 
 if (timeout)
@@ -25,7 +26,8 @@ if (timeout)
 
 before(async() =>
 {
-  self.ABP = (await browser.runtime.getBackgroundPage()).ABP;
+  background = await browser.runtime.getBackgroundPage();
+  self.ABP = background.ABP;
   restoreSubscriptions = ABP.subscriptions.removeAll();
 });
 
@@ -33,6 +35,35 @@ after(() =>
 {
   if (restoreSubscriptions)
     restoreSubscriptions();
+});
+
+beforeEach(function()
+{
+  let {fn} = this.currentTest;
+  this.currentTest.fn = function()
+  {
+    let result = fn.call(this);
+    if (!result || typeof result.then != "function")
+      return result;
+
+    return new Promise((resolve, reject) =>
+    {
+      function onError(event) { reject(event.error); }
+      function onMessageError(event) { reject(event); }
+      function onRejection(event) { reject(event.reason); }
+
+      background.addEventListener("error", onError);
+      background.addEventListener("messageerror", onMessageError);
+      background.addEventListener("unhandledrejection", onRejection);
+
+      result.then(resolve, reject).then(() =>
+      {
+        background.removeEventListener("error", onError);
+        background.removeEventListener("messageerror", onMessageError);
+        background.removeEventListener("unhandledrejection", onRejection);
+      });
+    });
+  };
 });
 
 afterEach(() => ABP.subscriptions.removeAll());
