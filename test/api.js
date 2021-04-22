@@ -485,6 +485,18 @@ describe("API", () =>
 
   describe("Reporting", () =>
   {
+    describe("Analytics", () =>
+    {
+      it("gets the first version", async() =>
+      {
+        let today = new Date().toISOString().substring(0, 10).replace(/-/g, "");
+
+        await wait(() => ABP.reporting.getFirstVersion() != "0", 1000,
+                   "No resource has been downloaded yet.");
+        expect(ABP.reporting.getFirstVersion()).toBe(today);
+      });
+    });
+
     describe("Allowlisting", () =>
     {
       it("detects allowlisted tabs", async() =>
