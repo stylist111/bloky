@@ -272,7 +272,17 @@ export default {
       this.removeAll();
 
       for (let subscription of subscriptions)
-        filterStorage.addSubscription(subscription);
+      {
+        if (subscription instanceof DownloadableSubscription)
+        {
+          let {url, title, homepage} = subscription;
+          this.add(url, {title, homepage});
+        }
+        else
+        {
+          filterStorage.addSubscription(subscription);
+        }
+      }
     };
   },
 
