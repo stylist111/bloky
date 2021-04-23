@@ -24,6 +24,12 @@ export default {
   /**
    * Emitted when any filter is matched.
    * @event
+   * @param {object|null} details Either null in a non-request context
+   *                              or a details object from either
+   *                              {@link https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webRequest/onBeforeRequest#details|webRequest.onBeforeRequest}
+   *                              or {@link https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webRequest/onHeadersReceived#details|webRequest.onHeadersReceived}
+   *                              from the web extensions API.
+   * @param {string} filter The text value of the filter matched.
    * @type {EventDispatcher.<{details: object, filter: string}>}
    */
   onFilterMatch: new EventDispatcher(
