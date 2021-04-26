@@ -15,7 +15,8 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Page, Popup, TEST_PAGES_URL, setMinTimeout} from "./utils.js";
+import {Page, Popup, TEST_PAGES_URL, setMinTimeout, waitForInvisibleElement}
+  from "./utils.js";
 
 const VALID_SUBSCRIPTION_URL = "https://testpages.adblockplus.org/en/abp-testcase-subscription.txt";
 const INVALID_SUBSCRIPTION_URL = "invalidUrl";
@@ -546,6 +547,15 @@ describe("API", () =>
           checkRequestLogging("image.html", `@@${option}`)
         );
       }
+
+      it("logs element hiding filter", async() =>
+      {
+        await checkLogging("###elem-hide", async() =>
+        {
+          let tabId = await new Page("element-hiding.html").loaded();
+          await waitForInvisibleElement(tabId, "elem-hide");
+        });
+      });
 
       function checkPopupLogging(filter)
       {

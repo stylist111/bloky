@@ -43,7 +43,7 @@ function onMessage(message, sender)
       subscribeLinkClicked(message.url, message.title);
       break;
     case "abp:trace-elem-hide":
-      logHiddenElements(message.selectors, message.filters, sender.url);
+      logHiddenElements(message.selectors, message.filters, sender);
       break;
     case "abp:inject-css":
       let styleSheet = createStyleSheet([message.selector]);

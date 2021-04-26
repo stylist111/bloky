@@ -33,11 +33,17 @@ export function logItem(details, filter)
     logFunction({details, filter: filter.text});
 }
 
-export function logHiddenElements(selectors, filters, url)
+export function logHiddenElements(selectors, filters, sender)
 {
+  let details = {
+    tabId: sender.tab.id,
+    frameId: sender.frameId,
+    url: sender.url
+  };
+
   if (selectors.length > 0)
   {
-    let {hostname} = parseURL(url);
+    let {hostname} = parseURL(sender.url);
 
     for (let subscription of filterStorage.subscriptions())
     {
@@ -51,13 +57,13 @@ export function logHiddenElements(selectors, filters, url)
         if (filter instanceof ElemHideFilter &&
             selectors.includes(filter.selector) &&
             filter.isActiveOnDomain(hostname))
-          logItem(null, filter);
+          logItem(details, filter);
       }
     }
   }
 
   for (let text of filters)
-    logItem(null, Filter.fromText(text));
+    logItem(details, Filter.fromText(text));
 }
 
 export function tracingEnabled()
