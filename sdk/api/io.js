@@ -17,54 +17,146 @@
 
 import browser from "webextension-polyfill";
 
-const KEY_PREFIX = "abp:file:";
+const DB_NAME = "ABP";
+const DB_VERSION = 1;
 
-function fileToKey(fileName)
+let database;
+
+function clearContent(filename, entryStore, contentStore)
 {
-  return KEY_PREFIX + fileName;
+  entryStore.get(filename).onsuccess = event =>
+  {
+    let entry = event.target.result;
+    if (entry)
+      contentStore.delete(entry.content);
+  };
 }
 
-async function loadFile(fileName)
+function saveFile(db, filename, data, lastModified)
 {
-  let key = fileToKey(fileName);
-  let items = await browser.storage.local.get(key);
-  let entry = items[key];
-  if (entry)
-    return entry;
-  throw {type: "NoSuchFile"};
-}
+  return new Promise((resolve, reject) =>
+  {
+    let tx = db.transaction(["file-entries", "file-contents"], "readwrite");
+    let entryStore = tx.objectStore("file-entries");
+    let contentStore = tx.objectStore("file-contents");
 
-function saveFile(fileName, data)
-{
-  return browser.storage.local.set({
-    [fileToKey(fileName)]: {
-      content: Array.from(data),
-      lastModified: Date.now()
+    try
+    {
+      clearContent(filename, entryStore, contentStore);
+      contentStore.add(Array.from(data)).onsuccess = event =>
+      {
+        let content = event.target.result;
+        entryStore.put({lastModified, content}, filename);
+      };
     }
+    catch (e)
+    {
+      tx.abort();
+      throw e;
+    }
+
+    tx.oncomplete = () => resolve();
+    tx.onerror = event => reject(event.target.error);
   });
+}
+
+async function migrate(db)
+{
+  let items = await browser.storage.local.get(null);
+  let prefix = "file:";
+
+  for (let key in items)
+  {
+    if (key.startsWith(prefix))
+    {
+      let filename = key.slice(prefix.length);
+      let {content, lastModified} = items[key];
+      await saveFile(db, filename, content, lastModified);
+      browser.storage.local.remove(key);
+    }
+  }
+
+  return db;
+}
+
+function openDatabase()
+{
+  return new Promise((resolve, reject) =>
+  {
+    let request = indexedDB.open(DB_NAME, DB_VERSION);
+    let migrationRequired = false;
+
+    request.onupgradeneeded = event =>
+    {
+      let db = event.target.result;
+      db.createObjectStore("file-entries");
+      db.createObjectStore("file-contents", {autoIncrement: true});
+      migrationRequired = true;
+    };
+
+    request.onsuccess = event =>
+    {
+      let db = event.target.result;
+      resolve(migrationRequired ? migrate(db) : db);
+    };
+
+    request.onerror = event => reject(event.target.error);
+  });
+}
+
+function requestDatabase()
+{
+  if (!database)
+    database = openDatabase();
+  return database;
 }
 
 export let IO =
 {
   /**
    * Reads text lines from a file.
-   * @param {string} fileName
+   * @param {string} filename
    *    Name of the file to be read
    * @param {TextSink} listener
    *    Function that will be called for each line in the file
    * @return {Promise}
    *    Promise to be resolved or rejected once the operation is completed
    */
-  async readFromFile(fileName, listener)
+  async readFromFile(filename, listener)
   {
-    let entry = await loadFile(fileName);
-    for (let line of entry.content)
-      listener(line);
+    let db = await requestDatabase();
+
+    await new Promise((resolve, reject) =>
+    {
+      let tx = db.transaction(["file-entries", "file-contents"], "readonly");
+      let entryStore = tx.objectStore("file-entries");
+      let contentStore = tx.objectStore("file-contents");
+
+      entryStore.get(filename).onsuccess = entryEvent =>
+      {
+        let entry = entryEvent.target.result;
+        if (!entry)
+        {
+          reject(new Error("File does not exist"));
+          return;
+        }
+
+        contentStore.get(entry.content).onsuccess = contentEvent =>
+        {
+          for (let line of contentEvent.target.result)
+            listener(line);
+
+          resolve();
+        };
+      };
+
+      tx.onerror = event => reject(event.target.error);
+    });
   },
 
   /**
    * Writes text lines to a file.
-   * @param {string} fileName
+   * @param {string} filename
    *    Name of the file to be written
    * @param {Iterable.<string>} data
    *    An array-like or iterable object containing the lines (without line
@@ -72,50 +164,83 @@ export let IO =
    * @return {Promise}
    *    Promise to be resolved or rejected once the operation is completed
    */
-  writeToFile(fileName, data)
+  async writeToFile(filename, data)
   {
-    return saveFile(fileName, data);
+    let db = await requestDatabase();
+    await saveFile(db, filename, data, Date.now());
   },
 
   /**
    * Renames a file.
-   * @param {string} fromFile
+   * @param {string} oldName
    *    Name of the file to be renamed
    * @param {string} newName
    *    New file name, will be overwritten if exists
    * @return {Promise}
    *    Promise to be resolved or rejected once the operation is completed
    */
-  async renameFile(fromFile, newName)
+  async renameFile(oldName, newName)
   {
-    let entry = await loadFile(fromFile);
-    await browser.storage.local.set({[fileToKey(newName)]: entry});
-    await browser.storage.local.remove(fileToKey(fromFile));
+    let db = await requestDatabase();
+
+    await new Promise((resolve, reject) =>
+    {
+      let tx = db.transaction(["file-entries", "file-contents"], "readwrite");
+      let entryStore = tx.objectStore("file-entries");
+      let contentStore = tx.objectStore("file-contents");
+
+      entryStore.get(oldName).onsuccess = event =>
+      {
+        let entry = event.target.result;
+        if (!entry)
+        {
+          reject(new Error("File does not exist"));
+          return;
+        }
+
+        clearContent(newName, entryStore, contentStore);
+        entryStore.put(entry, newName);
+        entryStore.delete(oldName);
+      };
+
+      tx.oncomplete = () => resolve();
+      tx.onerror = event => reject(event.target.error);
+    });
   },
 
   /**
    * Retrieves file metadata.
-   * @param {string} fileName
+   * @param {string} filename
    *    Name of the file to be looked up
    * @return {Promise.<StatData>}
    *    Promise to be resolved with file metadata once the operation is
    *    completed
    */
-  async statFile(fileName)
+  async statFile(filename)
   {
-    try
+    let db = await requestDatabase();
+
+    return new Promise((resolve, reject) =>
     {
-      let entry = await loadFile(fileName);
-      return {
-        exists: true,
-        lastModified: entry.lastModified
+      let tx = db.transaction(["file-entries"], "readonly");
+      let store = tx.objectStore("file-entries");
+
+      store.get(filename).onsuccess = event =>
+      {
+        let entry = event.target.result;
+        let exists = false;
+        let lastModified;
+
+        if (entry)
+        {
+          exists = true;
+          lastModified = entry.lastModified;
+        }
+
+        resolve({exists, lastModified});
       };
-    }
-    catch (error)
-    {
-      if (error.type == "NoSuchFile")
-        return {exists: false};
-      throw error;
-    }
+
+      tx.onerror = event => reject(event.target.error);
+    });
   }
 };
