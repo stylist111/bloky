@@ -15,6 +15,8 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import {TEST_PAGES_URL} from "../utils.js";
+
 mocha.setup("bdd");
 
 let timeout = new URLSearchParams(document.location.search).get("timeout");
@@ -26,6 +28,20 @@ if (timeout)
 
 before(async() =>
 {
+  try
+  {
+    await fetch(TEST_PAGES_URL);
+  }
+  catch (err)
+  {
+    let elem = document.getElementById("test-pages-status");
+    let message =
+      `Warning: Test pages server can't be reached at ${TEST_PAGES_URL}`;
+    elem.style.display = "block";
+    elem.textContent = message;
+    mocha.Mocha.reporters.Base.consoleLog("\x1b[33m%s\x1b[0m", message);
+  }
+
   background = await browser.runtime.getBackgroundPage();
   self.ABP = background.ABP;
   restoreSubscriptions = ABP.subscriptions.removeAll();
