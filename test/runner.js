@@ -41,6 +41,7 @@ import "msedgedriver";
 
 const MACOS_EDGE_BINARY =
   "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge";
+const {By} = webdriver;
 
 class Chromium
 {
@@ -239,11 +240,81 @@ async function switchToHandle(driver, testFn)
   }
 }
 
+async function getHandle(driver, page, params)
+{
+  let url;
+  let handle = await driver.wait(() => switchToHandle(driver, handleUrl =>
+  {
+    if (!handleUrl)
+      return false;
+
+    url = new URL(handleUrl);
+    return url.pathname == page;
+  }), 5000, `${page} did not open`);
+
+  if (params)
+  {
+    url.search = querystring.encode(params);
+    await driver.navigate().to(url.href);
+  }
+
+  return handle;
+}
+
+async function pollMessages(driver, handle)
+{
+  let result;
+  let log = [];
+
+  while (!result)
+  {
+    let messages = await driver.executeAsyncScript(`
+      let callback = arguments[0];
+      if (document.readyState == "complete")
+        callback(poll());
+      else
+        window.addEventListener("load", () => callback(poll()));`);
+
+    if (!messages)
+      return;
+
+    for (let [id, arg] of messages)
+    {
+      switch (id)
+      {
+        case "log":
+          log.push(arg);
+          console.log(...arg); // eslint-disable-line no-console
+          break;
+
+        case "click":
+          await switchToHandle(driver, handleUrl => handleUrl == arg.url);
+          await driver.findElement(webdriver.By.css(arg.selector)).click();
+          await driver.switchTo().window(handle);
+          break;
+
+        case "end":
+          result = arg;
+          result.log = log;
+          break;
+      }
+    }
+  }
+  return result;
+}
+
+async function startTestRun(driver, id)
+{
+  await getHandle(driver, "/test/index.html");
+  await driver.findElement(By.id(id)).click();
+}
+
 async function run()
 {
   let {browser, version, params} = parseArguments();
   let driver = await BROWSERS[browser].getDriver(version);
-  let result;
+  let resultUnit;
+  let resultReload;
 
   try
   {
@@ -251,49 +322,23 @@ async function run()
     // eslint-disable-next-line no-console
     console.log(`Browser: ${cap.getBrowserName()} ${cap.getBrowserVersion()}`);
 
-    let url;
-    let handle = await driver.wait(() => switchToHandle(driver, handleUrl =>
+    await startTestRun(driver, "unit");
+    let handle = await getHandle(driver, "/test/unit.html", params);
+    resultUnit = await pollMessages(driver, handle);
+
+    await startTestRun(driver, "reload");
+    while (!resultReload ||
+           resultReload.log.toString().includes("Reload (preparation)"))
     {
-      if (!handleUrl)
-        return false;
-
-      url = new URL(handleUrl);
-      return url.pathname == "/test/index.html";
-    }), 5000, "unit tests page did not open");
-
-    if (params)
-    {
-      url.search = querystring.encode(params);
-      await driver.navigate().to(url.href);
-    }
-
-    while (!result)
-    {
-      let messages = await driver.executeAsyncScript(`
-        let callback = arguments[0];
-        if (document.readyState == "complete")
-          callback(poll());
-        else
-          window.addEventListener("load", () => callback(poll()));`);
-
-      for (let [id, arg] of messages)
+      handle = await getHandle(driver, "/test/reload.html", params);
+      try
       {
-        switch (id)
-        {
-          case "log":
-            console.log(...arg); // eslint-disable-line no-console
-            break;
-
-          case "click":
-            await switchToHandle(driver, handleUrl => handleUrl == arg.url);
-            await driver.findElement(webdriver.By.css(arg.selector)).click();
-            await driver.switchTo().window(handle);
-            break;
-
-          case "end":
-            result = arg;
-            break;
-        }
+        resultReload = await pollMessages(driver, handle);
+      }
+      catch (e)
+      {
+        if (e.name != "NoSuchWindowError")
+          throw e;
       }
     }
   }
@@ -302,7 +347,8 @@ async function run()
     await driver.quit();
   }
 
-  if (result.failures > 0 || result.total == 0)
+  if (resultUnit.failures > 0 || resultUnit.total == 0 ||
+      resultReload.failures > 0 || resultReload.total == 0)
     process.exit(1);
 }
 

@@ -15,7 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Page, Resource, waitForInvisibleElement, setMinTimeout, wait,
+import {Page, Resource, waitForInvisibleElement, setMinTimeout, wait, isFirefox,
         TEST_PAGES_URL, TEST_PAGES_DOMAIN, SITEKEY} from "./utils.js";
 
 describe("Blocking", () =>
@@ -259,7 +259,7 @@ describe("Blocking", () =>
 
   describe("Snippets", function()
   {
-    if (typeof netscape != "undefined")
+    if (isFirefox())
       setMinTimeout(this, 3000);
 
     async function waitForBlocked(page, snippet)

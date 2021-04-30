@@ -15,7 +15,10 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import {filterStorage} from "../../adblockpluscore/lib/filterStorage.js";
+
 import {Prefs} from "./prefs.js";
+import {IO} from "./io.js";
 
 export default {
   /**
@@ -26,5 +29,16 @@ export default {
   setElementHidingDebugMode(enabled)
   {
     Prefs.elemhide_debug = enabled;
+  },
+
+  /**
+   * @ignore
+   */
+  async getFilterStorageSource()
+  {
+    let contents = [];
+    await IO.readFromFile(filterStorage.sourceFile,
+                          line => contents.push(line));
+    return contents;
   }
 };

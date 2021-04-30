@@ -337,3 +337,22 @@ export function wait(condition, timeout = 0, message, pollTimeout = 100)
 
   return result;
 }
+
+export function isFirefox()
+{
+  return typeof netscape != "undefined";
+}
+
+export function isOldestFirefox()
+{
+  if (!isFirefox())
+    return false;
+
+  let version = /\brv:([^;)]+)/.exec(navigator.userAgent)[1];
+  return parseInt(version, 10) < 86;
+}
+
+export function isEdge()
+{
+  return window.navigator.userAgent.includes("Edg/");
+}

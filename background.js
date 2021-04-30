@@ -40,4 +40,6 @@ ABP.start().then(async() =>
   }
 
   chrome.tabs.create({url: "/test/index.html"});
+  if (localStorage.getItem("reload-test-running"))
+    chrome.tabs.create({url: "/test/reload.html"});
 });

@@ -15,7 +15,8 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Page, Popup, TEST_PAGES_URL, SITEKEY, setMinTimeout} from "./utils.js";
+import {Page, Popup, setMinTimeout, isFirefox, TEST_PAGES_URL, SITEKEY}
+  from "./utils.js";
 
 describe("Pop-up blocking", function()
 {
@@ -55,7 +56,7 @@ describe("Pop-up blocking", function()
   {
     ABP.filters.add(`|${TEST_PAGES_URL}/popup.html^$popup`);
     ABP.filters.add(`@@|${TEST_PAGES_URL}/popup.html^$popup`);
-    if (typeof netscape != "undefined")
+    if (isFirefox())
     {
       Page.removeCurrent();
       opener = new Page("popup-opener.html");
