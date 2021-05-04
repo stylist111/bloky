@@ -21,6 +21,20 @@ export const SITEKEY = "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANGtTstne7" +
                        "e8MbmDHDiMFkGbcuBgXmiVesGOG3gtYeM1EkrzVhBj" +
                        "GUvKXYE4GLFwqty3v5MuWWbvItUWBTYoVVsCAwEAAQ";
 
+function handleConnection(details, tabId, removeListeners, reject)
+{
+  if ((details.tabId == tabId || !tabId) &&
+      (details.error == "net::ERR_CONNECTION_REFUSED" ||
+       details.error == "NS_ERROR_CONNECTION_REFUSED" ||
+       // Under some circumstances (e.g. when loading the page in the CSP tests)
+       // Firefox fails to load the page with the plain error code.
+       details.error == "Error code 2152398861"))
+  {
+    removeListeners();
+    reject(new Error("Connection refused. Test pages server is probably down"));
+  }
+}
+
 export class Page
 {
   constructor(path)
@@ -41,17 +55,30 @@ export class Page
   {
     let tabId = await this.created;
 
-    return new Promise(resolve =>
+    return new Promise((resolve, reject) =>
     {
+      function removeListeners()
+      {
+        browser.webNavigation.onCompleted.removeListener(onCompleted);
+        browser.webNavigation.onErrorOccurred.removeListener(onErrorOccurred);
+      }
+
       function onCompleted(details)
       {
         if (details.tabId == tabId && details.frameId == 0)
         {
-          browser.webNavigation.onCompleted.removeListener(onCompleted);
+          removeListeners();
           resolve(tabId);
         }
       }
+
+      function onErrorOccurred(details)
+      {
+        handleConnection(details, tabId, removeListeners, reject);
+      }
+
       browser.webNavigation.onCompleted.addListener(onCompleted);
+      browser.webNavigation.onErrorOccurred.addListener(onErrorOccurred);
     });
   }
 
@@ -98,20 +125,28 @@ export class Resource
         return requestUrl.origin + requestUrl.pathname == url;
       }
 
-      let error = await new Promise(resolve =>
+      function removeListeners()
+      {
+        browser.webRequest.onErrorOccurred.removeListener(onErrorOccurred);
+        browser.webRequest.onCompleted.removeListener(onCompleted);
+      }
+
+      let error = await new Promise((resolve, reject) =>
       {
         let filter = {urls: ["<all_urls>"], tabId};
 
-        onErrorOccurred = details => matches(details) && resolve(details);
+        onErrorOccurred = details =>
+        {
+          handleConnection(details, tabId, removeListeners, reject);
+          return matches(details) && resolve(details);
+        };
         onCompleted = details => matches(details) && resolve();
 
         browser.webRequest.onErrorOccurred.addListener(onErrorOccurred, filter);
         browser.webRequest.onCompleted.addListener(onCompleted, filter);
       });
 
-      browser.webRequest.onErrorOccurred.removeListener(onErrorOccurred);
-      browser.webRequest.onCompleted.removeListener(onCompleted);
-
+      removeListeners();
       return error;
     })();
   }
@@ -143,6 +178,7 @@ export class Popup
         {
           browser.tabs.onCreated.removeListener(onTabCreated);
           onCreatedNavigationTarget.removeListener(onNavigationTarget);
+          browser.webNavigation.onErrorOccurred.removeListener(onErrorOccurred);
         }
 
         function onTabCreated(tab)
@@ -157,6 +193,11 @@ export class Popup
           resolve(details.tabId);
         }
 
+        function onErrorOccurred(details)
+        {
+          handleConnection(details, openerTabId, removeListeners, reject);
+        }
+
         let code = `document.getElementById("${id}").click()`;
         browser.tabs.executeScript(openerTabId, {code}).catch(err =>
         {
@@ -166,6 +207,7 @@ export class Popup
 
         browser.tabs.onCreated.addListener(onTabCreated);
         onCreatedNavigationTarget.addListener(onNavigationTarget);
+        browser.webNavigation.onErrorOccurred.addListener(onErrorOccurred);
       }, reject);
     });
 

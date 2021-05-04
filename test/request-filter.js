@@ -156,7 +156,8 @@ describe("Blocking", () =>
     {
       // The CI Firefox job throws NS_ERROR_ABORT on navigator.sendBeacon()
       // Blocked $ping requests would have ip:null instead
-      if (e.message.includes("\"ip\": null"))
+      if (e.message.includes("\"ip\": null") ||
+          e.message.startsWith("Connection refused"))
         throw e;
     }
   });
