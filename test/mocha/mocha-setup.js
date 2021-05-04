@@ -26,8 +26,10 @@ let restoreSubscriptions;
 if (timeout)
   mocha.timeout(parseInt(timeout, 10));
 
-before(async() =>
+before(async function()
 {
+  this.timeout(5000);
+
   try
   {
     await fetch(TEST_PAGES_URL);
