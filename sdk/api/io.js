@@ -56,7 +56,7 @@ function saveFile(db, filename, data, lastModified)
     }
 
     tx.oncomplete = () => resolve();
-    tx.onerror = event => reject(event.target.error);
+    tx.onerror = tx.onabort = event => reject(event.target.error);
   });
 }
 
@@ -150,7 +150,7 @@ export let IO =
         };
       };
 
-      tx.onerror = event => reject(event.target.error);
+      tx.onerror = tx.onabort = event => reject(event.target.error);
     });
   },
 
@@ -204,7 +204,7 @@ export let IO =
       };
 
       tx.oncomplete = () => resolve();
-      tx.onerror = event => reject(event.target.error);
+      tx.onerror = tx.onabort = event => reject(event.target.error);
     });
   },
 
@@ -240,7 +240,7 @@ export let IO =
         resolve({exists, lastModified});
       };
 
-      tx.onerror = event => reject(event.target.error);
+      tx.onerror = tx.onabort = event => reject(event.target.error);
     });
   }
 };
