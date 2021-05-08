@@ -32,28 +32,21 @@ function clearContent(filename, entryStore, contentStore)
   };
 }
 
-function saveFile(db, filename, data, lastModified)
+function saveFile(db, filename, lines, lastModified)
 {
   return new Promise((resolve, reject) =>
   {
+    let data = new TextEncoder().encode(Array.from(lines).join("\n"));
     let tx = db.transaction(["file-entries", "file-contents"], "readwrite");
     let entryStore = tx.objectStore("file-entries");
     let contentStore = tx.objectStore("file-contents");
 
-    try
+    clearContent(filename, entryStore, contentStore);
+    contentStore.add(data).onsuccess = event =>
     {
-      clearContent(filename, entryStore, contentStore);
-      contentStore.add(Array.from(data)).onsuccess = event =>
-      {
-        let content = event.target.result;
-        entryStore.put({lastModified, content}, filename);
-      };
-    }
-    catch (e)
-    {
-      tx.abort();
-      throw e;
-    }
+      let content = event.target.result;
+      entryStore.put({lastModified, content}, filename);
+    };
 
     tx.oncomplete = () => resolve();
     tx.onerror = tx.onabort = event => reject(event.target.error);
@@ -126,7 +119,7 @@ export let IO =
   {
     let db = await requestDatabase();
 
-    await new Promise((resolve, reject) =>
+    let data = await new Promise((resolve, reject) =>
     {
       let tx = db.transaction(["file-entries", "file-contents"], "readonly");
       let entryStore = tx.objectStore("file-entries");
@@ -143,31 +136,46 @@ export let IO =
 
         contentStore.get(entry.content).onsuccess = contentEvent =>
         {
-          for (let line of contentEvent.target.result)
-            listener(line);
-
-          resolve();
+          resolve(contentEvent.target.result);
         };
       };
 
       tx.onerror = tx.onabort = event => reject(event.target.error);
     });
+
+    let decoder = new TextDecoder();
+    let start = 0;
+
+    while (true)
+    {
+      let index = data.indexOf(10 /* newline character */, start + 1000);
+      let end = index != -1 ? index : data.length;
+      let text = decoder.decode(data.subarray(start, end));
+
+      for (let line of text.split("\n"))
+        listener(line);
+
+      if (index == -1)
+        break;
+
+      start = index + 1;
+    }
   },
 
   /**
    * Writes text lines to a file.
    * @param {string} filename
    *    Name of the file to be written
-   * @param {Iterable.<string>} data
+   * @param {Iterable.<string>} lines
    *    An array-like or iterable object containing the lines (without line
    *    endings)
    * @return {Promise}
    *    Promise to be resolved or rejected once the operation is completed
    */
-  async writeToFile(filename, data)
+  async writeToFile(filename, lines)
   {
     let db = await requestDatabase();
-    await saveFile(db, filename, data, Date.now());
+    await saveFile(db, filename, lines, Date.now());
   },
 
   /**
