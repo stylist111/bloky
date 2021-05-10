@@ -276,3 +276,64 @@ export async function waitForInvisibleElement(tabId, id)
     visible = (await browser.tabs.executeScript(tabId, {code}))[0];
   } while (visible != null);
 }
+
+export function wait(condition, timeout = 0, message, pollTimeout = 100)
+{
+  if (typeof condition !== "function")
+    throw TypeError("Wait condition must be a function");
+
+  function evaluateCondition()
+  {
+    return new Promise((resolve, reject) =>
+    {
+      try
+      {
+        resolve(condition(this));
+      }
+      catch (ex)
+      {
+        reject(ex);
+      }
+    });
+  }
+
+  let result = new Promise((resolve, reject) =>
+  {
+    let startTime = Date.now();
+    let pollCondition = async() =>
+    {
+      evaluateCondition().then(value =>
+      {
+        let elapsed = Date.now() - startTime;
+        if (value)
+        {
+          resolve(value);
+        }
+        else if (timeout && elapsed >= timeout)
+        {
+          try
+          {
+            let timeoutMessage = message ?
+              `${typeof message === "function" ? message() : message}\n` : "";
+            reject(
+              new Error(`${timeoutMessage}Wait timed out after ${elapsed}ms`)
+            );
+          }
+          catch (ex)
+          {
+            reject(
+              new Error(`${ex.message}\nWait timed out after ${elapsed}ms`)
+            );
+          }
+        }
+        else
+        {
+          setTimeout(pollCondition, pollTimeout);
+        }
+      }, reject);
+    };
+    pollCondition();
+  });
+
+  return result;
+}

@@ -21,8 +21,10 @@ import {filterStorage} from "../../adblockpluscore/lib/filterStorage.js";
 import {synchronizer} from "../../adblockpluscore/lib/synchronizer.js";
 import {filterNotifier} from "../../adblockpluscore/lib/filterNotifier.js";
 import {recommendations} from "../../adblockpluscore/lib/recommendations.js";
+import {Filter} from "../../adblockpluscore/lib/filterClasses.js";
 
 import {EventDispatcher} from "./types.js";
+import {convertFilter} from "./filters.js";
 
 function convertSubscription(subscription)
 {
@@ -149,6 +151,23 @@ export default {
   {
     return text ? Array.from(filterStorage.subscriptions(text),
                              convertSubscription) : [];
+  },
+
+  /**
+   * Returns the filter list of a given subscription URL.
+   * @param {string} url The URL of the subscription.
+   * @return {Array.<Filter>|undefined} Filters from the subscription, or
+   *                                    undefined if the subscription was not
+   *                                    previously added.
+   */
+  getFilters(url)
+  {
+    let subscription = getSubscription(url);
+    if (subscription)
+    {
+      return Array.from(subscription.filterText(),
+                        text => convertFilter(Filter.fromText(text)));
+    }
   },
 
   /**

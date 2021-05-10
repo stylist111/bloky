@@ -15,8 +15,8 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Page, Popup, TEST_PAGES_URL, setMinTimeout, waitForInvisibleElement}
-  from "./utils.js";
+import {Page, Popup, setMinTimeout, waitForInvisibleElement, wait,
+        TEST_PAGES_URL} from "./utils.js";
 
 const VALID_SUBSCRIPTION_URL = "https://testpages.adblockplus.org/en/abp-testcase-subscription.txt";
 const INVALID_SUBSCRIPTION_URL = "invalidUrl";
@@ -91,6 +91,22 @@ describe("API", () =>
       expect(ABP.subscriptions.getForFilter(VALID_FILTER_TEXT)).toEqual([
         expect.objectContaining({downloadable: false})
       ]);
+    });
+
+    it("gets filters from a subscription", async() =>
+    {
+      ABP.subscriptions.add(VALID_SUBSCRIPTION_URL);
+
+      let filters;
+      await wait(() =>
+      {
+        filters = ABP.subscriptions.getFilters(VALID_SUBSCRIPTION_URL);
+        return filters.length > 0;
+      }, 4000);
+
+      expect(filters).toEqual(expect.arrayContaining([expect.objectContaining(
+        {text: "||testpages.adblockplus.org/testfiles/image/static/$image"}
+      )]));
     });
 
     it("disables an existing subscription", () =>

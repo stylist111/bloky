@@ -27,7 +27,7 @@ import {filterState} from "../../adblockpluscore/lib/filterState.js";
 
 import {EventDispatcher, FilterError} from "./types.js";
 
-function convertFilter(filter)
+export function convertFilter(filter)
 {
   return {
     text: filter.text,
