@@ -15,8 +15,8 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Page, Resource, waitForInvisibleElement, setMinTimeout, TEST_PAGES_URL,
-        TEST_PAGES_DOMAIN, SITEKEY} from "./utils.js";
+import {Page, Resource, waitForInvisibleElement, setMinTimeout, wait,
+        TEST_PAGES_URL, TEST_PAGES_DOMAIN, SITEKEY} from "./utils.js";
 
 describe("Blocking", () =>
 {
@@ -267,9 +267,12 @@ describe("Blocking", () =>
       let tabId = await new Page(page).loaded();
 
       let code = "document.documentElement.dataset.blocked;";
-      let blocked = null;
-      while (blocked == null)
+      let blocked;
+      await wait(async() =>
+      {
         blocked = (await browser.tabs.executeScript(tabId, {code}))[0];
+        return blocked != null;
+      }, 2000);
 
       return {blocked, tabId};
     }
