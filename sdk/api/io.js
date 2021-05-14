@@ -53,8 +53,27 @@ function saveFile(db, filename, lines, lastModified)
   });
 }
 
-async function migrate(db)
+function openDatabase()
 {
+  return new Promise((resolve, reject) =>
+  {
+    let request = indexedDB.open(DB_NAME, DB_VERSION);
+
+    request.onupgradeneeded = event =>
+    {
+      let db = event.target.result;
+      db.createObjectStore("file-entries");
+      db.createObjectStore("file-contents", {autoIncrement: true});
+    };
+
+    request.onsuccess = event => resolve(event.target.result);
+    request.onerror = event => reject(event.target.error);
+  });
+}
+
+async function openDatabaseAndMigrate()
+{
+  let db = openDatabase();
   let items = await browser.storage.local.get(null);
   let prefix = "file:";
 
@@ -64,7 +83,7 @@ async function migrate(db)
     {
       let filename = key.slice(prefix.length);
       let {content, lastModified} = items[key];
-      await saveFile(db, filename, content, lastModified);
+      await saveFile(await db, filename, content, lastModified);
       browser.storage.local.remove(key);
     }
   }
@@ -72,35 +91,11 @@ async function migrate(db)
   return db;
 }
 
-function openDatabase()
-{
-  return new Promise((resolve, reject) =>
-  {
-    let request = indexedDB.open(DB_NAME, DB_VERSION);
-    let migrationRequired = false;
-
-    request.onupgradeneeded = event =>
-    {
-      let db = event.target.result;
-      db.createObjectStore("file-entries");
-      db.createObjectStore("file-contents", {autoIncrement: true});
-      migrationRequired = true;
-    };
-
-    request.onsuccess = event =>
-    {
-      let db = event.target.result;
-      resolve(migrationRequired ? migrate(db) : db);
-    };
-
-    request.onerror = event => reject(event.target.error);
-  });
-}
 
 function requestDatabase()
 {
   if (!database)
-    database = openDatabase();
+    database = openDatabaseAndMigrate();
   return database;
 }
 
