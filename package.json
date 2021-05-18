@@ -17,7 +17,7 @@
     "babel-eslint": "^10.1.0",
     "chromedriver": "^87.0.4",
     "dmg": "0.1.0",
-    "documentation": "^13.1.1",
+    "documentation": "^13.2.5",
     "eslint": "^7.13.0",
     "eslint-config-eyeo": "^3.2.0",
     "eslint-plugin-html": "^6.1.1",
