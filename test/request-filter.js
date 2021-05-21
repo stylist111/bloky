@@ -294,5 +294,21 @@ describe("Blocking", () =>
       let {tabId} = await waitForBlocked("snippets-hiding.html", snippet);
       await waitForInvisibleElement(tabId, snippet);
     });
+
+    it("applies the debugging stylesheet for hiding element snippet", async() =>
+    {
+      let snippet = "hide-if-contains";
+      ABP.filters.add(`${TEST_PAGES_DOMAIN}#$#${snippet} Target div`);
+
+      ABP.debugging.setElementHidingDebugMode(true);
+      let {tabId} = await waitForBlocked("snippets-hiding.html", snippet);
+      ABP.debugging.setElementHidingDebugMode(false);
+
+      let code = `let el = document.getElementById("hide-if-contains");
+                  let styles = window.getComputedStyle(el);
+                  styles["outline-color"]`;
+      let color = (await browser.tabs.executeScript(tabId, {code}))[0];
+      expect(color).toEqual("rgb(255, 0, 0)");
+    });
   });
 });

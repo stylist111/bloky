@@ -16,14 +16,15 @@ toc:
         }
       </style>
     children:
+      - debugging
       - filters
-      - subscriptions
       - notifications
       - reporting
+      - subscriptions
   - name: Objects
     children:
-      - Subscription
+      - EventDispatcher
       - Filter
       - FilterError
-      - EventDispatcher
       - Recommendation
+      - Subscription

@@ -43,7 +43,7 @@ async function initContentFeatures()
     let elemHideEmulation = new ElemHideEmulation((elements, filters) =>
     {
       for (let element of elements)
-        hideElement(element);
+        hideElement(element, response.cssProperties);
 
       if (tracer)
         tracer.log(filters);

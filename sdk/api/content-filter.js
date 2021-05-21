@@ -17,7 +17,8 @@
 
 import browser from "webextension-polyfill";
 
-import {elemHide} from "../../adblockpluscore/lib/elemHide.js";
+import {createStyleSheet, elemHide}
+  from "../../adblockpluscore/lib/elemHide.js";
 import {elemHideEmulation}
   from "../../adblockpluscore/lib/elemHideEmulation.js";
 import {contentTypes} from "../../adblockpluscore/lib/contentTypes.js";
@@ -27,12 +28,23 @@ import snippetsLibrarySource
 
 import {getFrameInfo} from "./frame-state.js";
 import {logItem, tracingEnabled} from "./diagnostics.js";
+import {Prefs} from "./prefs.js";
+
+const DEBUG_CSS_PROPERTIES = [["background", "#e67370"],
+                              ["outline", "solid red"]];
+
+const DEBUG_CSS_PROPERTIES_SNIPPETS = [
+  ["background", "repeating-linear-gradient(to bottom, " +
+                 "#e67370 0, #e67370 9px, white 9px, white 10px)"],
+  ["outline", "solid red"]
+];
 
 export function applyContentFilters(tabId, frameId)
 {
   let frame = getFrameInfo(tabId, frameId);
   let emulatedPatterns = [];
   let tracedSelectors;
+  let debug = Prefs.elemhide_debug;
 
   if (!(frame.allowlisted & contentTypes.DOCUMENT))
   {
@@ -41,11 +53,15 @@ export function applyContentFilters(tabId, frameId)
     if (filters.length > 0)
     {
       let scripts = filters.map(({script}) => script);
+      let environment = {};
+      if (debug)
+        environment.debugCSSProperties = DEBUG_CSS_PROPERTIES_SNIPPETS;
+
       browser.tabs.executeScript(
         tabId,
         {
           frameId,
-          code: compileScript(scripts, [snippetsLibrarySource]),
+          code: compileScript(scripts, [snippetsLibrarySource], environment),
           matchAboutBlank: true,
           runAt: "document_start"
         }
@@ -58,7 +74,19 @@ export function applyContentFilters(tabId, frameId)
       let specificOnly = (frame.allowlisted & contentTypes.GENERICHIDE) != 0;
       let trace = tracingEnabled();
       let styleSheet = elemHide.getStyleSheet(frame.hostname,
-                                              specificOnly, trace, trace);
+                                              specificOnly, trace || debug,
+                                              trace);
+
+      if (debug)
+      {
+        let declarationBlock = "{";
+        for (let [property, value] of DEBUG_CSS_PROPERTIES)
+          declarationBlock += `${property}: ${value} !important;`;
+        declarationBlock += "}";
+
+        styleSheet.code = createStyleSheet(styleSheet.selectors,
+                                           declarationBlock);
+      }
 
       injectCSS(tabId, frameId, styleSheet.code);
 
@@ -76,7 +104,10 @@ export function applyContentFilters(tabId, frameId)
     }
   }
 
-  return {emulatedPatterns, tracedSelectors};
+  let cssProperties;
+  if (debug)
+    cssProperties = DEBUG_CSS_PROPERTIES;
+  return {emulatedPatterns, cssProperties, tracedSelectors};
 }
 
 export function injectCSS(tabId, frameId, code)

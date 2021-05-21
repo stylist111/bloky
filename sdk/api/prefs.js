@@ -31,7 +31,8 @@ let defaults = new Map([
   ["show_statsinpopup", true],
   ["notificationurl", "https://notification.adblockplus.org/notification.json"],
   ["subscriptions_exceptionsurl", "https://easylist-downloads.adblockplus.org/exceptionrules.txt"],
-  ["notifications_ignoredcategories", []]
+  ["notifications_ignoredcategories", []],
+  ["elemhide_debug", false]
 ]);
 
 export let Prefs = {

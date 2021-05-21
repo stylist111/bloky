@@ -101,4 +101,35 @@ describe("Element Hiding", () =>
       await waitForInvisibleElement(tabId, "elem-hide-img-request");
     });
   });
+
+  describe("Debugging", async() =>
+  {
+    async function getElementStyle(id, property)
+    {
+      let tabId = await new Page("element-hiding.html").loaded();
+      let code = `let el = document.getElementById("${id}");
+                  let styles = window.getComputedStyle(el);
+                  styles["${property}"]`;
+      return (await browser.tabs.executeScript(tabId, {code}))[0];
+    }
+
+    it("highlights an element", async() =>
+    {
+      ABP.debugging.setElementHidingDebugMode(true);
+      ABP.filters.add("###elem-hide");
+      let style = await getElementStyle("elem-hide", "background-color");
+      ABP.debugging.setElementHidingDebugMode(false);
+      expect(style).toBe("rgb(230, 115, 112)");
+    });
+
+    it("doesn't highlight an element when disabled", async() =>
+    {
+      ABP.debugging.setElementHidingDebugMode(true);
+      ABP.debugging.setElementHidingDebugMode(false);
+
+      ABP.filters.add("###elem-hide");
+      let style = await getElementStyle("elem-hide", "background-color");
+      expect(style).toBe("rgba(0, 0, 0, 0)");
+    });
+  });
 });
