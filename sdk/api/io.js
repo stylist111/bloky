@@ -17,9 +17,6 @@
 
 import browser from "webextension-polyfill";
 
-const DB_NAME = "ABP";
-const DB_VERSION = 1;
-
 let database;
 
 function clearContent(filename, entryStore, contentStore)
@@ -53,49 +50,29 @@ function saveFile(db, filename, lines, lastModified)
   });
 }
 
-function openDatabase()
+export async function init(db, legacyStorageItems)
 {
-  return new Promise((resolve, reject) =>
-  {
-    let request = indexedDB.open(DB_NAME, DB_VERSION);
-
-    request.onupgradeneeded = event =>
-    {
-      let db = event.target.result;
-      db.createObjectStore("file-entries");
-      db.createObjectStore("file-contents", {autoIncrement: true});
-    };
-
-    request.onsuccess = event => resolve(event.target.result);
-    request.onerror = event => reject(event.target.error);
-  });
-}
-
-async function openDatabaseAndMigrate()
-{
-  let db = openDatabase();
-  let items = await browser.storage.local.get(null);
   let prefix = "file:";
 
-  for (let key in items)
+  for (let key in legacyStorageItems)
   {
     if (key.startsWith(prefix))
     {
       let filename = key.slice(prefix.length);
-      let {content, lastModified} = items[key];
-      await saveFile(await db, filename, content, lastModified);
+      let {content, lastModified} = legacyStorageItems[key];
+
+      await saveFile(db, filename, content, lastModified);
       browser.storage.local.remove(key);
     }
   }
 
-  return db;
+  database = db;
 }
 
-
-function requestDatabase()
+function getDatabase()
 {
   if (!database)
-    database = openDatabaseAndMigrate();
+    throw new Error("Database hasn't been opened. Did you call start()?");
   return database;
 }
 
@@ -112,10 +89,9 @@ export let IO =
    */
   async readFromFile(filename, listener)
   {
-    let db = await requestDatabase();
-
     let data = await new Promise((resolve, reject) =>
     {
+      let db = getDatabase();
       let tx = db.transaction(["file-entries", "file-contents"], "readonly");
       let entryStore = tx.objectStore("file-entries");
       let contentStore = tx.objectStore("file-contents");
@@ -169,8 +145,7 @@ export let IO =
    */
   async writeToFile(filename, lines)
   {
-    let db = await requestDatabase();
-    await saveFile(db, filename, lines, Date.now());
+    await saveFile(getDatabase(), filename, lines, Date.now());
   },
 
   /**
@@ -182,12 +157,11 @@ export let IO =
    * @return {Promise}
    *    Promise to be resolved or rejected once the operation is completed
    */
-  async renameFile(oldName, newName)
+  renameFile(oldName, newName)
   {
-    let db = await requestDatabase();
-
-    await new Promise((resolve, reject) =>
+    return new Promise((resolve, reject) =>
     {
+      let db = getDatabase();
       let tx = db.transaction(["file-entries", "file-contents"], "readwrite");
       let entryStore = tx.objectStore("file-entries");
       let contentStore = tx.objectStore("file-contents");
@@ -219,12 +193,11 @@ export let IO =
    *    Promise to be resolved with file metadata once the operation is
    *    completed
    */
-  async statFile(filename)
+  statFile(filename)
   {
-    let db = await requestDatabase();
-
     return new Promise((resolve, reject) =>
     {
+      let db = getDatabase();
       let tx = db.transaction(["file-entries"], "readonly");
       let store = tx.objectStore("file-entries");
 

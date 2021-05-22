@@ -56,7 +56,6 @@ The extension's `manifest.json` is required to include the following configurati
     "webNavigation",
     "webRequest",
     "webRequestBlocking",
-    "storage",
     "unlimitedStorage",
     "<all_urls>"
   ]

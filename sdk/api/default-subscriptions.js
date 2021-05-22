@@ -6,7 +6,7 @@ import {Subscription, DownloadableSubscription, SpecialSubscription}
 import {filterStorage} from "../../adblockpluscore/lib/filterStorage.js";
 import {synchronizer} from "../../adblockpluscore/lib/synchronizer.js";
 
-import {Prefs} from "./prefs.js";
+const ACCEPTABLE_ADS_URL = "https://easylist-downloads.adblockplus.org/exceptionrules.txt";
 
 function getDefaultSubscriptions()
 {
@@ -50,7 +50,7 @@ function shouldAddDefaultSubscriptions()
   for (let subscription of filterStorage.subscriptions())
   {
     if (subscription instanceof DownloadableSubscription &&
-        subscription.url != Prefs.subscriptions_exceptionsurl &&
+        subscription.url != ACCEPTABLE_ADS_URL &&
         subscription.type != "circumvention")
       return false;
 
@@ -68,7 +68,7 @@ export function configureDefaultSubscriptions()
 
   if (filterStorage.getSubscriptionCount() == 0)
   {
-    subscriptions.push({url: Prefs.subscriptions_exceptionsurl,
+    subscriptions.push({url: ACCEPTABLE_ADS_URL,
                         title: "Allow non-intrusive advertising"});
   }
 

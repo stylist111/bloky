@@ -26,6 +26,7 @@ import * as frameState from "./frame-state.js";
 import * as requestFilter from "./request-filter.js";
 import * as messageResponder from "./message-responder.js";
 import * as popupBlocker from "./popup-blocker.js";
+import {init as initIDB} from "./idb.js";
 import {configureDefaultSubscriptions} from "./default-subscriptions.js";
 
 export {onSubscribeLinkClicked} from "./subscribe-links.js";
@@ -53,17 +54,21 @@ export async function start()
 {
   stopped = false;
 
+  await initIDB();
+  if (stopped)
+    return;
+
   notifications.locale = browser.i18n.getUILanguage();
   notifications.start();
-  await filterEngine.initialize();
 
+  await filterEngine.initialize();
   if (stopped)
     return;
 
   synchronizer.start();
   configureDefaultSubscriptions();
-  await frameState.start();
 
+  await frameState.start();
   if (stopped)
     return;
 
