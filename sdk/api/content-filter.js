@@ -28,15 +28,6 @@ import {getFrameInfo} from "./frame-state.js";
 import {logItem, tracingEnabled} from "./diagnostics.js";
 import {Prefs} from "./prefs.js";
 
-const DEBUG_CSS_PROPERTIES = [["background", "#e67370"],
-                              ["outline", "solid red"]];
-
-const DEBUG_CSS_PROPERTIES_SNIPPETS = [
-  ["background", "repeating-linear-gradient(to bottom, " +
-                 "#e67370 0, #e67370 9px, white 9px, white 10px)"],
-  ["outline", "solid red"]
-];
-
 export function applyContentFilters(tabId, frameId)
 {
   let frame = getFrameInfo(tabId, frameId);
@@ -53,7 +44,7 @@ export function applyContentFilters(tabId, frameId)
       let scripts = filters.map(({script}) => script);
       let environment = {};
       if (debug)
-        environment.debugCSSProperties = DEBUG_CSS_PROPERTIES_SNIPPETS;
+        environment.debugCSSProperties = Prefs.debug_css_properties_snippets;
 
       browser.tabs.executeScript(
         tabId,
@@ -78,7 +69,7 @@ export function applyContentFilters(tabId, frameId)
       if (debug)
       {
         let declarationBlock = "{";
-        for (let [property, value] of DEBUG_CSS_PROPERTIES)
+        for (let [property, value] of Prefs.debug_css_properties)
           declarationBlock += `${property}: ${value} !important;`;
         declarationBlock += "}";
 
@@ -104,7 +95,7 @@ export function applyContentFilters(tabId, frameId)
 
   let cssProperties;
   if (debug)
-    cssProperties = DEBUG_CSS_PROPERTIES;
+    cssProperties = Prefs.debug_css_properties;
   return {emulatedPatterns, cssProperties, tracedSelectors};
 }
 

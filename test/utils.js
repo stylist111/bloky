@@ -339,6 +339,21 @@ export function wait(condition, timeout = 0, message, pollTimeout = 100)
   return result;
 }
 
+export async function waitForSnippetBlocked(page)
+{
+  let tabId = await new Page(page).loaded();
+
+  let code = "document.documentElement.dataset.blocked;";
+  let blocked;
+  await wait(async() =>
+  {
+    blocked = (await browser.tabs.executeScript(tabId, {code}))[0];
+    return blocked != null;
+  }, 2000);
+
+  return {blocked, tabId};
+}
+
 export function isFirefox()
 {
   return typeof netscape != "undefined";

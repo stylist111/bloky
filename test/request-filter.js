@@ -15,8 +15,9 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Page, Resource, waitForInvisibleElement, setMinTimeout, wait, isFirefox,
-        TEST_PAGES_URL, TEST_PAGES_DOMAIN, SITEKEY} from "./utils.js";
+import {Page, Resource, waitForInvisibleElement, setMinTimeout,
+        waitForSnippetBlocked, isFirefox, TEST_PAGES_URL,
+        TEST_PAGES_DOMAIN, SITEKEY} from "./utils.js";
 
 describe("Blocking", () =>
 {
@@ -262,27 +263,14 @@ describe("Blocking", () =>
     if (isFirefox())
       setMinTimeout(this, 3000);
 
-    async function waitForBlocked(page, snippet)
-    {
-      let tabId = await new Page(page).loaded();
 
-      let code = "document.documentElement.dataset.blocked;";
-      let blocked;
-      await wait(async() =>
-      {
-        blocked = (await browser.tabs.executeScript(tabId, {code}))[0];
-        return blocked != null;
-      }, 2000);
-
-      return {blocked, tabId};
-    }
 
     it("applies blocking snippets", async() =>
     {
       let snippet = "abort-current-inline-script";
       ABP.filters.add(
         `${TEST_PAGES_DOMAIN}#$#${snippet} document.abortCurrentInlineScript`);
-      let {blocked} = await waitForBlocked("snippets-blocking.html", snippet);
+      let {blocked} = await waitForSnippetBlocked("snippets-blocking.html");
       expect(blocked).toBe("true");
     });
 
@@ -291,24 +279,8 @@ describe("Blocking", () =>
       let snippet = "hide-if-contains";
       ABP.filters.add(`${TEST_PAGES_DOMAIN}#$#${snippet} Target div`);
 
-      let {tabId} = await waitForBlocked("snippets-hiding.html", snippet);
+      let {tabId} = await waitForSnippetBlocked("snippets-hiding.html");
       await waitForInvisibleElement(tabId, snippet);
-    });
-
-    it("applies the debugging stylesheet for hiding element snippet", async() =>
-    {
-      let snippet = "hide-if-contains";
-      ABP.filters.add(`${TEST_PAGES_DOMAIN}#$#${snippet} Target div`);
-
-      ABP.debugging.setElementHidingDebugMode(true);
-      let {tabId} = await waitForBlocked("snippets-hiding.html", snippet);
-      ABP.debugging.setElementHidingDebugMode(false);
-
-      let code = `let el = document.getElementById("hide-if-contains");
-                  let styles = window.getComputedStyle(el);
-                  styles["outline-color"]`;
-      let color = (await browser.tabs.executeScript(tabId, {code}))[0];
-      expect(color).toEqual("rgb(255, 0, 0)");
     });
   });
 });

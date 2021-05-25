@@ -15,8 +15,9 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Page, Popup, setMinTimeout, waitForInvisibleElement, wait,
-        TEST_PAGES_URL} from "./utils.js";
+import {Page, Popup, setMinTimeout, waitForInvisibleElement,
+        waitForSnippetBlocked, wait, TEST_PAGES_URL,
+        TEST_PAGES_DOMAIN} from "./utils.js";
 
 const VALID_SUBSCRIPTION_URL = "https://testpages.adblockplus.org/en/abp-testcase-subscription.txt";
 const INVALID_SUBSCRIPTION_URL = "invalidUrl";
@@ -686,5 +687,93 @@ describe("API", () =>
         expect(fake.firstArg).toEqual(notification);
       });
     });
+  });
+
+  describe("Debugging", async() =>
+  {
+    async function getElementStyle(id, property)
+    {
+      let tabId = await new Page("element-hiding.html").loaded();
+      let code = `let el = document.getElementById("${id}");
+                  let styles = window.getComputedStyle(el);
+                  styles["${property}"]`;
+      return (await browser.tabs.executeScript(tabId, {code}))[0];
+    }
+
+    it("highlights an element", async() =>
+    {
+      ABP.debugging.setElementHidingDebugMode(true);
+      ABP.filters.add("###elem-hide");
+
+      let tabId = await new Page("element-hiding.html").loaded();
+      let code = `window.getComputedStyle(
+        document.getElementById('elem-hide'))['background-color']`;
+
+      let style;
+      await wait(async() =>
+      {
+        style = (await browser.tabs.executeScript(tabId, {code}))[0];
+        return style != "rgba(0, 0, 0, 0)";
+      }, 100);
+
+      ABP.debugging.setElementHidingDebugMode(false);
+      expect(style).toBe("rgb(230, 115, 112)");
+    });
+
+    it("doesn't highlight an element when disabled", async() =>
+    {
+      ABP.debugging.setElementHidingDebugMode(true);
+      ABP.debugging.setElementHidingDebugMode(false);
+
+      ABP.filters.add("###elem-hide");
+      let style = await getElementStyle("elem-hide", "background-color");
+      expect(style).toBe("rgba(0, 0, 0, 0)");
+    });
+
+    it("highlights an element with a custom style", async() =>
+    {
+      ABP.debugging.setElementHidingDebugMode(true);
+      ABP.debugging.setElementHidingDebugStyle([["background", "pink"]]);
+      ABP.filters.add("###elem-hide");
+      let style = await getElementStyle("elem-hide", "background-color");
+      ABP.debugging.setElementHidingDebugMode(false);
+      expect(style).toBe("rgb(255, 192, 203)");
+    });
+
+    it("applies the debugging stylesheet for hiding element snippet", async() =>
+    {
+      let snippet = "hide-if-contains";
+      ABP.filters.add(`${TEST_PAGES_DOMAIN}#$#${snippet} Target div`);
+
+      ABP.debugging.setElementHidingDebugMode(true);
+      let {tabId} = await waitForSnippetBlocked("snippets-hiding.html");
+      ABP.debugging.setElementHidingDebugMode(false);
+
+      let code = `let el = document.getElementById("hide-if-contains");
+                  let styles = window.getComputedStyle(el);
+                  styles["outline-color"]`;
+      let color = (await browser.tabs.executeScript(tabId, {code}))[0];
+      expect(color).toEqual("rgb(255, 0, 0)");
+    });
+
+    it("applies a custom debugging stylesheet for hiding element snippets",
+       async() =>
+       {
+         let snippet = "hide-if-contains";
+         ABP.filters.add(`${TEST_PAGES_DOMAIN}#$#${snippet} Target div`);
+
+         ABP.debugging.setElementHidingDebugMode(true);
+         ABP.debugging.setElementHidingDebugStyle(null,
+                                                  [["background-color", "pink"]]
+         );
+         let {tabId} = await waitForSnippetBlocked("snippets-hiding.html");
+         ABP.debugging.setElementHidingDebugMode(false);
+
+         let code = `let el = document.getElementById("hide-if-contains");
+                  let styles = window.getComputedStyle(el);
+                  styles["background-color"]`;
+         let color = (await browser.tabs.executeScript(tabId, {code}))[0];
+         expect(color).toEqual("rgb(255, 192, 203)");
+       });
   });
 });

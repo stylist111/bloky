@@ -31,6 +31,22 @@ export default {
     Prefs.elemhide_debug = enabled;
   },
 
+  /*
+   * Updates the element hiding debug style.
+   * @param {Object} debugCssProperties The css properties for
+   *                                    the debug element.
+   * @param {Object} debugCssSnippetProperties The css properties for
+   *                                           the debug snippet element.
+   */
+  setElementHidingDebugStyle(debugCssProperties, debugCssSnippetProperties)
+  {
+    if (debugCssProperties)
+      Prefs.debug_css_properties = debugCssProperties;
+
+    if (debugCssSnippetProperties)
+      Prefs.debug_css_properties_snippets = debugCssSnippetProperties;
+  },
+
   /**
    * @ignore
    */
