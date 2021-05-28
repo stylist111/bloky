@@ -59,7 +59,7 @@ test:firefox:latest:
 test:firefox:oldest:
   extends: .test
   script:
-    - node test/runner.js firefox 64.0
+    - node test/runner.js firefox 70.0
 
 test:edge:
   extends: .test
