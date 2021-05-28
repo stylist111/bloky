@@ -18,7 +18,6 @@
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 import {analytics} from "adblockpluscore/lib/analytics.js";
 
-import {getFrameInfo} from "./frame-state.js";
 import {EventDispatcher} from "./types.js";
 import {setLogFunction} from "./diagnostics.js";
 
@@ -64,18 +63,6 @@ export default {
       setLogFunction(null);
     }
   ),
-
-  /**
-   * Returns whether or not a tab/frame is allowlisted.
-   * @param {number} tabId The id of the tab to check.
-   * @param {number} [frameId] The id of the frame to check.
-   * @return {boolean}
-   */
-  isAllowlisted(tabId, frameId = 0)
-  {
-    let frameInfo = getFrameInfo(tabId, frameId);
-    return (frameInfo.allowlisted & contentTypes.DOCUMENT) != 0;
-  },
 
   /**
    * The contentTypes object.

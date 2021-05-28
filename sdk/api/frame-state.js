@@ -33,6 +33,7 @@ class FrameInfo
     let hostname;
     let sitekey;
     let allowlisted = 0;
+    let allowingFilters;
     let urlInfo = parseURL(url);
 
     if (pending && pending.url != url)
@@ -45,16 +46,17 @@ class FrameInfo
     if (pending)
     {
       ({hostname} = urlInfo);
-      ({sitekey, allowlisted} = pending);
+      ({sitekey, allowlisted, allowingFilters} = pending);
     }
     else if (parent)
     {
-      ({hostname, sitekey, allowlisted} = parent);
+      ({hostname, sitekey, allowlisted, allowingFilters} = parent);
     }
 
     this.hostname = hostname;
     this.sitekey = sitekey;
     this.allowlisted = allowlisted;
+    this.allowingFilters = allowingFilters;
     this.pending = null;
   }
 }
@@ -64,11 +66,12 @@ class PendingFrameInfo
   constructor(parent, url, sitekey)
   {
     let allowlisted = 0;
+    let allowingFilters;
     let hostname;
 
     if (parent)
     {
-      ({allowlisted, hostname} = parent);
+      ({allowlisted, hostname, allowingFilters} = parent);
 
       if (!sitekey)
         ({sitekey} = parent);
@@ -87,9 +90,19 @@ class PendingFrameInfo
       logItem(null, filter);
     }
 
+    if (allowlisted != 0)
+    {
+      let matches = matcher.search(url, allowlisted, hostname,
+                                   sitekey, false, "allowing");
+      allowingFilters = new Set(allowingFilters);
+      for (let filter of matches.allowing)
+        allowingFilters.add(filter);
+    }
+
     this.url = url;
     this.sitekey = sitekey;
     this.allowlisted = allowlisted;
+    this.allowingFilters = allowingFilters;
   }
 }
 

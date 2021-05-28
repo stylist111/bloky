@@ -24,8 +24,10 @@ import {SpecialSubscription}
 import {isSlowFilter} from "adblockpluscore/lib/matcher.js";
 import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {filterState} from "adblockpluscore/lib/filterState.js";
+import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 
 import {EventDispatcher, FilterError} from "./types.js";
+import {getFrameInfo} from "./frame-state.js";
 
 export function convertFilter(filter)
 {
@@ -130,6 +132,36 @@ export default {
     }
 
     return result;
+  },
+
+  /**
+   * Returns allowlisted filters for specific document.
+   * @param {number} tabId The id of the tab to lookup.
+   * @param {Object} [options]
+   * @param {number} [options.frameId=0] The id of the frame to lookup.
+   * @param {Array.<string>} [options.types=["document"]]
+   *                         The types of filters to consider.
+   *                         These can be any of "document", "elemhide",
+   *                         "genericblock", and "generichide".
+   * @return {Array.<string>}
+   */
+  getAllowingFilters(tabId, options = {})
+  {
+    let filters = [];
+    let {frameId, types} = {frameId: 0, types: ["document"], ...options};
+    let frameInfo = getFrameInfo(tabId, frameId);
+
+    if (frameInfo.allowingFilters)
+    {
+      let mask = types.reduce((a, b) => a | contentTypes[b.toUpperCase()], 0);
+      for (let filter of frameInfo.allowingFilters)
+      {
+        if ((filter.contentType & mask) != 0)
+          filters.push(filter.text);
+      }
+    }
+
+    return filters;
   },
 
   /**

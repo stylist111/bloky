@@ -473,6 +473,79 @@ describe("API", () =>
       expect(fake.callCount).toBe(1);
       expect(fake.firstArg).toEqual({...VALID_FILTER, enabled: false});
     });
+
+    describe("Allowlisting", () =>
+    {
+      const ALLOWING_IMAGE_DOC_FILTER =
+        `@@|${TEST_PAGES_URL}/image.html^$document`;
+
+      it("returns filters for allowlisted tabs", async() =>
+      {
+        EWE.filters.add(`|${TEST_PAGES_URL}/image.png^`);
+        EWE.filters.add(ALLOWING_IMAGE_DOC_FILTER);
+
+        let tabId = await new Page("image.html").loaded();
+        expect(EWE.filters.getAllowingFilters(tabId)).toEqual(
+          [ALLOWING_IMAGE_DOC_FILTER]);
+      });
+
+      async function loadTabWithFrame()
+      {
+        let tabId = await new Page("iframe.html").loaded();
+        let frames = await browser.webNavigation.getAllFrames({tabId});
+        let {frameId} = frames.find(({url}) =>
+          url == `${TEST_PAGES_URL}/image.html`);
+        return {tabId, frameId};
+      }
+
+      it("returns filters for allowlisted frames", async() =>
+      {
+        EWE.filters.add(ALLOWING_IMAGE_DOC_FILTER);
+
+        let {tabId, frameId} = await loadTabWithFrame();
+        expect(EWE.filters.getAllowingFilters(tabId, {frameId})).toEqual(
+          [ALLOWING_IMAGE_DOC_FILTER]);
+        expect(EWE.filters.getAllowingFilters(tabId)).toEqual([]);
+
+        EWE.filters.add(`@@|${TEST_PAGES_URL}/iframe.html^$document`);
+
+        ({tabId, frameId} = await loadTabWithFrame());
+
+        const ALLOWING_IFRAME_DOC_FILTER =
+          `@@|${TEST_PAGES_URL}/iframe.html^$document`;
+
+        expect(EWE.filters.getAllowingFilters(tabId, {frameId})).toEqual([
+          ALLOWING_IFRAME_DOC_FILTER, ALLOWING_IMAGE_DOC_FILTER]);
+        expect(EWE.filters.getAllowingFilters(tabId)).toEqual([
+          ALLOWING_IFRAME_DOC_FILTER]);
+      });
+
+      it("returns element-hiding filters for allowlisted tabs", async() =>
+      {
+        let filter = `@@|${TEST_PAGES_URL}/*.html$elemhide`;
+
+        EWE.filters.add(`|${TEST_PAGES_URL}/image.png^`);
+        EWE.filters.add(ALLOWING_IMAGE_DOC_FILTER);
+        EWE.filters.add(filter);
+
+        let tabId = await new Page("image.html").loaded();
+        let opts = {types: ["elemhide"]};
+        expect(EWE.filters.getAllowingFilters(tabId, opts)).toEqual([filter]);
+      });
+
+      it("doesn't return filters for non-allowlisted tabs", async() =>
+      {
+        let tabId = await new Page("image.html").loaded();
+        expect(EWE.filters.getAllowingFilters(tabId)).toEqual([]);
+      });
+
+      it("doesn't return filters for non-allowlisted frames", async() =>
+      {
+        let {tabId, frameId} = await loadTabWithFrame();
+        expect(EWE.filters.getAllowingFilters(tabId, {frameId})).toEqual([]);
+        expect(EWE.filters.getAllowingFilters(tabId)).toEqual([]);
+      });
+    });
   });
 
   describe("Initialization", () =>
@@ -539,24 +612,6 @@ describe("API", () =>
         await wait(() => EWE.reporting.getFirstVersion() != "0", 1000,
                    "No resource has been downloaded yet.");
         expect(EWE.reporting.getFirstVersion()).toBe(today);
-      });
-    });
-
-    describe("Allowlisting", () =>
-    {
-      it("detects allowlisted tabs", async() =>
-      {
-        EWE.filters.add(`|${TEST_PAGES_URL}/image.png^`);
-        EWE.filters.add(`@@|${TEST_PAGES_URL}/image.html^$document`);
-
-        let tabId = await new Page("image.html").loaded();
-        expect(EWE.reporting.isAllowlisted(tabId)).toBeTruthy();
-      });
-
-      it("detects non-allowlisted tabs", async() =>
-      {
-        let tabId = await new Page("image.html").loaded();
-        expect(EWE.reporting.isAllowlisted(tabId)).toBeFalsy();
       });
     });
 
