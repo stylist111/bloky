@@ -106,6 +106,7 @@ export default {
    *                                    If not provided, falls back to the URL.
    * @param {string} [properties.homepage] Website of the project that
    *                                       manages this filter list.
+   * @throws {Error} Invalid subscription URL provided.
    */
   add(url, properties = {})
   {
@@ -174,7 +175,7 @@ export default {
    * Checks if a subscription has been added.
    * @param {string} url The URL of the subscription to be checked.
    * @return {boolean} True if a subscription has been added.
-   * @throws {TypeError} Invalid url provided.
+   * @throws {TypeError} Invalid URL provided.
    */
   has(url)
   {
@@ -184,7 +185,7 @@ export default {
   /**
    * Enables a previously disabled subscription. Has no effect otherwise.
    * @param {string} url The URL of the subscription to be enabled.
-   * @throws {Error} Subscription does not exist
+   * @throws {Error} Subscription does not exist.
    * @return {undefined}
    */
   enable(url)
@@ -201,7 +202,7 @@ export default {
    * Disables a subscription so that it doesn't have any
    * effect until it gets enabled again.
    * @param {string} url The URL of the subscription to be disabled.
-   * @throws {Error} Subscription does not exist
+   * @throws {Error} Subscription does not exist.
    * @return {undefined}
    */
   disable(url)
@@ -233,6 +234,7 @@ export default {
    * given URL to be downloaded immediately.
    * @param {string} [url] The URL of the subscription to be synchronized.
    *                       If omitted, all subscriptions will be synchronized.
+   * @throws {Error} Subscription does not exist.
    * @return {undefined}
    */
   sync(url)
