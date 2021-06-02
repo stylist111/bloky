@@ -44,6 +44,7 @@ test:chromium:latest:
   extends: .test
   script:
     - xvfb-run -a node test/runner.js chromium
+  allow_failure: true
 
 test:chromium:oldest:
   extends: .test
