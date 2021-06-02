@@ -61,5 +61,12 @@ export default {
   {
     let frameInfo = getFrameInfo(tabId, frameId);
     return (frameInfo.allowlisted & contentTypes.DOCUMENT) != 0;
-  }
+  },
+
+  /**
+   * The contentTypes object.
+   * @see {@link https://eyeo.gitlab.io/adblockplus/adblockpluscore/master/docs/module-contentTypes.html#.contentTypes|Adblock Plus core content types documentation}
+   * @external
+   */
+  contentTypes
 };
