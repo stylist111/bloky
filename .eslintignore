@@ -2,3 +2,4 @@
 /dist/
 /docs/
 /test/*-snapshots/
+/test/bundle/dist/

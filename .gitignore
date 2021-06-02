@@ -2,3 +2,4 @@ node_modules
 dist
 docs
 test/*-snapshots
+test/bundle/package-lock.json

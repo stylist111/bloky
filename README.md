@@ -153,3 +153,9 @@ through the global `ABP` object.
 [builds]: https://gitlab.com/eyeo/adblockplus/webext-sdk/-/jobs/artifacts/master/browse/dist?job=build
 [docs]: https://gitlab.com/eyeo/adblockplus/webext-sdk/-/jobs/artifacts/master/file/docs/index.html?job=build
 [dev]: https://gitlab.com/eyeo/adblockplus/webext-sdk#development
+
+### Bundle test
+
+Checks that the bundled code can be imported and re-bundled
+
+    node test/bundle/run.js

@@ -24,6 +24,7 @@ build:
     - npm run lint
     - npx webpack --env release
     - npm run docs
+    - node test/bundle/run.js
   artifacts:
     paths:
       - dist/
