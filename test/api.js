@@ -96,6 +96,8 @@ describe("API", () =>
 
     it("gets filters from a subscription", async() =>
     {
+      expect(ABP.subscriptions.getFilters(VALID_SUBSCRIPTION_URL)).toBeNull();
+
       ABP.subscriptions.add(VALID_SUBSCRIPTION_URL);
 
       let filters;
@@ -370,7 +372,7 @@ describe("API", () =>
 
     it("validates a valid filter", () =>
     {
-      expect(ABP.filters.validate(VALID_FILTER_TEXT)).toBeUndefined();
+      expect(ABP.filters.validate(VALID_FILTER_TEXT)).toBeNull();
     });
 
     it("validates a filter with unknown option", () =>

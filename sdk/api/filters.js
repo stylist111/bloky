@@ -67,6 +67,8 @@ function validateFilter(filter)
         return new FilterError("invalid_domain", domain);
     }
   }
+
+  return null;
 }
 
 export default {
@@ -124,7 +126,6 @@ export default {
   /**
    * Enables a previously disabled filter. Has no effect otherwise.
    * @param {string} text The filter rule to be enabled.
-   * @return {undefined}
    */
   enable(text)
   {
@@ -135,7 +136,6 @@ export default {
    * Disables a filter so that it doesn't have any
    * effect until it gets enabled again.
    * @param {string} text The filter rule to be disabled.
-   * @return {undefined}
    */
   disable(text)
   {
@@ -146,7 +146,6 @@ export default {
    * Removes a filter. The filter will no longer have any effect
    * and won't be returned by `filters.getAll()`
    * @param {string} text The filter rule to be removed.
-   * @return {undefined}
    */
   remove(text)
   {
@@ -156,7 +155,7 @@ export default {
   /**
    * Validates a list of filters.
    * @param {string} text Filter to be validated
-   * @return {undefined|Error}
+   * @return {null|Error}
    */
   validate(text)
   {

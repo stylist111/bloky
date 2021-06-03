@@ -157,9 +157,8 @@ export default {
   /**
    * Returns the filter list of a given subscription URL.
    * @param {string} url The URL of the subscription.
-   * @return {Array.<Filter>|undefined} Filters from the subscription, or
-   *                                    undefined if the subscription was not
-   *                                    previously added.
+   * @return {Array.<Filter>|null} Filters from the subscription, or null if
+   *                               the subscription was not previously added.
    */
   getFilters(url)
   {
@@ -169,6 +168,8 @@ export default {
       return Array.from(subscription.filterText(),
                         text => convertFilter(Filter.fromText(text)));
     }
+
+    return null;
   },
 
   /**
@@ -186,7 +187,6 @@ export default {
    * Enables a previously disabled subscription. Has no effect otherwise.
    * @param {string} url The URL of the subscription to be enabled.
    * @throws {Error} Subscription does not exist.
-   * @return {undefined}
    */
   enable(url)
   {
@@ -203,7 +203,6 @@ export default {
    * effect until it gets enabled again.
    * @param {string} url The URL of the subscription to be disabled.
    * @throws {Error} Subscription does not exist.
-   * @return {undefined}
    */
   disable(url)
   {
@@ -219,7 +218,6 @@ export default {
    * Removes the subscription for the given URL.
    * It will no longer have any effect.
    * @param {string} url The URL of the subscription to be removed.
-   * @return {undefined}
    */
   remove(url)
   {
@@ -235,7 +233,6 @@ export default {
    * @param {string} [url] The URL of the subscription to be synchronized.
    *                       If omitted, all subscriptions will be synchronized.
    * @throws {Error} Subscription does not exist.
-   * @return {undefined}
    */
   sync(url)
   {

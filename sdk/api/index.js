@@ -79,7 +79,6 @@ export async function start()
 
 /**
  * Stops blocking any content.
- * @return {undefined}
  */
 export function stop()
 {
