@@ -141,7 +141,7 @@ through the global `EWE` object.
 
 ### Using the test runner
 
-    node test/runner.js {chromium|firefox|edge} [version] [options]
+    node test/runner.js {chromium|firefox|edge} [version|channel] [options]
 
 - The `--timeout` option overrides the per-test timeout in milliseconds.
 - The `--grep` option filters the tests to run with a regular expression.

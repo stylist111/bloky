@@ -34,7 +34,7 @@ const MAX_VERSION_DECREMENTS = 50;
 
 let dirname = path.dirname(fileURLToPath(import.meta.url));
 
-async function download(url, destFile)
+export async function download(url, destFile)
 {
   let cacheDir = path.dirname(destFile);
 
@@ -99,7 +99,7 @@ export async function downloadChromium(chromiumRevision)
     {
       await fs.promises.access(browserDir);
       console.log(`Reusing cached executable in ${browserDir}`);
-      return getChromiumExecutable(browserDir);
+      return {binary: getChromiumExecutable(browserDir), revision};
     }
     catch (e) {}
 
@@ -136,7 +136,7 @@ export async function downloadChromium(chromiumRevision)
 
   await extractZip(archive, {dir: browserDir});
   console.log(`Executable extracted to ${browserDir}`);
-  return getChromiumExecutable(browserDir);
+  return {binary: getChromiumExecutable(browserDir), revision};
 }
 
 function getFirefoxExecutable(dir)

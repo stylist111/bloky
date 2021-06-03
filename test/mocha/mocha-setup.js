@@ -49,8 +49,10 @@ before(async function()
   restoreSubscriptions = EWE.subscriptions.removeAll();
 });
 
-after(() =>
+after(function()
 {
+  this.timeout(3000);
+
   if (restoreSubscriptions)
     restoreSubscriptions();
 });

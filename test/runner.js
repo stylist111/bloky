@@ -21,6 +21,7 @@ import path from "path";
 import {exec, execFile} from "child_process";
 import {promisify} from "util";
 import querystring from "querystring";
+import fs from "fs";
 
 import got from "got";
 import yargs from "yargs";
@@ -28,8 +29,10 @@ import webdriver from "selenium-webdriver";
 import chrome from "selenium-webdriver/chrome.js";
 import firefox from "selenium-webdriver/firefox.js";
 import command from "selenium-webdriver/lib/command.js";
+import extractZip from "extract-zip";
 
-import {downloadChromium, downloadFirefox} from "./browser-download.js";
+import {downloadChromium, downloadFirefox, download}
+  from "./browser-download.js";
 
 import {RECENT_FIREFOX_VERSION} from "./utils.js";
 
@@ -50,7 +53,7 @@ class Chromium
     return data.chromium_base_position;
   }
 
-  async getLatestVersion()
+  async getLatestVersion(channel = "stable")
   {
     let os = process.platform;
     if (os == "win32")
@@ -59,7 +62,7 @@ class Chromium
       os = process.arch == "arm64" ? "mac_arm64" : "mac";
 
     let data = await got(`https://omahaproxy.appspot.com/all.json?os=${os}`).json();
-    let release = data[0].versions.find(ver => ver.channel == "stable");
+    let release = data[0].versions.find(ver => ver.channel == channel);
     let {current_version: version, branch_base_position: base} = release;
 
     if (release.true_branch && release.true_branch.includes("_"))
@@ -83,22 +86,52 @@ class Chromium
         npm_config_chromedriver_skip_download: false,
         npm_config_tmp: path.resolve("test",
                                      "chromium-snapshots",
-                                     "chromedriver"),
+                                     "download-cache"),
         CHROMEDRIVER_VERSION: `LATEST_${version}`
       }}
     );
   }
 
+  async installDevDriver(revision)
+  {
+    let platform = `${process.platform}-${process.arch}`;
+    let buildTypes = {
+      "win32-ia32": ["Win", "chromedriver_win32.zip", "chromedriver.exe"],
+      "win32-x64": ["Win_x64", "chromedriver_win32.zip", "chromedriver.exe"],
+      "linux-x64": ["Linux_x64", "chromedriver_linux64.zip", "chromedriver"],
+      "darwin-x64": ["Mac", "chromedriver_mac64.zip", "chromedriver"],
+      "darwin-arm64": ["Mac_Arm", "chromedriver_mac64.zip", "chromedriver"]
+    };
+    let [dir, zip, driver] = buildTypes[platform];
+
+    let snapshotsDir = path.join(process.cwd(), "test", "chromium-snapshots");
+    let cacheDir = path.join(snapshotsDir, "download-cache");
+    let chromedriverDir = path.join(process.cwd(), "node_modules",
+                                    "chromedriver", "lib", "chromedriver");
+    let archive = path.join(cacheDir, `${revision}-${zip}`);
+
+    await download(`https://commondatastorage.googleapis.com/chromium-browser-snapshots/${dir}/${revision}/${zip}`,
+                   archive);
+    await extractZip(archive, {dir: cacheDir});
+    await fs.promises.mkdir(chromedriverDir, {recursive: true});
+    await fs.promises.copyFile(path.join(cacheDir, zip.split(".")[0], driver),
+                               path.join(chromedriverDir, driver));
+  }
+
   async getDriver(version)
   {
     let base;
-    if (version)
+    let dev = version == "beta" || version == "dev";
+    if (version && !dev)
       base = await this.getBranchBasePosition(version);
     else
-      ({version, base} = await this.getLatestVersion());
+      ({version, base} = await this.getLatestVersion(version));
 
-    let binary = await downloadChromium(base);
-    await this.installDriver(version);
+    let {binary, revision} = await downloadChromium(base);
+    if (dev)
+      await this.installDevDriver(revision);
+    else
+      await this.installDriver(version);
 
     let options = new chrome.Options();
     options.addArguments("no-sandbox", `load-extension=${process.cwd()}`);
@@ -114,16 +147,18 @@ class Chromium
 
 class Firefox
 {
-  async getLatestVersion()
+  async getLatestVersion(branch)
   {
     let data = await got("https://product-details.mozilla.org/1.0/firefox_versions.json").json();
-    return data.LATEST_FIREFOX_VERSION;
+    return branch == "beta" ?
+      data.FIREFOX_DEVEDITION : data.LATEST_FIREFOX_VERSION;
   }
 
   async getDriver(version)
   {
-    let binary = await downloadFirefox(version ||
-                                       await this.getLatestVersion());
+    if (!version || version == "beta")
+      version = await this.getLatestVersion(version);
+    let binary = await downloadFirefox(version);
 
     let options = new firefox.Options();
     options.headless();
