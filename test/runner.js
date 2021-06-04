@@ -34,6 +34,8 @@ import {ensureChromium}
 import {ensureFirefox}
   from "../adblockpluscore/test/runners/firefox_download.mjs";
 
+import {RECENT_FIREFOX_VERSION} from "./utils.js";
+
 // Required to start the driver on some platforms (e.g. Windows).
 import "chromedriver";
 import "geckodriver";
@@ -243,6 +245,11 @@ async function switchToHandle(driver, testFn)
 async function getHandle(driver, page, params)
 {
   let url;
+  let timeout = 5000;
+  let cap = await driver.getCapabilities();
+  let version = parseInt(cap.getBrowserVersion().split(".")[0], 10);
+  if (cap.getBrowserName() == "firefox" && version < RECENT_FIREFOX_VERSION)
+    timeout = 8000;
   let handle = await driver.wait(() => switchToHandle(driver, handleUrl =>
   {
     if (!handleUrl)
@@ -250,7 +257,7 @@ async function getHandle(driver, page, params)
 
     url = new URL(handleUrl);
     return url.pathname == page;
-  }), 5000, `${page} did not open`);
+  }), timeout, `${page} did not open`);
 
   if (params)
   {

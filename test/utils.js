@@ -20,6 +20,7 @@ export const TEST_PAGES_URL = `http://${TEST_PAGES_DOMAIN}:3000`;
 export const SITEKEY = "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANGtTstne7" +
                        "e8MbmDHDiMFkGbcuBgXmiVesGOG3gtYeM1EkrzVhBj" +
                        "GUvKXYE4GLFwqty3v5MuWWbvItUWBTYoVVsCAwEAAQ";
+export const RECENT_FIREFOX_VERSION = 86; // Latest Firefox on February 2021
 
 function handleConnection(details, tabId, removeListeners, reject)
 {
@@ -349,7 +350,7 @@ export function isOldestFirefox()
     return false;
 
   let version = /\brv:([^;)]+)/.exec(navigator.userAgent)[1];
-  return parseInt(version, 10) < 86;
+  return parseInt(version, 10) < RECENT_FIREFOX_VERSION;
 }
 
 export function isEdge()

@@ -52,7 +52,7 @@ describe(`Reload (${phase})`, function()
         return contents.some(line => line.includes(VALID_FILTER_TEXT));
       }, 2000, "The added filter didn't reach storage");
 
-      localStorage.setItem("reload-test-running", true);
+      localStorage.setItem("reload-test-running", "true");
 
       if (isOldestFirefox() || isEdge()) // let storage consolidate on CI
         await new Promise(r => setTimeout(r, 2000));
@@ -69,7 +69,7 @@ describe(`Reload (${phase})`, function()
     }
     finally
     {
-      localStorage.setItem("reload-test-running", false);
+      localStorage.removeItem("reload-test-running");
       ABP.filters.remove(VALID_FILTER_TEXT);
     }
   });
