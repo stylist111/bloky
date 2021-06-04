@@ -16,7 +16,7 @@
  */
 
 import {filterStorage} from "../../adblockpluscore/lib/filterStorage.js";
-import {Filter, isActiveFilter, InvalidFilter}
+import {Filter, isActiveFilter, InvalidFilter, URLFilter}
   from "../../adblockpluscore/lib/filterClasses.js";
 import {isValidHostname} from "../../adblockpluscore/lib/url.js";
 import {SpecialSubscription}
@@ -32,7 +32,7 @@ export function convertFilter(filter)
   return {
     text: filter.text,
     enabled: !filter.disabled,
-    slow: isSlowFilter(filter),
+    slow: filter instanceof URLFilter && isSlowFilter(filter),
     type: filter.type
   };
 }
@@ -82,7 +82,8 @@ export default {
    *                             be applied. Filters are enabled by default.
    * @property {boolean} slow Indicates that this filter is not subject to an
    *                          internal optimization. Filters that are
-   *                          considered slow should be avoided.
+   *                          considered slow should be avoided. Only URLFilters
+   *                          can be slow.
    * @property {string} type The filter {@link https://eyeo.gitlab.io/adblockplus/adblockpluscore/next/docs/module-filterClasses.Filter.html#type|type}
    */
 

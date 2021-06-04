@@ -401,6 +401,15 @@ describe("API", () =>
       expect(error.toString()).toEqual(`FilterError: ${JSON.stringify(props)}`);
     });
 
+    it("produces the correct slow state for a URL filter", () =>
+    {
+      ABP.filters.add("example##.site-panel");
+
+      expect(ABP.filters.getAll()).toEqual([
+        expect.objectContaining({slow: false})
+      ]);
+    });
+
     it("listens to onAdded events", () =>
     {
       let fake = sinon.fake();
