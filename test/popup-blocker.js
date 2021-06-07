@@ -37,6 +37,11 @@ describe("Pop-up blocking", function()
   it("blocks a script-based popup tab", async() =>
   {
     ABP.filters.add(`|${TEST_PAGES_URL}/popup.html^$popup`);
+    if (isFirefox())
+    {
+      Page.removeCurrent();
+      opener = new Page("popup-opener.html");
+    }
     expect(await new Popup("script-tab", opener).blocked).toBeTruthy();
   });
 
