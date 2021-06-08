@@ -17,10 +17,10 @@
 
 import browser from "webextension-polyfill";
 
-import {filterEngine} from "../../adblockpluscore/lib/filterEngine.js";
-import {synchronizer} from "../../adblockpluscore/lib/synchronizer.js";
+import {filterEngine} from "adblockpluscore/lib/filterEngine.js";
+import {synchronizer} from "adblockpluscore/lib/synchronizer.js";
 import {notifications as _notifications}
-  from "../../adblockpluscore/lib/notifications.js";
+  from "adblockpluscore/lib/notifications.js";
 
 import * as frameState from "./frame-state.js";
 import * as requestFilter from "./request-filter.js";

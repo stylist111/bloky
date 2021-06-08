@@ -15,8 +15,8 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {contentTypes} from "../../adblockpluscore/lib/contentTypes.js";
-import {analytics} from "../../adblockpluscore/lib/analytics.js";
+import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
+import {analytics} from "adblockpluscore/lib/analytics.js";
 
 import {getFrameInfo} from "./frame-state.js";
 import {EventDispatcher} from "./types.js";

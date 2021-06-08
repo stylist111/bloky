@@ -1,10 +1,10 @@
 import browser from "webextension-polyfill";
 
-import {recommendations} from "../../adblockpluscore/lib/recommendations.js";
+import {recommendations} from "adblockpluscore/lib/recommendations.js";
 import {Subscription, DownloadableSubscription, SpecialSubscription}
-  from "../../adblockpluscore/lib/subscriptionClasses.js";
-import {filterStorage} from "../../adblockpluscore/lib/filterStorage.js";
-import {synchronizer} from "../../adblockpluscore/lib/synchronizer.js";
+  from "adblockpluscore/lib/subscriptionClasses.js";
+import {filterStorage} from "adblockpluscore/lib/filterStorage.js";
+import {synchronizer} from "adblockpluscore/lib/synchronizer.js";
 
 const ACCEPTABLE_ADS_URL = "https://easylist-downloads.adblockplus.org/exceptionrules.txt";
 

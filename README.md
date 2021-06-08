@@ -97,7 +97,6 @@ For more information, please refer to the [API documention][docs].
 
 ### Installing/Updating dependencies
 
-    git submodule update --init
     npm install
 
 ### Building the library
@@ -143,7 +142,7 @@ through the global `ABP` object.
 ### Using the test runner
 
     node test/runner.js {chromium|firefox|edge} [version] [options]
-  
+
 - The `--timeout` option overrides the per-test timeout in milliseconds.
 - The `--grep` option filters the tests to run with a regular expression.
 

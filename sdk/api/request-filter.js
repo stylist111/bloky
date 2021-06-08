@@ -17,10 +17,10 @@
 
 import browser from "webextension-polyfill";
 
-import {BlockingFilter} from "../../adblockpluscore/lib/filterClasses.js";
-import {contentTypes} from "../../adblockpluscore/lib/contentTypes.js";
-import {defaultMatcher as matcher} from "../../adblockpluscore/lib/matcher.js";
-import {filterNotifier} from "../../adblockpluscore/lib/filterNotifier.js";
+import {BlockingFilter} from "adblockpluscore/lib/filterClasses.js";
+import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
+import {defaultMatcher as matcher} from "adblockpluscore/lib/matcher.js";
+import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 
 import {getFrameInfo} from "./frame-state.js";
 import {ignoreNoConnectionError} from "../errors.js";

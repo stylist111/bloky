@@ -15,10 +15,9 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {filterStorage} from "../../adblockpluscore/lib/filterStorage.js";
-import {Filter, ElemHideFilter}
-  from "../../adblockpluscore/lib/filterClasses.js";
-import {parseURL} from "../../adblockpluscore/lib/url.js";
+import {filterStorage} from "adblockpluscore/lib/filterStorage.js";
+import {Filter, ElemHideFilter} from "adblockpluscore/lib/filterClasses.js";
+import {parseURL} from "adblockpluscore/lib/url.js";
 import {convertFilter} from "./filters.js";
 
 let logFunction;

@@ -15,15 +15,15 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {filterStorage} from "../../adblockpluscore/lib/filterStorage.js";
+import {filterStorage} from "adblockpluscore/lib/filterStorage.js";
 import {Filter, isActiveFilter, InvalidFilter, URLFilter}
-  from "../../adblockpluscore/lib/filterClasses.js";
-import {isValidHostname} from "../../adblockpluscore/lib/url.js";
+  from "adblockpluscore/lib/filterClasses.js";
+import {isValidHostname} from "adblockpluscore/lib/url.js";
 import {SpecialSubscription}
-  from "../../adblockpluscore/lib/subscriptionClasses.js";
-import {isSlowFilter} from "../../adblockpluscore/lib/matcher.js";
-import {filterNotifier} from "../../adblockpluscore/lib/filterNotifier.js";
-import {filterState} from "../../adblockpluscore/lib/filterState.js";
+  from "adblockpluscore/lib/subscriptionClasses.js";
+import {isSlowFilter} from "adblockpluscore/lib/matcher.js";
+import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
+import {filterState} from "adblockpluscore/lib/filterState.js";
 
 import {EventDispatcher, FilterError} from "./types.js";
 

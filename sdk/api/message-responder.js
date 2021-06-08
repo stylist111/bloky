@@ -18,8 +18,7 @@
 import browser from "webextension-polyfill";
 
 import {applyContentFilters, injectCSS} from "./content-filter.js";
-import {createStyleSheet}
-  from "../../adblockpluscore/lib/elemHide.js";
+import {createStyleSheet} from "adblockpluscore/lib/elemHide.js";
 import {subscribeLinkClicked, subscribeLinksEnabled}
   from "./subscribe-links.js";
 import {logHiddenElements} from "./diagnostics.js";

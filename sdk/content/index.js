@@ -18,7 +18,7 @@
 import browser from "webextension-polyfill";
 
 import {ElemHideEmulation}
-  from "../../adblockpluscore/lib/content/elemHideEmulation.js";
+  from "adblockpluscore/lib/content/elemHideEmulation.js";
 
 import {ignoreNoConnectionError} from "../errors.js";
 import {startElementCollapsing, hideElement} from "./element-collapsing.js";

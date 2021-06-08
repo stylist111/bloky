@@ -16,7 +16,7 @@
  */
 
 import browser from "webextension-polyfill";
-import {EventEmitter} from "../../adblockpluscore/lib/events.js";
+import {EventEmitter} from "adblockpluscore/lib/events.js";
 
 let eventEmitter = new EventEmitter();
 let database;

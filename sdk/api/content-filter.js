@@ -17,14 +17,12 @@
 
 import browser from "webextension-polyfill";
 
-import {createStyleSheet, elemHide}
-  from "../../adblockpluscore/lib/elemHide.js";
-import {elemHideEmulation}
-  from "../../adblockpluscore/lib/elemHideEmulation.js";
-import {contentTypes} from "../../adblockpluscore/lib/contentTypes.js";
-import {snippets, compileScript} from "../../adblockpluscore/lib/snippets.js";
+import {createStyleSheet, elemHide} from "adblockpluscore/lib/elemHide.js";
+import {elemHideEmulation} from "adblockpluscore/lib/elemHideEmulation.js";
+import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
+import {snippets, compileScript} from "adblockpluscore/lib/snippets.js";
 import snippetsLibrarySource
-  from "raw-loader!../../adblockpluscore/lib/content/snippets.js";
+  from "raw-loader!adblockpluscore/lib/content/snippets.js";
 
 import {getFrameInfo} from "./frame-state.js";
 import {logItem, tracingEnabled} from "./diagnostics.js";

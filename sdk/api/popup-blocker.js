@@ -17,9 +17,9 @@
 
 import browser from "webextension-polyfill";
 
-import {defaultMatcher as matcher} from "../../adblockpluscore/lib/matcher.js";
-import {BlockingFilter} from "../../adblockpluscore/lib/filterClasses.js";
-import {contentTypes} from "../../adblockpluscore/lib/contentTypes.js";
+import {defaultMatcher as matcher} from "adblockpluscore/lib/matcher.js";
+import {BlockingFilter} from "adblockpluscore/lib/filterClasses.js";
+import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 
 import {logItem} from "./diagnostics.js";
 import {getFrameInfo} from "./frame-state.js";
