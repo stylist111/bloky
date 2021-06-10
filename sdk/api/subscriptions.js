@@ -157,8 +157,7 @@ export default {
   /**
    * Returns the filter list of a given subscription URL.
    * @param {string} url The URL of the subscription.
-   * @return {Array.<Filter>|null} Filters from the subscription, or null if
-   *                               the subscription was not previously added.
+   * @return {Array.<Filter>} Filters from the subscription.
    */
   getFilters(url)
   {
@@ -169,7 +168,7 @@ export default {
                         text => convertFilter(Filter.fromText(text)));
     }
 
-    return null;
+    return [];
   },
 
   /**

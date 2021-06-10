@@ -96,7 +96,7 @@ describe("API", () =>
 
     it("gets filters from a subscription", async() =>
     {
-      expect(ABP.subscriptions.getFilters(VALID_SUBSCRIPTION_URL)).toBeNull();
+      expect(ABP.subscriptions.getFilters(VALID_SUBSCRIPTION_URL)).toEqual([]);
 
       ABP.subscriptions.add(VALID_SUBSCRIPTION_URL);
 
