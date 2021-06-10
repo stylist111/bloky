@@ -60,6 +60,8 @@ test:firefox:oldest:
   extends: .test
   script:
     - node test/runner.js firefox 70.0
+  # https://gitlab.com/eyeo/adblockplus/webext-sdk/-/issues/50
+  retry: 2
 
 test:edge:
   extends: .test
