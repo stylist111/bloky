@@ -32,6 +32,16 @@ export default {
   getFirstVersion: analytics.getFirstVersion,
 
   /**
+  * @typedef {Object} FilterMatchInfo
+  * @property {string|undefined} docDomain The domain name of the document that
+  *                                        loads the URL.
+  * @property {string|undefined} rewrittenUrl The name of the internal resource
+  *                                           to which to rewrite the URL.
+  * @property {boolean|undefined} specificOnly Whether selectors from generic
+  *                                           filters should be included.
+  */
+
+  /**
    * Emitted when any filter is matched.
    * @event
    * @param {object|null|{frameId: number, tabId: number, url: string}} details
@@ -40,8 +50,12 @@ export default {
    *   or {@link https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webRequest/onHeadersReceived#details|webRequest.onHeadersReceived}
    *   from the web extensions API, or for element hiding filters an object with
    *   the properties `frameId`, `tabId` and `url`.
-   * @param {string} filter The text value of the filter matched.
-   * @type {EventDispatcher.<{details: object, filter: string}>}
+   * @param {Filter} filter The filter that matched.
+   * @param {FilterMatchInfo} info Extra information that might be
+   *                    relevant depending on the context.
+   * @type {EventDispatcher.<{details: object,
+   *                          filter: Filter,
+   *                          info: FilterMatchInfo}>}
    */
   onFilterMatch: new EventDispatcher(
     setLogFunction,

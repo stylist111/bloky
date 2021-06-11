@@ -33,7 +33,8 @@ export function convertFilter(filter)
     text: filter.text,
     enabled: !filter.disabled,
     slow: filter instanceof URLFilter && isSlowFilter(filter),
-    type: filter.type
+    type: filter.type,
+    thirdParty: filter.thirdParty
   };
 }
 

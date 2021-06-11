@@ -22,8 +22,13 @@ const VALID_SUBSCRIPTION_URL = "https://testpages.adblockplus.org/en/abp-testcas
 const INVALID_SUBSCRIPTION_URL = "invalidUrl";
 
 const VALID_FILTER_TEXT = "$image";
-const VALID_FILTER =
-  {text: VALID_FILTER_TEXT, enabled: true, slow: true, type: "blocking"};
+const VALID_FILTER = {
+  text: VALID_FILTER_TEXT,
+  enabled: true,
+  slow: true,
+  type: "blocking",
+  thirdParty: null
+};
 const INVALID_FILTER_TEXT = "/foo/$rewrite=";
 
 describe("API", () =>
@@ -536,12 +541,12 @@ describe("API", () =>
 
     describe("Diagnostics", () =>
     {
-      async function checkLogging(filter, callback)
+      async function checkLogging(filter, callback, info = {})
       {
         let fake = sinon.fake();
 
         ABP.reporting.onFilterMatch.addListener(fake);
-        ABP.filters.add(filter);
+        ABP.filters.add(filter.text);
 
         try
         {
@@ -553,67 +558,101 @@ describe("API", () =>
         }
 
         expect(fake.called).toBeTruthy();
-        expect(fake.firstArg).toEqual({details: expect.any(Object), filter});
+        expect(fake.firstArg).toEqual({
+          details: expect.any(Object),
+          filter: expect.objectContaining(filter),
+          info: expect.objectContaining(info)
+        });
       }
 
-      function checkRequestLogging(page, filter)
+      function checkRequestLogging(page, filter, info)
       {
-        return checkLogging(filter, () => new Page(page).loaded());
+        return checkLogging(filter, () => new Page(page).loaded(), info);
       }
 
       it("logs blocking request filter", async() =>
       {
-        await checkRequestLogging("image.html", "/image.png^$image");
+        await checkRequestLogging("image.html", {
+          text: "/image.png^$image",
+          slow: false,
+          enabled: true,
+          type: "blocking",
+          thirdParty: null
+        });
+      });
+
+      it("logs third-party requests", async() =>
+      {
+        await checkRequestLogging("third-party.html", {
+          text: "/image.png$third-party",
+          thirdParty: true
+        });
       });
 
       it("logs allowlisting request filter", async() =>
       {
         ABP.filters.add("/image.png^$image");
-        await checkRequestLogging("image.html", "@@$image");
+        await checkRequestLogging("image.html", {
+          text: "@@$image",
+          type: "allowing"
+        }, {docDomain: "localhost", specificOnly: false});
+      });
+
+      it("logs rewrite filter", async() =>
+      {
+        await checkRequestLogging(
+          "script.html",
+          {text: "*.js$rewrite=abp-resource:blank-js,domain=localhost"},
+          {
+            docDomain: "localhost",
+            rewrittenUrl: "data:application/javascript,",
+            specificOnly: false
+          });
       });
 
       it("logs blocking $header filter", async() =>
       {
-        await checkRequestLogging("header.html", "*$header=x-header=whatever");
+        await checkRequestLogging("header.html",
+                                  {text: "*$header=x-header=whatever"});
       });
 
       it("logs allowlisting $header filter", async() =>
       {
         ABP.filters.add("*$header=x-header=whatever");
-        await checkRequestLogging("header.html", "@@$header");
+        await checkRequestLogging("header.html", {text: "@@$header"});
       });
 
       it("logs blocking $csp filter", async() =>
       {
-        await checkRequestLogging("csp.html", "*$csp=img-src 'none'");
+        await checkRequestLogging("csp.html", {text: "*$csp=img-src 'none'"});
       });
 
       it("logs allowlisting $csp filter", async() =>
       {
         ABP.filters.add("*$csp=img-src 'none'");
-        await checkRequestLogging("csp.html", "@@$csp");
+        await checkRequestLogging("csp.html", {text: "@@$csp"});
       });
 
       for (let option of ["$document", "$elemhide",
                           "$genericblock", "$generichide"])
       {
         it(`logs allowlisting ${option} filter`, () =>
-          checkRequestLogging("image.html", `@@${option}`)
+          checkRequestLogging("image.html", {text: `@@${option}`})
         );
       }
 
       it("logs element hiding filter", async() =>
       {
-        await checkLogging("###elem-hide", async() =>
+        await checkLogging({text: "###elem-hide"}, async() =>
         {
           let tabId = await new Page("element-hiding.html").loaded();
           await waitForInvisibleElement(tabId, "elem-hide");
         });
       });
 
-      function checkPopupLogging(filter)
+      function checkPopupLogging(text)
       {
-        return checkLogging(filter, () =>
+        return checkLogging({text}, () =>
           new Popup("link", new Page("popup-opener.html")).blocked
         );
       }

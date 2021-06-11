@@ -100,44 +100,53 @@ class RequestFilter
     }
   }
 
-  isBlocking(details, filter)
+  isBlocking(details, filter, info)
   {
     if (filter)
     {
       if (filter instanceof BlockingFilter)
         return true;
 
-      logItem(details, filter);
+      logItem(details, filter, info);
     }
     return false;
   }
 
-  block(details, filter)
+  block(details, filter, info)
   {
-    logItem(details, filter);
-
-    if (typeof filter.rewrite == "string")
+    let value = (() =>
     {
-      let redirectUrl = filter.rewriteUrl(details.url);
-      // If no rewrite happened (error, different origin), we'll
-      // return undefined in order to avoid an "infinite" loop.
-      if (redirectUrl != details.url)
-        return {redirectUrl};
-    }
-    else
-    {
-      this.collapse(details);
-      return {cancel: true};
-    }
+      if (typeof filter.rewrite == "string")
+      {
+        let rewrittenUrl = filter.rewriteUrl(details.url);
+        // If no rewrite happened (error, different origin), we'll
+        // return undefined in order to avoid an "infinite" loop.
+        if (rewrittenUrl != details.url)
+        {
+          info.rewrittenUrl = rewrittenUrl;
+          return {redirectUrl: rewrittenUrl};
+        }
+      }
+      else
+      {
+        this.collapse(details);
+        return {cancel: true};
+      }
+    })();
+    logItem(details, filter, info);
+    return value;
   }
 
   match(details, frame, specificOnly)
   {
+    let docDomain = frame.hostname;
     let filter = matcher.match(details.url, this.getContentType(details),
-                               frame.hostname, frame.sitekey, specificOnly);
+                               docDomain, frame.sitekey, specificOnly);
 
-    if (this.isBlocking(details, filter))
-      return this.block(details, filter);
+    let info = {docDomain, specificOnly};
+
+    if (this.isBlocking(details, filter, info))
+      return this.block(details, filter, info);
   }
 
   filter(details)
@@ -170,19 +179,22 @@ class HeaderFilter extends RequestFilter
   match(details, frame, specificOnly)
   {
     let typeMask = contentTypes.HEADER | this.getContentType(details);
+    let docDomain = frame.hostname;
+    let info = {docDomain, specificOnly};
+
     if (!this.isBlocking(details, matcher.match(details.url, typeMask,
-                                                frame.hostname, frame.sitekey,
-                                                specificOnly)))
+                                                docDomain, frame.sitekey,
+                                                specificOnly), info))
       return;
 
     let matches = matcher.search(details.url, contentTypes.HEADER,
-                                 frame.hostname, frame.sitekey,
+                                 docDomain, frame.sitekey,
                                  specificOnly, "blocking");
 
     for (let filter of matches.blocking)
     {
       if (filter.filterHeaders(details.responseHeaders))
-        return this.block(details, filter);
+        return this.block(details, filter, info);
     }
   }
 }
@@ -209,9 +221,10 @@ class CSPFilter extends RequestFilter
     let parentFrame = getFrameInfo(details.tabId, details.parentFrameId);
     let docDomain = parentFrame && parentFrame.hostname;
 
+    let info = {docDomain, specificOnly};
     if (!this.isBlocking(details, matcher.match(details.url, contentTypes.CSP,
                                                 docDomain, frame.sitekey,
-                                                specificOnly)))
+                                                specificOnly), info))
       return;
 
     let {responseHeaders} = details;
@@ -220,7 +233,7 @@ class CSPFilter extends RequestFilter
 
     for (let filter of matches.blocking)
     {
-      logItem(details, filter);
+      logItem(details, filter, info);
       responseHeaders.push(
         {name: "Content-Security-Policy", value: filter.csp}
       );

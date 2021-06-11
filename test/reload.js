@@ -18,8 +18,13 @@
 import {wait, isEdge, isOldestFirefox} from "./utils.js";
 
 const VALID_FILTER_TEXT = "reload.test^$image";
-const VALID_FILTER =
-  {text: VALID_FILTER_TEXT, enabled: true, slow: false, type: "blocking"};
+const VALID_FILTER = {
+  text: VALID_FILTER_TEXT,
+  enabled: true,
+  slow: false,
+  type: "blocking",
+  thirdParty: null
+};
 
 let start = new URLSearchParams(document.location.search).get("start");
 let phase = start ? "preparation" : "check";

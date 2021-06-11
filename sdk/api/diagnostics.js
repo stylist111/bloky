@@ -19,6 +19,7 @@ import {filterStorage} from "../../adblockpluscore/lib/filterStorage.js";
 import {Filter, ElemHideFilter}
   from "../../adblockpluscore/lib/filterClasses.js";
 import {parseURL} from "../../adblockpluscore/lib/url.js";
+import {convertFilter} from "./filters.js";
 
 let logFunction;
 
@@ -27,10 +28,10 @@ export function setLogFunction(func)
   logFunction = func;
 }
 
-export function logItem(details, filter)
+export function logItem(details, filter, info = {})
 {
   if (logFunction)
-    logFunction({details, filter: filter.text});
+    logFunction({details, filter: convertFilter(filter), info});
 }
 
 export function logHiddenElements(selectors, filters, sender)

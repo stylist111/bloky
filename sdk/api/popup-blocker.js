@@ -49,7 +49,7 @@ function checkPotentialPopup(tabId, url, frame)
 
   if (filter)
   {
-    logItem(null, filter);
+    logItem(null, filter, {docDomain: frame.hostname, specificOnly});
 
     if (filter instanceof BlockingFilter)
       browser.tabs.remove(tabId).catch(() => {});

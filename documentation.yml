@@ -26,5 +26,6 @@ toc:
       - EventDispatcher
       - Filter
       - FilterError
+      - FilterMatchInfo
       - Recommendation
       - Subscription
