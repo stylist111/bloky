@@ -29,10 +29,7 @@ import chrome from "selenium-webdriver/chrome.js";
 import firefox from "selenium-webdriver/firefox.js";
 import command from "selenium-webdriver/lib/command.js";
 
-import {ensureChromium}
-  from "../adblockpluscore/test/runners/chromium_download.mjs";
-import {ensureFirefox}
-  from "../adblockpluscore/test/runners/firefox_download.mjs";
+import {downloadChromium, downloadFirefox} from "./browser-download.js";
 
 import {RECENT_FIREFOX_VERSION} from "./utils.js";
 
@@ -59,7 +56,7 @@ class Chromium
     if (os == "win32")
       os = process.arch == "x64" ? "win64" : "win";
     else if (os == "darwin")
-      os = "mac";
+      os = process.arch == "arm64" ? "mac_arm64" : "mac";
 
     let data = await got(`https://omahaproxy.appspot.com/all.json?os=${os}`).json();
     let release = data[0].versions.find(ver => ver.channel == "stable");
@@ -84,7 +81,7 @@ class Chromium
       {env: {
         ...process.env,
         npm_config_chromedriver_skip_download: false,
-        npm_config_tmp: path.resolve("adblockpluscore",
+        npm_config_tmp: path.resolve("test",
                                      "chromium-snapshots",
                                      "chromedriver"),
         CHROMEDRIVER_VERSION: `LATEST_${version}`
@@ -100,7 +97,7 @@ class Chromium
     else
       ({version, base} = await this.getLatestVersion());
 
-    let binary = await ensureChromium(base);
+    let binary = await downloadChromium(base);
     await this.installDriver(version);
 
     let options = new chrome.Options();
@@ -125,7 +122,8 @@ class Firefox
 
   async getDriver(version)
   {
-    let binary = await ensureFirefox(version || await this.getLatestVersion());
+    let binary = await downloadFirefox(version ||
+                                       await this.getLatestVersion());
 
     let options = new firefox.Options();
     options.headless();

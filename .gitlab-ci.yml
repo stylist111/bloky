@@ -15,8 +15,8 @@ variables:
 cache:
   paths:
     - node_modules/
-    - adblockpluscore/*-snapshots/download-cache/
-    - adblockpluscore/chromium-snapshots/chromedriver/
+    - test/*-snapshots/download-cache/
+    - test/chromium-snapshots/chromedriver/
 
 build:
   stage: build
