@@ -1,22 +1,22 @@
 /*
- * This file is part of Adblock Plus <https://adblockplus.org/>,
+ * This file is part of eyeo's Web Extension Ad Blocking Toolkit (EWE),
  * Copyright (C) 2006-present eyeo GmbH
  *
- * Adblock Plus is free software: you can redistribute it and/or modify
+ * EWE is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
  *
- * Adblock Plus is distributed in the hope that it will be useful,
+ * EWE is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
+ * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 /* eslint-env webextensions, browser */
-/* global ABP */
+/* global EWE */
 
 "use strict";
 
@@ -30,7 +30,7 @@ mockGetUILanguage(chrome);
 if (typeof browser != "undefined")
   mockGetUILanguage(browser);
 
-ABP.start().then(async() =>
+EWE.start().then(async() =>
 {
   if (typeof netscape != "undefined")
   {

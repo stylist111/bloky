@@ -1,4 +1,4 @@
-# Ad Blocking Web Extension SDK
+# eyeo's Web Extension Ad Blocking Toolkit
 
 This is a library that provides integration of eyeo's [Ad Blocking Core][abpcore]
 for Chromium and Firefox extensions (like [Adblock Plus][abpui]).
@@ -24,8 +24,8 @@ for Chromium and Firefox extensions (like [Adblock Plus][abpui]).
 
 ## Getting started
 
-The library comes in two parts, `abp-api.js` to be included in the extension's
-background page, and `abp-content.js` to be loaded as a content script. Please
+The library comes in two parts, `ewe-api.js` to be included in the extension's
+background page, and `ewe-content.js` to be loaded as a content script. Please
 download the [latest build][builds] (or [build the library yourself][dev]).
 
 The extension's `manifest.json` is required to include the following configuration:
@@ -35,14 +35,14 @@ The extension's `manifest.json` is required to include the following configurati
   "manifest_version": 2,
   "background": {
     "scripts": [
-      "abp-api.js"
+      "ewe-api.js"
     ]
   },
   "content_scripts": [
     {
       "all_frames": true,
       "js": [
-        "abp-content.js"
+        "ewe-content.js"
       ],
       "match_about_blank": true,
       "matches": [
@@ -63,28 +63,28 @@ The extension's `manifest.json` is required to include the following configurati
 ```
 
 The API will be available in your own background scripts through the
-global `ABP` object. Please call `ABP.start()` to start blocking ads.
+global `EWE` object. Please call `EWE.start()` to start blocking ads.
 
 ### Module bundlers (optional)
 
-`abp-api.js` is built as a UMD module (Universal Module Definition),
+`ewe-api.js` is built as a UMD module (Universal Module Definition),
 and so it can also be used with module bundlers.
 
-If using a module bundler **do not** add `abp-api.js` to your `manifest.json`.
-Consequently, there won't be a global `ABP` object.
+If using a module bundler **do not** add `ewe-api.js` to your `manifest.json`.
+Consequently, there won't be a global `EWE` object.
 
 #### CommonJS
 
 ```javascript
-const ABP = require("./abp-api.js");
-ABP.start();
+const EWE = require("./ewe-api.js");
+EWE.start();
 ```
 
 #### ESM
 
 ```javascript
-import * as ABP from "./abp-api.js";
-ABP.start();
+import * as EWE from "./ewe-api.js";
+EWE.start();
 ```
 
 <div class="no-docs">
@@ -137,7 +137,7 @@ Note: For the popup tests to work, you have to disable the browser's
 built-in popup blocking (on `localhost`).
 
 You can also inspect the extension's background page to manually test the API
-through the global `ABP` object.
+through the global `EWE` object.
 
 ### Using the test runner
 

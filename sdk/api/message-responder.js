@@ -1,18 +1,18 @@
 /*
- * This file is part of Adblock Plus <https://adblockplus.org/>,
+ * This file is part of eyeo's Web Extension Ad Blocking Toolkit (EWE),
  * Copyright (C) 2006-present eyeo GmbH
  *
- * Adblock Plus is free software: you can redistribute it and/or modify
+ * EWE is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
  *
- * Adblock Plus is distributed in the hope that it will be useful,
+ * EWE is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
+ * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 import browser from "webextension-polyfill";
@@ -30,19 +30,19 @@ function onMessage(message, sender)
 
   switch (message.type)
   {
-    case "abp:content-hello":
+    case "ewe:content-hello":
       let filterData = applyContentFilters(sender.tab.id, sender.frameId);
       return Promise.resolve({
         ...filterData,
         subscribeLinks: subscribeLinksEnabled(sender.url)
       });
-    case "abp:subscribe-link-clicked":
+    case "ewe:subscribe-link-clicked":
       subscribeLinkClicked(message.url, message.title);
       break;
-    case "abp:trace-elem-hide":
+    case "ewe:trace-elem-hide":
       logHiddenElements(message.selectors, message.filters, sender);
       break;
-    case "abp:inject-css":
+    case "ewe:inject-css":
       let styleSheet = createStyleSheet([message.selector]);
       injectCSS(sender.tab.id, sender.frameId, styleSheet);
       break;

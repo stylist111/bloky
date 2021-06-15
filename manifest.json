@@ -1,10 +1,10 @@
 {
-  "name": "SDK test extension",
+  "name": "eyeo's Web Extension Ad Blocking Toolkit Test Extension",
   "version": "0.0.1",
   "manifest_version": 2,
   "background": {
     "scripts": [
-      "dist/abp-api.js",
+      "dist/ewe-api.js",
       "background.js"
     ]
   },
@@ -12,7 +12,7 @@
     {
       "all_frames": true,
       "js": [
-        "dist/abp-content.js"
+        "dist/ewe-content.js"
       ],
       "match_about_blank": true,
       "matches": [

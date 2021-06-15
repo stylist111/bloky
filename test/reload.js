@@ -1,18 +1,18 @@
 /*
- * This file is part of Adblock Plus <https://adblockplus.org/>,
+ * This file is part of eyeo's Web Extension Ad Blocking Toolkit (EWE),
  * Copyright (C) 2006-present eyeo GmbH
  *
- * Adblock Plus is free software: you can redistribute it and/or modify
+ * EWE is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
  *
- * Adblock Plus is distributed in the hope that it will be useful,
+ * EWE is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
+ * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 import {wait, isEdge, isOldestFirefox} from "./utils.js";
@@ -39,14 +39,14 @@ describe(`Reload (${phase})`, function()
 
     if (start)
     {
-      ABP.filters.add(VALID_FILTER_TEXT);
+      EWE.filters.add(VALID_FILTER_TEXT);
 
       await wait(async() =>
       {
         let contents = [];
         try
         {
-          contents = await ABP.debugging.getFilterStorageSource();
+          contents = await EWE.debugging.getFilterStorageSource();
         }
         catch (e) {} // Error: File does not exist
         return contents.some(line => line.includes(VALID_FILTER_TEXT));
@@ -63,14 +63,14 @@ describe(`Reload (${phase})`, function()
 
     try
     {
-      expect(ABP.filters.getAll()).toEqual(
+      expect(EWE.filters.getAll()).toEqual(
         expect.arrayContaining([VALID_FILTER])
       );
     }
     finally
     {
       localStorage.removeItem("reload-test-running");
-      ABP.filters.remove(VALID_FILTER_TEXT);
+      EWE.filters.remove(VALID_FILTER_TEXT);
     }
   });
 });
