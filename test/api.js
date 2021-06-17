@@ -714,7 +714,7 @@ describe("API", () =>
       {
         style = (await browser.tabs.executeScript(tabId, {code}))[0];
         return style != "rgba(0, 0, 0, 0)";
-      }, 100);
+      }, 500);
 
       ABP.debugging.setElementHidingDebugMode(false);
       expect(style).toBe("rgb(230, 115, 112)");
