@@ -28,7 +28,9 @@ const VALID_FILTER = {
   enabled: true,
   slow: true,
   type: "blocking",
-  thirdParty: null
+  thirdParty: null,
+  selector: null,
+  csp: null
 };
 const INVALID_FILTER_TEXT = "/foo/$rewrite=";
 
@@ -413,6 +415,24 @@ describe("API", () =>
 
       expect(EWE.filters.getAll()).toEqual([
         expect.objectContaining({slow: false})
+      ]);
+    });
+
+    it("has a selector property", () =>
+    {
+      EWE.filters.add("example##.site-panel");
+
+      expect(EWE.filters.getAll()).toEqual([
+        expect.objectContaining({selector: ".site-panel"})
+      ]);
+    });
+
+    it("has a csp property", () =>
+    {
+      EWE.filters.add("*$csp=img-src 'none'");
+
+      expect(EWE.filters.getAll()).toEqual([
+        expect.objectContaining({csp: "img-src 'none'"})
       ]);
     });
 

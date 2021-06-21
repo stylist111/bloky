@@ -23,7 +23,9 @@ const VALID_FILTER = {
   enabled: true,
   slow: false,
   type: "blocking",
-  thirdParty: null
+  thirdParty: null,
+  selector: null,
+  csp: null
 };
 
 let start = new URLSearchParams(document.location.search).get("start");

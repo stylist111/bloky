@@ -34,7 +34,9 @@ export function convertFilter(filter)
     enabled: !filter.disabled,
     slow: filter instanceof URLFilter && isSlowFilter(filter),
     type: filter.type,
-    thirdParty: filter.thirdParty
+    thirdParty: filter.thirdParty,
+    selector: filter.selector || null,
+    csp: filter.csp
   };
 }
 
@@ -86,6 +88,11 @@ export default {
    *                          considered slow should be avoided. Only URLFilters
    *                          can be slow.
    * @property {string} type The filter {@link https://eyeo.gitlab.io/adblockplus/adblockpluscore/next/docs/module-filterClasses.Filter.html#type|type}
+   * @property {boolean|null} thirdParty True when the filter applies to
+   *                          third-party, false to first-party, null otherwise.
+   * @property {string|null} selector CSS selector for the HTML elements that
+   *                                  will be hidden.
+   * @property {string|null} csp Content Security Policy to be injected.
    */
 
   /**
