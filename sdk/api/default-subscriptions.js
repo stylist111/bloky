@@ -85,8 +85,9 @@ function shouldAddDefaultSubscriptions()
 export function configureDefaultSubscriptions()
 {
   let subscriptions = [];
+  let subscriptionsFirstRun = filterStorage.getSubscriptionCount() == 0;
 
-  if (filterStorage.getSubscriptionCount() == 0)
+  if (subscriptionsFirstRun)
   {
     subscriptions.push({url: ACCEPTABLE_ADS_URL,
                         title: "Allow non-intrusive advertising"});
@@ -106,4 +107,6 @@ export function configureDefaultSubscriptions()
     if (!subscription.lastDownload)
       synchronizer.execute(subscription);
   }
+
+  return {subscriptionsFirstRun, storageFirstRun: filterStorage.firstRun};
 }

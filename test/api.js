@@ -620,6 +620,20 @@ describe("API", () =>
         }
       });
     }
+
+    it("informs when the filter engine runs for the first time", async() =>
+    {
+      let firstRun = EWE.start();
+      EWE.stop();
+      expect(await firstRun).toBeNull();
+
+      expect(await EWE.start()).toEqual(
+        {storageFirstRun: true, subscriptionsFirstRun: true});
+
+      EWE.stop();
+      expect(await EWE.start()).toEqual(
+        {storageFirstRun: true, subscriptionsFirstRun: false});
+    });
   });
 
   describe("Reporting", () =>

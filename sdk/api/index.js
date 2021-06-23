@@ -56,8 +56,19 @@ export let snippets = {
 let stopped = true;
 
 /**
+* @typedef {Object} FirstRunInfo
+* @property {boolean} subscriptionsFirstRun True when no pre-existing
+*                                           subscriptions were found, false
+*                                           otherwise.
+* @property {boolean} storageFirstRun Whether the subscriptions storage was
+*                                     initialized or not.
+*/
+
+/**
  * Initializes the filter engine and starts blocking content.
- * @return {Promise.<undefined>}
+ * @return {Promise.<FirstRunInfo|null>} Null if `stop()` was called before
+ *                                       `FirstRunInfo` could be determined.
+ * @see {@link #stop|stop()}
  */
 export async function start()
 {
@@ -65,7 +76,7 @@ export async function start()
 
   await initIDB();
   if (stopped)
-    return;
+    return null;
 
   // https://bugs.chromium.org/p/chromium/issues/detail?id=1159438
   notifications.locale = browser.i18n.getUILanguage ?
@@ -74,18 +85,20 @@ export async function start()
 
   await filterEngine.initialize();
   if (stopped)
-    return;
+    return null;
 
   synchronizer.start();
-  configureDefaultSubscriptions();
+  let firstRun = configureDefaultSubscriptions();
 
   await frameState.start();
   if (stopped)
-    return;
+    return firstRun;
 
   requestFilter.start();
   popupBlocker.start();
   messageResponder.start();
+
+  return firstRun;
 }
 
 /**

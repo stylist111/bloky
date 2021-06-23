@@ -28,5 +28,6 @@ toc:
       - Filter
       - FilterError
       - FilterMatchInfo
+      - FirstRunInfo
       - Recommendation
       - Subscription
