@@ -45,6 +45,7 @@ export function applyContentFilters(tabId, frameId)
       if (debug)
         environment.debugCSSProperties = Prefs.debug_css_properties_snippets;
 
+      let details = {tabId, frameId};
       browser.tabs.executeScript(
         tabId,
         {
@@ -53,7 +54,7 @@ export function applyContentFilters(tabId, frameId)
           matchAboutBlank: true,
           runAt: "document_start"
         }
-      ).then(() => filters.forEach(filter => logItem(null, filter)),
+      ).then(() => filters.forEach(filter => logItem(details, filter)),
              () => {});
     }
 

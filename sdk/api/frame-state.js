@@ -28,7 +28,7 @@ let startupPromise;
 
 class FrameInfo
 {
-  constructor(parent, url, pending)
+  constructor(tabId, frameId, parent, url, pending)
   {
     let hostname;
     let sitekey;
@@ -41,7 +41,7 @@ class FrameInfo
 
     if (!pending && (urlInfo.protocol == "http:" ||
                      urlInfo.protocol == "https:"))
-      pending = new PendingFrameInfo(parent, url);
+      pending = new PendingFrameInfo(tabId, frameId, parent, url);
 
     if (pending)
     {
@@ -63,7 +63,7 @@ class FrameInfo
 
 class PendingFrameInfo
 {
-  constructor(parent, url, sitekey)
+  constructor(tabId, frameId, parent, url, sitekey)
   {
     let allowlisted = 0;
     let allowingFilters;
@@ -77,6 +77,8 @@ class PendingFrameInfo
         ({sitekey} = parent);
     }
 
+    let details = {tabId, frameId, url};
+
     while (true)
     {
       let typeMask = ~allowlisted & ALLOWING_TYPES;
@@ -87,7 +89,7 @@ class PendingFrameInfo
 
       allowlisted |= filter.contentType & ALLOWING_TYPES;
 
-      logItem(null, filter);
+      logItem(details, filter);
     }
 
     if (allowlisted != 0)
@@ -121,7 +123,10 @@ async function discoverExistingFrames()
       state.set(tabId, frames);
 
       for (let {frameId, parentFrameId, url} of rawFrames)
-        frames.set(frameId, new FrameInfo(frames.get(parentFrameId), url));
+      {
+        frames.set(frameId, new FrameInfo(tabId, frameId,
+                                          frames.get(parentFrameId), url));
+      }
     })
   ));
 }
@@ -139,12 +144,14 @@ function onHeadersReceived(details)
   let parent = frames.get(details.parentFrameId);
   if (!frame)
   {
-    frame = new FrameInfo(parent, "about:blank");
+    frame = new FrameInfo(details.tabId, details.frameId, parent,
+                          "about:blank");
     frames.set(details.frameId, frame);
   }
 
   let sitekey = getSitekeyFromHeaders(details.responseHeaders, details.url);
-  frame.pending = new PendingFrameInfo(parent, details.url, sitekey);
+  frame.pending = new PendingFrameInfo(details.tabId, details.frameId, parent,
+                                       details.url, sitekey);
 }
 
 function recordFrameFromNavigationEvent({tabId, frameId, parentFrameId, url})
@@ -166,7 +173,7 @@ function recordFrameFromNavigationEvent({tabId, frameId, parentFrameId, url})
     state.set(tabId, frames);
   }
 
-  frames.set(frameId, new FrameInfo(parent, url, pending));
+  frames.set(frameId, new FrameInfo(tabId, frameId, parent, url, pending));
 }
 
 function onBeforeNavigate(details)
@@ -232,7 +239,7 @@ export function getFrameInfo(tabId, frameId, initiator)
   }
 
   if (initiator)
-    return new FrameInfo(null, initiator);
+    return new FrameInfo(tabId, frameId, null, initiator);
 }
 
 export async function start()

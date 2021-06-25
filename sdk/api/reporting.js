@@ -43,12 +43,12 @@ export default {
   /**
    * Emitted when any filter is matched.
    * @event
-   * @param {object|null|{frameId: number, tabId: number, url: string}} details
-   *   Either null in some non-request contexts, or a details object from either
-   *   {@link https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webRequest/onBeforeRequest#details|webRequest.onBeforeRequest}
-   *   or {@link https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webRequest/onHeadersReceived#details|webRequest.onHeadersReceived}
-   *   from the web extensions API, or for element hiding filters an object with
-   *   the properties `frameId`, `tabId` and `url`.
+   * @param {object|{frameId: number, tabId: number, url: string}} details
+   *   Either
+   *   the {@link https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webRequest/onBeforeRequest#details|onBeforeRequest details}
+   *   object or the {@link https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webRequest/onHeadersReceived#details|onHeadersReceived details}
+   *   object from the web extensions API, or an object with the properties
+   *   `frameId`, `tabId` and `url` (for snippet filters `url` is undefined).
    * @param {Filter} filter The filter that matched.
    * @param {FilterMatchInfo} info Extra information that might be
    *                    relevant depending on the context.

@@ -621,7 +621,8 @@ describe("API", () =>
 
     describe("Diagnostics", () =>
     {
-      async function checkLogging(filter, callback, info = {})
+      async function checkLogging(filter, callback, info = {},
+                                  checkUrl = true)
       {
         let fake = sinon.fake();
 
@@ -635,11 +636,23 @@ describe("API", () =>
         finally
         {
           EWE.reporting.onFilterMatch.removeListener(fake);
+          EWE.filters.remove(filter.text);
         }
 
         expect(fake.called).toBeTruthy();
+
+        if (checkUrl)
+        {
+          expect(fake.firstArg.details).toEqual(
+            expect.objectContaining({url: expect.any(String)})
+          );
+        }
+
         expect(fake.firstArg).toEqual({
-          details: expect.any(Object),
+          details: expect.objectContaining({
+            tabId: expect.any(Number),
+            frameId: expect.any(Number)
+          }),
           filter: expect.objectContaining(filter),
           info: expect.objectContaining(info)
         });
@@ -728,6 +741,16 @@ describe("API", () =>
           let tabId = await new Page("element-hiding.html").loaded();
           await waitForInvisibleElement(tabId, "elem-hide");
         });
+      });
+
+      it("logs snippets filter", async() =>
+      {
+        await checkLogging({
+          text: `${TEST_PAGES_DOMAIN}#$#$hide-if-contains Target div`
+        }, async() =>
+        {
+          await waitForSnippetBlocked("snippets-hiding.html");
+        }, {}, false);
       });
 
       function checkPopupLogging(text)
