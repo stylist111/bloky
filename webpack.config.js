@@ -55,6 +55,11 @@ export default (env = {}) => ({
         test: /\.js$/,
         enforce: "pre",
         use: ["source-map-loader"]
+      },
+      {
+        resourceQuery: "?source",
+        type: "asset/source",
+        use: env.release ? ["terser-loader"] : []
       }
     ]
   },

@@ -15,8 +15,8 @@
   "type": "module",
   "dependencies": {
     "adblockpluscore": "git+https://gitlab.com/eyeo/adblockplus/adblockpluscore.git#4b22007",
-    "raw-loader": "^4.0.2",
     "source-map-loader": "^3.0.0",
+    "terser-loader": "^2.0.2",
     "webextension-polyfill": "^0.8.0",
     "webpack": "^5.37.1",
     "webpack-cli": "^4.7.0"
