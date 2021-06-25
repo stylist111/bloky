@@ -28,6 +28,8 @@ build:
     paths:
       - dist/
       - docs/
+    exclude:
+      - dist/package.json
     expire_in: 1 month
 
 .test:
