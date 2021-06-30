@@ -9,6 +9,7 @@ for Chromium and Firefox extensions (like [Adblock Plus][abpui]).
 
 * [Getting started](#getting-started)
   * [Module bundlers (optional)](#module-bundlers-optional)
+  * [Machine learning models](#machine-learning-models)
 * [Documentation](#documentation)
 * [Development](#development)
   * [Installing/Updating dependencies](#installing-updating-dependencies)
@@ -86,6 +87,14 @@ EWE.start();
 import * as EWE from "./ewe-api.js";
 EWE.start();
 ```
+
+### Machine learning models
+
+Along with the library bundles there is a `models` folder. In order to support
+ML-enabled snippets please include this folder and its contents in your
+extension bundle in the same directory were `ewe-api.js` is located.
+
+It is safe to omit these files but ML-enabled snippets won't have any effect then.
 
 <div class="no-docs">
 

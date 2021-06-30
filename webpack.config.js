@@ -20,6 +20,8 @@
 import path from "path";
 import url from "url";
 
+import TerserPlugin from "terser-webpack-plugin";
+
 let dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
 export default (env = {}) => ({
@@ -36,7 +38,8 @@ export default (env = {}) => ({
   },
   mode: env.release ? "production" : "development",
   optimization: {
-    minimize: !!env.release
+    minimize: !!env.release,
+    minimizer: [new TerserPlugin({extractComments: false})]
   },
   devtool: env.release ? "source-map" : "inline-source-map",
   performance: {
@@ -60,6 +63,18 @@ export default (env = {}) => ({
         resourceQuery: "?source",
         type: "asset/source",
         use: env.release ? ["terser-loader"] : []
+      },
+      {
+        resourceQuery: "?model",
+        type: "asset/resource",
+        generator: {
+          filename(pathData)
+          {
+            let model = path.basename(path.dirname(pathData.filename));
+            let filename = path.basename(pathData.filename).replace(/\?.*/, "");
+            return path.join("models", model, filename);
+          }
+        }
       }
     ]
   },
