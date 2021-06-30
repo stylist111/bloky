@@ -15,6 +15,8 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import browser from "webextension-polyfill";
+
 import {TEST_PAGES_URL} from "../utils.js";
 
 mocha.setup("bdd");

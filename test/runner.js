@@ -34,8 +34,6 @@ import extractZip from "extract-zip";
 import {downloadChromium, downloadFirefox, download}
   from "./browser-download.js";
 
-import {RECENT_FIREFOX_VERSION} from "./utils.js";
-
 // Required to start the driver on some platforms (e.g. Windows).
 import "chromedriver";
 import "geckodriver";
@@ -44,6 +42,8 @@ import "msedgedriver";
 const MACOS_EDGE_BINARY =
   "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge";
 const {By} = webdriver;
+
+let extensionDir = path.resolve(process.cwd(), "dist", "test-mv2");
 
 class Chromium
 {
@@ -134,7 +134,7 @@ class Chromium
       await this.installDriver(version);
 
     let options = new chrome.Options();
-    options.addArguments("no-sandbox", `load-extension=${process.cwd()}`);
+    options.addArguments("no-sandbox", `load-extension=${extensionDir}`);
     options.setChromeBinaryPath(binary);
 
     let builder = new webdriver.Builder();
@@ -171,7 +171,7 @@ class Firefox
     let driver = await builder.build();
     await driver.execute(
       new command.Command("install addon")
-          .setParameter("path", process.cwd())
+          .setParameter("path", extensionDir)
           .setParameter("temporary", true)
     );
     return driver;
@@ -217,7 +217,7 @@ class Edge
     builder.withCapabilities({
       "browserName": "MicrosoftEdge",
       "ms:edgeChromium": true,
-      "ms:edgeOptions": {args: [`load-extension=${process.cwd()}`]}
+      "ms:edgeOptions": {args: [`load-extension=${extensionDir}`]}
     });
 
     return builder.build();
@@ -278,11 +278,6 @@ async function switchToHandle(driver, testFn)
 async function getHandle(driver, page, params)
 {
   let url;
-  let timeout = 5000;
-  let cap = await driver.getCapabilities();
-  let version = parseInt(cap.getBrowserVersion().split(".")[0], 10);
-  if (cap.getBrowserName() == "firefox" && version < RECENT_FIREFOX_VERSION)
-    timeout = 8000;
   let handle = await driver.wait(() => switchToHandle(driver, handleUrl =>
   {
     if (!handleUrl)
@@ -290,7 +285,7 @@ async function getHandle(driver, page, params)
 
     url = new URL(handleUrl);
     return url.pathname == page;
-  }), timeout, `${page} did not open`);
+  }), 8000, `${page} did not open`);
 
   if (params)
   {
@@ -345,7 +340,7 @@ async function pollMessages(driver, handle)
 
 async function startTestRun(driver, id)
 {
-  await getHandle(driver, "/test/index.html");
+  await getHandle(driver, "/index.html");
   await driver.findElement(By.id(id)).click();
 }
 
@@ -363,14 +358,14 @@ async function run()
     console.log(`Browser: ${cap.getBrowserName()} ${cap.getBrowserVersion()}`);
 
     await startTestRun(driver, "unit");
-    let handle = await getHandle(driver, "/test/unit.html", params);
+    let handle = await getHandle(driver, "/unit.html", params);
     resultUnit = await pollMessages(driver, handle);
 
     await startTestRun(driver, "reload");
     while (!resultReload ||
            resultReload.log.toString().includes("Reload (preparation)"))
     {
-      handle = await getHandle(driver, "/test/reload.html", params);
+      handle = await getHandle(driver, "/reload.html", params);
       try
       {
         resultReload = await pollMessages(driver, handle);

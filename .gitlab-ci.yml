@@ -6,7 +6,7 @@ stages:
   - build
   - test
 
-variables:  
+variables:
   npm_config_audit: "false"
   npm_config_fund: "false"
   npm_config_prefer_offline: "true"
@@ -36,6 +36,7 @@ build:
   stage: test
   before_script:
     - npm install
+    - npm run test-build
     - node test/start-server.js &
   needs:
     - job: build
@@ -90,7 +91,9 @@ test:edge:
         -OutFile 'MicrosoftEdgeEnterpriseX64.msi'
     - Start-Process msiexec
         -ArgumentList "/i MicrosoftEdgeEnterpriseX64.msi /norestart /qn" -Wait
+    - choco install -y nodejs --version=12.18.4
     - npm install
+    - npm run test-build
     - Start-Process "node" -ArgumentList "test/start-server.js" -PassThru
   script:
     - node test/runner.js edge --timeout=15000
@@ -99,3 +102,4 @@ test:edge:
     - windows
     - windows-1809
   cache: {}
+  interruptible: true

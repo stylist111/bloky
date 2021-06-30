@@ -15,6 +15,9 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import browser from "webextension-polyfill";
+import expect from "expect";
+
 export const TEST_PAGES_DOMAIN = "localhost";
 export const TEST_PAGES_URL = `http://${TEST_PAGES_DOMAIN}:3000`;
 export const SITEKEY = "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANGtTstne7" +

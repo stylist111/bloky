@@ -15,6 +15,10 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import browser from "webextension-polyfill";
+import expect from "expect";
+import sinon from "sinon/pkg/sinon.js";
+
 import {Page, Popup, setMinTimeout, waitForInvisibleElement,
         waitForSnippetBlocked, wait, TEST_PAGES_URL,
         TEST_PAGES_DOMAIN} from "./utils.js";

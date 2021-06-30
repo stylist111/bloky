@@ -15,6 +15,9 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import browser from "webextension-polyfill";
+import expect from "expect";
+
 import {Page, Resource, waitForInvisibleElement, setMinTimeout,
         waitForSnippetBlocked, isFirefox, TEST_PAGES_URL,
         TEST_PAGES_DOMAIN, SITEKEY} from "./utils.js";

@@ -15,10 +15,12 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* eslint-env webextensions, browser */
-/* global EWE */
+/* eslint-env webextensions, serviceworker */
 
 "use strict";
+
+if (typeof EWE == "undefined" && typeof importScripts != "undefined")
+  importScripts("ewe-api.js");
 
 function mockGetUILanguage(api)
 {
@@ -39,7 +41,7 @@ EWE.start().then(async() =>
       await new Promise(resolve => setTimeout(resolve, 2000));
   }
 
-  chrome.tabs.create({url: "/test/index.html"});
+  chrome.tabs.create({url: "index.html"});
   if (localStorage.getItem("reload-test-running"))
-    chrome.tabs.create({url: "/test/reload.html"});
+    chrome.tabs.create({url: "reload.html"});
 });

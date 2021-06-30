@@ -15,6 +15,8 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import expect from "expect";
+
 import {Page} from "./utils.js";
 import * as runner from "./mocha/mocha-runner.js";
 

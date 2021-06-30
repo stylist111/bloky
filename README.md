@@ -12,13 +12,14 @@ for Chromium and Firefox extensions (like [Adblock Plus][abpui]).
   * [Machine learning models](#machine-learning-models)
 * [Documentation](#documentation)
 * [Development](#development)
+  * [Prerequisites](#prerequisites)
   * [Installing/Updating dependencies](#installing-updating-dependencies)
   * [Building the library](#building-the-library)
   * [Building the documentation](#building-the-documentation)
   * [Linting the code](#linting-the-code)
 * [Testing](#testing)
   * [Serving the test pages](#serving-the-test-pages)
-  * [Using the test extension](#using-the-test-extension)
+  * [Building the test extension](#building-the-test-extension)
   * [Using the test runner](#using-the-test-runner)
 
 </div>
@@ -104,6 +105,10 @@ For more information, please refer to the [API documention][docs].
 
 ## Development
 
+### Prerequisites
+
+Node >= 12.18.4
+
 ### Installing/Updating dependencies
 
     npm install
@@ -117,7 +122,7 @@ For more information, please refer to the [API documention][docs].
 By default, debug builds are created. If building the library to be used
 in another project you would want to create a release build.
 
-     npx webpack --env release
+    npx webpack --env release
 
 ### Building the documentation
 
@@ -136,13 +141,19 @@ the test runner, the test suite requires locally served test pages.
 
     node test/start-server.js
 
-### Using the test extension
+### Building the test extension
 
-You can load the project root as an unpacked extension under `chrome://extensions`
+    npm run test-build
+
+The test extension will be built on both `/dist/test-mv2` and `/dist/test-mv3`
+folders, which can be loaded as unpacked extensions under `chrome://extensions`
 in Chromium-based browsers, and under `about:debugging` in Firefox.
 Once the extension is loaded, it opens the test suite in a new tab.
 
-Note: For the popup tests to work, you have to disable the browser's
+Notes:
+- `test-mv2` contains a manifest version 2 extension, and `test-mv3`
+contains a manifest version 3 extension.
+- For the popup tests to work, you have to disable the browser's
 built-in popup blocking (on `localhost`).
 
 You can also inspect the extension's background page to manually test the API
@@ -155,6 +166,7 @@ through the global `EWE` object.
 - The `--timeout` option overrides the per-test timeout in milliseconds.
 - The `--grep` option filters the tests to run with a regular expression.
 
+Note: The test runner runs on `/dist/test-mv2`.
 </div>
 
 [abpcore]: https://gitlab.com/eyeo/adblockplus/adblockpluscore

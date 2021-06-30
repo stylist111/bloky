@@ -15,6 +15,9 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import browser from "webextension-polyfill";
+import expect from "expect";
+
 import {wait, isEdge, isOldestFirefox} from "./utils.js";
 
 const VALID_FILTER_TEXT = "reload.test^$image";

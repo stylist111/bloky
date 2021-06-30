@@ -15,6 +15,8 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import expect from "expect";
+
 import {Page, Popup, setMinTimeout, isFirefox, TEST_PAGES_URL, SITEKEY}
   from "./utils.js";
 
