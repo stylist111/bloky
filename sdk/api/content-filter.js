@@ -100,14 +100,29 @@ export function applyContentFilters(tabId, frameId)
 
 export function injectCSS(tabId, frameId, code)
 {
-  browser.tabs.insertCSS(
-    tabId,
-    {
-      code,
-      cssOrigin: "user",
-      frameId,
-      matchAboutBlank: true,
-      runAt: "document_start"
-    }
-  ).catch(() => {}); // Fails if tab or frame no longer exists
+  let result;
+
+  if (browser.scripting && browser.scripting.insertCSS)
+  {
+    result = browser.scripting.insertCSS({
+      target: {tabId, frameIds: [frameId]},
+      css: code,
+      origin: "USER"
+    });
+  }
+  else
+  {
+    result = browser.tabs.insertCSS(
+      tabId,
+      {
+        code,
+        cssOrigin: "user",
+        frameId,
+        matchAboutBlank: true,
+        runAt: "document_start"
+      }
+    );
+  }
+
+  result.catch(() => {}); // Fails if tab or frame no longer exists
 }

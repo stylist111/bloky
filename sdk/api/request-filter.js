@@ -252,7 +252,9 @@ CSPFilter.prototype.eventArgs = [
   ["blocking", "responseHeaders"]
 ];
 
-let filters = [new RequestFilter(), new HeaderFilter(), new CSPFilter()];
+let filters = browser.declarativeNetRequest ? [] : [new RequestFilter(),
+                                                    new HeaderFilter(),
+                                                    new CSPFilter()];
 
 function onBeforeNavigate()
 {

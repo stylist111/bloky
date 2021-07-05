@@ -58,7 +58,9 @@ export async function start()
   if (stopped)
     return;
 
-  notifications.locale = browser.i18n.getUILanguage();
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=1159438
+  notifications.locale = browser.i18n.getUILanguage ?
+    browser.i18n.getUILanguage() : navigator.language;
   notifications.start();
 
   await filterEngine.initialize();

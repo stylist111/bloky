@@ -27,7 +27,9 @@ const ACCEPTABLE_ADS_URL = "https://easylist-downloads.adblockplus.org/exception
 
 function getDefaultSubscriptions()
 {
-  let currentLang = browser.i18n.getUILanguage().split("-")[0];
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=1159438
+  let currentLang = (browser.i18n.getUILanguage ?
+    browser.i18n.getUILanguage() : navigator.language).split("-")[0];
   let defaultLang = (browser.runtime.getManifest()
                                     .default_locale || "en").split("_")[0];
 
