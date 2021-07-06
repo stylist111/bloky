@@ -20,7 +20,6 @@
 import path from "path";
 import {exec, execFile} from "child_process";
 import {promisify} from "util";
-import querystring from "querystring";
 import fs from "fs";
 
 import got from "got";
@@ -41,7 +40,6 @@ import "msedgedriver";
 
 const MACOS_EDGE_BINARY =
   "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge";
-const {By} = webdriver;
 
 let extensionDir = path.resolve(process.cwd(), "dist", "test-mv2");
 
@@ -275,7 +273,7 @@ async function switchToHandle(driver, testFn)
   }
 }
 
-async function getHandle(driver, page, params)
+async function getHandle(driver, page)
 {
   let url;
   let handle = await driver.wait(() => switchToHandle(driver, handleUrl =>
@@ -286,12 +284,6 @@ async function getHandle(driver, page, params)
     url = new URL(handleUrl);
     return url.pathname == page;
   }), 8000, `${page} did not open`);
-
-  if (params)
-  {
-    url.search = querystring.encode(params);
-    await driver.navigate().to(url.href);
-  }
 
   return handle;
 }
@@ -338,10 +330,16 @@ async function pollMessages(driver, handle)
   return result;
 }
 
-async function startTestRun(driver, id)
+async function startTestRun(driver, id, params)
 {
   await getHandle(driver, "/index.html");
-  await driver.findElement(By.id(id)).click();
+  driver.executeScript(`
+    let elem = document.getElementById(arguments[0]);
+    let search = new URLSearchParams(elem.search);
+    for (let key in arguments[1])
+      search.append(key, arguments[1][key]);
+    elem.search = search.toString();
+    elem.click();`, id, params);
 }
 
 async function run()
@@ -357,15 +355,15 @@ async function run()
     // eslint-disable-next-line no-console
     console.log(`Browser: ${cap.getBrowserName()} ${cap.getBrowserVersion()}`);
 
-    await startTestRun(driver, "unit");
-    let handle = await getHandle(driver, "/unit.html", params);
+    await startTestRun(driver, "unit", params);
+    let handle = await getHandle(driver, "/unit.html");
     resultUnit = await pollMessages(driver, handle);
 
-    await startTestRun(driver, "reload");
+    await startTestRun(driver, "reload", params);
     while (!resultReload ||
            resultReload.log.toString().includes("Reload (preparation)"))
     {
-      handle = await getHandle(driver, "/reload.html", params);
+      handle = await getHandle(driver, "/reload.html");
       try
       {
         resultReload = await pollMessages(driver, handle);
