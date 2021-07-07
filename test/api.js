@@ -605,13 +605,6 @@ describe("API", () =>
 
   describe("Reporting", () =>
   {
-    it("exposes content types", () =>
-    {
-      expect(EWE.reporting.contentTypes).toEqual(expect.objectContaining({
-        OTHER: expect.any(Number)
-      }));
-    });
-
     describe("Analytics", () =>
     {
       it("gets the first version", async() =>

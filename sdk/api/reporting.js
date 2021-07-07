@@ -15,7 +15,6 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 import {analytics} from "adblockpluscore/lib/analytics.js";
 
 import {EventDispatcher} from "./types.js";
@@ -62,12 +61,5 @@ export default {
     {
       setLogFunction(null);
     }
-  ),
-
-  /**
-   * The contentTypes object.
-   * @see {@link https://eyeo.gitlab.io/adblockplus/adblockpluscore/master/docs/module-contentTypes.html#.contentTypes|Adblock Plus core content types documentation}
-   * @external
-   */
-  contentTypes
+  )
 };
