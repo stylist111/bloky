@@ -141,9 +141,7 @@ the test runner, the test suite requires locally served test pages.
 
     node test/start-server.js
 
-### Building the test extension
-
-    npm run test-build
+### Using the test extension
 
 The test extension will be built on both `/dist/test-mv2` and `/dist/test-mv3`
 folders, which can be loaded as unpacked extensions under `chrome://extensions`

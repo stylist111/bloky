@@ -21,64 +21,153 @@ import path from "path";
 import url from "url";
 
 import TerserPlugin from "terser-webpack-plugin";
+import HtmlWebpackPlugin from "html-webpack-plugin";
+import MiniCssExtractPlugin from "mini-css-extract-plugin";
+import GenerateJsonPlugin from "generate-json-webpack-plugin";
+import CopyPlugin from "copy-webpack-plugin";
 
 let dirname = path.dirname(url.fileURLToPath(import.meta.url));
+let templateDir = path.join(dirname, "test", "template.html");
 
-export default (env = {}) => ({
-  entry: {
-    api: {
-      import: "./sdk/api/index.js",
-      library: {name: "EWE", type: "umd"}
+export default (env = {}) =>
+{
+  let builds = [{
+    name: "sdk",
+    entry: {
+      api: {
+        import: "./sdk/api/index.js",
+        library: {name: "EWE", type: "umd"}
+      },
+      content: "./sdk/content/index.js"
     },
-    content: "./sdk/content/index.js"
-  },
-  output: {
-    filename: "ewe-[name].js",
-    path: path.resolve(dirname, "dist")
-  },
-  mode: env.release ? "production" : "development",
-  optimization: {
-    minimize: !!env.release,
-    minimizer: [new TerserPlugin({extractComments: false})]
-  },
-  devtool: env.release ? "source-map" : "inline-source-map",
-  performance: {
-    hints: false
-  },
-  resolve: {
-    alias: {
-      io$: path.resolve(dirname, "./sdk/api/io.js"),
-      prefs$: path.resolve(dirname, "./sdk/api/prefs.js"),
-      info$: path.resolve(dirname, "./sdk/api/info.js")
-    }
-  },
-  module: {
-    rules: [
-      {
-        test: /\.js$/,
-        enforce: "pre",
-        use: ["source-map-loader"]
-      },
-      {
-        resourceQuery: "?source",
-        type: "asset/source",
-        use: env.release ? ["terser-loader"] : []
-      },
-      {
-        resourceQuery: "?model",
-        type: "asset/resource",
-        generator: {
-          filename(pathData)
-          {
-            let model = path.basename(path.dirname(pathData.filename));
-            let filename = path.basename(pathData.filename).replace(/\?.*/, "");
-            return path.join("models", model, filename);
+    output: {
+      filename: "ewe-[name].js",
+      path: path.resolve(dirname, "dist")
+    },
+    mode: env.release ? "production" : "development",
+    optimization: {
+      minimize: !!env.release,
+      minimizer: [new TerserPlugin({extractComments: false})]
+    },
+    devtool: env.release ? "source-map" : "inline-source-map",
+    performance: {
+      hints: false
+    },
+    resolve: {
+      alias: {
+        io$: path.resolve(dirname, "./sdk/api/io.js"),
+        prefs$: path.resolve(dirname, "./sdk/api/prefs.js"),
+        info$: path.resolve(dirname, "./sdk/api/info.js")
+      }
+    },
+    module: {
+      rules: [
+        {
+          test: /\.js$/,
+          enforce: "pre",
+          use: ["source-map-loader"]
+        },
+        {
+          resourceQuery: "?source",
+          type: "asset/source",
+          use: env.release ? ["terser-loader"] : []
+        },
+        {
+          resourceQuery: "?model",
+          type: "asset/resource",
+          generator: {
+            filename(pathData)
+            {
+              let model = path.basename(path.dirname(pathData.filename));
+              let filename = path.basename(pathData.filename).replace(/\?.*/, "");
+              return path.join("models", model, filename);
+            }
           }
         }
-      }
-    ]
-  },
-  externals: {
-    perf_hooks: "self"
+      ]
+    },
+    externals: {
+      perf_hooks: "self"
+    }
+  }];
+
+  for (let manifestVersion of [2, 3])
+  {
+    let manifest = {
+      name: "eyeo's Web Extension Ad Blocking Toolkit Test Extension",
+      version: "0.0.1",
+      description: `Manifest version: ${manifestVersion}`,
+      manifest_version: manifestVersion,
+      background: manifestVersion >= 3 ?
+          {service_worker: "background.js"} :
+          {scripts: ["ewe-api.js", "background.js"]},
+      content_scripts: [
+        {
+          all_frames: true,
+          js: ["ewe-content.js"],
+          match_about_blank: true,
+          matches: ["http://*/*", "https://*/*"],
+          run_at: "document_start"
+        }
+      ],
+      permissions: [
+        "webNavigation", "webRequest", "storage", "unlimitedStorage",
+        ...manifestVersion >= 3 ? ["scripting"] :
+                                  ["webRequestBlocking", "<all_urls>"]
+      ],
+      ...manifestVersion >= 3 ? {host_permissions: ["<all_urls>"]} : {}
+    };
+
+    builds.push({
+      dependencies: ["sdk"],
+      mode: "development",
+      entry: {
+        unit: path.join(dirname, "test", "unit.js"),
+        reload: path.join(dirname, "test", "reload-wrap.js")
+      },
+      output: {
+        path: path.resolve(dirname, "dist", `test-mv${manifestVersion}`)
+      },
+      optimization: {
+        minimize: false
+      },
+      devtool: "inline-source-map",
+      module: {
+        rules: [
+          {
+            test: /\.css$/,
+            use: [MiniCssExtractPlugin.loader, "css-loader"]
+          }
+        ]
+      },
+      plugins: [
+        new HtmlWebpackPlugin({
+          title: "Unit tests",
+          filename: "unit.html",
+          inject: "body",
+          chunks: ["unit"],
+          template: templateDir
+        }),
+        new HtmlWebpackPlugin({
+          title: "Reload test",
+          filename: "reload.html",
+          inject: "body",
+          chunks: ["reload"],
+          template: templateDir
+        }),
+        new MiniCssExtractPlugin(),
+        new GenerateJsonPlugin("manifest.json", manifest, null, 2),
+        new CopyPlugin({
+          patterns: [
+            {from: "ewe-*", context: path.join(dirname, "dist")},
+            {from: path.join(dirname, "dist", "models"), to: "models"},
+            {from: path.join(dirname, "test", "background.js")},
+            {from: path.join(dirname, "test", "index.html")}
+          ]
+        })
+      ]
+    });
   }
-});
+
+  return builds;
+};
