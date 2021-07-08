@@ -33,6 +33,7 @@ export default [2, 3].map(manifestVersion =>
   let manifest = {
     name: "eyeo's Web Extension Ad Blocking Toolkit Test Extension",
     version: "0.0.1",
+    description: `Manifest version: ${manifestVersion}`,
     manifest_version: manifestVersion,
     background: manifestVersion >= 3 ?
       {service_worker: "background.js"} :
