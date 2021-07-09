@@ -549,6 +549,12 @@ describe("API", () =>
         expect(EWE.filters.getAllowingFilters(tabId, {frameId})).toEqual([]);
         expect(EWE.filters.getAllowingFilters(tabId)).toEqual([]);
       });
+
+      it("handles empty tabs", async() =>
+      {
+        let tabId = await new Page("about:blank", true).loaded();
+        expect(EWE.filters.getAllowingFilters(tabId)).toEqual([]);
+      });
     });
   });
 

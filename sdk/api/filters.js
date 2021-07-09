@@ -151,7 +151,7 @@ export default {
     let {frameId, types} = {frameId: 0, types: ["document"], ...options};
     let frameInfo = getFrameInfo(tabId, frameId);
 
-    if (frameInfo.allowingFilters)
+    if (frameInfo && frameInfo.allowingFilters)
     {
       let mask = types.reduce((a, b) => a | contentTypes[b.toUpperCase()], 0);
       for (let filter of frameInfo.allowingFilters)

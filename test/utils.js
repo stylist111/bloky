@@ -41,9 +41,9 @@ function handleConnection(details, tabId, removeListeners, reject)
 
 export class Page
 {
-  constructor(path)
+  constructor(path, fullUrl = false)
   {
-    this.url = `${TEST_PAGES_URL}/${path}`;
+    this.url = fullUrl ? path : `${TEST_PAGES_URL}/${path}`;
     this.created = (async() =>
     {
       if (Page.current)
