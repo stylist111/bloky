@@ -118,7 +118,11 @@ addEventListener("unhandledrejection", ({reason}) => lastError = reason);
 function mockGetUILanguage(api)
 {
   let {getUILanguage} = api.i18n;
-  api.i18n.getUILanguage = () => self.uiLanguageOverride || getUILanguage();
+  if (getUILanguage)
+    api.i18n.getUILanguage = () => self.uiLanguageOverride || getUILanguage();
+  else
+    // https://bugs.chromium.org/p/chromium/issues/detail?id=1159438
+    console.error("getUILanguage is not available");
 }
 
 mockGetUILanguage(chrome);

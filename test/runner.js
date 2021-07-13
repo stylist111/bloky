@@ -41,7 +41,7 @@ import "msedgedriver";
 const MACOS_EDGE_BINARY =
   "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge";
 
-let extensionDir = path.resolve(process.cwd(), "dist", "test-mv2");
+let extensionDir;
 
 class Chromium
 {
@@ -222,6 +222,7 @@ class Edge
   }
 }
 
+const MANIFESTS = ["v2", "v3"];
 const BROWSERS = {
   chromium: new Chromium(),
   firefox: new Firefox(),
@@ -233,8 +234,9 @@ function parseArguments()
   let parser = yargs(process.argv.slice(2));
   parser.version(false);
   parser.strict();
-  parser.command("$0 <browser> [version]", "", subparser =>
+  parser.command("$0 <manifest> <browser> [version]", "", subparser =>
   {
+    subparser.positional("browser", {choices: MANIFESTS});
     subparser.positional("browser", {choices: Object.keys(BROWSERS)});
     subparser.positional("version", {type: "string"});
   });
@@ -250,7 +252,12 @@ function parseArguments()
       (params || (params = {}))[param] = value;
   }
 
-  return {browser: argv.browser, version: argv.version, params};
+  return {
+    manifest: argv.manifest,
+    browser: argv.browser,
+    version: argv.version,
+    params
+  };
 }
 
 async function switchToHandle(driver, testFn)
@@ -349,7 +356,8 @@ async function startTestRun(driver, id, params)
 
 async function run()
 {
-  let {browser, version, params} = parseArguments();
+  let {manifest, browser, version, params} = parseArguments();
+  extensionDir = path.resolve(process.cwd(), "dist", `test-m${manifest}`);
   let driver = await BROWSERS[browser].getDriver(version);
   let resultUnit;
   let resultReload;

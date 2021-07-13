@@ -180,12 +180,11 @@ through the global `EWE` object.
 
 ### Using the test runner
 
-    npm test -- {chromium|firefox|edge} [version|channel] [options]
+    npm test -- {v2|v3} {chromium|firefox|edge} [version|channel] [options]
 
 Runner [options](#test-options) need to be preceded by two dashes (`--`), for
 example `--timeout 10000`.
 
-Note: The test runner runs on `/dist/test-mv2`.
 </div>
 
 [abpcore]: https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore
