@@ -333,7 +333,7 @@ async function pollMessages(driver, handle)
 async function startTestRun(driver, id, params)
 {
   await getHandle(driver, "/index.html");
-  driver.executeScript(`
+  await driver.executeScript(`
     let elem = document.getElementById(arguments[0]);
     let search = new URLSearchParams(elem.search);
     for (let key in arguments[1])
