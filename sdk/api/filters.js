@@ -105,7 +105,8 @@ export default {
    */
   add(text)
   {
-    let filter = Filter.fromText(text);
+    let normalized = Filter.normalize(text);
+    let filter = Filter.fromText(normalized);
     let error = validateFilter(filter);
 
     if (error)
@@ -170,7 +171,8 @@ export default {
    */
   enable(text)
   {
-    filterState.setEnabled(text, true);
+    let normalized = Filter.normalize(text);
+    filterState.setEnabled(normalized, true);
   },
 
   /**
@@ -180,7 +182,8 @@ export default {
    */
   disable(text)
   {
-    filterState.setEnabled(text, false);
+    let normalized = Filter.normalize(text);
+    filterState.setEnabled(normalized, false);
   },
 
   /**
@@ -190,7 +193,8 @@ export default {
    */
   remove(text)
   {
-    filterStorage.removeFilter(Filter.fromText(text));
+    let normalized = Filter.normalize(text);
+    filterStorage.removeFilter(Filter.fromText(normalized));
   },
 
   /**

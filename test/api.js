@@ -381,6 +381,25 @@ describe("API", () =>
       expect(EWE.filters.getAll()).toEqual([]);
     });
 
+    it("normalizes a filter internally", () =>
+    {
+      EWE.filters.add(VALID_FILTER_TEXT);
+
+      let PADDED_FILTER_TEXT = " " + VALID_FILTER_TEXT;
+      EWE.filters.add(PADDED_FILTER_TEXT);
+      expect(EWE.filters.getAll()).toEqual([VALID_FILTER]);
+
+      EWE.filters.disable(PADDED_FILTER_TEXT);
+      let filters = EWE.filters.getAll();
+      expect(filters).toEqual([{...VALID_FILTER, enabled: false}]);
+
+      EWE.filters.enable(PADDED_FILTER_TEXT);
+      expect(EWE.filters.getAll()).toEqual([VALID_FILTER]);
+
+      EWE.filters.remove(PADDED_FILTER_TEXT);
+      expect(EWE.filters.getAll()).toEqual([]);
+    });
+
     it("validates a valid filter", () =>
     {
       expect(EWE.filters.validate(VALID_FILTER_TEXT)).toBeNull();
