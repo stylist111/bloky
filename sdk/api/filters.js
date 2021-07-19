@@ -136,7 +136,7 @@ export default {
   },
 
   /**
-   * Returns allowlisted filters for specific document.
+   * Returns allowlisted filters for a specific document.
    * @param {number} tabId The id of the tab to lookup.
    * @param {Object} [options]
    * @param {number} [options.frameId=0] The id of the frame to lookup.
@@ -200,7 +200,7 @@ export default {
   /**
    * Validates a list of filters.
    * @param {string} text Filter to be validated
-   * @return {null|Error}
+   * @return {null|FilterError}
    */
   validate(text)
   {
