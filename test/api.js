@@ -19,9 +19,8 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 import sinon from "sinon/pkg/sinon.js";
 
-import {Page, Popup, setMinTimeout, waitForInvisibleElement,
-        waitForSnippetBlocked, wait, TEST_PAGES_URL,
-        TEST_PAGES_DOMAIN} from "./utils.js";
+import {Page, Popup, setMinTimeout, waitForInvisibleElement, wait,
+        TEST_PAGES_URL, TEST_PAGES_DOMAIN} from "./utils.js";
 
 const VALID_SUBSCRIPTION_URL = "https://testpages.adblockplus.org/en/abp-testcase-subscription.txt";
 const INVALID_SUBSCRIPTION_URL = "invalidUrl";
@@ -749,15 +748,11 @@ describe("API", () =>
         });
       });
 
-      it("logs snippets filter", async() =>
-      {
-        await checkLogging({
-          text: `${TEST_PAGES_DOMAIN}#$#$hide-if-contains Target div`
-        }, async() =>
-        {
-          await waitForSnippetBlocked("snippets-hiding.html");
-        }, {}, false);
-      });
+      it("logs snippets filter", () =>
+        checkLogging({text: `${TEST_PAGES_DOMAIN}#$#do`},
+                     () => new Page("image.html").loaded(),
+                     {}, false)
+      );
 
       function checkPopupLogging(text)
       {
@@ -847,41 +842,5 @@ describe("API", () =>
       EWE.debugging.setElementHidingDebugMode(false);
       expect(style).toBe("rgb(255, 192, 203)");
     });
-
-    it("applies the debugging stylesheet for hiding element snippet", async() =>
-    {
-      let snippet = "hide-if-contains";
-      EWE.filters.add(`${TEST_PAGES_DOMAIN}#$#${snippet} Target div`);
-
-      EWE.debugging.setElementHidingDebugMode(true);
-      let {tabId} = await waitForSnippetBlocked("snippets-hiding.html");
-      EWE.debugging.setElementHidingDebugMode(false);
-
-      let code = `let el = document.getElementById("hide-if-contains");
-                  let styles = window.getComputedStyle(el);
-                  styles["outline-color"]`;
-      let color = (await browser.tabs.executeScript(tabId, {code}))[0];
-      expect(color).toEqual("rgb(255, 0, 0)");
-    });
-
-    it("applies a custom debugging stylesheet for hiding element snippets",
-       async() =>
-       {
-         let snippet = "hide-if-contains";
-         EWE.filters.add(`${TEST_PAGES_DOMAIN}#$#${snippet} Target div`);
-
-         EWE.debugging.setElementHidingDebugMode(true);
-         EWE.debugging.setElementHidingDebugStyle(null,
-                                                  [["background-color", "pink"]]
-         );
-         let {tabId} = await waitForSnippetBlocked("snippets-hiding.html");
-         EWE.debugging.setElementHidingDebugMode(false);
-
-         let code = `let el = document.getElementById("hide-if-contains");
-                  let styles = window.getComputedStyle(el);
-                  styles["background-color"]`;
-         let color = (await browser.tabs.executeScript(tabId, {code}))[0];
-         expect(color).toEqual("rgb(255, 192, 203)");
-       });
   });
 });

@@ -21,11 +21,17 @@ import {createStyleSheet, elemHide} from "adblockpluscore/lib/elemHide.js";
 import {elemHideEmulation} from "adblockpluscore/lib/elemHideEmulation.js";
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 import {snippets, compileScript} from "adblockpluscore/lib/snippets.js";
-import snippetsLibSource from "adblockpluscore/lib/content/snippets.js?source";
 
 import {getFrameInfo} from "./frame-state.js";
 import {logItem, tracingEnabled} from "./diagnostics.js";
 import {Prefs} from "./prefs.js";
+
+let snippetLibraries = [];
+
+export function setSnippetLibrary(code)
+{
+  snippetLibraries = code != null ? [code] : [];
+}
 
 export function applyContentFilters(tabId, frameId)
 {
@@ -50,7 +56,7 @@ export function applyContentFilters(tabId, frameId)
         tabId,
         {
           frameId,
-          code: compileScript(scripts, [snippetsLibSource], environment),
+          code: compileScript(scripts, snippetLibraries, environment),
           matchAboutBlank: true,
           runAt: "document_start"
         }

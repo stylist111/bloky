@@ -28,6 +28,7 @@ import * as messageResponder from "./message-responder.js";
 import * as popupBlocker from "./popup-blocker.js";
 import {init as initIDB} from "./idb.js";
 import {configureDefaultSubscriptions} from "./default-subscriptions.js";
+import {setSnippetLibrary} from "./content-filter.js";
 
 export {onSubscribeLinkClicked} from "./subscribe-links.js";
 export {default as subscriptions} from "./subscriptions.js";
@@ -43,6 +44,14 @@ export {default as debugging} from "./debugging.js";
 // Workaround for documentation.js to parse the JSDocs above
 // https://github.com/documentationjs/documentation/issues/1363
 export let notifications = _notifications;
+
+export let snippets = {
+  /**
+   * Enables support for snippet filters.
+   * @param {string} code The code defining the available snippets.
+   */
+  setLibrary: setSnippetLibrary
+};
 
 let stopped = true;
 

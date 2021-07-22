@@ -105,3 +105,20 @@ describe("Element Hiding", () =>
     });
   });
 });
+
+describe("Snippets", () =>
+{
+  before(() => EWE.snippets.setLibrary("exports.do = () => { works = true;}"));
+  after(() => EWE.snippets.setLibrary(null));
+  afterEach(() => Page.removeCurrent());
+
+  it("applies a snippet", async() =>
+  {
+    EWE.filters.add(`${TEST_PAGES_DOMAIN}#$#do`);
+
+    let tabId = await new Page("image.html").loaded();
+    let results = await browser.tabs.executeScript(tabId, {code: "works;"});
+
+    expect(results[0]).toBe(true);
+  });
+});

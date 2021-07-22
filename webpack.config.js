@@ -68,11 +68,6 @@ export default (env = {}) =>
           use: ["source-map-loader"]
         },
         {
-          resourceQuery: "?source",
-          type: "asset/source",
-          use: env.release ? ["terser-loader"] : []
-        },
-        {
           resourceQuery: "?model",
           type: "asset/resource",
           generator: {

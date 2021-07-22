@@ -9,7 +9,8 @@ for Chromium and Firefox extensions (like [Adblock Plus][abpui]).
 
 * [Getting started](#getting-started)
   * [Module bundlers (optional)](#module-bundlers-optional)
-  * [Machine learning models](#machine-learning-models)
+  * [Snippet filters support](#snippet-filters-support)
+    * [Machine learning models](#machine-learning-models)
 * [Documentation](#documentation)
 * [Development](#development)
   * [Prerequisites](#prerequisites)
@@ -89,7 +90,18 @@ import * as EWE from "./ewe-api.js";
 EWE.start();
 ```
 
-### Machine learning models
+### Snippet filters support
+
+In order to enable support for [snippet filters][snippet-filters] you have to get
+the [snippets library][snippets-project] seperately and make it available to `EWE`:
+
+```javascript
+let response = await fetch("snippets.js");
+let code = await response.text();
+EWE.snippets.setLibrary(code);
+```
+
+#### Machine learning models
 
 Along with the library bundles there is a `models` folder. In order to support
 ML-enabled snippets please include this folder and its contents in your
@@ -170,6 +182,8 @@ Note: The test runner runs on `/dist/test-mv2`.
 [abpcore]: https://gitlab.com/eyeo/adblockplus/adblockpluscore
 [abpui]: https://gitlab.com/eyeo/adblockplus/abpui/adblockplusui
 [builds]: https://gitlab.com/eyeo/adblockplus/webext-sdk/-/jobs/artifacts/master/browse/dist?job=build
+[snippet-filters]: https://help.eyeo.com/adblockplus/snippet-filters-tutorial
+[snippets-project]: https://gitlab.com/eyeo/adblockplus/abp-snippets
 [docs]: https://gitlab.com/eyeo/adblockplus/webext-sdk/-/jobs/artifacts/master/file/docs/index.html?job=build
 [dev]: https://gitlab.com/eyeo/adblockplus/webext-sdk#development
 

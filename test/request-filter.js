@@ -18,9 +18,8 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 
-import {Page, Resource, waitForInvisibleElement, setMinTimeout,
-        waitForSnippetBlocked, isFirefox, TEST_PAGES_URL,
-        TEST_PAGES_DOMAIN, SITEKEY} from "./utils.js";
+import {Page, Resource, TEST_PAGES_URL, TEST_PAGES_DOMAIN, SITEKEY}
+  from "./utils.js";
 
 describe("Blocking", () =>
 {
@@ -258,32 +257,6 @@ describe("Blocking", () =>
       EWE.filters.add(`|${TEST_PAGES_URL}^$header=x-header=whatever`);
       EWE.filters.add(`@@|${TEST_PAGES_URL}^$document`);
       await new Page("header.html").expectResource("image.png").toBeLoaded();
-    });
-  });
-
-  describe("Snippets", function()
-  {
-    if (isFirefox())
-      setMinTimeout(this, 3000);
-
-
-
-    it("applies blocking snippets", async() =>
-    {
-      let snippet = "abort-current-inline-script";
-      EWE.filters.add(
-        `${TEST_PAGES_DOMAIN}#$#${snippet} document.abortCurrentInlineScript`);
-      let {blocked} = await waitForSnippetBlocked("snippets-blocking.html");
-      expect(blocked).toBe("true");
-    });
-
-    it("applies hiding element snippets", async() =>
-    {
-      let snippet = "hide-if-contains";
-      EWE.filters.add(`${TEST_PAGES_DOMAIN}#$#${snippet} Target div`);
-
-      let {tabId} = await waitForSnippetBlocked("snippets-hiding.html");
-      await waitForInvisibleElement(tabId, snippet);
     });
   });
 });
