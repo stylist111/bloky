@@ -144,6 +144,17 @@ function getAllowingFilters(tabId, opts)
   ]);
 }
 
+function getContentType(type)
+{
+  return runInBackgroundPage([
+    {op: "getGlobal", arg: "EWE"},
+    {op: "getProp", arg: "reporting"},
+    {op: "getProp", arg: "contentTypesMap"},
+    {op: "pushArg", arg: type},
+    {op: "callMethod", arg: "get"}
+  ]);
+}
+
 function setElementHidingDebugMode(enabled)
 {
   return runInBackgroundPage([
@@ -777,6 +788,12 @@ describe("API", () =>
 
   describe("Reporting", () =>
   {
+    it("exposes a mapping between content types and ResourceTypes", async() =>
+    {
+      expect(await getContentType("font")).toEqual("font");
+      expect(await getContentType("beacon")).toEqual("ping");
+    });
+
     describe("Analytics", () =>
     {
       it("gets the first version", async() =>

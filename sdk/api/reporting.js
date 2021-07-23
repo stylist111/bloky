@@ -16,9 +16,22 @@
  */
 
 import {analytics} from "adblockpluscore/lib/analytics.js";
+import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 
 import {EventDispatcher} from "./types.js";
 import {setLogFunction} from "./diagnostics.js";
+import {resourceTypes} from "./request-filter.js";
+
+let contentTypesMap = new Map();
+
+for (let item of resourceTypes)
+{
+  let contentTypeObject = Object.keys(contentTypes).find(key =>
+    contentTypes[key] === item[1]
+  );
+
+  contentTypesMap.set(item[0].toLowerCase(), contentTypeObject.toLowerCase());
+}
 
 export default {
   /**
@@ -65,5 +78,11 @@ export default {
     {
       setLogFunction(null);
     }
-  )
+  ),
+
+  /**
+   * Returns a mapping between resourceTypes and contentTypes.
+   * @return {Map.<string, string>}
+   */
+  contentTypesMap
 };

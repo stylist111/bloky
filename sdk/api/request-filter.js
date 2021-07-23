@@ -28,7 +28,7 @@ import {logItem} from "./diagnostics.js";
 
 const EXTENSION_PROTOCOL = new URL(browser.runtime.getURL("")).protocol;
 
-let resourceTypes = new Map();
+export let resourceTypes = new Map();
 for (let type in contentTypes)
   resourceTypes.set(type.toLowerCase(), contentTypes[type]);
 resourceTypes.set("sub_frame", contentTypes.SUBDOCUMENT);
