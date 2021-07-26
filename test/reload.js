@@ -70,7 +70,7 @@ describe(`Reload (${phase})`, function()
       let filters = await runInBackgroundPage([
         {op: "getGlobal", arg: "EWE"},
         {op: "getProp", arg: "filters"},
-        {op: "callMethod", arg: "getAll"}
+        {op: "callMethod", arg: "getUserFilters"}
       ]);
       expect(filters).toEqual(expect.arrayContaining([VALID_FILTER]));
     }

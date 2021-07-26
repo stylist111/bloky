@@ -96,7 +96,7 @@ function getAllFilters()
 {
   return runInBackgroundPage([
     ...filtersProp,
-    {op: "callMethod", arg: "getAll"}
+    {op: "callMethod", arg: "getUserFilters"}
   ]);
 }
 

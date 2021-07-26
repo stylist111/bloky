@@ -116,10 +116,10 @@ export default {
   },
 
   /**
-   * Returns an array of filter objects that have been added to subscriptions.
+   * Returns an array of user filter objects.
    * @return {Array.<Filter>}
    */
-  getAll()
+  getUserFilters()
   {
     let result = [];
 
@@ -189,7 +189,7 @@ export default {
 
   /**
    * Removes a filter. The filter will no longer have any effect
-   * and won't be returned by `filters.getAll()`
+   * and won't be returned by `filters.getUserFilters()`
    * @param {string} text The filter rule to be removed.
    */
   remove(text)
