@@ -23,7 +23,8 @@ import {Subscription, DownloadableSubscription, SpecialSubscription}
 import {filterStorage} from "adblockpluscore/lib/filterStorage.js";
 import {synchronizer} from "adblockpluscore/lib/synchronizer.js";
 
-const ACCEPTABLE_ADS_URL = "https://easylist-downloads.adblockplus.org/exceptionrules.txt";
+export const ACCEPTABLE_ADS_URL = "https://easylist-downloads.adblockplus.org/exceptionrules.txt";
+export const ACCEPTABLE_ADS_PRIVACY_URL = "https://easylist-downloads.adblockplus.org/exceptionrules-privacy-friendly.txt";
 
 function getDefaultSubscriptions()
 {

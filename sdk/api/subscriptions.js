@@ -25,6 +25,8 @@ import {Filter} from "adblockpluscore/lib/filterClasses.js";
 
 import {EventDispatcher} from "./types.js";
 import {convertFilter} from "./filters.js";
+import {ACCEPTABLE_ADS_URL, ACCEPTABLE_ADS_PRIVACY_URL}
+  from "./default-subscriptions.js";
 
 function convertSubscription(subscription)
 {
@@ -64,6 +66,18 @@ function makeListener(dispatch)
 }
 
 export default {
+  /**
+   * The URL of the Acceptable Ads subscription.
+   * @type {string}
+   */
+  ACCEPTABLE_ADS_URL,
+
+  /**
+   * The URL of the Acceptable Ads without third-party tracking subscription.
+   * @type {string}
+   */
+  ACCEPTABLE_ADS_PRIVACY_URL,
+
   /**
    * A resource that provides a list of filters that decide what to block.
    * @typedef {Object} Subscription
