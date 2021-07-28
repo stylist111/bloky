@@ -24,7 +24,7 @@ import {snippets, compileScript} from "adblockpluscore/lib/snippets.js";
 
 import {getFrameInfo} from "./frame-state.js";
 import {logItem, tracingEnabled} from "./diagnostics.js";
-import {Prefs} from "./prefs.js";
+import {debugOptions} from "./debugging.js";
 
 let snippetLibraries = [];
 
@@ -38,7 +38,6 @@ export function applyContentFilters(tabId, frameId)
   let frame = getFrameInfo(tabId, frameId);
   let emulatedPatterns = [];
   let tracedSelectors;
-  let debug = Prefs.elemhide_debug;
 
   if (!(frame.allowlisted & contentTypes.DOCUMENT))
   {
@@ -48,8 +47,8 @@ export function applyContentFilters(tabId, frameId)
     {
       let scripts = filters.map(({script}) => script);
       let environment = {};
-      if (debug)
-        environment.debugCSSProperties = Prefs.debug_css_properties_snippets;
+      if (debugOptions.elemHide)
+        environment.debugCSSProperties = debugOptions.snippetsCssProperties;
 
       let details = {tabId, frameId};
       browser.tabs.executeScript(
@@ -68,14 +67,16 @@ export function applyContentFilters(tabId, frameId)
     {
       let specificOnly = (frame.allowlisted & contentTypes.GENERICHIDE) != 0;
       let trace = tracingEnabled();
-      let styleSheet = elemHide.getStyleSheet(frame.hostname,
-                                              specificOnly, trace || debug,
-                                              trace);
+      let styleSheet = elemHide.getStyleSheet(
+        frame.hostname,
+        specificOnly, trace || debugOptions.elemHide,
+        trace
+      );
 
-      if (debug)
+      if (debugOptions.elemHide)
       {
         let declarationBlock = "{";
-        for (let [property, value] of Prefs.debug_css_properties)
+        for (let [property, value] of debugOptions.cssProperties)
           declarationBlock += `${property}: ${value} !important;`;
         declarationBlock += "}";
 
@@ -100,8 +101,8 @@ export function applyContentFilters(tabId, frameId)
   }
 
   let cssProperties;
-  if (debug)
-    cssProperties = Prefs.debug_css_properties;
+  if (debugOptions.elemHide)
+    cssProperties = debugOptions.cssProperties;
   return {emulatedPatterns, cssProperties, tracedSelectors};
 }
 

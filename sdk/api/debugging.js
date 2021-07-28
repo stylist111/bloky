@@ -17,8 +17,16 @@
 
 import {filterStorage} from "adblockpluscore/lib/filterStorage.js";
 
-import {Prefs} from "./prefs.js";
 import {IO} from "./io.js";
+
+export let debugOptions = {
+  elemHide: false,
+  cssProperties: [["background", "#e67370"], ["outline", "solid red"]],
+  snippetsCssProperties: [
+    ["background", "repeating-linear-gradient(to bottom, #e67370 0," +
+     "#e67370 9px, white 9px, white 10px)"],
+    ["outline", "solid red"]]
+};
 
 export default {
   /**
@@ -28,23 +36,23 @@ export default {
    */
   setElementHidingDebugMode(enabled)
   {
-    Prefs.elemhide_debug = enabled;
+    debugOptions.elemHide = enabled;
   },
 
   /*
    * Updates the element hiding debug style.
-   * @param {Object} debugCssProperties The css properties for
-   *                                    the debug element.
-   * @param {Object} debugCssSnippetProperties The css properties for
-   *                                           the debug snippet element.
+   * @param {Object} cssProperties The css properties for
+   *                               the debug element.
+   * @param {Object} snippetsCssProperties The css properties for
+   *                                       the debug snippet element.
    */
-  setElementHidingDebugStyle(debugCssProperties, debugCssSnippetProperties)
+  setElementHidingDebugStyle(cssProperties, snippetsCssProperties)
   {
-    if (debugCssProperties)
-      Prefs.debug_css_properties = debugCssProperties;
+    if (cssProperties)
+      debugOptions.cssProperties = cssProperties;
 
-    if (debugCssSnippetProperties)
-      Prefs.debug_css_properties_snippets = debugCssSnippetProperties;
+    if (snippetsCssProperties)
+      debugOptions.snippetsCssProperties = snippetsCssProperties;
   },
 
   /**

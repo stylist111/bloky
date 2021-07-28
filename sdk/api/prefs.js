@@ -26,7 +26,6 @@ let prefs = Object.create({
                              "notification.adblockplus.org",
                              "easylist-downloads.adblockplus.org"]},
   blocked_total: 0,
-  elemhide_debug: false,
   notificationdata: {},
   notifications_ignoredcategories: [],
   notificationurl: "https://notification.adblockplus.org/notification.json",
@@ -37,11 +36,6 @@ let prefs = Object.create({
   subscriptions_autoupdate: true,
   subscriptions_fallbackerrors: 5,
   subscriptions_fallbackurl: "https://adblockplus.org/getSubscription?version=%VERSION%&url=%SUBSCRIPTION%&downloadURL=%URL%&error=%ERROR%&responseStatus=%RESPONSESTATUS%",
-  debug_css_properties: [["background", "#e67370"], ["outline", "solid red"]],
-  debug_css_properties_snippets: [
-    ["background", "repeating-linear-gradient(to bottom, #e67370 0," +
-     "#e67370 9px, white 9px, white 10px)"],
-    ["outline", "solid red"]],
 
   on(preference, callback)
   {
