@@ -89,7 +89,7 @@ class PendingFrameInfo
 
       allowlisted |= filter.contentType & ALLOWING_TYPES;
 
-      logItem(details, filter);
+      logItem(details, filter, {matchingMethod: "allowing"});
     }
 
     if (allowlisted != 0)

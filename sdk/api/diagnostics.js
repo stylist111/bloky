@@ -57,13 +57,13 @@ export function logHiddenElements(selectors, filters, sender)
         if (filter instanceof ElemHideFilter &&
             selectors.includes(filter.selector) &&
             filter.isActiveOnDomain(hostname))
-          logItem(details, filter);
+          logItem(details, filter, {matchingMethod: "elemhide"});
       }
     }
   }
 
   for (let text of filters)
-    logItem(details, Filter.fromText(text));
+    logItem(details, Filter.fromText(text), {matchingMethod: "elemhide"});
 }
 
 export function tracingEnabled()

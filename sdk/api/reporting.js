@@ -37,6 +37,10 @@ export default {
   *                                           to which to rewrite the URL.
   * @property {boolean|undefined} specificOnly Whether selectors from generic
   *                                           filters should be included.
+  * @property {string} matchingMethod The method used to match this filter.
+  *                                   This can be the string "request",
+  *                                   "header", "csp", "popup", "elemhide",
+  *                                   "snippet" or "allowing".
   */
 
   /**

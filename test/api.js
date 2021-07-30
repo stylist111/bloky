@@ -652,8 +652,7 @@ describe("API", () =>
 
     describe("Diagnostics", () =>
     {
-      async function checkLogging(filter, callback, info = {},
-                                  checkUrl = true)
+      async function checkLogging(filter, callback, info = {}, checkUrl = true)
       {
         let fake = sinon.fake();
 
@@ -702,7 +701,7 @@ describe("API", () =>
           enabled: true,
           type: "blocking",
           thirdParty: null
-        });
+        }, {matchingMethod: "request"});
       });
 
       it("logs third-party requests", async() =>
@@ -719,7 +718,11 @@ describe("API", () =>
         await checkRequestLogging("image.html", {
           text: "@@$image",
           type: "allowing"
-        }, {docDomain: "localhost", specificOnly: false});
+        }, {
+          docDomain: "localhost",
+          specificOnly: false,
+          matchingMethod: "header"
+        });
       });
 
       it("logs rewrite filter", async() =>
@@ -737,7 +740,8 @@ describe("API", () =>
       it("logs blocking $header filter", async() =>
       {
         await checkRequestLogging("header.html",
-                                  {text: "*$header=x-header=whatever"});
+                                  {text: "*$header=x-header=whatever"},
+                                  {matchingMethod: "header"});
       });
 
       it("logs allowlisting $header filter", async() =>
@@ -748,20 +752,23 @@ describe("API", () =>
 
       it("logs blocking $csp filter", async() =>
       {
-        await checkRequestLogging("csp.html", {text: "*$csp=img-src 'none'"});
+        await checkRequestLogging("csp.html", {text: "*$csp=img-src 'none'"},
+                                  {matchingMethod: "csp"});
       });
 
       it("logs allowlisting $csp filter", async() =>
       {
         EWE.filters.add("*$csp=img-src 'none'");
-        await checkRequestLogging("csp.html", {text: "@@$csp"});
+        await checkRequestLogging("csp.html", {text: "@@$csp"},
+                                  {matchingMethod: "csp"});
       });
 
       for (let option of ["$document", "$elemhide",
                           "$genericblock", "$generichide"])
       {
         it(`logs allowlisting ${option} filter`, () =>
-          checkRequestLogging("image.html", {text: `@@${option}`})
+          checkRequestLogging("image.html", {text: `@@${option}`},
+                              {matchingMethod: "allowing"})
         );
       }
 
@@ -771,19 +778,20 @@ describe("API", () =>
         {
           let tabId = await new Page("element-hiding.html").loaded();
           await waitForInvisibleElement(tabId, "elem-hide");
-        });
+        }, {matchingMethod: "elemhide"});
       });
 
       it("logs snippets filter", () =>
         checkLogging({text: `${TEST_PAGES_DOMAIN}#$#do`},
                      () => new Page("image.html").loaded(),
-                     {}, false)
+                     {matchingMethod: "snippet"}, false)
       );
 
       function checkPopupLogging(text)
       {
         return checkLogging({text}, () =>
-          new Popup("link", new Page("popup-opener.html")).blocked
+          new Popup("link", new Page("popup-opener.html")).blocked,
+                            {matchingMethod: "popup"}
         );
       }
 

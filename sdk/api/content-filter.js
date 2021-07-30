@@ -59,8 +59,8 @@ export function applyContentFilters(tabId, frameId)
           matchAboutBlank: true,
           runAt: "document_start"
         }
-      ).then(() => filters.forEach(filter => logItem(details, filter)),
-             () => {});
+      ).then(() => filters.forEach(filter =>
+        logItem(details, filter, {matchingMethod: "snippet"})), () => {});
     }
 
     if (!(frame.allowlisted & contentTypes.ELEMHIDE))

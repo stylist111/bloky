@@ -143,8 +143,7 @@ class RequestFilter
     let filter = matcher.match(details.url, this.getContentType(details),
                                docDomain, frame.sitekey, specificOnly);
 
-    let info = {docDomain, specificOnly};
-
+    let info = {docDomain, specificOnly, matchingMethod: "request"};
     if (this.isBlocking(details, filter, info))
       return this.block(details, filter, info);
   }
@@ -180,7 +179,7 @@ class HeaderFilter extends RequestFilter
   {
     let typeMask = contentTypes.HEADER | this.getContentType(details);
     let docDomain = frame.hostname;
-    let info = {docDomain, specificOnly};
+    let info = {docDomain, specificOnly, matchingMethod: "header"};
 
     if (!this.isBlocking(details, matcher.match(details.url, typeMask,
                                                 docDomain, frame.sitekey,
@@ -221,7 +220,7 @@ class CSPFilter extends RequestFilter
     let parentFrame = getFrameInfo(details.tabId, details.parentFrameId);
     let docDomain = parentFrame && parentFrame.hostname;
 
-    let info = {docDomain, specificOnly};
+    let info = {docDomain, specificOnly, matchingMethod: "csp"};
     if (!this.isBlocking(details, matcher.match(details.url, contentTypes.CSP,
                                                 docDomain, frame.sitekey,
                                                 specificOnly), info))
