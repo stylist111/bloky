@@ -161,7 +161,8 @@ export default (env = {}) =>
             {from: "ewe-*", context: path.join(dirname, "dist")},
             {from: path.join(dirname, "dist", "models"), to: "models"},
             {from: path.join(dirname, "test", "background.js")},
-            {from: path.join(dirname, "test", "index.html")}
+            {from: path.join(dirname, "test", "index.html")},
+            {from: path.join(dirname, "test", "index-options.js")}
           ]
         })
       ]

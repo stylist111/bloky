@@ -332,14 +332,19 @@ async function pollMessages(driver, handle)
 
 async function startTestRun(driver, id, params)
 {
+  let search = new URLSearchParams();
+  for (let key in params)
+    search.append(key, params[key]);
+
   await getHandle(driver, "/index.html");
-  await driver.executeScript(`
-    let elem = document.getElementById(arguments[0]);
-    let search = new URLSearchParams(elem.search);
-    for (let key in arguments[1])
-      search.append(key, arguments[1][key]);
-    elem.search = search.toString();
-    elem.click();`, id, params);
+  if (search.toString())
+  {
+    let url = await driver.getCurrentUrl();
+    url = `${url}?${search.toString()}`;
+    await driver.navigate().to(url);
+  }
+
+  await driver.findElement(webdriver.By.id(id)).click();
 }
 
 async function run()

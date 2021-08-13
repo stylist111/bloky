@@ -29,7 +29,8 @@
   "overrides": [
     {
       "files": [
-        "background.js"
+        "background.js",
+        "index-options.js"
       ],
       "parserOptions": {
         "sourceType": "script"

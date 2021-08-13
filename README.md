@@ -173,12 +173,17 @@ built-in popup blocking (on `localhost`).
 You can also inspect the extension's background page to manually test the API
 through the global `EWE` object.
 
+#### Test options
+
+- The `timeout` option overrides the per-test timeout in milliseconds.
+- The `grep` option filters the tests to run with a regular expression.
+
 ### Using the test runner
 
     npm test -- {chromium|firefox|edge} [version|channel] [options]
 
-- The `--timeout` option overrides the per-test timeout in milliseconds.
-- The `--grep` option filters the tests to run with a regular expression.
+Runner [options](#test-options) need to be preceded by two dashes (`--`), for
+example `--timeout 10000`.
 
 Note: The test runner runs on `/dist/test-mv2`.
 </div>
