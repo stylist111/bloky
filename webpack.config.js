@@ -81,6 +81,9 @@ export default (env = {}) =>
         }
       ]
     },
+    plugins: [
+      new GenerateJsonPlugin("package.json", {type: "commonjs"}, null, 2)
+    ],
     externals: {
       perf_hooks: "self"
     }
@@ -121,7 +124,8 @@ export default (env = {}) =>
         reload: path.join(dirname, "test", "reload-wrap.js")
       },
       output: {
-        path: path.resolve(dirname, "dist", `test-mv${manifestVersion}`)
+        path: path.resolve(dirname, "dist", `test-mv${manifestVersion}`),
+        clean: true
       },
       optimization: {
         minimize: false
