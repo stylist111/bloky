@@ -24,7 +24,7 @@ export default {
   /**
    * Returns the version of the first ever downloaded resource.
    * @return {string}
-   * @see {@link https://eyeo.gitlab.io/adblockplus/adblockpluscore/master/docs/module-analytics-Analytics.html#getFirstVersion|Adblock Plus core analytics documentation}
+   * @see {@link https://eyeo.gitlab.io/adblockplus/abc/adblockpluscore/master/docs/module-analytics-Analytics.html#getFirstVersion|Adblock Plus core analytics documentation}
    * @external
    */
   getFirstVersion: analytics.getFirstVersion,

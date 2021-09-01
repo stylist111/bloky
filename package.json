@@ -17,7 +17,7 @@
     "@tensorflow/tfjs-backend-webgl": "^3.7.0",
     "@tensorflow/tfjs-converter": "^3.7.0",
     "@tensorflow/tfjs-core": "^3.7.0",
-    "adblockpluscore": "git+https://gitlab.com/eyeo/adblockplus/adblockpluscore.git#4b22007",
+    "adblockpluscore": "git+https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore.git#4b22007",
     "copy-webpack-plugin": "^9.0.1",
     "css-loader": "^5.2.6",
     "expect": "^25.5.0",

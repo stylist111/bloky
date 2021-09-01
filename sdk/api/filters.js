@@ -89,7 +89,7 @@ export default {
    *                          internal optimization. Filters that are
    *                          considered slow should be avoided. Only URLFilters
    *                          can be slow.
-   * @property {string} type The filter {@link https://eyeo.gitlab.io/adblockplus/adblockpluscore/next/docs/module-filterClasses.Filter.html#type|type}
+   * @property {string} type The filter {@link https://eyeo.gitlab.io/adblockplus/abc/adblockpluscore/next/docs/module-filterClasses.Filter.html#type|type}
    * @property {boolean|null} thirdParty True when the filter applies to
    *                          third-party, false to first-party, null otherwise.
    * @property {string|null} selector CSS selector for the HTML elements that

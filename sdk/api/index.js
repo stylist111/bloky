@@ -38,7 +38,7 @@ export {default as debugging} from "./debugging.js";
 
 /**
  * The notifications API (only used by Adblock Plus).
- * @see {@link https://eyeo.gitlab.io/adblockplus/adblockpluscore/master/docs/module-notifications.html|Adblock Plus core notifications documentation}
+ * @see {@link https://eyeo.gitlab.io/adblockplus/abc/adblockpluscore/master/docs/module-notifications-Notifications.html|Adblock Plus core notifications documentation}
  * @external
  */
 // Workaround for documentation.js to parse the JSDocs above

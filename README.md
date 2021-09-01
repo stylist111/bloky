@@ -183,7 +183,7 @@ through the global `EWE` object.
 Note: The test runner runs on `/dist/test-mv2`.
 </div>
 
-[abpcore]: https://gitlab.com/eyeo/adblockplus/adblockpluscore
+[abpcore]: https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore
 [abpui]: https://gitlab.com/eyeo/adblockplus/abpui/adblockplusui
 [builds]: https://gitlab.com/eyeo/adblockplus/webext-sdk/-/jobs/artifacts/master/browse/dist?job=build
 [snippet-filters]: https://help.eyeo.com/adblockplus/snippet-filters-tutorial
