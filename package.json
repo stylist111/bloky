@@ -51,6 +51,11 @@
   },
   "scripts": {
     "lint": "eslint --ext js,html .",
-    "docs": "documentation build --document-exported -f html -o docs --config documentation.yml sdk/api/index.js sdk/api/types.js"
+    "docs": "documentation build --document-exported -f html -o docs --config documentation.yml sdk/api/index.js sdk/api/types.js",
+    "build": "webpack",
+    "start": "webpack -w",
+    "test": "node test/runner.js",
+    "test-server": "node test/start-server.js",
+    "test-bundle": "node test/bundle/run.js"
   }
 }

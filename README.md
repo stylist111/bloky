@@ -127,14 +127,14 @@ Node >= 12.18.4
 
 ### Building the library
 
-    npx webpack
+    npm run build
 
 #### Release builds
 
 By default, debug builds are created. If building the library to be used
 in another project you would want to create a release build.
 
-    npx webpack --env release
+    npm run build -- --env release
 
 ### Building the documentation
 
@@ -144,6 +144,10 @@ in another project you would want to create a release build.
 
     npm run lint
 
+### Building and watching for changes
+
+    npm start
+
 ## Testing
 
 ### Serving the test pages
@@ -151,7 +155,7 @@ in another project you would want to create a release build.
 Regardless of whether you're manually loading the test extension, or using
 the test runner, the test suite requires locally served test pages.
 
-    node test/start-server.js
+    npm run test-server
 
 ### Using the test extension
 
@@ -171,7 +175,7 @@ through the global `EWE` object.
 
 ### Using the test runner
 
-    node test/runner.js {chromium|firefox|edge} [version|channel] [options]
+    npm test -- {chromium|firefox|edge} [version|channel] [options]
 
 - The `--timeout` option overrides the per-test timeout in milliseconds.
 - The `--grep` option filters the tests to run with a regular expression.
@@ -191,4 +195,4 @@ Note: The test runner runs on `/dist/test-mv2`.
 
 Checks that the bundled code can be imported and re-bundled
 
-    node test/bundle/run.js
+    npm run test-bundle

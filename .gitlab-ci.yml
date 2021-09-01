@@ -21,9 +21,9 @@ build:
   script:
     - npm install
     - npm run lint
-    - npx webpack --env release
+    - npm run build -- --env release
     - npm run docs
-    - node test/bundle/run.js
+    - npm run test-bundle
   artifacts:
     paths:
       - dist/
@@ -36,7 +36,7 @@ build:
   stage: test
   before_script:
     - npm install
-    - node test/start-server.js &
+    - npm run test-server &
   needs:
     - job: build
       artifacts: true
@@ -44,39 +44,39 @@ build:
 test:chromium:stable:
   extends: .test
   script:
-    - xvfb-run -a node test/runner.js chromium
+    - xvfb-run -a npm test -- chromium
 
 test:chromium:oldest:
   extends: .test
   script:
-    - xvfb-run -a node test/runner.js chromium 77.0.3865.0
+    - xvfb-run -a npm test -- chromium 77.0.3865.0
 
 test:chromium:beta:
   extends: .test
   script:
-    - xvfb-run -a node test/runner.js chromium beta
+    - xvfb-run -a npm test -- chromium beta
 
 test:chromium:dev:
   extends: .test
   script:
-    - xvfb-run -a node test/runner.js chromium dev
+    - xvfb-run -a npm test -- chromium dev
 
 test:firefox:latest:
   extends: .test
   script:
-    - node test/runner.js firefox
+    - npm test -- firefox
 
 test:firefox:oldest:
   extends: .test
   script:
-    - node test/runner.js firefox 68.0
+    - npm test -- firefox 68.0
   # https://gitlab.com/eyeo/adblockplus/webext-sdk/-/issues/50
   retry: 2
 
 test:firefox:beta:
   extends: .test
   script:
-    - node test/runner.js firefox beta
+    - npm test -- firefox beta
 
 test:edge:
   extends: .test
@@ -92,7 +92,7 @@ test:edge:
     - npm install
     - Start-Process "node" -ArgumentList "test/start-server.js" -PassThru
   script:
-    - node test/runner.js edge --timeout=15000
+    - npm test -- edge --timeout=15000
   tags:
     - shared-windows
     - windows
