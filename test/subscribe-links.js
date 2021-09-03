@@ -23,29 +23,23 @@ import * as runner from "./mocha/mocha-runner.js";
 
 describe("Subscribe links (runner only)", () =>
 {
-  let page;
-  let fake;
-
   before(async() =>
   {
     if (!await runner.isConnected())
       this.skip();
   });
 
-  beforeEach(async() =>
-  {
-    fake = await addFakeListener("onSubscribeLinkClicked");
-    page = new Page("subscribe.html");
-    await page.loaded();
-  });
-
-  afterEach(async() =>
+  afterEach(() =>
   {
     Page.removeCurrent();
   });
 
   async function checkSubscribeLink(selector)
   {
+    let fake = await addFakeListener("onSubscribeLinkClicked");
+    let page = new Page("subscribe.html");
+    await page.loaded();
+
     runner.click(page.url, selector);
     await wait(() => fake.called, 1000, "Listener was not called");
 
