@@ -20,6 +20,7 @@ import expect from "expect";
 
 import {Page, waitForInvisibleElement, TEST_PAGES_DOMAIN, TEST_PAGES_URL}
   from "./utils.js";
+import {addFilter, runInBackgroundPage} from "./messaging.js";
 
 describe("Element Hiding", () =>
 {
@@ -35,37 +36,37 @@ describe("Element Hiding", () =>
 
   it("hides an element", async() =>
   {
-    EWE.filters.add("###elem-hide");
+    await addFilter("###elem-hide");
     expect(await getVisibleElement("elem-hide")).toBeNull();
   });
 
   it("does not hide an allowlisted element", async() =>
   {
-    EWE.filters.add("###elem-hide");
-    EWE.filters.add("#@##elem-hide");
+    await addFilter("###elem-hide");
+    await addFilter("#@##elem-hide");
     expect(await getVisibleElement("elem-hide")).not.toBeNull();
   });
 
   it("does not hide elements in allowlisted document", async() =>
   {
-    EWE.filters.add("###elem-hide");
-    EWE.filters.add(`@@|${TEST_PAGES_URL}/*.html$document`);
+    await addFilter("###elem-hide");
+    await addFilter(`@@|${TEST_PAGES_URL}/*.html$document`);
     expect(await getVisibleElement("elem-hide")).not.toBeNull();
   });
 
   it("does not hide elements in document allowlisted by $elemhide", async() =>
   {
-    EWE.filters.add("###elem-hide");
-    EWE.filters.add(`@@|${TEST_PAGES_URL}/*.html$elemhide`);
+    await addFilter("###elem-hide");
+    await addFilter(`@@|${TEST_PAGES_URL}/*.html$elemhide`);
     expect(await getVisibleElement("elem-hide")).not.toBeNull();
   });
 
   it("does not hide elements through generic filter " +
      "in documents allowlisted by $generichide", async() =>
   {
-    EWE.filters.add("###elem-hide");
-    EWE.filters.add(`${TEST_PAGES_DOMAIN}###elem-hide-specific`);
-    EWE.filters.add(`@@|${TEST_PAGES_URL}$generichide`);
+    await addFilter("###elem-hide");
+    await addFilter(`${TEST_PAGES_DOMAIN}###elem-hide-specific`);
+    await addFilter(`@@|${TEST_PAGES_URL}$generichide`);
     expect(await getVisibleElement("elem-hide")).not.toBeNull();
     expect(await getVisibleElement("elem-hide-specific")).toBeNull();
   });
@@ -74,21 +75,21 @@ describe("Element Hiding", () =>
   {
     it("hides abp-properties elements", async() =>
     {
-      EWE.filters.add(
+      await addFilter(
         `${TEST_PAGES_DOMAIN}#?#div:-abp-properties(background-color: red)`);
       expect(await getVisibleElement("elem-hide-emulation-props")).toBeNull();
     });
 
     it("hides abp-has elements", async() =>
     {
-      EWE.filters.add(
+      await addFilter(
         `${TEST_PAGES_DOMAIN}#?#div:-abp-has(>span#elem-hide-emulation-has)`);
       expect(await getVisibleElement("elem-hide-emulation-has")).toBeNull();
     });
 
     it("hides abp-contains elements", async() =>
     {
-      EWE.filters.add(`${TEST_PAGES_DOMAIN}#?#span` +
+      await addFilter(`${TEST_PAGES_DOMAIN}#?#span` +
         ":-abp-contains(elem-hide-emulation-contain-target)");
       expect(await getVisibleElement("elem-hide-emulation-contain")).toBeNull();
     });
@@ -98,7 +99,7 @@ describe("Element Hiding", () =>
   {
     it("hides the img element of a blocked request", async() =>
     {
-      EWE.filters.add("/image.png^$image");
+      await addFilter("/image.png^$image");
 
       let tabId = await new Page("element-hiding.html").loaded();
       await waitForInvisibleElement(tabId, "elem-hide-img-request");
@@ -108,13 +109,24 @@ describe("Element Hiding", () =>
 
 describe("Snippets", () =>
 {
-  before(() => EWE.snippets.setLibrary("exports.do = () => { works = true;}"));
-  after(() => EWE.snippets.setLibrary(null));
+  function setSnippetLibrary(code)
+  {
+    return runInBackgroundPage([
+      {op: "getGlobal", arg: "EWE"},
+      {op: "getProp", arg: "snippets"},
+      {op: "pushArg", arg: code},
+      {op: "callMethod", arg: "setLibrary"}
+    ]);
+  }
+
+  before(async() =>
+    await setSnippetLibrary("exports.do = () => { works = true;}"));
+  after(async() => await setSnippetLibrary(null));
   afterEach(() => Page.removeCurrent());
 
   it("applies a snippet", async() =>
   {
-    EWE.filters.add(`${TEST_PAGES_DOMAIN}#$#do`);
+    await addFilter(`${TEST_PAGES_DOMAIN}#$#do`);
 
     let tabId = await new Page("image.html").loaded();
     let results = await browser.tabs.executeScript(tabId, {code: "works;"});

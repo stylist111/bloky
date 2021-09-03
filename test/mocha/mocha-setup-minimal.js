@@ -15,11 +15,4 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import browser from "webextension-polyfill";
-
 mocha.setup("bdd");
-
-before(async() =>
-{
-  self.EWE = (await browser.runtime.getBackgroundPage()).EWE;
-});

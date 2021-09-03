@@ -15,10 +15,10 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import browser from "webextension-polyfill";
 import expect from "expect";
 
 import {wait, isEdge, isOldestFirefox} from "./utils.js";
+import {addFilter, runInBackgroundPage} from "./messaging.js";
 
 const VALID_FILTER_TEXT = "reload.test^$image";
 const VALID_FILTER = {
@@ -40,21 +40,19 @@ describe(`Reload (${phase})`, function()
 
   it("persists storage data", async() =>
   {
-    let background = await browser.runtime.getBackgroundPage();
-
     if (start)
     {
-      EWE.filters.add(VALID_FILTER_TEXT);
+      await addFilter(VALID_FILTER_TEXT);
 
       await wait(async() =>
       {
-        let contents = [];
-        try
-        {
-          contents = await EWE.debugging.getFilterStorageSource();
-        }
-        catch (e) {} // Error: File does not exist
-        return contents.some(line => line.includes(VALID_FILTER_TEXT));
+        return await runInBackgroundPage([
+          {op: "getGlobal", arg: "EWE"},
+          {op: "getProp", arg: "debugging"},
+          {op: "pushArg", arg: VALID_FILTER_TEXT},
+          {op: "callMethod", arg: "isInFilterStorage"},
+          {op: "await"}
+        ]);
       }, 2000, "The added filter didn't reach storage");
 
       localStorage.setItem("reload-test-running", "true");
@@ -62,20 +60,31 @@ describe(`Reload (${phase})`, function()
       if (isOldestFirefox() || isEdge()) // let storage consolidate on CI
         await new Promise(r => setTimeout(r, 2000));
 
-      background.chrome.runtime.reload();
-      return;
+      return runInBackgroundPage([
+        {op: "getGlobal", arg: "chrome"},
+        {op: "getProp", arg: "runtime"},
+        {op: "callMethod", arg: "reload"}
+      ]);
     }
 
     try
     {
-      expect(EWE.filters.getAll()).toEqual(
-        expect.arrayContaining([VALID_FILTER])
-      );
+      let filters = await runInBackgroundPage([
+        {op: "getGlobal", arg: "EWE"},
+        {op: "getProp", arg: "filters"},
+        {op: "callMethod", arg: "getAll"}
+      ]);
+      expect(filters).toEqual(expect.arrayContaining([VALID_FILTER]));
     }
     finally
     {
       localStorage.removeItem("reload-test-running");
-      EWE.filters.remove(VALID_FILTER_TEXT);
+      await runInBackgroundPage([
+        {op: "getGlobal", arg: "EWE"},
+        {op: "getProp", arg: "filters"},
+        {op: "pushArg", arg: VALID_FILTER_TEXT},
+        {op: "callMethod", arg: "remove"}
+      ]);
     }
   });
 });

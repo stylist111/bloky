@@ -22,6 +22,99 @@
 if (typeof EWE == "undefined" && typeof importScripts != "undefined")
   importScripts("ewe-api.js");
 
+let callbackIdCounter = 0;
+let callbacks = new Map();
+let lastError;
+
+function toStringIfError(obj)
+{
+  return obj instanceof Error ? obj.toString() : obj;
+}
+
+async function runOperations(operations)
+{
+  let stack = [];
+
+  for (let {op, arg} of operations)
+  {
+    switch (op)
+    {
+      case "getGlobal":
+        stack.push(self[arg]);
+        break;
+
+      case "getProp":
+        stack.push(stack.pop()[arg]);
+        break;
+
+      case "pushArg":
+        stack.push(arg);
+        break;
+
+      case "callMethod":
+        let obj = stack.shift();
+        let args = stack.splice(0);
+        stack.push(obj[arg](...args));
+        break;
+
+      case "await":
+        stack.push(await stack.pop());
+        break;
+
+      case "pushCallback":
+        stack.push(callbacks.get(arg));
+        break;
+
+      case "getLastError":
+        stack.push(lastError);
+        lastError = null;
+        break;
+    }
+  }
+
+  return stack.pop();
+}
+
+function handleTestMessage(request, sender, sendResponse)
+{
+  switch (request.type)
+  {
+    case "ewe-test:run":
+      runOperations(request.operations).then(
+        res => sendResponse({result: toStringIfError(res)}),
+        err => sendResponse({error: toStringIfError(err)})
+      );
+      return true;
+
+    case "ewe-test:make-callback":
+      let id = ++callbackIdCounter;
+      let tabId = sender.tab.id;
+
+      callbacks.set(id, (...args) =>
+      {
+        let message = {type: "ewe-test:call-callback", id, args};
+        chrome.tabs.sendMessage(tabId, message);
+      });
+      sendResponse(id);
+      break;
+
+    case "ewe-test:setLanguageAndStart":
+      self.uiLanguageOverride = request.args[0];
+      EWE.start().then(started => sendResponse({result: started}));
+      break;
+
+    case "ewe-test:deleteUiLanguageOverride":
+      delete self.uiLanguageOverride;
+      sendResponse({});
+      return true;
+  }
+}
+
+chrome.runtime.onMessage.addListener(handleTestMessage);
+
+addEventListener("error", ({error}) => lastError = error);
+addEventListener("unhandledrejection", ({reason}) => lastError = reason);
+
 function mockGetUILanguage(api)
 {
   let {getUILanguage} = api.i18n;

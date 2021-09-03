@@ -15,14 +15,12 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import browser from "webextension-polyfill";
-
 import {TEST_PAGES_URL} from "../utils.js";
+import {runInBackgroundPage, removeFakeListeners} from "../messaging.js";
 
 mocha.setup("bdd");
 
 let timeout = new URLSearchParams(document.location.search).get("timeout");
-let background;
 let restoreSubscriptions;
 
 if (timeout)
@@ -45,10 +43,11 @@ before(async function()
     elem.textContent = message;
     mocha.Mocha.reporters.Base.consoleLog("\x1b[33m%s\x1b[0m", message);
   }
-
-  background = await browser.runtime.getBackgroundPage();
-  self.EWE = background.EWE;
-  restoreSubscriptions = EWE.subscriptions.removeAll();
+  restoreSubscriptions = await runInBackgroundPage([
+    {op: "getGlobal", arg: "EWE"},
+    {op: "getProp", arg: "subscriptions"},
+    {op: "callMethod", arg: "removeAll"}
+  ]);
 });
 
 after(function()
@@ -62,30 +61,23 @@ after(function()
 beforeEach(function()
 {
   let {fn} = this.currentTest;
-  this.currentTest.fn = function()
+  this.currentTest.fn = async function()
   {
-    let result = fn.call(this);
-    if (!result || typeof result.then != "function")
-      return result;
+    await fn.call(this);
 
-    return new Promise((resolve, reject) =>
-    {
-      function onError(event) { reject(event.error); }
-      function onMessageError(event) { reject(event); }
-      function onRejection(event) { reject(event.reason); }
-
-      background.addEventListener("error", onError);
-      background.addEventListener("messageerror", onMessageError);
-      background.addEventListener("unhandledrejection", onRejection);
-
-      result.then(resolve, reject).then(() =>
-      {
-        background.removeEventListener("error", onError);
-        background.removeEventListener("messageerror", onMessageError);
-        background.removeEventListener("unhandledrejection", onRejection);
-      });
-    });
+    let error = await runInBackgroundPage([{op: "getLastError"}]);
+    if (error)
+      throw new Error(error);
   };
 });
 
-afterEach(() => EWE.subscriptions.removeAll());
+afterEach(async() =>
+{
+  await runInBackgroundPage([
+    {op: "getGlobal", arg: "EWE"},
+    {op: "getProp", arg: "subscriptions"},
+    {op: "callMethod", arg: "removeAll"}
+  ]);
+
+  await removeFakeListeners();
+});

@@ -19,6 +19,7 @@ import expect from "expect";
 
 import {Page, Popup, setMinTimeout, isFirefox, TEST_PAGES_URL, SITEKEY}
   from "./utils.js";
+import {addFilter} from "./messaging.js";
 
 describe("Pop-up blocking", function()
 {
@@ -32,13 +33,13 @@ describe("Pop-up blocking", function()
 
   it("blocks a link-based popup", async() =>
   {
-    EWE.filters.add(`|${TEST_PAGES_URL}/popup.html^$popup`);
+    await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
     expect(await new Popup("link", opener).blocked).toBeTruthy();
   });
 
   it("blocks a script-based popup tab", async() =>
   {
-    EWE.filters.add(`|${TEST_PAGES_URL}/popup.html^$popup`);
+    await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
     if (isFirefox())
     {
       Page.removeCurrent();
@@ -49,20 +50,20 @@ describe("Pop-up blocking", function()
 
   it("blocks a script-based popup window", async() =>
   {
-    EWE.filters.add(`|${TEST_PAGES_URL}/popup.html^$popup`);
+    await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
     expect(await new Popup("script-window", opener).blocked).toBeTruthy();
   });
 
   it("blocks a script-based popup with deferred navigation", async() =>
   {
-    EWE.filters.add(`|${TEST_PAGES_URL}/popup.html^$popup`);
+    await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
     expect(await new Popup("script-deferred", opener).blocked).toBeTruthy();
   });
 
   it("does not block an allowlisted popup", async() =>
   {
-    EWE.filters.add(`|${TEST_PAGES_URL}/popup.html^$popup`);
-    EWE.filters.add(`@@|${TEST_PAGES_URL}/popup.html^$popup`);
+    await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
+    await addFilter(`@@|${TEST_PAGES_URL}/popup.html^$popup`);
     if (isFirefox())
     {
       Page.removeCurrent();
@@ -73,8 +74,8 @@ describe("Pop-up blocking", function()
 
   it("does not block a popup allowlisted by sitekey", async() =>
   {
-    EWE.filters.add(`|${TEST_PAGES_URL}/popup.html^$popup`);
-    EWE.filters.add(`@@$popup,sitekey=${SITEKEY}`);
+    await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
+    await addFilter(`@@$popup,sitekey=${SITEKEY}`);
     let popup = new Popup("link", new Page("popup-opener.html?sitekey=1"));
     expect(await popup.blocked).toBeFalsy();
   });
@@ -82,8 +83,8 @@ describe("Pop-up blocking", function()
   it("does not block a popup opened by " +
      "a document allowlisted by sitekey", async() =>
   {
-    EWE.filters.add(`|${TEST_PAGES_URL}/popup.html^$popup`);
-    EWE.filters.add(`@@$document,sitekey=${SITEKEY}`);
+    await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
+    await addFilter(`@@$document,sitekey=${SITEKEY}`);
     let popup = new Popup("link", new Page("popup-opener.html?sitekey=1"));
     expect(await popup.blocked).toBeFalsy();
   });

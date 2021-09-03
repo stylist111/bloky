@@ -17,10 +17,10 @@
 
 import browser from "webextension-polyfill";
 import expect from "expect";
-import sinon from "sinon/pkg/sinon.js";
 
 import {Page, Popup, setMinTimeout, waitForInvisibleElement, wait,
         TEST_PAGES_URL, TEST_PAGES_DOMAIN} from "./utils.js";
+import {addFilter, runInBackgroundPage, addFakeListener} from "./messaging.js";
 
 const VALID_SUBSCRIPTION_URL = "https://testpages.adblockplus.org/en/abp-testcase-subscription.txt";
 const INVALID_SUBSCRIPTION_URL = "invalidUrl";
@@ -37,6 +37,143 @@ const VALID_FILTER = {
 };
 const INVALID_FILTER_TEXT = "/foo/$rewrite=";
 
+let subscriptionsProp = [
+  {op: "getGlobal", arg: "EWE"},
+  {op: "getProp", arg: "subscriptions"}
+];
+let filtersProp = [
+  {op: "getGlobal", arg: "EWE"},
+  {op: "getProp", arg: "filters"}
+];
+
+function addSubscription(subscription)
+{
+  return runInBackgroundPage([
+    ...subscriptionsProp,
+    {op: "pushArg", arg: subscription},
+    {op: "callMethod", arg: "add"}
+  ]);
+}
+
+function disableSubscription(subscription)
+{
+  return runInBackgroundPage([
+    ...subscriptionsProp,
+    {op: "pushArg", arg: subscription},
+    {op: "callMethod", arg: "disable"}
+  ]);
+}
+
+function enableSubscription(subscription)
+{
+  return runInBackgroundPage([
+    ...subscriptionsProp,
+    {op: "pushArg", arg: subscription},
+    {op: "callMethod", arg: "enable"}
+  ]);
+}
+
+function removeSubscription(subscription)
+{
+  return runInBackgroundPage([
+    ...subscriptionsProp,
+    {op: "pushArg", arg: subscription},
+    {op: "callMethod", arg: "remove"}
+  ]);
+}
+
+function getDownloadable()
+{
+  return runInBackgroundPage([
+    ...subscriptionsProp,
+    {op: "callMethod", arg: "getDownloadable"}
+  ]);
+}
+
+function getAllFilters()
+{
+  return runInBackgroundPage([
+    ...filtersProp,
+    {op: "callMethod", arg: "getAll"}
+  ]);
+}
+
+function disableFilter(filter)
+{
+  return runInBackgroundPage([
+    ...filtersProp,
+    {op: "pushArg", arg: filter},
+    {op: "callMethod", arg: "disable"}
+  ]);
+}
+
+function enableFilter(filter)
+{
+  return runInBackgroundPage([
+    ...filtersProp,
+    {op: "pushArg", arg: filter},
+    {op: "callMethod", arg: "enable"}
+  ]);
+}
+
+function removeFilter(filter)
+{
+  return runInBackgroundPage([
+    ...filtersProp,
+    {op: "pushArg", arg: filter},
+    {op: "callMethod", arg: "remove"}
+  ]);
+}
+
+function validateFilter(filter)
+{
+  return runInBackgroundPage([
+    ...filtersProp,
+    {op: "pushArg", arg: filter},
+    {op: "callMethod", arg: "validate"}
+  ]);
+}
+
+function getAllowingFilters(tabId, opts)
+{
+  return runInBackgroundPage([
+    ...filtersProp,
+    {op: "pushArg", arg: tabId},
+    {op: "pushArg", arg: opts},
+    {op: "callMethod", arg: "getAllowingFilters"}
+  ]);
+}
+
+function setElementHidingDebugMode(enabled)
+{
+  return runInBackgroundPage([
+    {op: "getGlobal", arg: "EWE"},
+    {op: "getProp", arg: "debugging"},
+    {op: "pushArg", arg: enabled},
+    {op: "callMethod", arg: "setElementHidingDebugMode"}
+  ]);
+}
+
+function setElementHidingDebugStyle(cssProperties, cssSnippetProperties)
+{
+  return runInBackgroundPage([
+    {op: "getGlobal", arg: "EWE"},
+    {op: "getProp", arg: "debugging"},
+    {op: "pushArg", arg: cssProperties},
+    {op: "pushArg", arg: cssSnippetProperties},
+    {op: "callMethod", arg: "setElementHidingDebugStyle"}
+  ]);
+}
+
+function getFirstVersion()
+{
+  return runInBackgroundPage([
+    {op: "getGlobal", arg: "EWE"},
+    {op: "getProp", arg: "reporting"},
+    {op: "callMethod", arg: "getFirstVersion"}
+  ]);
+}
+
 describe("API", () =>
 {
   afterEach(() =>
@@ -47,11 +184,11 @@ describe("API", () =>
 
   describe("Subscriptions", () =>
   {
-    it("adds a subscription", () =>
+    it("adds a subscription", async() =>
     {
-      EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
+      await addSubscription(VALID_SUBSCRIPTION_URL);
 
-      let subscriptions = EWE.subscriptions.getDownloadable();
+      let subscriptions = await getDownloadable();
       expect(subscriptions).toEqual([expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
         enabled: true,
@@ -61,14 +198,19 @@ describe("API", () =>
       })]);
     });
 
-    it("adds a subscription with properties", () =>
+    it("adds a subscription with properties", async() =>
     {
       let title = "testTitle";
       let homepage = "testHomePage";
 
-      EWE.subscriptions.add(VALID_SUBSCRIPTION_URL, {title, homepage});
+      await runInBackgroundPage([
+        ...subscriptionsProp,
+        {op: "pushArg", arg: VALID_SUBSCRIPTION_URL},
+        {op: "pushArg", arg: {title, homepage}},
+        {op: "callMethod", arg: "add"}
+      ]);
 
-      let subscriptions = EWE.subscriptions.getDownloadable();
+      let subscriptions = await getDownloadable();
       expect(subscriptions).toEqual([expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
         enabled: true,
@@ -79,118 +221,146 @@ describe("API", () =>
     });
 
     it("does not add an invalid subscription", () =>
-    {
-      expect(() => EWE.subscriptions.add(INVALID_SUBSCRIPTION_URL))
-        .toThrowError("Invalid subscription URL");
-    });
+      expect(addSubscription(INVALID_SUBSCRIPTION_URL)).rejects.toThrow(
+        "Error: Invalid subscription URL provided: invalidUrl"
+      )
+    );
 
-    it("adds multiple subscriptions", () =>
+    it("adds multiple subscriptions", async() =>
     {
-      EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
-      EWE.subscriptions.add(VALID_SUBSCRIPTION_URL + "?2");
+      await addSubscription(VALID_SUBSCRIPTION_URL);
+      await addSubscription(VALID_SUBSCRIPTION_URL + "?2");
 
-      let subscriptions = EWE.subscriptions.getDownloadable();
+      let subscriptions = await getDownloadable();
       expect(subscriptions).toEqual([
         expect.objectContaining({url: VALID_SUBSCRIPTION_URL}),
         expect.objectContaining({url: VALID_SUBSCRIPTION_URL + "?2"})
       ]);
     });
 
-    it("gets subscriptions for a filter", () =>
+    it("gets subscriptions for a filter", async() =>
     {
-      EWE.filters.add(VALID_FILTER_TEXT);
+      await addFilter(VALID_FILTER_TEXT);
 
-      expect(EWE.subscriptions.getForFilter(VALID_FILTER_TEXT)).toEqual([
+      let result = await runInBackgroundPage([
+        ...subscriptionsProp,
+        {op: "pushArg", arg: VALID_FILTER_TEXT},
+        {op: "callMethod", arg: "getForFilter"}
+      ]);
+
+      expect(result).toEqual([
         expect.objectContaining({downloadable: false})
       ]);
     });
 
     it("gets filters from a subscription", async() =>
     {
-      expect(EWE.subscriptions.getFilters(VALID_SUBSCRIPTION_URL)).toEqual([]);
+      let result = await runInBackgroundPage([
+        ...subscriptionsProp,
+        {op: "pushArg", arg: VALID_SUBSCRIPTION_URL},
+        {op: "callMethod", arg: "getFilters"}
+      ]);
 
-      EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
+      expect(result).toEqual([]);
 
-      let filters;
-      await wait(() =>
+      await addSubscription(VALID_SUBSCRIPTION_URL);
+
+      await wait(async() =>
       {
-        filters = EWE.subscriptions.getFilters(VALID_SUBSCRIPTION_URL);
-        return filters.length > 0;
+        result = await runInBackgroundPage([
+          ...subscriptionsProp,
+          {op: "pushArg", arg: VALID_SUBSCRIPTION_URL},
+          {op: "callMethod", arg: "getFilters"}
+        ]);
+
+        return result.length > 0;
       }, 4000);
 
-      expect(filters).toEqual(expect.arrayContaining([expect.objectContaining(
+      expect(result).toEqual(expect.arrayContaining([expect.objectContaining(
         {text: "||testpages.adblockplus.org/testfiles/image/static/$image"}
       )]));
     });
 
-    it("checks if a subscription has been added", () =>
+    it("checks if a subscription has been added", async() =>
     {
-      expect(EWE.subscriptions.has(VALID_SUBSCRIPTION_URL)).toBeFalsy();
-      EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
-      expect(EWE.subscriptions.has(VALID_SUBSCRIPTION_URL)).toBeTruthy();
+      let result = await runInBackgroundPage([
+        ...subscriptionsProp,
+        {op: "pushArg", arg: VALID_SUBSCRIPTION_URL},
+        {op: "callMethod", arg: "has"}
+      ]);
+      expect(result).toBe(false);
+      await addSubscription(VALID_SUBSCRIPTION_URL);
+
+      result = await runInBackgroundPage([
+        ...subscriptionsProp,
+        {op: "pushArg", arg: VALID_SUBSCRIPTION_URL},
+        {op: "callMethod", arg: "has"}
+      ]);
+      expect(result).toBe(true);
     });
 
-    it("disables an existing subscription", () =>
+    it("disables an existing subscription", async() =>
     {
-      EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
-      EWE.subscriptions.disable(VALID_SUBSCRIPTION_URL);
+      await addSubscription(VALID_SUBSCRIPTION_URL);
+      await disableSubscription(VALID_SUBSCRIPTION_URL);
 
-      let subscriptions = EWE.subscriptions.getDownloadable();
+      let subscriptions = await getDownloadable();
       expect(subscriptions).toEqual([expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
         enabled: false
       })]);
     });
 
-    it("enables an existing subscription", () =>
+    it("enables an existing subscription", async() =>
     {
-      EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
-      EWE.subscriptions.disable(VALID_SUBSCRIPTION_URL);
-      EWE.subscriptions.enable(VALID_SUBSCRIPTION_URL);
+      await addSubscription(VALID_SUBSCRIPTION_URL);
+      await disableSubscription(VALID_SUBSCRIPTION_URL);
+      await enableSubscription(VALID_SUBSCRIPTION_URL);
 
-      let subscriptions = EWE.subscriptions.getDownloadable();
+      let subscriptions = await getDownloadable();
       expect(subscriptions).toEqual([expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
         enabled: true
       })]);
     });
 
-    it("enables a subscription that is already enabled.", () =>
+    it("enables a subscription that is already enabled.", async() =>
     {
-      EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
-      EWE.subscriptions.enable(VALID_SUBSCRIPTION_URL);
+      await addSubscription(VALID_SUBSCRIPTION_URL);
+      await enableSubscription(VALID_SUBSCRIPTION_URL);
 
-      let subscriptions = EWE.subscriptions.getDownloadable();
+      let subscriptions = await getDownloadable();
       expect(subscriptions).toEqual([expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
         enabled: true
       })]);
     });
 
-    it("fails enabling/disabling a nonexistent subscription", () =>
+    it("fails enabling/disabling a nonexistent subscription", async() =>
     {
-      expect(
-        () => EWE.subscriptions.enable("DoesNotExist")
-      ).toThrowError("Subscription does not exist");
-
-      expect(
-        () => EWE.subscriptions.disable("DoesNotExist")
-      ).toThrowError("Subscription does not exist");
+      let errorMessage = "Error: Subscription does not exist: DoesNotExist";
+      await expect(enableSubscription("DoesNotExist"))
+        .rejects.toThrow(errorMessage);
+      await expect(disableSubscription("DoesNotExist"))
+        .rejects.toThrow(errorMessage);
     });
 
-    it("removes a subscription", () =>
+    it("removes a subscription", async() =>
     {
-      EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
-      EWE.subscriptions.remove(VALID_SUBSCRIPTION_URL);
+      await addSubscription(VALID_SUBSCRIPTION_URL);
+      await removeSubscription(VALID_SUBSCRIPTION_URL);
 
-      expect(EWE.subscriptions.getDownloadable()).toEqual([]);
+      expect(await getDownloadable()).toEqual([]);
     });
 
-    it("gets recommendations", () =>
+    it("gets recommendations", async() =>
     {
-      let recommendations = EWE.subscriptions.getRecommendations();
+      let result = await runInBackgroundPage([
+        ...subscriptionsProp,
+        {op: "callMethod", arg: "getRecommendations"}
+      ]);
 
-      expect(recommendations).toEqual(expect.arrayContaining([
+      expect(result).toEqual(expect.arrayContaining([
         expect.objectContaining({
           languages: ["en"],
           title: "EasyList",
@@ -199,7 +369,7 @@ describe("API", () =>
         })
       ]));
 
-      for (let item of recommendations)
+      for (let item of result)
       {
         expect(item).toEqual({
           languages: expect.any(Object),
@@ -213,13 +383,10 @@ describe("API", () =>
       }
     });
 
-    it("listens to onAdded events", () =>
+    it("listens to onAdded events", async() =>
     {
-      let fake = sinon.fake();
-
-      EWE.subscriptions.onAdded.addListener(fake);
-      EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
-      EWE.subscriptions.onAdded.removeListener(fake);
+      let fake = await addFakeListener("subscriptions", "onAdded");
+      await addSubscription(VALID_SUBSCRIPTION_URL);
 
       expect(fake.callCount).toBe(1);
       expect(fake.firstArg).toEqual(expect.objectContaining({
@@ -229,14 +396,11 @@ describe("API", () =>
       }));
     });
 
-    it("listens to onChanged events", () =>
+    it("listens to onChanged events", async() =>
     {
-      let fake = sinon.fake();
-
-      EWE.subscriptions.onChanged.addListener(fake);
-      EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
-      EWE.subscriptions.disable(VALID_SUBSCRIPTION_URL);
-      EWE.subscriptions.onChanged.removeListener(fake);
+      let fake = await addFakeListener("subscriptions", "onChanged");
+      await addSubscription(VALID_SUBSCRIPTION_URL);
+      await disableSubscription(VALID_SUBSCRIPTION_URL);
 
       expect(fake.callCount).toBe(1);
       expect(fake.firstArg).toEqual(expect.objectContaining({
@@ -245,14 +409,11 @@ describe("API", () =>
       }));
     });
 
-    it("listens to onRemoved events", () =>
+    it("listens to onRemoved events", async() =>
     {
-      let fake = sinon.fake();
-
-      EWE.subscriptions.onRemoved.addListener(fake);
-      EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
-      EWE.subscriptions.remove(VALID_SUBSCRIPTION_URL);
-      EWE.subscriptions.onRemoved.removeListener(fake);
+      let fake = await addFakeListener("subscriptions", "onRemoved");
+      await addSubscription(VALID_SUBSCRIPTION_URL);
+      await removeSubscription(VALID_SUBSCRIPTION_URL);
 
       expect(fake.callCount).toBe(1);
       expect(fake.firstArg).toEqual(
@@ -264,14 +425,12 @@ describe("API", () =>
     {
       setMinTimeout(this, 5000);
 
-      let previousDownload = 0;
-      let syncedOne = false;
-      let syncedAll = false;
-
-      EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
-
       await new Promise((resolve, reject) =>
       {
+        let previousDownload = 0;
+        let syncedOne = false;
+        let syncedAll = false;
+
         async function onChanged(subscription)
         {
           try
@@ -286,211 +445,193 @@ describe("API", () =>
             {
               syncedOne = true;
               await new Promise(elapsed => setTimeout(elapsed, 1000));
-              EWE.subscriptions.sync(VALID_SUBSCRIPTION_URL);
+              await runInBackgroundPage([
+                ...subscriptionsProp,
+                {op: "pushArg", arg: VALID_SUBSCRIPTION_URL},
+                {op: "callMethod", arg: "sync"}
+              ]);
             }
             else if (!syncedAll)
             {
               syncedAll = true;
               await new Promise(elapsed => setTimeout(elapsed, 1000));
-              EWE.subscriptions.sync();
+              await runInBackgroundPage([
+                ...subscriptionsProp,
+                {op: "callMethod", arg: "sync"}
+              ]);
             }
             else
             {
-              EWE.subscriptions.onChanged.removeListener(onChanged);
               resolve();
             }
           }
           catch (err)
           {
-            EWE.subscriptions.onChanged.removeListener(onChanged);
             reject(err);
           }
         }
 
-        EWE.subscriptions.onChanged.addListener(onChanged);
+        addFakeListener("subscriptions", "onChanged",
+                        void 0, void 0, onChanged)
+          .then(() => addSubscription(VALID_SUBSCRIPTION_URL))
+          .catch(reject);
       });
     });
   });
 
   describe("Filters", () =>
   {
-    it("adds a filter", () =>
+    it("adds a filter", async() =>
     {
-      EWE.filters.add(VALID_FILTER_TEXT);
+      await addFilter(VALID_FILTER_TEXT);
 
-      let filters = EWE.filters.getAll();
+      let filters = await getAllFilters();
       expect(filters).toEqual([VALID_FILTER]);
     });
 
     it("does not add an invalid filter", () =>
-    {
-      expect(() => EWE.filters.add(INVALID_FILTER_TEXT)).toThrowError(
-        JSON.stringify({
-          type: "invalid_filter",
-          reason: "filter_invalid_rewrite",
-          option: null
-        })
-      );
-    });
+      expect(addFilter(INVALID_FILTER_TEXT)).rejects.toThrow("FilterError")
+    );
 
-    it("adds multiple filters", () =>
+    it("adds multiple filters", async() =>
     {
-      EWE.filters.add(VALID_FILTER_TEXT);
-      EWE.filters.add("another-filter");
+      await addFilter(VALID_FILTER_TEXT);
+      await addFilter("another-filter");
 
-      let filters = EWE.filters.getAll();
+      let filters = await getAllFilters();
       expect(filters).toEqual([
         VALID_FILTER,
         {...VALID_FILTER, text: "another-filter"}
       ]);
     });
 
-    it("disable an existing filter", () =>
+    it("disable an existing filter", async() =>
     {
-      EWE.filters.add(VALID_FILTER_TEXT);
-      EWE.filters.disable(VALID_FILTER_TEXT);
+      await addFilter(VALID_FILTER_TEXT);
+      await disableFilter(VALID_FILTER_TEXT);
 
-      let filters = EWE.filters.getAll();
+      let filters = await getAllFilters();
       expect(filters).toEqual([{...VALID_FILTER, enabled: false}]);
     });
 
-    it("enables an existing filter", () =>
+    it("enables an existing filter", async() =>
     {
-      EWE.filters.add(VALID_FILTER_TEXT);
-      EWE.filters.disable(VALID_FILTER_TEXT);
-      EWE.filters.enable(VALID_FILTER_TEXT);
+      await addFilter(VALID_FILTER_TEXT);
+      await disableFilter(VALID_FILTER_TEXT);
+      await enableFilter(VALID_FILTER_TEXT);
 
-      let filters = EWE.filters.getAll();
+      let filters = await getAllFilters();
       expect(filters).toEqual([VALID_FILTER]);
     });
 
-    it("enables a filter that is already enabled.", () =>
+    it("enables a filter that is already enabled.", async() =>
     {
-      EWE.filters.add(VALID_FILTER_TEXT);
-      EWE.filters.enable(VALID_FILTER_TEXT);
+      await addFilter(VALID_FILTER_TEXT);
+      await enableFilter(VALID_FILTER_TEXT);
 
-      let filters = EWE.filters.getAll();
+      let filters = await getAllFilters();
       expect(filters).toEqual([VALID_FILTER]);
     });
 
-    it("removes a filter", () =>
+    it("removes a filter", async() =>
     {
-      EWE.filters.add(VALID_FILTER_TEXT);
-      EWE.filters.remove(VALID_FILTER_TEXT);
+      await addFilter(VALID_FILTER_TEXT);
+      await removeFilter(VALID_FILTER_TEXT);
 
-      expect(EWE.filters.getAll()).toEqual([]);
+      expect(await getAllFilters()).toEqual([]);
     });
 
-    it("normalizes a filter internally", () =>
+    it("normalizes a filter internally", async() =>
     {
-      EWE.filters.add(VALID_FILTER_TEXT);
+      await addFilter(VALID_FILTER_TEXT);
 
       let PADDED_FILTER_TEXT = " " + VALID_FILTER_TEXT;
-      EWE.filters.add(PADDED_FILTER_TEXT);
-      expect(EWE.filters.getAll()).toEqual([VALID_FILTER]);
+      await addFilter(PADDED_FILTER_TEXT);
+      expect(await getAllFilters()).toEqual([VALID_FILTER]);
 
-      EWE.filters.disable(PADDED_FILTER_TEXT);
-      let filters = EWE.filters.getAll();
+      await disableFilter(PADDED_FILTER_TEXT);
+      let filters = await getAllFilters();
       expect(filters).toEqual([{...VALID_FILTER, enabled: false}]);
 
-      EWE.filters.enable(PADDED_FILTER_TEXT);
-      expect(EWE.filters.getAll()).toEqual([VALID_FILTER]);
+      await enableFilter(PADDED_FILTER_TEXT);
+      expect(await getAllFilters()).toEqual([VALID_FILTER]);
 
-      EWE.filters.remove(PADDED_FILTER_TEXT);
-      expect(EWE.filters.getAll()).toEqual([]);
+      await removeFilter(PADDED_FILTER_TEXT);
+      expect(await getAllFilters()).toEqual([]);
     });
 
-    it("validates a valid filter", () =>
+    it("validates a valid filter", async() =>
     {
-      expect(EWE.filters.validate(VALID_FILTER_TEXT)).toBeNull();
+      let result = await validateFilter(VALID_FILTER_TEXT);
+      expect(result).toBeNull();
     });
 
-    it("validates a filter with unknown option", () =>
+    it("validates a filter with unknown option", async() =>
     {
-      let props = {
-        type: "invalid_filter",
-        reason: "filter_unknown_option",
-        option: "foo"
-      };
-
-      let error = EWE.filters.validate("@@||example.com^$foo");
-      expect(error).toEqual(expect.objectContaining(props));
-      expect(error.toString()).toEqual(`FilterError: ${JSON.stringify(props)}`);
+      let result = await validateFilter("@@||example.com^$foo");
+      expect(result).toEqual("FilterError: {\"type\":\"invalid_filter\"," +
+                             "\"reason\":\"filter_unknown_option\"," +
+                             "\"option\":\"foo\"}");
     });
 
-    it("validates a filter with an invalid domain", () =>
+    it("validates a filter with an invalid domain", async() =>
     {
-      let props = {
-        type: "invalid_domain",
-        reason: "http://foo",
-        option: null
-      };
-
-      let error = EWE.filters.validate("/image.png$domain=http://foo");
-      expect(error).toEqual(expect.objectContaining(props));
-      expect(error.toString()).toEqual(`FilterError: ${JSON.stringify(props)}`);
+      let result = await validateFilter("/image.png$domain=http://foo");
+      // eslint-disable-next-line max-len
+      expect(result).toEqual("FilterError: {\"type\":\"invalid_domain\",\"reason\":\"http://foo\",\"option\":null}");
     });
 
-    it("produces the correct slow state for a URL filter", () =>
+    it("produces the correct slow state for a URL filter", async() =>
     {
-      EWE.filters.add("example##.site-panel");
+      await addFilter("example##.site-panel");
 
-      expect(EWE.filters.getAll()).toEqual([
+      expect(await getAllFilters()).toEqual([
         expect.objectContaining({slow: false})
       ]);
     });
 
-    it("has a selector property", () =>
+    it("has a selector property", async() =>
     {
-      EWE.filters.add("example##.site-panel");
+      await addFilter("example##.site-panel");
 
-      expect(EWE.filters.getAll()).toEqual([
+      expect(await getAllFilters()).toEqual([
         expect.objectContaining({selector: ".site-panel"})
       ]);
     });
 
-    it("has a csp property", () =>
+    it("has a csp property", async() =>
     {
-      EWE.filters.add("*$csp=img-src 'none'");
+      await addFilter("*$csp=img-src 'none'");
 
-      expect(EWE.filters.getAll()).toEqual([
+      expect(await getAllFilters()).toEqual([
         expect.objectContaining({csp: "img-src 'none'"})
       ]);
     });
 
-    it("listens to onAdded events", () =>
+    it("listens to onAdded events", async() =>
     {
-      let fake = sinon.fake();
-
-      EWE.filters.onAdded.addListener(fake);
-      EWE.filters.add(VALID_FILTER_TEXT);
-      EWE.filters.onAdded.removeListener(fake);
+      let fake = await addFakeListener("filters", "onAdded");
+      await addFilter(VALID_FILTER_TEXT);
 
       expect(fake.callCount).toBe(1);
       expect(fake.firstArg).toEqual(VALID_FILTER);
     });
 
-    it("listens to onChanged events", () =>
+    it("listens to onChanged events", async() =>
     {
-      let fake = sinon.fake();
-
-      EWE.filters.onChanged.addListener(fake);
-      EWE.filters.add(VALID_FILTER_TEXT);
-      EWE.filters.disable(VALID_FILTER_TEXT);
-      EWE.filters.onChanged.removeListener(fake);
+      let fake = await addFakeListener("filters", "onChanged");
+      await addFilter(VALID_FILTER_TEXT);
+      await disableFilter(VALID_FILTER_TEXT);
 
       expect(fake.callCount).toBe(1);
       expect(fake.firstArg).toEqual({...VALID_FILTER, enabled: false});
     });
 
-    it("listens to onRemoved events", () =>
+    it("listens to onRemoved events", async() =>
     {
-      let fake = sinon.fake();
-
-      EWE.filters.onRemoved.addListener(fake);
-      EWE.filters.add(VALID_FILTER_TEXT);
-      EWE.filters.remove(VALID_FILTER_TEXT);
-      EWE.filters.onRemoved.removeListener(fake);
+      let fake = await addFakeListener("filters", "onRemoved");
+      await addFilter(VALID_FILTER_TEXT);
+      await removeFilter(VALID_FILTER_TEXT);
 
       expect(fake.callCount).toBe(1);
       expect(fake.firstArg).toEqual({...VALID_FILTER, enabled: false});
@@ -503,11 +644,11 @@ describe("API", () =>
 
       it("returns filters for allowlisted tabs", async() =>
       {
-        EWE.filters.add(`|${TEST_PAGES_URL}/image.png^`);
-        EWE.filters.add(ALLOWING_IMAGE_DOC_FILTER);
+        await addFilter(`|${TEST_PAGES_URL}/image.png^`);
+        await addFilter(ALLOWING_IMAGE_DOC_FILTER);
 
         let tabId = await new Page("image.html").loaded();
-        expect(EWE.filters.getAllowingFilters(tabId)).toEqual(
+        expect(await getAllowingFilters(tabId)).toEqual(
           [ALLOWING_IMAGE_DOC_FILTER]);
       });
 
@@ -522,23 +663,23 @@ describe("API", () =>
 
       it("returns filters for allowlisted frames", async() =>
       {
-        EWE.filters.add(ALLOWING_IMAGE_DOC_FILTER);
+        await addFilter(ALLOWING_IMAGE_DOC_FILTER);
 
         let {tabId, frameId} = await loadTabWithFrame();
-        expect(EWE.filters.getAllowingFilters(tabId, {frameId})).toEqual(
+        expect(await getAllowingFilters(tabId, {frameId})).toEqual(
           [ALLOWING_IMAGE_DOC_FILTER]);
-        expect(EWE.filters.getAllowingFilters(tabId)).toEqual([]);
+        expect(await getAllowingFilters(tabId)).toEqual([]);
 
-        EWE.filters.add(`@@|${TEST_PAGES_URL}/iframe.html^$document`);
+        await addFilter(`@@|${TEST_PAGES_URL}/iframe.html^$document`);
 
         ({tabId, frameId} = await loadTabWithFrame());
 
         const ALLOWING_IFRAME_DOC_FILTER =
           `@@|${TEST_PAGES_URL}/iframe.html^$document`;
 
-        expect(EWE.filters.getAllowingFilters(tabId, {frameId})).toEqual([
+        expect(await getAllowingFilters(tabId, {frameId})).toEqual([
           ALLOWING_IFRAME_DOC_FILTER, ALLOWING_IMAGE_DOC_FILTER]);
-        expect(EWE.filters.getAllowingFilters(tabId)).toEqual([
+        expect(await getAllowingFilters(tabId)).toEqual([
           ALLOWING_IFRAME_DOC_FILTER]);
       });
 
@@ -546,48 +687,42 @@ describe("API", () =>
       {
         let filter = `@@|${TEST_PAGES_URL}/*.html$elemhide`;
 
-        EWE.filters.add(`|${TEST_PAGES_URL}/image.png^`);
-        EWE.filters.add(ALLOWING_IMAGE_DOC_FILTER);
-        EWE.filters.add(filter);
+        await addFilter(`|${TEST_PAGES_URL}/image.png^`);
+        await addFilter(ALLOWING_IMAGE_DOC_FILTER);
+        await addFilter(filter);
 
         let tabId = await new Page("image.html").loaded();
         let opts = {types: ["elemhide"]};
-        expect(EWE.filters.getAllowingFilters(tabId, opts)).toEqual([filter]);
+        expect(await getAllowingFilters(tabId, opts)).toEqual([filter]);
       });
 
       it("doesn't return filters for non-allowlisted tabs", async() =>
       {
         let tabId = await new Page("image.html").loaded();
-        expect(EWE.filters.getAllowingFilters(tabId)).toEqual([]);
+        expect(await getAllowingFilters(tabId)).toEqual([]);
       });
 
       it("doesn't return filters for non-allowlisted frames", async() =>
       {
         let {tabId, frameId} = await loadTabWithFrame();
-        expect(EWE.filters.getAllowingFilters(tabId, {frameId})).toEqual([]);
-        expect(EWE.filters.getAllowingFilters(tabId)).toEqual([]);
+        expect(await getAllowingFilters(tabId, {frameId})).toEqual([]);
+        expect(await getAllowingFilters(tabId)).toEqual([]);
       });
 
       it("handles empty tabs", async() =>
       {
         let tabId = await new Page("about:blank", true).loaded();
-        expect(EWE.filters.getAllowingFilters(tabId)).toEqual([]);
+        expect(await getAllowingFilters(tabId)).toEqual([]);
       });
     });
   });
 
   describe("Initialization", () =>
   {
-    let background;
-
-    before(async() =>
+    after(async() =>
     {
-      background = await browser.runtime.getBackgroundPage();
-    });
-
-    after(() =>
-    {
-      delete background.uiLanguageOverride;
+      await browser.runtime.sendMessage(
+        {type: "ewe-test:deleteUiLanguageOverride"});
     });
 
     for (let [language, subscriptionUrl] of [
@@ -597,11 +732,10 @@ describe("API", () =>
     {
       it(`configures default subscriptions for ${language}`, async() =>
       {
-        background.uiLanguageOverride = language;
+        await browser.runtime.sendMessage(
+          {type: "ewe-test:setLanguageAndStart", args: [language]});
 
-        await EWE.start();
-
-        let subscriptions = EWE.subscriptions.getDownloadable();
+        let subscriptions = await getDownloadable();
         let urls = [
           subscriptionUrl,
           "https://easylist-downloads.adblockplus.org/exceptionrules.txt",
@@ -623,16 +757,21 @@ describe("API", () =>
 
     it("informs when the filter engine runs for the first time", async() =>
     {
-      let firstRun = EWE.start();
-      EWE.stop();
-      expect(await firstRun).toBeNull();
+      let result = await runInBackgroundPage([
+        {op: "getGlobal", arg: "EWE"},
+        {op: "callMethod", arg: "start"},
+        {op: "await"}
+      ]);
+      expect(result).toEqual({storageFirstRun: true,
+                              subscriptionsFirstRun: true});
 
-      expect(await EWE.start()).toEqual(
-        {storageFirstRun: true, subscriptionsFirstRun: true});
-
-      EWE.stop();
-      expect(await EWE.start()).toEqual(
-        {storageFirstRun: true, subscriptionsFirstRun: false});
+      result = await runInBackgroundPage([
+        {op: "getGlobal", arg: "EWE"},
+        {op: "callMethod", arg: "start"},
+        {op: "await"}
+      ]);
+      expect(result).toEqual({storageFirstRun: true,
+                              subscriptionsFirstRun: false});
     });
   });
 
@@ -644,9 +783,9 @@ describe("API", () =>
       {
         let today = new Date().toISOString().substring(0, 10).replace(/-/g, "");
 
-        await wait(() => EWE.reporting.getFirstVersion() != "0", 1000,
+        await wait(async() => await getFirstVersion() != "0", 1000,
                    "No resource has been downloaded yet.");
-        expect(EWE.reporting.getFirstVersion()).toBe(today);
+        expect(await getFirstVersion()).toBe(today);
       });
     });
 
@@ -654,10 +793,8 @@ describe("API", () =>
     {
       async function checkLogging(filter, callback, info = {}, checkUrl = true)
       {
-        let fake = sinon.fake();
-
-        EWE.reporting.onFilterMatch.addListener(fake);
-        EWE.filters.add(filter.text);
+        let fake = await addFakeListener("reporting", "onFilterMatch");
+        await addFilter(filter.text);
 
         try
         {
@@ -665,8 +802,7 @@ describe("API", () =>
         }
         finally
         {
-          EWE.reporting.onFilterMatch.removeListener(fake);
-          EWE.filters.remove(filter.text);
+          await removeFilter(filter.text);
         }
 
         expect(fake.called).toBeTruthy();
@@ -714,7 +850,7 @@ describe("API", () =>
 
       it("logs allowlisting request filter", async() =>
       {
-        EWE.filters.add("/image.png^$image");
+        await addFilter("/image.png^$image");
         await checkRequestLogging("image.html", {
           text: "@@$image",
           type: "allowing"
@@ -746,7 +882,7 @@ describe("API", () =>
 
       it("logs allowlisting $header filter", async() =>
       {
-        EWE.filters.add("*$header=x-header=whatever");
+        await addFilter("*$header=x-header=whatever");
         await checkRequestLogging("header.html", {text: "@@$header"});
       });
 
@@ -758,7 +894,7 @@ describe("API", () =>
 
       it("logs allowlisting $csp filter", async() =>
       {
-        EWE.filters.add("*$csp=img-src 'none'");
+        await addFilter("*$csp=img-src 'none'");
         await checkRequestLogging("csp.html", {text: "@@$csp"},
                                   {matchingMethod: "csp"});
       });
@@ -802,23 +938,39 @@ describe("API", () =>
 
       it("logs allowlisting popup filter", async() =>
       {
-        EWE.filters.add("*popup.html^$popup");
+        await addFilter("*popup.html^$popup");
         await checkPopupLogging("@@$popup");
       });
     });
 
     describe("Notifications", () =>
     {
-      it("supports notifications", () =>
+      it("supports notifications", async() =>
       {
         let notification = {id: "test"};
-        let fake = sinon.fake();
 
-        EWE.notifications.addNotification(notification);
-        EWE.notifications.addShowListener(fake);
-        EWE.notifications.showNext();
-        EWE.notifications.removeShowListener(fake);
-        EWE.notifications.removeNotification(notification);
+        await runInBackgroundPage([
+          {op: "getGlobal", arg: "EWE"},
+          {op: "getProp", arg: "notifications"},
+          {op: "pushArg", arg: notification},
+          {op: "callMethod", arg: "addNotification"}
+        ]);
+
+        let fake = await addFakeListener("notifications", null,
+                                         "addShowListener",
+                                         "removeShowListener");
+        await runInBackgroundPage([
+          {op: "getGlobal", arg: "EWE"},
+          {op: "getProp", arg: "notifications"},
+          {op: "callMethod", arg: "showNext"}
+        ]);
+
+        await runInBackgroundPage([
+          {op: "getGlobal", arg: "EWE"},
+          {op: "getProp", arg: "notifications"},
+          {op: "pushArg", arg: notification},
+          {op: "callMethod", arg: "removeNotification"}
+        ]);
 
         expect(fake.callCount).toBe(1);
         expect(fake.firstArg).toEqual(notification);
@@ -839,8 +991,8 @@ describe("API", () =>
 
     it("highlights an element", async() =>
     {
-      EWE.debugging.setElementHidingDebugMode(true);
-      EWE.filters.add("###elem-hide");
+      await setElementHidingDebugMode(true);
+      await addFilter("###elem-hide");
 
       let tabId = await new Page("element-hiding.html").loaded();
       let code = `window.getComputedStyle(
@@ -853,27 +1005,27 @@ describe("API", () =>
         return style != "rgba(0, 0, 0, 0)";
       }, 500);
 
-      EWE.debugging.setElementHidingDebugMode(false);
+      await setElementHidingDebugMode(false);
       expect(style).toBe("rgb(230, 115, 112)");
     });
 
     it("doesn't highlight an element when disabled", async() =>
     {
-      EWE.debugging.setElementHidingDebugMode(true);
-      EWE.debugging.setElementHidingDebugMode(false);
+      await setElementHidingDebugMode(true);
+      await setElementHidingDebugMode(false);
 
-      EWE.filters.add("###elem-hide");
+      await addFilter("###elem-hide");
       let style = await getElementStyle("elem-hide", "background-color");
       expect(style).toBe("rgba(0, 0, 0, 0)");
     });
 
     it("highlights an element with a custom style", async() =>
     {
-      EWE.debugging.setElementHidingDebugMode(true);
-      EWE.debugging.setElementHidingDebugStyle([["background", "pink"]]);
-      EWE.filters.add("###elem-hide");
+      await setElementHidingDebugMode(true);
+      await setElementHidingDebugStyle([["background", "pink"]]);
+      await addFilter("###elem-hide");
       let style = await getElementStyle("elem-hide", "background-color");
-      EWE.debugging.setElementHidingDebugMode(false);
+      await setElementHidingDebugMode(false);
       expect(style).toBe("rgb(255, 192, 203)");
     });
   });

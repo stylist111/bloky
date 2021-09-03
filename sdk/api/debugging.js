@@ -57,12 +57,13 @@ export default {
 
   /**
    * @ignore
+   * @param {string} text
    */
-  async getFilterStorageSource()
+  async isInFilterStorage(text)
   {
     let contents = [];
     await IO.readFromFile(filterStorage.sourceFile,
                           line => contents.push(line));
-    return contents;
+    return contents.some(line => line.includes(text));
   }
 };
