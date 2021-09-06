@@ -41,7 +41,7 @@
     "express": "^4.17.1",
     "extract-zip": "^2.0.1",
     "fs-extra": "^10.0.0",
-    "geckodriver": "^2.0.0",
+    "geckodriver": "^2.0.4",
     "got": "^11.8.2",
     "msedgedriver": "^87.0.13",
     "on-headers": "^1.0.2",
