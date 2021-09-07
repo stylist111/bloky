@@ -15,11 +15,10 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import browser from "webextension-polyfill";
 import expect from "expect";
 
-import {Page, waitForInvisibleElement, TEST_PAGES_DOMAIN, TEST_PAGES_URL}
-  from "./utils.js";
+import {Page, waitForInvisibleElement, executeScript, TEST_PAGES_DOMAIN,
+        TEST_PAGES_URL} from "./utils.js";
 import {addFilter, setTestSnippets} from "./messaging.js";
 
 describe("Element Hiding", () =>
@@ -29,11 +28,13 @@ describe("Element Hiding", () =>
   async function getVisibleElement(id)
   {
     let tabId = await new Page("element-hiding.html").loaded();
-    let code = `let el = document.getElementById("${id}");
-                el.offsetParent ? el.outerHTML : null`;
     // hiding elements may take a few ms on CI
     await new Promise(r => setTimeout(r, 200));
-    return (await browser.tabs.executeScript(tabId, {code}))[0];
+    return await executeScript(tabId, elemId =>
+    {
+      let el = document.getElementById(elemId);
+      return el.offsetParent ? el.outerHTML : null;
+    }, [id]);
   }
 
   it("hides an element", async() =>
@@ -122,8 +123,6 @@ describe("Snippets", () =>
     await addFilter(`${TEST_PAGES_DOMAIN}#$#${snippet}`);
 
     let tabId = await new Page("image.html").loaded();
-    let results = await browser.tabs.executeScript(tabId, {code: "works;"});
-
-    expect(results[0]).toBe(true);
+    expect(await executeScript(tabId, () => self.works)).toBe(true);
   });
 });

@@ -19,7 +19,7 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 
 import {Page, Popup, setMinTimeout, waitForInvisibleElement, wait,
-        TEST_PAGES_URL, TEST_PAGES_DOMAIN} from "./utils.js";
+        executeScript, TEST_PAGES_URL, TEST_PAGES_DOMAIN} from "./utils.js";
 import {addFilter, runInBackgroundPage, addFakeListener, setTestSnippets}
   from "./messaging.js";
 
@@ -1017,8 +1017,11 @@ describe("API", () =>
 
   describe("Debugging", async() =>
   {
-    let code = `window.getComputedStyle(
-      document.getElementById('elem-hide'))['background-color']`;
+    function getBackgroundColor()
+    {
+      let elem = document.getElementById("elem-hide");
+      return window.getComputedStyle(elem)["background-color"];
+    }
 
     async function waitForHighlightedStyle()
     {
@@ -1026,7 +1029,7 @@ describe("API", () =>
       let style;
       await wait(async() =>
       {
-        style = (await browser.tabs.executeScript(tabId, {code}))[0];
+        style = await executeScript(tabId, getBackgroundColor);
         return style != "rgba(0, 0, 0, 0)";
       }, 500);
 
@@ -1049,7 +1052,7 @@ describe("API", () =>
       await setElementHidingDebugMode(false);
       await addFilter("###elem-hide");
       let tabId = await new Page("element-hiding.html").loaded();
-      let style = (await browser.tabs.executeScript(tabId, {code}))[0];
+      let style = await executeScript(tabId, getBackgroundColor);
 
       expect(style).toBe("rgba(0, 0, 0, 0)");
     });

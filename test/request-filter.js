@@ -15,11 +15,10 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import browser from "webextension-polyfill";
 import expect from "expect";
 
-import {Page, Resource, TEST_PAGES_URL, TEST_PAGES_DOMAIN, SITEKEY}
-  from "./utils.js";
+import {Page, Resource, executeScript, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
+        SITEKEY} from "./utils.js";
 import {addFilter} from "./messaging.js";
 
 describe("Blocking", () =>
@@ -78,8 +77,9 @@ describe("Blocking", () =>
     await addFilter(
       `*.js$rewrite=abp-resource:blank-js,domain=${TEST_PAGES_DOMAIN}`);
     let tabId = await new Page("script.html").loaded();
-    let code = "document.documentElement.dataset.setByScript;";
-    expect((await browser.tabs.executeScript(tabId, {code}))[0]).toBeFalsy();
+    let result = await executeScript(
+      tabId, () => document.documentElement.dataset.setByScript);
+    expect(result).toBeFalsy();
   });
 
   it("blocks $domain requests", async() =>
@@ -201,8 +201,8 @@ describe("Blocking", () =>
     async function checkViolatedDirective(query = "")
     {
       let tabId = await new Page(`csp.html${query}`).loaded();
-      let code = "document.documentElement.dataset.violatedDirective";
-      return (await browser.tabs.executeScript(tabId, {code}))[0];
+      return await executeScript(
+        tabId, () => document.documentElement.dataset.violatedDirective);
     }
 
     it("injects header", async() =>

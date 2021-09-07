@@ -39,6 +39,21 @@ function handleConnection(details, tabId, removeListeners, reject)
   }
 }
 
+export async function executeScript(tabId, func, args)
+{
+  if (browser.scripting)
+  {
+    let {result} =
+      await browser.scripting.executeScript({target: {tabId}, func, args});
+    return result;
+  }
+
+  let argsString = args ? args.map(JSON.stringify).join(",") : "";
+  return (await browser.tabs.executeScript(
+    tabId, {code: `(${func})(${argsString});`})
+  )[0];
+}
+
 export class Page
 {
   constructor(path, fullUrl = false)
@@ -202,8 +217,11 @@ export class Popup
           handleConnection(details, openerTabId, removeListeners, reject);
         }
 
-        let code = `document.getElementById("${id}").click()`;
-        browser.tabs.executeScript(openerTabId, {code}).catch(err =>
+        executeScript(
+          openerTabId,
+          elemId => document.getElementById(elemId).click(),
+          [id]
+        ).catch(err =>
         {
           removeListeners();
           reject(err);
@@ -272,13 +290,15 @@ export function setMinTimeout(runnable, timeout)
 
 export async function waitForInvisibleElement(tabId, id)
 {
-  let code = `var el = document.getElementById("${id}");
-              el.offsetParent ? el.outerHTML : null`;
-  await wait(
-    async() => (await browser.tabs.executeScript(tabId, {code}))[0] == null,
-    1000,
-    `The element with id "${id}" is still visible`
-  );
+  await wait(async() =>
+  {
+    let result = await executeScript(tabId, elemId =>
+    {
+      let el = document.getElementById(elemId);
+      return el.offsetParent ? el.outerHTML : null;
+    }, [id]);
+    return result == null;
+  }, 1000, `The element with id "${id}" is still visible`);
 }
 
 export function wait(condition, timeout = 0, message, pollTimeout = 100)

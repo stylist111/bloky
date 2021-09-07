@@ -139,6 +139,7 @@ EWE.start().then(async() =>
   }
 
   chrome.tabs.create({url: "index.html"});
-  if (localStorage.getItem("reload-test-running"))
+  if (typeof localStorage != "undefined" &&
+      localStorage.getItem("reload-test-running"))
     chrome.tabs.create({url: "reload.html"});
 });

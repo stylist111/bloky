@@ -110,7 +110,7 @@ export default (env = {}) =>
       ],
       permissions: [
         "webNavigation", "webRequest", "storage", "unlimitedStorage",
-        ...manifestVersion >= 3 ? ["scripting"] :
+        ...manifestVersion >= 3 ? ["scripting", "declarativeNetRequest"] :
                                   ["webRequestBlocking", "<all_urls>"]
       ],
       ...manifestVersion >= 3 ? {host_permissions: ["<all_urls>"]} : {}
