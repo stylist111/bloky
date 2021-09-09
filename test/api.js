@@ -840,7 +840,10 @@ describe("API", () =>
             frameId: expect.any(Number)
           }),
           filter: expect.objectContaining(filter),
-          info: expect.objectContaining(info)
+          info: expect.objectContaining({
+            docDomain: "localhost",
+            ...info
+          })
         });
       }
 
@@ -875,7 +878,6 @@ describe("API", () =>
           text: `@@|${TEST_PAGES_URL}$image`,
           type: "allowing"
         }, {
-          docDomain: "localhost",
           specificOnly: false,
           matchingMethod: "header"
         });
@@ -887,7 +889,6 @@ describe("API", () =>
           "script.html",
           {text: "*.js$rewrite=abp-resource:blank-js,domain=localhost"},
           {
-            docDomain: "localhost",
             rewrittenUrl: "data:application/javascript,",
             specificOnly: false
           });
@@ -933,6 +934,15 @@ describe("API", () =>
           {matchingMethod: "allowing", allowingReason: option.substring(1)}
         ));
       }
+
+      it("logs allowlisting for different domain iframe", async() =>
+      {
+        let url = "http://127.0.0.1:3000/iframe.html";
+        await checkLogging({text: `@@|${TEST_PAGES_URL}/image.html^$document`},
+                           () => new Page(url, true).loaded(),
+                           {matchingMethod: "allowing",
+                            docDomain: "127.0.0.1"});
+      });
 
       it("logs element hiding filter", async() =>
       {

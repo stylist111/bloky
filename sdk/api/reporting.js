@@ -44,8 +44,8 @@ export default {
 
   /**
   * @typedef {Object} FilterMatchInfo
-  * @property {string|undefined} docDomain The domain name of the document that
-  *                                        loads the URL.
+  * @property {string} docDomain The domain name of the document that loads
+  *                              the URL.
   * @property {string|undefined} rewrittenUrl The name of the internal resource
   *                                           to which to rewrite the URL.
   * @property {boolean|undefined} specificOnly Whether selectors from generic

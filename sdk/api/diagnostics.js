@@ -40,11 +40,14 @@ export function logHiddenElements(selectors, filters, sender)
     frameId: sender.frameId,
     url: sender.url
   };
+  let {hostname} = parseURL(sender.url);
+  let info = {
+    docDomain: hostname,
+    matchingMethod: "elemhide"
+  };
 
   if (selectors.length > 0)
   {
-    let {hostname} = parseURL(sender.url);
-
     for (let subscription of filterStorage.subscriptions())
     {
       if (subscription.disabled)
@@ -57,13 +60,13 @@ export function logHiddenElements(selectors, filters, sender)
         if (filter instanceof ElemHideFilter &&
             selectors.includes(filter.selector) &&
             filter.isActiveOnDomain(hostname))
-          logItem(details, filter, {matchingMethod: "elemhide"});
+          logItem(details, filter, info);
       }
     }
   }
 
   for (let text of filters)
-    logItem(details, Filter.fromText(text), {matchingMethod: "elemhide"});
+    logItem(details, Filter.fromText(text), info);
 }
 
 export function tracingEnabled()

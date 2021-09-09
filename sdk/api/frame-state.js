@@ -35,24 +35,18 @@ class FrameInfo
     let sitekey;
     let allowlisted = 0;
     let allowingFilters;
-    let urlInfo = parseURL(url);
 
     if (pending && pending.url != url)
       pending = null;
 
-    if (!pending && (urlInfo.protocol == "http:" ||
-                     urlInfo.protocol == "https:"))
+    if (!pending && (url.startsWith("http://") ||
+                     url.startsWith("https://")))
       pending = new PendingFrameInfo(tabId, frameId, parent, url);
 
     if (pending)
-    {
-      ({hostname} = urlInfo);
-      ({sitekey, allowlisted, allowingFilters} = pending);
-    }
+      ({hostname, sitekey, allowlisted, allowingFilters} = pending);
     else if (parent)
-    {
       ({hostname, sitekey, allowlisted, allowingFilters} = parent);
-    }
 
     this.hostname = hostname;
     this.sitekey = sitekey;
@@ -68,22 +62,29 @@ class PendingFrameInfo
   {
     let allowlisted = 0;
     let allowingFilters;
-    let hostname;
+    let parentHostname;
 
     if (parent)
     {
-      ({allowlisted, hostname, allowingFilters} = parent);
+      ({hostname: parentHostname, allowlisted, allowingFilters} = parent);
 
       if (!sitekey)
         ({sitekey} = parent);
     }
 
+    let urlInfo = parseURL(url);
+    let hostname = urlInfo.hostname;
+
     let details = {tabId, frameId, url};
+    // The docDomain for a frame is the hostname of the parent frame
+    // (the loader). For top-level frames we use the current URL's hostname.
+    let info = {docDomain: parentHostname || hostname,
+                matchingMethod: "allowing"};
 
     while (true)
     {
       let typeMask = ~allowlisted & ALLOWING_TYPES;
-      let filter = matcher.match(url, typeMask, hostname, sitekey);
+      let filter = matcher.match(url, typeMask, parentHostname, sitekey);
 
       if (!filter)
         break;
@@ -91,18 +92,19 @@ class PendingFrameInfo
       allowlisted |= filter.contentType & ALLOWING_TYPES;
 
       let allowingReason = this.getAllowingReason(typeMask, filter);
-      logItem(details, filter, {matchingMethod: "allowing", allowingReason});
+      logItem(details, filter, {...info, allowingReason});
     }
 
     if (allowlisted != 0)
     {
-      let matches = matcher.search(url, allowlisted, hostname,
+      let matches = matcher.search(url, allowlisted, parentHostname,
                                    sitekey, false, "allowing");
       allowingFilters = new Set(allowingFilters);
       for (let filter of matches.allowing)
         allowingFilters.add(filter);
     }
 
+    this.hostname = hostname;
     this.url = url;
     this.sitekey = sitekey;
     this.allowlisted = allowlisted;

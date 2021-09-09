@@ -220,7 +220,8 @@ class CSPFilter extends RequestFilter
     let parentFrame = getFrameInfo(details.tabId, details.parentFrameId);
     let docDomain = parentFrame && parentFrame.hostname;
 
-    let info = {docDomain, specificOnly, matchingMethod: "csp"};
+    let info = {docDomain: docDomain || frame.hostname, specificOnly,
+                matchingMethod: "csp"};
     if (!this.isBlocking(details, matcher.match(details.url, contentTypes.CSP,
                                                 docDomain, frame.sitekey,
                                                 specificOnly), info))

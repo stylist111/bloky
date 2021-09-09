@@ -65,7 +65,10 @@ export function applyContentFilters(tabId, frameId)
           runAt: "document_start"
         }
       ).then(() => filters.forEach(filter =>
-        logItem(details, filter, {matchingMethod: "snippet"})), () => {});
+      {
+        logItem(details, filter, {docDomain: frame.hostname,
+                                  matchingMethod: "snippet"});
+      }), () => {});
     }
 
     if (!(frame.allowlisted & contentTypes.ELEMHIDE))
