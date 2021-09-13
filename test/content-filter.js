@@ -20,7 +20,7 @@ import expect from "expect";
 
 import {Page, waitForInvisibleElement, TEST_PAGES_DOMAIN, TEST_PAGES_URL}
   from "./utils.js";
-import {addFilter, runInBackgroundPage} from "./messaging.js";
+import {addFilter, setTestSnippets} from "./messaging.js";
 
 describe("Element Hiding", () =>
 {
@@ -31,6 +31,8 @@ describe("Element Hiding", () =>
     let tabId = await new Page("element-hiding.html").loaded();
     let code = `let el = document.getElementById("${id}");
                 el.offsetParent ? el.outerHTML : null`;
+    // hiding elements may take a few ms on CI
+    await new Promise(r => setTimeout(r, 200));
     return (await browser.tabs.executeScript(tabId, {code}))[0];
   }
 
@@ -109,24 +111,15 @@ describe("Element Hiding", () =>
 
 describe("Snippets", () =>
 {
-  function setSnippetLibrary(code)
-  {
-    return runInBackgroundPage([
-      {op: "getGlobal", arg: "EWE"},
-      {op: "getProp", arg: "snippets"},
-      {op: "pushArg", arg: code},
-      {op: "callMethod", arg: "setLibrary"}
-    ]);
-  }
+  let snippet = "do";
 
-  before(async() =>
-    await setSnippetLibrary("exports.do = () => { works = true;}"));
-  after(async() => await setSnippetLibrary(null));
+  before(() => setTestSnippets(snippet));
+  after(() => setTestSnippets(null));
   afterEach(() => Page.removeCurrent());
 
   it("applies a snippet", async() =>
   {
-    await addFilter(`${TEST_PAGES_DOMAIN}#$#do`);
+    await addFilter(`${TEST_PAGES_DOMAIN}#$#${snippet}`);
 
     let tabId = await new Page("image.html").loaded();
     let results = await browser.tabs.executeScript(tabId, {code: "works;"});

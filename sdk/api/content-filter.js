@@ -26,11 +26,15 @@ import {getFrameInfo} from "./frame-state.js";
 import {logItem, tracingEnabled} from "./diagnostics.js";
 import {debugOptions} from "./debugging.js";
 
-let snippetLibraries = [];
+let isolatedLib;
+let injectedLib;
+let injectedList;
 
-export function setSnippetLibrary(code)
+export function setSnippetLibrary(isolatedCode, injectedCode, list)
 {
-  snippetLibraries = code != null ? [code] : [];
+  isolatedLib = isolatedCode;
+  injectedLib = injectedCode;
+  injectedList = list;
 }
 
 export function applyContentFilters(tabId, frameId)
@@ -55,7 +59,8 @@ export function applyContentFilters(tabId, frameId)
         tabId,
         {
           frameId,
-          code: compileScript(scripts, snippetLibraries, environment),
+          code: compileScript(scripts, isolatedLib, injectedLib, injectedList,
+                              environment),
           matchAboutBlank: true,
           runAt: "document_start"
         }

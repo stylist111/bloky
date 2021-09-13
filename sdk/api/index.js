@@ -38,7 +38,7 @@ export {default as debugging} from "./debugging.js";
 
 /**
  * The notifications API (only used by Adblock Plus).
- * @see {@link https://eyeo.gitlab.io/adblockplus/abc/adblockpluscore/master/docs/module-notifications-Notifications.html|Adblock Plus core notifications documentation}
+ * @see {@link https://eyeo.gitlab.io/adblockplus/abc/adblockpluscore/next/docs/module-notifications-Notifications.html|Adblock Plus core notifications documentation}
  * @external
  */
 // Workaround for documentation.js to parse the JSDocs above
@@ -48,7 +48,14 @@ export let notifications = _notifications;
 export let snippets = {
   /**
    * Enables support for snippet filters.
-   * @param {string} code The code defining the available snippets.
+   * @param {string} isolatedCode The code defining the available snippets
+   *                              to be executed in the isolated content script
+   *                              context.
+   * @param {string} injectedCode The code defining the available snippets
+   *                              to be injected and executed in the main
+   *                              context.
+   * @param {Array.<string>} injectedList An array containing the injectable
+   *                                      snippets.
    */
   setLibrary: setSnippetLibrary
 };

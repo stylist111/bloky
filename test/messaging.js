@@ -86,3 +86,17 @@ export async function removeFakeListeners()
 
   removalOperations = [];
 }
+
+export function setTestSnippets(name)
+{
+  return runInBackgroundPage([
+    {op: "getGlobal", arg: "EWE"},
+    {op: "getProp", arg: "snippets"},
+    {op: "pushArg",
+     arg: name ? `exports.snippets = {${name}: () => works = true};` : null},
+    {op: "pushArg",
+     arg: name ? `let snippets = {${name}: () => works = true};` : null},
+    {op: "pushArg", arg: name ? [name] : []},
+    {op: "callMethod", arg: "setLibrary"}
+  ]);
+}

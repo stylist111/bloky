@@ -196,6 +196,8 @@ describe("Blocking", () =>
 
   describe("Content-Security-Policy", () =>
   {
+    const CSP_FILTER = `|${TEST_PAGES_URL}$csp=img-src 'none'`;
+
     async function checkViolatedDirective(query = "")
     {
       let tabId = await new Page(`csp.html${query}`).loaded();
@@ -205,27 +207,27 @@ describe("Blocking", () =>
 
     it("injects header", async() =>
     {
-      addFilter("*$csp=img-src 'none'");
+      addFilter(CSP_FILTER);
       expect(await checkViolatedDirective()).toEqual("img-src");
     });
 
     it("does not inject header for allowlisted requests", async() =>
     {
-      addFilter("*$csp=img-src 'none'");
+      addFilter(CSP_FILTER);
       addFilter(`@@|${TEST_PAGES_URL}/csp.html^$csp`);
       expect(await checkViolatedDirective()).toBeFalsy();
     });
 
     it("does not inject header for allowlisted requests by document", async() =>
     {
-      addFilter("*$csp=img-src 'none'");
+      addFilter(CSP_FILTER);
       addFilter(`@@|${TEST_PAGES_URL}/csp.html^$document`);
       expect(await checkViolatedDirective()).toBeFalsy();
     });
 
     it("does not inject header for allowlisted requests by sitekey", async() =>
     {
-      addFilter("*$csp=img-src 'none'");
+      addFilter(CSP_FILTER);
       addFilter(`@@$csp,sitekey=${SITEKEY}`);
       expect(await checkViolatedDirective("?sitekey=1")).toBeFalsy();
     });

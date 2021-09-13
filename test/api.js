@@ -20,16 +20,17 @@ import expect from "expect";
 
 import {Page, Popup, setMinTimeout, waitForInvisibleElement, wait,
         TEST_PAGES_URL, TEST_PAGES_DOMAIN} from "./utils.js";
-import {addFilter, runInBackgroundPage, addFakeListener} from "./messaging.js";
+import {addFilter, runInBackgroundPage, addFakeListener, setTestSnippets}
+  from "./messaging.js";
 
 const VALID_SUBSCRIPTION_URL = "https://testpages.adblockplus.org/en/abp-testcase-subscription.txt";
 const INVALID_SUBSCRIPTION_URL = "invalidUrl";
 
-const VALID_FILTER_TEXT = "$image";
+const VALID_FILTER_TEXT = `|${TEST_PAGES_URL}$image`;
 const VALID_FILTER = {
   text: VALID_FILTER_TEXT,
   enabled: true,
-  slow: true,
+  slow: false,
   type: "blocking",
   thirdParty: null,
   selector: null,
@@ -512,7 +513,7 @@ describe("API", () =>
       let filters = await getAllFilters();
       expect(filters).toEqual([
         VALID_FILTER,
-        {...VALID_FILTER, text: "another-filter"}
+        {...VALID_FILTER, text: "another-filter", slow: true}
       ]);
     });
 
@@ -612,7 +613,7 @@ describe("API", () =>
 
     it("has a csp property", async() =>
     {
-      await addFilter("*$csp=img-src 'none'");
+      await addFilter(`|${TEST_PAGES_URL}$csp=img-src 'none'`);
 
       expect(await getAllFilters()).toEqual([
         expect.objectContaining({csp: "img-src 'none'"})
@@ -806,8 +807,10 @@ describe("API", () =>
       });
     });
 
-    describe("Diagnostics", () =>
+    describe("Diagnostics", function()
     {
+      setMinTimeout(this, 3000);
+
       async function checkLogging(filter, callback, info = {}, checkUrl = true)
       {
         let fake = await addFakeListener("reporting", "onFilterMatch");
@@ -869,7 +872,7 @@ describe("API", () =>
       {
         await addFilter("/image.png^$image");
         await checkRequestLogging("image.html", {
-          text: "@@$image",
+          text: `@@|${TEST_PAGES_URL}$image`,
           type: "allowing"
         }, {
           docDomain: "localhost",
@@ -892,37 +895,43 @@ describe("API", () =>
 
       it("logs blocking $header filter", async() =>
       {
-        await checkRequestLogging("header.html",
-                                  {text: "*$header=x-header=whatever"},
-                                  {matchingMethod: "header"});
+        await checkRequestLogging(
+          "header.html",
+          {text: `|${TEST_PAGES_URL}$header=x-header=whatever`},
+          {matchingMethod: "header"});
       });
 
       it("logs allowlisting $header filter", async() =>
       {
-        await addFilter("*$header=x-header=whatever");
-        await checkRequestLogging("header.html", {text: "@@$header"});
+        await addFilter(`|${TEST_PAGES_URL}$header=x-header=whatever`);
+        await checkRequestLogging("header.html",
+                                  {text: `@@|${TEST_PAGES_URL}$header`});
       });
 
       it("logs blocking $csp filter", async() =>
       {
-        await checkRequestLogging("csp.html", {text: "*$csp=img-src 'none'"},
-                                  {matchingMethod: "csp"});
+        await checkRequestLogging(
+          "csp.html",
+          {text: `|${TEST_PAGES_URL}$csp=img-src 'none'`},
+          {matchingMethod: "csp"});
       });
 
       it("logs allowlisting $csp filter", async() =>
       {
-        await addFilter("*$csp=img-src 'none'");
-        await checkRequestLogging("csp.html", {text: "@@$csp"},
+        await addFilter(`|${TEST_PAGES_URL}$csp=img-src 'none'`);
+        await checkRequestLogging("csp.html",
+                                  {text: `@@|${TEST_PAGES_URL}$csp`},
                                   {matchingMethod: "csp"});
       });
 
       for (let option of ["$document", "$elemhide",
                           "$genericblock", "$generichide"])
       {
-        it(`logs allowlisting ${option} filter`, () =>
-          checkRequestLogging("image.html", {text: `@@${option}`},
-                              {matchingMethod: "allowing"})
-        );
+        it(`logs allowlisting ${option} filter`, () => checkRequestLogging(
+          "image.html",
+          {text: `@@|${TEST_PAGES_URL}${option}`},
+          {matchingMethod: "allowing"}
+        ));
       }
 
       it("logs element hiding filter", async() =>
@@ -934,11 +943,22 @@ describe("API", () =>
         }, {matchingMethod: "elemhide"});
       });
 
-      it("logs snippets filter", () =>
-        checkLogging({text: `${TEST_PAGES_DOMAIN}#$#do`},
-                     () => new Page("image.html").loaded(),
-                     {matchingMethod: "snippet"}, false)
-      );
+      it("logs snippets filter", async() =>
+      {
+        let snippet = "do";
+
+        await setTestSnippets(snippet);
+        try
+        {
+          await checkLogging({text: `${TEST_PAGES_DOMAIN}#$#${snippet}`},
+                             () => new Page("image.html").loaded(),
+                             {matchingMethod: "snippet"}, false);
+        }
+        finally
+        {
+          await setTestSnippets(null);
+        }
+      });
 
       function checkPopupLogging(text)
       {
@@ -955,8 +975,8 @@ describe("API", () =>
 
       it("logs allowlisting popup filter", async() =>
       {
-        await addFilter("*popup.html^$popup");
-        await checkPopupLogging("@@$popup");
+        await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
+        await checkPopupLogging(`@@|${TEST_PAGES_URL}$popup`);
       });
     });
 
@@ -997,24 +1017,12 @@ describe("API", () =>
 
   describe("Debugging", async() =>
   {
-    async function getElementStyle(id, property)
+    let code = `window.getComputedStyle(
+      document.getElementById('elem-hide'))['background-color']`;
+
+    async function waitForHighlightedStyle()
     {
       let tabId = await new Page("element-hiding.html").loaded();
-      let code = `let el = document.getElementById("${id}");
-                  let styles = window.getComputedStyle(el);
-                  styles["${property}"]`;
-      return (await browser.tabs.executeScript(tabId, {code}))[0];
-    }
-
-    it("highlights an element", async() =>
-    {
-      await setElementHidingDebugMode(true);
-      await addFilter("###elem-hide");
-
-      let tabId = await new Page("element-hiding.html").loaded();
-      let code = `window.getComputedStyle(
-        document.getElementById('elem-hide'))['background-color']`;
-
       let style;
       await wait(async() =>
       {
@@ -1022,7 +1030,16 @@ describe("API", () =>
         return style != "rgba(0, 0, 0, 0)";
       }, 500);
 
+      return style;
+    }
+
+    it("highlights an element", async() =>
+    {
+      await setElementHidingDebugMode(true);
+      await addFilter("###elem-hide");
+      let style = await waitForHighlightedStyle();
       await setElementHidingDebugMode(false);
+
       expect(style).toBe("rgb(230, 115, 112)");
     });
 
@@ -1030,9 +1047,10 @@ describe("API", () =>
     {
       await setElementHidingDebugMode(true);
       await setElementHidingDebugMode(false);
-
       await addFilter("###elem-hide");
-      let style = await getElementStyle("elem-hide", "background-color");
+      let tabId = await new Page("element-hiding.html").loaded();
+      let style = (await browser.tabs.executeScript(tabId, {code}))[0];
+
       expect(style).toBe("rgba(0, 0, 0, 0)");
     });
 
@@ -1041,8 +1059,9 @@ describe("API", () =>
       await setElementHidingDebugMode(true);
       await setElementHidingDebugStyle([["background", "pink"]]);
       await addFilter("###elem-hide");
-      let style = await getElementStyle("elem-hide", "background-color");
+      let style = await waitForHighlightedStyle();
       await setElementHidingDebugMode(false);
+
       expect(style).toBe("rgb(255, 192, 203)");
     });
   });
