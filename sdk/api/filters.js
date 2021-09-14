@@ -136,7 +136,8 @@ export default {
   },
 
   /**
-   * Returns allowlisted filters for a specific document.
+   * Returns the allowlisted filters that were applied to the document when
+   * it was loaded.
    * @param {number} tabId The id of the tab to lookup.
    * @param {Object} [options]
    * @param {number} [options.frameId=0] The id of the frame to lookup.
