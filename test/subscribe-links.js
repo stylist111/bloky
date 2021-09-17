@@ -17,12 +17,14 @@
 
 import expect from "expect";
 
-import {wait, Page} from "./utils.js";
+import {Page, wait, setMinTimeout} from "./utils.js";
 import {addFakeListener} from "./messaging.js";
 import * as runner from "./mocha/mocha-runner.js";
 
-describe("Subscribe links (runner only)", () =>
+describe("Subscribe links (runner only)", function()
 {
+  setMinTimeout(this, 3000);
+
   before(async() =>
   {
     if (!await runner.isConnected())
@@ -41,7 +43,7 @@ describe("Subscribe links (runner only)", () =>
     await page.loaded();
 
     runner.click(page.url, selector);
-    await wait(() => fake.called, 1000, "Listener was not called");
+    await wait(() => fake.called, 2000, "Listener was not called");
 
     expect(fake.callCount).toBe(1);
     expect(fake.firstArg).toEqual({url: "https://example.org/",
