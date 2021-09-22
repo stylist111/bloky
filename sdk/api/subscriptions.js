@@ -83,14 +83,10 @@ export default {
    * @typedef {Object} Subscription
    * @property {boolean} enabled Indicates whether this subscription will
    *                             be applied.
-   * @property {?string} downloadStatus The status code of the most recent
-   *                                    download attempt. The value
-   *                                    "synchronize_ok" indicates a successful
-   *                                    download, other string values indicate
-   *                                    different errors. While the initial
-   *                                    download hasn't completed yet it's null.
-   * @property {string} downloading Indicates whether the subscription is
-   *                                currently downloading.
+   * @property {string|null} downloadStatus The {@link https://eyeo.gitlab.io/adblockplus/abc/adblockpluscore/next/docs/module-subscriptionClasses.DownloadableSubscription.html#downloadStatus|status}
+   *                                        of the most recent download attempt.
+   * @property {boolean} downloading Indicates whether the subscription is
+   *                                 currently downloading.
    * @property {number} expires
    * @property {?string} homepage Website of the project that manages
    *                              this filter list.
