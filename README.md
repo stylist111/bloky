@@ -10,7 +10,6 @@ for Chromium and Firefox extensions (like [Adblock Plus][abpui]).
 * [Getting started](#getting-started)
   * [Module bundlers (optional)](#module-bundlers-optional)
   * [Snippet filters support](#snippet-filters-support)
-    * [Machine learning models](#machine-learning-models)
 * [Documentation](#documentation)
 * [Development](#development)
   * [Prerequisites](#prerequisites)
@@ -101,13 +100,8 @@ let code = await response.text();
 EWE.snippets.setLibrary(code);
 ```
 
-#### Machine learning models
-
-Along with the library bundles there is a `models` folder. In order to support
-ML-enabled snippets please include this folder and its contents in your
-extension bundle in the same directory were `ewe-api.js` is located.
-
-It is safe to omit these files but ML-enabled snippets won't have any effect then.
+The integration of the machine learning models is expected to be done by clients
+of the snippet library.
 
 <div class="no-docs">
 

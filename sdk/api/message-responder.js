@@ -18,7 +18,6 @@
 import browser from "webextension-polyfill";
 
 import {applyContentFilters, injectCSS} from "./content-filter.js";
-import {inference} from "./ml.js";
 import {createStyleSheet} from "adblockpluscore/lib/elemHide.js";
 import {subscribeLinkClicked, subscribeLinksEnabled}
   from "./subscribe-links.js";
@@ -47,8 +46,6 @@ function onMessage(message, sender)
       let styleSheet = createStyleSheet([message.selector]);
       injectCSS(sender.tab.id, sender.frameId, styleSheet);
       break;
-    case "ewe:ml-inference":
-      return inference(message.model, message.inputs);
   }
 }
 

@@ -66,18 +66,6 @@ export default (env = {}) =>
           test: /\.js$/,
           enforce: "pre",
           use: ["source-map-loader"]
-        },
-        {
-          resourceQuery: "?model",
-          type: "asset/resource",
-          generator: {
-            filename(pathData)
-            {
-              let model = path.basename(path.dirname(pathData.filename));
-              let filename = path.basename(pathData.filename).replace(/\?.*/, "");
-              return path.join("models", model, filename);
-            }
-          }
         }
       ]
     },
@@ -159,7 +147,6 @@ export default (env = {}) =>
         new CopyPlugin({
           patterns: [
             {from: "ewe-*", context: path.join(dirname, "dist")},
-            {from: path.join(dirname, "dist", "models"), to: "models"},
             {from: path.join(dirname, "test", "background.js")},
             {from: path.join(dirname, "test", "index.html")},
             {from: path.join(dirname, "test", "index-options.js")}
