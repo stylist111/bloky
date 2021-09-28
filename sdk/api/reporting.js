@@ -54,6 +54,12 @@ export default {
   *                                   This can be the string "request",
   *                                   "header", "csp", "popup", "elemhide",
   *                                   "snippet" or "allowing".
+  * @property {string|undefined} allowingReason When the type in request details
+  *                                             is undefined, this contains the
+  *                                             reason why the request/frame
+  *                                             got allowlisted. That is either
+  *                                             "document", "elemhide",
+  *                                             "genericblock" or "generichide".
   */
 
   /**

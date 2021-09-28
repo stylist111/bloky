@@ -930,7 +930,7 @@ describe("API", () =>
         it(`logs allowlisting ${option} filter`, () => checkRequestLogging(
           "image.html",
           {text: `@@|${TEST_PAGES_URL}${option}`},
-          {matchingMethod: "allowing"}
+          {matchingMethod: "allowing", allowingReason: option.substring(1)}
         ));
       }
 

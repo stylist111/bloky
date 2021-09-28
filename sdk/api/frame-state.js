@@ -19,7 +19,8 @@ import browser from "webextension-polyfill";
 
 import {parseURL} from "adblockpluscore/lib/url.js";
 import {defaultMatcher as matcher} from "adblockpluscore/lib/matcher.js";
-import {ALLOWING_TYPES} from "adblockpluscore/lib/contentTypes.js";
+import {ALLOWING_TYPES, contentTypes}
+  from "adblockpluscore/lib/contentTypes.js";
 import {verifySignature} from "adblockpluscore/lib/rsa.js";
 import {logItem} from "./diagnostics.js";
 
@@ -89,7 +90,8 @@ class PendingFrameInfo
 
       allowlisted |= filter.contentType & ALLOWING_TYPES;
 
-      logItem(details, filter, {matchingMethod: "allowing"});
+      let allowingReason = this.getAllowingReason(typeMask, filter);
+      logItem(details, filter, {matchingMethod: "allowing", allowingReason});
     }
 
     if (allowlisted != 0)
@@ -105,6 +107,19 @@ class PendingFrameInfo
     this.sitekey = sitekey;
     this.allowlisted = allowlisted;
     this.allowingFilters = allowingFilters;
+  }
+
+  getAllowingReason(typeMask, filter)
+  {
+    let allowingTypes = [
+      "DOCUMENT", "ELEMHIDE", "GENERICBLOCK", "GENERICHIDE"
+    ];
+
+    for (let type of allowingTypes)
+    {
+      if (typeMask & filter.contentType & contentTypes[type])
+        return type.toLowerCase();
+    }
   }
 }
 
