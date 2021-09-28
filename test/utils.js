@@ -366,17 +366,3 @@ export function isFirefox()
 {
   return typeof netscape != "undefined";
 }
-
-export function isOldestFirefox()
-{
-  if (!isFirefox())
-    return false;
-
-  let version = /\brv:([^;)]+)/.exec(navigator.userAgent)[1];
-  return parseInt(version, 10) < RECENT_FIREFOX_VERSION;
-}
-
-export function isEdge()
-{
-  return window.navigator.userAgent.includes("Edg/");
-}

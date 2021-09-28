@@ -372,7 +372,7 @@ async function run()
     let handle = await getHandle(driver, "/unit.html");
     resultUnit = await pollMessages(driver, handle);
 
-    await startTestRun(driver, "reload", params);
+    await startTestRun(driver, "reload");
     while (!resultReload ||
            resultReload.log.toString().includes("Reload (preparation)"))
     {

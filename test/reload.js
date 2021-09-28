@@ -16,8 +16,9 @@
  */
 
 import expect from "expect";
+import browser from "webextension-polyfill";
 
-import {wait, isEdge, isOldestFirefox} from "./utils.js";
+import {wait} from "./utils.js";
 import {addFilter, runInBackgroundPage} from "./messaging.js";
 
 const VALID_FILTER_TEXT = "reload.test^$image";
@@ -55,10 +56,7 @@ describe(`Reload (${phase})`, function()
         ]);
       }, 2000, "The added filter didn't reach storage");
 
-      localStorage.setItem("reload-test-running", "true");
-
-      if (isOldestFirefox() || isEdge()) // let storage consolidate on CI
-        await new Promise(r => setTimeout(r, 2000));
+      await browser.storage.local.set({"reload-test-running": true});
 
       return runInBackgroundPage([
         {op: "getGlobal", arg: "chrome"},
@@ -78,7 +76,7 @@ describe(`Reload (${phase})`, function()
     }
     finally
     {
-      localStorage.removeItem("reload-test-running");
+      await browser.storage.local.remove("reload-test-running");
       await runInBackgroundPage([
         {op: "getGlobal", arg: "EWE"},
         {op: "getProp", arg: "filters"},
