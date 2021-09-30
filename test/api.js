@@ -24,6 +24,7 @@ import {addFilter, runInBackgroundPage, addFakeListener, setTestSnippets}
   from "./messaging.js";
 
 const VALID_SUBSCRIPTION_URL = "https://testpages.adblockplus.org/en/abp-testcase-subscription.txt";
+const ANOTHER_VALID_SUBSCRIPTION_URL = "https://testpages.adblockplus.org/en/websocket-webrtc-subscription.txt";
 const INVALID_SUBSCRIPTION_URL = "invalidUrl";
 
 const VALID_FILTER_TEXT = `|${TEST_PAGES_URL}$image`;
@@ -435,7 +436,7 @@ describe("API", () =>
 
     it("syncs subscriptions", async function()
     {
-      setMinTimeout(this, 5000);
+      setMinTimeout(this, 3000);
 
       await new Promise((resolve, reject) =>
       {
@@ -447,7 +448,7 @@ describe("API", () =>
         {
           try
           {
-            if (subscription.url != VALID_SUBSCRIPTION_URL)
+            if (subscription.url != ANOTHER_VALID_SUBSCRIPTION_URL)
               return;
 
             expect(subscription.lastDownload).toBeGreaterThan(previousDownload);
@@ -456,17 +457,17 @@ describe("API", () =>
             if (!syncedOne)
             {
               syncedOne = true;
-              await new Promise(elapsed => setTimeout(elapsed, 1000));
+              await new Promise(elapsed => setTimeout(elapsed, 1050));
               await runInBackgroundPage([
                 ...subscriptionsProp,
-                {op: "pushArg", arg: VALID_SUBSCRIPTION_URL},
+                {op: "pushArg", arg: ANOTHER_VALID_SUBSCRIPTION_URL},
                 {op: "callMethod", arg: "sync"}
               ]);
             }
             else if (!syncedAll)
             {
               syncedAll = true;
-              await new Promise(elapsed => setTimeout(elapsed, 1000));
+              await new Promise(elapsed => setTimeout(elapsed, 1050));
               await runInBackgroundPage([
                 ...subscriptionsProp,
                 {op: "callMethod", arg: "sync"}
@@ -485,7 +486,7 @@ describe("API", () =>
 
         addFakeListener("subscriptions", "onChanged",
                         void 0, void 0, onChanged)
-          .then(() => addSubscription(VALID_SUBSCRIPTION_URL))
+          .then(() => addSubscription(ANOTHER_VALID_SUBSCRIPTION_URL))
           .catch(reject);
       });
     });
