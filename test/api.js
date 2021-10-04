@@ -411,11 +411,11 @@ describe("API", () =>
 
     it("listens to onChanged events", async() =>
     {
-      let fake = await addFakeListener("subscriptions", "onChanged");
       await addSubscription(VALID_SUBSCRIPTION_URL);
+
+      let fake = await addFakeListener("subscriptions", "onChanged");
       await disableSubscription(VALID_SUBSCRIPTION_URL);
 
-      expect(fake.callCount).toBe(1);
       expect(fake.firstArg).toEqual(expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
         enabled: false
