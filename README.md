@@ -92,7 +92,7 @@ EWE.start();
 ### Snippet filters support
 
 In order to enable support for [snippet filters][snippet-filters] you have to get
-the [snippets library][snippets-project] seperately and make it available to `EWE`:
+the [snippets library][snippets-project] separately and make it available to `EWE`:
 
 ```javascript
 let response = await fetch("snippets.js");
@@ -102,6 +102,15 @@ EWE.snippets.setLibrary(code);
 
 The integration of the machine learning models is expected to be done by clients
 of the snippet library.
+
+### Notifications support
+
+Using the [notifications module][notifications-module] is optional. To start
+using it, an initialisation is required:
+
+```javascript
+EWE.notifications.start();
+```
 
 <div class="no-docs">
 
@@ -188,6 +197,7 @@ example `--timeout 10000`.
 [snippets-project]: https://gitlab.com/eyeo/adblockplus/abp-snippets
 [docs]: https://gitlab.com/eyeo/adblockplus/webext-sdk/-/jobs/artifacts/master/file/docs/index.html?job=build
 [dev]: https://gitlab.com/eyeo/adblockplus/webext-sdk#development
+[notifications-module]: https://gitlab.com/eyeo/adblockplus/webext-sdk/-/jobs/artifacts/master/file/docs/index.html?job=build#notifications
 
 ### Bundle test
 

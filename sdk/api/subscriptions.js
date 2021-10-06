@@ -108,7 +108,8 @@ export default {
    */
 
   /**
-   * Creates a new subscription from a given URL.
+   * Creates a new subscription from a given URL. The subscription also gets
+   * synchronised if it had not been previously downloaded.
    * @param {string} url The URL of the subscription to be added.
    * @param {object} [properties] An object containing properties to be
    *                              set on the new subscription.

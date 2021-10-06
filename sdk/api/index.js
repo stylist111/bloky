@@ -15,8 +15,6 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import browser from "webextension-polyfill";
-
 import {filterEngine} from "adblockpluscore/lib/filterEngine.js";
 import {synchronizer} from "adblockpluscore/lib/synchronizer.js";
 import {notifications as _notifications}
@@ -37,7 +35,11 @@ export {default as reporting} from "./reporting.js";
 export {default as debugging} from "./debugging.js";
 
 /**
- * The notifications API (only used by Adblock Plus).
+ * The notifications API (optional usage).
+ *
+ * To start using this module, calling `notifications.start()` is required.
+ * Please also notice that notification events are **not** using the
+ * {@link #eventdispatcher|EventDispatcher} interface.
  * @see {@link https://eyeo.gitlab.io/adblockplus/abc/adblockpluscore/next/docs/module-notifications-Notifications.html|Adblock Plus core notifications documentation}
  * @external
  */
@@ -73,6 +75,9 @@ let stopped = true;
 
 /**
  * Initializes the filter engine and starts blocking content.
+ *
+ * Calling this function is required for the other API calls to work, except for
+ * API event listener calls, which could also be done before `start()`.
  * @return {Promise.<FirstRunInfo|null>} Null if `stop()` was called before
  *                                       `FirstRunInfo` could be determined.
  * @see {@link #stop|stop()}
@@ -84,11 +89,6 @@ export async function start()
   await initIDB();
   if (stopped)
     return null;
-
-  // https://bugs.chromium.org/p/chromium/issues/detail?id=1159438
-  notifications.locale = browser.i18n.getUILanguage ?
-    browser.i18n.getUILanguage() : navigator.language;
-  notifications.start();
 
   await filterEngine.initialize();
   if (stopped)

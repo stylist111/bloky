@@ -995,11 +995,19 @@ describe("API", () =>
     {
       it("supports notifications", async() =>
       {
+        let notificationsProp = [
+          {op: "getGlobal", arg: "EWE"},
+          {op: "getProp", arg: "notifications"}
+        ];
         let notification = {id: "test"};
 
         await runInBackgroundPage([
-          {op: "getGlobal", arg: "EWE"},
-          {op: "getProp", arg: "notifications"},
+          ...notificationsProp,
+          {op: "callMethod", arg: "start"}
+        ]);
+
+        await runInBackgroundPage([
+          ...notificationsProp,
           {op: "pushArg", arg: notification},
           {op: "callMethod", arg: "addNotification"}
         ]);
@@ -1008,16 +1016,19 @@ describe("API", () =>
                                          "addShowListener",
                                          "removeShowListener");
         await runInBackgroundPage([
-          {op: "getGlobal", arg: "EWE"},
-          {op: "getProp", arg: "notifications"},
+          ...notificationsProp,
           {op: "callMethod", arg: "showNext"}
         ]);
 
         await runInBackgroundPage([
-          {op: "getGlobal", arg: "EWE"},
-          {op: "getProp", arg: "notifications"},
+          ...notificationsProp,
           {op: "pushArg", arg: notification},
           {op: "callMethod", arg: "removeNotification"}
+        ]);
+
+        await runInBackgroundPage([
+          ...notificationsProp,
+          {op: "callMethod", arg: "stop"}
         ]);
 
         expect(fake.callCount).toBe(1);
