@@ -743,8 +743,10 @@ describe("API", () =>
       ["de", "https://easylist-downloads.adblockplus.org/easylistgermany+easylist.txt"]
     ])
     {
-      it(`configures default subscriptions for ${language}`, async() =>
+      it(`configures default subscriptions for ${language}`, async function()
       {
+        setMinTimeout(this, 3000);
+
         await browser.runtime.sendMessage(
           {type: "ewe-test:setLanguageAndStart", args: [language]});
 
