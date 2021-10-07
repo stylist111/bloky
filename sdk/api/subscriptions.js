@@ -337,13 +337,36 @@ export default {
 
   /**
    * Emitted when any property of the subscription has changed.
+   * The name of the specific property is provided as a string, except
+   * when the subscription has been updated, where it will be null.
+   *
    * @event
-   * @type {EventDispatcher.<Subscription>}
+   * @type {EventDispatcher.<Subscription, string>}
    */
   onChanged: new EventDispatcher(dispatch =>
   {
-    filterNotifier.on("subscription.disabled", makeListener(dispatch));
-    filterNotifier.on("subscription.updated", makeListener(dispatch));
+    function makeChangeListener(property)
+    {
+      // This name differs between EWE and adblockpluscore.
+      if (property == "disabled")
+        property = "enabled";
+
+      return subscription =>
+      {
+        if (subscription instanceof DownloadableSubscription)
+          dispatch(convertSubscription(subscription), property);
+      };
+    }
+
+    let properties = ["disabled", "title", "homepage", "lastDownload",
+                      "downloadStatus", "downloading"];
+    for (let property of properties)
+    {
+      filterNotifier.on(`subscription.${property}`,
+                        makeChangeListener(property));
+    }
+
+    filterNotifier.on("subscription.updated", makeChangeListener(null));
   }),
 
   /**

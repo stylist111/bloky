@@ -420,6 +420,7 @@ describe("API", () =>
         url: VALID_SUBSCRIPTION_URL,
         enabled: false
       }));
+      expect(fake.lastArg).toEqual("enabled");
     });
 
     it("listens to onRemoved events", async() =>
@@ -443,12 +444,30 @@ describe("API", () =>
         let previousDownload = 0;
         let syncedOne = false;
         let syncedAll = false;
+        let sawGeneric = false;
+        let sawDownloading = false;
 
-        async function onChanged(subscription)
+        async function onChanged(subscription, property)
         {
           try
           {
             if (subscription.url != ANOTHER_VALID_SUBSCRIPTION_URL)
+              return;
+
+            if (property == "downloading")
+            {
+              expect(subscription.downloading).toEqual(true);
+              sawDownloading = true;
+              return;
+            }
+
+            if (property == null)
+            {
+              sawGeneric = true;
+              return;
+            }
+
+            if (property != "lastDownload")
               return;
 
             expect(subscription.lastDownload).toBeGreaterThan(previousDownload);
@@ -475,6 +494,8 @@ describe("API", () =>
             }
             else
             {
+              expect(sawDownloading).toEqual(true);
+              expect(sawGeneric).toEqual(true);
               resolve();
             }
           }
