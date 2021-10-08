@@ -14,7 +14,7 @@
   },
   "type": "module",
   "dependencies": {
-    "adblockpluscore": "git+https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore.git#0211013",
+    "adblockpluscore": "^0.5.0",
     "copy-webpack-plugin": "^9.0.1",
     "css-loader": "^5.2.6",
     "expect": "^25.5.0",
