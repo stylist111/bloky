@@ -221,14 +221,16 @@ export default {
 
   /**
    * Emitted when a filter is either enabled or disabled.
+   * The property name "enabled" is provided.
+   *
    * @event
-   * @type {EventDispatcher.<Filter>}
+   * @type {EventDispatcher.<Filter, string>}
    */
   onChanged: new EventDispatcher(dispatch =>
   {
     filterNotifier.on("filterState.enabled", (text, enabled) =>
     {
-      dispatch({...convertFilter(Filter.fromText(text)), enabled});
+      dispatch({...convertFilter(Filter.fromText(text)), enabled}, "enabled");
     });
   }),
 

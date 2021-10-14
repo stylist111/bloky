@@ -659,6 +659,7 @@ describe("API", () =>
 
       expect(fake.callCount).toBe(1);
       expect(fake.firstArg).toEqual({...VALID_FILTER, enabled: false});
+      expect(fake.lastArg).toEqual("enabled");
     });
 
     it("listens to onRemoved events", async() =>
