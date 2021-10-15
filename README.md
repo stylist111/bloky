@@ -132,6 +132,16 @@ Node >= 12.18.4
 
     npm run build
 
+#### Custom builds
+
+As webpack is our build tool of choice, any [webpack command line options](https://webpack.js.org/api/cli/) can be used.
+
+    # Build only sdk, no test extensions
+    npm run build -- --config-name sdk
+
+    # Don't generate any sourcemaps
+    npm run build -- --no-devtool
+
 #### Release builds
 
 By default, debug builds are created. If building the library to be used

@@ -42,7 +42,8 @@ export default (env = {}) =>
     },
     output: {
       filename: "ewe-[name].js",
-      path: path.resolve(dirname, "dist")
+      path: path.resolve(dirname, "dist"),
+      clean: true
     },
     mode: env.release ? "production" : "development",
     optimization: {
