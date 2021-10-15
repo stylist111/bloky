@@ -194,6 +194,28 @@ describe("Blocking", () =>
     await new Page("image.html").expectResource("image.png").toBeLoaded();
   });
 
+  it("blocks requests after history.pushState", async() =>
+  {
+    addFilter("/image.png^$image");
+    await new Page("history.html").expectResource("image.png").toBeBlocked();
+  });
+
+  it("blocks requests after history.pushState with previous URL allowlisted",
+     async() =>
+     {
+       addFilter(`@@|${TEST_PAGES_URL}/history.html^$document`);
+       addFilter("/image.png^$image");
+       await new Page("history.html").expectResource("image.png").toBeBlocked();
+     });
+
+  it("does not block requests with allowlisted URL after history.pushState",
+     async() =>
+     {
+       addFilter(`@@|${TEST_PAGES_URL}/history-after-pushState.html^$document`);
+       addFilter("/image.png^$image");
+       await new Page("history.html").expectResource("image.png").toBeLoaded();
+     });
+
   describe("Content-Security-Policy", () =>
   {
     const CSP_FILTER = `|${TEST_PAGES_URL}$csp=img-src 'none'`;

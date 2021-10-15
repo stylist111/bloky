@@ -149,7 +149,8 @@ function onHeadersReceived(details)
                                        details.url, sitekey);
 }
 
-function recordFrameFromNavigationEvent({tabId, frameId, parentFrameId, url})
+function recordFrameFromNavigationEvent({tabId, frameId, parentFrameId, url},
+                                        historyStateUpdated)
 {
   let frames = state.get(tabId);
   let pending;
@@ -162,7 +163,8 @@ function recordFrameFromNavigationEvent({tabId, frameId, parentFrameId, url})
     parent = frames.get(parentFrameId);
   }
 
-  if (frameId == 0 || !frames)
+  // Top-level history-state updates don't invalidate the existing frames.
+  if ((!historyStateUpdated && frameId == 0) || !frames)
   {
     frames = new Map();
     state.set(tabId, frames);
@@ -174,12 +176,17 @@ function recordFrameFromNavigationEvent({tabId, frameId, parentFrameId, url})
 function onBeforeNavigate(details)
 {
   if (details.url == "about:srcdoc")
-    recordFrameFromNavigationEvent(details);
+    recordFrameFromNavigationEvent(details, false);
 }
 
 function onCommitted(details)
 {
-  recordFrameFromNavigationEvent(details);
+  recordFrameFromNavigationEvent(details, false);
+}
+
+function onHistoryStateUpdated(details)
+{
+  recordFrameFromNavigationEvent(details, true);
 }
 
 function onRemoved(tabId)
@@ -253,6 +260,8 @@ export async function start()
     );
     browser.webNavigation.onBeforeNavigate.addListener(onBeforeNavigate);
     browser.webNavigation.onCommitted.addListener(onCommitted);
+    browser.webNavigation.onHistoryStateUpdated.addListener(
+      onHistoryStateUpdated);
     browser.tabs.onRemoved.addListener(onRemoved);
     browser.tabs.onReplaced.addListener(onReplaced);
   }
@@ -268,6 +277,8 @@ export function stop()
   browser.webRequest.onHeadersReceived.removeListener(onHeadersReceived);
   browser.webNavigation.onBeforeNavigate.removeListener(onBeforeNavigate);
   browser.webNavigation.onCommitted.removeListener(onCommitted);
+  browser.webNavigation.onHistoryStateUpdated.removeListener(
+    onHistoryStateUpdated);
   browser.tabs.onRemoved.removeListener(onRemoved);
   browser.tabs.onReplaced.removeListener(onReplaced);
 }
