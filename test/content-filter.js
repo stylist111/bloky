@@ -17,24 +17,29 @@
 
 import expect from "expect";
 
-import {Page, waitForInvisibleElement, executeScript, TEST_PAGES_DOMAIN,
-        TEST_PAGES_URL} from "./utils.js";
+import {Page, waitForInvisibleElement, executeScript, setMinTimeout, wait,
+        TEST_PAGES_DOMAIN, TEST_PAGES_URL} from "./utils.js";
 import {addFilter, setTestSnippets} from "./messaging.js";
 
 describe("Element Hiding", () =>
 {
   afterEach(() => Page.removeCurrent());
 
+  function getHTML(tabId, elemId)
+  {
+    return executeScript(tabId, id =>
+    {
+      let el = document.getElementById(id);
+      return el.offsetParent ? el.outerHTML : null;
+    }, [elemId]);
+  }
+
   async function getVisibleElement(id)
   {
     let tabId = await new Page("element-hiding.html").loaded();
     // hiding elements may take a few ms on CI
     await new Promise(r => setTimeout(r, 200));
-    return await executeScript(tabId, elemId =>
-    {
-      let el = document.getElementById(elemId);
-      return el.offsetParent ? el.outerHTML : null;
-    }, [id]);
+    return await getHTML(tabId, id);
   }
 
   it("hides an element", async() =>
@@ -81,6 +86,51 @@ describe("Element Hiding", () =>
       await addFilter(
         `${TEST_PAGES_DOMAIN}#?#div:-abp-properties(background-color: red)`);
       expect(await getVisibleElement("elem-hide-emulation-props")).toBeNull();
+    });
+
+    it("hides abp-properties elements after unhide", async function()
+    {
+      setMinTimeout(this, 9000);
+
+      await addFilter(
+        `${TEST_PAGES_DOMAIN}#?#.child1:-abp-properties(background-color: blue)`
+      );
+      await addFilter(
+        `${TEST_PAGES_DOMAIN}#?#.child2:-abp-properties(background-color: lime)`
+      );
+
+      let tabId = await new Page("element-hiding.html").loaded();
+      await new Promise(r => setTimeout(r, 200));
+      let elem1 = await getHTML(tabId, "unhide1");
+      let elem2 = await getHTML(tabId, "unhide2");
+      expect(elem1).toBeNull();
+      expect(elem2).toBeNull();
+
+      await executeScript(tabId, async() =>
+      {
+        document.getElementById("unhide1").parentElement.className = "";
+        document.getElementById("unhide2").parentElement.className = "";
+      });
+      await wait(async() =>
+      {
+        elem1 = await getHTML(tabId, "unhide1");
+        elem2 = await getHTML(tabId, "unhide2");
+        return elem1 != null && elem2 != null;
+      }, 4000, "Element is not visible");
+      expect(elem1).toContain("unhide1");
+      expect(elem2).toContain("unhide2");
+
+      await executeScript(tabId, async() =>
+      {
+        document.getElementById("unhide1").parentElement.className = "parent1";
+        document.getElementById("unhide2").parentElement.className = "parent2";
+      });
+      await wait(async() =>
+      {
+        elem1 = await getHTML(tabId, "unhide1");
+        elem2 = await getHTML(tabId, "unhide2");
+        return elem1 == null && elem2 == null;
+      }, 4000, "Element is visible");
     });
 
     it("hides abp-has elements", async() =>

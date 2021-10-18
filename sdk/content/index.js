@@ -21,7 +21,8 @@ import {ElemHideEmulation}
   from "adblockpluscore/lib/content/elemHideEmulation.js";
 
 import {ignoreNoConnectionError} from "../errors.js";
-import {startElementCollapsing, hideElement} from "./element-collapsing.js";
+import {startElementCollapsing, hideElement, unhideElement}
+  from "./element-collapsing.js";
 import {ElementHidingTracer} from "./element-hiding-tracer.js";
 import {handleSubscribeLinks} from "./subscribe-links.js";
 
@@ -47,6 +48,10 @@ async function initContentFeatures()
 
       if (tracer)
         tracer.log(filters);
+    }, elements =>
+    {
+      for (let element of elements)
+        unhideElement(element);
     });
     elemHideEmulation.apply(response.emulatedPatterns);
   }

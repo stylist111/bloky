@@ -19,6 +19,7 @@ import browser from "webextension-polyfill";
 import {ignoreNoConnectionError} from "../errors.js";
 
 let collapsedSelectors = new Set();
+let observers = new WeakMap();
 
 function getURLFromElement(element)
 {
@@ -86,7 +87,10 @@ export function hideElement(element, properties)
   for (let [key, value] of properties)
     style.setProperty(key, value, "important");
 
-  new MutationObserver(() =>
+  if (observers.has(element))
+    observers.get(element).disconnect();
+
+  let observer = new MutationObserver(() =>
   {
     for (let [key, value] of properties)
     {
@@ -94,12 +98,27 @@ export function hideElement(element, properties)
           style.getPropertyPriority(key) != "important")
         style.setProperty(key, value, "important");
     }
-  }).observe(
+  });
+  observer.observe(
     element, {
       attributes: true,
       attributeFilter: ["style"]
     }
   );
+  observers.set(element, observer);
+}
+
+export function unhideElement(element)
+{
+  let observer = observers.get(element);
+  if (observer)
+  {
+    observer.disconnect();
+    observers.delete(element);
+  }
+
+  let property = element.localName == "frame" ? "visibility" : "display";
+  element.style.removeProperty(property);
 }
 
 function collapseElement(element)
