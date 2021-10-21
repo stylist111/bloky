@@ -25,6 +25,7 @@ import {isSlowFilter} from "adblockpluscore/lib/matcher.js";
 import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {filterState} from "adblockpluscore/lib/filterState.js";
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
+import {defaultMatcher as matcher} from "adblockpluscore/lib/matcher.js";
 
 import {EventDispatcher, FilterError} from "./types.js";
 import {getFrameInfo} from "./frame-state.js";
@@ -136,8 +137,8 @@ export default {
   },
 
   /**
-   * Returns the allowlisted filters that were applied to the document when
-   * it was loaded.
+   * Returns the allowing filters that will be effective
+   * when the given document will be reloaded.
    * @param {number} tabId The id of the tab to lookup.
    * @param {Object} [options]
    * @param {number} [options.frameId=0] The id of the frame to lookup.
@@ -149,21 +150,21 @@ export default {
    */
   getAllowingFilters(tabId, options = {})
   {
-    let filters = [];
     let {frameId, types} = {frameId: 0, types: ["document"], ...options};
-    let frameInfo = getFrameInfo(tabId, frameId);
+    let filters = new Set();
+    let mask = types.reduce((a, b) => a | contentTypes[b.toUpperCase()], 0);
 
-    if (frameInfo && frameInfo.allowingFilters)
+    for (let frame = getFrameInfo(tabId, frameId); frame; frame = frame.parent)
     {
-      let mask = types.reduce((a, b) => a | contentTypes[b.toUpperCase()], 0);
-      for (let filter of frameInfo.allowingFilters)
-      {
-        if ((filter.contentType & mask) != 0)
-          filters.push(filter.text);
-      }
+      let parentHostname = frame.parent && frame.parent.hostname;
+      let matches = matcher.search(frame.url, mask, parentHostname,
+                                   frame.sitekey, false, "allowing");
+
+      for (let filter of matches.allowing)
+        filters.add(filter.text);
     }
 
-    return filters;
+    return Array.from(filters);
   },
 
   /**

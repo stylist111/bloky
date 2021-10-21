@@ -676,6 +676,8 @@ describe("API", () =>
     {
       const ALLOWING_IMAGE_DOC_FILTER =
         `@@|${TEST_PAGES_URL}/image.html^$document`;
+      const ALLOWING_IFRAME_DOC_FILTER =
+        `@@|${TEST_PAGES_URL}/iframe.html^$document`;
 
       it("returns filters for allowlisted tabs", async() =>
       {
@@ -683,6 +685,16 @@ describe("API", () =>
         await addFilter(ALLOWING_IMAGE_DOC_FILTER);
 
         let tabId = await new Page("image.html").loaded();
+        expect(await getAllowingFilters(tabId)).toEqual(
+          [ALLOWING_IMAGE_DOC_FILTER]);
+      });
+
+      it("returns filters for allowlisted tabs after page load", async() =>
+      {
+        let tabId = await new Page("image.html").loaded();
+
+        await addFilter(`|${TEST_PAGES_URL}/image.png^`);
+        await addFilter(ALLOWING_IMAGE_DOC_FILTER);
         expect(await getAllowingFilters(tabId)).toEqual(
           [ALLOWING_IMAGE_DOC_FILTER]);
       });
@@ -705,17 +717,24 @@ describe("API", () =>
           [ALLOWING_IMAGE_DOC_FILTER]);
         expect(await getAllowingFilters(tabId)).toEqual([]);
 
-        await addFilter(`@@|${TEST_PAGES_URL}/iframe.html^$document`);
+        await addFilter(ALLOWING_IFRAME_DOC_FILTER);
 
         ({tabId, frameId} = await loadTabWithFrame());
-
-        const ALLOWING_IFRAME_DOC_FILTER =
-          `@@|${TEST_PAGES_URL}/iframe.html^$document`;
-
-        expect(await getAllowingFilters(tabId, {frameId})).toEqual([
-          ALLOWING_IFRAME_DOC_FILTER, ALLOWING_IMAGE_DOC_FILTER]);
+        expect(await getAllowingFilters(tabId, {frameId})).toEqual(
+          expect.arrayContaining([ALLOWING_IMAGE_DOC_FILTER,
+                                  ALLOWING_IFRAME_DOC_FILTER])
+        );
         expect(await getAllowingFilters(tabId)).toEqual([
           ALLOWING_IFRAME_DOC_FILTER]);
+      });
+
+      it("returns filters for allowlisted parent frames", async() =>
+      {
+        let {tabId, frameId} = await loadTabWithFrame();
+
+        await addFilter(ALLOWING_IFRAME_DOC_FILTER);
+        expect(await getAllowingFilters(tabId, {frameId})).toEqual(
+          [ALLOWING_IFRAME_DOC_FILTER]);
       });
 
       it("returns element-hiding filters for allowlisted tabs", async() =>

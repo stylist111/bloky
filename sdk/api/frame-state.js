@@ -31,11 +31,6 @@ class FrameInfo
 {
   constructor(tabId, frameId, parent, url, pending)
   {
-    let hostname;
-    let sitekey;
-    let allowlisted = 0;
-    let allowingFilters;
-
     if (pending && pending.url != url)
       pending = null;
 
@@ -43,15 +38,13 @@ class FrameInfo
                      url.startsWith("https://")))
       pending = new PendingFrameInfo(tabId, frameId, parent, url);
 
-    if (pending)
-      ({hostname, sitekey, allowlisted, allowingFilters} = pending);
-    else if (parent)
-      ({hostname, sitekey, allowlisted, allowingFilters} = parent);
+    let {hostname, sitekey, allowlisted} = pending || parent || {};
 
+    this.url = url;
     this.hostname = hostname;
     this.sitekey = sitekey;
-    this.allowlisted = allowlisted;
-    this.allowingFilters = allowingFilters;
+    this.allowlisted = allowlisted || 0;
+    this.parent = parent;
     this.pending = null;
   }
 }
@@ -61,12 +54,11 @@ class PendingFrameInfo
   constructor(tabId, frameId, parent, url, sitekey)
   {
     let allowlisted = 0;
-    let allowingFilters;
     let parentHostname;
 
     if (parent)
     {
-      ({hostname: parentHostname, allowlisted, allowingFilters} = parent);
+      ({hostname: parentHostname, allowlisted} = parent);
 
       if (!sitekey)
         ({sitekey} = parent);
@@ -95,20 +87,10 @@ class PendingFrameInfo
       logItem(details, filter, {...info, allowingReason});
     }
 
-    if (allowlisted != 0)
-    {
-      let matches = matcher.search(url, allowlisted, parentHostname,
-                                   sitekey, false, "allowing");
-      allowingFilters = new Set(allowingFilters);
-      for (let filter of matches.allowing)
-        allowingFilters.add(filter);
-    }
-
-    this.hostname = hostname;
     this.url = url;
+    this.hostname = hostname;
     this.sitekey = sitekey;
     this.allowlisted = allowlisted;
-    this.allowingFilters = allowingFilters;
   }
 
   getAllowingReason(typeMask, filter)
