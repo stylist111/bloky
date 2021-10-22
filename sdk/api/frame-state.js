@@ -49,6 +49,15 @@ class FrameInfo
   }
 }
 
+function getAllowingReason(typeMask, filter)
+{
+  for (let type in contentTypes)
+  {
+    if (typeMask & filter.contentType & contentTypes[type])
+      return type.toLowerCase();
+  }
+}
+
 class PendingFrameInfo
 {
   constructor(tabId, frameId, parent, url, sitekey)
@@ -83,7 +92,7 @@ class PendingFrameInfo
 
       allowlisted |= filter.contentType & ALLOWING_TYPES;
 
-      let allowingReason = this.getAllowingReason(typeMask, filter);
+      let allowingReason = getAllowingReason(typeMask, filter);
       logItem(details, filter, {...info, allowingReason});
     }
 
@@ -91,19 +100,6 @@ class PendingFrameInfo
     this.hostname = hostname;
     this.sitekey = sitekey;
     this.allowlisted = allowlisted;
-  }
-
-  getAllowingReason(typeMask, filter)
-  {
-    let allowingTypes = [
-      "DOCUMENT", "ELEMHIDE", "GENERICBLOCK", "GENERICHIDE"
-    ];
-
-    for (let type of allowingTypes)
-    {
-      if (typeMask & filter.contentType & contentTypes[type])
-        return type.toLowerCase();
-    }
   }
 }
 
