@@ -222,7 +222,6 @@ class Edge
   }
 }
 
-const MANIFESTS = ["v2", "v3"];
 const BROWSERS = {
   chromium: new Chromium(),
   firefox: new Firefox(),
@@ -236,7 +235,7 @@ function parseArguments()
   parser.strict();
   parser.command("$0 <manifest> <browser> [version]", "", subparser =>
   {
-    subparser.positional("browser", {choices: MANIFESTS});
+    subparser.positional("manifest", {choices: ["v2", "v3"]});
     subparser.positional("browser", {choices: Object.keys(BROWSERS)});
     subparser.positional("version", {type: "string"});
   });
