@@ -19,7 +19,7 @@ import expect from "expect";
 import browser from "webextension-polyfill";
 
 import {wait} from "./utils.js";
-import {addFilter, runInBackgroundPage} from "./messaging.js";
+import {addFilter, callMethod, runInBackgroundPage} from "./messaging.js";
 
 const VALID_FILTER_TEXT = "reload.test^$image";
 const VALID_FILTER = {
@@ -67,22 +67,13 @@ describe(`Reload (${phase})`, function()
 
     try
     {
-      let filters = await runInBackgroundPage([
-        {op: "getGlobal", arg: "EWE"},
-        {op: "getProp", arg: "filters"},
-        {op: "callMethod", arg: "getUserFilters"}
-      ]);
-      expect(filters).toEqual(expect.arrayContaining([VALID_FILTER]));
+      expect(await callMethod(["filters"], "getUserFilters"))
+        .toEqual(expect.arrayContaining([VALID_FILTER]));
     }
     finally
     {
       await browser.storage.local.remove("reload-test-running");
-      await runInBackgroundPage([
-        {op: "getGlobal", arg: "EWE"},
-        {op: "getProp", arg: "filters"},
-        {op: "pushArg", arg: VALID_FILTER_TEXT},
-        {op: "callMethod", arg: "remove"}
-      ]);
+      await callMethod(["filters"], "remove", [VALID_FILTER_TEXT]);
     }
   });
 });

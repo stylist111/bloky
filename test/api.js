@@ -20,8 +20,8 @@ import expect from "expect";
 
 import {Page, Popup, setMinTimeout, waitForInvisibleElement, wait,
         executeScript, TEST_PAGES_URL, TEST_PAGES_DOMAIN} from "./utils.js";
-import {addFilter, runInBackgroundPage, addFakeListener, setTestSnippets}
-  from "./messaging.js";
+import {addFilter, callMethod, runInBackgroundPage, addFakeListener,
+        setTestSnippets} from "./messaging.js";
 
 const VALID_SUBSCRIPTION_URL = "https://testpages.adblockplus.org/en/abp-testcase-subscription.txt";
 const ANOTHER_VALID_SUBSCRIPTION_URL = "https://testpages.adblockplus.org/en/websocket-webrtc-subscription.txt";
@@ -39,154 +39,6 @@ const VALID_FILTER = {
 };
 const INVALID_FILTER_TEXT = "/foo/$rewrite=";
 
-let subscriptionsProp = [
-  {op: "getGlobal", arg: "EWE"},
-  {op: "getProp", arg: "subscriptions"}
-];
-let filtersProp = [
-  {op: "getGlobal", arg: "EWE"},
-  {op: "getProp", arg: "filters"}
-];
-
-function addSubscription(subscription)
-{
-  return runInBackgroundPage([
-    ...subscriptionsProp,
-    {op: "pushArg", arg: subscription},
-    {op: "callMethod", arg: "add"}
-  ]);
-}
-
-function disableSubscription(subscription)
-{
-  return runInBackgroundPage([
-    ...subscriptionsProp,
-    {op: "pushArg", arg: subscription},
-    {op: "callMethod", arg: "disable"}
-  ]);
-}
-
-function enableSubscription(subscription)
-{
-  return runInBackgroundPage([
-    ...subscriptionsProp,
-    {op: "pushArg", arg: subscription},
-    {op: "callMethod", arg: "enable"}
-  ]);
-}
-
-function removeSubscription(subscription)
-{
-  return runInBackgroundPage([
-    ...subscriptionsProp,
-    {op: "pushArg", arg: subscription},
-    {op: "callMethod", arg: "remove"}
-  ]);
-}
-
-function getDownloadable()
-{
-  return runInBackgroundPage([
-    ...subscriptionsProp,
-    {op: "callMethod", arg: "getDownloadable"}
-  ]);
-}
-
-function getAllFilters()
-{
-  return runInBackgroundPage([
-    ...filtersProp,
-    {op: "callMethod", arg: "getUserFilters"}
-  ]);
-}
-
-function disableFilter(filter)
-{
-  return runInBackgroundPage([
-    ...filtersProp,
-    {op: "pushArg", arg: filter},
-    {op: "callMethod", arg: "disable"}
-  ]);
-}
-
-function enableFilter(filter)
-{
-  return runInBackgroundPage([
-    ...filtersProp,
-    {op: "pushArg", arg: filter},
-    {op: "callMethod", arg: "enable"}
-  ]);
-}
-
-function removeFilter(filter)
-{
-  return runInBackgroundPage([
-    ...filtersProp,
-    {op: "pushArg", arg: filter},
-    {op: "callMethod", arg: "remove"}
-  ]);
-}
-
-function validateFilter(filter)
-{
-  return runInBackgroundPage([
-    ...filtersProp,
-    {op: "pushArg", arg: filter},
-    {op: "callMethod", arg: "validate"}
-  ]);
-}
-
-function getAllowingFilters(tabId, opts)
-{
-  return runInBackgroundPage([
-    ...filtersProp,
-    {op: "pushArg", arg: tabId},
-    {op: "pushArg", arg: opts},
-    {op: "callMethod", arg: "getAllowingFilters"}
-  ]);
-}
-
-function getContentType(type)
-{
-  return runInBackgroundPage([
-    {op: "getGlobal", arg: "EWE"},
-    {op: "getProp", arg: "reporting"},
-    {op: "getProp", arg: "contentTypesMap"},
-    {op: "pushArg", arg: type},
-    {op: "callMethod", arg: "get"}
-  ]);
-}
-
-function setElementHidingDebugMode(enabled)
-{
-  return runInBackgroundPage([
-    {op: "getGlobal", arg: "EWE"},
-    {op: "getProp", arg: "debugging"},
-    {op: "pushArg", arg: enabled},
-    {op: "callMethod", arg: "setElementHidingDebugMode"}
-  ]);
-}
-
-function setElementHidingDebugStyle(cssProperties, cssSnippetProperties)
-{
-  return runInBackgroundPage([
-    {op: "getGlobal", arg: "EWE"},
-    {op: "getProp", arg: "debugging"},
-    {op: "pushArg", arg: cssProperties},
-    {op: "pushArg", arg: cssSnippetProperties},
-    {op: "callMethod", arg: "setElementHidingDebugStyle"}
-  ]);
-}
-
-function getFirstVersion()
-{
-  return runInBackgroundPage([
-    {op: "getGlobal", arg: "EWE"},
-    {op: "getProp", arg: "reporting"},
-    {op: "callMethod", arg: "getFirstVersion"}
-  ]);
-}
-
 describe("API", () =>
 {
   afterEach(() =>
@@ -199,10 +51,10 @@ describe("API", () =>
   {
     it("adds a subscription", async() =>
     {
-      await addSubscription(VALID_SUBSCRIPTION_URL);
+      await callMethod(["subscriptions"], "add", [VALID_SUBSCRIPTION_URL]);
 
-      let subscriptions = await getDownloadable();
-      expect(subscriptions).toEqual([expect.objectContaining({
+      let subs = await callMethod(["subscriptions"], "getDownloadable");
+      expect(subs).toEqual([expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
         enabled: true,
         title: VALID_SUBSCRIPTION_URL,
@@ -216,15 +68,11 @@ describe("API", () =>
       let title = "testTitle";
       let homepage = "testHomePage";
 
-      await runInBackgroundPage([
-        ...subscriptionsProp,
-        {op: "pushArg", arg: VALID_SUBSCRIPTION_URL},
-        {op: "pushArg", arg: {title, homepage}},
-        {op: "callMethod", arg: "add"}
-      ]);
+      await callMethod(["subscriptions"], "add",
+                       [VALID_SUBSCRIPTION_URL, {title, homepage}]);
 
-      let subscriptions = await getDownloadable();
-      expect(subscriptions).toEqual([expect.objectContaining({
+      let subs = await callMethod(["subscriptions"], "getDownloadable");
+      expect(subs).toEqual([expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
         enabled: true,
         title,
@@ -234,18 +82,18 @@ describe("API", () =>
     });
 
     it("does not add an invalid subscription", () =>
-      expect(addSubscription(INVALID_SUBSCRIPTION_URL)).rejects.toThrow(
-        "Error: Invalid subscription URL provided: invalidUrl"
-      )
+      expect(callMethod(["subscriptions"], "add", [INVALID_SUBSCRIPTION_URL]))
+        .rejects.toThrow("Error: Invalid subscription URL provided: invalidUrl")
     );
 
     it("adds multiple subscriptions", async() =>
     {
-      await addSubscription(VALID_SUBSCRIPTION_URL);
-      await addSubscription(VALID_SUBSCRIPTION_URL + "?2");
+      await callMethod(["subscriptions"], "add", [VALID_SUBSCRIPTION_URL]);
+      await callMethod(["subscriptions"], "add",
+                       [VALID_SUBSCRIPTION_URL + "?2"]);
 
-      let subscriptions = await getDownloadable();
-      expect(subscriptions).toEqual([
+      let subs = await callMethod(["subscriptions"], "getDownloadable");
+      expect(subs).toEqual([
         expect.objectContaining({url: VALID_SUBSCRIPTION_URL}),
         expect.objectContaining({url: VALID_SUBSCRIPTION_URL + "?2"})
       ]);
@@ -254,38 +102,24 @@ describe("API", () =>
     it("gets subscriptions for a filter", async() =>
     {
       await addFilter(VALID_FILTER_TEXT);
-
-      let result = await runInBackgroundPage([
-        ...subscriptionsProp,
-        {op: "pushArg", arg: VALID_FILTER_TEXT},
-        {op: "callMethod", arg: "getForFilter"}
-      ]);
-
-      expect(result).toEqual([
+      expect(await callMethod(["subscriptions"], "getForFilter",
+                              [VALID_FILTER_TEXT])).toEqual([
         expect.objectContaining({downloadable: false})
       ]);
     });
 
     it("gets filters from a subscription", async() =>
     {
-      let result = await runInBackgroundPage([
-        ...subscriptionsProp,
-        {op: "pushArg", arg: VALID_SUBSCRIPTION_URL},
-        {op: "callMethod", arg: "getFilters"}
-      ]);
+      expect(await callMethod(["subscriptions"], "getFilters",
+                              [VALID_SUBSCRIPTION_URL])).toEqual([]);
 
-      expect(result).toEqual([]);
+      await callMethod(["subscriptions"], "add", [VALID_SUBSCRIPTION_URL]);
 
-      await addSubscription(VALID_SUBSCRIPTION_URL);
-
+      let result;
       await wait(async() =>
       {
-        result = await runInBackgroundPage([
-          ...subscriptionsProp,
-          {op: "pushArg", arg: VALID_SUBSCRIPTION_URL},
-          {op: "callMethod", arg: "getFilters"}
-        ]);
-
+        result = await callMethod(["subscriptions"], "getFilters",
+                                  [VALID_SUBSCRIPTION_URL]);
         return result.length > 0;
       }, 4000);
 
@@ -296,29 +130,21 @@ describe("API", () =>
 
     it("checks if a subscription has been added", async() =>
     {
-      let result = await runInBackgroundPage([
-        ...subscriptionsProp,
-        {op: "pushArg", arg: VALID_SUBSCRIPTION_URL},
-        {op: "callMethod", arg: "has"}
-      ]);
-      expect(result).toBe(false);
-      await addSubscription(VALID_SUBSCRIPTION_URL);
+      expect(await callMethod(["subscriptions"], "has",
+                              [VALID_SUBSCRIPTION_URL])).toBe(false);
 
-      result = await runInBackgroundPage([
-        ...subscriptionsProp,
-        {op: "pushArg", arg: VALID_SUBSCRIPTION_URL},
-        {op: "callMethod", arg: "has"}
-      ]);
-      expect(result).toBe(true);
+      await callMethod(["subscriptions"], "add", [VALID_SUBSCRIPTION_URL]);
+      expect(await callMethod(["subscriptions"], "has",
+                              [VALID_SUBSCRIPTION_URL])).toBe(true);
     });
 
     it("disables an existing subscription", async() =>
     {
-      await addSubscription(VALID_SUBSCRIPTION_URL);
-      await disableSubscription(VALID_SUBSCRIPTION_URL);
+      await callMethod(["subscriptions"], "add", [VALID_SUBSCRIPTION_URL]);
+      await callMethod(["subscriptions"], "disable", [VALID_SUBSCRIPTION_URL]);
 
-      let subscriptions = await getDownloadable();
-      expect(subscriptions).toEqual([expect.objectContaining({
+      let subs = await callMethod(["subscriptions"], "getDownloadable");
+      expect(subs).toEqual([expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
         enabled: false
       })]);
@@ -326,12 +152,12 @@ describe("API", () =>
 
     it("enables an existing subscription", async() =>
     {
-      await addSubscription(VALID_SUBSCRIPTION_URL);
-      await disableSubscription(VALID_SUBSCRIPTION_URL);
-      await enableSubscription(VALID_SUBSCRIPTION_URL);
+      await callMethod(["subscriptions"], "add", [VALID_SUBSCRIPTION_URL]);
+      await callMethod(["subscriptions"], "disable", [VALID_SUBSCRIPTION_URL]);
+      await callMethod(["subscriptions"], "enable", [VALID_SUBSCRIPTION_URL]);
 
-      let subscriptions = await getDownloadable();
-      expect(subscriptions).toEqual([expect.objectContaining({
+      let subs = await callMethod(["subscriptions"], "getDownloadable");
+      expect(subs).toEqual([expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
         enabled: true
       })]);
@@ -339,11 +165,11 @@ describe("API", () =>
 
     it("enables a subscription that is already enabled.", async() =>
     {
-      await addSubscription(VALID_SUBSCRIPTION_URL);
-      await enableSubscription(VALID_SUBSCRIPTION_URL);
+      await callMethod(["subscriptions"], "add", [VALID_SUBSCRIPTION_URL]);
+      await callMethod(["subscriptions"], "enable", [VALID_SUBSCRIPTION_URL]);
 
-      let subscriptions = await getDownloadable();
-      expect(subscriptions).toEqual([expect.objectContaining({
+      let subs = await callMethod(["subscriptions"], "getDownloadable");
+      expect(subs).toEqual([expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
         enabled: true
       })]);
@@ -352,26 +178,24 @@ describe("API", () =>
     it("fails enabling/disabling a nonexistent subscription", async() =>
     {
       let errorMessage = "Error: Subscription does not exist: DoesNotExist";
-      await expect(enableSubscription("DoesNotExist"))
+      await expect(callMethod(["subscriptions"], "enable", ["DoesNotExist"]))
         .rejects.toThrow(errorMessage);
-      await expect(disableSubscription("DoesNotExist"))
+      await expect(callMethod(["subscriptions"], "disable", ["DoesNotExist"]))
         .rejects.toThrow(errorMessage);
     });
 
     it("removes a subscription", async() =>
     {
-      await addSubscription(VALID_SUBSCRIPTION_URL);
-      await removeSubscription(VALID_SUBSCRIPTION_URL);
+      await callMethod(["subscriptions"], "add", [VALID_SUBSCRIPTION_URL]);
+      await callMethod(["subscriptions"], "remove", [VALID_SUBSCRIPTION_URL]);
 
-      expect(await getDownloadable()).toEqual([]);
+      expect(await callMethod(["subscriptions"], "getDownloadable"))
+        .toEqual([]);
     });
 
     it("gets recommendations", async() =>
     {
-      let result = await runInBackgroundPage([
-        ...subscriptionsProp,
-        {op: "callMethod", arg: "getRecommendations"}
-      ]);
+      let result = await callMethod(["subscriptions"], "getRecommendations");
 
       expect(result).toEqual(expect.arrayContaining([
         expect.objectContaining({
@@ -399,7 +223,7 @@ describe("API", () =>
     it("listens to onAdded events", async() =>
     {
       let fake = await addFakeListener("subscriptions", "onAdded");
-      await addSubscription(VALID_SUBSCRIPTION_URL);
+      await callMethod(["subscriptions"], "add", [VALID_SUBSCRIPTION_URL]);
 
       expect(fake.callCount).toBe(1);
       expect(fake.firstArg).toEqual(expect.objectContaining({
@@ -411,10 +235,10 @@ describe("API", () =>
 
     it("listens to onChanged events", async() =>
     {
-      await addSubscription(VALID_SUBSCRIPTION_URL);
+      await callMethod(["subscriptions"], "add", [VALID_SUBSCRIPTION_URL]);
 
       let fake = await addFakeListener("subscriptions", "onChanged");
-      await disableSubscription(VALID_SUBSCRIPTION_URL);
+      await callMethod(["subscriptions"], "disable", [VALID_SUBSCRIPTION_URL]);
 
       expect(fake.firstArg).toEqual(expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
@@ -426,8 +250,8 @@ describe("API", () =>
     it("listens to onRemoved events", async() =>
     {
       let fake = await addFakeListener("subscriptions", "onRemoved");
-      await addSubscription(VALID_SUBSCRIPTION_URL);
-      await removeSubscription(VALID_SUBSCRIPTION_URL);
+      await callMethod(["subscriptions"], "add", [VALID_SUBSCRIPTION_URL]);
+      await callMethod(["subscriptions"], "remove", [VALID_SUBSCRIPTION_URL]);
 
       expect(fake.callCount).toBe(1);
       expect(fake.firstArg).toEqual(
@@ -477,20 +301,14 @@ describe("API", () =>
             {
               syncedOne = true;
               await new Promise(elapsed => setTimeout(elapsed, 1050));
-              await runInBackgroundPage([
-                ...subscriptionsProp,
-                {op: "pushArg", arg: ANOTHER_VALID_SUBSCRIPTION_URL},
-                {op: "callMethod", arg: "sync"}
-              ]);
+              await callMethod(["subscriptions"], "sync",
+                               [ANOTHER_VALID_SUBSCRIPTION_URL]);
             }
             else if (!syncedAll)
             {
               syncedAll = true;
               await new Promise(elapsed => setTimeout(elapsed, 1050));
-              await runInBackgroundPage([
-                ...subscriptionsProp,
-                {op: "callMethod", arg: "sync"}
-              ]);
+              await callMethod(["subscriptions"], "sync");
             }
             else
             {
@@ -505,9 +323,9 @@ describe("API", () =>
           }
         }
 
-        addFakeListener("subscriptions", "onChanged",
-                        void 0, void 0, onChanged)
-          .then(() => addSubscription(ANOTHER_VALID_SUBSCRIPTION_URL))
+        addFakeListener("subscriptions", "onChanged", void 0, void 0, onChanged)
+          .then(() => callMethod(["subscriptions"], "add",
+                                 [ANOTHER_VALID_SUBSCRIPTION_URL]))
           .catch(reject);
       });
     });
@@ -518,9 +336,8 @@ describe("API", () =>
     it("adds a filter", async() =>
     {
       await addFilter(VALID_FILTER_TEXT);
-
-      let filters = await getAllFilters();
-      expect(filters).toEqual([VALID_FILTER]);
+      expect(await callMethod(["filters"], "getUserFilters"))
+        .toEqual([VALID_FILTER]);
     });
 
     it("does not add an invalid filter", () =>
@@ -532,8 +349,7 @@ describe("API", () =>
       await addFilter(VALID_FILTER_TEXT);
       await addFilter("another-filter");
 
-      let filters = await getAllFilters();
-      expect(filters).toEqual([
+      expect(await callMethod(["filters"], "getUserFilters")).toEqual([
         VALID_FILTER,
         {...VALID_FILTER, text: "another-filter", slow: true}
       ]);
@@ -542,37 +358,37 @@ describe("API", () =>
     it("disable an existing filter", async() =>
     {
       await addFilter(VALID_FILTER_TEXT);
-      await disableFilter(VALID_FILTER_TEXT);
+      await callMethod(["filters"], "disable", [VALID_FILTER_TEXT]);
 
-      let filters = await getAllFilters();
-      expect(filters).toEqual([{...VALID_FILTER, enabled: false}]);
+      expect(await callMethod(["filters"], "getUserFilters"))
+        .toEqual([{...VALID_FILTER, enabled: false}]);
     });
 
     it("enables an existing filter", async() =>
     {
       await addFilter(VALID_FILTER_TEXT);
-      await disableFilter(VALID_FILTER_TEXT);
-      await enableFilter(VALID_FILTER_TEXT);
+      await callMethod(["filters"], "disable", [VALID_FILTER_TEXT]);
+      await callMethod(["filters"], "enable", [VALID_FILTER_TEXT]);
 
-      let filters = await getAllFilters();
-      expect(filters).toEqual([VALID_FILTER]);
+      expect(await callMethod(["filters"], "getUserFilters"))
+        .toEqual([VALID_FILTER]);
     });
 
     it("enables a filter that is already enabled.", async() =>
     {
       await addFilter(VALID_FILTER_TEXT);
-      await enableFilter(VALID_FILTER_TEXT);
+      await callMethod(["filters"], "enable", [VALID_FILTER_TEXT]);
 
-      let filters = await getAllFilters();
-      expect(filters).toEqual([VALID_FILTER]);
+      expect(await callMethod(["filters"], "getUserFilters"))
+        .toEqual([VALID_FILTER]);
     });
 
     it("removes a filter", async() =>
     {
       await addFilter(VALID_FILTER_TEXT);
-      await removeFilter(VALID_FILTER_TEXT);
+      await callMethod(["filters"], "remove", [VALID_FILTER_TEXT]);
 
-      expect(await getAllFilters()).toEqual([]);
+      expect(await callMethod(["filters"], "getUserFilters")).toEqual([]);
     });
 
     it("normalizes a filter internally", async() =>
@@ -581,28 +397,31 @@ describe("API", () =>
 
       let PADDED_FILTER_TEXT = " " + VALID_FILTER_TEXT;
       await addFilter(PADDED_FILTER_TEXT);
-      expect(await getAllFilters()).toEqual([VALID_FILTER]);
+      expect(await callMethod(["filters"], "getUserFilters"))
+        .toEqual([VALID_FILTER]);
 
-      await disableFilter(PADDED_FILTER_TEXT);
-      let filters = await getAllFilters();
-      expect(filters).toEqual([{...VALID_FILTER, enabled: false}]);
+      await callMethod(["filters"], "disable", [PADDED_FILTER_TEXT]);
+      expect(await callMethod(["filters"], "getUserFilters"))
+        .toEqual([{...VALID_FILTER, enabled: false}]);
 
-      await enableFilter(PADDED_FILTER_TEXT);
-      expect(await getAllFilters()).toEqual([VALID_FILTER]);
+      await callMethod(["filters"], "enable", [PADDED_FILTER_TEXT]);
+      expect(await callMethod(["filters"], "getUserFilters"))
+        .toEqual([VALID_FILTER]);
 
-      await removeFilter(PADDED_FILTER_TEXT);
-      expect(await getAllFilters()).toEqual([]);
+      await callMethod(["filters"], "remove", [PADDED_FILTER_TEXT]);
+      expect(await callMethod(["filters"], "getUserFilters")).toEqual([]);
     });
 
     it("validates a valid filter", async() =>
     {
-      let result = await validateFilter(VALID_FILTER_TEXT);
-      expect(result).toBeNull();
+      expect(await callMethod(["filters"], "validate", [VALID_FILTER_TEXT]))
+        .toBeNull();
     });
 
     it("validates a filter with unknown option", async() =>
     {
-      let result = await validateFilter("@@||example.com^$foo");
+      let result = await callMethod(["filters"], "validate",
+                                    ["@@||example.com^$foo"]);
       expect(result).toEqual("FilterError: {\"type\":\"invalid_filter\"," +
                              "\"reason\":\"filter_unknown_option\"," +
                              "\"option\":\"foo\"}");
@@ -610,7 +429,8 @@ describe("API", () =>
 
     it("validates a filter with an invalid domain", async() =>
     {
-      let result = await validateFilter("/image.png$domain=http://foo");
+      let result = await callMethod(["filters"], "validate",
+                                    ["/image.png$domain=http://foo"]);
       // eslint-disable-next-line max-len
       expect(result).toEqual("FilterError: {\"type\":\"invalid_domain\",\"reason\":\"http://foo\",\"option\":null}");
     });
@@ -619,7 +439,7 @@ describe("API", () =>
     {
       await addFilter("example##.site-panel");
 
-      expect(await getAllFilters()).toEqual([
+      expect(await callMethod(["filters"], "getUserFilters")).toEqual([
         expect.objectContaining({slow: false})
       ]);
     });
@@ -628,7 +448,7 @@ describe("API", () =>
     {
       await addFilter("example##.site-panel");
 
-      expect(await getAllFilters()).toEqual([
+      expect(await callMethod(["filters"], "getUserFilters")).toEqual([
         expect.objectContaining({selector: ".site-panel"})
       ]);
     });
@@ -637,7 +457,7 @@ describe("API", () =>
     {
       await addFilter(`|${TEST_PAGES_URL}$csp=img-src 'none'`);
 
-      expect(await getAllFilters()).toEqual([
+      expect(await callMethod(["filters"], "getUserFilters")).toEqual([
         expect.objectContaining({csp: "img-src 'none'"})
       ]);
     });
@@ -655,7 +475,7 @@ describe("API", () =>
     {
       let fake = await addFakeListener("filters", "onChanged");
       await addFilter(VALID_FILTER_TEXT);
-      await disableFilter(VALID_FILTER_TEXT);
+      await callMethod(["filters"], "disable", [VALID_FILTER_TEXT]);
 
       expect(fake.callCount).toBe(1);
       expect(fake.firstArg).toEqual({...VALID_FILTER, enabled: false});
@@ -666,7 +486,7 @@ describe("API", () =>
     {
       let fake = await addFakeListener("filters", "onRemoved");
       await addFilter(VALID_FILTER_TEXT);
-      await removeFilter(VALID_FILTER_TEXT);
+      await callMethod(["filters"], "remove", [VALID_FILTER_TEXT]);
 
       expect(fake.callCount).toBe(1);
       expect(fake.firstArg).toEqual({...VALID_FILTER, enabled: false});
@@ -685,8 +505,8 @@ describe("API", () =>
         await addFilter(ALLOWING_IMAGE_DOC_FILTER);
 
         let tabId = await new Page("image.html").loaded();
-        expect(await getAllowingFilters(tabId)).toEqual(
-          [ALLOWING_IMAGE_DOC_FILTER]);
+        expect(await callMethod(["filters"], "getAllowingFilters", [tabId]))
+          .toEqual([ALLOWING_IMAGE_DOC_FILTER]);
       });
 
       it("returns filters for allowlisted tabs after page load", async() =>
@@ -695,8 +515,8 @@ describe("API", () =>
 
         await addFilter(`|${TEST_PAGES_URL}/image.png^`);
         await addFilter(ALLOWING_IMAGE_DOC_FILTER);
-        expect(await getAllowingFilters(tabId)).toEqual(
-          [ALLOWING_IMAGE_DOC_FILTER]);
+        expect(await callMethod(["filters"], "getAllowingFilters", [tabId]))
+          .toEqual([ALLOWING_IMAGE_DOC_FILTER]);
       });
 
       async function loadTabWithFrame()
@@ -713,19 +533,21 @@ describe("API", () =>
         await addFilter(ALLOWING_IMAGE_DOC_FILTER);
 
         let {tabId, frameId} = await loadTabWithFrame();
-        expect(await getAllowingFilters(tabId, {frameId})).toEqual(
-          [ALLOWING_IMAGE_DOC_FILTER]);
-        expect(await getAllowingFilters(tabId)).toEqual([]);
+        expect(await callMethod(["filters"], "getAllowingFilters",
+                                [tabId, {frameId}]))
+          .toEqual([ALLOWING_IMAGE_DOC_FILTER]);
+        expect(await callMethod(["filters"], "getAllowingFilters", [tabId]))
+          .toEqual([]);
 
         await addFilter(ALLOWING_IFRAME_DOC_FILTER);
 
         ({tabId, frameId} = await loadTabWithFrame());
-        expect(await getAllowingFilters(tabId, {frameId})).toEqual(
-          expect.arrayContaining([ALLOWING_IMAGE_DOC_FILTER,
-                                  ALLOWING_IFRAME_DOC_FILTER])
-        );
-        expect(await getAllowingFilters(tabId)).toEqual([
-          ALLOWING_IFRAME_DOC_FILTER]);
+        expect(await callMethod(["filters"], "getAllowingFilters",
+                                [tabId, {frameId}]))
+          .toEqual(expect.arrayContaining([ALLOWING_IMAGE_DOC_FILTER,
+                                           ALLOWING_IFRAME_DOC_FILTER]));
+        expect(await callMethod(["filters"], "getAllowingFilters", [tabId]))
+         .toEqual([ALLOWING_IFRAME_DOC_FILTER]);
       });
 
       it("returns filters for allowlisted parent frames", async() =>
@@ -733,8 +555,9 @@ describe("API", () =>
         let {tabId, frameId} = await loadTabWithFrame();
 
         await addFilter(ALLOWING_IFRAME_DOC_FILTER);
-        expect(await getAllowingFilters(tabId, {frameId})).toEqual(
-          [ALLOWING_IFRAME_DOC_FILTER]);
+        expect(await callMethod(["filters"], "getAllowingFilters",
+                                [tabId, {frameId}]))
+          .toEqual([ALLOWING_IFRAME_DOC_FILTER]);
       });
 
       it("returns element-hiding filters for allowlisted tabs", async() =>
@@ -747,26 +570,31 @@ describe("API", () =>
 
         let tabId = await new Page("image.html").loaded();
         let opts = {types: ["elemhide"]};
-        expect(await getAllowingFilters(tabId, opts)).toEqual([filter]);
+        expect(await callMethod(["filters"], "getAllowingFilters",
+                                [tabId, opts])).toEqual([filter]);
       });
 
       it("doesn't return filters for non-allowlisted tabs", async() =>
       {
         let tabId = await new Page("image.html").loaded();
-        expect(await getAllowingFilters(tabId)).toEqual([]);
+        expect(await callMethod(["filters"], "getAllowingFilters", [tabId]))
+          .toEqual([]);
       });
 
       it("doesn't return filters for non-allowlisted frames", async() =>
       {
         let {tabId, frameId} = await loadTabWithFrame();
-        expect(await getAllowingFilters(tabId, {frameId})).toEqual([]);
-        expect(await getAllowingFilters(tabId)).toEqual([]);
+        expect(await callMethod(["filters"], "getAllowingFilters",
+                                [tabId, {frameId}])).toEqual([]);
+        expect(await callMethod(["filters"], "getAllowingFilters", [tabId]))
+          .toEqual([]);
       });
 
       it("handles empty tabs", async() =>
       {
         let tabId = await new Page("about:blank", true).loaded();
-        expect(await getAllowingFilters(tabId)).toEqual([]);
+        expect(await callMethod(["filters"], "getAllowingFilters", [tabId]))
+          .toEqual([]);
       });
     });
   });
@@ -791,18 +619,18 @@ describe("API", () =>
         await browser.runtime.sendMessage(
           {type: "ewe-test:setLanguageAndStart", args: [language]});
 
-        let subscriptions = await getDownloadable();
+        let subs = await callMethod(["subscriptions"], "getDownloadable");
         let urls = [
           subscriptionUrl,
           "https://easylist-downloads.adblockplus.org/exceptionrules.txt",
           "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt"
         ];
 
-        expect(subscriptions).toEqual(expect.arrayContaining(urls.map(
+        expect(subs).toEqual(expect.arrayContaining(urls.map(
           url => expect.objectContaining({url, enabled: true})
         )));
 
-        for (let subscription of subscriptions)
+        for (let subscription of subs)
         {
           expect(urls).toContain(subscription.url);
           expect(subscription.downloading ||
@@ -835,8 +663,10 @@ describe("API", () =>
   {
     it("exposes a mapping between content types and ResourceTypes", async() =>
     {
-      expect(await getContentType("font")).toEqual("font");
-      expect(await getContentType("beacon")).toEqual("ping");
+      expect(await callMethod(["reporting", "contentTypesMap"],
+                              "get", ["font"])).toEqual("font");
+      expect(await callMethod(["reporting", "contentTypesMap"],
+                              "get", ["beacon"])).toEqual("ping");
     });
 
     describe("Analytics", () =>
@@ -845,9 +675,12 @@ describe("API", () =>
       {
         let today = new Date().toISOString().substring(0, 10).replace(/-/g, "");
 
-        await wait(async() => await getFirstVersion() != "0", 1000,
-                   "No resource has been downloaded yet.");
-        expect(await getFirstVersion()).toBe(today);
+        await wait(
+          async() => await callMethod(["reporting"], "getFirstVersion") != "0",
+          1000,
+          "No resource has been downloaded yet."
+        );
+        expect(await callMethod(["reporting"], "getFirstVersion")).toBe(today);
       });
     });
 
@@ -866,7 +699,7 @@ describe("API", () =>
         }
         finally
         {
-          await removeFilter(filter.text);
+          await callMethod(["filters"], "remove", [filter.text]);
         }
 
         expect(fake.called).toBeTruthy();
@@ -1038,41 +871,19 @@ describe("API", () =>
     {
       it("supports notifications", async() =>
       {
-        let notificationsProp = [
-          {op: "getGlobal", arg: "EWE"},
-          {op: "getProp", arg: "notifications"}
-        ];
         let notification = {id: "test"};
 
-        await runInBackgroundPage([
-          ...notificationsProp,
-          {op: "callMethod", arg: "start"}
-        ]);
-
-        await runInBackgroundPage([
-          ...notificationsProp,
-          {op: "pushArg", arg: notification},
-          {op: "callMethod", arg: "addNotification"}
-        ]);
+        await callMethod(["notifications"], "start");
+        await callMethod(["notifications"], "addNotification", [notification]);
 
         let fake = await addFakeListener("notifications", null,
                                          "addShowListener",
                                          "removeShowListener");
-        await runInBackgroundPage([
-          ...notificationsProp,
-          {op: "callMethod", arg: "showNext"}
-        ]);
+        await callMethod(["notifications"], "showNext");
+        await callMethod(["notifications"], "removeNotification",
+                         [notification]);
 
-        await runInBackgroundPage([
-          ...notificationsProp,
-          {op: "pushArg", arg: notification},
-          {op: "callMethod", arg: "removeNotification"}
-        ]);
-
-        await runInBackgroundPage([
-          ...notificationsProp,
-          {op: "callMethod", arg: "stop"}
-        ]);
+        await callMethod(["notifications"], "stop");
 
         expect(fake.callCount).toBe(1);
         expect(fake.firstArg).toEqual(notification);
@@ -1096,25 +907,25 @@ describe("API", () =>
       {
         style = await executeScript(tabId, getBackgroundColor);
         return style != "rgba(0, 0, 0, 0)";
-      }, 500);
+      }, 500, "Style is not highlighted");
 
       return style;
     }
 
     it("highlights an element", async() =>
     {
-      await setElementHidingDebugMode(true);
+      await callMethod(["debugging"], "setElementHidingDebugMode", [true]);
       await addFilter("###elem-hide");
       let style = await waitForHighlightedStyle();
-      await setElementHidingDebugMode(false);
+      await callMethod(["debugging"], "setElementHidingDebugMode", [false]);
 
       expect(style).toBe("rgb(230, 115, 112)");
     });
 
     it("doesn't highlight an element when disabled", async() =>
     {
-      await setElementHidingDebugMode(true);
-      await setElementHidingDebugMode(false);
+      await callMethod(["debugging"], "setElementHidingDebugMode", [true]);
+      await callMethod(["debugging"], "setElementHidingDebugMode", [false]);
       await addFilter("###elem-hide");
       let tabId = await new Page("element-hiding.html").loaded();
       let style = await executeScript(tabId, getBackgroundColor);
@@ -1124,11 +935,12 @@ describe("API", () =>
 
     it("highlights an element with a custom style", async() =>
     {
-      await setElementHidingDebugMode(true);
-      await setElementHidingDebugStyle([["background", "pink"]]);
+      await callMethod(["debugging"], "setElementHidingDebugMode", [true]);
+      await callMethod(["debugging"], "setElementHidingDebugStyle",
+                       [[["background", "pink"]]]);
       await addFilter("###elem-hide");
       let style = await waitForHighlightedStyle();
-      await setElementHidingDebugMode(false);
+      await callMethod(["debugging"], "setElementHidingDebugMode", [false]);
 
       expect(style).toBe("rgb(255, 192, 203)");
     });

@@ -41,14 +41,19 @@ export async function makeCallbackInBackgroundPage(callback)
   return id;
 }
 
-export function addFilter(text)
+export function callMethod(namespace, method, args = [])
 {
   return runInBackgroundPage([
     {op: "getGlobal", arg: "EWE"},
-    {op: "getProp", arg: "filters"},
-    {op: "pushArg", arg: text},
-    {op: "callMethod", arg: "add"}
+    ...namespace.map(arg => ({op: "getProp", arg})),
+    ...args.map(arg => ({op: "pushArg", arg})),
+    {op: "callMethod", arg: method}
   ]);
+}
+
+export function addFilter(text)
+{
+  return callMethod(["filters"], "add", [text]);
 }
 
 let removalOperations = [];

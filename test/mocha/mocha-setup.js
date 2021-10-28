@@ -16,7 +16,8 @@
  */
 
 import {TEST_PAGES_URL} from "../utils.js";
-import {runInBackgroundPage, removeFakeListeners} from "../messaging.js";
+import {callMethod, runInBackgroundPage, removeFakeListeners}
+  from "../messaging.js";
 
 mocha.setup("bdd");
 
@@ -43,11 +44,7 @@ before(async function()
     elem.textContent = message;
     mocha.Mocha.reporters.Base.consoleLog("\x1b[33m%s\x1b[0m", message);
   }
-  restoreSubscriptions = await runInBackgroundPage([
-    {op: "getGlobal", arg: "EWE"},
-    {op: "getProp", arg: "subscriptions"},
-    {op: "callMethod", arg: "removeAll"}
-  ]);
+  restoreSubscriptions = await callMethod(["subscriptions"], "removeAll");
 });
 
 after(function()
@@ -73,11 +70,6 @@ beforeEach(function()
 
 afterEach(async() =>
 {
-  await runInBackgroundPage([
-    {op: "getGlobal", arg: "EWE"},
-    {op: "getProp", arg: "subscriptions"},
-    {op: "callMethod", arg: "removeAll"}
-  ]);
-
+  await callMethod(["subscriptions"], "removeAll");
   await removeFakeListeners();
 });
