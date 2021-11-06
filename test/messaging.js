@@ -58,10 +58,10 @@ export function addFilter(text)
 
 let removalOperations = [];
 
-export async function addFakeListener(namespace, eventName,
-                                      method = "addListener",
-                                      removeMethod = "removeListener",
-                                      callback = sinon.fake())
+export async function addFakeListener({namespace, eventName, eventOptions,
+                                       method = "addListener",
+                                       removeMethod = "removeListener",
+                                       callback = sinon.fake()})
 {
   let id = await makeCallbackInBackgroundPage(callback);
 
@@ -70,6 +70,7 @@ export async function addFakeListener(namespace, eventName,
     {op: "getProp", arg: namespace},
     ...eventName ? [{op: "getProp", arg: eventName}] : [],
     {op: "pushCallback", arg: id},
+    ...eventOptions ? [{op: "pushArg", arg: eventOptions}] : [],
     {op: "callMethod", arg: method}
   ]);
 
@@ -78,6 +79,7 @@ export async function addFakeListener(namespace, eventName,
     {op: "getProp", arg: namespace},
     ...eventName ? [{op: "getProp", arg: eventName}] : [],
     {op: "pushCallback", arg: id},
+    ...eventOptions ? [{op: "pushArg", arg: eventOptions}] : [],
     {op: "callMethod", arg: removeMethod}
   ]);
 

@@ -94,7 +94,7 @@ class RequestFilter
 
     if (selector && frameId != -1)
     {
-      // Retriying to fix a connection error on Chromium 90
+      // Retrying to fix a connection error on Chromium 90
       sendCollapseMessage()
         .catch(() => ignoreNoConnectionError(sendCollapseMessage()));
     }
@@ -102,13 +102,16 @@ class RequestFilter
 
   isBlocking(details, filter, info)
   {
-    if (filter)
+    if (!filter)
     {
-      if (filter instanceof BlockingFilter)
-        return true;
-
-      logItem(details, filter, info);
+      logItem(details, null, info);
+      return false;
     }
+
+    if (filter instanceof BlockingFilter)
+      return true;
+
+    logItem(details, filter, info);
     return false;
   }
 
@@ -152,13 +155,21 @@ class RequestFilter
   {
     let initiator = details.initiator || details.documentUrl;
     if (initiator && initiator.startsWith(EXTENSION_PROTOCOL))
+    {
+      logItem(details, null, {});
       return;
+    }
 
     let frame = this.getFrameInfo(details, initiator);
-    if (frame.allowlisted & contentTypes.DOCUMENT)
-      return;
-
     let specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) != 0;
+
+    if (frame.allowlisted & contentTypes.DOCUMENT)
+    {
+      logItem(details, null, {docDomain: frame.hostname,
+                              specificOnly});
+      return;
+    }
+
     return this.match(details, frame, specificOnly);
   }
 }

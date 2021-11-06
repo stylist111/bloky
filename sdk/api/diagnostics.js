@@ -20,17 +20,112 @@ import {Filter, ElemHideFilter} from "adblockpluscore/lib/filterClasses.js";
 import {parseURL} from "adblockpluscore/lib/url.js";
 import {convertFilter} from "./filters.js";
 
-let logFunction;
+let listeners = [];
+let defaultOptions = {includeElementHiding: false,
+                      includeUnmatched: false,
+                      filterType: "blocking",
+                      tabId: null};
 
-export function setLogFunction(func)
+/**
+ * The BlockableEventDispatcher class allows users to listen to
+ * filters and requests.
+ * @hideconstructor
+ */
+export class BlockableEventDispatcher
 {
-  logFunction = func;
+  /**
+  * @typedef {Object} BlockableEventOptions
+  * @param {boolean} [includeElementHiding=false]
+  *   Whether or not effective element hiding filters should also be emitted.
+  *   Note that this will enable element hiding tracing which degrades
+  *   performance and should only be used to enable ad-hoc diagnostics.
+  * @param {boolean} [includeUnmatched=false]
+  *   Whether or not unmatched requests should also be emitted.
+  * @param {string} [filterType="blocking"]
+  *   The type of filters to emit. Can be "blocking", "allowing", or "all".
+  * @param {Number} [tabId=null]
+  *   The tab to filter events for. Element hiding tracing will be limited to
+  *   this tab (if `includeElementHiding` is set). If set to `null` events for
+  *   all tabs will be considered, and are subject to element hiding tracing
+  *   (if `includeElementHiding` is set) which will degrade performance.
+  */
+
+  /**
+   * Attaches a listener function to an event. This listener will be called
+   * when the Blockable event is emitted.
+   * @param {function} listener The user defined function that will be called
+   *                            once the specified event is emitted.
+   * @param {BlockableEventOptions} options The filtering conditions to apply
+   *                                        when the event is emitted.
+   * @example
+   * // Logs all blocked requests
+   * EWE.reporting.onBlockableItem.addListener(console.log);
+   * @example
+   * // Log all blockable items of a specific tab for debugging purposes
+   * EWE.reporting.onBlockableItem.addListener(
+   *   console.log,
+   *   {includeElementHiding: true,
+   *    includeUnmatched: true,
+   *    filterType: "all", tabId}
+   * );
+   */
+  addListener(listener, options)
+  {
+    listeners.push({listener, options: {...defaultOptions, ...options}});
+  }
+
+  /**
+   * Removes the added function. This means the listener will no
+   * longer be called by the emitted event.
+   * @param {function} listener The user defined function to be removed.
+   * @param {Object} options The filtering conditions to apply when
+   *                         the event is emitted.
+   */
+  removeListener(listener, options)
+  {
+    let {includeElementHiding, includeUnmatched,
+         filterType, tabId} = {...defaultOptions, ...options};
+
+    let index = listeners.findIndex(obj =>
+      obj.listener == listener &&
+      obj.options.includeElementHiding == includeElementHiding &&
+      obj.options.includeUnmatched == includeUnmatched &&
+      obj.options.filterType == filterType &&
+      obj.options.tabId == tabId
+    );
+
+    if (index != -1)
+      listeners.splice(index, 1);
+  }
 }
 
 export function logItem(details, filter, info = {})
 {
-  if (logFunction)
-    logFunction({details, filter: convertFilter(filter), info});
+  for (let {listener, options} of listeners)
+  {
+    let {includeElementHiding, includeUnmatched, filterType, tabId} = options;
+
+    if (tabId != null && tabId != details.tabId)
+      continue;
+
+    if (filter)
+    {
+      if (!includeElementHiding && (filter.type == "elemhide" ||
+                                    filter.type == "elemhideexception" ||
+                                    filter.type == "elemhideemulation"))
+        continue;
+
+      if (filterType != "all" &&
+          filterType == "allowing" != (filter.type == "allowing" ||
+                                       filter.type == "elemhideexception"))
+        continue;
+    }
+
+    if (!includeUnmatched && !filter)
+      continue;
+
+    listener({details, filter: filter && convertFilter(filter), info});
+  }
 }
 
 export function logHiddenElements(selectors, filters, sender)
@@ -69,7 +164,10 @@ export function logHiddenElements(selectors, filters, sender)
     logItem(details, Filter.fromText(text), info);
 }
 
-export function tracingEnabled()
+export function tracingEnabled(tabId)
 {
-  return !!logFunction;
+  return listeners.some(({options}) =>
+    options.includeElementHiding &&
+    (options.tabId == null || options.tabId == tabId)
+  );
 }

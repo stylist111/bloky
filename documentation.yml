@@ -24,6 +24,8 @@ toc:
       - subscriptions
   - name: Objects
     children:
+      - BlockableEventDispatcher
+      - BlockableEventOptions
       - EventDispatcher
       - Filter
       - FilterError

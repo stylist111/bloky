@@ -15,6 +15,8 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+export {BlockableEventDispatcher} from "./diagnostics.js";
+
 /**
  * The EventDispatcher class allows users to listen to
  * certain events that are emitted.
@@ -40,10 +42,11 @@ export class EventDispatcher
   }
 
   /**
-   * Attaches a listener function to an event defined by our api.
-   * @param {function} listener The user defined function that will be called
-   *                            once the specified event is emitted
-   */
+    * Attaches a listener function to an event. This listener will be called
+    * when the event is emitted.
+    * @param {function} listener The user defined function that will be called
+    *                            once the specified event is emitted
+    */
   addListener(listener)
   {
     if (!this._initialized)
@@ -56,10 +59,10 @@ export class EventDispatcher
   }
 
   /**
-   * Removes the added function from an api event.
-   * The listener will no longer be called by the event.
-   * @param {function} listener The user defined function to be removed.
-   */
+    * Removes the added function. The listener will no longer be called
+    * by the event.
+    * @param {function} listener The user defined function to be removed.
+    */
   removeListener(listener)
   {
     this._listeners.delete(listener);

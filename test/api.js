@@ -21,7 +21,7 @@ import expect from "expect";
 import {Page, Popup, setMinTimeout, waitForInvisibleElement, wait,
         executeScript, TEST_PAGES_URL, TEST_PAGES_DOMAIN} from "./utils.js";
 import {addFilter, callMethod, runInBackgroundPage, addFakeListener,
-        setTestSnippets} from "./messaging.js";
+        removeFakeListeners, setTestSnippets} from "./messaging.js";
 
 const VALID_SUBSCRIPTION_URL = "https://testpages.adblockplus.org/en/abp-testcase-subscription.txt";
 const ANOTHER_VALID_SUBSCRIPTION_URL = "https://testpages.adblockplus.org/en/websocket-webrtc-subscription.txt";
@@ -222,7 +222,8 @@ describe("API", () =>
 
     it("listens to onAdded events", async() =>
     {
-      let fake = await addFakeListener("subscriptions", "onAdded");
+      let fake = await addFakeListener({namespace: "subscriptions",
+                                        eventName: "onAdded"});
       await callMethod(["subscriptions"], "add", [VALID_SUBSCRIPTION_URL]);
 
       expect(fake.callCount).toBe(1);
@@ -237,7 +238,8 @@ describe("API", () =>
     {
       await callMethod(["subscriptions"], "add", [VALID_SUBSCRIPTION_URL]);
 
-      let fake = await addFakeListener("subscriptions", "onChanged");
+      let fake = await addFakeListener({namespace: "subscriptions",
+                                        eventName: "onChanged"});
       await callMethod(["subscriptions"], "disable", [VALID_SUBSCRIPTION_URL]);
 
       expect(fake.firstArg).toEqual(expect.objectContaining({
@@ -249,7 +251,8 @@ describe("API", () =>
 
     it("listens to onRemoved events", async() =>
     {
-      let fake = await addFakeListener("subscriptions", "onRemoved");
+      let fake = await addFakeListener({namespace: "subscriptions",
+                                        eventName: "onRemoved"});
       await callMethod(["subscriptions"], "add", [VALID_SUBSCRIPTION_URL]);
       await callMethod(["subscriptions"], "remove", [VALID_SUBSCRIPTION_URL]);
 
@@ -323,7 +326,9 @@ describe("API", () =>
           }
         }
 
-        addFakeListener("subscriptions", "onChanged", void 0, void 0, onChanged)
+        addFakeListener({namespace: "subscriptions",
+                         eventName: "onChanged",
+                         callback: onChanged})
           .then(() => callMethod(["subscriptions"], "add",
                                  [ANOTHER_VALID_SUBSCRIPTION_URL]))
           .catch(reject);
@@ -464,7 +469,8 @@ describe("API", () =>
 
     it("listens to onAdded events", async() =>
     {
-      let fake = await addFakeListener("filters", "onAdded");
+      let fake = await addFakeListener({namespace: "filters",
+                                        eventName: "onAdded"});
       await addFilter(VALID_FILTER_TEXT);
 
       expect(fake.callCount).toBe(1);
@@ -473,23 +479,28 @@ describe("API", () =>
 
     it("listens to onChanged events", async() =>
     {
-      let fake = await addFakeListener("filters", "onChanged");
+      let fake = await addFakeListener({namespace: "filters",
+                                        eventName: "onChanged"});
       await addFilter(VALID_FILTER_TEXT);
       await callMethod(["filters"], "disable", [VALID_FILTER_TEXT]);
 
       expect(fake.callCount).toBe(1);
       expect(fake.firstArg).toEqual({...VALID_FILTER, enabled: false});
       expect(fake.lastArg).toEqual("enabled");
+
+      // This is a workaround and should be removed once https://gitlab.com/eyeo/webext/webext-sdk/-/issues/122 is fixed.
+      await callMethod(["filters"], "enable", [VALID_FILTER_TEXT]);
     });
 
     it("listens to onRemoved events", async() =>
     {
-      let fake = await addFakeListener("filters", "onRemoved");
+      let fake = await addFakeListener({namespace: "filters",
+                                        eventName: "onRemoved"});
       await addFilter(VALID_FILTER_TEXT);
       await callMethod(["filters"], "remove", [VALID_FILTER_TEXT]);
 
       expect(fake.callCount).toBe(1);
-      expect(fake.firstArg).toEqual({...VALID_FILTER, enabled: false});
+      expect(fake.firstArg).toEqual(VALID_FILTER);
     });
 
     describe("Allowlisting", () =>
@@ -661,6 +672,13 @@ describe("API", () =>
 
   describe("Reporting", () =>
   {
+    let allowingItems = {includeElementHiding: false,
+                         includeUnmatched: false,
+                         filterType: "allowing"};
+    let allItemsWithoutEH = {includeElementHiding: false,
+                             includeUnmatched: true,
+                             filterType: "all"};
+
     it("exposes a mapping between content types and ResourceTypes", async() =>
     {
       expect(await callMethod(["reporting", "contentTypesMap"],
@@ -684,13 +702,16 @@ describe("API", () =>
       });
     });
 
-    describe("Diagnostics", function()
-    {
-      setMinTimeout(this, 3000);
 
-      async function checkLogging(filter, callback, info = {}, checkUrl = true)
+    describe("Diagnostics", () =>
+    {
+      async function checkLogging(filter, callback, eventOptions,
+                                  info = {}, checkUrl = true)
       {
-        let fake = await addFakeListener("reporting", "onFilterMatch");
+        let fake = await addFakeListener({namespace: "reporting",
+                                          eventName: "onBlockableItem",
+                                          eventOptions});
+
         await addFilter(filter.text);
 
         try
@@ -724,10 +745,40 @@ describe("API", () =>
         });
       }
 
-      function checkRequestLogging(page, filter, info)
+      function checkRequestLogging(page, filter, info, eventOptions)
       {
-        return checkLogging(filter, () => new Page(page).loaded(), info);
+        return checkLogging(filter, () => new Page(page).loaded(),
+                            eventOptions, info);
       }
+
+      async function checkUnmatchedLogging(callback, requests, eventOptions)
+      {
+        let fake = await addFakeListener({namespace: "reporting",
+                                          eventName: "onBlockableItem",
+                                          eventOptions});
+
+        await callback();
+        expect(fake.called).toBeTruthy();
+
+        let firstArgs = fake.args.map(args => args[0]);
+        expect(firstArgs).toEqual(expect.arrayContaining(requests));
+      }
+
+      it("it does not log removed items", async() =>
+      {
+        let fake = await addFakeListener({namespace: "reporting",
+                                          eventName: "onBlockableItem"});
+
+        await addFilter("/image.png^$image");
+        let page = new Page("image.html");
+        await page.loaded();
+        expect(fake.called).toBeTruthy();
+
+        let {callCount} = fake;
+        await removeFakeListeners();
+        await new Page("image.html").loaded();
+        expect(fake.callCount).toEqual(callCount);
+      });
 
       it("logs blocking request filter", async() =>
       {
@@ -757,7 +808,7 @@ describe("API", () =>
         }, {
           specificOnly: false,
           matchingMethod: "header"
-        });
+        }, allowingItems);
       });
 
       it("logs rewrite filter", async() =>
@@ -783,7 +834,8 @@ describe("API", () =>
       {
         await addFilter(`|${TEST_PAGES_URL}$header=x-header=whatever`);
         await checkRequestLogging("header.html",
-                                  {text: `@@|${TEST_PAGES_URL}$header`});
+                                  {text: `@@|${TEST_PAGES_URL}$header`}, null,
+                                  allowingItems);
       });
 
       it("logs blocking $csp filter", async() =>
@@ -799,7 +851,8 @@ describe("API", () =>
         await addFilter(`|${TEST_PAGES_URL}$csp=img-src 'none'`);
         await checkRequestLogging("csp.html",
                                   {text: `@@|${TEST_PAGES_URL}$csp`},
-                                  {matchingMethod: "csp"});
+                                  {matchingMethod: "csp"},
+                                  allowingItems);
       });
 
       for (let option of ["$document", "$elemhide",
@@ -808,7 +861,8 @@ describe("API", () =>
         it(`logs allowlisting ${option} filter`, () => checkRequestLogging(
           "image.html",
           {text: `@@|${TEST_PAGES_URL}${option}`},
-          {matchingMethod: "allowing", allowingReason: option.substring(1)}
+          {matchingMethod: "allowing", allowingReason: option.substring(1)},
+          allowingItems
         ));
       }
 
@@ -817,6 +871,7 @@ describe("API", () =>
         let url = "http://127.0.0.1:3000/iframe.html";
         await checkLogging({text: `@@|${TEST_PAGES_URL}/image.html^$document`},
                            () => new Page(url, true).loaded(),
+                           allowingItems,
                            {matchingMethod: "allowing",
                             docDomain: "127.0.0.1"});
       });
@@ -827,7 +882,98 @@ describe("API", () =>
         {
           let tabId = await new Page("element-hiding.html").loaded();
           await waitForInvisibleElement(tabId, "elem-hide");
-        }, {matchingMethod: "elemhide"});
+        }, {includeElementHiding: true,
+            includeUnmatched: false,
+            filterType: "all"}, {matchingMethod: "elemhide"}
+        );
+      });
+
+      it("logs element hiding filter for a given tab", async() =>
+      {
+        let page = new Page("element-hiding.html");
+        let tabId = await page.created;
+
+        await checkLogging({text: "###elem-hide"}, async() =>
+        {
+          await page.loaded();
+          await waitForInvisibleElement(tabId, "elem-hide");
+        }, {includeElementHiding: true,
+            includeUnmatched: false,
+            filterType: "all",
+            tabId}, {matchingMethod: "elemhide"}
+        );
+      });
+
+      let allItemsRequests = [{
+        details: expect.objectContaining({
+          tabId: expect.any(Number),
+          frameId: expect.any(Number),
+          url: `${TEST_PAGES_URL}/element-hiding.html`,
+          type: "main_frame"
+        }),
+        filter: null,
+        info: expect.objectContaining({
+          docDomain: TEST_PAGES_DOMAIN,
+          matchingMethod: "csp"
+        })
+      }, {
+        details: expect.objectContaining({
+          tabId: expect.any(Number),
+          frameId: expect.any(Number),
+          url: `${TEST_PAGES_URL}/image.png`,
+          type: "image"
+        }),
+        filter: expect.objectContaining({text: VALID_FILTER_TEXT}),
+        info: expect.objectContaining({
+          docDomain: TEST_PAGES_DOMAIN,
+          matchingMethod: "request"
+        })
+      }, {
+        details: expect.objectContaining({
+          tabId: expect.any(Number),
+          frameId: expect.any(Number),
+          url: `${TEST_PAGES_URL}/element-hiding.html`
+        }),
+        filter: expect.objectContaining({text: "###elem-hide"}),
+        info: expect.objectContaining({
+          docDomain: TEST_PAGES_DOMAIN,
+          matchingMethod: "elemhide"
+        })
+      }];
+
+      it("logs all items", async() =>
+      {
+        await addFilter("###elem-hide");
+        await addFilter(VALID_FILTER_TEXT);
+
+        await checkUnmatchedLogging(async() =>
+        {
+          let tabId = await new Page("element-hiding.html").loaded();
+          await waitForInvisibleElement(tabId, "elem-hide");
+        }, allItemsRequests, {includeElementHiding: true,
+                              includeUnmatched: true,
+                              filterType: "all"});
+      });
+
+      it("logs for the requested tab", async() =>
+      {
+        await addFilter(VALID_FILTER_TEXT);
+
+        let page = new Page("image.html");
+        let tabId = await page.created;
+
+        let [fake1, fake2] = await Promise.all(
+          [tabId, tabId + 1].map(
+            id => addFakeListener({namespace: "reporting",
+                                   eventName: "onBlockableItem",
+                                   eventOptions: {tabId: id}})
+          )
+        );
+
+        await page.loaded();
+
+        expect(fake1.called).toBeTruthy();
+        expect(fake2.called).toBeFalsy();
       });
 
       it("logs snippets filter", async() =>
@@ -839,6 +985,9 @@ describe("API", () =>
         {
           await checkLogging({text: `${TEST_PAGES_DOMAIN}#$#${snippet}`},
                              () => new Page("image.html").loaded(),
+                             {includeElementHiding: false,
+                              includeUnmatched: false,
+                              filterType: "blocking"},
                              {matchingMethod: "snippet"}, false);
         }
         finally
@@ -847,23 +996,174 @@ describe("API", () =>
         }
       });
 
-      function checkPopupLogging(text)
+      function checkPopupLogging(text, filterType)
       {
         return checkLogging({text}, () =>
           new Popup("link", new Page("popup-opener.html")).blocked,
+                            {includeElementHiding: false,
+                             includeUnmatched: false,
+                             filterType},
                             {matchingMethod: "popup"}
         );
       }
 
       it("logs blocking popup filter", async() =>
       {
-        await checkPopupLogging("*popup.html^$popup");
+        await checkPopupLogging("*popup.html^$popup", "blocking");
       });
 
       it("logs allowlisting popup filter", async() =>
       {
         await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
-        await checkPopupLogging(`@@|${TEST_PAGES_URL}$popup`);
+        await checkPopupLogging(`@@|${TEST_PAGES_URL}$popup`, "allowing");
+      });
+
+      describe("Unmatched requests", () =>
+      {
+        it("logs unmatched image requests", async() =>
+        {
+          await checkUnmatchedLogging(() => new Page("image.html").loaded(), [{
+            details: expect.objectContaining({
+              tabId: expect.any(Number),
+              frameId: expect.any(Number),
+              url: `${TEST_PAGES_URL}/image.png`,
+              type: "image"
+            }),
+            filter: null,
+            info: expect.objectContaining({
+              docDomain: TEST_PAGES_DOMAIN,
+              matchingMethod: "request",
+              specificOnly: false
+            })
+          }], allItemsWithoutEH);
+        });
+
+        it("logs unmatched requests for the requested tab", async() =>
+        {
+          let page = new Page("image.html");
+          let tabId = await page.created;
+
+          let [fake1, fake2] = await Promise.all(
+            [tabId, tabId + 1].map(
+              id => addFakeListener({namespace: "reporting",
+                                     eventName: "onBlockableItem",
+                                     eventOptions: {includeUnmatched: true,
+                                                    tabId: id}})
+            )
+          );
+
+          await page.loaded();
+
+          expect(fake1.called).toBeTruthy();
+          expect(fake2.called).toBeFalsy();
+
+          let firstArgs = fake1.args.map(args => args[0]);
+          expect(firstArgs).toEqual(expect.arrayContaining([{
+            details: expect.objectContaining({
+              tabId: expect.any(Number),
+              frameId: expect.any(Number),
+              url: `${TEST_PAGES_URL}/image.png`,
+              type: "image"
+            }),
+            filter: null,
+            info: expect.objectContaining({
+              docDomain: TEST_PAGES_DOMAIN,
+              matchingMethod: "request",
+              specificOnly: false
+            })
+          }]));
+        });
+
+        it("logs unmatched document requests", async() =>
+        {
+          await checkUnmatchedLogging(() => new Page("image.html").loaded(), [{
+            details: expect.objectContaining({
+              tabId: expect.any(Number),
+              frameId: expect.any(Number),
+              url: `${TEST_PAGES_URL}/image.html`,
+              type: "main_frame"
+            }),
+            filter: null,
+            info: expect.objectContaining({
+              docDomain: TEST_PAGES_DOMAIN,
+              matchingMethod: "csp",
+              specificOnly: false
+            })
+          }], allItemsWithoutEH);
+        });
+
+        it("logs unmatched iframe requests", async() =>
+        {
+          await checkUnmatchedLogging(() => new Page("iframe.html").loaded(), [
+            {
+              details: expect.objectContaining({
+                tabId: expect.any(Number),
+                frameId: expect.any(Number),
+                url: `${TEST_PAGES_URL}/image.html`,
+                type: "sub_frame"
+              }),
+              filter: null,
+              info: expect.objectContaining({
+                docDomain: TEST_PAGES_DOMAIN,
+                matchingMethod: "csp",
+                specificOnly: false
+              })
+            },
+            {
+              details: expect.objectContaining({
+                tabId: expect.any(Number),
+                frameId: expect.any(Number),
+                url: `${TEST_PAGES_URL}/image.png`,
+                type: "image"
+              }),
+              filter: null,
+              info: expect.objectContaining({
+                docDomain: TEST_PAGES_DOMAIN,
+                matchingMethod: "request",
+                specificOnly: false
+              })
+            }
+          ], allItemsWithoutEH);
+        });
+
+        it("logs unmatched allowlisted iframe requests", async() =>
+        {
+          await addFilter(`@@|${TEST_PAGES_URL}/image.html$document`);
+
+
+          await checkUnmatchedLogging(() =>
+            new Page("iframe.html").loaded(), [
+            {
+              details: expect.objectContaining({
+                tabId: expect.any(Number),
+                frameId: expect.any(Number),
+                url: `${TEST_PAGES_URL}/image.html`,
+                type: "sub_frame"
+              }),
+              filter: null,
+              info: {
+                docDomain: TEST_PAGES_DOMAIN,
+                specificOnly: false
+              }
+            },
+            {
+              details: expect.objectContaining({
+                frameId: expect.any(Number),
+                tabId: expect.any(Number),
+                url: `${TEST_PAGES_URL}/image.html`
+              }),
+              filter: expect.objectContaining({
+                enabled: true,
+                text: `@@|${TEST_PAGES_URL}/image.html$document`,
+                type: "allowing"
+              }),
+              info: expect.objectContaining({
+                allowingReason: "document",
+                matchingMethod: "allowing"
+              })
+            }
+          ], allItemsWithoutEH);
+        });
       });
     });
 
@@ -876,9 +1176,9 @@ describe("API", () =>
         await callMethod(["notifications"], "start");
         await callMethod(["notifications"], "addNotification", [notification]);
 
-        let fake = await addFakeListener("notifications", null,
-                                         "addShowListener",
-                                         "removeShowListener");
+        let fake = await addFakeListener({namespace: "notifications",
+                                          method: "addShowListener",
+                                          removeMethod: "removeShowListener"});
         await callMethod(["notifications"], "showNext");
         await callMethod(["notifications"], "removeNotification",
                          [notification]);

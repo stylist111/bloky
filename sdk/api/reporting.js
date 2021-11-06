@@ -18,8 +18,7 @@
 import {analytics} from "adblockpluscore/lib/analytics.js";
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 
-import {EventDispatcher} from "./types.js";
-import {setLogFunction} from "./diagnostics.js";
+import {BlockableEventDispatcher} from "./diagnostics.js";
 import {resourceTypes} from "./request-filter.js";
 
 let contentTypesMap = new Map();
@@ -46,24 +45,23 @@ export default {
   * @typedef {Object} FilterMatchInfo
   * @property {string} docDomain The domain name of the document that loads
   *                              the URL.
-  * @property {string|undefined} rewrittenUrl The name of the internal resource
-  *                                           to which to rewrite the URL.
-  * @property {boolean|undefined} specificOnly Whether selectors from generic
-  *                                           filters should be included.
+  * @property {?string} rewrittenUrl The name of the internal resource to which
+  *                                  to rewrite the URL.
+  * @property {?boolean} specificOnly Whether selectors from generic filters
+  *                                   should be included.
   * @property {string} matchingMethod The method used to match this filter.
   *                                   This can be the string "request",
   *                                   "header", "csp", "popup", "elemhide",
   *                                   "snippet" or "allowing".
-  * @property {string|undefined} allowingReason When the type in request details
-  *                                             is undefined, this contains the
-  *                                             reason why the request/frame
-  *                                             got allowlisted. That is either
-  *                                             "document", "elemhide",
-  *                                             "genericblock" or "generichide".
+  * @property {?string} allowingReason When the type in request details is
+  *                                    undefined, this contains the reason why
+  *                                    the request/frame got allowlisted. That
+  *                                    is either "document", "elemhide",
+  *                                    "genericblock" or "generichide".
   */
 
   /**
-   * Emitted when any filter is matched.
+   * Emitted when any blockable item is matched.
    * @event
    * @param {object|{frameId: number, tabId: number, url: string}} details
    *   Either
@@ -73,18 +71,12 @@ export default {
    *   `frameId`, `tabId` and `url` (for snippet filters `url` is undefined).
    * @param {Filter} filter The filter that matched.
    * @param {FilterMatchInfo} info Extra information that might be
-   *                    relevant depending on the context.
-   * @type {EventDispatcher.<{details: object,
-   *                          filter: Filter,
-   *                          info: FilterMatchInfo}>}
+   *                               relevant depending on the context.
+   * @type {BlockableEventDispatcher.<{details: object,
+   *                                   filter: Filter,
+   *                                   info: FilterMatchInfo}>}
    */
-  onFilterMatch: new EventDispatcher(
-    setLogFunction,
-    () =>
-    {
-      setLogFunction(null);
-    }
-  ),
+  onBlockableItem: new BlockableEventDispatcher(),
 
   /**
    * Returns a mapping between resourceTypes and contentTypes.

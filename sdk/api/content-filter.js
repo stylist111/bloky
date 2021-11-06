@@ -74,7 +74,7 @@ export function applyContentFilters(tabId, frameId)
     if (!(frame.allowlisted & contentTypes.ELEMHIDE))
     {
       let specificOnly = (frame.allowlisted & contentTypes.GENERICHIDE) != 0;
-      let trace = tracingEnabled();
+      let trace = tracingEnabled(tabId);
       let styleSheet = elemHide.getStyleSheet(
         frame.hostname,
         specificOnly, trace || debugOptions.elemHide,
