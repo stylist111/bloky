@@ -38,7 +38,8 @@ describe("Subscribe links (runner only)", function()
 
   async function checkSubscribeLink(selector)
   {
-    let fake = await addFakeListener({namespace: "onSubscribeLinkClicked"});
+    let fake = await addFakeListener({namespace: "reporting",
+                                      eventName: "onSubscribeLinkClicked"});
     let page = new Page("subscribe.html");
     await page.loaded();
 

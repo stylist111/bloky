@@ -28,7 +28,6 @@ import {init as initIDB} from "./idb.js";
 import {configureDefaultSubscriptions} from "./default-subscriptions.js";
 import {setSnippetLibrary} from "./content-filter.js";
 
-export {onSubscribeLinkClicked} from "./subscribe-links.js";
 export {default as subscriptions} from "./subscriptions.js";
 export {default as filters} from "./filters.js";
 export {default as reporting} from "./reporting.js";

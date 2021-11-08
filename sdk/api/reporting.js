@@ -20,6 +20,7 @@ import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 
 import {BlockableEventDispatcher} from "./diagnostics.js";
 import {resourceTypes} from "./request-filter.js";
+import {onSubscribeLinkClicked} from "./subscribe-links.js";
 
 let contentTypesMap = new Map();
 
@@ -82,5 +83,24 @@ export default {
    * Returns a mapping between resourceTypes and contentTypes.
    * @return {Map.<string, string>}
    */
-  contentTypesMap
+  contentTypesMap,
+
+  /**
+   * Emitted when a subscribe link is clicked on a web page.
+   *
+   * A subscribe link has a URL pointing to `https://subscribe.adblockplus.org/`
+   * or starting with `abp:subscribe` (deprecated), followed by a query string
+   * with a `location` parameter, and optionally a `title` parameter. Subscribe
+   * links can only be used on certain trusted domains (including `localhost`).
+   * @example
+   * <a href="https://subscribe.adblockplus.org?location=http%3A%2F%2Flocalhost%2Flist.txt&title=Example">Example</a>
+   * <a href="abp:subscribe?location=location=http%3A%2F%2Flocalhost%2Flist.txt&title=Example">Example (deprecated)</a>
+   * @event
+   * @param {string} url The subscription URL from the subscribe link
+   *                     `location`'s parameter.
+   * @param {string} title The subscription title from the subscribe link
+   *                       `title`'s parameter.
+   * @type {EventDispatcher.<{url: string, title: string}>}
+   */
+  onSubscribeLinkClicked
 };
