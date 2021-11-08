@@ -530,12 +530,11 @@ describe("API", () =>
           .toEqual([ALLOWING_IMAGE_DOC_FILTER]);
       });
 
-      async function loadTabWithFrame()
+      async function loadTabWithFrame(path = "iframe.html")
       {
-        let tabId = await new Page("iframe.html").loaded();
+        let tabId = await new Page(path).loaded();
         let frames = await browser.webNavigation.getAllFrames({tabId});
-        let {frameId} = frames.find(({url}) =>
-          url == `${TEST_PAGES_URL}/image.html`);
+        let {frameId} = frames.find(({url}) => url.endsWith("/image.html"));
         return {tabId, frameId};
       }
 
@@ -558,7 +557,7 @@ describe("API", () =>
           .toEqual(expect.arrayContaining([ALLOWING_IMAGE_DOC_FILTER,
                                            ALLOWING_IFRAME_DOC_FILTER]));
         expect(await callMethod(["filters"], "getAllowingFilters", [tabId]))
-         .toEqual([ALLOWING_IFRAME_DOC_FILTER]);
+          .toEqual([ALLOWING_IFRAME_DOC_FILTER]);
       });
 
       it("returns filters for allowlisted parent frames", async() =>
@@ -606,6 +605,52 @@ describe("API", () =>
         let tabId = await new Page("about:blank", true).loaded();
         expect(await callMethod(["filters"], "getAllowingFilters", [tabId]))
           .toEqual([]);
+      });
+
+      it("returns whether a resource is allowlisted", async() =>
+      {
+        let url = `${TEST_PAGES_URL}/image.png`;
+
+        await addFilter(`|${url}^`);
+        await addFilter("@@*$image");
+
+        let tabId = await new Page("image.html").loaded();
+        expect(await callMethod(["filters"], "isResourceAllowlisted",
+                                [url, "image", tabId])).toEqual(true);
+      });
+
+      it("returns whether a frame resource is allowlisted", async() =>
+      {
+        let url = `${TEST_PAGES_URL}/image.html`;
+        await addFilter(`|${url}^`);
+        await addFilter(`@@||${TEST_PAGES_DOMAIN}^$document`);
+
+        let {tabId, frameId} = await loadTabWithFrame();
+
+        expect(await callMethod(
+          ["filters"], "isResourceAllowlisted", [url, "document", tabId]
+        )).toEqual(true);
+        expect(await callMethod(
+          ["filters"],
+          "isResourceAllowlisted",
+          [url, "document", tabId, frameId]
+        )).toEqual(true);
+      });
+
+      it("returns whether a resource inside a frame is allowlisted", async() =>
+      {
+        let url = `${TEST_PAGES_URL}/image.png`;
+        await addFilter(`|${url}^`);
+        await addFilter("@@*$image,domain=127.0.0.1");
+
+        let {tabId, frameId} = await loadTabWithFrame("iframe-resource.html");
+
+        expect(await callMethod(
+          ["filters"], "isResourceAllowlisted", [url, "image", tabId]
+        )).toEqual(false);
+        expect(await callMethod(
+          ["filters"], "isResourceAllowlisted", [url, "image", tabId, frameId]
+        )).toEqual(true);
       });
     });
   });

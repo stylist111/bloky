@@ -168,6 +168,26 @@ export default {
   },
 
   /**
+   * Returns whether a particular resource is allowlisted.
+   * @param {string} url The resource's url.
+   * @param {string} type The resource's content type. Can be one of
+   *   "background", "csp", "document", "dtd", "elemhide", "font",
+   *   "genericblock", "generichide", "header", "image", "media", "object",
+   *   "other", "ping", "popup", "script", "stylesheet", "subdocument",
+   *   "webrtc", "websocket", "xbl", "xmlhttprequest".
+   * @param {number} tabId The id of resource's tab.
+   * @param {number} frameId=0 The id of the resource's frame.
+   * @return {bool}
+   */
+  isResourceAllowlisted(url, type, tabId, frameId = 0)
+  {
+    let {hostname, sitekey} = getFrameInfo(tabId, frameId) || {};
+    let mask = contentTypes[type.toUpperCase()];
+
+    return matcher.isAllowlisted(url, mask, hostname, sitekey);
+  },
+
+  /**
    * Enables a previously disabled filter. Has no effect otherwise.
    * @param {string} text The filter rule to be enabled.
    */
