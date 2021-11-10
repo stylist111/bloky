@@ -17,18 +17,33 @@
 
 import expect from "expect";
 
-import {Page, Resource, executeScript, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
+import {Page, Resource, executeScript, wait, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
         SITEKEY} from "./utils.js";
-import {addFilter} from "./messaging.js";
+import {addFilter, callMethod} from "./messaging.js";
 
 describe("Blocking", () =>
 {
   afterEach(() => Page.removeCurrent());
 
-  it("blocks a request", async() =>
+  it("blocks a request using user filters", async() =>
   {
     await addFilter("/image.png^$image");
     await new Page("image.html").expectResource("image.png").toBeBlocked();
+  });
+
+  it("blocks a request using subscriptions", async() =>
+  {
+    await callMethod(["subscriptions"], "add",
+                     [`${TEST_PAGES_URL}/subscription.txt`]);
+    await wait(async() =>
+    {
+      try
+      {
+        await new Page("image.html").expectResource("image.png").toBeBlocked();
+        return true;
+      }
+      catch (e) {}
+    }, 500, "image.png was not blocked");
   });
 
   it("does not block an allowlisted request", async() =>

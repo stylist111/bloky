@@ -23,8 +23,9 @@ import {Page, Popup, setMinTimeout, waitForInvisibleElement, wait,
 import {addFilter, callMethod, runInBackgroundPage, addFakeListener,
         removeFakeListeners, setTestSnippets} from "./messaging.js";
 
-const VALID_SUBSCRIPTION_URL = "https://testpages.adblockplus.org/en/abp-testcase-subscription.txt";
-const ANOTHER_VALID_SUBSCRIPTION_URL = "https://testpages.adblockplus.org/en/websocket-webrtc-subscription.txt";
+const VALID_SUBSCRIPTION_URL = `${TEST_PAGES_URL}/subscription.txt`;
+const ANOTHER_VALID_SUBSCRIPTION_URL =
+  `${TEST_PAGES_URL}/subscription-empty.txt`;
 const INVALID_SUBSCRIPTION_URL = "invalidUrl";
 
 const VALID_FILTER_TEXT = `|${TEST_PAGES_URL}$image`;
@@ -124,7 +125,7 @@ describe("API", () =>
       }, 4000);
 
       expect(result).toEqual(expect.arrayContaining([expect.objectContaining(
-        {text: "||testpages.adblockplus.org/testfiles/image/static/$image"}
+        {text: "/image.png^$image"}
       )]));
     });
 

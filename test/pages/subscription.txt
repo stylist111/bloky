@@ -1,0 +1,3 @@
+[Adblock Plus]
+
+/image.png^$image
