@@ -65,7 +65,7 @@ after(async function()
 
   expect(await callMethod(["filters"], "getUserFilters"))
     .toEqual([expect.objectContaining({text: RESTORE_SUBSCRIPTIONS_TEST})]);
-  await callMethod(["filters"], "remove", [RESTORE_SUBSCRIPTIONS_TEST]);
+  await callMethod(["filters"], "remove", [[RESTORE_SUBSCRIPTIONS_TEST]]);
 });
 
 beforeEach(function()

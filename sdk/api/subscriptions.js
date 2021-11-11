@@ -15,6 +15,8 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import browser from "webextension-polyfill";
+
 import {Subscription, DownloadableSubscription}
   from "adblockpluscore/lib/subscriptionClasses.js";
 import {filterStorage} from "adblockpluscore/lib/filterStorage.js";
@@ -25,6 +27,7 @@ import {Filter} from "adblockpluscore/lib/filterClasses.js";
 
 import {EventDispatcher} from "./types.js";
 import {convertFilter} from "./filters.js";
+import {removeDynamicFilters} from "./dnr-filters.js";
 import {ACCEPTABLE_ADS_URL, ACCEPTABLE_ADS_PRIVACY_URL}
   from "./default-subscriptions.js";
 
@@ -296,7 +299,7 @@ export default {
    *                    restore the removed subscriptions and filters.
    * @private
    */
-  removeAll()
+  async removeAll()
   {
     let subscriptions = [];
 
@@ -306,9 +309,11 @@ export default {
       filterStorage.removeSubscription(subscription);
     }
 
-    return () =>
+    let addRules = await removeDynamicFilters();
+
+    return async() =>
     {
-      this.removeAll();
+      await this.removeAll();
 
       for (let subscription of subscriptions)
       {
@@ -322,6 +327,11 @@ export default {
           filterStorage.addSubscription(subscription);
         }
       }
+
+      // This workaround should be removed once subscriptions management
+      // supports mv3
+      if (browser.declarativeNetRequest)
+        await browser.declarativeNetRequest.updateDynamicRules({addRules});
     };
   },
 

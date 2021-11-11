@@ -109,9 +109,12 @@ function handleTestMessage(request, sender, sendResponse)
       return true;
 
     case "ewe-test:storeAndRemoveAllSubscriptions":
-      self.restoreSubscriptions = EWE.subscriptions.removeAll();
-      sendResponse({});
-      return true;
+      EWE.subscriptions.removeAll().then(restoreFunc =>
+      {
+        self.restoreSubscriptions = restoreFunc;
+        sendResponse({});
+        return true;
+      });
   }
 }
 

@@ -20,6 +20,7 @@ import * as frameState from "./frame-state.js";
 import * as requestFilter from "./request-filter.js";
 import * as popupBlocker from "./popup-blocker.js";
 import {init as initIDB} from "./idb.js";
+import {init as initDNRFilters} from "./dnr-filters.js";
 
 let startupPromise;
 let stopped = true;
@@ -62,6 +63,7 @@ export default {
         await startAsyncModule(() => frameState.start());
         requestFilter.start();
         popupBlocker.start();
+        await startAsyncModule(() => initDNRFilters());
       })();
     }
     return startupPromise;

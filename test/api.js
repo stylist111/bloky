@@ -21,7 +21,8 @@ import expect from "expect";
 import {Page, Popup, setMinTimeout, waitForInvisibleElement, wait,
         executeScript, TEST_PAGES_URL, TEST_PAGES_DOMAIN} from "./utils.js";
 import {addFilter, callMethod, runInBackgroundPage, addFakeListener,
-        removeFakeListeners, setTestSnippets} from "./messaging.js";
+        removeFakeListeners, setTestSnippets}
+  from "./messaging.js";
 
 const VALID_SUBSCRIPTION_URL = `${TEST_PAGES_URL}/subscription.txt`;
 const ANOTHER_VALID_SUBSCRIPTION_URL =
@@ -339,29 +340,28 @@ describe("API", () =>
 
   describe("Filters", () =>
   {
-    it("adds a filter", async() =>
+    it("adds a single filter", async() =>
     {
       await addFilter(VALID_FILTER_TEXT);
       expect(await callMethod(["filters"], "getUserFilters"))
         .toEqual([VALID_FILTER]);
     });
 
-    it("does not add an invalid filter", () =>
-      expect(addFilter(INVALID_FILTER_TEXT)).rejects.toThrow("FilterError")
-    );
-
     it("adds multiple filters", async() =>
     {
-      await addFilter(VALID_FILTER_TEXT);
-      await addFilter("another-filter");
-
+      await callMethod(["filters"], "add",
+                       [[VALID_FILTER_TEXT, "another-filter"]]);
       expect(await callMethod(["filters"], "getUserFilters")).toEqual([
         VALID_FILTER,
         {...VALID_FILTER, text: "another-filter", slow: true}
       ]);
     });
 
-    it("disable an existing filter", async() =>
+    it("does not add invalid filters", async() =>
+      expect(addFilter(INVALID_FILTER_TEXT)).rejects.toThrow("FilterError")
+    );
+
+    it("disables an existing filter", async() =>
     {
       await addFilter(VALID_FILTER_TEXT);
       await callMethod(["filters"], "disable", [VALID_FILTER_TEXT]);
@@ -389,11 +389,10 @@ describe("API", () =>
         .toEqual([VALID_FILTER]);
     });
 
-    it("removes a filter", async() =>
+    it("removes a single filter", async() =>
     {
       await addFilter(VALID_FILTER_TEXT);
-      await callMethod(["filters"], "remove", [VALID_FILTER_TEXT]);
-
+      await callMethod(["filters"], "remove", [[VALID_FILTER_TEXT]]);
       expect(await callMethod(["filters"], "getUserFilters")).toEqual([]);
     });
 
@@ -414,7 +413,7 @@ describe("API", () =>
       expect(await callMethod(["filters"], "getUserFilters"))
         .toEqual([VALID_FILTER]);
 
-      await callMethod(["filters"], "remove", [PADDED_FILTER_TEXT]);
+      await callMethod(["filters"], "remove", [[PADDED_FILTER_TEXT]]);
       expect(await callMethod(["filters"], "getUserFilters")).toEqual([]);
     });
 
@@ -498,7 +497,7 @@ describe("API", () =>
       let fake = await addFakeListener({namespace: "filters",
                                         eventName: "onRemoved"});
       await addFilter(VALID_FILTER_TEXT);
-      await callMethod(["filters"], "remove", [VALID_FILTER_TEXT]);
+      await callMethod(["filters"], "remove", [[VALID_FILTER_TEXT]]);
 
       expect(fake.callCount).toBe(1);
       expect(fake.firstArg).toEqual(VALID_FILTER);
@@ -766,7 +765,7 @@ describe("API", () =>
         }
         finally
         {
-          await callMethod(["filters"], "remove", [filter.text]);
+          await callMethod(["filters"], "remove", [[filter.text]]);
         }
 
         await wait(() => fake.called, 100, "Fake was not called");

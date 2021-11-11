@@ -47,13 +47,14 @@ export function callMethod(namespace, method, args = [])
     {op: "getGlobal", arg: "EWE"},
     ...namespace.map(arg => ({op: "getProp", arg})),
     ...args.map(arg => ({op: "pushArg", arg})),
-    {op: "callMethod", arg: method}
+    {op: "callMethod", arg: method},
+    {op: "await"}
   ]);
 }
 
 export function addFilter(text)
 {
-  return callMethod(["filters"], "add", [text]);
+  return callMethod(["filters"], "add", [[text]]);
 }
 
 let removalOperations = [];

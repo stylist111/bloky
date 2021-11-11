@@ -15,10 +15,10 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import browser from "webextension-polyfill";
+
 import {filterStorage} from "adblockpluscore/lib/filterStorage.js";
-import {Filter, isActiveFilter, InvalidFilter, URLFilter}
-  from "adblockpluscore/lib/filterClasses.js";
-import {isValidHostname} from "adblockpluscore/lib/url.js";
+import {Filter, URLFilter} from "adblockpluscore/lib/filterClasses.js";
 import {SpecialSubscription}
   from "adblockpluscore/lib/subscriptionClasses.js";
 import {isSlowFilter} from "adblockpluscore/lib/matcher.js";
@@ -27,8 +27,10 @@ import {filterState} from "adblockpluscore/lib/filterState.js";
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 import {defaultMatcher as matcher} from "adblockpluscore/lib/matcher.js";
 
-import {EventDispatcher, FilterError} from "./types.js";
+import {EventDispatcher} from "./types.js";
 import {getFrameInfo} from "./frame-state.js";
+import {addFilters, removeFilters, validateFilter, getDynamicFilterTexts}
+  from "./dnr-filters.js";
 
 export function convertFilter(filter)
 {
@@ -60,23 +62,6 @@ function makeSubListener(dispatch)
   };
 }
 
-function validateFilter(filter)
-{
-  if (filter instanceof InvalidFilter)
-    return new FilterError("invalid_filter", filter.reason, filter.option);
-
-  if (isActiveFilter(filter) && filter.domains)
-  {
-    for (let domain of filter.domains.keys())
-    {
-      if (domain && !isValidHostname(domain))
-        return new FilterError("invalid_domain", domain);
-    }
-  }
-
-  return null;
-}
-
 export default {
   /**
    * Represents a single filter rule and its state.
@@ -99,28 +84,41 @@ export default {
    */
 
   /**
-   * Adds a filter from text.
-   * @param {string} text The filter rule to be added.
-   * @throws {FilterError}
-   * @return {undefined}
+   * Adds multiple filters from texts.
+   * @param {[string]} texts The filter rules to be added.
+   * @throws {FilterError|Error} The first filter to add that either failed
+   *   validation (FilterError) or that is not supported by the DNR (Error).
    */
-  add(text)
+  async add(texts)
   {
-    let normalized = Filter.normalize(text);
-    let filter = Filter.fromText(normalized);
-    let error = validateFilter(filter);
+    if (browser.declarativeNetRequest)
+    {
+      await addFilters(texts);
+      return;
+    }
 
-    if (error)
-      throw error;
+    let filters = [];
+    for (let text of texts)
+    {
+      let normalized = Filter.normalize(text);
+      let filter = Filter.fromText(normalized);
+      let error = validateFilter(filter);
 
-    filterStorage.addFilter(filter);
+      if (error)
+        throw error;
+
+      filters.push(filter);
+    }
+
+    for (let filter of filters)
+      filterStorage.addFilter(filter);
   },
 
   /**
    * Returns an array of user filter objects.
    * @return {Array.<Filter>}
    */
-  getUserFilters()
+  async getUserFilters()
   {
     let result = [];
 
@@ -129,6 +127,15 @@ export default {
       if (subscription instanceof SpecialSubscription)
       {
         for (let text of subscription.filterText())
+          result.push(convertFilter(Filter.fromText(text)));
+      }
+    }
+
+    if (browser.declarativeNetRequest)
+    {
+      for (let text of await getDynamicFilterTexts())
+      {
+        if (!result.find(filter => filter.text == text))
           result.push(convertFilter(Filter.fromText(text)));
       }
     }
@@ -209,14 +216,23 @@ export default {
   },
 
   /**
-   * Removes a filter. The filter will no longer have any effect
-   * and won't be returned by `filters.getUserFilters()`
-   * @param {string} text The filter rule to be removed.
+   * Removes multiple filters. The filters will no longer have any effect
+   * and won't be returned by `filters.getUserFilters()`.
+   * @param {[string]} texts The filter rules to be removed.
    */
-  remove(text)
+  async remove(texts)
   {
-    let normalized = Filter.normalize(text);
-    filterStorage.removeFilter(Filter.fromText(normalized));
+    if (browser.declarativeNetRequest)
+    {
+      await removeFilters(texts);
+      return;
+    }
+
+    for (let text of texts)
+    {
+      let normalized = Filter.normalize(text);
+      filterStorage.removeFilter(Filter.fromText(normalized));
+    }
   },
 
   /**

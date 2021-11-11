@@ -18,19 +18,20 @@
 import expect from "expect";
 import browser from "webextension-polyfill";
 
-import {wait} from "./utils.js";
-import {addFilter, callMethod, runInBackgroundPage} from "./messaging.js";
+import {Page, wait} from "./utils.js";
+import {addFilter, callMethod, runInBackgroundPage}
+  from "./messaging.js";
 
-const VALID_FILTER_TEXT = "reload.test^$image";
-const VALID_FILTER = {
-  text: VALID_FILTER_TEXT,
+const CONTENT_FILTER_TEXT = "reload###test";
+const CONTENT_FILTER = {
+  text: CONTENT_FILTER_TEXT,
   enabled: true,
   slow: false,
-  type: "blocking",
-  thirdParty: null,
-  selector: null,
-  csp: null
+  type: "elemhide",
+  selector: "#test"
 };
+const IMAGE_FILTER_TEXT = "/image.png^$image";
+const BLOCKING_FILTER_TEXT = "/blocking.png^$image";
 
 let start = new URLSearchParams(document.location.search).get("start");
 let phase = start ? "preparation" : "check";
@@ -39,23 +40,10 @@ describe(`Reload (${phase})`, function()
 {
   this.timeout(5000);
 
-  it("persists storage data", async() =>
+  after(async() =>
   {
     if (start)
     {
-      await addFilter(VALID_FILTER_TEXT);
-
-      await wait(async() =>
-      {
-        return await runInBackgroundPage([
-          {op: "getGlobal", arg: "EWE"},
-          {op: "getProp", arg: "debugging"},
-          {op: "pushArg", arg: VALID_FILTER_TEXT},
-          {op: "callMethod", arg: "isInFilterStorage"},
-          {op: "await"}
-        ]);
-      }, 2000, "The added filter didn't reach storage");
-
       await browser.storage.local.set({"reload-test-running": true});
 
       return runInBackgroundPage([
@@ -65,15 +53,93 @@ describe(`Reload (${phase})`, function()
       ]);
     }
 
+    await browser.storage.local.remove("reload-test-running");
+  });
+
+  it("persists filter storage data", async() =>
+  {
+    if (start)
+    {
+      await addFilter(CONTENT_FILTER_TEXT);
+      await wait(async() =>
+      {
+        return await callMethod(["debugging"], "isInFilterStorage",
+                                [CONTENT_FILTER_TEXT]);
+      }, 2000, "The added filter didn't reach storage");
+
+      return;
+    }
+
     try
     {
       expect(await callMethod(["filters"], "getUserFilters"))
-        .toEqual(expect.arrayContaining([VALID_FILTER]));
+        .toEqual(expect.arrayContaining([CONTENT_FILTER]));
     }
     finally
     {
-      await browser.storage.local.remove("reload-test-running");
-      await callMethod(["filters"], "remove", [VALID_FILTER_TEXT]);
+      await callMethod(["filters"], "remove", [[CONTENT_FILTER_TEXT]]);
+    }
+  });
+
+  it("blocks a request using stored filters", async() =>
+  {
+    if (start)
+    {
+      await addFilter(IMAGE_FILTER_TEXT);
+      if (!browser.declarativeNetRequest)
+      {
+        await wait(async() =>
+        {
+          return await callMethod(["debugging"], "isInFilterStorage",
+                                  [IMAGE_FILTER_TEXT]);
+        }, 2000, "The added filter didn't reach storage");
+      }
+
+      return;
+    }
+
+    try
+    {
+      await new Page("image.html").expectResource("image.png").toBeBlocked();
+    }
+    finally
+    {
+      await callMethod(["filters"], "remove", [[IMAGE_FILTER_TEXT]]);
+    }
+  });
+
+  it("persists blocking filters state", async() =>
+  {
+    if (start)
+    {
+      await addFilter(BLOCKING_FILTER_TEXT);
+      if (!browser.declarativeNetRequest)
+      {
+        await wait(async() =>
+        {
+          return await callMethod(["debugging"], "isInFilterStorage",
+                                  [BLOCKING_FILTER_TEXT]);
+        }, 2000, "The added filter didn't reach storage");
+      }
+
+      return;
+    }
+
+    try
+    {
+      expect(await callMethod(["filters"], "getUserFilters")).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({text: BLOCKING_FILTER_TEXT})
+        ])
+      );
+      // Check that adding existing and new filters doesn't throw
+      await addFilter(BLOCKING_FILTER_TEXT);
+      await addFilter(IMAGE_FILTER_TEXT);
+    }
+    finally
+    {
+      await callMethod(["filters"], "remove",
+                       [[BLOCKING_FILTER_TEXT, IMAGE_FILTER_TEXT]]);
     }
   });
 });
