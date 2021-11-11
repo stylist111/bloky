@@ -161,8 +161,13 @@ class RequestFilter
     }
 
     let frame = this.getFrameInfo(details, initiator);
-    let specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) != 0;
+    if (!frame)
+    {
+      logItem(details, null, {});
+      return;
+    }
 
+    let specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) != 0;
     if (frame.allowlisted & contentTypes.DOCUMENT)
     {
       logItem(details, null, {docDomain: frame.hostname,
