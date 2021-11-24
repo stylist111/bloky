@@ -239,7 +239,9 @@ function parseArguments()
     subparser.positional("browser", {choices: Object.keys(BROWSERS)});
     subparser.positional("version", {type: "string"});
   });
-  parser.option("timeout");
+  parser.option("timeout", {
+    description: "Maximum running time for each test. 0 disables timeouts."
+  });
   parser.option("grep");
 
   let {argv} = parser;
@@ -247,7 +249,7 @@ function parseArguments()
   for (let param of ["timeout", "grep"])
   {
     let value = argv[param];
-    if (value)
+    if (typeof value != "undefined")
       (params || (params = {}))[param] = value;
   }
 
@@ -358,6 +360,24 @@ async function run()
   let {manifest, browser, version, params} = parseArguments();
   extensionDir = path.resolve(process.cwd(), "dist", `test-m${manifest}`);
   let driver = await BROWSERS[browser].getDriver(version);
+  if (params && typeof params.timeout != "undefined")
+  {
+    let driverTimeouts = await driver.manage().getTimeouts();
+    let paramsTimeout = parseInt(params.timeout, 10);
+    if (paramsTimeout == 0)
+    {
+      // 0 is a mocha special case to disable timeouts
+      await driver.manage().setTimeouts({
+        script: null
+      });
+    }
+    else if (paramsTimeout > driverTimeouts.script)
+    {
+      await driver.manage().setTimeouts({
+        script: paramsTimeout
+      });
+    }
+  }
   let resultUnit;
   let resultReload;
 
