@@ -54,7 +54,7 @@ export function applyContentFilters(tabId, frameId)
       if (debugOptions.elemHide)
         environment.debugCSSProperties = debugOptions.snippetsCssProperties;
 
-      let details = {tabId, frameId};
+      let request = {tabId, frameId};
       browser.tabs.executeScript(
         tabId,
         {
@@ -66,8 +66,8 @@ export function applyContentFilters(tabId, frameId)
         }
       ).then(() => filters.forEach(filter =>
       {
-        logItem(details, filter, {docDomain: frame.hostname,
-                                  matchingMethod: "snippet"});
+        logItem(request, filter, {docDomain: frame.hostname,
+                                  method: "snippet"});
       }), () => {});
     }
 

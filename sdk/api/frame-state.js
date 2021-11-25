@@ -79,8 +79,8 @@ class PendingFrameInfo
     let details = {tabId, frameId, url};
     // The docDomain for a frame is the hostname of the parent frame
     // (the loader). For top-level frames we use the current URL's hostname.
-    let info = {docDomain: parentHostname || hostname,
-                matchingMethod: "allowing"};
+    let matchInfo = {docDomain: parentHostname || hostname,
+                     method: "allowing"};
 
     while (true)
     {
@@ -93,7 +93,7 @@ class PendingFrameInfo
       allowlisted |= filter.contentType & ALLOWING_TYPES;
 
       let allowingReason = getAllowingReason(typeMask, filter);
-      logItem(details, filter, {...info, allowingReason});
+      logItem(details, filter, {...matchInfo, allowingReason});
     }
 
     this.url = url;

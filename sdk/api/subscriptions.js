@@ -81,12 +81,16 @@ export default {
   /**
    * A resource that provides a list of filters that decide what to block.
    * @typedef {Object} Subscription
-   * @property {boolean} enabled Indicates whether this subscription will
-   *                             be applied.
-   * @property {string|null} downloadStatus The {@link https://eyeo.gitlab.io/adblockplus/abc/adblockpluscore/next/docs/module-subscriptionClasses.DownloadableSubscription.html#downloadStatus|status}
-   *                                        of the most recent download attempt.
+   * @property {boolean} downloadable Indicates whether this subscription is
+   *                                  downloaded and updated over the network.
+   *                                  If `false` the subscription is merely
+   *                                  a container for user-defined filters.
    * @property {boolean} downloading Indicates whether the subscription is
    *                                 currently downloading.
+   * @property {string|null} downloadStatus The {@link https://eyeo.gitlab.io/adblockplus/abc/adblockpluscore/next/docs/module-subscriptionClasses.DownloadableSubscription.html#downloadStatus|status}
+   *                                        of the most recent download attempt.
+   * @property {boolean} enabled Indicates whether this subscription will
+   *                             be applied.
    * @property {number} expires
    * @property {?string} homepage Website of the project that manages
    *                              this filter list.
@@ -101,10 +105,6 @@ export default {
    *                        Used a the identifier.
    * @property {string} version The version provided by the subscription's
    *                            metadata. Defaults to '0' if not provided.
-   * @property {boolean} downloadable Indicates whether this subscription is
-   *                                  downloaded and updated over the network.
-   *                                  If `false` the subscription is merely
-   *                                  a container for user-defined filters.
    */
 
   /**

@@ -99,13 +99,13 @@ export class BlockableEventDispatcher
   }
 }
 
-export function logItem(details, filter, info = {})
+export function logItem(request, filter, matchInfo = {})
 {
   for (let {listener, options} of listeners)
   {
     let {includeElementHiding, includeUnmatched, filterType, tabId} = options;
 
-    if (tabId != null && tabId != details.tabId)
+    if (tabId != null && tabId != request.tabId)
       continue;
 
     if (filter)
@@ -124,21 +124,21 @@ export function logItem(details, filter, info = {})
     if (!includeUnmatched && !filter)
       continue;
 
-    listener({details, filter: filter && convertFilter(filter), info});
+    listener({request, filter: filter && convertFilter(filter), matchInfo});
   }
 }
 
 export function logHiddenElements(selectors, filters, sender)
 {
-  let details = {
+  let request = {
     tabId: sender.tab.id,
     frameId: sender.frameId,
     url: sender.url
   };
   let {hostname} = parseURL(sender.url);
-  let info = {
+  let matchInfo = {
     docDomain: hostname,
-    matchingMethod: "elemhide"
+    method: "elemhide"
   };
 
   if (selectors.length > 0)
@@ -155,13 +155,13 @@ export function logHiddenElements(selectors, filters, sender)
         if (filter instanceof ElemHideFilter &&
             selectors.includes(filter.selector) &&
             filter.isActiveOnDomain(hostname))
-          logItem(details, filter, info);
+          logItem(request, filter, matchInfo);
       }
     }
   }
 
   for (let text of filters)
-    logItem(details, Filter.fromText(text), info);
+    logItem(request, Filter.fromText(text), matchInfo);
 }
 
 export function tracingEnabled(tabId)

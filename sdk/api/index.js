@@ -65,11 +65,12 @@ let stopped = true;
 
 /**
 * @typedef {Object} FirstRunInfo
-* @property {boolean} subscriptionsFirstRun True when no pre-existing
-*                                           subscriptions were found, false
-*                                           otherwise.
-* @property {boolean} storageFirstRun Whether the subscriptions storage was
-*                                     initialized or not.
+* @property {boolean} foundStorage Whether the subscriptions storage was
+*                                  initialized or not.
+* @property {boolean} foundSubscriptions True when pre-existing subscriptions
+*                                        were found, false otherwise.
+*                                        Considers also whether custom filters
+*                                        exist.
 */
 
 /**

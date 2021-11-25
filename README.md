@@ -202,12 +202,12 @@ example `--timeout 10000`.
 
 [abpcore]: https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore
 [abpui]: https://gitlab.com/eyeo/adblockplus/abpui/adblockplusui
-[builds]: https://gitlab.com/eyeo/adblockplus/webext-sdk/-/jobs/artifacts/master/browse/dist?job=build
+[builds]: https://gitlab.com/eyeo/webext/webext-sdk/-/jobs/artifacts/master/browse/dist?job=build
 [snippet-filters]: https://help.eyeo.com/adblockplus/snippet-filters-tutorial
 [snippets-project]: https://gitlab.com/eyeo/adblockplus/abp-snippets
-[docs]: https://gitlab.com/eyeo/adblockplus/webext-sdk/-/jobs/artifacts/master/file/docs/index.html?job=build
-[dev]: https://gitlab.com/eyeo/adblockplus/webext-sdk#development
-[notifications-module]: https://gitlab.com/eyeo/adblockplus/webext-sdk/-/jobs/artifacts/master/file/docs/index.html?job=build#notifications
+[docs]: https://gitlab.com/eyeo/webext/webext-sdk/-/jobs/artifacts/master/file/docs/index.html?job=build
+[dev]: https://gitlab.com/eyeo/webext/webext-sdk#development
+[notifications-module]: https://gitlab.com/eyeo/webext/webext-sdk/-/jobs/artifacts/master/file/docs/index.html?job=build#notifications
 
 ### Bundle test
 

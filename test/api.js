@@ -703,16 +703,16 @@ describe("API", () =>
         {op: "callMethod", arg: "start"},
         {op: "await"}
       ]);
-      expect(result).toEqual({storageFirstRun: true,
-                              subscriptionsFirstRun: true});
+      expect(result).toEqual({foundStorage: false,
+                              foundSubscriptions: false});
 
       result = await runInBackgroundPage([
         {op: "getGlobal", arg: "EWE"},
         {op: "callMethod", arg: "start"},
         {op: "await"}
       ]);
-      expect(result).toEqual({storageFirstRun: true,
-                              subscriptionsFirstRun: false});
+      expect(result).toEqual({foundStorage: false,
+                              foundSubscriptions: true});
     });
   });
 
@@ -752,7 +752,7 @@ describe("API", () =>
     describe("Diagnostics", () =>
     {
       async function checkLogging(filter, callback, eventOptions,
-                                  info = {}, checkUrl = true)
+                                  matchInfo = {}, checkUrl = true)
       {
         let fake = await addFakeListener({namespace: "reporting",
                                           eventName: "onBlockableItem",
@@ -773,28 +773,28 @@ describe("API", () =>
 
         if (checkUrl)
         {
-          expect(fake.firstArg.details).toEqual(
+          expect(fake.firstArg.request).toEqual(
             expect.objectContaining({url: expect.any(String)})
           );
         }
 
         expect(fake.firstArg).toEqual({
-          details: expect.objectContaining({
+          request: expect.objectContaining({
             tabId: expect.any(Number),
             frameId: expect.any(Number)
           }),
           filter: expect.objectContaining(filter),
-          info: expect.objectContaining({
+          matchInfo: expect.objectContaining({
             docDomain: "localhost",
-            ...info
+            ...matchInfo
           })
         });
       }
 
-      function checkRequestLogging(page, filter, info, eventOptions)
+      function checkRequestLogging(page, filter, matchInfo, eventOptions)
       {
         return checkLogging(filter, () => new Page(page).loaded(),
-                            eventOptions, info);
+                            eventOptions, matchInfo);
       }
 
       async function checkUnmatchedLogging(callback, requests, eventOptions)
@@ -834,7 +834,7 @@ describe("API", () =>
           enabled: true,
           type: "blocking",
           thirdParty: null
-        }, {matchingMethod: "request"});
+        }, {method: "request"});
       });
 
       it("logs third-party requests", async() =>
@@ -853,7 +853,7 @@ describe("API", () =>
           type: "allowing"
         }, {
           specificOnly: false,
-          matchingMethod: "header"
+          method: "header"
         }, allowingItems);
       });
 
@@ -873,7 +873,7 @@ describe("API", () =>
         await checkRequestLogging(
           "header.html",
           {text: `|${TEST_PAGES_URL}$header=x-header=whatever`},
-          {matchingMethod: "header"});
+          {method: "header"});
       });
 
       it("logs allowlisting $header filter", async() =>
@@ -889,7 +889,7 @@ describe("API", () =>
         await checkRequestLogging(
           "csp.html",
           {text: `|${TEST_PAGES_URL}$csp=img-src 'none'`},
-          {matchingMethod: "csp"});
+          {method: "csp"});
       });
 
       it("logs allowlisting $csp filter", async() =>
@@ -897,7 +897,7 @@ describe("API", () =>
         await addFilter(`|${TEST_PAGES_URL}$csp=img-src 'none'`);
         await checkRequestLogging("csp.html",
                                   {text: `@@|${TEST_PAGES_URL}$csp`},
-                                  {matchingMethod: "csp"},
+                                  {method: "csp"},
                                   allowingItems);
       });
 
@@ -907,7 +907,7 @@ describe("API", () =>
         it(`logs allowlisting ${option} filter`, () => checkRequestLogging(
           "image.html",
           {text: `@@|${TEST_PAGES_URL}${option}`},
-          {matchingMethod: "allowing", allowingReason: option.substring(1)},
+          {method: "allowing", allowingReason: option.substring(1)},
           allowingItems
         ));
       }
@@ -918,7 +918,7 @@ describe("API", () =>
         await checkLogging({text: `@@|${TEST_PAGES_URL}/image.html^$document`},
                            () => new Page(url, true).loaded(),
                            allowingItems,
-                           {matchingMethod: "allowing",
+                           {method: "allowing",
                             docDomain: "127.0.0.1"});
       });
 
@@ -930,7 +930,7 @@ describe("API", () =>
           await waitForInvisibleElement(tabId, "elem-hide");
         }, {includeElementHiding: true,
             includeUnmatched: false,
-            filterType: "all"}, {matchingMethod: "elemhide"}
+            filterType: "all"}, {method: "elemhide"}
         );
       });
 
@@ -946,44 +946,44 @@ describe("API", () =>
         }, {includeElementHiding: true,
             includeUnmatched: false,
             filterType: "all",
-            tabId}, {matchingMethod: "elemhide"}
+            tabId}, {method: "elemhide"}
         );
       });
 
       let allItemsRequests = [{
-        details: expect.objectContaining({
+        request: expect.objectContaining({
           tabId: expect.any(Number),
           frameId: expect.any(Number),
           url: `${TEST_PAGES_URL}/element-hiding.html`,
           type: "main_frame"
         }),
         filter: null,
-        info: expect.objectContaining({
+        matchInfo: expect.objectContaining({
           docDomain: TEST_PAGES_DOMAIN,
-          matchingMethod: "csp"
+          method: "csp"
         })
       }, {
-        details: expect.objectContaining({
+        request: expect.objectContaining({
           tabId: expect.any(Number),
           frameId: expect.any(Number),
           url: `${TEST_PAGES_URL}/image.png`,
           type: "image"
         }),
         filter: expect.objectContaining({text: VALID_FILTER_TEXT}),
-        info: expect.objectContaining({
+        matchInfo: expect.objectContaining({
           docDomain: TEST_PAGES_DOMAIN,
-          matchingMethod: "request"
+          method: "request"
         })
       }, {
-        details: expect.objectContaining({
+        request: expect.objectContaining({
           tabId: expect.any(Number),
           frameId: expect.any(Number),
           url: `${TEST_PAGES_URL}/element-hiding.html`
         }),
         filter: expect.objectContaining({text: "###elem-hide"}),
-        info: expect.objectContaining({
+        matchInfo: expect.objectContaining({
           docDomain: TEST_PAGES_DOMAIN,
-          matchingMethod: "elemhide"
+          method: "elemhide"
         })
       }];
 
@@ -1034,7 +1034,7 @@ describe("API", () =>
                              {includeElementHiding: false,
                               includeUnmatched: false,
                               filterType: "blocking"},
-                             {matchingMethod: "snippet"}, false);
+                             {method: "snippet"}, false);
         }
         finally
         {
@@ -1049,7 +1049,7 @@ describe("API", () =>
                             {includeElementHiding: false,
                              includeUnmatched: false,
                              filterType},
-                            {matchingMethod: "popup"}
+                            {method: "popup"}
         );
       }
 
@@ -1069,16 +1069,16 @@ describe("API", () =>
         it("logs unmatched image requests", async() =>
         {
           await checkUnmatchedLogging(() => new Page("image.html").loaded(), [{
-            details: expect.objectContaining({
+            request: expect.objectContaining({
               tabId: expect.any(Number),
               frameId: expect.any(Number),
               url: `${TEST_PAGES_URL}/image.png`,
               type: "image"
             }),
             filter: null,
-            info: expect.objectContaining({
+            matchInfo: expect.objectContaining({
               docDomain: TEST_PAGES_DOMAIN,
-              matchingMethod: "request",
+              method: "request",
               specificOnly: false
             })
           }], allItemsWithoutEH);
@@ -1105,16 +1105,16 @@ describe("API", () =>
 
           let firstArgs = fake1.args.map(args => args[0]);
           expect(firstArgs).toEqual(expect.arrayContaining([{
-            details: expect.objectContaining({
+            request: expect.objectContaining({
               tabId: expect.any(Number),
               frameId: expect.any(Number),
               url: `${TEST_PAGES_URL}/image.png`,
               type: "image"
             }),
             filter: null,
-            info: expect.objectContaining({
+            matchInfo: expect.objectContaining({
               docDomain: TEST_PAGES_DOMAIN,
-              matchingMethod: "request",
+              method: "request",
               specificOnly: false
             })
           }]));
@@ -1123,16 +1123,16 @@ describe("API", () =>
         it("logs unmatched document requests", async() =>
         {
           await checkUnmatchedLogging(() => new Page("image.html").loaded(), [{
-            details: expect.objectContaining({
+            request: expect.objectContaining({
               tabId: expect.any(Number),
               frameId: expect.any(Number),
               url: `${TEST_PAGES_URL}/image.html`,
               type: "main_frame"
             }),
             filter: null,
-            info: expect.objectContaining({
+            matchInfo: expect.objectContaining({
               docDomain: TEST_PAGES_DOMAIN,
-              matchingMethod: "csp",
+              method: "csp",
               specificOnly: false
             })
           }], allItemsWithoutEH);
@@ -1142,30 +1142,30 @@ describe("API", () =>
         {
           await checkUnmatchedLogging(() => new Page("iframe.html").loaded(), [
             {
-              details: expect.objectContaining({
+              request: expect.objectContaining({
                 tabId: expect.any(Number),
                 frameId: expect.any(Number),
                 url: `${TEST_PAGES_URL}/image.html`,
                 type: "sub_frame"
               }),
               filter: null,
-              info: expect.objectContaining({
+              matchInfo: expect.objectContaining({
                 docDomain: TEST_PAGES_DOMAIN,
-                matchingMethod: "csp",
+                method: "csp",
                 specificOnly: false
               })
             },
             {
-              details: expect.objectContaining({
+              request: expect.objectContaining({
                 tabId: expect.any(Number),
                 frameId: expect.any(Number),
                 url: `${TEST_PAGES_URL}/image.png`,
                 type: "image"
               }),
               filter: null,
-              info: expect.objectContaining({
+              matchInfo: expect.objectContaining({
                 docDomain: TEST_PAGES_DOMAIN,
-                matchingMethod: "request",
+                method: "request",
                 specificOnly: false
               })
             }
@@ -1180,20 +1180,20 @@ describe("API", () =>
           await checkUnmatchedLogging(() =>
             new Page("iframe.html").loaded(), [
             {
-              details: expect.objectContaining({
+              request: expect.objectContaining({
                 tabId: expect.any(Number),
                 frameId: expect.any(Number),
                 url: `${TEST_PAGES_URL}/image.html`,
                 type: "sub_frame"
               }),
               filter: null,
-              info: {
+              matchInfo: {
                 docDomain: TEST_PAGES_DOMAIN,
                 specificOnly: false
               }
             },
             {
-              details: expect.objectContaining({
+              request: expect.objectContaining({
                 frameId: expect.any(Number),
                 tabId: expect.any(Number),
                 url: `${TEST_PAGES_URL}/image.html`
@@ -1203,9 +1203,9 @@ describe("API", () =>
                 text: `@@|${TEST_PAGES_URL}/image.html$document`,
                 type: "allowing"
               }),
-              info: expect.objectContaining({
+              matchInfo: expect.objectContaining({
                 allowingReason: "document",
-                matchingMethod: "allowing"
+                method: "allowing"
               })
             }
           ], allItemsWithoutEH);

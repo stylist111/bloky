@@ -100,22 +100,22 @@ class RequestFilter
     }
   }
 
-  isBlocking(details, filter, info)
+  isBlocking(details, filter, matchInfo)
   {
     if (!filter)
     {
-      logItem(details, null, info);
+      logItem(details, null, matchInfo);
       return false;
     }
 
     if (filter instanceof BlockingFilter)
       return true;
 
-    logItem(details, filter, info);
+    logItem(details, filter, matchInfo);
     return false;
   }
 
-  block(details, filter, info)
+  block(details, filter, matchInfo)
   {
     let value = (() =>
     {
@@ -126,7 +126,7 @@ class RequestFilter
         // return undefined in order to avoid an "infinite" loop.
         if (rewrittenUrl != details.url)
         {
-          info.rewrittenUrl = rewrittenUrl;
+          matchInfo.rewrittenUrl = rewrittenUrl;
           return {redirectUrl: rewrittenUrl};
         }
       }
@@ -136,7 +136,7 @@ class RequestFilter
         return {cancel: true};
       }
     })();
-    logItem(details, filter, info);
+    logItem(details, filter, matchInfo);
     return value;
   }
 
@@ -146,9 +146,9 @@ class RequestFilter
     let filter = matcher.match(details.url, this.getContentType(details),
                                docDomain, frame.sitekey, specificOnly);
 
-    let info = {docDomain, specificOnly, matchingMethod: "request"};
-    if (this.isBlocking(details, filter, info))
-      return this.block(details, filter, info);
+    let matchInfo = {docDomain, specificOnly, method: "request"};
+    if (this.isBlocking(details, filter, matchInfo))
+      return this.block(details, filter, matchInfo);
   }
 
   filter(details)
@@ -195,11 +195,11 @@ class HeaderFilter extends RequestFilter
   {
     let typeMask = contentTypes.HEADER | this.getContentType(details);
     let docDomain = frame.hostname;
-    let info = {docDomain, specificOnly, matchingMethod: "header"};
+    let matchInfo = {docDomain, specificOnly, method: "header"};
 
     if (!this.isBlocking(details, matcher.match(details.url, typeMask,
                                                 docDomain, frame.sitekey,
-                                                specificOnly), info))
+                                                specificOnly), matchInfo))
       return;
 
     let matches = matcher.search(details.url, contentTypes.HEADER,
@@ -209,7 +209,7 @@ class HeaderFilter extends RequestFilter
     for (let filter of matches.blocking)
     {
       if (filter.filterHeaders(details.responseHeaders))
-        return this.block(details, filter, info);
+        return this.block(details, filter, matchInfo);
     }
   }
 }
@@ -236,11 +236,11 @@ class CSPFilter extends RequestFilter
     let parentFrame = getFrameInfo(details.tabId, details.parentFrameId);
     let docDomain = parentFrame && parentFrame.hostname;
 
-    let info = {docDomain: docDomain || frame.hostname, specificOnly,
-                matchingMethod: "csp"};
+    let matchInfo = {docDomain: docDomain || frame.hostname, specificOnly,
+                     method: "csp"};
     if (!this.isBlocking(details, matcher.match(details.url, contentTypes.CSP,
                                                 docDomain, frame.sitekey,
-                                                specificOnly), info))
+                                                specificOnly), matchInfo))
       return;
 
     let {responseHeaders} = details;
@@ -249,7 +249,7 @@ class CSPFilter extends RequestFilter
 
     for (let filter of matches.blocking)
     {
-      logItem(details, filter, info);
+      logItem(details, filter, matchInfo);
       responseHeaders.push(
         {name: "Content-Security-Policy", value: filter.csp}
       );

@@ -50,10 +50,9 @@ export default {
   *                                  to rewrite the URL.
   * @property {?boolean} specificOnly Whether selectors from generic filters
   *                                   should be included.
-  * @property {string} matchingMethod The method used to match this filter.
-  *                                   This can be the string "request",
-  *                                   "header", "csp", "popup", "elemhide",
-  *                                   "snippet" or "allowing".
+  * @property {string} method The method used to match this filter.
+  *                           This can be the string "request", "header", "csp",
+  *                           "popup", "elemhide", "snippet" or "allowing".
   * @property {?string} allowingReason When the type in request details is
   *                                    undefined, this contains the reason why
   *                                    the request/frame got allowlisted. That
@@ -64,18 +63,18 @@ export default {
   /**
    * Emitted when any blockable item is matched.
    * @event
-   * @param {object|{frameId: number, tabId: number, url: string}} details
+   * @param {object|{frameId: number, tabId: number, url: string}} request
    *   Either
    *   the {@link https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webRequest/onBeforeRequest#details|onBeforeRequest details}
    *   object or the {@link https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webRequest/onHeadersReceived#details|onHeadersReceived details}
    *   object from the web extensions API, or an object with the properties
    *   `frameId`, `tabId` and `url` (for snippet filters `url` is undefined).
    * @param {Filter} filter The filter that matched.
-   * @param {FilterMatchInfo} info Extra information that might be
-   *                               relevant depending on the context.
-   * @type {BlockableEventDispatcher.<{details: object,
+   * @param {FilterMatchInfo} matchInfo Extra information that might be
+   *                                    relevant depending on the context.
+   * @type {BlockableEventDispatcher.<{request: object,
    *                                   filter: Filter,
-   *                                   info: FilterMatchInfo}>}
+   *                                   matchInfo: FilterMatchInfo}>}
    */
   onBlockableItem: new BlockableEventDispatcher(),
 
