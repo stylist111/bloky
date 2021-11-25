@@ -769,7 +769,7 @@ describe("API", () =>
           await callMethod(["filters"], "remove", [filter.text]);
         }
 
-        expect(fake.called).toBeTruthy();
+        await wait(() => fake.called, 100, "Fake was not called");
 
         if (checkUrl)
         {
