@@ -49,14 +49,15 @@ export let notifications = _notifications;
 export let snippets = {
   /**
    * Enables support for snippet filters.
-   * @param {string} isolatedCode The code defining the available snippets
-   *                              to be executed in the isolated content script
-   *                              context.
-   * @param {string} injectedCode The code defining the available snippets
-   *                              to be injected and executed in the main
-   *                              context.
-   * @param {Array.<string>} injectedList An array containing the injectable
-   *                                      snippets.
+   * @param {Object} [snippetInfo]
+   * @param {string} [snippetInfo.isolatedCode]
+   *   The code defining the available snippets to be executed in the isolated
+   *   content script context.
+   * @param {string} [snippetInfo.injectedCode]
+   *   The code defining the available snippets to be injected and executed in
+   *   the main context.
+   * @param {Array.<string>} [snippetInfo.injectedList]
+   *   An array containing the injectable snippets.
    */
   setLibrary: setSnippetLibrary
 };

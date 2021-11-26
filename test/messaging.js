@@ -102,9 +102,8 @@ export function setTestSnippets(name)
   return runInBackgroundPage([
     {op: "getGlobal", arg: "EWE"},
     {op: "getProp", arg: "snippets"},
-    {op: "pushArg", arg: name ? isolatedCode : null},
-    {op: "pushArg", arg: name ? injectedCode : null},
-    {op: "pushArg", arg: name ? [name] : []},
+    {op: "pushArg", arg: name ? {isolatedCode, injectedCode,
+                                 injectedList: [name]} : []},
     {op: "callMethod", arg: "setLibrary"}
   ]);
 }

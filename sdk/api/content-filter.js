@@ -28,13 +28,13 @@ import {debugOptions} from "./debugging.js";
 
 let isolatedLib;
 let injectedLib;
-let injectedList;
+let injectedItems;
 
-export function setSnippetLibrary(isolatedCode, injectedCode, list)
+export function setSnippetLibrary({isolatedCode, injectedCode, injectedList})
 {
   isolatedLib = isolatedCode;
   injectedLib = injectedCode;
-  injectedList = list;
+  injectedItems = injectedList;
 }
 
 export function applyContentFilters(tabId, frameId)
@@ -59,7 +59,7 @@ export function applyContentFilters(tabId, frameId)
         tabId,
         {
           frameId,
-          code: compileScript(scripts, isolatedLib, injectedLib, injectedList,
+          code: compileScript(scripts, isolatedLib, injectedLib, injectedItems,
                               environment),
           matchAboutBlank: true,
           runAt: "document_start"
