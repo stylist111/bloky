@@ -43,9 +43,9 @@ export async function executeScript(tabId, func, args)
 {
   if (browser.scripting)
   {
-    let {result} =
+    let out =
       await browser.scripting.executeScript({target: {tabId}, func, args});
-    return result;
+    return out[0].result;
   }
 
   let argsString = args ? args.map(JSON.stringify).join(",") : "";
