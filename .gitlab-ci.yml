@@ -12,7 +12,11 @@ variables:
   npm_config_prefer_offline: "true"
 
 cache:
-  paths:
+  - key:
+      prefix: $CI_JOB_IMAGE
+      files:
+      - package-lock.json
+    paths:
     - node_modules/
     - test/*-snapshots/download-cache/
 
