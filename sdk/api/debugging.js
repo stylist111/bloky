@@ -16,6 +16,7 @@
  */
 
 import {filterStorage} from "adblockpluscore/lib/filterStorage.js";
+import {default as initializer} from "./initializer.js";
 
 import {IO} from "./io.js";
 
@@ -65,5 +66,16 @@ export default {
     await IO.readFromFile(filterStorage.sourceFile,
                           line => contents.push(line));
     return contents.some(line => line.includes(text));
+  },
+
+  /**
+   * @ignore
+   * Shuts down stateful modules. This is useful to emulate the
+   * stateful modules being shut down by other mechanisms, such as the
+   * background service worker being suspended.
+   */
+  initializerStop()
+  {
+    initializer.stop();
   }
 };

@@ -19,7 +19,7 @@ import expect from "expect";
 
 import {Page, waitForInvisibleElement, executeScript, setMinTimeout, wait,
         TEST_PAGES_DOMAIN, TEST_PAGES_URL} from "./utils.js";
-import {addFilter, setTestSnippets} from "./messaging.js";
+import {addFilter, setTestSnippets, callMethod} from "./messaging.js";
 
 describe("Element Hiding", () =>
 {
@@ -45,6 +45,13 @@ describe("Element Hiding", () =>
   it("hides an element", async() =>
   {
     await addFilter("###elem-hide");
+    expect(await getVisibleElement("elem-hide")).toBeNull();
+  });
+
+  it("hides an element after service worker is suspended", async() =>
+  {
+    await addFilter("###elem-hide");
+    await callMethod(["debugging"], "initializerStop");
     expect(await getVisibleElement("elem-hide")).toBeNull();
   });
 

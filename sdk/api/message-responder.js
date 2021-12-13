@@ -17,25 +17,24 @@
 
 import browser from "webextension-polyfill";
 
+import {default as initializer} from "./initializer.js";
 import {applyContentFilters, injectCSS} from "./content-filter.js";
 import {createStyleSheet} from "adblockpluscore/lib/elemHide.js";
 import {subscribeLinkClicked, subscribeLinksEnabled}
   from "./subscribe-links.js";
 import {logHiddenElements} from "./diagnostics.js";
 
-function onMessage(message, sender)
+async function handleMessage(message, sender)
 {
-  if (typeof message != "object" || message == null)
-    return;
-
+  await initializer.start();
   switch (message.type)
   {
     case "ewe:content-hello":
       let filterData = applyContentFilters(sender.tab.id, sender.frameId);
-      return Promise.resolve({
+      return {
         ...filterData,
         subscribeLinks: subscribeLinksEnabled(sender.url)
-      });
+      };
     case "ewe:subscribe-link-clicked":
       subscribeLinkClicked(message.url, message.title);
       break;
@@ -47,6 +46,13 @@ function onMessage(message, sender)
       injectCSS(sender.tab.id, sender.frameId, styleSheet);
       break;
   }
+}
+
+function onMessage(message, sender)
+{
+  if (typeof message == "object" && message != null &&
+      message.type.startsWith("ewe:"))
+    return handleMessage(message, sender);
 }
 
 export function start()

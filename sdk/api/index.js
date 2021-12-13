@@ -15,16 +15,12 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {filterEngine} from "adblockpluscore/lib/filterEngine.js";
 import {synchronizer} from "adblockpluscore/lib/synchronizer.js";
 import {notifications as _notifications}
   from "adblockpluscore/lib/notifications.js";
 
-import * as frameState from "./frame-state.js";
-import * as requestFilter from "./request-filter.js";
+import {default as initializer} from "./initializer.js";
 import * as messageResponder from "./message-responder.js";
-import * as popupBlocker from "./popup-blocker.js";
-import {init as initIDB} from "./idb.js";
 import {configureDefaultSubscriptions} from "./default-subscriptions.js";
 import {setSnippetLibrary} from "./content-filter.js";
 
@@ -64,6 +60,13 @@ export let snippets = {
 
 let stopped = true;
 
+async function startAsyncModule(startModule)
+{
+  await startModule();
+  if (stopped)
+    throw new Error("Stopped before initialization was finished");
+}
+
 /**
 * @typedef {Object} FirstRunInfo
 * @property {boolean} foundStorage Whether the subscriptions storage was
@@ -79,33 +82,19 @@ let stopped = true;
  *
  * Calling this function is required for the other API calls to work, except for
  * API event listener calls, which could also be done before `start()`.
- * @return {Promise.<FirstRunInfo|null>} Null if `stop()` was called before
- *                                       `FirstRunInfo` could be determined.
+ * @return {Promise.<FirstRunInfo>} Promise that is resolved after
+ *                                  starting up is completed. Promise
+ *                                  is rejected if `stop()` is called
+ *                                  before starting is completed.
  * @see {@link #stop|stop()}
  */
 export async function start()
 {
   stopped = false;
-
-  await initIDB();
-  if (stopped)
-    return null;
-
-  await filterEngine.initialize();
-  if (stopped)
-    return null;
-
+  messageResponder.start();
+  await startAsyncModule(() => initializer.start());
   synchronizer.start();
   let firstRun = configureDefaultSubscriptions();
-
-  await frameState.start();
-  if (stopped)
-    return firstRun;
-
-  requestFilter.start();
-  popupBlocker.start();
-  messageResponder.start();
-
   return firstRun;
 }
 
@@ -115,10 +104,8 @@ export async function start()
 export function stop()
 {
   stopped = true;
-  synchronizer.stop();
-  frameState.stop();
-  requestFilter.stop();
-  popupBlocker.stop();
   messageResponder.stop();
+  initializer.stop();
+  synchronizer.stop();
   notifications.stop();
 }
