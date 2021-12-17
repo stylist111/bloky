@@ -26,7 +26,7 @@ build:
     - npm install
     - npm run lint
     - npm run build -- --env release
-    - npm run docs
+    - DOCS_ERROR=$(npm run docs 2>&1 >/dev/null) && if [ ! -z "$DOCS_ERROR" ]; then echo $DOCS_ERROR && false; fi
     - npm run test-bundle
   artifacts:
     paths:
