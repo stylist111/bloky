@@ -107,6 +107,11 @@ function handleTestMessage(request, sender, sendResponse)
       delete self.uiLanguageOverride;
       sendResponse({});
       return true;
+
+    case "ewe-test:storeAndRemoveAllSubscriptions":
+      self.restoreSubscriptions = EWE.subscriptions.removeAll();
+      sendResponse({});
+      return true;
   }
 }
 

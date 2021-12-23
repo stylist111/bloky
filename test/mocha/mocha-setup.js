@@ -15,14 +15,18 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import browser from "webextension-polyfill";
+import expect from "expect";
+
 import {TEST_PAGES_URL} from "../utils.js";
-import {callMethod, runInBackgroundPage, removeFakeListeners}
+import {callMethod, runInBackgroundPage, removeFakeListeners, addFilter}
   from "../messaging.js";
+
+const RESTORE_SUBSCRIPTIONS_TEST = "restoreSubscriptionsTest";
 
 mocha.setup("bdd");
 
 let timeout = new URLSearchParams(document.location.search).get("timeout");
-let restoreSubscriptions;
 
 if (timeout)
   mocha.timeout(parseInt(timeout, 10));
@@ -44,15 +48,24 @@ before(async function()
     elem.textContent = message;
     mocha.Mocha.reporters.Base.consoleLog("\x1b[33m%s\x1b[0m", message);
   }
-  restoreSubscriptions = await callMethod(["subscriptions"], "removeAll");
+
+  await addFilter(RESTORE_SUBSCRIPTIONS_TEST);
+  await browser.runtime.sendMessage({
+    type: "ewe-test:storeAndRemoveAllSubscriptions"});
 });
 
-after(function()
+after(async function()
 {
   this.timeout(3000);
 
-  if (restoreSubscriptions)
-    restoreSubscriptions();
+  await runInBackgroundPage([
+    {op: "getGlobal", arg: "self"},
+    {op: "callMethod", arg: "restoreSubscriptions"}
+  ]);
+
+  expect(await callMethod(["filters"], "getUserFilters"))
+    .toEqual([expect.objectContaining({text: RESTORE_SUBSCRIPTIONS_TEST})]);
+  await callMethod(["filters"], "remove", [RESTORE_SUBSCRIPTIONS_TEST]);
 });
 
 beforeEach(function()
