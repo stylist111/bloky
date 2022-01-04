@@ -1,5 +1,5 @@
 default:
-  image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node12-no-python
+  image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
   interruptible: true
 
 stages:
@@ -93,6 +93,7 @@ test:v2:edge:
         -OutFile 'MicrosoftEdgeEnterpriseX64.msi'
     - Start-Process msiexec
         -ArgumentList "/i MicrosoftEdgeEnterpriseX64.msi /norestart /qn" -Wait
+    - choco upgrade -y nodejs --version 16.10.0
     - npm install
     - Start-Process "node" -ArgumentList "test/start-server.js" -PassThru
   script:

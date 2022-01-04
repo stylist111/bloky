@@ -10,7 +10,8 @@
   "private": true,
   "license": "GPL-3.0",
   "engines": {
-    "npm": ">=6"
+    "node": ">=16.10.0",
+    "npm": ">=7"
   },
   "type": "module",
   "dependencies": {

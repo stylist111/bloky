@@ -122,7 +122,8 @@ For more information, please refer to the [API documention][docs].
 
 ### Prerequisites
 
-Node >= 12.18.4
+- Node >= 16.10.0
+- npm >= 7
 
 ### Installing/Updating dependencies
 
