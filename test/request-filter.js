@@ -19,7 +19,7 @@ import expect from "expect";
 
 import {Page, Resource, executeScript, wait, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
         SITEKEY} from "./utils.js";
-import {addFilter, callMethod} from "./messaging.js";
+import {addFilter, EWE} from "./messaging.js";
 
 describe("Blocking", () =>
 {
@@ -33,8 +33,7 @@ describe("Blocking", () =>
 
   it("blocks a request using subscriptions", async() =>
   {
-    await callMethod(["subscriptions"], "add",
-                     [`${TEST_PAGES_URL}/subscription.txt`]);
+    await EWE.subscriptions.add(`${TEST_PAGES_URL}/subscription.txt`);
     await wait(async() =>
     {
       try

@@ -20,7 +20,7 @@ import expect from "expect";
 
 import {Page, Popup, setMinTimeout, waitForInvisibleElement, wait,
         executeScript, TEST_PAGES_URL, TEST_PAGES_DOMAIN} from "./utils.js";
-import {addFilter, callMethod, runInBackgroundPage, addFakeListener,
+import {addFilter, EWE, runInBackgroundPage, addFakeListener,
         removeFakeListeners, setTestSnippets}
   from "./messaging.js";
 
@@ -53,9 +53,9 @@ describe("API", () =>
   {
     it("adds a subscription", async() =>
     {
-      await callMethod(["subscriptions"], "add", [VALID_SUBSCRIPTION_URL]);
+      await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
 
-      let subs = await callMethod(["subscriptions"], "getDownloadable");
+      let subs = await EWE.subscriptions.getDownloadable();
       expect(subs).toEqual([expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
         enabled: true,
@@ -70,10 +70,10 @@ describe("API", () =>
       let title = "testTitle";
       let homepage = "testHomePage";
 
-      await callMethod(["subscriptions"], "add",
-                       [VALID_SUBSCRIPTION_URL, {title, homepage}]);
+      await EWE.subscriptions.add(
+        VALID_SUBSCRIPTION_URL, {title, homepage});
 
-      let subs = await callMethod(["subscriptions"], "getDownloadable");
+      let subs = await EWE.subscriptions.getDownloadable();
       expect(subs).toEqual([expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
         enabled: true,
@@ -84,17 +84,16 @@ describe("API", () =>
     });
 
     it("does not add an invalid subscription", () =>
-      expect(callMethod(["subscriptions"], "add", [INVALID_SUBSCRIPTION_URL]))
+      expect(EWE.subscriptions.add(INVALID_SUBSCRIPTION_URL))
         .rejects.toThrow("Error: Invalid subscription URL provided: invalidUrl")
     );
 
     it("adds multiple subscriptions", async() =>
     {
-      await callMethod(["subscriptions"], "add", [VALID_SUBSCRIPTION_URL]);
-      await callMethod(["subscriptions"], "add",
-                       [VALID_SUBSCRIPTION_URL + "?2"]);
+      await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
+      await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL + "?2");
 
-      let subs = await callMethod(["subscriptions"], "getDownloadable");
+      let subs = await EWE.subscriptions.getDownloadable();
       expect(subs).toEqual([
         expect.objectContaining({url: VALID_SUBSCRIPTION_URL}),
         expect.objectContaining({url: VALID_SUBSCRIPTION_URL + "?2"})
@@ -104,24 +103,22 @@ describe("API", () =>
     it("gets subscriptions for a filter", async() =>
     {
       await addFilter(VALID_FILTER_TEXT);
-      expect(await callMethod(["subscriptions"], "getForFilter",
-                              [VALID_FILTER_TEXT])).toEqual([
+      expect(await EWE.subscriptions.getForFilter(VALID_FILTER_TEXT)).toEqual([
         expect.objectContaining({downloadable: false})
       ]);
     });
 
     it("gets filters from a subscription", async() =>
     {
-      expect(await callMethod(["subscriptions"], "getFilters",
-                              [VALID_SUBSCRIPTION_URL])).toEqual([]);
+      expect(await EWE.subscriptions.getFilters(
+        VALID_SUBSCRIPTION_URL)).toEqual([]);
 
-      await callMethod(["subscriptions"], "add", [VALID_SUBSCRIPTION_URL]);
+      await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
 
       let result;
       await wait(async() =>
       {
-        result = await callMethod(["subscriptions"], "getFilters",
-                                  [VALID_SUBSCRIPTION_URL]);
+        result = await EWE.subscriptions.getFilters(VALID_SUBSCRIPTION_URL);
         return result.length > 0;
       }, 4000);
 
@@ -132,20 +129,18 @@ describe("API", () =>
 
     it("checks if a subscription has been added", async() =>
     {
-      expect(await callMethod(["subscriptions"], "has",
-                              [VALID_SUBSCRIPTION_URL])).toBe(false);
+      expect(await EWE.subscriptions.has(VALID_SUBSCRIPTION_URL)).toBe(false);
 
-      await callMethod(["subscriptions"], "add", [VALID_SUBSCRIPTION_URL]);
-      expect(await callMethod(["subscriptions"], "has",
-                              [VALID_SUBSCRIPTION_URL])).toBe(true);
+      await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
+      expect(await EWE.subscriptions.has(VALID_SUBSCRIPTION_URL)).toBe(true);
     });
 
     it("disables an existing subscription", async() =>
     {
-      await callMethod(["subscriptions"], "add", [VALID_SUBSCRIPTION_URL]);
-      await callMethod(["subscriptions"], "disable", [VALID_SUBSCRIPTION_URL]);
+      await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
+      await EWE.subscriptions.disable(VALID_SUBSCRIPTION_URL);
 
-      let subs = await callMethod(["subscriptions"], "getDownloadable");
+      let subs = await EWE.subscriptions.getDownloadable();
       expect(subs).toEqual([expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
         enabled: false
@@ -154,11 +149,11 @@ describe("API", () =>
 
     it("enables an existing subscription", async() =>
     {
-      await callMethod(["subscriptions"], "add", [VALID_SUBSCRIPTION_URL]);
-      await callMethod(["subscriptions"], "disable", [VALID_SUBSCRIPTION_URL]);
-      await callMethod(["subscriptions"], "enable", [VALID_SUBSCRIPTION_URL]);
+      await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
+      await EWE.subscriptions.disable(VALID_SUBSCRIPTION_URL);
+      await EWE.subscriptions.enable(VALID_SUBSCRIPTION_URL);
 
-      let subs = await callMethod(["subscriptions"], "getDownloadable");
+      let subs = await EWE.subscriptions.getDownloadable();
       expect(subs).toEqual([expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
         enabled: true
@@ -167,10 +162,10 @@ describe("API", () =>
 
     it("enables a subscription that is already enabled.", async() =>
     {
-      await callMethod(["subscriptions"], "add", [VALID_SUBSCRIPTION_URL]);
-      await callMethod(["subscriptions"], "enable", [VALID_SUBSCRIPTION_URL]);
+      await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
+      await EWE.subscriptions.enable(VALID_SUBSCRIPTION_URL);
 
-      let subs = await callMethod(["subscriptions"], "getDownloadable");
+      let subs = await EWE.subscriptions.getDownloadable();
       expect(subs).toEqual([expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
         enabled: true
@@ -180,24 +175,24 @@ describe("API", () =>
     it("fails enabling/disabling a nonexistent subscription", async() =>
     {
       let errorMessage = "Error: Subscription does not exist: DoesNotExist";
-      await expect(callMethod(["subscriptions"], "enable", ["DoesNotExist"]))
+      await expect(EWE.subscriptions.enable("DoesNotExist"))
         .rejects.toThrow(errorMessage);
-      await expect(callMethod(["subscriptions"], "disable", ["DoesNotExist"]))
+      await expect(EWE.subscriptions.disable("DoesNotExist"))
         .rejects.toThrow(errorMessage);
     });
 
     it("removes a subscription", async() =>
     {
-      await callMethod(["subscriptions"], "add", [VALID_SUBSCRIPTION_URL]);
-      await callMethod(["subscriptions"], "remove", [VALID_SUBSCRIPTION_URL]);
+      await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
+      await EWE.subscriptions.remove(VALID_SUBSCRIPTION_URL);
 
-      expect(await callMethod(["subscriptions"], "getDownloadable"))
+      expect(await EWE.subscriptions.getDownloadable())
         .toEqual([]);
     });
 
     it("gets recommendations", async() =>
     {
-      let result = await callMethod(["subscriptions"], "getRecommendations");
+      let result = await EWE.subscriptions.getRecommendations();
 
       expect(result).toEqual(expect.arrayContaining([
         expect.objectContaining({
@@ -226,7 +221,7 @@ describe("API", () =>
     {
       let fake = await addFakeListener({namespace: "subscriptions",
                                         eventName: "onAdded"});
-      await callMethod(["subscriptions"], "add", [VALID_SUBSCRIPTION_URL]);
+      await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
 
       expect(fake.callCount).toBe(1);
       expect(fake.firstArg).toEqual(expect.objectContaining({
@@ -238,11 +233,11 @@ describe("API", () =>
 
     it("listens to onChanged events", async() =>
     {
-      await callMethod(["subscriptions"], "add", [VALID_SUBSCRIPTION_URL]);
+      await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
 
       let fake = await addFakeListener({namespace: "subscriptions",
                                         eventName: "onChanged"});
-      await callMethod(["subscriptions"], "disable", [VALID_SUBSCRIPTION_URL]);
+      await EWE.subscriptions.disable(VALID_SUBSCRIPTION_URL);
 
       expect(fake.firstArg).toEqual(expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
@@ -255,8 +250,8 @@ describe("API", () =>
     {
       let fake = await addFakeListener({namespace: "subscriptions",
                                         eventName: "onRemoved"});
-      await callMethod(["subscriptions"], "add", [VALID_SUBSCRIPTION_URL]);
-      await callMethod(["subscriptions"], "remove", [VALID_SUBSCRIPTION_URL]);
+      await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
+      await EWE.subscriptions.remove(VALID_SUBSCRIPTION_URL);
 
       expect(fake.callCount).toBe(1);
       expect(fake.firstArg).toEqual(
@@ -306,14 +301,13 @@ describe("API", () =>
             {
               syncedOne = true;
               await new Promise(elapsed => setTimeout(elapsed, 1050));
-              await callMethod(["subscriptions"], "sync",
-                               [ANOTHER_VALID_SUBSCRIPTION_URL]);
+              await EWE.subscriptions.sync(ANOTHER_VALID_SUBSCRIPTION_URL);
             }
             else if (!syncedAll)
             {
               syncedAll = true;
               await new Promise(elapsed => setTimeout(elapsed, 1050));
-              await callMethod(["subscriptions"], "sync");
+              await EWE.subscriptions.sync();
             }
             else
             {
@@ -331,8 +325,7 @@ describe("API", () =>
         addFakeListener({namespace: "subscriptions",
                          eventName: "onChanged",
                          callback: onChanged})
-          .then(() => callMethod(["subscriptions"], "add",
-                                 [ANOTHER_VALID_SUBSCRIPTION_URL]))
+          .then(() => EWE.subscriptions.add(ANOTHER_VALID_SUBSCRIPTION_URL))
           .catch(reject);
       });
     });
@@ -343,15 +336,14 @@ describe("API", () =>
     it("adds a single filter", async() =>
     {
       await addFilter(VALID_FILTER_TEXT);
-      expect(await callMethod(["filters"], "getUserFilters"))
+      expect(await EWE.filters.getUserFilters())
         .toEqual([VALID_FILTER]);
     });
 
     it("adds multiple filters", async() =>
     {
-      await callMethod(["filters"], "add",
-                       [[VALID_FILTER_TEXT, "another-filter"]]);
-      expect(await callMethod(["filters"], "getUserFilters")).toEqual([
+      await EWE.filters.add([VALID_FILTER_TEXT, "another-filter"]);
+      expect(await EWE.filters.getUserFilters()).toEqual([
         VALID_FILTER,
         {...VALID_FILTER, text: "another-filter", slow: true}
       ]);
@@ -364,36 +356,36 @@ describe("API", () =>
     it("disables an existing filter", async() =>
     {
       await addFilter(VALID_FILTER_TEXT);
-      await callMethod(["filters"], "disable", [VALID_FILTER_TEXT]);
+      await EWE.filters.disable(VALID_FILTER_TEXT);
 
-      expect(await callMethod(["filters"], "getUserFilters"))
+      expect(await EWE.filters.getUserFilters())
         .toEqual([{...VALID_FILTER, enabled: false}]);
     });
 
     it("enables an existing filter", async() =>
     {
       await addFilter(VALID_FILTER_TEXT);
-      await callMethod(["filters"], "disable", [VALID_FILTER_TEXT]);
-      await callMethod(["filters"], "enable", [VALID_FILTER_TEXT]);
+      await EWE.filters.disable(VALID_FILTER_TEXT);
+      await EWE.filters.enable(VALID_FILTER_TEXT);
 
-      expect(await callMethod(["filters"], "getUserFilters"))
+      expect(await EWE.filters.getUserFilters())
         .toEqual([VALID_FILTER]);
     });
 
     it("enables a filter that is already enabled.", async() =>
     {
       await addFilter(VALID_FILTER_TEXT);
-      await callMethod(["filters"], "enable", [VALID_FILTER_TEXT]);
+      await EWE.filters.enable(VALID_FILTER_TEXT);
 
-      expect(await callMethod(["filters"], "getUserFilters"))
+      expect(await EWE.filters.getUserFilters())
         .toEqual([VALID_FILTER]);
     });
 
     it("removes a single filter", async() =>
     {
       await addFilter(VALID_FILTER_TEXT);
-      await callMethod(["filters"], "remove", [[VALID_FILTER_TEXT]]);
-      expect(await callMethod(["filters"], "getUserFilters")).toEqual([]);
+      await EWE.filters.remove([VALID_FILTER_TEXT]);
+      expect(await EWE.filters.getUserFilters()).toEqual([]);
     });
 
     it("normalizes a filter internally", async() =>
@@ -402,31 +394,30 @@ describe("API", () =>
 
       let PADDED_FILTER_TEXT = " " + VALID_FILTER_TEXT;
       await addFilter(PADDED_FILTER_TEXT);
-      expect(await callMethod(["filters"], "getUserFilters"))
+      expect(await EWE.filters.getUserFilters())
         .toEqual([VALID_FILTER]);
 
-      await callMethod(["filters"], "disable", [PADDED_FILTER_TEXT]);
-      expect(await callMethod(["filters"], "getUserFilters"))
+      await EWE.filters.disable(PADDED_FILTER_TEXT);
+      expect(await EWE.filters.getUserFilters())
         .toEqual([{...VALID_FILTER, enabled: false}]);
 
-      await callMethod(["filters"], "enable", [PADDED_FILTER_TEXT]);
-      expect(await callMethod(["filters"], "getUserFilters"))
+      await EWE.filters.enable(PADDED_FILTER_TEXT);
+      expect(await EWE.filters.getUserFilters())
         .toEqual([VALID_FILTER]);
 
-      await callMethod(["filters"], "remove", [[PADDED_FILTER_TEXT]]);
-      expect(await callMethod(["filters"], "getUserFilters")).toEqual([]);
+      await EWE.filters.remove([PADDED_FILTER_TEXT]);
+      expect(await EWE.filters.getUserFilters()).toEqual([]);
     });
 
     it("validates a valid filter", async() =>
     {
-      expect(await callMethod(["filters"], "validate", [VALID_FILTER_TEXT]))
+      expect(await EWE.filters.validate(VALID_FILTER_TEXT))
         .toBeNull();
     });
 
     it("validates a filter with unknown option", async() =>
     {
-      let result = await callMethod(["filters"], "validate",
-                                    ["@@||example.com^$foo"]);
+      let result = await EWE.filters.validate("@@||example.com^$foo");
       expect(result).toEqual("FilterError: {\"type\":\"invalid_filter\"," +
                              "\"reason\":\"filter_unknown_option\"," +
                              "\"option\":\"foo\"}");
@@ -434,8 +425,7 @@ describe("API", () =>
 
     it("validates a filter with an invalid domain", async() =>
     {
-      let result = await callMethod(["filters"], "validate",
-                                    ["/image.png$domain=http://foo"]);
+      let result = await EWE.filters.validate("/image.png$domain=http://foo");
       // eslint-disable-next-line max-len
       expect(result).toEqual("FilterError: {\"type\":\"invalid_domain\",\"reason\":\"http://foo\",\"option\":null}");
     });
@@ -444,7 +434,7 @@ describe("API", () =>
     {
       await addFilter("example##.site-panel");
 
-      expect(await callMethod(["filters"], "getUserFilters")).toEqual([
+      expect(await EWE.filters.getUserFilters()).toEqual([
         expect.objectContaining({slow: false})
       ]);
     });
@@ -453,7 +443,7 @@ describe("API", () =>
     {
       await addFilter("example##.site-panel");
 
-      expect(await callMethod(["filters"], "getUserFilters")).toEqual([
+      expect(await EWE.filters.getUserFilters()).toEqual([
         expect.objectContaining({selector: ".site-panel"})
       ]);
     });
@@ -462,7 +452,7 @@ describe("API", () =>
     {
       await addFilter(`|${TEST_PAGES_URL}$csp=img-src 'none'`);
 
-      expect(await callMethod(["filters"], "getUserFilters")).toEqual([
+      expect(await EWE.filters.getUserFilters()).toEqual([
         expect.objectContaining({csp: "img-src 'none'"})
       ]);
     });
@@ -482,14 +472,14 @@ describe("API", () =>
       let fake = await addFakeListener({namespace: "filters",
                                         eventName: "onChanged"});
       await addFilter(VALID_FILTER_TEXT);
-      await callMethod(["filters"], "disable", [VALID_FILTER_TEXT]);
+      await EWE.filters.disable(VALID_FILTER_TEXT);
 
       expect(fake.callCount).toBe(1);
       expect(fake.firstArg).toEqual({...VALID_FILTER, enabled: false});
       expect(fake.lastArg).toEqual("enabled");
 
       // This is a workaround and should be removed once https://gitlab.com/eyeo/webext/webext-sdk/-/issues/122 is fixed.
-      await callMethod(["filters"], "enable", [VALID_FILTER_TEXT]);
+      await EWE.filters.enable(VALID_FILTER_TEXT);
     });
 
     it("listens to onRemoved events", async() =>
@@ -497,7 +487,7 @@ describe("API", () =>
       let fake = await addFakeListener({namespace: "filters",
                                         eventName: "onRemoved"});
       await addFilter(VALID_FILTER_TEXT);
-      await callMethod(["filters"], "remove", [[VALID_FILTER_TEXT]]);
+      await EWE.filters.remove([VALID_FILTER_TEXT]);
 
       expect(fake.callCount).toBe(1);
       expect(fake.firstArg).toEqual(VALID_FILTER);
@@ -516,7 +506,7 @@ describe("API", () =>
         await addFilter(ALLOWING_IMAGE_DOC_FILTER);
 
         let tabId = await new Page("image.html").loaded();
-        expect(await callMethod(["filters"], "getAllowingFilters", [tabId]))
+        expect(await EWE.filters.getAllowingFilters(tabId))
           .toEqual([ALLOWING_IMAGE_DOC_FILTER]);
       });
 
@@ -526,7 +516,7 @@ describe("API", () =>
 
         await addFilter(`|${TEST_PAGES_URL}/image.png^`);
         await addFilter(ALLOWING_IMAGE_DOC_FILTER);
-        expect(await callMethod(["filters"], "getAllowingFilters", [tabId]))
+        expect(await EWE.filters.getAllowingFilters(tabId))
           .toEqual([ALLOWING_IMAGE_DOC_FILTER]);
       });
 
@@ -543,21 +533,21 @@ describe("API", () =>
         await addFilter(ALLOWING_IMAGE_DOC_FILTER);
 
         let {tabId, frameId} = await loadTabWithFrame();
-        expect(await callMethod(["filters"], "getAllowingFilters",
-                                [tabId, {frameId}]))
+        expect(await EWE.filters.getAllowingFilters(
+          tabId, {frameId}))
           .toEqual([ALLOWING_IMAGE_DOC_FILTER]);
-        expect(await callMethod(["filters"], "getAllowingFilters", [tabId]))
+        expect(await EWE.filters.getAllowingFilters([tabId]))
           .toEqual([]);
 
         await addFilter(ALLOWING_IFRAME_DOC_FILTER);
 
         ({tabId, frameId} = await loadTabWithFrame());
-        expect(await callMethod(["filters"], "getAllowingFilters",
-                                [tabId, {frameId}]))
+        expect(await EWE.filters.getAllowingFilters(
+          tabId, {frameId}))
           .toEqual(expect.arrayContaining([ALLOWING_IMAGE_DOC_FILTER,
                                            ALLOWING_IFRAME_DOC_FILTER]));
-        expect(await callMethod(["filters"], "getAllowingFilters", [tabId]))
-          .toEqual([ALLOWING_IFRAME_DOC_FILTER]);
+        expect(await EWE.filters.getAllowingFilters(tabId))
+         .toEqual([ALLOWING_IFRAME_DOC_FILTER]);
       });
 
       it("returns filters for allowlisted parent frames", async() =>
@@ -565,8 +555,8 @@ describe("API", () =>
         let {tabId, frameId} = await loadTabWithFrame();
 
         await addFilter(ALLOWING_IFRAME_DOC_FILTER);
-        expect(await callMethod(["filters"], "getAllowingFilters",
-                                [tabId, {frameId}]))
+        expect(await EWE.filters.getAllowingFilters(
+          tabId, {frameId}))
           .toEqual([ALLOWING_IFRAME_DOC_FILTER]);
       });
 
@@ -580,30 +570,30 @@ describe("API", () =>
 
         let tabId = await new Page("image.html").loaded();
         let opts = {types: ["elemhide"]};
-        expect(await callMethod(["filters"], "getAllowingFilters",
-                                [tabId, opts])).toEqual([filter]);
+        expect(await EWE.filters.getAllowingFilters(
+          tabId, opts)).toEqual([filter]);
       });
 
       it("doesn't return filters for non-allowlisted tabs", async() =>
       {
         let tabId = await new Page("image.html").loaded();
-        expect(await callMethod(["filters"], "getAllowingFilters", [tabId]))
+        expect(await EWE.filters.getAllowingFilters(tabId))
           .toEqual([]);
       });
 
       it("doesn't return filters for non-allowlisted frames", async() =>
       {
         let {tabId, frameId} = await loadTabWithFrame();
-        expect(await callMethod(["filters"], "getAllowingFilters",
-                                [tabId, {frameId}])).toEqual([]);
-        expect(await callMethod(["filters"], "getAllowingFilters", [tabId]))
+        expect(await EWE.filters.getAllowingFilters(
+          tabId, {frameId})).toEqual([]);
+        expect(await EWE.filters.getAllowingFilters([tabId]))
           .toEqual([]);
       });
 
       it("handles empty tabs", async() =>
       {
         let tabId = await new Page("about:blank", true).loaded();
-        expect(await callMethod(["filters"], "getAllowingFilters", [tabId]))
+        expect(await EWE.filters.getAllowingFilters(tabId))
           .toEqual([]);
       });
 
@@ -615,8 +605,8 @@ describe("API", () =>
         await addFilter("@@*$image");
 
         let tabId = await new Page("image.html").loaded();
-        expect(await callMethod(["filters"], "isResourceAllowlisted",
-                                [url, "image", tabId])).toEqual(true);
+        expect(await EWE.filters.isResourceAllowlisted(
+          url, "image", tabId)).toEqual(true);
       });
 
       it("returns whether a frame resource is allowlisted", async() =>
@@ -627,14 +617,10 @@ describe("API", () =>
 
         let {tabId, frameId} = await loadTabWithFrame();
 
-        expect(await callMethod(
-          ["filters"], "isResourceAllowlisted", [url, "document", tabId]
-        )).toEqual(true);
-        expect(await callMethod(
-          ["filters"],
-          "isResourceAllowlisted",
-          [url, "document", tabId, frameId]
-        )).toEqual(true);
+        expect(await EWE.filters.isResourceAllowlisted(
+          url, "document", tabId)).toEqual(true);
+        expect(await EWE.filters.isResourceAllowlisted(
+          url, "document", tabId, frameId)).toEqual(true);
       });
 
       it("returns whether a resource inside a frame is allowlisted", async() =>
@@ -645,12 +631,10 @@ describe("API", () =>
 
         let {tabId, frameId} = await loadTabWithFrame("iframe-resource.html");
 
-        expect(await callMethod(
-          ["filters"], "isResourceAllowlisted", [url, "image", tabId]
-        )).toEqual(false);
-        expect(await callMethod(
-          ["filters"], "isResourceAllowlisted", [url, "image", tabId, frameId]
-        )).toEqual(true);
+        expect(await EWE.filters.isResourceAllowlisted(
+          url, "image", tabId)).toEqual(false);
+        expect(await EWE.filters.isResourceAllowlisted(
+          url, "image", tabId, frameId)).toEqual(true);
       });
     });
   });
@@ -675,7 +659,7 @@ describe("API", () =>
         await browser.runtime.sendMessage(
           {type: "ewe-test:setLanguageAndStart", args: [language]});
 
-        let subs = await callMethod(["subscriptions"], "getDownloadable");
+        let subs = await EWE.subscriptions.getDownloadable();
         let urls = [
           subscriptionUrl,
           "https://easylist-downloads.adblockplus.org/exceptionrules.txt",
@@ -726,10 +710,8 @@ describe("API", () =>
 
     it("exposes a mapping between content types and ResourceTypes", async() =>
     {
-      expect(await callMethod(["reporting", "contentTypesMap"],
-                              "get", ["font"])).toEqual("font");
-      expect(await callMethod(["reporting", "contentTypesMap"],
-                              "get", ["beacon"])).toEqual("ping");
+      expect(await EWE.reporting.contentTypesMap.get("font")).toEqual("font");
+      expect(await EWE.reporting.contentTypesMap.get("beacon")).toEqual("ping");
     });
 
     describe("Analytics", () =>
@@ -739,11 +721,11 @@ describe("API", () =>
         let today = new Date().toISOString().substring(0, 10).replace(/-/g, "");
 
         await wait(
-          async() => await callMethod(["reporting"], "getFirstVersion") != "0",
+          async() => await EWE.reporting.getFirstVersion() != "0",
           1000,
           "No resource has been downloaded yet."
         );
-        expect(await callMethod(["reporting"], "getFirstVersion")).toBe(today);
+        expect(await EWE.reporting.getFirstVersion()).toBe(today);
       });
     });
 
@@ -765,7 +747,7 @@ describe("API", () =>
         }
         finally
         {
-          await callMethod(["filters"], "remove", [[filter.text]]);
+          await EWE.filters.remove([filter.text]);
         }
 
         await wait(() => fake.called, 100, "Fake was not called");
@@ -1218,17 +1200,16 @@ describe("API", () =>
       {
         let notification = {id: "test"};
 
-        await callMethod(["notifications"], "start");
-        await callMethod(["notifications"], "addNotification", [notification]);
+        await EWE.notifications.start();
+        await EWE.notifications.addNotification(notification);
 
         let fake = await addFakeListener({namespace: "notifications",
                                           method: "addShowListener",
                                           removeMethod: "removeShowListener"});
-        await callMethod(["notifications"], "showNext");
-        await callMethod(["notifications"], "removeNotification",
-                         [notification]);
+        await EWE.notifications.showNext();
+        await EWE.notifications.removeNotification(notification);
 
-        await callMethod(["notifications"], "stop");
+        await EWE.notifications.stop();
 
         expect(fake.callCount).toBe(1);
         expect(fake.firstArg).toEqual(notification);
@@ -1259,18 +1240,18 @@ describe("API", () =>
 
     it("highlights an element", async() =>
     {
-      await callMethod(["debugging"], "setElementHidingDebugMode", [true]);
+      await EWE.debugging.setElementHidingDebugMode(true);
       await addFilter("###elem-hide");
       let style = await waitForHighlightedStyle();
-      await callMethod(["debugging"], "setElementHidingDebugMode", [false]);
+      await EWE.debugging.setElementHidingDebugMode(false);
 
       expect(style).toBe("rgb(230, 115, 112)");
     });
 
     it("doesn't highlight an element when disabled", async() =>
     {
-      await callMethod(["debugging"], "setElementHidingDebugMode", [true]);
-      await callMethod(["debugging"], "setElementHidingDebugMode", [false]);
+      await EWE.debugging.setElementHidingDebugMode(true);
+      await EWE.debugging.setElementHidingDebugMode(false);
       await addFilter("###elem-hide");
       let tabId = await new Page("element-hiding.html").loaded();
       let style = await executeScript(tabId, getBackgroundColor);
@@ -1280,12 +1261,11 @@ describe("API", () =>
 
     it("highlights an element with a custom style", async() =>
     {
-      await callMethod(["debugging"], "setElementHidingDebugMode", [true]);
-      await callMethod(["debugging"], "setElementHidingDebugStyle",
-                       [[["background", "pink"]]]);
+      await EWE.debugging.setElementHidingDebugMode(true);
+      await EWE.debugging.setElementHidingDebugStyle([["background", "pink"]]);
       await addFilter("###elem-hide");
       let style = await waitForHighlightedStyle();
-      await callMethod(["debugging"], "setElementHidingDebugMode", [false]);
+      await EWE.debugging.setElementHidingDebugMode(false);
 
       expect(style).toBe("rgb(255, 192, 203)");
     });

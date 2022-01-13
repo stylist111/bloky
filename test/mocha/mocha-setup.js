@@ -19,7 +19,7 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 
 import {TEST_PAGES_URL} from "../utils.js";
-import {callMethod, runInBackgroundPage, removeFakeListeners, addFilter}
+import {addFilter, EWE, runInBackgroundPage, removeFakeListeners}
   from "../messaging.js";
 
 const RESTORE_SUBSCRIPTIONS_TEST = "restoreSubscriptionsTest";
@@ -63,9 +63,9 @@ after(async function()
     {op: "callMethod", arg: "restoreSubscriptions"}
   ]);
 
-  expect(await callMethod(["filters"], "getUserFilters"))
+  expect(await EWE.filters.getUserFilters())
     .toEqual([expect.objectContaining({text: RESTORE_SUBSCRIPTIONS_TEST})]);
-  await callMethod(["filters"], "remove", [[RESTORE_SUBSCRIPTIONS_TEST]]);
+  await EWE.filters.remove([RESTORE_SUBSCRIPTIONS_TEST]);
 });
 
 beforeEach(function()
@@ -83,6 +83,6 @@ beforeEach(function()
 
 afterEach(async() =>
 {
-  await callMethod(["subscriptions"], "removeAll");
+  await EWE.subscriptions.removeAll();
   await removeFakeListeners();
 });

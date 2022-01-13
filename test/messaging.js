@@ -41,20 +41,36 @@ export async function makeCallbackInBackgroundPage(callback)
   return id;
 }
 
-export function callMethod(namespace, method, args = [])
+function proxy(namespace)
 {
-  return runInBackgroundPage([
-    {op: "getGlobal", arg: "EWE"},
-    ...namespace.map(arg => ({op: "getProp", arg})),
-    ...args.map(arg => ({op: "pushArg", arg})),
-    {op: "callMethod", arg: method},
-    {op: "await"}
-  ]);
+  return new Proxy(Object.create(null), {
+    get(target, property)
+    {
+      if (property in target)
+        return target[property];
+
+      return (...args) => runInBackgroundPage([
+        {op: "getGlobal", arg: "EWE"},
+        ...namespace.map(arg => ({op: "getProp", arg})),
+        ...args.map(arg => ({op: "pushArg", arg})),
+        {op: "callMethod", arg: property},
+        {op: "await"}
+      ]);
+    }
+  });
 }
+
+export const EWE = Object.fromEntries([
+  "subscriptions",
+  "filters",
+  "notifications",
+  "debugging",
+  "reporting"].map(name => [name, proxy([name])]));
+EWE.reporting.contentTypesMap = proxy(["reporting", "contentTypesMap"]);
 
 export function addFilter(text)
 {
-  return callMethod(["filters"], "add", [[text]]);
+  return EWE.filters.add([text]);
 }
 
 let removalOperations = [];

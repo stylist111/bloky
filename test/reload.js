@@ -19,7 +19,7 @@ import expect from "expect";
 import browser from "webextension-polyfill";
 
 import {Page, wait} from "./utils.js";
-import {addFilter, callMethod, runInBackgroundPage}
+import {addFilter, EWE, runInBackgroundPage}
   from "./messaging.js";
 
 const CONTENT_FILTER_TEXT = "reload###test";
@@ -63,8 +63,7 @@ describe(`Reload (${phase})`, function()
       await addFilter(CONTENT_FILTER_TEXT);
       await wait(async() =>
       {
-        return await callMethod(["debugging"], "isInFilterStorage",
-                                [CONTENT_FILTER_TEXT]);
+        return await EWE.debugging.isInFilterStorage(CONTENT_FILTER_TEXT);
       }, 2000, "The added filter didn't reach storage");
 
       return;
@@ -72,12 +71,12 @@ describe(`Reload (${phase})`, function()
 
     try
     {
-      expect(await callMethod(["filters"], "getUserFilters"))
+      expect(await EWE.filters.getUserFilters())
         .toEqual(expect.arrayContaining([CONTENT_FILTER]));
     }
     finally
     {
-      await callMethod(["filters"], "remove", [[CONTENT_FILTER_TEXT]]);
+      await EWE.filters.remove([CONTENT_FILTER_TEXT]);
     }
   });
 
@@ -90,8 +89,7 @@ describe(`Reload (${phase})`, function()
       {
         await wait(async() =>
         {
-          return await callMethod(["debugging"], "isInFilterStorage",
-                                  [IMAGE_FILTER_TEXT]);
+          return await EWE.debugging.isInFilterStorage(IMAGE_FILTER_TEXT);
         }, 2000, "The added filter didn't reach storage");
       }
 
@@ -104,7 +102,7 @@ describe(`Reload (${phase})`, function()
     }
     finally
     {
-      await callMethod(["filters"], "remove", [[IMAGE_FILTER_TEXT]]);
+      await EWE.filters.remove([IMAGE_FILTER_TEXT]);
     }
   });
 
@@ -117,8 +115,7 @@ describe(`Reload (${phase})`, function()
       {
         await wait(async() =>
         {
-          return await callMethod(["debugging"], "isInFilterStorage",
-                                  [BLOCKING_FILTER_TEXT]);
+          return await EWE.debugging.isInFilterStorage(BLOCKING_FILTER_TEXT);
         }, 2000, "The added filter didn't reach storage");
       }
 
@@ -127,7 +124,7 @@ describe(`Reload (${phase})`, function()
 
     try
     {
-      expect(await callMethod(["filters"], "getUserFilters")).toEqual(
+      expect(await EWE.filters.getUserFilters()).toEqual(
         expect.arrayContaining([
           expect.objectContaining({text: BLOCKING_FILTER_TEXT})
         ])
@@ -138,8 +135,7 @@ describe(`Reload (${phase})`, function()
     }
     finally
     {
-      await callMethod(["filters"], "remove",
-                       [[BLOCKING_FILTER_TEXT, IMAGE_FILTER_TEXT]]);
+      await EWE.filters.remove([BLOCKING_FILTER_TEXT, IMAGE_FILTER_TEXT]);
     }
   });
 });
