@@ -404,3 +404,12 @@ export function firefoxVersion()
 {
   return navigator.userAgent.split("Firefox/")[1];
 }
+
+export function getVisibleElement(tabId, elemId)
+{
+  return executeScript(tabId, id =>
+  {
+    let el = document.getElementById(id);
+    return el.offsetParent ? el.outerHTML : null;
+  }, [elemId]);
+}

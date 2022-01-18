@@ -19,7 +19,8 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 
 import {Page, Popup, setMinTimeout, wait, executeScript, TEST_PAGES_URL,
-        TEST_PAGES_DOMAIN, isFirefox, firefoxVersion} from "./utils.js";
+        TEST_PAGES_DOMAIN, isFirefox, firefoxVersion, getVisibleElement}
+  from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, addFakeListener,
         removeFakeListeners, setTestSnippets}
   from "./messaging.js";
@@ -1185,6 +1186,75 @@ describe("API", () =>
             request: expectedRequestRelativeUrl("element-hiding.html")
           }],
           false
+        );
+      });
+
+      it("logs element hiding filter dynamically", async function()
+      {
+        setMinTimeout(this, 3000);
+
+        let text = `${TEST_PAGES_DOMAIN}###element-hiding-dyn`;
+        await checkLogging(
+          [text],
+          elemhideEventOptions,
+          async() =>
+          {
+            let tabId = await new Page("image.html").loaded();
+            await executeScript(tabId, async() =>
+            {
+              let div = document.createElement("div");
+              div.id = "element-hiding-dyn";
+              div.style = "display: block !important;";
+              div.innerHTML = "Target";
+              document.body.appendChild(div);
+            });
+            await wait(
+              async() =>
+                await getVisibleElement(tabId, "element-hiding-dyn") == null,
+              200,
+              "Element is not visible"
+            );
+            await new Promise(r => setTimeout(r, 1500));
+            return tabId;
+          },
+          [{
+            filter: expectedElemhideFilter(text),
+            matchInfo: elemhideMatchInfo,
+            request: expectedRequestRelativeUrl("image.html")
+          }]
+        );
+      });
+
+      it("logs element hiding emulation filter", async function()
+      {
+        setMinTimeout(this, 5000);
+
+        let text = TEST_PAGES_DOMAIN +
+          "#?#.child1:-abp-properties(background-color: blue)";
+        await checkLogging(
+          [text],
+          elemhideEventOptions,
+          async() =>
+          {
+            let tabId = await new Page("element-hiding.html").loaded();
+            await executeScript(tabId, async() =>
+            {
+              document.getElementById("unhide1").parentElement.className = "";
+            });
+            await wait(
+              async() => await getVisibleElement(tabId, "unhide1") != null,
+              4000, "Element is not visible"
+            );
+            return tabId;
+          },
+          [{
+            filter: {
+              ...expectedElemhideFilter(text),
+              type: "elemhideemulation"
+            },
+            matchInfo: elemhideMatchInfo,
+            request: expectedRequestRelativeUrl("element-hiding.html")
+          }]
         );
       });
 

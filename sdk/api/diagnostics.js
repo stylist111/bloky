@@ -36,8 +36,12 @@ export class BlockableEventDispatcher
   /**
   * @typedef {Object} BlockableEventOptions
   * @param {boolean} [includeElementHiding=false]
-  *   Whether or not effective element hiding filters should also be emitted.
-  *   Note that this will enable element hiding tracing which degrades
+  *   Whether or not element hiding filters accounting for dynamic DOM changes
+  *   should also be emitted. This event is emitted after the page has been
+  *   fully loaded, and the element hiding filters have been applied. The
+  *   expected delay between the filter being applied and the event being
+  *   emitted is around two seconds.
+  *   Note that this will enable element hiding tracing, which degrades
   *   performance and should only be used to enable ad-hoc diagnostics.
   * @param {boolean} [includeUnmatched=false]
   *   Whether or not unmatched requests should also be emitted.

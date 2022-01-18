@@ -18,60 +18,51 @@
 import expect from "expect";
 
 import {Page, waitForInvisibleElement, executeScript, setMinTimeout, wait,
-        TEST_PAGES_DOMAIN, TEST_PAGES_URL} from "./utils.js";
+        getVisibleElement, TEST_PAGES_DOMAIN, TEST_PAGES_URL} from "./utils.js";
 import {addFilter, EWE, setTestSnippets} from "./messaging.js";
 
 describe("Element Hiding", () =>
 {
-  function getHTML(tabId, elemId)
-  {
-    return executeScript(tabId, id =>
-    {
-      let el = document.getElementById(id);
-      return el.offsetParent ? el.outerHTML : null;
-    }, [elemId]);
-  }
-
-  async function getVisibleElement(id)
+  async function getElemHideElement(id)
   {
     let tabId = await new Page("element-hiding.html").loaded();
     // hiding elements may take a few ms on CI
     await new Promise(r => setTimeout(r, 200));
-    return await getHTML(tabId, id);
+    return await getVisibleElement(tabId, id);
   }
 
   it("hides an element", async() =>
   {
     await addFilter("###elem-hide");
-    expect(await getVisibleElement("elem-hide")).toBeNull();
+    expect(await getElemHideElement("elem-hide")).toBeNull();
   });
 
   it("hides an element after service worker is suspended", async() =>
   {
     await addFilter("###elem-hide");
     await EWE.debugging.initializerStop();
-    expect(await getVisibleElement("elem-hide")).toBeNull();
+    expect(await getElemHideElement("elem-hide")).toBeNull();
   });
 
   it("does not hide an allowlisted element", async() =>
   {
     await addFilter("###elem-hide");
     await addFilter("#@##elem-hide");
-    expect(await getVisibleElement("elem-hide")).not.toBeNull();
+    expect(await getElemHideElement("elem-hide")).not.toBeNull();
   });
 
   it("does not hide elements in allowlisted document", async() =>
   {
     await addFilter("###elem-hide");
     await addFilter(`@@|${TEST_PAGES_URL}/*.html$document`);
-    expect(await getVisibleElement("elem-hide")).not.toBeNull();
+    expect(await getElemHideElement("elem-hide")).not.toBeNull();
   });
 
   it("does not hide elements in document allowlisted by $elemhide", async() =>
   {
     await addFilter("###elem-hide");
     await addFilter(`@@|${TEST_PAGES_URL}/*.html$elemhide`);
-    expect(await getVisibleElement("elem-hide")).not.toBeNull();
+    expect(await getElemHideElement("elem-hide")).not.toBeNull();
   });
 
   it("does not hide elements through generic filter " +
@@ -83,8 +74,8 @@ describe("Element Hiding", () =>
 
     let tabId = await new Page("element-hiding.html").loaded();
     await new Promise(r => setTimeout(r, 200));
-    expect(await getHTML(tabId, "elem-hide")).not.toBeNull();
-    expect(await getHTML(tabId, "elem-hide-specific")).toBeNull();
+    expect(await getVisibleElement(tabId, "elem-hide")).not.toBeNull();
+    expect(await getVisibleElement(tabId, "elem-hide-specific")).toBeNull();
   });
 
   describe("Element Hiding Emulation", async() =>
@@ -93,7 +84,7 @@ describe("Element Hiding", () =>
     {
       await addFilter(
         `${TEST_PAGES_DOMAIN}#?#div:-abp-properties(background-color: red)`);
-      expect(await getVisibleElement("elem-hide-emulation-props")).toBeNull();
+      expect(await getElemHideElement("elem-hide-emulation-props")).toBeNull();
     });
 
     it("hides abp-properties elements after unhide", async function()
@@ -109,8 +100,8 @@ describe("Element Hiding", () =>
 
       let tabId = await new Page("element-hiding.html").loaded();
       await new Promise(r => setTimeout(r, 200));
-      let elem1 = await getHTML(tabId, "unhide1");
-      let elem2 = await getHTML(tabId, "unhide2");
+      let elem1 = await getVisibleElement(tabId, "unhide1");
+      let elem2 = await getVisibleElement(tabId, "unhide2");
       expect(elem1).toBeNull();
       expect(elem2).toBeNull();
 
@@ -121,8 +112,8 @@ describe("Element Hiding", () =>
       });
       await wait(async() =>
       {
-        elem1 = await getHTML(tabId, "unhide1");
-        elem2 = await getHTML(tabId, "unhide2");
+        elem1 = await getVisibleElement(tabId, "unhide1");
+        elem2 = await getVisibleElement(tabId, "unhide2");
         return elem1 != null && elem2 != null;
       }, 4000, "Element is not visible");
       expect(elem1).toContain("unhide1");
@@ -135,8 +126,8 @@ describe("Element Hiding", () =>
       });
       await wait(async() =>
       {
-        elem1 = await getHTML(tabId, "unhide1");
-        elem2 = await getHTML(tabId, "unhide2");
+        elem1 = await getVisibleElement(tabId, "unhide1");
+        elem2 = await getVisibleElement(tabId, "unhide2");
         return elem1 == null && elem2 == null;
       }, 4000, "Element is visible");
     });
@@ -145,14 +136,15 @@ describe("Element Hiding", () =>
     {
       await addFilter(
         `${TEST_PAGES_DOMAIN}#?#div:-abp-has(>span#elem-hide-emulation-has)`);
-      expect(await getVisibleElement("elem-hide-emulation-has")).toBeNull();
+      expect(await getElemHideElement("elem-hide-emulation-has")).toBeNull();
     });
 
     it("hides abp-contains elements", async() =>
     {
       await addFilter(`${TEST_PAGES_DOMAIN}#?#span` +
         ":-abp-contains(elem-hide-emulation-contain-target)");
-      expect(await getVisibleElement("elem-hide-emulation-contain")).toBeNull();
+      expect(await getElemHideElement("elem-hide-emulation-contain"))
+        .toBeNull();
     });
   });
 
