@@ -66,6 +66,14 @@ describe("Blocking", () =>
     await page.expectResource("image.png").toBeLoaded();
   });
 
+  it("does not block a request from iframe allowlisted by sitekey", async() =>
+  {
+    await addFilter("/image.png^$image");
+    await addFilter(`@@$document,sitekey=${SITEKEY}`);
+    let page = new Page("iframe-sitekey.html");
+    await page.expectResource("image.png").toBeLoaded();
+  });
+
   it("handles rewritten srcdoc frames", async() =>
   {
     await addFilter(`|${TEST_PAGES_URL}/image.png^`);
