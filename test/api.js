@@ -18,8 +18,8 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 
-import {Page, Popup, setMinTimeout, waitForInvisibleElement, wait,
-        executeScript, TEST_PAGES_URL, TEST_PAGES_DOMAIN} from "./utils.js";
+import {Page, Popup, setMinTimeout, wait, executeScript, TEST_PAGES_URL,
+        TEST_PAGES_DOMAIN, isFirefox, firefoxVersion} from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, addFakeListener,
         removeFakeListeners, setTestSnippets}
   from "./messaging.js";
@@ -43,12 +43,6 @@ const INVALID_FILTER_TEXT = "/foo/$rewrite=";
 
 describe("API", () =>
 {
-  afterEach(() =>
-  {
-    Page.removeCurrent();
-    Popup.removeCurrent();
-  });
-
   describe("Subscriptions", () =>
   {
     it("adds a subscription", async() =>
@@ -701,12 +695,10 @@ describe("API", () =>
 
   describe("Reporting", () =>
   {
-    let allowingItems = {includeElementHiding: false,
-                         includeUnmatched: false,
-                         filterType: "allowing"};
-    let allItemsWithoutEH = {includeElementHiding: false,
-                             includeUnmatched: true,
-                             filterType: "all"};
+    let defaultEventOptions = {};
+    let allowingEventOptions = {filterType: "allowing"};
+    let elemhideEventOptions = {includeElementHiding: true};
+    let unmatchedEventOptions = {includeUnmatched: true, filterType: "all"};
 
     it("exposes a mapping between content types and ResourceTypes", async() =>
     {
@@ -732,63 +724,186 @@ describe("API", () =>
 
     describe("Diagnostics", () =>
     {
-      async function checkLogging(filter, callback, eventOptions,
-                                  matchInfo = {}, checkUrl = true)
+      expect.extend({
+        anyNullable(received, type)
+        {
+          return {
+            pass: received == null || typeof received == type
+          };
+        }
+      });
+
+      function expectedBlockingFilter(filterText)
       {
-        let fake = await addFakeListener({namespace: "reporting",
-                                          eventName: "onBlockableItem",
-                                          eventOptions});
+        return {
+          text: filterText,
+          enabled: true,
+          slow: expect.any(Boolean),
+          type: "blocking",
+          thirdParty: expect.anyNullable("boolean"),
+          selector: null,
+          csp: expect.anyNullable("string")
+        };
+      }
 
-        await addFilter(filter.text);
+      function expectedAllowingFilter(filterText)
+      {
+        return {
+          text: filterText,
+          enabled: true,
+          slow: expect.any(Boolean),
+          type: "allowing",
+          thirdParty: expect.anyNullable("boolean"),
+          selector: null
+        };
+      }
 
-        try
-        {
-          await callback();
-        }
-        finally
-        {
-          await EWE.filters.remove([filter.text]);
-        }
+      function expectedElemhideFilter(filterText)
+      {
+        return {
+          text: filterText,
+          enabled: true,
+          slow: false,
+          type: "elemhide",
+          selector: expect.any(String)
+        };
+      }
 
-        await wait(() => fake.called, 100, "Fake was not called");
+      let requestMatchInfo = {
+        docDomain: TEST_PAGES_DOMAIN,
+        method: "request",
+        specificOnly: false
+      };
 
-        if (checkUrl)
-        {
-          expect(fake.firstArg.request).toEqual(
-            expect.objectContaining({url: expect.any(String)})
-          );
-        }
+      let allowingMatchInfo = {
+        docDomain: TEST_PAGES_DOMAIN,
+        method: "allowing"
+      };
 
-        expect(fake.firstArg).toEqual({
-          request: expect.objectContaining({
-            tabId: expect.any(Number),
-            frameId: expect.any(Number)
-          }),
-          filter: expect.objectContaining(filter),
-          matchInfo: expect.objectContaining({
-            docDomain: "localhost",
-            ...matchInfo
-          })
+      let headerMatchInfo = {
+        docDomain: TEST_PAGES_DOMAIN,
+        method: "header",
+        specificOnly: false
+      };
+
+      let cspMatchInfo = {
+        docDomain: TEST_PAGES_DOMAIN,
+        method: "csp",
+        specificOnly: false
+      };
+
+      let elemhideMatchInfo = {
+        docDomain: TEST_PAGES_DOMAIN,
+        method: "elemhide"
+      };
+
+      let popupMatchInfo = {
+        docDomain: TEST_PAGES_DOMAIN,
+        method: "popup",
+        specificOnly: false
+      };
+
+      function expectRewriteMatchInfo(rewrittenUrl)
+      {
+        return {
+          rewrittenUrl,
+          ...requestMatchInfo
+        };
+      }
+
+      function expectedRequestUrl(url)
+      {
+        return expect.objectContaining({
+          url,
+          frameId: expect.any(Number),
+          tabId: expect.any(Number)
         });
       }
 
-      function checkRequestLogging(page, filter, matchInfo, eventOptions)
+      function expectedRequestRelativeUrl(relativeUrl)
       {
-        return checkLogging(filter, () => new Page(page).loaded(),
-                            eventOptions, matchInfo);
+        return expectedRequestUrl(`${TEST_PAGES_URL}/${relativeUrl}`);
       }
 
-      async function checkUnmatchedLogging(callback, requests, eventOptions)
+      async function expectLoggedMessages(getReceivedEvents, requests)
       {
+        // Some of the events we're checking for here may be emitted
+        // after the page is done loading, like elemhide.
+        try
+        {
+          await wait(() => getReceivedEvents().length == requests.length, 1000);
+        }
+        catch (e)
+        {
+          // Rather than fail in the catch, we're going to fail with
+          // the assertions below. This will give better output.
+        }
+
+        let receivedEvents = getReceivedEvents();
+        expect(receivedEvents).toHaveLength(requests.length);
+        expect(receivedEvents).toEqual(expect.arrayContaining(requests));
+      }
+
+      function getReceivedEventsFromFake(fake, tabId, filterToCurrentTab)
+      {
+        return fake.args
+            .map(args => args[0])
+            .filter(event =>
+            {
+              // Some legitimate events make it difficult to write
+              // reliable tests. It's easier to just filter out these
+              // requests, and assert based on requests on the test
+              // pages themselves.
+              let url = event.request.url;
+              let isFavicon = url && url.endsWith("/favicon.ico");
+              if (isFavicon)
+                return false;
+
+              // Header filtering may be hit multiple times if the
+              // resource is cached. This is legitimate because the
+              // headers for the 304 response from the server, and the
+              // 200 response from the brower may be different. We
+              // still want to let through 304 results that ended in
+              // blocking, since they don't continue after that.
+              let isCachedResponse = event.request.statusCode == 304;
+              let isBlocking = event.filter && event.filter.type == "blocking";
+              let isCachedNonBlocking = isCachedResponse && !isBlocking;
+              if (isCachedNonBlocking)
+                return false;
+
+              // Some tests ran into issues with previous other tabs
+              // being open, resulting in unexpected events. We filter
+              // here rather than in eventOptions because we want to
+              // capture all events for the tab, and don't know the
+              // tabId to filter on until after we've opened it.
+              let isCurrentTab = event.request.tabId == tabId;
+              let isIrrelevantTab = filterToCurrentTab && !isCurrentTab;
+              if (isIrrelevantTab)
+                return false;
+
+              return true;
+            });
+      }
+
+      async function checkLogging(filters, eventOptions, callbackOrPage,
+                                  expectedLogs, filterToCurrentTab = true)
+      {
+        let callback = callbackOrPage;
+        if (typeof callbackOrPage == "string")
+          callback = () => new Page(callbackOrPage).loaded();
+
         let fake = await addFakeListener({namespace: "reporting",
                                           eventName: "onBlockableItem",
                                           eventOptions});
 
-        await callback();
-        expect(fake.called).toBeTruthy();
+        if (filters)
+          await EWE.filters.add(filters);
 
-        let firstArgs = fake.args.map(args => args[0]);
-        expect(firstArgs).toEqual(expect.arrayContaining(requests));
+        let tabId = await callback();
+        let getReceivedEvents =
+            () => getReceivedEventsFromFake(fake, tabId, filterToCurrentTab);
+
+        await expectLoggedMessages(getReceivedEvents, expectedLogs);
       }
 
       it("it does not log removed items", async() =>
@@ -803,115 +918,194 @@ describe("API", () =>
 
         let {callCount} = fake;
         await removeFakeListeners();
-        await new Page("image.html").loaded();
+        await page.reload();
         expect(fake.callCount).toEqual(callCount);
       });
 
       it("logs blocking request filter", async() =>
       {
-        await checkRequestLogging("image.html", {
-          text: "/image.png^$image",
-          slow: false,
-          enabled: true,
-          type: "blocking",
-          thirdParty: null
-        }, {method: "request"});
+        await checkLogging(
+          ["/image.png^$image"],
+          defaultEventOptions,
+          "image.html",
+          [{
+            filter: expectedBlockingFilter("/image.png^$image"),
+            matchInfo: requestMatchInfo,
+            request: expectedRequestRelativeUrl("image.png")
+          }]);
       });
 
       it("logs third-party requests", async() =>
       {
-        await checkRequestLogging("third-party.html", {
-          text: "/image.png$third-party",
-          thirdParty: true
-        });
+        await checkLogging(
+          ["/image.png$third-party"],
+          defaultEventOptions,
+          "third-party.html",
+          [{
+            filter: expectedBlockingFilter("/image.png$third-party"),
+            matchInfo: requestMatchInfo,
+            request: expectedRequestUrl("http://127.0.0.1:3000/image.png")
+          }]
+        );
       });
 
       it("logs allowlisting request filter", async() =>
       {
-        await addFilter("/image.png^$image");
-        await checkRequestLogging("image.html", {
-          text: `@@|${TEST_PAGES_URL}$image`,
-          type: "allowing"
-        }, {
-          specificOnly: false,
-          method: "header"
-        }, allowingItems);
+        await checkLogging(
+          ["/image.png^$image", `@@|${TEST_PAGES_URL}$image`],
+          allowingEventOptions,
+          "image.html",
+          [{
+            filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}$image`),
+            matchInfo: requestMatchInfo,
+            request: expectedRequestRelativeUrl("image.png")
+          }, {
+            filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}$image`),
+            matchInfo: headerMatchInfo,
+            request: expectedRequestRelativeUrl("image.png")
+          }]
+        );
       });
 
       it("logs rewrite filter", async() =>
       {
-        await checkRequestLogging(
+        await checkLogging(
+          ["*.js$rewrite=abp-resource:blank-js,domain=localhost"],
+          defaultEventOptions,
           "script.html",
-          {text: "*.js$rewrite=abp-resource:blank-js,domain=localhost"},
-          {
-            rewrittenUrl: "data:application/javascript,",
-            specificOnly: false
-          });
+          [{
+            filter: expectedBlockingFilter(
+              "*.js$rewrite=abp-resource:blank-js,domain=localhost"
+            ),
+            matchInfo: expectRewriteMatchInfo("data:application/javascript,"),
+            request: expectedRequestRelativeUrl("script.js")
+          }]);
       });
 
       it("logs blocking $header filter", async() =>
       {
-        await checkRequestLogging(
+        await checkLogging(
+          [`|${TEST_PAGES_URL}$header=x-header=whatever`],
+          defaultEventOptions,
           "header.html",
-          {text: `|${TEST_PAGES_URL}$header=x-header=whatever`},
-          {method: "header"});
+          [{
+            filter: expectedBlockingFilter(
+              `|${TEST_PAGES_URL}$header=x-header=whatever`
+            ),
+            matchInfo: headerMatchInfo,
+            request: expectedRequestRelativeUrl(
+              "image.png?header-name=x-header&header-value=whatever"
+            )
+          }]);
       });
 
       it("logs allowlisting $header filter", async() =>
       {
-        await addFilter(`|${TEST_PAGES_URL}$header=x-header=whatever`);
-        await checkRequestLogging("header.html",
-                                  {text: `@@|${TEST_PAGES_URL}$header`}, null,
-                                  allowingItems);
+        await checkLogging(
+          [
+            `|${TEST_PAGES_URL}$header=x-header=whatever`,
+            `@@|${TEST_PAGES_URL}$header`
+          ],
+          allowingEventOptions,
+          "header.html",
+          [{
+            filter: expectedAllowingFilter(
+              `@@|${TEST_PAGES_URL}$header`
+            ),
+            matchInfo: headerMatchInfo,
+            request: expectedRequestRelativeUrl(
+              "image.png?header-name=x-header&header-value=whatever"
+            )
+          }]);
       });
 
       it("logs blocking $csp filter", async() =>
       {
-        await checkRequestLogging(
+        await checkLogging(
+          [`|${TEST_PAGES_URL}$csp=img-src 'none'`],
+          defaultEventOptions,
           "csp.html",
-          {text: `|${TEST_PAGES_URL}$csp=img-src 'none'`},
-          {method: "csp"});
+          [{
+            filter: expectedBlockingFilter(
+              `|${TEST_PAGES_URL}$csp=img-src 'none'`
+            ),
+            matchInfo: cspMatchInfo,
+            request: expectedRequestRelativeUrl("csp.html")
+          }]);
       });
 
       it("logs allowlisting $csp filter", async() =>
       {
-        await addFilter(`|${TEST_PAGES_URL}$csp=img-src 'none'`);
-        await checkRequestLogging("csp.html",
-                                  {text: `@@|${TEST_PAGES_URL}$csp`},
-                                  {method: "csp"},
-                                  allowingItems);
+        await checkLogging(
+          [`|${TEST_PAGES_URL}$csp=img-src 'none'`, `@@|${TEST_PAGES_URL}$csp`],
+          allowingEventOptions,
+          "csp.html",
+          [{
+            filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}$csp`),
+            matchInfo: cspMatchInfo,
+            request: expectedRequestRelativeUrl("csp.html")
+          }]);
       });
 
       for (let option of ["$document", "$elemhide",
                           "$genericblock", "$generichide"])
       {
-        it(`logs allowlisting ${option} filter`, () => checkRequestLogging(
+        it(`logs allowlisting ${option} filter`, () => checkLogging(
+          [`@@|${TEST_PAGES_URL}${option}`],
+          allowingEventOptions,
           "image.html",
-          {text: `@@|${TEST_PAGES_URL}${option}`},
-          {method: "allowing", allowingReason: option.substring(1)},
-          allowingItems
+          [{
+            filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}${option}`),
+            matchInfo: {
+              ...allowingMatchInfo,
+              allowingReason: option.substring(1)
+            },
+            request: expectedRequestRelativeUrl("image.html")
+          }]
         ));
       }
 
       it("logs allowlisting for different domain iframe", async() =>
       {
+        let expectedEvents = [{
+          filter: expectedAllowingFilter(
+            `@@|${TEST_PAGES_URL}/image.html^$document`
+          ),
+          matchInfo: {
+            ...allowingMatchInfo,
+            docDomain: "127.0.0.1",
+            allowingReason: "document"
+          },
+          request: expectedRequestRelativeUrl("image.html")
+        }];
+        if (isFirefox() && firefoxVersion() >= "97.0")
+        {
+          // Duplicated event in Firefox
+          // see https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/150
+          // and https://bugzilla.mozilla.org/show_bug.cgi?id=1750196
+          expectedEvents.push(expectedEvents[0]);
+        }
+
         let url = "http://127.0.0.1:3000/iframe.html";
-        await checkLogging({text: `@@|${TEST_PAGES_URL}/image.html^$document`},
-                           () => new Page(url, true).loaded(),
-                           allowingItems,
-                           {method: "allowing",
-                            docDomain: "127.0.0.1"});
+        await checkLogging(
+          [`@@|${TEST_PAGES_URL}/image.html^$document`],
+          allowingEventOptions,
+          () => new Page(url, true).loaded(),
+          expectedEvents
+        );
       });
 
       it("logs element hiding filter", async() =>
       {
-        await checkLogging({text: "###elem-hide"}, async() =>
-        {
-          let tabId = await new Page("element-hiding.html").loaded();
-          await waitForInvisibleElement(tabId, "elem-hide");
-        }, {includeElementHiding: true,
-            includeUnmatched: false,
-            filterType: "all"}, {method: "elemhide"}
+        await checkLogging(
+          ["###elem-hide"],
+          elemhideEventOptions,
+          "element-hiding.html",
+          [{
+            filter: expectedElemhideFilter("###elem-hide"),
+            matchInfo: elemhideMatchInfo,
+            request: expectedRequestRelativeUrl("element-hiding.html")
+          }]
         );
       });
 
@@ -919,67 +1113,42 @@ describe("API", () =>
       {
         let page = new Page("element-hiding.html");
         let tabId = await page.created;
-
-        await checkLogging({text: "###elem-hide"}, async() =>
-        {
-          await page.loaded();
-          await waitForInvisibleElement(tabId, "elem-hide");
-        }, {includeElementHiding: true,
-            includeUnmatched: false,
-            filterType: "all",
-            tabId}, {method: "elemhide"}
+        await checkLogging(
+          ["###elem-hide"],
+          {
+            tabId,
+            ...elemhideEventOptions
+          },
+          () => page.loaded(),
+          [{
+            filter: expectedElemhideFilter("###elem-hide"),
+            matchInfo: elemhideMatchInfo,
+            request: expectedRequestRelativeUrl("element-hiding.html")
+          }],
+          false
         );
       });
 
-      let allItemsRequests = [{
-        request: expect.objectContaining({
-          tabId: expect.any(Number),
-          frameId: expect.any(Number),
-          url: `${TEST_PAGES_URL}/element-hiding.html`,
-          type: "main_frame"
-        }),
-        filter: null,
-        matchInfo: expect.objectContaining({
-          docDomain: TEST_PAGES_DOMAIN,
-          method: "csp"
-        })
-      }, {
-        request: expect.objectContaining({
-          tabId: expect.any(Number),
-          frameId: expect.any(Number),
-          url: `${TEST_PAGES_URL}/image.png`,
-          type: "image"
-        }),
-        filter: expect.objectContaining({text: VALID_FILTER_TEXT}),
-        matchInfo: expect.objectContaining({
-          docDomain: TEST_PAGES_DOMAIN,
-          method: "request"
-        })
-      }, {
-        request: expect.objectContaining({
-          tabId: expect.any(Number),
-          frameId: expect.any(Number),
-          url: `${TEST_PAGES_URL}/element-hiding.html`
-        }),
-        filter: expect.objectContaining({text: "###elem-hide"}),
-        matchInfo: expect.objectContaining({
-          docDomain: TEST_PAGES_DOMAIN,
-          method: "elemhide"
-        })
-      }];
-
       it("logs all items", async() =>
       {
-        await addFilter("###elem-hide");
-        await addFilter(VALID_FILTER_TEXT);
-
-        await checkUnmatchedLogging(async() =>
-        {
-          let tabId = await new Page("element-hiding.html").loaded();
-          await waitForInvisibleElement(tabId, "elem-hide");
-        }, allItemsRequests, {includeElementHiding: true,
-                              includeUnmatched: true,
-                              filterType: "all"});
+        await checkLogging(
+          ["###elem-hide", VALID_FILTER_TEXT],
+          {includeElementHiding: true, includeUnmatched: true},
+          "element-hiding.html",
+          [{
+            filter: null,
+            matchInfo: cspMatchInfo,
+            request: expectedRequestRelativeUrl("element-hiding.html")
+          }, {
+            filter: expectedBlockingFilter(VALID_FILTER_TEXT),
+            matchInfo: requestMatchInfo,
+            request: expectedRequestRelativeUrl("image.png")
+          }, {
+            filter: expectedElemhideFilter("###elem-hide"),
+            matchInfo: elemhideMatchInfo,
+            request: expectedRequestRelativeUrl("element-hiding.html")
+          }]
+        );
       });
 
       it("logs for the requested tab", async() =>
@@ -1010,12 +1179,28 @@ describe("API", () =>
         await setTestSnippets(snippet);
         try
         {
-          await checkLogging({text: `${TEST_PAGES_DOMAIN}#$#${snippet}`},
-                             () => new Page("image.html").loaded(),
-                             {includeElementHiding: false,
-                              includeUnmatched: false,
-                              filterType: "blocking"},
-                             {method: "snippet"}, false);
+          await checkLogging(
+            [`${TEST_PAGES_DOMAIN}#$#${snippet}`],
+            defaultEventOptions,
+            "image.html",
+            [{
+              filter: {
+                text: `${TEST_PAGES_DOMAIN}#$#${snippet}`,
+                enabled: true,
+                slow: false,
+                type: "snippet",
+                selector: null
+              },
+              matchInfo: {
+                docDomain: TEST_PAGES_DOMAIN,
+                method: "snippet"
+              },
+              request: expect.objectContaining({
+                frameId: expect.any(Number),
+                tabId: expect.any(Number)
+              })
+            }]
+          );
         }
         finally
         {
@@ -1023,173 +1208,177 @@ describe("API", () =>
         }
       });
 
-      function checkPopupLogging(text, filterType)
-      {
-        return checkLogging({text}, () =>
-          new Popup("link", new Page("popup-opener.html")).blocked,
-                            {includeElementHiding: false,
-                             includeUnmatched: false,
-                             filterType},
-                            {method: "popup"}
-        );
-      }
-
       it("logs blocking popup filter", async() =>
       {
-        await checkPopupLogging("*popup.html^$popup", "blocking");
+        await checkLogging(
+          ["*popup.html^$popup"],
+          defaultEventOptions,
+          async() =>
+          {
+            let popup = new Popup("link", new Page("popup-opener.html"));
+            await popup.blocked;
+            return await popup.created;
+          },
+          [{
+            filter: expectedBlockingFilter("*popup.html^$popup"),
+            matchInfo: popupMatchInfo,
+            request: expectedRequestRelativeUrl("popup.html")
+          }]
+        );
       });
 
       it("logs allowlisting popup filter", async() =>
       {
-        await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
-        await checkPopupLogging(`@@|${TEST_PAGES_URL}$popup`, "allowing");
+        await checkLogging(
+          ["*popup.html^$popup", `@@|${TEST_PAGES_URL}/popup.html^$popup`],
+          allowingEventOptions,
+          async() =>
+          {
+            let popup = new Popup("link", new Page("popup-opener.html"));
+            await popup.blocked;
+            return await popup.created;
+          },
+          [{
+            filter: expectedAllowingFilter(
+              `@@|${TEST_PAGES_URL}/popup.html^$popup`
+            ),
+            matchInfo: popupMatchInfo,
+            request: expectedRequestRelativeUrl("popup.html")
+          }]
+        );
       });
 
       describe("Unmatched requests", () =>
       {
-        it("logs unmatched image requests", async() =>
+        it("logs all unmatched requests on the image page", async() =>
         {
-          await checkUnmatchedLogging(() => new Page("image.html").loaded(), [{
-            request: expect.objectContaining({
-              tabId: expect.any(Number),
-              frameId: expect.any(Number),
-              url: `${TEST_PAGES_URL}/image.png`,
-              type: "image"
-            }),
-            filter: null,
-            matchInfo: expect.objectContaining({
-              docDomain: TEST_PAGES_DOMAIN,
-              method: "request",
-              specificOnly: false
-            })
-          }], allItemsWithoutEH);
+          await checkLogging(
+            [],
+            unmatchedEventOptions,
+            "image.html",
+            [{
+              filter: null,
+              matchInfo: cspMatchInfo,
+              request: expectedRequestRelativeUrl("image.html")
+            }, {
+              filter: null,
+              matchInfo: requestMatchInfo,
+              request: expectedRequestRelativeUrl("image.png")
+            }, {
+              filter: null,
+              matchInfo: headerMatchInfo,
+              request: expectedRequestRelativeUrl("image.png")
+            }]
+          );
         });
 
         it("logs unmatched requests for the requested tab", async() =>
         {
           let page = new Page("image.html");
-          let tabId = await page.created;
-
-          let [fake1, fake2] = await Promise.all(
-            [tabId, tabId + 1].map(
-              id => addFakeListener({namespace: "reporting",
-                                     eventName: "onBlockableItem",
-                                     eventOptions: {includeUnmatched: true,
-                                                    tabId: id}})
-            )
+          let tabId = await page.loaded();
+          let otherTabFake = addFakeListener({
+            namespace: "reporting",
+            eventName: "onBlockableItem",
+            eventOptions: {includeUnmatched: true, tabId: tabId + 1}
+          });
+          await checkLogging(
+            [],
+            {...unmatchedEventOptions, tabId},
+            () => page.reload(true),
+            [{
+              filter: null,
+              matchInfo: cspMatchInfo,
+              request: expectedRequestRelativeUrl("image.html")
+            }, {
+              filter: null,
+              matchInfo: requestMatchInfo,
+              request: expectedRequestRelativeUrl("image.png")
+            }, {
+              filter: null,
+              matchInfo: headerMatchInfo,
+              request: expectedRequestRelativeUrl("image.png")
+            }]
           );
-
-          await page.loaded();
-
-          expect(fake1.called).toBeTruthy();
-          expect(fake2.called).toBeFalsy();
-
-          let firstArgs = fake1.args.map(args => args[0]);
-          expect(firstArgs).toEqual(expect.arrayContaining([{
-            request: expect.objectContaining({
-              tabId: expect.any(Number),
-              frameId: expect.any(Number),
-              url: `${TEST_PAGES_URL}/image.png`,
-              type: "image"
-            }),
-            filter: null,
-            matchInfo: expect.objectContaining({
-              docDomain: TEST_PAGES_DOMAIN,
-              method: "request",
-              specificOnly: false
-            })
-          }]));
-        });
-
-        it("logs unmatched document requests", async() =>
-        {
-          await checkUnmatchedLogging(() => new Page("image.html").loaded(), [{
-            request: expect.objectContaining({
-              tabId: expect.any(Number),
-              frameId: expect.any(Number),
-              url: `${TEST_PAGES_URL}/image.html`,
-              type: "main_frame"
-            }),
-            filter: null,
-            matchInfo: expect.objectContaining({
-              docDomain: TEST_PAGES_DOMAIN,
-              method: "csp",
-              specificOnly: false
-            })
-          }], allItemsWithoutEH);
+          expect(otherTabFake.called).toBeFalsy();
         });
 
         it("logs unmatched iframe requests", async() =>
         {
-          await checkUnmatchedLogging(() => new Page("iframe.html").loaded(), [
-            {
-              request: expect.objectContaining({
-                tabId: expect.any(Number),
-                frameId: expect.any(Number),
-                url: `${TEST_PAGES_URL}/image.html`,
-                type: "sub_frame"
-              }),
+          await checkLogging(
+            [],
+            unmatchedEventOptions,
+            "iframe.html",
+            [{
               filter: null,
-              matchInfo: expect.objectContaining({
-                docDomain: TEST_PAGES_DOMAIN,
-                method: "csp",
-                specificOnly: false
-              })
-            },
-            {
-              request: expect.objectContaining({
-                tabId: expect.any(Number),
-                frameId: expect.any(Number),
-                url: `${TEST_PAGES_URL}/image.png`,
-                type: "image"
-              }),
+              matchInfo: cspMatchInfo,
+              request: expectedRequestRelativeUrl("iframe.html")
+            }, {
               filter: null,
-              matchInfo: expect.objectContaining({
-                docDomain: TEST_PAGES_DOMAIN,
-                method: "request",
-                specificOnly: false
-              })
-            }
-          ], allItemsWithoutEH);
+              matchInfo: requestMatchInfo,
+              request: expectedRequestRelativeUrl("image.html")
+            }, {
+              filter: null,
+              matchInfo: headerMatchInfo,
+              request: expectedRequestRelativeUrl("image.html")
+            }, {
+              filter: null,
+              matchInfo: cspMatchInfo,
+              request: expectedRequestRelativeUrl("image.html")
+            }, {
+              filter: null,
+              matchInfo: requestMatchInfo,
+              request: expectedRequestRelativeUrl("image.png")
+            }, {
+              filter: null,
+              matchInfo: headerMatchInfo,
+              request: expectedRequestRelativeUrl("image.png")
+            }]
+          );
         });
 
         it("logs unmatched allowlisted iframe requests", async() =>
         {
-          await addFilter(`@@|${TEST_PAGES_URL}/image.html$document`);
-
-
-          await checkUnmatchedLogging(() =>
-            new Page("iframe.html").loaded(), [
-            {
-              request: expect.objectContaining({
-                tabId: expect.any(Number),
-                frameId: expect.any(Number),
-                url: `${TEST_PAGES_URL}/image.html`,
-                type: "sub_frame"
-              }),
+          await checkLogging(
+            [`@@|${TEST_PAGES_URL}/image.html$document`],
+            unmatchedEventOptions,
+            "iframe.html",
+            [{
+              filter: null,
+              matchInfo: cspMatchInfo,
+              request: expectedRequestRelativeUrl("iframe.html")
+            }, {
+              filter: null,
+              matchInfo: requestMatchInfo,
+              request: expectedRequestRelativeUrl("image.html")
+            }, {
+              filter: null,
+              matchInfo: headerMatchInfo,
+              request: expectedRequestRelativeUrl("image.html")
+            }, {
+              filter: expectedAllowingFilter(
+                `@@|${TEST_PAGES_URL}/image.html$document`
+              ),
+              matchInfo: {
+                ...allowingMatchInfo,
+                allowingReason: "document"
+              },
+              request: expectedRequestRelativeUrl("image.html")
+            }, {
               filter: null,
               matchInfo: {
-                docDomain: TEST_PAGES_DOMAIN,
+                ...allowingMatchInfo,
                 specificOnly: false
-              }
-            },
-            {
-              request: expect.objectContaining({
-                frameId: expect.any(Number),
-                tabId: expect.any(Number),
-                url: `${TEST_PAGES_URL}/image.html`
-              }),
-              filter: expect.objectContaining({
-                enabled: true,
-                text: `@@|${TEST_PAGES_URL}/image.html$document`,
-                type: "allowing"
-              }),
-              matchInfo: expect.objectContaining({
-                allowingReason: "document",
-                method: "allowing"
-              })
-            }
-          ], allItemsWithoutEH);
+              },
+              request: expectedRequestRelativeUrl("image.html")
+            }, {
+              filter: null,
+              matchInfo: {
+                ...allowingMatchInfo,
+                specificOnly: false
+              },
+              request: expectedRequestRelativeUrl("image.png")
+            }]
+          );
         });
       });
     });

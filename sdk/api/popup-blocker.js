@@ -54,6 +54,8 @@ function checkPotentialPopup(tabId, url, frame)
 
     if (filter instanceof BlockingFilter)
       browser.tabs.remove(tabId).catch(() => {});
+    else
+      forgetPopup(tabId);
   }
 }
 

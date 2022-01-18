@@ -69,7 +69,7 @@ export default {
    *   object or the {@link https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webRequest/onHeadersReceived#details|onHeadersReceived details}
    *   object from the web extensions API, or an object with the properties
    *   `frameId`, `tabId` and `url` (for snippet filters `url` is undefined).
-   * @param {Filter} filter The filter that matched.
+   * @param {?Filter} filter The filter that matched, if any.
    * @param {FilterMatchInfo} matchInfo Extra information that might be
    *                                    relevant depending on the context.
    * @type {BlockableEventDispatcher.<{request: object,

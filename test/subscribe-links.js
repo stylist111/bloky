@@ -31,11 +31,6 @@ describe("Subscribe links (runner only)", function()
       this.skip();
   });
 
-  afterEach(() =>
-  {
-    Page.removeCurrent();
-  });
-
   async function checkSubscribeLink(selector)
   {
     let fake = await addFakeListener({namespace: "reporting",

@@ -58,6 +58,31 @@ function getAllowingReason(typeMask, filter)
   }
 }
 
+function findAllowlistingFilters(frame)
+{
+  let details = {tabId: frame.tabId, frameId: frame.frameId, url: frame.url};
+  // The docDomain for a frame is the hostname of the parent frame
+  // (the loader). For top-level frames we use the current URL's hostname.
+  let matchInfo = {docDomain: frame.parentHostname || frame.hostname,
+                   method: "allowing"};
+
+  while (true)
+  {
+    let typeMask = ~frame.allowlisted & ALLOWING_TYPES;
+    let filter = matcher.match(
+      frame.url, typeMask, frame.parentHostname, frame.sitekey
+    );
+
+    if (!filter)
+      break;
+
+    frame.allowlisted |= filter.contentType & ALLOWING_TYPES;
+
+    let allowingReason = getAllowingReason(typeMask, filter);
+    logItem(details, filter, {...matchInfo, allowingReason});
+  }
+}
+
 class PendingFrameInfo
 {
   constructor(tabId, frameId, parent, url, sitekey)
@@ -74,32 +99,16 @@ class PendingFrameInfo
     }
 
     let urlInfo = parseURL(url);
-    let hostname = urlInfo.hostname;
 
-    let details = {tabId, frameId, url};
-    // The docDomain for a frame is the hostname of the parent frame
-    // (the loader). For top-level frames we use the current URL's hostname.
-    let matchInfo = {docDomain: parentHostname || hostname,
-                     method: "allowing"};
-
-    while (true)
-    {
-      let typeMask = ~allowlisted & ALLOWING_TYPES;
-      let filter = matcher.match(url, typeMask, parentHostname, sitekey);
-
-      if (!filter)
-        break;
-
-      allowlisted |= filter.contentType & ALLOWING_TYPES;
-
-      let allowingReason = getAllowingReason(typeMask, filter);
-      logItem(details, filter, {...matchInfo, allowingReason});
-    }
-
+    this.tabId = tabId;
+    this.frameId = frameId;
     this.url = url;
-    this.hostname = hostname;
+    this.hostname = urlInfo.hostname;
+    this.parentHostname = parentHostname;
     this.sitekey = sitekey;
     this.allowlisted = allowlisted;
+
+    findAllowlistingFilters(this);
   }
 }
 
@@ -137,16 +146,22 @@ function onHeadersReceived(details)
 
   let frame = frames.get(details.frameId);
   let parent = frames.get(details.parentFrameId);
-  if (!frame)
+  let sitekey = getSitekeyFromHeaders(details.responseHeaders, details.url);
+
+  if (frame)
+  {
+    let allowlistFrame = frame.pending || frame;
+    allowlistFrame.sitekey = sitekey || allowlistFrame.sitekey;
+    findAllowlistingFilters(allowlistFrame);
+  }
+  else
   {
     frame = new FrameInfo(details.tabId, details.frameId, parent,
                           "about:blank");
     frames.set(details.frameId, frame);
+    frame.pending = new PendingFrameInfo(details.tabId, details.frameId, parent,
+                                         details.url, sitekey);
   }
-
-  let sitekey = getSitekeyFromHeaders(details.responseHeaders, details.url);
-  frame.pending = new PendingFrameInfo(details.tabId, details.frameId, parent,
-                                       details.url, sitekey);
 }
 
 function recordFrameFromNavigationEvent({tabId, frameId, parentFrameId, url},

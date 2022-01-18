@@ -105,10 +105,11 @@ export async function addFakeListener({namespace, eventName, eventOptions,
 
 export async function removeFakeListeners()
 {
-  for (let operations of removalOperations)
-    await runInBackgroundPage(operations);
-
+  let removing = removalOperations;
   removalOperations = [];
+
+  for (let operations of removing)
+    await runInBackgroundPage(operations);
 }
 
 export function setTestSnippets(name)

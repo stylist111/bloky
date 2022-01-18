@@ -18,7 +18,7 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 
-import {TEST_PAGES_URL} from "../utils.js";
+import {TEST_PAGES_URL, Page, Popup} from "../utils.js";
 import {addFilter, EWE, runInBackgroundPage, removeFakeListeners}
   from "../messaging.js";
 
@@ -84,5 +84,7 @@ beforeEach(function()
 afterEach(async() =>
 {
   await EWE.subscriptions.removeAll();
+  await Page.removeCurrent();
+  await Popup.removeCurrent();
   await removeFakeListeners();
 });

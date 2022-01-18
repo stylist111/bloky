@@ -59,12 +59,19 @@ export class Page
   constructor(path, fullUrl = false)
   {
     this.url = fullUrl ? path : `${TEST_PAGES_URL}/${path}`;
+    let removingCurrentPromise = Page.removeCurrent();
     this.created = (async() =>
     {
-      if (Page.current)
-        await browser.tabs.remove(await Page.current.created);
+      await removingCurrentPromise;
 
-      return (await browser.tabs.create({url: this.url, active: false})).id;
+      // Firefox appears to have an issue where if a tab is opened in
+      // the background (not active), the browser forgets that blocked
+      // requests on that page were blocked and tries to request them
+      // again. Functionally everything still works fine, but the
+      // duplicate requests do mess with our tests.
+      let active = isFirefox();
+
+      return (await browser.tabs.create({url: this.url, active})).id;
     })();
 
     Page.current = this;
@@ -98,7 +105,29 @@ export class Page
 
       browser.webNavigation.onCompleted.addListener(onCompleted);
       browser.webNavigation.onErrorOccurred.addListener(onErrorOccurred);
+
+      // If the tab is already complete, then the above event won't
+      // ever fire. In practice, this only happens if the tab being
+      // loaded is empty.
+      browser.tabs.get(tabId).then(tab =>
+      {
+        // URL comparison is needed because it seems old versions of
+        // Firefox say they're completed before actually starting
+        // navigation.
+        if (tab.url == this.url && tab.status == "complete")
+        {
+          removeListeners();
+          resolve(tabId);
+        }
+      });
     });
+  }
+
+  async reload(bypassCache = false)
+  {
+    let tabId = await this.created;
+    await browser.tabs.reload(tabId, {bypassCache});
+    return tabId;
   }
 
   expectResource(path)
@@ -117,12 +146,14 @@ export class Page
     };
   }
 
-  static removeCurrent()
+  static async removeCurrent()
   {
-    if (Page.current)
+    let removingPage = Page.current;
+    Page.current = null;
+    if (removingPage)
     {
-      Page.current.created.then(browser.tabs.remove);
-      Page.current = null;
+      let tabId = await removingPage.created;
+      await browser.tabs.remove(tabId);
     }
   }
 }
@@ -272,12 +303,14 @@ export class Popup
     Popup.current = this;
   }
 
-  static removeCurrent()
+  static async removeCurrent()
   {
-    if (Popup.current)
+    let removingPopup = Popup.current;
+    Popup.current = null;
+    if (removingPopup)
     {
-      Popup.current.created.then(browser.tabs.remove);
-      Popup.current = null;
+      let tabId = await removingPopup.created;
+      await browser.tabs.remove(tabId);
     }
   }
 }
@@ -365,4 +398,9 @@ export function wait(condition, timeout = 0, message, pollTimeout = 100)
 export function isFirefox()
 {
   return typeof netscape != "undefined";
+}
+
+export function firefoxVersion()
+{
+  return navigator.userAgent.split("Firefox/")[1];
 }

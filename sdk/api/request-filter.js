@@ -170,8 +170,14 @@ class RequestFilter
     let specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) != 0;
     if (frame.allowlisted & contentTypes.DOCUMENT)
     {
-      logItem(details, null, {docDomain: frame.hostname,
-                              specificOnly});
+      if (this.shouldLogForAllowlistedDocument)
+      {
+        logItem(details, null, {
+          docDomain: frame.hostname,
+          method: "allowing",
+          specificOnly
+        });
+      }
       return;
     }
 
@@ -179,6 +185,7 @@ class RequestFilter
   }
 }
 
+RequestFilter.prototype.shouldLogForAllowlistedDocument = true;
 RequestFilter.prototype.event = browser.webRequest.onBeforeRequest;
 RequestFilter.prototype.eventArgs = [
   {
@@ -214,6 +221,7 @@ class HeaderFilter extends RequestFilter
   }
 }
 
+HeaderFilter.prototype.shouldLogForAllowlistedDocument = false;
 HeaderFilter.prototype.event = browser.webRequest.onHeadersReceived;
 HeaderFilter.prototype.eventArgs = [
   {
@@ -228,7 +236,8 @@ class CSPFilter extends RequestFilter
 {
   getFrameInfo(details)
   {
-    return getFrameInfo(details.tabId, details.frameId).pending;
+    let frame = getFrameInfo(details.tabId, details.frameId);
+    return frame.pending || frame;
   }
 
   match(details, frame, specificOnly)

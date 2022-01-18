@@ -23,8 +23,6 @@ import {addFilter, EWE} from "./messaging.js";
 
 describe("Blocking", () =>
 {
-  afterEach(() => Page.removeCurrent());
-
   it("blocks a request using user filters", async() =>
   {
     await addFilter("/image.png^$image");

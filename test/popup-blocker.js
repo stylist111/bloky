@@ -17,8 +17,7 @@
 
 import expect from "expect";
 
-import {Page, Popup, setMinTimeout, isFirefox, TEST_PAGES_URL, SITEKEY}
-  from "./utils.js";
+import {Page, Popup, setMinTimeout, TEST_PAGES_URL, SITEKEY} from "./utils.js";
 import {addFilter} from "./messaging.js";
 
 describe("Pop-up blocking", function()
@@ -26,10 +25,7 @@ describe("Pop-up blocking", function()
   setMinTimeout(this, 3000);
 
   let opener;
-
-  before(() => { opener = new Page("popup-opener.html"); });
-  after(() => Page.removeCurrent());
-  afterEach(() => Popup.removeCurrent());
+  beforeEach(() => { opener = new Page("popup-opener.html"); });
 
   it("blocks a link-based popup", async() =>
   {
@@ -40,11 +36,6 @@ describe("Pop-up blocking", function()
   it("blocks a script-based popup tab", async() =>
   {
     await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
-    if (isFirefox())
-    {
-      Page.removeCurrent();
-      opener = new Page("popup-opener.html");
-    }
     expect(await new Popup("script-tab", opener).blocked).toBeTruthy();
   });
 
@@ -64,11 +55,6 @@ describe("Pop-up blocking", function()
   {
     await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
     await addFilter(`@@|${TEST_PAGES_URL}/popup.html^$popup`);
-    if (isFirefox())
-    {
-      Page.removeCurrent();
-      opener = new Page("popup-opener.html");
-    }
     expect(await new Popup("link", opener).blocked).toBeFalsy();
   });
 
@@ -87,5 +73,15 @@ describe("Pop-up blocking", function()
     await addFilter(`@@$document,sitekey=${SITEKEY}`);
     let popup = new Popup("link", new Page("popup-opener.html?sitekey=1"));
     expect(await popup.blocked).toBeFalsy();
+  });
+
+  it("blocks a variety of popups from the same page", async() =>
+  {
+    await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
+    expect(await new Popup("link", opener).blocked).toBeTruthy();
+    expect(await new Popup("link", opener).blocked).toBeTruthy();
+    expect(await new Popup("script-tab", opener).blocked).toBeTruthy();
+    expect(await new Popup("script-window", opener).blocked).toBeTruthy();
+    expect(await new Popup("script-deferred", opener).blocked).toBeTruthy();
   });
 });

@@ -98,7 +98,7 @@ export default (env = {}) =>
         }
       ],
       permissions: [
-        "webNavigation", "webRequest", "storage", "unlimitedStorage",
+        "webNavigation", "webRequest", "storage", "unlimitedStorage", "tabs",
         ...manifestVersion >= 3 ? ["scripting", "declarativeNetRequest"] :
                                   ["webRequestBlocking", "<all_urls>"]
       ],

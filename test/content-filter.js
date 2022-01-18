@@ -23,8 +23,6 @@ import {addFilter, EWE, setTestSnippets} from "./messaging.js";
 
 describe("Element Hiding", () =>
 {
-  afterEach(() => Page.removeCurrent());
-
   function getHTML(tabId, elemId)
   {
     return executeScript(tabId, id =>
@@ -82,8 +80,11 @@ describe("Element Hiding", () =>
     await addFilter("###elem-hide");
     await addFilter(`${TEST_PAGES_DOMAIN}###elem-hide-specific`);
     await addFilter(`@@|${TEST_PAGES_URL}$generichide`);
-    expect(await getVisibleElement("elem-hide")).not.toBeNull();
-    expect(await getVisibleElement("elem-hide-specific")).toBeNull();
+
+    let tabId = await new Page("element-hiding.html").loaded();
+    await new Promise(r => setTimeout(r, 200));
+    expect(await getHTML(tabId, "elem-hide")).not.toBeNull();
+    expect(await getHTML(tabId, "elem-hide-specific")).toBeNull();
   });
 
   describe("Element Hiding Emulation", async() =>
@@ -173,7 +174,6 @@ describe("Snippets", () =>
 
   before(() => setTestSnippets(snippet));
   after(() => setTestSnippets(null));
-  afterEach(() => Page.removeCurrent());
 
   it("applies a snippet", async() =>
   {
