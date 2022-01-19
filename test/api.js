@@ -617,18 +617,56 @@ describe("API", () =>
           url, "document", tabId, frameId)).toEqual(true);
       });
 
-      it("returns whether a resource inside a frame is allowlisted", async() =>
+      it("returns whether a cross domain resource is allowlisted", async() =>
       {
         let url = `${TEST_PAGES_URL}/image.png`;
         await addFilter(`|${url}^`);
         await addFilter("@@*$image,domain=127.0.0.1");
 
-        let {tabId, frameId} = await loadTabWithFrame("iframe-resource.html");
-
+        let {tabId, frameId} =
+          await loadTabWithFrame("iframe-cross-domain.html");
         expect(await EWE.filters.isResourceAllowlisted(
           url, "image", tabId)).toEqual(false);
         expect(await EWE.filters.isResourceAllowlisted(
           url, "image", tabId, frameId)).toEqual(true);
+      });
+
+      it("returns whether a resource is allowlisted by $document", async() =>
+      {
+        let url = `${TEST_PAGES_URL}/image.png`;
+
+        await addFilter(`|${url}^`);
+        let {tabId, frameId} = await loadTabWithFrame();
+        expect(await EWE.filters.isResourceAllowlisted(
+          url, "image", tabId)).toEqual(false);
+        expect(await EWE.filters.isResourceAllowlisted(
+          url, "image", tabId, frameId)).toEqual(false);
+
+        await addFilter(`@@|${TEST_PAGES_URL}/iframe.html^$document`);
+        ({tabId, frameId} = await loadTabWithFrame());
+        expect(await EWE.filters.isResourceAllowlisted(
+          url, "image", tabId)).toEqual(true);
+        expect(await EWE.filters.isResourceAllowlisted(
+          url, "image", tabId, frameId)).toEqual(true);
+      });
+
+      it("returns whether a resource is allowlisted by $elemhide", async() =>
+      {
+        let url = `${TEST_PAGES_URL}/iframe-elemhide.html`;
+
+        await addFilter(`|${TEST_PAGES_URL}##elem-hide^`);
+        let {tabId, frameId} = await loadTabWithFrame();
+        expect(await EWE.filters.isResourceAllowlisted(
+          url, "elemhide", tabId)).toEqual(false);
+        expect(await EWE.filters.isResourceAllowlisted(
+          url, "elemhide", tabId, frameId)).toEqual(false);
+
+        await addFilter(`@@|${url}^$elemhide`);
+        ({tabId, frameId} = await loadTabWithFrame());
+        expect(await EWE.filters.isResourceAllowlisted(
+          url, "elemhide", tabId)).toEqual(true);
+        expect(await EWE.filters.isResourceAllowlisted(
+          url, "elemhide", tabId, frameId)).toEqual(true);
       });
     });
   });

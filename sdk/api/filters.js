@@ -188,10 +188,21 @@ export default {
    */
   isResourceAllowlisted(url, type, tabId, frameId = 0)
   {
-    let {hostname, sitekey} = getFrameInfo(tabId, frameId) || {};
     let mask = contentTypes[type.toUpperCase()];
+    let frame = getFrameInfo(tabId, frameId) || {};
 
-    return matcher.isAllowlisted(url, mask, hostname, sitekey);
+    if (matcher.isAllowlisted(url, mask, frame.hostname, frame.sitekey))
+      return true;
+
+    for (; frame; frame = frame.parent)
+    {
+      let parentHostname = frame.parent && frame.parent.hostname;
+      if (matcher.isAllowlisted(frame.url, contentTypes.DOCUMENT,
+                                parentHostname, frame.sitekey))
+        return true;
+    }
+
+    return false;
   },
 
   /**
