@@ -24,6 +24,7 @@ import {isValidHostname} from "adblockpluscore/lib/url.js";
 import {RESOURCE_TYPES, contentTypes}
   from "adblockpluscore/lib/contentTypes.js";
 import {filterStorage} from "adblockpluscore/lib/filterStorage.js";
+import {filterState} from "adblockpluscore/lib/filterState.js";
 
 import {FilterError} from "./types.js";
 
@@ -113,6 +114,32 @@ export function init()
   return initializationPromise;
 }
 
+async function getRules(filter, useFilterEngine)
+{
+  let ruleIds = [];
+  let filterRules = [];
+
+  if (filter instanceof URLFilter)
+  {
+    let result = await getRulesFromFilter(
+      filter, browser.declarativeNetRequest.isRegexSupported
+    );
+
+    for (let rule of result)
+    {
+      let id = ++highestRuleId;
+      rule.id = id;
+      ruleIds.push(id);
+      filterRules.push(rule);
+    }
+
+    if (result.length == 0 && !useFilterEngine)
+      throw new Error(`Filter unsupported by DNR: ${filter.text}`);
+  }
+
+  return {filterRules, ruleIds};
+}
+
 async function processFilterTexts(texts)
 {
   let details = [];
@@ -136,24 +163,8 @@ async function processFilterTexts(texts)
                            filter.contentType & contentTypes.POPUP) &&
                           filter.contentType != RESOURCE_TYPES;
 
-    let ruleIds = [];
-    if (filter instanceof URLFilter)
-    {
-      let result = await getRulesFromFilter(
-        filter, browser.declarativeNetRequest.isRegexSupported
-      );
-
-      for (let rule of result)
-      {
-        let id = ++highestRuleId;
-        rule.id = id;
-        ruleIds.push(id);
-        rules.push(rule);
-      }
-
-      if (result.length == 0 && !useFilterEngine)
-        throw new Error(`Filter unsupported by DNR: ${text}`);
-    }
+    let {filterRules, ruleIds} = await getRules(filter, useFilterEngine);
+    rules.push(...filterRules);
 
     seenFilterTexts.add(text);
     details.push({filter, useFilterEngine, ruleIds});
@@ -182,13 +193,14 @@ export async function addFilters(texts)
       filterStorage.addFilter(filter);
 
     setHighestRuleId(ruleIds);
-    dynamicFilters.set(filter.text, {ruleIds, useFilterEngine});
+    dynamicFilters.set(filter.text,
+                       {ruleIds, useFilterEngine, enabled: true});
   }
 
   await storeDynamicFilters();
 }
 
-export async function removeFilters(texts)
+export async function removeOrDisableFilters(texts, remove = true)
 {
   await init();
 
@@ -203,10 +215,23 @@ export async function removeFilters(texts)
       ruleIdsToRemove.push(ruleId);
 
     let details = dynamicFilters.get(text);
-    if (details.useFilterEngine)
-      filterStorage.removeFilter(Filter.fromText(text));
 
-    dynamicFilters.delete(text);
+    if (remove)
+    {
+      if (details.useFilterEngine)
+        filterStorage.removeFilter(Filter.fromText(text));
+
+      dynamicFilters.delete(text);
+    }
+    else
+    {
+      if (details.useFilterEngine)
+        filterState.setEnabled(text, false);
+
+      details.enabled = false;
+      details.ruleIds = [];
+      dynamicFilters.set(text, details);
+    }
   }
 
   if (ruleIdsToRemove.length > 0)
@@ -219,8 +244,46 @@ export async function removeFilters(texts)
   await storeDynamicFilters();
 }
 
-export async function getDynamicFilterTexts()
+export async function enableFilters(texts)
 {
   await init();
-  return dynamicFilters.keys();
+
+  let rules = [];
+
+  for (let text of texts)
+  {
+    let normalized = Filter.normalize(text);
+    let details = dynamicFilters.get(normalized);
+
+    if (!details || details.enabled)
+      continue;
+
+    let {useFilterEngine} = details;
+    let filter = Filter.fromText(normalized);
+
+    if (useFilterEngine)
+      filterState.setEnabled(filter, true);
+
+    let {filterRules, ruleIds} = await getRules(filter, useFilterEngine);
+    rules.push(...filterRules);
+
+    setHighestRuleId(ruleIds);
+    dynamicFilters.set(filter.text,
+                       {ruleIds, useFilterEngine, enabled: true});
+  }
+
+  if (rules.length == 0)
+    return;
+
+  await browser.declarativeNetRequest.updateDynamicRules({
+    addRules: rules
+  });
+
+  await storeDynamicFilters();
+}
+
+export async function getDynamicFilters()
+{
+  await init();
+  return dynamicFilters;
 }

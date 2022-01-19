@@ -30,10 +30,20 @@ const ANOTHER_VALID_SUBSCRIPTION_URL =
 const INVALID_SUBSCRIPTION_URL = "invalidUrl";
 
 const VALID_FILTER_TEXT = `|${TEST_PAGES_URL}$image`;
+const SECOND_VALID_FILTER_TEXT = "another-filter";
 const VALID_FILTER = {
   text: VALID_FILTER_TEXT,
   enabled: true,
   slow: false,
+  type: "blocking",
+  thirdParty: null,
+  selector: null,
+  csp: null
+};
+const SECOND_VALID_FILTER = {
+  text: SECOND_VALID_FILTER_TEXT,
+  enabled: true,
+  slow: true,
   type: "blocking",
   thirdParty: null,
   selector: null,
@@ -336,10 +346,10 @@ describe("API", () =>
 
     it("adds multiple filters", async() =>
     {
-      await EWE.filters.add([VALID_FILTER_TEXT, "another-filter"]);
+      await EWE.filters.add([VALID_FILTER_TEXT, SECOND_VALID_FILTER_TEXT]);
       expect(await EWE.filters.getUserFilters()).toEqual([
         VALID_FILTER,
-        {...VALID_FILTER, text: "another-filter", slow: true}
+        {...SECOND_VALID_FILTER}
       ]);
     });
 
@@ -347,32 +357,43 @@ describe("API", () =>
       expect(addFilter(INVALID_FILTER_TEXT)).rejects.toThrow("FilterError")
     );
 
-    it("disables an existing filter", async() =>
+    it("disables existing filters", async() =>
     {
       await addFilter(VALID_FILTER_TEXT);
-      await EWE.filters.disable(VALID_FILTER_TEXT);
+      await addFilter(SECOND_VALID_FILTER_TEXT);
+
+      await EWE.filters.disable([VALID_FILTER_TEXT, SECOND_VALID_FILTER_TEXT]);
 
       expect(await EWE.filters.getUserFilters())
-        .toEqual([{...VALID_FILTER, enabled: false}]);
+        .toEqual([{...VALID_FILTER, enabled: false},
+                  {...SECOND_VALID_FILTER, enabled: false}]);
     });
 
-    it("enables an existing filter", async() =>
+    it("enables existing filters", async() =>
     {
       await addFilter(VALID_FILTER_TEXT);
-      await EWE.filters.disable(VALID_FILTER_TEXT);
-      await EWE.filters.enable(VALID_FILTER_TEXT);
+      await addFilter(SECOND_VALID_FILTER_TEXT);
+
+      await EWE.filters.disable([VALID_FILTER_TEXT, SECOND_VALID_FILTER_TEXT]);
+      await EWE.filters.enable([VALID_FILTER_TEXT, SECOND_VALID_FILTER_TEXT]);
+
+      expect(await EWE.filters.getUserFilters())
+        .toEqual([VALID_FILTER, SECOND_VALID_FILTER]);
+    });
+
+    it("enables a filter that is already enabled", async() =>
+    {
+      await addFilter(VALID_FILTER_TEXT);
+      await EWE.filters.enable([VALID_FILTER_TEXT]);
 
       expect(await EWE.filters.getUserFilters())
         .toEqual([VALID_FILTER]);
     });
 
-    it("enables a filter that is already enabled.", async() =>
+    it("does not enable nor add an unexisting filter", async() =>
     {
-      await addFilter(VALID_FILTER_TEXT);
-      await EWE.filters.enable(VALID_FILTER_TEXT);
-
-      expect(await EWE.filters.getUserFilters())
-        .toEqual([VALID_FILTER]);
+      await EWE.filters.enable([VALID_FILTER_TEXT]);
+      expect(await EWE.filters.getUserFilters()).toEqual([]);
     });
 
     it("removes a single filter", async() =>
@@ -391,11 +412,11 @@ describe("API", () =>
       expect(await EWE.filters.getUserFilters())
         .toEqual([VALID_FILTER]);
 
-      await EWE.filters.disable(PADDED_FILTER_TEXT);
+      await EWE.filters.disable([PADDED_FILTER_TEXT]);
       expect(await EWE.filters.getUserFilters())
         .toEqual([{...VALID_FILTER, enabled: false}]);
 
-      await EWE.filters.enable(PADDED_FILTER_TEXT);
+      await EWE.filters.enable([PADDED_FILTER_TEXT]);
       expect(await EWE.filters.getUserFilters())
         .toEqual([VALID_FILTER]);
 
@@ -466,14 +487,14 @@ describe("API", () =>
       let fake = await addFakeListener({namespace: "filters",
                                         eventName: "onChanged"});
       await addFilter(VALID_FILTER_TEXT);
-      await EWE.filters.disable(VALID_FILTER_TEXT);
+      await EWE.filters.disable([VALID_FILTER_TEXT]);
 
       expect(fake.callCount).toBe(1);
       expect(fake.firstArg).toEqual({...VALID_FILTER, enabled: false});
       expect(fake.lastArg).toEqual("enabled");
 
       // This is a workaround and should be removed once https://gitlab.com/eyeo/webext/webext-sdk/-/issues/122 is fixed.
-      await EWE.filters.enable(VALID_FILTER_TEXT);
+      await EWE.filters.enable([VALID_FILTER_TEXT]);
     });
 
     it("listens to onRemoved events", async() =>

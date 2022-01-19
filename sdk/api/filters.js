@@ -29,8 +29,8 @@ import {defaultMatcher as matcher} from "adblockpluscore/lib/matcher.js";
 
 import {EventDispatcher} from "./types.js";
 import {getFrameInfo} from "./frame-state.js";
-import {addFilters, removeFilters, validateFilter, getDynamicFilterTexts}
-  from "./dnr-filters.js";
+import {addFilters, validateFilter, getDynamicFilters, removeOrDisableFilters,
+        enableFilters} from "./dnr-filters.js";
 
 export function convertFilter(filter)
 {
@@ -133,10 +133,14 @@ export default {
 
     if (browser.declarativeNetRequest)
     {
-      for (let text of await getDynamicFilterTexts())
+      for (let [text, details] of (await getDynamicFilters()).entries())
       {
         if (!result.find(filter => filter.text == text))
-          result.push(convertFilter(Filter.fromText(text)));
+        {
+          let filter = convertFilter(Filter.fromText(text));
+          filter.enabled = details.enabled;
+          result.push(filter);
+        }
       }
     }
 
@@ -206,24 +210,42 @@ export default {
   },
 
   /**
-   * Enables a previously disabled filter. Has no effect otherwise.
-   * @param {string} text The filter rule to be enabled.
+   * Enables multiple filters. The filters effects will again be applied.
+   * @param {[string]} texts The filter rules to be enabled.
    */
-  enable(text)
+  async enable(texts)
   {
-    let normalized = Filter.normalize(text);
-    filterState.setEnabled(normalized, true);
+    if (browser.declarativeNetRequest)
+    {
+      await enableFilters(texts);
+      return;
+    }
+
+    for (let text of texts)
+    {
+      let normalized = Filter.normalize(text);
+      filterState.setEnabled(normalized, true);
+    }
   },
 
   /**
-   * Disables a filter so that it doesn't have any
-   * effect until it gets enabled again.
-   * @param {string} text The filter rule to be disabled.
+   * Disables multiple filters. The filters will no longer have any effect
+   * but will be returned by `filters.getUserFilters()`.
+   * @param {[string]} texts The filter rules to be disabled.
    */
-  disable(text)
+  async disable(texts)
   {
-    let normalized = Filter.normalize(text);
-    filterState.setEnabled(normalized, false);
+    if (browser.declarativeNetRequest)
+    {
+      await removeOrDisableFilters(texts, false);
+      return;
+    }
+
+    for (let text of texts)
+    {
+      let normalized = Filter.normalize(text);
+      filterState.setEnabled(normalized, false);
+    }
   },
 
   /**
@@ -235,7 +257,7 @@ export default {
   {
     if (browser.declarativeNetRequest)
     {
-      await removeFilters(texts);
+      await removeOrDisableFilters(texts, true);
       return;
     }
 

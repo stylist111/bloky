@@ -43,6 +43,21 @@ describe("Blocking", () =>
     }, 500, "image.png was not blocked");
   });
 
+  it("does not block a request using a disabled filter", async() =>
+  {
+    await addFilter("/image.png^$image");
+    await EWE.filters.disable(["/image.png^$image"]);
+    await new Page("image.html").expectResource("image.png").toBeLoaded();
+  });
+
+  it("blocks a request using a re-enabled filter", async() =>
+  {
+    await addFilter("/image.png^$image");
+    await EWE.filters.disable(["/image.png^$image"]);
+    await EWE.filters.enable(["/image.png^$image"]);
+    await new Page("image.html").expectResource("image.png").toBeBlocked();
+  });
+
   it("does not block an allowlisted request", async() =>
   {
     await addFilter("/image.png^$image");
