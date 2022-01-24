@@ -747,8 +747,44 @@ describe("API", () =>
 
     it("exposes a mapping between content types and ResourceTypes", async() =>
     {
-      expect(await EWE.reporting.contentTypesMap.get("font")).toEqual("font");
-      expect(await EWE.reporting.contentTypesMap.get("beacon")).toEqual("ping");
+      let expected = {
+        other: "other",
+        script: "script",
+        image: "image",
+        stylesheet: "stylesheet",
+        object: "object",
+        subdocument: "subdocument",
+        websocket: "websocket",
+        webrtc: "webrtc",
+        ping: "ping",
+        xmlhttprequest: "xmlhttprequest",
+        media: "media",
+        font: "font",
+        popup: "popup",
+        csp: "csp",
+        header: "header",
+        document: "document",
+        genericblock: "genericblock",
+        elemhide: "elemhide",
+        generichide: "generichide",
+        background: "image",
+        xbl: "other",
+        dtd: "other",
+        object_subrequest: "object",
+        sub_frame: "subdocument",
+        beacon: "ping",
+        imageset: "image",
+        main_frame: "document"
+      };
+
+      let result = await runInBackgroundPage([
+        {op: "getGlobal", arg: "EWE"},
+        {op: "getProp", arg: "reporting"},
+        {op: "getProp", arg: "contentTypesMap"},
+        {op: "stringifyMap"}
+      ]);
+
+      expect(JSON.parse(result)).toEqual(expected);
     });
 
     describe("Analytics", () =>

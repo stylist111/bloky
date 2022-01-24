@@ -35,6 +35,7 @@ resourceTypes.set("sub_frame", contentTypes.SUBDOCUMENT);
 resourceTypes.set("beacon", contentTypes.PING);
 resourceTypes.set("imageset", contentTypes.IMAGE);
 resourceTypes.set("object_subrequest", contentTypes.OBJECT);
+resourceTypes.set("main_frame", contentTypes.DOCUMENT);
 
 let typeSelectors = new Map([
   [contentTypes.IMAGE, "img,input"],

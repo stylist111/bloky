@@ -61,6 +61,10 @@ async function runOperations(operations)
         stack.push(await stack.pop());
         break;
 
+      case "stringifyMap":
+        stack.push(JSON.stringify(Object.fromEntries(stack.pop())));
+        break;
+
       case "pushCallback":
         stack.push(callbacks.get(arg));
         break;
