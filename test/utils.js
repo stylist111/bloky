@@ -413,3 +413,13 @@ export function getVisibleElement(tabId, elemId)
     return el.offsetParent ? el.outerHTML : null;
   }, [elemId]);
 }
+
+export function getVisibleElementInFrame(tabId, elemId, frameElementId)
+{
+  return executeScript(tabId, (frameId, elementId) =>
+  {
+    let frameDocument = document.getElementById(frameId).contentDocument;
+    let el = frameDocument.getElementById(elementId);
+    return el.offsetParent ? el.outerHTML : null;
+  }, [frameElementId, elemId]);
+}

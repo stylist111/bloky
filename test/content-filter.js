@@ -18,7 +18,8 @@
 import expect from "expect";
 
 import {Page, waitForInvisibleElement, executeScript, setMinTimeout, wait,
-        getVisibleElement, TEST_PAGES_DOMAIN, TEST_PAGES_URL} from "./utils.js";
+        getVisibleElement, getVisibleElementInFrame, TEST_PAGES_DOMAIN,
+        TEST_PAGES_URL} from "./utils.js";
 import {addFilter, EWE, setTestSnippets} from "./messaging.js";
 
 describe("Element Hiding", () =>
@@ -29,6 +30,14 @@ describe("Element Hiding", () =>
     // hiding elements may take a few ms on CI
     await new Promise(r => setTimeout(r, 200));
     return await getVisibleElement(tabId, id);
+  }
+
+  async function getElemHideElementInFrame(id, frameId)
+  {
+    let tabId = await new Page("iframe-elemhide.html").loaded();
+    // hiding elements may take a few ms on CI
+    await new Promise(r => setTimeout(r, 200));
+    return await getVisibleElementInFrame(tabId, id, frameId);
   }
 
   it("hides an element", async() =>
@@ -51,12 +60,32 @@ describe("Element Hiding", () =>
     expect(await getElemHideElement("elem-hide")).not.toBeNull();
   });
 
-  it("does not hide elements in allowlisted document", async() =>
+  for (let type of ["$document", "$elemhide"])
   {
-    await addFilter("###elem-hide");
-    await addFilter(`@@|${TEST_PAGES_URL}/*.html$document`);
-    expect(await getElemHideElement("elem-hide")).not.toBeNull();
-  });
+    it(`does not hide elements in allowlisted ${type}`, async function()
+    {
+      setMinTimeout(this, 4000);
+
+      await addFilter("###elem-hide");
+      expect(await getElemHideElement("elem-hide")).toBeNull();
+
+      await addFilter(`@@|${TEST_PAGES_URL}/*.html${type}`);
+      expect(await getElemHideElement("elem-hide")).not.toBeNull();
+    });
+
+    it(`does not hide frame elements allowlisted by ${type}`, async function()
+    {
+      setMinTimeout(this, 4000);
+
+      await addFilter("###elem-hide");
+      expect(await getElemHideElementInFrame("elem-hide", "elem-hide-frame"))
+        .toBeNull();
+
+      await addFilter(`@@|${TEST_PAGES_URL}/iframe-elemhide.html^${type}`);
+      expect(await getElemHideElementInFrame("elem-hide", "elem-hide-frame"))
+        .not.toBeNull();
+    });
+  }
 
   it("does not hide elements in document allowlisted by $elemhide", async() =>
   {

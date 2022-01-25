@@ -549,8 +549,7 @@ describe("API", () =>
         await addFilter(ALLOWING_IMAGE_DOC_FILTER);
 
         let {tabId, frameId} = await loadTabWithFrame();
-        expect(await EWE.filters.getAllowingFilters(
-          tabId, {frameId}))
+        expect(await EWE.filters.getAllowingFilters(tabId, {frameId}))
           .toEqual([ALLOWING_IMAGE_DOC_FILTER]);
         expect(await EWE.filters.getAllowingFilters([tabId]))
           .toEqual([]);
@@ -558,12 +557,11 @@ describe("API", () =>
         await addFilter(ALLOWING_IFRAME_DOC_FILTER);
 
         ({tabId, frameId} = await loadTabWithFrame());
-        expect(await EWE.filters.getAllowingFilters(
-          tabId, {frameId}))
+        expect(await EWE.filters.getAllowingFilters(tabId, {frameId}))
           .toEqual(expect.arrayContaining([ALLOWING_IMAGE_DOC_FILTER,
                                            ALLOWING_IFRAME_DOC_FILTER]));
         expect(await EWE.filters.getAllowingFilters(tabId))
-         .toEqual([ALLOWING_IFRAME_DOC_FILTER]);
+          .toEqual([ALLOWING_IFRAME_DOC_FILTER]);
       });
 
       it("returns filters for allowlisted parent frames", async() =>
@@ -571,8 +569,7 @@ describe("API", () =>
         let {tabId, frameId} = await loadTabWithFrame();
 
         await addFilter(ALLOWING_IFRAME_DOC_FILTER);
-        expect(await EWE.filters.getAllowingFilters(
-          tabId, {frameId}))
+        expect(await EWE.filters.getAllowingFilters(tabId, {frameId}))
           .toEqual([ALLOWING_IFRAME_DOC_FILTER]);
       });
 
@@ -580,14 +577,13 @@ describe("API", () =>
       {
         let filter = `@@|${TEST_PAGES_URL}/*.html$elemhide`;
 
-        await addFilter(`|${TEST_PAGES_URL}/image.png^`);
         await addFilter(ALLOWING_IMAGE_DOC_FILTER);
         await addFilter(filter);
 
         let tabId = await new Page("image.html").loaded();
         let opts = {types: ["elemhide"]};
-        expect(await EWE.filters.getAllowingFilters(
-          tabId, opts)).toEqual([filter]);
+        expect(await EWE.filters.getAllowingFilters(tabId, opts))
+          .toEqual([filter]);
       });
 
       it("doesn't return filters for non-allowlisted tabs", async() =>
@@ -615,23 +611,19 @@ describe("API", () =>
 
       it("returns whether a resource is allowlisted", async() =>
       {
-        let url = `${TEST_PAGES_URL}/image.png`;
-
-        await addFilter(`|${url}^`);
         await addFilter("@@*$image");
 
         let tabId = await new Page("image.html").loaded();
         expect(await EWE.filters.isResourceAllowlisted(
-          url, "image", tabId)).toEqual(true);
+          `${TEST_PAGES_URL}/image.png`, "image", tabId)).toEqual(true);
       });
 
       it("returns whether a frame resource is allowlisted", async() =>
       {
-        let url = `${TEST_PAGES_URL}/image.html`;
-        await addFilter(`|${url}^`);
         await addFilter(`@@||${TEST_PAGES_DOMAIN}^$document`);
 
         let {tabId, frameId} = await loadTabWithFrame();
+        let url = `${TEST_PAGES_URL}/image.html`;
 
         expect(await EWE.filters.isResourceAllowlisted(
           url, "document", tabId)).toEqual(true);
@@ -641,12 +633,12 @@ describe("API", () =>
 
       it("returns whether a cross domain resource is allowlisted", async() =>
       {
-        let url = `${TEST_PAGES_URL}/image.png`;
-        await addFilter(`|${url}^`);
         await addFilter("@@*$image,domain=127.0.0.1");
 
         let {tabId, frameId} =
           await loadTabWithFrame("iframe-cross-domain.html");
+        let url = `${TEST_PAGES_URL}/image.png`;
+
         expect(await EWE.filters.isResourceAllowlisted(
           url, "image", tabId)).toEqual(false);
         expect(await EWE.filters.isResourceAllowlisted(
@@ -655,17 +647,11 @@ describe("API", () =>
 
       it("returns whether a resource is allowlisted by $document", async() =>
       {
+        await addFilter(`@@|${TEST_PAGES_URL}/iframe.html^$document`);
+
+        let {tabId, frameId} = await loadTabWithFrame();
         let url = `${TEST_PAGES_URL}/image.png`;
 
-        await addFilter(`|${url}^`);
-        let {tabId, frameId} = await loadTabWithFrame();
-        expect(await EWE.filters.isResourceAllowlisted(
-          url, "image", tabId)).toEqual(false);
-        expect(await EWE.filters.isResourceAllowlisted(
-          url, "image", tabId, frameId)).toEqual(false);
-
-        await addFilter(`@@|${TEST_PAGES_URL}/iframe.html^$document`);
-        ({tabId, frameId} = await loadTabWithFrame());
         expect(await EWE.filters.isResourceAllowlisted(
           url, "image", tabId)).toEqual(true);
         expect(await EWE.filters.isResourceAllowlisted(
@@ -675,16 +661,10 @@ describe("API", () =>
       it("returns whether a resource is allowlisted by $elemhide", async() =>
       {
         let url = `${TEST_PAGES_URL}/iframe-elemhide.html`;
-
-        await addFilter(`|${TEST_PAGES_URL}##elem-hide^`);
-        let {tabId, frameId} = await loadTabWithFrame();
-        expect(await EWE.filters.isResourceAllowlisted(
-          url, "elemhide", tabId)).toEqual(false);
-        expect(await EWE.filters.isResourceAllowlisted(
-          url, "elemhide", tabId, frameId)).toEqual(false);
-
         await addFilter(`@@|${url}^$elemhide`);
-        ({tabId, frameId} = await loadTabWithFrame());
+
+        let {tabId, frameId} = await loadTabWithFrame();
+
         expect(await EWE.filters.isResourceAllowlisted(
           url, "elemhide", tabId)).toEqual(true);
         expect(await EWE.filters.isResourceAllowlisted(
