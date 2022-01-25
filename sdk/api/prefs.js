@@ -25,7 +25,6 @@ let prefs = Object.create({
   analytics: {trustedHosts: ["adblockplus.org",
                              "notification.adblockplus.org",
                              "easylist-downloads.adblockplus.org"]},
-  blocked_total: 0,
   notificationdata: {},
   notifications_ignoredcategories: [],
   notificationurl: "https://notification.adblockplus.org/notification.json",
