@@ -33,7 +33,7 @@ function forgetPopup(tabId)
   if (loadingPopups.size == 0)
   {
     browser.webRequest.onBeforeRequest.removeListener(onPopupURLChanged);
-    browser.webNavigation.onCommitted.removeListener(onPopupURLChanged);
+    browser.webNavigation.onBeforeNavigate.removeListener(onPopupURLChanged);
     browser.webNavigation.onCompleted.removeListener(onCompleted);
     browser.tabs.onRemoved.removeListener(forgetPopup);
   }
@@ -54,8 +54,8 @@ function checkPotentialPopup(tabId, url, frame)
 
     if (filter instanceof BlockingFilter)
       browser.tabs.remove(tabId).catch(() => {});
-    else
-      forgetPopup(tabId);
+
+    forgetPopup(tabId);
   }
 }
 
@@ -91,7 +91,7 @@ function onPopup({tabId, url, sourceTabId, sourceFrameId})
         types: ["main_frame"]
       }
     );
-    browser.webNavigation.onCommitted.addListener(onPopupURLChanged);
+    browser.webNavigation.onBeforeNavigate.addListener(onPopupURLChanged);
     browser.webNavigation.onCompleted.addListener(onCompleted);
     browser.tabs.onRemoved.addListener(forgetPopup);
   }

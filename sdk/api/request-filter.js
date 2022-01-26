@@ -43,6 +43,9 @@ let typeSelectors = new Map([
   [contentTypes.OBJECT, "object,embed"]
 ]);
 
+let pendingAllowlistedRequests = new Set();
+let pendingCspRequests = new Set();
+
 class RequestFilter
 {
   register()
@@ -67,6 +70,11 @@ class RequestFilter
   {
     return details.type == "sub_frame" ? details.parentFrameId :
                                          details.frameId;
+  }
+
+  getInitiator(details)
+  {
+    return details.initiator || details.documentUrl;
   }
 
   getFrameInfo(details, initiator)
@@ -100,21 +108,6 @@ class RequestFilter
     }
   }
 
-  isBlocking(details, filter, matchInfo)
-  {
-    if (!filter)
-    {
-      logItem(details, null, matchInfo);
-      return false;
-    }
-
-    if (filter instanceof BlockingFilter)
-      return true;
-
-    logItem(details, filter, matchInfo);
-    return false;
-  }
-
   block(details, filter, matchInfo)
   {
     let value = (() =>
@@ -140,52 +133,68 @@ class RequestFilter
     return value;
   }
 
+  allow(details, filter, matchInfo)
+  {
+    pendingAllowlistedRequests.add(details.requestId);
+    logItem(details, filter, matchInfo);
+  }
+
   match(details, frame, specificOnly)
   {
     let docDomain = frame.hostname;
-    let filter = matcher.match(details.url, this.getContentType(details),
-                               docDomain, frame.sitekey, specificOnly);
-
-    let matchInfo = {docDomain, specificOnly, method: "request"};
-    if (this.isBlocking(details, filter, matchInfo))
-      return this.block(details, filter, matchInfo);
+    // This currently needs to be matcher.search because matcher.match
+    // will only return an allowing filter if it's overriding a
+    // blocking filter. Unfortunately, the current design doesn't
+    // consider the potential of header filters being checked in a
+    // later stage. Using search may have performance implications, so
+    // this should be changed back to using matcher.match after
+    // https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore/-/issues/392
+    // is resolved.
+    let matches = matcher.search(details.url, this.getContentType(details),
+                                 docDomain, frame.sitekey, specificOnly);
+    let filter = matches.allowing[0] || matches.blocking[0];
+    if (filter)
+    {
+      let matchInfo = {docDomain, specificOnly, method: "request"};
+      if (filter instanceof BlockingFilter)
+        return this.block(details, filter, matchInfo);
+      return this.allow(details, filter, matchInfo);
+    }
   }
 
   filter(details)
   {
-    let initiator = details.initiator || details.documentUrl;
+    if (pendingAllowlistedRequests.has(details.requestId))
+      return;
+
+    let initiator = this.getInitiator(details);
     if (initiator && initiator.startsWith(EXTENSION_PROTOCOL))
     {
-      logItem(details, null, {});
-      return;
+      // These are requests sent by an extension, so if we block these
+      // we could block our own ability to update subscriptions etc.
+      return this.allow(details, null, {
+        method: "allowing", allowingReason: "extensionInitiated"
+      });
     }
 
     let frame = this.getFrameInfo(details, initiator);
     if (!frame)
-    {
-      logItem(details, null, {});
       return;
-    }
 
     let specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) != 0;
     if (frame.allowlisted & contentTypes.DOCUMENT)
     {
-      if (this.shouldLogForAllowlistedDocument)
-      {
-        logItem(details, null, {
-          docDomain: frame.hostname,
-          method: "allowing",
-          specificOnly
-        });
-      }
-      return;
+      return this.allow(details, null, {
+        docDomain: frame.hostname,
+        method: "allowing",
+        specificOnly
+      });
     }
 
     return this.match(details, frame, specificOnly);
   }
 }
 
-RequestFilter.prototype.shouldLogForAllowlistedDocument = true;
 RequestFilter.prototype.event = browser.webRequest.onBeforeRequest;
 RequestFilter.prototype.eventArgs = [
   {
@@ -200,28 +209,36 @@ class HeaderFilter extends RequestFilter
 {
   match(details, frame, specificOnly)
   {
-    let typeMask = contentTypes.HEADER | this.getContentType(details);
     let docDomain = frame.hostname;
-    let matchInfo = {docDomain, specificOnly, method: "header"};
-
-    if (!this.isBlocking(details, matcher.match(details.url, typeMask,
-                                                docDomain, frame.sitekey,
-                                                specificOnly), matchInfo))
-      return;
-
     let matches = matcher.search(details.url, contentTypes.HEADER,
                                  docDomain, frame.sitekey,
-                                 specificOnly, "blocking");
+                                 specificOnly);
 
-    for (let filter of matches.blocking)
+    let filter = (() =>
     {
-      if (filter.filterHeaders(details.responseHeaders))
+      // You might think that we should call filterHeaders on the
+      // allowing filter too, but actually filterHeaders is only on
+      // blocking filters
+      if (matches.allowing.length > 0)
+        return matches.allowing[0];
+
+      for (let blockingFilter of matches.blocking)
+      {
+        if (blockingFilter.filterHeaders(details.responseHeaders))
+          return blockingFilter;
+      }
+    })();
+
+    if (filter)
+    {
+      let matchInfo = {docDomain, specificOnly, method: "header"};
+      if (filter instanceof BlockingFilter)
         return this.block(details, filter, matchInfo);
+      return this.allow(details, filter, matchInfo);
     }
   }
 }
 
-HeaderFilter.prototype.shouldLogForAllowlistedDocument = false;
 HeaderFilter.prototype.event = browser.webRequest.onHeadersReceived;
 HeaderFilter.prototype.eventArgs = [
   {
@@ -234,7 +251,7 @@ HeaderFilter.prototype.eventArgs = [
 
 class CSPFilter extends RequestFilter
 {
-  getFrameInfo(details)
+  getFrameInfo(details, initiator)
   {
     let frame = getFrameInfo(details.tabId, details.frameId);
     return frame.pending || frame;
@@ -244,24 +261,29 @@ class CSPFilter extends RequestFilter
   {
     let parentFrame = getFrameInfo(details.tabId, details.parentFrameId);
     let docDomain = parentFrame && parentFrame.hostname;
-
-    let matchInfo = {docDomain: docDomain || frame.hostname, specificOnly,
-                     method: "csp"};
-    if (!this.isBlocking(details, matcher.match(details.url, contentTypes.CSP,
-                                                docDomain, frame.sitekey,
-                                                specificOnly), matchInfo))
-      return;
+    let matchInfo = {docDomain: docDomain || frame.hostname,
+                     specificOnly, method: "csp"};
 
     let {responseHeaders} = details;
     let matches = matcher.search(details.url, contentTypes.CSP, docDomain,
-                                 frame.sitekey, specificOnly, "blocking");
+                                 frame.sitekey, specificOnly);
 
-    for (let filter of matches.blocking)
+    if (matches.allowing.length > 0)
     {
-      logItem(details, filter, matchInfo);
-      responseHeaders.push(
-        {name: "Content-Security-Policy", value: filter.csp}
-      );
+      let filter = matches.allowing[0];
+      return this.allow(details, filter, matchInfo);
+    }
+
+    if (matches.blocking.length > 0)
+    {
+      pendingCspRequests.add(details.requestId);
+      for (let filter of matches.blocking)
+      {
+        logItem(details, filter, matchInfo);
+        responseHeaders.push(
+          {name: "Content-Security-Policy", value: filter.csp}
+        );
+      }
     }
 
     return {responseHeaders};
@@ -277,9 +299,74 @@ CSPFilter.prototype.eventArgs = [
   ["blocking", "responseHeaders"]
 ];
 
-let filters = browser.declarativeNetRequest ? [] : [new RequestFilter(),
-                                                    new HeaderFilter(),
-                                                    new CSPFilter()];
+class RequestCompletionFilter extends RequestFilter
+{
+  filter(details)
+  {
+    let wasAllowlisted = pendingAllowlistedRequests.delete(details.requestId);
+    let wasCsp = pendingCspRequests.delete(details.requestId);
+    if (wasAllowlisted || wasCsp)
+      return;
+
+    let initiator = this.getInitiator(details);
+    let frame = this.getFrameInfo(details, initiator);
+    if (!frame)
+      return;
+
+    let pending = frame.pending || frame;
+    let specificOnly = (pending.allowlisted & contentTypes.GENERICBLOCK) != 0;
+
+    if (details.frameId == 0)
+    {
+      let popupFilter = matcher.match(
+        details.url, contentTypes.POPUP,
+        frame.hostname, frame.sitekey, specificOnly
+      );
+      if (popupFilter)
+        return;
+    }
+    let matchInfo = {
+      docDomain: pending.hostname,
+      method: "unmatched",
+      specificOnly
+    };
+    logItem(details, null, matchInfo);
+  }
+}
+
+RequestCompletionFilter.prototype.event = browser.webRequest.onCompleted;
+RequestCompletionFilter.prototype.eventArgs = [
+  {
+    types: Object.values(browser.webRequest.ResourceType),
+    urls: ["http://*/*", "https://*/*", "ws://*/*", "wss://*/*"]
+  },
+  []
+];
+
+class RequestErrorFilter extends RequestFilter
+{
+  filter(details)
+  {
+    pendingAllowlistedRequests.delete(details.requestId);
+    pendingCspRequests.delete(details.requestId);
+  }
+}
+
+RequestErrorFilter.prototype.event = browser.webRequest.onErrorOccurred;
+RequestErrorFilter.prototype.eventArgs = [
+  {
+    types: Object.values(browser.webRequest.ResourceType),
+    urls: ["http://*/*", "https://*/*", "ws://*/*", "wss://*/*"]
+  }
+];
+
+let filters = browser.declarativeNetRequest ? [] : [
+  new RequestFilter(),
+  new HeaderFilter(),
+  new CSPFilter(),
+  new RequestCompletionFilter(),
+  new RequestErrorFilter()
+];
 
 function onBeforeNavigate()
 {

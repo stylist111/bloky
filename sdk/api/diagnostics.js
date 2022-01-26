@@ -43,8 +43,14 @@ export class BlockableEventDispatcher
   *   emitted is around two seconds.
   *   Note that this will enable element hiding tracing, which degrades
   *   performance and should only be used to enable ad-hoc diagnostics.
-  * @param {boolean} [includeUnmatched=false]
-  *   Whether or not unmatched requests should also be emitted.
+  * @param {boolean} [includeUnmatched=false] Whether or not unmatched requests
+  *   should also be emitted. This event is generally emitted after a request is
+  *   fully completed. Note that blockable item events may refer to either
+  *   requests or documents. Unmatched events only refer to requests. This has
+  *   the potentially confusing implication that there may be allowing document
+  *   events (eg a $genericblock allowing filter being activated for a document)
+  *   as well as an unmatched event for the request that actually loaded the
+  *   HTML of the document.
   * @param {string} [filterType="blocking"]
   *   The type of filters to emit. Can be "blocking", "allowing", or "all".
   * @param {Number} [tabId=null]

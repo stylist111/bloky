@@ -44,24 +44,31 @@ export default {
 
   /**
   * @typedef {Object} FilterMatchInfo
-  * @property {string} docDomain The domain name of the document that loads
-  *                              the URL.
+  * @property {string} docDomain The domain of the document that loads the URL.
   * @property {?string} rewrittenUrl The name of the internal resource to which
-  *                                  to rewrite the URL.
+  *   to rewrite the URL.
   * @property {?boolean} specificOnly Whether selectors from generic filters
-  *                                   should be included.
-  * @property {string} method The method used to match this filter.
-  *                           This can be the string "request", "header", "csp",
-  *                           "popup", "elemhide", "snippet" or "allowing".
+  *   should be included.
+  * @property {string} method The method used to match this filter. This can be
+  *   the string "request", "header", "csp", "popup", "elemhide", "snippet",
+  *   "allowing", or "unmatched".
   * @property {?string} allowingReason When the type in request details is
-  *                                    undefined, this contains the reason why
-  *                                    the request/frame got allowlisted. That
-  *                                    is either "document", "elemhide",
-  *                                    "genericblock" or "generichide".
+  *   undefined, this contains the reason why the request/frame got
+  *   allowlisted. That is either "document", "elemhide", "genericblock",
+  *   "generichide", or "extensionInitiated". "extensionInitiated" refers to any
+  *   web requests initiated by a browser extension rather than a web page
+  *   (those requests are not blockable).
   */
 
   /**
    * Emitted when any blockable item is matched.
+   *
+   * This includes both filters being applied on a document level and web
+   * requests. Multiple events may be emitted for a document, one for each
+   * filter being applied to the document. There will generally only be one
+   * event emitted for each web request. The exception to this is CSP filters,
+   * where multiple CSP filters may be applied to a request at the same time,
+   * and an event will be emitted for each filter applied.
    * @event
    * @param {object|{frameId: number, tabId: number, url: string}} request
    *   Either

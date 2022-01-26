@@ -26,7 +26,7 @@ describe("Element Hiding", () =>
 {
   async function getElemHideElement(id)
   {
-    let tabId = await new Page("element-hiding.html").loaded();
+    let tabId = await new Page("element-hiding.html").loaded;
     // hiding elements may take a few ms on CI
     await new Promise(r => setTimeout(r, 200));
     return await getVisibleElement(tabId, id);
@@ -34,7 +34,7 @@ describe("Element Hiding", () =>
 
   async function getElemHideElementInFrame(id, frameId)
   {
-    let tabId = await new Page("iframe-elemhide.html").loaded();
+    let tabId = await new Page("iframe-elemhide.html").loaded;
     // hiding elements may take a few ms on CI
     await new Promise(r => setTimeout(r, 200));
     return await getVisibleElementInFrame(tabId, id, frameId);
@@ -101,7 +101,7 @@ describe("Element Hiding", () =>
     await addFilter(`${TEST_PAGES_DOMAIN}###elem-hide-specific`);
     await addFilter(`@@|${TEST_PAGES_URL}$generichide`);
 
-    let tabId = await new Page("element-hiding.html").loaded();
+    let tabId = await new Page("element-hiding.html").loaded;
     await new Promise(r => setTimeout(r, 200));
     expect(await getVisibleElement(tabId, "elem-hide")).not.toBeNull();
     expect(await getVisibleElement(tabId, "elem-hide-specific")).toBeNull();
@@ -127,7 +127,7 @@ describe("Element Hiding", () =>
         `${TEST_PAGES_DOMAIN}#?#.child2:-abp-properties(background-color: lime)`
       );
 
-      let tabId = await new Page("element-hiding.html").loaded();
+      let tabId = await new Page("element-hiding.html").loaded;
       await new Promise(r => setTimeout(r, 200));
       let elem1 = await getVisibleElement(tabId, "unhide1");
       let elem2 = await getVisibleElement(tabId, "unhide2");
@@ -179,11 +179,12 @@ describe("Element Hiding", () =>
 
   describe("Element collapsing", async() =>
   {
-    it("hides the img element of a blocked request", async() =>
+    it("hides the img element of a blocked request", async function()
     {
+      setMinTimeout(this, 3000);
       await addFilter("/image.png^$image");
 
-      let tabId = await new Page("element-hiding.html").loaded();
+      let tabId = await new Page("element-hiding.html").loaded;
       await waitForInvisibleElement(tabId, "elem-hide-img-request");
     });
   });
@@ -200,7 +201,7 @@ describe("Snippets", () =>
   {
     await addFilter(`${TEST_PAGES_DOMAIN}#$#${snippet}`);
 
-    let tabId = await new Page("image.html").loaded();
+    let tabId = await new Page("image.html").loaded;
     expect(await executeScript(tabId, () => self.works)).toBe(true);
   });
 });

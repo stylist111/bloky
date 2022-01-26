@@ -58,8 +58,10 @@ export class Page
 {
   constructor(path, fullUrl = false)
   {
-    this.url = fullUrl ? path : `${TEST_PAGES_URL}/${path}`;
     let removingCurrentPromise = Page.removeCurrent();
+    Page.current = this;
+
+    this.url = fullUrl ? path : `${TEST_PAGES_URL}/${path}`;
     this.created = (async() =>
     {
       await removingCurrentPromise;
@@ -74,51 +76,47 @@ export class Page
       return (await browser.tabs.create({url: this.url, active})).id;
     })();
 
-    Page.current = this;
-  }
-
-  async loaded()
-  {
-    let tabId = await this.created;
-
-    return new Promise((resolve, reject) =>
+    this.loaded = this.created.then(tabId =>
     {
-      function removeListeners()
+      return new Promise((resolve, reject) =>
       {
-        browser.webNavigation.onCompleted.removeListener(onCompleted);
-        browser.webNavigation.onErrorOccurred.removeListener(onErrorOccurred);
-      }
-
-      function onCompleted(details)
-      {
-        if (details.tabId == tabId && details.frameId == 0)
+        function removeListeners()
         {
-          removeListeners();
-          resolve(tabId);
+          browser.webNavigation.onCompleted.removeListener(onCompleted);
+          browser.webNavigation.onErrorOccurred.removeListener(onErrorOccurred);
         }
-      }
 
-      function onErrorOccurred(details)
-      {
-        handleConnection(details, tabId, removeListeners, reject);
-      }
-
-      browser.webNavigation.onCompleted.addListener(onCompleted);
-      browser.webNavigation.onErrorOccurred.addListener(onErrorOccurred);
-
-      // If the tab is already complete, then the above event won't
-      // ever fire. In practice, this only happens if the tab being
-      // loaded is empty.
-      browser.tabs.get(tabId).then(tab =>
-      {
-        // URL comparison is needed because it seems old versions of
-        // Firefox say they're completed before actually starting
-        // navigation.
-        if (tab.url == this.url && tab.status == "complete")
+        function onCompleted(details)
         {
-          removeListeners();
-          resolve(tabId);
+          if (details.tabId == tabId && details.frameId == 0)
+          {
+            removeListeners();
+            resolve(tabId);
+          }
         }
+
+        function onErrorOccurred(details)
+        {
+          handleConnection(details, tabId, removeListeners, reject);
+        }
+
+        browser.webNavigation.onCompleted.addListener(onCompleted);
+        browser.webNavigation.onErrorOccurred.addListener(onErrorOccurred);
+
+        // If the tab is already complete, then the above event won't
+        // ever fire. In practice, this only happens if the tab being
+        // loaded is empty.
+        browser.tabs.get(tabId).then(tab =>
+        {
+          // URL comparison is needed because it seems old versions of
+          // Firefox say they're completed before actually starting
+          // navigation.
+          if (tab.url == this.url && tab.status == "complete")
+          {
+            removeListeners();
+            resolve(tabId);
+          }
+        });
       });
     });
   }
@@ -220,7 +218,7 @@ export class Popup
   {
     this.created = new Promise((resolve, reject) =>
     {
-      opener.created.then(openerTabId =>
+      opener.loaded.then(openerTabId =>
       {
         let {onCreatedNavigationTarget} = browser.webNavigation;
 
@@ -233,20 +231,30 @@ export class Popup
 
         function onTabCreated(tab)
         {
-          removeListeners();
-          resolve(tab.id);
+          if (tab.openerTabId == openerTabId)
+          {
+            removeListeners();
+            resolve(tab.id);
+          }
         }
 
         function onNavigationTarget(details)
         {
-          removeListeners();
-          resolve(details.tabId);
+          if (details.sourceTabId == openerTabId)
+          {
+            removeListeners();
+            resolve(details.tabId);
+          }
         }
 
         function onErrorOccurred(details)
         {
           handleConnection(details, openerTabId, removeListeners, reject);
         }
+
+        browser.tabs.onCreated.addListener(onTabCreated);
+        onCreatedNavigationTarget.addListener(onNavigationTarget);
+        browser.webNavigation.onErrorOccurred.addListener(onErrorOccurred);
 
         executeScript(
           openerTabId,
@@ -257,10 +265,6 @@ export class Popup
           removeListeners();
           reject(err);
         });
-
-        browser.tabs.onCreated.addListener(onTabCreated);
-        onCreatedNavigationTarget.addListener(onNavigationTarget);
-        browser.webNavigation.onErrorOccurred.addListener(onErrorOccurred);
       }, reject);
     });
 
@@ -297,6 +301,25 @@ export class Popup
 
         browser.tabs.onRemoved.addListener(onTabRemoved);
         browser.webNavigation.onCompleted.addListener(onCompleted);
+
+        // As with normal pages, it's possible that the we missed the
+        // events above. Especially since this is called
+        // asynchronously after the tab is created.
+        browser.tabs.get(popupTabId).then(tab =>
+        {
+          if (tab.url != "about:blank" && tab.status == "complete")
+          {
+            removeListeners();
+            resolve(false);
+          }
+        }).catch(() =>
+        {
+          // We are assuming that this error is because the tab
+          // doesn't exist, and not some other error. This means it's
+          // already been blocked.
+          removeListeners();
+          resolve(true);
+        });
       }, reject);
     });
 
@@ -310,7 +333,8 @@ export class Popup
     if (removingPopup)
     {
       let tabId = await removingPopup.created;
-      await browser.tabs.remove(tabId);
+      // popup may already be closed if it was blocked, so this may fail
+      await browser.tabs.remove(tabId).catch(() => {});
     }
   }
 }
@@ -331,7 +355,7 @@ export async function waitForInvisibleElement(tabId, id)
       return el.offsetParent ? el.outerHTML : null;
     }, [id]);
     return result == null;
-  }, 1000, `The element with id "${id}" is still visible`);
+  }, 2000, `The element with id "${id}" is still visible`);
 }
 
 export function wait(condition, timeout = 0, message, pollTimeout = 100)

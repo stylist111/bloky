@@ -521,14 +521,14 @@ describe("API", () =>
         await addFilter(`|${TEST_PAGES_URL}/image.png^`);
         await addFilter(ALLOWING_IMAGE_DOC_FILTER);
 
-        let tabId = await new Page("image.html").loaded();
+        let tabId = await new Page("image.html").loaded;
         expect(await EWE.filters.getAllowingFilters(tabId))
           .toEqual([ALLOWING_IMAGE_DOC_FILTER]);
       });
 
       it("returns filters for allowlisted tabs after page load", async() =>
       {
-        let tabId = await new Page("image.html").loaded();
+        let tabId = await new Page("image.html").loaded;
 
         await addFilter(`|${TEST_PAGES_URL}/image.png^`);
         await addFilter(ALLOWING_IMAGE_DOC_FILTER);
@@ -538,7 +538,7 @@ describe("API", () =>
 
       async function loadTabWithFrame(path = "iframe.html")
       {
-        let tabId = await new Page(path).loaded();
+        let tabId = await new Page(path).loaded;
         let frames = await browser.webNavigation.getAllFrames({tabId});
         let {frameId} = frames.find(({url}) => url.endsWith("/image.html"));
         return {tabId, frameId};
@@ -580,7 +580,7 @@ describe("API", () =>
         await addFilter(ALLOWING_IMAGE_DOC_FILTER);
         await addFilter(filter);
 
-        let tabId = await new Page("image.html").loaded();
+        let tabId = await new Page("image.html").loaded;
         let opts = {types: ["elemhide"]};
         expect(await EWE.filters.getAllowingFilters(tabId, opts))
           .toEqual([filter]);
@@ -588,7 +588,7 @@ describe("API", () =>
 
       it("doesn't return filters for non-allowlisted tabs", async() =>
       {
-        let tabId = await new Page("image.html").loaded();
+        let tabId = await new Page("image.html").loaded;
         expect(await EWE.filters.getAllowingFilters(tabId))
           .toEqual([]);
       });
@@ -604,7 +604,7 @@ describe("API", () =>
 
       it("handles empty tabs", async() =>
       {
-        let tabId = await new Page("about:blank", true).loaded();
+        let tabId = await new Page("about:blank", true).loaded;
         expect(await EWE.filters.getAllowingFilters(tabId))
           .toEqual([]);
       });
@@ -613,7 +613,7 @@ describe("API", () =>
       {
         await addFilter("@@*$image");
 
-        let tabId = await new Page("image.html").loaded();
+        let tabId = await new Page("image.html").loaded;
         expect(await EWE.filters.isResourceAllowlisted(
           `${TEST_PAGES_URL}/image.png`, "image", tabId)).toEqual(true);
       });
@@ -739,6 +739,11 @@ describe("API", () =>
     let allowingEventOptions = {filterType: "allowing"};
     let elemhideEventOptions = {includeElementHiding: true};
     let unmatchedEventOptions = {includeUnmatched: true, filterType: "all"};
+    let allEventOptions = {
+      includeElementHiding: true,
+      includeUnmatched: true,
+      filterType: "all"
+    };
 
     it("exposes a mapping between content types and ResourceTypes", async() =>
     {
@@ -762,8 +767,9 @@ describe("API", () =>
     });
 
 
-    describe("Diagnostics", () =>
+    describe("Diagnostics", function()
     {
+      setMinTimeout(this, 3000);
       expect.extend({
         anyNullable(received, type)
         {
@@ -842,6 +848,11 @@ describe("API", () =>
         method: "popup",
         specificOnly: false
       };
+      let unmatchedMatchInfo = {
+        docDomain: TEST_PAGES_DOMAIN,
+        method: "unmatched",
+        specificOnly: false
+      };
 
       function expectRewriteMatchInfo(rewrittenUrl)
       {
@@ -871,13 +882,16 @@ describe("API", () =>
         // after the page is done loading, like elemhide.
         try
         {
-          await wait(() => getReceivedEvents().length == requests.length, 1000);
+          await wait(() => getReceivedEvents().length >= requests.length,
+                     1000, null, 50);
         }
         catch (e)
         {
           // Rather than fail in the catch, we're going to fail with
           // the assertions below. This will give better output.
         }
+        // add a little wait here in case there are extra unexpected events
+        await new Promise(r => setTimeout(r, 50));
 
         let receivedEvents = getReceivedEvents();
         expect(receivedEvents).toHaveLength(requests.length);
@@ -899,18 +913,6 @@ describe("API", () =>
               if (isFavicon)
                 return false;
 
-              // Header filtering may be hit multiple times if the
-              // resource is cached. This is legitimate because the
-              // headers for the 304 response from the server, and the
-              // 200 response from the brower may be different. We
-              // still want to let through 304 results that ended in
-              // blocking, since they don't continue after that.
-              let isCachedResponse = event.request.statusCode == 304;
-              let isBlocking = event.filter && event.filter.type == "blocking";
-              let isCachedNonBlocking = isCachedResponse && !isBlocking;
-              if (isCachedNonBlocking)
-                return false;
-
               // Some tests ran into issues with previous other tabs
               // being open, resulting in unexpected events. We filter
               // here rather than in eventOptions because we want to
@@ -930,7 +932,7 @@ describe("API", () =>
       {
         let callback = callbackOrPage;
         if (typeof callbackOrPage == "string")
-          callback = () => new Page(callbackOrPage).loaded();
+          callback = () => new Page(callbackOrPage).loaded;
 
         let fake = await addFakeListener({namespace: "reporting",
                                           eventName: "onBlockableItem",
@@ -953,7 +955,7 @@ describe("API", () =>
 
         await addFilter("/image.png^$image");
         let page = new Page("image.html");
-        await page.loaded();
+        await page.loaded;
         expect(fake.called).toBeTruthy();
 
         let {callCount} = fake;
@@ -966,43 +968,51 @@ describe("API", () =>
       {
         await checkLogging(
           ["/image.png^$image"],
-          defaultEventOptions,
+          allEventOptions,
           "image.html",
           [{
+            filter: null,
+            matchInfo: unmatchedMatchInfo,
+            request: expectedRequestRelativeUrl("image.html")
+          }, {
             filter: expectedBlockingFilter("/image.png^$image"),
             matchInfo: requestMatchInfo,
             request: expectedRequestRelativeUrl("image.png")
           }]);
       });
 
-      it("logs third-party requests", async() =>
-      {
-        await checkLogging(
-          ["/image.png$third-party"],
-          defaultEventOptions,
-          "third-party.html",
-          [{
-            filter: expectedBlockingFilter("/image.png$third-party"),
-            matchInfo: requestMatchInfo,
-            request: expectedRequestUrl("http://127.0.0.1:3000/image.png")
-          }]
-        );
-      });
-
       it("logs allowlisting request filter", async() =>
       {
         await checkLogging(
           ["/image.png^$image", `@@|${TEST_PAGES_URL}$image`],
-          allowingEventOptions,
+          allEventOptions,
           "image.html",
           [{
+            filter: null,
+            matchInfo: unmatchedMatchInfo,
+            request: expectedRequestRelativeUrl("image.html")
+          }, {
             filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}$image`),
             matchInfo: requestMatchInfo,
             request: expectedRequestRelativeUrl("image.png")
+          }]
+        );
+      });
+
+      it("logs third-party requests", async() =>
+      {
+        await checkLogging(
+          ["/image.png$third-party"],
+          allEventOptions,
+          "third-party.html",
+          [{
+            filter: null,
+            matchInfo: unmatchedMatchInfo,
+            request: expectedRequestRelativeUrl("third-party.html")
           }, {
-            filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}$image`),
-            matchInfo: headerMatchInfo,
-            request: expectedRequestRelativeUrl("image.png")
+            filter: expectedBlockingFilter("/image.png$third-party"),
+            matchInfo: requestMatchInfo,
+            request: expectedRequestUrl("http://127.0.0.1:3000/image.png")
           }]
         );
       });
@@ -1011,9 +1021,13 @@ describe("API", () =>
       {
         await checkLogging(
           ["*.js$rewrite=abp-resource:blank-js,domain=localhost"],
-          defaultEventOptions,
+          allEventOptions,
           "script.html",
           [{
+            filter: null,
+            matchInfo: unmatchedMatchInfo,
+            request: expectedRequestRelativeUrl("script.html")
+          }, {
             filter: expectedBlockingFilter(
               "*.js$rewrite=abp-resource:blank-js,domain=localhost"
             ),
@@ -1022,13 +1036,43 @@ describe("API", () =>
           }]);
       });
 
+      it("logs unmatched for invalid rewrite filter", async() =>
+      {
+        // At time of writing, rewrite filters are not allowed to
+        // redirect to arbitrary resources. It's only ever data urls
+        // defined in core. This means when we redirect, we don't have
+        // to deal with the redirected request, because it's a data
+        // url. This test is meant to catch if this assumption is
+        // broken in future and an arbitrary redirect is allowed.
+        expect(addFilter(
+          `*.js$rewrite=${TEST_PAGES_URL}/script.js,domain=localhost`
+        )).rejects.toThrow("FilterError");
+        await checkLogging(
+          [],
+          allEventOptions,
+          "script.html",
+          [{
+            filter: null,
+            matchInfo: unmatchedMatchInfo,
+            request: expectedRequestRelativeUrl("script.html")
+          }, {
+            filter: null,
+            matchInfo: unmatchedMatchInfo,
+            request: expectedRequestRelativeUrl("script.js")
+          }]);
+      });
+
       it("logs blocking $header filter", async() =>
       {
         await checkLogging(
           [`|${TEST_PAGES_URL}$header=x-header=whatever`],
-          defaultEventOptions,
+          allEventOptions,
           "header.html",
           [{
+            filter: null,
+            matchInfo: unmatchedMatchInfo,
+            request: expectedRequestRelativeUrl("header.html")
+          }, {
             filter: expectedBlockingFilter(
               `|${TEST_PAGES_URL}$header=x-header=whatever`
             ),
@@ -1046,9 +1090,13 @@ describe("API", () =>
             `|${TEST_PAGES_URL}$header=x-header=whatever`,
             `@@|${TEST_PAGES_URL}$header`
           ],
-          allowingEventOptions,
+          allEventOptions,
           "header.html",
           [{
+            filter: null,
+            matchInfo: unmatchedMatchInfo,
+            request: expectedRequestRelativeUrl("header.html")
+          }, {
             filter: expectedAllowingFilter(
               `@@|${TEST_PAGES_URL}$header`
             ),
@@ -1059,11 +1107,35 @@ describe("API", () =>
           }]);
       });
 
+      it("logs $header filter allowlisted by non-header filter", async() =>
+      {
+        await checkLogging(
+          [
+            `|${TEST_PAGES_URL}$header=x-header=whatever`,
+            `@@|${TEST_PAGES_URL}`
+          ],
+          allEventOptions,
+          "header.html",
+          [{
+            filter: null,
+            matchInfo: unmatchedMatchInfo,
+            request: expectedRequestRelativeUrl("header.html")
+          }, {
+            filter: expectedAllowingFilter(
+              `@@|${TEST_PAGES_URL}`
+            ),
+            matchInfo: requestMatchInfo,
+            request: expectedRequestRelativeUrl(
+              "image.png?header-name=x-header&header-value=whatever"
+            )
+          }]);
+      });
+
       it("logs blocking $csp filter", async() =>
       {
         await checkLogging(
           [`|${TEST_PAGES_URL}$csp=img-src 'none'`],
-          defaultEventOptions,
+          allEventOptions,
           "csp.html",
           [{
             filter: expectedBlockingFilter(
@@ -1078,31 +1150,83 @@ describe("API", () =>
       {
         await checkLogging(
           [`|${TEST_PAGES_URL}$csp=img-src 'none'`, `@@|${TEST_PAGES_URL}$csp`],
-          allowingEventOptions,
+          allEventOptions,
           "csp.html",
           [{
             filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}$csp`),
             matchInfo: cspMatchInfo,
             request: expectedRequestRelativeUrl("csp.html")
+          }, {
+            filter: null,
+            matchInfo: unmatchedMatchInfo,
+            request: expectedRequestRelativeUrl("image.png")
           }]);
       });
 
-      for (let option of ["$document", "$elemhide",
-                          "$genericblock", "$generichide"])
+      it("logs allowlisting $document filter", async() =>
       {
-        it(`logs allowlisting ${option} filter`, () => checkLogging(
-          [`@@|${TEST_PAGES_URL}${option}`],
-          allowingEventOptions,
+        await checkLogging(
+          [`@@|${TEST_PAGES_URL}$document`],
+          allEventOptions,
           "image.html",
           [{
-            filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}${option}`),
+            filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}$document`),
             matchInfo: {
               ...allowingMatchInfo,
-              allowingReason: option.substring(1)
+              allowingReason: "document"
             },
             request: expectedRequestRelativeUrl("image.html")
+          }, {
+            filter: null,
+            matchInfo: {
+              ...allowingMatchInfo,
+              specificOnly: false
+            },
+            request: expectedRequestRelativeUrl("image.html")
+          }, {
+            filter: null,
+            matchInfo: {
+              ...allowingMatchInfo,
+              specificOnly: false
+            },
+            request: expectedRequestRelativeUrl("image.png")
           }]
-        ));
+        );
+      });
+
+      for (let option of ["$elemhide", "$genericblock", "$generichide"])
+      {
+        it(`logs allowlisting ${option} filter`, async() =>
+        {
+          let specificOnly = option == "$genericblock";
+          await checkLogging(
+            [`@@|${TEST_PAGES_URL}${option}`],
+            allEventOptions,
+            "image.html",
+            [{
+              filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}${option}`),
+              matchInfo: {
+                ...allowingMatchInfo,
+                allowingReason: option.substring(1)
+              },
+              request: expectedRequestRelativeUrl("image.html")
+            }, {
+              filter: null,
+              matchInfo: {
+                ...unmatchedMatchInfo,
+                specificOnly
+              },
+              request: expectedRequestRelativeUrl("image.html")
+            }, {
+              filter: null,
+              matchInfo: {
+                ...unmatchedMatchInfo,
+                specificOnly
+              },
+              request: expectedRequestRelativeUrl("image.png")
+            }]
+          );
+        });
       }
 
       it("logs allowlisting for different domain iframe", async() =>
@@ -1130,7 +1254,7 @@ describe("API", () =>
         await checkLogging(
           [`@@|${TEST_PAGES_URL}/image.html^$document`],
           allowingEventOptions,
-          () => new Page(url, true).loaded(),
+          () => new Page(url, true).loaded,
           expectedEvents
         );
       });
@@ -1159,7 +1283,7 @@ describe("API", () =>
             tabId,
             ...elemhideEventOptions
           },
-          () => page.loaded(),
+          () => page.loaded,
           [{
             filter: expectedElemhideFilter("###elem-hide"),
             matchInfo: elemhideMatchInfo,
@@ -1171,7 +1295,7 @@ describe("API", () =>
 
       it("logs element hiding filter dynamically", async function()
       {
-        setMinTimeout(this, 3000);
+        setMinTimeout(this, 4000);
 
         let text = `${TEST_PAGES_DOMAIN}###element-hiding-dyn`;
         await checkLogging(
@@ -1179,7 +1303,7 @@ describe("API", () =>
           elemhideEventOptions,
           async() =>
           {
-            let tabId = await new Page("image.html").loaded();
+            let tabId = await new Page("image.html").loaded;
             await executeScript(tabId, async() =>
             {
               let div = document.createElement("div");
@@ -1216,7 +1340,7 @@ describe("API", () =>
           elemhideEventOptions,
           async() =>
           {
-            let tabId = await new Page("element-hiding.html").loaded();
+            let tabId = await new Page("element-hiding.html").loaded;
             await executeScript(tabId, async() =>
             {
               document.getElementById("unhide1").parentElement.className = "";
@@ -1246,7 +1370,7 @@ describe("API", () =>
           "element-hiding.html",
           [{
             filter: null,
-            matchInfo: cspMatchInfo,
+            matchInfo: unmatchedMatchInfo,
             request: expectedRequestRelativeUrl("element-hiding.html")
           }, {
             filter: expectedBlockingFilter(VALID_FILTER_TEXT),
@@ -1275,7 +1399,7 @@ describe("API", () =>
           )
         );
 
-        await page.loaded();
+        await page.loaded;
 
         expect(fake1.called).toBeTruthy();
         expect(fake2.called).toBeFalsy();
@@ -1319,12 +1443,14 @@ describe("API", () =>
 
       it("logs blocking popup filter", async() =>
       {
+        let opener = new Page("popup-opener.html");
+        await opener.loaded;
         await checkLogging(
           ["*popup.html^$popup"],
-          defaultEventOptions,
+          allEventOptions,
           async() =>
           {
-            let popup = new Popup("link", new Page("popup-opener.html"));
+            let popup = new Popup("link", opener);
             await popup.blocked;
             return await popup.created;
           },
@@ -1338,12 +1464,14 @@ describe("API", () =>
 
       it("logs allowlisting popup filter", async() =>
       {
+        let opener = new Page("popup-opener.html");
+        await opener.loaded;
         await checkLogging(
           ["*popup.html^$popup", `@@|${TEST_PAGES_URL}/popup.html^$popup`],
-          allowingEventOptions,
+          allEventOptions,
           async() =>
           {
-            let popup = new Popup("link", new Page("popup-opener.html"));
+            let popup = new Popup("link", opener);
             await popup.blocked;
             return await popup.created;
           },
@@ -1357,6 +1485,70 @@ describe("API", () =>
         );
       });
 
+      it("logs blocking third-party popup filter", async() =>
+      {
+        let opener = new Page("popup-opener.html");
+        await opener.loaded;
+        await checkLogging(
+          [`popup.html^$popup,domain=${TEST_PAGES_DOMAIN}`],
+          allEventOptions,
+          async() =>
+          {
+            let popup = new Popup("third-party-link", opener);
+            await popup.blocked;
+            return await popup.created;
+          },
+          [{
+            filter: expectedBlockingFilter(
+              `popup.html^$popup,domain=${TEST_PAGES_DOMAIN}`
+            ),
+            matchInfo: popupMatchInfo,
+            request: expectedRequestUrl("http://127.0.0.1:3000/popup.html")
+          }]
+        );
+      });
+
+      it("logs allowlisted third-party popup filter", async() =>
+      {
+        let opener = new Page("popup-opener.html");
+        await opener.loaded;
+        await checkLogging(
+          ["*popup.html^$popup", "@@|http://127.0.0.1:3000/popup.html^$popup"],
+          allEventOptions,
+          async() =>
+          {
+            let popup = new Popup("third-party-link", opener);
+            await popup.blocked;
+            return await popup.created;
+          },
+          [{
+            filter: expectedAllowingFilter(
+              "@@|http://127.0.0.1:3000/popup.html^$popup"
+            ),
+            matchInfo: popupMatchInfo,
+            request: expectedRequestUrl("http://127.0.0.1:3000/popup.html")
+          }]
+        );
+      });
+
+      it("logs requests sent by the extension", async() =>
+      {
+        await checkLogging(
+          [],
+          allEventOptions,
+          () => fetch(`${TEST_PAGES_URL}/image.png`),
+          [{
+            filter: null,
+            matchInfo: {
+              method: "allowing",
+              allowingReason: "extensionInitiated"
+            },
+            request: expectedRequestRelativeUrl("image.png")
+          }],
+          false
+        );
+      });
+
       describe("Unmatched requests", () =>
       {
         it("logs all unmatched requests on the image page", async() =>
@@ -1367,44 +1559,42 @@ describe("API", () =>
             "image.html",
             [{
               filter: null,
-              matchInfo: cspMatchInfo,
+              matchInfo: unmatchedMatchInfo,
               request: expectedRequestRelativeUrl("image.html")
             }, {
               filter: null,
-              matchInfo: requestMatchInfo,
-              request: expectedRequestRelativeUrl("image.png")
-            }, {
-              filter: null,
-              matchInfo: headerMatchInfo,
+              matchInfo: unmatchedMatchInfo,
               request: expectedRequestRelativeUrl("image.png")
             }]
           );
         });
 
-        it("logs unmatched requests for the requested tab", async() =>
+        it("logs unmatched requests for the requested tab", async function()
         {
+          setMinTimeout(this, 4000);
+
           let page = new Page("image.html");
-          let tabId = await page.loaded();
+          let tabId = await page.loaded;
           let otherTabFake = addFakeListener({
             namespace: "reporting",
             eventName: "onBlockableItem",
             eventOptions: {includeUnmatched: true, tabId: tabId + 1}
           });
+
+          // small pause for unmatched events to finish coming through
+          await new Promise(r => setTimeout(r, 50));
+
           await checkLogging(
             [],
             {...unmatchedEventOptions, tabId},
             () => page.reload(true),
             [{
               filter: null,
-              matchInfo: cspMatchInfo,
+              matchInfo: unmatchedMatchInfo,
               request: expectedRequestRelativeUrl("image.html")
             }, {
               filter: null,
-              matchInfo: requestMatchInfo,
-              request: expectedRequestRelativeUrl("image.png")
-            }, {
-              filter: null,
-              matchInfo: headerMatchInfo,
+              matchInfo: unmatchedMatchInfo,
               request: expectedRequestRelativeUrl("image.png")
             }]
           );
@@ -1419,27 +1609,15 @@ describe("API", () =>
             "iframe.html",
             [{
               filter: null,
-              matchInfo: cspMatchInfo,
+              matchInfo: unmatchedMatchInfo,
               request: expectedRequestRelativeUrl("iframe.html")
             }, {
               filter: null,
-              matchInfo: requestMatchInfo,
+              matchInfo: unmatchedMatchInfo,
               request: expectedRequestRelativeUrl("image.html")
             }, {
               filter: null,
-              matchInfo: headerMatchInfo,
-              request: expectedRequestRelativeUrl("image.html")
-            }, {
-              filter: null,
-              matchInfo: cspMatchInfo,
-              request: expectedRequestRelativeUrl("image.html")
-            }, {
-              filter: null,
-              matchInfo: requestMatchInfo,
-              request: expectedRequestRelativeUrl("image.png")
-            }, {
-              filter: null,
-              matchInfo: headerMatchInfo,
+              matchInfo: unmatchedMatchInfo,
               request: expectedRequestRelativeUrl("image.png")
             }]
           );
@@ -1453,16 +1631,8 @@ describe("API", () =>
             "iframe.html",
             [{
               filter: null,
-              matchInfo: cspMatchInfo,
+              matchInfo: unmatchedMatchInfo,
               request: expectedRequestRelativeUrl("iframe.html")
-            }, {
-              filter: null,
-              matchInfo: requestMatchInfo,
-              request: expectedRequestRelativeUrl("image.html")
-            }, {
-              filter: null,
-              matchInfo: headerMatchInfo,
-              request: expectedRequestRelativeUrl("image.html")
             }, {
               filter: expectedAllowingFilter(
                 `@@|${TEST_PAGES_URL}/image.html$document`
@@ -1487,6 +1657,114 @@ describe("API", () =>
               },
               request: expectedRequestRelativeUrl("image.png")
             }]
+          );
+        });
+
+        it("logs unmatched third-party requests", async() =>
+        {
+          await checkLogging(
+            [],
+            allEventOptions,
+            "third-party.html",
+            [{
+              filter: null,
+              matchInfo: unmatchedMatchInfo,
+              request: expectedRequestRelativeUrl("third-party.html")
+            }, {
+              filter: null,
+              matchInfo: unmatchedMatchInfo,
+              request: expectedRequestUrl("http://127.0.0.1:3000/image.png")
+            }]
+          );
+        });
+
+        it("logs unmatched popup requests", async() =>
+        {
+          let opener = new Page("popup-opener.html");
+          await opener.loaded;
+          await checkLogging(
+            [],
+            allEventOptions,
+            async() =>
+            {
+              let popup = new Popup("link", opener);
+              await popup.blocked;
+              return await popup.created;
+            },
+            [{
+              filter: null,
+              matchInfo: unmatchedMatchInfo,
+              request: expectedRequestRelativeUrl("popup.html")
+            }]
+          );
+        });
+
+        it("logs unmatched different domain iframe requests", async() =>
+        {
+          let url = "http://127.0.0.1:3000/iframe.html";
+          await checkLogging(
+            [],
+            allEventOptions,
+            () => new Page(url, true).loaded,
+            [{
+              filter: null,
+              matchInfo: {
+                ...unmatchedMatchInfo,
+                docDomain: "127.0.0.1"
+              },
+              request: expectedRequestUrl(url)
+            }, {
+              filter: null,
+              matchInfo: {
+                ...unmatchedMatchInfo,
+                docDomain: "127.0.0.1"
+              },
+              request: expectedRequestRelativeUrl("image.html")
+            }, {
+              filter: null,
+              matchInfo: unmatchedMatchInfo,
+              request: expectedRequestRelativeUrl("image.png")
+            }]
+          );
+        });
+      });
+
+      describe("Event Options Filtering", () =>
+      {
+        it("filters out unmatched requests with default options", async() =>
+        {
+          await checkLogging(
+            ["/image.png^$image"],
+            defaultEventOptions,
+            "image.html",
+            [{
+              filter: expectedBlockingFilter("/image.png^$image"),
+              matchInfo: requestMatchInfo,
+              request: expectedRequestRelativeUrl("image.png")
+            }]);
+        });
+
+        it("filters out unmatched requests with allowing options", async() =>
+        {
+          await checkLogging(
+            ["/image.png^$image", `@@|${TEST_PAGES_URL}$image`],
+            allowingEventOptions,
+            "image.html",
+            [{
+              filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}$image`),
+              matchInfo: requestMatchInfo,
+              request: expectedRequestRelativeUrl("image.png")
+            }]
+          );
+        });
+
+        it("filters out allowing requests with default options", async() =>
+        {
+          await checkLogging(
+            ["/image.png^$image", `@@|${TEST_PAGES_URL}$image`],
+            defaultEventOptions,
+            "image.html",
+            []
           );
         });
       });
@@ -1525,7 +1803,7 @@ describe("API", () =>
 
     async function waitForHighlightedStyle()
     {
-      let tabId = await new Page("element-hiding.html").loaded();
+      let tabId = await new Page("element-hiding.html").loaded;
       let style;
       await wait(async() =>
       {
@@ -1551,7 +1829,7 @@ describe("API", () =>
       await EWE.debugging.setElementHidingDebugMode(true);
       await EWE.debugging.setElementHidingDebugMode(false);
       await addFilter("###elem-hide");
-      let tabId = await new Page("element-hiding.html").loaded();
+      let tabId = await new Page("element-hiding.html").loaded;
       let style = await executeScript(tabId, getBackgroundColor);
 
       expect(style).toBe("rgba(0, 0, 0, 0)");

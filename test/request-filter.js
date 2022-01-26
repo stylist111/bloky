@@ -111,7 +111,7 @@ describe("Blocking", () =>
   {
     await addFilter(
       `*.js$rewrite=abp-resource:blank-js,domain=${TEST_PAGES_DOMAIN}`);
-    let tabId = await new Page("script.html").loaded();
+    let tabId = await new Page("script.html").loaded;
     let result = await executeScript(
       tabId, () => document.documentElement.dataset.setByScript);
     expect(result).toBeFalsy();
@@ -258,7 +258,7 @@ describe("Blocking", () =>
 
     async function checkViolatedDirective(query = "")
     {
-      let tabId = await new Page(`csp.html${query}`).loaded();
+      let tabId = await new Page(`csp.html${query}`).loaded;
       return await executeScript(
         tabId, () => document.documentElement.dataset.violatedDirective);
     }

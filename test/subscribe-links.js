@@ -36,7 +36,7 @@ describe("Subscribe links (runner only)", function()
     let fake = await addFakeListener({namespace: "reporting",
                                       eventName: "onSubscribeLinkClicked"});
     let page = new Page("subscribe.html");
-    await page.loaded();
+    await page.loaded;
 
     runner.click(page.url, selector);
     await wait(() => fake.called, 2000, "Listener was not called");

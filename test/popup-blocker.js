@@ -17,7 +17,8 @@
 
 import expect from "expect";
 
-import {Page, Popup, setMinTimeout, TEST_PAGES_URL, SITEKEY} from "./utils.js";
+import {Page, Popup, setMinTimeout, TEST_PAGES_URL, TEST_PAGES_DOMAIN, SITEKEY}
+  from "./utils.js";
 import {addFilter} from "./messaging.js";
 
 describe("Pop-up blocking", function()
@@ -49,6 +50,19 @@ describe("Pop-up blocking", function()
   {
     await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
     expect(await new Popup("script-deferred", opener).blocked).toBeTruthy();
+  });
+
+  it("blocks a link-based third-party popup", async() =>
+  {
+    await addFilter(`popup.html^$popup,domain=${TEST_PAGES_DOMAIN}`);
+    expect(await new Popup("third-party-link", opener).blocked).toBeTruthy();
+  });
+
+  it("does not block a link-based third-party popup " +
+     "if the domain is for the opener page", async() =>
+  {
+    await addFilter("popup.html^$popup,domain=127.0.0.1");
+    expect(await new Popup("third-party-link", opener).blocked).toBeFalsy();
   });
 
   it("does not block an allowlisted popup", async() =>
