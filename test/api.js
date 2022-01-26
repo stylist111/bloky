@@ -19,7 +19,7 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 
 import {Page, Popup, setMinTimeout, wait, executeScript, TEST_PAGES_URL,
-        TEST_PAGES_DOMAIN, isFirefox, firefoxVersion, getVisibleElement}
+        TEST_PAGES_DOMAIN, isFirefox, firefoxVersion, getVisibleElement, isMV3}
   from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, addFakeListener,
         removeFakeListeners, setTestSnippets}
@@ -56,6 +56,12 @@ describe("API", () =>
 {
   describe("Subscriptions", () =>
   {
+    before(function()
+    {
+      if (isMV3())
+        this.skip();
+    });
+
     it("adds a subscription", async() =>
     {
       await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
@@ -473,8 +479,11 @@ describe("API", () =>
       ]);
     });
 
-    it("listens to onAdded events", async() =>
+    it("listens to onAdded events", async function()
     {
+      if (isMV3())
+        this.skip();
+
       let fake = await addFakeListener({namespace: "filters",
                                         eventName: "onAdded"});
       await addFilter(VALID_FILTER_TEXT);
@@ -483,8 +492,11 @@ describe("API", () =>
       expect(fake.firstArg).toEqual(VALID_FILTER);
     });
 
-    it("listens to onChanged events", async() =>
+    it("listens to onChanged events", async function()
     {
+      if (isMV3())
+        this.skip();
+
       let fake = await addFakeListener({namespace: "filters",
                                         eventName: "onChanged"});
       await addFilter(VALID_FILTER_TEXT);
@@ -498,8 +510,11 @@ describe("API", () =>
       await EWE.filters.enable([VALID_FILTER_TEXT]);
     });
 
-    it("listens to onRemoved events", async() =>
+    it("listens to onRemoved events", async function()
     {
+      if (isMV3())
+        this.skip();
+
       let fake = await addFakeListener({namespace: "filters",
                                         eventName: "onRemoved"});
       await addFilter(VALID_FILTER_TEXT);
@@ -805,7 +820,14 @@ describe("API", () =>
 
     describe("Diagnostics", function()
     {
+      before(function()
+      {
+        if (isMV3())
+          this.skip();
+      });
+
       setMinTimeout(this, 3000);
+
       expect.extend({
         anyNullable(received, type)
         {

@@ -17,12 +17,19 @@
 
 import expect from "expect";
 
-import {Page, Popup, setMinTimeout, TEST_PAGES_URL, TEST_PAGES_DOMAIN, SITEKEY}
-  from "./utils.js";
+import {Page, Popup, setMinTimeout, isMV3, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
+        SITEKEY} from "./utils.js";
 import {addFilter} from "./messaging.js";
 
 describe("Pop-up blocking", function()
 {
+  before(function()
+  {
+    // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/102
+    if (isMV3())
+      this.skip();
+  });
+
   setMinTimeout(this, 3000);
 
   let opener;
@@ -72,23 +79,6 @@ describe("Pop-up blocking", function()
     expect(await new Popup("link", opener).blocked).toBeFalsy();
   });
 
-  it("does not block a popup allowlisted by sitekey", async() =>
-  {
-    await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
-    await addFilter(`@@$popup,sitekey=${SITEKEY}`);
-    let popup = new Popup("link", new Page("popup-opener.html?sitekey=1"));
-    expect(await popup.blocked).toBeFalsy();
-  });
-
-  it("does not block a popup opened by " +
-     "a document allowlisted by sitekey", async() =>
-  {
-    await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
-    await addFilter(`@@$document,sitekey=${SITEKEY}`);
-    let popup = new Popup("link", new Page("popup-opener.html?sitekey=1"));
-    expect(await popup.blocked).toBeFalsy();
-  });
-
   it("blocks a variety of popups from the same page", async() =>
   {
     await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
@@ -97,5 +87,30 @@ describe("Pop-up blocking", function()
     expect(await new Popup("script-tab", opener).blocked).toBeTruthy();
     expect(await new Popup("script-window", opener).blocked).toBeTruthy();
     expect(await new Popup("script-deferred", opener).blocked).toBeTruthy();
+  });
+
+  describe("Sitekey allowlisting", () =>
+  {
+    before(function()
+    {
+      if (isMV3())
+        this.skip();
+    });
+
+    it("does not block a popup", async() =>
+    {
+      await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
+      await addFilter(`@@$popup,sitekey=${SITEKEY}`);
+      let popup = new Popup("link", new Page("popup-opener.html?sitekey=1"));
+      expect(await popup.blocked).toBeFalsy();
+    });
+
+    it("does not block a popup opened by a document", async() =>
+    {
+      await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
+      await addFilter(`@@$document,sitekey=${SITEKEY}`);
+      let popup = new Popup("link", new Page("popup-opener.html?sitekey=1"));
+      expect(await popup.blocked).toBeFalsy();
+    });
   });
 });

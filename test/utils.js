@@ -447,3 +447,8 @@ export function getVisibleElementInFrame(tabId, elemId, frameElementId)
     return el.offsetParent ? el.outerHTML : null;
   }, [frameElementId, elemId]);
 }
+
+export function isMV3()
+{
+  return typeof browser.declarativeNetRequest != "undefined";
+}

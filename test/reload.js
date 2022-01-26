@@ -18,7 +18,7 @@
 import expect from "expect";
 import browser from "webextension-polyfill";
 
-import {Page, wait} from "./utils.js";
+import {Page, wait, isMV3} from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage}
   from "./messaging.js";
 
@@ -85,7 +85,7 @@ describe(`Reload (${phase})`, function()
     if (start)
     {
       await addFilter(IMAGE_FILTER_TEXT);
-      if (!browser.declarativeNetRequest)
+      if (!isMV3())
       {
         await wait(async() =>
         {
@@ -111,7 +111,7 @@ describe(`Reload (${phase})`, function()
     if (start)
     {
       await addFilter(BLOCKING_FILTER_TEXT);
-      if (!browser.declarativeNetRequest)
+      if (!isMV3())
       {
         await wait(async() =>
         {

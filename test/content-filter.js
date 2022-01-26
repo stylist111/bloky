@@ -18,7 +18,7 @@
 import expect from "expect";
 
 import {Page, waitForInvisibleElement, executeScript, setMinTimeout, wait,
-        getVisibleElement, getVisibleElementInFrame, TEST_PAGES_DOMAIN,
+        getVisibleElement, getVisibleElementInFrame, isMV3, TEST_PAGES_DOMAIN,
         TEST_PAGES_URL} from "./utils.js";
 import {addFilter, EWE, setTestSnippets} from "./messaging.js";
 
@@ -197,8 +197,11 @@ describe("Snippets", () =>
   before(() => setTestSnippets(snippet));
   after(() => setTestSnippets(null));
 
-  it("applies a snippet", async() =>
+  it("applies a snippet", async function()
   {
+    if (isMV3())
+      this.skip();
+
     await addFilter(`${TEST_PAGES_DOMAIN}#$#${snippet}`);
 
     let tabId = await new Page("image.html").loaded;

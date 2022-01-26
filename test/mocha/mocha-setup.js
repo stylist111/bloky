@@ -18,7 +18,7 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 
-import {TEST_PAGES_URL, Page, Popup} from "../utils.js";
+import {TEST_PAGES_URL, Page, Popup, isMV3} from "../utils.js";
 import {addFilter, EWE, runInBackgroundPage, removeFakeListeners}
   from "../messaging.js";
 
@@ -62,6 +62,10 @@ after(async function()
     {op: "getGlobal", arg: "self"},
     {op: "callMethod", arg: "restoreSubscriptions"}
   ]);
+
+  // To be removed when there is subscriptions V3 support
+  if (isMV3())
+    return;
 
   expect(await EWE.filters.getUserFilters())
     .toEqual([expect.objectContaining({text: RESTORE_SUBSCRIPTIONS_TEST})]);
