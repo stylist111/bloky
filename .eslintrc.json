@@ -8,6 +8,7 @@
     "eslint-plugin-html"
   ],
   "rules": {
+    "brace-style": ["error", "stroustrup"],
     "curly": [
       "error",
       "multi-or-nest",

@@ -35,8 +35,7 @@ export default {
    * or snippets to be highlighted instead of hidden.
    * @param {boolean} enabled Enables or disables debug mode.
    */
-  setElementHidingDebugMode(enabled)
-  {
+  setElementHidingDebugMode(enabled) {
     debugOptions.elemHide = enabled;
   },
 
@@ -47,8 +46,7 @@ export default {
    * @param {Object} snippetsCssProperties The css properties for
    *                                       the debug snippet element.
    */
-  setElementHidingDebugStyle(cssProperties, snippetsCssProperties)
-  {
+  setElementHidingDebugStyle(cssProperties, snippetsCssProperties) {
     if (cssProperties)
       debugOptions.cssProperties = cssProperties;
 
@@ -60,8 +58,7 @@ export default {
    * @ignore
    * @param {string} text
    */
-  async isInFilterStorage(text)
-  {
+  async isInFilterStorage(text) {
     let contents = [];
     await IO.readFromFile(filterStorage.sourceFile,
                           line => contents.push(line));
@@ -74,8 +71,7 @@ export default {
    * stateful modules being shut down by other mechanisms, such as the
    * background service worker being suspended.
    */
-  initializerStop()
-  {
+  initializerStop() {
     initializer.stop();
   }
 };

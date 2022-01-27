@@ -1,6 +1,5 @@
 <script>
-  document.addEventListener("securitypolicyviolation", e =>
-  {
+  document.addEventListener("securitypolicyviolation", e => {
     document.documentElement.dataset.violatedDirective = e.violatedDirective;
   });
 </script>

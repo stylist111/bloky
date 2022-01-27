@@ -32,8 +32,7 @@ import {getFrameInfo} from "./frame-state.js";
 import {addFilters, validateFilter, getDynamicFilters, removeOrDisableFilters,
         enableFilters} from "./dnr-filters.js";
 
-export function convertFilter(filter)
-{
+export function convertFilter(filter) {
   return {
     text: filter.text,
     enabled: !filter.disabled,
@@ -45,17 +44,13 @@ export function convertFilter(filter)
   };
 }
 
-function makeFilterListener(dispatch)
-{
+function makeFilterListener(dispatch) {
   return filter => dispatch(convertFilter(filter));
 }
 
-function makeSubListener(dispatch)
-{
-  return subscription =>
-  {
-    if (subscription instanceof SpecialSubscription)
-    {
+function makeSubListener(dispatch) {
+  return subscription => {
+    if (subscription instanceof SpecialSubscription) {
       for (let text of subscription.filterText())
         dispatch(convertFilter(Filter.fromText(text)));
     }
@@ -89,17 +84,14 @@ export default {
    * @throws {FilterError|Error} The first filter to add that either failed
    *   validation (FilterError) or that is not supported by the DNR (Error).
    */
-  async add(texts)
-  {
-    if (browser.declarativeNetRequest)
-    {
+  async add(texts) {
+    if (browser.declarativeNetRequest) {
       await addFilters(texts);
       return;
     }
 
     let filters = [];
-    for (let text of texts)
-    {
+    for (let text of texts) {
       let normalized = Filter.normalize(text);
       let filter = Filter.fromText(normalized);
       let error = validateFilter(filter);
@@ -118,25 +110,19 @@ export default {
    * Returns an array of user filter objects.
    * @return {Array.<Filter>}
    */
-  async getUserFilters()
-  {
+  async getUserFilters() {
     let result = [];
 
-    for (let subscription of filterStorage.subscriptions())
-    {
-      if (subscription instanceof SpecialSubscription)
-      {
+    for (let subscription of filterStorage.subscriptions()) {
+      if (subscription instanceof SpecialSubscription) {
         for (let text of subscription.filterText())
           result.push(convertFilter(Filter.fromText(text)));
       }
     }
 
-    if (browser.declarativeNetRequest)
-    {
-      for (let [text, details] of (await getDynamicFilters()).entries())
-      {
-        if (!result.find(filter => filter.text == text))
-        {
+    if (browser.declarativeNetRequest) {
+      for (let [text, details] of (await getDynamicFilters()).entries()) {
+        if (!result.find(filter => filter.text == text)) {
           let filter = convertFilter(Filter.fromText(text));
           filter.enabled = details.enabled;
           result.push(filter);
@@ -159,14 +145,13 @@ export default {
    *                         "genericblock", and "generichide".
    * @return {Array.<string>}
    */
-  getAllowingFilters(tabId, options = {})
-  {
+  getAllowingFilters(tabId, options = {}) {
     let {frameId, types} = {frameId: 0, types: ["document"], ...options};
     let filters = new Set();
     let mask = types.reduce((a, b) => a | contentTypes[b.toUpperCase()], 0);
 
-    for (let frame = getFrameInfo(tabId, frameId); frame; frame = frame.parent)
-    {
+    for (let frame = getFrameInfo(tabId, frameId); frame;
+         frame = frame.parent) {
       let parentHostname = frame.parent && frame.parent.hostname;
       let matches = matcher.search(frame.url, mask, parentHostname,
                                    frame.sitekey, false, "allowing");
@@ -190,16 +175,14 @@ export default {
    * @param {number} frameId=0 The id of the resource's frame.
    * @return {bool}
    */
-  isResourceAllowlisted(url, type, tabId, frameId = 0)
-  {
+  isResourceAllowlisted(url, type, tabId, frameId = 0) {
     let mask = contentTypes[type.toUpperCase()];
     let frame = getFrameInfo(tabId, frameId) || {};
 
     if (matcher.isAllowlisted(url, mask, frame.hostname, frame.sitekey))
       return true;
 
-    for (; frame; frame = frame.parent)
-    {
+    for (; frame; frame = frame.parent) {
       let parentHostname = frame.parent && frame.parent.hostname;
       if (matcher.isAllowlisted(frame.url, contentTypes.DOCUMENT,
                                 parentHostname, frame.sitekey))
@@ -213,16 +196,13 @@ export default {
    * Enables multiple filters. The filters effects will again be applied.
    * @param {[string]} texts The filter rules to be enabled.
    */
-  async enable(texts)
-  {
-    if (browser.declarativeNetRequest)
-    {
+  async enable(texts) {
+    if (browser.declarativeNetRequest) {
       await enableFilters(texts);
       return;
     }
 
-    for (let text of texts)
-    {
+    for (let text of texts) {
       let normalized = Filter.normalize(text);
       filterState.setEnabled(normalized, true);
     }
@@ -233,16 +213,13 @@ export default {
    * but will be returned by `filters.getUserFilters()`.
    * @param {[string]} texts The filter rules to be disabled.
    */
-  async disable(texts)
-  {
-    if (browser.declarativeNetRequest)
-    {
+  async disable(texts) {
+    if (browser.declarativeNetRequest) {
       await removeOrDisableFilters(texts, false);
       return;
     }
 
-    for (let text of texts)
-    {
+    for (let text of texts) {
       let normalized = Filter.normalize(text);
       filterState.setEnabled(normalized, false);
     }
@@ -253,16 +230,13 @@ export default {
    * and won't be returned by `filters.getUserFilters()`.
    * @param {[string]} texts The filter rules to be removed.
    */
-  async remove(texts)
-  {
-    if (browser.declarativeNetRequest)
-    {
+  async remove(texts) {
+    if (browser.declarativeNetRequest) {
       await removeOrDisableFilters(texts, true);
       return;
     }
 
-    for (let text of texts)
-    {
+    for (let text of texts) {
       let normalized = Filter.normalize(text);
       filterStorage.removeFilter(Filter.fromText(normalized));
     }
@@ -273,8 +247,7 @@ export default {
    * @param {string} text Filter to be validated
    * @return {null|FilterError}
    */
-  validate(text)
-  {
+  validate(text) {
     return validateFilter(Filter.fromText(text));
   },
 
@@ -283,8 +256,7 @@ export default {
    * @event
    * @type {EventDispatcher.<Filter>}
    */
-  onAdded: new EventDispatcher(dispatch =>
-  {
+  onAdded: new EventDispatcher(dispatch => {
     filterNotifier.on("filter.added", makeFilterListener(dispatch));
     filterNotifier.on("subscription.added", makeSubListener(dispatch));
   }),
@@ -296,10 +268,8 @@ export default {
    * @event
    * @type {EventDispatcher.<Filter, string>}
    */
-  onChanged: new EventDispatcher(dispatch =>
-  {
-    filterNotifier.on("filterState.enabled", (text, enabled) =>
-    {
+  onChanged: new EventDispatcher(dispatch => {
+    filterNotifier.on("filterState.enabled", (text, enabled) => {
       dispatch({...convertFilter(Filter.fromText(text)), enabled}, "enabled");
     });
   }),
@@ -309,8 +279,7 @@ export default {
    * @event
    * @type {EventDispatcher.<Filter>}
    */
-  onRemoved: new EventDispatcher(dispatch =>
-  {
+  onRemoved: new EventDispatcher(dispatch => {
     filterNotifier.on("filter.removed", makeFilterListener(dispatch));
     filterNotifier.on("subscription.removed", makeSubListener(dispatch));
   })

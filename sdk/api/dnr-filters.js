@@ -32,15 +32,12 @@ let highestRuleId = 1;
 let dynamicFilters = new Map();
 let initializationPromise;
 
-export function validateFilter(filter)
-{
+export function validateFilter(filter) {
   if (filter instanceof InvalidFilter)
     return new FilterError("invalid_filter", filter.reason, filter.option);
 
-  if (isActiveFilter(filter) && filter.domains)
-  {
-    for (let domain of filter.domains.keys())
-    {
+  if (isActiveFilter(filter) && filter.domains) {
+    for (let domain of filter.domains.keys()) {
       if (domain && !isValidHostname(domain))
         return new FilterError("invalid_domain", domain);
     }
@@ -49,8 +46,7 @@ export function validateFilter(filter)
   return null;
 }
 
-export async function removeDynamicFilters()
-{
+export async function removeDynamicFilters() {
   if (!browser.declarativeNetRequest)
     return;
 
@@ -68,31 +64,25 @@ export async function removeDynamicFilters()
   return rules;
 }
 
-function setHighestRuleId(ruleIds)
-{
+function setHighestRuleId(ruleIds) {
   if (!ruleIds)
     return;
 
-  for (let id of ruleIds)
-  {
+  for (let id of ruleIds) {
     if (highestRuleId < id)
       highestRuleId = id;
   }
 }
 
-function storeDynamicFilters()
-{
+function storeDynamicFilters() {
   return browser.storage.local.set({
     dynamicFilters: Object.fromEntries(dynamicFilters)
   });
 }
 
-export function init()
-{
-  if (!initializationPromise)
-  {
-    initializationPromise = (async() =>
-    {
+export function init() {
+  if (!initializationPromise) {
+    initializationPromise = (async() => {
       if (!browser.declarativeNetRequest)
         return;
 
@@ -114,19 +104,16 @@ export function init()
   return initializationPromise;
 }
 
-async function getRules(filter, useFilterEngine)
-{
+async function getRules(filter, useFilterEngine) {
   let ruleIds = [];
   let filterRules = [];
 
-  if (filter instanceof URLFilter)
-  {
+  if (filter instanceof URLFilter) {
     let result = await getRulesFromFilter(
       filter, browser.declarativeNetRequest.isRegexSupported
     );
 
-    for (let rule of result)
-    {
+    for (let rule of result) {
       let id = ++highestRuleId;
       rule.id = id;
       ruleIds.push(id);
@@ -140,15 +127,13 @@ async function getRules(filter, useFilterEngine)
   return {filterRules, ruleIds};
 }
 
-async function processFilterTexts(texts)
-{
+async function processFilterTexts(texts) {
   let details = [];
   let rules = [];
   let seenFilterTexts = new Set();
 
   texts = texts.map(Filter.normalize);
-  for (let text of texts)
-  {
+  for (let text of texts) {
     if (dynamicFilters.has(text) || seenFilterTexts.has(text))
       continue;
 
@@ -173,20 +158,17 @@ async function processFilterTexts(texts)
   return {rules, details};
 }
 
-export async function addFilters(texts)
-{
+export async function addFilters(texts) {
   await init();
 
   let filtersToAdd = await processFilterTexts(texts);
-  if (filtersToAdd.rules.length > 0)
-  {
+  if (filtersToAdd.rules.length > 0) {
     await browser.declarativeNetRequest.updateDynamicRules({
       addRules: filtersToAdd.rules
     });
   }
 
-  for (let filterDetails of filtersToAdd.details)
-  {
+  for (let filterDetails of filtersToAdd.details) {
     let {filter, useFilterEngine, ruleIds} = filterDetails;
 
     if (useFilterEngine)
@@ -200,14 +182,12 @@ export async function addFilters(texts)
   await storeDynamicFilters();
 }
 
-export async function removeOrDisableFilters(texts, remove = true)
-{
+export async function removeOrDisableFilters(texts, remove = true) {
   await init();
 
   let filtersToRemove = texts.map(Filter.normalize);
   let ruleIdsToRemove = [];
-  for (let text of filtersToRemove)
-  {
+  for (let text of filtersToRemove) {
     if (!dynamicFilters.has(text))
       continue;
 
@@ -216,15 +196,13 @@ export async function removeOrDisableFilters(texts, remove = true)
 
     let details = dynamicFilters.get(text);
 
-    if (remove)
-    {
+    if (remove) {
       if (details.useFilterEngine)
         filterStorage.removeFilter(Filter.fromText(text));
 
       dynamicFilters.delete(text);
     }
-    else
-    {
+    else {
       if (details.useFilterEngine)
         filterState.setEnabled(text, false);
 
@@ -234,8 +212,7 @@ export async function removeOrDisableFilters(texts, remove = true)
     }
   }
 
-  if (ruleIdsToRemove.length > 0)
-  {
+  if (ruleIdsToRemove.length > 0) {
     await browser.declarativeNetRequest.updateDynamicRules({
       removeRuleIds: ruleIdsToRemove
     });
@@ -244,14 +221,12 @@ export async function removeOrDisableFilters(texts, remove = true)
   await storeDynamicFilters();
 }
 
-export async function enableFilters(texts)
-{
+export async function enableFilters(texts) {
   await init();
 
   let rules = [];
 
-  for (let text of texts)
-  {
+  for (let text of texts) {
     let normalized = Filter.normalize(text);
     let details = dynamicFilters.get(normalized);
 
@@ -282,8 +257,7 @@ export async function enableFilters(texts)
   await storeDynamicFilters();
 }
 
-export async function getDynamicFilters()
-{
+export async function getDynamicFilters() {
   await init();
   return dynamicFilters;
 }

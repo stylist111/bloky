@@ -26,13 +26,11 @@ export let applicationVersion = "0";
 export let platform;
 export let platformVersion = "0";
 
-function parseChromiumUserAgent()
-{
+function parseChromiumUserAgent() {
   let regexp = /(\S+)\/(\S+)(?:\s*\(.*?\))?/g;
   let match;
 
-  while (match = regexp.exec(navigator.userAgent))
-  {
+  while (match = regexp.exec(navigator.userAgent)) {
     let [, app, version] = match;
 
     // For compatibility with legacy websites, Chrome's UA
@@ -41,8 +39,7 @@ function parseChromiumUserAgent()
     if (app == "Mozilla" || app == "AppleWebKit" || app == "Safari")
       continue;
 
-    if (app == "Chrome")
-    {
+    if (app == "Chrome") {
       platformVersion = version;
       if (application != "unknown")
         continue;
@@ -53,22 +50,19 @@ function parseChromiumUserAgent()
   }
 }
 
-if (typeof netscape != "undefined")
-{
+if (typeof netscape != "undefined") {
   platform = "gecko";
 
   let match = /\brv:([^;)]+)/.exec(navigator.userAgent);
   if (match)
     platformVersion = match[1];
 
-  browser.runtime.getBrowserInfo().then(browserInfo =>
-  {
+  browser.runtime.getBrowserInfo().then(browserInfo => {
     application = browserInfo.name.toLowerCase();
     applicationVersion = browserInfo.version;
   });
 }
-else
-{
+else {
   platform = "chromium";
   parseChromiumUserAgent();
 }

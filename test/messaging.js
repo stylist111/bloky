@@ -18,8 +18,7 @@
 import browser from "webextension-polyfill";
 import sinon from "sinon/pkg/sinon.js";
 
-export async function runInBackgroundPage(operations)
-{
+export async function runInBackgroundPage(operations) {
   let {result, error} =
     await browser.runtime.sendMessage({type: "ewe-test:run", operations});
   if (error)
@@ -28,12 +27,10 @@ export async function runInBackgroundPage(operations)
   return result;
 }
 
-export async function makeCallbackInBackgroundPage(callback)
-{
+export async function makeCallbackInBackgroundPage(callback) {
   let id = await browser.runtime.sendMessage({type: "ewe-test:make-callback"});
 
-  browser.runtime.onMessage.addListener(message =>
-  {
+  browser.runtime.onMessage.addListener(message => {
     if (message.type == "ewe-test:call-callback" && message.id == id)
       callback(...message.args);
   });
@@ -41,11 +38,9 @@ export async function makeCallbackInBackgroundPage(callback)
   return id;
 }
 
-function proxy(namespace)
-{
+function proxy(namespace) {
   return new Proxy(Object.create(null), {
-    get(target, property)
-    {
+    get(target, property) {
       if (property in target)
         return target[property];
 
@@ -68,8 +63,7 @@ export const EWE = Object.fromEntries([
   "reporting"].map(name => [name, proxy([name])]));
 EWE.reporting.contentTypesMap = proxy(["reporting", "contentTypesMap"]);
 
-export function addFilter(text)
-{
+export function addFilter(text) {
   return EWE.filters.add([text]);
 }
 
@@ -78,8 +72,7 @@ let removalOperations = [];
 export async function addFakeListener({namespace, eventName, eventOptions,
                                        method = "addListener",
                                        removeMethod = "removeListener",
-                                       callback = sinon.fake()})
-{
+                                       callback = sinon.fake()}) {
   let id = await makeCallbackInBackgroundPage(callback);
 
   await runInBackgroundPage([
@@ -103,8 +96,7 @@ export async function addFakeListener({namespace, eventName, eventOptions,
   return callback;
 }
 
-export async function removeFakeListeners()
-{
+export async function removeFakeListeners() {
   let removing = removalOperations;
   removalOperations = [];
 
@@ -112,8 +104,7 @@ export async function removeFakeListeners()
     await runInBackgroundPage(operations);
 }
 
-export function setTestSnippets(name)
-{
+export function setTestSnippets(name) {
   let isolatedCode = `exports.snippets = {${name}: () => self.works = true};`;
   let injectedCode = `let snippets = {${name}: () => self.works = true};`;
 

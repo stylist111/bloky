@@ -22,48 +22,40 @@ import {Page, waitForInvisibleElement, executeScript, setMinTimeout, wait,
         TEST_PAGES_URL} from "./utils.js";
 import {addFilter, EWE, setTestSnippets} from "./messaging.js";
 
-describe("Element Hiding", () =>
-{
-  async function getElemHideElement(id)
-  {
+describe("Element Hiding", () => {
+  async function getElemHideElement(id) {
     let tabId = await new Page("element-hiding.html").loaded;
     // hiding elements may take a few ms on CI
     await new Promise(r => setTimeout(r, 200));
     return await getVisibleElement(tabId, id);
   }
 
-  async function getElemHideElementInFrame(id, frameId)
-  {
+  async function getElemHideElementInFrame(id, frameId) {
     let tabId = await new Page("iframe-elemhide.html").loaded;
     // hiding elements may take a few ms on CI
     await new Promise(r => setTimeout(r, 200));
     return await getVisibleElementInFrame(tabId, id, frameId);
   }
 
-  it("hides an element", async() =>
-  {
+  it("hides an element", async() => {
     await addFilter("###elem-hide");
     expect(await getElemHideElement("elem-hide")).toBeNull();
   });
 
-  it("hides an element after service worker is suspended", async() =>
-  {
+  it("hides an element after service worker is suspended", async() => {
     await addFilter("###elem-hide");
     await EWE.debugging.initializerStop();
     expect(await getElemHideElement("elem-hide")).toBeNull();
   });
 
-  it("does not hide an allowlisted element", async() =>
-  {
+  it("does not hide an allowlisted element", async() => {
     await addFilter("###elem-hide");
     await addFilter("#@##elem-hide");
     expect(await getElemHideElement("elem-hide")).not.toBeNull();
   });
 
-  for (let type of ["$document", "$elemhide"])
-  {
-    it(`does not hide elements in allowlisted ${type}`, async function()
-    {
+  for (let type of ["$document", "$elemhide"]) {
+    it(`does not hide elements in allowlisted ${type}`, async function() {
       setMinTimeout(this, 4000);
 
       await addFilter("###elem-hide");
@@ -73,8 +65,7 @@ describe("Element Hiding", () =>
       expect(await getElemHideElement("elem-hide")).not.toBeNull();
     });
 
-    it(`does not hide frame elements allowlisted by ${type}`, async function()
-    {
+    it(`does not hide frame elements allowlisted by ${type}`, async function() {
       setMinTimeout(this, 4000);
 
       await addFilter("###elem-hide");
@@ -87,16 +78,14 @@ describe("Element Hiding", () =>
     });
   }
 
-  it("does not hide elements in document allowlisted by $elemhide", async() =>
-  {
+  it("does not hide elements in document allowlisted by $elemhide", async() => {
     await addFilter("###elem-hide");
     await addFilter(`@@|${TEST_PAGES_URL}/*.html$elemhide`);
     expect(await getElemHideElement("elem-hide")).not.toBeNull();
   });
 
   it("does not hide elements through generic filter " +
-     "in documents allowlisted by $generichide", async() =>
-  {
+     "in documents allowlisted by $generichide", async() => {
     await addFilter("###elem-hide");
     await addFilter(`${TEST_PAGES_DOMAIN}###elem-hide-specific`);
     await addFilter(`@@|${TEST_PAGES_URL}$generichide`);
@@ -107,17 +96,14 @@ describe("Element Hiding", () =>
     expect(await getVisibleElement(tabId, "elem-hide-specific")).toBeNull();
   });
 
-  describe("Element Hiding Emulation", async() =>
-  {
-    it("hides abp-properties elements", async() =>
-    {
+  describe("Element Hiding Emulation", async() => {
+    it("hides abp-properties elements", async() => {
       await addFilter(
         `${TEST_PAGES_DOMAIN}#?#div:-abp-properties(background-color: red)`);
       expect(await getElemHideElement("elem-hide-emulation-props")).toBeNull();
     });
 
-    it("hides abp-properties elements after unhide", async function()
-    {
+    it("hides abp-properties elements after unhide", async function() {
       setMinTimeout(this, 9000);
 
       await addFilter(
@@ -134,13 +120,11 @@ describe("Element Hiding", () =>
       expect(elem1).toBeNull();
       expect(elem2).toBeNull();
 
-      await executeScript(tabId, async() =>
-      {
+      await executeScript(tabId, async() => {
         document.getElementById("unhide1").parentElement.className = "";
         document.getElementById("unhide2").parentElement.className = "";
       });
-      await wait(async() =>
-      {
+      await wait(async() => {
         elem1 = await getVisibleElement(tabId, "unhide1");
         elem2 = await getVisibleElement(tabId, "unhide2");
         return elem1 != null && elem2 != null;
@@ -148,28 +132,24 @@ describe("Element Hiding", () =>
       expect(elem1).toContain("unhide1");
       expect(elem2).toContain("unhide2");
 
-      await executeScript(tabId, async() =>
-      {
+      await executeScript(tabId, async() => {
         document.getElementById("unhide1").parentElement.className = "parent1";
         document.getElementById("unhide2").parentElement.className = "parent2";
       });
-      await wait(async() =>
-      {
+      await wait(async() => {
         elem1 = await getVisibleElement(tabId, "unhide1");
         elem2 = await getVisibleElement(tabId, "unhide2");
         return elem1 == null && elem2 == null;
       }, 4000, "Element is visible");
     });
 
-    it("hides abp-has elements", async() =>
-    {
+    it("hides abp-has elements", async() => {
       await addFilter(
         `${TEST_PAGES_DOMAIN}#?#div:-abp-has(>span#elem-hide-emulation-has)`);
       expect(await getElemHideElement("elem-hide-emulation-has")).toBeNull();
     });
 
-    it("hides abp-contains elements", async() =>
-    {
+    it("hides abp-contains elements", async() => {
       await addFilter(`${TEST_PAGES_DOMAIN}#?#span` +
         ":-abp-contains(elem-hide-emulation-contain-target)");
       expect(await getElemHideElement("elem-hide-emulation-contain"))
@@ -177,10 +157,8 @@ describe("Element Hiding", () =>
     });
   });
 
-  describe("Element collapsing", async() =>
-  {
-    it("hides the img element of a blocked request", async function()
-    {
+  describe("Element collapsing", async() => {
+    it("hides the img element of a blocked request", async function() {
       setMinTimeout(this, 3000);
       await addFilter("/image.png^$image");
 
@@ -190,15 +168,13 @@ describe("Element Hiding", () =>
   });
 });
 
-describe("Snippets", () =>
-{
+describe("Snippets", () => {
   let snippet = "do";
 
   before(() => setTestSnippets(snippet));
   after(() => setTestSnippets(null));
 
-  it("applies a snippet", async function()
-  {
+  it("applies a snippet", async function() {
     if (isMV3())
       this.skip();
 

@@ -27,10 +27,8 @@ import {logItem} from "./diagnostics.js";
 let state = new Map();
 let startupPromise;
 
-class FrameInfo
-{
-  constructor(tabId, frameId, parent, url, pending)
-  {
+class FrameInfo {
+  constructor(tabId, frameId, parent, url, pending) {
     if (pending && pending.url != url)
       pending = null;
 
@@ -49,25 +47,21 @@ class FrameInfo
   }
 }
 
-function getAllowingReason(typeMask, filter)
-{
-  for (let type in contentTypes)
-  {
+function getAllowingReason(typeMask, filter) {
+  for (let type in contentTypes) {
     if (typeMask & filter.contentType & contentTypes[type])
       return type.toLowerCase();
   }
 }
 
-function findAllowlistingFilters(frame)
-{
+function findAllowlistingFilters(frame) {
   let details = {tabId: frame.tabId, frameId: frame.frameId, url: frame.url};
   // The docDomain for a frame is the hostname of the parent frame
   // (the loader). For top-level frames we use the current URL's hostname.
   let matchInfo = {docDomain: frame.parentHostname || frame.hostname,
                    method: "allowing"};
 
-  while (true)
-  {
+  while (true) {
     let typeMask = ~frame.allowlisted & ALLOWING_TYPES;
     let filter = matcher.match(
       frame.url, typeMask, frame.parentHostname, frame.sitekey
@@ -83,15 +77,12 @@ function findAllowlistingFilters(frame)
   }
 }
 
-class PendingFrameInfo
-{
-  constructor(tabId, frameId, parent, url, sitekey)
-  {
+class PendingFrameInfo {
+  constructor(tabId, frameId, parent, url, sitekey) {
     let allowlisted = 0;
     let parentHostname;
 
-    if (parent)
-    {
+    if (parent) {
       ({hostname: parentHostname, allowlisted} = parent);
 
       if (!sitekey)
@@ -112,12 +103,10 @@ class PendingFrameInfo
   }
 }
 
-async function discoverExistingFrames()
-{
+async function discoverExistingFrames() {
   let tabs = await browser.tabs.query({});
   await Promise.all(tabs.map(({id: tabId}) =>
-    browser.webNavigation.getAllFrames({tabId}).then(rawFrames =>
-    {
+    browser.webNavigation.getAllFrames({tabId}).then(rawFrames => {
       if (!rawFrames || !startupPromise)
         return;
 
@@ -126,8 +115,7 @@ async function discoverExistingFrames()
       let frames = new Map();
       state.set(tabId, frames);
 
-      for (let {frameId, parentFrameId, url} of rawFrames)
-      {
+      for (let {frameId, parentFrameId, url} of rawFrames) {
         frames.set(frameId, new FrameInfo(tabId, frameId,
                                           frames.get(parentFrameId), url));
       }
@@ -135,11 +123,9 @@ async function discoverExistingFrames()
   ));
 }
 
-function onHeadersReceived(details)
-{
+function onHeadersReceived(details) {
   let frames = state.get(details.tabId);
-  if (!frames)
-  {
+  if (!frames) {
     frames = new Map();
     state.set(details.tabId, frames);
   }
@@ -148,14 +134,12 @@ function onHeadersReceived(details)
   let parent = frames.get(details.parentFrameId);
   let sitekey = getSitekeyFromHeaders(details.responseHeaders, details.url);
 
-  if (frame)
-  {
+  if (frame) {
     let allowlistFrame = frame.pending || frame;
     allowlistFrame.sitekey = sitekey || allowlistFrame.sitekey;
     findAllowlistingFilters(allowlistFrame);
   }
-  else
-  {
+  else {
     frame = new FrameInfo(details.tabId, details.frameId, parent,
                           "about:blank");
     frames.set(details.frameId, frame);
@@ -165,22 +149,19 @@ function onHeadersReceived(details)
 }
 
 function recordFrameFromNavigationEvent({tabId, frameId, parentFrameId, url},
-                                        historyStateUpdated)
-{
+                                        historyStateUpdated) {
   let frames = state.get(tabId);
   let pending;
   let parent;
 
-  if (frames)
-  {
+  if (frames) {
     let frame = frames.get(frameId);
     pending = frame && frame.pending;
     parent = frames.get(parentFrameId);
   }
 
   // Top-level history-state updates don't invalidate the existing frames.
-  if ((!historyStateUpdated && frameId == 0) || !frames)
-  {
+  if ((!historyStateUpdated && frameId == 0) || !frames) {
     frames = new Map();
     state.set(tabId, frames);
   }
@@ -188,34 +169,28 @@ function recordFrameFromNavigationEvent({tabId, frameId, parentFrameId, url},
   frames.set(frameId, new FrameInfo(tabId, frameId, parent, url, pending));
 }
 
-function onBeforeNavigate(details)
-{
+function onBeforeNavigate(details) {
   if (details.url == "about:srcdoc")
     recordFrameFromNavigationEvent(details, false);
 }
 
-function onCommitted(details)
-{
+function onCommitted(details) {
   recordFrameFromNavigationEvent(details, false);
 }
 
-function onHistoryStateUpdated(details)
-{
+function onHistoryStateUpdated(details) {
   recordFrameFromNavigationEvent(details, true);
 }
 
-function onRemoved(tabId)
-{
+function onRemoved(tabId) {
   state.delete(tabId);
 }
 
-function onReplaced(addedTabId, removedTabId)
-{
+function onReplaced(addedTabId, removedTabId) {
   state.delete(removedTabId);
 }
 
-function verifyAndExtractSitekey(token, url)
-{
+function verifyAndExtractSitekey(token, url) {
   let parts = token.split("_");
   if (parts.length < 2)
     return null;
@@ -231,12 +206,9 @@ function verifyAndExtractSitekey(token, url)
   return key;
 }
 
-function getSitekeyFromHeaders(headers, url)
-{
-  for (let header of headers)
-  {
-    if (header.name.toLowerCase() == "x-adblock-key" && header.value)
-    {
+function getSitekeyFromHeaders(headers, url) {
+  for (let header of headers) {
+    if (header.name.toLowerCase() == "x-adblock-key" && header.value) {
       let sitekey = verifyAndExtractSitekey(header.value, url);
       if (sitekey)
         return sitekey;
@@ -245,11 +217,9 @@ function getSitekeyFromHeaders(headers, url)
   return null;
 }
 
-export function getFrameInfo(tabId, frameId, initiator)
-{
+export function getFrameInfo(tabId, frameId, initiator) {
   let frames = state.get(tabId);
-  if (frames)
-  {
+  if (frames) {
     let frame = frames.get(frameId);
     if (frame)
       return frame;
@@ -259,10 +229,8 @@ export function getFrameInfo(tabId, frameId, initiator)
     return new FrameInfo(tabId, frameId, null, initiator);
 }
 
-export async function start()
-{
-  if (!startupPromise)
-  {
+export async function start() {
+  if (!startupPromise) {
     startupPromise = discoverExistingFrames();
 
     browser.webRequest.onHeadersReceived.addListener(
@@ -284,8 +252,7 @@ export async function start()
   await startupPromise;
 }
 
-export function stop()
-{
+export function stop() {
   startupPromise = null;
   state.clear();
 

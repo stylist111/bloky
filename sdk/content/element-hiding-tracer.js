@@ -18,14 +18,11 @@
 import browser from "webextension-polyfill";
 import {ignoreNoConnectionError} from "../errors.js";
 
-export class ElementHidingTracer
-{
-  constructor(selectors)
-  {
+export class ElementHidingTracer {
+  constructor(selectors) {
     this.selectors = new Map(selectors);
 
-    this.observer = new MutationObserver(() =>
-    {
+    this.observer = new MutationObserver(() => {
       this.observer.disconnect();
       setTimeout(() => this.trace(), 1000);
     });
@@ -36,22 +33,18 @@ export class ElementHidingTracer
       this.trace();
   }
 
-  log(filters, selectors = [])
-  {
+  log(filters, selectors = []) {
     ignoreNoConnectionError(browser.runtime.sendMessage(
       {type: "ewe:trace-elem-hide", filters, selectors}
     ));
   }
 
-  trace()
-  {
+  trace() {
     let filters = [];
     let selectors = [];
 
-    for (let [selector, filter] of this.selectors)
-    {
-      if (document.querySelector(selector))
-      {
+    for (let [selector, filter] of this.selectors) {
+      if (document.querySelector(selector)) {
         this.selectors.delete(selector);
         if (filter)
           filters.push(filter);

@@ -33,13 +33,10 @@ const WS_PORT = 3001;
 let app = express();
 let dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-function bypassCache(req, res, next)
-{
+function bypassCache(req, res, next) {
   let userAgent = req.get("User-Agent");
-  if (userAgent && userAgent.includes("Gecko/") && req.path == "/csp.html")
-  {
-    onHeaders(res, () =>
-    {
+  if (userAgent && userAgent.includes("Gecko/") && req.path == "/csp.html") {
+    onHeaders(res, () => {
       res.removeHeader("Etag");
       res.removeHeader("Last-Modified");
     });
@@ -48,10 +45,8 @@ function bypassCache(req, res, next)
   next();
 }
 
-async function sitekeyHeader(req, res, next)
-{
-  if (req.query.sitekey)
-  {
+async function sitekeyHeader(req, res, next) {
+  if (req.query.sitekey) {
     let pem = await fs.promises.readFile(path.join(dirname, "sitekey.pem"));
     let privateKey = crypto.createPrivateKey(pem);
     let publicKey = crypto.createPublicKey(privateKey);
@@ -65,8 +60,7 @@ async function sitekeyHeader(req, res, next)
   next();
 }
 
-function testHeader(req, res, next)
-{
+function testHeader(req, res, next) {
   let header = req.query["header-name"];
 
   if (header)
@@ -82,14 +76,12 @@ app.use(express.static(path.join(dirname, "pages")));
 
 app.post("/ping-handler", (req, res) => res.sendStatus(200));
 
-app.listen(HTTP_PORT, HOST, () =>
-{
+app.listen(HTTP_PORT, HOST, () => {
   // eslint-disable-next-line no-console
   console.log(`Test pages server listening at http://${HOST}:${HTTP_PORT}`);
 });
 
-new WebSocket.Server({host: HOST, port: WS_PORT}).on("listening", () =>
-{
+new WebSocket.Server({host: HOST, port: WS_PORT}).on("listening", () => {
   // eslint-disable-next-line no-console
   console.log(`Web socket server listening at ws://${HOST}:${WS_PORT}`);
 });

@@ -18,11 +18,12 @@
 let messages = [];
 let emit = () => {};
 let setConnected;
-let connected = new Promise(resolve => { setConnected = resolve; });
+let connected = new Promise(resolve => {
+  setConnected = resolve;
+});
 let runner = mocha.run();
 
-function sendMessage(id, arg)
-{
+function sendMessage(id, arg) {
   messages.push([id, arg]);
   emit();
 }
@@ -35,12 +36,14 @@ mocha.Mocha.reporters.Base.useColors = true;
 mocha.Mocha.reporters.Base.consoleLog = (...args) => sendMessage("log", args);
 new mocha.Mocha.reporters.Spec(runner);
 
-self.poll = async function()
-{
+self.poll = async function() {
   setConnected(true);
 
-  if (messages.length == 0)
-    await new Promise(resolve => { emit = resolve; });
+  if (messages.length == 0) {
+    await new Promise(resolve => {
+      emit = resolve;
+    });
+  }
 
   let newMessages = messages;
   messages = [];
@@ -48,15 +51,13 @@ self.poll = async function()
   return newMessages;
 };
 
-export function isConnected()
-{
+export function isConnected() {
   return Promise.race([
     connected,
     new Promise(resolve => setTimeout(resolve, 1000, false))
   ]);
 }
 
-export function click(url, selector)
-{
+export function click(url, selector) {
   sendMessage("click", {url, selector});
 }

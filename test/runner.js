@@ -43,16 +43,13 @@ const MACOS_EDGE_BINARY =
 
 let extensionDir;
 
-class Chromium
-{
-  async getBranchBasePosition(version)
-  {
+class Chromium {
+  async getBranchBasePosition(version) {
     let data = await got(`https://omahaproxy.appspot.com/deps.json?version=${version}`).json();
     return data.chromium_base_position;
   }
 
-  async getLatestVersion(channel = "stable")
-  {
+  async getLatestVersion(channel = "stable") {
     let os = process.platform;
     if (os == "win32")
       os = process.arch == "x64" ? "win64" : "win";
@@ -63,8 +60,7 @@ class Chromium
     let release = data[0].versions.find(ver => ver.channel == channel);
     let {current_version: version, branch_base_position: base} = release;
 
-    if (release.true_branch && release.true_branch.includes("_"))
-    {
+    if (release.true_branch && release.true_branch.includes("_")) {
       // A wrong base may be caused by a mini-branch (patched) release
       // In that case, the base is taken from the unpatched version
       version = [...version.split(".").slice(0, 3), "0"].join(".");
@@ -74,8 +70,7 @@ class Chromium
     return {version, base};
   }
 
-  async installDriver(version)
-  {
+  async installDriver(version) {
     await promisify(execFile)(
       process.execPath,
       [path.join("node_modules", "chromedriver", "install.js")],
@@ -90,8 +85,7 @@ class Chromium
     );
   }
 
-  async installDevDriver(revision)
-  {
+  async installDevDriver(revision) {
     let platform = `${process.platform}-${process.arch}`;
     let buildTypes = {
       "win32-ia32": ["Win", "chromedriver_win32.zip", "chromedriver.exe"],
@@ -116,8 +110,7 @@ class Chromium
                                path.join(chromedriverDir, driver));
   }
 
-  async getDriver(version)
-  {
+  async getDriver(version) {
     let base;
     let dev = version == "beta" || version == "dev";
     if (version && !dev)
@@ -143,17 +136,14 @@ class Chromium
   }
 }
 
-class Firefox
-{
-  async getLatestVersion(branch)
-  {
+class Firefox {
+  async getLatestVersion(branch) {
     let data = await got("https://product-details.mozilla.org/1.0/firefox_versions.json").json();
     return branch == "beta" ?
       data.FIREFOX_DEVEDITION : data.LATEST_FIREFOX_VERSION;
   }
 
-  async getDriver(version)
-  {
+  async getDriver(version) {
     if (!version || version == "beta")
       version = await this.getLatestVersion(version);
     let binary = await downloadFirefox(version);
@@ -176,20 +166,16 @@ class Firefox
   }
 }
 
-class Edge
-{
-  async installDriver()
-  {
+class Edge {
+  async installDriver() {
     let version;
-    if (process.platform == "win32")
-    {
+    if (process.platform == "win32") {
       let cmd = "(Get-ItemProperty ${Env:ProgramFiles(x86)}\\Microsoft\\" +
                 "Edge\\Application\\msedge.exe).VersionInfo.ProductVersion";
       let {stdout} = await promisify(exec)(cmd, {shell: "powershell.exe"});
       version = stdout.trim();
     }
-    else if (process.platform == "darwin")
-    {
+    else if (process.platform == "darwin") {
       let {stdout} =
         await promisify(execFile)(MACOS_EDGE_BINARY, ["--version"]);
       version = stdout.trim().replace(/.*\s/, "");
@@ -206,8 +192,7 @@ class Edge
     );
   }
 
-  async getDriver()
-  {
+  async getDriver() {
     await this.installDriver();
 
     let builder = new webdriver.Builder();
@@ -228,13 +213,11 @@ const BROWSERS = {
   edge: new Edge()
 };
 
-function parseArguments()
-{
+function parseArguments() {
   let parser = yargs(process.argv.slice(2));
   parser.version(false);
   parser.strict();
-  parser.command("$0 <manifest> <browser> [version]", "", subparser =>
-  {
+  parser.command("$0 <manifest> <browser> [version]", "", subparser => {
     subparser.positional("manifest", {choices: ["v2", "v3"]});
     subparser.positional("browser", {choices: Object.keys(BROWSERS)});
     subparser.positional("version", {type: "string"});
@@ -246,8 +229,7 @@ function parseArguments()
 
   let {argv} = parser;
   let params;
-  for (let param of ["timeout", "grep"])
-  {
+  for (let param of ["timeout", "grep"]) {
     let value = argv[param];
     if (typeof value != "undefined")
       (params || (params = {}))[param] = value;
@@ -261,18 +243,14 @@ function parseArguments()
   };
 }
 
-async function switchToHandle(driver, testFn)
-{
-  for (let handle of await driver.getAllWindowHandles())
-  {
+async function switchToHandle(driver, testFn) {
+  for (let handle of await driver.getAllWindowHandles()) {
     let url;
-    try
-    {
+    try {
       await driver.switchTo().window(handle);
       url = await driver.getCurrentUrl();
     }
-    catch (e)
-    {
+    catch (e) {
       continue;
     }
 
@@ -281,11 +259,9 @@ async function switchToHandle(driver, testFn)
   }
 }
 
-async function getHandle(driver, page)
-{
+async function getHandle(driver, page) {
   let url;
-  let handle = await driver.wait(() => switchToHandle(driver, handleUrl =>
-  {
+  let handle = await driver.wait(() => switchToHandle(driver, handleUrl => {
     if (!handleUrl)
       return false;
 
@@ -296,13 +272,11 @@ async function getHandle(driver, page)
   return handle;
 }
 
-async function pollMessages(driver, handle)
-{
+async function pollMessages(driver, handle) {
   let result;
   let log = [];
 
-  while (!result)
-  {
+  while (!result) {
     let messages = await driver.executeAsyncScript(`
       let callback = arguments[0];
       if (document.readyState == "complete")
@@ -313,10 +287,8 @@ async function pollMessages(driver, handle)
     if (!messages)
       return;
 
-    for (let [id, arg] of messages)
-    {
-      switch (id)
-      {
+    for (let [id, arg] of messages) {
+      switch (id) {
         case "log":
           log.push(arg);
           console.log(...arg); // eslint-disable-line no-console
@@ -338,15 +310,13 @@ async function pollMessages(driver, handle)
   return result;
 }
 
-async function startTestRun(driver, id, params)
-{
+async function startTestRun(driver, id, params) {
   let search = new URLSearchParams();
   for (let key in params)
     search.append(key, params[key]);
 
   await getHandle(driver, "/index.html");
-  if (search.toString())
-  {
+  if (search.toString()) {
     let url = await driver.getCurrentUrl();
     url = `${url}?${search.toString()}`;
     await driver.navigate().to(url);
@@ -355,24 +325,20 @@ async function startTestRun(driver, id, params)
   await driver.findElement(webdriver.By.id(id)).click();
 }
 
-async function run()
-{
+async function run() {
   let {manifest, browser, version, params} = parseArguments();
   extensionDir = path.resolve(process.cwd(), "dist", `test-m${manifest}`);
   let driver = await BROWSERS[browser].getDriver(version);
-  if (params && typeof params.timeout != "undefined")
-  {
+  if (params && typeof params.timeout != "undefined") {
     let driverTimeouts = await driver.manage().getTimeouts();
     let paramsTimeout = parseInt(params.timeout, 10);
-    if (paramsTimeout == 0)
-    {
+    if (paramsTimeout == 0) {
       // 0 is a mocha special case to disable timeouts
       await driver.manage().setTimeouts({
         script: null
       });
     }
-    else if (paramsTimeout > driverTimeouts.script)
-    {
+    else if (paramsTimeout > driverTimeouts.script) {
       await driver.manage().setTimeouts({
         script: paramsTimeout
       });
@@ -381,8 +347,7 @@ async function run()
   let resultUnit;
   let resultReload;
 
-  try
-  {
+  try {
     let cap = await driver.getCapabilities();
     // eslint-disable-next-line no-console
     console.log(`Browser: ${cap.getBrowserName()} ${cap.getBrowserVersion()}`);
@@ -393,22 +358,18 @@ async function run()
 
     await startTestRun(driver, "reload");
     while (!resultReload ||
-           resultReload.log.toString().includes("Reload (preparation)"))
-    {
+           resultReload.log.toString().includes("Reload (preparation)")) {
       handle = await getHandle(driver, "/reload.html");
-      try
-      {
+      try {
         resultReload = await pollMessages(driver, handle);
       }
-      catch (e)
-      {
+      catch (e) {
         if (e.name != "NoSuchWindowError")
           throw e;
       }
     }
   }
-  finally
-  {
+  finally {
     await driver.quit();
   }
 
@@ -417,8 +378,7 @@ async function run()
     process.exit(1);
 }
 
-run().catch(err =>
-{
+run().catch(err => {
   console.error(err instanceof Error ? err.stack : `Error: ${err}`);
   process.exit(1);
 });

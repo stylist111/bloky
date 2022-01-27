@@ -24,8 +24,7 @@ import {onSubscribeLinkClicked} from "./subscribe-links.js";
 
 let contentTypesMap = new Map();
 
-for (let item of resourceTypes)
-{
+for (let item of resourceTypes) {
   let contentTypeObject = Object.keys(contentTypes).find(key =>
     contentTypes[key] === item[1]
   );

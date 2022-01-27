@@ -24,11 +24,9 @@ import {subscribeLinkClicked, subscribeLinksEnabled}
   from "./subscribe-links.js";
 import {logHiddenElements} from "./diagnostics.js";
 
-async function handleMessage(message, sender)
-{
+async function handleMessage(message, sender) {
   await initializer.start();
-  switch (message.type)
-  {
+  switch (message.type) {
     case "ewe:content-hello":
       let filterData = applyContentFilters(sender.tab.id, sender.frameId);
       return {
@@ -48,19 +46,16 @@ async function handleMessage(message, sender)
   }
 }
 
-function onMessage(message, sender)
-{
+function onMessage(message, sender) {
   if (typeof message == "object" && message != null &&
       message.type.startsWith("ewe:"))
     return handleMessage(message, sender);
 }
 
-export function start()
-{
+export function start() {
   browser.runtime.onMessage.addListener(onMessage);
 }
 
-export function stop()
-{
+export function stop() {
   browser.runtime.onMessage.removeListener(onMessage);
 }

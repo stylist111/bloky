@@ -25,14 +25,11 @@ const DB_VERSION = 1;
 
 let initializationPromise;
 
-function openDatabase()
-{
-  return new Promise((resolve, reject) =>
-  {
+function openDatabase() {
+  return new Promise((resolve, reject) => {
     let request = indexedDB.open(DB_NAME, DB_VERSION);
 
-    request.onupgradeneeded = event =>
-    {
+    request.onupgradeneeded = event => {
       let db = event.target.result;
       db.createObjectStore("file-entries");
       db.createObjectStore("file-contents", {autoIncrement: true});
@@ -44,14 +41,10 @@ function openDatabase()
   });
 }
 
-export function init()
-{
-  if (!initializationPromise)
-  {
-    initializationPromise = (async() =>
-    {
-      try
-      {
+export function init() {
+  if (!initializationPromise) {
+    initializationPromise = (async() => {
+      try {
         let [db, legacyStorageItems] = await Promise.all([
           openDatabase(),
           browser.storage ? await browser.storage.local.get(null) : {}
@@ -60,8 +53,7 @@ export function init()
         await Promise.all([initIO(db, legacyStorageItems),
                            initPrefs(db, legacyStorageItems)]);
       }
-      catch (e)
-      {
+      catch (e) {
         initializationPromise = null;
         throw e;
       }

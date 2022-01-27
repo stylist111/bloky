@@ -53,13 +53,11 @@ const ALLOWED_DOMAINS = new Set([
 
 let dispatchFunction;
 
-function isDomainAllowed(domain)
-{
+function isDomainAllowed(domain) {
   if (domain.endsWith("."))
     domain = domain.substring(0, domain.length - 1);
 
-  while (true)
-  {
+  while (true) {
     if (ALLOWED_DOMAINS.has(domain))
       return true;
     let index = domain.indexOf(".");
@@ -69,8 +67,7 @@ function isDomainAllowed(domain)
   }
 }
 
-export function subscribeLinksEnabled(url)
-{
+export function subscribeLinksEnabled(url) {
   if (!dispatchFunction)
     return false;
 
@@ -79,19 +76,16 @@ export function subscribeLinksEnabled(url)
          protocol == "https:" && isDomainAllowed(hostname);
 }
 
-export function subscribeLinkClicked(url, title)
-{
+export function subscribeLinkClicked(url, title) {
   if (dispatchFunction)
     dispatchFunction({url, title});
 }
 
 export let onSubscribeLinkClicked = new EventDispatcher(
-  dispatch =>
-  {
+  dispatch => {
     dispatchFunction = dispatch;
   },
-  () =>
-  {
+  () => {
     dispatchFunction = null;
   }
 );

@@ -21,10 +21,8 @@ import {Page, Popup, setMinTimeout, isMV3, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
         SITEKEY} from "./utils.js";
 import {addFilter} from "./messaging.js";
 
-describe("Pop-up blocking", function()
-{
-  before(function()
-  {
+describe("Pop-up blocking", function() {
+  before(function() {
     // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/102
     if (isMV3())
       this.skip();
@@ -33,54 +31,48 @@ describe("Pop-up blocking", function()
   setMinTimeout(this, 3000);
 
   let opener;
-  beforeEach(() => { opener = new Page("popup-opener.html"); });
+  beforeEach(() => {
+    opener = new Page("popup-opener.html");
+  });
 
-  it("blocks a link-based popup", async() =>
-  {
+  it("blocks a link-based popup", async() => {
     await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
     expect(await new Popup("link", opener).blocked).toBeTruthy();
   });
 
-  it("blocks a script-based popup tab", async() =>
-  {
+  it("blocks a script-based popup tab", async() => {
     await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
     expect(await new Popup("script-tab", opener).blocked).toBeTruthy();
   });
 
-  it("blocks a script-based popup window", async() =>
-  {
+  it("blocks a script-based popup window", async() => {
     await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
     expect(await new Popup("script-window", opener).blocked).toBeTruthy();
   });
 
-  it("blocks a script-based popup with deferred navigation", async() =>
-  {
+  it("blocks a script-based popup with deferred navigation", async() => {
     await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
     expect(await new Popup("script-deferred", opener).blocked).toBeTruthy();
   });
 
-  it("blocks a link-based third-party popup", async() =>
-  {
+  it("blocks a link-based third-party popup", async() => {
     await addFilter(`popup.html^$popup,domain=${TEST_PAGES_DOMAIN}`);
     expect(await new Popup("third-party-link", opener).blocked).toBeTruthy();
   });
 
   it("does not block a link-based third-party popup " +
-     "if the domain is for the opener page", async() =>
-  {
+     "if the domain is for the opener page", async() => {
     await addFilter("popup.html^$popup,domain=127.0.0.1");
     expect(await new Popup("third-party-link", opener).blocked).toBeFalsy();
   });
 
-  it("does not block an allowlisted popup", async() =>
-  {
+  it("does not block an allowlisted popup", async() => {
     await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
     await addFilter(`@@|${TEST_PAGES_URL}/popup.html^$popup`);
     expect(await new Popup("link", opener).blocked).toBeFalsy();
   });
 
-  it("blocks a variety of popups from the same page", async() =>
-  {
+  it("blocks a variety of popups from the same page", async() => {
     await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
     expect(await new Popup("link", opener).blocked).toBeTruthy();
     expect(await new Popup("link", opener).blocked).toBeTruthy();
@@ -89,24 +81,20 @@ describe("Pop-up blocking", function()
     expect(await new Popup("script-deferred", opener).blocked).toBeTruthy();
   });
 
-  describe("Sitekey allowlisting", () =>
-  {
-    before(function()
-    {
+  describe("Sitekey allowlisting", () => {
+    before(function() {
       if (isMV3())
         this.skip();
     });
 
-    it("does not block a popup", async() =>
-    {
+    it("does not block a popup", async() => {
       await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
       await addFilter(`@@$popup,sitekey=${SITEKEY}`);
       let popup = new Popup("link", new Page("popup-opener.html?sitekey=1"));
       expect(await popup.blocked).toBeFalsy();
     });
 
-    it("does not block a popup opened by a document", async() =>
-    {
+    it("does not block a popup opened by a document", async() => {
       await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
       await addFilter(`@@$document,sitekey=${SITEKEY}`);
       let popup = new Popup("link", new Page("popup-opener.html?sitekey=1"));

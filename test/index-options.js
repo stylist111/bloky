@@ -20,8 +20,7 @@
 const TEST_LINKS = ["unit", "reload"];
 const OPTIONS = ["grep", "timeout"];
 
-function onLoad()
-{
+function onLoad() {
   if (!document.location.search)
     return;
 
@@ -30,8 +29,7 @@ function onLoad()
     document.getElementById(option).value = search.get(option);
 }
 
-function onClick(event)
-{
+function onClick(event) {
   let id = event.target.id;
   if (!TEST_LINKS.includes(id))
     return;

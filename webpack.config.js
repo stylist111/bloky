@@ -29,8 +29,7 @@ import CopyPlugin from "copy-webpack-plugin";
 let dirname = path.dirname(url.fileURLToPath(import.meta.url));
 let templateDir = path.join(dirname, "test", "template.html");
 
-export default (env = {}) =>
-{
+export default (env = {}) => {
   let builds = [{
     name: "sdk",
     entry: {
@@ -78,8 +77,7 @@ export default (env = {}) =>
     }
   }];
 
-  for (let manifestVersion of [2, 3])
-  {
+  for (let manifestVersion of [2, 3]) {
     let manifest = {
       name: "eyeo's Web Extension Ad Blocking Toolkit Test Extension",
       version: "0.0.1",

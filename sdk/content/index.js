@@ -26,8 +26,7 @@ import {startElementCollapsing, hideElement, unhideElement}
 import {ElementHidingTracer} from "./element-hiding-tracer.js";
 import {handleSubscribeLinks} from "./subscribe-links.js";
 
-async function initContentFeatures()
-{
+async function initContentFeatures() {
   let response = await ignoreNoConnectionError(
     browser.runtime.sendMessage({type: "ewe:content-hello"})
   );
@@ -39,17 +38,14 @@ async function initContentFeatures()
   if (response.tracedSelectors)
     tracer = new ElementHidingTracer(response.tracedSelectors);
 
-  if (response.emulatedPatterns.length > 0)
-  {
-    let elemHideEmulation = new ElemHideEmulation((elements, filters) =>
-    {
+  if (response.emulatedPatterns.length > 0) {
+    let elemHideEmulation = new ElemHideEmulation((elements, filters) => {
       for (let element of elements)
         hideElement(element, response.cssProperties);
 
       if (tracer)
         tracer.log(filters);
-    }, elements =>
-    {
+    }, elements => {
       for (let element of elements)
         unhideElement(element);
     });

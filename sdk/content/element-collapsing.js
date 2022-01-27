@@ -21,15 +21,12 @@ import {ignoreNoConnectionError} from "../errors.js";
 let collapsedSelectors = new Set();
 let observers = new WeakMap();
 
-function getURLFromElement(element)
-{
-  if (element.localName == "object")
-  {
+function getURLFromElement(element) {
+  if (element.localName == "object") {
     if (element.data)
       return element.data;
 
-    for (let child of element.children)
-    {
+    for (let child of element.children) {
       if (child.localName == "param" && child.name == "movie" && child.value)
         return new URL(child.value, document.baseURI).href;
     }
@@ -40,8 +37,7 @@ function getURLFromElement(element)
   return element.currentSrc || element.src;
 }
 
-function getSelectorForBlockedElement(element)
-{
+function getSelectorForBlockedElement(element) {
   // Setting the "display" CSS property to "none" doesn't have any effect on
   // <frame> elements (in framesets). So we have to hide it inline through
   // the "visibility" CSS property.
@@ -52,18 +48,15 @@ function getSelectorForBlockedElement(element)
   // we cannot address it in CSS by the source URL; in that case we
   // don't "collapse" it using a CSS selector but rather hide it directly by
   // setting the style="..." attribute.
-  if (element.localName == "video" || element.localName == "audio")
-  {
-    for (let child of element.children)
-    {
+  if (element.localName == "video" || element.localName == "audio") {
+    for (let child of element.children) {
       if (child.localName == "source")
         return null;
     }
   }
 
   let selector = "";
-  for (let attr of ["src", "srcset"])
-  {
+  for (let attr of ["src", "srcset"]) {
     let value = element.getAttribute(attr);
     if (value && attr in element)
       selector += "[" + attr + "=" + CSS.escape(value) + "]";
@@ -72,12 +65,10 @@ function getSelectorForBlockedElement(element)
   return selector ? element.localName + selector : null;
 }
 
-export function hideElement(element, properties)
-{
+export function hideElement(element, properties) {
   let {style} = element;
 
-  if (!properties)
-  {
+  if (!properties) {
     if (element.localName == "frame")
       properties = [["visibility", "hidden"]];
     else
@@ -90,10 +81,8 @@ export function hideElement(element, properties)
   if (observers.has(element))
     observers.get(element).disconnect();
 
-  let observer = new MutationObserver(() =>
-  {
-    for (let [key, value] of properties)
-    {
+  let observer = new MutationObserver(() => {
+    for (let [key, value] of properties) {
       if (style.getPropertyValue(key) != value ||
           style.getPropertyPriority(key) != "important")
         style.setProperty(key, value, "important");
@@ -108,11 +97,9 @@ export function hideElement(element, properties)
   observers.set(element, observer);
 }
 
-export function unhideElement(element)
-{
+export function unhideElement(element) {
   let observer = observers.get(element);
-  if (observer)
-  {
+  if (observer) {
     observer.disconnect();
     observers.delete(element);
   }
@@ -121,17 +108,14 @@ export function unhideElement(element)
   element.style.removeProperty(property);
 }
 
-function collapseElement(element)
-{
+function collapseElement(element) {
   let selector = getSelectorForBlockedElement(element);
-  if (!selector)
-  {
+  if (!selector) {
     hideElement(element);
     return;
   }
 
-  if (!collapsedSelectors.has(selector))
-  {
+  if (!collapsedSelectors.has(selector)) {
     ignoreNoConnectionError(
       browser.runtime.sendMessage({
         type: "ewe:inject-css",
@@ -142,26 +126,19 @@ function collapseElement(element)
   }
 }
 
-export function startElementCollapsing()
-{
+export function startElementCollapsing() {
   let deferred = null;
 
-  browser.runtime.onMessage.addListener((message, sender) =>
-  {
+  browser.runtime.onMessage.addListener((message, sender) => {
     if (!message || message.type != "ewe:collapse")
       return;
 
-    if (document.readyState == "loading")
-    {
-      if (!deferred)
-      {
+    if (document.readyState == "loading") {
+      if (!deferred) {
         deferred = new Map();
-        document.addEventListener("DOMContentLoaded", () =>
-        {
-          for (let [selector, urls] of deferred)
-          {
-            for (let element of document.querySelectorAll(selector))
-            {
+        document.addEventListener("DOMContentLoaded", () => {
+          for (let [selector, urls] of deferred) {
+            for (let element of document.querySelectorAll(selector)) {
               if (urls.has(getURLFromElement(element)))
                 collapseElement(element);
             }
@@ -175,10 +152,8 @@ export function startElementCollapsing()
       deferred.set(message.selector, urls);
       urls.add(message.url);
     }
-    else
-    {
-      for (let element of document.querySelectorAll(message.selector))
-      {
+    else {
+      for (let element of document.querySelectorAll(message.selector)) {
         if (getURLFromElement(element) == message.url)
           collapseElement(element);
       }

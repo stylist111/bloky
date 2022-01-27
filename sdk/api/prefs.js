@@ -36,54 +36,45 @@ let prefs = Object.create({
   subscriptions_fallbackerrors: 5,
   subscriptions_fallbackurl: "https://adblockplus.org/getSubscription?version=%VERSION%&url=%SUBSCRIPTION%&downloadURL=%URL%&error=%ERROR%&responseStatus=%RESPONSESTATUS%",
 
-  on(preference, callback)
-  {
+  on(preference, callback) {
     eventEmitter.on(preference, callback);
   },
 
-  off(preference, callback)
-  {
+  off(preference, callback) {
     eventEmitter.off(preference, callback);
   }
 });
 
-function updatePref(name, updateIDB)
-{
+function updatePref(name, updateIDB) {
   updateIDB(database.transaction(["prefs"], "readwrite").objectStore("prefs"));
   eventEmitter.emit(name);
 }
 
 export let Prefs = new Proxy(prefs, {
-  set(obj, name, value)
-  {
+  set(obj, name, value) {
     obj[name] = value;
     updatePref(name, store => store.put({name, value}));
     return true;
   },
 
-  deleteProperty(obj, name)
-  {
+  deleteProperty(obj, name) {
     delete obj[name];
     updatePref(name, store => store.delete(name));
     return true;
   }
 });
 
-async function migratePrefs(db, legacyStorageItems)
-{
+async function migratePrefs(db, legacyStorageItems) {
   let keys = [];
 
-  await new Promise((resolve, reject) =>
-  {
+  await new Promise((resolve, reject) => {
     let tx = db.transaction(["prefs"], "readwrite");
     let store = tx.objectStore("prefs");
 
-    for (let name in prefs)
-    {
+    for (let name in prefs) {
       let key = `pref:${name}`;
 
-      if (key in legacyStorageItems)
-      {
+      if (key in legacyStorageItems) {
         store.put({name, value: legacyStorageItems[key]});
         keys.push(key);
       }
@@ -97,10 +88,8 @@ async function migratePrefs(db, legacyStorageItems)
     browser.storage.local.remove(keys);
 }
 
-function loadPrefs(db)
-{
-  return new Promise((resolve, reject) =>
-  {
+function loadPrefs(db) {
+  return new Promise((resolve, reject) => {
     let tx = db.transaction(["prefs"], "readonly");
     let store = tx.objectStore("prefs");
 
@@ -109,8 +98,7 @@ function loadPrefs(db)
   });
 }
 
-export async function init(db, legacyStorageItems)
-{
+export async function init(db, legacyStorageItems) {
   await migratePrefs(db, legacyStorageItems);
 
   for (let {name, value} of await loadPrefs(db))

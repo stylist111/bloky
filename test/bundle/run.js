@@ -24,15 +24,12 @@ import url from "url";
 
 let cwd = path.dirname(url.fileURLToPath(import.meta.url));
 
-(async() =>
-{
-  try
-  {
+(async() => {
+  try {
     await promisify(exec)("npm i", {cwd});
     await promisify(exec)("npx webpack", {cwd});
   }
-  catch (e)
-  {
+  catch (e) {
     console.error(e);
     process.exit(1);
   }

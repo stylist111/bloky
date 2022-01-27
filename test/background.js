@@ -26,19 +26,15 @@ let callbackIdCounter = 0;
 let callbacks = new Map();
 let lastError;
 
-function toStringIfError(obj)
-{
+function toStringIfError(obj) {
   return obj instanceof Error ? obj.toString() : obj;
 }
 
-async function runOperations(operations)
-{
+async function runOperations(operations) {
   let stack = [];
 
-  for (let {op, arg} of operations)
-  {
-    switch (op)
-    {
+  for (let {op, arg} of operations) {
+    switch (op) {
       case "getGlobal":
         stack.push(self[arg]);
         break;
@@ -79,10 +75,8 @@ async function runOperations(operations)
   return stack.pop();
 }
 
-function handleTestMessage(request, sender, sendResponse)
-{
-  switch (request.type)
-  {
+function handleTestMessage(request, sender, sendResponse) {
+  switch (request.type) {
     case "ewe-test:run":
       runOperations(request.operations).then(
         res => sendResponse({result: toStringIfError(res)}),
@@ -94,8 +88,7 @@ function handleTestMessage(request, sender, sendResponse)
       let id = ++callbackIdCounter;
       let tabId = sender.tab.id;
 
-      callbacks.set(id, (...args) =>
-      {
+      callbacks.set(id, (...args) => {
         let message = {type: "ewe-test:call-callback", id, args};
         chrome.tabs.sendMessage(tabId, message);
       });
@@ -113,8 +106,7 @@ function handleTestMessage(request, sender, sendResponse)
       return true;
 
     case "ewe-test:storeAndRemoveAllSubscriptions":
-      EWE.subscriptions.removeAll().then(restoreFunc =>
-      {
+      EWE.subscriptions.removeAll().then(restoreFunc => {
         self.restoreSubscriptions = restoreFunc;
         sendResponse({});
         return true;
@@ -127,8 +119,7 @@ chrome.runtime.onMessage.addListener(handleTestMessage);
 addEventListener("error", ({error}) => lastError = error);
 addEventListener("unhandledrejection", ({reason}) => lastError = reason);
 
-function mockGetUILanguage(api)
-{
+function mockGetUILanguage(api) {
   let {getUILanguage} = api.i18n;
   if (getUILanguage)
     api.i18n.getUILanguage = () => self.uiLanguageOverride || getUILanguage();
@@ -141,18 +132,15 @@ mockGetUILanguage(chrome);
 if (typeof browser != "undefined")
   mockGetUILanguage(browser);
 
-EWE.start().then(async() =>
-{
-  if (typeof netscape != "undefined")
-  {
+EWE.start().then(async() => {
+  if (typeof netscape != "undefined") {
     let version = /\brv:([^;)]+)/.exec(navigator.userAgent)[1];
     if (parseInt(version, 10) < 86)
       await new Promise(resolve => setTimeout(resolve, 2000));
   }
 
   chrome.tabs.create({url: "index.html"});
-  chrome.storage.local.get(["reload-test-running"], result =>
-  {
+  chrome.storage.local.get(["reload-test-running"], result => {
     if (result["reload-test-running"])
       chrome.tabs.create({url: "reload.html"});
   });

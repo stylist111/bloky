@@ -26,8 +26,7 @@ import {synchronizer} from "adblockpluscore/lib/synchronizer.js";
 export const ACCEPTABLE_ADS_URL = "https://easylist-downloads.adblockplus.org/exceptionrules.txt";
 export const ACCEPTABLE_ADS_PRIVACY_URL = "https://easylist-downloads.adblockplus.org/exceptionrules-privacy-friendly.txt";
 
-function getDefaultSubscriptions()
-{
+function getDefaultSubscriptions() {
   // https://bugs.chromium.org/p/chromium/issues/detail?id=1159438
   let currentLang = (browser.i18n.getUILanguage ?
     browser.i18n.getUILanguage() : navigator.language).split("-")[0];
@@ -38,10 +37,8 @@ function getDefaultSubscriptions()
   let adSubscriptionsDefaultLang = [];
   let chosenSubscriptions = [];
 
-  for (let subscription of recommendations())
-  {
-    switch (subscription.type)
-    {
+  for (let subscription of recommendations()) {
+    switch (subscription.type) {
       case "ads":
         if (subscription.languages.includes(currentLang))
           adSubscriptions.push(subscription);
@@ -56,8 +53,7 @@ function getDefaultSubscriptions()
   }
 
   if (adSubscriptions.length > 0 || (adSubscriptions =
-                                     adSubscriptionsDefaultLang).length > 0)
-  {
+                                     adSubscriptionsDefaultLang).length > 0) {
     let randomIndex = Math.floor(Math.random() * adSubscriptions.length);
     chosenSubscriptions.unshift(adSubscriptions[randomIndex]);
   }
@@ -65,10 +61,8 @@ function getDefaultSubscriptions()
   return chosenSubscriptions;
 }
 
-function shouldAddDefaultSubscriptions()
-{
-  for (let subscription of filterStorage.subscriptions())
-  {
+function shouldAddDefaultSubscriptions() {
+  for (let subscription of filterStorage.subscriptions()) {
     if (subscription instanceof DownloadableSubscription &&
         subscription.url != ACCEPTABLE_ADS_URL &&
         subscription.type != "circumvention")
@@ -82,13 +76,11 @@ function shouldAddDefaultSubscriptions()
   return true;
 }
 
-export function configureDefaultSubscriptions()
-{
+export function configureDefaultSubscriptions() {
   let subscriptions = [];
   let foundSubscriptions = filterStorage.getSubscriptionCount() != 0;
 
-  if (!foundSubscriptions)
-  {
+  if (!foundSubscriptions) {
     subscriptions.push({url: ACCEPTABLE_ADS_URL,
                         title: "Allow non-intrusive advertising"});
   }
@@ -96,8 +88,7 @@ export function configureDefaultSubscriptions()
   if (shouldAddDefaultSubscriptions())
     subscriptions.push(...getDefaultSubscriptions());
 
-  for (let {url, title, homepage} of subscriptions)
-  {
+  for (let {url, title, homepage} of subscriptions) {
     let subscription = Subscription.fromURL(url);
     subscription.disabled = false;
     subscription.title = title;

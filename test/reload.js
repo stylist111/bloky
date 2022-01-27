@@ -36,14 +36,11 @@ const BLOCKING_FILTER_TEXT = "/blocking.png^$image";
 let start = new URLSearchParams(document.location.search).get("start");
 let phase = start ? "preparation" : "check";
 
-describe(`Reload (${phase})`, function()
-{
+describe(`Reload (${phase})`, function() {
   this.timeout(5000);
 
-  after(async() =>
-  {
-    if (start)
-    {
+  after(async() => {
+    if (start) {
       await browser.storage.local.set({"reload-test-running": true});
 
       return runInBackgroundPage([
@@ -56,39 +53,30 @@ describe(`Reload (${phase})`, function()
     await browser.storage.local.remove("reload-test-running");
   });
 
-  it("persists filter storage data", async() =>
-  {
-    if (start)
-    {
+  it("persists filter storage data", async() => {
+    if (start) {
       await addFilter(CONTENT_FILTER_TEXT);
-      await wait(async() =>
-      {
+      await wait(async() => {
         return await EWE.debugging.isInFilterStorage(CONTENT_FILTER_TEXT);
       }, 2000, "The added filter didn't reach storage");
 
       return;
     }
 
-    try
-    {
+    try {
       expect(await EWE.filters.getUserFilters())
         .toEqual(expect.arrayContaining([CONTENT_FILTER]));
     }
-    finally
-    {
+    finally {
       await EWE.filters.remove([CONTENT_FILTER_TEXT]);
     }
   });
 
-  it("blocks a request using stored filters", async() =>
-  {
-    if (start)
-    {
+  it("blocks a request using stored filters", async() => {
+    if (start) {
       await addFilter(IMAGE_FILTER_TEXT);
-      if (!isMV3())
-      {
-        await wait(async() =>
-        {
+      if (!isMV3()) {
+        await wait(async() => {
           return await EWE.debugging.isInFilterStorage(IMAGE_FILTER_TEXT);
         }, 2000, "The added filter didn't reach storage");
       }
@@ -96,25 +84,19 @@ describe(`Reload (${phase})`, function()
       return;
     }
 
-    try
-    {
+    try {
       await new Page("image.html").expectResource("image.png").toBeBlocked();
     }
-    finally
-    {
+    finally {
       await EWE.filters.remove([IMAGE_FILTER_TEXT]);
     }
   });
 
-  it("persists blocking filters state", async() =>
-  {
-    if (start)
-    {
+  it("persists blocking filters state", async() => {
+    if (start) {
       await addFilter(BLOCKING_FILTER_TEXT);
-      if (!isMV3())
-      {
-        await wait(async() =>
-        {
+      if (!isMV3()) {
+        await wait(async() => {
           return await EWE.debugging.isInFilterStorage(BLOCKING_FILTER_TEXT);
         }, 2000, "The added filter didn't reach storage");
       }
@@ -122,8 +104,7 @@ describe(`Reload (${phase})`, function()
       return;
     }
 
-    try
-    {
+    try {
       expect(await EWE.filters.getUserFilters()).toEqual(
         expect.arrayContaining([
           expect.objectContaining({text: BLOCKING_FILTER_TEXT})
@@ -133,8 +114,7 @@ describe(`Reload (${phase})`, function()
       await addFilter(BLOCKING_FILTER_TEXT);
       await addFilter(IMAGE_FILTER_TEXT);
     }
-    finally
-    {
+    finally {
       await EWE.filters.remove([BLOCKING_FILTER_TEXT, IMAGE_FILTER_TEXT]);
     }
   });

@@ -31,16 +31,13 @@ let timeout = new URLSearchParams(document.location.search).get("timeout");
 if (timeout)
   mocha.timeout(parseInt(timeout, 10));
 
-before(async function()
-{
+before(async function() {
   this.timeout(5000);
 
-  try
-  {
+  try {
     await fetch(TEST_PAGES_URL);
   }
-  catch (err)
-  {
+  catch (err) {
     let elem = document.getElementById("test-pages-status");
     let message =
       `Warning: Test pages server can't be reached at ${TEST_PAGES_URL}`;
@@ -54,8 +51,7 @@ before(async function()
     type: "ewe-test:storeAndRemoveAllSubscriptions"});
 });
 
-after(async function()
-{
+after(async function() {
   this.timeout(3000);
 
   await runInBackgroundPage([
@@ -72,11 +68,9 @@ after(async function()
   await EWE.filters.remove([RESTORE_SUBSCRIPTIONS_TEST]);
 });
 
-beforeEach(function()
-{
+beforeEach(function() {
   let {fn} = this.currentTest;
-  this.currentTest.fn = async function()
-  {
+  this.currentTest.fn = async function() {
     await fn.call(this);
 
     let error = await runInBackgroundPage([{op: "getLastError"}]);
@@ -85,8 +79,7 @@ beforeEach(function()
   };
 });
 
-afterEach(async() =>
-{
+afterEach(async() => {
   await EWE.subscriptions.removeAll();
   await Page.removeCurrent();
   await Popup.removeCurrent();

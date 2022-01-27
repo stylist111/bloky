@@ -31,8 +31,7 @@ import {removeDynamicFilters} from "./dnr-filters.js";
 import {ACCEPTABLE_ADS_URL, ACCEPTABLE_ADS_PRIVACY_URL}
   from "./default-subscriptions.js";
 
-function convertSubscription(subscription)
-{
+function convertSubscription(subscription) {
   let {disabled, downloadStatus, homepage,
        version, lastDownload, lastSuccess,
        softExpiration, expires, title, url} = subscription;
@@ -43,13 +42,11 @@ function convertSubscription(subscription)
           downloadable: subscription instanceof DownloadableSubscription};
 }
 
-function convertRecommendation({languages, title, type, url})
-{
+function convertRecommendation({languages, title, type, url}) {
   return {languages, title, type, url};
 }
 
-function getSubscription(url)
-{
+function getSubscription(url) {
   let subscription = Subscription.fromURL(url);
 
   if (filterStorage.hasSubscription(subscription) &&
@@ -59,10 +56,8 @@ function getSubscription(url)
   return null;
 }
 
-function makeListener(dispatch)
-{
-  return subscription =>
-  {
+function makeListener(dispatch) {
+  return subscription => {
     if (subscription instanceof DownloadableSubscription)
       dispatch(convertSubscription(subscription));
   };
@@ -122,8 +117,7 @@ export default {
    *                                       manages this filter list.
    * @throws {Error} Invalid subscription URL provided.
    */
-  add(url, properties = {})
-  {
+  add(url, properties = {}) {
     if (!Subscription.isValidURL(url))
       throw new Error(`Invalid subscription URL provided: ${url}`);
 
@@ -144,12 +138,10 @@ export default {
    * downloaded and updated over the network.
    * @return {Array.<Subscription>}
    */
-  getDownloadable()
-  {
+  getDownloadable() {
     let result = [];
 
-    for (let subscription of filterStorage.subscriptions())
-    {
+    for (let subscription of filterStorage.subscriptions()) {
       if (subscription instanceof DownloadableSubscription)
         result.push(convertSubscription(subscription));
     }
@@ -162,8 +154,7 @@ export default {
    * @param {string} text The filter rule for which to look.
    * @return {Array.<Subscription>}
    */
-  getForFilter(text)
-  {
+  getForFilter(text) {
     return text ? Array.from(filterStorage.subscriptions(text),
                              convertSubscription) : [];
   },
@@ -173,11 +164,9 @@ export default {
    * @param {string} url The URL of the subscription.
    * @return {Array.<Filter>} Filters from the subscription.
    */
-  getFilters(url)
-  {
+  getFilters(url) {
     let subscription = getSubscription(url);
-    if (subscription)
-    {
+    if (subscription) {
       return Array.from(subscription.filterText(),
                         text => convertFilter(Filter.fromText(text)));
     }
@@ -191,8 +180,7 @@ export default {
    * @return {boolean} True if a subscription has been added.
    * @throws {TypeError} Invalid URL provided.
    */
-  has(url)
-  {
+  has(url) {
     return getSubscription(new URL(url).href) != null;
   },
 
@@ -201,8 +189,7 @@ export default {
    * @param {string} url The URL of the subscription to be enabled.
    * @throws {Error} Subscription does not exist.
    */
-  enable(url)
-  {
+  enable(url) {
     let subscription = getSubscription(url);
 
     if (!subscription)
@@ -217,8 +204,7 @@ export default {
    * @param {string} url The URL of the subscription to be disabled.
    * @throws {Error} Subscription does not exist.
    */
-  disable(url)
-  {
+  disable(url) {
     let subscription = getSubscription(url);
 
     if (!subscription)
@@ -232,8 +218,7 @@ export default {
    * It will no longer have any effect.
    * @param {string} url The URL of the subscription to be removed.
    */
-  remove(url)
-  {
+  remove(url) {
     let subscription = getSubscription(url);
 
     if (subscription)
@@ -247,12 +232,10 @@ export default {
    *                       If omitted, all subscriptions will be synchronized.
    * @throws {Error} Subscription does not exist.
    */
-  sync(url)
-  {
+  sync(url) {
     let subscriptions = [];
 
-    if (url)
-    {
+    if (url) {
       let subscription = getSubscription(url);
 
       if (!subscription)
@@ -260,10 +243,8 @@ export default {
 
       subscriptions.push(subscription);
     }
-    else
-    {
-      for (let subscription of filterStorage.subscriptions())
-      {
+    else {
+      for (let subscription of filterStorage.subscriptions()) {
         if (subscription instanceof DownloadableSubscription)
           subscriptions.push(subscription);
       }
@@ -288,8 +269,7 @@ export default {
    * Returns an array of all recommended subscriptions.
    * @return {Array.<Recommendation>}
    */
-  getRecommendations()
-  {
+  getRecommendations() {
     return Array.from(recommendations(), convertRecommendation);
   },
 
@@ -299,31 +279,25 @@ export default {
    *                    restore the removed subscriptions and filters.
    * @private
    */
-  async removeAll()
-  {
+  async removeAll() {
     let subscriptions = [];
 
-    for (let subscription of filterStorage.subscriptions())
-    {
+    for (let subscription of filterStorage.subscriptions()) {
       subscriptions.push(subscription);
       filterStorage.removeSubscription(subscription);
     }
 
     let addRules = await removeDynamicFilters();
 
-    return async() =>
-    {
+    return async() => {
       await this.removeAll();
 
-      for (let subscription of subscriptions)
-      {
-        if (subscription instanceof DownloadableSubscription)
-        {
+      for (let subscription of subscriptions) {
+        if (subscription instanceof DownloadableSubscription) {
           let {url, title, homepage} = subscription;
           this.add(url, {title, homepage});
         }
-        else
-        {
+        else {
           filterStorage.addSubscription(subscription);
         }
       }
@@ -340,8 +314,7 @@ export default {
    * @event
    * @type {EventDispatcher.<Subscription>}
    */
-  onAdded: new EventDispatcher(dispatch =>
-  {
+  onAdded: new EventDispatcher(dispatch => {
     filterNotifier.on("subscription.added", makeListener(dispatch));
   }),
 
@@ -353,16 +326,13 @@ export default {
    * @event
    * @type {EventDispatcher.<Subscription, string>}
    */
-  onChanged: new EventDispatcher(dispatch =>
-  {
-    function makeChangeListener(property)
-    {
+  onChanged: new EventDispatcher(dispatch => {
+    function makeChangeListener(property) {
       // This name differs between EWE and adblockpluscore.
       if (property == "disabled")
         property = "enabled";
 
-      return subscription =>
-      {
+      return subscription => {
         if (subscription instanceof DownloadableSubscription)
           dispatch(convertSubscription(subscription), property);
       };
@@ -370,8 +340,7 @@ export default {
 
     let properties = ["disabled", "title", "homepage", "lastDownload",
                       "downloadStatus", "downloading"];
-    for (let property of properties)
-    {
+    for (let property of properties) {
       filterNotifier.on(`subscription.${property}`,
                         makeChangeListener(property));
     }
@@ -384,8 +353,7 @@ export default {
    * @event
    * @type {EventDispatcher.<Subscription>}
    */
-  onRemoved: new EventDispatcher(dispatch =>
-  {
+  onRemoved: new EventDispatcher(dispatch => {
     filterNotifier.on("subscription.removed", makeListener(dispatch));
   })
 };

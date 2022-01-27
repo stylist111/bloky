@@ -31,8 +31,7 @@ let defaultOptions = {includeElementHiding: false,
  * filters and requests.
  * @hideconstructor
  */
-export class BlockableEventDispatcher
-{
+export class BlockableEventDispatcher {
   /**
   * @typedef {Object} BlockableEventOptions
   * @param {boolean} [includeElementHiding=false]
@@ -79,8 +78,7 @@ export class BlockableEventDispatcher
    *    filterType: "all", tabId}
    * );
    */
-  addListener(listener, options)
-  {
+  addListener(listener, options) {
     listeners.push({listener, options: {...defaultOptions, ...options}});
   }
 
@@ -91,8 +89,7 @@ export class BlockableEventDispatcher
    * @param {Object} options The filtering conditions to apply when
    *                         the event is emitted.
    */
-  removeListener(listener, options)
-  {
+  removeListener(listener, options) {
     let {includeElementHiding, includeUnmatched,
          filterType, tabId} = {...defaultOptions, ...options};
 
@@ -109,17 +106,14 @@ export class BlockableEventDispatcher
   }
 }
 
-export function logItem(request, filter, matchInfo = {})
-{
-  for (let {listener, options} of listeners)
-  {
+export function logItem(request, filter, matchInfo = {}) {
+  for (let {listener, options} of listeners) {
     let {includeElementHiding, includeUnmatched, filterType, tabId} = options;
 
     if (tabId != null && tabId != request.tabId)
       continue;
 
-    if (filter)
-    {
+    if (filter) {
       if (!includeElementHiding && (filter.type == "elemhide" ||
                                     filter.type == "elemhideexception" ||
                                     filter.type == "elemhideemulation"))
@@ -138,8 +132,7 @@ export function logItem(request, filter, matchInfo = {})
   }
 }
 
-export function logHiddenElements(selectors, filters, sender)
-{
+export function logHiddenElements(selectors, filters, sender) {
   let request = {
     tabId: sender.tab.id,
     frameId: sender.frameId,
@@ -151,15 +144,12 @@ export function logHiddenElements(selectors, filters, sender)
     method: "elemhide"
   };
 
-  if (selectors.length > 0)
-  {
-    for (let subscription of filterStorage.subscriptions())
-    {
+  if (selectors.length > 0) {
+    for (let subscription of filterStorage.subscriptions()) {
       if (subscription.disabled)
         continue;
 
-      for (let text of subscription.filterText())
-      {
+      for (let text of subscription.filterText()) {
         let filter = Filter.fromText(text);
 
         if (filter instanceof ElemHideFilter &&
@@ -174,8 +164,7 @@ export function logHiddenElements(selectors, filters, sender)
     logItem(request, Filter.fromText(text), matchInfo);
 }
 
-export function tracingEnabled(tabId)
-{
+export function tracingEnabled(tabId) {
   return listeners.some(({options}) =>
     options.includeElementHiding &&
     (options.tabId == null || options.tabId == tabId)

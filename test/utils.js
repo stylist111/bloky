@@ -25,24 +25,20 @@ export const SITEKEY = "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANGtTstne7" +
                        "GUvKXYE4GLFwqty3v5MuWWbvItUWBTYoVVsCAwEAAQ";
 export const RECENT_FIREFOX_VERSION = 86; // Latest Firefox on February 2021
 
-function handleConnection(details, tabId, removeListeners, reject)
-{
+function handleConnection(details, tabId, removeListeners, reject) {
   if ((details.tabId == tabId || !tabId) &&
       (details.error == "net::ERR_CONNECTION_REFUSED" ||
        details.error == "NS_ERROR_CONNECTION_REFUSED" ||
        // Under some circumstances (e.g. when loading the page in the CSP tests)
        // Firefox fails to load the page with the plain error code.
-       details.error == "Error code 2152398861"))
-  {
+       details.error == "Error code 2152398861")) {
     removeListeners();
     reject(new Error("Connection refused. Test pages server is probably down"));
   }
 }
 
-export async function executeScript(tabId, func, args)
-{
-  if (browser.scripting)
-  {
+export async function executeScript(tabId, func, args) {
+  if (browser.scripting) {
     let out =
       await browser.scripting.executeScript({target: {tabId}, func, args});
     return out[0].result;
@@ -54,16 +50,13 @@ export async function executeScript(tabId, func, args)
   )[0];
 }
 
-export class Page
-{
-  constructor(path, fullUrl = false)
-  {
+export class Page {
+  constructor(path, fullUrl = false) {
     let removingCurrentPromise = Page.removeCurrent();
     Page.current = this;
 
     this.url = fullUrl ? path : `${TEST_PAGES_URL}/${path}`;
-    this.created = (async() =>
-    {
+    this.created = (async() => {
       await removingCurrentPromise;
 
       // Firefox appears to have an issue where if a tab is opened in
@@ -76,27 +69,21 @@ export class Page
       return (await browser.tabs.create({url: this.url, active})).id;
     })();
 
-    this.loaded = this.created.then(tabId =>
-    {
-      return new Promise((resolve, reject) =>
-      {
-        function removeListeners()
-        {
+    this.loaded = this.created.then(tabId => {
+      return new Promise((resolve, reject) => {
+        function removeListeners() {
           browser.webNavigation.onCompleted.removeListener(onCompleted);
           browser.webNavigation.onErrorOccurred.removeListener(onErrorOccurred);
         }
 
-        function onCompleted(details)
-        {
-          if (details.tabId == tabId && details.frameId == 0)
-          {
+        function onCompleted(details) {
+          if (details.tabId == tabId && details.frameId == 0) {
             removeListeners();
             resolve(tabId);
           }
         }
 
-        function onErrorOccurred(details)
-        {
+        function onErrorOccurred(details) {
           handleConnection(details, tabId, removeListeners, reject);
         }
 
@@ -106,13 +93,11 @@ export class Page
         // If the tab is already complete, then the above event won't
         // ever fire. In practice, this only happens if the tab being
         // loaded is empty.
-        browser.tabs.get(tabId).then(tab =>
-        {
+        browser.tabs.get(tabId).then(tab => {
           // URL comparison is needed because it seems old versions of
           // Firefox say they're completed before actually starting
           // navigation.
-          if (tab.url == this.url && tab.status == "complete")
-          {
+          if (tab.url == this.url && tab.status == "complete") {
             removeListeners();
             resolve(tabId);
           }
@@ -121,70 +106,57 @@ export class Page
     });
   }
 
-  async reload(bypassCache = false)
-  {
+  async reload(bypassCache = false) {
     let tabId = await this.created;
     await browser.tabs.reload(tabId, {bypassCache});
     return tabId;
   }
 
-  expectResource(path)
-  {
+  expectResource(path) {
     let resource = new Resource(path, this);
 
     return {
-      toBeBlocked()
-      {
+      toBeBlocked() {
         return resource.expectToBeBlocked();
       },
-      toBeLoaded()
-      {
+      toBeLoaded() {
         return resource.expectToBeLoaded();
       }
     };
   }
 
-  static async removeCurrent()
-  {
+  static async removeCurrent() {
     let removingPage = Page.current;
     Page.current = null;
-    if (removingPage)
-    {
+    if (removingPage) {
       let tabId = await removingPage.created;
       await browser.tabs.remove(tabId);
     }
   }
 }
 
-export class Resource
-{
-  constructor(path, page)
-  {
-    this.error = (async() =>
-    {
+export class Resource {
+  constructor(path, page) {
+    this.error = (async() => {
       let tabId = page && await page.created;
       let url = new URL(path, TEST_PAGES_URL).href;
       let onErrorOccurred;
       let onCompleted;
 
-      function matches(details)
-      {
+      function matches(details) {
         let requestUrl = new URL(details.url);
         return requestUrl.origin + requestUrl.pathname == url;
       }
 
-      function removeListeners()
-      {
+      function removeListeners() {
         browser.webRequest.onErrorOccurred.removeListener(onErrorOccurred);
         browser.webRequest.onCompleted.removeListener(onCompleted);
       }
 
-      let error = await new Promise((resolve, reject) =>
-      {
+      let error = await new Promise((resolve, reject) => {
         let filter = {urls: ["<all_urls>"], tabId};
 
-        onErrorOccurred = details =>
-        {
+        onErrorOccurred = details => {
           handleConnection(details, tabId, removeListeners, reject);
           return matches(details) && resolve(details);
         };
@@ -199,56 +171,44 @@ export class Resource
     })();
   }
 
-  async expectToBeBlocked()
-  {
+  async expectToBeBlocked() {
     expect(await this.error).toEqual(expect.objectContaining({
       error: expect.stringMatching(/^(net::ERR_BLOCKED_BY_CLIENT|NS_ERROR_ABORT)$/)
     }));
   }
 
-  async expectToBeLoaded()
-  {
+  async expectToBeLoaded() {
     expect(await this.error).toBeUndefined();
   }
 }
 
-export class Popup
-{
-  constructor(id, opener)
-  {
-    this.created = new Promise((resolve, reject) =>
-    {
-      opener.loaded.then(openerTabId =>
-      {
+export class Popup {
+  constructor(id, opener) {
+    this.created = new Promise((resolve, reject) => {
+      opener.loaded.then(openerTabId => {
         let {onCreatedNavigationTarget} = browser.webNavigation;
 
-        function removeListeners()
-        {
+        function removeListeners() {
           browser.tabs.onCreated.removeListener(onTabCreated);
           onCreatedNavigationTarget.removeListener(onNavigationTarget);
           browser.webNavigation.onErrorOccurred.removeListener(onErrorOccurred);
         }
 
-        function onTabCreated(tab)
-        {
-          if (tab.openerTabId == openerTabId)
-          {
+        function onTabCreated(tab) {
+          if (tab.openerTabId == openerTabId) {
             removeListeners();
             resolve(tab.id);
           }
         }
 
-        function onNavigationTarget(details)
-        {
-          if (details.sourceTabId == openerTabId)
-          {
+        function onNavigationTarget(details) {
+          if (details.sourceTabId == openerTabId) {
             removeListeners();
             resolve(details.tabId);
           }
         }
 
-        function onErrorOccurred(details)
-        {
+        function onErrorOccurred(details) {
           handleConnection(details, openerTabId, removeListeners, reject);
         }
 
@@ -260,40 +220,32 @@ export class Popup
           openerTabId,
           elemId => document.getElementById(elemId).click(),
           [id]
-        ).catch(err =>
-        {
+        ).catch(err => {
           removeListeners();
           reject(err);
         });
       }, reject);
     });
 
-    this.blocked = new Promise((resolve, reject) =>
-    {
-      this.created.then(popupTabId =>
-      {
-        function removeListeners()
-        {
+    this.blocked = new Promise((resolve, reject) => {
+      this.created.then(popupTabId => {
+        function removeListeners() {
           browser.tabs.onRemoved.removeListener(onTabRemoved);
           browser.webNavigation.onCompleted.removeListener(onCompleted);
         }
 
-        function onTabRemoved(tabId)
-        {
-          if (tabId == popupTabId)
-          {
+        function onTabRemoved(tabId) {
+          if (tabId == popupTabId) {
             removeListeners();
             Popup.current = null;
             resolve(true);
           }
         }
 
-        function onCompleted(details)
-        {
+        function onCompleted(details) {
           if (details.tabId == popupTabId &&
               details.frameId == 0 &&
-              details.url != "about:blank")
-          {
+              details.url != "about:blank") {
             removeListeners();
             resolve(false);
           }
@@ -305,15 +257,12 @@ export class Popup
         // As with normal pages, it's possible that the we missed the
         // events above. Especially since this is called
         // asynchronously after the tab is created.
-        browser.tabs.get(popupTabId).then(tab =>
-        {
-          if (tab.url != "about:blank" && tab.status == "complete")
-          {
+        browser.tabs.get(popupTabId).then(tab => {
+          if (tab.url != "about:blank" && tab.status == "complete") {
             removeListeners();
             resolve(false);
           }
-        }).catch(() =>
-        {
+        }).catch(() => {
           // We are assuming that this error is because the tab
           // doesn't exist, and not some other error. This means it's
           // already been blocked.
@@ -326,12 +275,10 @@ export class Popup
     Popup.current = this;
   }
 
-  static async removeCurrent()
-  {
+  static async removeCurrent() {
     let removingPopup = Popup.current;
     Popup.current = null;
-    if (removingPopup)
-    {
+    if (removingPopup) {
       let tabId = await removingPopup.created;
       // popup may already be closed if it was blocked, so this may fail
       await browser.tabs.remove(tabId).catch(() => {});
@@ -339,18 +286,14 @@ export class Popup
   }
 }
 
-export function setMinTimeout(runnable, timeout)
-{
+export function setMinTimeout(runnable, timeout) {
   if (runnable.timeout() < timeout)
     runnable.timeout(timeout);
 }
 
-export async function waitForInvisibleElement(tabId, id)
-{
-  await wait(async() =>
-  {
-    let result = await executeScript(tabId, elemId =>
-    {
+export async function waitForInvisibleElement(tabId, id) {
+  await wait(async() => {
+    let result = await executeScript(tabId, elemId => {
       let el = document.getElementById(elemId);
       return el.offsetParent ? el.outerHTML : null;
     }, [id]);
@@ -358,57 +301,44 @@ export async function waitForInvisibleElement(tabId, id)
   }, 2000, `The element with id "${id}" is still visible`);
 }
 
-export function wait(condition, timeout = 0, message, pollTimeout = 100)
-{
+export function wait(condition, timeout = 0, message, pollTimeout = 100) {
   if (typeof condition !== "function")
     throw TypeError("Wait condition must be a function");
 
-  function evaluateCondition()
-  {
-    return new Promise((resolve, reject) =>
-    {
-      try
-      {
+  function evaluateCondition() {
+    return new Promise((resolve, reject) => {
+      try {
         resolve(condition(this));
       }
-      catch (ex)
-      {
+      catch (ex) {
         reject(ex);
       }
     });
   }
 
-  let result = new Promise((resolve, reject) =>
-  {
+  let result = new Promise((resolve, reject) => {
     let startTime = Date.now();
-    let pollCondition = async() =>
-    {
-      evaluateCondition().then(value =>
-      {
+    let pollCondition = async() => {
+      evaluateCondition().then(value => {
         let elapsed = Date.now() - startTime;
-        if (value)
-        {
+        if (value) {
           resolve(value);
         }
-        else if (timeout && elapsed >= timeout)
-        {
-          try
-          {
+        else if (timeout && elapsed >= timeout) {
+          try {
             let timeoutMessage = message ?
               `${typeof message === "function" ? message() : message}\n` : "";
             reject(
               new Error(`${timeoutMessage}Wait timed out after ${elapsed}ms`)
             );
           }
-          catch (ex)
-          {
+          catch (ex) {
             reject(
               new Error(`${ex.message}\nWait timed out after ${elapsed}ms`)
             );
           }
         }
-        else
-        {
+        else {
           setTimeout(pollCondition, pollTimeout);
         }
       }, reject);
@@ -419,36 +349,29 @@ export function wait(condition, timeout = 0, message, pollTimeout = 100)
   return result;
 }
 
-export function isFirefox()
-{
+export function isFirefox() {
   return typeof netscape != "undefined";
 }
 
-export function firefoxVersion()
-{
+export function firefoxVersion() {
   return navigator.userAgent.split("Firefox/")[1];
 }
 
-export function getVisibleElement(tabId, elemId)
-{
-  return executeScript(tabId, id =>
-  {
+export function getVisibleElement(tabId, elemId) {
+  return executeScript(tabId, id => {
     let el = document.getElementById(id);
     return el.offsetParent ? el.outerHTML : null;
   }, [elemId]);
 }
 
-export function getVisibleElementInFrame(tabId, elemId, frameElementId)
-{
-  return executeScript(tabId, (frameId, elementId) =>
-  {
+export function getVisibleElementInFrame(tabId, elemId, frameElementId) {
+  return executeScript(tabId, (frameId, elementId) => {
     let frameDocument = document.getElementById(frameId).contentDocument;
     let el = frameDocument.getElementById(elementId);
     return el.offsetParent ? el.outerHTML : null;
   }, [frameElementId, elemId]);
 }
 
-export function isMV3()
-{
+export function isMV3() {
   return typeof browser.declarativeNetRequest != "undefined";
 }

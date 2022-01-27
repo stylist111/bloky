@@ -60,8 +60,7 @@ export let snippets = {
 
 let stopped = true;
 
-async function startAsyncModule(startModule)
-{
+async function startAsyncModule(startModule) {
   await startModule();
   if (stopped)
     throw new Error("Stopped before initialization was finished");
@@ -88,8 +87,7 @@ async function startAsyncModule(startModule)
  *                                  before starting is completed.
  * @see {@link #stop|stop()}
  */
-export async function start()
-{
+export async function start() {
   stopped = false;
   messageResponder.start();
   await startAsyncModule(() => initializer.start());
@@ -101,8 +99,7 @@ export async function start()
 /**
  * Stops blocking any content.
  */
-export function stop()
-{
+export function stop() {
   stopped = true;
   messageResponder.stop();
   initializer.stop();

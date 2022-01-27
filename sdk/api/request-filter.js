@@ -47,85 +47,68 @@ let typeSelectors = new Map([
 let pendingAllowlistedRequests = new Set();
 let pendingCspRequests = new Set();
 
-class RequestFilter
-{
-  register()
-  {
-    if (!this.listener)
-    {
+class RequestFilter {
+  register() {
+    if (!this.listener) {
       this.listener = this.filter.bind(this);
       this.event.addListener(this.listener, ...this.eventArgs);
     }
   }
 
-  unregister()
-  {
-    if (this.listener)
-    {
+  unregister() {
+    if (this.listener) {
       this.event.removeListener(this.listener);
       this.listener = null;
     }
   }
 
-  getFrameId(details)
-  {
+  getFrameId(details) {
     return details.type == "sub_frame" ? details.parentFrameId :
                                          details.frameId;
   }
 
-  getInitiator(details)
-  {
+  getInitiator(details) {
     return details.initiator || details.documentUrl;
   }
 
-  getFrameInfo(details, initiator)
-  {
+  getFrameInfo(details, initiator) {
     return getFrameInfo(details.tabId, this.getFrameId(details), initiator);
   }
 
-  getContentType(details)
-  {
+  getContentType(details) {
     return resourceTypes.get(details.type) || contentTypes.OTHER;
   }
 
-  collapse(details)
-  {
+  collapse(details) {
     let selector = typeSelectors.get(this.getContentType(details));
     let frameId = this.getFrameId(details);
 
-    let sendCollapseMessage = () =>
-    {
+    let sendCollapseMessage = () => {
       return browser.tabs.sendMessage(
         details.tabId,
         {type: "ewe:collapse", selector, url: details.url}, {frameId}
       );
     };
 
-    if (selector && frameId != -1)
-    {
+    if (selector && frameId != -1) {
       // Retrying to fix a connection error on Chromium 90
       sendCollapseMessage()
         .catch(() => ignoreNoConnectionError(sendCollapseMessage()));
     }
   }
 
-  block(details, filter, matchInfo)
-  {
-    let value = (() =>
-    {
-      if (typeof filter.rewrite == "string")
-      {
+  block(details, filter, matchInfo) {
+    let value = (() => {
+      if (typeof filter.rewrite == "string") {
         let rewrittenUrl = filter.rewriteUrl(details.url);
         // If no rewrite happened (error, different origin), we'll
         // return undefined in order to avoid an "infinite" loop.
-        if (rewrittenUrl != details.url)
-        {
+        if (rewrittenUrl != details.url) {
           matchInfo.rewrittenUrl = rewrittenUrl;
           return {redirectUrl: rewrittenUrl};
         }
       }
-      else
-      {
+      else {
         this.collapse(details);
         return {cancel: true};
       }
@@ -134,14 +117,12 @@ class RequestFilter
     return value;
   }
 
-  allow(details, filter, matchInfo)
-  {
+  allow(details, filter, matchInfo) {
     pendingAllowlistedRequests.add(details.requestId);
     logItem(details, filter, matchInfo);
   }
 
-  match(details, frame, specificOnly)
-  {
+  match(details, frame, specificOnly) {
     let docDomain = frame.hostname;
     // This currently needs to be matcher.search because matcher.match
     // will only return an allowing filter if it's overriding a
@@ -154,8 +135,7 @@ class RequestFilter
     let matches = matcher.search(details.url, this.getContentType(details),
                                  docDomain, frame.sitekey, specificOnly);
     let filter = matches.allowing[0] || matches.blocking[0];
-    if (filter)
-    {
+    if (filter) {
       let matchInfo = {docDomain, specificOnly, method: "request"};
       if (filter instanceof BlockingFilter)
         return this.block(details, filter, matchInfo);
@@ -163,14 +143,12 @@ class RequestFilter
     }
   }
 
-  filter(details)
-  {
+  filter(details) {
     if (pendingAllowlistedRequests.has(details.requestId))
       return;
 
     let initiator = this.getInitiator(details);
-    if (initiator && initiator.startsWith(EXTENSION_PROTOCOL))
-    {
+    if (initiator && initiator.startsWith(EXTENSION_PROTOCOL)) {
       // These are requests sent by an extension, so if we block these
       // we could block our own ability to update subscriptions etc.
       return this.allow(details, null, {
@@ -183,8 +161,7 @@ class RequestFilter
       return;
 
     let specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) != 0;
-    if (frame.allowlisted & contentTypes.DOCUMENT)
-    {
+    if (frame.allowlisted & contentTypes.DOCUMENT) {
       return this.allow(details, null, {
         docDomain: frame.hostname,
         method: "allowing",
@@ -206,32 +183,27 @@ RequestFilter.prototype.eventArgs = [
   ["blocking"]
 ];
 
-class HeaderFilter extends RequestFilter
-{
-  match(details, frame, specificOnly)
-  {
+class HeaderFilter extends RequestFilter {
+  match(details, frame, specificOnly) {
     let docDomain = frame.hostname;
     let matches = matcher.search(details.url, contentTypes.HEADER,
                                  docDomain, frame.sitekey,
                                  specificOnly);
 
-    let filter = (() =>
-    {
+    let filter = (() => {
       // You might think that we should call filterHeaders on the
       // allowing filter too, but actually filterHeaders is only on
       // blocking filters
       if (matches.allowing.length > 0)
         return matches.allowing[0];
 
-      for (let blockingFilter of matches.blocking)
-      {
+      for (let blockingFilter of matches.blocking) {
         if (blockingFilter.filterHeaders(details.responseHeaders))
           return blockingFilter;
       }
     })();
 
-    if (filter)
-    {
+    if (filter) {
       let matchInfo = {docDomain, specificOnly, method: "header"};
       if (filter instanceof BlockingFilter)
         return this.block(details, filter, matchInfo);
@@ -250,16 +222,13 @@ HeaderFilter.prototype.eventArgs = [
   ["blocking", "responseHeaders"]
 ];
 
-class CSPFilter extends RequestFilter
-{
-  getFrameInfo(details, initiator)
-  {
+class CSPFilter extends RequestFilter {
+  getFrameInfo(details, initiator) {
     let frame = getFrameInfo(details.tabId, details.frameId);
     return frame.pending || frame;
   }
 
-  match(details, frame, specificOnly)
-  {
+  match(details, frame, specificOnly) {
     let parentFrame = getFrameInfo(details.tabId, details.parentFrameId);
     let docDomain = parentFrame && parentFrame.hostname;
     let matchInfo = {docDomain: docDomain || frame.hostname,
@@ -269,17 +238,14 @@ class CSPFilter extends RequestFilter
     let matches = matcher.search(details.url, contentTypes.CSP, docDomain,
                                  frame.sitekey, specificOnly);
 
-    if (matches.allowing.length > 0)
-    {
+    if (matches.allowing.length > 0) {
       let filter = matches.allowing[0];
       return this.allow(details, filter, matchInfo);
     }
 
-    if (matches.blocking.length > 0)
-    {
+    if (matches.blocking.length > 0) {
       pendingCspRequests.add(details.requestId);
-      for (let filter of matches.blocking)
-      {
+      for (let filter of matches.blocking) {
         logItem(details, filter, matchInfo);
         responseHeaders.push(
           {name: "Content-Security-Policy", value: filter.csp}
@@ -300,10 +266,8 @@ CSPFilter.prototype.eventArgs = [
   ["blocking", "responseHeaders"]
 ];
 
-class RequestCompletionFilter extends RequestFilter
-{
-  filter(details)
-  {
+class RequestCompletionFilter extends RequestFilter {
+  filter(details) {
     let wasAllowlisted = pendingAllowlistedRequests.delete(details.requestId);
     let wasCsp = pendingCspRequests.delete(details.requestId);
     if (wasAllowlisted || wasCsp)
@@ -317,8 +281,7 @@ class RequestCompletionFilter extends RequestFilter
     let pending = frame.pending || frame;
     let specificOnly = (pending.allowlisted & contentTypes.GENERICBLOCK) != 0;
 
-    if (details.frameId == 0)
-    {
+    if (details.frameId == 0) {
       let popupFilter = matcher.match(
         details.url, contentTypes.POPUP,
         frame.hostname, frame.sitekey, specificOnly
@@ -344,10 +307,8 @@ RequestCompletionFilter.prototype.eventArgs = [
   []
 ];
 
-class RequestErrorFilter extends RequestFilter
-{
-  filter(details)
-  {
+class RequestErrorFilter extends RequestFilter {
+  filter(details) {
     pendingAllowlistedRequests.delete(details.requestId);
     pendingCspRequests.delete(details.requestId);
   }
@@ -369,14 +330,12 @@ let filters = browser.declarativeNetRequest ? [] : [
   new RequestErrorFilter()
 ];
 
-function onBeforeNavigate()
-{
+function onBeforeNavigate() {
   browser.webNavigation.onBeforeNavigate.removeListener(onBeforeNavigate);
   browser.webRequest.handlerBehaviorChanged();
 }
 
-function onFilterChange()
-{
+function onFilterChange() {
   browser.webNavigation.onBeforeNavigate.addListener(onBeforeNavigate);
 }
 
@@ -388,20 +347,17 @@ const FILTER_EVENTS = ["subscription.added",
                        "filter.removed",
                        "filterState.enabled"];
 
-export function start()
-{
+export function start() {
   for (let filter of filters)
     filter.register();
 
-  for (let event of FILTER_EVENTS)
-  {
+  for (let event of FILTER_EVENTS) {
     if (!filterNotifier.listeners(event).includes(onFilterChange))
       filterNotifier.on(event, onFilterChange);
   }
 }
 
-export function stop()
-{
+export function stop() {
   for (let filter of filters)
     filter.unregister();
 

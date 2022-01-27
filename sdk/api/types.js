@@ -24,15 +24,12 @@ export {BlockableEventDispatcher} from "./diagnostics.js";
  * @param {function} initializer
  * @param {function} [finalizer]
  */
-export class EventDispatcher
-{
-  constructor(initializer, finalizer)
-  {
+export class EventDispatcher {
+  constructor(initializer, finalizer) {
     this._listeners = new Set();
     this._initialized = false;
 
-    let dispatch = (...args) =>
-    {
+    let dispatch = (...args) => {
       for (let listener of this._listeners)
         listener(...args);
     };
@@ -47,10 +44,8 @@ export class EventDispatcher
     * @param {function} listener The user defined function that will be called
     *                            once the specified event is emitted
     */
-  addListener(listener)
-  {
-    if (!this._initialized)
-    {
+  addListener(listener) {
+    if (!this._initialized) {
       this._initialize();
       this._initialized = true;
     }
@@ -63,12 +58,10 @@ export class EventDispatcher
     * by the event.
     * @param {function} listener The user defined function to be removed.
     */
-  removeListener(listener)
-  {
+  removeListener(listener) {
     this._listeners.delete(listener);
 
-    if (this._initialized && this._finalize && this._listeners.size == 0)
-    {
+    if (this._initialized && this._finalize && this._listeners.size == 0) {
       this._finalize();
       this._initialized = false;
     }
@@ -85,10 +78,8 @@ export class EventDispatcher
  * @param {string?} option
  * @hideconstructor
  */
-export class FilterError extends Error
-{
-  constructor(type, reason, option = null)
-  {
+export class FilterError extends Error {
+  constructor(type, reason, option = null) {
     super(JSON.stringify({type, reason, option}));
     this.name = "FilterError";
     this.type = type;

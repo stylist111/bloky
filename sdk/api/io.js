@@ -19,28 +19,23 @@ import browser from "webextension-polyfill";
 
 let database;
 
-function clearContent(filename, entryStore, contentStore)
-{
-  entryStore.get(filename).onsuccess = event =>
-  {
+function clearContent(filename, entryStore, contentStore) {
+  entryStore.get(filename).onsuccess = event => {
     let entry = event.target.result;
     if (entry)
       contentStore.delete(entry.content);
   };
 }
 
-function saveFile(db, filename, lines, lastModified)
-{
-  return new Promise((resolve, reject) =>
-  {
+function saveFile(db, filename, lines, lastModified) {
+  return new Promise((resolve, reject) => {
     let data = new TextEncoder().encode(Array.from(lines).join("\n"));
     let tx = db.transaction(["file-entries", "file-contents"], "readwrite");
     let entryStore = tx.objectStore("file-entries");
     let contentStore = tx.objectStore("file-contents");
 
     clearContent(filename, entryStore, contentStore);
-    contentStore.add(data).onsuccess = event =>
-    {
+    contentStore.add(data).onsuccess = event => {
       let content = event.target.result;
       entryStore.put({lastModified, content}, filename);
     };
@@ -50,14 +45,11 @@ function saveFile(db, filename, lines, lastModified)
   });
 }
 
-export async function init(db, legacyStorageItems)
-{
+export async function init(db, legacyStorageItems) {
   let prefix = "file:";
 
-  for (let key in legacyStorageItems)
-  {
-    if (key.startsWith(prefix))
-    {
+  for (let key in legacyStorageItems) {
+    if (key.startsWith(prefix)) {
       let filename = key.slice(prefix.length);
       let {content, lastModified} = legacyStorageItems[key];
 
@@ -69,8 +61,7 @@ export async function init(db, legacyStorageItems)
   database = db;
 }
 
-function getDatabase()
-{
+function getDatabase() {
   if (!database)
     throw new Error("Database hasn't been opened. Did you call start()?");
   return database;
@@ -87,26 +78,21 @@ export let IO =
    * @return {Promise}
    *    Promise to be resolved or rejected once the operation is completed
    */
-  async readFromFile(filename, listener)
-  {
-    let data = await new Promise((resolve, reject) =>
-    {
+  async readFromFile(filename, listener) {
+    let data = await new Promise((resolve, reject) => {
       let db = getDatabase();
       let tx = db.transaction(["file-entries", "file-contents"], "readonly");
       let entryStore = tx.objectStore("file-entries");
       let contentStore = tx.objectStore("file-contents");
 
-      entryStore.get(filename).onsuccess = entryEvent =>
-      {
+      entryStore.get(filename).onsuccess = entryEvent => {
         let entry = entryEvent.target.result;
-        if (!entry)
-        {
+        if (!entry) {
           reject(new Error("File does not exist"));
           return;
         }
 
-        contentStore.get(entry.content).onsuccess = contentEvent =>
-        {
+        contentStore.get(entry.content).onsuccess = contentEvent => {
           resolve(contentEvent.target.result);
         };
       };
@@ -117,8 +103,7 @@ export let IO =
     let decoder = new TextDecoder();
     let start = 0;
 
-    while (true)
-    {
+    while (true) {
       let index = data.indexOf(10 /* newline character */, start + 1000);
       let end = index != -1 ? index : data.length;
       let text = decoder.decode(data.subarray(start, end));
@@ -143,8 +128,7 @@ export let IO =
    * @return {Promise}
    *    Promise to be resolved or rejected once the operation is completed
    */
-  async writeToFile(filename, lines)
-  {
+  async writeToFile(filename, lines) {
     await saveFile(getDatabase(), filename, lines, Date.now());
   },
 
@@ -157,20 +141,16 @@ export let IO =
    * @return {Promise}
    *    Promise to be resolved or rejected once the operation is completed
    */
-  renameFile(oldName, newName)
-  {
-    return new Promise((resolve, reject) =>
-    {
+  renameFile(oldName, newName) {
+    return new Promise((resolve, reject) => {
       let db = getDatabase();
       let tx = db.transaction(["file-entries", "file-contents"], "readwrite");
       let entryStore = tx.objectStore("file-entries");
       let contentStore = tx.objectStore("file-contents");
 
-      entryStore.get(oldName).onsuccess = event =>
-      {
+      entryStore.get(oldName).onsuccess = event => {
         let entry = event.target.result;
-        if (!entry)
-        {
+        if (!entry) {
           reject(new Error("File does not exist"));
           return;
         }
@@ -193,22 +173,18 @@ export let IO =
    *    Promise to be resolved with file metadata once the operation is
    *    completed
    */
-  statFile(filename)
-  {
-    return new Promise((resolve, reject) =>
-    {
+  statFile(filename) {
+    return new Promise((resolve, reject) => {
       let db = getDatabase();
       let tx = db.transaction(["file-entries"], "readonly");
       let store = tx.objectStore("file-entries");
 
-      store.get(filename).onsuccess = event =>
-      {
+      store.get(filename).onsuccess = event => {
         let entry = event.target.result;
         let exists = false;
         let lastModified;
 
-        if (entry)
-        {
+        if (entry) {
           exists = true;
           lastModified = entry.lastModified;
         }

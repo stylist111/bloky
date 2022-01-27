@@ -21,18 +21,15 @@ import {Page, wait, setMinTimeout} from "./utils.js";
 import {addFakeListener} from "./messaging.js";
 import * as runner from "./mocha/mocha-runner.js";
 
-describe("Subscribe links (runner only)", function()
-{
+describe("Subscribe links (runner only)", function() {
   setMinTimeout(this, 3000);
 
-  before(async() =>
-  {
+  before(async() => {
     if (!await runner.isConnected())
       this.skip();
   });
 
-  async function checkSubscribeLink(selector)
-  {
+  async function checkSubscribeLink(selector) {
     let fake = await addFakeListener({namespace: "reporting",
                                       eventName: "onSubscribeLinkClicked"});
     let page = new Page("subscribe.html");

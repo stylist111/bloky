@@ -26,12 +26,10 @@ import {getFrameInfo} from "./frame-state.js";
 
 let loadingPopups = new Map();
 
-function forgetPopup(tabId)
-{
+function forgetPopup(tabId) {
   loadingPopups.delete(tabId);
 
-  if (loadingPopups.size == 0)
-  {
+  if (loadingPopups.size == 0) {
     browser.webRequest.onBeforeRequest.removeListener(onPopupURLChanged);
     browser.webNavigation.onBeforeNavigate.removeListener(onPopupURLChanged);
     browser.webNavigation.onCompleted.removeListener(onCompleted);
@@ -39,16 +37,14 @@ function forgetPopup(tabId)
   }
 }
 
-function checkPotentialPopup(tabId, url, frame)
-{
+function checkPotentialPopup(tabId, url, frame) {
   let specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) != 0;
   let filter = matcher.match(
     url || "about:blank", contentTypes.POPUP,
     frame.hostname, frame.sitekey, specificOnly
   );
 
-  if (filter)
-  {
+  if (filter) {
     logItem({tabId, frameId: 0, url}, filter,
             {docDomain: frame.hostname, specificOnly, method: "popup"});
 
@@ -59,8 +55,7 @@ function checkPotentialPopup(tabId, url, frame)
   }
 }
 
-function onPopupURLChanged(details)
-{
+function onPopupURLChanged(details) {
   if (details.frameId != 0)
     return;
 
@@ -69,21 +64,18 @@ function onPopupURLChanged(details)
     checkPotentialPopup(details.tabId, details.url, frame);
 }
 
-function onCompleted(details)
-{
+function onCompleted(details) {
   if (details.frameId == 0 && details.url != "about:blank")
     forgetPopup(details.tabId);
 }
 
-function onPopup({tabId, url, sourceTabId, sourceFrameId})
-{
+function onPopup({tabId, url, sourceTabId, sourceFrameId}) {
   let frame = getFrameInfo(sourceTabId, sourceFrameId);
 
   if (frame.allowlisted & contentTypes.DOCUMENT)
     return;
 
-  if (loadingPopups.size == 0)
-  {
+  if (loadingPopups.size == 0) {
     browser.webRequest.onBeforeRequest.addListener(
       onPopupURLChanged,
       {
@@ -100,14 +92,12 @@ function onPopup({tabId, url, sourceTabId, sourceFrameId})
   checkPotentialPopup(tabId, url, frame);
 }
 
-function onTabCreated({id, url, openerTabId})
-{
+function onTabCreated({id, url, openerTabId}) {
   if (openerTabId)
     onPopup({tabId: id, url, sourceTabId: openerTabId, sourceFrameId: 0});
 }
 
-export function start()
-{
+export function start() {
   browser.webNavigation.onCreatedNavigationTarget.addListener(onPopup);
 
   // On Firefox, clicking on a <a target="_blank" rel="noopener"> link doesn't
@@ -119,8 +109,7 @@ export function start()
     browser.tabs.onCreated.addListener(onTabCreated);
 }
 
-export function stop()
-{
+export function stop() {
   browser.webNavigation.onCreatedNavigationTarget.removeListener(onPopup);
   browser.tabs.onCreated.removeListener(onTabCreated);
 }

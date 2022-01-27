@@ -34,8 +34,7 @@ const MAX_VERSION_DECREMENTS = 50;
 
 let dirname = path.dirname(fileURLToPath(import.meta.url));
 
-export async function download(url, destFile)
-{
+export async function download(url, destFile) {
   let cacheDir = path.dirname(destFile);
 
   await fs.promises.mkdir(cacheDir, {recursive: true});
@@ -43,12 +42,10 @@ export async function download(url, destFile)
   let tempDest = `${destFile}-${process.pid}`;
   let writable = fs.createWriteStream(tempDest);
 
-  try
-  {
+  try {
     await promisify(pipeline)(got.stream(url), writable);
   }
-  catch (error)
-  {
+  catch (error) {
     fs.unlink(tempDest, () => {});
     throw error;
   }
@@ -56,10 +53,8 @@ export async function download(url, destFile)
   await fs.promises.rename(tempDest, destFile);
 }
 
-function getChromiumExecutable(dir)
-{
-  switch (process.platform)
-  {
+function getChromiumExecutable(dir) {
+  switch (process.platform) {
     case "win32":
       return path.join(dir, "chrome-win", "chrome.exe");
     case "linux":
@@ -72,8 +67,7 @@ function getChromiumExecutable(dir)
   }
 }
 
-export async function downloadChromium(chromiumRevision)
-{
+export async function downloadChromium(chromiumRevision) {
   let revision = parseInt(chromiumRevision, 10);
   let startingRevision = revision;
   let platform = `${process.platform}-${process.arch}`;
@@ -91,12 +85,10 @@ export async function downloadChromium(chromiumRevision)
   let browserDir = null;
   let snapshotsDir = path.join(dirname, "chromium-snapshots");
 
-  while (true)
-  {
+  while (true) {
     browserDir = path.join(snapshotsDir, `chromium-${platform}-${revision}`);
 
-    try
-    {
+    try {
       await fs.promises.access(browserDir);
       console.log(`Reusing cached executable in ${browserDir}`);
       return {binary: getChromiumExecutable(browserDir), revision};
@@ -108,15 +100,12 @@ export async function downloadChromium(chromiumRevision)
     archive = path.join(snapshotsDir, "download-cache",
                         `${revision}-${fileName}`);
 
-    try
-    {
-      try
-      {
+    try {
+      try {
         await fs.promises.access(archive);
         console.log(`Reusing cached archive ${archive}`);
       }
-      catch (e)
-      {
+      catch (e) {
         console.log("Downloading Chromium...");
         await download(
           `https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/${platformDir}%2F${revision}%2F${fileName}?alt=media`,
@@ -124,8 +113,7 @@ export async function downloadChromium(chromiumRevision)
       }
       break;
     }
-    catch (e)
-    {
+    catch (e) {
       // Chromium advises decrementing the branch_base_position when no matching
       // build was found. See https://www.chromium.org/getting-involved/download-chromium
       console.log(`Base ${revision} not found, trying ${--revision}`);
@@ -139,10 +127,8 @@ export async function downloadChromium(chromiumRevision)
   return {binary: getChromiumExecutable(browserDir), revision};
 }
 
-function getFirefoxExecutable(dir)
-{
-  switch (process.platform)
-  {
+function getFirefoxExecutable(dir) {
+  switch (process.platform) {
     case "win32":
       return path.join(dir, "core", "firefox.exe");
     case "linux":
@@ -154,47 +140,38 @@ function getFirefoxExecutable(dir)
   }
 }
 
-async function extractTar(archive, dir)
-{
+async function extractTar(archive, dir) {
   await fs.promises.mkdir(dir);
   await promisify(exec)(["tar", "-jxf", archive, "-C", dir].join(" "));
 }
 
-async function extractDmg(archive, dir)
-{
+async function extractDmg(archive, dir) {
   let mpath = await promisify(dmg.mount)(archive);
   let files = await fs.promises.readdir(mpath);
   let target = files.find(file => path.extname(file) == ".app");
   let source = path.join(mpath, target);
   await fs.promises.mkdir(dir);
-  try
-  {
+  try {
     await fsExtra.copy(source, path.join(dir, target));
   }
-  finally
-  {
-    try
-    {
+  finally {
+    try {
       await promisify(dmg.unmount)(mpath);
     }
-    catch (err)
-    {
+    catch (err) {
       console.error(`Error unmounting DMG: ${err}`);
     }
   }
 }
 
-async function runWinInstaller(archive, dir)
-{
+async function runWinInstaller(archive, dir) {
   // Procedure inspired from mozinstall. Uninstaller will also need to be run.
   // https://hg.mozilla.org/mozilla-central/file/tip/testing/mozbase/mozinstall/mozinstall/mozinstall.py
   await promisify(exec)(`"${archive}" /extractdir=${dir}`);
 }
 
-function extractFirefoxArchive(archive, dir)
-{
-  switch (process.platform)
-  {
+function extractFirefoxArchive(archive, dir) {
+  switch (process.platform) {
     case "win32":
       return runWinInstaller(archive, dir);
     case "linux":
@@ -206,8 +183,7 @@ function extractFirefoxArchive(archive, dir)
   }
 }
 
-export async function downloadFirefox(version)
-{
+export async function downloadFirefox(version) {
   let {platform} = process;
   if (platform == "win32")
     platform += "-" + process.arch;
@@ -220,8 +196,7 @@ export async function downloadFirefox(version)
 
   let snapshotsDir = path.join(dirname, "firefox-snapshots");
   let browserDir = path.join(snapshotsDir, `firefox-${platform}-${version}`);
-  try
-  {
+  try {
     await fs.promises.access(browserDir);
     console.log(`Reusing cached executable from ${browserDir}`);
     return getFirefoxExecutable(browserDir);
@@ -233,13 +208,11 @@ export async function downloadFirefox(version)
   let [buildPlatform, fileName] = buildTypes[platform];
   let archive = path.join(snapshotsDir, "download-cache", fileName);
 
-  try
-  {
+  try {
     await fs.promises.access(archive);
     console.log(`Reusing cached archive ${archive}`);
   }
-  catch (e)
-  {
+  catch (e) {
     let url = `https://archive.mozilla.org/pub/firefox/releases/${version}/${buildPlatform}/en-US/${fileName}`;
     console.log("Downloading Firefox...");
     await download(url, archive);

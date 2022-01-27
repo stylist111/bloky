@@ -30,25 +30,21 @@ let isolatedLib;
 let injectedLib;
 let injectedItems;
 
-export function setSnippetLibrary({isolatedCode, injectedCode, injectedList})
-{
+export function setSnippetLibrary({isolatedCode, injectedCode, injectedList}) {
   isolatedLib = isolatedCode;
   injectedLib = injectedCode;
   injectedItems = injectedList;
 }
 
-export function applyContentFilters(tabId, frameId)
-{
+export function applyContentFilters(tabId, frameId) {
   let frame = getFrameInfo(tabId, frameId);
   let emulatedPatterns = [];
   let tracedSelectors;
 
-  if (!(frame.allowlisted & contentTypes.DOCUMENT))
-  {
+  if (!(frame.allowlisted & contentTypes.DOCUMENT)) {
     let filters = snippets.getFilters(frame.hostname);
 
-    if (filters.length > 0)
-    {
+    if (filters.length > 0) {
       let scripts = filters.map(({script}) => script);
       let environment = {};
       if (debugOptions.elemHide)
@@ -64,15 +60,13 @@ export function applyContentFilters(tabId, frameId)
           matchAboutBlank: true,
           runAt: "document_start"
         }
-      ).then(() => filters.forEach(filter =>
-      {
+      ).then(() => filters.forEach(filter => {
         logItem(request, filter, {docDomain: frame.hostname,
                                   method: "snippet"});
       }), () => {});
     }
 
-    if (!(frame.allowlisted & contentTypes.ELEMHIDE))
-    {
+    if (!(frame.allowlisted & contentTypes.ELEMHIDE)) {
       let specificOnly = (frame.allowlisted & contentTypes.GENERICHIDE) != 0;
       let trace = tracingEnabled(tabId);
       let styleSheet = elemHide.getStyleSheet(
@@ -81,8 +75,7 @@ export function applyContentFilters(tabId, frameId)
         trace
       );
 
-      if (debugOptions.elemHide)
-      {
+      if (debugOptions.elemHide) {
         let declarationBlock = "{";
         for (let [property, value] of debugOptions.cssProperties)
           declarationBlock += `${property}: ${value} !important;`;
@@ -97,8 +90,7 @@ export function applyContentFilters(tabId, frameId)
       for (let {selector, text} of elemHideEmulation.getFilters(frame.hostname))
         emulatedPatterns.push({selector, text});
 
-      if (trace)
-      {
+      if (trace) {
         tracedSelectors = [];
         for (let selector of styleSheet.selectors)
           tracedSelectors.push([selector, null]);
@@ -114,20 +106,17 @@ export function applyContentFilters(tabId, frameId)
   return {emulatedPatterns, cssProperties, tracedSelectors};
 }
 
-export function injectCSS(tabId, frameId, code)
-{
+export function injectCSS(tabId, frameId, code) {
   let result;
 
-  if (browser.scripting && browser.scripting.insertCSS)
-  {
+  if (browser.scripting && browser.scripting.insertCSS) {
     result = browser.scripting.insertCSS({
       target: {tabId, frameIds: [frameId]},
       css: code,
       origin: "USER"
     });
   }
-  else
-  {
+  else {
     result = browser.tabs.insertCSS(
       tabId,
       {
