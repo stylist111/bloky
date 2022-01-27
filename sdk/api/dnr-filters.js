@@ -28,6 +28,7 @@ import {filterStorage} from "adblockpluscore/lib/filterStorage.js";
 import {filterState} from "adblockpluscore/lib/filterState.js";
 
 import {FilterError} from "./types.js";
+import {Prefs} from "./prefs.js";
 
 let highestRuleId = 1;
 let dynamicFilters = new Map();
@@ -52,7 +53,7 @@ export async function removeDynamicFilters() {
     return;
 
   dynamicFilters = new Map();
-  await browser.storage.local.remove(["dynamicFilters"]);
+  Prefs.dynamic_filters = {};
 
   let rules = await browser.declarativeNetRequest.getDynamicRules();
   if (rules.length == 0)
@@ -76,9 +77,7 @@ function setHighestRuleId(ruleIds) {
 }
 
 function storeDynamicFilters() {
-  return browser.storage.local.set({
-    dynamicFilters: Object.fromEntries(dynamicFilters)
-  });
+  Prefs.dynamic_filters = Object.fromEntries(dynamicFilters);
 }
 
 export function init() {
@@ -87,14 +86,13 @@ export function init() {
       if (!browser.declarativeNetRequest)
         return;
 
-      let result = await browser.storage.local.get(["dynamicFilters"]);
-
-      if ("dynamicFilters" in result)
-        dynamicFilters = new Map(Object.entries(result.dynamicFilters));
+      let result = Prefs.dynamic_filters;
+      if (Object.keys(result).length > 0)
+        dynamicFilters = new Map(Object.entries(result));
       else
         // DNR rules persist after the extension is uninstalled. The same cannot
-        // be said for storage.local. To be safe, if we have no record of
-        // dynamic filters let's clear any DNR rules too.
+        // be said for storage. To be safe, if we have no record of dynamic
+        // filters let's clear any DNR rules too.
         await removeDynamicFilters();
 
       for (let {ruleIds} of dynamicFilters.values())
@@ -182,7 +180,7 @@ export async function addFilters(texts) {
                        {ruleIds, useFilterEngine, enabled: true});
   }
 
-  await storeDynamicFilters();
+  storeDynamicFilters();
 }
 
 export async function removeOrDisableFilters(texts, remove = true) {
@@ -225,7 +223,7 @@ export async function removeOrDisableFilters(texts, remove = true) {
     });
   }
 
-  await storeDynamicFilters();
+  storeDynamicFilters();
 }
 
 export async function enableFilters(texts) {
@@ -263,7 +261,7 @@ export async function enableFilters(texts) {
     addRules: rules
   });
 
-  await storeDynamicFilters();
+  storeDynamicFilters();
 }
 
 export async function getDynamicFilters() {
