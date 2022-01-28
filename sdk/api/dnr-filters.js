@@ -20,6 +20,7 @@ import {convertFilter as getRulesFromFilter} from "abp2dnr/lib/abp2dnr.js";
 
 import {Filter, InvalidFilter, ContentFilter, AllowingFilter, URLFilter,
         isActiveFilter} from "adblockpluscore/lib/filterClasses.js";
+import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {isValidHostname} from "adblockpluscore/lib/url.js";
 import {RESOURCE_TYPES, contentTypes}
   from "adblockpluscore/lib/contentTypes.js";
@@ -173,6 +174,8 @@ export async function addFilters(texts) {
 
     if (useFilterEngine)
       filterStorage.addFilter(filter);
+    else
+      filterNotifier.emit("filter.added", filter, null);
 
     setHighestRuleId(ruleIds);
     dynamicFilters.set(filter.text,
@@ -199,12 +202,16 @@ export async function removeOrDisableFilters(texts, remove = true) {
     if (remove) {
       if (details.useFilterEngine)
         filterStorage.removeFilter(Filter.fromText(text));
+      else
+        filterNotifier.emit("filter.removed", Filter.fromText(text), null);
 
       dynamicFilters.delete(text);
     }
     else {
       if (details.useFilterEngine)
         filterState.setEnabled(text, false);
+      else
+        filterNotifier.emit("filterState.enabled", text, false, true);
 
       details.enabled = false;
       details.ruleIds = [];
@@ -238,6 +245,8 @@ export async function enableFilters(texts) {
 
     if (useFilterEngine)
       filterState.setEnabled(filter, true);
+    else
+      filterNotifier.emit("filterState.enabled", normalized, true, false);
 
     let {filterRules, ruleIds} = await getRules(filter, useFilterEngine);
     rules.push(...filterRules);

@@ -40,9 +40,11 @@ export class EventDispatcher {
 
   /**
     * Attaches a listener function to an event. This listener will be called
-    * when the event is emitted.
+    * when the event is emitted. Please note that in an MV3 context this has
+    * to happen in the first turn of the event loop. This should happen when
+    * your service worker starts.
     * @param {function} listener The user defined function that will be called
-    *                            once the specified event is emitted
+    *                            once the specified event is emitted.
     */
   addListener(listener) {
     if (!this._initialized) {

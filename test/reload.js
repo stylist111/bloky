@@ -24,9 +24,11 @@ import {addFilter, EWE, runInBackgroundPage}
 
 const CONTENT_FILTER_TEXT = "reload###test";
 const CONTENT_FILTER = {
+  csp: null,
   text: CONTENT_FILTER_TEXT,
   enabled: true,
   slow: false,
+  thirdParty: null,
   type: "elemhide",
   selector: "#test"
 };

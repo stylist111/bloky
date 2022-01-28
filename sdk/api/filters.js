@@ -38,9 +38,9 @@ export function convertFilter(filter) {
     enabled: !filter.disabled,
     slow: filter instanceof URLFilter && isSlowFilter(filter),
     type: filter.type,
-    thirdParty: filter.thirdParty,
+    thirdParty: filter.thirdParty || null,
     selector: filter.selector || null,
-    csp: filter.csp
+    csp: filter.csp || null
   };
 }
 

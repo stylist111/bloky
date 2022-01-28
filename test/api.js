@@ -434,10 +434,7 @@ describe("API", () => {
       ]);
     });
 
-    it("listens to onAdded events", async function() {
-      if (isMV3())
-        this.skip();
-
+    it("listens to onAdded events", async() => {
       let fake = await addFakeListener({namespace: "filters",
                                         eventName: "onAdded"});
       await addFilter(VALID_FILTER_TEXT);
@@ -446,10 +443,7 @@ describe("API", () => {
       expect(fake.firstArg).toEqual(VALID_FILTER);
     });
 
-    it("listens to onChanged events", async function() {
-      if (isMV3())
-        this.skip();
-
+    it("listens to onChanged events", async() => {
       let fake = await addFakeListener({namespace: "filters",
                                         eventName: "onChanged"});
       await addFilter(VALID_FILTER_TEXT);
@@ -463,10 +457,7 @@ describe("API", () => {
       await EWE.filters.enable([VALID_FILTER_TEXT]);
     });
 
-    it("listens to onRemoved events", async function() {
-      if (isMV3())
-        this.skip();
-
+    it("listens to onRemoved events", async() => {
       let fake = await addFakeListener({namespace: "filters",
                                         eventName: "onRemoved"});
       await addFilter(VALID_FILTER_TEXT);
@@ -775,6 +766,7 @@ describe("API", () => {
 
       function expectedAllowingFilter(filterText) {
         return {
+          csp: null,
           text: filterText,
           enabled: true,
           slow: expect.any(Boolean),
@@ -786,9 +778,11 @@ describe("API", () => {
 
       function expectedElemhideFilter(filterText) {
         return {
+          csp: null,
           text: filterText,
           enabled: true,
           slow: false,
+          thirdParty: null,
           type: "elemhide",
           selector: expect.any(String)
         };
@@ -1360,9 +1354,11 @@ describe("API", () => {
             "image.html",
             [{
               filter: {
+                csp: null,
                 text: `${TEST_PAGES_DOMAIN}#$#${snippet}`,
                 enabled: true,
                 slow: false,
+                thirdParty: null,
                 type: "snippet",
                 selector: null
               },
