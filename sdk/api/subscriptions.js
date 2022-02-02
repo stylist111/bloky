@@ -85,7 +85,7 @@ export default {
    *                                  a container for user-defined filters.
    * @property {boolean} downloading Indicates whether the subscription is
    *                                 currently downloading.
-   * @property {string|null} downloadStatus The {@link https://eyeo.gitlab.io/adblockplus/abc/adblockpluscore/next/docs/module-subscriptionClasses.DownloadableSubscription.html#downloadStatus|status}
+   * @property {string|null} downloadStatus The {@link https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore/-/jobs/artifacts/0.5.1/file/build/docs/module-subscriptionClasses.DownloadableSubscription.html?job=docs#downloadStatus|status}
    *                                        of the most recent download attempt.
    * @property {boolean} enabled Indicates whether this subscription will
    *                             be applied.
