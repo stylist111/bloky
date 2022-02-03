@@ -364,12 +364,14 @@ export function getVisibleElement(tabId, elemId) {
   }, [elemId]);
 }
 
-export function getVisibleElementInFrame(tabId, elemId, frameElementId) {
-  return executeScript(tabId, (frameId, elementId) => {
-    let frameDocument = document.getElementById(frameId).contentDocument;
+export function getVisibleElementInFrame(tabId, elemId, frameElementIds) {
+  return executeScript(tabId, (frameIds, elementId) => {
+    let frameDocument = document;
+    for (let frameId of frameIds)
+      frameDocument = frameDocument.getElementById(frameId).contentDocument;
     let el = frameDocument.getElementById(elementId);
     return el.offsetParent ? el.outerHTML : null;
-  }, [frameElementId, elemId]);
+  }, [frameElementIds, elemId]);
 }
 
 export function isMV3() {

@@ -34,7 +34,7 @@ describe("Element Hiding", () => {
     let tabId = await new Page("iframe-elemhide.html").loaded;
     // hiding elements may take a few ms on CI
     await new Promise(r => setTimeout(r, 200));
-    return await getVisibleElementInFrame(tabId, id, frameId);
+    return await getVisibleElementInFrame(tabId, id, [frameId]);
   }
 
   it("hides an element", async() => {
@@ -165,6 +165,26 @@ describe("Element Hiding", () => {
       let tabId = await new Page("element-hiding.html").loaded;
       await waitForInvisibleElement(tabId, "elem-hide-img-request");
     });
+
+    for (let [testcase, frameIds] of [
+      ["element-hiding-aboutblank", ["aboutblank-iframe"]],
+      ["element-hiding-aboutblank-deep", ["aboutblank-iframe-outer",
+                                          "aboutblank-iframe"]]
+    ]) {
+      it(`hides the img element of a blocked request in ${testcase} iframe`,
+         async function() {
+           setMinTimeout(this, 5000);
+
+           await addFilter("/image.png^$image");
+
+           let tabId = await new Page(`${testcase}.html`).loaded;
+           await wait(async() => {
+             let visible = await getVisibleElementInFrame(
+               tabId, "aboutblank-img", frameIds);
+             return visible === null;
+           }, 2000, "The image element is still visible");
+         });
+    }
   });
 });
 

@@ -126,6 +126,22 @@ function collapseElement(element) {
   }
 }
 
+function hideInAboutBlankFrames(selector, urls) {
+  // Resources (e.g. images) loaded into about:blank frames
+  // are (sometimes) loaded with the frameId of the main_frame.
+  for (let frame of document.querySelectorAll("iframe[src='about:blank']")) {
+    if (!frame.contentDocument)
+      continue;
+
+    for (let element of frame.contentDocument.querySelectorAll(selector)) {
+      // Use hideElement, because we don't have the correct frameId
+      // for the "ewe:inject-css" message.
+      if (urls.has(getURLFromElement(element)))
+        hideElement(element);
+    }
+  }
+}
+
 export function startElementCollapsing() {
   let deferred = null;
 
@@ -142,6 +158,8 @@ export function startElementCollapsing() {
               if (urls.has(getURLFromElement(element)))
                 collapseElement(element);
             }
+
+            hideInAboutBlankFrames(selector, urls);
           }
 
           deferred = null;
@@ -157,6 +175,8 @@ export function startElementCollapsing() {
         if (getURLFromElement(element) == message.url)
           collapseElement(element);
       }
+
+      hideInAboutBlankFrames(message.selector, new Set([message.url]));
     }
   });
 }
