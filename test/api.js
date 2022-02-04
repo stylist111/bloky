@@ -1191,7 +1191,7 @@ describe("API", () => {
           },
           request: expectedRequestRelativeUrl("image.html")
         }];
-        if (isFirefox() && firefoxVersion() >= "97.0") {
+        if (isFirefox() && firefoxVersion() >= 97) {
           // Duplicated event in Firefox
           // see https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/150
           // and https://bugzilla.mozilla.org/show_bug.cgi?id=1750196

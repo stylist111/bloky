@@ -18,8 +18,8 @@
 import expect from "expect";
 
 import {Page, waitForInvisibleElement, executeScript, setMinTimeout, wait,
-        getVisibleElement, getVisibleElementInFrame, isMV3, TEST_PAGES_DOMAIN,
-        TEST_PAGES_URL} from "./utils.js";
+        getVisibleElement, getVisibleElementInFrame, isMV3, isFirefox,
+        firefoxVersion, TEST_PAGES_DOMAIN, TEST_PAGES_URL} from "./utils.js";
 import {addFilter, EWE, setTestSnippets} from "./messaging.js";
 
 describe("Element Hiding", () => {
@@ -158,11 +158,11 @@ describe("Element Hiding", () => {
   });
 
   describe("Element collapsing", async() => {
-    it("hides the img element of a blocked request", async function() {
-      setMinTimeout(this, 3000);
+    it("hides the img element of a blocked request", async() => {
       await addFilter("/image.png^$image");
 
-      let tabId = await new Page("element-hiding.html").loaded;
+      let forceBg = isFirefox() && firefoxVersion() >= 97;
+      let tabId = await new Page("element-hiding.html", false, forceBg).loaded;
       await waitForInvisibleElement(tabId, "elem-hide-img-request");
     });
 

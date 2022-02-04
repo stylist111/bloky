@@ -51,7 +51,7 @@ export async function executeScript(tabId, func, args) {
 }
 
 export class Page {
-  constructor(path, fullUrl = false) {
+  constructor(path, fullUrl = false, forceBackground = false) {
     let removingCurrentPromise = Page.removeCurrent();
     Page.current = this;
 
@@ -64,7 +64,7 @@ export class Page {
       // requests on that page were blocked and tries to request them
       // again. Functionally everything still works fine, but the
       // duplicate requests do mess with our tests.
-      let active = isFirefox();
+      let active = isFirefox() && !forceBackground;
 
       return (await browser.tabs.create({url: this.url, active})).id;
     })();
@@ -298,7 +298,7 @@ export async function waitForInvisibleElement(tabId, id) {
       return el.offsetParent ? el.outerHTML : null;
     }, [id]);
     return result == null;
-  }, 2000, `The element with id "${id}" is still visible`);
+  }, 1000, `The element with id "${id}" is still visible`);
 }
 
 export function wait(condition, timeout = 0, message, pollTimeout = 100) {
@@ -354,7 +354,8 @@ export function isFirefox() {
 }
 
 export function firefoxVersion() {
-  return navigator.userAgent.split("Firefox/")[1];
+  let version = /Firefox\/(\d+)/.exec(navigator.userAgent)[1];
+  return parseInt(version, 10);
 }
 
 export function getVisibleElement(tabId, elemId) {
