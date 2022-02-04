@@ -151,7 +151,10 @@ export default (env = {}) => {
             {from: path.join(dirname, "test", "index-options.js")}
           ]
         })
-      ]
+      ],
+      watchOptions: {
+        ignored: ["**/dist", "**/node_modules"]
+      }
     });
   }
 
