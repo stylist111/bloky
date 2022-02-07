@@ -18,9 +18,9 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 
-import {Page, Popup, setMinTimeout, wait, executeScript, TEST_PAGES_URL,
-        TEST_PAGES_DOMAIN, isFirefox, firefoxVersion, getVisibleElement, isMV3}
-  from "./utils.js";
+import {Page, Popup, setMinTimeout, wait, executeScript, isFirefox, isEdge,
+        firefoxVersion, getVisibleElement, isMV3, TEST_PAGES_URL,
+        TEST_PAGES_DOMAIN} from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, addFakeListener,
         removeFakeListeners, setTestSnippets}
   from "./messaging.js";
@@ -612,6 +612,22 @@ describe("API", () => {
           url, "elemhide", tabId)).toEqual(true);
         expect(await EWE.filters.isResourceAllowlisted(
           url, "elemhide", tabId, frameId)).toEqual(true);
+      });
+
+      it("handles new tab allowlisting listener", async() => {
+        let isNewTabAllowlisted = browser.runtime.sendMessage(
+          {type: "ewe-test:isNewTabAllowlisted"});
+
+        let pageUrl = isFirefox() ? "about:blank" :
+                      isEdge() ? "edge://newtab/" : "chrome://newtab/";
+        // On Chromium 77, "chrome://newtab/" status keeps stuck at "loading",
+        // that's why Page is not awaited on `loaded` here.
+        new Page(pageUrl, true);
+
+        let {result, url, error} = await isNewTabAllowlisted;
+        expect(error).toBeUndefined();
+        expect(result).toEqual(false);
+        expect(url).toBe(pageUrl);
       });
     });
   });

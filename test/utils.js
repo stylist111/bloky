@@ -358,6 +358,10 @@ export function firefoxVersion() {
   return parseInt(version, 10);
 }
 
+export function isEdge() {
+  return navigator.appVersion.indexOf("Edg") > -1;
+}
+
 export function getVisibleElement(tabId, elemId) {
   return executeScript(tabId, id => {
     let el = document.getElementById(id);

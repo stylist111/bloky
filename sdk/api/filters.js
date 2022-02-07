@@ -183,6 +183,9 @@ export default {
       return true;
 
     for (; frame; frame = frame.parent) {
+      if (!frame.url)
+        break;
+
       let parentHostname = frame.parent && frame.parent.hostname;
       if (matcher.isAllowlisted(frame.url, contentTypes.DOCUMENT,
                                 parentHostname, frame.sitekey))

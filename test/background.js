@@ -111,6 +111,26 @@ function handleTestMessage(request, sender, sendResponse) {
         sendResponse({});
         return true;
       });
+      break;
+
+    case "ewe-test:isNewTabAllowlisted": {
+      function listener(updatedId, changeInfo, tab) {
+        chrome.tabs.onUpdated.removeListener(listener);
+        try {
+          let result = EWE.filters.isResourceAllowlisted(
+            tab.url, "document", updatedId);
+          sendResponse({
+            url: tab.url,
+            result
+          });
+        }
+        catch (e) {
+          sendResponse({error: toStringIfError(e)});
+        }
+      }
+      chrome.tabs.onUpdated.addListener(listener);
+      return true;
+    }
   }
 }
 
