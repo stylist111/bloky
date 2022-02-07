@@ -37,10 +37,11 @@ function handleConnection(details, tabId, removeListeners, reject) {
   }
 }
 
-export async function executeScript(tabId, func, args) {
+export async function executeScript(tabId, func, args, world) {
   if (browser.scripting) {
     let out =
-      await browser.scripting.executeScript({target: {tabId}, func, args});
+      await browser.scripting.executeScript(
+        {target: {tabId}, func, world, args});
     return out[0].result;
   }
 

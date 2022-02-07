@@ -165,3 +165,19 @@ EWE.start().then(async() => {
       chrome.tabs.create({url: "reload.html"});
   });
 });
+
+let injectedCode = (environment, ..._) => {
+  let snippets = {"injected-snippet": arg => document.body.textContent = arg};
+  for (let [name, ...args] of _)
+    snippets[name](...args);
+};
+injectedCode.has = snippet => ["injected-snippet"].includes(snippet);
+
+let isolatedCode = (environment, ..._) => {
+  let snippets = {"isolated-snippet": arg => self.isolated_snippet_works = arg};
+  for (let [name, ...args] of _)
+    snippets[name](...args);
+};
+isolatedCode.has = snippet => ["isolated-snippet"].includes(snippet);
+
+EWE.snippets.setLibrary({isolatedCode, injectedCode});

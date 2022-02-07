@@ -95,10 +95,11 @@ In order to enable support for [snippet filters][snippet-filters] you have to ge
 the [snippets library][snippets-project] separately and make it available to `EWE`:
 
 ```javascript
-let response = await fetch("snippets.js");
-let code = await response.text();
-EWE.snippets.setLibrary(code);
+import isolatedCode from "mv3.isolated.mjs";
+import injectedCode from "mv3.injected.mjs";
+EWE.snippets.setLibrary({isolatedCode, injectedCode});
 ```
+Note `mv3...` artifacts are required to be used for both MV2 and MV3.
 
 The integration of the machine learning models is expected to be done by clients
 of the snippet library.

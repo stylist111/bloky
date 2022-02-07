@@ -18,9 +18,9 @@
 import expect from "expect";
 
 import {Page, waitForInvisibleElement, executeScript, setMinTimeout, wait,
-        getVisibleElement, getVisibleElementInFrame, isMV3, isFirefox,
+        getVisibleElement, getVisibleElementInFrame, isFirefox,
         firefoxVersion, TEST_PAGES_DOMAIN, TEST_PAGES_URL} from "./utils.js";
-import {addFilter, EWE, setTestSnippets} from "./messaging.js";
+import {addFilter, EWE} from "./messaging.js";
 
 describe("Element Hiding", () => {
   async function getElemHideElement(id) {
@@ -189,18 +189,32 @@ describe("Element Hiding", () => {
 });
 
 describe("Snippets", () => {
-  let snippet = "do";
+  // keep in-sync with `background.js`
+  const injectedSnippet = "injected-snippet";
+  const isolatedSnippet = "isolated-snippet";
 
-  before(() => setTestSnippets(snippet));
-  after(() => setTestSnippets(null));
-
-  it("applies a snippet", async function() {
-    if (isMV3())
-      this.skip();
-
-    await addFilter(`${TEST_PAGES_DOMAIN}#$#${snippet}`);
+  async function assertSnippet(snippet, func, world) {
+    await addFilter(`${TEST_PAGES_DOMAIN}#$#${snippet} true`);
 
     let tabId = await new Page("image.html").loaded;
-    expect(await executeScript(tabId, () => self.works)).toBe(true);
+
+    // snippets arguments are stringified (JSON.string()),
+    // so we set true (as boolean), but check "true" (as string)
+    expect(await executeScript(tabId, func, null, world))
+      .toBe("true");
+  }
+
+  it("applies an injected snippet", async() => {
+    await assertSnippet(
+      injectedSnippet,
+      () => document.body.textContent,
+      "MAIN");
+  });
+
+  it("applies an isolated snippet", async() => {
+    await assertSnippet(
+      isolatedSnippet,
+      () => self.isolated_snippet_works,
+      "ISOLATED");
   });
 });
