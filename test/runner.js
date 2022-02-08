@@ -180,16 +180,39 @@ class Edge {
         await promisify(execFile)(MACOS_EDGE_BINARY, ["--version"]);
       version = stdout.trim().replace(/.*\s/, "");
     }
+    else if (process.platform == "linux") {
+      let {stdout} = await promisify(execFile)("microsoft-edge", ["--version"]);
+      version = stdout.trim().replace(/.*\s/, "");
+    }
 
     if (!version)
       throw new Error("Edge is not installed");
 
-    await promisify(execFile)(
-      process.execPath,
-      [path.join("node_modules", "msedgedriver", "install.js")],
-      {env: {...process.env, EDGECHROMIUMDRIVER_VERSION: version,
-             npm_config_edgechromiumdriver_skip_download: false}}
-    );
+    if (process.platform == "linux") {
+      // "install.js" does not work for linux yet
+      let zip = "edgedriver_linux64.zip";
+      let driver = "msedgedriver";
+      let snapshotsDir = path.join(process.cwd(), "test", "edge-snapshots");
+      let cacheDir = path.join(snapshotsDir, "download-cache");
+      let driverDir = path.join(process.cwd(), "node_modules", "msedgedriver",
+                                "bin");
+      let archive = path.join(cacheDir, `${version}-${zip}`);
+
+      await download(`https://msedgedriver.azureedge.net/${version}/${zip}`,
+                     archive);
+      await extractZip(archive, {dir: cacheDir});
+      await fs.promises.mkdir(driverDir, {recursive: true});
+      await fs.promises.copyFile(path.join(cacheDir, driver),
+                                 path.join(driverDir, driver));
+    }
+    else {
+      await promisify(execFile)(
+        process.execPath,
+        [path.join("node_modules", "msedgedriver", "install.js")],
+        {env: {...process.env, EDGECHROMIUMDRIVER_VERSION: version,
+               npm_config_edgechromiumdriver_skip_download: false}}
+      );
+    }
   }
 
   async getDriver() {
@@ -200,7 +223,7 @@ class Edge {
     builder.withCapabilities({
       "browserName": "MicrosoftEdge",
       "ms:edgeChromium": true,
-      "ms:edgeOptions": {args: [`load-extension=${extensionDir}`]}
+      "ms:edgeOptions": {args: ["no-sandbox", `load-extension=${extensionDir}`]}
     });
 
     return builder.build();

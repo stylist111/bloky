@@ -42,7 +42,7 @@
     "fs-extra": "^10.0.0",
     "geckodriver": "^2.0.4",
     "got": "^11.8.2",
-    "msedgedriver": "^87.0.13",
+    "msedgedriver": "^91.0.0",
     "on-headers": "^1.0.2",
     "selenium-webdriver": "^4.0.0-beta.3",
     "ws": "^7.4.6",
