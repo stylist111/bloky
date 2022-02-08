@@ -136,7 +136,7 @@ export default {
   /**
    * Returns an array of subscription objects for all subscriptions that are
    * downloaded and updated over the network.
-   * @return {Array.<Subscription>}
+   * @return {Array<Subscription>}
    */
   getDownloadable() {
     let result = [];
@@ -152,7 +152,7 @@ export default {
   /**
    * Returns an array of subscription objects for a given filter.
    * @param {string} text The filter rule for which to look.
-   * @return {Array.<Subscription>}
+   * @return {Array<Subscription>}
    */
   getForFilter(text) {
     return text ? Array.from(filterStorage.subscriptions(text),
@@ -162,7 +162,7 @@ export default {
   /**
    * Returns the filter list of a given subscription URL.
    * @param {string} url The URL of the subscription.
-   * @return {Array.<Filter>} Filters from the subscription.
+   * @return {Array<Filter>} Filters from the subscription.
    */
   getFilters(url) {
     let subscription = getSubscription(url);
@@ -256,7 +256,7 @@ export default {
   /**
    * Defines the recommended filter subscriptions per language.
    * @typedef {Object} Recommendation
-   * @property {Array.<string>} languages The languages that this recommendation
+   * @property {Array<string>} languages The languages that this recommendation
    *                                      would match to.
    * @property {string} title The display name of the recommended subscription.
    * @property {string} type The kind of content targeted by this
@@ -267,7 +267,7 @@ export default {
 
   /**
    * Returns an array of all recommended subscriptions.
-   * @return {Array.<Recommendation>}
+   * @return {Array<Recommendation>}
    */
   getRecommendations() {
     return Array.from(recommendations(), convertRecommendation);
@@ -312,7 +312,7 @@ export default {
   /**
    * Emitted when a new subscription is added.
    * @event
-   * @type {EventDispatcher.<Subscription>}
+   * @type {EventDispatcher<Subscription>}
    */
   onAdded: new EventDispatcher(dispatch => {
     filterNotifier.on("subscription.added", makeListener(dispatch));
@@ -324,7 +324,7 @@ export default {
    * when the subscription has been updated, where it will be null.
    *
    * @event
-   * @type {EventDispatcher.<Subscription, string>}
+   * @type {EventDispatcher<Subscription, string>}
    */
   onChanged: new EventDispatcher(dispatch => {
     function makeChangeListener(property) {
@@ -351,7 +351,7 @@ export default {
   /**
    * Emitted when a subscription is removed.
    * @event
-   * @type {EventDispatcher.<Subscription>}
+   * @type {EventDispatcher<Subscription>}
    */
   onRemoved: new EventDispatcher(dispatch => {
     filterNotifier.on("subscription.removed", makeListener(dispatch));

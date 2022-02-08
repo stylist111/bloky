@@ -122,7 +122,7 @@ export let IO =
    * Writes text lines to a file.
    * @param {string} filename
    *    Name of the file to be written
-   * @param {Iterable.<string>} lines
+   * @param {Iterable<string>} lines
    *    An array-like or iterable object containing the lines (without line
    *    endings)
    * @return {Promise}
@@ -169,7 +169,7 @@ export let IO =
    * Retrieves file metadata.
    * @param {string} filename
    *    Name of the file to be looked up
-   * @return {Promise.<StatData>}
+   * @return {Promise<StatData>}
    *    Promise to be resolved with file metadata once the operation is
    *    completed
    */

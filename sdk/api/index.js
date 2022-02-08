@@ -48,7 +48,7 @@ export let snippets = {
    * @callback SnippetCallback
    * @param {Object} environment
    *   The environment variables
-   * @param {...Array.<Array.<string>>} _
+   * @param {...Array<Array<string>>} _
    *   The snippets names and arguments.
    */
 
@@ -88,7 +88,7 @@ async function startAsyncModule(startModule) {
  *
  * Calling this function is required for the other API calls to work, except for
  * API event listener calls, which could also be done before `start()`.
- * @return {Promise.<FirstRunInfo>} Promise that is resolved after
+ * @return {Promise<FirstRunInfo>} Promise that is resolved after
  *                                  starting up is completed. Promise
  *                                  is rejected if `stop()` is called
  *                                  before starting is completed.

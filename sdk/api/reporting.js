@@ -78,7 +78,7 @@ export default {
    * @param {?Filter} filter The filter that matched, if any.
    * @param {FilterMatchInfo} matchInfo Extra information that might be
    *                                    relevant depending on the context.
-   * @type {BlockableEventDispatcher.<{request: object,
+   * @type {BlockableEventDispatcher<{request: object,
    *                                   filter: Filter,
    *                                   matchInfo: FilterMatchInfo}>}
    */
@@ -86,7 +86,7 @@ export default {
 
   /**
    * Returns a mapping between resourceTypes and contentTypes.
-   * @return {Map.<string, string>}
+   * @return {Map<string, string>}
    */
   contentTypesMap,
 
@@ -105,7 +105,7 @@ export default {
    *                     `location`'s parameter.
    * @param {string} title The subscription title from the subscribe link
    *                       `title`'s parameter.
-   * @type {EventDispatcher.<{url: string, title: string}>}
+   * @type {EventDispatcher<{url: string, title: string}>}
    */
   onSubscribeLinkClicked
 };

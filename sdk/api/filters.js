@@ -81,6 +81,7 @@ export default {
   /**
    * Adds multiple filters from texts.
    * @param {[string]} texts The filter rules to be added.
+   * @return {Promise}
    * @throws {FilterError|Error} The first filter to add that either failed
    *   validation (FilterError) or that is not supported by the DNR (Error).
    */
@@ -108,7 +109,7 @@ export default {
 
   /**
    * Returns an array of user filter objects.
-   * @return {Array.<Filter>}
+   * @return {Promise<Array<Filter>>}
    */
   async getUserFilters() {
     let result = [];
@@ -139,11 +140,10 @@ export default {
    * @param {number} tabId The id of the tab to lookup.
    * @param {Object} [options]
    * @param {number} [options.frameId=0] The id of the frame to lookup.
-   * @param {Array.<string>} [options.types=["document"]]
-   *                         The types of filters to consider.
-   *                         These can be any of "document", "elemhide",
-   *                         "genericblock", and "generichide".
-   * @return {Array.<string>}
+   * @param {Array<string>} [options.types=["document"]] The types of filters
+   *   to consider. These can be any of "document", "elemhide", "genericblock",
+   *   and "generichide".
+   * @return {Array<string>}
    */
   getAllowingFilters(tabId, options = {}) {
     let {frameId, types} = {frameId: 0, types: ["document"], ...options};
@@ -198,6 +198,7 @@ export default {
   /**
    * Enables multiple filters. The filters effects will again be applied.
    * @param {[string]} texts The filter rules to be enabled.
+   * @return {Promise}
    */
   async enable(texts) {
     if (browser.declarativeNetRequest) {
@@ -215,6 +216,7 @@ export default {
    * Disables multiple filters. The filters will no longer have any effect
    * but will be returned by `filters.getUserFilters()`.
    * @param {[string]} texts The filter rules to be disabled.
+   * @return {Promise}
    */
   async disable(texts) {
     if (browser.declarativeNetRequest) {
@@ -232,6 +234,7 @@ export default {
    * Removes multiple filters. The filters will no longer have any effect
    * and won't be returned by `filters.getUserFilters()`.
    * @param {[string]} texts The filter rules to be removed.
+   * @return {Promise}
    */
   async remove(texts) {
     if (browser.declarativeNetRequest) {
@@ -257,7 +260,7 @@ export default {
   /**
    * Emitted when a new filter is added.
    * @event
-   * @type {EventDispatcher.<Filter>}
+   * @type {EventDispatcher<Filter>}
    */
   onAdded: new EventDispatcher(dispatch => {
     filterNotifier.on("filter.added", makeFilterListener(dispatch));
@@ -267,9 +270,8 @@ export default {
   /**
    * Emitted when a filter is either enabled or disabled.
    * The property name "enabled" is provided.
-   *
    * @event
-   * @type {EventDispatcher.<Filter, string>}
+   * @type {EventDispatcher<Filter, string>}
    */
   onChanged: new EventDispatcher(dispatch => {
     filterNotifier.on("filterState.enabled", (text, enabled) => {
@@ -280,7 +282,7 @@ export default {
   /**
    * Emitted when a filter is removed.
    * @event
-   * @type {EventDispatcher.<Filter>}
+   * @type {EventDispatcher<Filter>}
    */
   onRemoved: new EventDispatcher(dispatch => {
     filterNotifier.on("filter.removed", makeFilterListener(dispatch));
