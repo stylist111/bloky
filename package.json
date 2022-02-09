@@ -1,13 +1,12 @@
 {
   "name": "webext-sdk",
-  "version": "0.0.1",
-  "description": "",
+  "version": "0.1.0",
+  "description": "eyeo's Web Extension Ad Blocking Toolkit",
   "repository": {
     "type": "git",
     "url": "https://gitlab.com/eyeo/adblockplus/webext-sdk"
   },
-  "author": "",
-  "private": true,
+  "author": "eyeo GmbH",
   "license": "GPL-3.0",
   "engines": {
     "node": ">=16.10.0",
