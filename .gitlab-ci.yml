@@ -89,10 +89,10 @@ test:v2:firefox:beta:
 test:v2:edge:windows:
   extends: .test
   variables:
-    NODE_OPTIONS: --experimental-modules
+    CI_PROJECT_ID_MAINSTREAM: 22365241
   before_script:
     - Invoke-WebRequest
-        -Uri "${Env:CI_API_V4_URL}/projects/${Env:CI_PROJECT_ID}/packages/generic/microsoft-edge/79.0.309/MicrosoftEdgeEnterpriseX64.msi"
+        -Uri "${Env:CI_API_V4_URL}/projects/${Env:CI_PROJECT_ID_MAINSTREAM}/packages/generic/microsoft-edge/79.0.309/MicrosoftEdgeEnterpriseX64.msi"
         -Headers @{'JOB-TOKEN' = $Env:CI_JOB_TOKEN}
         -OutFile 'MicrosoftEdgeEnterpriseX64.msi'
     - Start-Process msiexec
