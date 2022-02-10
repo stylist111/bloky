@@ -31,6 +31,5 @@ toc:
       - FilterError
       - FilterMatchInfo
       - FirstRunInfo
-      - Recommendation
+      - Recommendation      
       - Subscription
-      - SnippetCallback

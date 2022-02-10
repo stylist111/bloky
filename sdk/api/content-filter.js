@@ -20,7 +20,7 @@ import browser from "webextension-polyfill";
 import {createStyleSheet, elemHide} from "adblockpluscore/lib/elemHide.js";
 import {elemHideEmulation} from "adblockpluscore/lib/elemHideEmulation.js";
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
-import {snippets, parseScript} from "adblockpluscore/lib/snippets.js";
+import {snippets, compileScript} from "adblockpluscore/lib/snippets.js";
 
 import {getFrameInfo} from "./frame-state.js";
 import {logItem, tracingEnabled} from "./diagnostics.js";
@@ -28,15 +28,16 @@ import {debugOptions} from "./debugging.js";
 
 let isolatedLib;
 let injectedLib;
+let injectedItems;
 
-export function setSnippetLibrary({isolatedCode, injectedCode}) {
+export function setSnippetLibrary({isolatedCode, injectedCode, injectedList}) {
   isolatedLib = isolatedCode;
   injectedLib = injectedCode;
+  injectedItems = injectedList;
 }
 
 export function applyContentFilters(tabId, frameId) {
   let frame = getFrameInfo(tabId, frameId);
-  let details = {tabId, frameIds: [frameId]};
   let emulatedPatterns = [];
   let tracedSelectors;
 
@@ -49,104 +50,19 @@ export function applyContentFilters(tabId, frameId) {
       if (debugOptions.elemHide)
         environment.debugCSSProperties = debugOptions.snippetsCssProperties;
 
-      let isolated = [];
-      let main = [];
-
-      for (let script of scripts) {
-        for (let [snippet, ...args] of parseScript(script)) {
-          if (isolatedLib.has(snippet))
-            isolated.push([snippet, ...args]);
-          if (injectedLib.has(snippet))
-            main.push([snippet, ...args]);
+      let request = {tabId, frameId};
+      browser.tabs.executeScript(
+        tabId,
+        {
+          frameId,
+          code: compileScript(scripts, isolatedLib, injectedLib, injectedItems,
+                              environment),
+          matchAboutBlank: true,
+          runAt: "document_start"
         }
-      }
-
-      let execute = [];
-      if (browser.scripting && browser.scripting.executeScript) {
-        if (isolated.length > 0) {
-          execute.push(
-            browser.scripting.executeScript({
-              target: details,
-              world: "ISOLATED",
-              func: isolatedLib,
-              args: [environment, ...isolated]
-            })
-          );
-        }
-
-        if (main.length > 0) {
-          execute.push(
-            browser.scripting.executeScript({
-              target: details,
-              world: "MAIN",
-              func: injectedLib,
-              args: [environment, ...main]
-            })
-          );
-        }
-      }
-      else {
-        if (isolated.length > 0) {
-          const args = JSON.stringify([environment, ...isolated]);
-          const code = `(${isolatedLib}).apply(null,${args})`;
-          execute.push(
-            browser.tabs.executeScript(
-              tabId,
-              {
-                frameId,
-                code,
-                matchAboutBlank: true,
-                runAt: "document_start"
-              }));
-        }
-
-        if (main.length > 0) {
-          const args = JSON.stringify([environment, ...main]);
-          const code =
-          `function injectSnippetsInMainContext(exec)
-          {
-            // injecting phases
-            let script = document.createElement("script");
-            script.type = "application/javascript";
-            script.async = false;
-
-            // Firefox 58 only bypasses site CSPs when assigning to 'src',
-            // while Chrome 67 and Microsoft Edge (tested on 44.17763.1.0)
-            // only bypass site CSPs when using 'textContent'.
-            if (typeof netscape != "undefined" && typeof browser != "undefined")
-            {
-              let url = URL.createObjectURL(new Blob([executable]));
-              script.src = url;
-              document.documentElement.appendChild(script);
-              URL.revokeObjectURL(url);
-            }
-            else
-            {
-              script.textContent = executable;
-              document.documentElement.appendChild(script);
-            }
-
-            document.documentElement.removeChild(script);
-          };
-          const executable = \`(${injectedLib}).apply(null,${args});\`;
-          injectSnippetsInMainContext(executable);`;
-          execute.push(
-            browser.tabs.executeScript(
-              tabId,
-              {
-                frameId,
-                code,
-                matchAboutBlank: true,
-                runAt: "document_start"
-              }));
-        }
-      }
-
-      Promise.all(execute).then(() => filters.forEach(filter => {
-        logItem({tabId, frameId}, filter, {
-          docDomain: frame.hostname,
-          method: "snippet"
-        });
+      ).then(() => filters.forEach(filter => {
+        logItem(request, filter, {docDomain: frame.hostname,
+                                  method: "snippet"});
       }), () => {});
     }
 

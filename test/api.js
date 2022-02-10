@@ -22,7 +22,7 @@ import {Page, Popup, setMinTimeout, wait, executeScript, isFirefox, isEdge,
         firefoxVersion, getVisibleElement, isMV3, TEST_PAGES_URL,
         TEST_PAGES_DOMAIN} from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, addFakeListener,
-        removeFakeListeners}
+        removeFakeListeners, setTestSnippets}
   from "./messaging.js";
 
 const VALID_SUBSCRIPTION_URL = `${TEST_PAGES_URL}/subscription.txt`;
@@ -1360,33 +1360,38 @@ describe("API", () => {
       });
 
       it("logs snippets filter", async() => {
-        // keep in-sync with `background.js`
-        const snippet = "injected-snippet";
+        let snippet = "do";
 
-        await checkLogging(
-          [`${TEST_PAGES_DOMAIN}#$#${snippet} true`],
-          defaultEventOptions,
-          "image.html",
-          [{
-            filter: {
-              csp: null,
-              text: `${TEST_PAGES_DOMAIN}#$#${snippet} true`,
-              enabled: true,
-              slow: false,
-              thirdParty: null,
-              type: "snippet",
-              selector: null
-            },
-            matchInfo: {
-              docDomain: TEST_PAGES_DOMAIN,
-              method: "snippet"
-            },
-            request: expect.objectContaining({
-              frameId: expect.any(Number),
-              tabId: expect.any(Number)
-            })
-          }]
-        );
+        await setTestSnippets(snippet);
+        try {
+          await checkLogging(
+            [`${TEST_PAGES_DOMAIN}#$#${snippet}`],
+            defaultEventOptions,
+            "image.html",
+            [{
+              filter: {
+                csp: null,
+                text: `${TEST_PAGES_DOMAIN}#$#${snippet}`,
+                enabled: true,
+                slow: false,
+                thirdParty: null,
+                type: "snippet",
+                selector: null
+              },
+              matchInfo: {
+                docDomain: TEST_PAGES_DOMAIN,
+                method: "snippet"
+              },
+              request: expect.objectContaining({
+                frameId: expect.any(Number),
+                tabId: expect.any(Number)
+              })
+            }]
+          );
+        }
+        finally {
+          await setTestSnippets(null);
+        }
       });
 
       it("logs blocking popup filter", async() => {

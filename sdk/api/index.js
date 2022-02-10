@@ -44,23 +44,16 @@ export let notifications = _notifications;
 
 export let snippets = {
   /**
-   * Snippet callback.
-   * @callback SnippetCallback
-   * @param {Object} environment
-   *   The environment variables
-   * @param {...Array<Array<string>>} _
-   *   The snippets names and arguments.
-   */
-
-  /**
    * Enables support for snippet filters.
    * @param {Object} [snippetInfo]
-   * @param {SnippetCallback} [snippetInfo.isolatedCode]
+   * @param {string} [snippetInfo.isolatedCode]
    *   The code defining the available snippets to be executed in the isolated
    *   content script context.
-   * @param {SnippetCallback} [snippetInfo.injectedCode]
+   * @param {string} [snippetInfo.injectedCode]
    *   The code defining the available snippets to be injected and executed in
    *   the main context.
+   * @param {Array.<string>} [snippetInfo.injectedList]
+   *   An array containing the injectable snippets.
    */
   setLibrary: setSnippetLibrary
 };
