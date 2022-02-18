@@ -16,7 +16,8 @@
  */
 
 import browser from "webextension-polyfill";
-import {convertFilter as getRulesFromFilter} from "abp2dnr/lib/abp2dnr.js";
+import {convertFilter as getRulesFromFilter}
+  from "@eyeo/abp2dnr/lib/abp2dnr.js";
 
 import {Filter, InvalidFilter, ContentFilter, AllowingFilter, URLFilter,
         isActiveFilter} from "adblockpluscore/lib/filterClasses.js";

@@ -14,7 +14,7 @@
   },
   "type": "module",
   "dependencies": {
-    "abp2dnr": "git+https://gitlab.com/eyeo/adblockplus/abp2dnr.git#37d91e75",
+    "@eyeo/abp2dnr": "^0.1.0",
     "adblockpluscore": "^0.5.1",
     "copy-webpack-plugin": "^9.0.1",
     "css-loader": "^5.2.6",
