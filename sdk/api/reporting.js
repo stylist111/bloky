@@ -43,7 +43,9 @@ export default {
 
   /**
   * @typedef {Object} FilterMatchInfo
-  * @property {string} docDomain The domain of the document that loads the URL.
+  * @property {string|null} docDomain The hostname of the document that caused
+  *   the request. This will be null for "main_frame" requests since those
+  *   create the top-level document in the first place.
   * @property {?string} rewrittenUrl The name of the internal resource to which
   *   to rewrite the URL.
   * @property {?boolean} specificOnly Whether selectors from generic filters

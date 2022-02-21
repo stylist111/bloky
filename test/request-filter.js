@@ -18,7 +18,7 @@
 import expect from "expect";
 
 import {Page, Resource, executeScript, wait, isMV3, TEST_PAGES_URL,
-        TEST_PAGES_DOMAIN, SITEKEY} from "./utils.js";
+        TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, SITEKEY} from "./utils.js";
 import {addFilter, EWE} from "./messaging.js";
 
 describe("Blocking", () => {
@@ -108,7 +108,7 @@ describe("Blocking", () => {
   it("handles $third-party requests", async() => {
     await addFilter("image.png$third-party");
     let page = new Page("third-party.html");
-    await page.expectResource("http://127.0.0.1:3000/image.png").toBeBlocked();
+    await page.expectResource(`${CROSS_DOMAIN_URL}/image.png`).toBeBlocked();
     await new Page("image.html").expectResource("image.png").toBeLoaded();
   });
 

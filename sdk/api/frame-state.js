@@ -136,8 +136,14 @@ function onHeadersReceived(details) {
 
   if (frame) {
     let allowlistFrame = frame.pending || frame;
-    allowlistFrame.sitekey = sitekey || allowlistFrame.sitekey;
-    findAllowlistingFilters(allowlistFrame);
+    if (allowlistFrame.url == details.url) {
+      allowlistFrame.sitekey = sitekey || allowlistFrame.sitekey;
+      findAllowlistingFilters(allowlistFrame);
+    }
+    else {
+      frame.pending = new PendingFrameInfo(details.tabId, details.frameId,
+                                           parent, details.url, sitekey);
+    }
   }
   else {
     frame = new FrameInfo(details.tabId, details.frameId, parent,

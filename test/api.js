@@ -20,7 +20,7 @@ import expect from "expect";
 
 import {Page, Popup, setMinTimeout, wait, executeScript, isFirefox, isEdge,
         firefoxVersion, getVisibleElement, isMV3, TEST_PAGES_URL,
-        TEST_PAGES_DOMAIN} from "./utils.js";
+        TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN} from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, addFakeListener,
         removeFakeListeners, setTestSnippets}
   from "./messaging.js";
@@ -578,7 +578,7 @@ describe("API", () => {
       });
 
       it("returns whether a cross domain resource is allowlisted", async() => {
-        await addFilter("@@*$image,domain=127.0.0.1");
+        await addFilter(`@@*$image,domain=${CROSS_DOMAIN}`);
 
         let {tabId, frameId} =
           await loadTabWithFrame("iframe-cross-domain.html");
@@ -843,6 +843,12 @@ describe("API", () => {
         specificOnly: false
       };
 
+      let unmatchedMainFrameMatchInfo = {
+        docDomain: null,
+        method: "unmatched",
+        specificOnly: false
+      };
+
       function expectRewriteMatchInfo(rewrittenUrl) {
         return {
           rewrittenUrl,
@@ -950,7 +956,7 @@ describe("API", () => {
           "image.html",
           [{
             filter: null,
-            matchInfo: unmatchedMatchInfo,
+            matchInfo: unmatchedMainFrameMatchInfo,
             request: expectedRequestRelativeUrl("image.html")
           }, {
             filter: expectedBlockingFilter("/image.png^$image"),
@@ -966,7 +972,7 @@ describe("API", () => {
           "image.html",
           [{
             filter: null,
-            matchInfo: unmatchedMatchInfo,
+            matchInfo: unmatchedMainFrameMatchInfo,
             request: expectedRequestRelativeUrl("image.html")
           }, {
             filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}$image`),
@@ -983,12 +989,12 @@ describe("API", () => {
           "third-party.html",
           [{
             filter: null,
-            matchInfo: unmatchedMatchInfo,
+            matchInfo: unmatchedMainFrameMatchInfo,
             request: expectedRequestRelativeUrl("third-party.html")
           }, {
             filter: expectedBlockingFilter("/image.png$third-party"),
             matchInfo: requestMatchInfo,
-            request: expectedRequestUrl("http://127.0.0.1:3000/image.png")
+            request: expectedRequestUrl(`${CROSS_DOMAIN_URL}/image.png`)
           }]
         );
       });
@@ -1000,7 +1006,7 @@ describe("API", () => {
           "script.html",
           [{
             filter: null,
-            matchInfo: unmatchedMatchInfo,
+            matchInfo: unmatchedMainFrameMatchInfo,
             request: expectedRequestRelativeUrl("script.html")
           }, {
             filter: expectedBlockingFilter(
@@ -1027,7 +1033,7 @@ describe("API", () => {
           "script.html",
           [{
             filter: null,
-            matchInfo: unmatchedMatchInfo,
+            matchInfo: unmatchedMainFrameMatchInfo,
             request: expectedRequestRelativeUrl("script.html")
           }, {
             filter: null,
@@ -1043,7 +1049,7 @@ describe("API", () => {
           "header.html",
           [{
             filter: null,
-            matchInfo: unmatchedMatchInfo,
+            matchInfo: unmatchedMainFrameMatchInfo,
             request: expectedRequestRelativeUrl("header.html")
           }, {
             filter: expectedBlockingFilter(
@@ -1066,7 +1072,7 @@ describe("API", () => {
           "header.html",
           [{
             filter: null,
-            matchInfo: unmatchedMatchInfo,
+            matchInfo: unmatchedMainFrameMatchInfo,
             request: expectedRequestRelativeUrl("header.html")
           }, {
             filter: expectedAllowingFilter(
@@ -1089,7 +1095,7 @@ describe("API", () => {
           "header.html",
           [{
             filter: null,
-            matchInfo: unmatchedMatchInfo,
+            matchInfo: unmatchedMainFrameMatchInfo,
             request: expectedRequestRelativeUrl("header.html")
           }, {
             filter: expectedAllowingFilter(
@@ -1148,6 +1154,7 @@ describe("API", () => {
             filter: null,
             matchInfo: {
               ...allowingMatchInfo,
+              docDomain: null,
               specificOnly: false
             },
             request: expectedRequestRelativeUrl("image.html")
@@ -1160,6 +1167,79 @@ describe("API", () => {
             request: expectedRequestRelativeUrl("image.png")
           }]
         );
+      });
+
+      it("logs allowlisting $document filter " +
+         "after cross domain navigation", async() => {
+        let fake = await addFakeListener({namespace: "reporting",
+                                          eventName: "onBlockableItem",
+                                          eventOptions: allEventOptions});
+
+        await EWE.filters.add([`@@|${TEST_PAGES_URL}$document`,
+                               `@@|${CROSS_DOMAIN_URL}$document`]);
+
+        let page = new Page("cross-domain-navigation.html");
+        let tabId = await page.loaded;
+
+        let expectedLogs = [{
+          filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}$document`),
+          matchInfo: {
+            ...allowingMatchInfo,
+            allowingReason: "document"
+          },
+          request: expectedRequestRelativeUrl("cross-domain-navigation.html")
+        }, {
+          filter: null,
+          matchInfo: {
+            ...allowingMatchInfo,
+            docDomain: null,
+            specificOnly: false
+          },
+          request: expectedRequestRelativeUrl("cross-domain-navigation.html")
+        }, {
+          filter: expectedAllowingFilter(`@@|${CROSS_DOMAIN_URL}$document`),
+          matchInfo: {
+            ...allowingMatchInfo,
+            docDomain: CROSS_DOMAIN,
+            allowingReason: "document"
+          },
+          request: expect.objectContaining({
+            url: `${CROSS_DOMAIN_URL}/image.html`,
+            frameId: expect.any(Number),
+            tabId: expect.any(Number)
+          })
+        }, {
+          filter: null,
+          matchInfo: {
+            ...allowingMatchInfo,
+            docDomain: null,
+            specificOnly: false
+          },
+          request: expect.objectContaining({
+            url: `${CROSS_DOMAIN_URL}/image.html`,
+            frameId: expect.any(Number),
+            tabId: expect.any(Number),
+            type: "main_frame"
+          })
+        }, {
+          filter: null,
+          matchInfo: {
+            ...allowingMatchInfo,
+            docDomain: CROSS_DOMAIN,
+            specificOnly: false
+          },
+          request: expect.objectContaining({
+            url: `${CROSS_DOMAIN_URL}/image.png`,
+            frameId: expect.any(Number),
+            tabId: expect.any(Number),
+            type: "image"
+          })
+        }];
+
+        let getNextWaveOfReceivedEvents =
+            () => getReceivedEventsFromFake(fake, tabId, true);
+
+        await expectLoggedMessages(getNextWaveOfReceivedEvents, expectedLogs);
       });
 
       for (let option of ["$elemhide", "$genericblock", "$generichide"]) {
@@ -1180,6 +1260,7 @@ describe("API", () => {
               filter: null,
               matchInfo: {
                 ...unmatchedMatchInfo,
+                docDomain: null,
                 specificOnly
               },
               request: expectedRequestRelativeUrl("image.html")
@@ -1202,7 +1283,7 @@ describe("API", () => {
           ),
           matchInfo: {
             ...allowingMatchInfo,
-            docDomain: "127.0.0.1",
+            docDomain: CROSS_DOMAIN,
             allowingReason: "document"
           },
           request: expectedRequestRelativeUrl("image.html")
@@ -1214,7 +1295,7 @@ describe("API", () => {
           expectedEvents.push(expectedEvents[0]);
         }
 
-        let url = "http://127.0.0.1:3000/iframe.html";
+        let url = `${CROSS_DOMAIN_URL}/iframe.html`;
         await checkLogging(
           [`@@|${TEST_PAGES_URL}/image.html^$document`],
           allowingEventOptions,
@@ -1325,7 +1406,7 @@ describe("API", () => {
           "element-hiding.html",
           [{
             filter: null,
-            matchInfo: unmatchedMatchInfo,
+            matchInfo: unmatchedMainFrameMatchInfo,
             request: expectedRequestRelativeUrl("element-hiding.html")
           }, {
             filter: expectedBlockingFilter(VALID_FILTER_TEXT),
@@ -1450,7 +1531,7 @@ describe("API", () => {
               `popup.html^$popup,domain=${TEST_PAGES_DOMAIN}`
             ),
             matchInfo: popupMatchInfo,
-            request: expectedRequestUrl("http://127.0.0.1:3000/popup.html")
+            request: expectedRequestUrl(`${CROSS_DOMAIN_URL}/popup.html`)
           }]
         );
       });
@@ -1459,7 +1540,7 @@ describe("API", () => {
         let opener = new Page("popup-opener.html");
         await opener.loaded;
         await checkLogging(
-          ["*popup.html^$popup", "@@|http://127.0.0.1:3000/popup.html^$popup"],
+          ["*popup.html^$popup", `@@|${CROSS_DOMAIN_URL}/popup.html^$popup`],
           allEventOptions,
           async() => {
             let popup = new Popup("third-party-link", opener);
@@ -1468,10 +1549,10 @@ describe("API", () => {
           },
           [{
             filter: expectedAllowingFilter(
-              "@@|http://127.0.0.1:3000/popup.html^$popup"
+              `@@|${CROSS_DOMAIN_URL}/popup.html^$popup`
             ),
             matchInfo: popupMatchInfo,
-            request: expectedRequestUrl("http://127.0.0.1:3000/popup.html")
+            request: expectedRequestUrl(`${CROSS_DOMAIN_URL}/popup.html`)
           }]
         );
       });
@@ -1501,7 +1582,7 @@ describe("API", () => {
             "image.html",
             [{
               filter: null,
-              matchInfo: unmatchedMatchInfo,
+              matchInfo: unmatchedMainFrameMatchInfo,
               request: expectedRequestRelativeUrl("image.html")
             }, {
               filter: null,
@@ -1531,7 +1612,7 @@ describe("API", () => {
             () => page.reload(true),
             [{
               filter: null,
-              matchInfo: unmatchedMatchInfo,
+              matchInfo: unmatchedMainFrameMatchInfo,
               request: expectedRequestRelativeUrl("image.html")
             }, {
               filter: null,
@@ -1549,7 +1630,7 @@ describe("API", () => {
             "iframe.html",
             [{
               filter: null,
-              matchInfo: unmatchedMatchInfo,
+              matchInfo: unmatchedMainFrameMatchInfo,
               request: expectedRequestRelativeUrl("iframe.html")
             }, {
               filter: null,
@@ -1570,7 +1651,7 @@ describe("API", () => {
             "iframe.html",
             [{
               filter: null,
-              matchInfo: unmatchedMatchInfo,
+              matchInfo: unmatchedMainFrameMatchInfo,
               request: expectedRequestRelativeUrl("iframe.html")
             }, {
               filter: expectedAllowingFilter(
@@ -1606,12 +1687,12 @@ describe("API", () => {
             "third-party.html",
             [{
               filter: null,
-              matchInfo: unmatchedMatchInfo,
+              matchInfo: unmatchedMainFrameMatchInfo,
               request: expectedRequestRelativeUrl("third-party.html")
             }, {
               filter: null,
               matchInfo: unmatchedMatchInfo,
-              request: expectedRequestUrl("http://127.0.0.1:3000/image.png")
+              request: expectedRequestUrl(`${CROSS_DOMAIN_URL}/image.png`)
             }]
           );
         });
@@ -1629,31 +1710,25 @@ describe("API", () => {
             },
             [{
               filter: null,
-              matchInfo: unmatchedMatchInfo,
+              matchInfo: unmatchedMainFrameMatchInfo,
               request: expectedRequestRelativeUrl("popup.html")
             }]
           );
         });
 
         it("logs unmatched different domain iframe requests", async() => {
-          let url = "http://127.0.0.1:3000/iframe.html";
+          let url = `${CROSS_DOMAIN_URL}/iframe.html`;
           await checkLogging(
             [],
             allEventOptions,
             () => new Page(url, true).loaded,
             [{
               filter: null,
-              matchInfo: {
-                ...unmatchedMatchInfo,
-                docDomain: "127.0.0.1"
-              },
+              matchInfo: unmatchedMainFrameMatchInfo,
               request: expectedRequestUrl(url)
             }, {
               filter: null,
-              matchInfo: {
-                ...unmatchedMatchInfo,
-                docDomain: "127.0.0.1"
-              },
+              matchInfo: {...unmatchedMatchInfo, docDomain: CROSS_DOMAIN},
               request: expectedRequestRelativeUrl("image.html")
             }, {
               filter: null,

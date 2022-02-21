@@ -19,7 +19,9 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 
 export const TEST_PAGES_DOMAIN = "localhost";
+export const CROSS_DOMAIN = "127.0.0.1";
 export const TEST_PAGES_URL = `http://${TEST_PAGES_DOMAIN}:3000`;
+export const CROSS_DOMAIN_URL = `http://${CROSS_DOMAIN}:3000`;
 export const SITEKEY = "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANGtTstne7" +
                        "e8MbmDHDiMFkGbcuBgXmiVesGOG3gtYeM1EkrzVhBj" +
                        "GUvKXYE4GLFwqty3v5MuWWbvItUWBTYoVVsCAwEAAQ";

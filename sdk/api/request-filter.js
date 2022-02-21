@@ -67,6 +67,10 @@ class RequestFilter {
                                          details.frameId;
   }
 
+  getDocDomain(type, hostname) {
+    return type == "main_frame" ? null : hostname;
+  }
+
   getInitiator(details) {
     return details.initiator || details.documentUrl;
   }
@@ -123,7 +127,7 @@ class RequestFilter {
   }
 
   match(details, frame, specificOnly) {
-    let docDomain = frame.hostname;
+    let docDomain = this.getDocDomain(details.type, frame.hostname);
     // This currently needs to be matcher.search because matcher.match
     // will only return an allowing filter if it's overriding a
     // blocking filter. Unfortunately, the current design doesn't
@@ -163,7 +167,7 @@ class RequestFilter {
     let specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) != 0;
     if (frame.allowlisted & contentTypes.DOCUMENT) {
       return this.allow(details, null, {
-        docDomain: frame.hostname,
+        docDomain: this.getDocDomain(details.type, frame.hostname),
         method: "allowing",
         specificOnly
       });
@@ -185,7 +189,7 @@ RequestFilter.prototype.eventArgs = [
 
 class HeaderFilter extends RequestFilter {
   match(details, frame, specificOnly) {
-    let docDomain = frame.hostname;
+    let docDomain = this.getDocDomain(details.type, frame.hostname);
     let matches = matcher.search(details.url, contentTypes.HEADER,
                                  docDomain, frame.sitekey,
                                  specificOnly);
@@ -230,7 +234,8 @@ class CSPFilter extends RequestFilter {
 
   match(details, frame, specificOnly) {
     let parentFrame = getFrameInfo(details.tabId, details.parentFrameId);
-    let docDomain = parentFrame && parentFrame.hostname;
+    let docDomain = this.getDocDomain(details.type,
+                                      parentFrame && parentFrame.hostname);
     let matchInfo = {docDomain: docDomain || frame.hostname,
                      specificOnly, method: "csp"};
 
@@ -290,7 +295,7 @@ class RequestCompletionFilter extends RequestFilter {
         return;
     }
     let matchInfo = {
-      docDomain: pending.hostname,
+      docDomain: this.getDocDomain(details.type, pending.hostname),
       method: "unmatched",
       specificOnly
     };
