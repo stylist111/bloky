@@ -35,7 +35,7 @@ import {addFilters, validateFilter, getDynamicFilters, removeOrDisableFilters,
 export function convertFilter(filter) {
   return {
     text: filter.text,
-    enabled: !filter.disabled,
+    enabled: typeof filter.disabled == "undefined" ? null : !filter.disabled,
     slow: filter instanceof URLFilter && isSlowFilter(filter),
     type: filter.type,
     thirdParty: filter.thirdParty || null,
@@ -64,8 +64,10 @@ export default {
    * @property {string} text A {@link https://help.eyeo.com/adblockplus/how-to-write-filters|filter}
    *                         rule that specifies what content
    *                         to block or to allow. Used to identify a filter.
-   * @property {boolean} enabled Indicates whether this filter would
-   *                             be applied. Filters are enabled by default.
+   * @property {boolean|null} enabled Indicates whether this filter would
+   *                                  be applied. Filters are enabled by
+   *                                  default. For comment filters returned
+   *                                  value is null.
    * @property {boolean} slow Indicates that this filter is not subject to an
    *                          internal optimization. Filters that are
    *                          considered slow should be avoided. Only URLFilters
@@ -125,7 +127,8 @@ export default {
       for (let [text, details] of (await getDynamicFilters()).entries()) {
         if (!result.find(filter => filter.text == text)) {
           let filter = convertFilter(Filter.fromText(text));
-          filter.enabled = details.enabled;
+          filter.enabled = filter.type == "comment" ? null : details.enabled;
+
           result.push(filter);
         }
       }

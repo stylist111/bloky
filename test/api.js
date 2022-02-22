@@ -31,6 +31,7 @@ const ANOTHER_VALID_SUBSCRIPTION_URL =
 const INVALID_SUBSCRIPTION_URL = "invalidUrl";
 
 const VALID_FILTER_TEXT = `|${TEST_PAGES_URL}$image`;
+const COMMENT_FILTER_TEXT = "!comment";
 const SECOND_VALID_FILTER_TEXT = "another-filter";
 const VALID_FILTER = {
   text: VALID_FILTER_TEXT,
@@ -46,6 +47,15 @@ const SECOND_VALID_FILTER = {
   enabled: true,
   slow: true,
   type: "blocking",
+  thirdParty: null,
+  selector: null,
+  csp: null
+};
+const COMMENT_FILTER = {
+  text: COMMENT_FILTER_TEXT,
+  enabled: null,
+  slow: false,
+  type: "comment",
   thirdParty: null,
   selector: null,
   csp: null
@@ -325,6 +335,11 @@ describe("API", () => {
         VALID_FILTER,
         {...SECOND_VALID_FILTER}
       ]);
+    });
+
+    it("adds comment filter", async() => {
+      await EWE.filters.add([COMMENT_FILTER_TEXT]);
+      expect(await EWE.filters.getUserFilters()).toEqual([COMMENT_FILTER]);
     });
 
     it("does not add invalid filters", async() =>
