@@ -1074,6 +1074,14 @@ describe("API", () => {
             request: expectedRequestRelativeUrl(
               "image.png?header-name=x-header&header-value=whatever"
             )
+          }, {
+            filter: expectedBlockingFilter(
+              `|${TEST_PAGES_URL}$header=x-header=whatever`
+            ),
+            matchInfo: headerMatchInfo,
+            request: expectedRequestRelativeUrl(
+              "script.js?header-name=x-header&header-value=whatever"
+            )
           }]);
       });
 
@@ -1097,6 +1105,14 @@ describe("API", () => {
             request: expectedRequestRelativeUrl(
               "image.png?header-name=x-header&header-value=whatever"
             )
+          }, {
+            filter: expectedAllowingFilter(
+              `@@|${TEST_PAGES_URL}$header`
+            ),
+            matchInfo: headerMatchInfo,
+            request: expectedRequestRelativeUrl(
+              "script.js?header-name=x-header&header-value=whatever"
+            )
           }]);
       });
 
@@ -1109,16 +1125,20 @@ describe("API", () => {
           allEventOptions,
           "header.html",
           [{
-            filter: null,
-            matchInfo: unmatchedMainFrameMatchInfo,
+            filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}`),
+            matchInfo: cspMatchInfo,
             request: expectedRequestRelativeUrl("header.html")
           }, {
-            filter: expectedAllowingFilter(
-              `@@|${TEST_PAGES_URL}`
-            ),
+            filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}`),
             matchInfo: requestMatchInfo,
             request: expectedRequestRelativeUrl(
               "image.png?header-name=x-header&header-value=whatever"
+            )
+          }, {
+            filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}`),
+            matchInfo: requestMatchInfo,
+            request: expectedRequestRelativeUrl(
+              "script.js?header-name=x-header&header-value=whatever"
             )
           }]);
       });

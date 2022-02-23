@@ -35,7 +35,7 @@ export {default as debugging} from "./debugging.js";
  * To start using this module, calling `notifications.start()` is required.
  * Please also notice that notification events are **not** using the
  * {@link #eventdispatcher|EventDispatcher} interface.
- * @see {@link https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore/-/jobs/artifacts/0.5.1/file/build/docs/module-notifications-Notifications.html?job=docs|Adblock Plus core notifications documentation}
+ * @see {@link https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore/-/jobs/artifacts/0.6.0/file/build/docs/module-notifications-Notifications.html?job=docs|Adblock Plus core notifications documentation}
  * @external
  */
 // Workaround for documentation.js to parse the JSDocs above

@@ -292,6 +292,12 @@ describe("Blocking", () => {
       await new Page("header.html").expectResource("image.png").toBeLoaded();
     });
 
+    it("only blocks specific content types", async() => {
+      addFilter(`|${TEST_PAGES_URL}^$image,header=x-header=whatever`);
+      await new Page("header.html").expectResource("image.png").toBeBlocked();
+      await new Page("header.html").expectResource("script.js").toBeLoaded();
+    });
+
     it("does not block a request from allowlisted document", async() => {
       await addFilter(`|${TEST_PAGES_URL}^$header=x-header=whatever`);
       await addFilter(`@@|${TEST_PAGES_URL}^$document`);

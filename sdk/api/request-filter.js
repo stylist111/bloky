@@ -80,7 +80,10 @@ class RequestFilter {
   }
 
   getContentType(details) {
-    return resourceTypes.get(details.type) || contentTypes.OTHER;
+    let contentType = resourceTypes.get(details.type) || contentTypes.OTHER;
+    if (contentType == contentTypes.DOCUMENT)
+      return contentTypes.OTHER;
+    return contentType;
   }
 
   collapse(details) {
@@ -190,9 +193,9 @@ RequestFilter.prototype.eventArgs = [
 class HeaderFilter extends RequestFilter {
   match(details, frame, specificOnly) {
     let docDomain = this.getDocDomain(details.type, frame.hostname);
-    let matches = matcher.search(details.url, contentTypes.HEADER,
-                                 docDomain, frame.sitekey,
-                                 specificOnly);
+    let typeMask = contentTypes.HEADER | this.getContentType(details);
+    let matches = matcher.search(details.url, typeMask, docDomain,
+                                 frame.sitekey, specificOnly);
 
     let filter = (() => {
       // You might think that we should call filterHeaders on the
@@ -234,13 +237,14 @@ class CSPFilter extends RequestFilter {
 
   match(details, frame, specificOnly) {
     let parentFrame = getFrameInfo(details.tabId, details.parentFrameId);
-    let docDomain = this.getDocDomain(details.type,
-                                      parentFrame && parentFrame.hostname);
+    let docDomain =
+      this.getDocDomain(details.type, parentFrame && parentFrame.hostname);
+    let typeMask = contentTypes.CSP | this.getContentType(details);
     let matchInfo = {docDomain: docDomain || frame.hostname,
                      specificOnly, method: "csp"};
 
     let {responseHeaders} = details;
-    let matches = matcher.search(details.url, contentTypes.CSP, docDomain,
+    let matches = matcher.search(details.url, typeMask, docDomain,
                                  frame.sitekey, specificOnly);
 
     if (matches.allowing.length > 0) {

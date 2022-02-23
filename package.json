@@ -15,7 +15,7 @@
   "type": "module",
   "dependencies": {
     "@eyeo/abp2dnr": "^0.1.0",
-    "adblockpluscore": "^0.5.1",
+    "adblockpluscore": "^0.6.0",
     "copy-webpack-plugin": "^9.0.1",
     "css-loader": "^5.2.6",
     "expect": "^25.5.0",
