@@ -168,51 +168,70 @@ class Firefox {
 
 class Edge {
   async installDriver() {
-    let version;
+    let stdout;
     if (process.platform == "win32") {
       let cmd = "(Get-ItemProperty ${Env:ProgramFiles(x86)}\\Microsoft\\" +
                 "Edge\\Application\\msedge.exe).VersionInfo.ProductVersion";
-      let {stdout} = await promisify(exec)(cmd, {shell: "powershell.exe"});
-      version = stdout.trim();
+      ({stdout} = await promisify(exec)(cmd, {shell: "powershell.exe"}));
     }
     else if (process.platform == "darwin") {
-      let {stdout} =
-        await promisify(execFile)(MACOS_EDGE_BINARY, ["--version"]);
-      version = stdout.trim().replace(/.*\s/, "");
+      ({stdout} = await promisify(execFile)(MACOS_EDGE_BINARY, ["--version"]));
     }
     else if (process.platform == "linux") {
-      let {stdout} = await promisify(execFile)("microsoft-edge", ["--version"]);
-      version = stdout.trim().replace(/.*\s/, "");
+      ({stdout} = await promisify(execFile)("microsoft-edge", ["--version"]));
     }
+    let version = stdout.trim().replace(/.*\s/, "");
 
     if (!version)
       throw new Error("Edge is not installed");
 
-    if (process.platform == "linux") {
-      // "install.js" does not work for linux yet
-      let zip = "edgedriver_linux64.zip";
-      let driver = "msedgedriver";
-      let snapshotsDir = path.join(process.cwd(), "test", "edge-snapshots");
-      let cacheDir = path.join(snapshotsDir, "download-cache");
-      let driverDir = path.join(process.cwd(), "node_modules", "msedgedriver",
-                                "bin");
-      let archive = path.join(cacheDir, `${version}-${zip}`);
-
-      await download(`https://msedgedriver.azureedge.net/${version}/${zip}`,
-                     archive);
-      await extractZip(archive, {dir: cacheDir});
-      await fs.promises.mkdir(driverDir, {recursive: true});
-      await fs.promises.copyFile(path.join(cacheDir, driver),
-                                 path.join(driverDir, driver));
-    }
-    else {
-      await promisify(execFile)(
+    if (process.platform == "win32") {
+      return await promisify(execFile)(
         process.execPath,
         [path.join("node_modules", "msedgedriver", "install.js")],
         {env: {...process.env, EDGECHROMIUMDRIVER_VERSION: version,
                npm_config_edgechromiumdriver_skip_download: false}}
       );
     }
+    // "install.js" does not work for linux, and does not provide a fallback
+    // mechanism when msedgedriver doesn't exist for the latest Edge version
+    let platform = `${process.platform}-${process.arch}`;
+    let buildTypes = {
+      "linux-x64": "edgedriver_linux64",
+      "darwin-x64": "edgedriver_mac64",
+      "darwin-arm64": "edgedriver_arm64"
+    };
+    let zip = `${buildTypes[platform]}.zip`;
+    let driver = "msedgedriver";
+    let snapshotsDir = path.join(process.cwd(), "test", "edge-snapshots");
+    let cacheDir = path.join(snapshotsDir, "download-cache");
+    let driverDir = path.join(process.cwd(), "node_modules", "msedgedriver",
+                              "bin");
+    let archive = path.join(cacheDir, `${version}-${zip}`);
+
+    let vSplit = version.split(".");
+    let lastNum = parseInt(vSplit[3], 10);
+    while (lastNum >= 0) {
+      try {
+        let attempt = `${vSplit[0]}.${vSplit[1]}.${vSplit[2]}.${lastNum}`;
+        // eslint-disable-next-line no-console
+        console.log(`Trying to download msedgedriver ${attempt} ...`);
+        await download(`https://msedgedriver.azureedge.net/${attempt}/${zip}`,
+                       archive);
+        break;
+      }
+      catch (e) {
+        lastNum--;
+      }
+    }
+
+    if (lastNum < 0)
+      throw new Error(`msedgedriver was not found for Edge ${version}`);
+
+    await extractZip(archive, {dir: cacheDir});
+    await fs.promises.mkdir(driverDir, {recursive: true});
+    await fs.promises.copyFile(path.join(cacheDir, driver),
+                               path.join(driverDir, driver));
   }
 
   async getDriver() {
