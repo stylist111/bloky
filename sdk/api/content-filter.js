@@ -50,7 +50,7 @@ export function applyContentFilters(tabId, frameId) {
       if (debugOptions.elemHide)
         environment.debugCSSProperties = debugOptions.snippetsCssProperties;
 
-      let request = {tabId, frameId};
+      let request = {tabId, frameId, url: frame.url};
       browser.tabs.executeScript(
         tabId,
         {

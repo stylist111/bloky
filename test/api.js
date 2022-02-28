@@ -1500,7 +1500,8 @@ describe("API", () => {
               },
               request: expect.objectContaining({
                 frameId: expect.any(Number),
-                tabId: expect.any(Number)
+                tabId: expect.any(Number),
+                url: expect.any(String)
               })
             }]
           );
