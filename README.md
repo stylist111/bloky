@@ -32,7 +32,7 @@ download the [latest build][builds] (or [build the library yourself][dev]).
 
 The extension's `manifest.json` is required to include the following configuration:
 
-```json
+```
 {
   "manifest_version": 2,
   "background": {
@@ -77,14 +77,14 @@ Consequently, there won't be a global `EWE` object.
 
 #### CommonJS
 
-```javascript
+```
 const EWE = require("./ewe-api.js");
 EWE.start();
 ```
 
 #### ESM
 
-```javascript
+```
 import * as EWE from "./ewe-api.js";
 EWE.start();
 ```
@@ -94,7 +94,7 @@ EWE.start();
 In order to enable support for [snippet filters][snippet-filters] you have to get
 the [snippets library][snippets-project] separately and make it available to `EWE`:
 
-```javascript
+```
 let response = await fetch("snippets.js");
 let code = await response.text();
 EWE.snippets.setLibrary(code);
@@ -108,7 +108,7 @@ of the snippet library.
 Using the [notifications module][notifications-module] is optional. To start
 using it, an initialisation is required:
 
-```javascript
+```
 EWE.notifications.start();
 ```
 
