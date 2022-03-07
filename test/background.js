@@ -132,6 +132,7 @@ function handleTestMessage(request, sender, sendResponse) {
       return true;
     }
   }
+  return true;
 }
 
 chrome.runtime.onMessage.addListener(handleTestMessage);

@@ -50,6 +50,7 @@ function onMessage(message, sender) {
   if (typeof message == "object" && message != null &&
       message.type.startsWith("ewe:"))
     return handleMessage(message, sender);
+  return false;
 }
 
 export function start() {

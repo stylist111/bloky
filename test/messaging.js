@@ -33,6 +33,7 @@ export async function makeCallbackInBackgroundPage(callback) {
   browser.runtime.onMessage.addListener(message => {
     if (message.type == "ewe-test:call-callback" && message.id == id)
       callback(...message.args);
+    return true;
   });
 
   return id;
