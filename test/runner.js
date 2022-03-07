@@ -140,7 +140,7 @@ class Firefox {
   async getLatestVersion(branch) {
     let data = await got("https://product-details.mozilla.org/1.0/firefox_versions.json").json();
     return branch == "beta" ?
-      data.FIREFOX_DEVEDITION : data.LATEST_FIREFOX_VERSION;
+      data.LATEST_FIREFOX_DEVEL_VERSION : data.LATEST_FIREFOX_VERSION;
   }
 
   async getDriver(version) {
