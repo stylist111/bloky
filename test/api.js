@@ -699,6 +699,14 @@ describe("API", () => {
       expect(result).toEqual({foundStorage: false,
                               foundSubscriptions: true});
     });
+
+    // This test is problematic in edge and oldest chromium.
+    // see: https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/191
+    it("ignores messages without a type property", async function() {
+      this.skip();
+      await expect(browser.runtime.sendMessage({a: "1"}))
+        .resolves.not.toThrow();
+    });
   });
 
   describe("Reporting", () => {
