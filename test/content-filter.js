@@ -48,7 +48,9 @@ describe("Element Hiding", () => {
     expect(await getElemHideElement("elem-hide")).toBeNull();
   });
 
-  it("does not hide an allowlisted element", async() => {
+  it("does not hide an allowlisted element", async function() {
+    setMinTimeout(this, 4000);
+
     await addFilter("###elem-hide");
     await addFilter("#@##elem-hide");
     expect(await getElemHideElement("elem-hide")).not.toBeNull();
@@ -56,7 +58,7 @@ describe("Element Hiding", () => {
 
   for (let type of ["$document", "$elemhide"]) {
     it(`does not hide elements in allowlisted ${type}`, async function() {
-      setMinTimeout(this, 4000);
+      setMinTimeout(this, 12000);
 
       await addFilter("###elem-hide");
       expect(await getElemHideElement("elem-hide")).toBeNull();
@@ -66,7 +68,7 @@ describe("Element Hiding", () => {
     });
 
     it(`does not hide frame elements allowlisted by ${type}`, async function() {
-      setMinTimeout(this, 4000);
+      setMinTimeout(this, 8000);
 
       await addFilter("###elem-hide");
       expect(await getElemHideElementInFrame("elem-hide", "elem-hide-frame"))

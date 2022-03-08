@@ -17,7 +17,8 @@
 
 import expect from "expect";
 
-import {Page, Resource, executeScript, wait, isMV3, TEST_PAGES_URL,
+import {Page, Resource, executeScript, wait, isMV3, setMinTimeout,
+        TEST_PAGES_URL,
         TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, SITEKEY} from "./utils.js";
 import {addFilter, EWE} from "./messaging.js";
 
@@ -47,7 +48,9 @@ describe("Blocking", () => {
     await new Page("image.html").expectResource("image.png").toBeLoaded();
   });
 
-  it("blocks a request using a re-enabled filter", async() => {
+  it("blocks a request using a re-enabled filter", async function() {
+    setMinTimeout(this, 4000);
+
     await addFilter("/image.png^$image");
     await EWE.filters.disable(["/image.png^$image"]);
     await EWE.filters.enable(["/image.png^$image"]);
@@ -200,7 +203,9 @@ describe("Blocking", () => {
      });
 
   it("does not block requests with allowlisted URL after history.pushState",
-     async() => {
+     async function() {
+       setMinTimeout(this, 4000);
+
        await addFilter(
          `@@|${TEST_PAGES_URL}/history-after-pushState.html^$document`);
        await addFilter("/image.png^$image");
@@ -216,7 +221,8 @@ describe("Blocking", () => {
   }
 
   describe("Content-Security-Policy", () => {
-    it("injects header", async() => {
+    it("injects header", async function() {
+      setMinTimeout(this, 4000);
       await addFilter(CSP_FILTER);
       expect(await checkViolatedDirective()).toEqual("img-src");
     });
