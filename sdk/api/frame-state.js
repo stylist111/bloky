@@ -64,7 +64,7 @@ function findAllowlistingFilters(frame) {
   while (true) {
     let typeMask = ~frame.allowlisted & ALLOWING_TYPES;
     let filter = matcher.match(
-      frame.url, typeMask, frame.parentHostname, frame.sitekey
+      frame.url, typeMask, matchInfo.docDomain, frame.sitekey
     );
 
     if (!filter)

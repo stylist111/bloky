@@ -86,6 +86,13 @@ describe("Element Hiding", () => {
     expect(await getElemHideElement("elem-hide")).not.toBeNull();
   });
 
+  it("does not hide elements in document allowlisted for domain", async() => {
+    await addFilter("###elem-hide");
+    await addFilter(
+      `@@|${TEST_PAGES_URL}/*.html$elemhide,domain=${TEST_PAGES_DOMAIN}`);
+    expect(await getElemHideElement("elem-hide")).not.toBeNull();
+  });
+
   it("does not hide elements through generic filter " +
      "in documents allowlisted by $generichide", async() => {
     await addFilter("###elem-hide");
