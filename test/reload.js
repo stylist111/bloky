@@ -120,4 +120,23 @@ describe(`Reload (${phase})`, function() {
       await EWE.filters.remove([BLOCKING_FILTER_TEXT, IMAGE_FILTER_TEXT]);
     }
   });
+
+  it("ignores file:/// entries in storage", async() => {
+    if (start) {
+      let randomKey = `file:///${new Date().getTime()}`;
+      let saveData = {};
+      saveData[randomKey] = {
+        name: "name",
+        width: 250,
+        height: 345,
+        src: "a base 64 string"
+      };
+
+      await browser.storage.local.set(saveData);
+    }
+
+    // This test recreates the situation in https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/175
+    // The application not failing during the 'check' phase means
+    // this test passes.
+  });
 });

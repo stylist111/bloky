@@ -49,7 +49,8 @@ export async function init(db, legacyStorageItems) {
   let prefix = "file:";
 
   for (let key in legacyStorageItems) {
-    if (key.startsWith(prefix)) {
+    // This regex matches `file:` but ignores `file:///`
+    if (/^file:([^/])/.exec(key)) {
       let filename = key.slice(prefix.length);
       let {content, lastModified} = legacyStorageItems[key];
 
