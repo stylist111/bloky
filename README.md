@@ -10,6 +10,7 @@ for Chromium and Firefox extensions (like [Adblock Plus][abpui]).
 * [Getting started](#getting-started)
   * [Module bundlers (optional)](#module-bundlers-optional)
   * [Snippet filters support](#snippet-filters-support)
+  * [Shared resources](#shared-resources)
 * [Documentation](#documentation)
 * [Development](#development)
   * [Prerequisites](#prerequisites)
@@ -102,6 +103,25 @@ EWE.snippets.setLibrary(code);
 
 The integration of the machine learning models is expected to be done by clients
 of the snippet library.
+
+### Shared resources
+
+There are some shared resources that are used by both webext-sdk & production code:
+- `browser`
+  - Global is set by webextension-polyfill version 0.8.0.
+- `browser.runtime.connect()`/`browser.runtime.onConnect`
+  - Channel name is prefixed with "ewe:".
+- `browser.runtime.sendMessage()`/`browser.runtime.onMessage`
+  - Messages are objects with a "type" property whose value is prefixed with "ewe:".
+- `indexedDB.open()`
+  - Database name is prefixed with "EWE".
+- `ewe:content-hello`
+  - This event is [sent by the SDK](https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/blob/master/sdk/content/index.js#L31) to the [SDK message responder](https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/blob/master/sdk/api/message-responder.js) in order to initialise content features.
+- Web page links
+  - Links used by module are prefixed with "abp:" or "https://subscribe.adblockplus.org/".
+
+During initialization webext-sdk migrates legacy data from local storage to indexedDB.
+Files migrated have to be prefixed: ```file:```. Files prefixed with ```file:///``` will be ignored.
 
 ### Notifications support
 
