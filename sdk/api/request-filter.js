@@ -169,7 +169,7 @@ class RequestFilter {
 
     let specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) != 0;
     if (frame.allowlisted & contentTypes.DOCUMENT) {
-      return this.allow(details, null, {
+      return this.allow(details, frame.allowingDocumentFilter, {
         docDomain: this.getDocDomain(details.type, frame.hostname),
         method: "allowing",
         specificOnly

@@ -36,7 +36,8 @@ class FrameInfo {
                      url.startsWith("https://")))
       pending = new PendingFrameInfo(tabId, frameId, parent, url);
 
-    let {hostname, sitekey, allowlisted} = pending || parent || {};
+    let {hostname, sitekey, allowlisted,
+         allowingDocumentFilter} = pending || parent || {};
 
     this.url = url;
     this.hostname = hostname;
@@ -44,6 +45,7 @@ class FrameInfo {
     this.allowlisted = allowlisted || 0;
     this.parent = parent;
     this.pending = null;
+    this.allowingDocumentFilter = allowingDocumentFilter;
   }
 }
 
@@ -71,6 +73,8 @@ function findAllowlistingFilters(frame) {
       break;
 
     frame.allowlisted |= filter.contentType & ALLOWING_TYPES;
+    if (filter.contentType & contentTypes.DOCUMENT)
+      frame.allowingDocumentFilter = filter;
 
     let allowingReason = getAllowingReason(typeMask, filter);
     logItem(details, filter, {...matchInfo, allowingReason});
@@ -80,10 +84,12 @@ function findAllowlistingFilters(frame) {
 class PendingFrameInfo {
   constructor(tabId, frameId, parent, url, sitekey) {
     let allowlisted = 0;
+    let allowingDocumentFilter;
     let parentHostname;
 
     if (parent) {
-      ({hostname: parentHostname, allowlisted} = parent);
+      ({hostname: parentHostname, allowlisted,
+        allowingDocumentFilter} = parent);
 
       if (!sitekey)
         ({sitekey} = parent);
@@ -98,6 +104,7 @@ class PendingFrameInfo {
     this.parentHostname = parentHostname;
     this.sitekey = sitekey;
     this.allowlisted = allowlisted;
+    this.allowingDocumentFilter = allowingDocumentFilter;
 
     findAllowlistingFilters(this);
   }

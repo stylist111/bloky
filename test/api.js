@@ -952,7 +952,7 @@ describe("API", () => {
 
         let tabId = await callback();
         let getReceivedEvents =
-            () => getReceivedEventsFromFake(fake, tabId, filterToCurrentTab);
+          () => getReceivedEventsFromFake(fake, tabId, filterToCurrentTab);
 
         await expectLoggedMessages(getReceivedEvents, expectedLogs);
       }
@@ -1194,7 +1194,7 @@ describe("API", () => {
             },
             request: expectedRequestRelativeUrl("image.html")
           }, {
-            filter: null,
+            filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}$document`),
             matchInfo: {
               ...allowingMatchInfo,
               docDomain: null,
@@ -1202,7 +1202,7 @@ describe("API", () => {
             },
             request: expectedRequestRelativeUrl("image.html")
           }, {
-            filter: null,
+            filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}$document`),
             matchInfo: {
               ...allowingMatchInfo,
               specificOnly: false
@@ -1232,7 +1232,7 @@ describe("API", () => {
           },
           request: expectedRequestRelativeUrl("cross-domain-navigation.html")
         }, {
-          filter: null,
+          filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}$document`),
           matchInfo: {
             ...allowingMatchInfo,
             docDomain: null,
@@ -1252,7 +1252,7 @@ describe("API", () => {
             tabId: expect.any(Number)
           })
         }, {
-          filter: null,
+          filter: expectedAllowingFilter(`@@|${CROSS_DOMAIN_URL}$document`),
           matchInfo: {
             ...allowingMatchInfo,
             docDomain: null,
@@ -1265,7 +1265,7 @@ describe("API", () => {
             type: "main_frame"
           })
         }, {
-          filter: null,
+          filter: expectedAllowingFilter(`@@|${CROSS_DOMAIN_URL}$document`),
           matchInfo: {
             ...allowingMatchInfo,
             docDomain: CROSS_DOMAIN,
@@ -1330,6 +1330,26 @@ describe("API", () => {
             allowingReason: "document"
           },
           request: expectedRequestRelativeUrl("image.html")
+        }, {
+          filter: expectedAllowingFilter(
+            `@@|${TEST_PAGES_URL}/image.html^$document`
+          ),
+          matchInfo: {
+            ...allowingMatchInfo,
+            docDomain: TEST_PAGES_DOMAIN,
+            specificOnly: false
+          },
+          request: expectedRequestRelativeUrl("image.html")
+        }, {
+          filter: expectedAllowingFilter(
+            `@@|${TEST_PAGES_URL}/image.html^$document`
+          ),
+          matchInfo: {
+            ...allowingMatchInfo,
+            docDomain: TEST_PAGES_DOMAIN,
+            specificOnly: false
+          },
+          request: expectedRequestRelativeUrl("image.png")
         }];
         if (isFirefox() && firefoxVersion() >= 97) {
           // Duplicated event in Firefox
@@ -1344,6 +1364,37 @@ describe("API", () => {
           allowingEventOptions,
           () => new Page(url, true).loaded,
           expectedEvents
+        );
+      });
+
+      it("logs allowlisting with $document filter", async() => {
+        await checkLogging(
+          [`@@${TEST_PAGES_URL}/image.html$document`],
+          allowingEventOptions,
+          "image.html",
+          [{
+            filter: expectedAllowingFilter(
+              `@@${TEST_PAGES_URL}/image.html$document`
+            ),
+            matchInfo: {...allowingMatchInfo, allowingReason: "document"},
+            request: expectedRequestRelativeUrl("image.html")
+          }, {
+            filter: expectedAllowingFilter(
+              `@@${TEST_PAGES_URL}/image.html$document`
+            ),
+            matchInfo: {
+              ...allowingMatchInfo,
+              docDomain: null,
+              specificOnly: false
+            },
+            request: expectedRequestRelativeUrl("image.html")
+          }, {
+            filter: expectedAllowingFilter(
+              `@@${TEST_PAGES_URL}/image.html$document`
+            ),
+            matchInfo: {...allowingMatchInfo, specificOnly: false},
+            request: expectedRequestRelativeUrl("image.png")
+          }]
         );
       });
 
@@ -1707,14 +1758,18 @@ describe("API", () => {
               },
               request: expectedRequestRelativeUrl("image.html")
             }, {
-              filter: null,
+              filter: expectedAllowingFilter(
+                `@@|${TEST_PAGES_URL}/image.html$document`
+              ),
               matchInfo: {
                 ...allowingMatchInfo,
                 specificOnly: false
               },
               request: expectedRequestRelativeUrl("image.html")
             }, {
-              filter: null,
+              filter: expectedAllowingFilter(
+                `@@|${TEST_PAGES_URL}/image.html$document`
+              ),
               matchInfo: {
                 ...allowingMatchInfo,
                 specificOnly: false
