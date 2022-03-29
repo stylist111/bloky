@@ -24,6 +24,8 @@ import * as messageResponder from "./message-responder.js";
 import {configureDefaultSubscriptions} from "./default-subscriptions.js";
 import {setSnippetLibrary} from "./content-filter.js";
 
+import {setAddonInfo} from "./info.js";
+
 export {default as subscriptions} from "./subscriptions.js";
 export {default as filters} from "./filters.js";
 export {default as reporting} from "./reporting.js";
@@ -81,13 +83,22 @@ async function startAsyncModule(startModule) {
  *
  * Calling this function is required for the other API calls to work, except for
  * API event listener calls, which could also be done before `start()`.
+ * @param {Object} [addonInfo] An object containing addon information belonging
+ *                             to sdk consumer, that can be accessed via
+ *                             `debugging` module. (It is usually used as an
+ *                             identifier in network requests, etc.)
+ * @param {string} [addonInfo.name] Name of the addon/extension.
+ * @param {string} [addonInfo.version] Version of the addon/extension.
  * @return {Promise<FirstRunInfo>} Promise that is resolved after
  *                                  starting up is completed. Promise
  *                                  is rejected if `stop()` is called
  *                                  before starting is completed.
  * @see {@link #stop|stop()}
  */
-export async function start() {
+export async function start(addonInfo) {
+  if (addonInfo)
+    setAddonInfo(addonInfo);
+
   stopped = false;
   messageResponder.start();
   await startAsyncModule(() => initializer.start());

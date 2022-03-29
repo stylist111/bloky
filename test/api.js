@@ -61,6 +61,8 @@ const COMMENT_FILTER = {
   csp: null
 };
 const INVALID_FILTER_TEXT = "/foo/$rewrite=";
+const ADDON_NAME = "foo";
+const ADDON_VERSION = "2.1";
 
 describe("API", () => {
   describe("Subscriptions", () => {
@@ -707,6 +709,51 @@ describe("API", () => {
       await expect(browser.runtime.sendMessage({a: "1"}))
         .resolves.not.toThrow();
     });
+
+    it("starts with default addon info", async() => {
+      let manifest = browser.runtime.getManifest();
+
+      await runInBackgroundPage([
+        {op: "getGlobal", arg: "EWE"},
+        {op: "callMethod", arg: "start"},
+        {op: "await"}
+      ]);
+
+      let addonInfo = await runInBackgroundPage([
+        {op: "getGlobal", arg: "EWE"},
+        {op: "getProp", arg: "debugging"},
+        {op: "getProp", arg: "addonInfo"}
+      ]);
+
+      expect(addonInfo).toEqual(
+        expect.objectContaining({
+          name: manifest.short_name || manifest.name,
+          version: manifest.version
+        })
+      );
+    });
+
+    it(
+      "starts with the addon info provided by the initial start call",
+      async() => {
+        await runInBackgroundPage([
+          {op: "getGlobal", arg: "EWE"},
+          {op: "pushArg", arg: {name: ADDON_NAME, version: ADDON_VERSION}},
+          {op: "callMethod", arg: "start"},
+          {op: "await"}
+        ]);
+
+        let addonInfo = await runInBackgroundPage([
+          {op: "getGlobal", arg: "EWE"},
+          {op: "getProp", arg: "debugging"},
+          {op: "getProp", arg: "addonInfo"}
+        ]);
+
+        expect(addonInfo).toEqual(
+          expect.objectContaining({name: ADDON_NAME, version: ADDON_VERSION})
+        );
+      }
+    );
   });
 
   describe("Reporting", () => {

@@ -17,8 +17,8 @@
 
 import {filterStorage} from "adblockpluscore/lib/filterStorage.js";
 import {default as initializer} from "./initializer.js";
-
 import {IO} from "./io.js";
+import {addonName, addonVersion} from "./info.js";
 
 export let debugOptions = {
   elemHide: false,
@@ -30,6 +30,16 @@ export let debugOptions = {
 };
 
 export default {
+  /**
+   * AddonInfo assigned during start.
+   * @type {Object}
+   * @property {string} name
+   * @property {string} version
+   */
+  get addonInfo() {
+    return {name: addonName, version: addonVersion};
+  },
+
   /**
    * Causes elements targeted by element hiding, element hiding emulation,
    * or snippets to be highlighted instead of hidden.

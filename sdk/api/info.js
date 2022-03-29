@@ -66,3 +66,8 @@ else {
   platform = "chromium";
   parseChromiumUserAgent();
 }
+
+export function setAddonInfo({name, version}) {
+  addonName = name;
+  addonVersion = version;
+}
