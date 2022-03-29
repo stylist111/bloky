@@ -220,6 +220,12 @@ through the global `EWE` object.
 Runner [options](#test-options) need to be preceded by two dashes (`--`), for
 example `--timeout 10000`.
 
+Edge tests can be also performed on Docker, to achieve that run
+following commands:
+
+  docker build  --no-cache -t webext .
+  docker run -it webext  
+
 </div>
 
 [abpcore]: https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore

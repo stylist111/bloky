@@ -1,0 +1,4 @@
+node_modules
+docs
+test/*-snapshots
+test/bundle/package-lock.json
