@@ -4,6 +4,7 @@ default:
 
 stages:
   - build
+  - testPages
   - test
 
 variables:
@@ -122,6 +123,50 @@ test:v3:edge:linux:
     - docker:19.03.5-dind
   script:
     - docker info
-    - docker build  --no-cache -t webext .
+    - docker build  --no-cache -t webext -f test/dockerfiles/Dockerfile .
     - docker run --shm-size=256m webext  
   interruptible: true
+
+.testpages-integration:
+  stage: testPages
+  image: docker:19.03.5
+  services:
+    - docker:19.03.5-dind
+  before_script:
+    - docker info
+  variables:
+    DOCKER_DRIVER: overlay2
+  script:
+    - docker build -t testpages -f test/dockerfiles/testpages.Dockerfile .
+    - docker run --shm-size=256m -e SKIP_EXTENSION_DOWNLOAD="true" -e BROWSER="$BROWSER" testpages 
+  after_script:
+    - IMAGE_ID=$(docker ps -aqf ancestor=testpages)
+    - echo "Copying files"
+    - docker cp $IMAGE_ID:/testpages.adblockplus.org/test/screenshots .
+      2> /dev/null
+    - docker cp $IMAGE_ID:/adblockpluschrome.zip .
+  artifacts:
+    paths:
+      - screenshots/
+      - adblockpluschrome.zip
+    expire_in: 1 mo
+
+testPages:chrome:latest:
+  extends: .testpages-integration
+  variables:
+    BROWSER: Chromium \(latest\)
+
+testPages:chrome:oldest:
+  extends: .testpages-integration
+  variables:
+    BROWSER: Chromium \(oldest\)
+
+testPages:firefox:latest:
+  extends: .testpages-integration
+  variables:
+    BROWSER: Firefox \(latest\)
+
+testPages:firefox:oldest:
+  extends: .testpages-integration
+  variables:
+    BROWSER: Firefox \(oldest\)

@@ -223,8 +223,34 @@ example `--timeout 10000`.
 Edge tests can be also performed on Docker, to achieve that run
 following commands:
 
-  docker build  --no-cache -t webext .
+  docker build  --no-cache -t webext -f test/dockerfiles/Dockerfile .
   docker run -it webext  
+
+### Building ABPUI extension and running testpages tests
+If there are no breaking changes in webext code, you will be able to build
+ABPUI extension with current codebase. To build custom extension on Docker use following command: 
+
+    docker build -t testpages  -f test/dockerfiles/testpages.Dockerfile . 
+
+
+To run testpages automated tests on Docker, build testpages image with command above and: 
+
+    docker run --shm-size=256m -it testpages               
+
+To copy custom extension from Docker image after tests were run, run following commands: 
+
+    IMAGE_ID=$(docker ps -aqf ancestor=testpages)
+    docker cp $IMAGE_ID:/adblockpluschrome.zip . 
+
+Note: Tests by default will skip `Snippets` tests, as extension built with Docker 
+won't support snippets. You can exclude other tests by passing TESTS_EXCLUDE argument f.ex:
+
+    docker run --shm-size=256m -e TESTS_EXCLUDE="Snippets|CSP|Header" -it testpages
+
+Firefox (latest) is the default browser. Other browsers can be run using the
+BROWSER argument:
+
+    docker run -e BROWSER="Chromium \(latest\)" -it testpages
 
 </div>
 
