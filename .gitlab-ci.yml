@@ -4,8 +4,8 @@ default:
 
 stages:
   - build
-  - testPages
   - test
+  - testPages
 
 variables:
   npm_config_audit: "false"
