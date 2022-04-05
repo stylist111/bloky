@@ -52,6 +52,14 @@ export async function executeScript(tabId, func, args) {
   )[0];
 }
 
+export async function clickElement(tabId, elementId) {
+  await executeScript(
+    tabId,
+    elemId => document.getElementById(elemId).click(),
+    [elementId]
+  );
+}
+
 export class Page {
   constructor(path, fullUrl = false, forceBackground = false) {
     let removingCurrentPromise = Page.removeCurrent();
@@ -218,11 +226,7 @@ export class Popup {
         onCreatedNavigationTarget.addListener(onNavigationTarget);
         browser.webNavigation.onErrorOccurred.addListener(onErrorOccurred);
 
-        executeScript(
-          openerTabId,
-          elemId => document.getElementById(elemId).click(),
-          [id]
-        ).catch(err => {
+        clickElement(openerTabId, id).catch(err => {
           removeListeners();
           reject(err);
         });

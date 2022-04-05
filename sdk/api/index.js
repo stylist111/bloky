@@ -30,6 +30,7 @@ export {default as subscriptions} from "./subscriptions.js";
 export {default as filters} from "./filters.js";
 export {default as reporting} from "./reporting.js";
 export {default as debugging} from "./debugging.js";
+export {default as allowlisting} from "./allowlisting.js";
 
 /**
  * The notifications API (optional usage).

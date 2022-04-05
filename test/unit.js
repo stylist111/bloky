@@ -7,4 +7,5 @@ import "./content-filter.js";
 import "./api.js";
 import "./popup-blocker.js";
 import "./subscribe-links.js";
+import "./allowlisting.js";
 import "./mocha/mocha-runner.js";

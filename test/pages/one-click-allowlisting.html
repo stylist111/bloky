@@ -1,0 +1,241 @@
+<img src="image.png">
+
+<ul>
+  <li><a id="allowlist" href="#">Allowlist page</a></li>
+  <li><a id="allowlist_old_timestamp" href="#">Allowlist page with invalid timestamp (too old)</a></li>
+  <li><a id="allowlist_future_timestamp" href="#">Allowlist page with invalid timestamp (in the future)</a></li>
+  <li><a id="allowlist_nonsense_timestamp" href="#">Allowlist page with invalid timestamp (not a number)</a></li>
+  <li><a id="allowlist_different_domain" href="#">Allowlist page with an invalid domain</a></li>
+  <li><a id="malicious_subclass" href="#">Malicious Allowlist Event: Subclass</a></li>
+  <li><a id="malicious_override" href="#">Malicious Allowlist Event: Override</a></li>
+  <li><a id="malicious_has_own_property" href="#">Malicious Allowlist Event: Has Own Property</a></li>
+  <li><a id="malicious_replaced_custom_event" href="#">Malicious Allowlist Event: Replaced CustomEvent</a></li>
+  <li><a id="malicious_get_prototype_of" href="#">Malicious Allowlist Event: Get Prototype Of</a></li>
+  <li><a id="malicious_custom_event_prototype" href="#">Malicious Allowlist Event: Custom Event Prototype</a></li>
+  <li><a id="malicious_proxy_object" href="#">Malicious Allowlist Event: Proxy Object</a></li>
+  <li><a id="malicious_dos_attempt" href="#">Malicious Allowlist Event: Denial of Service attempt</a></li>
+  <li><a id="malicious_dos_attempt_valid_signature" href="#">Malicious Allowlist Event: Denial of Service attempt with a valid signature</a></li>
+</ul>
+
+<script>
+  function base64ToArrayBuffer(str) {
+    let decodedData = atob(str);
+    return Uint8Array.from(decodedData, c => c.charCodeAt(0));
+  }
+
+  function arrayBufferToBase64(buffer) {
+    let binary = "";
+    let bytes = new Uint8Array(buffer);
+    for (let i = 0; i < bytes.byteLength; i++)
+      binary += String.fromCharCode(bytes[i]);
+
+    return btoa(binary);
+  }
+
+  async function sign(key, algorithm, data) {
+    let abKey = base64ToArrayBuffer(key);
+    let importedKey = await crypto.subtle.importKey(
+      "pkcs8",
+      abKey,
+      algorithm,
+      false,
+      ["sign"]
+    );
+    let abData = (new TextEncoder()).encode(data);
+    let abSignature = await crypto.subtle.sign(algorithm, importedKey, abData);
+    return arrayBufferToBase64(abSignature);
+  }
+
+  async function createAllowlistEvent(hostname, timestamp) {
+    // NB: THIS TEST CODE IS INSECURE!
+    // This code demonstrated the signing flow, but by doing the
+    // signing in the browser it exposes the private key to anyone who
+    // opens the dev tools. This is fine for unit tests, but a real
+    // website should NEVER do this. The allowlisting event should
+    // always be signed on the server.
+
+    let data = `${hostname},${timestamp}`;
+
+    // eslint-disable-next-line max-len
+    // let publicKey = "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAorAkyGHnzZkVE0TGcU7Sl6/LlH9j3udDNvHv/fSzplLMdqkw0HZNV9zaBFQ0Rw73AJ7MQ8JQm2hex9DEss3xsrlpHEi/nC7C1authg1rt5Xo4K0P5Bo+j6y41UtgQoL9xKJ6RlYGBq4uBHaq/xRyp/7zUxOiViTdnVZRhSkmyBCIQ+5l8/mTk5yyMLfH7QM0KFKdJbnnTU8HEGzHaFi33vAwWPpJjCohYUzYxgXOgSZYV6xNPycQj4U/D4k+7UT+d4zzrj7fSz08/ijfHLB8G6dr1nx7+Pydt3ijhKEX2mKaAWgKtyM2wTgFXys4rnAbdr340FpQaVebNF0bwGsqluBNdvZ6fPgN9dLlpVDQKXlOKdfOyc64Yw82/jHKdYC7NO1bg13hqo7JWM10Gklt2FY5ekfDBZagPbYCH780C8w0aMceBs3NBTI6SAPI8xhyu7LwL7vw/vMwz8kfIsKOCPFqf0qPlvJCaryIAA7Ca6SHfBqaTzyivEEqn6tWphCpYSODfPRO4Udg+l/o/PCJuly41b4QF2x8H+LvJnr7HFknmFYwisbIofC/2ucO2sfJDP4EOHKeDV9mexHSJIfjyFYV0f0ALj1eKl9Viz37qLefzXFhTG4wzoK5F/QM1ZhIWjN+0DBn6GTQxuWc4eAuASoh07JG4M+i2rWcUTYvgOECAwEAAQ==";
+    // eslint-disable-next-line max-len
+    let privateKey = "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";
+    let algorithm = {
+      name: "RSASSA-PKCS1-v1_5",
+      modulusLength: 4096,
+      publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+      hash: {name: "SHA-512"}
+    };
+
+    let signature = await sign(privateKey, algorithm, data);
+    return new CustomEvent("domain_allowlisting_request", {
+      detail: {
+        signature,
+        timestamp
+      }
+    });
+  }
+
+  async function allowlist(hostname = location.hostname,
+                           timestamp = Date.now()) {
+    let event = await createAllowlistEvent(hostname, timestamp);
+    document.dispatchEvent(event);
+  }
+
+  document.addEventListener("domain_allowlisting_success", () => {
+    let element = document.createElement("div");
+    element.id = "domain_allowlisting_success_received";
+    element.text = "Allowlisting Success Event Received";
+    document.body.appendChild(element);
+  });
+
+  function eventHandlerDetected() {
+    let element = document.createElement("div");
+    element.id = "event_handler_detected";
+    element.text = "Event Handler Detected";
+    document.body.appendChild(element);
+  }
+
+  function maliciousSubclass() {
+    class UntrustedEvent extends CustomEvent {
+      get detail() {
+        eventHandlerDetected();
+        return super.detail;
+      }
+    }
+    let event = new UntrustedEvent("domain_allowlisting_request", {
+      detail: "ev"
+    });
+    document.dispatchEvent(event);
+  }
+
+  function maliciousOverride() {
+    let event = new CustomEvent("domain_allowlisting_request", {detail: "ev"});
+    Object.defineProperty(event, "detail", {
+      get() {
+        eventHandlerDetected();
+        return super.detail;
+      }
+    });
+    document.dispatchEvent(event);
+  }
+
+  function maliciousHasOwnProperty() {
+    let ev = new CustomEvent("domain_allowlisting_request");
+    Object.defineProperty(ev, "detail", {
+      get() {
+        eventHandlerDetected();
+        return "ev";
+      }
+    });
+    Object.defineProperty(ev, "hasOwnProperty", {
+      value(name) {
+        eventHandlerDetected();
+        if (name === "hasOwnProperty" || name === "detail")
+          return false;
+
+        // eslint-disable-next-line no-prototype-builtins
+        return super.hasOwnProperty(name);
+      }
+    });
+    document.dispatchEvent(ev);
+  }
+
+  function maliciousReplacedCustomEvent() {
+    window.CustomEvent = class extends Event {
+      get detail() {
+        eventHandlerDetected();
+        return super.detail;
+      }
+    };
+    let ev = new CustomEvent("domain_allowlisting_request");
+    document.dispatchEvent(ev);
+  }
+
+  function maliciousGetPrototypeOf() {
+    let origGetPrototypeOf = Object.getPrototypeOf;
+    let ev = new CustomEvent("domain_allowlisting_request", {detail: "ev"});
+    Object.defineProperty(Object, "getPrototypeOf", {
+      value(obj) {
+        if (obj === ev)
+          eventHandlerDetected();
+        return origGetPrototypeOf(obj);
+      }
+    });
+    document.dispatchEvent(ev);
+  }
+
+  function maliciousCustomEventPrototype() {
+    let origPrototype = CustomEvent.prototype;
+    let ev = new CustomEvent("domain_allowlisting_request", {detail: "ev"});
+    Object.defineProperty(CustomEvent, "prototype", {
+      get() {
+        eventHandlerDetected();
+        return origPrototype;
+      }
+    });
+    document.dispatchEvent(ev);
+  }
+
+  function maliciousProxyObject() {
+    let ev = new CustomEvent("domain_allowlisting_request");
+    let proxy = new Proxy(ev, {
+      get(target, property, receiver) {
+        if (property === "detail")
+          eventHandlerDetected();
+  
+        return target[property];
+      }
+    });
+    document.dispatchEvent(proxy);
+  }
+
+  function maliciousDOSAttempt() {
+    let event = new CustomEvent("domain_allowlisting_request", {
+      detail: {
+        signature: "bad signature",
+        timestamp: Date.now()
+      }
+    });
+    for (let i = 0; i < 100000; ++i)
+      document.dispatchEvent(event);
+  }
+
+  async function maliciousDOSAttemptWithValidSignature() {
+    let event = await createAllowlistEvent(location.hostname, Date.now());
+    for (let i = 0; i < 100000; ++i)
+      document.dispatchEvent(event);
+  }
+
+  document.getElementById("allowlist")
+    .addEventListener("click", () => allowlist());
+  document.getElementById("allowlist_old_timestamp")
+    .addEventListener("click", () => allowlist(location.hostname,
+                                               Date.now() - 3600000));
+  document.getElementById("allowlist_future_timestamp")
+    .addEventListener("click", () => allowlist(location.hostname,
+                                               Date.now() + 1000));
+  document.getElementById("allowlist_nonsense_timestamp")
+    .addEventListener("click", () => allowlist(location.hostname,
+                                               "fakeTimestamp"));
+  document.getElementById("allowlist_different_domain")
+    .addEventListener("click", () => allowlist("example.com"));
+  document.getElementById("malicious_subclass")
+    .addEventListener("click", maliciousSubclass);
+  document.getElementById("malicious_override")
+    .addEventListener("click", maliciousOverride);
+  document.getElementById("malicious_has_own_property")
+    .addEventListener("click", maliciousHasOwnProperty);
+  document.getElementById("malicious_replaced_custom_event")
+    .addEventListener("click", maliciousReplacedCustomEvent);
+  document.getElementById("malicious_get_prototype_of")
+    .addEventListener("click", maliciousGetPrototypeOf);
+  document.getElementById("malicious_custom_event_prototype")
+    .addEventListener("click", maliciousCustomEventPrototype);
+  document.getElementById("malicious_proxy_object")
+    .addEventListener("click", maliciousProxyObject);
+  document.getElementById("malicious_dos_attempt")
+    .addEventListener("click", maliciousDOSAttempt);
+  document.getElementById("malicious_dos_attempt_valid_signature")
+    .addEventListener("click", maliciousDOSAttemptWithValidSignature);
+</script>

@@ -1,0 +1,11 @@
+{
+  "env": {
+    "node": true
+  },
+  "globals": {
+    "btoa": "readonly"
+  },
+  "rules": {
+    "no-console": "off"
+  }
+}

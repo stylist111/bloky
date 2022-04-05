@@ -23,6 +23,7 @@ import {ElemHideEmulation}
 import {ignoreNoConnectionError} from "../errors.js";
 import {startElementCollapsing, hideElement, unhideElement}
   from "./element-collapsing.js";
+import {startOneClickAllowlisting} from "./allowlisting.js";
 import {ElementHidingTracer} from "./element-hiding-tracer.js";
 import {handleSubscribeLinks} from "./subscribe-links.js";
 
@@ -57,4 +58,5 @@ async function initContentFeatures() {
 }
 
 startElementCollapsing();
+startOneClickAllowlisting();
 initContentFeatures();

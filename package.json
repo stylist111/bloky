@@ -54,6 +54,7 @@
     "start": "webpack -w",
     "test": "node test/runner.js",
     "test-server": "node test/start-server.js",
-    "test-bundle": "node test/bundle/run.js"
+    "test-bundle": "node test/bundle/run.js",
+    "create-allowlisting-keypair": "node scripts/createKeypair.js"
   }
 }

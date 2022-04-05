@@ -22,6 +22,7 @@ toc:
       - reporting
       - snippets
       - subscriptions
+      - allowlisting
   - name: Objects
     children:
       - BlockableEventDispatcher
@@ -33,3 +34,5 @@ toc:
       - FirstRunInfo
       - Recommendation      
       - Subscription
+      - allowlistingCallback
+      - AllowlistingAuthorizationError

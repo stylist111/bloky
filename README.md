@@ -11,6 +11,8 @@ for Chromium and Firefox extensions (like [Adblock Plus][abpui]).
   * [Module bundlers (optional)](#module-bundlers-optional)
   * [Snippet filters support](#snippet-filters-support)
   * [Shared resources](#shared-resources)
+  * [Notifications support](#notifications-support)
+  * [One Click Allowlisting support](#one-click-allowlisting-support)
 * [Documentation](#documentation)
 * [Development](#development)
   * [Prerequisites](#prerequisites)
@@ -131,6 +133,33 @@ using it, an initialisation is required:
 ```
 EWE.notifications.start();
 ```
+
+### One Click Allowlisting support
+
+To enable One Click Allowlisting, you need to set the list of
+authorized public keys that can be used to authenticate allowlisting
+requests.
+
+```
+EWE.allowlisting.setAuthorizedKeys(keys);
+```
+
+See the [allowlisting module][allowlisting-module] docs for more
+detail.
+
+New keypairs can be created with the correct algorithm and settings by
+using our keypair creation script.
+
+```
+npm run create-allowlisting-keypair
+```
+
+See the Development section below for details on running our scripts
+and other EWE development tasks. Keys can also be generated using
+other programs like OpenSSL. The keys use the RSASSA-PKCS1-v1_5
+algorithm, SHA512 hash and 4096 bit long modulus. Additionally, when
+passed to `setAuthorizedKeys`, the keys should be base64 encoded
+strings, in SPKI format.
 
 <div class="no-docs">
 
@@ -263,6 +292,7 @@ BROWSER argument:
 [dev]: https://gitlab.com/eyeo/webext/webext-sdk#development
 [notifications-module]: https://gitlab.com/eyeo/webext/webext-sdk/-/jobs/artifacts/master/file/docs/index.html?job=build#notifications
 [abp2dnr-requirements]: https://gitlab.com/eyeo/adblockplus/abp2dnr#requirements
+[allowlisting-module]: https://gitlab.com/eyeo/webext/webext-sdk/-/jobs/artifacts/master/file/docs/index.html?job=build#allowlisting
 
 ### Bundle test
 

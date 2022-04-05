@@ -23,6 +23,7 @@ import {createStyleSheet} from "adblockpluscore/lib/elemHide.js";
 import {subscribeLinkClicked, subscribeLinksEnabled}
   from "./subscribe-links.js";
 import {logHiddenElements} from "./diagnostics.js";
+import {allowlistPage} from "./allowlisting.js";
 
 async function handleMessage(message, sender) {
   await initializer.start();
@@ -43,6 +44,10 @@ async function handleMessage(message, sender) {
       let styleSheet = createStyleSheet([message.selector]);
       injectCSS(sender.tab.id, sender.frameId, styleSheet);
       break;
+    case "ewe:allowlist-page":
+      return allowlistPage(
+        sender.tab.id, sender.frameId, message.timestamp, message.signature
+      );
   }
 }
 
