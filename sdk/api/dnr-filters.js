@@ -16,8 +16,6 @@
  */
 
 import browser from "webextension-polyfill";
-import {convertFilter as getRulesFromFilter}
-  from "@eyeo/abp2dnr/lib/abp2dnr.js";
 
 import {Filter, InvalidFilter, ContentFilter, AllowingFilter, URLFilter,
         isActiveFilter} from "adblockpluscore/lib/filterClasses.js";
@@ -27,6 +25,7 @@ import {RESOURCE_TYPES, contentTypes}
   from "adblockpluscore/lib/contentTypes.js";
 import {filterStorage} from "adblockpluscore/lib/filterStorage.js";
 import {filterState} from "adblockpluscore/lib/filterState.js";
+import {createConverter} from "adblockpluscore/lib/dnr/index.js";
 import {ERROR_DUPLICATE_FILTERS, ERROR_FILTER_NOT_FOUND} from "../errors.js";
 
 import {FilterError} from "./types.js";
@@ -35,6 +34,13 @@ import {Prefs} from "./prefs.js";
 let highestRuleId = 1;
 let dynamicFilters = new Map();
 let initializationPromise;
+
+let getRulesFromFilter = () => {};
+if (browser.declarativeNetRequest) {
+  getRulesFromFilter = createConverter({
+    isRegexSupported: browser.declarativeNetRequest.isRegexSupported
+  });
+}
 
 export function validateFilter(filter) {
   if (filter instanceof InvalidFilter)
@@ -110,9 +116,11 @@ async function getRules(filter, useFilterEngine) {
   let filterRules = [];
 
   if (filter instanceof URLFilter) {
-    let result = await getRulesFromFilter(
-      filter, browser.declarativeNetRequest.isRegexSupported
-    );
+    let result = await getRulesFromFilter(filter.text);
+    if (result.name == "Error") {
+      let {option} = result.detail;
+      throw new FilterError(result.message, result.detail.text, option);
+    }
 
     for (let rule of result) {
       let id = ++highestRuleId;
@@ -154,6 +162,7 @@ async function processFilterTexts(texts) {
                           (filter.contentType & contentTypes.WEBRTC ||
                            filter.contentType & contentTypes.POPUP) &&
                           filter.contentType != RESOURCE_TYPES;
+
 
     let {filterRules, ruleIds} = await getRules(filter, useFilterEngine);
     add.push(...filterRules);

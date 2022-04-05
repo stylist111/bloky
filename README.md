@@ -173,7 +173,6 @@ For more information, please refer to the [API documention][docs].
 
 - Node >= 16.10.0
 - npm >= 7
-- [abp2dnr requirements][abp2dnr-requirements]
 
 ### Installing/Updating dependencies
 
@@ -292,7 +291,6 @@ BROWSER argument:
 [docs]: https://gitlab.com/eyeo/webext/webext-sdk/-/jobs/artifacts/master/file/docs/index.html?job=build
 [dev]: https://gitlab.com/eyeo/webext/webext-sdk#development
 [notifications-module]: https://gitlab.com/eyeo/webext/webext-sdk/-/jobs/artifacts/master/file/docs/index.html?job=build#notifications
-[abp2dnr-requirements]: https://gitlab.com/eyeo/adblockplus/abp2dnr#requirements
 [allowlisting-module]: https://gitlab.com/eyeo/webext/webext-sdk/-/jobs/artifacts/master/file/docs/index.html?job=build#allowlisting
 
 ### Bundle test

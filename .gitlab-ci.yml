@@ -24,8 +24,6 @@ cache:
 build:
   stage: build
   before_script:
-    # make and g++ required by node-gyp (abp2dnr dependency)
-    - apt-get update && apt-get install -y make g++
     - npm install
   script:
     - npm run lint
@@ -51,7 +49,6 @@ audit:
 .test:
   stage: test
   before_script:
-    - apt-get update && apt-get install -y make g++
     - npm install
     - npm run test-server &
   needs:
@@ -111,8 +108,6 @@ test:v2:edge:windows:
         -OutFile 'MicrosoftEdgeEnterpriseX64.msi'
     - Start-Process msiexec
         -ArgumentList "/i MicrosoftEdgeEnterpriseX64.msi /norestart /qn" -Wait
-    # python2 is required by node-gyp (abp2dnr dependency)
-    - choco install -y python2
     - choco upgrade -y nodejs --version 16.10.0
     - npm install
     - Start-Process "node" -ArgumentList "test/start-server.js" -PassThru

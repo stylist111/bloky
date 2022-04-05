@@ -14,7 +14,6 @@
   },
   "type": "module",
   "dependencies": {
-    "@eyeo/abp2dnr": "^0.1.0",
     "adblockpluscore": "^0.7.0",
     "webextension-polyfill": "^0.8.0"
   },
