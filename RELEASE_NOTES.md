@@ -1,3 +1,47 @@
+0.3.0 - 2022/04/12
+==================
+
+# General
+
+- Update to adblockpluscore 0.7.0 (#197)
+  - addFilter() will ignore the newly returned error from core.
+- One click allow listing (#171)
+- Adds allowingDocumentFilter to frame (#149)
+- Update legacy storage condition (#175)
+- Allow customizing the default subscriptions by SDK users (#112)
+- Faster matching with allowing filters (#206)
+
+# Documentation
+
+- Add shared resources information to README (#176)
+
+# Tests
+
+- Added testpages and custom extensions for the webext-sdk (#199)
+- Dockerize MSEdge tests for more reliable CI (#195)
+
+0.2.1 - 2022/03/30
+==================
+
+This is a bugfix release.
+
+# General
+
+- Allow setting the `addonName` (#198)
+
+# Updating your code
+
+You can now optionally set the `addonName` to your own when building
+an extension with the SDK.
+
+Simply call `EWE.start()` this way:
+```javascript
+EWE.start({
+  name: "adblockpluschrome",
+  version: "3.12"
+});
+```
+
 0.2.0 - 2022/03/14
 ==================
 
