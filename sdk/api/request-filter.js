@@ -17,7 +17,8 @@
 
 import browser from "webextension-polyfill";
 
-import {BlockingFilter} from "adblockpluscore/lib/filterClasses.js";
+import {BlockingFilter, AllowingFilter}
+  from "adblockpluscore/lib/filterClasses.js";
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 import {defaultMatcher as matcher} from "adblockpluscore/lib/matcher.js";
 import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
@@ -131,17 +132,9 @@ class RequestFilter {
 
   match(details, frame, specificOnly) {
     let docDomain = this.getDocDomain(details.type, frame.hostname);
-    // This currently needs to be matcher.search because matcher.match
-    // will only return an allowing filter if it's overriding a
-    // blocking filter. Unfortunately, the current design doesn't
-    // consider the potential of header filters being checked in a
-    // later stage. Using search may have performance implications, so
-    // this should be changed back to using matcher.match after
-    // https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore/-/issues/392
-    // is resolved.
-    let matches = matcher.search(details.url, this.getContentType(details),
-                                 docDomain, frame.sitekey, specificOnly);
-    let filter = matches.allowing[0] || matches.blocking[0];
+
+    let filter = matcher.match(details.url, this.getContentType(details),
+                               docDomain, frame.sitekey, specificOnly, true);
     if (filter) {
       let matchInfo = {docDomain, specificOnly, method: "request"};
       if (filter instanceof BlockingFilter)
@@ -193,29 +186,24 @@ RequestFilter.prototype.eventArgs = [
 class HeaderFilter extends RequestFilter {
   match(details, frame, specificOnly) {
     let docDomain = this.getDocDomain(details.type, frame.hostname);
+    let matchInfo = {docDomain, specificOnly, method: "header"};
+
     let typeMask = contentTypes.HEADER | this.getContentType(details);
+    let allowingFilter = matcher.match(details.url, typeMask, docDomain,
+                                       frame.sitekey, specificOnly, true);
+
+    if (allowingFilter && allowingFilter instanceof AllowingFilter)
+      return this.allow(details, allowingFilter, matchInfo);
+
     let matches = matcher.search(details.url, typeMask, docDomain,
-                                 frame.sitekey, specificOnly);
+                                 frame.sitekey, specificOnly, "blocking");
 
-    let filter = (() => {
-      // You might think that we should call filterHeaders on the
-      // allowing filter too, but actually filterHeaders is only on
-      // blocking filters
-      if (matches.allowing.length > 0)
-        return matches.allowing[0];
+    let filter = matches.blocking.find(blockingFilter => {
+      return blockingFilter.filterHeaders(details.responseHeaders);
+    });
 
-      for (let blockingFilter of matches.blocking) {
-        if (blockingFilter.filterHeaders(details.responseHeaders))
-          return blockingFilter;
-      }
-    })();
-
-    if (filter) {
-      let matchInfo = {docDomain, specificOnly, method: "header"};
-      if (filter instanceof BlockingFilter)
-        return this.block(details, filter, matchInfo);
-      return this.allow(details, filter, matchInfo);
-    }
+    if (filter)
+      return this.block(details, filter, matchInfo);
   }
 }
 
@@ -244,13 +232,13 @@ class CSPFilter extends RequestFilter {
                      specificOnly, method: "csp"};
 
     let {responseHeaders} = details;
-    let matches = matcher.search(details.url, typeMask, docDomain,
-                                 frame.sitekey, specificOnly);
+    let allowingFilter = matcher.match(details.url, typeMask, docDomain,
+                                       frame.sitekey, specificOnly, true);
+    if (allowingFilter && allowingFilter instanceof AllowingFilter)
+      return this.allow(details, allowingFilter, matchInfo);
 
-    if (matches.allowing.length > 0) {
-      let filter = matches.allowing[0];
-      return this.allow(details, filter, matchInfo);
-    }
+    let matches = matcher.search(details.url, typeMask, docDomain,
+                                 frame.sitekey, specificOnly, "blocking");
 
     if (matches.blocking.length > 0) {
       pendingCspRequests.add(details.requestId);
