@@ -17,7 +17,8 @@
 
 import browser from "webextension-polyfill";
 
-import {filterStorage} from "adblockpluscore/lib/filterStorage.js";
+import {filterStorage, FilterStorageError}
+  from "adblockpluscore/lib/filterStorage.js";
 import {Filter, URLFilter} from "adblockpluscore/lib/filterClasses.js";
 import {SpecialSubscription}
   from "adblockpluscore/lib/subscriptionClasses.js";
@@ -105,8 +106,15 @@ export default {
       filters.push(filter);
     }
 
-    for (let filter of filters)
-      filterStorage.addFilter(filter);
+    for (let filter of filters) {
+      try {
+        await filterStorage.addFilter(filter);
+      }
+      catch (error) {
+        if (!(error instanceof FilterStorageError))
+          throw error;
+      }
+    }
   },
 
   /**
