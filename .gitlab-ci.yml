@@ -55,6 +55,11 @@ test:v2:chromium:stable:
   script:
     - xvfb-run -a npm test -- v2 chromium
 
+test:v2-subs:chromium:stable:
+  extends: .test
+  script:
+    - xvfb-run -a npm test -- v2-custom chromium
+
 test:v2:chromium:oldest:
   extends: .test
   script:

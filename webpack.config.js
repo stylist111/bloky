@@ -19,6 +19,7 @@
 
 import path from "path";
 import url from "url";
+import fs from "fs";
 
 import TerserPlugin from "terser-webpack-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
@@ -28,10 +29,54 @@ import CopyPlugin from "copy-webpack-plugin";
 
 let dirname = path.dirname(url.fileURLToPath(import.meta.url));
 let templateDir = path.join(dirname, "test", "template.html");
+const eweRegularConfigName = "sdk";
+const eweCustomConfigName = "sdk-subs";
+const eweDistPath = path.join(dirname, "dist");
+const eweRegularOutputPath = eweDistPath;
+const eweCustomOutputPath = path.join(eweDistPath, "ewe-subs");
+const eweRegularSubscriptionsFile = "custom-subscriptions.json";
+const eweTestSubscriptionsFile = "test/custom-subscriptions.json";
 
-export default (env = {}) => {
-  let builds = [{
-    name: "sdk",
+const base = {
+  eweConfigName: eweRegularConfigName,
+  ewePath: eweRegularOutputPath
+};
+
+// Canonical Manifest V2
+const mv2 = {
+  ...base,
+  manifestVersion: 2,
+  background: {scripts: ["ewe-api.js", "background.js"]},
+  permissions: ["webRequestBlocking", "<all_urls>"],
+  misc: {
+    /* nothing */
+  },
+  outputPath: "test-mv2"
+};
+
+// Canonical Manifest V3
+const mv3 = {
+  ...base,
+  manifestVersion: 3,
+  background: {service_worker: "background.js"},
+  permissions: ["scripting", "declarativeNetRequest"],
+  misc: {
+    host_permissions: ["<all_urls>"]
+  },
+  outputPath: "test-mv3"
+};
+
+// Manifest V2 + customs subscriptions list file
+const mv2Custom = {
+  ...mv2,
+  eweConfigName: eweCustomConfigName,
+  ewePath: eweCustomOutputPath,
+  outputPath: "test-mv2-custom"
+};
+
+function eweBuild(env, configName, subscriptionFile, silent, outputPath) {
+  let build = {
+    name: configName,
     entry: {
       api: {
         import: "./sdk/api/index.js",
@@ -41,7 +86,7 @@ export default (env = {}) => {
     },
     output: {
       filename: "ewe-[name].js",
-      path: path.resolve(dirname, "dist"),
+      path: outputPath,
       clean: true
     },
     mode: env.release ? "production" : "development",
@@ -75,17 +120,40 @@ export default (env = {}) => {
     externals: {
       perf_hooks: "self"
     }
-  }];
+  };
 
-  for (let manifestVersion of [2, 3]) {
+  let customSubsFile = path.resolve(dirname, subscriptionFile);
+  if (fs.existsSync(customSubsFile)) {
+    if (!silent)
+      console.warn(`Using custom subscriptions file (${customSubsFile})`);
+    build.resolve.alias["../data/subscriptions.json"] = customSubsFile;
+  }
+
+  return build;
+}
+
+export default (env = {}) => {
+  if (fs.existsSync(eweDistPath))
+    fs.rmSync(eweDistPath, {recursive: true});
+
+  let builds = [
+    eweBuild(env, eweRegularConfigName, eweRegularSubscriptionsFile,
+             false, eweRegularOutputPath),
+    eweBuild(env, eweCustomConfigName, eweTestSubscriptionsFile,
+             true, eweCustomOutputPath)
+  ];
+
+  for (let buildVariant of [mv2, mv3, mv2Custom]) {
+    let description = `Manifest version: ${buildVariant.manifestVersion}`;
+    if (buildVariant.eweConfigName == eweCustomConfigName)
+      description = `${description} - custom subscriptions`;
+
     let manifest = {
       name: "eyeo's Web Extension Ad Blocking Toolkit Test Extension",
       version: "0.0.1",
-      description: `Manifest version: ${manifestVersion}`,
-      manifest_version: manifestVersion,
-      background: manifestVersion >= 3 ?
-          {service_worker: "background.js"} :
-          {scripts: ["ewe-api.js", "background.js"]},
+      description,
+      manifest_version: buildVariant.manifestVersion,
+      background: buildVariant.background,
       content_scripts: [
         {
           all_frames: true,
@@ -97,21 +165,20 @@ export default (env = {}) => {
       ],
       permissions: [
         "webNavigation", "webRequest", "storage", "unlimitedStorage", "tabs",
-        ...manifestVersion >= 3 ? ["scripting", "declarativeNetRequest"] :
-                                  ["webRequestBlocking", "<all_urls>"]
+        ...buildVariant.permissions
       ],
-      ...manifestVersion >= 3 ? {host_permissions: ["<all_urls>"]} : {}
+      ...buildVariant.misc
     };
 
     builds.push({
-      dependencies: ["sdk"],
+      dependencies: [buildVariant.eweConfigName],
       mode: "development",
       entry: {
         unit: path.join(dirname, "test", "unit.js"),
         reload: path.join(dirname, "test", "reload-wrap.js")
       },
       output: {
-        path: path.resolve(dirname, "dist", `test-mv${manifestVersion}`),
+        path: path.resolve(dirname, "dist", buildVariant.outputPath),
         clean: true
       },
       optimization: {
@@ -145,7 +212,7 @@ export default (env = {}) => {
         new GenerateJsonPlugin("manifest.json", manifest, null, 2),
         new CopyPlugin({
           patterns: [
-            {from: "ewe-*", context: path.join(dirname, "dist")},
+            {from: "ewe-*", context: buildVariant.ewePath},
             {from: path.join(dirname, "test", "background.js")},
             {from: path.join(dirname, "test", "index.html")},
             {from: path.join(dirname, "test", "index-options.js")}

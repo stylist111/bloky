@@ -1,0 +1,11 @@
+[
+  {
+    "type": "test",
+    "languages": [
+      "test"
+    ],
+    "title": "TestSubscription",
+    "url": "TestUrl",
+    "homepage": "TestHomepage"
+  }
+]

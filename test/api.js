@@ -20,7 +20,8 @@ import expect from "expect";
 
 import {Page, Popup, setMinTimeout, wait, executeScript, isFirefox, isEdge,
         firefoxVersion, getVisibleElement, isMV3, TEST_PAGES_URL,
-        TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN} from "./utils.js";
+        TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN,
+        isCustomSubsExtension} from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, addFakeListener,
         removeFakeListeners, setTestSnippets}
   from "./messaging.js";
@@ -198,7 +199,10 @@ describe("API", () => {
         .toEqual([]);
     });
 
-    it("gets recommendations", async() => {
+    it("gets adblockpluscore recommendations", async function() {
+      if (isCustomSubsExtension())
+        this.skip();
+
       let result = await EWE.subscriptions.getRecommendations();
 
       expect(result).toEqual(expect.arrayContaining([
@@ -221,6 +225,23 @@ describe("API", () => {
         for (let language of item.languages)
           expect(language).toEqual(expect.any(String));
       }
+    });
+
+    it("gets custom recommendations", async function() {
+      if (!isCustomSubsExtension())
+        this.skip();
+
+      let result = await EWE.subscriptions.getRecommendations();
+
+      // keep in-sync with `test/custom-subscriptions.json`
+      expect(result).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          languages: ["test"],
+          title: "TestSubscription",
+          type: "test",
+          url: "TestUrl"
+        })
+      ]));
     });
 
     it("listens to onAdded events", async() => {
@@ -660,6 +681,9 @@ describe("API", () => {
       ["de", "https://easylist-downloads.adblockplus.org/easylistgermany+easylist.txt"]
     ]) {
       it(`configures default subscriptions for ${language}`, async function() {
+        if (isCustomSubsExtension())
+          this.skip();
+
         setMinTimeout(this, 3000);
 
         await browser.runtime.sendMessage(

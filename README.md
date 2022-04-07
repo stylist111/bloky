@@ -231,6 +231,7 @@ Once the extension is loaded, it opens the test suite in a new tab.
 Notes:
 - `test-mv2` contains a manifest version 2 extension, and `test-mv3`
 contains a manifest version 3 extension.
+- `test-mv2-custom` contains a manifest version 2 extension using custom (test) subscriptions.
 - For the popup tests to work, you have to disable the browser's
 built-in popup blocking (on `localhost`).
 
@@ -244,7 +245,7 @@ through the global `EWE` object.
 
 ### Using the test runner
 
-    npm test -- {v2|v3} {chromium|firefox|edge} [version|channel] [options]
+    npm test -- {v2|v3|v2-custom} {chromium|firefox|edge} [version|channel] [options]
 
 Runner [options](#test-options) need to be preceded by two dashes (`--`), for
 example `--timeout 10000`.
@@ -299,3 +300,35 @@ BROWSER argument:
 Checks that the bundled code can be imported and re-bundled
 
     npm run test-bundle
+
+### Custom subscriptions list
+
+The default provided subscriptions can be overridden by adding a file called `custom-subscriptions.json` in the root of
+this project's directory and then using the following command:
+`npm run subs-merge -- [-a] [-i ...] -o $(pwd)/custom-subscriptions.json` to merge the files.
+
+Note the following:
+* use `-a` argument to add the default subscriptions file to the list of input files if necessary
+* use `-i` argument to add a file to the list of input files if necessary
+* use absolute output file path (otherwise `node_modules/adblockpluscore` will be used as current dir)
+* one can use `$(pwd)` on nix-based environments or `../../custom-subscriptions.json` for convenience
+* `subs-merge` is a "forwarding" npm script that just calls according npm script from "adblockpluscore" dependency
+  using `--prefix` argument
+  
+Examples:
+
+* merge product-specific subscriptions file with default subscriptions:
+```
+    npm run subs-merge -- \
+        -a \
+        -i /tmp/product-subscriptions.json \
+        -o $(pwd)/custom-subscriptions.json
+```
+
+* merge two subscriptions files:
+```
+    npm run subs-merge -- \
+        -i /tmp/product-subscriptions.json \
+        -i /tmp/language_en-subscriptions.json \
+        -o $(pwd)/custom-subscriptions.json
+```

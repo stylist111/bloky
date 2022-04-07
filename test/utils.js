@@ -388,3 +388,8 @@ export function getVisibleElementInFrame(tabId, elemId, frameElementIds) {
 export function isMV3() {
   return typeof browser.declarativeNetRequest != "undefined";
 }
+
+export function isCustomSubsExtension() {
+  let manifest = browser.runtime.getManifest();
+  return manifest.description.endsWith("custom subscriptions");
+}

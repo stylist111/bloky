@@ -260,7 +260,7 @@ function parseArguments() {
   parser.version(false);
   parser.strict();
   parser.command("$0 <manifest> <browser> [version]", "", subparser => {
-    subparser.positional("manifest", {choices: ["v2", "v3"]});
+    subparser.positional("manifest", {choices: ["v2", "v3", "v2-custom"]});
     subparser.positional("browser", {choices: Object.keys(BROWSERS)});
     subparser.positional("version", {type: "string"});
   });
