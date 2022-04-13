@@ -293,7 +293,8 @@ export class Popup {
 }
 
 export function setMinTimeout(runnable, timeout) {
-  if (runnable.timeout() < timeout)
+  let currentTimeout = runnable.timeout();
+  if (currentTimeout < timeout && currentTimeout != 0)
     runnable.timeout(timeout);
 }
 
