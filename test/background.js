@@ -75,7 +75,10 @@ async function runOperations(operations) {
   return stack.pop();
 }
 
+let messages = [];
+
 function handleTestMessage(request, sender, sendResponse) {
+  messages.push({request, sender});
   switch (request.type) {
     case "ewe-test:run":
       runOperations(request.operations).then(
@@ -129,6 +132,17 @@ function handleTestMessage(request, sender, sendResponse) {
         }
       }
       chrome.tabs.onUpdated.addListener(listener);
+      return true;
+    }
+
+    case "ewe-test:getMessages": {
+      sendResponse(messages.map(arg => arg.request));
+      return true;
+    }
+
+    case "ewe-test:clearMessages": {
+      messages = [];
+      sendResponse({});
       return true;
     }
   }

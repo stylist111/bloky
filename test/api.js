@@ -1482,6 +1482,31 @@ describe("API", () => {
         );
       });
 
+      it("does not run content scripts in non-web page context", async() => {
+        await browser.runtime.sendMessage({type: "ewe-test:clearMessages"});
+        await new Page("about:blank", true).loaded;
+        await new Promise(r => setTimeout(r, 200));
+        let getMessage = {type: "ewe-test:getMessages"};
+        let messages = await browser.runtime.sendMessage(getMessage);
+        expect(messages).toEqual([
+          // no "ewe:content-hello" message sent from "about:blank" page
+          getMessage
+        ]);
+      });
+
+      it("receives ewe:content-hello message in background.js", async() => {
+        await browser.runtime.sendMessage({type: "ewe-test:clearMessages"});
+        await new Page("element-hiding.html").loaded;
+        await new Promise(r => setTimeout(r, 200));
+        let getMessage = {type: "ewe-test:getMessages"};
+        let messages = await browser.runtime.sendMessage(getMessage);
+        expect(messages).toEqual([
+          // "ewe:content-hello" message sent from non-"about:blank" pages
+          {type: "ewe:content-hello"},
+          getMessage
+        ]);
+      });
+
       it("logs element hiding filter for a given tab", async() => {
         let page = new Page("element-hiding.html");
         let tabId = await page.created;
