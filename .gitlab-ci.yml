@@ -40,6 +40,14 @@ build:
       - dist/package.json
     expire_in: 1 month
 
+audit:
+  stage: test
+  before_script:
+    - npm install
+  script:
+    - npm audit --production
+  allow_failure: true
+
 .test:
   stage: test
   before_script:
