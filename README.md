@@ -253,8 +253,8 @@ example `--timeout 10000`.
 Edge tests can be also performed on Docker, to achieve that run
 following commands:
 
-  docker build  --no-cache -t webext -f test/dockerfiles/Dockerfile .
-  docker run -it webext  
+    docker build  --no-cache -t webext -f test/dockerfiles/Dockerfile .
+    docker run -it webext  
 
 ### Building ABPUI extension and running testpages tests
 If there are no breaking changes in webext code, you will be able to build
