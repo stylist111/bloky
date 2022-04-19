@@ -22,8 +22,8 @@ import {Page, Resource, executeScript, wait, isMV3, setMinTimeout,
         TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, SITEKEY} from "./utils.js";
 import {addFilter, EWE} from "./messaging.js";
 
-describe("Blocking", () => {
-  it("blocks a request using user filters", async() => {
+describe("Blocking", function() {
+  it("blocks a request using user filters", async function() {
     await addFilter("/image.png^$image");
     await new Page("image.html").expectResource("image.png").toBeBlocked();
   });
@@ -42,7 +42,7 @@ describe("Blocking", () => {
     }, 500, "image.png was not blocked");
   });
 
-  it("does not block a request using a disabled filter", async() => {
+  it("does not block a request using a disabled filter", async function() {
     await addFilter("/image.png^$image");
     await EWE.filters.disable(["/image.png^$image"]);
     await new Page("image.html").expectResource("image.png").toBeLoaded();
@@ -57,13 +57,13 @@ describe("Blocking", () => {
     await new Page("image.html").expectResource("image.png").toBeBlocked();
   });
 
-  it("does not block an allowlisted request", async() => {
+  it("does not block an allowlisted request", async function() {
     await addFilter("/image.png^$image");
     await addFilter("@@/image.png^$image");
     await new Page("image.html").expectResource("image.png").toBeLoaded();
   });
 
-  it("handles rewritten srcdoc frames", async() => {
+  it("handles rewritten srcdoc frames", async function() {
     await addFilter(`|${TEST_PAGES_URL}/image.png^`);
     await new Page("srcdoc.html").expectResource("image.png").toBeBlocked();
     await addFilter(`@@|${TEST_PAGES_URL}/srcdoc.html^$document`);
@@ -82,7 +82,7 @@ describe("Blocking", () => {
     await new Resource("image.png").expectToBeLoaded();
   });
 
-  it("handles $rewrite requests", async() => {
+  it("handles $rewrite requests", async function() {
     await addFilter(
       `*.js$rewrite=abp-resource:blank-js,domain=${TEST_PAGES_DOMAIN}`);
     let tabId = await new Page("script.html").loaded;
@@ -91,63 +91,63 @@ describe("Blocking", () => {
     expect(result).toBeFalsy();
   });
 
-  it("blocks $domain requests", async() => {
+  it("blocks $domain requests", async function() {
     await addFilter(`/image.png$domain=${TEST_PAGES_DOMAIN}`);
     await new Page("image.html").expectResource("image.png").toBeBlocked();
   });
 
-  it("handles $match-case requests", async() => {
+  it("handles $match-case requests", async function() {
     await addFilter(`|${TEST_PAGES_URL}/IMAGE.png$match-case`);
     await new Page("image.html").expectResource("image.png").toBeLoaded();
     await addFilter(`|${TEST_PAGES_URL}/image.png$match-case`);
     await new Page("image.html").expectResource("image.png").toBeBlocked();
   });
 
-  it("blocks $other requests", async() => {
+  it("blocks $other requests", async function() {
     await addFilter(`$other,domain=${TEST_PAGES_DOMAIN}`);
     await new Page("other.html").expectResource("image.png").toBeBlocked();
   });
 
-  it("handles $third-party requests", async() => {
+  it("handles $third-party requests", async function() {
     await addFilter("image.png$third-party");
     let page = new Page("third-party.html");
     await page.expectResource(`${CROSS_DOMAIN_URL}/image.png`).toBeBlocked();
     await new Page("image.html").expectResource("image.png").toBeLoaded();
   });
 
-  it("handles $script requests", async() => {
+  it("handles $script requests", async function() {
     await addFilter(`|${TEST_PAGES_URL}/*.js$script`);
     await new Page("script.html").expectResource("script.js").toBeBlocked();
     await addFilter(`@@|${TEST_PAGES_URL}/script.js$script`);
     await new Page("script.html").expectResource("script.js").toBeLoaded();
   });
 
-  it("handles $stylesheet requests", async() => {
+  it("handles $stylesheet requests", async function() {
     await addFilter(`|${TEST_PAGES_URL}/*.css$stylesheet`);
     await new Page("style.html").expectResource("style.css").toBeBlocked();
     await addFilter(`@@|${TEST_PAGES_URL}/style.css$stylesheet`);
     await new Page("style.html").expectResource("style.css").toBeLoaded();
   });
 
-  it("handles $subdocument requests", async() => {
+  it("handles $subdocument requests", async function() {
     await addFilter(`|${TEST_PAGES_URL}/*.html$subdocument`);
     await new Page("iframe.html").expectResource("image.html").toBeBlocked();
     await addFilter(`@@|${TEST_PAGES_URL}/image.html$subdocument`);
     await new Page("iframe.html").expectResource("image.html").toBeLoaded();
   });
 
-  it("handles $genericblock requests", async() => {
+  it("handles $genericblock requests", async function() {
     await addFilter(`/image.png$domain=${TEST_PAGES_DOMAIN}`);
     await addFilter(`@@|${TEST_PAGES_URL}/*.html$genericblock`);
     await new Page("image.html").expectResource("image.png").toBeBlocked();
   });
 
-  it("blocks $ping requests", async() => {
+  it("blocks $ping requests", async function() {
     await addFilter(`|${TEST_PAGES_URL}/*^$ping`);
     await new Page("ping.html").expectResource("ping-handler").toBeBlocked();
   });
 
-  it("does not block allowlisted $ping requests", async() => {
+  it("does not block allowlisted $ping requests", async function() {
     await addFilter(`|${TEST_PAGES_URL}/*^$ping`);
     await addFilter(`@@|${TEST_PAGES_URL}/ping-handler^$ping`);
 
@@ -163,7 +163,7 @@ describe("Blocking", () => {
     }
   });
 
-  it("handles $websocket requests", async() => {
+  it("handles $websocket requests", async function() {
     let url = `ws://${TEST_PAGES_DOMAIN}:3001/`;
     await addFilter(`$websocket,domain=${TEST_PAGES_DOMAIN}`);
     await new Page("websocket.html").expectResource(url).toBeBlocked();
@@ -171,7 +171,7 @@ describe("Blocking", () => {
     await new Page("websocket.html").expectResource(url).toBeLoaded();
   });
 
-  it("handles $xmlhttprequest requests", async() => {
+  it("handles $xmlhttprequest requests", async function() {
     await addFilter(`|${TEST_PAGES_URL}/*.png$xmlhttprequest`);
     await new Page("fetch.html").expectResource("image.png").toBeBlocked();
     await addFilter(`@@|${TEST_PAGES_URL}/image.png$xmlhttprequest`);
@@ -186,17 +186,17 @@ describe("Blocking", () => {
     await fetch(`${TEST_PAGES_URL}/image.png`);
   });
 
-  it("does not block requests with no filters", async() => {
+  it("does not block requests with no filters", async function() {
     await new Page("image.html").expectResource("image.png").toBeLoaded();
   });
 
-  it("blocks requests after history.pushState", async() => {
+  it("blocks requests after history.pushState", async function() {
     await addFilter("/image.png^$image");
     await new Page("history.html").expectResource("image.png").toBeBlocked();
   });
 
   it("blocks requests after history.pushState with previous URL allowlisted",
-     async() => {
+     async function() {
        await addFilter(`@@|${TEST_PAGES_URL}/history.html^$document`);
        await addFilter("/image.png^$image");
        await new Page("history.html").expectResource("image.png").toBeBlocked();
@@ -220,91 +220,91 @@ describe("Blocking", () => {
       tabId, () => document.documentElement.dataset.violatedDirective);
   }
 
-  describe("Content-Security-Policy", () => {
+  describe("Content-Security-Policy", function() {
     it("injects header", async function() {
       setMinTimeout(this, 4000);
       await addFilter(CSP_FILTER);
       expect(await checkViolatedDirective()).toEqual("img-src");
     });
 
-    it("does not inject header for allowlisted requests", async() => {
+    it("does not inject header for allowlisted requests", async function() {
       await addFilter(CSP_FILTER);
       await addFilter(`@@|${TEST_PAGES_URL}/csp.html^$csp`);
       expect(await checkViolatedDirective()).toBeFalsy();
     });
 
     it("does not inject header for allowlisted requests by document",
-       async() => {
+       async function() {
          await addFilter(CSP_FILTER);
          await addFilter(`@@|${TEST_PAGES_URL}/csp.html^$document`);
          expect(await checkViolatedDirective()).toBeFalsy();
        });
   });
 
-  describe("Sitekey allowlisting", () => {
+  describe("Sitekey allowlisting", function() {
     before(function() {
       if (isMV3())
         this.skip();
     });
 
-    it("does not block a request", async() => {
+    it("does not block a request", async function() {
       await addFilter("/image.png^$image");
       await addFilter(`@@$sitekey=${SITEKEY}`);
       let page = new Page("image.html?sitekey=1");
       await page.expectResource("image.png").toBeLoaded();
     });
 
-    it("does not block a request from document", async() => {
+    it("does not block a request from document", async function() {
       await addFilter("/image.png^$image");
       await addFilter(`@@$document,sitekey=${SITEKEY}`);
       let page = new Page("image.html?sitekey=1");
       await page.expectResource("image.png").toBeLoaded();
     });
 
-    it("does not block a request from iframe", async() => {
+    it("does not block a request from iframe", async function() {
       await addFilter("/image.png^$image");
       await addFilter(`@@$document,sitekey=${SITEKEY}`);
       let page = new Page("iframe-sitekey.html");
       await page.expectResource("image.png").toBeLoaded();
     });
 
-    it("does not inject header", async() => {
+    it("does not inject header", async function() {
       await addFilter(CSP_FILTER);
       await addFilter(`@@$csp,sitekey=${SITEKEY}`);
       expect(await checkViolatedDirective("?sitekey=1")).toBeFalsy();
     });
   });
 
-  describe("Header-based filtering", () => {
+  describe("Header-based filtering", function() {
     before(function() {
       if (isMV3())
         this.skip();
     });
 
-    it("blocks a request", async() => {
+    it("blocks a request", async function() {
       await addFilter(`|${TEST_PAGES_URL}^$header=x-header=whatever`);
       await new Page("header.html").expectResource("image.png").toBeBlocked();
     });
 
-    it("does not block an allowlisted request", async() => {
+    it("does not block an allowlisted request", async function() {
       await addFilter(`|${TEST_PAGES_URL}^$header=x-header=whatever`);
       await addFilter(`@@|${TEST_PAGES_URL}/image.png^`);
       await new Page("header.html").expectResource("image.png").toBeLoaded();
     });
 
-    it("does not block a request allowlisted by header", async() => {
+    it("does not block a request allowlisted by header", async function() {
       await addFilter(`|${TEST_PAGES_URL}^$header=x-header=whatever`);
       await addFilter(`@@|${TEST_PAGES_URL}/image.png^$header`);
       await new Page("header.html").expectResource("image.png").toBeLoaded();
     });
 
-    it("only blocks specific content types", async() => {
+    it("only blocks specific content types", async function() {
       addFilter(`|${TEST_PAGES_URL}^$image,header=x-header=whatever`);
       await new Page("header.html").expectResource("image.png").toBeBlocked();
       await new Page("header.html").expectResource("script.js").toBeLoaded();
     });
 
-    it("does not block a request from allowlisted document", async() => {
+    it("does not block a request from allowlisted document", async function() {
       await addFilter(`|${TEST_PAGES_URL}^$header=x-header=whatever`);
       await addFilter(`@@|${TEST_PAGES_URL}^$document`);
       await new Page("header.html").expectResource("image.png").toBeLoaded();

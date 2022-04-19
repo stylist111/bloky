@@ -15,6 +15,8 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* eslint-disable mocha/no-top-level-hooks */
+
 import browser from "webextension-polyfill";
 import expect from "expect";
 
@@ -79,7 +81,7 @@ beforeEach(function() {
   };
 });
 
-afterEach(async() => {
+afterEach(async function() {
   await EWE.subscriptions.removeAll();
   await Page.removeCurrent();
   await Popup.removeCurrent();

@@ -41,7 +41,7 @@ let phase = start ? "preparation" : "check";
 describe(`Reload (${phase})`, function() {
   this.timeout(5000);
 
-  after(async() => {
+  after(async function() {
     if (start) {
       await browser.storage.local.set({"reload-test-running": true});
 
@@ -55,7 +55,7 @@ describe(`Reload (${phase})`, function() {
     await browser.storage.local.remove("reload-test-running");
   });
 
-  it("persists filter storage data", async() => {
+  it("persists filter storage data", async function() {
     if (start) {
       await addFilter(CONTENT_FILTER_TEXT);
       await wait(async() => {
@@ -74,7 +74,7 @@ describe(`Reload (${phase})`, function() {
     }
   });
 
-  it("blocks a request using stored filters", async() => {
+  it("blocks a request using stored filters", async function() {
     if (start) {
       await addFilter(IMAGE_FILTER_TEXT);
       if (!isMV3()) {
@@ -94,7 +94,7 @@ describe(`Reload (${phase})`, function() {
     }
   });
 
-  it("persists blocking filters state", async() => {
+  it("persists blocking filters state", async function() {
     if (start) {
       await addFilter(BLOCKING_FILTER_TEXT);
       if (!isMV3()) {
@@ -121,7 +121,7 @@ describe(`Reload (${phase})`, function() {
     }
   });
 
-  it("ignores file:/// entries in storage", async() => {
+  it("ignores file:/// entries in storage", async function() {
     if (start) {
       let randomKey = `file:///${new Date().getTime()}`;
       let saveData = {};

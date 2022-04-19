@@ -21,7 +21,7 @@ import {Page, clickElement, executeScript, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
         setMinTimeout} from "./utils.js";
 import {EWE, addFilter, addFakeListener} from "./messaging.js";
 
-describe("One Click Allowlisting", () => {
+describe("One Click Allowlisting", function() {
   let page;
   let expectImageResource;
   let tabId;
@@ -30,7 +30,7 @@ describe("One Click Allowlisting", () => {
   // eslint-disable-next-line max-len
   let publicKey = "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAorAkyGHnzZkVE0TGcU7Sl6/LlH9j3udDNvHv/fSzplLMdqkw0HZNV9zaBFQ0Rw73AJ7MQ8JQm2hex9DEss3xsrlpHEi/nC7C1authg1rt5Xo4K0P5Bo+j6y41UtgQoL9xKJ6RlYGBq4uBHaq/xRyp/7zUxOiViTdnVZRhSkmyBCIQ+5l8/mTk5yyMLfH7QM0KFKdJbnnTU8HEGzHaFi33vAwWPpJjCohYUzYxgXOgSZYV6xNPycQj4U/D4k+7UT+d4zzrj7fSz08/ijfHLB8G6dr1nx7+Pydt3ijhKEX2mKaAWgKtyM2wTgFXys4rnAbdr340FpQaVebNF0bwGsqluBNdvZ6fPgN9dLlpVDQKXlOKdfOyc64Yw82/jHKdYC7NO1bg13hqo7JWM10Gklt2FY5ekfDBZagPbYCH780C8w0aMceBs3NBTI6SAPI8xhyu7LwL7vw/vMwz8kfIsKOCPFqf0qPlvJCaryIAA7Ca6SHfBqaTzyivEEqn6tWphCpYSODfPRO4Udg+l/o/PCJuly41b4QF2x8H+LvJnr7HFknmFYwisbIofC/2ucO2sfJDP4EOHKeDV9mexHSJIfjyFYV0f0ALj1eKl9Viz37qLefzXFhTG4wzoK5F/QM1ZhIWjN+0DBn6GTQxuWc4eAuASoh07JG4M+i2rWcUTYvgOECAwEAAQ==";
 
-  beforeEach(async() => {
+  beforeEach(async function() {
     await EWE.allowlisting.setAuthorizedKeys([publicKey]);
     await addFilter(`|${TEST_PAGES_URL}$image`);
     page = new Page("one-click-allowlisting.html");
@@ -95,17 +95,17 @@ describe("One Click Allowlisting", () => {
     await expectImageResource.toBeBlocked();
   }
 
-  it("blocks before clicking allowlist", async() => {
+  it("blocks before clicking allowlist", async function() {
     await expectImageResource.toBeBlocked();
     expect(await getSuccessEventReceived()).toBeNull();
   });
 
-  it("unblocks when allowlist is clicked", async() => {
+  it("unblocks when allowlist is clicked", async function() {
     await clickAllowlistButton("allowlist");
     await expectSuccessfulAllowlist();
   });
 
-  it("blocks when the request comes from in an iframe", async() => {
+  it("blocks when the request comes from in an iframe", async function() {
     page = new Page("one-click-allowlisting-iframe.html");
     expectImageResource = page.expectResource("image.png");
     tabId = await page.loaded;
@@ -141,7 +141,7 @@ describe("One Click Allowlisting", () => {
     }]]);
   });
 
-  it("unblocks if only the page was previously allowlisted", async() => {
+  it("unblocks if only the page was previously allowlisted", async function() {
     await addFilter(
       `@@|${TEST_PAGES_URL}/one-click-allowlisting.html$document`
     );
@@ -152,24 +152,24 @@ describe("One Click Allowlisting", () => {
     await expectSuccessfulAllowlist();
   });
 
-  describe("Invalid signature", () => {
-    it("blocks when signature key is invalid", async() => {
+  describe("Invalid signature", function() {
+    it("blocks when signature key is invalid", async function() {
       await EWE.allowlisting.setAuthorizedKeys([]);
       await clickAllowlistButton("allowlist");
       await expectUnsuccessfulAllowlist("invalid_signature");
     });
 
-    it("blocks when signature timestamp is too long ago", async() => {
+    it("blocks when signature timestamp is too long ago", async function() {
       await clickAllowlistButton("allowlist_old_timestamp");
       await expectUnsuccessfulAllowlist("invalid_timestamp");
     });
 
-    it("blocks when signature timestamp is in the future", async() => {
+    it("blocks when signature timestamp is in the future", async function() {
       await clickAllowlistButton("allowlist_future_timestamp");
       await expectUnsuccessfulAllowlist("invalid_timestamp");
     });
 
-    it("blocks when signature timestamp is not a number", async() => {
+    it("blocks when signature timestamp is not a number", async function() {
       await clickAllowlistButton("allowlist_nonsense_timestamp");
       await expectUnsuccessfulAllowlist("invalid_timestamp", {
         domain: "localhost",
@@ -178,7 +178,7 @@ describe("One Click Allowlisting", () => {
       });
     });
 
-    it("blocks when signature domain is invalid", async() => {
+    it("blocks when signature domain is invalid", async function() {
       await clickAllowlistButton("allowlist_different_domain");
       await expectUnsuccessfulAllowlist("invalid_signature");
       // this test tries to add a filter for example.com, so we want to
@@ -189,7 +189,7 @@ describe("One Click Allowlisting", () => {
     });
   });
 
-  describe("Malicious publisher script protection", () => {
+  describe("Malicious publisher script protection", function() {
     async function getEventHandlerDetected() {
       return await executeScript(
         tabId,
@@ -210,7 +210,7 @@ describe("One Click Allowlisting", () => {
       "malicious_custom_event_prototype",
       "malicious_proxy_object"
     ]) {
-      it(`can't detect handler with untrusted event using ${link}`, async() => {
+      it(`can't detect handler with untrusted event using ${link}`, async function() {
         await clickAllowlistButton(link);
         expect(await getEventHandlerDetected()).toBeNull();
       });
@@ -219,14 +219,14 @@ describe("One Click Allowlisting", () => {
     // Without the DOS protection code, this test doesn't fail
     // normally. It locks up the background script, and can end up
     // timing out the rest of the tests.
-    it("does not break with many allowlisting requests", async() => {
+    it("does not break with many allowlisting requests", async function() {
       await clickAllowlistButton("malicious_dos_attempt");
       let userFilters = await EWE.filters.getUserFilters();
       let userFilterTexts = userFilters.map(f => f.text);
       expect(userFilterTexts).toEqual([`|${TEST_PAGES_URL}$image`]);
     });
 
-    it("does not break with many valid allowlisting requests", async() => {
+    it("does not break with many valid allowlisting requests", async function() {
       await clickAllowlistButton("malicious_dos_attempt_valid_signature");
       let userFilters = await EWE.filters.getUserFilters();
       let userFilterTexts = userFilters.map(f => f.text);

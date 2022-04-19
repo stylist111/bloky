@@ -1,11 +1,15 @@
 {
-  "extends": "eslint-config-eyeo",
+  "extends": [
+    "eslint-config-eyeo",
+    "plugin:mocha/recommended"
+  ],
   "root": true,
   "env": {
     "es2021": true
   },
   "plugins": [
-    "eslint-plugin-html"
+    "eslint-plugin-html",
+    "mocha"
   ],
   "rules": {
     "brace-style": ["error", "stroustrup"],
@@ -19,9 +23,15 @@
       {
         "ignoreUrls": true,
         "ignoreRegExpLiterals": true,
+        "ignoreStrings": true,
+        "ignoreTemplateLiterals": true,
         "ignorePattern": "abp:subscribe"
       }
-    ]
+    ],
+    "prefer-arrow-callback": "off",
+    "mocha/prefer-arrow-callback": "error",
+    "mocha/max-top-level-suites": "off",
+    "mocha/no-setup-in-describe": "off"
   },
   "parserOptions": {
     "sourceType": "module",

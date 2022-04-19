@@ -22,7 +22,7 @@ import {Page, waitForInvisibleElement, executeScript, setMinTimeout, wait,
         firefoxVersion, TEST_PAGES_DOMAIN, TEST_PAGES_URL} from "./utils.js";
 import {addFilter, EWE, setTestSnippets} from "./messaging.js";
 
-describe("Element Hiding", () => {
+describe("Element Hiding", function() {
   async function getElemHideElement(id) {
     let tabId = await new Page("element-hiding.html").loaded;
     // hiding elements may take a few ms on CI
@@ -37,12 +37,12 @@ describe("Element Hiding", () => {
     return await getVisibleElementInFrame(tabId, id, [frameId]);
   }
 
-  it("hides an element", async() => {
+  it("hides an element", async function() {
     await addFilter("###elem-hide");
     expect(await getElemHideElement("elem-hide")).toBeNull();
   });
 
-  it("hides an element after service worker is suspended", async() => {
+  it("hides an element after service worker is suspended", async function() {
     await addFilter("###elem-hide");
     await EWE.debugging.initializerStop();
     expect(await getElemHideElement("elem-hide")).toBeNull();
@@ -80,13 +80,13 @@ describe("Element Hiding", () => {
     });
   }
 
-  it("does not hide elements in document allowlisted by $elemhide", async() => {
+  it("does not hide elements in document allowlisted by $elemhide", async function() {
     await addFilter("###elem-hide");
     await addFilter(`@@|${TEST_PAGES_URL}/*.html$elemhide`);
     expect(await getElemHideElement("elem-hide")).not.toBeNull();
   });
 
-  it("does not hide elements in document allowlisted for domain", async() => {
+  it("does not hide elements in document allowlisted for domain", async function() {
     await addFilter("###elem-hide");
     await addFilter(
       `@@|${TEST_PAGES_URL}/*.html$elemhide,domain=${TEST_PAGES_DOMAIN}`);
@@ -94,7 +94,7 @@ describe("Element Hiding", () => {
   });
 
   it("does not hide elements through generic filter " +
-     "in documents allowlisted by $generichide", async() => {
+     "in documents allowlisted by $generichide", async function() {
     await addFilter("###elem-hide");
     await addFilter(`${TEST_PAGES_DOMAIN}###elem-hide-specific`);
     await addFilter(`@@|${TEST_PAGES_URL}$generichide`);
@@ -105,8 +105,8 @@ describe("Element Hiding", () => {
     expect(await getVisibleElement(tabId, "elem-hide-specific")).toBeNull();
   });
 
-  describe("Element Hiding Emulation", async() => {
-    it("hides abp-properties elements", async() => {
+  describe("Element Hiding Emulation", function() {
+    it("hides abp-properties elements", async function() {
       await addFilter(
         `${TEST_PAGES_DOMAIN}#?#div:-abp-properties(background-color: red)`);
       expect(await getElemHideElement("elem-hide-emulation-props")).toBeNull();
@@ -152,13 +152,13 @@ describe("Element Hiding", () => {
       }, 4000, "Element is visible");
     });
 
-    it("hides abp-has elements", async() => {
+    it("hides abp-has elements", async function() {
       await addFilter(
         `${TEST_PAGES_DOMAIN}#?#div:-abp-has(>span#elem-hide-emulation-has)`);
       expect(await getElemHideElement("elem-hide-emulation-has")).toBeNull();
     });
 
-    it("hides abp-contains elements", async() => {
+    it("hides abp-contains elements", async function() {
       await addFilter(`${TEST_PAGES_DOMAIN}#?#span` +
         ":-abp-contains(elem-hide-emulation-contain-target)");
       expect(await getElemHideElement("elem-hide-emulation-contain"))
@@ -166,8 +166,8 @@ describe("Element Hiding", () => {
     });
   });
 
-  describe("Element collapsing", async() => {
-    it("hides the img element of a blocked request", async() => {
+  describe("Element collapsing", function() {
+    it("hides the img element of a blocked request", async function() {
       await addFilter("/image.png^$image");
 
       let forceBg = isFirefox() && firefoxVersion() >= 97;
@@ -197,11 +197,15 @@ describe("Element Hiding", () => {
   });
 });
 
-describe("Snippets", () => {
+describe("Snippets", function() {
   let snippet = "do";
 
-  before(() => setTestSnippets(snippet));
-  after(() => setTestSnippets(null));
+  before(async function() {
+    await setTestSnippets(snippet);
+  });
+  after(async function() {
+    await setTestSnippets(null);
+  });
 
   it("applies a snippet", async function() {
     if (isMV3())

@@ -65,14 +65,14 @@ const INVALID_FILTER_TEXT = "/foo/$rewrite=";
 const ADDON_NAME = "foo";
 const ADDON_VERSION = "2.1";
 
-describe("API", () => {
-  describe("Subscriptions", () => {
+describe("API", function() {
+  describe("Subscriptions", function() {
     before(function() {
       if (isMV3())
         this.skip();
     });
 
-    it("adds a subscription", async() => {
+    it("adds a subscription", async function() {
       await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
 
       let subs = await EWE.subscriptions.getDownloadable();
@@ -85,7 +85,7 @@ describe("API", () => {
       })]);
     });
 
-    it("adds a subscription with properties", async() => {
+    it("adds a subscription with properties", async function() {
       let title = "testTitle";
       let homepage = "testHomePage";
 
@@ -102,12 +102,12 @@ describe("API", () => {
       })]);
     });
 
-    it("does not add an invalid subscription", () =>
+    it("does not add an invalid subscription", function() {
       expect(EWE.subscriptions.add(INVALID_SUBSCRIPTION_URL))
-        .rejects.toThrow("Error: Invalid subscription URL provided: invalidUrl")
-    );
+        .rejects.toThrow("Error: Invalid subscription URL provided: invalidUrl");
+    });
 
-    it("adds multiple subscriptions", async() => {
+    it("adds multiple subscriptions", async function() {
       await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
       await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL + "?2");
 
@@ -118,14 +118,14 @@ describe("API", () => {
       ]);
     });
 
-    it("gets subscriptions for a filter", async() => {
+    it("gets subscriptions for a filter", async function() {
       await addFilter(VALID_FILTER_TEXT);
       expect(await EWE.subscriptions.getForFilter(VALID_FILTER_TEXT)).toEqual([
         expect.objectContaining({downloadable: false})
       ]);
     });
 
-    it("gets filters from a subscription", async() => {
+    it("gets filters from a subscription", async function() {
       expect(await EWE.subscriptions.getFilters(
         VALID_SUBSCRIPTION_URL)).toEqual([]);
 
@@ -142,14 +142,14 @@ describe("API", () => {
       )]));
     });
 
-    it("checks if a subscription has been added", async() => {
+    it("checks if a subscription has been added", async function() {
       expect(await EWE.subscriptions.has(VALID_SUBSCRIPTION_URL)).toBe(false);
 
       await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
       expect(await EWE.subscriptions.has(VALID_SUBSCRIPTION_URL)).toBe(true);
     });
 
-    it("disables an existing subscription", async() => {
+    it("disables an existing subscription", async function() {
       await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
       await EWE.subscriptions.disable(VALID_SUBSCRIPTION_URL);
 
@@ -160,7 +160,7 @@ describe("API", () => {
       })]);
     });
 
-    it("enables an existing subscription", async() => {
+    it("enables an existing subscription", async function() {
       await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
       await EWE.subscriptions.disable(VALID_SUBSCRIPTION_URL);
       await EWE.subscriptions.enable(VALID_SUBSCRIPTION_URL);
@@ -172,7 +172,7 @@ describe("API", () => {
       })]);
     });
 
-    it("enables a subscription that is already enabled.", async() => {
+    it("enables a subscription that is already enabled.", async function() {
       await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
       await EWE.subscriptions.enable(VALID_SUBSCRIPTION_URL);
 
@@ -183,7 +183,7 @@ describe("API", () => {
       })]);
     });
 
-    it("fails enabling/disabling a nonexistent subscription", async() => {
+    it("fails enabling/disabling a nonexistent subscription", async function() {
       let errorMessage = "Error: Subscription does not exist: DoesNotExist";
       await expect(EWE.subscriptions.enable("DoesNotExist"))
         .rejects.toThrow(errorMessage);
@@ -191,7 +191,7 @@ describe("API", () => {
         .rejects.toThrow(errorMessage);
     });
 
-    it("removes a subscription", async() => {
+    it("removes a subscription", async function() {
       await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
       await EWE.subscriptions.remove(VALID_SUBSCRIPTION_URL);
 
@@ -244,7 +244,7 @@ describe("API", () => {
       ]));
     });
 
-    it("listens to onAdded events", async() => {
+    it("listens to onAdded events", async function() {
       let fake = await addFakeListener({namespace: "subscriptions",
                                         eventName: "onAdded"});
       await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
@@ -257,7 +257,7 @@ describe("API", () => {
       }));
     });
 
-    it("listens to onChanged events", async() => {
+    it("listens to onChanged events", async function() {
       await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
 
       let fake = await addFakeListener({namespace: "subscriptions",
@@ -271,7 +271,7 @@ describe("API", () => {
       expect(fake.lastArg).toEqual("enabled");
     });
 
-    it("listens to onRemoved events", async() => {
+    it("listens to onRemoved events", async function() {
       let fake = await addFakeListener({namespace: "subscriptions",
                                         eventName: "onRemoved"});
       await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
@@ -345,14 +345,14 @@ describe("API", () => {
     });
   });
 
-  describe("Filters", () => {
-    it("adds a single filter", async() => {
+  describe("Filters", function() {
+    it("adds a single filter", async function() {
       await addFilter(VALID_FILTER_TEXT);
       expect(await EWE.filters.getUserFilters())
         .toEqual([VALID_FILTER]);
     });
 
-    it("adds multiple filters", async() => {
+    it("adds multiple filters", async function() {
       await EWE.filters.add([VALID_FILTER_TEXT, SECOND_VALID_FILTER_TEXT]);
       expect(await EWE.filters.getUserFilters()).toEqual([
         VALID_FILTER,
@@ -360,16 +360,17 @@ describe("API", () => {
       ]);
     });
 
-    it("adds comment filter", async() => {
+    it("adds comment filter", async function() {
       await EWE.filters.add([COMMENT_FILTER_TEXT]);
       expect(await EWE.filters.getUserFilters()).toEqual([COMMENT_FILTER]);
     });
 
-    it("does not add invalid filters", async() =>
-      expect(addFilter(INVALID_FILTER_TEXT)).rejects.toThrow("FilterError")
+    it("does not add invalid filters", async function() {
+      return expect(addFilter(INVALID_FILTER_TEXT)).rejects.toThrow("FilterError");
+    }
     );
 
-    it("disables existing filters", async() => {
+    it("disables existing filters", async function() {
       await addFilter(VALID_FILTER_TEXT);
       await addFilter(SECOND_VALID_FILTER_TEXT);
 
@@ -380,7 +381,7 @@ describe("API", () => {
                   {...SECOND_VALID_FILTER, enabled: false}]);
     });
 
-    it("enables existing filters", async() => {
+    it("enables existing filters", async function() {
       await addFilter(VALID_FILTER_TEXT);
       await addFilter(SECOND_VALID_FILTER_TEXT);
 
@@ -391,7 +392,7 @@ describe("API", () => {
         .toEqual([VALID_FILTER, SECOND_VALID_FILTER]);
     });
 
-    it("enables a filter that is already enabled", async() => {
+    it("enables a filter that is already enabled", async function() {
       await addFilter(VALID_FILTER_TEXT);
       await EWE.filters.enable([VALID_FILTER_TEXT]);
 
@@ -399,18 +400,18 @@ describe("API", () => {
         .toEqual([VALID_FILTER]);
     });
 
-    it("does not enable nor add an unexisting filter", async() => {
+    it("does not enable nor add an unexisting filter", async function() {
       await EWE.filters.enable([VALID_FILTER_TEXT]);
       expect(await EWE.filters.getUserFilters()).toEqual([]);
     });
 
-    it("removes a single filter", async() => {
+    it("removes a single filter", async function() {
       await addFilter(VALID_FILTER_TEXT);
       await EWE.filters.remove([VALID_FILTER_TEXT]);
       expect(await EWE.filters.getUserFilters()).toEqual([]);
     });
 
-    it("normalizes a filter internally", async() => {
+    it("normalizes a filter internally", async function() {
       await addFilter(VALID_FILTER_TEXT);
 
       let PADDED_FILTER_TEXT = " " + VALID_FILTER_TEXT;
@@ -430,25 +431,25 @@ describe("API", () => {
       expect(await EWE.filters.getUserFilters()).toEqual([]);
     });
 
-    it("validates a valid filter", async() => {
+    it("validates a valid filter", async function() {
       expect(await EWE.filters.validate(VALID_FILTER_TEXT))
         .toBeNull();
     });
 
-    it("validates a filter with unknown option", async() => {
+    it("validates a filter with unknown option", async function() {
       let result = await EWE.filters.validate("@@||example.com^$foo");
       expect(result).toEqual("FilterError: {\"type\":\"invalid_filter\"," +
                              "\"reason\":\"filter_unknown_option\"," +
                              "\"option\":\"foo\"}");
     });
 
-    it("validates a filter with an invalid domain", async() => {
+    it("validates a filter with an invalid domain", async function() {
       let result = await EWE.filters.validate("/image.png$domain=http://foo");
       // eslint-disable-next-line max-len
       expect(result).toEqual("FilterError: {\"type\":\"invalid_domain\",\"reason\":\"http://foo\",\"option\":null}");
     });
 
-    it("produces the correct slow state for a URL filter", async() => {
+    it("produces the correct slow state for a URL filter", async function() {
       await addFilter("example##.site-panel");
 
       expect(await EWE.filters.getUserFilters()).toEqual([
@@ -456,7 +457,7 @@ describe("API", () => {
       ]);
     });
 
-    it("has a selector property", async() => {
+    it("has a selector property", async function() {
       await addFilter("example##.site-panel");
 
       expect(await EWE.filters.getUserFilters()).toEqual([
@@ -464,7 +465,7 @@ describe("API", () => {
       ]);
     });
 
-    it("has a csp property", async() => {
+    it("has a csp property", async function() {
       await addFilter(`|${TEST_PAGES_URL}$csp=img-src 'none'`);
 
       expect(await EWE.filters.getUserFilters()).toEqual([
@@ -472,7 +473,7 @@ describe("API", () => {
       ]);
     });
 
-    it("listens to onAdded events", async() => {
+    it("listens to onAdded events", async function() {
       let fake = await addFakeListener({namespace: "filters",
                                         eventName: "onAdded"});
       await addFilter(VALID_FILTER_TEXT);
@@ -481,7 +482,7 @@ describe("API", () => {
       expect(fake.firstArg).toEqual(VALID_FILTER);
     });
 
-    it("listens to onChanged events", async() => {
+    it("listens to onChanged events", async function() {
       let fake = await addFakeListener({namespace: "filters",
                                         eventName: "onChanged"});
       await addFilter(VALID_FILTER_TEXT);
@@ -495,7 +496,7 @@ describe("API", () => {
       await EWE.filters.enable([VALID_FILTER_TEXT]);
     });
 
-    it("listens to onRemoved events", async() => {
+    it("listens to onRemoved events", async function() {
       let fake = await addFakeListener({namespace: "filters",
                                         eventName: "onRemoved"});
       await addFilter(VALID_FILTER_TEXT);
@@ -505,13 +506,13 @@ describe("API", () => {
       expect(fake.firstArg).toEqual(VALID_FILTER);
     });
 
-    describe("Allowlisting", () => {
+    describe("Allowlisting", function() {
       const ALLOWING_IMAGE_DOC_FILTER =
         `@@|${TEST_PAGES_URL}/image.html^$document`;
       const ALLOWING_IFRAME_DOC_FILTER =
         `@@|${TEST_PAGES_URL}/iframe.html^$document`;
 
-      it("returns filters for allowlisted tabs", async() => {
+      it("returns filters for allowlisted tabs", async function() {
         await addFilter(`|${TEST_PAGES_URL}/image.png^`);
         await addFilter(ALLOWING_IMAGE_DOC_FILTER);
 
@@ -520,7 +521,7 @@ describe("API", () => {
           .toEqual([ALLOWING_IMAGE_DOC_FILTER]);
       });
 
-      it("returns filters for allowlisted tabs after page load", async() => {
+      it("returns filters for allowlisted tabs after page load", async function() {
         let tabId = await new Page("image.html").loaded;
 
         await addFilter(`|${TEST_PAGES_URL}/image.png^`);
@@ -536,7 +537,7 @@ describe("API", () => {
         return {tabId, frameId};
       }
 
-      it("returns filters for allowlisted frames", async() => {
+      it("returns filters for allowlisted frames", async function() {
         await addFilter(ALLOWING_IMAGE_DOC_FILTER);
 
         let {tabId, frameId} = await loadTabWithFrame();
@@ -555,7 +556,7 @@ describe("API", () => {
           .toEqual([ALLOWING_IFRAME_DOC_FILTER]);
       });
 
-      it("returns filters for allowlisted parent frames", async() => {
+      it("returns filters for allowlisted parent frames", async function() {
         let {tabId, frameId} = await loadTabWithFrame();
 
         await addFilter(ALLOWING_IFRAME_DOC_FILTER);
@@ -563,7 +564,7 @@ describe("API", () => {
           .toEqual([ALLOWING_IFRAME_DOC_FILTER]);
       });
 
-      it("returns element-hiding filters for allowlisted tabs", async() => {
+      it("returns element-hiding filters for allowlisted tabs", async function() {
         let filter = `@@|${TEST_PAGES_URL}/*.html$elemhide`;
 
         await addFilter(ALLOWING_IMAGE_DOC_FILTER);
@@ -575,13 +576,13 @@ describe("API", () => {
           .toEqual([filter]);
       });
 
-      it("doesn't return filters for non-allowlisted tabs", async() => {
+      it("doesn't return filters for non-allowlisted tabs", async function() {
         let tabId = await new Page("image.html").loaded;
         expect(await EWE.filters.getAllowingFilters(tabId))
           .toEqual([]);
       });
 
-      it("doesn't return filters for non-allowlisted frames", async() => {
+      it("doesn't return filters for non-allowlisted frames", async function() {
         let {tabId, frameId} = await loadTabWithFrame();
         expect(await EWE.filters.getAllowingFilters(
           tabId, {frameId})).toEqual([]);
@@ -589,13 +590,13 @@ describe("API", () => {
           .toEqual([]);
       });
 
-      it("handles empty tabs", async() => {
+      it("handles empty tabs", async function() {
         let tabId = await new Page("about:blank", true).loaded;
         expect(await EWE.filters.getAllowingFilters(tabId))
           .toEqual([]);
       });
 
-      it("returns whether a resource is allowlisted", async() => {
+      it("returns whether a resource is allowlisted", async function() {
         await addFilter("@@*$image");
 
         let tabId = await new Page("image.html").loaded;
@@ -603,7 +604,7 @@ describe("API", () => {
           `${TEST_PAGES_URL}/image.png`, "image", tabId)).toEqual(true);
       });
 
-      it("returns whether a frame resource is allowlisted", async() => {
+      it("returns whether a frame resource is allowlisted", async function() {
         await addFilter(`@@||${TEST_PAGES_DOMAIN}^$document`);
 
         let {tabId, frameId} = await loadTabWithFrame();
@@ -615,7 +616,7 @@ describe("API", () => {
           url, "document", tabId, frameId)).toEqual(true);
       });
 
-      it("returns whether a cross domain resource is allowlisted", async() => {
+      it("returns whether a cross domain resource is allowlisted", async function() {
         await addFilter(`@@*$image,domain=${CROSS_DOMAIN}`);
 
         let {tabId, frameId} =
@@ -628,7 +629,7 @@ describe("API", () => {
           url, "image", tabId, frameId)).toEqual(true);
       });
 
-      it("returns whether a resource is allowlisted by $document", async() => {
+      it("returns whether a resource is allowlisted by $document", async function() {
         await addFilter(`@@|${TEST_PAGES_URL}/iframe.html^$document`);
 
         let {tabId, frameId} = await loadTabWithFrame();
@@ -640,7 +641,7 @@ describe("API", () => {
           url, "image", tabId, frameId)).toEqual(true);
       });
 
-      it("returns whether a resource is allowlisted by $elemhide", async() => {
+      it("returns whether a resource is allowlisted by $elemhide", async function() {
         let url = `${TEST_PAGES_URL}/iframe-elemhide.html`;
         await addFilter(`@@|${url}^$elemhide`);
 
@@ -652,7 +653,7 @@ describe("API", () => {
           url, "elemhide", tabId, frameId)).toEqual(true);
       });
 
-      it("handles new tab allowlisting listener", async() => {
+      it("handles new tab allowlisting listener", async function() {
         let isNewTabAllowlisted = browser.runtime.sendMessage(
           {type: "ewe-test:isNewTabAllowlisted"});
 
@@ -670,8 +671,8 @@ describe("API", () => {
     });
   });
 
-  describe("Initialization", () => {
-    after(async() => {
+  describe("Initialization", function() {
+    after(async function() {
       await browser.runtime.sendMessage(
         {type: "ewe-test:deleteUiLanguageOverride"});
     });
@@ -708,7 +709,7 @@ describe("API", () => {
       });
     }
 
-    it("informs when the filter engine runs for the first time", async() => {
+    it("informs when the filter engine runs for the first time", async function() {
       let result = await runInBackgroundPage([
         {op: "getGlobal", arg: "EWE"},
         {op: "callMethod", arg: "start"},
@@ -734,7 +735,7 @@ describe("API", () => {
         .resolves.not.toThrow();
     });
 
-    it("starts with default addon info", async() => {
+    it("starts with default addon info", async function() {
       let manifest = browser.runtime.getManifest();
 
       await runInBackgroundPage([
@@ -759,7 +760,7 @@ describe("API", () => {
 
     it(
       "starts with the addon info provided by the initial start call",
-      async() => {
+      async function() {
         await runInBackgroundPage([
           {op: "getGlobal", arg: "EWE"},
           {op: "pushArg", arg: {name: ADDON_NAME, version: ADDON_VERSION}},
@@ -780,7 +781,7 @@ describe("API", () => {
     );
   });
 
-  describe("Reporting", () => {
+  describe("Reporting", function() {
     let defaultEventOptions = {};
     let allowingEventOptions = {filterType: "allowing"};
     let elemhideEventOptions = {includeElementHiding: true};
@@ -791,7 +792,7 @@ describe("API", () => {
       filterType: "all"
     };
 
-    it("exposes a mapping between content types and ResourceTypes", async() => {
+    it("exposes a mapping between content types and ResourceTypes", async function() {
       let expected = {
         other: "other",
         script: "script",
@@ -832,8 +833,8 @@ describe("API", () => {
       expect(JSON.parse(result)).toEqual(expected);
     });
 
-    describe("Analytics", () => {
-      it("gets the first version", async() => {
+    describe("Analytics", function() {
+      it("gets the first version", async function() {
         let today = new Date().toISOString().substring(0, 10).replace(/-/g, "");
 
         await wait(
@@ -1028,7 +1029,7 @@ describe("API", () => {
         await expectLoggedMessages(getReceivedEvents, expectedLogs);
       }
 
-      it("it does not log removed items", async() => {
+      it("it does not log removed items", async function() {
         let fake = await addFakeListener({namespace: "reporting",
                                           eventName: "onBlockableItem"});
 
@@ -1043,7 +1044,7 @@ describe("API", () => {
         expect(fake.callCount).toEqual(callCount);
       });
 
-      it("logs blocking request filter", async() => {
+      it("logs blocking request filter", async function() {
         await checkLogging(
           ["/image.png^$image"],
           allEventOptions,
@@ -1059,7 +1060,7 @@ describe("API", () => {
           }]);
       });
 
-      it("logs allowlisting request filter", async() => {
+      it("logs allowlisting request filter", async function() {
         await checkLogging(
           ["/image.png^$image", `@@|${TEST_PAGES_URL}$image`],
           allEventOptions,
@@ -1076,7 +1077,7 @@ describe("API", () => {
         );
       });
 
-      it("logs third-party requests", async() => {
+      it("logs third-party requests", async function() {
         await checkLogging(
           ["/image.png$third-party"],
           allEventOptions,
@@ -1093,7 +1094,7 @@ describe("API", () => {
         );
       });
 
-      it("logs rewrite filter", async() => {
+      it("logs rewrite filter", async function() {
         await checkLogging(
           ["*.js$rewrite=abp-resource:blank-js,domain=localhost"],
           allEventOptions,
@@ -1111,7 +1112,7 @@ describe("API", () => {
           }]);
       });
 
-      it("logs unmatched for invalid rewrite filter", async() => {
+      it("logs unmatched for invalid rewrite filter", async function() {
         // At time of writing, rewrite filters are not allowed to
         // redirect to arbitrary resources. It's only ever data urls
         // defined in core. This means when we redirect, we don't have
@@ -1136,7 +1137,7 @@ describe("API", () => {
           }]);
       });
 
-      it("logs blocking $header filter", async() => {
+      it("logs blocking $header filter", async function() {
         await checkLogging(
           [`|${TEST_PAGES_URL}$header=x-header=whatever`],
           allEventOptions,
@@ -1164,7 +1165,7 @@ describe("API", () => {
           }]);
       });
 
-      it("logs allowlisting $header filter", async() => {
+      it("logs allowlisting $header filter", async function() {
         await checkLogging(
           [
             `|${TEST_PAGES_URL}$header=x-header=whatever`,
@@ -1195,7 +1196,7 @@ describe("API", () => {
           }]);
       });
 
-      it("logs $header filter allowlisted by non-header filter", async() => {
+      it("logs $header filter allowlisted by non-header filter", async function() {
         await checkLogging(
           [
             `|${TEST_PAGES_URL}$header=x-header=whatever`,
@@ -1222,7 +1223,7 @@ describe("API", () => {
           }]);
       });
 
-      it("logs blocking $csp filter", async() => {
+      it("logs blocking $csp filter", async function() {
         await checkLogging(
           [`|${TEST_PAGES_URL}$csp=img-src 'none'`],
           allEventOptions,
@@ -1236,7 +1237,7 @@ describe("API", () => {
           }]);
       });
 
-      it("logs allowlisting $csp filter", async() => {
+      it("logs allowlisting $csp filter", async function() {
         await checkLogging(
           [`|${TEST_PAGES_URL}$csp=img-src 'none'`, `@@|${TEST_PAGES_URL}$csp`],
           allEventOptions,
@@ -1252,7 +1253,7 @@ describe("API", () => {
           }]);
       });
 
-      it("logs allowlisting $document filter", async() => {
+      it("logs allowlisting $document filter", async function() {
         await checkLogging(
           [`@@|${TEST_PAGES_URL}$document`],
           allEventOptions,
@@ -1284,7 +1285,7 @@ describe("API", () => {
       });
 
       it("logs allowlisting $document filter " +
-         "after cross domain navigation", async() => {
+         "after cross domain navigation", async function() {
         let fake = await addFakeListener({namespace: "reporting",
                                           eventName: "onBlockableItem",
                                           eventOptions: allEventOptions});
@@ -1357,7 +1358,7 @@ describe("API", () => {
       });
 
       for (let option of ["$elemhide", "$genericblock", "$generichide"]) {
-        it(`logs allowlisting ${option} filter`, async() => {
+        it(`logs allowlisting ${option} filter`, async function() {
           let specificOnly = option == "$genericblock";
           await checkLogging(
             [`@@|${TEST_PAGES_URL}${option}`],
@@ -1390,7 +1391,7 @@ describe("API", () => {
         });
       }
 
-      it("logs allowlisting for different domain iframe", async() => {
+      it("logs allowlisting for different domain iframe", async function() {
         let expectedEvents = [{
           filter: expectedAllowingFilter(
             `@@|${TEST_PAGES_URL}/image.html^$document`
@@ -1438,7 +1439,7 @@ describe("API", () => {
         );
       });
 
-      it("logs allowlisting with $document filter", async() => {
+      it("logs allowlisting with $document filter", async function() {
         await checkLogging(
           [`@@${TEST_PAGES_URL}/image.html$document`],
           allowingEventOptions,
@@ -1469,7 +1470,7 @@ describe("API", () => {
         );
       });
 
-      it("logs element hiding filter", async() => {
+      it("logs element hiding filter", async function() {
         await checkLogging(
           ["###elem-hide"],
           elemhideEventOptions,
@@ -1482,7 +1483,7 @@ describe("API", () => {
         );
       });
 
-      it("does not run content scripts in non-web page context", async() => {
+      it("does not run content scripts in non-web page context", async function() {
         await browser.runtime.sendMessage({type: "ewe-test:clearMessages"});
         await new Page("about:blank", true).loaded;
         await new Promise(r => setTimeout(r, 200));
@@ -1494,7 +1495,7 @@ describe("API", () => {
         ]);
       });
 
-      it("receives ewe:content-hello message in background.js", async() => {
+      it("receives ewe:content-hello message in background.js", async function() {
         await browser.runtime.sendMessage({type: "ewe-test:clearMessages"});
         await new Page("element-hiding.html").loaded;
         await new Promise(r => setTimeout(r, 200));
@@ -1507,7 +1508,7 @@ describe("API", () => {
         ]);
       });
 
-      it("logs element hiding filter for a given tab", async() => {
+      it("logs element hiding filter for a given tab", async function() {
         let page = new Page("element-hiding.html");
         let tabId = await page.created;
         await checkLogging(
@@ -1589,7 +1590,7 @@ describe("API", () => {
         );
       });
 
-      it("logs all items", async() => {
+      it("logs all items", async function() {
         await checkLogging(
           ["###elem-hide", VALID_FILTER_TEXT],
           {includeElementHiding: true, includeUnmatched: true},
@@ -1610,7 +1611,7 @@ describe("API", () => {
         );
       });
 
-      it("logs for the requested tab", async() => {
+      it("logs for the requested tab", async function() {
         await addFilter(VALID_FILTER_TEXT);
 
         let page = new Page("image.html");
@@ -1630,7 +1631,7 @@ describe("API", () => {
         expect(fake2.called).toBeFalsy();
       });
 
-      it("logs snippets filter", async() => {
+      it("logs snippets filter", async function() {
         let snippet = "do";
 
         await setTestSnippets(snippet);
@@ -1666,7 +1667,7 @@ describe("API", () => {
         }
       });
 
-      it("logs blocking popup filter", async() => {
+      it("logs blocking popup filter", async function() {
         let opener = new Page("popup-opener.html");
         await opener.loaded;
         await checkLogging(
@@ -1685,7 +1686,7 @@ describe("API", () => {
         );
       });
 
-      it("logs allowlisting popup filter", async() => {
+      it("logs allowlisting popup filter", async function() {
         let opener = new Page("popup-opener.html");
         await opener.loaded;
         await checkLogging(
@@ -1706,7 +1707,7 @@ describe("API", () => {
         );
       });
 
-      it("logs blocking third-party popup filter", async() => {
+      it("logs blocking third-party popup filter", async function() {
         let opener = new Page("popup-opener.html");
         await opener.loaded;
         await checkLogging(
@@ -1727,7 +1728,7 @@ describe("API", () => {
         );
       });
 
-      it("logs allowlisted third-party popup filter", async() => {
+      it("logs allowlisted third-party popup filter", async function() {
         let opener = new Page("popup-opener.html");
         await opener.loaded;
         await checkLogging(
@@ -1748,7 +1749,7 @@ describe("API", () => {
         );
       });
 
-      it("logs requests sent by the extension", async() => {
+      it("logs requests sent by the extension", async function() {
         await checkLogging(
           [],
           allEventOptions,
@@ -1765,8 +1766,8 @@ describe("API", () => {
         );
       });
 
-      describe("Unmatched requests", () => {
-        it("logs all unmatched requests on the image page", async() => {
+      describe("Unmatched requests", function() {
+        it("logs all unmatched requests on the image page", async function() {
           await checkLogging(
             [],
             unmatchedEventOptions,
@@ -1814,7 +1815,7 @@ describe("API", () => {
           expect(otherTabFake.called).toBeFalsy();
         });
 
-        it("logs unmatched iframe requests", async() => {
+        it("logs unmatched iframe requests", async function() {
           await checkLogging(
             [],
             unmatchedEventOptions,
@@ -1835,7 +1836,7 @@ describe("API", () => {
           );
         });
 
-        it("logs unmatched allowlisted iframe requests", async() => {
+        it("logs unmatched allowlisted iframe requests", async function() {
           await checkLogging(
             [`@@|${TEST_PAGES_URL}/image.html$document`],
             unmatchedEventOptions,
@@ -1875,7 +1876,7 @@ describe("API", () => {
           );
         });
 
-        it("logs unmatched third-party requests", async() => {
+        it("logs unmatched third-party requests", async function() {
           await checkLogging(
             [],
             allEventOptions,
@@ -1892,7 +1893,7 @@ describe("API", () => {
           );
         });
 
-        it("logs unmatched popup requests", async() => {
+        it("logs unmatched popup requests", async function() {
           let opener = new Page("popup-opener.html");
           await opener.loaded;
           await checkLogging(
@@ -1911,7 +1912,7 @@ describe("API", () => {
           );
         });
 
-        it("logs unmatched different domain iframe requests", async() => {
+        it("logs unmatched different domain iframe requests", async function() {
           let url = `${CROSS_DOMAIN_URL}/iframe.html`;
           await checkLogging(
             [],
@@ -1934,8 +1935,8 @@ describe("API", () => {
         });
       });
 
-      describe("Event Options Filtering", () => {
-        it("filters out unmatched requests with default options", async() => {
+      describe("Event Options Filtering", function() {
+        it("filters out unmatched requests with default options", async function() {
           await checkLogging(
             ["/image.png^$image"],
             defaultEventOptions,
@@ -1947,7 +1948,7 @@ describe("API", () => {
             }]);
         });
 
-        it("filters out unmatched requests with allowing options", async() => {
+        it("filters out unmatched requests with allowing options", async function() {
           await checkLogging(
             ["/image.png^$image", `@@|${TEST_PAGES_URL}$image`],
             allowingEventOptions,
@@ -1960,7 +1961,7 @@ describe("API", () => {
           );
         });
 
-        it("filters out allowing requests with default options", async() => {
+        it("filters out allowing requests with default options", async function() {
           await checkLogging(
             ["/image.png^$image", `@@|${TEST_PAGES_URL}$image`],
             defaultEventOptions,
@@ -1971,8 +1972,8 @@ describe("API", () => {
       });
     });
 
-    describe("Notifications", () => {
-      it("supports notifications", async() => {
+    describe("Notifications", function() {
+      it("supports notifications", async function() {
         let notification = {id: "test"};
 
         await EWE.notifications.start();
@@ -1992,7 +1993,7 @@ describe("API", () => {
     });
   });
 
-  describe("Debugging", async() => {
+  describe("Debugging", function() {
     function getBackgroundColor() {
       let elem = document.getElementById("elem-hide");
       return window.getComputedStyle(elem)["background-color"];
@@ -2009,7 +2010,7 @@ describe("API", () => {
       return style;
     }
 
-    it("highlights an element", async() => {
+    it("highlights an element", async function() {
       await EWE.debugging.setElementHidingDebugMode(true);
       await addFilter("###elem-hide");
       let style = await waitForHighlightedStyle();
@@ -2018,7 +2019,7 @@ describe("API", () => {
       expect(style).toBe("rgb(230, 115, 112)");
     });
 
-    it("doesn't highlight an element when disabled", async() => {
+    it("doesn't highlight an element when disabled", async function() {
       await EWE.debugging.setElementHidingDebugMode(true);
       await EWE.debugging.setElementHidingDebugMode(false);
       await addFilter("###elem-hide");
@@ -2028,7 +2029,7 @@ describe("API", () => {
       expect(style).toBe("rgba(0, 0, 0, 0)");
     });
 
-    it("highlights an element with a custom style", async() => {
+    it("highlights an element with a custom style", async function() {
       await EWE.debugging.setElementHidingDebugMode(true);
       await EWE.debugging.setElementHidingDebugStyle([["background", "pink"]]);
       await addFilter("###elem-hide");

@@ -27,6 +27,7 @@
     "eslint": "^7.29.0",
     "eslint-config-eyeo": "^3.2.0",
     "eslint-plugin-html": "^6.1.2",
+    "eslint-plugin-mocha": "^10.0.4",
     "expect": "^25.5.0",
     "express": "^4.17.1",
     "extract-zip": "^2.0.1",

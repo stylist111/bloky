@@ -24,7 +24,7 @@ import * as runner from "./mocha/mocha-runner.js";
 describe("Subscribe links (runner only)", function() {
   setMinTimeout(this, 3000);
 
-  before(async() => {
+  before(async function() {
     if (!await runner.isConnected())
       this.skip();
   });
@@ -43,11 +43,11 @@ describe("Subscribe links (runner only)", function() {
                                    title: "Sample Filter List"});
   }
 
-  it("subscribes to a link", () =>
-    checkSubscribeLink("#subscribe")
-  );
+  it("subscribes to a link", async function() {
+    await checkSubscribeLink("#subscribe");
+  });
 
-  it("subscribes to a legacy link", () =>
-    checkSubscribeLink("#subscribe-legacy")
-  );
+  it("subscribes to a legacy link", async function() {
+    await checkSubscribeLink("#subscribe-legacy");
+  });
 });
