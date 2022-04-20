@@ -1,3 +1,18 @@
+0.4.0 - 2022/04/21
+==================
+
+# General
+
+- Fix the context of content scripts on Firefox to only run the web
+  content (#174)
+- Add API to attach metadata to custom filters (#157)
+
+# Tests
+
+- Improve reliability of tests in manual testing.
+- Add an `npm audit` pipeline on CI (#207)
+- Use plain functions in mocha test (#159)
+
 0.3.0 - 2022/04/12
 ==================
 
