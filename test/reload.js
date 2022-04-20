@@ -112,8 +112,6 @@ describe(`Reload (${phase})`, function() {
           expect.objectContaining({text: BLOCKING_FILTER_TEXT})
         ])
       );
-      // Check that adding existing and new filters doesn't throw
-      await addFilter(BLOCKING_FILTER_TEXT);
       await addFilter(IMAGE_FILTER_TEXT);
     }
     finally {

@@ -17,6 +17,8 @@
 
 const ERROR_NO_CONNECTION = "Could not establish connection. " +
                             "Receiving end does not exist.";
+export const ERROR_DUPLICATE_FILTERS = "storage_duplicate_filters";
+export const ERROR_FILTER_NOT_FOUND = "filter_not_found";
 
 export function ignoreNoConnectionError(promise) {
   return promise.catch(error => {

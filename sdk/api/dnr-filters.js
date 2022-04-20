@@ -27,6 +27,7 @@ import {RESOURCE_TYPES, contentTypes}
   from "adblockpluscore/lib/contentTypes.js";
 import {filterStorage} from "adblockpluscore/lib/filterStorage.js";
 import {filterState} from "adblockpluscore/lib/filterState.js";
+import {ERROR_DUPLICATE_FILTERS, ERROR_FILTER_NOT_FOUND} from "../errors.js";
 
 import {FilterError} from "./types.js";
 import {Prefs} from "./prefs.js";
@@ -129,12 +130,18 @@ async function getRules(filter, useFilterEngine) {
 
 async function processFilterTexts(texts) {
   let details = [];
-  let rules = [];
+  let add = [];
+  let exist = [];
   let seenFilterTexts = new Set();
 
   texts = texts.map(Filter.normalize);
   for (let text of texts) {
-    if (dynamicFilters.has(text) || seenFilterTexts.has(text))
+    if (dynamicFilters.has(text)) {
+      exist.push(text);
+      continue;
+    }
+
+    if (seenFilterTexts.has(text))
       continue;
 
     let filter = Filter.fromText(text);
@@ -149,39 +156,62 @@ async function processFilterTexts(texts) {
                           filter.contentType != RESOURCE_TYPES;
 
     let {filterRules, ruleIds} = await getRules(filter, useFilterEngine);
-    rules.push(...filterRules);
+    add.push(...filterRules);
 
     seenFilterTexts.add(text);
     details.push({filter, useFilterEngine, ruleIds});
   }
 
-  return {rules, details};
+  return {add, exist, details};
 }
 
-export async function addFilters(texts) {
+export async function addFilters(texts, metadata) {
   await init();
 
-  let filtersToAdd = await processFilterTexts(texts);
-  if (filtersToAdd.rules.length > 0) {
+  let filters = await processFilterTexts(texts);
+  if (filters.exist.length > 0)
+    throw new FilterError(ERROR_DUPLICATE_FILTERS);
+
+  if (filters.add.length > 0) {
     await browser.declarativeNetRequest.updateDynamicRules({
-      addRules: filtersToAdd.rules
+      addRules: filters.add
     });
   }
 
-  for (let filterDetails of filtersToAdd.details) {
+  for (let filterDetails of filters.details) {
     let {filter, useFilterEngine, ruleIds} = filterDetails;
 
     if (useFilterEngine)
-      filterStorage.addFilter(filter);
+      await filterStorage.addFilter(filter);
     else
       filterNotifier.emit("filter.added", filter, null);
 
     setHighestRuleId(ruleIds);
     dynamicFilters.set(filter.text,
-                       {ruleIds, useFilterEngine, enabled: true});
+                       {ruleIds, useFilterEngine,
+                        enabled: true, metadata});
   }
 
   storeDynamicFilters();
+}
+
+export function setMetadataForFilter(text, metadata) {
+  let details = dynamicFilters.get(text);
+  if (!details)
+    throw new FilterError(ERROR_FILTER_NOT_FOUND);
+
+  details.metadata = metadata;
+
+  storeDynamicFilters();
+}
+
+export function getMetadataForFilter(text) {
+  let details = dynamicFilters.get(text);
+  if (!details)
+    return null;
+
+  let metadata = details.metadata;
+  return (typeof metadata != "undefined") ? metadata : null;
 }
 
 export async function removeOrDisableFilters(texts, remove = true) {

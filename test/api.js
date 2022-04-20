@@ -365,10 +365,108 @@ describe("API", function() {
       expect(await EWE.filters.getUserFilters()).toEqual([COMMENT_FILTER]);
     });
 
+    describe("Filters metadata", function() {
+      const filterText = VALID_FILTER_TEXT;
+
+      async function assertAddMetadata(metadata) {
+        await EWE.filters.add([filterText], metadata);
+        expect(await EWE.filters.getMetadata(filterText)).toEqual(metadata);
+      }
+
+      it("adds empty", async function() {
+        await assertAddMetadata({});
+      });
+
+      it("adds a number", async function() {
+        await assertAddMetadata({created: 123});
+      });
+
+      it("adds a string", async function() {
+        await assertAddMetadata({owner: "owner"});
+      });
+
+      it("adds a bool", async function() {
+        await assertAddMetadata({user_data: true});
+      });
+
+      it("adds for multiple filters", async function() {
+        let filters = [
+          VALID_FILTER_TEXT,
+          SECOND_VALID_FILTER_TEXT
+        ];
+        let metadata = {created: 123};
+        await EWE.filters.add(filters, metadata);
+        for (let filter of filters)
+          expect(await EWE.filters.getMetadata(filter)).toEqual(metadata);
+      });
+
+      it("skips adding same metadata for the filter in array", async function() {
+        let filters = [
+          filterText,
+          filterText // to be skipped
+        ];
+        let metadata = {created: 123};
+        await EWE.filters.add(filters, metadata);
+        expect(await EWE.filters.getMetadata(filterText)).toEqual(metadata);
+      });
+
+      it("throws if adding same metadata for the filter", async function() {
+        let filters = [filterText];
+        let metadata = {created: 123};
+        await EWE.filters.add(filters, metadata);
+        await expect(EWE.filters.add(filters, metadata))
+          .rejects.toThrow("FilterError");
+      });
+
+      it("throws if adding different metadata for the filter", async function() {
+        let filters = [filterText];
+        let metadata1 = {created: 123};
+        let metadata2 = {owner: "user"};
+        await EWE.filters.add(filters, metadata1);
+        await expect(EWE.filters.add(filters, metadata2))
+          .rejects.toThrow("FilterError");
+      });
+
+      it("throws if setting metadata for not added filter", async function() {
+        let metadata = {created: 123};
+        await expect(EWE.filters.setMetadata("not_added_filter", metadata))
+          .rejects.toThrow("FilterError");
+      });
+
+      it("updates metadata for added filter with metadata", async function() {
+        let filters = [filterText];
+        let metadata1 = {created: 123};
+        await EWE.filters.add(filters, metadata1);
+        // filter must be added with metadata originally to update the metadata
+        // due to "adblockpluscore" implementation details.
+        expect(await EWE.filters.getMetadata(filterText)).toEqual(metadata1);
+        let metadata2 = {created: 456};
+        await EWE.filters.setMetadata(filterText, metadata2);
+        await expect(await EWE.filters.getMetadata(filterText))
+          .toEqual(metadata2);
+      });
+
+      it("updates metadata for added filter without metadata", async function() {
+        let filters = [filterText];
+        let metadata = {created: 123};
+        await EWE.filters.add(filters);
+        await EWE.filters.setMetadata(filterText, metadata);
+        await expect(await EWE.filters.getMetadata(filterText))
+          .toEqual(metadata);
+      });
+
+      it("throws if adding with metadata for added wo metadata", async function() {
+        let filters = [filterText];
+        let metadata = {created: 123};
+        await EWE.filters.add(filters);
+        await expect(EWE.filters.add(filters, metadata))
+          .rejects.toThrow("FilterError");
+      });
+    });
+
     it("does not add invalid filters", async function() {
       return expect(addFilter(INVALID_FILTER_TEXT)).rejects.toThrow("FilterError");
-    }
-    );
+    });
 
     it("disables existing filters", async function() {
       await addFilter(VALID_FILTER_TEXT);
@@ -415,7 +513,9 @@ describe("API", function() {
       await addFilter(VALID_FILTER_TEXT);
 
       let PADDED_FILTER_TEXT = " " + VALID_FILTER_TEXT;
-      await addFilter(PADDED_FILTER_TEXT);
+      await expect(addFilter(PADDED_FILTER_TEXT))
+        .rejects.toThrow("FilterError");
+
       expect(await EWE.filters.getUserFilters())
         .toEqual([VALID_FILTER]);
 

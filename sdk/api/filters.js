@@ -17,21 +17,22 @@
 
 import browser from "webextension-polyfill";
 
-import {filterStorage, FilterStorageError}
-  from "adblockpluscore/lib/filterStorage.js";
+import {filterStorage} from "adblockpluscore/lib/filterStorage.js";
 import {Filter, URLFilter} from "adblockpluscore/lib/filterClasses.js";
-import {SpecialSubscription}
-  from "adblockpluscore/lib/subscriptionClasses.js";
+import {SpecialSubscription} from "adblockpluscore/lib/subscriptionClasses.js";
 import {isSlowFilter} from "adblockpluscore/lib/matcher.js";
 import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {filterState} from "adblockpluscore/lib/filterState.js";
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 import {defaultMatcher as matcher} from "adblockpluscore/lib/matcher.js";
 
-import {EventDispatcher} from "./types.js";
+import {EventDispatcher, FilterError} from "./types.js";
 import {getFrameInfo} from "./frame-state.js";
-import {addFilters, validateFilter, getDynamicFilters, removeOrDisableFilters,
-        enableFilters} from "./dnr-filters.js";
+import {addFilters, getMetadataForFilter, setMetadataForFilter,
+        validateFilter, getDynamicFilters,
+        removeOrDisableFilters, enableFilters}
+  from "./dnr-filters.js";
+import {ERROR_DUPLICATE_FILTERS, ERROR_FILTER_NOT_FOUND} from "../errors.js";
 
 export function convertFilter(filter) {
   return {
@@ -84,13 +85,15 @@ export default {
   /**
    * Adds multiple filters from texts.
    * @param {[string]} texts The filter rules to be added.
+   * @param {?Object} metadata Extra data to associate with a filter.
    * @return {Promise}
    * @throws {FilterError|Error} The first filter to add that either failed
    *   validation (FilterError) or that is not supported by the DNR (Error).
+   *   An error will be thrown for duplicated filters.
    */
-  async add(texts) {
+  async add(texts, metadata) {
     if (browser.declarativeNetRequest) {
-      await addFilters(texts);
+      await addFilters(texts, metadata);
       return;
     }
 
@@ -106,15 +109,65 @@ export default {
       filters.push(filter);
     }
 
-    for (let filter of filters) {
-      try {
+    if (!metadata) {
+      if (filterStorage.filtersExist(filters).length > 0)
+        throw new FilterError(ERROR_DUPLICATE_FILTERS);
+
+      for (let filter of filters)
         await filterStorage.addFilter(filter);
+    }
+    else {
+      try {
+        await filterStorage.addFiltersWithMetadata(filters, metadata);
       }
-      catch (error) {
-        if (!(error instanceof FilterStorageError))
-          throw error;
+      catch (e) {
+        throw new FilterError(e.message);
       }
     }
+  },
+
+  /**
+   * Set an extra data associated with an added filter.
+   * @param {string} text filter text to set metadata for.
+   * @param {Object} metadata Extra data to associate with a filter.
+   * @returns {Promise<void>} Nothing is done for not added filter.
+   * @throws {FilterError} An error will be thrown for not added filter.
+   */
+  async setMetadata(text, metadata) {
+    if (browser.declarativeNetRequest) {
+      setMetadataForFilter(text, metadata);
+      return;
+    }
+
+    try {
+      await filterStorage.setMetadataForFilter(text, metadata);
+    }
+    catch (e) {
+      if (e.message == ERROR_FILTER_NOT_FOUND) {
+        // filter might be added without a metadata first,
+        // so we're trying to make it working in a non-surprising way:
+        // by removing the existing filter and readding it with a metadata.
+        let filter = Filter.fromText(Filter.normalize(text));
+        if (filterStorage.filtersExist([filter]).length > 0) {
+          await filterStorage.removeFilter(filter);
+          await this.add([text], metadata);
+          return;
+        }
+      }
+      throw new FilterError(e.message);
+    }
+  },
+
+  /**
+   * Returns an extra data associated with a filter.
+   * @param {string} text The filter text to get metadata for.
+   * @return {Promise<?Object>}
+   */
+  async getMetadata(text) {
+    if (browser.declarativeNetRequest)
+      return getMetadataForFilter(text);
+
+    return await filterStorage.getMetadataForFilter(text);
   },
 
   /**
