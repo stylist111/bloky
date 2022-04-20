@@ -15,8 +15,6 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* eslint-disable mocha/no-top-level-hooks */
-
 import browser from "webextension-polyfill";
 import expect from "expect";
 
