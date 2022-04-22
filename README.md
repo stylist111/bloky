@@ -81,14 +81,14 @@ Consequently, there won't be a global `EWE` object.
 #### CommonJS
 
 ```
-const EWE = require("./ewe-api.js");
+const EWE = require("@eyeo/webext-sdk");
 EWE.start();
 ```
 
 #### ESM
 
 ```
-import * as EWE from "./ewe-api.js";
+import * as EWE from "@eyeo/webext-sdk";
 EWE.start();
 ```
 

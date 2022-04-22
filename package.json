@@ -13,6 +13,19 @@
     "npm": ">=7"
   },
   "type": "module",
+  "main": "./dist/ewe-api.js",
+  "exports": {
+    ".": "./dist/ewe-api.js",
+    "./content": "./dist/ewe-content.js",
+    "./sdk/*": "./sdk/*"
+  },
+  "files": [
+    "dist/*.js*",
+    "RELEASE_NOTES.md",
+    "scripts",
+    "sdk",
+    "webpack.config.js"
+  ],
   "dependencies": {
     "adblockpluscore": "^0.7.2",
     "webextension-polyfill": "^0.8.0"
@@ -51,6 +64,7 @@
     "docs": "documentation build --document-exported -f html -o docs --config documentation.yml sdk/api/index.js sdk/api/types.js",
     "build": "webpack",
     "start": "webpack -w",
+    "prepublishOnly": "webpack",
     "subs-merge": "npm run --prefix node_modules/adblockpluscore merge-subscriptions --",
     "test": "node test/runner.js",
     "test-server": "node test/start-server.js",
