@@ -16,13 +16,21 @@
  */
 
 const ERROR_NO_CONNECTION = "Could not establish connection. " +
-                            "Receiving end does not exist.";
+      "Receiving end does not exist.";
+const ERROR_CLOSED_CONNECTION = "A listener indicated an asynchronous " +
+      "response by returning true, but the message channel closed before a " +
+      "response was received";
+
 export const ERROR_DUPLICATE_FILTERS = "storage_duplicate_filters";
 export const ERROR_FILTER_NOT_FOUND = "filter_not_found";
 
 export function ignoreNoConnectionError(promise) {
   return promise.catch(error => {
-    if (typeof error != "object" || error.message != ERROR_NO_CONNECTION)
-      throw error;
+    if (typeof error == "object" &&
+        (error.message == ERROR_NO_CONNECTION ||
+         error.message == ERROR_CLOSED_CONNECTION))
+      return;
+
+    throw error;
   });
 }
