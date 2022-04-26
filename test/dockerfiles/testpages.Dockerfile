@@ -75,7 +75,7 @@ RUN apt-get update
 RUN apt-get -t stretch-backports install -y git
 
 # Clone ABPUI
-RUN git clone -b dep-ewe-2021-1 https://gitlab.com/eyeo/adblockplus/abpui/adblockplusui.git
+RUN git clone -b 3.13 https://gitlab.com/eyeo/adblockplus/abpui/adblockplusui.git
 # Update dependencies 
 RUN cd adblockplusui && npm run submodules:update && git submodule status && npm install
 # Create extension builds
