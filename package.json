@@ -14,7 +14,7 @@
   },
   "type": "module",
   "dependencies": {
-    "adblockpluscore": "^0.7.0",
+    "adblockpluscore": "^0.7.1",
     "webextension-polyfill": "^0.8.0"
   },
   "devDependencies": {

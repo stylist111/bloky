@@ -22,6 +22,16 @@ import {Page, wait, isMV3} from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage}
   from "./messaging.js";
 
+const METADATA_FILTER_TEXT = "reload###metadata-test";
+const METADATA_FILTER = {
+  csp: null,
+  text: METADATA_FILTER_TEXT,
+  enabled: true,
+  slow: false,
+  thirdParty: null,
+  type: "elemhide",
+  selector: "#metadata-test"
+};
 const CONTENT_FILTER_TEXT = "reload###test";
 const CONTENT_FILTER = {
   csp: null,
@@ -71,6 +81,29 @@ describe(`Reload (${phase})`, function() {
     }
     finally {
       await EWE.filters.remove([CONTENT_FILTER_TEXT]);
+    }
+  });
+
+  it("persists metadata filter storage data", async function() {
+    let metadata = {a: 1};
+    if (start) {
+      await EWE.filters.add([METADATA_FILTER_TEXT], metadata);
+      await wait(async() => {
+        return await EWE.debugging.isInFilterStorage(METADATA_FILTER_TEXT);
+      }, 2000, "The added filter didn't reach storage");
+
+      return;
+    }
+
+    try {
+      expect(await EWE.filters.getUserFilters())
+        .toEqual(expect.arrayContaining([METADATA_FILTER]));
+
+      expect(await EWE.filters.getMetadata(METADATA_FILTER_TEXT))
+        .toEqual(metadata);
+    }
+    finally {
+      await EWE.filters.remove([METADATA_FILTER_TEXT]);
     }
   });
 
