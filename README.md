@@ -253,25 +253,25 @@ Edge tests can be also performed on Docker, to achieve that run
 following commands:
 
     docker build  --no-cache -t webext -f test/dockerfiles/Dockerfile .
-    docker run -it webext  
+    docker run -it webext
 
 ### Building ABPUI extension and running testpages tests
 If there are no breaking changes in webext code, you will be able to build
-ABPUI extension with current codebase. To build custom extension on Docker use following command: 
+ABPUI extension with current codebase. To build custom extension on Docker use following command:
 
-    docker build -t testpages  -f test/dockerfiles/testpages.Dockerfile . 
+    docker build -t testpages  -f test/dockerfiles/testpages.Dockerfile .
 
 
-To run testpages automated tests on Docker, build testpages image with command above and: 
+To run testpages automated tests on Docker, build testpages image with command above and:
 
-    docker run --shm-size=256m -it testpages               
+    docker run --shm-size=256m -it testpages
 
-To copy custom extension from Docker image after tests were run, run following commands: 
+To copy custom extension from Docker image after tests were run, run following commands:
 
     IMAGE_ID=$(docker ps -aqf ancestor=testpages)
-    docker cp $IMAGE_ID:/adblockpluschrome.zip . 
+    docker cp $IMAGE_ID:/adblockpluschrome.zip .
 
-Note: Tests by default will skip `Snippets` tests, as extension built with Docker 
+Note: Tests by default will skip `Snippets` tests, as extension built with Docker
 won't support snippets. You can exclude other tests by passing TESTS_EXCLUDE argument f.ex:
 
     docker run --shm-size=256m -e TESTS_EXCLUDE="Snippets|CSP|Header" -it testpages
@@ -288,10 +288,10 @@ BROWSER argument:
 [builds]: https://gitlab.com/eyeo/webext/webext-sdk/-/jobs/artifacts/master/browse/dist?job=build
 [snippet-filters]: https://help.eyeo.com/adblockplus/snippet-filters-tutorial
 [snippets-project]: https://gitlab.com/eyeo/adblockplus/abp-snippets
-[docs]: https://gitlab.com/eyeo/webext/webext-sdk/-/jobs/artifacts/master/file/docs/index.html?job=build
+[docs]: https://eyeo.gitlab.io/adblockplus/abc/webext-sdk/master/docs/
 [dev]: https://gitlab.com/eyeo/webext/webext-sdk#development
-[notifications-module]: https://gitlab.com/eyeo/webext/webext-sdk/-/jobs/artifacts/master/file/docs/index.html?job=build#notifications
-[allowlisting-module]: https://gitlab.com/eyeo/webext/webext-sdk/-/jobs/artifacts/master/file/docs/index.html?job=build#allowlisting
+[notifications-module]: https://eyeo.gitlab.io/adblockplus/abc/webext-sdk/master/docs/#notifications
+[allowlisting-module]: https://eyeo.gitlab.io/adblockplus/abc/webext-sdk/master/docs/#allowlisting
 
 ### Bundle test
 
@@ -312,7 +312,7 @@ Note the following:
 * one can use `$(pwd)` on nix-based environments or `../../custom-subscriptions.json` for convenience
 * `subs-merge` is a "forwarding" npm script that just calls according npm script from "adblockpluscore" dependency
   using `--prefix` argument
-  
+
 Examples:
 
 * merge product-specific subscriptions file with default subscriptions:

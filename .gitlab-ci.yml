@@ -4,6 +4,7 @@ default:
 
 stages:
   - build
+  - pages
   - test
   - testPages
 
@@ -178,3 +179,10 @@ testPages:firefox:oldest:
   extends: .testpages-integration
   variables:
     BROWSER: Firefox \(oldest\)
+
+.pages:
+  stage: pages
+  dependencies:
+    - build
+
+include: ".gitlab-pages.yml"
