@@ -298,6 +298,46 @@ BROWSER argument:
 Checks that the bundled code can be imported and re-bundled
 
     npm run test-bundle
+    
+### Scripts test
+
+    npm run test-scripts
+    
+# MV3 subscriptions
+
+```
+# generate the subscriptions list
+npm run subs-init
+
+# edit the subscriptions manually (eg. use test subscription "https://testpages.adblockplus.org/en/abp-testcase-subscription.txt")
+subl node_modules/adblockpluscore/build/data/subscriptions_mv3.json
+
+# fetch the subscriptions
+npm run subs-fetch [-- -i /tmp/custom_subscriptions_mv3.json -o /tmp/output]
+
+# convert to DNR (npm run convert-subscriptions using abp2dnr from webext-sdk)
+npm run subs-convert [-- -i /tmp/input -o /tmp/output ]
+
+# generate the fragment
+npm run subs-generate [-- -i /tmp/input -o /tmp/output/custom_fragment.tpl -p "/custom_subscriptions"]
+
+# edit ruleset to enable it (for testing purpose)
+subl subscriptions/rules.json.tpl
+
+# pack the webext
+npm run build
+
+# deploy dist/test-mv3 to browser and test it with testpages
+
+```
+
+In the most common use case (no specific requirements and changes needed) the scripts calls chain might look as follows:
+```
+npm run subs-init
+npm run subs-fetch
+npm run subs-convert
+npm run subs-generate
+```
 
 ### Custom subscriptions list
 

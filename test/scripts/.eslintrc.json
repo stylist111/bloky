@@ -1,0 +1,14 @@
+{
+  "rules": {
+    "max-len": [
+      "error",
+      {
+        "ignoreUrls": true,
+        "ignoreRegExpLiterals": true,
+        "ignoreStrings": true,
+        "ignoreTemplateLiterals": true
+      }
+    ],
+    "no-console": "off"
+  }
+}

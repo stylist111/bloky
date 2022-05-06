@@ -4,3 +4,4 @@ docs
 test/*-snapshots
 test/bundle/package-lock.json
 custom-subscriptions.json
+subscriptions

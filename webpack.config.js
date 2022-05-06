@@ -36,6 +36,8 @@ const eweRegularOutputPath = eweDistPath;
 const eweCustomOutputPath = path.join(eweDistPath, "ewe-subs");
 const eweRegularSubscriptionsFile = "custom-subscriptions.json";
 const eweTestSubscriptionsFile = "test/custom-subscriptions.json";
+const subscriptionsDir = path.join(dirname, "subscriptions");
+const fragmentFile = path.join(subscriptionsDir, "rules.json.tpl");
 
 const base = {
   eweConfigName: eweRegularConfigName,
@@ -61,7 +63,11 @@ const mv3 = {
   background: {service_worker: "background.js"},
   permissions: ["scripting", "declarativeNetRequest"],
   misc: {
-    host_permissions: ["<all_urls>"]
+    host_permissions: ["<all_urls>"],
+    ...fs.existsSync(fragmentFile) ?
+      {declarative_net_request: JSON.parse(
+        fs.readFileSync(fragmentFile, "utf8"))} :
+      {}
   },
   outputPath: "test-mv3"
 };
@@ -215,7 +221,14 @@ export default (env = {}) => {
             {from: "ewe-*", context: buildVariant.ewePath},
             {from: path.join(dirname, "test", "background.js")},
             {from: path.join(dirname, "test", "index.html")},
-            {from: path.join(dirname, "test", "index-options.js")}
+            {from: path.join(dirname, "test", "index-options.js")},
+            ...buildVariant.manifestVersion >= 3 &&
+               fs.existsSync(subscriptionsDir) &&
+               fs.readdirSync(subscriptionsDir)
+                .filter(file => file.endsWith(".json"))
+                .length > 0 ?
+                  [{from: path.join(subscriptionsDir, "*.json")}] :
+                  []
           ]
         })
       ],
