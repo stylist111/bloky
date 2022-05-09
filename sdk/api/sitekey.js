@@ -50,7 +50,7 @@ export function clearAllSitekeys() {
 }
 
 export function clearTabSitekeys(tabId) {
-  sitekeys.remove(tabId);
+  sitekeys.delete(tabId);
 }
 
 export function setSitekeyFromHeaders(tabId, frameId, url, headers) {
