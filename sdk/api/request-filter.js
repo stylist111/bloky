@@ -22,10 +22,12 @@ import {BlockingFilter, AllowingFilter}
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 import {defaultMatcher as matcher} from "adblockpluscore/lib/matcher.js";
 import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
+import {parseURL} from "adblockpluscore/lib/url.js";
 
 import {getFrameInfo} from "./frame-state.js";
 import {ignoreNoConnectionError} from "../errors.js";
 import {logItem} from "./diagnostics.js";
+import {getSitekey, setSitekeyFromHeaders} from "./sitekey.js";
 
 const EXTENSION_PROTOCOL = new URL(browser.runtime.getURL("")).protocol;
 
@@ -218,30 +220,63 @@ HeaderFilter.prototype.eventArgs = [
 ];
 
 class CSPFilter extends RequestFilter {
-  getFrameInfo(details, initiator) {
-    let frame = getFrameInfo(details.tabId, details.frameId);
-    return frame.pending || frame;
-  }
+  filter(details) {
+    let {requestId, tabId, frameId, parentFrameId, responseHeaders, url, type} =
+        details;
 
-  match(details, frame, specificOnly) {
-    let parentFrame = getFrameInfo(details.tabId, details.parentFrameId);
+    if (pendingAllowlistedRequests.has(requestId))
+      return;
+
+    let initiator = this.getInitiator(details);
+    if (initiator && initiator.startsWith(EXTENSION_PROTOCOL)) {
+      // These are requests sent by an extension, so if we block these
+      // we could block our own ability to update subscriptions etc.
+      return this.allow(details, null, {
+        method: "allowing", allowingReason: "extensionInitiated"
+      });
+    }
+
+    let parentFrame = getFrameInfo(tabId, parentFrameId);
+    let {hostname: parentHostname, sitekey: parentSitekey} = parentFrame || {};
+
+    let urlInfo = parseURL(url);
+    let hostname = parentHostname || urlInfo.hostname;
+    let sitekey = setSitekeyFromHeaders(
+      tabId, frameId, url, responseHeaders
+    ) || parentSitekey;
+
+    let specificOnlyFilter = matcher.match(
+      url, contentTypes.GENERICBLOCK, hostname, sitekey
+    );
+    let documentFilter = matcher.match(
+      url, contentTypes.DOCUMENT, hostname, sitekey
+    );
+    let specificOnly = !!specificOnlyFilter;
+
+    if (documentFilter) {
+      return this.allow(details, documentFilter, {
+        docDomain: this.getDocDomain(type, urlInfo.hostname),
+        method: "allowing",
+        specificOnly
+      });
+    }
+
     let docDomain =
-      this.getDocDomain(details.type, parentFrame && parentFrame.hostname);
+      this.getDocDomain(type, parentHostname);
     let typeMask = contentTypes.CSP | this.getContentType(details);
-    let matchInfo = {docDomain: docDomain || frame.hostname,
+    let matchInfo = {docDomain: docDomain || urlInfo.hostname,
                      specificOnly, method: "csp"};
 
-    let {responseHeaders} = details;
-    let allowingFilter = matcher.match(details.url, typeMask, docDomain,
-                                       frame.sitekey, specificOnly, true);
+    let allowingFilter = matcher.match(url, typeMask, docDomain,
+                                       sitekey, specificOnly, true);
     if (allowingFilter && allowingFilter instanceof AllowingFilter)
       return this.allow(details, allowingFilter, matchInfo);
 
-    let matches = matcher.search(details.url, typeMask, docDomain,
-                                 frame.sitekey, specificOnly, "blocking");
+    let matches = matcher.search(url, typeMask, docDomain,
+                                 sitekey, specificOnly, "blocking");
 
     if (matches.blocking.length > 0) {
-      pendingCspRequests.add(details.requestId);
+      pendingCspRequests.add(requestId);
       for (let filter of matches.blocking) {
         logItem(details, filter, matchInfo);
         responseHeaders.push(
@@ -265,33 +300,57 @@ CSPFilter.prototype.eventArgs = [
 
 class RequestCompletionFilter extends RequestFilter {
   filter(details) {
-    let wasAllowlisted = pendingAllowlistedRequests.delete(details.requestId);
-    let wasCsp = pendingCspRequests.delete(details.requestId);
+    let {requestId, tabId, frameId, parentFrameId, url, type} = details;
+    let wasAllowlisted = pendingAllowlistedRequests.delete(requestId);
+    let wasCsp = pendingCspRequests.delete(requestId);
     if (wasAllowlisted || wasCsp)
       return;
 
     let initiator = this.getInitiator(details);
-    let frame = this.getFrameInfo(details, initiator);
-    if (!frame)
-      return;
 
-    let pending = frame.pending || frame;
-    let specificOnly = (pending.allowlisted & contentTypes.GENERICBLOCK) != 0;
+    if (type == "main_frame" || type == "sub_frame") {
+      // for these two types, it's unreliable if frame is there or not
+      // yet. The request could be completed before or after the new
+      // frame is committed.
+      let parentFrame = getFrameInfo(tabId, parentFrameId);
+      let {hostname: parentHostname, sitekey: parentSitekey} =
+          parentFrame || {};
 
-    if (details.frameId == 0) {
-      let popupFilter = matcher.match(
-        details.url, contentTypes.POPUP,
-        frame.hostname, frame.sitekey, specificOnly
+      let urlInfo = parseURL(url);
+      let hostname = parentHostname || urlInfo.hostname;
+      let sitekey = getSitekey(tabId, frameId, url) || parentSitekey;
+      let specificOnlyFilter = matcher.match(
+        url, contentTypes.GENERICBLOCK, hostname, sitekey
       );
-      if (popupFilter)
-        return;
+      let specificOnly = !!specificOnlyFilter;
+
+      if (frameId == 0) {
+        let popupFilter = matcher.match(
+          url, contentTypes.POPUP, hostname, sitekey, specificOnly
+        );
+        if (popupFilter)
+          return;
+      }
+      let matchInfo = {
+        docDomain: this.getDocDomain(type, hostname),
+        method: "unmatched",
+        specificOnly
+      };
+      logItem(details, null, matchInfo);
     }
-    let matchInfo = {
-      docDomain: this.getDocDomain(details.type, pending.hostname),
-      method: "unmatched",
-      specificOnly
-    };
-    logItem(details, null, matchInfo);
+    else {
+      let frame = this.getFrameInfo(details, initiator);
+      if (!frame)
+        return;
+
+      let specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) != 0;
+      let matchInfo = {
+        docDomain: this.getDocDomain(type, frame.hostname),
+        method: "unmatched",
+        specificOnly
+      };
+      logItem(details, null, matchInfo);
+    }
   }
 }
 
@@ -300,8 +359,7 @@ RequestCompletionFilter.prototype.eventArgs = [
   {
     types: Object.values(browser.webRequest.ResourceType),
     urls: ["http://*/*", "https://*/*", "ws://*/*", "wss://*/*"]
-  },
-  []
+  }
 ];
 
 class RequestErrorFilter extends RequestFilter {

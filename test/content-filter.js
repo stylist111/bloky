@@ -19,12 +19,20 @@ import expect from "expect";
 
 import {Page, waitForInvisibleElement, executeScript, setMinTimeout, wait,
         getVisibleElement, getVisibleElementInFrame, isMV3, isFirefox,
-        firefoxVersion, TEST_PAGES_DOMAIN, TEST_PAGES_URL} from "./utils.js";
+        firefoxVersion, TEST_PAGES_DOMAIN, TEST_PAGES_URL, SITEKEY}
+  from "./utils.js";
 import {addFilter, EWE, setTestSnippets} from "./messaging.js";
 
 describe("Element Hiding", function() {
   async function getElemHideElement(id) {
     let tabId = await new Page("element-hiding.html").loaded;
+    // hiding elements may take a few ms on CI
+    await new Promise(r => setTimeout(r, 200));
+    return await getVisibleElement(tabId, id);
+  }
+
+  async function getElemHideElementWithSitekey(id) {
+    let tabId = await new Page("element-hiding.html?sitekey=1").loaded;
     // hiding elements may take a few ms on CI
     await new Promise(r => setTimeout(r, 200));
     return await getVisibleElement(tabId, id);
@@ -194,6 +202,37 @@ describe("Element Hiding", function() {
            }, 2000, "The image element is still visible");
          });
     }
+  });
+
+  describe("Sitekey allowlisting", function() {
+    before(function() {
+      if (isMV3())
+        this.skip();
+    });
+
+    it("has no effect on pages without the sitekey", async function() {
+      await addFilter("###elem-hide");
+      await addFilter(`@@$elemhide,sitekey=${SITEKEY}`);
+      expect(await getElemHideElement("elem-hide")).toBeNull();
+    });
+
+    it("does not hide an element on a sitekey allowlisted page", async function() {
+      await addFilter("###elem-hide");
+      await addFilter(`@@$elemhide,sitekey=${SITEKEY}`);
+      expect(await getElemHideElementWithSitekey("elem-hide")).not.toBeNull();
+    });
+
+    it("does not hide an element on a sitekey allowlisted page after reload", async function() {
+      await addFilter("###elem-hide");
+      await addFilter(`@@$elemhide,sitekey=${SITEKEY}`);
+
+      let page = new Page("element-hiding.html?sitekey=1");
+      let tabId = await page.loaded;
+      await page.reload();
+      // hiding elements may take a few ms on CI
+      await new Promise(r => setTimeout(r, 200));
+      expect(await getVisibleElement(tabId, "elem-hide")).not.toBeNull();
+    });
   });
 });
 

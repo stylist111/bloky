@@ -63,6 +63,15 @@ describe("Blocking", function() {
     await new Page("image.html").expectResource("image.png").toBeLoaded();
   });
 
+  it("does not block an allowlisted request after reload", async function() {
+    await addFilter("/image.png^$image");
+    await addFilter("@@/image.png^$image");
+    let page = new Page("image.html");
+    await page.loaded;
+    page.reload();
+    await page.expectResource("image.png").toBeLoaded();
+  });
+
   it("handles rewritten srcdoc frames", async function() {
     await addFilter(`|${TEST_PAGES_URL}/image.png^`);
     await new Page("srcdoc.html").expectResource("image.png").toBeBlocked();
@@ -273,6 +282,26 @@ describe("Blocking", function() {
       await addFilter(`@@$csp,sitekey=${SITEKEY}`);
       expect(await checkViolatedDirective("?sitekey=1")).toBeFalsy();
     });
+
+    it("does not block a request after a reload", async function() {
+      await addFilter("/image.png^$image");
+      await addFilter(`@@$sitekey=${SITEKEY}`);
+      let page = new Page("image.html?sitekey=1");
+      await page.loaded;
+      page.reload();
+      await page.expectResource("image.png").toBeLoaded();
+    });
+
+    it("block a request after a reload if sitekey filter was removed", async function() {
+      await addFilter("/image.png^$image");
+      await addFilter(`@@$sitekey=${SITEKEY}`);
+      let page = new Page("image.html?sitekey=1");
+      await page.expectResource("image.png").toBeLoaded();
+
+      await EWE.filters.remove([`@@$sitekey=${SITEKEY}`]);
+      page.reload();
+      await page.expectResource("image.png").toBeBlocked();
+    });
   });
 
   describe("Header-based filtering", function() {
@@ -308,6 +337,15 @@ describe("Blocking", function() {
       await addFilter(`|${TEST_PAGES_URL}^$header=x-header=whatever`);
       await addFilter(`@@|${TEST_PAGES_URL}^$document`);
       await new Page("header.html").expectResource("image.png").toBeLoaded();
+    });
+
+    it("does not block a request from allowlisted document after reload", async function() {
+      await addFilter(`|${TEST_PAGES_URL}^$header=x-header=whatever`);
+      await addFilter(`@@|${TEST_PAGES_URL}^$document`);
+      let page = new Page("header.html");
+      await page.loaded;
+      page.reload();
+      await page.expectResource("image.png").toBeLoaded();
     });
   });
 });

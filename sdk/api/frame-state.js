@@ -21,31 +21,36 @@ import {parseURL} from "adblockpluscore/lib/url.js";
 import {defaultMatcher as matcher} from "adblockpluscore/lib/matcher.js";
 import {ALLOWING_TYPES, contentTypes}
   from "adblockpluscore/lib/contentTypes.js";
-import {verifySignature} from "adblockpluscore/lib/rsa.js";
+
 import {logItem} from "./diagnostics.js";
+import {getSitekey, setSitekeyFromHeaders, clearAllSitekeys, clearTabSitekeys}
+  from "./sitekey.js";
 
 let state = new Map();
 let startupPromise;
 
 class FrameInfo {
-  constructor(tabId, frameId, parent, url, pending) {
-    if (pending && pending.url != url)
-      pending = null;
+  constructor(tabId, frameId, parent, url) {
+    let {
+      allowlisted: parentAllowlisted,
+      sitekey: parentSitekey,
+      allowingDocumentFilter: parentAllowingDocumentFilter
+    } = parent || {};
 
-    if (!pending && (url.startsWith("http://") ||
-                     url.startsWith("https://")))
-      pending = new PendingFrameInfo(tabId, frameId, parent, url);
-
-    let {hostname, sitekey, allowlisted,
-         allowingDocumentFilter} = pending || parent || {};
+    let urlInfo = parseURL(url);
 
     this.url = url;
-    this.hostname = hostname;
-    this.sitekey = sitekey;
-    this.allowlisted = allowlisted || 0;
+    this.hostname = urlInfo.hostname;
+    this.sitekey = getSitekey(tabId, frameId, url) || parentSitekey;
     this.parent = parent;
-    this.pending = null;
-    this.allowingDocumentFilter = allowingDocumentFilter;
+
+    // allowlisted and allowingDocumentFilter start with their parent
+    // value, but may have extra allowing filters added when we call
+    // findAllowlistingFilters
+    this.allowlisted = parentAllowlisted || 0;
+    this.allowingDocumentFilter = parentAllowingDocumentFilter;
+
+    findAllowlistingFilters(this, tabId, frameId);
   }
 }
 
@@ -56,11 +61,12 @@ function getAllowingReason(typeMask, filter) {
   }
 }
 
-function findAllowlistingFilters(frame) {
-  let details = {tabId: frame.tabId, frameId: frame.frameId, url: frame.url};
+function findAllowlistingFilters(frame, tabId, frameId) {
+  let details = {tabId, frameId, url: frame.url};
   // The docDomain for a frame is the hostname of the parent frame
   // (the loader). For top-level frames we use the current URL's hostname.
-  let matchInfo = {docDomain: frame.parentHostname || frame.hostname,
+  let parentHostname = frame.parent && frame.parent.hostname;
+  let matchInfo = {docDomain: parentHostname || frame.hostname,
                    method: "allowing"};
 
   while (true) {
@@ -78,35 +84,6 @@ function findAllowlistingFilters(frame) {
 
     let allowingReason = getAllowingReason(typeMask, filter);
     logItem(details, filter, {...matchInfo, allowingReason});
-  }
-}
-
-class PendingFrameInfo {
-  constructor(tabId, frameId, parent, url, sitekey) {
-    let allowlisted = 0;
-    let allowingDocumentFilter;
-    let parentHostname;
-
-    if (parent) {
-      ({hostname: parentHostname, allowlisted,
-        allowingDocumentFilter} = parent);
-
-      if (!sitekey)
-        ({sitekey} = parent);
-    }
-
-    let urlInfo = parseURL(url);
-
-    this.tabId = tabId;
-    this.frameId = frameId;
-    this.url = url;
-    this.hostname = urlInfo.hostname;
-    this.parentHostname = parentHostname;
-    this.sitekey = sitekey;
-    this.allowlisted = allowlisted;
-    this.allowingDocumentFilter = allowingDocumentFilter;
-
-    findAllowlistingFilters(this);
   }
 }
 
@@ -131,47 +108,23 @@ async function discoverExistingFrames() {
 }
 
 function onHeadersReceived(details) {
-  let frames = state.get(details.tabId);
-  if (!frames) {
-    frames = new Map();
-    state.set(details.tabId, frames);
-  }
-
-  let frame = frames.get(details.frameId);
-  let parent = frames.get(details.parentFrameId);
-  let sitekey = getSitekeyFromHeaders(details.responseHeaders, details.url);
-
-  if (frame) {
-    let allowlistFrame = frame.pending || frame;
-    if (allowlistFrame.url == details.url) {
-      allowlistFrame.sitekey = sitekey || allowlistFrame.sitekey;
-      findAllowlistingFilters(allowlistFrame);
+  let {tabId, frameId, url, responseHeaders} = details;
+  let sitekey = setSitekeyFromHeaders(
+    tabId, frameId, url, responseHeaders
+  );
+  if (sitekey) {
+    let frame = getFrameInfo(tabId, frameId);
+    if (frame && frame.url == url && frame.sitekey != sitekey) {
+      frame.sitekey = sitekey;
+      findAllowlistingFilters(frame, tabId, frameId);
     }
-    else {
-      frame.pending = new PendingFrameInfo(details.tabId, details.frameId,
-                                           parent, details.url, sitekey);
-    }
-  }
-  else {
-    frame = new FrameInfo(details.tabId, details.frameId, parent,
-                          "about:blank");
-    frames.set(details.frameId, frame);
-    frame.pending = new PendingFrameInfo(details.tabId, details.frameId, parent,
-                                         details.url, sitekey);
   }
 }
 
 function recordFrameFromNavigationEvent({tabId, frameId, parentFrameId, url},
                                         historyStateUpdated) {
   let frames = state.get(tabId);
-  let pending;
-  let parent;
-
-  if (frames) {
-    let frame = frames.get(frameId);
-    pending = frame && frame.pending;
-    parent = frames.get(parentFrameId);
-  }
+  let parent = frames && frames.get(parentFrameId);
 
   // Top-level history-state updates don't invalidate the existing frames.
   if ((!historyStateUpdated && frameId == 0) || !frames) {
@@ -179,7 +132,7 @@ function recordFrameFromNavigationEvent({tabId, frameId, parentFrameId, url},
     state.set(tabId, frames);
   }
 
-  frames.set(frameId, new FrameInfo(tabId, frameId, parent, url, pending));
+  frames.set(frameId, new FrameInfo(tabId, frameId, parent, url));
 }
 
 function onBeforeNavigate(details) {
@@ -197,37 +150,12 @@ function onHistoryStateUpdated(details) {
 
 function onRemoved(tabId) {
   state.delete(tabId);
+  clearTabSitekeys(tabId);
 }
 
 function onReplaced(addedTabId, removedTabId) {
   state.delete(removedTabId);
-}
-
-function verifyAndExtractSitekey(token, url) {
-  let parts = token.split("_");
-  if (parts.length < 2)
-    return null;
-
-  let key = parts[0].replace(/=/g, "");
-  let signature = parts[1];
-  let urlObj = new URL(url);
-  let data = `${urlObj.pathname}${urlObj.search}\0${urlObj.host}\0` +
-             self.navigator.userAgent;
-  if (!verifySignature(key, signature, data))
-    return null;
-
-  return key;
-}
-
-function getSitekeyFromHeaders(headers, url) {
-  for (let header of headers) {
-    if (header.name.toLowerCase() == "x-adblock-key" && header.value) {
-      let sitekey = verifyAndExtractSitekey(header.value, url);
-      if (sitekey)
-        return sitekey;
-    }
-  }
-  return null;
+  clearTabSitekeys(removedTabId);
 }
 
 export function getFrameInfo(tabId, frameId, initiator) {
@@ -268,6 +196,7 @@ export async function start() {
 export function stop() {
   startupPromise = null;
   state.clear();
+  clearAllSitekeys();
 
   browser.webRequest.onHeadersReceived.removeListener(onHeadersReceived);
   browser.webNavigation.onBeforeNavigate.removeListener(onBeforeNavigate);
