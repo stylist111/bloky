@@ -31,7 +31,7 @@ RUN pip install Jinja2
 RUN apt-get install -y spawn-fcgi python-flup python-m2crypto nginx
 
 # Clone testpages
-RUN git clone -b subscribe-fix https://gitlab.com/eyeo/adblockplus/abc/testpages.adblockplus.org.git
+RUN git clone https://gitlab.com/eyeo/adblockplus/abc/testpages.adblockplus.org.git
 RUN cd testpages.adblockplus.org && npm install
 
 # nginx config
@@ -79,12 +79,18 @@ RUN git clone -b 3.13 https://gitlab.com/eyeo/adblockplus/abpui/adblockplusui.gi
 # Update dependencies 
 RUN cd adblockplusui && npm run submodules:update && git submodule status && npm install
 # Create extension builds
-RUN cd adblockplusui/adblockpluschrome && npx gulp build -t chrome  -c development --unhandled-rejections=strict
+RUN cd adblockplusui/vendor && rm -rf webext-sdk
+RUN mkdir adblockplusui/vendor/webext-sdk
+COPY . adblockplusui/vendor/webext-sdk
+RUN cd adblockplusui/vendor/webext-sdk && npm install
+RUN cd adblockplusui/adblockpluschrome \
+ && npx gulp build -t chrome -c development
 RUN mv adblockplusui/adblockpluschrome/adblockpluschrome-*.zip /adblockpluschrome.zip
 # Unpack custom extension
 RUN  unzip -q adblockpluschrome.zip -d testpages.adblockplus.org/testext;
 ENV BROWSER="Firefox \(latest\)"
 ENV TESTS_SUBSET=""
 ENV SKIP_EXTENSION_DOWNLOAD="true"
-ENV TESTS_EXCLUDE="Snippets" 
+# Skipping circumvention because EWE 0.4.0 has a bug: https://gitlab.com/eyeo/adblockplus/abpui/adblockplusui/-/issues/1124
+ENV TESTS_EXCLUDE="Snippets|Circumvention" 
 ENTRYPOINT /testpages.adblockplus.org/test/entrypoint.sh
