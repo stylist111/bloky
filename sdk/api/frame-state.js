@@ -40,7 +40,7 @@ class FrameInfo {
     let urlInfo = parseURL(url);
 
     this.url = url;
-    this.hostname = urlInfo.hostname;
+    this.hostname = urlInfo.hostname || (parent ? parent.hostname : "");
     this.sitekey = getSitekey(tabId, frameId, url) || parentSitekey;
     this.parent = parent;
 

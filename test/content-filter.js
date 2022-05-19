@@ -172,6 +172,30 @@ describe("Element Hiding", function() {
       expect(await getElemHideElement("elem-hide-emulation-contain"))
         .toBeNull();
     });
+
+    it("hides the img element of a blocked request in element-hiding-aboutblank", async function() {
+      setMinTimeout(this, 5000);
+      await addFilter("##img");
+
+      let tabId = await new Page("element-hiding-aboutblank.html").loaded;
+      await wait(async() => {
+        let visible = await getVisibleElementInFrame(
+          tabId, "aboutblank-img", ["aboutblank-iframe"]);
+        return visible === null;
+      }, 2000, "The image element is still visible");
+    });
+
+    it("hides the img element in element-hiding-aboutblank with specific rule", async function() {
+      setMinTimeout(this, 5000);
+      await addFilter("localhost##img"); // specific for "localhost"
+
+      let tabId = await new Page("element-hiding-aboutblank.html").loaded;
+      await wait(async() => {
+        let visible = await getVisibleElementInFrame(
+          tabId, "aboutblank-img", ["aboutblank-iframe"]);
+        return visible === null;
+      }, 2000, "The image element is still visible");
+    });
   });
 
   describe("Element collapsing", function() {

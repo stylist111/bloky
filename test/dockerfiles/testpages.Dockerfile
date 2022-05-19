@@ -43,7 +43,7 @@ RUN cd /etc/nginx && openssl req -x509 -newkey rsa:4096 \
   -keyout ${DOMAIN}_key.pem \
   -out ${DOMAIN}_cert.pem \
   -days 365 -nodes -subj '/CN=$DOMAIN'
-  
+
 # spawn-fcgi config
 RUN touch /var/run/500-multiplexer_spawn-fcgi.pid
 
@@ -76,7 +76,7 @@ RUN apt-get -t stretch-backports install -y git
 
 # Clone ABPUI
 RUN git clone -b 3.13 https://gitlab.com/eyeo/adblockplus/abpui/adblockplusui.git
-# Update dependencies 
+# Update dependencies
 RUN cd adblockplusui && npm run submodules:update && git submodule status && npm install
 # Create extension builds
 RUN cd adblockplusui/vendor && rm -rf webext-sdk
@@ -92,5 +92,5 @@ ENV BROWSER="Firefox \(latest\)"
 ENV TESTS_SUBSET=""
 ENV SKIP_EXTENSION_DOWNLOAD="true"
 # Skipping circumvention because EWE 0.4.0 has a bug: https://gitlab.com/eyeo/adblockplus/abpui/adblockplusui/-/issues/1124
-ENV TESTS_EXCLUDE="Snippets|Circumvention" 
+ENV TESTS_EXCLUDE="Snippets"
 ENTRYPOINT /testpages.adblockplus.org/test/entrypoint.sh

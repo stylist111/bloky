@@ -29,6 +29,14 @@ async function handleMessage(message, sender) {
   await initializer.start();
   switch (message.type) {
     case "ewe:content-hello":
+      // Firefox mistakenly runs content scripts in non-web page context,
+      // it does not happen in Chrome.
+      // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/174.
+      // Messages sent from a non-web page context do not have an
+      // associated tab and can be ignored.
+      if (!sender.tab)
+        return;
+
       let filterData = applyContentFilters(sender.tab.id, sender.frameId);
       return {
         ...filterData,

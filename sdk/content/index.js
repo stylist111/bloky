@@ -59,9 +59,4 @@ async function initContentFeatures() {
 
 startElementCollapsing();
 startOneClickAllowlisting();
-
-// Firefox mistakenly runs content scripts in non-web page context,
-// it does not happen in Chrome.
-// https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/174.
-if (document.location.href != "about:blank")
-  initContentFeatures();
+initContentFeatures();
