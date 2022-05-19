@@ -19,6 +19,7 @@ import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 import {defaultMatcher as matcher} from "adblockpluscore/lib/matcher.js";
 import {parseURL} from "adblockpluscore/lib/url.js";
 import {MILLIS_IN_HOUR} from "adblockpluscore/lib/time.js";
+import {base64ToArrayBuffer} from "adblockpluscore/lib/rsa.js";
 
 import {getFrameInfo} from "./frame-state.js";
 import {default as filters} from "./filters.js";
@@ -40,11 +41,6 @@ let algorithm = {
   publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
   hash: {name: "SHA-512"}
 };
-
-function base64ToArrayBuffer(str) {
-  let decodedData = atob(str);
-  return Uint8Array.from(decodedData, c => c.charCodeAt(0));
-}
 
 function getAllowData(domain, timestamp) {
   let str = `${domain},${timestamp}`;

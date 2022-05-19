@@ -45,6 +45,8 @@ function bypassCache(req, res, next) {
   next();
 }
 
+// Adds a sitekey to the response if you pass in ?sitekey=1 as a query
+// parameter.
 async function sitekeyHeader(req, res, next) {
   if (req.query.sitekey) {
     let pem = await fs.promises.readFile(path.join(dirname, "sitekey.pem"));
@@ -52,6 +54,23 @@ async function sitekeyHeader(req, res, next) {
     let publicKey = crypto.createPublicKey(privateKey);
     let spki = publicKey.export({type: "spki", format: "der"});
     let data = `${req.url}\0${req.get("Host")}\0${req.get("User-Agent")}`;
+    let signature = crypto.sign("rsa-sha1", Buffer.from(data), privateKey);
+    let value = `${spki.toString("base64")}_${signature.toString("base64")}`;
+    res.header("X-Adblock-Key", value);
+  }
+
+  next();
+}
+
+// Adds a sitekey with an invalid signature to the response if you
+// pass in ?invalid-sitekey=1 as a query parameter.
+async function invalidSitekeyHeader(req, res, next) {
+  if (req.query["invalid-sitekey"]) {
+    let pem = await fs.promises.readFile(path.join(dirname, "sitekey.pem"));
+    let privateKey = crypto.createPrivateKey(pem);
+    let publicKey = crypto.createPublicKey(privateKey);
+    let spki = publicKey.export({type: "spki", format: "der"});
+    let data = "this data to sign isn't the right data to sign";
     let signature = crypto.sign("rsa-sha1", Buffer.from(data), privateKey);
     let value = `${spki.toString("base64")}_${signature.toString("base64")}`;
     res.header("X-Adblock-Key", value);
@@ -71,6 +90,7 @@ function testHeader(req, res, next) {
 
 app.use(bypassCache);
 app.use(sitekeyHeader);
+app.use(invalidSitekeyHeader);
 app.use(testHeader);
 app.use(express.static(path.join(dirname, "pages")));
 

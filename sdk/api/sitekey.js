@@ -15,7 +15,7 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {verifySignature} from "adblockpluscore/lib/rsa.js";
+import {verifySignatureSync} from "adblockpluscore/lib/rsa.js";
 
 let sitekeys = new Map();
 
@@ -95,5 +95,5 @@ function verifySitekey(sitekey, signature, url) {
     urlObj.host,
     self.navigator.userAgent
   ].join("\0");
-  return verifySignature(sitekey, signature, data);
+  return verifySignatureSync(sitekey, signature, data);
 }
