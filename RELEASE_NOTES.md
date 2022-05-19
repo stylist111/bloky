@@ -1,3 +1,23 @@
+0.4.1 - 2022/05/19
+==================
+
+# General
+
+- Update adblockpluscore to 0.7.2 (also fixes #213)
+- Fix the exports for the npm module (#211)
+- Fix error management when sending messages from the background page
+  following changes in Chromium (#216)
+- Fix an issue with sitekey when reloading frames causing them to be ignored
+  in some situations (#221)
+- Use the synchronous sitekey verification from core 0.7.2 (#225)
+- Anonymous frame `document.write()` blocking was not working (#229)
+
+# Tests
+
+- Use Adblock Plus 3.13 for the testpages tests on CI instead of
+  an unreleased branch (#218)
+- Also ensure the latest webext-sdk is used for testpages.
+
 0.4.0 - 2022/04/21
 ==================
 
