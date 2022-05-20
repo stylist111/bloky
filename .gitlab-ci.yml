@@ -172,6 +172,12 @@ testPages:chrome:oldest:
   variables:
     BROWSER: Chromium \(oldest\)
 
+testPages:chrome:beta:
+  extends: .testpages-integration
+  allow_failure: true
+  variables:
+    BROWSER: Chromium \(beta\)
+
 testPages:firefox:latest:
   extends: .testpages-integration
   variables:
@@ -181,6 +187,12 @@ testPages:firefox:oldest:
   extends: .testpages-integration
   variables:
     BROWSER: Firefox \(oldest\)
+
+testPages:firefox:beta:
+  extends: .testpages-integration
+  allow_failure: true
+  variables:
+    BROWSER: Firefox \(beta\) 
 
 .pages:
   stage: pages
