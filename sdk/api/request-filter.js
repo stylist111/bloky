@@ -75,6 +75,7 @@ class RequestFilter {
   }
 
   getInitiator(details) {
+    // Chrome calls it initiator, Firefox calls it documentUrl
     return details.initiator || details.documentUrl;
   }
 

@@ -26,9 +26,73 @@ import {logItem} from "./diagnostics.js";
 import {getSitekey, setSitekeyFromHeaders, clearAllSitekeys, clearTabSitekeys}
   from "./sitekey.js";
 
+/**
+ * All known currently active frames, that can be looked up by
+ * `tabId`, and then by `frameId` (`[tabId, [frameId, FrameInfo]]`).
+ *
+ * Maintaining this state is the central reason for the code in this
+ * file. When we start up EWE, we scan all existing tabs for their
+ * frames. After that, we hook into various browser events to try to
+ * keep it up to date as things change.
+ *
+ * @type {Map<number, Map<number, FrameInfo>>}
+ */
 let state = new Map();
 let startupPromise;
 
+/**
+ * Manages tracking state that is tied to a single specific frame.
+ *
+ * A simple webpage will have a single frame in a tab. However, when
+ * we look at sites with advertising and embedded trackers, they often
+ * have many <iframe> elements. Each iframe may have slightly
+ * different state, but generally a frame will inherit settings from
+ * the frame that it's on (its parent frame).
+ *
+ * This state is mostly used in applying frame-level allowing filters
+ * (eg `$document` filters), but is also used to hold parameters like
+ * what hostname to use when checking if filters match a request, and
+ * whether or not a sitekey is involved. This needs to be done
+ * statefully because we inherit some state from parent frames.
+ *
+ * We sometimes need access to this data synchronously (for example to
+ * do request filtering), but the functions to fetch this data from
+ * the browser on demand are asynchronous. The events where we need to
+ * make decisions based on the frame usually have some of the frame's
+ * state, like the URL of the frame, but don't have the sitekey and
+ * don't have all of the information about the parents of the frame.
+ *
+ * @property {string} url The url of the frame.
+ * @property {string} hostname The hostname part of the frame's
+ *   URL. If the URL isn't a normal HTTP URL (for example if it's
+ *   about:blank) then this will be the parent frame's hostname. If
+ *   that also doesn't have a normal HTTP hostname, then this will
+ *   default to an empty string.
+ * @property {?string} sitekey The sitekey associated with a frame, if
+ *   there is one. These sitekeys are read from the
+ *   `onHeadersReceived` event. This is inherited from the parent
+ *   frame if this frame doesn't have a sitekey of its own.
+ * @property {?FrameInfo} parent The frame that this from is on. Null
+ *   if this is the top-level frame on a tab.
+ * @property {number} allowlisted Bitfield where each set bit is the
+ *   content type of an allowlisting filter applied to the frame. This
+ *   includes filters that turn of ad filtering entirely, like
+ *   `$document` filters, but also includes filters that modify how we
+ *   look up request filters like `$genericblock`.
+ * @property {?Filter} allowingDocumentFilter The `$document` filter
+ *   that is being applied to this frame, if any. This is useful for
+ *   logging, for example if a request is allowed because of this
+ *   filter. If you just need to check if there is a `$document` filter
+ *   applied to the frame or not, you can also check
+ *   `frame.allowlisted`.
+ *
+ * @param {number} tabId The tabId of the tab that the this frame is on.
+ * @param {number} frameId The frameId of this frame.
+ * @param {?FrameInfo} parent The frame that this from is on. Null
+ *   if this is the top-level frame on a tab.
+ * @param {string} url The url of the frame.
+ * @hideconstructor
+ */
 class FrameInfo {
   constructor(tabId, frameId, parent, url) {
     let {
@@ -54,6 +118,14 @@ class FrameInfo {
   }
 }
 
+/**
+ * Get a text description of the allowing filter added.
+ * @param {number} typeMask Bitset to filter types you want to name.
+ * @param {Filter} filter The filter with the allowing reason you want
+ *   to name.
+ * @return {string} Content type name of the allowing filter just
+ *   added.
+ */
 function getAllowingReason(typeMask, filter) {
   for (let type in contentTypes) {
     if (typeMask & filter.contentType & contentTypes[type])
@@ -61,6 +133,24 @@ function getAllowingReason(typeMask, filter) {
   }
 }
 
+/**
+ * Checks if the matcher has any allowing filters that should be
+ * applied to this frame, and updates `frame.allowlisted` and
+ * `frame.allowingDocumentFilter` accordingly.
+ *
+ * This can only ever add extra allowing filters. It's also safe to
+ * call multiple times on the same frame. This would normally be
+ * called on a new frame to find its allowing filters, but should also
+ * be called whenever a frame is updated in such a way that there
+ * could be new allowing filters, for example when a sitekey is added
+ * to an existing frame.
+ *
+ * @param {FrameInfo} frame The frame that will be checked for new
+ *   filters, and will be updated.
+ * @param {number} tabId The tabId of the tab the frame is on. Used for
+ *   logging.
+ * @param {number} frameId The frameId of the frame. Used for logging.
+ */
 function findAllowlistingFilters(frame, tabId, frameId) {
   let details = {tabId, frameId, url: frame.url};
   // The docDomain for a frame is the hostname of the parent frame
@@ -69,6 +159,8 @@ function findAllowlistingFilters(frame, tabId, frameId) {
   let matchInfo = {docDomain: parentHostname || frame.hostname,
                    method: "allowing"};
 
+  // This loop will keep trying to find new types of allowing filters
+  // for the frame until the matcher doesn't return any more.
   while (true) {
     let typeMask = ~frame.allowlisted & ALLOWING_TYPES;
     let filter = matcher.match(
@@ -79,6 +171,8 @@ function findAllowlistingFilters(frame, tabId, frameId) {
       break;
 
     frame.allowlisted |= filter.contentType & ALLOWING_TYPES;
+    // We need to hold onto document allowing filters because we might
+    // need it for logging blockable requests later.
     if (filter.contentType & contentTypes.DOCUMENT)
       frame.allowingDocumentFilter = filter;
 
@@ -87,13 +181,26 @@ function findAllowlistingFilters(frame, tabId, frameId) {
   }
 }
 
+/**
+ * Builds the frame state from scratch using the tabs API.
+ *
+ * This is called on startup, and in MV3 whenever the service worker
+ * starts up. The only shortcoming is that this can't find sitekeys
+ * for existing frames, since those are read from headers.
+ * @async
+ * @return {Promise} Resolves when all frames have been scanned.
+ */
 async function discoverExistingFrames() {
   let tabs = await browser.tabs.query({});
   await Promise.all(tabs.map(({id: tabId}) =>
     browser.webNavigation.getAllFrames({tabId}).then(rawFrames => {
+      // If `startupPromise` was unset, that means that `stop` was
+      // called, so we should stop initializing.
       if (!rawFrames || !startupPromise)
         return;
 
+      // Sort the frames so that we'll add parent frames before the
+      // child frames.
       rawFrames.sort((a, b) => a.frameId - b.frameId);
 
       let frames = new Map();
@@ -113,6 +220,13 @@ function onHeadersReceived(details) {
     tabId, frameId, url, responseHeaders
   );
   if (sitekey) {
+    // Sometimes the onHeadersReceived event comes after the
+    // onCommitted event. This seems to be common when loading
+    // iframes: the browser will show the iframe and then start
+    // loading its contents. When this happens, we may get a sitekey
+    // for a frame that's already being shown, and that may mean we
+    // need to add some new allowlisting filters based on that
+    // sitekey.
     let frame = getFrameInfo(tabId, frameId);
     if (frame && frame.url == url && frame.sitekey != sitekey) {
       frame.sitekey = sitekey;
@@ -121,13 +235,44 @@ function onHeadersReceived(details) {
   }
 }
 
+
+/**
+ * Updates the frame state to reflect that a new frame is being shown.
+ *
+ * This can broadly be thought of in two categories:
+ *
+ * 1. The browser has navigated to the new page. Specifically, this is
+ *    on the `webNavigation.onCommitted` event, which fires when the
+ *    browser has decided to switch to the new document. We will
+ *    usually have received headers for the document already by this
+ *    point, but not always.
+ * 2. The site is a single page application, and has updated its
+ *    contents using Javascript and updated its URL with the history
+ *    API.
+ *
+ * @param {Object} details Details object as provided by the
+ *   webNavigation API events.
+ * @param {number} details.tabId The tabId of the tab that the updated
+ *   frame is on.
+ * @param {number} details.frameId The frameId of the updated frame.
+ * @param {?number} details.parentFrameId The frameId of the frame
+ *   that the updated frame is on. Undefined if the updated frame is
+ *   the top-level frame.
+ * @param {string} details.url The new url of the frame.
+ * @param {boolean} historyStateUpdated True if this was triggered by
+ *   a history state update, rather than by a full page navigation.
+ */
 function recordFrameFromNavigationEvent({tabId, frameId, parentFrameId, url},
                                         historyStateUpdated) {
   let frames = state.get(tabId);
   let parent = frames && frames.get(parentFrameId);
 
-  // Top-level history-state updates don't invalidate the existing frames.
-  if ((!historyStateUpdated && frameId == 0) || !frames) {
+  // We generally need to throw away any existing frame state for the
+  // whole tab when a new top-level frame is committed to the
+  // tab. This is because all previous frame state was on the old
+  // top-level frame. However, if this was a history API update, those
+  // frames could still be there on the page so we can't clear them out.
+  if (!frames || (frameId == 0 && !historyStateUpdated)) {
     frames = new Map();
     state.set(tabId, frames);
   }
@@ -136,6 +281,11 @@ function recordFrameFromNavigationEvent({tabId, frameId, parentFrameId, url},
 }
 
 function onBeforeNavigate(details) {
+  // If an iframe's URL is "about:srcdoc", that means its contents is
+  // actually specified using the srcdoc attribute. Some browsers
+  // don't actually emit the webNavigation.onCommitted event for these
+  // frames, so we need to use a different event to get them into our
+  // frame state.
   if (details.url == "about:srcdoc")
     recordFrameFromNavigationEvent(details, false);
 }
@@ -158,6 +308,17 @@ function onReplaced(addedTabId, removedTabId) {
   clearTabSitekeys(removedTabId);
 }
 
+/**
+ * Gets the state for a frame if we have it.
+ *
+ * @param {number} tabId The tabId of the tab the frame is on.
+ * @param {number} frameId The frameId of the frame.
+ * @param {?string} initiator If getting the frame info is triggered
+ *   by a web request, this should be the URL that initiated the
+ *   request. Used to provide a temporary frame state for use with
+ *   service workers.
+ * @returns {?FrameInfo}
+ */
 export function getFrameInfo(tabId, frameId, initiator) {
   let frames = state.get(tabId);
   if (frames) {
@@ -166,6 +327,10 @@ export function getFrameInfo(tabId, frameId, initiator) {
       return frame;
   }
 
+  // Sometimes a request comes through that isn't actually tied to a
+  // real tab or frame. For example, when a service worker initiates a
+  // request. In those cases, we create a temporary frame state to use
+  // in filtering logic.
   if (initiator)
     return new FrameInfo(tabId, frameId, null, initiator);
 }
