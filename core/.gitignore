@@ -1,0 +1,10 @@
+/node_modules/
+/browser-snapshots/
+/coverage/
+benchmark/*.txt
+benchmark/benchmarkresults.json
+/build/docs/
+/build/
+/dist/
+benchmark/tempresults.json
+.DS_Store
