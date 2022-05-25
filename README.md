@@ -3,8 +3,10 @@
 [![Contributor
 Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](./CODE_OF_CONDUCT.md)
 
-This is a library that provides integration of eyeo's [Ad Blocking Core][abpcore]
-for Chromium and Firefox extensions (like [Adblock Plus][abpui]).
+This is a library that provides integration of eyeo's Ad Blocking Core
+for Chromium and Firefox extensions (like [Adblock Plus][abpui]). The Ad
+Blocking Core is in the `core` directory. See the content of that directory
+for further information.
 
 <div class="no-docs">
 
@@ -533,7 +535,6 @@ from the example above needs to be escaped (`\!`).
 
 </div>
 
-[abpcore]: https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore
 [abpui]: https://gitlab.com/eyeo/adblockplus/abpui/adblockplusui
 [builds]: https://gitlab.com/eyeo/webext/webext-sdk/-/jobs/artifacts/master/browse/dist?job=build
 [snippet-filters]: https://help.eyeo.com/adblockplus/snippet-filters-tutorial

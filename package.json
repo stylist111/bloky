@@ -21,13 +21,16 @@
   },
   "files": [
     "dist/*.js*",
+    "core/data",
+    "core/lib",
+    "core/scripts",
     "RELEASE_NOTES.md",
     "scripts",
     "sdk",
     "webpack.config.js"
   ],
   "dependencies": {
-    "adblockpluscore": "^0.11.1",
+    "adblockpluscore": "./core",
     "webextension-polyfill": "^0.8.0",
     "yargs": "^17.5.1"
   },

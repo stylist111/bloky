@@ -4,3 +4,7 @@
 /browser-snapshots/
 /test/bundle/dist/
 /test/unit/dist/
+/core/lib/jsbn.js
+/core/lib/rusha.js
+/core/lib/content/snippets.js
+/core/data/
