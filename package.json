@@ -74,7 +74,6 @@
     "subs-fetch": "npm run --prefix node_modules/adblockpluscore fetch-subscriptions",
     "subs-convert": "node scripts/convertSubscriptions.js",
     "subs-generate": "node scripts/generateSubscriptionsFragment.js",
-    "test-bundle": "node test/bundle/run.js",
     "create-allowlisting-keypair": "node scripts/createKeypair.js"
   }
 }
