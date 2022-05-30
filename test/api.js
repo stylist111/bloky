@@ -801,11 +801,8 @@ describe("API", function() {
           url => expect.objectContaining({url, enabled: true})
         )));
 
-        for (let subscription of subs) {
+        for (let subscription of subs)
           expect(urls).toContain(subscription.url);
-          expect(subscription.downloading ||
-                 subscription.lastDownload).toBeTruthy();
-        }
       });
     }
 
