@@ -19,6 +19,7 @@
 import {OUTPUT_DIR as inputDir}
   from "adblockpluscore/scripts/fetchSubscriptions.js";
 import {processFile} from "adblockpluscore/scripts/text2dnr.js";
+import {createConverter} from "adblockpluscore/lib/dnr/index.js";
 import fs from "fs";
 import path from "path";
 import yargs from "yargs";
@@ -48,11 +49,12 @@ async function convert(inDir, outDir) {
   if (!fs.existsSync(outDir))
     fs.mkdirSync(outDir, {recursive: true});
 
+  let converter = createConverter({});
   for (let inFile of files) {
     let inFileAbs = path.join(inDir, inFile);
     let outFileAbs = path.join(outDir, path.parse(inFile).base + ".json");
     console.log(`Converting ${inFileAbs} to ${outFileAbs} ...`);
-    await processFile(inFileAbs, outFileAbs);
+    await processFile(converter, inFileAbs, outFileAbs);
     await addRuleId(outFileAbs);
   }
 }
