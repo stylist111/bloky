@@ -16,11 +16,11 @@
  */
 
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
-import {defaultMatcher as matcher} from "adblockpluscore/lib/matcher.js";
 import {parseURL} from "adblockpluscore/lib/url.js";
 import {MILLIS_IN_HOUR} from "adblockpluscore/lib/time.js";
 import {base64ToArrayBuffer} from "adblockpluscore/lib/rsa.js";
 
+import {filterEngine} from "./index.js";
 import {getFrameInfo} from "./frame-state.js";
 import {default as filters} from "./filters.js";
 import {EventDispatcher} from "./types.js";
@@ -107,7 +107,7 @@ export async function allowlistPage(tabId, frameId, timestamp, signature) {
   }
 
   let urlInfo = parseURL(frame.url);
-  let alreadyAllowlistedDomain = matcher.isAllowlisted(
+  let alreadyAllowlistedDomain = filterEngine.defaultMatcher.isAllowlisted(
     `${urlInfo.protocol}//${domain}`,
     contentTypes.DOCUMENT,
     domain,

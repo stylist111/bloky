@@ -15,7 +15,7 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {filterEngine} from "adblockpluscore/lib/filterEngine.js";
+import {filterEngine} from "./index.js";
 import * as frameState from "./frame-state.js";
 import * as requestFilter from "./request-filter.js";
 import * as popupBlocker from "./popup-blocker.js";

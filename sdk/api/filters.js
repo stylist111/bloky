@@ -22,10 +22,9 @@ import {Filter, URLFilter} from "adblockpluscore/lib/filterClasses.js";
 import {SpecialSubscription} from "adblockpluscore/lib/subscriptionClasses.js";
 import {isSlowFilter} from "adblockpluscore/lib/matcher.js";
 import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
-import {filterState} from "adblockpluscore/lib/filterState.js";
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
-import {defaultMatcher as matcher} from "adblockpluscore/lib/matcher.js";
 
+import {filterEngine} from "./index.js";
 import {EventDispatcher, FilterError} from "./types.js";
 import {getFrameInfo} from "./frame-state.js";
 import {addFilters, getMetadataForFilter, setMetadataForFilter,
@@ -33,6 +32,8 @@ import {addFilters, getMetadataForFilter, setMetadataForFilter,
         removeOrDisableFilters, enableFilters}
   from "./dnr-filters.js";
 import {ERROR_DUPLICATE_FILTERS, ERROR_FILTER_NOT_FOUND} from "../errors.js";
+
+let {filterState} = filterStorage;
 
 export function convertFilter(filter) {
   return {
@@ -217,8 +218,8 @@ export default {
     for (let frame = getFrameInfo(tabId, frameId); frame;
          frame = frame.parent) {
       let parentHostname = frame.parent && frame.parent.hostname;
-      let matches = matcher.search(frame.url, mask, parentHostname,
-                                   frame.sitekey, false, "allowing");
+      let matches = filterEngine.defaultMatcher.search(
+        frame.url, mask, parentHostname, frame.sitekey, false, "allowing");
 
       for (let filter of matches.allowing)
         filters.add(filter.text);
@@ -242,6 +243,7 @@ export default {
   isResourceAllowlisted(url, type, tabId, frameId = 0) {
     let mask = contentTypes[type.toUpperCase()];
     let frame = getFrameInfo(tabId, frameId) || {};
+    let matcher = filterEngine.defaultMatcher;
 
     if (matcher.isAllowlisted(url, mask, frame.hostname, frame.sitekey))
       return true;

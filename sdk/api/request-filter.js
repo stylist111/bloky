@@ -20,10 +20,10 @@ import browser from "webextension-polyfill";
 import {BlockingFilter, AllowingFilter}
   from "adblockpluscore/lib/filterClasses.js";
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
-import {defaultMatcher as matcher} from "adblockpluscore/lib/matcher.js";
 import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {parseURL} from "adblockpluscore/lib/url.js";
 
+import {filterEngine} from "./index.js";
 import {getFrameInfo} from "./frame-state.js";
 import {ignoreNoConnectionError} from "../errors.js";
 import {logItem} from "./diagnostics.js";
@@ -136,8 +136,9 @@ class RequestFilter {
   match(details, frame, specificOnly) {
     let docDomain = this.getDocDomain(details.type, frame.hostname);
 
-    let filter = matcher.match(details.url, this.getContentType(details),
-                               docDomain, frame.sitekey, specificOnly, true);
+    let filter = filterEngine.defaultMatcher.match(
+      details.url, this.getContentType(details),
+      docDomain, frame.sitekey, specificOnly, true);
     if (filter) {
       let matchInfo = {docDomain, specificOnly, method: "request"};
       if (filter instanceof BlockingFilter)
@@ -190,6 +191,7 @@ class HeaderFilter extends RequestFilter {
   match(details, frame, specificOnly) {
     let docDomain = this.getDocDomain(details.type, frame.hostname);
     let matchInfo = {docDomain, specificOnly, method: "header"};
+    let matcher = filterEngine.defaultMatcher;
 
     let typeMask = contentTypes.HEADER | this.getContentType(details);
     let allowingFilter = matcher.match(details.url, typeMask, docDomain,
@@ -239,6 +241,7 @@ class CSPFilter extends RequestFilter {
 
     let parentFrame = getFrameInfo(tabId, parentFrameId);
     let {hostname: parentHostname, sitekey: parentSitekey} = parentFrame || {};
+    let matcher = filterEngine.defaultMatcher;
 
     let urlInfo = parseURL(url);
     let hostname = parentHostname || urlInfo.hostname;
@@ -320,6 +323,7 @@ class RequestCompletionFilter extends RequestFilter {
       let urlInfo = parseURL(url);
       let hostname = parentHostname || urlInfo.hostname;
       let sitekey = getSitekey(tabId, frameId, url) || parentSitekey;
+      let matcher = filterEngine.defaultMatcher;
       let specificOnlyFilter = matcher.match(
         url, contentTypes.GENERICBLOCK, hostname, sitekey
       );

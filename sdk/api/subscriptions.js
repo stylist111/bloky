@@ -20,11 +20,11 @@ import browser from "webextension-polyfill";
 import {Subscription, DownloadableSubscription}
   from "adblockpluscore/lib/subscriptionClasses.js";
 import {filterStorage} from "adblockpluscore/lib/filterStorage.js";
-import {synchronizer} from "adblockpluscore/lib/synchronizer.js";
 import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {recommendations} from "adblockpluscore/lib/recommendations.js";
 import {Filter} from "adblockpluscore/lib/filterClasses.js";
 
+import {synchronizer} from "./index.js";
 import {EventDispatcher} from "./types.js";
 import {convertFilter} from "./filters.js";
 import {removeDynamicFilters} from "./dnr-filters.js";

@@ -21,7 +21,8 @@ import {recommendations} from "adblockpluscore/lib/recommendations.js";
 import {Subscription, DownloadableSubscription, SpecialSubscription}
   from "adblockpluscore/lib/subscriptionClasses.js";
 import {filterStorage} from "adblockpluscore/lib/filterStorage.js";
-import {synchronizer} from "adblockpluscore/lib/synchronizer.js";
+
+import {synchronizer} from "./index.js";
 
 export const ACCEPTABLE_ADS_URL = "https://easylist-downloads.adblockplus.org/exceptionrules.txt";
 export const ACCEPTABLE_ADS_PRIVACY_URL = "https://easylist-downloads.adblockplus.org/exceptionrules-privacy-friendly.txt";

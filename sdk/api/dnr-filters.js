@@ -24,12 +24,13 @@ import {isValidHostname} from "adblockpluscore/lib/url.js";
 import {RESOURCE_TYPES, contentTypes}
   from "adblockpluscore/lib/contentTypes.js";
 import {filterStorage} from "adblockpluscore/lib/filterStorage.js";
-import {filterState} from "adblockpluscore/lib/filterState.js";
 import {createConverter} from "adblockpluscore/lib/dnr/index.js";
 import {ERROR_DUPLICATE_FILTERS, ERROR_FILTER_NOT_FOUND} from "../errors.js";
 
 import {FilterError} from "./types.js";
 import {Prefs} from "./prefs.js";
+
+const {filterState} = filterStorage;
 
 let highestRuleId = 1;
 let dynamicFilters = new Map();

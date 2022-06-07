@@ -17,10 +17,10 @@
 
 import browser from "webextension-polyfill";
 
-import {defaultMatcher as matcher} from "adblockpluscore/lib/matcher.js";
 import {BlockingFilter} from "adblockpluscore/lib/filterClasses.js";
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 
+import {filterEngine} from "./index.js";
 import {logItem} from "./diagnostics.js";
 import {getFrameInfo} from "./frame-state.js";
 
@@ -39,7 +39,7 @@ function forgetPopup(tabId) {
 
 function checkPotentialPopup(tabId, url, frame) {
   let specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) != 0;
-  let filter = matcher.match(
+  let filter = filterEngine.defaultMatcher.match(
     url || "about:blank", contentTypes.POPUP,
     frame.hostname, frame.sitekey, specificOnly
   );

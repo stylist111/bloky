@@ -17,11 +17,11 @@
 
 import browser from "webextension-polyfill";
 
-import {createStyleSheet, elemHide} from "adblockpluscore/lib/elemHide.js";
-import {elemHideEmulation} from "adblockpluscore/lib/elemHideEmulation.js";
+import {createStyleSheet} from "adblockpluscore/lib/elemHide.js";
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
-import {snippets, compileScript} from "adblockpluscore/lib/snippets.js";
+import {compileScript} from "adblockpluscore/lib/snippets.js";
 
+import {filterEngine} from "./index.js";
 import {getFrameInfo} from "./frame-state.js";
 import {logItem, tracingEnabled} from "./diagnostics.js";
 import {debugOptions} from "./debugging.js";
@@ -42,7 +42,7 @@ export function applyContentFilters(tabId, frameId) {
   let tracedSelectors;
 
   if (!(frame.allowlisted & contentTypes.DOCUMENT)) {
-    let filters = snippets.getFilters(frame.hostname);
+    let filters = filterEngine.snippets.getFilters(frame.hostname);
 
     if (filters.length > 0) {
       let scripts = filters.map(({script}) => script);
@@ -69,7 +69,7 @@ export function applyContentFilters(tabId, frameId) {
     if (!(frame.allowlisted & contentTypes.ELEMHIDE)) {
       let specificOnly = (frame.allowlisted & contentTypes.GENERICHIDE) != 0;
       let trace = tracingEnabled(tabId);
-      let styleSheet = elemHide.getStyleSheet(
+      let styleSheet = filterEngine.elemHide.getStyleSheet(
         frame.hostname,
         specificOnly, trace || debugOptions.elemHide,
         trace
@@ -87,7 +87,8 @@ export function applyContentFilters(tabId, frameId) {
 
       injectCSS(tabId, frameId, styleSheet.code);
 
-      for (let {selector, text} of elemHideEmulation.getFilters(frame.hostname))
+      for (let {selector, text} of filterEngine.elemHideEmulation.getFilters(
+        frame.hostname))
         emulatedPatterns.push({selector, text});
 
       if (trace) {

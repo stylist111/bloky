@@ -18,10 +18,10 @@
 import browser from "webextension-polyfill";
 
 import {parseURL} from "adblockpluscore/lib/url.js";
-import {defaultMatcher as matcher} from "adblockpluscore/lib/matcher.js";
 import {ALLOWING_TYPES, contentTypes}
   from "adblockpluscore/lib/contentTypes.js";
 
+import {filterEngine} from "./index.js";
 import {logItem} from "./diagnostics.js";
 import {getSitekey, setSitekeyFromHeaders, clearAllSitekeys, clearTabSitekeys}
   from "./sitekey.js";
@@ -163,7 +163,7 @@ function findAllowlistingFilters(frame, tabId, frameId) {
   // for the frame until the matcher doesn't return any more.
   while (true) {
     let typeMask = ~frame.allowlisted & ALLOWING_TYPES;
-    let filter = matcher.match(
+    let filter = filterEngine.defaultMatcher.match(
       frame.url, typeMask, matchInfo.docDomain, frame.sitekey
     );
 
