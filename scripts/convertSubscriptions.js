@@ -40,7 +40,7 @@ async function addRuleId(filename) {
   for (let rule of rules)
     rule["id"] = generateRuleId();
   json = JSON.stringify(rules, null, 2);
-  await fs.unlink(filename, err => {});
+  await fs.promises.unlink(filename);
   fs.writeFileSync(filename, json, {encoding});
 }
 
@@ -49,7 +49,15 @@ async function convert(inDir, outDir) {
   if (!fs.existsSync(outDir))
     fs.mkdirSync(outDir, {recursive: true});
 
-  let converter = createConverter({});
+  let converter = createConverter({
+    modifyRule(rule) {
+      if (rule.condition.regexFilter) {
+        console.warn(`Skipping regex rule ${rule.condition.regexFilter}..`);
+        return Error("Regex rules are temporarily disabled.");
+      }
+      return rule;
+    }
+  });
   for (let inFile of files) {
     let inFileAbs = path.join(inDir, inFile);
     let outFileAbs = path.join(outDir, path.parse(inFile).base + ".json");
@@ -84,3 +92,4 @@ if (import.meta.url === `file://${process.argv[1]}`)
   main();
 
 export {outputDir};
+export {convert};
