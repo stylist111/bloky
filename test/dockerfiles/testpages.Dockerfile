@@ -77,7 +77,7 @@ RUN apt-get -t stretch-backports install -y git
 # Clone ABPUI
 RUN git clone -b 3.13 https://gitlab.com/eyeo/adblockplus/abpui/adblockplusui.git
 # Update dependencies
-RUN cd adblockplusui && npm run submodules:update && git submodule status && npm install
+RUN cd adblockplusui && npm run submodules:update && git submodule status && npm install --legacy-peer-deps
 # Create extension builds
 RUN cd adblockplusui/vendor && rm -rf webext-sdk
 RUN mkdir adblockplusui/vendor/webext-sdk
