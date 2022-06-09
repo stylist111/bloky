@@ -1079,19 +1079,33 @@ describe("API", function() {
         expect(receivedEvents).toEqual(expect.arrayContaining(requests));
       }
 
+      function compareMatchInfo(m1, m2) {
+        let keys = [
+          "docDomain",
+          "rewrittenUrl",
+          "specificOnly",
+          "method",
+          "allowingReason"
+        ];
+        return keys.every(key => m1[key] === m2[key]);
+      }
+
       function getReceivedEventsFromFake(fake, tabId, filterToCurrentTab) {
+        // Some legitimate events make it difficult to write
+        // reliable tests. It's easier to just filter out these
+        // requests, and assert based on requests on the test
+        // pages themselves.
         return fake.args
             .map(args => args[0])
             .filter(event => {
-              // Some legitimate events make it difficult to write
-              // reliable tests. It's easier to just filter out these
-              // requests, and assert based on requests on the test
-              // pages themselves.
+              // Favicon request is difficult to sandbox or link to a
+              // specific tab, since it's made and cached for a
+              // domain.
               let url = event.request.url;
               let isFavicon = url && url.endsWith("/favicon.ico");
-              if (isFavicon)
-                return false;
-
+              return !isFavicon;
+            })
+            .filter(event => {
               // Some tests ran into issues with previous other tabs
               // being open, resulting in unexpected events. We filter
               // here rather than in eventOptions because we want to
@@ -1099,10 +1113,33 @@ describe("API", function() {
               // tabId to filter on until after we've opened it.
               let isCurrentTab = event.request.tabId == tabId;
               let isIrrelevantTab = filterToCurrentTab && !isCurrentTab;
-              if (isIrrelevantTab)
-                return false;
+              return !isIrrelevantTab;
+            })
+            .filter((event, index, allEvents) => {
+              // Some browsers (mostly Firefox) sometimes retry blocked
+              // requests. We get the same result the second time, so it
+              // looks like a duplicate log, but it's for a different
+              // requestId so it isn't actually a duplicate. For testing,
+              // we'd rather just filter these duplicates out since they
+              // aren't reliable.
+              let previousEvents = allEvents.slice(0, index);
+              let isRetryRequest = previousEvents.some(prev => {
+                let filterMatches = (prev.filter && prev.filter.text) ==
+                  (event.filter && event.filter.text);
+                let matchInfoMatches = compareMatchInfo(
+                  prev.matchInfo, event.matchInfo
+                );
+                let requestMatches =
+                    prev.request.requestId != event.request.requestId &&
+                    prev.request.tabId == event.request.tabId &&
+                    prev.request.frameId == event.request.frameId &&
+                    prev.request.url == event.request.url;
 
-              return true;
+                return filterMatches &&
+                  matchInfoMatches &&
+                  requestMatches;
+              });
+              return !isRetryRequest;
             });
       }
 
