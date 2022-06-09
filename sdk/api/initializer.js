@@ -19,8 +19,9 @@ import {filterEngine} from "./index.js";
 import * as frameState from "./frame-state.js";
 import * as requestFilter from "./request-filter.js";
 import * as popupBlocker from "./popup-blocker.js";
-import {init as initIDB} from "./idb.js";
+import {IO as io} from "./io.js";
 import {init as initDNRFilters} from "./dnr-filters.js";
+import {init as initPrefs} from "./prefs.js";
 
 let startupPromise;
 let stopped = true;
@@ -54,7 +55,8 @@ export default {
     if (!startupPromise) {
       startupPromise = (async() => {
         stopped = false;
-        await startAsyncModule(() => initIDB());
+        await startAsyncModule(() => io.initialize());
+        await startAsyncModule(() => initPrefs());
         await startAsyncModule(() => filterEngine.initialize());
         await startAsyncModule(() => frameState.start());
         requestFilter.start();

@@ -15,61 +15,16 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import browser from "webextension-polyfill";
+import {IO as ioIdb} from "./io-idb.js";
+import {IO as ioBsl} from "./io-bsl.js";
 
-let database;
+let io;
+let initializationPromise;
 
-function clearContent(filename, entryStore, contentStore) {
-  entryStore.get(filename).onsuccess = event => {
-    let entry = event.target.result;
-    if (entry)
-      contentStore.delete(entry.content);
-  };
-}
-
-function saveFile(db, filename, lines, lastModified) {
-  return new Promise((resolve, reject) => {
-    let data = new TextEncoder().encode(Array.from(lines).join("\n"));
-    let tx = db.transaction(["file-entries", "file-contents"], "readwrite");
-    let entryStore = tx.objectStore("file-entries");
-    let contentStore = tx.objectStore("file-contents");
-
-    clearContent(filename, entryStore, contentStore);
-    contentStore.add(data).onsuccess = event => {
-      let content = event.target.result;
-      entryStore.put({lastModified, content}, filename);
-    };
-
-    tx.oncomplete = () => resolve();
-    tx.onerror = tx.onabort = event => reject(event.target.error);
-  });
-}
-
-export async function init(db, legacyStorageItems) {
-  let prefix = "file:";
-
-  for (let key in legacyStorageItems) {
-    // This regex matches `file:` but ignores `file:///`
-    if (/^file:([^/])/.exec(key)) {
-      let filename = key.slice(prefix.length);
-      let {content, lastModified} = legacyStorageItems[key];
-
-      await saveFile(db, filename, content, lastModified);
-      browser.storage.local.remove(key);
-    }
-  }
-
-  database = db;
-}
-
-function getDatabase() {
-  if (!database)
-    throw new Error("Database hasn't been opened. Did you call start()?");
-  return database;
-}
-
-export let IO =
-{
+// This is a facade implementation that forwards to the current concrete
+// implementation of IO. By default IndexedDB is used but if it's unavailable
+// a fallback to `browser.storage.local` is used.
+export let IO = {
   /**
    * Reads text lines from a file.
    * @param {string} filename
@@ -80,43 +35,7 @@ export let IO =
    *    Promise to be resolved or rejected once the operation is completed
    */
   async readFromFile(filename, listener) {
-    let data = await new Promise((resolve, reject) => {
-      let db = getDatabase();
-      let tx = db.transaction(["file-entries", "file-contents"], "readonly");
-      let entryStore = tx.objectStore("file-entries");
-      let contentStore = tx.objectStore("file-contents");
-
-      entryStore.get(filename).onsuccess = entryEvent => {
-        let entry = entryEvent.target.result;
-        if (!entry) {
-          reject(new Error("File does not exist"));
-          return;
-        }
-
-        contentStore.get(entry.content).onsuccess = contentEvent => {
-          resolve(contentEvent.target.result);
-        };
-      };
-
-      tx.onerror = tx.onabort = event => reject(event.target.error);
-    });
-
-    let decoder = new TextDecoder();
-    let start = 0;
-
-    while (true) {
-      let index = data.indexOf(10 /* newline character */, start + 1000);
-      let end = index != -1 ? index : data.length;
-      let text = decoder.decode(data.subarray(start, end));
-
-      for (let line of text.split("\n"))
-        listener(line);
-
-      if (index == -1)
-        break;
-
-      start = index + 1;
-    }
+    return io.readFromFile(filename, listener);
   },
 
   /**
@@ -130,7 +49,7 @@ export let IO =
    *    Promise to be resolved or rejected once the operation is completed
    */
   async writeToFile(filename, lines) {
-    await saveFile(getDatabase(), filename, lines, Date.now());
+    return io.writeToFile(filename, lines);
   },
 
   /**
@@ -143,27 +62,7 @@ export let IO =
    *    Promise to be resolved or rejected once the operation is completed
    */
   renameFile(oldName, newName) {
-    return new Promise((resolve, reject) => {
-      let db = getDatabase();
-      let tx = db.transaction(["file-entries", "file-contents"], "readwrite");
-      let entryStore = tx.objectStore("file-entries");
-      let contentStore = tx.objectStore("file-contents");
-
-      entryStore.get(oldName).onsuccess = event => {
-        let entry = event.target.result;
-        if (!entry) {
-          reject(new Error("File does not exist"));
-          return;
-        }
-
-        clearContent(newName, entryStore, contentStore);
-        entryStore.put(entry, newName);
-        entryStore.delete(oldName);
-      };
-
-      tx.oncomplete = () => resolve();
-      tx.onerror = tx.onabort = event => reject(event.target.error);
-    });
+    return io.renameFile(oldName, newName);
   },
 
   /**
@@ -175,25 +74,43 @@ export let IO =
    *    completed
    */
   statFile(filename) {
-    return new Promise((resolve, reject) => {
-      let db = getDatabase();
-      let tx = db.transaction(["file-entries"], "readonly");
-      let store = tx.objectStore("file-entries");
+    return io.statFile(filename);
+  },
 
-      store.get(filename).onsuccess = event => {
-        let entry = event.target.result;
-        let exists = false;
-        let lastModified;
-
-        if (entry) {
-          exists = true;
-          lastModified = entry.lastModified;
+  /**
+   * Initialize the storage
+   * @return {Promise} initialization promise
+   */
+  initialize() {
+    if (!initializationPromise) {
+      initializationPromise = (async() => {
+        io = ioIdb;
+        try {
+          await io.initialize();
         }
+        catch (e) {
+          if (e instanceof DOMException &&
+              e.name == "InvalidStateError") {
+            // fall back to `browser.storage.local` API if IndexedDb
+            // is unavailable, eg. in Firefox in private mode. See
+            // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/231
+            io = ioBsl;
+            try {
+              await io.initialize();
+            }
+            catch {
+              initializationPromise = null;
+              throw e;
+            }
+          }
+          else {
+            initializationPromise = null;
+            throw e;
+          }
+        }
+      })();
+    }
 
-        resolve({exists, lastModified});
-      };
-
-      tx.onerror = tx.onabort = event => reject(event.target.error);
-    });
+    return initializationPromise;
   }
 };

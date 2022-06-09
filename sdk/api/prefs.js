@@ -17,11 +17,9 @@
 
 import browser from "webextension-polyfill";
 import {EventEmitter} from "adblockpluscore/lib/events.js";
+import {getDatabase} from "./io-idb.js";
 
-let eventEmitter = new EventEmitter();
-let database;
-
-let prefs = Object.create({
+export const defaults = Object.create({
   analytics: {trustedHosts: ["adblockplus.org",
                              "notification.adblockplus.org",
                              "easylist-downloads.adblockplus.org"]},
@@ -35,75 +33,124 @@ let prefs = Object.create({
   show_statsinpopup: true,
   subscriptions_autoupdate: true,
   subscriptions_fallbackerrors: 5,
-  subscriptions_fallbackurl: "https://adblockplus.org/getSubscription?version=%VERSION%&url=%SUBSCRIPTION%&downloadURL=%URL%&error=%ERROR%&responseStatus=%RESPONSESTATUS%",
+  subscriptions_fallbackurl: "https://adblockplus.org/getSubscription?version=%VERSION%&url=%SUBSCRIPTION%&downloadURL=%URL%&error=%ERROR%&responseStatus=%RESPONSESTATUS%"
+});
 
+export let Prefs = {
   on(preference, callback) {
     eventEmitter.on(preference, callback);
   },
-
   off(preference, callback) {
     eventEmitter.off(preference, callback);
   }
-});
+};
 
-function updatePref(name, updateIDB) {
-  updateIDB(database.transaction(["prefs"], "readwrite").objectStore("prefs"));
-  eventEmitter.emit(name);
+const KEY_PREFIX = "abp:pref:";
+
+let eventEmitter = new EventEmitter();
+let overrides = new Map();
+let initializationPromise;
+
+function keyToPref(key) {
+  return key.startsWith(KEY_PREFIX) ? key.substr(KEY_PREFIX.length) : null;
 }
 
-export let Prefs = new Proxy(prefs, {
-  set(obj, name, value) {
-    obj[name] = value;
-    updatePref(name, store => store.put({name, value}));
-    return true;
-  },
+function prefToKey(pref) {
+  return `${KEY_PREFIX}${pref}`;
+}
 
-  deleteProperty(obj, name) {
-    delete obj[name];
-    updatePref(name, store => store.delete(name));
-    return true;
-  }
-});
-
-async function migratePrefs(db, legacyStorageItems) {
-  let keys = [];
-
-  await new Promise((resolve, reject) => {
-    let tx = db.transaction(["prefs"], "readwrite");
-    let store = tx.objectStore("prefs");
-
-    for (let name in prefs) {
-      let key = `pref:${name}`;
-
-      if (key in legacyStorageItems) {
-        store.put({name, value: legacyStorageItems[key]});
-        keys.push(key);
+function addPreference(preference) {
+  Object.defineProperty(Prefs, preference, {
+    get() {
+      return (overrides.has(preference) ?
+        overrides.get(preference) :
+        defaults[preference]);
+    },
+    set(value) {
+      let key = prefToKey(preference);
+      if (value === defaults[preference]) {
+        overrides.delete(preference);
+        browser.storage.local.remove(key);
+        return;
       }
-    }
 
-    tx.oncomplete = () => resolve();
-    tx.onerror = event => reject(event.target.error);
+      overrides.set(preference, value);
+      browser.storage.local.set({[key]: value});
+    },
+    enumerable: true
   });
-
-  if (keys.length > 0)
-    browser.storage.local.remove(keys);
 }
 
-function loadPrefs(db) {
+export async function migratePrefs(db) {
   return new Promise((resolve, reject) => {
-    let tx = db.transaction(["prefs"], "readonly");
-    let store = tx.objectStore("prefs");
-
-    store.getAll().onsuccess = event => resolve(event.target.result);
+    let tx = db.transaction(["prefs"], "readwrite");
+    tx.oncomplete = () => resolve();
     tx.onerror = tx.onabort = event => reject(event.target.error);
+
+    let prefsStore;
+    try {
+      prefsStore = tx.objectStore("prefs");
+    }
+    catch (e) {
+      // no "prefs" object store
+      return;
+    }
+    prefsStore.getAll().onsuccess = event => {
+      for (let {name, value} of event.target.result)
+        savePreference(name, value);
+      prefsStore.clear();
+    };
   });
 }
 
-export async function init(db, legacyStorageItems) {
-  await migratePrefs(db, legacyStorageItems);
+function savePreference(name, value) {
+  let key = prefToKey(name);
+  overrides.set(name, value);
+  browser.storage.local.set({[key]: value});
+}
 
-  for (let {name, value} of await loadPrefs(db))
-    prefs[name] = value;
+function onChanged(changes, areaName) {
+  if (areaName != "local")
+    return;
 
-  database = db;
+  for (let key in changes) {
+    let pref = keyToPref(key);
+    if (pref && defaults[pref]) {
+      let change = changes[key];
+      if ("newValue" in change && change.newValue != defaults[pref])
+        overrides.set(pref, change.newValue);
+      else
+        overrides.delete(pref);
+
+      eventEmitter.emit(pref);
+    }
+  }
+}
+
+async function loadPreferences() {
+  let prefs = Object.keys(Object.getPrototypeOf(defaults));
+  prefs.forEach(addPreference);
+
+  let items = await browser.storage.local.get(prefs.map(prefToKey));
+  for (let key in items)
+    overrides.set(keyToPref(key), items[key]);
+}
+
+export async function init() {
+  if (!initializationPromise) {
+    initializationPromise = (async() => {
+      try {
+        let db = getDatabase();
+        await migratePrefs(db);
+      }
+      catch (e) {
+        // db might be unavailable
+      }
+
+      await loadPreferences();
+      browser.storage.onChanged.addListener(onChanged);
+    })();
+  }
+
+  return initializationPromise;
 }
