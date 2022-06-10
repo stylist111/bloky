@@ -307,19 +307,19 @@ Checks that the bundled code can be imported and re-bundled
 
 ```
 # generate the subscriptions list
-npm run subs-init
+npm run subs-init [-- -o /tmp/custom_subscriptions_mv3.json]
 
 # edit the subscriptions manually (eg. use test subscription "https://testpages.adblockplus.org/en/abp-testcase-subscription.txt")
 subl node_modules/adblockpluscore/build/data/subscriptions_mv3.json
 
 # fetch the subscriptions
-npm run subs-fetch [-- -i /tmp/custom_subscriptions_mv3.json -o /tmp/output]
+npm run subs-fetch [-- -i /tmp/custom_subscriptions_mv3.json -o /tmp/abp_rules]
 
 # convert to DNR (npm run convert-subscriptions using abp2dnr from webext-sdk)
-npm run subs-convert [-- -i /tmp/input -o /tmp/output ]
+npm run subs-convert [-- -i /tmp/abp_rules -o /tmp/dnr_rules ]
 
 # generate the fragment
-npm run subs-generate [-- -i /tmp/input -o /tmp/output/custom_fragment.tpl -p "/custom_subscriptions"]
+npm run subs-generate [-- -i /tmp/dnr_rules -o /tmp/dnr_rules/custom_fragment.tpl -p "/subscriptions"]
 
 # edit ruleset to enable it (for testing purpose)
 subl subscriptions/rules.json.tpl
@@ -334,6 +334,7 @@ npm run build
 In the most common use case (no specific requirements and changes needed) the scripts calls chain might look as follows:
 ```
 npm run subs-init
+npm run subs-merge
 npm run subs-fetch
 npm run subs-convert
 npm run subs-generate

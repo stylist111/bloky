@@ -71,7 +71,8 @@
     "test-bundle": "node test/bundle/run.js",
     "test-scripts": "mocha test/scripts/*.js",
     "subs-init": "npm run --prefix node_modules/adblockpluscore update-subscriptions:mv3",
-    "subs-fetch": "npm run --prefix node_modules/adblockpluscore fetch-subscriptions",
+    "subs-merge": "npm run --prefix node_modules/adblockpluscore merge-subscriptions -- -o ../../custom-subscriptions.json",
+    "subs-fetch": "npm run --prefix node_modules/adblockpluscore fetch-subscriptions -- -i ../../custom-subscriptions.json",
     "subs-convert": "node scripts/convertSubscriptions.js",
     "subs-generate": "node scripts/generateSubscriptionsFragment.js",
     "create-allowlisting-keypair": "node scripts/createKeypair.js"
