@@ -1,0 +1,38 @@
+# Copyright (c) 2019-present eyeo GmbH
+#
+# This module is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+FROM node:16
+
+# Build custom extension
+# enable unsafe-perm to avoid problems with running npm as root
+# see https://gitlab.com/eyeo/adblockplus/abpui/adblockplusui/-/issues/193
+RUN export npm_config_unsafe_perm=true
+
+# Update git version to fix problems with ls-files command
+# https://gitlab.com/eyeo/adblockplus/abpui/adblockplusui/-/issues/1040
+RUN echo "deb http://deb.debian.org/debian stretch-backports main" > /etc/apt/sources.list.d/stretch-backports.list
+RUN apt-get update
+RUN apt-get -t stretch-backports install -y git
+
+# Clone ABPUI
+RUN git clone -b 3.13 https://gitlab.com/eyeo/adblockplus/abpui/adblockplusui.git
+# Update dependencies
+RUN cd adblockplusui && npm run submodules:update && git submodule status && npm install --legacy-peer-deps
+# Create extension builds
+RUN rm -rf adblockplusui/vendor/webext-sdk && mkdir adblockplusui/vendor/webext-sdk
+COPY . adblockplusui/vendor/webext-sdk
+RUN cd adblockplusui/vendor/webext-sdk && npm install
+RUN cd adblockplusui/adblockpluschrome && npx gulp build -t chrome -c development
+RUN mv adblockplusui/adblockpluschrome/adblockpluschrome-*.zip /extension.zip
