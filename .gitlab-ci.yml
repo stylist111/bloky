@@ -152,8 +152,8 @@ test:v3:edge:linux:
   needs:
     - job: build
   script:
-    - docker build --no-cache -t webext -f test/dockerfiles/Dockerfile .
-    - docker run --shm-size=256m webext
+    - docker build -t functional -f test/dockerfiles/functional.Dockerfile .
+    - docker run --shm-size=256m -e TEST_PARAMS="v2 edge" functional
   interruptible: true
 
 .testpages-integration:

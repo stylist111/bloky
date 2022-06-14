@@ -22,7 +22,7 @@ for Chromium and Firefox extensions (like [Adblock Plus][abpui]).
   * [Linting the code](#linting-the-code)
 * [Testing](#testing)
   * [Serving the test pages](#serving-the-test-pages)
-  * [Building the test extension](#building-the-test-extension)
+  * [Using the test extension](#using-the-test-extension)
   * [Using the test runner](#using-the-test-runner)
 
 </div>
@@ -249,11 +249,29 @@ through the global `EWE` object.
 Runner [options](#test-options) need to be preceded by two dashes (`--`), for
 example `--timeout 10000`.
 
-Edge tests can be also performed on Docker, to achieve that run
-following commands:
+#### Using the test runner on docker
 
-    docker build  --no-cache -t webext -f test/dockerfiles/Dockerfile .
-    docker run -it webext
+Running tests locally sometimes shows different results than on the CI/CD
+pipeline. The reason why is that functional tests run embedded in the browser,
+which may behave differently depending on the platform and on machine
+resources.
+
+Running the tests in docker may be useful to locally reproduce the same
+infrastructure the CI offers, especially on Windows or MacOS platforms. To do
+so, run the following commands:
+
+    docker build -t functional -f test/dockerfiles/functional.Dockerfile .
+    docker run -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" -it functional
+
+Please notice that the `TEST_PARAMS` argument can also take the additional
+options described previously.
+
+Tip: The following resources setup on a local MacOS Docker installation has
+proven to be close enough to the Gitlab linux shared runners behaviour:
+
+- CPUs: 1
+- Memory: 1.5 GB
+- Swap: 1.5 GB
 
 ### Building ABPUI extension and running testpages integration tests
 
@@ -288,7 +306,7 @@ is recommended to [use the TESTS_EXCLUDE option](https://gitlab.com/eyeo/adblock
 [dev]: https://gitlab.com/eyeo/webext/webext-sdk#development
 [notifications-module]: https://eyeo.gitlab.io/adblockplus/abc/webext-sdk/master/docs/#notifications
 [allowlisting-module]: https://eyeo.gitlab.io/adblockplus/abc/webext-sdk/master/docs/#allowlisting
-[testpages-project](https://gitlab.com/eyeo/adblockplus/abc/testpages.adblockplus.org)
+[testpages-project]: https://gitlab.com/eyeo/adblockplus/abc/testpages.adblockplus.org
 
 ### Bundle test
 
