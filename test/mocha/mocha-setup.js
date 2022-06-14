@@ -74,8 +74,13 @@ beforeEach(function() {
     await fn.call(this);
 
     let error = await runInBackgroundPage([{op: "getLastError"}]);
-    if (error)
-      throw new Error(error);
+    if (error) {
+      // https://github.com/mozilla/webextension-polyfill/issues/384
+      if (error.includes("A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received"))
+        console.warn(error);
+      else
+        throw new Error(error.message);
+    }
   };
 });
 
