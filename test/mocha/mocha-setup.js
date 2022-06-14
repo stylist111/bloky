@@ -18,7 +18,7 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 
-import {TEST_PAGES_URL, Page, Popup, isMV3} from "../utils.js";
+import {TEST_PAGES_URL, Page, Popup, isMV3, setMinTimeout} from "../utils.js";
 import {addFilter, EWE, runInBackgroundPage, removeFakeListeners}
   from "../messaging.js";
 
@@ -32,7 +32,7 @@ if (timeout)
   mocha.timeout(parseInt(timeout, 10));
 
 before(async function() {
-  this.timeout(5000);
+  setMinTimeout(this, 5000);
 
   try {
     await fetch(TEST_PAGES_URL);
@@ -52,7 +52,7 @@ before(async function() {
 });
 
 after(async function() {
-  this.timeout(3000);
+  setMinTimeout(this, 3000);
 
   await runInBackgroundPage([
     {op: "getGlobal", arg: "self"},

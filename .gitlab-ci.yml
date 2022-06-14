@@ -134,7 +134,7 @@ test:v2:edge:windows:
     - npm install
     - Start-Process "node" -ArgumentList "test/start-server.js" -PassThru
   script:
-    - npm test -- v2 edge --timeout=15000
+    - npm test -- v2 edge --timeout=10000
   tags:
     - shared-windows
     - windows

@@ -39,7 +39,7 @@ describe("Blocking", function() {
         return true;
       }
       catch (e) {}
-    }, 500, "image.png was not blocked");
+    }, 1000, "image.png was not blocked");
   });
 
   it("does not block a request using a disabled filter", async function() {
