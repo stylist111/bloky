@@ -24,7 +24,7 @@ import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {parseURL} from "adblockpluscore/lib/url.js";
 
 import {filterEngine} from "./index.js";
-import {getFrameInfo} from "./frame-state.js";
+import {getFrameInfo, isTopLevelFrameId} from "./frame-state.js";
 import {ignoreNoConnectionError} from "../errors.js";
 import {logItem} from "./diagnostics.js";
 import {getSitekey, setSitekeyFromHeaders} from "./sitekey.js";
@@ -79,8 +79,15 @@ class RequestFilter {
     return details.initiator || details.documentUrl;
   }
 
-  getFrameInfo(details, initiator) {
-    return getFrameInfo(details.tabId, this.getFrameId(details), initiator);
+  getFrameInfo(details) {
+    if (details.type == "sub_frame")
+      return getFrameInfo(details.tabId, details.parentFrameId);
+    return getFrameInfo(
+      details.tabId,
+      details.frameId,
+      details.parentFrameId,
+      this.getInitiator(details)
+    );
   }
 
   getContentType(details) {
@@ -160,7 +167,7 @@ class RequestFilter {
       });
     }
 
-    let frame = this.getFrameInfo(details, initiator);
+    let frame = this.getFrameInfo(details);
     if (!frame)
       return;
 
@@ -310,8 +317,6 @@ class RequestCompletionFilter extends RequestFilter {
     if (wasAllowlisted || wasCsp)
       return;
 
-    let initiator = this.getInitiator(details);
-
     if (type == "main_frame" || type == "sub_frame") {
       // for these two types, it's unreliable if frame is there or not
       // yet. The request could be completed before or after the new
@@ -329,7 +334,7 @@ class RequestCompletionFilter extends RequestFilter {
       );
       let specificOnly = !!specificOnlyFilter;
 
-      if (frameId == 0) {
+      if (isTopLevelFrameId(frameId)) {
         let popupFilter = matcher.match(
           url, contentTypes.POPUP, hostname, sitekey, specificOnly
         );
@@ -344,7 +349,7 @@ class RequestCompletionFilter extends RequestFilter {
       logItem(details, null, matchInfo);
     }
     else {
-      let frame = this.getFrameInfo(details, initiator);
+      let frame = this.getFrameInfo(details);
       if (!frame)
         return;
 

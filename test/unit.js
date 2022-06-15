@@ -2,6 +2,7 @@ import "mocha/mocha.js";
 import "mocha/mocha.css";
 
 import "./mocha/mocha-setup.js";
+import "./expect-matchers.js";
 import "./request-filter.js";
 import "./content-filter.js";
 import "./api.js";

@@ -19,7 +19,7 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 
 import {Page, Popup, setMinTimeout, wait, executeScript, isFirefox, isEdge,
-        firefoxVersion, getVisibleElement, isMV3, TEST_PAGES_URL,
+        getVisibleElement, isMV3, TEST_PAGES_URL,
         TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN,
         isCustomSubsExtension} from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, addFakeListener,
@@ -952,14 +952,6 @@ describe("API", function() {
 
       setMinTimeout(this, 3000);
 
-      expect.extend({
-        anyNullable(received, type) {
-          return {
-            pass: received == null || typeof received == type
-          };
-        }
-      });
-
       function expectedBlockingFilter(filterText) {
         return {
           text: filterText,
@@ -1060,23 +1052,28 @@ describe("API", function() {
         return expectedRequestUrl(`${TEST_PAGES_URL}/${relativeUrl}`);
       }
 
-      async function expectLoggedMessages(getReceivedEvents, requests) {
+      async function expectLoggedMessages(getReceivedEvents, mandatoryEvents,
+                                          optionalEvents = []) {
         // Some of the events we're checking for here may be emitted
         // after the page is done loading, like elemhide.
+        let maxEventsLength = mandatoryEvents.length + optionalEvents.length;
         try {
-          await wait(() => getReceivedEvents().length >= requests.length,
+          await wait(() => getReceivedEvents().length >= maxEventsLength,
                      1000, null, 50);
         }
         catch (e) {
           // Rather than fail in the catch, we're going to fail with
-          // the assertions below. This will give better output.
+          // the assertions below. This will give better output with
+          // highlighting which events were unmatched. Also, it lets
+          // us not fail if the missing requests were the optional
+          // ones.
         }
         // add a little wait here in case there are extra unexpected events
         await new Promise(r => setTimeout(r, 50));
 
         let receivedEvents = getReceivedEvents();
-        expect(receivedEvents).toHaveLength(requests.length);
-        expect(receivedEvents).toEqual(expect.arrayContaining(requests));
+        expect(receivedEvents)
+          .toBeArrayContainingExactly(mandatoryEvents, optionalEvents);
       }
 
       function compareMatchInfo(m1, m2) {
@@ -1144,7 +1141,10 @@ describe("API", function() {
       }
 
       async function checkLogging(filters, eventOptions, callbackOrPage,
-                                  expectedLogs, filterToCurrentTab = true) {
+                                  mandatoryEvents, {
+                                    filterToCurrentTab = true,
+                                    optionalEvents = []
+                                  } = {}) {
         let callback = callbackOrPage;
         if (typeof callbackOrPage == "string")
           callback = () => new Page(callbackOrPage).loaded;
@@ -1160,10 +1160,12 @@ describe("API", function() {
         let getReceivedEvents =
           () => getReceivedEventsFromFake(fake, tabId, filterToCurrentTab);
 
-        await expectLoggedMessages(getReceivedEvents, expectedLogs);
+        await expectLoggedMessages(
+          getReceivedEvents, mandatoryEvents, optionalEvents
+        );
       }
 
-      it("it does not log removed items", async function() {
+      it("does not log removed items", async function() {
         let fake = await addFakeListener({namespace: "reporting",
                                           eventName: "onBlockableItem"});
 
@@ -1526,50 +1528,204 @@ describe("API", function() {
       }
 
       it("logs allowlisting for different domain iframe", async function() {
-        let expectedEvents = [{
-          filter: expectedAllowingFilter(
-            `@@|${TEST_PAGES_URL}/image.html^$document`
-          ),
-          matchInfo: {
-            ...allowingMatchInfo,
-            docDomain: CROSS_DOMAIN,
-            allowingReason: "document"
-          },
-          request: expectedRequestRelativeUrl("image.html")
-        }, {
-          filter: expectedAllowingFilter(
-            `@@|${TEST_PAGES_URL}/image.html^$document`
-          ),
-          matchInfo: {
-            ...allowingMatchInfo,
-            docDomain: TEST_PAGES_DOMAIN,
-            specificOnly: false
-          },
-          request: expectedRequestRelativeUrl("image.html")
-        }, {
-          filter: expectedAllowingFilter(
-            `@@|${TEST_PAGES_URL}/image.html^$document`
-          ),
-          matchInfo: {
-            ...allowingMatchInfo,
-            docDomain: TEST_PAGES_DOMAIN,
-            specificOnly: false
-          },
-          request: expectedRequestRelativeUrl("image.png")
-        }];
-        if (isFirefox() && firefoxVersion() >= 97) {
-          // Duplicated event in Firefox
-          // see https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/150
-          // and https://bugzilla.mozilla.org/show_bug.cgi?id=1750196
-          expectedEvents.push(expectedEvents[0]);
-        }
-
-        let url = `${CROSS_DOMAIN_URL}/iframe.html`;
         await checkLogging(
           [`@@|${TEST_PAGES_URL}/image.html^$document`],
           allowingEventOptions,
-          () => new Page(url, true).loaded,
-          expectedEvents
+          () => new Page(`${CROSS_DOMAIN_URL}/iframe.html`, true).loaded,
+          [{
+            filter: expectedAllowingFilter(
+              `@@|${TEST_PAGES_URL}/image.html^$document`
+            ),
+            matchInfo: {
+              ...allowingMatchInfo,
+              docDomain: CROSS_DOMAIN,
+              allowingReason: "document"
+            },
+            request: expectedRequestRelativeUrl("image.html")
+          }, {
+            filter: expectedAllowingFilter(
+              `@@|${TEST_PAGES_URL}/image.html^$document`
+            ),
+            matchInfo: {
+              ...allowingMatchInfo,
+              docDomain: TEST_PAGES_DOMAIN,
+              specificOnly: false
+            },
+            request: expectedRequestRelativeUrl("image.html")
+          }, {
+            filter: expectedAllowingFilter(
+              `@@|${TEST_PAGES_URL}/image.html^$document`
+            ),
+            matchInfo: {
+              ...allowingMatchInfo,
+              docDomain: TEST_PAGES_DOMAIN,
+              specificOnly: false
+            },
+            request: expectedRequestRelativeUrl("image.png")
+          }]
+        );
+      });
+
+      it("logs allowlisting for nested iframe", async function() {
+        await checkLogging(
+          [`@@${TEST_PAGES_URL}/iframe.html$document`],
+          allowingEventOptions,
+          "nested-iframe.html",
+          [{
+            filter: expectedAllowingFilter(
+              `@@${TEST_PAGES_URL}/iframe.html$document`
+            ),
+            matchInfo: {...allowingMatchInfo, allowingReason: "document"},
+            request: expectedRequestRelativeUrl("iframe.html")
+          }, {
+            filter: expectedAllowingFilter(
+              `@@${TEST_PAGES_URL}/iframe.html$document`
+            ),
+            matchInfo: {
+              ...allowingMatchInfo,
+              specificOnly: false
+            },
+            request: expectedRequestRelativeUrl("iframe.html")
+          }, {
+            filter: expectedAllowingFilter(
+              `@@${TEST_PAGES_URL}/iframe.html$document`
+            ),
+            matchInfo: {
+              ...allowingMatchInfo,
+              specificOnly: false
+            },
+            request: expectedRequestRelativeUrl("image.html")
+          }, {
+            filter: expectedAllowingFilter(
+              `@@${TEST_PAGES_URL}/iframe.html$document`
+            ),
+            matchInfo: {...allowingMatchInfo, specificOnly: false},
+            request: expectedRequestRelativeUrl("image.png")
+          }]
+        );
+      });
+
+      it("logs allowlisting for contents of aborted iframe", async function() {
+        await checkLogging(
+          [`@@${TEST_PAGES_URL}/nested-iframe-aborted-request.html$document`],
+          allowingEventOptions,
+          "nested-iframe-aborted-request.html",
+          [{
+            filter: expectedAllowingFilter(
+              `@@${TEST_PAGES_URL}/nested-iframe-aborted-request.html$document`
+            ),
+            matchInfo: {...allowingMatchInfo, allowingReason: "document"},
+            request: expectedRequestRelativeUrl("nested-iframe-aborted-request.html")
+          }, {
+            filter: expectedAllowingFilter(
+              `@@${TEST_PAGES_URL}/nested-iframe-aborted-request.html$document`
+            ),
+            matchInfo: {
+              ...allowingMatchInfo,
+              docDomain: null,
+              specificOnly: false
+            },
+            request: expectedRequestRelativeUrl("nested-iframe-aborted-request.html")
+          }, {
+            filter: expectedAllowingFilter(
+              `@@${TEST_PAGES_URL}/nested-iframe-aborted-request.html$document`
+            ),
+            matchInfo: {
+              ...allowingMatchInfo,
+              specificOnly: false
+            },
+            request: expectedRequestRelativeUrl("image.html")
+          }, {
+            filter: expectedAllowingFilter(
+              `@@${TEST_PAGES_URL}/nested-iframe-aborted-request.html$document`
+            ),
+            matchInfo: {...allowingMatchInfo, specificOnly: false},
+            request: expectedRequestRelativeUrl("image.png")
+          }],
+          {
+            // This event may appear depending on the order frames are
+            // loaded and then committed. If it's committed first (eg
+            // firefox), we correctly get this event before the frame
+            // ultimately errors. If it would only be committed later
+            // (eg chrome), we don't get this event. Blocking should
+            // be the same either way.
+            optionalEvents: [{
+              filter: expectedAllowingFilter(
+                `@@${TEST_PAGES_URL}/nested-iframe-aborted-request.html$document`
+              ),
+              matchInfo: {...allowingMatchInfo, specificOnly: false},
+              request: expectedRequestRelativeUrl("iframe.html?delay=500")
+            }]
+          }
+        );
+      });
+
+      it("does not use aborted iframe's url to add allowlisting filters", async function() {
+        // This one is unusual in that the filter applies to the URL
+        // which is aborted. So we might see the frame being committed
+        // and the request for the frame, but we shouldn't see
+        // allowlisting applied to the contents of the frame that are
+        // injected with Javascript.
+        await checkLogging(
+          [`@@${TEST_PAGES_URL}/iframe.html$document`],
+          allowingEventOptions,
+          "nested-iframe-aborted-request.html",
+          [],
+          {
+            optionalEvents: [{
+              filter: expectedAllowingFilter(
+                `@@${TEST_PAGES_URL}/iframe.html$document`
+              ),
+              matchInfo: {...allowingMatchInfo, allowingReason: "document"},
+              request: expectedRequestRelativeUrl("iframe.html?delay=500")
+            }, {
+              filter: expectedAllowingFilter(
+                `@@${TEST_PAGES_URL}/iframe.html$document`
+              ),
+              matchInfo: {...allowingMatchInfo, specificOnly: false},
+              request: expectedRequestRelativeUrl("iframe.html?delay=500")
+            }]
+          }
+        );
+      });
+
+      it("logs allowlisting for nested iframe when the inner frame is set by srcdoc", async function() {
+        await checkLogging(
+          [`@@${TEST_PAGES_URL}/nested-iframe-srcdoc.html$document`],
+          allowingEventOptions,
+          "nested-iframe-srcdoc.html",
+          [{
+            filter: expectedAllowingFilter(
+              `@@${TEST_PAGES_URL}/nested-iframe-srcdoc.html$document`
+            ),
+            matchInfo: {...allowingMatchInfo, allowingReason: "document"},
+            request: expectedRequestRelativeUrl("nested-iframe-srcdoc.html")
+          }, {
+            filter: expectedAllowingFilter(
+              `@@${TEST_PAGES_URL}/nested-iframe-srcdoc.html$document`
+            ),
+            matchInfo: {
+              ...allowingMatchInfo,
+              docDomain: null,
+              specificOnly: false
+            },
+            request: expectedRequestRelativeUrl("nested-iframe-srcdoc.html")
+          }, {
+            filter: expectedAllowingFilter(
+              `@@${TEST_PAGES_URL}/nested-iframe-srcdoc.html$document`
+            ),
+            matchInfo: {
+              ...allowingMatchInfo,
+              specificOnly: false
+            },
+            request: expectedRequestRelativeUrl("image.html")
+          }, {
+            filter: expectedAllowingFilter(
+              `@@${TEST_PAGES_URL}/nested-iframe-srcdoc.html$document`
+            ),
+            matchInfo: {...allowingMatchInfo, specificOnly: false},
+            request: expectedRequestRelativeUrl("image.png")
+          }]
         );
       });
 
@@ -1645,7 +1801,7 @@ describe("API", function() {
             matchInfo: elemhideMatchInfo,
             request: expectedRequestRelativeUrl("element-hiding.html")
           }],
-          false
+          {filterToCurrentTab: false}
         );
       });
 
@@ -1884,7 +2040,7 @@ describe("API", function() {
             },
             request: expectedRequestRelativeUrl("image.png")
           }],
-          false
+          {filterToCurrentTab: false}
         );
       });
 

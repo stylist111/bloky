@@ -27,6 +27,38 @@ import {getSitekey, setSitekeyFromHeaders, clearAllSitekeys, clearTabSitekeys}
   from "./sitekey.js";
 
 /**
+ * The frameId of the top level frame on each tab.
+ */
+export const TOP_LEVEL_FRAME_ID = 0;
+
+/**
+ * Checks if a frameId corresponds to the top level frame on a tab.
+ * @param {number} frameId
+ * @return {boolean}
+ */
+export function isTopLevelFrameId(frameId) {
+  return frameId == TOP_LEVEL_FRAME_ID;
+}
+
+/**
+ * Checks if a frameId corresponds to a frame on a tab.
+ * @param {number} frameId
+ * @return {boolean}
+ */
+export function isValidFrameId(frameId) {
+  return frameId >= TOP_LEVEL_FRAME_ID;
+}
+
+/**
+ * Checks if a frameId corresponds to an iframe.
+ * @param {number} frameId
+ * @return {boolean}
+ */
+export function isValidChildFrameId(frameId) {
+  return frameId > TOP_LEVEL_FRAME_ID;
+}
+
+/**
  * All known currently active frames, that can be looked up by
  * `tabId`, and then by `frameId` (`[tabId, [frameId, FrameInfo]]`).
  *
@@ -207,8 +239,19 @@ async function discoverExistingFrames() {
       state.set(tabId, frames);
 
       for (let {frameId, parentFrameId, url} of rawFrames) {
-        frames.set(frameId, new FrameInfo(tabId, frameId,
-                                          frames.get(parentFrameId), url));
+        let parent = isValidFrameId(parentFrameId) ?
+            frames.get(parentFrameId) :
+            null;
+
+        // Chrome unfortunately has a bug where getAllFrames doesn't
+        // always return all parent frames
+        // (https://bugs.chromium.org/p/chromium/issues/detail?id=725917).
+        // Not much we can do about it, but if we can't see the
+        // required parent frame we can fall back to the root frame.
+        if (isValidChildFrameId(parentFrameId) && !parent)
+          parent = frames.get(TOP_LEVEL_FRAME_ID);
+
+        frames.set(frameId, new FrameInfo(tabId, frameId, parent, url));
       }
     })
   ));
@@ -255,29 +298,66 @@ function onHeadersReceived(details) {
  * @param {number} details.tabId The tabId of the tab that the updated
  *   frame is on.
  * @param {number} details.frameId The frameId of the updated frame.
- * @param {?number} details.parentFrameId The frameId of the frame
- *   that the updated frame is on. Undefined if the updated frame is
- *   the top-level frame.
+ * @param {number} [details.parentFrameId=-1] The frameId of the frame
+ *   that the updated frame is on. -1 if the updated frame is the
+ *   top-level frame.
  * @param {string} details.url The new url of the frame.
- * @param {boolean} historyStateUpdated True if this was triggered by
- *   a history state update, rather than by a full page navigation.
+ * @param {Object} [options={}]
+ * @param {boolean} [options.historyStateUpdated=false] True if this
+ *   was triggered by a history state update, rather than by a full
+ *   page navigation.
+ * @param {boolean} [options.errorOccurred=false] True if this was
+ *   triggered by a `webNavigation.onErrorOccurred` event rather than
+ *   a `webNavigation.onCommitted` event.
+ * @return {FrameInfo} The newly created frame state.
  */
-function recordFrameFromNavigationEvent({tabId, frameId, parentFrameId, url},
-                                        historyStateUpdated) {
+function recordFrameFromNavigationEvent(
+  {tabId, frameId, parentFrameId = -1, url},
+  {historyStateUpdated = false, errorOccurred = false} = {}) {
   let frames = state.get(tabId);
-  let parent = frames && frames.get(parentFrameId);
 
   // We generally need to throw away any existing frame state for the
   // whole tab when a new top-level frame is committed to the
   // tab. This is because all previous frame state was on the old
   // top-level frame. However, if this was a history API update, those
   // frames could still be there on the page so we can't clear them out.
-  if (!frames || (frameId == 0 && !historyStateUpdated)) {
+  if (!frames || (isTopLevelFrameId(frameId) && !historyStateUpdated)) {
     frames = new Map();
     state.set(tabId, frames);
   }
+  let frame = frames.get(frameId);
+  let parent = isValidFrameId(parentFrameId) ? frames.get(parentFrameId) : null;
 
-  frames.set(frameId, new FrameInfo(tabId, frameId, parent, url));
+  // Same as discoverExistingFrames, if we expect a parent but our
+  // frame state doesn't seem to have that parent, falling back to the
+  // root frame is better than nothing. This might happen due to this
+  // bug: https://bugs.chromium.org/p/chromium/issues/detail?id=725917.
+  if (isValidChildFrameId(parentFrameId) && !parent)
+    parent = frames.get(TOP_LEVEL_FRAME_ID);
+
+  // If the frame had an error instead of loading, we don't want to
+  // use the URL from the error. Otherwise unscrupulous websites could
+  // embed their advert in an iframe that has an allowlisted URL, but
+  // doesn't actually contain the contents of that URL.
+  if (errorOccurred) {
+    if (frame)
+      url = frame.url;
+    else if (parent)
+      url = parent.url;
+  }
+
+  // We might get multiple calls to `recordFrameFromNavigationEvent`
+  // for iframes. This is because we need to listen to several
+  // different events to hear about all frames, including onCommitted
+  // and onBeforeNavigate and onErrorOccurred. To avoid duplicate
+  // onBlockableItem events, we check if the frame we already have is
+  // the same.
+  if (!frame || isTopLevelFrameId(frameId) ||
+      frame.url != url || frame.parent != parent) {
+    frame = new FrameInfo(tabId, frameId, parent, url);
+    frames.set(frameId, frame);
+  }
+  return frame;
 }
 
 function onBeforeNavigate(details) {
@@ -287,15 +367,31 @@ function onBeforeNavigate(details) {
   // frames, so we need to use a different event to get them into our
   // frame state.
   if (details.url == "about:srcdoc")
-    recordFrameFromNavigationEvent(details, false);
+    recordFrameFromNavigationEvent(details);
 }
 
 function onCommitted(details) {
-  recordFrameFromNavigationEvent(details, false);
+  recordFrameFromNavigationEvent(details);
+}
+
+function onErrorOccurred(details) {
+  // On Chrome, errored iframes are never committed, but they are
+  // still on the page and their contents can still be manipulated
+  // with Javascript so we need them in our frame state.
+  // See https://bugs.chromium.org/p/chromium/issues/detail?id=725917
+  //
+  // Firefox's docs don't mention parentFrameId on this event, but
+  // Chrome's do, and it does appear to be there in practice. Check
+  // for it before proceeding in case some browsers don't, since it's
+  // very important to have the parent frame to record frame state
+  // changes.
+  if (isValidChildFrameId(details.frameId) &&
+      typeof details.parentFrameId == "number")
+    recordFrameFromNavigationEvent(details, {errorOccurred: true});
 }
 
 function onHistoryStateUpdated(details) {
-  recordFrameFromNavigationEvent(details, true);
+  recordFrameFromNavigationEvent(details, {historyStateUpdated: true});
 }
 
 function onRemoved(tabId) {
@@ -309,17 +405,31 @@ function onReplaced(addedTabId, removedTabId) {
 }
 
 /**
- * Gets the state for a frame if we have it.
+ * Gets the state for a frame if we have it. If parentFrameId and
+ * initiator are also provided, this function may also construct the
+ * frame and add it to the frame state.
  *
  * @param {number} tabId The tabId of the tab the frame is on.
  * @param {number} frameId The frameId of the frame.
+ * @param {?number} parentFrameId The frameId of the parent of the
+ *   frame being requested. If this is set, it could be used to
+ *   create the frame if it isn't already in the frame state.
  * @param {?string} initiator If getting the frame info is triggered
  *   by a web request, this should be the URL that initiated the
- *   request. Used to provide a temporary frame state for use with
- *   service workers.
+ *   request. If this is set, it could be used to create the frame if
+ *   it isn't already in the frame state. Also used to provide a
+ *   temporary frame state for use with service workers. In Firefox
+ *   APIs, this is referred to as documentURL rather than initiator.
  * @returns {?FrameInfo}
  */
-export function getFrameInfo(tabId, frameId, initiator) {
+export function getFrameInfo(tabId, frameId, parentFrameId, initiator) {
+  // tabId is -1 if the request came from a service worker, so we
+  // construct a temporary frame state for it to use. We don't store
+  // a tabId of -1 in our frame state, so we don't even need to check
+  // it before returning.
+  if (initiator && tabId == -1)
+    return new FrameInfo(tabId, frameId, null, initiator);
+
   let frames = state.get(tabId);
   if (frames) {
     let frame = frames.get(frameId);
@@ -327,12 +437,17 @@ export function getFrameInfo(tabId, frameId, initiator) {
       return frame;
   }
 
-  // Sometimes a request comes through that isn't actually tied to a
-  // real tab or frame. For example, when a service worker initiates a
-  // request. In those cases, we create a temporary frame state to use
-  // in filtering logic.
-  if (initiator)
-    return new FrameInfo(tabId, frameId, null, initiator);
+  // Sometimes the webRequest API can trigger for resources in a frame
+  // before the onCommitted event for the frame. In this case, it
+  // should be safe to construct the frame state early.
+  if (initiator) {
+    return recordFrameFromNavigationEvent({
+      tabId,
+      frameId,
+      parentFrameId,
+      url: initiator
+    });
+  }
 }
 
 export async function start() {
@@ -349,6 +464,7 @@ export async function start() {
     );
     browser.webNavigation.onBeforeNavigate.addListener(onBeforeNavigate);
     browser.webNavigation.onCommitted.addListener(onCommitted);
+    browser.webNavigation.onErrorOccurred.addListener(onErrorOccurred);
     browser.webNavigation.onHistoryStateUpdated.addListener(
       onHistoryStateUpdated);
     browser.tabs.onRemoved.addListener(onRemoved);
@@ -366,6 +482,7 @@ export function stop() {
   browser.webRequest.onHeadersReceived.removeListener(onHeadersReceived);
   browser.webNavigation.onBeforeNavigate.removeListener(onBeforeNavigate);
   browser.webNavigation.onCommitted.removeListener(onCommitted);
+  browser.webNavigation.onErrorOccurred.removeListener(onErrorOccurred);
   browser.webNavigation.onHistoryStateUpdated.removeListener(
     onHistoryStateUpdated);
   browser.tabs.onRemoved.removeListener(onRemoved);

@@ -105,6 +105,23 @@ describe("Blocking", function() {
     await new Page("image.html").expectResource("image.png").toBeBlocked();
   });
 
+  for (let testCase of [
+    {name: "nested iframe", file: "nested-iframe.html"},
+    {name: "nested iframe using srcdoc", file: "nested-iframe-srcdoc.html"},
+    {name: "nested iframe where the request is aborted", file: "nested-iframe-aborted-request.html"}
+  ]) {
+    it(`blocks resources in a ${testCase.name}`, async function() {
+      await addFilter("/image.png");
+      await new Page(testCase.file).expectResource("image.png").toBeBlocked();
+    });
+
+    it(`does not block resources in a ${testCase.name} if the top iframe is allowlisted`, async function() {
+      await addFilter("/image.png");
+      await addFilter(`@@/${testCase.file}$document`);
+      await new Page(testCase.file).expectResource("image.png").toBeLoaded();
+    });
+  }
+
   it("handles $match-case requests", async function() {
     await addFilter(`|${TEST_PAGES_URL}/IMAGE.png$match-case`);
     await new Page("image.html").expectResource("image.png").toBeLoaded();

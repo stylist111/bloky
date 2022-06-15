@@ -79,6 +79,17 @@ async function invalidSitekeyHeader(req, res, next) {
   next();
 }
 
+// Some tests require certain things to happen before other
+// things. This middleware lets you add a delay before the server
+// responds. Pass ?delay=500 as a query parameter to add a 500ms
+// delay.
+async function delay(req, res, next) {
+  if (req.query.delay)
+    setTimeout(next, parseInt(req.query.delay, 10));
+  else
+    next();
+}
+
 function testHeader(req, res, next) {
   let header = req.query["header-name"];
 
@@ -91,6 +102,7 @@ function testHeader(req, res, next) {
 app.use(bypassCache);
 app.use(sitekeyHeader);
 app.use(invalidSitekeyHeader);
+app.use(delay);
 app.use(testHeader);
 app.use(express.static(path.join(dirname, "pages")));
 

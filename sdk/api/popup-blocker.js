@@ -22,7 +22,7 @@ import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 
 import {filterEngine} from "./index.js";
 import {logItem} from "./diagnostics.js";
-import {getFrameInfo} from "./frame-state.js";
+import {getFrameInfo, isTopLevelFrameId} from "./frame-state.js";
 
 let loadingPopups = new Map();
 
@@ -65,7 +65,7 @@ function onPopupURLChanged(details) {
 }
 
 function onCompleted(details) {
-  if (details.frameId == 0 && details.url != "about:blank")
+  if (isTopLevelFrameId(details.frameId) && details.url != "about:blank")
     forgetPopup(details.tabId);
 }
 
