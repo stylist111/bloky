@@ -35,7 +35,7 @@ download the [latest build][builds] (or [build the library yourself][dev]).
 
 The extension's `manifest.json` is required to include the following configuration:
 
-```
+```json
 {
   "manifest_version": 2,
   "background": {
@@ -80,14 +80,14 @@ Consequently, there won't be a global `EWE` object.
 
 #### CommonJS
 
-```
+```javascript
 const EWE = require("@eyeo/webext-sdk");
 EWE.start();
 ```
 
 #### ESM
 
-```
+```javascript
 import * as EWE from "@eyeo/webext-sdk";
 EWE.start();
 ```
@@ -97,7 +97,7 @@ EWE.start();
 In order to enable support for [snippet filters][snippet-filters] you have to get
 the [snippets library][snippets-project] separately and make it available to `EWE`:
 
-```
+```javascript
 let response = await fetch("snippets.js");
 let code = await response.text();
 EWE.snippets.setLibrary(code);
@@ -130,7 +130,7 @@ Files migrated have to be prefixed: ```file:```. Files prefixed with ```file:///
 Using the [notifications module][notifications-module] is optional. To start
 using it, an initialisation is required:
 
-```
+```javascript
 EWE.notifications.start();
 ```
 
@@ -140,7 +140,7 @@ To enable One Click Allowlisting, you need to set the list of
 authorized public keys that can be used to authenticate allowlisting
 requests.
 
-```
+```javascript
 EWE.allowlisting.setAuthorizedKeys(keys);
 ```
 
@@ -150,9 +150,7 @@ detail.
 New keypairs can be created with the correct algorithm and settings by
 using our keypair creation script.
 
-```
-npm run create-allowlisting-keypair
-```
+    npm run create-allowlisting-keypair
 
 See the Development section below for details on running our scripts
 and other EWE development tasks. Keys can also be generated using
@@ -186,18 +184,22 @@ For more information, please refer to the [API documention][docs].
 
 As webpack is our build tool of choice, any [webpack command line options](https://webpack.js.org/api/cli/) can be used.
 
-    # Build only sdk, no test extensions
-    npm run build -- --config-name sdk
+```shell
+# Build only sdk, no test extensions
+npm run build -- --config-name sdk
 
-    # Don't generate any sourcemaps
-    npm run build -- --no-devtool
+# Don't generate any sourcemaps
+npm run build -- --no-devtool
+```
 
 #### Release builds
 
 By default, debug builds are created. If building the library to be used
 in another project you would want to create a release build.
 
-    npm run build -- --env release
+```shell
+npm run build -- --env release
+```
 
 ### Building the documentation
 
@@ -244,7 +246,9 @@ through the global `EWE` object.
 
 ### Using the test runner
 
-    npm test -- {v2|v3|v2-custom} {chromium|firefox|edge} [version|channel] [options]
+```shell
+npm test -- {v2|v3|v2-custom} {chromium|firefox|edge} [version|channel] [options]
+```
 
 Runner [options](#test-options) need to be preceded by two dashes (`--`), for
 example `--timeout 10000`.
@@ -260,8 +264,10 @@ Running the tests in docker may be useful to locally reproduce the same
 infrastructure the CI offers, especially on Windows or MacOS platforms. To do
 so, run the following commands:
 
-    docker build -t functional -f test/dockerfiles/functional.Dockerfile .
-    docker run -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" -it functional
+```shell
+docker build -t functional -f test/dockerfiles/functional.Dockerfile .
+docker run -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" -it functional
+```
 
 Please notice that the `TEST_PARAMS` argument can also take the additional
 options described previously.
@@ -279,18 +285,22 @@ If there are no breaking changes in webext code, you will be able to build
 ABPUI extension with current codebase. To build and extract the custom extension
 on Docker run the following commands:
 
-    docker build -t extension -f test/dockerfiles/extension.Dockerfile .
-    docker run extension
-    docker cp $(docker ps -aqf ancestor=extension):/extension.zip .
+```shell
+docker build -t extension -f test/dockerfiles/extension.Dockerfile .
+docker run extension
+docker cp $(docker ps -aqf ancestor=extension):/extension.zip .
+```
 
 To run testpages integration tests on Docker with the custom extension previously
 created, you may clone the [Testpages project](testpages-project) and follow
 the instructions on [how to run tests with packed extensions](https://gitlab.com/eyeo/adblockplus/abc/testpages.adblockplus.org#packed-extensions). Example:
 
-    cd testpages.adblockplus.org
-    cp <location/to/extension.zip> .
-    docker build -t testpages --build-arg EXTENSION_FILE="extension.zip" .
-    docker run --shm-size=256m -e SKIP_EXTENSION_DOWNLOAD="true" -e TESTS_EXCLUDE="Snippets" testpages
+```shell
+cd testpages.adblockplus.org
+cp <location/to/extension.zip> .
+docker build -t testpages --build-arg EXTENSION_FILE="extension.zip" .
+docker run --shm-size=256m -e SKIP_EXTENSION_DOWNLOAD="true" -e TESTS_EXCLUDE="Snippets" testpages
+```
 
 Note: At the moment the custom extension won't support snippets. That's why it
 is recommended to [use the TESTS_EXCLUDE option](https://gitlab.com/eyeo/adblockplus/abc/testpages.adblockplus.org#tests-subset).
@@ -320,7 +330,7 @@ Checks that the bundled code can be imported and re-bundled
 
 # MV3 subscriptions
 
-```
+```shell
 # generate the subscriptions list
 npm run subs-init [-- -o /tmp/custom_subscriptions_mv3.json]
 
@@ -343,7 +353,6 @@ subl subscriptions/rules.json.tpl
 npm run build
 
 # deploy dist/test-mv3 to browser and test it with testpages
-
 ```
 
 In the most common use case (no specific requirements and changes needed) the scripts calls chain might look as follows:
@@ -372,17 +381,17 @@ Note the following:
 Examples:
 
 * merge product-specific subscriptions file with default subscriptions:
-```
-    npm run subs-merge -- \
-        -a \
-        -i /tmp/product-subscriptions.json \
-        -o $(pwd)/custom-subscriptions.json
+```shell
+npm run subs-merge -- \
+  -a \
+  -i /tmp/product-subscriptions.json \
+  -o $(pwd)/custom-subscriptions.json
 ```
 
 * merge two subscriptions files:
-```
-    npm run subs-merge -- \
-        -i /tmp/product-subscriptions.json \
-        -i /tmp/language_en-subscriptions.json \
-        -o $(pwd)/custom-subscriptions.json
+```shell
+npm run subs-merge -- \
+  -i /tmp/product-subscriptions.json \
+  -i /tmp/language_en-subscriptions.json \
+  -o $(pwd)/custom-subscriptions.json
 ```
