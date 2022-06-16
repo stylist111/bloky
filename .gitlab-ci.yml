@@ -153,7 +153,7 @@ test:v3:edge:linux:
     - job: build
   script:
     - docker build -t functional -f test/dockerfiles/functional.Dockerfile .
-    - docker run --shm-size=256m -e TEST_PARAMS="v2 edge" functional
+    - docker run --shm-size=256m -e TEST_PARAMS="v3 edge" functional
   interruptible: true
 
 .testpages-integration:
