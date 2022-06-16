@@ -2114,46 +2114,6 @@ describe("API", function() {
           );
         });
 
-        it("logs unmatched allowlisted iframe requests", async function() {
-          await checkLogging(
-            [`@@|${TEST_PAGES_URL}/image.html$document`],
-            unmatchedEventOptions,
-            "iframe.html",
-            [{
-              filter: null,
-              matchInfo: unmatchedMainFrameMatchInfo,
-              request: expectedRequestRelativeUrl("iframe.html")
-            }, {
-              filter: expectedAllowingFilter(
-                `@@|${TEST_PAGES_URL}/image.html$document`
-              ),
-              matchInfo: {
-                ...allowingMatchInfo,
-                allowingReason: "document"
-              },
-              request: expectedRequestRelativeUrl("image.html")
-            }, {
-              filter: expectedAllowingFilter(
-                `@@|${TEST_PAGES_URL}/image.html$document`
-              ),
-              matchInfo: {
-                ...allowingMatchInfo,
-                specificOnly: false
-              },
-              request: expectedRequestRelativeUrl("image.html")
-            }, {
-              filter: expectedAllowingFilter(
-                `@@|${TEST_PAGES_URL}/image.html$document`
-              ),
-              matchInfo: {
-                ...allowingMatchInfo,
-                specificOnly: false
-              },
-              request: expectedRequestRelativeUrl("image.png")
-            }]
-          );
-        });
-
         it("logs unmatched third-party requests", async function() {
           await checkLogging(
             [],
@@ -2186,6 +2146,37 @@ describe("API", function() {
               filter: null,
               matchInfo: unmatchedMainFrameMatchInfo,
               request: expectedRequestRelativeUrl("popup.html")
+            }]
+          );
+        });
+
+        it("logs unmatched allowlisted iframe requests", async function() {
+          await checkLogging(
+            [`@@|${TEST_PAGES_URL}/image.html$document`],
+            unmatchedEventOptions,
+            "iframe.html",
+            [{
+              filter: null,
+              matchInfo: unmatchedMainFrameMatchInfo,
+              request: expectedRequestRelativeUrl("iframe.html")
+            }, {
+              filter: expectedAllowingFilter(
+                `@@|${TEST_PAGES_URL}/image.html$document`
+              ),
+              matchInfo: {...allowingMatchInfo, allowingReason: "document"},
+              request: expectedRequestRelativeUrl("image.html")
+            }, {
+              filter: expectedAllowingFilter(
+                `@@|${TEST_PAGES_URL}/image.html$document`
+              ),
+              matchInfo: {...allowingMatchInfo, specificOnly: false},
+              request: expectedRequestRelativeUrl("image.html")
+            }, {
+              filter: expectedAllowingFilter(
+                `@@|${TEST_PAGES_URL}/image.html$document`
+              ),
+              matchInfo: {...allowingMatchInfo, specificOnly: false},
+              request: expectedRequestRelativeUrl("image.png")
             }]
           );
         });

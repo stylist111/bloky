@@ -276,7 +276,7 @@ Tip: The following resources setup on a local MacOS Docker installation has
 proven to be close enough to the Gitlab linux shared runners behaviour:
 
 - CPUs: 1
-- Memory: 1.5 GB
+- Memory: 1.75 GB
 - Swap: 1.5 GB
 
 ### Building ABPUI extension and running testpages integration tests
