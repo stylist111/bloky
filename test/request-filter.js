@@ -287,17 +287,17 @@ describe("Blocking", function() {
       await page.expectResource("image.png").toBeLoaded();
     });
 
+    it("does not inject header", async function() {
+      await addFilter(CSP_FILTER);
+      await addFilter(`@@$csp,sitekey=${SITEKEY}`);
+      expect(await checkViolatedDirective("?sitekey=1")).toBeFalsy();
+    });
+
     it("does not block a request from iframe", async function() {
       await addFilter("/image.png^$image");
       await addFilter(`@@$document,sitekey=${SITEKEY}`);
       let page = new Page("iframe-sitekey.html");
       await page.expectResource("image.png").toBeLoaded();
-    });
-
-    it("does not inject header", async function() {
-      await addFilter(CSP_FILTER);
-      await addFilter(`@@$csp,sitekey=${SITEKEY}`);
-      expect(await checkViolatedDirective("?sitekey=1")).toBeFalsy();
     });
 
     it("does not block a request after a reload", async function() {
@@ -309,7 +309,7 @@ describe("Blocking", function() {
       await page.expectResource("image.png").toBeLoaded();
     });
 
-    it("block a request after a reload if sitekey filter was removed", async function() {
+    it("blocks a request after a reload if sitekey filter was removed", async function() {
       await addFilter("/image.png^$image");
       await addFilter(`@@$sitekey=${SITEKEY}`);
       let page = new Page("image.html?sitekey=1");
