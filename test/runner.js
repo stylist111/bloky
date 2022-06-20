@@ -185,28 +185,23 @@ class Edge {
     if (!version)
       throw new Error("Edge is not installed");
 
-    if (process.platform == "win32") {
-      return await promisify(execFile)(
-        process.execPath,
-        [path.join("node_modules", "msedgedriver", "install.js")],
-        {env: {...process.env, EDGECHROMIUMDRIVER_VERSION: version,
-               npm_config_edgechromiumdriver_skip_download: false}}
-      );
-    }
-    // "install.js" does not work for linux, and does not provide a fallback
-    // mechanism when msedgedriver doesn't exist for the latest Edge version
+    // Based on "node_modules/msedgedriver/install.js", adding a fallback
+    // mechanism when msedgedriver doesn't exist for the latest Edge version.
     let platform = `${process.platform}-${process.arch}`;
     let buildTypes = {
-      "linux-x64": "edgedriver_linux64",
-      "darwin-x64": "edgedriver_mac64",
-      "darwin-arm64": "edgedriver_arm64"
+      "win32-ia32": ["edgedriver_win32.zip", "msedgedriver.exe"],
+      "win32-x64": ["edgedriver_win64.zip", "msedgedriver.exe"],
+      "linux-x64": ["edgedriver_linux64.zip", "msedgedriver"],
+      "darwin-x64": ["edgedriver_mac64.zip", "msedgedriver"],
+      "darwin-arm64": ["edgedriver_arm64.zip", "msedgedriver"]
     };
-    let zip = `${buildTypes[platform]}.zip`;
-    let driver = "msedgedriver";
+    let [zip, driver] = buildTypes[platform];
     let snapshotsDir = path.join(process.cwd(), "test", "edge-snapshots");
     let cacheDir = path.join(snapshotsDir, "download-cache");
-    let driverDir = path.join(process.cwd(), "node_modules", "msedgedriver",
-                              "bin");
+    let driverBinDir = path.join(process.cwd(), "node_modules", "msedgedriver",
+                                 "bin");
+    let driverLibDir = path.join(process.cwd(), "node_modules", "msedgedriver",
+                                 "lib", "msedgedriver");
     let archive = path.join(cacheDir, `${version}-${zip}`);
 
     let vSplit = version.split(".");
@@ -229,9 +224,11 @@ class Edge {
       throw new Error(`msedgedriver was not found for Edge ${version}`);
 
     await extractZip(archive, {dir: cacheDir});
-    await fs.promises.mkdir(driverDir, {recursive: true});
-    await fs.promises.copyFile(path.join(cacheDir, driver),
-                               path.join(driverDir, driver));
+    for (let destinationDir of [driverBinDir, driverLibDir]) {
+      await fs.promises.mkdir(destinationDir, {recursive: true});
+      await fs.promises.copyFile(path.join(cacheDir, driver),
+                                 path.join(destinationDir, driver));
+    }
   }
 
   async getDriver() {
