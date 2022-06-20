@@ -15,7 +15,7 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {filterStorage} from "adblockpluscore/lib/filterStorage.js";
+import {FilterStorage} from "adblockpluscore/lib/filterStorage.js";
 import {default as initializer} from "./initializer.js";
 import {IO} from "./io.js";
 import {addonName, addonVersion} from "./info.js";
@@ -70,7 +70,7 @@ export default {
    */
   async isInFilterStorage(text) {
     let contents = [];
-    await IO.readFromFile(filterStorage.sourceFile,
+    await IO.readFromFile(FilterStorage.sourceFile,
                           line => contents.push(line));
     return contents.some(line => line.includes(text));
   },

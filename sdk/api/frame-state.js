@@ -21,7 +21,7 @@ import {parseURL} from "adblockpluscore/lib/url.js";
 import {ALLOWING_TYPES, contentTypes}
   from "adblockpluscore/lib/contentTypes.js";
 
-import {filterEngine} from "./index.js";
+import {filterEngine} from "./core.js";
 import {logItem} from "./diagnostics.js";
 import {getSitekey, setSitekeyFromHeaders, clearAllSitekeys, clearTabSitekeys}
   from "./sitekey.js";

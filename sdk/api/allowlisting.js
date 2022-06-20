@@ -20,7 +20,7 @@ import {parseURL} from "adblockpluscore/lib/url.js";
 import {MILLIS_IN_HOUR} from "adblockpluscore/lib/time.js";
 import {base64ToArrayBuffer} from "adblockpluscore/lib/rsa.js";
 
-import {filterEngine} from "./index.js";
+import {filterEngine} from "./core.js";
 import {getFrameInfo} from "./frame-state.js";
 import {default as filters} from "./filters.js";
 import {EventDispatcher} from "./types.js";

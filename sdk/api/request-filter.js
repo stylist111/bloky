@@ -23,7 +23,7 @@ import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {parseURL} from "adblockpluscore/lib/url.js";
 
-import {filterEngine} from "./index.js";
+import {filterEngine} from "./core.js";
 import {getFrameInfo, isTopLevelFrameId} from "./frame-state.js";
 import {ignoreNoConnectionError} from "../errors.js";
 import {logItem} from "./diagnostics.js";

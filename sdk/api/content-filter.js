@@ -21,7 +21,7 @@ import {createStyleSheet} from "adblockpluscore/lib/elemHide.js";
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 import {compileScript} from "adblockpluscore/lib/snippets.js";
 
-import {filterEngine} from "./index.js";
+import {filterEngine} from "./core.js";
 import {getFrameInfo} from "./frame-state.js";
 import {logItem, tracingEnabled} from "./diagnostics.js";
 import {debugOptions} from "./debugging.js";

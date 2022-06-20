@@ -15,7 +15,6 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {FilterEngine, Synchronizer} from "adblockpluscore";
 import {notifications as _notifications}
   from "adblockpluscore/lib/notifications.js";
 
@@ -32,8 +31,7 @@ export {default as reporting} from "./reporting.js";
 export {default as debugging} from "./debugging.js";
 export {default as allowlisting} from "./allowlisting.js";
 
-export let synchronizer = new Synchronizer();
-export let filterEngine = new FilterEngine();
+import {filterEngine} from "./core.js";
 
 /**
  * The notifications API (optional usage).
@@ -106,7 +104,7 @@ export async function start(addonInfo) {
   stopped = false;
   messageResponder.start();
   await startAsyncModule(() => initializer.start());
-  synchronizer.start();
+  filterEngine.filterStorage.synchronizer.start();
   let firstRun = configureDefaultSubscriptions();
   return firstRun;
 }
@@ -118,6 +116,6 @@ export function stop() {
   stopped = true;
   messageResponder.stop();
   initializer.stop();
-  synchronizer.stop();
+  filterEngine.filterStorage.synchronizer.stop();
   notifications.stop();
 }

@@ -19,12 +19,11 @@ import browser from "webextension-polyfill";
 
 import {Subscription, DownloadableSubscription}
   from "adblockpluscore/lib/subscriptionClasses.js";
-import {filterStorage} from "adblockpluscore/lib/filterStorage.js";
 import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {recommendations} from "adblockpluscore/lib/recommendations.js";
 import {Filter} from "adblockpluscore/lib/filterClasses.js";
 
-import {synchronizer} from "./index.js";
+import {filterEngine} from "./core.js";
 import {EventDispatcher} from "./types.js";
 import {convertFilter} from "./filters.js";
 import {removeDynamicFilters} from "./dnr-filters.js";
@@ -35,8 +34,10 @@ function convertSubscription(subscription) {
   let {disabled, downloadStatus, homepage,
        version, lastDownload, lastSuccess,
        softExpiration, expires, title, url} = subscription;
+  let {synchronizer} = filterEngine.filterStorage;
 
-  return {enabled: !disabled, downloading: synchronizer.isExecuting(url),
+  return {enabled: !disabled,
+          downloading: synchronizer.isExecuting(url),
           downloadStatus, homepage, version, lastDownload, lastSuccess,
           softExpiration, expires, title, url,
           downloadable: subscription instanceof DownloadableSubscription};
@@ -49,7 +50,7 @@ function convertRecommendation({languages, title, type, url}) {
 function getSubscription(url) {
   let subscription = Subscription.fromURL(url);
 
-  if (filterStorage.hasSubscription(subscription) &&
+  if (filterEngine.filterStorage.hasSubscription(subscription) &&
       subscription instanceof DownloadableSubscription)
     return subscription;
 
@@ -121,6 +122,8 @@ export default {
     if (!Subscription.isValidURL(url))
       throw new Error(`Invalid subscription URL provided: ${url}`);
 
+    let {filterStorage} = filterEngine;
+
     let subscription = Subscription.fromURL(url);
     filterStorage.addSubscription(subscription);
 
@@ -130,7 +133,7 @@ export default {
       subscription.homepage = properties.homepage;
 
     if (!subscription.lastDownload)
-      synchronizer.execute(subscription);
+      filterStorage.synchronizer.execute(subscription);
   },
 
   /**
@@ -141,7 +144,7 @@ export default {
   getDownloadable() {
     let result = [];
 
-    for (let subscription of filterStorage.subscriptions()) {
+    for (let subscription of filterEngine.filterStorage.subscriptions()) {
       if (subscription instanceof DownloadableSubscription)
         result.push(convertSubscription(subscription));
     }
@@ -155,7 +158,7 @@ export default {
    * @return {Array<Subscription>}
    */
   getForFilter(text) {
-    return text ? Array.from(filterStorage.subscriptions(text),
+    return text ? Array.from(filterEngine.filterStorage.subscriptions(text),
                              convertSubscription) : [];
   },
 
@@ -222,7 +225,7 @@ export default {
     let subscription = getSubscription(url);
 
     if (subscription)
-      filterStorage.removeSubscription(subscription);
+      filterEngine.filterStorage.removeSubscription(subscription);
   },
 
   /**
@@ -234,6 +237,7 @@ export default {
    */
   sync(url) {
     let subscriptions = [];
+    let {filterStorage} = filterEngine;
 
     if (url) {
       let subscription = getSubscription(url);
@@ -250,7 +254,7 @@ export default {
       }
     }
     for (let subscription of subscriptions)
-      synchronizer.execute(subscription, true);
+      filterStorage.synchronizer.execute(subscription, true);
   },
 
   /**
@@ -281,6 +285,8 @@ export default {
    */
   async removeAll() {
     let subscriptions = [];
+
+    const {filterStorage} = filterEngine;
 
     for (let subscription of filterStorage.subscriptions()) {
       subscriptions.push(subscription);

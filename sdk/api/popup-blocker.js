@@ -20,7 +20,7 @@ import browser from "webextension-polyfill";
 import {BlockingFilter} from "adblockpluscore/lib/filterClasses.js";
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 
-import {filterEngine} from "./index.js";
+import {filterEngine} from "./core.js";
 import {logItem} from "./diagnostics.js";
 import {getFrameInfo, isTopLevelFrameId} from "./frame-state.js";
 

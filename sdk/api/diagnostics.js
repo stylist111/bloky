@@ -15,9 +15,9 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {filterStorage} from "adblockpluscore/lib/filterStorage.js";
 import {Filter, ElemHideFilter} from "adblockpluscore/lib/filterClasses.js";
 import {parseURL} from "adblockpluscore/lib/url.js";
+import {filterEngine} from "./core.js";
 import {convertFilter} from "./filters.js";
 
 let listeners = [];
@@ -145,7 +145,7 @@ export function logHiddenElements(selectors, filters, sender) {
   };
 
   if (selectors.length > 0) {
-    for (let subscription of filterStorage.subscriptions()) {
+    for (let subscription of filterEngine.filterStorage.subscriptions()) {
       if (subscription.disabled)
         continue;
 

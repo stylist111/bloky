@@ -23,14 +23,12 @@ import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {isValidHostname} from "adblockpluscore/lib/url.js";
 import {RESOURCE_TYPES, contentTypes}
   from "adblockpluscore/lib/contentTypes.js";
-import {filterStorage} from "adblockpluscore/lib/filterStorage.js";
+import {filterEngine} from "./core.js";
 import {createConverter} from "adblockpluscore/lib/dnr/index.js";
 import {ERROR_DUPLICATE_FILTERS, ERROR_FILTER_NOT_FOUND} from "../errors.js";
 
 import {FilterError} from "./types.js";
 import {Prefs} from "./prefs.js";
-
-const {filterState} = filterStorage;
 
 let highestRuleId = 1;
 let dynamicFilters = new Map();
@@ -192,7 +190,7 @@ export async function addFilters(texts, metadata) {
     let {filter, useFilterEngine, ruleIds} = filterDetails;
 
     if (useFilterEngine)
-      await filterStorage.addFilter(filter);
+      await filterEngine.filterStorage.addFilter(filter);
     else
       filterNotifier.emit("filter.added", filter, null);
 
@@ -240,7 +238,7 @@ export async function removeOrDisableFilters(texts, remove = true) {
 
     if (remove) {
       if (details.useFilterEngine)
-        filterStorage.removeFilter(Filter.fromText(text));
+        filterEngine.filterStorage.removeFilter(Filter.fromText(text));
       else
         filterNotifier.emit("filter.removed", Filter.fromText(text), null);
 
@@ -248,7 +246,7 @@ export async function removeOrDisableFilters(texts, remove = true) {
     }
     else {
       if (details.useFilterEngine)
-        filterState.setEnabled(text, false);
+        filterEngine.filterStorage.filterState.setEnabled(text, false);
       else
         filterNotifier.emit("filterState.enabled", text, false, true);
 
@@ -283,7 +281,7 @@ export async function enableFilters(texts) {
     let filter = Filter.fromText(normalized);
 
     if (useFilterEngine)
-      filterState.setEnabled(filter, true);
+      filterEngine.filterStorage.filterState.setEnabled(filter, true);
     else
       filterNotifier.emit("filterState.enabled", normalized, true, false);
 

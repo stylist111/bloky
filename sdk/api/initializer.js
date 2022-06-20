@@ -15,7 +15,7 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {filterEngine} from "./index.js";
+import {filterEngine} from "./core.js";
 import * as frameState from "./frame-state.js";
 import * as requestFilter from "./request-filter.js";
 import * as popupBlocker from "./popup-blocker.js";

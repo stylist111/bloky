@@ -17,14 +17,13 @@
 
 import browser from "webextension-polyfill";
 
-import {filterStorage} from "adblockpluscore/lib/filterStorage.js";
 import {Filter, URLFilter} from "adblockpluscore/lib/filterClasses.js";
 import {SpecialSubscription} from "adblockpluscore/lib/subscriptionClasses.js";
 import {isSlowFilter} from "adblockpluscore/lib/matcher.js";
 import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 
-import {filterEngine} from "./index.js";
+import {filterEngine} from "./core.js";
 import {EventDispatcher, FilterError} from "./types.js";
 import {getFrameInfo} from "./frame-state.js";
 import {addFilters, getMetadataForFilter, setMetadataForFilter,
@@ -32,8 +31,6 @@ import {addFilters, getMetadataForFilter, setMetadataForFilter,
         removeOrDisableFilters, enableFilters}
   from "./dnr-filters.js";
 import {ERROR_DUPLICATE_FILTERS, ERROR_FILTER_NOT_FOUND} from "../errors.js";
-
-let {filterState} = filterStorage;
 
 export function convertFilter(filter) {
   return {
@@ -110,6 +107,8 @@ export default {
       filters.push(filter);
     }
 
+    let {filterStorage} = filterEngine;
+
     if (!metadata) {
       if (filterStorage.filtersExist(filters).length > 0)
         throw new FilterError(ERROR_DUPLICATE_FILTERS);
@@ -140,6 +139,8 @@ export default {
       return;
     }
 
+    let {filterStorage} = filterEngine;
+
     try {
       await filterStorage.setMetadataForFilter(text, metadata);
     }
@@ -168,7 +169,7 @@ export default {
     if (browser.declarativeNetRequest)
       return getMetadataForFilter(text);
 
-    return await filterStorage.getMetadataForFilter(text);
+    return await filterEngine.filterStorage.getMetadataForFilter(text);
   },
 
   /**
@@ -178,7 +179,7 @@ export default {
   async getUserFilters() {
     let result = [];
 
-    for (let subscription of filterStorage.subscriptions()) {
+    for (let subscription of filterEngine.filterStorage.subscriptions()) {
       if (subscription instanceof SpecialSubscription) {
         for (let text of subscription.filterText())
           result.push(convertFilter(Filter.fromText(text)));
@@ -274,7 +275,7 @@ export default {
 
     for (let text of texts) {
       let normalized = Filter.normalize(text);
-      filterState.setEnabled(normalized, true);
+      filterEngine.filterStorage.filterState.setEnabled(normalized, true);
     }
   },
 
@@ -292,7 +293,7 @@ export default {
 
     for (let text of texts) {
       let normalized = Filter.normalize(text);
-      filterState.setEnabled(normalized, false);
+      filterEngine.filterStorage.filterState.setEnabled(normalized, false);
     }
   },
 
@@ -310,7 +311,7 @@ export default {
 
     for (let text of texts) {
       let normalized = Filter.normalize(text);
-      filterStorage.removeFilter(Filter.fromText(normalized));
+      filterEngine.filterStorage.removeFilter(Filter.fromText(normalized));
     }
   },
 

@@ -20,9 +20,8 @@ import browser from "webextension-polyfill";
 import {recommendations} from "adblockpluscore/lib/recommendations.js";
 import {Subscription, DownloadableSubscription, SpecialSubscription}
   from "adblockpluscore/lib/subscriptionClasses.js";
-import {filterStorage} from "adblockpluscore/lib/filterStorage.js";
 
-import {synchronizer} from "./index.js";
+import {filterEngine} from "./core.js";
 
 export const ACCEPTABLE_ADS_URL = "https://easylist-downloads.adblockplus.org/exceptionrules.txt";
 export const ACCEPTABLE_ADS_PRIVACY_URL = "https://easylist-downloads.adblockplus.org/exceptionrules-privacy-friendly.txt";
@@ -63,6 +62,7 @@ function getDefaultSubscriptions() {
 }
 
 function shouldAddDefaultSubscriptions() {
+  let {filterStorage} = filterEngine;
   for (let subscription of filterStorage.subscriptions()) {
     if (subscription instanceof DownloadableSubscription &&
         subscription.url != ACCEPTABLE_ADS_URL &&
@@ -79,6 +79,7 @@ function shouldAddDefaultSubscriptions() {
 
 export function configureDefaultSubscriptions() {
   let subscriptions = [];
+  let {filterStorage} = filterEngine;
   let foundSubscriptions = filterStorage.getSubscriptionCount() != 0;
 
   if (!foundSubscriptions) {
@@ -97,7 +98,7 @@ export function configureDefaultSubscriptions() {
 
     filterStorage.addSubscription(subscription);
     if (!subscription.lastDownload)
-      synchronizer.execute(subscription);
+      filterStorage.synchronizer.execute(subscription);
   }
 
   return {foundSubscriptions, foundStorage: !filterStorage.firstRun};
