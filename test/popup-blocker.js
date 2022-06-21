@@ -52,7 +52,8 @@ describe("Pop-up blocking", function() {
 
   it("blocks a script-based popup with deferred navigation", async function() {
     await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
-    expect(await new Popup("script-deferred", opener).blocked).toBeTruthy();
+    expect(await new Popup("script-deferred", opener, true).blocked)
+      .toBeTruthy();
   });
 
   it("blocks a link-based third-party popup", async function() {

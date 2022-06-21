@@ -195,7 +195,9 @@ export class Resource {
 }
 
 export class Popup {
-  constructor(id, opener) {
+  constructor(id, opener, deferred = false) {
+    this.deferred = deferred;
+
     this.created = new Promise((resolve, reject) => {
       opener.loaded.then(openerTabId => {
         let {onCreatedNavigationTarget} = browser.webNavigation;
@@ -236,7 +238,12 @@ export class Popup {
     });
 
     this.blocked = new Promise((resolve, reject) => {
-      this.created.then(popupTabId => {
+      this.created.then(popId => new Promise(res => {
+        if (this.deferred)
+          setTimeout(() => res(popId), 200);
+        else
+          res(popId);
+      })).then(popupTabId => {
         function removeListeners() {
           browser.tabs.onRemoved.removeListener(onTabRemoved);
           browser.webNavigation.onCompleted.removeListener(onCompleted);
