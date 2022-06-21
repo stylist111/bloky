@@ -1947,33 +1947,38 @@ describe("API", function() {
 
       it("logs blocking popup filter", async function() {
         let opener = new Page("popup-opener.html");
-        await opener.loaded;
+        let sourceTabId = await opener.loaded;
         await checkLogging(
           ["*popup.html^$popup"],
           allEventOptions,
           async() => {
             let popup = new Popup("link", opener);
             await popup.blocked;
-            return await popup.created;
+            return sourceTabId;
           },
           [{
             filter: expectedBlockingFilter("*popup.html^$popup"),
             matchInfo: popupMatchInfo,
             request: expectedRequestRelativeUrl("popup.html")
-          }]
+          }],
+          {optionalEvents: [{
+            filter: null,
+            matchInfo: unmatchedMainFrameMatchInfo,
+            request: expectedRequestRelativeUrl("popup-opener.html")
+          }]}
         );
       });
 
       it("logs allowlisting popup filter", async function() {
         let opener = new Page("popup-opener.html");
-        await opener.loaded;
+        let sourceTabId = await opener.loaded;
         await checkLogging(
           ["*popup.html^$popup", `@@|${TEST_PAGES_URL}/popup.html^$popup`],
           allEventOptions,
           async() => {
             let popup = new Popup("link", opener);
             await popup.blocked;
-            return await popup.created;
+            return sourceTabId;
           },
           [{
             filter: expectedAllowingFilter(
@@ -1981,20 +1986,25 @@ describe("API", function() {
             ),
             matchInfo: popupMatchInfo,
             request: expectedRequestRelativeUrl("popup.html")
-          }]
+          }],
+          {optionalEvents: [{
+            filter: null,
+            matchInfo: unmatchedMainFrameMatchInfo,
+            request: expectedRequestRelativeUrl("popup-opener.html")
+          }]}
         );
       });
 
       it("logs blocking third-party popup filter", async function() {
         let opener = new Page("popup-opener.html");
-        await opener.loaded;
+        let sourceTabId = await opener.loaded;
         await checkLogging(
           [`popup.html^$popup,domain=${TEST_PAGES_DOMAIN}`],
           allEventOptions,
           async() => {
             let popup = new Popup("third-party-link", opener);
             await popup.blocked;
-            return await popup.created;
+            return sourceTabId;
           },
           [{
             filter: expectedBlockingFilter(
@@ -2002,20 +2012,25 @@ describe("API", function() {
             ),
             matchInfo: popupMatchInfo,
             request: expectedRequestUrl(`${CROSS_DOMAIN_URL}/popup.html`)
-          }]
+          }],
+          {optionalEvents: [{
+            filter: null,
+            matchInfo: unmatchedMainFrameMatchInfo,
+            request: expectedRequestRelativeUrl("popup-opener.html")
+          }]}
         );
       });
 
       it("logs allowlisted third-party popup filter", async function() {
         let opener = new Page("popup-opener.html");
-        await opener.loaded;
+        let sourceTabId = await opener.loaded;
         await checkLogging(
           ["*popup.html^$popup", `@@|${CROSS_DOMAIN_URL}/popup.html^$popup`],
           allEventOptions,
           async() => {
             let popup = new Popup("third-party-link", opener);
             await popup.blocked;
-            return await popup.created;
+            return sourceTabId;
           },
           [{
             filter: expectedAllowingFilter(
@@ -2023,7 +2038,12 @@ describe("API", function() {
             ),
             matchInfo: popupMatchInfo,
             request: expectedRequestUrl(`${CROSS_DOMAIN_URL}/popup.html`)
-          }]
+          }],
+          {optionalEvents: [{
+            filter: null,
+            matchInfo: unmatchedMainFrameMatchInfo,
+            request: expectedRequestRelativeUrl("popup-opener.html")
+          }]}
         );
       });
 

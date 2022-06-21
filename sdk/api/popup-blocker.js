@@ -37,7 +37,7 @@ function forgetPopup(tabId) {
   }
 }
 
-function checkPotentialPopup(tabId, url, frame) {
+function checkPotentialPopup(sourceTabId, popupTabId, url, frame) {
   let specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) != 0;
   let filter = filterEngine.defaultMatcher.match(
     url || "about:blank", contentTypes.POPUP,
@@ -45,13 +45,13 @@ function checkPotentialPopup(tabId, url, frame) {
   );
 
   if (filter) {
-    logItem({tabId, frameId: 0, url}, filter,
+    logItem({tabId: sourceTabId, frameId: 0, url}, filter,
             {docDomain: frame.hostname, specificOnly, method: "popup"});
 
     if (filter instanceof BlockingFilter)
-      browser.tabs.remove(tabId).catch(() => {});
+      browser.tabs.remove(popupTabId).catch(() => {});
 
-    forgetPopup(tabId);
+    forgetPopup(popupTabId);
   }
 }
 
@@ -61,7 +61,7 @@ function onPopupURLChanged(details) {
 
   let frame = loadingPopups.get(details.tabId);
   if (frame)
-    checkPotentialPopup(details.tabId, details.url, frame);
+    checkPotentialPopup(frame.tabId, details.tabId, details.url, frame);
 }
 
 function onCompleted(details) {
@@ -89,7 +89,7 @@ function onPopup({tabId, url, sourceTabId, sourceFrameId}) {
   }
 
   loadingPopups.set(tabId, frame);
-  checkPotentialPopup(tabId, url, frame);
+  checkPotentialPopup(sourceTabId, tabId, url, frame);
 }
 
 function onTabCreated({id, url, openerTabId}) {

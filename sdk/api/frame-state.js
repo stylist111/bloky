@@ -94,6 +94,7 @@ let startupPromise;
  * state, like the URL of the frame, but don't have the sitekey and
  * don't have all of the information about the parents of the frame.
  *
+ * @property {number} tabId The id of the tab.
  * @property {string} url The url of the frame.
  * @property {string} hostname The hostname part of the frame's
  *   URL. If the URL isn't a normal HTTP URL (for example if it's
@@ -135,6 +136,7 @@ class FrameInfo {
 
     let urlInfo = parseURL(url);
 
+    this.tabId = tabId;
     this.url = url;
     this.hostname = urlInfo.hostname || (parent ? parent.hostname : "");
     this.sitekey = getSitekey(tabId, frameId, url) || parentSitekey;
