@@ -297,6 +297,12 @@ docker run extension
 docker cp $(docker ps -aqf ancestor=extension):/extension.zip .
 ```
 
+The extension code uses the most recently released ABPUI Tag by default. If you prefer to choose a different tag, pass it as a build argument: 
+
+```
+docker build --build-arg ABPUITAG="3.13" -t extension -f test/dockerfiles/extension.Dockerfile .
+```
+
 To run testpages integration tests on Docker with the custom extension previously
 created, you may clone the [Testpages project](testpages-project) and follow
 the instructions on [how to run tests with packed extensions](https://gitlab.com/eyeo/adblockplus/abc/testpages.adblockplus.org#packed-extensions). Example:

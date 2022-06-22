@@ -27,7 +27,14 @@ RUN apt-get update
 RUN apt-get -t stretch-backports install -y git
 
 # Clone ABPUI
-RUN git clone -b 3.13 https://gitlab.com/eyeo/adblockplus/abpui/adblockplusui.git
+# Checkout on recent release commit to have stable ABPUI version or use predefined
+RUN git clone https://gitlab.com/eyeo/adblockplus/abpui/adblockplusui.git 
+ARG ABPUITAG=""
+RUN if [ "$ABPUITAG" = "" ]; then cd adblockplusui && git fetch --tags \
+  && ABPUITAG=$(git describe --tags `git rev-list --tags --max-count=1`); fi
+RUN git -C adblockplusui checkout $ABPUITAG
+RUN echo "Using ABPUI tag: ${ABPUITAG}"
+
 # Update dependencies
 RUN cd adblockplusui && npm run submodules:update && git submodule status && npm install --legacy-peer-deps
 # Create extension builds
