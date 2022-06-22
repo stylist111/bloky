@@ -113,11 +113,13 @@ test:v2:firefox:incognito:
     - npm test -- v2 firefox --incognito
 
 test:v2:firefox:oldest:
-  extends: .test
+  stage: test
+  extends: .docker-image
+  needs:
+    - job: build
   script:
-    - npm test -- v2 firefox 68.0
-  # https://gitlab.com/eyeo/adblockplus/webext-sdk/-/issues/50
-  retry: 2
+    - docker build -t functional -f test/dockerfiles/functional.Dockerfile .
+    - docker run --shm-size=256m -e TEST_PARAMS="v2 firefox 68.0" functional
 
 test:v2:firefox:beta:
   extends: .test
@@ -159,7 +161,6 @@ test:v3:edge:linux:
   script:
     - docker build -t functional -f test/dockerfiles/functional.Dockerfile .
     - docker run --shm-size=256m -e TEST_PARAMS="v3 edge" functional
-  interruptible: true
 
 .testpages-integration:
   stage: integration
