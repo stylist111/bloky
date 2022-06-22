@@ -950,7 +950,7 @@ describe("API", function() {
           this.skip();
       });
 
-      setMinTimeout(this, 3000);
+      setMinTimeout(this, 4000);
 
       function expectedBlockingFilter(filterText) {
         return {
@@ -1806,8 +1806,6 @@ describe("API", function() {
       });
 
       it("logs element hiding filter dynamically", async function() {
-        setMinTimeout(this, 4000);
-
         let text = `${TEST_PAGES_DOMAIN}###element-hiding-dyn`;
         await checkLogging(
           [text],
@@ -2083,8 +2081,6 @@ describe("API", function() {
         });
 
         it("logs unmatched requests for the requested tab", async function() {
-          setMinTimeout(this, 4000);
-
           let page = new Page("image.html");
           let tabId = await page.loaded;
           let otherTabFake = addFakeListener({
