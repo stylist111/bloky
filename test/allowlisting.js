@@ -44,6 +44,11 @@ describe("One Click Allowlisting", function() {
   });
 
   async function reload() {
+    // Waiting for it to finish loading before reloading prevents
+    // browser events from before the reload from bleeding into events
+    // after the reload.
+    await expectImageResource.completed;
+
     let pageReloadPromise = page.reload(true);
     expectImageResource = page.expectResource("image.png");
     await pageReloadPromise;
@@ -56,7 +61,7 @@ describe("One Click Allowlisting", function() {
     // do its thing before checking results. This time may seem
     // excessive, but the CI pipeline runners can sometimes be pretty
     // slow.
-    await new Promise(r => setTimeout(r, 200));
+    await new Promise(r => setTimeout(r, 300));
   }
 
   async function getSuccessEventReceived() {

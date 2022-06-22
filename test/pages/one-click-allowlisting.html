@@ -211,10 +211,10 @@
     .addEventListener("click", () => allowlist());
   document.getElementById("allowlist_old_timestamp")
     .addEventListener("click", () => allowlist(location.hostname,
-                                               Date.now() - 3600000));
+                                               Date.now() - 3610000));
   document.getElementById("allowlist_future_timestamp")
     .addEventListener("click", () => allowlist(location.hostname,
-                                               Date.now() + 1000));
+                                               Date.now() + 10000));
   document.getElementById("allowlist_nonsense_timestamp")
     .addEventListener("click", () => allowlist(location.hostname,
                                                "fakeTimestamp"));

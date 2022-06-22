@@ -181,6 +181,8 @@ export class Resource {
       removeListeners();
       return error;
     })();
+
+    this.completed = this.error.then(e => null);
   }
 
   async expectToBeBlocked() {
