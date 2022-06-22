@@ -18,15 +18,16 @@
 "use strict";
 
 const TEST_LINKS = ["unit", "reload"];
-const OPTIONS = ["grep", "timeout"];
+const TEXT_OPTIONS = ["grep", "timeout"];
 
 function onLoad() {
   if (!document.location.search)
     return;
 
   let search = new URLSearchParams(document.location.search);
-  for (let option of OPTIONS)
+  for (let option of TEXT_OPTIONS)
     document.getElementById(option).value = search.get(option);
+  document.getElementById("incognito").checked = search.get("incognito");
 }
 
 function onClick(event) {
@@ -36,8 +37,9 @@ function onClick(event) {
 
   let elem = document.getElementById(id);
   let search = new URLSearchParams(elem.search);
-  for (let option of OPTIONS)
+  for (let option of TEXT_OPTIONS)
     search.set(option, document.getElementById(option).value);
+  search.set("incognito", document.getElementById("incognito").checked);
 
   elem.search = search.toString();
 }

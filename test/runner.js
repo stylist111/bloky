@@ -42,6 +42,7 @@ const MACOS_EDGE_BINARY =
   "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge";
 
 let extensionDir;
+let {until, By} = webdriver;
 
 class Chromium {
   async getBranchBasePosition(version) {
@@ -110,7 +111,7 @@ class Chromium {
                                path.join(chromedriverDir, driver));
   }
 
-  async getDriver(version) {
+  async getDriver(version, incognito = false) {
     let base;
     let dev = version == "beta" || version == "dev";
     if (version && !dev)
@@ -125,6 +126,9 @@ class Chromium {
       await this.installDriver(version);
 
     let options = new chrome.Options();
+    if (incognito)
+      throw new Error("Sorry, we don't support incognito in Chrome");
+
     options.addArguments("no-sandbox", `load-extension=${extensionDir}`);
     options.setChromeBinaryPath(binary);
 
@@ -143,26 +147,47 @@ class Firefox {
       data.LATEST_FIREFOX_DEVEL_VERSION : data.LATEST_FIREFOX_VERSION;
   }
 
-  async getDriver(version) {
+  async getDriver(version, incognito = false) {
     if (!version || version == "beta")
       version = await this.getLatestVersion(version);
     let binary = await downloadFirefox(version);
 
     let options = new firefox.Options();
+    if (incognito)
+      options.addArguments("-private");
     options.headless();
     options.setBinary(binary);
 
-    let builder = new webdriver.Builder();
-    builder.forBrowser("firefox");
-    builder.setFirefoxOptions(options);
+    let driver = await new webdriver.Builder()
+      .forBrowser("firefox")
+      .setFirefoxOptions(options)
+      .build();
 
-    let driver = await builder.build();
     await driver.execute(
       new command.Command("install addon")
-          .setParameter("path", extensionDir)
-          .setParameter("temporary", true)
+        .setParameter("path", extensionDir)
+        .setParameter("temporary", true)
     );
     return driver;
+  }
+
+  async allowExtensionInIncognito(driver) {
+    // We need to allow the extension in private browsing through the UI
+    // as Firefox doesn't allow setting it programatically:
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=1729315
+    await driver.navigate().to("about:addons");
+    await driver.wait(until.elementLocated(By.name("extension")), 5000).click();
+
+    for (let elem of await driver.findElements(By.className("card addon"))) {
+      let text = await elem.getAttribute("innerHTML");
+      if (!text.includes("eyeo's Web Extension Ad Blocking Toolkit Test Extension"))
+        continue;
+
+      await elem.click();
+      await driver.findElement(By.name("private-browsing")).click();
+      return;
+    }
+    throw new Error("Test extension was not found on incognito mode");
   }
 }
 
@@ -231,7 +256,10 @@ class Edge {
     }
   }
 
-  async getDriver() {
+  async getDriver(incognito = false) {
+    if (incognito)
+      throw new Error("Sorry, we don't support incognito in Edge");
+
     await this.installDriver();
 
     let builder = new webdriver.Builder();
@@ -261,6 +289,9 @@ function parseArguments() {
     subparser.positional("browser", {choices: Object.keys(BROWSERS)});
     subparser.positional("version", {type: "string"});
   });
+  parser.option("incognito", {
+    description: "Run the tests in incognito mode (Chrome) or private browsing (Firefox) - currently only supported on Firefox."
+  });
   parser.option("timeout", {
     description: "Maximum running time for each test. 0 disables timeouts."
   });
@@ -268,12 +299,11 @@ function parseArguments() {
 
   let {argv} = parser;
   let params;
-  for (let param of ["timeout", "grep"]) {
+  for (let param of ["timeout", "grep", "incognito"]) {
     let value = argv[param];
     if (typeof value != "undefined")
       (params || (params = {}))[param] = value;
   }
-
   return {
     manifest: argv.manifest,
     browser: argv.browser,
@@ -367,7 +397,9 @@ async function startTestRun(driver, id, params) {
 async function run() {
   let {manifest, browser, version, params} = parseArguments();
   extensionDir = path.resolve(process.cwd(), "dist", `test-m${manifest}`);
-  let driver = await BROWSERS[browser].getDriver(version);
+  let paramsIncognito =
+    typeof params != "undefined" && typeof params.incognito != "undefined";
+  let driver = await BROWSERS[browser].getDriver(version, paramsIncognito);
   if (params && typeof params.timeout != "undefined") {
     let driverTimeouts = await driver.manage().getTimeouts();
     let paramsTimeout = parseInt(params.timeout, 10);
@@ -383,6 +415,7 @@ async function run() {
       });
     }
   }
+
   let resultUnit;
   let resultReload;
 
@@ -390,6 +423,8 @@ async function run() {
     let cap = await driver.getCapabilities();
     // eslint-disable-next-line no-console
     console.log(`Browser: ${cap.getBrowserName()} ${cap.getBrowserVersion()}`);
+    if (paramsIncognito)
+      await BROWSERS[browser].allowExtensionInIncognito(driver);
 
     await startTestRun(driver, "unit", params);
     let handle = await getHandle(driver, "/unit.html");

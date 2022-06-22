@@ -107,6 +107,11 @@ test:v2:firefox:latest:
   script:
     - npm test -- v2 firefox
 
+test:v2:firefox:incognito:
+  extends: .test
+  script:
+    - npm test -- v2 firefox --incognito
+
 test:v2:firefox:oldest:
   extends: .test
   script:

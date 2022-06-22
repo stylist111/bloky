@@ -243,6 +243,9 @@ through the global `EWE` object.
 
 - The `timeout` option overrides the per-test timeout in milliseconds.
 - The `grep` option filters the tests to run with a regular expression.
+- The `incognito` checkbox is used to inform the tests whether the browser
+started in incognito/private mode or not. This does not cause tests to run 
+in incognito mode.
 
 ### Using the test runner
 
@@ -252,6 +255,9 @@ npm test -- {v2|v3|v2-custom} {chromium|firefox|edge} [version|channel] [options
 
 Runner [options](#test-options) need to be preceded by two dashes (`--`), for
 example `--timeout 10000`.
+
+In the test runner context, the `--incognito` flag forces the browser to start
+in incognito/private mode. This is only supported by Firefox. 
 
 #### Using the test runner on docker
 

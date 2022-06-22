@@ -17,7 +17,7 @@
 
 import expect from "expect";
 
-import {Page, Resource, executeScript, wait, isMV3, setMinTimeout,
+import {Page, Resource, executeScript, wait, isMV3, isIncognito, setMinTimeout,
         TEST_PAGES_URL,
         TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, SITEKEY} from "./utils.js";
 import {addFilter, EWE} from "./messaging.js";
@@ -81,6 +81,10 @@ describe("Blocking", function() {
 
   it("handles requests from service workers", async function() {
     if (isMV3())
+      this.skip();
+    // Firefox doesn't allow service workers in pages when in Incognito Mode
+    // See: https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API
+    if (isIncognito())
       this.skip();
 
     await addFilter(`|${TEST_PAGES_URL}/image.png^`);

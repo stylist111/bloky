@@ -399,6 +399,11 @@ export function isMV3() {
   return typeof browser.declarativeNetRequest != "undefined";
 }
 
+export function isIncognito() {
+  let incognito = new URLSearchParams(document.location.search).get("incognito");
+  return incognito == "true";
+}
+
 export function isCustomSubsExtension() {
   let manifest = browser.runtime.getManifest();
   return manifest.description.endsWith("custom subscriptions");

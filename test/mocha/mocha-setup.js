@@ -18,7 +18,8 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 
-import {TEST_PAGES_URL, Page, Popup, isMV3, setMinTimeout} from "../utils.js";
+import {TEST_PAGES_URL, Page, Popup, isMV3, setMinTimeout, isIncognito}
+  from "../utils.js";
 import {addFilter, EWE, runInBackgroundPage, removeFakeListeners}
   from "../messaging.js";
 
@@ -32,7 +33,7 @@ if (timeout)
   mocha.timeout(parseInt(timeout, 10));
 
 before(async function() {
-  setMinTimeout(this, 5000);
+  setMinTimeout(this, 7000);
 
   try {
     await fetch(TEST_PAGES_URL);
@@ -49,6 +50,12 @@ before(async function() {
   await addFilter(RESTORE_SUBSCRIPTIONS_TEST);
   await browser.runtime.sendMessage({
     type: "ewe-test:storeAndRemoveAllSubscriptions"});
+
+  // The incognito CI job would sometimes fail the first test case for no
+  // apparent reason. Sleeping should allow more time for the test extension
+  // to be "ready".
+  if (isIncognito())
+    await new Promise(r => setTimeout(r, 2000));
 });
 
 after(async function() {
