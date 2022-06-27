@@ -50,7 +50,7 @@ let typeSelectors = new Map([
 let pendingAllowlistedRequests = new Set();
 let pendingCspRequests = new Set();
 
-class RequestFilter {
+class BaseFilter {
   register() {
     if (!this.listener) {
       this.listener = this.filter.bind(this);
@@ -66,8 +66,25 @@ class RequestFilter {
   }
 
   getFrameId(details) {
+    // sub_frame requests are loading the iframe document itself, so
+    // from our point of view the initiating frame is actually the
+    // parent of the iframe.
     return details.type == "sub_frame" ? details.parentFrameId :
                                          details.frameId;
+  }
+
+  getParentFrameId(details) {
+    if (details.type == "sub_frame") {
+      // frameAncestors is exactly what we need, but it's only
+      // available in Firefox so sometimes we just don't have what we
+      // need :(
+      if (!details.frameAncestors)
+        return null;
+
+      return details.frameAncestors.length > 1 ?
+        details.frameAncestors[1].frameId : -1;
+    }
+    return details.parentFrameId;
   }
 
   getDocDomain(type, hostname) {
@@ -79,15 +96,22 @@ class RequestFilter {
     return details.initiator || details.documentUrl;
   }
 
+  getDocumentUrl(details) {
+    return details.documentUrl || details.initiator;
+  }
+
   getFrameInfo(details) {
-    if (details.type == "sub_frame")
-      return getFrameInfo(details.tabId, details.parentFrameId);
-    return getFrameInfo(
-      details.tabId,
-      details.frameId,
-      details.parentFrameId,
-      this.getInitiator(details)
-    );
+    let tabId = details.tabId;
+    let frameId = this.getFrameId(details);
+    let parentFrameId = this.getParentFrameId(details);
+    let initiator = this.getInitiator(details);
+    let documentUrl = this.getDocumentUrl(details);
+
+    return getFrameInfo(tabId, frameId, {
+      initiator,
+      parentFrameId,
+      documentUrl
+    });
   }
 
   getContentType(details) {
@@ -140,18 +164,10 @@ class RequestFilter {
     logItem(details, filter, matchInfo);
   }
 
-  match(details, frame, specificOnly) {
-    let docDomain = this.getDocDomain(details.type, frame.hostname);
-
-    let filter = filterEngine.defaultMatcher.match(
-      details.url, this.getContentType(details),
-      docDomain, frame.sitekey, specificOnly, true);
-    if (filter) {
-      let matchInfo = {docDomain, specificOnly, method: "request"};
-      if (filter instanceof BlockingFilter)
-        return this.block(details, filter, matchInfo);
-      return this.allow(details, filter, matchInfo);
-    }
+  match(details, frame, specificOnly, contentType, docDomain) {
+    // This does nothing in BaseFilter, but should be overridden in
+    // any child class that uses the default implementation of
+    // BaseFilter.filter.
   }
 
   filter(details) {
@@ -172,15 +188,70 @@ class RequestFilter {
       return;
 
     let specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) != 0;
+    let docDomain = this.getDocDomain(details.type, frame.hostname);
     if (frame.allowlisted & contentTypes.DOCUMENT) {
       return this.allow(details, frame.allowingDocumentFilter, {
-        docDomain: this.getDocDomain(details.type, frame.hostname),
+        docDomain,
         method: "allowing",
         specificOnly
       });
     }
 
-    return this.match(details, frame, specificOnly);
+    let contentType = this.getContentType(details);
+
+    return this.match(details, frame, specificOnly, contentType, docDomain);
+  }
+}
+
+class RequestFilter extends BaseFilter {
+  getDocumentUrl(details) {
+    // We can be more idealistic here since we are doing this check
+    // again later if we don't have enough info. documentUrl SHOULD
+    // only ever be documentUrl (not initiator).
+    return details.documentUrl;
+  }
+
+  getFrameInfo(details) {
+    let frame = super.getFrameInfo(details);
+
+    // Chromium-based browsers sometimes emit onBeforeRequest events
+    // for resources on a frame before we get the onCommitted event
+    // for the frame itself. This could mean that we're missing some
+    // frame-level allowlisting filters, and can't actually make a
+    // blocking decision yet. We only do this wait in the
+    // onBeforeRequest filter because we can still do the blocking /
+    // allowing when we have all the necessary info later in the
+    // onHeadersReceived event.
+    //
+    // As an aside, if in the future we only needed to support Firefox
+    // here, Firefox supports asynchronous blocking responses in the
+    // webRequest API.
+    if (frame) {
+      // We might be missing sitekeys if we haven't received headers yet.
+      if (!frame.headersReceived)
+        return null;
+
+      // A wrong URL likely means that we've navigated to a new page
+      // and frame-state hasn't caught up yet.
+      let {documentUrl, initiator} = details;
+      if ((documentUrl && frame.url != documentUrl) ||
+         (initiator && frame.hostname != parseURL(initiator).hostname))
+        return null;
+    }
+
+    return frame;
+  }
+
+  match(details, frame, specificOnly, contentType, docDomain) {
+    let filter = filterEngine.defaultMatcher.match(
+      details.url, contentType, docDomain, frame.sitekey, specificOnly, true
+    );
+    if (filter) {
+      let matchInfo = {docDomain, specificOnly, method: "request"};
+      if (filter instanceof BlockingFilter)
+        return this.block(details, filter, matchInfo);
+      return this.allow(details, filter, matchInfo);
+    }
   }
 }
 
@@ -194,13 +265,24 @@ RequestFilter.prototype.eventArgs = [
   ["blocking"]
 ];
 
-class HeaderFilter extends RequestFilter {
-  match(details, frame, specificOnly) {
-    let docDomain = this.getDocDomain(details.type, frame.hostname);
-    let matchInfo = {docDomain, specificOnly, method: "header"};
+class HeaderFilter extends BaseFilter {
+  match(details, frame, specificOnly, contentType, docDomain) {
     let matcher = filterEngine.defaultMatcher;
 
-    let typeMask = contentTypes.HEADER | this.getContentType(details);
+    // This is a repeat of the RequestFilter check, in case it was
+    // skipped due to not having enough frame information at the time.
+    let requestFilter = matcher.match(
+      details.url, contentType, docDomain, frame.sitekey, specificOnly, true
+    );
+    if (requestFilter) {
+      let requestMatchInfo = {docDomain, specificOnly, method: "request"};
+      if (requestFilter instanceof BlockingFilter)
+        return this.block(details, requestFilter, requestMatchInfo);
+      return this.allow(details, requestFilter, requestMatchInfo);
+    }
+
+    let matchInfo = {docDomain, specificOnly, method: "header"};
+    let typeMask = contentTypes.HEADER | contentType;
     let allowingFilter = matcher.match(details.url, typeMask, docDomain,
                                        frame.sitekey, specificOnly, true);
 
@@ -229,7 +311,7 @@ HeaderFilter.prototype.eventArgs = [
   ["blocking", "responseHeaders"]
 ];
 
-class CSPFilter extends RequestFilter {
+class CSPFilter extends BaseFilter {
   filter(details) {
     let {requestId, tabId, frameId, parentFrameId, responseHeaders, url, type} =
         details;
@@ -309,7 +391,7 @@ CSPFilter.prototype.eventArgs = [
   ["blocking", "responseHeaders"]
 ];
 
-class RequestCompletionFilter extends RequestFilter {
+class RequestCompletionFilter extends BaseFilter {
   filter(details) {
     let {requestId, tabId, frameId, parentFrameId, url, type} = details;
     let wasAllowlisted = pendingAllowlistedRequests.delete(requestId);
@@ -325,8 +407,7 @@ class RequestCompletionFilter extends RequestFilter {
       let {hostname: parentHostname, sitekey: parentSitekey} =
           parentFrame || {};
 
-      let urlInfo = parseURL(url);
-      let hostname = parentHostname || urlInfo.hostname;
+      let hostname = parentHostname || parseURL(url).hostname;
       let sitekey = getSitekey(tabId, frameId, url) || parentSitekey;
       let matcher = filterEngine.defaultMatcher;
       let specificOnlyFilter = matcher.match(
@@ -372,7 +453,7 @@ RequestCompletionFilter.prototype.eventArgs = [
   }
 ];
 
-class RequestErrorFilter extends RequestFilter {
+class RequestErrorFilter extends BaseFilter {
   filter(details) {
     pendingAllowlistedRequests.delete(details.requestId);
     pendingCspRequests.delete(details.requestId);

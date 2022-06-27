@@ -19,6 +19,17 @@ import {verifySignatureSync} from "adblockpluscore/lib/rsa.js";
 
 let sitekeys = new Map();
 
+/**
+ * Gets the stored sitekey for a given frame. Sitekeys are retrieved
+ * from the headers of main_frame and sub_frame requests (the html
+ * documents in tabs and iframes).
+ * @param {number} tabId Id of the tab the frame is on.
+ * @param {number} frameId Id of the frame on the tab.
+ * @param {string} url Url for the frame.
+ * @return {string|null|undefined} The sitekey if we have it, null if
+ *   we've processed headers for this frame but it didn't have a
+ *   sitekey, undefined if we haven't seen any headers for this frame.
+ */
 export function getSitekey(tabId, frameId, url) {
   let sitekeysForTab = sitekeys.get(tabId);
   if (!sitekeysForTab)
@@ -53,23 +64,45 @@ export function clearTabSitekeys(tabId) {
   sitekeys.delete(tabId);
 }
 
+/**
+ * Use the headers from an onHeadersReceived event for an main_frame
+ * and sub_frame request to update our sitekey map. This also
+ * validates the sitekey before storing.
+ *
+ * If there is no sitekey, this inserts a null entry in the sitekey
+ * map so you can differentiate between not having a sitekey because
+ * there wasn't one in the headers and because the headers haven't
+ * been received yet.
+ * @param {number} tabId Id of the tab the frame is on.
+ * @param {number} frameId Id of the frame on the tab.
+ * @param {string} url Url for the frame.
+ * @param {webRequest.HttpHeaders} headers the HTTP response headers
+ *   to check for a sitekey. See {@link webRequest API
+ *   https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webRequest/HttpHeaders}.
+ * @return {string|null} The sitekey if it was found and is
+ *   valid. Null if there was no valid sitekey.
+ */
 export function setSitekeyFromHeaders(tabId, frameId, url, headers) {
   let sitekeyHeader = getSitekeyHeader(headers);
-  if (!sitekeyHeader)
-    return null;
+  let newSitekey = sitekeyHeader ? sitekeyHeader.sitekey : null;
 
   // If this sitekey is the same as the one we already have, we can
   // just leave the existing one. No need to do signature verification
   // since we've already checked this sitekey on this site.
   let existingSitekey = getSitekey(tabId, frameId, url);
-  if (sitekeyHeader.sitekey == existingSitekey)
+  if (existingSitekey && newSitekey == existingSitekey)
     return existingSitekey;
 
-  let {sitekey, signature} = sitekeyHeader;
-  if (verifySitekey(sitekey, signature, url)) {
-    setSitekey(tabId, frameId, url, sitekey);
-    return sitekey;
+  if (newSitekey && verifySitekey(newSitekey, sitekeyHeader.signature, url)) {
+    setSitekey(tabId, frameId, url, newSitekey);
+    return newSitekey;
   }
+
+  // Inserting null here indicates that we've received headers for a
+  // URL and it didn't have sitekeys (as opposed to not receiving
+  // filters yet).
+  setSitekey(tabId, frameId, url, null);
+  return null;
 }
 
 function getSitekeyHeader(headers) {

@@ -105,6 +105,11 @@ let startupPromise;
  *   there is one. These sitekeys are read from the
  *   `onHeadersReceived` event. This is inherited from the parent
  *   frame if this frame doesn't have a sitekey of its own.
+ * @property {boolean} headersReceived True if we've received an
+ *   `onHeadersReceived` event for this frame and have checked it for
+ *   sitekeys. If this is false, it could mean that we don't have
+ *   enough information yet to make blocking decisions, because a
+ *   sitekey might still arrive with the headers.
  * @property {?FrameInfo} parent The frame that this from is on. Null
  *   if this is the top-level frame on a tab.
  * @property {number} allowlisted Bitfield where each set bit is the
@@ -139,7 +144,9 @@ class FrameInfo {
     this.tabId = tabId;
     this.url = url;
     this.hostname = urlInfo.hostname || (parent ? parent.hostname : "");
-    this.sitekey = getSitekey(tabId, frameId, url) || parentSitekey;
+    let sitekey = getSitekey(tabId, frameId, url);
+    this.sitekey = sitekey || parentSitekey;
+    this.headersReceived = (!!sitekey) || sitekey === null;
     this.parent = parent;
 
     // allowlisted and allowingDocumentFilter start with their parent
@@ -259,11 +266,16 @@ async function discoverExistingFrames() {
   ));
 }
 
-function onHeadersReceived(details) {
-  let {tabId, frameId, url, responseHeaders} = details;
+function onHeadersReceived({tabId, frameId, url, responseHeaders}) {
   let sitekey = setSitekeyFromHeaders(
     tabId, frameId, url, responseHeaders
   );
+
+  let frame = getFrameInfo(tabId, frameId);
+  let isSameFrame = frame && frame.url == url;
+  if (isSameFrame)
+    frame.headersReceived = true;
+
   if (sitekey) {
     // Sometimes the onHeadersReceived event comes after the
     // onCommitted event. This seems to be common when loading
@@ -272,8 +284,7 @@ function onHeadersReceived(details) {
     // for a frame that's already being shown, and that may mean we
     // need to add some new allowlisting filters based on that
     // sitekey.
-    let frame = getFrameInfo(tabId, frameId);
-    if (frame && frame.url == url && frame.sitekey != sitekey) {
+    if (isSameFrame && frame.sitekey != sitekey) {
       frame.sitekey = sitekey;
       findAllowlistingFilters(frame, tabId, frameId);
     }
@@ -413,18 +424,30 @@ function onReplaced(addedTabId, removedTabId) {
  *
  * @param {number} tabId The tabId of the tab the frame is on.
  * @param {number} frameId The frameId of the frame.
- * @param {?number} parentFrameId The frameId of the parent of the
+ * @param {?Object} [metadata] Additional metadata about the web
+ *   request context that lead to asking for frame info, which might
+ *   be used to create a FrameInfo if one doesn't exist already.
+ * @param {?number} metadata.parentFrameId The frameId of the parent of the
  *   frame being requested. If this is set, it could be used to
  *   create the frame if it isn't already in the frame state.
- * @param {?string} initiator If getting the frame info is triggered
- *   by a web request, this should be the URL that initiated the
- *   request. If this is set, it could be used to create the frame if
- *   it isn't already in the frame state. Also used to provide a
+ * @param {?string} metadata.initiator If getting the frame info is
+ *   triggered by a web request, this should be the URL that initiated
+ *   the request. If this is set, it can be used to provide a
  *   temporary frame state for use with service workers. In Firefox
- *   APIs, this is referred to as documentURL rather than initiator.
+ *   APIs, there is not an initiator but there is a documentUrl which
+ *   can fulfil the same purpose.
+ * @param {?string} metadata.documentUrl If getting the frame info is
+ *   triggered by a web request, this should be the URL of the frame
+ *   that initiated the request. If this is set, it could be used to
+ *   create the frame if it isn't already in the frame state. This may
+ *   not be available in Chrome. In Chrome, if initiator is provided,
+ *   it can also be used to construct a FrameInfo, but this is not
+ *   ideal since the initiator only contains the domain part of the
+ *   URL.
  * @returns {?FrameInfo}
  */
-export function getFrameInfo(tabId, frameId, parentFrameId, initiator) {
+export function getFrameInfo(tabId, frameId,
+                             {parentFrameId, initiator, documentUrl} = {}) {
   // tabId is -1 if the request came from a service worker, so we
   // construct a temporary frame state for it to use. We don't store
   // a tabId of -1 in our frame state, so we don't even need to check
@@ -442,12 +465,12 @@ export function getFrameInfo(tabId, frameId, parentFrameId, initiator) {
   // Sometimes the webRequest API can trigger for resources in a frame
   // before the onCommitted event for the frame. In this case, it
   // should be safe to construct the frame state early.
-  if (initiator) {
+  if (documentUrl && typeof parentFrameId == "number") {
     return recordFrameFromNavigationEvent({
       tabId,
       frameId,
       parentFrameId,
-      url: initiator
+      url: documentUrl
     });
   }
 }
