@@ -771,6 +771,22 @@ describe("API", function() {
     });
   });
 
+  describe("Filters limit", function() {
+    before(function() {
+      if (!isMV3())
+        this.skip();
+    });
+
+    it("does not add more than 5000 dynamic filters", async function() {
+      let fiveThousandAndOneFilters = Array.from(
+        {length: 5001},
+        (_, x) => (VALID_FILTER + "_" + x)
+      );
+      await expect(EWE.filters.add(fiveThousandAndOneFilters)).rejects.toThrow(
+        "FilterError: {\"type\":\"too_many_filters\",\"option\":null}");
+    });
+  });
+
   describe("Initialization", function() {
     after(async function() {
       await browser.runtime.sendMessage(

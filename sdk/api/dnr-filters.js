@@ -25,7 +25,8 @@ import {RESOURCE_TYPES, contentTypes}
   from "adblockpluscore/lib/contentTypes.js";
 import {filterEngine} from "./core.js";
 import {createConverter} from "adblockpluscore/lib/dnr/index.js";
-import {ERROR_DUPLICATE_FILTERS, ERROR_FILTER_NOT_FOUND} from "../errors.js";
+import {ERROR_DUPLICATE_FILTERS, ERROR_FILTER_NOT_FOUND,
+        ERROR_TOO_MANY_FILTERS} from "../errors.js";
 
 import {FilterError} from "./types.js";
 import {Prefs} from "./prefs.js";
@@ -173,6 +174,17 @@ async function processFilterTexts(texts) {
   return {add, exist, details};
 }
 
+async function dynamicRulesAvailable() {
+  let {declarativeNetRequest} = browser;
+  if (!declarativeNetRequest)
+    return Infinity;
+
+  const {MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES} = declarativeNetRequest;
+  let used = (await declarativeNetRequest.getDynamicRules()).length +
+               (await declarativeNetRequest.getSessionRules()).length;
+  return MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES - used;
+}
+
 export async function addFilters(texts, metadata) {
   await init();
 
@@ -180,7 +192,15 @@ export async function addFilters(texts, metadata) {
   if (filters.exist.length > 0)
     throw new FilterError(ERROR_DUPLICATE_FILTERS);
 
-  if (filters.add.length > 0) {
+  let {length} = filters.add;
+  if (length > 0) {
+    // always false when !browser.declarativeNetRequest
+    if (length >= await dynamicRulesAvailable())
+      throw new FilterError(ERROR_TOO_MANY_FILTERS);
+
+    // so that this would throw the right error in case
+    // browser.declarativeNetRequest doesn't exist or if
+    // the API returned a different error instead
     await browser.declarativeNetRequest.updateDynamicRules({
       addRules: filters.add
     });

@@ -23,6 +23,7 @@ const ERROR_CLOSED_CONNECTION = "A listener indicated an asynchronous " +
 
 export const ERROR_DUPLICATE_FILTERS = "storage_duplicate_filters";
 export const ERROR_FILTER_NOT_FOUND = "filter_not_found";
+export const ERROR_TOO_MANY_FILTERS = "too_many_filters";
 
 export function ignoreNoConnectionError(promise) {
   return promise.catch(error => {
