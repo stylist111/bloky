@@ -2290,7 +2290,7 @@ describe("API", function() {
       await wait(async() => {
         style = await executeScript(tabId, getBackgroundColor);
         return style != "rgba(0, 0, 0, 0)";
-      }, 500, "Style is not highlighted");
+      }, 800, "Style is not highlighted");
 
       return style;
     }
