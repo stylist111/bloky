@@ -244,7 +244,7 @@ through the global `EWE` object.
 - The `timeout` option overrides the per-test timeout in milliseconds.
 - The `grep` option filters the tests to run with a regular expression.
 - The `incognito` checkbox is used to inform the tests whether the browser
-started in incognito/private mode or not. This does not cause tests to run 
+started in incognito/private mode or not. This does not cause tests to run
 in incognito mode.
 
 ### Using the test runner
@@ -257,22 +257,17 @@ Runner [options](#test-options) need to be preceded by two dashes (`--`), for
 example `--timeout 10000`.
 
 In the test runner context, the `--incognito` flag forces the browser to start
-in incognito/private mode. This is only supported by Firefox. 
+in incognito/private mode. This is only supported by Firefox.
 
 #### Using the test runner on docker
 
-Running tests locally sometimes shows different results than on the CI/CD
-pipeline. The reason why is that functional tests run embedded in the browser,
-which may behave differently depending on the platform and on machine
-resources.
-
-Running the tests in docker may be useful to locally reproduce the same
-infrastructure the CI offers, especially on Windows or MacOS platforms. To do
-so, run the following commands:
+The CI/CD pipeline runs the functional tests using [this docker image](https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/blob/master/test/dockerfiles/functional.Dockerfile).
+Using docker locally to run the same tests may be useful to recreate the
+infrastructure the CI uses:
 
 ```
 docker build -t functional -f test/dockerfiles/functional.Dockerfile .
-docker run -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" -it functional
+docker run --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" -it functional
 ```
 
 Please notice that the `TEST_PARAMS` argument can also take the additional
@@ -297,7 +292,7 @@ docker run extension
 docker cp $(docker ps -aqf ancestor=extension):/extension.zip .
 ```
 
-The extension code uses the most recently released ABPUI Tag by default. If you prefer to choose a different tag, pass it as a build argument: 
+The extension code uses the most recently released ABPUI Tag by default. If you prefer to choose a different tag, pass it as a build argument:
 
 ```
 docker build --build-arg ABPUITAG="3.13" -t extension -f test/dockerfiles/extension.Dockerfile .
@@ -311,7 +306,7 @@ the instructions on [how to run tests with packed extensions](https://gitlab.com
 cd testpages.adblockplus.org
 cp <location/to/extension.zip> .
 docker build -t testpages --build-arg EXTENSION_FILE="extension.zip" .
-docker run --shm-size=256m -e SKIP_EXTENSION_DOWNLOAD="true" -e TESTS_EXCLUDE="Snippets" testpages
+docker run --shm-size=512m -e SKIP_EXTENSION_DOWNLOAD="true" -e TESTS_EXCLUDE="Snippets" testpages
 ```
 
 Note: At the moment the custom extension won't support snippets. That's why it

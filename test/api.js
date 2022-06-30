@@ -788,6 +788,8 @@ describe("API", function() {
   });
 
   describe("Initialization", function() {
+    setMinTimeout(this, 3000);
+
     after(async function() {
       await browser.runtime.sendMessage(
         {type: "ewe-test:deleteUiLanguageOverride"});

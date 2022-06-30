@@ -70,61 +70,58 @@ audit:
 
 .test:
   stage: test
-  before_script:
-    - npm install
-    - npm run test-server &
-  needs:
-    - job: build
-      artifacts: true
-
-test:v2:chromium:stable:
-  extends: .test
-  script:
-    - xvfb-run -a npm test -- v2 chromium
-
-test:v2-subs:chromium:stable:
-  extends: .test
-  script:
-    - xvfb-run -a npm test -- v2-custom chromium
-
-test:v2:chromium:oldest:
-  extends: .test
-  script:
-    - xvfb-run -a npm test -- v2 chromium 77.0.3865.0
-
-test:v2:chromium:beta:
-  extends: .test
-  script:
-    - xvfb-run -a npm test -- v2 chromium beta
-
-test:v2:chromium:dev:
-  extends: .test
-  script:
-    - xvfb-run -a npm test -- v2 chromium dev
-
-test:v2:firefox:latest:
-  extends: .test
-  script:
-    - npm test -- v2 firefox
-
-test:v2:firefox:incognito:
-  extends: .test
-  script:
-    - npm test -- v2 firefox --incognito
-
-test:v2:firefox:oldest:
-  stage: test
   extends: .docker-image
   needs:
     - job: build
+      artifacts: true
   script:
     - docker build -t functional -f test/dockerfiles/functional.Dockerfile .
-    - docker run --shm-size=256m -e TEST_PARAMS="v2 firefox 68.0" functional
+    - docker run --shm-size=512m -e TEST_PARAMS="$TEST_PARAMS" functional
+
+test:v2:chromium:stable:
+  extends: .test
+  variables:
+    TEST_PARAMS: v2 chromium
+
+test:v2-subs:chromium:stable:
+  extends: .test
+  variables:
+    TEST_PARAMS: v2-custom chromium
+
+test:v2:chromium:oldest:
+  extends: .test
+  variables:
+    TEST_PARAMS: v2 chromium 77.0.3865.0
+
+test:v2:chromium:beta:
+  extends: .test
+  variables:
+    TEST_PARAMS: v2 chromium beta
+
+test:v2:chromium:dev:
+  extends: .test
+  variables:
+    TEST_PARAMS: v2 chromium dev
+
+test:v2:firefox:latest:
+  extends: .test
+  variables:
+    TEST_PARAMS: v2 firefox
+
+test:v2:firefox:incognito:
+  extends: .test
+  variables:
+    TEST_PARAMS: v2 firefox --incognito
+
+test:v2:firefox:oldest:
+  extends: .test
+  variables:
+    TEST_PARAMS: v2 firefox 68.0
 
 test:v2:firefox:beta:
   extends: .test
-  script:
-    - npm test -- v2 firefox beta
+  variables:
+    TEST_PARAMS: v2 firefox beta
 
 test:v2:edge:windows:
   extends: .test
@@ -150,17 +147,13 @@ test:v2:edge:windows:
 
 test:v3:chromium:stable:
   extends: .test
-  script:
-    - xvfb-run -a npm test -- v3 chromium
+  variables:
+    TEST_PARAMS: v3 chromium
 
 test:v3:edge:linux:
-  stage: test
-  extends: .docker-image
-  needs:
-    - job: build
-  script:
-    - docker build -t functional -f test/dockerfiles/functional.Dockerfile .
-    - docker run --shm-size=256m -e TEST_PARAMS="v3 edge" functional
+  extends: .test
+  variables:
+    TEST_PARAMS: v3 edge
 
 .testpages-integration:
   stage: integration
@@ -175,7 +168,7 @@ test:v3:edge:linux:
   script:
     - cd testpages.adblockplus.org &&
       docker build -t testpages --build-arg EXTENSION_FILE="extension.zip" . &&
-      docker run --shm-size=256m -e SKIP_EXTENSION_DOWNLOAD="true" -e TESTS_EXCLUDE="Snippets" -e BROWSER="$BROWSER" testpages
+      docker run --shm-size=512m -e SKIP_EXTENSION_DOWNLOAD="true" -e TESTS_EXCLUDE="Snippets" -e BROWSER="$BROWSER" testpages
   after_script:
     - docker cp $(docker ps -aqf ancestor=testpages):/testpages.adblockplus.org/test/screenshots .
       2> /dev/null
