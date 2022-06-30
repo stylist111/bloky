@@ -346,12 +346,25 @@ async function pollMessages(driver, handle) {
   let log = [];
 
   while (!result) {
-    let messages = await driver.executeAsyncScript(`
-      let callback = arguments[0];
-      if (document.readyState == "complete")
-        callback(poll());
+    let messages;
+    let script = `
+      return new Promise(resolve => {
+        if (document.readyState == "complete")
+          resolve(poll());
+        else
+          window.addEventListener("load", () => resolve(poll()));
+      });`;
+    try {
+      messages = await driver.executeScript(script);
+    }
+    catch (err) {
+      if (err.message.includes("received Inspector.detached event"))
+        // From Chromium 105 the driver.executeScript function might throw
+        // this error on low resource machines. Retrying usually helps.
+        messages = await driver.executeScript(script);
       else
-        window.addEventListener("load", () => callback(poll()));`);
+        throw err;
+    }
 
     if (!messages)
       return;

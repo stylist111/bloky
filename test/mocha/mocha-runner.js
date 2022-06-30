@@ -15,6 +15,8 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* global Mocha */
+
 let messages = [];
 let emit = () => {};
 let setConnected;
@@ -32,9 +34,9 @@ runner.on("end", () =>
   sendMessage("end", {failures: runner.failures, total: runner.total})
 );
 
-mocha.Mocha.reporters.Base.useColors = true;
-mocha.Mocha.reporters.Base.consoleLog = (...args) => sendMessage("log", args);
-new mocha.Mocha.reporters.Spec(runner);
+Mocha.reporters.Base.useColors = true;
+Mocha.reporters.Base.consoleLog = (...args) => sendMessage("log", args);
+new Mocha.reporters.Spec(runner);
 
 self.poll = async function() {
   setConnected(true);

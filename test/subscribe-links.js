@@ -22,7 +22,7 @@ import {addFakeListener} from "./messaging.js";
 import * as runner from "./mocha/mocha-runner.js";
 
 describe("Subscribe links (runner only)", function() {
-  setMinTimeout(this, 3000);
+  setMinTimeout(this, 5000);
 
   before(async function() {
     if (!await runner.isConnected())
@@ -36,7 +36,15 @@ describe("Subscribe links (runner only)", function() {
     await page.loaded;
 
     runner.click(page.url, selector);
-    await wait(() => fake.called, 2000, "Listener was not called");
+    try {
+      await wait(() => fake.called, 2000);
+    }
+    catch (e) {
+      // driver.executeScript in test/runner.js might throw which
+      // prevents this click from happening. Retrying usually helps.
+      runner.click(page.url, selector);
+      await wait(() => fake.called, 2000, "Listener was not called");
+    }
 
     expect(fake.callCount).toBe(1);
     expect(fake.firstArg).toEqual({url: "https://example.org/",
