@@ -27,7 +27,7 @@
     "webpack.config.js"
   ],
   "dependencies": {
-    "adblockpluscore": "git+https://github.com/adblockplus/adblockpluscore.git#48a4da327caf0093ba785fb0a5a687f62597029b",
+    "adblockpluscore": "git+https://github.com/adblockplus/adblockpluscore.git#52f733aeee37736432f8c8e6da81aad156d20e67",
     "webextension-polyfill": "^0.8.0"
   },
   "devDependencies": {
@@ -65,16 +65,20 @@
     "build": "webpack",
     "start": "webpack -w",
     "prepublishOnly": "webpack",
-    "subs-merge": "npm run --prefix node_modules/adblockpluscore merge-subscriptions --",
     "test": "node test/runner.js",
     "test-server": "node test/start-server.js",
     "test-bundle": "node test/bundle/run.js",
     "test-scripts": "mocha test/scripts/*.js",
-    "subs-init": "npm run --prefix node_modules/adblockpluscore update-subscriptions:mv3",
-    "subs-merge": "npm run --prefix node_modules/adblockpluscore merge-subscriptions -- -o ../../custom-subscriptions.json",
-    "subs-fetch": "npm run --prefix node_modules/adblockpluscore fetch-subscriptions -- -i ../../custom-subscriptions.json",
-    "subs-convert": "node scripts/convertSubscriptions.js",
+    "subs-init": "npm exec updateSubscriptions -- -t mv3",
+    "subs-merge": "npm exec mergeSubscriptions -- -i build/data/subscriptions_mv3.json -o ./custom-subscriptions.json",
+    "subs-fetch": "npm exec fetchSubscriptions -- -i ./custom-subscriptions.json",
+    "subs-convert": "node scripts/convertSubscriptions.js -i build/data/subscriptions/ABP/",
     "subs-generate": "node scripts/generateSubscriptionsFragment.js",
     "create-allowlisting-keypair": "node scripts/createKeypair.js"
+  },
+  "bin":
+  {
+    "convertSubscriptions": "./scripts/convertSubscriptions.js",
+    "generateSubscriptionsFragment": "./scripts/generateSubscriptionsFragment.js"
   }
 }

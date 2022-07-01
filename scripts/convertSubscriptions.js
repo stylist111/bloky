@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /*
  * This file is part of eyeo's Web Extension Ad Blocking Toolkit (EWE),
  * Copyright (C) 2006-present eyeo GmbH
@@ -88,7 +89,11 @@ async function main() {
   await convert(inDir, outDir);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`)
+let proc = process.argv[1];
+let stats = fs.statSync(proc);
+if (stats.isSymbolicLink)
+  proc = fs.realpathSync(proc);
+if (import.meta.url === `file://${proc}`)
   main();
 
 export {outputDir};

@@ -344,19 +344,19 @@ Checks that the bundled code can be imported and re-bundled
 
 ```
 # generate the subscriptions list
-npm run subs-init [-- -o /tmp/custom_subscriptions_mv3.json]
+npm run subs-init
 
-# edit the subscriptions manually (eg. use test subscription "https://testpages.adblockplus.org/en/abp-testcase-subscription.txt")
-subl node_modules/adblockpluscore/build/data/subscriptions_mv3.json
+# merge the subscriptions list
+npm run subs-merge [-- -i /tmp/product_specific_subscriptions_mv3.json]
 
 # fetch the subscriptions
-npm run subs-fetch [-- -i /tmp/custom_subscriptions_mv3.json -o /tmp/abp_rules]
+npm run subs-fetch
 
 # convert to DNR (npm run convert-subscriptions using abp2dnr from webext-sdk)
-npm run subs-convert [-- -i /tmp/abp_rules -o /tmp/dnr_rules ]
+npm run subs-convert
 
 # generate the fragment
-npm run subs-generate [-- -i /tmp/dnr_rules -o /tmp/dnr_rules/custom_fragment.tpl -p "/subscriptions"]
+npm run subs-generate
 
 # edit ruleset to enable it (for testing purpose)
 subl subscriptions/rules.json.tpl
@@ -406,4 +406,13 @@ npm run subs-merge -- \
   -i /tmp/product-subscriptions.json \
   -i /tmp/language_en-subscriptions.json \
   -o $(pwd)/custom-subscriptions.json
+```
+
+The scripts are also available via npm symlinks:
+```
+npm exec updateSubscriptions -- -t mv3 // subs-init
+npm exec mergeSubscriptions [-- -i ... -o ...] // subs-merge
+npm exec fetchSubscriptions [-- -i ... -o ...] // subs-fetch
+npm exec convertSubscriptions [-- -i ... -o ...] // subs-convert
+npm exec generateSubscriptionsFragment [-- -i ... -o ...] // subs-generate
 ```
