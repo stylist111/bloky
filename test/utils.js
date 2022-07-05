@@ -275,7 +275,7 @@ export class Popup {
         // events above. Especially since this is called
         // asynchronously after the tab is created.
         browser.tabs.get(popupTabId).then(tab => {
-          if (tab.url != "about:blank" && tab.status == "complete") {
+          if (tab.url && tab.url != "about:blank" && tab.status == "complete") {
             removeListeners();
             resolve(false);
           }

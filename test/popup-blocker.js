@@ -22,12 +22,6 @@ import {Page, Popup, setMinTimeout, isMV3, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
 import {addFilter} from "./messaging.js";
 
 describe("Pop-up blocking", function() {
-  before(function() {
-    // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/102
-    if (isMV3())
-      this.skip();
-  });
-
   setMinTimeout(this, 3000);
 
   let opener;
