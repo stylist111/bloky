@@ -18,7 +18,7 @@
 import expect from "expect";
 
 import {Page, clickElement, executeScript, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
-        setMinTimeout} from "./utils.js";
+        setMinTimeout, wait} from "./utils.js";
 import {EWE, addFilter, addFakeListener} from "./messaging.js";
 
 describe("One Click Allowlisting", function() {
@@ -92,6 +92,8 @@ describe("One Click Allowlisting", function() {
     }
 
     expect(await getSuccessEventReceived()).toBeNull();
+    await wait(() => onUnauthorizedFake.called, 1000,
+               "onUnauthorizedFake was not called");
     expect(onUnauthorizedFake.args).toEqual([[{
       reason: errorMessage,
       request: expectedRequest
