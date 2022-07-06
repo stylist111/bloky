@@ -5,5 +5,5 @@ test/*-snapshots
 test/bundle/package-lock.json
 custom-subscriptions.json
 subscriptions
-extension.zip
+extension
 testpages.adblockplus.org

@@ -53,10 +53,10 @@ build:integration:
   script:
     - docker build -t extension -f test/dockerfiles/extension.Dockerfile .
     - docker run extension
-    - docker cp $(docker ps -aqf ancestor=extension):/extension.zip .
+    - docker cp $(docker ps -aqf ancestor=extension):/extension .
   artifacts:
     paths:
-      - extension.zip
+      - extension
     expire_in: 1 month
 
 audit:
@@ -158,17 +158,19 @@ test:v3:edge:linux:
 .testpages-integration:
   stage: integration
   extends: .docker-image
+  variables:
+    MANIFEST: mv2
   needs:
     - job: build:integration
       artifacts: true
   before_script:
     - apk add git
     - git clone https://gitlab.com/eyeo/adblockplus/abc/testpages.adblockplus.org.git
-    - cp extension.zip testpages.adblockplus.org
+    - cp "extension/extension"$MANIFEST".zip" testpages.adblockplus.org
   script:
     - cd testpages.adblockplus.org &&
-      docker build -t testpages --build-arg EXTENSION_FILE="extension.zip" . &&
-      docker run --shm-size=512m -e SKIP_EXTENSION_DOWNLOAD="true" -e TESTS_EXCLUDE="Snippets" -e BROWSER="$BROWSER" testpages
+      docker build -t testpages --build-arg EXTENSION_FILE="extension"$MANIFEST".zip" . &&
+      docker run --shm-size=512m -e SKIP_EXTENSION_DOWNLOAD="true" -e TESTS_EXCLUDE="Snippets$SKIP" -e BROWSER="$BROWSER" testpages
   after_script:
     - docker cp $(docker ps -aqf ancestor=testpages):/testpages.adblockplus.org/test/screenshots .
       2> /dev/null
@@ -178,37 +180,52 @@ test:v3:edge:linux:
     when: always
     expire_in: 1 mo
 
-test:integration:chrome:latest:
+test:integration:v2:chrome:latest:
   extends: .testpages-integration
   variables:
     BROWSER: Chromium \(latest\)
 
-test:integration:chrome:oldest:
+test:integration:v2:chrome:oldest:
   extends: .testpages-integration
   variables:
     BROWSER: Chromium \(oldest\)
 
-test:integration:chrome:beta:
+test:integration:v2:chrome:beta:
   extends: .testpages-integration
   allow_failure: true
   variables:
     BROWSER: Chromium \(beta\)
 
-test:integration:firefox:latest:
+test:integration:v2:firefox:latest:
   extends: .testpages-integration
   variables:
     BROWSER: Firefox \(latest\)
 
-test:integration:firefox:oldest:
+test:integration:v2:firefox:oldest:
   extends: .testpages-integration
   variables:
     BROWSER: Firefox \(oldest\)
 
-test:integration:firefox:beta:
+test:integration:v2:firefox:beta:
   extends: .testpages-integration
-  allow_failure: true
   variables:
     BROWSER: Firefox \(beta\)
+
+.test:integration:v3:
+  extends: .testpages-integration
+  variables:
+    MANIFEST: mv3
+    SKIP: "|Header|Sitekey|Subscriptions"
+
+test:integration:v3:chrome:latest:
+  extends: .test:integration:v3
+  variables:
+    BROWSER: Chromium \(latest\)
+
+test:integration:v3:chrome:beta:
+  extends: .test:integration:v3
+  variables:
+    BROWSER: Chromium \(beta\)
 
 .pages:
   stage: pages
