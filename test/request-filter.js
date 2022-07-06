@@ -300,8 +300,16 @@ describe("Blocking", function() {
     it("does not block a request from iframe", async function() {
       await addFilter("/image.png^$image");
       await addFilter(`@@$document,sitekey=${SITEKEY}`);
-      let page = new Page("iframe-sitekey.html");
-      await page.expectResource("image.png").toBeLoaded();
+      // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/255
+      // Retrying will be removed once the issue is fixed.
+      await wait(async() => {
+        try {
+          await new Page("iframe-sitekey.html").expectResource("image.png")
+            .toBeLoaded();
+          return true;
+        }
+        catch (e) {}
+      }, 1000, "image.png was blocked");
     });
 
     it("does not block a request after a reload", async function() {
