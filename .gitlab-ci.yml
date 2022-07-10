@@ -148,12 +148,12 @@ test:v2:edge:windows:
 test:v3:chromium:stable:
   extends: .test
   variables:
-    TEST_PARAMS: v3 chromium
+    TEST_PARAMS: v3 chromium --timeout 10000
 
 test:v3:edge:linux:
   extends: .test
   variables:
-    TEST_PARAMS: v3 edge
+    TEST_PARAMS: v3 edge --timeout 10000
 
 .testpages-integration:
   stage: integration

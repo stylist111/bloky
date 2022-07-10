@@ -273,12 +273,32 @@ docker run --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|e
 Please notice that the `TEST_PARAMS` argument can also take the additional
 options described previously.
 
-Tip: The following resources setup on a local MacOS Docker installation has
-proven to be close enough to the Gitlab linux shared runners behaviour:
+#### Tip: Matching CI system resources
+
+The following resources setup on a local macOS Docker installation has
+proven to be close enough to the [Gitlab linux shared
+runners](https://docs.gitlab.com/ee/ci/runners/saas/linux_saas_runner.html)
+behaviour:
 
 - CPUs: 1
 - Memory: 1.75 GB
 - Swap: 1.5 GB
+
+This can also by done by adding the flags `--cpus=1 --memory=3.75g` to `docker run`.
+
+```
+docker run --cpus=1 --memory=3.75g {other flags as above}
+```
+
+#### Tip: Maintaining browser cache
+
+If you have a slow internet connection or are running the test many
+times, you can add the following flags to `docker run` to use the
+browser download cache from the host machine.
+
+```
+-v $(pwd)/test/chromium-snapshots:/webext-sdk/test/chromium-snapshots -v $(pwd)/test/firefox-snapshots:/webext-sdk/test/firefox-snapshots -v $(pwd)/test/edge-snapshots:/webext-sdk/test/edge-snapshots
+```
 
 ### Building ABPUI extension and running testpages integration tests
 

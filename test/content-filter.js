@@ -21,39 +21,52 @@ import {Page, waitForInvisibleElement, executeScript, setMinTimeout, wait,
         getVisibleElement, getVisibleElementInFrame, isMV3, isFirefox,
         firefoxVersion, TEST_PAGES_DOMAIN, TEST_PAGES_URL, SITEKEY}
   from "./utils.js";
-import {addFilter, EWE, setTestSnippets} from "./messaging.js";
+import {addFilter, setTestSnippets} from "./messaging.js";
+import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 
 describe("Element Hiding", function() {
-  async function getElemHideElement(id) {
-    let tabId = await new Page("element-hiding.html").loaded;
-    // hiding elements may take a few ms on CI
-    await new Promise(r => setTimeout(r, 200));
-    return await getVisibleElement(tabId, id);
+  async function expectElemHideHidden({elemId = "elem-hide",
+                                       url = "element-hiding.html", frameId,
+                                       timeout = 1000} = {}) {
+    let tabId = await new Page(url).loaded;
+    let getElem = frameId ?
+        () => getVisibleElementInFrame(tabId, elemId, [frameId]) :
+        () => getVisibleElement(tabId, elemId);
+
+    await wait(
+      async() => await getElem() == null,
+      timeout,
+      `Expected element "${elemId}" on page "${url}" to be hidden, but it was visible.`
+    );
   }
 
-  async function getElemHideElementWithSitekey(id) {
-    let tabId = await new Page("element-hiding.html?sitekey=1").loaded;
-    // hiding elements may take a few ms on CI
-    await new Promise(r => setTimeout(r, 200));
-    return await getVisibleElement(tabId, id);
-  }
+  async function expectElemHideVisible({elemId = "elem-hide",
+                                        url = "element-hiding.html",
+                                        frameId} = {}) {
+    let tabId = await new Page(url).loaded;
+    let getElem = frameId ?
+        () => getVisibleElementInFrame(tabId, elemId, [frameId]) :
+        () => getVisibleElement(tabId, elemId);
 
-  async function getElemHideElementInFrame(id, frameId) {
-    let tabId = await new Page("iframe-elemhide.html").loaded;
-    // hiding elements may take a few ms on CI
+    // If we're expecting things to not be hidden, but we check before
+    // the filters have a chance to be applied, then we're not really
+    // testing anything.
     await new Promise(r => setTimeout(r, 200));
-    return await getVisibleElementInFrame(tabId, id, [frameId]);
+
+    let elem = await getElem();
+    expect(elem).not.toBeNull();
   }
 
   it("hides an element", async function() {
     await addFilter("###elem-hide");
-    expect(await getElemHideElement("elem-hide")).toBeNull();
+    await expectElemHideHidden();
   });
 
   it("hides an element after service worker is suspended", async function() {
+    setMinTimeout(this, 4000);
     await addFilter("###elem-hide");
-    await EWE.debugging.initializerStop();
-    expect(await getElemHideElement("elem-hide")).toBeNull();
+    await suspendServiceWorker(this);
+    await expectElemHideHidden({timeout: 2000});
   });
 
   it("does not hide an allowlisted element", async function() {
@@ -61,7 +74,7 @@ describe("Element Hiding", function() {
 
     await addFilter("###elem-hide");
     await addFilter("#@##elem-hide");
-    expect(await getElemHideElement("elem-hide")).not.toBeNull();
+    await expectElemHideVisible();
   });
 
   for (let type of ["$document", "$elemhide"]) {
@@ -69,55 +82,65 @@ describe("Element Hiding", function() {
       setMinTimeout(this, 12000);
 
       await addFilter("###elem-hide");
-      expect(await getElemHideElement("elem-hide")).toBeNull();
+      await expectElemHideHidden();
 
       await addFilter(`@@|${TEST_PAGES_URL}/*.html${type}`);
-      expect(await getElemHideElement("elem-hide")).not.toBeNull();
+      await expectElemHideVisible();
     });
 
     it(`does not hide frame elements allowlisted by ${type}`, async function() {
       setMinTimeout(this, 8000);
 
       await addFilter("###elem-hide");
-      expect(await getElemHideElementInFrame("elem-hide", "elem-hide-frame"))
-        .toBeNull();
+      await expectElemHideHidden({
+        url: "iframe-elemhide.html",
+        elemId: "elem-hide",
+        frameId: "elem-hide-frame"
+      });
 
       await addFilter(`@@|${TEST_PAGES_URL}/iframe-elemhide.html^${type}`);
-      expect(await getElemHideElementInFrame("elem-hide", "elem-hide-frame"))
-        .not.toBeNull();
+      await expectElemHideVisible({
+        url: "iframe-elemhide.html",
+        elemId: "elem-hide",
+        frameId: "elem-hide-frame"
+      });
     });
   }
 
   it("does not hide elements in document allowlisted by $elemhide", async function() {
     await addFilter("###elem-hide");
     await addFilter(`@@|${TEST_PAGES_URL}/*.html$elemhide`);
-    expect(await getElemHideElement("elem-hide")).not.toBeNull();
+    await expectElemHideVisible();
   });
 
   it("does not hide elements in document allowlisted for domain", async function() {
     await addFilter("###elem-hide");
     await addFilter(
       `@@|${TEST_PAGES_URL}/*.html$elemhide,domain=${TEST_PAGES_DOMAIN}`);
-    expect(await getElemHideElement("elem-hide")).not.toBeNull();
+    await expectElemHideVisible();
   });
 
-  it("does not hide elements through generic filter " +
-     "in documents allowlisted by $generichide", async function() {
+  it("does not hide elements through generic filter in documents allowlisted by $generichide", async function() {
     await addFilter("###elem-hide");
     await addFilter(`${TEST_PAGES_DOMAIN}###elem-hide-specific`);
     await addFilter(`@@|${TEST_PAGES_URL}$generichide`);
 
     let tabId = await new Page("element-hiding.html").loaded;
-    await new Promise(r => setTimeout(r, 200));
-    expect(await getVisibleElement(tabId, "elem-hide")).not.toBeNull();
-    expect(await getVisibleElement(tabId, "elem-hide-specific")).toBeNull();
+    await wait(
+      async() => {
+        expect(await getVisibleElement(tabId, "elem-hide")).not.toBeNull();
+        return await getVisibleElement(tabId, "elem-hide-specific") == null;
+      },
+      1000,
+      "Expected element \"elem-hide-specific\" to be hidden, but it was visible."
+    );
   });
 
   describe("Element Hiding Emulation", function() {
     it("hides abp-properties elements", async function() {
       await addFilter(
         `${TEST_PAGES_DOMAIN}#?#div:-abp-properties(background-color: red)`);
-      expect(await getElemHideElement("elem-hide-emulation-props")).toBeNull();
+      await expectElemHideHidden({elemId: "elem-hide-emulation-props"});
     });
 
     it("hides abp-properties elements after unhide", async function() {
@@ -131,11 +154,16 @@ describe("Element Hiding", function() {
       );
 
       let tabId = await new Page("element-hiding.html").loaded;
-      await new Promise(r => setTimeout(r, 200));
-      let elem1 = await getVisibleElement(tabId, "unhide1");
-      let elem2 = await getVisibleElement(tabId, "unhide2");
-      expect(elem1).toBeNull();
-      expect(elem2).toBeNull();
+      let elem1;
+      let elem2;
+
+      await wait(
+        async() => {
+          elem1 = await getVisibleElement(tabId, "unhide1");
+          elem2 = await getVisibleElement(tabId, "unhide2");
+          return elem1 == null && elem2 == null;
+        }, 1000, "Elements were not hidden initially"
+      );
 
       await executeScript(tabId, async() => {
         document.getElementById("unhide1").parentElement.className = "";
@@ -163,38 +191,35 @@ describe("Element Hiding", function() {
     it("hides abp-has elements", async function() {
       await addFilter(
         `${TEST_PAGES_DOMAIN}#?#div:-abp-has(>span#elem-hide-emulation-has)`);
-      expect(await getElemHideElement("elem-hide-emulation-has")).toBeNull();
+      await expectElemHideHidden({elemId: "elem-hide-emulation-has"});
     });
 
     it("hides abp-contains elements", async function() {
       await addFilter(`${TEST_PAGES_DOMAIN}#?#span` +
-        ":-abp-contains(elem-hide-emulation-contain-target)");
-      expect(await getElemHideElement("elem-hide-emulation-contain"))
-        .toBeNull();
+                      ":-abp-contains(elem-hide-emulation-contain-target)");
+      await expectElemHideHidden({elemId: "elem-hide-emulation-contain"});
     });
 
     it("hides the img element of a blocked request in element-hiding-aboutblank", async function() {
       setMinTimeout(this, 5000);
       await addFilter("##img");
 
-      let tabId = await new Page("element-hiding-aboutblank.html").loaded;
-      await wait(async() => {
-        let visible = await getVisibleElementInFrame(
-          tabId, "aboutblank-img", ["aboutblank-iframe"]);
-        return visible === null;
-      }, 2000, "The image element is still visible");
+      await expectElemHideHidden({
+        elemId: "aboutblank-img",
+        url: "element-hiding-aboutblank.html",
+        frameId: "aboutblank-iframe"
+      });
     });
 
     it("hides the img element in element-hiding-aboutblank with specific rule", async function() {
       setMinTimeout(this, 5000);
       await addFilter("localhost##img"); // specific for "localhost"
 
-      let tabId = await new Page("element-hiding-aboutblank.html").loaded;
-      await wait(async() => {
-        let visible = await getVisibleElementInFrame(
-          tabId, "aboutblank-img", ["aboutblank-iframe"]);
-        return visible === null;
-      }, 2000, "The image element is still visible");
+      await expectElemHideHidden({
+        elemId: "aboutblank-img",
+        url: "element-hiding-aboutblank.html",
+        frameId: "aboutblank-iframe"
+      });
     });
   });
 
@@ -237,13 +262,13 @@ describe("Element Hiding", function() {
     it("has no effect on pages without the sitekey", async function() {
       await addFilter("###elem-hide");
       await addFilter(`@@$elemhide,sitekey=${SITEKEY}`);
-      expect(await getElemHideElement("elem-hide")).toBeNull();
+      await expectElemHideHidden();
     });
 
     it("does not hide an element on a sitekey allowlisted page", async function() {
       await addFilter("###elem-hide");
       await addFilter(`@@$elemhide,sitekey=${SITEKEY}`);
-      expect(await getElemHideElementWithSitekey("elem-hide")).not.toBeNull();
+      await expectElemHideVisible({url: "element-hiding.html?sitekey=1"});
     });
 
     it("does not hide an element on a sitekey allowlisted page after reload", async function() {

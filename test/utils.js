@@ -309,6 +309,12 @@ export function setMinTimeout(runnable, timeout) {
     runnable.timeout(timeout);
 }
 
+export function increaseMinTimeout(runnable, extra) {
+  let currentTimeout = runnable.timeout();
+  if (currentTimeout != 0)
+    runnable.timeout(currentTimeout + extra);
+}
+
 export async function waitForInvisibleElement(tabId, id) {
   await wait(async() => {
     let result = await executeScript(tabId, elemId => {

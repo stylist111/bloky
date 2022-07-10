@@ -61,14 +61,15 @@ before(async function() {
 after(async function() {
   setMinTimeout(this, 3000);
 
+  // To be removed when there is subscriptions V3 support
+  // See https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/242
+  if (isMV3())
+    return;
+
   await runInBackgroundPage([
     {op: "getGlobal", arg: "self"},
     {op: "callMethod", arg: "restoreSubscriptions"}
   ]);
-
-  // To be removed when there is subscriptions V3 support
-  if (isMV3())
-    return;
 
   expect(await EWE.filters.getUserFilters())
     .toEqual([expect.objectContaining({text: RESTORE_SUBSCRIPTIONS_TEST})]);

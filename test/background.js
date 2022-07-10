@@ -26,6 +26,11 @@ let callbackIdCounter = 0;
 let callbacks = new Map();
 let lastError;
 
+// This is state that deliberately is not backed by storage so we can
+// be sure that our MV3 service worker tests can suspend the service
+// worker.
+let inMemoryState = null;
+
 function toStringIfError(obj) {
   return obj instanceof Error ? obj.toString() : obj;
 }
@@ -143,6 +148,17 @@ function handleTestMessage(request, sender, sendResponse) {
     case "ewe-test:clearMessages": {
       messages = [];
       sendResponse({});
+      return true;
+    }
+
+    case "ewe-test:setInMemoryState": {
+      inMemoryState = request.data;
+      sendResponse({});
+      return true;
+    }
+
+    case "ewe-test:getInMemoryState": {
+      sendResponse(inMemoryState);
       return true;
     }
   }

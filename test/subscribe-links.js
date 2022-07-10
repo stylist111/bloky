@@ -35,14 +35,14 @@ describe("Subscribe links (runner only)", function() {
     let page = new Page("subscribe.html");
     await page.loaded;
 
-    runner.click(page.url, selector);
+    await runner.click(page.url, selector);
     try {
       await wait(() => fake.called, 2000);
     }
     catch (e) {
       // driver.executeScript in test/runner.js might throw which
       // prevents this click from happening. Retrying usually helps.
-      runner.click(page.url, selector);
+      await runner.click(page.url, selector);
       await wait(() => fake.called, 2000, "Listener was not called");
     }
 

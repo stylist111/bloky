@@ -23,6 +23,7 @@ import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {recommendations} from "adblockpluscore/lib/recommendations.js";
 import {Filter} from "adblockpluscore/lib/filterClasses.js";
 
+import {default as initializer} from "./initializer.js";
 import {filterEngine} from "./core.js";
 import {EventDispatcher} from "./types.js";
 import {convertFilter} from "./filters.js";
@@ -284,6 +285,7 @@ export default {
    * @private
    */
   async removeAll() {
+    await initializer.start();
     let subscriptions = [];
 
     const {filterStorage} = filterEngine;

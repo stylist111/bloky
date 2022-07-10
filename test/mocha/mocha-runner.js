@@ -17,29 +17,28 @@
 
 /* global Mocha */
 
+import {EventEmitter} from "adblockpluscore/lib/events.js";
+
+import {increaseMinTimeout} from "../utils.js";
+
 let messages = [];
 let emit = () => {};
 let setConnected;
 let connected = new Promise(resolve => {
   setConnected = resolve;
 });
-let runner = mocha.run();
+let webdriverEventEmitter = new EventEmitter();
 
 function sendMessage(id, arg) {
   messages.push([id, arg]);
   emit();
 }
 
-runner.on("end", () =>
-  sendMessage("end", {failures: runner.failures, total: runner.total})
-);
-
-Mocha.reporters.Base.useColors = true;
-Mocha.reporters.Base.consoleLog = (...args) => sendMessage("log", args);
-new Mocha.reporters.Spec(runner);
-
-self.poll = async function() {
+self.poll = async function(webdriverEvents) {
   setConnected(true);
+
+  for (let webdriverEvent of webdriverEvents)
+    webdriverEventEmitter.emit(webdriverEvent.id, webdriverEvent.arg);
 
   if (messages.length == 0) {
     await new Promise(resolve => {
@@ -53,13 +52,55 @@ self.poll = async function() {
   return newMessages;
 };
 
+let isConnectedPromise = null;
 export function isConnected() {
-  return Promise.race([
-    connected,
-    new Promise(resolve => setTimeout(resolve, 1000, false))
-  ]);
+  if (!isConnectedPromise) {
+    isConnectedPromise = Promise.race([
+      connected,
+      new Promise(resolve => setTimeout(resolve, 1000, false))
+    ]);
+  }
+
+  return isConnectedPromise;
 }
 
-export function click(url, selector) {
-  sendMessage("click", {url, selector});
+export async function click(url, selector) {
+  let target = {url, selector};
+  sendMessage("click", target);
+  await new Promise(resolve => {
+    function done(arg) {
+      if (arg && arg.url == target.url && arg.selector == target.selector) {
+        webdriverEventEmitter.off("clicked", done);
+        resolve();
+      }
+    }
+    webdriverEventEmitter.on("clicked", done);
+  });
+}
+
+export async function suspendServiceWorker(runnable) {
+  sendMessage("suspendServiceWorker");
+  if (!await isConnected())
+    runnable.skip();
+
+  increaseMinTimeout(runnable, 2000);
+
+  await new Promise(resolve => {
+    function done() {
+      webdriverEventEmitter.off("serviceWorkerSuspended", done);
+      resolve();
+    }
+    webdriverEventEmitter.on("serviceWorkerSuspended", done);
+  });
+}
+
+export function start() {
+  let runner = mocha.run();
+  runner.on("end", () => {
+    sendMessage("end", {failures: runner.failures, total: runner.total});
+  });
+
+  Mocha.reporters.Base.useColors = true;
+  Mocha.reporters.Base.consoleLog = (...args) => sendMessage("log", args);
+  new Mocha.reporters.Spec(runner);
 }

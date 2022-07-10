@@ -111,7 +111,7 @@ class Chromium {
                                path.join(chromedriverDir, driver));
   }
 
-  async getDriver(version, incognito = false) {
+  async getDriver(version, manifest, incognito = false) {
     let base;
     let dev = version == "beta" || version == "dev";
     if (version && !dev)
@@ -125,11 +125,19 @@ class Chromium {
     else
       await this.installDriver(version);
 
-    let options = new chrome.Options();
     if (incognito)
       throw new Error("Sorry, we don't support incognito in Chrome");
 
-    options.addArguments("no-sandbox", `load-extension=${extensionDir}`);
+    let args = ["no-sandbox", `load-extension=${extensionDir}`];
+
+    // auto-open-devtools-for-tabs is required to make MV3 service
+    // workers start up after being suspended in tests.
+    // See https://bugs.chromium.org/p/chromium/issues/detail?id=1325792#c8
+    if (manifestIsMV3(manifest))
+      args.push("auto-open-devtools-for-tabs");
+
+    let options = new chrome.Options();
+    options.addArguments(...args);
     options.setChromeBinaryPath(binary);
 
     let builder = new webdriver.Builder();
@@ -137,6 +145,22 @@ class Chromium {
     builder.setChromeOptions(options);
 
     return builder.build();
+  }
+
+  async suspendServiceWorker(driver, handle) {
+    await driver.switchTo().newWindow("tab");
+    await driver.get("chrome://serviceworker-internals/");
+    let stopButtons = await driver.findElements(webdriver.By.className("stop"));
+    for (let stopButton of stopButtons) {
+      if (await stopButton.isDisplayed())
+        await stopButton.click();
+    }
+    // This is a very long timeout, to ensure that the service worker
+    // has time to finish shutting down even on slow single core
+    // service workers before we start trying to wake it up again.
+    await new Promise(r => setTimeout(r, 1000));
+    await driver.close();
+    await driver.switchTo().window(handle);
   }
 }
 
@@ -147,7 +171,7 @@ class Firefox {
       data.LATEST_FIREFOX_DEVEL_VERSION : data.LATEST_FIREFOX_VERSION;
   }
 
-  async getDriver(version, incognito = false) {
+  async getDriver(version, manifest, incognito = false) {
     if (!version || version == "beta")
       version = await this.getLatestVersion(version);
     let binary = await downloadFirefox(version);
@@ -188,6 +212,10 @@ class Firefox {
       return;
     }
     throw new Error("Test extension was not found on incognito mode");
+  }
+
+  async suspendServiceWorker(driver, handle) {
+    throw new Error("Suspending service workers not currently implemented for firefox because we don't yet support MV3 in firefox");
   }
 }
 
@@ -256,21 +284,34 @@ class Edge {
     }
   }
 
-  async getDriver(incognito = false) {
+  async getDriver(version, manifest, incognito = false) {
     if (incognito)
       throw new Error("Sorry, we don't support incognito in Edge");
 
     await this.installDriver();
+
+    let args = ["no-sandbox", `load-extension=${extensionDir}`];
+
+    // auto-open-devtools-for-tabs is required to make MV3 service
+    // workers start up after being suspended in tests.
+    // See https://bugs.chromium.org/p/chromium/issues/detail?id=1325792#c8
+    if (manifestIsMV3(manifest))
+      args.push("auto-open-devtools-for-tabs");
+
 
     let builder = new webdriver.Builder();
     builder.forBrowser("MicrosoftEdge");
     builder.withCapabilities({
       "browserName": "MicrosoftEdge",
       "ms:edgeChromium": true,
-      "ms:edgeOptions": {args: ["no-sandbox", `load-extension=${extensionDir}`]}
+      "ms:edgeOptions": {args}
     });
 
     return builder.build();
+  }
+
+  async suspendServiceWorker(driver, handle) {
+    await BROWSERS.chromium.suspendServiceWorker(driver, handle);
   }
 }
 
@@ -341,30 +382,38 @@ async function getHandle(driver, page) {
   return handle;
 }
 
-async function pollMessages(driver, handle) {
+function manifestIsMV3(manifest) {
+  return manifest.startsWith("v3");
+}
+
+async function pollMessages(browser, driver, handle, manifest) {
+  let isMV3 = manifestIsMV3(manifest);
   let result;
+  let webdriverEvents = [];
   let log = [];
 
   while (!result) {
     let messages;
     let script = `
+      let webdriverEvents = arguments[0];
       return new Promise(resolve => {
         if (document.readyState == "complete")
-          resolve(poll());
+          resolve(poll(webdriverEvents));
         else
-          window.addEventListener("load", () => resolve(poll()));
+          window.addEventListener("load", () => resolve(poll(webdriverEvents)));
       });`;
     try {
-      messages = await driver.executeScript(script);
+      messages = await driver.executeScript(script, webdriverEvents);
     }
     catch (err) {
       if (err.message.includes("received Inspector.detached event"))
         // From Chromium 105 the driver.executeScript function might throw
         // this error on low resource machines. Retrying usually helps.
-        messages = await driver.executeScript(script);
+        messages = await driver.executeScript(script, webdriverEvents);
       else
         throw err;
     }
+    webdriverEvents = [];
 
     if (!messages)
       return;
@@ -380,6 +429,14 @@ async function pollMessages(driver, handle) {
           await switchToHandle(driver, handleUrl => handleUrl == arg.url);
           await driver.findElement(webdriver.By.css(arg.selector)).click();
           await driver.switchTo().window(handle);
+          webdriverEvents.push({id: "clicked", arg});
+          break;
+
+        case "suspendServiceWorker":
+          // this is a noop for mv2, since there's no service worker to suspend.
+          if (isMV3)
+            await browser.suspendServiceWorker(driver, handle);
+          webdriverEvents.push({id: "serviceWorkerSuspended"});
           break;
 
         case "end":
@@ -408,11 +465,12 @@ async function startTestRun(driver, id, params) {
 }
 
 async function run() {
-  let {manifest, browser, version, params} = parseArguments();
+  let {manifest, browser: browserName, version, params} = parseArguments();
   extensionDir = path.resolve(process.cwd(), "dist", `test-m${manifest}`);
   let paramsIncognito =
     typeof params != "undefined" && typeof params.incognito != "undefined";
-  let driver = await BROWSERS[browser].getDriver(version, paramsIncognito);
+  let browser = BROWSERS[browserName];
+  let driver = await browser.getDriver(version, manifest, paramsIncognito);
   if (params && typeof params.timeout != "undefined") {
     let driverTimeouts = await driver.manage().getTimeouts();
     let paramsTimeout = parseInt(params.timeout, 10);
@@ -437,18 +495,18 @@ async function run() {
     // eslint-disable-next-line no-console
     console.log(`Browser: ${cap.getBrowserName()} ${cap.getBrowserVersion()}`);
     if (paramsIncognito)
-      await BROWSERS[browser].allowExtensionInIncognito(driver);
+      await browser.allowExtensionInIncognito(driver);
 
     await startTestRun(driver, "unit", params);
     let handle = await getHandle(driver, "/unit.html");
-    resultUnit = await pollMessages(driver, handle);
+    resultUnit = await pollMessages(browser, driver, handle, manifest);
 
     await startTestRun(driver, "reload");
     while (!resultReload ||
            resultReload.log.toString().includes("Reload (preparation)")) {
       handle = await getHandle(driver, "/reload.html");
       try {
-        resultReload = await pollMessages(driver, handle);
+        resultReload = await pollMessages(browser, driver, handle, manifest);
       }
       catch (e) {
         if (e.name != "NoSuchWindowError")
