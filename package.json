@@ -41,7 +41,7 @@
     "eslint-plugin-html": "^6.1.2",
     "expect": "^25.5.0",
     "express": "^4.17.1",
-    "geckodriver": "^2.0.4",
+    "geckodriver": "^3.0.2",
     "generate-json-webpack-plugin": "^2.0.0",
     "html-webpack-plugin": "^5.3.2",
     "mini-css-extract-plugin": "^2.0.0",
