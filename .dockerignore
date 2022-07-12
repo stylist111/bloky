@@ -1,5 +1,5 @@
 node_modules
 docs
-test/*-snapshots
+browser-snapshots
 test/bundle/package-lock.json
 dist

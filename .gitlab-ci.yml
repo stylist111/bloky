@@ -20,7 +20,7 @@ cache:
       - package-lock.json
     paths:
     - node_modules/
-    - test/*-snapshots/download-cache/
+    - browser-snapshots/*/cache/
 
 build:
   stage: build

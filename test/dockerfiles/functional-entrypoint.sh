@@ -1,7 +1,7 @@
 #! /bin/bash
 
 # Browser config
-if [[ "$TEST_PARAMS" == *"chromium"* ]] || [[ "$TEST_PARAMS" == *"edge"* ]]; then
+if [[ "$TEST_PARAMS" =~ (chromium|edge|incognito) ]]; then
   XVFB_CMD="xvfb-run -a"
 fi
 

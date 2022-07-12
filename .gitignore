@@ -1,7 +1,7 @@
 node_modules
 dist
 docs
-test/*-snapshots
+browser-snapshots
 test/bundle/package-lock.json
 custom-subscriptions.json
 subscriptions
