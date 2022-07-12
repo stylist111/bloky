@@ -68,7 +68,7 @@ function isDomainAllowed(domain) {
 }
 
 export function subscribeLinksEnabled(url) {
-  if (!dispatchFunction)
+  if (!dispatchFunction || !url)
     return false;
 
   let {protocol, hostname} = new URL(url);

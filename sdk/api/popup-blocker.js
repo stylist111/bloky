@@ -22,7 +22,7 @@ import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 
 import {filterEngine} from "./core.js";
 import {logItem} from "./diagnostics.js";
-import {getFrameInfo, isTopLevelFrameId} from "./frame-state.js";
+import {getFrameInfo, isTopLevelFrameId, BLANK_PAGE_URL} from "./frame-state.js";
 
 let loadingPopups = new Map();
 
@@ -40,7 +40,7 @@ function forgetPopup(tabId) {
 function checkPotentialPopup(sourceTabId, popupTabId, url, frame) {
   let specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) != 0;
   let filter = filterEngine.defaultMatcher.match(
-    url || "about:blank", contentTypes.POPUP,
+    url || BLANK_PAGE_URL, contentTypes.POPUP,
     frame.hostname, frame.sitekey, specificOnly
   );
 
@@ -65,7 +65,7 @@ function onPopupURLChanged(details) {
 }
 
 function onCompleted(details) {
-  if (isTopLevelFrameId(details.frameId) && details.url != "about:blank")
+  if (isTopLevelFrameId(details.frameId) && details.url != BLANK_PAGE_URL)
     forgetPopup(details.tabId);
 }
 

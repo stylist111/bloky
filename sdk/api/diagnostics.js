@@ -19,6 +19,7 @@ import {Filter, ElemHideFilter} from "adblockpluscore/lib/filterClasses.js";
 import {parseURL} from "adblockpluscore/lib/url.js";
 import {filterEngine} from "./core.js";
 import {convertFilter} from "./filters.js";
+import {BLANK_PAGE_URL} from "./frame-state.js";
 
 let listeners = [];
 let defaultOptions = {includeElementHiding: false,
@@ -136,9 +137,9 @@ export function logHiddenElements(selectors, filters, sender) {
   let request = {
     tabId: sender.tab.id,
     frameId: sender.frameId,
-    url: sender.url
+    url: sender.url || BLANK_PAGE_URL
   };
-  let {hostname} = parseURL(sender.url);
+  let {hostname} = parseURL(request.url);
   let matchInfo = {
     docDomain: hostname,
     method: "elemhide"

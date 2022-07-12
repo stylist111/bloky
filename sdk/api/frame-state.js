@@ -27,6 +27,11 @@ import {getSitekey, setSitekeyFromHeaders, clearAllSitekeys, clearTabSitekeys}
   from "./sitekey.js";
 
 /**
+ * The URL that browsers use to represent an empty page, about:blank.
+ */
+export const BLANK_PAGE_URL = "about:blank";
+
+/**
  * The frameId of the top level frame on each tab.
  */
 export const TOP_LEVEL_FRAME_ID = 0;
@@ -260,6 +265,12 @@ async function discoverExistingFrames() {
         if (isValidChildFrameId(parentFrameId) && !parent)
           parent = frames.get(TOP_LEVEL_FRAME_ID);
 
+        // Yandex gives undefined or an empty string here sometimes,
+        // for example when browsing to pages that Yandex treats
+        // specially like their own website.
+        if (!url)
+          url = BLANK_PAGE_URL;
+
         frames.set(frameId, new FrameInfo(tabId, frameId, parent, url));
       }
     })
@@ -327,6 +338,12 @@ function onHeadersReceived({tabId, frameId, url, responseHeaders}) {
 function recordFrameFromNavigationEvent(
   {tabId, frameId, parentFrameId = -1, url},
   {historyStateUpdated = false, errorOccurred = false} = {}) {
+  // Yandex gives undefined or an empty string here sometimes,
+  // for example when browsing to pages that Yandex treats
+  // specially like their own website.
+  if (!url)
+    url = BLANK_PAGE_URL;
+
   let frames = state.get(tabId);
 
   // We generally need to throw away any existing frame state for the
