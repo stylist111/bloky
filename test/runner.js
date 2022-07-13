@@ -227,7 +227,7 @@ async function run() {
   }
 
   let results = {
-    unit: null,
+    functional: null,
     reload: null
   };
 
@@ -239,9 +239,9 @@ async function run() {
         driver, "eyeo's Web Extension Ad Blocking Toolkit Test Extension");
     }
 
-    await startTestRun(driver, "unit", params);
-    let handle = await getHandle(driver, "/unit.html");
-    results.unit = await pollMessages(browser, driver, handle, manifest);
+    await startTestRun(driver, "functional", params);
+    let handle = await getHandle(driver, "/functional.html");
+    results.functional = await pollMessages(browser, driver, handle, manifest);
 
     await startTestRun(driver, "reload");
     while (!results.reload ||

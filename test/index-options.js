@@ -17,7 +17,7 @@
 
 "use strict";
 
-const TEST_LINKS = ["unit", "reload"];
+const TEST_LINKS = ["functional", "reload"];
 const TEXT_OPTIONS = ["grep", "timeout"];
 
 function onLoad() {

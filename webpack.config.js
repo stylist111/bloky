@@ -180,7 +180,7 @@ export default (env = {}) => {
       dependencies: [buildVariant.eweConfigName],
       mode: "development",
       entry: {
-        unit: path.join(dirname, "test", "unit.js"),
+        functional: path.join(dirname, "test", "functional.js"),
         reload: path.join(dirname, "test", "reload-wrap.js")
       },
       output: {
@@ -201,14 +201,14 @@ export default (env = {}) => {
       },
       plugins: [
         new HtmlWebpackPlugin({
-          title: "Unit tests",
-          filename: "unit.html",
+          title: "Functional tests",
+          filename: "functional.html",
           inject: "body",
-          chunks: ["unit"],
+          chunks: ["functional"],
           template: templateDir
         }),
         new HtmlWebpackPlugin({
-          title: "Reload test",
+          title: "Reload tests",
           filename: "reload.html",
           inject: "body",
           chunks: ["reload"],

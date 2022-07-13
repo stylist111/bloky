@@ -50,7 +50,7 @@
     // NB: THIS TEST CODE IS INSECURE!
     // This code demonstrated the signing flow, but by doing the
     // signing in the browser it exposes the private key to anyone who
-    // opens the dev tools. This is fine for unit tests, but a real
+    // opens the dev tools. This is fine for functional tests, but a real
     // website should NEVER do this. The allowlisting event should
     // always be signed on the server.
 
@@ -183,7 +183,7 @@
       get(target, property, receiver) {
         if (property === "detail")
           eventHandlerDetected();
-  
+
         return target[property];
       }
     });

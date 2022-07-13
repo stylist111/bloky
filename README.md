@@ -21,9 +21,9 @@ for Chromium and Firefox extensions (like [Adblock Plus][abpui]).
   * [Building the documentation](#building-the-documentation)
   * [Linting the code](#linting-the-code)
 * [Testing](#testing)
-  * [Serving the test pages](#serving-the-test-pages)
-  * [Using the test extension](#using-the-test-extension)
-  * [Using the test runner](#using-the-test-runner)
+  * [Functional tests](#functional-tests)
+  * [Integration tests](#integration-tests)
+  * [Non-functional tests](#non-functional-tests)
 
 </div>
 
@@ -215,14 +215,16 @@ npm run build -- --env release
 
 ## Testing
 
-### Serving the test pages
+### Functional tests
+
+#### Serving the test pages
 
 Regardless of whether you're manually loading the test extension, or using
-the test runner, the test suite requires locally served test pages.
+the test runner, functional test suites require locally served test pages.
 
     npm run test-server
 
-### Using the test extension
+#### Using the test extension
 
 The test extension will be built on both `/dist/test-mv2` and `/dist/test-mv3`
 folders, which can be loaded as unpacked extensions under `chrome://extensions`
@@ -232,14 +234,15 @@ Once the extension is loaded, it opens the test suite in a new tab.
 Notes:
 - `test-mv2` contains a manifest version 2 extension, and `test-mv3`
 contains a manifest version 3 extension.
-- `test-mv2-custom` contains a manifest version 2 extension using custom (test) subscriptions.
+- `test-mv2-custom` contains a manifest version 2 extension using custom (test)
+subscriptions.
 - For the popup tests to work, you have to disable the browser's
 built-in popup blocking (on `localhost`).
 
 You can also inspect the extension's background page to manually test the API
 through the global `EWE` object.
 
-#### Test options
+##### Test options
 
 - The `timeout` option overrides the per-test timeout in milliseconds.
 - The `grep` option filters the tests to run with a regular expression.
@@ -247,7 +250,7 @@ through the global `EWE` object.
 started in incognito/private mode or not. This does not cause tests to run
 in incognito mode.
 
-### Using the test runner
+#### Using the test runner
 
 ```
 npm test -- {v2|v3|v2-custom} {chromium|firefox|edge} [version|channel] [options]
@@ -259,7 +262,7 @@ example `--timeout 10000`.
 In the test runner context, the `--incognito` flag forces the browser to start
 in incognito/private mode. This is only supported by Firefox.
 
-#### Using the test runner on docker
+##### Using the test runner on docker
 
 The CI/CD pipeline runs the functional tests using [this docker image](https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/blob/master/test/dockerfiles/functional.Dockerfile).
 Using docker locally to run the same tests may be useful to recreate the
@@ -273,7 +276,7 @@ docker run --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|e
 Please notice that the `TEST_PARAMS` argument can also take the additional
 options described previously.
 
-#### Tip: Matching CI system resources
+##### Tip: Matching CI system resources
 
 The following resources setup on a local macOS Docker installation has
 proven to be close enough to the [Gitlab linux shared
@@ -290,7 +293,7 @@ This can also by done by adding the flags `--cpus=1 --memory=3.75g` to `docker r
 docker run --cpus=1 --memory=3.75g {other flags as above}
 ```
 
-#### Tip: Maintaining browser cache
+##### Tip: Maintaining browser cache
 
 If you have a slow internet connection or are running the test many
 times, you can add the following flags to `docker run` to use the
@@ -319,9 +322,11 @@ with the `--help` option for a list of options.
 npm run measureTestFlakiness -- --help
 ```
 
-### Building ABPUI extension and running testpages integration tests
+### Integration tests
 
-If there are no breaking changes in webext code, you will be able to build
+#### Building ABPUI extension and running testpages integration tests
+
+If there are no breaking changes in the code, you will be able to build
 ABPUI extension with current codebase. To build and extract the custom extension
 on Docker run the following commands:
 
@@ -364,17 +369,19 @@ is recommended to [use the TESTS_EXCLUDE option](https://gitlab.com/eyeo/adblock
 [allowlisting-module]: https://eyeo.gitlab.io/adblockplus/abc/webext-sdk/master/docs/#allowlisting
 [testpages-project]: https://gitlab.com/eyeo/adblockplus/abc/testpages.adblockplus.org
 
-### Bundle test
+### Non-functional tests
+
+#### Bundle test
 
 Checks that the bundled code can be imported and re-bundled
 
     npm run test-bundle
 
-### Scripts test
+#### Scripts test
 
     npm run test-scripts
 
-# MV3 subscriptions
+## MV3 subscriptions
 
 ```
 # generate the subscriptions list

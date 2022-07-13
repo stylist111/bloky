@@ -5,7 +5,7 @@ default:
 stages:
   - build
   - pages
-  - test
+  - functional
   - integration
 
 variables:
@@ -30,6 +30,7 @@ build:
     - npm run lint
     - npm run build -- --env release
     - DOCS_ERROR=$(npm run docs 2>&1 >/dev/null) && if [ ! -z "$DOCS_ERROR" ]; then echo $DOCS_ERROR && false; fi
+    # Non-functional tests run here for convenience
     - npm run test-bundle
     - npm run test-scripts
   artifacts:
@@ -60,16 +61,15 @@ build:integration:
     expire_in: 1 month
 
 audit:
-  stage: test
-  needs: []
+  stage: build
   before_script:
     - npm install
   script:
     - npm audit --production
   allow_failure: true
 
-.test:
-  stage: test
+.functional:
+  stage: functional
   extends: .docker-image
   needs:
     - job: build
@@ -78,53 +78,53 @@ audit:
     - docker build -t functional -f test/dockerfiles/functional.Dockerfile .
     - docker run --shm-size=512m -e TEST_PARAMS="$TEST_PARAMS" functional
 
-test:v2:chromium:stable:
-  extends: .test
+func:v2:chromium:stable:
+  extends: .functional
   variables:
     TEST_PARAMS: v2 chromium
 
-test:v2-subs:chromium:stable:
-  extends: .test
+func:v2-subs:chromium:stable:
+  extends: .functional
   variables:
     TEST_PARAMS: v2-custom chromium
 
-test:v2:chromium:oldest:
-  extends: .test
+func:v2:chromium:oldest:
+  extends: .functional
   variables:
     TEST_PARAMS: v2 chromium 77.0.3865.0
 
-test:v2:chromium:beta:
-  extends: .test
+func:v2:chromium:beta:
+  extends: .functional
   variables:
     TEST_PARAMS: v2 chromium beta
 
-test:v2:chromium:dev:
-  extends: .test
+func:v2:chromium:dev:
+  extends: .functional
   variables:
     TEST_PARAMS: v2 chromium dev
 
-test:v2:firefox:latest:
-  extends: .test
+func:v2:firefox:latest:
+  extends: .functional
   variables:
     TEST_PARAMS: v2 firefox
 
-test:v2:firefox:incognito:
-  extends: .test
+func:v2:firefox:incognito:
+  extends: .functional
   variables:
     TEST_PARAMS: v2 firefox --incognito
 
-test:v2:firefox:oldest:
-  extends: .test
+func:v2:firefox:oldest:
+  extends: .functional
   variables:
     TEST_PARAMS: v2 firefox 68.0
 
-test:v2:firefox:beta:
-  extends: .test
+func:v2:firefox:beta:
+  extends: .functional
   variables:
     TEST_PARAMS: v2 firefox beta
 
-test:v2:edge:windows:
-  extends: .test
+func:v2:edge:windows:
+  extends: .functional
   variables:
     CI_PROJECT_ID_MAINSTREAM: 22365241
   before_script:
@@ -145,17 +145,17 @@ test:v2:edge:windows:
     - windows-1809
   cache: {}
 
-test:v3:chromium:stable:
-  extends: .test
+func:v3:chromium:stable:
+  extends: .functional
   variables:
     TEST_PARAMS: v3 chromium --timeout 10000
 
-test:v3:edge:linux:
-  extends: .test
+func:v3:edge:linux:
+  extends: .functional
   variables:
     TEST_PARAMS: v3 edge --timeout 10000
 
-.testpages-integration:
+.integration:
   stage: integration
   extends: .docker-image
   variables:
@@ -180,50 +180,50 @@ test:v3:edge:linux:
     when: always
     expire_in: 1 mo
 
-test:integration:v2:chrome:latest:
-  extends: .testpages-integration
+int:v2:chrome:latest:
+  extends: .integration
   variables:
     BROWSER: chromium latest
 
-test:integration:v2:chrome:oldest:
-  extends: .testpages-integration
+int:v2:chrome:oldest:
+  extends: .integration
   variables:
     BROWSER: chromium 77.0.3865.0
 
-test:integration:v2:chrome:beta:
-  extends: .testpages-integration
+int:v2:chrome:beta:
+  extends: .integration
   allow_failure: true
   variables:
     BROWSER: chromium beta
 
-test:integration:v2:firefox:latest:
-  extends: .testpages-integration
+int:v2:firefox:latest:
+  extends: .integration
   variables:
     BROWSER: firefox latest
 
-test:integration:v2:firefox:oldest:
-  extends: .testpages-integration
+int:v2:firefox:oldest:
+  extends: .integration
   variables:
     BROWSER: firefox 68.0
 
-test:integration:v2:firefox:beta:
-  extends: .testpages-integration
+int:v2:firefox:beta:
+  extends: .integration
   variables:
     BROWSER: firefox beta
 
-.test:integration:v3:
-  extends: .testpages-integration
+.integration:v3:
+  extends: .integration
   variables:
     MANIFEST: mv3
     SKIP: "|Header|Sitekey|Subscriptions"
 
-test:integration:v3:chrome:latest:
-  extends: .test:integration:v3
+int:v3:chrome:latest:
+  extends: .integration:v3
   variables:
     BROWSER: chromium latest
 
-test:integration:v3:chrome:beta:
-  extends: .test:integration:v3
+int:v3:chrome:beta:
+  extends: .integration:v3
   variables:
     BROWSER: chromium beta
 
