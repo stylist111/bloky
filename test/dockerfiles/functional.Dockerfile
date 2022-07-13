@@ -8,10 +8,8 @@ RUN echo "deb [arch=amd64] https://packages.microsoft.com/repos/edge stable main
 RUN rm microsoft.*
 RUN apt-get update && apt-get install -y microsoft-edge-stable
 
-COPY package*.json webext-sdk/
-RUN cd webext-sdk && npm install
-
 COPY . webext-sdk/
+RUN cd webext-sdk && npm install
 RUN cd webext-sdk && npm run build
 
 ENV TEST_PARAMS="v2 chromium"
