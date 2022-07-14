@@ -22,6 +22,8 @@ import {Page, clickElement, executeScript, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
 import {EWE, addFilter, addFakeListener} from "./messaging.js";
 
 describe("One Click Allowlisting", function() {
+  setMinTimeout(this, 4000);
+
   let page;
   let expectImageResource;
   let tabId;
@@ -44,14 +46,9 @@ describe("One Click Allowlisting", function() {
   });
 
   async function reload() {
-    // Waiting for it to finish loading before reloading prevents
-    // browser events from before the reload from bleeding into events
-    // after the reload.
-    await expectImageResource.completed;
-
-    let pageReloadPromise = page.reload(true);
+    page = new Page("one-click-allowlisting.html");
     expectImageResource = page.expectResource("image.png");
-    await pageReloadPromise;
+    tabId = await page.loaded;
   }
 
   async function clickAllowlistButton(id) {
@@ -76,7 +73,8 @@ describe("One Click Allowlisting", function() {
   }
 
   async function expectSuccessfulAllowlist() {
-    expect(await getSuccessEventReceived()).not.toBeNull();
+    await wait(async() => await getSuccessEventReceived() != null,
+               1000, "success event was not received");
     expect(onUnauthorizedFake.called).toBeFalsy();
     await reload();
     await expectImageResource.toBeLoaded();
@@ -130,7 +128,6 @@ describe("One Click Allowlisting", function() {
   });
 
   it("does nothing if domain is already allowlisted", async function() {
-    setMinTimeout(this, 4000);
     await clickAllowlistButton("allowlist");
     await expectSuccessfulAllowlist();
 

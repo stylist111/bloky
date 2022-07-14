@@ -6,7 +6,6 @@ if [[ "$TEST_PARAMS" =~ (chromium|edge|incognito) ]]; then
 fi
 
 cd webext-sdk
-npm run build
 npm run test-server &
 
 $XVFB_CMD npm test -- $TEST_PARAMS

@@ -12,6 +12,7 @@ COPY package*.json webext-sdk/
 RUN cd webext-sdk && npm install
 
 COPY . webext-sdk/
+RUN cd webext-sdk && npm run build
 
 ENV TEST_PARAMS="v2 chromium"
 ENTRYPOINT webext-sdk/test/dockerfiles/functional-entrypoint.sh

@@ -297,7 +297,26 @@ times, you can add the following flags to `docker run` to use the
 browser download cache from the host machine.
 
 ```
--v $(pwd)/test/chromium-snapshots:/webext-sdk/test/chromium-snapshots -v $(pwd)/test/firefox-snapshots:/webext-sdk/test/firefox-snapshots -v $(pwd)/test/edge-snapshots:/webext-sdk/test/edge-snapshots
+-v $(pwd)/browser-snapshots:/webext-sdk/browser-snapshots
+```
+
+### Tip: Testing flaky tests
+
+Flaky tests in our CI pipelines are annoying because they don't fail
+or succeed every time. To help in measuring if a fix improves these,
+you can run the `measureTestFlakiness` test to see the percentage of
+test runs that fail.
+
+```
+npm run measureTestFlakiness
+```
+
+This script has various options to tweak how many runs to do, which
+tests to run, or the docker options to use. You can run the script
+with the `--help` option for a list of options.
+
+```
+npm run measureTestFlakiness -- --help
 ```
 
 ### Building ABPUI extension and running testpages integration tests

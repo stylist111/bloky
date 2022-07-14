@@ -66,6 +66,7 @@
     "test-server": "node test/start-server.js",
     "test-bundle": "node test/bundle/run.js",
     "test-scripts": "mocha test/scripts/*.js",
+    "measureTestFlakiness": "node scripts/measureTestFlakiness.js",
     "subs-init": "npm exec updateSubscriptions -- -t mv3",
     "subs-merge": "npm exec mergeSubscriptions -- -i build/data/subscriptions_mv3.json -o ./custom-subscriptions.json",
     "subs-fetch": "npm exec fetchSubscriptions -- -i ./custom-subscriptions.json",

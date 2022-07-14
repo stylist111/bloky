@@ -16,6 +16,7 @@
  */
 
 /* eslint-env node */
+/* eslint-disable no-console */
 
 import path from "path";
 
@@ -129,7 +130,7 @@ async function pollMessages(browser, driver, handle, manifest) {
       switch (id) {
         case "log":
           log.push(arg);
-          console.log(...arg); // eslint-disable-line no-console
+          console.log(...arg);
           break;
 
         case "click":
@@ -205,7 +206,6 @@ async function run() {
   if (manifestIsMV3(manifest) && (browser == "chromium" || browser == "edge"))
     extraArgs.push("auto-open-devtools-for-tabs");
 
-  // eslint-disable-next-line no-console
   console.log(`Getting ready to run ${browser}...`);
   let driver = await BROWSERS[browser].getDriver(
     version, {headless, extensionPaths, incognito, extraArgs});
@@ -226,12 +226,13 @@ async function run() {
     }
   }
 
-  let resultUnit;
-  let resultReload;
+  let results = {
+    unit: null,
+    reload: null
+  };
 
   try {
     let cap = await driver.getCapabilities();
-    // eslint-disable-next-line no-console
     console.log(`Browser: ${cap.getBrowserName()} ${cap.getBrowserVersion()}`);
     if (incognito) {
       await BROWSERS[browser].enableExtensionInIncognito(
@@ -240,14 +241,14 @@ async function run() {
 
     await startTestRun(driver, "unit", params);
     let handle = await getHandle(driver, "/unit.html");
-    resultUnit = await pollMessages(browser, driver, handle, manifest);
+    results.unit = await pollMessages(browser, driver, handle, manifest);
 
     await startTestRun(driver, "reload");
-    while (!resultReload ||
-           resultReload.log.toString().includes("Reload (preparation)")) {
+    while (!results.reload ||
+           results.reload.log.toString().includes("Reload (preparation)")) {
       handle = await getHandle(driver, "/reload.html");
       try {
-        resultReload = await pollMessages(browser, driver, handle, manifest);
+        results.reload = await pollMessages(browser, driver, handle, manifest);
       }
       catch (e) {
         if (e.name != "NoSuchWindowError")
@@ -259,9 +260,33 @@ async function run() {
     await driver.quit();
   }
 
-  if (resultUnit.failures > 0 || resultUnit.total == 0 ||
-      resultReload.failures > 0 || resultReload.total == 0)
+  let totalTestsRun = 0;
+  let expectTestsInEverySection = !(params && params.grep);
+  for (let section in results) {
+    if (!results[section]) {
+      console.error(`Test Failure: ${section} tests did not run correctly`);
+      process.exit(1);
+    }
+
+    if (expectTestsInEverySection && results[section].total == 0) {
+      console.error(`Test Failure: No ${section} tests ran`);
+      process.exit(1);
+    }
+
+    if (results[section].failures > 0) {
+      console.error(`Test Failure: ${results[section].failures} ${section} tests failed`);
+      process.exit(1);
+    }
+
+    totalTestsRun += results[section].total;
+  }
+
+  if (totalTestsRun == 0) {
+    console.error("Test Failure: No tests ran");
     process.exit(1);
+  }
+
+  console.log("All tests passed");
 }
 
 run().catch(err => {

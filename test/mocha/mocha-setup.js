@@ -59,7 +59,7 @@ before(async function() {
 });
 
 after(async function() {
-  setMinTimeout(this, 3000);
+  setMinTimeout(this, 6000);
 
   // To be removed when there is subscriptions V3 support
   // See https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/242
