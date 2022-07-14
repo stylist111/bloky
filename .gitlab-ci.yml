@@ -183,33 +183,33 @@ test:v3:edge:linux:
 test:integration:v2:chrome:latest:
   extends: .testpages-integration
   variables:
-    BROWSER: Chromium \(latest\)
+    BROWSER: chromium latest
 
 test:integration:v2:chrome:oldest:
   extends: .testpages-integration
   variables:
-    BROWSER: Chromium \(oldest\)
+    BROWSER: chromium 77.0.3865.0
 
 test:integration:v2:chrome:beta:
   extends: .testpages-integration
   allow_failure: true
   variables:
-    BROWSER: Chromium \(beta\)
+    BROWSER: chromium beta
 
 test:integration:v2:firefox:latest:
   extends: .testpages-integration
   variables:
-    BROWSER: Firefox \(latest\)
+    BROWSER: firefox latest
 
 test:integration:v2:firefox:oldest:
   extends: .testpages-integration
   variables:
-    BROWSER: Firefox \(oldest\)
+    BROWSER: firefox 68.0
 
 test:integration:v2:firefox:beta:
   extends: .testpages-integration
   variables:
-    BROWSER: Firefox \(beta\)
+    BROWSER: firefox beta
 
 .test:integration:v3:
   extends: .testpages-integration
@@ -220,12 +220,12 @@ test:integration:v2:firefox:beta:
 test:integration:v3:chrome:latest:
   extends: .test:integration:v3
   variables:
-    BROWSER: Chromium \(latest\)
+    BROWSER: chromium latest
 
 test:integration:v3:chrome:beta:
   extends: .test:integration:v3
   variables:
-    BROWSER: Chromium \(beta\)
+    BROWSER: chromium beta
 
 .pages:
   stage: pages
