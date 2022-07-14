@@ -1,5 +1,8 @@
 # eyeo's Web Extension Ad Blocking Toolkit
 
+[![Contributor
+Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](./CODE_OF_CONDUCT.md)
+
 This is a library that provides integration of eyeo's [Ad Blocking Core][abpcore]
 for Chromium and Firefox extensions (like [Adblock Plus][abpui]).
 
@@ -7,6 +10,7 @@ for Chromium and Firefox extensions (like [Adblock Plus][abpui]).
 
 ## Table of contents
 
+* [Code of Conduct](#code-of-conduct)
 * [Getting started](#getting-started)
   * [Module bundlers (optional)](#module-bundlers-optional)
   * [Snippet filters support](#snippet-filters-support)
@@ -26,6 +30,11 @@ for Chromium and Firefox extensions (like [Adblock Plus][abpui]).
   * [Non-functional tests](#non-functional-tests)
 
 </div>
+
+## Code of Conduct
+
+All contributors to this project are required to read, and follow, our
+[code of conduct](./CODE_OF_CONDUCT.md).
 
 ## Getting started
 
