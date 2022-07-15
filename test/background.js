@@ -190,7 +190,12 @@ EWE.start().then(async() => {
       await new Promise(resolve => setTimeout(resolve, 2000));
   }
 
-  chrome.tabs.create({url: "index.html"});
+  let indexUrl = chrome.runtime.getURL("index.html");
+  chrome.tabs.query({url: indexUrl}, currentTabs => {
+    if (currentTabs.length == 0)
+      chrome.tabs.create({url: "index.html"});
+  });
+
   chrome.storage.local.get(["reload-test-running"], result => {
     if (result["reload-test-running"])
       chrome.tabs.create({url: "reload.html"});
