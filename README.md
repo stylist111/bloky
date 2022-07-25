@@ -430,10 +430,9 @@ npm run subs-generate
 
 The default provided subscriptions can be overridden by adding a file called `custom-subscriptions.json` in the root of
 this project's directory and then using the following command:
-`npm run subs-merge -- [-a] [-i ...] -o $(pwd)/custom-subscriptions.json` to merge the files.
+`npm run subs-merge -- [-i ...] -o $(pwd)/custom-subscriptions.json` to merge the files.
 
 Note the following:
-* use `-a` argument to add the default subscriptions file to the list of input files if necessary
 * use `-i` argument to add a file to the list of input files if necessary
 * use absolute output file path (otherwise `node_modules/adblockpluscore` will be used as current dir)
 * one can use `$(pwd)` on nix-based environments or `../../custom-subscriptions.json` for convenience
@@ -445,7 +444,6 @@ Examples:
 * merge product-specific subscriptions file with default subscriptions:
 ```
 npm run subs-merge -- \
-  -a \
   -i /tmp/product-subscriptions.json \
   -o $(pwd)/custom-subscriptions.json
 ```
