@@ -147,20 +147,20 @@ func:v2:edge:windows:
 
 func:v3-default-subs:chromium:stable:
   extends: .functional
-  variables:    
-    TEST_PARAMS: v3 chromium --timeout 10000
+  variables:
+    TEST_PARAMS: v3 chromium
     MV3_SUBSCRIPTIONS: default
 
 func:v3-test-subs:chromium:stable:
   extends: .functional
   variables:
-    TEST_PARAMS: v3 chromium --timeout 10000
+    TEST_PARAMS: v3 chromium
     MV3_SUBSCRIPTIONS: test
 
 func:v3-default-subs:edge:linux:
   extends: .functional
   variables:
-    TEST_PARAMS: v3 edge --timeout 10000
+    TEST_PARAMS: v3 edge
     MV3_SUBSCRIPTIONS: default
 
 .integration:

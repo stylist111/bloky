@@ -83,7 +83,7 @@ export async function suspendServiceWorker(runnable) {
   if (!await isConnected())
     runnable.skip();
 
-  increaseMinTimeout(runnable, 2000);
+  increaseMinTimeout(runnable, 3000);
 
   await new Promise(resolve => {
     function done() {

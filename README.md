@@ -284,7 +284,7 @@ docker run --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|e
 
 Please notice that the `TEST_PARAMS` argument can also take the additional
 options described previously.
-Please also notice that the existence of the MV3_SUBSCRIPTIONS argument to determine which subscriptions to bundle for an MV3 context. This can be omitted when testing an MV2 extension.
+Please also notice that the existence of the `MV3_SUBSCRIPTIONS` argument to determine which subscriptions to bundle for an MV3 context. This can be omitted when testing an MV2 extension.
 
 ##### Tip: Matching CI system resources
 
@@ -428,11 +428,11 @@ npm run subs-convert
 npm run subs-generate
 ```
 
-For convenience and testing purposes, the following script will run all the scripts above using either the `default` list or the `test` subscriptions as defined in `test/scripts/custom-mv3-subscriptions.json`. Please note that the "Allow nonintrusive advertising" list is currently required by the tests. 
+For convenience and testing purposes, the following script will run all the scripts above using either the `default` list or the `test` subscriptions as defined in `test/scripts/custom-mv3-subscriptions.json`. Please note that the "Allow nonintrusive advertising" list is currently required by the tests.
 ```
 npm run subs-run -- -t {test|default}
 ```
- 
+
 ### Custom subscriptions list
 
 The default provided subscriptions can be overridden by adding a file called `custom-subscriptions.json` in the root of

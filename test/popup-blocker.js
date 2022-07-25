@@ -22,7 +22,7 @@ import {Page, Popup, setMinTimeout, isMV3, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
 import {addFilter} from "./messaging.js";
 
 describe("Pop-up blocking", function() {
-  setMinTimeout(this, 3000);
+  setMinTimeout(this, 4000);
 
   let opener;
   beforeEach(function() {
