@@ -1,0 +1,14 @@
+[
+  {
+    "type": "ads",
+    "title": "Test MV3 Custom Subscription",
+    "homepage": "http://localhost:3000/subscription.txt",
+    "url": "http://localhost:3000/subscription.txt"
+  },
+  {
+    "type": "ads",
+    "title": "Allow nonintrusive advertising",
+    "homepage": "https://acceptableads.com/",
+    "url": "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt"
+  }
+]

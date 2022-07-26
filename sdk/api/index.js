@@ -15,12 +15,14 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import browser from "webextension-polyfill";
 import {notifications as _notifications}
   from "adblockpluscore/lib/notifications.js";
 
 import {default as initializer} from "./initializer.js";
 import * as messageResponder from "./message-responder.js";
 import {configureDefaultSubscriptions} from "./default-subscriptions.js";
+import {configureDefaultRulesets} from "./default-rulesets.js";
 import {setSnippetLibrary} from "./content-filter.js";
 
 import {setAddonInfo} from "./info.js";
@@ -105,7 +107,10 @@ export async function start(addonInfo) {
   messageResponder.start();
   await startAsyncModule(() => initializer.start());
   filterEngine.filterStorage.synchronizer.start();
-  let firstRun = configureDefaultSubscriptions();
+
+  let firstRun = browser.declarativeNetRequest ?
+    await configureDefaultRulesets() :
+    configureDefaultSubscriptions();
   return firstRun;
 }
 

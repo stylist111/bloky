@@ -4,6 +4,7 @@ docs
 browser-snapshots
 test/bundle/package-lock.json
 custom-subscriptions.json
-subscriptions
+rulesets
 extension
 testpages.adblockplus.org
+build/data

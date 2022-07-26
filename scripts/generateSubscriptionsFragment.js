@@ -23,8 +23,8 @@ import {outputDir as convertOutputDir}
 import yargs from "yargs";
 import {hideBin} from "yargs/helpers";
 
-const outputDir = "subscriptions";
-const outputFile = path.join(outputDir, "rules.json.tpl");
+const outputDir = "rulesets";
+const outputFile = path.join(outputDir, "rulesets.json.tpl");
 
 function generateFragment(dir, pathPrefix, space = 2) {
   if (!fs.existsSync(dir)) {

@@ -26,7 +26,7 @@ import path from "path";
 import yargs from "yargs";
 import {hideBin} from "yargs/helpers";
 
-const outputDir = "subscriptions/";
+const outputDir = "rulesets";
 
 let highestRuleId = 1;
 

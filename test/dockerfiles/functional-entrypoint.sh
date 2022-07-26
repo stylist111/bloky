@@ -7,5 +7,4 @@ fi
 
 cd webext-sdk
 npm run test-server &
-
 $XVFB_CMD npm test -- $TEST_PARAMS

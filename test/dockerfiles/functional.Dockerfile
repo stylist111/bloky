@@ -10,6 +10,9 @@ RUN apt-get update && apt-get install -y microsoft-edge-stable
 
 COPY . webext-sdk/
 RUN cd webext-sdk && npm install
+
+ARG MV3_SUBSCRIPTIONS
+RUN cd webext-sdk && if [ -n "$MV3_SUBSCRIPTIONS" ]; then bash -c "npm run test-server &" && npm run subs-run -- --type $MV3_SUBSCRIPTIONS; fi
 RUN cd webext-sdk && npm run build
 
 ENV TEST_PARAMS="v2 chromium"

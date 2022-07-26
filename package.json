@@ -72,10 +72,11 @@
     "subs-fetch": "npm exec fetchSubscriptions -- -i ./custom-subscriptions.json",
     "subs-convert": "node scripts/convertSubscriptions.js -i build/data/subscriptions/ABP/",
     "subs-generate": "node scripts/generateSubscriptionsFragment.js",
+    "subs-run": "node test/scripts/prepare-mv3-files.js",
+    "subs-clean": "node test/scripts/clean-mv3-files.js",
     "create-allowlisting-keypair": "node scripts/createKeypair.js"
   },
-  "bin":
-  {
+  "bin": {
     "convertSubscriptions": "./scripts/convertSubscriptions.js",
     "generateSubscriptionsFragment": "./scripts/generateSubscriptionsFragment.js"
   }

@@ -75,7 +75,7 @@ audit:
     - job: build
       artifacts: true
   script:
-    - docker build -t functional -f test/dockerfiles/functional.Dockerfile .
+    - docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg MV3_SUBSCRIPTIONS="$MV3_SUBSCRIPTIONS" .
     - docker run --shm-size=512m -e TEST_PARAMS="$TEST_PARAMS" functional
 
 func:v2:chromium:stable:
@@ -145,15 +145,23 @@ func:v2:edge:windows:
     - windows-1809
   cache: {}
 
-func:v3:chromium:stable:
+func:v3-default-subs:chromium:stable:
+  extends: .functional
+  variables:    
+    TEST_PARAMS: v3 chromium --timeout 10000
+    MV3_SUBSCRIPTIONS: default
+
+func:v3-test-subs:chromium:stable:
   extends: .functional
   variables:
     TEST_PARAMS: v3 chromium --timeout 10000
+    MV3_SUBSCRIPTIONS: test
 
-func:v3:edge:linux:
+func:v3-default-subs:edge:linux:
   extends: .functional
   variables:
     TEST_PARAMS: v3 edge --timeout 10000
+    MV3_SUBSCRIPTIONS: default
 
 .integration:
   stage: integration

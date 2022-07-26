@@ -24,9 +24,10 @@ import {Subscription, DownloadableSubscription, SpecialSubscription}
 import {filterEngine} from "./core.js";
 
 export const ACCEPTABLE_ADS_URL = "https://easylist-downloads.adblockplus.org/exceptionrules.txt";
+export const ACCEPTABLE_ADS_MV3_URL = "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt";
 export const ACCEPTABLE_ADS_PRIVACY_URL = "https://easylist-downloads.adblockplus.org/exceptionrules-privacy-friendly.txt";
 
-function getDefaultSubscriptions() {
+export function getDefaultSubscriptions() {
   // https://bugs.chromium.org/p/chromium/issues/detail?id=1159438
   let currentLang = (browser.i18n.getUILanguage ?
     browser.i18n.getUILanguage() : navigator.language).split("-")[0];

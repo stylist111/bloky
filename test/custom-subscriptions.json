@@ -1,11 +1,26 @@
 [
   {
-    "type": "test",
+    "type": "ads",
+    "title": "Allow nonintrusive advertising",
+    "url": "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt",
+    "homepage": "https://acceptableads.com/"
+  },
+  {
+    "type": "ads",
     "languages": [
-      "test"
+      "en"
     ],
-    "title": "TestSubscription",
-    "url": "TestUrl",
-    "homepage": "TestHomepage"
+    "title": "TestSubscriptionEn",
+    "url": "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt",
+    "homepage": "TestHomepageEn"
+  },
+  {
+    "type": "ads",
+    "languages": [
+      "de"
+    ],
+    "title": "TestSubscriptionDe",
+    "url": "TestUrlDe",
+    "homepage": "TestHomepageDe"
   }
 ]

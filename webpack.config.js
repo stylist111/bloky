@@ -36,8 +36,8 @@ const eweRegularOutputPath = eweDistPath;
 const eweCustomOutputPath = path.join(eweDistPath, "ewe-subs");
 const eweRegularSubscriptionsFile = "custom-subscriptions.json";
 const eweTestSubscriptionsFile = "test/custom-subscriptions.json";
-const subscriptionsDir = path.join(dirname, "subscriptions");
-const fragmentFile = path.join(subscriptionsDir, "rules.json.tpl");
+const subscriptionsDir = path.join(dirname, "rulesets");
+const fragmentFile = path.join(subscriptionsDir, "rulesets.json.tpl");
 
 const base = {
   eweConfigName: eweRegularConfigName,
@@ -72,7 +72,7 @@ const mv3 = {
   outputPath: "test-mv3"
 };
 
-// Manifest V2 + customs subscriptions list file
+// Manifest V2 + custom subscriptions list file
 const mv2Custom = {
   ...mv2,
   eweConfigName: eweCustomConfigName,

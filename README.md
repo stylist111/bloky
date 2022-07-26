@@ -278,12 +278,13 @@ Using docker locally to run the same tests may be useful to recreate the
 infrastructure the CI uses:
 
 ```
-docker build -t functional -f test/dockerfiles/functional.Dockerfile .
+docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg MV3_SUBSCRIPTIONS={default|test} .
 docker run --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" -it functional
 ```
 
 Please notice that the `TEST_PARAMS` argument can also take the additional
 options described previously.
+Please also notice that the existence of the MV3_SUBSCRIPTIONS argument to determine which subscriptions to bundle for an MV3 context. This can be omitted when testing an MV2 extension.
 
 ##### Tip: Matching CI system resources
 
@@ -392,6 +393,8 @@ Checks that the bundled code can be imported and re-bundled
 
 ## MV3 subscriptions
 
+In MV3, the following scripts are required to be run in order to have subscriptions loaded.
+
 ```
 # generate the subscriptions list
 npm run subs-init
@@ -408,13 +411,12 @@ npm run subs-convert
 # generate the fragment
 npm run subs-generate
 
-# edit ruleset to enable it (for testing purpose)
-subl subscriptions/rules.json.tpl
+# If needed, enable items in `rulesets/rulesets.json.tpl` file (for testing purposes)
 
 # pack the webext
 npm run build
 
-# deploy dist/test-mv3 to browser and test it with testpages
+# If needed, build the mv3 test extension to see subscriptions being loaded there
 ```
 
 In the most common use case (no specific requirements and changes needed) the scripts calls chain might look as follows:
@@ -426,6 +428,11 @@ npm run subs-convert
 npm run subs-generate
 ```
 
+For convenience and testing purposes, the following script will run all the scripts above using either the `default` list or the `test` subscriptions as defined in `test/scripts/custom-mv3-subscriptions.json`. Please note that the "Allow nonintrusive advertising" list is currently required by the tests. 
+```
+npm run subs-run -- -t {test|default}
+```
+ 
 ### Custom subscriptions list
 
 The default provided subscriptions can be overridden by adding a file called `custom-subscriptions.json` in the root of
@@ -438,6 +445,7 @@ Note the following:
 * one can use `$(pwd)` on nix-based environments or `../../custom-subscriptions.json` for convenience
 * `subs-merge` is a "forwarding" npm script that just calls according npm script from "adblockpluscore" dependency
   using `--prefix` argument
+* By default these scripts output ruleset files into a folder called `rulesets` and the full subscription files into `build/data`. 
 
 Examples:
 

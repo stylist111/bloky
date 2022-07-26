@@ -19,7 +19,7 @@ import expect from "expect";
 
 import {Page, Resource, executeScript, wait, isMV3, isIncognito, setMinTimeout,
         TEST_PAGES_URL,
-        TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, SITEKEY} from "./utils.js";
+        TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, SITEKEY, isMV3TestSubsExtension} from "./utils.js";
 import {addFilter, EWE} from "./messaging.js";
 
 describe("Blocking", function() {
@@ -29,17 +29,20 @@ describe("Blocking", function() {
   });
 
   it("blocks a request using subscriptions", async function() {
-    if (isMV3())
+    if (isMV3() && !isMV3TestSubsExtension())
       this.skip();
 
-    await EWE.subscriptions.add(`${TEST_PAGES_URL}/subscription.txt`);
+    if (!isMV3())
+      await EWE.subscriptions.add(`${TEST_PAGES_URL}/subscription.txt`);
+
     await wait(async() => {
       try {
-        await new Page("image.html").expectResource("image.png").toBeBlocked();
+        await new Page("image-from-subscription.html")
+          .expectResource("image-from-subscription.png").toBeBlocked();
         return true;
       }
       catch (e) {}
-    }, 1000, "image.png was not blocked");
+    }, 1000, "image-from-subscription.png was not blocked");
   });
 
   it("does not block a request using a disabled filter", async function() {

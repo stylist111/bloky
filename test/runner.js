@@ -77,7 +77,7 @@ async function switchToHandle(driver, testFn) {
   }
 }
 
-async function getHandle(driver, page) {
+async function getHandle(driver, page, timeout = 8000) {
   let url;
   let handle = await driver.wait(() => switchToHandle(driver, handleUrl => {
     if (!handleUrl)
@@ -85,7 +85,7 @@ async function getHandle(driver, page) {
 
     url = new URL(handleUrl);
     return url.pathname == page;
-  }), 8000, `${page} did not open`);
+  }), timeout, `${page} did not open`);
 
   return handle;
 }
@@ -246,7 +246,8 @@ async function run() {
     await startTestRun(driver, "reload");
     while (!results.reload ||
            results.reload.log.toString().includes("Reload (preparation)")) {
-      handle = await getHandle(driver, "/reload.html");
+      // The 20s timeout covers rulesets delays when loading an MV3 extension
+      handle = await getHandle(driver, "/reload.html", 20000);
       try {
         results.reload = await pollMessages(browser, driver, handle, manifest);
       }

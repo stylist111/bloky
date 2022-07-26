@@ -28,6 +28,7 @@ export const SITEKEY = "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANGtTstne7" +
                        "e8MbmDHDiMFkGbcuBgXmiVesGOG3gtYeM1EkrzVhBj" +
                        "GUvKXYE4GLFwqty3v5MuWWbvItUWBTYoVVsCAwEAAQ";
 export const RECENT_FIREFOX_VERSION = 86; // Latest Firefox on February 2021
+export const FETCHED_TEST_SUBSCRIPTION_NAME = "http___localhost_3000_subscription_txt";
 
 function handleConnection(details, tabId, removeListeners, reject) {
   if ((details.tabId == tabId || !tabId) &&
@@ -412,7 +413,17 @@ export function isIncognito() {
   return incognito == "true";
 }
 
-export function isCustomSubsExtension() {
+export function isMV2CustomSubsExtension() {
   let manifest = browser.runtime.getManifest();
   return manifest.description.endsWith("custom subscriptions");
+}
+
+export function isMV3TestSubsExtension() {
+  let manifest = browser.runtime.getManifest();
+
+  if (!manifest.declarative_net_request)
+    return false;
+
+  let firstRulesetId = manifest.declarative_net_request.rule_resources[0].id;
+  return firstRulesetId == FETCHED_TEST_SUBSCRIPTION_NAME;
 }
