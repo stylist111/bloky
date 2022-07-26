@@ -1,3 +1,62 @@
+0.5.0 - 2022/07/29
+==================
+
+# General
+
+- Added Code of Conduct.
+- Updated to adblockpluscore 0.8.0. (#309)
+- Update to the API changes for core in 0.8.0. (#226)
+- Improve frame-state API documentation. (#103)
+- Fix filter storage in private/incognito mode. (#231)
+- Fix an issue with `$document` option. (#230)
+- Fix matching of popup filters. (#234)
+- Allow defering filtering later to improve reliability on Chrome (#228)
+- Fix blocking with empty tab URL like on Yandex. (#246)
+
+# Manifest v3
+
+- Use text2dnr code from adblockopluscore instead of abp2dnr module.
+  (#205)
+- Handle Regular Expression filter conversion.
+- Add `declarative_net_request` to manifest. (#127)
+- Handle limit in filter numbers. (#243)
+- Fix the conversion scripts with adblockpluscore npm package (#270)
+- Add ruleset conversion testing. (#277)
+
+# Tests
+
+- Fix tests for filters with metadata. (Follow-up on #213)
+- Test pages test now run on beta browsers too.
+- Make sure mv3 test on Edge are run on mv3 (#264)
+- Some tests cleanup. (#249, #258)
+- Tests in private/incognito mode for Firefox, Chromium, Edge. (#248,
+  #285, #286)
+- Run tests in CI in Docker. (#260, #281)
+- Enable popup test in mv3. (#102)
+- Added integration test in mv3. (#282)
+- Service worker suspend test for mv3. (#217)
+- Use get-browser-binary module for downloading browsers.
+- Fix issues with tab focusing when running test. (#73)
+- Fix install process for unit tests. (#299)
+- Improve test reliability.
+  - Better install process on CI for Edge (#261)
+  - Fixed intermittent failures "configures default subscriptions". (#227)
+  - Fix windows timeout (#240)
+  - Fix webxtension-polyfill errors. (#247)
+  - Reorder some tests. (#255, #256)
+  - Fix flakey popup test. (#257)
+  - Prevent resource event from leaking in other tests. (#271)
+  - Increase tiemout on `onBlockableItem` and higlighting tests. (#273, #274)
+  - Fix Chromium crash with subscribe link tests. (#279)
+  - Fix one-click allowlisting test flakyness. (#263, #271)
+  - Fix sitekey flakyness. (#255, #275)
+  - Fix test when run around 0:00 UTC (#312)
+
+# Update your code
+
+- If you used adblockpluscore directly, some of the API changed in 0.8.0.
+
+
 0.4.1 - 2022/05/19
 ==================
 
