@@ -19,10 +19,11 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 
 import {Page, Popup, setMinTimeout, wait, executeScript, isFirefox, isEdge,
-        getVisibleElement, isMV3, TEST_PAGES_URL,
+        isChromiumBased, isIncognito, getVisibleElement, isMV3, TEST_PAGES_URL,
         TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN,
         FETCHED_TEST_SUBSCRIPTION_NAME, isMV2CustomSubsExtension,
         isMV3TestSubsExtension} from "./utils.js";
+
 import {addFilter, EWE, runInBackgroundPage, addFakeListener,
         removeFakeListeners, setTestSnippets}
   from "./messaging.js";
@@ -875,6 +876,10 @@ describe("API", function() {
           disableRulesetIds: rulesetIds
         });
       }
+      // Skipping because webext has a bug in chromium browsers in incognito
+      // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/311
+      if (isChromiumBased() && isIncognito())
+        this.skip();
 
       let result = await runInBackgroundPage([
         {op: "getGlobal", arg: "EWE"},

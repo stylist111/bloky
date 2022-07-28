@@ -157,12 +157,14 @@ async function pollMessages(browser, driver, handle, manifest) {
   return result;
 }
 
-async function startTestRun(driver, id, params) {
+async function startTestRun(driver, id, params, incognito) {
   let search = new URLSearchParams();
   for (let key in params)
     search.append(key, params[key]);
 
-  await getHandle(driver, "/index.html");
+  // In incognito mode extension load is taking a bit longer
+  await getHandle(driver, "/index.html", incognito ? 12000 : void 0);
+
   if (search.toString()) {
     let url = await driver.getCurrentUrl();
     url = `${url}?${search.toString()}`;
@@ -239,7 +241,7 @@ async function run() {
         driver, "eyeo's Web Extension Ad Blocking Toolkit Test Extension");
     }
 
-    await startTestRun(driver, "functional", params);
+    await startTestRun(driver, "functional", params, incognito);
     let handle = await getHandle(driver, "/functional.html");
     results.functional = await pollMessages(browser, driver, handle, manifest);
 

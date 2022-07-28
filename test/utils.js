@@ -387,6 +387,10 @@ export function isEdge() {
   return navigator.appVersion.indexOf("Edg") > -1;
 }
 
+export function isChromiumBased() {
+  return /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+}
+
 export function getVisibleElement(tabId, elemId) {
   return executeScript(tabId, id => {
     let el = document.getElementById(id);
