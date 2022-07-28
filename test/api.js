@@ -1005,14 +1005,27 @@ describe("API", function() {
         if (isMV3())
           this.skip();
 
-        let today = new Date().toISOString().substring(0, 10).replace(/-/g, "");
-
         await wait(
           async() => await EWE.reporting.getFirstVersion() != "0",
           1000,
           "No resource has been downloaded yet."
         );
-        expect(await EWE.reporting.getFirstVersion()).toBe(today);
+
+        // When using the MV2 custom subs extension, getFirstVersion() returns
+        // the creation date of that file, which may not be today.
+        // Returning here ensures at least that getFirstVersion() is not 0.
+        if (isMV2CustomSubsExtension())
+          return;
+
+        let date = new Date();
+        let today = date.toISOString().substring(0, 10).replace(/-/g, "");
+        date.setDate(date.getDate() - 1);
+        // Yesterday is needed to not fail when the test runs at UTC 00:00
+        let yesterday = date.toISOString().substring(0, 10).replace(/-/g, "");
+        let expectedDates = RegExp(`(${today}|${yesterday})`);
+
+        expect(await EWE.reporting.getFirstVersion()).toEqual(
+          expect.stringMatching(expectedDates));
       });
     });
 
