@@ -55,7 +55,8 @@
 # Update your code
 
 - If you used adblockpluscore directly, some of the API changed in 0.8.0.
-
+- A `too_many_filters` error can be returned by `addFilters` in Manifest V3
+  if the dynamic filter limit is reached. (#243)
 
 0.4.1 - 2022/05/19
 ==================
