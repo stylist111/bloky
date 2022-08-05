@@ -28,6 +28,8 @@ let connected = new Promise(resolve => {
   setConnected = resolve;
 });
 let webdriverEventEmitter = new EventEmitter();
+let urlParams = new URLSearchParams(document.location.search);
+let serviceWorkerFuzzingEnabled = urlParams.get("fuzzServiceWorkers") == "true";
 
 function sendMessage(id, arg) {
   messages.push([id, arg]);
@@ -80,10 +82,12 @@ export async function click(url, selector) {
 
 export async function suspendServiceWorker(runnable) {
   sendMessage("suspendServiceWorker");
-  if (!await isConnected())
-    runnable.skip();
+  if (runnable) {
+    if (!await isConnected())
+      runnable.skip();
 
-  increaseMinTimeout(runnable, 3000);
+    increaseMinTimeout(runnable, 3000);
+  }
 
   await new Promise(resolve => {
     function done() {
@@ -92,6 +96,15 @@ export async function suspendServiceWorker(runnable) {
     }
     webdriverEventEmitter.on("serviceWorkerSuspended", done);
   });
+}
+
+export async function fuzzSuspendServiceWorker() {
+  if (serviceWorkerFuzzingEnabled)
+    await suspendServiceWorker();
+}
+
+export function isFuzzingServiceWorker() {
+  return serviceWorkerFuzzingEnabled;
 }
 
 export function start() {

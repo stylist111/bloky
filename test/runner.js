@@ -44,6 +44,11 @@ function parseArguments() {
   parser.option("timeout", {
     description: "Maximum running time for each test. 0 disables timeouts."
   });
+  parser.option("testKinds", {
+    description: "Which kinds of tests to run (by default all are run)",
+    array: true,
+    choices: ["functional", "reload", "fuzz"]
+  });
   parser.option("grep");
 
   let {argv} = parser;
@@ -53,10 +58,21 @@ function parseArguments() {
     if (typeof value != "undefined")
       (params || (params = {}))[param] = value;
   }
+
+  let testKinds = argv.testKinds;
+  // default is specified here rather than using a yargs default
+  // because it depends on another yargs option (the manifest).
+  if (!testKinds) {
+    testKinds = ["functional", "reload"];
+    if (manifestIsMV3(argv.manifest))
+      testKinds.push("fuzz");
+  }
+
   return {
     manifest: argv.manifest,
     browser: argv.browser,
     version: argv.version,
+    testKinds,
     params
   };
 }
@@ -94,8 +110,23 @@ function manifestIsMV3(manifest) {
   return manifest.startsWith("v3");
 }
 
-async function pollMessages(browser, driver, handle, manifest) {
-  let isMV3 = manifestIsMV3(manifest);
+async function setMinDriverTimeout(driver, timeout) {
+  let driverTimeouts = await driver.manage().getTimeouts();
+  let paramsTimeout = parseInt(timeout, 10);
+  if (paramsTimeout == 0) {
+    // 0 is a mocha special case to disable timeouts
+    await driver.manage().setTimeouts({
+      script: null
+    });
+  }
+  else if (driverTimeouts.script && paramsTimeout > driverTimeouts.script) {
+    await driver.manage().setTimeouts({
+      script: paramsTimeout
+    });
+  }
+}
+
+async function pollMessages(driver, handle, isMV3) {
   let result;
   let webdriverEvents = [];
   let log = [];
@@ -162,16 +193,83 @@ async function startTestRun(driver, id, params, incognito) {
   for (let key in params)
     search.append(key, params[key]);
 
+  search = search.toString();
+
   // In incognito mode extension load is taking a bit longer
   await getHandle(driver, "/index.html", incognito ? 12000 : void 0);
-
-  if (search.toString()) {
+  if (search) {
     let url = await driver.getCurrentUrl();
-    url = `${url}?${search.toString()}`;
-    await driver.navigate().to(url);
+    let urlComponents = url.split("?");
+    let currentPath = urlComponents[0];
+    let currentSearch = urlComponents[1];
+    if (!currentSearch || currentSearch != search)
+      await driver.navigate().to(`${currentPath}?${search}`);
   }
 
   await driver.findElement(webdriver.By.id(id)).click();
+}
+
+async function runFunctionalTests(driver, params, isMV3, incognito) {
+  console.log("================");
+  console.log("Functional Tests");
+  console.log("================");
+
+  await startTestRun(driver, "functional", params, incognito);
+  let handle = await getHandle(driver, "/functional.html");
+  let results = await pollMessages(driver, handle, isMV3);
+  await driver.switchTo().window(handle);
+  await driver.close();
+  return results;
+}
+
+async function runReloadTests(driver, params, isMV3) {
+  console.log("============");
+  console.log("Reload Tests");
+  console.log("============");
+
+  let results;
+  let handle;
+
+  await startTestRun(driver, "reload");
+  while (!results ||
+         results.log.toString().includes("Reload (preparation)")) {
+    // The 20s timeout covers rulesets delays when loading an MV3 extension
+    handle = await getHandle(driver, "/reload.html", 20000);
+    try {
+      results = await pollMessages(driver, handle, isMV3);
+    }
+    catch (e) {
+      if (e.name != "NoSuchWindowError")
+        throw e;
+    }
+  }
+  await driver.switchTo().window(handle);
+  await driver.close();
+  return results;
+}
+
+async function runFuzzTests(driver, params, isMV3, incognito) {
+  console.log("==========");
+  console.log("Fuzz Tests");
+  console.log("==========");
+
+  if (!isMV3) {
+    console.warn("Service worker fuzzing tests are only for MV3");
+    return {failures: 0, total: 0, log: []};
+  }
+
+  let fuzzParams = {...params, fuzzServiceWorkers: true};
+  if (typeof fuzzParams.timeout == "undefined") {
+    fuzzParams.timeout = 60000;
+    await setMinDriverTimeout(driver, fuzzParams.timeout);
+  }
+
+  await startTestRun(driver, "functional", fuzzParams, incognito);
+  let handle = await getHandle(driver, "/functional.html");
+  let results = await pollMessages(driver, handle, isMV3);
+  await driver.switchTo().window(handle);
+  await driver.close();
+  return results;
 }
 
 async function suspendServiceWorker(driver, handle) {
@@ -195,7 +293,9 @@ async function suspendServiceWorker(driver, handle) {
 }
 
 async function run() {
-  let {manifest, browser, version, params} = parseArguments();
+  let {manifest, browser, version, params, testKinds} = parseArguments();
+  let isMV3 = manifestIsMV3(manifest);
+
   let extensionPaths =
     [path.resolve(process.cwd(), "dist", `test-m${manifest}`)];
   let incognito =
@@ -205,33 +305,17 @@ async function run() {
   // auto-open-devtools-for-tabs is required to make MV3 service
   // workers start up after being suspended in tests.
   // See https://bugs.chromium.org/p/chromium/issues/detail?id=1325792#c8
-  if (manifestIsMV3(manifest) && (browser == "chromium" || browser == "edge"))
+  if (isMV3 && (browser == "chromium" || browser == "edge"))
     extraArgs.push("auto-open-devtools-for-tabs");
 
   console.log(`Getting ready to run ${browser}...`);
   let driver = await BROWSERS[browser].getDriver(
     version, {headless, extensionPaths, incognito, extraArgs});
 
-  if (params && typeof params.timeout != "undefined") {
-    let driverTimeouts = await driver.manage().getTimeouts();
-    let paramsTimeout = parseInt(params.timeout, 10);
-    if (paramsTimeout == 0) {
-      // 0 is a mocha special case to disable timeouts
-      await driver.manage().setTimeouts({
-        script: null
-      });
-    }
-    else if (paramsTimeout > driverTimeouts.script) {
-      await driver.manage().setTimeouts({
-        script: paramsTimeout
-      });
-    }
-  }
+  if (params && typeof params.timeout != "undefined")
+    await setMinDriverTimeout(driver, params.timeout);
 
-  let results = {
-    functional: null,
-    reload: null
-  };
+  let results = {};
 
   try {
     let cap = await driver.getCapabilities();
@@ -241,21 +325,21 @@ async function run() {
         driver, "eyeo's Web Extension Ad Blocking Toolkit Test Extension");
     }
 
-    await startTestRun(driver, "functional", params, incognito);
-    let handle = await getHandle(driver, "/functional.html");
-    results.functional = await pollMessages(browser, driver, handle, manifest);
-
-    await startTestRun(driver, "reload");
-    while (!results.reload ||
-           results.reload.log.toString().includes("Reload (preparation)")) {
-      // The 20s timeout covers rulesets delays when loading an MV3 extension
-      handle = await getHandle(driver, "/reload.html", 20000);
-      try {
-        results.reload = await pollMessages(browser, driver, handle, manifest);
-      }
-      catch (e) {
-        if (e.name != "NoSuchWindowError")
-          throw e;
+    for (let testKind of testKinds) {
+      switch (testKind) {
+        case "functional":
+          results.functional = await runFunctionalTests(
+            driver, params, isMV3, incognito
+          );
+          break;
+        case "reload":
+          results.reload = await runReloadTests(driver, params, isMV3);
+          break;
+        case "fuzz":
+          results.fuzz = await runFuzzTests(driver, params, isMV3, incognito);
+          break;
+        default:
+          console.warn(`Unknown test kind: ${testKind}`);
       }
     }
   }
@@ -264,24 +348,24 @@ async function run() {
   }
 
   let totalTestsRun = 0;
-  let expectTestsInEverySection = !(params && params.grep);
-  for (let section in results) {
-    if (!results[section]) {
-      console.error(`Test Failure: ${section} tests did not run correctly`);
+  let expectTestsForEveryKind = !(params && params.grep);
+  for (let testKind of testKinds) {
+    if (!results[testKind]) {
+      console.error(`Test Failure: ${testKind} tests did not run correctly`);
       process.exit(1);
     }
 
-    if (expectTestsInEverySection && results[section].total == 0) {
-      console.error(`Test Failure: No ${section} tests ran`);
+    if (expectTestsForEveryKind && results[testKind].total == 0) {
+      console.error(`Test Failure: No ${testKind} tests ran`);
       process.exit(1);
     }
 
-    if (results[section].failures > 0) {
-      console.error(`Test Failure: ${results[section].failures} ${section} tests failed`);
+    if (results[testKind].failures > 0) {
+      console.error(`Test Failure: ${results[testKind].failures} ${testKind} tests failed`);
       process.exit(1);
     }
 
-    totalTestsRun += results[section].total;
+    totalTestsRun += results[testKind].total;
   }
 
   if (totalTestsRun == 0) {

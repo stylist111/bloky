@@ -23,6 +23,7 @@ import {isSlowFilter} from "adblockpluscore/lib/matcher.js";
 import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 
+import {default as initializer} from "./initializer.js";
 import {filterEngine} from "./core.js";
 import {EventDispatcher, FilterError} from "./types.js";
 import {getFrameInfo} from "./frame-state.js";
@@ -90,6 +91,7 @@ export default {
    *   An error will be thrown for duplicated filters.
    */
   async add(texts, metadata) {
+    await initializer.start();
     if (browser.declarativeNetRequest) {
       await addFilters(texts, metadata);
       return;
@@ -134,6 +136,7 @@ export default {
    * @throws {FilterError} An error will be thrown for not added filter.
    */
   async setMetadata(text, metadata) {
+    await initializer.start();
     if (browser.declarativeNetRequest) {
       setMetadataForFilter(text, metadata);
       return;
@@ -166,6 +169,7 @@ export default {
    * @return {Promise<?Object>}
    */
   async getMetadata(text) {
+    await initializer.start();
     if (browser.declarativeNetRequest)
       return getMetadataForFilter(text);
 
@@ -177,6 +181,7 @@ export default {
    * @return {Promise<Array<Filter>>}
    */
   async getUserFilters() {
+    await initializer.start();
     let result = [];
 
     for (let subscription of filterEngine.filterStorage.subscriptions()) {
@@ -268,6 +273,8 @@ export default {
    * @return {Promise}
    */
   async enable(texts) {
+    await initializer.start();
+
     if (browser.declarativeNetRequest) {
       await enableFilters(texts);
       return;
@@ -286,6 +293,8 @@ export default {
    * @return {Promise}
    */
   async disable(texts) {
+    await initializer.start();
+
     if (browser.declarativeNetRequest) {
       await removeOrDisableFilters(texts, false);
       return;
@@ -304,6 +313,8 @@ export default {
    * @return {Promise}
    */
   async remove(texts) {
+    await initializer.start();
+
     if (browser.declarativeNetRequest) {
       await removeOrDisableFilters(texts, true);
       return;

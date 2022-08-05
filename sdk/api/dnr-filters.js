@@ -61,7 +61,7 @@ export async function removeDynamicFilters() {
     return;
 
   dynamicFilters = new Map();
-  Prefs.dynamic_filters = {};
+  Prefs.dynamic_filters = [];
 
   let rules = await browser.declarativeNetRequest.getDynamicRules();
   if (rules.length == 0)
@@ -85,7 +85,9 @@ function setHighestRuleId(ruleIds) {
 }
 
 function storeDynamicFilters() {
-  Prefs.dynamic_filters = Object.fromEntries(dynamicFilters);
+  let storageArray = [];
+  storageArray.push(...dynamicFilters);
+  Prefs.dynamic_filters = storageArray;
 }
 
 export function init() {
@@ -95,8 +97,8 @@ export function init() {
         return;
 
       let result = Prefs.dynamic_filters;
-      if (Object.keys(result).length > 0)
-        dynamicFilters = new Map(Object.entries(result));
+      if (Array.isArray(result) && result.length > 0)
+        dynamicFilters = new Map(result);
       else
         // DNR rules persist after the extension is uninstalled. The same cannot
         // be said for storage. To be safe, if we have no record of dynamic

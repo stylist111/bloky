@@ -19,6 +19,7 @@
 
 const TEST_LINKS = ["functional", "reload"];
 const TEXT_OPTIONS = ["grep", "timeout"];
+const CHECKBOX_OPTIONS = ["incognito", "fuzzServiceWorkers"];
 
 function onLoad() {
   if (!document.location.search)
@@ -27,7 +28,9 @@ function onLoad() {
   let search = new URLSearchParams(document.location.search);
   for (let option of TEXT_OPTIONS)
     document.getElementById(option).value = search.get(option);
-  document.getElementById("incognito").checked = search.get("incognito");
+
+  for (let option of CHECKBOX_OPTIONS)
+    document.getElementById(option).checked = search.get(option);
 }
 
 function onClick(event) {
@@ -39,7 +42,9 @@ function onClick(event) {
   let search = new URLSearchParams(elem.search);
   for (let option of TEXT_OPTIONS)
     search.set(option, document.getElementById(option).value);
-  search.set("incognito", document.getElementById("incognito").checked);
+
+  for (let option of CHECKBOX_OPTIONS)
+    search.set(option, document.getElementById(option).checked);
 
   elem.search = search.toString();
 }

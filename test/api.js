@@ -27,6 +27,7 @@ import {Page, Popup, setMinTimeout, wait, executeScript, isFirefox, isEdge,
 import {addFilter, EWE, runInBackgroundPage, addFakeListener,
         removeFakeListeners, setTestSnippets}
   from "./messaging.js";
+import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 const VALID_SUBSCRIPTION_URL = `${TEST_PAGES_URL}/subscription.txt`;
 const ANOTHER_VALID_SUBSCRIPTION_URL =
@@ -369,7 +370,7 @@ describe("API", function() {
       await EWE.filters.add([VALID_FILTER_TEXT, SECOND_VALID_FILTER_TEXT]);
       expect(await EWE.filters.getUserFilters()).toEqual([
         VALID_FILTER,
-        {...SECOND_VALID_FILTER}
+        SECOND_VALID_FILTER
       ]);
     });
 
@@ -586,40 +587,54 @@ describe("API", function() {
       ]);
     });
 
-    it("listens to onAdded events", async function() {
-      let fake = await addFakeListener({namespace: "filters",
-                                        eventName: "onAdded"});
-      await addFilter(VALID_FILTER_TEXT);
+    describe("Filter events", function() {
+      before(function() {
+        // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/317
+        if (isFuzzingServiceWorker())
+          this.skip();
+      });
 
-      expect(fake.callCount).toBe(1);
-      expect(fake.firstArg).toEqual(VALID_FILTER);
-    });
+      it("listens to onAdded events", async function() {
+        let fake = await addFakeListener({namespace: "filters",
+                                          eventName: "onAdded"});
+        await addFilter(VALID_FILTER_TEXT);
 
-    it("listens to onChanged events", async function() {
-      let fake = await addFakeListener({namespace: "filters",
-                                        eventName: "onChanged"});
-      await addFilter(VALID_FILTER_TEXT);
-      await EWE.filters.disable([VALID_FILTER_TEXT]);
+        expect(fake.callCount).toBe(1);
+        expect(fake.firstArg).toEqual(VALID_FILTER);
+      });
 
-      expect(fake.callCount).toBe(1);
-      expect(fake.firstArg).toEqual({...VALID_FILTER, enabled: false});
-      expect(fake.lastArg).toEqual("enabled");
+      it("listens to onChanged events", async function() {
+        let fake = await addFakeListener({namespace: "filters",
+                                          eventName: "onChanged"});
+        await addFilter(VALID_FILTER_TEXT);
+        await EWE.filters.disable([VALID_FILTER_TEXT]);
 
-      // This is a workaround and should be removed once https://gitlab.com/eyeo/webext/webext-sdk/-/issues/122 is fixed.
-      await EWE.filters.enable([VALID_FILTER_TEXT]);
-    });
+        expect(fake.callCount).toBe(1);
+        expect(fake.firstArg).toEqual({...VALID_FILTER, enabled: false});
+        expect(fake.lastArg).toEqual("enabled");
 
-    it("listens to onRemoved events", async function() {
-      let fake = await addFakeListener({namespace: "filters",
-                                        eventName: "onRemoved"});
-      await addFilter(VALID_FILTER_TEXT);
-      await EWE.filters.remove([VALID_FILTER_TEXT]);
+        // This is a workaround and should be removed once https://gitlab.com/eyeo/webext/webext-sdk/-/issues/122 is fixed.
+        await EWE.filters.enable([VALID_FILTER_TEXT]);
+      });
 
-      expect(fake.callCount).toBe(1);
-      expect(fake.firstArg).toEqual(VALID_FILTER);
+      it("listens to onRemoved events", async function() {
+        let fake = await addFakeListener({namespace: "filters",
+                                          eventName: "onRemoved"});
+        await addFilter(VALID_FILTER_TEXT);
+        await EWE.filters.remove([VALID_FILTER_TEXT]);
+
+        expect(fake.callCount).toBe(1);
+        expect(fake.firstArg).toEqual(VALID_FILTER);
+      });
     });
 
     describe("Allowlisting", function() {
+      before(function() {
+        // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/318
+        if (isFuzzingServiceWorker())
+          this.skip();
+      });
+
       const ALLOWING_IMAGE_DOC_FILTER =
         `@@|${TEST_PAGES_URL}/image.html^$document`;
       const ALLOWING_IFRAME_DOC_FILTER =
@@ -803,6 +818,12 @@ describe("API", function() {
   describe("Initialization", function() {
     setMinTimeout(this, 3000);
 
+    before(function() {
+      // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/319
+      if (isFuzzingServiceWorker())
+        this.skip();
+    });
+
     after(async function() {
       await browser.runtime.sendMessage(
         {type: "ewe-test:deleteUiLanguageOverride"});
@@ -953,6 +974,12 @@ describe("API", function() {
   });
 
   describe("Reporting", function() {
+    before(function() {
+      // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/320
+      if (isFuzzingServiceWorker())
+        this.skip();
+    });
+
     let defaultEventOptions = {};
     let allowingEventOptions = {filterType: "allowing"};
     let elemhideEventOptions = {includeElementHiding: true};
@@ -2378,6 +2405,12 @@ describe("API", function() {
 
   describe("Debugging", function() {
     setMinTimeout(this, 3000);
+
+    before(function() {
+      // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/321
+      if (isFuzzingServiceWorker())
+        this.skip();
+    });
 
     function getBackgroundColor() {
       let elem = document.getElementById("elem-hide");

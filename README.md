@@ -255,9 +255,14 @@ through the global `EWE` object.
 
 - The `timeout` option overrides the per-test timeout in milliseconds.
 - The `grep` option filters the tests to run with a regular expression.
-- The `incognito` checkbox is used to inform the tests whether the browser
-started in incognito/private mode or not. This does not cause tests to run
-in incognito mode.
+- The `incognito` checkbox is used to inform the tests whether the
+browser started in incognito/private mode or not. This does not cause
+tests to run in incognito mode.
+- The `testKinds` option is used to run only a certain subset of the
+functional tests. For example, you can target only the service worker
+fuzzing tests by running `--testKinds fuzz`, or a combination of the
+normal functional tests and reload tests by running tests with
+`--testKinds functional reload`.
 
 #### Using the test runner
 

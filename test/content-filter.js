@@ -22,9 +22,16 @@ import {Page, waitForInvisibleElement, executeScript, setMinTimeout, wait,
         firefoxVersion, TEST_PAGES_DOMAIN, TEST_PAGES_URL, SITEKEY}
   from "./utils.js";
 import {addFilter, setTestSnippets} from "./messaging.js";
-import {suspendServiceWorker} from "./mocha/mocha-runner.js";
+import {suspendServiceWorker, isFuzzingServiceWorker}
+  from "./mocha/mocha-runner.js";
 
 describe("Element Hiding", function() {
+  before(function() {
+    // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/322
+    if (isFuzzingServiceWorker())
+      this.skip();
+  });
+
   async function expectElemHideHidden({elemId = "elem-hide",
                                        url = "element-hiding.html", frameId,
                                        timeout = 1000} = {}) {

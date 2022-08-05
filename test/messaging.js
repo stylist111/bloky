@@ -18,7 +18,10 @@
 import browser from "webextension-polyfill";
 import sinon from "sinon/pkg/sinon.js";
 
+import {fuzzSuspendServiceWorker} from "./mocha/mocha-runner.js";
+
 export async function runInBackgroundPage(operations) {
+  await fuzzSuspendServiceWorker();
   let {result, error} =
     await browser.runtime.sendMessage({type: "ewe-test:run", operations});
   if (error)
@@ -28,6 +31,7 @@ export async function runInBackgroundPage(operations) {
 }
 
 export async function makeCallbackInBackgroundPage(callback) {
+  await fuzzSuspendServiceWorker();
   let id = await browser.runtime.sendMessage({type: "ewe-test:make-callback"});
 
   browser.runtime.onMessage.addListener(message => {

@@ -20,9 +20,16 @@ import expect from "expect";
 import {Page, clickElement, executeScript, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
         setMinTimeout, wait} from "./utils.js";
 import {EWE, addFilter, addFakeListener} from "./messaging.js";
+import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 describe("One Click Allowlisting", function() {
   setMinTimeout(this, 4000);
+
+  before(function() {
+    // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/316
+    if (isFuzzingServiceWorker())
+      this.skip();
+  });
 
   let page;
   let expectImageResource;

@@ -20,9 +20,16 @@ import expect from "expect";
 import {Page, Popup, setMinTimeout, isMV3, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
         CROSS_DOMAIN, SITEKEY} from "./utils.js";
 import {addFilter} from "./messaging.js";
+import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 describe("Pop-up blocking", function() {
   setMinTimeout(this, 4000);
+
+  before(function() {
+    // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/323
+    if (isFuzzingServiceWorker())
+      this.skip();
+  });
 
   let opener;
   beforeEach(function() {

@@ -19,13 +19,20 @@ import expect from "expect";
 
 import {Page, wait, setMinTimeout} from "./utils.js";
 import {addFakeListener} from "./messaging.js";
-import * as runner from "./mocha/mocha-runner.js";
+import {isConnected, click, isFuzzingServiceWorker}
+  from "./mocha/mocha-runner.js";
 
 describe("Subscribe links (runner only)", function() {
   setMinTimeout(this, 5000);
 
+  before(function() {
+    // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/325
+    if (isFuzzingServiceWorker())
+      this.skip();
+  });
+
   before(async function() {
-    if (!await runner.isConnected())
+    if (!await isConnected())
       this.skip();
   });
 
@@ -35,14 +42,14 @@ describe("Subscribe links (runner only)", function() {
     let page = new Page("subscribe.html");
     await page.loaded;
 
-    await runner.click(page.url, selector);
+    await click(page.url, selector);
     try {
       await wait(() => fake.called, 2000);
     }
     catch (e) {
       // driver.executeScript in test/runner.js might throw which
       // prevents this click from happening. Retrying usually helps.
-      await runner.click(page.url, selector);
+      await click(page.url, selector);
       await wait(() => fake.called, 2000, "Listener was not called");
     }
 
