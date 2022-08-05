@@ -277,6 +277,8 @@ int:v3:chrome:beta:
   extends: .integration:v3
   variables:
     BROWSER: chromium beta
+    # Popup skipped because of: https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/326
+    SKIP: "|Popup|Header|Sitekey|Subscriptions"
 
 .pages:
   stage: pages
