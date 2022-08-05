@@ -408,15 +408,19 @@ npm run subs-init
 npm run subs-merge [-- -i /tmp/product_specific_subscriptions_mv3.json]
 
 # fetch the subscriptions
-npm run subs-fetch
+npm run subs-fetch [-- -ife]
+```
 
+Ignore fetch errors by passing `-ife` / `--ignoreFetchErrors` flag (useful when subscription links might be unstable).
+
+```
 # convert to DNR (npm run convert-subscriptions using abp2dnr from webext-sdk)
 npm run subs-convert
 
 # generate the fragment
-npm run subs-generate
+npm run subs-generate [-- -p]
 
-# If needed, enable items in `rulesets/rulesets.json.tpl` file (for testing purposes)
+# If needed, enable items in `scriptsOutput/rulesets/rulesets.json` file (for testing purposes)
 
 # pack the webext
 npm run build
@@ -440,17 +444,13 @@ npm run subs-run -- -t {test|default}
 
 ### Custom subscriptions list
 
-The default provided subscriptions can be overridden by adding a file called `custom-subscriptions.json` in the root of
-this project's directory and then using the following command:
-`npm run subs-merge -- [-i ...] -o $(pwd)/custom-subscriptions.json` to merge the files.
+The default provided subscriptions can be overridden by adding a file called `custom-subscriptions.json` in the `scriptsOutput` directory and then using the following command:
+`npm run subs-merge -- [-i ...] -o $(pwd)/scriptsOutput/custom-subscriptions.json` to merge the files.
 
 Note the following:
 * use `-i` argument to add a file to the list of input files if necessary
-* use absolute output file path (otherwise `node_modules/adblockpluscore` will be used as current dir)
 * one can use `$(pwd)` on nix-based environments or `../../custom-subscriptions.json` for convenience
-* `subs-merge` is a "forwarding" npm script that just calls according npm script from "adblockpluscore" dependency
-  using `--prefix` argument
-* By default these scripts output ruleset files into a folder called `rulesets` and the full subscription files into `build/data`. 
+* By default these scripts output ruleset files into a folder called `scriptsOutput/rulesets` and the full subscription files into `scriptsOutput/subscriptions`.
 
 Examples:
 
@@ -458,7 +458,7 @@ Examples:
 ```
 npm run subs-merge -- \
   -i /tmp/product-subscriptions.json \
-  -o $(pwd)/custom-subscriptions.json
+  -o $(pwd)/scriptsOutput/custom-subscriptions.json
 ```
 
 * merge two subscriptions files:
@@ -466,14 +466,14 @@ npm run subs-merge -- \
 npm run subs-merge -- \
   -i /tmp/product-subscriptions.json \
   -i /tmp/language_en-subscriptions.json \
-  -o $(pwd)/custom-subscriptions.json
+  -o $(pwd)/scriptsOutput/custom-subscriptions.json
 ```
 
 The scripts are also available via npm symlinks:
 ```
-npm exec updateSubscriptions -- -t mv3 // subs-init
-npm exec mergeSubscriptions [-- -i ... -o ...] // subs-merge
-npm exec fetchSubscriptions [-- -i ... -o ...] // subs-fetch
-npm exec convertSubscriptions [-- -i ... -o ...] // subs-convert
-npm exec generateSubscriptionsFragment [-- -i ... -o ...] // subs-generate
+npm exec subs-init -- -t mv3
+npm exec subs-merge [-- -i ... -o ...]
+npm exec subs-fetch [-- -i ... -o ...]
+npm exec subs-convert [-- -i ... -o ...]
+npm exec subs-generate [-- -i ... -o ...]
 ```

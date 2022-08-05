@@ -18,7 +18,7 @@
 
 // the path is relative to adblockpluscore
 import {OUTPUT_DIR as inputDir}
-  from "adblockpluscore/scripts/fetchSubscriptions.js";
+  from "./fetchSubscriptions.js";
 import {processFile} from "adblockpluscore/scripts/text2dnr.js";
 import {createConverter} from "adblockpluscore/lib/dnr/index.js";
 import fs from "fs";
@@ -26,7 +26,7 @@ import path from "path";
 import yargs from "yargs";
 import {hideBin} from "yargs/helpers";
 
-const outputDir = "rulesets";
+const outputDir = path.join("scriptsOutput", "rulesets");
 
 let highestRuleId = 1;
 
@@ -61,7 +61,7 @@ async function convert(inDir, outDir) {
   });
   for (let inFile of files) {
     let inFileAbs = path.join(inDir, inFile);
-    let outFileAbs = path.join(outDir, path.parse(inFile).base + ".json");
+    let outFileAbs = path.join(outDir, path.parse(inFile).base);
     console.log(`Converting ${inFileAbs} to ${outFileAbs} ...`);
     await processFile(converter, inFileAbs, outFileAbs);
     await addRuleId(outFileAbs);
@@ -84,7 +84,7 @@ async function main() {
     })
     .parse();
 
-  let inDir = args.input || `node_modules/adblockpluscore/${inputDir}`;
+  let inDir = args.input || inputDir;
   let outDir = args.output || outputDir;
   await convert(inDir, outDir);
 }

@@ -21,7 +21,7 @@ import fs from "fs";
 import path from "path";
 
 export async function cleanup() {
-  for (let item of ["rulesets", "build", "custom-subscriptions.json"]) {
+  for (let item of ["scriptsOutput"]) {
     let pathToRemove = path.join(process.cwd(), item);
     if (fs.existsSync(pathToRemove))
       await fs.promises.rm(pathToRemove, {recursive: true});

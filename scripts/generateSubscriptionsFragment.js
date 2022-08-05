@@ -22,21 +22,26 @@ import {outputDir as convertOutputDir}
   from "./convertSubscriptions.js";
 import yargs from "yargs";
 import {hideBin} from "yargs/helpers";
+import validator from "validator";
 
-const outputDir = "rulesets";
-const outputFile = path.join(outputDir, "rulesets.json.tpl");
+const outputDir = path.join("scriptsOutput", "rulesets");
+const outputFile = path.join(outputDir, "rulesets.json");
+
+function isValidRulesetFile(file) {
+  return validator.isUUID(path.parse(file).base);
+}
 
 function generateFragment(dir, pathPrefix, space = 2) {
   if (!fs.existsSync(dir)) {
     throw new Error(`DNR rules directory (${dir}) does not exist. ` +
-      "Run `npm run \"convert-subscriptions\"` to generate it.");
+      "Run `npm run \"subs-convert\"` to generate it.");
   }
 
   let files = fs.readdirSync(dir);
   let fragment = {rule_resources: []};
   for (let file of files) {
-    if (path.extname(file) !== ".json") {
-      console.warn(`Not .json file (${file}) skipped`);
+    if (!isValidRulesetFile(file)) {
+      console.warn(`Not ruleset file (${file}) skipped`);
       continue;
     }
     fragment.rule_resources.push({
@@ -81,7 +86,7 @@ function main() {
 
   let fromDir = args.input || convertOutputDir;
   let toFile = args.output || outputFile;
-  let pathPrefix = args.prefix || outputDir + "/";
+  let pathPrefix = args.prefix;
   let fragmentJson = generateFragment(fromDir, pathPrefix);
   fs.writeFileSync(toFile, fragmentJson);
   console.log(`Web extension manifest fragment file (${toFile}) generated.`);

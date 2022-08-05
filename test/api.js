@@ -21,9 +21,7 @@ import expect from "expect";
 import {Page, Popup, setMinTimeout, wait, executeScript, isFirefox, isEdge,
         isChromiumBased, isIncognito, getVisibleElement, isMV3, TEST_PAGES_URL,
         TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN,
-        FETCHED_TEST_SUBSCRIPTION_NAME, isMV2CustomSubsExtension,
-        isMV3TestSubsExtension} from "./utils.js";
-
+        isMV2CustomSubsExtension, isMV3TestSubsExtension} from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, addFakeListener,
         removeFakeListeners, setTestSnippets}
   from "./messaging.js";
@@ -863,34 +861,13 @@ describe("API", function() {
       });
     }
 
-    it("configures rulesets for the first time", async function() {
-      if (!isMV3())
-        this.skip();
-
-      await runInBackgroundPage([
-        {op: "getGlobal", arg: "EWE"},
-        {op: "callMethod", arg: "start"},
-        {op: "await"}
-      ]);
-
-      let enabledRulesets = await browser.declarativeNetRequest
-        .getEnabledRulesets();
-
-      if (isMV3TestSubsExtension()) {
-        expect(enabledRulesets).toEqual(expect.arrayContaining([
-          FETCHED_TEST_SUBSCRIPTION_NAME
-        ]));
-      }
-      else {
-        expect(enabledRulesets).toEqual(expect.arrayContaining([
-          "https___easylist_downloads_adblockplus_org_v3_full_easylist_txt",
-          "https___easylist_downloads_adblockplus_org_v3_full_exceptionrules_txt"
-        ]));
-      }
-    });
-
     it("informs when the filter engine runs for the first time", async function() {
       if (isMV3()) {
+        this.skip();
+        // we will expose the API to enable the subscriptions,
+        // there is no code inside of SDK to enable any of them at the moment.
+        // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/305
+
         let rulesetIds = await browser.declarativeNetRequest
           .getEnabledRulesets();
         await browser.declarativeNetRequest.updateEnabledRulesets({

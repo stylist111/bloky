@@ -34,10 +34,10 @@ const eweCustomConfigName = "sdk-subs";
 const eweDistPath = path.join(dirname, "dist");
 const eweRegularOutputPath = eweDistPath;
 const eweCustomOutputPath = path.join(eweDistPath, "ewe-subs");
-const eweRegularSubscriptionsFile = "custom-subscriptions.json";
+const eweRegularSubscriptionsFile = path.join("scriptsOutput", "custom-subscriptions.json");
 const eweTestSubscriptionsFile = "test/custom-subscriptions.json";
-const subscriptionsDir = path.join(dirname, "rulesets");
-const fragmentFile = path.join(subscriptionsDir, "rulesets.json.tpl");
+const subscriptionsDir = path.join(dirname, "scriptsOutput", "rulesets");
+const fragmentFile = path.join(subscriptionsDir, "rulesets.json");
 
 const base = {
   eweConfigName: eweRegularConfigName,
@@ -225,9 +225,9 @@ export default (env = {}) => {
             ...buildVariant.manifestVersion >= 3 &&
                fs.existsSync(subscriptionsDir) &&
                fs.readdirSync(subscriptionsDir)
-                .filter(file => file.endsWith(".json"))
+                .filter(file => !file.endsWith(fragmentFile))
                 .length > 0 ?
-                  [{from: path.join(subscriptionsDir, "*.json")}] :
+                  [{from: subscriptionsDir}] :
                   []
           ]
         })

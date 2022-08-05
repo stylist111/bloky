@@ -24,7 +24,6 @@ import {Subscription, DownloadableSubscription, SpecialSubscription}
 import {filterEngine} from "./core.js";
 
 export const ACCEPTABLE_ADS_URL = "https://easylist-downloads.adblockplus.org/exceptionrules.txt";
-export const ACCEPTABLE_ADS_MV3_URL = "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt";
 export const ACCEPTABLE_ADS_PRIVACY_URL = "https://easylist-downloads.adblockplus.org/exceptionrules-privacy-friendly.txt";
 
 export function getDefaultSubscriptions() {

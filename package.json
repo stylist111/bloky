@@ -47,6 +47,7 @@
     "mini-css-extract-plugin": "^2.0.0",
     "mocha": "^10.0.0",
     "msedgedriver": "^91.0.0",
+    "nock": "^13.2.1",
     "on-headers": "^1.0.2",
     "selenium-webdriver": "^4.3.0",
     "sinon": "^11.1.1",
@@ -54,7 +55,8 @@
     "webpack": "^5.37.1",
     "webpack-cli": "^4.7.0",
     "ws": "^7.4.6",
-    "yargs": "^17.0.1"
+    "yargs": "^17.0.1",
+    "validator": "^13.7.0"
   },
   "scripts": {
     "lint": "eslint --ext js,html .",
@@ -67,17 +69,20 @@
     "test-bundle": "node test/bundle/run.js",
     "test-scripts": "mocha test/scripts/*.js",
     "measureTestFlakiness": "node scripts/measureTestFlakiness.js",
-    "subs-init": "npm exec updateSubscriptions -- -t mv3",
-    "subs-merge": "npm exec mergeSubscriptions -- -i build/data/subscriptions_mv3.json -o ./custom-subscriptions.json",
-    "subs-fetch": "npm exec fetchSubscriptions -- -i ./custom-subscriptions.json",
-    "subs-convert": "node scripts/convertSubscriptions.js -i build/data/subscriptions/ABP/",
+    "subs-init": "node scripts/initSubscriptions.js",
+    "subs-merge": "node scripts/mergeSubscriptions.js",
+    "subs-fetch": "node scripts/fetchSubscriptions.js",
+    "subs-convert": "node scripts/convertSubscriptions.js",
     "subs-generate": "node scripts/generateSubscriptionsFragment.js",
     "subs-run": "node test/scripts/prepare-mv3-files.js",
     "subs-clean": "node test/scripts/clean-mv3-files.js",
     "create-allowlisting-keypair": "node scripts/createKeypair.js"
   },
   "bin": {
-    "convertSubscriptions": "./scripts/convertSubscriptions.js",
-    "generateSubscriptionsFragment": "./scripts/generateSubscriptionsFragment.js"
+    "subs-init": "./scripts/initSubscriptions.js",
+    "subs-merge": "./scripts/mergeSubscriptions.js",
+    "subs-fetch": "./scripts/fetchSubscriptions.js",
+    "subs-convert": "./scripts/convertSubscriptions.js",
+    "subs-generate": "./scripts/generateSubscriptionsFragment.js"
   }
 }

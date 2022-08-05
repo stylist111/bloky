@@ -22,6 +22,9 @@ import path from "path";
 
 import {generateFragment} from "../../scripts/generateSubscriptionsFragment.js";
 
+const VALID_RULESET_FILE = "03648752-31EE-4FD0-85C1-20B07C5551C3";
+const VALID_RULESET_FILE2 = "07549D8B-F06F-4D9D-A567-929AA59E9D1D";
+
 describe("generateSubscriptionsFragment script", () => {
   let tmpDir;
   let originalConsoleWarn;
@@ -71,46 +74,45 @@ describe("generateSubscriptionsFragment script", () => {
     expect(warnings.length).toEqual(1);
   });
 
-  it("ignores not .json files", () => {
+  it("ignores not subscriptions files", () => {
     createRuleFile("jsfile.js");
     expect(generateFragment(tmpDir, null, null))
       .toEqual('{"rule_resources":[]}');
   });
 
-  it("warns on not .json files", () => {
+  it("warns on not subscription files", () => {
     expect(warnings.length).toEqual(0);
     createRuleFile("jsfile.js");
-    createRuleFile("file.json");
+    createRuleFile(VALID_RULESET_FILE);
     generateFragment(tmpDir, null, null);
     expect(warnings.length).toEqual(1);
   });
 
   it("returns single rule", () => {
-    createRuleFile("singleFile.json");
+    createRuleFile(VALID_RULESET_FILE);
     let fragment = generateFragment(tmpDir, null, null);
     expect(JSON.parse(fragment)["rule_resources"].length).toEqual(1);
   });
 
   it("returns valid rule id", () => {
-    // assuming file name without extension is taken as rule id
-    const baseFilename = "singleFile";
-    createRuleFile(baseFilename + ".json");
-    expect(getRulesArrayFrom(tmpDir)[0].id).toEqual(baseFilename);
+    const filename = VALID_RULESET_FILE;
+    createRuleFile(filename);
+    expect(getRulesArrayFrom(tmpDir)[0].id).toEqual(filename);
   });
 
   it("returns rules disabled by default", () => {
-    createRuleFile("singleFile.json");
+    createRuleFile(VALID_RULESET_FILE);
     expect(getRulesArrayFrom(tmpDir)[0].enabled).toEqual(false);
   });
 
   it("returns proper file path", () => {
-    const filename = "singleFile.json";
+    const filename = VALID_RULESET_FILE;
     createRuleFile(filename);
     expect(getRulesArrayFrom(tmpDir)[0].path).toEqual(filename);
   });
 
   it("returns proper file path with prefix", () => {
-    const filename = "singleFile.json";
+    const filename = VALID_RULESET_FILE;
     createRuleFile(filename);
     const prefix = "subscriptions/";
     let rules = JSON.parse(
@@ -119,22 +121,22 @@ describe("generateSubscriptionsFragment script", () => {
   });
 
   it("returns multiple rules", () => {
-    createRuleFile("multipleFile1.json");
-    createRuleFile("multipleFile2.json");
+    createRuleFile(VALID_RULESET_FILE);
+    createRuleFile(VALID_RULESET_FILE2);
     expect(getRulesArrayFrom(tmpDir).length).toEqual(2);
   });
 
   it("prettifies JSON if space is passed", () => {
-    createRuleFile("file.json");
+    createRuleFile(VALID_RULESET_FILE);
     expect(generateFragment(tmpDir, null, null))
-      .toEqual('{"rule_resources":[{"id":"file","enabled":false,"path":"file.json"}]}');
+      .toEqual(`{"rule_resources":[{"id":"${VALID_RULESET_FILE}","enabled":false,"path":"${VALID_RULESET_FILE}"}]}`);
     expect(generateFragment(tmpDir, null, 2)).toEqual(
 `{
   "rule_resources": [
     {
-      "id": "file",
+      "id": "${VALID_RULESET_FILE}",
       "enabled": false,
-      "path": "file.json"
+      "path": "${VALID_RULESET_FILE}"
     }
   ]
 }`);
@@ -142,9 +144,9 @@ describe("generateSubscriptionsFragment script", () => {
 `{
 \t"rule_resources": [
 \t\t{
-\t\t\t"id": "file",
+\t\t\t"id": "${VALID_RULESET_FILE}",
 \t\t\t"enabled": false,
-\t\t\t"path": "file.json"
+\t\t\t"path": "${VALID_RULESET_FILE}"
 \t\t}
 \t]
 }`);

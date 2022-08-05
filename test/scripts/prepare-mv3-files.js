@@ -26,7 +26,7 @@ import {hideBin} from "yargs/helpers";
 
 import {cleanup} from "./clean-mv3-files.js";
 
-let rulesetFile = path.join(process.cwd(), "rulesets", "rulesets.json.tpl");
+let rulesetFile = path.join(process.cwd(), "scriptsOutput", "rulesets", "rulesets.json");
 const CHROMIUM_RULESETS_LIMIT = 50;
 
 async function enableTestSubscription() {
@@ -68,9 +68,10 @@ async function run() {
   let usingTestSubscriptions = args.type == "test";
   if (usingTestSubscriptions) {
     let customSubscriptionFile = path.join(process.cwd(), "test", "scripts", "custom-mv3-subscriptions.json");
-    let customSubscriptionsOutput = path.join(process.cwd(), "custom-subscriptions.json");
+    let customSubscriptionsOutput = path.join(process.cwd(), "scriptsOutput", "custom-subscriptions.json");
     console.log(`Getting only the subscriptions in ${customSubscriptionFile}`);
-    await promisify(exec)(`npm exec mergeSubscriptions -- -i ${customSubscriptionFile} -o ${customSubscriptionsOutput}`);
+    await fs.promises.mkdir(path.dirname(customSubscriptionsOutput));
+    await promisify(exec)(`npm run subs-merge -- -i ${customSubscriptionFile} -o ${customSubscriptionsOutput}`);
   }
   else {
     console.log("Full run that should include all subscriptions");
@@ -89,10 +90,7 @@ async function run() {
     // the allowed number of recommended subscriptions.
     await removeOverflowRulesets();
 
-  console.log("✅ Rulesets and subscriptions generated. Please see the output here: ");
-
-  for (let item of ["rulesets", "build", "custom-subscriptions.json"])
-    console.log(" - " + path.join(process.cwd(), item));
+  console.log("✅ Rulesets and subscriptions generated. Please see the output in the `scriptsOutput` directory");
 }
 
 run().catch(err => {

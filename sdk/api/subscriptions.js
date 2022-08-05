@@ -28,7 +28,7 @@ import {filterEngine} from "./core.js";
 import {EventDispatcher} from "./types.js";
 import {convertFilter} from "./filters.js";
 import {removeDynamicFilters} from "./dnr-filters.js";
-import {ACCEPTABLE_ADS_URL, ACCEPTABLE_ADS_PRIVACY_URL, ACCEPTABLE_ADS_MV3_URL}
+import {ACCEPTABLE_ADS_URL, ACCEPTABLE_ADS_PRIVACY_URL}
   from "./default-subscriptions.js";
 
 function convertSubscription(subscription) {
@@ -71,13 +71,6 @@ export default {
    * @type {string}
    */
   ACCEPTABLE_ADS_URL,
-
-  /**
-   * The URL of the Acceptable Ads subscription in an mv3 context.
-   * @type {string}
-   */
-  ACCEPTABLE_ADS_MV3_URL,
-
   /**
    * The URL of the Acceptable Ads without third-party tracking subscription.
    * @type {string}

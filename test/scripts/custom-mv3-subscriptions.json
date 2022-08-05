@@ -1,14 +1,18 @@
 [
   {
+    "id": "03648752-31EE-4FD0-85C1-20B07C5551C3",
     "type": "ads",
     "title": "Test MV3 Custom Subscription",
     "homepage": "http://localhost:3000/subscription.txt",
-    "url": "http://localhost:3000/subscription.txt"
+    "url": "http://localhost:3000/subscription.txt",
+    "mv2_url": "http://localhost:3000/mv2_subscription.txt"
   },
   {
+    "id": "07549D8B-F06F-4D9D-A567-929AA59E9D1D",
     "type": "ads",
     "title": "Allow nonintrusive advertising",
     "homepage": "https://acceptableads.com/",
-    "url": "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt"
+    "url": "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt",
+    "mv2_url": "https://easylist-downloads.adblockplus.org/exceptionrules.txt"
   }
 ]

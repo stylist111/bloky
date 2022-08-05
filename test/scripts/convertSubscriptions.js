@@ -58,7 +58,7 @@ describe("convertSubscriptions script", () => {
   }
 
   function getDnrRulesFromFile(filename) {
-    let fullFilename = path.join(tmpOutDir, filename + ".json");
+    let fullFilename = path.join(tmpOutDir, filename);
     return JSON.parse(fs.readFileSync(fullFilename, encoding));
   }
 
