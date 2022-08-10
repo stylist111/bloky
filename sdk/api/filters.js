@@ -224,8 +224,9 @@ export default {
     for (let frame = getFrameInfo(tabId, frameId); frame;
          frame = frame.parent) {
       let parentHostname = frame.parent && frame.parent.hostname;
+      let docDomain = parentHostname || frame.hostname;
       let matches = filterEngine.defaultMatcher.search(
-        frame.url, mask, parentHostname, frame.sitekey, false, "allowing");
+        frame.url, mask, docDomain, frame.sitekey, false, "allowing");
 
       for (let filter of matches.allowing)
         filters.add(filter.text);

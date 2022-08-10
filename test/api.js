@@ -716,6 +716,20 @@ describe("API", function() {
           .toEqual([]);
       });
 
+      it("returns filters for allowlisted domains", async function() {
+        let filter = `@@*$document,domain=${TEST_PAGES_DOMAIN}`;
+
+        await addFilter(filter);
+        let tabId = await new Page("image.html").loaded;
+        expect(await EWE.filters.getAllowingFilters(tabId)).toEqual([filter]);
+      });
+
+      it("doesn't return filters for non-allowlisted domains", async function() {
+        await addFilter(`@@*$document,domain=~${TEST_PAGES_DOMAIN}`);
+        let tabId = await new Page("image.html").loaded;
+        expect(await EWE.filters.getAllowingFilters(tabId)).toEqual([]);
+      });
+
       it("handles empty tabs", async function() {
         let tabId = await new Page("about:blank", true).loaded;
         expect(await EWE.filters.getAllowingFilters(tabId))
