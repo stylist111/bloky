@@ -15,6 +15,8 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* global Mocha */
+
 import browser from "webextension-polyfill";
 import expect from "expect";
 
@@ -44,7 +46,7 @@ before(async function() {
       `Warning: Test pages server can't be reached at ${TEST_PAGES_URL}`;
     elem.style.display = "block";
     elem.textContent = message;
-    mocha.Mocha.reporters.Base.consoleLog("\x1b[33m%s\x1b[0m", message);
+    Mocha.reporters.Base.consoleLog("\x1b[33m%s\x1b[0m", message);
   }
 
   await addFilter(RESTORE_SUBSCRIPTIONS_TEST);
