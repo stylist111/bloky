@@ -64,14 +64,6 @@ export let snippets = {
   setLibrary: setSnippetLibrary
 };
 
-let stopped = true;
-
-async function startAsyncModule(startModule) {
-  await startModule();
-  if (stopped)
-    throw new Error("Stopped before initialization was finished");
-}
-
 /**
 * @typedef {Object} FirstRunInfo
 * @property {boolean} foundStorage Whether the subscriptions storage was
@@ -103,24 +95,12 @@ export async function start(addonInfo) {
   if (addonInfo)
     setAddonInfo(addonInfo);
 
-  stopped = false;
   messageResponder.start();
-  await startAsyncModule(() => initializer.start());
+  await initializer.start();
   filterEngine.filterStorage.synchronizer.start();
 
   let firstRun = browser.declarativeNetRequest ?
     await configureDefaultRulesets() :
     configureDefaultSubscriptions();
   return firstRun;
-}
-
-/**
- * Stops blocking any content.
- */
-export function stop() {
-  stopped = true;
-  messageResponder.stop();
-  initializer.stop();
-  filterEngine.filterStorage.synchronizer.stop();
-  notifications.stop();
 }

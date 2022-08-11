@@ -24,13 +24,6 @@ import {init as initDNRFilters} from "./dnr-filters.js";
 import {init as initPrefs} from "./prefs.js";
 
 let startupPromise;
-let stopped = true;
-
-async function startAsyncModule(start) {
-  await start();
-  if (stopped)
-    throw new Error("Stopped before initialization was finished");
-}
 
 export default {
   /**
@@ -54,32 +47,15 @@ export default {
   start() {
     if (!startupPromise) {
       startupPromise = (async() => {
-        stopped = false;
-        await startAsyncModule(() => io.initialize());
-        await startAsyncModule(() => initPrefs());
-        await startAsyncModule(() => filterEngine.initialize());
-        await startAsyncModule(() => frameState.start());
+        await io.initialize();
+        await initPrefs();
+        await filterEngine.initialize();
+        await frameState.start();
         requestFilter.start();
         popupBlocker.start();
-        await startAsyncModule(() => initDNRFilters());
+        await initDNRFilters();
       })();
     }
     return startupPromise;
-  },
-
-  /**
-   * Stops blocking any content and uninitializes stateful modules
-   * used in filtering requests.
-   */
-  stop() {
-    stopped = true;
-    startupPromise = null;
-    frameState.stop();
-    requestFilter.stop();
-    popupBlocker.stop();
-  },
-
-  isStarted() {
-    return !stopped;
   }
 };

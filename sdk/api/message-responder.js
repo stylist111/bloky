@@ -69,7 +69,3 @@ function onMessage(message, sender) {
 export function start() {
   browser.runtime.onMessage.addListener(onMessage);
 }
-
-export function stop() {
-  browser.runtime.onMessage.removeListener(onMessage);
-}

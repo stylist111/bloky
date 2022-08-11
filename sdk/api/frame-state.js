@@ -23,7 +23,7 @@ import {ALLOWING_TYPES, contentTypes}
 
 import {filterEngine} from "./core.js";
 import {logItem} from "./diagnostics.js";
-import {getSitekey, setSitekeyFromHeaders, clearAllSitekeys, clearTabSitekeys}
+import {getSitekey, setSitekeyFromHeaders, clearTabSitekeys}
   from "./sitekey.js";
 
 /**
@@ -514,19 +514,4 @@ export async function start() {
   }
 
   await startupPromise;
-}
-
-export function stop() {
-  startupPromise = null;
-  state.clear();
-  clearAllSitekeys();
-
-  browser.webRequest.onHeadersReceived.removeListener(onHeadersReceived);
-  browser.webNavigation.onBeforeNavigate.removeListener(onBeforeNavigate);
-  browser.webNavigation.onCommitted.removeListener(onCommitted);
-  browser.webNavigation.onErrorOccurred.removeListener(onErrorOccurred);
-  browser.webNavigation.onHistoryStateUpdated.removeListener(
-    onHistoryStateUpdated);
-  browser.tabs.onRemoved.removeListener(onRemoved);
-  browser.tabs.onReplaced.removeListener(onReplaced);
 }

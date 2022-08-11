@@ -108,8 +108,3 @@ export function start() {
   if (typeof netscape != "undefined")
     browser.tabs.onCreated.addListener(onTabCreated);
 }
-
-export function stop() {
-  browser.webNavigation.onCreatedNavigationTarget.removeListener(onPopup);
-  browser.tabs.onCreated.removeListener(onTabCreated);
-}

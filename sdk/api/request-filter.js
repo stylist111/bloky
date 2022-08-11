@@ -502,11 +502,3 @@ export function start() {
       filterNotifier.on(event, onFilterChange);
   }
 }
-
-export function stop() {
-  for (let filter of filters)
-    filter.unregister();
-
-  for (let event of FILTER_EVENTS)
-    filterNotifier.off(event, onFilterChange);
-}
