@@ -85,11 +85,8 @@ export let snippets = {
  *                             identifier in network requests, etc.)
  * @param {string} [addonInfo.name] Name of the addon/extension.
  * @param {string} [addonInfo.version] Version of the addon/extension.
- * @return {Promise<FirstRunInfo>} Promise that is resolved after
- *                                  starting up is completed. Promise
- *                                  is rejected if `stop()` is called
- *                                  before starting is completed.
- * @see {@link #stop|stop()}
+ * @return {Promise<FirstRunInfo>} Promise that is resolved after starting up
+ *                                 is completed.
  */
 export async function start(addonInfo) {
   if (addonInfo)
