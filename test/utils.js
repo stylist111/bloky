@@ -28,7 +28,7 @@ export const SITEKEY = "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANGtTstne7" +
                        "e8MbmDHDiMFkGbcuBgXmiVesGOG3gtYeM1EkrzVhBj" +
                        "GUvKXYE4GLFwqty3v5MuWWbvItUWBTYoVVsCAwEAAQ";
 export const RECENT_FIREFOX_VERSION = 86; // Latest Firefox on February 2021
-export const FETCHED_TEST_SUBSCRIPTION_NAME = "http___localhost_3000_subscription_txt";
+export const FETCHED_TEST_SUBSCRIPTION_ID = "00000000-0000-0000-0000-000000000000";
 
 function handleConnection(details, tabId, removeListeners, reject) {
   if ((details.tabId == tabId || !tabId) &&
@@ -429,5 +429,5 @@ export function isMV3TestSubsExtension() {
     return false;
 
   let firstRulesetId = manifest.declarative_net_request.rule_resources[0].id;
-  return firstRulesetId == FETCHED_TEST_SUBSCRIPTION_NAME;
+  return firstRulesetId == FETCHED_TEST_SUBSCRIPTION_ID;
 }
