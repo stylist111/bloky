@@ -21,15 +21,8 @@ import {Page, Resource, executeScript, wait, isMV3, isIncognito, setMinTimeout,
         TEST_PAGES_URL,
         TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, SITEKEY, isMV3TestSubsExtension} from "./utils.js";
 import {addFilter, EWE} from "./messaging.js";
-import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 describe("Blocking", function() {
-  before(function() {
-    // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/324
-    if (isFuzzingServiceWorker())
-      this.skip();
-  });
-
   it("blocks a request using user filters", async function() {
     await addFilter("/image.png^$image");
     await new Page("image.html").expectResource("image.png").toBeBlocked();
