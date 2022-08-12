@@ -3,8 +3,6 @@ dist
 docs
 browser-snapshots
 test/bundle/package-lock.json
-custom-subscriptions.json
-rulesets
 extension
 testpages.adblockplus.org
-build/data
+scriptsOutput
