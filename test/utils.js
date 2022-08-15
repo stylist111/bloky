@@ -18,6 +18,8 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 
+import {fuzzSuspendServiceWorker} from "./mocha/mocha-runner.js";
+
 export const TEST_PAGES_DOMAIN = "localhost";
 export const CROSS_DOMAIN = "127.0.0.1";
 export const TEST_PAGES_URL = `http://${TEST_PAGES_DOMAIN}:3000`;
@@ -79,6 +81,7 @@ export class Page {
       // duplicate requests do mess with our tests.
       let active = isFirefox() && !forceBackground;
 
+      await fuzzSuspendServiceWorker();
       return (await browser.tabs.create({url: this.url, active})).id;
     })();
 
@@ -121,6 +124,7 @@ export class Page {
 
   async reload(bypassCache = false) {
     let tabId = await this.created;
+    await fuzzSuspendServiceWorker();
     await browser.tabs.reload(tabId, {bypassCache});
     return tabId;
   }
@@ -233,10 +237,12 @@ export class Popup {
         onCreatedNavigationTarget.addListener(onNavigationTarget);
         browser.webNavigation.onErrorOccurred.addListener(onErrorOccurred);
 
-        clickElement(openerTabId, id).catch(err => {
-          removeListeners();
-          reject(err);
-        });
+        fuzzSuspendServiceWorker()
+          .then(() => clickElement(openerTabId, id))
+          .catch(err => {
+            removeListeners();
+            reject(err);
+          });
       }, reject);
     });
 

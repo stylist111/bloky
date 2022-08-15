@@ -1,0 +1,6 @@
+<iframe id="elem-hide-parent-frame" srcdoc=""></iframe>
+<script>
+  let {contentDocument} = document.querySelectorAll("iframe")[0];
+  contentDocument.write("<iframe id='elem-hide-frame' src='http://localhost:3000/element-hiding.html'></iframe>");
+  contentDocument.close();
+</script>

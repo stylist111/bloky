@@ -22,43 +22,41 @@ import {Page, waitForInvisibleElement, executeScript, setMinTimeout, wait,
         firefoxVersion, TEST_PAGES_DOMAIN, TEST_PAGES_URL, SITEKEY}
   from "./utils.js";
 import {addFilter, setTestSnippets} from "./messaging.js";
-import {suspendServiceWorker, isFuzzingServiceWorker}
-  from "./mocha/mocha-runner.js";
+import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 describe("Element Hiding", function() {
-  before(function() {
-    // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/322
-    if (isFuzzingServiceWorker())
-      this.skip();
-  });
+  let hideTimeout = isFuzzingServiceWorker() ? 2000 : 1000;
+  let collapseTimeout = 2000;
+  let elemhideEmulationUpdateTimeout = 4000;
+  let unhiddenTimeout = isFuzzingServiceWorker() ? 1000 : 200;
 
   async function expectElemHideHidden({elemId = "elem-hide",
-                                       url = "element-hiding.html", frameId,
-                                       timeout = 1000} = {}) {
+                                       url = "element-hiding.html",
+                                       frameIds} = {}) {
     let tabId = await new Page(url).loaded;
-    let getElem = frameId ?
-        () => getVisibleElementInFrame(tabId, elemId, [frameId]) :
+    let getElem = frameIds ?
+        () => getVisibleElementInFrame(tabId, elemId, frameIds) :
         () => getVisibleElement(tabId, elemId);
 
     await wait(
       async() => await getElem() == null,
-      timeout,
+      hideTimeout,
       `Expected element "${elemId}" on page "${url}" to be hidden, but it was visible.`
     );
   }
 
   async function expectElemHideVisible({elemId = "elem-hide",
                                         url = "element-hiding.html",
-                                        frameId} = {}) {
+                                        frameIds} = {}) {
     let tabId = await new Page(url).loaded;
-    let getElem = frameId ?
-        () => getVisibleElementInFrame(tabId, elemId, [frameId]) :
+    let getElem = frameIds ?
+        () => getVisibleElementInFrame(tabId, elemId, frameIds) :
         () => getVisibleElement(tabId, elemId);
 
     // If we're expecting things to not be hidden, but we check before
     // the filters have a chance to be applied, then we're not really
     // testing anything.
-    await new Promise(r => setTimeout(r, 200));
+    await new Promise(r => setTimeout(r, unhiddenTimeout));
 
     let elem = await getElem();
     expect(elem).not.toBeNull();
@@ -67,13 +65,6 @@ describe("Element Hiding", function() {
   it("hides an element", async function() {
     await addFilter("###elem-hide");
     await expectElemHideHidden();
-  });
-
-  it("hides an element after service worker is suspended", async function() {
-    setMinTimeout(this, 4000);
-    await addFilter("###elem-hide");
-    await suspendServiceWorker(this);
-    await expectElemHideHidden({timeout: 2000});
   });
 
   it("does not hide an allowlisted element", async function() {
@@ -102,16 +93,40 @@ describe("Element Hiding", function() {
       await expectElemHideHidden({
         url: "iframe-elemhide.html",
         elemId: "elem-hide",
-        frameId: "elem-hide-frame"
+        frameIds: ["elem-hide-frame"]
       });
 
       await addFilter(`@@|${TEST_PAGES_URL}/iframe-elemhide.html^${type}`);
       await expectElemHideVisible({
         url: "iframe-elemhide.html",
         elemId: "elem-hide",
-        frameId: "elem-hide-frame"
+        frameIds: ["elem-hide-frame"]
       });
     });
+
+    for (let nestedFrameTestCase of [
+      {name: "nested iframe", file: "nested-iframe-elemhide.html"},
+      {name: "nested iframe using srcdoc", file: "nested-iframe-elemhide-srcdoc.html"},
+      {name: "nested iframe where the request is aborted", file: "nested-iframe-elemhide-aborted-request.html"}
+    ]) {
+      it(`does not hide elemented allowlisted by ${type} in a ${nestedFrameTestCase.name} if the top iframe is allowlisted`, async function() {
+        setMinTimeout(this, 8000);
+
+        await addFilter("###elem-hide");
+        await expectElemHideHidden({
+          url: nestedFrameTestCase.file,
+          elemId: "elem-hide",
+          frameIds: ["elem-hide-parent-frame", "elem-hide-frame"]
+        });
+
+        await addFilter(`@@|${TEST_PAGES_URL}/${nestedFrameTestCase.file}^${type}`);
+        await expectElemHideVisible({
+          url: nestedFrameTestCase.file,
+          elemId: "elem-hide",
+          frameIds: ["elem-hide-parent-frame", "elem-hide-frame"]
+        });
+      });
+    }
   }
 
   it("does not hide elements in document allowlisted by $elemhide", async function() {
@@ -138,7 +153,7 @@ describe("Element Hiding", function() {
         expect(await getVisibleElement(tabId, "elem-hide")).not.toBeNull();
         return await getVisibleElement(tabId, "elem-hide-specific") == null;
       },
-      1000,
+      hideTimeout,
       "Expected element \"elem-hide-specific\" to be hidden, but it was visible."
     );
   });
@@ -169,7 +184,7 @@ describe("Element Hiding", function() {
           elem1 = await getVisibleElement(tabId, "unhide1");
           elem2 = await getVisibleElement(tabId, "unhide2");
           return elem1 == null && elem2 == null;
-        }, 1000, "Elements were not hidden initially"
+        }, hideTimeout, "Elements were not hidden initially"
       );
 
       await executeScript(tabId, async() => {
@@ -180,7 +195,7 @@ describe("Element Hiding", function() {
         elem1 = await getVisibleElement(tabId, "unhide1");
         elem2 = await getVisibleElement(tabId, "unhide2");
         return elem1 != null && elem2 != null;
-      }, 4000, "Element is not visible");
+      }, elemhideEmulationUpdateTimeout, "Element is not visible");
       expect(elem1).toContain("unhide1");
       expect(elem2).toContain("unhide2");
 
@@ -192,7 +207,7 @@ describe("Element Hiding", function() {
         elem1 = await getVisibleElement(tabId, "unhide1");
         elem2 = await getVisibleElement(tabId, "unhide2");
         return elem1 == null && elem2 == null;
-      }, 4000, "Element is visible");
+      }, elemhideEmulationUpdateTimeout, "Element is visible");
     });
 
     it("hides abp-has elements", async function() {
@@ -214,7 +229,7 @@ describe("Element Hiding", function() {
       await expectElemHideHidden({
         elemId: "aboutblank-img",
         url: "element-hiding-aboutblank.html",
-        frameId: "aboutblank-iframe"
+        frameIds: ["aboutblank-iframe"]
       });
     });
 
@@ -225,7 +240,7 @@ describe("Element Hiding", function() {
       await expectElemHideHidden({
         elemId: "aboutblank-img",
         url: "element-hiding-aboutblank.html",
-        frameId: "aboutblank-iframe"
+        frameIds: ["aboutblank-iframe"]
       });
     });
   });
@@ -255,7 +270,7 @@ describe("Element Hiding", function() {
              let visible = await getVisibleElementInFrame(
                tabId, "aboutblank-img", frameIds);
              return visible === null;
-           }, 2000, "The image element is still visible");
+           }, collapseTimeout, "The image element is still visible");
          });
     }
   });
@@ -286,7 +301,7 @@ describe("Element Hiding", function() {
       let tabId = await page.loaded;
       await page.reload();
       // hiding elements may take a few ms on CI
-      await new Promise(r => setTimeout(r, 200));
+      await new Promise(r => setTimeout(r, unhiddenTimeout));
       expect(await getVisibleElement(tabId, "elem-hide")).not.toBeNull();
     });
   });
