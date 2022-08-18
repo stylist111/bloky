@@ -277,7 +277,6 @@ int:v3:chrome:beta:
   extends: .integration:v3
   variables:
     BROWSER: chromium beta
-    SKIP: "|Header|Sitekey|Subscriptions"
 
 .pages:
   stage: pages
