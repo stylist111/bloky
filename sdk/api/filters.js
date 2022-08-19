@@ -214,9 +214,11 @@ export default {
    * @param {Array<string>} [options.types=["document"]] The types of filters
    *   to consider. These can be any of "document", "elemhide", "genericblock",
    *   and "generichide".
-   * @return {Array<string>}
+   * @return {Promise<Array<string>>}
    */
-  getAllowingFilters(tabId, options = {}) {
+  async getAllowingFilters(tabId, options = {}) {
+    await initializer.start();
+
     let {frameId, types} = {frameId: 0, types: ["document"], ...options};
     let filters = new Set();
     let mask = types.reduce((a, b) => a | contentTypes[b.toUpperCase()], 0);
@@ -245,9 +247,11 @@ export default {
    *   "webrtc", "websocket", "xbl", "xmlhttprequest".
    * @param {number} tabId The id of resource's tab.
    * @param {number} frameId=0 The id of the resource's frame.
-   * @return {bool}
+   * @return {Promise<bool>}
    */
-  isResourceAllowlisted(url, type, tabId, frameId = 0) {
+  async isResourceAllowlisted(url, type, tabId, frameId = 0) {
+    await initializer.start();
+
     let mask = contentTypes[type.toUpperCase()];
     let frame = getFrameInfo(tabId, frameId) || {};
     let matcher = filterEngine.defaultMatcher;

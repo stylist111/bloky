@@ -627,12 +627,6 @@ describe("API", function() {
     });
 
     describe("Allowlisting", function() {
-      before(function() {
-        // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/318
-        if (isFuzzingServiceWorker())
-          this.skip();
-      });
-
       const ALLOWING_IMAGE_DOC_FILTER =
         `@@|${TEST_PAGES_URL}/image.html^$document`;
       const ALLOWING_IFRAME_DOC_FILTER =
@@ -794,19 +788,29 @@ describe("API", function() {
       });
 
       it("handles new tab allowlisting listener", async function() {
-        let isNewTabAllowlisted = browser.runtime.sendMessage(
-          {type: "ewe-test:isNewTabAllowlisted"});
+        let url = isFirefox() ? "about:blank" :
+            isEdge() ? "edge://newtab/" : "chrome://newtab/";
 
-        let pageUrl = isFirefox() ? "about:blank" :
-                      isEdge() ? "edge://newtab/" : "chrome://newtab/";
-        // On Chromium 77, "chrome://newtab/" status keeps stuck at "loading",
-        // that's why Page is not awaited on `loaded` here.
-        new Page(pageUrl, true);
+        // On Chromium 77, "chrome://newtab/" status keeps stuck at
+        // "loading", that's why Page is not awaited on `loaded` here,
+        // but we need to wait a bit longer than just `created` for
+        // the tab updated event to have happened.
+        let tabId = await new Page(url, true).created;
+        let timeout = isFuzzingServiceWorker() ? 3000 : 500;
+        await new Promise(r => setTimeout(r, timeout));
 
-        let {result, url, error} = await isNewTabAllowlisted;
-        expect(error).toBeUndefined();
-        expect(result).toEqual(false);
-        expect(url).toBe(pageUrl);
+        let newTabAllowlisted = await browser.runtime.sendMessage(
+          {type: "ewe-test:wasNewTabAllowlisted", tabId, url}
+        );
+
+        expect(newTabAllowlisted).toEqual(
+          expect.objectContaining({
+            tabId,
+            url,
+            isResourceAllowlisted: false
+          })
+        );
+        expect(newTabAllowlisted).not.toHaveProperty("error");
       });
     });
   });

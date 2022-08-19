@@ -80,6 +80,65 @@ async function runOperations(operations) {
   return stack.pop();
 }
 
+class TabAllowlistedResults {
+  constructor() {
+    if (!chrome.storage.session)
+      this._map = new Map();
+  }
+
+  key(tabId, url) {
+    return `ewe-test:tabAllowlistedResults:${tabId}:${url}`;
+  }
+
+  async set(tabId, url, result) {
+    let key = this.key(tabId, url);
+    return new Promise(resolve => {
+      if (chrome.storage.session) {
+        chrome.storage.session.set({
+          [key]: result
+        }, resolve);
+      }
+      else {
+        this._map.set(key, result);
+        resolve();
+      }
+    });
+  }
+
+  async get(tabId, url) {
+    let key = this.key(tabId, url);
+    return new Promise(resolve => {
+      if (chrome.storage.session) {
+        chrome.storage.session.get([key], results => {
+          resolve(results[key]);
+        });
+      }
+      else {
+        resolve(this._map.get(key));
+      }
+    });
+  }
+}
+
+let tabAllowlistedResults = new TabAllowlistedResults();
+
+async function checkTabAllowlisted(tabId, changeInfo, tab) {
+  let result = {
+    tabId,
+    url: tab.url
+  };
+  try {
+    result.isResourceAllowlisted = await EWE.filters.isResourceAllowlisted(
+      tab.url, "document", tabId
+    );
+  }
+  catch (e) {
+    result.error = toStringIfError(e);
+  }
+  await tabAllowlistedResults.set(tabId, tab.url, result);
+}
+chrome.tabs.onUpdated.addListener(checkTabAllowlisted);
+
 let messages = [];
 
 function handleTestMessage(request, sender, sendResponse) {
@@ -121,22 +180,9 @@ function handleTestMessage(request, sender, sendResponse) {
       });
       break;
 
-    case "ewe-test:isNewTabAllowlisted": {
-      function listener(updatedId, changeInfo, tab) {
-        chrome.tabs.onUpdated.removeListener(listener);
-        try {
-          let result = EWE.filters.isResourceAllowlisted(
-            tab.url, "document", updatedId);
-          sendResponse({
-            url: tab.url,
-            result
-          });
-        }
-        catch (e) {
-          sendResponse({error: toStringIfError(e)});
-        }
-      }
-      chrome.tabs.onUpdated.addListener(listener);
+    case "ewe-test:wasNewTabAllowlisted": {
+      let {tabId: requestedTabId, url} = request;
+      tabAllowlistedResults.get(requestedTabId, url).then(sendResponse);
       return true;
     }
 
