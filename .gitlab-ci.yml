@@ -140,6 +140,7 @@ func:v2:firefox:beta:
     - Start-Process msiexec
         -ArgumentList "/i MicrosoftEdgeEnterpriseX64.msi /norestart /qn" -Wait
     - choco upgrade -y nodejs --version 16.10.0
+    - npm install -g npm
     - npm install
     - Start-Process "node" -ArgumentList "test/start-server.js" -PassThru
   tags:
