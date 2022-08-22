@@ -37,7 +37,7 @@ async function handleMessage(message, sender) {
       if (!sender.tab)
         return;
 
-      let filterData = applyContentFilters(sender.tab.id, sender.frameId);
+      let filterData = await applyContentFilters(sender.tab.id, sender.frameId);
       return {
         ...filterData,
         subscribeLinks: subscribeLinksEnabled(sender.url)

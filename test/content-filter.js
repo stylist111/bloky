@@ -21,8 +21,9 @@ import {Page, waitForInvisibleElement, executeScript, setMinTimeout, wait,
         getVisibleElement, getVisibleElementInFrame, isMV3, isFirefox,
         firefoxVersion, TEST_PAGES_DOMAIN, TEST_PAGES_URL, SITEKEY}
   from "./utils.js";
-import {addFilter, setTestSnippets} from "./messaging.js";
-import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
+import {addFilter} from "./messaging.js";
+import {isFuzzingServiceWorker}
+  from "./mocha/mocha-runner.js";
 
 describe("Element Hiding", function() {
   let hideTimeout = isFuzzingServiceWorker() ? 2000 : 1000;
@@ -308,22 +309,40 @@ describe("Element Hiding", function() {
 });
 
 describe("Snippets", function() {
-  let snippet = "do";
+  // keep in-sync with `background.js`
+  const injectedSnippet = "injected-snippet";
+  const isolatedSnippet = "isolated-snippet";
 
-  before(async function() {
-    await setTestSnippets(snippet);
-  });
-  after(async function() {
-    await setTestSnippets(null);
-  });
-
-  it("applies a snippet", async function() {
-    if (isMV3())
-      this.skip();
-
-    await addFilter(`${TEST_PAGES_DOMAIN}#$#${snippet}`);
+  async function assertSnippet(snippet, func, world) {
+    await addFilter(`${TEST_PAGES_DOMAIN}#$#${snippet} true`);
 
     let tabId = await new Page("image.html").loaded;
-    expect(await executeScript(tabId, () => self.works)).toBe(true);
+
+    // If the service worker is suspended just before the new page is opened
+    // (like the service worker fuzzing tests do),
+    // then there might be a short delay between the page loading and the
+    // snippet actually being applied. This is partly us initializing the
+    // filter engine, and partly chrome doing chrome things.
+    await wait(
+      // Snippets arguments are stringified (JSON.string()),
+      // so we set true (as boolean), but check "true" (as string).
+      async() => await executeScript(tabId, func, null, world) == "true",
+      1000,
+      "Snippet was not applied"
+    );
+  }
+
+  it("applies an injected snippet", async function() {
+    await assertSnippet(
+      injectedSnippet,
+      () => document.body.textContent,
+      "MAIN");
+  });
+
+  it("applies an isolated snippet", async function() {
+    await assertSnippet(
+      isolatedSnippet,
+      () => self.isolated_snippet_works,
+      "ISOLATED");
   });
 });

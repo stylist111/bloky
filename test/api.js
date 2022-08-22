@@ -23,7 +23,7 @@ import {Page, Popup, setMinTimeout, wait, executeScript, isFirefox, isEdge,
         TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN,
         isMV2CustomSubsExtension, isMV3TestSubsExtension} from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, addFakeListener,
-        removeFakeListeners, setTestSnippets}
+        removeFakeListeners}
   from "./messaging.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
@@ -2028,39 +2028,34 @@ describe("API", function() {
       });
 
       it("logs snippets filter", async function() {
-        let snippet = "do";
+        // keep in-sync with `background.js`
+        const snippet = "injected-snippet";
 
-        await setTestSnippets(snippet);
-        try {
-          await checkLogging(
-            [`${TEST_PAGES_DOMAIN}#$#${snippet}`],
-            defaultEventOptions,
-            "image.html",
-            [{
-              filter: {
-                csp: null,
-                text: `${TEST_PAGES_DOMAIN}#$#${snippet}`,
-                enabled: true,
-                slow: false,
-                thirdParty: null,
-                type: "snippet",
-                selector: null
-              },
-              matchInfo: {
-                docDomain: TEST_PAGES_DOMAIN,
-                method: "snippet"
-              },
-              request: expect.objectContaining({
-                frameId: expect.any(Number),
-                tabId: expect.any(Number),
-                url: expect.any(String)
-              })
-            }]
-          );
-        }
-        finally {
-          await setTestSnippets(null);
-        }
+        await checkLogging(
+          [`${TEST_PAGES_DOMAIN}#$#${snippet} true`],
+          defaultEventOptions,
+          "image.html",
+          [{
+            filter: {
+              csp: null,
+              text: `${TEST_PAGES_DOMAIN}#$#${snippet} true`,
+              enabled: true,
+              slow: false,
+              thirdParty: null,
+              type: "snippet",
+              selector: null
+            },
+            matchInfo: {
+              docDomain: TEST_PAGES_DOMAIN,
+              method: "snippet"
+            },
+            request: expect.objectContaining({
+              frameId: expect.any(Number),
+              tabId: expect.any(Number),
+              url: expect.any(String)
+            })
+          }]
+        );
       });
 
       it("logs blocking popup filter", async function() {

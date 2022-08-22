@@ -19,7 +19,7 @@ import browser from "webextension-polyfill";
 
 import {createStyleSheet} from "adblockpluscore/lib/elemHide.js";
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
-import {compileScript} from "adblockpluscore/lib/snippets.js";
+import {parseScript} from "adblockpluscore/lib/snippets.js";
 
 import {filterEngine} from "./core.js";
 import {getFrameInfo} from "./frame-state.js";
@@ -28,16 +28,15 @@ import {debugOptions} from "./debugging.js";
 
 let isolatedLib;
 let injectedLib;
-let injectedItems;
 
-export function setSnippetLibrary({isolatedCode, injectedCode, injectedList}) {
+export function setSnippetLibrary({isolatedCode, injectedCode}) {
   isolatedLib = isolatedCode;
   injectedLib = injectedCode;
-  injectedItems = injectedList;
 }
 
-export function applyContentFilters(tabId, frameId) {
+export async function applyContentFilters(tabId, frameId) {
   let frame = getFrameInfo(tabId, frameId);
+  let details = {tabId, frameIds: [frameId]};
   let emulatedPatterns = [];
   let tracedSelectors;
 
@@ -50,19 +49,125 @@ export function applyContentFilters(tabId, frameId) {
       if (debugOptions.elemHide)
         environment.debugCSSProperties = debugOptions.snippetsCssProperties;
 
-      let request = {tabId, frameId, url: frame.url};
-      browser.tabs.executeScript(
-        tabId,
-        {
-          frameId,
-          code: compileScript(scripts, isolatedLib, injectedLib, injectedItems,
-                              environment),
-          matchAboutBlank: true,
-          runAt: "document_start"
+      let isolatedDependencies = [];
+      let isolated = [];
+      let main = [];
+
+      for (let script of scripts) {
+        for (let [snippet, ...args] of parseScript(script)) {
+          if (isolatedLib.has(snippet)) {
+            let dependency = isolatedLib.get(snippet);
+            if (dependency)
+              isolatedDependencies.push(dependency);
+            isolated.push([snippet, ...args]);
+          }
+          if (injectedLib.has(snippet))
+            main.push([snippet, ...args]);
         }
-      ).then(() => filters.forEach(filter => {
-        logItem(request, filter, {docDomain: frame.hostname,
-                                  method: "snippet"});
+      }
+
+      let execute = [];
+      if (browser.scripting && browser.scripting.executeScript) {
+        if (isolated.length > 0) {
+          if (isolatedDependencies.length) {
+            let isolatedDepsPromises = [];
+            for (let dependency of isolatedDependencies) {
+              isolatedDepsPromises.push(browser.scripting.executeScript({
+                target: details,
+                world: "ISOLATED",
+                func: dependency
+              }));
+            }
+            await Promise.all(isolatedDepsPromises);
+          }
+
+          execute.push(
+            browser.scripting.executeScript({
+              target: details,
+              world: "ISOLATED",
+              func: isolatedLib,
+              args: [environment, ...isolated]
+            })
+          );
+        }
+
+        if (main.length > 0) {
+          execute.push(
+            browser.scripting.executeScript({
+              target: details,
+              world: "MAIN",
+              func: injectedLib,
+              args: [environment, ...main]
+            })
+          );
+        }
+      }
+      else {
+        if (isolated.length > 0) {
+          const args = JSON.stringify([environment, ...isolated]);
+          const code = `(${isolatedLib}).apply(null,${args})`;
+          execute.push(
+            browser.tabs.executeScript(
+              tabId,
+              {
+                frameId,
+                code,
+                matchAboutBlank: true,
+                runAt: "document_start"
+              }));
+        }
+
+        if (main.length > 0) {
+          const args = JSON.stringify([environment, ...main]);
+          // stringify injectedLib to escape backticks
+          let code = JSON.stringify(injectedLib.toString());
+          code = `"(${code.slice(1, -1)}).apply(null,${JSON.stringify(args).slice(1, -1)});"`;
+          let executable =
+          `function injectSnippetsInMainContext(executable)
+          {
+            // injecting phases
+            let script = document.createElement("script");
+            script.type = "application/javascript";
+            script.async = false;
+
+            // Firefox 58 only bypasses site CSPs when assigning to 'src',
+            // while Chrome 67 and Microsoft Edge (tested on 44.17763.1.0)
+            // only bypass site CSPs when using 'textContent'.
+            if (typeof netscape != "undefined" && typeof browser != "undefined")
+            {
+              let url = URL.createObjectURL(new Blob([executable]));
+              script.src = url;
+              document.documentElement.appendChild(script);
+              URL.revokeObjectURL(url);
+            }
+            else
+            {
+              script.textContent = executable;
+              document.documentElement.appendChild(script);
+            }
+
+            document.documentElement.removeChild(script);
+          };
+          const executable = ${code};
+          injectSnippetsInMainContext(executable);`;
+          execute.push(
+            browser.tabs.executeScript(
+              tabId,
+              {
+                frameId,
+                code: executable,
+                matchAboutBlank: true,
+                runAt: "document_start"
+              }));
+        }
+      }
+
+      let request = {tabId, frameId, url: frame.url};
+      Promise.all(execute).then(() => filters.forEach(filter => {
+        logItem(request, filter, {
+          docDomain: frame.hostname,
+          method: "snippet"
+        });
       }), () => {});
     }
 
