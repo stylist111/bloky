@@ -15,11 +15,18 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import browser from "webextension-polyfill";
+
 import {IO as ioIdb} from "./io-idb.js";
 import {IO as ioBsl} from "./io-bsl.js";
 
 let io;
 let initializationPromise;
+
+export function readFileContent(path) {
+  const url = browser.runtime.getURL(path);
+  return fetch(url).then(content => content.text());
+}
 
 // This is a facade implementation that forwards to the current concrete
 // implementation of IO. By default IndexedDB is used but if it's unavailable

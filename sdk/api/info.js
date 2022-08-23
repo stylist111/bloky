@@ -21,6 +21,8 @@ let manifest = browser.runtime.getManifest();
 
 export let addonName = manifest.short_name || manifest.name;
 export let addonVersion = manifest.version;
+export let addonBundledSubscriptions;
+export let addonBundledSubscriptionsPath;
 export let application = "unknown";
 export let applicationVersion = "0";
 export let platform;
@@ -67,7 +69,15 @@ else {
   parseChromiumUserAgent();
 }
 
-export function setAddonInfo({name, version}) {
-  addonName = name;
-  addonVersion = version;
+export function setAddonInfo({name,
+                              version,
+                              bundledSubscriptions,
+                              bundledSubscriptionsPath}) {
+  if (name)
+    addonName = name;
+  if (version)
+    addonVersion = version;
+
+  addonBundledSubscriptions = bundledSubscriptions;
+  addonBundledSubscriptionsPath = bundledSubscriptionsPath;
 }

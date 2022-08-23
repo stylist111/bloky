@@ -15,6 +15,15 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {FilterEngine} from "adblockpluscore";
+import browser from "webextension-polyfill";
 
-export let filterEngine = new FilterEngine();
+import {Features, FilterEngine} from "adblockpluscore";
+
+export let filterEngine = new FilterEngine((function() {
+  let features;
+
+  if (browser.declarativeNetRequest)
+    features = Features.DNR;
+
+  return {features};
+})());

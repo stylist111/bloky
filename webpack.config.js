@@ -223,12 +223,8 @@ export default (env = {}) => {
             {from: path.join(dirname, "test", "index.html")},
             {from: path.join(dirname, "test", "index-options.js")},
             ...buildVariant.manifestVersion >= 3 &&
-               fs.existsSync(subscriptionsDir) &&
-               fs.readdirSync(subscriptionsDir)
-                .filter(file => !file.endsWith(fragmentFile))
-                .length > 0 ?
-                  [{from: subscriptionsDir}] :
-                  []
+              fs.existsSync(path.join(dirname, "scriptsOutput")) ?
+              [{from: path.join(dirname, "scriptsOutput")}] : []
           ]
         })
       ],

@@ -271,11 +271,13 @@ int:v2:firefox:beta:
 
 int:v3:chrome:latest:
   extends: .integration:v3
+  allow_failure: true
   variables:
     BROWSER: chromium latest
 
 int:v3:chrome:beta:
   extends: .integration:v3
+  allow_failure: true
   variables:
     BROWSER: chromium beta
 

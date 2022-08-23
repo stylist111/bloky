@@ -21,19 +21,19 @@ import {notifications as _notifications}
 
 import {default as initializer} from "./initializer.js";
 import * as messageResponder from "./message-responder.js";
-import {configureDefaultSubscriptions} from "./default-subscriptions.js";
-import {configureDefaultRulesets} from "./default-rulesets.js";
+import {configureDefaultSubscriptions, getFirstRun}
+  from "./default-subscriptions.js";
 import {setSnippetLibrary} from "./content-filter.js";
-
 import {setAddonInfo} from "./info.js";
+import {filterEngine} from "./core.js";
+import {setRecommendations} from "adblockpluscore/lib/recommendations.js";
+import {validate} from "./subscriptions.js";
 
 export {default as subscriptions} from "./subscriptions.js";
 export {default as filters} from "./filters.js";
 export {default as reporting} from "./reporting.js";
 export {default as debugging} from "./debugging.js";
 export {default as allowlisting} from "./allowlisting.js";
-
-import {filterEngine} from "./core.js";
 
 /**
  * The notifications API (optional usage).
@@ -79,6 +79,7 @@ export let snippets = {
 *                                        were found, false otherwise.
 *                                        Considers also whether custom filters
 *                                        exist.
+* @property {Array.<string>} [warnings] An array of warnings.
 */
 
 /**
@@ -86,25 +87,49 @@ export let snippets = {
  *
  * Calling this function is required for the other API calls to work, except for
  * API event listener calls, which could also be done before `start()`.
- * @param {Object} [addonInfo] An object containing addon information belonging
- *                             to sdk consumer, that can be accessed via
- *                             `debugging` module. (It is usually used as an
- *                             identifier in network requests, etc.)
+ * @param {Object} [addonInfo] An object containing addon
+ *   information belonging to sdk consumer, that can be accessed via
+ *   `debugging` module. (It is usually used as an identifier in
+ *   network requests, etc.)
  * @param {string} [addonInfo.name] Name of the addon/extension.
  * @param {string} [addonInfo.version] Version of the addon/extension.
+ * @param {Array<Recommendation>} [addonInfo.bundledSubscriptions]
+ *   A list of subscriptions provided by the integrator.
+ * @param {string} [addonInfo.bundledSubscriptionsPath]
+ *   A path to subscription files provided by the integrator.
+ * @return {Promise<FirstRunInfo>} Promise that is resolved after
+ *                                 starting up is completed. Promise
+ *                                 is rejected if `stop()` is called
+ *                                 before starting is completed.
  * @return {Promise<FirstRunInfo>} Promise that is resolved after starting up
  *                                 is completed.
  */
 export async function start(addonInfo) {
-  if (addonInfo)
+  messageResponder.start();
+
+  let warnings = [];
+  if (browser.declarativeNetRequest) {
+    if (!addonInfo)
+      throw new Error("No addonInfo provided to EWE.start");
+
+    warnings = await validate(addonInfo.bundledSubscriptions,
+                              addonInfo.bundledSubscriptionsPath);
+  }
+
+  if (addonInfo) {
     setAddonInfo(addonInfo);
 
-  messageResponder.start();
+    if (addonInfo.bundledSubscriptions &&
+        addonInfo.bundledSubscriptions.length > 0)
+      setRecommendations(addonInfo.bundledSubscriptions);
+  }
+
   await initializer.start();
   filterEngine.filterStorage.synchronizer.start();
 
-  let firstRun = browser.declarativeNetRequest ?
-    await configureDefaultRulesets() :
+  let firstRun = getFirstRun();
+  if (!firstRun.foundSubscriptions && !browser.declarativeNetRequest)
     configureDefaultSubscriptions();
-  return firstRun;
+
+  return {...firstRun, warnings};
 }

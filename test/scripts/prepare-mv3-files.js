@@ -29,11 +29,11 @@ import {cleanup} from "./clean-mv3-files.js";
 let rulesetFile = path.join(process.cwd(), "scriptsOutput", "rulesets", "rulesets.json");
 const CHROMIUM_RULESETS_LIMIT = 50;
 
-async function enableTestSubscription() {
-  let content = JSON.parse(await fs.promises.readFile(rulesetFile));
-
-  content.rule_resources[0].enabled = true;
-  await fs.promises.writeFile(rulesetFile, JSON.stringify(content));
+async function addExtraTestSubscription() {
+  let subscriptionFileName = "00000000-0000-0000-0000-000000000002";
+  console.log(`Creating the test subscription file: ${subscriptionFileName} `);
+  await fs.promises.writeFile(path.join(process.cwd(), "scriptsOutput", "subscriptions",
+                                        subscriptionFileName), "");
 }
 
 async function removeOverflowRulesets() {
@@ -81,10 +81,10 @@ async function run() {
 
   await promisify(exec)("npm run subs-fetch");
   await promisify(exec)("npm run subs-convert");
-  await promisify(exec)("npm run subs-generate");
+  await promisify(exec)("npm run subs-generate -- -p rulesets/");
 
   if (usingTestSubscriptions)
-    await enableTestSubscription();
+    await addExtraTestSubscription();
   else
     // This is needed because we currently get more than
     // the allowed number of recommended subscriptions.

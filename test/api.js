@@ -19,9 +19,12 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 
 import {Page, Popup, setMinTimeout, wait, executeScript, isFirefox, isEdge,
-        isChromiumBased, isIncognito, getVisibleElement, isMV3, TEST_PAGES_URL,
+        isChromiumBased, isIncognito,
+        getVisibleElement, isMV3, TEST_PAGES_URL,
         TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN,
-        isMV2CustomSubsExtension, isMV3TestSubsExtension} from "./utils.js";
+        isMV2CustomSubsExtension, isMV3TestSubsExtension,
+        TEST_MV3_SUBSCRIPTION}
+  from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, addFakeListener,
         removeFakeListeners}
   from "./messaging.js";
@@ -201,7 +204,7 @@ describe("API", function() {
     });
 
     it("gets adblockpluscore recommendations", async function() {
-      if (isMV2CustomSubsExtension())
+      if (isMV3() || isMV2CustomSubsExtension())
         this.skip();
 
       let result = await EWE.subscriptions.getRecommendations();
@@ -903,7 +906,8 @@ describe("API", function() {
         {op: "await"}
       ]);
       expect(result).toEqual({foundStorage: false,
-                              foundSubscriptions: false});
+                              foundSubscriptions: false,
+                              warnings: []});
 
       result = await runInBackgroundPage([
         {op: "getGlobal", arg: "EWE"},
@@ -911,7 +915,9 @@ describe("API", function() {
         {op: "await"}
       ]);
 
-      expect(result).toEqual({foundStorage: false, foundSubscriptions: true});
+      expect(result).toEqual({foundStorage: false,
+                              foundSubscriptions: true,
+                              warnings: []});
     });
 
     // This test is problematic in edge and oldest chromium.
@@ -923,6 +929,9 @@ describe("API", function() {
     });
 
     it("starts with default addon info", async function() {
+      if (isMV3())
+        this.skip(); // MV3 has to have addonInfo.
+
       let manifest = browser.runtime.getManifest();
 
       await runInBackgroundPage([
@@ -945,27 +954,112 @@ describe("API", function() {
       );
     });
 
-    it(
-      "starts with the addon info provided by the initial start call",
-      async function() {
-        await runInBackgroundPage([
-          {op: "getGlobal", arg: "EWE"},
-          {op: "pushArg", arg: {name: ADDON_NAME, version: ADDON_VERSION}},
-          {op: "callMethod", arg: "start"},
-          {op: "await"}
-        ]);
+    it("starts with the addon info provided by the initial start call",
+       async function() {
+         if (isMV3())
+           this.skip(); // MV3 has to have addonInfo.
 
-        let addonInfo = await runInBackgroundPage([
-          {op: "getGlobal", arg: "EWE"},
-          {op: "getProp", arg: "debugging"},
-          {op: "getProp", arg: "addonInfo"}
-        ]);
+         await runInBackgroundPage([
+           {op: "getGlobal", arg: "EWE"},
+           {op: "pushArg", arg: {name: ADDON_NAME, version: ADDON_VERSION}},
+           {op: "callMethod", arg: "start"},
+           {op: "await"}
+         ]);
 
-        expect(addonInfo).toEqual(
-          expect.objectContaining({name: ADDON_NAME, version: ADDON_VERSION})
-        );
-      }
+         let addonInfo = await runInBackgroundPage([
+           {op: "getGlobal", arg: "EWE"},
+           {op: "getProp", arg: "debugging"},
+           {op: "getProp", arg: "addonInfo"}
+         ]);
+
+         expect(addonInfo).toEqual(
+           expect.objectContaining({name: ADDON_NAME, version: ADDON_VERSION})
+         );
+       }
     );
+
+    it("starts with the subscription info provided by the initial start call",
+       async function() {
+         if (!isMV3TestSubsExtension())
+           this.skip();
+
+         let receivedStartupInfo = await runInBackgroundPage([
+           {op: "getGlobal", arg: "EWE"},
+           {op: "getProp", arg: "debugging"},
+           {op: "getProp", arg: "addonInfo"}
+         ]);
+
+         // The list of bundled subscriptions is passed as an
+         // argument to EWE.start in the background.js file.
+         expect(receivedStartupInfo).toEqual(
+           expect.objectContaining({
+             bundledSubscriptions: [TEST_MV3_SUBSCRIPTION],
+             bundledSubscriptionsPath: "subscriptions"
+           })
+         );
+       }
+    );
+
+    it("starts with the provided subscriptions enabled and non downloadable", async function() {
+      if (!isMV3TestSubsExtension())
+        this.skip();
+
+      await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.url);
+
+      // The list of bundled subscriptions is passed as an
+      // argument to EWE.start in the background.js file.
+      let subs = await EWE.subscriptions.getDownloadable();
+      expect(subs).toEqual([
+        expect.objectContaining({
+          enabled: true,
+          downloadable: false,
+          id: TEST_MV3_SUBSCRIPTION.id
+        })
+      ]);
+    });
+
+    describe("Validation", function() {
+      before(function() {
+        if (!isMV3())
+          this.skip();
+      });
+
+      it("validates the provided subscriptions", async function() {
+        await expect(EWE.subscriptions.validate(null, "subscriptions"))
+          .rejects.toThrow("No `bundledSubscriptions` provided");
+        await expect(EWE.subscriptions.validate([], null))
+          .rejects.toThrow("No `bundledSubscriptionsPath` provided");
+      });
+
+      it("validates the provided subscription files", async function() {
+        let subscription = {
+          id: "00000000-0000-0000-0000-000000000001",
+          url: "https://domain.com/subscription.txt",
+          mv2_url: "https://domain.com/subscription.txt"
+        };
+        let warnings = await EWE.subscriptions.validate([subscription], "subscriptions");
+        expect(warnings).toEqual(expect.arrayContaining(
+          [`No subscription content file for ID=${subscription.id}`]));
+      });
+
+      it("validates the provided subscriptions with the manifest rulesets", async function() {
+        // This subscription file exists, but we don't have a ruleset for it.
+        let subscription = {
+          id: "00000000-0000-0000-0000-000000000002",
+          url: "https://domain.com/subscription.txt",
+          mv2_url: "https://domain.com/subscription.txt"
+        };
+        let warnings = await EWE.subscriptions.validate([subscription], "subscriptions");
+        expect(warnings).toEqual(expect.arrayContaining(
+          [`No ruleset with ID=${subscription.id} declared in the manifest`]));
+      });
+
+      it("validates adding a subscription without being provided to EWE.start", async function() {
+        let url = TEST_MV3_SUBSCRIPTION.url + "_missing";
+        await expect(EWE.subscriptions.add(url))
+          .rejects.toThrow(`Failed to find the subscription with URL=${url}`);
+      });
+    });
   });
 
   describe("Reporting", function() {

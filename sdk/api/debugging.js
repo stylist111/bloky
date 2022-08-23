@@ -17,7 +17,7 @@
 
 import {FilterStorage} from "adblockpluscore/lib/filterStorage.js";
 import {IO} from "./io.js";
-import {addonName, addonVersion} from "./info.js";
+import {addonBundledSubscriptions, addonBundledSubscriptionsPath, addonName, addonVersion} from "./info.js";
 
 export let debugOptions = {
   elemHide: false,
@@ -36,7 +36,12 @@ export default {
    * @property {string} version
    */
   get addonInfo() {
-    return {name: addonName, version: addonVersion};
+    return {
+      name: addonName,
+      version: addonVersion,
+      bundledSubscriptions: addonBundledSubscriptions,
+      bundledSubscriptionsPath: addonBundledSubscriptionsPath
+    };
   },
 
   /**

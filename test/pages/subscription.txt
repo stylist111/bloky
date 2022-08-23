@@ -1,3 +1,4 @@
 [Adblock Plus]
 
 /image-from-subscription.png^$image
+###elem-hide

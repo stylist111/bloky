@@ -17,12 +17,14 @@
 
 import browser from "webextension-polyfill";
 
-import {Subscription, DownloadableSubscription}
+import {Subscription, DownloadableSubscription, RegularSubscription}
   from "adblockpluscore/lib/subscriptionClasses.js";
 import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {recommendations} from "adblockpluscore/lib/recommendations.js";
 import {Filter} from "adblockpluscore/lib/filterClasses.js";
 
+import {addonBundledSubscriptions, addonBundledSubscriptionsPath}
+  from "./info.js";
 import {default as initializer} from "./initializer.js";
 import {filterEngine} from "./core.js";
 import {EventDispatcher} from "./types.js";
@@ -30,22 +32,26 @@ import {convertFilter} from "./filters.js";
 import {removeDynamicFilters} from "./dnr-filters.js";
 import {ACCEPTABLE_ADS_URL, ACCEPTABLE_ADS_PRIVACY_URL}
   from "./default-subscriptions.js";
+import {readFileContent} from "./io.js";
 
 function convertSubscription(subscription) {
-  let {disabled, downloadStatus, homepage,
+  let {id, disabled, downloadStatus, homepage,
        version, lastDownload, lastSuccess,
        softExpiration, expires, title, url} = subscription;
   let {synchronizer} = filterEngine.filterStorage;
 
-  return {enabled: !disabled,
-          downloading: synchronizer.isExecuting(url),
-          downloadStatus, homepage, version, lastDownload, lastSuccess,
-          softExpiration, expires, title, url,
-          downloadable: subscription instanceof DownloadableSubscription};
+  return {
+    id, enabled: !disabled,
+    downloading: synchronizer.isExecuting(url),
+    downloadStatus, homepage, version, lastDownload, lastSuccess,
+    softExpiration, expires, title, url,
+    downloadable: subscription instanceof DownloadableSubscription};
 }
 
-function convertRecommendation({languages, title, type, url}) {
-  return {languages, title, type, url};
+function convertRecommendation({id, languages, title, requires, type, url,
+                                // eslint-disable-next-line camelcase
+                                mv2_url}) {
+  return {id, languages, title, requires, type, url, mv2_url};
 }
 
 function getSubscription(url) {
@@ -65,6 +71,50 @@ function makeListener(dispatch) {
   };
 }
 
+export async function getFilterText(subscription, path) {
+  let subscriptionPath = `${path}/${subscription.id}`;
+  return (await readFileContent(subscriptionPath)).split("\n");
+}
+
+export async function subscriptionFileExists(subscription, path) {
+  let subscriptionPath = `${path}/${subscription.id}`;
+  const url = browser.runtime.getURL(subscriptionPath);
+  try {
+    const fetchResult = await fetch(url, {method: "HEAD"});
+    return fetchResult.ok;
+  }
+  catch (error) {
+    return false;
+  }
+}
+
+export async function validate(bundledSubscriptions,
+                               bundledSubscriptionsPath) {
+  if (!bundledSubscriptions)
+    throw new Error("No `bundledSubscriptions` provided");
+
+  if (!bundledSubscriptionsPath)
+    throw new Error("No `bundledSubscriptionsPath` provided");
+
+  let warnings = [];
+  let manifest = browser.runtime.getManifest();
+
+  for (let subscription of bundledSubscriptions) {
+    let fileExists = await subscriptionFileExists(subscription,
+                                                  bundledSubscriptionsPath);
+    if (!fileExists)
+      warnings.push(`No subscription content file for ID=${subscription.id}`);
+
+    if (!manifest.declarative_net_request ||
+      !manifest.declarative_net_request.rule_resources ||
+      !(manifest.declarative_net_request.rule_resources.find(
+        ruleset => ruleset.id == subscription.id)))
+      warnings.push(`No ruleset with ID=${subscription.id} declared in the manifest`);
+  }
+
+  return warnings;
+}
+
 export default {
   /**
    * The URL of the Acceptable Ads subscription.
@@ -76,6 +126,17 @@ export default {
    * @type {string}
    */
   ACCEPTABLE_ADS_PRIVACY_URL,
+
+  /**
+   * Returns a list of warnings in the context of validating that a user has
+   * provided the appropriate files to the extension.
+   * @param {Array<Recommendation>} [addonInfo.bundledSubscriptions]
+   *   A list of subscriptions provided by the integrator.
+   * @param {string} [addonInfo.bundledSubscriptionsPath]
+   *   A path to subscription files provided by the integrator.
+   * @return {Array<String>}
+   */
+  validate,
 
   /**
    * A resource that provides a list of filters that decide what to block.
@@ -116,21 +177,46 @@ export default {
    *                                    If not provided, falls back to the URL.
    * @param {string} [properties.homepage] Website of the project that
    *                                       manages this filter list.
+   * @return {Promise}
    * @throws {Error} Invalid subscription URL provided.
    */
-  add(url, properties = {}) {
+  async add(url, properties = {}) {
+    await initializer.start();
+
     if (!Subscription.isValidURL(url))
       throw new Error(`Invalid subscription URL provided: ${url}`);
 
     let {filterStorage} = filterEngine;
 
     let subscription = Subscription.fromURL(url);
-    filterStorage.addSubscription(subscription);
+
+    if (browser.declarativeNetRequest) {
+      let subscriptionInfo = addonBundledSubscriptions.find(x => x.url == url);
+
+      if (!subscriptionInfo)
+        throw new Error(`Failed to find the subscription with URL=${url}`);
+
+      try {
+        if (!subscription.downloadable) {
+          subscription.setFilterText(await getFilterText(
+            subscriptionInfo, addonBundledSubscriptionsPath));
+        }
+
+        await browser.declarativeNetRequest.updateEnabledRulesets({
+          enableRulesetIds: [subscription.id]
+        });
+      }
+      catch (e) {
+        // it was detected and reported in the start() warnings
+      }
+    }
 
     if ("title" in properties)
       subscription.title = properties.title;
     if ("homepage" in properties)
       subscription.homepage = properties.homepage;
+
+    filterStorage.addSubscription(subscription);
 
     if (!subscription.lastDownload)
       filterStorage.synchronizer.execute(subscription);
@@ -145,7 +231,7 @@ export default {
     let result = [];
 
     for (let subscription of filterEngine.filterStorage.subscriptions()) {
-      if (subscription instanceof DownloadableSubscription)
+      if (subscription instanceof RegularSubscription)
         result.push(convertSubscription(subscription));
     }
 
@@ -260,13 +346,20 @@ export default {
   /**
    * Defines the recommended filter subscriptions per language.
    * @typedef {Object} Recommendation
+   * @property {string} id The identifier for this subscription.
    * @property {Array<string>} languages The languages that this recommendation
    *                                      would match to.
    * @property {string} title The display name of the recommended subscription.
+   * @property {Array<string>} requires A list of subscriptions that this
+   *                                    one depends on.
    * @property {string} type The kind of content targeted by this
    *                         recommended subscription.
+   * @property {Array<string>} languages A list of language code that this
+   *                                     subscription applies to.
    * @property {string} url Where the recommended subscription can be found
    *                        in plain text.
+   * @property {string} mv2_url Where the recommended subscription can be found
+   *                            for MV2 in plain text.
    */
 
   /**

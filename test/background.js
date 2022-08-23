@@ -229,7 +229,42 @@ mockGetUILanguage(chrome);
 if (typeof browser != "undefined")
   mockGetUILanguage(browser);
 
-EWE.start().then(async() => {
+function isMV3() {
+  return typeof chrome.declarativeNetRequest != "undefined";
+}
+
+function isMV3TestSubsExtension() {
+  let manifest = chrome.runtime.getManifest();
+
+  if (!manifest.declarative_net_request)
+    return false;
+
+  let firstRulesetId = manifest.declarative_net_request.rule_resources[0].id;
+  return firstRulesetId == "00000000-0000-0000-0000-000000000000";
+}
+
+let startupInfo = {};
+
+if (isMV3()) {
+  if (isMV3TestSubsExtension()) {
+    startupInfo = {
+      bundledSubscriptions: [{
+        id: "00000000-0000-0000-0000-000000000000",
+        url: "http://localhost:3000/subscription.txt",
+        mv2_url: "http://localhost:3000/subscription.txt"
+      }],
+      bundledSubscriptionsPath: "subscriptions"
+    };
+  }
+  else {
+    startupInfo = {
+      bundledSubscriptions: [],
+      bundledSubscriptionsPath: "subscriptions"
+    };
+  }
+}
+
+EWE.start(startupInfo).then(async() => {
   if (typeof netscape != "undefined") {
     let version = /\brv:([^;)]+)/.exec(navigator.userAgent)[1];
     if (parseInt(version, 10) < 86)

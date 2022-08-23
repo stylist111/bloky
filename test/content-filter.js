@@ -19,9 +19,9 @@ import expect from "expect";
 
 import {Page, waitForInvisibleElement, executeScript, setMinTimeout, wait,
         getVisibleElement, getVisibleElementInFrame, isMV3, isFirefox,
-        firefoxVersion, TEST_PAGES_DOMAIN, TEST_PAGES_URL, SITEKEY}
-  from "./utils.js";
-import {addFilter} from "./messaging.js";
+        firefoxVersion, TEST_PAGES_DOMAIN, TEST_PAGES_URL, SITEKEY,
+        isMV3TestSubsExtension, TEST_MV3_SUBSCRIPTION} from "./utils.js";
+import {addFilter, EWE} from "./messaging.js";
 import {isFuzzingServiceWorker}
   from "./mocha/mocha-runner.js";
 
@@ -65,6 +65,16 @@ describe("Element Hiding", function() {
 
   it("hides an element", async function() {
     await addFilter("###elem-hide");
+    await expectElemHideHidden();
+  });
+
+  it("hides an element using bundled MV3 subscriptions", async function() {
+    if (!isMV3TestSubsExtension())
+      this.skip();
+
+    // The list of bundled subscriptions is passed as an
+    // argument to EWE.start in the background.js file.
+    await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.url);
     await expectElemHideHidden();
   });
 

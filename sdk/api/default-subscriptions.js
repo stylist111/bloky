@@ -77,15 +77,18 @@ function shouldAddDefaultSubscriptions() {
   return true;
 }
 
+export function getFirstRun() {
+  let {filterStorage} = filterEngine;
+  let foundSubscriptions = filterStorage.getSubscriptionCount() != 0;
+  return {foundSubscriptions, foundStorage: !filterStorage.firstRun};
+}
+
 export function configureDefaultSubscriptions() {
   let subscriptions = [];
   let {filterStorage} = filterEngine;
-  let foundSubscriptions = filterStorage.getSubscriptionCount() != 0;
 
-  if (!foundSubscriptions) {
-    subscriptions.push({url: ACCEPTABLE_ADS_URL,
-                        title: "Allow non-intrusive advertising"});
-  }
+  subscriptions.push({url: ACCEPTABLE_ADS_URL,
+                      title: "Allow non-intrusive advertising"});
 
   if (shouldAddDefaultSubscriptions())
     subscriptions.push(...getDefaultSubscriptions());
@@ -100,6 +103,4 @@ export function configureDefaultSubscriptions() {
     if (!subscription.lastDownload)
       filterStorage.synchronizer.execute(subscription);
   }
-
-  return {foundSubscriptions, foundStorage: !filterStorage.firstRun};
 }

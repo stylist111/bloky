@@ -31,6 +31,11 @@ export const SITEKEY = "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANGtTstne7" +
                        "GUvKXYE4GLFwqty3v5MuWWbvItUWBTYoVVsCAwEAAQ";
 export const RECENT_FIREFOX_VERSION = 86; // Latest Firefox on February 2021
 export const FETCHED_TEST_SUBSCRIPTION_ID = "00000000-0000-0000-0000-000000000000";
+export const TEST_MV3_SUBSCRIPTION = {
+  id: FETCHED_TEST_SUBSCRIPTION_ID,
+  url: TEST_PAGES_URL + "/subscription.txt",
+  mv2_url: TEST_PAGES_URL + "/subscription.txt"
+};
 
 function handleConnection(details, tabId, removeListeners, reject) {
   if ((details.tabId == tabId || !tabId) &&
