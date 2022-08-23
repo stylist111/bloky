@@ -93,5 +93,12 @@ async function main() {
 }
 
 let proc = process.argv[1];
-if (import.meta.url === `file://${proc}`)
-  main();
+let stats = fs.statSync(proc);
+if (stats.isSymbolicLink)
+  proc = fs.realpathSync(proc);
+if (import.meta.url === `file://${proc}`) {
+  main().catch(err => {
+    console.error(err);
+    process.exit(1);
+  });
+}
