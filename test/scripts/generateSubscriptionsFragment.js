@@ -20,10 +20,48 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 
-import {generateFragment} from "../../scripts/generateSubscriptionsFragment.js";
+import {generateFragment, isUUID}
+  from "../../scripts/generateSubscriptionsFragment.js";
 
 const VALID_RULESET_FILE = "03648752-31EE-4FD0-85C1-20B07C5551C3";
 const VALID_RULESET_FILE2 = "07549D8B-F06F-4D9D-A567-929AA59E9D1D";
+
+describe("isUUID()", () => {
+  it("is falsy in edge cases", () => {
+    expect(isUUID()).toBeFalsy();
+    expect(isUUID(null)).toBeFalsy();
+    expect(isUUID("")).toBeFalsy();
+    expect(isUUID(".")).toBeFalsy();
+  });
+
+  it("is falsy for non UUID strings", () => {
+    expect(isUUID("something")).toBeFalsy();
+  });
+
+  it("is truthy for UUID strings", () => {
+    expect(isUUID("07549D8B-F06F-4D9D-A567-929AA59E9D1D")).toBeTruthy();
+    expect(isUUID("5BD2BB73-459D-4A74-AF9D-A10157268350")).toBeTruthy();
+    expect(isUUID("00000000-0000-0000-0000-000000000000")).toBeTruthy();
+  });
+
+  it("supports all UUID versions", () => {
+    expect(isUUID("2ef7cc5c-22c2-11ed-861d-0242ac120002")).toBeTruthy(); // v1
+    expect(isUUID("2ef7cc5c-22c2-21ed-861d-0242ac120002")).toBeTruthy(); // v2
+    expect(isUUID("2ef7cc5c-22c2-31ed-861d-0242ac120002")).toBeTruthy(); // v3
+    expect(isUUID("1ab0186b-3bcb-43e8-a20f-07840c422c29")).toBeTruthy(); // v4
+    expect(isUUID("2e1f9cee-f240-5dd7-b9d4-9b3cde9e425c")).toBeTruthy(); // v5
+  });
+
+  it("is not case-sensitive", () => {
+    expect(isUUID("07549d8b-f06f-4d9d-a567-929aa59e9d1d")).toBeTruthy();
+  });
+
+  it("is whitespace-sensitive", () => {
+    let strWithWhitespaces = "07549d8b - f06f - 4d9d - a567 - 929aa59e9d1d";
+    expect(isUUID(strWithWhitespaces)).toBeFalsy();
+    expect(isUUID(strWithWhitespaces.replace(/\s+/g, ""))).toBeTruthy();
+  });
+});
 
 describe("generateSubscriptionsFragment script", () => {
   let tmpDir;

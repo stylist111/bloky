@@ -22,13 +22,18 @@ import {outputDir as convertOutputDir}
   from "./convertSubscriptions.js";
 import yargs from "yargs";
 import {hideBin} from "yargs/helpers";
-import validator from "validator";
 
 const outputDir = path.join("scriptsOutput", "rulesets");
 const outputFile = path.join(outputDir, "rulesets.json");
 
+const uuidRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/i;
+
+export function isUUID(str) {
+  return uuidRegex.test(str);
+}
+
 function isValidRulesetFile(file) {
-  return validator.isUUID(path.parse(file).base);
+  return isUUID(path.parse(file).base);
 }
 
 function generateFragment(dir, pathPrefix, space = 2) {

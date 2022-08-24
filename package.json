@@ -28,7 +28,8 @@
   ],
   "dependencies": {
     "adblockpluscore": "git+https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore.git#1f288dbe38d06df48f316246d4902c3690e6ae38",
-    "webextension-polyfill": "^0.8.0"
+    "webextension-polyfill": "^0.8.0",
+    "yargs": "^17.5.1"
   },
   "devDependencies": {
     "@eyeo/get-browser-binary": "^0.3.0",
@@ -54,9 +55,7 @@
     "source-map-loader": "^3.0.0",
     "webpack": "^5.37.1",
     "webpack-cli": "^4.7.0",
-    "ws": "^7.4.6",
-    "yargs": "^17.0.1",
-    "validator": "^13.7.0"
+    "ws": "^7.4.6"
   },
   "scripts": {
     "lint": "eslint --ext js,html .",
