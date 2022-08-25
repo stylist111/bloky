@@ -284,10 +284,10 @@ async function suspendServiceWorker(driver, handle) {
     if (await stopButton.isDisplayed())
       await stopButton.click();
   }
-  // This is a very long timeout, to ensure that the service worker
-  // has time to finish shutting down even on slow single core
-  // service workers before we start trying to wake it up again.
-  await new Promise(r => setTimeout(r, 1000));
+  // Short delay to ensure that there is time for the browser to get
+  // the click event and start suspending the service worker before we
+  // kill the page.
+  await new Promise(r => setTimeout(r, 10));
   await driver.close();
   await driver.switchTo().window(handle);
 }

@@ -6,6 +6,7 @@ stages:
   - build
   - pages
   - functional
+  - fuzz
   - integration
 
 variables:
@@ -71,11 +72,10 @@ audit:
 .functional:
   stage: functional
   extends: .docker-image
-  needs:
-    - job: build
-      artifacts: true
-  script:
+  needs: []
+  before_script:
     - docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg MV3_SUBSCRIPTIONS="$MV3_SUBSCRIPTIONS" .
+  script:
     - docker run --shm-size=512m -e TEST_PARAMS="$TEST_PARAMS" functional
 
 func:v2:chromium:stable:
@@ -129,7 +129,10 @@ func:v2:firefox:beta:
     TEST_PARAMS: v2 firefox beta
 
 .edge:windows:
-  extends: .functional
+  stage: functional
+  needs:
+    - job: build
+      artifacts: true
   variables:
     CI_PROJECT_ID_MAINSTREAM: 22365241
   before_script:
@@ -173,30 +176,6 @@ func:v3-default-subs:edge:linux:
     TEST_PARAMS: v3 edge --testKinds functional reload
     MV3_SUBSCRIPTIONS: default
 
-func:v3-default-subs:chromium:stable:fuzz:
-  extends: .functional
-  variables:
-    TEST_PARAMS: v3 chromium --testKinds fuzz
-    MV3_SUBSCRIPTIONS: default
-
-func:v3-test-subs:chromium:stable:fuzz:
-  extends: .functional
-  variables:
-    TEST_PARAMS: v3 chromium --testKinds fuzz
-    MV3_SUBSCRIPTIONS: test
-
-func:v3-default-subs:chromium:stable:incognito:fuzz:
-  extends: .functional
-  variables:
-    TEST_PARAMS: v3 chromium --testKinds fuzz --incognito
-    MV3_SUBSCRIPTIONS: default
-
-func:v3-default-subs:edge:linux:fuzz:
-  extends: .functional
-  variables:
-    TEST_PARAMS: v3 edge --testKinds fuzz
-    MV3_SUBSCRIPTIONS: default
-
 func:v2:edge:windows:
   extends: .edge:windows
   script:
@@ -206,6 +185,43 @@ func:v2:edge:windows:incognito:
   extends: .edge:windows
   script:
     - npm test -- v2 edge --incognito --timeout=10000
+
+.fuzz:
+  extends: .functional
+  stage: fuzz
+  script:
+    - docker run --shm-size=512m -e TEST_PARAMS="v3 $BROWSER --testKinds fuzz --grep ^$FUNCTIONAL_AREA" functional
+  parallel:
+    matrix:
+      - FUNCTIONAL_AREA:
+        - "(Blocking|Pop-up\\sblocking)"
+        - "(Element\\sHiding|Snippets)"
+        - "API"
+        - "(?!Blocking|Pop-up\\sblocking|Element\\sHiding|Snippets|API)"
+
+fuzz:v3-default-subs:chromium:stable:
+  extends: .fuzz
+  variables:
+    MV3_SUBSCRIPTIONS: default
+    BROWSER: chromium
+    
+fuzz:v3-test-subs:chromium:stable:fuzz:
+  extends: .fuzz
+  variables:
+    MV3_SUBSCRIPTIONS: test
+    BROWSER: chromium
+
+fuzz:v3-default-subs:chromium:stable:incognito:
+  extends: .fuzz
+  variables:
+    MV3_SUBSCRIPTIONS: default
+    BROWSER: chromium --incognito
+
+fuzz:v3-default-subs:edge:linux:
+  extends: .fuzz
+  variables:
+    MV3_SUBSCRIPTIONS: default
+    BROWSER: edge
 
 .integration:
   stage: integration

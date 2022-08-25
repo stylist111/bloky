@@ -861,8 +861,6 @@ describe("API", function() {
         if (isMV2CustomSubsExtension() || isMV3TestSubsExtension())
           this.skip();
 
-        setMinTimeout(this, 3000);
-
         await browser.runtime.sendMessage(
           {type: "ewe-test:setLanguageAndStart", args: [language]});
 
