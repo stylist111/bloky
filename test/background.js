@@ -296,6 +296,8 @@ let isolatedCode = (environment, ..._) => {
     snippets[name](...args);
 };
 isolatedCode.has = snippet => ["isolated-snippet"].includes(snippet);
-isolatedCode.get = () => null;
+isolatedCode.get = () => function dependency() {
+  self.isolated_snippet_dependency = true;
+};
 
 EWE.snippets.setLibrary({isolatedCode, injectedCode});

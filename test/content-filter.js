@@ -352,7 +352,7 @@ describe("Snippets", function() {
   it("applies an isolated snippet", async function() {
     await assertSnippet(
       isolatedSnippet,
-      () => self.isolated_snippet_works,
+      () => self.isolated_snippet_dependency && self.isolated_snippet_works,
       "ISOLATED");
   });
 });

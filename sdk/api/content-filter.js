@@ -105,7 +105,13 @@ export async function applyContentFilters(tabId, frameId) {
       else {
         if (isolated.length > 0) {
           const args = JSON.stringify([environment, ...isolated]);
-          const code = `(${isolatedLib}).apply(null,${args})`;
+          let code = "";
+          // prepend all dependencies before the snippets
+          if (isolatedDependencies.length) {
+            for (const cb of isolatedDependencies)
+              code += `(${cb})();`;
+          }
+          code += `(${isolatedLib}).apply(null,${args})`;
           execute.push(
             browser.tabs.executeScript(
               tabId,
