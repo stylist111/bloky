@@ -106,8 +106,8 @@ describe("API", function() {
       })]);
     });
 
-    it("does not add an invalid subscription", function() {
-      expect(EWE.subscriptions.add(INVALID_SUBSCRIPTION_URL))
+    it("does not add an invalid subscription", async function() {
+      await expect(EWE.subscriptions.add(INVALID_SUBSCRIPTION_URL))
         .rejects.toThrow("Error: Invalid subscription URL provided: invalidUrl");
     });
 
@@ -1467,7 +1467,7 @@ describe("API", function() {
         // to deal with the redirected request, because it's a data
         // url. This test is meant to catch if this assumption is
         // broken in future and an arbitrary redirect is allowed.
-        expect(addFilter(
+        await expect(addFilter(
           `*.js$rewrite=${TEST_PAGES_URL}/script.js,domain=localhost`
         )).rejects.toThrow("FilterError");
         await checkLogging(
