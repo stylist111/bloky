@@ -25,12 +25,12 @@ import {addFilter, EWE} from "./messaging.js";
 import {isFuzzingServiceWorker}
   from "./mocha/mocha-runner.js";
 
-describe("Element Hiding", function() {
-  let hideTimeout = isFuzzingServiceWorker() ? 2000 : 1000;
-  let collapseTimeout = 2000;
-  let elemhideEmulationUpdateTimeout = 4000;
-  let unhiddenTimeout = isFuzzingServiceWorker() ? 1000 : 200;
+let hideTimeout = isFuzzingServiceWorker() ? 2000 : 1000;
+let collapseTimeout = 2000;
+let elemhideEmulationUpdateTimeout = 4000;
+let unhiddenTimeout = isFuzzingServiceWorker() ? 1000 : 200;
 
+describe("Element Hiding", function() {
   async function expectElemHideHidden({elemId = "elem-hide",
                                        url = "element-hiding.html",
                                        frameIds} = {}) {
@@ -337,7 +337,7 @@ describe("Snippets", function() {
       // Snippets arguments are stringified (JSON.string()),
       // so we set true (as boolean), but check "true" (as string).
       async() => await executeScript(tabId, func, null, world) == "true",
-      1000,
+      hideTimeout,
       "Snippet was not applied"
     );
   }
