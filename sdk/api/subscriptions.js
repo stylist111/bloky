@@ -17,7 +17,7 @@
 
 import browser from "webextension-polyfill";
 
-import {Subscription, DownloadableSubscription, RegularSubscription}
+import {Subscription, RegularSubscription}
   from "adblockpluscore/lib/subscriptionClasses.js";
 import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {recommendations} from "adblockpluscore/lib/recommendations.js";
@@ -37,15 +37,16 @@ import {readFileContent} from "./io.js";
 function convertSubscription(subscription) {
   let {id, disabled, downloadStatus, homepage,
        version, lastDownload, lastSuccess,
-       softExpiration, expires, title, url} = subscription;
+       softExpiration, expires, title, url,
+       downloadable} = subscription;
   let {synchronizer} = filterEngine.filterStorage;
 
   return {
     id, enabled: !disabled,
     downloading: synchronizer.isExecuting(url),
     downloadStatus, homepage, version, lastDownload, lastSuccess,
-    softExpiration, expires, title, url,
-    downloadable: subscription instanceof DownloadableSubscription};
+    softExpiration, expires, title, url, downloadable
+  };
 }
 
 function convertRecommendation({id, languages, title, requires, type, url,
@@ -58,7 +59,7 @@ function getSubscription(url) {
   let subscription = Subscription.fromURL(url);
 
   if (filterEngine.filterStorage.hasSubscription(subscription) &&
-      subscription instanceof DownloadableSubscription)
+      subscription instanceof RegularSubscription)
     return subscription;
 
   return null;
@@ -66,17 +67,33 @@ function getSubscription(url) {
 
 function makeListener(dispatch) {
   return subscription => {
-    if (subscription instanceof DownloadableSubscription)
+    if (subscription instanceof RegularSubscription)
       dispatch(convertSubscription(subscription));
   };
 }
 
-export async function getFilterText(subscription, path) {
+async function enableRuleset(rulesetId) {
+  if (browser.declarativeNetRequest && rulesetExistsInManifest(rulesetId)) {
+    await browser.declarativeNetRequest.updateEnabledRulesets({
+      enableRulesetIds: [rulesetId]
+    });
+  }
+}
+
+async function disableRuleset(rulesetId) {
+  if (browser.declarativeNetRequest && rulesetExistsInManifest(rulesetId)) {
+    await browser.declarativeNetRequest.updateEnabledRulesets({
+      disableRulesetIds: [rulesetId]
+    });
+  }
+}
+
+async function getFilterText(subscription, path) {
   let subscriptionPath = `${path}/${subscription.id}`;
   return (await readFileContent(subscriptionPath)).split("\n");
 }
 
-export async function subscriptionFileExists(subscription, path) {
+async function subscriptionFileExists(subscription, path) {
   let subscriptionPath = `${path}/${subscription.id}`;
   const url = browser.runtime.getURL(subscriptionPath);
   try {
@@ -88,6 +105,16 @@ export async function subscriptionFileExists(subscription, path) {
   }
 }
 
+function rulesetExistsInManifest(rulesetId) {
+  let manifest = browser.runtime.getManifest();
+
+  return manifest.declarative_net_request &&
+    manifest.declarative_net_request.rule_resources &&
+    manifest.declarative_net_request.rule_resources.find(
+      ruleset => ruleset.id == rulesetId
+    );
+}
+
 export async function validate(bundledSubscriptions,
                                bundledSubscriptionsPath) {
   if (!bundledSubscriptions)
@@ -97,7 +124,6 @@ export async function validate(bundledSubscriptions,
     throw new Error("No `bundledSubscriptionsPath` provided");
 
   let warnings = [];
-  let manifest = browser.runtime.getManifest();
 
   for (let subscription of bundledSubscriptions) {
     let fileExists = await subscriptionFileExists(subscription,
@@ -105,10 +131,7 @@ export async function validate(bundledSubscriptions,
     if (!fileExists)
       warnings.push(`No subscription content file for ID=${subscription.id}`);
 
-    if (!manifest.declarative_net_request ||
-      !manifest.declarative_net_request.rule_resources ||
-      !(manifest.declarative_net_request.rule_resources.find(
-        ruleset => ruleset.id == subscription.id)))
+    if (!rulesetExistsInManifest(subscription.id))
       warnings.push(`No ruleset with ID=${subscription.id} declared in the manifest`);
   }
 
@@ -192,24 +215,25 @@ export default {
 
     if (browser.declarativeNetRequest) {
       let subscriptionInfo = addonBundledSubscriptions.find(x => x.url == url);
-
       if (!subscriptionInfo)
         throw new Error(`Failed to find the subscription with URL=${url}`);
 
-      try {
-        if (!subscription.downloadable) {
-          subscription.setFilterText(await getFilterText(
-            subscriptionInfo, addonBundledSubscriptionsPath));
+      if (!subscription.downloadable) {
+        let filterText;
+        try {
+          filterText = await getFilterText(
+            subscriptionInfo, addonBundledSubscriptionsPath);
+        }
+        catch (e) {
+          // We already warn if the file doesn't exist on startup, so
+          // we can ignore an error loading the bundled file here.
         }
 
-        await browser.declarativeNetRequest.updateEnabledRulesets({
-          enableRulesetIds: [subscription.id]
-        });
-      }
-      catch (e) {
-        // it was detected and reported in the start() warnings
+        if (filterText)
+          subscription.setFilterText(filterText);
       }
     }
+    await enableRuleset(subscription.id);
 
     if ("title" in properties)
       subscription.title = properties.title;
@@ -225,9 +249,11 @@ export default {
   /**
    * Returns an array of subscription objects for all subscriptions that are
    * downloaded and updated over the network.
-   * @return {Array<Subscription>}
+   * @return {Promise<Array<Subscription>>}
    */
-  getDownloadable() {
+  async getDownloadable() {
+    await initializer.start();
+
     let result = [];
 
     for (let subscription of filterEngine.filterStorage.subscriptions()) {
@@ -241,9 +267,11 @@ export default {
   /**
    * Returns an array of subscription objects for a given filter.
    * @param {string} text The filter rule for which to look.
-   * @return {Array<Subscription>}
+   * @return {Promise<Array<Subscription>>}
    */
-  getForFilter(text) {
+  async getForFilter(text) {
+    await initializer.start();
+
     return text ? Array.from(filterEngine.filterStorage.subscriptions(text),
                              convertSubscription) : [];
   },
@@ -251,9 +279,11 @@ export default {
   /**
    * Returns the filter list of a given subscription URL.
    * @param {string} url The URL of the subscription.
-   * @return {Array<Filter>} Filters from the subscription.
+   * @return {Promise<Array<Filter>>} Filters from the subscription.
    */
-  getFilters(url) {
+  async getFilters(url) {
+    await initializer.start();
+
     let subscription = getSubscription(url);
     if (subscription) {
       return Array.from(subscription.filterText(),
@@ -266,52 +296,69 @@ export default {
   /**
    * Checks if a subscription has been added.
    * @param {string} url The URL of the subscription to be checked.
-   * @return {boolean} True if a subscription has been added.
+   * @return {Promise<boolean>} True if a subscription has been added.
    * @throws {TypeError} Invalid URL provided.
    */
-  has(url) {
+  async has(url) {
+    await initializer.start();
+
     return getSubscription(new URL(url).href) != null;
   },
 
   /**
    * Enables a previously disabled subscription. Has no effect otherwise.
    * @param {string} url The URL of the subscription to be enabled.
+   * @return {Promise}
    * @throws {Error} Subscription does not exist.
    */
-  enable(url) {
+  async enable(url) {
+    await initializer.start();
+
     let subscription = getSubscription(url);
 
     if (!subscription)
       throw new Error(`Subscription does not exist: ${url}`);
 
     subscription.disabled = false;
+
+    await enableRuleset(subscription.id);
   },
 
   /**
    * Disables a subscription so that it doesn't have any
    * effect until it gets enabled again.
    * @param {string} url The URL of the subscription to be disabled.
+   * @return {Promise}
    * @throws {Error} Subscription does not exist.
    */
-  disable(url) {
+  async disable(url) {
+    await initializer.start();
+
     let subscription = getSubscription(url);
 
     if (!subscription)
       throw new Error(`Subscription does not exist: ${url}`);
 
     subscription.disabled = true;
+
+    await disableRuleset(subscription.id);
   },
 
   /**
    * Removes the subscription for the given URL.
    * It will no longer have any effect.
+   * @return {Promise}
    * @param {string} url The URL of the subscription to be removed.
    */
-  remove(url) {
+  async remove(url) {
+    await initializer.start();
+
     let subscription = getSubscription(url);
 
     if (subscription)
       filterEngine.filterStorage.removeSubscription(subscription);
+
+    await disableRuleset(subscription.id);
   },
 
   /**
@@ -335,7 +382,7 @@ export default {
     }
     else {
       for (let subscription of filterStorage.subscriptions()) {
-        if (subscription instanceof DownloadableSubscription)
+        if (subscription.downloadable)
           subscriptions.push(subscription);
       }
     }
@@ -372,41 +419,19 @@ export default {
 
   /**
    * Clears all subscriptions and filters.
-   * @return {function} A function that can be called to
+   * @return {Promise} A function that can be called to
    *                    restore the removed subscriptions and filters.
    * @private
    */
   async removeAll() {
-    await initializer.start();
-    let subscriptions = [];
+    for (let subscription of await this.getDownloadable())
+      await this.remove(subscription.url);
+
+    await removeDynamicFilters();
 
     const {filterStorage} = filterEngine;
-
-    for (let subscription of filterStorage.subscriptions()) {
-      subscriptions.push(subscription);
+    for (let subscription of filterStorage.subscriptions())
       filterStorage.removeSubscription(subscription);
-    }
-
-    let addRules = await removeDynamicFilters();
-
-    return async() => {
-      await this.removeAll();
-
-      for (let subscription of subscriptions) {
-        if (subscription instanceof DownloadableSubscription) {
-          let {url, title, homepage} = subscription;
-          this.add(url, {title, homepage});
-        }
-        else {
-          filterStorage.addSubscription(subscription);
-        }
-      }
-
-      // This workaround should be removed once subscriptions management
-      // supports mv3
-      if (browser.declarativeNetRequest)
-        await browser.declarativeNetRequest.updateDynamicRules({addRules});
-    };
   },
 
   /**
@@ -433,7 +458,7 @@ export default {
         property = "enabled";
 
       return subscription => {
-        if (subscription instanceof DownloadableSubscription)
+        if (subscription instanceof RegularSubscription)
           dispatch(convertSubscription(subscription), property);
       };
     }

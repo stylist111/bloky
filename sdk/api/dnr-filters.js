@@ -303,7 +303,7 @@ export async function enableFilters(texts) {
     let filter = Filter.fromText(normalized);
 
     if (useFilterEngine)
-      filterEngine.filterStorage.filterState.setEnabled(filter, true);
+      filterEngine.filterStorage.filterState.setEnabled(filter.text, true);
     else
       filterNotifier.emit("filterState.enabled", normalized, true, false);
 

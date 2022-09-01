@@ -20,8 +20,10 @@ import sinon from "sinon/pkg/sinon.js";
 
 import {fuzzSuspendServiceWorker} from "./mocha/mocha-runner.js";
 
-export async function runInBackgroundPage(operations) {
-  await fuzzSuspendServiceWorker();
+export async function runInBackgroundPage(operations, fuzzEnabled = true) {
+  if (fuzzEnabled)
+    await fuzzSuspendServiceWorker();
+
   let {result, error} =
     await browser.runtime.sendMessage({type: "ewe-test:run", operations});
   if (error)

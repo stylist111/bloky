@@ -23,7 +23,7 @@ import {Page, Popup, setMinTimeout, wait, executeScript, isFirefox, isEdge,
         getVisibleElement, isMV3, TEST_PAGES_URL,
         TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN,
         isMV2CustomSubsExtension, isMV3TestSubsExtension,
-        TEST_MV3_SUBSCRIPTION}
+        TEST_MV3_SUBSCRIPTION, TEST_MV3_SUBSCRIPTION_2}
   from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, addFakeListener,
         removeFakeListeners}
@@ -31,6 +31,7 @@ import {addFilter, EWE, runInBackgroundPage, addFakeListener,
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 const VALID_SUBSCRIPTION_URL = `${TEST_PAGES_URL}/subscription.txt`;
+const VALID_SUBSCRIPTION_URL_2 = `${TEST_PAGES_URL}/subscription.txt?2`;
 const ANOTHER_VALID_SUBSCRIPTION_URL =
   `${TEST_PAGES_URL}/subscription-empty.txt`;
 const INVALID_SUBSCRIPTION_URL = "invalidUrl";
@@ -38,6 +39,8 @@ const INVALID_SUBSCRIPTION_URL = "invalidUrl";
 const VALID_FILTER_TEXT = `|${TEST_PAGES_URL}$image`;
 const COMMENT_FILTER_TEXT = "!comment";
 const SECOND_VALID_FILTER_TEXT = "another-filter";
+const VALID_REQUEST_FILTER_TEXT = `|${TEST_PAGES_URL}$image`;
+const VALID_CONTENT_FILTER_TEXT = `${TEST_PAGES_DOMAIN}###image`;
 const VALID_FILTER = {
   text: VALID_FILTER_TEXT,
   enabled: true,
@@ -72,7 +75,8 @@ const ADDON_VERSION = "2.1";
 describe("API", function() {
   describe("Subscriptions", function() {
     before(function() {
-      if (isMV3())
+      // In MV3, most tests depend on having the test subscriptions available
+      if (isMV3() && !isMV3TestSubsExtension())
         this.skip();
     });
 
@@ -85,7 +89,7 @@ describe("API", function() {
         enabled: true,
         title: VALID_SUBSCRIPTION_URL,
         homepage: null,
-        downloadable: true
+        downloadable: expect.any(Boolean)
       })]);
     });
 
@@ -102,7 +106,19 @@ describe("API", function() {
         enabled: true,
         title,
         homepage,
-        downloadable: true
+        downloadable: expect.any(Boolean)
+      })]);
+    });
+
+    it("adds downloadable subscriptions in MV2 and non-downloadable subscriptions in MV3", async function() {
+      await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
+
+      let downloadable = !isMV3();
+
+      let subs = await EWE.subscriptions.getDownloadable();
+      expect(subs).toEqual([expect.objectContaining({
+        url: VALID_SUBSCRIPTION_URL,
+        downloadable
       })]);
     });
 
@@ -113,19 +129,39 @@ describe("API", function() {
 
     it("adds multiple subscriptions", async function() {
       await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
-      await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL + "?2");
+      await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL_2);
 
       let subs = await EWE.subscriptions.getDownloadable();
       expect(subs).toEqual([
         expect.objectContaining({url: VALID_SUBSCRIPTION_URL}),
-        expect.objectContaining({url: VALID_SUBSCRIPTION_URL + "?2"})
+        expect.objectContaining({url: VALID_SUBSCRIPTION_URL_2})
       ]);
     });
 
     it("gets subscriptions for a filter", async function() {
+      await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
+
+      await wait(async() => {
+        let loaded = await EWE.subscriptions.getFilters(VALID_SUBSCRIPTION_URL);
+        return loaded.length > 0;
+      }, 4000);
+
+      expect(await EWE.subscriptions.getForFilter("/image-from-subscription.png^$image")).toEqual([
+        expect.objectContaining({url: VALID_SUBSCRIPTION_URL})
+      ]);
+    });
+
+    it("gets user subscriptions for a filter", async function() {
+      // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/339
+      if (isMV3())
+        this.skip();
+
       await addFilter(VALID_FILTER_TEXT);
       expect(await EWE.subscriptions.getForFilter(VALID_FILTER_TEXT)).toEqual([
-        expect.objectContaining({downloadable: false})
+        expect.objectContaining({
+          url: expect.stringContaining("~user~"),
+          downloadable: false
+        })
       ]);
     });
 
@@ -203,6 +239,26 @@ describe("API", function() {
         .toEqual([]);
     });
 
+    it("removes all subscriptions and filters", async function() {
+      await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
+      await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL_2);
+      await EWE.filters.add([
+        VALID_REQUEST_FILTER_TEXT,
+        VALID_CONTENT_FILTER_TEXT
+      ]);
+
+      await EWE.subscriptions.removeAll();
+
+      expect(await EWE.subscriptions.getDownloadable()).toEqual([]);
+      expect(await EWE.filters.getUserFilters()).toEqual([]);
+
+      const {declarativeNetRequest} = browser;
+      if (declarativeNetRequest) {
+        expect(await declarativeNetRequest.getEnabledRulesets()).toEqual([]);
+        expect(await declarativeNetRequest.getDynamicRules()).toEqual([]);
+      }
+    });
+
     it("gets adblockpluscore recommendations", async function() {
       if (isMV3() || isMV2CustomSubsExtension())
         this.skip();
@@ -259,46 +315,10 @@ describe("API", function() {
       ]));
     });
 
-    it("listens to onAdded events", async function() {
-      let fake = await addFakeListener({namespace: "subscriptions",
-                                        eventName: "onAdded"});
-      await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
-
-      expect(fake.callCount).toBe(1);
-      expect(fake.firstArg).toEqual(expect.objectContaining({
-        url: VALID_SUBSCRIPTION_URL,
-        enabled: true,
-        title: VALID_SUBSCRIPTION_URL
-      }));
-    });
-
-    it("listens to onChanged events", async function() {
-      await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
-
-      let fake = await addFakeListener({namespace: "subscriptions",
-                                        eventName: "onChanged"});
-      await EWE.subscriptions.disable(VALID_SUBSCRIPTION_URL);
-
-      expect(fake.firstArg).toEqual(expect.objectContaining({
-        url: VALID_SUBSCRIPTION_URL,
-        enabled: false
-      }));
-      expect(fake.lastArg).toEqual("enabled");
-    });
-
-    it("listens to onRemoved events", async function() {
-      let fake = await addFakeListener({namespace: "subscriptions",
-                                        eventName: "onRemoved"});
-      await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
-      await EWE.subscriptions.remove(VALID_SUBSCRIPTION_URL);
-
-      expect(fake.callCount).toBe(1);
-      expect(fake.firstArg).toEqual(
-        expect.objectContaining({url: VALID_SUBSCRIPTION_URL})
-      );
-    });
-
     it("syncs subscriptions", async function() {
+      if (isMV3())
+        this.skip();
+
       setMinTimeout(this, 3000);
 
       await new Promise((resolve, reject) => {
@@ -356,6 +376,53 @@ describe("API", function() {
                          callback: onChanged})
           .then(() => EWE.subscriptions.add(ANOTHER_VALID_SUBSCRIPTION_URL))
           .catch(reject);
+      });
+    });
+
+    describe("Subscription events", function() {
+      before(function() {
+        // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/338
+        if (isFuzzingServiceWorker())
+          this.skip();
+      });
+
+      it("listens to onAdded events", async function() {
+        let fake = await addFakeListener({namespace: "subscriptions",
+                                          eventName: "onAdded"});
+        await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
+
+        expect(fake.callCount).toBe(1);
+        expect(fake.firstArg).toEqual(expect.objectContaining({
+          url: VALID_SUBSCRIPTION_URL,
+          enabled: true,
+          title: VALID_SUBSCRIPTION_URL
+        }));
+      });
+
+      it("listens to onChanged events", async function() {
+        await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
+
+        let fake = await addFakeListener({namespace: "subscriptions",
+                                          eventName: "onChanged"});
+        await EWE.subscriptions.disable(VALID_SUBSCRIPTION_URL);
+
+        expect(fake.firstArg).toEqual(expect.objectContaining({
+          url: VALID_SUBSCRIPTION_URL,
+          enabled: false
+        }));
+        expect(fake.lastArg).toEqual("enabled");
+      });
+
+      it("listens to onRemoved events", async function() {
+        let fake = await addFakeListener({namespace: "subscriptions",
+                                          eventName: "onRemoved"});
+        await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
+        await EWE.subscriptions.remove(VALID_SUBSCRIPTION_URL);
+
+        expect(fake.callCount).toBe(1);
+        expect(fake.firstArg).toEqual(
+          expect.objectContaining({url: VALID_SUBSCRIPTION_URL})
+        );
       });
     });
   });
@@ -991,7 +1058,8 @@ describe("API", function() {
          // argument to EWE.start in the background.js file.
          expect(receivedStartupInfo).toEqual(
            expect.objectContaining({
-             bundledSubscriptions: [TEST_MV3_SUBSCRIPTION],
+             bundledSubscriptions: [
+               TEST_MV3_SUBSCRIPTION, TEST_MV3_SUBSCRIPTION_2],
              bundledSubscriptionsPath: "subscriptions"
            })
          );

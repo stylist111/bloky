@@ -172,14 +172,6 @@ function handleTestMessage(request, sender, sendResponse) {
       sendResponse({});
       return true;
 
-    case "ewe-test:storeAndRemoveAllSubscriptions":
-      EWE.subscriptions.removeAll().then(restoreFunc => {
-        self.restoreSubscriptions = restoreFunc;
-        sendResponse({});
-        return true;
-      });
-      break;
-
     case "ewe-test:wasNewTabAllowlisted": {
       let {tabId: requestedTabId, url} = request;
       tabAllowlistedResults.get(requestedTabId, url).then(sendResponse);
@@ -252,6 +244,10 @@ if (isMV3()) {
         id: "00000000-0000-0000-0000-000000000000",
         url: "http://localhost:3000/subscription.txt",
         mv2_url: "http://localhost:3000/subscription.txt"
+      }, {
+        id: "00000000-0000-0000-0000-000000000010",
+        url: "http://localhost:3000/subscription.txt?2",
+        mv2_url: "http://localhost:3000/subscription.txt?2"
       }],
       bundledSubscriptionsPath: "subscriptions"
     };

@@ -8,6 +8,14 @@
     "mv2_url": "http://localhost:3000/mv2_subscription.txt"
   },
   {
+    "id": "00000000-0000-0000-0000-000000000010",
+    "type": "ads",
+    "title": "Test MV3 Custom Subscription 2",
+    "homepage": "http://localhost:3000/subscription.txt?2",
+    "url": "http://localhost:3000/subscription.txt?2",
+    "mv2_url": "http://localhost:3000/mv2_subscription.txt?2"
+  },
+  {
     "id": "07549D8B-F06F-4D9D-A567-929AA59E9D1D",
     "type": "ads",
     "title": "Allow nonintrusive advertising",
