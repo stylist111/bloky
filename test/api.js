@@ -406,11 +406,15 @@ describe("API", function() {
                                           eventName: "onChanged"});
         await EWE.subscriptions.disable(VALID_SUBSCRIPTION_URL);
 
-        expect(fake.firstArg).toEqual(expect.objectContaining({
-          url: VALID_SUBSCRIPTION_URL,
-          enabled: false
-        }));
-        expect(fake.lastArg).toEqual("enabled");
+        expect(fake.args).toEqual(expect.arrayContaining([
+          [
+            expect.objectContaining({
+              url: VALID_SUBSCRIPTION_URL,
+              enabled: false
+            }),
+            "enabled"
+          ]
+        ]));
       });
 
       it("listens to onRemoved events", async function() {
