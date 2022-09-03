@@ -1,3 +1,71 @@
+0.6.0 - 2022/09/06
+==================
+
+# General
+
+- Updated to adblockpluscore 0.9.1 (#341)
+- Remove unused stop API (#315)
+- Use the updated Chrome scripting API for snippets (#143)
+- Properly inject the dependencies for the new snippet library (#335)
+
+# Bug fixes
+
+- Fix incorrect result from `filters.getAllowingFilter()`. (#297)
+- Fix scripts not running properly. (#331)
+- Allow scripts to run without runing npm install for
+  adblockpluscore. (#333)
+- Better resilience to out of order events.
+
+# Manifest V3
+
+- Improvement to scripts to generate DNR ruleset from subscription
+  with proper ID. (#304)
+- Ensure the allowing filter API still work with service worker
+  shutdown. (#318)
+- Subscriptions initialisation for the extension in Manifest V3,
+  including setting up defaults. (#305)
+
+
+# Tests
+
+- Properly warn if the test server isn't running. (#327)
+- CI: Upgrade NPM on Windows.
+- CI: Use release tag to build the extension for integration.
+- Fix some tests with async assertions that didn't await.
+- Lots of testing enabled for Manifest V3
+  - Testing with service worker termination. (#250, #322, #324, #328)
+
+# Update your code
+
+- Stop calling `EWE.stop()`. (#315)
+
+- `EWE.start()` no longer set the default subscriptions, and
+  `EWE.subscriptions.addDefaults()` need to be called instead. (#305)
+
+- The following API function are now `async (#242, #318)
+  * `EWE.filters.getAllowingFilters()`
+  * `EWE.filters.isResourceAllowlisted()`
+  * `EWE.subscriptions.getDownloadable()`
+  * `EWE.subscriptions.getFilters()`
+  * `EWE.subscriptions.getForFilter()`
+  * `EWE.subscriptions.has()`
+  * `EWE.subscriptions.enable()`
+  * `EWE.subscriptions.disable()`
+  * `EWE.subscriptions.remove()`
+
+- Snippets library version 0.5.0 is the minimum required. (#143)
+
+- Scripts names changed in `npm exec ...` to what is used in `npm run
+  ...` (#304):
+
+  * from `updateSubscriptions` to `subs-init`
+  * from `mergeSubscriptions` to `subs-merge`
+  * from `fetchSubscriptions` to `subs-fetch`
+  * from `convertSubscriptions` to `subs-convert`
+  * from `generateSubscriptionsFragment` to `subs-generate`
+
+- Any change related to the update to adblockpluscore 0.9.1.
+
 0.5.0 - 2022/07/29
 ==================
 
