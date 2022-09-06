@@ -42,7 +42,7 @@
 - `EWE.start()` no longer set the default subscriptions, and
   `EWE.subscriptions.addDefaults()` need to be called instead. (#305)
 
-- The following API function are now `async (#242, #318)
+- The following API function are now `async` (#242, #318)
   * `EWE.filters.getAllowingFilters()`
   * `EWE.filters.isResourceAllowlisted()`
   * `EWE.subscriptions.getDownloadable()`
