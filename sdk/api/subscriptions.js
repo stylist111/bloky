@@ -17,8 +17,8 @@
 
 import browser from "webextension-polyfill";
 
-import {Subscription, RegularSubscription}
-  from "adblockpluscore/lib/subscriptionClasses.js";
+import {Subscription, DownloadableSubscription, RegularSubscription,
+        SpecialSubscription} from "adblockpluscore/lib/subscriptionClasses.js";
 import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {recommendations} from "adblockpluscore/lib/recommendations.js";
 import {Filter} from "adblockpluscore/lib/filterClasses.js";
@@ -30,9 +30,11 @@ import {filterEngine} from "./core.js";
 import {EventDispatcher} from "./types.js";
 import {convertFilter} from "./filters.js";
 import {removeDynamicFilters} from "./dnr-filters.js";
-import {ACCEPTABLE_ADS_URL, ACCEPTABLE_ADS_PRIVACY_URL}
-  from "./default-subscriptions.js";
+
 import {readFileContent} from "./io.js";
+
+const ACCEPTABLE_ADS_URL = "https://easylist-downloads.adblockplus.org/exceptionrules.txt";
+const ACCEPTABLE_ADS_PRIVACY_URL = "https://easylist-downloads.adblockplus.org/exceptionrules-privacy-friendly.txt";
 
 function convertSubscription(subscription) {
   let {id, disabled, downloadStatus, homepage,
@@ -70,6 +72,73 @@ function makeListener(dispatch) {
     if (subscription instanceof RegularSubscription)
       dispatch(convertSubscription(subscription));
   };
+}
+
+export function getDefaultSubscriptions() {
+  let hasCurrentLang = false;
+  let hasDefaultLang = false;
+  let hasAA = false;
+  let hasAntiCV = false;
+
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=1159438
+  let currentLang = (browser.i18n.getUILanguage ?
+    browser.i18n.getUILanguage() : navigator.language).split("-")[0];
+  let defaultLang = (browser.runtime.getManifest()
+                                    .default_locale || "en").split("_")[0];
+
+  let adSubscriptions = [];
+  let adSubscriptionsDefaultLang = [];
+  let chosenSubscriptions = [];
+
+  for (let subscription of recommendations()) {
+    switch (subscription.type) {
+      case "ads":
+        if (subscription.languages.includes(currentLang)){
+          hasCurrentLang = true;
+          adSubscriptions.push(subscription);
+        }
+
+        if (subscription.languages.includes(defaultLang)) {
+          hasDefaultLang = true;
+          adSubscriptionsDefaultLang.push(subscription);
+        }
+        break;
+
+      case "circumvention":
+        chosenSubscriptions.push(subscription);
+        hasAntiCV = true;
+        break;
+
+      case "allowing":
+        chosenSubscriptions.push(subscription);
+        hasAA = true;
+        break;
+    }
+  }
+
+  if (adSubscriptions.length == 0)
+    adSubscriptions = adSubscriptionsDefaultLang;
+
+  chosenSubscriptions.unshift(...adSubscriptions);
+
+  return {chosenSubscriptions, hasAA, hasAntiCV,
+          hasCurrentLang, hasDefaultLang};
+}
+
+function shouldAddDefaultSubscriptions() {
+  let {filterStorage} = filterEngine;
+  for (let subscription of filterStorage.subscriptions()) {
+    if (subscription instanceof DownloadableSubscription &&
+        subscription.url != ACCEPTABLE_ADS_URL &&
+        subscription.type != "circumvention")
+      return false;
+
+    if (subscription instanceof SpecialSubscription &&
+        subscription.filterCount > 0)
+      return false;
+  }
+
+  return true;
 }
 
 async function enableRuleset(rulesetId) {
@@ -244,6 +313,42 @@ export default {
 
     if (!subscription.lastDownload)
       filterStorage.synchronizer.execute(subscription);
+  },
+
+  /**
+   * Adds a list of default subscriptions based on the provided bundled
+   * subscriptions from the EWE.start() call.
+   * Subscriptions are selected based on relevant language, type of
+   * circumvention, and type of allowing.
+   * @throws {Error} No default language subscription
+   * @throws {Error} No current language subscription
+   * @throws {Error} No anti-circumvention subscription
+   * @throws {Error} No allowing subscription
+   * @see {@link #start|start()}
+   * @return {Promise}
+   */
+  async addDefaults() {
+    let subscriptions = [];
+
+    if (shouldAddDefaultSubscriptions()) {
+      let defaultSubscriptions = getDefaultSubscriptions();
+      if (!defaultSubscriptions.hasDefaultLang)
+        throw Error("No default language subscription");
+
+      if (!defaultSubscriptions.hasCurrentLang)
+        throw Error("No current language subscription");
+
+      if (!defaultSubscriptions.hasAntiCV)
+        throw Error("No anti-circumvention subscription");
+
+      if (!defaultSubscriptions.hasAA)
+        throw Error("No allowing subscription");
+
+      subscriptions.push(...defaultSubscriptions.chosenSubscriptions);
+    }
+
+    for (let subscription of subscriptions)
+      await this.add(subscription.url);
   },
 
   /**

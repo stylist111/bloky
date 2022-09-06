@@ -17,7 +17,9 @@
 
 import {FilterStorage} from "adblockpluscore/lib/filterStorage.js";
 import {IO} from "./io.js";
-import {addonBundledSubscriptions, addonBundledSubscriptionsPath, addonName, addonVersion} from "./info.js";
+import {addonBundledSubscriptions, addonBundledSubscriptionsPath,
+        addonName, addonVersion, setAddonInfo} from "./info.js";
+import {setRecommendations} from "adblockpluscore/lib/recommendations.js";
 
 export let debugOptions = {
   elemHide: false,
@@ -77,5 +79,15 @@ export default {
     await IO.readFromFile(FilterStorage.sourceFile,
                           line => contents.push(line));
     return contents.some(line => line.includes(text));
+  },
+
+  /**
+   * @ignore
+   * @param {Recommendation} subscriptions
+   */
+  _setSubscriptions(subscriptions) {
+    setAddonInfo({bundledSubscriptions: subscriptions,
+                  bundledSubscriptionsPath: addonBundledSubscriptionsPath});
+    setRecommendations(subscriptions);
   }
 };

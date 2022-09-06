@@ -284,8 +284,8 @@ Using docker locally to run the same tests may be useful to recreate the
 infrastructure the CI uses:
 
 ```
-docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg MV3_SUBSCRIPTIONS={default|test} .
-docker run --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" -it functional
+docker build -t functional -f test/dockerfiles/functional.Dockerfile .
+docker run --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" -e MV3_SUBSCRIPTIONS={default|test} -it functional
 ```
 
 Please notice that the `TEST_PARAMS` argument can also take the additional

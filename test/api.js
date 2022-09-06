@@ -72,6 +72,52 @@ const INVALID_FILTER_TEXT = "/foo/$rewrite=";
 const ADDON_NAME = "foo";
 const ADDON_VERSION = "2.1";
 
+let subCircumvention = {
+  id: "D4028CDD-3D39-4624-ACC7-8140F4EC3238",
+  type: "circumvention",
+  title: "ABP filters",
+  homepage: "https://github.com/abp-filters/abp-filters-anti-cv",
+  url: "https://easylist-downloads.adblockplus.org/v3/full/abp-filters-anti-cv.txt",
+  mv2_url: "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt"
+};
+
+let subEasylist = {
+  id: "8C13E995-8F06-4927-BEA7-6C845FB7EEBF",
+  type: "ads",
+  languages: [
+    "en"
+  ],
+  title: "EasyList",
+  homepage: "https://easylist.to/",
+  url: "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt",
+  mv2_url: "https://easylist-downloads.adblockplus.org/easylist.txt"
+};
+
+let subEasylistPlusGermany = {
+  id: "0CD3D105-D3B3-4652-8489-94163DE9A08F",
+  type: "ads",
+  languages: [
+    "de"
+  ],
+  title: "EasyList Germany+EasyList",
+  homepage: "https://easylist.to/",
+  includes: [
+    "8C13E995-8F06-4927-BEA7-6C845FB7EEBF",
+    "4337FB2B-A95C-44D5-B78D-11AD40F7711B"
+  ],
+  url: "https://easylist-downloads.adblockplus.org/v3/full/easylistgermany+easylist.txt",
+  mv2_url: "https://easylist-downloads.adblockplus.org/easylistgermany+easylist.txt"
+};
+
+let subExceptions = {
+  id: "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F",
+  type: "allowing",
+  title: "Allow nonintrusive advertising",
+  homepage: "https://acceptableads.com/",
+  url: "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt",
+  mv2_url: "https://easylist-downloads.adblockplus.org/exceptionrules.txt"
+};
+
 describe("API", function() {
   describe("Subscriptions", function() {
     before(function() {
@@ -264,7 +310,6 @@ describe("API", function() {
         this.skip();
 
       let result = await EWE.subscriptions.getRecommendations();
-
       expect(result).toEqual(expect.arrayContaining([
         expect.objectContaining({
           languages: ["en"],
@@ -285,34 +330,6 @@ describe("API", function() {
         for (let language of item.languages)
           expect(language).toEqual(expect.any(String));
       }
-    });
-
-    it("gets custom recommendations", async function() {
-      if (!isMV2CustomSubsExtension())
-        this.skip();
-
-      let result = await EWE.subscriptions.getRecommendations();
-
-      // keep in-sync with `test/custom-subscriptions.json`
-      expect(result).toEqual(expect.arrayContaining([
-        expect.objectContaining({
-          type: "ads",
-          title: "Allow nonintrusive advertising",
-          url: "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt"
-        }),
-        expect.objectContaining({
-          type: "ads",
-          languages: ["en"],
-          title: "TestSubscriptionEn",
-          url: "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt"
-        }),
-        expect.objectContaining({
-          type: "ads",
-          languages: ["de"],
-          title: "TestSubscriptionDe",
-          url: "TestUrlDe"
-        })
-      ]));
     });
 
     it("syncs subscriptions", async function() {
@@ -870,7 +887,7 @@ describe("API", function() {
         // but we need to wait a bit longer than just `created` for
         // the tab updated event to have happened.
         let tabId = await new Page(url, true).created;
-        let timeout = isFuzzingServiceWorker() ? 3000 : 500;
+        let timeout = isFuzzingServiceWorker() ? 5000 : 500;
         await new Promise(r => setTimeout(r, timeout));
 
         let newTabAllowlisted = await browser.runtime.sendMessage(
@@ -906,8 +923,7 @@ describe("API", function() {
   });
 
   describe("Initialization", function() {
-    setMinTimeout(this, 3000);
-
+    setMinTimeout(this, 10000);
     before(function() {
       // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/319
       if (isFuzzingServiceWorker())
@@ -917,84 +933,6 @@ describe("API", function() {
     after(async function() {
       await browser.runtime.sendMessage(
         {type: "ewe-test:deleteUiLanguageOverride"});
-    });
-
-    for (let [language, subscriptionUrl] of [
-      ["en", "https://easylist-downloads.adblockplus.org/easylist.txt"],
-      ["de", "https://easylist-downloads.adblockplus.org/easylistgermany+easylist.txt"]
-    ]) {
-      it(`configures default subscriptions for ${language}`, async function() {
-        // Once the following issue is handled, this condition can be removed:
-        // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/242
-        if (isMV3())
-          this.skip();
-
-        if (isMV2CustomSubsExtension() || isMV3TestSubsExtension())
-          this.skip();
-
-        await browser.runtime.sendMessage(
-          {type: "ewe-test:setLanguageAndStart", args: [language]});
-
-        let subs = await EWE.subscriptions.getDownloadable();
-        let urls = [
-          subscriptionUrl,
-          "https://easylist-downloads.adblockplus.org/exceptionrules.txt",
-          "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt"
-        ];
-
-        expect(subs).toEqual(expect.arrayContaining(urls.map(
-          url => expect.objectContaining({url, enabled: true})
-        )));
-
-        for (let subscription of subs)
-          expect(urls).toContain(subscription.url);
-      });
-    }
-
-    it("informs when the filter engine runs for the first time", async function() {
-      if (isMV3()) {
-        this.skip();
-        // we will expose the API to enable the subscriptions,
-        // there is no code inside of SDK to enable any of them at the moment.
-        // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/305
-
-        let rulesetIds = await browser.declarativeNetRequest
-          .getEnabledRulesets();
-        await browser.declarativeNetRequest.updateEnabledRulesets({
-          disableRulesetIds: rulesetIds
-        });
-      }
-      // Skipping because webext has a bug in chromium browsers in incognito
-      // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/311
-      if (isChromiumBased() && isIncognito())
-        this.skip();
-
-      let result = await runInBackgroundPage([
-        {op: "getGlobal", arg: "EWE"},
-        {op: "callMethod", arg: "start"},
-        {op: "await"}
-      ]);
-      expect(result).toEqual({foundStorage: false,
-                              foundSubscriptions: false,
-                              warnings: []});
-
-      result = await runInBackgroundPage([
-        {op: "getGlobal", arg: "EWE"},
-        {op: "callMethod", arg: "start"},
-        {op: "await"}
-      ]);
-
-      expect(result).toEqual({foundStorage: false,
-                              foundSubscriptions: true,
-                              warnings: []});
-    });
-
-    // This test is problematic in edge and oldest chromium.
-    // see: https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/191
-    it("ignores messages without a type property", async function() {
-      this.skip();
-      await expect(browser.runtime.sendMessage({a: "1"}))
-        .resolves.not.toThrow();
     });
 
     it("starts with default addon info", async function() {
@@ -1021,6 +959,122 @@ describe("API", function() {
           version: manifest.version
         })
       );
+    });
+
+    for (let [language, mv2subscriptionUrl, mv3subscriptionUrl] of [
+      ["en",
+       "https://easylist-downloads.adblockplus.org/easylist.txt",
+       "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt"],
+      ["de",
+       "https://easylist-downloads.adblockplus.org/easylistgermany+easylist.txt",
+       "https://easylist-downloads.adblockplus.org/v3/full/easylistgermany+easylist.txt"]
+    ]) {
+      it(`configures default subscriptions for ${language}`, async function() {
+        if (isMV2CustomSubsExtension() || isMV3TestSubsExtension())
+          this.skip();
+
+        await browser.runtime.sendMessage(
+          {type: "ewe-test:setLanguage", args: [language]});
+
+        let startSubscriptions = [
+          subCircumvention,
+          subExceptions
+        ];
+
+        // default language (required even for "de")
+        startSubscriptions.push(subEasylist);
+
+        if (language == "de")
+          startSubscriptions.push(subEasylistPlusGermany);
+
+        if (!isMV3()) {
+          // the way how it is in "core" `./data/subscriptions.json"
+          for (let subscription of startSubscriptions)
+            subscription.url = subscription.mv2_url;
+        }
+
+        EWE.debugging._setSubscriptions(startSubscriptions);
+
+        await EWE.subscriptions.addDefaults();
+
+        let activeSubs = await EWE.subscriptions.getDownloadable();
+
+        let expectedUrls;
+        if (isMV3()) {
+          expectedUrls = [
+            mv3subscriptionUrl,
+            "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt",
+            "https://easylist-downloads.adblockplus.org/v3/full/abp-filters-anti-cv.txt"
+          ];
+        }
+        else {
+          expectedUrls = [
+            mv2subscriptionUrl,
+            "https://easylist-downloads.adblockplus.org/exceptionrules.txt",
+            "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt"
+          ];
+        }
+
+        expect(activeSubs).toEqual(
+          expect.arrayContaining(expectedUrls.map(
+            url => expect.objectContaining({url, enabled: true})
+          )));
+
+        for (let subscription of activeSubs)
+          expect(expectedUrls).toContain(subscription.url);
+      });
+    }
+
+    it("informs when the filter engine runs for the first time", async function() {
+      if (isMV3TestSubsExtension())
+        this.skip();
+
+      // Skipping because webext has a bug in chromium browsers in incognito
+      // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/311
+      if (isChromiumBased() && isIncognito())
+        this.skip();
+
+      await browser.runtime.sendMessage(
+        {type: "ewe-test:setLanguage", args: ["en"]});
+
+      let result = await runInBackgroundPage([
+        {op: "getGlobal", arg: "EWE"},
+        {op: "pushArg", arg: {
+          name: ADDON_NAME,
+          version: ADDON_VERSION,
+          bundledSubscriptions: [subEasylist, subCircumvention, subExceptions],
+          bundledSubscriptionsPath: "subscriptions"}},
+        {op: "callMethod", arg: "start"},
+        {op: "await"}
+      ]);
+      expect(result).toEqual({foundStorage: false,
+                              foundSubscriptions: false,
+                              warnings: []});
+
+      await EWE.subscriptions.addDefaults();
+
+      result = await runInBackgroundPage([
+        {op: "getGlobal", arg: "EWE"},
+        {op: "pushArg", arg: {
+          name: ADDON_NAME,
+          version: ADDON_VERSION,
+          bundledSubscriptions: [subEasylist, subCircumvention, subExceptions],
+          bundledSubscriptionsPath: "subscriptions"}},
+        {op: "callMethod", arg: "start"},
+        {op: "await"}
+      ]);
+
+      expect(result).toEqual({foundStorage: false,
+                              foundSubscriptions: true,
+                              warnings: []});
+    });
+
+    // This test is problematic in edge and oldest chromium.
+    // see: https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/191
+    it("ignores messages without a type property", async function() {
+      this.skip();
+      await expect(browser.runtime.sendMessage({a: "1"}))
+        .resolves.not.toThrow();
     });
 
     it("starts with the addon info provided by the initial start call",
@@ -1128,6 +1182,53 @@ describe("API", function() {
         let url = TEST_MV3_SUBSCRIPTION.url + "_missing";
         await expect(EWE.subscriptions.add(url))
           .rejects.toThrow(`Failed to find the subscription with URL=${url}`);
+      });
+
+      describe("validates adding default subscriptions", function() {
+        before(function() {
+          if (!isMV3())
+            this.skip();
+        });
+
+        async function setLanguage(language) {
+          await browser.runtime.sendMessage(
+            {type: "ewe-test:setLanguage", args: [language]});
+        }
+
+        it("throws if no default language subscription is provided", async function() {
+          await setLanguage("en");
+          EWE.debugging._setSubscriptions([]);
+          await expect(EWE.subscriptions.addDefaults())
+            .rejects.toThrow("No default language subscription");
+        });
+
+        it("throws if no current language subscription is provided", async function() {
+          await setLanguage("de"); // anything different from "en"
+          EWE.debugging._setSubscriptions([subEasylist]); // "en"
+          await expect(EWE.subscriptions.addDefaults())
+            .rejects.toThrow("No current language subscription");
+        });
+
+        it("throws if no anti-circumvention subscription is provided", async function() {
+          await setLanguage("en");
+          EWE.debugging._setSubscriptions([subEasylist, subExceptions]);
+          await expect(EWE.subscriptions.addDefaults())
+            .rejects.toThrow("No anti-circumvention subscription");
+        });
+
+        it("throws if no allowing subscription is provided", async function() {
+          await setLanguage("en");
+          EWE.debugging._setSubscriptions([subEasylist, subCircumvention]);
+          await expect(EWE.subscriptions.addDefaults())
+            .rejects.toThrow("No allowing subscription");
+        });
+
+        it("does not throw if everything needed is provided", async function() {
+          await setLanguage("en");
+          EWE.debugging._setSubscriptions([
+            subEasylist, subCircumvention, subExceptions]);
+          await EWE.subscriptions.addDefaults();
+        });
       });
     });
   });

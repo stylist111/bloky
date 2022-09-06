@@ -18,9 +18,8 @@
 import expect from "expect";
 
 import {Page, Resource, executeScript, wait, isMV3, isIncognito, setMinTimeout,
-        TEST_PAGES_URL,
-        TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, SITEKEY, isMV3TestSubsExtension,
-        TEST_MV3_SUBSCRIPTION} from "./utils.js";
+        TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, SITEKEY,
+        isMV3TestSubsExtension, TEST_MV3_SUBSCRIPTION} from "./utils.js";
 import {addFilter, EWE} from "./messaging.js";
 
 describe("Blocking", function() {

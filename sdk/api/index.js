@@ -21,8 +21,6 @@ import {notifications as _notifications}
 
 import {default as initializer} from "./initializer.js";
 import * as messageResponder from "./message-responder.js";
-import {configureDefaultSubscriptions, getFirstRun}
-  from "./default-subscriptions.js";
 import {setSnippetLibrary} from "./content-filter.js";
 import {setAddonInfo} from "./info.js";
 import {filterEngine} from "./core.js";
@@ -87,10 +85,10 @@ export let snippets = {
  *
  * Calling this function is required for the other API calls to work, except for
  * API event listener calls, which could also be done before `start()`.
- * @param {Object} [addonInfo] An object containing addon
+ * @param {Object?} [addonInfo] An object containing addon
  *   information belonging to sdk consumer, that can be accessed via
  *   `debugging` module. (It is usually used as an identifier in
- *   network requests, etc.)
+ *   network requests, etc.). This object can be undefined for MV2.
  * @param {string} [addonInfo.name] Name of the addon/extension.
  * @param {string} [addonInfo.version] Version of the addon/extension.
  * @param {Array<Recommendation>} [addonInfo.bundledSubscriptions]
@@ -125,11 +123,13 @@ export async function start(addonInfo) {
   }
 
   await initializer.start();
-  filterEngine.filterStorage.synchronizer.start();
 
-  let firstRun = getFirstRun();
-  if (!firstRun.foundSubscriptions && !browser.declarativeNetRequest)
-    configureDefaultSubscriptions();
+  let {filterStorage} = filterEngine;
+
+  filterStorage.synchronizer.start();
+
+  let foundSubscriptions = filterStorage.getSubscriptionCount() != 0;
+  let firstRun = {foundSubscriptions, foundStorage: !filterStorage.firstRun};
 
   return {...firstRun, warnings};
 }

@@ -25,13 +25,13 @@ if (isMV3()) {
   describe("MV3 Service Workers", function() {
     // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/307
     after(async function() {
-      setMinTimeout(this, 6000);
+      setMinTimeout(this, 12000);
       // From our observations, after a service worker is suspended it starts
       // up again when a message is sent to it. However, that restart seems to
       // cause lag spikes a few seconds after the service worker restarts.
       // Sleeping is a workaround to ensure the API is fully responsive on
       // subsequent tests.
-      await new Promise(r => setTimeout(r, 5000));
+      await new Promise(r => setTimeout(r, 10000));
     });
 
     it("state is cleared when service worker is suspended", async function() {
