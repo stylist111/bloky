@@ -3,6 +3,7 @@
 
 # General
 
+- Minimum supported Chrome version for Manifest V3 is 102.
 - Updated to adblockpluscore 0.9.1 (#341)
 - Remove unused stop API (#315)
 - Use the updated Chrome scripting API for snippets (#143)
@@ -40,11 +41,12 @@
 - Stop calling `EWE.stop()`. (#315)
 
 - `EWE.start()` no longer set the default subscriptions, and
-  `EWE.subscriptions.addDefaults()` need to be called instead. (#305)
+  `EWE.subscriptions.addDefaults()` needs to be called instead. (#305)
 
-- The following API function are now `async` (#242, #318)
+- The following API function are now `async` (#242, #305, #318)
   * `EWE.filters.getAllowingFilters()`
   * `EWE.filters.isResourceAllowlisted()`
+  * `EWE.subscriptions.add()`
   * `EWE.subscriptions.getDownloadable()`
   * `EWE.subscriptions.getFilters()`
   * `EWE.subscriptions.getForFilter()`
@@ -54,6 +56,11 @@
   * `EWE.subscriptions.remove()`
 
 - Snippets library version 0.5.0 is the minimum required. (#143)
+
+  - Parameters to `EWE.snippets.setLibrary()` changed and the object
+    no longer take a `injectList` property. `isolatedCode` and
+    `injectCode` are typed deferently and match snippet library
+    version 0.5.x.
 
 - Scripts names changed in `npm exec ...` to what is used in `npm run
   ...` (#304):
