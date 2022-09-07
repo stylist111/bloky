@@ -285,6 +285,12 @@ describe("API", function() {
         .toEqual([]);
     });
 
+    it("fails removing a nonexistent subscription", async function() {
+      let errorMessage = "Error: Subscription does not exist: DoesNotExist";
+      await expect(EWE.subscriptions.remove("DoesNotExist"))
+        .rejects.toThrow(errorMessage);
+    });
+
     it("removes all subscriptions and filters", async function() {
       await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
       await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL_2);

@@ -452,16 +452,19 @@ export default {
   /**
    * Removes the subscription for the given URL.
    * It will no longer have any effect.
-   * @return {Promise}
    * @param {string} url The URL of the subscription to be removed.
+   * @return {Promise}
+   * @throws {Error} Subscription does not exist.
    */
   async remove(url) {
     await initializer.start();
 
     let subscription = getSubscription(url);
 
-    if (subscription)
-      filterEngine.filterStorage.removeSubscription(subscription);
+    if (!subscription)
+      throw new Error(`Subscription does not exist: ${url}`);
+
+    filterEngine.filterStorage.removeSubscription(subscription);
 
     await disableRuleset(subscription.id);
   },
