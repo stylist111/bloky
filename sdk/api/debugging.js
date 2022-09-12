@@ -20,6 +20,7 @@ import {IO} from "./io.js";
 import {addonBundledSubscriptions, addonBundledSubscriptionsPath,
         addonName, addonVersion, setAddonInfo} from "./info.js";
 import {setRecommendations} from "adblockpluscore/lib/recommendations.js";
+import {validate} from "./subscriptions.js";
 
 export let debugOptions = {
   elemHide: false,
@@ -89,5 +90,17 @@ export default {
     setAddonInfo({bundledSubscriptions: subscriptions,
                   bundledSubscriptionsPath: addonBundledSubscriptionsPath});
     setRecommendations(subscriptions);
-  }
+  },
+
+  /**
+   * @ignore
+   * Used internally. Returns a list of warnings in the context of validating
+   * that a user has provided the appropriate files to the extension.
+   * @param {Array<Recommendation>} [addonInfo.bundledSubscriptions]
+   *   A list of subscriptions provided by the integrator.
+   * @param {string} [addonInfo.bundledSubscriptionsPath]
+   *   A path to subscription files provided by the integrator.
+   * @return {Array<String>}
+   */
+  validateSubscriptions: validate
 };

@@ -220,17 +220,6 @@ export default {
   ACCEPTABLE_ADS_PRIVACY_URL,
 
   /**
-   * Returns a list of warnings in the context of validating that a user has
-   * provided the appropriate files to the extension.
-   * @param {Array<Recommendation>} [addonInfo.bundledSubscriptions]
-   *   A list of subscriptions provided by the integrator.
-   * @param {string} [addonInfo.bundledSubscriptionsPath]
-   *   A path to subscription files provided by the integrator.
-   * @return {Array<String>}
-   */
-  validate,
-
-  /**
    * A resource that provides a list of filters that decide what to block.
    * @typedef {Object} Subscription
    * @property {boolean} downloadable Indicates whether this subscription is
@@ -507,10 +496,10 @@ export default {
    * @property {string} title The display name of the recommended subscription.
    * @property {Array<string>} requires A list of subscriptions that this
    *                                    one depends on.
+   * @property {Array<string>} includes A list of subscriptions that this
+   *                                    one also contains.
    * @property {string} type The kind of content targeted by this
    *                         recommended subscription.
-   * @property {Array<string>} languages A list of language code that this
-   *                                     subscription applies to.
    * @property {string} url Where the recommended subscription can be found
    *                        in plain text.
    * @property {string} mv2_url Where the recommended subscription can be found

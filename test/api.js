@@ -1155,9 +1155,9 @@ describe("API", function() {
       });
 
       it("validates the provided subscriptions", async function() {
-        await expect(EWE.subscriptions.validate(null, "subscriptions"))
+        await expect(EWE.debugging.validateSubscriptions(null, "subscriptions"))
           .rejects.toThrow("No `bundledSubscriptions` provided");
-        await expect(EWE.subscriptions.validate([], null))
+        await expect(EWE.debugging.validateSubscriptions([], null))
           .rejects.toThrow("No `bundledSubscriptionsPath` provided");
       });
 
@@ -1167,7 +1167,7 @@ describe("API", function() {
           url: "https://domain.com/subscription.txt",
           mv2_url: "https://domain.com/subscription.txt"
         };
-        let warnings = await EWE.subscriptions.validate([subscription], "subscriptions");
+        let warnings = await EWE.debugging.validateSubscriptions([subscription], "subscriptions");
         expect(warnings).toEqual(expect.arrayContaining(
           [`No subscription content file for ID=${subscription.id}`]));
       });
@@ -1179,7 +1179,7 @@ describe("API", function() {
           url: "https://domain.com/subscription.txt",
           mv2_url: "https://domain.com/subscription.txt"
         };
-        let warnings = await EWE.subscriptions.validate([subscription], "subscriptions");
+        let warnings = await EWE.debugging.validateSubscriptions([subscription], "subscriptions");
         expect(warnings).toEqual(expect.arrayContaining(
           [`No ruleset with ID=${subscription.id} declared in the manifest`]));
       });

@@ -77,7 +77,7 @@ export let snippets = {
 *                                        were found, false otherwise.
 *                                        Considers also whether custom filters
 *                                        exist.
-* @property {Array.<string>} [warnings] An array of warnings.
+* @property {Array.<string>?} [warnings] An array of warnings.
 */
 
 /**
@@ -88,17 +88,16 @@ export let snippets = {
  * @param {Object?} [addonInfo] An object containing addon
  *   information belonging to sdk consumer, that can be accessed via
  *   `debugging` module. (It is usually used as an identifier in
- *   network requests, etc.). This object can be undefined for MV2.
+ *   network requests, etc.). This object can be undefined for MV2. If it is,
+ *   name and version will default to the extension's name and version.
  * @param {string} [addonInfo.name] Name of the addon/extension.
  * @param {string} [addonInfo.version] Version of the addon/extension.
- * @param {Array<Recommendation>} [addonInfo.bundledSubscriptions]
- *   A list of subscriptions provided by the integrator.
- * @param {string} [addonInfo.bundledSubscriptionsPath]
- *   A path to subscription files provided by the integrator.
- * @return {Promise<FirstRunInfo>} Promise that is resolved after
- *                                 starting up is completed. Promise
- *                                 is rejected if `stop()` is called
- *                                 before starting is completed.
+ * @param {Array<Recommendation>?} [addonInfo.bundledSubscriptions]
+ *   A list of subscriptions provided by the integrator. Cannot be undefined
+ *   for MV3.
+ * @param {string?} [addonInfo.bundledSubscriptionsPath]
+ *   A path to subscription files provided by the integrator. Cannot be
+ *   undefined for MV3.
  * @return {Promise<FirstRunInfo>} Promise that is resolved after starting up
  *                                 is completed.
  */
