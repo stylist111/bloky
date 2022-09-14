@@ -19,8 +19,7 @@ import expect from "expect";
 import browser from "webextension-polyfill";
 
 import {Page, wait, isMV3} from "./utils.js";
-import {addFilter, EWE, runInBackgroundPage}
-  from "./messaging.js";
+import {addFilter, EWE, runInBackgroundPage} from "./messaging.js";
 
 const METADATA_FILTER_TEXT = "reload###metadata-test";
 const METADATA_FILTER = {

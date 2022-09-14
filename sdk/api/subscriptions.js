@@ -22,6 +22,7 @@ import {Subscription, DownloadableSubscription, RegularSubscription,
 import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {recommendations} from "adblockpluscore/lib/recommendations.js";
 import {Filter} from "adblockpluscore/lib/filterClasses.js";
+import {parseFilterList} from "adblockpluscore/lib/filters/lists.js";
 
 import {addonBundledSubscriptions, addonBundledSubscriptionsPath}
   from "./info.js";
@@ -159,7 +160,14 @@ async function disableRuleset(rulesetId) {
 
 async function getFilterText(subscription, path) {
   let subscriptionPath = `${path}/${subscription.id}`;
-  return (await readFileContent(subscriptionPath)).split("\n");
+  let rawLines = (await readFileContent(subscriptionPath));
+  let {lines, error} = parseFilterList(rawLines);
+  if (error)
+    throw new Error(error);
+  if (!lines)
+    throw new Error("invalid filter list");
+  lines.shift();
+  return lines;
 }
 
 async function subscriptionFileExists(subscription, path) {
@@ -205,6 +213,42 @@ export async function validate(bundledSubscriptions,
   }
 
   return warnings;
+}
+
+async function remove(url) {
+  await initializer.start();
+
+  let subscription = getSubscription(url);
+
+  if (!subscription)
+    throw new Error(`Subscription does not exist: ${url}`);
+
+  filterEngine.filterStorage.removeSubscription(subscription);
+
+  await disableRuleset(subscription.id);
+}
+
+export async function updateFilterText() {
+  let removeUrls = [];
+
+  for (let subscription of filterEngine.filterStorage.subscriptions()) {
+    if (subscription instanceof RegularSubscription) {
+      let subscriptionInfo = addonBundledSubscriptions.find(
+        x => x.url == subscription.url);
+
+      if (subscriptionInfo) {
+        let filterText = await getFilterText(
+          subscriptionInfo, addonBundledSubscriptionsPath);
+        subscription.setFilterText(filterText);
+      }
+      else {
+        removeUrls.push(subscription.url);
+      }
+    }
+  }
+
+  for (let url of removeUrls)
+    await remove(url);
 }
 
 export default {
@@ -445,18 +489,7 @@ export default {
    * @return {Promise}
    * @throws {Error} Subscription does not exist.
    */
-  async remove(url) {
-    await initializer.start();
-
-    let subscription = getSubscription(url);
-
-    if (!subscription)
-      throw new Error(`Subscription does not exist: ${url}`);
-
-    filterEngine.filterStorage.removeSubscription(subscription);
-
-    await disableRuleset(subscription.id);
-  },
+  remove,
 
   /**
    * Forces a new version of a subscription with the

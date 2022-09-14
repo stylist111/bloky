@@ -1099,6 +1099,11 @@ EWE.start(startupInfo).then(async() => {
     if (result["reload-test-running"])
       chrome.tabs.create({url: "reload.html"});
   });
+
+  chrome.storage.local.get(["update-test-running"], result => {
+    if (result["update-test-running"])
+      chrome.tabs.create({url: "mv3-update.html"});
+  });
 });
 
 let injectedCode = (environment, ..._) => {

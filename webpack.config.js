@@ -28,7 +28,7 @@ import GenerateJsonPlugin from "generate-json-webpack-plugin";
 import CopyPlugin from "copy-webpack-plugin";
 
 let dirname = path.dirname(url.fileURLToPath(import.meta.url));
-let templateDir = path.join(dirname, "test", "template.html");
+let htmlTemplate = path.join(dirname, "test", "template.html");
 const eweRegularConfigName = "sdk";
 const eweCustomConfigName = "sdk-subs";
 const eweDistPath = path.join(dirname, "dist");
@@ -181,7 +181,8 @@ export default (env = {}) => {
       mode: "development",
       entry: {
         functional: path.join(dirname, "test", "functional.js"),
-        reload: path.join(dirname, "test", "reload-wrap.js")
+        reload: path.join(dirname, "test", "reload-wrap.js"),
+        update: path.join(dirname, "test", "update-wrap.js")
       },
       output: {
         path: path.resolve(dirname, "dist", buildVariant.outputPath),
@@ -205,14 +206,21 @@ export default (env = {}) => {
           filename: "functional.html",
           inject: "body",
           chunks: ["functional"],
-          template: templateDir
+          template: htmlTemplate
         }),
         new HtmlWebpackPlugin({
           title: "Reload tests",
           filename: "reload.html",
           inject: "body",
           chunks: ["reload"],
-          template: templateDir
+          template: htmlTemplate
+        }),
+        new HtmlWebpackPlugin({
+          title: "MV3 update tests",
+          filename: "mv3-update.html",
+          inject: "body",
+          chunks: ["update"],
+          template: htmlTemplate
         }),
         new MiniCssExtractPlugin(),
         new GenerateJsonPlugin("manifest.json", manifest, null, 2),

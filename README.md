@@ -262,8 +262,8 @@ tests to run in incognito mode.
 - The `testKinds` option is used to run only a certain subset of the
 functional tests. For example, you can target only the service worker
 fuzzing tests by running `--testKinds fuzz`, or a combination of the
-normal functional tests and reload tests by running tests with
-`--testKinds functional reload`.
+functional, reload and update tests by running tests with
+`--testKinds functional reload mv3-update`.
 
 #### Using the test runner
 
@@ -442,6 +442,8 @@ For convenience and testing purposes, the following script will run all the scri
 ```
 npm run subs-run -- -t {test|default}
 ```
+
+The subscriptions data is updated automatically based on the extension version changing.
 
 ### Custom subscriptions list
 

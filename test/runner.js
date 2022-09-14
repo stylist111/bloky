@@ -19,6 +19,7 @@
 /* eslint-disable no-console */
 
 import path from "path";
+import fs from "fs";
 
 import yargs from "yargs";
 import webdriver from "selenium-webdriver";
@@ -28,6 +29,8 @@ import {BROWSERS} from "@eyeo/get-browser-binary";
 import "chromedriver";
 import "geckodriver";
 import "msedgedriver";
+
+let extensionPaths;
 
 function parseArguments() {
   let parser = yargs(process.argv.slice(2));
@@ -47,7 +50,7 @@ function parseArguments() {
   parser.option("testKinds", {
     description: "Which kinds of tests to run (by default all are run)",
     array: true,
-    choices: ["functional", "reload", "fuzz"]
+    choices: ["functional", "reload", "mv3-update", "fuzz"]
   });
   parser.option("grep");
 
@@ -64,8 +67,10 @@ function parseArguments() {
   // because it depends on another yargs option (the manifest).
   if (!testKinds) {
     testKinds = ["functional", "reload"];
-    if (manifestIsMV3(argv.manifest))
+    if (manifestIsMV3(argv.manifest)) {
       testKinds.push("fuzz");
+      testKinds.push("mv3-update");
+    }
   }
 
   return {
@@ -126,6 +131,105 @@ async function setMinDriverTimeout(driver, timeout) {
   }
 }
 
+async function updateManifestFiles() {
+  for (let extensionPath of extensionPaths) {
+    let manifestFile = path.resolve(extensionPath, "manifest.json");
+    let content = JSON.parse(await fs.promises.readFile(manifestFile));
+    content.version = "0.0.2"; // Assumes current version is "0.0.1"
+    await fs.promises.writeFile(manifestFile, JSON.stringify(content));
+  }
+}
+
+export async function exists(filename) {
+  try {
+    await fs.promises.access(filename);
+    return true;
+  }
+  catch (error) {
+    return false;
+  }
+}
+
+async function copyFile(fromFile, toFile) {
+  for (let extensionPath of extensionPaths) {
+    let absFromFile = path.resolve(extensionPath, fromFile);
+    let absToFile = path.resolve(extensionPath, toFile);
+    if (await exists(absFromFile)) {
+      let content = (await fs.promises.readFile(absFromFile)).toString();
+      if (await exists(absToFile))
+        await fs.promises.unlink(absToFile);
+      await fs.promises.writeFile(absToFile, content);
+    }
+  }
+}
+
+async function moveFile(fromFile, toFile) {
+  for (let extensionPath of extensionPaths) {
+    let absFromFile = path.resolve(extensionPath, fromFile);
+    let absToFile = path.resolve(extensionPath, toFile);
+    if (await exists(absFromFile)) {
+      if (await exists(absToFile))
+        await fs.promises.unlink(absToFile);
+      await fs.promises.rename(absFromFile, absToFile);
+    }
+  }
+}
+
+async function addLines(file, lines) {
+  for (let extensionPath of extensionPaths) {
+    let absFile = path.resolve(extensionPath, file);
+    if (await exists(absFile)) {
+      let content = (await fs.promises.readFile(absFile)).toString();
+      for (let line of lines)
+        content = content + "\n" + line;
+      await fs.promises.writeFile(absFile, content);
+    }
+  }
+}
+
+async function removeLines(file, lines) {
+  for (let extensionPath of extensionPaths) {
+    let absFile = path.resolve(extensionPath, file);
+    if (await exists(absFile)) {
+      let content = (await fs.promises.readFile(absFile)).toString().split("\n");
+      let readyContent = [];
+      for (let line of content) {
+        if (lines.indexOf(line) < 0)
+          readyContent.push(line);
+      }
+      await fs.promises.writeFile(absFile, readyContent.join("\n"));
+    }
+  }
+}
+
+async function runCommand(method, args) {
+  switch (method) {
+    case "copyFile":
+      await copyFile(args.from, args.to);
+      break;
+
+    case "moveFile":
+      await moveFile(args.from, args.to);
+      break;
+
+    case "addLines":
+      await addLines(args.file, args.lines);
+      break;
+
+    case "removeLines":
+      await removeLines(args.file, args.lines);
+      break;
+
+    default:
+      throw new Error(`Unknown command: ${method}`);
+  }
+}
+
+async function updateWebExtension(commands) {
+  for (let command of commands)
+    await runCommand(command.method, command.args);
+}
+
 async function pollMessages(driver, handle, isMV3) {
   let result;
   let webdriverEvents = [];
@@ -169,6 +273,12 @@ async function pollMessages(driver, handle, isMV3) {
           await driver.findElement(webdriver.By.css(arg.selector)).click();
           await driver.switchTo().window(handle);
           webdriverEvents.push({id: "clicked", arg});
+          break;
+
+        case "updateExtensionFiles":
+          await updateManifestFiles();
+          await updateWebExtension(JSON.parse(arg));
+          webdriverEvents.push({id: "extensionUpdated"});
           break;
 
         case "suspendServiceWorker":
@@ -222,19 +332,20 @@ async function runFunctionalTests(driver, params, isMV3, incognito) {
   return results;
 }
 
-async function runReloadTests(driver, params, isMV3) {
+async function runReloadTests(
+  driver, params, isMV3, title, id, testOutputToken, page) {
   console.log("============");
-  console.log("Reload Tests");
+  console.log(`${title} Tests`);
   console.log("============");
 
   let results;
   let handle;
 
-  await startTestRun(driver, "reload");
+  await startTestRun(driver, id);
   while (!results ||
-         results.log.toString().includes("Reload (preparation)")) {
+         results.log.toString().includes(`${testOutputToken} (preparation)`)) {
     // The 20s timeout covers rulesets delays when loading an MV3 extension
-    handle = await getHandle(driver, "/reload.html", 20000);
+    handle = await getHandle(driver, page, 20000);
     try {
       results = await pollMessages(driver, handle, isMV3);
     }
@@ -296,8 +407,7 @@ async function run() {
   let {manifest, browser, version, params, testKinds} = parseArguments();
   let isMV3 = manifestIsMV3(manifest);
 
-  let extensionPaths =
-    [path.resolve(process.cwd(), "dist", `test-m${manifest}`)];
+  extensionPaths = [path.resolve(process.cwd(), "dist", `test-m${manifest}`)];
   let incognito =
     typeof params != "undefined" && typeof params.incognito != "undefined";
   let headless = browser == "firefox" && !incognito;
@@ -333,7 +443,12 @@ async function run() {
           );
           break;
         case "reload":
-          results.reload = await runReloadTests(driver, params, isMV3);
+          results.reload = await runReloadTests(
+            driver, params, isMV3, "Reload", "reload", "Reload", "/reload.html");
+          break;
+        case "mv3-update":
+          results["mv3-update"] = await runReloadTests(
+            driver, params, isMV3, "MV3 update", "mv3-update", "MV3 update", "/mv3-update.html");
           break;
         case "fuzz":
           results.fuzz = await runFuzzTests(driver, params, isMV3, incognito);

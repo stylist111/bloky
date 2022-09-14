@@ -82,7 +82,7 @@ func:v2:chromium:stable:
   extends: .functional
   variables:
     TEST_PARAMS: v2 chromium
-  
+
 func:v2:chromium:stable:incognito:
   extends: .functional
   variables:
@@ -155,25 +155,25 @@ func:v2:firefox:beta:
 func:v3-default-subs:chromium:stable:
   extends: .functional
   variables:
-    TEST_PARAMS: v3 chromium --testKinds functional reload
+    TEST_PARAMS: v3 chromium --testKinds functional reload mv3-update
     MV3_SUBSCRIPTIONS: default
 
 func:v3-test-subs:chromium:stable:
   extends: .functional
   variables:
-    TEST_PARAMS: v3 chromium --testKinds functional reload
+    TEST_PARAMS: v3 chromium --testKinds functional reload mv3-update
     MV3_SUBSCRIPTIONS: test
 
 func:v3-default-subs:chromium:stable:incognito:
   extends: .functional
   variables:
-    TEST_PARAMS: v3 chromium --testKinds functional reload --incognito
+    TEST_PARAMS: v3 chromium --testKinds functional reload mv3-update --incognito
     MV3_SUBSCRIPTIONS: default
 
 func:v3-default-subs:edge:linux:
   extends: .functional
   variables:
-    TEST_PARAMS: v3 edge --testKinds functional reload
+    TEST_PARAMS: v3 edge --testKinds functional reload mv3-update
     MV3_SUBSCRIPTIONS: default
 
 func:v2:edge:windows:
@@ -204,7 +204,7 @@ fuzz:v3-default-subs:chromium:stable:
   variables:
     MV3_SUBSCRIPTIONS: default
     BROWSER: chromium
-    
+
 fuzz:v3-test-subs:chromium:stable:fuzz:
   extends: .fuzz
   variables:

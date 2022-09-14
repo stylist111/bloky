@@ -25,7 +25,7 @@ import {setSnippetLibrary} from "./content-filter.js";
 import {setAddonInfo} from "./info.js";
 import {filterEngine} from "./core.js";
 import {setRecommendations} from "adblockpluscore/lib/recommendations.js";
-import {validate} from "./subscriptions.js";
+import {validate, updateFilterText} from "./subscriptions.js";
 
 export {default as subscriptions} from "./subscriptions.js";
 export {default as filters} from "./filters.js";
@@ -69,6 +69,15 @@ export let snippets = {
   setLibrary: setSnippetLibrary
 };
 
+async function onInstalled(details) {
+  let manifest = browser.runtime.getManifest();
+  if (details.previousVersion &&
+    details.previousVersion !== manifest.version) {
+    await initializer.start();
+    await updateFilterText();
+  }
+}
+
 /**
 * @typedef {Object} FirstRunInfo
 * @property {boolean} foundStorage Whether the subscriptions storage was
@@ -109,6 +118,7 @@ export async function start(addonInfo) {
     if (!addonInfo)
       throw new Error("No addonInfo provided to EWE.start");
 
+    browser.runtime.onInstalled.addListener(onInstalled);
     warnings = await validate(addonInfo.bundledSubscriptions,
                               addonInfo.bundledSubscriptionsPath);
   }

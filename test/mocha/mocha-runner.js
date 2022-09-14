@@ -80,6 +80,17 @@ export async function click(url, selector) {
   });
 }
 
+export async function updateExtensionFiles(commands) {
+  sendMessage("updateExtensionFiles", JSON.stringify(commands));
+  await new Promise(resolve => {
+    function done() {
+      webdriverEventEmitter.off("extensionUpdated", done);
+      resolve();
+    }
+    webdriverEventEmitter.on("extensionUpdated", done);
+  });
+}
+
 export async function suspendServiceWorker(runnable) {
   sendMessage("suspendServiceWorker");
   if (runnable) {
