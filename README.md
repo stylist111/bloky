@@ -349,14 +349,12 @@ on Docker run the following commands:
 ```
 docker build -t extension -f test/dockerfiles/extension.Dockerfile .
 docker run extension
-docker cp $(docker ps -aqf ancestor=extension):/extension.zip .
+docker cp $(docker ps -aqf ancestor=extension):/extension .
 ```
 
-The extension code uses the most recently released ABPUI Tag by default. If you prefer to choose a different tag, pass it as a build argument:
+The extension code uses the most recently released ABPUI Tag by default.
 
-```
-docker build --build-arg ABPUITAG="3.13" -t extension -f test/dockerfiles/extension.Dockerfile .
-```
+`extension` folder will contain two versions: mv2 and mv3. 
 
 To run testpages integration tests on Docker with the custom extension previously
 created, you may clone the [Testpages project](testpages-project) and follow
@@ -364,8 +362,8 @@ the instructions on [how to run tests with packed extensions](https://gitlab.com
 
 ```
 cd testpages.adblockplus.org
-cp <location/to/extension.zip> .
-docker build -t testpages --build-arg EXTENSION_FILE="extension.zip" .
+cp <location/to/extension/> .
+docker build -t testpages --build-arg EXTENSION_FILE="extension/extensionmv<2|3>.zip" .
 docker run --shm-size=512m -e SKIP_EXTENSION_DOWNLOAD="true" -e TESTS_EXCLUDE="Snippets" testpages
 ```
 
