@@ -305,8 +305,10 @@ async function startTestRun(driver, id, params, incognito) {
 
   search = search.toString();
 
-  // In incognito mode extension load is taking a bit longer
-  await getHandle(driver, "/index.html", incognito ? 12000 : void 0);
+  // starting the extension can sometimes be really slow. This is
+  // worst in incognito mode and when an MV3 extension has many
+  // subscriptions and rulesets.
+  await getHandle(driver, "/index.html", 25000);
   if (search) {
     let url = await driver.getCurrentUrl();
     let urlComponents = url.split("?");
@@ -344,8 +346,10 @@ async function runReloadTests(
   await startTestRun(driver, id);
   while (!results ||
          results.log.toString().includes(`${testOutputToken} (preparation)`)) {
-    // The 20s timeout covers rulesets delays when loading an MV3 extension
-    handle = await getHandle(driver, page, 20000);
+    // Reloading with an update has the same performance impact as
+    // loading the first time. This is worst in incognito mode and
+    // when an MV3 extension has many subscriptions and rulesets.
+    handle = await getHandle(driver, page, 25000);
     try {
       results = await pollMessages(driver, handle, isMV3);
     }

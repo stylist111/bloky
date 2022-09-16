@@ -36,6 +36,13 @@ async function clearFilters() {
     {op: "callMethod", arg: "removeAll"},
     {op: "await"}
   ], false);
+
+  await runInBackgroundPage([
+    {op: "getGlobal", arg: "EWE"},
+    {op: "getProp", arg: "debugging"},
+    {op: "callMethod", arg: "ensureEverythingHasSaved"},
+    {op: "await"}
+  ], false);
 }
 
 before(async function() {

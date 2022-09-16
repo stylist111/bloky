@@ -59,6 +59,31 @@ function prefToKey(pref) {
   return `${KEY_PREFIX}${pref}`;
 }
 
+let activeSaveActions = new Set();
+
+function trackSaving(savePromise) {
+  activeSaveActions.add(savePromise);
+  savePromise.finally(() => activeSaveActions.delete(savePromise));
+  return savePromise;
+}
+
+export async function awaitSavingComplete() {
+  if (Promise.allSettled) {
+    await Promise.allSettled(activeSaveActions);
+    return;
+  }
+
+  // Promise.allSettled isn't supported in oldest Firefox.
+  // It was added in Firefox 71.
+  for (let saveAction of activeSaveActions) {
+    try {
+      await saveAction;
+    }
+    catch (e) {
+    }
+  }
+}
+
 function addPreference(preference) {
   Object.defineProperty(Prefs, preference, {
     get() {
@@ -70,12 +95,12 @@ function addPreference(preference) {
       let key = prefToKey(preference);
       if (value === defaults[preference]) {
         overrides.delete(preference);
-        browser.storage.local.remove(key);
+        trackSaving(browser.storage.local.remove(key));
         return;
       }
 
       overrides.set(preference, value);
-      browser.storage.local.set({[key]: value});
+      trackSaving(browser.storage.local.set({[key]: value}));
     },
     enumerable: true
   });
@@ -106,7 +131,7 @@ export async function migratePrefs(db) {
 function savePreference(name, value) {
   let key = prefToKey(name);
   overrides.set(name, value);
-  browser.storage.local.set({[key]: value});
+  trackSaving(browser.storage.local.set({[key]: value}));
 }
 
 function onChanged(changes, areaName) {

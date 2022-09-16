@@ -16,9 +16,12 @@
  */
 
 import {FilterStorage} from "adblockpluscore/lib/filterStorage.js";
+
 import {IO} from "./io.js";
 import {addonBundledSubscriptions, addonBundledSubscriptionsPath,
         addonName, addonVersion, setAddonInfo} from "./info.js";
+import {filterEngine} from "./core.js";
+import {awaitSavingComplete} from "./prefs.js";
 import {setRecommendations} from "adblockpluscore/lib/recommendations.js";
 import {validate} from "./subscriptions.js";
 
@@ -102,5 +105,22 @@ export default {
    *   A path to subscription files provided by the integrator.
    * @return {Array<String>}
    */
-  validateSubscriptions: validate
+  validateSubscriptions: validate,
+
+  /**
+   * @ignore
+   * Used internally. Waits for any pending save actions to complete.
+   * @return {Promise}
+   */
+  async ensureEverythingHasSaved() {
+    let {filterStorage} = filterEngine;
+    if (filterStorage) {
+      // It would be better if filterStorage gave a promise to await for this.
+      // https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore/-/issues/464
+      while (filterStorage._saving)
+        await new Promise(r => setTimeout(r, 10));
+    }
+
+    await awaitSavingComplete();
+  }
 };
