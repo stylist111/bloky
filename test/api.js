@@ -22,8 +22,8 @@ import {Page, Popup, setMinTimeout, wait, executeScript, isFirefox, isEdge,
         isChromiumBased, isIncognito,
         getVisibleElement, isMV3, TEST_PAGES_URL,
         TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN,
-        isMV2CustomSubsExtension, isMV3TestSubsExtension,
-        TEST_MV3_SUBSCRIPTION, TEST_MV3_SUBSCRIPTION_2}
+        isMV2CustomSubsExtension, TEST_MV3_SUBSCRIPTION,
+        TEST_MV3_SUBSCRIPTION_2}
   from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, addFakeListener,
         removeFakeListeners}
@@ -109,7 +109,7 @@ let subEasylistPlusGermany = {
   mv2_url: "https://easylist-downloads.adblockplus.org/easylistgermany+easylist.txt"
 };
 
-let subExceptions = {
+let subAcceptableAds = {
   id: "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F",
   type: "allowing",
   title: "Allow nonintrusive advertising",
@@ -120,12 +120,6 @@ let subExceptions = {
 
 describe("API", function() {
   describe("Subscriptions", function() {
-    before(function() {
-      // In MV3, most tests depend on having the test subscriptions available
-      if (isMV3() && !isMV3TestSubsExtension())
-        this.skip();
-    });
-
     it("adds a subscription", async function() {
       await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
 
@@ -133,7 +127,7 @@ describe("API", function() {
       expect(subs).toEqual([expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
         enabled: true,
-        title: VALID_SUBSCRIPTION_URL,
+        title: isMV3() ? "Test MV3 Custom Subscription" : VALID_SUBSCRIPTION_URL,
         homepage: null,
         downloadable: expect.any(Boolean)
       })]);
@@ -326,6 +320,8 @@ describe("API", function() {
       ]));
 
       for (let item of result) {
+        if (item.id)
+          continue;
         expect(item).toEqual({
           languages: expect.any(Object),
           title: expect.any(String),
@@ -418,7 +414,7 @@ describe("API", function() {
         expect(fake.firstArg).toEqual(expect.objectContaining({
           url: VALID_SUBSCRIPTION_URL,
           enabled: true,
-          title: VALID_SUBSCRIPTION_URL
+          title: isMV3() ? "Test MV3 Custom Subscription" : VALID_SUBSCRIPTION_URL
         }));
       });
 
@@ -941,6 +937,35 @@ describe("API", function() {
         {type: "ewe-test:deleteUiLanguageOverride"});
     });
 
+    it("starts with the subscription info provided by the initial start call",
+       async function() {
+         // unskip when MV2 and MV3 are treated in exactly the same way
+         // in terms of how subscriptions are provided initially.
+         if (!isMV3())
+           this.skip();
+
+         let receivedStartupInfo = await runInBackgroundPage([
+           {op: "getGlobal", arg: "EWE"},
+           {op: "getProp", arg: "debugging"},
+           {op: "getProp", arg: "addonInfo"}
+         ]);
+
+         // The list of bundled subscriptions is passed as an
+         // argument to EWE.start in the background.js file.
+         expect(receivedStartupInfo).toEqual(
+           expect.objectContaining(
+             {
+               bundledSubscriptions: expect.arrayContaining([
+                 TEST_MV3_SUBSCRIPTION, TEST_MV3_SUBSCRIPTION_2,
+                 subEasylist, subEasylistPlusGermany, subCircumvention,
+                 subAcceptableAds
+               ]),
+               bundledSubscriptionsPath: "subscriptions"
+             })
+         );
+       }
+    );
+
     it("starts with default addon info", async function() {
       if (isMV3())
         this.skip(); // MV3 has to have addonInfo.
@@ -967,6 +992,22 @@ describe("API", function() {
       );
     });
 
+    it("starts with the provided subscriptions enabled and correctly downloadable", async function() {
+      await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.url);
+
+      // The list of bundled subscriptions is passed as an
+      // argument to EWE.start in the background.js file.
+      let subs = await EWE.subscriptions.getDownloadable();
+      expect(subs).toEqual([
+        expect.objectContaining({
+          enabled: true,
+          downloadable: !isMV3(),
+          id: isMV2CustomSubsExtension() || (!isMV3()) ?
+            null : TEST_MV3_SUBSCRIPTION.id
+        })
+      ]);
+    });
+
     for (let [language, mv2subscriptionUrl, mv3subscriptionUrl] of [
       ["en",
        "https://easylist-downloads.adblockplus.org/easylist.txt",
@@ -976,15 +1017,12 @@ describe("API", function() {
        "https://easylist-downloads.adblockplus.org/v3/full/easylistgermany+easylist.txt"]
     ]) {
       it(`configures default subscriptions for ${language}`, async function() {
-        if (isMV2CustomSubsExtension() || isMV3TestSubsExtension())
-          this.skip();
-
         await browser.runtime.sendMessage(
           {type: "ewe-test:setLanguage", args: [language]});
 
         let startSubscriptions = [
           subCircumvention,
-          subExceptions
+          subAcceptableAds
         ];
 
         // default language (required even for "de")
@@ -1032,9 +1070,6 @@ describe("API", function() {
     }
 
     it("informs when the filter engine runs for the first time", async function() {
-      if (isMV3TestSubsExtension())
-        this.skip();
-
       // Skipping because webext has a bug in chromium browsers in incognito
       // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/311
       if (isChromiumBased() && isIncognito())
@@ -1048,7 +1083,8 @@ describe("API", function() {
         {op: "pushArg", arg: {
           name: ADDON_NAME,
           version: ADDON_VERSION,
-          bundledSubscriptions: [subEasylist, subCircumvention, subExceptions],
+          bundledSubscriptions: [subEasylist, subCircumvention,
+                                 subAcceptableAds],
           bundledSubscriptionsPath: "subscriptions"}},
         {op: "callMethod", arg: "start"},
         {op: "await"}
@@ -1064,7 +1100,8 @@ describe("API", function() {
         {op: "pushArg", arg: {
           name: ADDON_NAME,
           version: ADDON_VERSION,
-          bundledSubscriptions: [subEasylist, subCircumvention, subExceptions],
+          bundledSubscriptions: [subEasylist, subCircumvention,
+                                 subAcceptableAds],
           bundledSubscriptionsPath: "subscriptions"}},
         {op: "callMethod", arg: "start"},
         {op: "await"}
@@ -1106,47 +1143,6 @@ describe("API", function() {
          );
        }
     );
-
-    it("starts with the subscription info provided by the initial start call",
-       async function() {
-         if (!isMV3TestSubsExtension())
-           this.skip();
-
-         let receivedStartupInfo = await runInBackgroundPage([
-           {op: "getGlobal", arg: "EWE"},
-           {op: "getProp", arg: "debugging"},
-           {op: "getProp", arg: "addonInfo"}
-         ]);
-
-         // The list of bundled subscriptions is passed as an
-         // argument to EWE.start in the background.js file.
-         expect(receivedStartupInfo).toEqual(
-           expect.objectContaining({
-             bundledSubscriptions: [
-               TEST_MV3_SUBSCRIPTION, TEST_MV3_SUBSCRIPTION_2],
-             bundledSubscriptionsPath: "subscriptions"
-           })
-         );
-       }
-    );
-
-    it("starts with the provided subscriptions enabled and non downloadable", async function() {
-      if (!isMV3TestSubsExtension())
-        this.skip();
-
-      await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.url);
-
-      // The list of bundled subscriptions is passed as an
-      // argument to EWE.start in the background.js file.
-      let subs = await EWE.subscriptions.getDownloadable();
-      expect(subs).toEqual([
-        expect.objectContaining({
-          enabled: true,
-          downloadable: false,
-          id: TEST_MV3_SUBSCRIPTION.id
-        })
-      ]);
-    });
 
     describe("Validation", function() {
       before(function() {
@@ -1217,7 +1213,7 @@ describe("API", function() {
 
         it("throws if no anti-circumvention subscription is provided", async function() {
           await setLanguage("en");
-          EWE.debugging._setSubscriptions([subEasylist, subExceptions]);
+          EWE.debugging._setSubscriptions([subEasylist, subAcceptableAds]);
           await expect(EWE.subscriptions.addDefaults())
             .rejects.toThrow("No anti-circumvention subscription");
         });
@@ -1232,7 +1228,7 @@ describe("API", function() {
         it("does not throw if everything needed is provided", async function() {
           await setLanguage("en");
           EWE.debugging._setSubscriptions([
-            subEasylist, subCircumvention, subExceptions]);
+            subEasylist, subCircumvention, subAcceptableAds]);
           await EWE.subscriptions.addDefaults();
         });
       });

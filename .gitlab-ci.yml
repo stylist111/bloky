@@ -1,5 +1,4 @@
 default:
-  image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
   interruptible: true
 
 stages:
@@ -24,9 +23,10 @@ cache:
     - browser-snapshots/*/cache/
 
 build:
+  image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
   stage: build
   before_script:
-    - npm install
+    - npm install  
   script:
     - npm run lint
     - npm run build -- --env release
@@ -62,6 +62,7 @@ build:integration:
     expire_in: 1 month
 
 audit:
+  image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
   stage: build
   before_script:
     - npm install
@@ -74,7 +75,7 @@ audit:
   extends: .docker-image
   needs: []
   before_script:
-    - docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg MV3_SUBSCRIPTIONS="$MV3_SUBSCRIPTIONS" .
+    - docker build -t functional -f test/dockerfiles/functional.Dockerfile .
   script:
     - docker run --shm-size=512m -e TEST_PARAMS="$TEST_PARAMS" functional
 
@@ -157,29 +158,20 @@ func:v2:firefox:beta:
     - windows-1809
   cache: {}
 
-func:v3-default-subs:chromium:stable:
+func:v3-subs:chromium:stable:
   extends: .functional
   variables:
     TEST_PARAMS: v3 chromium --testKinds functional reload mv3-update
-    MV3_SUBSCRIPTIONS: default
-
-func:v3-test-subs:chromium:stable:
+   
+func:v3-subs:chromium:stable:incognito:
   extends: .functional
   variables:
-    TEST_PARAMS: v3 chromium --testKinds functional reload mv3-update
-    MV3_SUBSCRIPTIONS: test
+    TEST_PARAMS: v3 chromium --testKinds functional reload mv3-update --incognito    
 
-func:v3-default-subs:chromium:stable:incognito:
+func:v3-subs:edge:linux:
   extends: .functional
   variables:
-    TEST_PARAMS: v3 chromium --testKinds functional reload mv3-update --incognito
-    MV3_SUBSCRIPTIONS: default
-
-func:v3-default-subs:edge:linux:
-  extends: .functional
-  variables:
-    TEST_PARAMS: v3 edge --testKinds functional reload mv3-update
-    MV3_SUBSCRIPTIONS: default
+    TEST_PARAMS: v3 edge --testKinds functional reload mv3-update    
 
 func:v2:edge:windows:
   extends: .edge:windows
@@ -209,28 +201,19 @@ func:v2:edge:windows:incognito:
         - "API"
         - "(?!Blocking|Pop-up\\sblocking|Element\\sHiding|Snippets|API)"
 
-fuzz:v3-default-subs:chromium:stable:
+fuzz:v3-subs:chromium:stable:
   extends: .fuzz
   variables:
-    MV3_SUBSCRIPTIONS: default
     BROWSER: chromium
 
-fuzz:v3-test-subs:chromium:stable:fuzz:
+fuzz:v3-subs:chromium:stable:incognito:
   extends: .fuzz
-  variables:
-    MV3_SUBSCRIPTIONS: test
-    BROWSER: chromium
-
-fuzz:v3-default-subs:chromium:stable:incognito:
-  extends: .fuzz
-  variables:
-    MV3_SUBSCRIPTIONS: default
+  variables:    
     BROWSER: chromium --incognito
 
-fuzz:v3-default-subs:edge:linux:
+fuzz:v3-subs:edge:linux:
   extends: .fuzz
-  variables:
-    MV3_SUBSCRIPTIONS: default
+  variables:    
     BROWSER: edge
 
 .integration:
@@ -307,6 +290,7 @@ int:v3:chrome:beta:
     BROWSER: chromium beta
 
 .pages:
+  image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
   stage: pages
   dependencies:
     - build

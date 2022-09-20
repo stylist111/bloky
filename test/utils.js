@@ -34,13 +34,19 @@ export const FETCHED_TEST_SUBSCRIPTION_ID = "00000000-0000-0000-0000-00000000000
 export const FETCHED_TEST_SUBSCRIPTION_ID_2 = "00000000-0000-0000-0000-000000000010";
 export const TEST_MV3_SUBSCRIPTION = {
   id: FETCHED_TEST_SUBSCRIPTION_ID,
+  homepage: TEST_PAGES_URL + "/subscription.txt",
   url: TEST_PAGES_URL + "/subscription.txt",
-  mv2_url: TEST_PAGES_URL + "/subscription.txt"
+  title: "Test MV3 Custom Subscription",
+  type: "ads",
+  mv2_url: TEST_PAGES_URL + "/mv2_subscription.txt"
 };
 export const TEST_MV3_SUBSCRIPTION_2 = {
   id: FETCHED_TEST_SUBSCRIPTION_ID_2,
+  homepage: TEST_PAGES_URL + "/subscription.txt?2",
   url: TEST_PAGES_URL + "/subscription.txt?2",
-  mv2_url: TEST_PAGES_URL + "/subscription.txt?2"
+  title: "Test MV3 Custom Subscription 2",
+  type: "ads",
+  mv2_url: TEST_PAGES_URL + "/mv2_subscription.txt?2"
 };
 
 function handleConnection(details, tabId, removeListeners, reject) {
@@ -438,14 +444,4 @@ export function isIncognito() {
 export function isMV2CustomSubsExtension() {
   let manifest = browser.runtime.getManifest();
   return manifest.description.endsWith("custom subscriptions");
-}
-
-export function isMV3TestSubsExtension() {
-  let manifest = browser.runtime.getManifest();
-
-  if (!manifest.declarative_net_request)
-    return false;
-
-  let firstRulesetId = manifest.declarative_net_request.rule_resources[0].id;
-  return firstRulesetId == FETCHED_TEST_SUBSCRIPTION_ID;
 }

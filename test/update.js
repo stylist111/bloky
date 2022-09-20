@@ -18,7 +18,7 @@
 import expect from "expect";
 import browser from "webextension-polyfill";
 
-import {TEST_MV3_SUBSCRIPTION, isMV3TestSubsExtension}
+import {TEST_MV3_SUBSCRIPTION}
   from "./utils.js";
 import {EWE, runInBackgroundPage} from "./messaging.js";
 import {isConnected, updateExtensionFiles} from "./mocha/mocha-runner.js";
@@ -33,9 +33,6 @@ describe(`MV3 update (${phase}) (runner only)`, function() {
 
   before(async function() {
     if (!await isConnected())
-      this.skip();
-
-    if (!isMV3TestSubsExtension())
       this.skip();
   });
 

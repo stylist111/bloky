@@ -19,7 +19,7 @@ import expect from "expect";
 
 import {Page, Resource, executeScript, wait, isMV3, isIncognito, setMinTimeout,
         TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, SITEKEY,
-        isMV3TestSubsExtension, TEST_MV3_SUBSCRIPTION} from "./utils.js";
+        TEST_MV3_SUBSCRIPTION} from "./utils.js";
 import {addFilter, EWE} from "./messaging.js";
 
 describe("Blocking", function() {
@@ -29,9 +29,6 @@ describe("Blocking", function() {
   });
 
   it("blocks a request using subscriptions", async function() {
-    if (isMV3() && !isMV3TestSubsExtension())
-      this.skip();
-
     // In MV3 the list of bundled subscriptions is passed as an
     // argument to EWE.start in the background.js file.
     await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.url);

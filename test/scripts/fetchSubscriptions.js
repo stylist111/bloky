@@ -25,7 +25,7 @@ import nock from "nock";
 import {fetchSubscriptions} from "../../scripts/fetchSubscriptions.js";
 
 const VALID_RULESET_FILE = "03648752-31EE-4FD0-85C1-20B07C5551C3";
-const VALID_RULESET_FILE2 = "07549D8B-F06F-4D9D-A567-929AA59E9D1D";
+const VALID_RULESET_FILE2 = "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F";
 const ENCODING = "utf-8";
 
 describe("fetchSubscriptions script", function() {

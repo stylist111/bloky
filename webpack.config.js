@@ -34,7 +34,6 @@ const eweCustomConfigName = "sdk-subs";
 const eweDistPath = path.join(dirname, "dist");
 const eweRegularOutputPath = eweDistPath;
 const eweCustomOutputPath = path.join(eweDistPath, "ewe-subs");
-const eweRegularSubscriptionsFile = path.join("scriptsOutput", "custom-subscriptions.json");
 const eweTestSubscriptionsFile = "test/custom-subscriptions.json";
 const subscriptionsDir = path.join(dirname, "scriptsOutput", "rulesets");
 const fragmentFile = path.join(subscriptionsDir, "rulesets.json");
@@ -128,11 +127,13 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath) {
     }
   };
 
-  let customSubsFile = path.resolve(dirname, subscriptionFile);
-  if (fs.existsSync(customSubsFile)) {
-    if (!silent)
-      console.warn(`Using custom subscriptions file (${customSubsFile})`);
-    build.resolve.alias["../data/subscriptions.json"] = customSubsFile;
+  if (subscriptionFile) {
+    let customSubsFile = path.resolve(dirname, subscriptionFile);
+    if (fs.existsSync(customSubsFile)) {
+      if (!silent)
+        console.warn(`Using custom subscriptions file (${customSubsFile})`);
+      build.resolve.alias["../data/subscriptions.json"] = customSubsFile;
+    }
   }
 
   return build;
@@ -143,7 +144,7 @@ export default (env = {}) => {
     fs.rmSync(eweDistPath, {recursive: true});
 
   let builds = [
-    eweBuild(env, eweRegularConfigName, eweRegularSubscriptionsFile,
+    eweBuild(env, eweRegularConfigName, null,
              false, eweRegularOutputPath),
     eweBuild(env, eweCustomConfigName, eweTestSubscriptionsFile,
              true, eweCustomOutputPath)

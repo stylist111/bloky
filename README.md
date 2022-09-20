@@ -285,12 +285,11 @@ infrastructure the CI uses:
 
 ```
 docker build -t functional -f test/dockerfiles/functional.Dockerfile .
-docker run --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" -e MV3_SUBSCRIPTIONS={default|test} -it functional
+docker run --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" -e -it functional
 ```
 
 Please notice that the `TEST_PARAMS` argument can also take the additional
 options described previously.
-Please also notice that the existence of the `MV3_SUBSCRIPTIONS` argument to determine which subscriptions to bundle for an MV3 context. This can be omitted when testing an MV2 extension.
 
 ##### Tip: Matching CI system resources
 

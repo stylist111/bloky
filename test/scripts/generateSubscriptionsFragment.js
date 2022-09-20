@@ -24,7 +24,7 @@ import {generateFragment, isUUID}
   from "../../scripts/generateSubscriptionsFragment.js";
 
 const VALID_RULESET_FILE = "03648752-31EE-4FD0-85C1-20B07C5551C3";
-const VALID_RULESET_FILE2 = "07549D8B-F06F-4D9D-A567-929AA59E9D1D";
+const VALID_RULESET_FILE2 = "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F";
 
 describe("isUUID()", () => {
   it("is falsy in edge cases", () => {
@@ -39,7 +39,7 @@ describe("isUUID()", () => {
   });
 
   it("is truthy for UUID strings", () => {
-    expect(isUUID("07549D8B-F06F-4D9D-A567-929AA59E9D1D")).toBeTruthy();
+    expect(isUUID("0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F")).toBeTruthy();
     expect(isUUID("5BD2BB73-459D-4A74-AF9D-A10157268350")).toBeTruthy();
     expect(isUUID("00000000-0000-0000-0000-000000000000")).toBeTruthy();
   });
@@ -53,7 +53,7 @@ describe("isUUID()", () => {
   });
 
   it("is not case-sensitive", () => {
-    expect(isUUID("07549d8b-f06f-4d9d-a567-929aa59e9d1d")).toBeTruthy();
+    expect(isUUID("0798b6a2-94a4-4adf-89ed-bec112fc4c7f")).toBeTruthy();
   });
 
   it("is whitespace-sensitive", () => {
