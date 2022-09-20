@@ -1095,14 +1095,22 @@ EWE.start(startupInfo).then(async() => {
       chrome.tabs.create({url: "index.html"});
   });
 
-  chrome.storage.local.get(["reload-test-running"], result => {
-    if (result["reload-test-running"])
+  const RELOAD_FLAG = "reload-test-running";
+  chrome.storage.local.get([RELOAD_FLAG], result => {
+    if (result[RELOAD_FLAG])
       chrome.tabs.create({url: "reload.html"});
   });
 
-  chrome.storage.local.get(["update-test-running"], result => {
-    if (result["update-test-running"])
+  const UPDATE_FLAG = "update-test-running";
+  chrome.storage.local.get([UPDATE_FLAG], result => {
+    if (result[UPDATE_FLAG])
       chrome.tabs.create({url: "mv3-update.html"});
+  });
+
+  const MIGRATE_FLAG = "migrate-test-running";
+  chrome.storage.local.get([MIGRATE_FLAG], result => {
+    if (result[MIGRATE_FLAG])
+      chrome.tabs.create({url: "mv2-mv3-migrate.html"});
   });
 });
 

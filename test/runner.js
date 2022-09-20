@@ -30,6 +30,8 @@ import "chromedriver";
 import "geckodriver";
 import "msedgedriver";
 
+let originalExtensionPath;
+let currentExtensionPath;
 let extensionPaths;
 
 function parseArguments() {
@@ -50,7 +52,7 @@ function parseArguments() {
   parser.option("testKinds", {
     description: "Which kinds of tests to run (by default all are run)",
     array: true,
-    choices: ["functional", "reload", "mv3-update", "fuzz"]
+    choices: ["functional", "reload", "mv3-update", "mv2-mv3-migrate", "fuzz"]
   });
   parser.option("grep");
 
@@ -131,12 +133,12 @@ async function setMinDriverTimeout(driver, timeout) {
   }
 }
 
-async function updateManifestFiles() {
+async function updateManifest(version) {
   for (let extensionPath of extensionPaths) {
     let manifestFile = path.resolve(extensionPath, "manifest.json");
     let content = JSON.parse(await fs.promises.readFile(manifestFile));
-    content.version = "0.0.2"; // Assumes current version is "0.0.1"
-    await fs.promises.writeFile(manifestFile, JSON.stringify(content));
+    content.version = version;
+    await fs.promises.writeFile(manifestFile, JSON.stringify(content, null, 2));
   }
 }
 
@@ -202,6 +204,12 @@ async function removeLines(file, lines) {
   }
 }
 
+async function copyDir(fromDir, toDir) {
+  if (await exists(toDir))
+    await fs.promises.rmdir(toDir, {recursive: true});
+  await fs.promises.cp(fromDir, toDir, {recursive: true});
+}
+
 async function runCommand(method, args) {
   switch (method) {
     case "copyFile":
@@ -218,6 +226,18 @@ async function runCommand(method, args) {
 
     case "removeLines":
       await removeLines(args.file, args.lines);
+      break;
+
+    case "copyDir":
+      let absFrom = path.resolve(process.cwd(), "dist", args.from);
+      let absTo = args.to ?
+        path.resolve(process.cwd(), "dist", args.to) :
+        currentExtensionPath;
+      await copyDir(absFrom, absTo);
+      break;
+
+    case "updateManifest":
+      await updateManifest(args.version);
       break;
 
     default:
@@ -276,7 +296,6 @@ async function pollMessages(driver, handle, isMV3) {
           break;
 
         case "updateExtensionFiles":
-          await updateManifestFiles();
           await updateWebExtension(JSON.parse(arg));
           webdriverEvents.push({id: "extensionUpdated"});
           break;
@@ -411,7 +430,17 @@ async function run() {
   let {manifest, browser, version, params, testKinds} = parseArguments();
   let isMV3 = manifestIsMV3(manifest);
 
-  extensionPaths = [path.resolve(process.cwd(), "dist", `test-m${manifest}`)];
+  // copy a targeted test web extension to a temporary directory `test-current`
+  originalExtensionPath = path.resolve(process.cwd(), "dist", `test-m${manifest}`);
+  if (testKinds.includes("mv2-mv3-migrate")) {
+    currentExtensionPath = path.resolve(process.cwd(), "dist", "test-current");
+    await copyDir(originalExtensionPath, currentExtensionPath);
+  }
+  else {
+    currentExtensionPath = originalExtensionPath;
+  }
+  extensionPaths = [currentExtensionPath];
+
   let incognito =
     typeof params != "undefined" && typeof params.incognito != "undefined";
   let headless = browser == "firefox" && !incognito;
@@ -453,6 +482,12 @@ async function run() {
         case "mv3-update":
           results["mv3-update"] = await runReloadTests(
             driver, params, isMV3, "MV3 update", "mv3-update", "MV3 update", "/mv3-update.html");
+          break;
+        case "mv2-mv3-migrate":
+          if (isMV3)
+            console.warn("Migrate tests assume it's started as MV2 test and continued as MV3 test");
+          results["mv2-mv3-migrate"] = await runReloadTests(
+            driver, params, isMV3, "MV2 MV3 migrate", "mv2-mv3-migrate", "MV2 MV3 migrate", "/mv2-mv3-migrate.html");
           break;
         case "fuzz":
           results.fuzz = await runFuzzTests(driver, params, isMV3, incognito);

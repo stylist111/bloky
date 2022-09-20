@@ -83,6 +83,11 @@ func:v2:chromium:stable:
   variables:
     TEST_PARAMS: v2 chromium
 
+func:v2:chromium:stable:migrate:
+  extends: .functional
+  variables:
+    TEST_PARAMS: v2 chromium --testKinds mv2-mv3-migrate
+
 func:v2:chromium:stable:incognito:
   extends: .functional
   variables:
@@ -180,6 +185,11 @@ func:v2:edge:windows:
   extends: .edge:windows
   script:
     - npm test -- v2 edge --timeout=10000
+
+func:v2:edge:windows:migrate:
+  extends: .edge:windows
+  script:
+    - npm test -- v2 edge --timeout=10000 --testKinds mv2-mv3-migrate
 
 func:v2:edge:windows:incognito:
   extends: .edge:windows

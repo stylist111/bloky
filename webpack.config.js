@@ -182,7 +182,8 @@ export default (env = {}) => {
       entry: {
         functional: path.join(dirname, "test", "functional.js"),
         reload: path.join(dirname, "test", "reload-wrap.js"),
-        update: path.join(dirname, "test", "update-wrap.js")
+        update: path.join(dirname, "test", "update-wrap.js"),
+        migrate: path.join(dirname, "test", "migrate-wrap.js")
       },
       output: {
         path: path.resolve(dirname, "dist", buildVariant.outputPath),
@@ -220,6 +221,13 @@ export default (env = {}) => {
           filename: "mv3-update.html",
           inject: "body",
           chunks: ["update"],
+          template: htmlTemplate
+        }),
+        new HtmlWebpackPlugin({
+          title: "MV2 MV3 migrate tests",
+          filename: "mv2-mv3-migrate.html",
+          inject: "body",
+          chunks: ["migrate"],
           template: htmlTemplate
         }),
         new MiniCssExtractPlugin(),

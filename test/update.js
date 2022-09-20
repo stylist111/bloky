@@ -63,7 +63,6 @@ describe(`MV3 update (${phase}) (runner only)`, function() {
       await EWE.subscriptions.removeAll();
       await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.url);
 
-      // includes manifest version update from 0.0.1 to 0.0.2
       await updateExtensionFiles([
         // back-up
         {
@@ -85,6 +84,12 @@ describe(`MV3 update (${phase}) (runner only)`, function() {
           args: {
             file: subscriptionFile,
             lines: [filter]
+          }
+        },
+        {
+          method: "updateManifest",
+          args: {
+            version: "0.0.2"
           }
         }
       ]);
