@@ -33,7 +33,7 @@ function forgetPopup(tabId) {
     browser.webRequest.onBeforeRequest.removeListener(onPopupURLChanged);
     browser.webNavigation.onBeforeNavigate.removeListener(onPopupURLChanged);
     browser.webNavigation.onCompleted.removeListener(onCompleted);
-    browser.tabs.onRemoved.removeListener(forgetPopup);
+    browser.tabs.onRemoved.removeListener(onTabRemoved);
   }
 }
 
@@ -55,18 +55,22 @@ function checkPotentialPopup(sourceTabId, popupTabId, url, frame) {
   }
 }
 
-function onPopupURLChanged(details) {
-  if (details.frameId != 0)
+function onPopupURLChanged({frameId, tabId, url}) {
+  if (!isTopLevelFrameId(frameId))
     return;
 
-  let frame = loadingPopups.get(details.tabId);
+  let frame = loadingPopups.get(tabId);
   if (frame)
-    checkPotentialPopup(frame.tabId, details.tabId, details.url, frame);
+    checkPotentialPopup(frame.tabId, tabId, url, frame);
 }
 
-function onCompleted(details) {
-  if (isTopLevelFrameId(details.frameId) && details.url != BLANK_PAGE_URL)
-    forgetPopup(details.tabId);
+function onCompleted({frameId, url, tabId}) {
+  if (isTopLevelFrameId(frameId) && url != BLANK_PAGE_URL)
+    forgetPopup(tabId);
+}
+
+function onTabRemoved({tabId}) {
+  forgetPopup(tabId);
 }
 
 function onPopup({tabId, url, sourceTabId, sourceFrameId}) {
@@ -85,7 +89,7 @@ function onPopup({tabId, url, sourceTabId, sourceFrameId}) {
     );
     browser.webNavigation.onBeforeNavigate.addListener(onPopupURLChanged);
     browser.webNavigation.onCompleted.addListener(onCompleted);
-    browser.tabs.onRemoved.addListener(forgetPopup);
+    browser.tabs.onRemoved.addListener(onTabRemoved);
   }
 
   loadingPopups.set(tabId, frame);
@@ -97,6 +101,10 @@ function onTabCreated({id, url, openerTabId}) {
     onPopup({tabId: id, url, sourceTabId: openerTabId, sourceFrameId: 0});
 }
 
+/**
+ * Starts blocking popups. Must only be called after filter engine and
+ * frame state are initialized.
+ */
 export function start() {
   browser.webNavigation.onCreatedNavigationTarget.addListener(onPopup);
 

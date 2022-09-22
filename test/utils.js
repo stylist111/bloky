@@ -18,7 +18,8 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 
-import {fuzzSuspendServiceWorker} from "./mocha/mocha-runner.js";
+import {fuzzSuspendServiceWorker, isFuzzingServiceWorker}
+  from "./mocha/mocha-runner.js";
 
 export const TEST_PAGES_DOMAIN = "localhost";
 export const CROSS_DOMAIN = "127.0.0.1";
@@ -147,6 +148,17 @@ export class Page {
     return tabId;
   }
 
+  async stillExists() {
+    let tabId = await this.created;
+    try {
+      await browser.tabs.get(tabId);
+      return true;
+    }
+    catch (e) {
+      return false;
+    }
+  }
+
   expectResource(path) {
     let resource = new Resource(path, this);
 
@@ -266,10 +278,18 @@ export class Popup {
 
     this.blocked = new Promise((resolve, reject) => {
       this.created.then(popId => new Promise(res => {
-        if (this.deferred)
+        if (isFuzzingServiceWorker()) {
+          // Unfortunately if the service worker was suspended in the
+          // middle of a popup opening it might not be quite as
+          // reponsive as we'd expect from normal conditions.
+          setTimeout(() => res(popId), 5000);
+        }
+        else if (this.deferred) {
           setTimeout(() => res(popId), 200);
-        else
+        }
+        else {
           res(popId);
+        }
       })).then(popupTabId => {
         function removeListeners() {
           browser.tabs.onRemoved.removeListener(onTabRemoved);
@@ -314,17 +334,22 @@ export class Popup {
       }, reject);
     });
 
-    Popup.current = this;
+    if (!Popup.current)
+      Popup.current = [];
+
+    Popup.current.push(this);
   }
 
   static async removeCurrent() {
-    let removingPopup = Popup.current;
-    Popup.current = null;
-    if (removingPopup) {
+    if (!Popup.current)
+      return;
+
+    for (let removingPopup of Popup.current) {
       let tabId = await removingPopup.created;
       // popup may already be closed if it was blocked, so this may fail
       await browser.tabs.remove(tabId).catch(() => {});
     }
+    Popup.current = null;
   }
 }
 

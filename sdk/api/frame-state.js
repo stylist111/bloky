@@ -240,9 +240,7 @@ async function discoverExistingFrames() {
   let tabs = await browser.tabs.query({});
   await Promise.all(tabs.map(({id: tabId}) =>
     browser.webNavigation.getAllFrames({tabId}).then(rawFrames => {
-      // If `startupPromise` was unset, that means that `stop` was
-      // called, so we should stop initializing.
-      if (!rawFrames || !startupPromise)
+      if (!rawFrames)
         return;
 
       // Sort the frames so that we'll add parent frames before the

@@ -468,7 +468,7 @@ RequestErrorFilter.prototype.eventArgs = [
   }
 ];
 
-let filters = browser.declarativeNetRequest ? [] : [
+let filters = [
   new RequestFilter(),
   new HeaderFilter(),
   new CSPFilter(),
@@ -493,7 +493,14 @@ const FILTER_EVENTS = ["subscription.added",
                        "filter.removed",
                        "filterState.enabled"];
 
+/**
+ * Starts filtering requests. Must only be called after filter engine and
+ * frame state are initialized.
+ */
 export function start() {
+  if (browser.declarativeNetRequest)
+    return;
+
   for (let filter of filters)
     filter.register();
 

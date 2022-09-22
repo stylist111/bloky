@@ -66,6 +66,10 @@ function onMessage(message, sender) {
   return false;
 }
 
+/**
+ * Start the message responder module. In MV3, this must be called in
+ * the first turn of the event loop.
+ */
 export function start() {
   browser.runtime.onMessage.addListener(onMessage);
 }

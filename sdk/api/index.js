@@ -21,6 +21,9 @@ import {notifications as _notifications}
 
 import {default as initializer} from "./initializer.js";
 import * as messageResponder from "./message-responder.js";
+import * as popupBlockerBackgroundPage from "./popup-blocker-background-page.js";
+import * as popupBlockerServiceWorker from "./popup-blocker-service-worker.js";
+import * as requestFilter from "./request-filter.js";
 import {setSnippetLibrary} from "./content-filter.js";
 import {setAddonInfo} from "./info.js";
 import {filterEngine} from "./core.js";
@@ -32,6 +35,12 @@ export {default as filters} from "./filters.js";
 export {default as reporting} from "./reporting.js";
 export {default as debugging} from "./debugging.js";
 export {default as allowlisting} from "./allowlisting.js";
+
+let manifest = browser.runtime.getManifest();
+
+function isRunningInServiceWorker() {
+  return !!(manifest.background && manifest.background.service_worker);
+}
 
 /**
  * The notifications API (optional usage).
@@ -70,7 +79,6 @@ export let snippets = {
 };
 
 async function onInstalled(details) {
-  let manifest = browser.runtime.getManifest();
   if (details.previousVersion &&
     details.previousVersion !== manifest.version) {
     await initializer.start();
@@ -111,9 +119,10 @@ async function onInstalled(details) {
  *                                 is completed.
  */
 export async function start(addonInfo) {
-  messageResponder.start();
+  startSubmodulesWithListeners();
 
   let warnings = [];
+
   if (browser.declarativeNetRequest) {
     if (!addonInfo)
       throw new Error("No addonInfo provided to EWE.start");
@@ -131,14 +140,35 @@ export async function start(addonInfo) {
       setRecommendations(addonInfo.bundledSubscriptions);
   }
 
-  await initializer.start();
+  await startSubmodules();
 
   let {filterStorage} = filterEngine;
+  let firstRun = {
+    foundSubscriptions: filterStorage.getSubscriptionCount() != 0,
+    foundStorage: !filterStorage.firstRun,
+    warnings
+  };
 
-  filterStorage.synchronizer.start();
+  return firstRun;
+}
 
-  let foundSubscriptions = filterStorage.getSubscriptionCount() != 0;
-  let firstRun = {foundSubscriptions, foundStorage: !filterStorage.firstRun};
+function startSubmodulesWithListeners() {
+  // for MV3, submodules that register event listeners generally need
+  // to register their events in the first turn of the event loop to
+  // register their event listeners.
+  messageResponder.start();
+  if (isRunningInServiceWorker())
+    popupBlockerServiceWorker.start();
+}
 
-  return {...firstRun, warnings};
+async function startSubmodules() {
+  await initializer.start();
+
+  // MV2-style popup and request blocking assume that initializer is
+  // started first.
+  if (!isRunningInServiceWorker())
+    popupBlockerBackgroundPage.start();
+
+  requestFilter.start();
+  filterEngine.filterStorage.synchronizer.start();
 }
