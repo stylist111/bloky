@@ -78,6 +78,15 @@ audit:
     - docker build -t functional -f test/dockerfiles/functional.Dockerfile .
   script:
     - docker run --shm-size=512m -e TEST_PARAMS="$TEST_PARAMS" functional
+  after_script:
+    - IMAGE_ID=$(docker ps -aqf ancestor=functional)
+    - docker cp $IMAGE_ID:/webext-sdk/dist .
+  artifacts:
+    paths:
+      - dist
+    when: on_failure
+    expire_in: 1 mo
+
 
 func:v2:chromium:stable:
   extends: .functional
@@ -157,6 +166,12 @@ func:v2:firefox:beta:
     - windows
     - windows-1809
   cache: {}
+  artifacts:
+    paths:
+      - dist
+    when: on_failure
+    expire_in: 1 mo
+
 
 func:v3:chromium:stable:
   extends: .functional
