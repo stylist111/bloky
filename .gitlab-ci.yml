@@ -158,17 +158,17 @@ func:v2:firefox:beta:
     - windows-1809
   cache: {}
 
-func:v3-subs:chromium:stable:
+func:v3:chromium:stable:
   extends: .functional
   variables:
     TEST_PARAMS: v3 chromium --testKinds functional reload mv3-update
    
-func:v3-subs:chromium:stable:incognito:
+func:v3:chromium:stable:incognito:
   extends: .functional
   variables:
     TEST_PARAMS: v3 chromium --testKinds functional reload mv3-update --incognito    
 
-func:v3-subs:edge:linux:
+func:v3:edge:linux:
   extends: .functional
   variables:
     TEST_PARAMS: v3 edge --testKinds functional reload mv3-update    
@@ -201,17 +201,17 @@ func:v2:edge:windows:incognito:
         - "API"
         - "(?!Blocking|Pop-up\\sblocking|Element\\sHiding|Snippets|API)"
 
-fuzz:v3-subs:chromium:stable:
+fuzz:v3:chromium:stable:
   extends: .fuzz
   variables:
     BROWSER: chromium
 
-fuzz:v3-subs:chromium:stable:incognito:
+fuzz:v3:chromium:stable:incognito:
   extends: .fuzz
   variables:    
     BROWSER: chromium --incognito
 
-fuzz:v3-subs:edge:linux:
+fuzz:v3:edge:linux:
   extends: .fuzz
   variables:    
     BROWSER: edge
