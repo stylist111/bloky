@@ -29,9 +29,12 @@ import {default as WebSocket} from "ws";
 const HOST = "localhost";
 const HTTP_PORT = 3000;
 const WS_PORT = 3001;
+const HTTP_ADMIN_PORT = 3003;
 
 let app = express();
+let adminApp = express();
 let dirname = path.dirname(url.fileURLToPath(import.meta.url));
+let requests = [];
 
 function bypassCache(req, res, next) {
   let userAgent = req.get("User-Agent");
@@ -99,11 +102,18 @@ function testHeader(req, res, next) {
   next();
 }
 
+function logRequests(req, res, next) {
+  requests.push(req);
+
+  next();
+}
+
 app.use(bypassCache);
 app.use(sitekeyHeader);
 app.use(invalidSitekeyHeader);
 app.use(delay);
 app.use(testHeader);
+app.use(logRequests);
 app.use(express.static(path.join(dirname, "pages")));
 
 app.post("/ping-handler", (req, res) => res.sendStatus(200));
@@ -116,4 +126,46 @@ app.listen(HTTP_PORT, HOST, () => {
 new WebSocket.Server({host: HOST, port: WS_PORT}).on("listening", () => {
   // eslint-disable-next-line no-console
   console.log(`Web socket server listening at ws://${HOST}:${WS_PORT}`);
+});
+
+let reply = "[Adblock Plus]\n";
+
+// configure to reply (eg. ../configure?reply=123)
+adminApp.get("/configure", (req, res) => {
+  reply = req.query["reply"];
+  res.send("");
+});
+
+// clear the requests list
+adminApp.get("/clear", (req, res) => {
+  requests = [];
+  res.send("");
+});
+
+// get the requests list
+adminApp.get("/list", (req, res) => {
+  res.send(JSON.stringify(requests.map(request => {
+    return {
+      method: request.method,
+      url: request.url,
+      query: request.query
+    };
+  }), null, 2));
+});
+
+// get the subscription content (GET)
+adminApp.get("/subscription.txt", (req, res) => {
+  requests.push(req);
+  res.send(reply);
+});
+
+// get the subscription content (HEAD)
+adminApp.head("/subscription.txt", (req, res) => {
+  requests.push(req);
+  res.send(reply);
+});
+
+adminApp.listen(HTTP_ADMIN_PORT, () => {
+  // eslint-disable-next-line no-console
+  console.log(`Admin commands server listening at http://${HOST}:${HTTP_ADMIN_PORT}`);
 });

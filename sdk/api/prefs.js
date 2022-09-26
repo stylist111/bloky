@@ -33,7 +33,8 @@ export const defaults = Object.create({
   show_statsinpopup: true,
   subscriptions_autoupdate: true,
   subscriptions_fallbackerrors: 5,
-  subscriptions_fallbackurl: "https://adblockplus.org/getSubscription?version=%VERSION%&url=%SUBSCRIPTION%&downloadURL=%URL%&error=%ERROR%&responseStatus=%RESPONSESTATUS%"
+  subscriptions_fallbackurl: "https://adblockplus.org/getSubscription?version=%VERSION%&url=%SUBSCRIPTION%&downloadURL=%URL%&error=%ERROR%&responseStatus=%RESPONSESTATUS%",
+  subscriptions_initial_delay: 1000 // 1 s
 });
 
 export let Prefs = {

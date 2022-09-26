@@ -127,6 +127,14 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath) {
     }
   };
 
+  if (env.release) {
+    // "testing.js" API should not be exposed publicly
+    let testingJsPath = path.resolve(dirname, "./sdk/api/testing.js");
+    let testingJsStubPath = path.resolve(dirname, "./sdk/api/testing-stub.js");
+    build.module.rules[0].exclude = [testingJsPath];
+    build.resolve.alias["./testing.js"] = testingJsStubPath;
+  }
+
   if (subscriptionFile) {
     let customSubsFile = path.resolve(dirname, subscriptionFile);
     if (fs.existsSync(customSubsFile)) {

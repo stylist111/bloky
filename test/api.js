@@ -17,14 +17,14 @@
 
 import browser from "webextension-polyfill";
 import expect from "expect";
+import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 
 import {Page, Popup, setMinTimeout, wait, executeScript, isFirefox, isEdge,
         isChromiumBased, isIncognito,
         getVisibleElement, isMV3, TEST_PAGES_URL,
         TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN,
         isMV2CustomSubsExtension, TEST_MV3_SUBSCRIPTION,
-        TEST_MV3_SUBSCRIPTION_2}
-  from "./utils.js";
+        TEST_MV3_SUBSCRIPTION_2, TEST_MV3_SUBSCRIPTION_3} from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, addFakeListener,
         removeFakeListeners}
   from "./messaging.js";
@@ -957,6 +957,7 @@ describe("API", function() {
              {
                bundledSubscriptions: expect.arrayContaining([
                  TEST_MV3_SUBSCRIPTION, TEST_MV3_SUBSCRIPTION_2,
+                 TEST_MV3_SUBSCRIPTION_3,
                  subEasylist, subEasylistPlusGermany, subCircumvention,
                  subAcceptableAds
                ]),
@@ -2712,6 +2713,69 @@ describe("API", function() {
       await EWE.debugging.setElementHidingDebugMode(false);
 
       expect(style).toBe("rgb(255, 192, 203)");
+    });
+  });
+
+  describe("Synchronization", function() {
+    this.timeout(30000);
+
+    const ADMIN_PORT = 3003; // should be in-sync with "start-server.js"
+    const ADMIN_BASE_URL = `http://localhost:${ADMIN_PORT}`;
+    const METHOD_HEAD = "HEAD";
+
+    async function configure(properties = {}) {
+      await EWE.debugging._setSubscriptions([TEST_MV3_SUBSCRIPTION_3]);
+
+      await fetch(`${ADMIN_BASE_URL}/clear`);
+      let reply = "%5BAdblock%20Plus%5D%0A%21%20Expires%3A%201%20d"; // "! Expires: 1 d"
+      await fetch(`${ADMIN_BASE_URL}/configure?reply=${reply}`);
+
+      await EWE.subscriptions.removeAll();
+      await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION_3.url, properties);
+
+      let downloadables = await EWE.subscriptions.getDownloadable();
+      expect(downloadables.length).toEqual(1);
+      expect(downloadables).toEqual([expect.objectContaining({
+        downloadable: false // Countable Sub
+      })]);
+    }
+
+    async function requestsSent() {
+      await wait(async() => {
+        let response = await fetch(`${ADMIN_BASE_URL}/list`);
+        let requests = await response.json();
+        return requests.length > 0;
+      }, 20000, "No requests sent", 100);
+    }
+
+    it("sends HEAD requests for expired subscriptions after the SW restarts", async function() {
+      if (!isMV3() || isFuzzingServiceWorker())
+        this.skip();
+
+      await configure();
+      await requestsSent();
+      await fetch(`${ADMIN_BASE_URL}/clear`);
+
+      let now = Date.now();
+      let softExpiration = now / 1000; // seconds, not millis
+      await EWE.testing._setSubscriptionProperties(
+        TEST_MV3_SUBSCRIPTION_3.url, {
+          softExpiration, expires: softExpiration,
+          lastDownload: 1
+        });
+
+      await suspendServiceWorker(this);
+      await addFilter("someFilterToAwakeTheSW");
+
+      await requestsSent();
+
+      let response = await fetch(`${ADMIN_BASE_URL}/list`);
+      let requests = await response.json();
+
+      expect(requests.length).toEqual(1);
+      expect(requests).toEqual([expect.objectContaining({
+        method: METHOD_HEAD
+      })]);
     });
   });
 });

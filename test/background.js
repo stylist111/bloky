@@ -249,6 +249,14 @@ if (isMV3()) {
         mv2_url: "http://localhost:3000/mv2_subscription.txt?2"
       },
       {
+        id: "00000000-0000-0000-0000-000000000020",
+        type: "ads",
+        title: "Test MV3 Custom Subscription 3",
+        homepage: "http://localhost:3003/subscription.txt",
+        url: "http://localhost:3003/subscription.txt",
+        mv2_url: "http://localhost:3003/subscription.txt"
+      },
+      {
         id: "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F",
         type: "allowing",
         title: "Allow nonintrusive advertising",

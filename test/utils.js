@@ -33,6 +33,7 @@ export const SITEKEY = "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANGtTstne7" +
 export const RECENT_FIREFOX_VERSION = 86; // Latest Firefox on February 2021
 export const FETCHED_TEST_SUBSCRIPTION_ID = "00000000-0000-0000-0000-000000000000";
 export const FETCHED_TEST_SUBSCRIPTION_ID_2 = "00000000-0000-0000-0000-000000000010";
+export const FETCHED_TEST_SUBSCRIPTION_ID_3 = "00000000-0000-0000-0000-000000000020";
 export const TEST_MV3_SUBSCRIPTION = {
   id: FETCHED_TEST_SUBSCRIPTION_ID,
   homepage: TEST_PAGES_URL + "/subscription.txt",
@@ -48,6 +49,14 @@ export const TEST_MV3_SUBSCRIPTION_2 = {
   title: "Test MV3 Custom Subscription 2",
   type: "ads",
   mv2_url: TEST_PAGES_URL + "/mv2_subscription.txt?2"
+};
+export const TEST_MV3_SUBSCRIPTION_3 = {
+  id: FETCHED_TEST_SUBSCRIPTION_ID_3,
+  type: "ads",
+  homepage: "http://localhost:3003/subscription.txt",
+  title: "Test MV3 Custom Subscription 3",
+  url: "http://localhost:3003/subscription.txt",
+  mv2_url: "http://localhost:3003/subscription.txt"
 };
 
 function handleConnection(details, tabId, removeListeners, reject) {

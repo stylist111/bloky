@@ -35,6 +35,7 @@ export {default as filters} from "./filters.js";
 export {default as reporting} from "./reporting.js";
 export {default as debugging} from "./debugging.js";
 export {default as allowlisting} from "./allowlisting.js";
+export {default as testing} from "./testing.js";
 
 let manifest = browser.runtime.getManifest();
 
