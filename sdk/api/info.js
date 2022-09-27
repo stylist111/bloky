@@ -17,6 +17,8 @@
 
 import browser from "webextension-polyfill";
 
+import {setRecommendations} from "adblockpluscore/lib/recommendations.js";
+
 let manifest = browser.runtime.getManifest();
 
 export let addonName = manifest.short_name || manifest.name;
@@ -69,15 +71,30 @@ else {
   parseChromiumUserAgent();
 }
 
-export function setAddonInfo({name,
-                              version,
-                              bundledSubscriptions,
-                              bundledSubscriptionsPath}) {
-  if (name)
-    addonName = name;
-  if (version)
-    addonVersion = version;
+export function setAddonInfo(addonInfo) {
+  if (browser.declarativeNetRequest) {
+    if (!addonInfo)
+      throw new Error("No addonInfo provided to EWE.start");
 
-  addonBundledSubscriptions = bundledSubscriptions;
-  addonBundledSubscriptionsPath = bundledSubscriptionsPath;
+    if (!addonInfo.bundledSubscriptions)
+      throw new Error("No `bundledSubscriptions` provided");
+
+    if (!addonInfo.bundledSubscriptionsPath)
+      throw new Error("No `bundledSubscriptionsPath` provided");
+  }
+
+  if (!addonInfo)
+    return;
+
+  if (addonInfo.name)
+    addonName = addonInfo.name;
+  if (addonInfo.version)
+    addonVersion = addonInfo.version;
+
+  addonBundledSubscriptions = addonInfo.bundledSubscriptions;
+  addonBundledSubscriptionsPath = addonInfo.bundledSubscriptionsPath;
+
+  if (addonBundledSubscriptions &&
+      addonBundledSubscriptions.length > 0)
+    setRecommendations(addonBundledSubscriptions);
 }

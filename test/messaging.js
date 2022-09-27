@@ -113,3 +113,12 @@ export async function removeFakeListeners() {
   for (let operations of removing)
     await runInBackgroundPage(operations);
 }
+
+export async function ensureEverythingHasSaved() {
+  await runInBackgroundPage([
+    {op: "getGlobal", arg: "EWE"},
+    {op: "getProp", arg: "debugging"},
+    {op: "callMethod", arg: "ensureEverythingHasSaved"},
+    {op: "await"}
+  ], false);
+}

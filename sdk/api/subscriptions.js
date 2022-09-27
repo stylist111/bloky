@@ -75,15 +75,21 @@ function makeListener(dispatch) {
   };
 }
 
-export function getDefaultSubscriptions() {
+export function getDefaultSubscriptions(uiLanguage) {
   let hasCurrentLang = false;
   let hasDefaultLang = false;
   let hasAA = false;
   let hasAntiCV = false;
 
-  // https://bugs.chromium.org/p/chromium/issues/detail?id=1159438
-  let currentLang = (browser.i18n.getUILanguage ?
-    browser.i18n.getUILanguage() : navigator.language).split("-")[0];
+  if (!uiLanguage) {
+    // https://bugs.chromium.org/p/chromium/issues/detail?id=1159438
+    if (browser.i18n.getUILanguage)
+      uiLanguage = browser.i18n.getUILanguage();
+    else
+      uiLanguage = navigator.language;
+  }
+
+  let currentLang = uiLanguage.split("-")[0];
   let defaultLang = (browser.runtime.getManifest()
                                     .default_locale || "en").split("_")[0];
 
@@ -194,12 +200,6 @@ function rulesetExistsInManifest(rulesetId) {
 
 export async function validate(bundledSubscriptions,
                                bundledSubscriptionsPath) {
-  if (!bundledSubscriptions)
-    throw new Error("No `bundledSubscriptions` provided");
-
-  if (!bundledSubscriptionsPath)
-    throw new Error("No `bundledSubscriptionsPath` provided");
-
   let warnings = [];
 
   for (let subscription of bundledSubscriptions) {
@@ -353,6 +353,11 @@ export default {
    * subscriptions from the EWE.start() call.
    * Subscriptions are selected based on relevant language, type of
    * circumvention, and type of allowing.
+   * @param {string} [uiLanguage] The relevant language used for
+   * determining which subscriptions to add. If omitted,
+   * browser.i18n.getUILanguage will be used. If
+   * browser.i18n.getUILanguage is unavailable, navigator.language is
+   * used.
    * @throws {Error} No default language subscription
    * @throws {Error} No current language subscription
    * @throws {Error} No anti-circumvention subscription
@@ -360,11 +365,13 @@ export default {
    * @see {@link #start|start()}
    * @return {Promise}
    */
-  async addDefaults() {
+  async addDefaults(uiLanguage) {
+    await initializer.start();
+
     let subscriptions = [];
 
     if (shouldAddDefaultSubscriptions()) {
-      let defaultSubscriptions = getDefaultSubscriptions();
+      let defaultSubscriptions = getDefaultSubscriptions(uiLanguage);
       if (!defaultSubscriptions.hasDefaultLang)
         throw Error("No default language subscription");
 

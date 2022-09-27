@@ -26,7 +26,7 @@ import {Page, Popup, setMinTimeout, wait, executeScript, isFirefox, isEdge,
         isMV2CustomSubsExtension, TEST_MV3_SUBSCRIPTION,
         TEST_MV3_SUBSCRIPTION_2, TEST_MV3_SUBSCRIPTION_3} from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, addFakeListener,
-        removeFakeListeners}
+        removeFakeListeners, ensureEverythingHasSaved}
   from "./messaging.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
@@ -926,16 +926,6 @@ describe("API", function() {
 
   describe("Initialization", function() {
     setMinTimeout(this, 10000);
-    before(function() {
-      // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/319
-      if (isFuzzingServiceWorker())
-        this.skip();
-    });
-
-    after(async function() {
-      await browser.runtime.sendMessage(
-        {type: "ewe-test:deleteUiLanguageOverride"});
-    });
 
     it("starts with the subscription info provided by the initial start call",
        async function() {
@@ -1018,9 +1008,6 @@ describe("API", function() {
        "https://easylist-downloads.adblockplus.org/v3/full/easylistgermany+easylist.txt"]
     ]) {
       it(`configures default subscriptions for ${language}`, async function() {
-        await browser.runtime.sendMessage(
-          {type: "ewe-test:setLanguage", args: [language]});
-
         let startSubscriptions = [
           subCircumvention,
           subAcceptableAds
@@ -1036,11 +1023,12 @@ describe("API", function() {
           // the way how it is in "core" `./data/subscriptions.json"
           for (let subscription of startSubscriptions)
             subscription.url = subscription.mv2_url;
+          await EWE.testing._setSubscriptions(startSubscriptions);
         }
 
-        EWE.debugging._setSubscriptions(startSubscriptions);
-
-        await EWE.subscriptions.addDefaults();
+        await EWE.subscriptions.addDefaults(language);
+        // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/364
+        await ensureEverythingHasSaved();
 
         let activeSubs = await EWE.subscriptions.getDownloadable();
 
@@ -1076,8 +1064,9 @@ describe("API", function() {
       if (isChromiumBased() && isIncognito())
         this.skip();
 
-      await browser.runtime.sendMessage(
-        {type: "ewe-test:setLanguage", args: ["en"]});
+      let expectedFoundStorage = false;
+      if (isFuzzingServiceWorker())
+        expectedFoundStorage = expect.any(Boolean);
 
       let result = await runInBackgroundPage([
         {op: "getGlobal", arg: "EWE"},
@@ -1090,11 +1079,11 @@ describe("API", function() {
         {op: "callMethod", arg: "start"},
         {op: "await"}
       ]);
-      expect(result).toEqual({foundStorage: false,
+      expect(result).toEqual({foundStorage: expectedFoundStorage,
                               foundSubscriptions: false,
                               warnings: []});
 
-      await EWE.subscriptions.addDefaults();
+      await EWE.subscriptions.addDefaults("en");
 
       result = await runInBackgroundPage([
         {op: "getGlobal", arg: "EWE"},
@@ -1108,7 +1097,7 @@ describe("API", function() {
         {op: "await"}
       ]);
 
-      expect(result).toEqual({foundStorage: false,
+      expect(result).toEqual({foundStorage: expectedFoundStorage,
                               foundSubscriptions: true,
                               warnings: []});
     });
@@ -1152,10 +1141,12 @@ describe("API", function() {
       });
 
       it("validates the provided subscriptions", async function() {
-        await expect(EWE.debugging.validateSubscriptions(null, "subscriptions"))
-          .rejects.toThrow("No `bundledSubscriptions` provided");
-        await expect(EWE.debugging.validateSubscriptions([], null))
-          .rejects.toThrow("No `bundledSubscriptionsPath` provided");
+        await expect(EWE.testing._setAddonInfo(null))
+          .rejects.toThrow("Error: No addonInfo provided to EWE.start");
+        await expect(EWE.testing._setAddonInfo({}))
+          .rejects.toThrow("Error: No `bundledSubscriptions` provided");
+        await expect(EWE.testing._setAddonInfo({bundledSubscriptions: []}))
+          .rejects.toThrow("Error: No `bundledSubscriptionsPath` provided");
       });
 
       it("validates the provided subscription files", async function() {
@@ -1193,44 +1184,34 @@ describe("API", function() {
             this.skip();
         });
 
-        async function setLanguage(language) {
-          await browser.runtime.sendMessage(
-            {type: "ewe-test:setLanguage", args: [language]});
-        }
-
         it("throws if no default language subscription is provided", async function() {
-          await setLanguage("en");
-          EWE.debugging._setSubscriptions([]);
-          await expect(EWE.subscriptions.addDefaults())
+          EWE.testing._setSubscriptions([]);
+          await expect(EWE.subscriptions.addDefaults("en"))
             .rejects.toThrow("No default language subscription");
         });
 
         it("throws if no current language subscription is provided", async function() {
-          await setLanguage("de"); // anything different from "en"
-          EWE.debugging._setSubscriptions([subEasylist]); // "en"
-          await expect(EWE.subscriptions.addDefaults())
+          EWE.testing._setSubscriptions([subEasylist]); // "en"
+          await expect(EWE.subscriptions.addDefaults("de"))
             .rejects.toThrow("No current language subscription");
         });
 
         it("throws if no anti-circumvention subscription is provided", async function() {
-          await setLanguage("en");
-          EWE.debugging._setSubscriptions([subEasylist, subAcceptableAds]);
-          await expect(EWE.subscriptions.addDefaults())
+          EWE.testing._setSubscriptions([subEasylist, subAcceptableAds]);
+          await expect(EWE.subscriptions.addDefaults("en"))
             .rejects.toThrow("No anti-circumvention subscription");
         });
 
         it("throws if no allowing subscription is provided", async function() {
-          await setLanguage("en");
-          EWE.debugging._setSubscriptions([subEasylist, subCircumvention]);
-          await expect(EWE.subscriptions.addDefaults())
+          EWE.testing._setSubscriptions([subEasylist, subCircumvention]);
+          await expect(EWE.subscriptions.addDefaults("en"))
             .rejects.toThrow("No allowing subscription");
         });
 
         it("does not throw if everything needed is provided", async function() {
-          await setLanguage("en");
-          EWE.debugging._setSubscriptions([
+          EWE.testing._setSubscriptions([
             subEasylist, subCircumvention, subAcceptableAds]);
-          await EWE.subscriptions.addDefaults();
+          await EWE.subscriptions.addDefaults("en");
         });
       });
     });
@@ -2724,7 +2705,7 @@ describe("API", function() {
     const METHOD_HEAD = "HEAD";
 
     async function configure(properties = {}) {
-      await EWE.debugging._setSubscriptions([TEST_MV3_SUBSCRIPTION_3]);
+      await EWE.testing._setSubscriptions([TEST_MV3_SUBSCRIPTION_3]);
 
       await fetch(`${ADMIN_BASE_URL}/clear`);
       let reply = "%5BAdblock%20Plus%5D%0A%21%20Expires%3A%201%20d"; // "! Expires: 1 d"

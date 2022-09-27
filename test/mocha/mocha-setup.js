@@ -19,7 +19,7 @@
 
 import {TEST_PAGES_URL, Page, Popup, setMinTimeout, isIncognito}
   from "../utils.js";
-import {runInBackgroundPage, removeFakeListeners}
+import {runInBackgroundPage, removeFakeListeners, ensureEverythingHasSaved}
   from "../messaging.js";
 
 mocha.setup("bdd");
@@ -37,12 +37,7 @@ async function clearFilters() {
     {op: "await"}
   ], false);
 
-  await runInBackgroundPage([
-    {op: "getGlobal", arg: "EWE"},
-    {op: "getProp", arg: "debugging"},
-    {op: "callMethod", arg: "ensureEverythingHasSaved"},
-    {op: "await"}
-  ], false);
+  await ensureEverythingHasSaved();
 }
 
 before(async function() {

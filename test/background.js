@@ -162,16 +162,6 @@ function handleTestMessage(request, sender, sendResponse) {
       sendResponse(id);
       break;
 
-    case "ewe-test:setLanguage":
-      self.uiLanguageOverride = request.args[0];
-      sendResponse({});
-      break;
-
-    case "ewe-test:deleteUiLanguageOverride":
-      delete self.uiLanguageOverride;
-      sendResponse({});
-      return true;
-
     case "ewe-test:wasNewTabAllowlisted": {
       let {tabId: requestedTabId, url} = request;
       tabAllowlistedResults.get(requestedTabId, url).then(sendResponse);
@@ -207,19 +197,6 @@ chrome.runtime.onMessage.addListener(handleTestMessage);
 
 addEventListener("error", ({error}) => lastError = error);
 addEventListener("unhandledrejection", ({reason}) => lastError = reason);
-
-function mockGetUILanguage(api) {
-  let {getUILanguage} = api.i18n;
-  if (getUILanguage)
-    api.i18n.getUILanguage = () => self.uiLanguageOverride || getUILanguage();
-  else
-    // https://bugs.chromium.org/p/chromium/issues/detail?id=1159438
-    console.error("getUILanguage is not available");
-}
-
-mockGetUILanguage(chrome);
-if (typeof browser != "undefined")
-  mockGetUILanguage(browser);
 
 function isMV3() {
   return typeof chrome.declarativeNetRequest != "undefined";

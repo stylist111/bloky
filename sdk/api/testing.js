@@ -16,9 +16,12 @@
  */
 
 import {Subscription} from "adblockpluscore/lib/subscriptionClasses.js";
+import {setRecommendations} from "adblockpluscore/lib/recommendations.js";
+
 import {filterEngine} from "./core.js";
 import {Prefs} from "./prefs.js";
 import {default as debugging} from "./debugging.js";
+import {setAddonInfo, addonBundledSubscriptionsPath} from "./info.js";
 
 export default {
   /**
@@ -54,5 +57,17 @@ export default {
 
     await filterEngine.filterStorage.saveToDisk();
     await debugging.ensureEverythingHasSaved();
-  }
+  },
+
+  /**
+   * @ignore
+   * @param {Recommendation} subscriptions
+   */
+  _setSubscriptions(subscriptions) {
+    setAddonInfo({bundledSubscriptions: subscriptions,
+                  bundledSubscriptionsPath: addonBundledSubscriptionsPath});
+    setRecommendations(subscriptions);
+  },
+
+  _setAddonInfo: setAddonInfo
 };

@@ -27,7 +27,6 @@ import * as requestFilter from "./request-filter.js";
 import {setSnippetLibrary} from "./content-filter.js";
 import {setAddonInfo} from "./info.js";
 import {filterEngine} from "./core.js";
-import {setRecommendations} from "adblockpluscore/lib/recommendations.js";
 import {validate, updateFilterText} from "./subscriptions.js";
 
 export {default as subscriptions} from "./subscriptions.js";
@@ -120,25 +119,15 @@ async function onInstalled(details) {
  *                                 is completed.
  */
 export async function start(addonInfo) {
+  setAddonInfo(addonInfo);
   startSubmodulesWithListeners();
 
   let warnings = [];
 
   if (browser.declarativeNetRequest) {
-    if (!addonInfo)
-      throw new Error("No addonInfo provided to EWE.start");
-
     browser.runtime.onInstalled.addListener(onInstalled);
     warnings = await validate(addonInfo.bundledSubscriptions,
                               addonInfo.bundledSubscriptionsPath);
-  }
-
-  if (addonInfo) {
-    setAddonInfo(addonInfo);
-
-    if (addonInfo.bundledSubscriptions &&
-        addonInfo.bundledSubscriptions.length > 0)
-      setRecommendations(addonInfo.bundledSubscriptions);
   }
 
   await startSubmodules();
