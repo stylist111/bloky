@@ -6,3 +6,4 @@ test/bundle/package-lock.json
 extension
 testpages.adblockplus.org
 scriptsOutput
+test/scripts/test-extension/package-lock.json

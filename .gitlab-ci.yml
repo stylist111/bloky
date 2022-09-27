@@ -172,7 +172,6 @@ func:v2:firefox:beta:
     when: on_failure
     expire_in: 1 mo
 
-
 func:v3:chromium:stable:
   extends: .functional
   variables:
@@ -202,6 +201,22 @@ func:v2:edge:windows:incognito:
   extends: .edge:windows
   script:
     - npm test -- v2 edge --incognito --timeout=10000
+
+func:scripts:
+  image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
+  cache: []
+  needs: []
+  stage: functional
+  before_script:
+    - npm install --production
+  script: 
+    - cd test/scripts/test-extension
+    - npm install
+    - npm exec subs-init
+    - npm exec subs-merge
+    - npm exec subs-fetch
+    - npm exec subs-convert
+    - npm exec subs-generate
 
 .fuzz:
   extends: .functional
