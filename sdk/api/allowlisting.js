@@ -34,6 +34,7 @@ let allowlistingCallback = function(domain) {
 let dispatchUnauthorized = () => {};
 
 let authorizedPublicKeys = [];
+let publicKeysUpdated = Promise.resolve();
 
 let algorithm = {
   name: "RSASSA-PKCS1-v1_5",
@@ -67,6 +68,8 @@ function verifyTimestamp(timestamp) {
 async function verifyAnySignatures(domain, timestamp, signature) {
   if (typeof signature != "string")
     return false;
+
+  await publicKeysUpdated;
 
   let data = getAllowData(domain, timestamp);
   let abSignature = base64ToArrayBuffer(signature);
@@ -139,31 +142,43 @@ export async function allowlistPage(tabId, frameId, timestamp, signature) {
   return await succeedAllowlisting(domain);
 }
 
+async function setAuthorizedKeys(keys) {
+  let newAuthorizedPublicKeys = [];
+  for (let key of keys) {
+    let abKey = base64ToArrayBuffer(key);
+    let importedKey = await crypto.subtle.importKey(
+      "spki",
+      abKey,
+      algorithm,
+      false,
+      ["verify"]
+    );
+    newAuthorizedPublicKeys.push(importedKey);
+  }
+  authorizedPublicKeys = newAuthorizedPublicKeys;
+}
+
 export default {
   /**
-   * Updates the list of public keys used to verify allowlisting requests.
+   * Updates the list of public keys used to verify allowlisting
+   * requests. If there are any invalid keys, the list of authorized
+   * keys keeps its previous value.
+   *
+   * Any allowlisting requests that come in while this function is in
+   * progress will wait for it to finish before verifying any
+   * signatures.
    *
    * @param {[string]} keys The new set of public keys. The keys
    *   should be base64 encoded strings, in SPKI format. The keys must
    *   additionally use the RSASSA-PKCS1-v1_5 algorithm, SHA512 hash
    *   and 4096 bit long modulus.
    * @return {Promise} Promise that resolves when the keys have been
-   * updated, or rejects if any of the keys are invalid.
+   *   updated, or rejects if any of the keys are invalid.
    */
   async setAuthorizedKeys(keys) {
-    let newAuthorizedPublicKeys = [];
-    for (let key of keys) {
-      let abKey = base64ToArrayBuffer(key);
-      let importedKey = await crypto.subtle.importKey(
-        "spki",
-        abKey,
-        algorithm,
-        false,
-        ["verify"]
-      );
-      newAuthorizedPublicKeys.push(importedKey);
-    }
-    authorizedPublicKeys = newAuthorizedPublicKeys;
+    let resultPromise = setAuthorizedKeys(keys);
+    publicKeysUpdated = resultPromise.catch(() => {});
+    return await resultPromise;
   },
 
   /**

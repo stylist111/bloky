@@ -19,37 +19,30 @@ import expect from "expect";
 
 import {Page, clickElement, executeScript, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
         setMinTimeout, wait} from "./utils.js";
-import {EWE, addFilter, addFakeListener} from "./messaging.js";
-import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
+import {EWE, addFilter, getTestEvents, clearTestEvents, runInBackgroundPage}
+  from "./messaging.js";
+import {isFuzzingServiceWorker, fuzzSuspendServiceWorker}
+  from "./mocha/mocha-runner.js";
 
 describe("One Click Allowlisting", function() {
   setMinTimeout(this, 4000);
 
-  before(function() {
-    // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/316
-    if (isFuzzingServiceWorker())
-      this.skip();
-  });
+  let timeout = isFuzzingServiceWorker() ? 3000 : 1000;
 
   let page;
   let expectImageResource;
   let tabId;
-  let onUnauthorizedFake;
 
-  // eslint-disable-next-line max-len
-  let publicKey = "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAorAkyGHnzZkVE0TGcU7Sl6/LlH9j3udDNvHv/fSzplLMdqkw0HZNV9zaBFQ0Rw73AJ7MQ8JQm2hex9DEss3xsrlpHEi/nC7C1authg1rt5Xo4K0P5Bo+j6y41UtgQoL9xKJ6RlYGBq4uBHaq/xRyp/7zUxOiViTdnVZRhSkmyBCIQ+5l8/mTk5yyMLfH7QM0KFKdJbnnTU8HEGzHaFi33vAwWPpJjCohYUzYxgXOgSZYV6xNPycQj4U/D4k+7UT+d4zzrj7fSz08/ijfHLB8G6dr1nx7+Pydt3ijhKEX2mKaAWgKtyM2wTgFXys4rnAbdr340FpQaVebNF0bwGsqluBNdvZ6fPgN9dLlpVDQKXlOKdfOyc64Yw82/jHKdYC7NO1bg13hqo7JWM10Gklt2FY5ekfDBZagPbYCH780C8w0aMceBs3NBTI6SAPI8xhyu7LwL7vw/vMwz8kfIsKOCPFqf0qPlvJCaryIAA7Ca6SHfBqaTzyivEEqn6tWphCpYSODfPRO4Udg+l/o/PCJuly41b4QF2x8H+LvJnr7HFknmFYwisbIofC/2ucO2sfJDP4EOHKeDV9mexHSJIfjyFYV0f0ALj1eKl9Viz37qLefzXFhTG4wzoK5F/QM1ZhIWjN+0DBn6GTQxuWc4eAuASoh07JG4M+i2rWcUTYvgOECAwEAAQ==";
+  let getOnUnauthorizedEvents = () =>
+    getTestEvents("allowlisting.onUnauthorized");
+  let clearOnUnauthorizedEvents = () =>
+    clearTestEvents("allowlisting.onUnauthorized");
 
   beforeEach(async function() {
-    await EWE.allowlisting.setAuthorizedKeys([publicKey]);
     await addFilter(`|${TEST_PAGES_URL}$image`);
     page = new Page("one-click-allowlisting.html");
     expectImageResource = page.expectResource("image.png");
     tabId = await page.loaded;
-    onUnauthorizedFake = await addFakeListener({
-      namespace: "allowlisting",
-      eventName: "onUnauthorized",
-      eventOptions: {}
-    });
   });
 
   async function reload() {
@@ -59,13 +52,8 @@ describe("One Click Allowlisting", function() {
   }
 
   async function clickAllowlistButton(id) {
+    await fuzzSuspendServiceWorker();
     await clickElement(tabId, id);
-    // clicking the button triggers an event which will probably
-    // involve a message to the background page. Give it some time to
-    // do its thing before checking results. This time may seem
-    // excessive, but the CI pipeline runners can sometimes be pretty
-    // slow.
-    await new Promise(r => setTimeout(r, 300));
   }
 
   async function getSuccessEventReceived() {
@@ -81,8 +69,8 @@ describe("One Click Allowlisting", function() {
 
   async function expectSuccessfulAllowlist() {
     await wait(async() => await getSuccessEventReceived() != null,
-               1000, "success event was not received");
-    expect(onUnauthorizedFake.called).toBeFalsy();
+               timeout, "success event was not received");
+    expect(await getOnUnauthorizedEvents()).toEqual([]);
     await reload();
     await expectImageResource.toBeLoaded();
   }
@@ -96,15 +84,23 @@ describe("One Click Allowlisting", function() {
       };
     }
 
-    expect(await getSuccessEventReceived()).toBeNull();
-    await wait(() => onUnauthorizedFake.called, 1000,
-               "onUnauthorizedFake was not called");
-    expect(onUnauthorizedFake.args).toEqual([[{
+    let events;
+    await wait(async() => {
+      events = await getOnUnauthorizedEvents();
+      return events.length > 0;
+    }, timeout, "onUnauthorized was not called");
+
+    expect(events).toEqual([{
       reason: errorMessage,
       request: expectedRequest
-    }]]);
+    }]);
+    expect(await getSuccessEventReceived()).toBeNull();
+
     await reload();
-    await expectImageResource.toBeBlocked();
+    if (errorMessage == "already_allowlisted")
+      await expectImageResource.toBeLoaded();
+    else
+      await expectImageResource.toBeBlocked();
   }
 
   it("blocks before clicking allowlist", async function() {
@@ -114,6 +110,11 @@ describe("One Click Allowlisting", function() {
 
   it("unblocks when allowlist is clicked", async function() {
     await clickAllowlistButton("allowlist");
+    await expectSuccessfulAllowlist();
+  });
+
+  it("unblocks when allowlist is clicked using the second key", async function() {
+    await clickAllowlistButton("allowlist_second_key");
     await expectSuccessfulAllowlist();
   });
 
@@ -138,18 +139,10 @@ describe("One Click Allowlisting", function() {
     await clickAllowlistButton("allowlist");
     await expectSuccessfulAllowlist();
 
-    onUnauthorizedFake.resetHistory();
+    await clearOnUnauthorizedEvents();
 
     await clickAllowlistButton("allowlist");
-    expect(await getSuccessEventReceived()).toBeNull();
-    expect(onUnauthorizedFake.args).toEqual([[{
-      reason: "already_allowlisted",
-      request: {
-        domain: "localhost",
-        signature: expect.any(String),
-        timestamp: expect.any(Number)
-      }
-    }]]);
+    await expectUnsuccessfulAllowlist("already_allowlisted");
   });
 
   it("unblocks if only the page was previously allowlisted", async function() {
@@ -164,9 +157,8 @@ describe("One Click Allowlisting", function() {
   });
 
   describe("Invalid signature", function() {
-    it("blocks when signature key is invalid", async function() {
-      await EWE.allowlisting.setAuthorizedKeys([]);
-      await clickAllowlistButton("allowlist");
+    it("blocks when signature key is unauthorized", async function() {
+      await clickAllowlistButton("allowlist_unauthorized_key");
       await expectUnsuccessfulAllowlist("invalid_signature");
     });
 
@@ -223,8 +215,18 @@ describe("One Click Allowlisting", function() {
     ]) {
       it(`can't detect handler with untrusted event using ${link}`, async function() {
         await clickAllowlistButton(link);
+        await new Promise(r => setTimeout(r, timeout));
         expect(await getEventHandlerDetected()).toBeNull();
       });
+    }
+
+    async function getUserFilters() {
+      return await runInBackgroundPage([
+        {op: "getGlobal", arg: "EWE"},
+        {op: "getProp", arg: "filters"},
+        {op: "callMethod", arg: "getUserFilters"},
+        {op: "await"}
+      ], false);
     }
 
     // Without the DOS protection code, this test doesn't fail
@@ -232,15 +234,25 @@ describe("One Click Allowlisting", function() {
     // timing out the rest of the tests.
     it("does not break with many allowlisting requests", async function() {
       await clickAllowlistButton("malicious_dos_attempt");
-      let userFilters = await EWE.filters.getUserFilters();
+      await new Promise(r => setTimeout(r, timeout));
+      let userFilters = await getUserFilters();
       let userFilterTexts = userFilters.map(f => f.text);
       expect(userFilterTexts).toEqual([`|${TEST_PAGES_URL}$image`]);
     });
 
     it("does not break with many valid allowlisting requests", async function() {
       await clickAllowlistButton("malicious_dos_attempt_valid_signature");
-      let userFilters = await EWE.filters.getUserFilters();
-      let userFilterTexts = userFilters.map(f => f.text);
+
+      let userFilterTexts;
+      await wait(async() => {
+        // Fuzzing service worker while polling here is
+        // inappropriate. We'd kill the exact process that we're
+        // waiting to see the results of.
+        let userFilters = await getUserFilters();
+        userFilterTexts = userFilters.map(f => f.text);
+        return userFilterTexts.length > 1;
+      }, timeout, "allowlisting filter was not added");
+
       expect(userFilterTexts).toEqual(expect.arrayContaining([
         `|${TEST_PAGES_URL}$image`,
         `@@||${TEST_PAGES_DOMAIN}^$document`

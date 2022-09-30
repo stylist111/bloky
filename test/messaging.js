@@ -122,3 +122,29 @@ export async function ensureEverythingHasSaved() {
     {op: "await"}
   ], false);
 }
+
+export async function getTestEvents(name) {
+  return await runInBackgroundPage([
+    {op: "getGlobal", arg: "testEvents"},
+    {op: "pushArg", arg: name},
+    {op: "callMethod", arg: "get"},
+    {op: "await"}
+  ], false);
+}
+
+export async function clearTestEvents(name) {
+  return await runInBackgroundPage([
+    {op: "getGlobal", arg: "testEvents"},
+    {op: "pushArg", arg: name},
+    {op: "callMethod", arg: "clear"},
+    {op: "await"}
+  ], false);
+}
+
+export async function clearAllTestEvents() {
+  return await runInBackgroundPage([
+    {op: "getGlobal", arg: "testEvents"},
+    {op: "callMethod", arg: "clearAll"},
+    {op: "await"}
+  ], false);
+}

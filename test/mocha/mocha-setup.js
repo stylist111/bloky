@@ -19,8 +19,8 @@
 
 import {TEST_PAGES_URL, Page, Popup, setMinTimeout, isIncognito}
   from "../utils.js";
-import {runInBackgroundPage, removeFakeListeners, ensureEverythingHasSaved}
-  from "../messaging.js";
+import {runInBackgroundPage, removeFakeListeners, ensureEverythingHasSaved,
+        clearAllTestEvents} from "../messaging.js";
 
 mocha.setup("bdd");
 
@@ -82,6 +82,7 @@ beforeEach(function() {
 
 afterEach(async function() {
   await clearFilters();
+  await clearAllTestEvents();
   await Page.removeCurrent();
   await Popup.removeCurrent();
   await removeFakeListeners();

@@ -139,6 +139,78 @@ async function checkTabAllowlisted(tabId, changeInfo, tab) {
 }
 chrome.tabs.onUpdated.addListener(checkTabAllowlisted);
 
+let TEST_EVENT_STORAGE_KEY = "ewe-test:test-event-map";
+class TestEventMap {
+  constructor() {
+    this.loaded = new Promise(resolve => {
+      if (chrome.storage.session) {
+        chrome.storage.session.get([TEST_EVENT_STORAGE_KEY], results => {
+          this.data = results[TEST_EVENT_STORAGE_KEY] || {};
+          resolve();
+        });
+      }
+      else {
+        this.data = {};
+        resolve();
+      }
+    });
+  }
+
+  saveSessionStorage() {
+    return new Promise(resolve => {
+      if (chrome.storage.session) {
+        chrome.storage.session.set({
+          [TEST_EVENT_STORAGE_KEY]: this.data
+        }, resolve);
+      }
+      else {
+        resolve();
+      }
+    });
+  }
+
+  async push(name, event) {
+    await this.loaded;
+
+    if (!this.data[name])
+      this.data[name] = [];
+
+    this.data[name].push(event);
+
+    await this.saveSessionStorage();
+  }
+
+  async get(name) {
+    await this.loaded;
+
+    if (this.data[name])
+      return this.data[name];
+
+    return [];
+  }
+
+  async clear(name) {
+    await this.loaded;
+
+    delete this.data[name];
+    await this.saveSessionStorage();
+  }
+
+  async clearAll() {
+    await this.loaded;
+
+    this.data = {};
+    await this.saveSessionStorage();
+  }
+}
+
+self.testEvents = new TestEventMap();
+function createTestEventListener(name) {
+  return async function(event) {
+    await self.testEvents.push(name, event);
+  };
+}
+
 let messages = [];
 
 function handleTestMessage(request, sender, sendResponse) {
@@ -330,3 +402,11 @@ isolatedCode.get = () => function dependency() {
 };
 
 EWE.snippets.setLibrary({isolatedCode, injectedCode});
+
+let oneClickAllowlistingPublicKeys = [
+  "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAorAkyGHnzZkVE0TGcU7Sl6/LlH9j3udDNvHv/fSzplLMdqkw0HZNV9zaBFQ0Rw73AJ7MQ8JQm2hex9DEss3xsrlpHEi/nC7C1authg1rt5Xo4K0P5Bo+j6y41UtgQoL9xKJ6RlYGBq4uBHaq/xRyp/7zUxOiViTdnVZRhSkmyBCIQ+5l8/mTk5yyMLfH7QM0KFKdJbnnTU8HEGzHaFi33vAwWPpJjCohYUzYxgXOgSZYV6xNPycQj4U/D4k+7UT+d4zzrj7fSz08/ijfHLB8G6dr1nx7+Pydt3ijhKEX2mKaAWgKtyM2wTgFXys4rnAbdr340FpQaVebNF0bwGsqluBNdvZ6fPgN9dLlpVDQKXlOKdfOyc64Yw82/jHKdYC7NO1bg13hqo7JWM10Gklt2FY5ekfDBZagPbYCH780C8w0aMceBs3NBTI6SAPI8xhyu7LwL7vw/vMwz8kfIsKOCPFqf0qPlvJCaryIAA7Ca6SHfBqaTzyivEEqn6tWphCpYSODfPRO4Udg+l/o/PCJuly41b4QF2x8H+LvJnr7HFknmFYwisbIofC/2ucO2sfJDP4EOHKeDV9mexHSJIfjyFYV0f0ALj1eKl9Viz37qLefzXFhTG4wzoK5F/QM1ZhIWjN+0DBn6GTQxuWc4eAuASoh07JG4M+i2rWcUTYvgOECAwEAAQ==",
+  "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAz0zHgcXEoGyk4iZHUCfrhU3j7JiHi1EhAtMONxFfmeN4bp6zOWQaMz8cU4S+2jOFD/3oKJGTYNqYH9hBXMG1GzA7nzjNBsONTE64TMxQBt8ksT0bTwqTZ4nqTRWJsjo3XPzB+qkC7a1vXmujcfRsQMY7xbBnhZ6VVGMGtpUIPXNjtjGk3JOD1rKUU8Efq2lZmQlBf63s6u6EDnX6WcdgwlLpQwewO8BrXDBurdH83ZaVrx3zOQVQyJTj0+CAkammJ04Aq1golgddz4qRzr5vmB0FQkibr3oh79HfaqByKHsqgBFeAcdSbSg/pzqeNjnH0+a6GNx31V8UoDC3cRa/Uqet+t55QTSwWI4Iu11CZrKb3HX78swDkHW9/pyG2KZeUViFLe3EqInzH7jTZPTuQR4zGXMZji/WtqWxONjt37PKReJSTnMJSh2GyVUk3tZGb1fNtgthiu711uPh8/qjiuWPiaECRnCAc6sRgblxVRD4tIYgLmbbUsTPwlBFw6iZ/2HjqowA4/S5og1M3JAp4KBr7QYRz30Ji3TUjg5rWJdzO/WNx46W1Ro08PkfidvjdQ2PJvQkCtNCgnRbyAgPLJ1hMDycsKYduKO8Y5AszVgD/RBipYg9HVkuCnYChCspu8cq6gaR1sx3IcqZZs9kZUIqAT1bxMdYkKCm0igciAkCAwEAAQ=="
+];
+EWE.allowlisting.setAuthorizedKeys(oneClickAllowlistingPublicKeys);
+
+EWE.allowlisting.onUnauthorized.addListener(createTestEventListener("allowlisting.onUnauthorized"));

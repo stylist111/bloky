@@ -16,28 +16,50 @@
  */
 
 import {webcrypto as crypto} from "crypto";
+import fs from "fs";
 
-import {arrayBufferToBase64} from "adblockpluscore/lib/rsa.js";
+function arrayBufferToBase64(buffer) {
+  let binary = "";
+  let bytes = new Uint8Array(buffer);
+  for (let i = 0; i < bytes.byteLength; i++)
+    binary += String.fromCharCode(bytes[i]);
 
-async function createKeypair() {
-  let algorithm = {
-    name: "RSASSA-PKCS1-v1_5",
-    modulusLength: 4096,
-    publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-    hash: {name: "SHA-512"}
-  };
-
-  let key = await crypto.subtle.generateKey(algorithm, true, []);
-
-  let pub = arrayBufferToBase64(
-    await crypto.subtle.exportKey("spki", key.publicKey)
-  );
-  console.log("Public key:", pub);
-
-  let priv = arrayBufferToBase64(
-    await crypto.subtle.exportKey("pkcs8", key.privateKey)
-  );
-  console.log("Private key:", priv);
+  return btoa(binary);
 }
 
-createKeypair();
+export let algorithm = {
+  name: "RSASSA-PKCS1-v1_5",
+  modulusLength: 4096,
+  publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+  hash: {name: "SHA-512"}
+};
+
+export async function createKeypair() {
+  let key = await crypto.subtle.generateKey(algorithm, true, [
+    "sign",
+    "verify"
+  ]);
+
+  let publicKey = arrayBufferToBase64(
+    await crypto.subtle.exportKey("spki", key.publicKey)
+  );
+  let privateKey = arrayBufferToBase64(
+    await crypto.subtle.exportKey("pkcs8", key.privateKey)
+  );
+
+  return {publicKey, privateKey};
+}
+
+let proc = process.argv[1];
+let stats = fs.statSync(proc);
+if (stats.isSymbolicLink)
+  proc = fs.realpathSync(proc);
+if (import.meta.url === `file://${proc}`) {
+  createKeypair().then(({publicKey, privateKey}) => {
+    console.log(`publicKey="${publicKey}";`);
+    console.log(`privateKey="${privateKey}";`);
+  }, err => {
+    console.error(err);
+    process.exit(1);
+  });
+}

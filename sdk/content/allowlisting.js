@@ -24,6 +24,7 @@ const EVENT_INTERVAL_MS = 100;
 
 let errorCount = 0;
 let eventProcessingInterval = null;
+let eventProcessingInProgress = false;
 let eventQueue = [];
 
 function isEventTrusted(event) {
@@ -45,27 +46,36 @@ async function allowlistDomain(event) {
 }
 
 async function processNextEvent() {
-  let event = eventQueue.shift();
-  if (event) {
-    try {
-      let allowlistingResult = await allowlistDomain(event);
-      if (allowlistingResult === true) {
-        document.dispatchEvent(new Event("domain_allowlisting_success"));
-        stopOneClickAllowlisting();
-      }
-      else {
-        throw new Error("Domain allowlisting rejected");
-      }
-    }
-    catch (e) {
-      errorCount++;
-      if (errorCount >= MAX_ERROR_THRESHOLD)
-        stopOneClickAllowlisting();
-    }
-  }
+  if (eventProcessingInProgress)
+    return;
 
-  if (!eventQueue.length)
-    stopProcessingInterval();
+  try {
+    eventProcessingInProgress = true;
+    let event = eventQueue.shift();
+    if (event) {
+      try {
+        let allowlistingResult = await allowlistDomain(event);
+        if (allowlistingResult === true) {
+          document.dispatchEvent(new Event("domain_allowlisting_success"));
+          stopOneClickAllowlisting();
+        }
+        else {
+          throw new Error("Domain allowlisting rejected");
+        }
+      }
+      catch (e) {
+        errorCount++;
+        if (errorCount >= MAX_ERROR_THRESHOLD)
+          stopOneClickAllowlisting();
+      }
+    }
+
+    if (!eventQueue.length)
+      stopProcessingInterval();
+  }
+  finally {
+    eventProcessingInProgress = false;
+  }
 }
 
 function onDomainAllowlistingRequest(event) {
