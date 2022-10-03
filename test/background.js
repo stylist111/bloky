@@ -80,65 +80,6 @@ async function runOperations(operations) {
   return stack.pop();
 }
 
-class TabAllowlistedResults {
-  constructor() {
-    if (!chrome.storage.session)
-      this._map = new Map();
-  }
-
-  key(tabId, url) {
-    return `ewe-test:tabAllowlistedResults:${tabId}:${url}`;
-  }
-
-  async set(tabId, url, result) {
-    let key = this.key(tabId, url);
-    return new Promise(resolve => {
-      if (chrome.storage.session) {
-        chrome.storage.session.set({
-          [key]: result
-        }, resolve);
-      }
-      else {
-        this._map.set(key, result);
-        resolve();
-      }
-    });
-  }
-
-  async get(tabId, url) {
-    let key = this.key(tabId, url);
-    return new Promise(resolve => {
-      if (chrome.storage.session) {
-        chrome.storage.session.get([key], results => {
-          resolve(results[key]);
-        });
-      }
-      else {
-        resolve(this._map.get(key));
-      }
-    });
-  }
-}
-
-let tabAllowlistedResults = new TabAllowlistedResults();
-
-async function checkTabAllowlisted(tabId, changeInfo, tab) {
-  let result = {
-    tabId,
-    url: tab.url
-  };
-  try {
-    result.isResourceAllowlisted = await EWE.filters.isResourceAllowlisted(
-      tab.url, "document", tabId
-    );
-  }
-  catch (e) {
-    result.error = toStringIfError(e);
-  }
-  await tabAllowlistedResults.set(tabId, tab.url, result);
-}
-chrome.tabs.onUpdated.addListener(checkTabAllowlisted);
-
 let TEST_EVENT_STORAGE_KEY = "ewe-test:test-event-map";
 class TestEventMap {
   constructor() {
@@ -169,13 +110,13 @@ class TestEventMap {
     });
   }
 
-  async push(name, event) {
+  async push(name, eventArgs) {
     await this.loaded;
 
     if (!this.data[name])
       this.data[name] = [];
 
-    this.data[name].push(event);
+    this.data[name].push(eventArgs);
 
     await this.saveSessionStorage();
   }
@@ -206,8 +147,8 @@ class TestEventMap {
 
 self.testEvents = new TestEventMap();
 function createTestEventListener(name) {
-  return async function(event) {
-    await self.testEvents.push(name, event);
+  return async function(...eventArgs) {
+    await self.testEvents.push(name, eventArgs);
   };
 }
 
@@ -233,12 +174,6 @@ function handleTestMessage(request, sender, sendResponse) {
       });
       sendResponse(id);
       break;
-
-    case "ewe-test:wasNewTabAllowlisted": {
-      let {tabId: requestedTabId, url} = request;
-      tabAllowlistedResults.get(requestedTabId, url).then(sendResponse);
-      return true;
-    }
 
     case "ewe-test:getMessages": {
       sendResponse(messages.map(arg => arg.request));
@@ -269,6 +204,30 @@ chrome.runtime.onMessage.addListener(handleTestMessage);
 
 addEventListener("error", ({error}) => lastError = error);
 addEventListener("unhandledrejection", ({reason}) => lastError = reason);
+
+EWE.filters.onAdded.addListener(createTestEventListener("filters.onAdded"));
+EWE.filters.onChanged.addListener(createTestEventListener("filters.onChanged"));
+EWE.filters.onRemoved.addListener(createTestEventListener("filters.onRemoved"));
+EWE.subscriptions.onAdded.addListener(createTestEventListener("subscriptions.onAdded"));
+EWE.subscriptions.onChanged.addListener(createTestEventListener("subscriptions.onChanged"));
+EWE.subscriptions.onRemoved.addListener(createTestEventListener("subscriptions.onRemoved"));
+
+async function checkTabAllowlisted(tabId, changeInfo, tab) {
+  let result = {
+    tabId,
+    url: tab.url
+  };
+  try {
+    result.isResourceAllowlisted = await EWE.filters.isResourceAllowlisted(
+      tab.url, "document", tabId
+    );
+  }
+  catch (e) {
+    result.error = toStringIfError(e);
+  }
+  await self.testEvents.push("ewe-test.newTabAllowlisted", [result]);
+}
+chrome.tabs.onUpdated.addListener(checkTabAllowlisted);
 
 function isMV3() {
   return typeof chrome.declarativeNetRequest != "undefined";

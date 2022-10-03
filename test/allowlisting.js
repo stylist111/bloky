@@ -90,10 +90,10 @@ describe("One Click Allowlisting", function() {
       return events.length > 0;
     }, timeout, "onUnauthorized was not called");
 
-    expect(events).toEqual([{
+    expect(events).toEqual([[{
       reason: errorMessage,
       request: expectedRequest
-    }]);
+    }]]);
     expect(await getSuccessEventReceived()).toBeNull();
 
     await reload();

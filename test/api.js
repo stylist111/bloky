@@ -26,8 +26,7 @@ import {Page, Popup, setMinTimeout, wait, executeScript, isFirefox, isEdge,
         isMV2CustomSubsExtension, TEST_MV3_SUBSCRIPTION,
         TEST_MV3_SUBSCRIPTION_2, TEST_MV3_SUBSCRIPTION_3} from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, addFakeListener,
-        removeFakeListeners, ensureEverythingHasSaved}
-  from "./messaging.js";
+        removeFakeListeners, ensureEverythingHasSaved, getTestEvents} from "./messaging.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 const VALID_SUBSCRIPTION_URL = `${TEST_PAGES_URL}/subscription.txt`;
@@ -399,53 +398,38 @@ describe("API", function() {
     });
 
     describe("Subscription events", function() {
-      before(function() {
-        // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/338
-        if (isFuzzingServiceWorker())
-          this.skip();
-      });
-
       it("listens to onAdded events", async function() {
-        let fake = await addFakeListener({namespace: "subscriptions",
-                                          eventName: "onAdded"});
         await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
-
-        expect(fake.callCount).toBe(1);
-        expect(fake.firstArg).toEqual(expect.objectContaining({
-          url: VALID_SUBSCRIPTION_URL,
-          enabled: true,
-          title: isMV3() ? "Test MV3 Custom Subscription" : VALID_SUBSCRIPTION_URL
-        }));
+        expect(await getTestEvents("subscriptions.onAdded"))
+          .toEqual([[expect.objectContaining({
+            url: VALID_SUBSCRIPTION_URL,
+            enabled: true,
+            title: isMV3() ? "Test MV3 Custom Subscription" : VALID_SUBSCRIPTION_URL
+          })]]);
       });
 
       it("listens to onChanged events", async function() {
         await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
-
-        let fake = await addFakeListener({namespace: "subscriptions",
-                                          eventName: "onChanged"});
         await EWE.subscriptions.disable(VALID_SUBSCRIPTION_URL);
-
-        expect(fake.args).toEqual(expect.arrayContaining([
-          [
-            expect.objectContaining({
-              url: VALID_SUBSCRIPTION_URL,
-              enabled: false
-            }),
-            "enabled"
-          ]
-        ]));
+        expect(await getTestEvents("subscriptions.onChanged"))
+          .toEqual(expect.arrayContaining([
+            [
+              expect.objectContaining({
+                url: VALID_SUBSCRIPTION_URL,
+                enabled: false
+              }),
+              "enabled"
+            ]
+          ]));
       });
 
       it("listens to onRemoved events", async function() {
-        let fake = await addFakeListener({namespace: "subscriptions",
-                                          eventName: "onRemoved"});
         await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
         await EWE.subscriptions.remove(VALID_SUBSCRIPTION_URL);
-
-        expect(fake.callCount).toBe(1);
-        expect(fake.firstArg).toEqual(
-          expect.objectContaining({url: VALID_SUBSCRIPTION_URL})
-        );
+        expect(await getTestEvents("subscriptions.onRemoved"))
+          .toEqual([[expect.objectContaining({
+            url: VALID_SUBSCRIPTION_URL
+          })]]);
       });
     });
   });
@@ -679,43 +663,28 @@ describe("API", function() {
     });
 
     describe("Filter events", function() {
-      before(function() {
-        // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/317
-        if (isFuzzingServiceWorker())
-          this.skip();
-      });
-
       it("listens to onAdded events", async function() {
-        let fake = await addFakeListener({namespace: "filters",
-                                          eventName: "onAdded"});
         await addFilter(VALID_FILTER_TEXT);
-
-        expect(fake.callCount).toBe(1);
-        expect(fake.firstArg).toEqual(VALID_FILTER);
+        expect(await getTestEvents("filters.onAdded"))
+          .toEqual([[VALID_FILTER]]);
       });
 
       it("listens to onChanged events", async function() {
-        let fake = await addFakeListener({namespace: "filters",
-                                          eventName: "onChanged"});
         await addFilter(VALID_FILTER_TEXT);
         await EWE.filters.disable([VALID_FILTER_TEXT]);
 
-        expect(fake.callCount).toBe(1);
-        expect(fake.firstArg).toEqual({...VALID_FILTER, enabled: false});
-        expect(fake.lastArg).toEqual("enabled");
+        expect(await getTestEvents("filters.onChanged"))
+          .toEqual([[{...VALID_FILTER, enabled: false}, "enabled"]]);
 
         // This is a workaround and should be removed once https://gitlab.com/eyeo/webext/webext-sdk/-/issues/122 is fixed.
         await EWE.filters.enable([VALID_FILTER_TEXT]);
       });
 
       it("listens to onRemoved events", async function() {
-        let fake = await addFakeListener({namespace: "filters",
-                                          eventName: "onRemoved"});
         await addFilter(VALID_FILTER_TEXT);
         await EWE.filters.remove([VALID_FILTER_TEXT]);
-
-        expect(fake.callCount).toBe(1);
-        expect(fake.firstArg).toEqual(VALID_FILTER);
+        expect(await getTestEvents("filters.onRemoved"))
+          .toEqual([[VALID_FILTER]]);
       });
     });
 
@@ -892,18 +861,15 @@ describe("API", function() {
         let timeout = isFuzzingServiceWorker() ? 5000 : 500;
         await new Promise(r => setTimeout(r, timeout));
 
-        let newTabAllowlisted = await browser.runtime.sendMessage(
-          {type: "ewe-test:wasNewTabAllowlisted", tabId, url}
-        );
+        let events = (await getTestEvents("ewe-test.newTabAllowlisted"))
+            .filter(event => event[0].tabId == tabId);
 
-        expect(newTabAllowlisted).toEqual(
-          expect.objectContaining({
+        expect(events[0])
+          .toEqual([{
             tabId,
             url,
             isResourceAllowlisted: false
-          })
-        );
-        expect(newTabAllowlisted).not.toHaveProperty("error");
+          }]);
       });
     });
   });

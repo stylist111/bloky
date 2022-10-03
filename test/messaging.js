@@ -123,6 +123,13 @@ export async function ensureEverythingHasSaved() {
   ], false);
 }
 
+/**
+ * Gets the events that have been fired so far for a given event name.
+ *
+ * @param {string} name The name of the event to query.
+ * @return {Array<Array<*>>} Outer array is each individual
+ *   event. Inner array is the arguments passed to that event.
+ */
 export async function getTestEvents(name) {
   return await runInBackgroundPage([
     {op: "getGlobal", arg: "testEvents"},
