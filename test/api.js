@@ -939,7 +939,8 @@ describe("API", function() {
       expect(addonInfo).toEqual(
         expect.objectContaining({
           name: manifest.short_name || manifest.name,
-          version: manifest.version
+          version: manifest.version,
+          manifestVersion: String(manifest.manifest_version)
         })
       );
     });

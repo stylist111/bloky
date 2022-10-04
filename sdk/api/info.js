@@ -29,6 +29,7 @@ export let application = "unknown";
 export let applicationVersion = "0";
 export let platform;
 export let platformVersion = "0";
+export let manifestVersion = String(manifest.manifest_version);
 
 function parseChromiumUserAgent() {
   let regexp = /(\S+)\/(\S+)(?:\s*\(.*?\))?/g;
@@ -90,6 +91,8 @@ export function setAddonInfo(addonInfo) {
     addonName = addonInfo.name;
   if (addonInfo.version)
     addonVersion = addonInfo.version;
+  if (addonInfo.manifestVersion)
+    manifestVersion = addonInfo.manifestVersion;
 
   addonBundledSubscriptions = addonInfo.bundledSubscriptions;
   addonBundledSubscriptionsPath = addonInfo.bundledSubscriptionsPath;

@@ -19,7 +19,7 @@ import {FilterStorage} from "adblockpluscore/lib/filterStorage.js";
 
 import {IO} from "./io.js";
 import {addonBundledSubscriptions, addonBundledSubscriptionsPath,
-        addonName, addonVersion} from "./info.js";
+        addonName, addonVersion, manifestVersion} from "./info.js";
 import {filterEngine} from "./core.js";
 import {awaitSavingComplete} from "./prefs.js";
 import {validate} from "./subscriptions.js";
@@ -45,7 +45,8 @@ export default {
       name: addonName,
       version: addonVersion,
       bundledSubscriptions: addonBundledSubscriptions,
-      bundledSubscriptionsPath: addonBundledSubscriptionsPath
+      bundledSubscriptionsPath: addonBundledSubscriptionsPath,
+      manifestVersion
     };
   },
 
