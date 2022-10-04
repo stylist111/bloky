@@ -1,7 +1,4 @@
-FROM registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
-
-# Edge dependencies
-RUN apt-get install -y fonts-liberation libatomic1 xdg-utils
+FROM registry.gitlab.com/eyeo/docker/get-browser-binary:node16
 
 COPY . webext-sdk/
 RUN cd webext-sdk && npm install
