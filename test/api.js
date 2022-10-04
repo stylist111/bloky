@@ -1184,12 +1184,6 @@ describe("API", function() {
   });
 
   describe("Reporting", function() {
-    before(function() {
-      // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/320
-      if (isFuzzingServiceWorker())
-        this.skip();
-    });
-
     let defaultEventOptions = {};
     let allowingEventOptions = {filterType: "allowing"};
     let elemhideEventOptions = {includeElementHiding: true};
@@ -2586,25 +2580,31 @@ describe("API", function() {
         });
       });
     });
+  });
 
-    describe("Notifications", function() {
-      it("supports notifications", async function() {
-        let notification = {id: "test"};
+  describe("Notifications", function() {
+    before(function() {
+      // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/320
+      if (isFuzzingServiceWorker())
+        this.skip();
+    });
 
-        await EWE.notifications.start();
-        await EWE.notifications.addNotification(notification);
+    it("supports notifications", async function() {
+      let notification = {id: "test"};
 
-        let fake = await addFakeListener({namespace: "notifications",
-                                          method: "addShowListener",
-                                          removeMethod: "removeShowListener"});
-        await EWE.notifications.showNext();
-        await EWE.notifications.removeNotification(notification);
+      await EWE.notifications.start();
+      await EWE.notifications.addNotification(notification);
 
-        await EWE.notifications.stop();
+      let fake = await addFakeListener({namespace: "notifications",
+                                        method: "addShowListener",
+                                        removeMethod: "removeShowListener"});
+      await EWE.notifications.showNext();
+      await EWE.notifications.removeNotification(notification);
 
-        expect(fake.callCount).toBe(1);
-        expect(fake.firstArg).toEqual(notification);
-      });
+      await EWE.notifications.stop();
+
+      expect(fake.callCount).toBe(1);
+      expect(fake.firstArg).toEqual(notification);
     });
   });
 
