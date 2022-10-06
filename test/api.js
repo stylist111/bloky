@@ -26,13 +26,12 @@ import {Page, Popup, setMinTimeout, wait, executeScript, isFirefox, isEdge,
         isMV2CustomSubsExtension, TEST_MV3_SUBSCRIPTION,
         TEST_MV3_SUBSCRIPTION_2, TEST_MV3_SUBSCRIPTION_3} from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, addFakeListener,
-        removeFakeListeners, ensureEverythingHasSaved, getTestEvents} from "./messaging.js";
+        removeFakeListeners, ensureEverythingHasSaved, getTestEvents,
+        clearTestEvents} from "./messaging.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 const VALID_SUBSCRIPTION_URL = `${TEST_PAGES_URL}/subscription.txt`;
 const VALID_SUBSCRIPTION_URL_2 = `${TEST_PAGES_URL}/subscription.txt?2`;
-const ANOTHER_VALID_SUBSCRIPTION_URL =
-  `${TEST_PAGES_URL}/subscription-empty.txt`;
 const INVALID_SUBSCRIPTION_URL = "invalidUrl";
 
 const VALID_FILTER_TEXT = `|${TEST_PAGES_URL}$image`;
@@ -333,68 +332,64 @@ describe("API", function() {
       }
     });
 
-    it("syncs subscriptions", async function() {
-      if (isMV3())
-        this.skip();
+    async function prepareSyncTest() {
+      await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
+      await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL_2);
 
-      setMinTimeout(this, 3000);
+      // This wait is to make sure we don't confuse our download
+      // starting events linked to calling `sync` with the download
+      // starting events from just adding the sub.
+      await wait(async() => {
+        let subs = await EWE.subscriptions.getDownloadable();
+        return subs.every(sub => sub.lastDownload);
+      }, 1000, "Subscriptions were not synced when added");
 
-      await new Promise((resolve, reject) => {
-        let previousDownload = 0;
-        let syncedOne = false;
-        let syncedAll = false;
-        let sawGeneric = false;
-        let sawDownloading = false;
+      await clearTestEvents("subscriptions.onChanged");
+    }
 
-        async function onChanged(subscription, property) {
-          try {
-            if (subscription.url != ANOTHER_VALID_SUBSCRIPTION_URL)
-              return;
+    it("syncs a specific subscription if specified", async function() {
+      setMinTimeout(this, 5000);
+      await prepareSyncTest();
 
-            if (property == "downloading") {
-              expect(subscription.downloading).toEqual(true);
-              sawDownloading = true;
-              return;
-            }
+      await EWE.subscriptions.sync(VALID_SUBSCRIPTION_URL);
 
-            if (property == null) {
-              sawGeneric = true;
-              return;
-            }
-
-            if (property != "lastDownload")
-              return;
-
-            expect(subscription.lastDownload).toBeGreaterThan(previousDownload);
-            previousDownload = subscription.lastDownload;
-
-            if (!syncedOne) {
-              syncedOne = true;
-              await new Promise(elapsed => setTimeout(elapsed, 1050));
-              await EWE.subscriptions.sync(ANOTHER_VALID_SUBSCRIPTION_URL);
-            }
-            else if (!syncedAll) {
-              syncedAll = true;
-              await new Promise(elapsed => setTimeout(elapsed, 1050));
-              await EWE.subscriptions.sync();
-            }
-            else {
-              expect(sawDownloading).toEqual(true);
-              expect(sawGeneric).toEqual(true);
-              resolve();
-            }
-          }
-          catch (err) {
-            reject(err);
-          }
-        }
-
-        addFakeListener({namespace: "subscriptions",
-                         eventName: "onChanged",
-                         callback: onChanged})
-          .then(() => EWE.subscriptions.add(ANOTHER_VALID_SUBSCRIPTION_URL))
-          .catch(reject);
+      let changeEvents = await getTestEvents("subscriptions.onChanged");
+      let downloadStartingEvents = changeEvents.filter(event => {
+        return event[0].downloading == true && event[1] == "downloading";
       });
+      expect(downloadStartingEvents).toEqual([
+        [
+          expect.objectContaining({
+            url: VALID_SUBSCRIPTION_URL
+          }),
+          "downloading"
+        ]
+      ]);
+    });
+
+    it("syncs all subscriptions if no subscription is specified", async function() {
+      await prepareSyncTest();
+
+      await EWE.subscriptions.sync();
+
+      let changeEvents = await getTestEvents("subscriptions.onChanged");
+      let downloadStartingEvents = changeEvents.filter(event => {
+        return event[0].downloading == true && event[1] == "downloading";
+      });
+      expect(downloadStartingEvents).toEqual([
+        [
+          expect.objectContaining({
+            url: VALID_SUBSCRIPTION_URL
+          }),
+          "downloading"
+        ],
+        [
+          expect.objectContaining({
+            url: VALID_SUBSCRIPTION_URL_2
+          }),
+          "downloading"
+        ]
+      ]);
     });
 
     describe("Subscription events", function() {

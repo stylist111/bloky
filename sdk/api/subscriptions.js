@@ -502,10 +502,15 @@ export default {
    * Forces a new version of a subscription with the
    * given URL to be downloaded immediately.
    * @param {string} [url] The URL of the subscription to be synchronized.
-   *                       If omitted, all subscriptions will be synchronized.
+   *   If omitted, all subscriptions will be synchronized.
+   * @return {Promise} Resolves when syncing has been successfully
+   *   triggered. Syncing may not be completed when this promise
+   *   resolves.
    * @throws {Error} Subscription does not exist.
    */
-  sync(url) {
+  async sync(url) {
+    await initializer.start();
+
     let subscriptions = [];
     let {filterStorage} = filterEngine;
 
@@ -519,7 +524,7 @@ export default {
     }
     else {
       for (let subscription of filterStorage.subscriptions()) {
-        if (subscription.downloadable)
+        if (subscription instanceof RegularSubscription)
           subscriptions.push(subscription);
       }
     }
