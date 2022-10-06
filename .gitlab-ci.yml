@@ -31,15 +31,10 @@ build:
     - npm run lint
     - npm run build
     - DOCS_ERROR=$(npm run docs 2>&1 >/dev/null) && if [ ! -z "$DOCS_ERROR" ]; then echo $DOCS_ERROR && false; fi
-    # Non-functional tests run here for convenience
-    - npm run test-bundle
-    - npm run test-scripts
   artifacts:
     paths:
       - dist/
       - docs/
-    exclude:
-      - dist/package.json
     expire_in: 1 month
 
 .docker-image:
@@ -204,19 +199,21 @@ func:v2:edge:windows:incognito:
 
 func:scripts:
   image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
-  cache: []
-  needs: []
   stage: functional
+  needs: []
   before_script:
-    - npm install --production
-  script: 
-    - cd test/scripts/test-extension
     - npm install
-    - npm exec subs-init
-    - npm exec subs-merge
-    - npm exec subs-fetch
-    - npm exec subs-convert
-    - npm exec subs-generate
+  script:
+    - npm run test-scripts
+
+func:bundle:
+  image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
+  stage: functional
+  script:
+    - npm run test-bundle
+  needs:
+    - job: build
+      artifacts: true
 
 .fuzz:
   extends: .functional
@@ -318,6 +315,22 @@ int:v3:chrome:beta:
   extends: .integration:v3
   variables:
     BROWSER: chromium beta
+
+int:scripts:
+  image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
+  cache: []
+  needs: []
+  stage: integration
+  before_script:
+    - npm install --production
+  script:
+    - cd test/scripts/test-extension
+    - npm install
+    - npm exec subs-init
+    - npm exec subs-merge
+    - npm exec subs-fetch
+    - npm exec subs-convert
+    - npm exec subs-generate
 
 .pages:
   image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python

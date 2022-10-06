@@ -73,8 +73,8 @@
     "subs-fetch": "node scripts/fetchSubscriptions.js",
     "subs-convert": "node scripts/convertSubscriptions.js",
     "subs-generate": "node scripts/generateSubscriptionsFragment.js",
-    "subs-run": "node test/scripts/prepare-mv3-files.js",
-    "subs-clean": "node test/scripts/clean-mv3-files.js",
+    "subs-run": "node scripts/prepare-mv3-files.js",
+    "subs-clean": "node scripts/clean-mv3-files.js",
     "create-allowlisting-keypair": "node scripts/createKeypair.js"
   },
   "bin": {
