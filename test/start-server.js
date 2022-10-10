@@ -16,6 +16,7 @@
  */
 
 /* eslint-env node */
+/* eslint-disable no-console */
 
 import path from "path";
 import url from "url";
@@ -25,11 +26,23 @@ import crypto from "crypto";
 import express from "express";
 import onHeaders from "on-headers";
 import {default as WebSocket} from "ws";
+import yargs from "yargs";
+import {hideBin} from "yargs/helpers";
 
 const HOST = "localhost";
 const HTTP_PORT = 3000;
 const WS_PORT = 3001;
 const HTTP_ADMIN_PORT = 3003;
+
+const args = yargs(hideBin(process.argv))
+      .option("verbose", {
+        alias: "v",
+        type: "boolean",
+        requiresArg: false,
+        description: "Verbose console logging, including all requests"
+      })
+      .parse();
+
 
 let app = express();
 let adminApp = express();
@@ -103,8 +116,10 @@ function testHeader(req, res, next) {
 }
 
 function logRequests(req, res, next) {
-  requests.push(req);
+  if (args.verbose)
+    console.log(new Date().toISOString(), req.method, req.url);
 
+  requests.push(req);
   next();
 }
 
@@ -119,12 +134,10 @@ app.use(express.static(path.join(dirname, "pages")));
 app.post("/ping-handler", (req, res) => res.sendStatus(200));
 
 app.listen(HTTP_PORT, HOST, () => {
-  // eslint-disable-next-line no-console
   console.log(`Test pages server listening at http://${HOST}:${HTTP_PORT}`);
 });
 
 new WebSocket.Server({host: HOST, port: WS_PORT}).on("listening", () => {
-  // eslint-disable-next-line no-console
   console.log(`Web socket server listening at ws://${HOST}:${WS_PORT}`);
 });
 
@@ -154,18 +167,15 @@ adminApp.get("/list", (req, res) => {
 });
 
 // get the subscription content (GET)
-adminApp.get("/subscription.txt", (req, res) => {
-  requests.push(req);
+adminApp.get("/subscription.txt", logRequests, (req, res) => {
   res.send(reply);
 });
 
 // get the subscription content (HEAD)
-adminApp.head("/subscription.txt", (req, res) => {
-  requests.push(req);
+adminApp.head("/subscription.txt", logRequests, (req, res) => {
   res.send(reply);
 });
 
 adminApp.listen(HTTP_ADMIN_PORT, () => {
-  // eslint-disable-next-line no-console
   console.log(`Admin commands server listening at http://${HOST}:${HTTP_ADMIN_PORT}`);
 });

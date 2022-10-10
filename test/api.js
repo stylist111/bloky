@@ -313,7 +313,7 @@ describe("API", function() {
           languages: ["en"],
           title: "EasyList",
           type: "ads",
-          url: "https://easylist-downloads.adblockplus.org/easylist.txt"
+          mv2URL: "https://easylist-downloads.adblockplus.org/easylist.txt"
         })
       ]));
 

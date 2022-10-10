@@ -54,8 +54,8 @@ function convertSubscription(subscription) {
 
 function convertRecommendation({id, languages, title, requires, type, url,
                                 // eslint-disable-next-line camelcase
-                                mv2_url}) {
-  return {id, languages, title, requires, type, url, mv2_url};
+                                mv2URL}) {
+  return {id, languages, title, requires, type, url, mv2URL};
 }
 
 function getSubscription(url) {
@@ -547,7 +547,7 @@ export default {
    *                         recommended subscription.
    * @property {string} url Where the recommended subscription can be found
    *                        in plain text.
-   * @property {string} mv2_url Where the recommended subscription can be found
+   * @property {string} mv2URL Where the recommended subscription can be found
    *                            for MV2 in plain text.
    */
 
