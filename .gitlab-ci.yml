@@ -138,6 +138,12 @@ func:v2:firefox:beta:
   variables:
     TEST_PARAMS: v2 firefox beta
 
+# https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/369
+func:v2:firefox:update:incognito:
+  extends: .functional
+  variables:
+    TEST_PARAMS: v2 firefox --testKinds update --incognito
+
 .edge:windows:
   stage: functional
   needs:
@@ -170,17 +176,17 @@ func:v2:firefox:beta:
 func:v3:chromium:stable:
   extends: .functional
   variables:
-    TEST_PARAMS: v3 chromium --testKinds functional reload mv3-update
+    TEST_PARAMS: v3 chromium --testKinds functional reload update
    
 func:v3:chromium:stable:incognito:
   extends: .functional
   variables:
-    TEST_PARAMS: v3 chromium --testKinds functional reload mv3-update --incognito    
+    TEST_PARAMS: v3 chromium --testKinds functional reload update --incognito
 
 func:v3:edge:linux:
   extends: .functional
   variables:
-    TEST_PARAMS: v3 edge --testKinds functional reload mv3-update    
+    TEST_PARAMS: v3 edge --testKinds functional reload update
 
 func:v2:edge:windows:
   extends: .edge:windows

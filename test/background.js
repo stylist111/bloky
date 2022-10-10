@@ -333,7 +333,7 @@ EWE.start(startupInfo).then(async() => {
   const UPDATE_FLAG = "update-test-running";
   chrome.storage.local.get([UPDATE_FLAG], result => {
     if (result[UPDATE_FLAG])
-      chrome.tabs.create({url: "mv3-update.html"});
+      chrome.tabs.create({url: "update.html"});
   });
 
   const MIGRATE_FLAG = "migrate-test-running";

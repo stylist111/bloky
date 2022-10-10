@@ -17,7 +17,7 @@
 
 import browser from "webextension-polyfill";
 
-const KEY_PREFIX = "abp:file:";
+const KEY_PREFIX = "ewe:file:";
 
 function fileToKey(fileName) {
   return KEY_PREFIX + fileName;
@@ -110,12 +110,34 @@ export let IO = {
     }
   },
 
+  async fixPrefixes() {
+    let data = await browser.storage.local.get();
+    for (let key in data) {
+      let value = data[key];
+
+      // The order of prefixes matters:
+      // the most important should be the last
+      // to override the existing values jic.
+      for (let eachPrefix of ["abp:file:", "file:"]) {
+        if (key.startsWith(eachPrefix)) {
+          let obj = {};
+          obj[KEY_PREFIX + key.substring(eachPrefix.length)] = value;
+          await browser.storage.local.set(obj);
+          await browser.storage.local.remove(key);
+        }
+      }
+    }
+  },
+
   /**
    * Initialize the storage
    * @return {Promise} initialization promise
    */
-  initialize() {
-    return Promise.resolve(null);
+  async initialize() {
+    // Migrating the files with 'file:' and `abp:file:` prefixes
+    // to 'ewe:file:' stored in `browser.storage.local` in Firefox private mode.
+    // See https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/369
+    await this.fixPrefixes();
   }
 };
 

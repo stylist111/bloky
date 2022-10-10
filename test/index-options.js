@@ -17,7 +17,7 @@
 
 "use strict";
 
-const TEST_LINKS = ["functional", "reload", "mv3-update", "mv2-mv3-migrate"];
+const TEST_LINKS = ["functional", "reload", "update", "mv2-mv3-migrate"];
 const TEXT_OPTIONS = ["grep", "timeout"];
 const CHECKBOX_OPTIONS = ["incognito", "fuzzServiceWorkers"];
 

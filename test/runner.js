@@ -52,7 +52,7 @@ function parseArguments() {
   parser.option("testKinds", {
     description: "Which kinds of tests to run (by default all are run)",
     array: true,
-    choices: ["functional", "reload", "mv3-update", "mv2-mv3-migrate", "fuzz"]
+    choices: ["functional", "reload", "update", "mv2-mv3-migrate", "fuzz"]
   });
   parser.option("grep");
 
@@ -71,7 +71,7 @@ function parseArguments() {
     testKinds = ["functional", "reload"];
     if (manifestIsMV3(argv.manifest)) {
       testKinds.push("fuzz");
-      testKinds.push("mv3-update");
+      testKinds.push("update");
     }
   }
 
@@ -269,6 +269,11 @@ async function pollMessages(driver, handle, isMV3) {
       messages = await driver.executeScript(script, webdriverEvents);
     }
     catch (err) {
+      if (err.message.includes("Document was unloaded"))
+      // In firefox the driver.executeScript function might throw
+      // this error on low resource machines. Retrying usually helps.
+        messages = await driver.executeScript(script, webdriverEvents);
+
       if (err.message.includes("received Inspector.detached event"))
         // From Chromium 105 the driver.executeScript function might throw
         // this error on low resource machines. Retrying usually helps.
@@ -354,7 +359,7 @@ async function runFunctionalTests(driver, params, isMV3, incognito) {
 }
 
 async function runReloadTests(
-  driver, params, isMV3, title, id, testOutputToken, page) {
+  driver, params, isMV3, incognito, title, id, testOutputToken, page) {
   console.log("============");
   console.log(`${title} Tests`);
   console.log("============");
@@ -362,7 +367,7 @@ async function runReloadTests(
   let results;
   let handle;
 
-  await startTestRun(driver, id);
+  await startTestRun(driver, id, params, incognito);
   while (!results ||
          results.log.toString().includes(`${testOutputToken} (preparation)`)) {
     // Reloading with an update has the same performance impact as
@@ -477,17 +482,20 @@ async function run() {
           break;
         case "reload":
           results.reload = await runReloadTests(
-            driver, params, isMV3, "Reload", "reload", "Reload", "/reload.html");
+            driver, params, isMV3, incognito,
+            "Reload", "reload", "Reload", "/reload.html");
           break;
-        case "mv3-update":
-          results["mv3-update"] = await runReloadTests(
-            driver, params, isMV3, "MV3 update", "mv3-update", "MV3 update", "/mv3-update.html");
+        case "update":
+          results.update = await runReloadTests(
+            driver, params, isMV3, incognito,
+            "Update", "update", "Update", "/update.html");
           break;
         case "mv2-mv3-migrate":
           if (isMV3)
             console.warn("Migrate tests assume it's started as MV2 test and continued as MV3 test");
           results["mv2-mv3-migrate"] = await runReloadTests(
-            driver, params, isMV3, "MV2 MV3 migrate", "mv2-mv3-migrate", "MV2 MV3 migrate", "/mv2-mv3-migrate.html");
+            driver, params, isMV3, incognito,
+            "MV2 MV3 migrate", "mv2-mv3-migrate", "MV2 MV3 migrate", "/mv2-mv3-migrate.html");
           break;
         case "fuzz":
           results.fuzz = await runFuzzTests(driver, params, isMV3, incognito);

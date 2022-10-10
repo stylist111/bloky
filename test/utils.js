@@ -479,3 +479,20 @@ export function isMV2CustomSubsExtension() {
   let manifest = browser.runtime.getManifest();
   return manifest.description.endsWith("custom subscriptions");
 }
+
+export async function writeFile(prefix, fileName, data) {
+  return browser.storage.local.set({
+    [prefix + fileName]: {
+      content: Array.from(data),
+      lastModified: Date.now()
+    }
+  });
+}
+
+export async function readFile(prefix, fileName) {
+  let key = prefix + fileName;
+  let items = await browser.storage.local.get(key);
+  let entry = items[key];
+  if (entry)
+    return entry;
+}

@@ -226,8 +226,8 @@ export default (env = {}) => {
           template: htmlTemplate
         }),
         new HtmlWebpackPlugin({
-          title: "MV3 update tests",
-          filename: "mv3-update.html",
+          title: "Update tests",
+          filename: "update.html",
           inject: "body",
           chunks: ["update"],
           template: htmlTemplate

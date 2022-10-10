@@ -263,7 +263,7 @@ tests to run in incognito mode.
 functional tests. For example, you can target only the service worker
 fuzzing tests by running `--testKinds fuzz`, or a combination of the
 functional, reload and update tests by running tests with
-`--testKinds functional reload mv3-update mv2-mv3-migrate`.
+`--testKinds functional reload update mv2-mv3-migrate`.
 
 #### Using the test runner
 
