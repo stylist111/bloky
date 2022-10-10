@@ -1,3 +1,10 @@
+0.6.1 - 2022/10/11
+==================
+
+# Bug fixes
+
+- Fix duplicated preferences stored in local storage (#369)
+
 0.6.0 - 2022/09/06
 ==================
 
