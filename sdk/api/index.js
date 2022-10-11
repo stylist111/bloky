@@ -27,7 +27,8 @@ import * as requestFilter from "./request-filter.js";
 import {setSnippetLibrary} from "./content-filter.js";
 import {setAddonInfo} from "./info.js";
 import {filterEngine} from "./core.js";
-import {validate, updateFilterText} from "./subscriptions.js";
+import {updateFilterText, validate as validateSubscriptions,
+        migrate as migrateSubscriptions} from "./subscriptions.js";
 
 export {default as subscriptions} from "./subscriptions.js";
 export {default as filters} from "./filters.js";
@@ -82,6 +83,7 @@ async function onInstalled(details) {
   if (details.previousVersion &&
     details.previousVersion !== manifest.version) {
     await initializer.start();
+    await migrateSubscriptions();
     await updateFilterText();
   }
 }
@@ -126,8 +128,8 @@ export async function start(addonInfo) {
 
   if (browser.declarativeNetRequest) {
     browser.runtime.onInstalled.addListener(onInstalled);
-    warnings = await validate(addonInfo.bundledSubscriptions,
-                              addonInfo.bundledSubscriptionsPath);
+    warnings = await validateSubscriptions(
+      addonInfo.bundledSubscriptions, addonInfo.bundledSubscriptionsPath);
   }
 
   await startSubmodules();

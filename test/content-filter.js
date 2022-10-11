@@ -25,7 +25,7 @@ import {addFilter, EWE} from "./messaging.js";
 import {isFuzzingServiceWorker}
   from "./mocha/mocha-runner.js";
 
-let hideTimeout = isFuzzingServiceWorker() ? 5000 : 1000;
+let hideTimeout = isFuzzingServiceWorker() ? 15000 : 1000;
 let collapseTimeout = 2000;
 let elemhideEmulationUpdateTimeout = 4000;
 let unhiddenTimeout = isFuzzingServiceWorker() ? 1000 : 200;

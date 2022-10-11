@@ -18,8 +18,8 @@
 import expect from "expect";
 import browser from "webextension-polyfill";
 
-import {TEST_MV3_SUBSCRIPTION, isFirefox, isMV3, readFile, writeFile}
-  from "./utils.js";
+import {TEST_MV3_SUBSCRIPTION, TEST_ANTI_CV_SUBSCRIPTION,
+        isFirefox, isMV3, readFile, writeFile} from "./utils.js";
 import {EWE, runInBackgroundPage} from "./messaging.js";
 import {isConnected, updateExtensionFiles} from "./mocha/mocha-runner.js";
 
@@ -158,5 +158,36 @@ describe(`Update (${phase}) (runner only)`, function() {
     // pre-SDK should win
     let actualData3 = await readFile(CURRENT_PREFIX, file);
     expect(actualData3.content).toEqual(Array.from(data1));
+  });
+
+  it("does not migrate the subscriptions because of anti-cv subscription", async function() {
+    if (start) {
+      await EWE.subscriptions.add(TEST_ANTI_CV_SUBSCRIPTION.url);
+
+      let downloadables = await EWE.subscriptions.getDownloadable();
+      expect(downloadables).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          url: TEST_ANTI_CV_SUBSCRIPTION.url,
+          downloadable: true
+        })]));
+      await EWE.debugging.ensureEverythingHasSaved();
+      await new Promise(elapsed => setTimeout(elapsed, 1000));
+
+      expect(await EWE.testing._getPrefs("subscriptions_migrated"))
+        .toBeFalsy();
+    }
+
+    await new Promise(elapsed => setTimeout(elapsed, 1000));
+
+    // anti-cv subscriptions stay `DownloadableSubscription` even in MV3
+    let downloadables = await EWE.subscriptions.getDownloadable();
+    expect(downloadables).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        url: TEST_ANTI_CV_SUBSCRIPTION.url,
+        downloadable: true
+      })]));
+
+    expect(await EWE.testing._getPrefs("subscriptions_migrated"))
+      .toBeFalsy();
   });
 });

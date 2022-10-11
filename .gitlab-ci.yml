@@ -88,10 +88,10 @@ func:v2:chromium:stable:
   variables:
     TEST_PARAMS: v2 chromium
 
-func:v2:chromium:stable:migrate:
+func:v2:chromium:beta:migrate:
   extends: .functional
   variables:
-    TEST_PARAMS: v2 chromium --testKinds mv2-mv3-migrate
+    TEST_PARAMS: v2 chromium beta --testKinds mv2-mv3-migrate
 
 func:v2:chromium:stable:incognito:
   extends: .functional

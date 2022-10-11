@@ -36,6 +36,16 @@ export default {
 
   /**
    * @ignore
+   * Used internally. Gets the preference value.
+   * @param {string} [key] Preference key
+   * @returns {Object} Preference value
+   */
+  _getPrefs(key) {
+    return Prefs[key];
+  },
+
+  /**
+   * @ignore
    * Used internally. Restart the Synchronizer.
    */
   _restartSynchronizer() {

@@ -33,6 +33,7 @@ import {convertFilter} from "./filters.js";
 import {removeDynamicFilters} from "./dnr-filters.js";
 
 import {readFileContent} from "./io.js";
+import {Prefs} from "./prefs.js";
 
 const ACCEPTABLE_ADS_URL = "https://easylist-downloads.adblockplus.org/exceptionrules.txt";
 const ACCEPTABLE_ADS_PRIVACY_URL = "https://easylist-downloads.adblockplus.org/exceptionrules-privacy-friendly.txt";
@@ -251,6 +252,121 @@ export async function updateFilterText() {
     await remove(url);
 }
 
+async function getDownloadable() {
+  await initializer.start();
+
+  let result = [];
+
+  for (let subscription of filterEngine.filterStorage.subscriptions()) {
+    if (subscription instanceof RegularSubscription)
+      result.push(convertSubscription(subscription));
+  }
+
+  return result;
+}
+
+async function add(url, properties = {}) {
+  await initializer.start();
+
+  if (!Subscription.isValidURL(url))
+    throw new Error(`Invalid subscription URL provided: ${url}`);
+
+  let {filterStorage} = filterEngine;
+
+  let subscription = Subscription.fromURL(url);
+
+  if (browser.declarativeNetRequest) {
+    let subscriptionInfo = addonBundledSubscriptions.find(x => x.url == url);
+    if (!subscriptionInfo)
+      throw new Error(`Failed to find the subscription with URL=${url}`);
+
+    if (!subscription.downloadable) {
+      let filterText;
+      try {
+        filterText = await getFilterText(
+          subscriptionInfo, addonBundledSubscriptionsPath);
+      }
+      catch (e) {
+        // We already warn if the file doesn't exist on startup, so
+        // we can ignore an error loading the bundled file here.
+      }
+
+      if (filterText)
+        subscription.setFilterText(filterText);
+    }
+  }
+  await enableRuleset(subscription.id);
+
+  if ("title" in properties)
+    subscription.title = properties.title;
+  if ("homepage" in properties)
+    subscription.homepage = properties.homepage;
+
+  filterStorage.addSubscription(subscription);
+
+  if (!subscription.lastDownload)
+    filterStorage.synchronizer.execute(subscription);
+}
+
+async function disable(url) {
+  await initializer.start();
+
+  let subscription = getSubscription(url);
+
+  if (!subscription)
+    throw new Error(`Subscription does not exist: ${url}`);
+
+  subscription.disabled = true;
+
+  await disableRuleset(subscription.id);
+}
+
+function migrationNeeded() {
+  if (browser.runtime.getManifest().manifest_version == 2)
+    return false;
+
+  for (let subscription of filterEngine.filterStorage.subscriptions()) {
+    // anti-cv subscriptions stay `DownloadableSubscriptions` even in MV3
+    if (subscription.downloadable && subscription.type != "circumvention")
+      return true;
+  }
+
+  return false;
+}
+
+function saveMigrationError(url, error) {
+  Prefs.migration_errors.push({url, error});
+}
+
+export async function migrate() {
+  if (Prefs.subscriptions_migrated || !migrationNeeded())
+    return;
+
+  let downloadables = await getDownloadable();
+  for (let downloadable of downloadables) {
+    await remove(downloadable.url); // MV2 URL
+    let subscriptionInfo = addonBundledSubscriptions.find(
+      it => it.mv2_url == downloadable.url);
+    if (subscriptionInfo) {
+      try {
+        await add(subscriptionInfo.url); // MV3 URL
+        if (!downloadable.enabled)
+          await disable(subscriptionInfo.url);
+      }
+      catch (e) {
+        saveMigrationError(downloadable.url, e.message);
+      }
+    }
+    else {
+      saveMigrationError(
+        downloadable.url,
+        `Failed to find the subscription with URL=${downloadable.url}`);
+    }
+  }
+
+  Prefs.subscriptions_migrated = true;
+}
+
 export default {
   /**
    * The URL of the Acceptable Ads subscription.
@@ -305,48 +421,7 @@ export default {
    * @return {Promise}
    * @throws {Error} Invalid subscription URL provided.
    */
-  async add(url, properties = {}) {
-    await initializer.start();
-
-    if (!Subscription.isValidURL(url))
-      throw new Error(`Invalid subscription URL provided: ${url}`);
-
-    let {filterStorage} = filterEngine;
-
-    let subscription = Subscription.fromURL(url);
-
-    if (browser.declarativeNetRequest) {
-      let subscriptionInfo = addonBundledSubscriptions.find(x => x.url == url);
-      if (!subscriptionInfo)
-        throw new Error(`Failed to find the subscription with URL=${url}`);
-
-      if (!subscription.downloadable) {
-        let filterText;
-        try {
-          filterText = await getFilterText(
-            subscriptionInfo, addonBundledSubscriptionsPath);
-        }
-        catch (e) {
-          // We already warn if the file doesn't exist on startup, so
-          // we can ignore an error loading the bundled file here.
-        }
-
-        if (filterText)
-          subscription.setFilterText(filterText);
-      }
-    }
-    await enableRuleset(subscription.id);
-
-    if ("title" in properties)
-      subscription.title = properties.title;
-    if ("homepage" in properties)
-      subscription.homepage = properties.homepage;
-
-    filterStorage.addSubscription(subscription);
-
-    if (!subscription.lastDownload)
-      filterStorage.synchronizer.execute(subscription);
-  },
+  add,
 
   /**
    * Adds a list of default subscriptions based on the provided bundled
@@ -396,18 +471,7 @@ export default {
    * downloaded and updated over the network.
    * @return {Promise<Array<Subscription>>}
    */
-  async getDownloadable() {
-    await initializer.start();
-
-    let result = [];
-
-    for (let subscription of filterEngine.filterStorage.subscriptions()) {
-      if (subscription instanceof RegularSubscription)
-        result.push(convertSubscription(subscription));
-    }
-
-    return result;
-  },
+  getDownloadable,
 
   /**
    * Returns an array of subscription objects for a given filter.
@@ -476,18 +540,7 @@ export default {
    * @return {Promise}
    * @throws {Error} Subscription does not exist.
    */
-  async disable(url) {
-    await initializer.start();
-
-    let subscription = getSubscription(url);
-
-    if (!subscription)
-      throw new Error(`Subscription does not exist: ${url}`);
-
-    subscription.disabled = true;
-
-    await disableRuleset(subscription.id);
-  },
+  disable,
 
   /**
    * Removes the subscription for the given URL.
@@ -574,6 +627,21 @@ export default {
     const {filterStorage} = filterEngine;
     for (let subscription of filterStorage.subscriptions())
       filterStorage.removeSubscription(subscription);
+  },
+
+  /**
+   * Returns an array of MV2 to MV3 migration errors.
+   * @return {array<string, string>} The migration errors.
+   */
+  getMigrationErrors() {
+    return Prefs.migration_errors;
+  },
+
+  /**
+   * Clears the migration errors.
+   */
+  clearMigrationErrors() {
+    Prefs.migration_errors = [];
   },
 
   /**

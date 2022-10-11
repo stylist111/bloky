@@ -58,6 +58,14 @@ export const TEST_MV3_SUBSCRIPTION_3 = {
   url: "http://localhost:3003/subscription.txt",
   mv2_url: "http://localhost:3003/subscription.txt"
 };
+export const TEST_ANTI_CV_SUBSCRIPTION = {
+  id: "D4028CDD-3D39-4624-ACC7-8140F4EC3238",
+  type: "circumvention",
+  title: "ABP filters",
+  homepage: "https://github.com/abp-filters/abp-filters-anti-cv",
+  url: "https://easylist-downloads.adblockplus.org/v3/full/abp-filters-anti-cv.txt",
+  mv2_url: "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt"
+};
 
 function handleConnection(details, tabId, removeListeners, reject) {
   if ((details.tabId == tabId || !tabId) &&

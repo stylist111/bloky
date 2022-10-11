@@ -18,12 +18,18 @@
 import expect from "expect";
 import browser from "webextension-polyfill";
 
-import {isMV3} from "./utils.js";
-import {runInBackgroundPage} from "./messaging.js";
+import {isMV3, TEST_ANTI_CV_SUBSCRIPTION, wait} from "./utils.js";
+import {EWE, runInBackgroundPage} from "./messaging.js";
 import {isConnected, updateExtensionFiles} from "./mocha/mocha-runner.js";
 
 let start = new URLSearchParams(document.location.search).get("start");
 let phase = start ? "preparation" : "check";
+
+const EASYLIST_URL_MV2 = "https://easylist-downloads.adblockplus.org/easylist.txt";
+const EASYLIST_GERMANY_URL_MV2 = "https://easylist-downloads.adblockplus.org/easylistgermany+easylist.txt";
+
+const EASYLIST_URL_MV3 = "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt";
+const EASYLIST_GERMANY_URL_MV3 = "https://easylist-downloads.adblockplus.org/v3/full/easylistgermany+easylist.txt";
 
 describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
   this.timeout(5000);
@@ -57,6 +63,27 @@ describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
 
     if (start) {
       expect(isMV3()).toBeFalsy(); // MV2 before the migration
+      await EWE.testing._setPrefs("subscriptions_migrated", false);
+
+      await EWE.subscriptions.removeAll();
+      await EWE.subscriptions.add(EASYLIST_URL_MV2);
+      await EWE.subscriptions.add(EASYLIST_GERMANY_URL_MV2);
+      await EWE.subscriptions.disable(EASYLIST_GERMANY_URL_MV2);
+
+      let downloadables = await EWE.subscriptions.getDownloadable();
+      expect(downloadables).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          url: EASYLIST_URL_MV2,
+          downloadable: true,
+          enabled: true
+        }),
+        expect.objectContaining({
+          url: EASYLIST_GERMANY_URL_MV2,
+          downloadable: true,
+          enabled: false
+        })
+      ]));
+      await EWE.debugging.ensureEverythingHasSaved();
 
       await updateExtensionFiles([
         {
@@ -84,6 +111,23 @@ describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
 
     try {
       expect(isMV3()).toBeTruthy(); // MV3 after the migration
+
+      await wait(() => EWE.testing._getPrefs("subscriptions_migrated"),
+                 1000, "Prefs.subscriptions_migrated was not set");
+
+      let downloadables = await EWE.subscriptions.getDownloadable();
+      expect(downloadables).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          url: EASYLIST_URL_MV3,
+          downloadable: false,
+          enabled: true
+        }),
+        expect.objectContaining({
+          url: EASYLIST_GERMANY_URL_MV3,
+          downloadable: false,
+          enabled: false
+        })
+      ]));
     }
     finally {
       // restore from back-up
@@ -97,5 +141,62 @@ describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
         }
       ]);
     }
+  });
+
+  it("migrates the anti-cv subscription and it stays downloadable, but with MV3 URL", async function() {
+    if (start) {
+      await EWE.subscriptions.add(TEST_ANTI_CV_SUBSCRIPTION.mv2_url); // MV2 URL
+
+      let downloadables = await EWE.subscriptions.getDownloadable();
+      expect(downloadables).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          url: TEST_ANTI_CV_SUBSCRIPTION.mv2_url,
+          downloadable: true,
+          enabled: true
+        })
+      ]));
+      await EWE.debugging.ensureEverythingHasSaved();
+      await new Promise(elapsed => setTimeout(elapsed, 1000));
+      return;
+    }
+
+    await new Promise(elapsed => setTimeout(elapsed, 1000));
+
+    let downloadables = await EWE.subscriptions.getDownloadable();
+    expect(downloadables).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        url: TEST_ANTI_CV_SUBSCRIPTION.url, // MV3 URL
+        downloadable: true, // still downloadable even in MV3
+        enabled: true
+      })
+    ]));
+  });
+
+  it("reports the migration errors", async function() {
+    const URL = "https://someSubsriptionThatIsNotSupportedInMV3.com";
+    if (start) {
+      await EWE.subscriptions.add(URL);
+
+      let downloadables = await EWE.subscriptions.getDownloadable();
+      expect(downloadables).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          url: URL,
+          downloadable: true
+        })]));
+      await EWE.debugging.ensureEverythingHasSaved();
+      await new Promise(elapsed => setTimeout(elapsed, 1000));
+
+      return;
+    }
+
+    let errors = await EWE.subscriptions.getMigrationErrors();
+    expect(errors).toEqual([expect.objectContaining({
+      url: URL,
+      error: `Failed to find the subscription with URL=${URL}`
+    })]);
+
+    await EWE.subscriptions.clearMigrationErrors();
+    errors = await EWE.subscriptions.getMigrationErrors();
+    expect(errors).toEqual([]);
   });
 });
