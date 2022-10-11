@@ -1,3 +1,87 @@
+0.7.0 - 2022/10/17
+==================
+
+Chrome 102 is now the minimum supported version for Manifest V3.
+
+# General
+
+- Updated adblockpluscore to 0.10.0 (#377)
+- Added MV3 compatible popup blocker. (#323)
+- Make one click allowlisting work on a cold service worker start. (#316)
+- In MV3, the synchronizer perform HEAD request to the URL. (#368)
+- Pass the manifest version to the susbcription requests. (#366)
+- User subscriptions an custom filters migration. (#344, #345, #378)
+- In MV3, bundled subscriptions are now reloaded on extension update (#337)
+
+# Bug fixes
+
+- `subscriptions.remove()` properly returns an error if the subscription
+  doesn't exist, instead of a `TypeError`. (#354)
+- Removed `subscriptions.validate()` from the API as it wasn't meant to
+  be. (#357)
+- Make sure the preferences are saved. This also increase the tests
+  reliability. (#363, #362)
+- Fix initialization order to improve reliability. (#319)
+- In MV3, only one AA subscription is installed. (#352)
+- `subscriptions.ACCEPTABLE_ADS_URL` and
+  `subscriptions.ACCEPTABLE_ADS_PRIVACY_URL` now return the correct URLs,
+  which differs depending on if the extension is MV2 or MV3 (#358)
+
+# Tests
+
+- Use new `get-browser-binary` module for the test harness to download
+  browsers.
+- Added testing of MV2 to MV3 migration. (#361)
+- Large improvements to MV3 subscriptions testing. (#347)
+- Added timer mocking to test synchronizer in the context of ServiceWorkers.
+  (#336)
+- Isolate the testing of scripts. (#333, #370)
+- Events and notificatiosn work in fuzz tests. (#320, #338)
+- Test server will log requestion options (#346)
+
+# Updating your code
+
+- Don't call `subscriptions.validate()` from the API anymore. (#357)
+
+- `subscriptions.sync()` now returns a promise. Note that this promise
+  resolves when syncing has been successfully triggered, not when it has
+  completed. (#368)
+
+- Subscription migration from MV2 to MV3 (#345):
+  * The migration happens automatically. Nothing needs to be done
+  * Once the migration happened, call subscriptions.getMigrationErrors()`.
+    It will return a list of (url, error) items a subscriptions url and
+    an error message respectively.
+  * Call `subscriptions.clearMigrationError()` to clear these errors.
+
+- In MV3, `subscriptions.getRecommendations()` will return subscriptions with
+  a MV3 appropriate URL, which is likely different from the one in MV2.
+  (#377)
+
+- MV3 popup blocking introduces the use of `browser.storage.session` for
+  MV3 extensions. This means that in MV3, the minimum supported version
+  of Chrome is 102 for MV3 extensions. (#323)
+
+- One-click allowing list in Manifest V3:
+  * `allowlisting.onUnauthorized`, `allowlisting.setAllowlistingCallback`,
+    and `allowlisting.setAuthorizedKeys` should now all be called in the
+    first turn of the event loop. This is to ensure that the authorized
+    key is available if an allowlisting event activates the service worker.
+  * `allowlisting.setAuthorizedKeys` still returns a promise, which resolves
+    or rejects when all of the keys have been validated. It is also unchanged
+    in that the keys are NOT updated if ANY of the keys passed in are invalid.
+    However, a difference is that the new keys will take effect immediately.
+    Internally, the signature verification will wait for the new keys to
+    finish being verified before using them (if they're valid) or continuing
+    with the previous set of authorized keys (if the new keys are not valid).
+
+- `subscriptions.ACCEPTABLE_ADS_URL` and
+  `subscriptions.ACCEPTABLE_ADS_PRIVACY_URL` are now property getters. This
+  shouldn't have an impact on your code. Also
+  `subscriptions.ACCEPTABLE_ADS_ID` and
+  `subscriptions.ACCEPTABLE_ADS_PRIVACY_ID` have been added to return the ID
+  of these subscriptions. (#358)
+
 0.6.1 - 2022/10/11
 ==================
 
