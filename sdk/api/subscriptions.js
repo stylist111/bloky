@@ -37,6 +37,7 @@ import {Prefs} from "./prefs.js";
 
 const ACCEPTABLE_ADS_URL = "https://easylist-downloads.adblockplus.org/exceptionrules.txt";
 const ACCEPTABLE_ADS_PRIVACY_URL = "https://easylist-downloads.adblockplus.org/exceptionrules-privacy-friendly.txt";
+const ACCEPTABLE_ADS_ID = "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F";
 
 function convertSubscription(subscription) {
   let {id, disabled, downloadStatus, homepage,
@@ -96,6 +97,7 @@ export function getDefaultSubscriptions(uiLanguage) {
 
   let adSubscriptions = [];
   let adSubscriptionsDefaultLang = [];
+  let aaSubscriptions = [];
   let chosenSubscriptions = [];
 
   for (let subscription of recommendations()) {
@@ -118,7 +120,7 @@ export function getDefaultSubscriptions(uiLanguage) {
         break;
 
       case "allowing":
-        chosenSubscriptions.push(subscription);
+        aaSubscriptions.push(subscription);
         hasAA = true;
         break;
     }
@@ -126,6 +128,14 @@ export function getDefaultSubscriptions(uiLanguage) {
 
   if (adSubscriptions.length == 0)
     adSubscriptions = adSubscriptionsDefaultLang;
+
+  // if we have the preferred AA in the list - use it only,
+  // otherwise use all listed AA subscriptions
+  let preferredAASubscription = aaSubscriptions.find(
+    it => it.id == ACCEPTABLE_ADS_ID);
+  if (preferredAASubscription)
+    aaSubscriptions = [preferredAASubscription];
+  chosenSubscriptions.unshift(...aaSubscriptions);
 
   chosenSubscriptions.unshift(...adSubscriptions);
 

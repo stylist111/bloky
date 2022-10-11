@@ -1020,6 +1020,76 @@ describe("API", function() {
       });
     }
 
+    it("adds only one preferred AA subscription when multiple provided", async function() {
+      if (!isMV3() || isFuzzingServiceWorker())
+        this.skip();
+
+      let alternativeAAUrl = "https://easylist-downloads.adblockplus.org/exceptionrules-privacy-friendly.txt";
+
+      await EWE.testing._setSubscriptions([
+        subEasylist,
+        subAcceptableAds,
+        {
+          type: "allowing",
+          title: "Allow nonintrusive advertising without third-party tracking",
+          url: alternativeAAUrl,
+          homepage: "https://acceptableads.com/"
+        },
+        subCircumvention
+      ]);
+
+      await EWE.subscriptions.addDefaults("en");
+      let activeSubs = await EWE.subscriptions.getDownloadable();
+      expect(activeSubs).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          url: subAcceptableAds.url
+        })
+      ]));
+      expect(activeSubs).not.toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          url: alternativeAAUrl
+        })
+      ]));
+    });
+
+    it("adds all AA subscription when multiple provided without preferred AA subscription", async function() {
+      if (!isMV3() || isFuzzingServiceWorker())
+        this.skip();
+
+      let alternativeAAUrl1 = "https://easylist-downloads.adblockplus.org/exceptionrules-privacy-friendly.txt";
+      let alternativeAAUrl2 = "https://easylist-downloads.adblockplus.org/exceptionrules-privacy-friendly-2.txt";
+
+      await EWE.testing._setSubscriptions([
+        subEasylist,
+        {
+          id: "ID1",
+          type: "allowing",
+          title: "Allow nonintrusive advertising without third-party tracking",
+          url: alternativeAAUrl1,
+          homepage: "https://acceptableads.com/"
+        },
+        {
+          id: "ID2",
+          type: "allowing",
+          title: "Allow nonintrusive advertising without third-party tracking 2",
+          url: alternativeAAUrl2,
+          homepage: "https://acceptableads.com/"
+        },
+        subCircumvention
+      ]);
+
+      await EWE.subscriptions.addDefaults("en");
+      let activeSubs = await EWE.subscriptions.getDownloadable();
+      expect(activeSubs).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          url: alternativeAAUrl1
+        }),
+        expect.objectContaining({
+          url: alternativeAAUrl2
+        })
+      ]));
+    });
+
     it("informs when the filter engine runs for the first time", async function() {
       // Skipping because webext has a bug in chromium browsers in incognito
       // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/311
@@ -1142,36 +1212,36 @@ describe("API", function() {
 
       describe("validates adding default subscriptions", function() {
         before(function() {
-          if (!isMV3())
+          if (!isMV3() || isFuzzingServiceWorker())
             this.skip();
         });
 
         it("throws if no default language subscription is provided", async function() {
-          EWE.testing._setSubscriptions([]);
+          await EWE.testing._setSubscriptions([]);
           await expect(EWE.subscriptions.addDefaults("en"))
             .rejects.toThrow("No default language subscription");
         });
 
         it("throws if no current language subscription is provided", async function() {
-          EWE.testing._setSubscriptions([subEasylist]); // "en"
+          await EWE.testing._setSubscriptions([subEasylist]); // "en"
           await expect(EWE.subscriptions.addDefaults("de"))
             .rejects.toThrow("No current language subscription");
         });
 
         it("throws if no anti-circumvention subscription is provided", async function() {
-          EWE.testing._setSubscriptions([subEasylist, subAcceptableAds]);
+          await EWE.testing._setSubscriptions([subEasylist, subAcceptableAds]);
           await expect(EWE.subscriptions.addDefaults("en"))
             .rejects.toThrow("No anti-circumvention subscription");
         });
 
         it("throws if no allowing subscription is provided", async function() {
-          EWE.testing._setSubscriptions([subEasylist, subCircumvention]);
+          await EWE.testing._setSubscriptions([subEasylist, subCircumvention]);
           await expect(EWE.subscriptions.addDefaults("en"))
             .rejects.toThrow("No allowing subscription");
         });
 
         it("does not throw if everything needed is provided", async function() {
-          EWE.testing._setSubscriptions([
+          await EWE.testing._setSubscriptions([
             subEasylist, subCircumvention, subAcceptableAds]);
           await EWE.subscriptions.addDefaults("en");
         });
