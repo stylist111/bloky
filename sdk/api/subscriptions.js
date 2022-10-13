@@ -43,14 +43,14 @@ function convertSubscription(subscription) {
   let {id, disabled, downloadStatus, homepage,
        version, lastDownload, lastSuccess,
        softExpiration, expires, title, url,
-       downloadable} = subscription;
+       downloadable, downloadCount} = subscription;
   let {synchronizer} = filterEngine.filterStorage;
 
   return {
     id, enabled: !disabled,
     downloading: synchronizer.isExecuting(url),
     downloadStatus, homepage, version, lastDownload, lastSuccess,
-    softExpiration, expires, title, url, downloadable
+    softExpiration, expires, title, url, downloadable, downloadCount
   };
 }
 
@@ -311,6 +311,12 @@ async function add(url, properties = {}) {
     subscription.title = properties.title;
   if ("homepage" in properties)
     subscription.homepage = properties.homepage;
+  if ("downloadCount" in properties)
+    subscription.downloadCount = properties.downloadCount;
+  if ("version" in properties)
+    subscription.version = properties.version;
+  if ("lastDownload" in properties)
+    subscription.lastDownload = properties.lastDownload;
 
   filterStorage.addSubscription(subscription);
 
@@ -359,7 +365,11 @@ export async function migrate() {
       it => it.mv2_url == downloadable.url);
     if (subscriptionInfo) {
       try {
-        await add(subscriptionInfo.url); // MV3 URL
+        await add(subscriptionInfo.url, {
+          downloadCount: downloadable.downloadCount,
+          version: downloadable.version,
+          lastDownload: downloadable.lastDownload
+        });
         if (!downloadable.enabled)
           await disable(subscriptionInfo.url);
       }

@@ -67,6 +67,7 @@ describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
     if (start) {
       expect(isMV3()).toBeFalsy(); // MV2 before the migration
       await EWE.testing._setPrefs("migration_state", MIGRATED_TO_MV2);
+      await EWE.subscriptions.clearMigrationErrors();
 
       await EWE.subscriptions.removeAll();
       await EWE.subscriptions.add(EASYLIST_URL_MV2);
@@ -144,6 +145,33 @@ describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
         }
       ]);
     }
+  });
+
+  it("migrates user subscriptions meta data", async function() {
+    if (start) {
+      // assuming it's added in the test above
+      await EWE.subscriptions.sync(EASYLIST_URL_MV2);
+
+      await new Promise(elapsed => setTimeout(elapsed, 1000));
+      await EWE.debugging.ensureEverythingHasSaved();
+
+      let meta = await wait(async() => {
+        let downloadables = await EWE.subscriptions.getDownloadable();
+        let sub = downloadables.find(it => it.url == EASYLIST_URL_MV2);
+        return (sub.downloadCount ? {
+            downloadCount: sub.downloadCount,
+            version: sub.version
+          } : null);
+      }, 3000, "The subscription is not yet downloaded");
+      await browser.storage.local.set({meta});
+      return;
+    }
+
+    let savedValues = await browser.storage.local.get("meta");
+    let downloadables = await EWE.subscriptions.getDownloadable();
+    let sub = downloadables.find(it => it.url == EASYLIST_URL_MV3);
+    expect(sub.downloadCount >= savedValues.meta.downloadCount).toBeTruthy();
+    expect(sub.version).toEqual(savedValues.meta.version);
   });
 
   it("migrates the anti-cv subscription and it stays downloadable, but with MV3 URL", async function() {
