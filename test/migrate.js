@@ -21,6 +21,7 @@ import browser from "webextension-polyfill";
 import {isMV3, TEST_ANTI_CV_SUBSCRIPTION, wait} from "./utils.js";
 import {EWE, runInBackgroundPage} from "./messaging.js";
 import {isConnected, updateExtensionFiles} from "./mocha/mocha-runner.js";
+import {MIGRATED_TO_MV2, MIGRATED_TO_MV3} from "../sdk/api/prefs.js";
 
 let start = new URLSearchParams(document.location.search).get("start");
 let phase = start ? "preparation" : "check";
@@ -30,6 +31,8 @@ const EASYLIST_GERMANY_URL_MV2 = "https://easylist-downloads.adblockplus.org/eas
 
 const EASYLIST_URL_MV3 = "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt";
 const EASYLIST_GERMANY_URL_MV3 = "https://easylist-downloads.adblockplus.org/v3/full/easylistgermany+easylist.txt";
+
+const RE2_UNSUPPORTED_FILTER = "/t(?=re)/$image";
 
 describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
   this.timeout(5000);
@@ -63,7 +66,7 @@ describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
 
     if (start) {
       expect(isMV3()).toBeFalsy(); // MV2 before the migration
-      await EWE.testing._setPrefs("subscriptions_migrated", false);
+      await EWE.testing._setPrefs("migration_state", MIGRATED_TO_MV2);
 
       await EWE.subscriptions.removeAll();
       await EWE.subscriptions.add(EASYLIST_URL_MV2);
@@ -112,8 +115,8 @@ describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
     try {
       expect(isMV3()).toBeTruthy(); // MV3 after the migration
 
-      await wait(() => EWE.testing._getPrefs("subscriptions_migrated"),
-                 1000, "Prefs.subscriptions_migrated was not set");
+      await wait(async() => await EWE.testing._getPrefs("migration_state") === MIGRATED_TO_MV3,
+                 2000, "Prefs.migration_state was not set");
 
       let downloadables = await EWE.subscriptions.getDownloadable();
       expect(downloadables).toEqual(expect.arrayContaining([
@@ -172,7 +175,7 @@ describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
     ]));
   });
 
-  it("reports the migration errors", async function() {
+  it("reports the subscription migration errors", async function() {
     const URL = "https://someSubsriptionThatIsNotSupportedInMV3.com";
     if (start) {
       await EWE.subscriptions.add(URL);
@@ -190,13 +193,59 @@ describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
     }
 
     let errors = await EWE.subscriptions.getMigrationErrors();
-    expect(errors).toEqual([expect.objectContaining({
-      url: URL,
-      error: `Failed to find the subscription with URL=${URL}`
-    })]);
+    expect(errors).toEqual([
+      expect.objectContaining({
+        url: URL,
+        error: `Failed to find the subscription with URL=${URL}`
+      }),
+      // This is part of migrate custom filter test
+      expect.objectContaining({
+        text: RE2_UNSUPPORTED_FILTER
+      })
+    ]);
 
     await EWE.subscriptions.clearMigrationErrors();
     errors = await EWE.subscriptions.getMigrationErrors();
     expect(errors).toEqual([]);
+  });
+
+  it("migrates custom filters", async function() {
+    const meta = {tag: "test"};
+    const enabledFilters = [
+      "|test1.com$image",
+      "test1.com###image",
+      "@@other1.com$image",
+      "test1.com#@##image"
+    ];
+    const disabledFilters = [
+      "|test2.com$image",
+      "test2.com###image",
+      "@@other2.com$image",
+      "test2.com#@##image"
+    ];
+    const allFilters = [
+      ...enabledFilters,
+      ...disabledFilters
+    ];
+
+    if (start) {
+      await EWE.filters.add([RE2_UNSUPPORTED_FILTER, ...allFilters], meta);
+      await EWE.filters.disable(disabledFilters);
+      await EWE.debugging.ensureEverythingHasSaved();
+      return;
+    }
+
+    for (const filter of allFilters)
+      expect(await EWE.filters.getMetadata(filter)).toEqual(meta);
+
+    let expectedEnabled = enabledFilters.map(text => expect.objectContaining({
+      text, enabled: true
+    }));
+    let expectedDisabled = disabledFilters.map(text => expect.objectContaining({
+      text, enabled: false
+    }));
+    let expectedUserFilters = [...expectedEnabled, ...expectedDisabled];
+    expect(await EWE.filters.getUserFilters())
+      .toEqual(expect.arrayContaining(expectedUserFilters));
   });
 });

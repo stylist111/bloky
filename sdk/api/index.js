@@ -29,6 +29,8 @@ import {setAddonInfo} from "./info.js";
 import {filterEngine} from "./core.js";
 import {updateFilterText, validate as validateSubscriptions,
         migrate as migrateSubscriptions} from "./subscriptions.js";
+import {migrateCustomFilters} from "./dnr-filters.js";
+import {MIGRATED_TO_MV2, MIGRATED_TO_MV3, Prefs} from "./prefs.js";
 
 export {default as subscriptions} from "./subscriptions.js";
 export {default as filters} from "./filters.js";
@@ -83,7 +85,13 @@ async function onInstalled(details) {
   if (details.previousVersion &&
     details.previousVersion !== manifest.version) {
     await initializer.start();
-    await migrateSubscriptions();
+
+    if (Prefs.migration_state === MIGRATED_TO_MV2) {
+      await migrateSubscriptions();
+      await migrateCustomFilters();
+      Prefs.migration_state = MIGRATED_TO_MV3;
+    }
+
     await updateFilterText();
   }
 }

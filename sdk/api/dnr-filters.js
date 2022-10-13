@@ -20,6 +20,7 @@ import browser from "webextension-polyfill";
 import {Filter, InvalidFilter, ContentFilter, AllowingFilter, URLFilter,
         isActiveFilter} from "adblockpluscore/lib/filterClasses.js";
 import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
+import {SpecialSubscription} from "adblockpluscore/lib/subscriptionClasses.js";
 import {isValidHostname} from "adblockpluscore/lib/url.js";
 import {RESOURCE_TYPES, contentTypes}
   from "adblockpluscore/lib/contentTypes.js";
@@ -165,12 +166,16 @@ async function processFilterTexts(texts) {
                            filter.contentType & contentTypes.POPUP) &&
                           filter.contentType != RESOURCE_TYPES;
 
-
-    let {filterRules, ruleIds} = await getRules(filter, useFilterEngine);
-    add.push(...filterRules);
+    if (!filterEngine.filterStorage.filterState.isEnabled(text)) {
+      details.push({filter, useFilterEngine, ruleIds: [], enabled: false});
+    }
+    else {
+      let {filterRules, ruleIds} = await getRules(filter, useFilterEngine);
+      add.push(...filterRules);
+      details.push({filter, useFilterEngine, ruleIds, enabled: true});
+    }
 
     seenFilterTexts.add(text);
-    details.push({filter, useFilterEngine, ruleIds});
   }
 
   return {add, exist, details};
@@ -189,7 +194,6 @@ async function dynamicRulesAvailable() {
 
 export async function addFilters(texts, metadata) {
   await init();
-
   let filters = await processFilterTexts(texts);
   if (filters.exist.length > 0)
     throw new FilterError(ERROR_DUPLICATE_FILTERS);
@@ -209,7 +213,7 @@ export async function addFilters(texts, metadata) {
   }
 
   for (let filterDetails of filters.details) {
-    let {filter, useFilterEngine, ruleIds} = filterDetails;
+    let {filter, useFilterEngine, ruleIds, enabled} = filterDetails;
 
     if (useFilterEngine)
       await filterEngine.filterStorage.addFilter(filter);
@@ -218,8 +222,7 @@ export async function addFilters(texts, metadata) {
 
     setHighestRuleId(ruleIds);
     dynamicFilters.set(filter.text,
-                       {ruleIds, useFilterEngine,
-                        enabled: true, metadata});
+                       {ruleIds, useFilterEngine, enabled, metadata});
   }
 
   storeDynamicFilters();
@@ -328,4 +331,29 @@ export async function enableFilters(texts) {
 export async function getDynamicFilters() {
   await init();
   return dynamicFilters;
+}
+
+export async function migrateCustomFilters() {
+  let data = [];
+
+  for (let subscription of filterEngine.filterStorage.subscriptions()) {
+    if (!(subscription instanceof SpecialSubscription))
+      continue;
+
+    for (let text of subscription.filterText())
+      data.push({text, metadata: subscription.metadata});
+  }
+
+  for (let entry of data) {
+    try {
+      filterEngine.filterStorage.removeFilter(Filter.fromText(entry.text));
+      await addFilters([entry.text], entry.metadata);
+    }
+    catch (e) {
+      Prefs.migration_errors.push({
+        error: e.message,
+        text: entry.text
+      });
+    }
+  }
 }

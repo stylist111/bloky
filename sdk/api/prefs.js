@@ -19,6 +19,9 @@ import browser from "webextension-polyfill";
 import {EventEmitter} from "adblockpluscore/lib/events.js";
 import {getDatabase} from "./io-idb.js";
 
+export const MIGRATED_TO_MV2 = 0;
+export const MIGRATED_TO_MV3 = 1;
+
 export const defaults = Object.create({
   analytics: {trustedHosts: ["adblockplus.org",
                              "notification.adblockplus.org",
@@ -36,7 +39,7 @@ export const defaults = Object.create({
   subscriptions_fallbackurl: "https://adblockplus.org/getSubscription?version=%VERSION%&url=%SUBSCRIPTION%&downloadURL=%URL%&error=%ERROR%&responseStatus=%RESPONSESTATUS%",
   subscriptions_initial_delay: 1000, // 1 s
   migration_errors: [],
-  subscriptions_migrated: false
+  migration_state: MIGRATED_TO_MV2
 });
 
 export let Prefs = {

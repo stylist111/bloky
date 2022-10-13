@@ -22,6 +22,7 @@ import {TEST_MV3_SUBSCRIPTION, TEST_ANTI_CV_SUBSCRIPTION,
         isFirefox, isMV3, readFile, writeFile} from "./utils.js";
 import {EWE, runInBackgroundPage} from "./messaging.js";
 import {isConnected, updateExtensionFiles} from "./mocha/mocha-runner.js";
+import {MIGRATED_TO_MV2, MIGRATED_TO_MV3} from "../sdk/api/prefs.js";
 
 let start = new URLSearchParams(document.location.search).get("start");
 let phase = start ? "preparation" : "check";
@@ -161,6 +162,9 @@ describe(`Update (${phase}) (runner only)`, function() {
   });
 
   it("does not migrate the subscriptions because of anti-cv subscription", async function() {
+    if (isFirefox())
+      this.skip();
+
     if (start) {
       await EWE.subscriptions.add(TEST_ANTI_CV_SUBSCRIPTION.url);
 
@@ -173,8 +177,8 @@ describe(`Update (${phase}) (runner only)`, function() {
       await EWE.debugging.ensureEverythingHasSaved();
       await new Promise(elapsed => setTimeout(elapsed, 1000));
 
-      expect(await EWE.testing._getPrefs("subscriptions_migrated"))
-        .toBeFalsy();
+      expect(await EWE.testing._getPrefs("migration_state"))
+        .toEqual(MIGRATED_TO_MV2);
     }
 
     await new Promise(elapsed => setTimeout(elapsed, 1000));
@@ -187,7 +191,7 @@ describe(`Update (${phase}) (runner only)`, function() {
         downloadable: true
       })]));
 
-    expect(await EWE.testing._getPrefs("subscriptions_migrated"))
-      .toBeFalsy();
+    expect(await EWE.testing._getPrefs("migration_state"))
+      .toEqual(MIGRATED_TO_MV3);
   });
 });

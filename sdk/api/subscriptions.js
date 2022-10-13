@@ -349,7 +349,7 @@ function saveMigrationError(url, error) {
 }
 
 export async function migrate() {
-  if (Prefs.subscriptions_migrated || !migrationNeeded())
+  if (!migrationNeeded())
     return;
 
   let downloadables = await getDownloadable();
@@ -373,8 +373,6 @@ export async function migrate() {
         `Failed to find the subscription with URL=${downloadable.url}`);
     }
   }
-
-  Prefs.subscriptions_migrated = true;
 }
 
 export default {
