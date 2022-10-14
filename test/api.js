@@ -392,6 +392,28 @@ describe("API", function() {
       ]);
     });
 
+    it("returns the right URLs per manifest version", async function() {
+      let expectedAaURL = isMV3() ?
+        "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt" :
+        "https://easylist-downloads.adblockplus.org/exceptionrules.txt";
+      let actualAaURL = await runInBackgroundPage([
+        {op: "getGlobal", arg: "EWE"},
+        {op: "getProp", arg: "subscriptions"},
+        {op: "getProp", arg: "ACCEPTABLE_ADS_URL"}
+      ]);
+      expect(actualAaURL).toEqual(expectedAaURL);
+
+      let expectedAaPrivacyURL = isMV3() ?
+        "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules-privacy-friendly.txt" :
+        "https://easylist-downloads.adblockplus.org/exceptionrules-privacy-friendly.txt";
+      let actualAaPrivacyURL = await runInBackgroundPage([
+        {op: "getGlobal", arg: "EWE"},
+        {op: "getProp", arg: "subscriptions"},
+        {op: "getProp", arg: "ACCEPTABLE_ADS_PRIVACY_URL"}
+      ]);
+      expect(actualAaPrivacyURL).toEqual(expectedAaPrivacyURL);
+    });
+
     describe("Subscription events", function() {
       it("listens to onAdded events", async function() {
         await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);

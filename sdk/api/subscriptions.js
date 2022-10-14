@@ -35,9 +35,13 @@ import {removeDynamicFilters} from "./dnr-filters.js";
 import {readFileContent} from "./io.js";
 import {Prefs} from "./prefs.js";
 
-const ACCEPTABLE_ADS_URL = "https://easylist-downloads.adblockplus.org/exceptionrules.txt";
-const ACCEPTABLE_ADS_PRIVACY_URL = "https://easylist-downloads.adblockplus.org/exceptionrules-privacy-friendly.txt";
 const ACCEPTABLE_ADS_ID = "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F";
+const ACCEPTABLE_ADS_MV2_URL = "https://easylist-downloads.adblockplus.org/exceptionrules.txt";
+const ACCEPTABLE_ADS_MV3_URL = "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt";
+
+const ACCEPTABLE_ADS_PRIVACY_ID = "F12E0801-A00B-49DE-B1E3-52C9C4F90C8C";
+const ACCEPTABLE_ADS_PRIVACY_MV2_URL = "https://easylist-downloads.adblockplus.org/exceptionrules-privacy-friendly.txt";
+const ACCEPTABLE_ADS_PRIVACY_MV3_URL = "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules-privacy-friendly.txt";
 
 function convertSubscription(subscription) {
   let {id, disabled, downloadStatus, homepage,
@@ -147,7 +151,7 @@ function shouldAddDefaultSubscriptions() {
   let {filterStorage} = filterEngine;
   for (let subscription of filterStorage.subscriptions()) {
     if (subscription instanceof DownloadableSubscription &&
-        subscription.url != ACCEPTABLE_ADS_URL &&
+        subscription.url != ACCEPTABLE_ADS_MV2_URL &&
         subscription.type != "circumvention")
       return false;
 
@@ -390,12 +394,34 @@ export default {
    * The URL of the Acceptable Ads subscription.
    * @type {string}
    */
-  ACCEPTABLE_ADS_URL,
+  get ACCEPTABLE_ADS_URL() {
+    return browser.declarativeNetRequest ?
+      ACCEPTABLE_ADS_MV3_URL :
+      ACCEPTABLE_ADS_MV2_URL;
+  },
+
   /**
-   * The URL of the Acceptable Ads without third-party tracking subscription.
+   * The UUID of the Acceptable Ads subscription.
    * @type {string}
    */
-  ACCEPTABLE_ADS_PRIVACY_URL,
+  ACCEPTABLE_ADS_ID,
+
+  /**
+   * The URL of the Acceptable Ads
+   * without third-party tracking subscription.
+   * @type {string}
+   */
+  get ACCEPTABLE_ADS_PRIVACY_URL() {
+    return browser.declarativeNetRequest ?
+      ACCEPTABLE_ADS_PRIVACY_MV3_URL :
+      ACCEPTABLE_ADS_PRIVACY_MV2_URL;
+  },
+
+  /**
+   * The UUID of the Acceptable Ads without third-party tracking subscription.
+   * @type {string}
+   */
+  ACCEPTABLE_ADS_PRIVACY_ID,
 
   /**
    * A resource that provides a list of filters that decide what to block.
