@@ -21,7 +21,9 @@ import {setRecommendations} from "adblockpluscore/lib/recommendations.js";
 import {filterEngine} from "./core.js";
 import {Prefs} from "./prefs.js";
 import {default as debugging} from "./debugging.js";
+import {default as subs} from "./subscriptions.js";
 import {setAddonInfo, addonBundledSubscriptionsPath} from "./info.js";
+import {removeDynamicFilters} from "./dnr-filters.js";
 
 export default {
   /**
@@ -79,5 +81,22 @@ export default {
     setRecommendations(subscriptions);
   },
 
-  _setAddonInfo: setAddonInfo
+  _setAddonInfo: setAddonInfo,
+
+  /**
+   * @ignore
+   * Clears all subscriptions and filters.
+   * @return {Promise} A function that can be called to
+   *                    restore the removed subscriptions and filters.
+   */
+  async _removeAllSubscriptions() {
+    for (let subscription of await subs.getDownloadable())
+      await subs.remove(subscription.url);
+
+    await removeDynamicFilters();
+
+    const {filterStorage} = filterEngine;
+    for (let subscription of filterStorage.subscriptions())
+      filterStorage.removeSubscription(subscription);
+  }
 };

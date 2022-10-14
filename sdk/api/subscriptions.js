@@ -30,7 +30,6 @@ import {default as initializer} from "./initializer.js";
 import {filterEngine} from "./core.js";
 import {EventDispatcher} from "./types.js";
 import {convertFilter} from "./filters.js";
-import {removeDynamicFilters} from "./dnr-filters.js";
 
 import {readFileContent} from "./io.js";
 import {Prefs} from "./prefs.js";
@@ -654,23 +653,6 @@ export default {
    */
   getRecommendations() {
     return Array.from(recommendations(), convertRecommendation);
-  },
-
-  /**
-   * Clears all subscriptions and filters.
-   * @return {Promise} A function that can be called to
-   *                    restore the removed subscriptions and filters.
-   * @private
-   */
-  async removeAll() {
-    for (let subscription of await this.getDownloadable())
-      await this.remove(subscription.url);
-
-    await removeDynamicFilters();
-
-    const {filterStorage} = filterEngine;
-    for (let subscription of filterStorage.subscriptions())
-      filterStorage.removeSubscription(subscription);
   },
 
   /**

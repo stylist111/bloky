@@ -32,8 +32,8 @@ if (timeout)
 async function clearFilters() {
   await runInBackgroundPage([
     {op: "getGlobal", arg: "EWE"},
-    {op: "getProp", arg: "subscriptions"},
-    {op: "callMethod", arg: "removeAll"},
+    {op: "getProp", arg: "testing"},
+    {op: "callMethod", arg: "_removeAllSubscriptions"},
     {op: "await"}
   ], false);
 

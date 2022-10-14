@@ -69,7 +69,7 @@ describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
       await EWE.testing._setPrefs("migration_state", MIGRATED_TO_MV2);
       await EWE.subscriptions.clearMigrationErrors();
 
-      await EWE.subscriptions.removeAll();
+      await EWE.testing._removeAllSubscriptions();
       await EWE.subscriptions.add(EASYLIST_URL_MV2);
       await EWE.subscriptions.add(EASYLIST_GERMANY_URL_MV2);
       await EWE.subscriptions.disable(EASYLIST_GERMANY_URL_MV2);

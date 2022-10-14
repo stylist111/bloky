@@ -291,7 +291,7 @@ describe("API", function() {
         VALID_CONTENT_FILTER_TEXT
       ]);
 
-      await EWE.subscriptions.removeAll();
+      await EWE.testing._removeAllSubscriptions();
 
       expect(await EWE.subscriptions.getDownloadable()).toEqual([]);
       expect(await EWE.filters.getUserFilters()).toEqual([]);
@@ -2765,7 +2765,7 @@ describe("API", function() {
       let reply = "%5BAdblock%20Plus%5D%0A%21%20Expires%3A%201%20d"; // "! Expires: 1 d"
       await fetch(`${ADMIN_BASE_URL}/configure?reply=${reply}`);
 
-      await EWE.subscriptions.removeAll();
+      await EWE.testing._removeAllSubscriptions();
       await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION_3.url, properties);
 
       let downloadables = await EWE.subscriptions.getDownloadable();

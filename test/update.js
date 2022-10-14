@@ -61,7 +61,7 @@ describe(`Update (${phase}) (runner only)`, function() {
     const tmpManifestFile = `${manifestFile}.tmp`;
 
     if (start) {
-      await EWE.subscriptions.removeAll();
+      await EWE.testing._removeAllSubscriptions();
       await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.url);
 
       await updateExtensionFiles([
