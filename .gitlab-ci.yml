@@ -13,15 +13,6 @@ variables:
   npm_config_fund: "false"
   npm_config_prefer_offline: "true"
 
-cache:
-  - key:
-      prefix: $CI_JOB_IMAGE
-      files:
-      - package-lock.json
-    paths:
-    - node_modules/
-    - browser-snapshots/*/cache/
-
 build:
   image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
   stage: build
@@ -162,7 +153,6 @@ func:v2:firefox:update:incognito:
     - shared-windows
     - windows
     - windows-1809
-  cache: {}
 
 func:v3:chromium:stable:
   extends: .functional
@@ -315,7 +305,6 @@ int:v3:chrome:beta:
 
 int:scripts:
   image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
-  cache: []
   needs: []
   stage: integration
   before_script:
