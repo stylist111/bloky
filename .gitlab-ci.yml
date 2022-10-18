@@ -55,6 +55,7 @@ build:integration:
     paths:
       - extension
     expire_in: 1 month
+  when: manual
 
 audit:
   image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
