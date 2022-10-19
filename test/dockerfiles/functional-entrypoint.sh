@@ -5,6 +5,5 @@ if [[ "$TEST_PARAMS" =~ (chromium|edge|incognito) ]]; then
   XVFB_CMD="xvfb-run -a"
 fi
 
-cd webext-sdk
 npm run test-server &
 $XVFB_CMD npm test -- $TEST_PARAMS
