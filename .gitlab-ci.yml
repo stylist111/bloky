@@ -48,7 +48,17 @@ build:integration:
     paths:
       - extension
     expire_in: 1 month
-  when: manual
+  rules:
+    # Do not trigger a merge request pipeline
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
+    # Run automatically on master branch
+    - if: $CI_COMMIT_BRANCH == "master"
+      allow_failure: true
+    # Run manually on all other branches
+    - when: manual
+      allow_failure: true
+
 
 audit:
   image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
