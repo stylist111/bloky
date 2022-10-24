@@ -141,7 +141,7 @@ func:v2:firefox:update:incognito:
   variables:
     TEST_PARAMS: v2 firefox --testKinds update --incognito
 
-.edge:windows:
+func:v2:windows:edge-all:
   stage: functional
   needs:
     - job: build
@@ -163,6 +163,10 @@ func:v2:firefox:update:incognito:
     - shared-windows
     - windows
     - windows-1809
+  script:
+    - npm test -- v2 edge --timeout=10000
+    - npm test -- v2 edge --timeout=10000 --testKinds mv2-mv3-migrate
+    - npm test -- v2 edge --incognito --timeout=10000
 
 func:v3:chromium:stable:
   extends: .functional
@@ -178,21 +182,6 @@ func:v3:edge:linux:
   extends: .functional
   variables:
     TEST_PARAMS: v3 edge --testKinds functional reload update
-
-func:v2:edge:windows:
-  extends: .edge:windows
-  script:
-    - npm test -- v2 edge --timeout=10000
-
-func:v2:edge:windows:migrate:
-  extends: .edge:windows
-  script:
-    - npm test -- v2 edge --timeout=10000 --testKinds mv2-mv3-migrate
-
-func:v2:edge:windows:incognito:
-  extends: .edge:windows
-  script:
-    - npm test -- v2 edge --incognito --timeout=10000
 
 func:scripts:
   image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
