@@ -60,9 +60,9 @@
   "scripts": {
     "lint": "eslint --ext js,html .",
     "docs": "documentation build --document-exported -f html -o docs --config documentation.yml sdk/api/index.js sdk/api/types.js",
-    "build": "webpack",
+    "build": "node scripts/build.js",
     "start": "webpack -w",
-    "prepublishOnly": "webpack",
+    "prepublishOnly": "npm run build",
     "test": "node test/runner.js",
     "test-server": "node test/start-server.js",
     "test-bundle": "node test/bundle/run.js",

@@ -186,6 +186,7 @@ export default (env = {}) => {
     };
 
     builds.push({
+      name: buildVariant.outputPath,
       dependencies: [buildVariant.eweConfigName],
       mode: "development",
       entry: {

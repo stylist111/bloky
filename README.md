@@ -192,7 +192,16 @@ For more information, please refer to the [API documention][docs].
 
 #### Custom builds
 
-As webpack is our build tool of choice, any [webpack command line options](https://webpack.js.org/api/cli/) can be used.
+Our build script is a CLI program with a few additional flags that can
+be passed to it. It can list the options available if you ask for
+`--help`.
+
+```
+npm run build -- --help
+```
+
+There are some specific flags which might be useful to customise the
+build:
 
 ```
 # Build only sdk, no test extensions
@@ -201,6 +210,10 @@ npm run build -- --config-name sdk
 # Don't generate any sourcemaps
 npm run build -- --no-devtool
 ```
+
+In the background, this script is using Webpack. You can also see the
+[webpack command line options](https://webpack.js.org/api/cli/) for
+further information on these flags.
 
 #### Release builds
 
@@ -437,10 +450,7 @@ npm run subs-convert
 npm run subs-generate
 ```
 
-For convenience and testing purposes, the following script will run all the scripts above using either the `default` list or the `test` subscriptions as defined in `test/scripts/custom-mv3-subscriptions.json`. Please note that the "Allow nonintrusive advertising" list is currently required by the tests.
-```
-npm run subs-run -- -t {test|default}
-```
+For convenience and testing purposes, running `npm run build` will automatically run the above scripts to create a meaningful subset of data used in our tests.
 
 The subscriptions data is updated automatically based on the extension version changing.
 

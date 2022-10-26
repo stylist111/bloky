@@ -28,5 +28,8 @@ export async function cleanup() {
   }
 }
 
-if (import.meta.url.endsWith("clean-mv3-files.js"))
+let proc = process.argv[1];
+if (fs.statSync(proc).isSymbolicLink)
+  proc = fs.realpathSync(proc);
+if (import.meta.url === `file://${proc}`)
   cleanup();

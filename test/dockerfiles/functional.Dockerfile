@@ -6,8 +6,6 @@ COPY . webext-sdk/
 WORKDIR webext-sdk/
 
 RUN npm install
-
-RUN if [ -z "$SKIP_BUILD" ]; then bash -c "npm run test-server &" && npm run subs-run; fi
 RUN if [ -z "$SKIP_BUILD" ]; then npm run build; fi
 
 ENV TEST_PARAMS="v2 chromium"
