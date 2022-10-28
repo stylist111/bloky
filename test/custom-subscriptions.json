@@ -1,26 +1,44 @@
 [
   {
-    "type": "ads",
+    "id": "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F",
+    "type": "allowing",
     "title": "Allow nonintrusive advertising",
+    "homepage": "https://acceptableads.com/",
     "url": "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt",
-    "homepage": "https://acceptableads.com/"
+    "mv2_url": "https://easylist-downloads.adblockplus.org/exceptionrules.txt"
   },
   {
+    "id": "8C13E995-8F06-4927-BEA7-6C845FB7EEBF",
     "type": "ads",
     "languages": [
       "en"
     ],
     "title": "TestSubscriptionEn",
+    "homepage": "TestHomepageEn",
     "url": "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt",
-    "homepage": "TestHomepageEn"
+    "mv2_url": "https://easylist-downloads.adblockplus.org/easylist.txt"
   },
   {
+    "id": "0CD3D105-D3B3-4652-8489-94163DE9A08F",
     "type": "ads",
     "languages": [
       "de"
     ],
     "title": "TestSubscriptionDe",
-    "url": "TestUrlDe",
-    "homepage": "TestHomepageDe"
+    "homepage": "TestHomepageDe",
+    "includes": [
+      "8C13E995-8F06-4927-BEA7-6C845FB7EEBF",
+      "4337FB2B-A95C-44D5-B78D-11AD40F7711B"
+    ],
+    "url": "https://easylist-downloads.adblockplus.org/v3/full/easylistgermany+easylist.txt",
+    "mv2_url": "https://easylist-downloads.adblockplus.org/easylistgermany+easylist.txt"
+  },
+  {
+    "id": "D4028CDD-3D39-4624-ACC7-8140F4EC3238",
+    "type": "circumvention",
+    "title": "ABP filters",
+    "homepage": "https://github.com/abp-filters/abp-filters-anti-cv",
+    "url": "https://easylist-downloads.adblockplus.org/v3/full/abp-filters-anti-cv.txt",
+    "mv2_url": "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt"
   }
 ]

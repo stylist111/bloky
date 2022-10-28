@@ -505,8 +505,10 @@ export default {
       subscriptions.push(...defaultSubscriptions.chosenSubscriptions);
     }
 
-    for (let subscription of subscriptions)
-      await this.add(subscription.url);
+    for (let subscription of subscriptions) {
+      await this.add(browser.declarativeNetRequest ?
+        subscription.url : subscription.mv2URL);
+    }
   },
 
   /**

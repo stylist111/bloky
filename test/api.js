@@ -313,6 +313,7 @@ describe("API", function() {
           languages: ["en"],
           title: "EasyList",
           type: "ads",
+          url: "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt",
           mv2URL: "https://easylist-downloads.adblockplus.org/easylist.txt"
         })
       ]));
@@ -324,7 +325,39 @@ describe("API", function() {
           languages: expect.any(Object),
           title: expect.any(String),
           type: expect.any(String),
-          url: expect.any(String)
+          url: expect.any(String),
+          mv2URL: expect.any(String)
+        });
+
+        for (let language of item.languages)
+          expect(language).toEqual(expect.any(String));
+      }
+    });
+
+    it("gets recommendations from overridden subscriptions file", async function() {
+      if (!isMV2CustomSubsExtension())
+        this.skip();
+
+      let result = await EWE.subscriptions.getRecommendations();
+      expect(result).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          languages: ["en"],
+          title: "TestSubscriptionEn",
+          type: "ads",
+          url: "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt",
+          mv2URL: "https://easylist-downloads.adblockplus.org/easylist.txt"
+        })
+      ]));
+
+      for (let item of result) {
+        if (item.id)
+          continue;
+        expect(item).toEqual({
+          languages: expect.any(Object),
+          title: expect.any(String),
+          type: expect.any(String),
+          url: expect.any(String),
+          mv2URL: expect.any(String)
         });
 
         for (let language of item.languages)
@@ -977,8 +1010,7 @@ describe("API", function() {
         expect.objectContaining({
           enabled: true,
           downloadable: !isMV3(),
-          id: isMV2CustomSubsExtension() || (!isMV3()) ?
-            null : TEST_MV3_SUBSCRIPTION.id
+          id: isMV3() ? TEST_MV3_SUBSCRIPTION.id : null
         })
       ]);
     });
@@ -1002,13 +1034,6 @@ describe("API", function() {
 
         if (language == "de")
           startSubscriptions.push(subEasylistPlusGermany);
-
-        if (!isMV3()) {
-          // the way how it is in "core" `./data/subscriptions.json"
-          for (let subscription of startSubscriptions)
-            subscription.url = subscription.mv2_url;
-          await EWE.testing._setSubscriptions(startSubscriptions);
-        }
 
         await EWE.subscriptions.addDefaults(language);
         // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/364
