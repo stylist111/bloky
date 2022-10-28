@@ -1,6 +1,18 @@
 default:
   interruptible: true
 
+.manual-run:
+  rules:
+    # Do not trigger a merge request pipeline
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
+    # Run automatically on master branch
+    - if: $CI_COMMIT_BRANCH == "master"
+      allow_failure: true
+    # Run manually on all other branches
+    - when: manual
+      allow_failure: true
+
 stages:
   - build
   - pages
@@ -47,15 +59,7 @@ build:integration:
       - extension
     expire_in: 1 month
   rules:
-    # Do not trigger a merge request pipeline
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: never
-    # Run automatically on master branch
-    - if: $CI_COMMIT_BRANCH == "master"
-      allow_failure: true
-    # Run manually on all other branches
-    - when: manual
-      allow_failure: true
+      - !reference [.manual-run, rules]
 
 
 audit:
@@ -87,6 +91,8 @@ func:v2:chromium:beta:migrate:
   extends: .functional
   variables:
     TEST_PARAMS: v2 chromium beta --testKinds mv2-mv3-migrate
+  rules:
+    - !reference [.manual-run, rules]
 
 func:v2:chromium:stable:incognito:
   extends: .functional
@@ -107,11 +113,15 @@ func:v2:chromium:beta:
   extends: .functional
   variables:
     TEST_PARAMS: v2 chromium beta
+  rules:
+      - !reference [.manual-run, rules]
 
 func:v2:chromium:dev:
   extends: .functional
   variables:
     TEST_PARAMS: v2 chromium dev
+  rules:
+    - !reference [.manual-run, rules]
 
 func:v2:firefox:latest:
   extends: .functional
@@ -132,6 +142,8 @@ func:v2:firefox:beta:
   extends: .functional
   variables:
     TEST_PARAMS: v2 firefox beta
+  rules:
+    - !reference [.manual-run, rules]
 
 # https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/369
 func:v2:firefox:update:incognito:
@@ -221,6 +233,8 @@ fuzz:v3:chromium:stable:incognito:
   extends: .fuzz
   variables:    
     BROWSER: chromium --incognito
+  rules:
+    - !reference [.manual-run, rules]
 
 fuzz:v3:edge:linux:
   extends: .fuzz
