@@ -1,3 +1,14 @@
+0.7.1 - 2022/11/03
+==================
+
+# Bug fixes
+
+- Update adblockpluscore to 0.10.1 to restore Easylist China in the
+  default recommendations. (#394, #384)
+- Use correct URL when calling `addDefault` in Manifest V2. (#382)
+- Make sure the DNR rulesets are enabled when reloading the extension,
+  including when changing permission like "incognito mode". (#387)
+
 0.7.0 - 2022/10/17
 ==================
 
