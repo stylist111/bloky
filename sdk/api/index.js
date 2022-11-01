@@ -28,7 +28,8 @@ import {setSnippetLibrary} from "./content-filter.js";
 import {setAddonInfo} from "./info.js";
 import {filterEngine} from "./core.js";
 import {updateFilterText, validate as validateSubscriptions,
-        migrate as migrateSubscriptions} from "./subscriptions.js";
+        migrate as migrateSubscriptions, ensureDNRRulesetsEnabled}
+  from "./subscriptions.js";
 import {migrateCustomFilters} from "./dnr-filters.js";
 import {MIGRATED_TO_MV2, MIGRATED_TO_MV3, Prefs} from "./prefs.js";
 
@@ -82,18 +83,16 @@ export let snippets = {
 };
 
 async function onInstalled(details) {
-  if (details.previousVersion &&
-    details.previousVersion !== manifest.version) {
-    await initializer.start();
+  await initializer.start();
 
-    if (Prefs.migration_state === MIGRATED_TO_MV2) {
-      await migrateSubscriptions();
-      await migrateCustomFilters();
-      Prefs.migration_state = MIGRATED_TO_MV3;
-    }
-
-    await updateFilterText();
+  if (Prefs.migration_state === MIGRATED_TO_MV2) {
+    await migrateSubscriptions();
+    await migrateCustomFilters();
+    Prefs.migration_state = MIGRATED_TO_MV3;
   }
+
+  await updateFilterText();
+  await ensureDNRRulesetsEnabled();
 }
 
 /**

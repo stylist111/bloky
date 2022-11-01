@@ -388,6 +388,17 @@ export async function migrate() {
   }
 }
 
+export async function ensureDNRRulesetsEnabled() {
+  if (browser.declarativeNetRequest) {
+    let enabledItems = await browser.declarativeNetRequest.getEnabledRulesets();
+
+    for (let subscription of filterEngine.filterStorage.subscriptions()) {
+      if (!enabledItems.includes(subscription.id) && !subscription.disabled)
+        enableRuleset(subscription.id);
+    }
+  }
+}
+
 export default {
   /**
    * The URL of the Acceptable Ads subscription.

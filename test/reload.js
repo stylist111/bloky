@@ -18,8 +18,8 @@
 import expect from "expect";
 import browser from "webextension-polyfill";
 
-import {Page, wait, isMV3} from "./utils.js";
-import {addFilter, EWE, runInBackgroundPage} from "./messaging.js";
+import {Page, wait, isMV3, TEST_MV3_SUBSCRIPTION} from "./utils.js";
+import {addFilter, EWE, runInBackgroundPage, ensureEverythingHasSaved} from "./messaging.js";
 
 const METADATA_FILTER_TEXT = "reload###metadata-test";
 const METADATA_FILTER = {
@@ -168,5 +168,19 @@ describe(`Reload (${phase})`, function() {
     // This test recreates the situation in https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/175
     // The application not failing during the 'check' phase means
     // this test passes.
+  });
+
+  it("blocks a request using stored subscriptions", async function() {
+    if (start) {
+      await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.url);
+      return await ensureEverythingHasSaved();
+    }
+
+    try {
+      await new Page("image-from-subscription.html").expectResource("image-from-subscription.png").toBeBlocked();
+    }
+    finally {
+      await EWE.subscriptions.remove(TEST_MV3_SUBSCRIPTION.url);
+    }
   });
 });
