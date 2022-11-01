@@ -27,7 +27,7 @@
     "webpack.config.js"
   ],
   "dependencies": {
-    "adblockpluscore": "^0.10.0",
+    "adblockpluscore": "^0.10.1",
     "webextension-polyfill": "^0.8.0",
     "yargs": "^17.5.1"
   },
