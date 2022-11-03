@@ -488,8 +488,6 @@ Example:
   ...
 ]
 ```
-
-<<<<<<< HEAD
 #### Manifest file changes
 
 To be able to filter any network requests, rulesets have to be listed in the 
@@ -512,9 +510,6 @@ Example:
   ...
 }
 ```
-=======
-For convenience and testing purposes, running `npm run build` will automatically run the above scripts to create a meaningful subset of data used in our tests.
->>>>>>> 05d481f19942e01b6dbc35b3c338bcce06615b16
 
 Keep in mind that there may be other changes that needs to be done in the 
 manifest file. Please refer to [official MV3 documentation](https://developer.chrome.com/docs/extensions/mv3/intro/mv3-migration/#updating-manifest-dot-json) for detailed 
@@ -678,6 +673,8 @@ Example:
 ```
 npm exec subs-generate -- -i data/rulesets -o data/rulesets.json -p path/to/rulesets/
 ```
+
+For convenience and testing purposes, running `npm run build` will automatically run the above scripts to create a meaningful subset of data used in our tests.
 
 ### Custom subscriptions list
 
