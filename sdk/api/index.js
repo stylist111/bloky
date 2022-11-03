@@ -32,6 +32,7 @@ import {updateFilterText, validate as validateSubscriptions,
   from "./subscriptions.js";
 import {migrateCustomFilters} from "./dnr-filters.js";
 import {MIGRATED_TO_MV2, MIGRATED_TO_MV3, Prefs} from "./prefs.js";
+import {isRunningInServiceWorker} from "./browser-features.js";
 
 export {default as subscriptions} from "./subscriptions.js";
 export {default as filters} from "./filters.js";
@@ -39,12 +40,6 @@ export {default as reporting} from "./reporting.js";
 export {default as debugging} from "./debugging.js";
 export {default as allowlisting} from "./allowlisting.js";
 export {default as testing} from "./testing.js";
-
-let manifest = browser.runtime.getManifest();
-
-function isRunningInServiceWorker() {
-  return !!(manifest.background && manifest.background.service_worker);
-}
 
 /**
  * The notifications API (optional usage).
