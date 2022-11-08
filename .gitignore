@@ -7,3 +7,5 @@ extension
 testpages.adblockplus.org
 scriptsOutput
 test/scripts/test-extension/package-lock.json
+.idea
+.DS_Store
