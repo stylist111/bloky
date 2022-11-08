@@ -24,6 +24,7 @@ import * as messageResponder from "./message-responder.js";
 import * as popupBlockerBackgroundPage from "./popup-blocker-background-page.js";
 import * as popupBlockerServiceWorker from "./popup-blocker-service-worker.js";
 import * as requestFilter from "./request-filter.js";
+import * as sitekey from "./sitekey.js";
 import {setSnippetLibrary} from "./content-filter.js";
 import {setAddonInfo} from "./info.js";
 import {filterEngine} from "./core.js";
@@ -33,6 +34,7 @@ import {updateFilterText, validate as validateSubscriptions,
 import {migrateCustomFilters} from "./dnr-filters.js";
 import {MIGRATED_TO_MV2, MIGRATED_TO_MV3, Prefs} from "./prefs.js";
 import {isRunningInServiceWorker} from "./browser-features.js";
+
 
 export {default as subscriptions} from "./subscriptions.js";
 export {default as filters} from "./filters.js";
@@ -153,6 +155,8 @@ function startSubmodulesWithListeners() {
   messageResponder.start();
   if (isRunningInServiceWorker())
     popupBlockerServiceWorker.start();
+
+  sitekey.start();
 }
 
 async function startSubmodules() {

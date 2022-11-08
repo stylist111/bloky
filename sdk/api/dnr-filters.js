@@ -118,7 +118,8 @@ async function getRules(filter, useFilterEngine) {
   let ruleIds = [];
   let filterRules = [];
 
-  if (filter instanceof URLFilter) {
+  // "sitekey" option is not supported in DNR
+  if (filter instanceof URLFilter && !filter.sitekeys) {
     let result = await getRulesFromFilter(filter.text);
     if (result.name == "Error") {
       let {option} = result.detail;

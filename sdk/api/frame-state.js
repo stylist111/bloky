@@ -23,8 +23,7 @@ import {ALLOWING_TYPES, contentTypes}
 
 import {filterEngine} from "./core.js";
 import {logItem} from "./diagnostics.js";
-import {getSitekey, setSitekeyFromHeaders, clearTabSitekeys}
-  from "./sitekey.js";
+import {getSitekey, clearTabSitekeys, addListener} from "./sitekey.js";
 
 /**
  * The URL that browsers use to represent an empty page, about:blank.
@@ -275,11 +274,7 @@ async function discoverExistingFrames() {
   ));
 }
 
-function onHeadersReceived({tabId, frameId, url, responseHeaders}) {
-  let sitekey = setSitekeyFromHeaders(
-    tabId, frameId, url, responseHeaders
-  );
-
+function onSitekeyReceived(tabId, frameId, url, sitekey) {
   let frame = getFrameInfo(tabId, frameId);
   let isSameFrame = frame && frame.url == url;
   if (isSameFrame)
@@ -492,16 +487,8 @@ export function getFrameInfo(tabId, frameId,
 
 export async function start() {
   if (!startupPromise) {
-    startupPromise = discoverExistingFrames();
+    addListener(onSitekeyReceived);
 
-    browser.webRequest.onHeadersReceived.addListener(
-      onHeadersReceived,
-      {
-        urls: ["http://*/*", "https://*/*"],
-        types: ["main_frame", "sub_frame"]
-      },
-      ["responseHeaders"]
-    );
     browser.webNavigation.onBeforeNavigate.addListener(onBeforeNavigate);
     browser.webNavigation.onCommitted.addListener(onCommitted);
     browser.webNavigation.onErrorOccurred.addListener(onErrorOccurred);
@@ -509,6 +496,8 @@ export async function start() {
       onHistoryStateUpdated);
     browser.tabs.onRemoved.addListener(onRemoved);
     browser.tabs.onReplaced.addListener(onReplaced);
+
+    startupPromise = discoverExistingFrames();
   }
 
   await startupPromise;

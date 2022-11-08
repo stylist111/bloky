@@ -20,7 +20,7 @@ import expect from "expect";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 
 import {Page, Popup, setMinTimeout, wait, executeScript, isFirefox, isEdge,
-        isChromiumBased, isIncognito,
+        isChromiumBased, isIncognito, SITEKEY,
         getVisibleElement, isMV3, TEST_PAGES_URL,
         TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN,
         isMV2CustomSubsExtension, TEST_MV3_SUBSCRIPTION,
@@ -502,6 +502,15 @@ describe("API", function() {
     it("adds comment filter", async function() {
       await EWE.filters.add([COMMENT_FILTER_TEXT]);
       expect(await EWE.filters.getUserFilters()).toEqual([COMMENT_FILTER]);
+    });
+
+    it("adds an allowing filter with sitekey option", async function() {
+      const SITEKEY_ELEMHIDE_FILTER = `@@$elemhide,sitekey=${SITEKEY}`;
+      await EWE.filters.add([SITEKEY_ELEMHIDE_FILTER]);
+      expect(await EWE.filters.getUserFilters()).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({text: SITEKEY_ELEMHIDE_FILTER})
+        ]));
     });
 
     describe("Filters metadata", function() {
@@ -2808,7 +2817,7 @@ describe("API", function() {
       }, 20000, "No requests sent", 100);
     }
 
-    it("sends HEAD requests for expired subscriptions after the SW restarts", async function() {
+    it("sends HEAD requests for expired subscriptions after service worker restarts", async function() {
       if (!isMV3() || isFuzzingServiceWorker())
         this.skip();
 

@@ -25,7 +25,11 @@ import {default as subs} from "./subscriptions.js";
 import {setAddonInfo, addonBundledSubscriptionsPath} from "./info.js";
 import {removeDynamicFilters} from "./dnr-filters.js";
 
+import * as sitekey from "./sitekey.js";
+
 export default {
+  ...sitekey, // everything exported from "sitekey.js"
+
   /**
    * @ignore
    * Used internally. Sets the preference value.

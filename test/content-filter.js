@@ -17,13 +17,14 @@
 
 import expect from "expect";
 
+import browser from "webextension-polyfill";
 import {Page, waitForInvisibleElement, executeScript, setMinTimeout, wait,
-        getVisibleElement, getVisibleElementInFrame, isMV3, isFirefox,
+        getVisibleElement, getVisibleElementInFrame, isFirefox,
         firefoxVersion, TEST_PAGES_DOMAIN, TEST_PAGES_URL, SITEKEY,
-        TEST_MV3_SUBSCRIPTION} from "./utils.js";
+        TEST_MV3_SUBSCRIPTION,
+        isMV3} from "./utils.js";
 import {addFilter, EWE} from "./messaging.js";
-import {isFuzzingServiceWorker}
-  from "./mocha/mocha-runner.js";
+import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 let hideTimeout = isFuzzingServiceWorker() ? 15000 : 1000;
 let collapseTimeout = 2000;
@@ -66,6 +67,85 @@ describe("Element Hiding", function() {
   it("hides an element", async function() {
     await addFilter("###elem-hide");
     await expectElemHideHidden();
+  });
+
+  it("saves and loads the sitekeys", async function() {
+    if (!isMV3() || isFuzzingServiceWorker())
+      this.skip();
+
+    await EWE.testing.clearAllSitekeys(false);
+
+    try {
+      await EWE.testing._setSitekey(1, 1, "url1", "sitekey1", "sig1");
+      await EWE.testing._setSitekey(1, 1, "url2", "sitekey2", "sig2");
+      await EWE.testing._setSitekey(1, 2, "url3", "sitekey3", "sig3");
+      await EWE.testing._setSitekey(2, 3, "url4", "sitekey4", "sig4");
+      await EWE.testing._setSitekey(4, 5, "url5", null, null);
+
+      await EWE.testing._doSaveSitekeys();
+      await EWE.testing._awaitSavingComplete();
+      await EWE.testing.clearAllSitekeys(false);
+      await EWE.testing._loadSitekeys(false);
+
+      expect(await EWE.testing.getSitekey(1, 1, "url1")).toEqual("sitekey1");
+      expect(await EWE.testing._getSitekeySignature(1, 1, "url1")).toEqual("sig1");
+      expect(await EWE.testing.getSitekey(1, 1, "url2")).toEqual("sitekey2");
+      expect(await EWE.testing._getSitekeySignature(1, 1, "url2")).toEqual("sig2");
+      expect(await EWE.testing.getSitekey(1, 2, "url3")).toEqual("sitekey3");
+      expect(await EWE.testing._getSitekeySignature(1, 2, "url3")).toEqual("sig3");
+      expect(await EWE.testing.getSitekey(2, 3, "url4")).toEqual("sitekey4");
+      expect(await EWE.testing._getSitekeySignature(2, 3, "url4")).toEqual("sig4");
+      expect(await EWE.testing.getSitekey(4, 5, "url5")).toBeNull();
+    }
+    finally {
+      await EWE.testing.clearAllSitekeys();
+    }
+  });
+
+  it("verifies the sitekeys loaded from the storage", async function() {
+    if (!isMV3() || isFuzzingServiceWorker())
+      this.skip();
+
+    await EWE.testing.clearAllSitekeys(false);
+
+    try {
+      let url = "element-hiding.html?sitekey=1";
+      let page = new Page(url);
+      let tabId = await page.loaded;
+
+      await EWE.testing._doSaveSitekeys();
+      await EWE.testing._awaitSavingComplete();
+
+      // simulate a fake signature injection
+      let key = "ewe:sitekeys";
+      let data = await browser.storage.session.get(key);
+      data = data[key];
+      expect(data).not.toBeNull();
+      expect(data[tabId]).not.toBeNull(); // valid sitekey
+      let fakeTabId = 7;
+      let fakeFrameId = 8;
+      let fakeUrl = "http://someFakeDomain.com";
+      let fakeUrlMap = {};
+      fakeUrlMap[fakeUrl] = {sitekey: SITEKEY, signature: "fakeSignature"};
+      let fakeFrameIdMap = {};
+      fakeFrameIdMap[fakeFrameId] = fakeUrlMap;
+      data[fakeTabId] = fakeFrameIdMap;
+      let obj = {};
+      obj[key] = data;
+      await browser.storage.session.set(obj);
+
+      await EWE.testing.clearAllSitekeys(false);
+
+      await EWE.testing._loadSitekeys(true); // with verification
+
+      expect(await EWE.testing.getSitekey(tabId, 0, TEST_PAGES_URL + "/" + url))
+        .not.toBeNull();
+      expect(await EWE.testing.getSitekey(fakeTabId, fakeFrameId, fakeUrl))
+        .toBeNull();
+    }
+    finally {
+      await EWE.testing.clearAllSitekeys();
+    }
   });
 
   it("hides an element using subscriptions", async function() {
@@ -290,11 +370,6 @@ describe("Element Hiding", function() {
   });
 
   describe("Sitekey allowlisting", function() {
-    before(function() {
-      if (isMV3())
-        this.skip();
-    });
-
     it("has no effect on pages without the sitekey", async function() {
       await addFilter("###elem-hide");
       await addFilter(`@@$elemhide,sitekey=${SITEKEY}`);
@@ -317,6 +392,44 @@ describe("Element Hiding", function() {
       // hiding elements may take a few ms on CI
       await new Promise(r => setTimeout(r, unhiddenTimeout));
       expect(await getVisibleElement(tabId, "elem-hide")).not.toBeNull();
+    });
+
+    it("properly merges the loaded and new sitekeys", async function() {
+      let obj1 =
+        {1: {2: {url1: {sitekey: "sitekey1", signature: "signature1"}}}};
+      let obj1PlusTabId =
+        {1: {3: {url1: {sitekey: "sitekey2", signature: "signature2"}}},
+         4: {5: {url1: {sitekey: "sitekey3", signature: "signature3"}}}};
+      expect(await EWE.testing.merge(obj1, obj1PlusTabId)).toEqual({
+        1: {
+          2: {url1: {sitekey: "sitekey1", signature: "signature1"}},
+          3: {url1: {sitekey: "sitekey2", signature: "signature2"}}
+        },
+        4: {
+          5: {url1: {sitekey: "sitekey3", signature: "signature3"}}
+        }
+      });
+
+      let obj2 =
+        {1: {2: {url1: {sitekey: "sitekey1", signature: "signature1"}}}};
+      let obj2PlusUrl =
+        {1: {2: {url2: {sitekey: "sitekey2", signature: "signature2"}}}};
+      expect(await EWE.testing.merge(obj2, obj2PlusUrl)).toEqual({
+        1: {
+          2: {
+            url1: {sitekey: "sitekey1", signature: "signature1"},
+            url2: {sitekey: "sitekey2", signature: "signature2"}
+          }
+        }
+      });
+
+      let obj3 =
+        {1: {2: {url: {sitekey: "sitekey1", signature: "signature1"}}}};
+      let obj3Clone =
+        {1: {2: {url: {sitekey: "sitekey1", signature: "signature1"}}}};
+      expect(await EWE.testing.merge(obj3, obj3Clone)).toEqual({
+        1: {2: {url: {sitekey: "sitekey1", signature: "signature1"}}}
+      });
     });
   });
 });

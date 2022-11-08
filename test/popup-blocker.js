@@ -17,7 +17,7 @@
 
 import expect from "expect";
 
-import {Page, Popup, setMinTimeout, isMV3, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
+import {Page, Popup, setMinTimeout, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
         CROSS_DOMAIN, SITEKEY} from "./utils.js";
 import {addFilter} from "./messaging.js";
 
@@ -89,11 +89,6 @@ describe("Pop-up blocking", function() {
   });
 
   describe("Sitekey allowlisting", function() {
-    before(function() {
-      if (isMV3())
-        this.skip();
-    });
-
     it("does not block a popup", async function() {
       await addFilter(`|${TEST_PAGES_URL}/popup.html^$popup`);
       await addFilter(`@@$popup,sitekey=${SITEKEY}`);

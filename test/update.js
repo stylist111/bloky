@@ -179,6 +179,7 @@ describe(`Update (${phase}) (runner only)`, function() {
 
       expect(await EWE.testing._getPrefs("migration_state"))
         .toEqual(MIGRATED_TO_MV2);
+      return;
     }
 
     await new Promise(elapsed => setTimeout(elapsed, 1000));
