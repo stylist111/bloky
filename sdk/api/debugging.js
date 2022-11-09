@@ -15,6 +15,8 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import browser from "webextension-polyfill";
+
 import {FilterStorage} from "adblockpluscore/lib/filterStorage.js";
 
 import {IO} from "./io.js";
@@ -23,6 +25,7 @@ import {addonBundledSubscriptions, addonBundledSubscriptionsPath,
 import {filterEngine} from "./core.js";
 import {awaitSavingComplete} from "./prefs.js";
 import {validate} from "./subscriptions.js";
+import {isRunningInServiceWorker} from "./browser-features.js";
 
 export let debugOptions = {
   elemHide: false,
@@ -32,6 +35,35 @@ export let debugOptions = {
      "#e67370 9px, white 9px, white 10px)"],
     ["outline", "solid red"]]
 };
+
+const STORAGE_KEY = "ewe:debugOptions";
+let savingPromise = Promise.resolve(null);
+let storage = browser.storage.local;
+
+export async function saveDebugOptions() {
+  if (!isRunningInServiceWorker())
+    return;
+
+  await savingPromise;
+
+  let obj = {};
+  obj[STORAGE_KEY] = JSON.stringify(debugOptions);
+  savingPromise = storage.set(obj);
+  await savingPromise;
+}
+
+export async function loadDebugOptions() {
+  if (!isRunningInServiceWorker())
+    return;
+
+  let obj = await storage.get(STORAGE_KEY);
+  if (!obj || !obj[STORAGE_KEY])
+    return;
+
+  debugOptions = JSON.parse(obj[STORAGE_KEY]);
+}
+
+let initializationPromise;
 
 export default {
   /**
@@ -54,24 +86,32 @@ export default {
    * Causes elements targeted by element hiding, element hiding emulation,
    * or snippets to be highlighted instead of hidden.
    * @param {boolean} enabled Enables or disables debug mode.
+   * @returns {Promise}
    */
-  setElementHidingDebugMode(enabled) {
+  async setElementHidingDebugMode(enabled) {
+    await this.start();
     debugOptions.elemHide = enabled;
+    await saveDebugOptions();
   },
 
-  /*
+  /**
    * Updates the element hiding debug style.
    * @param {Object} cssProperties The css properties for
    *                               the debug element.
    * @param {Object} snippetsCssProperties The css properties for
    *                                       the debug snippet element.
+   * @returns {Promise}
    */
-  setElementHidingDebugStyle(cssProperties, snippetsCssProperties) {
+  async setElementHidingDebugStyle(cssProperties, snippetsCssProperties) {
+    await this.start();
+
     if (cssProperties)
       debugOptions.cssProperties = cssProperties;
 
     if (snippetsCssProperties)
       debugOptions.snippetsCssProperties = snippetsCssProperties;
+
+    await saveDebugOptions();
   },
 
   /**
@@ -112,5 +152,15 @@ export default {
     }
 
     await awaitSavingComplete();
+  },
+
+  async start() {
+    if (!initializationPromise)
+      initializationPromise = loadDebugOptions();
+    return initializationPromise;
+  },
+
+  async ensureSaved() {
+    await savingPromise;
   }
 };

@@ -24,7 +24,8 @@ import {Page, Popup, setMinTimeout, wait, executeScript, isFirefox, isEdge,
         getVisibleElement, isMV3, TEST_PAGES_URL,
         TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN,
         isMV2CustomSubsExtension, TEST_MV3_SUBSCRIPTION,
-        TEST_MV3_SUBSCRIPTION_2, TEST_MV3_SUBSCRIPTION_3} from "./utils.js";
+        TEST_MV3_SUBSCRIPTION_2, TEST_MV3_SUBSCRIPTION_3,
+        waitForHighlightedStyle, getBackgroundColor} from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, addFakeListener,
         removeFakeListeners, ensureEverythingHasSaved, getTestEvents,
         clearTestEvents} from "./messaging.js";
@@ -2731,29 +2732,8 @@ describe("API", function() {
   });
 
   describe("Debugging", function() {
-    setMinTimeout(this, 3000);
-
-    before(function() {
-      // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/321
-      if (isFuzzingServiceWorker())
-        this.skip();
-    });
-
-    function getBackgroundColor() {
-      let elem = document.getElementById("elem-hide");
-      return window.getComputedStyle(elem)["background-color"];
-    }
-
-    async function waitForHighlightedStyle() {
-      let tabId = await new Page("element-hiding.html").loaded;
-      let style;
-      await wait(async() => {
-        style = await executeScript(tabId, getBackgroundColor);
-        return style != "rgba(0, 0, 0, 0)";
-      }, 2000, "Style is not highlighted", 200);
-
-      return style;
-    }
+    let timeout = (isMV3() && isFuzzingServiceWorker() ? 20000 : 3000);
+    setMinTimeout(this, timeout);
 
     it("highlights an element", async function() {
       await EWE.debugging.setElementHidingDebugMode(true);

@@ -504,3 +504,19 @@ export async function readFile(prefix, fileName) {
   if (entry)
     return entry;
 }
+
+export function getBackgroundColor() {
+  let elem = document.getElementById("elem-hide");
+  return window.getComputedStyle(elem)["background-color"];
+}
+
+export async function waitForHighlightedStyle() {
+  let tabId = await new Page("element-hiding.html").loaded;
+  let style;
+  await wait(async() => {
+    style = await executeScript(tabId, getBackgroundColor);
+    return style != "rgba(0, 0, 0, 0)";
+  }, 5000, "Style is not highlighted", 200);
+
+  return style;
+}

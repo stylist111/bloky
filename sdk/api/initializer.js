@@ -20,6 +20,7 @@ import * as frameState from "./frame-state.js";
 import {IO as io} from "./io.js";
 import {init as initDNRFilters} from "./dnr-filters.js";
 import {init as initPrefs} from "./prefs.js";
+import {default as debugging} from "./debugging.js";
 
 let startupPromise;
 
@@ -42,6 +43,7 @@ export default {
     if (!startupPromise) {
       startupPromise = (async() => {
         await io.initialize();
+        await debugging.start();
         await initPrefs();
         await filterEngine.initialize();
         await frameState.start();

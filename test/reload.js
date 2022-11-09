@@ -18,8 +18,10 @@
 import expect from "expect";
 import browser from "webextension-polyfill";
 
-import {Page, wait, isMV3, TEST_MV3_SUBSCRIPTION} from "./utils.js";
-import {addFilter, EWE, runInBackgroundPage, ensureEverythingHasSaved} from "./messaging.js";
+import {Page, wait, isMV3, TEST_MV3_SUBSCRIPTION, waitForHighlightedStyle}
+  from "./utils.js";
+import {addFilter, EWE, runInBackgroundPage, ensureEverythingHasSaved}
+  from "./messaging.js";
 
 const METADATA_FILTER_TEXT = "reload###metadata-test";
 const METADATA_FILTER = {
@@ -182,5 +184,22 @@ describe(`Reload (${phase})`, function() {
     finally {
       await EWE.subscriptions.remove(TEST_MV3_SUBSCRIPTION.url);
     }
+  });
+
+  it("persists debug mode across browser restart", async function() {
+    if (!isMV3())
+      this.skip();
+
+    if (start) {
+      await EWE.debugging.setElementHidingDebugMode(true);
+      await EWE.debugging.setElementHidingDebugStyle([["background", "pink"]]);
+      return;
+    }
+
+    await addFilter("###elem-hide");
+    let style = await waitForHighlightedStyle();
+    await EWE.debugging.setElementHidingDebugMode(false);
+
+    expect(style).toBe("rgb(255, 192, 203)");
   });
 });
