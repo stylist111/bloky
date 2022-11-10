@@ -165,7 +165,7 @@ func:v2:windows:edge-all:
         -OutFile 'MicrosoftEdgeEnterpriseX64.msi'
     - Start-Process msiexec
         -ArgumentList "/i MicrosoftEdgeEnterpriseX64.msi /norestart /qn" -Wait
-    - choco upgrade -y nodejs --version 16.10.0
+    - choco upgrade -y nodejs --version 16.18.1
     - npm install -g npm
     - npm install
     - Start-Process "node" -ArgumentList "test/start-server.js" -PassThru
