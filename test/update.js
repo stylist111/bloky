@@ -19,7 +19,7 @@ import expect from "expect";
 import browser from "webextension-polyfill";
 
 import {TEST_MV3_SUBSCRIPTION, TEST_ANTI_CV_SUBSCRIPTION,
-        isFirefox, isMV3, readFile, writeFile} from "./utils.js";
+        isFirefox, isMV3, readFile, writeFile, Page} from "./utils.js";
 import {EWE, runInBackgroundPage} from "./messaging.js";
 import {isConnected, updateExtensionFiles} from "./mocha/mocha-runner.js";
 import {MIGRATED_TO_MV2, MIGRATED_TO_MV3} from "../sdk/api/prefs.js";
@@ -51,14 +51,12 @@ describe(`Update (${phase}) (runner only)`, function() {
     await browser.storage.local.remove("update-test-running");
   });
 
-  it("updates the subscription filter text if manifest version is updated", async function() {
+  it("updates the subscription filter text when updating the extension", async function() {
     if (!isMV3())
       this.skip();
 
     const subscriptionFile = `subscriptions/${TEST_MV3_SUBSCRIPTION.id}`;
     const tmpSubscriptionFile = `${subscriptionFile}.tmp`;
-    const manifestFile = "manifest.json";
-    const tmpManifestFile = `${manifestFile}.tmp`;
 
     if (start) {
       await EWE.testing._removeAllSubscriptions();
@@ -74,23 +72,10 @@ describe(`Update (${phase}) (runner only)`, function() {
           }
         },
         {
-          method: "copyFile",
-          args: {
-            from: manifestFile,
-            to: tmpManifestFile
-          }
-        },
-        {
           method: "addLines",
           args: {
             file: subscriptionFile,
             lines: [filter]
-          }
-        },
-        {
-          method: "updateManifest",
-          args: {
-            version: "0.0.2"
           }
         }
       ]);
@@ -101,6 +86,17 @@ describe(`Update (${phase}) (runner only)`, function() {
       let filters = await EWE.subscriptions.getFilters(
         TEST_MV3_SUBSCRIPTION.url);
       expect(filters.find(it => it.text == filter)).toBeDefined();
+
+      let downloadables = await EWE.subscriptions.getDownloadable();
+      expect(downloadables).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          url: TEST_MV3_SUBSCRIPTION.url,
+          downloadable: false,
+          enabled: true
+        })
+      ]));
+
+      await new Page("image-from-subscription.html").expectResource("image-from-subscription.png").toBeBlocked();
     }
     finally {
       // restore from back-up
@@ -110,13 +106,6 @@ describe(`Update (${phase}) (runner only)`, function() {
           args: {
             from: tmpSubscriptionFile,
             to: subscriptionFile
-          }
-        },
-        {
-          method: "moveFile",
-          args: {
-            from: tmpManifestFile,
-            to: manifestFile
           }
         }
       ]);

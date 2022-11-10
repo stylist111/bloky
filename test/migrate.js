@@ -18,7 +18,8 @@
 import expect from "expect";
 import browser from "webextension-polyfill";
 
-import {isMV3, TEST_ANTI_CV_SUBSCRIPTION, wait} from "./utils.js";
+import {isMV3, TEST_ANTI_CV_SUBSCRIPTION, wait, TEST_MV3_SUBSCRIPTION, Page}
+  from "./utils.js";
 import {EWE, runInBackgroundPage} from "./messaging.js";
 import {isConnected, updateExtensionFiles} from "./mocha/mocha-runner.js";
 import {MIGRATED_TO_MV2, MIGRATED_TO_MV3} from "../sdk/api/prefs.js";
@@ -61,21 +62,24 @@ describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
   });
 
   it("migrates user subscriptions", async function() {
-    const MANIFEST_FILE = "manifest.json";
-    const TMP_MANIFEST_FILE = `${MANIFEST_FILE}.tmp`;
-
     if (start) {
       expect(isMV3()).toBeFalsy(); // MV2 before the migration
       await EWE.testing._setPrefs("migration_state", MIGRATED_TO_MV2);
       await EWE.subscriptions.clearMigrationErrors();
 
       await EWE.testing._removeAllSubscriptions();
+      await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.mv2_url);
       await EWE.subscriptions.add(EASYLIST_URL_MV2);
       await EWE.subscriptions.add(EASYLIST_GERMANY_URL_MV2);
       await EWE.subscriptions.disable(EASYLIST_GERMANY_URL_MV2);
 
       let downloadables = await EWE.subscriptions.getDownloadable();
       expect(downloadables).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          url: TEST_MV3_SUBSCRIPTION.mv2_url,
+          downloadable: true,
+          enabled: true
+        }),
         expect.objectContaining({
           url: EASYLIST_URL_MV2,
           downloadable: true,
@@ -95,56 +99,37 @@ describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
           args: {
             from: "test-mv3"
           }
-        },
-        {
-          method: "copyFile",
-          args: {
-            from: MANIFEST_FILE,
-            to: TMP_MANIFEST_FILE
-          }
-        },
-        {
-          method: "updateManifest",
-          args: {
-            version: "0.0.3"
-          }
         }
       ]);
+
       return;
     }
 
-    try {
-      expect(isMV3()).toBeTruthy(); // MV3 after the migration
+    expect(isMV3()).toBeTruthy(); // MV3 after the migration
 
-      await wait(async() => await EWE.testing._getPrefs("migration_state") === MIGRATED_TO_MV3,
-                 2000, "Prefs.migration_state was not set");
+    await wait(async() => await EWE.testing._getPrefs("migration_state") === MIGRATED_TO_MV3,
+               2000, "Prefs.migration_state was not set");
 
-      let downloadables = await EWE.subscriptions.getDownloadable();
-      expect(downloadables).toEqual(expect.arrayContaining([
-        expect.objectContaining({
-          url: EASYLIST_URL_MV3,
-          downloadable: false,
-          enabled: true
-        }),
-        expect.objectContaining({
-          url: EASYLIST_GERMANY_URL_MV3,
-          downloadable: false,
-          enabled: false
-        })
-      ]));
-    }
-    finally {
-      // restore from back-up
-      await updateExtensionFiles([
-        {
-          method: "moveFile",
-          args: {
-            from: TMP_MANIFEST_FILE,
-            to: MANIFEST_FILE
-          }
-        }
-      ]);
-    }
+    let downloadables = await EWE.subscriptions.getDownloadable();
+    expect(downloadables).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        url: TEST_MV3_SUBSCRIPTION.url,
+        downloadable: false,
+        enabled: true
+      }),
+      expect.objectContaining({
+        url: EASYLIST_URL_MV3,
+        downloadable: false,
+        enabled: true
+      }),
+      expect.objectContaining({
+        url: EASYLIST_GERMANY_URL_MV3,
+        downloadable: false,
+        enabled: false
+      })
+    ]));
+
+    await new Page("image-from-subscription.html").expectResource("image-from-subscription.png").toBeBlocked();
   });
 
   it("migrates user subscriptions meta data", async function() {
