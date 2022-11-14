@@ -4,7 +4,7 @@ ARG SKIP_BUILD=
 
 COPY . webext-sdk/
 WORKDIR webext-sdk/
-
+RUN npm config set timeout 10000
 RUN npm install
 RUN if [ -z "$SKIP_BUILD" ]; then npm run build; fi
 
