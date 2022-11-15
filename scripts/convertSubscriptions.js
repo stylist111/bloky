@@ -34,28 +34,15 @@ function generateRuleId() {
   return highestRuleId++;
 }
 
-async function addRuleId(filename) {
-  const encoding = "utf-8";
-  let json = fs.readFileSync(filename, {encoding});
-  let rules = JSON.parse(json);
-  for (let rule of rules)
-    rule["id"] = generateRuleId();
-  json = JSON.stringify(rules, null, 2);
-  await fs.promises.unlink(filename);
-  fs.writeFileSync(filename, json, {encoding});
-}
-
 async function convert(inDir, outDir) {
   let files = fs.readdirSync(inDir);
   if (!fs.existsSync(outDir))
     fs.mkdirSync(outDir, {recursive: true});
 
   let converter = createConverter({
+    isRegexSupported: () => true,
     modifyRule(rule) {
-      if (rule.condition.regexFilter) {
-        console.warn(`Skipping regex rule ${rule.condition.regexFilter}..`);
-        return Error("Regex rules are temporarily disabled.");
-      }
+      rule["id"] = generateRuleId();
       return rule;
     }
   });
@@ -64,7 +51,6 @@ async function convert(inDir, outDir) {
     let outFileAbs = path.join(outDir, path.parse(inFile).base);
     console.log(`Converting ${inFileAbs} to ${outFileAbs} ...`);
     await processFile(converter, inFileAbs, outFileAbs);
-    await addRuleId(outFileAbs);
   }
 }
 

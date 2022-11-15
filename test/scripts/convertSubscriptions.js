@@ -62,12 +62,23 @@ describe("convertSubscriptions script", () => {
     return JSON.parse(fs.readFileSync(fullFilename, encoding));
   }
 
-  it("filters invalid regex rules", async function() {
+  it("does not filter regex rules", async function() {
     let filename = "foo.txt";
     createAbpRuleFile(filename, "[Adblock Plus 2.0]\n/rule1/\nrule2");
     await convert(tmpInDir, tmpOutDir);
     let dnrRules = getDnrRulesFromFile(filename);
-    expect(dnrRules.length).toEqual(1);
-    expect(dnrRules[0].condition.urlFilter).toEqual("rule2");
+    expect(dnrRules.length).toEqual(2);
+    expect(dnrRules[0].condition.regexFilter).toEqual("rule1");
+    expect(dnrRules[1].condition.urlFilter).toEqual("rule2");
+  });
+
+  it("adds rule ids", async function() {
+    let filename = "foo.txt";
+    createAbpRuleFile(filename, "[Adblock Plus 2.0]\nrule1\nrule2");
+    await convert(tmpInDir, tmpOutDir);
+    let dnrRules = getDnrRulesFromFile(filename);
+    expect(dnrRules.length).toEqual(2);
+    expect(dnrRules[0].id).toEqual(expect.any(Number));
+    expect(dnrRules[1].id).toEqual(expect.any(Number));
   });
 });
