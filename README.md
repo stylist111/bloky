@@ -304,7 +304,7 @@ infrastructure the CI uses:
 
 ```
 docker build -t functional -f test/dockerfiles/functional.Dockerfile .
-docker run --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" -e -it functional
+docker run --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" -it functional
 ```
 
 Please notice that the `TEST_PARAMS` argument can also take the additional
