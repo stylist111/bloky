@@ -25,9 +25,12 @@ import {startElementCollapsing, hideElement, unhideElement}
   from "./element-collapsing.js";
 import {startOneClickAllowlisting} from "./allowlisting.js";
 import {ElementHidingTracer} from "./element-hiding-tracer.js";
-import {handleSubscribeLinks} from "./subscribe-links.js";
+import {subscribeLinksEnabled, handleSubscribeLinks} from "./subscribe-links.js";
 
 async function initContentFeatures() {
+  if (subscribeLinksEnabled(window.location.href))
+    handleSubscribeLinks();
+
   let response = await ignoreNoConnectionError(
     browser.runtime.sendMessage({type: "ewe:content-hello"})
   );
@@ -52,9 +55,6 @@ async function initContentFeatures() {
     });
     elemHideEmulation.apply(response.emulatedPatterns);
   }
-
-  if (response.subscribeLinks)
-    handleSubscribeLinks();
 }
 
 startElementCollapsing();

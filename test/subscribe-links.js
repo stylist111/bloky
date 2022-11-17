@@ -17,45 +17,45 @@
 
 import expect from "expect";
 
-import {Page, wait, setMinTimeout} from "./utils.js";
-import {addFakeListener} from "./messaging.js";
+import {Page, setMinTimeout, wait} from "./utils.js";
+import {getTestEvents, clearTestEvents} from "./messaging.js";
 import {isConnected, click, isFuzzingServiceWorker}
   from "./mocha/mocha-runner.js";
 
 describe("Subscribe links (runner only)", function() {
-  setMinTimeout(this, 5000);
-
-  before(function() {
-    // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/325
-    if (isFuzzingServiceWorker())
-      this.skip();
-  });
+  setMinTimeout(this, isFuzzingServiceWorker() ? 30000 : 5000);
 
   before(async function() {
     if (!await isConnected())
       this.skip();
   });
 
+  let event = "reporting.onSubscribeLinkClicked";
+
   async function checkSubscribeLink(selector) {
-    let fake = await addFakeListener({namespace: "reporting",
-                                      eventName: "onSubscribeLinkClicked"});
+    await clearTestEvents(event);
+
     let page = new Page("subscribe.html");
     await page.loaded;
 
-    await click(page.url, selector);
+    let delay = isFuzzingServiceWorker() ? 15000 : 2000;
     try {
-      await wait(() => fake.called, 2000);
+      await click(page.url, selector);
+      await wait(async() => (await getTestEvents(event)).length > 0, delay);
     }
     catch (e) {
       // driver.executeScript in test/runner.js might throw which
       // prevents this click from happening. Retrying usually helps.
       await click(page.url, selector);
-      await wait(() => fake.called, 2000, "Listener was not called");
+      await wait(async() => (await getTestEvents(event)).length > 0, delay,
+                 "Listener was not called");
     }
 
-    expect(fake.callCount).toBe(1);
-    expect(fake.firstArg).toEqual({url: "https://example.org/",
-                                   title: "Sample Filter List"});
+    expect(await getTestEvents(event))
+      .toEqual([[expect.objectContaining({
+        url: "https://example.org/",
+        title: "Sample Filter List"
+      })]]);
   }
 
   it("subscribes to a link", async function() {

@@ -20,8 +20,7 @@ import browser from "webextension-polyfill";
 import {default as initializer} from "./initializer.js";
 import {applyContentFilters, injectCSS} from "./content-filter.js";
 import {createStyleSheet} from "adblockpluscore/lib/elemHide.js";
-import {subscribeLinkClicked, subscribeLinksEnabled}
-  from "./subscribe-links.js";
+import {subscribeLinkClicked} from "./subscribe-links.js";
 import {logHiddenElements} from "./diagnostics.js";
 import {allowlistPage} from "./allowlisting.js";
 
@@ -38,10 +37,7 @@ async function handleMessage(message, sender) {
         return;
 
       let filterData = await applyContentFilters(sender.tab.id, sender.frameId);
-      return {
-        ...filterData,
-        subscribeLinks: subscribeLinksEnabled(sender.url)
-      };
+      return {...filterData};
     case "ewe:subscribe-link-clicked":
       subscribeLinkClicked(message.url, message.title);
       break;

@@ -211,6 +211,7 @@ EWE.filters.onRemoved.addListener(createTestEventListener("filters.onRemoved"));
 EWE.subscriptions.onAdded.addListener(createTestEventListener("subscriptions.onAdded"));
 EWE.subscriptions.onChanged.addListener(createTestEventListener("subscriptions.onChanged"));
 EWE.subscriptions.onRemoved.addListener(createTestEventListener("subscriptions.onRemoved"));
+EWE.reporting.onSubscribeLinkClicked.addListener(createTestEventListener("reporting.onSubscribeLinkClicked"));
 
 async function checkTabAllowlisted(tabId, changeInfo, tab) {
   let result = {
