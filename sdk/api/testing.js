@@ -17,9 +17,10 @@
 
 import {Subscription} from "adblockpluscore/lib/subscriptionClasses.js";
 import {setRecommendations} from "adblockpluscore/lib/recommendations.js";
+import {notifications} from "adblockpluscore/lib/notifications.js";
 
 import {filterEngine} from "./core.js";
-import {Prefs} from "./prefs.js";
+import {Prefs, awaitSavingComplete, init as initPrefs} from "./prefs.js";
 import {default as debugging} from "./debugging.js";
 import {default as subs} from "./subscriptions.js";
 import {setAddonInfo, addonBundledSubscriptionsPath} from "./info.js";
@@ -36,7 +37,8 @@ export default {
    * @param {string} [key] Preference key
    * @param {Object} [value] Preference value
    */
-  _setPrefs(key, value) {
+  async _setPrefs(key, value) {
+    await initPrefs();
     Prefs[key] = value;
   },
 
@@ -46,7 +48,8 @@ export default {
    * @param {string} [key] Preference key
    * @returns {Object} Preference value
    */
-  _getPrefs(key) {
+  async _getPrefs(key) {
+    await initPrefs();
     return Prefs[key];
   },
 
@@ -102,5 +105,15 @@ export default {
     const {filterStorage} = filterEngine;
     for (let subscription of filterStorage.subscriptions())
       filterStorage.removeSubscription(subscription);
+  },
+
+  async _clearNotifications() {
+    await initPrefs();
+    for (let notification of notifications._localNotifications)
+      notifications.removeNotification(notification);
+
+    Prefs.notificationdata = {};
+    Prefs.notifications_ignoredcategories = [];
+    await awaitSavingComplete();
   }
 };

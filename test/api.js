@@ -2706,28 +2706,85 @@ describe("API", function() {
   });
 
   describe("Notifications", function() {
-    before(function() {
-      // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/320
-      if (isFuzzingServiceWorker())
-        this.skip();
+    afterEach(async function() {
+      await EWE.notifications.toggleIgnoreCategory("*", false);
+      await EWE.testing._clearNotifications();
     });
 
-    it("supports notifications", async function() {
-      let notification = {id: "test"};
+    it("supports showing local notifications", async function() {
+      let notification = {id: "local-test"};
+      await EWE.notifications.addNotification(notification);
+      await EWE.notifications.showNext();
+
+      expect(await getTestEvents("notifications.addShowListener"))
+        .toEqual([[notification]]);
+    });
+
+    it("supports showing immediate notifications", async function() {
+      let notification = {id: "immediate-test"};
+      await EWE.notifications.showNotification(notification);
+
+      expect(await getTestEvents("notifications.addShowListener"))
+        .toEqual([[notification]]);
+    });
+
+    it("supports showing remote notifications", async function() {
+      setMinTimeout(this, 3000);
+      let notification = {id: "remote-test"};
+      await EWE.testing._setPrefs("notificationurl", `${TEST_PAGES_URL}/notification.json`);
+
+      expect(await EWE.notifications.getDownloadCount()).toBe(0);
 
       await EWE.notifications.start();
-      await EWE.notifications.addNotification(notification);
+      await wait(async() => {
+        // Don't fuzz the service worker here, or you'll kill the in
+        // progress notifications download.
+        let downloadCount = await runInBackgroundPage([
+          {op: "getGlobal", arg: "EWE"},
+          {op: "getProp", arg: "notifications"},
+          {op: "callMethod", arg: "getDownloadCount"},
+          {op: "await"}
+        ], false);
+        return downloadCount > 0;
+      }, 1500, "Notifications were not downloaded");
 
-      let fake = await addFakeListener({namespace: "notifications",
-                                        method: "addShowListener",
-                                        removeMethod: "removeShowListener"});
       await EWE.notifications.showNext();
-      await EWE.notifications.removeNotification(notification);
+      let testEvents = await getTestEvents("notifications.addShowListener");
+      expect(testEvents).toEqual([[notification]]);
+      expect(await EWE.notifications.getDownloadCount()).toBe(1);
+    });
 
-      await EWE.notifications.stop();
+    it("returns the correct state for ignored categories", async function() {
+      expect(await EWE.notifications.getIgnoredCategories()).toEqual([]);
+      expect(await EWE.notifications.shouldIgnoreNotifications()).toBe(false);
 
-      expect(fake.callCount).toBe(1);
-      expect(fake.firstArg).toEqual(notification);
+      await EWE.notifications.toggleIgnoreCategory("*");
+
+      expect(await EWE.notifications.getIgnoredCategories()).toEqual(["*"]);
+      expect(await EWE.notifications.shouldIgnoreNotifications()).toBe(true);
+
+      await EWE.notifications.toggleIgnoreCategory("*");
+
+      expect(await EWE.notifications.getIgnoredCategories()).toEqual([]);
+      expect(await EWE.notifications.shouldIgnoreNotifications()).toBe(false);
+    });
+
+    it("shows ignorable notifications when ignoring notifications toggled off", async function() {
+      let notification = {id: "ignorable-to-show"};
+      await EWE.notifications.showNotification(notification, {ignorable: true});
+
+      expect(await getTestEvents("notifications.addShowListener"))
+        .toEqual([[notification]]);
+    });
+
+    it("ignores ignorable notifications when ignoring notifications is toggled on", async function() {
+      await EWE.notifications.toggleIgnoreCategory("*");
+
+      let notification = {id: "ignorable-to-ignore"};
+      await EWE.notifications.showNotification(notification, {ignorable: true});
+
+      expect(await getTestEvents("notifications.addShowListener"))
+        .toEqual([]);
     });
   });
 

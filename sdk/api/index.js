@@ -16,8 +16,6 @@
  */
 
 import browser from "webextension-polyfill";
-import {notifications as _notifications}
-  from "adblockpluscore/lib/notifications.js";
 
 import {default as initializer} from "./initializer.js";
 import * as messageResponder from "./message-responder.js";
@@ -42,19 +40,7 @@ export {default as reporting} from "./reporting.js";
 export {default as debugging} from "./debugging.js";
 export {default as allowlisting} from "./allowlisting.js";
 export {default as testing} from "./testing.js";
-
-/**
- * The notifications API (optional usage).
- *
- * To start using this module, calling `notifications.start()` is required.
- * Please also notice that notification events are **not** using the
- * {@link #eventdispatcher|EventDispatcher} interface.
- * @see {@link https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore/-/jobs/artifacts/0.6.0/file/build/docs/module-notifications-Notifications.html?job=docs|Adblock Plus core notifications documentation}
- * @external
- */
-// Workaround for documentation.js to parse the JSDocs above
-// https://github.com/documentationjs/documentation/issues/1363
-export let notifications = _notifications;
+export {notifications} from "./notifications.js";
 
 export let snippets = {
   /**

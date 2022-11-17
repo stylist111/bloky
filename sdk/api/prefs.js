@@ -30,6 +30,7 @@ export const defaults = Object.create({
   notificationdata: {},
   notifications_ignoredcategories: [],
   notificationurl: "https://notification.adblockplus.org/notification.json",
+  notifications_initial_delay: 1000, // 1 s
   patternsbackupinterval: 24,
   patternsbackups: 0,
   savestats: false,

@@ -27,7 +27,7 @@
     "webpack.config.js"
   ],
   "dependencies": {
-    "adblockpluscore": "^0.10.1",
+    "adblockpluscore": "git+https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore.git#cde1eac1897935d9afe6f75deda46dc75ad079f9",
     "webextension-polyfill": "^0.8.0",
     "yargs": "^17.5.1"
   },

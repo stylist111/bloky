@@ -212,6 +212,11 @@ EWE.subscriptions.onAdded.addListener(createTestEventListener("subscriptions.onA
 EWE.subscriptions.onChanged.addListener(createTestEventListener("subscriptions.onChanged"));
 EWE.subscriptions.onRemoved.addListener(createTestEventListener("subscriptions.onRemoved"));
 EWE.reporting.onSubscribeLinkClicked.addListener(createTestEventListener("reporting.onSubscribeLinkClicked"));
+EWE.notifications.addShowListener(createTestEventListener("notifications.addShowListener"));
+EWE.notifications.addShowListener(async notification => {
+  await EWE.notifications.markAsShown(notification.id);
+});
+
 
 async function checkTabAllowlisted(tabId, changeInfo, tab) {
   let result = {
@@ -368,5 +373,4 @@ let oneClickAllowlistingPublicKeys = [
   "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAz0zHgcXEoGyk4iZHUCfrhU3j7JiHi1EhAtMONxFfmeN4bp6zOWQaMz8cU4S+2jOFD/3oKJGTYNqYH9hBXMG1GzA7nzjNBsONTE64TMxQBt8ksT0bTwqTZ4nqTRWJsjo3XPzB+qkC7a1vXmujcfRsQMY7xbBnhZ6VVGMGtpUIPXNjtjGk3JOD1rKUU8Efq2lZmQlBf63s6u6EDnX6WcdgwlLpQwewO8BrXDBurdH83ZaVrx3zOQVQyJTj0+CAkammJ04Aq1golgddz4qRzr5vmB0FQkibr3oh79HfaqByKHsqgBFeAcdSbSg/pzqeNjnH0+a6GNx31V8UoDC3cRa/Uqet+t55QTSwWI4Iu11CZrKb3HX78swDkHW9/pyG2KZeUViFLe3EqInzH7jTZPTuQR4zGXMZji/WtqWxONjt37PKReJSTnMJSh2GyVUk3tZGb1fNtgthiu711uPh8/qjiuWPiaECRnCAc6sRgblxVRD4tIYgLmbbUsTPwlBFw6iZ/2HjqowA4/S5og1M3JAp4KBr7QYRz30Ji3TUjg5rWJdzO/WNx46W1Ro08PkfidvjdQ2PJvQkCtNCgnRbyAgPLJ1hMDycsKYduKO8Y5AszVgD/RBipYg9HVkuCnYChCspu8cq6gaR1sx3IcqZZs9kZUIqAT1bxMdYkKCm0igciAkCAwEAAQ=="
 ];
 EWE.allowlisting.setAuthorizedKeys(oneClickAllowlistingPublicKeys);
-
 EWE.allowlisting.onUnauthorized.addListener(createTestEventListener("allowlisting.onUnauthorized"));
