@@ -20,6 +20,7 @@
 import {exec, spawn} from "child_process";
 
 import yargs from "yargs";
+import path from "path";
 import {hideBin} from "yargs/helpers";
 
 let testServer;
@@ -45,7 +46,8 @@ async function killTestServer() {
 
 function runTestServer() {
   console.log("Test server starting...");
-  testServer = spawn("test/start-server.js");
+  testServer = spawn("node", [path.join(process.cwd(), "test", "start-server.js")]);
+
 
   return new Promise((resolve, reject) => {
     let log = [];
