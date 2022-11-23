@@ -1,3 +1,20 @@
+0.7.2 - 2022/11/24
+==================
+
+# General
+
+- Implement sitekey support for Manifest V3. (#380)
+
+# Tests
+
+- Fix test harness on Windows.
+
+# Updating your code
+
+- You only need to regenerate the DNR rulesets to add back the sitekey
+  filters. If you used tooling that doesn't use the SDK code, then you
+  might want to update it as well.
+
 0.7.1 - 2022/11/03
 ==================
 
