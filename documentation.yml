@@ -1,6 +1,8 @@
 toc:
   - name: README
     file: README.md
+  - name: Manifest V3
+    file: docs/MANIFEST_V3.md
   - name: APIs
     description: |
       <style>

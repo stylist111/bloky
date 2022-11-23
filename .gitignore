@@ -1,6 +1,5 @@
 node_modules
 dist
-docs
 browser-snapshots
 test/bundle/package-lock.json
 extension

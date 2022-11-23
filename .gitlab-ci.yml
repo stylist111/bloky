@@ -30,7 +30,7 @@ build:
   image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
   stage: build
   before_script:
-    - npm install  
+    - npm install
   script:
     - npm run lint
     - npm run build
@@ -38,7 +38,7 @@ build:
   artifacts:
     paths:
       - dist/
-      - docs/
+      - dist/docs
     expire_in: 1 month
 
 .docker-image:
