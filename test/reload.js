@@ -18,8 +18,8 @@
 import expect from "expect";
 import browser from "webextension-polyfill";
 
-import {Page, wait, isMV3, TEST_MV3_SUBSCRIPTION, waitForHighlightedStyle}
-  from "./utils.js";
+import {Page, wait, isMV3, TEST_MV3_SUBSCRIPTION, waitForHighlightedStyle,
+        isEdge} from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, ensureEverythingHasSaved}
   from "./messaging.js";
 
@@ -179,6 +179,8 @@ describe(`Reload (${phase})`, function() {
     }
 
     try {
+      if (isEdge())
+        await new Promise(r => setTimeout(r, 500));
       await new Page("image-from-subscription.html").expectResource("image-from-subscription.png").toBeBlocked();
     }
     finally {
