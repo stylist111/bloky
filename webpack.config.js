@@ -135,6 +135,10 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath) {
     build.resolve.alias["./testing.js"] = testingJsStubPath;
   }
 
+  // It helps to use webextension-polyfill `browser` in production and
+  // inject test `browser` in unit tests.
+  build.resolve.alias["./browser.js"] = path.resolve(dirname, "./sdk/api/webext-browser.js");
+
   if (subscriptionFile) {
     let customSubsFile = path.resolve(dirname, subscriptionFile);
     if (fs.existsSync(customSubsFile)) {

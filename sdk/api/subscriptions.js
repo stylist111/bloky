@@ -17,6 +17,8 @@
 
 import browser from "webextension-polyfill";
 
+import {validate as validateSubscriptions} from "./subscriptions-validator.js";
+import {rulesetExistsInManifest} from "./subscriptions-utils.js";
 import {Subscription, DownloadableSubscription, RegularSubscription,
         SpecialSubscription} from "adblockpluscore/lib/subscriptionClasses.js";
 import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
@@ -190,43 +192,10 @@ async function getFilterText(subscription, path) {
   return lines;
 }
 
-async function subscriptionFileExists(subscription, path) {
-  let subscriptionPath = `${path}/${subscription.id}`;
-  const url = browser.runtime.getURL(subscriptionPath);
-  try {
-    const fetchResult = await fetch(url, {method: "HEAD"});
-    return fetchResult.ok;
-  }
-  catch (error) {
-    return false;
-  }
-}
-
-function rulesetExistsInManifest(rulesetId) {
-  let manifest = browser.runtime.getManifest();
-
-  return manifest.declarative_net_request &&
-    manifest.declarative_net_request.rule_resources &&
-    manifest.declarative_net_request.rule_resources.find(
-      ruleset => ruleset.id == rulesetId
-    );
-}
-
 export async function validate(bundledSubscriptions,
                                bundledSubscriptionsPath) {
-  let warnings = [];
-
-  for (let subscription of bundledSubscriptions) {
-    let fileExists = await subscriptionFileExists(subscription,
-                                                  bundledSubscriptionsPath);
-    if (!fileExists)
-      warnings.push(`No subscription content file for ID=${subscription.id}`);
-
-    if (!rulesetExistsInManifest(subscription.id))
-      warnings.push(`No ruleset with ID=${subscription.id} declared in the manifest`);
-  }
-
-  return warnings;
+  return validateSubscriptions(
+    bundledSubscriptions, bundledSubscriptionsPath);
 }
 
 async function remove(url) {

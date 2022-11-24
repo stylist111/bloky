@@ -15,7 +15,7 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import browser from "webextension-polyfill";
+import browser from "./browser.js";
 
 let manifest = browser.runtime.getManifest();
 

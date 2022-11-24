@@ -16,6 +16,7 @@ default:
 stages:
   - build
   - pages
+  - unit
   - functional
   - fuzz
   - integration
@@ -201,6 +202,15 @@ func:scripts:
     - npm install
   script:
     - npm run test-scripts
+
+unittest:
+  image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
+  stage: unit
+  needs: []
+  before_script:
+    - npm install
+  script:
+    - npm run unittest
 
 func:bundle:
   image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python

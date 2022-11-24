@@ -16,7 +16,7 @@
  */
 
 import {verifySignatureSync} from "adblockpluscore/lib/rsa.js";
-import browser from "webextension-polyfill";
+import browser from "./browser.js";
 import {isRunningInServiceWorker} from "./browser-features.js";
 
 /**
@@ -173,7 +173,7 @@ function verifySitekey(sitekey, signature, url) {
   let data = [
     urlObj.pathname + urlObj.search,
     urlObj.host,
-    self.navigator.userAgent
+    navigator.userAgent
   ].join("\0");
   return verifySignatureSync(sitekey, signature, data);
 }
