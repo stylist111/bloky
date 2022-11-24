@@ -28,6 +28,8 @@ function base64ToArrayBuffer(base64) {
 
 describe("createKeypair script", function() {
   it("creates a keypair that can be used for signature verification", async function() {
+    this.timeout(3000);
+
     let {publicKey, privateKey} = await createKeypair();
 
     let importedPrivateKey = await crypto.subtle.importKey(
