@@ -185,7 +185,10 @@ function verifySitekeys(_sitekeys) {
     for (let [frameId, sitekeysMap] of Object.entries(framesMap)) {
       for (let [url, sitekeyInfo] of Object.entries(sitekeysMap)) {
         try {
-          if (!verifySitekey(sitekeyInfo.sitekey, sitekeyInfo.signature, url))
+          let verified = sitekeyInfo.sitekey === null ||
+              verifySitekey(sitekeyInfo.sitekey, sitekeyInfo.signature, url);
+
+          if (!verified)
             delete sitekeysMap[url];
         }
         catch (e) {
