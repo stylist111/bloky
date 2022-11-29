@@ -18,8 +18,7 @@
 import expect from "expect";
 import browser from "webextension-polyfill";
 
-import {Page, wait, isMV3, TEST_MV3_SUBSCRIPTION, waitForHighlightedStyle,
-        isEdge} from "./utils.js";
+import {Page, wait, isMV3, isFirefox, TEST_MV3_SUBSCRIPTION, waitForHighlightedStyle, isIncognito} from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, ensureEverythingHasSaved}
   from "./messaging.js";
 
@@ -50,7 +49,10 @@ let start = new URLSearchParams(document.location.search).get("start");
 let phase = start ? "preparation" : "check";
 
 describe(`Reload (${phase})`, function() {
-  this.timeout(5000);
+  if (isFirefox() && isIncognito())
+    this.timeout(7000);
+  else
+    this.timeout(5000);
 
   after(async function() {
     if (start) {
@@ -179,8 +181,7 @@ describe(`Reload (${phase})`, function() {
     }
 
     try {
-      if (isEdge())
-        await new Promise(r => setTimeout(r, 500));
+      await new Promise(r => setTimeout(r, 500));
       await new Page("image-from-subscription.html").expectResource("image-from-subscription.png").toBeBlocked();
     }
     finally {
