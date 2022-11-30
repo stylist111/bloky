@@ -21,4 +21,8 @@
 
 <!-- What behavior do you expect to see instead? -->
 
+## Release notes
+
+[ ] Release notes added
+
 /label ~bug

@@ -9,3 +9,9 @@
 ## What to change
 
 <!-- What needs to be done to implement this change? -->
+
+## Release notes
+
+[ ] Release notes added
+
+
