@@ -19,6 +19,8 @@
 
 import {EventEmitter} from "adblockpluscore/lib/events.js";
 
+import browser from "webextension-polyfill";
+
 import {increaseMinTimeout} from "../utils.js";
 
 let messages = [];
@@ -128,3 +130,19 @@ export function start() {
   Mocha.reporters.Base.consoleLog = (...args) => sendMessage("log", args);
   new Mocha.reporters.Spec(runner);
 }
+
+let originalConsole = {...console};
+for (let method of ["log", "debug", "info", "warn", "error"]) {
+  // eslint-disable-next-line no-console
+  console[method] = function(...args) {
+    originalConsole[method](...args);
+    sendMessage("log", args);
+  };
+}
+
+browser.runtime.onMessage.addListener(message => {
+  if (message.type == "ewe-test:log") {
+    // eslint-disable-next-line no-console
+    console.log(`Background (${message.level}):`, ...message.args);
+  }
+});

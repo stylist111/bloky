@@ -32,7 +32,6 @@ build:
   before_script:
     - npm install
   script:
-    - npm run lint
     - npm run build
     - DOCS_ERROR=$(npm run docs 2>&1 >/dev/null) && if [ ! -z "$DOCS_ERROR" ]; then echo $DOCS_ERROR && false; fi
   artifacts:
@@ -40,6 +39,14 @@ build:
       - dist/
       - dist/docs
     expire_in: 1 month
+
+lint:
+  image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
+  stage: build
+  before_script:
+    - npm install
+  script:
+    - npm run lint
 
 .docker-image:
   image: docker:19.03.5

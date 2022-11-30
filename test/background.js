@@ -374,3 +374,20 @@ let oneClickAllowlistingPublicKeys = [
 ];
 EWE.allowlisting.setAuthorizedKeys(oneClickAllowlistingPublicKeys);
 EWE.allowlisting.onUnauthorized.addListener(createTestEventListener("allowlisting.onUnauthorized"));
+
+let originalConsole = {...console};
+for (let method of ["log", "debug", "info", "warn", "error"]) {
+  // eslint-disable-next-line no-console
+  console[method] = function(...args) {
+    originalConsole[method](...args);
+    chrome.runtime.sendMessage(
+      {type: "ewe-test:log", level: method, args},
+      () => {
+        // this errors if there isn't a receiver (ie tests aren't
+        // running). It's safe to ignore that.
+        // eslint-disable-next-line no-unused-vars
+        let sendErrorToIgnore = chrome.runtime.lastError;
+      }
+    );
+  };
+}
