@@ -25,9 +25,8 @@ import {addonBundledSubscriptions, addonBundledSubscriptionsPath,
 import {filterEngine} from "./core.js";
 import {awaitSavingComplete} from "./prefs.js";
 import {validate} from "./subscriptions.js";
-import {isRunningInServiceWorker} from "./browser-features.js";
 
-export let debugOptions = {
+let defaultDebugOptions = {
   elemHide: false,
   cssProperties: [["background", "#e67370"], ["outline", "solid red"]],
   snippetsCssProperties: [
@@ -36,14 +35,13 @@ export let debugOptions = {
     ["outline", "solid red"]]
 };
 
+export let debugOptions;
+
 const STORAGE_KEY = "ewe:debugOptions";
 let savingPromise = Promise.resolve(null);
 let storage = browser.storage.local;
 
 export async function saveDebugOptions() {
-  if (!isRunningInServiceWorker())
-    return;
-
   await savingPromise;
 
   let obj = {};
@@ -53,12 +51,11 @@ export async function saveDebugOptions() {
 }
 
 export async function loadDebugOptions() {
-  if (!isRunningInServiceWorker())
-    return;
-
   let obj = await storage.get(STORAGE_KEY);
-  if (!obj || !obj[STORAGE_KEY])
+  if (!obj || !obj[STORAGE_KEY]) {
+    debugOptions = JSON.parse(JSON.stringify(defaultDebugOptions));
     return;
+  }
 
   debugOptions = JSON.parse(obj[STORAGE_KEY]);
 }
@@ -111,6 +108,16 @@ export default {
     if (snippetsCssProperties)
       debugOptions.snippetsCssProperties = snippetsCssProperties;
 
+    await saveDebugOptions();
+  },
+
+  /**
+   * Resets all of the debug options to their default state.
+   * @returns {Promise}
+   */
+  async clearDebugOptions() {
+    await this.start();
+    debugOptions = JSON.parse(JSON.stringify(defaultDebugOptions));
     await saveDebugOptions();
   },
 

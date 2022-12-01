@@ -510,13 +510,13 @@ export function getBackgroundColor() {
   return window.getComputedStyle(elem)["background-color"];
 }
 
-export async function waitForHighlightedStyle() {
+export async function waitForHighlightedStyle(timeout = 5000) {
   let tabId = await new Page("element-hiding.html").loaded;
   let style;
   await wait(async() => {
     style = await executeScript(tabId, getBackgroundColor);
     return style != "rgba(0, 0, 0, 0)";
-  }, 5000, "Style is not highlighted", 200);
+  }, timeout, "Style is not highlighted");
 
   return style;
 }

@@ -2791,15 +2791,17 @@ describe("API", function() {
   });
 
   describe("Debugging", function() {
-    let timeout = (isMV3() && isFuzzingServiceWorker() ? 20000 : 3000);
-    setMinTimeout(this, timeout);
+    setMinTimeout(this, 4000);
+    let highlightTimeout = isFuzzingServiceWorker() ? 15000 : 1000;
+
+    afterEach(async function() {
+      await EWE.debugging.clearDebugOptions();
+    });
 
     it("highlights an element", async function() {
       await EWE.debugging.setElementHidingDebugMode(true);
       await addFilter("###elem-hide");
-      let style = await waitForHighlightedStyle();
-      await EWE.debugging.setElementHidingDebugMode(false);
-
+      let style = await waitForHighlightedStyle(highlightTimeout);
       expect(style).toBe("rgb(230, 115, 112)");
     });
 
@@ -2817,9 +2819,7 @@ describe("API", function() {
       await EWE.debugging.setElementHidingDebugMode(true);
       await EWE.debugging.setElementHidingDebugStyle([["background", "pink"]]);
       await addFilter("###elem-hide");
-      let style = await waitForHighlightedStyle();
-      await EWE.debugging.setElementHidingDebugMode(false);
-
+      let style = await waitForHighlightedStyle(highlightTimeout);
       expect(style).toBe("rgb(255, 192, 203)");
     });
   });
