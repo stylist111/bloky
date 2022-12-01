@@ -12,6 +12,6 @@
 
 ## Release notes
 
-[ ] Release notes added
+- [ ] Release notes added
 
 
