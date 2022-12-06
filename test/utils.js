@@ -505,16 +505,14 @@ export async function readFile(prefix, fileName) {
     return entry;
 }
 
-export function getBackgroundColor() {
-  let elem = document.getElementById("elem-hide");
-  return window.getComputedStyle(elem)["background-color"];
-}
-
 export async function waitForHighlightedStyle(timeout = 5000) {
   let tabId = await new Page("element-hiding.html").loaded;
   let style;
   await wait(async() => {
-    style = await executeScript(tabId, getBackgroundColor);
+    style = await executeScript(tabId, () => {
+      let elem = document.getElementById("elem-hide");
+      return window.getComputedStyle(elem)["background-color"];
+    });
     return style != "rgba(0, 0, 0, 0)";
   }, timeout, "Style is not highlighted");
 

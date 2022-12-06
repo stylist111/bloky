@@ -21,8 +21,8 @@ import browser from "webextension-polyfill";
 import {Page, waitForInvisibleElement, executeScript, setMinTimeout, wait,
         getVisibleElement, getVisibleElementInFrame, isFirefox,
         firefoxVersion, TEST_PAGES_DOMAIN, TEST_PAGES_URL, SITEKEY,
-        TEST_MV3_SUBSCRIPTION,
-        isMV3} from "./utils.js";
+        TEST_MV3_SUBSCRIPTION, isMV3, waitForHighlightedStyle}
+  from "./utils.js";
 import {addFilter, EWE} from "./messaging.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
@@ -367,6 +367,35 @@ describe("Element Hiding", function() {
            }, collapseTimeout, "The image element is still visible");
          });
     }
+  });
+
+  describe("Debugging", function() {
+    setMinTimeout(this, 4000);
+
+    beforeEach(async function() {
+      await EWE.debugging.setElementHidingDebugMode(true);
+      await addFilter("###elem-hide");
+    });
+
+    afterEach(async function() {
+      await EWE.debugging.clearDebugOptions();
+    });
+
+    it("highlights an element", async function() {
+      let style = await waitForHighlightedStyle(hideTimeout);
+      expect(style).toBe("rgb(230, 115, 112)");
+    });
+
+    it("doesn't highlight an element when disabled", async function() {
+      await EWE.debugging.setElementHidingDebugMode(false);
+      await expectElemHideHidden();
+    });
+
+    it("highlights an element with a custom style", async function() {
+      await EWE.debugging.setElementHidingDebugStyle([["background", "pink"]]);
+      let style = await waitForHighlightedStyle(hideTimeout);
+      expect(style).toBe("rgb(255, 192, 203)");
+    });
   });
 
   describe("Sitekey allowlisting", function() {

@@ -24,8 +24,7 @@ import {Page, Popup, setMinTimeout, wait, executeScript, isFirefox, isEdge,
         getVisibleElement, isMV3, TEST_PAGES_URL,
         TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN,
         isMV2CustomSubsExtension, TEST_MV3_SUBSCRIPTION,
-        TEST_MV3_SUBSCRIPTION_2, TEST_MV3_SUBSCRIPTION_3,
-        waitForHighlightedStyle, getBackgroundColor} from "./utils.js";
+        TEST_MV3_SUBSCRIPTION_2, TEST_MV3_SUBSCRIPTION_3} from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, addFakeListener,
         removeFakeListeners, ensureEverythingHasSaved, getTestEvents,
         clearTestEvents} from "./messaging.js";
@@ -2791,40 +2790,6 @@ describe("API", function() {
 
       expect(await getTestEvents("notifications.addShowListener"))
         .toEqual([]);
-    });
-  });
-
-  describe("Debugging", function() {
-    setMinTimeout(this, 4000);
-    let highlightTimeout = isFuzzingServiceWorker() ? 15000 : 1000;
-
-    afterEach(async function() {
-      await EWE.debugging.clearDebugOptions();
-    });
-
-    it("highlights an element", async function() {
-      await EWE.debugging.setElementHidingDebugMode(true);
-      await addFilter("###elem-hide");
-      let style = await waitForHighlightedStyle(highlightTimeout);
-      expect(style).toBe("rgb(230, 115, 112)");
-    });
-
-    it("doesn't highlight an element when disabled", async function() {
-      await EWE.debugging.setElementHidingDebugMode(true);
-      await EWE.debugging.setElementHidingDebugMode(false);
-      await addFilter("###elem-hide");
-      let tabId = await new Page("element-hiding.html").loaded;
-      let style = await executeScript(tabId, getBackgroundColor);
-
-      expect(style).toBe("rgba(0, 0, 0, 0)");
-    });
-
-    it("highlights an element with a custom style", async function() {
-      await EWE.debugging.setElementHidingDebugMode(true);
-      await EWE.debugging.setElementHidingDebugStyle([["background", "pink"]]);
-      await addFilter("###elem-hide");
-      let style = await waitForHighlightedStyle(highlightTimeout);
-      expect(style).toBe("rgb(255, 192, 203)");
     });
   });
 
