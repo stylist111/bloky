@@ -374,13 +374,17 @@ describe("API", function() {
       // starting events from just adding the sub.
       await wait(async() => {
         let subs = await EWE.subscriptions.getDownloadable();
-        return subs.every(sub => sub.lastDownload);
+        return subs.every(sub => (!sub.downloadable || sub.lastDownload));
       }, 1000, "Subscriptions were not synced when added");
 
       await clearTestEvents("subscriptions.onChanged");
     }
 
     it("syncs a specific subscription if specified", async function() {
+      // Disable on MV3 as the subscription are not downloaded.
+      if (isMV3())
+        this.skip();
+
       setMinTimeout(this, 5000);
       await prepareSyncTest();
 
@@ -401,6 +405,10 @@ describe("API", function() {
     });
 
     it("syncs all subscriptions if no subscription is specified", async function() {
+      // Disable on MV3 as the subscription are not downloaded.
+      if (isMV3())
+        this.skip();
+
       await prepareSyncTest();
 
       await EWE.subscriptions.sync();

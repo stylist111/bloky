@@ -153,7 +153,10 @@ describe("Element Hiding", function() {
     await wait(
       async() => {
         let subscriptions = await EWE.subscriptions.getDownloadable();
-        return subscriptions[0].downloadStatus == "synchronize_ok";
+        if (!isMV3())
+          return subscriptions[0].downloadStatus == "synchronize_ok";
+
+        return subscriptions[0].url == TEST_MV3_SUBSCRIPTION.url;
       },
       1000,
       "Subscription was not downloaded."

@@ -49,14 +49,23 @@ function convertSubscription(subscription) {
        version, lastDownload, lastSuccess,
        softExpiration, expires, title, url,
        downloadable, downloadCount} = subscription;
-  let {synchronizer} = filterEngine.filterStorage;
 
-  return {
+  let newSubscription = {
     id, enabled: !disabled,
-    downloading: synchronizer.isExecuting(url),
-    downloadStatus, homepage, version, lastDownload, lastSuccess,
-    softExpiration, expires, title, url, downloadable, downloadCount
+    homepage, downloadable, title, url
   };
+
+  if (downloadable) {
+    let {synchronizer} = filterEngine.filterStorage;
+
+    Object.assign(newSubscription, {
+      downloading: synchronizer.isExecuting(url),
+      version, downloadStatus, lastSuccess, lastDownload,
+      softExpiration, expires, downloadCount
+    });
+  }
+
+  return newSubscription;
 }
 
 function convertRecommendation({id, languages, title, requires, type, url,
