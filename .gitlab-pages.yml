@@ -38,9 +38,9 @@
 pages:
   extends: .pages
   variables:
-    MASTER_ARTIFACT_URL: "$CI_API_V4_URL/projects/$CI_PROJECT_ID/jobs/artifacts/master/download?job=pages"
+    MASTER_ARTIFACT_URL: "$CI_API_V4_URL/projects/$CI_PROJECT_ID/jobs/artifacts/master/download?job=build"
   script:
-    - "UPDATES=docs"
+    - "UPDATES=dist/docs"
     - echo $UPDATES
     - "mkdir public"
     # preserve the most recent public pages
