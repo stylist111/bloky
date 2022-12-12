@@ -15,7 +15,7 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import browser from "webextension-polyfill";
+import browser from "./browser.js";
 
 import {parseURL} from "adblockpluscore/lib/url.js";
 import {ALLOWING_TYPES, contentTypes}

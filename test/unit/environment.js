@@ -58,10 +58,12 @@ const testNavigatorPrototype = {
 
 let browser;
 let navigator;
+let prefs;
 
 export let obj = {
   browser,
   navigator,
+  prefs,
 
   async configure() {
     this.browser = Object.create(testBrowserPrototype);
@@ -82,11 +84,29 @@ export let obj = {
     global.fetchResponse = {ok: true};
     // eslint-disable-next-line no-undef
     global.fetch = async(url, options) => Promise.resolve(global.fetchResponse);
+
+    // eslint-disable-next-line no-undef
+    global.prefs = this.prefs;
   },
 
   setFetchResponse(value) {
     // eslint-disable-next-line no-undef
     global.fetchResponse = value;
+  },
+
+  setRecommendations(value) {
+    // eslint-disable-next-line no-undef
+    global.recommendations = value;
+  },
+
+  setFilterStorageSubscriptions(value) {
+    // eslint-disable-next-line no-undef
+    global.filterStorageSubscriptions = value;
+  },
+
+  setPrefs(value) {
+    // eslint-disable-next-line no-undef
+    global.prefs = value;
   }
 };
 

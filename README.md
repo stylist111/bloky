@@ -239,6 +239,18 @@ npm run build -- --env release
 
 ## Testing
 
+### Unit tests
+
+Some tests require mocking of production files.
+Mocked files are generated right in the test with `mock(..)` or `cachedMock(...)` automatically.
+However one can generate the mocked file passing the filename from `/sdk/api/` directory:
+
+    npx webpack --config ./test/unit/mock/webpack.config.js --env filename="subscriptions.js"
+    
+Run the unit tests:
+
+    npm run unittest
+
 ### Functional tests
 
 #### Serving the test pages

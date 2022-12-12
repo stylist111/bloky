@@ -15,7 +15,7 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import browser from "webextension-polyfill";
+import browser from "./browser.js";
 
 import {validate as validateSubscriptions} from "./subscriptions-validator.js";
 import {rulesetExistsInManifest} from "./subscriptions-utils.js";
