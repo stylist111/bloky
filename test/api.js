@@ -1043,9 +1043,8 @@ describe("API", function() {
        "https://easylist-downloads.adblockplus.org/v3/full/easylistgermany+easylist.txt"]
     ]) {
       it(`configures default subscriptions for ${language}`, async function() {
-        // Sometimes on Edge in MV3 saving to storage takes more time
-        if (isMV3() && isEdge())
-          setMinTimeout(this, 15000);
+        // Sometimes saving to storage takes more time
+        setMinTimeout(this, 20000);
 
         let startSubscriptions = [
           subCircumvention,
