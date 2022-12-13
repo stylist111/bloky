@@ -336,6 +336,7 @@ docker run --cpus=1 --memory=3.75g {other flags as above}
 
 ##### Tip: Maintaining browser cache
 
+Note: This works only on linux machines.
 If you have a slow internet connection or are running the test many
 times, you can add the following flags to `docker run` to use the
 browser download cache from the host machine.
