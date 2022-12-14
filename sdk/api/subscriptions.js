@@ -331,8 +331,10 @@ function migrationNeeded() {
   return false;
 }
 
-function saveMigrationError(url, error) {
-  Prefs.migration_errors.push({url, error});
+function saveMigrationError(subscription, error) {
+  let errors = Prefs.migration_subscription_errors;
+  errors.push({subscription, error});
+  Prefs.migration_subscription_errors = errors;
 }
 
 export async function migrate() {
@@ -355,12 +357,12 @@ export async function migrate() {
           await disable(subscriptionInfo.url);
       }
       catch (e) {
-        saveMigrationError(downloadable.url, e.message);
+        saveMigrationError(downloadable, e.message);
       }
     }
     else {
       saveMigrationError(
-        downloadable.url,
+        downloadable,
         `Failed to find the subscription with URL=${downloadable.url}`);
     }
   }
@@ -647,18 +649,22 @@ export default {
   },
 
   /**
-   * Returns an array of MV2 to MV3 migration errors.
-   * @return {array<string, string>} The migration errors.
+   * Returns an array of MV2 to MV3 migration errors and the related
+   * subscription.
+   * @return {Promise<array<Subscription, string>>} The migration errors.
    */
-  getMigrationErrors() {
-    return Prefs.migration_errors;
+  async getMigrationErrors() {
+    await initializer.start();
+    return Prefs.migration_subscription_errors;
   },
 
   /**
    * Clears the migration errors.
+   * @return {Promise}
    */
-  clearMigrationErrors() {
-    Prefs.migration_errors = [];
+  async clearMigrationErrors() {
+    await initializer.start();
+    Prefs.migration_subscription_errors = [];
   },
 
   /**

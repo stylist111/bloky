@@ -21,7 +21,7 @@ import browser from "webextension-polyfill";
 import {isMV3, TEST_ANTI_CV_SUBSCRIPTION, wait, TEST_MV3_SUBSCRIPTION, Page}
   from "./utils.js";
 import {EWE, runInBackgroundPage} from "./messaging.js";
-import {isConnected, updateExtensionFiles} from "./mocha/mocha-runner.js";
+import {isConnected, updateExtensionFiles, suspendServiceWorker} from "./mocha/mocha-runner.js";
 import {MIGRATED_TO_MV2, MIGRATED_TO_MV3} from "../sdk/api/prefs.js";
 
 let start = new URLSearchParams(document.location.search).get("start");
@@ -107,8 +107,9 @@ describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
 
     expect(isMV3()).toBeTruthy(); // MV3 after the migration
 
+    // We rely on migration being done at this time.
     await wait(async() => await EWE.testing._getPrefs("migration_state") === MIGRATED_TO_MV3,
-               2000, "Prefs.migration_state was not set");
+               3000, "Prefs.migration_state was not set");
 
     let downloadables = await EWE.subscriptions.getDownloadable();
     expect(downloadables).toEqual(expect.arrayContaining([
@@ -188,40 +189,6 @@ describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
     ]));
   });
 
-  it("reports the subscription migration errors", async function() {
-    const URL = "https://someSubsriptionThatIsNotSupportedInMV3.com";
-    if (start) {
-      await EWE.subscriptions.add(URL);
-
-      let downloadables = await EWE.subscriptions.getDownloadable();
-      expect(downloadables).toEqual(expect.arrayContaining([
-        expect.objectContaining({
-          url: URL,
-          downloadable: true
-        })]));
-      await EWE.debugging.ensureEverythingHasSaved();
-      await new Promise(elapsed => setTimeout(elapsed, 1000));
-
-      return;
-    }
-
-    let errors = await EWE.subscriptions.getMigrationErrors();
-    expect(errors).toEqual([
-      expect.objectContaining({
-        url: URL,
-        error: `Failed to find the subscription with URL=${URL}`
-      }),
-      // This is part of migrate custom filter test
-      expect.objectContaining({
-        text: RE2_UNSUPPORTED_FILTER
-      })
-    ]);
-
-    await EWE.subscriptions.clearMigrationErrors();
-    errors = await EWE.subscriptions.getMigrationErrors();
-    expect(errors).toEqual([]);
-  });
-
   it("migrates custom filters", async function() {
     const meta = {tag: "test"};
     const enabledFilters = [
@@ -260,5 +227,101 @@ describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
     let expectedUserFilters = [...expectedEnabled, ...expectedDisabled];
     expect(await EWE.filters.getUserFilters())
       .toEqual(expect.arrayContaining(expectedUserFilters));
+
+    expect(await EWE.filters.getMigrationErrors()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          filter: expect.objectContaining({text: RE2_UNSUPPORTED_FILTER})
+        })
+      ])
+    );
+  });
+
+  // Due to the nature of how we test this entire mechanism, the order of when
+  // this test is run is important.
+  it("clears custom filter migration errors", async function() {
+    if (start)
+      return;
+
+    let errors = await EWE.filters.getMigrationErrors();
+    expect(errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          filter: expect.objectContaining({
+            text: RE2_UNSUPPORTED_FILTER
+          })
+        })
+      ])
+    );
+
+    await EWE.filters.clearMigrationErrors();
+    errors = await EWE.filters.getMigrationErrors();
+    expect(errors).toEqual([]);
+  });
+
+  it("reports the subscription migration errors and persists after reload", async function() {
+    const URL = "https://someSubsriptionThatIsNotSupportedInMV3.com";
+    if (start) {
+      await EWE.subscriptions.add(URL);
+
+      let downloadables = await EWE.subscriptions.getDownloadable();
+      expect(downloadables).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          url: URL,
+          downloadable: true
+        })
+      ]));
+      await EWE.debugging.ensureEverythingHasSaved();
+
+      return;
+    }
+
+    let errors = await EWE.subscriptions.getMigrationErrors();
+    expect(errors).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        error: `Failed to find the subscription with URL=${URL}`,
+        subscription: expect.objectContaining({
+          url: URL
+        })
+      })
+    ]));
+
+    // Suspending the service worker results in the same type of restart that
+    // happens when clicking the reload button for an extension. Both of these
+    // actions end in a state where any data stored in memory would be cleared.
+    await suspendServiceWorker(this);
+
+    let errorsAfterReload = await EWE.subscriptions.getMigrationErrors();
+
+    expect(errorsAfterReload).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        error: `Failed to find the subscription with URL=${URL}`,
+        subscription: expect.objectContaining({
+          url: URL
+        })
+      })
+    ]));
+  });
+
+  // Due to the nature of how we test this entire mechanism, the order of when
+  // this test is run is important.
+  it("clears custom subscription migration errors", async function() {
+    if (start)
+      return;
+
+    const URL = "https://someSubsriptionThatIsNotSupportedInMV3.com";
+    let errors = await EWE.subscriptions.getMigrationErrors();
+    expect(errors).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        error: `Failed to find the subscription with URL=${URL}`,
+        subscription: expect.objectContaining({
+          url: URL
+        })
+      })
+    ]));
+
+    await EWE.subscriptions.clearMigrationErrors();
+    errors = await EWE.subscriptions.getMigrationErrors();
+    expect(errors).toEqual([]);
   });
 });

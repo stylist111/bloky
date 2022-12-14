@@ -306,9 +306,7 @@ async function pollMessages(driver, handle, isMV3) {
           break;
 
         case "suspendServiceWorker":
-          // this is a noop for mv2, since there's no service worker to suspend.
-          if (isMV3)
-            await suspendServiceWorker(driver, handle);
+          await suspendServiceWorker(driver, handle);
           webdriverEvents.push({id: "serviceWorkerSuspended"});
           break;
 
@@ -419,6 +417,10 @@ async function suspendServiceWorker(driver, handle) {
   await driver.switchTo().newWindow("tab");
   await driver.get("chrome://serviceworker-internals/");
   let stopButtons = await driver.findElements(webdriver.By.className("stop"));
+
+  if (stopButtons.length == 0)
+    throw new Error("No service workers to stop.");
+
   for (let stopButton of stopButtons) {
     if (await stopButton.isDisplayed())
       await stopButton.click();
@@ -453,7 +455,8 @@ async function run() {
   // auto-open-devtools-for-tabs is required to make MV3 service
   // workers start up after being suspended in tests.
   // See https://bugs.chromium.org/p/chromium/issues/detail?id=1325792#c8
-  if (isMV3 && (browser == "chromium" || browser == "edge"))
+  if ((isMV3 || testKinds.includes("mv2-mv3-migrate")) &&
+    (browser == "chromium" || browser == "edge"))
     extraArgs.push("auto-open-devtools-for-tabs");
 
   console.log(`Getting ready to run ${browser}...`);

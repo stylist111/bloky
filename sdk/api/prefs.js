@@ -39,7 +39,8 @@ export const defaults = Object.create({
   subscriptions_fallbackerrors: 5,
   subscriptions_fallbackurl: "https://adblockplus.org/getSubscription?version=%VERSION%&url=%SUBSCRIPTION%&downloadURL=%URL%&error=%ERROR%&responseStatus=%RESPONSESTATUS%",
   subscriptions_initial_delay: 1000, // 1 s
-  migration_errors: [],
+  migration_filter_errors: [],
+  migration_subscription_errors: [],
   migration_state: MIGRATED_TO_MV2
 });
 

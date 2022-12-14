@@ -335,26 +335,25 @@ export async function getDynamicFilters() {
 }
 
 export async function migrateCustomFilters() {
-  let data = [];
+  let filters = [];
 
   for (let subscription of filterEngine.filterStorage.subscriptions()) {
     if (!(subscription instanceof SpecialSubscription))
       continue;
 
     for (let text of subscription.filterText())
-      data.push({text, metadata: subscription.metadata});
+      filters.push({text, metadata: subscription.metadata});
   }
 
-  for (let entry of data) {
+  for (let filter of filters) {
     try {
-      filterEngine.filterStorage.removeFilter(Filter.fromText(entry.text));
-      await addFilters([entry.text], entry.metadata);
+      filterEngine.filterStorage.removeFilter(Filter.fromText(filter.text));
+      await addFilters([filter.text], filter.metadata);
     }
     catch (e) {
-      Prefs.migration_errors.push({
-        error: e.message,
-        text: entry.text
-      });
+      let errors = Prefs.migration_filter_errors;
+      errors.push({error: e.message, filter});
+      Prefs.migration_filter_errors = errors;
     }
   }
 }

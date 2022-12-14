@@ -32,6 +32,7 @@ import {addFilters, getMetadataForFilter, setMetadataForFilter,
         removeOrDisableFilters, enableFilters}
   from "./dnr-filters.js";
 import {ERROR_DUPLICATE_FILTERS, ERROR_FILTER_NOT_FOUND} from "../errors.js";
+import {Prefs} from "./prefs.js";
 
 export function convertFilter(filter) {
   return {
@@ -370,5 +371,23 @@ export default {
   onRemoved: new EventDispatcher(dispatch => {
     filterNotifier.on("filter.removed", makeFilterListener(dispatch));
     filterNotifier.on("subscription.removed", makeSubListener(dispatch));
-  })
+  }),
+
+  /**
+   * Returns an array of MV2 to MV3 migration errors and the related filters.
+   * @return {Promise<array<Filter, string>>} The migration errors.
+   */
+  async getMigrationErrors() {
+    await initializer.start();
+    return Prefs.migration_filter_errors;
+  },
+
+  /**
+   * Clears the migration errors.
+   * @return {Promise}
+   */
+  async clearMigrationErrors() {
+    await initializer.start();
+    Prefs.migration_filter_errors = [];
+  }
 };
