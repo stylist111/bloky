@@ -80,6 +80,9 @@ The extension's `manifest.json` is required to include the following configurati
 The API will be available in your own background scripts through the
 global `EWE` object. Please call `EWE.start()` to start blocking ads.
 
+Note that in MV3 extensions, `EWE.start()` must be called in the first
+turn of the event loop so that it can attach event listeners.
+
 ### Module bundlers (optional)
 
 `ewe-api.js` is built as a UMD module (Universal Module Definition),

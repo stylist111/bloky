@@ -94,6 +94,10 @@ async function onInstalled(details) {
  *
  * Calling this function is required for the other API calls to work, except for
  * API event listener calls, which could also be done before `start()`.
+ *
+ * In MV3 extensions, this must be called in the first turn of the
+ * event loop.
+ *
  * @param {Object?} [addonInfo] An object containing addon
  *   information belonging to sdk consumer, that can be accessed via
  *   `debugging` module. (It is usually used as an identifier in
