@@ -109,7 +109,13 @@ async function subsRun(args) {
   if (configNames && !configNames.includes("test-mv3"))
     return;
 
-  await runTestServer();
+  if (args["force-subscription-update"]) {
+    console.log("Clearing any existing bundled subscriptions...");
+    await runCommand("npm run subs-clean");
+  }
+
+  if (!args["use-external-server"])
+    await runTestServer();
 
   try {
     console.log("Downloading bundled subscriptions...");
@@ -152,6 +158,14 @@ async function run() {
         })
         .option("no-devtool", {
           description: "Do not generate source maps.",
+          boolean: true
+        })
+        .option("force-subscription-update", {
+          description: "Always rebuild the bundled subscriptions.",
+          boolean: true
+        })
+        .option("use-external-server", {
+          description: "Does not start the test server. The test server must be running already.",
           boolean: true
         })
         .parse();

@@ -216,6 +216,36 @@ In the background, this script is using Webpack. You can also see the
 [webpack command line options](https://webpack.js.org/api/cli/) for
 further information on these flags.
 
+##### Managing Bundled Subscriptions in the test build
+
+In MV3 extensions (and the MV3 test extension), subscriptions are
+bundled statically at build time. The bundled subscriptions are based
+on [the custom subscriptions
+file](./test/scripts/custom-mv3-subscriptions.json). Bundled
+subscription are updated by the build script if this file changes.
+
+One case to look out for when working with bundled subscriptions in
+tests is that subscriptions are NOT re-fetched if their filters have
+changed. If you need to re-fetch new filters and the list of
+subscriptions hasn't changed, you can use the
+`--force-subscription-update` flag to the build script.
+
+```
+npm run build -- --force-subscription-update
+```
+
+##### Using your own test-server instance
+
+By default, the build script will start up the test server for
+updating bundled subscriptions. If you prefer to use a test server
+which is already running, you can use the `--use-external-server`
+flag.
+
+```
+npm run test-server&
+npm run build -- --use-external-server
+```
+
 #### Release builds
 
 By default, debug builds are created. If building the library to be used
@@ -232,10 +262,6 @@ npm run build -- --env release
 ### Linting the code
 
     npm run lint
-
-### Building and watching for changes
-
-    npm start
 
 ## Testing
 
