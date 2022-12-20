@@ -2741,13 +2741,17 @@ describe("API", function() {
     });
 
     it("supports showing remote notifications", async function() {
-      setMinTimeout(this, 3000);
+      setMinTimeout(this, 8000);
       let notification = {id: "remote-test"};
       await EWE.testing._setPrefs("notificationurl", `${TEST_PAGES_URL}/notification.json`);
 
       expect(await EWE.notifications.getDownloadCount()).toBe(0);
 
       await EWE.notifications.start();
+
+      // The download will try to start after a 1s delay. If the
+      // system is busy, this might be a few seconds more.
+      let maxFetchTimeout = 6000;
       await wait(async() => {
         // Don't fuzz the service worker here, or you'll kill the in
         // progress notifications download.
@@ -2758,7 +2762,7 @@ describe("API", function() {
           {op: "await"}
         ], false);
         return downloadCount > 0;
-      }, 1500, "Notifications were not downloaded");
+      }, maxFetchTimeout, "Notifications were not downloaded");
 
       await EWE.notifications.showNext();
       let testEvents = await getTestEvents("notifications.addShowListener");
@@ -2767,6 +2771,13 @@ describe("API", function() {
     });
 
     it("returns the correct state for ignored categories", async function() {
+      // this test has many steps which suspend the service worker,
+      // which give it a long runtime. This could be split into
+      // multiple test cases, but the toggling off runs into trouble
+      // with https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/441
+      if (isFuzzingServiceWorker())
+        setMinTimeout(this, 90000);
+
       expect(await EWE.notifications.getIgnoredCategories()).toEqual([]);
       expect(await EWE.notifications.shouldIgnoreNotifications()).toBe(false);
 
