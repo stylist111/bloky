@@ -2719,7 +2719,6 @@ describe("API", function() {
 
   describe("Notifications", function() {
     afterEach(async function() {
-      await EWE.notifications.toggleIgnoreCategory("*", false);
       await EWE.testing._clearNotifications();
     });
 
@@ -2770,22 +2769,20 @@ describe("API", function() {
       expect(await EWE.notifications.getDownloadCount()).toBe(1);
     });
 
-    it("returns the correct state for ignored categories", async function() {
-      // this test has many steps which suspend the service worker,
-      // which give it a long runtime. This could be split into
-      // multiple test cases, but the toggling off runs into trouble
-      // with https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/441
-      if (isFuzzingServiceWorker())
-        setMinTimeout(this, 90000);
-
+    it("returns the correct initial state for ignored categories", async function() {
       expect(await EWE.notifications.getIgnoredCategories()).toEqual([]);
       expect(await EWE.notifications.shouldIgnoreNotifications()).toBe(false);
+    });
 
+    it("returns the correct state for ignored categories when ignored", async function() {
       await EWE.notifications.toggleIgnoreCategory("*");
 
       expect(await EWE.notifications.getIgnoredCategories()).toEqual(["*"]);
       expect(await EWE.notifications.shouldIgnoreNotifications()).toBe(true);
+    });
 
+    it("returns the correct state for ignored categories after unignoring", async function() {
+      await EWE.notifications.toggleIgnoreCategory("*");
       await EWE.notifications.toggleIgnoreCategory("*");
 
       expect(await EWE.notifications.getIgnoredCategories()).toEqual([]);

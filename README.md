@@ -128,13 +128,13 @@ There are some shared resources that are used by both webext-sdk & production co
 - `browser.runtime.connect()`/`browser.runtime.onConnect`
   - Channel name is prefixed with "ewe:".
 - `browser.runtime.sendMessage()`/`browser.runtime.onMessage`
-  - Messages are objects with a "type" property whose value is prefixed with "ewe:".
+  - Our messages are objects with a "type" property whose value is prefixed with "ewe:".
 - `indexedDB.open()`
   - Database name is prefixed with "EWE".
-- `ewe:content-hello`
-  - This event is [sent by the SDK](https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/blob/master/sdk/content/index.js#L31) to the [SDK message responder](https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/blob/master/sdk/api/message-responder.js) in order to initialise content features.
 - Web page links
   - Links used by module are prefixed with "abp:" or "https://subscribe.adblockplus.org/".
+- `browser.storage.local` and `browser.storage.session`
+  - Storage keys are prefixed with either "ewe:" or "abp:pref:".
 
 During initialization webext-sdk migrates legacy data from local storage to indexedDB.
 Files migrated have to be prefixed: ```file:```. Files prefixed with ```file:///``` will be ignored.

@@ -142,24 +142,6 @@ function savePreference(name, value) {
   trackSaving(browser.storage.local.set({[key]: value}));
 }
 
-function onChanged(changes, areaName) {
-  if (areaName != "local")
-    return;
-
-  for (let key in changes) {
-    let pref = keyToPref(key);
-    if (pref && defaults[pref]) {
-      let change = changes[key];
-      if ("newValue" in change && change.newValue != defaults[pref])
-        overrides.set(pref, change.newValue);
-      else
-        overrides.delete(pref);
-
-      eventEmitter.emit(pref);
-    }
-  }
-}
-
 async function loadPreferences() {
   let prefs = Object.keys(Object.getPrototypeOf(defaults));
   prefs.forEach(addPreference);
@@ -181,7 +163,6 @@ export async function init() {
       }
 
       await loadPreferences();
-      browser.storage.onChanged.addListener(onChanged);
     })();
   }
 
