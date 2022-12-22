@@ -1,3 +1,18 @@
+0.7.3 - 2022/12/22
+==================
+
+# Bug fixes
+
+- Keep migration errors after reload. (#423)
+
+# Updating your code
+
+- `EWE.subscriptions.getMigrationErrors()` now returns only migration errors
+  that relate to subscriptions. Use `EWE.filters.getMigrationErrors()` for
+  the filter equivalent. Both of these functions are now asynchronous.
+- `getMigrationErrors` in the subscriptions and filters namespaces now
+  contain the full `subscription` and `filter` objects respectively.
+
 0.7.2 - 2022/11/24
 ==================
 
