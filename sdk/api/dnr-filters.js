@@ -17,13 +17,10 @@
 
 import browser from "webextension-polyfill";
 
-import {Filter, InvalidFilter, ContentFilter, AllowingFilter, URLFilter,
-        isActiveFilter} from "adblockpluscore/lib/filterClasses.js";
-import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
+import {Filter, InvalidFilter, URLFilter, isActiveFilter}
+  from "adblockpluscore/lib/filterClasses.js";
 import {SpecialSubscription} from "adblockpluscore/lib/subscriptionClasses.js";
 import {isValidHostname} from "adblockpluscore/lib/url.js";
-import {RESOURCE_TYPES, contentTypes}
-  from "adblockpluscore/lib/contentTypes.js";
 import {filterEngine} from "./core.js";
 import {createConverter} from "adblockpluscore/lib/dnr/index.js";
 import {ERROR_DUPLICATE_FILTERS, ERROR_FILTER_NOT_FOUND,
@@ -34,7 +31,12 @@ import {Prefs} from "./prefs.js";
 
 let highestRuleId = 1;
 let dynamicFilters = new Map();
+let ruleIdToFilterText = new Map();
 let initializationPromise;
+
+export function getFilterTextByRuleId(ruleId) {
+  return ruleIdToFilterText.get(ruleId);
+}
 
 let getRulesFromFilter = () => {};
 if (browser.declarativeNetRequest) {
@@ -63,6 +65,7 @@ export async function removeDynamicFilters() {
 
   dynamicFilters = new Map();
   Prefs.dynamic_filters = [];
+  Prefs.rule_id_to_filter_text = [];
 
   let rules = await browser.declarativeNetRequest.getDynamicRules();
   if (rules.length == 0)
@@ -89,6 +92,10 @@ function storeDynamicFilters() {
   let storageArray = [];
   storageArray.push(...dynamicFilters);
   Prefs.dynamic_filters = storageArray;
+
+  let ruleIdToFilterTextArray = [];
+  ruleIdToFilterTextArray.push(...ruleIdToFilterText);
+  Prefs.rule_id_to_filter_text = ruleIdToFilterTextArray;
 }
 
 export function init() {
@@ -97,14 +104,20 @@ export function init() {
       if (!browser.declarativeNetRequest)
         return;
 
-      let result = Prefs.dynamic_filters;
-      if (Array.isArray(result) && result.length > 0)
-        dynamicFilters = new Map(result);
+      let dynamicFilterArray = Prefs.dynamic_filters;
+      if (Array.isArray(dynamicFilterArray) &&
+          dynamicFilterArray.length > 0)
+        dynamicFilters = new Map(dynamicFilterArray);
       else
         // DNR rules persist after the extension is uninstalled. The same cannot
         // be said for storage. To be safe, if we have no record of dynamic
         // filters let's clear any DNR rules too.
         await removeDynamicFilters();
+
+      let ruleIdToFilterTextArray = Prefs.rule_id_to_filter_text;
+      if (Array.isArray(ruleIdToFilterTextArray) &&
+          ruleIdToFilterTextArray.length > 0)
+        ruleIdToFilterText = new Map(ruleIdToFilterTextArray);
 
       for (let {ruleIds} of dynamicFilters.values())
         setHighestRuleId(ruleIds);
@@ -114,7 +127,7 @@ export function init() {
   return initializationPromise;
 }
 
-async function getRules(filter, useFilterEngine) {
+async function getRules(filter) {
   let ruleIds = [];
   let filterRules = [];
 
@@ -132,9 +145,6 @@ async function getRules(filter, useFilterEngine) {
       ruleIds.push(id);
       filterRules.push(rule);
     }
-
-    if (result.length == 0 && !useFilterEngine)
-      throw new Error(`Filter unsupported by DNR: ${filter.text}`);
   }
 
   return {filterRules, ruleIds};
@@ -161,19 +171,13 @@ async function processFilterTexts(texts) {
     if (error)
       throw error;
 
-    let useFilterEngine = filter instanceof ContentFilter ||
-                          filter instanceof AllowingFilter ||
-                          (filter.contentType & contentTypes.WEBRTC ||
-                           filter.contentType & contentTypes.POPUP) &&
-                          filter.contentType != RESOURCE_TYPES;
-
     if (!filterEngine.filterStorage.filterState.isEnabled(text)) {
-      details.push({filter, useFilterEngine, ruleIds: [], enabled: false});
+      details.push({filter, ruleIds: [], enabled: false});
     }
     else {
-      let {filterRules, ruleIds} = await getRules(filter, useFilterEngine);
+      let {filterRules, ruleIds} = await getRules(filter);
       add.push(...filterRules);
-      details.push({filter, useFilterEngine, ruleIds, enabled: true});
+      details.push({filter, ruleIds, enabled: true});
     }
 
     seenFilterTexts.add(text);
@@ -214,16 +218,13 @@ export async function addFilters(texts, metadata) {
   }
 
   for (let filterDetails of filters.details) {
-    let {filter, useFilterEngine, ruleIds, enabled} = filterDetails;
-
-    if (useFilterEngine)
-      await filterEngine.filterStorage.addFilter(filter);
-    else
-      filterNotifier.emit("filter.added", filter, null);
+    let {filter, ruleIds, enabled} = filterDetails;
+    filterEngine.filterStorage.addFilter(filter);
 
     setHighestRuleId(ruleIds);
-    dynamicFilters.set(filter.text,
-                       {ruleIds, useFilterEngine, enabled, metadata});
+    dynamicFilters.set(filter.text, {ruleIds, enabled, metadata});
+    for (let ruleId of ruleIds)
+      ruleIdToFilterText.set(ruleId, filter.text);
   }
 
   storeDynamicFilters();
@@ -263,18 +264,14 @@ export async function removeOrDisableFilters(texts, remove = true) {
     let details = dynamicFilters.get(text);
 
     if (remove) {
-      if (details.useFilterEngine)
-        filterEngine.filterStorage.removeFilter(Filter.fromText(text));
-      else
-        filterNotifier.emit("filter.removed", Filter.fromText(text), null);
+      filterEngine.filterStorage.removeFilter(Filter.fromText(text));
 
       dynamicFilters.delete(text);
+      for (let ruleId of ruleIdsToRemove)
+        ruleIdToFilterText.delete(ruleId);
     }
     else {
-      if (details.useFilterEngine)
-        filterEngine.filterStorage.filterState.setEnabled(text, false);
-      else
-        filterNotifier.emit("filterState.enabled", text, false, true);
+      filterEngine.filterStorage.filterState.setEnabled(text, false);
 
       details.enabled = false;
       details.ruleIds = [];
@@ -303,20 +300,14 @@ export async function enableFilters(texts) {
     if (!details || details.enabled)
       continue;
 
-    let {useFilterEngine} = details;
     let filter = Filter.fromText(normalized);
+    filterEngine.filterStorage.filterState.setEnabled(filter.text, true);
 
-    if (useFilterEngine)
-      filterEngine.filterStorage.filterState.setEnabled(filter.text, true);
-    else
-      filterNotifier.emit("filterState.enabled", normalized, true, false);
-
-    let {filterRules, ruleIds} = await getRules(filter, useFilterEngine);
+    let {filterRules, ruleIds} = await getRules(filter);
     rules.push(...filterRules);
 
     setHighestRuleId(ruleIds);
-    dynamicFilters.set(filter.text,
-                       {ruleIds, useFilterEngine, enabled: true});
+    dynamicFilters.set(filter.text, {ruleIds, enabled: true});
   }
 
   if (rules.length == 0)

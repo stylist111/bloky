@@ -17,11 +17,13 @@
 
 import {Filter, ElemHideFilter} from "adblockpluscore/lib/filterClasses.js";
 import {parseURL} from "adblockpluscore/lib/url.js";
+import browser from "./browser.js";
 import {filterEngine} from "./core.js";
 import {convertFilter} from "./filters.js";
 import {BLANK_PAGE_URL} from "./frame-state.js";
 
 let listeners = [];
+let filterTextToEvents = new Map();
 let defaultOptions = {includeElementHiding: false,
                       includeUnmatched: false,
                       filterType: "blocking",
@@ -107,7 +109,57 @@ export class BlockableEventDispatcher {
   }
 }
 
+export function getMatchedFilterEvents(filterText) {
+  return filterTextToEvents.get(filterText);
+}
+
+export function clearMatchedFilterEvents(tabId) {
+  if (tabId) {
+    for (let events of filterTextToEvents.values())
+      events = events.filter(event => event.details.tabId != tabId);
+  }
+  else {
+    filterTextToEvents.clear();
+  }
+}
+
+function logFilterEvent(details, filter, matchInfo) {
+  if (!filter)
+    return;
+
+  // DNR rule (filter text) can match multiple times,
+  // so saving all the events to find the according one later.
+  let events = filterTextToEvents.get(filter.text);
+  if (!events)
+    events = [];
+
+  events.push({details, matchInfo});
+
+  // Assuming the DNR matched rules order corresponds to
+  // filter engine matched filters events order,
+  // so let's keep it ready (sorted) for mapping.
+  events.sort((a, b) => a.details.timeStamp - b.details.timeStamp);
+  filterTextToEvents.set(filter.text, events);
+}
+
 export function logItem(request, filter, matchInfo = {}) {
+  // Even in MV3 we have to emit all the log events
+  // that don't have an upcoming corresponding DNR rule match
+  if (!browser.declarativeNetRequest ||
+      matchInfo.method == "elemhide" ||
+      matchInfo.method == "snippet" ||
+      matchInfo.method == "popup" ||
+      matchInfo.method == "unmatched" ||
+      matchInfo.allowingReason == "elemhide" ||
+      matchInfo.allowingReason == "generichide" ||
+      matchInfo.allowingReason == "extensionInitiated" ||
+     (request.type == "main_frame" && matchInfo.method != "csp"))
+    emitLogItem(request, filter, matchInfo);
+  else
+    logFilterEvent(request, filter, matchInfo);
+}
+
+export function emitLogItem(request, filter, matchInfo = {}) {
   for (let {listener, options} of listeners) {
     let {includeElementHiding, includeUnmatched, filterType, tabId} = options;
 
@@ -165,9 +217,24 @@ export function logHiddenElements(selectors, filters, sender) {
     logItem(request, Filter.fromText(text), matchInfo);
 }
 
+export let forceEnableTracing = false;
+
+// We might want to avoid racing between subscribing listener for element
+// hiding events and "content-filter.js" `applyContentFilters()` that uses
+// `tracingEnabled` here to detect whether we need to trace the selectors:
+// if page loading is fast enough to happen before listener is subscribed,
+// we don't track the selectors and don't emit elemhide log events,
+// which makes the elemhiding log events-related tests flaky and
+// failing time to time.
+
+export function setForceEnableTracing(enabled) {
+  forceEnableTracing = enabled;
+}
+
 export function tracingEnabled(tabId) {
-  return listeners.some(({options}) =>
-    options.includeElementHiding &&
-    (options.tabId == null || options.tabId == tabId)
-  );
+  return forceEnableTracing ||
+    listeners.some(({options}) =>
+      options.includeElementHiding &&
+      (options.tabId == null || options.tabId == tabId)
+    );
 }

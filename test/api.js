@@ -25,9 +25,10 @@ import {Page, Popup, setMinTimeout, wait, executeScript, isFirefox, isEdge,
         TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN,
         isMV2CustomSubsExtension, TEST_MV3_SUBSCRIPTION,
         TEST_MV3_SUBSCRIPTION_2, TEST_MV3_SUBSCRIPTION_3} from "./utils.js";
-import {addFilter, EWE, runInBackgroundPage, addFakeListener,
-        removeFakeListeners, ensureEverythingHasSaved, getTestEvents,
-        clearTestEvents} from "./messaging.js";
+import {addFilter, EWE, runInBackgroundPage,
+        ensureEverythingHasSaved, getTestEvents,
+        clearTestEvents, addOnBlockableListener,
+        removeOnBlockableListener} from "./messaging.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 const VALID_SUBSCRIPTION_URL = `${TEST_PAGES_URL}/subscription.txt`;
@@ -1400,14 +1401,27 @@ describe("API", function() {
       });
     });
 
+    it("receives ewe:content-hello message in background.js",
+       async function() {
+         await browser.runtime.sendMessage({type: "ewe-test:clearMessages"});
+         await new Page("element-hiding.html").loaded;
+         await new Promise(r => setTimeout(r, 200));
+         let getMessage = {type: "ewe-test:getMessages"};
+         let messages = await browser.runtime.sendMessage(getMessage);
+         expect(messages).toEqual(expect.arrayContaining([
+           // "ewe:content-hello" message sent from non-"about:blank" pages
+           {type: "ewe:content-hello"},
+           getMessage
+         ]));
+       });
 
     describe("Diagnostics", function() {
+      setMinTimeout(this, isMV3() ? 140000 : 4000);
+
       before(function() {
-        if (isMV3())
+        if (isFuzzingServiceWorker())
           this.skip();
       });
-
-      setMinTimeout(this, 4000);
 
       function expectedBlockingFilter(filterText) {
         return {
@@ -1490,6 +1504,8 @@ describe("API", function() {
         specificOnly: false
       };
 
+      let listenerCounter = 0;
+
       function expectRewriteMatchInfo(rewrittenUrl) {
         return {
           rewrittenUrl,
@@ -1511,24 +1527,27 @@ describe("API", function() {
 
       async function expectLoggedMessages(getReceivedEvents, mandatoryEvents,
                                           optionalEvents = []) {
-        // Some of the events we're checking for here may be emitted
-        // after the page is done loading, like elemhide.
-        let maxEventsLength = mandatoryEvents.length + optionalEvents.length;
-        try {
-          await wait(() => getReceivedEvents().length >= maxEventsLength,
-                     1000, null, 50);
+        if (!isMV3()) {
+          // Some of the events we're checking for here may be emitted
+          // after the page is done loading, like elemhide.
+          let maxEventsLength = mandatoryEvents.length + optionalEvents.length;
+          try {
+            await wait(
+              async() => (await getReceivedEvents()).length >= maxEventsLength,
+              1000, null, 50);
+          }
+          catch (e) {
+            // Rather than fail in the catch, we're going to fail with
+            // the assertions below. This will give better output with
+            // highlighting which events were unmatched. Also, it lets
+            // us not fail if the missing requests were the optional
+            // ones.
+          }
+          // add a little wait here in case there are extra unexpected events
+          await new Promise(r => setTimeout(r, 50));
         }
-        catch (e) {
-          // Rather than fail in the catch, we're going to fail with
-          // the assertions below. This will give better output with
-          // highlighting which events were unmatched. Also, it lets
-          // us not fail if the missing requests were the optional
-          // ones.
-        }
-        // add a little wait here in case there are extra unexpected events
-        await new Promise(r => setTimeout(r, 50));
 
-        let receivedEvents = getReceivedEvents();
+        let receivedEvents = await getReceivedEvents();
         expect(receivedEvents)
           .toBeArrayContainingExactly(mandatoryEvents, optionalEvents);
       }
@@ -1544,12 +1563,15 @@ describe("API", function() {
         return keys.every(key => m1[key] === m2[key]);
       }
 
-      function getReceivedEventsFromFake(fake, tabId, filterToCurrentTab) {
+      async function getReceivedEventsFromListener(
+        listenerName, tabId, filterToCurrentTab, minEventsLength) {
+        let listenerEvents = await awaitUntilRequestedTestEvents(
+          listenerName, minEventsLength);
         // Some legitimate events make it difficult to write
         // reliable tests. It's easier to just filter out these
         // requests, and assert based on requests on the test
         // pages themselves.
-        return fake.args
+        return listenerEvents
             .map(args => args[0])
             .filter(event => {
               // Favicon request is difficult to sandbox or link to a
@@ -1562,7 +1584,8 @@ describe("API", function() {
             .filter(event => {
               // If the devtools are open, we might see requests to load
               // the dev tools.
-              let isDevToolsRequest = event.request.url.endsWith(".html") &&
+              let url = event.request.url;
+              let isDevToolsRequest = url && url.endsWith(".html") &&
                   event.request.type == "other";
               return !isDevToolsRequest;
             })
@@ -1604,44 +1627,96 @@ describe("API", function() {
             });
       }
 
+      async function addNewOnBlockableListener(eventOptions) {
+        let listenerName = `reporting.onBlockableItem#${listenerCounter++}`;
+        await addOnBlockableListener(listenerName, eventOptions);
+        return listenerName;
+      }
+
+      async function isCalled(name) {
+        let events = await getTestEvents(name);
+        let called = events.length > 0;
+        if (!isMV3() || called)
+          return called;
+
+        events = await awaitUntilRequestedTestEvents(name, 1);
+        return events.length > 0;
+      }
+
       async function checkLogging(filters, eventOptions, callbackOrPage,
                                   mandatoryEvents, {
                                     filterToCurrentTab = true,
-                                    optionalEvents = []
+                                    optionalEvents = [],
+                                    minEventsLength = 0
                                   } = {}) {
         let callback = callbackOrPage;
         if (typeof callbackOrPage == "string")
           callback = () => new Page(callbackOrPage).loaded;
 
-        let fake = await addFakeListener({namespace: "reporting",
-                                          eventName: "onBlockableItem",
-                                          eventOptions});
-
         if (filters)
           await EWE.filters.add(filters);
 
+        let listener = await addNewOnBlockableListener(eventOptions);
         let tabId = await callback();
         let getReceivedEvents =
-          () => getReceivedEventsFromFake(fake, tabId, filterToCurrentTab);
+          async() => await getReceivedEventsFromListener(
+            listener, tabId, filterToCurrentTab, minEventsLength);
 
         await expectLoggedMessages(
           getReceivedEvents, mandatoryEvents, optionalEvents
         );
       }
 
+      async function nextSchedulerCheck() {
+        // in MV3 we poll the matched rules and save the last check
+        // in Prefs to avoid too frequent requests.
+        const key = "last_reporting_check_timestamp";
+        let startCheckTimestamp = await EWE.testing._getPrefs(key);
+        await wait(async() => {
+          let currentCheckTimestamp = await EWE.testing._getPrefs(key);
+          let schedulerChecked = currentCheckTimestamp != startCheckTimestamp;
+          return schedulerChecked;
+        }, 45000, "No scheduler check happened", 1000);
+      }
+
+      async function awaitUntilRequestedTestEvents(name, minEventsLength) {
+        if (isMV3())
+          await nextSchedulerCheck();
+
+        let events = await getTestEvents(name);
+        if (isMV3() &&
+            minEventsLength &&
+            events.length < minEventsLength) {
+          // It can happen, that scheduler check happened too early,
+          // eg. page loading is not finished or element hiding is not finished.
+          // So we might need to wait for the next scheduler check.
+          await nextSchedulerCheck();
+          events = await getTestEvents(name);
+        }
+        return events;
+      }
+
       it("does not log removed items", async function() {
-        let fake = await addFakeListener({namespace: "reporting",
-                                          eventName: "onBlockableItem"});
+        // This test does multiple reloading and has to work with the
+        // polling mechanism.
+        if (isMV3())
+          setMinTimeout(this, 140000);
+
+        let listenerName = await addNewOnBlockableListener(null);
 
         await addFilter("/image.png^$image");
         let page = new Page("image.html");
         await page.loaded;
-        expect(fake.called).toBeTruthy();
 
-        let {callCount} = fake;
-        await removeFakeListeners();
+        let events = await awaitUntilRequestedTestEvents(listenerName);
+        let callCount = events.length;
+        expect(events.length > 0).toBeTruthy();
+
+        await removeOnBlockableListener(listenerName);
+
         await page.reload();
-        expect(fake.callCount).toEqual(callCount);
+        events = await awaitUntilRequestedTestEvents(listenerName);
+        expect(events.length).toEqual(callCount);
       });
 
       it("logs blocking request filter", async function() {
@@ -1657,7 +1732,31 @@ describe("API", function() {
             filter: expectedBlockingFilter("/image.png^$image"),
             matchInfo: requestMatchInfo,
             request: expectedRequestRelativeUrl("image.png")
-          }]);
+          }], {minEventsLength: 2});
+      });
+
+      it("logs multiple blocking request filter", async function() {
+        await checkLogging(
+          ["/image.png^$image"],
+          allEventOptions,
+          "imageMultiple.html",
+          [{
+            filter: null,
+            matchInfo: unmatchedMainFrameMatchInfo,
+            request: expectedRequestRelativeUrl("imageMultiple.html")
+          }, {
+            filter: expectedBlockingFilter("/image.png^$image"),
+            matchInfo: requestMatchInfo,
+            request: expectedRequestRelativeUrl("image.png?index=0")
+          }, {
+            filter: expectedBlockingFilter("/image.png^$image"),
+            matchInfo: requestMatchInfo,
+            request: expectedRequestRelativeUrl("image.png?index=1")
+          }, {
+            filter: expectedBlockingFilter("/image.png^$image"),
+            matchInfo: requestMatchInfo,
+            request: expectedRequestRelativeUrl("image.png?index=2")
+          }], {minEventsLength: 5});
       });
 
       it("logs allowlisting request filter", async function() {
@@ -1673,7 +1772,7 @@ describe("API", function() {
             filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}$image`),
             matchInfo: requestMatchInfo,
             request: expectedRequestRelativeUrl("image.png")
-          }]
+          }], {minEventsLength: 3}
         );
       });
 
@@ -1690,7 +1789,7 @@ describe("API", function() {
             filter: expectedBlockingFilter("/image.png$third-party"),
             matchInfo: requestMatchInfo,
             request: expectedRequestUrl(`${CROSS_DOMAIN_URL}/image.png`)
-          }]
+          }], {minEventsLength: 3}
         );
       });
 
@@ -1709,7 +1808,7 @@ describe("API", function() {
             ),
             matchInfo: expectRewriteMatchInfo("data:application/javascript,"),
             request: expectedRequestRelativeUrl("script.js")
-          }]);
+          }], {minEventsLength: 3});
       });
 
       it("logs unmatched for invalid rewrite filter", async function() {
@@ -1734,10 +1833,14 @@ describe("API", function() {
             filter: null,
             matchInfo: unmatchedMatchInfo,
             request: expectedRequestRelativeUrl("script.js")
-          }]);
+          }], {minEventsLength: 3});
       });
 
+      // is not feasible in MV3: "filter_unknown_option" thrown
       it("logs blocking $header filter", async function() {
+        if (isMV3())
+          this.skip();
+
         await checkLogging(
           [`|${TEST_PAGES_URL}$header=x-header=whatever`],
           allEventOptions,
@@ -1765,7 +1868,11 @@ describe("API", function() {
           }]);
       });
 
+      // is not feasible in MV3: "filter_unknown_option" thrown
       it("logs allowlisting $header filter", async function() {
+        if (isMV3())
+          this.skip();
+
         await checkLogging(
           [
             `|${TEST_PAGES_URL}$header=x-header=whatever`,
@@ -1796,7 +1903,11 @@ describe("API", function() {
           }]);
       });
 
+      // is not feasible in MV3: "filter_unknown_option" thrown
       it("logs $header filter allowlisted by non-header filter", async function() {
+        if (isMV3())
+          this.skip();
+
         await checkLogging(
           [
             `|${TEST_PAGES_URL}$header=x-header=whatever`,
@@ -1834,7 +1945,7 @@ describe("API", function() {
             ),
             matchInfo: cspMatchInfo,
             request: expectedRequestRelativeUrl("csp.html")
-          }]);
+          }], {minEventsLength: 2});
       });
 
       it("logs allowlisting $csp filter", async function() {
@@ -1850,7 +1961,7 @@ describe("API", function() {
             filter: null,
             matchInfo: unmatchedMatchInfo,
             request: expectedRequestRelativeUrl("image.png")
-          }]);
+          }], {minEventsLength: 3});
       });
 
       it("logs allowlisting $document filter", async function() {
@@ -1880,15 +1991,13 @@ describe("API", function() {
               specificOnly: false
             },
             request: expectedRequestRelativeUrl("image.png")
-          }]
+          }], {minEventsLength: 4}
         );
       });
 
       it("logs allowlisting $document filter " +
          "after cross domain navigation", async function() {
-        let fake = await addFakeListener({namespace: "reporting",
-                                          eventName: "onBlockableItem",
-                                          eventOptions: allEventOptions});
+        let listenerName = await addNewOnBlockableListener(allEventOptions);
 
         await EWE.filters.add([`@@|${TEST_PAGES_URL}$document`,
                                `@@|${CROSS_DOMAIN_URL}$document`]);
@@ -1951,8 +2060,8 @@ describe("API", function() {
           })
         }];
 
-        let getNextWaveOfReceivedEvents =
-            () => getReceivedEventsFromFake(fake, tabId, true);
+        let getNextWaveOfReceivedEvents = async() =>
+          await getReceivedEventsFromListener(listenerName, tabId, true, 7);
 
         await expectLoggedMessages(getNextWaveOfReceivedEvents, expectedLogs);
       });
@@ -1986,7 +2095,7 @@ describe("API", function() {
                 specificOnly
               },
               request: expectedRequestRelativeUrl("image.png")
-            }]
+            }], {minEventsLength: 4}
           );
         });
       }
@@ -2026,7 +2135,7 @@ describe("API", function() {
               specificOnly: false
             },
             request: expectedRequestRelativeUrl("image.png")
-          }]
+          }], {minEventsLength: 4}
         );
       });
 
@@ -2065,7 +2174,7 @@ describe("API", function() {
             ),
             matchInfo: {...allowingMatchInfo, specificOnly: false},
             request: expectedRequestRelativeUrl("image.png")
-          }]
+          }], {minEventsLength: 5}
         );
       });
 
@@ -2119,7 +2228,8 @@ describe("API", function() {
               ),
               matchInfo: {...allowingMatchInfo, specificOnly: false},
               request: expectedRequestRelativeUrl("iframe.html?delay=500")
-            }]
+            }],
+            minEventsLength: 8
           }
         );
       });
@@ -2189,7 +2299,7 @@ describe("API", function() {
             ),
             matchInfo: {...allowingMatchInfo, specificOnly: false},
             request: expectedRequestRelativeUrl("image.png")
-          }]
+          }], {minEventsLength: 7}
         );
       });
 
@@ -2220,7 +2330,7 @@ describe("API", function() {
             ),
             matchInfo: {...allowingMatchInfo, specificOnly: false},
             request: expectedRequestRelativeUrl("image.png")
-          }]
+          }], {minEventsLength: 3}
         );
       });
 
@@ -2233,101 +2343,122 @@ describe("API", function() {
             filter: expectedElemhideFilter("###elem-hide"),
             matchInfo: elemhideMatchInfo,
             request: expectedRequestRelativeUrl("element-hiding.html")
-          }]
+          }], {minEventsLength: 1}
         );
-      });
-
-      it("receives ewe:content-hello message in background.js", async function() {
-        await browser.runtime.sendMessage({type: "ewe-test:clearMessages"});
-        await new Page("element-hiding.html").loaded;
-        await new Promise(r => setTimeout(r, 200));
-        let getMessage = {type: "ewe-test:getMessages"};
-        let messages = await browser.runtime.sendMessage(getMessage);
-        expect(messages).toEqual([
-          // "ewe:content-hello" message sent from non-"about:blank" pages
-          {type: "ewe:content-hello"},
-          getMessage
-        ]);
       });
 
       it("logs element hiding filter for a given tab", async function() {
-        let page = new Page("element-hiding.html");
-        let tabId = await page.created;
-        await checkLogging(
-          ["###elem-hide"],
-          {
-            tabId,
-            ...elemhideEventOptions
-          },
-          () => page.loaded,
-          [{
-            filter: expectedElemhideFilter("###elem-hide"),
-            matchInfo: elemhideMatchInfo,
-            request: expectedRequestRelativeUrl("element-hiding.html")
-          }],
-          {filterToCurrentTab: false}
-        );
+        if (isMV3())
+          await EWE.testing.setForceEnableTracing(true);
+
+        try {
+          // The test is flaky as it's racy!
+          // It relies on the following assumptions:
+          // * elemhide filter is added before webext starts to
+          //   generate a list of CSS selectors
+          // We can't do it earlier as we need to get a `tabId` to subscribe
+          // and for this we have to start page loading.
+          let page = new Page("element-hiding.html");
+          let tabId = await page.created;
+          await checkLogging(
+            ["###elem-hide"],
+            {
+              tabId,
+              ...elemhideEventOptions
+            },
+            () => page.loaded,
+            [{
+              filter: expectedElemhideFilter("###elem-hide"),
+              matchInfo: elemhideMatchInfo,
+              request: expectedRequestRelativeUrl("element-hiding.html")
+            }],
+            {filterToCurrentTab: false, minEventsLength: 1}
+          );
+        }
+        finally {
+          if (isMV3())
+            await EWE.testing.setForceEnableTracing(false);
+        }
       });
 
       it("logs element hiding filter dynamically", async function() {
-        let text = `${TEST_PAGES_DOMAIN}###element-hiding-dyn`;
-        await checkLogging(
-          [text],
-          elemhideEventOptions,
-          async() => {
-            let tabId = await new Page("image.html").loaded;
-            await executeScript(tabId, async() => {
-              let div = document.createElement("div");
-              div.id = "element-hiding-dyn";
-              div.style = "display: block !important;";
-              div.innerHTML = "Target";
-              document.body.appendChild(div);
-            });
-            await wait(
-              async() =>
-                await getVisibleElement(tabId, "element-hiding-dyn") == null,
-              200,
-              "Element is not visible"
-            );
-            await new Promise(r => setTimeout(r, 1500));
-            return tabId;
-          },
-          [{
-            filter: expectedElemhideFilter(text),
-            matchInfo: elemhideMatchInfo,
-            request: expectedRequestRelativeUrl("image.html")
-          }]
-        );
+        if (isMV3())
+          await EWE.testing.setForceEnableTracing(true);
+
+        try {
+          let text = `${TEST_PAGES_DOMAIN}###element-hiding-dyn`;
+          await checkLogging(
+            [text],
+            elemhideEventOptions,
+            async() => {
+              let tabId = await new Page("image.html").loaded;
+              await executeScript(tabId, async() => {
+                let div = document.createElement("div");
+                div.id = "element-hiding-dyn";
+                div.style = "display: block !important;";
+                div.innerHTML = "Target";
+                document.body.appendChild(div);
+              });
+              await wait(
+                async() =>
+                  await getVisibleElement(tabId, "element-hiding-dyn") == null,
+                isMV3() ? 10000 : 200,
+                "Element is not visible"
+              );
+              await new Promise(r => setTimeout(r, isMV3() ? 10000 : 1500));
+              return tabId;
+            },
+            [{
+              filter: expectedElemhideFilter(text),
+              matchInfo: elemhideMatchInfo,
+              request: expectedRequestRelativeUrl("image.html")
+            }], {minEventsLength: 1});
+        }
+        finally {
+          if (isMV3())
+            await EWE.testing.setForceEnableTracing(false);
+        }
       });
 
       it("logs element hiding emulation filter", async function() {
-        setMinTimeout(this, 5000);
+        if (!isMV3())
+          setMinTimeout(this, 5000);
 
-        let text = TEST_PAGES_DOMAIN +
-          "#?#.child1:-abp-properties(background-color: blue)";
-        await checkLogging(
-          [text],
-          elemhideEventOptions,
-          async() => {
-            let tabId = await new Page("element-hiding.html").loaded;
-            await executeScript(tabId, async() => {
-              document.getElementById("unhide1").parentElement.className = "";
-            });
-            await wait(
-              async() => await getVisibleElement(tabId, "unhide1") != null,
-              4000, "Element is not visible"
-            );
-            return tabId;
-          },
-          [{
-            filter: {
-              ...expectedElemhideFilter(text),
-              type: "elemhideemulation"
+        if (isMV3())
+          await EWE.testing.setForceEnableTracing(true);
+
+        try {
+          let text = TEST_PAGES_DOMAIN +
+            "#?#.child1:-abp-properties(background-color: blue)";
+          await checkLogging(
+            [text],
+            elemhideEventOptions,
+            async() => {
+              let tabId = await new Page("element-hiding.html").loaded;
+              await new Promise(r => setTimeout(r, 100));
+              await executeScript(tabId, async() => {
+                document.getElementById("unhide1").parentElement.className = "";
+              }).catch(e => console.error(`Failed to execute the script: ${e.message}`));
+              await wait(
+                async() => await getVisibleElement(tabId, "unhide1") != null,
+                isMV3() ? 10000 : 4000, "Element is not visible"
+              );
+              return tabId;
             },
-            matchInfo: elemhideMatchInfo,
-            request: expectedRequestRelativeUrl("element-hiding.html")
-          }]
-        );
+            [{
+              filter: {
+                ...expectedElemhideFilter(text),
+                type: "elemhideemulation"
+              },
+              matchInfo: elemhideMatchInfo,
+              request: expectedRequestRelativeUrl("element-hiding.html")
+            }], {minEventsLength: 1}
+          );
+        }
+        finally {
+          if (isMV3())
+            await EWE.testing.setForceEnableTracing(false);
+        }
       });
 
       it("logs all items", async function() {
@@ -2347,28 +2478,29 @@ describe("API", function() {
             filter: expectedElemhideFilter("###elem-hide"),
             matchInfo: elemhideMatchInfo,
             request: expectedRequestRelativeUrl("element-hiding.html")
-          }]
+          }], {minEventsLength: 4}
         );
       });
 
       it("logs for the requested tab", async function() {
+        if (isMV3())
+          setMinTimeout(this, 140000);
+
         await addFilter(VALID_FILTER_TEXT);
 
         let page = new Page("image.html");
         let tabId = await page.created;
 
-        let [fake1, fake2] = await Promise.all(
+        let [listenerName1, listenerName2] = await Promise.all(
           [tabId, tabId + 1].map(
-            id => addFakeListener({namespace: "reporting",
-                                   eventName: "onBlockableItem",
-                                   eventOptions: {tabId: id}})
+            id => addNewOnBlockableListener({tabId: id})
           )
         );
 
         await page.loaded;
 
-        expect(fake1.called).toBeTruthy();
-        expect(fake2.called).toBeFalsy();
+        expect(await isCalled(listenerName1)).toBeTruthy();
+        expect(await isCalled(listenerName2)).toBeFalsy();
       });
 
       it("logs snippets filter", async function() {
@@ -2398,7 +2530,7 @@ describe("API", function() {
               tabId: expect.any(Number),
               url: expect.any(String)
             })
-          }]
+          }], {minEventsLength: 1}
         );
       });
 
@@ -2422,7 +2554,7 @@ describe("API", function() {
             filter: null,
             matchInfo: unmatchedMainFrameMatchInfo,
             request: expectedRequestRelativeUrl("popup-opener.html")
-          }]}
+          }], minEventsLength: 2}
         );
       });
 
@@ -2448,7 +2580,7 @@ describe("API", function() {
             filter: null,
             matchInfo: unmatchedMainFrameMatchInfo,
             request: expectedRequestRelativeUrl("popup-opener.html")
-          }]}
+          }], minEventsLength: 3}
         );
       });
 
@@ -2474,7 +2606,7 @@ describe("API", function() {
             filter: null,
             matchInfo: unmatchedMainFrameMatchInfo,
             request: expectedRequestRelativeUrl("popup-opener.html")
-          }]}
+          }], minEventsLength: 3}
         );
       });
 
@@ -2500,7 +2632,7 @@ describe("API", function() {
             filter: null,
             matchInfo: unmatchedMainFrameMatchInfo,
             request: expectedRequestRelativeUrl("popup-opener.html")
-          }]}
+          }], minEventsLength: 3}
         );
       });
 
@@ -2517,7 +2649,7 @@ describe("API", function() {
             },
             request: expectedRequestRelativeUrl("image.png")
           }],
-          {filterToCurrentTab: false}
+          {filterToCurrentTab: false, minEventsLength: 1}
         );
       });
 
@@ -2540,12 +2672,15 @@ describe("API", function() {
         });
 
         it("logs unmatched requests for the requested tab", async function() {
+          if (isMV3())
+            setMinTimeout(this, 120000);
+
           let page = new Page("image.html");
           let tabId = await page.loaded;
-          let otherTabFake = addFakeListener({
-            namespace: "reporting",
-            eventName: "onBlockableItem",
-            eventOptions: {includeUnmatched: true, tabId: tabId + 1}
+
+          let otherTabListenerName = await addNewOnBlockableListener({
+            includeUnmatched: true,
+            tabId: tabId + 1
           });
 
           // small pause for unmatched events to finish coming through
@@ -2565,7 +2700,7 @@ describe("API", function() {
               request: expectedRequestRelativeUrl("image.png")
             }]
           );
-          expect(otherTabFake.called).toBeFalsy();
+          expect(await isCalled(otherTabListenerName)).toBeFalsy();
         });
 
         it("logs unmatched iframe requests", async function() {

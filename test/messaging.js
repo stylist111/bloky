@@ -16,7 +16,6 @@
  */
 
 import browser from "webextension-polyfill";
-import sinon from "sinon/pkg/sinon.js";
 
 import {fuzzSuspendServiceWorker} from "./mocha/mocha-runner.js";
 
@@ -77,43 +76,6 @@ export function addFilter(text) {
   return EWE.filters.add([text]);
 }
 
-let removalOperations = [];
-
-export async function addFakeListener({namespace, eventName, eventOptions,
-                                       method = "addListener",
-                                       removeMethod = "removeListener",
-                                       callback = sinon.fake()}) {
-  let id = await makeCallbackInBackgroundPage(callback);
-
-  await runInBackgroundPage([
-    {op: "getGlobal", arg: "EWE"},
-    {op: "getProp", arg: namespace},
-    ...eventName ? [{op: "getProp", arg: eventName}] : [],
-    {op: "pushCallback", arg: id},
-    ...eventOptions ? [{op: "pushArg", arg: eventOptions}] : [],
-    {op: "callMethod", arg: method}
-  ]);
-
-  removalOperations.push([
-    {op: "getGlobal", arg: "EWE"},
-    {op: "getProp", arg: namespace},
-    ...eventName ? [{op: "getProp", arg: eventName}] : [],
-    {op: "pushCallback", arg: id},
-    ...eventOptions ? [{op: "pushArg", arg: eventOptions}] : [],
-    {op: "callMethod", arg: removeMethod}
-  ]);
-
-  return callback;
-}
-
-export async function removeFakeListeners() {
-  let removing = removalOperations;
-  removalOperations = [];
-
-  for (let operations of removing)
-    await runInBackgroundPage(operations);
-}
-
 export async function ensureEverythingHasSaved() {
   await runInBackgroundPage([
     {op: "getGlobal", arg: "EWE"},
@@ -132,9 +94,28 @@ export async function ensureEverythingHasSaved() {
  */
 export async function getTestEvents(name) {
   return await runInBackgroundPage([
-    {op: "getGlobal", arg: "testEvents"},
+    {op: "getGlobal", arg: "self"},
     {op: "pushArg", arg: name},
-    {op: "callMethod", arg: "get"},
+    {op: "callMethod", arg: "getTestEvents"},
+    {op: "await"}
+  ], false);
+}
+
+export async function addOnBlockableListener(name, eventOptions) {
+  return await runInBackgroundPage([
+    {op: "getGlobal", arg: "self"},
+    {op: "pushArg", arg: name},
+    {op: "pushArg", arg: eventOptions},
+    {op: "callMethod", arg: "addOnBlockableEventsListener"},
+    {op: "await"}
+  ], false);
+}
+
+export async function removeOnBlockableListener(name) {
+  return await runInBackgroundPage([
+    {op: "getGlobal", arg: "self"},
+    {op: "pushArg", arg: name},
+    {op: "callMethod", arg: "removeOnBlockableEventsListener"},
     {op: "await"}
   ], false);
 }

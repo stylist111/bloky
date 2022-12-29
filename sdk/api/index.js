@@ -143,8 +143,10 @@ function startSubmodulesWithListeners() {
   // to register their events in the first turn of the event loop to
   // register their event listeners.
   messageResponder.start();
-  if (isRunningInServiceWorker())
+  if (isRunningInServiceWorker()) {
     popupBlockerServiceWorker.start();
+    requestFilter.start();
+  }
 
   sitekey.start();
 }
@@ -154,9 +156,10 @@ async function startSubmodules() {
 
   // MV2-style popup and request blocking assume that initializer is
   // started first.
-  if (!isRunningInServiceWorker())
+  if (!isRunningInServiceWorker()) {
     popupBlockerBackgroundPage.start();
+    requestFilter.start();
+  }
 
-  requestFilter.start();
   filterEngine.filterStorage.synchronizer.start();
 }

@@ -24,9 +24,10 @@ import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {parseURL} from "adblockpluscore/lib/url.js";
 
 import {filterEngine} from "./core.js";
-import {getFrameInfo, isTopLevelFrameId} from "./frame-state.js";
+import {getFrameInfo, isTopLevelFrameId,
+        addOnFrameInfoListener, addOnTabRemovedListener} from "./frame-state.js";
 import {ignoreNoConnectionError} from "../errors.js";
-import {logItem} from "./diagnostics.js";
+import {logItem, clearMatchedFilterEvents} from "./diagnostics.js";
 import {getSitekey, setSitekeyFromHeaders} from "./sitekey.js";
 
 const EXTENSION_PROTOCOL = new URL(browser.runtime.getURL("")).protocol;
@@ -49,6 +50,10 @@ let typeSelectors = new Map([
 
 let pendingAllowlistedRequests = new Set();
 let pendingCspRequests = new Set();
+/**
+ * @type {Map<tabId, Map<frameId, details>>}
+ */
+let pendingDetails = new Map();
 
 class BaseFilter {
   register() {
@@ -265,6 +270,38 @@ RequestFilter.prototype.eventArgs = [
   ["blocking"]
 ];
 
+class MatchedFilterObserver extends RequestFilter {
+  defer(details) {
+    let frameIdToDetailsListMap = pendingDetails.get(details.tabId);
+    if (!frameIdToDetailsListMap) {
+      frameIdToDetailsListMap = new Map();
+      pendingDetails.set(details.tabId, frameIdToDetailsListMap);
+    }
+    let detailsList = frameIdToDetailsListMap.get(details.frameId);
+    if (!detailsList) {
+      detailsList = [];
+      frameIdToDetailsListMap.set(details.frameId, detailsList);
+    }
+    detailsList.push(details);
+  }
+
+  getFrameInfo(details) {
+    let frame = super.getFrameInfo(details);
+    if (!frame)
+      this.defer(details);
+    return frame;
+  }
+}
+
+MatchedFilterObserver.prototype.event = browser.webRequest.onBeforeRequest;
+MatchedFilterObserver.prototype.eventArgs = [
+  {
+    types: Object.values(browser.webRequest.ResourceType)
+                 .filter(type => type != "main_frame"),
+    urls: ["http://*/*", "https://*/*", "ws://*/*", "wss://*/*"]
+  }
+];
+
 class HeaderFilter extends BaseFilter {
   match(details, frame, specificOnly, contentType, docDomain) {
     let matcher = filterEngine.defaultMatcher;
@@ -308,7 +345,7 @@ HeaderFilter.prototype.eventArgs = [
                  .filter(type => type != "main_frame"),
     urls: ["http://*/*", "https://*/*"]
   },
-  ["blocking", "responseHeaders"]
+  browser.declarativeNetRequest ? ["responseHeaders"] : ["blocking", "responseHeaders"]
 ];
 
 class CSPFilter extends BaseFilter {
@@ -388,7 +425,7 @@ CSPFilter.prototype.eventArgs = [
     types: ["main_frame", "sub_frame"],
     urls: ["http://*/*", "https://*/*"]
   },
-  ["blocking", "responseHeaders"]
+  browser.declarativeNetRequest ? ["responseHeaders"] : ["blocking", "responseHeaders"]
 ];
 
 class RequestCompletionFilter extends BaseFilter {
@@ -468,13 +505,42 @@ RequestErrorFilter.prototype.eventArgs = [
   }
 ];
 
-let filters = [
+let matchedFiltersObserver = new MatchedFilterObserver();
+
+let filters = browser.declarativeNetRequest ? [
+  matchedFiltersObserver,
+  new CSPFilter(),
+  new RequestCompletionFilter(),
+  new RequestErrorFilter()
+] : [
   new RequestFilter(),
   new HeaderFilter(),
   new CSPFilter(),
   new RequestCompletionFilter(),
   new RequestErrorFilter()
 ];
+
+function onTabRemoved(tabId) {
+  pendingDetails.delete(tabId);
+  clearMatchedFilterEvents(tabId);
+}
+
+function onFrameInfo(tabId, frameId) {
+  let frameIdToDetailsListMap = pendingDetails.get(tabId);
+  if (!frameIdToDetailsListMap)
+    return;
+
+  let detailsList = frameIdToDetailsListMap.get(frameId);
+  if (!detailsList)
+    return;
+
+  for (let details of detailsList)
+    matchedFiltersObserver.filter(details);
+
+  frameIdToDetailsListMap.delete(frameId);
+  if (frameIdToDetailsListMap.size == 0)
+    pendingDetails.delete(tabId);
+}
 
 function onBeforeNavigate() {
   browser.webNavigation.onBeforeNavigate.removeListener(onBeforeNavigate);
@@ -498,8 +564,10 @@ const FILTER_EVENTS = ["subscription.added",
  * frame state are initialized.
  */
 export function start() {
-  if (browser.declarativeNetRequest)
-    return;
+  if (browser.declarativeNetRequest) {
+    addOnFrameInfoListener(onFrameInfo);
+    addOnTabRemovedListener(onTabRemoved);
+  }
 
   for (let filter of filters)
     filter.register();

@@ -27,6 +27,7 @@ export const defaults = Object.create({
                              "notification.adblockplus.org",
                              "easylist-downloads.adblockplus.org"]},
   dynamic_filters: {},
+  rule_id_to_filter_text: [],
   notificationdata: {},
   notifications_ignoredcategories: [],
   notificationurl: "https://notification.adblockplus.org/notification.json",
@@ -41,7 +42,8 @@ export const defaults = Object.create({
   subscriptions_initial_delay: 1000, // 1 s
   migration_filter_errors: [],
   migration_subscription_errors: [],
-  migration_state: MIGRATED_TO_MV2
+  migration_state: MIGRATED_TO_MV2,
+  last_reporting_check_timestamp: 0
 });
 
 export let Prefs = {

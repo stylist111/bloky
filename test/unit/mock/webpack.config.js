@@ -43,6 +43,7 @@ export function getConfig(filename) {
         "./types.js": path.resolve(dirname, "./webext-sdk.mock.js"),
         "./filters.js": path.resolve(dirname, "./webext-sdk.mock.js"),
         "./io.js": path.resolve(dirname, "./webext-sdk.mock.js"),
+        "./dnr-filters.js": path.resolve(dirname, "./webext-sdk.mock.js"),
         "./prefs.js": path.resolve(dirname, "./prefs.mock.js")
       }
     },

@@ -15,12 +15,20 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import browser from "./browser.js";
+
 import {analytics} from "adblockpluscore/lib/analytics.js";
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
+import {Filter} from "adblockpluscore/lib/filterClasses.js";
 
-import {BlockableEventDispatcher} from "./diagnostics.js";
+import {BlockableEventDispatcher, getMatchedFilterEvents,
+        clearMatchedFilterEvents} from "./diagnostics.js";
 import {resourceTypes} from "./request-filter.js";
 import {onSubscribeLinkClicked} from "./subscribe-links.js";
+import {emitLogItem} from "./diagnostics.js";
+import {default as scheduler} from "./reporting-scheduler.js";
+import {getMatchedFilters} from "./reporting-requester.js";
+
 
 let contentTypesMap = new Map();
 
@@ -30,6 +38,84 @@ for (let item of resourceTypes) {
   );
 
   contentTypesMap.set(item[0].toLowerCase(), contentTypeObject.toLowerCase());
+}
+
+let clearCounter;
+resetClearCounter();
+
+export function resetClearCounter() {
+  clearCounter = 0;
+}
+
+let debugLastCheckTimestamp;
+
+export function setLastCheckTimestamp(timeStamp) {
+  debugLastCheckTimestamp = timeStamp;
+}
+
+async function onCheck(lastCheckTimestamp) {
+  try {
+    let filterTextEventIndexMap = new Map();
+
+    // Can't request per tabId due to request frequency limitation,
+    // so passing `null` for `tabId` to have as much information as we can.
+    // Filtering happens when each `onBlockableItem` listener is triggered.
+    let usedLastCheckTimestamp;
+    if (debugLastCheckTimestamp) {
+      usedLastCheckTimestamp = debugLastCheckTimestamp;
+      debugLastCheckTimestamp = null;
+    }
+    else {
+      usedLastCheckTimestamp = lastCheckTimestamp;
+    }
+
+    let ruleInfoList = await getMatchedFilters(null, usedLastCheckTimestamp);
+    ruleInfoList.sort((a, b) => a.timeStamp - b.timeStamp);
+    // Assuming the DNR matched rules order corresponds to
+    // filter engine matched filters events order.
+    for (let ruleInfo of ruleInfoList) {
+      let filter = Filter.fromText(ruleInfo.text);
+      let events = getMatchedFilterEvents(filter.text);
+      // `ruleInfo.tabId = -1 is in some cases
+      // ("tab is inactive" according to the documentation),
+      // so we can't search/filter for tabId
+      let event;
+      if (events) {
+        // The events are already sorted by time stamp,
+        // so we can just request by DNR rule match index
+        let eventIndex = filterTextEventIndexMap.get(filter.text);
+        if (eventIndex == null)
+          eventIndex = 0;
+        else
+          eventIndex++;
+        filterTextEventIndexMap.set(filter.text, eventIndex);
+
+        if (eventIndex < events.length)
+          event = events[eventIndex];
+        else
+          event = null;
+      }
+      else {
+        event = null;
+      }
+
+      if (event)
+        emitLogItem(event.details, filter, event.matchInfo);
+    }
+    // It can happen, that scheduler check happened too early,
+    // eg. page loading is not finished or element hiding is not finished.
+    // So we might need to wait for the next scheduler check.
+    // If we clear matched MV2 events after every scheduler tick,
+    // we will be unable to find them for the matched MV3 (DNR) rules
+    // so we need them to survive at least 1 `clear()` call.
+    // On other hand we need to actually clean it when we need
+    // (eg. in the testing between the tests)
+    if (clearCounter++ % 2 == 0)
+      clearMatchedFilterEvents();
+  }
+  catch (e) {
+    console.error(e.message);
+  }
 }
 
 export default {
@@ -109,5 +195,16 @@ export default {
    *                       `title`'s parameter.
    * @type {EventDispatcher<{url: string, title: string}>}
    */
-  onSubscribeLinkClicked
+  onSubscribeLinkClicked,
+
+  /**
+   * Start monitoring for the matched rules
+   * @returns {Promise} starting promise.
+   */
+  async start() {
+    if (!browser.declarativeNetRequest)
+      return;
+
+    await scheduler.start(onCheck);
+  }
 };

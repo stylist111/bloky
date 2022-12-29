@@ -23,7 +23,8 @@ import {ALLOWING_TYPES, contentTypes}
 
 import {filterEngine} from "./core.js";
 import {logItem} from "./diagnostics.js";
-import {getSitekey, clearTabSitekeys, addListener} from "./sitekey.js";
+import {getSitekey, clearTabSitekeys,
+        addListener as addOnSitekeyReceivedListener} from "./sitekey.js";
 
 /**
  * The URL that browsers use to represent an empty page, about:blank.
@@ -75,6 +76,27 @@ export function isValidChildFrameId(frameId) {
  */
 let state = new Map();
 let startupPromise;
+
+let onFrameInfoListeners = [];
+let onTabRemovedListeners = [];
+
+export function addOnFrameInfoListener(listener) {
+  onFrameInfoListeners.push(listener);
+}
+
+export function addOnTabRemovedListener(listener) {
+  onTabRemovedListeners.push(listener);
+}
+
+function notifyOnFrameInfo(tabId, frameId) {
+  for (let listener of onFrameInfoListeners)
+    listener(tabId, frameId);
+}
+
+function notifyOnTabRemoved(tabId) {
+  for (let listener of onTabRemovedListeners)
+    listener(tabId);
+}
 
 /**
  * Manages tracking state that is tied to a single specific frame.
@@ -395,6 +417,7 @@ function onBeforeNavigate(details) {
 
 function onCommitted(details) {
   recordFrameFromNavigationEvent(details);
+  notifyOnFrameInfo(details.tabId, details.frameId);
 }
 
 function onErrorOccurred(details) {
@@ -417,14 +440,18 @@ function onHistoryStateUpdated(details) {
   recordFrameFromNavigationEvent(details, {historyStateUpdated: true});
 }
 
-function onRemoved(tabId) {
+function handleOnRemoved(tabId) {
   state.delete(tabId);
   clearTabSitekeys(tabId);
+  notifyOnTabRemoved(tabId);
+}
+
+function onRemoved(tabId) {
+  handleOnRemoved(tabId);
 }
 
 function onReplaced(addedTabId, removedTabId) {
-  state.delete(removedTabId);
-  clearTabSitekeys(removedTabId);
+  handleOnRemoved(removedTabId);
 }
 
 /**
@@ -487,7 +514,7 @@ export function getFrameInfo(tabId, frameId,
 
 export async function start() {
   if (!startupPromise) {
-    addListener(onSitekeyReceived);
+    addOnSitekeyReceivedListener(onSitekeyReceived);
 
     browser.webNavigation.onBeforeNavigate.addListener(onBeforeNavigate);
     browser.webNavigation.onCommitted.addListener(onCommitted);

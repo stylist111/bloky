@@ -49,6 +49,23 @@ const testBrowserPrototype = {
     getURL(path) {
       return path;
     }
+  },
+  declarativeNetRequest: {
+    _rulesMatchedInfo: [],
+
+    async getMatchedRules(filter) {
+      let result = [...this._rulesMatchedInfo];
+      if (filter) {
+        result = result
+          .filter(info => !filter.tabId ||
+            info.tabId == filter.tabId)
+          .filter(info => !filter.minTimeStamp ||
+            info.timeStamp >= filter.minTimeStamp);
+      }
+      return {rulesMatchedInfo: result};
+    },
+
+    DYNAMIC_RULESET_ID: "_dynamicRuleset"
   }
 };
 

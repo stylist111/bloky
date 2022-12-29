@@ -15,7 +15,12 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export class Subscription {}
+export let Subscription = {
+  fromURL(url) {
+    // eslint-disable-next-line no-undef
+    return global.fromURL(url);
+  }
+};
 export class RegularSubscription {}
 export class DownloadableSubscription {}
 export class SpecialSubscription {}

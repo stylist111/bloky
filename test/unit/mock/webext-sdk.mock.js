@@ -24,11 +24,16 @@ export let filterEngine = {
   }
 };
 export function convertFilter() {}
-export let addonBundledSubscriptions;
+// eslint-disable-next-line no-undef
+export let addonBundledSubscriptions = global.addonBundledSubscriptions;
 export let addonBundledSubscriptionsPath;
 export default {
   start() {}
 };
 export function readFileContent() {}
-export class Prefs {}
 export class EventDispatcher {}
+
+export function getFilterTextByRuleId(id) {
+  // eslint-disable-next-line no-undef
+  return global.getFilterTextByRuleId(id);
+}

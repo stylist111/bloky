@@ -135,7 +135,7 @@ async function onPopup({tabId, url, sourceTabId, sourceFrameId}) {
 
     let opener = {
       tabId: sourceTabId,
-      specificOnly: frame.allowlisted & contentTypes.GENERICBLOCK,
+      specificOnly: Boolean(frame.allowlisted & contentTypes.GENERICBLOCK),
       docDomain: frame.hostname,
       sitekey: frame.sitekey
     };

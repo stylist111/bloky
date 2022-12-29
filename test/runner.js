@@ -463,8 +463,9 @@ async function run() {
   let driver = await BROWSERS[browser].getDriver(
     version, {headless, extensionPaths, incognito, extraArgs});
 
-  if (params && typeof params.timeout != "undefined")
-    await setMinDriverTimeout(driver, params.timeout);
+  let timeout = (params && typeof params.timeout != "undefined" ?
+    params.timeout : 140000);
+  await setMinDriverTimeout(driver, timeout);
 
   let results = {};
 

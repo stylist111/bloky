@@ -19,7 +19,7 @@
 
 import {TEST_PAGES_URL, Page, Popup, setMinTimeout, isIncognito}
   from "../utils.js";
-import {runInBackgroundPage, removeFakeListeners, ensureEverythingHasSaved,
+import {runInBackgroundPage, ensureEverythingHasSaved,
         clearAllTestEvents} from "../messaging.js";
 
 mocha.setup("bdd");
@@ -38,6 +38,25 @@ async function clearFilters() {
   ], false);
 
   await ensureEverythingHasSaved();
+}
+
+async function clearFilterMatches() {
+  await runInBackgroundPage([
+    {op: "getGlobal", arg: "EWE"},
+    {op: "getProp", arg: "testing"},
+    {op: "callMethod", arg: "clearFilterMatches"},
+    {op: "await"}
+  ], false);
+}
+
+async function setFilterMatchesLastCheckTimestamp(timeStamp) {
+  await runInBackgroundPage([
+    {op: "getGlobal", arg: "EWE"},
+    {op: "getProp", arg: "testing"},
+    {op: "pushArg", arg: timeStamp},
+    {op: "callMethod", arg: "setLastCheckTimestamp"},
+    {op: "await"}
+  ], false);
 }
 
 before(async function() {
@@ -64,7 +83,7 @@ before(async function() {
     await new Promise(r => setTimeout(r, 2000));
 });
 
-beforeEach(function() {
+beforeEach(async function() {
   let {fn} = this.currentTest;
   this.currentTest.fn = async function() {
     await fn.call(this);
@@ -78,6 +97,8 @@ beforeEach(function() {
         throw new Error(error.message);
     }
   };
+  await clearFilterMatches();
+  await setFilterMatchesLastCheckTimestamp(Date.now());
 });
 
 afterEach(async function() {
@@ -85,5 +106,4 @@ afterEach(async function() {
   await clearAllTestEvents();
   await Page.removeCurrent();
   await Popup.removeCurrent();
-  await removeFakeListeners();
 });

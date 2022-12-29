@@ -21,6 +21,7 @@ import {OUTPUT_DIR as inputDir}
   from "./fetchSubscriptions.js";
 import {processFile} from "adblockpluscore/scripts/text2dnr.js";
 import {createConverter} from "adblockpluscore/lib/dnr/index.js";
+import {encode} from "../sdk/api/id-utils.js";
 import fs from "fs";
 import path from "path";
 import yargs from "yargs";
@@ -28,21 +29,24 @@ import {hideBin} from "yargs/helpers";
 
 const outputDir = path.join("scriptsOutput", "rulesets");
 
-let highestRuleId = 1;
-
-function generateRuleId() {
-  return highestRuleId++;
-}
-
 async function convert(inDir, outDir) {
   let files = fs.readdirSync(inDir);
   if (!fs.existsSync(outDir))
     fs.mkdirSync(outDir, {recursive: true});
 
+  let ruleIndex;
+  let lastFilterText;
+
   let converter = createConverter({
     isRegexSupported: () => true,
-    modifyRule(rule) {
-      rule["id"] = generateRuleId();
+    modifyRule(rule, context) {
+      if (!lastFilterText || lastFilterText != context.text)
+        ruleIndex = 0; // first rule for the filter text
+      else
+        ruleIndex++; // next rule for the same filter text
+      lastFilterText = context.text;
+
+      rule["id"] = encode(ruleIndex, context.line);
       return rule;
     }
   });

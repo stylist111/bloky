@@ -60,7 +60,11 @@ const mv3 = {
   ...base,
   manifestVersion: 3,
   background: {service_worker: "background.js"},
-  permissions: ["scripting", "declarativeNetRequest"],
+  permissions: [
+    "scripting",
+    "declarativeNetRequest",
+    "declarativeNetRequestFeedback"
+  ],
   misc: {
     host_permissions: ["<all_urls>"],
     ...fs.existsSync(fragmentFile) ?

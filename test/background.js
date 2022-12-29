@@ -145,12 +145,34 @@ class TestEventMap {
   }
 }
 
+self.listeners = new Map();
 self.testEvents = new TestEventMap();
+
 function createTestEventListener(name) {
-  return async function(...eventArgs) {
+  let listener = async function(...eventArgs) {
     await self.testEvents.push(name, eventArgs);
   };
+  self.listeners.set(name, listener);
+  return listener;
 }
+
+function findListener(name) {
+  return self.listeners.get(name);
+}
+
+self.addOnBlockableEventsListener = function(name, arg) {
+  EWE.reporting.onBlockableItem.addListener(
+    createTestEventListener(name), arg);
+};
+
+self.removeOnBlockableEventsListener = function(name, arg) {
+  EWE.reporting.onBlockableItem.removeListener(
+    findListener(name), arg);
+};
+
+self.getTestEvents = async function(name) {
+  return await self.testEvents.get(name);
+};
 
 let messages = [];
 

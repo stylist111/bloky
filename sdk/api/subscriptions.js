@@ -192,7 +192,9 @@ async function disableRuleset(rulesetId) {
 async function getFilterText(subscription, path) {
   let subscriptionPath = `${path}/${subscription.id}`;
   let rawLines = (await readFileContent(subscriptionPath));
-  let {lines, error} = parseFilterList(rawLines);
+  let {lines, error} = parseFilterList(rawLines, true);
+  // `true` as we need to preserve empty lines to find the line
+  // when reporting filter hits (we encode line into DNR rule id).
   if (error)
     throw new Error(error);
   if (!lines)
