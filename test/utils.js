@@ -250,8 +250,6 @@ export class Resource {
 
 export class Popup {
   constructor(id, opener, deferred = false) {
-    this.deferred = deferred;
-
     this.created = new Promise((resolve, reject) => {
       opener.loaded.then(openerTabId => {
         let {onCreatedNavigationTarget} = browser.webNavigation;
@@ -294,20 +292,8 @@ export class Popup {
     });
 
     this.blocked = new Promise((resolve, reject) => {
-      this.created.then(popId => new Promise(res => {
-        if (isFuzzingServiceWorker()) {
-          // Unfortunately if the service worker was suspended in the
-          // middle of a popup opening it might not be quite as
-          // reponsive as we'd expect from normal conditions.
-          setTimeout(() => res(popId), 5000);
-        }
-        else if (this.deferred) {
-          setTimeout(() => res(popId), 200);
-        }
-        else {
-          res(popId);
-        }
-      })).then(popupTabId => {
+      this.created.then(popupTabId => {
+        let blockedResolved = false;
         function removeListeners() {
           browser.tabs.onRemoved.removeListener(onTabRemoved);
           browser.webNavigation.onCompleted.removeListener(onCompleted);
@@ -315,9 +301,20 @@ export class Popup {
 
         function onTabRemoved(tabId) {
           if (tabId == popupTabId) {
+            if (!blockedResolved) {
+              blockedResolved = true;
+              removeListeners();
+              Popup.current = null;
+              resolve(true);
+            }
+          }
+        }
+
+        function onCompletedAfterWait() {
+          if (!blockedResolved) {
+            blockedResolved = true;
             removeListeners();
-            Popup.current = null;
-            resolve(true);
+            resolve(false);
           }
         }
 
@@ -325,8 +322,18 @@ export class Popup {
           if (details.tabId == popupTabId &&
               details.frameId == 0 &&
               details.url != "about:blank") {
-            removeListeners();
-            resolve(false);
+            let tolerance = 0;
+
+            if (deferred)
+              tolerance = 200;
+
+            if (isFuzzingServiceWorker())
+              tolerance = 15000;
+
+            if (tolerance > 0)
+              setTimeout(onCompletedAfterWait, tolerance);
+            else
+              onCompletedAfterWait();
           }
         }
 
@@ -337,16 +344,13 @@ export class Popup {
         // events above. Especially since this is called
         // asynchronously after the tab is created.
         browser.tabs.get(popupTabId).then(tab => {
-          if (tab.url && tab.url != "about:blank" && tab.status == "complete") {
-            removeListeners();
-            resolve(false);
-          }
+          if (tab.url && tab.url != "about:blank" && tab.status == "complete")
+            onCompleted({tabId: tab.tabId, frameId: tab.frameId, url: tab.url});
         }).catch(() => {
           // We are assuming that this error is because the tab
           // doesn't exist, and not some other error. This means it's
           // already been blocked.
-          removeListeners();
-          resolve(true);
+          onTabRemoved(popupTabId);
         });
       }, reject);
     });

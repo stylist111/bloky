@@ -69,6 +69,11 @@ class PotentialPopupMap {
     return opener;
   }
 
+  has(tabId) {
+    return Object.hasOwnProperty.call(this.openerPromiseMap, tabId) ||
+      Object.hasOwnProperty.call(this.openerMap, tabId);
+  }
+
   async remove(tabId) {
     if (this.openerPromiseMap[tabId])
       delete this.openerPromiseMap[tabId];
@@ -85,6 +90,12 @@ let potentialPopups;
 async function checkPotentialPopup(popupTabId, url, opener) {
   await initializer.start();
   let {docDomain, sitekey, specificOnly} = opener;
+
+  // because of the async nature of getting to this point, it might
+  // have been handled before we get here.
+  if (!potentialPopups.has(popupTabId))
+    return;
+
 
   let filter = filterEngine.defaultMatcher.match(
     url || BLANK_PAGE_URL, contentTypes.POPUP, docDomain, sitekey, specificOnly

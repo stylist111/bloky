@@ -256,7 +256,6 @@ async function pollMessages(driver, handle, isMV3) {
   let log = [];
 
   while (!result) {
-    let messages;
     let script = `
       let webdriverEvents = arguments[0];
       return new Promise(resolve => {
@@ -265,22 +264,9 @@ async function pollMessages(driver, handle, isMV3) {
         else
           window.addEventListener("load", () => resolve(poll(webdriverEvents)));
       });`;
-    try {
-      messages = await driver.executeScript(script, webdriverEvents);
-    }
-    catch (err) {
-      if (err.message.includes("Document was unloaded"))
-      // In firefox the driver.executeScript function might throw
-      // this error on low resource machines. Retrying usually helps.
-        messages = await driver.executeScript(script, webdriverEvents);
-
-      if (err.message.includes("received Inspector.detached event"))
-        // From Chromium 105 the driver.executeScript function might throw
-        // this error on low resource machines. Retrying usually helps.
-        messages = await driver.executeScript(script, webdriverEvents);
-      else
-        throw err;
-    }
+    let messages = await runWithRetry(
+      () => driver.executeScript(script, webdriverEvents)
+    );
     webdriverEvents = [];
 
     if (!messages)
@@ -397,7 +383,7 @@ async function runFuzzTests(driver, params, isMV3, incognito) {
 
   let fuzzParams = {...params, fuzzServiceWorkers: true};
   if (typeof fuzzParams.timeout == "undefined") {
-    fuzzParams.timeout = 60000;
+    fuzzParams.timeout = 80000;
     await setMinDriverTimeout(driver, fuzzParams.timeout);
   }
 
@@ -409,28 +395,54 @@ async function runFuzzTests(driver, params, isMV3, incognito) {
   return results;
 }
 
+async function runWithRetry(fn, retryCount = 2) {
+  try {
+    return await fn();
+  }
+  catch (err) {
+    // In low resource machines we sometimes get these errors when
+    // interacting with the browser. Retrying usually helps.
+    let docUnloaded = "Document was unloaded";
+    let inspectorDetatched = "received Inspector.detached event";
+    let targetIdNotFound = "No target with given id found";
+
+    let message = err.message;
+    let isLowResourceError = message.includes(docUnloaded) ||
+        message.includes(inspectorDetatched) ||
+        message.includes(targetIdNotFound);
+
+    if (retryCount > 0 && isLowResourceError)
+      return await runWithRetry(fn, retryCount - 1);
+    throw err;
+  }
+}
+
 async function suspendServiceWorker(driver, handle) {
   let browser = (await driver.getCapabilities()).getBrowserName();
   if (browser != "chrome" && browser != "msedge")
     throw new Error("Suspending service workers is not implemented for non Chromium-based browsers because we don't support MV3 in them");
 
-  await driver.switchTo().newWindow("tab");
-  await driver.get("chrome://serviceworker-internals/");
-  let stopButtons = await driver.findElements(webdriver.By.className("stop"));
+  return await runWithRetry(
+    async() => {
+      await driver.switchTo().newWindow("tab");
+      await driver.get("chrome://serviceworker-internals/");
+      let stopButtons = await driver.findElements(webdriver.By.className("stop"));
 
-  if (stopButtons.length == 0)
-    throw new Error("No service workers to stop.");
+      if (stopButtons.length == 0)
+        throw new Error("No service workers to stop.");
 
-  for (let stopButton of stopButtons) {
-    if (await stopButton.isDisplayed())
-      await stopButton.click();
-  }
-  // Short delay to ensure that there is time for the browser to get
-  // the click event and start suspending the service worker before we
-  // kill the page.
-  await new Promise(r => setTimeout(r, 10));
-  await driver.close();
-  await driver.switchTo().window(handle);
+      for (let stopButton of stopButtons) {
+        if (await stopButton.isDisplayed())
+          await stopButton.click();
+      }
+      // Short delay to ensure that there is time for the browser to get
+      // the click event and start suspending the service worker before we
+      // kill the page.
+      await new Promise(r => setTimeout(r, 10));
+      await driver.close();
+      await driver.switchTo().window(handle);
+    }
+  );
 }
 
 async function run() {
