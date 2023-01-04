@@ -1419,7 +1419,7 @@ describe("API", function() {
       setMinTimeout(this, isMV3() ? 140000 : 4000);
 
       before(function() {
-        if (isFuzzingServiceWorker())
+        if (isMV3())
           this.skip();
       });
 
