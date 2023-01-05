@@ -31,6 +31,8 @@ export const SITEKEY = "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANGtTstne7" +
                        "e8MbmDHDiMFkGbcuBgXmiVesGOG3gtYeM1EkrzVhBj" +
                        "GUvKXYE4GLFwqty3v5MuWWbvItUWBTYoVVsCAwEAAQ";
 export const RECENT_FIREFOX_VERSION = 86; // Latest Firefox on February 2021
+export const HIDETIMEOUT = isFuzzingServiceWorker() ? 15000 : 1000;
+export const UNHIDDENTIMEOUT = isFuzzingServiceWorker() ? 1000 : 200;
 export const FETCHED_TEST_SUBSCRIPTION_ID = "00000000-0000-0000-0000-000000000000";
 export const FETCHED_TEST_SUBSCRIPTION_ID_2 = "00000000-0000-0000-0000-000000000010";
 export const FETCHED_TEST_SUBSCRIPTION_ID_3 = "00000000-0000-0000-0000-000000000020";
@@ -59,12 +61,12 @@ export const TEST_MV3_SUBSCRIPTION_3 = {
   mv2_url: "http://localhost:3003/subscription.txt"
 };
 export const TEST_ANTI_CV_SUBSCRIPTION = {
-  id: "D4028CDD-3D39-4624-ACC7-8140F4EC3238",
+  id: "00000000-0000-0000-0000-000000000030",
   type: "circumvention",
   title: "ABP filters",
   homepage: "https://github.com/abp-filters/abp-filters-anti-cv",
-  url: "https://easylist-downloads.adblockplus.org/v3/full/abp-filters-anti-cv.txt",
-  mv2_url: "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt"
+  url: "http://localhost:3003/anti-cv-subscription.txt",
+  mv2_url: "http://localhost:3003/mv2_anti-cv-subscription.txt"
 };
 
 function handleConnection(details, tabId, removeListeners, reject) {
@@ -101,6 +103,36 @@ export async function clickElement(tabId, elementId) {
   );
 }
 
+export async function expectElemHideHidden({elemId = "elem-hide",
+                                            url = "element-hiding.html",
+                                            frameIds} = {}) {
+  let tabId = await new Page(url).loaded;
+  let getElem = frameIds ?
+        () => getVisibleElementInFrame(tabId, elemId, frameIds) :
+        () => getVisibleElement(tabId, elemId);
+
+  await wait(
+    async() => await getElem() == null,
+    HIDETIMEOUT,
+      `Expected element "${elemId}" on page "${url}" to be hidden, but it was visible.`
+  );
+}
+
+export async function expectElemHideVisible({elemId = "elem-hide",
+                                             url = "element-hiding.html",
+                                             frameIds} = {}) {
+  let tabId = await new Page(url).loaded;
+  let getElem = frameIds ?
+        () => getVisibleElementInFrame(tabId, elemId, frameIds) :
+        () => getVisibleElement(tabId, elemId);
+  // If we're expecting things to not be hidden, but we check before
+    // the filters have a chance to be applied, then we're not really
+    // testing anything.
+  await new Promise(r => setTimeout(r, UNHIDDENTIMEOUT));
+
+  let elem = await getElem();
+  expect(elem).not.toBeNull();
+}
 export class Page {
   constructor(path, fullUrl = false, forceBackground = false) {
     let removingCurrentPromise = Page.removeCurrent();

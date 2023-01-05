@@ -327,12 +327,20 @@ if (isMV3()) {
         mv2_url: "https://easylist-downloads.adblockplus.org/easylistgermany+easylist.txt"
       },
       {
-        id: "D4028CDD-3D39-4624-ACC7-8140F4EC3238",
+        id: "00000000-0000-0000-0000-000000000030",
         type: "circumvention",
         title: "ABP filters",
         homepage: "https://github.com/abp-filters/abp-filters-anti-cv",
-        url: "https://easylist-downloads.adblockplus.org/v3/full/abp-filters-anti-cv.txt",
-        mv2_url: "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt"
+        url: "http://localhost:3003/anti-cv-subscription.txt",
+        mv2_url: "http://localhost:3003/mv2_anti-cv-subscription.txt"
+      },
+      {
+        id: "00000000-0000-0000-0000-000000000040",
+        type: "ads",
+        title: "Non DNR filters",
+        homepage: "http://localhost:3003/subscription-that-shouldnt-be-moved-to-dnr-world.txt",
+        url: "http://localhost:3003/subscription-that-shouldnt-be-moved-to-dnr-world.txt",
+        mv2_url: "http://localhost:3003/mv2_subscription-that-shouldnt-be-moved-to-dnr-world.txt"
       }
     ],
     bundledSubscriptionsPath: "subscriptions"

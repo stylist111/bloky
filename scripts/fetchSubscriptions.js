@@ -46,6 +46,10 @@ export async function fetchSubscriptions(
   let subscriptions = await JSON.parse(
     await fs.promises.readFile(fromFile));
   for (let subscription of subscriptions) {
+    // `circumvention` subscriptions do not get converted.
+    if (subscription.type == "circumvention")
+      continue;
+
     let toFile = `${toDir}/${getSubscriptionFile(subscription)}`;
     let toTmpFile = toFile + ".tmp";
     try {

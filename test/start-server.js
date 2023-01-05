@@ -150,9 +150,11 @@ adminApp.get("/configure", (req, res) => {
   res.send("");
 });
 
-// clear the requests list
+// clear the requests list and reset replies
 adminApp.get("/clear", (req, res) => {
   requests = [];
+  replyAntiCv = defaultReplyAntiCv;
+  replyNonDNR = defaultReplyNonDNR;
   res.send("");
 });
 
@@ -175,6 +177,34 @@ adminApp.get("/subscription.txt", logRequests, (req, res) => {
 // get the subscription content (HEAD)
 adminApp.head("/subscription.txt", logRequests, (req, res) => {
   res.send(reply);
+});
+
+let defaultReplyAntiCv = "[Adblock Plus]";
+
+let replyAntiCv = defaultReplyAntiCv;
+
+adminApp.post("/setReplyForAntiCV", express.json(), (req, res) => {
+  replyAntiCv = req.body.data;
+  res.send("");
+});
+
+let defaultReplyNonDNR = "[Adblock Plus]";
+
+let replyNonDNR = defaultReplyNonDNR;
+
+adminApp.post("/setReplyForNonDNR", express.json(), (req, res) => {
+  replyNonDNR = req.body.data;
+  res.send("");
+});
+
+// get the anti-cv subscription content (GET)
+adminApp.get(/anti-cv-subscription.txt/, logRequests, (req, res) => {
+  res.send(replyAntiCv);
+});
+
+// get the subscription-that-shouldnt-be-moved-to-dnr-world (GET)
+adminApp.get(/subscription-that-shouldnt-be-moved-to-dnr-world.txt/, logRequests, (req, res) => {
+  res.send(replyNonDNR);
 });
 
 adminApp.listen(HTTP_ADMIN_PORT, () => {

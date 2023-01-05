@@ -28,7 +28,7 @@ import {filterEngine} from "./core.js";
 import {EventDispatcher, FilterError} from "./types.js";
 import {getFrameInfo} from "./frame-state.js";
 import {addFilters, getMetadataForFilter, setMetadataForFilter,
-        validateFilter, getDynamicFilters,
+        validateFilter, getDynamicUserFilters,
         removeOrDisableFilters, enableFilters}
   from "./dnr-filters.js";
 import {ERROR_DUPLICATE_FILTERS, ERROR_FILTER_NOT_FOUND} from "../errors.js";
@@ -193,7 +193,7 @@ export default {
     }
 
     if (browser.declarativeNetRequest) {
-      for (let [text, details] of (await getDynamicFilters()).entries()) {
+      for (let [text, details] of (await getDynamicUserFilters()).entries()) {
         if (!result.find(filter => filter.text == text)) {
           let filter = convertFilter(Filter.fromText(text));
           filter.enabled = filter.type == "comment" ? null : details.enabled;

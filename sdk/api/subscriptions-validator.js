@@ -23,6 +23,10 @@ export async function validate(bundledSubscriptions,
   let warnings = [];
 
   for (let subscription of bundledSubscriptions) {
+    // Circumvention subscriptions don't count.
+    if (subscription.type == "circumvention")
+      continue;
+
     let fileExists = await subscriptionFileExists(
       subscription, bundledSubscriptionsPath);
     if (!fileExists)

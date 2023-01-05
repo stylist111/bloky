@@ -21,6 +21,7 @@ import {Filter, InvalidFilter, URLFilter, isActiveFilter}
   from "adblockpluscore/lib/filterClasses.js";
 import {SpecialSubscription} from "adblockpluscore/lib/subscriptionClasses.js";
 import {isValidHostname} from "adblockpluscore/lib/url.js";
+import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {filterEngine} from "./core.js";
 import {createConverter} from "adblockpluscore/lib/dnr/index.js";
 import {ERROR_DUPLICATE_FILTERS, ERROR_FILTER_NOT_FOUND,
@@ -43,6 +44,75 @@ if (browser.declarativeNetRequest) {
   getRulesFromFilter = createConverter({
     isRegexSupported: browser.declarativeNetRequest.isRegexSupported
   });
+}
+
+/**
+ * Update a dynamic subscription.
+ *
+ * @param {Subscription} subscription The subscription updated.
+ * @param {?object} updates The list of added and removed filter text. If
+ *   falsey then nothing happens.
+ *
+ * @private
+ */
+async function dynamicSubscriptionUpdate(subscription, updates) {
+  if (!browser.declarativeNetRequest || !updates)
+    return;
+
+  // For now we only want to handle subscription that are in the
+  // recommendations.
+  if (!subscription.type)
+    return;
+
+  let {added, removed} = updates;
+
+  let filters = await processFilterTexts(added, subscription.id);
+  // Adding subscription.id into existing filter
+  for (let text of filters.existOnOtherSubscription) {
+    let filter = dynamicFilters.get(text);
+    filter.subscriptionIds.push(subscription.id);
+  }
+
+  // Removing subscription.id from existing filter
+  removed = removed.filter(text => {
+    let detail = dynamicFilters.get(text);
+    if (detail && detail.subscriptionIds) {
+      let index = detail.subscriptionIds.indexOf(subscription.id);
+      if (index !== -1)
+        detail.subscriptionIds.splice(index, 1);
+      return detail.subscriptionIds.length == 0;
+    }
+    return false;
+  });
+
+  let removeRuleIds = removed.flatMap(text => {
+    let detail = dynamicFilters.get(text);
+    return detail ? detail.ruleIds : [];
+  });
+
+  // Empty array cause exceptions. Make it `undefined`.
+  if (removeRuleIds.length == 0)
+    removeRuleIds = void 0;
+
+  await browser.declarativeNetRequest.updateDynamicRules(
+    {addRules: filters.add, removeRuleIds}
+  );
+
+  removed.forEach(text => dynamicFilters.delete(text));
+  removed.forEach(ruleId => ruleIdToFilterText.delete(ruleId));
+
+  filters.details.forEach(details => {
+    let {useFilterEngine, filter, ruleIds, enabled} = details;
+
+    setHighestRuleId(ruleIds);
+    dynamicFilters.set(filter.text,
+                       {ruleIds, useFilterEngine, enabled, metadata: {},
+                        subscriptionIds: [subscription.id]});
+    for (let ruleId of ruleIds)
+      ruleIdToFilterText.set(ruleId, filter.text);
+  });
+
+  storeDynamicFilters();
 }
 
 export function validateFilter(filter) {
@@ -121,6 +191,8 @@ export function init() {
 
       for (let {ruleIds} of dynamicFilters.values())
         setHighestRuleId(ruleIds);
+
+      filterNotifier.on("subscription.updated", dynamicSubscriptionUpdate);
     })();
   }
 
@@ -150,16 +222,22 @@ async function getRules(filter) {
   return {filterRules, ruleIds};
 }
 
-async function processFilterTexts(texts) {
+async function processFilterTexts(texts, subscriptionId = null) {
   let details = [];
   let add = [];
   let exist = [];
+  let existOnOtherSubscription = [];
   let seenFilterTexts = new Set();
 
   texts = texts.map(Filter.normalize);
   for (let text of texts) {
-    if (dynamicFilters.has(text)) {
-      exist.push(text);
+    let dynamicFilterToAnalyze = dynamicFilters.get(text);
+    if (dynamicFilterToAnalyze) {
+      let subscriptionIds = dynamicFilterToAnalyze.subscriptionIds || [null];
+      if (subscriptionIds.includes(subscriptionId))
+        exist.push(text);
+      else
+        existOnOtherSubscription.push(text);
       continue;
     }
 
@@ -183,7 +261,7 @@ async function processFilterTexts(texts) {
     seenFilterTexts.add(text);
   }
 
-  return {add, exist, details};
+  return {add, exist, existOnOtherSubscription, details};
 }
 
 async function dynamicRulesAvailable() {
@@ -217,12 +295,20 @@ export async function addFilters(texts, metadata) {
     });
   }
 
+  for (let text of filters.existOnOtherSubscription) {
+    let filter = dynamicFilters.get(text);
+    if (!filter.subscriptionIds)
+      filter.subscriptionIds = [];
+    filter.subscriptionIds.push(null);
+  }
+
   for (let filterDetails of filters.details) {
     let {filter, ruleIds, enabled} = filterDetails;
     filterEngine.filterStorage.addFilter(filter);
 
     setHighestRuleId(ruleIds);
-    dynamicFilters.set(filter.text, {ruleIds, enabled, metadata});
+    dynamicFilters.set(filter.text, {ruleIds, enabled, metadata,
+                                     subscriptionIds: [null]});
     for (let ruleId of ruleIds)
       ruleIdToFilterText.set(ruleId, filter.text);
   }
@@ -264,11 +350,23 @@ export async function removeOrDisableFilters(texts, remove = true) {
     let details = dynamicFilters.get(text);
 
     if (remove) {
-      filterEngine.filterStorage.removeFilter(Filter.fromText(text));
+      // Removing existing filter
+      if (details) {
+        if (!details.subscriptionIds)
+          details.subscriptionIds = [];
 
-      dynamicFilters.delete(text);
-      for (let ruleId of ruleIdsToRemove)
-        ruleIdToFilterText.delete(ruleId);
+        let index = details.subscriptionIds.indexOf(null);
+        if (index !== -1)
+          details.subscriptionIds.splice(index, 1);
+      }
+      // Removing filter only if subscriptionIds array is empty
+      if (details.subscriptionIds && details.subscriptionIds.length >= 0) {
+        filterEngine.filterStorage.removeFilter(Filter.fromText(text));
+
+        dynamicFilters.delete(text);
+        for (let ruleId of ruleIdsToRemove)
+          ruleIdToFilterText.delete(ruleId);
+      }
     }
     else {
       filterEngine.filterStorage.filterState.setEnabled(text, false);
@@ -276,6 +374,7 @@ export async function removeOrDisableFilters(texts, remove = true) {
       details.enabled = false;
       details.ruleIds = [];
       dynamicFilters.set(text, details);
+      ruleIdToFilterText.set(text, details);
     }
   }
 
@@ -323,6 +422,17 @@ export async function enableFilters(texts) {
 export async function getDynamicFilters() {
   await init();
   return dynamicFilters;
+}
+
+export async function getDynamicUserFilters() {
+  await init();
+  let dynamicUserFilters = new Map();
+
+  for (let [filterText, details] of dynamicFilters.entries()) {
+    if (!details.subscriptionIds || details.subscriptionIds.includes(null))
+      dynamicUserFilters.set(filterText, details);
+  }
+  return dynamicUserFilters;
 }
 
 export async function migrateCustomFilters() {

@@ -19,8 +19,9 @@ import expect from "expect";
 
 import browser from "webextension-polyfill";
 import {Page, waitForInvisibleElement, executeScript, setMinTimeout, wait,
-        getVisibleElement, getVisibleElementInFrame, isFirefox,
-        firefoxVersion, TEST_PAGES_DOMAIN, TEST_PAGES_URL, SITEKEY,
+        getVisibleElement, getVisibleElementInFrame, expectElemHideHidden,
+        expectElemHideVisible, isFirefox, firefoxVersion,
+        TEST_PAGES_DOMAIN, TEST_PAGES_URL, SITEKEY,
         TEST_MV3_SUBSCRIPTION, isMV3, waitForHighlightedStyle}
   from "./utils.js";
 import {addFilter, EWE} from "./messaging.js";
@@ -32,38 +33,6 @@ let elemhideEmulationUpdateTimeout = 4000;
 let unhiddenTimeout = isFuzzingServiceWorker() ? 1000 : 200;
 
 describe("Element Hiding", function() {
-  async function expectElemHideHidden({elemId = "elem-hide",
-                                       url = "element-hiding.html",
-                                       frameIds} = {}) {
-    let tabId = await new Page(url).loaded;
-    let getElem = frameIds ?
-        () => getVisibleElementInFrame(tabId, elemId, frameIds) :
-        () => getVisibleElement(tabId, elemId);
-
-    await wait(
-      async() => await getElem() == null,
-      hideTimeout,
-      `Expected element "${elemId}" on page "${url}" to be hidden, but it was visible.`
-    );
-  }
-
-  async function expectElemHideVisible({elemId = "elem-hide",
-                                        url = "element-hiding.html",
-                                        frameIds} = {}) {
-    let tabId = await new Page(url).loaded;
-    let getElem = frameIds ?
-        () => getVisibleElementInFrame(tabId, elemId, frameIds) :
-        () => getVisibleElement(tabId, elemId);
-
-    // If we're expecting things to not be hidden, but we check before
-    // the filters have a chance to be applied, then we're not really
-    // testing anything.
-    await new Promise(r => setTimeout(r, unhiddenTimeout));
-
-    let elem = await getElem();
-    expect(elem).not.toBeNull();
-  }
-
   it("hides an element", async function() {
     await addFilter("###elem-hide");
     await expectElemHideHidden();

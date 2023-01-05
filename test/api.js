@@ -21,8 +21,8 @@ import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 
 import {Page, Popup, setMinTimeout, wait, executeScript, isFirefox, isEdge,
         isChromiumBased, isIncognito, SITEKEY,
-        getVisibleElement, isMV3, TEST_PAGES_URL,
-        TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN,
+        getVisibleElement, isMV3, expectElemHideVisible, expectElemHideHidden,
+        TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN,
         isMV2CustomSubsExtension, TEST_MV3_SUBSCRIPTION,
         TEST_MV3_SUBSCRIPTION_2, TEST_MV3_SUBSCRIPTION_3} from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage,
@@ -72,12 +72,12 @@ const ADDON_NAME = "foo";
 const ADDON_VERSION = "2.1";
 
 let subCircumvention = {
-  id: "D4028CDD-3D39-4624-ACC7-8140F4EC3238",
+  id: "00000000-0000-0000-0000-000000000030",
   type: "circumvention",
   title: "ABP filters",
   homepage: "https://github.com/abp-filters/abp-filters-anti-cv",
-  url: "https://easylist-downloads.adblockplus.org/v3/full/abp-filters-anti-cv.txt",
-  mv2_url: "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt"
+  url: "http://localhost:3003/anti-cv-subscription.txt",
+  mv2_url: "http://localhost:3003/mv2_anti-cv-subscription.txt"
 };
 
 let subEasylist = {
@@ -115,6 +115,33 @@ let subAcceptableAds = {
   homepage: "https://acceptableads.com/",
   url: "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt",
   mv2_url: "https://easylist-downloads.adblockplus.org/exceptionrules.txt"
+};
+
+
+let shouldBeBlocked = async function(pageUrl, resource, errorMessage) {
+  await wait(
+    async() => {
+      try {
+        await new Page(pageUrl).expectResource(resource).toBeBlocked();
+        return true;
+      }
+      catch (e) {}
+      return false;
+    }, 4000, errorMessage ? errorMessage : `${resource} on ${pageUrl} was not blocked`
+  );
+};
+
+let shouldBeLoaded = async function(pageUrl, resource, errorMessage) {
+  await wait(
+    async() => {
+      try {
+        await new Page(pageUrl).expectResource(resource).toBeLoaded();
+        return true;
+      }
+      catch (e) {}
+      return false;
+    }, 4000, errorMessage ? errorMessage : `${resource} on ${pageUrl} was not loaded`
+  );
 };
 
 describe("API", function() {
@@ -456,6 +483,326 @@ describe("API", function() {
       expect(actualAaPrivacyURL).toEqual(expectedAaPrivacyURL);
     });
 
+    describe("Filter list updates", function() {
+      setMinTimeout(this, isFuzzingServiceWorker() ? 30000 : 10000);
+      beforeEach(async function() {
+        await fetch("http://localhost:3003/clear");
+      });
+
+      let updateSubscriptionData = async function(updatedReply, url = "setReplyForAntiCV") {
+        let data = {data: updatedReply};
+        await fetch(`http://localhost:3003/${url}`, {
+          method: "POST",
+          cache: "no-cache",
+          headers: {
+            "Content-Type": "application/json"},
+          body: JSON.stringify(data)
+        });
+      };
+
+      let addSubscription = async function(url = subCircumvention.url) {
+        await EWE.subscriptions.add(url);
+        await wait(
+          async() => {
+            let subscriptions = await EWE.subscriptions.getDownloadable();
+            expect(subscriptions)
+              .toEqual(
+                expect.arrayContaining([
+                  expect.objectContaining({url})
+                ]));
+            return subscriptions[0].downloadStatus == "synchronize_ok";
+          }, 2000, "Subscription was not downloaded."
+        );
+      };
+
+      it("updates the CV subscription", async function() {
+        let updatedReply = "[Adblock Plus]";
+        await updateSubscriptionData(updatedReply);
+        await addSubscription();
+
+        // update reply on the server
+        updatedReply = [
+          "[Adblock Plus]",
+          "example.com#$#abort-on-property-read atob"
+        ].join("\n");
+        await updateSubscriptionData(updatedReply);
+        await EWE.subscriptions.sync();
+        // wait for subscriptions to be synced
+        await new Promise(r => setTimeout(r, 1000));
+
+        expect(
+          await EWE.subscriptions.getForFilter("example.com#$#abort-on-property-read atob")
+        ).toEqual(expect.arrayContaining([
+          expect.objectContaining({url: subCircumvention.url})])
+        );
+      });
+
+      it("adds & removes content filter by updating CV subscription", async function() {
+        let updatedReply = [
+          "[Adblock Plus]",
+          "example.com##element_hiding_filter_2"
+        ].join("\n");
+        await updateSubscriptionData(updatedReply);
+        await addSubscription();
+        await expectElemHideVisible();
+
+        // update reply on the server to add content filter
+        updatedReply = [
+          "[Adblock Plus]",
+          "###elem-hide"
+        ].join("\n");
+        await updateSubscriptionData(updatedReply);
+        await EWE.subscriptions.sync();
+
+        await expectElemHideHidden();
+
+        // update reply on the server to remove content filter
+        updatedReply = [
+          "[Adblock Plus]",
+          "###elem-hide_3"
+        ].join("\n");
+        await updateSubscriptionData(updatedReply);
+        await EWE.subscriptions.sync();
+        // wait for subscriptions to be synced
+        await new Promise(r => setTimeout(r, 500));
+
+        await expectElemHideVisible();
+      });
+
+      it("doesn't bring non-CV subscription data to DNR world", async function() {
+        if (!isMV3())
+          this.skip();
+
+        let updatedReply = "[Adblock Plus]";
+        await updateSubscriptionData(updatedReply);
+        await addSubscription();
+        let dynamicRules = await browser.declarativeNetRequest
+              .getDynamicRules().length;
+
+        await addSubscription("http://localhost:3003/subscription-that-shouldnt-be-moved-to-dnr-world.txt");
+        expect(await browser.declarativeNetRequest
+          .getDynamicRules().length).toEqual(dynamicRules);
+
+        await shouldBeLoaded("image-from-non-dnr-subscription.html", "image-from-non-dnr-subscription.png",
+                             "Image from non dnr subscription was blocked before rule was added");
+
+        // update reply on the server
+        updatedReply = [
+          "[Adblock Plus]",
+          "example.com##element_hiding_filter",
+          "/image-from-non-dnr-subscription.png^$image"
+        ].join("\n");
+        await updateSubscriptionData(updatedReply, "setReplyForNonDNR");
+        await EWE.subscriptions.sync();
+
+        expect(await browser.declarativeNetRequest
+          .getDynamicRules().length).toEqual(dynamicRules);
+
+        // check that the circumvention subscription was updated and the non-DNR
+        // related subscription wasn't
+        await shouldBeLoaded("image-from-cv-subscription.html", "image-from-cv-subscription.png");
+
+        await shouldBeLoaded("image-from-non-dnr-subscription.html", "image-from-non-dnr-subscription.png",
+                             "Image from non dnr subscription was blocked");
+      });
+
+      it("doesn't remove enabled custom filters which conflict with subscription filters", async function() {
+        let updatedReply = [
+          "[Adblock Plus]",
+          "/image-from-custom-filter.png^$image"
+        ].join("\n");
+        await updateSubscriptionData(updatedReply);
+        await addSubscription();
+        await EWE.filters.add(["/image-from-custom-filter.png^$image"]);
+        let userFilters = await EWE.filters.getUserFilters();
+        expect(userFilters[0]).toMatchObject(
+          {
+            csp: null,
+            enabled: true,
+            selector: null,
+            slow: false,
+            text: "/image-from-custom-filter.png^$image",
+            thirdParty: null,
+            type: "blocking"
+          }
+        );
+
+        await shouldBeBlocked("image-from-custom-filter.html", "image-from-custom-filter.png");
+
+        // update reply on the server to remove filter
+        updatedReply = [
+          "[Adblock Plus]",
+          "example.com##.inserted_rtb"
+        ].join("\n");
+        await updateSubscriptionData(updatedReply);
+
+        await EWE.subscriptions.sync();
+        // wait for subscriptions to be synced
+        await new Promise(r => setTimeout(r, 1000));
+
+        userFilters = await EWE.filters.getUserFilters();
+        expect(userFilters[0]).toMatchObject(
+          {
+            csp: null,
+            enabled: true,
+            selector: null,
+            slow: false,
+            text: "/image-from-custom-filter.png^$image",
+            thirdParty: null,
+            type: "blocking"
+          }
+        );
+
+        await shouldBeBlocked("image-from-custom-filter.html", "image-from-custom-filter.png");
+      });
+
+      it("doesn't remove disabled custom filters which conflict with subscription filters but they remain disabled", async function() {
+        let updatedReply = [
+          "[Adblock Plus]",
+          "/image-from-custom-filter.png^$image"
+        ].join("\n");
+        await updateSubscriptionData(updatedReply);
+        await addSubscription();
+        await EWE.filters.add(["/image-from-custom-filter.png^$image"]);
+        let userFilters = await EWE.filters.getUserFilters();
+        expect(userFilters[0]).toMatchObject(
+          {
+            csp: null,
+            enabled: true,
+            selector: null,
+            slow: false,
+            text: "/image-from-custom-filter.png^$image",
+            thirdParty: null,
+            type: "blocking"
+          }
+        );
+        await shouldBeBlocked("image-from-custom-filter.html", "image-from-custom-filter.png");
+
+        await EWE.filters.disable(["/image-from-custom-filter.png^$image"]);
+        userFilters = await EWE.filters.getUserFilters();
+        expect(userFilters[0]).toMatchObject(
+          {
+            csp: null,
+            enabled: false,
+            selector: null,
+            slow: false,
+            text: "/image-from-custom-filter.png^$image",
+            thirdParty: null,
+            type: "blocking"
+          }
+        );
+        if (isMV3()) {
+        // We need to wait for dynamic rules to have changes in filters applied
+          await wait(
+            async() => {
+              let dynamicRules =
+                      await browser.declarativeNetRequest.getDynamicRules();
+              let dynamicRulesLength = dynamicRules.length;
+              return dynamicRulesLength == 0;
+            }, 2000, "DNRs weren't updated."
+          );
+        }
+
+        await shouldBeLoaded("image-from-custom-filter.html", "image-from-custom-filter.png");
+
+        // update reply on the server to remove filter
+        updatedReply = "[Adblock Plus]";
+
+        await updateSubscriptionData(updatedReply);
+        await EWE.subscriptions.sync();
+        // wait for subscriptions to be synced
+        await new Promise(r => setTimeout(r, 1000));
+
+        userFilters = await EWE.filters.getUserFilters();
+        expect(userFilters[0]).toMatchObject(
+          {
+            csp: null,
+            enabled: false,
+            selector: null,
+            slow: false,
+            text: "/image-from-custom-filter.png^$image",
+            thirdParty: null,
+            type: "blocking"
+          }
+        );
+        if (isMV3()) {
+          let dynamicRules =
+            await browser.declarativeNetRequest.getDynamicRules();
+          expect(dynamicRules.length).toBe(0);
+        }
+        await shouldBeLoaded("image-from-custom-filter.html", "image-from-custom-filter.png");
+      });
+
+      it("stops blocking resources after removing a URL filter", async function() {
+        let updatedReply = [
+          "[Adblock Plus]",
+          "/image-from-cv-subscription.png^$image"
+        ].join("\n");
+        await updateSubscriptionData(updatedReply);
+        await addSubscription();
+        await shouldBeBlocked("image-from-cv-subscription.html", "image-from-cv-subscription.png");
+
+        // update reply on the server to remove filter
+        updatedReply = "[Adblock Plus]";
+
+        await updateSubscriptionData(updatedReply);
+        await EWE.subscriptions.sync();
+
+        await shouldBeLoaded("image-from-cv-subscription.html", "image-from-cv-subscription.png");
+      });
+
+      it("block content after the filter list update", async function() {
+        let updatedReply = [
+          "[Adblock Plus]",
+          "/image-for-filter-that-should-be-untouched.png^$image"
+        ].join("\n");
+        await updateSubscriptionData(updatedReply);
+        const {declarativeNetRequest} = browser;
+
+        if (declarativeNetRequest) {
+          let dynamicRules = await declarativeNetRequest.getDynamicRules();
+          expect(dynamicRules.length).toEqual(0);
+          let enabledRulesets =
+              await declarativeNetRequest.getEnabledRulesets();
+          expect(enabledRulesets.length).toBe(0);
+        }
+        // make sure we have no subscription.
+        let downloadables = await EWE.subscriptions.getDownloadable();
+        expect(downloadables.length).toBe(0);
+
+        await shouldBeLoaded("image-from-cv-subscription.html", "image-from-cv-subscription.png");
+
+        await addSubscription();
+
+        // make sure we only have one subscription.
+        downloadables = await EWE.subscriptions.getDownloadable();
+        expect(downloadables.length).toBe(1);
+
+        if (declarativeNetRequest) {
+          let enabledRulesets =
+              await declarativeNetRequest.getEnabledRulesets();
+          // we shouldn't have a ruleset enabled for this list.
+          expect(enabledRulesets.length).toBe(0);
+        }
+
+        await shouldBeLoaded("image-from-cv-subscription.html", "image-from-cv-subscription.png");
+        await shouldBeBlocked("image-from-cv-subscription.html", "image-for-filter-that-should-be-untouched.png");
+
+        // update reply on the server
+        let updatedReplyForRemoval = [
+          "[Adblock Plus]",
+          "/image-from-cv-subscription.png^$image"
+        ].join("\n");
+        await updateSubscriptionData(updatedReplyForRemoval);
+        await EWE.subscriptions.sync();
+        // wait for subscriptions to be synced
+        await new Promise(r => setTimeout(r, 1000));
+
+        await shouldBeBlocked("image-from-cv-subscription.html", "image-from-cv-subscription.png");
+        await shouldBeLoaded("image-from-cv-subscription.html", "image-for-filter-that-should-be-untouched.png");
+      });
+    });
+
     describe("Subscription events", function() {
       it("listens to onAdded events", async function() {
         await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
@@ -520,6 +867,47 @@ describe("API", function() {
         expect.arrayContaining([
           expect.objectContaining({text: SITEKEY_ELEMHIDE_FILTER})
         ]));
+
+      it("adds filter that is already on subscription", async function() {
+        await EWE.subscriptions.add(subCircumvention.url);
+        await EWE.filters.add(["/image-from-custom-filter.png^$image"]);
+        let userFilters = await EWE.filters.getUserFilters();
+        expect(userFilters[0]).toMatchObject(
+          {
+            csp: null,
+            enabled: true,
+            selector: null,
+            slow: false,
+            text: "/image-from-custom-filter.png^$image",
+            thirdParty: null,
+            type: "blocking"
+          }
+        );
+
+        await shouldBeBlocked("image-from-custom-filter.html", "image-from-custom-filter.png");
+      });
+
+      it("remove custom filter that is already on subscription as a custom filter only", async function() {
+        await EWE.subscriptions.add(subCircumvention.url);
+        await EWE.filters.add(["/image-from-custom-filter.png^$image"]);
+        let userFilters = await EWE.filters.getUserFilters();
+        expect(userFilters[0]).toMatchObject(
+          {
+            csp: null,
+            enabled: true,
+            selector: null,
+            slow: false,
+            text: "/image-from-custom-filter.png^$image",
+            thirdParty: null,
+            type: "blocking"
+          }
+        );
+
+        await EWE.filters.remove(["/image-from-custom-filter.png^$image"]);
+        expect(await EWE.filters.getUserFilters().length).toEqual(0);
+
+        await shouldBeBlocked("image-from-custom-filter.html", "image-from-custom-filter.png");
+      });
     });
 
     describe("Filters metadata", function() {
@@ -1069,7 +1457,7 @@ describe("API", function() {
           expectedUrls = [
             mv3subscriptionUrl,
             "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt",
-            "https://easylist-downloads.adblockplus.org/v3/full/abp-filters-anti-cv.txt"
+            "http://localhost:3003/anti-cv-subscription.txt"
           ];
         }
         else {
