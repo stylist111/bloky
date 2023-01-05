@@ -235,15 +235,19 @@ Usage:
 ```
 npm exec subs-convert -- [--input/-i input_dir]
                          [--output/-o output_dir]
+                         [--report/-r]
+                         [--report-output/-O report_dir]
 ```
 
 Options:
 - `input`/`i`: Input directory. Default: `"scriptsOutput/subscriptions"`
 - `output`/`o`: Output directory. Default: `"scriptsOutput/rulesets"`
+- `report`/`r`: Boolean flag. If this flag is passed the report is generated. You can also use `--no-report` to force the report to not be generated. Default: `false`
+- `report-output`/`O`: Report directory. Default: `"scriptsOutput/report"`
 
 Example:
 ```
-npm exec subs-convert -- -i data/fetched -o data/rulesets
+npm exec subs-convert -- -i data/fetched -o data/rulesets -r -O data/report
 ```
 
 #### subs-generate

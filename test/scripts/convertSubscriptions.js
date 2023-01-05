@@ -28,6 +28,7 @@ describe("convertSubscriptions script", () => {
   let dirPath;
   let tmpInDir;
   let tmpOutDir;
+  let tmpReportDir;
   let originalConsoleWarn;
   let warnings;
 
@@ -39,6 +40,7 @@ describe("convertSubscriptions script", () => {
     dirPath = path.join(os.tmpdir(), "convert-");
     tmpInDir = fs.mkdtempSync(dirPath);
     tmpOutDir = fs.mkdtempSync(dirPath);
+    tmpReportDir = fs.mkdtempSync(dirPath);
     originalConsoleWarn = console.warn;
     console.warn = mockedConsoleWarn;
     warnings = [];
@@ -49,6 +51,8 @@ describe("convertSubscriptions script", () => {
       fs.rmdirSync(tmpInDir, {recursive: true});
     if (fs.existsSync(tmpOutDir))
       fs.rmdirSync(tmpOutDir, {recursive: true});
+    if (fs.existsSync(tmpReportDir))
+      fs.rmdirSync(tmpReportDir, {recursive: true});
     console.warn = originalConsoleWarn;
   });
 
@@ -61,6 +65,73 @@ describe("convertSubscriptions script", () => {
   function getDnrRulesFromFile(filename) {
     let fullFilename = path.join(tmpOutDir, filename);
     return JSON.parse(fs.readFileSync(fullFilename, encoding));
+  }
+
+  function getReportDataFromFile(filename) {
+    let fullFilename = path.join(tmpReportDir, filename);
+    return fs.readFileSync(fullFilename, encoding)
+      .trim().split("\n").slice(1)
+      .map(line => {
+        let [
+          filterText,
+          modifyHeaders,
+          allow,
+          allowAllRequests,
+          redirect,
+          block,
+          allTypes] = line.split("\t");
+
+        return {
+          filterText,
+          modifyHeaders,
+          allow,
+          allowAllRequests,
+          redirect,
+          block,
+          allTypes};
+      });
+  }
+
+  function getSummaryReportData() {
+    let fullFilename = path.join(tmpReportDir, "_reportSummary.csv");
+    return fs
+      .readFileSync(fullFilename, encoding)
+      .trim().split("\n").slice(1)
+      .map(line => {
+        let [
+          subsId,
+          modifyHeaders,
+          allow,
+          allowAllRequests,
+          redirect,
+          block,
+          allTypes,
+          modifyHeadersMax,
+          allowMax,
+          allowAllRequestsMax,
+          redirectMax,
+          blockMax,
+          content,
+          url
+        ] = line.split("\t");
+
+        return {
+          subsId,
+          modifyHeaders,
+          allow,
+          allowAllRequests,
+          redirect,
+          block,
+          allTypes,
+          modifyHeadersMax,
+          allowMax,
+          allowAllRequestsMax,
+          redirectMax,
+          blockMax,
+          content,
+          url
+        };
+      });
   }
 
   it("does not filter regex rules", async function() {
@@ -81,6 +152,66 @@ describe("convertSubscriptions script", () => {
     expect(dnrRules.length).toEqual(2);
     expect(dnrRules[0].id).toEqual(expect.any(Number));
     expect(dnrRules[1].id).toEqual(expect.any(Number));
+  });
+
+  it("generates a summary report file", async function() {
+    let filename = "foo.txt";
+    createAbpRuleFile(filename, "[Adblock Plus 2.0]\n/rule1/\nrule2\n");
+    await convert(tmpInDir, tmpOutDir, true, tmpReportDir);
+    const reportSummaryFile = fs.existsSync(path.join(tmpReportDir, "_reportSummary.csv"));
+    expect(reportSummaryFile).toBeTruthy();
+  });
+
+  it("generates a report for each subscription", async function() {
+    let filename1 = "foo.txt";
+    createAbpRuleFile(filename1, "[Adblock Plus 2.0]\n/rule1/\nrule2\n");
+    let filename2 = "bar.txt";
+    createAbpRuleFile(filename2, "[Adblock Plus 2.0]\n/rule1/\nrule2\n");
+    let filename3 = "baz.txt";
+    createAbpRuleFile(filename3, "[Adblock Plus 2.0]\n/rule1/\nrule2\n");
+    await convert(tmpInDir, tmpOutDir, true, tmpReportDir);
+    const folderContent = fs.readdirSync(tmpReportDir);
+    const subscriptionNames = [filename1, filename2, filename3];
+    expect(folderContent).toEqual(expect.arrayContaining(subscriptionNames));
+  });
+
+  it("generates the subscription data correctly", async function() {
+    let filename = "foo.txt";
+    createAbpRuleFile(filename, "[Adblock Plus 2.0]\n/image-from-subscription.png^$image\n###elem-hide");
+    await convert(tmpInDir, tmpOutDir, true, tmpReportDir);
+    const reportContent = getReportDataFromFile(filename);
+    expect(reportContent[0]).toEqual({
+      filterText: "/image-from-subscription.png^$image",
+      modifyHeaders: "0",
+      allow: "0",
+      allowAllRequests: "0",
+      redirect: "0",
+      block: "1",
+      allTypes: "1"
+    });
+  });
+
+  it("generates the summary data correctly", async function() {
+    let filename = "foo.txt";
+    createAbpRuleFile(filename, "[Adblock Plus 2.0]\n/image-from-subscription.png^$image\n###elem-hide");
+    await convert(tmpInDir, tmpOutDir, true, tmpReportDir);
+    const reportSummaryContent = getSummaryReportData(filename);
+    expect(reportSummaryContent[0]).toEqual({
+      subsId: filename,
+      modifyHeaders: "0",
+      allow: "0",
+      allowAllRequests: "0",
+      redirect: "0",
+      block: "1",
+      allTypes: "1",
+      modifyHeadersMax: "0",
+      allowMax: "0",
+      allowAllRequestsMax: "0",
+      redirectMax: "0",
+      blockMax: "1",
+      content: "1",
+      url: "1"
+    });
   });
 
   it("encodes line number into rule ids", async function() {
