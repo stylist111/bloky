@@ -1,4 +1,4 @@
-0.8.0 -
+0.8.0 - 2023/01/10
 ==================
 
 This release includes the changes in 0.7.1, 0.7.2 and 0.7.3. Please see also
