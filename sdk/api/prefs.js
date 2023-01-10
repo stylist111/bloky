@@ -97,9 +97,16 @@ export async function awaitSavingComplete() {
 function addPreference(preference) {
   Object.defineProperty(Prefs, preference, {
     get() {
-      return (overrides.has(preference) ?
-        overrides.get(preference) :
-        defaults[preference]);
+      if (overrides.has(preference))
+        return overrides.get(preference);
+
+      let defaultValue = defaults[preference];
+      // Arrays and Objects are deeply copied
+      // to avoid modifications of `defaults`
+      return Array.isArray(defaultValue) ||
+        (typeof defaultValue === "object" && defaultValue !== null) ?
+          JSON.parse(JSON.stringify(defaultValue)) :
+          defaultValue;
     },
     set(value) {
       let key = prefToKey(preference);

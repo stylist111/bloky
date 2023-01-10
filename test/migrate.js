@@ -65,7 +65,7 @@ describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
     if (start) {
       expect(isMV3()).toBeFalsy(); // MV2 before the migration
       await EWE.testing._setPrefs("migration_state", MIGRATED_TO_MV2);
-      await EWE.subscriptions.clearMigrationErrors();
+      // We assume that there are no migration errors at this point.
 
       await EWE.testing._removeAllSubscriptions();
       await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.mv2_url);
