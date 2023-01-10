@@ -1,3 +1,112 @@
+0.8.0 -
+==================
+
+This release includes the changes in 0.7.1, 0.7.2 and 0.7.3. Please see also
+the corresponding sections below.
+
+# General
+
+- Updated to adblockpluscore 0.11.0. This is necessary for some of the
+  change. (#438)
+- Improved documentation of the generation of the subscription data
+  (static rulesets) and split documentation to `docs`. The documentation
+  generation out is now in `dist/docs`. (#265, #433)
+
+- Manifest V3:
+  - Rename `EWE.subscriptions.removeAll` to
+    `EWE.subscriptions._removeAll` as the API is private. (#340)
+  - Support sitekeys in Manifest V3. (#380)
+  - No longer skip regular expression filter rules when generating the
+    Manifest V3 static rulesets. (#404)
+  - Documentation has been updated to mention that EWE.start must be
+    called in the first turn of the event loop for MV3
+    extensions. This has always been the case, but was not documented
+    before now. (#439)
+  - Subscriptions of type `circumvention` are downloaded and updated.
+    They are also excluded from the DNR rules generated from the
+    subscriptions. (#343)
+- A new function, `EWE.debugging.clearDebugOptions` has been
+  added. This resets the elemhide debug options to their default
+  setting. (#420)
+- Updated documentation on which storage keys we use in
+  `browser.storage.local` and `browser.storage.session`. (#422)
+
+# Bug fixes
+
+- Manifest V3:
+  - Make sure the rulesets are properly enabled. (#387)
+  - Element hide debugging continues to work if the service worker is
+    suspended. (#321)
+  - Ensure subscription links works with service worker suspended. (#325)
+  - Ensure notifications works with service worker suspended. (#320)
+- Don't return download related properties for non-downloadable subscriptions
+  when calling `EWE.subscriptions.getDownloadables()`. (#365)
+- Keep migration errors after reload. (#423, #443)
+- Prefs no longer watches changes to local storage which was sometimes
+  leading to it reverting to previous states if changed too
+  rapidly. (#441)
+
+# Build process
+
+- `npm run build` will now generate the subscription data (static
+  rulesets). (#386)
+- Fix build on Windows.
+- Removed `npm start`.
+- New flags `--force-subscription-update` and `--use-external-server`
+  have been added to the `npm run build` script.
+- npm run subs-convert script now supports reporting mechanism with `--report` flag. See readme for more info (#407)
+
+# Tests
+
+- Test reliability improvements:
+  - Improve testing of the migration scenario. (#383)
+  - Increase network timeout.
+  - Increase createKeypair script timeout. (#413)
+  - Fix flaky Edge reload and allowlisting test. (#398)
+  - Increase timeout & apply sleep on reload test to fix flakiness. (#313)
+- Added unit tests. (#388)
+- Various test updates and maintenance.
+- Upgrade get-browser-binary for the test harness. (#403)
+- Fix the update tests. (#396)
+- CI pipeline optimization. (#372)
+  - Reduce the tasks run on CI pipelines.
+  - Reuse the test extension from the build test.
+  - Remove unnecessary caching.
+  - Split some of the pipeline to be run manually.
+  - Edge CI jobs are run together.
+  - Edge jobs timeout got extended. (#288)
+  - Some jobs are to be run manually unless on `master`.
+  - Integration build got fixed.
+- Add the ability to see background and test logs in the CI log
+  output. (#399)
+
+# Updating your code
+
+- `EWE.subscriptions.removeAll` has been removed and should no longer
+  be used.
+- `EWE.debugging.setElementHidingDebugMode` and
+  `EWE.debugging.setElementHidingDebugStyle` methods are async now. (#321)
+- Debug mode settings in `EWE.debugging` are now retained. They are
+  also persisted when the browser restarts in MV3 mode. (#321)
+- In `EWE.subscriptions.getDownloadables()` will filter out some
+  properties for subscription whose `downloadable` property is false.
+  Excluded properties are: `downloading`, `version`, `downloadStatus`,
+  `lastSuccess`, `lastDownload`, `softExpiration`, `expires`, and
+  `downloadCount`. (#365)
+- `EWE.subscriptions.getMigrationErrors()` now returns only migration errors
+  that relate to subscriptions. Use `EWE.filters.getMigrationErrors()` for
+  the filter equivalent.
+- These functions are now asynchronous.
+- `getMigrationErrors` in the subscriptions and filters namespaces now
+  contain the full `subscription` and `filter` objects respectively.
+- If you ever use `adblockpluscore` directly, make sure to update to
+  match the version used by the SDK. (#438)
+- In MV3, subscriptions needs to be regenerated when upgrading to this
+  version of the SDK. A subscription of type `circumvention` will be
+  downloaded by the WebExtension, and updated like MV2 filter lists.
+  No DNR ruleset will be created by the subscription conversion
+  process. (#343)
+
 0.7.3 - 2022/12/22
 ==================
 
