@@ -95,13 +95,6 @@ func:v2:chromium:stable:
   variables:
     TEST_PARAMS: v2 chromium
 
-func:v2:chromium:beta:migrate:
-  extends: .functional
-  variables:
-    TEST_PARAMS: v2 chromium beta --testKinds mv2-mv3-migrate
-  rules:
-    - !reference [.manual-run, rules]
-
 func:v2:chromium:stable:incognito:
   extends: .functional
   variables:
@@ -182,8 +175,7 @@ func:v2:windows:edge-all:
     - windows
     - windows-1809
   script:
-    - npm test -- v2 edge --timeout=10000
-    - npm test -- v2 edge --timeout=10000 --testKinds mv2-mv3-migrate
+    - npm test -- v2 edge --timeout=10000    
     - npm test -- v2 edge --incognito --timeout=10000
 
 func:v3:chromium:stable:

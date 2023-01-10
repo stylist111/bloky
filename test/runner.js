@@ -73,6 +73,16 @@ function parseArguments() {
       testKinds.push("fuzz");
       testKinds.push("update");
     }
+    else if (argv.browser === "chromium") {
+      let version = argv.version;
+
+      // chromium 102 is the minimum supported version for MV3.
+      if (!version || version === "dev" || version === "beta" || version.split(".")[0] >= 102)
+        testKinds.push("mv2-mv3-migrate");
+    }
+    else if (argv.browser === "edge") {
+      testKinds.push("mv2-mv3-migrate");
+    }
   }
 
   return {

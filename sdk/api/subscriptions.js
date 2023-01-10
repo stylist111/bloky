@@ -52,7 +52,7 @@ function convertSubscription(subscription) {
 
   let newSubscription = {
     id, enabled: !disabled,
-    homepage, downloadable, title, url
+    homepage, downloadable, title, url, downloadCount, version
   };
 
   if (downloadable) {
