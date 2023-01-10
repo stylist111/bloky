@@ -1,6 +1,6 @@
 {
   "name": "@eyeo/webext-sdk",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "eyeo's Web Extension Ad Blocking Toolkit",
   "repository": {
     "type": "git",
