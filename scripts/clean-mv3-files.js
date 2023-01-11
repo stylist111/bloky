@@ -20,6 +20,8 @@
 import fs from "fs";
 import path from "path";
 
+import {isMain} from "./utils.js";
+
 export async function cleanup() {
   for (let item of ["scriptsOutput"]) {
     let pathToRemove = path.join(process.cwd(), item);
@@ -28,8 +30,5 @@ export async function cleanup() {
   }
 }
 
-let proc = process.argv[1];
-if (fs.statSync(proc).isSymbolicLink)
-  proc = fs.realpathSync(proc);
-if (import.meta.url === `file://${proc}`)
+if (isMain(import.meta.url))
   cleanup();

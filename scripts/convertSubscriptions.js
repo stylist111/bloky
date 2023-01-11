@@ -33,6 +33,7 @@ import {
   customCreateConverter,
   reports
 } from "./reportSubscription.js";
+import {isMain} from "./utils.js";
 
 const outputDir = path.join("scriptsOutput", "rulesets");
 const reportDir = path.join("scriptsOutput", "report");
@@ -120,11 +121,7 @@ async function main() {
   await convert(inDir, outDir, generateReport, repDir);
 }
 
-let proc = process.argv[1];
-let stats = fs.statSync(proc);
-if (stats.isSymbolicLink)
-  proc = fs.realpathSync(proc);
-if (import.meta.url === `file://${proc}`) {
+if (isMain(import.meta.url)) {
   main().catch(err => {
     console.error(err);
     process.exit(1);

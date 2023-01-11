@@ -23,6 +23,7 @@ import {exec} from "child_process";
 import path from "path";
 
 import {cleanup} from "./clean-mv3-files.js";
+import {isMain} from "./utils.js";
 
 async function addExtraTestSubscription() {
   let subscriptionFileName = "00000000-0000-0000-0000-000000000002";
@@ -30,7 +31,7 @@ async function addExtraTestSubscription() {
   let outputPath = path.join(
     process.cwd(), "scriptsOutput", "subscriptions", subscriptionFileName
   );
-  await fs.promises.writeFile(outputPath, "");
+  await fs.promises.writeFile(outputPath, "[Adblock Plus]");
 }
 
 async function readFile(filePath) {
@@ -95,11 +96,7 @@ async function run() {
               "Please see the output in the `scriptsOutput` directory");
 }
 
-let proc = process.argv[1];
-let stats = fs.statSync(proc);
-if (stats.isSymbolicLink)
-  proc = fs.realpathSync(proc);
-if (import.meta.url === `file://${proc}`) {
+if (isMain(import.meta.url)) {
   run().catch(err => {
     console.error(err);
     process.exit(1);

@@ -16,7 +16,8 @@
  */
 
 import {webcrypto as crypto} from "crypto";
-import fs from "fs";
+
+import {isMain} from "./utils.js";
 
 function arrayBufferToBase64(buffer) {
   let binary = "";
@@ -50,11 +51,7 @@ export async function createKeypair() {
   return {publicKey, privateKey};
 }
 
-let proc = process.argv[1];
-let stats = fs.statSync(proc);
-if (stats.isSymbolicLink)
-  proc = fs.realpathSync(proc);
-if (import.meta.url === `file://${proc}`) {
+if (isMain(import.meta.url)) {
   createKeypair().then(({publicKey, privateKey}) => {
     console.log(`publicKey="${publicKey}";`);
     console.log(`privateKey="${privateKey}";`);

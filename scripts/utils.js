@@ -66,3 +66,28 @@ export async function download(url, toFile) {
     request.end();
   });
 }
+
+/**
+ * Check if the script was invoked directly from the CLI.
+ *
+ * There are some scripts that can be imported and used in other files but can
+ * also be called from the CLI by the developer to run immediately. This
+ * function takes the url of the file where it was called from and compares it
+ * with the process running.
+ *  @param {string} url - The URL of the containing document, as provided by
+ * `import.meta.url`
+ * @returns {boolean} True if the script was invoked directly from the CLI,
+ * false otherwise.
+ * @example
+ * if (isMain(import.meta.url)) {
+ *   main();
+ * }
+ *
+ */
+export function isMain(url) {
+  let executableName = process.argv[1];
+  if (fs.statSync(executableName).isSymbolicLink)
+    executableName = fs.realpathSync(executableName);
+
+  return url === `file://${executableName}`;
+}

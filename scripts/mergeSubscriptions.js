@@ -22,6 +22,8 @@ import path from "path";
 import {hideBin} from "yargs/helpers";
 
 import {filenameMv3} from "./initSubscriptions.js";
+import {isMain} from "./utils.js";
+
 export const filename = path.join("scriptsOutput", "custom-subscriptions.json");
 
 export async function merge(fromFiles, toFile, space = 2) {
@@ -67,11 +69,7 @@ async function main() {
   await merge(inFiles, outFile, args.space);
 }
 
-let proc = process.argv[1];
-let stats = fs.statSync(proc);
-if (stats.isSymbolicLink)
-  proc = fs.realpathSync(proc);
-if (import.meta.url === `file://${proc}`) {
+if (isMain(import.meta.url)) {
   main().catch(err => {
     console.error(err);
     process.exit(1);

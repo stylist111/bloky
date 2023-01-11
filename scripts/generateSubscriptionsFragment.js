@@ -22,6 +22,7 @@ import {outputDir as convertOutputDir}
   from "./convertSubscriptions.js";
 import yargs from "yargs";
 import {hideBin} from "yargs/helpers";
+import {isMain} from "./utils.js";
 
 const outputDir = path.join("scriptsOutput", "rulesets");
 const outputFile = path.join(outputDir, "rulesets.json");
@@ -97,11 +98,7 @@ function main() {
   console.log(`Web extension manifest fragment file (${toFile}) generated.`);
 }
 
-let proc = process.argv[1];
-let stats = fs.statSync(proc);
-if (stats.isSymbolicLink)
-  proc = fs.realpathSync(proc);
-if (import.meta.url === `file://${proc}`) {
+if (isMain(import.meta.url)) {
   try {
     main();
   }

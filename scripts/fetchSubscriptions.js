@@ -17,7 +17,7 @@
  */
 
 import {filename} from "./mergeSubscriptions.js";
-import {exists, download} from "./utils.js";
+import {exists, download, isMain} from "./utils.js";
 import fs from "fs";
 import yargs from "yargs";
 import path from "path";
@@ -96,11 +96,7 @@ async function main() {
   await fetchSubscriptions(fromFile, toDir, ignoreFetchErrors);
 }
 
-let proc = process.argv[1];
-let stats = fs.statSync(proc);
-if (stats.isSymbolicLink)
-  proc = fs.realpathSync(proc);
-if (import.meta.url === `file://${proc}`) {
+if (isMain(import.meta.url)) {
   main().catch(err => {
     console.error(err);
     process.exit(1);

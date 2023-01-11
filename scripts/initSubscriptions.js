@@ -17,7 +17,7 @@
  */
 
 import fs from "fs";
-import {exists, download} from "./utils.js";
+import {exists, download, isMain} from "./utils.js";
 import path from "path";
 import yargs from "yargs";
 import {hideBin} from "yargs/helpers";
@@ -51,11 +51,7 @@ async function main() {
   console.log(`Subscriptions file (${filename}) generated.`);
 }
 
-let proc = process.argv[1];
-let stats = fs.statSync(proc);
-if (stats.isSymbolicLink)
-  proc = fs.realpathSync(proc);
-if (import.meta.url === `file://${proc}`) {
+if (isMain(import.meta.url)) {
   main().catch(err => {
     console.error(err);
     process.exit(1);
