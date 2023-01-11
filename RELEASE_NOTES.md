@@ -1,8 +1,8 @@
 0.8.0 - 2023/01/10
 ==================
 
-This release includes the changes in 0.7.1, 0.7.2 and 0.7.3. Please see also
-the corresponding sections below.
+This release includes the changes in 0.7.1, 0.7.2 and 0.7.3. Please
+see also the corresponding sections below.
 
 # General
 
@@ -39,9 +39,10 @@ the corresponding sections below.
     suspended. (#321)
   - Ensure subscription links works with service worker suspended. (#325)
   - Ensure notifications works with service worker suspended. (#320)
-- Don't return download related properties for non-downloadable subscriptions
-  when calling `EWE.subscriptions.getDownloadables()`. (#365)
-- Keep migration errors after reload. (#423, #443)
+- Don't return download related properties for non-downloadable
+  subscriptions when calling
+  `EWE.subscriptions.getDownloadables()`. (#365)
+- Keep migration errors after reload. (#443)
 - Prefs no longer watches changes to local storage which was sometimes
   leading to it reverting to previous states if changed too
   rapidly. (#441)
@@ -54,7 +55,8 @@ the corresponding sections below.
 - Removed `npm start`.
 - New flags `--force-subscription-update` and `--use-external-server`
   have been added to the `npm run build` script.
-- npm run subs-convert script now supports reporting mechanism with `--report` flag. See readme for more info (#407)
+- npm run subs-convert script now supports reporting mechanism with
+  `--report` flag. See readme for more info (#407)
 
 # Tests
 
@@ -93,12 +95,7 @@ the corresponding sections below.
   Excluded properties are: `downloading`, `version`, `downloadStatus`,
   `lastSuccess`, `lastDownload`, `softExpiration`, `expires`, and
   `downloadCount`. (#365)
-- `EWE.subscriptions.getMigrationErrors()` now returns only migration errors
-  that relate to subscriptions. Use `EWE.filters.getMigrationErrors()` for
-  the filter equivalent.
 - These functions are now asynchronous.
-- `getMigrationErrors` in the subscriptions and filters namespaces now
-  contain the full `subscription` and `filter` objects respectively.
 - If you ever use `adblockpluscore` directly, make sure to update to
   match the version used by the SDK. (#438)
 - In MV3, subscriptions needs to be regenerated when upgrading to this
