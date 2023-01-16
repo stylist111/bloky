@@ -150,11 +150,13 @@ describe("API", function() {
       await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
 
       let subs = await EWE.subscriptions.getDownloadable();
+      // homepage is `null` on MV2 until download
+      let homepage = isMV3() ? "http://localhost:3000/subscription.txt" : null;
       expect(subs).toEqual([expect.objectContaining({
         url: VALID_SUBSCRIPTION_URL,
         enabled: true,
         title: isMV3() ? "Test MV3 Custom Subscription" : VALID_SUBSCRIPTION_URL,
-        homepage: null,
+        homepage,
         downloadable: expect.any(Boolean)
       })]);
     });
