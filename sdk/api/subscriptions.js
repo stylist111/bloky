@@ -71,6 +71,10 @@ function convertSubscription(subscription) {
 function convertRecommendation({id, languages, title, requires, type, url,
                                 // eslint-disable-next-line camelcase
                                 mv2URL}) {
+  if (!browser.declarativeNetRequest)
+    // In MV2 we have to switch the URL to be the mv2URL
+    return {id, languages, title, requires, type, url: mv2URL};
+
   return {id, languages, title, requires, type, url, mv2URL};
 }
 
@@ -638,8 +642,8 @@ export default {
    *                         recommended subscription.
    * @property {string} url Where the recommended subscription can be found
    *                        in plain text.
-   * @property {string} mv2URL Where the recommended subscription can be found
-   *                            for MV2 in plain text.
+   * @property {?string} mv2URL Where the recommended subscription can be found
+   *                            for MV2 in plain text (Manifest V3 only).
    */
 
   /**

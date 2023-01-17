@@ -341,8 +341,7 @@ describe("API", function() {
           languages: ["en"],
           title: "EasyList",
           type: "ads",
-          url: "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt",
-          mv2URL: "https://easylist-downloads.adblockplus.org/easylist.txt"
+          url: "https://easylist-downloads.adblockplus.org/easylist.txt"
         })
       ]));
 
@@ -372,8 +371,7 @@ describe("API", function() {
           languages: ["en"],
           title: "TestSubscriptionEn",
           type: "ads",
-          url: "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt",
-          mv2URL: "https://easylist-downloads.adblockplus.org/easylist.txt"
+          url: "https://easylist-downloads.adblockplus.org/easylist.txt"
         })
       ]));
 
