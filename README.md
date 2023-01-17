@@ -364,6 +364,14 @@ docker run --cpus=1 --memory=3.75g {other flags as above}
 ```
 
 ##### Tip: Maintaining browser cache
+If you plan to work on one image by reruning tests (f.ex to investigate flakiness) 
+you can download it to the docker image and cache it.
+
+To do so please add `BROWSER` argument to the build command as follow: 
+
+```
+docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER=chromium .
+```
 
 Note: This works only on linux machines.
 If you have a slow internet connection or are running the test many

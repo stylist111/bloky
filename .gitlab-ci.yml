@@ -69,7 +69,6 @@ build:integration:
   rules:
       - !reference [.manual-run, rules]
 
-
 audit:
   image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
   stage: build
@@ -152,7 +151,7 @@ func:v2:firefox:update:incognito:
   variables:
     TEST_PARAMS: v2 firefox --testKinds update --incognito
 
-func:v2:windows:edge-all:
+.func:v2:windows:edge:
   stage: functional
   needs:
     - job: build
@@ -174,8 +173,15 @@ func:v2:windows:edge-all:
     - shared-windows
     - windows
     - windows-1809
+
+func:v2:windows:edge:stable:
+  extends: .func:v2:windows:edge
   script:
-    - npm test -- v2 edge --timeout=10000    
+    - npm test -- v2 edge --timeout=10000
+
+func:v2:windows:edge:incognito:
+  extends: .func:v2:windows:edge
+  script:
     - npm test -- v2 edge --incognito --timeout=10000
 
 func:v3:chromium:stable:

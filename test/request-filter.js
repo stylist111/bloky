@@ -44,6 +44,7 @@ describe("Blocking", function() {
   });
 
   it("does not block a request using a disabled filter", async function() {
+    setMinTimeout(this, 4000);
     await addFilter("/image.png^$image");
     await EWE.filters.disable(["/image.png^$image"]);
     await new Page("image.html").expectResource("image.png").toBeLoaded();

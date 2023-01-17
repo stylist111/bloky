@@ -21,6 +21,7 @@ import {TEST_PAGES_URL, Page, Popup, setMinTimeout, isIncognito}
   from "../utils.js";
 import {runInBackgroundPage, ensureEverythingHasSaved,
         clearAllTestEvents} from "../messaging.js";
+import {isFuzzingServiceWorker} from "./mocha-runner.js";
 
 mocha.setup("bdd");
 
@@ -102,6 +103,7 @@ beforeEach(async function() {
 });
 
 afterEach(async function() {
+  setMinTimeout(this, isFuzzingServiceWorker() ? 8000 : 5000);
   await clearFilters();
   await clearAllTestEvents();
   await Page.removeCurrent();

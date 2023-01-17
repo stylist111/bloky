@@ -1306,7 +1306,7 @@ describe("API", function() {
       });
 
       it("handles new tab allowlisting listener", async function() {
-        setMinTimeout(this, 3000);
+        setMinTimeout(this, isFuzzingServiceWorker() ? 10000 : 7000);
 
         let url = isFirefox() ? "about:blank" :
             isEdge() ? "edge://newtab/" : "chrome://newtab/";
@@ -1319,15 +1319,15 @@ describe("API", function() {
         let timeout = isFuzzingServiceWorker() ? 5000 : 2000;
         await new Promise(r => setTimeout(r, timeout));
 
-        let events = (await getTestEvents("ewe-test.newTabAllowlisted"))
+        let events;
+        await wait(async() => {
+          events = (await getTestEvents("ewe-test.newTabAllowlisted"))
             .filter(event => event[0].tabId == tabId);
+          if (events.length > 0)
+            return events;
+        }, 4000, "Events are not received");
 
-        expect(events[0])
-          .toEqual([{
-            tabId,
-            url,
-            isResourceAllowlisted: false
-          }]);
+        expect(events[0]).toEqual([{tabId, url, isResourceAllowlisted: false}]);
       });
     });
   });
