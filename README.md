@@ -401,6 +401,18 @@ with the `--help` option for a list of options.
 npm run measureTestFlakiness -- --help
 ```
 
+If you need to debug flaky tests on the pipeline, add [flaky] to the
+tests you want to run & then add [flaky] to the commit message. 
+This will trigger pipeline that will run only tests marked flaky in tests. 
+You can pack test marked as flaky in `for` loop for bigger amount of tests: 
+
+```js 
+  for (let i = 0; i < 10; i++){
+    it("This is test that fails [flaky]", async function() {
+       });
+      }
+```
+
 ### Integration tests
 
 #### Building ABPUI extension and running testpages integration tests
