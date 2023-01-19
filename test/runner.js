@@ -393,7 +393,7 @@ async function runFuzzTests(driver, params, isMV3, incognito) {
 
   let fuzzParams = {...params, fuzzServiceWorkers: true};
   if (typeof fuzzParams.timeout == "undefined") {
-    fuzzParams.timeout = 80000;
+    fuzzParams.timeout = 240000;
     await setMinDriverTimeout(driver, fuzzParams.timeout);
   }
 

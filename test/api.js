@@ -3304,6 +3304,9 @@ describe("API", function() {
     });
 
     it("returns the correct state for ignored categories after unignoring", async function() {
+      if (isFuzzingServiceWorker())
+        setMinTimeout(this, 60000);
+
       await EWE.notifications.toggleIgnoreCategory("*");
       await EWE.notifications.toggleIgnoreCategory("*");
 

@@ -277,7 +277,7 @@ fuzz:v3:chromium:stable:incognito:
 fuzz:v3:edge:linux:
   extends: .fuzz
   variables:    
-    BROWSER: edge
+    BROWSER: edge 108.0.1462.76
 
 # Integration tests (skipped for commits)
 
