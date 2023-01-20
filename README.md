@@ -31,8 +31,8 @@ for Chromium and Firefox extensions (like [Adblock Plus][abpui]).
   * [Functional tests](#functional-tests)
   * [Integration tests](#integration-tests)
   * [Non-functional tests](#non-functional-tests)
-* [Events](#events)  
-* [Manifest V3](docs/MANIFEST_V3.md)
+* [Events](#events)
+* [Supporting Manifest V3](#manifest-v3)
 
 </div>
 
@@ -571,6 +571,11 @@ The library provides the listeners to observe the events:
 
 Use `addListener(...)` to subscribe and `removeListener(...)` to unsubscribe.
 
+<div class="no-docs">
 ## Manifest V3
+</div>
 
-See [docs/MANIFEST_V3.md] for documentation specific to Manifest V3.
+<div class="no-docs">
+See [the Manifest V3 documentation](docs/MANIFEST_V3.md) for further
+explanations.
+</div>

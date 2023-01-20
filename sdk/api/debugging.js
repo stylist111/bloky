@@ -207,7 +207,8 @@ export default {
    * Causes elements targeted by element hiding, element hiding emulation,
    * or snippets to be highlighted instead of hidden.
    * @param {boolean} enabled Enables or disables debug mode.
-   * @returns {Promise}
+   * @returns {Promise} A promise that will resolve once the settings
+   *    are saved.
    */
   async setElementHidingDebugMode(enabled) {
     await this.start();
@@ -217,11 +218,12 @@ export default {
 
   /**
    * Updates the element hiding debug style.
-   * @param {Object} cssProperties The css properties for
-   *                               the debug element.
-   * @param {Object} snippetsCssProperties The css properties for
-   *                                       the debug snippet element.
-   * @returns {Promise}
+   * @param {Array} cssProperties The css properties for
+   *                              the debug element.
+   * @param {Array} snippetsCssProperties The css properties for
+   *                                      the debug snippet element.
+   * @returns {Promise} A promise that will resolve once the settings
+   *    are saved.
    */
   async setElementHidingDebugStyle(cssProperties, snippetsCssProperties) {
     await this.start();
@@ -271,7 +273,8 @@ export default {
   /**
    * @ignore
    * Used internally. Waits for any pending save actions to complete.
-   * @return {Promise}
+   * @return {Promise} The promise that is resolved once the filter storage
+   *   module has saved all items.
    */
   async ensureEverythingHasSaved() {
     let {filterStorage} = filterEngine;
@@ -285,12 +288,21 @@ export default {
     await awaitSavingComplete();
   },
 
+  /**
+   * @ignore
+   * Initialize debugging.
+   */
   async start() {
     if (!initializationPromise)
       initializationPromise = loadDebugOptions();
     return initializationPromise;
   },
 
+  /**
+   * @ignore
+   * Return the promise for saving the debugging options.
+   * @return {Promise}
+   */
   async ensureSaved() {
     await savingPromise;
   },

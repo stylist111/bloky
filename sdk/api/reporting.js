@@ -198,6 +198,7 @@ export default {
   onSubscribeLinkClicked,
 
   /**
+   * @ignore
    * Start monitoring for the matched rules
    * @returns {Promise} starting promise.
    */

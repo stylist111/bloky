@@ -33,6 +33,9 @@ import * as sitekey from "./sitekey.js";
 
 export default {
   ...sitekey, // everything exported from "sitekey.js"
+  /**
+   * @ignore
+   */
   _getMatchedFilters: getMatchedFilters,
 
   /**
@@ -92,6 +95,9 @@ export default {
     setRecommendations(subscriptions);
   },
 
+  /**
+   * @ignore
+   */
   _setAddonInfo: setAddonInfo,
 
   /**
@@ -111,6 +117,9 @@ export default {
       filterStorage.removeSubscription(subscription);
   },
 
+  /**
+   * @ignore
+   */
   async _clearNotifications() {
     await initPrefs();
     for (let notification of notifications._localNotifications)
