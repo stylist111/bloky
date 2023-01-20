@@ -12,6 +12,9 @@ for Chromium and Firefox extensions (like [Adblock Plus][abpui]).
 
 * [Code of Conduct](#code-of-conduct)
 * [Getting started](#getting-started)
+  * [Manifest for V2](#manifest-for-v2)
+  * [Manifest for V3](#manifest-for-v3)
+  * [API](#api)
   * [Module bundlers (optional)](#module-bundlers-optional)
   * [Snippet filters support](#snippet-filters-support)
   * [Shared resources](#shared-resources)
@@ -44,7 +47,14 @@ The library comes in two parts, `ewe-api.js` to be included in the extension's
 background page, and `ewe-content.js` to be loaded as a content script. Please
 download the [latest build][builds] (or [build the library yourself][dev]).
 
-The extension's `manifest.json` is required to include the following configuration:
+With two versions of the API, Manifest V2 and Manifest V3, there are
+two different manifest that are needed depending on which API you
+target.
+
+### Manifest for V2
+
+For Manifest V2, the extension's `manifest.json` is required to
+include the following configuration:
 
 ```
 {
@@ -77,6 +87,69 @@ The extension's `manifest.json` is required to include the following configurati
   ]
 }
 ```
+
+### Manifest for V3
+
+For Manifest V3, the extension's `manifest.json` is required to
+include the following configuration:
+
+```
+{
+  "manifest_version": 3,
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "all_frames": true,
+      "js": [
+        "ewe-content.js"
+      ],
+      "match_about_blank": true,
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "run_at": "document_start"
+    }
+  ],
+  "permissions": [
+    "declarativeNetRequestWithHostAccess",
+    "declarativeNetRequestFeedback",
+    "scripting",
+    "storage",
+    "tabs",
+    "webNavigation",
+    "webRequest",
+    "unlimitedStorage"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "declarative_net_request": <output from "subs-generate" script>
+}
+```
+
+The example above requires a couple of changes and can't be used
+as-is.
+
+The `service_worker` value needs be set to your built file for the
+background script, that includes `ewe-api.js`.
+
+Please note that for the sample above, you need to make sure to set
+the value of `declarative_net_request` properly, [as shown in the
+decalrativeNetRequest
+documentaion](https://developer.chrome.com/docs/extensions/reference/declarativeNetRequest/#manifest). This mean you also need to add to your extension build the files that contains the rulesets declared in this section, as well as the text filter lists. Refer to [the Manifest V3 documentation](docs/MANIFEST_V3.md) for more details.
+
+The permission `declarativeNetRequestWithHostAccess` requires the
+`host_permissions` to be `<all_urls>`. You could use the
+`declarativeNetRequest` permission without setting
+`host_permissions`. But it would have the effect of preventing the
+filtering of content and limiting the blocking to network requests to
+those specified in `host_permissions`. The default configuration
+provided offers the most functionality.
+
+### API
 
 The API will be available in your own background scripts through the
 global `EWE` object. Please call `EWE.start()` to start blocking ads.
