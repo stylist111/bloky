@@ -3246,6 +3246,16 @@ describe("API", function() {
       await EWE.testing._clearNotifications();
     });
 
+    // The test must be the first in this `describe`
+    // to avoid `_clearNotifications()` being called before
+    it("updates the ignored categories for the first time", async function() {
+      // default value
+      expect(await EWE.notifications.getIgnoredCategories()).toEqual([]);
+      await EWE.notifications.toggleIgnoreCategory("*");
+
+      expect(await EWE.notifications.getIgnoredCategories()).toEqual(["*"]);
+    });
+
     it("supports showing local notifications", async function() {
       let notification = {id: "local-test"};
       await EWE.notifications.addNotification(notification);
