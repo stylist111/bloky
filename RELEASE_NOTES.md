@@ -1,3 +1,28 @@
+0.8.1 - 2023/02/01
+==================
+
+# General
+
+- Updated to adblockpluscore 0.11.1. This is necessary for some of the
+  changes. (#456, #458, #462)
+
+# Fixes
+
+- Manifest V3:
+  - DNR subscription will have the `homepage` properly set
+    (adblockpluscore). (#458)
+  - Ignored notifications are now saved (adblockpluscore). (#456)
+- Documentations updates and clarifications. (#455, #459)
+- Manifest V2:
+  - `EWE.subscriptions.recommendations()` will return a
+    `Recommendation` object with the `url` property set to the proper
+    one, i.e. the one from `url_mv2`. (#437)
+
+# Tests
+
+- Fixed version flaky test by increasing timeouts. (#428, #446)
+- Limit the Edge fuzz test to Edge 108.
+
 0.8.0 - 2023/01/10
 ==================
 
