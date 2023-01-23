@@ -37,3 +37,5 @@ export function getFilterTextByRuleId(id) {
   // eslint-disable-next-line no-undef
   return global.getFilterTextByRuleId(id);
 }
+
+export let IO = {};

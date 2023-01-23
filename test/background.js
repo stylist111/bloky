@@ -347,6 +347,8 @@ if (isMV3()) {
   };
 }
 
+EWE.testing.enableDebugOutput(true);
+
 EWE.start(startupInfo).then(async() => {
   if (typeof netscape != "undefined") {
     let version = /\brv:([^;)]+)/.exec(navigator.userAgent)[1];

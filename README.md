@@ -28,6 +28,7 @@ for Chromium and Firefox extensions (like [Adblock Plus][abpui]).
   * [Functional tests](#functional-tests)
   * [Integration tests](#integration-tests)
   * [Non-functional tests](#non-functional-tests)
+* [Events](#events)  
 * [Manifest V3](docs/MANIFEST_V3.md)
 
 </div>
@@ -471,6 +472,23 @@ Checks that the bundled code can be imported and re-bundled
 #### Scripts test
 
     npm run test-scripts
+
+## Events
+
+The library provides the listeners to observe the events:
+* `EWE.allowlisting.onUnauthorized`: Emitted when an allowlisting request is rejected
+* `EWE.filters`:
+  * `onAdded`: Emitted when a new filter is added
+  * `onChanged`: Emitted when a filter is either enabled or disabled
+  * `onRemoved`: Emitted when a filter is removed
+* `EWE.subscriptions`:
+  * `onAdded`: Emitted when a new subscription is added
+  * `onChanged`: Emitted when any property of the subscription has changed
+  * `onRemoved`: Emitted when a subscription is removed
+* `EWE.debugging.onLogEvent`: Emitted when having debug output
+* `EWE.reporting.onBlockableItem`: Emitted when any blockable item is matched
+
+Use `addListener(...)` to subscribe and `removeListener(...)` to unsubscribe.
 
 ## Manifest V3
 

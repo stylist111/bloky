@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /*
  * This file is part of eyeo's Web Extension Ad Blocking Toolkit (EWE),
  * Copyright (C) 2006-present eyeo GmbH
@@ -15,7 +16,7 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import browser from "webextension-polyfill";
+import browser from "./browser.js";
 
 import {FilterStorage} from "adblockpluscore/lib/filterStorage.js";
 
@@ -34,6 +35,118 @@ let defaultDebugOptions = {
      "#e67370 9px, white 9px, white 10px)"],
     ["outline", "solid red"]]
 };
+
+let listeners = [];
+
+class DebugEventDispatcher {
+  addListener(listener) {
+    listeners.push(listener);
+  }
+
+  removeListener(listener) {
+    let index = listeners.findIndex(existingListener =>
+      existingListener == listener
+    );
+
+    if (index != -1)
+      listeners.splice(index, 1);
+  }
+}
+
+export const LOG_LEVEL_INFO = 0;
+export const LOG_LEVEL_WARNING = 1;
+export const LOG_LEVEL_ERROR = 2;
+
+export const LOG_COLOR_RED = "\x1b[31m";
+export const LOG_COLOR_GREEN = "\x1b[32m";
+export const LOG_COLOR_YELLOW = "\x1b[33m";
+export const LOG_COLOR_BLUE = "\x1b[34m";
+export const LOG_COLOR_MAGENTA = "\x1b[35m";
+export const LOG_COLOR_CYAN = "\x1b[36m";
+export const LOG_COLOR_BLUE_BRIGHT = "\x1b[94m";
+
+const LEVEL_TO_COLOR = new Map([
+  // no color for "LOG_LEVEL_INFO" level (using default)
+  [LOG_LEVEL_WARNING, LOG_COLOR_YELLOW],
+  [LOG_LEVEL_ERROR, LOG_COLOR_RED]
+]);
+
+class ConsoleLogger {
+  constructor(
+    printTimeStamp = true,
+    colorize = true,
+    levelToColor = LEVEL_TO_COLOR
+  ) {
+    this._printTimeStamp = printTimeStamp;
+    this._colorize = colorize;
+    this._levelToColor = levelToColor;
+  }
+
+  colorizeMessage(message, color) {
+    return color ? `${color}${message}\x1b[0m` : message;
+  }
+
+  padStartZero(value, length = 2) {
+    return String(value).padStart(length, "0");
+  }
+
+  formatTime(ts) {
+    return this.padStartZero(ts.getHours()) + ":" +
+      this.padStartZero(ts.getMinutes()) + ":" +
+      this.padStartZero(ts.getSeconds()) + "." +
+      this.padStartZero(ts.getMilliseconds(), 3);
+  }
+
+  getListener() {
+    return ({message, level, timeStamp, color}) => {
+      // Using default level color if no specific color is passed
+      let _color = color || this._levelToColor.get(level);
+      let colorizedMessage = this._colorize ?
+        this.colorizeMessage(message, _color) :
+        message;
+      let output = this._printTimeStamp ?
+        `${this.formatTime(timeStamp)}: ${colorizedMessage}` :
+        colorizedMessage;
+
+      switch (level) {
+        case LOG_LEVEL_INFO:
+          console.info(output);
+          break;
+
+        case LOG_LEVEL_WARNING:
+          console.warn(output);
+          break;
+
+        case LOG_LEVEL_ERROR:
+          console.error(output);
+          break;
+      }
+    };
+  }
+}
+
+const CONSOLE_LOGGER = new ConsoleLogger().getListener();
+
+export function emitLogEvent({message, level, color, timeStamp = new Date()}) {
+  for (let listener of listeners)
+    listener({message, level, timeStamp, color});
+}
+
+export function info(message, color) {
+  emitLogEvent({message, level: LOG_LEVEL_INFO, color});
+}
+
+export function log(message, color) {
+  emitLogEvent({message, level: LOG_LEVEL_INFO, color}); // also "info" level
+}
+
+export function warn(message, color) {
+  emitLogEvent({message, level: LOG_LEVEL_WARNING, color});
+}
+
+export function error(message, color) {
+  emitLogEvent({message, level: LOG_LEVEL_ERROR, color});
+}
 
 export let debugOptions;
 
@@ -63,6 +176,17 @@ export async function loadDebugOptions() {
 let initializationPromise;
 
 export default {
+  /**
+   * Represents a debug log output entry.
+   * @typedef {Object} LogEntry
+   * @property {string} message Output message.
+   * @property {number} level Log level.
+  *                           Can be one of `LOG_LEVEL_...` values.
+   * @property {Date} timeStamp Timestamp.
+   * @property {string|null} color Specific color (ANSI terminal color).
+  *                          Can be one of `LOG_COLOR_...` values or `null`.
+   */
+
   /**
    * AddonInfo assigned during start.
    * @type {Object}
@@ -169,5 +293,23 @@ export default {
 
   async ensureSaved() {
     await savingPromise;
-  }
+  },
+
+  /**
+   * Emitted when having debug output.
+   * @event
+   * @type {EventDispatcher<LogEntry>}
+   */
+  onLogEvent: new DebugEventDispatcher(),
+
+  /**
+   * Configurable logger (class) that outputs to console
+   */
+  ConsoleLogger,
+
+  /**
+   * Default logger instance that outputs to console
+   */
+  CONSOLE_LOGGER
 };
+

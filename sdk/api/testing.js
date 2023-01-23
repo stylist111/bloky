@@ -127,5 +127,14 @@ export default {
   },
 
   setLastCheckTimestamp,
-  setForceEnableTracing
+  setForceEnableTracing,
+
+  enableDebugOutput(enabled) {
+    if (enabled)
+      debugging.onLogEvent.addListener(debugging.CONSOLE_LOGGER);
+    else
+      debugging.onLogEvent.removeListener(debugging.CONSOLE_LOGGER);
+  },
+
+  CONSOLE_LOGGER: debugging.logger
 };

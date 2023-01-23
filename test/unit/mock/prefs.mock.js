@@ -20,3 +20,6 @@ export let Prefs = global.prefs;
 
 export async function init() {
 }
+
+export async function awaitSavingComplete() {
+}
