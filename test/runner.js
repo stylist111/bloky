@@ -481,7 +481,7 @@ async function run() {
     (browser == "chromium" || browser == "edge"))
     extraArgs.push("auto-open-devtools-for-tabs");
 
-  console.log(`Getting ready to run ${browser}...`);
+  console.log(`Getting ready to run ${browser} ${version} ...`);
   let driver = await BROWSERS[browser].getDriver(
     version, {headless, extensionPaths, incognito, extraArgs});
 

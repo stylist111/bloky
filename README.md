@@ -182,6 +182,14 @@ For more information, please refer to the [API documention][docs].
 
 ## Development
 
+### Tested Browsers 
+
+webext-sdk CI pipeline currently perform automated tests on following versions:
+- Manifest v2: Chromium: 77 - 109
+- Manifest v3: Chromium 109
+- Firefox: 68 - 109
+- Edge: 108
+
 ### Prerequisites
 
 - Node >= 16.10.0
