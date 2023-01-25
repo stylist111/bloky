@@ -352,6 +352,12 @@ npm run build -- --env release
 
 ## Testing
 
+### Core tests
+
+The tests for adblockpluscore can be run from the top level directory:
+
+    npm run test-core
+
 ### Unit tests
 
 Some tests require mocking of production files.

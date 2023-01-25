@@ -88,18 +88,34 @@ lint:
 
 # Unit tests
 
-unittest:
+.unit:
   image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
   stage: unit
   needs: []
   before_script:
     - npm install
-  script:
-    - npm run unittest
   rules:
     - !reference [.flaky-run, rules]
 
-# Functional Tests 
+unit:core:
+  extends: .unit
+  script:
+    - npm run test-core
+    - npm run -w core test:dist
+
+unit:benchmark:core:
+  extends: .unit
+  script:
+    - npm run -w core benchmark
+    - npm run -w core benchmark:save
+    - npm run -w core benchmark:compare
+
+unit:webext:
+  extends: .unit
+  script:
+    - npm run unittest
+
+# Functional Tests
 
 func:scripts:
   image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python

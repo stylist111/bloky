@@ -20,9 +20,8 @@ import "geckodriver";
 
 import {executeScript} from "./webdriver.mjs";
 
-// Firefox 57 seems to be the minimum to reliably run with WebDriver
-// on certain system configurations like Debian 9, TravisCI.
-const FIREFOX_VERSION = "57.0";
+// Firefox 60 is minimum supported by get-browser-binary
+const FIREFOX_VERSION = "60.0";
 
 async function runScript(script, scriptArgs) {
   let headless = process.env.BROWSER_TEST_HEADLESS != "0";

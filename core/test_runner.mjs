@@ -26,7 +26,6 @@ import {promisify} from "util";
 import MemoryFS from "memory-fs";
 import webpack from "webpack";
 
-import chromiumRemoteProcess from "./test/runners/chromium_remote_process.mjs";
 import chromiumProcess from "./test/runners/chromium_process.mjs";
 import firefoxProcess from "./test/runners/firefox_process.mjs";
 
@@ -36,8 +35,6 @@ let unitFiles = [];
 let browserFiles = [];
 
 let runnerDefinitions = {
-  // Chromium with chrome-remote-interface
-  chromium_remote: chromiumRemoteProcess,
   // Chromium with WebDriver (requires Chromium >= 63.0.3239)
   chromium: chromiumProcess,
   firefox: firefoxProcess
@@ -48,13 +45,8 @@ function configureRunners() {
                   process.env.BROWSER_TEST_RUNNERS.split(",") :
                   [];
 
-  if (runners.length == 0) {
-    // We default to not using the Chromium remote interface on Windows,
-    // as it fails.
-    if (process.platform == "win32")
-      return ["chromium", "firefox"];
-    return ["chromium_remote", "firefox"];
-  }
+  if (runners.length == 0)
+    return ["chromium", "firefox"];
 
   return runners.filter(
     runner => Object.prototype.hasOwnProperty.call(runnerDefinitions, runner)
@@ -124,6 +116,10 @@ async function runBrowserTests(processes) {
   let bundleFilename = "bundle.js";
   let mochaPath = path.join(dirname, "node_modules", "mocha", "mocha.js");
   let chaiPath = path.join(dirname, "node_modules", "chai", "chai.js");
+  // If we run in a workspace we need to get one level up.
+  // No idea how to determine if we run in a workspace.
+  if (!fs.existsSync(chaiPath))
+    chaiPath = path.join(dirname, "..", "node_modules", "chai", "chai.js");
 
   let bundle = await webpackInMemory(bundleFilename, {
     entry: path.join(dirname, "test", "browser", "_bootstrap.js"),
