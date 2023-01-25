@@ -320,10 +320,10 @@ npm exec subs-generate [-- -i ... -o ...]
 
 ### Adding subscriptions
 
-Before subscriptions are added, availability of subscriptions (that are added in 
-manifest file) via SDK has to be checked:
+Before subscriptions are added, availability of subscriptions (that
+are added in manifest file) via SDK has to be checked:
 
-```js
+```
 EWE.subscriptions.getRecommendations();
 /* Returns an array of subscriptions
 [
@@ -340,13 +340,13 @@ EWE.subscriptions.getRecommendations();
 
 Then, subscriptions can be added using their urls:
 
-```js
+```
 EWE.subscriptions.add('http://myhost.com/subscription.txt');
 ```
 
 To check which subscriptions are added and available:
 
-```js
+```
 await EWE.subscriptions.getDownloadable();
 /*
 [
