@@ -61,6 +61,7 @@ build:
   script:
     - npm run build
     - DOCS_ERROR=$(npm run docs 2>&1 >/dev/null) && if [ ! -z "$DOCS_ERROR" ]; then echo $DOCS_ERROR && false; fi
+    - npm run docs-core
   artifacts:
     paths:
       - dist/
