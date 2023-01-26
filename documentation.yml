@@ -18,15 +18,17 @@ toc:
         }
       </style>
     children:
+      - allowlisting
       - debugging
       - filters
       - notifications
       - reporting
       - snippets
       - subscriptions
-      - allowlisting
   - name: Objects
     children:
+      - allowlistingCallback
+      - AllowlistingAuthorizationError
       - BlockableEventDispatcher
       - BlockableEventOptions
       - EventDispatcher
@@ -37,5 +39,3 @@ toc:
       - Recommendation
       - Subscription
       - SnippetCallback
-      - allowlistingCallback
-      - AllowlistingAuthorizationError
