@@ -426,26 +426,39 @@ export default {
    *                                  downloaded and updated over the network.
    *                                  If `false` the subscription is merely
    *                                  a container for user-defined filters.
-   * @property {boolean} downloading Indicates whether the subscription is
-   *                                 currently downloading.
-   * @property {string|null} downloadStatus The {@link https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore/-/jobs/artifacts/0.6.0/file/build/docs/module-subscriptionClasses.DownloadableSubscription.html?job=docs#downloadStatus|status}
-   *                                        of the most recent download attempt.
+   * @property {?boolean} downloading Indicates whether the subscription is
+   *                                  currently downloading (downloadble
+   *                                  subscriptions only).
+   * @property {?string} downloadStatus The {@link https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore/-/jobs/artifacts/0.6.0/file/build/docs/module-subscriptionClasses.DownloadableSubscription.html?job=docs#downloadStatus|status}
+   *                                    of the most recent download attempt
+   *                                    (downloadble subscriptions only).
    * @property {boolean} enabled Indicates whether this subscription will
    *                             be applied.
-   * @property {number} expires
+   * @property {?number} expires Epoch time when the subscription must be
+   *                             downloaded (downloadble subscriptions
+   *                             only).
    * @property {?string} homepage Website of the project that manages
    *                              this filter list.
-   * @property {number} lastDownload Epoch time when the subscription
-   *                                 was last downloaded to your machine.
-   * @property {number} lastSuccess Epoch time when this subscription was last
-   *                                successfully downloaded.
-   * @property {number} softExpiration
+   * @property {?number} lastDownload Epoch time when the subscription
+   *                                  was last downloaded to your machine
+   *                                  (downloadble subscriptions only).
+   * @property {?number} lastSuccess Epoch time when this subscription was last
+   *                                 successfully downloaded (downloadble
+   *                                 subscriptions only).
+   * @property {?number} softExpiration Epoch time for the next attempt to
+   *                                    download the subscription. Can be
+   *                                    updated even if the subscription was
+   *                                    not downloaded. If `expires` is closer,
+   *                                    then `expires` prevail. (downloadble
+   *                                    subscriptions only).
    * @property {string} title The display name of the subscription.
    *                          If not provided, falls back to the URL.
    * @property {string} url Where the subscription can be found in plain text.
    *                        Used a the identifier.
    * @property {string} version The version provided by the subscription's
-   *                            metadata. Defaults to '0' if not provided.
+   *                            metadata. Defaults to '0' if not provided. It
+   *                            might be set if the subscription is not
+   *                            downloadable.
    */
 
   /**
