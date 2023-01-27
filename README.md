@@ -485,14 +485,16 @@ npm run measureTestFlakiness -- --help
 
 If you need to debug flaky tests on the pipeline, add [flaky] to the
 tests you want to run & then add [flaky] to the commit message. 
-This will trigger pipeline that will run only tests marked flaky in tests. 
-You can pack test marked as flaky in `for` loop for bigger amount of tests: 
+This will trigger pipeline that will run only tests marked flaky in tests,
+tests will be run 28 times. 
 
-```js 
-  for (let i = 0; i < 10; i++){
-    it("This is test that fails [flaky]", async function() {
-       });
-      }
+If you want to debug flaky tests locally (on Docker), add `-e MODE="[flaky]"`
+to Docker run command. 
+Note: Test will be run 30 times. If you need higher values - please set higher value in 
+`functional-entrypoint.sh` line 19. 
+
+```
+docker run --shm-size=512m -e TEST_PARAMS="v3 chromium" -e MODE="[flaky]" functional
 ```
 
 ### Integration tests

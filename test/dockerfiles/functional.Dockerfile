@@ -9,4 +9,5 @@ RUN npm install
 RUN if [ -z "$SKIP_BUILD" ]; then npm run build; fi
 RUN if [ ! -z "$BROWSER" ]; then node test/dockerfiles/get-browser-binaries.js $BROWSER; fi
 ENV TEST_PARAMS="v2 chromium"
+ENV MODE="Default"
 ENTRYPOINT test/dockerfiles/functional-entrypoint.sh

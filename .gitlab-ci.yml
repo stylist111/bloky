@@ -132,14 +132,7 @@ func:bundle:
   before_script:
     - docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg SKIP_BUILD=1 .
   script:
-    - >
-      if [[ $CI_COMMIT_MESSAGE =~ "[flaky]" ]];
-      then
-        echo "INFO: This job will run only tests marked as [flaky] in test"
-        docker run --shm-size=512m -e TEST_PARAMS="$TEST_PARAMS --grep flaky" functional
-      else
-        docker run --shm-size=512m -e TEST_PARAMS="$TEST_PARAMS" functional
-      fi
+    - docker run --shm-size=512m -e TEST_PARAMS="$TEST_PARAMS" -e MODE="$CI_COMMIT_MESSAGE" functional
 
 func:v2:chromium:stable:
   extends: .functional
