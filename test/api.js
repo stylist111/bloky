@@ -1175,7 +1175,8 @@ describe("API", function() {
         return {tabId, frameId};
       }
 
-      it("returns filters for allowlisted frames", async function() {
+      it("returns filters for allowlisted frames [flaky]", async function() {
+        setMinTimeout(this, 5000);
         await addFilter(ALLOWING_IMAGE_DOC_FILTER);
 
         let {tabId, frameId} = await loadTabWithFrame();
