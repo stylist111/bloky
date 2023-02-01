@@ -153,6 +153,13 @@ export function startElementCollapsing() {
       if (!deferred) {
         deferred = new Map();
         document.addEventListener("DOMContentLoaded", () => {
+          // Under some conditions a hostile script could try to trigger
+          // the event again. Since we set deferred to `null`, then
+          // we assume that we should just return instead of throwing
+          // a TypeError.
+          if (!deferred)
+            return;
+
           for (let [selector, urls] of deferred) {
             for (let element of document.querySelectorAll(selector)) {
               if (urls.has(getURLFromElement(element)))
