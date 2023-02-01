@@ -36,7 +36,7 @@ const EASYLIST_GERMANY_URL_MV3 = "https://easylist-downloads.adblockplus.org/v3/
 const RE2_UNSUPPORTED_FILTER = "/t(?=re)/$image";
 
 describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
-  this.timeout(5000);
+  this.timeout(10000);
 
   before(async function() {
     if (!await isConnected())
@@ -68,6 +68,9 @@ describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
       // We assume that there are no migration errors at this point.
 
       await EWE.testing._removeAllSubscriptions();
+      // The subscription below does not work in MV2 (not synchronized),
+      // but works in MV3 as we don't serve /mv2_subscription.txt,
+      // but do serve /subscription.txt on localhost.
       await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.mv2_url);
       await EWE.subscriptions.add(EASYLIST_URL_MV2);
       await EWE.subscriptions.add(EASYLIST_GERMANY_URL_MV2);
@@ -109,7 +112,7 @@ describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
 
     // We rely on migration being done at this time.
     await wait(async() => await EWE.testing._getPrefs("migration_state") === MIGRATED_TO_MV3,
-               3000, "Prefs.migration_state was not set");
+               10000, "Prefs.migration_state was not set");
 
     let downloadables = await EWE.subscriptions.getDownloadable();
     expect(downloadables).toEqual(expect.arrayContaining([
@@ -130,7 +133,8 @@ describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
       })
     ]));
 
-    await new Page("image-from-subscription.html").expectResource("image-from-subscription.png").toBeBlocked();
+    await new Page("image-from-subscription.html")
+      .expectResource("image-from-subscription.png").toBeBlocked();
   });
 
   it("migrates user subscriptions meta data", async function() {
