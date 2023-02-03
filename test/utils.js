@@ -554,3 +554,30 @@ export async function waitForHighlightedStyle(timeout = 5000) {
 
   return style;
 }
+
+export async function shouldBeBlocked(pageUrl, resource, errorMessage) {
+  await wait(
+    async() => {
+      try {
+        await new Page(pageUrl).expectResource(resource).toBeBlocked();
+        return true;
+      }
+      catch (e) {}
+      return false;
+    }, 4000, errorMessage ? errorMessage : `${resource} on ${pageUrl} was not blocked`
+  );
+}
+
+export async function shouldBeLoaded(pageUrl, resource, errorMessage) {
+  await wait(
+    async() => {
+      try {
+        await new Page(pageUrl).expectResource(resource).toBeLoaded();
+        return true;
+      }
+      catch (e) {}
+      return false;
+    }, 4000, errorMessage ? errorMessage : `${resource} on ${pageUrl} was not loaded`
+  );
+}
+

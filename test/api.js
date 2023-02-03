@@ -24,7 +24,7 @@ import {Page, Popup, setMinTimeout, wait, executeScript, isFirefox, isEdge,
         getVisibleElement, isMV3, expectElemHideVisible, expectElemHideHidden,
         TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN,
         isMV2CustomSubsExtension, TEST_MV3_SUBSCRIPTION,
-        TEST_MV3_SUBSCRIPTION_2, TEST_MV3_SUBSCRIPTION_3} from "./utils.js";
+        TEST_MV3_SUBSCRIPTION_2, TEST_MV3_SUBSCRIPTION_3, shouldBeBlocked, shouldBeLoaded} from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage,
         ensureEverythingHasSaved, getTestEvents,
         clearTestEvents, addOnBlockableListener,
@@ -115,33 +115,6 @@ let subAcceptableAds = {
   homepage: "https://acceptableads.com/",
   url: "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt",
   mv2_url: "https://easylist-downloads.adblockplus.org/exceptionrules.txt"
-};
-
-
-let shouldBeBlocked = async function(pageUrl, resource, errorMessage) {
-  await wait(
-    async() => {
-      try {
-        await new Page(pageUrl).expectResource(resource).toBeBlocked();
-        return true;
-      }
-      catch (e) {}
-      return false;
-    }, 4000, errorMessage ? errorMessage : `${resource} on ${pageUrl} was not blocked`
-  );
-};
-
-let shouldBeLoaded = async function(pageUrl, resource, errorMessage) {
-  await wait(
-    async() => {
-      try {
-        await new Page(pageUrl).expectResource(resource).toBeLoaded();
-        return true;
-      }
-      catch (e) {}
-      return false;
-    }, 4000, errorMessage ? errorMessage : `${resource} on ${pageUrl} was not loaded`
-  );
 };
 
 describe("API", function() {

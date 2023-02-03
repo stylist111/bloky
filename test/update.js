@@ -19,7 +19,7 @@ import expect from "expect";
 import browser from "webextension-polyfill";
 
 import {TEST_MV3_SUBSCRIPTION,
-        isFirefox, isMV3, readFile, writeFile, Page} from "./utils.js";
+        isFirefox, isMV3, readFile, writeFile, setMinTimeout, wait, shouldBeBlocked} from "./utils.js";
 import {EWE, runInBackgroundPage} from "./messaging.js";
 import {isConnected, updateExtensionFiles} from "./mocha/mocha-runner.js";
 
@@ -51,6 +51,7 @@ describe(`Update (${phase}) (runner only)`, function() {
   });
 
   it("updates the subscription filter text when updating the extension", async function() {
+    setMinTimeout(this, 3000);
     if (!isMV3())
       this.skip();
 
@@ -80,12 +81,18 @@ describe(`Update (${phase}) (runner only)`, function() {
       ]);
       return;
     }
+    await new Promise(r => setTimeout(r, 50));
 
-    try {
-      let filters = await EWE.subscriptions.getFilters(
+    let filters;
+
+    await wait(async() => {
+      filters = await EWE.subscriptions.getFilters(
         TEST_MV3_SUBSCRIPTION.url);
-      expect(filters.find(it => it.text == filter)).toBeDefined();
-
+      if (filters.length > 0)
+        return filters;
+    }, 40000, "Events are not received");
+    expect(filters.find(it => it.text == filter)).toBeDefined();
+    try {
       let downloadables = await EWE.subscriptions.getDownloadable();
       expect(downloadables).toEqual(expect.arrayContaining([
         expect.objectContaining({
@@ -94,8 +101,10 @@ describe(`Update (${phase}) (runner only)`, function() {
           enabled: true
         })
       ]));
+      // Page load sometimes occurs while the system isn't ready
+      await new Promise(r => setTimeout(r, 50));
 
-      await new Page("image-from-subscription.html").expectResource("image-from-subscription.png").toBeBlocked();
+      await shouldBeBlocked("image-from-subscription.html", "image-from-subscription.png");
     }
     finally {
       // restore from back-up
