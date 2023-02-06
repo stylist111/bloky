@@ -488,23 +488,35 @@ describe("API", function() {
         );
       };
 
+      let checkSynchronization =
+        async function(expectedFilter){
+          await wait(
+            async() => {
+              let subscriptionFilter =
+                  await EWE.subscriptions.getForFilter(expectedFilter);
+              if (subscriptionFilter.length > 0)
+                return true;
+            }, 6000, "Subscription was not synchronised properly."
+          );
+        };
+
       it("updates the CV subscription", async function() {
         let updatedReply = "[Adblock Plus]";
+        let filterToAdd = "example.com#$#abort-on-property-read atob";
         await updateSubscriptionData(updatedReply);
         await addSubscription();
 
         // update reply on the server
         updatedReply = [
           "[Adblock Plus]",
-          "example.com#$#abort-on-property-read atob"
+          filterToAdd
         ].join("\n");
         await updateSubscriptionData(updatedReply);
         await EWE.subscriptions.sync();
-        // wait for subscriptions to be synced
-        await new Promise(r => setTimeout(r, 1000));
+        await checkSynchronization(filterToAdd);
 
         expect(
-          await EWE.subscriptions.getForFilter("example.com#$#abort-on-property-read atob")
+          await EWE.subscriptions.getForFilter(filterToAdd)
         ).toEqual(expect.arrayContaining([
           expect.objectContaining({url: subCircumvention.url})])
         );
@@ -526,6 +538,7 @@ describe("API", function() {
         ].join("\n");
         await updateSubscriptionData(updatedReply);
         await EWE.subscriptions.sync();
+        await checkSynchronization("###elem-hide");
 
         await expectElemHideHidden();
 
@@ -537,7 +550,7 @@ describe("API", function() {
         await updateSubscriptionData(updatedReply);
         await EWE.subscriptions.sync();
         // wait for subscriptions to be synced
-        await new Promise(r => setTimeout(r, 500));
+        await checkSynchronization("###elem-hide_3");
 
         await expectElemHideVisible();
       });
@@ -610,8 +623,7 @@ describe("API", function() {
         await updateSubscriptionData(updatedReply);
 
         await EWE.subscriptions.sync();
-        // wait for subscriptions to be synced
-        await new Promise(r => setTimeout(r, 1000));
+        await checkSynchronization("example.com##.inserted_rtb");
 
         userFilters = await EWE.filters.getUserFilters();
         expect(userFilters[0]).toMatchObject(
@@ -630,13 +642,18 @@ describe("API", function() {
       });
 
       it("doesn't remove disabled custom filters which conflict with subscription filters but they remain disabled", async function() {
+        // usually this test takes ~3 000ms but sometimes it reaches 50 000ms
+        // to retrieve correct state of dynamic rules from browser
+        setMinTimeout(this, 50000);
+
         let updatedReply = [
           "[Adblock Plus]",
           "/image-from-custom-filter.png^$image"
         ].join("\n");
         await updateSubscriptionData(updatedReply);
-        await addSubscription();
+
         await EWE.filters.add(["/image-from-custom-filter.png^$image"]);
+        await addSubscription();
         let userFilters = await EWE.filters.getUserFilters();
         expect(userFilters[0]).toMatchObject(
           {
@@ -672,7 +689,7 @@ describe("API", function() {
                       await browser.declarativeNetRequest.getDynamicRules();
               let dynamicRulesLength = dynamicRules.length;
               return dynamicRulesLength == 0;
-            }, 2000, "DNRs weren't updated."
+            }, 15000, "DNRs weren't updated."
           );
         }
 
@@ -768,8 +785,7 @@ describe("API", function() {
         ].join("\n");
         await updateSubscriptionData(updatedReplyForRemoval);
         await EWE.subscriptions.sync();
-        // wait for subscriptions to be synced
-        await new Promise(r => setTimeout(r, 1000));
+        await checkSynchronization("/image-from-cv-subscription.png^$image");
 
         await shouldBeBlocked("image-from-cv-subscription.html", "image-from-cv-subscription.png");
         await shouldBeLoaded("image-from-cv-subscription.html", "image-for-filter-that-should-be-untouched.png");
