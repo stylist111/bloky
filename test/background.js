@@ -175,6 +175,7 @@ self.getTestEvents = async function(name) {
 };
 
 let messages = [];
+let migrationErrorsOnStart;
 
 function handleTestMessage(request, sender, sendResponse) {
   messages.push({request, sender});
@@ -216,6 +217,11 @@ function handleTestMessage(request, sender, sendResponse) {
 
     case "ewe-test:getInMemoryState": {
       sendResponse(inMemoryState);
+      return true;
+    }
+
+    case "ewe-test:getMigrationErrorsOnStart": {
+      sendResponse(migrationErrorsOnStart);
       return true;
     }
   }
@@ -350,6 +356,8 @@ if (isMV3()) {
 EWE.testing.enableDebugOutput(true);
 
 EWE.start(startupInfo).then(async() => {
+  migrationErrorsOnStart = await EWE.subscriptions.getMigrationErrors();
+
   if (typeof netscape != "undefined") {
     let version = /\brv:([^;)]+)/.exec(navigator.userAgent)[1];
     if (parseInt(version, 10) < 86)

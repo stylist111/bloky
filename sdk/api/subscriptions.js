@@ -230,7 +230,8 @@ export async function updateFilterText() {
   let removeUrls = [];
 
   for (let subscription of filterEngine.filterStorage.subscriptions()) {
-    if (subscription instanceof RegularSubscription) {
+    if ((subscription instanceof RegularSubscription) &&
+        subscription.type != "circumvention") {
       let subscriptionInfo = addonBundledSubscriptions.find(
         x => x.url == subscription.url);
 

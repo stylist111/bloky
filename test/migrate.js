@@ -280,8 +280,10 @@ describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
       return;
     }
 
-    let errors = await EWE.subscriptions.getMigrationErrors();
-    expect(errors).toEqual(expect.arrayContaining([
+    let errorsOnStart = await browser.runtime.sendMessage({
+      type: "ewe-test:getMigrationErrorsOnStart"
+    });
+    expect(errorsOnStart).toEqual(expect.arrayContaining([
       expect.objectContaining({
         error: `Failed to find the subscription with URL=${URL}`,
         subscription: expect.objectContaining({
@@ -289,6 +291,9 @@ describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
         })
       })
     ]));
+
+    let errors = await EWE.subscriptions.getMigrationErrors();
+    expect(errors).toEqual(errorsOnStart);
 
     // Suspending the service worker results in the same type of restart that
     // happens when clicking the reload button for an extension. Both of these

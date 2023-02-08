@@ -65,17 +65,17 @@ export let snippets = {
   setLibrary: setSnippetLibrary
 };
 
+const SESSION_STORAGE_KEY = "ewe:skip_init_rulesets";
+
 async function onInstalled(details) {
-  await initializer.start();
+  // Web extension update (with potential subscriptions filter
+  // text changed and repacked) can happen in the same browser session.
+  // So in order to not skip the next subscriptions filter text update
+  // the flag is removed.
+  if (details.reason != browser.runtime.OnInstalledReason.UPDATE)
+    return;
 
-  if (Prefs.migration_state === MIGRATED_TO_MV2) {
-    await migrateSubscriptions();
-    await migrateCustomFilters();
-    Prefs.migration_state = MIGRATED_TO_MV3;
-  }
-
-  await updateFilterText();
-  await ensureDNRRulesetsEnabled();
+  await browser.storage.session.remove(SESSION_STORAGE_KEY);
 }
 
 /**
@@ -135,6 +135,10 @@ export async function start(addonInfo) {
     warnings
   };
 
+  if (browser.declarativeNetRequest) {
+    await checkAndMigrateSubscriptions();
+    await checkAndInitSubscriptions();
+  }
   return firstRun;
 }
 
@@ -162,4 +166,29 @@ async function startSubmodules() {
   }
 
   filterEngine.filterStorage.synchronizer.start();
+}
+
+async function checkAndMigrateSubscriptions() {
+  if (Prefs.migration_state === MIGRATED_TO_MV2) {
+    await migrateSubscriptions();
+    await migrateCustomFilters();
+    Prefs.migration_state = MIGRATED_TO_MV3;
+  }
+}
+
+async function checkAndInitSubscriptions() {
+  // Loading the subbcriptions filter text can cause start-up
+  // performance penalty, so we do it only once per session only.
+  let skipInit = await browser.storage.session.get(
+    [SESSION_STORAGE_KEY]
+  );
+  if (skipInit[SESSION_STORAGE_KEY])
+    return;
+
+  await updateFilterText();
+  await ensureDNRRulesetsEnabled();
+
+  await browser.storage.session.set(
+    {[SESSION_STORAGE_KEY]: true}
+  );
 }
