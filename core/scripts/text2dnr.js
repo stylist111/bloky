@@ -28,14 +28,13 @@ let {normalize} = require("../lib/filters/index.js");
 let {parseFilterList} = require("../lib/filters/lists.js");
 
 function processContent(converter, filterListContent) {
-  let {error, lines} = parseFilterList(filterListContent, true);
+  let {error, lines} = parseFilterList(filterListContent);
   if (error)
     return Promise.reject(new Error(error));
 
   lines.shift();
   return Promise.resolve(lines
-                         .flatMap((filter, line) =>
-                           converter(normalize(filter), line + 1))
+                         .flatMap(filter => converter(normalize(filter)))
                          .filter(o => !(o instanceof Error)));
 }
 

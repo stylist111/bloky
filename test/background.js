@@ -245,6 +245,30 @@ EWE.notifications.addShowListener(async notification => {
   await EWE.notifications.markAsShown(notification.id);
 });
 
+EWE.reporting.onBlockableItem.addListener(
+  createTestEventListener("reporting.onBlockableItem.defaultEventOptions"),
+  {}
+);
+EWE.reporting.onBlockableItem.addListener(
+  createTestEventListener("reporting.onBlockableItem.allowingEventOptions"),
+  {filterType: "allowing"}
+);
+EWE.reporting.onBlockableItem.addListener(
+  createTestEventListener("reporting.onBlockableItem.elemhideEventOptions"),
+  {includeElementHiding: true}
+);
+EWE.reporting.onBlockableItem.addListener(
+  createTestEventListener("reporting.onBlockableItem.unmatchedEventOptions"),
+  {includeUnmatched: true, filterType: "all"}
+);
+EWE.reporting.onBlockableItem.addListener(
+  createTestEventListener("reporting.onBlockableItem.allEventOptions"),
+  {
+    includeElementHiding: true,
+    includeUnmatched: true,
+    filterType: "all"
+  }
+);
 
 async function checkTabAllowlisted(tabId, changeInfo, tab) {
   let result = {

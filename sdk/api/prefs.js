@@ -26,7 +26,6 @@ export const defaults = Object.create({
   analytics: {trustedHosts: ["adblockplus.org",
                              "notification.adblockplus.org",
                              "easylist-downloads.adblockplus.org"]},
-  rule_id_to_filter_text: [],
   dynamic_filters: [],
   notificationdata: {},
   notifications_ignoredcategories: [],
@@ -42,8 +41,7 @@ export const defaults = Object.create({
   subscriptions_initial_delay: 1000, // 1 s
   migration_filter_errors: [],
   migration_subscription_errors: [],
-  migration_state: MIGRATED_TO_MV2,
-  last_reporting_check_timestamp: 0
+  migration_state: MIGRATED_TO_MV2
 });
 
 export let Prefs = {

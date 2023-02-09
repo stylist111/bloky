@@ -22,6 +22,7 @@ import * as messageResponder from "./message-responder.js";
 import * as popupBlockerBackgroundPage from "./popup-blocker-background-page.js";
 import * as popupBlockerServiceWorker from "./popup-blocker-service-worker.js";
 import * as requestFilter from "./request-filter.js";
+import * as dnrRequestReporter from "./dnr-request-reporter.js";
 import * as sitekey from "./sitekey.js";
 import {setSnippetLibrary} from "./content-filter.js";
 import {setAddonInfo} from "./info.js";
@@ -147,10 +148,11 @@ function startSubmodulesWithListeners() {
   // to register their events in the first turn of the event loop to
   // register their event listeners.
   messageResponder.start();
-  if (isRunningInServiceWorker()) {
+  if (isRunningInServiceWorker())
     popupBlockerServiceWorker.start();
-    requestFilter.start();
-  }
+
+  if (browser.declarativeNetRequest)
+    dnrRequestReporter.start();
 
   sitekey.start();
 }
@@ -160,10 +162,11 @@ async function startSubmodules() {
 
   // MV2-style popup and request blocking assume that initializer is
   // started first.
-  if (!isRunningInServiceWorker()) {
+  if (!isRunningInServiceWorker())
     popupBlockerBackgroundPage.start();
+
+  if (!browser.declarativeNetRequest)
     requestFilter.start();
-  }
 
   filterEngine.filterStorage.synchronizer.start();
 }

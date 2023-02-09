@@ -32,12 +32,7 @@ import {Prefs} from "./prefs.js";
 
 let highestRuleId = 1;
 let dynamicFilters = new Map();
-let ruleIdToFilterText = new Map();
 let initializationPromise;
-
-export function getFilterTextByRuleId(ruleId) {
-  return ruleIdToFilterText.get(ruleId);
-}
 
 let getRulesFromFilter = () => {};
 if (browser.declarativeNetRequest) {
@@ -99,7 +94,6 @@ async function dynamicSubscriptionUpdate(subscription, updates) {
   );
 
   removed.forEach(text => dynamicFilters.delete(text));
-  removed.forEach(ruleId => ruleIdToFilterText.delete(ruleId));
 
   filters.details.forEach(details => {
     let {useFilterEngine, filter, ruleIds, enabled} = details;
@@ -108,8 +102,6 @@ async function dynamicSubscriptionUpdate(subscription, updates) {
     dynamicFilters.set(filter.text,
                        {ruleIds, useFilterEngine, enabled, metadata: {},
                         subscriptionIds: [subscription.id]});
-    for (let ruleId of ruleIds)
-      ruleIdToFilterText.set(ruleId, filter.text);
   });
 
   storeDynamicFilters();
@@ -135,7 +127,6 @@ export async function removeDynamicFilters() {
 
   dynamicFilters = new Map();
   Prefs.dynamic_filters = [];
-  Prefs.rule_id_to_filter_text = [];
 
   let rules = await browser.declarativeNetRequest.getDynamicRules();
   if (rules.length == 0)
@@ -162,10 +153,6 @@ function storeDynamicFilters() {
   let storageArray = [];
   storageArray.push(...dynamicFilters);
   Prefs.dynamic_filters = storageArray;
-
-  let ruleIdToFilterTextArray = [];
-  ruleIdToFilterTextArray.push(...ruleIdToFilterText);
-  Prefs.rule_id_to_filter_text = ruleIdToFilterTextArray;
 }
 
 export function init() {
@@ -183,11 +170,6 @@ export function init() {
         // be said for storage. To be safe, if we have no record of dynamic
         // filters let's clear any DNR rules too.
         await removeDynamicFilters();
-
-      let ruleIdToFilterTextArray = Prefs.rule_id_to_filter_text;
-      if (Array.isArray(ruleIdToFilterTextArray) &&
-          ruleIdToFilterTextArray.length > 0)
-        ruleIdToFilterText = new Map(ruleIdToFilterTextArray);
 
       for (let {ruleIds} of dynamicFilters.values())
         setHighestRuleId(ruleIds);
@@ -309,8 +291,6 @@ export async function addFilters(texts, metadata) {
     setHighestRuleId(ruleIds);
     dynamicFilters.set(filter.text, {ruleIds, enabled, metadata,
                                      subscriptionIds: [null]});
-    for (let ruleId of ruleIds)
-      ruleIdToFilterText.set(ruleId, filter.text);
   }
 
   storeDynamicFilters();
@@ -364,8 +344,6 @@ export async function removeOrDisableFilters(texts, remove = true) {
         filterEngine.filterStorage.removeFilter(Filter.fromText(text));
 
         dynamicFilters.delete(text);
-        for (let ruleId of ruleIdsToRemove)
-          ruleIdToFilterText.delete(ruleId);
       }
     }
     else {
@@ -374,7 +352,6 @@ export async function removeOrDisableFilters(texts, remove = true) {
       details.enabled = false;
       details.ruleIds = [];
       dynamicFilters.set(text, details);
-      ruleIdToFilterText.set(text, details);
     }
   }
 

@@ -2,6 +2,7 @@
 
 ## Table of contents
 
+* [Subscribing to events in MV3](#subscribing-to-events-in-mv3)
 * [MV3 subscriptions](#mv3-subscriptions)
   * [Basics](#basics)
   * [Converting subscription lists to rulesets](#converting-subscription-lists-to-rulesets)
@@ -10,6 +11,21 @@
   * [Adding subscriptions](#adding-subscriptions)
 
 </div>
+
+## Subscribing to events in MV3
+
+The background script in MV3 runs in a service worker which may be
+suspended at any time. This has interesting implications for event
+listeners. The following rule of thumb applies to browser events as
+well events provided by EWE:
+
+**All event listeners should be attached in the first turn of the event loop.**
+
+If you add an event listener after the first turn of the event loop,
+you will get all events that happen after you attach the event
+listener. However, when the service worker is suspended and is
+activated by a new event, you might miss that event because it could
+be processed before your listener is reregistered.
 
 ## MV3 subscriptions
 

@@ -25,18 +25,11 @@ import {default as debugging} from "./debugging.js";
 import {default as subs} from "./subscriptions.js";
 import {setAddonInfo, addonBundledSubscriptionsPath} from "./info.js";
 import {removeDynamicFilters} from "./dnr-filters.js";
-import {getMatchedFilters} from "./reporting-requester.js";
-import {clearMatchedFilterEvents, setForceEnableTracing} from "./diagnostics.js";
-import {resetClearCounter, setLastCheckTimestamp} from "./reporting.js";
 
 import * as sitekey from "./sitekey.js";
 
 export default {
   ...sitekey, // everything exported from "sitekey.js"
-  /**
-   * @ignore
-   */
-  _getMatchedFilters: getMatchedFilters,
 
   /**
    * @ignore
@@ -129,14 +122,6 @@ export default {
     Prefs.notifications_ignoredcategories = [];
     await awaitSavingComplete();
   },
-
-  async clearFilterMatches() {
-    clearMatchedFilterEvents();
-    resetClearCounter();
-  },
-
-  setLastCheckTimestamp,
-  setForceEnableTracing,
 
   enableDebugOutput(enabled) {
     if (enabled)

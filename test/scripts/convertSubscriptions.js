@@ -20,7 +20,6 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import {convert} from "../../scripts/convertSubscriptions.js";
-import {decode} from "../../sdk/api/id-utils.js";
 
 const encoding = "utf-8";
 
@@ -212,23 +211,5 @@ describe("convertSubscriptions script", () => {
       content: "1",
       url: "1"
     });
-  });
-
-  it("encodes line number into rule ids", async function() {
-    let filename = "foo.txt";
-    createAbpRuleFile(filename, "[Adblock Plus 2.0]\nrule1\nrule2");
-    await convert(tmpInDir, tmpOutDir);
-    let dnrRules = getDnrRulesFromFile(filename);
-    expect(dnrRules.length).toEqual(2);
-
-    let id1 = dnrRules[0].id;
-    expect(id1).toEqual(expect.any(Number));
-    let context1 = decode(id1);
-    expect(context1.line).toEqual(1);
-
-    let id2 = dnrRules[1].id;
-    expect(id2).toEqual(expect.any(Number));
-    let context2 = decode(id2);
-    expect(context2.line).toEqual(2);
   });
 });

@@ -1698,15 +1698,9 @@ describe("API", function() {
   });
 
   describe("Reporting", function() {
-    let defaultEventOptions = {};
-    let allowingEventOptions = {filterType: "allowing"};
     let elemhideEventOptions = {includeElementHiding: true};
     let unmatchedEventOptions = {includeUnmatched: true, filterType: "all"};
-    let allEventOptions = {
-      includeElementHiding: true,
-      includeUnmatched: true,
-      filterType: "all"
-    };
+    let timeoutWaitingForLogs = isFuzzingServiceWorker() ? 5000 : 1000;
 
     it("exposes a mapping between content types and ResourceTypes", async function() {
       let expected = {
@@ -1795,12 +1789,7 @@ describe("API", function() {
        });
 
     describe("Diagnostics", function() {
-      setMinTimeout(this, isMV3() ? 140000 : 4000);
-
-      before(function() {
-        if (isMV3())
-          this.skip();
-      });
+      setMinTimeout(this, 10000);
 
       function expectedBlockingFilter(filterText) {
         return {
@@ -1906,25 +1895,23 @@ describe("API", function() {
 
       async function expectLoggedMessages(getReceivedEvents, mandatoryEvents,
                                           optionalEvents = []) {
-        if (!isMV3()) {
-          // Some of the events we're checking for here may be emitted
-          // after the page is done loading, like elemhide.
-          let maxEventsLength = mandatoryEvents.length + optionalEvents.length;
-          try {
-            await wait(
-              async() => (await getReceivedEvents()).length >= maxEventsLength,
-              1000, null, 50);
-          }
-          catch (e) {
-            // Rather than fail in the catch, we're going to fail with
-            // the assertions below. This will give better output with
-            // highlighting which events were unmatched. Also, it lets
-            // us not fail if the missing requests were the optional
-            // ones.
-          }
-          // add a little wait here in case there are extra unexpected events
-          await new Promise(r => setTimeout(r, 50));
+        // Some of the events we're checking for here may be emitted
+        // after the page is done loading, like elemhide.
+        let maxEventsLength = mandatoryEvents.length + optionalEvents.length;
+        try {
+          await wait(
+            async() => (await getReceivedEvents()).length >= maxEventsLength,
+            timeoutWaitingForLogs, null, 50);
         }
+        catch (e) {
+          // Rather than fail in the catch, we're going to fail with
+          // the assertions below. This will give better output with
+          // highlighting which events were unmatched. Also, it lets
+          // us not fail if the missing requests were the optional
+          // ones.
+        }
+        // add a little wait here in case there are extra unexpected events
+        await new Promise(r => setTimeout(r, 50));
 
         let receivedEvents = await getReceivedEvents();
         expect(receivedEvents)
@@ -1943,9 +1930,9 @@ describe("API", function() {
       }
 
       async function getReceivedEventsFromListener(
-        listenerName, tabId, filterToCurrentTab, minEventsLength) {
-        let listenerEvents = await awaitUntilRequestedTestEvents(
-          listenerName, minEventsLength);
+        listenerName, tabId, filterToCurrentTab) {
+        let listenerEvents = await getTestEvents(listenerName);
+
         // Some legitimate events make it difficult to write
         // reliable tests. It's easier to just filter out these
         // requests, and assert based on requests on the test
@@ -2018,15 +2005,14 @@ describe("API", function() {
         if (!isMV3() || called)
           return called;
 
-        events = await awaitUntilRequestedTestEvents(name, 1);
+        events = await getReceivedEventsFromListener(name, 1);
         return events.length > 0;
       }
 
       async function checkLogging(filters, eventOptions, callbackOrPage,
                                   mandatoryEvents, {
                                     filterToCurrentTab = true,
-                                    optionalEvents = [],
-                                    minEventsLength = 0
+                                    optionalEvents = []
                                   } = {}) {
         let callback = callbackOrPage;
         if (typeof callbackOrPage == "string")
@@ -2035,51 +2021,30 @@ describe("API", function() {
         if (filters)
           await EWE.filters.add(filters);
 
-        let listener = await addNewOnBlockableListener(eventOptions);
+        let eventName;
+        if (typeof eventOptions == "string")
+          eventName = `reporting.onBlockableItem.${eventOptions}`;
+        else
+          eventName = await addNewOnBlockableListener(eventOptions);
+
+        await clearTestEvents(eventName);
+
         let tabId = await callback();
         let getReceivedEvents =
           async() => await getReceivedEventsFromListener(
-            listener, tabId, filterToCurrentTab, minEventsLength);
+            eventName, tabId, filterToCurrentTab);
 
         await expectLoggedMessages(
           getReceivedEvents, mandatoryEvents, optionalEvents
         );
       }
 
-      async function nextSchedulerCheck() {
-        // in MV3 we poll the matched rules and save the last check
-        // in Prefs to avoid too frequent requests.
-        const key = "last_reporting_check_timestamp";
-        let startCheckTimestamp = await EWE.testing._getPrefs(key);
-        await wait(async() => {
-          let currentCheckTimestamp = await EWE.testing._getPrefs(key);
-          let schedulerChecked = currentCheckTimestamp != startCheckTimestamp;
-          return schedulerChecked;
-        }, 45000, "No scheduler check happened", 1000);
-      }
-
-      async function awaitUntilRequestedTestEvents(name, minEventsLength) {
-        if (isMV3())
-          await nextSchedulerCheck();
-
-        let events = await getTestEvents(name);
-        if (isMV3() &&
-            minEventsLength &&
-            events.length < minEventsLength) {
-          // It can happen, that scheduler check happened too early,
-          // eg. page loading is not finished or element hiding is not finished.
-          // So we might need to wait for the next scheduler check.
-          await nextSchedulerCheck();
-          events = await getTestEvents(name);
-        }
-        return events;
-      }
-
-      it("does not log removed items", async function() {
-        // This test does multiple reloading and has to work with the
-        // polling mechanism.
-        if (isMV3())
-          setMinTimeout(this, 140000);
+      it("does not log after listener is removed", async function() {
+        // Dynamic adding and removing of event listeners isn't
+        // something which MV3 supports well with service workers
+        // stopping.
+        if (isFuzzingServiceWorker())
+          this.skip();
 
         let listenerName = await addNewOnBlockableListener(null);
 
@@ -2087,21 +2052,21 @@ describe("API", function() {
         let page = new Page("image.html");
         await page.loaded;
 
-        let events = await awaitUntilRequestedTestEvents(listenerName);
+        let events = await getTestEvents(listenerName);
         let callCount = events.length;
         expect(events.length > 0).toBeTruthy();
 
         await removeOnBlockableListener(listenerName);
 
         await page.reload();
-        events = await awaitUntilRequestedTestEvents(listenerName);
+        events = await getTestEvents(listenerName);
         expect(events.length).toEqual(callCount);
       });
 
       it("logs blocking request filter", async function() {
         await checkLogging(
           ["/image.png^$image"],
-          allEventOptions,
+          "allEventOptions",
           "image.html",
           [{
             filter: null,
@@ -2111,37 +2076,13 @@ describe("API", function() {
             filter: expectedBlockingFilter("/image.png^$image"),
             matchInfo: requestMatchInfo,
             request: expectedRequestRelativeUrl("image.png")
-          }], {minEventsLength: 2});
-      });
-
-      it("logs multiple blocking request filter", async function() {
-        await checkLogging(
-          ["/image.png^$image"],
-          allEventOptions,
-          "imageMultiple.html",
-          [{
-            filter: null,
-            matchInfo: unmatchedMainFrameMatchInfo,
-            request: expectedRequestRelativeUrl("imageMultiple.html")
-          }, {
-            filter: expectedBlockingFilter("/image.png^$image"),
-            matchInfo: requestMatchInfo,
-            request: expectedRequestRelativeUrl("image.png?index=0")
-          }, {
-            filter: expectedBlockingFilter("/image.png^$image"),
-            matchInfo: requestMatchInfo,
-            request: expectedRequestRelativeUrl("image.png?index=1")
-          }, {
-            filter: expectedBlockingFilter("/image.png^$image"),
-            matchInfo: requestMatchInfo,
-            request: expectedRequestRelativeUrl("image.png?index=2")
-          }], {minEventsLength: 5});
+          }]);
       });
 
       it("logs allowlisting request filter", async function() {
         await checkLogging(
           ["/image.png^$image", `@@|${TEST_PAGES_URL}$image`],
-          allEventOptions,
+          "allEventOptions",
           "image.html",
           [{
             filter: null,
@@ -2151,14 +2092,14 @@ describe("API", function() {
             filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}$image`),
             matchInfo: requestMatchInfo,
             request: expectedRequestRelativeUrl("image.png")
-          }], {minEventsLength: 3}
+          }]
         );
       });
 
       it("logs third-party requests", async function() {
         await checkLogging(
           ["/image.png$third-party"],
-          allEventOptions,
+          "allEventOptions",
           "third-party.html",
           [{
             filter: null,
@@ -2168,14 +2109,14 @@ describe("API", function() {
             filter: expectedBlockingFilter("/image.png$third-party"),
             matchInfo: requestMatchInfo,
             request: expectedRequestUrl(`${CROSS_DOMAIN_URL}/image.png`)
-          }], {minEventsLength: 3}
+          }]
         );
       });
 
       it("logs rewrite filter", async function() {
         await checkLogging(
           ["*.js$rewrite=abp-resource:blank-js,domain=localhost"],
-          allEventOptions,
+          "allEventOptions",
           "script.html",
           [{
             filter: null,
@@ -2187,7 +2128,59 @@ describe("API", function() {
             ),
             matchInfo: expectRewriteMatchInfo("data:application/javascript,"),
             request: expectedRequestRelativeUrl("script.js")
-          }], {minEventsLength: 3});
+          }]);
+      });
+
+      it("logs the url filter actually applied even if there is an unapplied filter too - blocking", async function() {
+        // In MV2, the first filter listed is applied because URL
+        // filters have the same priority. In MV3, blocking is
+        // prioritized over rewrite (see
+        // https://developer.chrome.com/docs/extensions/reference/declarativeNetRequest/#matching-algorithm).
+        let mv2ExpectedLog = {
+          filter: expectedBlockingFilter("*.js$rewrite=abp-resource:blank-js,domain=localhost"),
+          matchInfo: expectRewriteMatchInfo("data:application/javascript,"),
+          request: expectedRequestRelativeUrl("script.js")
+        };
+        let mv3ExpectedLog = {
+          filter: expectedBlockingFilter("*.js$domain=localhost"),
+          matchInfo: requestMatchInfo,
+          request: expectedRequestRelativeUrl("script.js")
+        };
+        let expectedLog = isMV3() ? mv3ExpectedLog : mv2ExpectedLog;
+
+        await checkLogging(
+          [
+            "*.js$rewrite=abp-resource:blank-js,domain=localhost",
+            "*.js$domain=localhost"
+          ],
+          "defaultEventOptions",
+          "script.html",
+          [expectedLog]);
+      });
+
+      it("logs the url filter actually applied even if there is an unapplied filter too - rewrite", async function() {
+        // In MV2, the first filter listed is applied, but in MV3 the
+        // one with the domain is higher priority.
+        let mv2ExpectedLog = {
+          filter: expectedBlockingFilter("*.js"),
+          matchInfo: requestMatchInfo,
+          request: expectedRequestRelativeUrl("script.js")
+        };
+        let mv3ExpectedLog = {
+          filter: expectedBlockingFilter("*.js$rewrite=abp-resource:blank-js,domain=localhost"),
+          matchInfo: expectRewriteMatchInfo("data:application/javascript,"),
+          request: expectedRequestRelativeUrl("script.js")
+        };
+        let expectedLog = isMV3() ? mv3ExpectedLog : mv2ExpectedLog;
+
+        await checkLogging(
+          [
+            "*.js",
+            "*.js$rewrite=abp-resource:blank-js,domain=localhost"
+          ],
+          "defaultEventOptions",
+          "script.html",
+          [expectedLog]);
       });
 
       it("logs unmatched for invalid rewrite filter", async function() {
@@ -2202,7 +2195,7 @@ describe("API", function() {
         )).rejects.toThrow("FilterError");
         await checkLogging(
           [],
-          allEventOptions,
+          "allEventOptions",
           "script.html",
           [{
             filter: null,
@@ -2212,7 +2205,7 @@ describe("API", function() {
             filter: null,
             matchInfo: unmatchedMatchInfo,
             request: expectedRequestRelativeUrl("script.js")
-          }], {minEventsLength: 3});
+          }]);
       });
 
       // is not feasible in MV3: "filter_unknown_option" thrown
@@ -2222,7 +2215,7 @@ describe("API", function() {
 
         await checkLogging(
           [`|${TEST_PAGES_URL}$header=x-header=whatever`],
-          allEventOptions,
+          "allEventOptions",
           "header.html",
           [{
             filter: null,
@@ -2257,7 +2250,7 @@ describe("API", function() {
             `|${TEST_PAGES_URL}$header=x-header=whatever`,
             `@@|${TEST_PAGES_URL}$header`
           ],
-          allEventOptions,
+          "allEventOptions",
           "header.html",
           [{
             filter: null,
@@ -2292,7 +2285,7 @@ describe("API", function() {
             `|${TEST_PAGES_URL}$header=x-header=whatever`,
             `@@|${TEST_PAGES_URL}`
           ],
-          allEventOptions,
+          "allEventOptions",
           "header.html",
           [{
             filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}`),
@@ -2316,7 +2309,7 @@ describe("API", function() {
       it("logs blocking $csp filter", async function() {
         await checkLogging(
           [`|${TEST_PAGES_URL}$csp=img-src 'none'`],
-          allEventOptions,
+          "allEventOptions",
           "csp.html",
           [{
             filter: expectedBlockingFilter(
@@ -2324,13 +2317,36 @@ describe("API", function() {
             ),
             matchInfo: cspMatchInfo,
             request: expectedRequestRelativeUrl("csp.html")
-          }], {minEventsLength: 2});
+          }]);
+      });
+
+      it("logs multiple blocking $csp filters if multiple apply", async function() {
+        await checkLogging(
+          [
+            `|${TEST_PAGES_URL}$csp=img-src 'none'`,
+            `|${TEST_PAGES_URL}$csp=img-src 127.0.0.1`
+          ],
+          "allEventOptions",
+          "csp.html",
+          [{
+            filter: expectedBlockingFilter(
+              `|${TEST_PAGES_URL}$csp=img-src 'none'`
+            ),
+            matchInfo: cspMatchInfo,
+            request: expectedRequestRelativeUrl("csp.html")
+          }, {
+            filter: expectedBlockingFilter(
+              `|${TEST_PAGES_URL}$csp=img-src 127.0.0.1`
+            ),
+            matchInfo: cspMatchInfo,
+            request: expectedRequestRelativeUrl("csp.html")
+          }]);
       });
 
       it("logs allowlisting $csp filter", async function() {
         await checkLogging(
           [`|${TEST_PAGES_URL}$csp=img-src 'none'`, `@@|${TEST_PAGES_URL}$csp`],
-          allEventOptions,
+          "allEventOptions",
           "csp.html",
           [{
             filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}$csp`),
@@ -2340,13 +2356,13 @@ describe("API", function() {
             filter: null,
             matchInfo: unmatchedMatchInfo,
             request: expectedRequestRelativeUrl("image.png")
-          }], {minEventsLength: 3});
+          }]);
       });
 
       it("logs allowlisting $document filter", async function() {
         await checkLogging(
           [`@@|${TEST_PAGES_URL}$document`],
-          allEventOptions,
+          "allEventOptions",
           "image.html",
           [{
             filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}$document`),
@@ -2370,79 +2386,78 @@ describe("API", function() {
               specificOnly: false
             },
             request: expectedRequestRelativeUrl("image.png")
-          }], {minEventsLength: 4}
+          }]
         );
       });
 
       it("logs allowlisting $document filter " +
          "after cross domain navigation", async function() {
-        let listenerName = await addNewOnBlockableListener(allEventOptions);
+        // In fuzz mode the page is loaded already navigated to "image.html"
+        // without having a history, so no "cross-domain-navigation.html" items
+        // are available and thus missing.
+        // See https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/493
+        if (isFuzzingServiceWorker())
+          return;
 
-        await EWE.filters.add([`@@|${TEST_PAGES_URL}$document`,
-                               `@@|${CROSS_DOMAIN_URL}$document`]);
-
-        let page = new Page("cross-domain-navigation.html");
-        let tabId = await page.loaded;
-
-        let expectedLogs = [{
-          filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}$document`),
-          matchInfo: {
-            ...allowingMatchInfo,
-            allowingReason: "document"
-          },
-          request: expectedRequestRelativeUrl("cross-domain-navigation.html")
-        }, {
-          filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}$document`),
-          matchInfo: {
-            ...allowingMatchInfo,
-            docDomain: null,
-            specificOnly: false
-          },
-          request: expectedRequestRelativeUrl("cross-domain-navigation.html")
-        }, {
-          filter: expectedAllowingFilter(`@@|${CROSS_DOMAIN_URL}$document`),
-          matchInfo: {
-            ...allowingMatchInfo,
-            docDomain: CROSS_DOMAIN,
-            allowingReason: "document"
-          },
-          request: expect.objectContaining({
-            url: `${CROSS_DOMAIN_URL}/image.html`,
-            frameId: expect.any(Number),
-            tabId: expect.any(Number)
-          })
-        }, {
-          filter: expectedAllowingFilter(`@@|${CROSS_DOMAIN_URL}$document`),
-          matchInfo: {
-            ...allowingMatchInfo,
-            docDomain: null,
-            specificOnly: false
-          },
-          request: expect.objectContaining({
-            url: `${CROSS_DOMAIN_URL}/image.html`,
-            frameId: expect.any(Number),
-            tabId: expect.any(Number),
-            type: "main_frame"
-          })
-        }, {
-          filter: expectedAllowingFilter(`@@|${CROSS_DOMAIN_URL}$document`),
-          matchInfo: {
-            ...allowingMatchInfo,
-            docDomain: CROSS_DOMAIN,
-            specificOnly: false
-          },
-          request: expect.objectContaining({
-            url: `${CROSS_DOMAIN_URL}/image.png`,
-            frameId: expect.any(Number),
-            tabId: expect.any(Number),
-            type: "image"
-          })
-        }];
-
-        let getNextWaveOfReceivedEvents = async() =>
-          await getReceivedEventsFromListener(listenerName, tabId, true, 7);
-
-        await expectLoggedMessages(getNextWaveOfReceivedEvents, expectedLogs);
+        await checkLogging(
+          [`@@|${TEST_PAGES_URL}$document`, `@@|${CROSS_DOMAIN_URL}$document`],
+          "allEventOptions",
+          "cross-domain-navigation.html",
+          [{
+            filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}$document`),
+            matchInfo: {
+              ...allowingMatchInfo,
+              allowingReason: "document"
+            },
+            request: expectedRequestRelativeUrl("cross-domain-navigation.html")
+          }, {
+            filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}$document`),
+            matchInfo: {
+              ...allowingMatchInfo,
+              docDomain: null,
+              specificOnly: false
+            },
+            request: expectedRequestRelativeUrl("cross-domain-navigation.html")
+          }, {
+            filter: expectedAllowingFilter(`@@|${CROSS_DOMAIN_URL}$document`),
+            matchInfo: {
+              ...allowingMatchInfo,
+              docDomain: CROSS_DOMAIN,
+              allowingReason: "document"
+            },
+            request: expect.objectContaining({
+              url: `${CROSS_DOMAIN_URL}/image.html`,
+              frameId: expect.any(Number),
+              tabId: expect.any(Number)
+            })
+          }, {
+            filter: expectedAllowingFilter(`@@|${CROSS_DOMAIN_URL}$document`),
+            matchInfo: {
+              ...allowingMatchInfo,
+              docDomain: null,
+              specificOnly: false
+            },
+            request: expect.objectContaining({
+              url: `${CROSS_DOMAIN_URL}/image.html`,
+              frameId: expect.any(Number),
+              tabId: expect.any(Number),
+              type: "main_frame"
+            })
+          }, {
+            filter: expectedAllowingFilter(`@@|${CROSS_DOMAIN_URL}$document`),
+            matchInfo: {
+              ...allowingMatchInfo,
+              docDomain: CROSS_DOMAIN,
+              specificOnly: false
+            },
+            request: expect.objectContaining({
+              url: `${CROSS_DOMAIN_URL}/image.png`,
+              frameId: expect.any(Number),
+              tabId: expect.any(Number),
+              type: "image"
+            })
+          }]
+        );
       });
 
       for (let option of ["$elemhide", "$genericblock", "$generichide"]) {
@@ -2450,7 +2465,7 @@ describe("API", function() {
           let specificOnly = option == "$genericblock";
           await checkLogging(
             [`@@|${TEST_PAGES_URL}${option}`],
-            allEventOptions,
+            "allEventOptions",
             "image.html",
             [{
               filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}${option}`),
@@ -2474,7 +2489,7 @@ describe("API", function() {
                 specificOnly
               },
               request: expectedRequestRelativeUrl("image.png")
-            }], {minEventsLength: 4}
+            }]
           );
         });
       }
@@ -2482,7 +2497,7 @@ describe("API", function() {
       it("logs allowlisting for different domain iframe", async function() {
         await checkLogging(
           [`@@|${TEST_PAGES_URL}/image.html^$document`],
-          allowingEventOptions,
+          "allowingEventOptions",
           () => new Page(`${CROSS_DOMAIN_URL}/iframe.html`, true).loaded,
           [{
             filter: expectedAllowingFilter(
@@ -2514,14 +2529,14 @@ describe("API", function() {
               specificOnly: false
             },
             request: expectedRequestRelativeUrl("image.png")
-          }], {minEventsLength: 4}
+          }]
         );
       });
 
       it("logs allowlisting for nested iframe", async function() {
         await checkLogging(
           [`@@${TEST_PAGES_URL}/iframe.html$document`],
-          allowingEventOptions,
+          "allowingEventOptions",
           "nested-iframe.html",
           [{
             filter: expectedAllowingFilter(
@@ -2553,14 +2568,14 @@ describe("API", function() {
             ),
             matchInfo: {...allowingMatchInfo, specificOnly: false},
             request: expectedRequestRelativeUrl("image.png")
-          }], {minEventsLength: 5}
+          }]
         );
       });
 
       it("logs allowlisting for contents of aborted iframe", async function() {
         await checkLogging(
           [`@@${TEST_PAGES_URL}/nested-iframe-aborted-request.html$document`],
-          allowingEventOptions,
+          "allowingEventOptions",
           "nested-iframe-aborted-request.html",
           [{
             filter: expectedAllowingFilter(
@@ -2607,8 +2622,7 @@ describe("API", function() {
               ),
               matchInfo: {...allowingMatchInfo, specificOnly: false},
               request: expectedRequestRelativeUrl("iframe.html?delay=500")
-            }],
-            minEventsLength: 8
+            }]
           }
         );
       });
@@ -2621,7 +2635,7 @@ describe("API", function() {
         // injected with Javascript.
         await checkLogging(
           [`@@${TEST_PAGES_URL}/iframe.html$document`],
-          allowingEventOptions,
+          "allowingEventOptions",
           "nested-iframe-aborted-request.html",
           [],
           {
@@ -2645,7 +2659,7 @@ describe("API", function() {
       it("logs allowlisting for nested iframe when the inner frame is set by srcdoc", async function() {
         await checkLogging(
           [`@@${TEST_PAGES_URL}/nested-iframe-srcdoc.html$document`],
-          allowingEventOptions,
+          "allowingEventOptions",
           "nested-iframe-srcdoc.html",
           [{
             filter: expectedAllowingFilter(
@@ -2678,14 +2692,14 @@ describe("API", function() {
             ),
             matchInfo: {...allowingMatchInfo, specificOnly: false},
             request: expectedRequestRelativeUrl("image.png")
-          }], {minEventsLength: 7}
+          }]
         );
       });
 
       it("logs allowlisting with $document filter", async function() {
         await checkLogging(
           [`@@${TEST_PAGES_URL}/image.html$document`],
-          allowingEventOptions,
+          "allowingEventOptions",
           "image.html",
           [{
             filter: expectedAllowingFilter(
@@ -2709,141 +2723,104 @@ describe("API", function() {
             ),
             matchInfo: {...allowingMatchInfo, specificOnly: false},
             request: expectedRequestRelativeUrl("image.png")
-          }], {minEventsLength: 3}
+          }]
         );
       });
 
       it("logs element hiding filter", async function() {
         await checkLogging(
           ["###elem-hide"],
-          elemhideEventOptions,
+          "elemhideEventOptions",
           "element-hiding.html",
           [{
             filter: expectedElemhideFilter("###elem-hide"),
             matchInfo: elemhideMatchInfo,
             request: expectedRequestRelativeUrl("element-hiding.html")
-          }], {minEventsLength: 1}
+          }]
         );
       });
 
       it("logs element hiding filter for a given tab", async function() {
-        if (isMV3())
-          await EWE.testing.setForceEnableTracing(true);
+        // Filtering by tabs can't work reliably when service worker
+        // is suspended because the event listener can't be attached
+        // in the first turn of the event loop.
+        if (isFuzzingServiceWorker())
+          this.skip();
 
-        try {
-          // The test is flaky as it's racy!
-          // It relies on the following assumptions:
-          // * elemhide filter is added before webext starts to
-          //   generate a list of CSS selectors
-          // We can't do it earlier as we need to get a `tabId` to subscribe
-          // and for this we have to start page loading.
-          let page = new Page("element-hiding.html");
-          let tabId = await page.created;
-          await checkLogging(
-            ["###elem-hide"],
-            {
-              tabId,
-              ...elemhideEventOptions
-            },
-            () => page.loaded,
-            [{
-              filter: expectedElemhideFilter("###elem-hide"),
-              matchInfo: elemhideMatchInfo,
-              request: expectedRequestRelativeUrl("element-hiding.html")
-            }],
-            {filterToCurrentTab: false, minEventsLength: 1}
-          );
-        }
-        finally {
-          if (isMV3())
-            await EWE.testing.setForceEnableTracing(false);
-        }
+        let page = new Page("element-hiding.html");
+        let tabId = await page.loaded;
+        await checkLogging(
+          ["###elem-hide"],
+          {
+            tabId,
+            ...elemhideEventOptions
+          },
+          () => page.reload(true),
+          [{
+            filter: expectedElemhideFilter("###elem-hide"),
+            matchInfo: elemhideMatchInfo,
+            request: expectedRequestRelativeUrl("element-hiding.html")
+          }],
+          {filterToCurrentTab: false}
+        );
       });
 
       it("logs element hiding filter dynamically", async function() {
         if (isMV3())
-          await EWE.testing.setForceEnableTracing(true);
+          setMinTimeout(this, 25000);
 
-        try {
-          let text = `${TEST_PAGES_DOMAIN}###element-hiding-dyn`;
-          await checkLogging(
-            [text],
-            elemhideEventOptions,
-            async() => {
-              let tabId = await new Page("image.html").loaded;
-              await executeScript(tabId, async() => {
-                let div = document.createElement("div");
-                div.id = "element-hiding-dyn";
-                div.style = "display: block !important;";
-                div.innerHTML = "Target";
-                document.body.appendChild(div);
-              });
-              await wait(
-                async() =>
-                  await getVisibleElement(tabId, "element-hiding-dyn") == null,
-                isMV3() ? 10000 : 200,
-                "Element is not visible"
-              );
-              await new Promise(r => setTimeout(r, isMV3() ? 10000 : 1500));
-              return tabId;
-            },
-            [{
-              filter: expectedElemhideFilter(text),
-              matchInfo: elemhideMatchInfo,
-              request: expectedRequestRelativeUrl("image.html")
-            }], {minEventsLength: 1});
-        }
-        finally {
-          if (isMV3())
-            await EWE.testing.setForceEnableTracing(false);
-        }
+        let text = `${TEST_PAGES_DOMAIN}###element-hiding-dyn`;
+        await checkLogging(
+          [text],
+          "elemhideEventOptions",
+          async() => {
+            let tabId = await new Page("image.html").loaded;
+            await executeScript(tabId, async() => {
+              let div = document.createElement("div");
+              div.id = "element-hiding-dyn";
+              div.style = "display: block !important;";
+              div.innerHTML = "Target";
+              document.body.appendChild(div);
+            });
+            await wait(
+              async() =>
+                await getVisibleElement(tabId, "element-hiding-dyn") == null,
+              isMV3() ? 10000 : 200,
+              "Element is not visible"
+            );
+            await new Promise(r => setTimeout(r, isMV3() ? 10000 : 1500));
+            return tabId;
+          },
+          [{
+            filter: expectedElemhideFilter(text),
+            matchInfo: elemhideMatchInfo,
+            request: expectedRequestRelativeUrl("image.html")
+          }]
+        );
       });
 
       it("logs element hiding emulation filter", async function() {
-        if (!isMV3())
-          setMinTimeout(this, 5000);
-
-        if (isMV3())
-          await EWE.testing.setForceEnableTracing(true);
-
-        try {
-          let text = TEST_PAGES_DOMAIN +
+        let text = TEST_PAGES_DOMAIN +
             "#?#.child1:-abp-properties(background-color: blue)";
-          await checkLogging(
-            [text],
-            elemhideEventOptions,
-            async() => {
-              let tabId = await new Page("element-hiding.html").loaded;
-              await new Promise(r => setTimeout(r, 100));
-              await executeScript(tabId, async() => {
-                document.getElementById("unhide1").parentElement.className = "";
-              }).catch(e => console.error(`Failed to execute the script: ${e.message}`));
-              await wait(
-                async() => await getVisibleElement(tabId, "unhide1") != null,
-                isMV3() ? 10000 : 4000, "Element is not visible"
-              );
-              return tabId;
+        await checkLogging(
+          [text],
+          "elemhideEventOptions",
+          "element-hiding.html",
+          [{
+            filter: {
+              ...expectedElemhideFilter(text),
+              type: "elemhideemulation"
             },
-            [{
-              filter: {
-                ...expectedElemhideFilter(text),
-                type: "elemhideemulation"
-              },
-              matchInfo: elemhideMatchInfo,
-              request: expectedRequestRelativeUrl("element-hiding.html")
-            }], {minEventsLength: 1}
-          );
-        }
-        finally {
-          if (isMV3())
-            await EWE.testing.setForceEnableTracing(false);
-        }
+            matchInfo: elemhideMatchInfo,
+            request: expectedRequestRelativeUrl("element-hiding.html")
+          }]
+        );
       });
 
       it("logs all items", async function() {
         await checkLogging(
           ["###elem-hide", VALID_FILTER_TEXT],
-          {includeElementHiding: true, includeUnmatched: true},
+          "allEventOptions",
           "element-hiding.html",
           [{
             filter: null,
@@ -2857,13 +2834,16 @@ describe("API", function() {
             filter: expectedElemhideFilter("###elem-hide"),
             matchInfo: elemhideMatchInfo,
             request: expectedRequestRelativeUrl("element-hiding.html")
-          }], {minEventsLength: 4}
+          }]
         );
       });
 
       it("logs for the requested tab", async function() {
-        if (isMV3())
-          setMinTimeout(this, 140000);
+        // Filtering by tabs can't work reliably when service worker
+        // is suspended because the event listener can't be attached
+        // in the first turn of the event loop.
+        if (isFuzzingServiceWorker())
+          this.skip();
 
         await addFilter(VALID_FILTER_TEXT);
 
@@ -2888,7 +2868,7 @@ describe("API", function() {
 
         await checkLogging(
           [`${TEST_PAGES_DOMAIN}#$#${snippet} true`],
-          defaultEventOptions,
+          "defaultEventOptions",
           "image.html",
           [{
             filter: {
@@ -2909,7 +2889,7 @@ describe("API", function() {
               tabId: expect.any(Number),
               url: expect.any(String)
             })
-          }], {minEventsLength: 1}
+          }]
         );
       });
 
@@ -2918,7 +2898,7 @@ describe("API", function() {
         let sourceTabId = await opener.loaded;
         await checkLogging(
           ["*popup.html^$popup"],
-          allEventOptions,
+          "allEventOptions",
           async() => {
             let popup = new Popup("link", opener);
             await popup.blocked;
@@ -2933,7 +2913,7 @@ describe("API", function() {
             filter: null,
             matchInfo: unmatchedMainFrameMatchInfo,
             request: expectedRequestRelativeUrl("popup-opener.html")
-          }], minEventsLength: 2}
+          }]}
         );
       });
 
@@ -2942,7 +2922,7 @@ describe("API", function() {
         let sourceTabId = await opener.loaded;
         await checkLogging(
           ["*popup.html^$popup", `@@|${TEST_PAGES_URL}/popup.html^$popup`],
-          allEventOptions,
+          "allEventOptions",
           async() => {
             let popup = new Popup("link", opener);
             await popup.blocked;
@@ -2959,7 +2939,7 @@ describe("API", function() {
             filter: null,
             matchInfo: unmatchedMainFrameMatchInfo,
             request: expectedRequestRelativeUrl("popup-opener.html")
-          }], minEventsLength: 3}
+          }]}
         );
       });
 
@@ -2968,7 +2948,7 @@ describe("API", function() {
         let sourceTabId = await opener.loaded;
         await checkLogging(
           [`popup.html^$popup,domain=${TEST_PAGES_DOMAIN}`],
-          allEventOptions,
+          "allEventOptions",
           async() => {
             let popup = new Popup("third-party-link", opener);
             await popup.blocked;
@@ -2985,7 +2965,7 @@ describe("API", function() {
             filter: null,
             matchInfo: unmatchedMainFrameMatchInfo,
             request: expectedRequestRelativeUrl("popup-opener.html")
-          }], minEventsLength: 3}
+          }]}
         );
       });
 
@@ -2994,7 +2974,7 @@ describe("API", function() {
         let sourceTabId = await opener.loaded;
         await checkLogging(
           ["*popup.html^$popup", `@@|${CROSS_DOMAIN_URL}/popup.html^$popup`],
-          allEventOptions,
+          "allEventOptions",
           async() => {
             let popup = new Popup("third-party-link", opener);
             await popup.blocked;
@@ -3011,14 +2991,18 @@ describe("API", function() {
             filter: null,
             matchInfo: unmatchedMainFrameMatchInfo,
             request: expectedRequestRelativeUrl("popup-opener.html")
-          }], minEventsLength: 3}
+          }]}
         );
       });
 
       it("logs requests sent by the extension", async function() {
+        // DNR doesn't have this protection mechanism
+        if (isMV3())
+          this.skip();
+
         await checkLogging(
           [],
-          allEventOptions,
+          "allEventOptions",
           () => fetch(`${TEST_PAGES_URL}/image.png`),
           [{
             filter: null,
@@ -3028,7 +3012,7 @@ describe("API", function() {
             },
             request: expectedRequestRelativeUrl("image.png")
           }],
-          {filterToCurrentTab: false, minEventsLength: 1}
+          {filterToCurrentTab: false}
         );
       });
 
@@ -3036,7 +3020,7 @@ describe("API", function() {
         it("logs all unmatched requests on the image page", async function() {
           await checkLogging(
             [],
-            unmatchedEventOptions,
+            "unmatchedEventOptions",
             "image.html",
             [{
               filter: null,
@@ -3051,8 +3035,11 @@ describe("API", function() {
         });
 
         it("logs unmatched requests for the requested tab", async function() {
-          if (isMV3())
-            setMinTimeout(this, 120000);
+          // Filtering by tabs can't work reliably when service worker
+          // is suspended because the event listener can't be attached
+          // in the first turn of the event loop.
+          if (isFuzzingServiceWorker())
+            this.skip();
 
           let page = new Page("image.html");
           let tabId = await page.loaded;
@@ -3085,7 +3072,7 @@ describe("API", function() {
         it("logs unmatched iframe requests", async function() {
           await checkLogging(
             [],
-            unmatchedEventOptions,
+            "unmatchedEventOptions",
             "iframe.html",
             [{
               filter: null,
@@ -3106,7 +3093,7 @@ describe("API", function() {
         it("logs unmatched third-party requests", async function() {
           await checkLogging(
             [],
-            allEventOptions,
+            "allEventOptions",
             "third-party.html",
             [{
               filter: null,
@@ -3125,7 +3112,7 @@ describe("API", function() {
           await opener.loaded;
           await checkLogging(
             [],
-            allEventOptions,
+            "allEventOptions",
             async() => {
               let popup = new Popup("link", opener);
               await popup.blocked;
@@ -3142,7 +3129,7 @@ describe("API", function() {
         it("logs unmatched allowlisted iframe requests", async function() {
           await checkLogging(
             [`@@|${TEST_PAGES_URL}/image.html$document`],
-            unmatchedEventOptions,
+            "unmatchedEventOptions",
             "iframe.html",
             [{
               filter: null,
@@ -3174,7 +3161,7 @@ describe("API", function() {
           let url = `${CROSS_DOMAIN_URL}/iframe.html`;
           await checkLogging(
             [],
-            allEventOptions,
+            "allEventOptions",
             () => new Page(url, true).loaded,
             [{
               filter: null,
@@ -3197,7 +3184,7 @@ describe("API", function() {
         it("filters out unmatched requests with default options", async function() {
           await checkLogging(
             ["/image.png^$image"],
-            defaultEventOptions,
+            "defaultEventOptions",
             "image.html",
             [{
               filter: expectedBlockingFilter("/image.png^$image"),
@@ -3209,7 +3196,7 @@ describe("API", function() {
         it("filters out unmatched requests with allowing options", async function() {
           await checkLogging(
             ["/image.png^$image", `@@|${TEST_PAGES_URL}$image`],
-            allowingEventOptions,
+            "allowingEventOptions",
             "image.html",
             [{
               filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}$image`),
@@ -3222,7 +3209,7 @@ describe("API", function() {
         it("filters out allowing requests with default options", async function() {
           await checkLogging(
             ["/image.png^$image", `@@|${TEST_PAGES_URL}$image`],
-            defaultEventOptions,
+            "defaultEventOptions",
             "image.html",
             []
           );

@@ -20,7 +20,6 @@
 import {OUTPUT_DIR as inputDir}
   from "./fetchSubscriptions.js";
 import {processFile} from "adblockpluscore/scripts/text2dnr.js";
-import {encode} from "../sdk/api/id-utils.js";
 import fs from "fs";
 import path from "path";
 import yargs from "yargs";
@@ -37,6 +36,12 @@ import {isMain} from "./utils.js";
 
 const outputDir = path.join("scriptsOutput", "rulesets");
 const reportDir = path.join("scriptsOutput", "report");
+
+let highestRuleId = 1;
+
+function generateRuleId() {
+  return highestRuleId++;
+}
 
 async function convert(inDir, outDir, generateReport = false,
                        repDir = reportDir) {
@@ -56,20 +61,13 @@ async function convert(inDir, outDir, generateReport = false,
     subsId = path.parse(inFile).base;
     console.log(`Converting ${inFileAbs} to ${outFileAbs} ...`);
 
-    let ruleIndex;
-    let lastFilterText;
     let converter = customCreateConverter({
       subsId,
       reports,
       generateReport,
       isRegexSupported: () => true,
       modifyRule(rule, context) {
-        if (!lastFilterText || lastFilterText != context.text)
-          ruleIndex = 0; // first rule for the filter text
-        else
-          ruleIndex++; // next rule for the same filter text
-        lastFilterText = context.text;
-        rule["id"] = encode(ruleIndex, context.line);
+        rule["id"] = generateRuleId();
         if (generateReport)
           accountForRule(rule, context.text, subsId);
         return rule;

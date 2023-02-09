@@ -66,16 +66,15 @@ exports.createConverter = options => convert.bind({
  * Returns an array with DNR Rules if the text is network related, or an Error
  * if no suitable rule can be created.
  * @param {string} text the filter text to convert or the generated error.
- * @param {number} line the line number of the filter text.
  * @returns {Rule[]|FilterParsingError}
  */
-function convert(text, line) {
+function convert(text) {
   const result = parse(text);
 
   if (result instanceof FilterParsingError)
     return result;
 
-  return asDNR.call(this, result, line);
+  return asDNR.call(this, result);
 }
 
 /** Convert a parsed filter to a DeclarativeNetRequest
@@ -90,10 +89,9 @@ function convert(text, line) {
  *
  * @param {module:filters/index~ParsedFilter} parsedFilter The parsed filter
  *   object.
- * @param {number} line The parsed filter line number
  * @return {Rule[]|Error}
  */
-function asDNR(parsedFilter, line) {
+function asDNR(parsedFilter) {
   let {
     blocking,
     text,
@@ -183,8 +181,7 @@ function asDNR(parsedFilter, line) {
       result = generateBlockingRules(filter, urlFilter, matchCase);
 
     let context = {
-      text: parsedFilter.text,
-      line
+      text: parsedFilter.text
     };
     return result
       .map(rule => this.modifyRule(rule, context))

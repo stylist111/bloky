@@ -309,7 +309,8 @@ func:v3:edge:linux:latest:
       - FUNCTIONAL_AREA:
         - "(Blocking|Pop-up\\sblocking)"
         - "(Element\\sHiding|Snippets)"
-        - "API"
+        - "API\\sReporting"
+        - "API\\s(?!Reporting)"
         - "(?!Blocking|Pop-up\\sblocking|Element\\sHiding|Snippets|API)"
   rules:
     - !reference [.flaky-run, rules]

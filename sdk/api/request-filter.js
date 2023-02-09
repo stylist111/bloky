@@ -24,10 +24,10 @@ import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {parseURL} from "adblockpluscore/lib/url.js";
 
 import {filterEngine} from "./core.js";
-import {getFrameInfo, isTopLevelFrameId,
-        addOnFrameInfoListener, addOnTabRemovedListener} from "./frame-state.js";
+import {getFrameInfo, isTopLevelFrameId, isValidChildFrameId, isValidFrameId}
+  from "./frame-state.js";
 import {ignoreNoConnectionError} from "../errors.js";
-import {logItem, clearMatchedFilterEvents} from "./diagnostics.js";
+import {logItem} from "./diagnostics.js";
 import {getSitekey, setSitekeyFromHeaders} from "./sitekey.js";
 
 const EXTENSION_PROTOCOL = new URL(browser.runtime.getURL("")).protocol;
@@ -48,12 +48,65 @@ let typeSelectors = new Map([
   [contentTypes.OBJECT, "object,embed"]
 ]);
 
+export function getRequestContentType(details) {
+  let contentType = resourceTypes.get(details.type) || contentTypes.OTHER;
+  if (contentType == contentTypes.DOCUMENT)
+    return contentTypes.OTHER;
+  return contentType;
+}
+
+function getFrameId(details) {
+  // sub_frame requests are loading the iframe document itself, so
+  // from our point of view the initiating frame is actually the
+  // parent of the iframe.
+  return details.type == "sub_frame" ? details.parentFrameId :
+    details.frameId;
+}
+
+function getParentFrameId(details) {
+  if (details.type == "sub_frame") {
+    // frameAncestors is exactly what we need, but it's only
+    // available in Firefox so sometimes we just don't have what we
+    // need :(
+    if (!details.frameAncestors)
+      return null;
+
+    return details.frameAncestors.length > 1 ?
+      details.frameAncestors[1].frameId : -1;
+  }
+  return details.parentFrameId;
+}
+
+export function getFrameInfoFromWebrequestDetails(details) {
+  let tabId = details.tabId;
+  let frameId = getFrameId(details);
+  let parentFrameId = getParentFrameId(details);
+  let initiator = details.initiator || details.documentUrl;
+  let documentUrl = details.documentUrl || details.initiator;
+
+  return getFrameInfo(tabId, frameId, {
+    initiator,
+    parentFrameId,
+    documentUrl
+  });
+}
+
+export function getParentFrameInfoFromWebrequestDetails(details) {
+  if (!isValidFrameId(details.parentFrameId))
+    return null;
+
+  let parentFrame = getFrameInfo(details.tabId, details.parentFrameId);
+  // Due to a chrome bug, the parent frame might not exist. In this
+  // case, we should fall back to the root frame. See
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=725917
+  if (!parentFrame && isValidChildFrameId(details.parentFrameId))
+    parentFrame = getFrameInfo(details.tabId, 0);
+
+  return parentFrame;
+}
+
 let pendingAllowlistedRequests = new Set();
 let pendingCspRequests = new Set();
-/**
- * @type {Map<tabId, Map<frameId, details>>}
- */
-let pendingDetails = new Map();
 
 class BaseFilter {
   register() {
@@ -70,28 +123,6 @@ class BaseFilter {
     }
   }
 
-  getFrameId(details) {
-    // sub_frame requests are loading the iframe document itself, so
-    // from our point of view the initiating frame is actually the
-    // parent of the iframe.
-    return details.type == "sub_frame" ? details.parentFrameId :
-                                         details.frameId;
-  }
-
-  getParentFrameId(details) {
-    if (details.type == "sub_frame") {
-      // frameAncestors is exactly what we need, but it's only
-      // available in Firefox so sometimes we just don't have what we
-      // need :(
-      if (!details.frameAncestors)
-        return null;
-
-      return details.frameAncestors.length > 1 ?
-        details.frameAncestors[1].frameId : -1;
-    }
-    return details.parentFrameId;
-  }
-
   getDocDomain(type, hostname) {
     return type == "main_frame" ? null : hostname;
   }
@@ -105,30 +136,9 @@ class BaseFilter {
     return details.documentUrl || details.initiator;
   }
 
-  getFrameInfo(details) {
-    let tabId = details.tabId;
-    let frameId = this.getFrameId(details);
-    let parentFrameId = this.getParentFrameId(details);
-    let initiator = this.getInitiator(details);
-    let documentUrl = this.getDocumentUrl(details);
-
-    return getFrameInfo(tabId, frameId, {
-      initiator,
-      parentFrameId,
-      documentUrl
-    });
-  }
-
-  getContentType(details) {
-    let contentType = resourceTypes.get(details.type) || contentTypes.OTHER;
-    if (contentType == contentTypes.DOCUMENT)
-      return contentTypes.OTHER;
-    return contentType;
-  }
-
   collapse(details) {
-    let selector = typeSelectors.get(this.getContentType(details));
-    let frameId = this.getFrameId(details);
+    let selector = typeSelectors.get(getRequestContentType(details));
+    let frameId = getFrameId(details);
 
     let sendCollapseMessage = () => {
       return browser.tabs.sendMessage(
@@ -188,7 +198,7 @@ class BaseFilter {
       });
     }
 
-    let frame = this.getFrameInfo(details);
+    let frame = getFrameInfoFromWebrequestDetails(details);
     if (!frame)
       return;
 
@@ -202,7 +212,7 @@ class BaseFilter {
       });
     }
 
-    let contentType = this.getContentType(details);
+    let contentType = getRequestContentType(details);
 
     return this.match(details, frame, specificOnly, contentType, docDomain);
   }
@@ -270,38 +280,6 @@ RequestFilter.prototype.eventArgs = [
   ["blocking"]
 ];
 
-class MatchedFilterObserver extends RequestFilter {
-  defer(details) {
-    let frameIdToDetailsListMap = pendingDetails.get(details.tabId);
-    if (!frameIdToDetailsListMap) {
-      frameIdToDetailsListMap = new Map();
-      pendingDetails.set(details.tabId, frameIdToDetailsListMap);
-    }
-    let detailsList = frameIdToDetailsListMap.get(details.frameId);
-    if (!detailsList) {
-      detailsList = [];
-      frameIdToDetailsListMap.set(details.frameId, detailsList);
-    }
-    detailsList.push(details);
-  }
-
-  getFrameInfo(details) {
-    let frame = super.getFrameInfo(details);
-    if (!frame)
-      this.defer(details);
-    return frame;
-  }
-}
-
-MatchedFilterObserver.prototype.event = browser.webRequest.onBeforeRequest;
-MatchedFilterObserver.prototype.eventArgs = [
-  {
-    types: Object.values(browser.webRequest.ResourceType)
-                 .filter(type => type != "main_frame"),
-    urls: ["http://*/*", "https://*/*", "ws://*/*", "wss://*/*"]
-  }
-];
-
 class HeaderFilter extends BaseFilter {
   match(details, frame, specificOnly, contentType, docDomain) {
     let matcher = filterEngine.defaultMatcher;
@@ -350,8 +328,7 @@ HeaderFilter.prototype.eventArgs = [
 
 class CSPFilter extends BaseFilter {
   filter(details) {
-    let {requestId, tabId, frameId, parentFrameId, responseHeaders, url, type} =
-        details;
+    let {requestId, tabId, frameId, responseHeaders, url, type} = details;
 
     if (pendingAllowlistedRequests.has(requestId))
       return;
@@ -365,7 +342,7 @@ class CSPFilter extends BaseFilter {
       });
     }
 
-    let parentFrame = getFrameInfo(tabId, parentFrameId);
+    let parentFrame = getParentFrameInfoFromWebrequestDetails(details);
     let {hostname: parentHostname, sitekey: parentSitekey} = parentFrame || {};
     let matcher = filterEngine.defaultMatcher;
 
@@ -393,7 +370,7 @@ class CSPFilter extends BaseFilter {
 
     let docDomain =
       this.getDocDomain(type, parentHostname);
-    let typeMask = contentTypes.CSP | this.getContentType(details);
+    let typeMask = contentTypes.CSP | getRequestContentType(details);
     let matchInfo = {docDomain: docDomain || urlInfo.hostname,
                      specificOnly, method: "csp"};
 
@@ -430,7 +407,7 @@ CSPFilter.prototype.eventArgs = [
 
 class RequestCompletionFilter extends BaseFilter {
   filter(details) {
-    let {requestId, tabId, frameId, parentFrameId, url, type} = details;
+    let {requestId, tabId, frameId, url, type} = details;
     let wasAllowlisted = pendingAllowlistedRequests.delete(requestId);
     let wasCsp = pendingCspRequests.delete(requestId);
     if (wasAllowlisted || wasCsp)
@@ -440,7 +417,7 @@ class RequestCompletionFilter extends BaseFilter {
       // for these two types, it's unreliable if frame is there or not
       // yet. The request could be completed before or after the new
       // frame is committed.
-      let parentFrame = getFrameInfo(tabId, parentFrameId);
+      let parentFrame = getParentFrameInfoFromWebrequestDetails(details);
       let {hostname: parentHostname, sitekey: parentSitekey} =
           parentFrame || {};
 
@@ -467,7 +444,7 @@ class RequestCompletionFilter extends BaseFilter {
       logItem(details, null, matchInfo);
     }
     else {
-      let frame = this.getFrameInfo(details);
+      let frame = getFrameInfoFromWebrequestDetails(details);
       if (!frame)
         return;
 
@@ -505,42 +482,13 @@ RequestErrorFilter.prototype.eventArgs = [
   }
 ];
 
-let matchedFiltersObserver = new MatchedFilterObserver();
-
-let filters = browser.declarativeNetRequest ? [
-  matchedFiltersObserver,
-  new CSPFilter(),
-  new RequestCompletionFilter(),
-  new RequestErrorFilter()
-] : [
+let filters = [
   new RequestFilter(),
   new HeaderFilter(),
   new CSPFilter(),
   new RequestCompletionFilter(),
   new RequestErrorFilter()
 ];
-
-function onTabRemoved(tabId) {
-  pendingDetails.delete(tabId);
-  clearMatchedFilterEvents(tabId);
-}
-
-function onFrameInfo(tabId, frameId) {
-  let frameIdToDetailsListMap = pendingDetails.get(tabId);
-  if (!frameIdToDetailsListMap)
-    return;
-
-  let detailsList = frameIdToDetailsListMap.get(frameId);
-  if (!detailsList)
-    return;
-
-  for (let details of detailsList)
-    matchedFiltersObserver.filter(details);
-
-  frameIdToDetailsListMap.delete(frameId);
-  if (frameIdToDetailsListMap.size == 0)
-    pendingDetails.delete(tabId);
-}
 
 function onBeforeNavigate() {
   browser.webNavigation.onBeforeNavigate.removeListener(onBeforeNavigate);
@@ -564,10 +512,8 @@ const FILTER_EVENTS = ["subscription.added",
  * frame state are initialized.
  */
 export function start() {
-  if (browser.declarativeNetRequest) {
-    addOnFrameInfoListener(onFrameInfo);
-    addOnTabRemovedListener(onTabRemoved);
-  }
+  if (browser.declarativeNetRequest)
+    return;
 
   for (let filter of filters)
     filter.register();

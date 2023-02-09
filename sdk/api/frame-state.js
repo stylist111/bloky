@@ -77,27 +77,6 @@ export function isValidChildFrameId(frameId) {
 let state = new Map();
 let startupPromise;
 
-let onFrameInfoListeners = [];
-let onTabRemovedListeners = [];
-
-export function addOnFrameInfoListener(listener) {
-  onFrameInfoListeners.push(listener);
-}
-
-export function addOnTabRemovedListener(listener) {
-  onTabRemovedListeners.push(listener);
-}
-
-function notifyOnFrameInfo(tabId, frameId) {
-  for (let listener of onFrameInfoListeners)
-    listener(tabId, frameId);
-}
-
-function notifyOnTabRemoved(tabId) {
-  for (let listener of onTabRemovedListeners)
-    listener(tabId);
-}
-
 /**
  * Manages tracking state that is tied to a single specific frame.
  *
@@ -417,7 +396,6 @@ function onBeforeNavigate(details) {
 
 function onCommitted(details) {
   recordFrameFromNavigationEvent(details);
-  notifyOnFrameInfo(details.tabId, details.frameId);
 }
 
 function onErrorOccurred(details) {
@@ -443,7 +421,6 @@ function onHistoryStateUpdated(details) {
 function handleOnRemoved(tabId) {
   state.delete(tabId);
   clearTabSitekeys(tabId);
-  notifyOnTabRemoved(tabId);
 }
 
 function onRemoved(tabId) {
