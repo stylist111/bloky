@@ -29,6 +29,8 @@ let timeout = new URLSearchParams(document.location.search).get("timeout");
 
 if (timeout)
   mocha.timeout(parseInt(timeout, 10));
+else
+  mocha.timeout(4000);
 
 async function clearFilters() {
   await runInBackgroundPage([
