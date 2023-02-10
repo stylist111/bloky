@@ -62,7 +62,10 @@ function verifyTimestamp(timestamp) {
     return false;
 
   let msSinceSigning = Date.now() - timestamp;
-  return msSinceSigning >= 0 && msSinceSigning < MILLIS_IN_HOUR;
+  // Sometimes in multithreaded systems,
+  // timestamp might be a bit (1 millisecond on practice) in the future,
+  // that's why we compare with -1
+  return msSinceSigning >= -1 && msSinceSigning < MILLIS_IN_HOUR;
 }
 
 async function verifyAnySignatures(domain, timestamp, signature) {
