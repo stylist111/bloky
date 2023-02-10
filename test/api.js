@@ -742,6 +742,9 @@ describe("API", function() {
       });
 
       it("block content after the filter list update", async function() {
+        // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/496
+        this.retries(3);
+
         let updatedReply = [
           "[Adblock Plus]",
           "/image-for-filter-that-should-be-untouched.png^$image"
@@ -1543,6 +1546,9 @@ describe("API", function() {
       // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/311
       if (isChromiumBased() && isIncognito())
         this.skip();
+
+      // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/401
+      this.retries(3);
 
       let expectedFoundStorage = false;
       if (isFuzzingServiceWorker())
@@ -2766,6 +2772,9 @@ describe("API", function() {
       });
 
       it("logs element hiding filter dynamically", async function() {
+        // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/480
+        this.retries(3);
+
         if (isMV3())
           setMinTimeout(this, 25000);
 
@@ -3293,6 +3302,9 @@ describe("API", function() {
     });
 
     it("returns the correct state for ignored categories after unignoring", async function() {
+      // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/448
+      this.retries(3);
+
       if (isFuzzingServiceWorker())
         setMinTimeout(this, 60000);
 

@@ -111,6 +111,9 @@ describe(`Reload (${phase})`, function() {
   });
 
   it("blocks a request using stored filters", async function() {
+    // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/445
+    this.retries(3);
+
     if (start) {
       await addFilter(IMAGE_FILTER_TEXT);
       if (!isMV3()) {

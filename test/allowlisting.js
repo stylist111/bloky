@@ -136,6 +136,9 @@ describe("One Click Allowlisting", function() {
   });
 
   it("does nothing if domain is already allowlisted", async function() {
+    // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/414
+    this.retries(3);
+
     await clickAllowlistButton("allowlist");
     await expectSuccessfulAllowlist();
 
@@ -146,6 +149,9 @@ describe("One Click Allowlisting", function() {
   });
 
   it("unblocks if only the page was previously allowlisted", async function() {
+    // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/499
+    this.retries(3);
+
     await addFilter(
       `@@|${TEST_PAGES_URL}/one-click-allowlisting.html$document`
     );

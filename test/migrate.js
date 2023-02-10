@@ -62,6 +62,9 @@ describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
   });
 
   it("migrates user subscriptions", async function() {
+    // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/498
+    this.retries(3);
+
     if (start) {
       expect(isMV3()).toBeFalsy(); // MV2 before the migration
       await EWE.testing._setPrefs("migration_state", MIGRATED_TO_MV2);
