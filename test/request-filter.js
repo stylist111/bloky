@@ -29,6 +29,8 @@ describe("Blocking", function() {
   });
 
   it("blocks a request using subscriptions", async function() {
+    setMinTimeout(this, 3000);
+
     // In MV3 the list of bundled subscriptions is passed as an
     // argument to EWE.start in the background.js file.
     await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.url);
