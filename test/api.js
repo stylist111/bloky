@@ -1554,6 +1554,8 @@ describe("API", function() {
       if (isFuzzingServiceWorker())
         expectedFoundStorage = expect.any(Boolean);
 
+      await EWE.testing._clearStorage();
+
       let result = await runInBackgroundPage([
         {op: "getGlobal", arg: "EWE"},
         {op: "pushArg", arg: {

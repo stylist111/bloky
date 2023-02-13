@@ -855,6 +855,14 @@ class FilterStorage {
 
     return checkBackupFile(1);
   }
+
+  /**
+   * Clears the cache
+   * @ignore
+   */
+  clearStats() {
+    this._stats.clear();
+  }
 }
 
 exports.FilterStorage = FilterStorage;

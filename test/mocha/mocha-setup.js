@@ -43,6 +43,15 @@ async function clearFilters() {
   await ensureEverythingHasSaved();
 }
 
+async function clearStorage() {
+  await runInBackgroundPage([
+    {op: "getGlobal", arg: "EWE"},
+    {op: "getProp", arg: "testing"},
+    {op: "callMethod", arg: "_clearStorage"},
+    {op: "await"}
+  ], false);
+}
+
 before(async function() {
   setMinTimeout(this, 7000);
 
@@ -59,6 +68,7 @@ before(async function() {
   }
 
   await clearFilters();
+  await clearStorage();
 
   // The incognito CI job would sometimes fail the first test case for no
   // apparent reason. Sleeping should allow more time for the test extension
@@ -86,6 +96,7 @@ beforeEach(async function() {
 afterEach(async function() {
   setMinTimeout(this, isFuzzingServiceWorker() ? 8000 : 5000);
   await clearFilters();
+  await clearStorage();
   await clearAllTestEvents();
   await Page.removeCurrent();
   await Popup.removeCurrent();

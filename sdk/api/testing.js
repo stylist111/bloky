@@ -25,6 +25,8 @@ import {default as debugging} from "./debugging.js";
 import {default as subs} from "./subscriptions.js";
 import {setAddonInfo, addonBundledSubscriptionsPath} from "./info.js";
 import {removeDynamicFilters} from "./dnr-filters.js";
+import {IO} from "./io.js";
+import {FilterStorage} from "adblockpluscore/lib/filterStorage.js";
 
 import * as sitekey from "./sitekey.js";
 
@@ -130,5 +132,24 @@ export default {
       debugging.onLogEvent.removeListener(debugging.CONSOLE_LOGGER);
   },
 
-  CONSOLE_LOGGER: debugging.logger
+  CONSOLE_LOGGER: debugging.logger,
+
+  /**
+   * @ignore
+   * Removes "patterns.ini" to avoid state leak between the tests.
+   * @return {Promise}
+   */
+  async _clearStorage() {
+    await IO.initialize();
+    let oldName = FilterStorage.sourceFile;
+    let newName = "removed.tmp";
+    let stat = await IO.statFile(oldName);
+
+    if (stat.exists) {
+      const {filterStorage} = filterEngine;
+      await IO.renameFile(oldName, newName);
+      filterStorage.clearStats();
+      await filterStorage.loadFromDisk();
+    }
+  }
 };
