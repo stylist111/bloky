@@ -1167,7 +1167,7 @@ describe("API", function() {
         return {tabId, frameId};
       }
 
-      it("returns filters for allowlisted frames [flaky]", async function() {
+      it("returns filters for allowlisted frames", async function() {
         setMinTimeout(this, 5000);
         await addFilter(ALLOWING_IMAGE_DOC_FILTER);
 
@@ -3230,6 +3230,8 @@ describe("API", function() {
   });
 
   describe("Notifications", function() {
+    if (isFuzzingServiceWorker())
+      setMinTimeout(this, 100000);
     afterEach(async function() {
       await EWE.testing._clearNotifications();
     });
@@ -3304,11 +3306,8 @@ describe("API", function() {
     });
 
     it("returns the correct state for ignored categories after unignoring", async function() {
-      // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/448
-      this.retries(3);
-
       if (isFuzzingServiceWorker())
-        setMinTimeout(this, 60000);
+        setMinTimeout(this, 300000);
 
       await EWE.notifications.toggleIgnoreCategory("*");
       await EWE.notifications.toggleIgnoreCategory("*");
@@ -3326,6 +3325,8 @@ describe("API", function() {
     });
 
     it("ignores ignorable notifications when ignoring notifications is toggled on", async function() {
+      if (isFuzzingServiceWorker())
+        setMinTimeout(this, 300000);
       await EWE.notifications.toggleIgnoreCategory("*");
 
       let notification = {id: "ignorable-to-ignore"};

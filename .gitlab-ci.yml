@@ -310,7 +310,8 @@ func:v3:edge:linux:latest:
         - "(Blocking|Pop-up\\sblocking)"
         - "(Element\\sHiding|Snippets)"
         - "API\\sReporting"
-        - "API\\s(?!Reporting)"
+        - "API\\sNotifications"
+        - "API\\s(?!Reporting|Notifications)"
         - "(?!Blocking|Pop-up\\sblocking|Element\\sHiding|Snippets|API)"
   rules:
     - !reference [.flaky-run, rules]
