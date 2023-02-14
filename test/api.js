@@ -742,9 +742,8 @@ describe("API", function() {
       });
 
       it("block content after the filter list update", async function() {
-        // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/496
-        this.retries(3);
-
+        if (isEdge() & isIncognito() & !isMV3())
+          setMinTimeout(this, 15000);
         let updatedReply = [
           "[Adblock Plus]",
           "/image-for-filter-that-should-be-untouched.png^$image"
