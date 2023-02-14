@@ -18,7 +18,7 @@
 import expect from "expect";
 import browser from "webextension-polyfill";
 
-import {isMV3, TEST_ANTI_CV_SUBSCRIPTION, wait, TEST_MV3_SUBSCRIPTION, Page}
+import {isMV3, TEST_ANTI_CV_SUBSCRIPTION, wait, TEST_MV3_SUBSCRIPTION}
   from "./utils.js";
 import {EWE, runInBackgroundPage} from "./messaging.js";
 import {isConnected, updateExtensionFiles, suspendServiceWorker} from "./mocha/mocha-runner.js";
@@ -62,9 +62,6 @@ describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
   });
 
   it("migrates user subscriptions", async function() {
-    // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/498
-    this.retries(3);
-
     if (start) {
       expect(isMV3()).toBeFalsy(); // MV2 before the migration
       await EWE.testing._setPrefs("migration_state", MIGRATED_TO_MV2);
@@ -136,8 +133,9 @@ describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
       })
     ]));
 
-    await new Page("image-from-subscription.html")
-      .expectResource("image-from-subscription.png").toBeBlocked();
+    let subscriptions = await EWE.subscriptions.getForFilter(
+      "/image-from-subscription.png^$image");
+    expect(subscriptions.length).toEqual(1);
   });
 
   it("migrates user subscriptions meta data", async function() {
@@ -267,7 +265,7 @@ describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
   });
 
   it("reports the subscription migration errors and persists after reload", async function() {
-    const URL = "https://someSubsriptionThatIsNotSupportedInMV3.com";
+    const URL = "https://someSubscriptionThatIsNotSupportedInMV3.com";
     if (start) {
       await EWE.subscriptions.add(URL);
 
@@ -321,7 +319,7 @@ describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
     if (start)
       return;
 
-    const URL = "https://someSubsriptionThatIsNotSupportedInMV3.com";
+    const URL = "https://someSubscriptionThatIsNotSupportedInMV3.com";
     let errors = await EWE.subscriptions.getMigrationErrors();
     expect(errors).toEqual(expect.arrayContaining([
       expect.objectContaining({
