@@ -20,7 +20,8 @@
   "exports": {
     ".": "./dist/ewe-api.js",
     "./content": "./dist/ewe-content.js",
-    "./sdk/*": "./sdk/*"
+    "./sdk/*": "./sdk/*",
+    "./adblockpluscore/*": "./core/*"
   },
   "files": [
     "dist/*.js*",
@@ -33,12 +34,12 @@
     "webpack.config.js"
   ],
   "dependencies": {
-    "adblockpluscore": "./core",
     "webextension-polyfill": "^0.8.0",
     "yargs": "^17.5.1"
   },
   "devDependencies": {
     "@eyeo/get-browser-binary": "^0.7.0",
+    "adblockpluscore": "./core",
     "chromedriver": "^90.0.1",
     "copy-webpack-plugin": "^9.0.1",
     "css-loader": "^5.2.6",
@@ -69,7 +70,7 @@
     "docs": "documentation build --document-exported --sort-order alpha -f html -o dist/docs --config documentation.yml sdk/api/index.js sdk/api/types.js",
     "docs-core": "jsdoc --configure core/.jsdoc.conf --destination dist/core/docs core/lib",
     "build": "node scripts/build.js",
-    "prepublishOnly": "npm run build",
+    "prepack": "npm run build",
     "test": "node test/runner.js",
     "unittest": "mocha ./test/unit/*.js",
     "test-server": "node test/start-server.js",
