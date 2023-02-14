@@ -1,3 +1,54 @@
+0.9.0 - 2023/02/14
+==================
+
+This release also includes fixes from 0.8.1
+
+# General
+
+- MV2 to MV3 migration is guaranteed to be done before `EWE.start()`
+  is finished, so the migration errors are available as soon as EWE is
+  started. (#385)
+- A new approach has been taken to emitting the
+  `EWE.reporting.onBlockableItem` events in MV3 extensions. This is
+  now more responsive and continues working correctly when the service
+  worker is suspended. (#389)
+
+# Internal
+
+- Small refactoring of the scripts: added function `isMain()` to check
+  whether or not a script is run from the CLI. (#391)
+- Supported logging events (no actual output added, only mechanism
+  in-place) and documented existing events. (#389)
+- adblockpluscore has been integrated into the webext-sdk repository.
+  (#267)
+
+# Fixes
+
+- The deferred element collapsing listener could throw an error if
+  called more than once. (#481)
+- One click allowlisting: add a tolerance for clock drift in the
+  signature checks. (#479)
+- The following issues have also been solved by the changes to how
+  `EWE.reporting.onBlockableItem` now gets emitted in #389. (#468,
+  #482, #483)
+
+# Tests
+
+- Test reliability improvements:
+  - Increased mocha global timeout from 2000ms to 4000ms.
+  - Added an option to help testing test flakiness. (#463)
+  - Automatically retries known flaky tests.
+  - Fixed version flaky test by increasing timeouts. (#474)
+  - Fixed flaky tests for: updates the subscription filter text when
+    updating the extension. (#466)
+  - Increased timeout for the test: blocks a request using
+    subscriptions. (#501)
+  - Verify that the synchronization happen for more reliable
+    testing. (#450, #471)
+- Pipeline runs tests now on specified versions of browsers.
+- Added test to check that ignored notification categories are
+  saved. (#456)
+
 0.8.1 - 2023/02/01
 ==================
 
@@ -32,7 +83,7 @@ see also the corresponding sections below.
 # General
 
 - Updated to adblockpluscore 0.11.0. This is necessary for some of the
-  change. (#438)
+  changes. (#438)
 - Improved documentation of the generation of the subscription data
   (static rulesets) and split documentation to `docs`. The documentation
   generation out is now in `dist/docs`. (#265, #433)
