@@ -117,6 +117,9 @@ let subAcceptableAds = {
   mv2_url: "https://easylist-downloads.adblockplus.org/exceptionrules.txt"
 };
 
+const ADMIN_PORT = 3003; // should be in-sync with "start-server.js"
+const ADMIN_BASE_URL = `http://localhost:${ADMIN_PORT}`;
+
 describe("API", function() {
   describe("Subscriptions", function() {
     it("adds a subscription", async function() {
@@ -1756,9 +1759,30 @@ describe("API", function() {
         if (isMV3())
           this.skip();
 
+        let now = new Date();
+        let reply = "%5BAdblock%20Plus%5D%0A%21Version%3A";
+        reply += now.getFullYear();
+        reply += (now.getMonth() + 1).toString().padStart(2, "0");
+        reply += now.getDate().toString().padStart(2, "0");
+        reply += "0005";
+        await fetch(`${ADMIN_BASE_URL}/configure?reply=${reply}`);
+
+        let url = `${ADMIN_BASE_URL}/subscription.txt`;
+
+        // only trusted hosts are processed to save the version
+        let key = "analytics";
+        let analytics = await EWE.testing._getPrefs(key);
+        let host = new URL(url).host;
+        if (!analytics.trustedHosts.includes(host)) {
+          analytics.trustedHosts.push(host);
+          await EWE.testing._setPrefs(key, analytics);
+        }
+
+        await EWE.subscriptions.add(url);
+
         await wait(
           async() => await EWE.reporting.getFirstVersion() != "0",
-          1000,
+          2000,
           "No resource has been downloaded yet."
         );
 
@@ -3338,9 +3362,6 @@ describe("API", function() {
 
   describe("Synchronization", function() {
     this.timeout(30000);
-
-    const ADMIN_PORT = 3003; // should be in-sync with "start-server.js"
-    const ADMIN_BASE_URL = `http://localhost:${ADMIN_PORT}`;
     const METHOD_HEAD = "HEAD";
 
     async function configure(properties = {}) {
