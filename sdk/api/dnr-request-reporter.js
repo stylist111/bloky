@@ -18,7 +18,6 @@
 import browser from "webextension-polyfill";
 
 import {logItem, loggingEnabled} from "./diagnostics.js";
-import {getFrameInfo} from "./frame-state.js";
 import {filterEngine} from "./core.js";
 import {default as initializer} from "./initializer.js";
 import {getRequestContentType, getFrameInfoFromWebrequestDetails,
@@ -29,22 +28,6 @@ import {BlockingFilter, AllowingFilter}
   from "adblockpluscore/lib/filterClasses.js";
 import {parseURL} from "adblockpluscore/lib/url.js";
 
-function getDocDomain(details, unmatched) {
-  let parentFrame = getParentFrameInfoFromWebrequestDetails(details);
-  let {hostname: parentHostname} = parentFrame || {};
-  let urlInfo = parseURL(details.url);
-  let hostname = parentHostname || urlInfo.hostname;
-
-  if (details.type == "main_frame")
-    return null;
-
-  if (details.type == "sub_frame")
-    return unmatched ? hostname : urlInfo.hostname;
-
-  let thisFrame = getFrameInfo(details.tabId, details.frameId);
-  return thisFrame ? thisFrame.hostname || urlInfo.hostname : null;
-}
-
 function getContext(details) {
   let contentType = getRequestContentType(details);
 
@@ -54,7 +37,8 @@ function getContext(details) {
     let urlInfo = parseURL(details.url);
     let hostname = parentHostname || urlInfo.hostname;
 
-    let docDomain = getDocDomain(details, false);
+    let docDomain = details.type == "main_frame" ? null : hostname;
+
     let specificOnlyFilter = filterEngine.defaultMatcher.match(
       details.url, contentTypes.GENERICBLOCK, hostname, null
     );
@@ -225,7 +209,6 @@ async function onCompleted(details) {
       return;
   }
 
-  docDomain = getDocDomain(details, true);
   let matchInfo = {
     docDomain,
     method: "unmatched",

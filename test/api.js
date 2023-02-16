@@ -2522,7 +2522,7 @@ describe("API", function() {
             ),
             matchInfo: {
               ...allowingMatchInfo,
-              docDomain: TEST_PAGES_DOMAIN,
+              docDomain: CROSS_DOMAIN,
               specificOnly: false
             },
             request: expectedRequestRelativeUrl("image.html")

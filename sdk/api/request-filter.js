@@ -359,17 +359,16 @@ class CSPFilter extends BaseFilter {
       url, contentTypes.DOCUMENT, hostname, sitekey
     );
     let specificOnly = !!specificOnlyFilter;
+    let docDomain = this.getDocDomain(type, parentHostname);
 
     if (documentFilter) {
       return this.allow(details, documentFilter, {
-        docDomain: this.getDocDomain(type, urlInfo.hostname),
+        docDomain,
         method: "allowing",
         specificOnly
       });
     }
 
-    let docDomain =
-      this.getDocDomain(type, parentHostname);
     let typeMask = contentTypes.CSP | getRequestContentType(details);
     let matchInfo = {docDomain: docDomain || urlInfo.hostname,
                      specificOnly, method: "csp"};
