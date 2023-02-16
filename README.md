@@ -436,6 +436,12 @@ docker run --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|e
 Please notice that the `TEST_PARAMS` argument can also take the additional
 options described previously.
 
+To run the core tests only:
+```
+docker build -t core -f test/dockerfiles/core.Dockerfile .
+docker run --shm-size=128m --cpus=1 --memory=3.75g TEST_PARAMS="(path to the test to run)" -e -it core
+```
+
 ##### Tip: Matching CI system resources
 
 The following resources setup on a local macOS Docker installation has
