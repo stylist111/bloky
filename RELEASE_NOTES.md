@@ -1,3 +1,39 @@
+0.10.0 - 2023/02/20
+===================
+
+# General
+
+- The `$webbundle` filter type is now supported. (#495)
+- `adblockpluscore` is no longer a dependency in the `package.json`,
+  while still exported. This fixes issues installing the package using
+  yarn. (#511)
+
+# Fixes
+
+- When a subframe is allowlisted using a `$document` filter on its
+  parent frame, `onBlockableItem` will now correctly report its
+  `docDomain` as the domain of the parent frame. (#494)
+
+# Tests
+
+- Fixed some flaky tests:
+  - API > Subscriptions > Filter list updates > block content after
+    the filter list update. (#496)
+  - Notifications -> returns the correct state for ignored categories
+    after unignoring. (#448)
+  - Make the "get the first version" test more reliable. (#508)
+
+# Updating your code
+
+- If you want to use the exported `adblockpluscore` code, import
+  `@eyeo/webext-sdk/adblockpluscore/` instead of just
+  `adblockpluscore`.
+- For web bundle support in MV3, the static rulesets must be
+  re-generated. In MV2, an unreleased (at the time of writing) version of
+  Chrome is necessary. We're confident that this release will work once 
+  https://chromium-review.googlesource.com/c/chromium/src/+/4199620  is
+  merged.
+
 0.9.0 - 2023/02/14
 ==================
 
@@ -45,6 +81,7 @@ This release also includes fixes from 0.8.1
     subscriptions. (#501)
   - Verify that the synchronization happen for more reliable
     testing. (#450, #471)
+  - Fixed flaky test: migrates user subscriptions. (#498)
 - Pipeline runs tests now on specified versions of browsers.
 - Added test to check that ignored notification categories are
   saved. (#456)
