@@ -379,6 +379,15 @@ the test runner, functional test suites require locally served test pages.
 
     npm run test-server
 
+##### Web bundle
+
+The tests for the web bundle blocking require a `.wbn` file. The one
+currently used is provided in the tree. However, if it needs to be
+regenerated, there is `test/tools/webbundle-builder.js` to be run from
+the top-level. The content is fixed in the script, so simply
+re-running it shouldn't yield any difference. It relies on the `wbn`
+module that will be installed as a development dependency.
+
 #### Using the test extension
 
 The test extension will be built on both `/dist/test-mv2` and `/dist/test-mv3`

@@ -52,7 +52,9 @@ let requests = [];
 
 function bypassCache(req, res, next) {
   let userAgent = req.get("User-Agent");
-  if (userAgent && userAgent.includes("Gecko/") && req.path == "/csp.html") {
+  // We also want to avoid caching of the webbundle for the purpose of testing
+  if ((userAgent && userAgent.includes("Gecko/") && req.path == "/csp.html") ||
+    req.path == "/webext-sample.wbn") {
     onHeaders(res, () => {
       res.removeHeader("Etag");
       res.removeHeader("Last-Modified");
@@ -116,6 +118,16 @@ function testHeader(req, res, next) {
   next();
 }
 
+function webbundleResponseType(req, res, next) {
+  if (req.url.endsWith(".wbn")) {
+    // Web bundles need to have the proper content type set.
+    res.header("X-Content-Type-Options", "nosniff");
+    res.type("application/webbundle");
+  }
+
+  next();
+}
+
 function logRequests(req, res, next) {
   if (args.verbose)
     console.log(new Date().toISOString(), req.method, req.url);
@@ -130,6 +142,7 @@ app.use(invalidSitekeyHeader);
 app.use(delay);
 app.use(testHeader);
 app.use(logRequests);
+app.use(webbundleResponseType);
 app.use(express.static(path.join(dirname, "pages")));
 
 app.post("/ping-handler", (req, res) => res.sendStatus(200));

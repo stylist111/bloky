@@ -245,7 +245,7 @@ export default {
    *   "background", "csp", "document", "dtd", "elemhide", "font",
    *   "genericblock", "generichide", "header", "image", "media", "object",
    *   "other", "ping", "popup", "script", "stylesheet", "subdocument",
-   *   "webrtc", "websocket", "xbl", "xmlhttprequest".
+   *   "webbundle", "webrtc", "websocket", "xbl", "xmlhttprequest".
    * @param {number} tabId The id of resource's tab.
    * @param {number} frameId=0 The id of the resource's frame.
    * @return {Promise<bool>}

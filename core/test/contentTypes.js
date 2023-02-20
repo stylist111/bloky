@@ -248,6 +248,20 @@ describe("contentTypes.XMLHTTPREQUEST", function() {
   });
 });
 
+describe("contentTypes.WEBBUNDLE", function() {
+  it("should be numerical", function() {
+    assertNumerical(contentTypes.WEBBUNDLE);
+  });
+
+  it("should be a positive non-fractional power of 2", function() {
+    assertPositivePowerOfTwo(contentTypes.WEBBUNDLE);
+  });
+
+  it("should be less than or equal to 2 ** 30", function() {
+    assertLessThanEqualTwoPowThirty(contentTypes.WEBBUNDLE);
+  });
+});
+
 describe("contentTypes.MEDIA", function() {
   it("should be numerical", function() {
     assertNumerical(contentTypes.MEDIA);

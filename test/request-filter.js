@@ -19,7 +19,7 @@ import expect from "expect";
 
 import {Page, Resource, executeScript, wait, isMV3, isIncognito, setMinTimeout,
         TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, SITEKEY,
-        TEST_MV3_SUBSCRIPTION} from "./utils.js";
+        TEST_MV3_SUBSCRIPTION, supportsWebBundle} from "./utils.js";
 import {addFilter, EWE} from "./messaging.js";
 
 describe("Blocking", function() {
@@ -174,6 +174,27 @@ describe("Blocking", function() {
     await addFilter(`/image.png$domain=${TEST_PAGES_DOMAIN}`);
     await addFilter(`@@|${TEST_PAGES_URL}/*.html$genericblock`);
     await new Page("image.html").expectResource("image.png").toBeBlocked();
+  });
+
+  it("blocks whole $webbundle requests", async function() {
+    if (!isMV3() || !supportsWebBundle())
+      this.skip();
+
+    await addFilter(`|${TEST_PAGES_URL}/*^$webbundle`);
+    await new Page("webbundle.html").expectResource("webext-sample.wbn").toBeBlocked();
+    await new Page("webbundle.html").expectResource("dir/a.js").toBeAborted();
+    await new Page("webbundle.html").expectResource("dir/c.png").toBeAborted();
+  });
+
+  it("blocks subresources inside of a webbundle", async function() {
+    await addFilter(`|${TEST_PAGES_URL}/dir/a.js`);
+    await addFilter(`|${TEST_PAGES_URL}/dir/c.png`);
+
+    if (supportsWebBundle())
+      await new Page("webbundle.html").expectResource("webext-sample.wbn").toBeLoaded();
+
+    await new Page("webbundle.html").expectResource("dir/a.js").toBeBlocked();
+    await new Page("webbundle.html").expectResource("dir/c.png").toBeBlocked();
   });
 
   it("blocks $ping requests", async function() {

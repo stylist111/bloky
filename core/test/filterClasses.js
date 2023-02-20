@@ -326,6 +326,7 @@ describe("Filter classes", function() {
     compareFilter("blah$background", ["type=blocking", "text=blah$background", "contentType=" + (contentTypes.IMAGE)]);
     compareFilter("blah$~image", ["type=blocking", "text=blah$~image", "contentType=" + (RESOURCE_TYPES & ~contentTypes.IMAGE)]);
     compareFilter("blah$~background", ["type=blocking", "text=blah$~background", "contentType=" + (RESOURCE_TYPES & ~contentTypes.IMAGE)]);
+    compareFilter("blah$webbundle", ["type=blocking", "text=blah$webbundle", "contentType=" + (contentTypes.WEBBUNDLE)]);
 
     compareFilter("@@blah$~script,~other", ["type=allowing", "text=@@blah$~script,~other", "contentType=" + (RESOURCE_TYPES & ~(contentTypes.SCRIPT | contentTypes.OTHER)), "header=null"]);
     compareFilter("@@http://blah$~script,~other", ["type=allowing", "text=@@http://blah$~script,~other", "contentType=" + (RESOURCE_TYPES & ~(contentTypes.SCRIPT | contentTypes.OTHER))]);

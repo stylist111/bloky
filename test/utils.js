@@ -215,6 +215,9 @@ export class Page {
       toBeBlocked() {
         return resource.expectToBeBlocked();
       },
+      toBeAborted() {
+        return resource.expectToBeAborted();
+      },
       toBeLoaded() {
         return resource.expectToBeLoaded();
       }
@@ -272,6 +275,16 @@ export class Resource {
   async expectToBeBlocked() {
     expect(await this.error).toEqual(expect.objectContaining({
       error: expect.stringMatching(/^(net::ERR_BLOCKED_BY_CLIENT|NS_ERROR_ABORT)$/)
+    }));
+  }
+
+  // The "aborted" error is emitted for subresources loaded from
+  // a web bundle that wasn't loaded (blocked)
+  // This is currently only in Chrome.
+  // What is the Firefox equivalent? It doesn't support web bundle.
+  async expectToBeAborted() {
+    expect(await this.error).toEqual(expect.objectContaining({
+      error: expect.stringMatching(/^(net::ERR_ABORTED)$/)
     }));
   }
 
@@ -491,6 +504,12 @@ export function isEdge() {
 
 export function isChromiumBased() {
   return /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+}
+
+// Feature detection for web bundle support.
+export function supportsWebBundle() {
+  // HTMLScriptElement.supports is only Chrome 96+ or Firefox 94+
+  return HTMLScriptElement.supports && HTMLScriptElement.supports("webbundle");
 }
 
 export function getVisibleElement(tabId, elemId) {

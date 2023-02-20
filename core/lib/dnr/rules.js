@@ -45,6 +45,7 @@ const requestTypes = new Map([
   [contentTypes.OBJECT, ["object"]],
   [contentTypes.SUBDOCUMENT, ["sub_frame"]],
   [contentTypes.WEBSOCKET, ["websocket"]],
+  [contentTypes.WEBBUNDLE, ["webbundle"]],
   [contentTypes.PING, ["ping"]],
   [contentTypes.XMLHTTPREQUEST, ["xmlhttprequest"]],
   [contentTypes.MEDIA, ["media"]],

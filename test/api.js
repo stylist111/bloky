@@ -36,6 +36,7 @@ const VALID_SUBSCRIPTION_URL_2 = `${TEST_PAGES_URL}/subscription.txt?2`;
 const INVALID_SUBSCRIPTION_URL = "invalidUrl";
 
 const VALID_FILTER_TEXT = `|${TEST_PAGES_URL}$image`;
+const WEBBUNDLE_FILTER_TEXT = `|${TEST_PAGES_URL}$webbundle`;
 const COMMENT_FILTER_TEXT = "!comment";
 const SECOND_VALID_FILTER_TEXT = "another-filter";
 const VALID_REQUEST_FILTER_TEXT = `|${TEST_PAGES_URL}$image`;
@@ -852,6 +853,12 @@ describe("API", function() {
     it("adds comment filter", async function() {
       await EWE.filters.add([COMMENT_FILTER_TEXT]);
       expect(await EWE.filters.getUserFilters()).toEqual([COMMENT_FILTER]);
+    });
+
+    it("adds a webbundle filter", async function() {
+      await EWE.filters.add([WEBBUNDLE_FILTER_TEXT]);
+      expect(await EWE.filters.getUserFilters())
+        .toEqual([{...VALID_FILTER, text: WEBBUNDLE_FILTER_TEXT}]);
     });
 
     it("adds an allowing filter with sitekey option", async function() {
@@ -1721,6 +1728,7 @@ describe("API", function() {
         object: "object",
         subdocument: "subdocument",
         websocket: "websocket",
+        webbundle: "webbundle",
         webrtc: "webrtc",
         ping: "ping",
         xmlhttprequest: "xmlhttprequest",

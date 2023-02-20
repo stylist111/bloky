@@ -50,6 +50,7 @@ exports.contentTypes = {
   SUBDOCUMENT: 32,
   WEBSOCKET: 128,
   WEBRTC: 256,
+  WEBBUNDLE: 512,
   PING: 1024,
   XMLHTTPREQUEST: 2048, // 1 << 11
 
