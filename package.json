@@ -28,18 +28,19 @@
     "core/data",
     "core/lib",
     "core/scripts",
+    "core/package.json",
     "RELEASE_NOTES.md",
     "scripts",
     "sdk",
     "webpack.config.js"
   ],
   "dependencies": {
+    "adblockpluscore": "file:./core",
     "webextension-polyfill": "^0.8.0",
     "yargs": "^17.5.1"
   },
   "devDependencies": {
     "@eyeo/get-browser-binary": "^0.7.0",
-    "adblockpluscore": "./core",
     "chromedriver": "^90.0.1",
     "copy-webpack-plugin": "^9.0.1",
     "css-loader": "^5.2.6",
