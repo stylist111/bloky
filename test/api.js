@@ -2808,8 +2808,7 @@ describe("API", function() {
         // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/480
         this.retries(3);
 
-        if (isMV3())
-          setMinTimeout(this, 25000);
+        setMinTimeout(this, 25000);
 
         let text = `${TEST_PAGES_DOMAIN}###element-hiding-dyn`;
         await checkLogging(
