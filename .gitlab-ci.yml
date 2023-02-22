@@ -52,6 +52,8 @@ variables:
   LATEST_FIREFOX_VERSION: "109.0"
   OLDEST_FIREFOX_VERSION: "68.0"
   LATEST_EDGE_VERSION: 108.0.1462.76
+  # until we use shared runners, this is default value
+  LATEST_EDGE_WINDOWS_VERSION:  79.0.309 
 
 build:
   image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
@@ -241,12 +243,12 @@ func:v2:firefox:update:incognito:
 func:v2:windows:edge:stable:
   extends: .func:v2:windows:edge
   script:
-    - npm test -- v2 edge $LATEST_EDGE_VERSION --timeout=10000
+    - npm test -- v2 edge $LATEST_EDGE_WINDOWS_VERSION --timeout=10000
 
 func:v2:windows:edge:incognito:
   extends: .func:v2:windows:edge
   script:
-    - npm test -- v2 edge $LATEST_EDGE_VERSION --incognito --timeout=10000
+    - npm test -- v2 edge $LATEST_EDGE_WINDOWS_VERSION --incognito --timeout=10000
 
 # Functional MV3 tests 
 
