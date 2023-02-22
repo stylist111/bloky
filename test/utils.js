@@ -457,10 +457,10 @@ export function wait(condition, timeout = 0, message, pollTimeout = 100) {
   }
 
   let result = new Promise((resolve, reject) => {
-    let startTime = Date.now();
+    let startTime = performance.now();
     let pollCondition = async() => {
       evaluateCondition().then(value => {
-        let elapsed = Date.now() - startTime;
+        let elapsed = performance.now() - startTime;
         if (value) {
           resolve(value);
         }
