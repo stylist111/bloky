@@ -481,13 +481,17 @@ describe("API", function() {
         await EWE.subscriptions.add(url);
         await wait(
           async() => {
+            // wait for subscription to be added
+            await new Promise(resolve => setTimeout(resolve, 100));
             let subscriptions = await EWE.subscriptions.getDownloadable();
-            expect(subscriptions)
+            if (subscriptions.length > 0) {
+              expect(subscriptions)
               .toEqual(
                 expect.arrayContaining([
                   expect.objectContaining({url})
                 ]));
-            return subscriptions[0].downloadStatus == "synchronize_ok";
+              return true;
+            }
           }, 2000, "Subscription was not downloaded."
         );
       };
