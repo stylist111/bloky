@@ -83,8 +83,8 @@ export default {
    */
 
   /**
-   * Adds multiple filters from texts.
-   * @param {[string]} texts The filter rules to be added.
+   * Adds one or multiple filters from texts.
+   * @param {string|[string]} texts The filter rules to be added.
    * @param {?Object} metadata Extra data to associate with a filter.
    * @return {Promise}
    * @throws {FilterError|Error} The first filter to add that either failed
@@ -93,6 +93,10 @@ export default {
    */
   async add(texts, metadata) {
     await initializer.start();
+
+    if (!Array.isArray(texts))
+      texts = [texts];
+
     if (browser.declarativeNetRequest) {
       await addFilters(texts, metadata);
       return;
@@ -274,12 +278,16 @@ export default {
   },
 
   /**
-   * Enables multiple filters. The filters effects will again be applied.
-   * @param {[string]} texts The filter rules to be enabled.
+   * Enables one or multiple filters. The filters effects
+   * will again be applied.
+   * @param {string|[string]} texts The filter rules to be enabled.
    * @return {Promise}
    */
   async enable(texts) {
     await initializer.start();
+
+    if (!Array.isArray(texts))
+      texts = [texts];
 
     if (browser.declarativeNetRequest) {
       await enableFilters(texts);
@@ -293,13 +301,16 @@ export default {
   },
 
   /**
-   * Disables multiple filters. The filters will no longer have any effect
-   * but will be returned by `filters.getUserFilters()`.
-   * @param {[string]} texts The filter rules to be disabled.
+   * Disables one or multiple filters. The filters will no longer have
+   * any effect but will be returned by `filters.getUserFilters()`.
+   * @param {string|[string]} texts The filter rules to be disabled.
    * @return {Promise}
    */
   async disable(texts) {
     await initializer.start();
+
+    if (!Array.isArray(texts))
+      texts = [texts];
 
     if (browser.declarativeNetRequest) {
       await removeOrDisableFilters(texts, false);
@@ -313,13 +324,16 @@ export default {
   },
 
   /**
-   * Removes multiple filters. The filters will no longer have any effect
-   * and won't be returned by `filters.getUserFilters()`.
-   * @param {[string]} texts The filter rules to be removed.
+   * Removes one or multiple filters. The filters will no longer have
+   * any effect and won't be returned by `filters.getUserFilters()`.
+   * @param {string|[string]} texts The filter rules to be removed.
    * @return {Promise}
    */
   async remove(texts) {
     await initializer.start();
+
+    if (!Array.isArray(texts))
+      texts = [texts];
 
     if (browser.declarativeNetRequest) {
       await removeOrDisableFilters(texts, true);

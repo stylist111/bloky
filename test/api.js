@@ -854,6 +854,14 @@ describe("API", function() {
       ]);
     });
 
+    it("adds and removes a single filter as a string", async function() {
+      await EWE.filters.add(VALID_FILTER_TEXT);
+      expect(await EWE.filters.getUserFilters()).toEqual([VALID_FILTER]);
+
+      await EWE.filters.remove(VALID_FILTER_TEXT);
+      expect(await EWE.filters.getUserFilters()).toEqual([]);
+    });
+
     it("adds comment filter", async function() {
       await EWE.filters.add([COMMENT_FILTER_TEXT]);
       expect(await EWE.filters.getUserFilters()).toEqual([COMMENT_FILTER]);
@@ -1043,6 +1051,19 @@ describe("API", function() {
     it("enables a filter that is already enabled", async function() {
       await addFilter(VALID_FILTER_TEXT);
       await EWE.filters.enable([VALID_FILTER_TEXT]);
+
+      expect(await EWE.filters.getUserFilters())
+        .toEqual([VALID_FILTER]);
+    });
+
+    it("disables and enables a single filter as a string", async function() {
+      await EWE.filters.add(VALID_FILTER_TEXT);
+      await EWE.filters.disable(VALID_FILTER_TEXT);
+
+      expect(await EWE.filters.getUserFilters())
+        .toEqual([{...VALID_FILTER, enabled: false}]);
+
+      await EWE.filters.enable(VALID_FILTER_TEXT);
 
       expect(await EWE.filters.getUserFilters())
         .toEqual([VALID_FILTER]);
