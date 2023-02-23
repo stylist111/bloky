@@ -8,9 +8,10 @@
 
 ## Steps
 
-Detailed steps: [Release Process](https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/wikis/Release-process) 
+Detailed steps: [Release Process](https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/wikis/Release-process)
 
-- [ ] Update `package.json`
+- [ ] (major release only) Run `npm run updatepsl` and commit the result. (ref this issue)
+- [ ] Update version in `package.json`, run `npm install`, and commit the result. (ref this issue)
 - [ ] Update Release notes
 - [ ] Cleanup Milestone issues
 - [ ] Tag the version
