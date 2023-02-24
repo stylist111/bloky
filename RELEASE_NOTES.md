@@ -1,3 +1,12 @@
+0.10.1 - 2023/02/24
+===================
+
+# Fixes
+
+- Fix import errors when running the scripts and when importing
+  individual SDK modules: adblockpluscore is again a dependency with
+  internal file location. (#518)
+
 0.10.0 - 2023/02/20
 ===================
 
