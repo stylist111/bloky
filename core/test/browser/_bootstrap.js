@@ -56,4 +56,4 @@ function runTests(moduleNames) {
   });
 }
 
-module.exports = runTests;
+window.runTests = runTests;

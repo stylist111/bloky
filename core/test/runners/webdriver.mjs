@@ -16,7 +16,7 @@
  */
 
 export async function executeScript(driver, name, script, scriptArgs) {
-  let realScript = `let f = ${script}
+  let realScript = `${script}; let f = window.runTests;
                     let callback = arguments[arguments.length - 1];
                     return f(...arguments).then(() => callback());`;
   try {
