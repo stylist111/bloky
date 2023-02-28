@@ -14,6 +14,7 @@ for further information.
 
 * [Code of Conduct](#code-of-conduct)
 * [Getting started](#getting-started)
+  * [Supported browsers](#supported-browsers)
   * [Manifest for V2](#manifest-for-v2)
   * [Manifest for V3](#manifest-for-v3)
   * [API](#api)
@@ -52,6 +53,21 @@ download the [latest build][builds] (or [build the library yourself][dev]).
 With two versions of the API, Manifest V2 and Manifest V3, there are
 two different manifest that are needed depending on which API you
 target.
+
+### Supported browsers
+
+The webext-sdk is tested on the following minimum versions:
+
+Manifest V2:
+
+- Chromium 77
+- Firefox 68
+- Edge 79
+
+Manifest V3:
+
+- Chromium 109
+- Edge 79
 
 ### Manifest for V2
 
