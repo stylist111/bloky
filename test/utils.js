@@ -489,6 +489,39 @@ export function wait(condition, timeout = 0, message, pollTimeout = 100) {
   return result;
 }
 
+export function waitForAssertion(condition, timeout = 1000, pollTimeout = 100) {
+  if (typeof condition !== "function")
+    throw TypeError("Wait condition must be a function");
+
+  async function evaluateCondition() {
+    try {
+      await condition(this);
+      return {assertionPassed: true};
+    }
+    catch (error) {
+      return {assertionPassed: false, error};
+    }
+  }
+
+  let result = new Promise((resolve, reject) => {
+    let startTime = performance.now();
+    let pollCondition = async() => {
+      let {assertionPassed, error} = await evaluateCondition();
+      let elapsed = performance.now() - startTime;
+
+      if (assertionPassed)
+        resolve();
+      else if (timeout && elapsed >= timeout)
+        reject(error);
+      else
+        setTimeout(pollCondition, pollTimeout);
+    };
+    pollCondition();
+  });
+
+  return result;
+}
+
 export function isFirefox() {
   return typeof netscape != "undefined";
 }

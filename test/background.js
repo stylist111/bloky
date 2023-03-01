@@ -80,77 +80,22 @@ async function runOperations(operations) {
   return stack.pop();
 }
 
-let TEST_EVENT_STORAGE_KEY = "ewe-test:test-event-map";
-class TestEventMap {
-  constructor() {
-    this.loaded = new Promise(resolve => {
-      if (chrome.storage.session) {
-        chrome.storage.session.get([TEST_EVENT_STORAGE_KEY], results => {
-          this.data = results[TEST_EVENT_STORAGE_KEY] || {};
-          resolve();
-        });
-      }
-      else {
-        this.data = {};
-        resolve();
-      }
-    });
-  }
-
-  saveSessionStorage() {
-    return new Promise(resolve => {
-      if (chrome.storage.session) {
-        chrome.storage.session.set({
-          [TEST_EVENT_STORAGE_KEY]: this.data
-        }, resolve);
-      }
-      else {
-        resolve();
-      }
-    });
-  }
-
-  async push(name, eventArgs) {
-    await this.loaded;
-
-    if (!this.data[name])
-      this.data[name] = [];
-
-    this.data[name].push(eventArgs);
-
-    await this.saveSessionStorage();
-  }
-
-  async get(name) {
-    await this.loaded;
-
-    if (this.data[name])
-      return this.data[name];
-
-    return [];
-  }
-
-  async clear(name) {
-    await this.loaded;
-
-    delete this.data[name];
-    await this.saveSessionStorage();
-  }
-
-  async clearAll() {
-    await this.loaded;
-
-    this.data = {};
-    await this.saveSessionStorage();
-  }
+function sendEventToMochaTests(eventName, eventArgs) {
+  chrome.runtime.sendMessage(
+    {type: "ewe-test:event", eventName, eventArgs},
+    () => {
+      // this errors if there isn't a receiver (ie tests aren't
+      // running). It's safe to ignore that.
+      // eslint-disable-next-line no-unused-vars
+      let sendErrorToIgnore = chrome.runtime.lastError;
+    }
+  );
 }
 
 self.listeners = new Map();
-self.testEvents = new TestEventMap();
-
 function createTestEventListener(name) {
   let listener = async function(...eventArgs) {
-    await self.testEvents.push(name, eventArgs);
+    sendEventToMochaTests(name, eventArgs);
   };
   self.listeners.set(name, listener);
   return listener;
@@ -168,10 +113,6 @@ self.addOnBlockableEventsListener = function(name, arg) {
 self.removeOnBlockableEventsListener = function(name, arg) {
   EWE.reporting.onBlockableItem.removeListener(
     findListener(name), arg);
-};
-
-self.getTestEvents = async function(name) {
-  return await self.testEvents.get(name);
 };
 
 let messages = [];
@@ -283,7 +224,7 @@ async function checkTabAllowlisted(tabId, changeInfo, tab) {
   catch (e) {
     result.error = toStringIfError(e);
   }
-  await self.testEvents.push("ewe-test.newTabAllowlisted", [result]);
+  sendEventToMochaTests("ewe-test.newTabAllowlisted", [result]);
 }
 chrome.tabs.onUpdated.addListener(checkTabAllowlisted);
 

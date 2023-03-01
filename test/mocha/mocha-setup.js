@@ -97,7 +97,7 @@ afterEach(async function() {
   setMinTimeout(this, isFuzzingServiceWorker() ? 8000 : 5000);
   await clearFilters();
   await clearStorage();
-  await clearAllTestEvents();
   await Page.removeCurrent();
   await Popup.removeCurrent();
+  clearAllTestEvents();
 });

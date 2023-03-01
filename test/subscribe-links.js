@@ -18,12 +18,12 @@
 import expect from "expect";
 
 import {Page, setMinTimeout, wait} from "./utils.js";
-import {getTestEvents, clearTestEvents} from "./messaging.js";
+import {getTestEvents} from "./messaging.js";
 import {isConnected, click, isFuzzingServiceWorker}
   from "./mocha/mocha-runner.js";
 
 describe("Subscribe links (runner only)", function() {
-  setMinTimeout(this, isFuzzingServiceWorker() ? 30000 : 5000);
+  setMinTimeout(this, isFuzzingServiceWorker() ? 30000 : 6000);
 
   before(async function() {
     if (!await isConnected())
@@ -33,25 +33,23 @@ describe("Subscribe links (runner only)", function() {
   let event = "reporting.onSubscribeLinkClicked";
 
   async function checkSubscribeLink(selector) {
-    await clearTestEvents(event);
-
     let page = new Page("subscribe.html");
     await page.loaded;
 
     let delay = isFuzzingServiceWorker() ? 15000 : 2000;
     try {
       await click(page.url, selector);
-      await wait(async() => (await getTestEvents(event)).length > 0, delay);
+      await wait(() => getTestEvents(event).length > 0, delay);
     }
     catch (e) {
       // driver.executeScript in test/runner.js might throw which
       // prevents this click from happening. Retrying usually helps.
       await click(page.url, selector);
-      await wait(async() => (await getTestEvents(event)).length > 0, delay,
+      await wait(() => getTestEvents(event).length > 0, delay,
                  "Listener was not called");
     }
 
-    expect(await getTestEvents(event))
+    expect(getTestEvents(event))
       .toEqual([[expect.objectContaining({
         url: "https://example.org/",
         title: "Sample Filter List"

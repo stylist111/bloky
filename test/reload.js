@@ -206,5 +206,6 @@ describe(`Reload (${phase})`, function() {
     await EWE.debugging.setElementHidingDebugMode(false);
 
     expect(style).toBe("rgb(255, 192, 203)");
+    await EWE.debugging.clearDebugOptions();
   });
 });

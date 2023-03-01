@@ -25,12 +25,9 @@ import {isFuzzingServiceWorker, fuzzSuspendServiceWorker}
   from "./mocha/mocha-runner.js";
 
 describe("One Click Allowlisting", function() {
-  // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/414
-  this.retries(3);
-
   setMinTimeout(this, 10000);
 
-  let timeout = isFuzzingServiceWorker() ? 9000 : 2000;
+  let timeout = isFuzzingServiceWorker() ? 9000 : 3000;
 
   let page;
   let expectImageResource;
@@ -73,7 +70,7 @@ describe("One Click Allowlisting", function() {
   async function expectSuccessfulAllowlist() {
     await wait(async() => await getSuccessEventReceived() != null,
                timeout, "success event was not received");
-    expect(await getOnUnauthorizedEvents()).toEqual([]);
+    expect(getOnUnauthorizedEvents()).toEqual([]);
     await reload();
     await expectImageResource.toBeLoaded();
   }
@@ -88,8 +85,8 @@ describe("One Click Allowlisting", function() {
     }
 
     let events;
-    await wait(async() => {
-      events = await getOnUnauthorizedEvents();
+    await wait(() => {
+      events = getOnUnauthorizedEvents();
       return events.length > 0;
     }, timeout, "onUnauthorized was not called");
 
@@ -142,7 +139,7 @@ describe("One Click Allowlisting", function() {
     await clickAllowlistButton("allowlist");
     await expectSuccessfulAllowlist();
 
-    await clearOnUnauthorizedEvents();
+    clearOnUnauthorizedEvents();
 
     await clickAllowlistButton("allowlist");
     await expectUnsuccessfulAllowlist("already_allowlisted");
@@ -217,8 +214,9 @@ describe("One Click Allowlisting", function() {
       "malicious_proxy_object"
     ]) {
       it(`can't detect handler with untrusted event using ${link}`, async function() {
+        let frontEndMaliciousScriptTimeout = 100;
         await clickAllowlistButton(link);
-        await new Promise(r => setTimeout(r, timeout));
+        await new Promise(r => setTimeout(r, frontEndMaliciousScriptTimeout));
         expect(await getEventHandlerDetected()).toBeNull();
       });
     }

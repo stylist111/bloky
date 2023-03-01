@@ -16,8 +16,10 @@
  */
 
 import browser from "webextension-polyfill";
+import expect from "expect";
 
 import {fuzzSuspendServiceWorker} from "./mocha/mocha-runner.js";
+import {waitForAssertion} from "./utils.js";
 
 export async function runInBackgroundPage(operations, fuzzEnabled = true) {
   if (fuzzEnabled)
@@ -85,6 +87,24 @@ export async function ensureEverythingHasSaved() {
   ], false);
 }
 
+let data = {};
+browser.runtime.onMessage.addListener(message => {
+  if (message.type == "ewe-test:event") {
+    let {eventName, eventArgs} = message;
+    if (!data[eventName])
+      data[eventName] = [];
+
+    data[eventName].push(eventArgs);
+  }
+});
+
+export async function expectTestEvents(name, expectedEvents, timeout = 500) {
+  await waitForAssertion(() => {
+    let actualEvents = getTestEvents(name);
+    expect(actualEvents).toEqual(expectedEvents);
+  }, timeout);
+}
+
 /**
  * Gets the events that have been fired so far for a given event name.
  *
@@ -92,13 +112,11 @@ export async function ensureEverythingHasSaved() {
  * @return {Array<Array<*>>} Outer array is each individual
  *   event. Inner array is the arguments passed to that event.
  */
-export async function getTestEvents(name) {
-  return await runInBackgroundPage([
-    {op: "getGlobal", arg: "self"},
-    {op: "pushArg", arg: name},
-    {op: "callMethod", arg: "getTestEvents"},
-    {op: "await"}
-  ], false);
+export function getTestEvents(name) {
+  if (data[name])
+    return data[name];
+
+  return [];
 }
 
 export async function addOnBlockableListener(name, eventOptions) {
@@ -120,19 +138,10 @@ export async function removeOnBlockableListener(name) {
   ], false);
 }
 
-export async function clearTestEvents(name) {
-  return await runInBackgroundPage([
-    {op: "getGlobal", arg: "testEvents"},
-    {op: "pushArg", arg: name},
-    {op: "callMethod", arg: "clear"},
-    {op: "await"}
-  ], false);
+export function clearTestEvents(name) {
+  delete data[name];
 }
 
-export async function clearAllTestEvents() {
-  return await runInBackgroundPage([
-    {op: "getGlobal", arg: "testEvents"},
-    {op: "callMethod", arg: "clearAll"},
-    {op: "await"}
-  ], false);
+export function clearAllTestEvents() {
+  data = {};
 }

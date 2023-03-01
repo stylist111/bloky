@@ -19,8 +19,8 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 
-import {Page, Popup, setMinTimeout, wait, executeScript, isFirefox, isEdge,
-        isChromiumBased, isIncognito, SITEKEY,
+import {Page, Popup, setMinTimeout, wait, waitForAssertion, executeScript,
+        isFirefox, isEdge, isChromiumBased, isIncognito, SITEKEY,
         getVisibleElement, isMV3, expectElemHideVisible, expectElemHideHidden,
         TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN,
         isMV2CustomSubsExtension, TEST_MV3_SUBSCRIPTION,
@@ -28,7 +28,7 @@ import {Page, Popup, setMinTimeout, wait, executeScript, isFirefox, isEdge,
 import {addFilter, EWE, runInBackgroundPage,
         ensureEverythingHasSaved, getTestEvents,
         clearTestEvents, addOnBlockableListener,
-        removeOnBlockableListener} from "./messaging.js";
+        removeOnBlockableListener, expectTestEvents} from "./messaging.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 const VALID_SUBSCRIPTION_URL = `${TEST_PAGES_URL}/subscription.txt`;
@@ -382,7 +382,7 @@ describe("API", function() {
         return subs.every(sub => (!sub.downloadable || sub.lastDownload));
       }, 1000, "Subscriptions were not synced when added");
 
-      await clearTestEvents("subscriptions.onChanged");
+      clearTestEvents("subscriptions.onChanged");
     }
 
     it("syncs a specific subscription if specified", async function() {
@@ -395,18 +395,20 @@ describe("API", function() {
 
       await EWE.subscriptions.sync(VALID_SUBSCRIPTION_URL);
 
-      let changeEvents = await getTestEvents("subscriptions.onChanged");
-      let downloadStartingEvents = changeEvents.filter(event => {
-        return event[0].downloading == true && event[1] == "downloading";
+      await waitForAssertion(() => {
+        let changeEvents = getTestEvents("subscriptions.onChanged");
+        let downloadStartingEvents = changeEvents.filter(event => {
+          return event[0].downloading == true && event[1] == "downloading";
+        });
+        expect(downloadStartingEvents).toEqual([
+          [
+            expect.objectContaining({
+              url: VALID_SUBSCRIPTION_URL
+            }),
+            "downloading"
+          ]
+        ]);
       });
-      expect(downloadStartingEvents).toEqual([
-        [
-          expect.objectContaining({
-            url: VALID_SUBSCRIPTION_URL
-          }),
-          "downloading"
-        ]
-      ]);
     });
 
     it("syncs all subscriptions if no subscription is specified", async function() {
@@ -418,24 +420,26 @@ describe("API", function() {
 
       await EWE.subscriptions.sync();
 
-      let changeEvents = await getTestEvents("subscriptions.onChanged");
-      let downloadStartingEvents = changeEvents.filter(event => {
-        return event[0].downloading == true && event[1] == "downloading";
+      await waitForAssertion(() => {
+        let changeEvents = getTestEvents("subscriptions.onChanged");
+        let downloadStartingEvents = changeEvents.filter(event => {
+          return event[0].downloading == true && event[1] == "downloading";
+        });
+        expect(downloadStartingEvents).toEqual([
+          [
+            expect.objectContaining({
+              url: VALID_SUBSCRIPTION_URL
+            }),
+            "downloading"
+          ],
+          [
+            expect.objectContaining({
+              url: VALID_SUBSCRIPTION_URL_2
+            }),
+            "downloading"
+          ]
+        ]);
       });
-      expect(downloadStartingEvents).toEqual([
-        [
-          expect.objectContaining({
-            url: VALID_SUBSCRIPTION_URL
-          }),
-          "downloading"
-        ],
-        [
-          expect.objectContaining({
-            url: VALID_SUBSCRIPTION_URL_2
-          }),
-          "downloading"
-        ]
-      ]);
     });
 
     it("returns the right URLs per manifest version", async function() {
@@ -805,36 +809,38 @@ describe("API", function() {
     describe("Subscription events", function() {
       it("listens to onAdded events", async function() {
         await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
-        expect(await getTestEvents("subscriptions.onAdded"))
-          .toEqual([[expect.objectContaining({
+        await expectTestEvents("subscriptions.onAdded", [[
+          expect.objectContaining({
             url: VALID_SUBSCRIPTION_URL,
             enabled: true,
             title: isMV3() ? "Test MV3 Custom Subscription" : VALID_SUBSCRIPTION_URL
-          })]]);
+          })
+        ]]);
       });
 
       it("listens to onChanged events", async function() {
         await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
         await EWE.subscriptions.disable(VALID_SUBSCRIPTION_URL);
-        expect(await getTestEvents("subscriptions.onChanged"))
-          .toEqual(expect.arrayContaining([
-            [
-              expect.objectContaining({
-                url: VALID_SUBSCRIPTION_URL,
-                enabled: false
-              }),
-              "enabled"
-            ]
-          ]));
+        await expectTestEvents(
+          "subscriptions.onChanged",
+          expect.arrayContaining([[
+            expect.objectContaining({
+              url: VALID_SUBSCRIPTION_URL,
+              enabled: false
+            }),
+            "enabled"
+          ]])
+        );
       });
 
       it("listens to onRemoved events", async function() {
         await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
         await EWE.subscriptions.remove(VALID_SUBSCRIPTION_URL);
-        expect(await getTestEvents("subscriptions.onRemoved"))
-          .toEqual([[expect.objectContaining({
+        await expectTestEvents("subscriptions.onRemoved", [[
+          expect.objectContaining({
             url: VALID_SUBSCRIPTION_URL
-          })]]);
+          })
+        ]]);
       });
     });
   });
@@ -1147,16 +1153,18 @@ describe("API", function() {
     describe("Filter events", function() {
       it("listens to onAdded events", async function() {
         await addFilter(VALID_FILTER_TEXT);
-        expect(await getTestEvents("filters.onAdded"))
-          .toEqual([[VALID_FILTER]]);
+        await expectTestEvents("filters.onAdded", [[
+          VALID_FILTER
+        ]]);
       });
 
       it("listens to onChanged events", async function() {
         await addFilter(VALID_FILTER_TEXT);
         await EWE.filters.disable([VALID_FILTER_TEXT]);
 
-        expect(await getTestEvents("filters.onChanged"))
-          .toEqual([[{...VALID_FILTER, enabled: false}, "enabled"]]);
+        await expectTestEvents("filters.onChanged", [[
+          {...VALID_FILTER, enabled: false}, "enabled"
+        ]]);
 
         // This is a workaround and should be removed once https://gitlab.com/eyeo/webext/webext-sdk/-/issues/122 is fixed.
         await EWE.filters.enable([VALID_FILTER_TEXT]);
@@ -1165,8 +1173,7 @@ describe("API", function() {
       it("listens to onRemoved events", async function() {
         await addFilter(VALID_FILTER_TEXT);
         await EWE.filters.remove([VALID_FILTER_TEXT]);
-        expect(await getTestEvents("filters.onRemoved"))
-          .toEqual([[VALID_FILTER]]);
+        await expectTestEvents("filters.onRemoved", [[VALID_FILTER]]);
       });
     });
 
@@ -1333,7 +1340,7 @@ describe("API", function() {
       });
 
       it("handles new tab allowlisting listener", async function() {
-        setMinTimeout(this, isFuzzingServiceWorker() ? 10000 : 7000);
+        setMinTimeout(this, isFuzzingServiceWorker() ? 10000 : 8000);
 
         let url = isFirefox() ? "about:blank" :
             isEdge() ? "edge://newtab/" : "chrome://newtab/";
@@ -1343,18 +1350,15 @@ describe("API", function() {
         // but we need to wait a bit longer than just `created` for
         // the tab updated event to have happened.
         let tabId = await new Page(url, true).created;
-        let timeout = isFuzzingServiceWorker() ? 5000 : 2000;
-        await new Promise(r => setTimeout(r, timeout));
+        let timeout = isFuzzingServiceWorker() ? 9000 : 6000;
 
-        let events;
-        await wait(async() => {
-          events = (await getTestEvents("ewe-test.newTabAllowlisted"))
-            .filter(event => event[0].tabId == tabId);
-          if (events.length > 0)
-            return events;
-        }, 4000, "Events are not received");
-
-        expect(events[0]).toEqual([{tabId, url, isResourceAllowlisted: false}]);
+        await waitForAssertion(() => {
+          let events = (getTestEvents("ewe-test.newTabAllowlisted"))
+              .filter(event => event[0].tabId == tabId);
+          expect(events[0]).toEqual([
+            {tabId, url, isResourceAllowlisted: false}
+          ]);
+        }, timeout);
       });
     });
   });
@@ -1964,7 +1968,7 @@ describe("API", function() {
         let maxEventsLength = mandatoryEvents.length + optionalEvents.length;
         try {
           await wait(
-            async() => (await getReceivedEvents()).length >= maxEventsLength,
+            () => getReceivedEvents().length >= maxEventsLength,
             timeoutWaitingForLogs, null, 50);
         }
         catch (e) {
@@ -1977,7 +1981,7 @@ describe("API", function() {
         // add a little wait here in case there are extra unexpected events
         await new Promise(r => setTimeout(r, 50));
 
-        let receivedEvents = await getReceivedEvents();
+        let receivedEvents = getReceivedEvents();
         expect(receivedEvents)
           .toBeArrayContainingExactly(mandatoryEvents, optionalEvents);
       }
@@ -1993,9 +1997,9 @@ describe("API", function() {
         return keys.every(key => m1[key] === m2[key]);
       }
 
-      async function getReceivedEventsFromListener(
+      function getReceivedEventsFromListener(
         listenerName, tabId, filterToCurrentTab) {
-        let listenerEvents = await getTestEvents(listenerName);
+        let listenerEvents = getTestEvents(listenerName);
 
         // Some legitimate events make it difficult to write
         // reliable tests. It's easier to just filter out these
@@ -2063,14 +2067,26 @@ describe("API", function() {
         return listenerName;
       }
 
-      async function isCalled(name) {
-        let events = await getTestEvents(name);
-        let called = events.length > 0;
-        if (!isMV3() || called)
-          return called;
+      async function expectCalled(name) {
+        await waitForAssertion(() => {
+          let events = getReceivedEventsFromListener(name);
+          let called = events.length > 0;
+          expect(called).toBeTruthy();
+        });
+      }
 
-        events = await getReceivedEventsFromListener(name, 1);
-        return events.length > 0;
+      async function expectNotCalled(name) {
+        let check = () => {
+          let events = getReceivedEventsFromListener(name);
+          let called = events.length > 0;
+          expect(called).toBeFalsy();
+        };
+
+        // check immediately in case we can exit early. Wait and check again in
+        // case the event is still propagating through the system.
+        check();
+        await new Promise(r => setTimeout(r, 100));
+        check();
       }
 
       async function checkLogging(filters, eventOptions, callbackOrPage,
@@ -2091,11 +2107,11 @@ describe("API", function() {
         else
           eventName = await addNewOnBlockableListener(eventOptions);
 
-        await clearTestEvents(eventName);
+        clearTestEvents(eventName);
 
         let tabId = await callback();
         let getReceivedEvents =
-          async() => await getReceivedEventsFromListener(
+          () => getReceivedEventsFromListener(
             eventName, tabId, filterToCurrentTab);
 
         await expectLoggedMessages(
@@ -2116,15 +2132,13 @@ describe("API", function() {
         let page = new Page("image.html");
         await page.loaded;
 
-        let events = await getTestEvents(listenerName);
-        let callCount = events.length;
-        expect(events.length > 0).toBeTruthy();
+        await expectCalled(listenerName);
 
         await removeOnBlockableListener(listenerName);
+        clearTestEvents(listenerName);
 
         await page.reload();
-        events = await getTestEvents(listenerName);
-        expect(events.length).toEqual(callCount);
+        await expectNotCalled(listenerName);
       });
 
       it("logs blocking request filter", async function() {
@@ -2924,8 +2938,8 @@ describe("API", function() {
 
         await page.loaded;
 
-        expect(await isCalled(listenerName1)).toBeTruthy();
-        expect(await isCalled(listenerName2)).toBeFalsy();
+        await expectCalled(listenerName1);
+        await expectNotCalled(listenerName2);
       });
 
       it("logs snippets filter", async function() {
@@ -3132,7 +3146,7 @@ describe("API", function() {
               request: expectedRequestRelativeUrl("image.png")
             }]
           );
-          expect(await isCalled(otherTabListenerName)).toBeFalsy();
+          await expectNotCalled(otherTabListenerName);
         });
 
         it("logs unmatched iframe requests", async function() {
@@ -3306,16 +3320,14 @@ describe("API", function() {
       await EWE.notifications.addNotification(notification);
       await EWE.notifications.showNext();
 
-      expect(await getTestEvents("notifications.addShowListener"))
-        .toEqual([[notification]]);
+      await expectTestEvents("notifications.addShowListener", [[notification]]);
     });
 
     it("supports showing immediate notifications", async function() {
       let notification = {id: "immediate-test"};
       await EWE.notifications.showNotification(notification);
 
-      expect(await getTestEvents("notifications.addShowListener"))
-        .toEqual([[notification]]);
+      await expectTestEvents("notifications.addShowListener", [[notification]]);
     });
 
     it("supports showing remote notifications", async function() {
@@ -3343,8 +3355,7 @@ describe("API", function() {
       }, maxFetchTimeout, "Notifications were not downloaded");
 
       await EWE.notifications.showNext();
-      let testEvents = await getTestEvents("notifications.addShowListener");
-      expect(testEvents).toEqual([[notification]]);
+      await expectTestEvents("notifications.addShowListener", [[notification]]);
       expect(await EWE.notifications.getDownloadCount()).toBe(1);
     });
 
@@ -3374,9 +3385,7 @@ describe("API", function() {
     it("shows ignorable notifications when ignoring notifications toggled off", async function() {
       let notification = {id: "ignorable-to-show"};
       await EWE.notifications.showNotification(notification, {ignorable: true});
-
-      expect(await getTestEvents("notifications.addShowListener"))
-        .toEqual([[notification]]);
+      await expectTestEvents("notifications.addShowListener", [[notification]]);
     });
 
     it("ignores ignorable notifications when ignoring notifications is toggled on", async function() {
@@ -3386,9 +3395,7 @@ describe("API", function() {
 
       let notification = {id: "ignorable-to-ignore"};
       await EWE.notifications.showNotification(notification, {ignorable: true});
-
-      expect(await getTestEvents("notifications.addShowListener"))
-        .toEqual([]);
+      await expectTestEvents("notifications.addShowListener", []);
     });
   });
 
