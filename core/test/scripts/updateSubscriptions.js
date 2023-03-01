@@ -26,7 +26,7 @@ const os = require("os");
 const path = require("path");
 const nock = require("nock");
 
-const {listUrl: listUrlMv2, update} =
+const {listUrl: listUrlMv2, update, INDEX_URL} =
   require("../../scripts/updateSubscriptions");
 
 const exampleSubscription = "subscriptionlist-master";
@@ -57,6 +57,10 @@ describe("updateSubscriptions script", function() {
     console.error = mockedConsoleErr;
     warnings = [];
     errors = [];
+
+    let indexUrl = new URL(INDEX_URL);
+    let mockedIndex = await readFile("test/data/v3_index.json");
+    nock(indexUrl.origin).get(indexUrl.pathname).reply(200, mockedIndex);
   });
 
   afterEach(async function() {

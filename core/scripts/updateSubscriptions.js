@@ -310,3 +310,4 @@ if (require.main == module)
 
 exports.listUrl = listUrl;
 exports.update = update;
+exports.INDEX_URL = INDEX_URL;
