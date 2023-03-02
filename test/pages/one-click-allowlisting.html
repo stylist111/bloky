@@ -234,9 +234,9 @@
   document.getElementById("allowlist_unauthorized_key")
     .addEventListener("click", () => allowlist({privateKey: unauthorizedPrivateKey}));
   document.getElementById("allowlist_old_timestamp")
-    .addEventListener("click", () => allowlist({timestamp: Date.now() - 3610000}));
+    .addEventListener("click", () => allowlist({timestamp: Date.now() - 4200000}));
   document.getElementById("allowlist_future_timestamp")
-    .addEventListener("click", () => allowlist({timestamp: Date.now() + 10000}));
+    .addEventListener("click", () => allowlist({timestamp: Date.now() + 600000}));
   document.getElementById("allowlist_nonsense_timestamp")
     .addEventListener("click", () => allowlist({timestamp: "fakeTimestamp"}));
   document.getElementById("allowlist_different_domain")

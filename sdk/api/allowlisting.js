@@ -17,13 +17,23 @@
 
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 import {parseURL} from "adblockpluscore/lib/url.js";
-import {MILLIS_IN_HOUR} from "adblockpluscore/lib/time.js";
+import {MILLIS_IN_HOUR, MILLIS_IN_MINUTE} from "adblockpluscore/lib/time.js";
 import {base64ToArrayBuffer} from "adblockpluscore/lib/rsa.js";
 
 import {filterEngine} from "./core.js";
 import {getFrameInfo} from "./frame-state.js";
 import {default as filters} from "./filters.js";
 import {EventDispatcher} from "./types.js";
+
+// Allowlisting depends on comparing timestamps which may be generated on
+// different clocks on different servers across the internet. One day everyone
+// will have perfectly synchronized clocks. Today however, we need some
+// tolerance for if the two clocks are out of sync. Based on
+// https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/maximum-tolerance-for-computer-clock-synchronization,
+// Microsoft seems to expect 5 min to be a reasonable tolerance for clock
+// skewing in Windows systems. This is also in the same order of magnitude the
+// hour window we have for the timstamp to be valid.
+const CLOCK_SKEW_TOLERANCE = 5 * MILLIS_IN_MINUTE;
 
 // Note that this is a default implementation, but it might be
 // replaced using `setAllowlistingCallback`. Don't rely on this
@@ -61,11 +71,11 @@ function verifyTimestamp(timestamp) {
   if (typeof timestamp != "number" || isNaN(timestamp))
     return false;
 
-  let msSinceSigning = Date.now() - timestamp;
-  // Sometimes in multithreaded systems,
-  // timestamp might be a bit (1 millisecond on practice) in the future,
-  // that's why we compare with -1
-  return msSinceSigning >= -1 && msSinceSigning < MILLIS_IN_HOUR;
+  let now = Date.now();
+
+  let inTheFuture = timestamp > now + CLOCK_SKEW_TOLERANCE;
+  let tooOld = timestamp < now - MILLIS_IN_HOUR - CLOCK_SKEW_TOLERANCE;
+  return !inTheFuture && !tooOld;
 }
 
 async function verifyAnySignatures(domain, timestamp, signature) {

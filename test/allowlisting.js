@@ -68,9 +68,10 @@ describe("One Click Allowlisting", function() {
   }
 
   async function expectSuccessfulAllowlist() {
-    await wait(async() => await getSuccessEventReceived() != null,
-               timeout, "success event was not received");
-    expect(getOnUnauthorizedEvents()).toEqual([]);
+    await wait(async() => {
+      expect(getOnUnauthorizedEvents()).toEqual([]);
+      return await getSuccessEventReceived() != null;
+    }, timeout, "success event was not received");
     await reload();
     await expectImageResource.toBeLoaded();
   }
