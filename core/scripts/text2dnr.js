@@ -27,15 +27,44 @@ let {createConverter} = require("../lib/dnr/index.js");
 let {normalize} = require("../lib/filters/index.js");
 let {parseFilterList} = require("../lib/filters/lists.js");
 
+/**
+ * @typedef {Object} FilterListContent
+ * @property {Array.<Object>} rules The DNR rules.
+ * @property {Array.<Array.<string, [number]>>} dnrMap The DNR map entries
+ *    as key value pairs of the filter text and the rule ids.
+ */
+/**
+ * Process the filter list content
+ *
+ * @param {Object} converter The converter for the rules.
+ * @param {Array.<string>} filterListContent The content of the filter
+ *   list as lines.
+ * @return {FilterListContent} An object containing the rules and the
+ *   DNR map.
+ *
+ * @ignore
+ */
 function processContent(converter, filterListContent) {
   let {error, lines} = parseFilterList(filterListContent);
   if (error)
     return Promise.reject(new Error(error));
 
   lines.shift();
-  return Promise.resolve(lines
-                         .flatMap(filter => converter(normalize(filter)))
-                         .filter(o => !(o instanceof Error)));
+  let dnrMap = [];
+  return Promise.resolve({
+    rules: lines
+      .flatMap(filter => {
+        let normalized = normalize(filter);
+        let rules = converter(normalized);
+        if (Array.isArray(rules) && rules.length > 0) {
+          let ids = rules.map(r => r.id);
+          dnrMap.push([normalized, ids]);
+        }
+        return rules;
+      })
+      .filter(o => !(o instanceof Error)),
+    dnrMap
+  });
 }
 
 function parseArgs(cliArgv) {
@@ -71,7 +100,13 @@ function processFile(converter, filename, outputfile) {
     .then(results => {
       if (typeof outputfile != "undefined") {
         return writeFile(
-          outputfile, JSON.stringify(results, null, 2), {encoding: "utf-8"}
+          outputfile,
+          JSON.stringify(results.rules, null, 2),
+          {encoding: "utf-8"}
+        ).then(() => writeFile(
+          outputfile + ".map",
+          JSON.stringify(results.dnrMap, null, 2),
+          {encoding: "utf-8"})
         );
       }
       return process.stdout.write(JSON.stringify(results, null, 2));

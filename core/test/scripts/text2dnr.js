@@ -200,7 +200,9 @@ describe("text2dnr script", function() {
 
       // Check the output is valid JSON.
       let obj = JSON.parse(written);
-      assert.ok(obj instanceof Array);
+      assert.ok(obj instanceof Object);
+      assert.ok(obj.rules instanceof Array);
+      assert.ok(obj.dnrMap instanceof Array);
 
       done();
     });

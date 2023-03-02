@@ -66,6 +66,12 @@ describe("convertSubscriptions script", () => {
     return JSON.parse(fs.readFileSync(fullFilename, encoding));
   }
 
+  // Get the DNR rules map from the rules file named `filename`.
+  function getDnrRulesMapFromRulesFile(filename) {
+    let fullFilename = path.join(tmpOutDir, filename + ".map");
+    return JSON.parse(fs.readFileSync(fullFilename, encoding));
+  }
+
   function getReportDataFromFile(filename) {
     let fullFilename = path.join(tmpReportDir, filename);
     return fs.readFileSync(fullFilename, encoding)
@@ -143,7 +149,7 @@ describe("convertSubscriptions script", () => {
     expect(dnrRules[1].condition.urlFilter).toEqual("rule2");
   });
 
-  it("adds rule ids", async function() {
+  it("adds rule ids and map them", async function() {
     let filename = "foo.txt";
     createAbpRuleFile(filename, "[Adblock Plus 2.0]\nrule1\nrule2");
     await convert(tmpInDir, tmpOutDir);
@@ -151,6 +157,13 @@ describe("convertSubscriptions script", () => {
     expect(dnrRules.length).toEqual(2);
     expect(dnrRules[0].id).toEqual(expect.any(Number));
     expect(dnrRules[1].id).toEqual(expect.any(Number));
+
+    let dnrMap = getDnrRulesMapFromRulesFile(filename);
+    expect(dnrMap.length).toEqual(2);
+    expect(dnrMap[0][0]).toEqual("rule1");
+    expect(dnrMap[0][1]).toContain(dnrRules[0].id);
+    expect(dnrMap[1][0]).toEqual("rule2");
+    expect(dnrMap[1][1]).toContain(dnrRules[1].id);
   });
 
   it("generates a summary report file", async function() {
