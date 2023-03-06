@@ -1585,9 +1585,6 @@ describe("API", function() {
       if (isChromiumBased() && isIncognito())
         this.skip();
 
-      // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/401
-      this.retries(3);
-
       let expectedFoundStorage = false;
       if (isFuzzingServiceWorker())
         expectedFoundStorage = expect.any(Boolean);
