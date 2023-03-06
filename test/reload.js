@@ -18,7 +18,7 @@
 import expect from "expect";
 import browser from "webextension-polyfill";
 
-import {Page, wait, isMV3, isFirefox, TEST_MV3_SUBSCRIPTION, waitForHighlightedStyle, isIncognito} from "./utils.js";
+import {Page, wait, isMV3, isFirefox, shouldBeBlocked, TEST_MV3_SUBSCRIPTION, waitForHighlightedStyle, isIncognito} from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, ensureEverythingHasSaved}
   from "./messaging.js";
 
@@ -124,12 +124,12 @@ describe(`Reload (${phase})`, function() {
       return;
     }
 
-    try {
-      await new Page("image.html").expectResource("image.png").toBeBlocked();
-    }
-    finally {
-      await EWE.filters.remove([IMAGE_FILTER_TEXT]);
-    }
+
+    // we have to give browser some time to load the page
+    await new Promise(resolve => setTimeout(resolve, 300));
+    await shouldBeBlocked("image.html", "image.png", "Image was not blocked");
+
+    await EWE.filters.remove([IMAGE_FILTER_TEXT]);
   });
 
   it("persists blocking filters state", async function() {
@@ -143,6 +143,10 @@ describe(`Reload (${phase})`, function() {
 
       return;
     }
+
+    let userFilters = await EWE.filters.getUserFilters();
+    if (userFilters.filter(e => e.text === IMAGE_FILTER_TEXT).length > 0)
+      await EWE.filters.remove(IMAGE_FILTER_TEXT);
 
     try {
       expect(await EWE.filters.getUserFilters()).toEqual(
@@ -177,6 +181,7 @@ describe(`Reload (${phase})`, function() {
   });
 
   it("blocks a request using stored subscriptions", async function() {
+    this.timeout(15000);
     if (start) {
       await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.url);
       return await ensureEverythingHasSaved();

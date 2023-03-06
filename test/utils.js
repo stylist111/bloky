@@ -614,7 +614,8 @@ export async function shouldBeBlocked(pageUrl, resource, errorMessage) {
         await new Page(pageUrl).expectResource(resource).toBeBlocked();
         return true;
       }
-      catch (e) {}
+      catch (e) {
+      }
       return false;
     }, 4000, errorMessage ? errorMessage : `${resource} on ${pageUrl} was not blocked`
   );
