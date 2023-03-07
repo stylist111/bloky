@@ -1962,25 +1962,11 @@ describe("API", function() {
                                           optionalEvents = []) {
         // Some of the events we're checking for here may be emitted
         // after the page is done loading, like elemhide.
-        let maxEventsLength = mandatoryEvents.length + optionalEvents.length;
-        try {
-          await wait(
-            () => getReceivedEvents().length >= maxEventsLength,
-            timeoutWaitingForLogs, null, 50);
-        }
-        catch (e) {
-          // Rather than fail in the catch, we're going to fail with
-          // the assertions below. This will give better output with
-          // highlighting which events were unmatched. Also, it lets
-          // us not fail if the missing requests were the optional
-          // ones.
-        }
-        // add a little wait here in case there are extra unexpected events
-        await new Promise(r => setTimeout(r, 50));
-
-        let receivedEvents = getReceivedEvents();
-        expect(receivedEvents)
-          .toBeArrayContainingExactly(mandatoryEvents, optionalEvents);
+        await waitForAssertion(() => {
+          let receivedEvents = getReceivedEvents();
+          expect(receivedEvents)
+            .toBeArrayContainingExactly(mandatoryEvents, optionalEvents);
+        }, timeoutWaitingForLogs);
       }
 
       function compareMatchInfo(m1, m2) {
@@ -2461,7 +2447,17 @@ describe("API", function() {
               specificOnly: false
             },
             request: expectedRequestRelativeUrl("image.png")
-          }]
+          }],
+          {
+            optionalEvents: [{
+              filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}$document`),
+              matchInfo: {
+                ...allowingMatchInfo,
+                allowingReason: "document"
+              },
+              request: expectedRequestUrl(TEST_PAGES_URL)
+            }]
+          }
         );
       });
 
@@ -2531,7 +2527,24 @@ describe("API", function() {
               tabId: expect.any(Number),
               type: "image"
             })
-          }]
+          }],
+          {
+            optionalEvents: [{
+              filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}$document`),
+              matchInfo: {
+                ...allowingMatchInfo,
+                allowingReason: "document"
+              },
+              request: expectedRequestUrl(TEST_PAGES_URL)
+            }, {
+              filter: expectedAllowingFilter(`@@|${CROSS_DOMAIN_URL}$document`),
+              matchInfo: {
+                ...allowingMatchInfo,
+                allowingReason: "document"
+              },
+              request: expectedRequestUrl(CROSS_DOMAIN_URL)
+            }]
+          }
         );
       });
 
@@ -2564,7 +2577,17 @@ describe("API", function() {
                 specificOnly
               },
               request: expectedRequestRelativeUrl("image.png")
-            }]
+            }],
+            {
+              optionalEvents: [{
+                filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}${option}`),
+                matchInfo: {
+                  ...allowingMatchInfo,
+                  allowingReason: option.substring(1)
+                },
+                request: expectedRequestUrl(TEST_PAGES_URL)
+              }]
+            }
           );
         });
       }
@@ -2764,37 +2787,6 @@ describe("API", function() {
           }, {
             filter: expectedAllowingFilter(
               `@@${TEST_PAGES_URL}/nested-iframe-srcdoc.html$document`
-            ),
-            matchInfo: {...allowingMatchInfo, specificOnly: false},
-            request: expectedRequestRelativeUrl("image.png")
-          }]
-        );
-      });
-
-      it("logs allowlisting with $document filter", async function() {
-        await checkLogging(
-          [`@@${TEST_PAGES_URL}/image.html$document`],
-          "allowingEventOptions",
-          "image.html",
-          [{
-            filter: expectedAllowingFilter(
-              `@@${TEST_PAGES_URL}/image.html$document`
-            ),
-            matchInfo: {...allowingMatchInfo, allowingReason: "document"},
-            request: expectedRequestRelativeUrl("image.html")
-          }, {
-            filter: expectedAllowingFilter(
-              `@@${TEST_PAGES_URL}/image.html$document`
-            ),
-            matchInfo: {
-              ...allowingMatchInfo,
-              docDomain: null,
-              specificOnly: false
-            },
-            request: expectedRequestRelativeUrl("image.html")
-          }, {
-            filter: expectedAllowingFilter(
-              `@@${TEST_PAGES_URL}/image.html$document`
             ),
             matchInfo: {...allowingMatchInfo, specificOnly: false},
             request: expectedRequestRelativeUrl("image.png")
