@@ -373,7 +373,7 @@ export class Popup {
               tolerance = 200;
 
             if (isFuzzingServiceWorker())
-              tolerance = 15000;
+              tolerance = 25000;
 
             if (tolerance > 0)
               setTimeout(onCompletedAfterWait, tolerance);
