@@ -19,7 +19,7 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 import sinon from "sinon/pkg/sinon.js";
 
-import {isMV3, setMinTimeout, wait} from "./utils.js";
+import {isMV3, setMinTimeout, waitForAssertion} from "./utils.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 import {runInBackgroundPage} from "./messaging.js";
 
@@ -74,11 +74,14 @@ describe("Testing Mechanisms", function() {
           {op: "callMethod", arg: method}
         ]);
 
-        // eslint-disable-next-line no-console
-        await wait(() => console.log.calledOnce);
-        // eslint-disable-next-line no-console
-        expect(console.log.getCall(0).args)
-          .toEqual([`Background (${method}):`, message, messageObject]);
+        await waitForAssertion(() => {
+          // eslint-disable-next-line no-console
+          expect(console.log.getCalls()).toEqual(expect.arrayContaining([
+            expect.objectContaining({
+              args: [`Background (${method}):`, message, messageObject]
+            })
+          ]));
+        });
       });
     }
   });
