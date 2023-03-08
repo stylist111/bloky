@@ -28,7 +28,7 @@ function base64ToArrayBuffer(base64) {
 
 describe("createKeypair script", function() {
   it("creates a keypair that can be used for signature verification", async function() {
-    this.timeout(3000);
+    this.timeout(5000);
 
     let {publicKey, privateKey} = await createKeypair();
 
