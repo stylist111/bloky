@@ -1,17 +1,38 @@
-## Background
+## What does the change do?
 
-<!-- Please add any context that might be useful for this issue. -->
+<!-- Describe what it does, and possibly give some background. -->
 
-## Use case
+### Use case
 
-<!-- What is the use case you want to satisfy? -->
+<!-- Explain why it is needed. -->
+
+## Error conditions
+
+<!-- As the feature is refined, clarify the error handling scenarios. -->
+
+## How to test
+
+<!-- Please clarify the testing scenario, possibly as it is implemented. -->
 
 ## What to change
 
-<!-- What needs to be done to implement this change? -->
+<!-- What needs to be done to implement this change? This can be filled
+as the implementation goes. -->
 
-## Release notes
+## Documentation changes
 
-- [ ] Release notes added
+<!-- The documentation changes. -->
 
+## Acceptance checklist
 
+<!-- This lists the conditions to consider the issue resolved.
+This list can be completed during the process of fixing the bug.
+-->
+
+Please make sure the following items are complete prior to resolving
+the issue:
+- [ ] What does it do?
+- [ ] Error conditions and handling.
+- [ ] Testing scenario.
+- [ ] Documenation changes.
+- [ ] Release notes added.
