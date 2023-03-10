@@ -1170,6 +1170,22 @@ describe("API", function() {
         await EWE.filters.enable([VALID_FILTER_TEXT]);
       });
 
+      it("listens to onChanged metadata events", async function() {
+        await EWE.filters.add(VALID_FILTER_TEXT);
+        const META1 = {a: "1"};
+        await EWE.filters.setMetadata(VALID_FILTER_TEXT, META1);
+        let EVENT = "filters.onChanged";
+        await expectTestEvents(EVENT, [[expect.objectContaining({
+          text: VALID_FILTER_TEXT, metadata: META1
+        }), "metadata"]]);
+        const META2 = {a: "2"};
+        clearTestEvents(EVENT);
+        await EWE.filters.setMetadata(VALID_FILTER_TEXT, META2);
+        await expectTestEvents(EVENT, [[expect.objectContaining({
+          text: VALID_FILTER_TEXT, oldMetadata: META1, metadata: META2
+        }), "metadata"]]);
+      });
+
       it("listens to onRemoved events", async function() {
         await addFilter(VALID_FILTER_TEXT);
         await EWE.filters.remove([VALID_FILTER_TEXT]);

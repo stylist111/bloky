@@ -68,6 +68,15 @@ export class EventDispatcher {
       this._initialized = false;
     }
   }
+
+  /**
+   * Call listeners with the provided arguments.
+   * @param {[Object]} listener arguments
+   */
+  emit(...args) {
+    for (let listener of this._listeners)
+      listener(...args);
+  }
 }
 
 /**

@@ -26,6 +26,7 @@ import {filterEngine} from "./core.js";
 import {createConverter} from "adblockpluscore/lib/dnr/index.js";
 import {ERROR_DUPLICATE_FILTERS, ERROR_FILTER_NOT_FOUND,
         ERROR_TOO_MANY_FILTERS} from "../errors.js";
+import {onChanged} from "./filters.js";
 
 import {FilterError} from "./types.js";
 import {Prefs} from "./prefs.js";
@@ -301,7 +302,10 @@ export function setMetadataForFilter(text, metadata) {
   if (!details)
     throw new FilterError(ERROR_FILTER_NOT_FOUND);
 
+  let oldMetadata = details.metadata;
   details.metadata = metadata;
+  onChanged.emit({...Filter.fromText(text), metadata, oldMetadata},
+                 "metadata");
 
   storeDynamicFilters();
 }

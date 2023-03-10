@@ -601,7 +601,7 @@ The library provides the listeners to observe the events:
 * `EWE.allowlisting.onUnauthorized`: Emitted when an allowlisting request is rejected
 * `EWE.filters`:
   * `onAdded`: Emitted when a new filter is added
-  * `onChanged`: Emitted when a filter is either enabled or disabled
+  * `onChanged`: Emitted when a filter is either enabled or disabled or metadata changed
   * `onRemoved`: Emitted when a filter is removed
 * `EWE.subscriptions`:
   * `onAdded`: Emitted when a new subscription is added

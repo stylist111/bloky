@@ -59,6 +59,21 @@ function makeSubListener(dispatch) {
   };
 }
 
+export let onChanged = new EventDispatcher(dispatch => {
+  filterNotifier.on("filterState.enabled", (text, enabled) => {
+    dispatch({...convertFilter(Filter.fromText(text)), enabled}, "enabled");
+  });
+
+  filterNotifier.on("subscription.metadata", (subscription, value, oldValue) => {
+    for (let filter of subscription.filterText()) {
+      dispatch({
+        ...convertFilter(Filter.fromText(filter)),
+        metadata: value, oldMetadata: oldValue
+      }, "metadata");
+    }
+  });
+});
+
 export default {
   /**
    * Represents a single filter rule and its state.
@@ -367,15 +382,12 @@ export default {
 
   /**
    * Emitted when a filter is either enabled or disabled.
-   * The property name "enabled" is provided.
+   * The property name "enabled" or
+   * "metadata" and optionally "oldMetadata" is provided.
    * @event
    * @type {EventDispatcher<Filter, string>}
    */
-  onChanged: new EventDispatcher(dispatch => {
-    filterNotifier.on("filterState.enabled", (text, enabled) => {
-      dispatch({...convertFilter(Filter.fromText(text)), enabled}, "enabled");
-    });
-  }),
+  onChanged,
 
   /**
    * Emitted when a filter is removed.
