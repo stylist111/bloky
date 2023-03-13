@@ -754,7 +754,7 @@ describe("API", function() {
       });
 
       it("block content after the filter list update", async function() {
-        if (isEdge() & isIncognito() & !isMV3())
+        if (isEdge() && isIncognito() && !isMV3())
           setMinTimeout(this, 15000);
         let updatedReply = [
           "[Adblock Plus]",
