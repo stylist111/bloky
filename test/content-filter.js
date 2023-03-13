@@ -175,7 +175,7 @@ describe("Element Hiding", function() {
       {name: "nested iframe using srcdoc", file: "nested-iframe-elemhide-srcdoc.html"},
       {name: "nested iframe where the request is aborted", file: "nested-iframe-elemhide-aborted-request.html"}
     ]) {
-      it(`does not hide elemented allowlisted by ${type} in a ${nestedFrameTestCase.name} if the top iframe is allowlisted`, async function() {
+      it(`does not hide element allowlisted by ${type} in a ${nestedFrameTestCase.name} if the top iframe is allowlisted`, async function() {
         setMinTimeout(this, 8000);
 
         await addFilter("###elem-hide");

@@ -18,7 +18,8 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 
-import {fuzzSuspendServiceWorker} from "./mocha/mocha-runner.js";
+import {fuzzSuspendServiceWorker, isFuzzingServiceWorker}
+  from "./mocha/mocha-runner.js";
 import {waitForAssertion} from "./utils.js";
 
 export async function runInBackgroundPage(operations, fuzzEnabled = true) {
@@ -74,8 +75,14 @@ export const EWE = Object.fromEntries([
 ].map(name => [name, proxy([name])]));
 EWE.reporting.contentTypesMap = proxy(["reporting", "contentTypesMap"]);
 
-export function addFilter(text) {
-  return EWE.filters.add([text]);
+export async function addFilter(text) {
+  let result = await EWE.filters.add([text]);
+
+  // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/364
+  if (isFuzzingServiceWorker())
+    await ensureEverythingHasSaved();
+
+  return result;
 }
 
 export async function ensureEverythingHasSaved() {
