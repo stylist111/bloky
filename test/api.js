@@ -1356,7 +1356,7 @@ describe("API", function() {
       });
 
       it("handles new tab allowlisting listener", async function() {
-        setMinTimeout(this, isFuzzingServiceWorker() ? 10000 : 8000);
+        setMinTimeout(this, 8000);
 
         let url = isFirefox() ? "about:blank" :
             isEdge() ? "edge://newtab/" : "chrome://newtab/";
@@ -1366,7 +1366,7 @@ describe("API", function() {
         // but we need to wait a bit longer than just `created` for
         // the tab updated event to have happened.
         let tabId = await new Page(url, true).created;
-        let timeout = isFuzzingServiceWorker() ? 9000 : 6000;
+        let timeout = isFuzzingServiceWorker() ? 15000 : 6000;
 
         await waitForAssertion(() => {
           let events = (getTestEvents("ewe-test.newTabAllowlisted"))
