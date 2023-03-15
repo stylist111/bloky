@@ -119,6 +119,11 @@ let messages = [];
 let migrationErrorsOnStart;
 
 function handleTestMessage(request, sender, sendResponse) {
+  if (typeof request != "object" || request == null || !request.type ||
+      !(request.type.startsWith("ewe-test:") || request.type.startsWith("ewe:"))
+  )
+    return false;
+
   messages.push({request, sender});
   switch (request.type) {
     case "ewe-test:run":

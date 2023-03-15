@@ -1641,12 +1641,20 @@ describe("API", function() {
                               warnings: []});
     });
 
-    // This test is problematic in edge and oldest chromium.
-    // see: https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/191
     it("ignores messages without a type property", async function() {
-      this.skip();
-      await expect(browser.runtime.sendMessage({a: "1"}))
-        .resolves.not.toThrow();
+      let timeout = async() => {
+        await new Promise(r => setTimeout(r, 1000));
+      };
+      // Old browsers hang on this unhandled message forever.
+      // New browsers resolve the promise.
+      // Either way, we just want to make sure we aren't throwing an error when
+      // we see these messages.
+      let unhandledMessageResult = Promise.race([
+        browser.runtime.sendMessage({a: "1"}),
+        timeout()
+      ]);
+
+      await expect(unhandledMessageResult).resolves.not.toThrow();
     });
 
     it("starts with the addon info provided by the initial start call",
