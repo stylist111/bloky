@@ -196,8 +196,29 @@ let defaultReplyAntiCv = "[Adblock Plus]";
 
 let replyAntiCv = defaultReplyAntiCv;
 
+let setOfResponses = new Map();
+
 adminApp.post("/setReplyForAntiCV", express.json(), (req, res) => {
   replyAntiCv = req.body.data;
+  res.send("");
+});
+
+adminApp.post("/clearUrlResponse", express.json(), (req, res) => {
+  setOfResponses.delete(req.body.url);
+  res.send("");
+});
+
+adminApp.post("/setUrlResponse", express.json(), (req, res) => {
+  let urlToSet = req.body.url;
+  let responseToReplyWith = req.body.responseToReplyWith;
+
+  setOfResponses.set(urlToSet, {responseToReplyWith});
+
+  adminApp.get(urlToSet, logRequests, (areq, ares) => {
+    if (setOfResponses.has(urlToSet))
+      ares.send(responseToReplyWith);
+  });
+
   res.send("");
 });
 

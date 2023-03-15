@@ -19,7 +19,8 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 import sinon from "sinon/pkg/sinon.js";
 
-import {isMV3, setMinTimeout, waitForAssertion} from "./utils.js";
+import {isMV3, setMinTimeout, waitForAssertion,
+        setEndpointResponse, clearEndpointResponse, TEST_ADMIN_PAGES_URL} from "./utils.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 import {runInBackgroundPage} from "./messaging.js";
 
@@ -84,5 +85,45 @@ describe("Testing Mechanisms", function() {
         });
       });
     }
+  });
+
+  describe("Endpoint manipulation", function() {
+    it("sets and responds using custom endpoints", async function() {
+      let response = {"some random content": "yes!"};
+
+      await setEndpointResponse("/test-a-random-endpoint", response);
+
+      let output = await fetch(`${TEST_ADMIN_PAGES_URL}/test-a-random-endpoint`);
+      expect(await output.json()).toEqual(response);
+    });
+
+    it("sets and responds with various types of data", async function() {
+      let stringResponse = "This is a string response";
+      let objectResponse = {hey: ["hello", "world"]};
+
+      await setEndpointResponse("/string", stringResponse);
+      await setEndpointResponse("/object", objectResponse);
+
+      let stringOutput = await fetch(`${TEST_ADMIN_PAGES_URL}/string`);
+      let objectOutput = await fetch(`${TEST_ADMIN_PAGES_URL}/object`);
+
+      expect(await stringOutput.text()).toEqual(stringResponse);
+      expect(await objectOutput.json()).toEqual(objectResponse);
+    });
+
+    it("clears dynamically set endpoints", async function() {
+      let customResponse = {hey: ["what's", "up", "?"]};
+      await setEndpointResponse("/test", customResponse);
+
+      let testOutput = await fetch(`${TEST_ADMIN_PAGES_URL}/test`);
+      expect(await testOutput.json()).toEqual(customResponse);
+
+      await clearEndpointResponse("/test");
+
+      testOutput = await fetch(`${TEST_ADMIN_PAGES_URL}/test`);
+      expect((async() => {
+        await testOutput.json();
+      })).rejects.toThrow();
+    });
   });
 });

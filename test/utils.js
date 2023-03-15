@@ -24,6 +24,7 @@ import {fuzzSuspendServiceWorker, isFuzzingServiceWorker}
 export const TEST_PAGES_DOMAIN = "localhost";
 export const CROSS_DOMAIN = "127.0.0.1";
 export const TEST_PAGES_URL = `http://${TEST_PAGES_DOMAIN}:3000`;
+export const TEST_ADMIN_PAGES_URL = `http://${TEST_PAGES_DOMAIN}:3003`;
 export const CROSS_DOMAIN_URL = `http://${CROSS_DOMAIN}:3000`;
 // the page will be served with this sitekey if you pass in sitekey=1
 // as a query param. Eg http://localhost:3000/image.html?sitekey=1
@@ -632,5 +633,23 @@ export async function shouldBeLoaded(pageUrl, resource, errorMessage) {
       return false;
     }, 4000, errorMessage ? errorMessage : `${resource} on ${pageUrl} was not loaded`
   );
+}
+
+export async function setEndpointResponse(url, responseToReplyWith) {
+  await fetch(`${TEST_ADMIN_PAGES_URL}/setUrlResponse`, {
+    method: "POST",
+    cache: "no-cache",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({url, responseToReplyWith})
+  });
+}
+
+export async function clearEndpointResponse(url) {
+  await fetch(`${TEST_ADMIN_PAGES_URL}/clearUrlResponse`, {
+    method: "POST",
+    cache: "no-cache",
+    headers: {"Content-Type": "application/json"},
+    body: url
+  });
 }
 
