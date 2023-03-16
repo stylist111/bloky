@@ -217,6 +217,8 @@ adminApp.post("/setUrlResponse", express.json(), (req, res) => {
   adminApp.get(urlToSet, logRequests, (areq, ares) => {
     if (setOfResponses.has(urlToSet))
       ares.send(responseToReplyWith);
+    else
+      ares.end();
   });
 
   res.send("");
