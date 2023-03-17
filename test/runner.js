@@ -316,7 +316,7 @@ async function pollMessages(driver, handle, isMV3) {
   return result;
 }
 
-async function startTestRun(driver, id, params, incognito) {
+async function startTestRun(driver, id, params) {
   let search = new URLSearchParams();
   for (let key in params)
     search.append(key, params[key]);
@@ -339,12 +339,12 @@ async function startTestRun(driver, id, params, incognito) {
   await driver.findElement(webdriver.By.id(id)).click();
 }
 
-async function runFunctionalTests(driver, params, isMV3, incognito) {
+async function runFunctionalTests(driver, params, isMV3) {
   console.log("================");
   console.log("Functional Tests");
   console.log("================");
 
-  await startTestRun(driver, "functional", params, incognito);
+  await startTestRun(driver, "functional", params);
   let handle = await getHandle(driver, "/functional.html");
   let results = await pollMessages(driver, handle, isMV3);
   await driver.switchTo().window(handle);
@@ -353,7 +353,7 @@ async function runFunctionalTests(driver, params, isMV3, incognito) {
 }
 
 async function runReloadTests(
-  driver, params, isMV3, incognito, title, id, testOutputToken, page) {
+  driver, params, isMV3, title, id, testOutputToken, page) {
   console.log("============");
   console.log(`${title} Tests`);
   console.log("============");
@@ -361,7 +361,7 @@ async function runReloadTests(
   let results;
   let handle;
 
-  await startTestRun(driver, id, params, incognito);
+  await startTestRun(driver, id, params);
   while (!results ||
          results.log.toString().includes(`${testOutputToken} (preparation)`)) {
     // Reloading with an update has the same performance impact as
@@ -381,7 +381,7 @@ async function runReloadTests(
   return results;
 }
 
-async function runFuzzTests(driver, params, isMV3, incognito) {
+async function runFuzzTests(driver, params, isMV3) {
   console.log("==========");
   console.log("Fuzz Tests");
   console.log("==========");
@@ -397,7 +397,7 @@ async function runFuzzTests(driver, params, isMV3, incognito) {
     await setMinDriverTimeout(driver, fuzzParams.timeout);
   }
 
-  await startTestRun(driver, "functional", fuzzParams, incognito);
+  await startTestRun(driver, "functional", fuzzParams);
   let handle = await getHandle(driver, "/functional.html");
   let results = await pollMessages(driver, handle, isMV3);
   await driver.switchTo().window(handle);
@@ -503,28 +503,25 @@ async function run() {
       switch (testKind) {
         case "functional":
           results.functional = await runFunctionalTests(
-            driver, params, isMV3, incognito
-          );
+            driver, params, isMV3);
           break;
         case "reload":
           results.reload = await runReloadTests(
-            driver, params, isMV3, incognito,
-            "Reload", "reload", "Reload", "/reload.html");
+            driver, params, isMV3, "Reload", "reload", "Reload", "/reload.html");
           break;
         case "update":
           results.update = await runReloadTests(
-            driver, params, isMV3, incognito,
-            "Update", "update", "Update", "/update.html");
+            driver, params, isMV3, "Update", "update", "Update", "/update.html");
           break;
         case "mv2-mv3-migrate":
           if (isMV3)
             console.warn("Migrate tests assume it's started as MV2 test and continued as MV3 test");
           results["mv2-mv3-migrate"] = await runReloadTests(
-            driver, params, isMV3, incognito,
+            driver, params, isMV3,
             "MV2 MV3 migrate", "mv2-mv3-migrate", "MV2 MV3 migrate", "/mv2-mv3-migrate.html");
           break;
         case "fuzz":
-          results.fuzz = await runFuzzTests(driver, params, isMV3, incognito);
+          results.fuzz = await runFuzzTests(driver, params, isMV3);
           break;
         default:
           console.warn(`Unknown test kind: ${testKind}`);
