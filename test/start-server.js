@@ -166,8 +166,6 @@ adminApp.get("/configure", (req, res) => {
 // clear the requests list and reset replies
 adminApp.get("/clear", (req, res) => {
   requests = [];
-  replyAntiCv = defaultReplyAntiCv;
-  replyNonDNR = defaultReplyNonDNR;
   res.send("");
 });
 
@@ -192,57 +190,48 @@ adminApp.head("/subscription.txt", logRequests, (req, res) => {
   res.send(reply);
 });
 
-let defaultReplyAntiCv = "[Adblock Plus]";
-
-let replyAntiCv = defaultReplyAntiCv;
-
 let setOfResponses = new Map();
-
-adminApp.post("/setReplyForAntiCV", express.json(), (req, res) => {
-  replyAntiCv = req.body.data;
-  res.send("");
-});
 
 adminApp.post("/clearUrlResponse", express.json(), (req, res) => {
   setOfResponses.delete(req.body.url);
   res.send("");
 });
 
-adminApp.post("/setUrlResponse", express.json(), (req, res) => {
-  let urlToSet = req.body.url;
-  let responseToReplyWith = req.body.responseToReplyWith;
-
-  setOfResponses.set(urlToSet, {responseToReplyWith});
+function createRouteHandler(urlToSet, replyData) {
+  setOfResponses.set(urlToSet, replyData);
 
   adminApp.get(urlToSet, logRequests, (areq, ares) => {
     if (setOfResponses.has(urlToSet))
-      ares.send(responseToReplyWith);
+      ares.send(setOfResponses.get(urlToSet));
     else
       ares.end();
   });
+}
+
+adminApp.post("/setUrlResponse", express.json(), (req, res) => {
+  let urlToSet = req.body.url;
+  let replyData = req.body.responseToReplyWith;
+
+  createRouteHandler(urlToSet, replyData);
 
   res.send("");
-});
-
-let defaultReplyNonDNR = "[Adblock Plus]";
-
-let replyNonDNR = defaultReplyNonDNR;
-
-adminApp.post("/setReplyForNonDNR", express.json(), (req, res) => {
-  replyNonDNR = req.body.data;
-  res.send("");
-});
-
-// get the anti-cv subscription content (GET)
-adminApp.get(/anti-cv-subscription.txt/, logRequests, (req, res) => {
-  res.send(replyAntiCv);
-});
-
-// get the subscription-that-shouldnt-be-moved-to-dnr-world (GET)
-adminApp.get(/subscription-that-shouldnt-be-moved-to-dnr-world.txt/, logRequests, (req, res) => {
-  res.send(replyNonDNR);
 });
 
 adminApp.listen(HTTP_ADMIN_PORT, () => {
   console.log(`Admin commands server listening at http://${HOST}:${HTTP_ADMIN_PORT}`);
 });
+
+let buildTimeReplies = [
+  {
+    url: "/subscription-that-shouldnt-be-moved-to-dnr-world.txt",
+    data: "[Adblock Plus]"
+  },
+  {
+    url: "/anti-cv-subscription.txt",
+    data: "[Adblock Plus]"
+  }
+];
+
+for (let i = 0; i < buildTimeReplies.length; i++)
+  createRouteHandler(buildTimeReplies[i].url, buildTimeReplies[i].data);
+

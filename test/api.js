@@ -24,7 +24,8 @@ import {Page, Popup, setMinTimeout, wait, waitForAssertion, executeScript,
         getVisibleElement, isMV3, expectElemHideVisible, expectElemHideHidden,
         TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN,
         isMV2CustomSubsExtension, TEST_MV3_SUBSCRIPTION,
-        TEST_MV3_SUBSCRIPTION_2, TEST_MV3_SUBSCRIPTION_3, shouldBeBlocked, shouldBeLoaded} from "./utils.js";
+        TEST_MV3_SUBSCRIPTION_2, TEST_MV3_SUBSCRIPTION_3, shouldBeBlocked,
+        shouldBeLoaded, setEndpointResponse} from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage,
         ensureEverythingHasSaved, getTestEvents,
         clearTestEvents, addOnBlockableListener,
@@ -468,18 +469,8 @@ describe("API", function() {
       setMinTimeout(this, isFuzzingServiceWorker() ? 30000 : 10000);
       beforeEach(async function() {
         await fetch("http://localhost:3003/clear");
+        await setEndpointResponse("/anti-cv-subscription.txt", "[Adblock Plus]");
       });
-
-      let updateSubscriptionData = async function(updatedReply, url = "setReplyForAntiCV") {
-        let data = {data: updatedReply};
-        await fetch(`http://localhost:3003/${url}`, {
-          method: "POST",
-          cache: "no-cache",
-          headers: {
-            "Content-Type": "application/json"},
-          body: JSON.stringify(data)
-        });
-      };
 
       let addSubscription = async function(url = subCircumvention.url) {
         await EWE.subscriptions.add(url);
@@ -515,7 +506,7 @@ describe("API", function() {
       it("updates the CV subscription", async function() {
         let updatedReply = "[Adblock Plus]";
         let filterToAdd = "example.com#$#abort-on-property-read atob";
-        await updateSubscriptionData(updatedReply);
+        await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
         await addSubscription();
 
         // update reply on the server
@@ -523,7 +514,7 @@ describe("API", function() {
           "[Adblock Plus]",
           filterToAdd
         ].join("\n");
-        await updateSubscriptionData(updatedReply);
+        await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
         await EWE.subscriptions.sync();
         await checkSynchronization(filterToAdd);
 
@@ -539,7 +530,7 @@ describe("API", function() {
           "[Adblock Plus]",
           "example.com##element_hiding_filter_2"
         ].join("\n");
-        await updateSubscriptionData(updatedReply);
+        await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
         await addSubscription();
         await expectElemHideVisible();
 
@@ -548,7 +539,7 @@ describe("API", function() {
           "[Adblock Plus]",
           "###elem-hide"
         ].join("\n");
-        await updateSubscriptionData(updatedReply);
+        await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
         await EWE.subscriptions.sync();
         await checkSynchronization("###elem-hide");
 
@@ -559,7 +550,7 @@ describe("API", function() {
           "[Adblock Plus]",
           "###elem-hide_3"
         ].join("\n");
-        await updateSubscriptionData(updatedReply);
+        await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
         await EWE.subscriptions.sync();
         // wait for subscriptions to be synced
         await checkSynchronization("###elem-hide_3");
@@ -572,7 +563,8 @@ describe("API", function() {
           this.skip();
 
         let updatedReply = "[Adblock Plus]";
-        await updateSubscriptionData(updatedReply);
+        await setEndpointResponse("/subscription-that-shouldnt-be-moved-to-dnr-world.txt", updatedReply);
+
         await addSubscription();
         let dynamicRules = await browser.declarativeNetRequest
               .getDynamicRules().length;
@@ -590,7 +582,7 @@ describe("API", function() {
           "example.com##element_hiding_filter",
           "/image-from-non-dnr-subscription.png^$image"
         ].join("\n");
-        await updateSubscriptionData(updatedReply, "setReplyForNonDNR");
+        await setEndpointResponse("/subscription-that-shouldnt-be-moved-to-dnr-world.txt", updatedReply);
         await EWE.subscriptions.sync();
 
         expect(await browser.declarativeNetRequest
@@ -609,7 +601,7 @@ describe("API", function() {
           "[Adblock Plus]",
           "/image-from-custom-filter.png^$image"
         ].join("\n");
-        await updateSubscriptionData(updatedReply);
+        await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
         await addSubscription();
         await EWE.filters.add(["/image-from-custom-filter.png^$image"]);
         let userFilters = await EWE.filters.getUserFilters();
@@ -632,7 +624,7 @@ describe("API", function() {
           "[Adblock Plus]",
           "example.com##.inserted_rtb"
         ].join("\n");
-        await updateSubscriptionData(updatedReply);
+        await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
 
         await EWE.subscriptions.sync();
         await checkSynchronization("example.com##.inserted_rtb");
@@ -662,7 +654,7 @@ describe("API", function() {
           "[Adblock Plus]",
           "/image-from-custom-filter.png^$image"
         ].join("\n");
-        await updateSubscriptionData(updatedReply);
+        await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
 
         await EWE.filters.add(["/image-from-custom-filter.png^$image"]);
         await addSubscription();
@@ -710,7 +702,7 @@ describe("API", function() {
         // update reply on the server to remove filter
         updatedReply = "[Adblock Plus]";
 
-        await updateSubscriptionData(updatedReply);
+        await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
         await EWE.subscriptions.sync();
         // wait for subscriptions to be synced
         await new Promise(r => setTimeout(r, 1000));
@@ -740,14 +732,14 @@ describe("API", function() {
           "[Adblock Plus]",
           "/image-from-cv-subscription.png^$image"
         ].join("\n");
-        await updateSubscriptionData(updatedReply);
+        await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
         await addSubscription();
         await shouldBeBlocked("image-from-cv-subscription.html", "image-from-cv-subscription.png");
 
         // update reply on the server to remove filter
         updatedReply = "[Adblock Plus]";
 
-        await updateSubscriptionData(updatedReply);
+        await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
         await EWE.subscriptions.sync();
 
         await shouldBeLoaded("image-from-cv-subscription.html", "image-from-cv-subscription.png");
@@ -760,7 +752,7 @@ describe("API", function() {
           "[Adblock Plus]",
           "/image-for-filter-that-should-be-untouched.png^$image"
         ].join("\n");
-        await updateSubscriptionData(updatedReply);
+        await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
         const {declarativeNetRequest} = browser;
 
         if (declarativeNetRequest) {
@@ -797,7 +789,7 @@ describe("API", function() {
           "[Adblock Plus]",
           "/image-from-cv-subscription.png^$image"
         ].join("\n");
-        await updateSubscriptionData(updatedReplyForRemoval);
+        await setEndpointResponse("/anti-cv-subscription.txt", updatedReplyForRemoval);
         await EWE.subscriptions.sync();
         await checkSynchronization("/image-from-cv-subscription.png^$image");
 
