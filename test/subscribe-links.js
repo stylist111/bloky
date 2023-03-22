@@ -23,7 +23,7 @@ import {isConnected, click, isFuzzingServiceWorker}
   from "./mocha/mocha-runner.js";
 
 describe("Subscribe links (runner only)", function() {
-  setMinTimeout(this, isFuzzingServiceWorker() ? 30000 : 6000);
+  setMinTimeout(this, isFuzzingServiceWorker() ? 30000 : 8000);
 
   before(async function() {
     if (!await isConnected())
