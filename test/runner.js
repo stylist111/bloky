@@ -46,6 +46,9 @@ function parseArguments() {
   parser.option("incognito", {
     description: "Run the tests in incognito mode (Chrome) or private browsing (Firefox) - currently only supported on Firefox."
   });
+  parser.option("forceHeadful", {
+    description: "Run the tests in non headless mode."
+  });
   parser.option("timeout", {
     description: "Maximum running time for each test. 0 disables timeouts."
   });
@@ -58,7 +61,7 @@ function parseArguments() {
 
   let {argv} = parser;
   let params;
-  for (let param of ["timeout", "grep", "incognito"]) {
+  for (let param of ["timeout", "grep", "incognito", "forceHeadful"]) {
     let value = argv[param];
     if (typeof value != "undefined")
       (params || (params = {}))[param] = value;
@@ -88,7 +91,7 @@ function parseArguments() {
   return {
     manifest: argv.manifest,
     browser: argv.browser,
-    version: argv.version,
+    version: argv.version || "latest",
     testKinds,
     params
   };
@@ -472,7 +475,7 @@ async function run() {
 
   let incognito =
     typeof params != "undefined" && typeof params.incognito != "undefined";
-  let headless = browser == "firefox" && !incognito;
+  let forceHeadful = typeof params != "undefined" && typeof params.forceHeadful != "undefined";
   let extraArgs = [];
   // auto-open-devtools-for-tabs is required to make MV3 service
   // workers start up after being suspended in tests.
@@ -482,8 +485,24 @@ async function run() {
     extraArgs.push("auto-open-devtools-for-tabs");
 
   console.log(`Getting ready to run ${browser} ${version} ...`);
+
+  let versionNumber = version;
+  let majorVersion;
+  // On Windows, Edge is assumed to be already installed
+  if (browser != "edge" || process.platform != "win32") {
+    ({versionNumber} = await BROWSERS[browser].installBrowser(version));
+    console.log(`Installed ${browser} ${versionNumber} ...`);
+
+    majorVersion = parseInt(versionNumber.split(".")[0], 10);
+  }
+
+  // New headless mode in Chromium was introduced in Chrome 111. The old
+  // headless mode does not support loading extensions.
+  let headless = (browser == "firefox" ||
+    browser == "chromium" && majorVersion >= 111) && !incognito && !forceHeadful;
+
   let driver = await BROWSERS[browser].getDriver(
-    version, {headless, extensionPaths, incognito, extraArgs});
+    versionNumber, {headless, extensionPaths, incognito, extraArgs});
 
   let timeout = (params && typeof params.timeout != "undefined" ?
     params.timeout : 140000);

@@ -430,6 +430,9 @@ through the global `EWE` object.
 - The `incognito` checkbox is used to inform the tests whether the
 browser started in incognito/private mode or not. This does not cause
 tests to run in incognito mode.
+- The `forceHeadful` checkbox is used to inform the tests whether the
+browser started in headless mode or not. By default tests are run in 
+headless mode for firefox & chrome >111. 
 - The `testKinds` option is used to run only a certain subset of the
 functional tests. For example, you can target only the service worker
 fuzzing tests by running `--testKinds fuzz`, or a combination of the
