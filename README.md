@@ -67,7 +67,7 @@ Manifest V2:
 Manifest V3:
 
 - Chromium 109
-- Edge 79
+- Edge 108
 
 ### Manifest for V2
 
@@ -426,7 +426,13 @@ through the global `EWE` object.
 ##### Test options
 
 - The `timeout` option overrides the per-test timeout in milliseconds.
-- The `grep` option filters the tests to run with a regular expression.
+- The `grep` option filters the tests to run with a regular expression. 
+You can use multiple `--grep` flags in one run, by default they will be 
+combined as look ahead positive (test must include A & B), you can use
+look ahead negative (exclude) by passing `!` in front of sentence. 
+For example: 
+`--grep API --grep \!Reporting --grep \!Subscriptions` 
+Will call all tests in API except Reporting and Subscriptions
 - The `incognito` checkbox is used to inform the tests whether the
 browser started in incognito/private mode or not. This does not cause
 tests to run in incognito mode.
@@ -468,7 +474,7 @@ options described previously.
 To run the core tests only:
 ```
 docker build -t core -f test/dockerfiles/core.Dockerfile .
-docker run --shm-size=128m --cpus=1 --memory=3.75g TEST_PARAMS="(path to the test to run)" -e -it core
+docker run --shm-size=512m --cpus=1 --memory=3.75g TEST_PARAMS="(path to the test to run)" -it core
 ```
 
 ##### Tip: Matching CI system resources
@@ -507,7 +513,7 @@ browser download cache from the host machine.
 -v $(pwd)/browser-snapshots:/webext-sdk/browser-snapshots
 ```
 
-##### Tip: Testing flaky tests
+#### Testing flaky tests
 
 Flaky tests in our CI pipelines are annoying because they don't fail
 or succeed every time. To help in measuring if a fix improves these,
@@ -526,19 +532,27 @@ with the `--help` option for a list of options.
 npm run measureTestFlakiness -- --help
 ```
 
+NOTE: In both cases, it is recommended to cache browser when building image
+to save execution time (by passing --build-arg BROWSER=<browser to cache>). 
+
+``` 
+npm run measureTestFlakiness -- --testParams "v3 chromium --testKinds functional" --dockerBuildFlag "--build-arg BROWSER=chromium"
+```
+
+or 
+
+```
+docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER=chromium .
+docker run --shm-size=512m -e TEST_PARAMS="v3 chromium" functional
+```
+
 If you need to debug flaky tests on the pipeline, add [flaky] to the
 tests you want to run & then add [flaky] to the commit message. 
-This will trigger pipeline that will run only tests marked flaky in tests,
-tests will be run 28 times. 
+This will trigger pipeline that will be extended with "flakiness check" jobs that
+run only tests marked flaky.
 
-If you want to debug flaky tests locally (on Docker), add `-e MODE="[flaky]"`
-to Docker run command. 
-Note: Test will be run 30 times. If you need higher values - please set higher value in 
-`functional-entrypoint.sh` line 19. 
-
-```
-docker run --shm-size=512m -e TEST_PARAMS="v3 chromium" -e MODE="[flaky]" functional
-```
+If you wish to extend any pipeline with `measureTestFlakiness`  job, you can easily trigger pipeline from
+gitlab UI and pass variable "FLAKY" set to true. This will trigger pipeline with extended flakiness check jobs. 
 
 ### Integration tests
 

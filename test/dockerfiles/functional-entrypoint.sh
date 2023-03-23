@@ -12,15 +12,9 @@ fi
 
 npm run test-server &
 
-# Run in "Flaky debug" mode or not
-
 if [[ "$MODE" == *"[flaky"* ]]; then
-
-  for i in {1..30}
-    do
-      echo "INFO: This job will run only tests marked as [flaky] in test"
-      $XVFB_CMD npm test -- $TEST_PARAMS --grep flaky
-    done
+  echo "INFO: This job will run tests marked as [flaky] in test"
+  $XVFB_CMD npm test -- $TEST_PARAMS --grep flaky
 else 
   $XVFB_CMD npm test -- $TEST_PARAMS
 fi

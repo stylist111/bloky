@@ -27,10 +27,20 @@ const args = yargs(hideBin(process.argv))
         default: "v2 chromium",
         description: "Which tests to run"
       })
-      .option("dockerFlags", {
+      .option("mode", {
+        type: "string",
+        default: "",
+        description: "Add [flaky] if want to run only flaky tests"
+      })
+      .option("dockerBuildFlags", {
+        type: "string",
+        default: "--build-arg BROWSER=chromium",
+        description: "extra flags to pass to docker build"
+      })
+      .option("dockerRunFlags", {
         type: "string",
         default: "--cpus=1 --memory=3.75g --shm-size=512m",
-        description: "extra flags to pass to docker"
+        description: "extra flags to pass to docker run"
       })
       .option("runs", {
         type: "number",
@@ -41,19 +51,21 @@ const args = yargs(hideBin(process.argv))
 
 const execOptions = {stdio: "inherit"};
 
-let command = `docker run ${args.dockerFlags} -v "${process.cwd()}/browser-snapshots:/webext-sdk/browser-snapshots" -e TEST_PARAMS="${args.testParams}" -it functional`;
-console.log(`This command will be run ${args.runs} times: ${command}`);
-
+// BUILDING CONTAINER
 console.log("Building container");
-let buildCommand = "docker build -t functional -f test/dockerfiles/functional.Dockerfile .";
+let buildCommand = `docker build -t functional -f test/dockerfiles/functional.Dockerfile ${args.dockerBuildFlags} .`;
 execSync(buildCommand, execOptions);
 
+// RUNNING CONTAINER
+let command = `docker run ${args.dockerRunFlags} -e TEST_PARAMS="${args.testParams}" -e MODE="${args.mode}" functional`;
+console.log(`This command will be run ${args.runs} times: ${command}`);
 let failureCount = 0;
+let errorsThrown = [];
 
-for (let i = 0; i < args.runs; i++) {
-  console.log(`Running attempt ${i + 1} out of ${args.runs}`);
-  if (i > 0) {
-    let currentFailureRate = Math.round(failureCount / i * 100);
+for (let run = 0; run < args.runs; run++) {
+  console.log(`Running attempt ${run + 1} out of ${args.runs}`);
+  if (run > 0) {
+    let currentFailureRate = Math.round(failureCount / run * 100);
     console.log(`${failureCount} failures so far. Current failure rate: ${currentFailureRate}%`);
   }
 
@@ -61,11 +73,16 @@ for (let i = 0; i < args.runs; i++) {
     execSync(command, execOptions);
     console.log("Test succeeded!");
   }
-  catch (e) {
+  catch (error) {
     failureCount++;
-    console.log(`Test failed! ${e}`);
+    errorsThrown.push(run + 1);
   }
 }
 
 let failureRate = Math.round(failureCount / args.runs * 100);
 console.log(`${failureCount} failures out of ${args.runs} attempts. Failure rate: ${failureRate}%`);
+
+if (failureCount > 0) {
+  console.log("Run attempts that failed: ", errorsThrown.join(", "), "scroll up for more details");
+  throw new Error("Test failed!");
+}

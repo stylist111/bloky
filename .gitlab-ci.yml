@@ -13,31 +13,33 @@ variables:
   OLDEST_FIREFOX_VERSION: "68.0"
   LATEST_EDGE_VERSION: 108.0.1462.76
   # until we use shared runners, this is default value
-  LATEST_EDGE_WINDOWS_VERSION:  79.0.309 
-
+  LATEST_EDGE_WINDOWS_VERSION:  79.0.309
+  
 # Jobs marked with that rule won't be triggered on pipelines for flaky 
 # debugging
-.flaky-run:
+.avoid-flaky-run:
   rules:
     # Do not trigger a merge request pipeline
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: never
     # Don't run automatically on commit that contains flaky
+    - if: $FLAKY == 'true'
+      when: manual
     - if: $CI_COMMIT_MESSAGE =~ /\[flaky]/
       when: manual
     # Run automatically if other conditions not filled
     - when: always
 
 # Used for jobs that will be included only in full set of tests
-.full-test-run:
+.all-browsers-test-run:
   rules:
     # Do not trigger a merge request pipeline
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: never
-    # Run automatically on master branch
-    - if: $CI_COMMIT_BRANCH == "master"
+    # Run full set when FULL is true
+    - if: $FULL == 'true'
       allow_failure: true
-    - if: $FULL == "true"
+    - if: $CI_COMMIT_BRANCH == "master"
       allow_failure: true
     # Run manually on all other branches
     - when: manual
@@ -82,7 +84,7 @@ audit:
     - npm audit --production
   allow_failure: true
   rules:
-    - !reference [.flaky-run, rules]
+    - !reference [.avoid-flaky-run, rules]
 
 lint:
   image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
@@ -101,7 +103,7 @@ lint:
   before_script:
     - npm install
   rules:
-    - !reference [.flaky-run, rules]
+    - !reference [.avoid-flaky-run, rules]
 
 unit:core:
   extends: .unit
@@ -132,7 +134,7 @@ func:scripts:
   script:
     - npm run test-scripts
   rules:
-    - !reference [.flaky-run, rules]
+    - !reference [.avoid-flaky-run, rules]
 
 func:bundle:
   image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
@@ -143,61 +145,74 @@ func:bundle:
     - job: build
       artifacts: true
   rules:
-    - !reference [.flaky-run, rules]
+    - !reference [.avoid-flaky-run, rules]
 
 .functional:
   stage: functional
+  timeout: 2 hours
   extends: .docker-image
   needs:
     - job: build
       artifacts: true
-  before_script:
-    - docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg SKIP_BUILD=1 .
   script:
-    - docker run --shm-size=512m -e TEST_PARAMS="$TEST_PARAMS" -e MODE="$CI_COMMIT_MESSAGE" functional
+        if echo "$FLAKY" | grep -q "true"; then
+          apk --update add nodejs npm;
+          npm install -g npm@latest;
+          npm install;
+          npm run measureTestFlakiness -- --testParams "$TEST_PARAMS" --dockerBuildFlag "--build-arg BROWSER=$BROWSER" --mode "$CI_COMMIT_MESSAGE" --runs 10;
+        else
+          docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER="$BROWSER" --build-arg SKIP_BUILD=1 .;
+          docker run --shm-size=512m -e TEST_PARAMS="$TEST_PARAMS" -e MODE="$CI_COMMIT_MESSAGE" functional;
+        fi 
 
 func:v2:chromium:stable:
   extends: .functional
   variables:
-    TEST_PARAMS: v2 chromium $LATEST_CHROME_VERSION
+    BROWSER: chromium $LATEST_CHROME_VERSION
+    TEST_PARAMS: v2 $BROWSER 
 
 func:v2:chromium:stable:incognito:
   extends: .functional
   variables:
-    TEST_PARAMS: v2 chromium $LATEST_CHROME_VERSION --incognito
+    BROWSER: chromium $LATEST_CHROME_VERSION
+    TEST_PARAMS: v2 $BROWSER --incognito
 
 func:v2-subs:chromium:stable:
   extends: .functional
   variables:
-    TEST_PARAMS: v2-custom chromium $LATEST_CHROME_VERSION
+    BROWSER: chromium $LATEST_CHROME_VERSION
+    TEST_PARAMS: v2-custom $BROWSER
 
 func:v2:chromium:oldest:
   extends: .functional
   variables:
-    TEST_PARAMS: v2 chromium $OLDEST_CHROME_VERSION
+    BROWSER: chromium $OLDEST_CHROME_VERSION
+    TEST_PARAMS: v2 $BROWSER
 
 func:v2:firefox:stable:
   extends: .functional
   variables:
-    TEST_PARAMS: v2 firefox $LATEST_FIREFOX_VERSION
+    BROWSER: firefox $LATEST_FIREFOX_VERSION
+    TEST_PARAMS: v2 $BROWSER 
 
 func:v2:firefox:incognito:
   extends: .functional
   variables:
-    TEST_PARAMS: v2 firefox $LATEST_FIREFOX_VERSION --incognito
+    BROWSER: firefox $LATEST_FIREFOX_VERSION
+    TEST_PARAMS: v2 $BROWSER --incognito
 
 func:v2:firefox:oldest:
   extends: .functional
   variables:
-    TEST_PARAMS: v2 firefox $OLDEST_FIREFOX_VERSION
+    BROWSER: firefox $OLDEST_FIREFOX_VERSION
+    TEST_PARAMS: v2 $BROWSER 
 
 # https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/369
 func:v2:firefox:update:incognito:
   extends: .functional
   variables:
-    TEST_PARAMS: v2 firefox $LATEST_FIREFOX_VERSION --testKinds update --incognito
-  rules:
-    - !reference [.flaky-run, rules]
+    BROWSER: firefox $LATEST_FIREFOX_VERSION
+    TEST_PARAMS: v2 $BROWSER --testKinds update --incognito
 
 .func:v2:windows:edge:
   stage: functional
@@ -237,101 +252,122 @@ func:v2:windows:edge:incognito:
 func:v3:chromium:stable:
   extends: .functional
   variables:
-    TEST_PARAMS: v3 chromium $LATEST_CHROME_VERSION --testKinds functional reload update
+    BROWSER: chromium $LATEST_CHROME_VERSION
+    TEST_PARAMS: v3 $BROWSER --testKinds functional reload update
    
 func:v3:chromium:stable:incognito:
   extends: .functional
   variables:
-    TEST_PARAMS: v3 chromium $LATEST_CHROME_VERSION --testKinds functional reload update --incognito
+    BROWSER: chromium $LATEST_CHROME_VERSION
+    TEST_PARAMS: v3 $BROWSER --testKinds functional reload update --incognito
 
 func:v3:edge:linux:
   extends: .functional
   variables:
-    TEST_PARAMS: v3 edge $LATEST_EDGE_VERSION --testKinds functional reload update
+    BROWSER: edge $LATEST_EDGE_VERSION
+    TEST_PARAMS: v3 $BROWSER --testKinds functional reload update
 
 # This jobs will be run on nightly runs of the pipeline or when triggered with "FULL" variable
 .functional-full:
   extends: .functional
   allow_failure: true
   rules:
-    - !reference [.full-test-run, rules]
+    - !reference [.all-browsers-test-run, rules]
 
 func:v2:chromium:beta:
   extends: .functional-full
   variables:
-    TEST_PARAMS: v2 chromium beta
+    BROWSER: chromium beta
+    TEST_PARAMS: v2 $BROWSER
 
 func:v2:chromium:dev:
   extends: .functional-full
   variables:
-    TEST_PARAMS: v2 chromium dev
+    BROWSER: chromium dev
+    TEST_PARAMS: v2 $BROWSER
 
 func:v2:chromium:latest:
   extends: .functional-full
   variables:
-    TEST_PARAMS: v2 chromium --testKinds functional reload update
+    BROWSER: chromium
+    TEST_PARAMS: v2 $BROWSER --testKinds functional reload update
 
 func:v2:firefox:beta:
   extends: .functional-full
   variables:
-    TEST_PARAMS: v2 firefox beta
+    BROWSER: firefox beta
+    TEST_PARAMS: v2 $BROWSER
 
 func:v3:chromium:latest:
   extends: .functional-full
   variables:
-    TEST_PARAMS: v3 chromium --testKinds functional reload update
+    BROWSER: chromium
+    TEST_PARAMS: v3 $BROWSER --testKinds functional reload update
 
 func:v2:firefox:latest:
   extends: .functional-full
   variables:
-    TEST_PARAMS: v2 firefox --testKinds functional reload update
+    BROWSER: firefox
+    TEST_PARAMS: v2 $BROWSER --testKinds functional reload update
 
 func:v2:edge:linux:latest:
   extends: .functional-full
   variables:
-    TEST_PARAMS: v2 edge --testKinds functional reload update
+    BROWSER: edge
+    TEST_PARAMS: v2 $BROWSER --testKinds functional reload update
 
 func:v3:edge:linux:latest:
   extends: .functional-full
   variables:
-    TEST_PARAMS: v3 edge --testKinds functional reload update
+    BROWSER: edge
+    TEST_PARAMS: v3 $BROWSER --testKinds functional reload update
 
 # Fuzz tests 
 
 .fuzz:
   extends: .functional
+  timeout: 3 hours 30 minutes
   stage: fuzz
   script:
-    - docker run --shm-size=512m -e TEST_PARAMS="v3 $BROWSER --testKinds fuzz --grep ^$FUNCTIONAL_AREA" functional
+        if echo "$FLAKY" | grep -q "true"; then
+          apk --update add nodejs npm;
+          npm install -g npm@latest;
+          npm install;
+          npm run measureTestFlakiness -- --testParams "v3 $BROWSER --testKinds fuzz --grep $FUNCTIONAL_AREA" --dockerBuildFlag "$DOCKER_BUILD_FLAG" --mode "$CI_COMMIT_MESSAGE" --runs 10;
+        else
+          docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg SKIP_BUILD=1 .;
+          docker run --shm-size=512m -e TEST_PARAMS="v3 $BROWSER --testKinds fuzz --grep $FUNCTIONAL_AREA" functional;
+        fi 
   parallel:
     matrix:
       - FUNCTIONAL_AREA:
-        - "(Blocking|Pop-up\\sblocking)"
-        - "(Element\\sHiding|Snippets)"
-        - "API\\sReporting"
-        - "API\\sNotifications"
-        - "API\\s(?!Reporting|Notifications)"
-        - "(?!Blocking|Pop-up\\sblocking|Element\\sHiding|Snippets|API)"
-  rules:
-    - !reference [.flaky-run, rules]
+        - "Blocking|Pop-up\\sblocking"
+        - "Element\\sHiding|Snippets"
+        - "API --grep Reporting"
+        - "API --grep Notifications"
+        - "API --grep !Reporting --grep !Notifications"
+        - "!Blocking --grep !Pop-up\\sblocking --grep !Element\\sHiding --grep !Snippets --grep !API"
 
 fuzz:v3:chromium:stable:
   extends: .fuzz
   variables:
     BROWSER: chromium $LATEST_CHROME_VERSION
+    TEST_PARAMS: $BROWSER
 
 fuzz:v3:chromium:stable:incognito:
   extends: .fuzz
   variables:    
-    BROWSER: chromium $LATEST_CHROME_VERSION --incognito
+    BROWSER: chromium $LATEST_CHROME_VERSION
+    TEST_PARAMS: $BROWSER  --incognito
   rules:
-    - !reference [.full-test-run, rules]
+    - !reference [.all-browsers-test-run, rules]
   
 # Fuzz tests is running on Edge 108 only so we don't need to increase timeout
 fuzz:v3:edge:linux:
   extends: .fuzz
   variables:    
     BROWSER: edge $LATEST_EDGE_VERSION
+    TEST_PARAMS: $BROWSER
 
 int:scripts:
   image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
@@ -348,7 +384,7 @@ int:scripts:
     - npm exec subs-convert -- -r
     - npm exec subs-generate
   rules:
-    - !reference [.flaky-run, rules]
+    - !reference [.avoid-flaky-run, rules]
 
 .pages:
   image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python

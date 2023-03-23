@@ -57,7 +57,9 @@ function parseArguments() {
     array: true,
     choices: ["functional", "reload", "update", "mv2-mv3-migrate", "fuzz"]
   });
-  parser.option("grep");
+  parser.option("grep"), {
+    array: true
+  };
 
   let {argv} = parser;
   let params;
@@ -66,7 +68,10 @@ function parseArguments() {
     if (typeof value != "undefined")
       (params || (params = {}))[param] = value;
   }
-
+  // we need to build regexp to allow to pas multiple grep flags
+  // and do && on them
+  if (params && params.grep)
+    params.grep = regexpFromGrep(params.grep);
   let testKinds = argv.testKinds;
   // default is specified here rather than using a yargs default
   // because it depends on another yargs option (the manifest).
@@ -95,6 +100,22 @@ function parseArguments() {
     testKinds,
     params
   };
+}
+
+function regexpFromGrep(grep) {
+  let grepped = Array.isArray(grep) ? grep : [grep];
+
+  // we need to check if we should exclude or include elements
+  let greppedString;
+  for (let element of grepped) {
+    // exclude
+    if (element.startsWith("!"))
+      greppedString = greppedString ? greppedString + "(?!.*" + element.slice(1) + ")" : "^(?!.*" + element.slice(1) + ")";
+    // include
+    else
+      greppedString = greppedString ? greppedString + "(?=.*" + element + ")" : "(?=.*" + element + ")";
+  }
+  return new RegExp(greppedString);
 }
 
 async function switchToHandle(driver, testFn) {
@@ -512,7 +533,7 @@ async function run() {
 
   try {
     let cap = await driver.getCapabilities();
-    console.log(`Browser: ${cap.getBrowserName()} ${cap.getBrowserVersion()}`);
+    console.log(`Browser used for tests: ${cap.getBrowserName()} ${cap.getBrowserVersion()}`);
     if (incognito) {
       await BROWSERS[browser].enableExtensionInIncognito(
         driver, "eyeo's Web Extension Ad Blocking Toolkit Test Extension");
