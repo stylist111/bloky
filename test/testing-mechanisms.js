@@ -22,20 +22,20 @@ import sinon from "sinon/pkg/sinon.js";
 import {isMV3, setMinTimeout, waitForAssertion,
         setEndpointResponse, clearEndpointResponse, TEST_ADMIN_PAGES_URL} from "./utils.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
-import {runInBackgroundPage} from "./messaging.js";
+import {runInBackgroundPage, waitForServiceWorkerInitialization}
+  from "./messaging.js";
 
 describe("Testing Mechanisms", function() {
   if (isMV3()) {
     describe("MV3 Service Workers", function() {
-      // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/307
       after(async function() {
         setMinTimeout(this, 12000);
         // From our observations, after a service worker is suspended it starts
         // up again when a message is sent to it. However, that restart seems to
         // cause lag spikes a few seconds after the service worker restarts.
-        // Sleeping is a workaround to ensure the API is fully responsive on
-        // subsequent tests.
-        await new Promise(r => setTimeout(r, 10000));
+        // Waiting for everything else to initialize is a workaround to ensure
+        // the API is fully responsive on subsequent tests.
+        await waitForServiceWorkerInitialization();
       });
 
       it("state is cleared when service worker is suspended", async function() {

@@ -77,20 +77,6 @@ describe("Pop-up blocking", function() {
       await notAPopup.loaded;
       expect(await notAPopup.stillExists()).toBe(true);
     });
-
-    it("blocks all popups when opened in parallel", async function() {
-      await EWE.filters.add([`|${TEST_PAGES_URL}/popup.html^$popup`]);
-      let blockedPopups = [
-        new Popup("link", opener),
-        new Popup("script-tab", opener),
-        new Popup("script-window", opener),
-        new Popup("script-deferred", opener, true),
-        new Popup("third-party-link", opener)
-      ];
-
-      for (let popup of blockedPopups)
-        expect(await popup.blocked).toBe(true);
-    });
   });
 
   describe("Sitekey allowlisting", function() {

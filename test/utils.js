@@ -20,6 +20,7 @@ import expect from "expect";
 
 import {fuzzSuspendServiceWorker, isFuzzingServiceWorker}
   from "./mocha/mocha-runner.js";
+import {waitForServiceWorkerInitialization} from "./messaging.js";
 
 export const TEST_PAGES_DOMAIN = "localhost";
 export const CROSS_DOMAIN = "127.0.0.1";
@@ -338,7 +339,12 @@ export class Popup {
     });
 
     this.blocked = new Promise((resolve, reject) => {
-      this.created.then(popupTabId => {
+      this.created.then(async popupTabId => {
+        if (isFuzzingServiceWorker())
+          await waitForServiceWorkerInitialization();
+
+        return popupTabId;
+      }).then(popupTabId => {
         let blockedResolved = false;
         function removeListeners() {
           browser.tabs.onRemoved.removeListener(onTabRemoved);
@@ -374,7 +380,7 @@ export class Popup {
               tolerance = 200;
 
             if (isFuzzingServiceWorker())
-              tolerance = 25000;
+              tolerance = 1000;
 
             if (tolerance > 0)
               setTimeout(onCompletedAfterWait, tolerance);
@@ -391,7 +397,7 @@ export class Popup {
         // asynchronously after the tab is created.
         browser.tabs.get(popupTabId).then(tab => {
           if (tab.url && tab.url != "about:blank" && tab.status == "complete")
-            onCompleted({tabId: tab.tabId, frameId: tab.frameId, url: tab.url});
+            onCompleted({tabId: popupTabId, frameId: 0, url: tab.url});
         }).catch(() => {
           // We are assuming that this error is because the tab
           // doesn't exist, and not some other error. This means it's

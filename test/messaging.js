@@ -152,3 +152,26 @@ export function clearTestEvents(name) {
 export function clearAllTestEvents() {
   data = {};
 }
+
+/**
+ * Pings the service worker and resolves when it is done initializing.
+ *
+ * Some tests, like popup blocking, need to wait to see if a popup was blocked
+ * or not. However, the time taken to startup and initialize is really variable,
+ * especially in the fuzz tests, so it's difficult to know how long to
+ * wait. With this function, we can wait for the service worker to be
+ * initialized, and then check if the popup was blocked, which cuts out some of
+ * the variability that the test needs to think about.
+ *
+ * Ideally we can in the future get to the point where startup is fast enough
+ * that we don't need this. See
+ * https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/307
+ **/
+export async function waitForServiceWorkerInitialization() {
+  await runInBackgroundPage([
+    {op: "getGlobal", arg: "EWE"},
+    {op: "getProp", arg: "testing"},
+    {op: "callMethod", arg: "_waitForInitialization"},
+    {op: "await"}
+  ], false);
+}

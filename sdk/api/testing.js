@@ -23,6 +23,7 @@ import {filterEngine} from "./core.js";
 import {Prefs, awaitSavingComplete, init as initPrefs} from "./prefs.js";
 import {default as debugging} from "./debugging.js";
 import {default as subs} from "./subscriptions.js";
+import {default as initializer} from "./initializer.js";
 import {setAddonInfo, addonBundledSubscriptionsPath} from "./info.js";
 import {removeDynamicFilters} from "./dnr-filters.js";
 import {IO} from "./io.js";
@@ -151,5 +152,9 @@ export default {
       filterStorage.clearStats();
       await filterStorage.loadFromDisk();
     }
+  },
+
+  async _waitForInitialization() {
+    await initializer.start();
   }
 };

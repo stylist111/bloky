@@ -96,7 +96,6 @@ async function checkPotentialPopup(popupTabId, url, opener) {
   if (!potentialPopups.has(popupTabId))
     return;
 
-
   let filter = filterEngine.defaultMatcher.match(
     url || BLANK_PAGE_URL, contentTypes.POPUP, docDomain, sitekey, specificOnly
   );
@@ -132,7 +131,7 @@ async function onCompleted({frameId, tabId, url}) {
   }
 }
 
-async function onTabRemoved({tabId}) {
+async function onTabRemoved(tabId) {
   await potentialPopups.remove(tabId);
 }
 

@@ -69,7 +69,7 @@ function onCompleted({frameId, url, tabId}) {
     forgetPopup(tabId);
 }
 
-function onTabRemoved({tabId}) {
+function onTabRemoved(tabId) {
   forgetPopup(tabId);
 }
 
