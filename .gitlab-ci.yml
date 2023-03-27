@@ -5,6 +5,7 @@ variables:
   npm_config_audit: "false"
   npm_config_fund: "false"
   npm_config_prefer_offline: "true"
+  RUN_ONLY_FLAKY_TESTS: "false"
 
   # Browser versions we use:
   LATEST_CHROME_VERSION: 109.0.5414.0
@@ -155,14 +156,20 @@ func:bundle:
     - job: build
       artifacts: true
   script:
+        if [ -z "${CI_COMMIT_MESSAGE##*"[flaky]"*}" ]; then
+          echo "Commit message contains [flaky] tag!";        
+          RUN_ONLY_FLAKY_TESTS=true;
+        else
+          RUN_ONLY_FLAKY_TESTS=false;
+        fi;
         if echo "$FLAKY" | grep -q "true"; then
           apk --update add nodejs npm;
           npm install -g npm@latest;
           npm install;
-          npm run measureTestFlakiness -- --testParams "$TEST_PARAMS" --dockerBuildFlag "--build-arg BROWSER=$BROWSER" --mode "$CI_COMMIT_MESSAGE" --runs 10;
+          npm run measureTestFlakiness -- --testParams "$TEST_PARAMS" --dockerBuildFlag "--build-arg BROWSER=$BROWSER" --runOnlyFlaky "$RUN_ONLY_FLAKY_TESTS" --runs 10;
         else
           docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER="$BROWSER" --build-arg SKIP_BUILD=1 .;
-          docker run --shm-size=512m -e TEST_PARAMS="$TEST_PARAMS" -e MODE="$CI_COMMIT_MESSAGE" functional;
+          docker run --shm-size=512m -e TEST_PARAMS="$TEST_PARAMS" -e RUN_ONLY_FLAKY="$RUN_ONLY_FLAKY_TESTS" functional;
         fi 
 
 func:v2:chromium:stable:
@@ -326,17 +333,23 @@ func:v3:edge:linux:latest:
 
 .fuzz:
   extends: .functional
-  timeout: 3 hours 30 minutes
+  timeout: 4 hours 30 minutes
   stage: fuzz
   script:
+       if [ -z "${CI_COMMIT_MESSAGE##*"[flaky]"*}" ]; then
+          echo "Commit message contains [flaky] tag!";        
+          RUN_ONLY_FLAKY_TESTS=true;
+        else
+          RUN_ONLY_FLAKY_TESTS=false;
+        fi;
         if echo "$FLAKY" | grep -q "true"; then
           apk --update add nodejs npm;
           npm install -g npm@latest;
           npm install;
-          npm run measureTestFlakiness -- --testParams "v3 $BROWSER --testKinds fuzz --grep $FUNCTIONAL_AREA" --dockerBuildFlag "$DOCKER_BUILD_FLAG" --mode "$CI_COMMIT_MESSAGE" --runs 10;
+          npm run measureTestFlakiness -- --testParams "v3 $BROWSER --testKinds fuzz --grep $FUNCTIONAL_AREA" --dockerBuildFlag "--build-arg BROWSER=$BROWSER" --runOnlyFlaky "$RUN_ONLY_FLAKY_TESTS" --runs 10;
         else
           docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg SKIP_BUILD=1 .;
-          docker run --shm-size=512m -e TEST_PARAMS="v3 $BROWSER --testKinds fuzz --grep $FUNCTIONAL_AREA" functional;
+          docker run --shm-size=512m -e TEST_PARAMS="v3 $BROWSER --testKinds fuzz --grep $FUNCTIONAL_AREA" -e RUN_ONLY_FLAKY="$RUN_ONLY_FLAKY_TESTS" functional;
         fi 
   parallel:
     matrix:
