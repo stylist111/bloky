@@ -27,7 +27,7 @@ const args = yargs(hideBin(process.argv))
         default: "v2 chromium",
         description: "Which tests to run"
       })
-      .option("runOnlyFLaky", {
+      .option("runOnlyFlaky", {
         type: "string",
         default: "false",
         description: "Set to true if you want to run only flaky tests"
@@ -57,7 +57,7 @@ let buildCommand = `docker build -t functional -f test/dockerfiles/functional.Do
 execSync(buildCommand, execOptions);
 
 // RUNNING CONTAINER
-let command = `docker run ${args.dockerRunFlags} -e TEST_PARAMS="${args.testParams}" -e RUN_ONLY_FLAKY="${args.runOnlyFLaky}" functional`;
+let command = `docker run ${args.dockerRunFlags} -e TEST_PARAMS="${args.testParams}" -e RUN_ONLY_FLAKY="${args.runOnlyFlaky}" functional`;
 console.log(`This command will be run ${args.runs} times: ${command}`);
 let failureCount = 0;
 let errorsThrown = [];

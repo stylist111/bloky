@@ -9,7 +9,6 @@ XVFB_CMD=" "
 if [[ "$TEST_PARAMS" =~ (chromium|edge|incognito) ]]; then
   XVFB_CMD="xvfb-run -a"
 fi
-echo "RUN_ONLY_FLAKY: $RUN_ONLY_FLAKY"
 
 npm run test-server &
 
