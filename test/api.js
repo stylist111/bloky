@@ -198,10 +198,6 @@ describe("API", function() {
     });
 
     it("gets user subscriptions for a filter", async function() {
-      // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/339
-      if (isMV3())
-        this.skip();
-
       await addFilter(VALID_FILTER_TEXT);
       expect(await EWE.subscriptions.getForFilter(VALID_FILTER_TEXT)).toEqual([
         expect.objectContaining({
