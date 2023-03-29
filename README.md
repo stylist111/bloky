@@ -31,9 +31,6 @@ for further information.
   * [Building the documentation](#building-the-documentation)
   * [Linting the code](#linting-the-code)
 * [Testing](#testing)
-  * [Functional tests](#functional-tests)
-  * [Integration tests](#integration-tests)
-  * [Non-functional tests](#non-functional-tests)
 * [Events](#events)
 * [Supporting Manifest V3](#manifest-v3)
 
@@ -367,230 +364,9 @@ npm run build -- --env release
 
     npm run lint
 
-## Testing
-
-### Core tests
-
-The tests for adblockpluscore can be run from the top level directory:
-
-    npm run test-core
-
-### Unit tests
-
-Some tests require mocking of production files.
-Mocked files are generated right in the test with `mock(..)` or `cachedMock(...)` automatically.
-However one can generate the mocked file passing the filename from `/sdk/api/` directory:
-
-    npx webpack --config ./test/unit/mock/webpack.config.js --env filename="subscriptions.js"
-    
-Run the unit tests:
-
-    npm run unittest
-
-### Functional tests
-
-#### Serving the test pages
-
-Regardless of whether you're manually loading the test extension, or using
-the test runner, functional test suites require locally served test pages.
-
-    npm run test-server
-
-##### Web bundle
-
-The tests for the web bundle blocking require a `.wbn` file. The one
-currently used is provided in the tree. However, if it needs to be
-regenerated, there is `test/tools/webbundle-builder.js` to be run from
-the top-level. The content is fixed in the script, so simply
-re-running it shouldn't yield any difference. It relies on the `wbn`
-module that will be installed as a development dependency.
-
-#### Using the test extension
-
-The test extension will be built on both `/dist/test-mv2` and `/dist/test-mv3`
-folders, which can be loaded as unpacked extensions under `chrome://extensions`
-in Chromium-based browsers, and under `about:debugging` in Firefox.
-Once the extension is loaded, it opens the test suite in a new tab.
-
-Notes:
-- `test-mv2` contains a manifest version 2 extension, and `test-mv3`
-contains a manifest version 3 extension.
-- `test-mv2-custom` contains a manifest version 2 extension using custom (test)
-subscriptions.
-- For the popup tests to work, you have to disable the browser's
-built-in popup blocking (on `localhost`).
-
-You can also inspect the extension's background page to manually test the API
-through the global `EWE` object.
-
-##### Test options
-
-- The `timeout` option overrides the per-test timeout in milliseconds.
-- The `grep` option filters the tests to run with a regular expression. 
-You can use multiple `--grep` flags in one run, by default they will be 
-combined as look ahead positive (test must include A & B), you can use
-look ahead negative (exclude) by passing `!` in front of sentence. 
-For example: 
-`--grep API --grep \!Reporting --grep \!Subscriptions` 
-Will call all tests in API except Reporting and Subscriptions
-- The `incognito` checkbox is used to inform the tests whether the
-browser started in incognito/private mode or not. This does not cause
-tests to run in incognito mode.
-- The `forceHeadful` checkbox is used to inform the tests whether the
-browser started in headless mode or not. By default tests are run in 
-headless mode for firefox & chrome >111. 
-- The `testKinds` option is used to run only a certain subset of the
-functional tests. For example, you can target only the service worker
-fuzzing tests by running `--testKinds fuzz`, or a combination of the
-functional, reload and update tests by running tests with
-`--testKinds functional reload update mv2-mv3-migrate`.
-
-#### Using the test runner
-
-```
-npm test -- {v2|v3|v2-custom} {chromium|firefox|edge} [version|channel] [options]
-```
-
-Runner [options](#test-options) need to be preceded by two dashes (`--`), for
-example `--timeout 10000`.
-
-In the test runner context, the `--incognito` flag forces the browser to start
-in incognito/private mode. This is only supported by Firefox.
-
-##### Using the test runner on docker
-
-The CI/CD pipeline runs the functional tests using [this docker image](https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/blob/master/test/dockerfiles/functional.Dockerfile).
-Using docker locally to run the same tests may be useful to recreate the
-infrastructure the CI uses:
-
-```
-docker build -t functional -f test/dockerfiles/functional.Dockerfile .
-docker run --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" -it functional
-```
-
-Please notice that the `TEST_PARAMS` argument can also take the additional
-options described previously.
-
-To run the core tests only:
-```
-docker build -t core -f test/dockerfiles/core.Dockerfile .
-docker run --shm-size=512m --cpus=1 --memory=3.75g TEST_PARAMS="(path to the test to run)" -it core
-```
-
-##### Tip: Matching CI system resources
-
-The following resources setup on a local macOS Docker installation has
-proven to be close enough to the [Gitlab linux shared
-runners](https://docs.gitlab.com/ee/ci/runners/saas/linux_saas_runner.html)
-behaviour:
-
-- CPUs: 1
-- Memory: 1.75 GB
-- Swap: 1.5 GB
-
-This can also by done by adding the flags `--cpus=1 --memory=3.75g` to `docker run`.
-
-```
-docker run --cpus=1 --memory=3.75g {other flags as above}
-```
-
-##### Tip: Maintaining browser cache
-If you plan to work on one image by reruning tests (f.ex to investigate flakiness) 
-you can download it to the docker image and cache it.
-
-To do so please add `BROWSER` argument to the build command as follow: 
-
-```
-docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER=chromium .
-```
-
-Note: This works only on linux machines.
-If you have a slow internet connection or are running the test many
-times, you can add the following flags to `docker run` to use the
-browser download cache from the host machine.
-
-```
--v $(pwd)/browser-snapshots:/webext-sdk/browser-snapshots
-```
-
-#### Testing flaky tests
-
-Flaky tests in our CI pipelines are annoying because they don't fail
-or succeed every time. To help in measuring if a fix improves these,
-you can run the `measureTestFlakiness` test to see the percentage of
-test runs that fail.
-
-```
-npm run measureTestFlakiness
-```
-
-This script has various options to tweak how many runs to do, which
-tests to run, or the docker options to use. You can run the script
-with the `--help` option for a list of options.
-
-```
-npm run measureTestFlakiness -- --help
-```
-
-NOTE: In both cases, it is recommended to cache browser when building image
-to save execution time (by passing --build-arg BROWSER=<browser to cache>). 
-
-``` 
-npm run measureTestFlakiness -- --testParams "v3 chromium --testKinds functional" --dockerBuildFlag "--build-arg BROWSER=chromium"
-```
-
-or 
-
-```
-docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER=chromium .
-docker run --shm-size=512m -e TEST_PARAMS="v3 chromium" functional
-```
-
-If you need to debug flaky tests on the pipeline, add [flaky] to the
-tests you want to run & then add [flaky] to the commit message. 
-This will trigger pipeline that will be extended with "flakiness check" jobs that
-run only tests marked flaky.
-
-If you wish to extend any pipeline with `measureTestFlakiness`  job, you can easily trigger pipeline from
-gitlab UI and pass variable "FLAKY" set to true. This will trigger pipeline with extended flakiness check jobs. 
-
-### Integration tests
-
-#### Building ABPUI extension and running testpages integration tests
-
-If there are no breaking changes in the code, you will be able to build
-ABPUI extension with current codebase. To build and extract the custom extension
-on Docker run the following commands:
-
-```
-docker build -t extension -f test/dockerfiles/extension.Dockerfile .
-docker run extension
-docker cp $(docker ps -aqf ancestor=extension):/extension .
-```
-
-The extension code uses the most recently released ABPUI Tag by default.
-
-`extension` folder will contain two versions: mv2 and mv3.
-
-To run testpages integration tests on Docker with the custom extension previously
-created, you may clone the [Testpages project](testpages-project) and follow
-the instructions on [how to run tests with packed extensions](https://gitlab.com/eyeo/adblockplus/abc/testpages.adblockplus.org#packed-extensions). Example:
-
-```
-cd testpages.adblockplus.org
-cp <location/to/extension/> .
-docker build -t testpages --build-arg EXTENSION_FILE="extension/extensionmv<2|3>.zip" .
-docker run --shm-size=512m -e SKIP_EXTENSION_DOWNLOAD="true" -e GREP="^.*$BROWSER((?!Snippets).)*\$" testpages
-```
-
-Note: At the moment the custom extension won't support snippets. That's why it
-is recommended to [use the GREP parameter](https://gitlab.com/eyeo/adblockplus/abc/testpages.adblockplus.org#grep)
-to exclude those tests. On a `zsh` shell (default for MacOS), the `!` symbol
-from the example above needs to be escaped (`\!`).
 
 </div>
 
-[abpui]: https://gitlab.com/eyeo/adblockplus/abpui/adblockplusui
 [builds]: https://gitlab.com/eyeo/webext/webext-sdk/-/jobs/artifacts/master/browse/dist?job=build
 [snippet-filters]: https://help.eyeo.com/adblockplus/snippet-filters-tutorial
 [snippets-project]: https://gitlab.com/eyeo/adblockplus/abp-snippets
@@ -598,19 +374,6 @@ from the example above needs to be escaped (`\!`).
 [dev]: https://gitlab.com/eyeo/webext/webext-sdk#development
 [notifications-module]: https://eyeo.gitlab.io/adblockplus/abc/webext-sdk/master/docs/#notifications
 [allowlisting-module]: https://eyeo.gitlab.io/adblockplus/abc/webext-sdk/master/docs/#allowlisting
-[testpages-project]: https://gitlab.com/eyeo/adblockplus/abc/testpages.adblockplus.org
-
-### Non-functional tests
-
-#### Bundle test
-
-Checks that the bundled code can be imported and re-bundled
-
-    npm run test-bundle
-
-#### Scripts test
-
-    npm run test-scripts
 
 ## Events
 
@@ -637,3 +400,8 @@ Use `addListener(...)` to subscribe and `removeListener(...)` to unsubscribe.
 See [the Manifest V3 documentation](docs/MANIFEST_V3.md) for further
 explanations.
 </div>
+
+
+## Testing 
+
+For full documentation about testing please refer to our [testing document](./docs/TESTING.md).
