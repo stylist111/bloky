@@ -57,6 +57,10 @@ describe(`Reload (${phase})`, function() {
   after(async function() {
     if (start) {
       await browser.storage.local.set({"reload-test-running": true});
+      // Even if we await for promise above, we still need to give browser time
+      // to complete setting flag, in other case in next steps we won't have
+      // flag set properly and reload.html won't load
+      await new Promise(r => setTimeout(r, 4500));
 
       return runInBackgroundPage([
         {op: "getGlobal", arg: "chrome"},
@@ -111,7 +115,7 @@ describe(`Reload (${phase})`, function() {
   });
 
   it("blocks a request using stored filters", async function() {
-    this.timeout(9000);
+    this.timeout(10000);
 
     if (start) {
       await addFilter(IMAGE_FILTER_TEXT);
