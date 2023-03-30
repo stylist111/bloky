@@ -34,19 +34,6 @@ export async function runInBackgroundPage(operations, fuzzEnabled = true) {
   return result;
 }
 
-export async function makeCallbackInBackgroundPage(callback) {
-  await fuzzSuspendServiceWorker();
-  let id = await browser.runtime.sendMessage({type: "ewe-test:make-callback"});
-
-  browser.runtime.onMessage.addListener(message => {
-    if (message.type == "ewe-test:call-callback" && message.id == id)
-      callback(...message.args);
-    return true;
-  });
-
-  return id;
-}
-
 function proxy(namespace) {
   return new Proxy(Object.create(null), {
     get(target, property) {

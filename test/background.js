@@ -133,17 +133,6 @@ function handleTestMessage(request, sender, sendResponse) {
       );
       return true;
 
-    case "ewe-test:make-callback":
-      let id = ++callbackIdCounter;
-      let tabId = sender.tab.id;
-
-      callbacks.set(id, (...args) => {
-        let message = {type: "ewe-test:call-callback", id, args};
-        chrome.tabs.sendMessage(tabId, message);
-      });
-      sendResponse(id);
-      break;
-
     case "ewe-test:getMessages": {
       sendResponse(messages.map(arg => arg.request));
       return true;
