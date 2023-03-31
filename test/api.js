@@ -20,7 +20,7 @@ import expect from "expect";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 
 import {Page, Popup, setMinTimeout, wait, waitForAssertion, executeScript,
-        isFirefox, isEdge, isChromiumBased, isIncognito, SITEKEY,
+        isFirefox, isEdge, isIncognito, SITEKEY,
         getVisibleElement, isMV3, expectElemHideVisible, expectElemHideHidden,
         TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN,
         isMV2CustomSubsExtension, TEST_MV3_SUBSCRIPTION,
@@ -1584,11 +1584,6 @@ describe("API", function() {
     });
 
     it("informs when the filter engine runs for the first time", async function() {
-      // Skipping because webext has a bug in chromium browsers in incognito
-      // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/311
-      if (isChromiumBased() && isIncognito())
-        this.skip();
-
       let expectedFoundStorage = false;
       if (isFuzzingServiceWorker())
         expectedFoundStorage = expect.any(Boolean);
@@ -1606,6 +1601,33 @@ describe("API", function() {
         {op: "callMethod", arg: "start"},
         {op: "await"}
       ]);
+
+      // This is temporary solution to see if it will stabilise tests
+      // test will still fail but at least we will know that solution worked
+      if (result.foundSubscriptions){
+        // eslint-disable-next-line no-console
+        console.log("result.foundSubscriptions is true while we expect false, retrying flow...");
+
+        await EWE.testing._clearStorage();
+
+        result = await runInBackgroundPage([
+          {op: "getGlobal", arg: "EWE"},
+          {op: "pushArg", arg: {
+            name: ADDON_NAME,
+            version: ADDON_VERSION,
+            bundledSubscriptions: [subEasylist, subCircumvention,
+                                   subAcceptableAds],
+            bundledSubscriptionsPath: "subscriptions"}},
+          {op: "callMethod", arg: "start"},
+          {op: "await"}
+        ]);
+        expect(result).toEqual({foundStorage: expectedFoundStorage,
+                                foundSubscriptions: false,
+                                warnings: []});
+
+        throw new Error("Had to retry flow, please remove this throw and leave flow as fix");
+      }
+
       expect(result).toEqual({foundStorage: expectedFoundStorage,
                               foundSubscriptions: false,
                               warnings: []});
@@ -1623,7 +1645,6 @@ describe("API", function() {
         {op: "callMethod", arg: "start"},
         {op: "await"}
       ]);
-
       expect(result).toEqual({foundStorage: expectedFoundStorage,
                               foundSubscriptions: true,
                               warnings: []});
