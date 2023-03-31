@@ -2,6 +2,9 @@ FROM registry.gitlab.com/eyeo/docker/get-browser-binary:node16
 
 ARG SKIP_BUILD=
 ARG BROWSER=
+COPY package*.json webext-sdk/
+RUN cd webext-sdk/ && npm install
+
 COPY . webext-sdk/
 WORKDIR webext-sdk/
 RUN npm config set timeout 10000
