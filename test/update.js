@@ -18,8 +18,8 @@
 import expect from "expect";
 import browser from "webextension-polyfill";
 
-import {TEST_MV3_SUBSCRIPTION,
-        isFirefox, isMV3, readFile, writeFile, setMinTimeout, wait, shouldBeBlocked} from "./utils.js";
+import {Page, TEST_MV3_SUBSCRIPTION,
+        isFirefox, isMV3, readFile, writeFile, setMinTimeout, wait} from "./utils.js";
 import {EWE, runInBackgroundPage} from "./messaging.js";
 import {isConnected, updateExtensionFiles} from "./mocha/mocha-runner.js";
 
@@ -104,7 +104,7 @@ describe(`Update (${phase}) (runner only)`, function() {
       // Page load sometimes occurs while the system isn't ready
       await new Promise(r => setTimeout(r, 50));
 
-      await shouldBeBlocked("image-from-subscription.html", "image-from-subscription.png");
+      await new Page("image-from-subscription.html").expectResource("image-from-subscription.png").toBeBlocked();
     }
     finally {
       // restore from back-up

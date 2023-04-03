@@ -24,7 +24,7 @@ import {Page, Popup, setMinTimeout, wait, waitForAssertion, executeScript,
         getVisibleElement, isMV3, expectElemHideVisible, expectElemHideHidden,
         TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN,
         isMV2CustomSubsExtension, TEST_MV3_SUBSCRIPTION,
-        TEST_MV3_SUBSCRIPTION_2, TEST_MV3_SUBSCRIPTION_3, shouldBeBlocked,
+        TEST_MV3_SUBSCRIPTION_2, TEST_MV3_SUBSCRIPTION_3,
         shouldBeLoaded, setEndpointResponse} from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage,
         ensureEverythingHasSaved, getTestEvents,
@@ -612,8 +612,7 @@ describe("API", function() {
             type: "blocking"
           }
         );
-
-        await shouldBeBlocked("image-from-custom-filter.html", "image-from-custom-filter.png");
+        await new Page("image-from-custom-filter.html").expectResource("image-from-custom-filter.png").toBeBlocked();
 
         // update reply on the server to remove filter
         updatedReply = [
@@ -637,8 +636,7 @@ describe("API", function() {
             type: "blocking"
           }
         );
-
-        await shouldBeBlocked("image-from-custom-filter.html", "image-from-custom-filter.png");
+        await new Page("image-from-custom-filter.html").expectResource("image-from-custom-filter.png").toBeBlocked();
       });
 
       it("doesn't remove disabled custom filters which conflict with subscription filters but they remain disabled", async function() {
@@ -666,7 +664,7 @@ describe("API", function() {
             type: "blocking"
           }
         );
-        await shouldBeBlocked("image-from-custom-filter.html", "image-from-custom-filter.png");
+        await new Page("image-from-custom-filter.html").expectResource("image-from-custom-filter.png").toBeBlocked();
 
         await EWE.filters.disable(["/image-from-custom-filter.png^$image"]);
         userFilters = await EWE.filters.getUserFilters();
@@ -730,7 +728,7 @@ describe("API", function() {
         ].join("\n");
         await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
         await addSubscription();
-        await shouldBeBlocked("image-from-cv-subscription.html", "image-from-cv-subscription.png");
+        await new Page("image-from-cv-subscription.html").expectResource("image-from-cv-subscription.png").toBeBlocked();
 
         // update reply on the server to remove filter
         updatedReply = "[Adblock Plus]";
@@ -778,7 +776,7 @@ describe("API", function() {
         }
 
         await shouldBeLoaded("image-from-cv-subscription.html", "image-from-cv-subscription.png");
-        await shouldBeBlocked("image-from-cv-subscription.html", "image-for-filter-that-should-be-untouched.png");
+        await new Page("image-from-cv-subscription.html").expectResource("image-for-filter-that-should-be-untouched.png").toBeBlocked();
 
         // update reply on the server
         let updatedReplyForRemoval = [
@@ -789,7 +787,7 @@ describe("API", function() {
         await EWE.subscriptions.sync();
         await checkSynchronization("/image-from-cv-subscription.png^$image");
 
-        await shouldBeBlocked("image-from-cv-subscription.html", "image-from-cv-subscription.png");
+        await new Page("image-from-cv-subscription.html").expectResource("image-from-cv-subscription.png").toBeBlocked();
         await shouldBeLoaded("image-from-cv-subscription.html", "image-for-filter-that-should-be-untouched.png");
       });
     });
@@ -890,8 +888,7 @@ describe("API", function() {
             type: "blocking"
           }
         );
-
-        await shouldBeBlocked("image-from-custom-filter.html", "image-from-custom-filter.png");
+        await new Page("image-from-custom-filter.html").expectResource("image-from-custom-filter.png").toBeBlocked();
       });
 
       it("remove custom filter that is already on subscription as a custom filter only", async function() {
@@ -913,7 +910,7 @@ describe("API", function() {
         await EWE.filters.remove(["/image-from-custom-filter.png^$image"]);
         expect(await EWE.filters.getUserFilters().length).toEqual(0);
 
-        await shouldBeBlocked("image-from-custom-filter.html", "image-from-custom-filter.png");
+        await new Page("image-from-custom-filter.html").expectResource("image-from-custom-filter.png").toBeBlocked();
       });
     });
 

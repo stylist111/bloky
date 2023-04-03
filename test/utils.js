@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /*
  * This file is part of eyeo's Web Extension Ad Blocking Toolkit (EWE),
  * Copyright (C) 2006-present eyeo GmbH
@@ -275,9 +276,12 @@ export class Resource {
   }
 
   async expectToBeBlocked() {
-    expect(await this.error).toEqual(expect.objectContaining({
-      error: expect.stringMatching(/^(net::ERR_BLOCKED_BY_CLIENT|NS_ERROR_ABORT)$/)
-    }));
+    await wait(
+      async() => {
+        let errorFromConsole = await this.error;
+        return (errorFromConsole.error == "NS_ERROR_ABORT") ||
+          (errorFromConsole.error == "net::ERR_BLOCKED_BY_CLIENT");
+      }, 1000, "Expected element is not blocked.");
   }
 
   // The "aborted" error is emitted for subresources loaded from
@@ -612,20 +616,6 @@ export async function waitForHighlightedStyle(timeout = 5000) {
   }, timeout, "Style is not highlighted");
 
   return style;
-}
-
-export async function shouldBeBlocked(pageUrl, resource, errorMessage) {
-  await wait(
-    async() => {
-      try {
-        await new Page(pageUrl).expectResource(resource).toBeBlocked();
-        return true;
-      }
-      catch (e) {
-      }
-      return false;
-    }, 4000, errorMessage ? errorMessage : `${resource} on ${pageUrl} was not blocked`
-  );
 }
 
 export async function shouldBeLoaded(pageUrl, resource, errorMessage) {

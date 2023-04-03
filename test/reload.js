@@ -18,7 +18,7 @@
 import expect from "expect";
 import browser from "webextension-polyfill";
 
-import {Page, wait, isMV3, isFirefox, shouldBeBlocked, TEST_MV3_SUBSCRIPTION, waitForHighlightedStyle, isIncognito} from "./utils.js";
+import {Page, wait, isMV3, isFirefox, TEST_MV3_SUBSCRIPTION, waitForHighlightedStyle, isIncognito} from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, ensureEverythingHasSaved}
   from "./messaging.js";
 
@@ -128,11 +128,9 @@ describe(`Reload (${phase})`, function() {
       return;
     }
 
-
     // we have to give browser some time to load the page
     await new Promise(resolve => setTimeout(resolve, 300));
-    await shouldBeBlocked("image.html", "image.png", "Image was not blocked");
-
+    await new Page("image.html").expectResource("image.png").toBeBlocked();
     await EWE.filters.remove([IMAGE_FILTER_TEXT]);
   });
 
