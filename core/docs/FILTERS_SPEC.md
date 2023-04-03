@@ -1,5 +1,4 @@
-Spec for the filters syntax
-===========================
+# Spec for the filters syntax
 
 Specification of the Adblock Plus filter syntax.
 
@@ -45,6 +44,7 @@ Firefox browsers don't support web bundles, this options has no effect
 (it will never match).
 
 An example of a web bundle:
+
 ```js
 <script type="webbundle">
 {

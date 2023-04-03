@@ -15,8 +15,8 @@ variables:
   LATEST_EDGE_VERSION: 108.0.1462.76
   # until we use shared runners, this is default value
   LATEST_EDGE_WINDOWS_VERSION:  79.0.309
-  
-# Jobs marked with that rule won't be triggered on pipelines for flaky 
+
+# Jobs marked with that rule won't be triggered on pipelines for flaky
 # debugging
 .avoid-flaky-run:
   rules:
@@ -94,6 +94,7 @@ lint:
     - npm install
   script:
     - npm run lint
+    - npm run markdownlint
 
 # Unit tests
 
@@ -157,7 +158,7 @@ func:bundle:
       artifacts: true
   script:
         if [ -z "${CI_COMMIT_MESSAGE##*"[flaky]"*}" ]; then
-          echo "Commit message contains [flaky] tag!";        
+          echo "Commit message contains [flaky] tag!";
           RUN_ONLY_FLAKY_TESTS=true;
         else
           RUN_ONLY_FLAKY_TESTS=false;
@@ -170,13 +171,13 @@ func:bundle:
         else
           docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER="$BROWSER" --build-arg SKIP_BUILD=1 .;
           docker run --shm-size=512m -e TEST_PARAMS="$TEST_PARAMS" -e RUN_ONLY_FLAKY="$RUN_ONLY_FLAKY_TESTS" functional;
-        fi 
+        fi
 
 func:v2:chromium:stable:
   extends: .functional
   variables:
     BROWSER: chromium $LATEST_CHROME_VERSION
-    TEST_PARAMS: v2 $BROWSER 
+    TEST_PARAMS: v2 $BROWSER
 
 func:v2:chromium:stable:incognito:
   extends: .functional
@@ -200,7 +201,7 @@ func:v2:firefox:stable:
   extends: .functional
   variables:
     BROWSER: firefox $LATEST_FIREFOX_VERSION
-    TEST_PARAMS: v2 $BROWSER 
+    TEST_PARAMS: v2 $BROWSER
 
 func:v2:firefox:incognito:
   extends: .functional
@@ -212,7 +213,7 @@ func:v2:firefox:oldest:
   extends: .functional
   variables:
     BROWSER: firefox $OLDEST_FIREFOX_VERSION
-    TEST_PARAMS: v2 $BROWSER 
+    TEST_PARAMS: v2 $BROWSER
 
 # https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/369
 func:v2:firefox:update:incognito:
@@ -254,14 +255,14 @@ func:v2:windows:edge:incognito:
   script:
     - npm test -- v2 edge $LATEST_EDGE_WINDOWS_VERSION --incognito --timeout=10000
 
-# Functional MV3 tests 
+# Functional MV3 tests
 
 func:v3:chromium:stable:
   extends: .functional
   variables:
     BROWSER: chromium $LATEST_CHROME_VERSION
     TEST_PARAMS: v3 $BROWSER --testKinds functional reload update
-   
+
 func:v3:chromium:stable:incognito:
   extends: .functional
   variables:
@@ -329,7 +330,7 @@ func:v3:edge:linux:latest:
     BROWSER: edge
     TEST_PARAMS: v3 $BROWSER --testKinds functional reload update
 
-# Fuzz tests 
+# Fuzz tests
 
 .fuzz:
   extends: .functional
@@ -337,7 +338,7 @@ func:v3:edge:linux:latest:
   stage: fuzz
   script:
        if [ -z "${CI_COMMIT_MESSAGE##*"[flaky]"*}" ]; then
-          echo "Commit message contains [flaky] tag!";        
+          echo "Commit message contains [flaky] tag!";
           RUN_ONLY_FLAKY_TESTS=true;
         else
           RUN_ONLY_FLAKY_TESTS=false;
@@ -350,7 +351,7 @@ func:v3:edge:linux:latest:
         else
           docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg SKIP_BUILD=1 .;
           docker run --shm-size=512m -e TEST_PARAMS="v3 $BROWSER --testKinds fuzz --grep $FUNCTIONAL_AREA" -e RUN_ONLY_FLAKY="$RUN_ONLY_FLAKY_TESTS" functional;
-        fi 
+        fi
   parallel:
     matrix:
       - FUNCTIONAL_AREA:
@@ -369,16 +370,16 @@ fuzz:v3:chromium:stable:
 
 fuzz:v3:chromium:stable:incognito:
   extends: .fuzz
-  variables:    
+  variables:
     BROWSER: chromium $LATEST_CHROME_VERSION
     TEST_PARAMS: $BROWSER  --incognito
   rules:
     - !reference [.all-browsers-test-run, rules]
-  
+
 # Fuzz tests is running on Edge 108 only so we don't need to increase timeout
 fuzz:v3:edge:linux:
   extends: .fuzz
-  variables:    
+  variables:
     BROWSER: edge $LATEST_EDGE_VERSION
     TEST_PARAMS: $BROWSER
 

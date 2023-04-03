@@ -57,20 +57,21 @@ The webext-sdk is tested on the following minimum versions:
 
 Manifest V2:
 
-- Chromium 77
-- Firefox 68
-- Edge 79
+* Chromium 77
+* Firefox 68
+* Edge 79
 
 Manifest V3:
 
-- Chromium 109
-- Edge 108
+* Chromium 109
+* Edge 108
 
 ### Manifest for V2
 
 For Manifest V2, the extension's `manifest.json` is required to
 include the following configuration:
 
+<!-- markdownlint-disable fenced-code-language -->
 ```
 {
   "manifest_version": 2,
@@ -154,7 +155,10 @@ background script, that includes `ewe-api.js`.
 Please note that for the sample above, you need to make sure to set
 the value of `declarative_net_request` properly, [as shown in the
 decalrativeNetRequest
-documentaion](https://developer.chrome.com/docs/extensions/reference/declarativeNetRequest/#manifest). This mean you also need to add to your extension build the files that contains the rulesets declared in this section, as well as the text filter lists. Refer to [the Manifest V3 documentation](docs/MANIFEST_V3.md) for more details.
+documentation](https://developer.chrome.com/docs/extensions/reference/declarativeNetRequest/#manifest).
+This mean you also need to add to your extension build the files that contains
+the rulesets declared in this section, as well as the text filter lists. Refer
+to [the Manifest V3 documentation](docs/MANIFEST_V3.md) for more details.
 
 The permission `declarativeNetRequestWithHostAccess` requires the
 `host_permissions` to be `<all_urls>`. You could use the
@@ -204,6 +208,7 @@ import isolatedCode from "mv3.isolated.mjs";
 import injectedCode from "mv3.injected.mjs";
 EWE.snippets.setLibrary({isolatedCode, injectedCode});
 ```
+
 Note `mv3...` artifacts are required to be used for both MV2 and MV3.
 
 The integration of the machine learning models is expected to be done by clients
@@ -212,21 +217,24 @@ of the snippet library.
 ### Shared resources
 
 There are some shared resources that are used by both webext-sdk & production code:
-- `browser`
-  - Global is set by webextension-polyfill version 0.8.0.
-- `browser.runtime.connect()`/`browser.runtime.onConnect`
-  - Channel name is prefixed with "ewe:".
-- `browser.runtime.sendMessage()`/`browser.runtime.onMessage`
-  - Our messages are objects with a "type" property whose value is prefixed with "ewe:".
-- `indexedDB.open()`
-  - Database name is prefixed with "EWE".
-- Web page links
-  - Links used by module are prefixed with "abp:" or "https://subscribe.adblockplus.org/".
-- `browser.storage.local` and `browser.storage.session`
-  - Storage keys are prefixed with either "ewe:" or "abp:pref:".
 
-During initialization webext-sdk migrates legacy data from local storage to indexedDB.
-Files migrated have to be prefixed: ```file:```. Files prefixed with ```file:///``` will be ignored.
+* `browser`
+  * Global is set by webextension-polyfill version 0.8.0.
+* `browser.runtime.connect()`/`browser.runtime.onConnect`
+  * Channel name is prefixed with "ewe:".
+* `browser.runtime.sendMessage()`/`browser.runtime.onMessage`
+  * Our messages are objects with a "type" property whose value is prefixed with
+    "ewe:".
+* `indexedDB.open()`
+  * Database name is prefixed with "EWE".
+* Web page links
+  * Links used by module are prefixed with "abp:" or "https://subscribe.adblockplus.org/".
+* `browser.storage.local` and `browser.storage.session`
+  * Storage keys are prefixed with either "ewe:" or "abp:pref:".
+
+During initialization webext-sdk migrates legacy data from local storage to
+indexedDB. Files migrated have to be prefixed: ```file:```. Files prefixed with
+```file:///``` will be ignored.
 
 ### Notifications support
 
@@ -253,7 +261,9 @@ detail.
 New keypairs can be created with the correct algorithm and settings by
 using our keypair creation script.
 
-    npm run create-allowlisting-keypair
+```
+npm run create-allowlisting-keypair
+```
 
 See the Development section below for details on running our scripts
 and other EWE development tasks. Keys can also be generated using
@@ -270,27 +280,32 @@ For more information, please refer to the [API documention][docs].
 
 ## Development
 
-### Tested Browsers 
+### Tested Browsers
 
-webext-sdk CI pipeline currently perform automated tests on following versions:
-- Manifest v2: Chromium: 77 - 109
-- Manifest v3: Chromium 109
-- Firefox: 68 - 109
-- Edge v3 (linux): 108
-- Edge v2 (windows): 79 
+The CI pipeline performs automated tests on the following browser versions:
+
+* Manifest v2: Chromium: 77 - 109
+* Manifest v3: Chromium 109
+* Firefox: 68 - 109
+* Edge v3 (linux): 108
+* Edge v2 (windows): 79
 
 ### Prerequisites
 
-- Node >= 16.10.0
-- npm >= 7
+* Node >= 16.10.0
+* npm >= 7
 
 ### Installing/Updating dependencies
 
-    npm install
+```
+npm install
+```
 
 ### Building the library
 
-    npm run build
+```
+npm run build
+```
 
 #### Custom builds
 
@@ -358,12 +373,19 @@ npm run build -- --env release
 
 ### Building the documentation
 
-    npm run docs
+```
+npm run docs
+```
 
 ### Linting the code
 
-    npm run lint
+```
+# Javascript
+npm run lint
 
+# Markdown
+npm run markdownlint
+```
 
 </div>
 
@@ -374,14 +396,17 @@ npm run build -- --env release
 [dev]: https://gitlab.com/eyeo/webext/webext-sdk#development
 [notifications-module]: https://eyeo.gitlab.io/adblockplus/abc/webext-sdk/master/docs/#notifications
 [allowlisting-module]: https://eyeo.gitlab.io/adblockplus/abc/webext-sdk/master/docs/#allowlisting
+[abpui]:https://gitlab.com/adblockinc/ext/adblockplus/adblockplusui
 
 ## Events
 
 The library provides the listeners to observe the events:
+
 * `EWE.allowlisting.onUnauthorized`: Emitted when an allowlisting request is rejected
 * `EWE.filters`:
   * `onAdded`: Emitted when a new filter is added
-  * `onChanged`: Emitted when a filter is either enabled or disabled or metadata changed
+  * `onChanged`: Emitted when a filter is either enabled or disabled or
+     metadata changed
   * `onRemoved`: Emitted when a filter is removed
 * `EWE.subscriptions`:
   * `onAdded`: Emitted when a new subscription is added
@@ -392,16 +417,11 @@ The library provides the listeners to observe the events:
 
 Use `addListener(...)` to subscribe and `removeListener(...)` to unsubscribe.
 
-<div class="no-docs">
 ## Manifest V3
-</div>
 
-<div class="no-docs">
-See [the Manifest V3 documentation](docs/MANIFEST_V3.md) for further
+See [the Manifest V3 documentation](./docs/MANIFEST_V3.md) for further
 explanations.
-</div>
 
-
-## Testing 
+## Testing
 
 For full documentation about testing please refer to our [testing document](./docs/TESTING.md).

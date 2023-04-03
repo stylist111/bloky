@@ -1,3 +1,5 @@
+# Manifest V3
+
 <div class="no-docs">
 
 ## Table of contents
@@ -5,8 +7,8 @@
 * [Subscribing to events in MV3](#subscribing-to-events-in-mv3)
 * [MV3 subscriptions](#mv3-subscriptions)
   * [Basics](#basics)
-  * [Converting subscription lists to rulesets](#converting-subscription-lists-to-rulesets)
-  * [CLI scripts](#cli-scripts)
+  * [Converting filter lists to DNR rulesets](#converting-filter-lists-to-dnr-rulesets)
+  * [Command line scripts](#command-line-scripts)
   * [Custom subscriptions list](#custom-subscriptions-list)
   * [Adding subscriptions](#adding-subscriptions)
 
@@ -19,7 +21,7 @@ suspended at any time. This has interesting implications for event
 listeners. The following rule of thumb applies to browser events as
 well events provided by EWE:
 
-**All event listeners should be attached in the first turn of the event loop.**
+__All event listeners should be attached in the first turn of the event loop.__
 
 If you add an event listener after the first turn of the event loop,
 you will get all events that happen after you attach the event
@@ -46,6 +48,8 @@ A JSON file with subscription information, defining its details and where it
 should be fetched from.
 
 Example:
+
+<!-- markdownlint-disable fenced-code-language -->
 ```
 [
   {
@@ -65,11 +69,12 @@ Example:
 
 #### Subscriptions
 
-A text file with filtering rules, referenced by its URL or ID in subscription 
-lists is a _filter list_. In manifest V2, a subscription consist mostly filter 
+A text file with filtering rules, referenced by its URL or ID in subscription
+lists is a _filter list_. In manifest V2, a subscription consist mostly filter
 list, and it has a specific format.
 
 Example:
+
 ```
 [Adblock Plus 2.0]
 ! id: 8C13E995-8F06-4927-BEA5-6C885FB7EEBF
@@ -80,10 +85,11 @@ testpages.adblockplus.org###eh-id
 
 #### DNR rules and rulesets
 
-DNR rules are the filtering rule format used in Manifest V3. They are provided 
+DNR rules are the filtering rule format used in Manifest V3. They are provided
 in ruleset files, which are JSON formatted.
 
 Example:
+
 ```
 [
   {
@@ -100,12 +106,14 @@ Example:
   ...
 ]
 ```
+
 #### Manifest file changes
 
-To be able to filter any network requests, rulesets have to be listed in the 
+To be able to filter any network requests, rulesets have to be listed in the
 extension manifest file.
 
 Example:
+
 ```
 {
   "name": "eyeo's Web Extension Ad Blocking Toolkit Test Extension",
@@ -123,46 +131,48 @@ Example:
 }
 ```
 
-Keep in mind that there may be other changes that needs to be done in the 
-manifest file. Please refer to [official MV3 documentation](https://developer.chrome.com/docs/extensions/mv3/intro/mv3-migration/#updating-manifest-dot-json) for detailed 
-information.
+Keep in mind that there may be other changes that needs to be done in the
+manifest file. Please refer to [official MV3
+documentation](https://developer.chrome.com/docs/extensions/mv3/intro/mv3-migration/#updating-manifest-dot-json)
+for detailed information.
 
 ### Converting filter lists to DNR rulesets
 
-- Get at least one filter list.
-- (Optionally) merge several filter lists into a single one, or make changes.
-- Download filters.
-- Convert filters to DNR rules.
-- Add DNR ruleset information to the manifest file.
+* Get at least one filter list.
+* (Optionally) merge several filter lists into a single one, or make changes.
+* Download filters.
+* Convert filters to DNR rules.
+* Add DNR ruleset information to the manifest file.
 
-Depending on project structure and necessary customizations, every extension 
+Depending on project structure and necessary customizations, every extension
 will need a separate workflow to deal with this work.
 
 Several command-line scripts are available to help with this process.
 
 ### Command line scripts
 
-These scripts are designed to run one after another, using previous scripts 
-output as input, while allowing custom steps (for transforming data, etc.) in 
+These scripts are designed to run one after another, using previous scripts
+output as input, while allowing custom steps (for transforming data, etc.) in
 between to accomodate various workflows.
 
-In the most common use case (no specific requirements and changes needed) the 
+In the most common use case (no specific requirements and changes needed) the
 scripts calls chain might look as follows:
+
 ```
 # download default subscription list to "scriptsOutput/subscriptions_mv3.json"
 npm exec subs-init
 
-# merge all given subscription lists into 
+# merge all given subscription lists into
 # "scriptsOutput/custom-subscriptions.json"
-# in this case, there is only one subscription list, so effectively it is just 
+# in this case, there is only one subscription list, so effectively it is just
 # renamed.
 npm exec subs-merge
 
-# download subscriptions defined in "scriptsOutput/custom-subscriptions.json" to 
+# download subscriptions defined in "scriptsOutput/custom-subscriptions.json" to
 # "scriptsOutput/subscriptions"
 npm exec subs-fetch
 
-# convert all subscriptions in "scriptsOutput/subscriptions" to rulesets in 
+# convert all subscriptions in "scriptsOutput/subscriptions" to rulesets in
 # "scriptsOutput/rulesets"
 npm exec subs-convert
 
@@ -172,33 +182,37 @@ npm exec subs-generate
 
 #### subs-init
 
-Downloads default subscription list to given output file location. (Default 
-subscription list is located at 
+Downloads default subscription list to given output file location. (Default
+subscription list is located at
 `"https://easylist-downloads.adblockplus.org/v3/index.json"`.)
 
 Usage:
+
 ```
 npm exec subs-init -- [--output/-o output_file]
 ```
 
 Options:
-- `output`/`o`: Output file. Default: `"scriptsOutput/subscriptions_mv3.json"`
+
+* `output`/`o`: Output file. Default: `"scriptsOutput/subscriptions_mv3.json"`
 
 Example:
+
 ```
 npm exec subs-init -- -o output/subs.json
 ```
 
 #### subs-merge
 
-Merges subscription lists. This is useful for workflows in which a main 
+Merges subscription lists. This is useful for workflows in which a main
 subscription list needs to be merged with a custom one.
 
-If there is only one subscription list, this step can be skipped. However, then 
-`subs-fetch` script will not work with default options, as it by default expects 
+If there is only one subscription list, this step can be skipped. However, then
+`subs-fetch` script will not work with default options, as it by default expects
 output file of this script as input file.
 
 Usage:
+
 ```
 npm exec subs-merge -- [--input/-i input_file...]
                        [--output/-o output_file]
@@ -206,13 +220,15 @@ npm exec subs-merge -- [--input/-i input_file...]
 ```
 
 Options:
-- `input`/`i`: Input file(s). Default: `"scriptsOutput/subscriptions_mv3.json"`
-- `output`/`o`: Output file. Default: 
+
+* `input`/`i`: Input file(s). Default: `"scriptsOutput/subscriptions_mv3.json"`
+* `output`/`o`: Output file. Default:
   `"scriptsOutput/custom-subscriptions.json"`
-- `space`/`s`: Number of spaces to be used for indentation in the output file. 
+* `space`/`s`: Number of spaces to be used for indentation in the output file.
   Default: `0`
 
 Example:
+
 ```
 npm exec subs-merge -- -i /data/main_subs.json /tmp/product_subs.json -o /subs/merged.json -s 2
 ```
@@ -222,6 +238,7 @@ npm exec subs-merge -- -i /data/main_subs.json /tmp/product_subs.json -o /subs/m
 Downloads filter lists from the subscriptions defined in input files.
 
 Usage:
+
 ```
 npm exec subs-fetch -- [--input/-i input_file...]
                        [--output/-o output_dir]
@@ -229,25 +246,28 @@ npm exec subs-fetch -- [--input/-i input_file...]
 ```
 
 Options:
-- `input`/`i`: Input file(s). Default: 
+
+* `input`/`i`: Input file(s). Default:
   `"scriptsOutput/custom-subscriptions.json"`
-- `output`/`o`: Output directory. Default: `"scriptsOutput/subscriptions"`
-- `ignoreFetchErrors`/`ife`: Whether to ignore fetching errors. This is useful 
+* `output`/`o`: Output directory. Default: `"scriptsOutput/subscriptions"`
+* `ignoreFetchErrors`/`ife`: Whether to ignore fetching errors. This is useful
   when download URL might be unreliable. Default: `false`
 
 Example:
+
 ```
 npm exec subs-fetch -- -i subs/merged.json -o data/fetched -ife
 ```
 
 #### subs-convert
 
-Converts filter lists to [rulesets](#mv3-rules-and-rulesets). It is important to 
-note that conversion only applies to network request rules (aka URL filters). 
-Other filters will continue to be provided with the filter list files after this 
-step.
+Converts filter lists to [rulesets](#converting-filter-lists-to-dnr-rulesets).
+It is important to note that conversion only applies to network request rules
+(aka URL filters). Other filters will continue to be provided with the filter
+list files after this step.
 
 Usage:
+
 ```
 npm exec subs-convert -- [--input/-i input_dir]
                          [--output/-o output_dir]
@@ -256,23 +276,28 @@ npm exec subs-convert -- [--input/-i input_dir]
 ```
 
 Options:
-- `input`/`i`: Input directory. Default: `"scriptsOutput/subscriptions"`
-- `output`/`o`: Output directory. Default: `"scriptsOutput/rulesets"`
-- `report`/`r`: Boolean flag. If this flag is passed the report is generated. You can also use `--no-report` to force the report to not be generated. Default: `false`
-- `report-output`/`O`: Report directory. Default: `"scriptsOutput/report"`
+
+* `input`/`i`: Input directory. Default: `"scriptsOutput/subscriptions"`
+* `output`/`o`: Output directory. Default: `"scriptsOutput/rulesets"`
+* `report`/`r`: Boolean flag. If this flag is passed the report is generated.
+You can also use `--no-report` to force the report to not be generated.
+Default: `false`
+* `report-output`/`O`: Report directory. Default: `"scriptsOutput/report"`
 
 Example:
+
 ```
 npm exec subs-convert -- -i data/fetched -o data/rulesets -r -O data/report
 ```
 
 #### subs-generate
 
-Generates web extension manifest fragment. Contents of this file then has to be 
-added to the manifest file. See [Manifest file changes](#manifest-file-changes) 
+Generates web extension manifest fragment. Contents of this file then has to be
+added to the manifest file. See [Manifest file changes](#manifest-file-changes)
 for details.
 
 Usage:
+
 ```
 npm exec subs-generate -- [--input/-i input_dir]
                           [--output/-o output_file]
@@ -280,37 +305,42 @@ npm exec subs-generate -- [--input/-i input_dir]
 ```
 
 Options:
-- `input`/`i`: Input directory. Default: `"scriptsOutput/rulesets"`
-- `output`/`o`: Output file. Default: `"scriptsOutput/rulesets/rulesets.json"`
-- `prefix`/`p`: Prefix text to be used in the fragment. (This is mainly used for 
+
+* `input`/`i`: Input directory. Default: `"scriptsOutput/rulesets"`
+* `output`/`o`: Output file. Default: `"scriptsOutput/rulesets/rulesets.json"`
+* `prefix`/`p`: Prefix text to be used in the fragment. (This is mainly used for
   specifying the path.) Default: `""`
 
 Example:
+
 ```
 npm exec subs-generate -- -i data/rulesets -o data/rulesets.json -p path/to/rulesets/
 ```
 
-For convenience and testing purposes, running `npm run build` will automatically run the above scripts to create a meaningful subset of data used in our tests.
+For convenience and testing purposes, running `npm run build` will automatically
+run the above scripts to create a meaningful subset of data used in our tests.
 
 ### Custom subscriptions list
 
-The default provided subscriptions can be overridden by adding a file called 
-`custom-subscriptions.json` in the `scriptsOutput` directory and then using the 
-following command: 
-`npm run subs-merge -- [-i ...] -o $(pwd)/scriptsOutput/custom-subscriptions.json` 
+The default provided subscriptions can be overridden by adding a file called
+`custom-subscriptions.json` in the `scriptsOutput` directory and then using the
+following command:
+`npm run subs-merge -- [-i ...] -o $(pwd)/scriptsOutput/custom-subscriptions.json`
 to merge the files.
 
 Note the following:
+
 * use `-i` argument to add a file to the list of input files if necessary
-* one can use `$(pwd)` on nix-based environments or 
+* one can use `$(pwd)` on nix-based environments or
   `../../custom-subscriptions.json` for convenience
-* By default these scripts output ruleset files into a folder called 
-  `scriptsOutput/rulesets` and the full subscription files into 
+* By default these scripts output ruleset files into a folder called
+  `scriptsOutput/rulesets` and the full subscription files into
   `scriptsOutput/subscriptions`.
 
 Examples:
 
 * merge product-specific subscriptions file with default subscriptions:
+
 ```
 npm run subs-merge -- \
   -i /tmp/product-subscriptions.json \
@@ -318,6 +348,7 @@ npm run subs-merge -- \
 ```
 
 * merge two subscriptions files:
+
 ```
 npm run subs-merge -- \
   -i /tmp/product-subscriptions.json \
@@ -326,6 +357,7 @@ npm run subs-merge -- \
 ```
 
 The scripts are also available via npm symlinks:
+
 ```
 npm exec subs-init -- -t mv3
 npm exec subs-merge [-- -i ... -o ...]

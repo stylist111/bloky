@@ -2,7 +2,8 @@
 
 ## Testing core
 
-``` 
+<!-- markdownlint-disable fenced-code-language -->
+```
 npm run test-core
 ```
 
@@ -12,7 +13,7 @@ npm run test-core
 npx webpack --config ./test/unit/mock/webpack.config.js --env filename="subscriptions.js"
 ```
 
-## Run the unit tests:
+## Run the unit tests
 
 ```
 npm run unittest
@@ -32,14 +33,14 @@ npm run test-scripts
 
 ## Start test server
 
-``` 
+```
 npm run test-server
 ```
 
 ## Run tests with test-runner
 
 ```
-npm test -- {v2|v3|v2-custom} {chromium|firefox|edge} [version|channel] --timeout 10000 --incognito 
+npm test -- {v2|v3|v2-custom} {chromium|firefox|edge} [version|channel] --timeout 10000 --incognito
 ```
 
 ## Docker runs
@@ -55,6 +56,7 @@ docker run --shm-size=128m --cpus=1 --memory=3.75g TEST_PARAMS="(path to the tes
 ```
 
 ### Func:webext
+
 ```
 docker build -t functional -f test/dockerfiles/functional.Dockerfile .
 ```
@@ -70,6 +72,7 @@ docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg
 ```
 
 ### Run docker for tests with [flaky] tag
+
 ```
 // Building container
 docker build -t functional -f test/dockerfiles/functional.Dockerfile .
@@ -78,7 +81,8 @@ docker build -t functional -f test/dockerfiles/functional.Dockerfile .
 docker run --shm-size=512m -e TEST_PARAMS="v3 chromium" -e RUN_ONLY_FLAKY="true" functional
 ```
 
-Code above will run tests only once. If you want to run docker multiple times in a row use the command below. 
+Code above will run tests only once. If you want to run docker multiple times
+in a row use the command below.
 
 ```
 npm run measureTestFlakiness -- --testParams "v3 chromium"  --dockerBuildFlag "--build-arg BROWSER=chromium" --runOnlyFlaky "true"
@@ -87,7 +91,7 @@ npm run measureTestFlakiness -- --testParams "v3 chromium"  --dockerBuildFlag "-
 ### Measure flakiness for whole test suite
 
 ```
-npm run measureTestFlakiness -- --testParams "v3 chromium" --dockerBuildFlag "--build-arg BROWSER=chromium" 
+npm run measureTestFlakiness -- --testParams "v3 chromium" --dockerBuildFlag "--build-arg BROWSER=chromium"
 ```
 
 ## I just want to run the tests on my machine, give me the command

@@ -1,5 +1,4 @@
-Adblock Plus core
-=================
+# Adblock Plus core
 
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](./CODE_OF_CONDUCT.md)
 
@@ -7,8 +6,7 @@ This repository contains the generic Adblock Plus code that's shared between
 platforms. This repository is __not designed to be used directly__, but instead
 to serve as a dependency for `adblockpluschrome` and `libadblockplus`.
 
-Contributing
-------------
+## Contributing
 
 Please follow the [code style](docs/CODE_STYLE.md). Most of the rules
 are enforced by the linter (see below).
@@ -18,9 +16,7 @@ are enforced by the linter (see below).
 All contributors to this project are required to read, and follow, our
 [code of conduct](./CODE_OF_CONDUCT.md).
 
-
-Resources
----------
+## Resources
 
 One of the feature of Adblock Plus is to allow redirecting requests to
 inactive versions of a resource (script, image, or media).
@@ -49,9 +45,7 @@ Adding the new resource for `$redirect`:
   `data/resources.js`. This file is also managed by the version control
   system and should be part of the checkin.
 
-
-Running the unit tests
-----------------------
+## Running the unit tests
 
 ### Requirements
 
@@ -80,9 +74,9 @@ and Firefox. You can select which runners to use by setting the
 BROWSER_TEST_RUNNERS environment, the default is
 "chromium_remote,firefox". Possible values (separated by a ',') are:
 
-- "chromium_remote": Chromium 60 (using the remote interface)
-- "chromium": Chromium 77 (using WebDriver)
-- "firefox": Firefox 57 (using WebDriver)
+* "chromium_remote": Chromium 60 (using the remote interface)
+* "chromium": Chromium 77 (using WebDriver)
+* "firefox": Firefox 57 (using WebDriver)
 
 You can not set a specific version of the browser at runtime.
 
@@ -91,6 +85,7 @@ to disable headless mode on the WebDriver controlled tests, set the
 BROWSER_TEST_HEADLESS environment to 0.
 
 ### Integration tests
+
 [testpages](https://gitlab.com/eyeo/adblockplus/abc/testpages.adblockplus.org)
 tests check `adblockpluscore` integration with ABP.
 To run them locally, you need to install [Docker](https://www.docker.com/).
@@ -105,12 +100,14 @@ docker run extensionforcore
 docker cp $(docker ps -aqf ancestor=extensionforcore):/extension .
 ```
 
-The extension code uses the most recently released ABPUI Tag by default. 
-`extension` folder will contain two versions: mv2 and mv3. 
+The extension code uses the most recently released ABPUI Tag by default.
+`extension` folder will contain two versions: mv2 and mv3.
 
 To run testpages integration tests on Docker with the custom extension previously
 created, you may clone the [Testpages project](testpages-project) and follow
-the instructions on [how to run tests with packed extensions](https://gitlab.com/eyeo/adblockplus/abc/testpages.adblockplus.org#packed-extensions). Example:
+the instructions on [how to run tests with packed
+extensions](https://gitlab.com/eyeo/adblockplus/abc/testpages.adblockplus.org#packed-extensions).
+Example:
 
 ```sh
 cd testpages.adblockplus.org
@@ -131,14 +128,12 @@ should run using `GREP` as follows:
 docker run -e GREP="chromium latest" -it testpages
 ```
 
-Linting
--------
+## Linting
 
 You can lint the code using [ESLint](http://eslint.org) by running
 `npm run lint`.
 
-Benchmarking
-------------
+## Benchmarking
 
 We do care about performance, and we want to keep an eye on changes that might
 degrade the previous state.
@@ -186,17 +181,17 @@ requirements - remove benchmarkresults.json manually. Next run with
 
 Both Matching & Filtering measurements requires filters to measure against.
 You can manipulate which set of filter lists to use by  setting proper flags:
-``` --filter-list=All ``` for filter lists
-supported flags:
-- All for all filter lists (Easylist, Easylist+AA, Testpages, Easyprivacy)
-- EasyList+AA for Easylist +AA
-- EasyList for Easylist only
+`--filter-list=All` for filter lists supported flags:
 
-```  --match-list=slowlist ``` for matching filter lists
-supported flags:
-- slowlist (for list of slow filters)
-- unitlist (for list used in unit tests)
-- all (for combination of slowfilters & unittests)
+* All for all filter lists (Easylist, Easylist+AA, Testpages, Easyprivacy)
+* EasyList+AA for Easylist +AA
+* EasyList for Easylist only
+
+`--match-list=slowlist` for matching filter lists supported flags:
+
+* slowlist (for list of slow filters)
+* unitlist (for list used in unit tests)
+* all (for combination of slowfilters & unittests)
 
 #### Benchmark cache
 
@@ -218,52 +213,55 @@ This operations does *not* store results in the benchmark history, so it can
 be executed incrementally, while we code.
 
 #### Benchmark - matching
-Part of benchmark measurement is Matching against various filters.
-When benchmark is run with flag: --match then by default it will run
-3 rounds of same matching per filters.
-Number of rounds can be adjusted by changing ```--rounds``` argument in benchmark run:
-`node --expose-gc benchmark.js --matchList=slowlist --match --rounds=23 --dt`
+
+Part of benchmark measurement is Matching against various filters. When
+benchmark runs with the flag `--match` then by default it will run 3 rounds of
+the same matching per filter. The number of rounds can be adjusted by
+changing the `--rounds` argument in the benchmark run:
+
+```sh
+node --expose-gc benchmark.js --matchList=slowlist --match --rounds=23 --dt`
+```
 
 ### Benchmark results
 
 If we'd like to compare current changes with *heap* and *bootstrap* we had
-before, `npm run benchmark:compare` would take care of that, producing a
-table with differences between the previous, stored, state, and the current
+before, `npm run benchmark:compare` would take care of that, producing a table
+with differences between the previous, stored, state, and the current
 one.
 
 Please note that the comparison is always against most efficient results
 generated via all previous saved benchmarks.
 
-**Please note**, as benchmarks results might be compromised by various factors,
+__Please note__, as benchmarks results might be compromised by various factors,
 such as your computer dedicating CPU for other tasks while running, there is a
 threshold margin to consider, where only multiple, repeated, better scores can
 be considered an effective improvement, as running the same benchmark twice,
 might produce diversions between scores itself, without changing code at all.
 
-Documentation
--------------
+## Documentation
 
 The module documentation is generated with `jsdoc`. To generate the
 documentation use:
 
-```
+```sh
 npm run docs
 ```
 
-CI will generate the documentation for `master` and `next` branches. It is available at:
+CI will generate the documentation for `master` and `next` branches. It is
+available at:
 
-- For `next` (the development branch): [https://eyeo.gitlab.io/adblockplus/abc/adblockpluscore/next/docs/]
-- For `master` (the release branch): [https://eyeo.gitlab.io/adblockplus/abc/adblockpluscore/master/docs/]
+* For `next` (the development branch): [https://eyeo.gitlab.io/adblockplus/abc/adblockpluscore/next/docs/]
+* For `master` (the release branch): [https://eyeo.gitlab.io/adblockplus/abc/adblockpluscore/master/docs/]
 
-Node.js module
---------------
+## Node.js module
 
 adblockpluscore is available as an npm module for Node.js. See:
-    https://www.npmjs.com/package/adblockpluscore
+    <https://www.npmjs.com/package/adblockpluscore>
 
 You can install it with:
 
-```
+```sh
 npm install adblockpluscore
 ```
 
