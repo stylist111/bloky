@@ -184,6 +184,36 @@ describe("Filter storage", function() {
     assert.deepEqual(changes, ["subscription.removed https://test1/"], "Received changes");
   });
 
+  it("Clearing", async function() {
+    let subscription1 = Subscription.fromURL("https://test1/");
+    let subscription2 = Subscription.fromURL("https://test2/");
+    let filter1 = Filter.fromText("block_me");
+
+    assert.equal(Subscription.fromURL(subscription1.url), subscription1, "Subscription known before addition");
+
+    filterStorage.addSubscription(subscription1);
+    filterStorage.addSubscription(subscription2);
+
+    compareSubscriptionList("Initial state", [subscription1, subscription2], [subscription1, subscription2]);
+
+    let subscription3 = await filterStorage.addFilter(filter1);
+    assert.equal(filterStorage.getGroupForFilter(filter1), subscription3);
+    assert.equal(Subscription.fromURL(subscription1.url), subscription1, "Subscription known after addition");
+
+    filterStorage.clear();
+
+    compareSubscriptionList("Clearing subscriptions", [], []);
+    assert.equal(filterStorage.hasSubscription(subscription1), false);
+    assert.equal(filterStorage.hasSubscription(subscription2), false);
+    assert.equal(filterStorage.hasSubscription(subscription3), false);
+    assert.deepEqual(Array.from(filterStorage.subscriptions()), []);
+    assert.equal(filterStorage.getGroupForFilter(filter1), null);
+
+    filterStorage.addSubscription(subscription1);
+    compareSubscriptionList("Add", [subscription1], []);
+    assert.equal(filterStorage.hasSubscription(subscription1), true);
+  });
+
   it("Moving subscriptions", function() {
     let subscription1 = Subscription.fromURL("https://test1/");
     let subscription2 = Subscription.fromURL("https://test2/");
@@ -458,7 +488,7 @@ describe("Filter storage", function() {
     assert.deepEqual(changes, ["filter.moved bar"], "Received changes");
   });
 
-  it("Hit counts", function() {
+  it("Hit counts", async function() {
     let changes = [];
     function listener(action, filter) {
       if (action.indexOf("filterState." == 0))
@@ -469,7 +499,7 @@ describe("Filter storage", function() {
     let filter1 = Filter.fromText("filter1");
     let filter2 = Filter.fromText("filter2");
 
-    filterStorage.addFilter(filter1);
+    await filterStorage.addFilter(filter1);
 
     assert.equal(filter1.hitCount, 0, "filter1 initial hit count");
     assert.equal(filter2.hitCount, 0, "filter2 initial hit count");

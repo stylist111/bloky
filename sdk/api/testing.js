@@ -109,8 +109,10 @@ export default {
     await removeDynamicFilters();
 
     const {filterStorage} = filterEngine;
-    for (let subscription of filterStorage.subscriptions())
-      filterStorage.removeSubscription(subscription);
+    filterStorage.clear();
+    await filterStorage.saveToDisk();
+
+    filterEngine.clear();
   },
 
   /**

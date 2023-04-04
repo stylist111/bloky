@@ -313,6 +313,21 @@ class FilterStorage {
   }
 
   /**
+   * Removes all the subscriptions from the storage.
+   */
+  clear() {
+    this._knownSubscriptions.clear();
+    this._metadataSubscriptions.clear();
+    Subscription.knownSubscriptions.clear();
+    this._stats.clear();
+
+    this._saving = false;
+    this._needsSave = true;
+
+    this.filterState = new FilterState();
+  }
+
+  /**
    * Replaces the list of filters in a subscription with a new list.
    * @param {module:subscriptionClasses.Subscription} subscription The
    *   subscription to be updated.

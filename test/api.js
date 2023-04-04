@@ -1370,6 +1370,18 @@ describe("API", function() {
         this.skip();
     });
 
+    it("does add about 5000 filters", async function() {
+      setMinTimeout(this, 10000);
+      let almostFiveThousandFilters = Array.from(
+        // 4999 only as 5000 will fail.
+        // See https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/539.
+        {length: 4999},
+        (_, x) => ("filter_" + x)
+      );
+      await expect(EWE.filters.add(almostFiveThousandFilters))
+        .resolves.not.toThrow();
+    });
+
     it("does not add more than 5000 dynamic filters", async function() {
       let fiveThousandAndOneFilters = Array.from(
         {length: 5001},

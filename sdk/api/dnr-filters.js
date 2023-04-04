@@ -285,9 +285,11 @@ export async function addFilters(texts, metadata) {
     filter.subscriptionIds.push(null);
   }
 
+  let subscription;
   for (let filterDetails of filters.details) {
     let {filter, ruleIds, enabled} = filterDetails;
-    filterEngine.filterStorage.addFilter(filter);
+    subscription = await filterEngine.filterStorage
+      .addFilter(filter, subscription);
 
     setHighestRuleId(ruleIds);
     dynamicFilters.set(filter.text, {ruleIds, enabled, metadata,
