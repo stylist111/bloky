@@ -29,8 +29,9 @@ describe("DNR Mapper", function() {
     return JSON.parse(data);
   }
 
-  it("finds the filter in the map", function() {
-    let mapper = new DnrMapper(() => loader("8C13E995-8F06-4927-BEA7-6C845FB7EEBF"));
+  it("finds the filter in the map", async function() {
+    let mapper = new DnrMapper(async() => loader("8C13E995-8F06-4927-BEA7-6C845FB7EEBF"));
+    await mapper.load();
 
     let ids = mapper.get("-ad-button-");
     assert.deepEqual(ids, [454852]);

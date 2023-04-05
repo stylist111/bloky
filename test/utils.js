@@ -560,6 +560,10 @@ export function isChromiumBased() {
   return /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
 }
 
+export function hasUpdateStaticRules() {
+  return !!browser.declarativeNetRequest.updateStaticRules;
+}
+
 // Feature detection for web bundle support.
 export function supportsWebBundle() {
   // HTMLScriptElement.supports is only Chrome 96+ or Firefox 94+

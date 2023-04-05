@@ -25,7 +25,9 @@ import {default as debugging} from "./debugging.js";
 import {default as subs} from "./subscriptions.js";
 import {default as initializer} from "./initializer.js";
 import {setAddonInfo, addonBundledSubscriptionsPath} from "./info.js";
-import {removeDynamicFilters} from "./dnr-filters.js";
+import {dnrSubscriptionUpdate, getDynamicFilters,
+        removeDynamicFilters} from "./dnr-filters.js";
+import {getSubscriptionRulesetMap} from "./subscriptions-utils.js";
 import {IO} from "./io.js";
 import {FilterStorage} from "adblockpluscore/lib/filterStorage.js";
 
@@ -113,6 +115,22 @@ export default {
     await filterStorage.saveToDisk();
 
     filterEngine.clear();
+  },
+
+  dnrSubscriptionUpdate,
+
+  getSubscriptionRulesetMap,
+
+  /*
+   * @ignore
+   * Serialize the result of getDynamicFilters() to an array.
+   * @return {Promise} The array.
+   */
+  async getDynamicFilters() {
+    await initPrefs();
+
+    let dynFilters = await getDynamicFilters();
+    return Array.from(dynFilters.entries());
   },
 
   /**

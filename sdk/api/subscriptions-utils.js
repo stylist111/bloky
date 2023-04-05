@@ -17,14 +17,21 @@
 
 import browser from "./browser.js";
 
-export function rulesetExistsInManifest(rulesetId) {
+function getRuleset(rulesetId) {
   let manifest = browser.runtime.getManifest();
 
-  return manifest.declarative_net_request &&
-    manifest.declarative_net_request.rule_resources &&
-    manifest.declarative_net_request.rule_resources.find(
+  if (manifest.declarative_net_request &&
+    manifest.declarative_net_request.rule_resources) {
+    return manifest.declarative_net_request.rule_resources.find(
       ruleset => ruleset.id == rulesetId
     );
+  }
+
+  return null;
+}
+
+export function rulesetExistsInManifest(rulesetId) {
+  return !!getRuleset(rulesetId);
 }
 
 export async function subscriptionFileExists(subscription, path) {
@@ -37,4 +44,24 @@ export async function subscriptionFileExists(subscription, path) {
   catch (error) {
     return false;
   }
+}
+
+/**
+ * Get the subscription static ruleset map
+ * @param {string} id The subscription id to get the map for.
+ *
+ * @private
+ * @returns {object} The subscription map. It can be used to
+ *     initialize a `Map` with key being the filter text and values
+ *     being an array of ids.
+ */
+export async function getSubscriptionRulesetMap(id) {
+  let dnrSub = getRuleset(id);
+
+  if (!dnrSub)
+    throw Error(`Subscription ${id} not found.`);
+
+  const url = browser.runtime.getURL(dnrSub.path + ".map");
+  let response = await fetch(url, {method: "HEAD"});
+  return await response.json();
 }

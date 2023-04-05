@@ -28,7 +28,8 @@ exports.DnrMapper = class DnrMapper {
    *     loader function will return the JSON parse output of the map
    *     files. In a Web Extension it will likely use `fetch` to load
    *     it from the extension files. The loader will be called when
-   *     the map needs to be used the first time.
+   *     the map needs to be used the first time. The function can be
+   *     async.
    *
    * @constructor
    */
@@ -42,20 +43,32 @@ exports.DnrMapper = class DnrMapper {
    * Call the loader.
    * @private
    */
-  _loadMapper() {
-    this.map = new Map(this.loader());
+  async _loadMapper() {
+    this.map = new Map(await this.loader());
   }
 
   /**
-   * Get the rule ids for the text.
+   * Load the map. Because it is async it can't be done on a get.
+   * Ideally you'd delay calling it to when neeeded. It is safe to
+   * call more than once.
+   * @async
+   */
+  async load() {
+    if (this.map === null)
+      await this._loadMapper();
+  }
+
+  /**
+   * Get the rule ids for the text. Make sure `load()` has been called
+   * once previously.
    *
    * @param {string} text The filter text to get the mapping from.
    *
-   * @returns {?Array.<number>} The rule IDs if found.
+   * @returns {?Array.<number>} The array of rule IDs if found.
    */
   get(text) {
     if (this.map === null)
-      this._loadMapper();
+      throw new Error("Mapper not loaded.");
 
     return this.map.get(text);
   }

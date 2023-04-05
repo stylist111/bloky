@@ -1,5 +1,13 @@
 [
   {
+    "id": "65ABBA21-96DA-40EB-8C43-BA9A5073B211",
+    "type": "ads",
+    "title": "Test MV3 Updateable Subscription",
+    "homepage": "http://localhost:3003/updateable_subscription.txt",
+    "url": "http://localhost:3003/updateable_subscription.txt",
+    "mv2_url": "http://localhost:3003/mv2_updateable_subscription.txt"
+  },
+  {
     "id": "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F",
     "type": "allowing",
     "title": "Allow nonintrusive advertising",

@@ -17,12 +17,17 @@
 
 /* eslint-disable no-console */
 
+import fs from "fs";
+import path from "path";
+import url from "url";
+
 import express from "express";
 import requestLogger from "./request-logger.js";
 
 const HTTP_ADMIN_PORT = 3003;
 
 let app = express();
+let dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
 let reply = "[Adblock Plus]\n";
 
@@ -58,6 +63,23 @@ app.get("/subscription.txt", requestLogger.logRequests, (req, res) => {
 app.head("/subscription.txt", requestLogger.logRequests, (req, res) => {
   res.send(reply);
 });
+
+// get the subscription content (GET)
+app.get("/updateable_subscription.txt", requestLogger.logRequests, (req, res) => {
+  let sub = fs.readFileSync(dirname + "/pages/updateable_subscription.txt");
+  res.send(sub);
+});
+
+app.get("/mv2_updateable_subscription.txt", requestLogger.logRequests, (req, res) => {
+  let sub = fs.readFileSync(dirname + "/pages/updateable_subscription.txt");
+  res.send(sub);
+});
+
+// get the subscription content (HEAD)
+app.head("/updateable_subscription.txt", requestLogger.logRequests, (req, res) => {
+  res.send(reply);
+});
+
 
 let responses = new Map();
 

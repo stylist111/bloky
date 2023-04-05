@@ -24,9 +24,12 @@ import {isValidHostname} from "adblockpluscore/lib/url.js";
 import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {filterEngine} from "./core.js";
 import {createConverter} from "adblockpluscore/lib/dnr/index.js";
+import {DnrMapper} from "adblockpluscore/lib/dnr/mapper.js";
+import {getSubscriptionRulesetMap} from "./subscriptions-utils.js";
 import {ERROR_DUPLICATE_FILTERS, ERROR_FILTER_NOT_FOUND,
         ERROR_TOO_MANY_FILTERS} from "../errors.js";
 import {onChanged} from "./filters.js";
+import {default as initializer} from "./initializer.js";
 
 import {FilterError} from "./types.js";
 import {Prefs} from "./prefs.js";
@@ -43,7 +46,7 @@ if (browser.declarativeNetRequest) {
 }
 
 /**
- * Update a dynamic subscription.
+ * Update a DNR subscription.
  *
  * @param {Subscription} subscription The subscription updated.
  * @param {?object} updates The list of added and removed filter text. If
@@ -51,26 +54,70 @@ if (browser.declarativeNetRequest) {
  *
  * @private
  */
-async function dynamicSubscriptionUpdate(subscription, updates) {
+export async function dnrSubscriptionUpdate(subscription, updates) {
   if (!browser.declarativeNetRequest || !updates)
     return;
 
-  // For now we only want to handle subscription that are in the
+  // For now we only want to handle subscriptions that are in the
   // recommendations.
   if (!subscription.type)
     return;
 
+  // We don't have the Chrome 111+ API to update the static rules
+  // but this subscription isn't downloadable. So we just can't update.
+  if (!subscription.downloadable &&
+      !browser.declarativeNetRequest.updateStaticRules)
+    return;
+
+  // Determine if we need to update static rules.
+  let needUpdateStaticRules = !subscription.downloadable;
+
   let {added, removed} = updates;
 
-  let filters = await processFilterTexts(added, subscription.id);
+  // With some path of code the filter engine might not be initialized
+  // if the service worker got awaken.
+  await initializer.start();
+
+  // The dnrMapper is only useful to update static rules.
+  let dnrMapper = null;
+  // The already disabled static rules.
+  let disabledStaticRules = null;
+  // This will contain the text of all the dynamic rules for the subscription
+  // and it will be updated to remove those that are still here.
+  let subscriptionDynRules = new Set();
+  if (needUpdateStaticRules) {
+    dnrMapper = new DnrMapper(
+      async() => await getSubscriptionRulesetMap(subscription.id)
+    );
+    disabledStaticRules =
+      await browser.declarativeNetRequest.getDisabledRuleIds(
+        {rulesetId: subscription.id}
+      );
+
+    // All the dynamic filters for this subscription must be removed.
+    for (let [text, detail] of dynamicFilters.entries()) {
+      if (detail && detail.subscriptionIds) {
+        let index = detail.subscriptionIds.indexOf(subscription.id);
+        if (index !== -1)
+          subscriptionDynRules.add(text);
+      }
+    }
+  }
+
+  let filters = await processFilterTexts(added, subscription.id, dnrMapper);
+  if (subscriptionDynRules.size != 0)
+    filters.exist.forEach(text => subscriptionDynRules.delete(text));
+
   // Adding subscription.id into existing filter
   for (let text of filters.existOnOtherSubscription) {
     let filter = dynamicFilters.get(text);
+    subscriptionDynRules.delete(text);
     filter.subscriptionIds.push(subscription.id);
   }
 
-  // Removing subscription.id from existing filter
-  removed = removed.filter(text => {
+  let toRemove = removed.concat(...subscriptionDynRules.entries());
+  // Removing subscription.id from existing filter.
+  let removedDynRules = toRemove.filter(text => {
     let detail = dynamicFilters.get(text);
     if (detail && detail.subscriptionIds) {
       let index = detail.subscriptionIds.indexOf(subscription.id);
@@ -81,10 +128,13 @@ async function dynamicSubscriptionUpdate(subscription, updates) {
     return false;
   });
 
-  let removeRuleIds = removed.flatMap(text => {
+  let removeRuleIds = removedDynRules.flatMap(text => {
     let detail = dynamicFilters.get(text);
     return detail ? detail.ruleIds : [];
   });
+
+  if (filters.add.length - removeRuleIds.length > await dynamicRulesAvailable())
+    throw new FilterError(ERROR_TOO_MANY_FILTERS);
 
   // Empty array cause exceptions. Make it `undefined`.
   if (removeRuleIds.length == 0)
@@ -94,7 +144,33 @@ async function dynamicSubscriptionUpdate(subscription, updates) {
     {addRules: filters.add, removeRuleIds}
   );
 
-  removed.forEach(text => dynamicFilters.delete(text));
+  if (needUpdateStaticRules) {
+    if (removed.length > 0)
+      await dnrMapper.load();
+
+    let disableRuleIds = removed.flatMap(text => {
+      let ids = dnrMapper.get(text);
+      return ids ? ids : [];
+    });
+    // Empty array cause exceptions. Make it `undefined`.
+    if (disableRuleIds.length == 0)
+      disableRuleIds = void 0;
+
+    let enableRuleIds = [...filters.staticRulesToEnable];
+    // Reenable the disabled rules to reset the state:
+    // `browser.declarativeNetRequest.updateStaticRules` will handle this
+    // properly.
+    enableRuleIds.push(...disabledStaticRules);
+
+    // This is Chrome 111+ only.
+    await browser.declarativeNetRequest.updateStaticRules({
+      rulesetId: subscription.id,
+      disableRuleIds,
+      enableRuleIds
+    });
+  }
+
+  removedDynRules.forEach(text => dynamicFilters.delete(text));
 
   filters.details.forEach(details => {
     let {useFilterEngine, filter, ruleIds, enabled} = details;
@@ -175,7 +251,7 @@ export function init() {
       for (let {ruleIds} of dynamicFilters.values())
         setHighestRuleId(ruleIds);
 
-      filterNotifier.on("subscription.updated", dynamicSubscriptionUpdate);
+      filterNotifier.on("subscription.updated", dnrSubscriptionUpdate);
     })();
   }
 
@@ -205,26 +281,67 @@ async function getRules(filter) {
   return {filterRules, ruleIds};
 }
 
-async function processFilterTexts(texts, subscriptionId = null) {
+/**
+ * @typedef {Object} FilterDetails
+ * @property {Filter} filter The filter object
+ * @property {Array.<number>} ruleIds The rule ids for the filter in
+ *   the dynamic ruleset.
+ * @property {boolean} enabled Whether the filter is enabled or
+ *   disabled.
+ *
+ * @typedef {Object} ProcessedFilters
+ * @property {Array.<Object>} add Rules to add to the dynamic ruleset
+ * @property {Array.<string>} exist Filters that exists.
+ * @property {Array.<string>} existOnOtherSubscription Filters that
+ *   exist on other subscriptions.
+ * @property {Array.<number>} staticRulesToEnable Static rules to enable.
+ * @property {Array.<FilterDetails>} details Details of the filters.
+ */
+/**
+ * Process the filter texts.
+ *
+ * @param {Array.<string>} texts The array of filter texts.
+ * @param {?string} subscriptionId The optional subscription ID.
+ * @param {?mapper} mapper The DNR mapper for the subscription. If null then
+ *   this doesn't check for static rules to enable or disable.
+ *
+ * @ignore
+ * @returns {ProcessedFilters} The processed filters.
+ */
+async function processFilterTexts(texts, subscriptionId = null, mapper = null) {
   let details = [];
   let add = [];
   let exist = [];
   let existOnOtherSubscription = [];
+  let staticRulesToEnable = [];
   let seenFilterTexts = new Set();
 
   texts = texts.map(Filter.normalize);
   for (let text of texts) {
+    if (seenFilterTexts.has(text))
+      continue;
+
     let dynamicFilterToAnalyze = dynamicFilters.get(text);
+    let thisFilterExist = false;
     if (dynamicFilterToAnalyze) {
       let subscriptionIds = dynamicFilterToAnalyze.subscriptionIds || [null];
       if (subscriptionIds.includes(subscriptionId))
         exist.push(text);
       else
         existOnOtherSubscription.push(text);
-      continue;
+      thisFilterExist = true;
     }
 
-    if (seenFilterTexts.has(text))
+    if (mapper) {
+      await mapper.load();
+      let staticRuleIds = mapper.get(text);
+      if (staticRuleIds) {
+        staticRulesToEnable.push(...staticRuleIds);
+        thisFilterExist = true;
+      }
+    }
+
+    if (thisFilterExist)
       continue;
 
     let filter = Filter.fromText(text);
@@ -237,14 +354,15 @@ async function processFilterTexts(texts, subscriptionId = null) {
     }
     else {
       let {filterRules, ruleIds} = await getRules(filter);
-      add.push(...filterRules);
+      if (filterRules)
+        add.push(...filterRules);
       details.push({filter, ruleIds, enabled: true});
     }
 
     seenFilterTexts.add(text);
   }
 
-  return {add, exist, existOnOtherSubscription, details};
+  return {add, exist, existOnOtherSubscription, staticRulesToEnable, details};
 }
 
 async function dynamicRulesAvailable() {
