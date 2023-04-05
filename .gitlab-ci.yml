@@ -20,6 +20,9 @@ variables:
 # debugging
 .avoid-flaky-run:
   rules:
+    # Run when "full" is specified because this is for nightly runs
+    - if: $FULL == 'true'
+      when: always
     # Do not trigger a merge request pipeline
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: never
