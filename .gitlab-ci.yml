@@ -166,7 +166,7 @@ func:bundle:
           apk --update add nodejs npm;
           npm install -g npm@latest;
           npm install;
-          npm run measureTestFlakiness -- --testParams "$TEST_PARAMS" --dockerBuildFlag "--build-arg BROWSER=$BROWSER" --runOnlyFlaky "$RUN_ONLY_FLAKY_TESTS" --runs 10;
+          npm run measureTestFlakiness -- --testParams "$TEST_PARAMS" --buildFlags "SKIP_BUILD=1" --runOnlyFlaky "$RUN_ONLY_FLAKY_TESTS" --runs 10;
         else
           docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER="$BROWSER" --build-arg SKIP_BUILD=1 .;
           docker run --shm-size=512m -e TEST_PARAMS="$TEST_PARAMS" -e RUN_ONLY_FLAKY="$RUN_ONLY_FLAKY_TESTS" functional;
@@ -346,7 +346,7 @@ func:v3:edge:linux:latest:
           apk --update add nodejs npm;
           npm install -g npm@latest;
           npm install;
-          npm run measureTestFlakiness -- --testParams "v3 $BROWSER --testKinds fuzz --grep $FUNCTIONAL_AREA" --dockerBuildFlag "--build-arg BROWSER=$BROWSER" --runOnlyFlaky "$RUN_ONLY_FLAKY_TESTS" --runs 10;
+          npm run measureTestFlakiness -- --testParams "v3 $BROWSER --testKinds fuzz --grep $FUNCTIONAL_AREA" --buildFlags "SKIP_BUILD=1" --runOnlyFlaky "$RUN_ONLY_FLAKY_TESTS";
         else
           docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg SKIP_BUILD=1 .;
           docker run --shm-size=512m -e TEST_PARAMS="v3 $BROWSER --testKinds fuzz --grep $FUNCTIONAL_AREA" -e RUN_ONLY_FLAKY="$RUN_ONLY_FLAKY_TESTS" functional;

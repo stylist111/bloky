@@ -32,9 +32,9 @@ const args = yargs(hideBin(process.argv))
         default: "false",
         description: "Set to true if you want to run only flaky tests"
       })
-      .option("dockerBuildFlags", {
+      .option("buildFlags", {
         type: "string",
-        default: "--build-arg BROWSER=chromium",
+        default: "SKIP_BUILD=0",
         description: "extra flags to pass to docker build"
       })
       .option("dockerRunFlags", {
@@ -52,8 +52,19 @@ const args = yargs(hideBin(process.argv))
 const execOptions = {stdio: "inherit"};
 
 // BUILDING CONTAINER
-console.log("Building container");
-let buildCommand = `docker build -t functional -f test/dockerfiles/functional.Dockerfile ${args.dockerBuildFlags} .`;
+// we need to remove "v2"/ "v3" from the command
+let testParams = args.testParams.split(" ").slice(1).join(" ");
+console.log("testParams: " + testParams);
+// we need to remove everything after the version
+testParams = testParams.split(" ").slice(0, 2).join(" ");
+console.log("testParams: " + testParams);
+// We need to create build flag here because "--build-arg" is
+// not passed properly
+// when invoking through the command line
+let additionalBuildFlags = args.buildFlags ? `--build-arg ${args.buildFlags}` : "";
+let buildCommand = ` docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg "BROWSER=${testParams}" ${additionalBuildFlags} .`;
+console.log("Command that will be used for building container: ", buildCommand);
+
 execSync(buildCommand, execOptions);
 
 // RUNNING CONTAINER

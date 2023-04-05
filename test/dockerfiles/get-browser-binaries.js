@@ -30,6 +30,8 @@ async function getBrowserBinary() {
   let browser = argv.browser;
   let version = argv.version;
   await BROWSERS[browser].installBrowser(version);
+  // eslint-disable-next-line no-console
+  console.log(`Browser ${browser} cached `);
 }
 
 getBrowserBinary().catch(err => {

@@ -318,7 +318,7 @@ row, so you can easily combine [flaky] tag approach with it, to run only one
 test multiple times in a row:
 
 ```
-npm run measureTestFlakiness -- --testParams "v3 chromium"--dockerBuildFlag "--build-arg BROWSER=chromium" --runOnlyFlaky "true"
+npm run measureTestFlakiness -- --testParams "v3 chromium" --runOnlyFlaky "true"
 ```
 
 ### Measuring flakiness on a pipeline
