@@ -380,11 +380,7 @@ npm run docs
 ### Linting the code
 
 ```
-# Javascript
 npm run lint
-
-# Markdown
-npm run markdownlint
 ```
 
 </div>

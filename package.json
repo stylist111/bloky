@@ -70,7 +70,7 @@
     "ws": "^7.4.6"
   },
   "scripts": {
-    "lint": "eslint --ext js,html .",
+    "lint": "node scripts/lint.js",
     "docs": "documentation build --document-exported --sort-order alpha -f html -o dist/docs --config documentation.yml sdk/api/index.js sdk/api/types.js",
     "docs-core": "jsdoc --configure core/.jsdoc.conf --destination dist/core/docs core/lib",
     "updatepsl": "npm run -w core updatepsl",
@@ -83,7 +83,6 @@
     "test-scripts": "mocha test/scripts/*.js",
     "test-core": "npm test -w core",
     "measureTestFlakiness": "node scripts/measureTestFlakiness.js",
-    "markdownlint": "markdownlint --ignore-path .gitignore --ignore \"**/RELEASE_NOTES.md\" .",
     "subs-init": "node scripts/initSubscriptions.js",
     "subs-merge": "node scripts/mergeSubscriptions.js",
     "subs-fetch": "node scripts/fetchSubscriptions.js",
