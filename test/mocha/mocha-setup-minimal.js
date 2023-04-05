@@ -15,4 +15,46 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import {isMV3, isMV2CustomSubsExtension, isIncognito} from "../utils.js";
+import {isConnected} from "./mocha-runner.js";
+
 mocha.setup("bdd");
+
+let timeout = new URLSearchParams(document.location.search).get("timeout");
+
+if (timeout)
+  mocha.timeout(parseInt(timeout, 10));
+else
+  mocha.timeout(4000);
+
+beforeEach(async function() {
+  let title = this.currentTest.fullTitle();
+  let tags = [{
+    id: "mv2",
+    condition: () => !isMV3()
+  }, {
+    id: "mv3",
+    condition: () => isMV3()
+  }, {
+    id: "mv2-custom-subs",
+    condition: () => isMV2CustomSubsExtension()
+  }, {
+    id: "runner",
+    condition: () => isConnected()
+  }, {
+    id: "incognito",
+    condition: () => isIncognito()
+  }];
+
+  for (let tag of tags) {
+    let onlyTag = title.includes(`[${tag.id}-only]`);
+    let skipTag = title.includes(`[${tag.id}-skip]`);
+
+    if (!onlyTag && !skipTag)
+      continue;
+
+    let value = await tag.condition();
+    if (onlyTag && !value || skipTag && value)
+      this.skip();
+  }
+});

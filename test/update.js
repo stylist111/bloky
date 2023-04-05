@@ -18,23 +18,18 @@
 import expect from "expect";
 import browser from "webextension-polyfill";
 
-import {Page, TEST_MV3_SUBSCRIPTION,
-        isFirefox, isMV3, readFile, writeFile, setMinTimeout, wait} from "./utils.js";
+import {Page, TEST_MV3_SUBSCRIPTION, isFirefox, readFile, writeFile,
+        setMinTimeout, wait} from "./utils.js";
 import {EWE, runInBackgroundPage} from "./messaging.js";
-import {isConnected, updateExtensionFiles} from "./mocha/mocha-runner.js";
+import {updateExtensionFiles} from "./mocha/mocha-runner.js";
 
 let start = new URLSearchParams(document.location.search).get("start");
 let phase = start ? "preparation" : "check";
 
 const filter = "someFilterAddedInANewWebExtentionRelease";
 
-describe(`Update (${phase}) (runner only)`, function() {
+describe(`Update (${phase}) [runner-only]`, function() {
   this.timeout(5000);
-
-  before(async function() {
-    if (!await isConnected())
-      this.skip();
-  });
 
   after(async function() {
     if (start) {
@@ -50,10 +45,8 @@ describe(`Update (${phase}) (runner only)`, function() {
     await browser.storage.local.remove("update-test-running");
   });
 
-  it("updates the subscription filter text when updating the extension", async function() {
+  it("updates the subscription filter text when updating the extension [mv3-only]", async function() {
     setMinTimeout(this, 3000);
-    if (!isMV3())
-      this.skip();
 
     const subscriptionFile = `subscriptions/${TEST_MV3_SUBSCRIPTION.id}`;
     const tmpSubscriptionFile = `${subscriptionFile}.tmp`;
@@ -120,8 +113,8 @@ describe(`Update (${phase}) (runner only)`, function() {
     }
   });
 
-  it("fixes the IO/Prefs prefixes", async function() {
-    if (isMV3() || !isFirefox())
+  it("fixes the IO/Prefs prefixes [mv2-only]", async function() {
+    if (!isFirefox())
       this.skip();
 
     // we also need to skip the test if it's not "incognito" mode,

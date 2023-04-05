@@ -17,9 +17,9 @@
 
 import expect from "expect";
 
-import {Page, Resource, executeScript, wait, isMV3, isIncognito, setMinTimeout,
-        TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, SITEKEY,
-        TEST_MV3_SUBSCRIPTION, supportsWebBundle} from "./utils.js";
+import {Page, Resource, executeScript, wait, setMinTimeout, TEST_PAGES_URL,
+        TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, SITEKEY, TEST_MV3_SUBSCRIPTION,
+        supportsWebBundle} from "./utils.js";
 import {addFilter, EWE} from "./messaging.js";
 
 describe("Blocking", function() {
@@ -83,13 +83,9 @@ describe("Blocking", function() {
     await new Page("srcdoc.html").expectResource("image.png").toBeLoaded();
   });
 
-  it("handles requests from service workers", async function() {
-    if (isMV3())
-      this.skip();
+  it("handles requests from service workers [mv2-only] [incognito-skip]", async function() {
     // Firefox doesn't allow service workers in pages when in Incognito Mode
     // See: https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API
-    if (isIncognito())
-      this.skip();
 
     await addFilter(`|${TEST_PAGES_URL}/image.png^`);
     new Page("service-worker.html");
@@ -176,8 +172,8 @@ describe("Blocking", function() {
     await new Page("image.html").expectResource("image.png").toBeBlocked();
   });
 
-  it("blocks whole $webbundle requests", async function() {
-    if (!isMV3() || !supportsWebBundle())
+  it("blocks whole $webbundle requests [mv3-only]", async function() {
+    if (!supportsWebBundle())
       this.skip();
 
     await addFilter(`|${TEST_PAGES_URL}/*^$webbundle`);
@@ -233,10 +229,7 @@ describe("Blocking", function() {
     await new Page("fetch.html").expectResource("image.png").toBeLoaded();
   });
 
-  it("does not block a request sent by the extension", async function() {
-    if (isMV3())
-      this.skip();
-
+  it("does not block a request sent by the extension [mv2-only]", async function() {
     await addFilter(`|${TEST_PAGES_URL}/image.png^`);
     await fetch(`${TEST_PAGES_URL}/image.png`);
   });
@@ -296,12 +289,7 @@ describe("Blocking", function() {
        });
   });
 
-  describe("Sitekey allowlisting", function() {
-    before(function() {
-      if (isMV3())
-        this.skip();
-    });
-
+  describe("Sitekey allowlisting [mv2-only]", function() {
     it("does not block a request", async function() {
       await addFilter("/image.png^$image");
       await addFilter(`@@$sitekey=${SITEKEY}`);
@@ -380,12 +368,7 @@ describe("Blocking", function() {
     });
   });
 
-  describe("Header-based filtering", function() {
-    before(function() {
-      if (isMV3())
-        this.skip();
-    });
-
+  describe("Header-based filtering [mv2-only]", function() {
     it("blocks a request", async function() {
       await addFilter(`|${TEST_PAGES_URL}^$header=x-header=whatever`);
       await new Page("header.html").expectResource("image.png").toBeBlocked();

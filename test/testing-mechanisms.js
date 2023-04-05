@@ -19,38 +19,36 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 import sinon from "sinon/pkg/sinon.js";
 
-import {isMV3, setMinTimeout, waitForAssertion,
-        setEndpointResponse, clearEndpointResponse, TEST_ADMIN_PAGES_URL} from "./utils.js";
+import {setMinTimeout, waitForAssertion, setEndpointResponse,
+        clearEndpointResponse, TEST_ADMIN_PAGES_URL} from "./utils.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 import {runInBackgroundPage, waitForServiceWorkerInitialization}
   from "./messaging.js";
 
 describe("Testing Mechanisms", function() {
-  if (isMV3()) {
-    describe("MV3 Service Workers", function() {
-      after(async function() {
-        setMinTimeout(this, 12000);
-        // From our observations, after a service worker is suspended it starts
-        // up again when a message is sent to it. However, that restart seems to
-        // cause lag spikes a few seconds after the service worker restarts.
-        // Waiting for everything else to initialize is a workaround to ensure
-        // the API is fully responsive on subsequent tests.
-        await waitForServiceWorkerInitialization();
-      });
-
-      it("state is cleared when service worker is suspended", async function() {
-        let testData = "This is some test data";
-        await browser.runtime.sendMessage({type: "ewe-test:setInMemoryState", data: testData});
-        expect(await browser.runtime.sendMessage({type: "ewe-test:getInMemoryState"}))
-          .toEqual(testData);
-
-        await suspendServiceWorker(this);
-
-        expect(await browser.runtime.sendMessage({type: "ewe-test:getInMemoryState"}))
-          .toEqual(null);
-      });
+  describe("MV3 Service Workers [mv3-only]", function() {
+    after(async function() {
+      setMinTimeout(this, 12000);
+      // From our observations, after a service worker is suspended it starts
+      // up again when a message is sent to it. However, that restart seems to
+      // cause lag spikes a few seconds after the service worker restarts.
+      // Waiting for everything else to initialize is a workaround to ensure
+      // the API is fully responsive on subsequent tests.
+      await waitForServiceWorkerInitialization();
     });
-  }
+
+    it("state is cleared when service worker is suspended", async function() {
+      let testData = "This is some test data";
+      await browser.runtime.sendMessage({type: "ewe-test:setInMemoryState", data: testData});
+      expect(await browser.runtime.sendMessage({type: "ewe-test:getInMemoryState"}))
+        .toEqual(testData);
+
+      await suspendServiceWorker(this);
+
+      expect(await browser.runtime.sendMessage({type: "ewe-test:getInMemoryState"}))
+        .toEqual(null);
+    });
+  });
 
   describe("Console logging", function() {
     const sandbox = sinon.createSandbox();

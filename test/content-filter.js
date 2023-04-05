@@ -38,8 +38,8 @@ describe("Element Hiding", function() {
     await expectElemHideHidden();
   });
 
-  it("saves and loads the sitekeys", async function() {
-    if (!isMV3() || isFuzzingServiceWorker())
+  it("saves and loads the sitekeys [mv3-only]", async function() {
+    if (isFuzzingServiceWorker())
       this.skip();
 
     await EWE.testing.clearAllSitekeys(false);
@@ -71,8 +71,8 @@ describe("Element Hiding", function() {
     }
   });
 
-  it("verifies the sitekeys loaded from the storage", async function() {
-    if (!isMV3() || isFuzzingServiceWorker())
+  it("verifies the sitekeys loaded from the storage [mv3-only]", async function() {
+    if (isFuzzingServiceWorker())
       this.skip();
 
     await EWE.testing.clearAllSitekeys(false);

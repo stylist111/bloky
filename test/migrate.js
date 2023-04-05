@@ -21,7 +21,8 @@ import browser from "webextension-polyfill";
 import {isMV3, TEST_ANTI_CV_SUBSCRIPTION, wait, TEST_MV3_SUBSCRIPTION}
   from "./utils.js";
 import {EWE, runInBackgroundPage} from "./messaging.js";
-import {isConnected, updateExtensionFiles, suspendServiceWorker} from "./mocha/mocha-runner.js";
+import {updateExtensionFiles, suspendServiceWorker}
+  from "./mocha/mocha-runner.js";
 import {MIGRATED_TO_MV2, MIGRATED_TO_MV3} from "../sdk/api/prefs.js";
 
 let start = new URLSearchParams(document.location.search).get("start");
@@ -35,13 +36,10 @@ const EASYLIST_GERMANY_URL_MV3 = "https://easylist-downloads.adblockplus.org/v3/
 
 const RE2_UNSUPPORTED_FILTER = "/t(?=re)/$image";
 
-describe(`MV2 MV3 migrate (${phase}) (runner only)`, function() {
+describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
   this.timeout(10000);
 
   before(async function() {
-    if (!await isConnected())
-      this.skip();
-
     // it's meant to be started as MV2 test and restarted as MV3 test only
     if ((isMV3() && start) || (!isMV3() && !start))
       this.skip();

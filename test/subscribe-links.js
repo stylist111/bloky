@@ -19,16 +19,10 @@ import expect from "expect";
 
 import {Page, setMinTimeout, wait} from "./utils.js";
 import {getTestEvents} from "./messaging.js";
-import {isConnected, click, isFuzzingServiceWorker}
-  from "./mocha/mocha-runner.js";
+import {click, isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
-describe("Subscribe links (runner only)", function() {
+describe("Subscribe links [runner-only]", function() {
   setMinTimeout(this, isFuzzingServiceWorker() ? 30000 : 8000);
-
-  before(async function() {
-    if (!await isConnected())
-      this.skip();
-  });
 
   let event = "reporting.onSubscribeLinkClicked";
 

@@ -198,10 +198,7 @@ describe(`Reload (${phase})`, function() {
     }
   });
 
-  it("persists debug mode across browser restart", async function() {
-    if (!isMV3())
-      this.skip();
-
+  it("persists debug mode across browser restart [mv3-only]", async function() {
     if (start) {
       await EWE.debugging.setElementHidingDebugMode(true);
       await EWE.debugging.setElementHidingDebugStyle([["background", "pink"]]);

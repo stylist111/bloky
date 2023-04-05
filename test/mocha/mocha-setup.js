@@ -23,14 +23,7 @@ import {runInBackgroundPage, ensureEverythingHasSaved,
         clearAllTestEvents} from "../messaging.js";
 import {isFuzzingServiceWorker} from "./mocha-runner.js";
 
-mocha.setup("bdd");
-
-let timeout = new URLSearchParams(document.location.search).get("timeout");
-
-if (timeout)
-  mocha.timeout(parseInt(timeout, 10));
-else
-  mocha.timeout(4000);
+import "./mocha-setup-minimal.js";
 
 async function clearFilters() {
   await runInBackgroundPage([

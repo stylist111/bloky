@@ -166,9 +166,44 @@ used is provided in the tree. However, if it needs to be regenerated, there is
 fixed in the script, so simply re-running it shouldn't yield any difference.
 It relies on the wbn module that will be installed as a development dependency.
 
+### Tagging functional tests
+
+Tags can be added to a test or a suite of tests to modify when the tests are
+run and when they are skipped.
+
+A tag is kebab-case identifier inside square brackets, for example `[mv2-only]`.
+
+For example, a test which is tagged to run only in MV2 mode would be tagged like
+so:
+
+```js
+it("logs blocking $header filter [mv2-only]", async function() {
+  // test body here
+});
+```
+
+Tags can also be added to `describe` descriptions to tag entire suites.
+
+If multiple tags are applied to the same test, all are applied.
+
+#### The tags and their functionality
+
+- `[mv2-only]`: Only run this test when testing an MV2 extension.
+- `[mv2-custom-subs-only]`: Only run this test when testing an MV2 extension
+  that uses custom subscriptions.
+- `[mv3-only]`: Only run this test when testing an MV3 extension.
+- `[runner-only]`: Only run this test when the test is run using Selenium
+  Webdriver (ie it is launched from the console using `npm test` script).
+- `[flaky]`: Run this test when using the `RUN_ONLY_FLAKY="true"` option in the
+  functional test docker container.
+
+All `-only` tags have an equivalent `-skip` tag, which does the opposite. For
+example, a test tagged with `[mv2-skip]` will only be run when NOT testing an
+MV2 extension.
+
 ----
 
-### Integration tests
+## Integration tests
 
 Integration tests checks if from integrator perspective (and directory)
 everything will work fine. To run integration tests locally use the following

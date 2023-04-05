@@ -307,9 +307,9 @@ describe("API", function() {
       }
     });
 
-    it("gets adblockpluscore recommendations", async function() {
-      if (isMV3() || isMV2CustomSubsExtension())
-        this.skip();
+    it("gets adblockpluscore recommendations [mv2-only] [mv2-custom-subs-skip]", async function() {
+      // In MV3, subscriptions must always be provided, so the core
+      // subscriptions are not used and this test doesn't apply.
 
       let result = await EWE.subscriptions.getRecommendations();
       expect(result).toEqual(expect.arrayContaining([
@@ -337,10 +337,7 @@ describe("API", function() {
       }
     });
 
-    it("gets recommendations from overridden subscriptions file", async function() {
-      if (!isMV2CustomSubsExtension())
-        this.skip();
-
+    it("gets recommendations from overridden subscriptions file [mv2-custom-subs-only]", async function() {
       let result = await EWE.subscriptions.getRecommendations();
       expect(result).toEqual(expect.arrayContaining([
         expect.objectContaining({
@@ -382,10 +379,8 @@ describe("API", function() {
       clearTestEvents("subscriptions.onChanged");
     }
 
-    it("syncs a specific subscription if specified", async function() {
+    it("syncs a specific subscription if specified [mv2-only]", async function() {
       // Disable on MV3 as the subscription are not downloaded.
-      if (isMV3())
-        this.skip();
 
       setMinTimeout(this, 5000);
       await prepareSyncTest();
@@ -408,10 +403,8 @@ describe("API", function() {
       });
     });
 
-    it("syncs all subscriptions if no subscription is specified", async function() {
+    it("syncs all subscriptions if no subscription is specified [mv2-only]", async function() {
       // Disable on MV3 as the subscription are not downloaded.
-      if (isMV3())
-        this.skip();
 
       await prepareSyncTest();
 
@@ -554,10 +547,7 @@ describe("API", function() {
         await expectElemHideVisible();
       });
 
-      it("doesn't bring non-CV subscription data to DNR world", async function() {
-        if (!isMV3())
-          this.skip();
-
+      it("doesn't bring non-CV subscription data to DNR world [mv3-only]", async function() {
         let updatedReply = "[Adblock Plus]";
         await setEndpointResponse("/subscription-that-shouldnt-be-moved-to-dnr-world.txt", updatedReply);
 
@@ -1364,12 +1354,7 @@ describe("API", function() {
     });
   });
 
-  describe("Filters limit", function() {
-    before(function() {
-      if (!isMV3())
-        this.skip();
-    });
-
+  describe("Filters limit [mv3-only]", function() {
     it("does add about 5000 filters", async function() {
       setMinTimeout(this, 10000);
       let almostFiveThousandFilters = Array.from(
@@ -1395,12 +1380,10 @@ describe("API", function() {
   describe("Initialization", function() {
     setMinTimeout(this, 10000);
 
-    it("starts with the subscription info provided by the initial start call",
+    it("starts with the subscription info provided by the initial start call [mv3-only]",
        async function() {
-         // unskip when MV2 and MV3 are treated in exactly the same way
-         // in terms of how subscriptions are provided initially.
-         if (!isMV3())
-           this.skip();
+         // Eventually this should be supported in MV2 as well.
+         // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/392
 
          let receivedStartupInfo = await runInBackgroundPage([
            {op: "getGlobal", arg: "EWE"},
@@ -1425,10 +1408,8 @@ describe("API", function() {
        }
     );
 
-    it("starts with default addon info", async function() {
-      if (isMV3())
-        this.skip(); // MV3 has to have addonInfo.
-
+    it("starts with default addon info [mv2-only]", async function() {
+      // MV2 only because from MV3 the addonInfo is mandatory.
       let manifest = browser.runtime.getManifest();
 
       await runInBackgroundPage([
@@ -1522,8 +1503,8 @@ describe("API", function() {
       });
     }
 
-    it("adds only one preferred AA subscription when multiple provided", async function() {
-      if (!isMV3() || isFuzzingServiceWorker())
+    it("adds only one preferred AA subscription when multiple provided [mv3-only]", async function() {
+      if (isFuzzingServiceWorker())
         this.skip();
 
       let alternativeAAUrl = "https://easylist-downloads.adblockplus.org/exceptionrules-privacy-friendly.txt";
@@ -1554,8 +1535,8 @@ describe("API", function() {
       ]));
     });
 
-    it("adds all AA subscription when multiple provided without preferred AA subscription", async function() {
-      if (!isMV3() || isFuzzingServiceWorker())
+    it("adds all AA subscription when multiple provided without preferred AA subscription [mv3-only]", async function() {
+      if (isFuzzingServiceWorker())
         this.skip();
 
       let alternativeAAUrl1 = "https://easylist-downloads.adblockplus.org/exceptionrules-privacy-friendly.txt";
@@ -1675,11 +1656,10 @@ describe("API", function() {
       await expect(unhandledMessageResult).resolves.not.toThrow();
     });
 
-    it("starts with the addon info provided by the initial start call",
+    it("starts with the addon info provided by the initial start call [mv2-only]",
+       // MV2 only because from MV3 must have more addon info than in this test,
+       // including subscription info
        async function() {
-         if (isMV3())
-           this.skip(); // MV3 has to have addonInfo.
-
          await runInBackgroundPage([
            {op: "getGlobal", arg: "EWE"},
            {op: "pushArg", arg: {name: ADDON_NAME, version: ADDON_VERSION}},
@@ -1699,12 +1679,7 @@ describe("API", function() {
        }
     );
 
-    describe("Validation", function() {
-      before(function() {
-        if (!isMV3())
-          this.skip();
-      });
-
+    describe("Validation [mv3-only]", function() {
       it("validates the provided subscriptions", async function() {
         await expect(EWE.testing._setAddonInfo(null))
           .rejects.toThrow("Error: No addonInfo provided to EWE.start");
@@ -1743,9 +1718,9 @@ describe("API", function() {
           .rejects.toThrow(`Failed to find the subscription with URL=${url}`);
       });
 
-      describe("validates adding default subscriptions", function() {
+      describe("validates adding default subscriptions [mv3-only]", function() {
         before(function() {
-          if (!isMV3() || isFuzzingServiceWorker())
+          if (isFuzzingServiceWorker())
             this.skip();
         });
 
@@ -1830,10 +1805,9 @@ describe("API", function() {
     });
 
     describe("Analytics", function() {
-      it("gets the first version", async function() {
+      it("gets the first version [mv2-only]", async function() {
+        // This should work in MV3 after
         // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/300
-        if (isMV3())
-          this.skip();
 
         let now = new Date();
         let reply = "%5BAdblock%20Plus%5D%0A%21Version%3A";
@@ -2312,10 +2286,7 @@ describe("API", function() {
       });
 
       // is not feasible in MV3: "filter_unknown_option" thrown
-      it("logs blocking $header filter", async function() {
-        if (isMV3())
-          this.skip();
-
+      it("logs blocking $header filter [mv2-only]", async function() {
         await checkLogging(
           [`|${TEST_PAGES_URL}$header=x-header=whatever`],
           "allEventOptions",
@@ -2344,10 +2315,7 @@ describe("API", function() {
       });
 
       // is not feasible in MV3: "filter_unknown_option" thrown
-      it("logs allowlisting $header filter", async function() {
-        if (isMV3())
-          this.skip();
-
+      it("logs allowlisting $header filter [mv2-only]", async function() {
         await checkLogging(
           [
             `|${TEST_PAGES_URL}$header=x-header=whatever`,
@@ -2379,10 +2347,7 @@ describe("API", function() {
       });
 
       // is not feasible in MV3: "filter_unknown_option" thrown
-      it("logs $header filter allowlisted by non-header filter", async function() {
-        if (isMV3())
-          this.skip();
-
+      it("logs $header filter allowlisted by non-header filter [mv2-only]", async function() {
         await checkLogging(
           [
             `|${TEST_PAGES_URL}$header=x-header=whatever`,
@@ -3106,11 +3071,8 @@ describe("API", function() {
         );
       });
 
-      it("logs requests sent by the extension", async function() {
+      it("logs requests sent by the extension [mv2-only]", async function() {
         // DNR doesn't have this protection mechanism
-        if (isMV3())
-          this.skip();
-
         await checkLogging(
           [],
           "allEventOptions",
@@ -3459,8 +3421,8 @@ describe("API", function() {
       }, 20000, "No requests sent", 100);
     }
 
-    it("sends HEAD requests for expired subscriptions after service worker restarts", async function() {
-      if (!isMV3() || isFuzzingServiceWorker())
+    it("sends HEAD requests for expired subscriptions after service worker restarts [mv3-only]", async function() {
+      if (isFuzzingServiceWorker())
         this.skip();
 
       await configure();
