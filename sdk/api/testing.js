@@ -109,7 +109,7 @@ export default {
     await removeDynamicFilters();
 
     const {filterStorage} = filterEngine;
-    filterStorage.clear();
+    filterStorage._clear();
     await filterStorage.saveToDisk();
 
     filterEngine.clear();

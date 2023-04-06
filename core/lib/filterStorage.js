@@ -313,9 +313,10 @@ class FilterStorage {
   }
 
   /**
-   * Removes all the subscriptions from the storage.
+   * Removes all the subscriptions from the storage (fast, for testing).
+   * @private
    */
-  clear() {
+  _clear() {
     this._knownSubscriptions.clear();
     this._metadataSubscriptions.clear();
     Subscription.knownSubscriptions.clear();

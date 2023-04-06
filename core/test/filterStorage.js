@@ -200,7 +200,7 @@ describe("Filter storage", function() {
     assert.equal(filterStorage.getGroupForFilter(filter1), subscription3);
     assert.equal(Subscription.fromURL(subscription1.url), subscription1, "Subscription known after addition");
 
-    filterStorage.clear();
+    filterStorage._clear();
 
     compareSubscriptionList("Clearing subscriptions", [], []);
     assert.equal(filterStorage.hasSubscription(subscription1), false);
