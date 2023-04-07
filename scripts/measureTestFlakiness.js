@@ -54,10 +54,8 @@ const execOptions = {stdio: "inherit"};
 // BUILDING CONTAINER
 // we need to remove "v2"/ "v3" from the command
 let testParams = args.testParams.split(" ").slice(1).join(" ");
-console.log("testParams: " + testParams);
 // we need to remove everything after the version
-testParams = testParams.split(" ").slice(0, 2).join(" ");
-console.log("testParams: " + testParams);
+testParams = testParams.substring(0, testParams.indexOf("--"));
 // We need to create build flag here because "--build-arg" is
 // not passed properly
 // when invoking through the command line
