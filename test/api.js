@@ -1356,7 +1356,8 @@ describe("API", function() {
 
   describe("Filters limit [mv3-only]", function() {
     it("does add about 5000 filters", async function() {
-      setMinTimeout(this, 10000);
+      let timeout = isFuzzingServiceWorker() ? 60000 : 20000;
+      setMinTimeout(this, timeout);
       let almostFiveThousandFilters = Array.from(
         // 4999 only as 5000 will fail.
         // See https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/539.
