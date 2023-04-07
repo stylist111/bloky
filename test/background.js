@@ -337,8 +337,12 @@ EWE.start(startupInfo).then(async() => {
 
   const UPDATE_FLAG = "update-test-running";
   chrome.storage.local.get([UPDATE_FLAG], result => {
-    if (result[UPDATE_FLAG])
-      chrome.tabs.create({url: "update.html"});
+    if (result[UPDATE_FLAG]) {
+      chrome.storage.local.get(["search"], searchResult => {
+        // We might need to be able to check some arguments, eg. "incognito"
+        chrome.tabs.create({url: `update.html${searchResult.search.replace("start=1&", "")}`});
+      });
+    }
   });
 
   const MIGRATE_FLAG = "migrate-test-running";

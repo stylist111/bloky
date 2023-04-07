@@ -19,7 +19,7 @@ import expect from "expect";
 import browser from "webextension-polyfill";
 
 import {Page, TEST_MV3_SUBSCRIPTION, isFirefox, readFile, writeFile,
-        setMinTimeout, wait} from "./utils.js";
+        setMinTimeout, wait, isIncognito} from "./utils.js";
 import {EWE, runInBackgroundPage} from "./messaging.js";
 import {updateExtensionFiles} from "./mocha/mocha-runner.js";
 
@@ -34,6 +34,7 @@ describe(`Update (${phase}) [runner-only]`, function() {
   after(async function() {
     if (start) {
       await browser.storage.local.set({"update-test-running": true});
+      await browser.storage.local.set({search: document.location.search});
 
       return runInBackgroundPage([
         {op: "getGlobal", arg: "chrome"},
@@ -43,6 +44,7 @@ describe(`Update (${phase}) [runner-only]`, function() {
     }
 
     await browser.storage.local.remove("update-test-running");
+    await browser.storage.local.remove("search");
   });
 
   it("updates the subscription filter text when updating the extension [mv3-only]", async function() {
@@ -114,12 +116,8 @@ describe(`Update (${phase}) [runner-only]`, function() {
   });
 
   it("fixes the IO/Prefs prefixes [mv2-only]", async function() {
-    if (!isFirefox())
+    if (!isFirefox() || !isIncognito())
       this.skip();
-
-    // we also need to skip the test if it's not "incognito" mode,
-    // but we don't pass the search query to the text except "start=1" argument,
-    // so `isIncognito()` does not work here.
 
     const PRE_SDK_PREFIX = "file:";
     const SDK_0_5_PREFIX = "abp:file:";
