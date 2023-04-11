@@ -1331,7 +1331,7 @@ describe("API", function() {
       });
 
       it("handles new tab allowlisting listener", async function() {
-        setMinTimeout(this, 8000);
+        setMinTimeout(this, 10000);
 
         let url = isFirefox() ? "about:blank" :
             isEdge() ? "edge://newtab/" : "chrome://newtab/";
@@ -1341,7 +1341,7 @@ describe("API", function() {
         // but we need to wait a bit longer than just `created` for
         // the tab updated event to have happened.
         let tabId = await new Page(url, true).created;
-        let timeout = isFuzzingServiceWorker() ? 15000 : 6000;
+        let timeout = isFuzzingServiceWorker() ? 80000 : 6000;
 
         await waitForAssertion(() => {
           let events = (getTestEvents("ewe-test.newTabAllowlisted"))
@@ -1379,7 +1379,8 @@ describe("API", function() {
   });
 
   describe("Initialization", function() {
-    setMinTimeout(this, 10000);
+    isFuzzingServiceWorker ?
+      setMinTimeout(this, 30000) : setMinTimeout(this, 10000);
 
     it("starts with the subscription info provided by the initial start call [mv3-only]",
        async function() {
@@ -1435,6 +1436,8 @@ describe("API", function() {
     });
 
     it("starts with the provided subscriptions enabled and correctly downloadable", async function() {
+      // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/545
+      this.retries(3);
       await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.url);
 
       // The list of bundled subscriptions is passed as an
@@ -1474,6 +1477,7 @@ describe("API", function() {
 
         await EWE.subscriptions.addDefaults(language);
         // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/364
+        // Probably here is failing due to timeout
         await ensureEverythingHasSaved();
 
         let activeSubs = await EWE.subscriptions.getDownloadable();

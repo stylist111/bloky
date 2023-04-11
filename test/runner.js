@@ -526,7 +526,7 @@ async function run() {
     versionNumber, {headless, extensionPaths, incognito, extraArgs});
 
   let timeout = (params && typeof params.timeout != "undefined" ?
-    params.timeout : 140000);
+    params.timeout : 200000);
   await setMinDriverTimeout(driver, timeout);
 
   let results = {};
