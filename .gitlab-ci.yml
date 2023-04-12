@@ -359,10 +359,10 @@ func:v3:edge:linux:latest:
       - FUNCTIONAL_AREA:
         - "Blocking|Pop-up\\sblocking"
         - "Element\\sHiding|Snippets"
-        - "API --grep Reporting"
-        - "API --grep Notifications"
-        - "API --grep !Reporting --grep !Notifications"
-        - "!Blocking --grep !Pop-up\\sblocking --grep !Element\\sHiding --grep !Snippets --grep !API"
+        - "API|Subscriptions --grep Reporting"
+        - "API|Subscriptions --grep Notifications"
+        - "API|Subscriptions --grep !Reporting --grep !Notifications"
+        - "!Blocking --grep !Pop-up\\sblocking --grep !Element\\sHiding --grep !Snippets --grep !API|Subscriptions"
 
 fuzz:v3:chromium:stable:
   extends: .fuzz

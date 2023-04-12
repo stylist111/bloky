@@ -6,6 +6,7 @@ import "./expect-matchers.js";
 import "./testing-mechanisms.js";
 import "./request-filter.js";
 import "./content-filter.js";
+import "./subscriptions.js";
 import "./api.js";
 import "./popup-blocker.js";
 import "./subscribe-links.js";
