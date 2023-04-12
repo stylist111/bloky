@@ -109,7 +109,7 @@ describe("One Click Allowlisting", function() {
     expect(await getSuccessEventReceived()).toBeNull();
   });
 
-  it("unblocks when allowlist is clicked", async function() {
+  it("unblocks when allowlist is clicked [fuzz]", async function() {
     await clickAllowlistButton("allowlist");
     await expectSuccessfulAllowlist();
   });
@@ -158,7 +158,7 @@ describe("One Click Allowlisting", function() {
   });
 
   describe("Invalid signature", function() {
-    it("blocks when signature key is unauthorized", async function() {
+    it("blocks when signature key is unauthorized [fuzz]", async function() {
       await clickAllowlistButton("allowlist_unauthorized_key");
       await expectUnsuccessfulAllowlist("invalid_signature");
     });

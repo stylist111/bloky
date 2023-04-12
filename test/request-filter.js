@@ -23,12 +23,12 @@ import {Page, Resource, executeScript, wait, setMinTimeout, TEST_PAGES_URL,
 import {addFilter, EWE} from "./messaging.js";
 
 describe("Blocking", function() {
-  it("blocks a request using user filters", async function() {
+  it("blocks a request using user filters [fuzz]", async function() {
     await addFilter("/image.png^$image");
     await new Page("image.html").expectResource("image.png").toBeBlocked();
   });
 
-  it("blocks a request using subscriptions", async function() {
+  it("blocks a request using subscriptions [fuzz]", async function() {
     setMinTimeout(this, 3000);
 
     // In MV3 the list of bundled subscriptions is passed as an
@@ -110,16 +110,16 @@ describe("Blocking", function() {
   });
 
   for (let testCase of [
-    {name: "nested iframe", file: "nested-iframe.html"},
+    {name: "nested iframe", file: "nested-iframe.html", tags: "[fuzz]"},
     {name: "nested iframe using srcdoc", file: "nested-iframe-srcdoc.html"},
     {name: "nested iframe where the request is aborted", file: "nested-iframe-aborted-request.html"}
   ]) {
-    it(`blocks resources in a ${testCase.name}`, async function() {
+    it(`blocks resources in a ${testCase.name} ${testCase.tags}`, async function() {
       await addFilter("/image.png");
       await new Page(testCase.file).expectResource("image.png").toBeBlocked();
     });
 
-    it(`does not block resources in a ${testCase.name} if the top iframe is allowlisted`, async function() {
+    it(`does not block resources in a ${testCase.name} if the top iframe is allowlisted ${testCase.tags}`, async function() {
       await addFilter("/image.png");
       await addFilter(`@@/${testCase.file}$document`);
       await new Page(testCase.file).expectResource("image.png").toBeLoaded();

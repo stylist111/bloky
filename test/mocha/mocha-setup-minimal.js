@@ -16,7 +16,7 @@
  */
 
 import {isMV3, isMV2CustomSubsExtension, isIncognito} from "../utils.js";
-import {isConnected} from "./mocha-runner.js";
+import {isConnected, isFuzzingServiceWorker} from "./mocha-runner.js";
 
 mocha.setup("bdd");
 
@@ -44,6 +44,9 @@ beforeEach(async function() {
   }, {
     id: "incognito",
     condition: () => isIncognito()
+  }, {
+    id: "fuzz",
+    condition: () => isFuzzingServiceWorker()
   }];
 
   for (let tag of tags) {
@@ -57,4 +60,7 @@ beforeEach(async function() {
     if (onlyTag && !value || skipTag && value)
       this.skip();
   }
+
+  if (isFuzzingServiceWorker() && !/\[fuzz(-only)?\]/.test(title))
+    this.skip();
 });

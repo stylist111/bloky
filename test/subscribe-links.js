@@ -50,7 +50,7 @@ describe("Subscribe links [runner-only]", function() {
       })]]);
   }
 
-  it("subscribes to a link", async function() {
+  it("subscribes to a link [fuzz]", async function() {
     await checkSubscribeLink("#subscribe");
   });
 

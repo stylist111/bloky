@@ -46,7 +46,7 @@ let subCircumvention = {
 const DNR = browser.declarativeNetRequest;
 
 describe("Subscriptions", function() {
-  it("adds a subscription", async function() {
+  it("adds a subscription [fuzz]", async function() {
     await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
 
     let subs = await EWE.subscriptions.getDownloadable();
@@ -114,7 +114,7 @@ describe("Subscriptions", function() {
     ]);
   });
 
-  it("gets user subscriptions for a filter", async function() {
+  it("gets user subscriptions for a filter [fuzz]", async function() {
     await addFilter(VALID_FILTER_TEXT);
     expect(await EWE.subscriptions.getForFilter(VALID_FILTER_TEXT)).toEqual([
       expect.objectContaining({
@@ -124,7 +124,7 @@ describe("Subscriptions", function() {
     ]);
   });
 
-  it("gets filters from a subscription", async function() {
+  it("gets filters from a subscription [fuzz]", async function() {
     expect(await EWE.subscriptions.getFilters(
       VALID_SUBSCRIPTION_URL)).toEqual([]);
     await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
@@ -140,14 +140,14 @@ describe("Subscriptions", function() {
     )]));
   });
 
-  it("checks if a subscription has been added", async function() {
+  it("checks if a subscription has been added [fuzz]", async function() {
     expect(await EWE.subscriptions.has(VALID_SUBSCRIPTION_URL)).toBe(false);
 
     await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
     expect(await EWE.subscriptions.has(VALID_SUBSCRIPTION_URL)).toBe(true);
   });
 
-  it("disables an existing subscription", async function() {
+  it("disables an existing subscription [fuzz]", async function() {
     await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
     await EWE.subscriptions.disable(VALID_SUBSCRIPTION_URL);
 
@@ -158,7 +158,7 @@ describe("Subscriptions", function() {
     })]);
   });
 
-  it("enables an existing subscription", async function() {
+  it("enables an existing subscription [fuzz]", async function() {
     await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
     await EWE.subscriptions.disable(VALID_SUBSCRIPTION_URL);
     await EWE.subscriptions.enable(VALID_SUBSCRIPTION_URL);
@@ -189,7 +189,7 @@ describe("Subscriptions", function() {
       .rejects.toThrow(errorMessage);
   });
 
-  it("removes a subscription", async function() {
+  it("removes a subscription [fuzz]", async function() {
     await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
     await EWE.subscriptions.remove(VALID_SUBSCRIPTION_URL);
 
@@ -385,7 +385,7 @@ describe("Subscriptions", function() {
       }, 6000, "Subscription was not synchronised properly.");
     };
 
-    it("updates the CV subscription", async function() {
+    it("updates the CV subscription [fuzz]", async function() {
       let updatedReply = "[Adblock Plus]";
       let filterToAdd = "example.com#$#abort-on-property-read atob";
       await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
@@ -640,7 +640,7 @@ describe("Subscriptions", function() {
     });
   });
 
-  describe("Subscription events", function() {
+  describe("Subscription events [fuzz]", function() {
     it("listens to onAdded events", async function() {
       await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
       await expectTestEvents("subscriptions.onAdded", [[

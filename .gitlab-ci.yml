@@ -349,20 +349,11 @@ func:v3:edge:linux:latest:
           apk --update add nodejs npm;
           npm install -g npm@latest;
           npm install;
-          npm run measureTestFlakiness -- --testParams "v3 $BROWSER --testKinds fuzz --grep $FUNCTIONAL_AREA" --buildFlags "SKIP_BUILD=1" --runOnlyFlaky "$RUN_ONLY_FLAKY_TESTS";
+          npm run measureTestFlakiness -- --testParams "v3 $BROWSER --testKinds fuzz" --buildFlags "SKIP_BUILD=1" --runOnlyFlaky "$RUN_ONLY_FLAKY_TESTS";
         else
           docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg SKIP_BUILD=1 .;
-          docker run --shm-size=512m -e TEST_PARAMS="v3 $BROWSER --testKinds fuzz --grep $FUNCTIONAL_AREA" -e RUN_ONLY_FLAKY="$RUN_ONLY_FLAKY_TESTS" functional;
+          docker run --shm-size=512m -e TEST_PARAMS="v3 $BROWSER --testKinds fuzz" -e RUN_ONLY_FLAKY="$RUN_ONLY_FLAKY_TESTS" functional;
         fi
-  parallel:
-    matrix:
-      - FUNCTIONAL_AREA:
-        - "Blocking|Pop-up\\sblocking"
-        - "Element\\sHiding|Snippets"
-        - "API|Subscriptions --grep Reporting"
-        - "API|Subscriptions --grep Notifications"
-        - "API|Subscriptions --grep !Reporting --grep !Notifications"
-        - "!Blocking --grep !Pop-up\\sblocking --grep !Element\\sHiding --grep !Snippets --grep !API|Subscriptions"
 
 fuzz:v3:chromium:stable:
   extends: .fuzz

@@ -62,7 +62,8 @@ describe("Testing Mechanisms", function() {
     });
 
     for (let method of ["log", "debug", "info", "warn", "error"]) {
-      it(`logs in the test when it logs in the background with level ${method}`, async function() {
+      let tags = method == "log" ? "[fuzz]" : "";
+      it(`logs in the test when it logs in the background with level ${method} ${tags}`, async function() {
         let message = "Hello world";
         let messageObject = {foo: "bar"};
 
@@ -86,7 +87,7 @@ describe("Testing Mechanisms", function() {
   });
 
   describe("Endpoint manipulation", function() {
-    it("sets and responds using custom endpoints", async function() {
+    it("sets and responds using custom endpoints [fuzz]", async function() {
       let response = {"some random content": "yes!"};
 
       await setEndpointResponse("/test-a-random-endpoint", response);

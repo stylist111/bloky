@@ -116,7 +116,7 @@ const ADMIN_BASE_URL = `http://localhost:${ADMIN_PORT}`;
 
 describe("API", function() {
   describe("Filters", function() {
-    it("adds a single filter", async function() {
+    it("adds a single filter [fuzz]", async function() {
       await addFilter(VALID_FILTER_TEXT);
       expect(await EWE.filters.getUserFilters())
         .toEqual([VALID_FILTER]);
@@ -214,7 +214,7 @@ describe("API", function() {
         await assertAddMetadata({created: 123});
       });
 
-      it("adds a string", async function() {
+      it("adds a string [fuzz]", async function() {
         await assertAddMetadata({owner: "owner"});
       });
 
@@ -301,7 +301,7 @@ describe("API", function() {
       return expect(addFilter(INVALID_FILTER_TEXT)).rejects.toThrow("FilterError");
     });
 
-    it("disables existing filters", async function() {
+    it("disables existing filters [fuzz]", async function() {
       await addFilter(VALID_FILTER_TEXT);
       await addFilter(SECOND_VALID_FILTER_TEXT);
 
@@ -312,7 +312,7 @@ describe("API", function() {
                   {...SECOND_VALID_FILTER, enabled: false}]);
     });
 
-    it("enables existing filters", async function() {
+    it("enables existing filters [fuzz]", async function() {
       await addFilter(VALID_FILTER_TEXT);
       await addFilter(SECOND_VALID_FILTER_TEXT);
 
@@ -349,7 +349,7 @@ describe("API", function() {
       expect(await EWE.filters.getUserFilters()).toEqual([]);
     });
 
-    it("removes a single filter", async function() {
+    it("removes a single filter [fuzz]", async function() {
       await addFilter(VALID_FILTER_TEXT);
       await EWE.filters.remove([VALID_FILTER_TEXT]);
       expect(await EWE.filters.getUserFilters()).toEqual([]);
@@ -382,7 +382,7 @@ describe("API", function() {
         .toBeNull();
     });
 
-    it("validates a filter with unknown option", async function() {
+    it("validates a filter with unknown option [fuzz]", async function() {
       let result = await EWE.filters.validate("@@||example.com^$foo");
       expect(result).toEqual("FilterError: {\"type\":\"invalid_filter\"," +
                              "\"reason\":\"filter_unknown_option\"," +
@@ -419,7 +419,7 @@ describe("API", function() {
       ]);
     });
 
-    describe("Filter events", function() {
+    describe("Filter events [fuzz]", function() {
       it("listens to onAdded events", async function() {
         await addFilter(VALID_FILTER_TEXT);
         await expectTestEvents("filters.onAdded", [[
@@ -468,7 +468,7 @@ describe("API", function() {
       const ALLOWING_IFRAME_DOC_FILTER =
         `@@|${TEST_PAGES_URL}/iframe.html^$document`;
 
-      it("returns filters for allowlisted tabs", async function() {
+      it("returns filters for allowlisted tabs [fuzz]", async function() {
         await addFilter(`|${TEST_PAGES_URL}/image.png^`);
         await addFilter(ALLOWING_IMAGE_DOC_FILTER);
 
@@ -477,7 +477,7 @@ describe("API", function() {
           .toEqual([ALLOWING_IMAGE_DOC_FILTER]);
       });
 
-      it("returns filters for allowlisted tabs after page load", async function() {
+      it("returns filters for allowlisted tabs after page load [fuzz]", async function() {
         let tabId = await new Page("image.html").loaded;
 
         await addFilter(`|${TEST_PAGES_URL}/image.png^`);
@@ -513,7 +513,7 @@ describe("API", function() {
           .toEqual([ALLOWING_IFRAME_DOC_FILTER]);
       });
 
-      it("returns filters for allowlisted parent frames", async function() {
+      it("returns filters for allowlisted parent frames [fuzz]", async function() {
         let {tabId, frameId} = await loadTabWithFrame();
 
         await addFilter(ALLOWING_IFRAME_DOC_FILTER);
@@ -567,7 +567,7 @@ describe("API", function() {
           .toEqual([]);
       });
 
-      it("returns whether a resource is allowlisted", async function() {
+      it("returns whether a resource is allowlisted [fuzz]", async function() {
         await addFilter("@@*$image");
 
         let tabId = await new Page("image.html").loaded;
@@ -600,7 +600,7 @@ describe("API", function() {
           url, "image", tabId, frameId)).toEqual(true);
       });
 
-      it("returns whether a resource is allowlisted by $document", async function() {
+      it("returns whether a resource is allowlisted by $document [fuzz]", async function() {
         await addFilter(`@@|${TEST_PAGES_URL}/iframe.html^$document`);
 
         let {tabId, frameId} = await loadTabWithFrame();
@@ -746,15 +746,17 @@ describe("API", function() {
       ]);
     });
 
-    for (let [language, mv2subscriptionUrl, mv3subscriptionUrl] of [
+    for (let [language, mv2subscriptionUrl, mv3subscriptionUrl, tags] of [
       ["en",
        "https://easylist-downloads.adblockplus.org/easylist.txt",
-       "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt"],
+       "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt",
+       "[fuzz]"],
       ["de",
        "https://easylist-downloads.adblockplus.org/easylistgermany+easylist.txt",
-       "https://easylist-downloads.adblockplus.org/v3/full/easylistgermany+easylist.txt"]
+       "https://easylist-downloads.adblockplus.org/v3/full/easylistgermany+easylist.txt",
+       ""]
     ]) {
-      it(`configures default subscriptions for ${language}`, async function() {
+      it(`configures default subscriptions for ${language} ${tags}`, async function() {
         // Sometimes saving to storage takes more time
         setMinTimeout(this, 20000);
 
@@ -802,10 +804,7 @@ describe("API", function() {
       });
     }
 
-    it("adds only one preferred AA subscription when multiple provided [mv3-only]", async function() {
-      if (isFuzzingServiceWorker())
-        this.skip();
-
+    it("adds only one preferred AA subscription when multiple provided [mv3-only] [fuzz-skip]", async function() {
       let alternativeAAUrl = "https://easylist-downloads.adblockplus.org/exceptionrules-privacy-friendly.txt";
 
       await EWE.testing._setSubscriptions([
@@ -834,10 +833,7 @@ describe("API", function() {
       ]));
     });
 
-    it("adds all AA subscription when multiple provided without preferred AA subscription [mv3-only]", async function() {
-      if (isFuzzingServiceWorker())
-        this.skip();
-
+    it("adds all AA subscription when multiple provided without preferred AA subscription [mv3-only] [fuzz-skip]", async function() {
       let alternativeAAUrl1 = "https://easylist-downloads.adblockplus.org/exceptionrules-privacy-friendly.txt";
       let alternativeAAUrl2 = "https://easylist-downloads.adblockplus.org/exceptionrules-privacy-friendly-2.txt";
 
@@ -872,7 +868,7 @@ describe("API", function() {
       ]));
     });
 
-    it("informs when the filter engine runs for the first time", async function() {
+    it("informs when the filter engine runs for the first time [fuzz]", async function() {
       let expectedFoundStorage = false;
       if (isFuzzingServiceWorker())
         expectedFoundStorage = expect.any(Boolean);
@@ -988,7 +984,7 @@ describe("API", function() {
           .rejects.toThrow("Error: No `bundledSubscriptionsPath` provided");
       });
 
-      it("validates the provided subscription files", async function() {
+      it("validates the provided subscription files [fuzz]", async function() {
         let subscription = {
           id: "00000000-0000-0000-0000-000000000001",
           url: "https://domain.com/subscription.txt",
@@ -1017,12 +1013,7 @@ describe("API", function() {
           .rejects.toThrow(`Failed to find the subscription with URL=${url}`);
       });
 
-      describe("validates adding default subscriptions [mv3-only]", function() {
-        before(function() {
-          if (isFuzzingServiceWorker())
-            this.skip();
-        });
-
+      describe("validates adding default subscriptions [mv3-only] [fuzz-skip]", function() {
         it("throws if no default language subscription is provided", async function() {
           await EWE.testing._setSubscriptions([]);
           await expect(EWE.subscriptions.addDefaults("en"))
@@ -1061,7 +1052,7 @@ describe("API", function() {
     let unmatchedEventOptions = {includeUnmatched: true, filterType: "all"};
     let timeoutWaitingForLogs = isFuzzingServiceWorker() ? 5000 : 1000;
 
-    it("exposes a mapping between content types and ResourceTypes", async function() {
+    it("exposes a mapping between content types and ResourceTypes [fuzz]", async function() {
       let expected = {
         other: "other",
         script: "script",
@@ -1417,12 +1408,10 @@ describe("API", function() {
         );
       }
 
-      it("does not log after listener is removed", async function() {
+      it("does not log after listener is removed [fuzz-skip]", async function() {
         // Dynamic adding and removing of event listeners isn't
         // something which MV3 supports well with service workers
         // stopping.
-        if (isFuzzingServiceWorker())
-          this.skip();
 
         let listenerName = await addNewOnBlockableListener(null);
 
@@ -1439,7 +1428,7 @@ describe("API", function() {
         await expectNotCalled(listenerName);
       });
 
-      it("logs blocking request filter", async function() {
+      it("logs blocking request filter [fuzz]", async function() {
         await checkLogging(
           ["/image.png^$image"],
           "allEventOptions",
@@ -1489,7 +1478,7 @@ describe("API", function() {
         );
       });
 
-      it("logs rewrite filter", async function() {
+      it("logs rewrite filter [fuzz]", async function() {
         await checkLogging(
           ["*.js$rewrite=abp-resource:blank-js,domain=localhost"],
           "allEventOptions",
@@ -1673,7 +1662,7 @@ describe("API", function() {
           }]);
       });
 
-      it("logs blocking $csp filter", async function() {
+      it("logs blocking $csp filter [fuzz]", async function() {
         await checkLogging(
           [`|${TEST_PAGES_URL}$csp=img-src 'none'`],
           "allEventOptions",
@@ -1726,7 +1715,7 @@ describe("API", function() {
           }]);
       });
 
-      it("logs allowlisting $document filter", async function() {
+      it("logs allowlisting $document filter [fuzz]", async function() {
         await checkLogging(
           [`@@|${TEST_PAGES_URL}$document`],
           "allEventOptions",
@@ -2100,7 +2089,7 @@ describe("API", function() {
         );
       });
 
-      it("logs element hiding filter", async function() {
+      it("logs element hiding filter [fuzz]", async function() {
         await checkLogging(
           ["###elem-hide"],
           "elemhideEventOptions",
@@ -2113,12 +2102,10 @@ describe("API", function() {
         );
       });
 
-      it("logs element hiding filter for a given tab", async function() {
+      it("logs element hiding filter for a given tab [fuzz-skip]", async function() {
         // Filtering by tabs can't work reliably when service worker
         // is suspended because the event listener can't be attached
         // in the first turn of the event loop.
-        if (isFuzzingServiceWorker())
-          this.skip();
 
         let page = new Page("element-hiding.html");
         let tabId = await page.loaded;
@@ -2138,10 +2125,7 @@ describe("API", function() {
         );
       });
 
-      it("logs element hiding filter dynamically", async function() {
-        // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/480
-        this.retries(3);
-
+      it("logs element hiding filter dynamically [fuzz]", async function() {
         setMinTimeout(this, 25000);
 
         let text = `${TEST_PAGES_DOMAIN}###element-hiding-dyn`;
@@ -2174,7 +2158,7 @@ describe("API", function() {
         );
       });
 
-      it("logs element hiding emulation filter", async function() {
+      it("logs element hiding emulation filter [fuzz]", async function() {
         let text = TEST_PAGES_DOMAIN +
             "#?#.child1:-abp-properties(background-color: blue)";
         await checkLogging(
@@ -2213,12 +2197,10 @@ describe("API", function() {
         );
       });
 
-      it("logs for the requested tab", async function() {
+      it("logs for the requested tab [fuzz-skip]", async function() {
         // Filtering by tabs can't work reliably when service worker
         // is suspended because the event listener can't be attached
         // in the first turn of the event loop.
-        if (isFuzzingServiceWorker())
-          this.skip();
 
         await addFilter(VALID_FILTER_TEXT);
 
@@ -2237,7 +2219,7 @@ describe("API", function() {
         await expectNotCalled(listenerName2);
       });
 
-      it("logs snippets filter", async function() {
+      it("logs snippets filter [fuzz]", async function() {
         // keep in-sync with `background.js`
         const snippet = "injected-snippet";
 
@@ -2268,7 +2250,7 @@ describe("API", function() {
         );
       });
 
-      it("logs blocking popup filter", async function() {
+      it("logs blocking popup filter [fuzz]", async function() {
         let opener = new Page("popup-opener.html");
         let sourceTabId = await opener.loaded;
         await checkLogging(
@@ -2389,7 +2371,7 @@ describe("API", function() {
       });
 
       describe("Unmatched requests", function() {
-        it("logs all unmatched requests on the image page", async function() {
+        it("logs all unmatched requests on the image page [fuzz]", async function() {
           await checkLogging(
             [],
             "unmatchedEventOptions",
@@ -2406,12 +2388,10 @@ describe("API", function() {
           );
         });
 
-        it("logs unmatched requests for the requested tab", async function() {
+        it("logs unmatched requests for the requested tab [fuzz-skip]", async function() {
           // Filtering by tabs can't work reliably when service worker
           // is suspended because the event listener can't be attached
           // in the first turn of the event loop.
-          if (isFuzzingServiceWorker())
-            this.skip();
 
           let page = new Page("image.html");
           let tabId = await page.loaded;
@@ -2479,7 +2459,7 @@ describe("API", function() {
           );
         });
 
-        it("logs unmatched popup requests", async function() {
+        it("logs unmatched popup requests [fuzz]", async function() {
           let opener = new Page("popup-opener.html");
           await opener.loaded;
           await checkLogging(
@@ -2553,7 +2533,7 @@ describe("API", function() {
       });
 
       describe("Event Options Filtering", function() {
-        it("filters out unmatched requests with default options", async function() {
+        it("filters out unmatched requests with default options [fuzz]", async function() {
           await checkLogging(
             ["/image.png^$image"],
             "defaultEventOptions",
@@ -2607,7 +2587,7 @@ describe("API", function() {
       expect(await EWE.notifications.getIgnoredCategories()).toEqual(["*"]);
     });
 
-    it("supports showing local notifications", async function() {
+    it("supports showing local notifications [fuzz]", async function() {
       let notification = {id: "local-test"};
       await EWE.notifications.addNotification(notification);
       await EWE.notifications.showNext();
@@ -2615,14 +2595,14 @@ describe("API", function() {
       await expectTestEvents("notifications.addShowListener", [[notification]]);
     });
 
-    it("supports showing immediate notifications", async function() {
+    it("supports showing immediate notifications [fuzz]", async function() {
       let notification = {id: "immediate-test"};
       await EWE.notifications.showNotification(notification);
 
       await expectTestEvents("notifications.addShowListener", [[notification]]);
     });
 
-    it("supports showing remote notifications", async function() {
+    it("supports showing remote notifications [fuzz]", async function() {
       setMinTimeout(this, 8000);
       let notification = {id: "remote-test"};
       await EWE.testing._setPrefs("notificationurl", `${TEST_PAGES_URL}/notification.json`);
@@ -2656,7 +2636,7 @@ describe("API", function() {
       expect(await EWE.notifications.shouldIgnoreNotifications()).toBe(false);
     });
 
-    it("returns the correct state for ignored categories when ignored", async function() {
+    it("returns the correct state for ignored categories when ignored [fuzz]", async function() {
       await EWE.notifications.toggleIgnoreCategory("*");
 
       expect(await EWE.notifications.getIgnoredCategories()).toEqual(["*"]);
@@ -2720,10 +2700,7 @@ describe("API", function() {
       }, 20000, "No requests sent", 100);
     }
 
-    it("sends HEAD requests for expired subscriptions after service worker restarts [mv3-only]", async function() {
-      if (isFuzzingServiceWorker())
-        this.skip();
-
+    it("sends HEAD requests for expired subscriptions after service worker restarts [mv3-only] [fuzz-skip]", async function() {
       await configure();
       await requestsSent();
       await fetch(`${ADMIN_BASE_URL}/clear`);

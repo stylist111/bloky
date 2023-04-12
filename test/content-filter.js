@@ -33,15 +33,12 @@ let elemhideEmulationUpdateTimeout = 4000;
 let unhiddenTimeout = isFuzzingServiceWorker() ? 1000 : 200;
 
 describe("Element Hiding", function() {
-  it("hides an element", async function() {
+  it("hides an element [fuzz]", async function() {
     await addFilter("###elem-hide");
     await expectElemHideHidden();
   });
 
-  it("saves and loads the sitekeys [mv3-only]", async function() {
-    if (isFuzzingServiceWorker())
-      this.skip();
-
+  it("saves and loads the sitekeys [mv3-only] [fuzz-skip]", async function() {
     await EWE.testing.clearAllSitekeys(false);
 
     try {
@@ -71,10 +68,7 @@ describe("Element Hiding", function() {
     }
   });
 
-  it("verifies the sitekeys loaded from the storage [mv3-only]", async function() {
-    if (isFuzzingServiceWorker())
-      this.skip();
-
+  it("verifies the sitekeys loaded from the storage [mv3-only] [fuzz-skip]", async function() {
     await EWE.testing.clearAllSitekeys(false);
 
     try {
@@ -117,7 +111,7 @@ describe("Element Hiding", function() {
     }
   });
 
-  it("hides an element using subscriptions", async function() {
+  it("hides an element using subscriptions [fuzz]", async function() {
     await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.url);
     await wait(
       async() => {
@@ -142,7 +136,7 @@ describe("Element Hiding", function() {
   });
 
   for (let type of ["$document", "$elemhide"]) {
-    it(`does not hide elements in allowlisted ${type}`, async function() {
+    it(`does not hide elements in document allowlisted ${type} [fuzz]`, async function() {
       setMinTimeout(this, 12000);
 
       await addFilter("###elem-hide");
@@ -195,12 +189,6 @@ describe("Element Hiding", function() {
     }
   }
 
-  it("does not hide elements in document allowlisted by $elemhide", async function() {
-    await addFilter("###elem-hide");
-    await addFilter(`@@|${TEST_PAGES_URL}/*.html$elemhide`);
-    await expectElemHideVisible();
-  });
-
   it("does not hide elements in document allowlisted for domain", async function() {
     await addFilter("###elem-hide");
     await addFilter(
@@ -225,7 +213,7 @@ describe("Element Hiding", function() {
   });
 
   describe("Element Hiding Emulation", function() {
-    it("hides abp-properties elements", async function() {
+    it("hides abp-properties elements [fuzz]", async function() {
       await addFilter(
         `${TEST_PAGES_DOMAIN}#?#div:-abp-properties(background-color: red)`);
       await expectElemHideHidden({elemId: "elem-hide-emulation-props"});
@@ -312,7 +300,7 @@ describe("Element Hiding", function() {
   });
 
   describe("Element collapsing", function() {
-    it("hides the img element of a blocked request", async function() {
+    it("hides the img element of a blocked request [fuzz]", async function() {
       await addFilter("/image.png^$image");
 
       let forceBg = isFirefox() && firefoxVersion() >= 97;
@@ -353,7 +341,7 @@ describe("Element Hiding", function() {
       await EWE.debugging.clearDebugOptions();
     });
 
-    it("highlights an element", async function() {
+    it("highlights an element [fuzz]", async function() {
       let style = await waitForHighlightedStyle(hideTimeout);
       expect(style).toBe("rgb(230, 115, 112)");
     });
@@ -377,7 +365,7 @@ describe("Element Hiding", function() {
       await expectElemHideHidden();
     });
 
-    it("does not hide an element on a sitekey allowlisted page", async function() {
+    it("does not hide an element on a sitekey allowlisted page [fuzz]", async function() {
       await addFilter("###elem-hide");
       await addFilter(`@@$elemhide,sitekey=${SITEKEY}`);
       await expectElemHideVisible({url: "element-hiding.html?sitekey=1"});
@@ -459,7 +447,7 @@ describe("Snippets", function() {
     );
   }
 
-  it("applies an injected snippet", async function() {
+  it("applies an injected snippet [fuzz]", async function() {
     await assertSnippet(
       injectedSnippet,
       () => document.body.textContent,

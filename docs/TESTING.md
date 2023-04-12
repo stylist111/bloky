@@ -22,8 +22,9 @@ and linting.
 functional tests on web bundles, scripts and functional tests on various
 combinations of browsers and manifests. Note: the set of browsers varies for
 branch master.
-- Fuzz Functional tests - MV3 related service workers tests based on functional
-suite.
+- [Fuzz Functional tests](#fuzz-functional-tests) - MV3 related service workers
+tests based on functional suite. Runs a subset of the functional tests, while
+suspending the service worker regularly to determine how the system behaves.
 - [Integration tests](#integration-tests) - tests of the integration scripts.
 
 ![Pipeline structure](/docs/pipeline_structure.png "Pipeline structure")
@@ -196,10 +197,56 @@ If multiple tags are applied to the same test, all are applied.
   Webdriver (ie it is launched from the console using `npm test` script).
 - `[flaky]`: Run this test when using the `RUN_ONLY_FLAKY="true"` option in the
   functional test docker container.
+- `[fuzz]`: Run this test in the service worker fuzz tests. By default, tests
+  are not run in the service worker fuzz tests, so only the subset selected with
+  `[fuzz]` and `[fuzz-only]` are run.
+- `[fuzz-only]`: Only run this test in the service worker fuzz tests.
 
 All `-only` tags have an equivalent `-skip` tag, which does the opposite. For
 example, a test tagged with `[mv2-skip]` will only be run when NOT testing an
 MV2 extension.
+
+----
+
+## Fuzz Functional tests
+
+One of the major changes that Google has introduced in Chrome with the Manifest
+V3 browser extension API is background service workers. These replace background
+pages as the only way to have an extension running a script in the background.
+
+For the most part, this is fine. You can do most of the things we needed to do
+in a background page in the new service worker.
+
+However, there is one major difference: service workers are event driven and may
+be suspended by the browser at any time the browser decides they are not in
+use. From a testing perspective, this means that we need to test that our
+functionality works even when it is triggered while the service worker is
+currently suspended.
+
+Rather than writing a whole separate suite of tests for this, we instead rerun a
+subset of the functional tests, except before any interaction with the service
+worker the service worker is suspended. These are referred to as the Fuzz tests.
+
+### Tagging which tests should run as fuzz tests
+
+We avoid running all of the functional tests in fuzz mode because suspending the
+service worker is a slow process. This makes the fuzz tests take a long time.
+
+We aim to run a representative subset of the functional tests based on the
+impact of service workers. As a rule of thumb, include one "happy path" for each
+distinct piece of functionality. For example, enable one fuzz test for adding a
+filter, but then don't enable the tests for adding multiple filters at once or
+any of the filter validation cases since they don't add any extra requirements
+for the service worker to start up correctly.
+
+Only the functional tests with the `[fuzz]` or `[fuzz-only]` tags in their
+description are run during the fuzz tests.
+
+Untagged tests are not run, but it is generally expected that they would pass if
+they were enabled in the future.
+
+The `[fuzz-skip]` tag can be applied to tests which are not expected to pass if
+the service worker is suspended as part of running the test.
 
 ----
 

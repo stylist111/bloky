@@ -31,7 +31,7 @@ describe("Pop-up blocking", function() {
       await opener.loaded;
     });
 
-    it("blocks a link-based popup", async function() {
+    it("blocks a link-based popup [fuzz]", async function() {
       await EWE.filters.add([`|${TEST_PAGES_URL}/popup.html^$popup`]);
       expect(await new Popup("link", opener).blocked).toBe(true);
     });
@@ -89,7 +89,7 @@ describe("Pop-up blocking", function() {
       expect(await popup.blocked).toBe(false);
     });
 
-    it("does not block a popup opened by a document", async function() {
+    it("does not block a popup opened by a document [fuzz]", async function() {
       await EWE.filters.add([
         `|${TEST_PAGES_URL}/popup.html^$popup`,
         `@@$document,sitekey=${SITEKEY}`
