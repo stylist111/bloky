@@ -19,8 +19,7 @@
 
 import {TEST_PAGES_URL, Page, Popup, setMinTimeout, isIncognito}
   from "../utils.js";
-import {runInBackgroundPage, ensureEverythingHasSaved,
-        clearAllTestEvents} from "../messaging.js";
+import {runInBackgroundPage, clearAllTestEvents} from "../messaging.js";
 import {isFuzzingServiceWorker} from "./mocha-runner.js";
 
 import "./mocha-setup-minimal.js";
@@ -32,8 +31,6 @@ async function clearFilters() {
     {op: "callMethod", arg: "_removeAllSubscriptions"},
     {op: "await"}
   ], false);
-
-  await ensureEverythingHasSaved();
 }
 
 async function clearStorage() {

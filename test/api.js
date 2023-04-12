@@ -24,8 +24,7 @@ import {Page, Popup, setMinTimeout, wait, waitForAssertion, executeScript,
         TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN,
         isMV2CustomSubsExtension, TEST_MV3_SUBSCRIPTION,
         TEST_MV3_SUBSCRIPTION_2, TEST_MV3_SUBSCRIPTION_3} from "./utils.js";
-import {addFilter, EWE, runInBackgroundPage,
-        ensureEverythingHasSaved, getTestEvents,
+import {addFilter, EWE, runInBackgroundPage, getTestEvents,
         clearTestEvents, addOnBlockableListener,
         removeOnBlockableListener, expectTestEvents} from "./messaging.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
@@ -772,9 +771,6 @@ describe("API", function() {
           startSubscriptions.push(subEasylistPlusGermany);
 
         await EWE.subscriptions.addDefaults(language);
-        // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/364
-        // Probably here is failing due to timeout
-        await ensureEverythingHasSaved();
 
         let activeSubs = await EWE.subscriptions.getDownloadable();
 
@@ -892,8 +888,6 @@ describe("API", function() {
                               warnings: []});
 
       await EWE.subscriptions.addDefaults("en");
-
-      await ensureEverythingHasSaved();
 
       result = await runInBackgroundPage([
         {op: "getGlobal", arg: "EWE"},

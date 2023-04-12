@@ -19,10 +19,9 @@ import expect from "expect";
 
 import {Page, clickElement, executeScript, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
         setMinTimeout, wait} from "./utils.js";
-import {EWE, addFilter, getTestEvents, clearTestEvents, runInBackgroundPage}
-  from "./messaging.js";
-import {isFuzzingServiceWorker, fuzzSuspendServiceWorker}
-  from "./mocha/mocha-runner.js";
+import {EWE, addFilter, getTestEvents, clearTestEvents, runInBackgroundPage,
+        fuzzSuspendServiceWorker} from "./messaging.js";
+import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 describe("One Click Allowlisting", function() {
   setMinTimeout(this, 10000);

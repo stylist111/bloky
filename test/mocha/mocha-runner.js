@@ -111,11 +111,6 @@ export async function suspendServiceWorker(runnable) {
   });
 }
 
-export async function fuzzSuspendServiceWorker() {
-  if (serviceWorkerFuzzingEnabled)
-    await suspendServiceWorker();
-}
-
 export function isFuzzingServiceWorker() {
   return serviceWorkerFuzzingEnabled;
 }

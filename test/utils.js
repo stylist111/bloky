@@ -19,9 +19,9 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 
-import {fuzzSuspendServiceWorker, isFuzzingServiceWorker}
-  from "./mocha/mocha-runner.js";
-import {waitForServiceWorkerInitialization} from "./messaging.js";
+import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
+import {fuzzSuspendServiceWorker, waitForServiceWorkerInitialization}
+  from "./messaging.js";
 
 export const TEST_PAGES_DOMAIN = "localhost";
 export const CROSS_DOMAIN = "127.0.0.1";
