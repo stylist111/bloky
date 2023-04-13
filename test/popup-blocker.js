@@ -71,6 +71,15 @@ describe("Pop-up blocking", function() {
       expect(await new Popup("link", opener).blocked).toBe(false);
     });
 
+    it("does not block the popup if opener is allowlisted", async function() {
+      await EWE.filters.add([
+        `|${TEST_PAGES_URL}/popup.html^$popup`,
+        `@@|${TEST_PAGES_URL}/popup-opener.html$subdocument,document`
+      ]);
+      let popup = new Popup("link", new Page("popup-opener.html"));
+      expect(await popup.blocked).toBe(false);
+    });
+
     it("does not block the popup page if navigated to directly", async function() {
       await EWE.filters.add([`|${TEST_PAGES_URL}/popup.html^$popup`]);
       let notAPopup = new Page("popup.html");
