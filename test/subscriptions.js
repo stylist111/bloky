@@ -24,24 +24,15 @@ import {Page, setMinTimeout, wait, waitForAssertion, isEdge, isIncognito, isMV3,
   from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, getTestEvents, clearTestEvents,
         expectTestEvents} from "./messaging.js";
+import {VALID_FILTER_TEXT, subCircumvention} from "./api-fixtures.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 const VALID_SUBSCRIPTION_URL = `${TEST_PAGES_URL}/subscription.txt`;
 const VALID_SUBSCRIPTION_URL_2 = `${TEST_PAGES_URL}/subscription.txt?2`;
 const INVALID_SUBSCRIPTION_URL = "invalidUrl";
 
-const VALID_FILTER_TEXT = `|${TEST_PAGES_URL}$image`;
 const VALID_REQUEST_FILTER_TEXT = `|${TEST_PAGES_URL}$image`;
 const VALID_CONTENT_FILTER_TEXT = `${TEST_PAGES_DOMAIN}###image`;
-
-let subCircumvention = {
-  id: "00000000-0000-0000-0000-000000000030",
-  type: "circumvention",
-  title: "ABP filters",
-  homepage: "https://github.com/abp-filters/abp-filters-anti-cv",
-  url: "http://localhost:3003/anti-cv-subscription.txt",
-  mv2_url: "http://localhost:3003/mv2_anti-cv-subscription.txt"
-};
 
 const DNR = browser.declarativeNetRequest;
 
