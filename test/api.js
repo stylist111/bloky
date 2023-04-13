@@ -887,37 +887,13 @@ describe("API", function() {
         {op: "await"}
       ]);
 
-      // This is temporary solution to see if it will stabilise tests
-      // test will still fail but at least we will know that solution worked
-      if (result.foundSubscriptions){
-        // eslint-disable-next-line no-console
-        console.log("result.foundSubscriptions is true while we expect false, retrying flow...");
-
-        await EWE.testing._clearStorage();
-
-        result = await runInBackgroundPage([
-          {op: "getGlobal", arg: "EWE"},
-          {op: "pushArg", arg: {
-            name: ADDON_NAME,
-            version: ADDON_VERSION,
-            bundledSubscriptions: [subEasylist, subCircumvention,
-                                   subAcceptableAds],
-            bundledSubscriptionsPath: "subscriptions"}},
-          {op: "callMethod", arg: "start"},
-          {op: "await"}
-        ]);
-        expect(result).toEqual({foundStorage: expectedFoundStorage,
-                                foundSubscriptions: false,
-                                warnings: []});
-
-        throw new Error("Had to retry flow, please remove this throw and leave flow as fix");
-      }
-
       expect(result).toEqual({foundStorage: expectedFoundStorage,
                               foundSubscriptions: false,
                               warnings: []});
 
       await EWE.subscriptions.addDefaults("en");
+
+      await ensureEverythingHasSaved();
 
       result = await runInBackgroundPage([
         {op: "getGlobal", arg: "EWE"},
