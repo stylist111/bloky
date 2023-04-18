@@ -42,7 +42,8 @@ function parseFilterList(filters) {
     title: null,
     version: null,
     expires: null,
-    abtest: null
+    abtest: null,
+    diffurl: null
   };
 
   for (let {hasOwnProperty} = Object.prototype, i = 1; i < lines.length; i++) {

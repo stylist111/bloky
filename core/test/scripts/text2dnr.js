@@ -25,7 +25,7 @@ const {createConverter} = require("../../lib/dnr/index.js");
 const {validateRule, validateIsAsciiOnly} = require("../../lib/dnr/rules.js");
 
 const {
-  parseArgs, processFile
+  parseArgs, readAndProcessFile
 } = require("../../scripts/text2dnr.js");
 
 describe("text2dnr script", function() {
@@ -61,12 +61,12 @@ describe("text2dnr script", function() {
   });
 
   it("error with missing filter file", async function() {
-    await assert.rejects(async() => await processFile(path.join(__dirname, "..", "data", "filters2.txt"), "foo.json"));
+    await assert.rejects(async() => await readAndProcessFile(path.join(__dirname, "..", "data", "filters2.txt"), "foo.json"));
   });
 
   it("produces the JSON file", async function() {
     let outputfile = "foo.json";
-    await processFile(
+    await readAndProcessFile(
       createConverter({}),
       path.join(__dirname, "..", "data", "filters.txt"),
       outputfile
@@ -78,7 +78,7 @@ describe("text2dnr script", function() {
   it("uses rule modify callback", async function() {
     let outputFile = "foo2.json";
     let id = 0;
-    await processFile(
+    await readAndProcessFile(
       createConverter({
         modifyRule(rule, context) {
           rule["id"] = ++id;
@@ -103,7 +103,7 @@ describe("text2dnr script", function() {
 
   it("passes context argument to rule modify callback", async function() {
     let outputFile = "foo3.json";
-    await processFile(
+    await readAndProcessFile(
       createConverter({
         modifyRule(rule, context) {
           rule["context"] = context;
@@ -133,7 +133,7 @@ describe("text2dnr script", function() {
         return false;
       }
     });
-    await processFile(
+    await readAndProcessFile(
       converter,
       path.join(__dirname, "..", "data", "regex_filters.txt"),
       outputFile
@@ -156,7 +156,7 @@ describe("text2dnr script", function() {
         return false;
       }
     });
-    await processFile(
+    await readAndProcessFile(
       converter,
       path.join(__dirname, "..", "data", "invalid_filters.txt"),
       outputFile

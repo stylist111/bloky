@@ -27,6 +27,8 @@ let {createConverter} = require("../lib/dnr/index.js");
 let {normalize} = require("../lib/filters/index.js");
 let {parseFilterList} = require("../lib/filters/lists.js");
 
+const ENCODING = {encoding: "utf-8"};
+
 /**
  * @typedef {Object} FilterListContent
  * @property {Array.<Object>} rules The DNR rules.
@@ -37,18 +39,14 @@ let {parseFilterList} = require("../lib/filters/lists.js");
  * Process the filter list content
  *
  * @param {Object} converter The converter for the rules.
- * @param {Array.<string>} filterListContent The content of the filter
+ * @param {Array.<string>} lines The content of the filter
  *   list as lines.
  * @return {FilterListContent} An object containing the rules and the
  *   DNR map.
  *
  * @ignore
  */
-function processContent(converter, filterListContent) {
-  let {error, lines} = parseFilterList(filterListContent);
-  if (error)
-    return Promise.reject(new Error(error));
-
+function processContent(converter, lines) {
   lines.shift();
   let dnrMap = [];
   return Promise.resolve({
@@ -94,28 +92,35 @@ function parseArgs(cliArgv) {
   return {filename, outputfile};
 }
 
-function processFile(converter, filename, outputfile) {
-  return readFile(filename, {encoding: "utf-8"})
-    .then(content => processContent(converter, content))
-    .then(results => {
-      if (typeof outputfile != "undefined") {
-        return writeFile(
-          outputfile,
-          JSON.stringify(results.rules, null, 2),
-          {encoding: "utf-8"}
-        ).then(() => writeFile(
-          outputfile + ".map",
-          JSON.stringify(results.dnrMap, null, 2),
-          {encoding: "utf-8"})
-        );
-      }
-      return process.stdout.write(JSON.stringify(results, null, 2));
-    });
+async function readAndProcessFile(converter, filename, outputfile) {
+  let fileContent = await readFile(filename, ENCODING);
+  let {error, lines} = await parseFilterList(fileContent);
+  if (error)
+    throw new Error(error);
+
+  return await processFile(converter, lines, outputfile);
+}
+
+async function processFile(converter, lines, outputfile) {
+  let results = await processContent(converter, lines);
+  if (typeof outputfile != "undefined") {
+    await writeFile(
+      outputfile,
+      JSON.stringify(results.rules, null, 2),
+      ENCODING
+    );
+    return await writeFile(
+      outputfile + ".map",
+      JSON.stringify(results.dnrMap, null, 2),
+      ENCODING
+    );
+  }
+  return process.stdout.write(JSON.stringify(results, null, 2));
 }
 
 async function main() {
   let {filename, outputfile} = parseArgs(process.argv);
-  await processFile(createConverter({}), filename, outputfile);
+  await readAndProcessFile(createConverter({}), filename, outputfile);
 }
 
 
@@ -129,3 +134,4 @@ if (require.main == module) {
 
 exports.parseArgs = parseArgs;
 exports.processFile = processFile;
+exports.readAndProcessFile = readAndProcessFile;

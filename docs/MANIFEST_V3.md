@@ -273,6 +273,7 @@ npm exec subs-convert -- [--input/-i input_dir]
                          [--output/-o output_dir]
                          [--report/-r]
                          [--report-output/-O report_dir]
+                         [--recommended-subscriptions/-s custom_subscriptions_filename]
 ```
 
 Options:
@@ -283,11 +284,13 @@ Options:
 You can also use `--no-report` to force the report to not be generated.
 Default: `false`
 * `report-output`/`O`: Report directory. Default: `"scriptsOutput/report"`
+* `recommended-subscriptions`/`s`: Path to the file with the recommended
+subscriptions. Default: `"scriptsOutput/custom-subscriptions.json"`
 
 Example:
 
 ```
-npm exec subs-convert -- -i data/fetched -o data/rulesets -r -O data/report
+npm exec subs-convert -- -i data/fetched -o data/rulesets -r -O data/report -s data/recommended.json
 ```
 
 #### subs-generate

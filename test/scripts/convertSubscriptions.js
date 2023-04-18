@@ -24,25 +24,33 @@ import {convert} from "../../scripts/convertSubscriptions.js";
 const encoding = "utf-8";
 
 describe("convertSubscriptions script", () => {
-  let dirPath;
+  let rootDir;
+  let dirPathPrefix;
   let tmpInDir;
   let tmpOutDir;
   let tmpReportDir;
   let originalConsoleWarn;
   let warnings;
 
+  let customSubscriptionsFilename;
+
   function mockedConsoleWarn(message) {
     warnings.push(message);
   }
 
   beforeEach(function() {
-    dirPath = path.join(os.tmpdir(), "convert-");
-    tmpInDir = fs.mkdtempSync(dirPath);
-    tmpOutDir = fs.mkdtempSync(dirPath);
-    tmpReportDir = fs.mkdtempSync(dirPath);
+    rootDir = os.tmpdir();
+    dirPathPrefix = path.join(rootDir, "convert-");
+    tmpInDir = fs.mkdtempSync(dirPathPrefix);
+    tmpOutDir = fs.mkdtempSync(dirPathPrefix);
+    tmpReportDir = fs.mkdtempSync(dirPathPrefix);
     originalConsoleWarn = console.warn;
     console.warn = mockedConsoleWarn;
     warnings = [];
+
+    customSubscriptionsFilename = path.join(rootDir, "custom-subscriptions.json");
+    fs.openSync(customSubscriptionsFilename, "w");
+    fs.writeFileSync(customSubscriptionsFilename, "[]", {encoding});
   });
 
   afterEach(function() {
@@ -142,7 +150,7 @@ describe("convertSubscriptions script", () => {
   it("does not filter regex rules", async function() {
     let filename = "foo.txt";
     createAbpRuleFile(filename, "[Adblock Plus 2.0]\n/rule1/\nrule2");
-    await convert(tmpInDir, tmpOutDir);
+    await convert(tmpInDir, tmpOutDir, false, "", customSubscriptionsFilename);
     let dnrRules = getDnrRulesFromFile(filename);
     expect(dnrRules.length).toEqual(2);
     expect(dnrRules[0].condition.regexFilter).toEqual("rule1");
@@ -152,7 +160,7 @@ describe("convertSubscriptions script", () => {
   it("adds rule ids and map them", async function() {
     let filename = "foo.txt";
     createAbpRuleFile(filename, "[Adblock Plus 2.0]\nrule1\nrule2");
-    await convert(tmpInDir, tmpOutDir);
+    await convert(tmpInDir, tmpOutDir, false, "", customSubscriptionsFilename);
     let dnrRules = getDnrRulesFromFile(filename);
     expect(dnrRules.length).toEqual(2);
     expect(dnrRules[0].id).toEqual(expect.any(Number));
@@ -166,10 +174,36 @@ describe("convertSubscriptions script", () => {
     expect(dnrMap[1][1]).toContain(dnrRules[1].id);
   });
 
+  it("should place a diff_url property on the subscription recommendations file", async function() {
+    let diffSubscriptionFilename = "00000000-0000-0000-0000-000000000050";
+    createAbpRuleFile(diffSubscriptionFilename,
+                      "[Adblock Plus 2.0]\n! DiffUrl: whereIShouldGetData.com\nrule1\nrule2");
+
+    let customSubscriptionsContent = JSON.stringify([{
+      id: "00000000-0000-0000-0000-000000000050",
+      type: "ads",
+      title: "Subscription with a DiffUrl",
+      homepage: "http://localhost:3003/diffSubscription.txt",
+      url: "http://localhost:3003/diffSubscription.txt",
+      mv2_url: "http://localhost:3003/mv2_diffSubscription.txt"
+    }]);
+
+    fs.openSync(customSubscriptionsFilename, "w");
+    fs.writeFileSync(customSubscriptionsFilename, customSubscriptionsContent,
+                     {encoding});
+
+    await convert(tmpInDir, tmpOutDir, false, "", customSubscriptionsFilename);
+
+    let result =
+      JSON.parse(fs.readFileSync(customSubscriptionsFilename, encoding));
+    expect(result[0].diff_url).toEqual("whereIShouldGetData.com");
+  });
+
   it("generates a summary report file", async function() {
     let filename = "foo.txt";
     createAbpRuleFile(filename, "[Adblock Plus 2.0]\n/rule1/\nrule2\n");
-    await convert(tmpInDir, tmpOutDir, true, tmpReportDir);
+    await convert(tmpInDir, tmpOutDir, true, tmpReportDir,
+                  customSubscriptionsFilename);
     const reportSummaryFile = fs.existsSync(path.join(tmpReportDir, "_reportSummary.csv"));
     expect(reportSummaryFile).toBeTruthy();
   });
@@ -181,7 +215,8 @@ describe("convertSubscriptions script", () => {
     createAbpRuleFile(filename2, "[Adblock Plus 2.0]\n/rule1/\nrule2\n");
     let filename3 = "baz.txt";
     createAbpRuleFile(filename3, "[Adblock Plus 2.0]\n/rule1/\nrule2\n");
-    await convert(tmpInDir, tmpOutDir, true, tmpReportDir);
+    await convert(tmpInDir, tmpOutDir, true, tmpReportDir,
+                  customSubscriptionsFilename);
     const folderContent = fs.readdirSync(tmpReportDir);
     const subscriptionNames = [filename1, filename2, filename3];
     expect(folderContent).toEqual(expect.arrayContaining(subscriptionNames));
@@ -190,7 +225,8 @@ describe("convertSubscriptions script", () => {
   it("generates the subscription data correctly", async function() {
     let filename = "foo.txt";
     createAbpRuleFile(filename, "[Adblock Plus 2.0]\n/image-from-subscription.png^$image\n###elem-hide");
-    await convert(tmpInDir, tmpOutDir, true, tmpReportDir);
+    await convert(tmpInDir, tmpOutDir, true, tmpReportDir,
+                  customSubscriptionsFilename);
     const reportContent = getReportDataFromFile(filename);
     expect(reportContent[0]).toEqual({
       filterText: "/image-from-subscription.png^$image",
@@ -206,7 +242,8 @@ describe("convertSubscriptions script", () => {
   it("generates the summary data correctly", async function() {
     let filename = "foo.txt";
     createAbpRuleFile(filename, "[Adblock Plus 2.0]\n/image-from-subscription.png^$image\n###elem-hide");
-    await convert(tmpInDir, tmpOutDir, true, tmpReportDir);
+    await convert(tmpInDir, tmpOutDir, true, tmpReportDir,
+                  customSubscriptionsFilename);
     const reportSummaryContent = getSummaryReportData(filename);
     expect(reportSummaryContent[0]).toEqual({
       subsId: filename,
