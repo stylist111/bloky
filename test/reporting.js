@@ -24,7 +24,8 @@ import {Page, Popup, setMinTimeout, wait, waitForAssertion, isMV3,
         TEST_ADMIN_PAGES_URL}
   from "./utils.js";
 import {EWE, addFilter, runInBackgroundPage, getTestEvents, clearTestEvents,
-        addOnBlockableListener, removeOnBlockableListener} from "./messaging.js";
+        addOnBlockableListener, removeOnBlockableListener,
+        waitForServiceWorkerInitialization} from "./messaging.js";
 import {VALID_FILTER_TEXT} from "./api-fixtures.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
@@ -247,6 +248,9 @@ describe("Reporting", function() {
 
     async function expectLoggedMessages(getReceivedEvents, mandatoryEvents,
                                         optionalEvents = []) {
+      if (isFuzzingServiceWorker())
+        await waitForServiceWorkerInitialization();
+
       // Some of the events we're checking for here may be emitted
       // after the page is done loading, like elemhide.
       await waitForAssertion(() => {
