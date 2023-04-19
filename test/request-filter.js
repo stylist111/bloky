@@ -313,16 +313,8 @@ describe("Blocking", function() {
     it("does not block a request from iframe", async function() {
       await addFilter("/image.png^$image");
       await addFilter(`@@$document,sitekey=${SITEKEY}`);
-      // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/255
-      // Retrying will be removed once the issue is fixed.
-      await wait(async() => {
-        try {
-          await new Page("iframe-sitekey.html").expectResource("image.png")
-            .toBeLoaded();
-          return true;
-        }
-        catch (e) {}
-      }, 1000, "image.png was blocked");
+      await new Page("iframe-sitekey.html").expectResource("image.png")
+        .toBeLoaded();
     });
 
     it("does not block a request after a reload", async function() {
@@ -337,17 +329,8 @@ describe("Blocking", function() {
     it("blocks a request after a reload if sitekey filter was removed", async function() {
       await addFilter("/image.png^$image");
       await addFilter(`@@$sitekey=${SITEKEY}`);
-      let page;
-      // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/255
-      // Retrying will be removed once the issue is fixed.
-      await wait(async() => {
-        try {
-          page = new Page("image.html?sitekey=1");
-          await page.expectResource("image.png").toBeLoaded();
-          return true;
-        }
-        catch (e) {}
-      }, 1000, "image.png was blocked before reload");
+      let page = new Page("image.html?sitekey=1");
+      await page.expectResource("image.png").toBeLoaded();
 
       await EWE.filters.remove([`@@$sitekey=${SITEKEY}`]);
       page.reload();
