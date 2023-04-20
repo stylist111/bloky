@@ -17,6 +17,7 @@ for further information.
   * [Supported browsers](#supported-browsers)
   * [Manifest for V2](#manifest-for-v2)
   * [Manifest for V3](#manifest-for-v3)
+  * [Required permissions and why we need them](#required-permissions-and-why-we-need-them)
   * [API](#api)
   * [Module bundlers (optional)](#module-bundlers-optional)
   * [Snippet filters support](#snippet-filters-support)
@@ -98,7 +99,9 @@ include the following configuration:
     "webNavigation",
     "webRequest",
     "webRequestBlocking",
+    "storage",
     "unlimitedStorage",
+    "tabs",
     "<all_urls>"
   ]
 }
@@ -130,8 +133,7 @@ include the following configuration:
     }
   ],
   "permissions": [
-    "declarativeNetRequestWithHostAccess",
-    "declarativeNetRequestFeedback",
+    "declarativeNetRequest",
     "scripting",
     "storage",
     "tabs",
@@ -167,6 +169,39 @@ The permission `declarativeNetRequestWithHostAccess` requires the
 filtering of content and limiting the blocking to network requests to
 those specified in `host_permissions`. The default configuration
 provided offers the most functionality.
+
+### Required permissions and why we need them
+
+We require several permissions for the SDK to function correctly. The manifest
+file templates above include the required permissions. Here is why we need each
+one:
+
+* `webNavigation`: Gives access to the Web Navigation API, which we use to
+  apply document-level allowing filters and to block popups.
+* `webRequest`: Gives access to the Web Request API. Used to apply URL filters
+  in MV2, and to report on URL filters in MV3. Also used to retrieve sitekeys
+  for a site.
+* `webRequestBlocking` (MV2 only): Allows blocking request based on URL filters
+  in MV2.
+* `declarativeNetRequest` (MV3 only): Gives access to the Declarative Net
+  Request API, which we use to apply URL filters in MV3.
+* `storage`: Gives access to storage APIs, which we use to store downloaded
+  subscriptions, user's custom filters, etc.
+* `unlimitedStorage`: By default, extensions are only allowed 5MB of storage,
+  which isn't enough for larger subscriptions. This permission removes that
+  limit.
+* `tabs`: Gives access to some tab metadata, including the tab's URL, which is
+  used to apply document-level allowing filters to the tab.
+* `scripting` (MV3 only): Used to apply content filters, including element
+  hiding filters and snippet filters.
+* `<all_urls>`: Allows the SDK to act on all websites. Note that in MV2
+  manifests this goes in the `permissions`, but in MV3 manifests this goes in
+  the new `host_permissions` section.
+
+You can read more about browser extension permissions and their effects in
+Google's docs for
+[MV2 permissions](https://developer.chrome.com/docs/extensions/mv2/declare_permissions/)
+and [MV3 permissions](https://developer.chrome.com/docs/extensions/mv3/declare_permissions/)
 
 ### API
 

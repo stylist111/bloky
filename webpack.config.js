@@ -62,8 +62,7 @@ const mv3 = {
   background: {service_worker: "background.js"},
   permissions: [
     "scripting",
-    "declarativeNetRequest",
-    "declarativeNetRequestFeedback"
+    "declarativeNetRequest"
   ],
   misc: {
     host_permissions: ["<all_urls>"],
