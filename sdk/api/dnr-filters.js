@@ -267,7 +267,7 @@ export async function addFilters(texts, metadata) {
   let {length} = filters.add;
   if (length > 0) {
     // always false when !browser.declarativeNetRequest
-    if (length >= await dynamicRulesAvailable())
+    if (length > await dynamicRulesAvailable())
       throw new FilterError(ERROR_TOO_MANY_FILTERS);
 
     // so that this would throw the right error in case

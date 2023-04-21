@@ -567,25 +567,17 @@ describe("Filters", function() {
 });
 
 describe("Filters limit [mv3-only]", function() {
-  it("does add about 5000 filters", async function() {
+  it("does not allow adding more than 5000 filters", async function() {
     let timeout = isFuzzingServiceWorker() ? 60000 : 20000;
     setMinTimeout(this, timeout);
-    let almostFiveThousandFilters = Array.from(
-      // 4999 only as 5000 will fail.
-      // See https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/539.
-      {length: 4999},
+    let fiveThousandFilters = Array.from(
+      {length: 5000},
       (_, x) => ("filter_" + x)
     );
-    await expect(EWE.filters.add(almostFiveThousandFilters))
+    await expect(EWE.filters.add(fiveThousandFilters))
       .resolves.not.toThrow();
-  });
 
-  it("does not add more than 5000 dynamic filters", async function() {
-    let fiveThousandAndOneFilters = Array.from(
-      {length: 5001},
-      (_, x) => (VALID_FILTER + "_" + x)
-    );
-    await expect(EWE.filters.add(fiveThousandAndOneFilters)).rejects.toThrow(
+    await expect(EWE.filters.add("filter_5001")).rejects.toThrow(
       "FilterError: {\"type\":\"too_many_filters\",\"option\":null}");
   });
 });
