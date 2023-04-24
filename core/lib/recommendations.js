@@ -96,6 +96,14 @@ class Recommendation {
   get mv2URL() {
     return this._source.mv2_url;
   }
+
+  /**
+   * Where this recommendation will get updates from.
+   * @type {?string}
+   */
+  get diffURL() {
+    return this._source.diff_url;
+  }
 }
 
 let _recommendations = null;

@@ -335,6 +335,9 @@ exports.Subscription = class Subscription {
 
     if (this.type)
       this.abtest = params.abtest;
+
+    if (params.diffURL)
+      this.diffURL = params.diffURL;
   }
 
   /**
@@ -565,6 +568,8 @@ exports.Subscription.fromURL = function(url) {
     let downloadable = true;
     let title = null;
     let params = null;
+    let updatableThroughDiffs = false;
+
     if (Subscription.dnr) {
       // In DNR we check if we got a mv2 URL and remap.
       let actualUrl = urlByMv2URL().get(url);
@@ -595,11 +600,19 @@ exports.Subscription.fromURL = function(url) {
             title
           };
         }
+
+        if (recommendation.diffURL) {
+          params.diffURL = recommendation.diffURL;
+          updatableThroughDiffs = true;
+          downloadable = false;
+        }
       }
     }
 
     if (downloadable)
       subscription = new DownloadableSubscription(url, title);
+    else if (updatableThroughDiffs)
+      subscription = new DiffUpdatableSubscription(url, title, params);
     else
       subscription = new CountableSubscription(url, title, params);
 
@@ -620,14 +633,21 @@ exports.Subscription.fromObject = function(obj) {
   if (obj.url[0] != "~") {
     // URL is valid - this is a regular subscription
     // Unless indicated otherwise it is downloadable.
-    if (("downloadable" in obj) && (obj.downloadable == "false"))
-      result = new CountableSubscription(obj.url, obj.title);
-    else
+    if (("downloadable" in obj) && (obj.downloadable == "false")){
+      if ("diffURL" in obj)
+        result = new DiffUpdatableSubscription(obj.url, obj.title);
+      else
+        result = new CountableSubscription(obj.url, obj.title);
+    }
+    else {
       result = new DownloadableSubscription(obj.url, obj.title);
+    }
 
     if (result.type)
       result.abtest = obj.abtest;
 
+    if ("diffURL" in obj)
+      result.diffURL = obj.diffURL;
     if ("downloadStatus" in obj)
       result._downloadStatus = obj.downloadStatus;
     if ("lastSuccess" in obj)
@@ -937,7 +957,7 @@ exports.RegularSubscription = class RegularSubscription extends Subscription {
 
     yield* super.serialize();
 
-    // To keep compatibility dowloadable is true if missing
+    // To keep compatibility downloadable is true if missing
     if (!this.downloadable)
       yield "downloadable=false";
     if (_homepage)
@@ -1235,5 +1255,75 @@ class DownloadableSubscription extends CountableSubscription {
    */
   get downloadable() {
     return true;
+  }
+};
+
+let DiffUpdatableSubscription =
+/**
+ * The `DiffUpdatableSubscription` class represents a regular filter
+ * subscription whose content (filter text) is downloaded from a filter list
+ * off the internet from `url`. The key difference between this and a
+ * `{@link CountableSubscription}` is that this class has a diffurl from where
+ * updates will be handled
+ *
+ * It will have its `downloadable` property set to `false`.
+ *
+ * @extends module:subscriptionClasses.CountableSubscription
+ */
+exports.DiffUpdatableSubscription =
+class DiffUpdatableSubscription extends CountableSubscription {
+  /**
+   * Construct a new DiffUpdatableSubscription
+   * @param {string} url The URL of the subscription.
+   * @param {string} [title] The title of the subscription.
+   * @param {?object} [params] The params to pass to
+   *    `{@link Subscription.setParams}`. Can be omitted or `null`.
+   * @private
+   */
+  constructor(url, title, params) {
+    super(url, title);
+
+    if (params)
+      this.setParams(params);
+  }
+
+  /**
+   * Serializes the subscription for writing out on disk.
+   * @yields {string}
+   * @package
+   */
+  *serialize() {
+    let {diffURL} = this;
+
+    yield* super.serialize();
+
+    if (diffURL)
+      yield "diffURL=" + diffURL;
+  }
+
+  /**
+   * Updatable subscriptions should not be downloadable as they will rather
+   * support getting diffs from a diffUrl.
+   *
+   * @type {boolean}
+   * @default <code>true</code>
+   */
+  get downloadable() {
+    return false;
+  }
+
+  /**
+   * The location where this subscription's content is downloaded from.
+   *
+   * @type {String}
+   */
+  get diffURL() {
+    return this._diffURL;
+  }
+
+  set diffURL(value) {
+    let oldValue = this._diffURL;
+    this._diffURL = value;
+    filterNotifier.emit("subscription.diffUrl", this, value, oldValue);
   }
 };

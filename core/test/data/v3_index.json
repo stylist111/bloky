@@ -50,7 +50,8 @@
       "8C13E995-8F06-4927-BEA7-6C845FB7EEBF"
     ],
     "url": "https://easylist-downloads.adblockplus.org/v3/full/abpindo.txt",
-    "mv2_url": "https://easylist-downloads.adblockplus.org/abpindo.txt"
+    "mv2_url": "https://easylist-downloads.adblockplus.org/abpindo.txt",
+    "diff_url": "https://easylist-downloads.adblockplus.org/v3/diff/abpindo/187271f7a9a62cda9661034000d12367bdfbb78c.json"
   },
   {
     "id": "03648752-31EE-4FD0-85C1-20B07C5551C3",

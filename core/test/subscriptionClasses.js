@@ -23,12 +23,15 @@ const {LIB_FOLDER, createSandbox} = require("./_common");
 let Subscription = null;
 let SpecialSubscription = null;
 let DownloadableSubscription = null;
+let DiffUpdatableSubscription = null;
 let RegularSubscription = null;
 let Filter = null;
 
 function compareSubscription(url, expected, postInit) {
   expected.push("[Subscription]");
+
   let subscription = Subscription.fromURL(url);
+
   if (postInit)
     postInit(subscription);
   let result = [...subscription.serialize()];
@@ -49,6 +52,7 @@ describe("Subscription classes", function() {
     (
       {Subscription, SpecialSubscription,
        DownloadableSubscription,
+       DiffUpdatableSubscription,
        RegularSubscription} = sandboxedRequire(LIB_FOLDER + "/subscriptionClasses"),
       {Filter} = sandboxedRequire(LIB_FOLDER + "/filterClasses")
     );
@@ -71,6 +75,7 @@ describe("Subscription classes", function() {
     assert.equal(typeof SpecialSubscription, "function", "typeof SpecialSubscription");
     assert.equal(typeof RegularSubscription, "function", "typeof RegularSubscription");
     assert.equal(typeof DownloadableSubscription, "function", "typeof DownloadableSubscription");
+    assert.equal(typeof DiffUpdatableSubscription, "function", "typeof DiffUpdatableSubscription");
   });
 
   it("Subscriptions with state", function() {
@@ -327,6 +332,17 @@ describe("DNR mode", function() {
     compareSubscription(sub4.url, [
       "title=https://test/default",
       "url=https://test/default"
+    ]);
+  });
+
+  it("Maps diff_url correctly", function() {
+    let subscription = Subscription.fromURL("https://easylist-downloads.adblockplus.org/v3/full/abpindo.txt");
+    assert.ok(subscription);
+    compareSubscription(subscription.url, [
+      "url=https://easylist-downloads.adblockplus.org/v3/full/abpindo.txt",
+      "downloadable=false", "diffURL=https://easylist-downloads.adblockplus.org/v3/diff/abpindo/187271f7a9a62cda9661034000d12367bdfbb78c.json", "fixedTitle=true",
+      "homepage=https://github.com/ABPindo/indonesianadblockrules/", "title=ABPindo",
+      "id=A4A32212-E6BD-45F6-AD0F-E0FD18E8537B"
     ]);
   });
 });
