@@ -69,6 +69,29 @@ describe("Testing Mechanisms", function() {
       expect(await browser.runtime.sendMessage({type: "ewe-test:getInMemoryState"}))
         .toEqual(null);
     });
+
+    describe("mock dynamic rules available", function() {
+      after(async function() {
+        await EWE.testing.testSetDynamicRulesAvailable(0);
+      });
+
+      it("can set the dynamic rules available to 100", async function() {
+        expect(
+          (await browser.declarativeNetRequest.getSessionRules()).length
+        ).toEqual(0);
+        expect(
+          (await browser.declarativeNetRequest.getSessionRules()).length
+        ).toEqual(0);
+
+        const MAX_NUMBER = await browser.declarativeNetRequest
+              .MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES;
+        expect(await EWE.testing.dynamicRulesAvailable()).toEqual(MAX_NUMBER);
+
+        await EWE.testing.testSetDynamicRulesAvailable(100);
+
+        expect(await EWE.testing.dynamicRulesAvailable()).toEqual(100);
+      });
+    });
   });
 
   describe("Console logging", function() {

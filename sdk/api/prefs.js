@@ -33,6 +33,7 @@ export const defaults = Object.create({
   notifications_initial_delay: 1000, // 1 s
   patternsbackupinterval: 24,
   patternsbackups: 0,
+  ruleset_updates: [],
   savestats: false,
   show_statsinpopup: true,
   subscriptions_autoupdate: true,

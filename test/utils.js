@@ -561,7 +561,8 @@ export function isChromiumBased() {
 }
 
 export function hasUpdateStaticRules() {
-  return !!browser.declarativeNetRequest.updateStaticRules;
+  return browser.declarativeNetRequest &&
+    browser.declarativeNetRequest.updateStaticRules;
 }
 
 // Feature detection for web bundle support.

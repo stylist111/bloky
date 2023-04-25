@@ -36,6 +36,7 @@ import {Prefs} from "./prefs.js";
 
 let highestRuleId = 1;
 let dynamicFilters = new Map();
+let rulesetUpdates = new Map();
 let initializationPromise;
 
 let getRulesFromFilter = () => {};
@@ -78,6 +79,7 @@ export async function dnrSubscriptionUpdate(subscription, updates) {
   // if the service worker got awaken.
   await initializer.start();
 
+  let rollback = null;
   // The dnrMapper is only useful to update static rules.
   let dnrMapper = null;
   // The already disabled static rules.
@@ -94,6 +96,11 @@ export async function dnrSubscriptionUpdate(subscription, updates) {
         {rulesetId: subscription.id}
       );
 
+    if (rulesetUpdates.size == 0)
+      loadRulesetUpdates();
+
+    let lastUpdate = rulesetUpdates.get(subscription.id);
+
     // All the dynamic filters for this subscription must be removed.
     for (let [text, detail] of dynamicFilters.entries()) {
       if (detail && detail.subscriptionIds) {
@@ -102,6 +109,13 @@ export async function dnrSubscriptionUpdate(subscription, updates) {
           subscriptionDynRules.add(text);
       }
     }
+
+    rollback = async() => {
+      if (lastUpdate)
+        await dnrSubscriptionUpdate(subscription, lastUpdate);
+      else
+        await dnrSubscriptionUpdate(subscription, {added: [], removed: []});
+    };
   }
 
   let filters = await processFilterTexts(added, subscription.id, dnrMapper);
@@ -116,7 +130,7 @@ export async function dnrSubscriptionUpdate(subscription, updates) {
   }
 
   let toRemove = removed.concat(...subscriptionDynRules.keys());
-  // Removing subscription.id from existing filter.
+  // Removing subscription.id from existing filters that are removed.
   let removedDynRules = toRemove.filter(text => {
     let detail = dynamicFilters.get(text);
     if (detail && detail.subscriptionIds) {
@@ -133,8 +147,12 @@ export async function dnrSubscriptionUpdate(subscription, updates) {
     return detail ? detail.ruleIds : [];
   });
 
-  if (filters.add.length - removeRuleIds.length > await dynamicRulesAvailable())
+  if (filters.add.length - removeRuleIds.length >
+      await dynamicRulesAvailable()) {
+    if (rollback)
+      await rollback();
     throw new FilterError(ERROR_TOO_MANY_FILTERS);
+  }
 
   // Empty array cause exceptions. Make it `undefined`.
   if (removeRuleIds.length == 0)
@@ -181,6 +199,8 @@ export async function dnrSubscriptionUpdate(subscription, updates) {
                         subscriptionIds: [subscription.id]});
   });
 
+  rulesetUpdates.set(subscription.id, updates);
+  storeRulesetUpdates();
   storeDynamicFilters();
 }
 
@@ -230,6 +250,23 @@ function storeDynamicFilters() {
   let storageArray = [];
   storageArray.push(...dynamicFilters);
   Prefs.dynamic_filters = storageArray;
+}
+
+function storeRulesetUpdates() {
+  let storageArray = [];
+  storageArray.push(...rulesetUpdates);
+  Prefs.ruleset_updates = storageArray;
+}
+
+function loadRulesetUpdates() {
+  let rulesetUpdatesArray = Prefs.ruleset_updates;
+  if (Array.isArray(rulesetUpdatesArray) && rulesetUpdatesArray.length > 0)
+    rulesetUpdates = new Map(rulesetUpdatesArray);
+}
+
+export function clearRulesetUpdates() {
+  rulesetUpdates.clear();
+  Prefs.ruleset_updates = [];
 }
 
 export function init() {
@@ -365,15 +402,38 @@ async function processFilterTexts(texts, subscriptionId = null, mapper = null) {
   return {add, exist, existOnOtherSubscription, staticRulesToEnable, details};
 }
 
-async function dynamicRulesAvailable() {
+let TESTING_MAX_DYNAMIC_RULES = 0;
+
+/**
+ * For testing purpose, set the a maximum number of dynamic
+ * rules. This value is used by `dynamicRulesAvailable()`.
+ * @param {number} num The maximum number of dynamic rules. A value of
+ *   `0` just unset it and uses the "system" default which is
+ *   `browser.declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES`
+ *
+ * @private
+ */
+export function testSetDynamicRulesAvailable(num) {
+  TESTING_MAX_DYNAMIC_RULES = num;
+}
+
+export async function dynamicRulesAvailable() {
   let {declarativeNetRequest} = browser;
   if (!declarativeNetRequest)
     return Infinity;
 
-  const {MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES} = declarativeNetRequest;
+  let maxNumberAvailable;
+  if (TESTING_MAX_DYNAMIC_RULES > 0) {
+    maxNumberAvailable = TESTING_MAX_DYNAMIC_RULES;
+  }
+  else {
+    maxNumberAvailable =
+      declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES;
+  }
+
   let used = (await declarativeNetRequest.getDynamicRules()).length +
                (await declarativeNetRequest.getSessionRules()).length;
-  return MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES - used;
+  return maxNumberAvailable - used;
 }
 
 export async function addFilters(texts, metadata) {
