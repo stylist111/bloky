@@ -84,7 +84,7 @@ beforeEach(async function() {
 });
 
 afterEach(async function() {
-  setMinTimeout(this, isFuzzingServiceWorker() ? 8000 : 5000);
+  setMinTimeout(this, isFuzzingServiceWorker() ? 8000 : 6000);
   await clearFilters();
   await clearStorage();
   await Page.removeCurrent();

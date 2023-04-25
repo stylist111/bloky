@@ -20,10 +20,41 @@ import expect from "expect";
 import sinon from "sinon/pkg/sinon.js";
 
 import {setMinTimeout, waitForAssertion, setEndpointResponse,
-        clearEndpointResponse, TEST_ADMIN_PAGES_URL} from "./utils.js";
+        clearEndpointResponse, TEST_ADMIN_PAGES_URL, TEST_PAGES_URL, wait, firefoxVersion, isFirefox} from "./utils.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
-import {runInBackgroundPage, waitForServiceWorkerInitialization}
+import {runInBackgroundPage, waitForServiceWorkerInitialization, EWE}
   from "./messaging.js";
+
+const VALID_FILTER_TEXT = `|${TEST_PAGES_URL}$image`;
+const SECOND_VALID_FILTER_TEXT = "another-filter";
+const VALID_FILTER = {
+  text: VALID_FILTER_TEXT,
+  enabled: true,
+  slow: false,
+  type: "blocking",
+  thirdParty: null,
+  selector: null,
+  csp: null
+};
+const SECOND_VALID_FILTER = {
+  text: SECOND_VALID_FILTER_TEXT,
+  enabled: true,
+  slow: true,
+  type: "blocking",
+  thirdParty: null,
+  selector: null,
+  csp: null
+};
+
+let subEasylist = {
+  id: "8C13E995-8F06-4927-BEA7-6C845FB7EEBF",
+  type: "ads",
+  languages: ["en"],
+  title: "EasyList",
+  homepage: "https://easylist.to/",
+  url: "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt",
+  mv2_url: "https://easylist-downloads.adblockplus.org/easylist.txt"
+};
 
 describe("Testing Mechanisms", function() {
   describe("MV3 Service Workers [mv3-only]", function() {
@@ -123,6 +154,76 @@ describe("Testing Mechanisms", function() {
       expect((async() => {
         await testOutput.json();
       })).rejects.toThrow();
+    });
+  });
+
+  describe("Communication endpoints for testpages [fuzz-skip]", function() {
+    it("Adds, gets and Removes filter", async function() {
+      // Add filter
+      await browser.runtime.sendMessage({type: "filters.importRaw", text: `${VALID_FILTER_TEXT} \n ${SECOND_VALID_FILTER_TEXT}`});
+
+      // Get filter
+      // In MV3 we need sometimes to wait for filter to be added
+      let userFilters;
+      await wait(async() => {
+        userFilters = await browser.runtime.sendMessage({type: "filters.get"});
+        return userFilters.length > 0 ? userFilters : false;
+      }, 1000, "Filters weren't added properly");
+      expect(userFilters).toBeArrayContainingExactly(
+        [VALID_FILTER, SECOND_VALID_FILTER]
+      );
+
+      // Remove filter
+      await Promise.all(userFilters.map(filter => browser.runtime.sendMessage(
+        {type: "filters.remove", text: filter.text}
+      )));
+      userFilters = await browser.runtime.sendMessage({type: "filters.get"});
+      expect(userFilters).toEqual([]);
+    });
+
+    it("Gets and Removes Subscriptions", async function() {
+      await EWE.subscriptions.add(subEasylist.url);
+
+      // Get subscriptions
+      let subs = await browser.runtime.sendMessage(
+        {type: "subscriptions.get", ignoreDisabled: true, downloadable: true}
+      );
+      expect(subs.length).toEqual(1);
+
+      // Remove subscription
+      await browser.runtime.sendMessage({type: "subscriptions.remove",
+                                         url: subEasylist.url});
+      subs = await browser.runtime.sendMessage(
+        {type: "subscriptions.get", ignoreDisabled: true, downloadable: true}
+      );
+      expect(subs).toEqual([]);
+    });
+
+    it("Responses with last error", async function() {
+      // For firefox 68 this test will fail
+      // To be unskipped once fix will land in get-browser-binary
+      // More details: https://gitlab.com/eyeo/developer-experience/get-browser-binary/-/issues/49
+      if (isFirefox() && firefoxVersion() == 68)
+        this.skip();
+
+      // Get error by invoking calling same endpoint twice with same argument
+      await browser.runtime.sendMessage({type: "filters.importRaw", text: `${VALID_FILTER_TEXT} `});
+      // In MV3 we need to wait for filter to be added
+      // before calling add one more time to trigger error
+      await wait(async() => {
+        let userFilters = await browser.runtime.sendMessage({type: "filters.get"});
+        return userFilters.length > 0 ? userFilters : false;
+      }, 1000, "First filter wasn't added properly");
+
+      await browser.runtime.sendMessage({type: "filters.importRaw", text: `${VALID_FILTER_TEXT} `});
+
+      let errors;
+      await wait(async() => {
+        errors = await browser.runtime.sendMessage({type: "debug.getLastError"});
+        return errors.length > 0 ? errors : false;
+      }, 1500, "Errors weren't received");
+
+      expect(errors).not.toBeNull();
     });
   });
 });
