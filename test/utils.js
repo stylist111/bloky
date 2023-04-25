@@ -20,7 +20,7 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
-import {fuzzSuspendServiceWorker, waitForServiceWorkerInitialization}
+import {fuzzSuspendServiceWorker, waitForServiceWorkerInitialization, EWE}
   from "./messaging.js";
 
 export const TEST_PAGES_DOMAIN = "localhost";
@@ -240,6 +240,8 @@ export class Page {
 
 export class Resource {
   constructor(path, page) {
+    this.path = path;
+
     this.error = (async() => {
       let tabId = page && await page.created;
       let url = new URL(path, TEST_PAGES_URL).href;
@@ -277,12 +279,12 @@ export class Resource {
   }
 
   async expectToBeBlocked() {
-    await wait(
-      async() => {
-        let errorFromConsole = await this.error;
-        return (errorFromConsole.error == "NS_ERROR_ABORT") ||
-          (errorFromConsole.error == "net::ERR_BLOCKED_BY_CLIENT");
-      }, 1000, "Expected element is not blocked.");
+    let error = await this.error;
+    let blocked = error &&
+        /^(net::ERR_BLOCKED_BY_CLIENT|NS_ERROR_ABORT)$/.test(error.error);
+
+    if (!blocked)
+      throw new Error(`${this.path} was not blocked`);
   }
 
   // The "aborted" error is emitted for subresources loaded from
@@ -290,13 +292,20 @@ export class Resource {
   // This is currently only in Chrome.
   // What is the Firefox equivalent? It doesn't support web bundle.
   async expectToBeAborted() {
-    expect(await this.error).toEqual(expect.objectContaining({
-      error: expect.stringMatching(/^(net::ERR_ABORTED)$/)
-    }));
+    let error = await this.error;
+    let aborted = error &&
+        /^(net::ERR_ABORTED)$/.test(error.error);
+
+    if (!aborted)
+      throw new Error(`${this.path} was not aborted`);
   }
 
   async expectToBeLoaded() {
-    expect(await this.error).toBeUndefined();
+    let error = await this.error;
+    let loaded = typeof error == "undefined";
+
+    if (!loaded)
+      throw new Error(`${this.path} did not load successfully`);
   }
 }
 
@@ -650,3 +659,11 @@ export async function clearEndpointResponse(url) {
   });
 }
 
+export async function waitForSubscriptionsToDownload() {
+  await wait(async() => {
+    let subscriptions = await EWE.subscriptions.getDownloadable();
+    return subscriptions.every(
+      sub => !sub.downloadable || sub.downloadStatus == "synchronize_ok"
+    );
+  }, 1000, "Subscriptions were not downloaded.");
+}

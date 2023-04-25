@@ -17,9 +17,9 @@
 
 import expect from "expect";
 
-import {Page, Resource, executeScript, wait, setMinTimeout, TEST_PAGES_URL,
+import {Page, Resource, executeScript, setMinTimeout, TEST_PAGES_URL,
         TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, SITEKEY, TEST_MV3_SUBSCRIPTION,
-        supportsWebBundle} from "./utils.js";
+        supportsWebBundle, waitForSubscriptionsToDownload} from "./utils.js";
 import {addFilter, EWE} from "./messaging.js";
 
 describe("Blocking", function() {
@@ -30,19 +30,11 @@ describe("Blocking", function() {
 
   it("blocks a request using subscriptions [fuzz]", async function() {
     setMinTimeout(this, 3000);
-
-    // In MV3 the list of bundled subscriptions is passed as an
-    // argument to EWE.start in the background.js file.
     await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.url);
+    await waitForSubscriptionsToDownload();
 
-    await wait(async() => {
-      try {
-        await new Page("image-from-subscription.html")
-          .expectResource("image-from-subscription.png").toBeBlocked();
-        return true;
-      }
-      catch (e) {}
-    }, 1000, "image-from-subscription.png was not blocked");
+    await new Page("image-from-subscription.html")
+      .expectResource("image-from-subscription.png").toBeBlocked();
   });
 
   it("does not block a request using a disabled filter", async function() {
