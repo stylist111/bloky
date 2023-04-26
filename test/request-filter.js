@@ -37,6 +37,17 @@ describe("Blocking", function() {
       .expectResource("image-from-subscription.png").toBeBlocked();
   });
 
+  it("does not block from subscription if allow filter is added", async function() {
+    setMinTimeout(this, 3000);
+
+    await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.url);
+    await EWE.filters.add("@@image-from-subscription.png");
+    await waitForSubscriptionsToDownload();
+
+    await new Page("image-from-subscription.html")
+          .expectResource("image-from-subscription.png").toBeLoaded();
+  });
+
   it("does not block a request using a disabled filter", async function() {
     setMinTimeout(this, 4000);
     await addFilter("/image.png^$image");
