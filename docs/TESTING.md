@@ -13,7 +13,7 @@ development local environment.
 
 ## Pipelines structure
 
-Pipeline has 6 stages:
+Pipeline has 5 stages:
 
 - Build - stage where webextension-sdk is built, and tested statically by audit
 and linting.
@@ -25,8 +25,6 @@ branch master.
 - [Fuzz Functional tests](#fuzz-functional-tests) - MV3 related service workers
 tests based on functional suite. Runs a subset of the functional tests, while
 suspending the service worker regularly to determine how the system behaves.
-- [Compliance tests](#compliance-tests) - tests ensuring compliance between
-eyeo's adBlocking products.
 - [Integration tests](#integration-tests) - tests of the integration scripts.
 
 ![Pipeline structure](/docs/pipeline_structure.png "Pipeline structure")
@@ -252,17 +250,6 @@ the service worker is suspended as part of running the test.
 
 ----
 
-## Compliance tests
-
-Compliance tests are performed on [testpages](https://testpages.adblockplus.org/)
-to assure compliance between webext-sdk and other eyeo adblocking solutions.
-They run the automated tests developed on the testpages project using the
-test extension built on the webext-sdk pipeline.
-They are performed on Firefox only, and skip Snippets and Subscriptions
-tests due to extension limitations.
-
-----
-
 ## Integration tests
 
 Integration tests checks if from integrator perspective (and directory)
@@ -305,20 +292,6 @@ docker run --cpus=1 --memory=3.75g --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-cus
 
 Please notice that the TEST_PARAMS argument can also take the additional options
 described previously.
-
-#### Compliance
-
-```
-docker build -t compliance -f test/dockerfiles/compliance-test.Dockerfile .
-docker run --shm-size=512m -it compliance
-```
-
-Please note that by default test extension will be build on docker. If you prefer
-to copy local one, pass `--build-arg EXTENSION=copy`:
-
-```
-docker build -t compliance -f test/dockerfiles/compliance-test.Dockerfile --build-arg EXTENSION=copy .
-```
 
 ### Maintaining browser cache
 

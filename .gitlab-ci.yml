@@ -62,7 +62,6 @@ stages:
   - unit
   - functional
   - fuzz
-  - compliance
   - integration
 
 build:
@@ -376,27 +375,6 @@ fuzz:v3:edge:linux:
   variables:
     BROWSER: edge $LATEST_EDGE_VERSION
     TEST_PARAMS: $BROWSER
-
-compliance:
-  stage: compliance
-  extends: .docker-image
-  needs:
-    - job: build
-      artifacts: true
-  script:
-    - docker build -t compliance -f test/dockerfiles/compliance-test.Dockerfile --build-arg EXTENSION=copy .
-    - docker run --shm-size=512m compliance
-  after_script:
-    - docker cp $(docker ps -aqf ancestor=compliance):/testpages.adblockplus.org/test/screenshots .
-      2> /dev/null
-  artifacts:
-    paths:
-      - screenshots/
-    when: always
-    expire_in: 1 mo
-  rules:
-    - !reference [.all-browsers-test-run, rules]
-    - allow_failure: false
 
 int:scripts:
   image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python

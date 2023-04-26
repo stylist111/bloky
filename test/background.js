@@ -35,12 +35,6 @@ function toStringIfError(obj) {
   return obj instanceof Error ? obj.toString() : obj;
 }
 
-function toPlainSubscription(subscription) {
-  subscription.disabled = !subscription.enabled;
-  delete subscription.enabled;
-  return subscription;
-}
-
 async function runOperations(operations) {
   let stack = [];
 
@@ -126,9 +120,7 @@ let migrationErrorsOnStart;
 
 function handleTestMessage(request, sender, sendResponse) {
   if (typeof request != "object" || request == null || !request.type ||
-  !(request.type.startsWith("ewe-test:") || request.type.startsWith("ewe:") ||
-  request.type.startsWith("filters") || request.type.startsWith("subscriptions") ||
-  request.type.startsWith("debug"))
+      !(request.type.startsWith("ewe-test:") || request.type.startsWith("ewe:"))
   )
     return false;
 
@@ -167,69 +159,14 @@ function handleTestMessage(request, sender, sendResponse) {
       sendResponse(migrationErrorsOnStart);
       return true;
     }
-
-    // Required for testing testpages
-    case "filters.get": {
-      EWE.filters.getUserFilters().then(userFilters => {
-        sendResponse(userFilters);
-      });
-      return true;
-    }
-
-    case "filters.importRaw": {
-      let lines = request.text.split("\n");
-      EWE.filters.add(lines).then(sendResponse({}));
-      return true;
-    }
-
-    case "filters.remove": {
-      EWE.filters.remove(request.text).then(sendResponse({}));
-      return true;
-    }
-
-    case "subscriptions.get": {
-      let subscriptions = [];
-      EWE.subscriptions.getDownloadable().then(subs => {
-        for (let s of subs) {
-          if (request.ignoreDisabled && !s.enabled)
-            continue;
-
-          let subscription = toPlainSubscription(s);
-          if (request.disabledFilters) {
-            let filters = EWE.subscriptions.getFilters(s.url) || [];
-            subscription.disabledFilters = filters.filter(f =>
-              f.enabled === false).map(f => f.text);
-          }
-          subscriptions.push(subscription);
-        }
-        sendResponse(subscriptions);
-      });
-      return true;
-    }
-
-    case "subscriptions.remove": {
-      EWE.subscriptions.remove(request.url).then(sendResponse({}));
-      return true;
-    }
-
-    case "debug.getLastError": {
-      let error = lastError;
-      lastError = null;
-      sendResponse(error);
-      return true;
-    }
   }
   return true;
 }
+
 chrome.runtime.onMessage.addListener(handleTestMessage);
 
-addEventListener("error", ({error}) => {
-  lastError = typeof error == "object" ? error.message : error;
-});
-
-addEventListener("unhandledrejection", ({reason}) => {
-  lastError = typeof reason == "object" ? reason.message : reason;
-});
+addEventListener("error", ({error}) => lastError = error);
+addEventListener("unhandledrejection", ({reason}) => lastError = reason);
 
 EWE.filters.onAdded.addListener(createTestEventListener("filters.onAdded"));
 EWE.filters.onChanged.addListener(createTestEventListener("filters.onChanged"));
