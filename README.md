@@ -64,7 +64,7 @@ Manifest V2:
 
 Manifest V3:
 
-* Chromium 109
+* Chromium 111
 * Edge 108
 
 ### Manifest for V2
@@ -320,7 +320,7 @@ For more information, please refer to the [API documention][docs].
 The CI pipeline performs automated tests on the following browser versions:
 
 * Manifest v2: Chromium: 77 - 109
-* Manifest v3: Chromium 109
+* Manifest v3: Chromium 111
 * Firefox: 68 - 109
 * Edge v3 (linux): 108
 * Edge v2 (windows): 79
