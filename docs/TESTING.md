@@ -395,19 +395,21 @@ test multiple times in a row:
 npm run measureTestFlakiness -- --testParams "v3 chromium" --runOnlyFlaky "true"
 ```
 
-### Measuring flakiness on a pipeline
+### Checking your tests quality on a pipeline
 
 If you need to debug specific flaky tests on the pipeline, add [flaky] to the
 tests you want to run & then add `[flaky]` to the commit message.
 This will trigger pipeline that will run only tests marked flaky in tests.
 
-You can also use UI to trigger “measure flakiness” on the branch you are working
-on:
+You can also use UI to trigger "check tests quality jobs" on the branch you
+are working on.
+This will trigger "measure flakiness" scripts & check that will run
+test modules in isolation:
 
 - Go to: <https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/pipelines>
 then press “Run pipelines”.
 - Select branch you want to run pipeline on
-- Provide variable: FLAKY: true
+- Provide variable: CHECKTESTS: true
 - Provide variable FULL: true if you wish to run full set of browsers (as on
 master)
 - Run pipeline
@@ -415,7 +417,7 @@ master)
 ![Run pipeline](/docs/run_pipeline_ui.png "Run pipeline from UI")
 
 Note: this setup is run on master on our Nightly Runs - checking if our
-pipelines are not flaky.
+tests are good quality (no flaky and independent from each other)
 
 You can also use our [webext sdk cheat sheet](TESTING_CHEAT_SHEET.md) for short
 version of commands commonly used by webext devs.

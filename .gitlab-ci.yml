@@ -26,8 +26,9 @@ variables:
     # Do not trigger a merge request pipeline
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: never
-    # Don't run automatically on commit that contains flaky
-    - if: $FLAKY == 'true'
+     # Don't run automatically on commit that contains flaky 
+     # or is pipeline that checks tests quality
+    - if: $CHECKTESTS == 'true'
       when: manual
     - if: $CI_COMMIT_MESSAGE =~ /\[flaky]/
       when: manual
@@ -60,6 +61,7 @@ stages:
   - build
   - pages
   - unit
+  - testsquality
   - functional
   - fuzz
   - compliance
@@ -166,7 +168,7 @@ func:bundle:
         else
           RUN_ONLY_FLAKY_TESTS=false;
         fi;
-        if echo "$FLAKY" | grep -q "true"; then
+        if echo "$CHECKTESTS" | grep -q "true"; then
           apk --update add nodejs npm;
           npm install -g npm@latest;
           npm install;
@@ -278,6 +280,61 @@ func:v3:edge:linux:
     BROWSER: edge $LATEST_EDGE_VERSION
     TEST_PARAMS: v3 $BROWSER --testKinds functional reload update
 
+# This jobs will run only on "check tests quality" pipelines and jobs will ALWAYS
+# run all tests regardless of FLAKY tags
+.functional-isolated:
+  extends: .functional
+  stage: testsquality
+  script:
+    - docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER="$BROWSER" --build-arg SKIP_BUILD=1 .
+    - docker run --shm-size=512m -e TEST_PARAMS="$TEST_PARAMS --grep $FUNCTIONAL_MODULE" functional;
+  parallel:
+    matrix:
+      - FUNCTIONAL_MODULE:
+        - "Initialization"
+        - "MV3\\sService\\sWorkers"
+        - "Console\\slogging"
+        - "Endpoint\\smanipulation"
+        - "Allowlisting"
+        - "Element\\sHiding"
+        - "Snippets"
+        - "Notifications"
+        - "^Blocking"
+        - "Reporting"
+        - "Subscriptions"
+        - "Filter\\slist\\supdates"
+        - "Subscription\\sevents"
+        - "^Filters"
+        - "Synchronization"
+        - "Subscribe"
+        - "Pop-up\\sblocking"
+  rules:
+    # Do not trigger a merge request pipeline
+      - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+        when: never
+      - if: $CHECKTESTS == 'true'
+        when: always
+    # Do not trigger on other pipelines
+      - when: manual
+
+testquality:v3:chromium:stable:
+  extends: .functional-isolated
+  variables:
+    BROWSER: chromium $LATEST_CHROME_VERSION
+    TEST_PARAMS: v3 $BROWSER --testKinds functional 
+
+testquality:v3:edge:linux:
+  extends: .functional-isolated
+  variables:
+    BROWSER: edge $LATEST_EDGE_VERSION
+    TEST_PARAMS: v3 $BROWSER --testKinds functional
+
+testquality:v2:firefox:
+  extends: .functional-isolated
+  variables:
+    BROWSER: firefox $LATEST_FIREFOX_VERSION
+    TEST_PARAMS: v2 $BROWSER --testKinds functional
+
 # This jobs will be run on nightly runs of the pipeline or when triggered with "FULL" variable
 .functional-full:
   extends: .functional
@@ -346,7 +403,7 @@ func:v3:edge:linux:latest:
         else
           RUN_ONLY_FLAKY_TESTS=false;
         fi;
-        if echo "$FLAKY" | grep -q "true"; then
+        if echo "$CHECKTESTS" | grep -q "true"; then
           apk --update add nodejs npm;
           npm install -g npm@latest;
           npm install;
