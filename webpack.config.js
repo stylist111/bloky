@@ -176,6 +176,10 @@ export default (env = {}) => {
       description,
       manifest_version: buildVariant.manifestVersion,
       background: buildVariant.background,
+      options_ui: {
+        open_in_tab: true,
+        page: "options.html"
+      },
       content_scripts: [
         {
           all_frames: true,
@@ -254,6 +258,7 @@ export default (env = {}) => {
             {from: "ewe-*", context: buildVariant.ewePath},
             {from: path.join(dirname, "test", "background.js")},
             {from: path.join(dirname, "test", "index.html")},
+            {from: path.join(dirname, "test", "options.html")},
             {from: path.join(dirname, "test", "index-options.js")},
             ...buildVariant.manifestVersion >= 3 &&
               fs.existsSync(path.join(dirname, "scriptsOutput")) ?

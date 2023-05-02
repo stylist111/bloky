@@ -71,6 +71,22 @@ docker run --cpus=1 --memory=3.75g --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-cus
 docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER=<chromium> .
 ```
 
+### Compliance tests
+
+```
+# Building container   
+docker build -t compliance -f test/dockerfiles/compliance-test.Dockerfile .
+
+# Running container
+docker run --shm-size=512m -it compliance;
+```
+
+### Build compliance tests and copy local extension
+
+```
+docker build -t compliance -f test/dockerfiles/compliance-test.Dockerfile --build-arg EXTENSION=copy .
+```
+
 ### Run docker for tests with [flaky] tag
 
 ```
