@@ -27,6 +27,11 @@ if (timeout)
 else
   mocha.timeout(4000);
 
+if (isFuzzingServiceWorker())
+  mocha.slow(20000);
+else
+  mocha.slow(3000);
+
 beforeEach(async function() {
   let title = this.currentTest.fullTitle();
   let tags = [{
