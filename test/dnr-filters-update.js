@@ -88,6 +88,7 @@ const UPDATES5 = {
 };
 
 const SUBSCRIPTION = {
+  url: "http://localhost:3003/updateable_subscription.txt",
   type: "ads",
   downloadable: false,
   id: UPDATABLE_SUBSCRIPTION_ID
@@ -121,6 +122,11 @@ describe("Test subscriptions update", function() {
     let dynFilters = new Map(await EWE.testing.getDynamicFilters());
     return dynFilters.get(text);
   }
+
+  beforeEach(async function() {
+    // Ensure it is enabled.
+    await EWE.subscriptions.add(SUBSCRIPTION.url);
+  });
 
   // The purpose of this test is to make sure we change nothing
   // if the static rules update API isn't available.

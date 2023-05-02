@@ -5,7 +5,8 @@
     "title": "Test MV3 Updateable Subscription",
     "homepage": "http://localhost:3003/updateable_subscription.txt",
     "url": "http://localhost:3003/updateable_subscription.txt",
-    "mv2_url": "http://localhost:3003/mv2_updateable_subscription.txt"
+    "mv2_url": "http://localhost:3003/mv2_updateable_subscription.txt",
+    "diff_url": "http://localhost:3003/updateable_subscription/diff/latest.json"
   },
   {
     "id": "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F",
