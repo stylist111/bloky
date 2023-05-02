@@ -212,7 +212,9 @@ describe("Testing Mechanisms", function() {
       let errors;
       await wait(async() => {
         errors = await browser.runtime.sendMessage({type: "debug.getLastError"});
-        return errors.length > 0 ? errors : false;
+        if (typeof errors != "object" && errors.length > 0)
+          return errors;
+        return false;
       }, 1500, "Errors weren't received");
 
       expect(errors).not.toBeNull();
