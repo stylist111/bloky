@@ -18,7 +18,7 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 
-import {Page, Popup, setMinTimeout, wait, waitForAssertion, isMV3,
+import {Page, Popup, setMinTimeout, wait, waitForAssertion, isMV3, isEdge,
         isMV2CustomSubsExtension, executeScript, getVisibleElement,
         TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN,
         TEST_ADMIN_PAGES_URL}
@@ -1356,6 +1356,10 @@ describe("Reporting", function() {
     });
 
     describe("Unmatched requests", function() {
+      // https://jira.eyeo.com/browse/EE-21
+      if (isFuzzingServiceWorker() && isEdge())
+        this.retries(3);
+
       it("logs all unmatched requests on the image page [fuzz]", async function() {
         await checkLogging(
           [],
