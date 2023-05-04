@@ -32,6 +32,8 @@ import {default as initializer} from "./initializer.js";
 import {filterEngine} from "./core.js";
 import {EventDispatcher} from "./types.js";
 import {convertFilter} from "./filters.js";
+import {disableDynamicFiltersForSubscriptionId,
+        restoreDynamicFiltersForSubscriptionId} from "./dnr-filters.js";
 
 import {readFileContent} from "./io.js";
 import {Prefs} from "./prefs.js";
@@ -183,6 +185,8 @@ async function enableRuleset(rulesetId) {
       enableRulesetIds: [rulesetId]
     });
   }
+
+  await restoreDynamicFiltersForSubscriptionId(rulesetId);
 }
 
 async function disableRuleset(rulesetId) {
@@ -190,6 +194,8 @@ async function disableRuleset(rulesetId) {
     await browser.declarativeNetRequest.updateEnabledRulesets({
       disableRulesetIds: [rulesetId]
     });
+
+    await disableDynamicFiltersForSubscriptionId(rulesetId);
   }
 }
 
@@ -291,7 +297,6 @@ async function add(url, properties = {}) {
         subscription.setFilterText(filterText);
     }
   }
-  await enableRuleset(subscription.id);
 
   if ("title" in properties)
     subscription.title = properties.title;
@@ -308,6 +313,8 @@ async function add(url, properties = {}) {
 
   if (!subscription.lastDownload)
     filterStorage.synchronizer.execute(subscription);
+
+  await enableRuleset(subscription.id);
 }
 
 async function disable(url) {

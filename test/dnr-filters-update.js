@@ -115,8 +115,12 @@ describe("Test subscriptions update", function() {
   }
 
   async function checkDynamicRuleCount(count) {
-    let added = await browser.declarativeNetRequest.getDynamicRules();
-    expect(added.length).toEqual(count);
+    let dynamicRules = await browser.declarativeNetRequest.getDynamicRules();
+    expect(dynamicRules.length).toEqual(count, "dynamic rules count mismatch");
+
+    // Both should be equal.
+    let dynamicFilters = await EWE.testing.getDynamicFilters();
+    expect(dynamicFilters.length).toEqual(count, "dynamic filters count mismatch");
   }
 
   async function getDynamicFilter(text) {
@@ -264,6 +268,74 @@ describe("Test subscriptions update", function() {
 
     // DYNAMIC_FILTER2 is the last one left.
     await checkDynamicRuleCount(1);
+  });
+
+  it("does not add dynamic rules when not added", async function() {
+    if (!hasUpdateStaticRules())
+      this.skip();
+
+    await EWE.subscriptions.remove(SUBSCRIPTION.url);
+
+    await EWE.testing.dnrSubscriptionUpdate(SUBSCRIPTION, UPDATES4);
+    await checkDynamicRuleCount(0);
+  });
+
+  it("does not add dynamic rules when not enabled", async function() {
+    if (!hasUpdateStaticRules())
+      this.skip();
+
+    // We need to mutate the subscription object, so we deep copy.
+    let subscription = JSON.parse(JSON.stringify(SUBSCRIPTION));
+    await EWE.subscriptions.disable(subscription.url);
+    // Because this is a mock subscription, we need to set the
+    // disabled property too.
+    subscription.disabled = true;
+
+    await EWE.testing.dnrSubscriptionUpdate(subscription, UPDATES4);
+    await checkDynamicRuleCount(0);
+  });
+
+
+  it("remove dynamic rules when removed", async function() {
+    if (!hasUpdateStaticRules())
+      this.skip();
+
+    await EWE.testing.dnrSubscriptionUpdate(SUBSCRIPTION, UPDATES4);
+    await checkDynamicRuleCount(6);
+
+    // If we remove the subscription all the dynamic rules should be
+    // removed.
+    await EWE.subscriptions.remove(SUBSCRIPTION.url);
+    await checkDynamicRuleCount(0);
+  });
+
+  it("remove dynamic rules when disabled", async function() {
+    if (!hasUpdateStaticRules())
+      this.skip();
+
+    await EWE.testing.dnrSubscriptionUpdate(SUBSCRIPTION, UPDATES4);
+    await checkDynamicRuleCount(6);
+
+    // If we disable the subscription all the dynamic rules should be
+    // removed.
+    await EWE.subscriptions.disable(SUBSCRIPTION.url);
+    await checkDynamicRuleCount(0);
+  });
+
+  it("restore dynamic rules when reenabled", async function() {
+    if (!hasUpdateStaticRules())
+      this.skip();
+
+    await EWE.testing.dnrSubscriptionUpdate(SUBSCRIPTION, UPDATES4);
+    await checkDynamicRuleCount(6);
+
+    // If we disable the subscription all the dynamic rules should be
+    // removed.
+    await EWE.subscriptions.disable(SUBSCRIPTION.url);
+    await checkDynamicRuleCount(0);
+
+    await EWE.subscriptions.enable(SUBSCRIPTION.url);
+    await checkDynamicRuleCount(6);
   });
 
   // Specific test cases for rollback.
