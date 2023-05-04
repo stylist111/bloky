@@ -20,13 +20,13 @@
 const assert = require("assert");
 const {LIB_FOLDER, createSandbox} = require("./_common");
 
-let Filter = null;
-let filterNotifier = null;
-let filterStorage = null;
-let filterEngine = null;
-let Subscription = null;
-
 describe("Filter storage", function() {
+  let Filter = null;
+  let filterNotifier = null;
+  let filterStorage = null;
+  let filterEngine = null;
+  let Subscription = null;
+
   beforeEach(async function() {
     let sandboxedRequire = createSandbox();
 
@@ -355,9 +355,9 @@ describe("Filter storage", function() {
     assert.notEqual(subscription3.url, subscription2.url);
     assert.equal(subscription3.filterCount, 1);
 
-    assert.rejects(filterStorage.getMetadataForFilter("another.example.com"), "FilterStorageError");
-    assert.rejects(filterStorage.getMetadataForFilter("example.com$image"), "FilterStorageError");
-    assert.rejects(filterStorage.setMetadataForFilter("example.com$image", {meta: "bar"}), "FilterStorageError");
+    assert.deepEqual(await filterStorage.getMetadataForFilter("another.example.com"), null);
+    assert.deepEqual(await filterStorage.getMetadataForFilter("example.com$image"), null);
+    await assert.rejects(filterStorage.setMetadataForFilter("example.com$image", {meta: "bar"}), "FilterStorageError");
     assert.deepEqual(await filterStorage.getMetadataForFilter("bar1"), {meta: "bar"});
 
     let subscription4 = await filterStorage.setMetadataForFilter("bar1", {meta: "bar updated"});
@@ -366,9 +366,9 @@ describe("Filter storage", function() {
     assert.deepEqual(await filterStorage.getMetadataForFilter("bar1"), {meta: "bar updated"});
 
     filterStorage.removeSubscription(subscription2);
-    assert.rejects(filterStorage.getMetadataForFilter("bar1"), "FilterStorageError");
-    assert.rejects(filterStorage.getMetadataForFilter("bar2"), "FilterStorageError");
-    assert.rejects(filterStorage.getMetadataForFilter("bar3"), "FilterStorageError");
+    assert.deepEqual(await filterStorage.getMetadataForFilter("bar1"), null);
+    assert.deepEqual(await filterStorage.getMetadataForFilter("bar2"), null);
+    assert.deepEqual(await filterStorage.getMetadataForFilter("bar3"), null);
   });
 
   it("passes filters array to filtersExist()", async function() {

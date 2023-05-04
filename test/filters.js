@@ -220,12 +220,21 @@ describe("Filters", function() {
       await expect(await EWE.filters.getMetadata(filterText)).toEqual(metadata);
     });
 
-    it("throws if adding with metadata for added wo metadata", async function() {
+    it("throws if adding with metadata for added without metadata", async function() {
       let filters = [filterText];
       let metadata = {created: 123};
       await EWE.filters.add(filters);
       await expect(EWE.filters.add(filters, metadata))
         .rejects.toThrow("FilterError");
+    });
+
+    it("returns null metadata for a fitler which does not exist", async function() {
+      await expect(await EWE.filters.getMetadata(filterText)).toEqual(null);
+    });
+
+    it("returns null metadata for a filter added without metadata", async function() {
+      await EWE.filters.add(filterText);
+      await expect(await EWE.filters.getMetadata(filterText)).toEqual(null);
     });
   });
 

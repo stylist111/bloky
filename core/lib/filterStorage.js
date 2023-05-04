@@ -406,7 +406,7 @@ class FilterStorage {
    *
    * @async
    * @param {string} text The filter text.
-   * @return {Promise<Object>} The metadata if any found.
+   * @return {Promise<?Object>} The metadata if any found.
    *
    * This function will iterate through all the subscriptions with metadata
    * to find a `SpecialSubscription` that contains the filter text.
@@ -417,7 +417,7 @@ class FilterStorage {
         return currentSubscription.metadata;
     }
 
-    throw new FilterStorageError("filter_not_found", {text});
+    return null;
   }
 
   /**
