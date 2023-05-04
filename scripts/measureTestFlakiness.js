@@ -34,7 +34,7 @@ const args = yargs(hideBin(process.argv))
       })
       .option("buildFlags", {
         type: "string",
-        default: "SKIP_BUILD=0",
+        default: "",
         description: "extra flags to pass to docker build"
       })
       .option("dockerRunFlags", {

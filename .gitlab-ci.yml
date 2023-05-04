@@ -315,7 +315,7 @@ func:v3:edge:linux:
       - if: $CHECKTESTS == 'true'
         when: always
     # Do not trigger on other pipelines
-      - when: manual
+      - when: never
 
 testquality:v3:chromium:stable:
   extends: .functional-isolated
