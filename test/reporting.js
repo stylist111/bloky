@@ -20,8 +20,8 @@ import expect from "expect";
 
 import {Page, Popup, setMinTimeout, wait, waitForAssertion, isMV3, isEdge,
         isMV2CustomSubsExtension, executeScript, getVisibleElement,
-        TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN,
-        TEST_ADMIN_PAGES_URL}
+        setEndpointResponse, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
+        CROSS_DOMAIN_URL, CROSS_DOMAIN, TEST_ADMIN_PAGES_URL}
   from "./utils.js";
 import {EWE, addFilter, runInBackgroundPage, getTestEvents, clearTestEvents,
         addOnBlockableListener, removeOnBlockableListener,
@@ -82,14 +82,13 @@ describe("Reporting", function() {
       // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/300
 
       let now = new Date();
-      let reply = "%5BAdblock%20Plus%5D%0A%21Version%3A";
-      reply += now.getFullYear();
+      let reply = "[Adblock Plus 2.0]";
+      reply += `\n! Version: ${now.getFullYear()}`;
       reply += (now.getMonth() + 1).toString().padStart(2, "0");
       reply += now.getDate().toString().padStart(2, "0");
       reply += "0005";
-      await fetch(`${TEST_ADMIN_PAGES_URL}/configure?reply=${reply}`);
-
-      let url = `${TEST_ADMIN_PAGES_URL}/subscription.txt`;
+      await setEndpointResponse("/subscriptionForFirstVersion.txt", reply);
+      let url = `${TEST_ADMIN_PAGES_URL}/subscriptionForFirstVersion.txt`;
 
       // only trusted hosts are processed to save the version
       let key = "analytics";
