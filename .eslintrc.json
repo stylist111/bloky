@@ -25,6 +25,14 @@
         "ignoreTemplateLiterals": true,
         "ignorePattern": "abp:subscribe"
       }
+    ],
+    "space-before-blocks": ["error", { "functions": "always"}],
+    "id-denylist": [
+      "error",
+      "blacklist", "blackList",
+      "_blacklist", "_blackList",
+      "Blacklist", "BlackList",
+      "BLACKLIST", "BLACK_LIST"
     ]
   },
   "parserOptions": {

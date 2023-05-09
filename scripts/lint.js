@@ -17,17 +17,30 @@
 
 import {exec} from "child_process";
 import {promisify} from "util";
+import yargs from "yargs";
+import {hideBin} from "yargs/helpers";
+
 
 let cwd = process.cwd();
 
 const commands = [
-  "npx eslint --ext js,html .",
+  "npx eslint --ext js,html,mjs .",
   "npx markdownlint --ignore-path .gitignore --ignore \"**/RELEASE_NOTES.md\" ."
 ];
 
 (async() => {
+  const args = yargs(hideBin(process.argv))
+    .option("fix", {
+      description: "Automatically fix problems",
+      boolean: true
+    })
+    .parse();
+
   try {
     for (let command of commands) {
+      if (args.fix)
+        command += " --fix";
+
       await promisify(exec)(command, {cwd});
       console.log(`OK: ${command}`);
     }

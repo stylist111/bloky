@@ -1,34 +1,14 @@
 {
-  "extends": "eslint-config-eyeo",
-  "root": true,
   "rules": {
-    "space-before-blocks": ["error", { "functions": "always"}],
-    "brace-style": ["error", "stroustrup"],
-    "curly": ["error", "multi-or-nest", "consistent"],
-    "function-call-argument-newline": ["error", "consistent"],
-    "id-denylist": [
-      "error",
-      "blacklist", "blackList",
-      "_blacklist", "_blackList",
-      "Blacklist", "BlackList",
-      "BLACKLIST", "BLACK_LIST"
-    ],
-    "max-len": [
-      "error", 80,
-      {
-        "ignoreUrls": true,
-        "ignoreRegExpLiterals": true,
-        "ignoreTemplateLiterals": true
-      }
-    ]
+    "function-call-argument-newline": ["error", "consistent"]
   },
   "parserOptions": {
-    "ecmaVersion": 2018
+    "sourceType": "script"
   },
-  "overrides": [
-    {
+  "overrides": [{
       "files": ["*.mjs"],
-      "parser": "babel-eslint"
-    }
-  ]
+      "parserOptions": {
+        "sourceType": "module"
+      }
+  }]
 }

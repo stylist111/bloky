@@ -118,6 +118,8 @@ async function runBrowserTests(processes) {
   let chaiPath = path.join(dirname, "node_modules", "chai", "chai.js");
   // If we run in a workspace we need to get one level up.
   // No idea how to determine if we run in a workspace.
+  if (!fs.existsSync(mochaPath))
+    mochaPath = path.join(dirname, "..", "node_modules", "mocha", "mocha.js");
   if (!fs.existsSync(chaiPath))
     chaiPath = path.join(dirname, "..", "node_modules", "chai", "chai.js");
 
