@@ -115,7 +115,7 @@ export async function dnrSubscriptionUpdate(subscription, updates) {
     filter.subscriptionIds.push(subscription.id);
   }
 
-  let toRemove = removed.concat(...subscriptionDynRules.entries());
+  let toRemove = removed.concat(...subscriptionDynRules.keys());
   // Removing subscription.id from existing filter.
   let removedDynRules = toRemove.filter(text => {
     let detail = dynamicFilters.get(text);
