@@ -59,6 +59,23 @@ function makeSubListener(dispatch) {
   };
 }
 
+export async function disable(texts) {
+  await initializer.start();
+
+  if (!Array.isArray(texts))
+    texts = [texts];
+
+  if (browser.declarativeNetRequest) {
+    await removeOrDisableFilters(texts, false);
+    return;
+  }
+
+  for (let text of texts) {
+    let normalized = Filter.normalize(text);
+    filterEngine.filterStorage.filterState.setEnabled(normalized, false);
+  }
+}
+
 export let onChanged = new EventDispatcher(dispatch => {
   filterNotifier.on("filterState.enabled", (text, enabled) => {
     dispatch({...convertFilter(Filter.fromText(text)), enabled}, "enabled");
@@ -321,22 +338,7 @@ export default {
    * @param {string|[string]} texts The filter rules to be disabled.
    * @return {Promise}
    */
-  async disable(texts) {
-    await initializer.start();
-
-    if (!Array.isArray(texts))
-      texts = [texts];
-
-    if (browser.declarativeNetRequest) {
-      await removeOrDisableFilters(texts, false);
-      return;
-    }
-
-    for (let text of texts) {
-      let normalized = Filter.normalize(text);
-      filterEngine.filterStorage.filterState.setEnabled(normalized, false);
-    }
-  },
+  disable,
 
   /**
    * Removes one or multiple filters. The filters will no longer have

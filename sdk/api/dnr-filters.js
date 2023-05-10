@@ -28,7 +28,7 @@ import {DnrMapper} from "adblockpluscore/lib/dnr/mapper.js";
 import {getSubscriptionRulesetMap} from "./subscriptions-utils.js";
 import {ERROR_DUPLICATE_FILTERS, ERROR_FILTER_NOT_FOUND,
         ERROR_TOO_MANY_FILTERS} from "../errors.js";
-import {onChanged} from "./filters.js";
+import {onChanged, disable} from "./filters.js";
 import {default as initializer} from "./initializer.js";
 
 import {FilterError} from "./types.js";
@@ -543,14 +543,22 @@ export async function migrateCustomFilters() {
     if (!(subscription instanceof SpecialSubscription))
       continue;
 
-    for (let text of subscription.filterText())
-      filters.push({text, metadata: subscription.metadata});
+    for (let text of subscription.filterText()) {
+      filters.push({
+        text,
+        metadata: subscription.metadata,
+        disabled: filterEngine.filterStorage.filterState
+          .isDisabledForSubscription(text, subscription.url)
+      });
+    }
   }
 
   for (let filter of filters) {
     try {
       filterEngine.filterStorage.removeFilter(Filter.fromText(filter.text));
       await addFilters([filter.text], filter.metadata);
+      if (filter.disabled)
+        await disable(filter.text);
     }
     catch (e) {
       let errors = Prefs.migration_filter_errors;

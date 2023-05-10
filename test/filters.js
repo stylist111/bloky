@@ -294,6 +294,44 @@ describe("Filters", function() {
     expect(await EWE.filters.getUserFilters()).toEqual([]);
   });
 
+  it("adds a previously disabled rule without metadata as enabled", async function() {
+    await EWE.filters.add(VALID_FILTER_TEXT);
+    await EWE.filters.disable(VALID_FILTER_TEXT);
+    await EWE.filters.remove(VALID_FILTER_TEXT);
+    await EWE.filters.add(VALID_FILTER_TEXT);
+    let filters = await EWE.filters.getUserFilters();
+    expect(filters).toEqual(expect.arrayContaining([expect.objectContaining({
+      text: VALID_FILTER_TEXT,
+      enabled: true
+    })]));
+  });
+
+  it("adds a previously disabled rule with metadata as enabled", async function() {
+    let metaData = {a: 1};
+    await EWE.filters.add(VALID_FILTER_TEXT, metaData);
+    await EWE.filters.disable(VALID_FILTER_TEXT);
+    await EWE.filters.remove(VALID_FILTER_TEXT);
+    await EWE.filters.add(VALID_FILTER_TEXT, metaData);
+    let filters = await EWE.filters.getUserFilters();
+    expect(filters).toEqual(expect.arrayContaining([expect.objectContaining({
+      text: VALID_FILTER_TEXT,
+      enabled: true
+    })]));
+  });
+
+  it("adds a previously disabled rule with metadata as enabled to new SpecialSubscription", async function() {
+    let metaData = {a: 1};
+    await EWE.filters.add(VALID_FILTER_TEXT, metaData);
+    await EWE.filters.disable(VALID_FILTER_TEXT);
+    await EWE.filters.remove(VALID_FILTER_TEXT);
+    await EWE.filters.add(VALID_FILTER_TEXT);
+    let filters = await EWE.filters.getUserFilters();
+    expect(filters).toEqual(expect.arrayContaining([expect.objectContaining({
+      text: VALID_FILTER_TEXT,
+      enabled: true
+    })]));
+  });
+
   it("normalizes a filter internally", async function() {
     await addFilter(VALID_FILTER_TEXT);
 

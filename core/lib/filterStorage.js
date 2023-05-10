@@ -396,6 +396,14 @@ class FilterStorage {
     this._metadataSubscriptions.set(subscription.url, subscription);
     this.addSubscription(subscription);
 
+    for (let filter of list) {
+      if (this.filterState.isDisabledForSubscription(
+        filter.text, subscription.url)) {
+        this.filterState.setDisabledForSubscription(
+          filter.text, subscription.url, false);
+      }
+    }
+
     subscription.metadata = metadata;
 
     return subscription;
@@ -447,6 +455,20 @@ class FilterStorage {
   }
 
   /**
+   * Checks and enables the filter for the subscription.
+   * @param {string} filterText The filter text.
+   * @param {string} subscriptionUrl The subscription URL to enable filter for.
+   * @private
+   */
+  enableFilter(filterText, subscriptionUrl) {
+    if (this.filterState.isDisabledForSubscription(
+      filterText, subscriptionUrl)) {
+      this.filterState.setDisabledForSubscription(
+        filterText, subscriptionUrl, false);
+    }
+  }
+
+  /**
    * Adds a user-defined filter to the storage.
    *
    * @async
@@ -476,6 +498,7 @@ class FilterStorage {
       // No group for this filter exists, create one
       subscription = SpecialSubscription.createForFilter(filter);
       this.addSubscription(subscription);
+      this.enableFilter(filter.text, subscription.url);
       return subscription;
     }
 
@@ -483,6 +506,7 @@ class FilterStorage {
       position = subscription.filterCount;
 
     subscription.insertFilterAt(filter, position);
+    this.enableFilter(filter.text, subscription.url);
     filterNotifier.emit("filter.added", filter, subscription, position);
     return subscription;
   }
