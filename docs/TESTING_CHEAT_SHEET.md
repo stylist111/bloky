@@ -78,7 +78,7 @@ docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg
 docker build -t compliance -f test/dockerfiles/compliance-test.Dockerfile .
 
 # Running container
-docker run --shm-size=512m -it compliance;
+docker run --shm-size=512m -e BROWSER="chromium latest" -e MANIFEST="mv2" -it compliance
 ```
 
 ### Build compliance tests and copy local extension

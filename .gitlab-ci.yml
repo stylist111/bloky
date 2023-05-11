@@ -434,7 +434,7 @@ fuzz:v3:edge:linux:
     BROWSER: edge $LATEST_EDGE_VERSION
     TEST_PARAMS: $BROWSER
 
-compliance:
+.compliance:
   stage: compliance
   extends: .docker-image
   needs:
@@ -442,7 +442,7 @@ compliance:
       artifacts: true
   script:
     - docker build -t compliance -f test/dockerfiles/compliance-test.Dockerfile --build-arg EXTENSION=copy .
-    - docker run --shm-size=512m compliance
+    - docker run --shm-size=512m -e BROWSER="$BROWSER" -e MANIFEST="$MANIFEST" compliance
   after_script:
     - docker cp $(docker ps -aqf ancestor=compliance):/testpages.adblockplus.org/test/screenshots .
       2> /dev/null
@@ -454,6 +454,30 @@ compliance:
   rules:
     - !reference [.all-browsers-test-run, rules]
     - allow_failure: false
+
+compliance:v2:firefox:
+  extends: .compliance
+  variables:
+    BROWSER: firefox latest
+    MANIFEST: mv2
+
+compliance:v2:chromium:
+  extends: .compliance
+  variables:
+    BROWSER: chromium latest
+    MANIFEST: mv2
+    
+compliance:v3:chromium:
+  extends: .compliance
+  variables:
+    BROWSER: chromium latest
+    MANIFEST: mv3
+
+compliance:v3:edge:
+  extends: .compliance
+  variables:
+    BROWSER: edge latest
+    MANIFEST: mv3
 
 int:scripts:
   image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python

@@ -310,8 +310,11 @@ described previously.
 
 ```
 docker build -t compliance -f test/dockerfiles/compliance-test.Dockerfile .
-docker run --shm-size=512m -it compliance
+docker run --shm-size=512m -e BROWSER="chromium latest" -e MANIFEST="mv2" -it compliance
 ```
+
+Please notice that the BROWSER & MANIFEST argument can be changed
+according to your needs.
 
 Please note that by default test extension will be built on docker. If you prefer
 to copy local one, pass `--build-arg EXTENSION=copy`:
