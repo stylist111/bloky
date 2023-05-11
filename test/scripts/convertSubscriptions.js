@@ -23,7 +23,7 @@ import {convert} from "../../scripts/convertSubscriptions.js";
 
 const encoding = "utf-8";
 
-describe("convertSubscriptions script", () => {
+describe("convertSubscriptions script", function() {
   let rootDir;
   let dirPathPrefix;
   let tmpInDir;

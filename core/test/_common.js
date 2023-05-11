@@ -225,7 +225,7 @@ exports.setupTimerAndFetch = function() {
     clearTimeout: fakeTimer.clearTimeout.bind(fakeTimer),
     fetch,
     Date: Object.assign(
-      // eslint-disable-line prefer-arrow-callback
+      // eslint-disable-next-line prefer-arrow-callback, mocha/prefer-arrow-callback
       function(...args) {
         return new Date(...args);
       },

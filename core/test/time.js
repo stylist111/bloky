@@ -18,20 +18,10 @@
 "use strict";
 
 const assert = require("assert");
-const {LIB_FOLDER, createSandbox} = require("./_common");
 
-let MILLIS_IN_SECOND = null;
-let MILLIS_IN_MINUTE = null;
-let MILLIS_IN_HOUR = null;
-let MILLIS_IN_DAY = null;
-
-beforeEach(function() {
-  let sandboxedRequire = createSandbox();
-  (
-    {MILLIS_IN_SECOND, MILLIS_IN_MINUTE, MILLIS_IN_HOUR,
-     MILLIS_IN_DAY} = sandboxedRequire(LIB_FOLDER + "/time")
-  );
-});
+const {LIB_FOLDER} = require("./_common");
+const {MILLIS_IN_SECOND, MILLIS_IN_MINUTE, MILLIS_IN_HOUR,
+       MILLIS_IN_DAY} = require(LIB_FOLDER + "/time");
 
 describe("MILLIS_IN_SECOND", function() {
   it("should be equal to 1000", function() {

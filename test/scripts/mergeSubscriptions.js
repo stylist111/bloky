@@ -40,7 +40,7 @@ describe("mergeSubscriptions script", function() {
 
   async function assertSubscriptionsContent(
     space, inContents, expectedOutContent) {
-    await assertSubscriptions(space, inContents, function(actualOutContent) {
+    await assertSubscriptions(space, inContents, actualOutContent => {
       expect(actualOutContent.toString())
         .toEqual(expectedOutContent);
     });
@@ -74,7 +74,7 @@ describe("mergeSubscriptions script", function() {
     for (let i = 0; i < count; i++)
       contents.push(`[{"${fieldName}${i}": "${fieldValue}${i}"}]`);
 
-    await assertSubscriptions(null, contents, function(actualContent) {
+    await assertSubscriptions(null, contents, actualContent => {
       let obj = JSON.parse(actualContent);
       expect(obj.length).toEqual(count);
       for (let i = 0; i < count; i++) {

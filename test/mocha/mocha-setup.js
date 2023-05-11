@@ -17,6 +17,8 @@
 
 /* global Mocha */
 
+/* eslint-disable mocha/no-top-level-hooks */
+
 import {TEST_PAGES_URL, Page, Popup, setMinTimeout, isIncognito}
   from "../utils.js";
 import {runInBackgroundPage, clearAllTestEvents} from "../messaging.js";

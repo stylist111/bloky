@@ -180,7 +180,7 @@ describe("Synchronizer", function() {
         }).catch(error => unexpectedError.call(assert, error));
       });
 
-      it("Sends subscription metadata for disabled subscription", function() {
+      it("Sends subscription metadata for enabled subscription", function() {
         let subscription = Subscription.fromURL("https://easylist-downloads.adblockplus.org/easylist.txt");
         filterStorage.addSubscription(subscription);
 

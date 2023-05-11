@@ -38,19 +38,19 @@ describe("EventEmitter", function() {
     });
 
     it("should not throw when listener is added", function() {
-      assert.doesNotThrow(() => eventEmitter.on("event", function() {}));
+      assert.doesNotThrow(() => eventEmitter.on("event", () => {}));
     });
 
     it("should not throw when second listener is added for same event", function() {
-      eventEmitter.on("event", function() {});
+      eventEmitter.on("event", () => {});
 
-      assert.doesNotThrow(() => eventEmitter.on("event", function() {}));
+      assert.doesNotThrow(() => eventEmitter.on("event", () => {}));
     });
 
     it("should not throw when second listener is added for different event", function() {
-      eventEmitter.on("event", function() {});
+      eventEmitter.on("event", () => {});
 
-      assert.doesNotThrow(() => eventEmitter.on("otherEvent", function() {}));
+      assert.doesNotThrow(() => eventEmitter.on("otherEvent", () => {}));
     });
 
     it("should not throw when same listener is re-added for same event", function() {
@@ -90,28 +90,28 @@ describe("EventEmitter", function() {
     it("should not throw when listener is added for event already dispatched", function() {
       eventEmitter.emit("event");
 
-      assert.doesNotThrow(() => eventEmitter.on("event", function() {}));
+      assert.doesNotThrow(() => eventEmitter.on("event", () => {}));
     });
 
     it("should not throw when listener is added for event already dispatched and handled", function() {
-      eventEmitter.on("event", function() {});
+      eventEmitter.on("event", () => {});
       eventEmitter.emit("event");
 
-      assert.doesNotThrow(() => eventEmitter.on("event", function() {}));
+      assert.doesNotThrow(() => eventEmitter.on("event", () => {}));
     });
 
     it("should not throw when thousandth listener is added for same event", function() {
       for (let i = 0; i < 999; i++)
-        eventEmitter.on("event", function() {});
+        eventEmitter.on("event", () => {});
 
-      assert.doesNotThrow(() => eventEmitter.on("event", function() {}));
+      assert.doesNotThrow(() => eventEmitter.on("event", () => {}));
     });
 
     it("should not throw when thousandth listener is added for different events", function() {
       for (let i = 0; i < 999; i++)
-        eventEmitter.on(`event-${i + 1}`, function() {});
+        eventEmitter.on(`event-${i + 1}`, () => {});
 
-      assert.doesNotThrow(() => eventEmitter.on("event-1000", function() {}));
+      assert.doesNotThrow(() => eventEmitter.on("event-1000", () => {}));
     });
   });
 
@@ -123,7 +123,7 @@ describe("EventEmitter", function() {
     });
 
     it("should not throw when non-existent listener is removed", function() {
-      assert.doesNotThrow(() => eventEmitter.off("event", function() {}));
+      assert.doesNotThrow(() => eventEmitter.off("event", () => {}));
     });
 
     it("should not throw when non-existent listener is removed a second time", function() {
@@ -135,9 +135,9 @@ describe("EventEmitter", function() {
     });
 
     it("should not throw when second non-existent listener is removed", function() {
-      eventEmitter.off("event", function() {});
+      eventEmitter.off("event", () => {});
 
-      assert.doesNotThrow(() => eventEmitter.off("event", function() {}));
+      assert.doesNotThrow(() => eventEmitter.off("event", () => {}));
     });
 
     it("should not throw when previously added listener is removed", function() {
@@ -149,9 +149,9 @@ describe("EventEmitter", function() {
     });
 
     it("should not throw when different listener than the one previously added is removed", function() {
-      eventEmitter.on("event", function() {});
+      eventEmitter.on("event", () => {});
 
-      assert.doesNotThrow(() => eventEmitter.off("event", function() {}));
+      assert.doesNotThrow(() => eventEmitter.off("event", () => {}));
     });
 
     it("should not throw when listener is removed for different event than the one for which it was added", function() {
@@ -177,20 +177,20 @@ describe("EventEmitter", function() {
       eventEmitter.on("event", listener);
       eventEmitter.off("event", listener);
 
-      assert.doesNotThrow(() => eventEmitter.off("event", function() {}));
+      assert.doesNotThrow(() => eventEmitter.off("event", () => {}));
     });
 
     it("should not throw when non-existent listener is removed for event already dispatched", function() {
       eventEmitter.emit("event");
 
-      assert.doesNotThrow(() => eventEmitter.off("event", function() {}));
+      assert.doesNotThrow(() => eventEmitter.off("event", () => {}));
     });
 
     it("should not throw when non-existent listener is removed for event already dispatched and handled", function() {
-      eventEmitter.on("event", function() {});
+      eventEmitter.on("event", () => {});
       eventEmitter.emit("event");
 
-      assert.doesNotThrow(() => eventEmitter.off("event", function() {}));
+      assert.doesNotThrow(() => eventEmitter.off("event", () => {}));
     });
 
     it("should not throw when previously added listener is removed for event already dispatched and handled", function() {
@@ -493,52 +493,52 @@ describe("EventEmitter", function() {
     });
 
     it("should return true when one listener exists", function() {
-      eventEmitter.on("event", function() {});
+      eventEmitter.on("event", () => {});
 
       assert.strictEqual(eventEmitter.hasListeners("event"), true);
     });
 
     it("should return true with no argument when one listener exists", function() {
-      eventEmitter.on("event", function() {});
+      eventEmitter.on("event", () => {});
 
       assert.strictEqual(eventEmitter.hasListeners(), true);
     });
 
     it("should return true when multiple listeners exist", function() {
-      eventEmitter.on("event", function() {});
-      eventEmitter.on("event", function() {});
+      eventEmitter.on("event", () => {});
+      eventEmitter.on("event", () => {});
 
       assert.strictEqual(eventEmitter.hasListeners("event"), true);
     });
 
     it("should return true with no argument when multiple listeners exist", function() {
-      eventEmitter.on("event", function() {});
-      eventEmitter.on("event", function() {});
+      eventEmitter.on("event", () => {});
+      eventEmitter.on("event", () => {});
 
       assert.strictEqual(eventEmitter.hasListeners(), true);
     });
 
     it("should return false when listeners exist for different event", function() {
-      eventEmitter.on("otherEvent", function() {});
-      eventEmitter.on("otherEvent", function() {});
+      eventEmitter.on("otherEvent", () => {});
+      eventEmitter.on("otherEvent", () => {});
 
       assert.strictEqual(eventEmitter.hasListeners("event"), false);
     });
 
     it("should return true when listeners exist for multiple events", function() {
-      eventEmitter.on("event", function() {});
-      eventEmitter.on("otherEvent", function() {});
-      eventEmitter.on("event", function() {});
-      eventEmitter.on("otherEvent", function() {});
+      eventEmitter.on("event", () => {});
+      eventEmitter.on("otherEvent", () => {});
+      eventEmitter.on("event", () => {});
+      eventEmitter.on("otherEvent", () => {});
 
       assert.strictEqual(eventEmitter.hasListeners("event"), true);
     });
 
     it("should return true with no argument when listeners exist for multiple events", function() {
-      eventEmitter.on("event", function() {});
-      eventEmitter.on("otherEvent", function() {});
-      eventEmitter.on("event", function() {});
-      eventEmitter.on("otherEvent", function() {});
+      eventEmitter.on("event", () => {});
+      eventEmitter.on("otherEvent", () => {});
+      eventEmitter.on("event", () => {});
+      eventEmitter.on("otherEvent", () => {});
 
       assert.strictEqual(eventEmitter.hasListeners(), true);
     });
@@ -547,7 +547,7 @@ describe("EventEmitter", function() {
       let listener = function() {};
 
       eventEmitter.on("event", listener);
-      eventEmitter.on("event", function() {});
+      eventEmitter.on("event", () => {});
 
       eventEmitter.off("event", listener);
 
@@ -558,7 +558,7 @@ describe("EventEmitter", function() {
       let listener = function() {};
 
       eventEmitter.on("event", listener);
-      eventEmitter.on("event", function() {});
+      eventEmitter.on("event", () => {});
 
       eventEmitter.off("event", listener);
 
@@ -568,7 +568,7 @@ describe("EventEmitter", function() {
     it("should return true after last of multiple previously added listeners is removed", function() {
       let listener = function() {};
 
-      eventEmitter.on("event", function() {});
+      eventEmitter.on("event", () => {});
       eventEmitter.on("event", listener);
 
       eventEmitter.off("event", listener);
@@ -579,7 +579,7 @@ describe("EventEmitter", function() {
     it("should return true with no argument after last of multiple previously added listeners is removed", function() {
       let listener = function() {};
 
-      eventEmitter.on("event", function() {});
+      eventEmitter.on("event", () => {});
       eventEmitter.on("event", listener);
 
       eventEmitter.off("event", listener);
@@ -617,9 +617,9 @@ describe("EventEmitter", function() {
       let listener1 = function() {};
       let listener2 = function() {};
 
-      eventEmitter.on("event", function() {});
+      eventEmitter.on("event", () => {});
       eventEmitter.on("otherEvent", listener1);
-      eventEmitter.on("event", function() {});
+      eventEmitter.on("event", () => {});
       eventEmitter.on("otherEvent", listener2);
 
       eventEmitter.off("otherEvent", listener1);
@@ -632,9 +632,9 @@ describe("EventEmitter", function() {
       let listener1 = function() {};
       let listener2 = function() {};
 
-      eventEmitter.on("event", function() {});
+      eventEmitter.on("event", () => {});
       eventEmitter.on("otherEvent", listener1);
-      eventEmitter.on("event", function() {});
+      eventEmitter.on("event", () => {});
       eventEmitter.on("otherEvent", listener2);
 
       eventEmitter.off("otherEvent", listener1);
@@ -728,7 +728,7 @@ describe("EventEmitter", function() {
     });
 
     it("should return true for event already dispatched and handled", function() {
-      eventEmitter.on("event", function() {});
+      eventEmitter.on("event", () => {});
 
       eventEmitter.emit("event");
 
@@ -737,28 +737,28 @@ describe("EventEmitter", function() {
 
     it("should return true when thousand listeners exist for same event", function() {
       for (let i = 0; i < 1000; i++)
-        eventEmitter.on("event", function() {});
+        eventEmitter.on("event", () => {});
 
       assert.strictEqual(eventEmitter.hasListeners("event"), true);
     });
 
     it("should return true with no argument when thousand listeners exist for same event", function() {
       for (let i = 0; i < 1000; i++)
-        eventEmitter.on("event", function() {});
+        eventEmitter.on("event", () => {});
 
       assert.strictEqual(eventEmitter.hasListeners(), true);
     });
 
     it("should return true for thousandth event when listeners exist for thousand different events", function() {
       for (let i = 0; i < 1000; i++)
-        eventEmitter.on(`event-${i + 1}`, function() {});
+        eventEmitter.on(`event-${i + 1}`, () => {});
 
       assert.strictEqual(eventEmitter.hasListeners("event-1000"), true);
     });
 
     it("should return true with no argument when listeners exist for thousand different events", function() {
       for (let i = 0; i < 1000; i++)
-        eventEmitter.on(`event-${i + 1}`, function() {});
+        eventEmitter.on(`event-${i + 1}`, () => {});
 
       assert.strictEqual(eventEmitter.hasListeners(), true);
     });

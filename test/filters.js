@@ -96,42 +96,45 @@ describe("Filters", function() {
     expect(await EWE.filters.getUserFilters()).toEqual(expect.arrayContaining([
       expect.objectContaining({text: SITEKEY_ELEMHIDE_FILTER})
     ]));
+  });
 
-    it("adds filter that is already on subscription", async function() {
-      await EWE.subscriptions.add(subCircumvention.url);
-      await EWE.filters.add(["/image-from-custom-filter.png^$image"]);
-      let userFilters = await EWE.filters.getUserFilters();
-      expect(userFilters[0]).toMatchObject({
-        csp: null,
-        enabled: true,
-        selector: null,
-        slow: false,
-        text: "/image-from-custom-filter.png^$image",
-        thirdParty: null,
-        type: "blocking"
-      });
-      await new Page("image-from-custom-filter.html").expectResource("image-from-custom-filter.png").toBeBlocked();
+  it("adds filter that is already on subscription", async function() {
+    await EWE.subscriptions.add(subCircumvention.url);
+    await EWE.filters.add(["/image-from-custom-filter.png^$image"]);
+    let userFilters = await EWE.filters.getUserFilters();
+    expect(userFilters[0]).toMatchObject({
+      csp: null,
+      enabled: true,
+      selector: null,
+      slow: false,
+      text: "/image-from-custom-filter.png^$image",
+      thirdParty: null,
+      type: "blocking"
+    });
+    await new Page("image-from-custom-filter.html").expectResource("image-from-custom-filter.png").toBeBlocked();
+  });
+
+  it("remove custom filter that is already on subscription as a custom filter only", async function() {
+    // https://jira.eyeo.com/browse/EE-79
+    this.skip();
+
+    await EWE.subscriptions.add(subCircumvention.url);
+    await EWE.filters.add(["/image-from-custom-filter.png^$image"]);
+    let userFilters = await EWE.filters.getUserFilters();
+    expect(userFilters[0]).toMatchObject({
+      csp: null,
+      enabled: true,
+      selector: null,
+      slow: false,
+      text: "/image-from-custom-filter.png^$image",
+      thirdParty: null,
+      type: "blocking"
     });
 
-    it("remove custom filter that is already on subscription as a custom filter only", async function() {
-      await EWE.subscriptions.add(subCircumvention.url);
-      await EWE.filters.add(["/image-from-custom-filter.png^$image"]);
-      let userFilters = await EWE.filters.getUserFilters();
-      expect(userFilters[0]).toMatchObject({
-        csp: null,
-        enabled: true,
-        selector: null,
-        slow: false,
-        text: "/image-from-custom-filter.png^$image",
-        thirdParty: null,
-        type: "blocking"
-      });
+    await EWE.filters.remove(["/image-from-custom-filter.png^$image"]);
+    expect(await EWE.filters.getUserFilters().length).toEqual(0);
 
-      await EWE.filters.remove(["/image-from-custom-filter.png^$image"]);
-      expect(await EWE.filters.getUserFilters().length).toEqual(0);
-
-      await new Page("image-from-custom-filter.html").expectResource("image-from-custom-filter.png").toBeBlocked();
-    });
+    await new Page("image-from-custom-filter.html").expectResource("image-from-custom-filter.png").toBeBlocked();
   });
 
   describe("Filters metadata", function() {

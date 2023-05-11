@@ -32,6 +32,8 @@ if (isFuzzingServiceWorker())
 else
   mocha.slow(3000);
 
+
+// eslint-disable-next-line mocha/no-top-level-hooks
 beforeEach(async function() {
   let title = this.currentTest.fullTitle();
   let tags = [{

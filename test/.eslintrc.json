@@ -6,8 +6,5 @@
   },
   "globals": {
     "EWE": "readonly"
-  },
-  "rules": {
-    "prefer-arrow-callback": "off"
   }
 }

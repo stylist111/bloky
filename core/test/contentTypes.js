@@ -19,13 +19,9 @@
 
 const assert = require("assert");
 
-const {LIB_FOLDER, createSandbox} = require("./_common");
-
-let contentTypes = null;
-let RESOURCE_TYPES = null;
-let SPECIAL_TYPES = null;
-let ALLOWING_TYPES = null;
-let enumerateTypes = null;
+const {LIB_FOLDER} = require("./_common");
+const {contentTypes, RESOURCE_TYPES, SPECIAL_TYPES, ALLOWING_TYPES,
+       enumerateTypes} = require(LIB_FOLDER + "/contentTypes");
 
 function assertNumerical(n) {
   assert.equal(typeof n, "number", `${n} is not of type number`);
@@ -56,14 +52,6 @@ function assertNoBitsShared(n, o) {
 function assertAllBitsShared(n, o) {
   assert.equal(n & o, n, `${n} does not share some bits with ${o}`);
 }
-
-beforeEach(function() {
-  let sandboxedRequire = createSandbox();
-  (
-    {contentTypes, RESOURCE_TYPES, SPECIAL_TYPES, ALLOWING_TYPES,
-     enumerateTypes} = sandboxedRequire(LIB_FOLDER + "/contentTypes")
-  );
-});
 
 // Types of web resources.
 describe("contentTypes.OTHER", function() {
