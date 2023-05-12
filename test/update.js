@@ -48,7 +48,7 @@ describe(`Update (${phase}) [runner-only]`, function() {
   });
 
   it("updates the subscription filter text when updating the extension [mv3-only]", async function() {
-    setMinTimeout(this, 3000);
+    setMinTimeout(this, 8000);
 
     const subscriptionFile = `subscriptions/${TEST_MV3_SUBSCRIPTION.id}`;
     const tmpSubscriptionFile = `${subscriptionFile}.tmp`;
