@@ -62,6 +62,6 @@ export async function getSubscriptionRulesetMap(id) {
     throw Error(`Subscription ${id} not found.`);
 
   const url = browser.runtime.getURL(dnrSub.path + ".map");
-  let response = await fetch(url, {method: "HEAD"});
+  let response = await fetch(url);
   return await response.json();
 }
