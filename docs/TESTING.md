@@ -417,6 +417,35 @@ test multiple times in a row:
 npm run measureTestFlakiness -- --testParams "v3 chromium" --runOnlyFlaky "true"
 ```
 
+### Tips for debugging failing/ flaky tests
+
+If job is failing on the pipeline but works on docker on your machine check first
+if you test on:
+
+- same browser & same browser version,
+- same manifest version,
+- you rebuild docker image,
+- you use same operating system or VM or container,
+- you use same set of tests (running isolated tests might behave differently).
+
+If you still experience failing tests on pipelines while you have tests passing
+locally on Docker. You can try to raise shared runner resources by adding tag
+to the job that is failing:
+
+```
+
+func:v2:chromium:stable:
+  tags: [ saas-linux-large-amd64 ]
+
+```
+
+This way you can check if there might be wrong architecture of the tests (race conditions
+static timeouts, etc).
+
+If tests are failing due to timeouts (of the tests or `wait()`), add `console.log()`
+in each step of the test to see where test starts to "hang" and investigate
+this step.
+
 ### Checking your tests quality on a pipeline
 
 If you need to debug specific flaky tests on the pipeline, add [flaky] to the
