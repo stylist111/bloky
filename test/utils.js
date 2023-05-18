@@ -124,7 +124,8 @@ export async function expectElemHideHidden({elemId = "elem-hide",
 
 export async function expectElemHideVisible({elemId = "elem-hide",
                                              url = "element-hiding.html",
-                                             frameIds} = {}) {
+                                             frameIds,
+                                             timeout = UNHIDDENTIMEOUT} = {}) {
   let tabId = await new Page(url).loaded;
   let getElem = frameIds ?
         () => getVisibleElementInFrame(tabId, elemId, frameIds) :
@@ -132,7 +133,7 @@ export async function expectElemHideVisible({elemId = "elem-hide",
   // If we're expecting things to not be hidden, but we check before
     // the filters have a chance to be applied, then we're not really
     // testing anything.
-  await new Promise(r => setTimeout(r, UNHIDDENTIMEOUT));
+  await new Promise(r => setTimeout(r, timeout));
 
   let elem = await getElem();
   expect(elem).not.toBeNull();
@@ -556,8 +557,18 @@ export function isEdge() {
   return navigator.appVersion.indexOf("Edg") > -1;
 }
 
+export function edgeVersion() {
+  return /Edg.?\/(\d*).(\d*).(\d*).(\d*)/.exec(
+    navigator.userAgent).splice(1);
+}
+
 export function isChromiumBased() {
   return /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+}
+
+export function chromiumVersion() {
+  return /Chrom.+\/(\d*).(\d*).(\d*).(\d*)\s.+/.exec(
+    navigator.userAgent).splice(1);
 }
 
 export function hasUpdateStaticRules() {
