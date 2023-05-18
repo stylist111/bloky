@@ -80,7 +80,7 @@ beforeEach(async function() {
       if (error.includes("A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received"))
         console.warn(error);
       else
-        throw new Error(error.message);
+        throw new Error(error);
     }
   };
 });
