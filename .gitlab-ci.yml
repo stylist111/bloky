@@ -452,8 +452,15 @@ fuzz:v3:edge:linux:
     when: always
     expire_in: 1 mo
   rules:
-    - !reference [.all-browsers-test-run, rules]
-    - allow_failure: false
+    # Do not trigger a merge request pipeline
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
+    # Run full set when FULL is true
+    - if: $FULL == 'true'
+    - if: $CI_COMMIT_BRANCH == "master"
+    # Run manually on all other branches
+    - when: manual
+      allow_failure: false
 
 compliance:v2:firefox:
   extends: .compliance
