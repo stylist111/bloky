@@ -425,54 +425,11 @@ EWE.start(startupInfo).then(async() => {
 });
 
 let injectedCode = (environment, ..._) => {
-  function loadContext() {
-    let context = {};
-    try {
-      context = JSON.parse(document.body.id);
-    }
-    catch (e) {
-      // may not exist yet
-    }
-    return context;
-  }
-  function saveContext(context) {
-    document.body.id = JSON.stringify(context);
-  }
-  function incrementCounter(context) {
-    context.counter = (context.counter || 0) + 1;
-  }
-  let injectedSnippetBody = arg => {
-    let context = loadContext();
-    context.arg = arg;
-    incrementCounter(context);
-    saveContext(context);
-  };
-  let recurringSnippetBody = () => {
-    let context = loadContext();
-    context.recurring_history = [];
-    incrementCounter(context);
-    // stays unchanged over the calls as it's local variable
-    let counter = context.counter;
-    saveContext(context);
-    function pushAndReschedule() {
-      let currentContext = loadContext();
-      currentContext.recurring_history.push(counter);
-      saveContext(currentContext);
-      setTimeout(pushAndReschedule, 100);
-    }
-    pushAndReschedule();
-  };
-  let snippets = {
-    "injected-snippet": injectedSnippetBody,
-    "recurring-injected-snippet": recurringSnippetBody
-  };
+  let snippets = {"injected-snippet": arg => document.body.textContent = arg};
   for (let [name, ...args] of _)
     snippets[name](...args);
 };
-injectedCode.has = snippet => [
-  "injected-snippet",
-  "recurring-injected-snippet"
-].includes(snippet);
+injectedCode.has = snippet => ["injected-snippet"].includes(snippet);
 
 let isolatedCode = (environment, ..._) => {
   let snippets = {"isolated-snippet": arg => self.isolated_snippet_works = arg};

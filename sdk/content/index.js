@@ -27,9 +27,6 @@ import {startOneClickAllowlisting} from "./allowlisting.js";
 import {ElementHidingTracer} from "./element-hiding-tracer.js";
 import {subscribeLinksEnabled, handleSubscribeLinks} from "./subscribe-links.js";
 
-let tracer;
-let elemHideEmulation;
-
 async function initContentFeatures() {
   if (subscribeLinksEnabled(window.location.href))
     handleSubscribeLinks();
@@ -38,24 +35,15 @@ async function initContentFeatures() {
     browser.runtime.sendMessage({type: "ewe:content-hello"})
   );
 
-  if (response)
-    await applyContentFeatures(response);
-}
+  if (!response)
+    return;
 
-async function removeContentFeatures() {
-  if (tracer)
-    tracer.disconnect();
-
-  if (elemHideEmulation)
-    elemHideEmulation.disconnect();
-}
-
-async function applyContentFeatures(response) {
+  let tracer;
   if (response.tracedSelectors)
     tracer = new ElementHidingTracer(response.tracedSelectors);
 
   if (response.emulatedPatterns.length > 0) {
-    elemHideEmulation = new ElemHideEmulation((elements, filters) => {
+    let elemHideEmulation = new ElemHideEmulation((elements, filters) => {
       for (let element of elements)
         hideElement(element, response.cssProperties);
 
@@ -68,15 +56,6 @@ async function applyContentFeatures(response) {
     elemHideEmulation.apply(response.emulatedPatterns);
   }
 }
-
-function onMessage(message) {
-  if (typeof message == "object" && message != null &&
-    message.type && message.type == "ewe:apply-content-features") {
-    removeContentFeatures();
-    applyContentFeatures(message);
-  }
-}
-browser.runtime.onMessage.addListener(onMessage);
 
 startElementCollapsing();
 startOneClickAllowlisting();

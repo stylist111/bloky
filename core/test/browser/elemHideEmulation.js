@@ -1402,40 +1402,6 @@ describe("Element hiding emulation", function() {
     }
   });
 
-  it("Unhides hidden elements when disconnected", async function() {
-    let parent = createElement();
-    createElement(parent, "p", "child");
-
-    let selectors = [
-      "div:-abp-has(p#child)"
-    ];
-
-    if (await applyElemHideEmulation(selectors))
-      expectHidden(parent);
-
-    elemHideEmulation.disconnect();
-    await timeout(REFRESH_INTERVAL);
-    expectNotTrackedHidden(parent);
-    expectVisible(parent);
-  });
-
-  it("Stops observing when disconnected", async function() {
-    let parent = createElement();
-
-    let selectors = [
-      "div:-abp-has(p#child)"
-    ];
-
-    if (await applyElemHideEmulation(selectors))
-      expectVisible(parent);
-
-    elemHideEmulation.disconnect();
-
-    createElement(parent, "p", "child");
-    await timeout(REFRESH_INTERVAL);
-    expectVisible(parent);
-  });
-
   async function runTestHidesEverythingWhenForcedToYieldThread() {
     setTestMode({
       minInvocationInterval: REFRESH_INTERVAL / 2,

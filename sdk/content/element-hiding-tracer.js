@@ -60,8 +60,4 @@ export class ElementHidingTracer {
                                      attributes: true,
                                      subtree: true});
   }
-
-  disconnect() {
-    this.observer.disconnect();
-  }
 }
