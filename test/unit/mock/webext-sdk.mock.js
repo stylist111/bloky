@@ -39,6 +39,3 @@ export function getFilterTextByRuleId(id) {
 }
 
 export let IO = {};
-
-export function disableDynamicFiltersForSubscriptionId() {}
-export function restoreDynamicFiltersForSubscriptionId() {}
