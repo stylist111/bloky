@@ -20,10 +20,10 @@ import expect from "expect";
 import browser from "webextension-polyfill";
 import {Page, waitForInvisibleElement, executeScript, setMinTimeout, wait,
         getVisibleElement, getVisibleElementInFrame, expectElemHideHidden,
-        expectElemHideVisible, isFirefox, firefoxVersion,
-        TEST_PAGES_DOMAIN, TEST_PAGES_URL, SITEKEY,
-        TEST_MV3_SUBSCRIPTION, waitForHighlightedStyle,
-        waitForSubscriptionsToDownload}
+        expectElemHideVisible, isFirefox, firefoxVersion, TEST_PAGES_DOMAIN,
+        TEST_PAGES_URL, SITEKEY, UNHIDDENTIMEOUT, HIDETIMEOUT,
+        TEST_MV3_SUBSCRIPTION, waitForHighlightedStyle, isEdge, edgeVersion,
+        waitForSubscriptionsToDownload, chromiumVersion, isChromiumBased}
   from "./utils.js";
 import {addFilter, EWE} from "./messaging.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
@@ -289,6 +289,34 @@ describe("Element Hiding", function() {
         frameIds: ["aboutblank-iframe"]
       });
     });
+
+    it("hides an element on history.pushState with previous URL allowlisted", async function() {
+      setMinTimeout(this, 6000);
+
+      await addFilter(`@@|${TEST_PAGES_URL}/history.html^$document`);
+      await addFilter(
+        `${TEST_PAGES_DOMAIN}#?#div:-abp-properties(background-color: red)`);
+
+      await expectElemHideHidden({
+        url: "history.html",
+        elemId: "elem-hide-emulation-props",
+        timeout: 4 * HIDETIMEOUT
+      });
+    });
+
+    it("does not hide an element on history.pushState with new URL allowlisted", async function() {
+      setMinTimeout(this, 6000);
+
+      await addFilter(`@@|${TEST_PAGES_URL}/history-after-pushState.html^$document`);
+      await addFilter(
+        `${TEST_PAGES_DOMAIN}#?#div:-abp-properties(background-color: red)`);
+
+      await expectElemHideVisible({
+        url: "history.html",
+        elemId: "elem-hide-emulation-props",
+        timeout: 4 * UNHIDDENTIMEOUT
+      });
+    });
   });
 
   describe("Element collapsing", function() {
@@ -413,6 +441,38 @@ describe("Element Hiding", function() {
       });
     });
   });
+
+  it("hides an element on history.pushState with previous URL allowlisted",
+     async function() {
+       setMinTimeout(this, 6000);
+
+       await addFilter(`@@|${TEST_PAGES_URL}/history.html^$document`);
+       await addFilter("###elem-hide");
+
+       await expectElemHideHidden({
+         url: "history.html",
+         elemId: "elem-hide",
+         timeout: 4 * HIDETIMEOUT
+       });
+     });
+
+  it("does not hide an element on history.pushState with new URL allowlisted",
+     async function() {
+       setMinTimeout(this, 6000);
+
+       if ((isChromiumBased() && (chromiumVersion()[0] < 87)) ||
+           (isEdge() && (edgeVersion()[0] < 87)))
+         this.skip(); // no "removeCSS" API available
+
+       await addFilter(`@@|${TEST_PAGES_URL}/history-after-pushState.html^$document`);
+       await addFilter("###elem-hide");
+
+       await expectElemHideVisible({
+         url: "history.html",
+         elemId: "elem-hide",
+         timeout: 4 * UNHIDDENTIMEOUT
+       });
+     });
 });
 
 describe("Snippets", function() {
@@ -442,7 +502,16 @@ describe("Snippets", function() {
   it("applies an injected snippet [fuzz]", async function() {
     await assertSnippet(
       injectedSnippet,
-      () => document.body.textContent,
+      () => {
+        try {
+          let context = JSON.parse(document.body.id);
+          return context.arg;
+        }
+        catch (e) {
+          // may not exist yet
+          return null;
+        }
+      },
       "MAIN");
   });
 
@@ -451,5 +520,28 @@ describe("Snippets", function() {
       isolatedSnippet,
       () => self.isolated_snippet_dependency && self.isolated_snippet_works,
       "ISOLATED");
+  });
+
+  it("restarts snippets on history.pushState", async function() {
+    setMinTimeout(this, 6000);
+
+    await addFilter(`${TEST_PAGES_DOMAIN}#$#${injectedSnippet} true`);
+    let tabId = await new Page("history.html").loaded;
+    // Snippet is expected to be called 2 times:
+    // 1 for "history.html" and 1 for "history-after-pushState.html",
+    // initiated by `history.pushState(..)` code.
+    await wait(
+      async() => await executeScript(tabId, () => {
+        try {
+          let context = JSON.parse(document.body.id);
+          return context.counter;
+        }
+        catch (e) {
+          // may not exist yet
+          return null;
+        }
+      }, null, "MAIN") == "2",
+      4 * HIDETIMEOUT,
+      "Snippet was not called 2 times");
   });
 });

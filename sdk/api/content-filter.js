@@ -34,6 +34,37 @@ export function setSnippetLibrary({isolatedCode, injectedCode}) {
   injectedLib = injectedCode;
 }
 
+function generateStylesheet(tabId, frame) {
+  let specificOnly = (frame.allowlisted & contentTypes.GENERICHIDE) != 0;
+  let trace = tracingEnabled(tabId);
+  let styleSheet = filterEngine.elemHide.getStyleSheet(
+    frame.hostname,
+    specificOnly, trace || debugOptions.elemHide,
+    trace
+  );
+
+  if (debugOptions.elemHide) {
+    let declarationBlock = "{";
+    for (let [property, value] of debugOptions.cssProperties)
+      declarationBlock += `${property}: ${value} !important;`;
+    declarationBlock += "}";
+
+    styleSheet.code = createStyleSheet(styleSheet.selectors, declarationBlock);
+  }
+
+  return styleSheet;
+}
+
+export async function removeContentFilters(tabId, frameId, frame) {
+  if (frame.allowlisted & contentTypes.DOCUMENT)
+    return;
+
+  if (!(frame.allowlisted & contentTypes.ELEMHIDE)) {
+    let styleSheet = generateStylesheet(tabId, frame);
+    await removeCSS(tabId, frameId, styleSheet.code);
+  }
+}
+
 export async function applyContentFilters(tabId, frameId) {
   let frame = getFrameInfo(tabId, frameId);
   let details = {tabId, frameIds: [frameId]};
@@ -154,8 +185,10 @@ export async function applyContentFilters(tabId, frameId) {
 
             document.documentElement.removeChild(script);
           };
-          const executable = ${code};
-          injectSnippetsInMainContext(executable);`;
+          {
+            const executable = ${code};
+            injectSnippetsInMainContext(executable);
+          }`;
           execute.push(
             browser.tabs.executeScript(
               tabId,
@@ -178,31 +211,14 @@ export async function applyContentFilters(tabId, frameId) {
     }
 
     if (!(frame.allowlisted & contentTypes.ELEMHIDE)) {
-      let specificOnly = (frame.allowlisted & contentTypes.GENERICHIDE) != 0;
-      let trace = tracingEnabled(tabId);
-      let styleSheet = filterEngine.elemHide.getStyleSheet(
-        frame.hostname,
-        specificOnly, trace || debugOptions.elemHide,
-        trace
-      );
-
-      if (debugOptions.elemHide) {
-        let declarationBlock = "{";
-        for (let [property, value] of debugOptions.cssProperties)
-          declarationBlock += `${property}: ${value} !important;`;
-        declarationBlock += "}";
-
-        styleSheet.code = createStyleSheet(styleSheet.selectors,
-                                           declarationBlock);
-      }
-
+      let styleSheet = generateStylesheet(tabId, frame);
       injectCSS(tabId, frameId, styleSheet.code);
 
       for (let {selector, text} of filterEngine.elemHideEmulation.getFilters(
         frame.hostname))
         emulatedPatterns.push({selector, text});
 
-      if (trace) {
+      if (tracingEnabled(tabId)) {
         tracedSelectors = [];
         for (let selector of styleSheet.selectors)
           tracedSelectors.push([selector, null]);
@@ -242,4 +258,37 @@ export function injectCSS(tabId, frameId, code) {
   }
 
   result.catch(() => {}); // Fails if tab or frame no longer exists
+}
+
+export async function removeCSS(tabId, frameId, code) {
+  let result;
+
+  if (browser.scripting && browser.scripting.removeCSS) {
+    result = browser.scripting.removeCSS({
+      target: {tabId, frameIds: [frameId]},
+      css: code,
+      origin: "USER"
+    });
+  }
+  else if (browser.tabs.removeCSS) {
+    result = browser.tabs.removeCSS(
+      tabId,
+      {
+        code,
+        cssOrigin: "user",
+        frameId,
+        matchAboutBlank: true
+      }
+    );
+  }
+  else {
+    result = Promise.resolve();
+  }
+
+  try {
+    await result;
+  }
+  catch (e) {
+    // Fails if tab or frame no longer exists
+  }
 }

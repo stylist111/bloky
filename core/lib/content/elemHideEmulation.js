@@ -1184,4 +1184,9 @@ exports.ElemHideEmulation = class ElemHideEmulation {
       }
     }
   }
+
+  disconnect() {
+    this.observer.disconnect();
+    this._unhideElems(Array.from(this.hiddenElements));
+  }
 };
