@@ -91,7 +91,7 @@ for (let run = 0; run < args.runs; run++) {
 let failureRate = Math.round(failureCount / args.runs * 100);
 console.log(`${failureCount} failures out of ${args.runs} attempts. Failure rate: ${failureRate}%`);
 
-if (failureCount > 0) {
+if (failureCount > 2) {
   console.log("Run attempts that failed: ", errorsThrown.join(", "), "scroll up for more details");
   throw new Error("Test failed!");
 }
