@@ -207,6 +207,10 @@ describe("Test subscriptions update", function() {
     expect(added.length).toEqual(4);
     await checkUpdateStateSaved(SUBSCRIPTION.id, UPDATES);
 
+    // Check that these are not reported as user filter.
+    let userFilters = await EWE.filters.getUserFilters();
+    expect(userFilters.length).toEqual(0);
+
     // The update disables one more static rule, and add DYNAMIC_FILTER
     ids = UPDATES2.removed.flatMap(text => mapper.get(text));
     expect(ids.length).toEqual(3);
@@ -230,6 +234,9 @@ describe("Test subscriptions update", function() {
     await checkDynamicRuleCount(6);
     // Still the same update state
     await checkUpdateStateSaved(SUBSCRIPTION.id, UPDATES3);
+
+    userFilters = await EWE.filters.getUserFilters();
+    expect(userFilters.length).toEqual(1);
 
     // Update that also bring rule DYNAMIC_FILTER2
     let dynFilter = await getDynamicFilter(DYNAMIC_FILTER2);
