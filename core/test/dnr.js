@@ -18,16 +18,12 @@
 "use strict";
 
 const assert = require("assert");
-const {LIB_FOLDER, createSandbox} = require("./_common");
+const {LIB_FOLDER} = require("./_common");
 
-let contentTypes = null;
-let RESOURCE_TYPES = null;
-let asDNR = null;
-let createConverter = null;
-let GENERIC_PRIORITY;
-let GENERIC_ALLOW_ALL_PRIORITY;
-let SPECIFIC_PRIORITY;
-let SPECIFIC_ALLOW_ALL_PRIORITY;
+const {GENERIC_PRIORITY, GENERIC_ALLOW_ALL_PRIORITY, SPECIFIC_PRIORITY,
+       SPECIFIC_ALLOW_ALL_PRIORITY} = require(LIB_FOLDER + "/dnr/rules");
+const {contentTypes, RESOURCE_TYPES} = require(LIB_FOLDER + "/contentTypes");
+const {asDNR, createConverter} = require(LIB_FOLDER + "/dnr");
 
 const preParsedRule = {
   blocking: false,
@@ -44,20 +40,9 @@ const preParsedRule = {
 };
 
 describe("DeclarativeNetRequest", function() {
-  beforeEach(function() {
-    let sandboxedRequire = createSandbox();
-    (
-      ({contentTypes, RESOURCE_TYPES} = sandboxedRequire(LIB_FOLDER + "/contentTypes")),
-      ({asDNR, createConverter} = sandboxedRequire(LIB_FOLDER + "/dnr")),
-      ({GENERIC_PRIORITY, GENERIC_ALLOW_ALL_PRIORITY,
-        SPECIFIC_PRIORITY, SPECIFIC_ALLOW_ALL_PRIORITY} =
-       sandboxedRequire(LIB_FOLDER + "/dnr/rules.js"))
-    );
-    let converter = {
-      isRegexSupported: r => true,
-      modifyRule: (rule, context) => rule
-    };
-    asDNR = asDNR.bind(converter);
+  let convert = asDNR.bind({
+    isRegexSupported: r => true,
+    modifyRule: (rule, context) => rule
   });
 
   it("Returns error for sitekey filters", function() {
@@ -72,7 +57,7 @@ describe("DeclarativeNetRequest", function() {
         sitekeys: "SiTeK3y"
       });
 
-    let result = asDNR(parsedSitekey);
+    let result = convert(parsedSitekey);
     assert(result instanceof Error);
     assert.equal(result.message, "filter_unknown_option");
     assert.equal(result.detail.text, "abcd$sitekey=SiTeK3y");
@@ -93,7 +78,7 @@ describe("DeclarativeNetRequest", function() {
         }
       });
 
-    let result = asDNR(parsedHeaderFiltering);
+    let result = convert(parsedHeaderFiltering);
     assert(result instanceof Error);
     assert.equal(result.message, "filter_unknown_option");
     assert.equal(result.detail.text, "abcd$header=content-type=application/pdf");
@@ -135,7 +120,7 @@ describe("DeclarativeNetRequest", function() {
         rewrite: "blank-mp42"
       });
 
-    let result = asDNR(rule);
+    let result = convert(rule);
     assert.equal(result.length, 0);
   });
 
@@ -148,7 +133,7 @@ describe("DeclarativeNetRequest", function() {
         text: "-ad-300x600px.",
         regexpSource: "-ad-300x600px."
       });
-    let result = asDNR(rule1);
+    let result = convert(rule1);
     assert.equal(result.length, 1);
     assert.equal(result[0].priority, GENERIC_PRIORITY);
     assert.equal(result[0].action.type, "block");
@@ -163,7 +148,7 @@ describe("DeclarativeNetRequest", function() {
         regexpSource: "-adwords.",
         domains: "~consultant-adwords.com|~consultant-adwords.fr|~expert-adwords.com|~freelance-adwords.com|~freelance-adwords.fr"
       });
-    result = asDNR(rule2);
+    result = convert(rule2);
     assert.equal(result.length, 1);
     assert.equal(result[0].priority, GENERIC_PRIORITY);
     assert.equal(result[0].action.type, "block");
@@ -188,7 +173,7 @@ describe("DeclarativeNetRequest", function() {
         regexpSource: ".openx.",
         domains: "~openx.com|~openx.solar"
       });
-    result = asDNR(rule3);
+    result = convert(rule3);
     assert.equal(result.length, 1);
     assert.equal(result[0].priority, GENERIC_PRIORITY);
     assert.equal(result[0].action.type, "block");
@@ -210,7 +195,7 @@ describe("DeclarativeNetRequest", function() {
         regexpSource: "||contentpass.net/stats?",
         thirdParty: true
       });
-    result = asDNR(rule4);
+    result = convert(rule4);
     assert.equal(result.length, 1);
     assert.equal(result[0].priority, GENERIC_PRIORITY);
     assert.equal(result[0].action.type, "block");
@@ -230,7 +215,7 @@ describe("DeclarativeNetRequest", function() {
         text: "/^https?://(.+?.)?anotherexample.com/images/uploads/[a-zA-Z]{6,15}-.*/",
         regexpSource: "/^https?://(.+?.)?anotherexample.com/images/uploads/[a-zA-Z]{6,15}-.*/"
       });
-    let result = asDNR(rule);
+    let result = convert(rule);
     assert.equal(result.length, 1);
     assert.equal(result[0].priority, GENERIC_PRIORITY);
     assert.equal(result[0].action.type, "block");
@@ -251,7 +236,7 @@ describe("DeclarativeNetRequest", function() {
         contentType: 2,
         domains: "example.com"
       });
-    let result = asDNR(rule1);
+    let result = convert(rule1);
     assert.equal(result.length, 1);
     assert.equal(result[0].priority, SPECIFIC_PRIORITY);
     assert.equal(result[0].action.type, "allow");
@@ -274,7 +259,7 @@ describe("DeclarativeNetRequest", function() {
         regexpSource: "||ads.microsoft.com^",
         contentType: 16777216
       });
-    result = asDNR(rule2);
+    result = convert(rule2);
     assert.equal(result.length, 0);
 
 
@@ -288,7 +273,7 @@ describe("DeclarativeNetRequest", function() {
         contentType: 134217728
       });
 
-    result = asDNR(rule3);
+    result = convert(rule3);
     assert.equal(result.length, 1);
     assert.equal(result[0].priority, SPECIFIC_ALLOW_ALL_PRIORITY);
     assert.equal(result[0].action.type, "allowAllRequests");
@@ -310,7 +295,7 @@ describe("DeclarativeNetRequest", function() {
         contentType: 402653184
       });
 
-    result = asDNR(rule4);
+    result = convert(rule4);
     assert.equal(result.length, 1);
     assert.equal(result[0].priority, GENERIC_ALLOW_ALL_PRIORITY);
     assert.equal(result[0].action.type, "allowAllRequests");
@@ -338,7 +323,7 @@ describe("DeclarativeNetRequest", function() {
         rewrite: "blank-mp3"
       });
 
-    let result = asDNR(rule);
+    let result = convert(rule);
     assert.equal(result.length, 1);
     assert.equal(result[0].priority, SPECIFIC_PRIORITY);
     assert.deepEqual(result[0].action, {type: "redirect", redirect: {
@@ -364,7 +349,7 @@ describe("DeclarativeNetRequest", function() {
         csp: "script-src 'self' * 'unsafe-inline'"
       });
 
-    let result = asDNR(rule);
+    let result = convert(rule);
     assert.equal(result.length, 1);
     assert.equal(result[0].priority, GENERIC_PRIORITY);
     assert.deepEqual(result[0].condition, {
@@ -396,7 +381,7 @@ describe("DeclarativeNetRequest", function() {
         thirdParty: false
       });
 
-    let result = asDNR(rule);
+    let result = convert(rule);
     assert.equal(result.length, 1);
     assert.equal(result[0].priority, SPECIFIC_PRIORITY);
     assert.equal(result[0].action.type, "allow");

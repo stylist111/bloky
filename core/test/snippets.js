@@ -20,23 +20,16 @@
 "use strict";
 
 const assert = require("assert");
-const {createSandbox} = require("./_common");
+const {LIB_FOLDER} = require("./_common");
 
-let snippets = null;
-let parseScript = null;
-let compileScript = null;
-let Filter = null;
-let SnippetFilter = null;
+const {Filter, SnippetFilter} = require(LIB_FOLDER + "/filterClasses");
+const {Snippets, parseScript, compileScript} =
+      require(LIB_FOLDER + "/snippets");
 
 describe("Snippets", function() {
-  beforeEach(function() {
-    let Snippets;
-    let sandboxedRequire = createSandbox();
-    (
-      {Filter, SnippetFilter} = sandboxedRequire("../lib/filterClasses"),
-      {Snippets, parseScript, compileScript} = sandboxedRequire("../lib/snippets")
-    );
+  let snippets = null;
 
+  beforeEach(function() {
     snippets = new Snippets();
   });
 

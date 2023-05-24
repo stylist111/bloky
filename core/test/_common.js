@@ -32,8 +32,6 @@ const SandboxedModule = dynamicRequire("sandboxed-module");
 const {MILLIS_IN_HOUR} = require(LIB_FOLDER + "/time");
 
 let globals = {
-  atob: data => Buffer.from(data, "base64").toString("binary"),
-  btoa: data => Buffer.from(data, "binary").toString("base64"),
   console: {
     log() {},
     warn() {},
@@ -70,6 +68,18 @@ function rewriteRequires(source) {
   });
 }
 
+/**
+ * Creates a sandboxed module loader. This is needed if
+ * - Modules being tested set global state
+ * - Modules being tested require on of the stubs (io, prefs, info)
+ * - Modules being tested need to mock time or network requests
+ *
+ * Tests that don't need the sandbox shouldn't use it.
+ * @param {?Object} options Additional options for the sandbox.
+ * @param {Object} options.globals Additional global variables to override in
+ *   the sandbox.
+ * @returns {function} Require function to load modules in the sandbox.
+ */
 exports.createSandbox = function(options) {
   if (!options)
     options = {};

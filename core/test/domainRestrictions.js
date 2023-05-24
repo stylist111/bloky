@@ -18,18 +18,11 @@
 "use strict";
 
 const assert = require("assert");
-const {LIB_FOLDER, createSandbox} = require("./_common");
+const {LIB_FOLDER} = require("./_common");
 
-let Filter = null;
+const {Filter} = require(LIB_FOLDER + "/filterClasses");
 
 describe("Domain restrictions", function() {
-  beforeEach(function() {
-    let sandboxedRequire = createSandbox();
-    (
-      {Filter} = sandboxedRequire(LIB_FOLDER + "/filterClasses")
-    );
-  });
-
   function testActive(text, domain, expectedActive, expectedOnlyDomain) {
     let filter = Filter.fromText(text);
     assert.equal(filter.isActiveOnDomain(domain), expectedActive, text + " active on " + domain);

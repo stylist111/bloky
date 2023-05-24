@@ -25,6 +25,7 @@ describe("analytics", function() {
   let Prefs = null;
 
   beforeEach(function() {
+    // Sandbox is required here to get the stub Prefs.
     let sandboxedRequire = createSandbox();
     (
       {analytics} = sandboxedRequire(LIB_FOLDER + "/analytics"),

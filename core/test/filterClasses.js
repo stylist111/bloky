@@ -18,36 +18,19 @@
 "use strict";
 
 const assert = require("assert");
-const {LIB_FOLDER, createSandbox} = require("./_common");
+const {LIB_FOLDER} = require("./_common");
 
-let contentTypes = null;
-let RESOURCE_TYPES = null;
-let Filter = null;
-let InvalidFilter = null;
-let CommentFilter = null;
-let ActiveFilter = null;
-let URLFilter = null;
-let BlockingFilter = null;
-let ContentFilter = null;
-let AllowingFilter = null;
-let ElemHideBase = null;
-let ElemHideFilter = null;
-let ElemHideException = null;
-let ElemHideEmulationFilter = null;
-let SnippetFilter = null;
+const {contentTypes, RESOURCE_TYPES} = require(LIB_FOLDER + "/contentTypes");
+const {Filter, InvalidFilter, CommentFilter, ActiveFilter, URLFilter,
+       BlockingFilter, AllowingFilter, ContentFilter, ElemHideBase,
+       ElemHideFilter, ElemHideException, ElemHideEmulationFilter,
+       SnippetFilter, isActiveFilter} = require(LIB_FOLDER + "/filterClasses");
+const {FilterState} = require(LIB_FOLDER + "/filterState");
 
 describe("Filter classes", function() {
   beforeEach(function() {
-    let sandboxedRequire = createSandbox();
-    (
-      {contentTypes, RESOURCE_TYPES} = sandboxedRequire(LIB_FOLDER + "/contentTypes"),
-      {Filter, InvalidFilter, CommentFilter, ActiveFilter, URLFilter,
-       BlockingFilter, AllowingFilter, ContentFilter, ElemHideBase,
-       ElemHideFilter, ElemHideException, ElemHideEmulationFilter,
-       SnippetFilter} = sandboxedRequire(LIB_FOLDER + "/filterClasses")
-    );
-
-    const {FilterState} = sandboxedRequire(LIB_FOLDER + "/filterState");
+    // This automatically sets the new filterState as the state used in
+    // filterClasses.
     new FilterState();
   });
 
@@ -913,15 +896,6 @@ describe("Filter classes", function() {
 });
 
 describe("isActiveFilter()", function() {
-  let isActiveFilter = null;
-
-  beforeEach(function() {
-    let sandboxedRequire = createSandbox();
-    (
-      {isActiveFilter, Filter} = sandboxedRequire(LIB_FOLDER + "/filterClasses")
-    );
-  });
-
   // Blocking filters.
   it("should return true for example", function() {
     assert.strictEqual(isActiveFilter(Filter.fromText("example")), true);

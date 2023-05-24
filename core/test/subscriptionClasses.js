@@ -48,6 +48,8 @@ function compareSubscription(url, expected, postInit) {
 
 describe("Subscription classes", function() {
   beforeEach(function() {
+    // Sandbox required because subscriptions are remembered between tests, and
+    // setRecommendations modifies global state.
     let sandboxedRequire = createSandbox();
     (
       {Subscription, SpecialSubscription,
@@ -272,6 +274,8 @@ describe("DNR mode", function() {
   let setRecommendations;
 
   beforeEach(function() {
+    // Sandbox required because subscriptions are remembered between tests, and
+    // setRecommendations modifies global state.
     let sandboxedRequire = createSandbox();
     (
       {Subscription, RegularSubscription,
@@ -349,6 +353,8 @@ describe("DNR mode", function() {
 
 describe("Subscription.isValidURL()", function() {
   beforeEach(function() {
+    // Sandbox required because subscriptions are remembered between tests, and
+    // setRecommendations modifies global state.
     let sandboxedRequire = createSandbox();
     (
       {Subscription} = sandboxedRequire(LIB_FOLDER + "/subscriptionClasses")

@@ -18,27 +18,16 @@
 "use strict";
 
 const assert = require("assert");
-const {LIB_FOLDER, createSandbox} = require("./_common");
+const {LIB_FOLDER} = require("./_common");
 
-let contentTypes = null;
-let Filter = null;
-let CombinedMatcher = null;
-let defaultMatcher = null;
-let Matcher = null;
-let parseURL = null;
-
+const {contentTypes} = require(LIB_FOLDER + "/contentTypes");
+const {Filter} = require(LIB_FOLDER + "/filterClasses");
+const {CombinedMatcher, newDefaultMatcher, Matcher} = require(LIB_FOLDER + "/matcher");
+const {parseURL} = require(LIB_FOLDER + "/url");
 
 describe("Matcher", function() {
+  let defaultMatcher = null;
   beforeEach(function() {
-    let newDefaultMatcher;
-    let sandboxedRequire = createSandbox();
-    (
-      {contentTypes} = sandboxedRequire(LIB_FOLDER + "/contentTypes"),
-      {Filter} = sandboxedRequire(LIB_FOLDER + "/filterClasses"),
-      {CombinedMatcher, newDefaultMatcher, Matcher} = sandboxedRequire(LIB_FOLDER + "/matcher"),
-      {parseURL} = sandboxedRequire(LIB_FOLDER + "/url")
-    );
-
     defaultMatcher = newDefaultMatcher();
   });
 

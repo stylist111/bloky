@@ -23,10 +23,13 @@ const {LIB_FOLDER, createSandbox} = require("./_common");
 describe("filterState", function() {
   let filterNotifier = null;
   let filterState = null;
+  let Filter = null;
 
   beforeEach(function() {
+    // Sandbox is required here because the filterNotifier is a global singleton.
     let sandboxedRequire = createSandbox();
     (
+      {Filter} = sandboxedRequire(LIB_FOLDER + "/filterClasses"),
       {filterNotifier} = sandboxedRequire(LIB_FOLDER + "/filterNotifier")
     );
     const {FilterState} = sandboxedRequire(LIB_FOLDER + "/filterState");
@@ -36,6 +39,7 @@ describe("filterState", function() {
   afterEach(function() {
     filterNotifier = null;
     filterState = null;
+    Filter.useFilterState(null);
   });
 
   describe("filterState.isEnabled() without subscription", function() {

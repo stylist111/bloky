@@ -24,6 +24,7 @@ let filterNotifier = null;
 
 describe("Filter notifier", function() {
   beforeEach(function() {
+    // Sandbox is required here because the filterNotifier is a global singleton.
     let sandboxedRequire = createSandbox();
     (
       {filterNotifier} = sandboxedRequire(LIB_FOLDER + "/filterNotifier")

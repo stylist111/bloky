@@ -67,6 +67,7 @@ describe("Filter Engine setup", function() {
   let DownloadableSubscription;
 
   beforeEach(function() {
+    // Sandbox is required here to get the stub io module.
     let sandboxedRequire = createSandbox();
     (
       {Features} = sandboxedRequire(LIB_FOLDER + "/features.js"),
@@ -160,6 +161,7 @@ describe("Filter Engine setup", function() {
 
 describe("Running the filterEngine", function() {
   beforeEach(function() {
+    // Sandbox is required here to get the stub io module.
     let sandboxedRequire = createSandbox();
     (
       {contentTypes} = sandboxedRequire(LIB_FOLDER + "/contentTypes.js"),

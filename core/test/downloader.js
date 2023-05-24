@@ -18,18 +18,11 @@
 "use strict";
 
 const assert = require("assert");
-const {LIB_FOLDER, createSandbox} = require("./_common");
+const {LIB_FOLDER} = require("./_common");
+
+const {Downloader} = require(LIB_FOLDER + "/downloader");
 
 describe("Downloader.isValidURL()", function() {
-  let Downloader = null;
-
-  beforeEach(function() {
-    let sandboxedRequire = createSandbox();
-    (
-      {Downloader} = sandboxedRequire(LIB_FOLDER + "/downloader")
-    );
-  });
-
   it("should return true for https://example.com/", function() {
     assert.strictEqual(Downloader.isValidURL("https://example.com/"), true);
   });

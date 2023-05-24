@@ -37,6 +37,8 @@ describe("Synchronizer", function() {
 
     let globals = Object.assign({}, setupTimerAndFetch.call(runner), setupRandomResult.call(runner));
 
+    // Sandbox required because the synchronizer does lots of stuff we want to
+    // mock in unit tests.
     let sandboxedRequire = createSandbox({globals});
     (
       {Subscription} = sandboxedRequire(LIB_FOLDER + "/subscriptionClasses"),

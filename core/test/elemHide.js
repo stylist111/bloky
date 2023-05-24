@@ -18,26 +18,18 @@
 "use strict";
 
 const assert = require("assert");
-const {LIB_FOLDER, createSandbox} = require("./_common");
+const {LIB_FOLDER} = require("./_common");
 
-let createStyleSheet = null;
-let rulesFromStyleSheet = null;
-let Filter = null;
+const {ElemHide, createStyleSheet, rulesFromStyleSheet} =
+      require(LIB_FOLDER + "/elemHide");
+const {ElemHideExceptions} = require(LIB_FOLDER + "/elemHideExceptions");
+const {Filter} = require(LIB_FOLDER + "/filterClasses");
 
 describe("Element hiding", function() {
   let elemHide = null;
   let elemHideExceptions = null;
 
   beforeEach(function() {
-    let ElemHide;
-
-    let sandboxedRequire = createSandbox({});
-    (
-      {ElemHide, createStyleSheet, rulesFromStyleSheet} = sandboxedRequire(LIB_FOLDER + "/elemHide"),
-      {Filter} = sandboxedRequire(LIB_FOLDER + "/filterClasses")
-    );
-
-    const {ElemHideExceptions} = sandboxedRequire(LIB_FOLDER + "/elemHideExceptions");
     elemHideExceptions = new ElemHideExceptions();
     elemHide = new ElemHide(elemHideExceptions);
   });

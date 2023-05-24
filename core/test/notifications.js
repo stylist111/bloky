@@ -39,6 +39,8 @@ describe("Notifications", function() {
                                 setupTimerAndFetch.call(runner),
                                 setupRandomResult.call(runner));
 
+    // Sandbox is required here to get the stub Prefs, and to handle all the
+    // time mocking.
     let sandboxedRequire = createSandbox({globals});
     (
       {Prefs} = sandboxedRequire("./stub-modules/prefs"),

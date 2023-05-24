@@ -28,6 +28,8 @@ describe("Filter storage", function() {
   let Subscription = null;
 
   beforeEach(async function() {
+    // Sandbox is required here to get the stub io module and because
+    // filterNotifier is a global singleton..
     let sandboxedRequire = createSandbox();
 
     (

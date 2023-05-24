@@ -18,18 +18,12 @@
 "use strict";
 
 const assert = require("assert");
-const {LIB_FOLDER, createSandbox} = require("./_common");
+const {LIB_FOLDER} = require("./_common");
+
+const {textToRegExp, makeRegExpParameter, qualifySelector} =
+      require(LIB_FOLDER + "/common");
 
 describe("textToRegExp()", function() {
-  let textToRegExp = null;
-
-  beforeEach(function() {
-    let sandboxedRequire = createSandbox();
-    (
-      {textToRegExp} = sandboxedRequire(LIB_FOLDER + "/common")
-    );
-  });
-
   for (let character of ["-", "/", "\\", "^", "$", "*", "+", "?", ".",
                          "(", ")", "|", "[", "]", "{", "}"]) {
     // Alone.
@@ -66,15 +60,6 @@ describe("textToRegExp()", function() {
 });
 
 describe("makeRegExpParameter()", function() {
-  let makeRegExpParameter = null;
-
-  beforeEach(function() {
-    let sandboxedRequire = createSandbox();
-    (
-      {makeRegExpParameter} = sandboxedRequire(LIB_FOLDER + "/common")
-    );
-  });
-
   it("should interpret patterns that start and end with / as a regex", function() {
     let text = "/[a-z]{3}/";
     let regexp = makeRegExpParameter(text);
@@ -102,15 +87,6 @@ describe("makeRegExpParameter()", function() {
 });
 
 describe("qualifySelector()", function() {
-  let qualifySelector = null;
-
-  beforeEach(function() {
-    let sandboxedRequire = createSandbox();
-    (
-      {qualifySelector} = sandboxedRequire(LIB_FOLDER + "/common")
-    );
-  });
-
   // Simple selectors.
   it("should return div#foo for #foo and div", function() {
     assert.equal(qualifySelector("#foo", "div"), "div#foo");

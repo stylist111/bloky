@@ -18,13 +18,13 @@
 "use strict";
 
 const assert = require("assert");
-const {LIB_FOLDER, createSandbox} = require("./_common");
+const {LIB_FOLDER} = require("./_common");
 
 const {publicSuffixes} = require("../data/publicSuffixList.js");
+const {parseURL, isLocalhost, domainSuffixes, URLRequest, getBaseDomain,
+       parseDomains, isValidHostname} = require(LIB_FOLDER + "/url");
 
 describe("parseURL()", function() {
-  let parseURL = null;
-
   function testURLParsing(url) {
     // Note: The function expects a normalized URL.
     // e.g. "http:example.com:80?foo" should already be normalized to
@@ -43,13 +43,6 @@ describe("parseURL()", function() {
     assert.equal(String(urlInfo), String(urlObject));
     assert.equal(urlInfo + "", urlObject + "");
   }
-
-  beforeEach(function() {
-    let sandboxedRequire = createSandbox();
-    (
-      {parseURL} = sandboxedRequire(LIB_FOLDER + "/url")
-    );
-  });
 
   it("should parse https://example.com/", function() {
     testURLParsing("https://example.com/");
@@ -434,15 +427,6 @@ describe("parseURL()", function() {
 });
 
 describe("isLocalhost()", function() {
-  let isLocalhost = null;
-
-  beforeEach(function() {
-    let sandboxedRequire = createSandbox();
-    (
-      {isLocalhost} = sandboxedRequire(LIB_FOLDER + "/url")
-    );
-  });
-
   it("should return true for localhost", function() {
     assert.strictEqual(isLocalhost("localhost"), true);
   });
@@ -461,15 +445,6 @@ describe("isLocalhost()", function() {
 });
 
 describe("*domainSuffixes()", function() {
-  let domainSuffixes = null;
-
-  beforeEach(function() {
-    let sandboxedRequire = createSandbox();
-    (
-      {domainSuffixes} = sandboxedRequire(LIB_FOLDER + "/url")
-    );
-  });
-
   it("should yield localhost for localhost", function() {
     assert.deepEqual([...domainSuffixes("localhost")], ["localhost"]);
   });
@@ -577,15 +552,6 @@ describe("*domainSuffixes()", function() {
 });
 
 describe("URLRequest", function() {
-  let URLRequest = null;
-
-  beforeEach(function() {
-    let sandboxedRequire = createSandbox();
-    (
-      {URLRequest} = sandboxedRequire(LIB_FOLDER + "/url")
-    );
-  });
-
   describe("#get thirdParty()", function() {
     function testThirdParty(url, documentHostname, expected, message) {
       let {thirdParty} = URLRequest.from(url, documentHostname);
@@ -651,8 +617,6 @@ describe("URLRequest", function() {
 });
 
 describe("getBaseDomain()", function() {
-  let getBaseDomain = null;
-
   before(function() {
     assert.equal(typeof publicSuffixes["localhost"], "undefined");
     assert.equal(typeof publicSuffixes["localhost.localdomain"], "undefined");
@@ -675,13 +639,6 @@ describe("getBaseDomain()", function() {
     assert.equal(publicSuffixes["us-east-1.amazonaws.com"], 1);
     assert.equal(typeof publicSuffixes["example.amazonaws.com"], "undefined");
     assert.equal(typeof publicSuffixes["amazonaws.com"], "undefined");
-  });
-
-  beforeEach(function() {
-    let sandboxedRequire = createSandbox();
-    (
-      {getBaseDomain} = sandboxedRequire(LIB_FOLDER + "/url")
-    );
   });
 
   it("should return correct values for all known suffixes", function() {
@@ -788,8 +745,6 @@ describe("getBaseDomain()", function() {
 });
 
 describe("parseDomains()", function() {
-  let parseDomains = null;
-
   function testFilterDomainsParsing(source, separator, expected,
                                     {repeatingDomains = true} = {}) {
     let domains = parseDomains(source, separator);
@@ -814,13 +769,6 @@ describe("parseDomains()", function() {
     if (repeatingDomains && source != "")
       testFilterDomainsParsing(`${source}${separator}${source}`, separator, expected, {repeatingDomains: false});
   }
-
-  beforeEach(function() {
-    let sandboxedRequire = createSandbox();
-    (
-      {parseDomains} = sandboxedRequire(LIB_FOLDER + "/url")
-    );
-  });
 
   it("should return Map {'' => true} for blank string", function() {
     testFilterDomainsParsing("", "|", {"": 1});
@@ -883,15 +831,6 @@ describe("parseDomains()", function() {
 });
 
 describe("isValidHostname()", function() {
-  let isValidHostname = null;
-
-  beforeEach(function() {
-    let sandboxedRequire = createSandbox();
-    (
-      {isValidHostname} = sandboxedRequire(LIB_FOLDER + "/url")
-    );
-  });
-
   it("should return false for blank hostname", function() {
     assert.strictEqual(isValidHostname(""), false);
   });

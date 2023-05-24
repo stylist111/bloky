@@ -18,22 +18,13 @@
 "use strict";
 
 const assert = require("assert");
-const {LIB_FOLDER, createSandbox} = require("./_common");
+const {LIB_FOLDER} = require("./_common");
 
-let contentTypes = null;
-let Filter = null;
-let URLRequest = null;
+const {contentTypes} = require(LIB_FOLDER + "/contentTypes");
+const {Filter} = require(LIB_FOLDER + "/filterClasses");
+const {URLRequest} = require(LIB_FOLDER + "/url");
 
 describe("URL filters matching", function() {
-  beforeEach(function() {
-    let sandboxedRequire = createSandbox();
-    (
-      {contentTypes} = sandboxedRequire(LIB_FOLDER + "/contentTypes"),
-      {Filter} = sandboxedRequire(LIB_FOLDER + "/filterClasses"),
-      {URLRequest} = sandboxedRequire(LIB_FOLDER + "/url")
-    );
-  });
-
   function testMatch(text, location, contentType, docDomain, thirdParty, sitekey, expected) {
     if (thirdParty && docDomain == null)
       docDomain = "some-other-domain";

@@ -18,18 +18,11 @@
 "use strict";
 
 const assert = require("assert");
-const {LIB_FOLDER, createSandbox} = require("./_common");
+const {LIB_FOLDER} = require("./_common");
+
+const {EventEmitter} = require(LIB_FOLDER + "/events");
 
 describe("EventEmitter", function() {
-  let EventEmitter = null;
-
-  beforeEach(function() {
-    let sandboxedRequire = createSandbox();
-    (
-      {EventEmitter} = sandboxedRequire(LIB_FOLDER + "/events")
-    );
-  });
-
   describe("#on()", function() {
     let eventEmitter = null;
 

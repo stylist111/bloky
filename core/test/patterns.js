@@ -18,18 +18,13 @@
 "use strict";
 
 const assert = require("assert");
-const {LIB_FOLDER, createSandbox} = require("./_common");
+const {LIB_FOLDER} = require("./_common");
+
+const {Pattern, filterToRegExp} = require(LIB_FOLDER + "/patterns");
+const {makeRegExpParameter} = require(LIB_FOLDER + "/common");
+const {URLRequest} = require(LIB_FOLDER + "/url");
 
 describe("filterToRegExp()", function() {
-  let filterToRegExp = null;
-
-  beforeEach(function() {
-    let sandboxedRequire = createSandbox();
-    (
-      {filterToRegExp} = sandboxedRequire(LIB_FOLDER + "/patterns")
-    );
-  });
-
   // Wildcards.
   it("should return '' for '*'", function() {
     assert.strictEqual(filterToRegExp("*"), "");
@@ -279,18 +274,6 @@ describe("filterToRegExp()", function() {
 });
 
 describe("Pattern", function() {
-  let Pattern = null;
-  let filterToRegExp = null;
-  let makeRegExpParameter = null;
-  let URLRequest = null;
-
-  beforeEach(function() {
-    let sandboxedRequire = createSandbox();
-    ({Pattern, filterToRegExp} = sandboxedRequire(LIB_FOLDER + "/patterns"));
-    ({makeRegExpParameter} = sandboxedRequire(LIB_FOLDER + "/common"));
-    ({URLRequest} = sandboxedRequire(LIB_FOLDER + "/url"));
-  });
-
   it("should not compile literal patterns to regexes", function() {
     function expectLiteralPattern(patternText) {
       let pattern = new Pattern(patternText);

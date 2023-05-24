@@ -25,6 +25,7 @@ let setRecommendations = null;
 
 describe("Recommendations", function() {
   beforeEach(function() {
+    // Sandbox required because setRecommendations sets global state
     let sandboxedRequire = createSandbox({});
     (
       {recommendations, setRecommendations} = sandboxedRequire(LIB_FOLDER + "/recommendations")

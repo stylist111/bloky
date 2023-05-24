@@ -18,18 +18,10 @@
 "use strict";
 
 const assert = require("assert");
-const {LIB_FOLDER, createSandbox} = require("./_common");
+const {LIB_FOLDER} = require("./_common");
+const {Cache} = require(LIB_FOLDER + "/caching");
 
 describe("Cache", function() {
-  let Cache = null;
-
-  beforeEach(function() {
-    let sandboxedRequire = createSandbox();
-    (
-      {Cache} = sandboxedRequire(LIB_FOLDER + "/caching")
-    );
-  });
-
   describe("#constructor()", function() {
     // A capacity must be specified and it must be coercible to a positive
     // number greater than or equal to one.

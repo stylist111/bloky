@@ -18,21 +18,12 @@
 "use strict";
 
 const assert = require("assert");
-const {LIB_FOLDER, createSandbox} = require("./_common");
+const {LIB_FOLDER} = require("./_common");
 
-let Filter = null;
-let FiltersByDomain = null;
-let FilterMap = null;
+const {Filter} = require(LIB_FOLDER + "/filterClasses");
+const {FiltersByDomain, FilterMap} = require(LIB_FOLDER + "/filtersByDomain");
 
 describe("Filters by domain", function() {
-  beforeEach(function() {
-    let sandboxedRequire = createSandbox();
-    (
-      {Filter} = sandboxedRequire(LIB_FOLDER + "/filterClasses"),
-      {FiltersByDomain, FilterMap} = sandboxedRequire(LIB_FOLDER + "/filtersByDomain")
-    );
-  });
-
   it("Filters by domain", function() {
     let filtersByDomain = new FiltersByDomain();
 

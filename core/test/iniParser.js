@@ -18,26 +18,27 @@
 "use strict";
 
 const assert = require("assert");
-const {LIB_FOLDER, createSandbox} = require("./_common");
+const {LIB_FOLDER} = require("./_common");
+
+const {Subscription} = require(LIB_FOLDER + "/subscriptionClasses");
+const {Filter} = require(LIB_FOLDER + "/filterClasses");
+const {FilterState} = require(LIB_FOLDER + "/filterState");
+const {INIParser} = require(LIB_FOLDER + "/iniParser");
+
 
 describe("INIParser", function() {
   let iniParser = null;
-  let Subscription = null;
   let filterState = null;
 
   beforeEach(function() {
-    let sandboxedRequire = createSandbox();
-    (
-      {Subscription} = sandboxedRequire(LIB_FOLDER + "/subscriptionClasses")
-    );
-    let {FilterState} = sandboxedRequire(LIB_FOLDER + "/filterState");
     filterState = new FilterState();
-    let {INIParser} = sandboxedRequire(LIB_FOLDER + "/iniParser");
     iniParser = new INIParser(filterState);
   });
 
   afterEach(function() {
     filterState = null;
+    iniParser = null;
+    Filter.useFilterState(null);
   });
 
   describe("#constructor()", function() {

@@ -32,6 +32,7 @@ let SpecialSubscription = null;
 
 describe("Filter storage read/write", function() {
   beforeEach(function() {
+    // Sandbox is required here to get the stub io module.
     let sandboxedRequire = createSandbox();
     (
       {FilterStorage} = sandboxedRequire(LIB_FOLDER + "/filterStorage"),

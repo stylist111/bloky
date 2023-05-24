@@ -18,11 +18,11 @@
 "use strict";
 
 const assert = require("assert");
-const {LIB_FOLDER, createSandbox} = require("./_common");
+const {LIB_FOLDER} = require("./_common");
+
+const {compareVersions} = require(LIB_FOLDER + "/versions.js");
 
 describe("compareVersions()", function() {
-  let compareVersions = null;
-
   function checkEqual(v1, v2) {
     assert.strictEqual(compareVersions(v1, v2), 0, `${v1} and ${v2} should be equal`);
   }
@@ -43,13 +43,6 @@ describe("compareVersions()", function() {
     else if (op == ">")
       checkGreaterThan(v1, v2);
   }
-
-  beforeEach(function() {
-    let sandboxedRequire = createSandbox();
-    (
-      {compareVersions} = sandboxedRequire(LIB_FOLDER + "/versions.js")
-    );
-  });
 
   it("should return 0 for 1 and 1", function() {
     compare("=", "1", "1");

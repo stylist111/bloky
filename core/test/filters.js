@@ -18,22 +18,12 @@
 "use strict";
 
 const assert = require("assert");
-const {LIB_FOLDER, createSandbox} = require("./_common");
+const {LIB_FOLDER} = require("./_common");
 
-let parse = null;
-let contentTypes = null;
-let RESOURCE_TYPES = null;
-let FilterParsingError = null;
+const {parse, FilterParsingError} = require(LIB_FOLDER + "/filters");
+const {contentTypes, RESOURCE_TYPES} = require(LIB_FOLDER + "/contentTypes");
 
 describe("Filter parse", function() {
-  beforeEach(function() {
-    let sandboxedRequire = createSandbox();
-    (
-      ({parse, FilterParsingError} = sandboxedRequire(LIB_FOLDER + "/filters")),
-      ({contentTypes, RESOURCE_TYPES} = sandboxedRequire(LIB_FOLDER + "/contentTypes"))
-    );
-  });
-
   /** Loosely compare an object. Values not in expected will
    * be treated as being `null`.
    *

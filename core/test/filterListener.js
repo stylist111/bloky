@@ -21,20 +21,16 @@ const assert = require("assert");
 const {LIB_FOLDER, createSandbox} = require("./_common");
 let sandboxedRequire = null;
 
-let IO = null;
-let filterEngine = null;
-let filterNotifier = null;
-let Subscription = null;
-let FilterStorage = null;
-let Filter = null;
-let defaultMatcher = null;
-let SpecialSubscription = null;
-let recommendations = null;
-let filterState = null;
-let elemHideExceptions = null;
-let elemHide = null;
-
 describe("Filter listener", function() {
+  let IO = null;
+  let filterEngine = null;
+  let filterNotifier = null;
+  let FilterStorage = null;
+  let defaultMatcher = null;
+  let filterState = null;
+  let elemHideExceptions = null;
+  let elemHide = null;
+
   // {module:matcher.findKeyword()} will not do what you expect.
   // This function will get the keyword for a filter using the
   // internal data.
@@ -92,6 +88,7 @@ describe("Filter listener", function() {
   }
 
   beforeEach(function() {
+    // Sandbox is required here to get the stub io module.
     sandboxedRequire = createSandbox();
     (
       {FilterStorage} = sandboxedRequire(LIB_FOLDER + "/filterStorage"),
@@ -159,6 +156,10 @@ describe("Filter listener", function() {
   });
 
   describe("Synchronization", function() {
+    let Filter = null;
+    let Subscription = null;
+    let SpecialSubscription = null;
+    let recommendations = null;
     let filterStorage = null;
 
     beforeEach(async function() {
@@ -190,6 +191,7 @@ describe("Filter listener", function() {
     afterEach(function() {
       filterState = null;
       filterStorage = null;
+      Filter.useFilterState(null);
     });
 
     it("Adding/removing filters", function() {

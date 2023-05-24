@@ -18,35 +18,15 @@
 "use strict";
 
 const assert = require("assert");
-const {Buffer} = require("buffer");
-const crypto = require("crypto");
-const {LIB_FOLDER, createSandbox} = require("./_common");
+const {LIB_FOLDER} = require("./_common");
 
-const globals = {
-  crypto: crypto.webcrypto,
+// Browser expects this exported globally, but in Node it's not.
+global.crypto = global.crypto || require("crypto").webcrypto;
 
-  // fallback for TextEncoder not exported as global
-  TextEncoder: global.TextEncoder || class {
-    encode(data) {
-      return Buffer.from(data);
-    }
-  }
-};
+const {verifySignature, verifySignatureSync, base64ToArrayBuffer,
+       arrayBufferToBase64} = require(LIB_FOLDER + "/rsa");
 
 describe("verifySignature()", function() {
-  let verifySignature = null;
-  let verifySignatureSync = null;
-
-  beforeEach(function() {
-    let sandboxedRequire = createSandbox({globals});
-    (
-      {
-        verifySignature,
-        verifySignatureSync
-      } = sandboxedRequire(LIB_FOLDER + "/rsa")
-    );
-  });
-
   async function assertVerified(publicKey, signature, data, result) {
     assert.strictEqual(await verifySignature(publicKey, signature, data), result);
     assert.strictEqual(verifySignatureSync(publicKey, signature, data), result);
@@ -221,19 +201,6 @@ describe("verifySignature()", function() {
 });
 
 describe("base64ToArrayBuffer()", function() {
-  let base64ToArrayBuffer = null;
-  let arrayBufferToBase64 = null;
-
-  beforeEach(function() {
-    let sandboxedRequire = createSandbox({globals});
-    (
-      {
-        base64ToArrayBuffer,
-        arrayBufferToBase64
-      } = sandboxedRequire(LIB_FOLDER + "/rsa")
-    );
-  });
-
   function assertBase64RoundTrip(originalBase64) {
     let ab = base64ToArrayBuffer(originalBase64);
     let base64 = arrayBufferToBase64(ab);

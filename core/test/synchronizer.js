@@ -41,6 +41,8 @@ describe("Synchronizer", function() {
   beforeEach(function() {
     runner = {};
 
+    // Sandbox required because the synchronizer does lots of stuff we want to
+    // mock in unit tests.
     let globals = Object.assign({}, setupTimerAndFetch.call(runner), setupRandomResult.call(runner));
     let FilterStorage;
     let sandboxedRequire = createSandbox({globals});
