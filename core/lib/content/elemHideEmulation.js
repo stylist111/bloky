@@ -747,7 +747,7 @@ exports.ElemHideEmulation = class ElemHideEmulation {
     this.hideElemsFunc = hideElemsFunc;
     this.unhideElemsFunc = unhideElemsFunc;
     this.observer = new MutationObserver(this.observe.bind(this));
-    this.hiddenElements = new Set();
+    this.hiddenElements = new Map();
   }
 
   isSameOrigin(stylesheet) {
@@ -923,7 +923,7 @@ exports.ElemHideEmulation = class ElemHideEmulation {
 
     let elementsToHide = [];
     let elementFilters = [];
-    let elementsToUnhide = new Set(this.hiddenElements);
+    let elementsToUnhide = new Set(this.hiddenElements.keys());
 
     for (let pattern of patternsToCheck) {
       let evaluationTargets = targets;
@@ -982,8 +982,8 @@ exports.ElemHideEmulation = class ElemHideEmulation {
   _hideElems(elementsToHide, elementFilters) {
     if (elementsToHide.length > 0) {
       this.hideElemsFunc(elementsToHide, elementFilters);
-      for (let elem of elementsToHide)
-        this.hiddenElements.add(elem);
+      for (let i = 0; i < elementsToHide.length; i++)
+        this.hiddenElements.set(elementsToHide[i], elementFilters[i]);
     }
   }
 
@@ -1155,6 +1155,23 @@ exports.ElemHideEmulation = class ElemHideEmulation {
   }
 
   apply(patterns) {
+    if (this.patterns) {
+      let removedPatterns = [];
+      for (let oldPattern of this.patterns) {
+        if (!patterns.find(newPattern => newPattern.text == oldPattern.text))
+          removedPatterns.push(oldPattern);
+      }
+      let elementsToUnhide = [];
+      for (let pattern of removedPatterns) {
+        for (let [element, filter] of this.hiddenElements) {
+          if (filter == pattern.text)
+            elementsToUnhide.push(element);
+        }
+      }
+      if (elementsToUnhide.length > 0)
+        this._unhideElems(elementsToUnhide);
+    }
+
     this.patterns = [];
     for (let pattern of patterns) {
       let selectors = this.parseSelector(pattern.selector);
@@ -1187,6 +1204,6 @@ exports.ElemHideEmulation = class ElemHideEmulation {
 
   disconnect() {
     this.observer.disconnect();
-    this._unhideElems(Array.from(this.hiddenElements));
+    this._unhideElems(Array.from(this.hiddenElements.keys()));
   }
 };

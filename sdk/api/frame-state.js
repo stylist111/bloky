@@ -25,7 +25,7 @@ import {filterEngine} from "./core.js";
 import {logItem} from "./diagnostics.js";
 import {getSitekey, clearTabSitekeys,
         addListener as addOnSitekeyReceivedListener} from "./sitekey.js";
-import {removeContentFilters, applyContentFilters} from "./content-filter.js";
+import {applyContentFilters} from "./content-filter.js";
 
 /**
  * The URL that browsers use to represent an empty page, about:blank.
@@ -416,14 +416,11 @@ function onErrorOccurred(details) {
 }
 
 async function onHistoryStateUpdated(details) {
-  let prevFrameInfo = getFrameInfo(details.tabId, details.frameId);
+  let previousFrame = getFrameInfo(details.tabId, details.frameId);
   recordFrameFromNavigationEvent(details, {historyStateUpdated: true});
 
-  if (prevFrameInfo)
-    await removeContentFilters(details.tabId, details.frameId, prevFrameInfo);
-
   let filterData = await applyContentFilters(
-    details.tabId, details.frameId);
+    details.tabId, details.frameId, previousFrame);
   try {
     await browser.tabs.sendMessage(
       details.tabId,

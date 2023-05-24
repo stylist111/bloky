@@ -34,14 +34,46 @@ export function setSnippetLibrary({isolatedCode, injectedCode}) {
   injectedLib = injectedCode;
 }
 
-function generateStylesheet(tabId, frame) {
+function generateStylesheet(tabId, previousFrame, frame) {
   let specificOnly = (frame.allowlisted & contentTypes.GENERICHIDE) != 0;
   let trace = tracingEnabled(tabId);
-  let styleSheet = filterEngine.elemHide.getStyleSheet(
-    frame.hostname,
-    specificOnly, trace || debugOptions.elemHide,
-    trace
-  );
+
+  let previousStylesheet;
+  if (previousFrame &&
+      !(previousFrame.allowlisted & contentTypes.DOCUMENT) &&
+      !(previousFrame.allowlisted & contentTypes.ELEMHIDE)) {
+    previousStylesheet = filterEngine.elemHide.getStyleSheet(
+      previousFrame.hostname,
+      specificOnly, trace || debugOptions.elemHide,
+      trace);
+  }
+  else {
+    previousStylesheet = {
+      selectors: []
+    };
+  }
+
+  let styleSheet;
+  if (!(frame.allowlisted & contentTypes.DOCUMENT) &&
+      !(frame.allowlisted & contentTypes.ELEMHIDE)) {
+    styleSheet = filterEngine.elemHide.getStyleSheet(
+      frame.hostname,
+      specificOnly, trace || debugOptions.elemHide,
+      trace);
+  }
+  else {
+    styleSheet = {
+      selectors: []
+    };
+  }
+
+  styleSheet.removedSelectors = previousStylesheet.selectors.filter(
+    element => !styleSheet.selectors.includes(element));
+  styleSheet.removedCode = createStyleSheet(styleSheet.removedSelectors);
+
+  styleSheet.addedSelectors = styleSheet.selectors.filter(
+    element => !previousStylesheet.selectors.includes(element));
+  styleSheet.addedCode = createStyleSheet(styleSheet.addedSelectors);
 
   if (debugOptions.elemHide) {
     let declarationBlock = "{";
@@ -49,118 +81,106 @@ function generateStylesheet(tabId, frame) {
       declarationBlock += `${property}: ${value} !important;`;
     declarationBlock += "}";
 
-    styleSheet.code = createStyleSheet(styleSheet.selectors, declarationBlock);
+    styleSheet.code = createStyleSheet(
+      styleSheet.selectors, declarationBlock);
+    styleSheet.removedCode = createStyleSheet(
+      styleSheet.removedSelectors, declarationBlock);
+    styleSheet.addedCode = createStyleSheet(
+      styleSheet.addedSelectors, declarationBlock);
   }
 
   return styleSheet;
 }
 
-export async function removeContentFilters(tabId, frameId, frame) {
-  if (frame.allowlisted & contentTypes.DOCUMENT)
-    return;
-
-  if (!(frame.allowlisted & contentTypes.ELEMHIDE)) {
-    let styleSheet = generateStylesheet(tabId, frame);
-    await removeCSS(tabId, frameId, styleSheet.code);
-  }
-}
-
-export async function applyContentFilters(tabId, frameId) {
-  let frame = getFrameInfo(tabId, frameId);
+async function executeSnippets(tabId, frameId, previousFrame, frame) {
   let details = {tabId, frameIds: [frameId]};
-  let emulatedPatterns = [];
-  let tracedSelectors;
+  let filters = filterEngine.snippets.getFilters(frame.hostname);
+  let scripts = filters.map(({script}) => script);
+  let environment = {};
+  if (debugOptions.elemHide)
+    environment.debugCSSProperties = debugOptions.snippetsCssProperties;
 
-  if (!(frame.allowlisted & contentTypes.DOCUMENT)) {
-    let filters = filterEngine.snippets.getFilters(frame.hostname);
+  let isolatedDependencies = [];
+  let isolated = [];
+  let main = [];
 
-    if (filters.length > 0) {
-      let scripts = filters.map(({script}) => script);
-      let environment = {};
-      if (debugOptions.elemHide)
-        environment.debugCSSProperties = debugOptions.snippetsCssProperties;
+  for (let script of scripts) {
+    for (let [snippet, ...args] of parseScript(script)) {
+      if (isolatedLib.has(snippet)) {
+        let dependency = isolatedLib.get(snippet);
+        if (dependency)
+          isolatedDependencies.push(dependency);
+        isolated.push([snippet, ...args]);
+      }
+      if (injectedLib.has(snippet))
+        main.push([snippet, ...args]);
+    }
+  }
 
-      let isolatedDependencies = [];
-      let isolated = [];
-      let main = [];
-
-      for (let script of scripts) {
-        for (let [snippet, ...args] of parseScript(script)) {
-          if (isolatedLib.has(snippet)) {
-            let dependency = isolatedLib.get(snippet);
-            if (dependency)
-              isolatedDependencies.push(dependency);
-            isolated.push([snippet, ...args]);
-          }
-          if (injectedLib.has(snippet))
-            main.push([snippet, ...args]);
+  let execute = [];
+  if (browser.scripting && browser.scripting.executeScript) {
+    if (isolated.length > 0) {
+      if (isolatedDependencies.length) {
+        let isolatedDepsPromises = [];
+        for (let dependency of isolatedDependencies) {
+          isolatedDepsPromises.push(browser.scripting.executeScript({
+            target: details,
+            world: "ISOLATED",
+            func: dependency
+          }));
         }
+        await Promise.all(isolatedDepsPromises);
       }
 
-      let execute = [];
-      if (browser.scripting && browser.scripting.executeScript) {
-        if (isolated.length > 0) {
-          if (isolatedDependencies.length) {
-            let isolatedDepsPromises = [];
-            for (let dependency of isolatedDependencies) {
-              isolatedDepsPromises.push(browser.scripting.executeScript({
-                target: details,
-                world: "ISOLATED",
-                func: dependency
-              }));
-            }
-            await Promise.all(isolatedDepsPromises);
-          }
+      execute.push(
+        browser.scripting.executeScript({
+          target: details,
+          world: "ISOLATED",
+          func: isolatedLib,
+          args: [environment, ...isolated]
+        })
+      );
+    }
 
-          execute.push(
-            browser.scripting.executeScript({
-              target: details,
-              world: "ISOLATED",
-              func: isolatedLib,
-              args: [environment, ...isolated]
-            })
-          );
-        }
-
-        if (main.length > 0) {
-          execute.push(
-            browser.scripting.executeScript({
-              target: details,
-              world: "MAIN",
-              func: injectedLib,
-              args: [environment, ...main]
-            })
-          );
-        }
+    if (main.length > 0) {
+      execute.push(
+        browser.scripting.executeScript({
+          target: details,
+          world: "MAIN",
+          func: injectedLib,
+          args: [environment, ...main]
+        })
+      );
+    }
+  }
+  else {
+    if (isolated.length > 0) {
+      const args = JSON.stringify([environment, ...isolated]);
+      let code = "";
+      // prepend all dependencies before the snippets
+      if (isolatedDependencies.length) {
+        for (const cb of isolatedDependencies)
+          code += `(${cb})();`;
       }
-      else {
-        if (isolated.length > 0) {
-          const args = JSON.stringify([environment, ...isolated]);
-          let code = "";
-          // prepend all dependencies before the snippets
-          if (isolatedDependencies.length) {
-            for (const cb of isolatedDependencies)
-              code += `(${cb})();`;
-          }
-          code += `(${isolatedLib}).apply(null,${args})`;
-          execute.push(
-            browser.tabs.executeScript(
-              tabId,
-              {
-                frameId,
-                code,
-                matchAboutBlank: true,
-                runAt: "document_start"
-              }));
-        }
+      code += `(${isolatedLib}).apply(null,${args})`;
+      execute.push(
+        browser.tabs.executeScript(
+          tabId,
+          {
+            frameId,
+            code,
+            matchAboutBlank: true,
+            runAt: "document_start"
+          }));
+    }
 
-        if (main.length > 0) {
-          const args = JSON.stringify([environment, ...main]);
-          // stringify injectedLib to escape backticks
-          let code = JSON.stringify(injectedLib.toString());
-          code = `"(${code.slice(1, -1)}).apply(null,${JSON.stringify(args).slice(1, -1)});"`;
-          let executable =
-          `function injectSnippetsInMainContext(executable)
+    if (main.length > 0) {
+      const args = JSON.stringify([environment, ...main]);
+      // stringify injectedLib to escape backticks
+      let code = JSON.stringify(injectedLib.toString());
+      code = `"(${code.slice(1, -1)}).apply(null,${JSON.stringify(args).slice(1, -1)});"`;
+      let executable =
+        `function injectSnippetsInMainContext(executable)
           {
             // injecting phases
             let script = document.createElement("script");
@@ -189,42 +209,53 @@ export async function applyContentFilters(tabId, frameId) {
             const executable = ${code};
             injectSnippetsInMainContext(executable);
           }`;
-          execute.push(
-            browser.tabs.executeScript(
-              tabId,
-              {
-                frameId,
-                code: executable,
-                matchAboutBlank: true,
-                runAt: "document_start"
-              }));
-        }
-      }
-
-      let request = {tabId, frameId, url: frame.url};
-      Promise.all(execute).then(() => filters.forEach(filter => {
-        logItem(request, filter, {
-          docDomain: frame.hostname,
-          method: "snippet"
-        });
-      }), () => {});
+      execute.push(
+        browser.tabs.executeScript(
+          tabId,
+          {
+            frameId,
+            code: executable,
+            matchAboutBlank: true,
+            runAt: "document_start"
+          }));
     }
+  }
 
-    if (!(frame.allowlisted & contentTypes.ELEMHIDE)) {
-      let styleSheet = generateStylesheet(tabId, frame);
-      injectCSS(tabId, frameId, styleSheet.code);
+  let request = {tabId, frameId, url: frame.url};
+  Promise.all(execute).then(() => filters.forEach(filter => {
+    logItem(request, filter, {
+      docDomain: frame.hostname,
+      method: "snippet"
+    });
+  }), () => {});
+}
 
-      for (let {selector, text} of filterEngine.elemHideEmulation.getFilters(
-        frame.hostname))
-        emulatedPatterns.push({selector, text});
+export async function applyContentFilters(tabId, frameId, previousFrame) {
+  let frame = getFrameInfo(tabId, frameId);
+  let emulatedPatterns = [];
+  let tracedSelectors;
+  let styleSheet = generateStylesheet(tabId, previousFrame, frame);
 
-      if (tracingEnabled(tabId)) {
-        tracedSelectors = [];
-        for (let selector of styleSheet.selectors)
-          tracedSelectors.push([selector, null]);
-        for (let exception of styleSheet.exceptions)
-          tracedSelectors.push([exception.selector, exception.text]);
-      }
+  if (previousFrame && !(previousFrame.allowlisted & contentTypes.DOCUMENT))
+    await removeCSS(tabId, frameId, styleSheet.removedCode);
+
+  if (!(frame.allowlisted & contentTypes.DOCUMENT))
+    executeSnippets(tabId, frameId, previousFrame, frame);
+
+  if (!(frame.allowlisted & contentTypes.DOCUMENT) &&
+      !(frame.allowlisted & contentTypes.ELEMHIDE)) {
+    injectCSS(tabId, frameId, styleSheet.addedCode);
+
+    for (let {selector, text} of filterEngine.elemHideEmulation.getFilters(
+      frame.hostname))
+      emulatedPatterns.push({selector, text});
+
+    if (tracingEnabled(tabId)) {
+      tracedSelectors = [];
+      for (let selector of styleSheet.addedSelectors)
+        tracedSelectors.push([selector, null]);
+      for (let exception of styleSheet.exceptions)
+        tracedSelectors.push([exception.selector, exception.text]);
     }
   }
 

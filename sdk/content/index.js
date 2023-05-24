@@ -45,9 +45,6 @@ async function initContentFeatures() {
 async function removeContentFeatures() {
   if (tracer)
     tracer.disconnect();
-
-  if (elemHideEmulation)
-    elemHideEmulation.disconnect();
 }
 
 async function applyContentFeatures(response) {
@@ -55,16 +52,21 @@ async function applyContentFeatures(response) {
     tracer = new ElementHidingTracer(response.tracedSelectors);
 
   if (response.emulatedPatterns.length > 0) {
-    elemHideEmulation = new ElemHideEmulation((elements, filters) => {
-      for (let element of elements)
-        hideElement(element, response.cssProperties);
+    if (!elemHideEmulation) {
+      elemHideEmulation = new ElemHideEmulation((elements, filters) => {
+        for (let element of elements)
+          hideElement(element, response.cssProperties);
 
-      if (tracer)
-        tracer.log(filters);
-    }, elements => {
-      for (let element of elements)
-        unhideElement(element);
-    });
+        if (tracer)
+          tracer.log(filters);
+      }, elements => {
+        for (let element of elements)
+          unhideElement(element);
+      });
+    }
+    elemHideEmulation.apply(response.emulatedPatterns);
+  }
+  else if (elemHideEmulation) {
     elemHideEmulation.apply(response.emulatedPatterns);
   }
 }
