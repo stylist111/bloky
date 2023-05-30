@@ -39,7 +39,7 @@ const args = yargs(hideBin(process.argv))
       })
       .option("dockerRunFlags", {
         type: "string",
-        default: "--cpus=1 --memory=3.75g --shm-size=512m",
+        default: "--cpus=2 --memory=8g --shm-size=512m",
         description: "extra flags to pass to docker run"
       })
       .option("runs", {
@@ -54,8 +54,9 @@ const execOptions = {stdio: "inherit"};
 // BUILDING CONTAINER
 // we need to remove "v2"/ "v3" from the command
 let testParams = args.testParams.split(" ").slice(1).join(" ");
+
 // we need to remove everything after the version
-testParams = testParams.substring(0, testParams.indexOf("--"));
+testParams = testParams.includes("--") ? testParams.substring(0, testParams.indexOf("--")) : testParams;
 // We need to create build flag here because "--build-arg" is
 // not passed properly
 // when invoking through the command line

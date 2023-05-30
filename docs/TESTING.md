@@ -293,14 +293,14 @@ to run the same tests may be useful to recreate the infrastructure the CI uses:
 
 ```
 docker build -t core -f test/dockerfiles/core.Dockerfile .
-docker run --shm-size=512m --cpus=1 --memory=3.75g TEST_PARAMS="(path to the test to run)" -it core
+docker run --cpus=2 --memory=8g --shm-size=512m TEST_PARAMS="(path to the test to run)" -it core
 ```
 
 #### Func:webext - Intel/AMD architecture
 
 ```
 docker build -t functional -f test/dockerfiles/functional.Dockerfile .
-docker run --cpus=1 --memory=3.75g --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" -it functional
+docker run --cpus=2 --memory=8g --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" -it functional
 ```
 
 Please notice that the TEST_PARAMS argument can also take the additional options
@@ -312,7 +312,7 @@ Chromium (native):
 
 ```
 docker build -t functional-arm -f test/dockerfiles/functional-arm64.Dockerfile .
-docker run --cpus=1 --memory=3.75g --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} chromium" -it functional-arm
+docker run --cpus=2 --memory=8g --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} chromium" -it functional-arm
 ```
 
 Firefox (AMD emulation):
@@ -320,7 +320,7 @@ Firefox (AMD emulation):
 ```
 docker build -t functional-amd -f test/dockerfiles/functional.Dockerfile .
 # Using init as a workaround: https://github.com/docker/for-mac/issues/6082
-docker run --platform linux/amd64 --init --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} firefox" -it functional-amd
+docker run --platform linux/amd64 --init --cpus=2 --memory=8g --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} firefox" -it functional-amd
 ```
 
 Edge: Not supported
@@ -386,7 +386,7 @@ command:
 docker build -t functional -f test/dockerfiles/functional.Dockerfile .
 
 // Running container in a mode that will run only tests that are tagged [flaky]
-docker run --shm-size=512m -e TEST_PARAMS="v3 chromium" -e RUN_ONLY_FLAKY="true" functional
+docker run --cpus=2 --memory=8g --shm-size=512m -e TEST_PARAMS="v3 chromium" -e RUN_ONLY_FLAKY="true" functional
 ```
 
 Code above will run tests only once. If you want to run docker multiple times in

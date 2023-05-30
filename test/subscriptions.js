@@ -367,13 +367,14 @@ describe("Subscriptions", function() {
       );
     };
 
-    let checkSynchronization = async function(expectedFilter) {
+    let synchronizeAndCheck = async function(expectedFilter, timeout = 6000) {
       await wait(async() => {
+        await EWE.subscriptions.sync();
         let subscriptionFilter =
           await EWE.subscriptions.getForFilter(expectedFilter);
         if (subscriptionFilter.length > 0)
           return true;
-      }, 6000, "Subscription was not synchronised properly.");
+      }, timeout, "Subscription was not synchronised properly.");
     };
 
     it("updates the CV subscription [fuzz]", async function() {
@@ -385,8 +386,8 @@ describe("Subscriptions", function() {
       // update reply on the server
       updatedReply = ["[Adblock Plus]", filterToAdd].join("\n");
       await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
-      await EWE.subscriptions.sync();
-      await checkSynchronization(filterToAdd);
+      let timeoutForCheck = isFuzzingServiceWorker ? 10000 : 6000;
+      await synchronizeAndCheck(filterToAdd, timeoutForCheck);
 
       expect(await EWE.subscriptions.getForFilter(filterToAdd)).toEqual(
         expect.arrayContaining([expect.objectContaining(
@@ -407,15 +408,13 @@ describe("Subscriptions", function() {
       // update reply on the server to add content filter
       updatedReply = ["[Adblock Plus]", "###elem-hide"].join("\n");
       await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
-      await EWE.subscriptions.sync();
-      await checkSynchronization("###elem-hide");
+      await synchronizeAndCheck("###elem-hide");
       await expectElemHideHidden();
 
       // update reply on the server to remove content filter
       updatedReply = ["[Adblock Plus]", "###elem-hide_3"].join("\n");
       await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
-      await EWE.subscriptions.sync();
-      await checkSynchronization("###elem-hide_3");
+      await synchronizeAndCheck("###elem-hide_3");
       await expectElemHideVisible();
     });
 
@@ -481,8 +480,7 @@ describe("Subscriptions", function() {
         ["[Adblock Plus]", "example.com##.inserted_rtb"].join("\n");
       await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
 
-      await EWE.subscriptions.sync();
-      await checkSynchronization("example.com##.inserted_rtb");
+      await synchronizeAndCheck("example.com##.inserted_rtb");
 
       userFilters = await EWE.filters.getUserFilters();
       expect(userFilters[0]).toMatchObject({
@@ -623,8 +621,7 @@ describe("Subscriptions", function() {
         "/image-from-cv-subscription.png^$image"
       ].join("\n");
       await setEndpointResponse("/anti-cv-subscription.txt", updatedReplyForRemoval);
-      await EWE.subscriptions.sync();
-      await checkSynchronization("/image-from-cv-subscription.png^$image");
+      await synchronizeAndCheck("/image-from-cv-subscription.png^$image");
 
       await new Page("image-from-cv-subscription.html").expectResource("image-from-cv-subscription.png").toBeBlocked();
       await shouldBeLoaded("image-from-cv-subscription.html", "image-for-filter-that-should-be-untouched.png");

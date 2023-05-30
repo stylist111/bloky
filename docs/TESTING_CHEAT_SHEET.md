@@ -52,7 +52,7 @@ docker build -t core -f test/dockerfiles/core.Dockerfile .
 ```
 
 ```
-docker run --shm-size=128m --cpus=1 --memory=3.75g TEST_PARAMS="(path to the test to run)" -e -it core
+docker run --cpus=2 --memory=8g --shm-size=512m TEST_PARAMS="(path to the test to run)" -e -it core
 ```
 
 ### Func:webext
@@ -62,7 +62,7 @@ docker build -t functional -f test/dockerfiles/functional.Dockerfile .
 ```
 
 ```
-docker run --cpus=1 --memory=3.75g --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" -it functional
+docker run --cpus=2 --memory=8g --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" -it functional
 ```
 
 ### Build container with browser cached in it
@@ -78,7 +78,7 @@ docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg
 docker build -t compliance -f test/dockerfiles/compliance-test.Dockerfile .
 
 # Running container
-docker run --shm-size=512m -e BROWSER="chromium latest" -e MANIFEST="mv2" -it compliance
+docker run --cpus=2 --memory=8g --shm-size=512m -e BROWSER="chromium latest" -e MANIFEST="mv2" -it compliance
 ```
 
 ### Build compliance tests and copy local extension
@@ -94,14 +94,14 @@ docker build -t compliance -f test/dockerfiles/compliance-test.Dockerfile --buil
 docker build -t functional -f test/dockerfiles/functional.Dockerfile .
 
 //Running container in a mode that will run only tests that are tagged [flaky]
-docker run --shm-size=512m -e TEST_PARAMS="v3 chromium" -e RUN_ONLY_FLAKY="true" functional
+docker run --cpus=2 --memory=8g --shm-size=512m -e TEST_PARAMS="v3 chromium" -e RUN_ONLY_FLAKY="true" functional
 ```
 
 Code above will run tests only once. If you want to run docker multiple times
 in a row use the command below.
 
 ```
-npm run measureTestFlakiness -- --testParams "v3 chromium"  --dockerBuildFlag "--build-arg BROWSER=chromium" --runOnlyFlaky "true"
+npm run measureTestFlakiness -- --testParams "v3 chromium" --runOnlyFlaky "true"
 ```
 
 ### Measure flakiness for whole test suite

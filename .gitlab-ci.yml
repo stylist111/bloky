@@ -175,7 +175,10 @@ func:bundle:
           npm run measureTestFlakiness -- --testParams "$TEST_PARAMS" --buildFlags "SKIP_BUILD=1" --runOnlyFlaky "$RUN_ONLY_FLAKY_TESTS" --runs 10;
         else
           docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER="$BROWSER" --build-arg SKIP_BUILD=1 .;
-          docker run --shm-size=512m -e TEST_PARAMS="$TEST_PARAMS" -e RUN_ONLY_FLAKY="$RUN_ONLY_FLAKY_TESTS" functional;
+          docker run --cpus=2 --memory=8g --shm-size=512m -e TEST_PARAMS="$TEST_PARAMS" -e RUN_ONLY_FLAKY="$RUN_ONLY_FLAKY_TESTS"  --name functional functional;
+          docker inspect functional | grep -i shm;
+          docker inspect functional | grep -i Memory;
+
         fi
 
 func:v2:chromium:stable:
@@ -287,7 +290,7 @@ func:v3:edge:linux:
   stage: testsquality
   script:
     - docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER="$BROWSER" --build-arg SKIP_BUILD=1 .
-    - docker run --shm-size=512m -e TEST_PARAMS="$TEST_PARAMS --grep $FUNCTIONAL_MODULE" functional;
+    - docker run --cpus=2 --memory=8g --shm-size=512m --memory-swap=16384m --shm-size=512m -e TEST_PARAMS="$TEST_PARAMS --grep $FUNCTIONAL_MODULE" functional;
   parallel:
     matrix:
       - FUNCTIONAL_MODULE:
@@ -410,7 +413,9 @@ func:v3:edge:linux:latest:
           npm run measureTestFlakiness -- --testParams "v3 $BROWSER --testKinds fuzz" --buildFlags "SKIP_BUILD=1" --runOnlyFlaky "$RUN_ONLY_FLAKY_TESTS";
         else
           docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg SKIP_BUILD=1 .;
-          docker run --shm-size=512m -e TEST_PARAMS="v3 $BROWSER --testKinds fuzz" -e RUN_ONLY_FLAKY="$RUN_ONLY_FLAKY_TESTS" functional;
+          docker run --cpus=2 --memory=8g --shm-size=512m -e TEST_PARAMS="v3 $BROWSER --testKinds fuzz" -e RUN_ONLY_FLAKY="$RUN_ONLY_FLAKY_TESTS" --name functional functional;
+          docker inspect functional | grep -i shm;
+          docker inspect functional | grep -i Memory;
         fi
 
 fuzz:v3:chromium:stable:
@@ -442,7 +447,7 @@ fuzz:v3:edge:linux:
       artifacts: true
   script:
     - docker build -t compliance -f test/dockerfiles/compliance-test.Dockerfile --build-arg EXTENSION=copy .
-    - docker run --shm-size=512m -e BROWSER="$BROWSER" -e MANIFEST="$MANIFEST" compliance
+    - docker run --cpus=2 --memory=8g --shm-size=512m -e BROWSER="$BROWSER" -e MANIFEST="$MANIFEST" compliance
   after_script:
     - docker cp $(docker ps -aqf ancestor=compliance):/testpages.adblockplus.org/test/screenshots .
       2> /dev/null
