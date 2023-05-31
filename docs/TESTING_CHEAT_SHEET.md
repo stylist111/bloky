@@ -120,3 +120,27 @@ npm run test-core
 npm run unittest
 npm test -- {v2|v3|v2-custom} {chromium|firefox|edge}
 ```
+
+### Measure flakiness for whole test suite
+
+```
+npm run measureTestFlakiness -- --testParams "v3 chromium"  
+```
+
+### Build and run tests
+
+```
+npm run build-then-test {v2|v3|v2-custom} {chromium|firefox|edge}
+```
+
+### Build and run a specific test
+
+```
+npm run build-then-test v3 chromium -- --grep="test name"
+```
+
+### Build and run all tests of a specific type
+
+```
+npm run build-then-test v3 chromium -- --testKinds="{functional|reload|update|mv2-mv3-migrate|fuzz}"
+```

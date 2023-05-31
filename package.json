@@ -68,6 +68,7 @@
     "wbn": "^0.0.8",
     "webpack": "^5.37.1",
     "webpack-cli": "^4.7.0",
+    "webpack-ext-reloader": "^1.1.9",
     "ws": "^7.4.6"
   },
   "scripts": {
@@ -77,9 +78,10 @@
     "updatepsl": "npm run -w core updatepsl",
     "build": "node scripts/build.js",
     "prepack": "npm run build",
-    "test": "node test/runner.js",
+    "build-then-test": "node scripts/build-and-test.js",
     "unittest": "mocha ./test/unit/*.js",
     "test-server": "node test/start-server.js",
+    "test": "node test/runner.js",
     "test-bundle": "node test/bundle/run.js",
     "test-scripts": "mocha test/scripts/*.js",
     "test-core": "npm test -w core",

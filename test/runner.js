@@ -30,76 +30,86 @@ import "chromedriver";
 import "geckodriver";
 import "msedgedriver";
 
+import {isMain} from "../scripts/utils.js";
+import {runTestServer, killTestServer} from "../scripts/test-server-manager.js";
+
+const isScriptInvokedFromCLI = isMain(import.meta.url);
+
 let originalExtensionPath;
 let currentExtensionPath;
 let extensionPaths;
 
 function parseArguments() {
-  let parser = yargs(process.argv.slice(2));
-  parser.version(false);
-  parser.strict();
-  parser.command("$0 <manifest> <browser> [version]", "", subparser => {
-    subparser.positional("manifest", {choices: ["v2", "v3", "v2-custom"]});
-    subparser.positional("browser", {choices: Object.keys(BROWSERS)});
-    subparser.positional("version", {type: "string"});
-  });
-  parser.option("incognito", {
-    description: "Run the tests in incognito mode (Chrome) or private browsing (Firefox) - currently only supported on Firefox."
-  });
-  parser.option("forceHeadful", {
-    description: "Run the tests in non headless mode."
-  });
-  parser.option("timeout", {
-    description: "Maximum running time for each test. 0 disables timeouts."
-  });
-  parser.option("testKinds", {
-    description: "Which kinds of tests to run (by default all are run)",
-    array: true,
-    choices: ["functional", "reload", "update", "mv2-mv3-migrate", "fuzz"]
-  });
-  parser.option("grep"), {
-    array: true
-  };
+  try {
+    let parser = yargs(process.argv.slice(2)).exitProcess(false);
+    parser.version(false);
+    parser.strict();
+    parser.command("$0 <manifest> <browser> [version]", "", subparser => {
+      subparser.positional("manifest", {choices: ["v2", "v3", "v2-custom"]});
+      subparser.positional("browser", {choices: Object.keys(BROWSERS)});
+      subparser.positional("version", {type: "string"});
+    });
+    parser.option("incognito", {
+      description: "Run the tests in incognito mode (Chrome) or private browsing (Firefox) - currently only supported on Firefox."
+    });
+    parser.option("forceHeadful", {
+      description: "Run the tests in non headless mode."
+    });
+    parser.option("timeout", {
+      description: "Maximum running time for each test. 0 disables timeouts."
+    });
+    parser.option("testKinds", {
+      description: "Which kinds of tests to run (by default all are run)",
+      array: true,
+      choices: ["functional", "reload", "update", "mv2-mv3-migrate", "fuzz"]
+    });
+    parser.option("grep"), {
+      array: true
+    };
 
-  let {argv} = parser;
-  let params;
-  for (let param of ["timeout", "grep", "incognito", "forceHeadful"]) {
-    let value = argv[param];
-    if (typeof value != "undefined")
-      (params || (params = {}))[param] = value;
-  }
-  // we need to build regexp to allow to pas multiple grep flags
-  // and do && on them
-  if (params && params.grep)
-    params.grep = regexpFromGrep(params.grep);
-  let testKinds = argv.testKinds;
-  // default is specified here rather than using a yargs default
-  // because it depends on another yargs option (the manifest).
-  if (!testKinds) {
-    testKinds = ["functional", "reload"];
-    if (manifestIsMV3(argv.manifest)) {
-      testKinds.push("fuzz");
-      testKinds.push("update");
+    let {argv} = parser;
+    let params;
+    for (let param of ["timeout", "grep", "incognito", "forceHeadful"]) {
+      let value = argv[param];
+      if (typeof value != "undefined")
+        (params || (params = {}))[param] = value;
     }
-    else if (argv.browser === "chromium") {
-      let version = argv.version;
+    // we need to build regexp to allow to pas multiple grep flags
+    // and do && on them
+    if (params && params.grep)
+      params.grep = regexpFromGrep(params.grep);
+    let testKinds = argv.testKinds;
+    // default is specified here rather than using a yargs default
+    // because it depends on another yargs option (the manifest).
+    if (!testKinds) {
+      testKinds = ["functional", "reload"];
+      if (manifestIsMV3(argv.manifest)) {
+        testKinds.push("fuzz");
+        testKinds.push("update");
+      }
+      else if (argv.browser === "chromium") {
+        let version = argv.version;
 
-      // chromium 102 is the minimum supported version for MV3.
-      if (!version || version === "dev" || version === "beta" || version.split(".")[0] >= 102)
+        // chromium 102 is the minimum supported version for MV3.
+        if (!version || version === "dev" || version === "beta" || version.split(".")[0] >= 102)
+          testKinds.push("mv2-mv3-migrate");
+      }
+      else if (argv.browser === "edge") {
         testKinds.push("mv2-mv3-migrate");
+      }
     }
-    else if (argv.browser === "edge") {
-      testKinds.push("mv2-mv3-migrate");
-    }
-  }
 
-  return {
-    manifest: argv.manifest,
-    browser: argv.browser,
-    version: argv.version || "latest",
-    testKinds,
-    params
-  };
+    return {
+      manifest: argv.manifest,
+      browser: argv.browser,
+      version: argv.version || "latest",
+      testKinds,
+      params
+    };
+  }
+  catch (error) {
+    throw new Error(error.message);
+  }
 }
 
 function regexpFromGrep(grep) {
@@ -479,7 +489,20 @@ async function suspendServiceWorker(driver, handle) {
   );
 }
 
-async function run() {
+export async function run() {
+  try {
+    if (isScriptInvokedFromCLI)
+      await runTestServer();
+
+    await runTests();
+  }
+  finally {
+    if (isScriptInvokedFromCLI)
+      await killTestServer();
+  }
+}
+
+async function runTests() {
   let {manifest, browser, version, params, testKinds} = parseArguments();
   let isMV3 = manifestIsMV3(manifest);
 
@@ -575,33 +598,28 @@ async function run() {
   let totalTestsRun = 0;
   let expectTestsForEveryKind = !(params && params.grep);
   for (let testKind of testKinds) {
-    if (!results[testKind]) {
-      console.error(`Test Failure: ${testKind} tests did not run correctly`);
-      process.exit(1);
-    }
+    if (!results[testKind])
+      throw new Error(`Test Failure: ${testKind} tests did not run correctly`);
 
-    if (expectTestsForEveryKind && results[testKind].total == 0) {
-      console.error(`Test Failure: No ${testKind} tests ran`);
-      process.exit(1);
-    }
+    if (expectTestsForEveryKind && results[testKind].total == 0)
+      throw new Error(`Test Failure: No ${testKind} tests ran`);
 
-    if (results[testKind].failures > 0) {
-      console.error(`Test Failure: ${results[testKind].failures} ${testKind} tests failed`);
-      process.exit(1);
-    }
+    if (results[testKind].failures > 0)
+      throw new Error(`Test Failure: ${results[testKind].failures} ${testKind} tests failed`);
 
     totalTestsRun += results[testKind].total;
   }
 
-  if (totalTestsRun == 0) {
-    console.error("Test Failure: No tests ran");
-    process.exit(1);
-  }
+  if (totalTestsRun == 0)
+    throw new Error("Test Failure: No tests ran");
 
   console.log("All tests passed");
 }
 
-run().catch(err => {
-  console.error(err instanceof Error ? err.stack : `Error: ${err}`);
-  process.exit(1);
-});
+if (isScriptInvokedFromCLI) {
+  run().catch(err => {
+    console.error(err instanceof Error ? err.stack : `Error: ${err}`);
+    killTestServer();
+    process.exit(1);
+  });
+}

@@ -342,6 +342,12 @@ npm install
 npm run build
 ```
 
+### Running Locally (and watch for changes)
+
+```
+npx webpack --watch
+```
+
 #### Custom builds
 
 Our build script is a CLI program with a few additional flags that can

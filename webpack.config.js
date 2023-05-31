@@ -26,6 +26,7 @@ import HtmlWebpackPlugin from "html-webpack-plugin";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import GenerateJsonPlugin from "generate-json-webpack-plugin";
 import CopyPlugin from "copy-webpack-plugin";
+import ExtensionReloader from "webpack-ext-reloader";
 
 let dirname = path.dirname(url.fileURLToPath(import.meta.url));
 let htmlTemplate = path.join(dirname, "test", "template.html");
@@ -165,6 +166,8 @@ export default (env = {}) => {
              true, eweCustomOutputPath)
   ];
 
+  let extensionReloaderPort = 9090;
+
   for (let buildVariant of [mv2, mv3, mv2Custom]) {
     let description = `Manifest version: ${buildVariant.manifestVersion}`;
     if (buildVariant.eweConfigName == eweCustomConfigName)
@@ -196,6 +199,58 @@ export default (env = {}) => {
       ...buildVariant.misc
     };
 
+    let plugins = [
+      new HtmlWebpackPlugin({
+        title: "Functional tests",
+        filename: "functional.html",
+        inject: "body",
+        chunks: ["functional"],
+        template: htmlTemplate
+      }),
+      new HtmlWebpackPlugin({
+        title: "Reload tests",
+        filename: "reload.html",
+        inject: "body",
+        chunks: ["reload"],
+        template: htmlTemplate
+      }),
+      new HtmlWebpackPlugin({
+        title: "Update tests",
+        filename: "update.html",
+        inject: "body",
+        chunks: ["update"],
+        template: htmlTemplate
+      }),
+      new HtmlWebpackPlugin({
+        title: "MV2 MV3 migrate tests",
+        filename: "mv2-mv3-migrate.html",
+        inject: "body",
+        chunks: ["migrate"],
+        template: htmlTemplate
+      }),
+      new MiniCssExtractPlugin(),
+      new GenerateJsonPlugin("manifest.json", manifest, null, 2),
+      new CopyPlugin({
+        patterns: [
+          {from: "ewe-*", context: buildVariant.ewePath},
+          {from: path.join(dirname, "test", "background.js")},
+          {from: path.join(dirname, "test", "index.html")},
+          {from: path.join(dirname, "test", "options.html")},
+          {from: path.join(dirname, "test", "index-options.js")},
+          ...buildVariant.manifestVersion >= 3 &&
+            fs.existsSync(path.join(dirname, "scriptsOutput")) ?
+            [{from: path.join(dirname, "scriptsOutput")}] : []
+        ]
+      })
+    ];
+
+    if (env.development) {
+      plugins.push(
+        new ExtensionReloader({
+          port: extensionReloaderPort
+        }));
+    }
+
     builds.push({
       name: buildVariant.outputPath,
       dependencies: [buildVariant.eweConfigName],
@@ -222,54 +277,13 @@ export default (env = {}) => {
           }
         ]
       },
-      plugins: [
-        new HtmlWebpackPlugin({
-          title: "Functional tests",
-          filename: "functional.html",
-          inject: "body",
-          chunks: ["functional"],
-          template: htmlTemplate
-        }),
-        new HtmlWebpackPlugin({
-          title: "Reload tests",
-          filename: "reload.html",
-          inject: "body",
-          chunks: ["reload"],
-          template: htmlTemplate
-        }),
-        new HtmlWebpackPlugin({
-          title: "Update tests",
-          filename: "update.html",
-          inject: "body",
-          chunks: ["update"],
-          template: htmlTemplate
-        }),
-        new HtmlWebpackPlugin({
-          title: "MV2 MV3 migrate tests",
-          filename: "mv2-mv3-migrate.html",
-          inject: "body",
-          chunks: ["migrate"],
-          template: htmlTemplate
-        }),
-        new MiniCssExtractPlugin(),
-        new GenerateJsonPlugin("manifest.json", manifest, null, 2),
-        new CopyPlugin({
-          patterns: [
-            {from: "ewe-*", context: buildVariant.ewePath},
-            {from: path.join(dirname, "test", "background.js")},
-            {from: path.join(dirname, "test", "index.html")},
-            {from: path.join(dirname, "test", "options.html")},
-            {from: path.join(dirname, "test", "index-options.js")},
-            ...buildVariant.manifestVersion >= 3 &&
-              fs.existsSync(path.join(dirname, "scriptsOutput")) ?
-              [{from: path.join(dirname, "scriptsOutput")}] : []
-          ]
-        })
-      ],
+      plugins,
       watchOptions: {
         ignored: ["**/dist", "**/node_modules"]
       }
     });
+
+    extensionReloaderPort++;
   }
 
   return builds;

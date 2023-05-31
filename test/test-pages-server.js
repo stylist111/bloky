@@ -25,7 +25,7 @@ import express from "express";
 import requestLogger from "./request-logger.js";
 import {bypassCache, sitekeyHeader, invalidSitekeyHeader, delay, testHeader, webbundleResponseType} from "./api-middleware.js";
 
-const HTTP_PORT = 3000;
+export const HTTP_PORT = 3000;
 
 let app = express();
 let dirname = path.dirname(url.fileURLToPath(import.meta.url));
