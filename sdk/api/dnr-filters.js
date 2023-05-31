@@ -342,6 +342,7 @@ export function init() {
         setHighestRuleId(ruleIds);
 
       filterNotifier.on("subscription.updated", dnrSubscriptionUpdate);
+      filterNotifier.on("subscription.diffReceived", dnrSubscriptionUpdate);
     })();
   }
 

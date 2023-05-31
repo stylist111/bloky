@@ -1303,7 +1303,7 @@ class DiffUpdatableSubscription extends CountableSubscription {
 
   /**
    * Updatable subscriptions should not be downloadable as they will rather
-   * support getting diffs from a diffUrl.
+   * support getting diffs from a diffURL.
    *
    * @type {boolean}
    * @default <code>true</code>
@@ -1324,6 +1324,6 @@ class DiffUpdatableSubscription extends CountableSubscription {
   set diffURL(value) {
     let oldValue = this._diffURL;
     this._diffURL = value;
-    filterNotifier.emit("subscription.diffUrl", this, value, oldValue);
+    filterNotifier.emit("subscription.diffURL", this, value, oldValue);
   }
 };

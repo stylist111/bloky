@@ -569,5 +569,12 @@ exports.Downloadable = class Downloadable {
      * @type {string}
      */
     this.url = url;
+
+    /**
+     * URL that stores the subscription URL when downloading occurs for
+     * the m3 diff mechanism.
+     * @type {string}
+     */
+    this.originalUrl = null;
   }
 };

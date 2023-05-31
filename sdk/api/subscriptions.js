@@ -50,11 +50,11 @@ function convertSubscription(subscription) {
   let {id, disabled, downloadStatus, homepage,
        version, lastDownload, lastSuccess,
        softExpiration, expires, title, url,
-       downloadable, downloadCount} = subscription;
+       downloadable, downloadCount, diffURL} = subscription;
 
   let newSubscription = {
     id, enabled: !disabled,
-    homepage, downloadable, title, url, downloadCount, version
+    homepage, downloadable, title, url, downloadCount, version, diffURL
   };
 
   if (downloadable) {
@@ -66,12 +66,21 @@ function convertSubscription(subscription) {
       softExpiration, expires, downloadCount
     });
   }
+  else if (diffURL) {
+    let {synchronizer} = filterEngine.filterStorage;
+
+    Object.assign(newSubscription, {
+      downloading: synchronizer.isExecuting(diffURL),
+      originalUrl: url,
+      version, downloadStatus, lastSuccess, lastDownload,
+      softExpiration, expires, downloadCount
+    });
+  }
 
   return newSubscription;
 }
 
 function convertRecommendation({id, languages, title, requires, type, url,
-                                // eslint-disable-next-line camelcase
                                 mv2URL}) {
   if (!browser.declarativeNetRequest)
     // In MV2 we have to switch the URL to be the mv2URL

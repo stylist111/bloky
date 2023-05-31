@@ -18,10 +18,14 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 import {DnrMapper} from "adblockpluscore/lib/dnr/mapper.js";
-import {EWE} from "./messaging.js";
-import {hasUpdateStaticRules} from "./utils.js";
+import {EWE, expectTestEvents} from "./messaging.js";
+import {hasUpdateStaticRules, Page, setEndpointResponse, shouldBeLoaded,
+        setMinTimeout, wait}
+  from "./utils.js";
+import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
-const UPDATABLE_SUBSCRIPTION_ID = "65ABBA21-96DA-40EB-8C43-BA9A5073B211";
+
+const UPDATABLE_SUBSCRIPTION_ID = "00000000-0000-0000-0000-000000000060";
 
 const DYNAMIC_FILTER = "||b5gxiibirp.invalid^";
 const DYNAMIC_FILTER2 = "||ttle10x9w7.invalid^";
@@ -89,7 +93,7 @@ const UPDATES5 = {
 };
 
 const SUBSCRIPTION = {
-  url: "http://localhost:3003/updateable_subscription.txt",
+  url: "http://localhost:3003/updatable_subscription.txt",
   type: "ads",
   downloadable: false,
   id: UPDATABLE_SUBSCRIPTION_ID
@@ -160,6 +164,13 @@ describe("Test subscriptions update", function() {
   }
 
   beforeEach(async function() {
+    await fetch("http://localhost:3003/clear");
+    await setEndpointResponse("/updatable_subscription/diff.json", JSON.stringify({
+      filters: {
+        add: [],
+        remove: []
+      }
+    }));
     // Ensure it is enabled.
     await EWE.subscriptions.add(SUBSCRIPTION.url);
   });
@@ -259,8 +270,10 @@ describe("Test subscriptions update", function() {
 
     // This update will try to enable a static rules that is enabled.
     // It should not change the dynamic rules.
+
     await EWE.testing.dnrSubscriptionUpdate(SUBSCRIPTION, UPDATES5);
     await checkDynamicRuleCount(6);
+
     let dynFilter3 = await getDynamicFilter(STATIC_FILTER_TO_DISABLE);
     expect(dynFilter3).toBeUndefined();
     await checkUpdateStateSaved(SUBSCRIPTION.id, UPDATES5);
@@ -301,7 +314,6 @@ describe("Test subscriptions update", function() {
     await EWE.testing.dnrSubscriptionUpdate(subscription, UPDATES4);
     await checkDynamicRuleCount(0);
   });
-
 
   it("remove dynamic rules when removed", async function() {
     if (!hasUpdateStaticRules())
@@ -441,7 +453,6 @@ describe("Test subscriptions update", function() {
         this.skip();
 
       await EWE.testing.testSetDynamicRulesAvailable(3);
-
       // This update should fail
       await expect(EWE.testing.dnrSubscriptionUpdate(SUBSCRIPTION, UPDATES))
         .rejects.toThrow(
@@ -450,6 +461,151 @@ describe("Test subscriptions update", function() {
 
       await checkDynamicRuleCount(0);
       await checkUpdateStateSaved(SUBSCRIPTION.id, EMPTY_UPDATE);
+    });
+  });
+
+  describe("Updates using the diffing mechanism", function() {
+    setMinTimeout(this, isFuzzingServiceWorker() ? 30000 : 10000);
+
+    beforeEach(async function() {
+      await EWE.subscriptions.remove(SUBSCRIPTION.url);
+    });
+
+    it("creates a diff enabled subscription when adding one [mv3-only]", async function() {
+      if (!hasUpdateStaticRules())
+        this.skip();
+
+      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
+      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
+      let testDiffUrl = "http://localhost:3003" + testDiffUrlEndpoint;
+      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+        filters: {
+          add: ["###elem-hide-img-request"],
+          remove: []
+        }
+      }));
+
+      await EWE.subscriptions.add(testDiffSubscriptionUrl);
+      await EWE.subscriptions.sync(testDiffSubscriptionUrl);
+
+      let subs = await EWE.subscriptions.getDownloadable();
+
+      expect(subs).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            diffURL: testDiffUrl,
+            enabled: true,
+            id: SUBSCRIPTION.id,
+            url: testDiffSubscriptionUrl
+          })
+        ])
+      );
+
+      await EWE.subscriptions.sync(testDiffSubscriptionUrl);
+      // There's a chance that this could get out of sync.
+
+      await expectTestEvents(
+        "subscriptions.onAdded",
+        expect.arrayContaining([[
+          expect.objectContaining({
+            url: testDiffSubscriptionUrl,
+            diffURL: testDiffUrl
+          })
+        ]])
+      );
+    });
+
+    it("applies and blocks with new filters added in the diffs [mv3-only]", async function() {
+      if (!hasUpdateStaticRules())
+        this.skip();
+
+      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
+      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
+      // start with empty diffs
+      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+        filters: {
+          add: [],
+          remove: []
+        }
+      }));
+
+      await EWE.subscriptions.add(testDiffSubscriptionUrl);
+      await EWE.subscriptions.sync(testDiffSubscriptionUrl);
+
+      await shouldBeLoaded(
+        "image.html",
+        "image.png"
+      );
+
+      // new filters added to the diffs
+      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+        filters: {
+          add: ["image.png"],
+          remove: []
+        }
+      }));
+      await EWE.subscriptions.sync(testDiffSubscriptionUrl);
+
+      await wait(async() => {
+        let newDNRrules = await browser.declarativeNetRequest.getDynamicRules();
+        if (newDNRrules.length > 0)
+          return true;
+      }, 4000, "Subscription was not synchronised properly.");
+
+      // now we block the image
+      await new Page("image.html").expectResource("image.png").toBeBlocked();
+    });
+
+    it("Subscriptions with empty diffs still block with normal filters [mv3-only]", async function() {
+      if (!hasUpdateStaticRules())
+        this.skip();
+
+      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
+      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
+      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+        filters: {
+          add: [],
+          remove: []
+        }
+      }));
+
+      await shouldBeLoaded(
+        "image-from-subscription.html",
+        "image-from-subscription.png",
+        "Image from subscription did not load correctly even before of adding the subscription");
+
+      await EWE.subscriptions.add(testDiffSubscriptionUrl);
+      await EWE.subscriptions.sync(testDiffSubscriptionUrl);
+      await new Page("image-from-subscription.html").expectResource("image-from-subscription.png").toBeBlocked();
+    });
+
+    it("doesnt apply filters removed by the diffs [mv3-only]", async function() {
+      if (!hasUpdateStaticRules())
+        this.skip();
+
+      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
+      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
+      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+        filters: {
+          add: [],
+          remove: []
+        }
+      }));
+      await EWE.subscriptions.add(testDiffSubscriptionUrl);
+      await EWE.subscriptions.sync(testDiffSubscriptionUrl);
+      await new Page("image-from-subscription.html").expectResource("image-from-subscription.png").toBeBlocked();
+
+      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+        filters: {
+          add: [],
+          remove: ["/image-from-subscription.png^$image"]
+        }
+      }));
+      await EWE.subscriptions.sync(testDiffSubscriptionUrl);
+      await shouldBeLoaded(
+        "image-from-subscription.html",
+        "image-from-subscription.png"
+      );
     });
   });
 });

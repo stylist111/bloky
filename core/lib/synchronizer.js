@@ -150,9 +150,20 @@ class Synchronizer {
   _getDownloadable(subscription, manual) {
     let {url, lastDownload, lastSuccess, lastCheck, version, softExpiration,
          expires, downloadCount, disabled, downloadable,
-         countable} = subscription;
+         countable, diffURL} = subscription;
 
-    let result = new Downloadable(url);
+    let result;
+
+    // If this is a DiffUpdatable subscription, use the diff URL and set the
+    // original URL. We need to set this original URL or it will not be
+    // available in the download success callback.
+    if (diffURL) {
+      result = new Downloadable(diffURL);
+      result.originalUrl = url;
+    }
+    else {
+      result = new Downloadable(url);
+    }
 
     if (analytics.isTrusted(url))
       result.firstVersion = analytics.getFirstVersion();
@@ -167,7 +178,7 @@ class Synchronizer {
     result.manual = manual;
     result.downloadCount = downloadCount;
     result.disabled = disabled;
-    if (disabled || (countable && !downloadable))
+    if (!diffURL && (disabled || (countable && !downloadable)))
       result.method = "HEAD";
 
     return result;
@@ -194,6 +205,18 @@ class Synchronizer {
 
   _onDownloadSuccess(downloadable, responseText, errorCallback,
                      redirectCallback) {
+    // if it has originalUrl, it means that it's a diffUpdatable subscription
+    if (downloadable.originalUrl) {
+      const subscription = Subscription.fromURL(downloadable.originalUrl);
+
+      const responseObject = JSON.parse(responseText);
+      const added = responseObject.filters.add;
+      const removed = responseObject.filters.remove;
+
+      filterNotifier.emit("subscription.diffReceived", subscription, {added, removed});
+      return;
+    }
+
     let subscription = Subscription.fromURL(downloadable.redirectURL ||
                                             downloadable.url);
     subscription.mark("downloading.finished");

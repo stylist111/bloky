@@ -65,18 +65,18 @@ app.head("/subscription.txt", requestLogger.logRequests, (req, res) => {
 });
 
 // get the subscription content (GET)
-app.get("/updateable_subscription.txt", requestLogger.logRequests, (req, res) => {
-  let sub = fs.readFileSync(dirname + "/pages/updateable_subscription.txt");
+app.get("/updatable_subscription.txt", requestLogger.logRequests, (req, res) => {
+  let sub = fs.readFileSync(dirname + "/pages/updatable_subscription.txt");
   res.send(sub);
 });
 
-app.get("/mv2_updateable_subscription.txt", requestLogger.logRequests, (req, res) => {
-  let sub = fs.readFileSync(dirname + "/pages/updateable_subscription.txt");
+app.get("/mv2_updatable_subscription.txt", requestLogger.logRequests, (req, res) => {
+  let sub = fs.readFileSync(dirname + "/pages/updatable_subscription.txt");
   res.send(sub);
 });
 
 // get the subscription content (HEAD)
-app.head("/updateable_subscription.txt", requestLogger.logRequests, (req, res) => {
+app.head("/updatable_subscription.txt", requestLogger.logRequests, (req, res) => {
   res.send(reply);
 });
 
@@ -122,9 +122,18 @@ export function startAdminServer(host) {
     {
       url: "/anti-cv-subscription.txt",
       data: "[Adblock Plus]"
+    },
+    {
+      url: "/updatable_subscription/diff.json",
+      data: JSON.stringify({
+        filters: {
+          add: [],
+          remove: []
+        }
+      })
     }
   ];
 
   for (let i = 0; i < buildTimeReplies.length; i++)
-        createRouteHandler(buildTimeReplies[i].url, buildTimeReplies[i].data);
+    createRouteHandler(buildTimeReplies[i].url, buildTimeReplies[i].data);
 }

@@ -371,13 +371,13 @@ if (isMV3()) {
         mv2_url: "http://localhost:3003/mv2_subscription-that-shouldnt-be-moved-to-dnr-world.txt"
       },
       {
-        id: "65ABBA21-96DA-40EB-8C43-BA9A5073B211",
+        id: "00000000-0000-0000-0000-000000000060",
         type: "ads",
-        title: "Test MV3 Updateable Subscription",
-        homepage: "http://localhost:3003/updateable_subscription.txt",
-        url: "http://localhost:3003/updateable_subscription.txt",
-        mv2_url: "http://localhost:3003/mv2_updateable_subscription.txt",
-        diff_url: "http://localhost:3003/updateable_subscription/diff/latest.json"
+        title: "Test MV3 Updatable Subscription",
+        homepage: "http://localhost:3003/updatable_subscription.txt",
+        diff_url: "http://localhost:3003/updatable_subscription/diff.json",
+        url: "http://localhost:3003/updatable_subscription.txt",
+        mv2_url: "http://localhost:3003/mv2_updatable_subscription.txt"
       }
     ],
     bundledSubscriptionsPath: "subscriptions"
