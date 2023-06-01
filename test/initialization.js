@@ -194,6 +194,22 @@ describe("Initialization", function() {
     });
   }
 
+  it("configures AA in default subscriptions from built-in adblockpluscore list", async function() {
+    let recommendations = await EWE.testing._recommendations();
+
+    // Force load from the default list (core/data/subscriptions.json)
+    await EWE.testing._setRecommendations(null);
+
+    try {
+      let defaultSubscriptions =
+        await EWE.testing._getDefaultSubscriptions("en");
+      expect(defaultSubscriptions.hasAA).toEqual(true);
+    }
+    finally {
+      await EWE.testing._setRecommendations(recommendations);
+    }
+  });
+
   it("adds only one preferred AA subscription when multiple provided [mv3-only] [fuzz-skip]", async function() {
     let alternativeAAUrl = "https://easylist-downloads.adblockplus.org/exceptionrules-privacy-friendly.txt";
 

@@ -16,13 +16,15 @@
  */
 
 import {Subscription} from "adblockpluscore/lib/subscriptionClasses.js";
-import {setRecommendations} from "adblockpluscore/lib/recommendations.js";
+import {setRecommendations, recommendations, Recommendation}
+  from "adblockpluscore/lib/recommendations.js";
 import {notifications} from "adblockpluscore/lib/notifications.js";
 
 import {filterEngine} from "./core.js";
 import {Prefs, awaitSavingComplete, init as initPrefs} from "./prefs.js";
 import {default as debugging} from "./debugging.js";
 import {default as subs} from "./subscriptions.js";
+import {getDefaultSubscriptions} from "./subscriptions.js";
 import {default as initializer} from "./initializer.js";
 import {setAddonInfo, addonBundledSubscriptionsPath} from "./info.js";
 import {dnrSubscriptionUpdate, dynamicRulesAvailable, getDynamicFilters,
@@ -93,6 +95,28 @@ export default {
                   bundledSubscriptionsPath: addonBundledSubscriptionsPath});
     setRecommendations(subscriptions);
   },
+
+  /**
+   * @ignore
+   * @param {Array} sources An array of sources for recommendations
+   */
+  _setRecommendations(sources) {
+    setRecommendations(sources ? [...sources.map(
+      source => new Recommendation(source))] : null);
+  },
+
+  /**
+   * @ignore
+   * @returns {Array} An array of recommendations
+   */
+  _recommendations() {
+    return [...recommendations()];
+  },
+
+  /**
+   * @ignore
+   */
+  _getDefaultSubscriptions: getDefaultSubscriptions,
 
   /**
    * @ignore

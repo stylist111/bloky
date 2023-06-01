@@ -134,3 +134,5 @@ exports.recommendations = function* recommendations() {
   for (let source of _recommendations)
     yield new Recommendation(source);
 };
+
+exports.Recommendation = Recommendation;
