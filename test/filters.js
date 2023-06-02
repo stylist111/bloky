@@ -562,6 +562,35 @@ describe("Filters", function() {
         `${TEST_PAGES_URL}/image.png`, "image", tabId)).toEqual(true);
     });
 
+    it("returns whether a resource is allowlisted when loading in existing frame", async function() {
+      await EWE.filters.add([`@@|${TEST_PAGES_URL}/image.html^$document`]);
+
+      await browser.runtime.sendMessage({
+        type: "ewe-test:subscribeTabsOnUpdated"});
+
+      try {
+        let page = new Page("image.html");
+        await page.loaded;
+        let isImagePageAllowlisted = await browser.runtime.sendMessage({
+          type: "ewe-test:isResourceAllowlisted",
+          url: `${TEST_PAGES_URL}/image.html`
+        });
+        expect(isImagePageAllowlisted).toEqual(true);
+
+        await page.load("header.html");
+        let isHeaderPageAllowlisted = await browser.runtime.sendMessage({
+          type: "ewe-test:isResourceAllowlisted",
+          url: `${TEST_PAGES_URL}/header.html`
+        });
+        expect(isHeaderPageAllowlisted).toEqual(false);
+      }
+      finally {
+        await browser.runtime.sendMessage({
+          type: "ewe-test:unsubscribeTabsOnUpdated"
+        });
+      }
+    });
+
     it("returns whether a frame resource is allowlisted", async function() {
       await addFilter(`@@||${TEST_PAGES_DOMAIN}^$document`);
 

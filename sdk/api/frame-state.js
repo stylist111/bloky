@@ -386,6 +386,17 @@ function recordFrameFromNavigationEvent(
 }
 
 function onBeforeNavigate(details) {
+  // We know the current frame information is about to become
+  // outdated, so we just delete the existing data.
+  let frames = state.get(details.tabId);
+  if (frames) {
+    // Firefox can trigger "onBeforeNavigate" multiple times,
+    // so we need to filter out only the actually changed navigations.
+    let frame = frames.get(details.frameId);
+    if (frame && frame.url != details.url)
+      frames.delete(details.frameId);
+  }
+
   // If an iframe's URL is "about:srcdoc", that means its contents is
   // actually specified using the srcdoc attribute. Some browsers
   // don't actually emit the webNavigation.onCommitted event for these
