@@ -19,7 +19,8 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 
 import {Page, setMinTimeout, waitForAssertion, isFirefox, isEdge, SITEKEY,
-        TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN} from "./utils.js";
+        TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN, setEndpointResponse,
+        waitForSubscriptionsToDownload} from "./utils.js";
 import {addFilter, EWE, getTestEvents, clearTestEvents, expectTestEvents}
   from "./messaging.js";
 import {VALID_FILTER_TEXT, COMMENT_FILTER_TEXT, SECOND_VALID_FILTER_TEXT,
@@ -99,40 +100,55 @@ describe("Filters", function() {
   });
 
   it("adds filter that is already on subscription", async function() {
+    const filter = "/image-from-custom-filter.png^$image";
+    let updatedReply = [
+      "[Adblock Plus]",
+      filter
+    ].join("\n");
+    await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
     await EWE.subscriptions.add(subCircumvention.url);
-    await EWE.filters.add(["/image-from-custom-filter.png^$image"]);
+    await waitForSubscriptionsToDownload();
+
+    await EWE.filters.add([filter]);
     let userFilters = await EWE.filters.getUserFilters();
     expect(userFilters[0]).toMatchObject({
       csp: null,
       enabled: true,
       selector: null,
       slow: false,
-      text: "/image-from-custom-filter.png^$image",
+      text: filter,
       thirdParty: null,
       type: "blocking"
     });
     await new Page("image-from-custom-filter.html").expectResource("image-from-custom-filter.png").toBeBlocked();
   });
 
-  it("remove custom filter that is already on subscription as a custom filter only", async function() {
-    // https://jira.eyeo.com/browse/EE-79
-    this.skip();
-
+  it("remove custom filter that is already on subscription as a custom filter only [mv2-only]", async function() {
+    const filter = "/image-from-custom-filter.png^$image";
+    let updatedReply = [
+      "[Adblock Plus]",
+      filter
+    ].join("\n");
+    await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
     await EWE.subscriptions.add(subCircumvention.url);
-    await EWE.filters.add(["/image-from-custom-filter.png^$image"]);
+    await waitForSubscriptionsToDownload();
+
+    await EWE.filters.add([filter]);
     let userFilters = await EWE.filters.getUserFilters();
+
     expect(userFilters[0]).toMatchObject({
       csp: null,
       enabled: true,
       selector: null,
       slow: false,
-      text: "/image-from-custom-filter.png^$image",
+      text: filter,
       thirdParty: null,
       type: "blocking"
     });
 
-    await EWE.filters.remove(["/image-from-custom-filter.png^$image"]);
-    expect(await EWE.filters.getUserFilters().length).toEqual(0);
+    await EWE.filters.remove([filter]);
+    userFilters = await EWE.filters.getUserFilters();
+    expect(userFilters.length).toEqual(0);
 
     await new Page("image-from-custom-filter.html").expectResource("image-from-custom-filter.png").toBeBlocked();
   });
