@@ -405,7 +405,7 @@ export class Popup {
           if (details.tabId == popupTabId &&
               details.frameId == 0 &&
               details.url != "about:blank") {
-            let tolerance = 0;
+            let tolerance = 5;
 
             if (deferred)
               tolerance = 200;
@@ -413,10 +413,7 @@ export class Popup {
             if (isFuzzingServiceWorker())
               tolerance = 1000;
 
-            if (tolerance > 0)
-              setTimeout(onCompletedAfterWait, tolerance);
-            else
-              onCompletedAfterWait();
+            setTimeout(onCompletedAfterWait, tolerance);
           }
         }
 
