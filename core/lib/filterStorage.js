@@ -343,11 +343,19 @@ class FilterStorage {
    * @param {Array.<string>} filterText The new filter text.
    */
   updateSubscriptionFilters(subscription, filterText) {
+    let update = subscription.updateFilterText(filterText);
     filterNotifier.emit(
       "subscription.updated",
       subscription,
-      subscription.updateFilterText(filterText)
+      update
     );
+    if (this.features & Features.DNR) {
+      filterNotifier.emit(
+        "subscription.dnrUpdated",
+        subscription,
+        update
+      );
+    }
   }
 
   /**

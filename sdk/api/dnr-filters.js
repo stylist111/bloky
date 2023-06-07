@@ -31,6 +31,7 @@ import {ERROR_DUPLICATE_FILTERS, ERROR_FILTER_NOT_FOUND,
         ERROR_TOO_MANY_FILTERS} from "../errors.js";
 import {onChanged, disable} from "./filters.js";
 import {default as initializer} from "./initializer.js";
+import {calculateDiff} from "./filter-diffs.js";
 
 import {FilterError} from "./types.js";
 import {Prefs} from "./prefs.js";
@@ -132,6 +133,8 @@ export async function dnrSubscriptionUpdate(subscription, updates) {
     return;
   }
 
+  let diff = (updates.type == "diff");
+
   // For now we only want to handle subscriptions that are in the
   // recommendations.
   if (!subscription.type) {
@@ -185,7 +188,7 @@ export async function dnrSubscriptionUpdate(subscription, updates) {
         await dnrSubscriptionUpdate(subscription, lastUpdate);
       }
       else {
-        await dnrSubscriptionUpdate(subscription, {added: [], removed: []});
+        await dnrSubscriptionUpdate(subscription, {type: "diff", added: [], removed: []});
       }
     };
   }
@@ -267,9 +270,51 @@ export async function dnrSubscriptionUpdate(subscription, updates) {
     });
   }
 
+  if (diff) {
+    await applyFilterTextUpdate(subscription, updates);
+  }
+
   rulesetUpdates.set(subscription.id, updates);
   storeRulesetUpdates();
   storeDynamicFilters();
+}
+
+/**
+ * Apply the filter text update to the subscription.
+ *
+ * @param {object} subscription The subscription to apply the update to
+ * @param {FilterDiffs} updates The update to apply.
+ */
+export async function applyFilterTextUpdate(subscription, updates) {
+  if (rulesetUpdates.size == 0) {
+    loadRulesetUpdates();
+  }
+  // apply the update to the storage
+  let base = rulesetUpdates.get(subscription.id);
+  let storageUpdate;
+  if (base) {
+    storageUpdate = calculateDiff(base, updates);
+  }
+  else {
+    storageUpdate = {
+      added: updates.added,
+      removed: updates.removed
+    };
+  }
+
+  for (let text of storageUpdate.removed) {
+    let index = subscription.findFilterTextIndex(text);
+    if (index >= 0) {
+      subscription.deleteFilterAt(index);
+    }
+  }
+
+  for (let text of storageUpdate.added) {
+    subscription.addFilterText(text);
+  }
+
+  await filterEngine.filterStorage.saveToDisk();
+  filterNotifier.emit("subscription.updated", subscription, storageUpdate);
 }
 
 export function validateFilter(filter) {
@@ -367,7 +412,7 @@ export function init() {
         setHighestRuleId(ruleIds);
       }
 
-      filterNotifier.on("subscription.updated", dnrSubscriptionUpdate);
+      filterNotifier.on("subscription.dnrUpdated", dnrSubscriptionUpdate);
       filterNotifier.on("subscription.diffReceived", dnrSubscriptionUpdate);
     })();
   }

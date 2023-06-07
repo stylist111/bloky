@@ -20,12 +20,13 @@ import expect from "expect";
 import {DnrMapper} from "adblockpluscore/lib/dnr/mapper.js";
 import {EWE, expectTestEvents} from "./messaging.js";
 import {hasUpdateStaticRules, Page, setEndpointResponse, shouldBeLoaded,
-        setMinTimeout, wait}
+        setMinTimeout, wait, expectElemHideVisible, expectElemHideHidden}
   from "./utils.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 
 const UPDATABLE_SUBSCRIPTION_ID = "00000000-0000-0000-0000-000000000060";
+const UPDATABLE_SUBSCRIPTION_URL = "http://localhost:3003/updatable_subscription.txt";
 
 const DYNAMIC_FILTER = "||b5gxiibirp.invalid^";
 const DYNAMIC_FILTER2 = "||ttle10x9w7.invalid^";
@@ -33,6 +34,7 @@ const DYNAMIC_FILTER3 = "||ma50byuiyppz.invalid^";
 const STATIC_FILTER_TO_DISABLE = "||kiihsbhe.invalid^";
 
 const EMPTY_UPDATE = {
+  type: "diff",
   added: [
   ],
   removed: [
@@ -40,6 +42,7 @@ const EMPTY_UPDATE = {
 };
 
 const UPDATES = {
+  type: "diff",
   added: [
     "||qkq0b8rl0qa6.invalid^",
     "||aktc734q.invalid^",
@@ -53,6 +56,7 @@ const UPDATES = {
 };
 
 const UPDATES2 = {
+  type: "diff",
   added: [
     ...UPDATES.added,
     DYNAMIC_FILTER
@@ -64,6 +68,7 @@ const UPDATES2 = {
 };
 
 const UPDATES3 = {
+  type: "diff",
   added: [
     ...UPDATES2.added
   ],
@@ -73,8 +78,10 @@ const UPDATES3 = {
 };
 
 const UPDATES4 = {
+  type: "diff",
   added: [
     ...UPDATES3.added,
+    "1u2pp.invalid##.ads",
     DYNAMIC_FILTER2
   ],
   removed: [
@@ -83,20 +90,15 @@ const UPDATES4 = {
 };
 
 const UPDATES5 = {
+  type: "diff",
   added: [
     ...UPDATES4.added,
     STATIC_FILTER_TO_DISABLE
   ],
   removed: [
-    ...UPDATES4.removed
+    ...UPDATES4.removed,
+    "###elem-hide"
   ]
-};
-
-const SUBSCRIPTION = {
-  url: "http://localhost:3003/updatable_subscription.txt",
-  type: "ads",
-  downloadable: false,
-  id: UPDATABLE_SUBSCRIPTION_ID
 };
 
 describe("Test subscriptions update", function() {
@@ -118,13 +120,18 @@ describe("Test subscriptions update", function() {
     ));
   }
 
+  // Check the dynamic rule count. It will check consistency with the
+  // content of the dynamicFilters.
   async function checkDynamicRuleCount(count) {
     let dynamicRules = await browser.declarativeNetRequest.getDynamicRules();
     expect(dynamicRules.length).toEqual(count, "dynamic rules count mismatch");
 
-    // Both should be equal.
-    let dynamicFilters = await EWE.testing.getDynamicFilters();
-    expect(dynamicFilters.length).toEqual(count, "dynamic filters count mismatch");
+    // We count the number of rules in the dynamicFilters and compare that.
+    let dynamicFilterRuleCount = 0;
+    (await EWE.testing.getDynamicFilters()).forEach(
+      dynamicFilter => dynamicFilterRuleCount += dynamicFilter[1].ruleIds.length
+    );
+    expect(dynamicFilterRuleCount).toEqual(count, "dynamic filters count mismatch");
   }
 
   async function getDynamicFilter(text) {
@@ -172,7 +179,7 @@ describe("Test subscriptions update", function() {
       }
     }));
     // Ensure it is enabled.
-    await EWE.subscriptions.add(SUBSCRIPTION.url);
+    await EWE.subscriptions.add(UPDATABLE_SUBSCRIPTION_URL);
   });
 
   // The purpose of this test is to make sure we change nothing
@@ -184,7 +191,8 @@ describe("Test subscriptions update", function() {
     }
 
     // The case of the first update.
-    await EWE.testing.dnrSubscriptionUpdate(SUBSCRIPTION, UPDATES);
+    await EWE.testing._dnrSubscriptionUpdate(
+      UPDATABLE_SUBSCRIPTION_URL, UPDATES);
 
     // There should have been no dyamic rules added.
     let added = await browser.declarativeNetRequest.getDynamicRules();
@@ -192,7 +200,9 @@ describe("Test subscriptions update", function() {
 
     let savedUpdates = await EWE.testing._getPrefs("ruleset_updates");
     expect(savedUpdates).not.toEqual(
-      expect.arrayContaining([expect.arrayContaining([SUBSCRIPTION.id])])
+      expect.arrayContaining([expect.arrayContaining([
+        UPDATABLE_SUBSCRIPTION_ID
+      ])])
     );
   });
 
@@ -213,12 +223,13 @@ describe("Test subscriptions update", function() {
     expect(dynamicRules.length).toEqual(0);
     let ids = UPDATES.removed.flatMap(text => mapper.get(text));
     expect(ids.length).toEqual(2);
-    await EWE.testing.dnrSubscriptionUpdate(SUBSCRIPTION, UPDATES);
-    await checkRulesAreDisabled(SUBSCRIPTION.id, ids);
+    await EWE.testing._dnrSubscriptionUpdate(
+      UPDATABLE_SUBSCRIPTION_URL, UPDATES);
+    await checkRulesAreDisabled(UPDATABLE_SUBSCRIPTION_ID, ids);
     // Check that 4 dynamic rules have been added.
     let added = await browser.declarativeNetRequest.getDynamicRules();
     expect(added.length).toEqual(4);
-    await checkUpdateStateSaved(SUBSCRIPTION.id, UPDATES);
+    await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, UPDATES);
 
     // Check that these are not reported as user filter.
     let userFilters = await EWE.filters.getUserFilters();
@@ -227,26 +238,28 @@ describe("Test subscriptions update", function() {
     // The update disables one more static rule, and add DYNAMIC_FILTER
     ids = UPDATES2.removed.flatMap(text => mapper.get(text));
     expect(ids.length).toEqual(3);
-    await EWE.testing.dnrSubscriptionUpdate(SUBSCRIPTION, UPDATES2);
-    await checkRulesAreDisabled(SUBSCRIPTION.id, ids);
+    await EWE.testing._dnrSubscriptionUpdate(
+      UPDATABLE_SUBSCRIPTION_URL, UPDATES2);
+    await checkRulesAreDisabled(UPDATABLE_SUBSCRIPTION_ID, ids);
     // Check that we have 5 dynamic rules.
     added = await browser.declarativeNetRequest.getDynamicRules();
     expect(added.length).toEqual(5);
-    await checkUpdateStateSaved(SUBSCRIPTION.id, UPDATES2);
+    await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, UPDATES2);
 
     // The case of the update reenabling a previously disabled static
     // rule STATIC_FILTER_TO_DISABLE
     ids = mapper.get(STATIC_FILTER_TO_DISABLE);
-    await EWE.testing.dnrSubscriptionUpdate(SUBSCRIPTION, UPDATES3);
-    await checkRulesAreNotDisabled(SUBSCRIPTION.id, ids);
-    await checkUpdateStateSaved(SUBSCRIPTION.id, UPDATES3);
+    await EWE.testing._dnrSubscriptionUpdate(
+      UPDATABLE_SUBSCRIPTION_URL, UPDATES3);
+    await checkRulesAreNotDisabled(UPDATABLE_SUBSCRIPTION_ID, ids);
+    await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, UPDATES3);
 
     // Add a user dynamic filter. This will be used to check overlaps with
     // subscription. This is DYNAMIC_FILTER2
     await EWE.filters.add([DYNAMIC_FILTER2]);
     await checkDynamicRuleCount(6);
     // Still the same update state
-    await checkUpdateStateSaved(SUBSCRIPTION.id, UPDATES3);
+    await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, UPDATES3);
 
     userFilters = await EWE.filters.getUserFilters();
     expect(userFilters.length).toEqual(1);
@@ -255,41 +268,84 @@ describe("Test subscriptions update", function() {
     let dynFilter = await getDynamicFilter(DYNAMIC_FILTER2);
     expect(dynFilter.subscriptionIds.indexOf(UPDATABLE_SUBSCRIPTION_ID))
       .toEqual(-1);
-    await EWE.testing.dnrSubscriptionUpdate(SUBSCRIPTION, UPDATES4);
+    await EWE.testing._dnrSubscriptionUpdate(
+      UPDATABLE_SUBSCRIPTION_URL, UPDATES4);
     await checkDynamicRuleCount(6);
     let dynFilter2 = await getDynamicFilter(DYNAMIC_FILTER2);
     expect(dynFilter2.subscriptionIds.indexOf(UPDATABLE_SUBSCRIPTION_ID))
       .not.toEqual(-1);
-    await checkUpdateStateSaved(SUBSCRIPTION.id, UPDATES4);
+    await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, UPDATES4);
 
     // Revert the update so that DYNAMIC_FILTER2 is no longer part of
     // this but is still present.
-    await EWE.testing.dnrSubscriptionUpdate(SUBSCRIPTION, UPDATES3);
+    await EWE.testing._dnrSubscriptionUpdate(
+      UPDATABLE_SUBSCRIPTION_URL, UPDATES3);
     await checkDynamicRuleCount(6);
     dynFilter2 = await getDynamicFilter(DYNAMIC_FILTER2);
     expect(dynFilter).toEqual(dynFilter2);
-    await checkUpdateStateSaved(SUBSCRIPTION.id, UPDATES3);
+    await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, UPDATES3);
 
     // This update will try to enable a static rules that is enabled.
     // It should not change the dynamic rules.
 
-    await EWE.testing.dnrSubscriptionUpdate(SUBSCRIPTION, UPDATES5);
+    await EWE.testing._dnrSubscriptionUpdate(
+      UPDATABLE_SUBSCRIPTION_URL, UPDATES5);
     await checkDynamicRuleCount(6);
 
     let dynFilter3 = await getDynamicFilter(STATIC_FILTER_TO_DISABLE);
     expect(dynFilter3).toBeUndefined();
-    await checkUpdateStateSaved(SUBSCRIPTION.id, UPDATES5);
+    await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, UPDATES5);
 
     // Empty update: no disabled rules, no dynamic rules.
-    await EWE.testing.dnrSubscriptionUpdate(SUBSCRIPTION, EMPTY_UPDATE);
+    await EWE.testing._dnrSubscriptionUpdate(
+      UPDATABLE_SUBSCRIPTION_URL, EMPTY_UPDATE);
     let disabled = await browser.declarativeNetRequest.getDisabledRuleIds(
-      {rulesetId: SUBSCRIPTION.id}
+      {rulesetId: UPDATABLE_SUBSCRIPTION_ID}
     );
     expect(disabled.length).toBe(0);
-    await checkUpdateStateSaved(SUBSCRIPTION.id, EMPTY_UPDATE);
+    await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, EMPTY_UPDATE);
 
     // DYNAMIC_FILTER2 is the last one left.
     await checkDynamicRuleCount(1);
+  });
+
+  async function hasFilterInSubscription(url, text) {
+    let subscriptions = await EWE.subscriptions.getForFilter(text);
+    let subscription = subscriptions.find(sub => sub.url == url);
+    return !!subscription;
+  }
+
+  it("does update the filterStorage [mv3-only]", async function() {
+    // This is MV3 only and we need Chrome 111+ API for this.
+    if (!hasUpdateStaticRules()) {
+      this.skip();
+    }
+
+    await EWE.testing._dnrSubscriptionUpdate(
+      UPDATABLE_SUBSCRIPTION_URL, UPDATES4);
+    await checkDynamicRuleCount(6);
+    let dynFilter = await getDynamicFilter(DYNAMIC_FILTER2);
+    expect(dynFilter.subscriptionIds.indexOf(UPDATABLE_SUBSCRIPTION_ID))
+      .not.toEqual(-1);
+    await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, UPDATES4);
+
+    expect(await hasFilterInSubscription(
+      UPDATABLE_SUBSCRIPTION_URL, "###elem-hide")).toBe(true);
+    expect(await hasFilterInSubscription(
+      UPDATABLE_SUBSCRIPTION_URL, DYNAMIC_FILTER2)).toBe(true);
+    expect(await hasFilterInSubscription(
+      UPDATABLE_SUBSCRIPTION_URL, "1u2pp.invalid##.ads")).toBe(true);
+
+    await EWE.testing._dnrSubscriptionUpdate(
+      UPDATABLE_SUBSCRIPTION_URL, UPDATES5);
+    await checkDynamicRuleCount(6);
+
+    let dynFilter2 = await getDynamicFilter(STATIC_FILTER_TO_DISABLE);
+    expect(dynFilter2).toBeUndefined();
+    await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, UPDATES5);
+    // This filter is removed in that update
+    expect(await hasFilterInSubscription(
+      UPDATABLE_SUBSCRIPTION_URL, "###elem-hide")).toBe(false);
   });
 
   it("does not add dynamic rules when not added", async function() {
@@ -297,9 +353,10 @@ describe("Test subscriptions update", function() {
       this.skip();
     }
 
-    await EWE.subscriptions.remove(SUBSCRIPTION.url);
+    await EWE.subscriptions.remove(UPDATABLE_SUBSCRIPTION_URL);
 
-    await EWE.testing.dnrSubscriptionUpdate(SUBSCRIPTION, UPDATES4);
+    await EWE.testing._dnrSubscriptionUpdate(
+      UPDATABLE_SUBSCRIPTION_URL, UPDATES4);
     await checkDynamicRuleCount(0);
   });
 
@@ -308,14 +365,9 @@ describe("Test subscriptions update", function() {
       this.skip();
     }
 
-    // We need to mutate the subscription object, so we deep copy.
-    let subscription = JSON.parse(JSON.stringify(SUBSCRIPTION));
-    await EWE.subscriptions.disable(subscription.url);
-    // Because this is a mock subscription, we need to set the
-    // disabled property too.
-    subscription.disabled = true;
-
-    await EWE.testing.dnrSubscriptionUpdate(subscription, UPDATES4);
+    await EWE.subscriptions.disable(UPDATABLE_SUBSCRIPTION_URL);
+    await EWE.testing._dnrSubscriptionUpdate(
+      UPDATABLE_SUBSCRIPTION_URL, UPDATES4);
     await checkDynamicRuleCount(0);
   });
 
@@ -324,12 +376,13 @@ describe("Test subscriptions update", function() {
       this.skip();
     }
 
-    await EWE.testing.dnrSubscriptionUpdate(SUBSCRIPTION, UPDATES4);
+    await EWE.testing._dnrSubscriptionUpdate(
+      UPDATABLE_SUBSCRIPTION_URL, UPDATES4);
     await checkDynamicRuleCount(6);
 
     // If we remove the subscription all the dynamic rules should be
     // removed.
-    await EWE.subscriptions.remove(SUBSCRIPTION.url);
+    await EWE.subscriptions.remove(UPDATABLE_SUBSCRIPTION_URL);
     await checkDynamicRuleCount(0);
   });
 
@@ -338,12 +391,13 @@ describe("Test subscriptions update", function() {
       this.skip();
     }
 
-    await EWE.testing.dnrSubscriptionUpdate(SUBSCRIPTION, UPDATES4);
+    await EWE.testing._dnrSubscriptionUpdate(
+      UPDATABLE_SUBSCRIPTION_URL, UPDATES4);
     await checkDynamicRuleCount(6);
 
     // If we disable the subscription all the dynamic rules should be
     // removed.
-    await EWE.subscriptions.disable(SUBSCRIPTION.url);
+    await EWE.subscriptions.disable(UPDATABLE_SUBSCRIPTION_URL);
     await checkDynamicRuleCount(0);
   });
 
@@ -352,20 +406,22 @@ describe("Test subscriptions update", function() {
       this.skip();
     }
 
-    await EWE.testing.dnrSubscriptionUpdate(SUBSCRIPTION, UPDATES4);
+    await EWE.testing._dnrSubscriptionUpdate(
+      UPDATABLE_SUBSCRIPTION_URL, UPDATES4);
     await checkDynamicRuleCount(6);
 
     // If we disable the subscription all the dynamic rules should be
     // removed.
-    await EWE.subscriptions.disable(SUBSCRIPTION.url);
+    await EWE.subscriptions.disable(UPDATABLE_SUBSCRIPTION_URL);
     await checkDynamicRuleCount(0);
 
-    await EWE.subscriptions.enable(SUBSCRIPTION.url);
+    await EWE.subscriptions.enable(UPDATABLE_SUBSCRIPTION_URL);
     await checkDynamicRuleCount(6);
   });
 
   // Specific test cases for rollback.
   const UPDATES2A = {
+    type: "diff",
     added: [
       ...UPDATES.added,
       DYNAMIC_FILTER3
@@ -376,6 +432,7 @@ describe("Test subscriptions update", function() {
   };
 
   const UPDATES2B = {
+    type: "diff",
     added: [
       ...UPDATES.added
     ],
@@ -399,14 +456,16 @@ describe("Test subscriptions update", function() {
       await EWE.filters.add([DYNAMIC_FILTER]);
       await checkDynamicRuleCount(1);
 
-      await EWE.testing.dnrSubscriptionUpdate(SUBSCRIPTION, UPDATES);
+      await EWE.testing._dnrSubscriptionUpdate(
+        UPDATABLE_SUBSCRIPTION_URL, UPDATES);
       await checkDynamicRuleCount(5);
-      await checkUpdateStateSaved(SUBSCRIPTION.id, UPDATES);
+      await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, UPDATES);
 
       // UPDATES2 will add DYNAMIC_FILTER, but it's already there.
-      await EWE.testing.dnrSubscriptionUpdate(SUBSCRIPTION, UPDATES2);
+      await EWE.testing._dnrSubscriptionUpdate(
+        UPDATABLE_SUBSCRIPTION_URL, UPDATES2);
       await checkDynamicRuleCount(5);
-      await checkUpdateStateSaved(SUBSCRIPTION.id, UPDATES2);
+      await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, UPDATES2);
       let dynFilters = await EWE.testing.getDynamicFilters();
 
       {
@@ -417,13 +476,14 @@ describe("Test subscriptions update", function() {
       }
 
       // This update should fail
-      await expect(EWE.testing.dnrSubscriptionUpdate(SUBSCRIPTION, UPDATES2A))
-        .rejects.toThrow(
-          "FilterError: {\"type\":\"too_many_filters\",\"option\":null}"
-        );
+      await expect(EWE.testing._dnrSubscriptionUpdate(
+        UPDATABLE_SUBSCRIPTION_URL, UPDATES2A
+      )).rejects.toThrow(
+        "FilterError: {\"type\":\"too_many_filters\",\"option\":null}"
+      );
       await checkDynamicRuleCount(5);
       // The previous update state should have been kept
-      await checkUpdateStateSaved(SUBSCRIPTION.id, UPDATES2);
+      await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, UPDATES2);
 
       // Check that DYNAMIC_FILTER is still here
       let dynFilters2 = await EWE.testing.getDynamicFilters();
@@ -438,17 +498,18 @@ describe("Test subscriptions update", function() {
       // `subscriptionIds` WILL be different.
       areDynamicFiltersEquivalent(dynFilters, dynFilters2);
 
-      await EWE.testing.dnrSubscriptionUpdate(SUBSCRIPTION, UPDATES2B);
+      await EWE.testing._dnrSubscriptionUpdate(
+        UPDATABLE_SUBSCRIPTION_URL, UPDATES2B);
       await checkDynamicRuleCount(5);
       dynFilters2 = await EWE.testing.getDynamicFilters();
-      await checkUpdateStateSaved(SUBSCRIPTION.id, UPDATES2B);
+      await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, UPDATES2B);
 
       // Check that DYNAMIC_FILTERS has the proper subscriptions, ie NOT
       // just `null`
       let f2 = dynFilters2.find(element => element[0] == DYNAMIC_FILTER);
       expect(f2);
       expect(f2[1].subscriptionIds).toEqual(
-        expect.not.arrayContaining([SUBSCRIPTION.id])
+        expect.not.arrayContaining([UPDATABLE_SUBSCRIPTION_ID])
       );
       expect(f2[1].subscriptionIds.length).toBe(1);
       expect(f2[1].subscriptionIds).toEqual(
@@ -463,13 +524,14 @@ describe("Test subscriptions update", function() {
 
       await EWE.testing.testSetDynamicRulesAvailable(3);
       // This update should fail
-      await expect(EWE.testing.dnrSubscriptionUpdate(SUBSCRIPTION, UPDATES))
-        .rejects.toThrow(
-          "FilterError: {\"type\":\"too_many_filters\",\"option\":null}"
-        );
+      await expect(EWE.testing._dnrSubscriptionUpdate(
+        UPDATABLE_SUBSCRIPTION_URL, UPDATES
+      )).rejects.toThrow(
+        "FilterError: {\"type\":\"too_many_filters\",\"option\":null}"
+      );
 
       await checkDynamicRuleCount(0);
-      await checkUpdateStateSaved(SUBSCRIPTION.id, EMPTY_UPDATE);
+      await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, EMPTY_UPDATE);
     });
   });
 
@@ -477,7 +539,7 @@ describe("Test subscriptions update", function() {
     setMinTimeout(this, isFuzzingServiceWorker() ? 30000 : 10000);
 
     beforeEach(async function() {
-      await EWE.subscriptions.remove(SUBSCRIPTION.url);
+      await EWE.subscriptions.remove(UPDATABLE_SUBSCRIPTION_URL);
     });
 
     it("creates a diff enabled subscription when adding one [mv3-only]", async function() {
@@ -505,7 +567,7 @@ describe("Test subscriptions update", function() {
           expect.objectContaining({
             diffURL: testDiffUrl,
             enabled: true,
-            id: SUBSCRIPTION.id,
+            id: UPDATABLE_SUBSCRIPTION_ID,
             url: testDiffSubscriptionUrl
           })
         ])
@@ -525,7 +587,7 @@ describe("Test subscriptions update", function() {
       );
     });
 
-    it("applies and blocks with new filters added in the diffs [mv3-only]", async function() {
+    it("applies and blocks with new request filters added in the diffs [mv3-only]", async function() {
       if (!hasUpdateStaticRules()) {
         this.skip();
       }
@@ -566,6 +628,49 @@ describe("Test subscriptions update", function() {
 
       // now we block the image
       await new Page("image.html").expectResource("image.png").toBeBlocked();
+    });
+
+    it("applies and blocks with new content filters added in the diffs [mv3-only]", async function() {
+      if (!hasUpdateStaticRules()) {
+        this.skip();
+      }
+
+      const testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
+      const testDiffUrlEndpoint = "/updatable_subscription/diff.json";
+
+      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+        filters: {
+          add: [],
+          remove: []
+        }
+      }));
+
+      await EWE.subscriptions.add(testDiffSubscriptionUrl);
+      await EWE.subscriptions.sync(testDiffSubscriptionUrl);
+
+      const elemId = "diff-elem-item";
+      await expectElemHideVisible({elemId});
+
+      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+        filters: {
+          add: ["###diff-elem-item"],
+          remove: []
+        }
+      }));
+
+      await EWE.subscriptions.sync(testDiffSubscriptionUrl);
+
+      await wait(async() => {
+        let filters =
+          await EWE.subscriptions.getFilters(testDiffSubscriptionUrl);
+        const lastFilter = filters.slice(-1)[0];
+
+        if (lastFilter.text === "###diff-elem-item") {
+          return true;
+        }
+      }, 10000, "Subscription was not synchronised properly.");
+
+      await expectElemHideHidden({elemId, timeout: 10000});
     });
 
     it("Subscriptions with empty diffs still block with normal filters [mv3-only]", async function() {

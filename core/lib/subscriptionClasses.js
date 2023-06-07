@@ -408,9 +408,26 @@ exports.Subscription = class Subscription {
    *
    * @returns {number} The `0`-based index at which the filter is found. If the
    *   filter is not found in the subscription, the return value is `-1`.
+   *
+   * @see {@link findFilterTextIndex} if you only have a filter text.
    */
   findFilterIndex(filter, fromIndex = 0) {
     return this._filterText.indexOf(filter.text, fromIndex);
+  }
+
+  /**
+   * Returns the `0`-based index of the given filter.
+   *
+   * @param {string} filterText The filter text..
+   * @param {number} [fromIndex] The `0`-based index from which to start the
+   *   search.
+   *
+   * @returns {number} The `0`-based index at which the filter is
+   *   found. If the filter is not found in the subscription, the
+   *   return value is `-1`.
+   */
+  findFilterTextIndex(filterText, fromIndex = 0) {
+    return this._filterText.indexOf(filterText, fromIndex);
   }
 
   /**
@@ -423,11 +440,21 @@ exports.Subscription = class Subscription {
 
   /**
    * Adds a filter to the subscription.
-   * @param {Filter} filter The filter.
+   * @param {module:filterClasses.Filter} filter The filter.
+   *
+   * @see {@link addFilterText} if you only have a filter text.
    */
   addFilter(filter) {
-    this._filterText.push(filter.text);
-    this._filterTextIndex.add(filter.text);
+    this.addFilterText(filter.text);
+  }
+
+  /**
+   * Adds a filter text to the subscription.
+   * @param {string} text The filter text.
+   */
+  addFilterText(text) {
+    this._filterText.push(text);
+    this._filterTextIndex.add(text);
   }
 
   /**

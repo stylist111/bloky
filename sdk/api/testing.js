@@ -145,7 +145,25 @@ export default {
     filterEngine.clear();
   },
 
-  dnrSubscriptionUpdate,
+  /**
+   * @ignore
+   * Call dnrSubscriptionUpdate by subscription URL for testing. It
+   * will get an real subscription object before calling the API.
+   *
+   * @param {string} url The subscription URL.
+   * @param {Object} updates The updates to apply.
+   */
+  async _dnrSubscriptionUpdate(url, updates) {
+    await this._waitForInitialization();
+
+    const {filterStorage} = filterEngine;
+    let subscription = filterStorage.getSubscription(url);
+    // This allow testing if the subscription is not in the storage.
+    if (!subscription) {
+      subscription = Subscription.fromURL(url);
+    }
+    await dnrSubscriptionUpdate(subscription, updates);
+  },
 
   getSubscriptionRulesetMap,
 
