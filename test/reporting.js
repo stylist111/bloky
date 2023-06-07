@@ -141,6 +141,14 @@ describe("Reporting", function() {
      });
 
   describe("Diagnostics", function() {
+    // There appears to be an issue with Edge in the fuzz tests where sometimes
+    // we don't get some of the webRequest events we expect when the service
+    // worker is suspended, especially the onComplete ones, and this makes some
+    // tests flaky.
+    // https://jira.eyeo.com/browse/EE-21
+    if (isFuzzingServiceWorker() && isEdge())
+      this.retries(3);
+
     setMinTimeout(this, 10000);
 
     function expectedBlockingFilter(filterText) {
@@ -1355,10 +1363,6 @@ describe("Reporting", function() {
     });
 
     describe("Unmatched requests", function() {
-      // https://jira.eyeo.com/browse/EE-21
-      if (isFuzzingServiceWorker() && isEdge())
-        this.retries(3);
-
       it("logs all unmatched requests on the image page [fuzz]", async function() {
         await checkLogging(
           [],
