@@ -80,7 +80,7 @@ build:
     paths:
       - dist/
       - dist/docs
-    expire_in: 1 month
+    expire_in: 1 week
 
 audit:
   image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
@@ -455,7 +455,7 @@ fuzz:v3:edge:linux:
     paths:
       - screenshots/
     when: always
-    expire_in: 1 mo
+    expire_in: 1 day
   rules:
     # Do not trigger a merge request pipeline
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
