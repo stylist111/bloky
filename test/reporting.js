@@ -816,6 +816,11 @@ describe("Reporting", function() {
           })
         }],
         {
+          // These extra frame events can come from our frame state doing its
+          // best to figure out the frame when we need to make a blocking
+          // decision, but haven't received the frame events yet. The document
+          // URL we have access to construct the frame state initially is only
+          // the domain part of the full document URL.
           optionalEvents: [{
             filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}$document`),
             matchInfo: {
@@ -827,6 +832,7 @@ describe("Reporting", function() {
             filter: expectedAllowingFilter(`@@|${CROSS_DOMAIN_URL}$document`),
             matchInfo: {
               ...allowingMatchInfo,
+              docDomain: CROSS_DOMAIN,
               allowingReason: "document"
             },
             request: expectedRequestUrl(CROSS_DOMAIN_URL)
