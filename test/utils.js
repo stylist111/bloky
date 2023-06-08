@@ -140,15 +140,11 @@ export async function expectElemHideVisible({elemId = "elem-hide",
   expect(elem).not.toBeNull();
 }
 export class Page {
-  getFullPath(path, fullUrl) {
-    return fullUrl ? path : `${TEST_PAGES_URL}/${path}`;
-  }
-
   constructor(path, fullUrl = false, forceBackground = false) {
     let removingCurrentPromise = Page.removeCurrent();
     Page.current = this;
 
-    this.url = this.getFullPath(path, fullUrl);
+    this.url = fullUrl ? path : `${TEST_PAGES_URL}/${path}`;
     this.created = (async() => {
       await removingCurrentPromise;
 
@@ -163,11 +159,7 @@ export class Page {
       return (await browser.tabs.create({url: this.url, active})).id;
     })();
 
-    this.loaded = this.waitForPageLoadAfterPromise(this.created);
-  }
-
-  waitForPageLoadAfterPromise(promise) {
-    return promise.then(tabId => {
+    this.loaded = this.created.then(tabId => {
       return new Promise((resolve, reject) => {
         function removeListeners() {
           browser.webNavigation.onCompleted.removeListener(onCompleted);
@@ -209,13 +201,6 @@ export class Page {
     await fuzzSuspendServiceWorker();
     await browser.tabs.reload(tabId, {bypassCache});
     return tabId;
-  }
-
-  async load(path, fullUrl = false) {
-    this.url = this.getFullPath(path, fullUrl);
-    let tabId = await this.created;
-    let promise = browser.tabs.update(tabId, {url: this.url});
-    await this.waitForPageLoadAfterPromise(promise.then(() => tabId));
   }
 
   async stillExists() {

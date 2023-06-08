@@ -121,15 +121,6 @@ self.removeOnBlockableEventsListener = function(name, arg) {
     findListener(name), arg);
 };
 
-let isResourceAllowlisted = new Map();
-async function tabsUpdatedListener(tabId, changeInfo, tab) {
-  if (changeInfo.status == "loading") {
-    isResourceAllowlisted.set(
-      tab.url,
-      await EWE.filters.isResourceAllowlisted(tab.url, "document", tabId));
-  }
-}
-
 let messages = [];
 let migrationErrorsOnStart;
 
@@ -225,23 +216,6 @@ function handleTestMessage(request, sender, sendResponse) {
       let error = lastError;
       lastError = null;
       sendResponse(error);
-      return true;
-    }
-
-    case "ewe-test:subscribeTabsOnUpdated": {
-      chrome.tabs.onUpdated.addListener(tabsUpdatedListener);
-      sendResponse({});
-      return true;
-    }
-
-    case "ewe-test:unsubscribeTabsOnUpdated": {
-      chrome.tabs.onUpdated.removeListener(tabsUpdatedListener);
-      sendResponse({});
-      return true;
-    }
-
-    case "ewe-test:isResourceAllowlisted": {
-      sendResponse(isResourceAllowlisted.get(request.url));
       return true;
     }
   }
