@@ -198,7 +198,15 @@ class BaseFilter {
       });
     }
 
-    let frame = getFrameInfoFromWebrequestDetails(details);
+    let frame = getFrameInfo(details.tabId, details.frameId);
+    if (frame && frame.isChangingURL) {
+      // `onBeforeNavigate` was already triggered, but `onCommited`
+      // was not yet triggered. Thus we don't really know the actual
+      // allowlisting state.
+      return;
+    }
+
+    frame = getFrameInfoFromWebrequestDetails(details);
     if (!frame)
       return;
 

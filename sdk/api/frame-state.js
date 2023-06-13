@@ -386,6 +386,27 @@ function recordFrameFromNavigationEvent(
 }
 
 function onBeforeNavigate(details) {
+  // We know the current frame information is about to become
+  // outdated, so we just delete the existing data.
+  let frames = state.get(details.tabId);
+  if (frames) {
+    // Firefox can trigger "onBeforeNavigate" multiple times,
+    // so we need to filter out only the actually changed navigations.
+    let frame = frames.get(details.frameId);
+    if (frame && frame.url != details.url) {
+      // We need to skip processing the frame state events for now
+      // (such as allowlisted for document) as it will be done later during
+      // the `onCommited`, but we also want to avoid allowlisting for some
+      // resources that refer to this tabId/frameId as the URL is changed,
+      // and the allowlisting state is currently undetermined.
+
+      frame.isChangingURL = true;
+      frame.url = details.url;
+      frame.allowlisting = 0;
+      frame.allowingDocumentFilter = null;
+    }
+  }
+
   // If an iframe's URL is "about:srcdoc", that means its contents is
   // actually specified using the srcdoc attribute. Some browsers
   // don't actually emit the webNavigation.onCommitted event for these
@@ -397,6 +418,8 @@ function onBeforeNavigate(details) {
 
 function onCommitted(details) {
   recordFrameFromNavigationEvent(details);
+  let frame = getFrameInfo(details.tabId, details.frameId);
+  frame.isChangingURL = false;
 }
 
 function onErrorOccurred(details) {
