@@ -178,7 +178,8 @@ async function onCompleted(details) {
     // CSP filters could apply in this case
 
     let cspTypeMask = contentTypes.CSP | getRequestContentType(details);
-    let cspMatchInfo = {docDomain: docDomain || parseURL(details.url).hostname,
+    let hostname = parseURL(details.url).hostname;
+    let cspMatchInfo = {docDomain: docDomain || hostname,
                         specificOnly, method: "csp"};
 
     let allowingCspFilter = filterEngine.defaultMatcher.match(
@@ -190,7 +191,7 @@ async function onCompleted(details) {
     }
 
     let cspFilters = filterEngine.defaultMatcher.search(
-      details.url, cspTypeMask, docDomain, null, specificOnly, "blocking"
+      details.url, cspTypeMask, hostname, null, specificOnly, "blocking"
     );
 
     let appliedCspFilters = false;

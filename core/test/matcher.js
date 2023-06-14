@@ -107,8 +107,15 @@ describe("Matcher", function() {
     }
   }
 
-  function checkSearch(filters, location, contentType, docDomain,
+  function checkSearch(filters, location, requestContentTypes, docDomain,
                        sitekey, specificOnly, filterType, expected) {
+    if (typeof requestContentTypes === "string")
+      requestContentTypes = [requestContentTypes];
+
+    let contentTypeMask = 0;
+    for (let contentType of requestContentTypes)
+      contentTypeMask |= contentTypes[contentType];
+
     let url = parseURL(location);
 
     let matcher = new CombinedMatcher();
@@ -116,7 +123,7 @@ describe("Matcher", function() {
       matcher.add(Filter.fromText(filter));
 
     for (let arg of [url, location]) {
-      let result = matcher.search(arg, contentTypes[contentType], docDomain, sitekey, specificOnly, filterType);
+      let result = matcher.search(arg, contentTypeMask, docDomain, sitekey, specificOnly, filterType);
 
       let converted = {};
       for (let key in result)
@@ -124,7 +131,7 @@ describe("Matcher", function() {
 
       assert.deepEqual(converted, expected, "search(" +
                        (typeof arg == "string" ? arg : `parseURL(${arg})`) + ", " +
-                       contentType + ", " + docDomain + ", " +
+                        requestContentTypes + ", " + docDomain + ", " +
                        (sitekey || "no-sitekey") + ", " +
                        (specificOnly ? "specificOnly" : "not-specificOnly") + ", " +
                        filterType + ") with:\n" + filters.join("\n"));
@@ -290,8 +297,24 @@ describe("Matcher", function() {
       allowing: ["@@foos"]
     });
 
+    // Matching CSP filter
+    let cspFilter = "$csp=script-src https://testpages.adblockplus.org/lib/utils.js,domain=testpages.adblockplus.org";
+    checkSearch(
+      [cspFilter],
+      "https://testpages.adblockplus.org/en/filters/csp_specific",
+      ["CSP", "OTHER"],
+      "testpages.adblockplus.org",
+      null,
+      false,
+      "all",
+      {
+        blocking: [cspFilter],
+        allowing: []
+      }
+    );
+
     // Non-matching content type.
-    checkSearch(filters, "http://example.com/foos", ["CSP", "OTHER"], "example.com", null, false, "all", {blocking: [], allowing: []});
+    checkSearch(filters, "http://example.com/foos", "INVALID", "example.com", null, false, "all", {blocking: [], allowing: []});
 
     // Non-matching specificity.
     checkSearch(filters, "http://example.com/foos", "IMAGE", "example.com", null, true, "all", {blocking: [], allowing: ["@@foos"]});

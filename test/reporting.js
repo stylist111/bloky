@@ -279,7 +279,7 @@ describe("Reporting", function() {
     }
 
     function getReceivedEventsFromListener(
-      listenerName, tabId, filterToCurrentTab) {
+      listenerName, tabId, filterToCurrentTab, devToolsEvents = false) {
       let listenerEvents = getTestEvents(listenerName);
 
       // Some legitimate events make it difficult to write
@@ -297,6 +297,8 @@ describe("Reporting", function() {
             return !isFavicon;
           })
           .filter(event => {
+            if (devToolsEvents)
+              return true;
             // If the devtools are open, we might see requests to load
             // the dev tools.
             let url = event.request.url;
@@ -666,6 +668,30 @@ describe("Reporting", function() {
           matchInfo: cspMatchInfo,
           request: expectedRequestRelativeUrl("csp.html")
         }]);
+    });
+
+    it("logs blocking $csp filter with domain option", async function() {
+      let url = "https://testpages.adblockplus.org/en/filters/csp_specific";
+      let cspFilter = "$csp=script-src https://testpages.adblockplus.org/lib/utils.js,domain=testpages.adblockplus.org";
+
+      await EWE.filters.add(cspFilter);
+
+      let eventName = "reporting.onBlockableItem.allEventOptions";
+      clearTestEvents(eventName);
+      let tabId = await new Page(url, true).loaded;
+
+      let events = await getReceivedEventsFromListener(
+        eventName, tabId, true, true);
+
+      expect(events).toEqual(expect.arrayContaining([{
+        filter: expectedBlockingFilter(cspFilter),
+        matchInfo: {
+          docDomain: "testpages.adblockplus.org",
+          method: "csp",
+          specificOnly: false
+        },
+        request: expectedRequestUrl("https://testpages.adblockplus.org/en/filters/csp_specific")
+      }]));
     });
 
     it("logs multiple blocking $csp filters if multiple apply", async function() {

@@ -386,7 +386,7 @@ class CSPFilter extends BaseFilter {
     if (allowingFilter && allowingFilter instanceof AllowingFilter)
       return this.allow(details, allowingFilter, matchInfo);
 
-    let matches = matcher.search(url, typeMask, docDomain,
+    let matches = matcher.search(url, typeMask, hostname,
                                  sitekey, specificOnly, "blocking");
 
     if (matches.blocking.length > 0) {

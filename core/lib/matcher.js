@@ -24,7 +24,7 @@
  *               a list of filters.
  */
 
-const {RESOURCE_TYPES, SPECIAL_TYPES, ALLOWING_TYPES,
+const {RESOURCE_TYPES, SPECIAL_TYPES, ALLOWING_TYPES, contentTypes,
        enumerateTypes} = require("./contentTypes");
 const {compilePatterns} = require("./patterns");
 const {domainSuffixes, URLRequest} = require("./url");
@@ -485,7 +485,7 @@ exports.Matcher = class Matcher {
 
   _checkEntryMatchForType(keyword, request, typeMask, sitekey, specificOnly,
                           collection) {
-    let filtersForType = this._filterMapsByType.get(typeMask);
+    let filtersForType = this._filterMapsByType.get(typeMask & SPECIAL_TYPES);
     if (filtersForType) {
       for (let filter of getFilters(filtersForType, keyword)) {
         if (specificOnly && filter.isGeneric())
@@ -573,11 +573,13 @@ exports.Matcher = class Matcher {
     }
 
     // If the type mask contains a special type (first condition) and it is
-    // the only type in the mask (second condition), we can use the
-    // type-specific map, which typically contains a lot fewer filters. This
-    // enables faster lookups for allowing types like $document, $elemhide,
-    // and so on, as well as other special types like $csp.
-    if ((typeMask & SPECIAL_TYPES) != 0 && (typeMask & typeMask - 1) == 0) {
+    // the only type in the mask (second condition with OTHER exception),
+    // we can use the type-specific map, which typically contains a lot fewer
+    // filters. This enables faster lookups for allowing types like $document,
+    // $elemhide, and so on, as well as other special types like $csp.
+    if ((typeMask & SPECIAL_TYPES) != 0 && (
+      (typeMask & typeMask - 1) == 0 ||
+      (typeMask & RESOURCE_TYPES) == contentTypes.OTHER)) {
       return this._checkEntryMatchForType(
         keyword, request, typeMask, sitekey, specificOnly, collection
       );
