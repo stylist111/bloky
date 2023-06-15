@@ -48,8 +48,9 @@ class DebugEventDispatcher {
       existingListener == listener
     );
 
-    if (index != -1)
+    if (index != -1) {
       listeners.splice(index, 1);
+    }
   }
 }
 
@@ -128,8 +129,9 @@ class ConsoleLogger {
 const CONSOLE_LOGGER = new ConsoleLogger().getListener();
 
 export function emitLogEvent({message, level, color, timeStamp = new Date()}) {
-  for (let listener of listeners)
+  for (let listener of listeners) {
     listener({message, level, timeStamp, color});
+  }
 }
 
 export function info(message, color) {
@@ -228,11 +230,13 @@ export default {
   async setElementHidingDebugStyle(cssProperties, snippetsCssProperties) {
     await this.start();
 
-    if (cssProperties)
+    if (cssProperties) {
       debugOptions.cssProperties = cssProperties;
+    }
 
-    if (snippetsCssProperties)
+    if (snippetsCssProperties) {
       debugOptions.snippetsCssProperties = snippetsCssProperties;
+    }
 
     await saveDebugOptions();
   },
@@ -281,8 +285,9 @@ export default {
     if (filterStorage) {
       // It would be better if filterStorage gave a promise to await for this.
       // https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore/-/issues/464
-      while (filterStorage._saving)
+      while (filterStorage._saving) {
         await new Promise(r => setTimeout(r, 10));
+      }
     }
 
     await awaitSavingComplete();
@@ -293,8 +298,9 @@ export default {
    * Initialize debugging.
    */
   async start() {
-    if (!initializationPromise)
+    if (!initializationPromise) {
       initializationPromise = loadDebugOptions();
+    }
     return initializationPromise;
   },
 

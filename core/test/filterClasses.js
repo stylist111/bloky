@@ -50,16 +50,18 @@ describe("Filter classes", function() {
     }
     else if (filter instanceof ActiveFilter) {
       result.push("disabled=" + filter.disabled);
-      for (let disabledSubscription of filter.disabledSubscriptions)
+      for (let disabledSubscription of filter.disabledSubscriptions) {
         result.push("disabledSubscriptions[]=" + disabledSubscription);
+      }
       result.push("lastHit=" + filter.lastHit);
       result.push("hitCount=" + filter.hitCount);
 
       let domains = [];
       if (filter.domains) {
         for (let [domain, isIncluded] of filter.domains) {
-          if (domain != "")
+          if (domain != "") {
             domains.push(isIncluded ? domain : "~" + domain);
+          }
         }
       }
       result.push("domains=" + domains.sort().join("|"));
@@ -74,10 +76,12 @@ describe("Filter classes", function() {
 
         result.push("thirdParty=" + filter.thirdParty);
         if (filter.header) {
-          if (filter.header.value)
+          if (filter.header.value) {
             result.push("header=" + filter.header.name + "=" + filter.header.value);
-          else
+          }
+          else {
             result.push("header=" + filter.header.name);
+          }
         }
         else {
           result.push("header=null");
@@ -111,15 +115,18 @@ describe("Filter classes", function() {
     let type = null;
     let hasProperty = {};
     for (let entry of expected) {
-      if (/^type=(.*)/.test(entry))
+      if (/^type=(.*)/.test(entry)) {
         type = RegExp.$1;
-      else if (/^(\w+)/.test(entry))
+      }
+      else if (/^(\w+)/.test(entry)) {
         hasProperty[RegExp.$1] = true;
+      }
     }
 
     function addProperty(prop, value) {
-      if (!(prop in hasProperty))
+      if (!(prop in hasProperty)) {
         expected.push(prop + "=" + value);
+      }
     }
 
     if (type == "allowing" || type == "blocking" || type == "elemhide" ||
@@ -157,8 +164,9 @@ describe("Filter classes", function() {
     addDefaults(expected);
 
     let filter = Filter.fromText(text);
-    if (postInit)
+    if (postInit) {
       postInit(filter);
+    }
     let result = serializeFilter(filter);
     assert.equal(result.sort().join("\n"), expected.sort().join("\n"), text);
 
@@ -168,8 +176,9 @@ describe("Filter classes", function() {
     if (buffer.length) {
       let map = Object.create(null);
       for (let line of buffer.slice(1)) {
-        if (/(.*?)=(.*)/.test(line))
+        if (/(.*?)=(.*)/.test(line)) {
           map[RegExp.$1] = RegExp.$2;
+        }
       }
       filter2 = Filter.fromObject(map);
     }

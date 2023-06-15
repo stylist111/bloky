@@ -25,10 +25,12 @@ import {isMain} from "./utils.js";
 export async function cleanup() {
   for (let item of ["scriptsOutput"]) {
     let pathToRemove = path.join(process.cwd(), item);
-    if (fs.existsSync(pathToRemove))
+    if (fs.existsSync(pathToRemove)) {
       await fs.promises.rm(pathToRemove, {recursive: true});
+    }
   }
 }
 
-if (isMain(import.meta.url))
+if (isMain(import.meta.url)) {
   cleanup();
+}

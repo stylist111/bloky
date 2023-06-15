@@ -31,37 +31,44 @@ let tracer;
 let elemHideEmulation;
 
 async function initContentFeatures() {
-  if (subscribeLinksEnabled(window.location.href))
+  if (subscribeLinksEnabled(window.location.href)) {
     handleSubscribeLinks();
+  }
 
   let response = await ignoreNoConnectionError(
     browser.runtime.sendMessage({type: "ewe:content-hello"})
   );
 
-  if (response)
+  if (response) {
     await applyContentFeatures(response);
+  }
 }
 
 async function removeContentFeatures() {
-  if (tracer)
+  if (tracer) {
     tracer.disconnect();
+  }
 }
 
 async function applyContentFeatures(response) {
-  if (response.tracedSelectors)
+  if (response.tracedSelectors) {
     tracer = new ElementHidingTracer(response.tracedSelectors);
+  }
 
   if (response.emulatedPatterns.length > 0) {
     if (!elemHideEmulation) {
       elemHideEmulation = new ElemHideEmulation((elements, filters) => {
-        for (let element of elements)
+        for (let element of elements) {
           hideElement(element, response.cssProperties);
+        }
 
-        if (tracer)
+        if (tracer) {
           tracer.log(filters);
+        }
       }, elements => {
-        for (let element of elements)
+        for (let element of elements) {
           unhideElement(element);
+        }
       });
     }
     elemHideEmulation.apply(response.emulatedPatterns);

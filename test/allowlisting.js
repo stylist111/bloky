@@ -97,10 +97,12 @@ describe("One Click Allowlisting", function() {
     expect(await getSuccessEventReceived()).toBeNull();
 
     await reload();
-    if (errorMessage == "already_allowlisted")
+    if (errorMessage == "already_allowlisted") {
       await expectImageResource.toBeLoaded();
-    else
+    }
+    else {
       await expectImageResource.toBeBlocked();
+    }
   }
 
   it("blocks before clicking allowlist", async function() {

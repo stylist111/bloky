@@ -68,8 +68,9 @@ describe("Element hiding", function() {
     assert.deepEqual(exceptions.map(({text}) => text), expectedExceptions);
 
     // Make sure each expected selector is in the actual CSS code.
-    for (let selector of normalizedExpectedSelectors)
+    for (let selector of normalizedExpectedSelectors) {
       assert.ok(code.includes(selector + " {display: none !important;}\n"));
+    }
   }
 
   it("Generate style sheet for domain", function() {

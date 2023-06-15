@@ -71,13 +71,15 @@ function parseArguments() {
     let params;
     for (let param of ["timeout", "grep", "incognito", "forceHeadful"]) {
       let value = argv[param];
-      if (typeof value != "undefined")
+      if (typeof value != "undefined") {
         (params || (params = {}))[param] = value;
+      }
     }
     // we need to build regexp to allow to pas multiple grep flags
     // and do && on them
-    if (params && params.grep)
+    if (params && params.grep) {
       params.grep = regexpFromGrep(params.grep);
+    }
     let testKinds = argv.testKinds;
     // default is specified here rather than using a yargs default
     // because it depends on another yargs option (the manifest).
@@ -91,8 +93,9 @@ function parseArguments() {
         let version = argv.version;
 
         // chromium 102 is the minimum supported version for MV3.
-        if (!version || version === "dev" || version === "beta" || version.split(".")[0] >= 102)
+        if (!version || version === "dev" || version === "beta" || version.split(".")[0] >= 102) {
           testKinds.push("mv2-mv3-migrate");
+        }
       }
       else if (argv.browser === "edge") {
         testKinds.push("mv2-mv3-migrate");
@@ -119,11 +122,13 @@ function regexpFromGrep(grep) {
   let greppedString;
   for (let element of grepped) {
     // exclude
-    if (element.startsWith("!"))
+    if (element.startsWith("!")) {
       greppedString = greppedString ? greppedString + "(?!.*" + element.slice(1) + ")" : "^(?!.*" + element.slice(1) + ")";
+    }
     // include
-    else
+    else {
       greppedString = greppedString ? greppedString + "(?=.*" + element + ")" : "(?=.*" + element + ")";
+    }
   }
   return new RegExp(greppedString);
 }
@@ -139,16 +144,18 @@ async function switchToHandle(driver, testFn) {
       continue;
     }
 
-    if (testFn(url))
+    if (testFn(url)) {
       return handle;
+    }
   }
 }
 
 async function getHandle(driver, page, timeout = 8000) {
   let url;
   let handle = await driver.wait(() => switchToHandle(driver, handleUrl => {
-    if (!handleUrl)
+    if (!handleUrl) {
       return false;
+    }
 
     url = new URL(handleUrl);
     return url.pathname == page;
@@ -202,8 +209,9 @@ async function copyFile(fromFile, toFile) {
     let absToFile = path.resolve(extensionPath, toFile);
     if (await exists(absFromFile)) {
       let content = (await fs.promises.readFile(absFromFile)).toString();
-      if (await exists(absToFile))
+      if (await exists(absToFile)) {
         await fs.promises.unlink(absToFile);
+      }
       await fs.promises.writeFile(absToFile, content);
     }
   }
@@ -214,8 +222,9 @@ async function moveFile(fromFile, toFile) {
     let absFromFile = path.resolve(extensionPath, fromFile);
     let absToFile = path.resolve(extensionPath, toFile);
     if (await exists(absFromFile)) {
-      if (await exists(absToFile))
+      if (await exists(absToFile)) {
         await fs.promises.unlink(absToFile);
+      }
       await fs.promises.rename(absFromFile, absToFile);
     }
   }
@@ -226,8 +235,9 @@ async function addLines(file, lines) {
     let absFile = path.resolve(extensionPath, file);
     if (await exists(absFile)) {
       let content = (await fs.promises.readFile(absFile)).toString();
-      for (let line of lines)
+      for (let line of lines) {
         content = content + "\n" + line;
+      }
       await fs.promises.writeFile(absFile, content);
     }
   }
@@ -240,8 +250,9 @@ async function removeLines(file, lines) {
       let content = (await fs.promises.readFile(absFile)).toString().split("\n");
       let readyContent = [];
       for (let line of content) {
-        if (lines.indexOf(line) < 0)
+        if (lines.indexOf(line) < 0) {
           readyContent.push(line);
+        }
       }
       await fs.promises.writeFile(absFile, readyContent.join("\n"));
     }
@@ -249,8 +260,9 @@ async function removeLines(file, lines) {
 }
 
 async function copyDir(fromDir, toDir) {
-  if (await exists(toDir))
+  if (await exists(toDir)) {
     await fs.promises.rmdir(toDir, {recursive: true});
+  }
   await fs.promises.cp(fromDir, toDir, {recursive: true});
 }
 
@@ -290,8 +302,9 @@ async function runCommand(method, args) {
 }
 
 async function updateWebExtension(commands) {
-  for (let command of commands)
+  for (let command of commands) {
     await runCommand(command.method, command.args);
+  }
 }
 
 async function pollMessages(driver, handle, isMV3) {
@@ -313,8 +326,9 @@ async function pollMessages(driver, handle, isMV3) {
     );
     webdriverEvents = [];
 
-    if (!messages)
+    if (!messages) {
       return;
+    }
 
     for (let [id, arg] of messages) {
       switch (id) {
@@ -352,8 +366,9 @@ async function pollMessages(driver, handle, isMV3) {
 
 async function startTestRun(driver, id, params) {
   let search = new URLSearchParams();
-  for (let key in params)
+  for (let key in params) {
     search.append(key, params[key]);
+  }
 
   search = search.toString();
 
@@ -366,8 +381,9 @@ async function startTestRun(driver, id, params) {
     let urlComponents = url.split("?");
     let currentPath = urlComponents[0];
     let currentSearch = urlComponents[1];
-    if (!currentSearch || currentSearch != search)
+    if (!currentSearch || currentSearch != search) {
       await driver.navigate().to(`${currentPath}?${search}`);
+    }
   }
 
   await driver.findElement(webdriver.By.id(id)).click();
@@ -406,8 +422,9 @@ async function runReloadTests(
       results = await pollMessages(driver, handle, isMV3);
     }
     catch (e) {
-      if (e.name != "NoSuchWindowError")
+      if (e.name != "NoSuchWindowError") {
         throw e;
+      }
     }
   }
   await driver.switchTo().window(handle);
@@ -455,16 +472,18 @@ async function runWithRetry(fn, retryCount = 2) {
         message.includes(inspectorDetatched) ||
         message.includes(targetIdNotFound);
 
-    if (retryCount > 0 && isLowResourceError)
+    if (retryCount > 0 && isLowResourceError) {
       return await runWithRetry(fn, retryCount - 1);
+    }
     throw err;
   }
 }
 
 async function suspendServiceWorker(driver, handle) {
   let browser = (await driver.getCapabilities()).getBrowserName();
-  if (browser != "chrome" && browser != "msedge")
+  if (browser != "chrome" && browser != "msedge") {
     throw new Error("Suspending service workers is not implemented for non Chromium-based browsers because we don't support MV3 in them");
+  }
 
   return await runWithRetry(
     async() => {
@@ -472,12 +491,14 @@ async function suspendServiceWorker(driver, handle) {
       await driver.get("chrome://serviceworker-internals/");
       let stopButtons = await driver.findElements(webdriver.By.className("stop"));
 
-      if (stopButtons.length == 0)
+      if (stopButtons.length == 0) {
         throw new Error("No service workers to stop.");
+      }
 
       for (let stopButton of stopButtons) {
-        if (await stopButton.isDisplayed())
+        if (await stopButton.isDisplayed()) {
           await stopButton.click();
+        }
       }
       // Short delay to ensure that there is time for the browser to get
       // the click event and start suspending the service worker before we
@@ -491,14 +512,16 @@ async function suspendServiceWorker(driver, handle) {
 
 export async function run() {
   try {
-    if (isScriptInvokedFromCLI)
+    if (isScriptInvokedFromCLI) {
       await runTestServer();
+    }
 
     await runTests();
   }
   finally {
-    if (isScriptInvokedFromCLI)
+    if (isScriptInvokedFromCLI) {
       await killTestServer();
+    }
   }
 }
 
@@ -525,8 +548,9 @@ async function runTests() {
   // workers start up after being suspended in tests.
   // See https://bugs.chromium.org/p/chromium/issues/detail?id=1325792#c8
   if ((isMV3 || testKinds.includes("mv2-mv3-migrate")) &&
-    (browser == "chromium" || browser == "edge"))
+    (browser == "chromium" || browser == "edge")) {
     extraArgs.push("auto-open-devtools-for-tabs");
+  }
 
   console.log(`Getting ready to run ${browser} ${version} ...`);
 
@@ -577,8 +601,9 @@ async function runTests() {
             driver, params, isMV3, "Update", "update", "Update", "/update.html");
           break;
         case "mv2-mv3-migrate":
-          if (isMV3)
+          if (isMV3) {
             console.warn("Migrate tests assume it's started as MV2 test and continued as MV3 test");
+          }
           results["mv2-mv3-migrate"] = await runReloadTests(
             driver, params, isMV3,
             "MV2 MV3 migrate", "mv2-mv3-migrate", "MV2 MV3 migrate", "/mv2-mv3-migrate.html");
@@ -598,20 +623,24 @@ async function runTests() {
   let totalTestsRun = 0;
   let expectTestsForEveryKind = !(params && params.grep);
   for (let testKind of testKinds) {
-    if (!results[testKind])
+    if (!results[testKind]) {
       throw new Error(`Test Failure: ${testKind} tests did not run correctly`);
+    }
 
-    if (expectTestsForEveryKind && results[testKind].total == 0)
+    if (expectTestsForEveryKind && results[testKind].total == 0) {
       throw new Error(`Test Failure: No ${testKind} tests ran`);
+    }
 
-    if (results[testKind].failures > 0)
+    if (results[testKind].failures > 0) {
       throw new Error(`Test Failure: ${results[testKind].failures} ${testKind} tests failed`);
+    }
 
     totalTestsRun += results[testKind].total;
   }
 
-  if (totalTestsRun == 0)
+  if (totalTestsRun == 0) {
     throw new Error("Test Failure: No tests ran");
+  }
 
   console.log("All tests passed");
 }

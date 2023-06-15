@@ -33,8 +33,9 @@ function isEventTrusted(event) {
 }
 
 async function allowlistDomain(event) {
-  if (!isEventTrusted(event))
+  if (!isEventTrusted(event)) {
     return false;
+  }
 
   return ignoreNoConnectionError(
     browser.runtime.sendMessage({
@@ -46,8 +47,9 @@ async function allowlistDomain(event) {
 }
 
 async function processNextEvent() {
-  if (eventProcessingInProgress)
+  if (eventProcessingInProgress) {
     return;
+  }
 
   try {
     eventProcessingInProgress = true;
@@ -65,13 +67,15 @@ async function processNextEvent() {
       }
       catch (e) {
         errorCount++;
-        if (errorCount >= MAX_ERROR_THRESHOLD)
+        if (errorCount >= MAX_ERROR_THRESHOLD) {
           stopOneClickAllowlisting();
+        }
       }
     }
 
-    if (!eventQueue.length)
+    if (!eventQueue.length) {
       stopProcessingInterval();
+    }
   }
   finally {
     eventProcessingInProgress = false;
@@ -79,8 +83,9 @@ async function processNextEvent() {
 }
 
 function onDomainAllowlistingRequest(event) {
-  if (eventQueue.length >= MAX_QUEUED_EVENTS)
+  if (eventQueue.length >= MAX_QUEUED_EVENTS) {
     return;
+  }
 
   eventQueue.push(event);
   startProcessingInterval();

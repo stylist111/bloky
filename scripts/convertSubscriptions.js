@@ -50,14 +50,17 @@ async function convert(inDir, outDir,
                        generateReport = false, repDir = reportDir,
                        recommendedSubscriptions = customSubscriptionsFilename) {
   let files = fs.readdirSync(inDir);
-  if (!fs.existsSync(outDir))
+  if (!fs.existsSync(outDir)) {
     fs.mkdirSync(outDir, {recursive: true});
-  if (generateReport && !fs.existsSync(repDir))
+  }
+  if (generateReport && !fs.existsSync(repDir)) {
     fs.mkdirSync(repDir, {recursive: true});
+  }
 
   // check if custom-subscriptions.json file exists
-  if (!fs.existsSync(recommendedSubscriptions))
+  if (!fs.existsSync(recommendedSubscriptions)) {
     throw new Error(`customs-subscriptions.json file (${recommendedSubscriptions}) does not exist.`);
+  }
 
   let customSubscriptions =
     JSON.parse(await fs.promises.readFile(recommendedSubscriptions));
@@ -79,19 +82,22 @@ async function convert(inDir, outDir,
       isRegexSupported: () => true,
       modifyRule(rule, context) {
         rule["id"] = generateRuleId();
-        if (generateReport)
+        if (generateReport) {
           accountForRule(rule, context.text, subsId);
+        }
         return rule;
       }
     });
 
-    if (generateReport)
+    if (generateReport) {
       setUpCounter(subsId);
+    }
 
     let fileContent = await readFile(inFileAbs, {encoding: "utf-8"});
     let {error, lines, params} = await parseFilterList(fileContent);
-    if (error)
+    if (error) {
       throw new Error(error);
+    }
 
     if (params.diffurl) {
       // iterate over all custom subscriptions and add the diffurl property
@@ -105,16 +111,18 @@ async function convert(inDir, outDir,
     }
 
     await processFile(converter, lines, outFileAbs);
-    if (generateReport)
+    if (generateReport) {
       await writeSubsReport(subsId, reportFileAbs);
+    }
   }
 
   // re-write the custom-subscriptions.json file
   await fs.promises.writeFile(recommendedSubscriptions,
                               JSON.stringify(customSubscriptions, null, 2));
 
-  if (generateReport)
+  if (generateReport) {
     await writeReportSummary(repDir);
+  }
 }
 
 async function main() {

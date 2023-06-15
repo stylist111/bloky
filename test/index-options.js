@@ -22,29 +22,35 @@ const TEXT_OPTIONS = ["grep", "timeout"];
 const CHECKBOX_OPTIONS = ["incognito", "fuzzServiceWorkers"];
 
 function onLoad() {
-  if (!document.location.search)
+  if (!document.location.search) {
     return;
+  }
 
   let search = new URLSearchParams(document.location.search);
-  for (let option of TEXT_OPTIONS)
+  for (let option of TEXT_OPTIONS) {
     document.getElementById(option).value = search.get(option);
+  }
 
-  for (let option of CHECKBOX_OPTIONS)
+  for (let option of CHECKBOX_OPTIONS) {
     document.getElementById(option).checked = search.get(option);
+  }
 }
 
 function onClick(event) {
   let id = event.target.id;
-  if (!TEST_LINKS.includes(id))
+  if (!TEST_LINKS.includes(id)) {
     return;
+  }
 
   let elem = document.getElementById(id);
   let search = new URLSearchParams(elem.search);
-  for (let option of TEXT_OPTIONS)
+  for (let option of TEXT_OPTIONS) {
     search.set(option, document.getElementById(option).value);
+  }
 
-  for (let option of CHECKBOX_OPTIONS)
+  for (let option of CHECKBOX_OPTIONS) {
     search.set(option, document.getElementById(option).checked);
+  }
 
   elem.search = search.toString();
 }

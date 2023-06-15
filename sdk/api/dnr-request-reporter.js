@@ -46,8 +46,9 @@ function getContext(details) {
       details.url, contentTypes.DOCUMENT, hostname, null
     );
     if (!allowingDocumentFilter && parentFrame &&
-        parentFrame.allowingDocumentFilter)
+        parentFrame.allowingDocumentFilter) {
       allowingDocumentFilter = parentFrame.allowingDocumentFilter;
+    }
 
     let specificOnly = !!specificOnlyFilter;
 
@@ -73,13 +74,15 @@ function getContext(details) {
 }
 
 async function onBeforeRedirect(details) {
-  if (!loggingEnabled(details.tabId))
+  if (!loggingEnabled(details.tabId)) {
     return;
+  }
 
   await initializer.start();
 
-  if (!details.redirectUrl.startsWith("data:"))
+  if (!details.redirectUrl.startsWith("data:")) {
     return;
+  }
 
   let {
     allowingDocumentFilter,
@@ -112,8 +115,9 @@ async function onBeforeRedirect(details) {
 }
 
 async function onErrorOccurred(details) {
-  if (!loggingEnabled(details.tabId))
+  if (!loggingEnabled(details.tabId)) {
     return;
+  }
 
   await initializer.start();
 
@@ -143,8 +147,9 @@ async function onErrorOccurred(details) {
 }
 
 async function onCompleted(details) {
-  if (!loggingEnabled(details.tabId))
+  if (!loggingEnabled(details.tabId)) {
     return;
+  }
 
   await initializer.start();
 
@@ -169,8 +174,9 @@ async function onCompleted(details) {
   );
   if (filter) {
     let matchInfo = {docDomain, specificOnly, method: "request"};
-    if (filter instanceof AllowingFilter)
+    if (filter instanceof AllowingFilter) {
       logItem(details, filter, matchInfo);
+    }
     return;
   }
 
@@ -206,8 +212,9 @@ async function onCompleted(details) {
       }
     }
 
-    if (appliedCspFilters)
+    if (appliedCspFilters) {
       return;
+    }
   }
 
   let matchInfo = {
@@ -225,8 +232,9 @@ let started = false;
  * blocking should be done using the declarativeNetRequest API.
  */
 export function start() {
-  if (!browser.declarativeNetRequest || started)
+  if (!browser.declarativeNetRequest || started) {
     return;
+  }
 
   let eventArgs = {
     types: Object.values(browser.webRequest.ResourceType),

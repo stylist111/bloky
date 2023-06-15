@@ -55,16 +55,18 @@ exports.FiltersByDomain = class FiltersByDomain extends Map {
    */
   add(filter, domains = filter.domains) {
     for (let [domain, include] of domains || defaultDomains) {
-      if (!include && domain == "")
+      if (!include && domain == "") {
         continue;
+      }
 
       let map = this.get(domain);
       if (!map) {
         this.set(domain, include ? filter : new FilterMap([[filter, false]]));
       }
       else if (map.size == 1 && !(map instanceof FilterMap)) {
-        if (filter != map)
+        if (filter != map) {
           this.set(domain, new FilterMap([[map, true], [filter, include]]));
+        }
       }
       else {
         map.set(filter, include);
@@ -94,8 +96,9 @@ exports.FiltersByDomain = class FiltersByDomain extends Map {
             for (let [lastFilter, include] of map.entries()) {
               // Reduce Map { "example.com" => Map { filter => true } } to
               // Map { "example.com" => filter }
-              if (include)
+              if (include) {
                 this.set(domain, lastFilter);
+              }
 
               break;
             }

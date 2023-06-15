@@ -32,8 +32,9 @@ function randomString(length) {
   const NUM_CHARS = CHARS.length;
 
   let result = "";
-  for (let i = 0; i < length; i++)
+  for (let i = 0; i < length; i++) {
     result += CHARS.charAt(Math.floor(Math.random() * NUM_CHARS));
+  }
 
   return result;
 }

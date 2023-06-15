@@ -56,8 +56,9 @@ function enableProfiling(enable, reporter) {
     performance.mark("start_profile");
     if (!reporter) {
       reporter = list => {
-        for (let entry of list.getEntriesByType("measure"))
+        for (let entry of list.getEntriesByType("measure")) {
           console.log(`${entry.name}: ${entry.duration}ms`);
+        }
       };
     }
     obs = new PerformanceObserver(reporter);
@@ -86,8 +87,9 @@ function enableProfiling(enable, reporter) {
  * @private
  */
 function profiler(id) {
-  if (inactiveProfiling)
+  if (inactiveProfiling) {
     return noopProfiler;
+  }
 
   return {
     id,

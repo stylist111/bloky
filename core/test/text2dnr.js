@@ -42,12 +42,14 @@ async function testRules(filters, expected, transformFunction, isRegexSupported)
   let rules = [];
 
   for (let filter of filters) {
-    for (let rule of await convertFilter(filter))
+    for (let rule of await convertFilter(filter)) {
       rules.push(rule);
+    }
   }
 
-  if (transformFunction)
+  if (transformFunction) {
     rules = rules.map(transformFunction);
+  }
 
   assert.deepEqual(rules, expected);
 }

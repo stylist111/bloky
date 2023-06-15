@@ -44,8 +44,9 @@ function recommendationsByURL() {
     if (Subscription.dnr) {
       _recommendationsByURL = new Map(
         (function*() {
-          for (let recommendation of recommendations())
+          for (let recommendation of recommendations()) {
             yield [recommendation.url, recommendation];
+          }
         })()
       );
     }
@@ -53,8 +54,9 @@ function recommendationsByURL() {
       _recommendationsByURL = new Map(
         (function*() {
           for (let recommendation of recommendations()) {
-            if (recommendation.mv2URL)
+            if (recommendation.mv2URL) {
               yield [recommendation.mv2URL, recommendation];
+            }
           }
         })()
       );
@@ -75,8 +77,9 @@ function urlByMv2URL() {
     _urlByMv2URL = new Map(
       (function*() {
         for (let {mv2URL, url} of recommendations()) {
-          if (mv2URL)
+          if (mv2URL) {
             yield [mv2URL, url];
+          }
         }
       })()
     );
@@ -154,8 +157,9 @@ exports.Subscription = class Subscription {
      */
     this._title = null;
 
-    if (title)
+    if (title) {
       this._title = title;
+    }
 
     /**
      * Whether the title of the subscription is non-editable.
@@ -318,8 +322,9 @@ exports.Subscription = class Subscription {
         url = null;
       }
 
-      if (url && (url.protocol == "http:" || url.protocol == "https:"))
+      if (url && (url.protocol == "http:" || url.protocol == "https:")) {
         this.homepage = url.href;
+      }
     }
 
     if (params.title) {
@@ -330,14 +335,17 @@ exports.Subscription = class Subscription {
       this.fixedTitle = false;
     }
 
-    if (params.version)
+    if (params.version) {
       this.version = parseInt(params.version, 10);
+    }
 
-    if (this.type)
+    if (this.type) {
       this.abtest = params.abtest;
+    }
 
-    if (params.diffURL)
+    if (params.diffURL) {
       this.diffURL = params.diffURL;
+    }
   }
 
   /**
@@ -359,14 +367,16 @@ exports.Subscription = class Subscription {
    * An error will be thrown if `text` isn't an array.
    */
   setFilterText(text, params = null) {
-    if (!Array.isArray(text))
+    if (!Array.isArray(text)) {
       throw new Error("setFilterText() must be called with an Array");
+    }
 
     this._filterText = text.map(t => Filter.normalize(t));
     this._filterTextIndex = new Set(this._filterText);
 
-    if (params)
+    if (params) {
       this.setParams(params);
+    }
   }
 
   /**
@@ -439,12 +449,14 @@ exports.Subscription = class Subscription {
    */
   deleteFilterAt(index) {
     // Ignore index if out of bounds on the negative side, for consistency.
-    if (index < 0)
+    if (index < 0) {
       return;
+    }
 
     let [filterText] = this._filterText.splice(index, 1);
-    if (!this._filterText.includes(filterText))
+    if (!this._filterText.includes(filterText)) {
       this._filterTextIndex.delete(filterText);
+    }
   }
 
   /**
@@ -464,8 +476,9 @@ exports.Subscription = class Subscription {
     }
     else if (filterText.length > 0) {
       for (let text of filterText) {
-        if (!this._filterTextIndex.has(text))
+        if (!this._filterTextIndex.has(text)) {
           added.push(text);
+        }
       }
     }
 
@@ -476,8 +489,9 @@ exports.Subscription = class Subscription {
     }
     else if (this._filterText.length > 0) {
       for (let text of this._filterText) {
-        if (!this._filterTextIndex.has(text))
+        if (!this._filterTextIndex.has(text)) {
           removed.push(text);
+        }
       }
     }
 
@@ -497,14 +511,18 @@ exports.Subscription = class Subscription {
     yield "[Subscription]";
     yield "url=" + url;
 
-    if (_title)
+    if (_title) {
       yield "title=" + _title;
-    if (_fixedTitle)
+    }
+    if (_fixedTitle) {
       yield "fixedTitle=true";
-    if (_disabled)
+    }
+    if (_disabled) {
       yield "disabled=true";
-    if (_id)
+    }
+    if (_id) {
       yield "id=" + _id;
+    }
   }
 
   /**
@@ -517,8 +535,9 @@ exports.Subscription = class Subscription {
 
     yield "[Subscription filters]";
 
-    for (let text of _filterText)
+    for (let text of _filterText) {
       yield text.replace(/\[/g, "\\[");
+    }
   }
 
   /**
@@ -561,8 +580,9 @@ exports.Subscription.dnr = false;
  */
 exports.Subscription.fromURL = function(url) {
   let subscription = Subscription.knownSubscriptions.get(url);
-  if (subscription)
+  if (subscription) {
     return subscription;
+  }
 
   if (url[0] != "~") {
     let downloadable = true;
@@ -575,8 +595,9 @@ exports.Subscription.fromURL = function(url) {
       let actualUrl = urlByMv2URL().get(url);
       if (actualUrl) {
         subscription = Subscription.knownSubscriptions.get(actualUrl);
-        if (subscription)
+        if (subscription) {
           return subscription;
+        }
 
         url = actualUrl;
       }
@@ -609,12 +630,15 @@ exports.Subscription.fromURL = function(url) {
       }
     }
 
-    if (downloadable)
+    if (downloadable) {
       subscription = new DownloadableSubscription(url, title);
-    else if (updatableThroughDiffs)
+    }
+    else if (updatableThroughDiffs) {
       subscription = new DiffUpdatableSubscription(url, title, params);
-    else
+    }
+    else {
       subscription = new CountableSubscription(url, title, params);
+    }
 
     return subscription;
   }
@@ -634,56 +658,76 @@ exports.Subscription.fromObject = function(obj) {
     // URL is valid - this is a regular subscription
     // Unless indicated otherwise it is downloadable.
     if (("downloadable" in obj) && (obj.downloadable == "false")){
-      if ("diffURL" in obj)
+      if ("diffURL" in obj) {
         result = new DiffUpdatableSubscription(obj.url, obj.title);
-      else
+      }
+      else {
         result = new CountableSubscription(obj.url, obj.title);
+      }
     }
     else {
       result = new DownloadableSubscription(obj.url, obj.title);
     }
 
-    if (result.type)
+    if (result.type) {
       result.abtest = obj.abtest;
+    }
 
-    if ("diffURL" in obj)
+    if ("diffURL" in obj) {
       result.diffURL = obj.diffURL;
-    if ("downloadStatus" in obj)
+    }
+    if ("downloadStatus" in obj) {
       result._downloadStatus = obj.downloadStatus;
-    if ("lastSuccess" in obj)
+    }
+    if ("lastSuccess" in obj) {
       result.lastSuccess = parseInt(obj.lastSuccess, 10) || 0;
-    if ("lastCheck" in obj)
+    }
+    if ("lastCheck" in obj) {
       result._lastCheck = parseInt(obj.lastCheck, 10) || 0;
-    if ("expires" in obj)
+    }
+    if ("expires" in obj) {
       result.expires = parseInt(obj.expires, 10) || 0;
-    if ("softExpiration" in obj)
+    }
+    if ("softExpiration" in obj) {
       result.softExpiration = parseInt(obj.softExpiration, 10) || 0;
-    if ("errors" in obj)
+    }
+    if ("errors" in obj) {
       result._errors = parseInt(obj.errors, 10) || 0;
-    if ("version" in obj)
+    }
+    if ("version" in obj) {
       result.version = parseInt(obj.version, 10) || 0;
-    if ("requiredVersion" in obj)
+    }
+    if ("requiredVersion" in obj) {
       result.requiredVersion = obj.requiredVersion;
-    if ("homepage" in obj)
+    }
+    if ("homepage" in obj) {
       result._homepage = obj.homepage;
-    if ("lastDownload" in obj)
+    }
+    if ("lastDownload" in obj) {
       result._lastDownload = parseInt(obj.lastDownload, 10) || 0;
-    if ("downloadCount" in obj)
+    }
+    if ("downloadCount" in obj) {
       result.downloadCount = parseInt(obj.downloadCount, 10) || 0;
+    }
   }
   else {
     result = new SpecialSubscription(obj.url, obj.title);
-    if ("defaults" in obj)
+    if ("defaults" in obj) {
       result.defaults = obj.defaults.split(" ");
-    if ("metadata" in obj)
+    }
+    if ("metadata" in obj) {
       result._metadata = JSON.parse(obj.metadata);
+    }
   }
-  if ("id" in obj)
+  if ("id" in obj) {
     result._id = obj.id;
-  if ("fixedTitle" in obj)
+  }
+  if ("fixedTitle" in obj) {
     result._fixedTitle = (obj.fixedTitle == "true");
-  if ("disabled" in obj)
+  }
+  if ("disabled" in obj) {
     result._disabled = (obj.disabled == "true");
+  }
 
   return result;
 };
@@ -744,10 +788,12 @@ exports.SpecialSubscription = class SpecialSubscription extends Subscription {
   isDefaultFor(filter) {
     if (this.defaults && this.defaults.length) {
       for (let type of this.defaults) {
-        if (SpecialSubscription.defaultsMap.get(type).includes(filter.type))
+        if (SpecialSubscription.defaultsMap.get(type).includes(filter.type)) {
           return true;
-        if (!isActiveFilter(filter) && type == "blocking")
+        }
+        if (!isActiveFilter(filter) && type == "blocking") {
           return true;
+        }
       }
     }
 
@@ -794,11 +840,13 @@ exports.SpecialSubscription = class SpecialSubscription extends Subscription {
     }
     // Metadata is encoded as a JSON on a single line.
     // This should be safe.
-    if (_metadata)
+    if (_metadata) {
       yield "metadata=" + JSON.stringify(_metadata);
+    }
 
-    if (_lastDownload)
+    if (_lastDownload) {
       yield "lastDownload=" + _lastDownload;
+    }
   }
 };
 
@@ -824,8 +872,9 @@ exports.SpecialSubscription.defaultsMap = new Map([
  */
 exports.SpecialSubscription.create = function(title) {
   let url;
-  do
+  do {
     url = "~user~" + Math.round(Math.random() * 1000000);
+  }
   while (Subscription.knownSubscriptions.has(url));
   return new SpecialSubscription(url, title);
 };
@@ -847,11 +896,13 @@ exports.SpecialSubscription.createForFilter = function(filter) {
   let subscription = SpecialSubscription.create();
   subscription.addFilter(filter);
   for (let [type, mappedTypes] of SpecialSubscription.defaultsMap) {
-    if (mappedTypes.includes(filter.type))
+    if (mappedTypes.includes(filter.type)) {
       subscription.defaults = [type];
+    }
   }
-  if (!subscription.defaults)
+  if (!subscription.defaults) {
     subscription.defaults = ["blocking"];
+  }
   return subscription;
 };
 
@@ -958,12 +1009,15 @@ exports.RegularSubscription = class RegularSubscription extends Subscription {
     yield* super.serialize();
 
     // To keep compatibility downloadable is true if missing
-    if (!this.downloadable)
+    if (!this.downloadable) {
       yield "downloadable=false";
-    if (_homepage)
+    }
+    if (_homepage) {
       yield "homepage=" + _homepage;
-    if (_lastDownload)
+    }
+    if (_lastDownload) {
       yield "lastDownload=" + _lastDownload;
+    }
   }
 };
 
@@ -1007,8 +1061,9 @@ class CountableSubscription extends RegularSubscription {
   constructor(url, title, params) {
     super(url, title);
 
-    if (params)
+    if (params) {
       this.setParams(params);
+    }
 
     /**
      * The status of the last download.
@@ -1121,8 +1176,9 @@ class CountableSubscription extends RegularSubscription {
   set disabled(value) {
     let {_disabled} = this;
     super.disabled = value;
-    if (synchronizer && _disabled && !value)
+    if (synchronizer && _disabled && !value) {
       synchronizer.execute(this);
+    }
   }
 
   /**
@@ -1196,24 +1252,33 @@ class CountableSubscription extends RegularSubscription {
 
     yield* super.serialize();
 
-    if (downloadStatus)
+    if (downloadStatus) {
       yield "downloadStatus=" + downloadStatus;
-    if (lastSuccess)
+    }
+    if (lastSuccess) {
       yield "lastSuccess=" + lastSuccess;
-    if (lastCheck)
+    }
+    if (lastCheck) {
       yield "lastCheck=" + lastCheck;
-    if (expires)
+    }
+    if (expires) {
       yield "expires=" + expires;
-    if (softExpiration)
+    }
+    if (softExpiration) {
       yield "softExpiration=" + softExpiration;
-    if (errors)
+    }
+    if (errors) {
       yield "errors=" + errors;
-    if (version)
+    }
+    if (version) {
       yield "version=" + version;
-    if (requiredVersion)
+    }
+    if (requiredVersion) {
       yield "requiredVersion=" + requiredVersion;
-    if (downloadCount)
+    }
+    if (downloadCount) {
       yield "downloadCount=" + downloadCount;
+    }
   }
 
   /**
@@ -1283,8 +1348,9 @@ class DiffUpdatableSubscription extends CountableSubscription {
   constructor(url, title, params) {
     super(url, title);
 
-    if (params)
+    if (params) {
       this.setParams(params);
+    }
   }
 
   /**
@@ -1297,8 +1363,9 @@ class DiffUpdatableSubscription extends CountableSubscription {
 
     yield* super.serialize();
 
-    if (diffURL)
+    if (diffURL) {
       yield "diffURL=" + diffURL;
+    }
   }
 
   /**

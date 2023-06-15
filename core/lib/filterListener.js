@@ -68,8 +68,9 @@ function shouldDeployFilters(subscription) {
  *   {@link module:filterStorage.filterStorage filter storage}.
  */
 function deployFilter(engine, storage, filter, subscriptions = null) {
-  if (!isActiveFilter(filter))
+  if (!isActiveFilter(filter)) {
     return;
+  }
 
   let deploy = false;
   let allowPrivileged = false;
@@ -80,8 +81,9 @@ function deployFilter(engine, storage, filter, subscriptions = null) {
     if (shouldDeployFilters(subscription) &&
         !filter.isDisabledForSubscription(subscription.url)) {
       deploy = true;
-      if (!requiresPrivilegedSubscription)
+      if (!requiresPrivilegedSubscription) {
         break;
+      }
 
       // Allow snippets to be executed only by the circumvention lists or the
       // user's own filters.
@@ -92,11 +94,13 @@ function deployFilter(engine, storage, filter, subscriptions = null) {
     }
   }
 
-  if (!deploy)
+  if (!deploy) {
     return;
+  }
 
-  if (requiresPrivilegedSubscription && !allowPrivileged)
+  if (requiresPrivilegedSubscription && !allowPrivileged) {
     return;
+  }
 
   engine.add(filter);
 }
@@ -114,8 +118,9 @@ function deployFilter(engine, storage, filter, subscriptions = null) {
  * @param {module:filterClasses.Filter} filter The filter.
  */
 function undeployFilter(engine, storage, filter) {
-  if (!isActiveFilter(filter))
+  if (!isActiveFilter(filter)) {
     return;
+  }
 
   let requiresPrivilegedSubscription = filter.requiresPrivilegedSubscription;
 
@@ -123,8 +128,9 @@ function undeployFilter(engine, storage, filter) {
     if (shouldDeployFilters(subscription) &&
         !filter.isDisabledForSubscription(subscription.url)) {
       if (!requiresPrivilegedSubscription ||
-          (requiresPrivilegedSubscription && subscription.privileged))
+          (requiresPrivilegedSubscription && subscription.privileged)) {
         return;
+      }
     }
   }
 
@@ -179,13 +185,16 @@ class FilterListener {
    * @package
    */
   async initialize(engine, storage) {
-    if (engine == null || typeof engine != "object")
+    if (engine == null || typeof engine != "object") {
       throw new Error("engine must be a non-null object.");
-    if (storage == null || typeof storage != "object")
+    }
+    if (storage == null || typeof storage != "object") {
       throw new Error("filterStorage must be a non-null object.");
+    }
 
-    if (this._engine != null || this._storage != null)
+    if (this._engine != null || this._storage != null) {
       throw new Error("Filter listener already initialized.");
+    }
 
     this._engine = engine;
     this._storage = storage;
@@ -261,10 +270,12 @@ class FilterListener {
    * @private
    */
   _setDirty(factor) {
-    if (factor == 0 && this._isDirty > 0)
+    if (factor == 0 && this._isDirty > 0) {
       this._isDirty = 1;
-    else
+    }
+    else {
       this._isDirty += factor;
+    }
     if (this._isDirty >= 1) {
       this._isDirty = 0;
       this._storage.saveToDisk();
@@ -287,8 +298,9 @@ class FilterListener {
     this._setDirty(1);
 
     if (shouldDeployFilters(subscription)) {
-      for (let text of subscription.filterText())
+      for (let text of subscription.filterText()) {
         undeployFilter(this._engine, this._storage, Filter.fromText(text));
+      }
     }
   }
 
@@ -304,8 +316,9 @@ class FilterListener {
         }
       }
       else {
-        for (let text of subscription.filterText())
+        for (let text of subscription.filterText()) {
           undeployFilter(this._engine, this._storage, Filter.fromText(text));
+        }
       }
     }
   }
@@ -346,17 +359,21 @@ class FilterListener {
     // remove the filter. Luckily, deployFilter and undeployFilter do
     // full checks that the filter should be added / removed.
     let filter = Filter.fromText(text);
-    if (this._engine.has(filter))
+    if (this._engine.has(filter)) {
       undeployFilter(this._engine, this._storage, filter);
-    else
+    }
+    else {
       deployFilter(this._engine, this._storage, filter);
+    }
   }
 
   _onFilterStateHitCount(text, newValue) {
-    if (newValue == 0)
+    if (newValue == 0) {
       this._setDirty(0);
-    else
+    }
+    else {
       this._setDirty(0.002);
+    }
   }
 
   _onFilterStateLastHit() {

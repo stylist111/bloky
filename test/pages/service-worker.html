@@ -3,10 +3,12 @@
                                    {scope: location.pathname});
 
   new Promise(resolve => {
-    if (navigator.serviceWorker.controller)
+    if (navigator.serviceWorker.controller) {
       resolve();
-    else
+    }
+    else {
       navigator.serviceWorker.addEventListener("controllerchange", resolve);
+    }
   }).then(() => {
     navigator.serviceWorker.controller.postMessage(null);
   });

@@ -58,8 +58,9 @@ class FilterEngine {
      */
     this.features = options ? options.features : Features.DEFAULT;
 
-    if (options && options.recommendations)
+    if (options && options.recommendations) {
       setRecommendations(options.recommendations);
+    }
 
     /** The `{@link module:elemHideExceptions.ElemHideExceptions}` for
      *    the engine.
@@ -138,8 +139,9 @@ class FilterEngine {
             text = Filter.normalize(text, true);
             if (text) {
               let filter = Filter.fromText(text);
-              if (filter.type !== "invalid")
+              if (filter.type !== "invalid") {
                 this.add(filter);
+              }
             }
           }
         }).finally(() => {
@@ -190,8 +192,9 @@ class FilterEngine {
    */
   add(filter) {
     let module = this.selectModule(filter.type);
-    if (module)
+    if (module) {
       module.add(filter);
+    }
   }
 
   /**
@@ -201,8 +204,9 @@ class FilterEngine {
    */
   remove(filter) {
     let module = this.selectModule(filter.type);
-    if (module)
+    if (module) {
       module.remove(filter);
+    }
   }
 
   /**
@@ -213,8 +217,9 @@ class FilterEngine {
    */
   has(filter) {
     let module = this.selectModule(filter.type);
-    if (module)
+    if (module) {
       return module.has(filter);
+    }
     return false;
   }
 
@@ -250,8 +255,9 @@ class FilterEngine {
    * @public
    */
   match(url, typeMask, documentHostname, sitekey = null, specificOnly = false) {
-    if (typeof url == "string")
+    if (typeof url == "string") {
       url = parseURL(url);
+    }
 
     let filter = this.defaultMatcher.match(
       url, typeMask, documentHostname, sitekey, specificOnly

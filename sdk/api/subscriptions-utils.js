@@ -58,8 +58,9 @@ export async function subscriptionFileExists(subscription, path) {
 export async function getSubscriptionRulesetMap(id) {
   let dnrSub = getRuleset(id);
 
-  if (!dnrSub)
+  if (!dnrSub) {
     throw Error(`Subscription ${id} not found.`);
+  }
 
   const url = browser.runtime.getURL(dnrSub.path + ".map");
   let response = await fetch(url);

@@ -57,30 +57,36 @@ describe("Filter listener", function() {
     }
 
     result.elemhide = [];
-    for (let filter of elemHide._filters)
+    for (let filter of elemHide._filters) {
       result.elemhide.push(filter.text);
+    }
 
     result.elemhideexception = [];
-    for (let exception of elemHideExceptions._exceptions)
+    for (let exception of elemHideExceptions._exceptions) {
       result.elemhideexception.push(exception.text);
+    }
 
     let {elemHideEmulation} = filterEngine;
     result.elemhideemulation = [];
-    for (let filter of elemHideEmulation)
+    for (let filter of elemHideEmulation) {
       result.elemhideemulation.push(filter.text);
+    }
 
     let {snippets} = filterEngine;
     result.snippets = [];
-    for (let filter of snippets._filters)
+    for (let filter of snippets._filters) {
       result.snippets.push(filter.text);
+    }
 
     let types = ["blocking", "allowing", "elemhide", "elemhideexception",
                  "elemhideemulation", "snippets"];
     for (let type of types) {
-      if (!(type in expected))
+      if (!(type in expected)) {
         expected[type] = [];
-      else
+      }
+      else {
         expected[type].sort();
+      }
       result[type].sort();
     }
 
@@ -469,8 +475,9 @@ describe("Filter listener", function() {
     it("Can add and remove a large element hide subscription", function() {
       let subscription = Subscription.fromURL("https://test");
       let filterText = [];
-      for (let i = 0; i < 20000; i++)
+      for (let i = 0; i < 20000; i++) {
         filterText.push(`example.com###id-${i}`);
+      }
 
       subscription.updateFilterText(filterText);
       assert.equal(elemHide._filters.size, 0);
@@ -486,8 +493,9 @@ describe("Filter listener", function() {
       let subscription = Subscription.fromURL("https://test");
 
       let filterText = [];
-      for (let i = 0; i < 20000; i++)
+      for (let i = 0; i < 20000; i++) {
         filterText.push(`example.com#@##id-${i}`);
+      }
 
       subscription.updateFilterText(filterText);
       assert.equal(elemHideExceptions._exceptions.size, 0);

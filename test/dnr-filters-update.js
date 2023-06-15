@@ -179,8 +179,9 @@ describe("Test subscriptions update", function() {
   // if the static rules update API isn't available.
   it("Doesn't update without the static rules updates [fuzz] [mv3-only]", async function() {
     // If we are on Chrome 111+ we don't run this test.
-    if (hasUpdateStaticRules())
+    if (hasUpdateStaticRules()) {
       this.skip();
+    }
 
     // The case of the first update.
     await EWE.testing.dnrSubscriptionUpdate(SUBSCRIPTION, UPDATES);
@@ -197,8 +198,9 @@ describe("Test subscriptions update", function() {
 
   it("Updates subscriptions [fuzz] [mv3-only]", async function() {
     // This is MV3 only and we need Chrome 111+ API for this.
-    if (!hasUpdateStaticRules())
+    if (!hasUpdateStaticRules()) {
       this.skip();
+    }
 
     let mapper = new DnrMapper(async() =>
       await EWE.testing.getSubscriptionRulesetMap(UPDATABLE_SUBSCRIPTION_ID)
@@ -291,8 +293,9 @@ describe("Test subscriptions update", function() {
   });
 
   it("does not add dynamic rules when not added", async function() {
-    if (!hasUpdateStaticRules())
+    if (!hasUpdateStaticRules()) {
       this.skip();
+    }
 
     await EWE.subscriptions.remove(SUBSCRIPTION.url);
 
@@ -301,8 +304,9 @@ describe("Test subscriptions update", function() {
   });
 
   it("does not add dynamic rules when not enabled", async function() {
-    if (!hasUpdateStaticRules())
+    if (!hasUpdateStaticRules()) {
       this.skip();
+    }
 
     // We need to mutate the subscription object, so we deep copy.
     let subscription = JSON.parse(JSON.stringify(SUBSCRIPTION));
@@ -316,8 +320,9 @@ describe("Test subscriptions update", function() {
   });
 
   it("remove dynamic rules when removed", async function() {
-    if (!hasUpdateStaticRules())
+    if (!hasUpdateStaticRules()) {
       this.skip();
+    }
 
     await EWE.testing.dnrSubscriptionUpdate(SUBSCRIPTION, UPDATES4);
     await checkDynamicRuleCount(6);
@@ -329,8 +334,9 @@ describe("Test subscriptions update", function() {
   });
 
   it("remove dynamic rules when disabled", async function() {
-    if (!hasUpdateStaticRules())
+    if (!hasUpdateStaticRules()) {
       this.skip();
+    }
 
     await EWE.testing.dnrSubscriptionUpdate(SUBSCRIPTION, UPDATES4);
     await checkDynamicRuleCount(6);
@@ -342,8 +348,9 @@ describe("Test subscriptions update", function() {
   });
 
   it("restore dynamic rules when reenabled", async function() {
-    if (!hasUpdateStaticRules())
+    if (!hasUpdateStaticRules()) {
       this.skip();
+    }
 
     await EWE.testing.dnrSubscriptionUpdate(SUBSCRIPTION, UPDATES4);
     await checkDynamicRuleCount(6);
@@ -383,8 +390,9 @@ describe("Test subscriptions update", function() {
     });
 
     it("Rollback on maximum subscriptions after update", async function() {
-      if (!hasUpdateStaticRules())
+      if (!hasUpdateStaticRules()) {
         this.skip();
+      }
 
       await EWE.testing.testSetDynamicRulesAvailable(5);
 
@@ -449,8 +457,9 @@ describe("Test subscriptions update", function() {
     });
 
     it("Rollback on maximum subscriptions with no updates", async function() {
-      if (!hasUpdateStaticRules())
+      if (!hasUpdateStaticRules()) {
         this.skip();
+      }
 
       await EWE.testing.testSetDynamicRulesAvailable(3);
       // This update should fail
@@ -472,8 +481,9 @@ describe("Test subscriptions update", function() {
     });
 
     it("creates a diff enabled subscription when adding one [mv3-only]", async function() {
-      if (!hasUpdateStaticRules())
+      if (!hasUpdateStaticRules()) {
         this.skip();
+      }
 
       let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
       let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
@@ -516,8 +526,9 @@ describe("Test subscriptions update", function() {
     });
 
     it("applies and blocks with new filters added in the diffs [mv3-only]", async function() {
-      if (!hasUpdateStaticRules())
+      if (!hasUpdateStaticRules()) {
         this.skip();
+      }
 
       let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
       let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
@@ -548,8 +559,9 @@ describe("Test subscriptions update", function() {
 
       await wait(async() => {
         let newDNRrules = await browser.declarativeNetRequest.getDynamicRules();
-        if (newDNRrules.length > 0)
+        if (newDNRrules.length > 0) {
           return true;
+        }
       }, 4000, "Subscription was not synchronised properly.");
 
       // now we block the image
@@ -557,8 +569,9 @@ describe("Test subscriptions update", function() {
     });
 
     it("Subscriptions with empty diffs still block with normal filters [mv3-only]", async function() {
-      if (!hasUpdateStaticRules())
+      if (!hasUpdateStaticRules()) {
         this.skip();
+      }
 
       let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
       let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
@@ -580,8 +593,9 @@ describe("Test subscriptions update", function() {
     });
 
     it("doesnt apply filters removed by the diffs [mv3-only]", async function() {
-      if (!hasUpdateStaticRules())
+      if (!hasUpdateStaticRules()) {
         this.skip();
+      }
 
       let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
       let testDiffUrlEndpoint = "/updatable_subscription/diff.json";

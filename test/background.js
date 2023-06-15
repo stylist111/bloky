@@ -19,8 +19,9 @@
 
 "use strict";
 
-if (typeof EWE == "undefined" && typeof importScripts != "undefined")
+if (typeof EWE == "undefined" && typeof importScripts != "undefined") {
   importScripts("ewe-api.js");
+}
 
 let callbackIdCounter = 0;
 let callbacks = new Map();
@@ -138,8 +139,9 @@ function handleTestMessage(request, sender, sendResponse) {
   !(request.type.startsWith("ewe-test:") || request.type.startsWith("ewe:") ||
   request.type.startsWith("filters") || request.type.startsWith("subscriptions") ||
   request.type.startsWith("debug"))
-  )
+  ) {
     return false;
+  }
 
   messages.push({request, sender});
   switch (request.type) {
@@ -200,8 +202,9 @@ function handleTestMessage(request, sender, sendResponse) {
       let subscriptions = [];
       EWE.subscriptions.getDownloadable().then(subs => {
         for (let s of subs) {
-          if (request.ignoreDisabled && !s.enabled)
+          if (request.ignoreDisabled && !s.enabled) {
             continue;
+          }
 
           let subscription = toPlainSubscription(s);
           if (request.disabledFilters) {
@@ -417,20 +420,23 @@ EWE.start(startupInfo).then(async() => {
 
   if (typeof netscape != "undefined") {
     let version = /\brv:([^;)]+)/.exec(navigator.userAgent)[1];
-    if (parseInt(version, 10) < 86)
+    if (parseInt(version, 10) < 86) {
       await new Promise(resolve => setTimeout(resolve, 2000));
+    }
   }
 
   let indexUrl = chrome.runtime.getURL("index.html");
   chrome.tabs.query({url: indexUrl}, currentTabs => {
-    if (currentTabs.length == 0)
+    if (currentTabs.length == 0) {
       chrome.tabs.create({url: "index.html"});
+    }
   });
 
   const RELOAD_FLAG = "reload-test-running";
   chrome.storage.local.get([RELOAD_FLAG], result => {
-    if (result[RELOAD_FLAG])
+    if (result[RELOAD_FLAG]) {
       chrome.tabs.create({url: "reload.html"});
+    }
   });
 
   const UPDATE_FLAG = "update-test-running";
@@ -445,8 +451,9 @@ EWE.start(startupInfo).then(async() => {
 
   const MIGRATE_FLAG = "migrate-test-running";
   chrome.storage.local.get([MIGRATE_FLAG], result => {
-    if (result[MIGRATE_FLAG])
+    if (result[MIGRATE_FLAG]) {
       chrome.tabs.create({url: "mv2-mv3-migrate.html"});
+    }
   });
 });
 
@@ -492,8 +499,9 @@ let injectedCode = (environment, ..._) => {
     "injected-snippet": injectedSnippetBody,
     "recurring-injected-snippet": recurringSnippetBody
   };
-  for (let [name, ...args] of _)
+  for (let [name, ...args] of _) {
     snippets[name](...args);
+  }
 };
 injectedCode.has = snippet => [
   "injected-snippet",
@@ -502,8 +510,9 @@ injectedCode.has = snippet => [
 
 let isolatedCode = (environment, ..._) => {
   let snippets = {"isolated-snippet": arg => self.isolated_snippet_works = arg};
-  for (let [name, ...args] of _)
+  for (let [name, ...args] of _) {
     snippets[name](...args);
+  }
 };
 isolatedCode.has = snippet => ["isolated-snippet"].includes(snippet);
 isolatedCode.get = () => function dependency() {

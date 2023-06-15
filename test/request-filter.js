@@ -176,8 +176,9 @@ describe("Blocking", function() {
   });
 
   it("blocks whole $webbundle requests [mv3-only]", async function() {
-    if (!supportsWebBundle())
+    if (!supportsWebBundle()) {
       this.skip();
+    }
 
     await addFilter(`|${TEST_PAGES_URL}/*^$webbundle`);
     await new Page("webbundle.html").expectResource("webext-sample.wbn").toBeBlocked();
@@ -189,8 +190,9 @@ describe("Blocking", function() {
     await addFilter(`|${TEST_PAGES_URL}/dir/a.js`);
     await addFilter(`|${TEST_PAGES_URL}/dir/c.png`);
 
-    if (supportsWebBundle())
+    if (supportsWebBundle()) {
       await new Page("webbundle.html").expectResource("webext-sample.wbn").toBeLoaded();
+    }
 
     await new Page("webbundle.html").expectResource("dir/a.js").toBeBlocked();
     await new Page("webbundle.html").expectResource("dir/c.png").toBeBlocked();
@@ -212,8 +214,9 @@ describe("Blocking", function() {
       // The CI Firefox job throws NS_ERROR_ABORT on navigator.sendBeacon()
       // Blocked $ping requests would have ip:null instead
       if (e.message.includes("\"ip\": null") ||
-          e.message.startsWith("Connection refused"))
+          e.message.startsWith("Connection refused")) {
         throw e;
+      }
     }
   });
 

@@ -86,8 +86,9 @@ export async function download(url, toFile) {
  */
 export function isMain(url) {
   let executableName = process.argv[1];
-  if (fs.statSync(executableName).isSymbolicLink)
+  if (fs.statSync(executableName).isSymbolicLink) {
     executableName = fs.realpathSync(executableName);
+  }
 
   return url === `file://${executableName}`;
 }

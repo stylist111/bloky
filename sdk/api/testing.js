@@ -79,8 +79,9 @@ export default {
    */
   async _setSubscriptionProperties(url, prototype) {
     let subscription = Subscription.fromURL(url);
-    for (let property in prototype)
+    for (let property in prototype) {
       subscription[property] = prototype[property];
+    }
 
     await filterEngine.filterStorage.saveToDisk();
     await debugging.ensureEverythingHasSaved();
@@ -130,8 +131,9 @@ export default {
    *                    restore the removed subscriptions and filters.
    */
   async _removeAllSubscriptions() {
-    for (let subscription of await subs.getDownloadable())
+    for (let subscription of await subs.getDownloadable()) {
       await subs.remove(subscription.url);
+    }
 
     await removeDynamicFilters();
     await clearRulesetUpdates();
@@ -167,8 +169,9 @@ export default {
    */
   async _clearNotifications() {
     await initPrefs();
-    for (let notification of notifications._localNotifications)
+    for (let notification of notifications._localNotifications) {
       notifications.removeNotification(notification);
+    }
 
     Prefs.notificationdata = {};
     Prefs.notifications_ignoredcategories = [];
@@ -176,10 +179,12 @@ export default {
   },
 
   enableDebugOutput(enabled) {
-    if (enabled)
+    if (enabled) {
       debugging.onLogEvent.addListener(debugging.CONSOLE_LOGGER);
-    else
+    }
+    else {
       debugging.onLogEvent.removeListener(debugging.CONSOLE_LOGGER);
+    }
   },
 
   CONSOLE_LOGGER: debugging.logger,

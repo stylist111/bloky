@@ -300,8 +300,9 @@ export class Resource {
     let blocked = error &&
         /^(net::ERR_BLOCKED_BY_CLIENT|NS_ERROR_ABORT)$/.test(error.error);
 
-    if (!blocked)
+    if (!blocked) {
       throw new Error(`${this.path} was not blocked`);
+    }
   }
 
   // The "aborted" error is emitted for subresources loaded from
@@ -313,16 +314,18 @@ export class Resource {
     let aborted = error &&
         /^(net::ERR_ABORTED)$/.test(error.error);
 
-    if (!aborted)
+    if (!aborted) {
       throw new Error(`${this.path} was not aborted`);
+    }
   }
 
   async expectToBeLoaded() {
     let error = await this.error;
     let loaded = typeof error == "undefined";
 
-    if (!loaded)
+    if (!loaded) {
       throw new Error(`${this.path} did not load successfully`);
+    }
   }
 }
 
@@ -371,8 +374,9 @@ export class Popup {
 
     this.blocked = new Promise((resolve, reject) => {
       this.created.then(async popupTabId => {
-        if (isFuzzingServiceWorker())
+        if (isFuzzingServiceWorker()) {
           await waitForServiceWorkerInitialization();
+        }
 
         return popupTabId;
       }).then(popupTabId => {
@@ -407,11 +411,13 @@ export class Popup {
               details.url != "about:blank") {
             let tolerance = 5;
 
-            if (deferred)
+            if (deferred) {
               tolerance = 200;
+            }
 
-            if (isFuzzingServiceWorker())
+            if (isFuzzingServiceWorker()) {
               tolerance = 1000;
+            }
 
             setTimeout(onCompletedAfterWait, tolerance);
           }
@@ -424,8 +430,9 @@ export class Popup {
         // events above. Especially since this is called
         // asynchronously after the tab is created.
         browser.tabs.get(popupTabId).then(tab => {
-          if (tab.url && tab.url != "about:blank" && tab.status == "complete")
+          if (tab.url && tab.url != "about:blank" && tab.status == "complete") {
             onCompleted({tabId: popupTabId, frameId: 0, url: tab.url});
+          }
         }).catch(() => {
           // We are assuming that this error is because the tab
           // doesn't exist, and not some other error. This means it's
@@ -435,15 +442,17 @@ export class Popup {
       }, reject);
     });
 
-    if (!Popup.current)
+    if (!Popup.current) {
       Popup.current = [];
+    }
 
     Popup.current.push(this);
   }
 
   static async removeCurrent() {
-    if (!Popup.current)
+    if (!Popup.current) {
       return;
+    }
 
     for (let removingPopup of Popup.current) {
       let tabId = await removingPopup.created;
@@ -456,14 +465,16 @@ export class Popup {
 
 export function setMinTimeout(runnable, timeout) {
   let currentTimeout = runnable.timeout();
-  if (currentTimeout < timeout && currentTimeout != 0)
+  if (currentTimeout < timeout && currentTimeout != 0) {
     runnable.timeout(timeout);
+  }
 }
 
 export function increaseMinTimeout(runnable, extra) {
   let currentTimeout = runnable.timeout();
-  if (currentTimeout != 0)
+  if (currentTimeout != 0) {
     runnable.timeout(currentTimeout + extra);
+  }
 }
 
 export async function waitForInvisibleElement(tabId, id) {
@@ -477,8 +488,9 @@ export async function waitForInvisibleElement(tabId, id) {
 }
 
 export function wait(condition, timeout = 0, message, pollTimeout = 100) {
-  if (typeof condition !== "function")
+  if (typeof condition !== "function") {
     throw TypeError("Wait condition must be a function");
+  }
 
   function evaluateCondition() {
     return new Promise((resolve, reject) => {
@@ -525,8 +537,9 @@ export function wait(condition, timeout = 0, message, pollTimeout = 100) {
 }
 
 export function waitForAssertion(condition, timeout = 1000, pollTimeout = 100) {
-  if (typeof condition !== "function")
+  if (typeof condition !== "function") {
     throw TypeError("Wait condition must be a function");
+  }
 
   async function evaluateCondition() {
     try {
@@ -544,12 +557,15 @@ export function waitForAssertion(condition, timeout = 1000, pollTimeout = 100) {
       let {assertionPassed, error} = await evaluateCondition();
       let elapsed = performance.now() - startTime;
 
-      if (assertionPassed)
+      if (assertionPassed) {
         resolve();
-      else if (timeout && elapsed >= timeout)
+      }
+      else if (timeout && elapsed >= timeout) {
         reject(error);
-      else
+      }
+      else {
         setTimeout(pollCondition, pollTimeout);
+      }
     };
     pollCondition();
   });
@@ -605,8 +621,9 @@ export function getVisibleElement(tabId, elemId) {
 export function getVisibleElementInFrame(tabId, elemId, frameElementIds) {
   return executeScript(tabId, (frameIds, elementId) => {
     let frameDocument = document;
-    for (let frameId of frameIds)
+    for (let frameId of frameIds) {
       frameDocument = frameDocument.getElementById(frameId).contentDocument;
+    }
     let el = frameDocument.getElementById(elementId);
     return el.offsetParent ? el.outerHTML : null;
   }, [frameElementIds, elemId]);
@@ -639,8 +656,9 @@ export async function readFile(prefix, fileName) {
   let key = prefix + fileName;
   let items = await browser.storage.local.get(key);
   let entry = items[key];
-  if (entry)
+  if (entry) {
     return entry;
+  }
 }
 
 export async function waitForHighlightedStyle(timeout = 5000) {

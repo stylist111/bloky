@@ -65,8 +65,9 @@ before(async function() {
   // The incognito CI job would sometimes fail the first test case for no
   // apparent reason. Sleeping should allow more time for the test extension
   // to be "ready".
-  if (isIncognito())
+  if (isIncognito()) {
     await new Promise(r => setTimeout(r, 2000));
+  }
 });
 
 beforeEach(async function() {
@@ -77,10 +78,12 @@ beforeEach(async function() {
     let error = await runInBackgroundPage([{op: "getLastError"}], false);
     if (error) {
       // https://github.com/mozilla/webextension-polyfill/issues/384
-      if (error.includes("A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received"))
+      if (error.includes("A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received")) {
         console.warn(error);
-      else
+      }
+      else {
         throw new Error(error);
+      }
     }
   };
 });

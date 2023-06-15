@@ -48,25 +48,29 @@ function checkPotentialPopup(sourceTabId, popupTabId, url, frame) {
     logItem({tabId: sourceTabId, frameId: 0, url}, filter,
             {docDomain: frame.hostname, specificOnly, method: "popup"});
 
-    if (filter instanceof BlockingFilter)
+    if (filter instanceof BlockingFilter) {
       browser.tabs.remove(popupTabId).catch(() => {});
+    }
 
     forgetPopup(popupTabId);
   }
 }
 
 function onPopupURLChanged({frameId, tabId, url}) {
-  if (!isTopLevelFrameId(frameId))
+  if (!isTopLevelFrameId(frameId)) {
     return;
+  }
 
   let frame = loadingPopups.get(tabId);
-  if (frame)
+  if (frame) {
     checkPotentialPopup(frame.tabId, tabId, url, frame);
+  }
 }
 
 function onCompleted({frameId, url, tabId}) {
-  if (isTopLevelFrameId(frameId) && url != BLANK_PAGE_URL)
+  if (isTopLevelFrameId(frameId) && url != BLANK_PAGE_URL) {
     forgetPopup(tabId);
+  }
 }
 
 function onTabRemoved(tabId) {
@@ -76,8 +80,9 @@ function onTabRemoved(tabId) {
 function onPopup({tabId, url, sourceTabId, sourceFrameId}) {
   let frame = getFrameInfo(sourceTabId, sourceFrameId);
 
-  if (frame.allowlisted & contentTypes.DOCUMENT)
+  if (frame.allowlisted & contentTypes.DOCUMENT) {
     return;
+  }
 
   if (loadingPopups.size == 0) {
     browser.webRequest.onBeforeRequest.addListener(
@@ -97,8 +102,9 @@ function onPopup({tabId, url, sourceTabId, sourceFrameId}) {
 }
 
 function onTabCreated({id, url, openerTabId}) {
-  if (openerTabId)
+  if (openerTabId) {
     onPopup({tabId: id, url, sourceTabId: openerTabId, sourceFrameId: 0});
+  }
 }
 
 /**
@@ -113,6 +119,7 @@ export function start() {
   // implies "noopener" by default). But on Chrome, opening a new empty tab
   // emits the tabs.onCreated event with openerTabId set. So this would
   // cause new tabs created by the user to be considered popups too, on Chrome.
-  if (typeof netscape != "undefined")
+  if (typeof netscape != "undefined") {
     browser.tabs.onCreated.addListener(onTabCreated);
+  }
 }

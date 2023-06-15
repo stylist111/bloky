@@ -17,8 +17,9 @@
 
 export function* recommendations() {
   // eslint-disable-next-line no-undef
-  for (let recommendation of global.recommendations)
+  for (let recommendation of global.recommendations) {
     yield recommendation;
+  }
 }
 
 export function setRecommendations(newValue) {

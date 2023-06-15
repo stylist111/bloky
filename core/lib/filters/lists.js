@@ -31,8 +31,9 @@ function parseFilterList(filters) {
   // The filter list always start with a header, at minimum `[Adblock]`.
   let headerMatch = /\[Adblock(?:\s*Plus\s*([\d.]+)?)?\]/i.exec(lines[0]);
 
-  if (!headerMatch)
+  if (!headerMatch) {
     return {error: "synchronize_invalid_data"};
+  }
 
   let minVersion = headerMatch[1];
 
@@ -48,8 +49,9 @@ function parseFilterList(filters) {
 
   for (let {hasOwnProperty} = Object.prototype, i = 1; i < lines.length; i++) {
     let match = /^\s*!\s*(.*?)\s*:\s*(.*)/.exec(lines[i]);
-    if (!match)
+    if (!match) {
       break;
+    }
 
     let keyword = match[1].toLowerCase();
     if (hasOwnProperty.call(params, keyword)) {

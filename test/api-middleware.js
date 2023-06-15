@@ -78,17 +78,20 @@ export async function invalidSitekeyHeader(req, res, next) {
 // responds. Pass ?delay=500 as a query parameter to add a 500ms
 // delay.
 export async function delay(req, res, next) {
-  if (req.query.delay)
+  if (req.query.delay) {
     setTimeout(next, parseInt(req.query.delay, 10));
-  else
+  }
+  else {
     next();
+  }
 }
 
 export function testHeader(req, res, next) {
   let header = req.query["header-name"];
 
-  if (header)
+  if (header) {
     res.header(header, req.query["header-value"] || "");
+  }
 
   next();
 }

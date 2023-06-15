@@ -34,8 +34,9 @@ class ElemHide {
    *   hiding exceptions.
    */
   constructor(elemHideExceptions) {
-    if (!(elemHideExceptions instanceof ElemHideExceptions))
+    if (!(elemHideExceptions instanceof ElemHideExceptions)) {
       throw new Error("elemHideExceptions must be an ElemHideExceptions");
+    }
 
     /** @type {ElemHideExceptions} */
     this.elemHideExceptions = elemHideExceptions;
@@ -142,8 +143,9 @@ class ElemHide {
 
     for (let collection of [this._styleSheetCache, this._filtersByDomain,
                             this._filterBySelector, this._filters,
-                            this._exceptionDomains])
+                            this._exceptionDomains]) {
       collection.clear();
+    }
 
     this._unconditionalSelectors = null;
     this._defaultStyleSheet = null;
@@ -154,8 +156,9 @@ class ElemHide {
    * @param {module:filterClasses.ElemHideFilter} filter
    */
   add(filter) {
-    if (this._filters.has(filter))
+    if (this._filters.has(filter)) {
       return;
+    }
 
     this._styleSheetCache.clear();
     this._commonStyleSheet = null;
@@ -181,8 +184,9 @@ class ElemHide {
    * @param {module:filterClasses.ElemHideFilter} filter
    */
   remove(filter) {
-    if (!this._filters.has(filter))
+    if (!this._filters.has(filter)) {
       return;
+    }
 
     this._styleSheetCache.clear();
     this._commonStyleSheet = null;
@@ -323,8 +327,9 @@ class ElemHide {
   _getKnownSuffix(domain) {
     for (let suffix of domainSuffixes(domain)) {
       if (this._filtersByDomain.has(suffix) ||
-          this._exceptionDomains.has(suffix))
+          this._exceptionDomains.has(suffix)) {
         return suffix;
+      }
     }
 
     return "";
@@ -336,8 +341,9 @@ class ElemHide {
    * @private
    */
   _getUnconditionalSelectors() {
-    if (!this._unconditionalSelectors)
+    if (!this._unconditionalSelectors) {
       this._unconditionalSelectors = [...this._filterBySelector.keys()];
+    }
 
     return this._unconditionalSelectors;
   }
@@ -370,8 +376,9 @@ class ElemHide {
           else {
             let {selector} = filter;
             if ((excluded.size == 0 || !excluded.has(filter)) &&
-                !this.elemHideExceptions.getException(selector, domain))
+                !this.elemHideExceptions.getException(selector, domain)) {
               selectors.push(selector);
+            }
           }
         }
       }
@@ -414,10 +421,12 @@ class ElemHide {
             let exception =
                 this.elemHideExceptions.getException(selector, domain);
 
-            if (exception)
+            if (exception) {
               exceptions.push(exception);
-            else
+            }
+            else {
               selectors.push(selector);
+            }
           }
         }
       }
@@ -484,8 +493,9 @@ class ElemHide {
         // Note: Once an exception domain is known it never becomes unknown,
         // even when all the exceptions containing that domain are removed.
         // This is a best-case optimization.
-        if (domain != "")
+        if (domain != "") {
           this._exceptionDomains.add(domain);
+        }
       }
     }
 
@@ -571,8 +581,9 @@ exports.createStyleSheet = function createStyleSheet(selectors,
                                                      declarationBlock) {
   let styleSheet = "";
 
-  for (let selector of selectors)
+  for (let selector of selectors) {
     styleSheet += createRule(selector, declarationBlock);
+  }
 
   return styleSheet;
 };

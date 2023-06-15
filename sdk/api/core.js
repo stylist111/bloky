@@ -22,8 +22,9 @@ import {Features, FilterEngine} from "adblockpluscore";
 export let filterEngine = new FilterEngine((function() {
   let features;
 
-  if (browser.declarativeNetRequest)
+  if (browser.declarativeNetRequest) {
     features = Features.DNR;
+  }
 
   return {features};
 })());

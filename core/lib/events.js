@@ -35,10 +35,12 @@ exports.EventEmitter = class EventEmitter {
    */
   on(name, listener) {
     let listeners = this._listeners.get(name);
-    if (listeners)
+    if (listeners) {
       listeners.push(listener);
-    else
+    }
+    else {
       this._listeners.set(name, [listener]);
+    }
   }
 
   /**
@@ -52,8 +54,9 @@ exports.EventEmitter = class EventEmitter {
     if (listeners) {
       if (listeners.length > 1) {
         let idx = listeners.indexOf(listener);
-        if (idx != -1)
+        if (idx != -1) {
           listeners.splice(idx, 1);
+        }
       }
       else if (listeners[0] === listener) {
         // We must use strict equality above for compatibility with
@@ -97,8 +100,9 @@ exports.EventEmitter = class EventEmitter {
   emit(name, ...args) {
     let listeners = this._listeners.size > 0 ? this._listeners.get(name) : null;
     if (listeners) {
-      for (let listener of listeners.slice())
+      for (let listener of listeners.slice()) {
         listener(...args);
+      }
     }
   }
 };

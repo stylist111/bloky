@@ -110,8 +110,9 @@ describe("Reporting", function() {
       // When using the MV2 custom subs extension, getFirstVersion() returns
       // the creation date of that file, which may not be today.
       // Returning here ensures at least that getFirstVersion() is not 0.
-      if (isMV2CustomSubsExtension())
+      if (isMV2CustomSubsExtension()) {
         return;
+      }
 
       let date = new Date();
       let today = date.toISOString().substring(0, 10).replace(/-/g, "");
@@ -146,8 +147,9 @@ describe("Reporting", function() {
     // worker is suspended, especially the onComplete ones, and this makes some
     // tests flaky.
     // https://jira.eyeo.com/browse/EE-21
-    if (isFuzzingServiceWorker() && isEdge())
+    if (isFuzzingServiceWorker() && isEdge()) {
       this.retries(3);
+    }
 
     setMinTimeout(this, 10000);
 
@@ -255,8 +257,9 @@ describe("Reporting", function() {
 
     async function expectLoggedMessages(getReceivedEvents, mandatoryEvents,
                                         optionalEvents = []) {
-      if (isFuzzingServiceWorker())
+      if (isFuzzingServiceWorker()) {
         await waitForServiceWorkerInitialization();
+      }
 
       // Some of the events we're checking for here may be emitted
       // after the page is done loading, like elemhide.
@@ -297,8 +300,9 @@ describe("Reporting", function() {
             return !isFavicon;
           })
           .filter(event => {
-            if (devToolsEvents)
+            if (devToolsEvents) {
               return true;
+            }
             // If the devtools are open, we might see requests to load
             // the dev tools.
             let url = event.request.url;
@@ -378,17 +382,21 @@ describe("Reporting", function() {
                                   optionalEvents = []
                                 } = {}) {
       let callback = callbackOrPage;
-      if (typeof callbackOrPage == "string")
+      if (typeof callbackOrPage == "string") {
         callback = () => new Page(callbackOrPage).loaded;
+      }
 
-      if (filters)
+      if (filters) {
         await EWE.filters.add(filters);
+      }
 
       let eventName;
-      if (typeof eventOptions == "string")
+      if (typeof eventOptions == "string") {
         eventName = `reporting.onBlockableItem.${eventOptions}`;
-      else
+      }
+      else {
         eventName = await addNewOnBlockableListener(eventOptions);
+      }
 
       clearTestEvents(eventName);
 
@@ -780,8 +788,9 @@ describe("Reporting", function() {
       // without having a history, so no "cross-domain-navigation.html" items
       // are available and thus missing.
       // See https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/493
-      if (isFuzzingServiceWorker())
+      if (isFuzzingServiceWorker()) {
         return;
+      }
 
       await checkLogging(
         [`@@|${TEST_PAGES_URL}$document`, `@@|${CROSS_DOMAIN_URL}$document`],

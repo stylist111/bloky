@@ -35,8 +35,9 @@ class NotificationSessionStorageBackend {
 
   delete(notification) {
     let removed = this.local.delete(notification);
-    if (removed)
+    if (removed) {
       this.save();
+    }
 
     return removed;
   }
@@ -48,8 +49,9 @@ class NotificationSessionStorageBackend {
   async load() {
     let result = await browser.storage.session.get([NOTIFICATION_KEY]);
     let loadedNotifications = result[NOTIFICATION_KEY] || [];
-    for (let notification of loadedNotifications)
+    for (let notification of loadedNotifications) {
       this.local.add(notification);
+    }
   }
 
   async save() {

@@ -51,8 +51,9 @@ class Synchronizer {
    * @param {FilterStorage} [filterStorage] The associated filter storage.
    */
   constructor(filterStorage) {
-    if (filterStorage == null || typeof filterStorage != "object")
+    if (filterStorage == null || typeof filterStorage != "object") {
       throw Error("filterStorage must be a valid object");
+    }
 
     /**
      * Whether the downloading of subscriptions has been started.
@@ -84,8 +85,9 @@ class Synchronizer {
    * least once.
    */
   start() {
-    if (this._started)
+    if (this._started) {
       return;
+    }
 
     this._downloader.scheduleChecks(
       getPreferredMillis("subscriptions_check_interval", CHECK_INTERVAL),
@@ -131,12 +133,14 @@ class Synchronizer {
    * @yields {module:downloader.Downloadable}
    */
   *_getDownloadables() {
-    if (!Prefs.subscriptions_autoupdate)
+    if (!Prefs.subscriptions_autoupdate) {
       return;
+    }
 
     for (let subscription of this._filterStorage.subscriptions()) {
-      if (subscription instanceof CountableSubscription)
+      if (subscription instanceof CountableSubscription) {
         yield this._getDownloadable(subscription, false);
+      }
     }
   }
 
@@ -165,11 +169,13 @@ class Synchronizer {
       result = new Downloadable(url);
     }
 
-    if (analytics.isTrusted(url))
+    if (analytics.isTrusted(url)) {
       result.firstVersion = analytics.getFirstVersion();
+    }
 
-    if (lastDownload != lastSuccess)
+    if (lastDownload != lastSuccess) {
       result.lastError = lastDownload * MILLIS_IN_SECOND;
+    }
 
     result.lastCheck = lastCheck * MILLIS_IN_SECOND;
     result.lastVersion = version;
@@ -178,8 +184,9 @@ class Synchronizer {
     result.manual = manual;
     result.downloadCount = downloadCount;
     result.disabled = disabled;
-    if (!diffURL && (disabled || (countable && !downloadable)))
+    if (!diffURL && (disabled || (countable && !downloadable))) {
       result.method = "HEAD";
+    }
 
     return result;
   }
@@ -227,11 +234,13 @@ class Synchronizer {
     let {error, lines, params,
          minVersion} = isHEAD ? {params: {}} : parseFilterList(responseText);
 
-    if (error)
+    if (error) {
       return errorCallback(error);
+    }
 
-    if (params.redirect)
+    if (params.redirect) {
       return redirectCallback(params.redirect);
+    }
 
     subscription.mark("parsing.finished");
 
@@ -244,13 +253,15 @@ class Synchronizer {
       subscription.lastCheck = oldSubscription.lastCheck;
 
       let listed = this._filterStorage.hasSubscription(oldSubscription);
-      if (listed)
+      if (listed) {
         this._filterStorage.removeSubscription(oldSubscription);
+      }
 
       Subscription.knownSubscriptions.delete(oldSubscription.url);
 
-      if (listed)
+      if (listed) {
         this._filterStorage.addSubscription(subscription);
+      }
     }
 
     // The download actually succeeded
@@ -271,8 +282,9 @@ class Synchronizer {
         url = null;
       }
 
-      if (url && (url.protocol == "http:" || url.protocol == "https:"))
+      if (url && (url.protocol == "http:" || url.protocol == "https:")) {
         subscription.homepage = url.href;
+      }
     }
 
     if (params.title) {
@@ -286,15 +298,17 @@ class Synchronizer {
     if (params.version) {
       subscription.version = parseInt(params.version, 10);
 
-      if (analytics.isTrusted(downloadable.redirectURL || downloadable.url))
+      if (analytics.isTrusted(downloadable.redirectURL || downloadable.url)) {
         analytics.recordVersion(params.version);
+      }
     }
     else {
       subscription.version = isHEAD ? downloadable.lastVersion : 0;
     }
 
-    if (subscription.type)
+    if (subscription.type) {
       subscription.abtest = params.abtest;
+    }
 
     let headExpInterval = getPreferredMillis(
       "subscriptions_head_expiration_interval",
@@ -312,10 +326,12 @@ class Synchronizer {
       let match = /^(\d+)\s*(h)?/.exec(params.expires);
       if (match) {
         let interval = parseInt(match[1], 10);
-        if (match[2])
+        if (match[2]) {
           expirationInterval = interval * MILLIS_IN_HOUR;
-        else
+        }
+        else {
           expirationInterval = interval * MILLIS_IN_DAY;
+        }
       }
     }
 
@@ -326,17 +342,21 @@ class Synchronizer {
     subscription.softExpiration = Math.round(softExpiration / MILLIS_IN_SECOND);
     subscription.expires = Math.round(hardExpiration / MILLIS_IN_SECOND);
 
-    if (minVersion)
+    if (minVersion) {
       subscription.requiredVersion = minVersion;
-    else
+    }
+    else {
       delete subscription.requiredVersion;
+    }
 
     // In case of HEAD request (disabled subscription) notify an update so that
     // the last version of the subscription will be stored for the next time.
-    if (isHEAD)
+    if (isHEAD) {
       filterNotifier.emit("subscription.updated", subscription);
-    else
+    }
+    else {
       this._processFilters(subscription, lines);
+    }
   }
 
   _onDownloadError(downloadable, downloadURL, error, responseStatus,
@@ -377,8 +397,9 @@ class Synchronizer {
 
         fetch(fallbackURL, initObj).then(response => response.text())
           .then(responseText => {
-            if (!this._filterStorage.hasSubscription(subscription))
+            if (!this._filterStorage.hasSubscription(subscription)) {
               return;
+            }
 
             let match = /^(\d+)(?:\s+(\S+))?$/.exec(responseText);
             if (match && match[1] == "301" &&    // Moved permanently
@@ -408,10 +429,12 @@ class Synchronizer {
     subscription, filters, errorCallback
   ) {
     let {error, lines} = parseFilterList(filters);
-    if (error)
+    if (error) {
       errorCallback(error);
-    else
+    }
+    else {
       this._processFilters(subscription, lines);
+    }
   }
 
   /**
@@ -430,8 +453,9 @@ class Synchronizer {
     let filterText = [];
     for (let line of lines) {
       line = Filter.normalize(line);
-      if (line)
+      if (line) {
         filterText.push(line);
+      }
     }
 
     this._filterStorage.updateSubscriptionFilters(subscription, filterText);

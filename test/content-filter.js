@@ -461,8 +461,9 @@ describe("Element Hiding", function() {
        setMinTimeout(this, 6000);
 
        if ((isChromiumBased() && (chromiumVersion()[0] < 87)) ||
-           (isEdge() && (edgeVersion()[0] < 87)))
+           (isEdge() && (edgeVersion()[0] < 87))) {
          this.skip(); // no "removeCSS" API available
+       }
 
        await addFilter(`@@|${TEST_PAGES_URL}/history-after-pushState.html^$document`);
        await addFilter("###elem-hide");

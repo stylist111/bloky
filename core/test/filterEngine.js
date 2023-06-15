@@ -239,8 +239,9 @@ describe("Running the filterEngine", function() {
 
     context("Using dynamic filter source", function() {
       function* filterSource() {
-        for (let i = 0; i < 100; i++)
+        for (let i = 0; i < 100; i++) {
           yield `/track?timestamp=${Date.now()}`;
+        }
       }
 
       it("should return promise", function() {

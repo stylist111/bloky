@@ -29,8 +29,9 @@ export function ignoreNoConnectionError(promise) {
   return promise.catch(error => {
     if (typeof error == "object" &&
         (error.message == ERROR_NO_CONNECTION ||
-         error.message == ERROR_CLOSED_CONNECTION))
+         error.message == ERROR_CLOSED_CONNECTION)) {
       return;
+    }
 
     throw error;
   });

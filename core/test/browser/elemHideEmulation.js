@@ -55,8 +55,9 @@ describe("Element hiding emulation", function() {
 
   function expectHidden(element, id) {
     let withId = "";
-    if (typeof id != "undefined")
+    if (typeof id != "undefined") {
       withId = ` with ID '${id}'`;
+    }
 
     assert.equal(
       window.getComputedStyle(element).display, "none", `The element${withId}'s display property should be set to 'none'`);
@@ -64,8 +65,9 @@ describe("Element hiding emulation", function() {
 
   function expectVisible(element, id) {
     let withId = "";
-    if (typeof id != "undefined")
+    if (typeof id != "undefined") {
       withId = ` with ID '${id}'`;
+    }
 
     assert.notEqual(
       window.getComputedStyle(element).display, "none", `The element${withId}'s display property should not be set to 'none'`);
@@ -73,8 +75,9 @@ describe("Element hiding emulation", function() {
 
   function expectProcessed(element, id = null) {
     let withId = "";
-    if (id)
+    if (id) {
       withId = ` with ID '${id}'`;
+    }
 
     assert.ok(
       getTestInfo().lastProcessedElements.has(element),
@@ -83,8 +86,9 @@ describe("Element hiding emulation", function() {
 
   function expectNotProcessed(element, id = null) {
     let withId = "";
-    if (id)
+    if (id) {
       withId = ` with ID '${id}'`;
+    }
 
     assert.ok(
       !getTestInfo().lastProcessedElements.has(element),
@@ -93,8 +97,9 @@ describe("Element hiding emulation", function() {
 
   function expectTrackedHidden(element, id = null) {
     let withId = "";
-    if (id)
+    if (id) {
       withId = ` with ID '${id}'`;
+    }
     assert.ok(
       elemHideEmulation.hiddenElements.has(element),
       `The element${withId} should be tracked as hidden`);
@@ -102,8 +107,9 @@ describe("Element hiding emulation", function() {
 
   function expectNotTrackedHidden(element, id = null) {
     let withId = "";
-    if (id)
+    if (id) {
       withId = ` with ID '${id}'`;
+    }
     assert.ok(
       !elemHideEmulation.hiddenElements.has(element),
       `The element${withId} should not be tracked as hidden`);
@@ -111,8 +117,9 @@ describe("Element hiding emulation", function() {
 
   function findUniqueId() {
     let id = "elemHideEmulationTest-" + Math.floor(Math.random() * 10000);
-    if (!testDocument.getElementById(id))
+    if (!testDocument.getElementById(id)) {
       return id;
+    }
     return findUniqueId();
   }
 
@@ -133,12 +140,15 @@ describe("Element hiding emulation", function() {
                          innerText = null) {
     let element = testDocument.createElement(type);
     element.id = id;
-    if (!parent)
+    if (!parent) {
       testDocument.body.appendChild(element);
-    else
+    }
+    else {
       parent.appendChild(element);
-    if (innerText)
+    }
+    if (innerText) {
       element.innerText = innerText;
+    }
     return element;
   }
 
@@ -158,14 +168,16 @@ describe("Element hiding emulation", function() {
           // Firefox will send mutation notifications even if the
           // property is set to the same value.
           for (let elem of elems) {
-            if (elem.style.display != "none")
+            if (elem.style.display != "none") {
               elem.style.display = "none";
+            }
           }
         },
         elems => {
           for (let elem of elems) {
-            if (elem.style.display === "none")
+            if (elem.style.display === "none") {
               elem.style.display = "";
+            }
           }
         }
       );
@@ -217,8 +229,9 @@ describe("Element hiding emulation", function() {
     let toHide = createElementWithStyle("{background-color: #000}");
     let selectors = [":-abp-properties(background-color: rgb(0, 0, 0))"];
 
-    if (await applyElemHideEmulation(selectors))
+    if (await applyElemHideEmulation(selectors)) {
       expectHidden(toHide);
+    }
   });
 
   it("Verbatim property selector: with prefix", async function() {
@@ -318,16 +331,18 @@ describe("Element hiding emulation", function() {
     let toHide = createElementWithStyle("{background-color: #000}");
     let selectors = [":-abp-properties(*color: rgb(0, 0, 0))"];
 
-    if (await applyElemHideEmulation(selectors))
+    if (await applyElemHideEmulation(selectors)) {
       expectHidden(toHide);
+    }
   });
 
   it("Property selector: with regular expression", async function() {
     let toHide = createElementWithStyle("{background-color: #000}");
     let selectors = [":-abp-properties(/.*color: rgb\\(0, 0, 0\\)/)"];
 
-    if (await applyElemHideEmulation(selectors))
+    if (await applyElemHideEmulation(selectors)) {
       expectHidden(toHide);
+    }
   });
 
   it("Dynamically changed property", async function() {
@@ -365,10 +380,12 @@ describe("Element hiding emulation", function() {
   function compareExpectations(elems, expectations) {
     for (let elem in expectations) {
       if (elems[elem]) {
-        if (expectations[elem])
+        if (expectations[elem]) {
           expectVisible(elems[elem], elem);
-        else
+        }
+        else {
           expectHidden(elems[elem], elem);
+        }
       }
     }
   }
@@ -376,15 +393,17 @@ describe("Element hiding emulation", function() {
   it("Pseudo-class: has selector: simple", async function() {
     let toHide = createElementWithStyle("{}");
 
-    if (await applyElemHideEmulation(["div:-abp-has(div)"]))
+    if (await applyElemHideEmulation(["div:-abp-has(div)"])) {
       expectVisible(toHide);
+    }
   });
 
   it("Pseudo-class: has selector: short", async function() {
     let toHide = createElementWithStyle("{}");
 
-    if (await applyElemHideEmulation(["div:has(div)"]))
+    if (await applyElemHideEmulation(["div:has(div)"])) {
       expectVisible(toHide);
+    }
   });
 
   it("Pseudo-class: has selector: with prefix", async function() {
@@ -507,8 +526,9 @@ describe("Element hiding emulation", function() {
 
     insertStyleRule(".inside {}");
 
-    if (await applyElemHideEmulation([selector]))
+    if (await applyElemHideEmulation([selector])) {
       compareExpectations(elems, expectations);
+    }
   }
 
   it("Pseudo-class: has selector: with has and with suffix sibling (1)", function() {
@@ -675,8 +695,9 @@ describe("Element hiding emulation", function() {
         </a>
       </div>`;
 
-    if (await applyElemHideEmulation([selector]))
+    if (await applyElemHideEmulation([selector])) {
       expectHidden(testDocument.getElementById("toHide"));
+    }
   }
 
   // See issue https://issues.adblockplus.org/ticket/7428
@@ -730,8 +751,9 @@ describe("Element hiding emulation", function() {
       toHide: testDocument.getElementById("tohide")
     };
 
-    if (await applyElemHideEmulation([selector]))
+    if (await applyElemHideEmulation([selector])) {
       compareExpectations(elems, expectations);
+    }
   }
 
   it("Pseudo-class: contains selector: text", function() {
@@ -1211,8 +1233,9 @@ describe("Element hiding emulation", function() {
     // </body>
     for (let i of [1, 2, 3, 4]) {
       let n = createElement(null, "div", `n${i}`);
-      for (let [j, text] of [[1], [2], [4, "Hello"]])
+      for (let [j, text] of [[1], [2], [4, "Hello"]]) {
         createElement(n, "p", `n${i}_${j}`, text);
+      }
     }
 
     let selectors = [
@@ -1229,17 +1252,20 @@ describe("Element hiding emulation", function() {
         expectVisible(testDocument.getElementById(parentId), parentId);
         for (let j of [1, 2, 4]) {
           let id = `n${i}_${j}`;
-          if (j == 4)
+          if (j == 4) {
             expectHidden(testDocument.getElementById(id), id);
-          else
+          }
+          else {
             expectVisible(testDocument.getElementById(id), id);
+          }
         }
       }
 
       // All <div> and <p> elements should be processed initially.
       for (let element of [...testDocument.getElementsByTagName("div"),
-                           ...testDocument.getElementsByTagName("p")])
+                           ...testDocument.getElementsByTagName("p")]) {
         expectProcessed(element, element.id);
+      }
 
       // Modify the text in <p id="n4_1">
       testDocument.getElementById("n4_1").innerText = "Try me!";
@@ -1249,17 +1275,21 @@ describe("Element hiding emulation", function() {
       // Another sanity check, that new text should have hidden n4
       for (let i of [1, 2, 3, 4]) {
         let parentId = `n${i}`;
-        if (i == 4)
+        if (i == 4) {
           expectHidden(testDocument.getElementById(parentId), parentId);
-        else
+        }
+        else {
           expectVisible(testDocument.getElementById(parentId), parentId);
+        }
 
         for (let j of [1, 2, 4]) {
           let id = `n${i}_${j}`;
-          if (j == 4)
+          if (j == 4) {
             expectHidden(testDocument.getElementById(id), id);
-          else
+          }
+          else {
             expectVisible(testDocument.getElementById(id), id);
+          }
         }
       }
 
@@ -1274,10 +1304,12 @@ describe("Element hiding emulation", function() {
             element.id == "n1_4" ||
             element.id == "n2_4" ||
             element.id == "n3_4" ||
-            element.id == "n4_4")
+            element.id == "n4_4") {
           expectProcessed(element, element.id);
-        else
+        }
+        else {
           expectNotProcessed(element, element.id);
+        }
       }
 
       // Create a new <p id="n2_3"> element with no text.
@@ -1300,10 +1332,12 @@ describe("Element hiding emulation", function() {
             element.id == "n1_4" ||
             element.id == "n2_4" ||
             element.id == "n3_4" ||
-            element.id == "n4_4")
+            element.id == "n4_4") {
           expectProcessed(element, element.id);
-        else
+        }
+        else {
           expectNotProcessed(element, element.id);
+        }
       }
     }
   });
@@ -1410,8 +1444,9 @@ describe("Element hiding emulation", function() {
       "div:-abp-has(p#child)"
     ];
 
-    if (await applyElemHideEmulation(selectors))
+    if (await applyElemHideEmulation(selectors)) {
       expectHidden(parent);
+    }
 
     elemHideEmulation.disconnect();
     await timeout(REFRESH_INTERVAL);
@@ -1426,8 +1461,9 @@ describe("Element hiding emulation", function() {
       "div:-abp-has(p#child)"
     ];
 
-    if (await applyElemHideEmulation(selectors))
+    if (await applyElemHideEmulation(selectors)) {
       expectVisible(parent);
+    }
 
     elemHideEmulation.disconnect();
 
@@ -1461,8 +1497,9 @@ describe("Element hiding emulation", function() {
         assert.fail("Timeout waiting for filtering to be completed");
       }
 
-      for (let elem of toHide)
+      for (let elem of toHide) {
         expectHidden(elem);
+      }
     }
   }
 

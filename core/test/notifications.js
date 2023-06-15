@@ -80,16 +80,18 @@ describe("Notifications", function() {
   function* pairs(array) {
     for (let element1 of array) {
       for (let element2 of array) {
-        if (element1 != element2)
+        if (element1 != element2) {
           yield [element1, element2];
+        }
       }
     }
   }
 
   function registerHandler(notificationList, checkCallback) {
     runner.registerHandler("/notification.json", metadata => {
-      if (checkCallback)
+      if (checkCallback) {
         checkCallback(metadata);
+      }
 
       let payload = {
         version: 55,
@@ -388,8 +390,9 @@ describe("Notifications", function() {
       ["locales", ["en-US", "de-DE"], true],
       ["locales", ["de-DE"], false],
       ["locales", ["en-GB", "de-DE"], false]
-    ])
+    ]) {
       it(`${propName}=${value}`, testTargetSelectionFunc(propName, value, result));
+    }
   });
 
   describe("No show stats", function() {
@@ -405,8 +408,9 @@ describe("Notifications", function() {
     for (let [propName, value, result] of [
       ["blockedTotalMin", "10", false],
       ["blockedTotalMax", "10", false]
-    ])
+    ]) {
       it(`Target ${propName}=${value}`, testTargetSelectionFunc(propName, value, result));
+    }
   });
 
   describe("Multiple targets", function() {
@@ -575,8 +579,9 @@ describe("Notifications", function() {
       Prefs.notificationdata = {};
       downloadCount = 0;
 
-      if (typeof eFlag != "undefined")
+      if (typeof eFlag != "undefined") {
         Prefs.notificationdata.data = {};
+      }
 
       // First download on 2019-05-07T12:00Z.
       await checkDownload({version: "2019050712"}, {
@@ -645,8 +650,9 @@ describe("Notifications", function() {
       Prefs.notificationdata = {};
       downloadCount = 0;
 
-      if (typeof eFlag != "undefined")
+      if (typeof eFlag != "undefined") {
         Prefs.notificationdata.data = {};
+      }
 
       // First download on 2019-05-07T00:00Z.
       await checkDownload({version: "20190507"}, {
@@ -751,8 +757,9 @@ describe("Notifications", function() {
       }
     ]) {
       let testId = `Math.random() returning ${currentTest.randomResult}`;
-      if (typeof currentTest.skip == "number")
+      if (typeof currentTest.skip == "number") {
         testId += ` skipping ${currentTest.skip} hours after ${currentTest.skipAfter} hours`;
+      }
 
       it(testId, function() {
         let requests = [];
@@ -810,8 +817,9 @@ describe("Notifications", function() {
     };
 
     function listener(name) {
-      if (name !== "notificationdata")
+      if (name !== "notificationdata") {
         return;
+      }
 
       Prefs.removeListener(listener);
       let notification = Prefs.notificationdata.data.notifications[0];

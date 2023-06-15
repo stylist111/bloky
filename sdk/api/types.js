@@ -30,8 +30,9 @@ export class EventDispatcher {
     this._initialized = false;
 
     let dispatch = (...args) => {
-      for (let listener of this._listeners)
+      for (let listener of this._listeners) {
         listener(...args);
+      }
     };
 
     this._initialize = initializer.bind(null, dispatch);
@@ -74,8 +75,9 @@ export class EventDispatcher {
    * @param {[Object]} listener arguments
    */
   emit(...args) {
-    for (let listener of this._listeners)
+    for (let listener of this._listeners) {
       listener(...args);
+    }
   }
 }
 

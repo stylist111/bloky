@@ -46,12 +46,14 @@ exports.filterToRegExp = function filterToRegExp(text) {
   text = text.replace(/\*+/g, "*");
 
   // remove leading wildcard
-  if (text[0] == "*")
+  if (text[0] == "*") {
     text = text.substring(1);
+  }
 
   // remove trailing wildcard
-  if (text[text.length - 1] == "*")
+  if (text[text.length - 1] == "*") {
     text = text.substring(0, text.length - 1);
+  }
 
   return text
     // remove anchors following separator placeholder
@@ -143,8 +145,9 @@ exports.compilePatterns = function compilePatterns(filters) {
   // platforms. As a precaution, we refuse to compile. Ideally we would check
   // the length of the regular expression source rather than the number of
   // filters, but this is far more straightforward and practical.
-  if (list.length > COMPILE_PATTERNS_MAX)
+  if (list.length > COMPILE_PATTERNS_MAX) {
     return null;
+  }
 
   let caseSensitive = "";
   let caseInsensitive = "";
@@ -152,21 +155,25 @@ exports.compilePatterns = function compilePatterns(filters) {
   for (let filter of filters) {
     let source = filter.urlPattern.regexpSource;
 
-    if (filter.matchCase)
+    if (filter.matchCase) {
       caseSensitive += source + "|";
-    else
+    }
+    else {
       caseInsensitive += source + "|";
+    }
   }
 
   let caseSensitiveRegExp = null;
   let caseInsensitiveRegExp = null;
 
   try {
-    if (caseSensitive)
+    if (caseSensitive) {
       caseSensitiveRegExp = new RegExp(caseSensitive.slice(0, -1));
+    }
 
-    if (caseInsensitive)
+    if (caseInsensitive) {
       caseInsensitiveRegExp = new RegExp(caseInsensitive.slice(0, -1));
+    }
   }
   catch (error) {
     // It is possible in theory for the regular expression to be too large
@@ -193,8 +200,9 @@ exports.Pattern = class Pattern {
   constructor(pattern, matchCase) {
     this.matchCase = matchCase || false;
 
-    if (!this.matchCase)
+    if (!this.matchCase) {
       pattern = pattern.toLowerCase();
+    }
 
     if (pattern.length >= 2 &&
         pattern[0] == "/" &&
@@ -262,8 +270,9 @@ exports.Pattern = class Pattern {
   matchesLocation(request) {
     let location = this.matchCase ? request.href : request.lowerCaseHref;
     let regexp = this.regexp;
-    if (regexp)
+    if (regexp) {
       return regexp.test(location);
+    }
 
     let pattern = this.pattern;
     let startsWithAnchor = pattern[0] == "|";
@@ -272,13 +281,16 @@ exports.Pattern = class Pattern {
     let endsWithAnchor = !endsWithSeparator &&
         pattern[pattern.length - 1] == "|";
 
-    if (startsWithExtendedAnchor)
+    if (startsWithExtendedAnchor) {
       pattern = pattern.substr(2);
-    else if (startsWithAnchor)
+    }
+    else if (startsWithAnchor) {
       pattern = pattern.substr(1);
+    }
 
-    if (endsWithSeparator || endsWithAnchor)
+    if (endsWithSeparator || endsWithAnchor) {
       pattern = pattern.slice(0, -1);
+    }
 
     let index = location.indexOf(pattern);
 
@@ -296,11 +308,13 @@ exports.Pattern = class Pattern {
            separatorRegExp.test(location[index + pattern.length]) :
            endsWithAnchor ?
            index == location.length - pattern.length :
-           true))
+           true)) {
         return true;
+      }
 
-      if (pattern == "")
+      if (pattern == "") {
         return true;
+      }
 
       index = location.indexOf(pattern, index + 1);
     }
@@ -321,8 +335,9 @@ exports.Pattern = class Pattern {
    * @returns {string[]}
    */
   keywordCandidates() {
-    if (!this.pattern)
+    if (!this.pattern) {
       return null;
+    }
     return this.pattern.toLowerCase().match(allKeywordsRegExp);
   }
 };

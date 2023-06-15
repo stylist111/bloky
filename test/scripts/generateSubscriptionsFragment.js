@@ -81,8 +81,9 @@ describe("generateSubscriptionsFragment script", function() {
   });
 
   afterEach(function() {
-    if (fs.existsSync(tmpDir))
+    if (fs.existsSync(tmpDir)) {
       fs.rmdirSync(tmpDir, {recursive: true});
+    }
     console.warn = originalConsoleWarn;
   });
 

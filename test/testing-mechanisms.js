@@ -216,8 +216,9 @@ describe("Testing Mechanisms", function() {
       // For firefox 68 this test will fail
       // To be unskipped once fix will land in get-browser-binary
       // More details: https://gitlab.com/eyeo/developer-experience/get-browser-binary/-/issues/49
-      if (isFirefox() && firefoxVersion() == 68)
+      if (isFirefox() && firefoxVersion() == 68) {
         this.skip();
+      }
 
       // Get error by invoking calling same endpoint twice with same argument
       await browser.runtime.sendMessage({type: "filters.importRaw", text: `${VALID_FILTER_TEXT} `});
@@ -225,8 +226,9 @@ describe("Testing Mechanisms", function() {
       // before calling add one more time to trigger error
       await wait(async() => {
         let userFilters = await browser.runtime.sendMessage({type: "filters.get"});
-        if (typeof userFilters == "object" && userFilters.length > 0)
+        if (typeof userFilters == "object" && userFilters.length > 0) {
           return userFilters;
+        }
         return false;
       }, 1000, "First filter wasn't added properly");
 
@@ -235,8 +237,9 @@ describe("Testing Mechanisms", function() {
       let errors;
       await wait(async() => {
         errors = await browser.runtime.sendMessage({type: "debug.getLastError"});
-        if (typeof errors != "object" && errors.length > 0)
+        if (typeof errors != "object" && errors.length > 0) {
           return errors;
+        }
         return false;
       }, 1500, "Errors weren't received");
 

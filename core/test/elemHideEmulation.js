@@ -43,10 +43,12 @@ describe("Element hiding emulation", function() {
     function testSelectorMatches(description, filters, domain, expectedMatches) {
       for (let filter of filters) {
         filter = Filter.fromText(filter);
-        if (filter instanceof ElemHideEmulationFilter)
+        if (filter instanceof ElemHideEmulationFilter) {
           elemHideEmulation.add(filter);
-        else
+        }
+        else {
           elemHideExceptions.add(filter);
+        }
       }
 
       let matches = elemHideEmulation.getFilters(domain)

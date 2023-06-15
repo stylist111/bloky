@@ -47,8 +47,9 @@ class FilterState {
    */
   disabledSubscriptions(filterText) {
     let state = this.map.get(filterText);
-    if (!state || typeof state.disabledSubscriptions !== "object")
+    if (!state || typeof state.disabledSubscriptions !== "object") {
       return new Set();
+    }
     return state.disabledSubscriptions;
   }
 
@@ -72,8 +73,9 @@ class FilterState {
    */
   isDisabledForSubscription(filterText, subscriptionUrl) {
     let state = this.map.get(filterText);
-    if (state)
+    if (state) {
       return state.isDisabledForSubscription(subscriptionUrl);
+    }
     return false;
   }
 
@@ -99,8 +101,9 @@ class FilterState {
    */
   isEnabled(filterText) {
     let state = this.map.get(filterText);
-    if (state)
+    if (state) {
       return state.enabled;
+    }
     return true;
   }
 
@@ -135,8 +138,9 @@ class FilterState {
    */
   getHitCount(filterText) {
     let state = this.map.get(filterText);
-    if (state)
+    if (state) {
       return state.hitCount;
+    }
 
     return 0;
   }
@@ -168,8 +172,9 @@ class FilterState {
    */
   getLastHit(filterText) {
     let state = this.map.get(filterText);
-    if (state)
+    if (state) {
       return state.lastHit;
+    }
 
     return 0;
   }
@@ -224,8 +229,9 @@ class FilterState {
    */
   reset(filterText) {
     let state = this.map.get(filterText);
-    if (!state)
+    if (!state) {
       return;
+    }
 
     this.map.delete(filterText);
 
@@ -250,8 +256,9 @@ class FilterState {
                           state.hitCount);
     }
 
-    if (state.lastHit != 0)
+    if (state.lastHit != 0) {
       filterNotifier.emit("filterState.lastHit", filterText, 0, state.lastHit);
+    }
   }
 
   /**
@@ -264,8 +271,9 @@ class FilterState {
    */
   *serialize(filterText) {
     let state = this.map.get(filterText);
-    if (!state)
+    if (!state) {
       return;
+    }
 
     yield "[Filter]";
     yield "text=" + filterText;
@@ -274,14 +282,17 @@ class FilterState {
       yield "disabled=true";
     }
     else if (typeof state.disabledSubscriptions === "object") {
-      for (let disabledSubscription of state.disabledSubscriptions)
+      for (let disabledSubscription of state.disabledSubscriptions) {
         yield "disabledSubscriptions[]=" + disabledSubscription;
+      }
     }
 
-    if (state.hitCount != 0)
+    if (state.hitCount != 0) {
       yield "hitCount=" + state.hitCount;
-    if (state.lastHit != 0)
+    }
+    if (state.lastHit != 0) {
       yield "lastHit=" + state.lastHit;
+    }
   }
 
   /**
@@ -296,19 +307,23 @@ class FilterState {
     if (!("disabled" in object ||
           "disabledSubscriptions" in object ||
           "hitCount" in object ||
-          "lastHit" in object))
+          "lastHit" in object)) {
       return;
+    }
 
     let state = new FilterStateEntry();
-    if (String(object.disabled) == "true")
+    if (String(object.disabled) == "true") {
       state.disabled = true;
-    else if (typeof object.disabledSubscriptions === "object")
+    }
+    else if (typeof object.disabledSubscriptions === "object") {
       state.disabledSubscriptions = new Set(object.disabledSubscriptions);
+    }
 
     state.hitCount = parseInt(object.hitCount, 10) || 0;
     state.lastHit = parseInt(object.lastHit, 10) || 0;
-    if (!state.isEmpty())
+    if (!state.isEmpty()) {
       this.map.set(filterText, state);
+    }
   }
 
   _updateStateObject(filterText, doUpdate) {
@@ -330,8 +345,9 @@ class FilterState {
     let newEnabled = state.enabled;
     let newDisabledSubscriptions = new Set(state.disabledSubscriptions);
 
-    if (state.isEmpty())
+    if (state.isEmpty()) {
       this.map.delete(filterText);
+    }
 
     if (oldHitCount !== newHitCount) {
       filterNotifier.emit("filterState.hitCount",
@@ -401,8 +417,9 @@ class FilterStateEntry {
    * @returns {boolean}
    */
   isDisabledForSubscription(subscriptionUrl) {
-    if (this.disabled === true)
+    if (this.disabled === true) {
       return true;
+    }
     return this.disabledSubscriptions &&
       this.disabledSubscriptions.has(subscriptionUrl);
   }
@@ -416,19 +433,22 @@ class FilterStateEntry {
   setDisabledForSubscription(subscriptionUrl, disabled) {
     delete this.disabled;
 
-    if (!this.disabledSubscriptions && !disabled)
+    if (!this.disabledSubscriptions && !disabled) {
       return;
+    }
 
-    if (!this.disabledSubscriptions)
+    if (!this.disabledSubscriptions) {
       this.disabledSubscriptions = new Set();
+    }
 
     if (disabled) {
       this.disabledSubscriptions.add(subscriptionUrl);
     }
     else {
       this.disabledSubscriptions.delete(subscriptionUrl);
-      if (this.disabledSubscriptions.size === 0)
+      if (this.disabledSubscriptions.size === 0) {
         delete this.disabledSubscriptions;
+      }
     }
   }
 
@@ -466,12 +486,14 @@ class FilterStateEntry {
  */
 function disabledSubscriptionsEquals(oldDisabledSubscriptions,
                                      newDisabledSubscriptions) {
-  if (oldDisabledSubscriptions.size !== newDisabledSubscriptions.size)
+  if (oldDisabledSubscriptions.size !== newDisabledSubscriptions.size) {
     return false;
+  }
 
   for (let old of oldDisabledSubscriptions) {
-    if (!newDisabledSubscriptions.has(old))
+    if (!newDisabledSubscriptions.has(old)) {
       return false;
+    }
   }
   return true;
 }

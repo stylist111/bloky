@@ -45,8 +45,9 @@ function configureRunners() {
                   process.env.BROWSER_TEST_RUNNERS.split(",") :
                   [];
 
-  if (runners.length == 0)
+  if (runners.length == 0) {
     return ["chromium", "firefox"];
+  }
 
   return runners.filter(
     runner => Object.prototype.hasOwnProperty.call(runnerDefinitions, runner)
@@ -66,13 +67,16 @@ function addTestPaths(testPaths, recurse) {
       }
       continue;
     }
-    if (path.basename(testPath).startsWith("_"))
+    if (path.basename(testPath).startsWith("_")) {
       continue;
+    }
     if (path.extname(testPath) == ".js") {
-      if (testPath.split(path.sep).includes("browser"))
+      if (testPath.split(path.sep).includes("browser")) {
         browserFiles.push(testPath);
-      else
+      }
+      else {
         unitFiles.push(testPath);
+      }
     }
   }
 }
@@ -96,13 +100,15 @@ async function webpackInMemory(bundleFilename, options) {
     // Error handling is based on this example
     // https://webpack.js.org/api/node/#error-handling
     let reason = error.stack || error;
-    if (error.details)
+    if (error.details) {
       reason += "\n" + error.details;
+    }
     throw reason;
   }
 
-  if (stats.hasErrors())
+  if (stats.hasErrors()) {
     throw stats.toJson().errors;
+  }
 
   let bundle = memoryFS.readFileSync("/" + bundleFilename, "utf-8");
   memoryFS.unlinkSync("/" + bundleFilename);
@@ -110,18 +116,21 @@ async function webpackInMemory(bundleFilename, options) {
 }
 
 async function runBrowserTests(processes) {
-  if (browserFiles.length == 0)
+  if (browserFiles.length == 0) {
     return;
+  }
 
   let bundleFilename = "bundle.js";
   let mochaPath = path.join(dirname, "node_modules", "mocha", "mocha.js");
   let chaiPath = path.join(dirname, "node_modules", "chai", "chai.js");
   // If we run in a workspace we need to get one level up.
   // No idea how to determine if we run in a workspace.
-  if (!fs.existsSync(mochaPath))
+  if (!fs.existsSync(mochaPath)) {
     mochaPath = path.join(dirname, "..", "node_modules", "mocha", "mocha.js");
-  if (!fs.existsSync(chaiPath))
+  }
+  if (!fs.existsSync(chaiPath)) {
     chaiPath = path.join(dirname, "..", "node_modules", "chai", "chai.js");
+  }
 
   let bundle = await webpackInMemory(bundleFilename, {
     entry: path.join(dirname, "test", "browser", "_bootstrap.js"),
@@ -169,8 +178,9 @@ async function runBrowserTests(processes) {
     )
   );
 
-  if (errors.length > 0)
+  if (errors.length > 0) {
     throw `Browser tests failed: ${errors.join(", ")}`;
+  }
 }
 
 function spawnScript(name, ...args) {
@@ -180,10 +190,12 @@ function spawnScript(name, ...args) {
                        {stdio: ["inherit", "inherit", "inherit"]});
     script.on("error", reject);
     script.on("close", code => {
-      if (code == 0)
+      if (code == 0) {
         resolve();
-      else
+      }
+      else {
         reject();
+      }
     });
   });
 }
@@ -198,12 +210,14 @@ function spawnScript(name, ...args) {
   try {
     await runBrowserTests(runnerProcesses);
 
-    if (unitFiles.length > 0)
+    if (unitFiles.length > 0) {
       await spawnScript("unit-tests", ...unitFiles);
+    }
   }
   catch (error) {
-    if (error)
+    if (error) {
       console.error(error);
+    }
 
     process.exit(1);
   }

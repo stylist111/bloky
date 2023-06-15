@@ -60,8 +60,9 @@ describe("Filter storage read/write", function() {
     let sections = [];
     for (let line of data) {
       if (/^\[.*\]$/.test(line)) {
-        if (curSection)
+        if (curSection) {
           sections.push(curSection);
+        }
 
         curSection = {header: line, data: []};
       }
@@ -69,18 +70,21 @@ describe("Filter storage read/write", function() {
         curSection.data.push(line);
       }
     }
-    if (curSection)
+    if (curSection) {
       sections.push(curSection);
+    }
 
     for (let section of sections) {
       section.key = section.header + " " + section.data[0];
       section.data.sort();
     }
     sections.sort((a, b) => {
-      if (a.key < b.key)
+      if (a.key < b.key) {
         return -1;
-      else if (a.key > b.key)
+      }
+      else if (a.key > b.key) {
         return 1;
+      }
       return 0;
     });
     return sections;
@@ -127,8 +131,9 @@ describe("Filter storage read/write", function() {
     it("Empty file", async function() {
       await filterStorage.saveToDisk();
 
-      for (let subscription of filterStorage._knownSubscriptions.values())
+      for (let subscription of filterStorage._knownSubscriptions.values()) {
         filterStorage.removeSubscription(subscription);
+      }
 
       await filterStorage.saveToDisk();
 
@@ -155,12 +160,14 @@ describe("Filter storage read/write", function() {
     try {
       let lines = await testData;
 
-      if (lines.length && lines[lines.length - 1] == "")
+      if (lines.length && lines[lines.length - 1] == "") {
         lines.pop();
+      }
 
       let importer = filterStorage.importData();
-      for (let line of lines)
+      for (let line of lines) {
         importer(line);
+      }
       importer(null);
 
       assert.equal(filterStorage.fileProperties.version, filterStorage.formatVersion, "File format version");
@@ -303,8 +310,9 @@ describe("Filter storage read/write", function() {
       Prefs.patternsbackupinterval = 24;
 
       try {
-        for (let subscription of filterStorage._knownSubscriptions.values())
+        for (let subscription of filterStorage._knownSubscriptions.values()) {
           filterStorage.removeSubscription(subscription);
+        }
 
         await filterStorage.saveToDisk();
 

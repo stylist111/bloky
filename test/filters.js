@@ -181,8 +181,9 @@ describe("Filters", function() {
       let filters = [VALID_FILTER_TEXT, SECOND_VALID_FILTER_TEXT];
       let metadata = {created: 123};
       await EWE.filters.add(filters, metadata);
-      for (let filter of filters)
+      for (let filter of filters) {
         expect(await EWE.filters.getMetadata(filter)).toEqual(metadata);
+      }
     });
 
     it("skips adding same metadata for the filter in array", async function() {

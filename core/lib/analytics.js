@@ -33,8 +33,9 @@ const {MILLIS_IN_DAY} = require("./time");
  *   returned value represents the Unix epoch.
  */
 function versionToDate(version) {
-  if (version == "0")
+  if (version == "0") {
     return new Date(0);
+  }
 
   let year = version.substring(0, 4);
   let month = version.substring(4, 6);
@@ -65,26 +66,31 @@ function versionToDate(version) {
  */
 function stripFirstVersion(firstVersion, currentVersion) {
   let eFlag = firstVersion.endsWith("-E");
-  if (eFlag)
+  if (eFlag) {
     firstVersion = firstVersion.slice(0, -2);
+  }
 
   try {
     let firstDate = versionToDate(firstVersion);
     let currentDate = versionToDate(currentVersion);
 
-    if (currentDate - firstDate > 365 * MILLIS_IN_DAY)
+    if (currentDate - firstDate > 365 * MILLIS_IN_DAY) {
       firstVersion = firstVersion.substring(0, 4);
-    else if (currentDate - firstDate > 30 * MILLIS_IN_DAY)
+    }
+    else if (currentDate - firstDate > 30 * MILLIS_IN_DAY) {
       firstVersion = firstVersion.substring(0, 6);
-    else
+    }
+    else {
       firstVersion = firstVersion.substring(0, 8);
+    }
   }
   catch (error) {
     return null;
   }
 
-  if (eFlag)
+  if (eFlag) {
     firstVersion += "-E";
+  }
 
   return firstVersion;
 }
@@ -150,8 +156,9 @@ class Analytics {
       let strippedFirstVersion = stripFirstVersion(firstVersion,
                                                    currentVersion);
       if (strippedFirstVersion) {
-        if (strippedFirstVersion == "0" && !isFreshInstall())
+        if (strippedFirstVersion == "0" && !isFreshInstall()) {
           strippedFirstVersion = "0-E";
+        }
 
         return strippedFirstVersion;
       }
@@ -172,13 +179,15 @@ class Analytics {
    * @param {string} version The version, in `YYYYMMDD[HH[MM]]` format.
    */
   recordVersion(version) {
-    if (!/^(\d{8}|\d{10}|\d{12})$/.test(version))
+    if (!/^(\d{8}|\d{10}|\d{12})$/.test(version)) {
       return;
+    }
 
     let {analytics} = Prefs;
     if (analytics) {
-      if (!analytics.data)
+      if (!analytics.data) {
         analytics.data = {};
+      }
 
       let {data} = analytics;
 
@@ -186,8 +195,9 @@ class Analytics {
 
       if (typeof data.firstVersion == "undefined") {
         // If this is not a new installation, set the -E flag.
-        if (!isFreshInstall())
+        if (!isFreshInstall()) {
           version += "-E";
+        }
 
         data.firstVersion = version;
       }

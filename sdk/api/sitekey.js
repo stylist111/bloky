@@ -31,23 +31,26 @@ let startupPromise;
 let listeners = [];
 
 function notifySitekey(tabId, frameId, url, sitekey) {
-  for (let listener of listeners)
+  for (let listener of listeners) {
     listener(tabId, frameId, url, sitekey);
+  }
 }
 
 function notifyAllSitekeys() {
   for (let [tabId, framesMap] of Object.entries(sitekeys)) {
     for (let [frameId, sitekeysMap] of Object.entries(framesMap)) {
-      for (let [url, sitekeyInfo] of Object.entries(sitekeysMap))
+      for (let [url, sitekeyInfo] of Object.entries(sitekeysMap)) {
         notifySitekey(tabId, frameId, url, sitekeyInfo.sitekey);
+      }
     }
   }
 }
 
 function onHeadersReceived({tabId, frameId, url, responseHeaders}) {
   let sitekey = setSitekeyFromHeaders(tabId, frameId, url, responseHeaders);
-  if (sitekey)
+  if (sitekey) {
     notifySitekey(tabId, frameId, url, sitekey);
+  }
 }
 
 export function addListener(listener) {
@@ -67,11 +70,13 @@ export function addListener(listener) {
  */
 export function getSitekey(tabId, frameId, url) {
   let sitekeysForTab = sitekeys[tabId];
-  if (!sitekeysForTab)
+  if (!sitekeysForTab) {
     return null;
+  }
   let sitekeysForFrame = sitekeysForTab[frameId];
-  if (!sitekeysForFrame)
+  if (!sitekeysForFrame) {
     return null;
+  }
   let sitekeyInfo = sitekeysForFrame[url];
   return sitekeyInfo ? sitekeyInfo.sitekey : null;
 }
@@ -98,8 +103,9 @@ export function _setSitekey(tabId, frameId, url, sitekey, signature) {
 
 export function clearAllSitekeys(save = true) {
   sitekeys = {};
-  if (save)
+  if (save) {
     _saveSitekeys();
+  }
 }
 
 export function clearTabSitekeys(tabId) {
@@ -135,8 +141,9 @@ export function setSitekeyFromHeaders(tabId, frameId, url, headers) {
   let existingSitekeyInfo = getSitekey(tabId, frameId, url);
   if (existingSitekeyInfo &&
       existingSitekeyInfo.sitekey &&
-      newSitekey == existingSitekeyInfo.sitekey)
+      newSitekey == existingSitekeyInfo.sitekey) {
     return existingSitekeyInfo.sitekey;
+  }
 
   if (newSitekey && verifySitekey(newSitekey, sitekeyHeader.signature, url)) {
     _setSitekey(tabId, frameId, url, newSitekey, sitekeyHeader.signature);
@@ -156,8 +163,9 @@ function getSitekeyHeader(headers) {
   for (let header of headers) {
     if (header.name.toLowerCase() == "x-adblock-key" && header.value) {
       let parts = header.value.split("_");
-      if (parts.length < 2)
+      if (parts.length < 2) {
         return null;
+      }
 
       return {
         sitekey: parts[0].replace(/=/g, ""),
@@ -188,32 +196,38 @@ function verifySitekeys(_sitekeys) {
           let verified = sitekeyInfo.sitekey === null ||
               verifySitekey(sitekeyInfo.sitekey, sitekeyInfo.signature, url);
 
-          if (!verified)
+          if (!verified) {
             delete sitekeysMap[url];
+          }
         }
         catch (e) {
           delete sitekeysMap[url];
         }
       }
-      if (Object.keys(sitekeysMap).length == 0)
+      if (Object.keys(sitekeysMap).length == 0) {
         delete framesMap[frameId];
+      }
     }
-    if (Object.keys(framesMap).length == 0)
+    if (Object.keys(framesMap).length == 0) {
       delete _sitekeys[tabId];
+    }
   }
 }
 
 export function merge(obj1, obj2) {
-  if (obj1 instanceof Array)
+  if (obj1 instanceof Array) {
     return [...obj1, ...obj2];
+  }
 
-  if (!(obj1 instanceof Object))
+  if (!(obj1 instanceof Object)) {
     return obj2;
+  }
 
   let resultObj = {};
 
-  for (let [key, obj1Values] of Object.entries(obj1))
+  for (let [key, obj1Values] of Object.entries(obj1)) {
     resultObj[key] = obj1Values;
+  }
 
   for (let [key, obj2Values] of Object.entries(obj2)) {
     let map1Values = resultObj[key];
@@ -225,13 +239,15 @@ export function merge(obj1, obj2) {
 
 export async function _loadSitekeys(verify = true) {
   let persistObj = await browser.storage.session.get(STORAGE_KEY);
-  if (!persistObj || !persistObj[STORAGE_KEY])
+  if (!persistObj || !persistObj[STORAGE_KEY]) {
     return;
+  }
 
   let savedSitekeys = persistObj[STORAGE_KEY];
 
-  if (verify)
+  if (verify) {
     verifySitekeys(savedSitekeys);
+  }
 
   // We might have `onHeadersReceived` triggered earlier than Filter Engine
   // loading is finished. Thus we might need to merge the saved and new
@@ -248,8 +264,9 @@ export function _doSaveSitekeys() {
 }
 
 export function _saveSitekeys() {
-  if (!isRunningInServiceWorker())
+  if (!isRunningInServiceWorker()) {
     return;
+  }
 
   _doSaveSitekeys();
 }

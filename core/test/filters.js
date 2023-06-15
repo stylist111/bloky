@@ -33,10 +33,12 @@ describe("Filter parse", function() {
   function compareObject(obj, expected) {
     Object.entries(obj).forEach(([key, value]) => {
       let expectedValue = expected[key];
-      if (typeof expectedValue != "undefined")
+      if (typeof expectedValue != "undefined") {
         assert.deepEqual([key, value], [key, expectedValue]);
-      else
+      }
+      else {
         assert.deepStrictEqual([key, value], [key, null]);
+      }
     });
   }
 
@@ -51,10 +53,12 @@ describe("Filter parse", function() {
     assert(result instanceof FilterParsingError);
     assert.equal(result.message, error);
     // errorDetail MUST contain the text of the filter.
-    if (!errorDetail)
+    if (!errorDetail) {
       errorDetail = {text};
-    else if (!errorDetail.text)
+    }
+    else if (!errorDetail.text) {
       errorDetail.text = text;
+    }
     assert.deepEqual(result.detail, errorDetail);
   }
 

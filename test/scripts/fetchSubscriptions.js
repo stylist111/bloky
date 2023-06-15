@@ -51,8 +51,9 @@ describe("fetchSubscriptions script", function() {
   });
 
   afterEach(async function() {
-    if (fs.existsSync(tmpDir))
+    if (fs.existsSync(tmpDir)) {
       await fs.promises.rm(tmpDir, {recursive: true});
+    }
   });
 
   it("should throw an error if input file does not exist", async function() {

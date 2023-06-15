@@ -164,38 +164,45 @@ describe("Cache", function() {
     });
 
     it("should return any set value until capacity is exceeded", function() {
-      for (let i = 0; i < CAPACITY; i++)
+      for (let i = 0; i < CAPACITY; i++) {
         cache.set(i, i);
+      }
 
       // All entries exist.
-      for (let i = 0; i < CAPACITY; i++)
+      for (let i = 0; i < CAPACITY; i++) {
         assert.strictEqual(cache.get(i), i);
+      }
     });
 
     it("should return only last set value once capacity is exceeded", function() {
-      for (let i = 0; i < CAPACITY; i++)
+      for (let i = 0; i < CAPACITY; i++) {
         cache.set(i, i);
+      }
 
       cache.set(CAPACITY, CAPACITY);
 
       // Only the last entry exists.
-      for (let i = 0; i < CAPACITY; i++)
+      for (let i = 0; i < CAPACITY; i++) {
         assert.strictEqual(cache.get(i), i == CAPACITY ? i : undefined);
+      }
     });
 
     it("should return undefined for any key once cache is cleared", function() {
-      for (let i = 0; i < CAPACITY; i++)
+      for (let i = 0; i < CAPACITY; i++) {
         cache.set(i, i);
+      }
 
       cache.clear();
 
-      for (let i = 0; i < CAPACITY; i++)
+      for (let i = 0; i < CAPACITY; i++) {
         assert.strictEqual(cache.get(i), undefined);
+      }
     });
 
     it("should return set value after cache is cleared", function() {
-      for (let i = 0; i < CAPACITY; i++)
+      for (let i = 0; i < CAPACITY; i++) {
         cache.set(i, i);
+      }
 
       cache.clear();
 
@@ -265,8 +272,9 @@ describe("Cache", function() {
     });
 
     it("should not throw when capacity is exceeded", function() {
-      for (let i = 0; i < CAPACITY; i++)
+      for (let i = 0; i < CAPACITY; i++) {
         cache.set(i, i);
+      }
 
       assert.doesNotThrow(() => cache.set(CAPACITY, CAPACITY));
     });
@@ -318,15 +326,17 @@ describe("Cache", function() {
     });
 
     it("should not throw on full cache", function() {
-      for (let i = 0; i < CAPACITY; i++)
+      for (let i = 0; i < CAPACITY; i++) {
         cache.set(i, i);
+      }
 
       assert.doesNotThrow(() => cache.clear());
     });
 
     it("should not throw after cache exceeds capacity", function() {
-      for (let i = 0; i < CAPACITY; i++)
+      for (let i = 0; i < CAPACITY; i++) {
         cache.set(i, i);
+      }
 
       cache.set(CAPACITY, CAPACITY);
 

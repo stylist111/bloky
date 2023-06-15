@@ -175,8 +175,9 @@ class FrameInfo {
  */
 function getAllowingReason(typeMask, filter) {
   for (let type in contentTypes) {
-    if (typeMask & filter.contentType & contentTypes[type])
+    if (typeMask & filter.contentType & contentTypes[type]) {
       return type.toLowerCase();
+    }
   }
 }
 
@@ -214,14 +215,16 @@ function findAllowlistingFilters(frame, tabId, frameId) {
       frame.url, typeMask, matchInfo.docDomain, frame.sitekey
     );
 
-    if (!filter)
+    if (!filter) {
       break;
+    }
 
     frame.allowlisted |= filter.contentType & ALLOWING_TYPES;
     // We need to hold onto document allowing filters because we might
     // need it for logging blockable requests later.
-    if (filter.contentType & contentTypes.DOCUMENT)
+    if (filter.contentType & contentTypes.DOCUMENT) {
       frame.allowingDocumentFilter = filter;
+    }
 
     let allowingReason = getAllowingReason(typeMask, filter);
     logItem(details, filter, {...matchInfo, allowingReason});
@@ -241,8 +244,9 @@ async function discoverExistingFrames() {
   let tabs = await browser.tabs.query({});
   await Promise.all(tabs.map(({id: tabId}) =>
     browser.webNavigation.getAllFrames({tabId}).then(rawFrames => {
-      if (!rawFrames)
+      if (!rawFrames) {
         return;
+      }
 
       // Sort the frames so that we'll add parent frames before the
       // child frames.
@@ -261,14 +265,16 @@ async function discoverExistingFrames() {
         // (https://bugs.chromium.org/p/chromium/issues/detail?id=725917).
         // Not much we can do about it, but if we can't see the
         // required parent frame we can fall back to the root frame.
-        if (isValidChildFrameId(parentFrameId) && !parent)
+        if (isValidChildFrameId(parentFrameId) && !parent) {
           parent = frames.get(TOP_LEVEL_FRAME_ID);
+        }
 
         // Yandex gives undefined or an empty string here sometimes,
         // for example when browsing to pages that Yandex treats
         // specially like their own website.
-        if (!url)
+        if (!url) {
           url = BLANK_PAGE_URL;
+        }
 
         frames.set(frameId, new FrameInfo(tabId, frameId, parent, url));
       }
@@ -279,8 +285,9 @@ async function discoverExistingFrames() {
 function onSitekeyReceived(tabId, frameId, url, sitekey) {
   let frame = getFrameInfo(tabId, frameId);
   let isSameFrame = frame && frame.url == url;
-  if (isSameFrame)
+  if (isSameFrame) {
     frame.headersReceived = true;
+  }
 
   if (sitekey) {
     // Sometimes the onHeadersReceived event comes after the
@@ -336,8 +343,9 @@ function recordFrameFromNavigationEvent(
   // Yandex gives undefined or an empty string here sometimes,
   // for example when browsing to pages that Yandex treats
   // specially like their own website.
-  if (!url)
+  if (!url) {
     url = BLANK_PAGE_URL;
+  }
 
   let frames = state.get(tabId);
 
@@ -357,18 +365,21 @@ function recordFrameFromNavigationEvent(
   // frame state doesn't seem to have that parent, falling back to the
   // root frame is better than nothing. This might happen due to this
   // bug: https://bugs.chromium.org/p/chromium/issues/detail?id=725917.
-  if (isValidChildFrameId(parentFrameId) && !parent)
+  if (isValidChildFrameId(parentFrameId) && !parent) {
     parent = frames.get(TOP_LEVEL_FRAME_ID);
+  }
 
   // If the frame had an error instead of loading, we don't want to
   // use the URL from the error. Otherwise unscrupulous websites could
   // embed their advert in an iframe that has an allowlisted URL, but
   // doesn't actually contain the contents of that URL.
   if (errorOccurred) {
-    if (frame)
+    if (frame) {
       url = frame.url;
-    else if (parent)
+    }
+    else if (parent) {
       url = parent.url;
+    }
   }
 
   // We might get multiple calls to `recordFrameFromNavigationEvent`
@@ -412,8 +423,9 @@ function onBeforeNavigate(details) {
   // don't actually emit the webNavigation.onCommitted event for these
   // frames, so we need to use a different event to get them into our
   // frame state.
-  if (details.url == "about:srcdoc")
+  if (details.url == "about:srcdoc") {
     recordFrameFromNavigationEvent(details);
+  }
 }
 
 function onCommitted(details) {
@@ -434,8 +446,9 @@ function onErrorOccurred(details) {
   // very important to have the parent frame to record frame state
   // changes.
   if (isValidChildFrameId(details.frameId) &&
-      typeof details.parentFrameId == "number")
+      typeof details.parentFrameId == "number") {
     recordFrameFromNavigationEvent(details, {errorOccurred: true});
+  }
 }
 
 async function onHistoryStateUpdated(details) {
@@ -503,14 +516,16 @@ export function getFrameInfo(tabId, frameId,
   // construct a temporary frame state for it to use. We don't store
   // a tabId of -1 in our frame state, so we don't even need to check
   // it before returning.
-  if (initiator && tabId == -1)
+  if (initiator && tabId == -1) {
     return new FrameInfo(tabId, frameId, null, initiator);
+  }
 
   let frames = state.get(tabId);
   if (frames) {
     let frame = frames.get(frameId);
-    if (frame)
+    if (frame) {
       return frame;
+    }
   }
 
   // Sometimes the webRequest API can trigger for resources in a frame

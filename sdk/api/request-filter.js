@@ -33,8 +33,9 @@ import {getSitekey, setSitekeyFromHeaders} from "./sitekey.js";
 const EXTENSION_PROTOCOL = new URL(browser.runtime.getURL("")).protocol;
 
 export let resourceTypes = new Map();
-for (let type in contentTypes)
+for (let type in contentTypes) {
   resourceTypes.set(type.toLowerCase(), contentTypes[type]);
+}
 resourceTypes.set("sub_frame", contentTypes.SUBDOCUMENT);
 resourceTypes.set("beacon", contentTypes.PING);
 resourceTypes.set("imageset", contentTypes.IMAGE);
@@ -50,8 +51,9 @@ let typeSelectors = new Map([
 
 export function getRequestContentType(details) {
   let contentType = resourceTypes.get(details.type) || contentTypes.OTHER;
-  if (contentType == contentTypes.DOCUMENT)
+  if (contentType == contentTypes.DOCUMENT) {
     return contentTypes.OTHER;
+  }
   return contentType;
 }
 
@@ -68,8 +70,9 @@ function getParentFrameId(details) {
     // frameAncestors is exactly what we need, but it's only
     // available in Firefox so sometimes we just don't have what we
     // need :(
-    if (!details.frameAncestors)
+    if (!details.frameAncestors) {
       return null;
+    }
 
     return details.frameAncestors.length > 1 ?
       details.frameAncestors[1].frameId : -1;
@@ -92,15 +95,17 @@ export function getFrameInfoFromWebrequestDetails(details) {
 }
 
 export function getParentFrameInfoFromWebrequestDetails(details) {
-  if (!isValidFrameId(details.parentFrameId))
+  if (!isValidFrameId(details.parentFrameId)) {
     return null;
+  }
 
   let parentFrame = getFrameInfo(details.tabId, details.parentFrameId);
   // Due to a chrome bug, the parent frame might not exist. In this
   // case, we should fall back to the root frame. See
   // https://bugs.chromium.org/p/chromium/issues/detail?id=725917
-  if (!parentFrame && isValidChildFrameId(details.parentFrameId))
+  if (!parentFrame && isValidChildFrameId(details.parentFrameId)) {
     parentFrame = getFrameInfo(details.tabId, 0);
+  }
 
   return parentFrame;
 }
@@ -186,8 +191,9 @@ class BaseFilter {
   }
 
   filter(details) {
-    if (pendingAllowlistedRequests.has(details.requestId))
+    if (pendingAllowlistedRequests.has(details.requestId)) {
       return;
+    }
 
     let initiator = this.getInitiator(details);
     if (initiator && initiator.startsWith(EXTENSION_PROTOCOL)) {
@@ -207,8 +213,9 @@ class BaseFilter {
     }
 
     frame = getFrameInfoFromWebrequestDetails(details);
-    if (!frame)
+    if (!frame) {
       return;
+    }
 
     let specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) != 0;
     let docDomain = this.getDocDomain(details.type, frame.hostname);
@@ -251,15 +258,17 @@ class RequestFilter extends BaseFilter {
     // webRequest API.
     if (frame) {
       // We might be missing sitekeys if we haven't received headers yet.
-      if (!frame.headersReceived)
+      if (!frame.headersReceived) {
         return null;
+      }
 
       // A wrong URL likely means that we've navigated to a new page
       // and frame-state hasn't caught up yet.
       let {documentUrl, initiator} = details;
       if ((documentUrl && frame.url != documentUrl) ||
-         (initiator && frame.hostname != parseURL(initiator).hostname))
+         (initiator && frame.hostname != parseURL(initiator).hostname)) {
         return null;
+      }
     }
 
     return frame;
@@ -271,8 +280,9 @@ class RequestFilter extends BaseFilter {
     );
     if (filter) {
       let matchInfo = {docDomain, specificOnly, method: "request"};
-      if (filter instanceof BlockingFilter)
+      if (filter instanceof BlockingFilter) {
         return this.block(details, filter, matchInfo);
+      }
       return this.allow(details, filter, matchInfo);
     }
   }
@@ -299,8 +309,9 @@ class HeaderFilter extends BaseFilter {
     );
     if (requestFilter) {
       let requestMatchInfo = {docDomain, specificOnly, method: "request"};
-      if (requestFilter instanceof BlockingFilter)
+      if (requestFilter instanceof BlockingFilter) {
         return this.block(details, requestFilter, requestMatchInfo);
+      }
       return this.allow(details, requestFilter, requestMatchInfo);
     }
 
@@ -309,8 +320,9 @@ class HeaderFilter extends BaseFilter {
     let allowingFilter = matcher.match(details.url, typeMask, docDomain,
                                        frame.sitekey, specificOnly, true);
 
-    if (allowingFilter && allowingFilter instanceof AllowingFilter)
+    if (allowingFilter && allowingFilter instanceof AllowingFilter) {
       return this.allow(details, allowingFilter, matchInfo);
+    }
 
     let matches = matcher.search(details.url, typeMask, docDomain,
                                  frame.sitekey, specificOnly, "blocking");
@@ -319,8 +331,9 @@ class HeaderFilter extends BaseFilter {
       return blockingFilter.filterHeaders(details.responseHeaders);
     });
 
-    if (filter)
+    if (filter) {
       return this.block(details, filter, matchInfo);
+    }
   }
 }
 
@@ -338,8 +351,9 @@ class CSPFilter extends BaseFilter {
   filter(details) {
     let {requestId, tabId, frameId, responseHeaders, url, type} = details;
 
-    if (pendingAllowlistedRequests.has(requestId))
+    if (pendingAllowlistedRequests.has(requestId)) {
       return;
+    }
 
     let initiator = this.getInitiator(details);
     if (initiator && initiator.startsWith(EXTENSION_PROTOCOL)) {
@@ -383,8 +397,9 @@ class CSPFilter extends BaseFilter {
 
     let allowingFilter = matcher.match(url, typeMask, docDomain,
                                        sitekey, specificOnly, true);
-    if (allowingFilter && allowingFilter instanceof AllowingFilter)
+    if (allowingFilter && allowingFilter instanceof AllowingFilter) {
       return this.allow(details, allowingFilter, matchInfo);
+    }
 
     let matches = matcher.search(url, typeMask, hostname,
                                  sitekey, specificOnly, "blocking");
@@ -417,8 +432,9 @@ class RequestCompletionFilter extends BaseFilter {
     let {requestId, tabId, frameId, url, type} = details;
     let wasAllowlisted = pendingAllowlistedRequests.delete(requestId);
     let wasCsp = pendingCspRequests.delete(requestId);
-    if (wasAllowlisted || wasCsp)
+    if (wasAllowlisted || wasCsp) {
       return;
+    }
 
     if (type == "main_frame" || type == "sub_frame") {
       // for these two types, it's unreliable if frame is there or not
@@ -440,8 +456,9 @@ class RequestCompletionFilter extends BaseFilter {
         let popupFilter = matcher.match(
           url, contentTypes.POPUP, hostname, sitekey, specificOnly
         );
-        if (popupFilter)
+        if (popupFilter) {
           return;
+        }
       }
       let matchInfo = {
         docDomain: this.getDocDomain(type, hostname),
@@ -452,8 +469,9 @@ class RequestCompletionFilter extends BaseFilter {
     }
     else {
       let frame = getFrameInfoFromWebrequestDetails(details);
-      if (!frame)
+      if (!frame) {
         return;
+      }
 
       let specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) != 0;
       let matchInfo = {
@@ -519,14 +537,17 @@ const FILTER_EVENTS = ["subscription.added",
  * frame state are initialized.
  */
 export function start() {
-  if (browser.declarativeNetRequest)
+  if (browser.declarativeNetRequest) {
     return;
+  }
 
-  for (let filter of filters)
+  for (let filter of filters) {
     filter.register();
+  }
 
   for (let event of FILTER_EVENTS) {
-    if (!filterNotifier.listeners(event).includes(onFilterChange))
+    if (!filterNotifier.listeners(event).includes(onFilterChange)) {
       filterNotifier.on(event, onFilterChange);
+    }
   }
 }

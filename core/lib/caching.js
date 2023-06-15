@@ -31,8 +31,9 @@ exports.Cache = class Cache extends Map {
    */
   constructor(capacity) {
     // Note: This check works for non-number values.
-    if (!(capacity >= 1))
+    if (!(capacity >= 1)) {
       throw new Error("capacity must be a positive number.");
+    }
 
     super();
     this._capacity = capacity;
@@ -50,14 +51,17 @@ exports.Cache = class Cache extends Map {
   set(key, value) {
     // To prevent logical errors, neither key nor value is allowed to be
     // undefined.
-    if (typeof key == "undefined")
+    if (typeof key == "undefined") {
       throw new Error("key must not be undefined.");
+    }
 
-    if (typeof value == "undefined")
+    if (typeof value == "undefined") {
       throw new Error("value must not be undefined.");
+    }
 
-    if (this.size == this._capacity && !this.has(key))
+    if (this.size == this._capacity && !this.has(key)) {
       this.clear();
+    }
 
     super.set(key, value);
   }

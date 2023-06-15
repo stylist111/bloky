@@ -51,8 +51,9 @@ exports.makeRegExpParameter = function makeRegExpParameter(text) {
 };
 
 let splitSelector = exports.splitSelector = function splitSelector(selector) {
-  if (!selector.includes(","))
+  if (!selector.includes(",")) {
     return [selector];
+  }
 
   let selectors = [];
   let start = 0;
@@ -105,43 +106,51 @@ function findTargetSelectorIndex(selector) {
     if (character == "'" || character == "\"") {
       // If we're already within the same type of quote, close the scope;
       // otherwise open a new scope.
-      if (currentScope == character)
+      if (currentScope == character) {
         scope.pop();
-      else
+      }
+      else {
         scope.push(character);
+      }
     }
     else if (character == "]" || character == ")") {
       // For closing brackets and parentheses, open a new scope only if we're
       // not within a quote. Within quotes these characters should have no
       // meaning.
-      if (currentScope != "'" && currentScope != "\"")
+      if (currentScope != "'" && currentScope != "\"") {
         scope.push(character);
+      }
     }
     else if (character == "[") {
       // If we're already within a bracket, close the scope.
-      if (currentScope == "]")
+      if (currentScope == "]") {
         scope.pop();
+      }
     }
     else if (character == "(") {
       // If we're already within a parenthesis, close the scope.
-      if (currentScope == ")")
+      if (currentScope == ")") {
         scope.pop();
+      }
     }
     else if (!currentScope) {
       // At the top level (not within any scope), count the whitespace if we've
       // encountered it. Otherwise if we've hit one of the combinators,
       // terminate here; otherwise if we've hit a non-colon character,
       // terminate here.
-      if (/\s/.test(character))
+      if (/\s/.test(character)) {
         whitespace++;
+      }
       else if ((character == ">" || character == "+" || character == "~") ||
-               (whitespace > 0 && character != ":"))
+               (whitespace > 0 && character != ":")) {
         break;
+      }
     }
 
     // Zero out the whitespace count if we've entered a scope.
-    if (scope.length > 0)
+    if (scope.length > 0) {
       whitespace = 0;
+    }
 
     // Increment the index by the size of the character. Note that for Unicode
     // composite characters (like emoji) this will be more than one.
@@ -179,17 +188,20 @@ exports.qualifySelector = function qualifySelector(selector, qualifier) {
     let [, type = "", rest] =
       /^([a-z][a-z-]*)?\*?(.*)/i.exec(sub.substring(index));
 
-    if (type == qualifierType)
+    if (type == qualifierType) {
       type = "";
+    }
 
     // If the qualifier ends in a combinator (e.g. "body #foo>"), we put the
     // type and the rest of the selector after the qualifier
     // (e.g. "body #foo>div.bar"); otherwise (e.g. "body #foo") we merge the
     // type into the qualifier (e.g. "body div#foo.bar").
-    if (/[\s>+~]$/.test(qualifier))
+    if (/[\s>+~]$/.test(qualifier)) {
       qualifiedSelector += sub.substring(0, index) + qualifier + type + rest;
-    else
+    }
+    else {
       qualifiedSelector += sub.substring(0, index) + type + qualifier + rest;
+    }
   }
 
   // Remove the initial comma and space.

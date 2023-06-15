@@ -161,8 +161,9 @@ describe("Initialization", function() {
       // default language (required even for "de")
       startSubscriptions.push(subEasylist);
 
-      if (language == "de")
+      if (language == "de") {
         startSubscriptions.push(subEasylistPlusGermany);
+      }
 
       await EWE.subscriptions.addDefaults(language);
 
@@ -189,8 +190,9 @@ describe("Initialization", function() {
           url => expect.objectContaining({url, enabled: true})
         )));
 
-      for (let subscription of activeSubs)
+      for (let subscription of activeSubs) {
         expect(expectedUrls).toContain(subscription.url);
+      }
     });
   }
 
@@ -276,8 +278,9 @@ describe("Initialization", function() {
 
   it("informs when the filter engine runs for the first time [fuzz]", async function() {
     let expectedFoundStorage = false;
-    if (isFuzzingServiceWorker())
+    if (isFuzzingServiceWorker()) {
       expectedFoundStorage = expect.any(Boolean);
+    }
 
     await EWE.testing._clearStorage();
 

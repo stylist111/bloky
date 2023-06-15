@@ -41,13 +41,15 @@ function parseChromiumUserAgent() {
     // For compatibility with legacy websites, Chrome's UA
     // also includes a Mozilla, AppleWebKit and Safari tokens.
     // Any further name/version pair indicates a fork.
-    if (app == "Mozilla" || app == "AppleWebKit" || app == "Safari")
+    if (app == "Mozilla" || app == "AppleWebKit" || app == "Safari") {
       continue;
+    }
 
     if (app == "Chrome") {
       platformVersion = version;
-      if (application != "unknown")
+      if (application != "unknown") {
         continue;
+      }
     }
 
     application = app == "OPR" ? "opera" : app.toLowerCase();
@@ -59,8 +61,9 @@ if (typeof netscape != "undefined") {
   platform = "gecko";
 
   let match = /\brv:([^;)]+)/.exec(navigator.userAgent);
-  if (match)
+  if (match) {
     platformVersion = match[1];
+  }
 
   browser.runtime.getBrowserInfo().then(browserInfo => {
     application = browserInfo.name.toLowerCase();
@@ -74,30 +77,38 @@ else {
 
 export function setAddonInfo(addonInfo) {
   if (browser.declarativeNetRequest) {
-    if (!addonInfo)
+    if (!addonInfo) {
       throw new Error("No addonInfo provided to EWE.start");
+    }
 
-    if (!addonInfo.bundledSubscriptions)
+    if (!addonInfo.bundledSubscriptions) {
       throw new Error("No `bundledSubscriptions` provided");
+    }
 
-    if (!addonInfo.bundledSubscriptionsPath)
+    if (!addonInfo.bundledSubscriptionsPath) {
       throw new Error("No `bundledSubscriptionsPath` provided");
+    }
   }
 
-  if (!addonInfo)
+  if (!addonInfo) {
     return;
+  }
 
-  if (addonInfo.name)
+  if (addonInfo.name) {
     addonName = addonInfo.name;
-  if (addonInfo.version)
+  }
+  if (addonInfo.version) {
     addonVersion = addonInfo.version;
-  if (addonInfo.manifestVersion)
+  }
+  if (addonInfo.manifestVersion) {
     manifestVersion = addonInfo.manifestVersion;
+  }
 
   addonBundledSubscriptions = addonInfo.bundledSubscriptions;
   addonBundledSubscriptionsPath = addonInfo.bundledSubscriptionsPath;
 
   if (addonBundledSubscriptions &&
-      addonBundledSubscriptions.length > 0)
+      addonBundledSubscriptions.length > 0) {
     setRecommendations(addonBundledSubscriptions);
+  }
 }

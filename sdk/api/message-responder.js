@@ -33,8 +33,9 @@ async function handleMessage(message, sender) {
       // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/174.
       // Messages sent from a non-web page context do not have an
       // associated tab and can be ignored.
-      if (!sender.tab)
+      if (!sender.tab) {
         return;
+      }
 
       let filterData = await applyContentFilters(sender.tab.id, sender.frameId);
       return {...filterData};
@@ -57,8 +58,9 @@ async function handleMessage(message, sender) {
 
 function onMessage(message, sender) {
   if (typeof message == "object" && message != null &&
-      message.type && message.type.startsWith("ewe:"))
+      message.type && message.type.startsWith("ewe:")) {
     return handleMessage(message, sender);
+  }
   return false;
 }
 

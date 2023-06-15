@@ -40,10 +40,12 @@ const {Cache} = require("./caching");
  */
 let countFilters = (map, keyword) => {
   let list = map.get(keyword);
-  if (!list)
+  if (!list) {
     return 0;
-  if (list instanceof Filter)
+  }
+  if (list instanceof Filter) {
     return 1;
+  }
   return list.length;
 };
 
@@ -55,10 +57,12 @@ let countFilters = (map, keyword) => {
  */
 let getFilters = (map, keyword) => {
   let list = map.get(keyword);
-  if (!list)
+  if (!list) {
     return Array.prototype;
-  if (list instanceof Filter)
+  }
+  if (list instanceof Filter) {
     return [list];
+  }
   return list;
 };
 
@@ -84,10 +88,12 @@ function addFilterByKeyword(filter, keyword, map) {
   let list = map.get(keyword);
   // when the keyword is known, promote as array if needed
   if (list) {
-    if (list instanceof Filter)
+    if (list instanceof Filter) {
       map.set(keyword, [list, filter]);
-    else
+    }
+    else {
       list.push(filter);
+    }
   }
   else {
     // store just the filter without the Array
@@ -108,16 +114,18 @@ function removeFilterByKeyword(filter, keyword, map) {
   if (list) {
     // when the value is a filter, remove the keyword if filter matches
     if (list instanceof Filter) {
-      if (list == filter)
+      if (list == filter) {
         map.delete(keyword);
+      }
     }
     // otherwise find the index and drop the array if the list has 1 item
     else {
       let i = list.findIndex(item => item === filter);
       if (i >= 0) {
         list.splice(i, 1);
-        if (list.length === 1)
+        if (list.length === 1) {
           map.set(keyword, list[0]);
+        }
       }
     }
   }
@@ -141,8 +149,9 @@ function removeFilterByKeyword(filter, keyword, map) {
  */
 function matchFilter(filter, request, typeMask, sitekey, collection) {
   if (filter.matches(request, typeMask, sitekey)) {
-    if (!collection)
+    if (!collection) {
       return filter;
+    }
 
     collection.push(filter);
   }
@@ -245,8 +254,9 @@ exports.Matcher = class Matcher {
    * @param {module:filterClasses.URLFilter} filter
    */
   add(filter) {
-    if (this._keywordByFilter.has(filter))
+    if (this._keywordByFilter.has(filter)) {
       return;
+    }
 
     // Look for a suitable keyword
     let keyword = this.findKeyword(filter);
@@ -258,19 +268,22 @@ exports.Matcher = class Matcher {
     this._keywordByFilter.set(filter, keyword);
 
     if (simple) {
-      if (this._compiledPatternsByKeyword.size > 0)
+      if (this._compiledPatternsByKeyword.size > 0) {
         this._compiledPatternsByKeyword.delete(keyword);
+      }
 
       return;
     }
 
-    if (keyword == "")
+    if (keyword == "") {
       this._keywordlessCompiledPatterns = false;
+    }
 
     for (let type of enumerateTypes(filter.contentType, SPECIAL_TYPES)) {
       let map = this._filterMapsByType.get(type);
-      if (!map)
+      if (!map) {
         this._filterMapsByType.set(type, map = new Map());
+      }
 
       addFilterByKeyword(filter, keyword, map);
     }
@@ -305,8 +318,9 @@ exports.Matcher = class Matcher {
    */
   remove(filter) {
     let keyword = this._keywordByFilter.get(filter);
-    if (typeof keyword == "undefined")
+    if (typeof keyword == "undefined") {
       return;
+    }
 
     let simple = filter.contentType == RESOURCE_TYPES && filter.isGeneric();
 
@@ -321,19 +335,22 @@ exports.Matcher = class Matcher {
     this._keywordByFilter.delete(filter);
 
     if (simple) {
-      if (this._compiledPatternsByKeyword.size > 0)
+      if (this._compiledPatternsByKeyword.size > 0) {
         this._compiledPatternsByKeyword.delete(keyword);
+      }
 
       return;
     }
 
-    if (keyword == "")
+    if (keyword == "") {
       this._keywordlessCompiledPatterns = false;
+    }
 
     for (let type of enumerateTypes(filter.contentType, SPECIAL_TYPES)) {
       let map = this._filterMapsByType.get(type);
-      if (map)
+      if (map) {
         removeFilterByKeyword(filter, keyword, map);
+      }
     }
 
     let filtersByDomain = this._filterDomainMapsByKeyword.get(keyword);
@@ -354,8 +371,9 @@ exports.Matcher = class Matcher {
         for (let [lastDomain, map] of filtersByDomain.entries()) {
           // Reduce Map { "foo" => Map { "" => filter } } to
           // Map { "foo" => filter }
-          if (lastDomain == "" && !(map instanceof FilterMap))
+          if (lastDomain == "" && !(map instanceof FilterMap)) {
             this._filterDomainMapsByKeyword.set(keyword, map);
+          }
 
           break;
         }
@@ -387,8 +405,9 @@ exports.Matcher = class Matcher {
     let result = "";
 
     let candidates = filter.urlPattern.keywordCandidates();
-    if (!candidates)
+    if (!candidates) {
       return result;
+    }
 
     let resultCount = 0xFFFFFF;
     let resultLength = 0;
@@ -396,8 +415,9 @@ exports.Matcher = class Matcher {
     for (let i = 0, l = candidates.length; i < l; i++) {
       let candidate = candidates[i].substring(1);
 
-      if (isBadKeyword(candidate))
+      if (isBadKeyword(candidate)) {
         continue;
+      }
 
       let simpleCount = countFilters(this._simpleFiltersByKeyword, candidate);
       let complexCount = countFilters(this._complexFiltersByKeyword,
@@ -427,10 +447,12 @@ exports.Matcher = class Matcher {
         if (map instanceof FilterMap) {
           for (let [filter, include] of map.entries()) {
             if (!include) {
-              if (excluded)
+              if (excluded) {
                 excluded.add(filter);
-              else
+              }
+              else {
                 excluded = new Set([filter]);
+              }
             }
             else if (
               (!excluded || !excluded.has(filter)) &&
@@ -474,8 +496,9 @@ exports.Matcher = class Matcher {
           this._checkEntryMatchSimpleQuickCheck(keyword, request, filters)) {
         for (let filter of filters) {
           // Simple filters match any resource type.
-          if (matchFilter(filter, request, RESOURCE_TYPES, null, collection))
+          if (matchFilter(filter, request, RESOURCE_TYPES, null, collection)) {
             return filter;
+          }
         }
       }
     }
@@ -488,11 +511,13 @@ exports.Matcher = class Matcher {
     let filtersForType = this._filterMapsByType.get(typeMask & SPECIAL_TYPES);
     if (filtersForType) {
       for (let filter of getFilters(filtersForType, keyword)) {
-        if (specificOnly && filter.isGeneric())
+        if (specificOnly && filter.isGeneric()) {
           continue;
+        }
 
-        if (matchFilter(filter, request, typeMask, sitekey, collection))
+        if (matchFilter(filter, request, typeMask, sitekey, collection)) {
           return filter;
+        }
       }
     }
 
@@ -516,15 +541,17 @@ exports.Matcher = class Matcher {
             // single URL request that has not already been blocked by one of
             // the simple filters (i.e. most URL requests).
             let map = filtersByDomain.get("");
-            if (map instanceof FilterMap)
+            if (map instanceof FilterMap) {
               compiled = compilePatterns([...map.keys()]);
+            }
 
             this._keywordlessCompiledPatterns = compiled || null;
           }
 
           // We can skip the generic filters if none of them pass the test.
-          if (compiled && !compiled.test(request))
+          if (compiled && !compiled.test(request)) {
             specificOnly = true;
+          }
         }
 
         return this._matchFiltersByDomain(
@@ -568,8 +595,9 @@ exports.Matcher = class Matcher {
     // not contain any resource types.
     if (!specificOnly && (typeMask & RESOURCE_TYPES) != 0) {
       let filter = this._checkEntryMatchSimple(keyword, request, collection);
-      if (filter)
+      if (filter) {
         return filter;
+      }
     }
 
     // If the type mask contains a special type (first condition) and it is
@@ -620,14 +648,16 @@ exports.Matcher = class Matcher {
     let candidates = request.lowerCaseHref.match(/[a-z0-9%]{2,}|$/g);
 
     for (let i = 0, l = candidates.length; i < l; i++) {
-      if (isBadKeyword(candidates[i]))
+      if (isBadKeyword(candidates[i])) {
         continue;
+      }
 
       let result = this.checkEntryMatch(
         candidates[i], request, typeMask, sitekey, specificOnly
       );
-      if (result)
+      if (result) {
         return result;
+      }
     }
 
     return null;
@@ -673,10 +703,12 @@ class CombinedMatcher {
    * @param {module:filterClasses.Filter} filter
    */
   add(filter) {
-    if (filter.type == "allowing")
+    if (filter.type == "allowing") {
       this._allowing.add(filter);
-    else
+    }
+    else {
       this._blocking.add(filter);
+    }
 
     this._resultCache.clear();
   }
@@ -686,10 +718,12 @@ class CombinedMatcher {
    * @param {module:filterClasses.Filter} filter
    */
   remove(filter) {
-    if (filter.type == "allowing")
+    if (filter.type == "allowing") {
       this._allowing.remove(filter);
-    else
+    }
+    else {
       this._blocking.remove(filter);
+    }
 
     this._resultCache.clear();
   }
@@ -700,8 +734,9 @@ class CombinedMatcher {
    * @returns {boolean}
    */
   has(filter) {
-    if (filter.type == "allowing")
+    if (filter.type == "allowing") {
       return this._allowing.has(filter);
+    }
     return this._blocking.has(filter);
   }
 
@@ -712,8 +747,9 @@ class CombinedMatcher {
    * @protected
    */
   findKeyword(filter) {
-    if (filter.type == "allowing")
+    if (filter.type == "allowing") {
       return this._allowing.findKeyword(filter);
+    }
     return this._blocking.findKeyword(filter);
   }
 
@@ -745,16 +781,18 @@ class CombinedMatcher {
 
     if (exhaustiveSearch) {
       findAllowing();
-      if (!allowingHit && !typeIsOnlyAllowing)
+      if (!allowingHit && !typeIsOnlyAllowing) {
         findBlocking();
+      }
     }
     else if (typeIsOnlyAllowing) {
       findAllowing();
     }
     else {
       findBlocking();
-      if (blockingHit)
+      if (blockingHit) {
         findAllowing();
+      }
     }
 
     return allowingHit || blockingHit;
@@ -766,23 +804,27 @@ class CombinedMatcher {
     let searchBlocking = filterType == "blocking" || filterType == "all";
     let searchAllowing = filterType == "allowing" || filterType == "all";
 
-    if (searchBlocking)
+    if (searchBlocking) {
       hits.blocking = [];
+    }
 
-    if (searchAllowing)
+    if (searchAllowing) {
       hits.allowing = [];
+    }
 
     // If the type mask includes no types other than allowing types, we
     // can skip the blocking filters.
-    if ((typeMask & ~ALLOWING_TYPES) == 0)
+    if ((typeMask & ~ALLOWING_TYPES) == 0) {
       searchBlocking = false;
+    }
 
     let request = URLRequest.from(url, docDomain);
     let candidates = request.lowerCaseHref.match(/[a-z0-9%]{2,}|$/g);
 
     for (let i = 0, l = candidates.length; i < l; i++) {
-      if (isBadKeyword(candidates[i]))
+      if (isBadKeyword(candidates[i])) {
         continue;
+      }
 
       if (searchBlocking) {
         this._blocking.checkEntryMatch(
@@ -847,8 +889,9 @@ class CombinedMatcher {
         exhaustiveSearch = false) {
     let key = `${url} ${typeMask} ${docDomain} ${sitekey} ${specificOnly} ${exhaustiveSearch}`;
     let result = this._resultCache.get(key);
-    if (typeof result != "undefined")
+    if (typeof result != "undefined") {
       return result;
+    }
 
     result = this._matchInternal(
       url, typeMask, docDomain, sitekey, specificOnly, exhaustiveSearch
@@ -886,8 +929,9 @@ class CombinedMatcher {
               `${specificOnly} ${filterType}`;
 
     let result = this._resultCache.get(key);
-    if (typeof result != "undefined")
+    if (typeof result != "undefined") {
       return result;
+    }
 
     result = this._searchInternal(
       url, typeMask, docDomain, sitekey, specificOnly, filterType

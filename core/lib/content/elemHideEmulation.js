@@ -49,10 +49,12 @@ function toCSSStyleDeclaration(value) {
  *   its thread
  */
 exports.setTestMode = function setTestMode(options) {
-  if (typeof options.minInvocationInterval !== "undefined")
+  if (typeof options.minInvocationInterval !== "undefined") {
     minInvocationInterval = options.minInvocationInterval;
-  if (typeof options.maxSynchronousProcessingTime !== "undefined")
+  }
+  if (typeof options.maxSynchronousProcessingTime !== "undefined") {
     maxSynchronousProcessingTime = options.maxSynchronousProcessingTime;
+  }
 
   testInfo = {
     lastProcessedElements: new Set(),
@@ -116,8 +118,9 @@ function yieldThread() {
 
 function getCachedPropertyValue(object, name, defaultValueFunc = () => {}) {
   let value = object[name];
-  if (typeof value == "undefined")
+  if (typeof value == "undefined") {
     Object.defineProperty(object, name, {value: value = defaultValueFunc()});
+  }
   return value;
 }
 
@@ -129,8 +132,9 @@ function getCachedPropertyValue(object, name, defaultValueFunc = () => {}) {
 function positionInParent(node) {
   let index = 0;
   for (let child of node.parentNode.children) {
-    if (child == node)
+    if (child == node) {
       return index + 1;
+    }
 
     index++;
   }
@@ -139,19 +143,22 @@ function positionInParent(node) {
 }
 
 function makeSelector(node, selector = "") {
-  if (node == null)
+  if (node == null) {
     return null;
+  }
   if (!node.parentElement) {
     let newSelector = ":root";
-    if (selector)
+    if (selector) {
       newSelector += " > " + selector;
+    }
     return newSelector;
   }
   let idx = positionInParent(node);
   if (idx > 0) {
     let newSelector = `${node.tagName}:nth-child(${idx})`;
-    if (selector)
+    if (selector) {
       newSelector += " > " + selector;
+    }
     return makeSelector(node.parentElement, newSelector);
   }
 
@@ -169,8 +176,9 @@ function parseSelectorContent(content, startIndex) {
       i++;
     }
     else if (quote) {
-      if (c == quote)
+      if (c == quote) {
         quote = null;
+      }
     }
     else if (c == "'" || c == '"') {
       quote = c;
@@ -180,13 +188,15 @@ function parseSelectorContent(content, startIndex) {
     }
     else if (c == ")") {
       parens--;
-      if (parens == 0)
+      if (parens == 0) {
         break;
+      }
     }
   }
 
-  if (parens > 0)
+  if (parens > 0) {
     return null;
+  }
   return {text: content.substring(startIndex, i), end: i};
 }
 
@@ -251,8 +261,9 @@ function scopedQuerySelector(subtree, selector, all) {
       return all ? subtree.querySelectorAll(selector) :
         subtree.querySelector(selector);
     }
-    if (scopeSupported == null)
+    if (scopeSupported == null) {
       return tryQuerySelector(subtree, selector, all);
+    }
     return null;
   }
   return all ? subtree.querySelectorAll(selector) :
@@ -301,8 +312,9 @@ class NotSelector {
   }
 
   *getSelectors(prefix, subtree, targets) {
-    for (let element of this.getElements(prefix, subtree, targets))
+    for (let element of this.getElements(prefix, subtree, targets)) {
       yield [makeSelector(element), element];
+    }
   }
 
   /**
@@ -325,11 +337,13 @@ class NotSelector {
           continue;
         }
 
-        if (testInfo)
+        if (testInfo) {
           testInfo.lastProcessedElements.add(element);
+        }
 
-        if (!this._innerPattern.matches(element, subtree))
+        if (!this._innerPattern.matches(element, subtree)) {
           yield element;
+        }
 
         yield null;
       }
@@ -359,8 +373,9 @@ class HasSelector {
   }
 
   *getSelectors(prefix, subtree, targets) {
-    for (let element of this.getElements(prefix, subtree, targets))
+    for (let element of this.getElements(prefix, subtree, targets)) {
       yield [makeSelector(element), element];
+    }
   }
 
   /**
@@ -383,14 +398,17 @@ class HasSelector {
           continue;
         }
 
-        if (testInfo)
+        if (testInfo) {
           testInfo.lastProcessedElements.add(element);
+        }
 
         for (let selector of this._innerPattern.evaluate(element, targets)) {
-          if (selector == null)
+          if (selector == null) {
             yield null;
-          else if (scopedQuerySelector(element, selector))
+          }
+          else if (scopedQuerySelector(element, selector)) {
             yield element;
+          }
         }
 
         yield null;
@@ -413,8 +431,9 @@ class XPathSelector {
   }
 
   *getSelectors(prefix, subtree, targets) {
-    for (let element of this.getElements(prefix, subtree, targets))
+    for (let element of this.getElements(prefix, subtree, targets)) {
       yield [makeSelector(element), element];
+    }
   }
 
   *getElements(prefix, subtree, targets) {
@@ -422,8 +441,9 @@ class XPathSelector {
     let elements = prefix ? scopedQuerySelectorAll(subtree, prefix) : [subtree];
     for (let parent of elements) {
       let result = this._expression.evaluate(parent, flag, null);
-      for (let i = 0, {snapshotLength} = result; i < snapshotLength; i++)
+      for (let i = 0, {snapshotLength} = result; i < snapshotLength; i++) {
         yield result.snapshotItem(i);
+      }
     }
   }
 }
@@ -436,8 +456,9 @@ class ContainsSelector {
   }
 
   *getSelectors(prefix, subtree, targets) {
-    for (let element of this.getElements(prefix, subtree, targets))
+    for (let element of this.getElements(prefix, subtree, targets)) {
       yield [makeSelector(element), subtree];
+    }
   }
 
   *getElements(prefix, subtree, targets) {
@@ -465,13 +486,16 @@ class ContainsSelector {
           continue;
         }
 
-        if (testInfo)
+        if (testInfo) {
           testInfo.lastProcessedElements.add(element);
+        }
 
-        if (this._regexp && this._regexp.test(element.textContent))
+        if (this._regexp && this._regexp.test(element.textContent)) {
           yield element;
-        else
+        }
+        else {
           yield null;
+        }
       }
     }
   }
@@ -484,10 +508,12 @@ class PropsSelector {
 
     let regexpString;
     if (propertyExpression.length >= 2 && propertyExpression[0] == "/" &&
-        propertyExpression[propertyExpression.length - 1] == "/")
+        propertyExpression[propertyExpression.length - 1] == "/") {
       regexpString = propertyExpression.slice(1, -1);
-    else
+    }
+    else {
       regexpString = filterToRegExp(propertyExpression);
+    }
 
     this._regexp = new RegExp(regexpString, "i");
 
@@ -497,8 +523,9 @@ class PropsSelector {
   *getSelectors(prefix, subtree, targets) {
     for (let subSelector of this._subSelectors) {
       if (subSelector.startsWith("*") &&
-          !incompletePrefixRegexp.test(prefix))
+          !incompletePrefixRegexp.test(prefix)) {
         subSelector = subSelector.substring(1);
+      }
 
       yield [qualifySelector(subSelector, prefix), subtree];
     }
@@ -510,8 +537,9 @@ class PropsSelector {
       if (this._regexp.test(style.style)) {
         for (let subSelector of style.subSelectors) {
           let idx = subSelector.lastIndexOf("::");
-          if (idx != -1)
+          if (idx != -1) {
             subSelector = subSelector.substring(0, idx);
+          }
 
           this._subSelectors.push(subSelector);
         }
@@ -579,8 +607,9 @@ class Pattern {
     );
 
     for (let mutationType of mutationTypes) {
-      if (mutationTypeMatchMap.get(mutationType))
+      if (mutationTypeMatchMap.get(mutationType)) {
         return true;
+      }
     }
 
     return false;
@@ -611,10 +640,12 @@ class Pattern {
       for (let [selector, element] of selectors[index].getSelectors(
         prefix, currentSubtree, targets
       )) {
-        if (selector == null)
+        if (selector == null) {
           yield null;
-        else
+        }
+        else {
           yield* evaluateInner(index + 1, selector, element);
+        }
       }
       // Just in case the getSelectors() generator above had to run some heavy
       // document.querySelectorAll() call which didn't produce any results, make
@@ -633,21 +664,24 @@ class Pattern {
    */
   matches(target, subtree) {
     let targetFilter = [target];
-    if (this.maybeContainsSiblingCombinators)
+    if (this.maybeContainsSiblingCombinators) {
       targetFilter = null;
+    }
 
     let selectorGenerator = this.evaluate(subtree, targetFilter);
     for (let selector of selectorGenerator) {
-      if (selector && target.matches(selector))
+      if (selector && target.matches(selector)) {
         return true;
+      }
     }
     return false;
   }
 
   setStyles(styles) {
     for (let selector of this.selectors) {
-      if (selector.dependsOnStyles)
+      if (selector.dependsOnStyles) {
         selector.setStyles(styles);
+      }
     }
   }
 }
@@ -660,16 +694,18 @@ function extractMutationTypes(mutations) {
 
     // There are only 3 types of mutations: "attributes", "characterData", and
     // "childList".
-    if (types.size == 3)
+    if (types.size == 3) {
       break;
+    }
   }
 
   return types;
 }
 
 function extractMutationTargets(mutations) {
-  if (!mutations)
+  if (!mutations) {
     return null;
+  }
 
   let targets = new Set();
 
@@ -677,10 +713,12 @@ function extractMutationTargets(mutations) {
     if (mutation.type == "childList") {
       // When new nodes are added, we're interested in the added nodes rather
       // than the parent.
-      for (let node of mutation.addedNodes)
+      for (let node of mutation.addedNodes) {
         targets.add(node);
-      if (mutation.removedNodes.length > 0)
+      }
+      if (mutation.removedNodes.length > 0) {
         targets.add(mutation.target);
+      }
     }
     else {
       targets.add(mutation.target);
@@ -691,8 +729,9 @@ function extractMutationTargets(mutations) {
 }
 
 function filterPatterns(patterns, {stylesheets, mutations}) {
-  if (!stylesheets && !mutations)
+  if (!stylesheets && !mutations) {
     return patterns.slice();
+  }
 
   let mutationTypes = mutations ? extractMutationTypes(mutations) : null;
 
@@ -767,16 +806,19 @@ exports.ElemHideEmulation = class ElemHideEmulation {
    * or null in case of errors.
    */
   parseSelector(selector) {
-    if (selector.length == 0)
+    if (selector.length == 0) {
       return [];
+    }
 
     let match = abpSelectorRegexp.exec(selector);
-    if (!match)
+    if (!match) {
       return [new PlainSelector(selector)];
+    }
 
     let selectors = [];
-    if (match.index > 0)
+    if (match.index > 0) {
       selectors.push(new PlainSelector(selector.substring(0, match.index)));
+    }
 
     let startIndex = match.index + match[0].length;
     let content = parseSelectorContent(selector, startIndex);
@@ -791,8 +833,9 @@ exports.ElemHideEmulation = class ElemHideEmulation {
     }
     else if (match[1] == "-abp-has" || match[1] == "has") {
       let hasSelectors = this.parseSelector(content.text);
-      if (hasSelectors == null)
+      if (hasSelectors == null) {
         return null;
+      }
       selectors.push(new HasSelector(hasSelectors));
     }
     else if (match[1] == "-abp-contains" || match[1] == "has-text") {
@@ -817,16 +860,19 @@ exports.ElemHideEmulation = class ElemHideEmulation {
     }
     else if (match[1] == "not") {
       let notSelectors = this.parseSelector(content.text);
-      if (notSelectors == null)
+      if (notSelectors == null) {
         return null;
+      }
 
       // if all of the inner selectors are PlainSelectors, then we
       // don't actually need to use our selector at all. We're better
       // off delegating to the browser :not implementation.
-      if (notSelectors.every(s => s instanceof PlainSelector))
+      if (notSelectors.every(s => s instanceof PlainSelector)) {
         selectors.push(new PlainSelector(`:not(${content.text})`));
-      else
+      }
+      else {
         selectors.push(new NotSelector(notSelectors));
+      }
     }
     else {
       // this is an error, can't parse selector.
@@ -837,8 +883,9 @@ exports.ElemHideEmulation = class ElemHideEmulation {
     }
 
     let suffix = this.parseSelector(selector.substring(content.end + 1));
-    if (suffix == null)
+    if (suffix == null) {
       return null;
+    }
 
     selectors.push(...suffix);
 
@@ -863,8 +910,9 @@ exports.ElemHideEmulation = class ElemHideEmulation {
     for (let stylesheet of stylesheets || []) {
       // Explicitly ignore third-party stylesheets to ensure consistent behavior
       // between Firefox and Chrome.
-      if (!this.isSameOrigin(stylesheet))
+      if (!this.isSameOrigin(stylesheet)) {
         continue;
+      }
 
       let rules;
       try {
@@ -878,12 +926,14 @@ exports.ElemHideEmulation = class ElemHideEmulation {
         continue;
       }
 
-      if (!rules)
+      if (!rules) {
         continue;
+      }
 
       for (let rule of rules) {
-        if (rule.type != rule.STYLE_RULE)
+        if (rule.type != rule.STYLE_RULE) {
           continue;
+        }
 
         cssStyles.push(stringifyStyle(rule));
       }
@@ -907,13 +957,15 @@ exports.ElemHideEmulation = class ElemHideEmulation {
    *    A promise that is fulfilled once all filtering is completed
    */
   async _addSelectors(stylesheets, mutations) {
-    if (testInfo)
+    if (testInfo) {
       testInfo.lastProcessedElements.clear();
+    }
 
     let deadline = newIdleDeadline();
 
-    if (shouldObserveStyles(this.patterns))
+    if (shouldObserveStyles(this.patterns)) {
       this._refreshPatternStyles();
+    }
 
     let patternsToCheck = filterPatterns(
       this.patterns, {stylesheets, mutations}
@@ -932,8 +984,9 @@ exports.ElemHideEmulation = class ElemHideEmulation {
       // easily optimize based on the mutation targets. Since this is a
       // special case, skip the optimization. By setting it to null here we
       // make sure we process the entire DOM.
-      if (pattern.maybeContainsSiblingCombinators)
+      if (pattern.maybeContainsSiblingCombinators) {
         evaluationTargets = null;
+      }
 
       let generator = pattern.evaluate(this.document, evaluationTargets);
       for (let selector of generator) {
@@ -949,8 +1002,9 @@ exports.ElemHideEmulation = class ElemHideEmulation {
           }
         }
 
-        if (deadline.timeRemaining() <= 0)
+        if (deadline.timeRemaining() <= 0) {
           deadline = await yieldThread();
+        }
       }
     }
     this._hideElems(elementsToHide, elementFilters);
@@ -970,11 +1024,13 @@ exports.ElemHideEmulation = class ElemHideEmulation {
       let matchesAny = this.patterns.some(pattern => pattern.matches(
         elem, this.document
       ));
-      if (matchesAny)
+      if (matchesAny) {
         elementsToUnhide.delete(elem);
+      }
 
-      if (deadline.timeRemaining() <= 0)
+      if (deadline.timeRemaining() <= 0) {
         deadline = await yieldThread();
+      }
     }
     this._unhideElems(Array.from(elementsToUnhide));
   }
@@ -982,16 +1038,18 @@ exports.ElemHideEmulation = class ElemHideEmulation {
   _hideElems(elementsToHide, elementFilters) {
     if (elementsToHide.length > 0) {
       this.hideElemsFunc(elementsToHide, elementFilters);
-      for (let i = 0; i < elementsToHide.length; i++)
+      for (let i = 0; i < elementsToHide.length; i++) {
         this.hiddenElements.set(elementsToHide[i], elementFilters[i]);
+      }
     }
   }
 
   _unhideElems(elementsToUnhide) {
     if (elementsToUnhide.length > 0) {
       this.unhideElemsFunc(elementsToUnhide);
-      for (let elem of elementsToUnhide)
+      for (let elem of elementsToUnhide) {
         this.hiddenElements.delete(elem);
+      }
     }
   }
 
@@ -1025,8 +1083,9 @@ exports.ElemHideEmulation = class ElemHideEmulation {
     );
     this._lastInvocation = performance.now();
     this._filteringInProgress = false;
-    if (this._scheduledProcessing)
+    if (this._scheduledProcessing) {
       this._scheduleNextFiltering();
+    }
   }
 
   /**
@@ -1054,13 +1113,15 @@ exports.ElemHideEmulation = class ElemHideEmulation {
       // The previous filters are not to filter everything, so the new
       // parameters matter. Push them onto the appropriate lists.
       if (stylesheets) {
-        if (!this._scheduledProcessing.stylesheets)
+        if (!this._scheduledProcessing.stylesheets) {
           this._scheduledProcessing.stylesheets = [];
+        }
         this._scheduledProcessing.stylesheets.push(...stylesheets);
       }
       if (mutations) {
-        if (!this._scheduledProcessing.mutations)
+        if (!this._scheduledProcessing.mutations) {
           this._scheduledProcessing.mutations = [];
+        }
         this._scheduledProcessing.mutations.push(...mutations);
       }
     }
@@ -1125,14 +1186,16 @@ exports.ElemHideEmulation = class ElemHideEmulation {
 
   _refreshPatternStyles(stylesheet) {
     let allCssRules = this._readCssRules(this.document.styleSheets);
-    for (let pattern of this.patterns)
+    for (let pattern of this.patterns) {
       pattern.setStyles(allCssRules);
+    }
   }
 
   onLoad(event) {
     let stylesheet = event.target.sheet;
-    if (stylesheet)
+    if (stylesheet) {
       this.queueFiltering([stylesheet]);
+    }
   }
 
   observe(mutations) {
@@ -1147,8 +1210,9 @@ exports.ElemHideEmulation = class ElemHideEmulation {
             toCSSStyleDeclaration(oldValue).display != "none")
       );
 
-      if (mutations.length == 0)
+      if (mutations.length == 0) {
         return;
+      }
     }
 
     this.queueFiltering(null, mutations);
@@ -1158,25 +1222,29 @@ exports.ElemHideEmulation = class ElemHideEmulation {
     if (this.patterns) {
       let removedPatterns = [];
       for (let oldPattern of this.patterns) {
-        if (!patterns.find(newPattern => newPattern.text == oldPattern.text))
+        if (!patterns.find(newPattern => newPattern.text == oldPattern.text)) {
           removedPatterns.push(oldPattern);
+        }
       }
       let elementsToUnhide = [];
       for (let pattern of removedPatterns) {
         for (let [element, filter] of this.hiddenElements) {
-          if (filter == pattern.text)
+          if (filter == pattern.text) {
             elementsToUnhide.push(element);
+          }
         }
       }
-      if (elementsToUnhide.length > 0)
+      if (elementsToUnhide.length > 0) {
         this._unhideElems(elementsToUnhide);
+      }
     }
 
     this.patterns = [];
     for (let pattern of patterns) {
       let selectors = this.parseSelector(pattern.selector);
-      if (selectors != null && selectors.length > 0)
+      if (selectors != null && selectors.length > 0) {
         this.patterns.push(new Pattern(selectors, pattern.text));
+      }
     }
 
     if (this.patterns.length > 0) {
@@ -1195,8 +1263,9 @@ exports.ElemHideEmulation = class ElemHideEmulation {
       );
       if (shouldObserveStyles(this.patterns)) {
         let onLoad = this.onLoad.bind(this);
-        if (this.document.readyState === "loading")
+        if (this.document.readyState === "loading") {
           this.document.addEventListener("DOMContentLoaded", onLoad, true);
+        }
         this.document.addEventListener("load", onLoad, true);
       }
     }

@@ -44,8 +44,9 @@ class PotentialPopupMap {
   }
 
   set(tabId, openerPromise) {
-    if (this.openerPromiseMap[tabId] || this.openerMap[tabId])
+    if (this.openerPromiseMap[tabId] || this.openerMap[tabId]) {
       return;
+    }
 
     this.openerPromiseMap[tabId] = openerPromise;
     openerPromise.then(async opener => {
@@ -61,8 +62,9 @@ class PotentialPopupMap {
 
   async get(tabId) {
     let openerPromise = this.openerPromiseMap[tabId];
-    if (openerPromise)
+    if (openerPromise) {
       return await openerPromise;
+    }
 
     await this.loaded;
     let opener = this.openerMap[tabId];
@@ -75,8 +77,9 @@ class PotentialPopupMap {
   }
 
   async remove(tabId) {
-    if (this.openerPromiseMap[tabId])
+    if (this.openerPromiseMap[tabId]) {
       delete this.openerPromiseMap[tabId];
+    }
 
     if (this.openerMap[tabId]) {
       delete this.openerMap[tabId];
@@ -93,8 +96,9 @@ async function checkPotentialPopup(popupTabId, url, opener) {
 
   // because of the async nature of getting to this point, it might
   // have been handled before we get here.
-  if (!potentialPopups.has(popupTabId))
+  if (!potentialPopups.has(popupTabId)) {
     return;
+  }
 
   let filter = filterEngine.defaultMatcher.match(
     url || BLANK_PAGE_URL, contentTypes.POPUP, docDomain, sitekey, specificOnly
@@ -104,25 +108,29 @@ async function checkPotentialPopup(popupTabId, url, opener) {
     logItem({tabId: opener.tabId, frameId: 0, url}, filter,
             {docDomain, specificOnly, method: "popup"});
 
-    if (filter instanceof BlockingFilter)
+    if (filter instanceof BlockingFilter) {
       browser.tabs.remove(popupTabId).catch(() => {});
+    }
 
     await potentialPopups.remove(popupTabId);
   }
 }
 
 async function onPopupURLChanged({frameId, tabId, url}) {
-  if (!isTopLevelFrameId(frameId))
+  if (!isTopLevelFrameId(frameId)) {
     return;
+  }
 
   let opener = await potentialPopups.get(tabId);
-  if (opener)
+  if (opener) {
     await checkPotentialPopup(tabId, url, opener);
+  }
 }
 
 async function onCompleted({frameId, tabId, url}) {
-  if (!isTopLevelFrameId(frameId) || url == BLANK_PAGE_URL)
+  if (!isTopLevelFrameId(frameId) || url == BLANK_PAGE_URL) {
     return;
+  }
 
   let opener = await potentialPopups.get(tabId);
   if (opener) {
@@ -140,8 +148,9 @@ async function onPopup({tabId, url, sourceTabId, sourceFrameId}) {
     await initializer.start();
     let frame = getFrameInfo(sourceTabId, sourceFrameId);
 
-    if (frame.allowlisted & contentTypes.DOCUMENT)
+    if (frame.allowlisted & contentTypes.DOCUMENT) {
       return;
+    }
 
     let opener = {
       tabId: sourceTabId,
@@ -155,8 +164,9 @@ async function onPopup({tabId, url, sourceTabId, sourceFrameId}) {
   potentialPopups.set(tabId, openerPromise);
 
   let opener = await openerPromise;
-  if (opener)
+  if (opener) {
     await checkPotentialPopup(tabId, url, opener);
+  }
 }
 
 /**

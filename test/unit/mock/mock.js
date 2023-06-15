@@ -30,8 +30,9 @@ export async function mock(filename) {
   let config = getConfig(filename);
   await new Promise((resolve, reject) => {
     webpack(config.webpackConfig, (err, res) => {
-      if (err)
+      if (err) {
         return reject(err);
+      }
       let errors = res.compilation.errors;
       if (errors.length > 0) {
         // eslint-disable-next-line no-console

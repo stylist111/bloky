@@ -475,10 +475,12 @@ describe("Synchronizer", function() {
         }
       ]) {
         let testId = `"${currentTest.expiration}"`;
-        if (currentTest.randomResult != 0.5)
+        if (currentTest.randomResult != 0.5) {
           testId += " with Math.random() returning " + currentTest.randomResult;
-        if (currentTest.skip)
+        }
+        if (currentTest.skip) {
           testId += " skipping " + currentTest.skip + " hours after " + currentTest.skipAfter + " hours";
+        }
 
         it(testId, function() {
           let subscription = Subscription.fromURL("https://example.com/subscription");

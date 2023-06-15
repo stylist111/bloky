@@ -30,13 +30,15 @@ export async function fuzzSuspendServiceWorker() {
 }
 
 export async function runInBackgroundPage(operations, fuzzEnabled = true) {
-  if (fuzzEnabled)
+  if (fuzzEnabled) {
     await fuzzSuspendServiceWorker();
+  }
 
   let {result, error} =
     await browser.runtime.sendMessage({type: "ewe-test:run", operations});
-  if (error)
+  if (error) {
     throw new Error(error);
+  }
 
   return result;
 }
@@ -44,8 +46,9 @@ export async function runInBackgroundPage(operations, fuzzEnabled = true) {
 function proxy(namespace) {
   return new Proxy(Object.create(null), {
     get(target, property) {
-      if (property in target)
+      if (property in target) {
         return target[property];
+      }
 
       return (...args) => runInBackgroundPage([
         {op: "getGlobal", arg: "EWE"},
@@ -87,8 +90,9 @@ let data = {};
 browser.runtime.onMessage.addListener(message => {
   if (message.type == "ewe-test:event") {
     let {eventName, eventArgs} = message;
-    if (!data[eventName])
+    if (!data[eventName]) {
       data[eventName] = [];
+    }
 
     data[eventName].push(eventArgs);
   }
@@ -109,8 +113,9 @@ export async function expectTestEvents(name, expectedEvents, timeout = 500) {
  *   event. Inner array is the arguments passed to that event.
  */
 export function getTestEvents(name) {
-  if (data[name])
+  if (data[name]) {
     return data[name];
+  }
 
   return [];
 }

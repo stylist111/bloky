@@ -20,8 +20,9 @@
 "use strict";
 
 function parseVersionComponent(comp) {
-  if (comp == "*")
+  if (comp == "*") {
     return Infinity;
+  }
   return parseInt(comp, 10) || 0;
 }
 
@@ -48,17 +49,21 @@ exports.compareVersions = function compareVersions(v1, v2) {
     let result = parseVersionComponent(components1[i]) -
                  parseVersionComponent(components2[i]) || 0;
 
-    if (result < 0)
+    if (result < 0) {
       return -1;
-    else if (result > 0)
+    }
+    else if (result > 0) {
       return 1;
+    }
   }
 
   // Compare version suffix (e.g. 0.1alpha < 0.1b1 < 01.b2 < 0.1).
   // However, note that this is a simple string comparision, meaning: b10 < b2
-  if (tail1 == tail2)
+  if (tail1 == tail2) {
     return 0;
-  if (!tail1 || tail2 && tail1 > tail2)
+  }
+  if (!tail1 || tail2 && tail1 > tail2) {
     return 1;
+  }
   return -1;
 };

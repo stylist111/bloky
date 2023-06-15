@@ -60,15 +60,18 @@ class ElemHideExceptions extends EventEmitter {
    * @param {module:filterClasses.ElemHideException} exception
    */
   add(exception) {
-    if (this._exceptions.has(exception))
+    if (this._exceptions.has(exception)) {
       return;
+    }
 
     let {selector} = exception;
     let set = this._exceptionsBySelector.get(selector);
-    if (set)
+    if (set) {
       set.add(exception);
-    else
+    }
+    else {
       this._exceptionsBySelector.set(selector, new Set([exception]));
+    }
 
     this._exceptions.add(exception);
 
@@ -80,14 +83,16 @@ class ElemHideExceptions extends EventEmitter {
    * @param {module:filterClasses.ElemHideException} exception
    */
   remove(exception) {
-    if (!this._exceptions.has(exception))
+    if (!this._exceptions.has(exception)) {
       return;
+    }
 
     let {selector} = exception;
     let set = this._exceptionsBySelector.get(selector);
     set.delete(exception);
-    if (set.size == 0)
+    if (set.size == 0) {
       this._exceptionsBySelector.delete(selector);
+    }
 
     this._exceptions.delete(exception);
 
@@ -123,8 +128,9 @@ class ElemHideExceptions extends EventEmitter {
     let exceptions = this._exceptionsBySelector.get(selector);
     if (exceptions) {
       for (let exception of exceptions) {
-        if (exception.isActiveOnDomain(domain))
+        if (exception.isActiveOnDomain(domain)) {
           return exception;
+        }
       }
     }
 

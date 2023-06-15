@@ -22,8 +22,9 @@ let database;
 function clearContent(filename, entryStore, contentStore) {
   entryStore.get(filename).onsuccess = event => {
     let entry = event.target.result;
-    if (entry)
+    if (entry) {
       contentStore.delete(entry.content);
+    }
   };
 }
 
@@ -50,8 +51,9 @@ async function initIO(db) {
 }
 
 export function getDatabase() {
-  if (!database)
+  if (!database) {
     throw new Error("Database hasn't been opened. Did you call start()?");
+  }
   return database;
 }
 
@@ -96,11 +98,13 @@ export let IO = {
       let end = index != -1 ? index : data.length;
       let text = decoder.decode(data.subarray(start, end));
 
-      for (let line of text.split("\n"))
+      for (let line of text.split("\n")) {
         listener(line);
+      }
 
-      if (index == -1)
+      if (index == -1) {
         break;
+      }
 
       start = index + 1;
     }

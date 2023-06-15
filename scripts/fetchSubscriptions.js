@@ -31,10 +31,12 @@ export function getSubscriptionFile(subscription) {
 
 export async function fetchSubscriptions(
   fromFile, toDir, ignoreFetchErrors = false) {
-  if (await exists(toDir))
+  if (await exists(toDir)) {
     console.warn("The output directory exists");
-  else
+  }
+  else {
     await fs.promises.mkdir(toDir, {recursive: true});
+  }
 
   if (!(await exists(fromFile))) {
     throw new Error(
@@ -47,8 +49,9 @@ export async function fetchSubscriptions(
     await fs.promises.readFile(fromFile));
   for (let subscription of subscriptions) {
     // `circumvention` subscriptions do not get converted.
-    if (subscription.type == "circumvention")
+    if (subscription.type == "circumvention") {
       continue;
+    }
 
     let toFile = `${toDir}/${getSubscriptionFile(subscription)}`;
     let toTmpFile = toFile + ".tmp";
@@ -60,8 +63,9 @@ export async function fetchSubscriptions(
         console.warn(`Downloading ${subscription.url} failed`);
         continue;
       }
-      if (await exists(toTmpFile))
+      if (await exists(toTmpFile)) {
         await fs.promises.rm(toTmpFile);
+      }
       throw e;
     }
     await fs.promises.rename(toTmpFile, toFile);

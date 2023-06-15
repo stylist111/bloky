@@ -139,8 +139,9 @@ let knownFilters = new Map();
  */
 exports.Filter.fromText = function(text) {
   let filter = knownFilters.get(text);
-  if (filter)
+  if (filter) {
     return filter;
+  }
 
   if (text.length === 0) {
     filter = new InvalidFilter(text, "filter_empty");
@@ -150,14 +151,17 @@ exports.Filter.fromText = function(text) {
   }
   else {
     let match = text.includes("#") ? CONTENT_FILTER.exec(text) : null;
-    if (match)
+    if (match) {
       filter = ContentFilter.fromText(text, match[1], match[2], match[3]);
-    else
+    }
+    else {
       filter = URLFilter.fromText(text);
+    }
   }
 
-  if (filter.type !== "invalid")
+  if (filter.type !== "invalid") {
     knownFilters.set(filter.text, filter);
+  }
 
   return filter;
 };
@@ -171,8 +175,9 @@ exports.Filter.fromText = function(text) {
  */
 exports.Filter.fromObject = function(obj) {
   let filter = Filter.fromText(obj.text);
-  if (isActiveFilter(filter) && filterState)
+  if (isActiveFilter(filter) && filterState) {
     filterState.fromObject(filter.text, obj);
+  }
   return filter;
 };
 
@@ -266,8 +271,9 @@ exports.ActiveFilter = class ActiveFilter extends Filter {
    * @inheritdoc
    */
   *serialize() {
-    if (filterState)
+    if (filterState) {
       yield* filterState.serialize(this.text);
+    }
   }
 
   /**
@@ -282,8 +288,9 @@ exports.ActiveFilter = class ActiveFilter extends Filter {
     return filterState && !filterState.isEnabled(this.text);
   }
   set disabled(value) {
-    if (filterState)
+    if (filterState) {
       filterState.setEnabled(this.text, !value);
+    }
   }
 
   /**
@@ -294,8 +301,9 @@ exports.ActiveFilter = class ActiveFilter extends Filter {
    * @type {Set<string>}
    */
   get disabledSubscriptions() {
-    if (!filterState)
+    if (!filterState) {
       return new Set();
+    }
     return filterState.disabledSubscriptions(this.text);
   }
 
@@ -317,8 +325,9 @@ exports.ActiveFilter = class ActiveFilter extends Filter {
    * and false for enabled
    */
   setDisabledForSubscription(subscriptionUrl, value) {
-    if (filterState)
+    if (filterState) {
       filterState.setDisabledForSubscription(this.text, subscriptionUrl, value);
+    }
   }
 
   /**
@@ -337,8 +346,9 @@ exports.ActiveFilter = class ActiveFilter extends Filter {
     return filterState ? filterState.getHitCount(this.text) : 0;
   }
   set hitCount(value) {
-    if (filterState)
+    if (filterState) {
       filterState.setHitCount(this.text, value);
+    }
   }
 
   /**
@@ -350,8 +360,9 @@ exports.ActiveFilter = class ActiveFilter extends Filter {
     return filterState ? filterState.getLastHit(this.text) : 0;
   }
   set lastHit(value) {
-    if (filterState)
+    if (filterState) {
       filterState.setLastHit(this.text, value);
+    }
   }
 
   /**
@@ -394,29 +405,35 @@ exports.ActiveFilter = class ActiveFilter extends Filter {
     // upper-case to avoid false positives here. Instead we need to
     // change the way filter options are parsed.
     if (this.sitekeys &&
-        (!sitekey || !this.sitekeys.includes(sitekey)))
+        (!sitekey || !this.sitekeys.includes(sitekey))) {
       return false;
+    }
 
     let {domains} = this;
 
     // If no domains are set the rule matches everywhere
-    if (!domains)
+    if (!domains) {
       return true;
+    }
 
-    if (docDomain == null)
+    if (docDomain == null) {
       docDomain = "";
-    else if (docDomain[docDomain.length - 1] == ".")
+    }
+    else if (docDomain[docDomain.length - 1] == ".") {
       docDomain = docDomain.substring(0, docDomain.length - 1);
+    }
 
     // If the document has no host name, match only if the filter
     // isn't restricted to specific domains
-    if (!docDomain)
+    if (!docDomain) {
       return domains.get("");
+    }
 
     for (docDomain of domainSuffixes(docDomain)) {
       let isDomainIncluded = domains.get(docDomain);
-      if (typeof isDomainIncluded != "undefined")
+      if (typeof isDomainIncluded != "undefined") {
         return isDomainIncluded;
+      }
     }
 
     return domains.get("");
@@ -430,24 +447,30 @@ exports.ActiveFilter = class ActiveFilter extends Filter {
   isActiveOnlyOnDomain(docDomain) {
     let {domains} = this;
 
-    if (!domains || domains.get(""))
+    if (!domains || domains.get("")) {
       return false;
+    }
 
-    if (docDomain == null)
+    if (docDomain == null) {
       docDomain = "";
-    else if (docDomain[docDomain.length - 1] == ".")
+    }
+    else if (docDomain[docDomain.length - 1] == ".") {
       docDomain = docDomain.substring(0, docDomain.length - 1);
+    }
 
-    if (!docDomain)
+    if (!docDomain) {
       return false;
+    }
 
     for (let [domain, isIncluded] of domains) {
       if (isIncluded && domain != docDomain) {
-        if (domain.length <= docDomain.length)
+        if (domain.length <= docDomain.length) {
           return false;
+        }
 
-        if (!domain.endsWith("." + docDomain))
+        if (!domain.endsWith("." + docDomain)) {
           return false;
+        }
       }
     }
 
@@ -595,8 +618,9 @@ exports.URLFilter = class URLFilter extends ActiveFilter {
    * @see ActiveFilter.sitekeys
    */
   get sitekeys() {
-    if (typeof this._sitekeys == "undefined")
+    if (typeof this._sitekeys == "undefined") {
       this._sitekeys = this._sitekeySource.split("|");
+    }
 
     return this._sitekeys;
   }
@@ -643,8 +667,9 @@ exports.URLFilter.fromText = function(filterText) {
 
   if (result instanceof FilterParsingError) {
     let option = null;
-    if (result.message == "filter_unknown_option" && result.detail)
+    if (result.message == "filter_unknown_option" && result.detail) {
       option = result.detail.option;
+    }
     return new InvalidFilter(filterText, result.message, option);
   }
 
@@ -784,14 +809,16 @@ exports.BlockingFilter = class BlockingFilter extends URLFilter {
    *   but no value.
    */
   filterHeaders(headers) {
-    if (!this.header)
+    if (!this.header) {
       return true;
+    }
 
     for (let header of headers) {
       if (header.name.toLowerCase() == this.header.name) {
         if (this.header.value) {
-          if (header.value.includes(this.header.value))
+          if (header.value.includes(this.header.value)) {
             return true;
+          }
         }
         else {
           return true;
@@ -862,8 +889,9 @@ exports.ContentFilter.fromText = function(text, domains, type, body) {
   // We don't allow content filters which have any empty domains.
   // Note: The ContentFilter.prototype.domainSeparator is duplicated here, if
   // that changes this must be changed too.
-  if (domains && /(^|,)~?(,|$)/.test(domains))
+  if (domains && /(^|,)~?(,|$)/.test(domains)) {
     return new InvalidFilter(text, "filter_invalid_domain");
+  }
 
   let restrictedByDomain = /,[^~][^,.]*\.[^,]/.test("," + domains) ||
       ("," + domains + ",").includes(",localhost,");
@@ -877,18 +905,21 @@ exports.ContentFilter.fromText = function(text, domains, type, body) {
         "filter_snippet_nodomain");
     }
 
-    if (type == "?")
+    if (type == "?") {
       return new ElemHideEmulationFilter(text, domains, body);
+    }
 
     return new SnippetFilter(text, domains, body);
   }
 
   if (!restrictedByDomain &&
-      body.length < MIN_GENERIC_CONTENT_FILTER_BODY_LENGTH)
+      body.length < MIN_GENERIC_CONTENT_FILTER_BODY_LENGTH) {
     return new InvalidFilter(text, "filter_elemhide_not_specific_enough");
+  }
 
-  if (type == "@")
+  if (type == "@") {
     return new ElemHideException(text, domains, body);
+  }
 
   return new ElemHideFilter(text, domains, body);
 };

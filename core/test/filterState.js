@@ -2278,8 +2278,9 @@ describe("filterState", function() {
     function checkEvents(func, expectedEvents = []) {
       events = [];
       func();
-      if (expectedEvents !== null)
+      if (expectedEvents !== null) {
         assert.deepEqual(events.splice(0), expectedEvents);
+      }
 
       return events.splice(0);
     }
@@ -2556,8 +2557,9 @@ describe("filterState", function() {
         filterState.fromObject("||example.com^", {disabled: true});
 
         let expectedResults = ["[Filter]", "text=||example.com^", "disabled=true"];
-        for (let line of filterState.serialize("||example.com^"))
+        for (let line of filterState.serialize("||example.com^")) {
           assert.strictEqual(line, expectedResults.shift());
+        }
 
         assert.strictEqual(expectedResults.length, 0);
       });
@@ -2566,8 +2568,9 @@ describe("filterState", function() {
         filterState.fromObject("||example.com^", {disabled: true, lastHit: 1, hitCount: 1});
 
         let expectedResults = ["[Filter]", "text=||example.com^", "disabled=true", "hitCount=1", "lastHit=1"];
-        for (let line of filterState.serialize("||example.com^"))
+        for (let line of filterState.serialize("||example.com^")) {
           assert.strictEqual(line, expectedResults.shift());
+        }
 
         assert.strictEqual(expectedResults.length, 0);
       });
@@ -2576,8 +2579,9 @@ describe("filterState", function() {
         filterState.fromObject("||example.com^", {disabled: false, lastHit: 1, hitCount: 1});
 
         let expectedResults = ["[Filter]", "text=||example.com^", "hitCount=1", "lastHit=1"];
-        for (let line of filterState.serialize("||example.com^"))
+        for (let line of filterState.serialize("||example.com^")) {
           assert.strictEqual(line, expectedResults.shift());
+        }
 
         assert.strictEqual(expectedResults.length, 0);
       });
@@ -2586,8 +2590,9 @@ describe("filterState", function() {
         filterState.fromObject("||example.com^", {disabledSubscriptions: ["~user", "~easylist"]});
 
         let expectedResults = ["[Filter]", "text=||example.com^", "disabledSubscriptions[]=~user", "disabledSubscriptions[]=~easylist"];
-        for (let line of filterState.serialize("||example.com^"))
+        for (let line of filterState.serialize("||example.com^")) {
           assert.strictEqual(line, expectedResults.shift());
+        }
 
         assert.strictEqual(expectedResults.length, 0);
       });
@@ -2596,8 +2601,9 @@ describe("filterState", function() {
         filterState.fromObject("||example.com^", {disabled: true, lastHit: 1, hitCount: 0});
 
         let expectedResults = ["[Filter]", "text=||example.com^", "disabled=true", "lastHit=1"];
-        for (let line of filterState.serialize("||example.com^"))
+        for (let line of filterState.serialize("||example.com^")) {
           assert.strictEqual(line, expectedResults.shift());
+        }
 
         assert.strictEqual(expectedResults.length, 0);
       });
@@ -2606,8 +2612,9 @@ describe("filterState", function() {
         filterState.fromObject("||example.com^", {disabled: true, lastHit: 0, hitCount: 1});
 
         let expectedResults = ["[Filter]", "text=||example.com^", "disabled=true", "hitCount=1"];
-        for (let line of filterState.serialize("||example.com^"))
+        for (let line of filterState.serialize("||example.com^")) {
           assert.strictEqual(line, expectedResults.shift());
+        }
 
         assert.strictEqual(expectedResults.length, 0);
       });

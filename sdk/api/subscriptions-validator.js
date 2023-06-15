@@ -24,16 +24,19 @@ export async function validate(bundledSubscriptions,
 
   for (let subscription of bundledSubscriptions) {
     // Circumvention subscriptions don't count.
-    if (subscription.type == "circumvention")
+    if (subscription.type == "circumvention") {
       continue;
+    }
 
     let fileExists = await subscriptionFileExists(
       subscription, bundledSubscriptionsPath);
-    if (!fileExists)
+    if (!fileExists) {
       warnings.push(`No subscription content file for ID=${subscription.id}`);
+    }
 
-    if (!rulesetExistsInManifest(subscription.id))
+    if (!rulesetExistsInManifest(subscription.id)) {
       warnings.push(`No ruleset with ID=${subscription.id} declared in the manifest`);
+    }
   }
 
   return warnings;

@@ -23,12 +23,14 @@ let observers = new WeakMap();
 
 function getURLFromElement(element) {
   if (element.localName == "object") {
-    if (element.data)
+    if (element.data) {
       return element.data;
+    }
 
     for (let child of element.children) {
-      if (child.localName == "param" && child.name == "movie" && child.value)
+      if (child.localName == "param" && child.name == "movie" && child.value) {
         return new URL(child.value, document.baseURI).href;
+      }
     }
 
     return null;
@@ -41,8 +43,9 @@ function getSelectorForBlockedElement(element) {
   // Setting the "display" CSS property to "none" doesn't have any effect on
   // <frame> elements (in framesets). So we have to hide it inline through
   // the "visibility" CSS property.
-  if (element.localName == "frame")
+  if (element.localName == "frame") {
     return null;
+  }
 
   // If the <video> or <audio> element contains any <source> children,
   // we cannot address it in CSS by the source URL; in that case we
@@ -50,16 +53,18 @@ function getSelectorForBlockedElement(element) {
   // setting the style="..." attribute.
   if (element.localName == "video" || element.localName == "audio") {
     for (let child of element.children) {
-      if (child.localName == "source")
+      if (child.localName == "source") {
         return null;
+      }
     }
   }
 
   let selector = "";
   for (let attr of ["src", "srcset"]) {
     let value = element.getAttribute(attr);
-    if (value && attr in element)
+    if (value && attr in element) {
       selector += "[" + attr + "=" + CSS.escape(value) + "]";
+    }
   }
 
   return selector ? element.localName + selector : null;
@@ -69,23 +74,28 @@ export function hideElement(element, properties) {
   let {style} = element;
 
   if (!properties) {
-    if (element.localName == "frame")
+    if (element.localName == "frame") {
       properties = [["visibility", "hidden"]];
-    else
+    }
+    else {
       properties = [["display", "none"]];
+    }
   }
 
-  for (let [key, value] of properties)
+  for (let [key, value] of properties) {
     style.setProperty(key, value, "important");
+  }
 
-  if (observers.has(element))
+  if (observers.has(element)) {
     observers.get(element).disconnect();
+  }
 
   let observer = new MutationObserver(() => {
     for (let [key, value] of properties) {
       if (style.getPropertyValue(key) != value ||
-          style.getPropertyPriority(key) != "important")
+          style.getPropertyPriority(key) != "important") {
         style.setProperty(key, value, "important");
+      }
     }
   });
   observer.observe(
@@ -130,14 +140,16 @@ function hideInAboutBlankFrames(selector, urls) {
   // Resources (e.g. images) loaded into about:blank frames
   // are (sometimes) loaded with the frameId of the main_frame.
   for (let frame of document.querySelectorAll("iframe[src='about:blank']")) {
-    if (!frame.contentDocument)
+    if (!frame.contentDocument) {
       continue;
+    }
 
     for (let element of frame.contentDocument.querySelectorAll(selector)) {
       // Use hideElement, because we don't have the correct frameId
       // for the "ewe:inject-css" message.
-      if (urls.has(getURLFromElement(element)))
+      if (urls.has(getURLFromElement(element))) {
         hideElement(element);
+      }
     }
   }
 }
@@ -146,8 +158,9 @@ export function startElementCollapsing() {
   let deferred = null;
 
   browser.runtime.onMessage.addListener((message, sender) => {
-    if (!message || message.type != "ewe:collapse")
+    if (!message || message.type != "ewe:collapse") {
       return false;
+    }
 
     if (document.readyState == "loading") {
       if (!deferred) {
@@ -157,13 +170,15 @@ export function startElementCollapsing() {
           // the event again. Since we set deferred to `null`, then
           // we assume that we should just return instead of throwing
           // a TypeError.
-          if (!deferred)
+          if (!deferred) {
             return;
+          }
 
           for (let [selector, urls] of deferred) {
             for (let element of document.querySelectorAll(selector)) {
-              if (urls.has(getURLFromElement(element)))
+              if (urls.has(getURLFromElement(element))) {
                 collapseElement(element);
+              }
             }
 
             hideInAboutBlankFrames(selector, urls);
@@ -179,8 +194,9 @@ export function startElementCollapsing() {
     }
     else {
       for (let element of document.querySelectorAll(message.selector)) {
-        if (getURLFromElement(element) == message.url)
+        if (getURLFromElement(element) == message.url) {
           collapseElement(element);
+        }
       }
 
       hideInAboutBlankFrames(message.selector, new Set([message.url]));

@@ -98,11 +98,13 @@ exports.FilterParsingError = FilterParsingError;
  */
 exports.parse = function parse(text) {
   // exclude empty text, comments, and content filters
-  if (text.length < 1)
+  if (text.length < 1) {
     return new FilterParsingError("filter_empty", {text});
+  }
 
-  if (text[0] === "!" || CONTENT_FILTER.test(text))
+  if (text[0] === "!" || CONTENT_FILTER.test(text)) {
     return new FilterParsingError("invalid", {text});
+  }
 
   // parse like an ABP URLFilter
   let blocking = true;
@@ -138,15 +140,17 @@ exports.parse = function parse(text) {
       }
 
       let inverse = option[0] == "~";
-      if (inverse)
+      if (inverse) {
         option = option.substring(1);
+      }
 
       let optionUpperCase = option.toUpperCase();
       let type = contentTypes[optionUpperCase.replace(/-/, "_")];
       if (type) {
         if (inverse) {
-          if (contentType == null)
+          if (contentType == null) {
             contentType = RESOURCE_TYPES;
+          }
           contentType &= ~type;
         }
         else if (type === contentTypes.CSP) {
@@ -240,12 +244,15 @@ exports.parse = function parse(text) {
       }
     }
     if (cspSet || headerSet) {
-      if (contentType == null)
+      if (contentType == null) {
         contentType = RESOURCE_TYPES;
-      if (cspSet)
+      }
+      if (cspSet) {
         contentType |= contentTypes.CSP;
-      if (headerSet)
+      }
+      if (headerSet) {
         contentType |= contentTypes.HEADER;
+      }
     }
   }
 
@@ -255,8 +262,9 @@ exports.parse = function parse(text) {
     let {length} = text;
     if (length > 0 && text[0] === "|") {
       minTextLength++;
-      if (length > 1 && text[1] === "|")
+      if (length > 1 && text[1] === "|") {
         minTextLength++;
+      }
     }
     if (length < minTextLength && !text.includes("*")) {
       return new FilterParsingError("filter_url_not_specific_enough",
@@ -270,8 +278,9 @@ exports.parse = function parse(text) {
   }
 
   if (blocking) {
-    if (csp && INVALID_CSP.test(csp))
+    if (csp && INVALID_CSP.test(csp)) {
       return new FilterParsingError("filter_invalid_csp", {text: origText});
+    }
 
     if (rewrite) {
       if (text.startsWith("||")) {
@@ -317,21 +326,25 @@ exports.parse = function parse(text) {
  * @return {string}
  */
 exports.normalize = function(text, dontSanitize = false) {
-  if (text === "")
+  if (text === "") {
     return text;
+  }
 
   // Remove line breaks, tabs etc
   text = text.replace(/[^\S ]+/g, "");
 
-  if (dontSanitize)
+  if (dontSanitize) {
     return text.trim();
+  }
 
-  if (!text.includes(" "))
+  if (!text.includes(" ")) {
     return text;
+  }
 
   // Don't remove spaces inside comments
-  if (/^ *!/.test(text))
+  if (/^ *!/.test(text)) {
     return text.trim();
+  }
 
   // Special treatment for content filters, right side is allowed to contain
   // spaces
@@ -343,12 +356,14 @@ exports.normalize = function(text, dontSanitize = false) {
   // For most regexp filters we strip all spaces, but $csp filter options
   // are allowed to contain single (non trailing) spaces.
   let strippedText = text.replace(/ +/g, "");
-  if (!strippedText.includes("$") || !/\b(csp|header)=/i.test(strippedText))
+  if (!strippedText.includes("$") || !/\b(csp|header)=/i.test(strippedText)) {
     return strippedText;
+  }
 
   let optionsMatch = FILTER_OPTIONS.exec(strippedText);
-  if (!optionsMatch)
+  if (!optionsMatch) {
     return strippedText;
+  }
 
   // For $csp filters we must first separate out the options part of the
   // text, being careful to preserve its spaces.

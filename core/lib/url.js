@@ -142,8 +142,9 @@ exports.domainSuffixes = function* domainSuffixes(
     yield domain;
   }
   else {
-    if (domain[domain.length - 1] == ".")
+    if (domain[domain.length - 1] == ".") {
       domain = domain.substring(0, domain.length - 1);
+    }
 
     while (domain != "") {
       yield domain;
@@ -153,8 +154,9 @@ exports.domainSuffixes = function* domainSuffixes(
     }
   }
 
-  if (includeBlank)
+  if (includeBlank) {
     yield "";
+  }
 };
 
 /**
@@ -189,8 +191,9 @@ exports.isLocalhost = function isLocalhost(hostname) {
  */
 function isIPAddress(hostname) {
   // Does it look like an IPv6 address?
-  if (hostname[0] == "[" && hostname[hostname.length - 1] == "]")
+  if (hostname[0] == "[" && hostname[hostname.length - 1] == "]") {
     return true;
+  }
 
   // Note: The first condition helps us avoid the more expensive regular
   // expression match for most hostnames.
@@ -227,31 +230,37 @@ function isValidIPv4Address(address) {
  * @returns {boolean} Whether the hostname is valid.
  */
 exports.isValidHostname = function isValidHostname(hostname) {
-  if (isValidIPv4Address(hostname))
+  if (isValidIPv4Address(hostname)) {
     return true;
+  }
 
   // This does not in fact validate the IPv6 address but it's alright for now.
-  if (hostname[0] == "[" && hostname[hostname.length - 1] == "]")
+  if (hostname[0] == "[" && hostname[hostname.length - 1] == "]") {
     return true;
+  }
 
   // Based on
   // https://en.wikipedia.org/wiki/Hostname#Restrictions_on_valid_hostnames
-  if (hostname[hostname.length - 1] == ".")
+  if (hostname[hostname.length - 1] == ".") {
     hostname = hostname.substring(0, hostname.length - 1);
+  }
 
-  if (hostname.length > 253)
+  if (hostname.length > 253) {
     return false;
+  }
 
   let labels = hostname.split(".");
 
   for (let label of labels) {
-    if (!/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/i.test(label))
+    if (!/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/i.test(label)) {
       return false;
+    }
   }
 
   // Based on https://tools.ietf.org/html/rfc3696#section-2
-  if (!/\D/.test(labels[labels.length - 1]))
+  if (!/\D/.test(labels[labels.length - 1])) {
     return false;
+  }
 
   return true;
 };
@@ -281,11 +290,13 @@ exports.getBaseDomain = function getBaseDomain(hostname) {
     }
   }
 
-  if (isNaN(cutoff))
+  if (isNaN(cutoff)) {
     return slices.length > 2 ? slices[slices.length - 2] : hostname;
+  }
 
-  if (cutoff <= 0)
+  if (cutoff <= 0) {
     return hostname;
+  }
 
   return slices[cutoff];
 };
@@ -299,22 +310,26 @@ exports.getBaseDomain = function getBaseDomain(hostname) {
  * @returns {boolean}
  */
 function isThirdParty(requestHostname, documentHostname) {
-  if (requestHostname[requestHostname.length - 1] == ".")
+  if (requestHostname[requestHostname.length - 1] == ".") {
     requestHostname = requestHostname.substring(0, requestHostname.length - 1);
+  }
 
   if (documentHostname[documentHostname.length - 1] == ".") {
     documentHostname =
       documentHostname.substring(0, documentHostname.length - 1);
   }
 
-  if (requestHostname == documentHostname)
+  if (requestHostname == documentHostname) {
     return false;
+  }
 
-  if (!requestHostname || !documentHostname)
+  if (!requestHostname || !documentHostname) {
     return true;
+  }
 
-  if (isIPAddress(requestHostname) || isIPAddress(documentHostname))
+  if (isIPAddress(requestHostname) || isIPAddress(documentHostname)) {
     return true;
+  }
 
   return getBaseDomain(requestHostname) != getBaseDomain(documentHostname);
 }
@@ -343,8 +358,9 @@ exports.URLRequest = class URLRequest {
    * @package
    */
   get urlInfo() {
-    if (!this._urlInfo)
+    if (!this._urlInfo) {
       this._urlInfo = parseURL(this._href);
+    }
 
     return this._urlInfo;
   }
@@ -385,8 +401,9 @@ exports.URLRequest = class URLRequest {
    * @package
    */
   get lowerCaseHref() {
-    if (this._lowerCaseHref == null)
+    if (this._lowerCaseHref == null) {
       this._lowerCaseHref = this._href.toLowerCase();
+    }
 
     return this._lowerCaseHref;
   }
@@ -416,8 +433,9 @@ exports.URLRequest.from = function(url, documentHostname = null) {
     request._href = url.href;
   }
 
-  if (documentHostname != null)
+  if (documentHostname != null) {
     request._documentHostname = documentHostname;
+  }
 
   return request;
 };
@@ -436,8 +454,9 @@ exports.URLRequest.from = function(url, documentHostname = null) {
  */
 exports.parseDomains = function parseDomains(source, separator) {
   let domains = domainsCache.get(source);
-  if (typeof domains != "undefined")
+  if (typeof domains != "undefined") {
     return domains;
+  }
 
   if (source[0] != "~" && !source.includes(separator)) {
     // Fast track for the common one-domain scenario.
@@ -448,8 +467,9 @@ exports.parseDomains = function parseDomains(source, separator) {
 
     let hasIncludes = false;
     for (let domain of source.split(separator)) {
-      if (domain == "")
+      if (domain == "") {
         continue;
+      }
 
       let include;
       if (domain[0] == "~") {
@@ -461,14 +481,16 @@ exports.parseDomains = function parseDomains(source, separator) {
         hasIncludes = true;
       }
 
-      if (!domains)
+      if (!domains) {
         domains = new Map();
+      }
 
       domains.set(domain, include);
     }
 
-    if (domains)
+    if (domains) {
       domains.set("", !hasIncludes);
+    }
   }
 
   domainsCache.set(source, domains);

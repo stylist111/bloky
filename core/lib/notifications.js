@@ -87,12 +87,14 @@ function saveNotificationData(key = "notificationdata") {
  *   found in the `translations` object.
  */
 function localize(translations, locale) {
-  if (locale in translations)
+  if (locale in translations) {
     return translations[locale];
+  }
 
   let languagePart = locale.substring(0, locale.indexOf("-"));
-  if (languagePart && languagePart in translations)
+  if (languagePart && languagePart in translations) {
     return translations[languagePart];
+  }
 
   return translations[DEFAULT_LOCALE];
 }
@@ -101,8 +103,9 @@ function isValidNotification(notification) {
   // Only notifications that are meant to be opened in a new tab must
   // contain at least one URL to open.
   if (notification.type == "newtab" &&
-      !(notification.links && notification.links.length > 0))
+      !(notification.links && notification.links.length > 0)) {
     return false;
+  }
 
   return true;
 }
@@ -190,8 +193,9 @@ class Notifications extends EventEmitter {
    * once.
    */
   start() {
-    if (this._started)
+    if (this._started) {
       return;
+    }
 
     Prefs.on("blocked_total", this._onBlockedTotal);
 
@@ -228,11 +232,13 @@ class Notifications extends EventEmitter {
    *   local notifications.
    */
   setLocalNotificationStorage(storageBackend) {
-    if (this._localNotifications == storageBackend)
+    if (this._localNotifications == storageBackend) {
       return;
+    }
 
-    for (let notification of this._localNotifications)
+    for (let notification of this._localNotifications) {
       storageBackend.add(notification);
+    }
 
     this._localNotifications = storageBackend;
   }
@@ -248,24 +254,31 @@ class Notifications extends EventEmitter {
 
     let downloadable = new Downloadable(url);
 
-    if (analytics.isTrusted(url))
+    if (analytics.isTrusted(url)) {
       downloadable.firstVersion = analytics.getFirstVersion();
+    }
 
-    if (typeof notificationdata.lastError == "number")
+    if (typeof notificationdata.lastError == "number") {
       downloadable.lastError = notificationdata.lastError;
-    if (typeof notificationdata.lastCheck == "number")
+    }
+    if (typeof notificationdata.lastCheck == "number") {
       downloadable.lastCheck = notificationdata.lastCheck;
+    }
 
     if (typeof notificationdata.data == "object" &&
-        "version" in notificationdata.data)
+        "version" in notificationdata.data) {
       downloadable.lastVersion = notificationdata.data.version;
+    }
 
-    if (typeof notificationdata.softExpiration == "number")
+    if (typeof notificationdata.softExpiration == "number") {
       downloadable.softExpiration = notificationdata.softExpiration;
-    if (typeof notificationdata.hardExpiration == "number")
+    }
+    if (typeof notificationdata.hardExpiration == "number") {
       downloadable.hardExpiration = notificationdata.hardExpiration;
-    if (typeof notificationdata.downloadCount == "number")
+    }
+    if (typeof notificationdata.downloadCount == "number") {
       downloadable.downloadCount = notificationdata.downloadCount;
+    }
 
     yield downloadable;
   }
@@ -284,8 +297,9 @@ class Notifications extends EventEmitter {
       let data = JSON.parse(responseText);
 
       if (typeof data.version == "string" &&
-          analytics.isTrusted(downloadable.redirectURL || downloadable.url))
+          analytics.isTrusted(downloadable.redirectURL || downloadable.url)) {
         analytics.recordVersion(data.version);
+      }
 
       let notifications = [];
       for (let notification of data.notifications) {
@@ -295,8 +309,9 @@ class Notifications extends EventEmitter {
         }
 
         if ("severity" in notification) {
-          if (!("type" in notification))
+          if (!("type" in notification)) {
             notification.type = notification.severity;
+          }
           delete notification.severity;
         }
 
@@ -380,8 +395,9 @@ class Notifications extends EventEmitter {
   _getNotifications() {
     let remoteNotifications = [];
     if (typeof Prefs.notificationdata.data == "object" &&
-        Prefs.notificationdata.data.notifications instanceof Array)
+        Prefs.notificationdata.data.notifications instanceof Array) {
       remoteNotifications = Prefs.notificationdata.data.notifications;
+    }
 
     return [...this._localNotifications, ...remoteNotifications];
   }
@@ -394,18 +410,21 @@ class Notifications extends EventEmitter {
    */
   _getNextToShow() {
     let notifications = this._getNotifications();
-    if (notifications.length == 0)
+    if (notifications.length == 0) {
       return null;
+    }
 
     const {addonName, addonVersion, application, applicationVersion,
            platform, platformVersion} = require("info");
 
     let {numBlocked} = this;
     // Compatibility for legacy adblockpluschrome
-    if ("blocked_total" in Prefs)
+    if ("blocked_total" in Prefs) {
       numBlocked = Prefs.blocked_total;
-    if (Prefs.show_statsinpopup === false)
+    }
+    if (Prefs.show_statsinpopup === false) {
       numBlocked = null;
+    }
 
     let targetChecks = {
       extension: v => v == addonName,
@@ -432,13 +451,15 @@ class Notifications extends EventEmitter {
     for (let notification of notifications) {
       if (notification.type != "critical") {
         let shown;
-        if (typeof Prefs.notificationdata.shown == "object")
+        if (typeof Prefs.notificationdata.shown == "object") {
           shown = Prefs.notificationdata.shown[notification.id];
+        }
 
         if (typeof shown != "undefined") {
           if (typeof notification.interval == "number") {
-            if (shown + notification.interval > Date.now())
+            if (shown + notification.interval > Date.now()) {
               continue;
+            }
           }
           else if (shown) {
             continue;
@@ -446,8 +467,9 @@ class Notifications extends EventEmitter {
         }
 
         if (notification.type != "relentless" &&
-            this.shouldIgnoreNotifications())
+            this.shouldIgnoreNotifications()) {
           continue;
+        }
       }
 
       if (notification.targets instanceof Array) {
@@ -464,13 +486,15 @@ class Notifications extends EventEmitter {
           }
         }
 
-        if (!match)
+        if (!match) {
           continue;
+        }
       }
 
       if (!notificationToShow || getNumericalSeverity(notification) >
-                                 getNumericalSeverity(notificationToShow))
+                                 getNumericalSeverity(notificationToShow)) {
         notificationToShow = notification;
+      }
     }
 
     return notificationToShow;
@@ -484,11 +508,13 @@ class Notifications extends EventEmitter {
    *   be considered to determine whether notification should be shown.
    */
   showNotification(notification, options = {}) {
-    if (options.ignorable && this.shouldIgnoreNotifications())
+    if (options.ignorable && this.shouldIgnoreNotifications()) {
       return;
+    }
 
-    for (let showListener of this._showListeners)
+    for (let showListener of this._showListeners) {
       showListener(notification);
+    }
   }
 
   /**
@@ -501,8 +527,9 @@ class Notifications extends EventEmitter {
   showNext() {
     let notification = this._getNextToShow();
     if (notification) {
-      for (let showListener of this._showListeners)
+      for (let showListener of this._showListeners) {
         showListener(notification);
+      }
     }
   }
 
@@ -514,21 +541,24 @@ class Notifications extends EventEmitter {
     let notifications = this._getNotifications();
 
     // Ignore if there's no notification with the given ID.
-    if (!notifications.some(notification => notification.id == id))
+    if (!notifications.some(notification => notification.id == id)) {
       return;
+    }
 
     let now = Date.now();
     let data = Prefs.notificationdata;
 
     if (data.shown instanceof Array) {
       let newShown = {};
-      for (let oldId of data.shown)
+      for (let oldId of data.shown) {
         newShown[oldId] = now;
+      }
       data.shown = newShown;
     }
 
-    if (typeof data.shown != "object")
+    if (typeof data.shown != "object") {
       data.shown = {};
+    }
 
     data.shown[id] = now;
 
@@ -547,10 +577,12 @@ class Notifications extends EventEmitter {
 
     for (let key of textKeys) {
       if (key in notification) {
-        if (typeof notification[key] == "string")
+        if (typeof notification[key] == "string") {
           localizedTexts[key] = notification[key];
-        else
+        }
+        else {
           localizedTexts[key] = localize(notification[key], this.locale);
+        }
       }
     }
 
@@ -562,8 +594,9 @@ class Notifications extends EventEmitter {
    * @param {Object} notification The notification to add.
    */
   addNotification(notification) {
-    if (!isValidNotification(notification))
+    if (!isValidNotification(notification)) {
       throw new Error(`Invalid notification with ID "${notification.id}"`);
+    }
 
     this._localNotifications.add(notification);
   }

@@ -41,8 +41,9 @@ describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
 
   before(async function() {
     // it's meant to be started as MV2 test and restarted as MV3 test only
-    if ((isMV3() && start) || (!isMV3() && !start))
+    if ((isMV3() && start) || (!isMV3() && !start)) {
       this.skip();
+    }
   });
 
   after(async function() {
@@ -218,8 +219,9 @@ describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
       return;
     }
 
-    for (const filter of allFilters)
+    for (const filter of allFilters) {
       expect(await EWE.filters.getMetadata(filter)).toEqual(meta);
+    }
 
     let expectedEnabled = enabledFilters.map(text => expect.objectContaining({
       text, enabled: true
@@ -243,8 +245,9 @@ describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
   // Due to the nature of how we test this entire mechanism, the order of when
   // this test is run is important.
   it("clears custom filter migration errors", async function() {
-    if (start)
+    if (start) {
       return;
+    }
 
     let errors = await EWE.filters.getMigrationErrors();
     expect(errors).toEqual(
@@ -314,8 +317,9 @@ describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
   // Due to the nature of how we test this entire mechanism, the order of when
   // this test is run is important.
   it("clears custom subscription migration errors", async function() {
-    if (start)
+    if (start) {
       return;
+    }
 
     const URL = "https://someSubscriptionThatIsNotSupportedInMV3.com";
     let errors = await EWE.subscriptions.getMigrationErrors();

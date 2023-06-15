@@ -34,8 +34,9 @@ const {Subscription} = require("./subscriptionClasses");
 exports.INIParser = class INIParser {
   /** @param {FilterState} filterState the filter state */
   constructor(filterState) {
-    if (!(filterState instanceof FilterState))
+    if (!(filterState instanceof FilterState)) {
       throw new Error("filterState must be a FilterState object");
+    }
 
     /**
      * Properties of the filter data.
@@ -69,8 +70,9 @@ exports.INIParser = class INIParser {
       this._curObj[match[1]] = match[2];
     }
     else if (this._wantObj === true && (match = /^(\w+)\[]=(.*)$/.exec(line))) {
-      if (!this._curObj[match[1]])
+      if (!this._curObj[match[1]]) {
         this._curObj[match[1]] = [];
+      }
       this._curObj[match[1]].push(match[2]);
     }
     else if (line === null || (match = /^\s*\[(.+)\]\s*$/.exec(line))) {
@@ -80,15 +82,17 @@ exports.INIParser = class INIParser {
           case "filter":
             if ("text" in this._curObj) {
               let {text} = this._curObj;
-              if (isActiveFilter(Filter.fromText(text)))
+              if (isActiveFilter(Filter.fromText(text))) {
                 this.filterState.fromObject(text, this._curObj);
+              }
             }
             break;
 
           case "subscription":
             let subscription = Subscription.fromObject(this._curObj);
-            if (subscription)
+            if (subscription) {
               this.subscriptions.push(subscription);
+            }
             break;
 
           case "subscription filters":
@@ -102,8 +106,9 @@ exports.INIParser = class INIParser {
         }
       }
 
-      if (line === null)
+      if (line === null) {
         return;
+      }
 
       this._curSection = match[1].toLowerCase();
       switch (this._curSection) {

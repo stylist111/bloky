@@ -54,12 +54,15 @@ describe("convertSubscriptions script", function() {
   });
 
   afterEach(function() {
-    if (fs.existsSync(tmpInDir))
+    if (fs.existsSync(tmpInDir)) {
       fs.rmdirSync(tmpInDir, {recursive: true});
-    if (fs.existsSync(tmpOutDir))
+    }
+    if (fs.existsSync(tmpOutDir)) {
       fs.rmdirSync(tmpOutDir, {recursive: true});
-    if (fs.existsSync(tmpReportDir))
+    }
+    if (fs.existsSync(tmpReportDir)) {
       fs.rmdirSync(tmpReportDir, {recursive: true});
+    }
     console.warn = originalConsoleWarn;
   });
 

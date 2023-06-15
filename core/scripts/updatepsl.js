@@ -28,8 +28,9 @@ async function main() {
   let psl = {};
 
   for (let line of response.body.split(/\r?\n/)) {
-    if (line.startsWith("//") || !line.includes("."))
+    if (line.startsWith("//") || !line.includes(".")) {
       continue;
+    }
 
     let value = 1;
     line = line.replace(/\s+$/, "");
@@ -51,5 +52,6 @@ async function main() {
                   JSON.stringify(psl, keys, 2));
 }
 
-if (require.main == module)
+if (require.main == module) {
   main();
+}

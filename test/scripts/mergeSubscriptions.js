@@ -30,8 +30,9 @@ describe("mergeSubscriptions script", function() {
   });
 
   afterEach(async function() {
-    if (fs.existsSync(tmpDir))
+    if (fs.existsSync(tmpDir)) {
       await fs.promises.rm(tmpDir, {recursive: true});
+    }
   });
 
   function randomTmpFile() {
@@ -71,8 +72,9 @@ describe("mergeSubscriptions script", function() {
     let contents = [];
     let fieldName = "title";
     let fieldValue = "value";
-    for (let i = 0; i < count; i++)
+    for (let i = 0; i < count; i++) {
       contents.push(`[{"${fieldName}${i}": "${fieldValue}${i}"}]`);
+    }
 
     await assertSubscriptions(null, contents, actualContent => {
       let obj = JSON.parse(actualContent);

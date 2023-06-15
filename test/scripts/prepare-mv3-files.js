@@ -56,8 +56,9 @@ describe("prepare MV3 files script", function() {
   });
 
   afterEach(function() {
-    if (fs.existsSync(tmpOutDir))
+    if (fs.existsSync(tmpOutDir)) {
       fs.rmdirSync(tmpOutDir, {recursive: true});
+    }
   });
 
   async function createExpectedOutput() {

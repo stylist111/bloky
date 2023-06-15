@@ -53,8 +53,9 @@ function makeFilterListener(dispatch) {
 function makeSubListener(dispatch) {
   return subscription => {
     if (subscription instanceof SpecialSubscription) {
-      for (let text of subscription.filterText())
+      for (let text of subscription.filterText()) {
         dispatch(convertFilter(Filter.fromText(text)));
+      }
     }
   };
 }
@@ -62,8 +63,9 @@ function makeSubListener(dispatch) {
 export async function disable(texts) {
   await initializer.start();
 
-  if (!Array.isArray(texts))
+  if (!Array.isArray(texts)) {
     texts = [texts];
+  }
 
   if (browser.declarativeNetRequest) {
     await removeOrDisableFilters(texts, false);
@@ -126,8 +128,9 @@ export default {
   async add(texts, metadata) {
     await initializer.start();
 
-    if (!Array.isArray(texts))
+    if (!Array.isArray(texts)) {
       texts = [texts];
+    }
 
     if (browser.declarativeNetRequest) {
       await addFilters(texts, metadata);
@@ -140,8 +143,9 @@ export default {
       let filter = Filter.fromText(normalized);
       let error = validateFilter(filter);
 
-      if (error)
+      if (error) {
         throw error;
+      }
 
       filters.push(filter);
     }
@@ -149,11 +153,13 @@ export default {
     let {filterStorage} = filterEngine;
 
     if (!metadata) {
-      if (filterStorage.filtersExist(filters).length > 0)
+      if (filterStorage.filtersExist(filters).length > 0) {
         throw new FilterError(ERROR_DUPLICATE_FILTERS);
+      }
 
-      for (let filter of filters)
+      for (let filter of filters) {
         await filterStorage.addFilter(filter);
+      }
     }
     else {
       try {
@@ -207,8 +213,9 @@ export default {
    */
   async getMetadata(text) {
     await initializer.start();
-    if (browser.declarativeNetRequest)
+    if (browser.declarativeNetRequest) {
       return getMetadataForFilter(text);
+    }
 
     return await filterEngine.filterStorage.getMetadataForFilter(text);
   },
@@ -223,8 +230,9 @@ export default {
 
     for (let subscription of filterEngine.filterStorage.subscriptions()) {
       if (subscription instanceof SpecialSubscription) {
-        for (let text of subscription.filterText())
+        for (let text of subscription.filterText()) {
           result.push(convertFilter(Filter.fromText(text)));
+        }
       }
     }
 
@@ -267,8 +275,9 @@ export default {
       let matches = filterEngine.defaultMatcher.search(
         frame.url, mask, docDomain, frame.sitekey, false, "allowing");
 
-      for (let filter of matches.allowing)
+      for (let filter of matches.allowing) {
         filters.add(filter.text);
+      }
     }
 
     return Array.from(filters);
@@ -293,17 +302,20 @@ export default {
     let frame = getFrameInfo(tabId, frameId) || {};
     let matcher = filterEngine.defaultMatcher;
 
-    if (matcher.isAllowlisted(url, mask, frame.hostname, frame.sitekey))
+    if (matcher.isAllowlisted(url, mask, frame.hostname, frame.sitekey)) {
       return true;
+    }
 
     for (; frame; frame = frame.parent) {
-      if (!frame.url)
+      if (!frame.url) {
         break;
+      }
 
       let parentHostname = frame.parent && frame.parent.hostname;
       if (matcher.isAllowlisted(frame.url, contentTypes.DOCUMENT,
-                                parentHostname, frame.sitekey))
+                                parentHostname, frame.sitekey)) {
         return true;
+      }
     }
 
     return false;
@@ -318,8 +330,9 @@ export default {
   async enable(texts) {
     await initializer.start();
 
-    if (!Array.isArray(texts))
+    if (!Array.isArray(texts)) {
       texts = [texts];
+    }
 
     if (browser.declarativeNetRequest) {
       await enableFilters(texts);
@@ -349,8 +362,9 @@ export default {
   async remove(texts) {
     await initializer.start();
 
-    if (!Array.isArray(texts))
+    if (!Array.isArray(texts)) {
       texts = [texts];
+    }
 
     if (browser.declarativeNetRequest) {
       await removeOrDisableFilters(texts, true);

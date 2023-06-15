@@ -62,10 +62,12 @@ const RESULTS_KEYS = TIMERIFY_KEYS
       .concat(HEAP_RESULTS_KEYS);
 
 function keyUnit(key) {
-  if (TIMERIFY_KEYS.includes(key))
+  if (TIMERIFY_KEYS.includes(key)) {
     return "ms";
-  else if (HEAP_RESULTS_KEYS.includes(key))
+  }
+  else if (HEAP_RESULTS_KEYS.includes(key)) {
     return "MB";
+  }
   return "";
 }
 
@@ -77,8 +79,9 @@ function loadDataFromFile(pathToLoad) {
     data = require(pathToLoad);
   }
   catch (e) {
-    if (e.code !== "MODULE_NOT_FOUND")
+    if (e.code !== "MODULE_NOT_FOUND") {
       throw e;
+    }
   }
   return data;
 }
@@ -94,8 +97,9 @@ exports.getFlagValue = function getFlagValue(flag) {
         .forEach(arg => {
           if (arg.slice(0, 2) === "--") {
             const longArg = arg.split("=");
-            if (longArg[0].slice(2, longArg[0].length) == flag)
+            if (longArg[0].slice(2, longArg[0].length) == flag) {
               value = longArg.length > 1 ? longArg[1] : true;
+            }
           }
         });
 
@@ -120,8 +124,9 @@ exports.loadFile = async function loadFile(list) {
 
 exports.checkIfFileExists = function checkIfFileExists(pathToFile) {
   try {
-    if (fs.existsSync(pathToFile))
+    if (fs.existsSync(pathToFile)) {
       return true;
+    }
   }
   catch (err) {
     return false;
@@ -167,10 +172,12 @@ exports.divideSetToArray = function divideSetToArray(setName) {
 function deepMerge(object1, object2) {
   for (let key of Object.keys(object2)) {
     try {
-      if (object2[key] instanceof Object)
+      if (object2[key] instanceof Object) {
         object1[key] = deepMerge(object1[key], object2[key]);
-      else
+      }
+      else {
         object1[key] = object2[key];
+      }
     }
     catch (e) {
       object1[key] = object2[key];
@@ -204,8 +211,9 @@ exports.cleanBenchmarkData = async function cleanBenchmarkData() {
   for (let i = 0; i < filterList.length; i++) {
     let filter = filterList[i];
     for (let timestamp in dataToAnalyze) {
-      if (typeof (dataToAnalyze[timestamp][filter]) != "number")
+      if (typeof (dataToAnalyze[timestamp][filter]) != "number") {
         continue;
+      }
       for (let key in dataToAnalyze[timestamp][filter]) {
         let valueToCompare =
           dataToAnalyze[timestamp][filter][key];
@@ -222,12 +230,14 @@ exports.cleanBenchmarkData = async function cleanBenchmarkData() {
   }
   console.log("Min Values", minValues);
   for (let key of RESULTS_KEYS) {
-    if (!timestampsToSave.includes(minValues[`${key}Timestamp`]))
+    if (!timestampsToSave.includes(minValues[`${key}Timestamp`])) {
       timestampsToSave.push(minValues[`${key}Timestamp`]);
+    }
   }
 
-  for (let timestamp of timestampsToSave)
+  for (let timestamp of timestampsToSave) {
     dataToSave[timestamp] = dataToAnalyze[timestamp];
+  }
 
   await this.saveToFile(dataToSave, BENCHMARK_RESULTS);
   console.log("Data is cleaned.");
@@ -243,8 +253,9 @@ function fillTab(col1, col2, col3, col4) {
 
 function getValuesKeys(obj) {
   let valueKeys = [];
-  for (let timestamp in obj)
+  for (let timestamp in obj) {
     valueKeys = Object.keys(obj[timestamp]);
+  }
 
   let uniqueWithoutGitKeys = valueKeys.filter(
     word => (word !== "Refs" && word !== "CommitHash"));
@@ -271,22 +282,27 @@ exports.compareResults = function compareResults(currentRunTimestamp) {
     for (let i = 0; i < filterList.length; i++) {
       let filter = filterList[i];
       let currentRunValue = currentRunData[currentRunTimestamp][filter][key];
-      if (!currentRunValue)
+      if (!currentRunValue) {
         continue;
+      }
 
       let valueMin = Number.MAX_SAFE_INTEGER;
       for (let timestamp of Object.keys(dataToAnalyze)) {
-        if (timestamp == currentRunTimestamp)
+        if (timestamp == currentRunTimestamp) {
           continue;
-        if (typeof (dataToAnalyze[timestamp][filter]) == "undefined")
+        }
+        if (typeof (dataToAnalyze[timestamp][filter]) == "undefined") {
           continue;
-        if (typeof (dataToAnalyze[timestamp][filter][key]) != "number")
+        }
+        if (typeof (dataToAnalyze[timestamp][filter][key]) != "number") {
           continue;
+        }
 
         let valueToCompare =
         dataToAnalyze[timestamp][filter][key];
-        if (valueMin > valueToCompare)
+        if (valueMin > valueToCompare) {
           valueMin = valueToCompare;
+        }
       }
       if (valueMin == Number.MAX_SAFE_INTEGER) {
         console.log(`Missing historical data to compare for ${filter}: ${key}`);
@@ -297,8 +313,9 @@ exports.compareResults = function compareResults(currentRunTimestamp) {
       // eslint-disable-next-line max-len
       if ((typeof (currentRunData[currentRunTimestamp][filter]) == "undefined") ||
         // eslint-disable-next-line max-len
-        typeof (currentRunData[currentRunTimestamp][filter][key]) == "undefined")
+        typeof (currentRunData[currentRunTimestamp][filter][key]) == "undefined") {
         continue;
+      }
 
       let diff = ((currentRunValue - valueMin) / valueMin) * 100;
 
@@ -329,8 +346,9 @@ exports.deleteFile = async function deleteFile(pathToDelete) {
 async function extractHeapDataFromMatchingResults(matchResults, parameter) {
   let resultsArray = [];
   for (let result in matchResults) {
-    if (result.includes(parameter))
+    if (result.includes(parameter)) {
       resultsArray.push(matchResults[result]);
+    }
   }
   return resultsArray;
 }
@@ -348,8 +366,9 @@ exports.countStatisticsOfRuns =
     let heap =
     await extractHeapDataFromMatchingResults(matchResults, parameter);
     let sum = 0;
-    for (let i = 0; i < heap.length; i++)
+    for (let i = 0; i < heap.length; i++) {
       sum += heap[i];
+    }
 
     let average = sum / heap.length;
     let margin = getMargin(heap, average);

@@ -22,8 +22,9 @@ import {EWE, runInBackgroundPage, expectTestEvents} from "./messaging.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 describe("Notifications", function() {
-  if (isFuzzingServiceWorker())
+  if (isFuzzingServiceWorker()) {
     setMinTimeout(this, 100000);
+  }
   afterEach(async function() {
     await EWE.testing._clearNotifications();
   });
@@ -95,8 +96,9 @@ describe("Notifications", function() {
   });
 
   it("returns the correct state for ignored categories after unignoring", async function() {
-    if (isFuzzingServiceWorker())
+    if (isFuzzingServiceWorker()) {
       setMinTimeout(this, 300000);
+    }
 
     await EWE.notifications.toggleIgnoreCategory("*");
     await EWE.notifications.toggleIgnoreCategory("*");
@@ -112,8 +114,9 @@ describe("Notifications", function() {
   });
 
   it("ignores ignorable notifications when ignoring notifications is toggled on", async function() {
-    if (isFuzzingServiceWorker())
+    if (isFuzzingServiceWorker()) {
       setMinTimeout(this, 300000);
+    }
     await EWE.notifications.toggleIgnoreCategory("*");
 
     let notification = {id: "ignorable-to-ignore"};

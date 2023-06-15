@@ -76,12 +76,15 @@ function parseArgs(cliArgv) {
           requiresArg: true
         })
         .check((argv, options) => {
-          if (argv._.length != 1)
+          if (argv._.length != 1) {
             throw new Error("Exactly one filename is needed.\n");
-          else if (argv.output == "")
+          }
+          else if (argv.output == "") {
             throw new Error("Output filename must be specified.\n");
-          else
+          }
+          else {
             return true;
+          }
         })
         .exitProcess(false)
         .help();
@@ -95,8 +98,9 @@ function parseArgs(cliArgv) {
 async function readAndProcessFile(converter, filename, outputfile) {
   let fileContent = await readFile(filename, ENCODING);
   let {error, lines} = await parseFilterList(fileContent);
-  if (error)
+  if (error) {
     throw new Error(error);
+  }
 
   return await processFile(converter, lines, outputfile);
 }

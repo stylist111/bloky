@@ -45,8 +45,9 @@ let knownModules = new Map();
 for (let dir of [path.join(__dirname, "stub-modules"),
                  path.join(__dirname, LIB_FOLDER)]) {
   for (let file of fs.readdirSync(path.resolve(dir))) {
-    if (path.extname(file) == ".js")
+    if (path.extname(file) == ".js") {
       knownModules.set(path.basename(file, ".js"), path.resolve(dir, file));
+    }
   }
 }
 
@@ -62,8 +63,9 @@ function rewriteRequires(source) {
   }
 
   return source.replace(/(\brequire\(["'])([^"']+)/g, (match, prefix, request) => {
-    if (knownModules.has(request))
+    if (knownModules.has(request)) {
       return prefix + escapeString(knownModules.get(request));
+    }
     return match;
   });
 }
@@ -81,8 +83,9 @@ function rewriteRequires(source) {
  * @returns {function} Require function to load modules in the sandbox.
  */
 exports.createSandbox = function(options) {
-  if (!options)
+  if (!options) {
     options = {};
+  }
 
   let sourceTransformers = [rewriteRequires];
 
@@ -108,8 +111,9 @@ exports.setupTimerAndFetch = function() {
       // Due to the way it works, it is safer to allow only one callback at a
       // time.
       // https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore/issues/43
-      if (this.callback && callback != this.callback)
+      if (this.callback && callback != this.callback) {
         throw new Error("Only one timer callback supported");
+      }
 
       this.callback = callback;
       this.delay = delay;
@@ -124,8 +128,9 @@ exports.setupTimerAndFetch = function() {
     },
 
     trigger() {
-      if (currentTime < this.nextExecution)
+      if (currentTime < this.nextExecution) {
         currentTime = this.nextExecution;
+      }
       try {
         this.callback();
       }
@@ -160,11 +165,13 @@ exports.setupTimerAndFetch = function() {
 
     let [status, text = "", headers = {}] = result;
 
-    if (status == 0)
+    if (status == 0) {
       throw new Error("Fetch error");
+    }
 
-    if (status == 301)
+    if (status == 301) {
       return fetch(headers["Location"], initObj);
+    }
 
     return {status, url: urlObj.href, text: async() => text,
             headers: new Map([["Date", "Thu, 07 Jan 2021 10:05:28 GMT"]])};
@@ -176,8 +183,9 @@ exports.setupTimerAndFetch = function() {
   };
 
   async function waitForRequests() {
-    if (requests.length == 0)
+    if (requests.length == 0) {
       return;
+    }
 
     let result = Promise.all(requests);
     requests = [];
@@ -207,8 +215,9 @@ exports.setupTimerAndFetch = function() {
   }
 
   this.runScheduledTasks = async(maxHours, initial = 0, skip = 0) => {
-    if (typeof maxHours != "number")
+    if (typeof maxHours != "number") {
       throw new Error("Numerical parameter expected");
+    }
 
     startTime = currentTime;
 

@@ -759,15 +759,17 @@ describe("parseDomains()", function() {
 
     if (domains) {
       domainsObj = {};
-      for (let [domain, include] of domains)
+      for (let [domain, include] of domains) {
         domainsObj[domain] = +include;
+      }
     }
 
     assert.deepEqual(domainsObj, expected, source);
 
     // Test repeating domains.
-    if (repeatingDomains && source != "")
+    if (repeatingDomains && source != "") {
       testFilterDomainsParsing(`${source}${separator}${source}`, separator, expected, {repeatingDomains: false});
+    }
   }
 
   it("should return Map {'' => true} for blank string", function() {

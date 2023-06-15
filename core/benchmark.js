@@ -35,10 +35,12 @@ let runMatchingBenchmark = helpers.getFlagExists("match");
 let benchmarkDate = helpers.getFlagValue("ts") || new Date().toISOString();
 let benchmarkDataEntryName;
 if (runMatchingBenchmark) {
-  if (filterListName)
+  if (filterListName) {
     benchmarkDataEntryName = `Matching_${matchListCase}_${filterListName}`;
-  else
+  }
+  else {
     benchmarkDataEntryName = `Matching_${matchListCase}`;
+  }
 }
 else {
   benchmarkDataEntryName = `FilterList_${filterListName}`;
@@ -110,8 +112,9 @@ function printMemory(type = "filterEngine", index = 1) {
 function runMatch(filterEngine, filters, location, contentType, docDomain,
                   sitekey, specificOnly) {
   let url = parseURL(location);
-  for (let filter of filters)
+  for (let filter of filters) {
     filterEngine.add(Filter.fromText(filter));
+  }
 
   for (let arg of [url, location]) {
     filterEngine.match(arg,
@@ -149,8 +152,9 @@ async function performMatchingBenchmark(initialFilters) {
     let filterToMatch = require(`./benchmark/${filter}.json`);
     for (let key in filterToMatch) {
       let rounds = helpers.getFlagValue("rounds");
-      if (rounds == null)
+      if (rounds == null) {
         rounds = 3;
+      }
 
       for (let i = 1; i <= rounds; i++) {
         let args = filterToMatch[key]["args"];
@@ -220,10 +224,12 @@ async function main() {
     }
 
     if (runMatchingBenchmark) {
-      if (filterListName)
+      if (filterListName) {
         console.log(`## Matching ${matchListCase} matches with ${filterListName} filters`);
-      else
+      }
+      else {
         console.log(`## Matching ${matchListCase} matches`);
+      }
 
       await performMatchingBenchmark(filters);
       await mergeAndSaveData(benchmarkResults);
@@ -234,15 +240,18 @@ async function main() {
       await mergeAndSaveData(benchmarkResults);
     }
 
-    if (helpers.getFlagValue("compare"))
+    if (helpers.getFlagValue("compare")) {
       helpers.compareResults(benchmarkDate);
+    }
   }
   finally {
     // deleting temporary file to keep it clean
-    if (deleteTempData)
+    if (deleteTempData) {
       await helpers.deleteFile(TEMP_BENCHMARK_RESULTS);
+    }
   }
 }
 
-if (require.main == module)
+if (require.main == module) {
   main();
+}

@@ -27,12 +27,14 @@ for (let key of Object.keys(Prefs)) {
       return value;
     },
     set(newValue) {
-      if (newValue == value)
+      if (newValue == value) {
         return;
+      }
 
       value = newValue;
-      for (let listener of listeners)
+      for (let listener of listeners) {
         listener(key);
+      }
 
       eventEmitter.emit(key);
     }
@@ -40,14 +42,16 @@ for (let key of Object.keys(Prefs)) {
 }
 
 Prefs.addListener = function(listener) {
-  if (listeners.indexOf(listener) < 0)
+  if (listeners.indexOf(listener) < 0) {
     listeners.push(listener);
+  }
 };
 
 Prefs.removeListener = function(listener) {
   let index = listeners.indexOf(listener);
-  if (index >= 0)
+  if (index >= 0) {
     listeners.splice(index, 1);
+  }
 };
 
 Prefs.on = eventEmitter.on.bind(eventEmitter);

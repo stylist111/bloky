@@ -20,8 +20,9 @@ import {EventDispatcher} from "./types.js";
 let dispatchFunction;
 
 export function subscribeLinkClicked(url, title) {
-  if (dispatchFunction)
+  if (dispatchFunction) {
     dispatchFunction({url, title});
+  }
 }
 
 export let onSubscribeLinkClicked = new EventDispatcher(

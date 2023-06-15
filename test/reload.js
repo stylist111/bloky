@@ -49,10 +49,12 @@ let start = new URLSearchParams(document.location.search).get("start");
 let phase = start ? "preparation" : "check";
 
 describe(`Reload (${phase})`, function() {
-  if (isFirefox() && isIncognito())
+  if (isFirefox() && isIncognito()) {
     this.timeout(7000);
-  else
+  }
+  else {
     this.timeout(5000);
+  }
 
   after(async function() {
     if (start) {
@@ -147,8 +149,9 @@ describe(`Reload (${phase})`, function() {
     }
 
     let userFilters = await EWE.filters.getUserFilters();
-    if (userFilters.filter(e => e.text === IMAGE_FILTER_TEXT).length > 0)
+    if (userFilters.filter(e => e.text === IMAGE_FILTER_TEXT).length > 0) {
       await EWE.filters.remove(IMAGE_FILTER_TEXT);
+    }
 
     try {
       expect(await EWE.filters.getUserFilters()).toEqual(

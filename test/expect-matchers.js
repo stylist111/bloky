@@ -50,14 +50,17 @@ expect.extend({
       };
     };
 
-    if (!Array.isArray(received))
+    if (!Array.isArray(received)) {
       return createResult(false, ["Received was not an array."]);
+    }
 
-    if (!Array.isArray(mandatoryExpected))
+    if (!Array.isArray(mandatoryExpected)) {
       return createResult(false, ["Expected was not an array."]);
+    }
 
-    if (!Array.isArray(optionalExpected))
+    if (!Array.isArray(optionalExpected)) {
       return createResult(false, ["Expected (optional) was not an array."]);
+    }
 
     let unmatchedReceived = [];
     let unmatchedMandatory = mandatoryExpected.slice(0);
@@ -83,8 +86,9 @@ expect.extend({
         }
       }
 
-      if (!matched)
+      if (!matched) {
         unmatchedReceived.push(receivedEvent);
+      }
     }
 
     let pass = unmatchedReceived.length == 0 &&

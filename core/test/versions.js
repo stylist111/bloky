@@ -36,12 +36,15 @@ describe("compareVersions()", function() {
   }
 
   function compare(op, v1, v2) {
-    if (op == "=")
+    if (op == "=") {
       checkEqual(v1, v2);
-    else if (op == "<")
+    }
+    else if (op == "<") {
       checkLessThan(v1, v2);
-    else if (op == ">")
+    }
+    else if (op == ">") {
       checkGreaterThan(v1, v2);
+    }
   }
 
   it("should return 0 for 1 and 1", function() {

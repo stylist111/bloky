@@ -38,8 +38,9 @@ exports.timeout = timeout;
 exports.waitFor = async function(predicate, pollingInterval = 10, maxTimeout = 1000) {
   let startTime = performance.now();
   while (!predicate()) {
-    if (performance.now() - startTime > maxTimeout)
+    if (performance.now() - startTime > maxTimeout) {
       throw new Error("Timeout");
+    }
 
     await timeout(pollingInterval);
   }

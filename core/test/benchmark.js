@@ -50,8 +50,9 @@ describe("Synchronizer", function() {
     synchronizer = new Synchronizer(filterStorage);
 
     profiler.enable(true, list => {
-      for (let entry of list.getEntriesByType("measure"))
+      for (let entry of list.getEntriesByType("measure")) {
         events.push(entry);
+      }
     });
   });
 

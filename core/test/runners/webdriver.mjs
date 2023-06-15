@@ -25,11 +25,13 @@ export async function executeScript(driver, name, script, scriptArgs) {
     let result = await driver.executeScript("return window._consoleLogs;");
 
     console.log(`\nBrowser tests in ${name}`);
-    for (let item of result.log)
+    for (let item of result.log) {
       console.log(...item);
+    }
 
-    if (result.failures != 0)
+    if (result.failures != 0) {
       throw name;
+    }
   }
   finally {
     await driver.quit();

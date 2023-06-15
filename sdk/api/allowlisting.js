@@ -68,8 +68,9 @@ async function verifySignature(data, signature, pubKey) {
 }
 
 function verifyTimestamp(timestamp) {
-  if (typeof timestamp != "number" || isNaN(timestamp))
+  if (typeof timestamp != "number" || isNaN(timestamp)) {
     return false;
+  }
 
   let now = Date.now();
 
@@ -79,16 +80,18 @@ function verifyTimestamp(timestamp) {
 }
 
 async function verifyAnySignatures(domain, timestamp, signature) {
-  if (typeof signature != "string")
+  if (typeof signature != "string") {
     return false;
+  }
 
   await publicKeysUpdated;
 
   let data = getAllowData(domain, timestamp);
   let abSignature = base64ToArrayBuffer(signature);
   for (let key of authorizedPublicKeys) {
-    if (await verifySignature(data, abSignature, key))
+    if (await verifySignature(data, abSignature, key)) {
       return true;
+    }
   }
   return false;
 }

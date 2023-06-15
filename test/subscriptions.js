@@ -225,8 +225,9 @@ describe("Subscriptions", function() {
     ]));
 
     for (let item of result) {
-      if (item.id)
+      if (item.id) {
         continue;
+      }
       expect(item).toEqual({
         languages: expect.any(Object),
         title: expect.any(String),
@@ -235,8 +236,9 @@ describe("Subscriptions", function() {
         mv2URL: expect.any(String)
       });
 
-      for (let language of item.languages)
+      for (let language of item.languages) {
         expect(language).toEqual(expect.any(String));
+      }
     }
   });
 
@@ -252,8 +254,9 @@ describe("Subscriptions", function() {
     ]));
 
     for (let item of result) {
-      if (item.id)
+      if (item.id) {
         continue;
+      }
       expect(item).toEqual({
         languages: expect.any(Object),
         title: expect.any(String),
@@ -262,8 +265,9 @@ describe("Subscriptions", function() {
         mv2URL: expect.any(String)
       });
 
-      for (let language of item.languages)
+      for (let language of item.languages) {
         expect(language).toEqual(expect.any(String));
+      }
     }
   });
 
@@ -372,8 +376,9 @@ describe("Subscriptions", function() {
         await EWE.subscriptions.sync();
         let subscriptionFilter =
           await EWE.subscriptions.getForFilter(expectedFilter);
-        if (subscriptionFilter.length > 0)
+        if (subscriptionFilter.length > 0) {
           return true;
+        }
       }, timeout, "Subscription was not synchronised properly.");
     };
 
@@ -582,8 +587,9 @@ describe("Subscriptions", function() {
     });
 
     it("blocks content after the filter list update", async function() {
-      if (isEdge() && isIncognito() && !isMV3())
+      if (isEdge() && isIncognito() && !isMV3()) {
         setMinTimeout(this, 15000);
+      }
       let updatedReply = [
         "[Adblock Plus]",
         "/image-for-filter-that-should-be-untouched.png^$image"

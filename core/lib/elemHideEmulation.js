@@ -33,8 +33,9 @@ class ElemHideEmulation extends Set {
    */
   constructor(elemHideExceptions) {
     super();
-    if (!(elemHideExceptions instanceof ElemHideExceptions))
+    if (!(elemHideExceptions instanceof ElemHideExceptions)) {
       throw new Error("elemHideExceptions must be an ElemHideExceptions");
+    }
 
     /** @type {ElemHideExceptions} */
     this.elemHideExceptions = elemHideExceptions;
@@ -64,8 +65,9 @@ class ElemHideEmulation extends Set {
 
     for (let filter of this) {
       if (filter.isActiveOnDomain(domain) &&
-          !this.elemHideExceptions.getException(filter.selector, domain))
+          !this.elemHideExceptions.getException(filter.selector, domain)) {
         result.push(filter);
+      }
     }
 
     return result;

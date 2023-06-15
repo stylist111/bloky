@@ -204,8 +204,9 @@ class FilterStorage {
     }
     else {
       for (let subscription of this._knownSubscriptions.values()) {
-        if (subscription.hasFilterText(filterText))
+        if (subscription.hasFilterText(filterText)) {
           yield subscription;
+        }
       }
     }
   }
@@ -218,13 +219,15 @@ class FilterStorage {
    * @returns {number}
    */
   getSubscriptionCount(filterText = null) {
-    if (filterText == null)
+    if (filterText == null) {
       return this._knownSubscriptions.size;
+    }
 
     let count = 0;
     for (let subscription of this._knownSubscriptions.values()) {
-      if (subscription.hasFilterText(filterText))
+      if (subscription.hasFilterText(filterText)) {
         count++;
+      }
     }
     return count;
   }
@@ -245,13 +248,15 @@ class FilterStorage {
         !subscription.disabled && !subscription.metadata
       ) {
         // Always prefer specialized subscriptions
-        if (subscription.isDefaultFor(filter))
+        if (subscription.isDefaultFor(filter)) {
           return subscription;
+        }
 
         // If this is a general subscription - store it as fallback
         if (!generalSubscription &&
-            (!subscription.defaults || !subscription.defaults.length))
+            (!subscription.defaults || !subscription.defaults.length)) {
           generalSubscription = subscription;
+        }
       }
     }
     return generalSubscription;
@@ -264,8 +269,9 @@ class FilterStorage {
    * @returns {boolean}
    */
   hasSubscription(subscription) {
-    if (typeof subscription == "string")
+    if (typeof subscription == "string") {
       return this._knownSubscriptions.has(subscription);
+    }
 
     return this._knownSubscriptions.has(subscription.url);
   }
@@ -285,8 +291,9 @@ class FilterStorage {
    *   subscription to be added.
    */
   addSubscription(subscription) {
-    if (this._knownSubscriptions.has(subscription.url))
+    if (this._knownSubscriptions.has(subscription.url)) {
       return;
+    }
 
     this._knownSubscriptions.set(subscription.url, subscription);
 
@@ -299,8 +306,9 @@ class FilterStorage {
    *   subscription to be removed.
    */
   removeSubscription(subscription) {
-    if (!this._knownSubscriptions.has(subscription.url))
+    if (!this._knownSubscriptions.has(subscription.url)) {
       return;
+    }
 
     this._knownSubscriptions.delete(subscription.url);
     this._metadataSubscriptions.delete(subscription.url);
@@ -356,8 +364,9 @@ class FilterStorage {
       for (let currentSubscription of this._knownSubscriptions.values()) {
         if (currentSubscription instanceof SpecialSubscription &&
             !currentSubscription.disabled &&
-            currentSubscription.hasFilterText(filter.text))
+            currentSubscription.hasFilterText(filter.text)) {
           exist.push(filter);
+        }
       }
     }
 
@@ -380,17 +389,20 @@ class FilterStorage {
     let list = Array.isArray(filters) ? filters : [filters];
 
     let exist = this.filtersExist(list);
-    if (exist.length != 0)
+    if (exist.length != 0) {
       throw new FilterStorageError("storage_duplicate_filters", {exist});
+    }
 
     let subscription = null;
 
     for (let filter of list) {
-      if (!subscription)
+      if (!subscription) {
         subscription = SpecialSubscription.createForFilter(filter);
+      }
       // We make sure we don't have a duplicate already from `filters`.
-      else if (!subscription.hasFilterText(filter.text))
+      else if (!subscription.hasFilterText(filter.text)) {
         subscription.addFilter(filter);
+      }
     }
 
     this._metadataSubscriptions.set(subscription.url, subscription);
@@ -421,8 +433,9 @@ class FilterStorage {
    */
   async getMetadataForFilter(text) {
     for (let currentSubscription of this._metadataSubscriptions.values()) {
-      if (currentSubscription.hasFilterText(text))
+      if (currentSubscription.hasFilterText(text)) {
         return currentSubscription.metadata;
+      }
     }
 
     return null;
@@ -502,8 +515,9 @@ class FilterStorage {
       return subscription;
     }
 
-    if (typeof position == "undefined")
+    if (typeof position == "undefined") {
       position = subscription.filterCount;
+    }
 
     subscription.insertFilterAt(filter, position);
     this.enableFilter(filter.text, subscription.url);
@@ -534,8 +548,9 @@ class FilterStorage {
           let index = -1;
           do {
             index = currentSubscription.findFilterIndex(filter, index + 1);
-            if (index >= 0)
+            if (index >= 0) {
               positions.push(index);
+            }
           } while (index >= 0);
         }
         else {
@@ -566,17 +581,20 @@ class FilterStorage {
    * @param {number} newPosition The new position of the filter.
    */
   moveFilter(filter, subscription, oldPosition, newPosition) {
-    if (!(subscription instanceof SpecialSubscription))
+    if (!(subscription instanceof SpecialSubscription)) {
       return;
+    }
 
     let currentFilterText = subscription.filterTextAt(oldPosition);
-    if (!currentFilterText || currentFilterText != filter.text)
+    if (!currentFilterText || currentFilterText != filter.text) {
       return;
+    }
 
     newPosition = Math.min(Math.max(newPosition, 0),
                            subscription.filterCount - 1);
-    if (oldPosition == newPosition)
+    if (oldPosition == newPosition) {
       return;
+    }
 
     subscription.deleteFilterAt(oldPosition);
     subscription.insertFilterAt(filter, newPosition);
@@ -590,8 +608,9 @@ class FilterStorage {
    * @param {Filter} filter
    */
   increaseHitCount(filter) {
-    if (!Prefs.savestats || !isActiveFilter(filter))
+    if (!Prefs.savestats || !isActiveFilter(filter)) {
       return;
+    }
 
     this.filterState.registerHit(filter.text);
   }
@@ -603,12 +622,14 @@ class FilterStorage {
    */
   resetHitCounts(filters) {
     if (filters) {
-      for (let filter of filters)
+      for (let filter of filters) {
         this.filterState.resetHits(filter.text);
+      }
     }
     else {
-      for (let text of this.filterState.map.keys())
+      for (let text of this.filterState.map.keys()) {
         this.filterState.resetHits(text);
+      }
     }
   }
 
@@ -638,21 +659,24 @@ class FilterStorage {
           // Convert to the new terminology when loading.
           if (Array.isArray(subscription.defaults)) {
             subscription.defaults.forEach((type, i, arr) => {
-              if (type == "whitelist")
+              if (type == "whitelist") {
                 arr[i] = "allowing";
+              }
             });
           }
           knownSubscriptions.set(subscription.url, subscription);
-          if (subscription.metadata)
+          if (subscription.metadata) {
             metadataSubscriptions.set(subscription.url, subscription);
+          }
         }
 
         this.fileProperties = parser.fileProperties;
         this._knownSubscriptions = knownSubscriptions;
         this._metadataSubscriptions = metadataSubscriptions;
 
-        if (!silent)
+        if (!silent) {
           filterNotifier.emit("load");
+        }
       }
     };
   }
@@ -732,8 +756,9 @@ class FilterStorage {
     let subscriptions = [];
     for (let subscription of this._knownSubscriptions.values()) {
       if (!(subscription instanceof SpecialSubscription &&
-            subscription.filterCount == 0))
+            subscription.filterCount == 0)) {
         subscriptions.push(subscription);
+      }
     }
 
     yield "# Adblock Plus preferences";
@@ -775,18 +800,21 @@ class FilterStorage {
       let {patternsbackups} = Prefs;
       let isBackupRequired = async() => {
         // First check whether we need to create a backup
-        if (patternsbackups <= 0)
+        if (patternsbackups <= 0) {
           return false;
+        }
 
         let statData = await statFile(FilterStorage.sourceFile);
-        if (!statData.exists)
+        if (!statData.exists) {
           return false;
+        }
 
         let backupStatData = await statFile(FilterStorage.getBackupName(1));
         if (backupStatData.exists &&
             (Date.now() - backupStatData.lastModified) / 3600000 <
-              Prefs.patternsbackupinterval)
+              Prefs.patternsbackupinterval) {
           return false;
+        }
 
         return true;
       };
@@ -876,8 +904,9 @@ class FilterStorage {
     let checkBackupFile = async index => {
       try {
         let statData = await statFile(FilterStorage.getBackupName(index));
-        if (!statData.exists)
+        if (!statData.exists) {
           return backups;
+        }
 
         backups.push({
           index,
@@ -915,8 +944,9 @@ exports.FilterStorage = FilterStorage;
  */
 async function statFile(path) {
   let known = stats.get(path);
-  if (known)
+  if (known) {
     return known;
+  }
 
   try {
     known = await IO.statFile(path);

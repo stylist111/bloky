@@ -82,9 +82,10 @@ function convertSubscription(subscription) {
 
 function convertRecommendation({id, languages, title, requires, type, url,
                                 mv2URL}) {
-  if (!browser.declarativeNetRequest)
+  if (!browser.declarativeNetRequest) {
     // In MV2 we have to switch the URL to be the mv2URL
     return {id, languages, title, requires, type, url: mv2URL};
+  }
 
   return {id, languages, title, requires, type, url, mv2URL};
 }
@@ -93,16 +94,18 @@ function getSubscription(url) {
   let subscription = Subscription.fromURL(url);
 
   if (filterEngine.filterStorage.hasSubscription(subscription) &&
-      subscription instanceof RegularSubscription)
+      subscription instanceof RegularSubscription) {
     return subscription;
+  }
 
   return null;
 }
 
 function makeListener(dispatch) {
   return subscription => {
-    if (subscription instanceof RegularSubscription)
+    if (subscription instanceof RegularSubscription) {
       dispatch(convertSubscription(subscription));
+    }
   };
 }
 
@@ -114,10 +117,12 @@ export function getDefaultSubscriptions(uiLanguage) {
 
   if (!uiLanguage) {
     // https://bugs.chromium.org/p/chromium/issues/detail?id=1159438
-    if (browser.i18n.getUILanguage)
+    if (browser.i18n.getUILanguage) {
       uiLanguage = browser.i18n.getUILanguage();
-    else
+    }
+    else {
       uiLanguage = navigator.language;
+    }
   }
 
   let currentLang = uiLanguage.split("-")[0];
@@ -155,15 +160,17 @@ export function getDefaultSubscriptions(uiLanguage) {
     }
   }
 
-  if (adSubscriptions.length == 0)
+  if (adSubscriptions.length == 0) {
     adSubscriptions = adSubscriptionsDefaultLang;
+  }
 
   // if we have the preferred AA in the list - use it only,
   // otherwise use all listed AA subscriptions
   let preferredAASubscription = aaSubscriptions.find(
     it => it.id == ACCEPTABLE_ADS_ID);
-  if (preferredAASubscription)
+  if (preferredAASubscription) {
     aaSubscriptions = [preferredAASubscription];
+  }
   chosenSubscriptions.unshift(...aaSubscriptions);
 
   chosenSubscriptions.unshift(...adSubscriptions);
@@ -177,12 +184,14 @@ function shouldAddDefaultSubscriptions() {
   for (let subscription of filterStorage.subscriptions()) {
     if (subscription instanceof DownloadableSubscription &&
         subscription.url != ACCEPTABLE_ADS_MV2_URL &&
-        subscription.type != "circumvention")
+        subscription.type != "circumvention") {
       return false;
+    }
 
     if (subscription instanceof SpecialSubscription &&
-        subscription.filterCount > 0)
+        subscription.filterCount > 0) {
       return false;
+    }
   }
 
   return true;
@@ -212,10 +221,12 @@ async function getFilterText(subscription, path) {
   let subscriptionPath = `${path}/${subscription.id}`;
   let rawLines = await readFileContent(subscriptionPath);
   let {lines, error} = parseFilterList(rawLines);
-  if (error)
+  if (error) {
     throw new Error(error);
-  if (!lines)
+  }
+  if (!lines) {
     throw new Error("invalid filter list");
+  }
   lines.shift();
   return lines;
 }
@@ -231,8 +242,9 @@ async function remove(url) {
 
   let subscription = getSubscription(url);
 
-  if (!subscription)
+  if (!subscription) {
     throw new Error(`Subscription does not exist: ${url}`);
+  }
 
   filterEngine.filterStorage.removeSubscription(subscription);
 
@@ -259,8 +271,9 @@ export async function updateFilterText() {
     }
   }
 
-  for (let url of removeUrls)
+  for (let url of removeUrls) {
     await remove(url);
+  }
 }
 
 async function getDownloadable() {
@@ -269,8 +282,9 @@ async function getDownloadable() {
   let result = [];
 
   for (let subscription of filterEngine.filterStorage.subscriptions()) {
-    if (subscription instanceof RegularSubscription)
+    if (subscription instanceof RegularSubscription) {
       result.push(convertSubscription(subscription));
+    }
   }
 
   return result;
@@ -279,8 +293,9 @@ async function getDownloadable() {
 async function add(url, properties = {}) {
   await initializer.start();
 
-  if (!Subscription.isValidURL(url))
+  if (!Subscription.isValidURL(url)) {
     throw new Error(`Invalid subscription URL provided: ${url}`);
+  }
 
   let {filterStorage} = filterEngine;
 
@@ -288,8 +303,9 @@ async function add(url, properties = {}) {
 
   if (browser.declarativeNetRequest) {
     let subscriptionInfo = addonBundledSubscriptions.find(x => x.url == url);
-    if (!subscriptionInfo)
+    if (!subscriptionInfo) {
       throw new Error(`Failed to find the subscription with URL=${url}`);
+    }
 
     if (!subscription.downloadable) {
       let filterText;
@@ -302,26 +318,33 @@ async function add(url, properties = {}) {
         // we can ignore an error loading the bundled file here.
       }
 
-      if (filterText)
+      if (filterText) {
         subscription.setFilterText(filterText);
+      }
     }
   }
 
-  if ("title" in properties)
+  if ("title" in properties) {
     subscription.title = properties.title;
-  if ("homepage" in properties)
+  }
+  if ("homepage" in properties) {
     subscription.homepage = properties.homepage;
-  if ("downloadCount" in properties)
+  }
+  if ("downloadCount" in properties) {
     subscription.downloadCount = properties.downloadCount;
-  if ("version" in properties)
+  }
+  if ("version" in properties) {
     subscription.version = properties.version;
-  if ("lastDownload" in properties)
+  }
+  if ("lastDownload" in properties) {
     subscription.lastDownload = properties.lastDownload;
+  }
 
   filterStorage.addSubscription(subscription);
 
-  if (!subscription.lastDownload)
+  if (!subscription.lastDownload) {
     filterStorage.synchronizer.execute(subscription);
+  }
 
   await enableRuleset(subscription.id);
 }
@@ -331,8 +354,9 @@ async function disable(url) {
 
   let subscription = getSubscription(url);
 
-  if (!subscription)
+  if (!subscription) {
     throw new Error(`Subscription does not exist: ${url}`);
+  }
 
   subscription.disabled = true;
 
@@ -340,13 +364,15 @@ async function disable(url) {
 }
 
 function migrationNeeded() {
-  if (browser.runtime.getManifest().manifest_version == 2)
+  if (browser.runtime.getManifest().manifest_version == 2) {
     return false;
+  }
 
   for (let subscription of filterEngine.filterStorage.subscriptions()) {
     // anti-cv subscriptions stay `DownloadableSubscriptions` even in MV3
-    if (subscription.downloadable && subscription.type != "circumvention")
+    if (subscription.downloadable && subscription.type != "circumvention") {
       return true;
+    }
   }
 
   return false;
@@ -359,8 +385,9 @@ function saveMigrationError(subscription, error) {
 }
 
 export async function migrate() {
-  if (!migrationNeeded())
+  if (!migrationNeeded()) {
     return;
+  }
 
   let downloadables = await getDownloadable();
   for (let downloadable of downloadables) {
@@ -374,8 +401,9 @@ export async function migrate() {
           version: downloadable.version,
           lastDownload: downloadable.lastDownload
         });
-        if (!downloadable.enabled)
+        if (!downloadable.enabled) {
           await disable(subscriptionInfo.url);
+        }
       }
       catch (e) {
         saveMigrationError(downloadable, e.message);
@@ -394,8 +422,9 @@ export async function ensureDNRRulesetsEnabled() {
     let enabledItems = await browser.declarativeNetRequest.getEnabledRulesets();
 
     for (let subscription of filterEngine.filterStorage.subscriptions()) {
-      if (!enabledItems.includes(subscription.id) && !subscription.disabled)
+      if (!enabledItems.includes(subscription.id) && !subscription.disabled) {
         enableRuleset(subscription.id);
+      }
     }
   }
 }
@@ -515,17 +544,21 @@ export default {
 
     if (shouldAddDefaultSubscriptions()) {
       let defaultSubscriptions = getDefaultSubscriptions(uiLanguage);
-      if (!defaultSubscriptions.hasDefaultLang)
+      if (!defaultSubscriptions.hasDefaultLang) {
         throw Error("No default language subscription");
+      }
 
-      if (!defaultSubscriptions.hasCurrentLang)
+      if (!defaultSubscriptions.hasCurrentLang) {
         throw Error("No current language subscription");
+      }
 
-      if (!defaultSubscriptions.hasAntiCV)
+      if (!defaultSubscriptions.hasAntiCV) {
         throw Error("No anti-circumvention subscription");
+      }
 
-      if (!defaultSubscriptions.hasAA)
+      if (!defaultSubscriptions.hasAA) {
         throw Error("No allowing subscription");
+      }
 
       subscriptions.push(...defaultSubscriptions.chosenSubscriptions);
     }
@@ -595,8 +628,9 @@ export default {
 
     let subscription = getSubscription(url);
 
-    if (!subscription)
+    if (!subscription) {
       throw new Error(`Subscription does not exist: ${url}`);
+    }
 
     subscription.disabled = false;
 
@@ -640,19 +674,22 @@ export default {
     if (url) {
       let subscription = getSubscription(url);
 
-      if (!subscription)
+      if (!subscription) {
         throw new Error(`Subscription does not exist: ${url}`);
+      }
 
       subscriptions.push(subscription);
     }
     else {
       for (let subscription of filterStorage.subscriptions()) {
-        if (subscription instanceof RegularSubscription)
+        if (subscription instanceof RegularSubscription) {
           subscriptions.push(subscription);
+        }
       }
     }
-    for (let subscription of subscriptions)
+    for (let subscription of subscriptions) {
       filterStorage.synchronizer.execute(subscription, true);
+    }
   },
 
   /**
@@ -721,12 +758,14 @@ export default {
   onChanged: new EventDispatcher(dispatch => {
     function makeChangeListener(property) {
       // This name differs between EWE and adblockpluscore.
-      if (property == "disabled")
+      if (property == "disabled") {
         property = "enabled";
+      }
 
       return subscription => {
-        if (subscription instanceof RegularSubscription)
+        if (subscription instanceof RegularSubscription) {
           dispatch(convertSubscription(subscription), property);
+        }
       };
     }
 

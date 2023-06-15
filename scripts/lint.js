@@ -38,8 +38,9 @@ const commands = [
 
   try {
     for (let command of commands) {
-      if (args.fix)
+      if (args.fix) {
         command += " --fix";
+      }
 
       await promisify(exec)(command, {cwd});
       console.log(`OK: ${command}`);

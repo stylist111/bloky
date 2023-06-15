@@ -65,8 +65,9 @@ describe("Debugging", function() {
     const colorEndToken = "[0m";
 
     beforeEach(async function() {
-      for (let method of ["info", "warn", "error"])
+      for (let method of ["info", "warn", "error"]) {
         sandbox.spy(console, method);
+      }
       consoleLogger = api.default.CONSOLE_LOGGER;
       api.default.onLogEvent.addListener(consoleLogger);
     });

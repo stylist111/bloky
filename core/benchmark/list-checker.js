@@ -46,5 +46,6 @@ async function listChecker() {
   }
 }
 
-if (require.main == module)
+if (require.main == module) {
   listChecker();
+}

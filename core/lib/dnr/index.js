@@ -71,8 +71,9 @@ exports.createConverter = options => convert.bind({
 function convert(text) {
   const result = parse(text);
 
-  if (result instanceof FilterParsingError)
+  if (result instanceof FilterParsingError) {
     return result;
+  }
 
   return asDNR.call(this, result);
 }
@@ -138,11 +139,12 @@ function asDNR(parsedFilter) {
 
       // The declarativeNetRequest API does not like the urlFilter to have a
       // redundant ||* prefix, so let's strip that now.
-      if (urlFilter.startsWith("||*"))
+      if (urlFilter.startsWith("||*")) {
         // A pattern beginning with `||*` isn't allowed, and `*`
         // should be used instead. So let's remove the `||`
         // See https://developer.chrome.com/docs/extensions/reference/declarativeNetRequest/#type-RuleCondition
         urlFilter = urlFilter.substr(2);
+      }
     }
     else if (urlPattern.regexp) {
       checkValidRegExp = this.isRegexSupported({
@@ -171,14 +173,18 @@ function asDNR(parsedFilter) {
     };
 
     let result;
-    if (contentType & contentTypes.CSP)
+    if (contentType & contentTypes.CSP) {
       result = generateCSPRules(filter, urlFilter, matchCase);
-    else if (!blocking)
+    }
+    else if (!blocking) {
       result = generateAllowingRules(filter, urlFilter, matchCase);
-    else if (rewrite)
+    }
+    else if (rewrite) {
       result = generateRedirectRules(filter, urlFilter, matchCase);
-    else
+    }
+    else {
       result = generateBlockingRules(filter, urlFilter, matchCase);
+    }
 
     let context = {
       text: parsedFilter.text

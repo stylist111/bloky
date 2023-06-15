@@ -43,8 +43,9 @@ describe("Recommendations", function() {
 
       assert.ok(Array.isArray(value));
 
-      for (let element of value)
+      for (let element of value) {
         assert.ok(typeof element == "string" && /^[a-z]{2}$/.test(element));
+      }
     }
 
     for (let name of ["url", "homepage"]) {
@@ -61,18 +62,21 @@ describe("Recommendations", function() {
 
   function checkEquality(recommendation, source) {
     // String values.
-    for (let name of ["type", "title", "url", "homepage"])
+    for (let name of ["type", "title", "url", "homepage"]) {
       assert.equal(recommendation[name], source[name]);
+    }
 
     // Array values.
-    for (let name of ["languages"])
+    for (let name of ["languages"]) {
       assert.deepEqual(recommendation[name], source[name] || []);
+    }
   }
 
   function checkImmutability(recommendation, source) {
     // No properties can be set.
-    for (let name of ["type", "languages", "title", "url", "homepage"])
+    for (let name of ["type", "languages", "title", "url", "homepage"]) {
       assert.throws(() => recommendation[name] = null);
+    }
 
     // Modifying mutable values (arrays) has an effect on neither the
     // recommendation nor the source.
@@ -109,8 +113,9 @@ describe("Recommendations", function() {
 
       // For non-ads recommendations, there should be only one per type. This is
       // a requirement of the WebExt UI.
-      if (type != "ads")
+      if (type != "ads") {
         assert.equal(knownTypes.has(type), false);
+      }
 
       knownTypes.add(type);
     }
@@ -123,8 +128,8 @@ describe("Recommendations", function() {
 
     setRecommendations(_recommendations);
 
-    for (let recommendation of recommendations())
-
+    for (let recommendation of recommendations()) {
       checkValidity(recommendation);
+    }
   });
 });

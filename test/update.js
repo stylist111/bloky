@@ -83,8 +83,9 @@ describe(`Update (${phase}) [runner-only]`, function() {
     await wait(async() => {
       filters = await EWE.subscriptions.getFilters(
         TEST_MV3_SUBSCRIPTION.url);
-      if (filters.length > 0)
+      if (filters.length > 0) {
         return filters;
+      }
     }, 40000, "Events are not received");
     expect(filters.find(it => it.text == filter)).toBeDefined();
     try {
@@ -116,8 +117,9 @@ describe(`Update (${phase}) [runner-only]`, function() {
   });
 
   it("fixes the IO/Prefs prefixes [mv2-only]", async function() {
-    if (!isFirefox() || !isIncognito())
+    if (!isFirefox() || !isIncognito()) {
       this.skip();
+    }
 
     const PRE_SDK_PREFIX = "file:";
     const SDK_0_5_PREFIX = "abp:file:";

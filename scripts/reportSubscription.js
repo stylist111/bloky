@@ -137,13 +137,15 @@ function customConvert(text, outputfile) {
   const report = this.reports.get(this.subsId);
   if (result instanceof FilterParsingError) {
     if (text && text[0] !== "!") {
-      if (this.generateReport)
+      if (this.generateReport) {
         report.contentFilterCounter++;
+      }
     }
     return result;
   }
-  if (this.generateReport)
+  if (this.generateReport) {
     report.urlFilterCounter++;
+  }
   return asDNR.call(this, result, outputfile);
 }
 

@@ -21,8 +21,9 @@
 require("mocha");
 require("chai");
 
-if (typeof window._consoleLogs == "undefined")
+if (typeof window._consoleLogs == "undefined") {
   window._consoleLogs = {passes: 0, failures: 0, log: []};
+}
 
 /*
  * Custom reporter for our harness. Reworked from `Spec` to use
@@ -48,8 +49,9 @@ function runTests(moduleNames) {
 
   mocha.setup({ui: "bdd", reporter: WdReporter});
 
-  for (let module of moduleNames)
+  for (let module of moduleNames) {
     require("./" + module + ".js");
+  }
 
   return new Promise((resolve, reject) => {
     mocha.run(resolve);

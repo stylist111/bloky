@@ -41,8 +41,9 @@ class RequestLogger {
   }
 
   logRequests(req, res, next) {
-    if (args.verbose)
+    if (args.verbose) {
       console.log(new Date().toISOString(), req.method, req.url);
+    }
 
     this.requests.push(req);
     next();

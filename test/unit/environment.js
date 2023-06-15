@@ -26,8 +26,9 @@ const testBrowserPrototype = {
     onHeadersReceived: {
       _callbacks: new Set(),
       _trigger(args) {
-        for (let callback of this._callbacks)
+        for (let callback of this._callbacks) {
           callback(args);
+        }
       },
 
       addListener(callback, details, filter) {

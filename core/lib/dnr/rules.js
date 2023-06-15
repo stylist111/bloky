@@ -59,14 +59,16 @@ exports.supportedRequestTypes = supportedRequestTypes;
 
 function getResourceTypes(filterContentType) {
   // The default is to match everything except "main_frame", which is fine.
-  if ((filterContentType & supportedRequestTypes) == supportedRequestTypes)
+  if ((filterContentType & supportedRequestTypes) == supportedRequestTypes) {
     return;
+  }
 
   let result = [];
 
   for (let [mask, types] of requestTypes) {
-    if (filterContentType & mask)
+    if (filterContentType & mask) {
       result = result.concat(types);
+    }
   }
 
   return result;
@@ -79,10 +81,12 @@ function getDomains(filterDomains) {
 
   if (filterDomains) {
     for (let [domain, enabled] of filterDomains) {
-      if (domain == "")
+      if (domain == "") {
         isGenericFilter = enabled;
-      else
+      }
+      else {
         (enabled ? domains : excludedDomains).push(domain);
+      }
     }
   }
 
@@ -92,26 +96,33 @@ function getDomains(filterDomains) {
 function getCondition(filter, urlFilter, resourceTypes, matchCase) {
   let condition = {};
 
-  if (urlFilter)
+  if (urlFilter) {
     condition.urlFilter = urlFilter;
-  else if (filter.regexp)
+  }
+  else if (filter.regexp) {
     condition.regexFilter = filter.regexp.source;
+  }
 
-  if (resourceTypes)
+  if (resourceTypes) {
     condition.resourceTypes = resourceTypes;
+  }
 
-  if (!matchCase)
+  if (!matchCase) {
     condition.isUrlFilterCaseSensitive = false;
+  }
 
-  if (filter.thirdParty != null)
+  if (filter.thirdParty != null) {
     condition.domainType = filter.thirdParty ? "thirdParty" : "firstParty";
+  }
 
   let {domains, excludedDomains, isGenericFilter} = getDomains(filter.domains);
 
-  if (domains.length)
+  if (domains.length) {
     condition.domains = domains;
-  if (excludedDomains.length)
+  }
+  if (excludedDomains.length) {
     condition.excludedDomains = excludedDomains;
+  }
 
   return [condition, isGenericFilter];
 }
@@ -120,15 +131,17 @@ exports.generateRedirectRules = function(filter, urlFilter, matchCase) {
   let url = resources[filter.rewrite];
 
   // We can't generate rules for unknown abp-resources...
-  if (!url)
+  if (!url) {
     return [];
+  }
 
   let resourceTypes = getResourceTypes(filter.contentType);
 
   // We can't generate rules for filters which don't include any supported
   // resource types.
-  if (resourceTypes && resourceTypes.length == 0)
+  if (resourceTypes && resourceTypes.length == 0) {
     return [];
+  }
 
   let [condition, isGenericFilter] = getCondition(
     filter, urlFilter, resourceTypes, matchCase
@@ -203,11 +216,13 @@ exports.generateCSPRules = function(filter, urlFilter, matchCase) {
   // regexFilter condition instead. But if we do that, we will need to be
   // careful not to hit the memory limit for regular expression rule conditions
   // and also to match subdomains correctly.
-  if (rule.condition.excludedDomains)
+  if (rule.condition.excludedDomains) {
     return [];
+  }
   if (rule.condition.domains) {
-    if (condition.urlFilter)
+    if (condition.urlFilter) {
       return [];
+    }
 
     let {domains} = condition;
     delete condition.domains;
@@ -230,8 +245,9 @@ exports.generateBlockingRules = function(filter, urlFilter, matchCase) {
 
   // We can't generate rules for filters which don't include any supported
   // resource types.
-  if (resourceTypes && resourceTypes.length == 0)
+  if (resourceTypes && resourceTypes.length == 0) {
     return [];
+  }
 
   let [condition, isGenericFilter] = getCondition(
     filter, urlFilter, resourceTypes, matchCase
@@ -282,23 +298,27 @@ exports.generateAllowingRules = function(filter, urlFilter, matchCase) {
 
 function validateIsAsciiOnly(str) {
   // [0-127] range is considered to be allowed ASCII characters
-  if (!/^[\x00-\x7F]*$/.test(str))
+  if (!/^[\x00-\x7F]*$/.test(str)) {
     throw new Error(`Invalid ASCII characters found in: "${str}"`);
+  }
 }
 exports.validateIsAsciiOnly = validateIsAsciiOnly;
 
 function validateDomains(domains) {
   if (domains) {
-    for (let domain of domains)
+    for (let domain of domains) {
       validateIsAsciiOnly(domain);
+    }
   }
 }
 
 function validateCondition(condition) {
-  if (condition.urlFilter)
+  if (condition.urlFilter) {
     validateIsAsciiOnly(condition.urlFilter);
-  if (condition.regexFilter)
+  }
+  if (condition.regexFilter) {
     validateIsAsciiOnly(condition.regexFilter);
+  }
 
   validateDomains(condition.initiatorDomains);
   validateDomains(condition.requestDomains);

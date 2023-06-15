@@ -77,8 +77,9 @@ function generateStylesheet(tabId, previousFrame, frame) {
 
   if (debugOptions.elemHide) {
     let declarationBlock = "{";
-    for (let [property, value] of debugOptions.cssProperties)
+    for (let [property, value] of debugOptions.cssProperties) {
       declarationBlock += `${property}: ${value} !important;`;
+    }
     declarationBlock += "}";
 
     styleSheet.code = createStyleSheet(
@@ -97,8 +98,9 @@ async function executeSnippets(tabId, frameId, previousFrame, frame) {
   let filters = filterEngine.snippets.getFilters(frame.hostname);
   let scripts = filters.map(({script}) => script);
   let environment = {};
-  if (debugOptions.elemHide)
+  if (debugOptions.elemHide) {
     environment.debugCSSProperties = debugOptions.snippetsCssProperties;
+  }
 
   let isolatedDependencies = [];
   let isolated = [];
@@ -108,12 +110,14 @@ async function executeSnippets(tabId, frameId, previousFrame, frame) {
     for (let [snippet, ...args] of parseScript(script)) {
       if (isolatedLib.has(snippet)) {
         let dependency = isolatedLib.get(snippet);
-        if (dependency)
+        if (dependency) {
           isolatedDependencies.push(dependency);
+        }
         isolated.push([snippet, ...args]);
       }
-      if (injectedLib.has(snippet))
+      if (injectedLib.has(snippet)) {
         main.push([snippet, ...args]);
+      }
     }
   }
 
@@ -159,8 +163,9 @@ async function executeSnippets(tabId, frameId, previousFrame, frame) {
       let code = "";
       // prepend all dependencies before the snippets
       if (isolatedDependencies.length) {
-        for (const cb of isolatedDependencies)
+        for (const cb of isolatedDependencies) {
           code += `(${cb})();`;
+        }
       }
       code += `(${isolatedLib}).apply(null,${args})`;
       execute.push(
@@ -236,32 +241,38 @@ export async function applyContentFilters(tabId, frameId, previousFrame) {
   let tracedSelectors;
   let styleSheet = generateStylesheet(tabId, previousFrame, frame);
 
-  if (previousFrame && !(previousFrame.allowlisted & contentTypes.DOCUMENT))
+  if (previousFrame && !(previousFrame.allowlisted & contentTypes.DOCUMENT)) {
     await removeCSS(tabId, frameId, styleSheet.removedCode);
+  }
 
-  if (!(frame.allowlisted & contentTypes.DOCUMENT))
+  if (!(frame.allowlisted & contentTypes.DOCUMENT)) {
     executeSnippets(tabId, frameId, previousFrame, frame);
+  }
 
   if (!(frame.allowlisted & contentTypes.DOCUMENT) &&
       !(frame.allowlisted & contentTypes.ELEMHIDE)) {
     injectCSS(tabId, frameId, styleSheet.addedCode);
 
     for (let {selector, text} of filterEngine.elemHideEmulation.getFilters(
-      frame.hostname))
+      frame.hostname)) {
       emulatedPatterns.push({selector, text});
+    }
 
     if (tracingEnabled(tabId)) {
       tracedSelectors = [];
-      for (let selector of styleSheet.addedSelectors)
+      for (let selector of styleSheet.addedSelectors) {
         tracedSelectors.push([selector, null]);
-      for (let exception of styleSheet.exceptions)
+      }
+      for (let exception of styleSheet.exceptions) {
         tracedSelectors.push([exception.selector, exception.text]);
+      }
     }
   }
 
   let cssProperties;
-  if (debugOptions.elemHide)
+  if (debugOptions.elemHide) {
     cssProperties = debugOptions.cssProperties;
+  }
   return {emulatedPatterns, cssProperties, tracedSelectors};
 }
 

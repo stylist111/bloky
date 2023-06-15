@@ -96,8 +96,9 @@ export async function awaitSavingComplete() {
 function addPreference(preference) {
   Object.defineProperty(Prefs, preference, {
     get() {
-      if (overrides.has(preference))
+      if (overrides.has(preference)) {
         return overrides.get(preference);
+      }
 
       let defaultValue = defaults[preference];
       // Arrays and Objects are deeply copied
@@ -137,8 +138,9 @@ export async function migratePrefs(db) {
       return;
     }
     prefsStore.getAll().onsuccess = event => {
-      for (let {name, value} of event.target.result)
+      for (let {name, value} of event.target.result) {
         savePreference(name, value);
+      }
       prefsStore.clear();
     };
   });
@@ -155,8 +157,9 @@ async function loadPreferences() {
   prefs.forEach(addPreference);
 
   let items = await browser.storage.local.get(prefs.map(prefToKey));
-  for (let key in items)
+  for (let key in items) {
     overrides.set(keyToPref(key), items[key]);
+  }
 }
 
 export async function init() {

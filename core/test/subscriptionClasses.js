@@ -32,15 +32,17 @@ function compareSubscription(url, expected, postInit) {
 
   let subscription = Subscription.fromURL(url);
 
-  if (postInit)
+  if (postInit) {
     postInit(subscription);
+  }
   let result = [...subscription.serialize()];
   assert.equal(result.sort().join("\n"), expected.sort().join("\n"), url);
 
   let map = Object.create(null);
   for (let line of result.slice(1)) {
-    if (/(.*?)=(.*)/.test(line))
+    if (/(.*?)=(.*)/.test(line)) {
       map[RegExp.$1] = RegExp.$2;
+    }
   }
   let subscription2 = Subscription.fromObject(map);
   assert.equal(subscription.toString(), subscription2.toString(), url + " deserialization");
@@ -65,8 +67,9 @@ describe("Subscription classes", function() {
 
     assert.equal(subscription.filterCount, expected.length);
 
-    for (let i = 0; i < subscription.filterCount; i++)
+    for (let i = 0; i < subscription.filterCount; i++) {
       assert.equal(subscription.filterTextAt(i), expected[i]);
+    }
 
     assert.ok(!subscription.filterTextAt(subscription.filterCount));
     assert.ok(!subscription.filterTextAt(-1));

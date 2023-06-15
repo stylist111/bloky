@@ -26,8 +26,9 @@ const {URLRequest} = require(LIB_FOLDER + "/url");
 
 describe("URL filters matching", function() {
   function testMatch(text, location, contentType, docDomain, thirdParty, sitekey, expected) {
-    if (thirdParty && docDomain == null)
+    if (thirdParty && docDomain == null) {
       docDomain = "some-other-domain";
+    }
 
     function testMatchInternal(filterText) {
       let filter = Filter.fromText(filterText);
@@ -37,8 +38,9 @@ describe("URL filters matching", function() {
     }
 
     testMatchInternal(text);
-    if (!/^@@/.test(text))
+    if (!/^@@/.test(text)) {
       testMatchInternal("@@" + text);
+    }
   }
 
   it("Basic filters", function() {

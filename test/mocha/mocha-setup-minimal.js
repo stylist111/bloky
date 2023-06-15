@@ -22,15 +22,19 @@ mocha.setup("bdd");
 
 let timeout = new URLSearchParams(document.location.search).get("timeout");
 
-if (timeout)
+if (timeout) {
   mocha.timeout(parseInt(timeout, 10));
-else
+}
+else {
   mocha.timeout(4000);
+}
 
-if (isFuzzingServiceWorker())
+if (isFuzzingServiceWorker()) {
   mocha.slow(20000);
-else
+}
+else {
   mocha.slow(3000);
+}
 
 
 // eslint-disable-next-line mocha/no-top-level-hooks
@@ -60,14 +64,17 @@ beforeEach(async function() {
     let onlyTag = title.includes(`[${tag.id}-only]`);
     let skipTag = title.includes(`[${tag.id}-skip]`);
 
-    if (!onlyTag && !skipTag)
+    if (!onlyTag && !skipTag) {
       continue;
+    }
 
     let value = await tag.condition();
-    if (onlyTag && !value || skipTag && value)
+    if (onlyTag && !value || skipTag && value) {
       this.skip();
+    }
   }
 
-  if (isFuzzingServiceWorker() && !/\[fuzz(-only)?\]/.test(title))
+  if (isFuzzingServiceWorker() && !/\[fuzz(-only)?\]/.test(title)) {
     this.skip();
+  }
 });

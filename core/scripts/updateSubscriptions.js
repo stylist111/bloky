@@ -110,8 +110,9 @@ function parseSubscriptionFile(file, validLanguages) {
     });
 
     reader.on("line", line => {
-      if (!line.match(/\S/g) || !continuing)
+      if (!line.match(/\S/g) || !continuing) {
         return;
+      }
 
       let index = line.indexOf("=");
       let key;
@@ -133,18 +134,22 @@ function parseSubscriptionFile(file, validLanguages) {
         return;
       }
 
-      if (value)
+      if (value) {
         value = value.trim();
+      }
 
-      if (value == "")
+      if (value == "") {
         console.warn(`Empty value given for attribute ${key} in ${file}`);
+      }
 
-      if (key != "name" && key in parsed)
+      if (key != "name" && key in parsed) {
         console.warn(`Value for attribute ${key} is duplicated in ${file}`);
+      }
 
       if (key == "supplements") {
-        if (!("supplements" in parsed))
+        if (!("supplements" in parsed)) {
           parsed["supplements"] = [];
+        }
         parsed["supplements"].push(value);
       }
       else if (key == "list" || key == "variant") {
@@ -165,8 +170,9 @@ function parseSubscriptionFile(file, validLanguages) {
 
           for (let keyword of keywordsMatch[1].split(",")) {
             keyword = keyword.toLowerCase();
-            if (keyword in keywords)
+            if (keyword in keywords) {
               keywords[keyword] = true;
+            }
           }
         }
 
@@ -181,8 +187,9 @@ function parseSubscriptionFile(file, validLanguages) {
                          " given?");
           }
         }
-        if (!("variants" in parsed))
+        if (!("variants" in parsed)) {
           parsed["variants"] = [];
+        }
         parsed["variants"].push([name, url, keywords["complete"]]);
 
         if (keywords["recommendation"]) {
@@ -193,8 +200,9 @@ function parseSubscriptionFile(file, validLanguages) {
       else if (key == "languages") {
         parsed["languages"] = value.split(",");
         for (let language of parsed["languages"]) {
-          if (!validLanguages.has(language))
+          if (!validLanguages.has(language)) {
             console.warn(`Unknown language code ${language} in ${file}`);
+          }
         }
       }
       else {
@@ -208,12 +216,14 @@ function parseSubscriptionFile(file, validLanguages) {
         return;
       }
       if (typeof parsed["variants"] !== "undefined") {
-        if (parsed["variants"].length == 0)
+        if (parsed["variants"].length == 0) {
           console.warn(`No list locations given in ${file}`);
+        }
 
         if ("title" in parsed && parsed["type"] == "ads" &&
-          parsed["languages"] == null)
+          parsed["languages"] == null) {
           console.warn(`Recommendation without languages in ${file}`);
+        }
 
         if (!("supplements" in parsed)) {
           for (let variant of parsed["variants"]) {
@@ -245,8 +255,9 @@ async function parseValidLanguages(root) {
 
       reader.on("line", line => {
         let match = line.match(languageRegex);
-        if (match)
+        if (match) {
           languages.add(match[1]);
+        }
       });
 
       reader.on("close", () => resolve(languages));
@@ -263,8 +274,9 @@ function postProcessSubscription(subscription) {
                              subscription["contact"];
 
   for (let key in subscription) {
-    if (!resultingKeys.has(key))
+    if (!resultingKeys.has(key)) {
       delete subscription[key];
+    }
   }
 }
 
@@ -285,13 +297,15 @@ async function update(toFile, allowlist = true) {
 
   let urls = new Set(parsed.map(subscription => subscription.url));
   // We want to add the default allowlist as it isn't in the repository.
-  if (allowlist)
+  if (allowlist) {
     urls.add(DEFAULT_ALLOWLIST);
+  }
   let index = await fetchIndex(INDEX_URL);
   parsed = index.filter(subscription => urls.has(subscription.mv2_url));
 
-  for (let subscription of parsed)
+  for (let subscription of parsed) {
     postProcessSubscription(subscription);
+  }
 
   parsed.sort((a, b) =>
     a["type"].toLowerCase().localeCompare(b["type"]) ||
@@ -299,14 +313,16 @@ async function update(toFile, allowlist = true) {
   );
 
   let toDir = path.dirname(toFile);
-  if (!(await exists(toDir)))
+  if (!(await exists(toDir))) {
     await mkdir(toDir, {recursive: true});
+  }
   await writeFile(toFile, JSON.stringify(parsed, null, 2), "utf8");
   await rm(root, {recursive: true});
 }
 
-if (require.main == module)
+if (require.main == module) {
   update(filename);
+}
 
 exports.listUrl = listUrl;
 exports.update = update;

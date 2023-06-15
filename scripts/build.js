@@ -31,10 +31,12 @@ function runCommand(command) {
   console.log(`> ${command}`);
   return new Promise((resolve, reject) => {
     let process = exec(command, error => {
-      if (error)
+      if (error) {
         reject(error);
-      else
+      }
+      else {
         resolve();
+      }
     });
     process.stdout.on("data", data => {
       console.log(data);
@@ -48,38 +50,44 @@ function runCommand(command) {
 async function subsRun(args) {
   let configNames = args["config-name"];
   // we only need subs-run for test-mv3 at this point.
-  if (configNames && !configNames.includes("test-mv3"))
+  if (configNames && !configNames.includes("test-mv3")) {
     return;
+  }
 
   if (args["force-subscription-update"]) {
     console.log("Clearing any existing bundled subscriptions...");
     await runCommand("npm run subs-clean");
   }
 
-  if (!args["use-external-server"])
+  if (!args["use-external-server"]) {
     await runTestServer();
+  }
 
   try {
     console.log("Downloading bundled subscriptions...");
     await runCommand("npm run subs-run");
   }
   finally {
-    if (isScriptInvokedFromCLI)
+    if (isScriptInvokedFromCLI) {
       await killTestServer();
+    }
   }
 }
 
 async function build(args) {
   console.log("Building...");
   let command = "npx webpack";
-  if (args.env)
+  if (args.env) {
     command += ` --env ${args.env}`;
+  }
 
-  if (args.configName)
+  if (args.configName) {
     command += ` --config-name ${args.configName.join(" ")}`;
+  }
 
-  if (args.devtool == false)
+  if (args.devtool == false) {
     command += " --no-devtool";
+  }
 
   await runCommand(command);
   console.log("✅ Building Completed");

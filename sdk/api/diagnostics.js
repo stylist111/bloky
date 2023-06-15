@@ -106,8 +106,9 @@ export class BlockableEventDispatcher {
       obj.options.tabId == tabId
     );
 
-    if (index != -1)
+    if (index != -1) {
       listeners.splice(index, 1);
+    }
   }
 }
 
@@ -115,23 +116,27 @@ export function logItem(request, filter, matchInfo = {}) {
   for (let {listener, options} of listeners) {
     let {includeElementHiding, includeUnmatched, filterType, tabId} = options;
 
-    if (tabId != null && tabId != request.tabId)
+    if (tabId != null && tabId != request.tabId) {
       continue;
+    }
 
     if (filter) {
       if (!includeElementHiding && (filter.type == "elemhide" ||
                                     filter.type == "elemhideexception" ||
-                                    filter.type == "elemhideemulation"))
+                                    filter.type == "elemhideemulation")) {
         continue;
+      }
 
       if (filterType != "all" &&
           filterType == "allowing" != (filter.type == "allowing" ||
-                                       filter.type == "elemhideexception"))
+                                       filter.type == "elemhideexception")) {
         continue;
+      }
     }
 
-    if (!includeUnmatched && !filter)
+    if (!includeUnmatched && !filter) {
       continue;
+    }
 
     listener({request, filter: filter && convertFilter(filter), matchInfo});
   }
@@ -151,22 +156,25 @@ export function logHiddenElements(selectors, filters, sender) {
 
   if (selectors.length > 0) {
     for (let subscription of filterEngine.filterStorage.subscriptions()) {
-      if (subscription.disabled)
+      if (subscription.disabled) {
         continue;
+      }
 
       for (let text of subscription.filterText()) {
         let filter = Filter.fromText(text);
 
         if (filter instanceof ElemHideFilter &&
             selectors.includes(filter.selector) &&
-            filter.isActiveOnDomain(hostname))
+            filter.isActiveOnDomain(hostname)) {
           logItem(request, filter, matchInfo);
+        }
       }
     }
   }
 
-  for (let text of filters)
+  for (let text of filters) {
     logItem(request, Filter.fromText(text), matchInfo);
+  }
 }
 
 export function loggingEnabled(tabId) {

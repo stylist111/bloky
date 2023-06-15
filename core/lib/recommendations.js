@@ -128,11 +128,13 @@ exports.setRecommendations = function(recommendations) {
  *   recommended filter subscription.
  */
 exports.recommendations = function* recommendations() {
-  if (!_recommendations)
+  if (!_recommendations) {
     _recommendations = require("../data/subscriptions.json");
+  }
 
-  for (let source of _recommendations)
+  for (let source of _recommendations) {
     yield new Recommendation(source);
+  }
 };
 
 exports.Recommendation = Recommendation;

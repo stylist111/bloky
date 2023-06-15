@@ -435,12 +435,14 @@ describe("ALLOWING_TYPES", function() {
 describe("*enumerateTypes()", function() {
   function testEnumerateTypes(types, expectedTypes, {selection} = {}) {
     let contentType = 0;
-    for (let type of types.split(","))
+    for (let type of types.split(",")) {
       contentType |= contentTypes[type];
+    }
 
     let expectedContentType = 0;
-    for (let type of expectedTypes.split(","))
+    for (let type of expectedTypes.split(",")) {
       expectedContentType |= contentTypes[type];
+    }
 
     let actualContentType = 0;
     for (let value of enumerateTypes(contentType, selection)) {

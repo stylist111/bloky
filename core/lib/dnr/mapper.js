@@ -54,8 +54,9 @@ exports.DnrMapper = class DnrMapper {
    * @async
    */
   async load() {
-    if (this.map === null)
+    if (this.map === null) {
       await this._loadMapper();
+    }
   }
 
   /**
@@ -67,8 +68,9 @@ exports.DnrMapper = class DnrMapper {
    * @returns {?Array.<number>} The array of rule IDs if found.
    */
   get(text) {
-    if (this.map === null)
+    if (this.map === null) {
       throw new Error("Mapper not loaded.");
+    }
 
     return this.map.get(text);
   }

@@ -212,24 +212,29 @@ exports.Downloader = class Downloader {
 
       // Sanity check: do expiration times make sense? Make sure people changing
       // system clock don't get stuck with outdated subscriptions.
-      if (downloadable.hardExpiration - now > this.maxExpirationInterval)
+      if (downloadable.hardExpiration - now > this.maxExpirationInterval) {
         downloadable.hardExpiration = now + this.maxExpirationInterval;
-      if (downloadable.softExpiration - now > this.maxExpirationInterval)
+      }
+      if (downloadable.softExpiration - now > this.maxExpirationInterval) {
         downloadable.softExpiration = now + this.maxExpirationInterval;
+      }
 
       // Notify the caller about changes to expiration parameters
-      if (this.onExpirationChange)
+      if (this.onExpirationChange) {
         this.onExpirationChange(downloadable);
+      }
 
       // Does that object need downloading?
       if (downloadable.softExpiration > now &&
-          downloadable.hardExpiration > now)
+          downloadable.hardExpiration > now) {
         continue;
+      }
 
       // Do not retry downloads too often
       if (downloadable.lastError &&
-          now - downloadable.lastError < this.minRetryInterval)
+          now - downloadable.lastError < this.minRetryInterval) {
         continue;
+      }
 
       this._download(downloadable, 0);
     }
@@ -263,17 +268,21 @@ exports.Downloader = class Downloader {
            platform, platformVersion, manifestVersion} = require("info");
 
     let url = downloadable.redirectURL || downloadable.url;
-    if (url.includes("?"))
+    if (url.includes("?")) {
       url += "&";
-    else
+    }
+    else {
       url += "?";
+    }
 
     // We limit the download count to 4+ to keep the request anonymized.
     let {downloadCount, disabled} = downloadable;
-    if (downloadCount > 4)
+    if (downloadCount > 4) {
       downloadCount = "4+";
-    if (typeof disabled == "undefined")
+    }
+    if (typeof disabled == "undefined") {
       disabled = false;
+    }
 
     url += "addonName=" + encodeURIComponent(addonName) +
            "&addonVersion=" + encodeURIComponent(addonVersion) +
@@ -286,15 +295,17 @@ exports.Downloader = class Downloader {
            "&disabled=" + String(disabled) +
            "&manifestVersion=" + encodeURIComponent(manifestVersion);
 
-    if (downloadable.firstVersion && !downloadable.redirectURL)
+    if (downloadable.firstVersion && !downloadable.redirectURL) {
       url += "&firstVersion=" + encodeURIComponent(downloadable.firstVersion);
+    }
 
     return url;
   }
 
   _download(downloadable, redirects) {
-    if (this.isDownloading(downloadable.url))
+    if (this.isDownloading(downloadable.url)) {
       return;
+    }
 
     let downloadUrl = this.getDownloadUrl(downloadable);
     let responseStatus = 0;
@@ -371,8 +382,9 @@ exports.Downloader = class Downloader {
         }
       }
 
-      if (!downloadable.disabled)
+      if (!downloadable.disabled) {
         downloadable.downloadCount++;
+      }
 
       response.text().then(
         responseText => {
@@ -398,8 +410,9 @@ exports.Downloader = class Downloader {
 
     this._downloading.add(downloadable.url);
 
-    if (this.onDownloadStarted)
+    if (this.onDownloadStarted) {
       this.onDownloadStarted(downloadable);
+    }
   }
 
   /**
@@ -471,8 +484,9 @@ exports.Downloader.isValidURL = function isValidURL(url) {
   }
 
   if (!["https:", "data:"].includes(url.protocol) &&
-      !isLocalhost(url.hostname))
+      !isLocalhost(url.hostname)) {
     return false;
+  }
 
   return true;
 };

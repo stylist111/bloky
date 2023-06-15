@@ -45,8 +45,9 @@ export async function checkPreviousRun(subsInput, scriptsOutputDir,
     let subsOutputContents = await readFile(subsOutput);
     let subsInputContents = await readFile(subsInput);
 
-    if (subsOutputContents != subsInputContents)
+    if (subsOutputContents != subsInputContents) {
       return false;
+    }
 
     let expectedSubs = JSON.parse(subsOutputContents);
     for (let sub of expectedSubs) {

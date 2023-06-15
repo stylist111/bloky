@@ -57,8 +57,9 @@ function generateFragment(dir, pathPrefix, space = 2) {
     });
   }
 
-  if (fragment.rule_resources.length === 0)
+  if (fragment.rule_resources.length === 0) {
     console.warn("No static rules generated.");
+  }
 
   return JSON.stringify(fragment, null, space);
 }

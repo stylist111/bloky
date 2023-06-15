@@ -92,11 +92,13 @@ function createRouteHandler(urlToSet, replyData) {
   responses.set(urlToSet, replyData);
 
   app.get(urlToSet, requestLogger.logRequests, (areq, ares) => {
-    if (responses.has(urlToSet))
+    if (responses.has(urlToSet)) {
       ares.send(responses.get(urlToSet));
+    }
 
-    else
+    else {
       ares.end();
+    }
   });
 }
 
@@ -134,6 +136,7 @@ export function startAdminServer(host) {
     }
   ];
 
-  for (let i = 0; i < buildTimeReplies.length; i++)
+  for (let i = 0; i < buildTimeReplies.length; i++) {
     createRouteHandler(buildTimeReplies[i].url, buildTimeReplies[i].data);
+  }
 }

@@ -47,8 +47,9 @@
   function arrayBufferToBase64(buffer) {
     let binary = "";
     let bytes = new Uint8Array(buffer);
-    for (let i = 0; i < bytes.byteLength; i++)
+    for (let i = 0; i < bytes.byteLength; i++) {
       binary += String.fromCharCode(bytes[i]);
+    }
 
     return btoa(binary);
   }
@@ -149,8 +150,9 @@
     Object.defineProperty(ev, "hasOwnProperty", {
       value(name) {
         eventHandlerDetected();
-        if (name === "hasOwnProperty" || name === "detail")
+        if (name === "hasOwnProperty" || name === "detail") {
           return false;
+        }
 
         // eslint-disable-next-line no-prototype-builtins
         return super.hasOwnProperty(name);
@@ -175,8 +177,9 @@
     let ev = new CustomEvent("domain_allowlisting_request", {detail: "ev"});
     Object.defineProperty(Object, "getPrototypeOf", {
       value(obj) {
-        if (obj === ev)
+        if (obj === ev) {
           eventHandlerDetected();
+        }
         return origGetPrototypeOf(obj);
       }
     });
@@ -199,8 +202,9 @@
     let ev = new CustomEvent("domain_allowlisting_request");
     let proxy = new Proxy(ev, {
       get(target, property, receiver) {
-        if (property === "detail")
+        if (property === "detail") {
           eventHandlerDetected();
+        }
 
         return target[property];
       }
@@ -215,16 +219,18 @@
         timestamp: Date.now()
       }
     });
-    for (let i = 0; i < 100000; ++i)
+    for (let i = 0; i < 100000; ++i) {
       document.dispatchEvent(event);
+    }
   }
 
   async function maliciousDOSAttemptWithValidSignature() {
     let event = await createAllowlistEvent(
       location.hostname, Date.now(), validPrivateKey
     );
-    for (let i = 0; i < 100000; ++i)
+    for (let i = 0; i < 100000; ++i) {
       document.dispatchEvent(event);
+    }
   }
 
   document.getElementById("allowlist")

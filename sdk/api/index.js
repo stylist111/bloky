@@ -73,8 +73,9 @@ async function onInstalled(details) {
   // text changed and repacked) can happen in the same browser session.
   // So in order to not skip the next subscriptions filter text update
   // the flag is removed.
-  if (details.reason != browser.runtime.OnInstalledReason.UPDATE)
+  if (details.reason != browser.runtime.OnInstalledReason.UPDATE) {
     return;
+  }
 
   await browser.storage.session.remove(SESSION_STORAGE_KEY);
 }
@@ -148,11 +149,13 @@ function startSubmodulesWithListeners() {
   // to register their events in the first turn of the event loop to
   // register their event listeners.
   messageResponder.start();
-  if (isRunningInServiceWorker())
+  if (isRunningInServiceWorker()) {
     popupBlockerServiceWorker.start();
+  }
 
-  if (browser.declarativeNetRequest)
+  if (browser.declarativeNetRequest) {
     dnrRequestReporter.start();
+  }
 
   sitekey.start();
 }
@@ -162,11 +165,13 @@ async function startSubmodules() {
 
   // MV2-style popup and request blocking assume that initializer is
   // started first.
-  if (!isRunningInServiceWorker())
+  if (!isRunningInServiceWorker()) {
     popupBlockerBackgroundPage.start();
+  }
 
-  if (!browser.declarativeNetRequest)
+  if (!browser.declarativeNetRequest) {
     requestFilter.start();
+  }
 
   filterEngine.filterStorage.synchronizer.start();
 }
@@ -185,8 +190,9 @@ async function checkAndInitSubscriptions() {
   let skipInit = await browser.storage.session.get(
     [SESSION_STORAGE_KEY]
   );
-  if (skipInit[SESSION_STORAGE_KEY])
+  if (skipInit[SESSION_STORAGE_KEY]) {
     return;
+  }
 
   await updateFilterText();
   await ensureDNRRulesetsEnabled();

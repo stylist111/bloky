@@ -146,8 +146,9 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath) {
   if (subscriptionFile) {
     let customSubsFile = path.resolve(dirname, subscriptionFile);
     if (fs.existsSync(customSubsFile)) {
-      if (!silent)
+      if (!silent) {
         console.warn(`Using custom subscriptions file (${customSubsFile})`);
+      }
       build.resolve.alias["../data/subscriptions.json"] = customSubsFile;
     }
   }
@@ -156,8 +157,9 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath) {
 }
 
 export default (env = {}) => {
-  if (fs.existsSync(eweDistPath))
+  if (fs.existsSync(eweDistPath)) {
     fs.rmSync(eweDistPath, {recursive: true});
+  }
 
   let builds = [
     eweBuild(env, eweRegularConfigName, null,
@@ -170,8 +172,9 @@ export default (env = {}) => {
 
   for (let buildVariant of [mv2, mv3, mv2Custom]) {
     let description = `Manifest version: ${buildVariant.manifestVersion}`;
-    if (buildVariant.eweConfigName == eweCustomConfigName)
+    if (buildVariant.eweConfigName == eweCustomConfigName) {
       description = `${description} - custom subscriptions`;
+    }
 
     let manifest = {
       name: "eyeo's Web Extension Ad Blocking Toolkit Test Extension",

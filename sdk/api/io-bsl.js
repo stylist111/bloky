@@ -27,8 +27,9 @@ async function loadFile(fileName) {
   let key = fileToKey(fileName);
   let items = await browser.storage.local.get(key);
   let entry = items[key];
-  if (entry)
+  if (entry) {
     return entry;
+  }
   throw {type: "NoSuchFile"};
 }
 
@@ -54,8 +55,9 @@ export let IO = {
    */
   async readFromFile(filename, listener) {
     let entry = await loadFile(filename);
-    for (let line of entry.content)
+    for (let line of entry.content) {
       listener(line);
+    }
   },
 
   /**
@@ -104,8 +106,9 @@ export let IO = {
       };
     }
     catch (error) {
-      if (error.type == "NoSuchFile")
+      if (error.type == "NoSuchFile") {
         return Promise.resolve({exists: false});
+      }
       throw error;
     }
   },

@@ -40,8 +40,9 @@ describe("Snippets", function() {
   it("Domain restrictions", function() {
     function testScriptMatches(description, filters, domain, expectedMatches) {
       for (let filter of filters.map(Filter.fromText)) {
-        if (filter instanceof SnippetFilter)
+        if (filter instanceof SnippetFilter) {
           snippets.add(filter);
+        }
       }
 
       let matches = snippets.getFilters(domain).map(filter => filter.script);

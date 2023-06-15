@@ -97,8 +97,9 @@ describe("Filter storage", function() {
 
     let changes = [];
     function listener(action, subscription) {
-      if (action.indexOf("subscription.") == 0)
+      if (action.indexOf("subscription.") == 0) {
         changes.push(action + " " + subscription.url);
+      }
     }
     addListener(listener);
 
@@ -147,8 +148,9 @@ describe("Filter storage", function() {
 
     let changes = [];
     function listener(action, subscription) {
-      if (action.indexOf("subscription.") == 0)
+      if (action.indexOf("subscription.") == 0) {
         changes.push(action + " " + subscription.url);
+      }
     }
     addListener(listener);
 
@@ -227,8 +229,9 @@ describe("Filter storage", function() {
 
     let changes = [];
     function listener(action, subscription) {
-      if (action.indexOf("subscription.") == 0)
+      if (action.indexOf("subscription.") == 0) {
         changes.push(action + " " + subscription.url);
+      }
     }
     addListener(listener);
 
@@ -254,8 +257,9 @@ describe("Filter storage", function() {
 
     let changes = [];
     function listener(action, filter) {
-      if (action.indexOf("filter.") == 0)
+      if (action.indexOf("filter.") == 0) {
         changes.push(action + " " + filter.text);
+      }
     }
     addListener(listener);
 
@@ -326,8 +330,9 @@ describe("Filter storage", function() {
 
     let map = Object.create(null);
     for (let line of result.slice(1)) {
-      if (/(.*?)=(.*)/.test(line))
+      if (/(.*?)=(.*)/.test(line)) {
         map[RegExp.$1] = RegExp.$2;
+      }
     }
 
     // The metadata is JSON.
@@ -401,8 +406,9 @@ describe("Filter storage", function() {
 
     let changes = [];
     function listener(action, filter) {
-      if (action.indexOf("filter.") == 0)
+      if (action.indexOf("filter.") == 0) {
         changes.push(action + " " + filter.text);
+      }
     }
     addListener(listener);
 
@@ -456,8 +462,9 @@ describe("Filter storage", function() {
 
     let changes = [];
     function listener(action, filter) {
-      if (action.indexOf("filter.") == 0)
+      if (action.indexOf("filter.") == 0) {
         changes.push(action + " " + filter.text);
+      }
     }
     addListener(listener);
 
@@ -493,8 +500,9 @@ describe("Filter storage", function() {
   it("Hit counts", async function() {
     let changes = [];
     function listener(action, filter) {
-      if (action.indexOf("filterState." == 0))
+      if (action.indexOf("filterState." == 0)) {
         changes.push(action + " " + filter);
+      }
     }
     addListener(listener);
 

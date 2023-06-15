@@ -31,8 +31,9 @@ export async function init(filename) {
     await fs.promises.unlink(filename);
   }
   let toDir = path.dirname(filename);
-  if (!(await exists(toDir)))
+  if (!(await exists(toDir))) {
     await fs.promises.mkdir(toDir, {recursive: true});
+  }
   await download(backendUrl, filename);
 }
 

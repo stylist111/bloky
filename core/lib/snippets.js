@@ -53,8 +53,9 @@ class Snippets extends EventEmitter {
   clear() {
     let {_filters} = this;
 
-    if (_filters.size == 0)
+    if (_filters.size == 0) {
       return;
+    }
 
     _filters.clear();
 
@@ -71,8 +72,9 @@ class Snippets extends EventEmitter {
 
     _filters.add(filter);
 
-    if (size != _filters.size)
+    if (size != _filters.size) {
       this.emit("snippets.filterAdded", filter);
+    }
   }
 
   /**
@@ -85,8 +87,9 @@ class Snippets extends EventEmitter {
 
     _filters.delete(filter);
 
-    if (size != _filters.size)
+    if (size != _filters.size) {
       this.emit("snippets.filterRemoved", filter);
+    }
   }
 
   /**
@@ -108,8 +111,9 @@ class Snippets extends EventEmitter {
     let result = [];
 
     for (let filter of this._filters) {
-      if (filter.isActiveOnDomain(domain))
+      if (filter.isActiveOnDomain(domain)) {
         result.push(filter);
+      }
     }
 
     return result;
@@ -164,8 +168,9 @@ exports.parseScript = function parseScript(script) {
 
       if (unicodeEscape.length == 4) {
         let codePoint = parseInt(unicodeEscape, 16);
-        if (!isNaN(codePoint))
+        if (!isNaN(codePoint)) {
           argument += String.fromCodePoint(codePoint);
+        }
 
         unicodeEscape = null;
       }
@@ -173,10 +178,12 @@ exports.parseScript = function parseScript(script) {
     else if (escape) {
       escape = false;
 
-      if (character == "u")
+      if (character == "u") {
         unicodeEscape = "";
-      else
+      }
+      else {
         argument += singleCharacterEscapes.get(character) || character;
+      }
     }
     else if (character == "\\") {
       escape = true;
@@ -184,8 +191,9 @@ exports.parseScript = function parseScript(script) {
     else if (character == "'") {
       withinQuotes = !withinQuotes;
 
-      if (!withinQuotes)
+      if (!withinQuotes) {
         quotesClosed = true;
+      }
     }
     else if (withinQuotes || character != ";" && !/\s/.test(character)) {
       argument += character;

@@ -54,80 +54,94 @@ describe("Matcher", function() {
   }
 
   function checkMatch(filters, location, requestContentTypes, docDomain, sitekey, specificOnly, expected, expectedFirstMatch = expected, expectedExhaustive = expected) {
-    if (typeof requestContentTypes === "string")
+    if (typeof requestContentTypes === "string") {
       requestContentTypes = [requestContentTypes];
+    }
 
     let contentTypeMask = 0;
-    for (let contentType of requestContentTypes)
+    for (let contentType of requestContentTypes) {
       contentTypeMask |= contentTypes[contentType];
+    }
 
     let url = parseURL(location);
 
     let matcher = new Matcher();
-    for (let filter of filters)
+    for (let filter of filters) {
       matcher.add(Filter.fromText(filter));
+    }
 
     for (let arg of [url, location]) {
       let result = matcher.match(arg, contentTypeMask, docDomain, sitekey, specificOnly);
-      if (result)
+      if (result) {
         result = result.text;
+      }
 
       assert.equal(result, expectedFirstMatch, "match(" + (typeof arg == "string" ? arg : `parseURL(${arg})`) + ", " + requestContentTypes + ", " + docDomain + ", " + (sitekey || "no-sitekey") + ", " + (specificOnly ? "specificOnly" : "not-specificOnly") + ") with:\n" + filters.join("\n"));
     }
 
     let combinedMatcher = new CombinedMatcher();
     for (let i = 0; i < 2; i++) {
-      for (let filter of filters)
+      for (let filter of filters) {
         combinedMatcher.add(Filter.fromText(filter));
+      }
 
       let result = combinedMatcher.match(url, contentTypeMask, docDomain, sitekey, specificOnly);
-      if (result)
+      if (result) {
         result = result.text;
+      }
 
       assert.equal(result, expected, "combinedMatch(parseURL(" + location + "), " + requestContentTypes + ", " + docDomain + ", " + (sitekey || "no-sitekey") + ", " + (specificOnly ? "specificOnly" : "not-specificOnly") + ") with:\n" + filters.join("\n"));
 
       let resultExhaustive = combinedMatcher.match(url, contentTypeMask, docDomain, sitekey, specificOnly, true);
-      if (resultExhaustive)
+      if (resultExhaustive) {
         resultExhaustive = resultExhaustive.text;
+      }
 
       assert.equal(resultExhaustive, expectedExhaustive, `combinedMatch(parseURL(${location}), ${requestContentTypes}, ${docDomain}, ${sitekey || "no-sitekey"}, ${specificOnly ? "specificOnly" : "not-specificOnly"}, "exhaustive") with:\n${filters.join("\n")}`);
 
       // Generic allowing rules can match for specificOnly searches, so we
       // can't easily know which rule will match for these allowlisting tests
-      if (specificOnly)
+      if (specificOnly) {
         continue;
+      }
 
       // For next run: add allowing filters for filters that aren't already
       filters = filters.map(text => text.substring(0, 2) == "@@" ? text : "@@" + text);
-      if (expected && expected.substring(0, 2) != "@@")
+      if (expected && expected.substring(0, 2) != "@@") {
         expected = "@@" + expected;
+      }
 
-      if (expectedExhaustive && expectedExhaustive.substring(0, 2) != "@@")
+      if (expectedExhaustive && expectedExhaustive.substring(0, 2) != "@@") {
         expectedExhaustive = "@@" + expectedExhaustive;
+      }
     }
   }
 
   function checkSearch(filters, location, requestContentTypes, docDomain,
                        sitekey, specificOnly, filterType, expected) {
-    if (typeof requestContentTypes === "string")
+    if (typeof requestContentTypes === "string") {
       requestContentTypes = [requestContentTypes];
+    }
 
     let contentTypeMask = 0;
-    for (let contentType of requestContentTypes)
+    for (let contentType of requestContentTypes) {
       contentTypeMask |= contentTypes[contentType];
+    }
 
     let url = parseURL(location);
 
     let matcher = new CombinedMatcher();
-    for (let filter of filters)
+    for (let filter of filters) {
       matcher.add(Filter.fromText(filter));
+    }
 
     for (let arg of [url, location]) {
       let result = matcher.search(arg, contentTypeMask, docDomain, sitekey, specificOnly, filterType);
 
       let converted = {};
-      for (let key in result)
+      for (let key in result) {
         converted[key] = result[key].map(filter => filter.text);
+      }
 
       assert.deepEqual(converted, expected, "search(" +
                        (typeof arg == "string" ? arg : `parseURL(${arg})`) + ", " +

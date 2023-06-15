@@ -94,15 +94,17 @@ describe("EventEmitter", function() {
     });
 
     it("should not throw when thousandth listener is added for same event", function() {
-      for (let i = 0; i < 999; i++)
+      for (let i = 0; i < 999; i++) {
         eventEmitter.on("event", () => {});
+      }
 
       assert.doesNotThrow(() => eventEmitter.on("event", () => {}));
     });
 
     it("should not throw when thousandth listener is added for different events", function() {
-      for (let i = 0; i < 999; i++)
+      for (let i = 0; i < 999; i++) {
         eventEmitter.on(`event-${i + 1}`, () => {});
+      }
 
       assert.doesNotThrow(() => eventEmitter.on("event-1000", () => {}));
     });
@@ -202,8 +204,9 @@ describe("EventEmitter", function() {
         eventEmitter.on("event", listeners[i]);
       }
 
-      for (let i = 0; i < listeners.length - 1; i++)
+      for (let i = 0; i < listeners.length - 1; i++) {
         eventEmitter.off("event", listeners[i]);
+      }
 
       assert.doesNotThrow(() => eventEmitter.off("event", listeners[listeners.length - 1]));
     });
@@ -215,8 +218,9 @@ describe("EventEmitter", function() {
         eventEmitter.on(`event-${i + 1}`, listeners[i]);
       }
 
-      for (let i = 0; i < listeners.length - 1; i++)
+      for (let i = 0; i < listeners.length - 1; i++) {
         eventEmitter.off(`event-${i + 1}`, listeners[i]);
+      }
 
       assert.doesNotThrow(() => eventEmitter.off("event-1000", listeners[listeners.length - 1]));
     });
@@ -450,8 +454,9 @@ describe("EventEmitter", function() {
         eventEmitter.on("event", listeners[i]);
       }
 
-      for (let i = 0; i < listeners.length; i++)
+      for (let i = 0; i < listeners.length; i++) {
         eventEmitter.off("event", listeners[i]);
+      }
 
       assert.deepEqual(eventEmitter.listeners("event"), []);
     });
@@ -463,8 +468,9 @@ describe("EventEmitter", function() {
         eventEmitter.on(`event-${i + 1}`, listeners[i]);
       }
 
-      for (let i = 0; i < listeners.length; i++)
+      for (let i = 0; i < listeners.length; i++) {
         eventEmitter.off(`event-${i + 1}`, listeners[i]);
+      }
 
       assert.deepEqual(eventEmitter.listeners("event-1000"), []);
     });
@@ -729,29 +735,33 @@ describe("EventEmitter", function() {
     });
 
     it("should return true when thousand listeners exist for same event", function() {
-      for (let i = 0; i < 1000; i++)
+      for (let i = 0; i < 1000; i++) {
         eventEmitter.on("event", () => {});
+      }
 
       assert.strictEqual(eventEmitter.hasListeners("event"), true);
     });
 
     it("should return true with no argument when thousand listeners exist for same event", function() {
-      for (let i = 0; i < 1000; i++)
+      for (let i = 0; i < 1000; i++) {
         eventEmitter.on("event", () => {});
+      }
 
       assert.strictEqual(eventEmitter.hasListeners(), true);
     });
 
     it("should return true for thousandth event when listeners exist for thousand different events", function() {
-      for (let i = 0; i < 1000; i++)
+      for (let i = 0; i < 1000; i++) {
         eventEmitter.on(`event-${i + 1}`, () => {});
+      }
 
       assert.strictEqual(eventEmitter.hasListeners("event-1000"), true);
     });
 
     it("should return true with no argument when listeners exist for thousand different events", function() {
-      for (let i = 0; i < 1000; i++)
+      for (let i = 0; i < 1000; i++) {
         eventEmitter.on(`event-${i + 1}`, () => {});
+      }
 
       assert.strictEqual(eventEmitter.hasListeners(), true);
     });
@@ -763,8 +773,9 @@ describe("EventEmitter", function() {
         eventEmitter.on("event", listeners[i]);
       }
 
-      for (let i = 0; i < listeners.length; i++)
+      for (let i = 0; i < listeners.length; i++) {
         eventEmitter.off("event", listeners[i]);
+      }
 
       assert.strictEqual(eventEmitter.hasListeners("event"), false);
     });
@@ -776,8 +787,9 @@ describe("EventEmitter", function() {
         eventEmitter.on("event", listeners[i]);
       }
 
-      for (let i = 0; i < listeners.length; i++)
+      for (let i = 0; i < listeners.length; i++) {
         eventEmitter.off("event", listeners[i]);
+      }
 
       assert.strictEqual(eventEmitter.hasListeners(), false);
     });
@@ -789,8 +801,9 @@ describe("EventEmitter", function() {
         eventEmitter.on(`event-${i + 1}`, listeners[i]);
       }
 
-      for (let i = 0; i < listeners.length; i++)
+      for (let i = 0; i < listeners.length; i++) {
         eventEmitter.off(`event-${i + 1}`, listeners[i]);
+      }
 
       assert.strictEqual(eventEmitter.hasListeners("event-1000"), false);
     });
@@ -802,8 +815,9 @@ describe("EventEmitter", function() {
         eventEmitter.on(`event-${i + 1}`, listeners[i]);
       }
 
-      for (let i = 0; i < listeners.length; i++)
+      for (let i = 0; i < listeners.length; i++) {
         eventEmitter.off(`event-${i + 1}`, listeners[i]);
+      }
 
       assert.strictEqual(eventEmitter.hasListeners(), false);
     });
@@ -1490,8 +1504,9 @@ describe("EventEmitter", function() {
         eventEmitter.on("event", listeners[i]);
       }
 
-      for (let i = 0; i < listeners.length; i++)
+      for (let i = 0; i < listeners.length; i++) {
         eventEmitter.off("event", listeners[i]);
+      }
 
       assert.deepStrictEqual((eventEmitter.emit("event"), calls), []);
     });
@@ -1508,8 +1523,9 @@ describe("EventEmitter", function() {
         eventEmitter.on("event", listeners[i]);
       }
 
-      for (let i = 0; i < listeners.length; i++)
+      for (let i = 0; i < listeners.length; i++) {
         eventEmitter.off("event", listeners[i]);
+      }
 
       assert.deepStrictEqual((eventEmitter.emit("event", true), calls), []);
     });
@@ -1526,8 +1542,9 @@ describe("EventEmitter", function() {
         eventEmitter.on(`event-${i + 1}`, listeners[i]);
       }
 
-      for (let i = 0; i < listeners.length; i++)
+      for (let i = 0; i < listeners.length; i++) {
         eventEmitter.off(`event-${i + 1}`, listeners[i]);
+      }
 
       assert.deepStrictEqual((eventEmitter.emit("event"), calls), []);
     });
@@ -1544,8 +1561,9 @@ describe("EventEmitter", function() {
         eventEmitter.on(`event-${i + 1}`, listeners[i]);
       }
 
-      for (let i = 0; i < listeners.length; i++)
+      for (let i = 0; i < listeners.length; i++) {
         eventEmitter.off(`event-${i + 1}`, listeners[i]);
+      }
 
       assert.deepStrictEqual((eventEmitter.emit("event", true), calls), []);
     });

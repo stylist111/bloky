@@ -56,8 +56,9 @@ describe("Filter notifier", function() {
     filterNotifier.emit("foo", {bar: true});
 
     let result2 = triggeredListeners = [];
-    for (let observer of list)
+    for (let observer of list) {
       observer({bar: true});
+    }
 
     assert.deepEqual(result1, result2, testDescription);
   }

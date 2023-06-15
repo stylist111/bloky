@@ -27,10 +27,12 @@ export class ElementHidingTracer {
       setTimeout(() => this.trace(), 1000);
     });
 
-    if (document.readyState == "loading")
+    if (document.readyState == "loading") {
       document.addEventListener("DOMContentLoaded", () => this.trace());
-    else
+    }
+    else {
       this.trace();
+    }
   }
 
   log(filters, selectors = []) {
@@ -46,15 +48,18 @@ export class ElementHidingTracer {
     for (let [selector, filter] of this.selectors) {
       if (document.querySelector(selector)) {
         this.selectors.delete(selector);
-        if (filter)
+        if (filter) {
           filters.push(filter);
-        else
+        }
+        else {
           selectors.push(selector);
+        }
       }
     }
 
-    if (filters.length > 0 || selectors.length > 0)
+    if (filters.length > 0 || selectors.length > 0) {
       this.log(filters, selectors);
+    }
 
     this.observer.observe(document, {childList: true,
                                      attributes: true,

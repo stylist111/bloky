@@ -59,8 +59,9 @@ describe("initSubscriptions script", function() {
   });
 
   afterEach(async function() {
-    if (fs.existsSync(tmpDir))
+    if (fs.existsSync(tmpDir)) {
       await fs.promises.rm(tmpDir, {recursive: true});
+    }
   });
 
   it("should download MV3 list", async function() {

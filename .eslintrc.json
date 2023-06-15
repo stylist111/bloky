@@ -15,8 +15,7 @@
     "brace-style": ["error", "stroustrup"],
     "curly": [
       "error",
-      "multi-or-nest",
-      "consistent"
+      "all"
     ],
     "max-len": [
       "error",

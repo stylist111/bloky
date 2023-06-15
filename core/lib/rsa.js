@@ -47,8 +47,9 @@ exports.base64ToArrayBuffer = function base64ToArrayBuffer(base64) {
 exports.arrayBufferToBase64 = function arrayBufferToBase64(buffer) {
   let binary = "";
   let bytes = new Uint8Array(buffer);
-  for (let i = 0; i < bytes.byteLength; i++)
+  for (let i = 0; i < bytes.byteLength; i++) {
     binary += String.fromCharCode(bytes[i]);
+  }
 
   return btoa(binary);
 };
@@ -138,12 +139,14 @@ function readASN1(data, templ) {
     let len = next();
     if (len & 0x80) {
       let cnt = len & 0x7F;
-      if (cnt > 2 || cnt == 0)
+      if (cnt > 2 || cnt == 0) {
         throw "Unsupported length";
+      }
 
       len = 0;
-      for (let i = 0; i < cnt; i++)
+      for (let i = 0; i < cnt; i++) {
         len += next() << (cnt - 1 - i) * 8;
+      }
       return len;
     }
     return len;
@@ -152,29 +155,36 @@ function readASN1(data, templ) {
   function readNode(curTempl) {
     let type = next();
     let len = readLength();
-    if ("type" in curTempl && curTempl.type != type)
+    if ("type" in curTempl && curTempl.type != type) {
       throw "Unexpected type";
+    }
     if ("content" in curTempl &&
-        curTempl.content != data.substring(pos, pos + len))
+        curTempl.content != data.substring(pos, pos + len)) {
       throw "Unexpected content";
-    if ("out" in curTempl)
+    }
+    if ("out" in curTempl) {
       out[curTempl.out] = new BigInteger(data.substring(pos, pos + len), 256);
+    }
     if ("children" in curTempl) {
       let i;
       let end;
       for (i = 0, end = pos + len; pos < end; i++) {
-        if (i >= curTempl.children.length)
+        if (i >= curTempl.children.length) {
           throw "Too many children";
+        }
         readNode(curTempl.children[i]);
       }
-      if (i < curTempl.children.length)
+      if (i < curTempl.children.length) {
         throw "Too few children";
-      if (pos > end)
+      }
+      if (pos > end) {
         throw "Children too large";
+      }
     }
     else if ("encapsulates" in curTempl) {
-      if (next() != 0)
+      if (next() != 0) {
         throw "Encapsulation expected";
+      }
       readNode(curTempl.encapsulates);
     }
     else {
@@ -184,8 +194,9 @@ function readASN1(data, templ) {
 
   let out = {};
   readNode(templ);
-  if (pos != data.length)
+  if (pos != data.length) {
     throw "Too much data";
+  }
   return out;
 }
 
@@ -223,12 +234,14 @@ let rusha;
  */
 exports.verifySignatureSync =
 function verifySignatureSync(key, signature, data) {
-  if (typeof rusha == "undefined")
+  if (typeof rusha == "undefined") {
     rusha = new Rusha();
+  }
 
   let keyData = readPublicKey(key);
-  if (!keyData)
+  if (!keyData) {
     return false;
+  }
 
   // We need the exponent as regular number
   keyData.e = parseInt(keyData.e.toString(16), 16);
@@ -242,11 +255,13 @@ function verifySignatureSync(key, signature, data) {
     let next = () => digest.charCodeAt(pos++);
 
     // Skip padding, see http://tools.ietf.org/html/rfc3447#section-9.2 step 5
-    if (next() != 1)
+    if (next() != 1) {
       throw "Wrong padding in signature digest";
+    }
     while (next() == 255) {}
-    if (digest.charCodeAt(pos - 1) != 0)
+    if (digest.charCodeAt(pos - 1) != 0) {
       throw "Wrong padding in signature digest";
+    }
 
     // Rest is an ASN.1 structure, get the SHA1 hash from it and compare to
     // the real one

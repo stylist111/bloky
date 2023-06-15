@@ -6,8 +6,9 @@ import {HTTP_PORT as TEST_PAGES_HTTP_PORT} from "../test/test-pages-server.js";
 let testServer;
 
 export function runTestServer() {
-  if (testServer)
+  if (testServer) {
     return;
+  }
 
   console.log("Test server starting...");
   testServer = spawn("node", [path.join(process.cwd(), "test", "start-server.js")]);
@@ -24,8 +25,9 @@ export function runTestServer() {
 
     function onData(data) {
       log.push(data);
-      if (data.includes(`listening at http://localhost:${TEST_PAGES_HTTP_PORT}`))
+      if (data.includes(`listening at http://localhost:${TEST_PAGES_HTTP_PORT}`)) {
         testPagesServerStarted = true;
+      }
 
       if (testPagesServerStarted) {
         console.log("✅ Test server started");
@@ -55,8 +57,9 @@ export async function killTestServer() {
     }, 5000);
 
     function onClose() {
-      if (!testServer)
+      if (!testServer) {
         return;
+      }
 
       testServer.off("close", onClose);
       console.log("✅ Test server has been stopped");

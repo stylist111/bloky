@@ -64,16 +64,19 @@ describe("updateSubscriptions script", function() {
   });
 
   afterEach(async function() {
-    if (existsSync(tmpDir))
+    if (existsSync(tmpDir)) {
       await rm(tmpDir, {recursive: true});
+    }
 
     let taredData = path.join("scripts", exampleSubscription + ".tar.gz");
-    if (existsSync(taredData))
+    if (existsSync(taredData)) {
       await rm(taredData, {recursive: true});
+    }
 
     let untaredData = path.join("scripts/", exampleSubscription);
-    if (existsSync(untaredData))
+    if (existsSync(untaredData)) {
       await rm(untaredData, {recursive: true});
+    }
   });
 
   async function mockData(mockedDataPath) {
@@ -160,8 +163,9 @@ describe("updateSubscriptions script", function() {
      async function() {
        await performSubscriptionUpdate("subscriptionURL/" + exampleSubscription);
        let subscriptionsJson = JSON.parse(await readFile(toFile));
-       for (const subscription of subscriptionsJson)
+       for (const subscription of subscriptionsJson) {
          assert.strictEqual(subscription["homepage"] == "https://easylist.to/", true);
+       }
      });
 
   it("should provide at least one subscription", async function() {
@@ -172,37 +176,42 @@ describe("updateSubscriptions script", function() {
 
   it("should provide the subscriptions having a type", async function() {
     await assertSubscriptions(subscriptions => {
-      for (let subscription of subscriptions)
+      for (let subscription of subscriptions) {
         assert.strictEqual(subscription.type != null, true);
+      }
     });
   });
 
   it("should provide the subscriptions having a title", async function() {
     await assertSubscriptions(subscriptions => {
-      for (let subscription of subscriptions)
+      for (let subscription of subscriptions) {
         assert.strictEqual(subscription.title != null, true);
+      }
     });
   });
 
   it("should provide the subscriptions having a url", async function() {
     await assertSubscriptions(subscriptions => {
-      for (let subscription of subscriptions)
+      for (let subscription of subscriptions) {
         assert.strictEqual(subscription.url != null, true);
+      }
     });
   });
 
   it("should provide the subscriptions having a homepage", async function() {
     await assertSubscriptions(subscriptions => {
-      for (let subscription of subscriptions)
+      for (let subscription of subscriptions) {
         assert.strictEqual(subscription.homepage != null, true);
+      }
     });
   });
 
   it("should provide the ads subscriptions having at least one language", async function() {
     await assertSubscriptions(subscriptions => {
       for (let subscription of subscriptions) {
-        if (subscription.type === "ads")
+        if (subscription.type === "ads") {
           assert.strictEqual(subscription.languages.length > 0, true);
+        }
       }
     });
   });

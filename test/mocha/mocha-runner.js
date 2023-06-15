@@ -41,8 +41,9 @@ function sendMessage(id, arg) {
 self.poll = async function(webdriverEvents) {
   setConnected(true);
 
-  for (let webdriverEvent of webdriverEvents)
+  for (let webdriverEvent of webdriverEvents) {
     webdriverEventEmitter.emit(webdriverEvent.id, webdriverEvent.arg);
+  }
 
   if (messages.length == 0) {
     await new Promise(resolve => {
@@ -96,8 +97,9 @@ export async function updateExtensionFiles(commands) {
 export async function suspendServiceWorker(runnable) {
   sendMessage("suspendServiceWorker");
   if (runnable) {
-    if (!await isConnected())
+    if (!await isConnected()) {
       runnable.skip();
+    }
 
     increaseMinTimeout(runnable, 3000);
   }
