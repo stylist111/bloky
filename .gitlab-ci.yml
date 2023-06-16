@@ -46,9 +46,6 @@ variables:
       allow_failure: true
     - if: $CI_COMMIT_BRANCH == "master"
       allow_failure: true
-    # Run manually on all other branches
-    - when: manual
-      allow_failure: true
 
 .docker-image:
   image: docker:23.0.1
@@ -463,9 +460,6 @@ fuzz:v3:edge:linux:
     # Run full set when FULL is true
     - if: $FULL == 'true'
     - if: $CI_COMMIT_BRANCH == "master"
-    # Run manually on all other branches
-    - when: manual
-      allow_failure: false
 
 compliance:v2:firefox:
   extends: .compliance
