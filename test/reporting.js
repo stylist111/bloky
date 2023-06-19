@@ -679,6 +679,8 @@ describe("Reporting", function() {
     });
 
     it("logs blocking $csp filter with domain option", async function() {
+      // Skipped due to https://jira.eyeo.com/browse/EE-123
+      this.skip();
       let url = "https://testpages.adblockplus.org/en/filters/csp_specific";
       let cspFilter = "$csp=script-src https://testpages.adblockplus.org/lib/utils.js,domain=testpages.adblockplus.org";
 
