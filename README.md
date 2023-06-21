@@ -311,7 +311,7 @@ strings, in SPKI format.
 
 ## Documentation
 
-For more information, please refer to the [API documention][docs].
+For more information, please refer to the [API documention][api-docs].
 
 ## Development
 
@@ -429,7 +429,7 @@ npm run lint
 [builds]: https://gitlab.com/eyeo/webext/webext-sdk/-/jobs/artifacts/master/browse/dist?job=build
 [snippet-filters]: https://help.eyeo.com/adblockplus/snippet-filters-tutorial
 [snippets-project]: https://gitlab.com/eyeo/adblockplus/abp-snippets
-[docs]: https://eyeo.gitlab.io/adblockplus/abc/webext-sdk/master/docs/
+[api-docs]: https://eyeo.gitlab.io/adblockplus/abc/webext-sdk/master/docs/#apis
 [dev]: https://gitlab.com/eyeo/webext/webext-sdk#development
 [notifications-module]: https://eyeo.gitlab.io/adblockplus/abc/webext-sdk/master/docs/#notifications
 [allowlisting-module]: https://eyeo.gitlab.io/adblockplus/abc/webext-sdk/master/docs/#allowlisting
