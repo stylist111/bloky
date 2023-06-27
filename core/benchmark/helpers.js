@@ -46,7 +46,7 @@ const EASYPRIVACY = {
 };
 const TESTPAGES = {
   path: "./benchmark/testpages.txt",
-  url: "https://testpages.adblockplus.org/en/abp-testcase-subscription.txt"
+  url: "https://abptestpages.org/en/abp-testcase-subscription.txt"
 };
 
 const TIMERIFY_KEYS = [

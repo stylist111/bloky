@@ -312,10 +312,10 @@ describe("Matcher", function() {
     });
 
     // Matching CSP filter
-    let cspFilter = "$csp=script-src https://testpages.adblockplus.org/lib/utils.js,domain=testpages.adblockplus.org";
+    let cspFilter = "$csp=script-src  https://abptestpages.org/lib/utils.js,domain=testpages.adblockplus.org";
     checkSearch(
       [cspFilter],
-      "https://testpages.adblockplus.org/en/filters/csp_specific",
+      "https://abptestpages.org/filters/csp_specific",
       ["CSP", "OTHER"],
       "testpages.adblockplus.org",
       null,

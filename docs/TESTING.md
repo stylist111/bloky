@@ -280,7 +280,7 @@ the service worker is suspended as part of running the test.
 
 ## Compliance tests
 
-Compliance tests are performed on [testpages](https://testpages.adblockplus.org/)
+Compliance tests are performed on local version of [testpages]( https://abptestpages.org)
 to assure compliance between webext-sdk and other eyeo adblocking solutions.
 They run the automated tests developed on the testpages project using the
 test extension built on the webext-sdk pipeline.

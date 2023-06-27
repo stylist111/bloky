@@ -79,7 +79,7 @@ Example:
 [Adblock Plus 2.0]
 ! id: 8C13E995-8F06-4927-BEA5-6C885FB7EEBF
 ...
-testpages.adblockplus.org###eh-id
+abptestpages.org###eh-id
 ...
 ```
 

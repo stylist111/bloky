@@ -260,7 +260,7 @@ describe("Subscription classes", function() {
       "##.bar"
     ], {
       version: "1",
-      homepage: "https://testpages.adblockplus.org/",
+      homepage: "https://abptestpages.org",
       title: "Another example"
     });
     assert.ok(subscription3.hasFilterText("##.foo"));
@@ -269,7 +269,7 @@ describe("Subscription classes", function() {
     assert.equal(subscription3._filterText.length, 2);
     assert.equal(subscription3.title, "Another example");
     assert.ok(subscription3.fixedTitle);
-    assert.equal(subscription3.homepage, "https://testpages.adblockplus.org/");
+    assert.equal(subscription3.homepage, "https://abptestpages.org/");
   });
 });
 

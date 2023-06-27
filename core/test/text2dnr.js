@@ -839,11 +839,11 @@ describe("convertFilter", function() {
         }
       ]);
 
-      await testRules(["@@||testpages.adblockplus.org^$csp"], [
+      await testRules(["@@||abptestpages.org^$csp"], [
         {
           priority: SPECIFIC_PRIORITY,
           condition: {
-            urlFilter: "||testpages.adblockplus.org^",
+            urlFilter: "||abptestpages.org^",
             resourceTypes: ["main_frame", "sub_frame"]
           },
           action: {
