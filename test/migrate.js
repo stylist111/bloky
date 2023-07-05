@@ -164,7 +164,7 @@ describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
     expect(sub.version).toEqual(savedValues.meta.version);
   });
 
-  it("migrates the anti-cv subscription and it stays downloadable, but with MV3 URL", async function() {
+  it("migrates the anti-cv subscription and it becomes diff updatable if diff URL is provided", async function() {
     if (start) {
       await EWE.subscriptions.add(TEST_ANTI_CV_SUBSCRIPTION.mv2_url); // MV2 URL
 
@@ -172,7 +172,7 @@ describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
       expect(downloadables).toEqual(expect.arrayContaining([
         expect.objectContaining({
           url: TEST_ANTI_CV_SUBSCRIPTION.mv2_url,
-          downloadable: true,
+          downloadable: true, // DownloadableSubscription
           enabled: true
         })
       ]));
@@ -187,7 +187,7 @@ describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
     expect(downloadables).toEqual(expect.arrayContaining([
       expect.objectContaining({
         url: TEST_ANTI_CV_SUBSCRIPTION.url, // MV3 URL
-        downloadable: true, // still downloadable even in MV3
+        downloadable: false, // DiffUpdatableSubscription
         enabled: true
       })
     ]));

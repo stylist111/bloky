@@ -389,7 +389,8 @@ if (isMV3()) {
         title: "ABP filters",
         homepage: "https://github.com/abp-filters/abp-filters-anti-cv",
         url: "http://localhost:3003/anti-cv-subscription.txt",
-        mv2_url: "http://localhost:3003/mv2_anti-cv-subscription.txt"
+        mv2_url: "http://localhost:3003/mv2_anti-cv-subscription.txt",
+        diff_url: "http://localhost:3003/anti-cv-subscription_diff.json"
       },
       {
         id: "00000000-0000-0000-0000-000000000040",

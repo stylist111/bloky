@@ -587,13 +587,8 @@ describe("Test subscriptions update", function() {
       );
     });
 
-    it("applies and blocks with new request filters added in the diffs [mv3-only]", async function() {
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
-      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
-      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
+    async function diffUpdateIsApplied(
+      testDiffSubscriptionUrl, testDiffUrlEndpoint) {
       // start with empty diffs
       await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
         filters: {
@@ -628,12 +623,34 @@ describe("Test subscriptions update", function() {
 
       // now we block the image
       await new Page("image.html").expectResource("image.png").toBeBlocked();
+    }
+
+    it("applies and blocks with new request filters added in the diffs [mv3-only]", async function() {
+      if (!hasUpdateStaticRules()) {
+        this.skip();
+      }
+
+      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
+      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
+      await diffUpdateIsApplied(testDiffSubscriptionUrl, testDiffUrlEndpoint);
+    });
+
+    it("applies and blocks with new request filters added in the diffs for anti-cv subscription [mv3-only]", async function() {
+      if (!hasUpdateStaticRules()) {
+        this.skip();
+      }
+
+      let testDiffSubscriptionUrl = "http://localhost:3003/anti-cv-subscription.txt";
+      let testDiffUrlEndpoint = "/anti-cv-subscription_diff.json";
+      await diffUpdateIsApplied(testDiffSubscriptionUrl, testDiffUrlEndpoint);
     });
 
     it("applies and blocks with new content filters added in the diffs [mv3-only]", async function() {
       if (!hasUpdateStaticRules()) {
         this.skip();
       }
+
+      setMinTimeout(this, 30000);
 
       const testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
       const testDiffUrlEndpoint = "/updatable_subscription/diff.json";
@@ -651,6 +668,7 @@ describe("Test subscriptions update", function() {
       const elemId = "diff-elem-item";
       await expectElemHideVisible({elemId});
 
+      // add filter
       await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
         filters: {
           add: ["###diff-elem-item"],
@@ -668,9 +686,31 @@ describe("Test subscriptions update", function() {
         if (lastFilter.text === "###diff-elem-item") {
           return true;
         }
-      }, 10000, "Subscription was not synchronised properly.");
+      }, 10000, "Subscription was not synchronised properly (filter added).");
 
       await expectElemHideHidden({elemId, timeout: 10000});
+
+      // remove filter
+      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+        filters: {
+          add: [],
+          remove: ["###diff-elem-item"]
+        }
+      }));
+
+      await EWE.subscriptions.sync(testDiffSubscriptionUrl);
+
+      await wait(async() => {
+        let filters =
+          await EWE.subscriptions.getFilters(testDiffSubscriptionUrl);
+        const lastFilter = filters.slice(-1)[0];
+
+        if (lastFilter.text !== "###diff-elem-item") {
+          return true;
+        }
+      }, 10000, "Subscription was not synchronised properly (filter removed).");
+
+      await expectElemHideVisible({elemId});
     });
 
     it("Subscriptions with empty diffs still block with normal filters [mv3-only]", async function() {
@@ -725,6 +765,67 @@ describe("Test subscriptions update", function() {
         "image-from-subscription.html",
         "image-from-subscription.png"
       );
+    });
+
+    it("doesn't remove enabled user filters which conflict with subscription filters", async function() {
+      if (!hasUpdateStaticRules()) {
+        this.skip();
+      }
+
+      setMinTimeout(this, 20000);
+
+      let filter = "/image-from-custom-filter.png^$image";
+      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
+      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
+      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+        filters: {
+          add: [filter],
+          remove: []
+        }
+      }));
+
+      await EWE.subscriptions.add(testDiffSubscriptionUrl);
+      await EWE.subscriptions.sync(testDiffSubscriptionUrl);
+      await EWE.filters.add([filter]);
+      let userFilters = await EWE.filters.getUserFilters();
+      expect(userFilters[0]).toMatchObject(
+        {
+          csp: null,
+          enabled: true,
+          selector: null,
+          slow: false,
+          text: "/image-from-custom-filter.png^$image",
+          thirdParty: null,
+          type: "blocking"
+        }
+      );
+      await new Page("image-from-custom-filter.html")
+        .expectResource("image-from-custom-filter.png")
+        .toBeBlocked();
+
+      // update reply on the server to remove filter
+      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+        filters: {
+          add: [],
+          remove: [filter]
+        }
+      }));
+
+      await EWE.subscriptions.sync(testDiffSubscriptionUrl);
+
+      userFilters = await EWE.filters.getUserFilters();
+      expect(userFilters[0]).toMatchObject({
+        csp: null,
+        enabled: true,
+        selector: null,
+        slow: false,
+        text: "/image-from-custom-filter.png^$image",
+        thirdParty: null,
+        type: "blocking"
+      });
+      await new Page("image-from-custom-filter.html")
+        .expectResource("image-from-custom-filter.png")
+        .toBeBlocked();
     });
   });
 });

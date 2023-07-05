@@ -255,8 +255,7 @@ export async function updateFilterText() {
   let removeUrls = [];
 
   for (let subscription of filterEngine.filterStorage.subscriptions()) {
-    if ((subscription instanceof RegularSubscription) &&
-        subscription.type != "circumvention") {
+    if (subscription instanceof RegularSubscription) {
       let subscriptionInfo = addonBundledSubscriptions.find(
         x => x.url == subscription.url);
 
@@ -302,6 +301,8 @@ async function add(url, properties = {}) {
   let subscription = Subscription.fromURL(url);
 
   if (browser.declarativeNetRequest) {
+    // This currently prevents us from adding user subscriptions, ie
+    // those we don't know about. See EE-117.
     let subscriptionInfo = addonBundledSubscriptions.find(x => x.url == url);
     if (!subscriptionInfo) {
       throw new Error(`Failed to find the subscription with URL=${url}`);

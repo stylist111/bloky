@@ -634,25 +634,22 @@ exports.Subscription.fromURL = function(url) {
         // In DNR we use the recommendation title.
         title = recommendation.title;
 
-        // In DNR currently "circumvention" list is downloadable.
-        // This until we can tag subscription to be downloadable.
-        downloadable = recommendation.type == "circumvention";
-        if (!downloadable) {
-          // We have to set the params like if the list was downloaded.
-          params = {
-            homepage: recommendation.homepage,
-            // The effect of setting title here is that it will make the
-            // fixedTitle property to be true.
-            // This is the equivalent of the title being set by the
-            // filter list.
-            title
-          };
-        }
+        // All the known subscriptions are considered to be either
+        // user countable or diff updatable
+        downloadable = false;
+        // We have to set the params like if the list was downloaded.
+        params = {
+          homepage: recommendation.homepage,
+          // The effect of setting title here is that it will make the
+          // fixedTitle property to be true.
+          // This is the equivalent of the title being set by the
+          // filter list.
+          title
+        };
 
         if (recommendation.diffURL) {
           params.diffURL = recommendation.diffURL;
           updatableThroughDiffs = true;
-          downloadable = false;
         }
       }
     }

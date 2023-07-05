@@ -133,6 +133,15 @@ export function startAdminServer(host) {
           remove: []
         }
       })
+    },
+    {
+      url: "/anti-cv-subscription_diff.json",
+      data: JSON.stringify({
+        filters: {
+          add: [],
+          remove: []
+        }
+      })
     }
   ];
 

@@ -18,9 +18,8 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 
-import {Page, setMinTimeout, wait, waitForAssertion, isEdge, isIncognito, isMV3,
-        expectElemHideVisible, expectElemHideHidden, TEST_PAGES_URL,
-        TEST_PAGES_DOMAIN, shouldBeLoaded, setEndpointResponse}
+import {Page, setMinTimeout, wait, waitForAssertion, isMV3,
+        TEST_PAGES_URL, TEST_PAGES_DOMAIN, shouldBeLoaded, setEndpointResponse}
   from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, getTestEvents, clearTestEvents,
         expectTestEvents} from "./messaging.js";
@@ -371,58 +370,6 @@ describe("Subscriptions", function() {
       );
     };
 
-    let synchronizeAndCheck = async function(expectedFilter, timeout = 6000) {
-      await wait(async() => {
-        await EWE.subscriptions.sync();
-        let subscriptionFilter =
-          await EWE.subscriptions.getForFilter(expectedFilter);
-        if (subscriptionFilter.length > 0) {
-          return true;
-        }
-      }, timeout, "Subscription was not synchronised properly.");
-    };
-
-    it("updates the CV subscription [fuzz]", async function() {
-      let updatedReply = "[Adblock Plus]";
-      let filterToAdd = "example.com#$#abort-on-property-read atob";
-      await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
-      await addSubscription();
-
-      // update reply on the server
-      updatedReply = ["[Adblock Plus]", filterToAdd].join("\n");
-      await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
-      let timeoutForCheck = isFuzzingServiceWorker ? 10000 : 6000;
-      await synchronizeAndCheck(filterToAdd, timeoutForCheck);
-
-      expect(await EWE.subscriptions.getForFilter(filterToAdd)).toEqual(
-        expect.arrayContaining([expect.objectContaining(
-          {url: subCircumvention.url}
-        )])
-      );
-    });
-
-    it("adds & removes content filter by updating CV subscription", async function() {
-      let updatedReply = [
-        "[Adblock Plus]",
-        "example.com##element_hiding_filter_2"
-      ].join("\n");
-      await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
-      await addSubscription();
-      await expectElemHideVisible();
-
-      // update reply on the server to add content filter
-      updatedReply = ["[Adblock Plus]", "###elem-hide"].join("\n");
-      await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
-      await synchronizeAndCheck("###elem-hide");
-      await expectElemHideHidden();
-
-      // update reply on the server to remove content filter
-      updatedReply = ["[Adblock Plus]", "###elem-hide_3"].join("\n");
-      await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
-      await synchronizeAndCheck("###elem-hide_3");
-      await expectElemHideVisible();
-    });
-
     it("doesn't bring non-CV subscription data to DNR world [mv3-only]", async function() {
       let updatedReply = "[Adblock Plus]";
       await setEndpointResponse("/subscription-that-shouldnt-be-moved-to-dnr-world.txt", updatedReply);
@@ -456,48 +403,6 @@ describe("Subscriptions", function() {
       await shouldBeLoaded("image-from-non-dnr-subscription.html",
                            "image-from-non-dnr-subscription.png",
                            "Image from non dnr subscription was blocked");
-    });
-
-    it("doesn't remove enabled custom filters which conflict with subscription filters", async function() {
-      let updatedReply = [
-        "[Adblock Plus]",
-        "/image-from-custom-filter.png^$image"
-      ].join("\n");
-      await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
-      await addSubscription();
-      await EWE.filters.add(["/image-from-custom-filter.png^$image"]);
-      let userFilters = await EWE.filters.getUserFilters();
-      expect(userFilters[0]).toMatchObject(
-        {
-          csp: null,
-          enabled: true,
-          selector: null,
-          slow: false,
-          text: "/image-from-custom-filter.png^$image",
-          thirdParty: null,
-          type: "blocking"
-        }
-      );
-      await new Page("image-from-custom-filter.html").expectResource("image-from-custom-filter.png").toBeBlocked();
-
-      // update reply on the server to remove filter
-      updatedReply =
-        ["[Adblock Plus]", "example.com##.inserted_rtb"].join("\n");
-      await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
-
-      await synchronizeAndCheck("example.com##.inserted_rtb");
-
-      userFilters = await EWE.filters.getUserFilters();
-      expect(userFilters[0]).toMatchObject({
-        csp: null,
-        enabled: true,
-        selector: null,
-        slow: false,
-        text: "/image-from-custom-filter.png^$image",
-        thirdParty: null,
-        type: "blocking"
-      });
-      await new Page("image-from-custom-filter.html").expectResource("image-from-custom-filter.png").toBeBlocked();
     });
 
     it("doesn't remove disabled custom filters which conflict with subscription filters but they remain disabled", async function() {
@@ -568,69 +473,6 @@ describe("Subscriptions", function() {
         expect(dynamicRules.length).toBe(0);
       }
       await shouldBeLoaded("image-from-custom-filter.html", "image-from-custom-filter.png");
-    });
-
-    it("stops blocking resources after removing a URL filter", async function() {
-      let updatedReply = [
-        "[Adblock Plus]",
-        "/image-from-cv-subscription.png^$image"
-      ].join("\n");
-      await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
-      await addSubscription();
-      await new Page("image-from-cv-subscription.html").expectResource("image-from-cv-subscription.png").toBeBlocked();
-
-      // update reply on the server to remove filter
-      updatedReply = "[Adblock Plus]";
-      await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
-      await EWE.subscriptions.sync();
-      await shouldBeLoaded("image-from-cv-subscription.html", "image-from-cv-subscription.png");
-    });
-
-    it("blocks content after the filter list update", async function() {
-      if (isEdge() && isIncognito() && !isMV3()) {
-        setMinTimeout(this, 15000);
-      }
-      let updatedReply = [
-        "[Adblock Plus]",
-        "/image-for-filter-that-should-be-untouched.png^$image"
-      ].join("\n");
-      await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
-
-      if (DNR) {
-        let dynamicRules = await DNR.getDynamicRules();
-        expect(dynamicRules.length).toEqual(0);
-        let enabledRulesets = await DNR.getEnabledRulesets();
-        expect(enabledRulesets.length).toBe(0);
-      }
-      // make sure we have no subscription.
-      let downloadables = await EWE.subscriptions.getDownloadable();
-      expect(downloadables.length).toBe(0);
-
-      await shouldBeLoaded("image-from-cv-subscription.html", "image-from-cv-subscription.png");
-      await addSubscription();
-
-      // make sure we only have one subscription.
-      downloadables = await EWE.subscriptions.getDownloadable();
-      expect(downloadables.length).toBe(1);
-
-      if (DNR) {
-        let enabledRulesets = await DNR.getEnabledRulesets();
-        // we shouldn't have a ruleset enabled for this list.
-        expect(enabledRulesets.length).toBe(0);
-      }
-      await shouldBeLoaded("image-from-cv-subscription.html", "image-from-cv-subscription.png");
-      await new Page("image-from-cv-subscription.html").expectResource("image-for-filter-that-should-be-untouched.png").toBeBlocked();
-
-      // update reply on the server
-      let updatedReplyForRemoval = [
-        "[Adblock Plus]",
-        "/image-from-cv-subscription.png^$image"
-      ].join("\n");
-      await setEndpointResponse("/anti-cv-subscription.txt", updatedReplyForRemoval);
-      await synchronizeAndCheck("/image-from-cv-subscription.png^$image");
-
-      await new Page("image-from-cv-subscription.html").expectResource("image-from-cv-subscription.png").toBeBlocked();
-      await shouldBeLoaded("image-from-cv-subscription.html", "image-for-filter-that-should-be-untouched.png");
     });
   });
 
