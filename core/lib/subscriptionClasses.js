@@ -32,6 +32,15 @@ const {profiler} = require("./profiler");
 let _recommendationsByURL = null;
 
 /**
+ * @ignore
+ * Clean the maps cache
+ */
+exports._clean = function() {
+  _recommendationsByURL = null;
+  _urlByMv2URL = null;
+};
+
+/**
  * Subscription recommendation by URL.
  *
  * If `Subscription.dnr` is falsey then the mv2URL is the actual URL

@@ -123,7 +123,7 @@ export function startAdminServer(host) {
     },
     {
       url: "/anti-cv-subscription.txt",
-      data: "[Adblock Plus]"
+      data: "[Adblock Plus]\nlocalhost###migrate-diff-elem-item"
     },
     {
       url: "/updatable_subscription/diff.json",

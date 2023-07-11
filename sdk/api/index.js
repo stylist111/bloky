@@ -177,9 +177,13 @@ async function startSubmodules() {
 }
 
 async function checkAndMigrateSubscriptions() {
-  if (Prefs.migration_state === MIGRATED_TO_MV2) {
+  if (Prefs.migration_state !== MIGRATED_TO_MV3) {
     await migrateSubscriptions();
-    await migrateCustomFilters();
+
+    if (Prefs.migration_state === MIGRATED_TO_MV2) {
+      await migrateCustomFilters();
+    }
+
     Prefs.migration_state = MIGRATED_TO_MV3;
   }
 }

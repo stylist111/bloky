@@ -18,7 +18,8 @@
 import expect from "expect";
 import browser from "webextension-polyfill";
 
-import {isMV3, TEST_ANTI_CV_SUBSCRIPTION, wait, TEST_MV3_SUBSCRIPTION}
+import {isMV3, TEST_ANTI_CV_SUBSCRIPTION, wait, TEST_MV3_SUBSCRIPTION,
+        expectElemHideHidden}
   from "./utils.js";
 import {EWE, runInBackgroundPage} from "./messaging.js";
 import {updateExtensionFiles, suspendServiceWorker}
@@ -160,11 +161,13 @@ describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
     let savedValues = await browser.storage.local.get("meta");
     let downloadables = await EWE.subscriptions.getDownloadable();
     let sub = downloadables.find(it => it.url == EASYLIST_URL_MV3);
-    expect(sub.downloadCount >= savedValues.meta.downloadCount).toBeTruthy();
-    expect(sub.version).toEqual(savedValues.meta.version);
+    expect(sub.downloadCount >= savedValues.meta.downloadCount).toBe(true);
+    expect(sub.version == savedValues.meta.version).toBe(true);
   });
 
-  it("migrates the anti-cv subscription and it becomes diff updatable if diff URL is provided", async function() {
+  it("migrates the anti-cv subscription", async function() {
+    this.timeout(20000);
+
     if (start) {
       await EWE.subscriptions.add(TEST_ANTI_CV_SUBSCRIPTION.mv2_url); // MV2 URL
 
@@ -191,6 +194,15 @@ describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
         enabled: true
       })
     ]));
+
+    // has a new filter provided in a diff update
+    let subscriptions = await EWE.subscriptions.getForFilter(
+      "localhost###migrate-diff-elem-item");
+    expect(subscriptions.length).toEqual(1);
+
+    // Checks that the content filter actually works
+    const elemId = "migrate-diff-elem-item";
+    await expectElemHideHidden({elemId, timeout: 10000});
   });
 
   it("migrates custom filters", async function() {

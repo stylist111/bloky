@@ -19,8 +19,9 @@ import browser from "./browser.js";
 
 import {validate as validateSubscriptions} from "./subscriptions-validator.js";
 import {rulesetExistsInManifest} from "./subscriptions-utils.js";
-import {Subscription, DownloadableSubscription, RegularSubscription,
-        SpecialSubscription} from "adblockpluscore/lib/subscriptionClasses.js";
+import {Subscription, CountableSubscription, RegularSubscription,
+        DownloadableSubscription, SpecialSubscription}
+  from "adblockpluscore/lib/subscriptionClasses.js";
 import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {recommendations} from "adblockpluscore/lib/recommendations.js";
 import {Filter} from "adblockpluscore/lib/filterClasses.js";
@@ -182,9 +183,15 @@ export function getDefaultSubscriptions(uiLanguage) {
 function shouldAddDefaultSubscriptions() {
   let {filterStorage} = filterEngine;
   for (let subscription of filterStorage.subscriptions()) {
+    if (browser.declarativeNetRequest) {
+      // `DiffUpdatableSubscription` is a subclass of `CountableSubscription`
+      if (subscription instanceof CountableSubscription) {
+        return false;
+      }
+    }
+
     if (subscription instanceof DownloadableSubscription &&
-        subscription.url != ACCEPTABLE_ADS_MV2_URL &&
-        subscription.type != "circumvention") {
+      subscription.url != ACCEPTABLE_ADS_MV2_URL) {
       return false;
     }
 
@@ -370,8 +377,7 @@ function migrationNeeded() {
   }
 
   for (let subscription of filterEngine.filterStorage.subscriptions()) {
-    // anti-cv subscriptions stay `DownloadableSubscriptions` even in MV3
-    if (subscription.downloadable && subscription.type != "circumvention") {
+    if (subscription.downloadable) {
       return true;
     }
   }
@@ -392,6 +398,12 @@ export async function migrate() {
 
   let downloadables = await getDownloadable();
   for (let downloadable of downloadables) {
+    // some subscriptions are already `CountableSubscriptions`,
+    // that were migrated from MV2 to MV3 without diff updated.
+    if (!downloadable.downloadable) {
+      continue;
+    }
+
     await remove(downloadable.url); // MV2 URL
     let subscriptionInfo = addonBundledSubscriptions.find(
       it => it.mv2_url == downloadable.url);

@@ -65,6 +65,16 @@ let subAcceptableAds = {
   mv2_url: "https://easylist-downloads.adblockplus.org/exceptionrules.txt"
 };
 
+let subDiffUpdatable = {
+  id: "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7A",
+  type: "ads",
+  homepage: "http://localhost:3003/subscription.txt",
+  title: "Test MV3 Custom Subscription 3",
+  url: "http://localhost:3003/subscription2.txt",
+  mv2_url: "http://localhost:3003/subscription2.txt",
+  diff_url: "http://localhost:3003/anti-cv-subscription_diff2.json"
+};
+
 describe("Initialization", function() {
   isFuzzingServiceWorker ?
     setMinTimeout(this, 30000) : setMinTimeout(this, 10000);
@@ -210,6 +220,36 @@ describe("Initialization", function() {
     finally {
       await EWE.testing._setRecommendations(recommendations);
     }
+  });
+
+  async function skipsAddingDefaultSubscriptions(subUrl, hasDiffUrl) {
+    await EWE.testing._setSubscriptions([
+      subEasylist,
+      subAcceptableAds,
+      subCircumvention,
+      subDiffUpdatable
+    ]);
+    await EWE.subscriptions.add(subUrl);
+
+    await EWE.subscriptions.addDefaults("en");
+
+    let activeSubs = await EWE.subscriptions.getDownloadable();
+    expect(activeSubs).toEqual([
+      expect.objectContaining({
+        url: subUrl
+      })
+    ]);
+    expect("diffURL" in activeSubs[0]).toBe(hasDiffUrl);
+  }
+
+  it("skips adding default subscriptions if there is a CountableSubscription [mv3-only] [fuzz-skip]", async function() {
+    await skipsAddingDefaultSubscriptions(
+      subEasylist.url, false); // CountableSubscription
+  });
+
+  it("skips adding default subscriptions if there is a DiffUpdatableSubscription [mv3-only] [fuzz-skip]", async function() {
+    await skipsAddingDefaultSubscriptions(
+      subDiffUpdatable.url, true); // DiffUpdatableSubscription
   });
 
   it("adds only one preferred AA subscription when multiple provided [mv3-only] [fuzz-skip]", async function() {

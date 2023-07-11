@@ -24,3 +24,5 @@ export let Subscription = {
 export class RegularSubscription {}
 export class DownloadableSubscription {}
 export class SpecialSubscription {}
+export class CountableSubscription {}
+export class DiffUpdatableSubscription {}

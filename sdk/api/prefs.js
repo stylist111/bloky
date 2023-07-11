@@ -19,8 +19,18 @@ import browser from "webextension-polyfill";
 import {EventEmitter} from "adblockpluscore/lib/events.js";
 import {getDatabase} from "./io-idb.js";
 
+// MV2
+// (all the subscriptions are downloadable)
 export const MIGRATED_TO_MV2 = 0;
-export const MIGRATED_TO_MV3 = 1;
+
+// MV3 without diff updates
+// (anti-cv subscription is the only `DownloadableSubscription`)
+export const MIGRATED_TO_MV3_WITHOUT_DIFF = 1;
+
+// MV3 with diff updates
+// (all subscriptions are either
+// `CountableSubscriptions` or `DiffUpdatableSubscriptions`)
+export const MIGRATED_TO_MV3 = 2;
 
 export const defaults = Object.create({
   analytics: {trustedHosts: ["adblockplus.org",

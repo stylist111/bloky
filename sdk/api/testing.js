@@ -15,7 +15,8 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Subscription} from "adblockpluscore/lib/subscriptionClasses.js";
+import {Subscription, _clean as _cleanSubscriptionClassesCache}
+  from "adblockpluscore/lib/subscriptionClasses.js";
 import {setRecommendations, recommendations, Recommendation}
   from "adblockpluscore/lib/recommendations.js";
 import {notifications} from "adblockpluscore/lib/notifications.js";
@@ -95,6 +96,7 @@ export default {
     setAddonInfo({bundledSubscriptions: subscriptions,
                   bundledSubscriptionsPath: addonBundledSubscriptionsPath});
     setRecommendations(subscriptions);
+    _cleanSubscriptionClassesCache();
   },
 
   /**

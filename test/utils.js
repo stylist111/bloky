@@ -71,7 +71,7 @@ export const TEST_ANTI_CV_SUBSCRIPTION = {
   homepage: "https://github.com/abp-filters/abp-filters-anti-cv",
   url: "http://localhost:3003/anti-cv-subscription.txt",
   mv2_url: "http://localhost:3003/mv2_anti-cv-subscription.txt",
-  diff_url: "http://localhost:3003/mv2_anti-cv-subscription_diff.txt"
+  diff_url: "http://localhost:3003/anti-cv-subscription_diff.json"
 };
 
 function handleConnection(details, tabId, removeListeners, reject) {
