@@ -679,29 +679,16 @@ describe("Reporting", function() {
     });
 
     it("logs blocking $csp filter with domain option", async function() {
-      // Skipped due to https://jira.eyeo.com/browse/EE-123
-      this.skip();
-      let url = "https://abptestpages.org/filters/csp_specific";
-      let cspFilter = "$csp=script-src https://abptestpages.org/lib/utils.js,domain=abptestpages.org";
-
-      await EWE.filters.add(cspFilter);
-
-      let eventName = "reporting.onBlockableItem.allEventOptions";
-      clearTestEvents(eventName);
-      let tabId = await new Page(url, true).loaded;
-
-      let events = await getReceivedEventsFromListener(
-        eventName, tabId, true, true);
-
-      expect(events).toEqual(expect.arrayContaining([{
-        filter: expectedBlockingFilter(cspFilter),
-        matchInfo: {
-          docDomain: "abptestpages.org",
-          method: "csp",
-          specificOnly: false
-        },
-        request: expectedRequestUrl("https://abptestpages.org/filters/csp_specific")
-      }]));
+      let cspFilter = `$csp=img-src 'none',domain=${TEST_PAGES_DOMAIN}`;
+      await checkLogging(
+        [cspFilter],
+        "allEventOptions",
+        "csp.html",
+        [{
+          filter: expectedBlockingFilter(cspFilter),
+          matchInfo: cspMatchInfo,
+          request: expectedRequestRelativeUrl("csp.html")
+        }]);
     });
 
     it("logs multiple blocking $csp filters if multiple apply", async function() {
