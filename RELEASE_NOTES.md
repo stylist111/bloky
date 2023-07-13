@@ -1,4 +1,4 @@
-0.11.0 -
+0.11.0 - 2023/07/13
 ===================
 
 This release also includes fixes from 0.10.1
