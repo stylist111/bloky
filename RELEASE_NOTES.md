@@ -1,3 +1,181 @@
+0.11.0 -
+===================
+
+This release also includes fixes from 0.10.1
+
+# General
+
+**This version introduces DiffUpdates. More details on the exact
+changes and integration notes can be found below. If you start
+integrating this version, please get in touch with the DATA team
+immediately to sync on potential implications on the user counting.
+Reach out to [Maria Henkhaus](mailto:m.henkhaus@eyeo.com).**
+
+- Added mechanism to update the static rulesets in Manifest V3 when a
+  diff update is received. That change provides users with the ability
+  to have DNR rules added and removed in between extension releases,
+  as long as the limits imposed by the browser are not surpassed.
+  (#503, #505, #528, EE-26, EE-84, EE-86, EE-88, EE-89, EE-92)
+- The minimum tested version of Chrome for Manifest V3 is 111. (#563)
+- The following APIs now accept a single string as a parameter in
+  addition to an array: `filters.add()`, `filters.enable()`,
+  `filters.disable()`, and `filters.remove()`. (#188)
+- A tolerance for clock skewing has been added to one click
+  allowlisting signature verification. The signature includes a
+  timestamp of when the signature was generated, and the signature is
+  invalid if the timestamp is in the future or an hour in the
+  past. Previously, we assumed that clocks were perfectly synchronised
+  between the signature generating server and the signature verifying
+  client. Now we allow the clocks to be out of sync by up to 5
+  minutes. (#523)
+- `filters.onChanged` is also called when filter metadata is changed.
+  (#524)
+- `filters.getMetadata` will now return `null` rather than throwing an
+  error if the filter has no metadata or if the filter does not
+  exist. (EE-17)
+- `filters.add()` will now enable the added rules if they were
+  disabled previously. (EE-13)
+- Content filters are now updated via the `history.pushState()` event, when
+  single page apps navigate using the browser's history API (EE-14, EE-90)
+
+
+# Fixes
+
+- Fix performance issues when adding 5000 dynamic rules. (#538, #553)
+- Amend maximum number of filters allowed to be added from 4999 to
+  5000 (#539)
+- Requirement to have the `declarativeNetRequestFeedback` permission
+  has been removed as it was not used. (#440)
+- Unexpected response from `filters.isResourceAllowlisted()` during
+  the tab loading in some cases (EE-16)
+- CSP filters ignored if domain isn't provided in the filter text (EE-25)
+
+
+# Documentation
+- Clarify the minimum tested versions (#460)
+- Permissions we need, and why we need them, have been added to our
+  documentation. (#440)
+- Documentation aimed at understanding the diffing process (EE-84)
+
+# Internal
+
+- Update issue templates for the acceptance checklist (#534).
+- Added a top level `updatepsl` npm script to call the one from
+  core. (!635)
+- Added `markdownlint` npm script to lint the documentation. (!683)
+- Changed code style rules to require curly braces. (EE-119)
+- Refactor start-server, splitting the logic for each server and
+  request logging into separate modules. (#543)
+- Webpack extension reload mechanism added for local development (#560)
+- Core: Added API `Subscription.addFilterText` and
+  `Subscription.findFilterTextIndex` for when you only have a filter
+  text. (EE-26)
+- Core: Added filter notification `subscription.dnrUpdate`. (EE-26)
+
+# Tests
+
+- Wait for the subscription to download before doing any assertions (#557).
+- Add the test to allow popup if opener is allowlisted (#475)
+- Wait until saving is completed before suspending service worker (#364).
+- Remove "manual jobs" from branch pipelines.
+- Reflect CI pipelines setup & change how we check if subscription is
+  synchronized (EE-101)
+- Increase tolerance for waiting for tab to be blocked (EE-93)
+- Fix failing test, not downloading subscription due to
+  header invalid data. (#561)
+- Fix skip-build flag not working properly on "npm measure flakiness"
+  and move test check to not run on branch.
+- Run tests in isolation on "check tests" pipeline.
+- Added compliance testing against testpages. (#558)
+- Add default false value for `RUN_ONLY_FLAKY` in Dockerfile.
+- Ensure everything is saved when adding default subscription. (#536)
+- Extract API subscriptions tests into a separate file. (#259)
+- Increase timeout for Allowlisting test & increase webdriver script
+  timeout. (#532)
+- Run all tests on nightly run.
+- Optimize runs by using build from runner, fix caching
+  browsers. (!688, !693)
+- Set timeout for `resource.expectToBeBlocked()` and remove
+  `shouldBeBlocked()`. (#544)
+- Document tests properly. (#417)
+- Some no longer used testing code removed (!679).
+- Stabilise `reload` tests by adding sleep & increasing one of the
+  timeouts. (#544)
+- Optimize the CI pipeline and measure test flakiness on nightly
+  pipeline runs. (#436)
+- Run chromium tests using the new headless mode. (#535)
+- Remove unneeded incognito parameter in `startRun()` method in runner.
+- Display the proper version for Edge testing on Windows.
+- Use proper monotonic clock for the testing measurements.
+- Increase the timeout for "logs element hiding filter dynamically"
+  test. (#480)
+- Increase timeout for flaky "subscribe to a link". (#537)
+- Increase timeout for flaky "updates the subscription filter text when
+  updating the extension". (EE-71)
+- Improve reliability of the filter list updates test. (#510)
+- The core browser test now also uses webpack 5. (#490)
+- Tests which test events in the background page / service worker now
+  send those events to the test extension page immediately. (#414)
+- Fix mocking of network requests in the MV3 filter list fetching
+  script unit tests. (#492)
+- Improve reliability of several "reload" tests. (#512)
+- Added a mechanism for fuzz tests to wait for the service worker to
+  fully initialize before running assertions. (#513)
+- Improve reliability of test "createKeypair script". (#533)
+- Remove a test retry forgotten from 0.9.0. (#401)
+- Update log tests to account for some logs which are correct but only
+  emitted in certain edge cases. (#522, #530)
+- Improve console logging test mechanism test to continue working when
+  other debugging logging is used. (#531)
+- Tests now wait for filters to save after adding them before
+  proceeding. (#517)
+- Wait longer for service worker to start up again in test. (#532)
+- Unskip the "ignores messages without a type property" test. (#191)
+- Added a mechanism for dynamically mocking url endpoints in our test
+  server. (#427) Adapted tests to use the new mechanism.
+- Test "gets user subscriptions for a filter" is now run on
+  MV3. (#339)
+- Skip the test "fixes the IO/Prefs prefixes" in non-incognito
+  mode. (#551)
+- Fuzz tests now run a representative subset of the functional tests,
+  rather than all of them. (#550)
+- Fuzz tests for onBlockableItem now wait for the service worker to
+  have started up before checking for the expected events. (#542,
+  #546)
+- Add test to check prioritising allowing filter rules over
+  subscription rules (#293)
+- New NPM script "build-then-test" created to build project and run
+  tests in a single command (#560)
+- "npm run test" and "npm run build" automatically run test server if
+  not already running (#560)
+- Fix a test pointing at an external resource (testpages) instead of
+  using its own test data (EE-123)
+- Update the domain of the testpages from the old 
+  testpages.adblockplus.org to the new abptestpages.org (EE-126)
+- Add the test to make sure adblockpluscore subscription list works (EE-41)
+- The "Diagnostics" tests sometimes fail in Edge, we added 3 retries
+  to keep them green while we are still working to solve the underlying
+  cause of the issue (#559, EE-21)
+- Unskip the test "remove custom filter that is already on subscription
+  as a custom filter only" for mv2. The test is also updated to ensure
+  that assertions are accurate. (EE-79)
+- Reduced the amount of memory used by the Core unit test suite. (EE-24)
+
+# Updating your code
+
+- No change is necessary but `filters.add()`, `filters.enable()`,
+  `filters.disable()`, and `filters.remove()` can now accept a single
+  string as a parameters if you only need to apply it to a single
+  filter. (#188)
+- The static DNR ruleset must be regenerated with `npm run
+  subs-convert`. Make sure your build process also copies the
+  corresponding `.map` files. (#528)
+- The scripts were updated to read the `DiffUrl` property in the
+  subscriptions and add a `diff_url` property to the generated
+  files. Make sure that the generated subscription objects have
+  this new `diff_url` property. (#503)
+- For MV3, Chromium 111 is the new minimum supported version. (#563)
+
 0.10.1 - 2023/02/24
 ===================
 
@@ -39,7 +217,7 @@
   `adblockpluscore`.
 - For web bundle support in MV3, the static rulesets must be
   re-generated. In MV2, an unreleased (at the time of writing) version of
-  Chrome is necessary. We're confident that this release will work once 
+  Chrome is necessary. We're confident that this release will work once
   https://chromium-review.googlesource.com/c/chromium/src/+/4199620  is
   merged.
 
@@ -461,7 +639,6 @@ Chrome 102 is now the minimum supported version for Manifest V3.
 - Add ruleset conversion testing. (#277)
 
 # Tests
-
 - Fix tests for filters with metadata. (Follow-up on #213)
 - Test pages test now run on beta browsers too.
 - Make sure mv3 test on Edge are run on mv3 (#264)
@@ -486,7 +663,7 @@ Chrome 102 is now the minimum supported version for Manifest V3.
   - Increase tiemout on `onBlockableItem` and higlighting tests. (#273, #274)
   - Fix Chromium crash with subscribe link tests. (#279)
   - Fix one-click allowlisting test flakyness. (#263, #271)
-  - Fix sitekey flakyness. (#255, #275)
+  - Fix sitekey flakiness. (#255, #275)
   - Fix test when run around 0:00 UTC (#312)
 
 # Update your code
