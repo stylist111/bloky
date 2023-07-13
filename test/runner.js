@@ -63,13 +63,16 @@ function parseArguments() {
       array: true,
       choices: ["functional", "reload", "update", "mv2-mv3-migrate", "fuzz"]
     });
+    parser.option("browserBinary", {
+      description: "Custom Browser Binary Path."
+    });
     parser.option("grep"), {
       array: true
     };
 
     let {argv} = parser;
     let params;
-    for (let param of ["timeout", "grep", "incognito", "forceHeadful"]) {
+    for (let param of ["timeout", "grep", "incognito", "forceHeadful", "browserBinary"]) {
       let value = argv[param];
       if (typeof value != "undefined") {
         (params || (params = {}))[param] = value;
@@ -101,7 +104,6 @@ function parseArguments() {
         testKinds.push("mv2-mv3-migrate");
       }
     }
-
     return {
       manifest: argv.manifest,
       browser: argv.browser,
@@ -526,9 +528,9 @@ export async function run() {
 }
 
 async function runTests() {
-  let {manifest, browser, version, params, testKinds} = parseArguments();
+  let {manifest, browser, version, params, testKinds} =
+      parseArguments();
   let isMV3 = manifestIsMV3(manifest);
-
   // copy a targeted test web extension to a temporary directory `test-current`
   originalExtensionPath = path.resolve(process.cwd(), "dist", `test-m${manifest}`);
   if (testKinds.includes("mv2-mv3-migrate")) {
@@ -543,6 +545,12 @@ async function runTests() {
   let incognito =
     typeof params != "undefined" && typeof params.incognito != "undefined";
   let forceHeadful = typeof params != "undefined" && typeof params.forceHeadful != "undefined";
+
+  let customBrowserBinary = null;
+  if (typeof params != "undefined" && typeof params.browserBinary != "undefined") {
+    customBrowserBinary = params.browserBinary;
+  }
+
   let extraArgs = [];
   // auto-open-devtools-for-tabs is required to make MV3 service
   // workers start up after being suspended in tests.
@@ -556,21 +564,24 @@ async function runTests() {
 
   let versionNumber = version;
   let majorVersion;
-  // On Windows, Edge is assumed to be already installed
-  if (browser != "edge" || process.platform != "win32") {
-    ({versionNumber} = await BROWSERS[browser].installBrowser(version));
-    console.log(`Installed ${browser} ${versionNumber} ...`);
 
-    majorVersion = parseInt(versionNumber.split(".")[0], 10);
+  if (!customBrowserBinary){
+    // On Windows, Edge is assumed to be already installed
+    if (browser != "edge" || process.platform != "win32") {
+      ({versionNumber} =
+            await BROWSERS[browser].installBrowser(version));
+      console.log(`Installed ${browser} ${versionNumber} ...`);
+      majorVersion = parseInt(versionNumber.split(".")[0], 10);
+    }
   }
 
   // New headless mode in Chromium was introduced in Chrome 111. The old
   // headless mode does not support loading extensions.
   let headless = (browser == "firefox" ||
     browser == "chromium" && majorVersion >= 111) && !incognito && !forceHeadful;
-
   let driver = await BROWSERS[browser].getDriver(
-    versionNumber, {headless, extensionPaths, incognito, extraArgs});
+    versionNumber,
+    {headless, extensionPaths, incognito, extraArgs, customBrowserBinary});
 
   let timeout = (params && typeof params.timeout != "undefined" ?
     params.timeout : 200000);

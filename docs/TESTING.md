@@ -186,6 +186,9 @@ tests. For example, you can target only the service worker fuzzing tests by
 running `--testKinds fuzz`, or a combination of the functional, reload and
 update tests by running tests with
 `--testKinds functional reload update mv2-mv3-migrate`.
+- The `browserBinary` option allow to pass installed browser binary
+to use custom versions. For example:
+`npm run test v3 chromium -- --browserBinary="/Users/user/Documents/repo/webext-sdk/browser-snapshots/chromium/chromium-darwin-x64-1097561/chrome-mac/Chromium.app/Contents/MacOS/Chromium"`
 
 #### Web bundle regeneration
 
