@@ -37,10 +37,6 @@
  *   "diff".
  */
 export function calculateDiff(base, update) {
-  if (base.type != "diff" || update.type != "diff") {
-    throw new Error("Invalid FilterDiffs type");
-  }
-
   let updateAdded = new Set(update.added);
   let updateRemoved = new Set(update.removed);
   let baseAdded = new Set(base.added);

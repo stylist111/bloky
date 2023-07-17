@@ -220,7 +220,7 @@ class Synchronizer {
       const added = responseObject.filters.add;
       const removed = responseObject.filters.remove;
 
-      filterNotifier.emit("subscription.diffReceived", subscription, {type: "diff", added, removed});
+      filterNotifier.emit("subscription.diffReceived", subscription, {added, removed});
       return;
     }
 

@@ -133,8 +133,6 @@ export async function dnrSubscriptionUpdate(subscription, updates) {
     return;
   }
 
-  let diff = (updates.type == "diff");
-
   // For now we only want to handle subscriptions that are in the
   // recommendations.
   if (!subscription.type) {
@@ -188,7 +186,7 @@ export async function dnrSubscriptionUpdate(subscription, updates) {
         await dnrSubscriptionUpdate(subscription, lastUpdate);
       }
       else {
-        await dnrSubscriptionUpdate(subscription, {type: "diff", added: [], removed: []});
+        await dnrSubscriptionUpdate(subscription, {added: [], removed: []});
       }
     };
   }
@@ -270,9 +268,7 @@ export async function dnrSubscriptionUpdate(subscription, updates) {
     });
   }
 
-  if (diff) {
-    await applyFilterTextUpdate(subscription, updates);
-  }
+  await applyFilterTextUpdate(subscription, updates);
 
   rulesetUpdates.set(subscription.id, updates);
   storeRulesetUpdates();

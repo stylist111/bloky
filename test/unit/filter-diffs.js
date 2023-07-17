@@ -21,7 +21,6 @@ import {calculateDiff} from "../../sdk/api/filter-diffs.js";
 describe("DNR diff updates", function() {
   it("properly generate a diff between base and update", function() {
     const BASE = {
-      type: "diff",
       added: [
         "A", "B", "C"
       ],
@@ -30,7 +29,6 @@ describe("DNR diff updates", function() {
       ]
     };
     const UPDATE = {
-      type: "diff",
       added: [
         "A", "B", "D"
       ],
@@ -42,26 +40,5 @@ describe("DNR diff updates", function() {
     let diff = calculateDiff(BASE, UPDATE);
     expect(diff.added).toEqual(expect.arrayContaining(["D", "U"]));
     expect(diff.removed).toEqual(expect.arrayContaining(["C", "V"]));
-  });
-
-  it("throw if the diffs are the wrong type", function() {
-    const BASE = {
-      added: [
-        "A", "B", "C"
-      ],
-      removed: [
-        "T", "U"
-      ]
-    };
-    const UPDATE = {
-      added: [
-        "A", "B", "D"
-      ],
-      removed: [
-        "T", "V"
-      ]
-    };
-
-    expect(() => calculateDiff(BASE, UPDATE)).toThrow("Invalid FilterDiffs type");
   });
 });

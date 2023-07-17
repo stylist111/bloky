@@ -34,7 +34,6 @@ const DYNAMIC_FILTER3 = "||ma50byuiyppz.invalid^";
 const STATIC_FILTER_TO_DISABLE = "||kiihsbhe.invalid^";
 
 const EMPTY_UPDATE = {
-  type: "diff",
   added: [
   ],
   removed: [
@@ -42,7 +41,6 @@ const EMPTY_UPDATE = {
 };
 
 const UPDATES = {
-  type: "diff",
   added: [
     "||qkq0b8rl0qa6.invalid^",
     "||aktc734q.invalid^",
@@ -56,7 +54,6 @@ const UPDATES = {
 };
 
 const UPDATES2 = {
-  type: "diff",
   added: [
     ...UPDATES.added,
     DYNAMIC_FILTER
@@ -68,7 +65,6 @@ const UPDATES2 = {
 };
 
 const UPDATES3 = {
-  type: "diff",
   added: [
     ...UPDATES2.added
   ],
@@ -78,7 +74,6 @@ const UPDATES3 = {
 };
 
 const UPDATES4 = {
-  type: "diff",
   added: [
     ...UPDATES3.added,
     "1u2pp.invalid##.ads",
@@ -90,7 +85,6 @@ const UPDATES4 = {
 };
 
 const UPDATES5 = {
-  type: "diff",
   added: [
     ...UPDATES4.added,
     STATIC_FILTER_TO_DISABLE
@@ -421,7 +415,6 @@ describe("Test subscriptions update", function() {
 
   // Specific test cases for rollback.
   const UPDATES2A = {
-    type: "diff",
     added: [
       ...UPDATES.added,
       DYNAMIC_FILTER3
@@ -432,7 +425,6 @@ describe("Test subscriptions update", function() {
   };
 
   const UPDATES2B = {
-    type: "diff",
     added: [
       ...UPDATES.added
     ],
