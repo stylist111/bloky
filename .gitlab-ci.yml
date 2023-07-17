@@ -44,8 +44,6 @@ variables:
     # Run full set when FULL is true
     - if: $FULL == 'true'
       allow_failure: true
-    - if: $CI_COMMIT_BRANCH == "master"
-      allow_failure: true
 
 .docker-image:
   image: docker:23.0.1
@@ -435,6 +433,8 @@ fuzz:v3:edge:linux:
   variables:
     BROWSER: edge $LATEST_EDGE_VERSION
     TEST_PARAMS: $BROWSER
+  rules:
+    - !reference [.all-browsers-test-run, rules]
 
 .compliance:
   stage: compliance
