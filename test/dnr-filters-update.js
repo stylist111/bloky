@@ -20,7 +20,8 @@ import expect from "expect";
 import {DnrMapper} from "adblockpluscore/lib/dnr/mapper.js";
 import {EWE, expectTestEvents} from "./messaging.js";
 import {hasUpdateStaticRules, Page, setEndpointResponse, shouldBeLoaded,
-        setMinTimeout, wait, expectElemHideVisible, expectElemHideHidden}
+        setMinTimeout, wait, expectElemHideVisible, expectElemHideHidden,
+        syncSubHasLastFilter, syncSubHasNoLastFilter}
   from "./utils.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
@@ -661,24 +662,15 @@ describe("Test subscriptions update", function() {
       await expectElemHideVisible({elemId});
 
       // add filter
+      const filter = "###diff-elem-item";
       await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
         filters: {
-          add: ["###diff-elem-item"],
+          add: [filter],
           remove: []
         }
       }));
 
-      await EWE.subscriptions.sync(testDiffSubscriptionUrl);
-
-      await wait(async() => {
-        let filters =
-          await EWE.subscriptions.getFilters(testDiffSubscriptionUrl);
-        const lastFilter = filters.slice(-1)[0];
-
-        if (lastFilter.text === "###diff-elem-item") {
-          return true;
-        }
-      }, 10000, "Subscription was not synchronised properly (filter added).");
+      await syncSubHasLastFilter(testDiffSubscriptionUrl, filter);
 
       await expectElemHideHidden({elemId, timeout: 10000});
 
@@ -686,21 +678,11 @@ describe("Test subscriptions update", function() {
       await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
         filters: {
           add: [],
-          remove: ["###diff-elem-item"]
+          remove: [filter]
         }
       }));
 
-      await EWE.subscriptions.sync(testDiffSubscriptionUrl);
-
-      await wait(async() => {
-        let filters =
-          await EWE.subscriptions.getFilters(testDiffSubscriptionUrl);
-        const lastFilter = filters.slice(-1)[0];
-
-        if (lastFilter.text !== "###diff-elem-item") {
-          return true;
-        }
-      }, 10000, "Subscription was not synchronised properly (filter removed).");
+      await syncSubHasNoLastFilter(testDiffSubscriptionUrl, filter);
 
       await expectElemHideVisible({elemId});
     });

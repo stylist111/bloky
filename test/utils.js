@@ -715,3 +715,26 @@ export async function waitForSubscriptionsToDownload() {
     );
   }, 1000, "Subscriptions were not downloaded.");
 }
+
+async function syncSubscription(
+  subscriptionUrl, lastFilterChecker, errorMessageDetails) {
+  await EWE.subscriptions.sync(subscriptionUrl);
+  await wait(async() => {
+    let filters =
+      await EWE.subscriptions.getFilters(subscriptionUrl);
+    const lastFilter = filters.slice(-1)[0];
+
+    if (lastFilterChecker(lastFilter.text)) {
+      return true;
+    }
+  }, 10000, `Subscription was not synchronised properly (${errorMessageDetails}).`);
+  await EWE.debugging.ensureEverythingHasSaved();
+}
+
+export async function syncSubHasLastFilter(url, filter) {
+  await syncSubscription(url, lastFilter => lastFilter === filter, "filter added");
+}
+
+export async function syncSubHasNoLastFilter(url, filter) {
+  await syncSubscription(url, lastFilter => lastFilter !== filter, "filter removed");
+}

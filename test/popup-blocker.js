@@ -18,7 +18,9 @@
 import expect from "expect";
 
 import {Page, Popup, setMinTimeout, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
-        CROSS_DOMAIN, SITEKEY} from "./utils.js";
+        CROSS_DOMAIN, SITEKEY, setEndpointResponse,
+        syncSubHasLastFilter, syncSubHasNoLastFilter, hasUpdateStaticRules}
+  from "./utils.js";
 import {EWE} from "./messaging.js";
 
 describe("Pop-up blocking", function() {
@@ -107,6 +109,133 @@ describe("Pop-up blocking", function() {
       // the filter to apply.
       let popup = new Popup("link", new Page("popup-opener.html?sitekey=1"));
       expect(await popup.blocked).toBe(false);
+    });
+  });
+
+  describe("Diff updates [mv3-only]", function() {
+    setMinTimeout(this, 30000);
+
+    const testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
+    const testDiffUrlEndpoint = "/updatable_subscription/diff.json";
+    const EMPTY_DIFF_RESPONSE = JSON.stringify({
+      filters: {
+        add: [],
+        remove: []
+      }
+    });
+
+    let opener;
+    beforeEach(async function() {
+      opener = new Page("popup-opener.html");
+      await opener.loaded;
+    });
+
+    it("blocks a script-based popup tab with filter from bundled subscription data", async function() {
+      // This is MV3 only and we need Chrome 111+ API for this.
+      if (!hasUpdateStaticRules()) {
+        this.skip();
+      }
+
+      await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_RESPONSE);
+      await EWE.subscriptions.add(testDiffSubscriptionUrl);
+
+      // Wait for the subscription to be synchronized after adding.
+      // (replace with checking of subscription state after EE-157 is done).
+      await new Promise(r => setTimeout(r, 3000));
+
+      // no sync needed, the filter is in bundled subscription data
+
+      expect(await new Popup("script-tab", opener).blocked).toBe(true);
+    });
+
+    it("stops blocking a script-based popup tab after filter from bundled subscription data is disabled", async function() {
+      // This is MV3 only and we need Chrome 111+ API for this.
+      if (!hasUpdateStaticRules()) {
+        this.skip();
+      }
+
+      await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_RESPONSE);
+      await EWE.subscriptions.add(testDiffSubscriptionUrl);
+
+      // Wait for the subscription to be synchronized after adding.
+      // (replace with checking of subscription state after EE-157 is done).
+      await new Promise(r => setTimeout(r, 3000));
+
+      expect(await new Popup("script-tab", opener).blocked).toBe(true);
+
+      const popupFilter = "http://localhost:3000/popup.html^$popup";
+      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+        filters: {
+          add: [],
+          remove: [popupFilter]
+        }
+      }));
+
+      await EWE.subscriptions.sync(testDiffSubscriptionUrl);
+      await new Promise(r => setTimeout(r, 3000)); // sub to be synchronized
+
+      expect(await new Popup("script-tab", opener).blocked).toBe(false);
+    });
+
+    it("blocks a script-based popup tab with filter from diff update", async function() {
+      // This is MV3 only and we need Chrome 111+ API for this.
+      if (!hasUpdateStaticRules()) {
+        this.skip();
+      }
+
+      await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_RESPONSE);
+      await EWE.subscriptions.add(testDiffSubscriptionUrl);
+
+      // Wait for the subscription to be synchronized after adding.
+      // (replace with checking of subscription state after EE-157 is done).
+      await new Promise(r => setTimeout(r, 3000));
+
+      expect(await new Popup("diff-script-tab", opener).blocked).toBe(false);
+
+      const popupFilter = `|${TEST_PAGES_URL}/diff-popup.html^$popup`;
+      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+        filters: {
+          add: [popupFilter],
+          remove: []
+        }
+      }));
+      await syncSubHasLastFilter(testDiffSubscriptionUrl, popupFilter);
+
+      expect(await new Popup("diff-script-tab", opener).blocked).toBe(true);
+    });
+
+    it("stops blocking a script-based popup tab with filter from diff update", async function() {
+      // This is MV3 only and we need Chrome 111+ API for this.
+      if (!hasUpdateStaticRules()) {
+        this.skip();
+      }
+
+      const popupFilter = `|${TEST_PAGES_URL}/diff-popup.html^$popup`;
+      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+        filters: {
+          add: [popupFilter],
+          remove: []
+        }
+      }));
+      await EWE.subscriptions.add(testDiffSubscriptionUrl);
+
+      // Wait for the subscription to be synchronized after adding.
+      // (replace with checking of subscription state after EE-157 is done).
+      await new Promise(r => setTimeout(r, 3000));
+
+      await syncSubHasLastFilter(testDiffSubscriptionUrl, popupFilter);
+
+      expect(await new Popup("diff-script-tab", opener).blocked).toBe(true);
+
+      // We don't need to have `popupFilter` in `remove:` filters
+      // as the diff is between the bundled state and current
+      // and there is no `popupFilter` in bundled state
+      // so empty diff response will make the current state equal to bundled.
+      await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_RESPONSE);
+
+      await syncSubHasNoLastFilter(testDiffSubscriptionUrl, popupFilter);
+
+      expect(await new Popup("diff-script-tab", opener).blocked).toBe(false);
     });
   });
 });

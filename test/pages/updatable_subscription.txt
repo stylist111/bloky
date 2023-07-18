@@ -9,6 +9,8 @@
 
 /image-from-subscription.png^$image
 ###elem-hide
+http://localhost:3000/popup.html^$popup
+! The ^ rule is needed for "blocks a script-based popup tab with rule from static ruleset" test
 ||1u2pp.invalid^
 ||g0marood01wq.invalid^
 ||74gset.invalid^
