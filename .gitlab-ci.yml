@@ -56,7 +56,7 @@ stages:
   - build
   - pages
   - unit
-  - testsquality
+  - test
   - functional
   - fuzz
   - compliance
@@ -282,7 +282,7 @@ func:v3:edge:linux:
 # run all tests regardless of FLAKY tags
 .functional-isolated:
   extends: .functional
-  stage: testsquality
+  stage: test
   script:
     - docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER="$BROWSER" --build-arg SKIP_BUILD=1 .
     - docker run --cpus=2 --memory=8g --shm-size=512m --memory-swap=16384m --shm-size=512m -e TEST_PARAMS="$TEST_PARAMS --grep $FUNCTIONAL_MODULE" functional;
@@ -508,4 +508,7 @@ int:scripts:
   dependencies:
     - build
 
-include: ".gitlab-pages.yml"
+include:
+  - ".gitlab-pages.yml"
+  - template: Jobs/SAST.gitlab-ci.yml
+  - template: Code-Quality.gitlab-ci.yml

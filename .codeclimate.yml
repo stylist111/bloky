@@ -1,0 +1,64 @@
+version: "2"
+checks:
+  argument-count:
+    enabled: true
+    config:
+      ## Default: 4
+      threshold: 8
+  complex-logic:
+    enabled: true
+    config:
+      threshold: 4
+  file-lines:
+    enabled: true
+    config:
+      ## Default: 250
+      threshold: 900
+  method-complexity:
+    enabled: true
+    config:
+      ## Default: 5
+      threshold: 45
+  method-count:
+    enabled: true
+    config:
+      threshold: 30
+  method-lines:
+    enabled: true
+    config:
+      ## Default: 25
+      threshold: 225
+  nested-control-flow:
+    enabled: true
+    config:
+      ## Default: 4
+      threshold: 20
+  identical-code:
+    ## Default: true
+    enabled: false
+  similar-code:
+    ## Default: true
+    enabled: false
+  return-statements:
+    enabled: true
+    config:
+      ## Default: 20
+      threshold: 20
+plugins:
+ rubocop:
+  enabled: true
+exclude_patterns:
+- "config/"
+- "db/"
+- "dist/"
+- "features/"
+- "**/node_modules/"
+- "script/"
+- "**/spec/"
+- "**/test/"
+- "**/tests/"
+- "**/vendor/"
+- "**/*.d.ts"
+- "core/data/publicSuffixList.js"
+- "core/lib/dnr/rules.js"
+- "core/lib/filters/index.js"

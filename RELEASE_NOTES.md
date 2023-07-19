@@ -1,3 +1,9 @@
+### Unreleased
+# Internal
+- Added security static analysis and codeclimate analysis for better code quality 
+- Exclude Fuzz Edge tests from Branch runs 
+- Upgrade get-browser-binary
+
 0.11.0 - 2023/07/13
 ===================
 
