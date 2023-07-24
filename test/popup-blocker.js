@@ -19,9 +19,11 @@ import expect from "expect";
 
 import {Page, Popup, setMinTimeout, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
         CROSS_DOMAIN, SITEKEY, setEndpointResponse,
-        syncSubHasLastFilter, syncSubHasNoLastFilter, hasUpdateStaticRules}
+        syncSubHasLastFilter, syncSubHasNoLastFilter, hasUpdateStaticRules,
+        isEdge}
   from "./utils.js";
 import {EWE} from "./messaging.js";
+import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 describe("Pop-up blocking", function() {
   setMinTimeout(this, 4000);
@@ -101,10 +103,17 @@ describe("Pop-up blocking", function() {
     });
 
     it("does not block a popup opened by a document [fuzz]", async function() {
+      setMinTimeout(this, 20000);
+
       await EWE.filters.add([
         `|${TEST_PAGES_URL}/popup.html^$popup`,
         `@@$document,sitekey=${SITEKEY}`
       ]);
+
+      if (isEdge() && isFuzzingServiceWorker()) {
+        await new Promise(r => setTimeout(r, 5000));
+      }
+
       // Note: opener must be opened AFTER adding document filter for
       // the filter to apply.
       let popup = new Popup("link", new Page("popup-opener.html?sitekey=1"));
