@@ -3,6 +3,7 @@
 - Added security static analysis and codeclimate analysis for better code quality 
 - Exclude Fuzz Edge tests from Branch runs 
 - Upgrade get-browser-binary
+- Add timeout to "does not block a popup opened by a document" tests if fuzz test runs in edge (EE-100)
 
 0.11.0 - 2023/07/13
 ===================
