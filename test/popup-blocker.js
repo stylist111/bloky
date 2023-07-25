@@ -234,6 +234,10 @@ describe("Pop-up blocking", function() {
 
       await syncSubHasLastFilter(testDiffSubscriptionUrl, popupFilter);
 
+      // Wait for the subscription to be synchronized after syncing.
+      // (replace with checking of subscription state after EE-157 is done).
+      await new Promise(r => setTimeout(r, 3000));
+
       expect(await new Popup("diff-script-tab", opener).blocked).toBe(true);
 
       // We don't need to have `popupFilter` in `remove:` filters

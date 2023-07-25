@@ -173,8 +173,14 @@ describe("Test subscriptions update", function() {
         remove: []
       }
     }));
+    await EWE.testing.clearIsDnrSubscriptionUpdating();
+
     // Ensure it is enabled.
     await EWE.subscriptions.add(UPDATABLE_SUBSCRIPTION_URL);
+
+    // Wait for subscription to be synchronized
+    // (replace with checking of subscription state after EE - 157 is done).
+    await new Promise(r => setTimeout(r, 3000));
   });
 
   // The purpose of this test is to make sure we change nothing
@@ -533,6 +539,7 @@ describe("Test subscriptions update", function() {
 
     beforeEach(async function() {
       await EWE.subscriptions.remove(UPDATABLE_SUBSCRIPTION_URL);
+      await EWE.testing.clearIsDnrSubscriptionUpdating();
     });
 
     it("creates a diff enabled subscription when adding one [mv3-only]", async function() {
@@ -551,7 +558,6 @@ describe("Test subscriptions update", function() {
       }));
 
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
-      await EWE.subscriptions.sync(testDiffSubscriptionUrl);
 
       let subs = await EWE.subscriptions.getDownloadable();
 
@@ -591,7 +597,10 @@ describe("Test subscriptions update", function() {
       }));
 
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
-      await EWE.subscriptions.sync(testDiffSubscriptionUrl);
+
+      // Wait for the subscription to be synchronized after adding.
+      // (replace with checking of subscription state after EE-157 is done).
+      await new Promise(r => setTimeout(r, 3000));
 
       await shouldBeLoaded(
         "image.html",
@@ -656,7 +665,6 @@ describe("Test subscriptions update", function() {
       }));
 
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
-      await EWE.subscriptions.sync(testDiffSubscriptionUrl);
 
       const elemId = "diff-elem-item";
       await expectElemHideVisible({elemId});
@@ -707,7 +715,6 @@ describe("Test subscriptions update", function() {
         "Image from subscription did not load correctly even before of adding the subscription");
 
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
-      await EWE.subscriptions.sync(testDiffSubscriptionUrl);
       await new Page("image-from-subscription.html").expectResource("image-from-subscription.png").toBeBlocked();
     });
 
@@ -725,7 +732,6 @@ describe("Test subscriptions update", function() {
         }
       }));
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
-      await EWE.subscriptions.sync(testDiffSubscriptionUrl);
       await new Page("image-from-subscription.html").expectResource("image-from-subscription.png").toBeBlocked();
 
       await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
@@ -759,7 +765,11 @@ describe("Test subscriptions update", function() {
       }));
 
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
-      await EWE.subscriptions.sync(testDiffSubscriptionUrl);
+
+      // Wait for the subscription to be synchronized after adding.
+      // (replace with checking of subscription state after EE-157 is done).
+      await new Promise(r => setTimeout(r, 3000));
+
       await EWE.filters.add([filter]);
       let userFilters = await EWE.filters.getUserFilters();
       expect(userFilters[0]).toMatchObject(
@@ -800,6 +810,33 @@ describe("Test subscriptions update", function() {
       await new Page("image-from-custom-filter.html")
         .expectResource("image-from-custom-filter.png")
         .toBeBlocked();
+    });
+
+    it("doesn't synchronize the same DiffUpdatable subscription concurrently", async function() {
+      setMinTimeout(this, 40000);
+
+      if (!hasUpdateStaticRules()) {
+        this.skip();
+      }
+      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
+      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
+      let filter = "someFilter";
+      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+        filters: {
+          add: [filter],
+          remove: []
+        }
+      }));
+      await EWE.subscriptions.add(testDiffSubscriptionUrl);
+
+      for (let i = 0; i < 1000; i++) {
+        await EWE.subscriptions.sync(testDiffSubscriptionUrl);
+      }
+
+      let filters = await EWE.subscriptions.getFilters(
+        testDiffSubscriptionUrl);
+      expect(filters.filter(eachFilter => eachFilter.text === filter).length)
+        .toEqual(1);
     });
   });
 });

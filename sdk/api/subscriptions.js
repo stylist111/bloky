@@ -34,7 +34,8 @@ import {filterEngine} from "./core.js";
 import {EventDispatcher} from "./types.js";
 import {convertFilter} from "./filters.js";
 import {disableDynamicFiltersForSubscriptionId,
-        restoreDynamicFiltersForSubscriptionId} from "./dnr-filters.js";
+        restoreDynamicFiltersForSubscriptionId,
+        isDnrSubscriptionUpdating} from "./dnr-filters.js";
 
 import {readFileContent} from "./io.js";
 import {Prefs} from "./prefs.js";
@@ -59,19 +60,15 @@ function convertSubscription(subscription) {
   };
 
   if (downloadable) {
-    let {synchronizer} = filterEngine.filterStorage;
-
     Object.assign(newSubscription, {
-      downloading: synchronizer.isExecuting(url),
+      downloading: isSynchronizing(url),
       version, downloadStatus, lastSuccess, lastDownload,
       softExpiration, expires, downloadCount
     });
   }
   else if (diffURL) {
-    let {synchronizer} = filterEngine.filterStorage;
-
     Object.assign(newSubscription, {
-      downloading: synchronizer.isExecuting(diffURL),
+      downloading: isSynchronizing(diffURL),
       originalUrl: url,
       version, downloadStatus, lastSuccess, lastDownload,
       softExpiration, expires, downloadCount
@@ -205,13 +202,15 @@ function shouldAddDefaultSubscriptions() {
 }
 
 async function enableRuleset(rulesetId) {
-  if (browser.declarativeNetRequest && rulesetExistsInManifest(rulesetId)) {
-    await browser.declarativeNetRequest.updateEnabledRulesets({
-      enableRulesetIds: [rulesetId]
-    });
-  }
+  if (browser.declarativeNetRequest) {
+    if (rulesetExistsInManifest(rulesetId)) {
+      await browser.declarativeNetRequest.updateEnabledRulesets({
+        enableRulesetIds: [rulesetId]
+      });
 
-  await restoreDynamicFiltersForSubscriptionId(rulesetId);
+      await restoreDynamicFiltersForSubscriptionId(rulesetId);
+    }
+  }
 }
 
 async function disableRuleset(rulesetId) {
@@ -296,6 +295,11 @@ async function getDownloadable() {
   return result;
 }
 
+function isSynchronizing(url) {
+  return filterEngine.filterStorage.synchronizer
+    .isExecuting(url) || isDnrSubscriptionUpdating(url);
+}
+
 async function add(url, properties = {}) {
   await initializer.start();
 
@@ -350,11 +354,12 @@ async function add(url, properties = {}) {
 
   filterStorage.addSubscription(subscription);
 
-  if (!subscription.lastDownload) {
+  await enableRuleset(subscription.id);
+
+  if (!subscription.lastDownload &&
+      !isSynchronizing(subscription.url)) {
     filterStorage.synchronizer.execute(subscription);
   }
-
-  await enableRuleset(subscription.id);
 }
 
 async function disable(url) {
@@ -671,7 +676,7 @@ export default {
   /**
    * Forces a new version of a subscription with the
    * given URL to be downloaded immediately.
-   * @param {string} [url] The URL of the subscription to be synchronized.
+   * @param {?string} [url] The URL of the subscription to be synchronized.
    *   If omitted, all subscriptions will be synchronized.
    * @return {Promise} Resolves when syncing has been successfully
    *   triggered. Syncing may not be completed when this promise
@@ -701,7 +706,9 @@ export default {
       }
     }
     for (let subscription of subscriptions) {
-      filterStorage.synchronizer.execute(subscription, true);
+      if (!isSynchronizing(subscription.url)) {
+        filterStorage.synchronizer.execute(subscription, true);
+      }
     }
   },
 

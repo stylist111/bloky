@@ -42,3 +42,4 @@ export let IO = {};
 
 export function disableDynamicFiltersForSubscriptionId() {}
 export function restoreDynamicFiltersForSubscriptionId() {}
+export function isDnrSubscriptionUpdating(url) {}

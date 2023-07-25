@@ -57,7 +57,7 @@ export async function restoreDynamicFiltersForSubscriptionId(id) {
 
       let lastUpdate = rulesetUpdates.get(subscription.id);
       if (lastUpdate) {
-        await dnrSubscriptionUpdate(subscription, lastUpdate);
+        await _dnrSubscriptionUpdate(subscription, lastUpdate);
       }
 
       break;
@@ -119,6 +119,17 @@ function removeDynRulesForSubscription(id, toRemove) {
   return {removedDynRules, removeRuleIds};
 }
 
+// URLs of the subscriptions that are currently updating
+let dnrSubscriptionUpdating = new Set();
+
+export function isDnrSubscriptionUpdating(url) {
+  return dnrSubscriptionUpdating.has(url);
+}
+
+export function clearIsDnrSubscriptionUpdating() {
+  dnrSubscriptionUpdating.clear();
+}
+
 /**
  * Update a DNR subscription.
  *
@@ -129,6 +140,20 @@ function removeDynRulesForSubscription(id, toRemove) {
  * @private
  */
 export async function dnrSubscriptionUpdate(subscription, updates) {
+  if (isDnrSubscriptionUpdating(subscription.url)) {
+    return;
+  }
+  dnrSubscriptionUpdating.add(subscription.url);
+
+  try {
+    await _dnrSubscriptionUpdate(subscription, updates);
+  }
+  finally {
+    dnrSubscriptionUpdating.delete(subscription.url);
+  }
+}
+
+export async function _dnrSubscriptionUpdate(subscription, updates) {
   if (!browser.declarativeNetRequest || !updates) {
     return;
   }
@@ -183,10 +208,10 @@ export async function dnrSubscriptionUpdate(subscription, updates) {
 
     rollback = async() => {
       if (lastUpdate) {
-        await dnrSubscriptionUpdate(subscription, lastUpdate);
+        await _dnrSubscriptionUpdate(subscription, lastUpdate);
       }
       else {
-        await dnrSubscriptionUpdate(subscription, {added: [], removed: []});
+        await _dnrSubscriptionUpdate(subscription, {added: [], removed: []});
       }
     };
   }

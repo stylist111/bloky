@@ -29,8 +29,9 @@ import {getDefaultSubscriptions} from "./subscriptions.js";
 import {default as initializer} from "./initializer.js";
 import {setAddonInfo, addonBundledSubscriptionsPath} from "./info.js";
 import {dnrSubscriptionUpdate, dynamicRulesAvailable, getDynamicFilters,
-        removeDynamicFilters, clearRulesetUpdates,
-        testSetDynamicRulesAvailable} from "./dnr-filters.js";
+        removeDynamicFilters, clearRulesetUpdates, testSetDynamicRulesAvailable,
+        clearIsDnrSubscriptionUpdating}
+  from "./dnr-filters.js";
 import {getSubscriptionRulesetMap} from "./subscriptions-utils.js";
 import {IO} from "./io.js";
 import {FilterStorage} from "adblockpluscore/lib/filterStorage.js";
@@ -139,6 +140,7 @@ export default {
 
     await removeDynamicFilters();
     await clearRulesetUpdates();
+    clearIsDnrSubscriptionUpdating();
 
     const {filterStorage} = filterEngine;
     filterStorage._clear();
@@ -230,5 +232,7 @@ export default {
 
   async _waitForInitialization() {
     await initializer.start();
-  }
+  },
+
+  clearIsDnrSubscriptionUpdating
 };
