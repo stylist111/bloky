@@ -213,26 +213,18 @@ class Synchronizer {
   _onDownloadSuccess(downloadable, responseText, errorCallback,
                      redirectCallback) {
     // if it has originalUrl, it means that it's a diffUpdatable subscription
-    if (downloadable.originalUrl) {
-      const subscription = Subscription.fromURL(downloadable.originalUrl);
-
-      const responseObject = JSON.parse(responseText);
-      const added = responseObject.filters.add;
-      const removed = responseObject.filters.remove;
-
-      filterNotifier.emit("subscription.diffReceived", subscription, {added, removed});
-      return;
-    }
+    let isDiffUpdatable = (downloadable.originalUrl != null);
 
     let subscription = Subscription.fromURL(downloadable.redirectURL ||
-                                            downloadable.url);
+      (isDiffUpdatable ? downloadable.originalUrl : downloadable.url));
     subscription.mark("downloading.finished");
     subscription.mark("parsing.started");
 
     let isHEAD = downloadable.method === "HEAD";
 
     let {error, lines, params,
-         minVersion} = isHEAD ? {params: {}} : parseFilterList(responseText);
+         minVersion} = isHEAD || isDiffUpdatable ?
+           {params: {}} : parseFilterList(responseText);
 
     if (error) {
       return errorCallback(error);
@@ -353,6 +345,13 @@ class Synchronizer {
     // the last version of the subscription will be stored for the next time.
     if (isHEAD) {
       filterNotifier.emit("subscription.updated", subscription);
+    }
+    else if (isDiffUpdatable) {
+      const responseObject = JSON.parse(responseText);
+      const added = responseObject.filters.add;
+      const removed = responseObject.filters.remove;
+
+      filterNotifier.emit("subscription.diffReceived", subscription, {added, removed});
     }
     else {
       this._processFilters(subscription, lines);
