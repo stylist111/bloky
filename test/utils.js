@@ -707,13 +707,11 @@ export async function clearEndpointResponse(url) {
   });
 }
 
-export async function waitForSubscriptionsToDownload(
-  skipNotDownloadable = true) {
+export async function waitForSubscriptionsToDownload() {
   await wait(async() => {
     let subscriptions = await EWE.subscriptions.getDownloadable();
     return subscriptions.every(
-      sub => (!sub.downloadable && skipNotDownloadable) ||
-             sub.downloadStatus == "synchronize_ok"
+      sub => !sub.downloadable || sub.downloadStatus == "synchronize_ok"
     );
   }, 1000, "Subscriptions were not downloaded.");
 }

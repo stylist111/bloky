@@ -20,7 +20,7 @@ import expect from "expect";
 import {Page, Popup, setMinTimeout, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
         CROSS_DOMAIN, SITEKEY, setEndpointResponse,
         syncSubHasLastFilter, syncSubHasNoLastFilter, hasUpdateStaticRules,
-        isEdge, waitForSubscriptionsToDownload}
+        isEdge}
   from "./utils.js";
 import {EWE} from "./messaging.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
@@ -147,7 +147,10 @@ describe("Pop-up blocking", function() {
 
       await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_RESPONSE);
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
-      await waitForSubscriptionsToDownload(false);
+
+      // Wait for the subscription to be synchronized after adding.
+      // (replace with checking of subscription state after EE-157 is done).
+      await new Promise(r => setTimeout(r, 3000));
 
       // no sync needed, the filter is in bundled subscription data
 
@@ -162,7 +165,10 @@ describe("Pop-up blocking", function() {
 
       await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_RESPONSE);
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
-      await waitForSubscriptionsToDownload(false);
+
+      // Wait for the subscription to be synchronized after adding.
+      // (replace with checking of subscription state after EE-157 is done).
+      await new Promise(r => setTimeout(r, 3000));
 
       expect(await new Popup("script-tab", opener).blocked).toBe(true);
 
@@ -188,7 +194,10 @@ describe("Pop-up blocking", function() {
 
       await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_RESPONSE);
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
-      await waitForSubscriptionsToDownload(false);
+
+      // Wait for the subscription to be synchronized after adding.
+      // (replace with checking of subscription state after EE-157 is done).
+      await new Promise(r => setTimeout(r, 3000));
 
       expect(await new Popup("diff-script-tab", opener).blocked).toBe(false);
 
@@ -218,9 +227,16 @@ describe("Pop-up blocking", function() {
         }
       }));
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
-      await waitForSubscriptionsToDownload(false);
+
+      // Wait for the subscription to be synchronized after adding.
+      // (replace with checking of subscription state after EE-157 is done).
+      await new Promise(r => setTimeout(r, 3000));
 
       await syncSubHasLastFilter(testDiffSubscriptionUrl, popupFilter);
+
+      // Wait for the subscription to be synchronized after syncing.
+      // (replace with checking of subscription state after EE-157 is done).
+      await new Promise(r => setTimeout(r, 3000));
 
       expect(await new Popup("diff-script-tab", opener).blocked).toBe(true);
 

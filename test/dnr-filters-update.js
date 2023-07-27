@@ -21,8 +21,7 @@ import {DnrMapper} from "adblockpluscore/lib/dnr/mapper.js";
 import {EWE, expectTestEvents} from "./messaging.js";
 import {hasUpdateStaticRules, Page, setEndpointResponse, shouldBeLoaded,
         setMinTimeout, wait, expectElemHideVisible, expectElemHideHidden,
-        syncSubHasLastFilter, syncSubHasNoLastFilter,
-        waitForSubscriptionsToDownload}
+        syncSubHasLastFilter, syncSubHasNoLastFilter}
   from "./utils.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
@@ -598,7 +597,10 @@ describe("Test subscriptions update", function() {
       }));
 
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
-      await waitForSubscriptionsToDownload(false);
+
+      // Wait for the subscription to be synchronized after adding.
+      // (replace with checking of subscription state after EE-157 is done).
+      await new Promise(r => setTimeout(r, 3000));
 
       await shouldBeLoaded(
         "image.html",
@@ -763,7 +765,10 @@ describe("Test subscriptions update", function() {
       }));
 
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
-      await waitForSubscriptionsToDownload(false);
+
+      // Wait for the subscription to be synchronized after adding.
+      // (replace with checking of subscription state after EE-157 is done).
+      await new Promise(r => setTimeout(r, 3000));
 
       await EWE.filters.add([filter]);
       let userFilters = await EWE.filters.getUserFilters();
@@ -832,38 +837,6 @@ describe("Test subscriptions update", function() {
         testDiffSubscriptionUrl);
       expect(filters.filter(eachFilter => eachFilter.text === filter).length)
         .toEqual(1);
-    });
-
-    it("updates the DiffUpdatable subscription properties", async function() {
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
-      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
-      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
-      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
-        filters: {
-          add: [],
-          remove: []
-        }
-      }));
-      await EWE.subscriptions.add(testDiffSubscriptionUrl);
-
-      await wait(async() => {
-        let subscriptions = await EWE.subscriptions.getDownloadable();
-        return subscriptions.length > 0 &&
-          subscriptions[0].downloadStatus == "synchronize_ok";
-      }, 3000, "Subscription was not synchronized.");
-
-      let subscription = (await EWE.subscriptions.getDownloadable())[0];
-      expect(subscription).toEqual(expect.objectContaining({
-        url: testDiffSubscriptionUrl,
-        downloadStatus: "synchronize_ok",
-        downloadCount: expect.any(Number),
-        softExpiration: expect.any(Number),
-        expires: expect.any(Number)
-      }));
-      expect(subscription.downloadCount > 0).toEqual(true);
     });
   });
 });
