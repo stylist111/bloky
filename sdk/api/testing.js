@@ -27,7 +27,8 @@ import {default as debugging} from "./debugging.js";
 import {default as subs} from "./subscriptions.js";
 import {getDefaultSubscriptions} from "./subscriptions.js";
 import {default as initializer} from "./initializer.js";
-import {setAddonInfo, addonBundledSubscriptionsPath} from "./info.js";
+import {setAddonInfo, addonBundledSubscriptionsPath, initializeDefaultAddonInfo}
+  from "./info.js";
 import {dnrSubscriptionUpdate, dynamicRulesAvailable, getDynamicFilters,
         removeDynamicFilters, clearRulesetUpdates, testSetDynamicRulesAvailable,
         clearIsDnrSubscriptionUpdating}
@@ -35,6 +36,7 @@ import {dnrSubscriptionUpdate, dynamicRulesAvailable, getDynamicFilters,
 import {getSubscriptionRulesetMap} from "./subscriptions-utils.js";
 import {IO} from "./io.js";
 import {FilterStorage} from "adblockpluscore/lib/filterStorage.js";
+import * as telemetry from "./telemetry.js";
 
 import * as sitekey from "./sitekey.js";
 
@@ -126,6 +128,11 @@ export default {
    * @ignore
    */
   _setAddonInfo: setAddonInfo,
+
+  /**
+   * @ignore
+   */
+  _resetDefaultAddonInfo: initializeDefaultAddonInfo,
 
   /**
    * @ignore
@@ -234,5 +241,9 @@ export default {
     await initializer.start();
   },
 
-  clearIsDnrSubscriptionUpdating
+  clearIsDnrSubscriptionUpdating,
+
+  stopTelemetry: telemetry.stop,
+  startTelemetry: telemetry.start,
+  resetTelemetry: telemetry.reset
 };

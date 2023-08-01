@@ -416,6 +416,8 @@ if (isMV3()) {
 
 EWE.testing.enableDebugOutput(true);
 
+startupInfo.telemetry = {url: "http://localhost:3003/telemetry", bearer: "bbb"};
+
 EWE.start(startupInfo).then(async() => {
   migrationErrorsOnStart = await EWE.subscriptions.getMigrationErrors();
 

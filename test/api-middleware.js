@@ -105,3 +105,14 @@ export function webbundleResponseType(req, res, next) {
 
   next();
 }
+
+
+// Catchall error handler that returns errors in JSON objects instead of the
+// default of wrapping them in HTML.
+export function apiErrorHandler(err, req, res, next) {
+  if (res.headersSent) {
+    // see http://expressjs.com/en/guide/error-handling.html
+    return next(err);
+  }
+  res.status(500).json({error: err.toString()});
+}

@@ -21,7 +21,7 @@ import {DnrMapper} from "adblockpluscore/lib/dnr/mapper.js";
 import {EWE, expectTestEvents} from "./messaging.js";
 import {hasUpdateStaticRules, Page, setEndpointResponse, shouldBeLoaded,
         setMinTimeout, wait, expectElemHideVisible, expectElemHideHidden,
-        syncSubHasLastFilter, syncSubHasNoLastFilter}
+        syncSubHasLastFilter, syncSubHasNoLastFilter, clearRequestLogs}
   from "./utils.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
@@ -166,7 +166,7 @@ describe("Test subscriptions update", function() {
   }
 
   beforeEach(async function() {
-    await fetch("http://localhost:3003/clear");
+    await clearRequestLogs();
     await setEndpointResponse("/updatable_subscription/diff.json", JSON.stringify({
       filters: {
         add: [],

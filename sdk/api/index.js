@@ -24,6 +24,7 @@ import * as popupBlockerServiceWorker from "./popup-blocker-service-worker.js";
 import * as requestFilter from "./request-filter.js";
 import * as dnrRequestReporter from "./dnr-request-reporter.js";
 import * as sitekey from "./sitekey.js";
+import * as telemetry from "./telemetry.js";
 import {setSnippetLibrary} from "./content-filter.js";
 import {setAddonInfo} from "./info.js";
 import {filterEngine} from "./core.js";
@@ -33,7 +34,6 @@ import {updateFilterText, validate as validateSubscriptions,
 import {migrateCustomFilters} from "./dnr-filters.js";
 import {MIGRATED_TO_MV2, MIGRATED_TO_MV3, Prefs} from "./prefs.js";
 import {isRunningInServiceWorker} from "./browser-features.js";
-
 
 export {default as subscriptions} from "./subscriptions.js";
 export {default as filters} from "./filters.js";
@@ -113,6 +113,15 @@ async function onInstalled(details) {
  * @param {string?} [addonInfo.bundledSubscriptionsPath]
  *   A path to subscription files provided by the integrator. Cannot be
  *   undefined for MV3.
+ * @param {Object?} [addonInfo.telemetry] Settings for telemetry. The telemetry
+ *   module will only be started if this is provided. This is currently an
+ *   experimental feature. If used, this will send a single POST request on
+ *   first start to the specified telemetry URL, using the specified bearer
+ *   token for authentication, with metadata about the extension.
+ * @param {string} [addonInfo.telemetry.url] The URL of the location where
+ *   user active pings will be sent to.
+ * @param {string} [addonInfo.telemetry.bearer] The Bearer token accompanying
+ *   the telemetry URL.
  * @return {Promise<FirstRunInfo>} Promise that is resolved after starting up
  *                                 is completed.
  */
@@ -141,6 +150,11 @@ export async function start(addonInfo) {
     await checkAndMigrateSubscriptions();
     await checkAndInitSubscriptions();
   }
+
+  if (addonInfo && addonInfo.telemetry) {
+    telemetry.start(addonInfo.telemetry);
+  }
+
   return firstRun;
 }
 

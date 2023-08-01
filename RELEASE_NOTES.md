@@ -1,5 +1,19 @@
-### Unreleased
-# Internal
+## Unreleased
+
+### Eyeometry implementation. 
+  Don't use this yet unless you want an initial sense of what the integration 
+  will be like. 
+  
+  Assuming you want to start using it. Integrators need to add a new property to
+  the addonInfo object passed into the EWE.start function.
+  
+  ```
+  addonInfo.telemetry = {url: "", bearer: ""}
+  ```
+
+  The current implementation pings the specified server once at startup. Nothing happens if the telemetry object isn't provided.
+
+### Internal
 - Added security static analysis and codeclimate analysis for better code quality 
 - Exclude Fuzz Edge tests from Branch runs 
 - Upgrade get-browser-binary

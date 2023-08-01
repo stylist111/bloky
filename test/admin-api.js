@@ -23,6 +23,7 @@ import url from "url";
 
 import express from "express";
 import requestLogger from "./request-logger.js";
+import {delay, apiErrorHandler} from "./api-middleware.js";
 
 const HTTP_ADMIN_PORT = 3003;
 
@@ -31,6 +32,9 @@ let dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
 let reply = "[Adblock Plus]\n";
 
+app.use(express.json());
+app.use(delay);
+
 // configure to reply (eg. ../configure?reply=123)
 app.get("/configure", (req, res) => {
   reply = encodeURIComponent(req.query["reply"]);
@@ -38,20 +42,14 @@ app.get("/configure", (req, res) => {
 });
 
 // clear the requests list and reset replies
-app.get("/clear", (req, res) => {
+app.post("/clearRequestLogs", (req, res) => {
   requestLogger.clearRequests();
   res.send("");
 });
 
 // get the requests list
-app.get("/list", (req, res) => {
-  res.send(JSON.stringify(requestLogger.getRequests().map(request => {
-    return {
-      method: request.method,
-      url: request.url,
-      query: request.query
-    };
-  }), null, 2));
+app.get("/requestLogs", (req, res) => {
+  res.send(JSON.stringify(requestLogger.getRequests(), null, 2));
 });
 
 // get the subscription content (GET)
@@ -83,31 +81,38 @@ app.head("/updatable_subscription.txt", requestLogger.logRequests, (req, res) =>
 
 let responses = new Map();
 
-app.post("/clearUrlResponse", express.json(), (req, res) => {
+app.post("/clearUrlResponse", (req, res) => {
   responses.delete(req.body.url);
   res.send("");
 });
 
-function createRouteHandler(urlToSet, replyData) {
-  responses.set(urlToSet, replyData);
+function createRouteHandler(route) {
+  responses.set(route.url, route.response);
 
-  app.get(urlToSet, requestLogger.logRequests, (areq, ares) => {
-    if (responses.has(urlToSet)) {
-      ares.send(responses.get(urlToSet));
+  let handler = (req, res) => {
+    if (responses.has(route.url)) {
+      res.send(responses.get(route.url));
     }
-
     else {
-      ares.end();
+      res.end();
     }
-  });
+  };
+
+  let method = (route.method || "GET").toUpperCase();
+
+  if (method == "POST") {
+    app.post(route.url, requestLogger.logRequests, handler);
+  }
+  else if (method == "GET") {
+    app.get(route.url, requestLogger.logRequests, handler);
+  }
+  else {
+    throw new Error(`Currently unsupported HTTP method: ${method}`);
+  }
 }
 
-app.post("/setUrlResponse", express.json(), (req, res) => {
-  let urlToSet = req.body.url;
-  let replyData = req.body.responseToReplyWith;
-
-  createRouteHandler(urlToSet, replyData);
-
+app.post("/setUrlResponse", (req, res, next) => {
+  createRouteHandler(req.body);
   res.send("");
 });
 
@@ -116,18 +121,18 @@ export function startAdminServer(host) {
     console.log(`Admin commands server listening at http://${host}:${HTTP_ADMIN_PORT}`);
   });
 
-  let buildTimeReplies = [
+  let buildTimeRoutes = [
     {
       url: "/subscription-that-shouldnt-be-moved-to-dnr-world.txt",
-      data: "[Adblock Plus]"
+      response: "[Adblock Plus]"
     },
     {
       url: "/anti-cv-subscription.txt",
-      data: "[Adblock Plus]\nlocalhost###migrate-diff-elem-item"
+      response: "[Adblock Plus]\nlocalhost###migrate-diff-elem-item"
     },
     {
       url: "/updatable_subscription/diff.json",
-      data: JSON.stringify({
+      response: JSON.stringify({
         filters: {
           add: [],
           remove: []
@@ -136,16 +141,25 @@ export function startAdminServer(host) {
     },
     {
       url: "/anti-cv-subscription_diff.json",
-      data: JSON.stringify({
+      response: JSON.stringify({
         filters: {
           add: [],
           remove: []
         }
       })
+    },
+    {
+      url: "/telemetry",
+      response: JSON.stringify({
+        token: "2023-05-18T12:50:00Z"
+      }),
+      method: "POST"
     }
   ];
 
-  for (let i = 0; i < buildTimeReplies.length; i++) {
-    createRouteHandler(buildTimeReplies[i].url, buildTimeReplies[i].data);
+  for (let route of buildTimeRoutes) {
+    createRouteHandler(route);
   }
 }
+
+app.use(apiErrorHandler);

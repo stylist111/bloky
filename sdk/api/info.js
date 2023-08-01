@@ -19,17 +19,46 @@ import browser from "./browser.js";
 
 import {setRecommendations} from "adblockpluscore/lib/recommendations.js";
 
-let manifest = browser.runtime.getManifest();
-
-export let addonName = manifest.short_name || manifest.name;
-export let addonVersion = manifest.version;
+export let addonName;
+export let addonVersion;
 export let addonBundledSubscriptions;
 export let addonBundledSubscriptionsPath;
-export let application = "unknown";
-export let applicationVersion = "0";
+export let application;
+export let applicationVersion;
 export let platform;
-export let platformVersion = "0";
-export let manifestVersion = String(manifest.manifest_version);
+export let platformVersion;
+export let manifestVersion;
+
+initializeDefaultAddonInfo();
+
+export function initializeDefaultAddonInfo() {
+  let manifest = browser.runtime.getManifest();
+
+  addonName = manifest.short_name || manifest.name;
+  addonVersion = manifest.version;
+  application = "unknown";
+  applicationVersion = "0";
+  platformVersion = "0";
+  manifestVersion = String(manifest.manifest_version);
+
+  if (typeof netscape != "undefined") {
+    platform = "gecko";
+
+    let match = /\brv:([^;)]+)/.exec(navigator.userAgent);
+    if (match) {
+      platformVersion = match[1];
+    }
+
+    browser.runtime.getBrowserInfo().then(browserInfo => {
+      application = browserInfo.name.toLowerCase();
+      applicationVersion = browserInfo.version;
+    });
+  }
+  else {
+    platform = "chromium";
+    parseChromiumUserAgent();
+  }
+}
 
 function parseChromiumUserAgent() {
   let regexp = /(\S+)\/(\S+)(?:\s*\(.*?\))?/g;
@@ -55,24 +84,6 @@ function parseChromiumUserAgent() {
     application = app == "OPR" ? "opera" : app.toLowerCase();
     applicationVersion = version;
   }
-}
-
-if (typeof netscape != "undefined") {
-  platform = "gecko";
-
-  let match = /\brv:([^;)]+)/.exec(navigator.userAgent);
-  if (match) {
-    platformVersion = match[1];
-  }
-
-  browser.runtime.getBrowserInfo().then(browserInfo => {
-    application = browserInfo.name.toLowerCase();
-    applicationVersion = browserInfo.version;
-  });
-}
-else {
-  platform = "chromium";
-  parseChromiumUserAgent();
 }
 
 export function setAddonInfo(addonInfo) {

@@ -327,8 +327,6 @@ describe("Initialization", function() {
     let result = await runInBackgroundPage([
       {op: "getGlobal", arg: "EWE"},
       {op: "pushArg", arg: {
-        name: ADDON_NAME,
-        version: ADDON_VERSION,
         bundledSubscriptions: [subEasylist, subCircumvention,
                                subAcceptableAds],
         bundledSubscriptionsPath: "subscriptions"}},
@@ -345,8 +343,6 @@ describe("Initialization", function() {
     result = await runInBackgroundPage([
       {op: "getGlobal", arg: "EWE"},
       {op: "pushArg", arg: {
-        name: ADDON_NAME,
-        version: ADDON_VERSION,
         bundledSubscriptions: [subEasylist, subCircumvention,
                                subAcceptableAds],
         bundledSubscriptionsPath: "subscriptions"}},
@@ -374,28 +370,29 @@ describe("Initialization", function() {
     await expect(unhandledMessageResult).resolves.not.toThrow();
   });
 
-  it("starts with the addon info provided by the initial start call [mv2-only]",
-     // MV2 only because from MV3 must have more addon info than in this test,
-     // including subscription info
-     async function() {
-       await runInBackgroundPage([
-         {op: "getGlobal", arg: "EWE"},
-         {op: "pushArg", arg: {name: ADDON_NAME, version: ADDON_VERSION}},
-         {op: "callMethod", arg: "start"},
-         {op: "await"}
-       ]);
+  it("starts with the addon info provided by the initial start call [mv2-only]", async function() {
+    // MV2 only because from MV3 must have more addon info than in this test,
+    // including subscription info
 
-       let addonInfo = await runInBackgroundPage([
-         {op: "getGlobal", arg: "EWE"},
-         {op: "getProp", arg: "debugging"},
-         {op: "getProp", arg: "addonInfo"}
-       ]);
+    await runInBackgroundPage([
+      {op: "getGlobal", arg: "EWE"},
+      {op: "pushArg", arg: {name: ADDON_NAME, version: ADDON_VERSION}},
+      {op: "callMethod", arg: "start"},
+      {op: "await"}
+    ]);
 
-       expect(addonInfo).toEqual(
-         expect.objectContaining({name: ADDON_NAME, version: ADDON_VERSION})
-       );
-     }
-  );
+    let addonInfo = await runInBackgroundPage([
+      {op: "getGlobal", arg: "EWE"},
+      {op: "getProp", arg: "debugging"},
+      {op: "getProp", arg: "addonInfo"}
+    ]);
+
+    expect(addonInfo).toEqual(
+      expect.objectContaining({name: ADDON_NAME, version: ADDON_VERSION})
+    );
+
+    await EWE.testing._resetDefaultAddonInfo();
+  });
 
   describe("Validation [mv3-only]", function() {
     it("validates the provided subscriptions", async function() {

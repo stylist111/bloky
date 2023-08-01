@@ -18,7 +18,7 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 
-import {Page, setMinTimeout, wait, waitForAssertion, isMV3,
+import {Page, setMinTimeout, wait, waitForAssertion, isMV3, clearRequestLogs,
         TEST_PAGES_URL, TEST_PAGES_DOMAIN, shouldBeLoaded, setEndpointResponse}
   from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, getTestEvents, clearTestEvents,
@@ -349,7 +349,7 @@ describe("Subscriptions", function() {
     setMinTimeout(this, isFuzzingServiceWorker() ? 30000 : 10000);
 
     beforeEach(async function() {
-      await fetch("http://localhost:3003/clear");
+      await clearRequestLogs();
       await setEndpointResponse("/anti-cv-subscription.txt", "[Adblock Plus]");
     });
 

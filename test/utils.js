@@ -689,22 +689,47 @@ export async function shouldBeLoaded(pageUrl, resource, errorMessage) {
   );
 }
 
-export async function setEndpointResponse(url, responseToReplyWith) {
-  await fetch(`${TEST_ADMIN_PAGES_URL}/setUrlResponse`, {
+async function throwHttpErrors(response) {
+  if (!response.ok) {
+    let body = await response.text();
+    throw new Error(
+      "Admin server error. Server responsed with the following: " +
+        `${response.status} - ${body}`
+    );
+  }
+}
+
+export async function clearRequestLogs() {
+  let response = await fetch(`${TEST_ADMIN_PAGES_URL}/clearRequestLogs`, {
+    method: "POST"
+  });
+  await throwHttpErrors(response);
+}
+
+export async function getRequestLogs() {
+  let response = await fetch(`${TEST_ADMIN_PAGES_URL}/requestLogs`);
+  await throwHttpErrors(response);
+  return await response.json();
+}
+
+export async function setEndpointResponse(url, response, method) {
+  let adminApiResponse = await fetch(`${TEST_ADMIN_PAGES_URL}/setUrlResponse`, {
     method: "POST",
     cache: "no-cache",
     headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({url, responseToReplyWith})
+    body: JSON.stringify({url, response, method})
   });
+  await throwHttpErrors(adminApiResponse);
 }
 
 export async function clearEndpointResponse(url) {
-  await fetch(`${TEST_ADMIN_PAGES_URL}/clearUrlResponse`, {
+  let response = await fetch(`${TEST_ADMIN_PAGES_URL}/clearUrlResponse`, {
     method: "POST",
     cache: "no-cache",
     headers: {"Content-Type": "application/json"},
     body: JSON.stringify({url})
   });
+  await throwHttpErrors(response);
 }
 
 export async function waitForSubscriptionsToDownload() {

@@ -17,7 +17,8 @@
 
 import expect from "expect";
 
-import {wait, TEST_ADMIN_PAGES_URL, TEST_MV3_SUBSCRIPTION_3} from "./utils.js";
+import {wait, TEST_ADMIN_PAGES_URL, TEST_MV3_SUBSCRIPTION_3, getRequestLogs,
+        clearRequestLogs} from "./utils.js";
 import {EWE, addFilter} from "./messaging.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 
@@ -28,7 +29,7 @@ describe("Synchronization", function() {
   async function configure(properties = {}) {
     await EWE.testing._setSubscriptions([TEST_MV3_SUBSCRIPTION_3]);
 
-    await fetch(`${TEST_ADMIN_PAGES_URL}/clear`);
+    await clearRequestLogs();
     let reply = "%5BAdblock%20Plus%5D%0A%21%20Expires%3A%201%20d"; // "! Expires: 1 d"
     await fetch(`${TEST_ADMIN_PAGES_URL}/configure?reply=${reply}`);
 
@@ -44,8 +45,7 @@ describe("Synchronization", function() {
 
   async function requestsSent() {
     await wait(async() => {
-      let response = await fetch(`${TEST_ADMIN_PAGES_URL}/list`);
-      let requests = await response.json();
+      let requests = await getRequestLogs();
       return requests.length > 0;
     }, 20000, "No requests sent", 100);
   }
@@ -53,7 +53,7 @@ describe("Synchronization", function() {
   it("sends HEAD requests for expired subscriptions after service worker restarts [mv3-only] [fuzz-skip]", async function() {
     await configure();
     await requestsSent();
-    await fetch(`${TEST_ADMIN_PAGES_URL}/clear`);
+    await clearRequestLogs();
 
     let now = Date.now();
     let softExpiration = now / 1000; // seconds, not millis
@@ -68,8 +68,7 @@ describe("Synchronization", function() {
 
     await requestsSent();
 
-    let response = await fetch(`${TEST_ADMIN_PAGES_URL}/list`);
-    let requests = await response.json();
+    let requests = await getRequestLogs();
 
     expect(requests.length).toEqual(1);
     expect(requests).toEqual([expect.objectContaining({

@@ -45,7 +45,12 @@ class RequestLogger {
       console.log(new Date().toISOString(), req.method, req.url);
     }
 
-    this.requests.push(req);
+    this.requests.push({
+      method: req.method,
+      url: req.url,
+      query: req.query,
+      body: req.body
+    });
     next();
   }
 
