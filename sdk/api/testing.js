@@ -25,7 +25,7 @@ import {filterEngine} from "./core.js";
 import {Prefs, awaitSavingComplete, init as initPrefs} from "./prefs.js";
 import {default as debugging} from "./debugging.js";
 import {default as subs} from "./subscriptions.js";
-import {getDefaultSubscriptions} from "./subscriptions.js";
+import {getDefaultSubscriptions, isSynchronizing} from "./subscriptions.js";
 import {default as initializer} from "./initializer.js";
 import {setAddonInfo, addonBundledSubscriptionsPath, initializeDefaultAddonInfo}
   from "./info.js";
@@ -242,6 +242,7 @@ export default {
   },
 
   clearIsDnrSubscriptionUpdating,
+  isSynchronizing,
 
   stopTelemetry: telemetry.stop,
   startTelemetry: telemetry.start,

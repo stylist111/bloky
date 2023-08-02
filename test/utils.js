@@ -20,7 +20,8 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
-import {fuzzSuspendServiceWorker, waitForServiceWorkerInitialization, EWE}
+import {fuzzSuspendServiceWorker, waitForServiceWorkerInitialization,
+        EWE, getTestEvents, clearTestEvents}
   from "./messaging.js";
 
 export const TEST_PAGES_DOMAIN = "localhost";
@@ -739,6 +740,18 @@ export async function waitForSubscriptionsToDownload() {
       sub => !sub.downloadable || sub.downloadStatus == "synchronize_ok"
     );
   }, 1000, "Subscriptions were not downloaded.");
+}
+
+export async function waitForSubscriptionToBeSynchronized(url) {
+  await wait(async() => {
+    let changeEvents = getTestEvents("subscriptions.onChanged");
+    return changeEvents.filter(event => {
+      return event[0].url == url &&
+        event[1] == null; // whole subscription update, not property
+    }).length > 0;
+  }, 3000, "Subscription was not synchronized.");
+
+  clearTestEvents("subscriptions.onChanged");
 }
 
 async function syncSubscription(

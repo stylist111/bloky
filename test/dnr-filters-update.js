@@ -18,10 +18,11 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 import {DnrMapper} from "adblockpluscore/lib/dnr/mapper.js";
-import {EWE, expectTestEvents} from "./messaging.js";
+import {EWE, clearTestEvents, expectTestEvents} from "./messaging.js";
 import {hasUpdateStaticRules, Page, setEndpointResponse, shouldBeLoaded,
         setMinTimeout, wait, expectElemHideVisible, expectElemHideHidden,
-        syncSubHasLastFilter, syncSubHasNoLastFilter, clearRequestLogs}
+        syncSubHasLastFilter, syncSubHasNoLastFilter,
+        waitForSubscriptionToBeSynchronized, clearRequestLogs}
   from "./utils.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
@@ -540,6 +541,7 @@ describe("Test subscriptions update", function() {
     beforeEach(async function() {
       await EWE.subscriptions.remove(UPDATABLE_SUBSCRIPTION_URL);
       await EWE.testing.clearIsDnrSubscriptionUpdating();
+      clearTestEvents("subscriptions.onChanged");
     });
 
     it("creates a diff enabled subscription when adding one [mv3-only]", async function() {
@@ -597,10 +599,7 @@ describe("Test subscriptions update", function() {
       }));
 
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
-
-      // Wait for the subscription to be synchronized after adding.
-      // (replace with checking of subscription state after EE-157 is done).
-      await new Promise(r => setTimeout(r, 3000));
+      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
 
       await shouldBeLoaded(
         "image.html",
@@ -715,7 +714,9 @@ describe("Test subscriptions update", function() {
         "Image from subscription did not load correctly even before of adding the subscription");
 
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
-      await new Page("image-from-subscription.html").expectResource("image-from-subscription.png").toBeBlocked();
+      await new Page("image-from-subscription.html")
+        .expectResource("image-from-subscription.png")
+        .toBeBlocked();
     });
 
     it("doesnt apply filters removed by the diffs [mv3-only]", async function() {
@@ -732,7 +733,11 @@ describe("Test subscriptions update", function() {
         }
       }));
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
-      await new Page("image-from-subscription.html").expectResource("image-from-subscription.png").toBeBlocked();
+      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+
+      await new Page("image-from-subscription.html")
+        .expectResource("image-from-subscription.png")
+        .toBeBlocked();
 
       await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
         filters: {
@@ -765,10 +770,7 @@ describe("Test subscriptions update", function() {
       }));
 
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
-
-      // Wait for the subscription to be synchronized after adding.
-      // (replace with checking of subscription state after EE-157 is done).
-      await new Promise(r => setTimeout(r, 3000));
+      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
 
       await EWE.filters.add([filter]);
       let userFilters = await EWE.filters.getUserFilters();

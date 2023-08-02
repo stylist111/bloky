@@ -145,6 +145,7 @@ exports.Downloader = class Downloader {
 
     /**
      * Set containing the URLs of objects currently being downloaded.
+     * (for DiffUpdatable subscriptions it's subscription URL, not diff URL)
      * @type {Set.<string>}
      */
     this._downloading = new Set();
@@ -303,7 +304,7 @@ exports.Downloader = class Downloader {
   }
 
   _download(downloadable, redirects) {
-    if (this.isDownloading(downloadable.url)) {
+    if (this.isDownloading(downloadable.originalUrl || downloadable.url)) {
       return;
     }
 
@@ -347,12 +348,12 @@ exports.Downloader = class Downloader {
     };
 
     let handleError = () => {
-      this._downloading.delete(downloadable.url);
+      this._downloading.delete(downloadable.originalUrl || downloadable.url);
       errorCallback("synchronize_connection_error");
     };
 
     let handleResponse = response => {
-      this._downloading.delete(downloadable.url);
+      this._downloading.delete(downloadable.originalUrl || downloadable.url);
 
       // If the Response.url property is available [1], disallow redirection
       // from HTTPS to any other protocol.
@@ -408,7 +409,7 @@ exports.Downloader = class Downloader {
 
     fetch(requestURL.href, initObj).then(handleResponse, handleError);
 
-    this._downloading.add(downloadable.url);
+    this._downloading.add(downloadable.originalUrl || downloadable.url);
 
     if (this.onDownloadStarted) {
       this.onDownloadStarted(downloadable);

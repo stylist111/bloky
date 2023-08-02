@@ -59,21 +59,12 @@ function convertSubscription(subscription) {
     homepage, downloadable, title, url, downloadCount, version, diffURL
   };
 
-  if (downloadable) {
-    Object.assign(newSubscription, {
-      downloading: isSynchronizing(url),
-      version, downloadStatus, lastSuccess, lastDownload,
-      softExpiration, expires, downloadCount
-    });
-  }
-  else if (diffURL) {
-    Object.assign(newSubscription, {
-      downloading: isSynchronizing(diffURL),
-      originalUrl: url,
-      version, downloadStatus, lastSuccess, lastDownload,
-      softExpiration, expires, downloadCount
-    });
-  }
+  Object.assign(newSubscription, {
+    downloading: isSynchronizing(url),
+    originalUrl: url,
+    version, downloadStatus, lastSuccess, lastDownload,
+    softExpiration, expires, downloadCount
+  });
 
   return newSubscription;
 }
@@ -295,7 +286,7 @@ async function getDownloadable() {
   return result;
 }
 
-function isSynchronizing(url) {
+export function isSynchronizing(url) {
   return filterEngine.filterStorage.synchronizer
     .isExecuting(url) || isDnrSubscriptionUpdating(url);
 }

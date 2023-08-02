@@ -293,11 +293,13 @@ export async function _dnrSubscriptionUpdate(subscription, updates) {
     });
   }
 
-  await applyFilterTextUpdate(subscription, updates);
+  let storageUpdate = await applyFilterTextUpdate(subscription, updates);
 
   rulesetUpdates.set(subscription.id, updates);
   storeRulesetUpdates();
   storeDynamicFilters();
+
+  filterNotifier.emit("subscription.updated", subscription, storageUpdate);
 }
 
 /**
@@ -335,7 +337,7 @@ export async function applyFilterTextUpdate(subscription, updates) {
   }
 
   await filterEngine.filterStorage.saveToDisk();
-  filterNotifier.emit("subscription.updated", subscription, storageUpdate);
+  return storageUpdate;
 }
 
 export function validateFilter(filter) {

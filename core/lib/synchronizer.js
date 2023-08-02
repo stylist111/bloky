@@ -192,7 +192,8 @@ class Synchronizer {
   }
 
   _onExpirationChange(downloadable) {
-    let subscription = Subscription.fromURL(downloadable.url);
+    let subscription = Subscription.fromURL(
+      downloadable.originalUrl || downloadable.url);
     subscription.lastCheck = Math.round(
       downloadable.lastCheck / MILLIS_IN_SECOND
     );
@@ -205,7 +206,8 @@ class Synchronizer {
   }
 
   _onDownloadStarted(downloadable) {
-    let subscription = Subscription.fromURL(downloadable.url);
+    let subscription = Subscription.fromURL(
+      downloadable.originalUrl || downloadable.url);
     filterNotifier.emit("subscription.downloading", subscription);
     subscription.mark("downloading.started");
   }
@@ -213,26 +215,18 @@ class Synchronizer {
   _onDownloadSuccess(downloadable, responseText, errorCallback,
                      redirectCallback) {
     // if it has originalUrl, it means that it's a diffUpdatable subscription
-    if (downloadable.originalUrl) {
-      const subscription = Subscription.fromURL(downloadable.originalUrl);
-
-      const responseObject = JSON.parse(responseText);
-      const added = responseObject.filters.add;
-      const removed = responseObject.filters.remove;
-
-      filterNotifier.emit("subscription.diffReceived", subscription, {added, removed});
-      return;
-    }
+    let isDiffUpdatable = (downloadable.originalUrl != null);
 
     let subscription = Subscription.fromURL(downloadable.redirectURL ||
-                                            downloadable.url);
+      (isDiffUpdatable ? downloadable.originalUrl : downloadable.url));
     subscription.mark("downloading.finished");
     subscription.mark("parsing.started");
 
     let isHEAD = downloadable.method === "HEAD";
 
     let {error, lines, params,
-         minVersion} = isHEAD ? {params: {}} : parseFilterList(responseText);
+         minVersion} = isHEAD || isDiffUpdatable ?
+           {params: {}} : parseFilterList(responseText);
 
     if (error) {
       return errorCallback(error);
@@ -247,7 +241,8 @@ class Synchronizer {
     // Handle redirects
     if (downloadable.redirectURL &&
         downloadable.redirectURL != downloadable.url) {
-      let oldSubscription = Subscription.fromURL(downloadable.url);
+      let oldSubscription = Subscription.fromURL(
+        downloadable.originalUrl || downloadable.url);
       subscription.title = oldSubscription.title;
       subscription.disabled = oldSubscription.disabled;
       subscription.lastCheck = oldSubscription.lastCheck;
@@ -354,6 +349,13 @@ class Synchronizer {
     if (isHEAD) {
       filterNotifier.emit("subscription.updated", subscription);
     }
+    else if (isDiffUpdatable) {
+      const responseObject = JSON.parse(responseText);
+      const added = responseObject.filters.add;
+      const removed = responseObject.filters.remove;
+
+      filterNotifier.emit("subscription.diffReceived", subscription, {added, removed});
+    }
     else {
       this._processFilters(subscription, lines);
     }
@@ -361,7 +363,8 @@ class Synchronizer {
 
   _onDownloadError(downloadable, downloadURL, error, responseStatus,
                    redirectCallback) {
-    let subscription = Subscription.fromURL(downloadable.url);
+    let subscription = Subscription.fromURL(
+      downloadable.originalUrl || downloadable.url);
     subscription.mark("downloading.finished");
     subscription.lastDownload = Math.round(Date.now() / MILLIS_IN_SECOND);
     subscription.downloadStatus = error;
