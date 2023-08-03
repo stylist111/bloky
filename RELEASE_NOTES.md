@@ -1,28 +1,38 @@
-## Unreleased
+Unreleased
+==========
 
-### Eyeometry implementation. 
-  Don't use this yet unless you want an initial sense of what the integration 
-  will be like. 
-  
-  Assuming you want to start using it. Integrators need to add a new property to
-  the addonInfo object passed into the EWE.start function.
-  
-  ```
-  addonInfo.telemetry = {url: "", bearer: ""}
-  ```
-
-  The current implementation pings the specified server once at startup. Nothing happens if the telemetry object isn't provided.
+0.12.0 - 2023/08/03
+===================
 
 # Fixes
 
-- Prevent from racy subscription updated in MV3 (EE-156).
-- Subscription properties not updated for MV3 subscriptions (EE-157).
+- Prevent racy subscription updates in MV3 (EE-156).
+- Subscription properties are now updated for MV3 subscriptions (EE-157).
 
-### Internal
-- Added security static analysis and codeclimate analysis for better code quality 
-- Exclude Fuzz Edge tests from Branch runs 
-- Upgrade get-browser-binary
-- Add timeout to "does not block a popup opened by a document" tests if fuzz test runs in edge (EE-100)
+# Internal
+
+- Added security static analysis and codeclimate analysis for better code
+  quality.
+- Exclude Fuzz Edge tests from Branch runs.
+- Upgrade get-browser-binary.
+- Add timeout to "does not block a popup opened by a document" tests if fuzz
+  test runs in edge. (EE-100)
+- Add popup tests for diff update scenario. (EE-158)
+
+# Eyeometry implementation. 
+
+Don't use this yet unless you want an initial sense of what the integration will
+be like.
+  
+Assuming you want to start using it. Integrators need to add a new property to
+the addonInfo object passed into the EWE.start function.
+  
+```js
+addonInfo.telemetry = {url: "", bearer: ""}
+```
+
+The current implementation pings the specified server once at startup. Nothing
+happens if the telemetry object isn't provided. (EE-159)
 
 0.11.0 - 2023/07/13
 ===================
