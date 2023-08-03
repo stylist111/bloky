@@ -13,6 +13,11 @@
 
   The current implementation pings the specified server once at startup. Nothing happens if the telemetry object isn't provided.
 
+# Fixes
+
+- Prevent from racy subscription updated in MV3 (EE-156).
+- Subscription properties not updated for MV3 subscriptions (EE-157).
+
 ### Internal
 - Added security static analysis and codeclimate analysis for better code quality 
 - Exclude Fuzz Edge tests from Branch runs 
