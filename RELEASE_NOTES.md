@@ -1,6 +1,13 @@
 Unreleased
 ==========
 
+# Fixes
+
+# Internal
+
+- Add test to make sure that subscriptions with diffs are updated correctly when
+  they expire. (EE-164)
+
 0.12.0 - 2023/08/03
 ===================
 

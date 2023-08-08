@@ -18,7 +18,9 @@
 import expect from "expect";
 
 import {wait, TEST_ADMIN_PAGES_URL, TEST_MV3_SUBSCRIPTION_3, getRequestLogs,
-        clearRequestLogs} from "./utils.js";
+        clearRequestLogs, setEndpointResponse, setMinTimeout, Page,
+        waitForSubscriptionToBeSynchronized, shouldBeLoaded,
+        hasUpdateStaticRules} from "./utils.js";
 import {EWE, addFilter} from "./messaging.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 
@@ -74,5 +76,78 @@ describe("Synchronization", function() {
     expect(requests).toEqual([expect.objectContaining({
       method: METHOD_HEAD
     })]);
+  });
+
+  describe("Diff updates expiration", function() {
+    let defaultCheckInterval;
+    let defaultInitialDelay;
+
+    beforeEach(function() {
+      // store default values from prefs
+      defaultCheckInterval = EWE.testing._getPrefs(
+        "subscriptions_check_interval"
+      );
+      defaultInitialDelay = EWE.testing._getPrefs(
+        "subscriptions_initial_delay"
+      );
+    });
+
+    afterEach(async function() {
+      // cleanup
+      await EWE.testing._setPrefs("subscriptions_check_interval", defaultCheckInterval);
+      await EWE.testing._setPrefs("subscriptions_initial_delay", defaultInitialDelay);
+      await EWE.testing._restartSynchronizer();
+    });
+
+    it("runs diff updates when a subscription expires [mv3-only]", async function() {
+      setMinTimeout(this, 10000);
+
+      if (!hasUpdateStaticRules()) {
+        this.skip();
+      }
+
+      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
+      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
+
+      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+        filters: {
+          add: [],
+          remove: []
+        }
+      }));
+
+      await EWE.subscriptions.add(testDiffSubscriptionUrl);
+      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+
+      await shouldBeLoaded(
+        "image.html",
+        "image.png"
+      );
+
+      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+        filters: {
+          add: ["image.png"],
+          remove: []
+        }
+      }));
+
+      // force the subscription to be expired
+      let now = Date.now();
+      let expiration = (now / 1000) + 1; // 1 second in the future
+      await EWE.testing._setSubscriptionProperties(
+        testDiffSubscriptionUrl, {
+          softExpiration: expiration, expires: expiration,
+          lastDownload: 1
+        }
+      );
+
+      // make the downloader check for updates every 100ms
+      await EWE.testing._setPrefs("subscriptions_check_interval", 100);
+      await EWE.testing._setPrefs("subscriptions_initial_delay", 0);
+      await EWE.testing._restartSynchronizer();
+      // waiting for the subscription to be updated automatically
+      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+      await new Page("image.html").expectResource("image.png").toBeBlocked();
+    });
   });
 });
