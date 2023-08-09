@@ -153,6 +153,41 @@ export async function dnrSubscriptionUpdate(subscription, updates) {
   }
 }
 
+export async function removeSubscriptionsDynamicFilters() {
+  for (let subscription of filterEngine.filterStorage.subscriptions()) {
+    if (subscription instanceof SpecialSubscription) {
+      continue;
+    }
+
+    await disableDynamicFiltersForSubscriptionId(subscription.id);
+  }
+}
+
+export async function enableAllDisabledStaticRules() {
+  // Requires Chrome 111+ API
+  if (!browser.declarativeNetRequest.updateStaticRules) {
+    return;
+  }
+
+  let disableRuleIds = [];
+  for (let subscription of filterEngine.filterStorage.subscriptions()) {
+    if (subscription instanceof SpecialSubscription) {
+      continue;
+    }
+
+    let enableRuleIds =
+      await browser.declarativeNetRequest.getDisabledRuleIds(
+        {rulesetId: subscription.id}
+      );
+
+    await browser.declarativeNetRequest.updateStaticRules({
+      rulesetId: subscription.id,
+      disableRuleIds,
+      enableRuleIds
+    });
+  }
+}
+
 export async function _dnrSubscriptionUpdate(subscription, updates) {
   if (!browser.declarativeNetRequest || !updates) {
     return;

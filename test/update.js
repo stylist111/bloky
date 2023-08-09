@@ -72,6 +72,12 @@ describe(`Update (${phase}) [runner-only]`, function() {
             file: subscriptionFile,
             lines: [filter]
           }
+        },
+        {
+          method: "updateManifest",
+          args: {
+            version: "0.0.2"
+          }
         }
       ]);
       return;

@@ -3,6 +3,11 @@ Unreleased
 
 # Fixes
 
+- Diff updates are now not wiped out during web extension restart
+  in a new browser session. Web extension version (in manifest)
+  now needs to be updated to let the SDK know to reload bundled
+  subscription data (EE-166).
+
 # Internal
 
 - Add test to make sure that subscriptions with diffs are updated correctly when

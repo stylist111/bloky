@@ -179,9 +179,9 @@ describe("Test subscriptions update", function() {
     // Ensure it is enabled.
     await EWE.subscriptions.add(UPDATABLE_SUBSCRIPTION_URL);
 
-    // Wait for subscription to be synchronized
-    // (replace with checking of subscription state after EE - 157 is done).
-    await new Promise(r => setTimeout(r, 3000));
+    if (hasUpdateStaticRules()) {
+      await waitForSubscriptionToBeSynchronized(UPDATABLE_SUBSCRIPTION_URL);
+    }
   });
 
   // The purpose of this test is to make sure we change nothing
@@ -839,6 +839,112 @@ describe("Test subscriptions update", function() {
         testDiffSubscriptionUrl);
       expect(filters.filter(eachFilter => eachFilter.text === filter).length)
         .toEqual(1);
+    });
+
+    it("wipes out diff updates after webext update", async function() {
+      if (!hasUpdateStaticRules()) {
+        this.skip();
+      }
+
+      setMinTimeout(this, 15000);
+
+      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
+      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
+      let filterToAdd = "image.png";
+      let filterToDisable = "/image-from-subscription.png^$image";
+
+      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+        filters: {
+          add: [filterToAdd],
+          remove: [filterToDisable]
+        }
+      }));
+
+      await EWE.subscriptions.add(testDiffSubscriptionUrl);
+      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+
+      await wait(async() => {
+        let newDNRrules = await browser.declarativeNetRequest.getDynamicRules();
+        if (newDNRrules.length > 0 &&
+          newDNRrules[0].condition.urlFilter == "image.png") {
+          return true;
+        }
+      }, 3000, "Subscription was not synchronised properly.");
+
+      // filter which is delivered with diff updates is active
+      await new Page("image.html")
+        .expectResource("image.png")
+        .toBeBlocked();
+
+      await shouldBeLoaded(
+        "image-from-subscription.html",
+        "image-from-subscription.png"
+      );
+
+      // simulate webext restart
+      await EWE.testing.clearSkipInitRulesets(); // called in `onInstalled()`
+      await EWE.testing.checkAndInitSubscriptions(false);
+
+      // no dynamic filters
+      await checkDynamicRuleCount(0);
+
+      // all diff filters should be wiped out
+      let subscriptions = await EWE.subscriptions.getForFilter(filterToAdd);
+      expect(subscriptions.length).toEqual(0);
+
+      // filterToAdd is removed and thus is not blocking
+      await shouldBeLoaded(
+        "image.html",
+        "image.png");
+
+      // filterToRemove is added back and thus is blocking
+      await new Page("image-from-subscription.html")
+        .expectResource("image-from-subscription.png")
+        .toBeBlocked();
+
+      let savedUpdates = await EWE.testing._getPrefs("ruleset_updates");
+      expect(savedUpdates).toEqual([]);
+    });
+
+    it("it does not wipe out user filters after webext update", async function() {
+      if (!hasUpdateStaticRules()) {
+        this.skip();
+      }
+
+      setMinTimeout(this, 15000);
+
+      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
+      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
+      let filterToAdd = "image.png";
+
+      await EWE.filters.add(filterToAdd);
+
+      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+        filters: {
+          add: [],
+          remove: []
+        }
+      }));
+
+      await EWE.subscriptions.add(testDiffSubscriptionUrl);
+      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+
+      // user filter is active
+      await new Page("image.html")
+        .expectResource("image.png")
+        .toBeBlocked();
+
+      // simulate webext restart
+      await EWE.testing.clearSkipInitRulesets(); // called in `onInstalled()`
+      await EWE.testing.checkAndInitSubscriptions(false);
+
+      // user filter is still listed and active
+      let userFilters = await EWE.filters.getUserFilters();
+      expect(userFilters.length).toEqual(1);
+
+      await new Page("image.html")
+        .expectResource("image.png")
+        .toBeBlocked();
     });
   });
 });

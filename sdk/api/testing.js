@@ -25,6 +25,7 @@ import {filterEngine} from "./core.js";
 import {Prefs, awaitSavingComplete, init as initPrefs} from "./prefs.js";
 import {default as debugging} from "./debugging.js";
 import {default as subs} from "./subscriptions.js";
+import {clearSkipInitRulesets, checkAndInitSubscriptions} from "./index.js";
 import {getDefaultSubscriptions, isSynchronizing} from "./subscriptions.js";
 import {default as initializer} from "./initializer.js";
 import {setAddonInfo, addonBundledSubscriptionsPath, initializeDefaultAddonInfo}
@@ -246,5 +247,8 @@ export default {
 
   stopTelemetry: telemetry.stop,
   startTelemetry: telemetry.start,
-  resetTelemetry: telemetry.reset
+  resetTelemetry: telemetry.reset,
+
+  clearSkipInitRulesets,
+  checkAndInitSubscriptions
 };

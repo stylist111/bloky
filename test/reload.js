@@ -18,7 +18,10 @@
 import expect from "expect";
 import browser from "webextension-polyfill";
 
-import {Page, wait, isMV3, isFirefox, TEST_MV3_SUBSCRIPTION, waitForHighlightedStyle, isIncognito} from "./utils.js";
+import {Page, wait, isMV3, isFirefox, TEST_MV3_SUBSCRIPTION,
+        waitForHighlightedStyle, isIncognito,
+        waitForSubscriptionToBeSynchronized}
+  from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, ensureEverythingHasSaved}
   from "./messaging.js";
 
@@ -187,14 +190,19 @@ describe(`Reload (${phase})`, function() {
 
   it("blocks a request using stored subscriptions", async function() {
     this.timeout(15000);
+
     if (start) {
       await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.url);
+      await waitForSubscriptionToBeSynchronized(TEST_MV3_SUBSCRIPTION.url);
       return await ensureEverythingHasSaved();
     }
 
     try {
       await new Promise(r => setTimeout(r, 500));
-      await new Page("image-from-subscription.html").expectResource("image-from-subscription.png").toBeBlocked();
+
+      await new Page("image-from-subscription.html")
+        .expectResource("image-from-subscription.png")
+        .toBeBlocked();
     }
     finally {
       await EWE.subscriptions.remove(TEST_MV3_SUBSCRIPTION.url);

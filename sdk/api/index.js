@@ -31,7 +31,9 @@ import {filterEngine} from "./core.js";
 import {updateFilterText, validate as validateSubscriptions,
         migrate as migrateSubscriptions, ensureDNRRulesetsEnabled}
   from "./subscriptions.js";
-import {migrateCustomFilters} from "./dnr-filters.js";
+import {migrateCustomFilters, clearRulesetUpdates,
+        removeSubscriptionsDynamicFilters, enableAllDisabledStaticRules}
+  from "./dnr-filters.js";
 import {MIGRATED_TO_MV2, MIGRATED_TO_MV3, Prefs} from "./prefs.js";
 import {isRunningInServiceWorker} from "./browser-features.js";
 
@@ -66,18 +68,24 @@ export let snippets = {
   setLibrary: setSnippetLibrary
 };
 
-const SESSION_STORAGE_KEY = "ewe:skip_init_rulesets";
+const SKIP_INIT_RULESETS_STORAGE_KEY = "ewe:skip_init_rulesets";
+
+export async function clearSkipInitRulesets() {
+  await browser.storage.local.remove(SKIP_INIT_RULESETS_STORAGE_KEY);
+}
 
 async function onInstalled(details) {
   // Web extension update (with potential subscriptions filter
   // text changed and repacked) can happen in the same browser session.
   // So in order to not skip the next subscriptions filter text update
   // the flag is removed.
-  if (details.reason != browser.runtime.OnInstalledReason.UPDATE) {
+  let manifest = browser.runtime.getManifest();
+  if (details.reason != browser.runtime.OnInstalledReason.UPDATE ||
+    !details.previousVersion || details.previousVersion == manifest.version) {
     return;
   }
 
-  await browser.storage.session.remove(SESSION_STORAGE_KEY);
+  await clearSkipInitRulesets();
 }
 
 /**
@@ -147,8 +155,10 @@ export async function start(addonInfo) {
   };
 
   if (browser.declarativeNetRequest) {
-    await checkAndMigrateSubscriptions();
-    await checkAndInitSubscriptions();
+    let migratedToMv3 = await checkAndMigrateSubscriptions();
+    // If it has just migrated to MV3 there is no diff updates data,
+    // so we can skip wiping it.
+    await checkAndInitSubscriptions(migratedToMv3);
   }
 
   if (addonInfo && addonInfo.telemetry) {
@@ -199,23 +209,35 @@ async function checkAndMigrateSubscriptions() {
     }
 
     Prefs.migration_state = MIGRATED_TO_MV3;
+    return true;
   }
+  return false;
 }
 
-async function checkAndInitSubscriptions() {
-  // Loading the subbcriptions filter text can cause start-up
-  // performance penalty, so we do it only once per session only.
-  let skipInit = await browser.storage.session.get(
-    [SESSION_STORAGE_KEY]
+export async function checkAndInitSubscriptions(skipWipeOutDiffs) {
+  // Loading the subcriptions filter text wipes out diff updates,
+  // so we do it in case of web extension update only.
+  let skipInit = await browser.storage.local.get(
+    [SKIP_INIT_RULESETS_STORAGE_KEY]
   );
-  if (skipInit[SESSION_STORAGE_KEY]) {
+  if (skipInit[SKIP_INIT_RULESETS_STORAGE_KEY]) {
+    // Rulesets state is not persisted between webext updates
+    await ensureDNRRulesetsEnabled();
     return;
+  }
+
+  if (!skipWipeOutDiffs) {
+    // It's a webext update, so we need to wipe out all diffs
+    // and start from scratch: full state provided in bundled data.
+    await clearRulesetUpdates();
+    await removeSubscriptionsDynamicFilters();
+    await enableAllDisabledStaticRules();
   }
 
   await updateFilterText();
   await ensureDNRRulesetsEnabled();
 
-  await browser.storage.session.set(
-    {[SESSION_STORAGE_KEY]: true}
+  await browser.storage.local.set(
+    {[SKIP_INIT_RULESETS_STORAGE_KEY]: true}
   );
 }
