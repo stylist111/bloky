@@ -27,6 +27,7 @@ import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import GenerateJsonPlugin from "generate-json-webpack-plugin";
 import CopyPlugin from "copy-webpack-plugin";
 import ExtensionReloader from "webpack-ext-reloader";
+import Dotenv from "dotenv-webpack";
 
 let dirname = path.dirname(url.fileURLToPath(import.meta.url));
 let htmlTemplate = path.join(dirname, "test", "template.html");
@@ -38,6 +39,7 @@ const eweCustomOutputPath = path.join(eweDistPath, "ewe-subs");
 const eweTestSubscriptionsFile = "test/custom-subscriptions.json";
 const subscriptionsDir = path.join(dirname, "scriptsOutput", "rulesets");
 const fragmentFile = path.join(subscriptionsDir, "rulesets.json");
+const packageJsonPath = path.join(dirname, "package.json");
 
 const base = {
   eweConfigName: eweRegularConfigName,
@@ -84,6 +86,9 @@ const mv2Custom = {
 };
 
 function eweBuild(env, configName, subscriptionFile, silent, outputPath) {
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+  process.env.VERSION = packageJson.version;
+
   let build = {
     name: configName,
     entry: {
@@ -124,7 +129,13 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath) {
       ]
     },
     plugins: [
-      new GenerateJsonPlugin("package.json", {type: "commonjs"}, null, 2)
+      new GenerateJsonPlugin("package.json", {type: "commonjs"}, null, 2),
+      // This replaces the webpackDotenvPlugin object in our code with values
+      // from your environment variables at build time.
+      new Dotenv({
+        systemvars: true,
+        prefix: "webpackDotenvPlugin."
+      })
     ],
     externals: {
       perf_hooks: "self"

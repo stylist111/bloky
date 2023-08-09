@@ -17,9 +17,11 @@
 
 import browser from "webextension-polyfill";
 import expect from "expect";
-import {EWE} from "./messaging.js";
-import {clearRequestLogs, getRequestLogs, waitForAssertion,
-        TEST_ADMIN_PAGES_URL} from "./utils.js";
+import {EWE, runInBackgroundPage} from "./messaging.js";
+import {clearRequestLogs, getRequestLogs,
+        isFirefox, isIncognito,
+        TEST_ADMIN_PAGES_URL, TEST_PAGES_URL,
+        waitForAssertion, waitForSubscriptionToBeSynchronized} from "./utils.js";
 
 describe("Telemetry", function() {
   const TELEMETRY_URL = `${TEST_ADMIN_PAGES_URL}/telemetry`;
@@ -78,21 +80,101 @@ describe("Telemetry", function() {
   it("sends extension metadata to the telemetry server", async function() {
     await clearRequestLogs();
     await EWE.testing.resetTelemetry();
-
     await EWE.testing.startTelemetry(TELEMETRY_ARGS);
 
     await waitForAssertion(async() => {
       let requests = await getRequestLogs();
-      expect(requests).toEqual([
-        expect.objectContaining({
-          url: "/telemetry",
-          method: "POST",
-          body: {
-            extension_name: "eyeo's Web Extension Ad Blocking Toolkit Test Extension",
-            extension_version: "0.0.1"
-          }
-        })
-      ]);
+      expect(requests).toEqual([expect.objectContaining({
+        url: "/telemetry",
+        method: "POST"
+      })]);
+
+      const telemetryFetchPayload = requests.filter(request => {
+        return request.url == "/telemetry";
+      })[0];
+
+      const payload = telemetryFetchPayload.body.payload;
+      expect(payload.platform).toEqual(expect.oneOf(["win", "Windows", "mac", "macOS", "linux", "Linux"]));
+      if (payload.platform_version) {
+        expect(payload.platform_version).toEqual(expect.stringMatching(/^\d+(.\d+)+$/));
+      }
+      expect(payload.application).toEqual(expect.oneOf(["firefox", "chrome", "edg"]));
+      expect(payload.application_version).toEqual(expect.stringMatching(/^\d+(.\d+)+$/));
+      expect(payload.addon_name).toEqual("eyeo-webext-sdk");
+      expect(payload.addon_version).toEqual(expect.stringMatching(/^\d+(.\d+)+$/));
+      expect(payload.extension_name).toEqual("eyeo's Web Extension Ad Blocking Toolkit Test Extension");
+      expect(payload.extension_version).toEqual("0.0.1");
+      expect(payload.aa_active).toEqual(false);
     });
   });
+
+  it("sends AA active (as false) extension metadata to the telemetry server when non AA subscriptions are active", async function() {
+    const notAnAAUrl = `${TEST_PAGES_URL}/subscription.txt`;
+    await EWE.subscriptions.add(notAnAAUrl);
+    await waitForSubscriptionToBeSynchronized(notAnAAUrl);
+
+    await clearRequestLogs();
+    await EWE.testing.resetTelemetry();
+    await EWE.testing.startTelemetry(TELEMETRY_ARGS);
+
+    await waitForAssertion(async() => {
+      let telemetryRequests = await getRequestLogs();
+
+      const telemetryFetchPayload = telemetryRequests.filter(request => {
+        return request.url == "/telemetry";
+      });
+
+      expect(telemetryRequests).toEqual([expect.objectContaining({
+        url: "/telemetry",
+        method: "POST"
+      })]);
+
+      const payload = telemetryFetchPayload[0].body.payload;
+      expect(payload.aa_active).toEqual(false);
+    });
+  });
+
+  for (let aaUrlPropertyName of ["ACCEPTABLE_ADS_PRIVACY_URL", "ACCEPTABLE_ADS_URL"]) {
+    it(`sends AA active extension metadata to the telemetry server when ${aaUrlPropertyName} is active`, async function() {
+      this.timeout(6000);
+
+      let aaUrl = await runInBackgroundPage([
+        {op: "getGlobal", arg: "EWE"},
+        {op: "getProp", arg: "subscriptions"},
+        {op: "getProp", arg: aaUrlPropertyName}
+      ]);
+      await EWE.subscriptions.add(aaUrl);
+      await waitForSubscriptionToBeSynchronized(aaUrl);
+
+      const notAnAAUrl = `${TEST_PAGES_URL}/subscription.txt`;
+      await EWE.subscriptions.add(notAnAAUrl);
+      await waitForSubscriptionToBeSynchronized(notAnAAUrl);
+
+      if (isFirefox() && isIncognito()) {
+        await new Promise(r => setTimeout(r, 500));
+      }
+      await clearRequestLogs();
+      await EWE.testing.resetTelemetry();
+      await EWE.testing.startTelemetry(TELEMETRY_ARGS);
+      if (isFirefox() && isIncognito()) {
+        await new Promise(r => setTimeout(r, 500));
+      }
+
+      await waitForAssertion(async() => {
+        let telemetryRequests = await getRequestLogs();
+
+        const telemetryFetchPayload = telemetryRequests.filter(request => {
+          return request.url == "/telemetry";
+        });
+
+        expect(telemetryRequests).toEqual([expect.objectContaining({
+          url: "/telemetry",
+          method: "POST"
+        })]);
+
+        const payload = telemetryFetchPayload[0].body.payload;
+        expect(payload.aa_active).toEqual(true);
+      });
+    });
+  }
 });

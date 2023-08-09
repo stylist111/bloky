@@ -10,7 +10,7 @@ variables:
   # Browser versions we use:
   LATEST_CHROME_VERSION: 111.0.5563.64
   OLDEST_CHROME_VERSION: 77.0.3865.0
-  LATEST_FIREFOX_VERSION: "109.0"
+  LATEST_FIREFOX_VERSION: "110.0"
   OLDEST_FIREFOX_VERSION: "68.0"
   LATEST_EDGE_VERSION: 108.0.1462.76
   # until we use shared runners, this is default value

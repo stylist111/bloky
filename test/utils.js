@@ -694,7 +694,7 @@ async function throwHttpErrors(response) {
   if (!response.ok) {
     let body = await response.text();
     throw new Error(
-      "Admin server error. Server responsed with the following: " +
+      "Admin server error. Server responded with the following: " +
         `${response.status} - ${body}`
     );
   }

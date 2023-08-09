@@ -16,7 +16,9 @@
  */
 
 import browser from "webextension-polyfill";
-import {addonName, addonVersion} from "./info.js";
+
+import * as info from "./info.js";
+import {hasAcceptableAdsEnabled} from "./subscriptions.js";
 
 const TELEMETRY_STORAGE_KEY = "ewe:telemetry";
 
@@ -62,8 +64,7 @@ async function ping(telemetry) {
     telemetry.url,
     telemetry.bearer,
     {
-      extension_name: addonName,
-      extension_version: addonVersion
+      payload: await getExtensionMetadata()
     }
   );
 
@@ -86,7 +87,7 @@ async function fetchWithBearerToken(url, token, body) {
 
   if (!response.ok) {
     throw new Error(
-      `Telemetry error. Server responsed with the following status: ${response.status}`
+      `Telemetry error. Server responded with the following status: ${response.status}`
     );
   }
 
@@ -98,4 +99,52 @@ async function fetchWithBearerToken(url, token, body) {
   }
 
   return pingToken;
+}
+
+async function getExtensionMetadata() {
+  let platform;
+  let platformVersion;
+
+  if (navigator.userAgentData) {
+    const platformInfo = await navigator.userAgentData.getHighEntropyValues([
+      "platform",
+      "platformVersion"
+    ]);
+
+    platform = platformInfo.platform;
+    platformVersion = platformInfo.platformVersion;
+  }
+  else {
+    const platformInfo = await browser.runtime.getPlatformInfo();
+    platform = platformInfo.os;
+  }
+
+  return {
+    // The OS. Windows, Linux, etc.
+    platform,
+
+    // The version of the system OS.
+    platform_version: platformVersion,
+
+    // The browser. Chrome, Firefox, etc.
+    application: info.application,
+
+    // The version of the browser.
+    application_version: info.applicationVersion,
+
+    // Used to identify this specific project.
+    addon_name: "eyeo-webext-sdk",
+
+    // The SDK's current version. See the Dotenv plugin in webpack.config.js
+    addon_version: webpackDotenvPlugin.VERSION,
+
+    // The name of the extension using the SDK.
+    extension_name: info.addonName,
+
+    // The extension's version.
+    extension_version: info.addonVersion,
+
+    // Depends on having the acceptable ads subscription enabled.
+    aa_active: await hasAcceptableAdsEnabled()
+  };
 }

@@ -1,7 +1,7 @@
 Unreleased
 ==========
 
-# Fixes
+## Eyeometry implementation. 
 
 - Diff updates are now not wiped out during web extension restart
   in a new browser session. Web extension version (in manifest)
@@ -9,7 +9,15 @@ Unreleased
   subscription data (EE-166).
 
 # Internal
+- We now gather and send all the correct information to the telemetry server. 
+We don't yet handle any timing or retry logic. 
+- We have a new dev dependency 'webpackDotenvPlugin' for getting the correct 
+package version for telemetry purposes
+- Nothing happens if the telemetry object isn't provided. (EE-159)
 
+## Internal
+
+- EWE.start now logs warning in our test extension. (EE-159)
 - Add test to make sure that subscriptions with diffs are updated correctly when
   they expire. (EE-164)
 

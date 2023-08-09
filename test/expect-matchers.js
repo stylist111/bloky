@@ -23,6 +23,11 @@ expect.extend({
       pass: received == null || typeof received == type
     };
   },
+  oneOf(received, expected) {
+    return {
+      pass: expected.includes(received)
+    };
+  },
   toBeArrayContainingExactly(received, mandatoryExpected,
                              optionalExpected = []) {
     let createResult = (pass, outcomeDescriptionLines) => {

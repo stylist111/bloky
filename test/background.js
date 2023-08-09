@@ -358,6 +358,14 @@ if (isMV3()) {
         mv2_url: "https://easylist-downloads.adblockplus.org/exceptionrules.txt"
       },
       {
+        id: "F12E0801-A00B-49DE-B1E3-52C9C4F90C8C",
+        type: "allowing",
+        title: "Allow nonintrusive advertising without third-party tracking",
+        homepage: "https://acceptableads.com/",
+        url: "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules-privacy-friendly.txt",
+        mv2_url: "https://easylist-downloads.adblockplus.org/exceptionrules-privacy-friendly.txt"
+      },
+      {
         id: "8C13E995-8F06-4927-BEA7-6C845FB7EEBF",
         type: "ads",
         languages: [
@@ -418,7 +426,11 @@ EWE.testing.enableDebugOutput(true);
 
 startupInfo.telemetry = {url: "http://localhost:3003/telemetry", bearer: "bbb"};
 
-EWE.start(startupInfo).then(async() => {
+EWE.start(startupInfo).then(async firstRun => {
+  if (firstRun.warnings.length > 0) {
+    console.warn("EWE startup warnings: ", firstRun.warnings);
+  }
+
   migrationErrorsOnStart = await EWE.subscriptions.getMigrationErrors();
 
   if (typeof netscape != "undefined") {

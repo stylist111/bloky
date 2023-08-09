@@ -98,6 +98,21 @@ function makeListener(dispatch) {
   };
 }
 
+export async function hasAcceptableAdsEnabled() {
+  const matches = [ACCEPTABLE_ADS_MV2_URL,
+                   ACCEPTABLE_ADS_MV3_URL,
+                   ACCEPTABLE_ADS_PRIVACY_MV2_URL,
+                   ACCEPTABLE_ADS_PRIVACY_MV3_URL];
+
+  for (let subscription of await getDownloadable()) {
+    if (subscription.enabled && matches.includes(subscription.url)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 export function getDefaultSubscriptions(uiLanguage) {
   let hasCurrentLang = false;
   let hasDefaultLang = false;
