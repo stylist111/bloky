@@ -8,6 +8,10 @@ Unreleased
   now needs to be updated to let the SDK know to reload bundled
   subscription data (EE-166).
 
+# General
+
+- `hide-if-classifies` snippet does not require domains now, the new syntax to accept filters like this `#$#hide-if-classifies .selector` (EE-138).
+
 # Internal
 - We now gather and send all the correct information to the telemetry server. 
 We don't yet handle any timing or retry logic. 

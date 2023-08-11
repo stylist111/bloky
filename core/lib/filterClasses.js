@@ -898,18 +898,22 @@ exports.ContentFilter.fromText = function(text, domains, type, body) {
 
   if (type == "?" || type == "$") {
     // Element hiding emulation and snippet filters are inefficient so we need
-    // to make sure that they're only applied if they specify active domains
-    if (!restrictedByDomain) {
-      return new InvalidFilter(text, type == "?" ?
-        "filter_elemhideemulation_nodomain" :
-        "filter_snippet_nodomain");
-    }
+    // to make sure that they're only applied if they specify active domains.
+    // The only exception is "hide-if-classifies" snippet (EE-138).
 
     if (type == "?") {
+      if (!restrictedByDomain) {
+        return new InvalidFilter(text, "filter_elemhideemulation_nodomain");
+      }
+
       return new ElemHideEmulationFilter(text, domains, body);
     }
 
-    return new SnippetFilter(text, domains, body);
+    let snippetFilter = new SnippetFilter(text, domains, body);
+    if (!restrictedByDomain && !snippetFilter.script.startsWith("hide-if-classifies")) {
+      return new InvalidFilter(text, "filter_snippet_nodomain");
+    }
+    return snippetFilter;
   }
 
   if (!restrictedByDomain &&

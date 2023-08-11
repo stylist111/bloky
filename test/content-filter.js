@@ -481,8 +481,8 @@ describe("Snippets", function() {
   const injectedSnippet = "injected-snippet";
   const isolatedSnippet = "isolated-snippet";
 
-  async function assertSnippet(snippet, func, world) {
-    await addFilter(`${TEST_PAGES_DOMAIN}#$#${snippet} true`);
+  async function assertSnippet(domain, snippet, func, world, snippetArgument = "true") {
+    await addFilter(`${domain}#$#${snippet} ${snippetArgument}`);
 
     let tabId = await new Page("image.html").loaded;
 
@@ -494,30 +494,45 @@ describe("Snippets", function() {
     await wait(
       // Snippets arguments are stringified (JSON.string()),
       // so we set true (as boolean), but check "true" (as string).
-      async() => await executeScript(tabId, func, null, world) == "true",
+      async() => {
+        return await executeScript(tabId, func, null, world) == snippetArgument;
+      },
       hideTimeout,
       "Snippet was not applied"
     );
   }
 
+  const injectedSnippetArgumentExtractor = () => {
+    try {
+      let context = JSON.parse(document.body.id);
+      return context.arg;
+    }
+    catch (e) {
+      // may not exist yet
+      return null;
+    }
+  };
+
   it("applies an injected snippet [fuzz]", async function() {
     await assertSnippet(
+      TEST_PAGES_DOMAIN,
       injectedSnippet,
-      () => {
-        try {
-          let context = JSON.parse(document.body.id);
-          return context.arg;
-        }
-        catch (e) {
-          // may not exist yet
-          return null;
-        }
-      },
+      injectedSnippetArgumentExtractor,
       "MAIN");
+  });
+
+  it("applies 'hide-if-classifies' snippet with no domains", async function() {
+    await assertSnippet(
+      "", // no domains
+      "hide-if-classifies",
+      injectedSnippetArgumentExtractor,
+      "MAIN",
+      ".selector");
   });
 
   it("applies an isolated snippet", async function() {
     await assertSnippet(
+      TEST_PAGES_DOMAIN,
       isolatedSnippet,
       () => self.isolated_snippet_dependency && self.isolated_snippet_works,
       "ISOLATED");

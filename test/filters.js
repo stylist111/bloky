@@ -659,6 +659,17 @@ describe("Filters", function() {
         expect(events[0]).toEqual([{tabId, url, isResourceAllowlisted: false}]);
       }, timeout);
     });
+
+    it("adds 'hide-if-classifies' snippet without domains limitation", async function() {
+      await expect(EWE.filters.add("#$#hide-if-classifies .selector"))
+        .resolves.not.toThrow();
+
+      await expect(EWE.filters.add("#$#some-snippet .selector"))
+        .rejects.toThrow("FilterError: {\"type\":\"invalid_filter\",\"reason\":\"filter_snippet_nodomain\",\"option\":null}");
+
+      await expect(EWE.filters.add("#?#:-abp-properties(foo)"))
+        .rejects.toThrow("FilterError: {\"type\":\"invalid_filter\",\"reason\":\"filter_elemhideemulation_nodomain\",\"option\":null}");
+    });
   });
 });
 

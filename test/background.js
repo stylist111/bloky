@@ -512,6 +512,7 @@ let injectedCode = (environment, ..._) => {
   };
   let snippets = {
     "injected-snippet": injectedSnippetBody,
+    "hide-if-classifies": injectedSnippetBody,
     "recurring-injected-snippet": recurringSnippetBody
   };
   for (let [name, ...args] of _) {
@@ -520,6 +521,7 @@ let injectedCode = (environment, ..._) => {
 };
 injectedCode.has = snippet => [
   "injected-snippet",
+  "hide-if-classifies",
   "recurring-injected-snippet"
 ].includes(snippet);
 
