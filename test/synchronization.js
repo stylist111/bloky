@@ -23,6 +23,7 @@ import {wait, TEST_ADMIN_PAGES_URL, TEST_MV3_SUBSCRIPTION_3, getRequestLogs,
         hasUpdateStaticRules} from "./utils.js";
 import {EWE, addFilter} from "./messaging.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
+import {MILLIS_IN_HOUR, MILLIS_IN_DAY} from "adblockpluscore/lib/time.js";
 
 describe("Synchronization", function() {
   this.timeout(30000);
@@ -82,12 +83,12 @@ describe("Synchronization", function() {
     let defaultCheckInterval;
     let defaultInitialDelay;
 
-    beforeEach(function() {
+    beforeEach(async function() {
       // store default values from prefs
-      defaultCheckInterval = EWE.testing._getPrefs(
+      defaultCheckInterval = await EWE.testing._getPrefs(
         "subscriptions_check_interval"
       );
-      defaultInitialDelay = EWE.testing._getPrefs(
+      defaultInitialDelay = await EWE.testing._getPrefs(
         "subscriptions_initial_delay"
       );
     });
@@ -148,6 +149,84 @@ describe("Synchronization", function() {
       // waiting for the subscription to be updated automatically
       await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
       await new Page("image.html").expectResource("image.png").toBeBlocked();
+    });
+
+    it("uses diff updatable subscription expiration interval if provided", async function() {
+      if (!hasUpdateStaticRules()) {
+        this.skip();
+      }
+
+      // The default interval is set to "5 days"
+      await EWE.testing._setPrefs(
+        "subscriptions_default_expiration_interval",
+        5 * MILLIS_IN_DAY);
+
+      // The subscription update interval is "1 day"
+      let testDiffSubscriptionUrl =
+        "http://localhost:3003/updatable_subscription.txt";
+      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
+
+      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+        filters: {
+          add: [],
+          remove: []
+        }
+      }));
+
+      await EWE.subscriptions.add(testDiffSubscriptionUrl);
+      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+
+      const allDownloadables = await EWE.subscriptions.getDownloadable();
+      const subscription =
+        allDownloadables.find(
+          eachSubscription => eachSubscription.url === testDiffSubscriptionUrl);
+
+      // The subscription.expires should be 2 days (double the interval),
+      // and the default value it's 10 days.
+      // So we set the limit to 2 days + 1 hour.
+      const limitExpiration =
+        (Date.now() + (2 * MILLIS_IN_DAY) + MILLIS_IN_HOUR) / 1000; // in secs
+      // the extra hour is to compensate the difference between Date.now()
+      // calculated in the test and Date.now() calculated in Synchronizer.
+      expect(subscription.expires).toBeLessThan(limitExpiration);
+    });
+
+    it("uses default diff updatable subscription expiration interval if not provided", async function() {
+      if (!hasUpdateStaticRules()) {
+        this.skip();
+      }
+
+      // The default interval is 5 days
+      await EWE.testing._setPrefs(
+        "subscriptions_default_expiration_interval",
+        5 * MILLIS_IN_DAY);
+
+      // The subscription update interval is expected to be NOT set.
+      let testDiffSubscriptionUrl = "http://localhost:3003/anti-cv-subscription.txt";
+      let testDiffUrlEndpoint = "http://localhost:3003/anti-cv-subscription_diff.json";
+
+      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+        filters: {
+          add: [],
+          remove: []
+        }
+      }));
+
+      await EWE.subscriptions.add(testDiffSubscriptionUrl);
+      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+
+      const allDownloadables = await EWE.subscriptions.getDownloadable();
+      const subscription =
+        allDownloadables.find(
+          eachSubscription => eachSubscription.url === testDiffSubscriptionUrl);
+
+      // 10 days - 1 hour in the future: it's double update interval - some gap
+      // to compensate the difference between test Date.now() and Date.now()
+      // that was actually used in Synchronizer for calculating `.expires`.
+      const limitExpiration =
+        (Date.now() + (10 * MILLIS_IN_DAY) - MILLIS_IN_HOUR) / 1000;
+
+      expect(subscription.expires).toBeGreaterThan(limitExpiration);
     });
   });
 });

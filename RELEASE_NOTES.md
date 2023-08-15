@@ -1,16 +1,22 @@
 Unreleased
 ==========
 
-## Eyeometry implementation. 
+# General
 
 - Diff updates are now not wiped out during web extension restart
   in a new browser session. Web extension version (in manifest)
   now needs to be updated to let the SDK know to reload bundled
   subscription data (EE-166).
-
-# General
-
-- `hide-if-classifies` snippet does not require domains now, the new syntax to accept filters like this `#$#hide-if-classifies .selector` (EE-138).
+- Fixed a bug where diff updatable subscriptions would not use the correct
+  expiration date present in the header and instead use the default value of
+  5 days. The `covertSubscriptions.js` script was updated to handle the expires
+  property in a similar way to the `diff_url`, adding the `expires` property to
+  the recommendations that are passed to `EWE.start()`. If this property is
+  omitted they will use the default 5 days, but no change is required from the
+  integrators at the moment since the new version of the script should handle
+  everything automatically. (EE-167)
+- `hide-if-classifies` snippet does not require domains now, the new syntax to
+  accept filters like this `#$#hide-if-classifies .selector` (EE-138).
 
 # Internal
 - We now gather and send all the correct information to the telemetry server. 
@@ -18,9 +24,6 @@ We don't yet handle any timing or retry logic.
 - We have a new dev dependency 'webpackDotenvPlugin' for getting the correct 
 package version for telemetry purposes
 - Nothing happens if the telemetry object isn't provided. (EE-159)
-
-## Internal
-
 - EWE.start now logs warning in our test extension. (EE-159)
 - Add test to make sure that subscriptions with diffs are updated correctly when
   they expire. (EE-164)

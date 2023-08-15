@@ -399,6 +399,7 @@ if (isMV3()) {
         url: "http://localhost:3003/anti-cv-subscription.txt",
         mv2_url: "http://localhost:3003/mv2_anti-cv-subscription.txt",
         diff_url: "http://localhost:3003/anti-cv-subscription_diff.json"
+        // no ".expires" property provided
       },
       {
         id: "00000000-0000-0000-0000-000000000040",
@@ -415,7 +416,8 @@ if (isMV3()) {
         homepage: "http://localhost:3003/updatable_subscription.txt",
         diff_url: "http://localhost:3003/updatable_subscription/diff.json",
         url: "http://localhost:3003/updatable_subscription.txt",
-        mv2_url: "http://localhost:3003/mv2_updatable_subscription.txt"
+        mv2_url: "http://localhost:3003/mv2_updatable_subscription.txt",
+        expires: "1 day"
       }
     ],
     bundledSubscriptionsPath: "subscriptions"

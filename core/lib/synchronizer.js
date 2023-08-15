@@ -34,6 +34,7 @@ const {Subscription,
        CountableSubscription} = require("./subscriptionClasses");
 const {analytics} = require("./analytics");
 const {parseFilterList} = require("./filters/lists.js");
+const {recommendations} = require("./recommendations");
 
 const INITIAL_DELAY = 1 * MILLIS_IN_MINUTE;
 const CHECK_INTERVAL = 1 * MILLIS_IN_HOUR;
@@ -317,6 +318,12 @@ class Synchronizer {
 
     let expirationInterval = isHEAD ? headExpInterval : defaultExpInterval;
 
+    if (isDiffUpdatable) {
+      params.expires =
+        [...recommendations()].find(
+          recommendation => recommendation.url === downloadable.originalUrl
+        ).expires;
+    }
     if (params.expires) {
       let match = /^(\d+)\s*(h)?/.exec(params.expires);
       if (match) {

@@ -99,12 +99,17 @@ async function convert(inDir, outDir,
       throw new Error(error);
     }
 
-    if (params.diffurl) {
-      // iterate over all custom subscriptions and add the diffurl property
-      // to the subscription whose id matches subsId
+    if (params.diffurl || params.expires) {
+      // iterate over all custom subscriptions and add the diffurl and expires
+      // properties to the subscription whose id matches subsId
       for (let customSubscription of customSubscriptions) {
         if (customSubscription.id === subsId) {
-          customSubscription.diff_url = params.diffurl;
+          if (params.diffurl) {
+            customSubscription.diff_url = params.diffurl;
+          }
+          if (params.expires) {
+            customSubscription.expires = params.expires;
+          }
           break;
         }
       }

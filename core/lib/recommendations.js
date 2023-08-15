@@ -104,6 +104,17 @@ class Recommendation {
   get diffURL() {
     return this._source.diff_url;
   }
+
+  /**
+   * Expiration interval from the subscription header.
+   * Usually the number of days or hours between expirations.
+   * @example "1 days"
+   * @example "6 hours"
+   * @type {?string}
+   */
+  get expires() {
+    return this._source.expires;
+  }
 }
 
 let _recommendations = null;

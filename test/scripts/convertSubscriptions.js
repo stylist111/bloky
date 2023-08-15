@@ -202,6 +202,32 @@ describe("convertSubscriptions script", function() {
     expect(result[0].diff_url).toEqual("whereIShouldGetData.com");
   });
 
+  it("should place an 'expires' property on the subscription recommendations file", async function() {
+    let diffSubscriptionFilename = "00000000-0000-0000-0000-000000000050";
+    createAbpRuleFile(diffSubscriptionFilename,
+                      "[Adblock Plus 2.0]\n! Expires: 3 days\nrule1\nrule2");
+
+    let customSubscriptionsContent = JSON.stringify([{
+      id: "00000000-0000-0000-0000-000000000050",
+      type: "ads",
+      title: "Subscription with a DiffUrl",
+      homepage: "http://localhost:3003/diffSubscription.txt",
+      url: "http://localhost:3003/diffSubscription.txt",
+      mv2_url: "http://localhost:3003/mv2_diffSubscription.txt",
+      expires: "3 days"
+    }]);
+
+    fs.openSync(customSubscriptionsFilename, "w");
+    fs.writeFileSync(customSubscriptionsFilename, customSubscriptionsContent,
+                     {encoding});
+
+    await convert(tmpInDir, tmpOutDir, false, "", customSubscriptionsFilename);
+
+    let result =
+      JSON.parse(fs.readFileSync(customSubscriptionsFilename, encoding));
+    expect(result[0].expires).toEqual("3 days");
+  });
+
   it("generates a summary report file", async function() {
     let filename = "foo.txt";
     createAbpRuleFile(filename, "[Adblock Plus 2.0]\n/rule1/\nrule2\n");
