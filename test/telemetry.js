@@ -98,7 +98,8 @@ describe("Telemetry", function() {
       if (payload.platform_version) {
         expect(payload.platform_version).toEqual(expect.stringMatching(/^\d+(.\d+)+$/));
       }
-      expect(payload.application).toEqual(expect.oneOf(["firefox", "chrome", "edg"]));
+      expect(payload.application)
+        .toEqual(expect.oneOf(["firefox", "chrome", "headlesschrome", "edg"]));
       expect(payload.application_version).toEqual(expect.stringMatching(/^\d+(.\d+)+$/));
       expect(payload.addon_name).toEqual("eyeo-webext-sdk");
       expect(payload.addon_version).toEqual(expect.stringMatching(/^\d+(.\d+)+$/));
