@@ -19,10 +19,11 @@ Unreleased
   accept filters like this `#$#hide-if-classifies .selector` (EE-138).
 
 # Internal
-- We now gather and send all the correct information to the telemetry server. 
-We don't yet handle any timing or retry logic. 
-- We have a new dev dependency 'webpackDotenvPlugin' for getting the correct 
-package version for telemetry purposes
+
+- We now gather and send all the correct information to the telemetry server. We
+  don't yet handle any timing or retry logic. (EE-159)
+- We have a new dev dependency 'webpackDotenvPlugin' for getting the correct
+  package version for telemetry purposes
 - Nothing happens if the telemetry object isn't provided. (EE-159)
 - EWE.start now logs warning in our test extension. (EE-159)
 - Add test to make sure that subscriptions with diffs are updated correctly when

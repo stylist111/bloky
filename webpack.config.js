@@ -85,10 +85,21 @@ const mv2Custom = {
   outputPath: "test-mv2-custom"
 };
 
-function eweBuild(env, configName, subscriptionFile, silent, outputPath) {
+function commonPlugins() {
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
   process.env.VERSION = packageJson.version;
 
+  return [
+    // This replaces the webpackDotenvPlugin object in our code with values
+    // from your environment variables at build time.
+    new Dotenv({
+      systemvars: true,
+      prefix: "webpackDotenvPlugin."
+    })
+  ];
+}
+
+function eweBuild(env, configName, subscriptionFile, silent, outputPath) {
   let build = {
     name: configName,
     entry: {
@@ -130,12 +141,7 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath) {
     },
     plugins: [
       new GenerateJsonPlugin("package.json", {type: "commonjs"}, null, 2),
-      // This replaces the webpackDotenvPlugin object in our code with values
-      // from your environment variables at build time.
-      new Dotenv({
-        systemvars: true,
-        prefix: "webpackDotenvPlugin."
-      })
+      ...commonPlugins()
     ],
     externals: {
       perf_hooks: "self"
@@ -255,7 +261,8 @@ export default (env = {}) => {
             fs.existsSync(path.join(dirname, "scriptsOutput")) ?
             [{from: path.join(dirname, "scriptsOutput")}] : []
         ]
-      })
+      }),
+      ...commonPlugins()
     ];
 
     if (env.development) {

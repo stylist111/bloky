@@ -11,6 +11,9 @@
     "eslint-plugin-html",
     "mocha"
   ],
+  "globals": {
+    "webpackDotenvPlugin": "readonly"
+  },
   "rules": {
     "brace-style": ["error", "stroustrup"],
     "curly": [

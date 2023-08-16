@@ -18,7 +18,7 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 import {EWE, runInBackgroundPage} from "./messaging.js";
-import {clearRequestLogs, getRequestLogs,
+import {clearRequestLogs, getRequestLogs, setMinTimeout,
         isFirefox, isIncognito,
         TEST_ADMIN_PAGES_URL, TEST_PAGES_URL,
         waitForAssertion, waitForSubscriptionToBeSynchronized} from "./utils.js";
@@ -137,7 +137,7 @@ describe("Telemetry", function() {
 
   for (let aaUrlPropertyName of ["ACCEPTABLE_ADS_PRIVACY_URL", "ACCEPTABLE_ADS_URL"]) {
     it(`sends AA active extension metadata to the telemetry server when ${aaUrlPropertyName} is active`, async function() {
-      this.timeout(6000);
+      setMinTimeout(this, 6000);
 
       let aaUrl = await runInBackgroundPage([
         {op: "getGlobal", arg: "EWE"},
@@ -178,4 +178,30 @@ describe("Telemetry", function() {
       });
     });
   }
+
+  it("can successfully send a payload to the eyeometry staging server", async function() {
+    setMinTimeout(this, 11000);
+
+    // These credentials can be set by setting the environment variables with
+    // the same name before running webpack.
+    let eyeometryArgs = {
+      url: webpackDotenvPlugin.EWE_EYEOMETRY_URL,
+      bearer: webpackDotenvPlugin.EWE_EYEOMETRY_BEARER
+    };
+    if (!eyeometryArgs.url || !eyeometryArgs.bearer) {
+      this.skip();
+    }
+
+    await EWE.testing.resetTelemetry();
+    await EWE.testing.startTelemetry(eyeometryArgs);
+
+    // When we have an onError event, it would be good to surface that value if
+    // this test fails.
+    await waitForAssertion(async() => {
+      let result = await browser.storage.local.get([TELEMETRY_STORAGE_KEY]);
+      expect(result[TELEMETRY_STORAGE_KEY]).toEqual({
+        firstPing: expect.any(String)
+      });
+    }, 10000);
+  });
 });

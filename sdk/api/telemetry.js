@@ -38,7 +38,7 @@ export function start(telemetry) {
   }
   started = true;
 
-  ping(telemetry).catch(console.error);
+  ping(telemetry).catch(e => console.error(e.toString()));
 }
 
 export async function reset() {
