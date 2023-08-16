@@ -19,7 +19,6 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 import {EWE, runInBackgroundPage} from "./messaging.js";
 import {clearRequestLogs, getRequestLogs, setMinTimeout,
-        isFirefox, isIncognito,
         TEST_ADMIN_PAGES_URL, TEST_PAGES_URL,
         waitForAssertion, waitForSubscriptionToBeSynchronized} from "./utils.js";
 
@@ -145,21 +144,13 @@ describe("Telemetry", function() {
         {op: "getProp", arg: aaUrlPropertyName}
       ]);
       await EWE.subscriptions.add(aaUrl);
-      await waitForSubscriptionToBeSynchronized(aaUrl);
 
       const notAnAAUrl = `${TEST_PAGES_URL}/subscription.txt`;
       await EWE.subscriptions.add(notAnAAUrl);
-      await waitForSubscriptionToBeSynchronized(notAnAAUrl);
 
-      if (isFirefox() && isIncognito()) {
-        await new Promise(r => setTimeout(r, 500));
-      }
       await clearRequestLogs();
       await EWE.testing.resetTelemetry();
       await EWE.testing.startTelemetry(TELEMETRY_ARGS);
-      if (isFirefox() && isIncognito()) {
-        await new Promise(r => setTimeout(r, 500));
-      }
 
       await waitForAssertion(async() => {
         let telemetryRequests = await getRequestLogs();
@@ -168,7 +159,7 @@ describe("Telemetry", function() {
           return request.url == "/telemetry";
         });
 
-        expect(telemetryRequests).toEqual([expect.objectContaining({
+        expect(telemetryFetchPayload).toEqual([expect.objectContaining({
           url: "/telemetry",
           method: "POST"
         })]);
