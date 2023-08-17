@@ -17,6 +17,10 @@ Unreleased
   everything automatically. (EE-167)
 - `hide-if-classifies` snippet does not require domains now, the new syntax to
   accept filters like this `#$#hide-if-classifies .selector` (EE-138).
+- `Subscription.insertFilterAt()` is deprecated in favour of
+  `Subscription.insertFilterTextAt()`, `Subscription.findFilterIndex()` is
+  deprecated in favour of `Subscription.findFilterTextIndex()` for better
+  performance (EE-114).
 
 # Internal
 

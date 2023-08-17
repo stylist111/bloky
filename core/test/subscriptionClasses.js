@@ -131,11 +131,11 @@ describe("Subscription classes", function() {
 
     subscription.addFilter(Filter.fromText("##.foo"));
     compareSubscriptionFilters(subscription, ["##.foo"]);
-    assert.equal(subscription.findFilterIndex(Filter.fromText("##.foo")), 0);
+    assert.equal(subscription.findFilterTextIndex("##.foo"), 0);
 
     subscription.addFilter(Filter.fromText("##.bar"));
     compareSubscriptionFilters(subscription, ["##.foo", "##.bar"]);
-    assert.equal(subscription.findFilterIndex(Filter.fromText("##.bar")), 1);
+    assert.equal(subscription.findFilterTextIndex("##.bar"), 1);
 
     // Repeat filter.
     subscription.addFilter(Filter.fromText("##.bar"));
@@ -143,65 +143,65 @@ describe("Subscription classes", function() {
                                               "##.bar"]);
 
     // The first occurrence is found.
-    assert.equal(subscription.findFilterIndex(Filter.fromText("##.bar")), 1);
+    assert.equal(subscription.findFilterTextIndex("##.bar"), 1);
 
     subscription.deleteFilterAt(0);
     compareSubscriptionFilters(subscription, ["##.bar", "##.bar"]);
-    assert.equal(subscription.findFilterIndex(Filter.fromText("##.bar")), 0);
+    assert.equal(subscription.findFilterTextIndex("##.bar"), 0);
 
-    subscription.insertFilterAt(Filter.fromText("##.foo"), 0);
+    subscription.insertFilterTextAt("##.foo", 0);
     compareSubscriptionFilters(subscription, ["##.foo", "##.bar",
                                               "##.bar"]);
-    assert.equal(subscription.findFilterIndex(Filter.fromText("##.bar")), 1);
+    assert.equal(subscription.findFilterTextIndex("##.bar"), 1);
 
     subscription.deleteFilterAt(1);
     compareSubscriptionFilters(subscription, ["##.foo", "##.bar"]);
-    assert.equal(subscription.findFilterIndex(Filter.fromText("##.bar")), 1);
+    assert.equal(subscription.findFilterTextIndex("##.bar"), 1);
 
     subscription.deleteFilterAt(1);
     compareSubscriptionFilters(subscription, ["##.foo"]);
-    assert.equal(subscription.findFilterIndex(Filter.fromText("##.bar")), -1);
+    assert.equal(subscription.findFilterTextIndex("##.bar"), -1);
 
     subscription.addFilter(Filter.fromText("##.bar"));
     compareSubscriptionFilters(subscription, ["##.foo", "##.bar"]);
-    assert.equal(subscription.findFilterIndex(Filter.fromText("##.bar")), 1);
+    assert.equal(subscription.findFilterTextIndex("##.bar"), 1);
 
     subscription.clearFilters();
     compareSubscriptionFilters(subscription, []);
-    assert.equal(subscription.findFilterIndex(Filter.fromText("##.foo")), -1);
-    assert.equal(subscription.findFilterIndex(Filter.fromText("##.bar")), -1);
+    assert.equal(subscription.findFilterTextIndex("##.foo"), -1);
+    assert.equal(subscription.findFilterTextIndex("##.bar"), -1);
 
     subscription.addFilter(Filter.fromText("##.bar"));
     compareSubscriptionFilters(subscription, ["##.bar"]);
 
     subscription.addFilter(Filter.fromText("##.foo"));
     compareSubscriptionFilters(subscription, ["##.bar", "##.foo"]);
-    assert.equal(subscription.findFilterIndex(Filter.fromText("##.bar")), 0);
-    assert.equal(subscription.findFilterIndex(Filter.fromText("##.foo")), 1);
+    assert.equal(subscription.findFilterTextIndex("##.bar"), 0);
+    assert.equal(subscription.findFilterTextIndex("##.foo"), 1);
 
     // Insert outside of bounds.
-    subscription.insertFilterAt(Filter.fromText("##.lambda"), 1000);
+    subscription.insertFilterTextAt("##.lambda", 1000);
     compareSubscriptionFilters(subscription, ["##.bar", "##.foo",
                                               "##.lambda"]);
-    assert.equal(subscription.findFilterIndex(Filter.fromText("##.lambda")), 2);
+    assert.equal(subscription.findFilterTextIndex("##.lambda"), 2);
 
     // Delete outside of bounds.
     subscription.deleteFilterAt(1000);
     compareSubscriptionFilters(subscription, ["##.bar", "##.foo",
                                               "##.lambda"]);
-    assert.equal(subscription.findFilterIndex(Filter.fromText("##.lambda")), 2);
+    assert.equal(subscription.findFilterTextIndex("##.lambda"), 2);
 
     // Insert outside of bounds (negative).
-    subscription.insertFilterAt(Filter.fromText("##.lambda"), -1000);
+    subscription.insertFilterTextAt("##.lambda", -1000);
     compareSubscriptionFilters(subscription, ["##.lambda", "##.bar",
                                               "##.foo", "##.lambda"]);
-    assert.equal(subscription.findFilterIndex(Filter.fromText("##.lambda")), 0);
+    assert.equal(subscription.findFilterTextIndex("##.lambda"), 0);
 
     // Delete outside of bounds (negative).
     subscription.deleteFilterAt(-1000);
     compareSubscriptionFilters(subscription, ["##.lambda", "##.bar",
                                               "##.foo", "##.lambda"]);
-    assert.equal(subscription.findFilterIndex(Filter.fromText("##.lambda")), 0);
+    assert.equal(subscription.findFilterTextIndex("##.lambda"), 0);
   });
 
   it("Subscription delta", function() {

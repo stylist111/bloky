@@ -419,9 +419,10 @@ exports.Subscription = class Subscription {
    *   filter is not found in the subscription, the return value is `-1`.
    *
    * @see {@link findFilterTextIndex} if you only have a filter text.
+   * @deprecated
    */
   findFilterIndex(filter, fromIndex = 0) {
-    return this._filterText.indexOf(filter.text, fromIndex);
+    return this.findFilterTextIndex(filter.text, fromIndex);
   }
 
   /**
@@ -452,6 +453,7 @@ exports.Subscription = class Subscription {
    * @param {module:filterClasses.Filter} filter The filter.
    *
    * @see {@link addFilterText} if you only have a filter text.
+   * @deprecated
    */
   addFilter(filter) {
     this.addFilterText(filter.text);
@@ -472,10 +474,23 @@ exports.Subscription = class Subscription {
    * @param {module:filterClasses.Filter} filter The filter.
    * @param {number} index The `0`-based index. If the index is out of bounds,
    *   the filter is inserted at the beginning or at the end accordingly.
+   * @see {@link insertFilterTextAt} if you only have a filter text.
+   * @deprecated
    */
   insertFilterAt(filter, index) {
-    this._filterText.splice(index, 0, filter.text);
-    this._filterTextIndex.add(filter.text);
+    this.insertFilterTextAt(filter.text, index);
+  }
+
+  /**
+   * Inserts a filter into the subscription at the given `0`-based index.
+   *
+   * @param {string} filterText The filter text.
+   * @param {number} index The `0`-based index. If the index is out of bounds,
+   *   the filter is inserted at the beginning or at the end accordingly.
+   */
+  insertFilterTextAt(filterText, index) {
+    this._filterText.splice(index, 0, filterText);
+    this._filterTextIndex.add(filterText);
   }
 
   /**

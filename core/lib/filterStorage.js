@@ -527,7 +527,7 @@ class FilterStorage {
       position = subscription.filterCount;
     }
 
-    subscription.insertFilterAt(filter, position);
+    subscription.insertFilterTextAt(filter.text, position);
     this.enableFilter(filter.text, subscription.url);
     filterNotifier.emit("filter.added", filter, subscription, position);
     return subscription;
@@ -555,7 +555,8 @@ class FilterStorage {
         if (typeof position == "undefined") {
           let index = -1;
           do {
-            index = currentSubscription.findFilterIndex(filter, index + 1);
+            index = currentSubscription.findFilterTextIndex(
+              filter.text, index + 1);
             if (index >= 0) {
               positions.push(index);
             }
@@ -605,7 +606,7 @@ class FilterStorage {
     }
 
     subscription.deleteFilterAt(oldPosition);
-    subscription.insertFilterAt(filter, newPosition);
+    subscription.insertFilterTextAt(filter.text, newPosition);
     filterNotifier.emit(
       "filter.moved", filter, subscription, oldPosition, newPosition
     );
