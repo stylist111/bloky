@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /*
  * This file is part of eyeo's Web Extension Ad Blocking Toolkit (EWE),
  * Copyright (C) 2006-present eyeo GmbH
@@ -707,10 +706,27 @@ export async function clearRequestLogs() {
   await throwHttpErrors(response);
 }
 
-export async function getRequestLogs() {
+/**
+ * Gets the list of requests that happened on the test server.
+ *
+ * @param {String?} url Only get requests for this URL. This should not include
+ * any query parameters. This can be both a relative path like `/telemetry`, or
+ * a full url like `http://localhost:3003/telemetry`.
+ */
+export async function getRequestLogs(url) {
   let response = await fetch(`${TEST_ADMIN_PAGES_URL}/requestLogs`);
   await throwHttpErrors(response);
-  return await response.json();
+  let requestLogs = await response.json();
+
+  if (url) {
+    if (url.startsWith(TEST_ADMIN_PAGES_URL)) {
+      url = url.slice(TEST_ADMIN_PAGES_URL.length);
+    }
+
+    requestLogs = requestLogs.filter(log => log.path == url);
+  }
+
+  return requestLogs;
 }
 
 export async function setEndpointResponse(url, response, method) {

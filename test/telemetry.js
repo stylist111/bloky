@@ -50,9 +50,8 @@ describe("Telemetry", function() {
     // wait for the telemetry requests to be sent
     await new Promise(r => setTimeout(r, 1000));
 
-    let responses = await getRequestLogs();
-    expect(responses.filter(request => request.url == "/telemetry").length)
-      .toEqual(1);
+    let responses = await getRequestLogs(TELEMETRY_URL);
+    expect(responses.length).toEqual(1);
   });
 
   it("doesn't ping again when starting again later", async function() {
@@ -64,9 +63,8 @@ describe("Telemetry", function() {
     // wait for the telemetry requests to be sent
     await new Promise(r => setTimeout(r, 1000));
 
-    let responses = await getRequestLogs();
-    expect(responses.filter(request => request.url == "/telemetry").length)
-      .toEqual(0);
+    let responses = await getRequestLogs(TELEMETRY_URL);
+    expect(responses.length).toEqual(0);
   });
 
   it("doesn't send request if both url and bearer token aren't provided", async function() {
@@ -82,17 +80,13 @@ describe("Telemetry", function() {
     await EWE.testing.startTelemetry(TELEMETRY_ARGS);
 
     await waitForAssertion(async() => {
-      let requests = await getRequestLogs();
+      let requests = await getRequestLogs(TELEMETRY_URL);
       expect(requests).toEqual([expect.objectContaining({
         url: "/telemetry",
         method: "POST"
       })]);
 
-      const telemetryFetchPayload = requests.filter(request => {
-        return request.url == "/telemetry";
-      })[0];
-
-      const payload = telemetryFetchPayload.body.payload;
+      const payload = requests[0].body.payload;
       expect(payload.platform).toEqual(expect.oneOf(["win", "Windows", "mac", "macOS", "linux", "Linux"]));
       if (payload.platform_version) {
         expect(payload.platform_version).toEqual(expect.stringMatching(/^\d+(.\d+)+$/));
@@ -118,18 +112,14 @@ describe("Telemetry", function() {
     await EWE.testing.startTelemetry(TELEMETRY_ARGS);
 
     await waitForAssertion(async() => {
-      let telemetryRequests = await getRequestLogs();
-
-      const telemetryFetchPayload = telemetryRequests.filter(request => {
-        return request.url == "/telemetry";
-      });
+      let telemetryRequests = await getRequestLogs(TELEMETRY_URL);
 
       expect(telemetryRequests).toEqual([expect.objectContaining({
         url: "/telemetry",
         method: "POST"
       })]);
 
-      const payload = telemetryFetchPayload[0].body.payload;
+      const payload = telemetryRequests[0].body.payload;
       expect(payload.aa_active).toEqual(false);
     });
   });
@@ -153,18 +143,14 @@ describe("Telemetry", function() {
       await EWE.testing.startTelemetry(TELEMETRY_ARGS);
 
       await waitForAssertion(async() => {
-        let telemetryRequests = await getRequestLogs();
+        let telemetryRequests = await getRequestLogs(TELEMETRY_URL);
 
-        const telemetryFetchPayload = telemetryRequests.filter(request => {
-          return request.url == "/telemetry";
-        });
-
-        expect(telemetryFetchPayload).toEqual([expect.objectContaining({
+        expect(telemetryRequests).toEqual([expect.objectContaining({
           url: "/telemetry",
           method: "POST"
         })]);
 
-        const payload = telemetryFetchPayload[0].body.payload;
+        const payload = telemetryRequests[0].body.payload;
         expect(payload.aa_active).toEqual(true);
       });
     });

@@ -48,6 +48,7 @@ class RequestLogger {
     this.requests.push({
       method: req.method,
       url: req.url,
+      path: req.path,
       query: req.query,
       body: req.body
     });

@@ -28,7 +28,8 @@ Unreleased
 - EWE.start now logs warning in our test extension. (EE-159)
 - Add test to make sure that subscriptions with diffs are updated correctly when
   they expire. (EE-164)
-
+- Our internal method for testing requests sent to a server now has automatic
+  URL filtering to better decouple tests.
 
 # Tests
 

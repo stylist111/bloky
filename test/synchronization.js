@@ -46,16 +46,16 @@ describe("Synchronization", function() {
     })]);
   }
 
-  async function requestsSent() {
+  async function requestsSent(url) {
     await wait(async() => {
-      let requests = await getRequestLogs();
+      let requests = await getRequestLogs(url);
       return requests.length > 0;
     }, 20000, "No requests sent", 100);
   }
 
   it("sends HEAD requests for expired subscriptions after service worker restarts [mv3-only] [fuzz-skip]", async function() {
     await configure();
-    await requestsSent();
+    await requestsSent(TEST_MV3_SUBSCRIPTION_3.url);
     await clearRequestLogs();
 
     let now = Date.now();
@@ -69,9 +69,9 @@ describe("Synchronization", function() {
     await suspendServiceWorker(this);
     await addFilter("someFilterToAwakeTheSW");
 
-    await requestsSent();
+    await requestsSent(TEST_MV3_SUBSCRIPTION_3.url);
 
-    let requests = await getRequestLogs();
+    let requests = await getRequestLogs(TEST_MV3_SUBSCRIPTION_3.url);
 
     expect(requests.length).toEqual(1);
     expect(requests).toEqual([expect.objectContaining({
