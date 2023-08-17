@@ -29,6 +29,12 @@ Unreleased
 - Add test to make sure that subscriptions with diffs are updated correctly when
   they expire. (EE-164)
 
+
+# Tests
+
+- Now skipping "fixes the IO/Prefs prefixes" test on FF 115+ as it's not using
+  `browser.storage.local` in private mode (due to IndexedDB support).
+
 0.12.0 - 2023/08/03
 ===================
 

@@ -19,7 +19,7 @@ import expect from "expect";
 import browser from "webextension-polyfill";
 
 import {Page, TEST_MV3_SUBSCRIPTION, isFirefox, readFile, writeFile,
-        setMinTimeout, wait, isIncognito} from "./utils.js";
+        setMinTimeout, wait, isIncognito, firefoxVersion} from "./utils.js";
 import {EWE, runInBackgroundPage} from "./messaging.js";
 import {updateExtensionFiles} from "./mocha/mocha-runner.js";
 
@@ -123,7 +123,8 @@ describe(`Update (${phase}) [runner-only]`, function() {
   });
 
   it("fixes the IO/Prefs prefixes [mv2-only]", async function() {
-    if (!isFirefox() || !isIncognito()) {
+    // Firefox 115 supports IndexedDB, so we don't switch to b.s.l for IO
+    if (!isFirefox() || !isIncognito() || firefoxVersion() >= 115) {
       this.skip();
     }
 
