@@ -57,7 +57,7 @@ export async function restoreDynamicFiltersForSubscriptionId(id) {
 
       let lastUpdate = rulesetUpdates.get(subscription.id);
       if (lastUpdate) {
-        await _dnrSubscriptionUpdate(subscription, lastUpdate);
+        await _dnrSubscriptionUpdate(subscription, lastUpdate, true);
       }
 
       break;
@@ -188,7 +188,8 @@ export async function enableAllDisabledStaticRules() {
   }
 }
 
-export async function _dnrSubscriptionUpdate(subscription, updates) {
+export async function _dnrSubscriptionUpdate(
+  subscription, updates, skipEmitting) {
   if (!browser.declarativeNetRequest || !updates) {
     return;
   }
@@ -334,7 +335,13 @@ export async function _dnrSubscriptionUpdate(subscription, updates) {
   storeRulesetUpdates();
   storeDynamicFilters();
 
-  filterNotifier.emit("subscription.updated", subscription, storageUpdate);
+  if (!skipEmitting) {
+    // `dnrSubscriptionUpdate()` is currently used for some internal routines,
+    // eg. restoring the dynamic rules for the subscription, which does not
+    // mean there was a subscription update actually (EE-163), so we might
+    // skip emitting the event.
+    filterNotifier.emit("subscription.updated", subscription, storageUpdate);
+  }
 }
 
 /**

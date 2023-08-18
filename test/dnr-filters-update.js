@@ -22,7 +22,7 @@ import {EWE, clearTestEvents, expectTestEvents} from "./messaging.js";
 import {hasUpdateStaticRules, Page, setEndpointResponse, shouldBeLoaded,
         setMinTimeout, wait, expectElemHideVisible, expectElemHideHidden,
         syncSubHasLastFilter, syncSubHasNoLastFilter,
-        waitForSubscriptionToBeSynchronized, clearRequestLogs}
+        waitForSubscriptionToBeSynchronized, clearRequestLogs, getRequestLogs}
   from "./utils.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
@@ -41,6 +41,13 @@ const EMPTY_UPDATE = {
   removed: [
   ]
 };
+
+const EMPTY_DIFF_UPDATE = JSON.stringify({
+  filters: {
+    add: [],
+    remove: []
+  }
+});
 
 const UPDATES = {
   added: [
@@ -168,12 +175,7 @@ describe("Test subscriptions update", function() {
 
   beforeEach(async function() {
     await clearRequestLogs();
-    await setEndpointResponse("/updatable_subscription/diff.json", JSON.stringify({
-      filters: {
-        add: [],
-        remove: []
-      }
-    }));
+    await setEndpointResponse("/updatable_subscription/diff.json", EMPTY_DIFF_UPDATE);
     await EWE.testing.clearIsDnrSubscriptionUpdating();
 
     // Ensure it is enabled.
@@ -531,6 +533,7 @@ describe("Test subscriptions update", function() {
       );
 
       await checkDynamicRuleCount(0);
+      await checkDynamicRuleCount(0);
       await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, EMPTY_UPDATE);
     });
   });
@@ -591,12 +594,7 @@ describe("Test subscriptions update", function() {
     async function diffUpdateIsApplied(
       testDiffSubscriptionUrl, testDiffUrlEndpoint) {
       // start with empty diffs
-      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
-        filters: {
-          add: [],
-          remove: []
-        }
-      }));
+      await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
 
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
       await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
@@ -656,13 +654,7 @@ describe("Test subscriptions update", function() {
       const testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
       const testDiffUrlEndpoint = "/updatable_subscription/diff.json";
 
-      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
-        filters: {
-          add: [],
-          remove: []
-        }
-      }));
-
+      await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
 
       const elemId = "diff-elem-item";
@@ -701,12 +693,8 @@ describe("Test subscriptions update", function() {
 
       let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
       let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
-      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
-        filters: {
-          add: [],
-          remove: []
-        }
-      }));
+
+      await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
 
       await shouldBeLoaded(
         "image-from-subscription.html",
@@ -726,12 +714,8 @@ describe("Test subscriptions update", function() {
 
       let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
       let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
-      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
-        filters: {
-          add: [],
-          remove: []
-        }
-      }));
+
+      await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
       await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
 
@@ -918,14 +902,7 @@ describe("Test subscriptions update", function() {
       let filterToAdd = "image.png";
 
       await EWE.filters.add(filterToAdd);
-
-      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
-        filters: {
-          add: [],
-          remove: []
-        }
-      }));
-
+      await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
       await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
 
@@ -945,6 +922,88 @@ describe("Test subscriptions update", function() {
       await new Page("image.html")
         .expectResource("image.png")
         .toBeBlocked();
+    });
+
+    it("it passes users counting data to back-end", async function() {
+      if (!hasUpdateStaticRules()) {
+        this.skip();
+      }
+
+      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
+      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
+
+      await clearRequestLogs();
+      await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
+      await EWE.subscriptions.add(testDiffSubscriptionUrl);
+      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+
+      let requests = (await getRequestLogs()).filter(
+        eachRequest => eachRequest.url.includes(testDiffUrlEndpoint));
+      expect(requests).toEqual(expect.arrayContaining([expect.objectContaining({
+        query: expect.objectContaining({
+          addonName: expect.any(String),
+          addonVersion: expect.any(String),
+          application: expect.any(String),
+          applicationVersion: expect.any(String),
+          platform: expect.any(String),
+          platformVersion: expect.any(String),
+          lastVersion: expect.any(String),
+          downloadCount: expect.any(String),
+          disabled: "false",
+          manifestVersion: "3"
+        })
+      })]));
+    });
+
+    it("it passes users counting data to back-end even for disabled subscriptions", async function() {
+      if (!hasUpdateStaticRules()) {
+        this.skip();
+      }
+
+      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
+      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
+
+      await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
+      await EWE.subscriptions.add(testDiffSubscriptionUrl, {}, "add() from test");
+      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+
+      await EWE.subscriptions.disable(testDiffSubscriptionUrl);
+      await clearRequestLogs();
+
+      await EWE.subscriptions.sync(testDiffSubscriptionUrl);
+      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+
+      let requests = (await getRequestLogs()).filter(
+        eachRequest => eachRequest.url.includes(testDiffUrlEndpoint));
+      expect(requests).toEqual(expect.arrayContaining([expect.objectContaining({
+        query: expect.objectContaining({
+          disabled: "true"
+        })
+      })]));
+    });
+
+    it("it increments downloadCount", async function() {
+      if (!hasUpdateStaticRules()) {
+        this.skip();
+      }
+
+      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
+      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
+
+      await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
+      await EWE.subscriptions.add(testDiffSubscriptionUrl);
+      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+
+      // after 4 we start sending "4+" to keep the request anonymized
+      for (let expectedDownloadCount of ["1", "2", "3", "4", "4+", "4+"]) {
+        await clearRequestLogs();
+        await EWE.subscriptions.sync(testDiffSubscriptionUrl);
+        await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+
+        let request = (await getRequestLogs()).find(
+          eachRequest => eachRequest.url.includes(testDiffUrlEndpoint));
+        expect(request.query["downloadCount"]).toEqual(expectedDownloadCount);
+      }
     });
   });
 });

@@ -21,6 +21,7 @@ Unreleased
   `Subscription.insertFilterTextAt()`, `Subscription.findFilterIndex()` is
   deprecated in favour of `Subscription.findFilterTextIndex()` for better
   performance (EE-114).
+- Enabling ruleset is not emitting "subscription.updated" now (EE-153).  
 
 # Internal
 
@@ -38,7 +39,9 @@ Unreleased
 # Tests
 
 - Now skipping "fixes the IO/Prefs prefixes" test on FF 115+ as it's not using
-  `browser.storage.local` in private mode (due to IndexedDB support).
+  `browser.storage.local` in private mode (due to IndexedDB support) (EE-154).
+- Few tests added to make sure user that counting is working for diff updatable
+  subscriptions on MV3 (EE-153).
 
 0.12.0 - 2023/08/03
 ===================
