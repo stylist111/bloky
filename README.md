@@ -426,13 +426,13 @@ npm run lint
 
 </div>
 
-[builds]: https://gitlab.com/eyeo/webext/webext-sdk/-/jobs/artifacts/master/browse/dist?job=build
+[builds]: https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution/-/jobs/artifacts/master/browse/dist?job=build
 [snippet-filters]: https://help.eyeo.com/adblockplus/snippet-filters-tutorial
 [snippets-project]: https://gitlab.com/eyeo/adblockplus/abp-snippets
-[api-docs]: https://eyeo.gitlab.io/adblockplus/abc/webext-sdk/master/docs/#apis
-[dev]: https://gitlab.com/eyeo/webext/webext-sdk#development
-[notifications-module]: https://eyeo.gitlab.io/adblockplus/abc/webext-sdk/master/docs/#notifications
-[allowlisting-module]: https://eyeo.gitlab.io/adblockplus/abc/webext-sdk/master/docs/#allowlisting
+[api-docs]: https://eyeo.gitlab.io/adblockplus/abc/webext-ad-filtering-solution/master/docs/#apis
+[dev]: https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution#development
+[notifications-module]: https://eyeo.gitlab.io/adblockplus/abc/webext-ad-filtering-solution/master/docs/#notifications
+[allowlisting-module]: https://eyeo.gitlab.io/adblockplus/abc/webext-ad-filtering-solution/master/docs/#allowlisting
 [abpui]:https://gitlab.com/adblockinc/ext/adblockplus/adblockplusui
 
 ## Events
