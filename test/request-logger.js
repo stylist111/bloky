@@ -50,7 +50,8 @@ class RequestLogger {
       url: req.url,
       path: req.path,
       query: req.query,
-      body: req.body
+      body: req.body,
+      authorization: req.get("Authorization")
     });
     next();
   }

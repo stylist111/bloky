@@ -24,10 +24,11 @@ import {clearRequestLogs, getRequestLogs, setMinTimeout,
 
 describe("Telemetry", function() {
   const TELEMETRY_URL = `${TEST_ADMIN_PAGES_URL}/telemetry`;
+  const TELEMETRY_BEARER = "SSBhbSBhIGJlYXIuLi4gZXIuLi4gUkFXUg==";
   const TELEMETRY_STORAGE_KEY = "ewe:telemetry";
   const TELEMETRY_ARGS = {
     url: TELEMETRY_URL,
-    bearer: "bbb"
+    bearer: TELEMETRY_BEARER
   };
 
   it("pings the telemetry server at startup", async function() {
@@ -70,7 +71,7 @@ describe("Telemetry", function() {
   it("doesn't send request if both url and bearer token aren't provided", async function() {
     await expect(EWE.testing.startTelemetry({url: TELEMETRY_URL}))
       .rejects.toThrow("Error: No telemetry `bearer` provided");
-    await expect(EWE.testing.startTelemetry({bearer: "bbb"}))
+    await expect(EWE.testing.startTelemetry({bearer: TELEMETRY_BEARER}))
       .rejects.toThrow("Error: No telemetry `url` provided");
   });
 
@@ -83,7 +84,8 @@ describe("Telemetry", function() {
       let requests = await getRequestLogs(TELEMETRY_URL);
       expect(requests).toEqual([expect.objectContaining({
         url: "/telemetry",
-        method: "POST"
+        method: "POST",
+        authorization: `Bearer ${TELEMETRY_BEARER}`
       })]);
 
       const payload = requests[0].body.payload;
@@ -116,7 +118,8 @@ describe("Telemetry", function() {
 
       expect(telemetryRequests).toEqual([expect.objectContaining({
         url: "/telemetry",
-        method: "POST"
+        method: "POST",
+        authorization: `Bearer ${TELEMETRY_BEARER}`
       })]);
 
       const payload = telemetryRequests[0].body.payload;
@@ -147,7 +150,8 @@ describe("Telemetry", function() {
 
         expect(telemetryRequests).toEqual([expect.objectContaining({
           url: "/telemetry",
-          method: "POST"
+          method: "POST",
+          authorization: `Bearer ${TELEMETRY_BEARER}`
         })]);
 
         const payload = telemetryRequests[0].body.payload;

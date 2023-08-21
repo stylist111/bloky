@@ -426,7 +426,10 @@ if (isMV3()) {
 
 EWE.testing.enableDebugOutput(true);
 
-startupInfo.telemetry = {url: "http://localhost:3003/telemetry", bearer: "bbb"};
+startupInfo.telemetry = {
+  url: "http://localhost:3003/telemetry",
+  bearer: "SSBhbSBhIGJlYXIuLi4gZXIuLi4gUkFXUg=="
+};
 
 EWE.start(startupInfo).then(async firstRun => {
   if (firstRun.warnings.length > 0) {
