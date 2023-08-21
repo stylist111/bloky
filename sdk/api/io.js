@@ -100,7 +100,7 @@ export let IO = {
               e.name == "InvalidStateError") {
             // fall back to `browser.storage.local` API if IndexedDb
             // is unavailable, eg. in Firefox in private mode. See
-            // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/231
+            // https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution/-/issues/231
             io = ioBsl;
             try {
               await io.initialize();

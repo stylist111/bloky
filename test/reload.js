@@ -183,7 +183,7 @@ describe(`Reload (${phase})`, function() {
       await browser.storage.local.set(saveData);
     }
 
-    // This test recreates the situation in https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/175
+    // This test recreates the situation in https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution/-/issues/175
     // The application not failing during the 'check' phase means
     // this test passes.
   });

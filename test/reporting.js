@@ -79,7 +79,7 @@ describe("Reporting", function() {
   describe("Analytics", function() {
     it("gets the first version [mv2-only]", async function() {
       // This should work in MV3 after
-      // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/300
+      // https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution/-/issues/300
 
       let now = new Date();
       let reply = "[Adblock Plus 2.0]";
@@ -776,7 +776,7 @@ describe("Reporting", function() {
       // In fuzz mode the page is loaded already navigated to "image.html"
       // without having a history, so no "cross-domain-navigation.html" items
       // are available and thus missing.
-      // See https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/493
+      // See https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution/-/issues/493
       if (isFuzzingServiceWorker()) {
         return;
       }

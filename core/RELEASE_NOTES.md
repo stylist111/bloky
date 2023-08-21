@@ -109,7 +109,7 @@
 
 If you were using the NPM scripts `fetch-subscriptions` and
 `merge-subscriptions`, these have been moved to the
-[webext-sdk](https://gitlab.com/eyeo/adblockplus/abc/webext-sdk).
+[webext-sdk](https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution).
 
 With #452 and #454 we introduce some important API changes necessary
 for Manifest v3 support:

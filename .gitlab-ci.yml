@@ -217,7 +217,7 @@ func:v2:firefox:oldest:
     BROWSER: firefox $OLDEST_FIREFOX_VERSION
     TEST_PARAMS: v2 $BROWSER
 
-# https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/369
+# https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution/-/issues/369
 func:v2:firefox:update:incognito:
   extends: .functional
   variables:

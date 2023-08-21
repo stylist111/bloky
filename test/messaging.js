@@ -159,7 +159,7 @@ export function clearAllTestEvents() {
  *
  * Ideally we can in the future get to the point where startup is fast enough
  * that we don't need this. See
- * https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/307
+ * https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution/-/issues/307
  **/
 export async function waitForServiceWorkerInitialization() {
   await runInBackgroundPage([

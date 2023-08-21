@@ -82,7 +82,7 @@ describe("Initialization", function() {
   it("starts with the subscription info provided by the initial start call [mv3-only]",
      async function() {
        // Eventually this should be supported in MV2 as well.
-       // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/392
+       // https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution/-/issues/392
 
        let receivedStartupInfo = await runInBackgroundPage([
          {op: "getGlobal", arg: "EWE"},
@@ -133,7 +133,7 @@ describe("Initialization", function() {
   });
 
   it("starts with the provided subscriptions enabled and correctly downloadable", async function() {
-    // https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/545
+    // https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution/-/issues/545
     this.retries(3);
     await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.url);
 

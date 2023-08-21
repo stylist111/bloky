@@ -139,7 +139,7 @@ export let IO = {
   async initialize() {
     // Migrating the files with 'file:' and `abp:file:` prefixes
     // to 'ewe:file:' stored in `browser.storage.local` in Firefox private mode.
-    // See https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/issues/369
+    // See https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution/-/issues/369
     await this.fixPrefixes();
   }
 };

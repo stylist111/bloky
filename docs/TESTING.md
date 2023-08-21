@@ -486,7 +486,7 @@ are working on.
 This will trigger "measure flakiness" scripts & check that will run
 test modules in isolation:
 
-- Go to: <https://gitlab.com/eyeo/adblockplus/abc/webext-sdk/-/pipelines>
+- Go to: <https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution/-/pipelines>
 then press “Run pipelines”.
 - Select branch you want to run pipeline on
 - Provide variable: CHECKTESTS: true
