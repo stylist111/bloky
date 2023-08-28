@@ -1,5 +1,8 @@
-0.13.0 - 2023/08/28
+Unreleased
 ==========
+
+0.13.0 - 2023/08/28
+===================
 
 # General
 
@@ -7,6 +10,16 @@
   in a new browser session. Web extension version (in manifest)
   now needs to be updated to let the SDK know to reload bundled
   subscription data (EE-166).
+- `hide-if-classifies` snippet does not require domains now, the new syntax now
+  accepts filters that follow this pattern: `#$#hide-if-classifies .selector`
+  (EE-138).
+- We now gather and send all the correct information to the telemetry server. We
+  don't yet handle any timing or retry logic. (EE-159)
+
+# Fixes 
+
+- Enabling a ruleset no longer emits a "subscription.updated" event 
+  unless a subscription is updated (EE-153).
 - Fixed a bug where diff updatable subscriptions would not use the correct
   expiration date present in the header and instead use the default value of
   5 days. The `covertSubscriptions.js` script was updated to handle the expires
@@ -15,27 +28,20 @@
   omitted they will use the default 5 days, but no change is required from the
   integrators at the moment since the new version of the script should handle
   everything automatically. (EE-167)
-- `hide-if-classifies` snippet does not require domains now, the new syntax now
-  accepts filters that follow this pattern: `#$#hide-if-classifies .selector`
-  (EE-138).
-- `Subscription.insertFilterAt()` is deprecated in favour of
-  `Subscription.insertFilterTextAt()`,
-  `Subscription.findFilterIndex()` is deprecated in favour of
-  `Subscription.findFilterTextIndex()` for better performance (EE-114).
-- Enabling ruleset is now not emitting "subscription.updated" (EE-153).  
 
 # Internal
 
-- We now gather and send all the correct information to the telemetry server. We
-  don't yet handle any timing or retry logic. (EE-159)
 - We have a new dev dependency 'webpackDotenvPlugin' for getting the correct
-  package version for telemetry purposes. (Nothing
-  happens if the telemetry object isn't provided)
-- EWE.start now logs warnings in our test extension. (EE-159)
+  package version for telemetry purposes.
+- EWE.start now logs start-up warnings in our test extension. (EE-159)
 - Add test to make sure that subscriptions with diffs are updated correctly when
   they expire. (EE-164)
 - Our internal method for testing requests sent to a server now has automatic
   URL filtering to better decouple tests.
+- `Subscription.insertFilterAt()` is deprecated in favour of
+  `Subscription.insertFilterTextAt()`,
+  `Subscription.findFilterIndex()` is deprecated in favour of
+  `Subscription.findFilterTextIndex()` for better performance (EE-114).
 
 # Tests
 
