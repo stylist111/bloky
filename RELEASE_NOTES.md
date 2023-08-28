@@ -27,10 +27,11 @@ Unreleased
 # Internal
 
 - We now gather and send all the correct information to the telemetry server. We
-  don't yet handle any timing or retry logic. (EE-159)
+  don't yet handle any timing or retry logic. (EE-159) 
 - We have a new dev dependency 'webpackDotenvPlugin' for getting the correct
-  package version for telemetry purposes.
-- EWE.start now logs warning in our test extension. (EE-159)
+  package version for telemetry purposes. (Nothing
+  happens if the telemetry object isn't provided)
+- EWE.start now logs warnings in our test extension. (EE-159)
 - Add test to make sure that subscriptions with diffs are updated correctly when
   they expire. (EE-164)
 - Our internal method for testing requests sent to a server now has automatic
@@ -42,6 +43,7 @@ Unreleased
   `browser.storage.local` in private mode (due to IndexedDB support) (EE-154).
 - Few tests added to make sure user that counting is working for diff updatable
   subscriptions on MV3 (EE-153).
+- Update get-browser-binary version to 0.13.0
 
 0.12.0 - 2023/08/03
 ===================
