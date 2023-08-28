@@ -15,21 +15,21 @@ Unreleased
   omitted they will use the default 5 days, but no change is required from the
   integrators at the moment since the new version of the script should handle
   everything automatically. (EE-167)
-- `hide-if-classifies` snippet does not require domains now, the new syntax to
-  accept filters like this `#$#hide-if-classifies .selector` (EE-138).
+- `hide-if-classifies` snippet does not require domains now, the new syntax now
+  accepts filters that follow this pattern: `#$#hide-if-classifies .selector`
+  (EE-138).
 - `Subscription.insertFilterAt()` is deprecated in favour of
-  `Subscription.insertFilterTextAt()`, `Subscription.findFilterIndex()` is
-  deprecated in favour of `Subscription.findFilterTextIndex()` for better
-  performance (EE-114).
-- Enabling ruleset is not emitting "subscription.updated" now (EE-153).  
+  `Subscription.insertFilterTextAt()`, 
+  `Subscription.findFilterIndex()` is deprecated in favour of 
+  `Subscription.findFilterTextIndex()` for better performance (EE-114).
+- Enabling ruleset is now not emitting "subscription.updated" (EE-153).  
 
 # Internal
 
 - We now gather and send all the correct information to the telemetry server. We
   don't yet handle any timing or retry logic. (EE-159)
 - We have a new dev dependency 'webpackDotenvPlugin' for getting the correct
-  package version for telemetry purposes
-- Nothing happens if the telemetry object isn't provided. (EE-159)
+  package version for telemetry purposes.
 - EWE.start now logs warning in our test extension. (EE-159)
 - Add test to make sure that subscriptions with diffs are updated correctly when
   they expire. (EE-164)
