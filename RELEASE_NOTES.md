@@ -1,4 +1,4 @@
-Unreleased
+0.13.0 - 2023/08/28
 ==========
 
 # General
@@ -19,15 +19,15 @@ Unreleased
   accepts filters that follow this pattern: `#$#hide-if-classifies .selector`
   (EE-138).
 - `Subscription.insertFilterAt()` is deprecated in favour of
-  `Subscription.insertFilterTextAt()`, 
-  `Subscription.findFilterIndex()` is deprecated in favour of 
+  `Subscription.insertFilterTextAt()`,
+  `Subscription.findFilterIndex()` is deprecated in favour of
   `Subscription.findFilterTextIndex()` for better performance (EE-114).
 - Enabling ruleset is now not emitting "subscription.updated" (EE-153).  
 
 # Internal
 
 - We now gather and send all the correct information to the telemetry server. We
-  don't yet handle any timing or retry logic. (EE-159) 
+  don't yet handle any timing or retry logic. (EE-159)
 - We have a new dev dependency 'webpackDotenvPlugin' for getting the correct
   package version for telemetry purposes. (Nothing
   happens if the telemetry object isn't provided)
@@ -63,7 +63,7 @@ Unreleased
   test runs in edge. (EE-100)
 - Add popup tests for diff update scenario. (EE-158)
 
-# Eyeometry implementation. 
+# Eyeometry implementation
 
 Don't use this yet unless you want an initial sense of what the integration will
 be like.
@@ -118,7 +118,6 @@ Reach out to [Maria Henkhaus](mailto:m.henkhaus@eyeo.com).**
 - Content filters are now updated via the `history.pushState()` event, when
   single page apps navigate using the browser's history API (EE-14, EE-90)
 
-
 # Fixes
 
 - Fix performance issues when adding 5000 dynamic rules. (#538, #553)
@@ -130,8 +129,8 @@ Reach out to [Maria Henkhaus](mailto:m.henkhaus@eyeo.com).**
   the tab loading in some cases (EE-16)
 - CSP filters ignored if domain isn't provided in the filter text (EE-25)
 
-
 # Documentation
+
 - Clarify the minimum tested versions (#460)
 - Permissions we need, and why we need them, have been added to our
   documentation. (#440)
@@ -230,7 +229,7 @@ Reach out to [Maria Henkhaus](mailto:m.henkhaus@eyeo.com).**
   not already running (#560)
 - Fix a test pointing at an external resource (testpages) instead of
   using its own test data (EE-123)
-- Update the domain of the testpages from the old 
+- Update the domain of the testpages from the old
   testpages.adblockplus.org to the new abptestpages.org (EE-126)
 - Add the test to make sure adblockpluscore subscription list works (EE-41)
 - The "Diagnostics" tests sometimes fail in Edge, we added 3 retries
@@ -298,7 +297,7 @@ Reach out to [Maria Henkhaus](mailto:m.henkhaus@eyeo.com).**
 - For web bundle support in MV3, the static rulesets must be
   re-generated. In MV2, an unreleased (at the time of writing) version of
   Chrome is necessary. We're confident that this release will work once
-  https://chromium-review.googlesource.com/c/chromium/src/+/4199620  is
+  <https://chromium-review.googlesource.com/c/chromium/src/+/4199620>  is
   merged.
 
 0.9.0 - 2023/02/14
@@ -577,11 +576,11 @@ Chrome 102 is now the minimum supported version for Manifest V3.
   completed. (#368)
 
 - Subscription migration from MV2 to MV3 (#345):
-  * The migration happens automatically. Nothing needs to be done
-  * Once the migration happened, call subscriptions.getMigrationErrors()`.
+  - The migration happens automatically. Nothing needs to be done
+  - Once the migration happened, call subscriptions.getMigrationErrors()`.
     It will return a list of (url, error) items a subscriptions url and
     an error message respectively.
-  * Call `subscriptions.clearMigrationError()` to clear these errors.
+  - Call `subscriptions.clearMigrationError()` to clear these errors.
 
 - In MV3, `subscriptions.getRecommendations()` will return subscriptions with
   a MV3 appropriate URL, which is likely different from the one in MV2.
@@ -592,11 +591,11 @@ Chrome 102 is now the minimum supported version for Manifest V3.
   of Chrome is 102 for MV3 extensions. (#323)
 
 - One-click allowing list in Manifest V3:
-  * `allowlisting.onUnauthorized`, `allowlisting.setAllowlistingCallback`,
+  - `allowlisting.onUnauthorized`, `allowlisting.setAllowlistingCallback`,
     and `allowlisting.setAuthorizedKeys` should now all be called in the
     first turn of the event loop. This is to ensure that the authorized
     key is available if an allowlisting event activates the service worker.
-  * `allowlisting.setAuthorizedKeys` still returns a promise, which resolves
+  - `allowlisting.setAuthorizedKeys` still returns a promise, which resolves
     or rejects when all of the keys have been validated. It is also unchanged
     in that the keys are NOT updated if ANY of the keys passed in are invalid.
     However, a difference is that the new keys will take effect immediately.
@@ -646,7 +645,6 @@ Chrome 102 is now the minimum supported version for Manifest V3.
 - Subscriptions initialisation for the extension in Manifest V3,
   including setting up defaults. (#305)
 
-
 # Tests
 
 - Properly warn if the test server isn't running. (#327)
@@ -664,16 +662,16 @@ Chrome 102 is now the minimum supported version for Manifest V3.
   `EWE.subscriptions.addDefaults()` needs to be called instead. (#305)
 
 - The following API function are now `async` (#242, #305, #318)
-  * `EWE.filters.getAllowingFilters()`
-  * `EWE.filters.isResourceAllowlisted()`
-  * `EWE.subscriptions.add()`
-  * `EWE.subscriptions.getDownloadable()`
-  * `EWE.subscriptions.getFilters()`
-  * `EWE.subscriptions.getForFilter()`
-  * `EWE.subscriptions.has()`
-  * `EWE.subscriptions.enable()`
-  * `EWE.subscriptions.disable()`
-  * `EWE.subscriptions.remove()`
+  - `EWE.filters.getAllowingFilters()`
+  - `EWE.filters.isResourceAllowlisted()`
+  - `EWE.subscriptions.add()`
+  - `EWE.subscriptions.getDownloadable()`
+  - `EWE.subscriptions.getFilters()`
+  - `EWE.subscriptions.getForFilter()`
+  - `EWE.subscriptions.has()`
+  - `EWE.subscriptions.enable()`
+  - `EWE.subscriptions.disable()`
+  - `EWE.subscriptions.remove()`
 
 - Snippets library version 0.5.0 is the minimum required. (#143)
 
@@ -685,11 +683,11 @@ Chrome 102 is now the minimum supported version for Manifest V3.
 - Scripts names changed in `npm exec ...` to what is used in `npm run
   ...` (#304):
 
-  * from `updateSubscriptions` to `subs-init`
-  * from `mergeSubscriptions` to `subs-merge`
-  * from `fetchSubscriptions` to `subs-fetch`
-  * from `convertSubscriptions` to `subs-convert`
-  * from `generateSubscriptionsFragment` to `subs-generate`
+  - from `updateSubscriptions` to `subs-init`
+  - from `mergeSubscriptions` to `subs-merge`
+  - from `fetchSubscriptions` to `subs-fetch`
+  - from `convertSubscriptions` to `subs-convert`
+  - from `generateSubscriptionsFragment` to `subs-generate`
 
 - Any change related to the update to adblockpluscore 0.9.1.
 
@@ -719,6 +717,7 @@ Chrome 102 is now the minimum supported version for Manifest V3.
 - Add ruleset conversion testing. (#277)
 
 # Tests
+
 - Fix tests for filters with metadata. (Follow-up on #213)
 - Test pages test now run on beta browsers too.
 - Make sure mv3 test on Edge are run on mv3 (#264)
@@ -824,6 +823,7 @@ You can now optionally set the `addonName` to your own when building
 an extension with the SDK.
 
 Simply call `EWE.start()` this way:
+
 ```javascript
 EWE.start({
   name: "adblockpluschrome",
