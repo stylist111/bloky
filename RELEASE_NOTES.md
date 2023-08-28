@@ -6,6 +6,11 @@ Unreleased
 - Now sending "firstVersion" and "lastVersion" request arguments for diff
   updatable subscriptions (EE-153).
 
+# Internal
+
+- Reduce unnecessary CI logs in Windows builds by not printing progress logs
+  from Choco.
+
 0.13.0 - 2023/08/28
 ===================
 
