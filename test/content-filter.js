@@ -478,12 +478,13 @@ describe("Element Hiding", function() {
 
 describe("Snippets", function() {
   // keep in-sync with `background.js`
-  const injectedSnippet = "injected-snippet";
-  const isolatedSnippet = "isolated-snippet";
+  const INJECTED_SNIPPET = "injected-snippet";
+  const ISOLATED_SNIPPET = "isolated-snippet";
+  const SNIPPET_NOT_APPLIED_ERROR = "Snippet was not applied";
+  const MAIN_WORLD = "MAIN";
+  const ISOLATED_WORLD = "ISOLATED";
 
-  async function assertSnippet(domain, snippet, func, world, snippetArgument = "true") {
-    await addFilter(`${domain}#$#${snippet} ${snippetArgument}`);
-
+  async function assertSnippet(extractor, world, expectedArgument = "true") {
     let tabId = await new Page("image.html").loaded;
 
     // If the service worker is suspended just before the new page is opened
@@ -495,14 +496,20 @@ describe("Snippets", function() {
       // Snippets arguments are stringified (JSON.string()),
       // so we set true (as boolean), but check "true" (as string).
       async() => {
-        return await executeScript(tabId, func, null, world) == snippetArgument;
+        let actualArgument = await executeScript(tabId, extractor, null, world);
+        return actualArgument == expectedArgument;
       },
       hideTimeout,
-      "Snippet was not applied"
+      SNIPPET_NOT_APPLIED_ERROR
     );
   }
 
-  const injectedSnippetArgumentExtractor = () => {
+  async function addAndAssertSnippet(domain, snippet, func, world, snippetArgument = "true") {
+    await addFilter(`${domain}#$#${snippet} ${snippetArgument}`);
+    await assertSnippet(func, world, snippetArgument);
+  }
+
+  const INJECTED_SNIPPET_ARG_EXTRACTOR = () => {
     try {
       let context = JSON.parse(document.body.id);
       return context.arg;
@@ -514,34 +521,34 @@ describe("Snippets", function() {
   };
 
   it("applies an injected snippet [fuzz]", async function() {
-    await assertSnippet(
+    await addAndAssertSnippet(
       TEST_PAGES_DOMAIN,
-      injectedSnippet,
-      injectedSnippetArgumentExtractor,
-      "MAIN");
+      INJECTED_SNIPPET,
+      INJECTED_SNIPPET_ARG_EXTRACTOR,
+      MAIN_WORLD);
   });
 
   it("applies 'hide-if-classifies' snippet with no domains", async function() {
-    await assertSnippet(
+    await addAndAssertSnippet(
       "", // no domains
       "hide-if-classifies",
-      injectedSnippetArgumentExtractor,
-      "MAIN",
+      INJECTED_SNIPPET_ARG_EXTRACTOR,
+      MAIN_WORLD,
       ".selector");
   });
 
   it("applies an isolated snippet", async function() {
-    await assertSnippet(
+    await addAndAssertSnippet(
       TEST_PAGES_DOMAIN,
-      isolatedSnippet,
+      ISOLATED_SNIPPET,
       () => self.isolated_snippet_dependency && self.isolated_snippet_works,
-      "ISOLATED");
+      ISOLATED_WORLD);
   });
 
   it("restarts snippets on history.pushState", async function() {
     setMinTimeout(this, 6000);
 
-    await addFilter(`${TEST_PAGES_DOMAIN}#$#${injectedSnippet} true`);
+    await addFilter(`${TEST_PAGES_DOMAIN}#$#${INJECTED_SNIPPET} true`);
     let tabId = await new Page("history.html").loaded;
     // Snippet is expected to be called 2 times:
     // 1 for "history.html" and 1 for "history-after-pushState.html",
@@ -556,8 +563,14 @@ describe("Snippets", function() {
           // may not exist yet
           return null;
         }
-      }, null, "MAIN") == "2",
+      }, null, MAIN_WORLD) == "2",
       4 * HIDETIMEOUT,
       "Snippet was not called 2 times");
+  });
+
+  it("does not deploy snippets not from anti-cv subscription [mv2-only]", async function() {
+    await EWE.subscriptions.add("http://localhost:3000/subscription.txt");
+    await expect(assertSnippet(INJECTED_SNIPPET_ARG_EXTRACTOR, MAIN_WORLD))
+      .rejects.toThrow(SNIPPET_NOT_APPLIED_ERROR);
   });
 });

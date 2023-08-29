@@ -2,3 +2,4 @@
 
 /image-from-subscription.png^$image
 ###elem-hide
+localhost#$#injected-snippet true
