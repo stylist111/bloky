@@ -372,7 +372,7 @@ exports.Downloader = class Downloader {
       }
 
       // We need to keep updated the subscription version even via HEAD.
-      if (downloadable.method === "HEAD") {
+      if (downloadable.method === "HEAD" || downloadable.originalUrl) {
         // However, as we don't know if the server would respond with such
         // detail, we need to be sure there is such `Date` or `date` field.
         let date = response.headers.get("Date") || response.headers.get("date");

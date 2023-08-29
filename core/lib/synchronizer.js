@@ -293,13 +293,15 @@ class Synchronizer {
 
     if (params.version) {
       subscription.version = parseInt(params.version, 10);
-
-      if (analytics.isTrusted(downloadable.redirectURL || downloadable.url)) {
-        analytics.recordVersion(params.version);
-      }
     }
     else {
-      subscription.version = isHEAD ? downloadable.lastVersion : 0;
+      subscription.version = isHEAD || isDiffUpdatable ?
+        downloadable.lastVersion : 0;
+    }
+
+    if ((params.version || isDiffUpdatable) &&
+        analytics.isTrusted(downloadable.redirectURL || downloadable.url)) {
+      analytics.recordVersion(subscription.version.toString());
     }
 
     if (subscription.type) {

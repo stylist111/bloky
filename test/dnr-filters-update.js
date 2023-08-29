@@ -890,7 +890,7 @@ describe("Test subscriptions update", function() {
       expect(savedUpdates).toEqual([]);
     });
 
-    it("it does not wipe out user filters after webext update", async function() {
+    it("does not wipe out user filters after webext update", async function() {
       if (!hasUpdateStaticRules()) {
         this.skip();
       }
@@ -924,7 +924,7 @@ describe("Test subscriptions update", function() {
         .toBeBlocked();
     });
 
-    it("it passes users counting data to back-end", async function() {
+    it("passes users counting data to back-end", async function() {
       if (!hasUpdateStaticRules()) {
         this.skip();
       }
@@ -955,7 +955,50 @@ describe("Test subscriptions update", function() {
       })]));
     });
 
-    it("it passes users counting data to back-end even for disabled subscriptions", async function() {
+    it("passes firstVersion and lastVersion", async function() {
+      if (!hasUpdateStaticRules()) {
+        this.skip();
+      }
+
+      let analytics = await EWE.testing._getPrefs("analytics");
+      let previousTrustedHosts = analytics.trustHosts;
+      try {
+        // we need to make 'localhost' trustedHost to record the response's
+        // 'version' as 'firstVersion'.
+        analytics.trustedHosts = ["localhost:3003"];
+        await EWE.testing._setPrefs("analytics", analytics);
+
+        let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
+        let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
+
+        await clearRequestLogs();
+        await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
+        await EWE.subscriptions.add(testDiffSubscriptionUrl);
+        await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+
+        await clearRequestLogs();
+        await EWE.subscriptions.sync(testDiffSubscriptionUrl);
+        await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+
+        let now = new Date();
+        let today = `${now.getFullYear()}`;
+        today += (now.getMonth() + 1).toString().padStart(2, "0");
+        today += now.getDate().toString().padStart(2, "0");
+
+        let requests = (await getRequestLogs()).filter(
+          eachRequest => eachRequest.url.includes(testDiffUrlEndpoint));
+        for (let eachRequest of requests) {
+          expect(eachRequest.query["lastVersion"].startsWith(today)).toEqual(true);
+          expect(eachRequest.query["firstVersion"].startsWith(today)).toEqual(true);
+        }
+      }
+      finally {
+        analytics.trustHosts = previousTrustedHosts;
+        await EWE.testing._setPrefs("analytics", analytics);
+      }
+    });
+
+    it("passes users counting data to back-end even for disabled subscriptions", async function() {
       if (!hasUpdateStaticRules()) {
         this.skip();
       }
@@ -982,7 +1025,7 @@ describe("Test subscriptions update", function() {
       })]));
     });
 
-    it("it increments downloadCount", async function() {
+    it("increments downloadCount", async function() {
       if (!hasUpdateStaticRules()) {
         this.skip();
       }
@@ -1003,6 +1046,42 @@ describe("Test subscriptions update", function() {
         let request = (await getRequestLogs()).find(
           eachRequest => eachRequest.url.includes(testDiffUrlEndpoint));
         expect(request.query["downloadCount"]).toEqual(expectedDownloadCount);
+      }
+    });
+
+    it("increments lastVersion", async function() {
+      if (!hasUpdateStaticRules()) {
+        this.skip();
+      }
+
+      setMinTimeout(this, 130000);
+
+      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
+      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
+
+      await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
+      await EWE.subscriptions.add(testDiffSubscriptionUrl);
+      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+
+      let previousLastVersion = null;
+      for (let i = 0; i < 2; i++) {
+        await clearRequestLogs();
+
+        // 1 minute is the minimum time difference that can be detected
+        // as we use '..HHmm' format in the 'lastVersion'
+        await new Promise(r => setTimeout(r, 61000));
+
+        await EWE.subscriptions.sync(testDiffSubscriptionUrl);
+        await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+
+        let request = (await getRequestLogs()).find(
+          eachRequest => eachRequest.url.includes(testDiffUrlEndpoint));
+
+        let nextLastVersion = parseInt(request.query["lastVersion"], 10);
+        if (previousLastVersion) {
+          expect(nextLastVersion).toBeGreaterThan(previousLastVersion);
+        }
+        previousLastVersion = nextLastVersion;
       }
     });
   });

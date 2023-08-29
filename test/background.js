@@ -374,7 +374,8 @@ if (isMV3()) {
         title: "EasyList",
         homepage: "https://easylist.to/",
         url: "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt",
-        mv2_url: "https://easylist-downloads.adblockplus.org/easylist.txt"
+        mv2_url: "https://easylist-downloads.adblockplus.org/easylist.txt",
+        diff_url: "https://easylist-downloads.adblockplus.org/v3/diff/easylist/ef590f9ee92f557ca060bd567ed60381d24c73d5.json"
       },
       {
         id: "0CD3D105-D3B3-4652-8489-94163DE9A08F",

@@ -1,6 +1,11 @@
 Unreleased
 ==========
 
+# General
+
+- Now sending "firstVersion" and "lastVersion" request arguments for diff
+  updatable subscriptions (EE-153).
+
 0.13.0 - 2023/08/28
 ===================
 

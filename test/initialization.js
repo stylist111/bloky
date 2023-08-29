@@ -37,7 +37,8 @@ let subEasylist = {
   title: "EasyList",
   homepage: "https://easylist.to/",
   url: "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt",
-  mv2_url: "https://easylist-downloads.adblockplus.org/easylist.txt"
+  mv2_url: "https://easylist-downloads.adblockplus.org/easylist.txt",
+  diff_url: "https://easylist-downloads.adblockplus.org/v3/diff/easylist/ef590f9ee92f557ca060bd567ed60381d24c73d5.json"
 };
 
 let subEasylistPlusGermany = {
@@ -224,7 +225,7 @@ describe("Initialization", function() {
 
   async function skipsAddingDefaultSubscriptions(subUrl, hasDiffUrl) {
     await EWE.testing._setSubscriptions([
-      subEasylist,
+      subEasylistPlusGermany,
       subAcceptableAds,
       subCircumvention,
       subDiffUpdatable
@@ -244,7 +245,7 @@ describe("Initialization", function() {
 
   it("skips adding default subscriptions if there is a CountableSubscription [mv3-only] [fuzz-skip]", async function() {
     await skipsAddingDefaultSubscriptions(
-      subEasylist.url, false); // CountableSubscription
+      subEasylistPlusGermany.url, false); // CountableSubscription
   });
 
   it("skips adding default subscriptions if there is a DiffUpdatableSubscription [mv3-only] [fuzz-skip]", async function() {
