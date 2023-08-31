@@ -6,6 +6,11 @@ Unreleased
 - Now sending "firstVersion" and "lastVersion" request arguments for diff
   updatable subscriptions (EE-153).
 
+# Fixes
+
+- Invalid CSS selectors will not break element hiding filter hits reporting
+  anymore (EE-187).
+
 # Internal
 
 - Reduce unnecessary CI logs in Windows builds by not printing progress logs

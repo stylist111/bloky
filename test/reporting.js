@@ -1124,6 +1124,21 @@ describe("Reporting", function() {
       );
     });
 
+    it("handles invalid elemhide selectors", async function() {
+      await checkLogging(
+        [
+          "####.wj-header-usercookies", // invalid selector
+          "###elem-hide"
+        ],
+        "elemhideEventOptions",
+        "element-hiding.html",
+        [{
+          filter: expectedElemhideFilter("###elem-hide"),
+          matchInfo: elemhideMatchInfo,
+          request: expectedRequestRelativeUrl("element-hiding.html")
+        }]);
+    });
+
     it("logs element hiding filter for a given tab [fuzz-skip]", async function() {
       // Filtering by tabs can't work reliably when service worker
       // is suspended because the event listener can't be attached
@@ -1185,6 +1200,27 @@ describe("Reporting", function() {
           "#?#.child1:-abp-properties(background-color: blue)";
       await checkLogging(
         [text],
+        "elemhideEventOptions",
+        "element-hiding.html",
+        [{
+          filter: {
+            ...expectedElemhideFilter(text),
+            type: "elemhideemulation"
+          },
+          matchInfo: elemhideMatchInfo,
+          request: expectedRequestRelativeUrl("element-hiding.html")
+        }]
+      );
+    });
+
+    it("handles invalid element hiding emulation selectors", async function() {
+      let text = TEST_PAGES_DOMAIN +
+        "#?#.child1:-abp-properties(background-color: blue)";
+      await checkLogging(
+        [
+          TEST_PAGES_DOMAIN + "#?#.wj-header-usercookies:-abp-properties(background-color: blue)", // invalid selector
+          text
+        ],
         "elemhideEventOptions",
         "element-hiding.html",
         [{

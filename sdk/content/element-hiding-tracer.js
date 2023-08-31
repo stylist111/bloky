@@ -46,14 +46,19 @@ export class ElementHidingTracer {
     let selectors = [];
 
     for (let [selector, filter] of this.selectors) {
-      if (document.querySelector(selector)) {
-        this.selectors.delete(selector);
-        if (filter) {
-          filters.push(filter);
+      try {
+        if (document.querySelector(selector)) {
+          this.selectors.delete(selector);
+          if (filter) {
+            filters.push(filter);
+          }
+          else {
+            selectors.push(selector);
+          }
         }
-        else {
-          selectors.push(selector);
-        }
+      }
+      catch (e) {
+        console.error(e.toString());
       }
     }
 

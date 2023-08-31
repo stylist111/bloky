@@ -39,6 +39,12 @@ describe("Element Hiding", function() {
     await expectElemHideHidden();
   });
 
+  it("handled invalid selectors", async function() {
+    await addFilter("####.wj-header-usercookies"); // invalid selector
+    await addFilter("###elem-hide");
+    await expectElemHideHidden();
+  });
+
   it("saves and loads the sitekeys [mv3-only] [fuzz-skip]", async function() {
     await EWE.testing.clearAllSitekeys(false);
 
