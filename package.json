@@ -37,7 +37,8 @@
   "dependencies": {
     "adblockpluscore": "file:./core",
     "webextension-polyfill": "^0.8.0",
-    "yargs": "^17.5.1"
+    "yargs": "^17.5.1",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@eyeo/get-browser-binary": "^0.13.0",

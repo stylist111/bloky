@@ -90,8 +90,12 @@ function createRouteHandler(route) {
   responses.set(route.url, route.response);
 
   let handler = (req, res) => {
-    if (responses.has(route.url)) {
-      res.send(responses.get(route.url));
+    let response = responses.get(route.url);
+    if (typeof response == "function") {
+      res.send(response());
+    }
+    else if (response) {
+      res.send(response);
     }
     else {
       res.end();
@@ -150,8 +154,8 @@ export function startAdminServer(host) {
     },
     {
       url: "/telemetry",
-      response: JSON.stringify({
-        token: "2023-05-18T12:50:00Z"
+      response: () => JSON.stringify({
+        token: new Date().toISOString()
       }),
       method: "POST"
     }

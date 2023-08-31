@@ -5,6 +5,17 @@ Unreleased
 
 - Now sending "firstVersion" and "lastVersion" request arguments for diff
   updatable subscriptions (EE-153).
+- Telemetry pings are now repeated every 12 hours if telemetry is enabled. If
+  the extension isn't running when it is time for the next ping, then the ping
+  happens the next time the extension starts up. This requires the `alarms`
+  permissions to be added to the manifest file. Telemetry is still considered an
+  experimental feature, as it does not yet have appropriate error handling, but
+  the happy path is functionally complete and feedback is welcome. (EE-159)
+
+# Update your code
+
+- Add the newly required `alarms` permission to the manifest file if you're
+  using telemetry. (EE-159)
 
 # Fixes
 

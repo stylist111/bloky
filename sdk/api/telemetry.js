@@ -16,15 +16,86 @@
  */
 
 import browser from "webextension-polyfill";
+import {v4 as uuidv4} from "uuid";
+import {MILLIS_IN_MINUTE} from "adblockpluscore/lib/time.js";
 
 import * as info from "./info.js";
 import {hasAcceptableAdsEnabled} from "./subscriptions.js";
 
 const TELEMETRY_STORAGE_KEY = "ewe:telemetry";
+const TELEMETRY_ALARM_KEY = "ewe:telemetry";
 
-let started = false;
+class AlarmScheduler {
+  constructor(config) {
+    this.config = config;
 
-export function start(telemetry) {
+    this.callListenerInProgress = false;
+
+    // this has to be declared as an arrow function here because it's capturing
+    // `this` in the closure.
+    this.onAlarm = async alarm => {
+      if (alarm.name != this.config.alarmKey) {
+        return;
+      }
+      await this.checkSchedule();
+    };
+
+    browser.alarms.onAlarm.addListener(this.onAlarm);
+    this.checkSchedule();
+  }
+
+  async checkSchedule() {
+    if (this.callListenerInProgress) {
+      return;
+    }
+    this.callListenerInProgress = true;
+
+    try {
+      let nextAlarmInfo = await this.callListenerIfItsTime();
+      browser.alarms.create(this.config.alarmKey, nextAlarmInfo);
+    }
+    finally {
+      this.callListenerInProgress = false;
+    }
+  }
+
+  async callListenerIfItsTime() {
+    let lastTimestamp = await this.config.getLastTimestamp();
+    if (lastTimestamp) {
+      const nextTimestamp = new Date(lastTimestamp).getTime() +
+             this.config.intervalInMinutes * MILLIS_IN_MINUTE;
+
+      if (Date.now() <= nextTimestamp) {
+        return {
+          when: nextTimestamp
+        };
+      }
+    }
+
+    try {
+      await this.config.listener();
+      return {
+        delayInMinutes: this.config.intervalInMinutes
+      };
+    }
+    catch (e) {
+      console.error(e.toString());
+      return {
+        delayInMinutes: this.config.errorRetryDelayInMinutes
+      };
+    }
+  }
+
+  async stop() {
+    browser.alarms.onAlarm.removeListener(this.onAlarm);
+    await browser.alarms.clear(this.config.alarmKey);
+  }
+}
+
+let scheduler = null;
+
+export function start(telemetry, pingIntervalInMinutes = 60 * 12,
+                      errorRetryDelayInMinutes = 60) {
   if (!telemetry.url) {
     throw new Error("No telemetry `url` provided");
   }
@@ -33,53 +104,82 @@ export function start(telemetry) {
     throw new Error("No telemetry `bearer` provided");
   }
 
-  if (started) {
+  if (scheduler) {
     return;
   }
-  started = true;
 
-  ping(telemetry).catch(e => console.error(e.toString()));
+  scheduler = new AlarmScheduler({
+    alarmKey: TELEMETRY_ALARM_KEY,
+    intervalInMinutes: pingIntervalInMinutes,
+    errorRetryDelayInMinutes,
+    listener: () => ping(telemetry),
+    async getLastTimestamp() {
+      const storageResult = await browser.storage.local.get(
+        [TELEMETRY_STORAGE_KEY]
+      );
+      const storage = storageResult[TELEMETRY_STORAGE_KEY];
+      return storage && storage.lastPing;
+    }
+  });
 }
 
 export async function reset() {
-  stop();
+  await stop();
   await browser.storage.local.remove(TELEMETRY_STORAGE_KEY);
 }
 
-export function stop() {
-  started = false;
+export async function stop() {
+  if (!scheduler) {
+    return;
+  }
+
+  await scheduler.stop();
+  scheduler = null;
+}
+
+function truncateTimes(timestamp) {
+  if (!timestamp) {
+    return timestamp;
+  }
+
+  return timestamp.split("T")[0] + "T00:00:00Z";
 }
 
 async function ping(telemetry) {
   const storageResult = await browser.storage.local.get(
     [TELEMETRY_STORAGE_KEY]
   );
-  const telemetryStorage = storageResult[TELEMETRY_STORAGE_KEY];
+  const storage = storageResult[TELEMETRY_STORAGE_KEY];
 
-  if (telemetryStorage && telemetryStorage.firstPing) {
-    return;
+  let payload = await getExtensionMetadata();
+  if (storage) {
+    payload.first_ping = truncateTimes(storage.firstPing);
+    payload.last_ping = truncateTimes(storage.lastPing);
+    payload.previous_last_ping = truncateTimes(storage.previousLastPing);
+    payload.last_ping_tag = storage.lastPingTag;
   }
 
   const pingToken = await fetchWithBearerToken(
     telemetry.url,
     telemetry.bearer,
-    {
-      payload: await getExtensionMetadata()
-    }
+    {payload}
   );
 
   await browser.storage.local.set({
     [TELEMETRY_STORAGE_KEY]: {
-      firstPing: pingToken
+      firstPing: (storage && storage.firstPing) || pingToken,
+      lastPing: pingToken,
+      previousLastPing: storage && storage.lastPing,
+      lastPingTag: uuidv4()
     }
   });
 }
 
-async function fetchWithBearerToken(url, token, body) {
+async function fetchWithBearerToken(url, bearer, body) {
   const response = await fetch(url, {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${token}`,
+      "Authorization": `Bearer ${bearer}`,
       "Content-Type": "application/json"
     },
     body: JSON.stringify(body)

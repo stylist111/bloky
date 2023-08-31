@@ -706,6 +706,13 @@ export async function clearRequestLogs() {
   await throwHttpErrors(response);
 }
 
+function stripAdminUrl(url) {
+  if (url.startsWith(TEST_ADMIN_PAGES_URL)) {
+    return url.slice(TEST_ADMIN_PAGES_URL.length);
+  }
+  return url;
+}
+
 /**
  * Gets the list of requests that happened on the test server.
  *
@@ -719,11 +726,8 @@ export async function getRequestLogs(url) {
   let requestLogs = await response.json();
 
   if (url) {
-    if (url.startsWith(TEST_ADMIN_PAGES_URL)) {
-      url = url.slice(TEST_ADMIN_PAGES_URL.length);
-    }
-
-    requestLogs = requestLogs.filter(log => log.path == url);
+    let path = stripAdminUrl(url);
+    requestLogs = requestLogs.filter(log => log.path == path);
   }
 
   return requestLogs;
@@ -734,7 +738,7 @@ export async function setEndpointResponse(url, response, method) {
     method: "POST",
     cache: "no-cache",
     headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({url, response, method})
+    body: JSON.stringify({url: stripAdminUrl(url), response, method})
   });
   await throwHttpErrors(adminApiResponse);
 }
@@ -744,7 +748,7 @@ export async function clearEndpointResponse(url) {
     method: "POST",
     cache: "no-cache",
     headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({url})
+    body: JSON.stringify({url: stripAdminUrl(url)})
   });
   await throwHttpErrors(response);
 }

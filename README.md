@@ -96,6 +96,7 @@ include the following configuration:
     }
   ],
   "permissions": [
+    "alarms",
     "webNavigation",
     "webRequest",
     "webRequestBlocking",
@@ -133,6 +134,7 @@ include the following configuration:
     }
   ],
   "permissions": [
+    "alarms",
     "declarativeNetRequest",
     "scripting",
     "storage",
@@ -176,6 +178,8 @@ We require several permissions for the SDK to function correctly. The manifest
 file templates above include the required permissions. Here is why we need each
 one:
 
+* `alarms`: This allows the SDK to sleep for regularly scheduled actions, like
+  telemetry or updating subscriptions.
 * `webNavigation`: Gives access to the Web Navigation API, which we use to
   apply document-level allowing filters and to block popups.
 * `webRequest`: Gives access to the Web Request API. Used to apply URL filters
@@ -266,6 +270,8 @@ There are some shared resources that are used by both webext-sdk & production co
   * Links used by module are prefixed with "abp:" or "https://subscribe.adblockplus.org/".
 * `browser.storage.local` and `browser.storage.session`
   * Storage keys are prefixed with either "ewe:" or "abp:pref:".
+* `browser.alarms`
+  * Alarm keys are prefixed with "ewe:".
 
 During initialization webext-sdk migrates legacy data from local storage to
 indexedDB. Files migrated have to be prefixed: ```file:```. Files prefixed with

@@ -213,6 +213,7 @@ export default (env = {}) => {
         }
       ],
       permissions: [
+        "alarms",
         "webNavigation", "webRequest", "storage", "unlimitedStorage", "tabs",
         ...buildVariant.permissions
       ],
