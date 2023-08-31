@@ -1124,6 +1124,20 @@ describe("Reporting", function() {
       );
     });
 
+    it("logs user element hiding filter that is also listed in a subscription once [mv2-only]", async function() {
+      await EWE.subscriptions.add("http://localhost:3000/subscription.txt");
+      await checkLogging(
+        ["###elem-hide"],
+        "elemhideEventOptions",
+        "element-hiding.html",
+        [{
+          filter: expectedElemhideFilter("###elem-hide"),
+          matchInfo: elemhideMatchInfo,
+          request: expectedRequestRelativeUrl("element-hiding.html")
+        }]
+      );
+    });
+
     it("handles invalid elemhide selectors", async function() {
       await checkLogging(
         [

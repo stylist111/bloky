@@ -155,6 +155,9 @@ export function logHiddenElements(selectors, filters, sender) {
   };
 
   if (selectors.length > 0) {
+    // The same filter can be listed in multiple subscriptions
+    // or can be added by user, so we need to exclude the duplicates.
+    let loggedElemHideFilters = [];
     for (let subscription of filterEngine.filterStorage.subscriptions()) {
       if (subscription.disabled) {
         continue;
@@ -165,7 +168,9 @@ export function logHiddenElements(selectors, filters, sender) {
 
         if (filter instanceof ElemHideFilter &&
             selectors.includes(filter.selector) &&
-            filter.isActiveOnDomain(hostname)) {
+            filter.isActiveOnDomain(hostname) &&
+            !loggedElemHideFilters.includes(filter.text)) {
+          loggedElemHideFilters.push(filter.text);
           logItem(request, filter, matchInfo);
         }
       }

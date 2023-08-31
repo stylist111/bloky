@@ -11,6 +11,7 @@ Unreleased
   permissions to be added to the manifest file. Telemetry is still considered an
   experimental feature, as it does not yet have appropriate error handling, but
   the happy path is functionally complete and feedback is welcome. (EE-159)
+- No more duplicates in elemhide filter hits reporting (EE-185).
 
 # Update your code
 
