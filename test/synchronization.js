@@ -17,8 +17,8 @@
 
 import expect from "expect";
 
-import {wait, TEST_ADMIN_PAGES_URL, TEST_MV3_SUBSCRIPTION_3, getRequestLogs,
-        clearRequestLogs, setEndpointResponse, setMinTimeout, Page,
+import {wait, TEST_MV3_SUBSCRIPTION_3, getRequestLogs, clearRequestLogs,
+        setEndpointResponse, setMinTimeout, Page,
         waitForSubscriptionToBeSynchronized, shouldBeLoaded,
         hasUpdateStaticRules} from "./utils.js";
 import {EWE, addFilter} from "./messaging.js";
@@ -33,8 +33,8 @@ describe("Synchronization", function() {
     await EWE.testing._setSubscriptions([TEST_MV3_SUBSCRIPTION_3]);
 
     await clearRequestLogs();
-    let reply = "%5BAdblock%20Plus%5D%0A%21%20Expires%3A%201%20d"; // "! Expires: 1 d"
-    await fetch(`${TEST_ADMIN_PAGES_URL}/configure?reply=${reply}`);
+    await setEndpointResponse("/subscription.txt",
+                              "[Adblock Plus]\n! Expires: 1 d");
 
     await EWE.testing._removeAllSubscriptions();
     await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION_3.url, properties);

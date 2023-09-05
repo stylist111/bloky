@@ -168,6 +168,25 @@ describe("Testing Mechanisms", function() {
         await testOutput.json();
       })).rejects.toThrow();
     });
+
+    it("clears dynamically set endpoints with build time responses", async function() {
+      let url = "/example-dynamic-endpoint";
+      let defaultResponse = "build time response";
+      let customResponse = "dynamic response!";
+
+      let testOutput = await fetch(`${TEST_ADMIN_PAGES_URL}${url}`);
+      expect(await testOutput.text()).toEqual(defaultResponse);
+
+      await setEndpointResponse(url, customResponse);
+
+      testOutput = await fetch(`${TEST_ADMIN_PAGES_URL}${url}`);
+      expect(await testOutput.text()).toEqual(customResponse);
+
+      await clearEndpointResponse(url);
+
+      testOutput = await fetch(`${TEST_ADMIN_PAGES_URL}${url}`);
+      expect(await testOutput.text()).toEqual(defaultResponse);
+    });
   });
 
   describe("Communication endpoints for testpages [fuzz-skip]", function() {
