@@ -12,6 +12,7 @@ Unreleased
   experimental feature, as it does not yet have appropriate error handling, but
   the happy path is functionally complete and feedback is welcome. (EE-159)
 - No more duplicates in elemhide filter hits reporting (EE-185).
+- Removed user filters (if present in subscriptions) now become active (EE-97).
 
 # Update your code
 

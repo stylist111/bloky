@@ -798,6 +798,54 @@ describe("Test subscriptions update", function() {
         .toBeBlocked();
     });
 
+    it("enables subscription filter when according disabled user filter is removed", async function() {
+      if (!hasUpdateStaticRules()) {
+        this.skip();
+      }
+
+      setMinTimeout(this, 20000);
+
+      let filter = "/image-from-custom-filter.png^$image";
+
+      await EWE.filters.add(filter);
+      await EWE.filters.disable(filter);
+
+      let userFilters = await EWE.filters.getUserFilters();
+      expect(userFilters[0]).toEqual(expect.objectContaining({
+        text: filter,
+        enabled: false
+      }));
+
+      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
+      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
+      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+        filters: {
+          add: [filter],
+          remove: []
+        }
+      }));
+
+      await EWE.subscriptions.add(testDiffSubscriptionUrl);
+      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+
+      userFilters = await EWE.filters.getUserFilters();
+      expect(userFilters[0]).toEqual(expect.objectContaining({
+        text: filter,
+        enabled: false
+      }));
+
+      await shouldBeLoaded(
+        "image-from-custom-filter.html",
+        "image-from-custom-filter.png",
+        "Image was blocked even though the user filter was created and disabled by user");
+
+      await EWE.filters.remove(filter);
+
+      await new Page("image-from-custom-filter.html")
+        .expectResource("image-from-custom-filter.png")
+        .toBeBlocked();
+    });
+
     it("doesn't synchronize the same DiffUpdatable subscription concurrently", async function() {
       setMinTimeout(this, 40000);
 

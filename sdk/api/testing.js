@@ -31,8 +31,8 @@ import {default as initializer} from "./initializer.js";
 import {setAddonInfo, addonBundledSubscriptionsPath, initializeDefaultAddonInfo}
   from "./info.js";
 import {dnrSubscriptionUpdate, dynamicRulesAvailable, getDynamicFilters,
-        removeDynamicFilters, clearRulesetUpdates, testSetDynamicRulesAvailable,
-        clearIsDnrSubscriptionUpdating}
+        removeAllDynamicFilters, clearRulesetUpdates,
+        testSetDynamicRulesAvailable, clearIsDnrSubscriptionUpdating}
   from "./dnr-filters.js";
 import {getSubscriptionRulesetMap} from "./subscriptions-utils.js";
 import {IO} from "./io.js";
@@ -146,7 +146,7 @@ export default {
       await subs.remove(subscription.url);
     }
 
-    await removeDynamicFilters();
+    await removeAllDynamicFilters();
     await clearRulesetUpdates();
     clearIsDnrSubscriptionUpdating();
 

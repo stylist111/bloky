@@ -40,6 +40,6 @@ export function getFilterTextByRuleId(id) {
 
 export let IO = {};
 
-export function disableDynamicFiltersForSubscriptionId() {}
-export function restoreDynamicFiltersForSubscriptionId() {}
+export function disableDynamicRules() {}
+export function restoreDynamicRules() {}
 export function isDnrSubscriptionUpdating(url) {}

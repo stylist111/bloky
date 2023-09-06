@@ -33,8 +33,7 @@ import {default as initializer} from "./initializer.js";
 import {filterEngine} from "./core.js";
 import {EventDispatcher} from "./types.js";
 import {convertFilter} from "./filters.js";
-import {disableDynamicFiltersForSubscriptionId,
-        restoreDynamicFiltersForSubscriptionId,
+import {disableDynamicRules, restoreDynamicRules,
         isDnrSubscriptionUpdating} from "./dnr-filters.js";
 
 import {readFileContent} from "./io.js";
@@ -214,7 +213,7 @@ async function enableRuleset(rulesetId) {
         enableRulesetIds: [rulesetId]
       });
 
-      await restoreDynamicFiltersForSubscriptionId(rulesetId);
+      await restoreDynamicRules(rulesetId);
     }
   }
 }
@@ -225,7 +224,7 @@ async function disableRuleset(rulesetId) {
       disableRulesetIds: [rulesetId]
     });
 
-    await disableDynamicFiltersForSubscriptionId(rulesetId);
+    await disableDynamicRules(rulesetId);
   }
 }
 
