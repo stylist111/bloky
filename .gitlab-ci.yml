@@ -240,7 +240,6 @@ func:v2:firefox:update:incognito:
         -ArgumentList "/i MicrosoftEdgeEnterpriseX64.msi /norestart /qn" -Wait
     - choco upgrade -y --no-progress nodejs --version 16.18.1
     - npm install
-    - Start-Process "node" -ArgumentList "test/start-server.js" -PassThru
   tags:
     - shared-windows
     - windows

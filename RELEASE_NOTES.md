@@ -14,6 +14,11 @@ Unreleased
 - No more duplicates in elemhide filter hits reporting (EE-185).
 - Removed user filters (if present in subscriptions) now become active (EE-97).
 
+# Fixes
+
+- Ensure tests for func:v2:windows:edge:stable and func:v2:windows:edge:incognito
+  are run in the CI pipeline (EE-169).
+
 # Update your code
 
 - Add the newly required `alarms` permission to the manifest file if you're
@@ -44,9 +49,9 @@ Unreleased
 - We now gather and send all the correct information to the telemetry server. We
   don't yet handle any timing or retry logic. (EE-159)
 
-# Fixes 
+# Fixes
 
-- Enabling a ruleset no longer emits a "subscription.updated" event 
+- Enabling a ruleset no longer emits a "subscription.updated" event
   unless a subscription is updated (EE-153).
 - Fixed a bug where diff updatable subscriptions would not use the correct
   expiration date present in the header and instead use the default value of

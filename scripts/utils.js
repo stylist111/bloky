@@ -90,5 +90,16 @@ export function isMain(url) {
     executableName = fs.realpathSync(executableName);
   }
 
-  return url === `file://${executableName}`;
+  const binUrl = generateBinUrl(executableName);
+
+  return url === binUrl;
+}
+
+function generateBinUrl(executableName) {
+  let binUrl = `file://${executableName}`;
+  if (process.platform.includes("win")) {
+    binUrl = `file:///${executableName.replaceAll("\\", "/")}`;
+  }
+
+  return binUrl;
 }
