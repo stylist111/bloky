@@ -97,7 +97,7 @@ export function isMain(url) {
 
 function generateBinUrl(executableName) {
   let binUrl = `file://${executableName}`;
-  if (process.platform.includes("win")) {
+  if (process.platform.includes("win32")) {
     binUrl = `file:///${executableName.replaceAll("\\", "/")}`;
   }
 
