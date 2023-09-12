@@ -26,7 +26,7 @@ import requestLogger from "./request-logger.js";
 import {delay, apiErrorHandler} from "./api-middleware.js";
 
 const HTTP_ADMIN_PORT = 3003;
-
+let dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const BUILD_TIME_ROUTES = [
   {
     url: "/example-dynamic-endpoint",
@@ -43,6 +43,14 @@ const BUILD_TIME_ROUTES = [
   {
     url: "/anti-cv-subscription.txt",
     response: "[Adblock Plus]\nlocalhost###migrate-diff-elem-item"
+  },
+  {
+    url: "/updatable_subscription.txt",
+    response: fs.readFileSync(dirname + "/pages/updatable_subscription.txt")
+  },
+  {
+    url: "/mv2_updatable_subscription.txt",
+    response: fs.readFileSync(dirname + "/pages/updatable_subscription.txt")
   },
   {
     url: "/updatable_subscription/diff.json",
@@ -72,7 +80,6 @@ const BUILD_TIME_ROUTES = [
 ];
 
 let app = express();
-let dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
 app.use(express.json());
 app.use(delay);
@@ -86,17 +93,6 @@ app.post("/clearRequestLogs", (req, res) => {
 // get the requests list
 app.get("/requestLogs", (req, res) => {
   res.send(JSON.stringify(requestLogger.getRequests(), null, 2));
-});
-
-// get the subscription content (GET)
-app.get("/updatable_subscription.txt", requestLogger.logRequests, (req, res) => {
-  let sub = fs.readFileSync(dirname + "/pages/updatable_subscription.txt");
-  res.send(sub);
-});
-
-app.get("/mv2_updatable_subscription.txt", requestLogger.logRequests, (req, res) => {
-  let sub = fs.readFileSync(dirname + "/pages/updatable_subscription.txt");
-  res.send(sub);
 });
 
 let responses = new Map();

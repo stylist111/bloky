@@ -187,6 +187,21 @@ describe("Testing Mechanisms", function() {
       testOutput = await fetch(`${TEST_ADMIN_PAGES_URL}${url}`);
       expect(await testOutput.text()).toEqual(defaultResponse);
     });
+
+    it("supports overwriting subscription routes", async function() {
+      const UPDATABLE_SUBSCRIPTION_URL =
+        "http://localhost:3003/updatable_subscription.txt";
+
+      try {
+        let updatedReply = "[New content of subscription]";
+        await setEndpointResponse(UPDATABLE_SUBSCRIPTION_URL, updatedReply, "GET");
+        let response = await fetch(UPDATABLE_SUBSCRIPTION_URL);
+        expect(await response.text()).toEqual(updatedReply);
+      }
+      finally {
+        clearEndpointResponse(UPDATABLE_SUBSCRIPTION_URL);
+      }
+    });
   });
 
   describe("Communication endpoints for testpages [fuzz-skip]", function() {

@@ -42,6 +42,14 @@ Unreleased
 - Reduce unnecessary CI logs in Windows builds by not printing progress logs
   from Choco.
 
+# For the release meeting
+- (EE-103) was intentionally left without release notes, since its only internal
+  changes. This note is just to remember that the commits
+  `NoIssue - refactor admin-api.js to allow overwriting subscriptions routes`
+  and `Fixes EE-103 - Fix test checking what happens when the same filter is in
+  sub and user filters` dont have any release notes. Please delete this before
+  releasing
+
 0.13.0 - 2023/08/28
 ===================
 
