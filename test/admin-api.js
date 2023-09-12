@@ -112,37 +112,41 @@ app.post("/clearUrlResponse", (req, res) => {
 });
 
 function createRouteHandler(route) {
-  responses.set(route.url, route.response);
-
-  let handler = (req, res) => {
-    let response = responses.get(route.url);
-    if (typeof response == "function") {
-      res.send(response());
-    }
-    else if (response) {
-      res.send(response);
-    }
-    else {
-      res.end();
-    }
-  };
-
   let method = (route.method || "GET").toUpperCase();
+  route.method = method;
 
-  if (method == "POST") {
-    app.post(route.url, requestLogger.logRequests, handler);
-  }
-  else if (method == "GET") {
-    app.get(route.url, requestLogger.logRequests, handler);
-  }
-  else {
+  if (!["GET", "POST"].includes(method)) {
     throw new Error(`Currently unsupported HTTP method: ${method}`);
   }
+
+  responses.set(route.url, route);
 }
 
-app.post("/setUrlResponse", (req, res, next) => {
+app.post("/setUrlResponse", (req, res) => {
   createRouteHandler(req.body);
   res.send("");
+});
+
+app.all("*", requestLogger.logRequests, (req, res, next) => {
+  let route = responses.get(req.path);
+  if (!route || req.method.toUpperCase() != route.method) {
+    next();
+    return;
+  }
+
+  if (route.status) {
+    res.status(route.status);
+  }
+
+  if (typeof route.response == "function") {
+    res.send(route.response());
+  }
+  else if (route.response) {
+    res.send(route.response);
+  }
+  else {
+    res.end();
+  }
 });
 
 export function startAdminServer(host) {

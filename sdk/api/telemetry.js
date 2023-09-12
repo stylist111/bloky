@@ -60,30 +60,23 @@ class AlarmScheduler {
   }
 
   async callListenerIfItsTime() {
-    let lastTimestamp = await this.config.getLastTimestamp();
-    if (lastTimestamp) {
-      const nextTimestamp = new Date(lastTimestamp).getTime() +
-             this.config.intervalInMinutes * MILLIS_IN_MINUTE;
-
-      if (Date.now() <= nextTimestamp) {
-        return {
-          when: nextTimestamp
-        };
-      }
-    }
-
-    try {
-      await this.config.listener();
+    let nextTimestamp = await this.config.getNextTimestamp();
+    if (nextTimestamp && Date.now() <= nextTimestamp) {
       return {
-        delayInMinutes: this.config.intervalInMinutes
+        when: nextTimestamp
       };
     }
-    catch (e) {
-      console.error(e.toString());
+
+    let success = await this.config.listener();
+    if (!success) {
       return {
         delayInMinutes: this.config.errorRetryDelayInMinutes
       };
     }
+
+    return {
+      delayInMinutes: this.config.intervalInMinutes
+    };
   }
 
   async stop() {
@@ -113,12 +106,43 @@ export function start(telemetry, pingIntervalInMinutes = 60 * 12,
     intervalInMinutes: pingIntervalInMinutes,
     errorRetryDelayInMinutes,
     listener: () => ping(telemetry),
-    async getLastTimestamp() {
-      const storageResult = await browser.storage.local.get(
+    async getNextTimestamp() {
+      let storageResult = await browser.storage.local.get(
         [TELEMETRY_STORAGE_KEY]
       );
-      const storage = storageResult[TELEMETRY_STORAGE_KEY];
-      return storage && storage.lastPing;
+      let storage = storageResult[TELEMETRY_STORAGE_KEY];
+      let lastPing = storage && storage.lastPing;
+      let lastError = storage && storage.lastError;
+
+      if (lastError) {
+        let nextRetryAfterError = new Date(lastError).getTime() +
+            (errorRetryDelayInMinutes * MILLIS_IN_MINUTE);
+        let nowTimestamp = Date.now();
+        let maxNextRetry = nowTimestamp +
+            (errorRetryDelayInMinutes * MILLIS_IN_MINUTE);
+        if (nextRetryAfterError > maxNextRetry) {
+          // This shouldn't happen if the clocks are working right. It implies
+          // that the system clock has been set backwards since we stored that
+          // timestamp. Let's correct the storage using our current clock
+          // value. We shouldn't do this with lastPing because lastPing comes
+          // from the server.
+          nextRetryAfterError = maxNextRetry;
+          await browser.storage.local.set({
+            [TELEMETRY_STORAGE_KEY]: {
+              ...storage,
+              lastError: (new Date(nowTimestamp)).toISOString()
+            }
+          });
+        }
+
+        return nextRetryAfterError;
+      }
+      else if (lastPing) {
+        return new Date(lastPing).getTime() +
+          (pingIntervalInMinutes * MILLIS_IN_MINUTE);
+      }
+
+      return null;
     }
   });
 }
@@ -159,11 +183,25 @@ async function ping(telemetry) {
     payload.last_ping_tag = storage.lastPingTag;
   }
 
-  const pingToken = await fetchWithBearerToken(
-    telemetry.url,
-    telemetry.bearer,
-    {payload}
-  );
+  let pingToken;
+  try {
+    pingToken = await fetchWithBearerToken(
+      telemetry.url,
+      telemetry.bearer,
+      {payload}
+    );
+  }
+  catch (e) {
+    await browser.storage.local.set({
+      [TELEMETRY_STORAGE_KEY]: {
+        ...storage,
+        lastError: (new Date()).toISOString()
+      }
+    });
+
+    console.error(e.toString());
+    return false;
+  }
 
   await browser.storage.local.set({
     [TELEMETRY_STORAGE_KEY]: {
@@ -173,6 +211,7 @@ async function ping(telemetry) {
       lastPingTag: uuidv4()
     }
   });
+  return true;
 }
 
 async function fetchWithBearerToken(url, bearer, body) {

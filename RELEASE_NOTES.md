@@ -8,9 +8,9 @@ Unreleased
 - Telemetry pings are now repeated every 12 hours if telemetry is enabled. If
   the extension isn't running when it is time for the next ping, then the ping
   happens the next time the extension starts up. This requires the `alarms`
-  permissions to be added to the manifest file. Telemetry is still considered an
-  experimental feature, as it does not yet have appropriate error handling, but
-  the happy path is functionally complete and feedback is welcome. (EE-159)
+  permissions to be added to the manifest file. If the telemetry server has an
+  error, then the next retry will happen in 1 hour instead of 12. There is
+  currently no events for integrators to observer these errors. (EE-159)
 - No more duplicates in elemhide filter hits reporting (EE-185).
 - Removed user filters (if present in subscriptions) now become active (EE-97).
 
