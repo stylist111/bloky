@@ -580,7 +580,7 @@ async function runTests() {
   let headless = (browser == "firefox" ||
     browser == "chromium" && majorVersion >= 111) && !incognito && !forceHeadful;
   let driver = await BROWSERS[browser].getDriver(
-    versionNumber,
+    version,
     {headless, extensionPaths, incognito, extraArgs, customBrowserBinary});
 
   let timeout = (params && typeof params.timeout != "undefined" ?

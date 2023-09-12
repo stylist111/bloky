@@ -123,19 +123,17 @@ describe("Filters", function() {
     await new Page("image-from-custom-filter.html").expectResource("image-from-custom-filter.png").toBeBlocked();
   });
 
-  it("remove custom filter that is already on subscription as a custom filter only [mv2-only]", async function() {
-    const filter = "/image-from-custom-filter.png^$image";
-    let updatedReply = [
-      "[Adblock Plus]",
-      filter
-    ].join("\n");
-    await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
-    await EWE.subscriptions.add(subCircumvention.url);
+  it("remove custom filter that is already on subscription as a custom filter only", async function() {
+    const UPDATABLE_SUBSCRIPTION_URL =
+      "http://localhost:3003/updatable_subscription.txt";
+
+    await EWE.subscriptions.add(UPDATABLE_SUBSCRIPTION_URL);
     await waitForSubscriptionsToDownload();
 
-    await EWE.filters.add([filter]);
+    // this filter is already in the subscription
+    const filter = "/image-from-subscription.png^$image";
+    await EWE.filters.add(filter);
     let userFilters = await EWE.filters.getUserFilters();
-
     expect(userFilters[0]).toMatchObject({
       csp: null,
       enabled: true,
@@ -146,11 +144,13 @@ describe("Filters", function() {
       type: "blocking"
     });
 
-    await EWE.filters.remove([filter]);
+    await EWE.filters.remove(filter);
     userFilters = await EWE.filters.getUserFilters();
     expect(userFilters.length).toEqual(0);
 
-    await new Page("image-from-custom-filter.html").expectResource("image-from-custom-filter.png").toBeBlocked();
+    await new Page("image-from-subscription.html")
+          .expectResource("image-from-subscription.png")
+          .toBeBlocked();
   });
 
   describe("Filters metadata", function() {
