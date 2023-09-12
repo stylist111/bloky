@@ -3,6 +3,11 @@ Unreleased
 
 # General
 
+- Added two new possible status to the subscription property `downloadStatus`:
+  `"synchronize_diff_too_many_filters"` and `"synchronize_diff_error"`.
+  The first one is emitted when a diff udpate reaches the limit number of
+  dynamic rules, and the second is when any other error happens during the diff
+  update (EE-85).
 - Now sending "firstVersion" and "lastVersion" request arguments for diff
   updatable subscriptions (EE-153).
 - Telemetry pings are now repeated every 12 hours if telemetry is enabled. If
@@ -21,6 +26,9 @@ Unreleased
 
 # Update your code
 
+- If you're using to the `EWE.subscriptions.onChanged` API to listen to changes
+  in `downloadStatus`, you need to handle the new status values
+  `"synchronize_diff_too_many_filters"` and `"synchronize_diff_error"` (EE-85).
 - Add the newly required `alarms` permission to the manifest file if you're
   using telemetry. (EE-159)
 

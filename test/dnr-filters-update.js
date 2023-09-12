@@ -18,7 +18,7 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 import {DnrMapper} from "adblockpluscore/lib/dnr/mapper.js";
-import {EWE, clearTestEvents, expectTestEvents} from "./messaging.js";
+import {EWE, clearTestEvents, expectTestEvents, getTestEvents} from "./messaging.js";
 import {hasUpdateStaticRules, Page, setEndpointResponse, shouldBeLoaded,
         setMinTimeout, wait, expectElemHideVisible, expectElemHideHidden,
         syncSubHasLastFilter, syncSubHasNoLastFilter,
@@ -477,12 +477,25 @@ describe("Test subscriptions update", function() {
         expect(detail.subscriptionIds.length).toBe(2);
       }
 
+      clearTestEvents("subscriptions.onChanged");
       // This update should fail
-      await expect(EWE.testing._dnrSubscriptionUpdate(
+      await EWE.testing._dnrSubscriptionUpdate(
         UPDATABLE_SUBSCRIPTION_URL, UPDATES2A
-      )).rejects.toThrow(
-        "FilterError: {\"type\":\"too_many_filters\",\"option\":null}"
       );
+
+      const lastEvent = getTestEvents("subscriptions.onChanged").slice(-1);
+      expect(lastEvent).toEqual(
+        [
+          [
+            expect.objectContaining({
+              url: UPDATABLE_SUBSCRIPTION_URL,
+              downloadStatus: "synchronize_diff_too_many_filters"
+            }),
+            "downloadStatus"
+          ]
+        ]
+      );
+
       await checkDynamicRuleCount(5);
       // The previous update state should have been kept
       await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, UPDATES2);
@@ -525,11 +538,24 @@ describe("Test subscriptions update", function() {
       }
 
       await EWE.testing.testSetDynamicRulesAvailable(3);
+
+      clearTestEvents("subscriptions.onChanged");
       // This update should fail
-      await expect(EWE.testing._dnrSubscriptionUpdate(
+      await EWE.testing._dnrSubscriptionUpdate(
         UPDATABLE_SUBSCRIPTION_URL, UPDATES
-      )).rejects.toThrow(
-        "FilterError: {\"type\":\"too_many_filters\",\"option\":null}"
+      );
+
+      const lastEvent = getTestEvents("subscriptions.onChanged").slice(-1);
+      expect(lastEvent).toEqual(
+        [
+          [
+            expect.objectContaining({
+              url: UPDATABLE_SUBSCRIPTION_URL,
+              downloadStatus: "synchronize_diff_too_many_filters"
+            }),
+            "downloadStatus"
+          ]
+        ]
       );
 
       await checkDynamicRuleCount(0);
@@ -1130,6 +1156,52 @@ describe("Test subscriptions update", function() {
           expect(nextLastVersion).toBeGreaterThan(previousLastVersion);
         }
         previousLastVersion = nextLastVersion;
+      }
+    });
+
+    it("notifies the error when the DNR limit is reached", async function() {
+      if (!hasUpdateStaticRules()){
+        this.skip();
+      }
+      try {
+        let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
+
+        await EWE.testing.testSetDynamicRulesAvailable(1);
+        await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+          filters: {
+            add: ["filterThatFits", "filterThatDoesNotFitIntoTheLimit"],
+            remove: []
+          }
+        }));
+
+        clearTestEvents("subscriptions.onChanged");
+        await EWE.subscriptions.add(UPDATABLE_SUBSCRIPTION_URL);
+
+        // this is the same as waitForSubscriptionToBeSynchronized() but without
+        // cleaning the test events
+        await wait(async() => {
+          let changeEvents = getTestEvents("subscriptions.onChanged");
+          return changeEvents.filter(event => {
+            return event[0].url === UPDATABLE_SUBSCRIPTION_URL &&
+              event[1] === null; // whole subscription update, not property
+          }).length > 0;
+        }, 3000, "Subscription was not synchronized.");
+
+        const lastEvent = getTestEvents("subscriptions.onChanged").slice(-1);
+        expect(lastEvent).toEqual(
+          [
+            [
+              expect.objectContaining({
+                url: UPDATABLE_SUBSCRIPTION_URL,
+                downloadStatus: "synchronize_diff_too_many_filters"
+              }),
+              "downloadStatus"
+            ]
+          ]
+        );
+      }
+      finally {
+        await EWE.testing.testSetDynamicRulesAvailable(0);
       }
     });
   });

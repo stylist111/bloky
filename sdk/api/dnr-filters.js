@@ -152,6 +152,20 @@ export async function dnrSubscriptionUpdate(subscription, updates) {
   try {
     await _dnrSubscriptionUpdate(subscription, updates);
   }
+  catch (e) {
+    if (e.type === ERROR_TOO_MANY_FILTERS){
+      subscription.downloadStatus = "synchronize_diff_too_many_filters";
+      e.rulesAvailable = await dynamicRulesAvailable();
+    }
+    else {
+      subscription.downloadStatus = "synchronize_diff_error";
+    }
+    // Here we have to decide what to do with this error
+    // Some options:
+    //  * add the entire error object as a new property of the subscription
+    //  * create a new event under EWE.subscription to notify the error
+    //  * leave it as it is, the "too_many_filters" status will be enough
+  }
   finally {
     dnrSubscriptionUpdating.delete(subscription.url);
   }
