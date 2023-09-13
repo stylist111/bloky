@@ -27,6 +27,8 @@ Unreleased
 
 - Ensure tests for func:v2:windows:edge:stable and func:v2:windows:edge:incognito
   are run in the CI pipeline (EE-169).
+- Fix flaky Fuzz Edge test in MV3 "does not hide an element on a sitekey
+  allowlisted page" (EE-120).
 
 # Update your code
 

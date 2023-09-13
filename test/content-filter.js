@@ -392,8 +392,14 @@ describe("Element Hiding", function() {
     });
 
     it("does not hide an element on a sitekey allowlisted page [fuzz]", async function() {
+      setMinTimeout(this, 5000);
+
       await addFilter("###elem-hide");
       await addFilter(`@@$elemhide,sitekey=${SITEKEY}`);
+
+      // Wait to ensure that adding the filters has completed
+      await new Promise(r => setTimeout(r, 2000));
+
       await expectElemHideVisible({url: "element-hiding.html?sitekey=1"});
     });
 
