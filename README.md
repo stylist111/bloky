@@ -333,8 +333,8 @@ The CI pipeline performs automated tests on the following browser versions:
 
 ### Prerequisites
 
-* Node >= 16.10.0
-* npm >= 7
+* Node >= 18
+* npm >= 9
 
 ### Installing/Updating dependencies
 

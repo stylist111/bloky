@@ -18,6 +18,10 @@ Unreleased
   currently no events for integrators to observer these errors. (EE-159)
 - No more duplicates in elemhide filter hits reporting (EE-185).
 - Removed user filters (if present in subscriptions) now become active (EE-97).
+- Updated the minimum supported version of Node to 18. Node 18 is the current
+  LTS version of Node. This only affects code that runs in Node, such as build
+  scripts, and the scripts used to download MV3 subscriptions for bundling. This
+  does not affect extension code running in the browser (EE-192).
 
 # Fixes
 

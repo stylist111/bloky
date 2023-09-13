@@ -12,8 +12,8 @@
   "author": "eyeo GmbH",
   "license": "GPL-3.0",
   "engines": {
-    "node": ">=16.10.0",
-    "npm": ">=7"
+    "node": ">=18",
+    "npm": ">=9"
   },
   "type": "module",
   "main": "./dist/ewe-api.js",

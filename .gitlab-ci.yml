@@ -62,7 +62,7 @@ stages:
   - integration
 
 build:
-  image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
+  image: node:18-bullseye-slim
   stage: build
   before_script:
     - npm install
@@ -77,7 +77,7 @@ build:
     expire_in: 1 week
 
 audit:
-  image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
+  image: node:18-bullseye-slim
   stage: build
   before_script:
     - npm install
@@ -88,7 +88,7 @@ audit:
     - !reference [.avoid-flaky-run, rules]
 
 lint:
-  image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
+  image: node:18-bullseye-slim
   stage: build
   before_script:
     - npm install
@@ -98,7 +98,7 @@ lint:
 # Unit tests
 
 .unit:
-  image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
+  image: registry.gitlab.com/eyeo/docker/get-browser-binary:node18
   stage: unit
   needs: []
   before_script:
@@ -127,7 +127,7 @@ unit:webext:
 # Functional Tests
 
 func:scripts:
-  image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
+  image: node:18-bullseye-slim
   stage: functional
   needs: []
   before_script:
@@ -138,7 +138,7 @@ func:scripts:
     - !reference [.avoid-flaky-run, rules]
 
 func:bundle:
-  image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
+  image: node:18-bullseye-slim
   stage: functional
   script:
     - npm run test-bundle
@@ -238,7 +238,7 @@ func:v2:firefox:update:incognito:
         -OutFile 'MicrosoftEdgeEnterpriseX64.msi'
     - Start-Process msiexec
         -ArgumentList "/i MicrosoftEdgeEnterpriseX64.msi /norestart /qn" -Wait
-    - choco upgrade -y --no-progress nodejs --version 16.18.1
+    - choco upgrade -y --no-progress nodejs --version 18.17.1
     - npm install
   tags:
     - shared-windows
@@ -471,7 +471,7 @@ compliance:v3:edge:
     MANIFEST: mv3
 
 int:scripts:
-  image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
+  image: node:18-bullseye-slim
   needs: []
   stage: integration
   before_script:
@@ -488,7 +488,7 @@ int:scripts:
     - !reference [.avoid-flaky-run, rules]
 
 .pages:
-  image: registry.gitlab.com/eyeo/docker/adblockplus-ci:node16-no-python
+  image: node:18-bullseye-slim
   stage: pages
   dependencies:
     - build

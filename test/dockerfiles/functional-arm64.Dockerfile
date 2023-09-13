@@ -1,6 +1,6 @@
-# Duplicated from registry.gitlab.com/eyeo/docker/get-browser-binary:node16
+# Duplicated from registry.gitlab.com/eyeo/docker/get-browser-binary:node18
 # https://gitlab.com/eyeo/developer-experience/get-browser-binary/-/issues/46
-FROM node:16-bullseye-slim
+FROM node:18-bullseye-slim
 # General packages
 RUN apt-get update && apt-get install -y git procps wget unzip bzip2 gnupg
 # xvfb (headful browser run)
@@ -20,7 +20,6 @@ RUN cd webext-sdk/ && npm install
 
 COPY . webext-sdk/
 WORKDIR webext-sdk/
-RUN npm config set timeout 10000
 RUN npm install
 RUN if [ -z "$SKIP_BUILD" ]; then npm run build; fi
 RUN if [ ! -z "$BROWSER" ]; then node test/dockerfiles/get-browser-binaries.js $BROWSER; fi

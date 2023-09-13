@@ -1,8 +1,7 @@
-FROM registry.gitlab.com/eyeo/docker/get-browser-binary:node16
+FROM registry.gitlab.com/eyeo/docker/get-browser-binary:node18
 
 COPY . webext-sdk/
 WORKDIR webext-sdk/
-RUN npm config set timeout 10000
 RUN npm install
 ENV TEST_PARAMS=""
 ENV MODE="Default"

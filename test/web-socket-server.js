@@ -23,7 +23,7 @@ import {default as WebSocket} from "ws";
 const WS_PORT = 3001;
 
 export function startWebSocketServer(host) {
-  new WebSocket.Server({host, port: WS_PORT}).on("listening", () => {
+  new WebSocket.Server({port: WS_PORT}).on("listening", () => {
     console.log(`Web socket server listening at ws://${host}:${WS_PORT}`);
   });
 }

@@ -42,7 +42,7 @@ app.use(express.static(path.join(dirname, "pages")));
 app.post("/ping-handler", (req, res) => res.sendStatus(200));
 
 export function startTestPagesServer(host) {
-  app.listen(HTTP_PORT, host, () => {
+  app.listen(HTTP_PORT, () => {
     console.log(`Test pages server listening at http://${host}:${HTTP_PORT}`);
   });
 }
