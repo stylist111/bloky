@@ -20,8 +20,7 @@ import "geckodriver";
 
 import {executeScript} from "./webdriver.mjs";
 
-// Firefox 60 is minimum supported by get-browser-binary
-const FIREFOX_VERSION = "60.0";
+const FIREFOX_VERSION = "68.0";
 
 async function runScript(script, scriptArgs) {
   let headless = process.env.BROWSER_TEST_HEADLESS != "0";
