@@ -574,16 +574,46 @@ describe("Filters", function() {
         await page.loaded;
         let isImagePageAllowlisted = await browser.runtime.sendMessage({
           type: "ewe-test:isResourceAllowlisted",
-          url: `${TEST_PAGES_URL}/image.html`
+          url: `${TEST_PAGES_URL}/image.html`,
+          status: "loading"
         });
         expect(isImagePageAllowlisted).toEqual(true);
 
         await page.load("header.html");
         let isHeaderPageAllowlisted = await browser.runtime.sendMessage({
           type: "ewe-test:isResourceAllowlisted",
-          url: `${TEST_PAGES_URL}/header.html`
+          url: `${TEST_PAGES_URL}/header.html`,
+          status: "loading"
         });
         expect(isHeaderPageAllowlisted).toEqual(false);
+      }
+      finally {
+        await browser.runtime.sendMessage({
+          type: "ewe-test:unsubscribeTabsOnUpdated"
+        });
+      }
+    });
+
+    it("returns whether a resource is allowlisted for excluded domains", async function() {
+      await EWE.filters.add(["@@*$document,domain=~localhost"]);
+
+      await browser.runtime.sendMessage({
+        type: "ewe-test:subscribeTabsOnUpdated"
+      });
+
+      try {
+        let url = `${TEST_PAGES_URL}/image.html`;
+        let tabId = await new Page(url, true).loaded;
+        expect(await EWE.filters.getAllowingFilters(url)).toEqual([]);
+        expect(await EWE.filters.isResourceAllowlisted(
+          url, "document", tabId)).toEqual(false);
+
+        let wasAllowlistedOnComplete = await browser.runtime.sendMessage({
+          type: "ewe-test:isResourceAllowlisted",
+          url,
+          status: "complete"
+        });
+        expect(wasAllowlistedOnComplete).toEqual(false);
       }
       finally {
         await browser.runtime.sendMessage({

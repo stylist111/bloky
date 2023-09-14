@@ -17,6 +17,7 @@
 
 import browser from "webextension-polyfill";
 
+import {parseURL} from "adblockpluscore/lib/url.js";
 import {Filter, URLFilter} from "adblockpluscore/lib/filterClasses.js";
 import {SpecialSubscription} from "adblockpluscore/lib/subscriptionClasses.js";
 import {isSlowFilter} from "adblockpluscore/lib/matcher.js";
@@ -302,7 +303,10 @@ export default {
     let frame = getFrameInfo(tabId, frameId) || {};
     let matcher = filterEngine.defaultMatcher;
 
-    if (matcher.isAllowlisted(url, mask, frame.hostname, frame.sitekey)) {
+    // The docDomain for a frame is the hostname of the parent frame
+    // (the loader). For top-level frames we use the current URL's hostname.
+    let docDomain = frame.hostname || parseURL(url).hostname;
+    if (matcher.isAllowlisted(url, mask, docDomain, frame.sitekey)) {
       return true;
     }
 
@@ -312,8 +316,9 @@ export default {
       }
 
       let parentHostname = frame.parent && frame.parent.hostname;
+      docDomain = parentHostname || frame.hostname;
       if (matcher.isAllowlisted(frame.url, contentTypes.DOCUMENT,
-                                parentHostname, frame.sitekey)) {
+                                docDomain, frame.sitekey)) {
         return true;
       }
     }
