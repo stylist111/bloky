@@ -21,6 +21,7 @@ import {MILLIS_IN_MINUTE} from "adblockpluscore/lib/time.js";
 
 import * as info from "./info.js";
 import {hasAcceptableAdsEnabled} from "./subscriptions.js";
+import {EventDispatcher} from "./types.js";
 
 const TELEMETRY_STORAGE_KEY = "ewe:telemetry";
 const TELEMETRY_ALARM_KEY = "ewe:telemetry";
@@ -86,6 +87,7 @@ class AlarmScheduler {
 }
 
 let scheduler = null;
+let onError = new EventDispatcher(dispatch => {});
 
 export function start(telemetry, pingIntervalInMinutes = 60 * 12,
                       errorRetryDelayInMinutes = 60) {
@@ -192,14 +194,18 @@ async function ping(telemetry) {
     );
   }
   catch (e) {
+    let lastError = (new Date()).toISOString();
     await browser.storage.local.set({
       [TELEMETRY_STORAGE_KEY]: {
         ...storage,
-        lastError: (new Date()).toISOString()
+        lastError
       }
     });
 
-    console.error(e.toString());
+    onError.emit({
+      message: e.message,
+      lastError
+    });
     return false;
   }
 
@@ -226,7 +232,7 @@ async function fetchWithBearerToken(url, bearer, body) {
 
   if (!response.ok) {
     throw new Error(
-      `Telemetry error. Server responded with the following status: ${response.status}`
+      `Telemetry server responded with error status ${response.status}.`
     );
   }
 
@@ -234,7 +240,7 @@ async function fetchWithBearerToken(url, bearer, body) {
   let pingToken = data.token;
 
   if (!pingToken) {
-    throw new Error("Telemetry error. Server response did not include a token.");
+    throw new Error("Telemetry server response did not include a token.");
   }
 
   return pingToken;
@@ -287,3 +293,19 @@ async function getExtensionMetadata() {
     aa_active: await hasAcceptableAdsEnabled()
   };
 }
+
+/**
+ * @typedef {Object} TelemetryPingError
+ * @property {string} message The error message, describing the failure.
+ * @property {string} lastError The timestamp of the error.
+ */
+
+export default {
+  /**
+   * Emitted when sending a telemetry ping fails.
+   *
+   * @event
+   * @type {EventDispatcher<TelemetryPingError>}
+   */
+  onError
+};

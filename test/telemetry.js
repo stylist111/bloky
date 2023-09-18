@@ -18,7 +18,7 @@
 
 import browser from "webextension-polyfill";
 import expect from "expect";
-import {EWE, runInBackgroundPage} from "./messaging.js";
+import {EWE, runInBackgroundPage, expectTestEvents} from "./messaging.js";
 import {clearRequestLogs, getRequestLogs, setMinTimeout, setEndpointResponse,
         clearEndpointResponse, TEST_ADMIN_PAGES_URL, TEST_PAGES_URL, wait,
         waitForAssertion, waitForSubscriptionToBeSynchronized}
@@ -456,6 +456,42 @@ describe("Telemetry", function() {
         }));
         expect(payloads[2].last_ping_tag)
           .not.toEqual(payloads[1].last_ping_tag);
+      });
+
+      it("listens to onError events for error status codes [fuzz]", async function() {
+        await setEndpointResponse(TELEMETRY_URL, {}, "POST", 500);
+        await startTelemetryWithTestArgs();
+        await expectTestEvents("telemetry.onError", [[{
+          message: "Telemetry server responded with error status 500.",
+          lastError: expect.any(String)
+        }]]);
+      });
+
+      it("listens to onError events for missing data", async function() {
+        await setEndpointResponse(TELEMETRY_URL, {}, "POST");
+        await startTelemetryWithTestArgs();
+        await expectTestEvents("telemetry.onError", [[{
+          message: "Telemetry server response did not include a token.",
+          lastError: expect.any(String)
+        }]]);
+      });
+
+      it("listens to onError events for network error", async function() {
+        await EWE.testing.startTelemetry({
+          url: "invalid-url.invalid", // https://en.wikipedia.org/wiki/.invalid
+          bearer: TELEMETRY_BEARER
+        });
+        // These are the error message from the browser, just passed through. It
+        // might be different on different browsers, and might need to grow as
+        // browsers change their error messages.
+        await expectTestEvents("telemetry.onError", [[{
+          message: expect.oneOf([
+            "NetworkError when attempting to fetch resource.",
+            "Failed to fetch",
+            "The operation was aborted. "
+          ]),
+          lastError: expect.any(String)
+        }]]);
       });
     });
   });

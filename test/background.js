@@ -271,6 +271,7 @@ EWE.notifications.addShowListener(createTestEventListener("notifications.addShow
 EWE.notifications.addShowListener(async notification => {
   await EWE.notifications.markAsShown(notification.id);
 });
+EWE.telemetry.onError.addListener(createTestEventListener("telemetry.onError"));
 
 EWE.reporting.onBlockableItem.addListener(
   createTestEventListener("reporting.onBlockableItem.defaultEventOptions"),

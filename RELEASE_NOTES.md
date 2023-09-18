@@ -14,8 +14,9 @@ Unreleased
   the extension isn't running when it is time for the next ping, then the ping
   happens the next time the extension starts up. This requires the `alarms`
   permissions to be added to the manifest file. If the telemetry server has an
-  error, then the next retry will happen in 1 hour instead of 12. There is
-  currently no events for integrators to observer these errors. (EE-159)
+  error, then the next retry will happen in 1 hour instead of 12. (EE-159)
+- Added a new event emitter, `EWE.telemetry.onError`, which will emit an event
+  whenever a call to the telemetry server fails. (EE-159)
 - No more duplicates in elemhide filter hits reporting (EE-185).
 - Removed user filters (if present in subscriptions) now become active (EE-97).
 - Updated the minimum supported version of Node to 18. Node 18 is the current
