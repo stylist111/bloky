@@ -122,17 +122,13 @@ self.removeOnBlockableEventsListener = function(name, arg) {
     findListener(name), arg);
 };
 
-// Map(URL(string) -> Map(status(string) -> isAllowlisted(boolean)))
 let isResourceAllowlisted = new Map();
-
 async function tabsUpdatedListener(tabId, changeInfo, tab) {
-  let statusToIsAllowlisted = isResourceAllowlisted.get(tab.url);
-  if (!statusToIsAllowlisted) {
-    statusToIsAllowlisted = new Map();
-    isResourceAllowlisted.set(tab.url, statusToIsAllowlisted);
+  if (changeInfo.status == "loading") {
+    isResourceAllowlisted.set(
+      tab.url,
+      await EWE.filters.isResourceAllowlisted(tab.url, "document", tabId));
   }
-  let isAlowlisted = await EWE.filters.isResourceAllowlisted(tab.url, "document", tabId);
-  statusToIsAllowlisted.set(changeInfo.status, isAlowlisted);
 }
 
 let messages = [];
@@ -248,9 +244,7 @@ function handleTestMessage(request, sender, sendResponse) {
     }
 
     case "ewe-test:isResourceAllowlisted": {
-      let statusToIsAllowlisted = isResourceAllowlisted.get(request.url) ||
-         new Map();
-      sendResponse(statusToIsAllowlisted.get(request.status));
+      sendResponse(isResourceAllowlisted.get(request.url));
       return true;
     }
   }

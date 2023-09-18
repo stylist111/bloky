@@ -29,7 +29,6 @@ Unreleased
   are run in the CI pipeline (EE-169).
 - Fix flaky Fuzz Edge test in MV3 "does not hide an element on a sitekey
   allowlisted page" (EE-120).
-- `isResourceAllowlisted()` is now consistent with `getAllowingFilters()` (EE-141).
 
 # Update your code
 
