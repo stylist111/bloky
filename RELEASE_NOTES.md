@@ -25,6 +25,9 @@ Unreleased
 
 # Fixes
 
+- Fix a bug that was making the element hiding filters to not work when
+  extensions didn't add a listener to `onBlockableItem` with
+  `includeElementHiding: true` (EE-204).
 - Ensure tests for func:v2:windows:edge:stable and func:v2:windows:edge:incognito
   are run in the CI pipeline (EE-169).
 - Fix flaky Fuzz Edge test in MV3 "does not hide an element on a sitekey

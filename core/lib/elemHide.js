@@ -230,15 +230,13 @@ class ElemHide {
    * @param {string} domain The domain.
    * @param {boolean} [specificOnly=false] Whether selectors from generic
    *   filters should be included.
-   * @param {boolean} [includeSelectors=false] Whether the return value should
-   *   include a separate list of selectors.
    * @param {boolean} [includeExceptions=false] Whether the return value should
    *   include a separate list of exceptions.
    *
    * @returns {module:elemHide~ElemHideStyleSheet} An object containing the CSS
    *   code and the list of selectors.
    */
-  getStyleSheet(domain, specificOnly = false, includeSelectors = false,
+  getStyleSheet(domain, specificOnly = false,
                 includeExceptions = false) {
     let code = null;
     let selectors = null;
@@ -261,56 +259,22 @@ class ElemHide {
     else {
       let knownSuffix = this._getKnownSuffix(domain);
 
-      if (includeSelectors || includeExceptions) {
-        let selectorsAndExceptions =
-          this._getConditionalSelectorsWithExceptions(knownSuffix, false);
+      let selectorsAndExceptions =
+        this._getConditionalSelectorsWithExceptions(knownSuffix, false);
 
-        selectors = selectorsAndExceptions.selectors;
-        exceptions = selectorsAndExceptions.exceptions;
-        code = knownSuffix == "" ? this._getCommonStyleSheet() :
-          this._getDefaultStyleSheet() + createStyleSheet(selectors);
+      selectors = selectorsAndExceptions.selectors;
+      exceptions = selectorsAndExceptions.exceptions;
+      code = knownSuffix == "" ? this._getCommonStyleSheet() :
+        this._getDefaultStyleSheet() + createStyleSheet(selectors);
 
-        selectors = this._getUnconditionalSelectors().concat(selectors);
-      }
-      else {
-        code = knownSuffix == "" ? this._getCommonStyleSheet() :
-          this._getDefaultStyleSheet() +
-                 this._getDomainSpecificStyleSheet(knownSuffix);
-      }
+      selectors = this._getUnconditionalSelectors().concat(selectors);
     }
 
     return {
       code,
-      selectors: includeSelectors ? selectors : null,
+      selectors,
       exceptions: includeExceptions ? exceptions : null
     };
-  }
-
-  /**
-   * Returns a style sheet for a given domain based on the current set of
-   * filters.
-   *
-   * @param {string} domain The domain.
-   * @param {boolean} [specificOnly=false] Whether selectors from generic
-   *   filters should be included.
-   * @param {boolean} [includeSelectors=false] Whether the return value should
-   *   include a separate list of selectors.
-   * @param {boolean} [includeExceptions=false] Whether the return value should
-   *   include a separate list of exceptions.
-   *
-   * @returns {module:elemHide~ElemHideStyleSheet} An object containing the CSS
-   *   code and the list of selectors.
-   *
-   * @deprecated Use
-   *   <code>{@link module:elemHide~ElemHide#getStyleSheet}</code> instead.
-   * @see module:elemHide~ElemHide#getStyleSheet
-   */
-  generateStyleSheetForDomain(domain, specificOnly = false,
-                              includeSelectors = false,
-                              includeExceptions = false) {
-    return this.getStyleSheet(
-      domain, specificOnly, includeSelectors, includeExceptions
-    );
   }
 
   /**

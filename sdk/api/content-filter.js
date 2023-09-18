@@ -44,7 +44,7 @@ function generateStylesheet(tabId, previousFrame, frame) {
       !(previousFrame.allowlisted & contentTypes.ELEMHIDE)) {
     previousStylesheet = filterEngine.elemHide.getStyleSheet(
       previousFrame.hostname,
-      specificOnly, trace || debugOptions.elemHide,
+      specificOnly,
       trace);
   }
   else {
@@ -58,7 +58,7 @@ function generateStylesheet(tabId, previousFrame, frame) {
       !(frame.allowlisted & contentTypes.ELEMHIDE)) {
     styleSheet = filterEngine.elemHide.getStyleSheet(
       frame.hostname,
-      specificOnly, trace || debugOptions.elemHide,
+      specificOnly,
       trace);
   }
   else {

@@ -52,13 +52,13 @@ describe("Element hiding", function() {
     let normalizedExpectedSelectors = normalizeSelectors(expectedSelectors);
 
     let {code, selectors, exceptions} =
-        elemHide.getStyleSheet(domain, specificOnly, true, true);
+        elemHide.getStyleSheet(domain, specificOnly, true);
 
     assert.deepEqual(normalizeSelectors(selectors), normalizedExpectedSelectors);
 
     // Test for consistency in exception free case.
     assert.deepEqual(
-      elemHide.getStyleSheet(domain, specificOnly, true, false), {
+      elemHide.getStyleSheet(domain, specificOnly, false), {
         code,
         selectors,
         exceptions: null

@@ -39,7 +39,7 @@ function checkFilters(...details) {
         break;
 
       case "elemhide":
-        let {selectors} = filterEngine.elemHide.getStyleSheet("example.com", false, true);
+        let {selectors} = filterEngine.elemHide.getStyleSheet("example.com", false);
         assert.deepEqual(selectors, expected);
         break;
 
