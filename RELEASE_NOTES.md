@@ -3,13 +3,20 @@ Unreleased
 
 # General
 
-- Added two new possible status to the subscription property `downloadStatus`:
+## Diff Updates
+- Added two new possible statuses to the subscription property `downloadStatus`:
   `"synchronize_diff_too_many_filters"` and `"synchronize_diff_error"`.
-  The first one is emitted when a diff udpate reaches the limit number of
+  The first one is emitted when a diff update reaches the limit number of
   dynamic rules, and the second is when any other error happens during the diff
-  update (EE-85).
-- Now sending "firstVersion" and "lastVersion" request arguments for diff
-  updatable subscriptions (EE-153).
+  update. (EE-85)
+- To ensure user counting still works, we now send `firstVersion`
+  and `lastVersion` request arguments for diff updatable
+  subscriptions. (EE-153)
+- If the same filter is present and active in subscription and in user filters,
+  it ends up in correct state when disabled. (EE-97)
+
+## Telemetry
+
 - Telemetry pings are now repeated every 12 hours if telemetry is enabled. If
   the extension isn't running when it is time for the next ping, then the ping
   happens the next time the extension starts up. This requires the `alarms`
@@ -17,41 +24,39 @@ Unreleased
   error, then the next retry will happen in 1 hour instead of 12. (EE-159)
 - Added a new event emitter, `EWE.telemetry.onError`, which will emit an event
   whenever a call to the telemetry server fails. (EE-159)
-- No more duplicates in elemhide filter hits reporting (EE-185).
-- Removed user filters (if present in subscriptions) now become active (EE-97).
-- Updated the minimum supported version of Node to 18. Node 18 is the current
-  LTS version of Node. This only affects code that runs in Node, such as build
-  scripts, and the scripts used to download MV3 subscriptions for bundling. This
-  does not affect extension code running in the browser (EE-192).
 
 # Fixes
 
-- Fix a bug that was making the element hiding filters to not work when
-  extensions didn't add a listener to `onBlockableItem` with
-  `includeElementHiding: true` (EE-204).
-- Ensure tests for func:v2:windows:edge:stable and func:v2:windows:edge:incognito
-  are run in the CI pipeline (EE-169).
-- Fix flaky Fuzz Edge test in MV3 "does not hide an element on a sitekey
-  allowlisted page" (EE-120).
-- `isResourceAllowlisted()` is now consistent with `getAllowingFilters()` (EE-141).
+- Fix a bug that was making the element hiding filters not work when
+  the extension doesn't add a listener to `onBlockableItem` with
+  `includeElementHiding: true`. (EE-204)
+- `isResourceAllowlisted()` is now consistent with `getAllowingFilters()`. (EE-141)
+- No more duplicates in element hiding filter hits reporting and invalid
+  CSS selectors will not break element hiding filter hits reporting anymore. 
+  (EE-187 and EE-185)
+
 
 # Update your code
 
 - If you're using to the `EWE.subscriptions.onChanged` API to listen to changes
   in `downloadStatus`, you need to handle the new status values
-  `"synchronize_diff_too_many_filters"` and `"synchronize_diff_error"` (EE-85).
+  `"synchronize_diff_too_many_filters"` and `"synchronize_diff_error"`. (EE-85)
 - Add the newly required `alarms` permission to the manifest file if you're
   using telemetry. (EE-159)
-
-# Fixes
-
-- Invalid CSS selectors will not break element hiding filter hits reporting
-  anymore (EE-187).
+- If you are using npm scripts, ensure you are using Node version >=18 and npm>=9
 
 # Internal
 
 - Reduce unnecessary CI logs in Windows builds by not printing progress logs
   from Choco.
+- Updated the minimum supported version of Node to 18. Node 18 is the current
+  LTS version of Node. This only affects code that runs in Node, such as build
+  scripts, and the scripts used to download MV3 subscriptions for bundling. This
+  does not affect extension code running in the browser. (EE-192)
+- Ensure tests for func:v2:windows:edge:stable and func:v2:windows:edge:incognito
+  are run in the CI pipeline. (EE-169)
+- Fix flaky Fuzz Edge test in MV3 "does not hide an element on a sitekey
+  allowlisted page". (EE-120)
 
 # For the release meeting
 - (EE-103) was intentionally left without release notes, since its only internal
