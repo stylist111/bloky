@@ -25,7 +25,7 @@ Unreleased
 - Added a new event emitter, `EWE.telemetry.onError`, which will emit an event
   whenever a call to the telemetry server fails. (EE-159)
 
-# Fixes
+# Fixes and improvements
 
 - Fix a bug that was making the element hiding filters not work when
   the extension doesn't add a listener to `onBlockableItem` with
@@ -34,37 +34,29 @@ Unreleased
 - No more duplicates in element hiding filter hits reporting and invalid
   CSS selectors will not break element hiding filter hits reporting anymore. 
   (EE-187 and EE-185)
-
+- Updated the minimum supported version of Node to 18. Node 18 is the current
+  LTS version of Node. This only affects code that runs in Node, such as build
+  scripts, and the scripts used to download MV3 subscriptions for bundling. This
+  does not affect extension code running in the browser. (EE-192)
 
 # Update your code
 
-- If you're using to the `EWE.subscriptions.onChanged` API to listen to changes
-  in `downloadStatus`, you need to handle the new status values
+- If you're using the `EWE.subscriptions.onChanged` API to listen to changes
+  in `downloadStatus`, you might want to handle the new status values
   `"synchronize_diff_too_many_filters"` and `"synchronize_diff_error"`. (EE-85)
 - Add the newly required `alarms` permission to the manifest file if you're
   using telemetry. (EE-159)
-- If you are using npm scripts, ensure you are using Node version >=18 and npm>=9
+- If you are using npm scripts, ensure you are using Node version >=18 and npm>=9.
+  (EE-192)
 
 # Internal
 
 - Reduce unnecessary CI logs in Windows builds by not printing progress logs
   from Choco.
-- Updated the minimum supported version of Node to 18. Node 18 is the current
-  LTS version of Node. This only affects code that runs in Node, such as build
-  scripts, and the scripts used to download MV3 subscriptions for bundling. This
-  does not affect extension code running in the browser. (EE-192)
 - Ensure tests for func:v2:windows:edge:stable and func:v2:windows:edge:incognito
   are run in the CI pipeline. (EE-169)
 - Fix flaky Fuzz Edge test in MV3 "does not hide an element on a sitekey
   allowlisted page". (EE-120)
-
-# For the release meeting
-- (EE-103) was intentionally left without release notes, since its only internal
-  changes. This note is just to remember that the commits
-  `NoIssue - refactor admin-api.js to allow overwriting subscriptions routes`
-  and `Fixes EE-103 - Fix test checking what happens when the same filter is in
-  sub and user filters` dont have any release notes. Please delete this before
-  releasing
 
 0.13.0 - 2023/08/28
 ===================
