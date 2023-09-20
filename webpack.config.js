@@ -31,8 +31,8 @@ import Dotenv from "dotenv-webpack";
 
 let dirname = path.dirname(url.fileURLToPath(import.meta.url));
 let htmlTemplate = path.join(dirname, "test", "template.html");
-const eweRegularConfigName = "sdk";
-const eweCustomConfigName = "sdk-subs";
+const eweRegularConfigName = "engine";
+const eweCustomConfigName = "engine-subs";
 const eweDistPath = path.join(dirname, "dist");
 const eweRegularOutputPath = eweDistPath;
 const eweCustomOutputPath = path.join(eweDistPath, "ewe-subs");
@@ -194,7 +194,7 @@ export default (env = {}) => {
     }
 
     let manifest = {
-      name: "eyeo's Web Extension Ad Blocking Toolkit Test Extension",
+      name: "eyeo's WebExtension Ad-Filtering Solution Test Extension",
       version: "0.0.1",
       description,
       manifest_version: buildVariant.manifestVersion,

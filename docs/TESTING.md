@@ -1,4 +1,4 @@
-# eyeo's Web Extension Ad Blocking Toolkit Testing
+# eyeo's WebExtension Ad-Filtering Solution Testing
 
 This project is automatically tested by functional, unit and integration tests:
 

@@ -1,4 +1,4 @@
-# eyeo's Web Extension Ad Blocking Toolkit Testing Cheat Sheet
+# eyeo's WebExtension Ad-Filtering Solution Testing Cheat Sheet
 
 ## Testing core
 

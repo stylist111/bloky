@@ -1,7 +1,7 @@
 {
-  "name": "@eyeo/webext-sdk",
-  "version": "0.13.0",
-  "description": "eyeo's Web Extension Ad Blocking Toolkit",
+  "name": "@eyeo/webext-ad-filtering-solution",
+  "version": "1.0.0",
+  "description": "eyeo's WebExtension Ad-Filtering Solution",
   "repository": {
     "type": "git",
     "url": "https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution"

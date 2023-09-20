@@ -124,9 +124,9 @@ describe("Telemetry", function() {
         expect(payload.application)
           .toEqual(expect.oneOf(["firefox", "chrome", "headlesschrome", "edg"]));
         expect(payload.application_version).toEqual(expect.stringMatching(/^\d+(.\d+)+$/));
-        expect(payload.addon_name).toEqual("eyeo-webext-sdk");
+        expect(payload.addon_name).toEqual("eyeo-webext-ad-filtering-solution");
         expect(payload.addon_version).toEqual(expect.stringMatching(/^\d+(.\d+)+$/));
-        expect(payload.extension_name).toEqual("eyeo's Web Extension Ad Blocking Toolkit Test Extension");
+        expect(payload.extension_name).toEqual("eyeo's WebExtension Ad-Filtering Solution Test Extension");
         expect(payload.extension_version).toEqual("0.0.1");
         expect(payload.aa_active).toEqual(false);
       });

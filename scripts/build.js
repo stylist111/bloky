@@ -103,7 +103,7 @@ export async function run() {
         .option("config-name", {
           description: "Name of the configuration to use.",
           choices: [
-            "sdk", "sdk-subs", "test-mv2", "test-mv2-custom", "test-mv3"
+            "engine", "engine-subs", "test-mv2", "test-mv2-custom", "test-mv3"
           ],
           array: true
         })

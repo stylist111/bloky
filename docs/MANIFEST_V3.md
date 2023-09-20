@@ -116,7 +116,7 @@ Example:
 
 ```
 {
-  "name": "eyeo's Web Extension Ad Blocking Toolkit Test Extension",
+  "name": "eyeo's WebExtension Ad-Filtering Solution Test Extension",
   "version": "0.0.1",
   "declarative_net_request": {
     "rule_resources": [

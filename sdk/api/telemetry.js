@@ -278,12 +278,12 @@ async function getExtensionMetadata() {
     application_version: info.applicationVersion,
 
     // Used to identify this specific project.
-    addon_name: "eyeo-webext-sdk",
+    addon_name: "eyeo-webext-ad-filtering-solution",
 
-    // The SDK's current version. See the Dotenv plugin in webpack.config.js
+    // The Engine's current version. See the Dotenv plugin in webpack.config.js
     addon_version: webpackDotenvPlugin.VERSION,
 
-    // The name of the extension using the SDK.
+    // The name of the extension using the Engine.
     extension_name: info.addonName,
 
     // The extension's version.

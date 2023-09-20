@@ -594,7 +594,7 @@ async function runTests() {
     console.log(`Browser used for tests: ${cap.getBrowserName()} ${cap.getBrowserVersion()}`);
     if (incognito) {
       await BROWSERS[browser].enableExtensionInIncognito(
-        driver, "eyeo's Web Extension Ad Blocking Toolkit Test Extension");
+        driver, "eyeo's WebExtension Ad-Filtering Solution Test Extension");
     }
 
     for (let testKind of testKinds) {

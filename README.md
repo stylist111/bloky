@@ -1,4 +1,4 @@
-# eyeo's Web Extension Ad Blocking Toolkit
+# eyeo's WebExtension Ad-Filtering Solution
 
 [![Contributor
 Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](./CODE_OF_CONDUCT.md)
@@ -54,7 +54,8 @@ target.
 
 ### Supported browsers
 
-The webext-sdk is tested on the following minimum versions:
+The webext-ad-filtering-solution (as a short term we use 'engine') is tested on
+the following minimum versions:
 
 Manifest V2:
 
@@ -174,12 +175,12 @@ provided offers the most functionality.
 
 ### Required permissions and why we need them
 
-We require several permissions for the SDK to function correctly. The manifest
-file templates above include the required permissions. Here is why we need each
-one:
+We require several permissions for the WebExt Ad-Filtering Solution to function
+correctly. The manifest file templates above include the required permissions.
+Here is why we need each one:
 
-* `alarms`: This allows the SDK to sleep for regularly scheduled actions, like
-  telemetry or updating subscriptions.
+* `alarms`: This allows the Engine to sleep for regularly scheduled actions,
+  like telemetry or updating subscriptions.
 * `webNavigation`: Gives access to the Web Navigation API, which we use to
   apply document-level allowing filters and to block popups.
 * `webRequest`: Gives access to the Web Request API. Used to apply URL filters
@@ -198,9 +199,9 @@ one:
   used to apply document-level allowing filters to the tab.
 * `scripting` (MV3 only): Used to apply content filters, including element
   hiding filters and snippet filters.
-* `<all_urls>`: Allows the SDK to act on all websites. Note that in MV2
-  manifests this goes in the `permissions`, but in MV3 manifests this goes in
-  the new `host_permissions` section.
+* `<all_urls>`: Allows the WebExt Ad-Filtering Solution to act on all websites.
+  Note that in MV2 manifests this goes in the `permissions`, but in MV3
+  manifests this goes in the new `host_permissions` section.
 
 You can read more about browser extension permissions and their effects in
 Google's docs for
@@ -226,14 +227,14 @@ Consequently, there won't be a global `EWE` object.
 #### CommonJS
 
 ```
-const EWE = require("@eyeo/webext-sdk");
+const EWE = require("@eyeo/webext-ad-filtering-solution");
 EWE.start();
 ```
 
 #### ESM
 
 ```
-import * as EWE from "@eyeo/webext-sdk";
+import * as EWE from "@eyeo/webext-ad-filtering-solution";
 EWE.start();
 ```
 
@@ -255,7 +256,8 @@ of the snippet library.
 
 ### Shared resources
 
-There are some shared resources that are used by both webext-sdk & production code:
+There are some shared resources that are used by both webext-ad-filtering-solution
+& production code:
 
 * `browser`
   * Global is set by webextension-polyfill version 0.8.0.
@@ -273,9 +275,9 @@ There are some shared resources that are used by both webext-sdk & production co
 * `browser.alarms`
   * Alarm keys are prefixed with "ewe:".
 
-During initialization webext-sdk migrates legacy data from local storage to
-indexedDB. Files migrated have to be prefixed: ```file:```. Files prefixed with
-```file:///``` will be ignored.
+During initialization the engine migrates legacy data from
+local storage to indexedDB. Files migrated have to be prefixed: ```file:```.
+Files prefixed with ```file:///``` will be ignored.
 
 ### Notifications support
 
@@ -368,8 +370,8 @@ There are some specific flags which might be useful to customise the
 build:
 
 ```
-# Build only sdk, no test extensions
-npm run build -- --config-name sdk
+# Build only engine, no test extensions
+npm run build -- --config-name engine
 
 # Don't generate any sourcemaps
 npm run build -- --no-devtool

@@ -3,6 +3,8 @@ Unreleased
 
 # General
 
+- We updated the product name in the documentation and old release notes (EE-189).
+
 ## Diff Updates
 - Added two new possible statuses to the subscription property `downloadStatus`:
   `"synchronize_diff_too_many_filters"` and `"synchronize_diff_error"`.
@@ -48,6 +50,8 @@ Unreleased
   using telemetry. (EE-159)
 - If you are using npm scripts, ensure you are using Node version >=18 and npm>=9.
   (EE-192)
+- If you're building your product using the `--config-name` option please update
+  the value accordingly to using the correct name(s). (EE-189)
 
 # Internal
 
@@ -58,6 +62,7 @@ Unreleased
 - Fix flaky Fuzz Edge test in MV3 "does not hide an element on a sitekey
   allowlisted page". (EE-120)
 
+
 0.13.0 - 2023/08/28
 ===================
 
@@ -65,7 +70,7 @@ Unreleased
 
 - Diff updates are now not wiped out during web extension restart
   in a new browser session. Web extension version (in manifest)
-  now needs to be updated to let the SDK know to reload bundled
+  now needs to be updated to let the Engine know to reload bundled
   subscription data (EE-166).
 - `hide-if-classifies` snippet does not require domains now, the new syntax now
   accepts filters that follow this pattern: `#$#hide-if-classifies .selector`
@@ -324,7 +329,7 @@ Reach out to [Maria Henkhaus](mailto:m.henkhaus@eyeo.com).**
 # Fixes
 
 - Fix import errors when running the scripts and when importing
-  individual SDK modules: adblockpluscore is again a dependency with
+  individual Engine modules: adblockpluscore is again a dependency with
   internal file location. (#518)
 
 0.10.0 - 2023/02/20
@@ -355,7 +360,7 @@ Reach out to [Maria Henkhaus](mailto:m.henkhaus@eyeo.com).**
 # Updating your code
 
 - If you want to use the exported `adblockpluscore` code, import
-  `@eyeo/webext-sdk/adblockpluscore/` instead of just
+  `@eyeo/webext-ad-filtering-solution/adblockpluscore/` instead of just
   `adblockpluscore`.
 - For web bundle support in MV3, the static rulesets must be
   re-generated. In MV2, an unreleased (at the time of writing) version of
@@ -384,8 +389,8 @@ This release also includes fixes from 0.8.1
   whether or not a script is run from the CLI. (#391)
 - Supported logging events (no actual output added, only mechanism
   in-place) and documented existing events. (#389)
-- adblockpluscore has been integrated into the webext-sdk repository.
-  (#267)
+- adblockpluscore has been integrated into the
+  webext-ad-filtering-solution repository. (#267)
 
 # Fixes
 
@@ -539,9 +544,9 @@ see also the corresponding sections below.
   `downloadCount`. (#365)
 - These functions are now asynchronous.
 - If you ever use `adblockpluscore` directly, make sure to update to
-  match the version used by the SDK. (#438)
+  match the version used by the Engine. (#438)
 - In MV3, subscriptions needs to be regenerated when upgrading to this
-  version of the SDK. A subscription of type `circumvention` will be
+  version of the Engine. A subscription of type `circumvention` will be
   downloaded by the WebExtension, and updated like MV2 filter lists.
   No DNR ruleset will be created by the subscription conversion
   process. (#343)
@@ -575,8 +580,8 @@ see also the corresponding sections below.
 # Updating your code
 
 - You only need to regenerate the DNR rulesets to add back the sitekey
-  filters. If you used tooling that doesn't use the SDK code, then you
-  might want to update it as well.
+  filters. If you used tooling that doesn't use the Engine code, then
+  you might want to update it as well.
 
 0.7.1 - 2022/11/03
 ==================
@@ -832,7 +837,8 @@ Chrome 102 is now the minimum supported version for Manifest V3.
 
 - Use Adblock Plus 3.13 for the testpages tests on CI instead of
   an unreleased branch (#218)
-- Also ensure the latest webext-sdk is used for testpages.
+- Also ensure the latest webext-ad-filtering-solution is used
+  for testpages.
 
 0.4.0 - 2022/04/21
 ==================
@@ -859,7 +865,8 @@ Chrome 102 is now the minimum supported version for Manifest V3.
 - One click allow listing (#171)
 - Adds allowingDocumentFilter to frame (#149)
 - Update legacy storage condition (#175)
-- Allow customizing the default subscriptions by SDK users (#112)
+- Allow customizing the default subscriptions by Engine
+  users (#112)
 - Faster matching with allowing filters (#206)
 
 # Documentation
@@ -868,7 +875,8 @@ Chrome 102 is now the minimum supported version for Manifest V3.
 
 # Tests
 
-- Added testpages and custom extensions for the webext-sdk (#199)
+- Added testpages and custom extensions for the
+  webext-ad-filtering-solution (#199)
 - Dockerize MSEdge tests for more reliable CI (#195)
 
 0.2.1 - 2022/03/30
@@ -883,7 +891,7 @@ This is a bugfix release.
 # Updating your code
 
 You can now optionally set the `addonName` to your own when building
-an extension with the SDK.
+an extension with the Engine.
 
 Simply call `EWE.start()` this way:
 
