@@ -131,8 +131,9 @@ async function tabsUpdatedListener(tabId, changeInfo, tab) {
     statusToIsAllowlisted = new Map();
     isResourceAllowlisted.set(tab.url, statusToIsAllowlisted);
   }
-  let isAlowlisted = await EWE.filters.isResourceAllowlisted(tab.url, "document", tabId);
-  statusToIsAllowlisted.set(changeInfo.status, isAlowlisted);
+  let isAllowlisted = await EWE.filters.isResourceAllowlisted(tab.url,
+                                                              "document", tabId);
+  statusToIsAllowlisted.set(changeInfo.status, isAllowlisted);
 }
 
 let messages = [];
