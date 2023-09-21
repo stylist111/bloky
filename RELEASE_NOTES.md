@@ -1,6 +1,9 @@
 Unreleased
 ==========
 
+🚀 1.0.0 - 2023/09/21 🚀
+===================
+
 # General
 
 - We updated the product name in the documentation and old release notes. 
