@@ -3,7 +3,9 @@ Unreleased
 
 # General
 
-- We updated the product name in the documentation and old release notes (EE-189).
+- We updated the product name in the documentation and old release notes. 
+  The term "SDK" has broadly been replaced with "Engine". There's a new npm 
+  module called `@eyeo/webext-ad-filtering-solution/`. (EE-189)
 
 ## Diff Updates
 - Added two new possible statuses to the subscription property `downloadStatus`:
@@ -43,6 +45,9 @@ Unreleased
 
 # Update your code
 
+- If you're using the npm module you should now use `@eyeo/webext-ad-filtering-solution/` instead. (EE-189)
+- If you're building your product using the `--config-name` option please update
+  the value accordingly to using the correct name(s). (EE-189)
 - If you're using the `EWE.subscriptions.onChanged` API to listen to changes
   in `downloadStatus`, you might want to handle the new status values
   `"synchronize_diff_too_many_filters"` and `"synchronize_diff_error"`. (EE-85)
@@ -50,8 +55,6 @@ Unreleased
   using telemetry. (EE-159)
 - If you are using npm scripts, ensure you are using Node version >=18 and npm>=9.
   (EE-192)
-- If you're building your product using the `--config-name` option please update
-  the value accordingly to using the correct name(s). (EE-189)
 
 # Internal
 
