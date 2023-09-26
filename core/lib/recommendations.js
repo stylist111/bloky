@@ -131,21 +131,19 @@ exports.setRecommendations = function(recommendations) {
 };
 
 /**
- * Yields `{@link module:recommendations~Recommendation Recommendation}` objects
+ * Returns an array of
+ * `{@link module:recommendations~Recommendation Recommendation}` objects
  * representing recommended filter subscriptions.
  *
- * @generator
- * @yields {module:recommendations~Recommendation} An object representing a
- *   recommended filter subscription.
+ * @returns {Array.<module:recommendations~Recommendation>} An array of objects
+ *  representing recommended filter subscriptions.
  */
-exports.recommendations = function* recommendations() {
+exports.recommendations = function recommendations() {
   if (!_recommendations) {
     _recommendations = require("../data/subscriptions.json");
   }
 
-  for (let source of _recommendations) {
-    yield new Recommendation(source);
-  }
+  return _recommendations.map(source => new Recommendation(source));
 };
 
 exports.Recommendation = Recommendation;

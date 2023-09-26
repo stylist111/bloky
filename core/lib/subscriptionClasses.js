@@ -49,26 +49,18 @@ exports._clean = function() {
  * @returns {Map.<string, Recommendation>}
  */
 function recommendationsByURL() {
-  if (!_recommendationsByURL) {
-    if (Subscription.dnr) {
-      _recommendationsByURL = new Map(
-        (function*() {
-          for (let recommendation of recommendations()) {
-            yield [recommendation.url, recommendation];
-          }
-        })()
-      );
+  if (_recommendationsByURL) {
+    return _recommendationsByURL;
+  }
+
+  _recommendationsByURL = new Map();
+
+  for (let recommendation of recommendations()) {
+    if (Subscription.dnr && recommendation.url) {
+      _recommendationsByURL.set(recommendation.url, recommendation);
     }
-    else {
-      _recommendationsByURL = new Map(
-        (function*() {
-          for (let recommendation of recommendations()) {
-            if (recommendation.mv2URL) {
-              yield [recommendation.mv2URL, recommendation];
-            }
-          }
-        })()
-      );
+    else if (recommendation.mv2URL) {
+      _recommendationsByURL.set(recommendation.mv2URL, recommendation);
     }
   }
   return _recommendationsByURL;
@@ -82,16 +74,15 @@ let _urlByMv2URL = null;
  * @returns {Map.<string, string>}
  */
 function urlByMv2URL() {
-  if (!_urlByMv2URL) {
-    _urlByMv2URL = new Map(
-      (function*() {
-        for (let {mv2URL, url} of recommendations()) {
-          if (mv2URL) {
-            yield [mv2URL, url];
-          }
-        }
-      })()
-    );
+  if (_urlByMv2URL) {
+    return _urlByMv2URL;
+  }
+
+  _urlByMv2URL = new Map();
+  for (let recommendation of recommendations()) {
+    if (recommendation.mv2URL) {
+      _urlByMv2URL.set(recommendation.mv2URL, recommendation.url);
+    }
   }
   return _urlByMv2URL;
 }
