@@ -1,6 +1,10 @@
 Unreleased
 ==========
 
+# Internal
+
+- Fix missing list in the custom subscription list. (EE-206)
+
 🚀 1.0.0 - 2023/09/21 🚀
 ===================
 
