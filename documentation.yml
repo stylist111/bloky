@@ -25,6 +25,7 @@ toc:
       - reporting
       - snippets
       - subscriptions
+      - telemetry
   - name: Objects
     children:
       - allowlistingCallback
@@ -39,3 +40,4 @@ toc:
       - Recommendation
       - Subscription
       - SnippetCallback
+      - TelemetryPingError

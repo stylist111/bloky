@@ -1,6 +1,9 @@
 Unreleased
 ==========
 
+# Documentation
+- Improved the API docs around eyeometry. (!837)
+
 # Internal
 
 - Fix missing list in the custom subscription list. (EE-206)

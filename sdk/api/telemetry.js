@@ -294,13 +294,14 @@ async function getExtensionMetadata() {
   };
 }
 
-/**
- * @typedef {Object} TelemetryPingError
- * @property {string} message The error message, describing the failure.
- * @property {string} lastError The timestamp of the error.
- */
 
 export default {
+  /**
+  * @typedef {Object} TelemetryPingError
+  * @property {string} message The error message, describing the failure.
+  * @property {string} lastError The timestamp of the error.
+  */
+
   /**
    * Emitted when sending a telemetry ping fails.
    *
