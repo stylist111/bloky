@@ -265,6 +265,9 @@ Converts filter lists to [rulesets](#converting-filter-lists-to-dnr-rulesets).
 It is important to note that conversion only applies to network request rules
 (aka URL filters). Other filters will continue to be provided with the filter
 list files after this step.
+Additionally, this script reads the diff urls from all filter lists converted and
+rewrites the recommended subscriptions file to add a `diff_url` to all the
+subscriptions that have one.
 
 Usage:
 
@@ -285,7 +288,8 @@ You can also use `--no-report` to force the report to not be generated.
 Default: `false`
 * `report-output`/`O`: Report directory. Default: `"scriptsOutput/report"`
 * `recommended-subscriptions`/`s`: Path to the file with the recommended
-subscriptions. Default: `"scriptsOutput/custom-subscriptions.json"`
+subscriptions. Usually should be the same value as the `--output` from
+`subs-merge`. Default: `"scriptsOutput/custom-subscriptions.json"`
 
 Example:
 

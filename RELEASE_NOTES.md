@@ -177,6 +177,12 @@ Reach out to [Maria Henkhaus](mailto:m.henkhaus@eyeo.com).**
   to have DNR rules added and removed in between extension releases,
   as long as the limits imposed by the browser are not surpassed.
   (#503, #505, #528, EE-26, EE-84, EE-86, EE-88, EE-89, EE-92)
+- The script `subs-convert` now also rewrites the recommended subscriptions file.
+  While converting the filters in DNR rules, it also reads the diff url from the
+  subscription and, after converting, rewrites the recommended subscriptions
+  file adding a `diff_url` property to the related subscription. A new option
+  `--recommended-subscriptions` was added to the script, and should receive the
+  path to the recommended subscriptions file.
 - The minimum tested version of Chrome for Manifest V3 is 111. (#563)
 - The following APIs now accept a single string as a parameter in
   addition to an array: `filters.add()`, `filters.enable()`,
