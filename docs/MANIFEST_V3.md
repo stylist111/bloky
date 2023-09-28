@@ -265,9 +265,9 @@ Converts filter lists to [rulesets](#converting-filter-lists-to-dnr-rulesets).
 It is important to note that conversion only applies to network request rules
 (aka URL filters). Other filters will continue to be provided with the filter
 list files after this step.
-Additionally, this script reads the diff urls from all filter lists converted and
-rewrites the recommended subscriptions file to add a `diff_url` to all the
-subscriptions that have one.
+Additionally, this script reads the diff url values from all the converted
+filter lists and rewrites the recommended subscriptions file to add a `diff_url`
+to all the subscriptions that have one.
 
 Usage:
 
