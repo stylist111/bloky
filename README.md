@@ -55,18 +55,18 @@ target.
 ### Supported browsers
 
 The webext-ad-filtering-solution (as a short term we use 'engine') is tested on
-the following minimum versions:
+the following versions:
 
 Manifest V2:
 
-* Chromium 77
-* Firefox 68
+* Chromium 77 & 111
+* Firefox 68 & 110
 * Edge 79
 
 Manifest V3:
 
 * Chromium 111
-* Edge 108
+* Edge 111
 
 ### Manifest for V2
 
