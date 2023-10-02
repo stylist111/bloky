@@ -60,7 +60,6 @@ function convertSubscription(subscription) {
 
   Object.assign(newSubscription, {
     downloading: isSynchronizing(url),
-    originalUrl: url,
     version, downloadStatus, lastSuccess, lastDownload,
     softExpiration, expires, downloadCount
   });
