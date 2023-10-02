@@ -151,6 +151,7 @@ class FilterStorage {
      * @private
      */
     this._saving = false;
+    this._initSaving();
 
     /**
      * Will be set to `true` if a
@@ -173,6 +174,35 @@ class FilterStorage {
 
     this.synchronizer = new Synchronizer(this);
     this.filterState = new FilterState();
+  }
+
+  _initSaving() {
+    if (this._saving) {
+      const fs = this;
+      this._savingPromise = new Promise((resolve, reject) => {
+        fs._savingPromiseResolve = resolve;
+        fs._savingPromiseReject = reject;
+      });
+    }
+    else {
+      if (this._savingPromiseResolve) {
+        this._savingPromiseResolve();
+      }
+
+      this._savingPromise = null;
+      this._savingPromiseResolve = null;
+      this._savingPromiseReject = null;
+    }
+  }
+
+  setSaving(newValue, skipInit = false) {
+    if (newValue == this._saving) {
+      return;
+    }
+    this._saving = newValue;
+    if (!skipInit) {
+      this._initSaving();
+    }
   }
 
   /**
@@ -330,8 +360,12 @@ class FilterStorage {
     Subscription.knownSubscriptions.clear();
     this._stats.clear();
 
+    // not using `setSaving(false)` as it might not resolve
+    // possible saving promise if reSaving is in progress.
     this._saving = false;
-    this._needsSave = true;
+    this._initSaving();
+
+    this._needsSave = false;
 
     this.filterState = new FilterState();
   }
@@ -794,17 +828,17 @@ class FilterStorage {
 
   /**
    * Saves all subscriptions back to disk.
+   * @param {boolean} [skipInitSavePromise=false] Skip init new saving promise
    * @returns {Promise} A promise resolved or rejected when saving is complete.
    * @package
    */
-  async saveToDisk() {
+  async saveToDisk(skipInitSavePromise = false) {
     if (this._saving) {
       this._needsSave = true;
       return;
     }
 
-    this._saving = true;
-
+    this.setSaving(true, skipInitSavePromise);
     try {
       let {patternsbackups} = Prefs;
       let isBackupRequired = async() => {
@@ -883,17 +917,28 @@ class FilterStorage {
       filterNotifier.emit("save");
     }
     catch (error) {
-      // If saving failed, report error but continue - we still have to process
-      // flags.
+      // If saving failed, report error but continue -
+      // we still have to process flags.
       console.warn(error);
       stats.delete(FilterStorage.sourceFile);
     }
 
-    this._saving = false;
+    // if it still needs reSaving, don't resolve current promise here and
+    // skip creating new promise in internal `saveToDisk()` below
+    this.setSaving(false, this._needsSave);
+
     if (this._needsSave) {
       this._needsSave = false;
-      this.saveToDisk();
+      this.saveToDisk(true);
     }
+  }
+
+  async awaitSavingComplete() {
+    if (!this._saving) {
+      return;
+    }
+
+    await this._savingPromise;
   }
 
   /**

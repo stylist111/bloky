@@ -25,6 +25,12 @@ import * as requestFilter from "./request-filter.js";
 import * as dnrRequestReporter from "./dnr-request-reporter.js";
 import * as sitekey from "./sitekey.js";
 import * as telemetry from "./telemetry.js";
+import * as subscriptions from "./subscriptions.js";
+import * as debugging from "./debugging.js";
+import * as filters from "./filters.js";
+import * as reporting from "./reporting.js";
+import * as testing from "./testing.js";
+import * as prefs from "./prefs.js";
 import {setSnippetLibrary} from "./content-filter.js";
 import {setAddonInfo} from "./info.js";
 import {filterEngine} from "./core.js";
@@ -37,13 +43,66 @@ import {migrateCustomFilters, clearRulesetUpdates,
 import {MIGRATED_TO_MV2, MIGRATED_TO_MV3, Prefs} from "./prefs.js";
 import {isRunningInServiceWorker} from "./browser-features.js";
 
-export {default as subscriptions} from "./subscriptions.js";
-export {default as filters} from "./filters.js";
-export {default as reporting} from "./reporting.js";
-export {default as debugging} from "./debugging.js";
+async function preApiCall() {
+  // Service worker can be shut down and we might need
+  // to initialize it before the usage.
+  await initializer.start();
+}
+
+async function postApiCall() {
+  if (!browser.declarativeNetRequest) {
+    return;
+  }
+
+  await prefs.awaitSavingComplete();
+  await filterEngine.filterStorage.awaitSavingComplete();
+  await sitekey._awaitSavingComplete();
+}
+
+function isAsync(func) {
+  return func.constructor && func.constructor.name === "AsyncFunction";
+}
+
+function wrapApiNamespace(target) {
+  return new Proxy(target, {
+    get(_target, prop, receiver) {
+      // wrapping only asynchronous functions
+      if (typeof _target[prop] === "function" && isAsync(_target[prop])) {
+        return async function(...args) {
+          await preApiCall();
+          let result = await _target[prop](...args);
+          await postApiCall();
+          return result;
+        };
+      }
+      return _target[prop];
+    }
+  });
+}
+
+const wrappedSubscriptions = wrapApiNamespace(subscriptions.default);
+export {wrappedSubscriptions as subscriptions};
+
+const wrappedFilters = wrapApiNamespace(filters.default);
+export {wrappedFilters as filters};
+
+const wrappedReporting = wrapApiNamespace(reporting.default);
+export {wrappedReporting as reporting};
+
+const wrappedDebugging = wrapApiNamespace(debugging.default);
+export {wrappedDebugging as debugging};
+
+// "Allowlisting" might be used before EWE is actually started
+// and it does not require pre- and post- actions.
 export {default as allowlisting} from "./allowlisting.js";
-export {default as telemetry} from "./telemetry.js";
-export {default as testing} from "./testing.js";
+
+const wrappedTelemetry = wrapApiNamespace(telemetry.default);
+export {wrappedTelemetry as telemetry};
+
+const wrappedTesting = wrapApiNamespace(testing.default);
+export {wrappedTesting as testing};
+
+// "Notifications" namespace is already a Proxy
 export {notifications} from "./notifications.js";
 
 export let snippets = {

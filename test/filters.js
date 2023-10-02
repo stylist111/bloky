@@ -708,7 +708,7 @@ describe("Filters", function() {
 
 describe("Filters limit [mv3-only]", function() {
   it("does not allow adding more than 5000 filters", async function() {
-    let timeout = isFuzzingServiceWorker() ? 60000 : 20000;
+    let timeout = isFuzzingServiceWorker() ? 60000 : 30000;
     setMinTimeout(this, timeout);
     let fiveThousandFilters = Array.from(
       {length: 5000},

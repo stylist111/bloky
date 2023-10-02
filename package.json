@@ -75,7 +75,7 @@
   },
   "scripts": {
     "lint": "node scripts/lint.js",
-    "docs": "documentation build --document-exported --sort-order alpha -f html -o dist/docs --config documentation.yml sdk/api/index.js sdk/api/types.js",
+    "docs": "documentation build --document-exported --sort-order alpha -f html -o dist/docs --config documentation.yml sdk/api/index.js sdk/api/subscriptions.js sdk/api/filters.js sdk/api/subscriptions.js sdk/api/reporting.js sdk/api/debugging.js sdk/api/telemetry.js sdk/api/testing.js sdk/api/types.js",
     "docs-core": "jsdoc --configure core/.jsdoc.conf --destination dist/core/docs core/lib",
     "updatepsl": "npm run -w core updatepsl",
     "build": "node scripts/build.js",

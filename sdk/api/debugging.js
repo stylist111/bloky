@@ -24,7 +24,8 @@ import {IO} from "./io.js";
 import {addonBundledSubscriptions, addonBundledSubscriptionsPath,
         addonName, addonVersion, manifestVersion} from "./info.js";
 import {filterEngine} from "./core.js";
-import {awaitSavingComplete} from "./prefs.js";
+import * as prefs from "./prefs.js";
+import * as sitekey from "./sitekey.js";
 import {validate} from "./subscriptions.js";
 
 let defaultDebugOptions = {
@@ -281,16 +282,9 @@ export default {
    *   module has saved all items.
    */
   async ensureEverythingHasSaved() {
-    let {filterStorage} = filterEngine;
-    if (filterStorage) {
-      // It would be better if filterStorage gave a promise to await for this.
-      // https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore/-/issues/464
-      while (filterStorage._saving) {
-        await new Promise(r => setTimeout(r, 10));
-      }
-    }
-
-    await awaitSavingComplete();
+    await prefs.awaitSavingComplete();
+    await filterEngine.filterStorage.awaitSavingComplete();
+    await sitekey._awaitSavingComplete();
   },
 
   /**

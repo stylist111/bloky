@@ -20,6 +20,7 @@ import {v4 as uuidv4} from "uuid";
 import {MILLIS_IN_MINUTE} from "adblockpluscore/lib/time.js";
 
 import * as info from "./info.js";
+import {default as initializer} from "./initializer.js";
 import {hasAcceptableAdsEnabled} from "./subscriptions.js";
 import {EventDispatcher} from "./types.js";
 
@@ -46,6 +47,8 @@ class AlarmScheduler {
   }
 
   async checkSchedule() {
+    await initializer.start();
+
     if (this.callListenerInProgress) {
       return;
     }

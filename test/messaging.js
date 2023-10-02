@@ -24,7 +24,6 @@ import {waitForAssertion} from "./utils.js";
 
 export async function fuzzSuspendServiceWorker() {
   if (isFuzzingServiceWorker()) {
-    await ensureEverythingHasSaved();
     await suspendServiceWorker();
   }
 }
@@ -75,15 +74,6 @@ EWE.reporting.contentTypesMap = proxy(["reporting", "contentTypesMap"]);
 export async function addFilter(text) {
   let result = await EWE.filters.add([text]);
   return result;
-}
-
-export async function ensureEverythingHasSaved() {
-  await runInBackgroundPage([
-    {op: "getGlobal", arg: "EWE"},
-    {op: "getProp", arg: "debugging"},
-    {op: "callMethod", arg: "ensureEverythingHasSaved"},
-    {op: "await"}
-  ], false);
 }
 
 let data = {};

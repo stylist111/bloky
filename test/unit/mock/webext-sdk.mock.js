@@ -43,3 +43,4 @@ export let IO = {};
 export function disableDynamicRules() {}
 export function restoreDynamicRules() {}
 export function isDnrSubscriptionUpdating(url) {}
+export async function _awaitSavingComplete() {}

@@ -22,7 +22,7 @@ import {Page, wait, isMV3, isFirefox, TEST_MV3_SUBSCRIPTION,
         waitForHighlightedStyle, isIncognito,
         waitForSubscriptionToBeSynchronized}
   from "./utils.js";
-import {addFilter, EWE, runInBackgroundPage, ensureEverythingHasSaved}
+import {addFilter, EWE, runInBackgroundPage}
   from "./messaging.js";
 
 const METADATA_FILTER_TEXT = "reload###metadata-test";
@@ -194,7 +194,8 @@ describe(`Reload (${phase})`, function() {
     if (start) {
       await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.url);
       await waitForSubscriptionToBeSynchronized(TEST_MV3_SUBSCRIPTION.url);
-      return await ensureEverythingHasSaved();
+      await EWE.debugging.ensureEverythingHasSaved();
+      return;
     }
 
     try {

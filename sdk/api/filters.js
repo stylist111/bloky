@@ -24,7 +24,6 @@ import {isSlowFilter} from "adblockpluscore/lib/matcher.js";
 import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 
-import {default as initializer} from "./initializer.js";
 import {filterEngine} from "./core.js";
 import {EventDispatcher, FilterError} from "./types.js";
 import {getFrameInfo} from "./frame-state.js";
@@ -62,8 +61,6 @@ function makeSubListener(dispatch) {
 }
 
 export async function disable(texts) {
-  await initializer.start();
-
   if (!Array.isArray(texts)) {
     texts = [texts];
   }
@@ -127,8 +124,6 @@ export default {
    *   An error will be thrown for duplicated filters.
    */
   async add(texts, metadata) {
-    await initializer.start();
-
     if (!Array.isArray(texts)) {
       texts = [texts];
     }
@@ -180,7 +175,6 @@ export default {
    * @throws {FilterError} An error will be thrown for not added filter.
    */
   async setMetadata(text, metadata) {
-    await initializer.start();
     if (browser.declarativeNetRequest) {
       setMetadataForFilter(text, metadata);
       return;
@@ -213,7 +207,6 @@ export default {
    * @return {Promise<?Object>}
    */
   async getMetadata(text) {
-    await initializer.start();
     if (browser.declarativeNetRequest) {
       return getMetadataForFilter(text);
     }
@@ -226,7 +219,6 @@ export default {
    * @return {Promise<Array<Filter>>}
    */
   async getUserFilters() {
-    await initializer.start();
     let result = [];
 
     for (let subscription of filterEngine.filterStorage.subscriptions()) {
@@ -263,8 +255,6 @@ export default {
    * @return {Promise<Array<string>>}
    */
   async getAllowingFilters(tabId, options = {}) {
-    await initializer.start();
-
     let {frameId, types} = {frameId: 0, types: ["document"], ...options};
     let filters = new Set();
     let mask = types.reduce((a, b) => a | contentTypes[b.toUpperCase()], 0);
@@ -297,8 +287,6 @@ export default {
    * @return {Promise<bool>}
    */
   async isResourceAllowlisted(url, type, tabId, frameId = 0) {
-    await initializer.start();
-
     let mask = contentTypes[type.toUpperCase()];
     let frame = getFrameInfo(tabId, frameId) || {};
     let matcher = filterEngine.defaultMatcher;
@@ -333,8 +321,6 @@ export default {
    * @return {Promise}
    */
   async enable(texts) {
-    await initializer.start();
-
     if (!Array.isArray(texts)) {
       texts = [texts];
     }
@@ -365,8 +351,6 @@ export default {
    * @return {Promise}
    */
   async remove(texts) {
-    await initializer.start();
-
     if (!Array.isArray(texts)) {
       texts = [texts];
     }
@@ -425,7 +409,6 @@ export default {
    * @return {Promise<array<Filter, string>>} The migration errors.
    */
   async getMigrationErrors() {
-    await initializer.start();
     return Prefs.migration_filter_errors;
   },
 
@@ -434,7 +417,6 @@ export default {
    * @return {Promise}
    */
   async clearMigrationErrors() {
-    await initializer.start();
     Prefs.migration_filter_errors = [];
   }
 };

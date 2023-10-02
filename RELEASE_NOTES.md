@@ -2,7 +2,13 @@ Unreleased
 ==========
 
 # Documentation
+
 - Improved the API docs around eyeometry. (!837)
+
+# General
+
+- All the public API methods (eg. `EWE.filters.add(...)`)
+  await for the data to be saved (EE-44).
 
 # Internal
 
@@ -18,6 +24,7 @@ Unreleased
   module called `@eyeo/webext-ad-filtering-solution/`. (EE-189)
 
 ## Diff Updates
+
 - Added two new possible statuses to the subscription property `downloadStatus`:
   `"synchronize_diff_too_many_filters"` and `"synchronize_diff_error"`.
   The first one is emitted when a diff update reaches the limit number of

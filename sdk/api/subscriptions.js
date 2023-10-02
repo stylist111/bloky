@@ -249,8 +249,6 @@ export async function validate(bundledSubscriptions,
 }
 
 async function remove(url) {
-  await initializer.start();
-
   let subscription = getSubscription(url);
 
   if (!subscription) {
@@ -287,8 +285,6 @@ export async function updateFilterText() {
 }
 
 async function getDownloadable() {
-  await initializer.start();
-
   let result = [];
 
   for (let subscription of filterEngine.filterStorage.subscriptions()) {
@@ -306,8 +302,6 @@ export function isSynchronizing(url) {
 }
 
 async function add(url, properties = {}) {
-  await initializer.start();
-
   if (!Subscription.isValidURL(url)) {
     throw new Error(`Invalid subscription URL provided: ${url}`);
   }
@@ -368,8 +362,6 @@ async function add(url, properties = {}) {
 }
 
 async function disable(url) {
-  await initializer.start();
-
   let subscription = getSubscription(url);
 
   if (!subscription) {
@@ -402,6 +394,8 @@ function saveMigrationError(subscription, error) {
 }
 
 export async function migrate() {
+  await initializer.start();
+
   if (!migrationNeeded()) {
     return;
   }
@@ -561,8 +555,6 @@ export default {
    * @return {Promise}
    */
   async addDefaults(uiLanguage) {
-    await initializer.start();
-
     let subscriptions = [];
 
     if (shouldAddDefaultSubscriptions()) {
@@ -605,8 +597,6 @@ export default {
    * @return {Promise<Array<Subscription>>}
    */
   async getForFilter(text) {
-    await initializer.start();
-
     return text ? Array.from(filterEngine.filterStorage.subscriptions(text),
                              convertSubscription) : [];
   },
@@ -617,8 +607,6 @@ export default {
    * @return {Promise<Array<Filter>>} Filters from the subscription.
    */
   async getFilters(url) {
-    await initializer.start();
-
     let subscription = getSubscription(url);
     if (subscription) {
       return Array.from(subscription.filterText(),
@@ -635,8 +623,6 @@ export default {
    * @throws {TypeError} Invalid URL provided.
    */
   async has(url) {
-    await initializer.start();
-
     return getSubscription(new URL(url).href) != null;
   },
 
@@ -647,8 +633,6 @@ export default {
    * @throws {Error} Subscription does not exist.
    */
   async enable(url) {
-    await initializer.start();
-
     let subscription = getSubscription(url);
 
     if (!subscription) {
@@ -689,8 +673,6 @@ export default {
    * @throws {Error} Subscription does not exist.
    */
   async sync(url) {
-    await initializer.start();
-
     let subscriptions = [];
     let {filterStorage} = filterEngine;
 
@@ -750,7 +732,6 @@ export default {
    * @return {Promise<array<Subscription, string>>} The migration errors.
    */
   async getMigrationErrors() {
-    await initializer.start();
     return Prefs.migration_subscription_errors;
   },
 
@@ -759,7 +740,6 @@ export default {
    * @return {Promise}
    */
   async clearMigrationErrors() {
-    await initializer.start();
     Prefs.migration_subscription_errors = [];
   },
 

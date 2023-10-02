@@ -433,14 +433,13 @@ if (isMV3()) {
   };
 }
 
-EWE.testing.enableDebugOutput(true);
-
 startupInfo.telemetry = {
   url: "http://localhost:3003/telemetry",
   bearer: "SSBhbSBhIGJlYXIuLi4gZXIuLi4gUkFXUg=="
 };
 
 EWE.start(startupInfo).then(async firstRun => {
+  EWE.testing.enableDebugOutput(true);
   if (firstRun.warnings.length > 0) {
     console.warn("EWE startup warnings: ", firstRun.warnings);
   }
