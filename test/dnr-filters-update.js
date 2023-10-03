@@ -1040,6 +1040,7 @@ describe("Test subscriptions update", function() {
         // we need to make 'localhost' trustedHost to record the response's
         // 'version' as 'firstVersion'.
         analytics.trustedHosts = ["localhost:3003"];
+        delete analytics.data; // removes the "firstVersion"
         await EWE.testing._setPrefs("analytics", analytics);
 
         let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
