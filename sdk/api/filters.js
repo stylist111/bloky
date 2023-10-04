@@ -34,6 +34,11 @@ import {addFilters, getMetadataForFilter, setMetadataForFilter,
 import {ERROR_DUPLICATE_FILTERS, ERROR_FILTER_NOT_FOUND} from "../errors.js";
 import {Prefs} from "./prefs.js";
 
+/**
+ * @ignore
+ * @param {*} filter Filter object
+ * @returns {*} Plain filter object
+ */
 export function convertFilter(filter) {
   return {
     text: filter.text,
@@ -60,7 +65,7 @@ function makeSubListener(dispatch) {
   };
 }
 
-export async function disable(texts) {
+async function disable(texts) {
   if (!Array.isArray(texts)) {
     texts = [texts];
   }
@@ -76,7 +81,12 @@ export async function disable(texts) {
   }
 }
 
-export let onChanged = new EventDispatcher(dispatch => {
+/**
+ * @ignore
+ */
+export const disableFilter = disable;
+
+let onChanged = new EventDispatcher(dispatch => {
   filterNotifier.on("filterState.enabled", (text, enabled) => {
     dispatch({...convertFilter(Filter.fromText(text)), enabled}, "enabled");
   });
@@ -90,6 +100,11 @@ export let onChanged = new EventDispatcher(dispatch => {
     }
   });
 });
+
+/**
+ * @ignore
+ */
+export let onChangedFilter = onChanged;
 
 export default {
   /**

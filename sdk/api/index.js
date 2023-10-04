@@ -80,15 +80,27 @@ function wrapApiNamespace(target) {
   });
 }
 
+/**
+ * @ignore
+ */
 const wrappedSubscriptions = wrapApiNamespace(subscriptions.default);
 export {wrappedSubscriptions as subscriptions};
 
+/**
+ * @ignore
+ */
 const wrappedFilters = wrapApiNamespace(filters.default);
 export {wrappedFilters as filters};
 
+/**
+ * @ignore
+ */
 const wrappedReporting = wrapApiNamespace(reporting.default);
 export {wrappedReporting as reporting};
 
+/**
+ * @ignore
+ */
 const wrappedDebugging = wrapApiNamespace(debugging.default);
 export {wrappedDebugging as debugging};
 
@@ -96,9 +108,15 @@ export {wrappedDebugging as debugging};
 // and it does not require pre- and post- actions.
 export {default as allowlisting} from "./allowlisting.js";
 
+/**
+ * @ignore
+ */
 const wrappedTelemetry = wrapApiNamespace(telemetry.default);
 export {wrappedTelemetry as telemetry};
 
+/**
+ * @ignore
+ */
 const wrappedTesting = wrapApiNamespace(testing.default);
 export {wrappedTesting as testing};
 
@@ -130,6 +148,9 @@ export let snippets = {
 
 const SKIP_INIT_RULESETS_STORAGE_KEY = "ewe:skip_init_rulesets";
 
+/**
+ * @ignore
+ */
 export async function clearSkipInitRulesets() {
   await browser.storage.local.remove(SKIP_INIT_RULESETS_STORAGE_KEY);
 }
@@ -274,6 +295,10 @@ async function checkAndMigrateSubscriptions() {
   return false;
 }
 
+/**
+ * @ignore
+ * @param {boolean} skipWipeOutDiffs Skip wiping diff updates data
+ */
 export async function checkAndInitSubscriptions(skipWipeOutDiffs) {
   // Loading the subcriptions filter text wipes out diff updates,
   // so we do it in case of web extension update only.

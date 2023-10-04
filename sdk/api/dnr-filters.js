@@ -29,7 +29,7 @@ import {getSubscriptionRulesetMap} from "./subscriptions-utils.js";
 import subscriptions from "./subscriptions.js";
 import {ERROR_DUPLICATE_FILTERS, ERROR_FILTER_NOT_FOUND,
         ERROR_TOO_MANY_FILTERS} from "../errors.js";
-import {onChanged, disable} from "./filters.js";
+import {onChangedFilter, disableFilter} from "./filters.js";
 import {default as initializer} from "./initializer.js";
 import {calculateDiff} from "./filter-diffs.js";
 
@@ -726,8 +726,8 @@ export function setMetadataForFilter(text, metadata) {
 
   let oldMetadata = details.metadata;
   details.metadata = metadata;
-  onChanged.emit({...Filter.fromText(text), metadata, oldMetadata},
-                 "metadata");
+  onChangedFilter.emit({...Filter.fromText(text), metadata, oldMetadata},
+                       "metadata");
 
   storeDynamicFilters();
 }
@@ -872,7 +872,7 @@ export async function migrateCustomFilters() {
       filterEngine.filterStorage.removeFilter(Filter.fromText(filter.text));
       await addFilters([filter.text], filter.metadata);
       if (filter.disabled) {
-        await disable(filter.text);
+        await disableFilter(filter.text);
       }
     }
     catch (e) {

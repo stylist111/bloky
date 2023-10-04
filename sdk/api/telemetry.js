@@ -92,6 +92,16 @@ class AlarmScheduler {
 let scheduler = null;
 let onError = new EventDispatcher(dispatch => {});
 
+/**
+ * @ignore
+ * Starts the telemetry
+ *
+ * @param {*} telemetry Telemetry configuration (URL, bearer)
+ * @param {number} [pingIntervalInMinutes = 720] pingIntervalInMinutes
+ *        Ping interval in minutes (default value: 12 hours)
+ * @param {number} errorRetryDelayInMinutes
+ *        Error retry interval (minutes, default: 1h)
+ */
 export function start(telemetry, pingIntervalInMinutes = 60 * 12,
                       errorRetryDelayInMinutes = 60) {
   if (!telemetry.url) {
@@ -152,11 +162,17 @@ export function start(telemetry, pingIntervalInMinutes = 60 * 12,
   });
 }
 
+/**
+ * @ignore
+ */
 export async function reset() {
   await stop();
   await browser.storage.local.remove(TELEMETRY_STORAGE_KEY);
 }
 
+/**
+ * @ignore
+ */
 export async function stop() {
   if (!scheduler) {
     return;

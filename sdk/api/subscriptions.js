@@ -96,6 +96,9 @@ function makeListener(dispatch) {
   };
 }
 
+/**
+ * @ignore
+ */
 export async function hasAcceptableAdsEnabled() {
   const matches = [ACCEPTABLE_ADS_MV2_URL,
                    ACCEPTABLE_ADS_MV3_URL,
@@ -111,6 +114,11 @@ export async function hasAcceptableAdsEnabled() {
   return false;
 }
 
+/**
+ * @ignore
+ * @param {string} uiLanguage UI language
+ * @return {Array<*>}
+ */
 export function getDefaultSubscriptions(uiLanguage) {
   let hasCurrentLang = false;
   let hasDefaultLang = false;
@@ -241,6 +249,11 @@ async function getFilterText(subscription, path) {
   return lines;
 }
 
+/**
+ * @ignore
+ * @param {Array<*>} bundledSubscriptions Bundled subscriptions
+ * @param {String} bundledSubscriptionsPath Bundled subscriptions path
+ */
 export async function validate(bundledSubscriptions,
                                bundledSubscriptionsPath) {
   return validateSubscriptions(
@@ -259,6 +272,9 @@ async function remove(url) {
   await disableRuleset(subscription.id);
 }
 
+/**
+ * @ignore
+ */
 export async function updateFilterText() {
   let removeUrls = [];
 
@@ -295,6 +311,11 @@ async function getDownloadable() {
   return result;
 }
 
+/**
+ * @ignore
+ * @param {boolean} url Is synchronizing for passed URL?
+ * @returns {boolean}
+ */
 export function isSynchronizing(url) {
   return filterEngine.filterStorage.synchronizer
     .isExecuting(url) || isDnrSubscriptionUpdating(url);
@@ -392,6 +413,9 @@ function saveMigrationError(subscription, error) {
   Prefs.migration_subscription_errors = errors;
 }
 
+/**
+ * @ignore
+ */
 export async function migrate() {
   await initializer.start();
 
@@ -433,6 +457,9 @@ export async function migrate() {
   }
 }
 
+/**
+ * @ignore
+ */
 export async function ensureDNRRulesetsEnabled() {
   if (browser.declarativeNetRequest) {
     let enabledItems = await browser.declarativeNetRequest.getEnabledRulesets();

@@ -32,8 +32,8 @@ const {profiler} = require("./profiler");
 let _recommendationsByURL = null;
 
 /**
- * @ignore
  * Clean the maps cache
+ * @ignore
  */
 exports._clean = function() {
   _recommendationsByURL = null;

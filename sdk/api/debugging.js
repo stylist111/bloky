@@ -55,16 +55,54 @@ class DebugEventDispatcher {
   }
 }
 
+/**
+ * @ignore
+ */
 export const LOG_LEVEL_INFO = 0;
+
+/**
+ * @ignore
+ */
 export const LOG_LEVEL_WARNING = 1;
+
+/**
+ * @ignore
+ */
 export const LOG_LEVEL_ERROR = 2;
 
+/**
+ * @ignore
+ */
 export const LOG_COLOR_RED = "\x1b[31m";
+
+/**
+ * @ignore
+ */
 export const LOG_COLOR_GREEN = "\x1b[32m";
+
+/**
+ * @ignore
+ */
 export const LOG_COLOR_YELLOW = "\x1b[33m";
+
+/**
+ * @ignore
+ */
 export const LOG_COLOR_BLUE = "\x1b[34m";
+
+/**
+ * @ignore
+ */
 export const LOG_COLOR_MAGENTA = "\x1b[35m";
+
+/**
+ * @ignore
+ */
 export const LOG_COLOR_CYAN = "\x1b[36m";
+
+/**
+ * @ignore
+ */
 export const LOG_COLOR_BLUE_BRIGHT = "\x1b[94m";
 
 const LEVEL_TO_COLOR = new Map([
@@ -129,34 +167,67 @@ class ConsoleLogger {
 
 const CONSOLE_LOGGER = new ConsoleLogger().getListener();
 
+/**
+ * @ignore
+ */
 export function emitLogEvent({message, level, color, timeStamp = new Date()}) {
   for (let listener of listeners) {
     listener({message, level, timeStamp, color});
   }
 }
 
+/**
+ * Outputs 'information' message
+ * @ignore
+ * @param {string} message Log message
+ * @param {*} color Log output color
+ */
 export function info(message, color) {
   emitLogEvent({message, level: LOG_LEVEL_INFO, color});
 }
 
+/**
+ * Outputs 'log' message
+ * @ignore
+ * @param {string} message Log message
+ * @param {*} color Log output color
+ */
 export function log(message, color) {
   emitLogEvent({message, level: LOG_LEVEL_INFO, color}); // also "info" level
 }
 
+/**
+ * Outputs 'warning' message
+ * @ignore
+ * @param {string} message Log message
+ * @param {*} color Log output color
+ */
 export function warn(message, color) {
   emitLogEvent({message, level: LOG_LEVEL_WARNING, color});
 }
 
+/**
+ * Outputs 'error' message
+ * @ignore
+ * @param {string} message Log message
+ * @param {*} color Log output color
+ */
 export function error(message, color) {
   emitLogEvent({message, level: LOG_LEVEL_ERROR, color});
 }
 
+/**
+ * @ignore
+ */
 export let debugOptions;
 
 const STORAGE_KEY = "ewe:debugOptions";
 let savingPromise = Promise.resolve(null);
 let storage = browser.storage.local;
 
+/**
+ * @ignore
+ */
 export async function saveDebugOptions() {
   await savingPromise;
 
@@ -166,6 +237,9 @@ export async function saveDebugOptions() {
   await savingPromise;
 }
 
+/**
+ * @ignore
+ */
 export async function loadDebugOptions() {
   let obj = await storage.get(STORAGE_KEY);
   if (!obj || !obj[STORAGE_KEY]) {
@@ -180,14 +254,15 @@ let initializationPromise;
 
 export default {
   /**
+   * @ignore
    * Represents a debug log output entry.
    * @typedef {Object} LogEntry
    * @property {string} message Output message.
    * @property {number} level Log level.
-  *                           Can be one of `LOG_LEVEL_...` values.
+   *                          Can be one of `LOG_LEVEL_...` values.
    * @property {Date} timeStamp Timestamp.
    * @property {string|null} color Specific color (ANSI terminal color).
-  *                          Can be one of `LOG_COLOR_...` values or `null`.
+   *                         Can be one of `LOG_COLOR_...` values or `null`.
    */
 
   /**
