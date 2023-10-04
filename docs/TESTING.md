@@ -337,22 +337,22 @@ described previously.
 
 #### Func:webext - ARM architecture (M1/M2 Apple Silicon)
 
-Chromium (native):
-
 ```
 docker build -t functional-arm -f test/dockerfiles/functional-arm64.Dockerfile .
-docker run --cpus=2 --memory=8g --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} chromium" -it functional-arm
+docker run --cpus=2 --memory=8g --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox}" -it functional-arm
 ```
 
-Firefox (AMD emulation):
+Only latest Chromium and latest Firefox ESR versions are supported. Edge is not
+supported.
+
+Regarding Firefox, it may be possible to run other versions using AMD emulation
+(unstable results):
 
 ```
 docker build -t functional-amd -f test/dockerfiles/functional.Dockerfile .
 # Using init as a workaround: https://github.com/docker/for-mac/issues/6082
-docker run --platform linux/amd64 --init --cpus=2 --memory=8g --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} firefox" -it functional-amd
+docker run --platform linux/amd64 --init --cpus=2 --memory=8g --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} firefox 68.0" -it functional-amd
 ```
-
-Edge: Not supported
 
 #### Compliance
 

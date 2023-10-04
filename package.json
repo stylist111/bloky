@@ -41,7 +41,7 @@
     "uuid": "^9.0.0"
   },
   "devDependencies": {
-    "@eyeo/get-browser-binary": "^0.13.0",
+    "@eyeo/get-browser-binary": "^0.14.0",
     "chromedriver": "^90.0.1",
     "copy-webpack-plugin": "^9.0.1",
     "css-loader": "^5.2.6",

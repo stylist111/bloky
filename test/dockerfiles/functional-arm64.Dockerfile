@@ -12,6 +12,11 @@ RUN apt-get install -y fonts-liberation libatomic1 xdg-utils libu2f-udev
 
 # Chromium ARM
 RUN apt-get install -y chromium
+# https://askubuntu.com/questions/1360864/google-chrome-not-launching
+RUN mkdir -p "/root/.config/chromium/Crash Reports/pending/"
+
+# Firefox ARM
+RUN apt-get install -y firefox-esr
 
 ARG SKIP_BUILD=
 ARG BROWSER=
