@@ -45,7 +45,7 @@ export function convertFilter(filter) {
     enabled: typeof filter.disabled == "undefined" ? null : !filter.disabled,
     slow: filter instanceof URLFilter && isSlowFilter(filter),
     type: filter.type,
-    thirdParty: filter.thirdParty || null,
+    thirdParty: filter.thirdParty != null ? filter.thirdParty : null,
     selector: filter.selector || null,
     csp: filter.csp || null
   };

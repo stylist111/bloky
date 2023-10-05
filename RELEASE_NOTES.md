@@ -15,6 +15,12 @@ Unreleased
 
 - Fix missing list in the custom subscription list. (EE-206)
 
+# Fixes
+
+- When a filter uses the `~third-party` flag, the `filter.thirdParty` property
+  will now correctly be set to `false`. This bug was only in returning the
+  filter externally, and did not affect request filter matching. (EE-220)
+
 🚀 1.0.0 - 2023/09/21 🚀
 ===================
 

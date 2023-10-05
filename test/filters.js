@@ -413,6 +413,22 @@ describe("Filters", function() {
     ]);
   });
 
+  it("has a third-party property", async function() {
+    await addFilter(`|${TEST_PAGES_URL}$third-party`);
+
+    expect(await EWE.filters.getUserFilters()).toEqual([
+      expect.objectContaining({thirdParty: true})
+    ]);
+  });
+
+  it("has a ~third-party property", async function() {
+    await addFilter(`|${TEST_PAGES_URL}$~third-party`);
+
+    expect(await EWE.filters.getUserFilters()).toEqual([
+      expect.objectContaining({thirdParty: false})
+    ]);
+  });
+
   describe("Filter events [fuzz]", function() {
     it("listens to onAdded events", async function() {
       await addFilter(VALID_FILTER_TEXT);
