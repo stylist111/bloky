@@ -17,77 +17,15 @@
 
 import browser from "webextension-polyfill";
 import {v4 as uuidv4} from "uuid";
-import {MILLIS_IN_MINUTE} from "adblockpluscore/lib/time.js";
+import {MILLIS_IN_HOUR} from "adblockpluscore/lib/time.js";
 
 import * as info from "./info.js";
-import {default as initializer} from "./initializer.js";
 import {hasAcceptableAdsEnabled} from "./subscriptions.js";
 import {EventDispatcher} from "./types.js";
+import {Scheduler} from "./scheduler.js";
+import {default as initializer} from "./initializer.js";
 
 const TELEMETRY_STORAGE_KEY = "ewe:telemetry";
-const TELEMETRY_ALARM_KEY = "ewe:telemetry";
-
-class AlarmScheduler {
-  constructor(config) {
-    this.config = config;
-
-    this.callListenerInProgress = false;
-
-    // this has to be declared as an arrow function here because it's capturing
-    // `this` in the closure.
-    this.onAlarm = async alarm => {
-      if (alarm.name != this.config.alarmKey) {
-        return;
-      }
-      await this.checkSchedule();
-    };
-
-    browser.alarms.onAlarm.addListener(this.onAlarm);
-    this.checkSchedule();
-  }
-
-  async checkSchedule() {
-    await initializer.start();
-
-    if (this.callListenerInProgress) {
-      return;
-    }
-    this.callListenerInProgress = true;
-
-    try {
-      let nextAlarmInfo = await this.callListenerIfItsTime();
-      browser.alarms.create(this.config.alarmKey, nextAlarmInfo);
-    }
-    finally {
-      this.callListenerInProgress = false;
-    }
-  }
-
-  async callListenerIfItsTime() {
-    let nextTimestamp = await this.config.getNextTimestamp();
-    if (nextTimestamp && Date.now() <= nextTimestamp) {
-      return {
-        when: nextTimestamp
-      };
-    }
-
-    let success = await this.config.listener();
-    if (!success) {
-      return {
-        delayInMinutes: this.config.errorRetryDelayInMinutes
-      };
-    }
-
-    return {
-      delayInMinutes: this.config.intervalInMinutes
-    };
-  }
-
-  async stop() {
-    browser.alarms.onAlarm.removeListener(this.onAlarm);
-    await browser.alarms.clear(this.config.alarmKey);
-  }
-}
 
 let scheduler = null;
 let onError = new EventDispatcher(dispatch => {});
@@ -96,14 +34,14 @@ let onError = new EventDispatcher(dispatch => {});
  * @ignore
  * Starts the telemetry
  *
- * @param {*} telemetry Telemetry configuration (URL, bearer)
- * @param {number} [pingIntervalInMinutes = 720] pingIntervalInMinutes
- *        Ping interval in minutes (default value: 12 hours)
- * @param {number} errorRetryDelayInMinutes
- *        Error retry interval (minutes, default: 1h)
+ * @param {Object} telemetry Telemetry configuration (URL, bearer)
+ * @param {number} [interval]
+ *        Ping interval in milliseconds (default: 12 hours)
+ * @param {number} [errorRetryDelay]
+ *        Error retry interval in milliseconds (default: 1 hour)
  */
-export function start(telemetry, pingIntervalInMinutes = 60 * 12,
-                      errorRetryDelayInMinutes = 60) {
+export function start(telemetry, interval = 12 * MILLIS_IN_HOUR,
+                      errorRetryDelay = 1 * MILLIS_IN_HOUR) {
   if (!telemetry.url) {
     throw new Error("No telemetry `url` provided");
   }
@@ -116,10 +54,9 @@ export function start(telemetry, pingIntervalInMinutes = 60 * 12,
     return;
   }
 
-  scheduler = new AlarmScheduler({
-    alarmKey: TELEMETRY_ALARM_KEY,
-    intervalInMinutes: pingIntervalInMinutes,
-    errorRetryDelayInMinutes,
+  scheduler = new Scheduler({
+    interval,
+    errorRetryDelay,
     listener: () => ping(telemetry),
     async getNextTimestamp() {
       let storageResult = await browser.storage.local.get(
@@ -131,10 +68,9 @@ export function start(telemetry, pingIntervalInMinutes = 60 * 12,
 
       if (lastError) {
         let nextRetryAfterError = new Date(lastError).getTime() +
-            (errorRetryDelayInMinutes * MILLIS_IN_MINUTE);
+            errorRetryDelay;
         let nowTimestamp = Date.now();
-        let maxNextRetry = nowTimestamp +
-            (errorRetryDelayInMinutes * MILLIS_IN_MINUTE);
+        let maxNextRetry = nowTimestamp + errorRetryDelay;
         if (nextRetryAfterError > maxNextRetry) {
           // This shouldn't happen if the clocks are working right. It implies
           // that the system clock has been set backwards since we stored that
@@ -153,8 +89,7 @@ export function start(telemetry, pingIntervalInMinutes = 60 * 12,
         return nextRetryAfterError;
       }
       else if (lastPing) {
-        return new Date(lastPing).getTime() +
-          (pingIntervalInMinutes * MILLIS_IN_MINUTE);
+        return new Date(lastPing).getTime() + interval;
       }
 
       return null;
@@ -166,19 +101,19 @@ export function start(telemetry, pingIntervalInMinutes = 60 * 12,
  * @ignore
  */
 export async function reset() {
-  await stop();
+  stop();
   await browser.storage.local.remove(TELEMETRY_STORAGE_KEY);
 }
 
 /**
  * @ignore
  */
-export async function stop() {
+export function stop() {
   if (!scheduler) {
     return;
   }
 
-  await scheduler.stop();
+  scheduler.stop();
   scheduler = null;
 }
 
@@ -191,6 +126,8 @@ function truncateTimes(timestamp) {
 }
 
 async function ping(telemetry) {
+  await initializer.start();
+
   const storageResult = await browser.storage.local.get(
     [TELEMETRY_STORAGE_KEY]
   );

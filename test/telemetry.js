@@ -18,18 +18,18 @@
 
 import browser from "webextension-polyfill";
 import expect from "expect";
+import {MILLIS_IN_HOUR} from "adblockpluscore/lib/time.js";
+
 import {EWE, runInBackgroundPage, expectTestEvents} from "./messaging.js";
 import {clearRequestLogs, getRequestLogs, setMinTimeout, setEndpointResponse,
         clearEndpointResponse, TEST_ADMIN_PAGES_URL, TEST_PAGES_URL, wait,
         waitForAssertion, waitForSubscriptionToBeSynchronized}
   from "./utils.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
-import {MILLIS_IN_HOUR, MILLIS_IN_MINUTE} from "adblockpluscore/lib/time.js";
 
 describe("Telemetry", function() {
   const TELEMETRY_URL = `${TEST_ADMIN_PAGES_URL}/telemetry`;
   const TELEMETRY_BEARER = "SSBhbSBhIGJlYXIuLi4gZXIuLi4gUkFXUg==";
-  const TELEMETRY_ALARM_KEY = "ewe:telemetry";
   const TELEMETRY_STORAGE_KEY = "ewe:telemetry";
   const TELEMETRY_ARGS = {
     url: TELEMETRY_URL,
@@ -67,9 +67,8 @@ describe("Telemetry", function() {
     const ERROR_DELAY_MS = 3000;
 
     async function startTelemetryWithTestArgs() {
-      await EWE.testing.startTelemetry(TELEMETRY_ARGS,
-                                       PING_INTERVAL_MS / MILLIS_IN_MINUTE,
-                                       ERROR_DELAY_MS / MILLIS_IN_MINUTE);
+      await EWE.testing.startTelemetry(TELEMETRY_ARGS, PING_INTERVAL_MS,
+                                       ERROR_DELAY_MS);
     }
 
     async function delayThenExpectNoNewPings(delay, currentPingCount) {
@@ -142,7 +141,7 @@ describe("Telemetry", function() {
     });
 
     it("can send a requests every 3 seconds if configured to", async function() {
-      await EWE.testing.startTelemetry(TELEMETRY_ARGS, 0.05);
+      await EWE.testing.startTelemetry(TELEMETRY_ARGS, 3000);
 
       await expectNextPing(1);
       await delayThenExpectNextPing(3000, 2);
@@ -160,46 +159,21 @@ describe("Telemetry", function() {
       await startTelemetryWithTestArgs();
 
       await delayThenExpectNoNewPings(1000, 1);
-      await delayThenExpectNextPing(PING_INTERVAL_MS / 2, 2);
+      await delayThenExpectNextPing(PING_INTERVAL_MS - 3000, 2);
     });
 
     it("schedules the next ping if the service worker is suspended before it is time for the next ping [mv3-only]", async function() {
       await startTelemetryWithTestArgs();
-
       await expectNextPing(1);
 
-      let firstPing = Date.now();
-      let tolerance = 1000;
-
-      await waitForAssertion(async() => {
-        let expectedNextPing = firstPing + PING_INTERVAL_MS;
-        let alarm = await browser.alarms.get(TELEMETRY_ALARM_KEY);
-        expect(alarm.periodInMinutes).toBeUndefined();
-        expect(alarm.scheduledTime)
-          .toBeGreaterThanOrEqual(expectedNextPing - tolerance);
-        expect(alarm.scheduledTime)
-          .toBeLessThanOrEqual(expectedNextPing + tolerance);
-      });
-
+      await new Promise(r => setTimeout(r, PING_INTERVAL_MS / 2));
       await suspendServiceWorker(this);
 
-      // We expect the (existing) alarm to fire after 6 seconds, waking the
-      // service worker
-      await new Promise(r => setTimeout(r, PING_INTERVAL_MS));
+      // Service worker is woken up at this point
+      await EWE.testing.stopTelemetry();
+      await startTelemetryWithTestArgs();
 
-      // After starting up, we expect the next ping to be reset to its default
-      // value: 12 hours. It shouldn't ping now because that time hasn't been
-      // reached yet. Rather, we should just get a new alarm and no new ping..
-      await waitForAssertion(async() => {
-        let expectedNextPing = firstPing + 12 * MILLIS_IN_HOUR;
-        let afterSuspendAlarm = await browser.alarms.get(TELEMETRY_ALARM_KEY);
-        expect(afterSuspendAlarm.periodInMinutes).toBeUndefined();
-        expect(afterSuspendAlarm.scheduledTime)
-          .toBeGreaterThanOrEqual(expectedNextPing - tolerance);
-        expect(afterSuspendAlarm.scheduledTime)
-          .toBeLessThanOrEqual(expectedNextPing + tolerance);
-        expect(await getRequestLogs(TELEMETRY_URL)).toHaveLength(1);
-      });
+      await delayThenExpectNextPing(PING_INTERVAL_MS / 2, 2);
     });
 
     it("pings immediately if the service worker is suspended after it is time for the next ping [mv3-only]", async function() {
@@ -207,33 +181,22 @@ describe("Telemetry", function() {
 
       await expectNextPing(1);
 
-      let firstPing = Date.now();
-      let expectedNextPing = firstPing + PING_INTERVAL_MS;
-      let tolerance = 1000;
-
-      await waitForAssertion(async() => {
-        let alarm = await browser.alarms.get(TELEMETRY_ALARM_KEY);
-        expect(alarm.periodInMinutes).toBeUndefined();
-        expect(alarm.scheduledTime)
-          .toBeGreaterThanOrEqual(expectedNextPing - tolerance);
-        expect(alarm.scheduledTime)
-          .toBeLessThanOrEqual(expectedNextPing + tolerance);
-      });
-
       await suspendServiceWorker(this);
 
       let storage = await browser.storage.local.get([TELEMETRY_STORAGE_KEY]);
       let telemetryStorage = storage[TELEMETRY_STORAGE_KEY];
       let adjustedLastPing =
-        new Date(telemetryStorage.lastPing).getTime() - 12 * MILLIS_IN_HOUR;
+         new Date(telemetryStorage.lastPing).getTime() - 12 * MILLIS_IN_HOUR;
       telemetryStorage.lastPing = new Date(adjustedLastPing).toISOString();
       await browser.storage.local.set({
         [TELEMETRY_STORAGE_KEY]: telemetryStorage
       });
 
-      // We expect the (existing) alarm to fire after 6 seconds, waking the
-      // service worker, and then ping immediately.
-      await delayThenExpectNextPing(PING_INTERVAL_MS, 2);
+      // this is just to give the service worker some ping to wake it
+      // up. Specific call doesn't matter.
+      await EWE.testing._waitForInitialization();
+
+      await expectNextPing(2);
     });
 
     it("sends a request after the error delay if the server had an error", async function() {
@@ -315,28 +278,11 @@ describe("Telemetry", function() {
 
       await expectNextPing(1);
 
-      let firstPing = Date.now();
-      let tolerance = 1000;
-
       await suspendServiceWorker(this);
 
-      // We expect the (existing) alarm to fire after 3 seconds, waking the
-      // service worker
-      await new Promise(r => setTimeout(r, ERROR_DELAY_MS));
-
-      // After starting up, we expect the next ping to be reset to its default
-      // value: 1 hour. It shouldn't ping now because that time hasn't been
-      // reached yet. Rather, we should just get a new alarm and no new ping..
-      await waitForAssertion(async() => {
-        let expectedNextPing = firstPing + MILLIS_IN_HOUR;
-        let afterSuspendAlarm = await browser.alarms.get(TELEMETRY_ALARM_KEY);
-        expect(afterSuspendAlarm.periodInMinutes).toBeUndefined();
-        expect(afterSuspendAlarm.scheduledTime)
-          .toBeGreaterThanOrEqual(expectedNextPing - tolerance);
-        expect(afterSuspendAlarm.scheduledTime)
-          .toBeLessThanOrEqual(expectedNextPing + tolerance);
-        expect(await getRequestLogs(TELEMETRY_URL)).toHaveLength(1);
-      });
+      await EWE.testing.stopTelemetry();
+      await startTelemetryWithTestArgs();
+      await delayThenExpectNextPing(ERROR_DELAY_MS, 2);
     });
 
     it("sends AA active (as false) extension metadata to the telemetry server when non AA subscriptions are active", async function() {
@@ -458,13 +404,13 @@ describe("Telemetry", function() {
           .not.toEqual(payloads[1].last_ping_tag);
       });
 
-      it("listens to onError events for error status codes [fuzz]", async function() {
+      it("listens to onError events for error status codes", async function() {
         await setEndpointResponse(TELEMETRY_URL, {}, "POST", 500);
         await startTelemetryWithTestArgs();
         await expectTestEvents("telemetry.onError", [[{
           message: "Telemetry server responded with error status 500.",
           lastError: expect.any(String)
-        }]]);
+        }]], 1000);
       });
 
       it("listens to onError events for missing data", async function() {

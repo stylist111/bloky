@@ -9,6 +9,7 @@ Unreleased
 
 - All the public API methods (eg. `EWE.filters.add(...)`)
   await for the data to be saved (EE-44).
+- The `alarms` permission is no longer required to use telemetry. (EE-159)
 
 # Internal
 
