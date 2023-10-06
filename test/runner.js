@@ -575,10 +575,14 @@ async function runTests() {
     }
   }
 
-  // New headless mode in Chromium was introduced in Chrome 111. The old
+  // New headless mode was introduced in Chromium 111 and Edge 114. The old
   // headless mode does not support loading extensions.
-  let headless = (browser == "firefox" ||
-    browser == "chromium" && majorVersion >= 111) && !incognito && !forceHeadful;
+  let isFirefox = browser == "firefox";
+  let isChromium = browser == "chromium" && majorVersion >= 111;
+  let isEdge = browser == "edge" && majorVersion >= 114;
+  let headless = !incognito && !forceHeadful &&
+    (isFirefox || isChromium || isEdge);
+
   let driver = await BROWSERS[browser].getDriver(
     version,
     {headless, extensionPaths, incognito, extraArgs, customBrowserBinary});
