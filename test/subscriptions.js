@@ -19,7 +19,8 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 
 import {Page, setMinTimeout, wait, waitForAssertion, isMV3, clearRequestLogs,
-        TEST_PAGES_URL, TEST_PAGES_DOMAIN, shouldBeLoaded, setEndpointResponse}
+        TEST_PAGES_URL, TEST_PAGES_DOMAIN, shouldBeLoaded, setEndpointResponse,
+        TEST_ANTI_CV_SUBSCRIPTION}
   from "./utils.js";
 import {addFilter, EWE, runInBackgroundPage, getTestEvents, clearTestEvents,
         expectTestEvents} from "./messaging.js";
@@ -56,6 +57,7 @@ describe("Subscriptions", function() {
     let homepage = "testHomePage";
 
     await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL, {title, homepage});
+
     let subs = await EWE.subscriptions.getDownloadable();
     expect(subs).toEqual([expect.objectContaining({
       url: VALID_SUBSCRIPTION_URL,
@@ -64,6 +66,97 @@ describe("Subscriptions", function() {
       homepage,
       downloadable: expect.any(Boolean)
     })]);
+  });
+
+  it("adds a CV subscription that gets privilege by default", async function() {
+    let antiCvUrl = "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt";
+    if (isMV3()) {
+      antiCvUrl = TEST_ANTI_CV_SUBSCRIPTION.url;
+    }
+    await EWE.subscriptions.add(antiCvUrl);
+
+    let subs = await EWE.subscriptions.getDownloadable();
+    expect(subs).toEqual([expect.objectContaining({
+      url: antiCvUrl,
+      privileged: true
+    })]);
+  });
+
+  it("adds a CV subscription with privileged false", async function() {
+    let antiCvUrl = "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt";
+    if (isMV3()) {
+      antiCvUrl = TEST_ANTI_CV_SUBSCRIPTION.url;
+    }
+    await EWE.subscriptions.add(antiCvUrl, {privileged: false});
+
+    let subs = await EWE.subscriptions.getDownloadable();
+    expect(subs).toEqual([expect.objectContaining({
+      url: antiCvUrl,
+      privileged: false
+    })]);
+  });
+
+  it("adds a subscription that has privileged set to true in the recommendations", async function() {
+    setMinTimeout(this, 10000);
+
+    let defaultRecommendations = await EWE.testing._recommendations();
+    await EWE.testing._setRecommendations([
+      {
+        _source: {
+          id: "00000000-0000-0000-0000-000000000060",
+          type: "ads",
+          title: "Test MV3 Updatable Subscription",
+          homepage: "http://localhost:3003/updatable_subscription.txt",
+          diff_url: "http://localhost:3003/updatable_subscription/diff.json",
+          url: "http://localhost:3003/updatable_subscription.txt",
+          mv2_url: "http://localhost:3003/mv2_updatable_subscription.txt",
+          expires: "1 day",
+          privileged: true
+        }
+      }
+    ]);
+    await EWE.testing._cleanSubscriptionClassesCache();
+
+    let subUrl = "http://localhost:3003/mv2_updatable_subscription.txt";
+    if (isMV3()) {
+      subUrl = "http://localhost:3003/updatable_subscription.txt";
+    }
+    try {
+      await EWE.subscriptions.add(subUrl);
+      let subs = await EWE.subscriptions.getDownloadable();
+      expect(subs).toEqual([expect.objectContaining({
+        url: subUrl,
+        privileged: true
+      })]);
+    }
+    finally {
+      await EWE.testing._setRecommendations(defaultRecommendations);
+      await EWE.testing._cleanSubscriptionClassesCache();
+    }
+  });
+
+  it("adds a CV subscription using addDefaults", async function() {
+    setMinTimeout(this, 10000);
+
+    await EWE.subscriptions.addDefaults("en");
+
+    let subs = await EWE.subscriptions.getDownloadable();
+    expect(subs.length).toEqual(3);
+
+    let compareUrl = "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt";
+    if (isMV3()) {
+      compareUrl = TEST_ANTI_CV_SUBSCRIPTION.url;
+    }
+
+    expect(subs).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        url: compareUrl,
+        privileged: true
+      }),
+      expect.objectContaining({
+        privileged: false
+      })
+    ]));
   });
 
   it("adds downloadable subscriptions in MV2 and non-downloadable subscriptions in MV3", async function() {

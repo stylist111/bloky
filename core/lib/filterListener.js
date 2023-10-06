@@ -249,6 +249,8 @@ class FilterListener {
                       this._onGenericChange.bind(this));
     filterNotifier.on("subscription.errors",
                       this._onGenericChange.bind(this));
+    filterNotifier.on("subscription.privileged",
+                      this._onGenericChange.bind(this));
 
     filterNotifier.on("load", this._onLoad.bind(this));
     filterNotifier.on("save", this._onSave.bind(this));

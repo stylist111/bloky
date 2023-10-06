@@ -115,6 +115,15 @@ class Recommendation {
   get expires() {
     return this._source.expires;
   }
+
+  /**
+   * True if this subscription can load filters that require privileged access,
+   * like snippets.
+   * @type {?bool}
+   */
+  get privileged() {
+    return this._source.privileged;
+  }
 }
 
 let _recommendations = null;

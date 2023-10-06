@@ -17,7 +17,7 @@
 
 import {Subscription, _clean as _cleanSubscriptionClassesCache}
   from "adblockpluscore/lib/subscriptionClasses.js";
-import {setRecommendations, recommendations, Recommendation}
+import {setRecommendations, recommendations}
   from "adblockpluscore/lib/recommendations.js";
 import {notifications} from "adblockpluscore/lib/notifications.js";
 
@@ -108,8 +108,9 @@ export default {
    * @param {Array} sources An array of sources for recommendations
    */
   _setRecommendations(sources) {
-    setRecommendations(sources ? [...sources.map(
-      source => new Recommendation(source))] : null);
+    const result = sources ?
+      sources.map(recommendation => recommendation._source) : null;
+    setRecommendations(result);
   },
 
   /**
@@ -117,7 +118,7 @@ export default {
    * @returns {Array} An array of recommendations
    */
   _recommendations() {
-    return [...recommendations()];
+    return recommendations();
   },
 
   /**
@@ -250,5 +251,6 @@ export default {
   resetTelemetry: telemetry.reset,
 
   clearSkipInitRulesets,
-  checkAndInitSubscriptions
+  checkAndInitSubscriptions,
+  _cleanSubscriptionClassesCache
 };

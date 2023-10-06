@@ -161,6 +161,8 @@ exports.Subscription = class Subscription {
       this._title = title;
     }
 
+    this._privileged = recommendation ? recommendation.privileged : false;
+
     /**
      * Whether the title of the subscription is non-editable.
      * @type {boolean}
@@ -220,11 +222,24 @@ exports.Subscription = class Subscription {
 
   /**
    * True if this subscription can load filters that require
-   * privileged access, like snippets.
+   * privileged access, like snippets. Defaults to the result of the type being
+   * "circumvention" if this value is null
    * @type {bool}
    */
   get privileged() {
-    return this.type === "circumvention";
+    if (this._privileged == null) {
+      return this._type === "circumvention";
+    }
+
+    return this._privileged;
+  }
+
+  set privileged(value) {
+    if (value !== this._privileged) {
+      let oldValue = this._privileged;
+      this._privileged = value;
+      filterNotifier.emit("subscription.privileged", this, value, oldValue);
+    }
   }
 
   /**

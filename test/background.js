@@ -426,7 +426,8 @@ if (isMV3()) {
         diff_url: "http://localhost:3003/updatable_subscription/diff.json",
         url: "http://localhost:3003/updatable_subscription.txt",
         mv2_url: "http://localhost:3003/mv2_updatable_subscription.txt",
-        expires: "1 day"
+        expires: "1 day",
+        privileged: true
       }
     ],
     bundledSubscriptionsPath: "subscriptions"

@@ -7,6 +7,15 @@ Unreleased
 
 # General
 
+- Privileged is now a property of a subscription and not purely based on the 
+  type of that subscription. The privileged property allows for subscriptions to run snippets. You can add a privileged subscription by passing the 
+  `privileged` property in the options. 
+  Ex: `EWE.subscription.add(url, {privileged: true})`
+  You can also add the privileged property to the recommendations file, and the 
+  subscriptions added by calling `EWE.subscriptions.addDefaults()` will have 
+  the specified privilege. If not provided, privileged will be true for CV 
+  subscriptions. (EE-182, !840)
+
 - All the public API methods (eg. `EWE.filters.add(...)`)
   await for the data to be saved (EE-44).
 - The `alarms` permission is no longer required to use telemetry. (EE-159)

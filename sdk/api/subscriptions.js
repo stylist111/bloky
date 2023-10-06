@@ -48,23 +48,29 @@ const ACCEPTABLE_ADS_PRIVACY_MV2_URL = "https://easylist-downloads.adblockplus.o
 const ACCEPTABLE_ADS_PRIVACY_MV3_URL = "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules-privacy-friendly.txt";
 
 function convertSubscription(subscription) {
-  let {id, disabled, downloadStatus, homepage,
-       version, lastDownload, lastSuccess,
-       softExpiration, expires, title, url,
-       downloadable, downloadCount, diffURL} = subscription;
+  const {
+    id, disabled, downloadStatus, homepage, version, lastDownload, lastSuccess,
+    softExpiration, expires, title, url, downloadable, downloadCount, diffURL,
+    privileged} = subscription;
 
-  let newSubscription = {
-    id, enabled: !disabled,
-    homepage, downloadable, title, url, downloadCount, version, diffURL
-  };
-
-  Object.assign(newSubscription, {
+  return {
+    id,
+    enabled: !disabled,
+    privileged,
+    homepage,
+    downloadable,
+    title,
+    url,
+    downloadCount,
+    version,
+    diffURL,
     downloading: isSynchronizing(url),
-    version, downloadStatus, lastSuccess, lastDownload,
-    softExpiration, expires, downloadCount
-  });
-
-  return newSubscription;
+    downloadStatus,
+    lastSuccess,
+    lastDownload,
+    softExpiration,
+    expires
+  };
 }
 
 function convertRecommendation({id, languages, title, requires, type, url,
@@ -370,6 +376,9 @@ async function add(url, properties = {}) {
   if ("lastDownload" in properties) {
     subscription.lastDownload = properties.lastDownload;
   }
+  if ("privileged" in properties) {
+    subscription.privileged = properties.privileged;
+  }
 
   filterStorage.addSubscription(subscription);
 
@@ -558,6 +567,8 @@ export default {
    *                                    If not provided, falls back to the URL.
    * @param {string} [properties.homepage] Website of the project that
    *                                       manages this filter list.
+   * @param {boolean} [properties.privileged] Whether or not this subscription
+   *                                          is allowed to run snippets.
    * @return {Promise}
    * @throws {Error} Invalid subscription URL provided.
    */
@@ -801,7 +812,7 @@ export default {
     }
 
     let properties = ["disabled", "title", "homepage", "lastDownload",
-                      "downloadStatus", "downloading"];
+                      "downloadStatus", "downloading", "privileged"];
     for (let property of properties) {
       filterNotifier.on(`subscription.${property}`,
                         makeChangeListener(property));
