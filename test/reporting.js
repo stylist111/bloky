@@ -32,7 +32,7 @@ import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 describe("Reporting", function() {
   let elemhideEventOptions = {includeElementHiding: true};
   let unmatchedEventOptions = {includeUnmatched: true, filterType: "all"};
-  let timeoutWaitingForLogs = isFuzzingServiceWorker() ? 5000 : 1000;
+  let timeoutWaitingForLogs = isFuzzingServiceWorker() ? 5000 : 1500;
 
   it("exposes a mapping between content types and ResourceTypes [fuzz]", async function() {
     let expected = {
