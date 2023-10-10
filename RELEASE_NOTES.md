@@ -1,37 +1,40 @@
 Unreleased
 ==========
 
+🎃 1.1.0 - 2023/10/10 🎃
+========================
+
 # Documentation
 
-- Improved the API docs around eyeometry. (!837)
+- Improved the API docs for telemetry. (!837)
+- Improved documentation for the `--recommended-subscriptions` flag (!838)
 
 # General
 
 - Privileged is now a property of a subscription and not purely based on the 
-  type of that subscription. The privileged property allows for subscriptions to run snippets. You can add a privileged subscription by passing the 
+  type of that subscription. The privileged property allows for subscriptions 
+  to run snippets. You can add a privileged subscription by passing the 
   `privileged` property in the options. 
   Ex: `EWE.subscription.add(url, {privileged: true})`
   You can also add the privileged property to the recommendations file, and the 
   subscriptions added by calling `EWE.subscriptions.addDefaults()` will have 
-  the specified privilege. If not provided, privileged will be true for CV 
-  subscriptions. (EE-182, !840)
-
-- All the public API methods (eg. `EWE.filters.add(...)`)
-  await for the data to be saved (EE-44).
+  the specified privilege. If not provided, privileged will be true for 
+  circumvention subscriptions. (EE-182, !840)
+- We now test on Edge 111. (!839)
+- All the public API methods (eg. `EWE.filters.add(...)`) wait for the data 
+  to be saved. (EE-44)
 - The `alarms` permission is no longer required to use telemetry. (EE-159)
-
-# Internal
-
-- Fix missing list in the custom subscription list. (EE-206)
 
 # Fixes
 
 - When a filter uses the `~third-party` flag, the `filter.thirdParty` property
   will now correctly be set to `false`. This bug was only in returning the
   filter externally, and did not affect request filter matching. (EE-220)
+- We no longer accidentally return the internal 'originalUrl' property on 
+  a subscription.
 
 🚀 1.0.0 - 2023/09/21 🚀
-===================
+========================
 
 # General
 
@@ -98,6 +101,12 @@ Unreleased
 - Fix flaky Fuzz Edge test in MV3 "does not hide an element on a sitekey
   allowlisted page". (EE-120)
 
+🌶 0.13.1 - 2023/09/27 🌶
+===================
+
+# Fixes
+
+- Fix a bug that was making the element hiding filters to not work when extensions didn't add a listener to onBlockableItem with includeElementHiding: true. (EE-204)
 
 0.13.0 - 2023/08/28
 ===================
