@@ -541,6 +541,8 @@ export default {
    * @property {?number} lastSuccess Epoch time when this subscription was last
    *                                 successfully downloaded (downloadble
    *                                 subscriptions only).
+   * @property {?boolean} privileged True if this subscription can load filters
+   *                              that require privileged access, like snippets.
    * @property {?number} softExpiration Epoch time for the next attempt to
    *                                    download the subscription. Can be
    *                                    updated even if the subscription was
@@ -747,6 +749,8 @@ export default {
    *                                    one depends on.
    * @property {Array<string>} includes A list of subscriptions that this
    *                                    one also contains.
+   * @property {?boolean} privileged True if this subscription can load filters
+   *                              that require privileged access, like snippets.
    * @property {string} type The kind of content targeted by this
    *                         recommended subscription.
    * @property {string} url Where the recommended subscription can be found
