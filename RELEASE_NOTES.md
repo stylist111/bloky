@@ -1,5 +1,8 @@
 Unreleased
 ==========
+# Internal
+
+- Compliance tests now use same browser version as functional tests.
 
 🎃 1.1.0 - 2023/10/10 🎃
 ========================

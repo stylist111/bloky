@@ -449,25 +449,25 @@ fuzz:v3:edge:linux:
 compliance:v2:firefox:
   extends: .compliance
   variables:
-    BROWSER: firefox latest
+    BROWSER: firefox $LATEST_FIREFOX_VERSION
     MANIFEST: mv2
 
 compliance:v2:chromium:
   extends: .compliance
   variables:
-    BROWSER: chromium latest
+    BROWSER: chromium $LATEST_CHROME_VERSION
     MANIFEST: mv2
     
 compliance:v3:chromium:
   extends: .compliance
   variables:
-    BROWSER: chromium latest
+    BROWSER: chromium $LATEST_CHROME_VERSION
     MANIFEST: mv3
 
 compliance:v3:edge:
   extends: .compliance
   variables:
-    BROWSER: edge latest
+    BROWSER: edge $LATEST_EDGE_VERSION
     MANIFEST: mv3
 
 int:scripts:
