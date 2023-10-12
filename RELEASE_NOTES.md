@@ -4,6 +4,11 @@ Unreleased
 
 - Compliance tests now use same browser version as functional tests.
 
+# Fixes
+
+- The engine no longer throws an exception when checking if the a request made
+  from an opaque domain should be blocked. (EE-215)
+
 🎃 1.1.0 - 2023/10/10 🎃
 ========================
 

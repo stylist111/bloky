@@ -129,6 +129,12 @@ describe("Blocking", function() {
     });
   }
 
+  it("blocks a request with an opaque origin", async function() {
+    await addFilter("/image.png^$image");
+    await new Page("image-with-opaque-origin.html")
+      .expectResource("image.png").toBeBlocked();
+  });
+
   it("handles $match-case requests", async function() {
     await addFilter(`|${TEST_PAGES_URL}/IMAGE.png$match-case`);
     await new Page("image.html").expectResource("image.png").toBeLoaded();

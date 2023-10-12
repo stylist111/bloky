@@ -80,12 +80,18 @@ function getParentFrameId(details) {
   return details.parentFrameId;
 }
 
+// Initiators have this weird thing where they sometimes use the string "null"
+// instead of just giving a value of null.
+function sanitizeInitiator(initiator) {
+  return initiator == "null" ? null : initiator;
+}
+
 export function getFrameInfoFromWebrequestDetails(details) {
   let tabId = details.tabId;
   let frameId = getFrameId(details);
   let parentFrameId = getParentFrameId(details);
-  let initiator = details.initiator || details.documentUrl;
-  let documentUrl = details.documentUrl || details.initiator;
+  let initiator = sanitizeInitiator(details.initiator) || details.documentUrl;
+  let documentUrl = details.documentUrl || sanitizeInitiator(details.initiator);
 
   return getFrameInfo(tabId, frameId, {
     initiator,
@@ -134,11 +140,11 @@ class BaseFilter {
 
   getInitiator(details) {
     // Chrome calls it initiator, Firefox calls it documentUrl
-    return details.initiator || details.documentUrl;
+    return sanitizeInitiator(details.initiator) || details.documentUrl;
   }
 
   getDocumentUrl(details) {
-    return details.documentUrl || details.initiator;
+    return details.documentUrl || sanitizeInitiator(details.initiator);
   }
 
   collapse(details) {
@@ -264,7 +270,8 @@ class RequestFilter extends BaseFilter {
 
       // A wrong URL likely means that we've navigated to a new page
       // and frame-state hasn't caught up yet.
-      let {documentUrl, initiator} = details;
+      let {documentUrl} = details;
+      let initiator = sanitizeInitiator(details.initiator);
       if ((documentUrl && frame.url != documentUrl) ||
          (initiator && frame.hostname != parseURL(initiator).hostname)) {
         return null;

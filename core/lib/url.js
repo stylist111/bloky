@@ -112,6 +112,11 @@ let parseURL =
  */
 exports.parseURL = function parseURL(url) {
   let match = /^([^:]+:)(?:\/\/(?:[^/]*@)?(\[[^\]]*\]|[^:/]+))?/.exec(url);
+
+  if (!match) {
+    throw new Error(`Failed to parse invalid URL "${url}"`);
+  }
+
   return new URLInfo(url, match[1], match[2]);
 };
 

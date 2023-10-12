@@ -61,6 +61,15 @@ function getContext(details) {
   }
 
   let frame = getFrameInfoFromWebrequestDetails(details);
+  if (!frame) {
+    return {
+      allowingDocumentFilter: null,
+      specificOnly: false,
+      docDomain: null,
+      contentType
+    };
+  }
+
   let allowingDocumentFilter = frame.allowingDocumentFilter;
   let specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) != 0;
   let docDomain = frame.hostname;
