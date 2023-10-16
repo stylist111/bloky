@@ -316,7 +316,7 @@ npm exec subs-generate
 ### Using the test runner on docker
 
 The CI/CD pipeline runs the tests using this docker image. Using docker locally
-to run the same tests may be useful to recreate the infrastructure the CI uses:
+to run the same tests may be useful to recreate the infrastructure the CI uses.
 
 #### Unit:core
 
@@ -325,7 +325,7 @@ docker build -t core -f test/dockerfiles/core.Dockerfile .
 docker run --cpus=2 --memory=8g --shm-size=512m TEST_PARAMS="(path to the test to run)" -it core
 ```
 
-#### Func:webext - Intel/AMD architecture
+#### Func:webext
 
 ```
 docker build -t functional -f test/dockerfiles/functional.Dockerfile .
@@ -334,25 +334,6 @@ docker run --cpus=2 --memory=8g --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom
 
 Please notice that the TEST_PARAMS argument can also take the additional options
 described previously.
-
-#### Func:webext - ARM architecture (M1/M2 Apple Silicon)
-
-```
-docker build -t functional-arm -f test/dockerfiles/functional-arm64.Dockerfile .
-docker run --cpus=2 --memory=8g --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox}" -it functional-arm
-```
-
-Only latest Chromium and latest Firefox ESR versions are supported. Edge is not
-supported.
-
-Regarding Firefox, it may be possible to run other versions using AMD emulation
-(unstable results):
-
-```
-docker build -t functional-amd -f test/dockerfiles/functional.Dockerfile .
-# Using init as a workaround: https://github.com/docker/for-mac/issues/6082
-docker run --platform linux/amd64 --init --cpus=2 --memory=8g --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} firefox 68.0" -it functional-amd
-```
 
 #### Compliance
 
@@ -369,6 +350,24 @@ to copy local one, pass `--build-arg EXTENSION=copy`:
 
 ```
 docker build -t compliance -f test/dockerfiles/compliance-test.Dockerfile --build-arg EXTENSION=copy .
+```
+
+#### ARM architecture (M1/M2 Apple Silicon)
+
+The previous examples assume an Intel/AMD architecture on the running machine.
+On ARM architectures, the run is done emulating the AMD architecture.
+Requirements:
+
+- macOS >= 13 (Ventura)
+- Rosetta
+- Docker Desktop needs the feature "Use Rosetta for x86/amd64 emulation on Apple
+Silicon" enabled. It can be found in the settings section called "Features in
+development"
+
+The `--platform` option should be used when running the image. Example:
+
+```
+docker run --platform linux/amd64 --cpus=2 --memory=8g --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" -it functional
 ```
 
 ### Maintaining browser cache
