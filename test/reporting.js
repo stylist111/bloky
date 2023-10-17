@@ -32,7 +32,7 @@ import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 describe("Reporting", function() {
   let elemhideEventOptions = {includeElementHiding: true};
   let unmatchedEventOptions = {includeUnmatched: true, filterType: "all"};
-  let timeoutWaitingForLogs = isFuzzingServiceWorker() ? 5000 : 1500;
+  let timeoutWaitingForLogs = isFuzzingServiceWorker() ? 5000 : 1000;
 
   it("exposes a mapping between content types and ResourceTypes [fuzz]", async function() {
     let expected = {
@@ -779,6 +779,13 @@ describe("Reporting", function() {
       // See https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution/-/issues/493
       if (isFuzzingServiceWorker()) {
         return;
+      }
+
+      // Sometimes this test fails on the Linux Edge CI because one of the
+      // expected filters remains unmached. Retrying as a workaround.
+      // https://jira.eyeo.com/browse/EE-221
+      if (isEdge()) {
+        this.retries(2);
       }
 
       await checkLogging(
