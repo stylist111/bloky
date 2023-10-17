@@ -61,13 +61,14 @@ testParams = testParams.includes("--") ? testParams.substring(0, testParams.inde
 // not passed properly
 // when invoking through the command line
 let additionalBuildFlags = args.buildFlags ? `--build-arg ${args.buildFlags}` : "";
-let buildCommand = ` docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg "BROWSER=${testParams}" ${additionalBuildFlags} .`;
-console.log("Command that will be used for building container: ", buildCommand);
+let buildCommand = `docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg "BROWSER=${testParams}" ${additionalBuildFlags} .`;
+console.log(`Command that will be used for building container: ${buildCommand}`);
 
 execSync(buildCommand, execOptions);
 
 // RUNNING CONTAINER
-let command = `docker run ${args.dockerRunFlags} -e TEST_PARAMS="${args.testParams}" -e RUN_ONLY_FLAKY="${args.runOnlyFlaky}" functional`;
+let platformOpt = process.arch == "arm64" ? "--platform linux/amd64" : "";
+let command = `docker run ${platformOpt} ${args.dockerRunFlags} -e TEST_PARAMS="${args.testParams}" -e RUN_ONLY_FLAKY="${args.runOnlyFlaky}" functional`;
 console.log(`This command will be run ${args.runs} times: ${command}`);
 let failureCount = 0;
 let errorsThrown = [];
