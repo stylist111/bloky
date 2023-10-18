@@ -21,7 +21,9 @@ const assert = require("assert");
 const {LIB_FOLDER} = require("./_common");
 
 // Browser expects this exported globally, but in Node it's not.
-global.crypto = global.crypto || require("crypto").webcrypto;
+if (!global.crypto) {
+  global.crypto = require("crypto").webcrypto;
+}
 
 const {verifySignature, verifySignatureSync, base64ToArrayBuffer,
        arrayBufferToBase64} = require(LIB_FOLDER + "/rsa");
