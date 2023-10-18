@@ -159,7 +159,7 @@ class BaseFilter {
     };
 
     if (selector && frameId != -1) {
-      // Retrying to fix a connection error on Chromium 90
+      // Retrying to fix a connection error on Chromium 90 and on Firefox
       sendCollapseMessage()
         .catch(() => ignoreNoConnectionError(sendCollapseMessage()));
     }
