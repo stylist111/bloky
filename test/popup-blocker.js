@@ -22,8 +22,10 @@ import {Page, Popup, setMinTimeout, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
         syncSubHasLastFilter, syncSubHasNoLastFilter, hasUpdateStaticRules,
         isEdge, waitForSubscriptionToBeSynchronized}
   from "./utils.js";
-import {EWE} from "./messaging.js";
-import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
+import {EWE, waitForServiceWorkerInitialization, getLastError}
+  from "./messaging.js";
+import {isFuzzingServiceWorker, suspendServiceWorker}
+  from "./mocha/mocha-runner.js";
 
 describe("Pop-up blocking", function() {
   setMinTimeout(this, 4000);
@@ -89,6 +91,16 @@ describe("Pop-up blocking", function() {
       let notAPopup = new Page("popup.html");
       await notAPopup.loaded;
       expect(await notAPopup.stillExists()).toBe(true);
+    });
+
+    it("does not error if a tab is closed while the service worker is suspended [mv3-only]", async function() {
+      await suspendServiceWorker();
+      await opener.remove();
+
+      // Closing the tab causes the service worker to start up again. However,
+      // the error might only be thrown once everything has startup up right.
+      await waitForServiceWorkerInitialization();
+      expect(await getLastError()).toBeUndefined();
     });
   });
 

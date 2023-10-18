@@ -44,7 +44,8 @@ class PotentialPopupMap {
   }
 
   set(tabId, openerPromise) {
-    if (this.openerPromiseMap[tabId] || this.openerMap[tabId]) {
+    if (this.openerPromiseMap[tabId] ||
+        (this.openerMap && this.openerMap[tabId])) {
       return;
     }
 
@@ -73,7 +74,7 @@ class PotentialPopupMap {
 
   has(tabId) {
     return Object.hasOwnProperty.call(this.openerPromiseMap, tabId) ||
-      Object.hasOwnProperty.call(this.openerMap, tabId);
+      (this.openerMap && Object.hasOwnProperty.call(this.openerMap, tabId));
   }
 
   async remove(tabId) {
@@ -81,6 +82,7 @@ class PotentialPopupMap {
       delete this.openerPromiseMap[tabId];
     }
 
+    await this.loaded;
     if (this.openerMap[tabId]) {
       delete this.openerMap[tabId];
       await this.saveMap();

@@ -8,6 +8,8 @@ Unreleased
 
 - The engine no longer throws an exception when checking if the a request made
   from an opaque domain should be blocked. (EE-215)
+- The engine no longer sometimes throws a TypeError from the popup blocker in
+  MV3 when the service worker starts in response to a tab being closed. (EE-229)
 
 🎃 1.1.0 - 2023/10/10 🎃
 ========================

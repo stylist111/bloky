@@ -21,7 +21,8 @@
 
 import {TEST_PAGES_URL, Page, Popup, setMinTimeout, isIncognito}
   from "../utils.js";
-import {runInBackgroundPage, clearAllTestEvents} from "../messaging.js";
+import {runInBackgroundPage, getLastError, clearAllTestEvents}
+  from "../messaging.js";
 import {isFuzzingServiceWorker} from "./mocha-runner.js";
 
 import "./mocha-setup-minimal.js";
@@ -75,7 +76,7 @@ beforeEach(async function() {
   this.currentTest.fn = async function() {
     await fn.call(this);
 
-    let error = await runInBackgroundPage([{op: "getLastError"}], false);
+    let error = await getLastError();
     if (error) {
       // https://github.com/mozilla/webextension-polyfill/issues/384
       if (error.includes("A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received")) {

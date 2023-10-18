@@ -246,12 +246,18 @@ export class Page {
     };
   }
 
+  async remove() {
+    if (Page.current == this) {
+      Page.current = null;
+    }
+
+    let tabId = await this.created;
+    await browser.tabs.remove(tabId);
+  }
+
   static async removeCurrent() {
-    let removingPage = Page.current;
-    Page.current = null;
-    if (removingPage) {
-      let tabId = await removingPage.created;
-      await browser.tabs.remove(tabId);
+    if (Page.current) {
+      await Page.current.remove();
     }
   }
 }

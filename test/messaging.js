@@ -159,3 +159,7 @@ export async function waitForServiceWorkerInitialization() {
     {op: "await"}
   ], false);
 }
+
+export async function getLastError() {
+  return await runInBackgroundPage([{op: "getLastError"}], false);
+}
