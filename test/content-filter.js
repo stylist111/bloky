@@ -582,6 +582,7 @@ describe("Snippets", function() {
 
   it("does not deploy snippets not from anti-cv subscription [mv2-only]", async function() {
     await EWE.subscriptions.add("http://localhost:3000/subscription.txt");
+    await waitForSubscriptionsToDownload();
     await expect(assertSnippet(INJECTED_SNIPPET_ARG_EXTRACTOR, MAIN_WORLD))
       .rejects.toThrow(SNIPPET_NOT_APPLIED_ERROR);
   });
@@ -589,6 +590,7 @@ describe("Snippets", function() {
   it("runs a snippet in a privileged subscription", async function() {
     // subscription with injected-snippet
     await EWE.subscriptions.add("http://localhost:3000/subscription.txt", {privileged: true});
+    await waitForSubscriptionsToDownload();
     await expect(assertSnippet(INJECTED_SNIPPET_ARG_EXTRACTOR, MAIN_WORLD))
       .resolves.not.toThrow();
   });
