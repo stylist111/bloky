@@ -126,8 +126,6 @@ describe("Element Hiding", function() {
   });
 
   it("does not hide an allowlisted element", async function() {
-    setMinTimeout(this, 4000);
-
     await addFilter("###elem-hide");
     await addFilter("#@##elem-hide");
     await expectElemHideVisible();
@@ -356,8 +354,6 @@ describe("Element Hiding", function() {
   });
 
   describe("Debugging", function() {
-    setMinTimeout(this, 4000);
-
     beforeEach(async function() {
       await EWE.debugging.setElementHidingDebugMode(true);
       await addFilter("###elem-hide");

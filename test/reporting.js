@@ -128,7 +128,6 @@ describe("Reporting", function() {
 
   it("receives ewe:content-hello message in background.js",
      async function() {
-       setMinTimeout(this, 4000);
        await browser.runtime.sendMessage({type: "ewe-test:clearMessages"});
        await new Page("element-hiding.html").loaded;
        await new Promise(r => setTimeout(r, 200));

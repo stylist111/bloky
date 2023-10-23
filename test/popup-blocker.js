@@ -28,8 +28,6 @@ import {isFuzzingServiceWorker, suspendServiceWorker}
   from "./mocha/mocha-runner.js";
 
 describe("Pop-up blocking", function() {
-  setMinTimeout(this, 4000);
-
   describe("Blocking", function() {
     let opener;
     beforeEach(async function() {

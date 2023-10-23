@@ -17,9 +17,9 @@
 
 import expect from "expect";
 
-import {Page, Resource, executeScript, setMinTimeout, TEST_PAGES_URL,
-        TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, SITEKEY, TEST_MV3_SUBSCRIPTION,
-        supportsWebBundle, waitForSubscriptionsToDownload} from "./utils.js";
+import {Page, Resource, executeScript, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
+        CROSS_DOMAIN_URL, SITEKEY, TEST_MV3_SUBSCRIPTION, supportsWebBundle,
+        waitForSubscriptionsToDownload} from "./utils.js";
 import {addFilter, EWE} from "./messaging.js";
 
 describe("Blocking", function() {
@@ -29,7 +29,6 @@ describe("Blocking", function() {
   });
 
   it("blocks a request using subscriptions [fuzz]", async function() {
-    setMinTimeout(this, 3000);
     await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.url);
     await waitForSubscriptionsToDownload();
 
@@ -38,8 +37,6 @@ describe("Blocking", function() {
   });
 
   it("does not block from subscription if allow filter is added", async function() {
-    setMinTimeout(this, 3000);
-
     await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.url);
     await EWE.filters.add("@@image-from-subscription.png");
     await waitForSubscriptionsToDownload();
@@ -49,15 +46,12 @@ describe("Blocking", function() {
   });
 
   it("does not block a request using a disabled filter", async function() {
-    setMinTimeout(this, 4000);
     await addFilter("/image.png^$image");
     await EWE.filters.disable(["/image.png^$image"]);
     await new Page("image.html").expectResource("image.png").toBeLoaded();
   });
 
   it("blocks a request using a re-enabled filter", async function() {
-    setMinTimeout(this, 4000);
-
     await addFilter("/image.png^$image");
     await EWE.filters.disable(["/image.png^$image"]);
     await EWE.filters.enable(["/image.png^$image"]);
@@ -264,8 +258,6 @@ describe("Blocking", function() {
 
   it("does not block requests with allowlisted URL after history.pushState",
      async function() {
-       setMinTimeout(this, 4000);
-
        await addFilter(
          `@@|${TEST_PAGES_URL}/history-after-pushState.html^$document`);
        await addFilter("/image.png^$image");
@@ -282,7 +274,6 @@ describe("Blocking", function() {
 
   describe("Content-Security-Policy", function() {
     it("injects header", async function() {
-      setMinTimeout(this, 4000);
       await addFilter(CSP_FILTER);
       expect(await checkViolatedDirective()).toEqual("img-src");
     });
