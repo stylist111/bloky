@@ -279,6 +279,7 @@ describe("DeclarativeNetRequest", function() {
     assert.equal(result[0].action.type, "allowAllRequests");
     assert.deepEqual(result[0].condition, {
       urlFilter: "||optout.exampleadvertising.org^",
+      isUrlFilterCaseSensitive: false,
       resourceTypes: [
         "main_frame",
         "sub_frame"
@@ -301,6 +302,7 @@ describe("DeclarativeNetRequest", function() {
     assert.equal(result[0].action.type, "allowAllRequests");
     assert.deepEqual(result[0].condition, {
       urlFilter: "||optout.exampleadvertising.org^",
+      isUrlFilterCaseSensitive: false,
       resourceTypes: [
         "main_frame",
         "sub_frame"
@@ -354,6 +356,7 @@ describe("DeclarativeNetRequest", function() {
     assert.equal(result[0].priority, GENERIC_PRIORITY);
     assert.deepEqual(result[0].condition, {
       urlFilter: "||example.com^",
+      isUrlFilterCaseSensitive: false,
       resourceTypes: [
         "main_frame",
         "sub_frame"
@@ -393,6 +396,26 @@ describe("DeclarativeNetRequest", function() {
       ],
       isUrlFilterCaseSensitive: false,
       domainType: "firstParty"
+    });
+  });
+
+  it("Convert easylist match-case rules", function() {
+    let rule = Object.assign(
+      {},
+      preParsedRule,
+      {
+        blocking: true,
+        text: "||example.com$match-case",
+        regexpSource: "||example.com",
+        matchCase: true
+      });
+    let result = convert(rule);
+    assert.equal(result.length, 1);
+    assert.equal(result[0].priority, GENERIC_PRIORITY);
+    assert.equal(result[0].action.type, "block");
+    assert.deepEqual(result[0].condition, {
+      urlFilter: "||example.com",
+      isUrlFilterCaseSensitive: true
     });
   });
 });

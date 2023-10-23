@@ -171,7 +171,8 @@ describe("text2dnr script", function() {
         type: "block"
       },
       condition: {
-        urlFilter: "https://www.abc.com"
+        urlFilter: "https://www.abc.com",
+        isUrlFilterCaseSensitive: false
       },
       priority: 1000
     }]);

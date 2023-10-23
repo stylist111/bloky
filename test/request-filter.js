@@ -129,6 +129,11 @@ describe("Blocking", function() {
       .expectResource("image.png").toBeBlocked();
   });
 
+  it("ignores case if $match-case is not specified", async function() {
+    await addFilter(`|${TEST_PAGES_URL}/IMAGE.png`);
+    await new Page("image.html").expectResource("image.png").toBeBlocked();
+  });
+
   it("handles $match-case requests", async function() {
     await addFilter(`|${TEST_PAGES_URL}/IMAGE.png$match-case`);
     await new Page("image.html").expectResource("image.png").toBeLoaded();

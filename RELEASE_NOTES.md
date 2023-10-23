@@ -10,6 +10,11 @@ Unreleased
   from an opaque domain should be blocked. (EE-215)
 - The engine no longer sometimes throws a TypeError from the popup blocker in
   MV3 when the service worker starts in response to a tab being closed. (EE-229)
+- When converting filters to MV3 rules, the `isUrlFilterCaseSensitive` property
+  is now always set. This previously relied the default value if the filter was
+  case sensitive, but the default value was changed in Chromium 118 leading to
+  inconsistent behaviour. This affected filter texts that use the `match-case`
+  option. (EE-233)
 
 🎃 1.1.0 - 2023/10/10 🎃
 ========================

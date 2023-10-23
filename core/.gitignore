@@ -3,6 +3,8 @@
 /coverage/
 benchmark/*.txt
 benchmark/benchmarkresults.json
+foo*.json
+foo*.json.map
 /build/docs/
 /build/
 /dist/

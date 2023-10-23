@@ -130,11 +130,7 @@ function asDNR(parsedFilter) {
       let match = /^(\|\||[a-zA-Z]*:\/\/)([^*^?/|]*)(.*)$/.exec(urlFilter);
       if (match) {
         hostname = match[2].toLowerCase();
-
         urlFilter = match[1] + hostname + match[3];
-        matchCase = matchCase ||
-                    match[3].length < 2 ||
-                    !/[a-zA-Z]/.test(match[3]);
       }
 
       // The declarativeNetRequest API does not like the urlFilter to have a
