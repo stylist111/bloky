@@ -32,11 +32,7 @@ const SandboxedModule = dynamicRequire("sandboxed-module");
 const {MILLIS_IN_HOUR} = require(LIB_FOLDER + "/time");
 
 let globals = {
-  console: {
-    log() {},
-    warn() {},
-    error() {}
-  },
+  console,
   process,
   URL
 };
@@ -254,8 +250,6 @@ exports.setupTimerAndFetch = function() {
     )
   };
 };
-
-console.warn = console.log;
 
 exports.setupRandomResult = function() {
   let randomResult = 0.5;
