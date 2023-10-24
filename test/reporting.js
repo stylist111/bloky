@@ -1281,16 +1281,13 @@ describe("Reporting", function() {
       // in the first turn of the event loop.
 
       await addFilter(VALID_FILTER_TEXT);
-
-      let page = new Page("image.html");
+      // The delay is used to prevent that the page loads before the listener is
+      // effectively added.
+      let page = new Page("image.html?delay=500");
       let tabId = await page.created;
-
       let [listenerName1, listenerName2] = await Promise.all(
-        [tabId, tabId + 1].map(
-          id => addNewOnBlockableListener({tabId: id})
-        )
+        [tabId, tabId + 1].map(id => addNewOnBlockableListener({tabId: id}))
       );
-
       await page.loaded;
 
       await expectCalled(listenerName1);

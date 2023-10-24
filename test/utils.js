@@ -568,6 +568,8 @@ export function waitForAssertion(condition, timeout = 1000, pollTimeout = 100) {
         resolve();
       }
       else if (timeout && elapsed >= timeout) {
+        error.message =
+          `${error.message}\nWait for assertion timed out after ${elapsed}ms`;
         reject(error);
       }
       else {
