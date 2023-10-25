@@ -1,0 +1,20 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "Noissue - "
+    labels:
+      - "dependabot"
+    versioning-strategy: "increase-if-necessary"
+  - package-ecosystem: "npm"
+    directory: "/core/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "Noissue - "
+    labels:
+      - "dependabot"
+    versioning-strategy: "increase-if-necessary"
