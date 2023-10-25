@@ -427,7 +427,7 @@ fuzz:v3:edge:linux:
       artifacts: true
   script:
     - docker build -t compliance -f test/dockerfiles/compliance-test.Dockerfile --build-arg EXTENSION=copy .
-    - docker run --cpus=2 --memory=8g --shm-size=512m -e BROWSER="$BROWSER" -e MANIFEST="$MANIFEST" compliance
+    - docker run --cpus=2 --memory=8g --shm-size=512m -e CUSTOM_BROWSER="$BROWSER" -e BROWSER_VERSION="$VERSION" -e MANIFEST="$MANIFEST" compliance
   after_script:
     - docker cp $(docker ps -aqf ancestor=compliance):/testpages.adblockplus.org/test/screenshots .
       2> /dev/null
@@ -447,25 +447,29 @@ fuzz:v3:edge:linux:
 compliance:v2:firefox:
   extends: .compliance
   variables:
-    BROWSER: firefox $LATEST_FIREFOX_VERSION
+    VERSION: $LATEST_FIREFOX_VERSION
+    BROWSER: firefox 
     MANIFEST: mv2
 
 compliance:v2:chromium:
   extends: .compliance
   variables:
-    BROWSER: chromium $LATEST_CHROME_VERSION
+    VERSION: $LATEST_CHROME_VERSION
+    BROWSER: chromium 
     MANIFEST: mv2
     
 compliance:v3:chromium:
   extends: .compliance
   variables:
-    BROWSER: chromium $LATEST_CHROME_VERSION
+    VERSION: $LATEST_CHROME_VERSION
+    BROWSER: chromium
     MANIFEST: mv3
 
 compliance:v3:edge:
   extends: .compliance
   variables:
-    BROWSER: edge $LATEST_EDGE_VERSION
+    VERSION: $LATEST_EDGE_VERSION
+    BROWSER: edge
     MANIFEST: mv3
 
 int:scripts:

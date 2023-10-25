@@ -23,6 +23,8 @@ FROM extension_${EXTENSION}
 RUN apt-get update && apt-get install -y git
 RUN git clone https://gitlab.com/eyeo/developer-experience/testpages.adblockplus.org
 RUN cd testpages.adblockplus.org/ && npm install
-ENV BROWSER="firefox latest"
+
+ENV CUSTOM_BROWSER="firefox"
 ENV MANIFEST="mv2"
+
 ENTRYPOINT /test/dockerfiles/compliance-entrypoint.sh

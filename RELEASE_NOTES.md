@@ -2,7 +2,7 @@ Unreleased
 ==========
 # Internal
 
-- Compliance tests now use same browser version as functional tests.
+- Compliance tests now use same browser version as functional tests. (EE-235)
 
 # Fixes
 

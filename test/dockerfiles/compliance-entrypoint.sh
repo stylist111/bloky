@@ -3,7 +3,7 @@
 set -eu
  XVFB_CMD=""
 # Browser config
-if [[ "$BROWSER" == *"chromium"* || "$BROWSER" == *"edge"* ]]; then
+if [[ "$CUSTOM_BROWSER" == *"chromium"* || "$CUSTOM_BROWSER" == *"edge"* ]]; then
   XVFB_CMD="xvfb-run -a"
 fi
 
@@ -17,5 +17,5 @@ fi
 
 cd testpages.adblockplus.org
 npm install
-$XVFB_CMD npm test -- -g "^.*$BROWSER$SKIP*$"
+$XVFB_CMD npm test -- -g "^.*$CUSTOM_BROWSER$SKIP*$"
 
