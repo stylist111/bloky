@@ -15,6 +15,9 @@ Unreleased
   case sensitive, but the default value was changed in Chromium 118 leading to
   inconsistent behaviour. This affected filter texts that use the `match-case`
   option. (EE-233)
+- No longer throw a TypeError from the popup blocker if we don't have frame info
+  for the opener yet. Similarly avoid other unhandled TypeErrors caused by the
+  frame info not being available yet. (EE-228)
 
 🎃 1.1.0 - 2023/10/10 🎃
 ========================

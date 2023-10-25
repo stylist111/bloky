@@ -239,32 +239,35 @@ export async function applyContentFilters(tabId, frameId, previousFrame) {
   let frame = getFrameInfo(tabId, frameId);
   let emulatedPatterns = [];
   let tracedSelectors;
-  let styleSheet = generateStylesheet(tabId, previousFrame, frame);
 
-  if (previousFrame && !(previousFrame.allowlisted & contentTypes.DOCUMENT)) {
-    await removeCSS(tabId, frameId, styleSheet.removedCode);
-  }
+  if (frame) {
+    let styleSheet = generateStylesheet(tabId, previousFrame, frame);
 
-  if (!(frame.allowlisted & contentTypes.DOCUMENT)) {
-    executeSnippets(tabId, frameId, previousFrame, frame);
-  }
-
-  if (!(frame.allowlisted & contentTypes.DOCUMENT) &&
-      !(frame.allowlisted & contentTypes.ELEMHIDE)) {
-    injectCSS(tabId, frameId, styleSheet.addedCode);
-
-    for (let {selector, text} of filterEngine.elemHideEmulation.getFilters(
-      frame.hostname)) {
-      emulatedPatterns.push({selector, text});
+    if (previousFrame && !(previousFrame.allowlisted & contentTypes.DOCUMENT)) {
+      await removeCSS(tabId, frameId, styleSheet.removedCode);
     }
 
-    if (tracingEnabled(tabId)) {
-      tracedSelectors = [];
-      for (let selector of styleSheet.addedSelectors) {
-        tracedSelectors.push([selector, null]);
+    if (!(frame.allowlisted & contentTypes.DOCUMENT)) {
+      executeSnippets(tabId, frameId, previousFrame, frame);
+    }
+
+    if (!(frame.allowlisted & contentTypes.DOCUMENT) &&
+      !(frame.allowlisted & contentTypes.ELEMHIDE)) {
+      injectCSS(tabId, frameId, styleSheet.addedCode);
+
+      for (let {selector, text} of filterEngine.elemHideEmulation.getFilters(
+        frame.hostname)) {
+        emulatedPatterns.push({selector, text});
       }
-      for (let exception of styleSheet.exceptions) {
-        tracedSelectors.push([exception.selector, exception.text]);
+
+      if (tracingEnabled(tabId)) {
+        tracedSelectors = [];
+        for (let selector of styleSheet.addedSelectors) {
+          tracedSelectors.push([selector, null]);
+        }
+        for (let exception of styleSheet.exceptions) {
+          tracedSelectors.push([exception.selector, exception.text]);
+        }
       }
     }
   }

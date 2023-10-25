@@ -148,7 +148,7 @@ async function onTabRemoved(tabId) {
 async function onPopup({tabId, url, sourceTabId, sourceFrameId}) {
   let openerPromise = (async() => {
     await initializer.start();
-    let frame = getFrameInfo(sourceTabId, sourceFrameId);
+    let frame = getFrameInfo(sourceTabId, sourceFrameId) || {};
 
     if (frame.allowlisted & contentTypes.DOCUMENT) {
       return;

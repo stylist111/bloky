@@ -429,8 +429,7 @@ function onBeforeNavigate(details) {
 }
 
 function onCommitted(details) {
-  recordFrameFromNavigationEvent(details);
-  let frame = getFrameInfo(details.tabId, details.frameId);
+  let frame = recordFrameFromNavigationEvent(details);
   frame.isChangingURL = false;
 }
 

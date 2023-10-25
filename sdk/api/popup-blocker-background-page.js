@@ -37,16 +37,17 @@ function forgetPopup(tabId) {
   }
 }
 
-function checkPotentialPopup(sourceTabId, popupTabId, url, frame) {
-  let specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) != 0;
+function checkPotentialPopup(popupTabId, url, opener) {
+  let {docDomain, sitekey, specificOnly} = opener;
+
   let filter = filterEngine.defaultMatcher.match(
     url || BLANK_PAGE_URL, contentTypes.POPUP,
-    frame.hostname, frame.sitekey, specificOnly
+    docDomain, sitekey, specificOnly
   );
 
   if (filter) {
-    logItem({tabId: sourceTabId, frameId: 0, url}, filter,
-            {docDomain: frame.hostname, specificOnly, method: "popup"});
+    logItem({tabId: opener.tabId, frameId: 0, url}, filter,
+            {docDomain, specificOnly, method: "popup"});
 
     if (filter instanceof BlockingFilter) {
       browser.tabs.remove(popupTabId).catch(() => {});
@@ -61,9 +62,9 @@ function onPopupURLChanged({frameId, tabId, url}) {
     return;
   }
 
-  let frame = loadingPopups.get(tabId);
-  if (frame) {
-    checkPotentialPopup(frame.tabId, tabId, url, frame);
+  let opener = loadingPopups.get(tabId);
+  if (opener) {
+    checkPotentialPopup(tabId, url, opener);
   }
 }
 
@@ -78,7 +79,7 @@ function onTabRemoved(tabId) {
 }
 
 function onPopup({tabId, url, sourceTabId, sourceFrameId}) {
-  let frame = getFrameInfo(sourceTabId, sourceFrameId);
+  let frame = getFrameInfo(sourceTabId, sourceFrameId) || {};
 
   if (frame.allowlisted & contentTypes.DOCUMENT) {
     return;
@@ -97,8 +98,15 @@ function onPopup({tabId, url, sourceTabId, sourceFrameId}) {
     browser.tabs.onRemoved.addListener(onTabRemoved);
   }
 
-  loadingPopups.set(tabId, frame);
-  checkPotentialPopup(sourceTabId, tabId, url, frame);
+  let opener = {
+    tabId: sourceTabId,
+    specificOnly: Boolean(frame.allowlisted & contentTypes.GENERICBLOCK),
+    docDomain: frame.hostname,
+    sitekey: frame.sitekey
+  };
+
+  loadingPopups.set(tabId, opener);
+  checkPotentialPopup(tabId, url, opener);
 }
 
 function onTabCreated({id, url, openerTabId}) {
