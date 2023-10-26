@@ -341,10 +341,22 @@ func:v2:chromium:latest:
     BROWSER: chromium
     TEST_PARAMS: v2 $BROWSER --testKinds functional reload update
 
+func:v2:chromium:beta:
+  extends: .functional-full
+  variables:
+    BROWSER: chromium beta
+    TEST_PARAMS: v2 $BROWSER --testKinds functional reload update
+
 func:v3:chromium:latest:
   extends: .functional-full
   variables:
     BROWSER: chromium
+    TEST_PARAMS: v3 $BROWSER --testKinds functional reload update
+
+func:v3:chromium:beta:
+  extends: .functional-full
+  variables:
+    BROWSER: chromium beta
     TEST_PARAMS: v3 $BROWSER --testKinds functional reload update
 
 func:v2:firefox:latest:
