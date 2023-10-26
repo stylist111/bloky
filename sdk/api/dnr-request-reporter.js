@@ -21,7 +21,8 @@ import {logItem, loggingEnabled} from "./diagnostics.js";
 import {filterEngine} from "./core.js";
 import {default as initializer} from "./initializer.js";
 import {getRequestContentType, getFrameInfoFromWebrequestDetails,
-        getParentFrameInfoFromWebrequestDetails} from "./request-filter.js";
+        getParentFrameInfoFromWebrequestDetails, sanitizeInitiator}
+  from "./request-filter.js";
 
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 import {BlockingFilter, AllowingFilter}
@@ -34,7 +35,9 @@ function getContext(details) {
   if (details.type == "main_frame" || details.type == "sub_frame") {
     let parentFrame = getParentFrameInfoFromWebrequestDetails(details);
     let {hostname: parentHostname} = parentFrame || {};
-    let urlInfo = parseURL(details.url);
+    let initiator = sanitizeInitiator(details.initiator) || details.documentUrl;
+    // In cross-origin requests, Chrome's initiator has the correct url domain
+    let urlInfo = parseURL(initiator || details.url);
     let hostname = parentHostname || urlInfo.hostname;
 
     let docDomain = details.type == "main_frame" ? null : hostname;

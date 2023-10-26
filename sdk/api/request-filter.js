@@ -82,7 +82,7 @@ function getParentFrameId(details) {
 
 // Initiators have this weird thing where they sometimes use the string "null"
 // instead of just giving a value of null.
-function sanitizeInitiator(initiator) {
+export function sanitizeInitiator(initiator) {
   return initiator == "null" ? null : initiator;
 }
 
