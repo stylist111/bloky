@@ -1,8 +1,8 @@
 Unreleased
 ==========
-# Internal
 
-- Compliance tests now use same browser version as functional tests. (EE-235)
+☀ 1.1.1 - 2023/10/26 ☀
+==================
 
 # Fixes
 
@@ -18,6 +18,10 @@ Unreleased
 - No longer throw a TypeError from the popup blocker if we don't have frame info
   for the opener yet. Similarly avoid other unhandled TypeErrors caused by the
   frame info not being available yet. (EE-228)
+- No more "Message manager disconnected" error message in the log on Firefox
+  prior version 79. (EE-227)
+- The `onBlockableItem` event will now use the initiator when setting the request's
+  `docDomain` when loading cross-domain iframes in MV3. (EE-217)
 
 🎃 1.1.0 - 2023/10/10 🎃
 ========================
