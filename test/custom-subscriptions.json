@@ -57,5 +57,13 @@
     "homepage": "https://github.com/abp-filters/abp-filters-anti-cv",
     "url": "https://easylist-downloads.adblockplus.org/v3/full/abp-filters-anti-cv.txt",
     "mv2_url": "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000070",
+    "type": "allowing",
+    "title": "Subscripion that contains allowing filter for tests",
+    "homepage": "TestsAllowingFilterAndSubscription",
+    "url": "http://localhost:3000/subscription-with-allowing-filter.txt",
+    "mv2_url": "http://localhost:3000/subscription-with-allowing-filter.txt"
   }
 ]

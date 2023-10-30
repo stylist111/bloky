@@ -620,7 +620,7 @@ describe("Filters", function() {
       try {
         let url = `${TEST_PAGES_URL}/image.html`;
         let tabId = await new Page(url, true).loaded;
-        expect(await EWE.filters.getAllowingFilters(url)).toEqual([]);
+        expect(await EWE.filters.getAllowingFilters(tabId)).toEqual([]);
         expect(await EWE.filters.isResourceAllowlisted(
           url, "document", tabId)).toEqual(false);
 

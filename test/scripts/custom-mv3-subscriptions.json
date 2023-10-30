@@ -89,5 +89,13 @@
     "homepage": "http://localhost:3003/subscription-that-shouldnt-be-moved-to-dnr-world.txt",
     "url": "http://localhost:3003/subscription-that-shouldnt-be-moved-to-dnr-world.txt",
     "mv2_url": "http://localhost:3003/mv2_subscription-that-shouldnt-be-moved-to-dnr-world.txt"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000070",
+    "type": "allowing",
+    "title": "Subscripion that contains allowing filter for tests",
+    "homepage": "http://localhost:3000/subscription-with-allowing-filter.txt",
+    "url": "http://localhost:3000/subscription-with-allowing-filter.txt",
+    "mv2_url": "http://localhost:3000/mv2_subscription-with-allowing-filter.txt"
   }
 ]

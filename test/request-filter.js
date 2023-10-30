@@ -17,10 +17,11 @@
 
 import expect from "expect";
 
-import {Page, Resource, executeScript, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
-        CROSS_DOMAIN_URL, SITEKEY, TEST_MV3_SUBSCRIPTION, supportsWebBundle,
-        waitForSubscriptionsToDownload} from "./utils.js";
+import {Page, Resource, executeScript, TEST_PAGES_URL,
+        TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, SITEKEY, TEST_MV3_SUBSCRIPTION,
+        shouldBeLoaded, supportsWebBundle, waitForSubscriptionsToDownload, setMinTimeout} from "./utils.js";
 import {addFilter, EWE} from "./messaging.js";
+import browser from "webextension-polyfill";
 
 describe("Blocking", function() {
   it("blocks a request using user filters [fuzz]", async function() {
@@ -397,5 +398,60 @@ describe("Blocking", function() {
       page.reload();
       await page.expectResource("image.png").toBeLoaded();
     });
+  });
+
+  async function expectResourceAllowedByFilter(url, resource, allowingFilter) {
+    await shouldBeLoaded(url, resource);
+    let isResourceAllowlisted = await browser.runtime.sendMessage({
+      type: "ewe-test:isResourceAllowlisted",
+      url: `${TEST_PAGES_URL}/${url}`,
+      status: "loading"
+    });
+    expect(await isResourceAllowlisted).toEqual(true);
+    let tabId = await new Page(url).loaded;
+    expect(await EWE.filters.getAllowingFilters(tabId))
+      .toEqual(allowingFilter);
+  }
+
+  async function expectResourceBlocked(url, resource) {
+    await new Page(url).expectResource(resource).toBeBlocked();
+    let tabId = await new Page(url).loaded;
+    let isResourceAllowlisted = await browser.runtime.sendMessage({
+      type: "ewe-test:isResourceAllowlisted",
+      url: `${TEST_PAGES_URL}/${url}`,
+      status: "loading"
+    });
+    expect(await EWE.filters.getAllowingFilters(tabId)).toEqual([]);
+    expect(isResourceAllowlisted).toEqual(false);
+  }
+
+  it("checks if getAllowingFilters() works when filter is added while present in disabled subscription", async function() {
+    setMinTimeout(this, 10000);
+
+    let url = "image.html";
+    let allowingFilter = ["@@||localhost^$document"];
+    let subscriptionWithAllowingFilter = `${TEST_PAGES_URL}/subscription-with-allowing-filter.txt`;
+    let resource = "image.png";
+
+    // Add filter to show that allowlisting is working
+    await addFilter(resource);
+    await browser.runtime.sendMessage({type: "ewe-test:subscribeTabsOnUpdated"});
+
+    try {
+      await EWE.subscriptions.add(subscriptionWithAllowingFilter);
+      await waitForSubscriptionsToDownload();
+      await expectResourceAllowedByFilter(url, resource, allowingFilter);
+
+      await EWE.subscriptions.disable(subscriptionWithAllowingFilter);
+      await expectResourceBlocked(url, resource);
+
+      await addFilter(allowingFilter[0]);
+      await expectResourceAllowedByFilter(url, resource, allowingFilter, true);
+    }
+    finally {
+      await browser.runtime.sendMessage({
+        type: "ewe-test:unsubscribeTabsOnUpdated"
+      });
+    }
   });
 });

@@ -428,6 +428,14 @@ if (isMV3()) {
         mv2_url: "http://localhost:3003/mv2_updatable_subscription.txt",
         expires: "1 day",
         privileged: true
+      },
+      {
+        id: "00000000-0000-0000-0000-000000000070",
+        type: "allowing",
+        title: "Subscripion that contains allowing filter for tests",
+        homepage: "TestsAllowingFilterAndSubscription",
+        url: "http://localhost:3000/subscription-with-allowing-filter.txt",
+        mv2_url: "http://localhost:3000/subscription-with-allowing-filter.txt"
       }
     ],
     bundledSubscriptionsPath: "subscriptions"
