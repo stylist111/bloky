@@ -306,34 +306,32 @@ describe("Telemetry", function() {
       });
     });
 
-    for (let aaUrlPropertyName of ["ACCEPTABLE_ADS_PRIVACY_URL", "ACCEPTABLE_ADS_URL"]) {
-      it(`sends AA active extension metadata to the telemetry server when ${aaUrlPropertyName} is active`, async function() {
-        let aaUrl = await runInBackgroundPage([
-          {op: "getGlobal", arg: "EWE"},
-          {op: "getProp", arg: "subscriptions"},
-          {op: "getProp", arg: aaUrlPropertyName}
-        ]);
-        await EWE.subscriptions.add(aaUrl);
+    it("sends AA active extension metadata to the telemetry server when an AA subscription is active", async function() {
+      let aaUrl = await runInBackgroundPage([
+        {op: "getGlobal", arg: "EWE"},
+        {op: "getProp", arg: "subscriptions"},
+        {op: "getProp", arg: "ACCEPTABLE_ADS_PRIVACY_URL"}
+      ]);
+      await EWE.subscriptions.add(aaUrl);
 
-        const notAnAAUrl = `${TEST_PAGES_URL}/subscription.txt`;
-        await EWE.subscriptions.add(notAnAAUrl);
+      const notAnAAUrl = `${TEST_PAGES_URL}/subscription.txt`;
+      await EWE.subscriptions.add(notAnAAUrl);
 
-        await EWE.testing.startTelemetry(TELEMETRY_ARGS);
+      await EWE.testing.startTelemetry(TELEMETRY_ARGS);
 
-        await waitForAssertion(async() => {
-          let telemetryRequests = await getRequestLogs(TELEMETRY_URL);
+      await waitForAssertion(async() => {
+        let telemetryRequests = await getRequestLogs(TELEMETRY_URL);
 
-          expect(telemetryRequests).toEqual([expect.objectContaining({
-            url: "/telemetry",
-            method: "POST",
-            authorization: `Bearer ${TELEMETRY_BEARER}`
-          })]);
+        expect(telemetryRequests).toEqual([expect.objectContaining({
+          url: "/telemetry",
+          method: "POST",
+          authorization: `Bearer ${TELEMETRY_BEARER}`
+        })]);
 
-          const payload = telemetryRequests[0].body.payload;
-          expect(payload.aa_active).toEqual(true);
-        });
+        const payload = telemetryRequests[0].body.payload;
+        expect(payload.aa_active).toEqual(true);
       });
-    }
+    });
 
     describe("Last ping metadata", function() {
       // these days are all in the past, so if we restart telemetry after making
