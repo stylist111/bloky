@@ -1,6 +1,12 @@
 Unreleased
 ==========
 
+# Fixes
+
+- Fixed an edge case where onBlockableItem events in MV3 would be missing their
+  allowlisting filter if the browser was loading resources before committing the
+  frame the requests were for. (EE-221)
+
 # Internal
 
 - Upgraded stable browser versions running in the CI. (EE-213)

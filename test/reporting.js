@@ -770,8 +770,7 @@ describe("Reporting", function() {
       );
     });
 
-    it("logs allowlisting $document filter " +
-       "after cross domain navigation", async function() {
+    it("logs allowlisting $document filter after cross domain navigation", async function() {
       // In fuzz mode the page is loaded already navigated to "image.html"
       // without having a history, so no "cross-domain-navigation.html" items
       // are available and thus missing.
@@ -780,17 +779,19 @@ describe("Reporting", function() {
         return;
       }
 
-      // Sometimes this test fails on the Linux Edge CI because one of the
-      // expected filters remains unmached. Retrying as a workaround.
-      // https://jira.eyeo.com/browse/EE-221
-      if (isEdge()) {
-        this.retries(2);
-      }
-
       await checkLogging(
         [`@@|${TEST_PAGES_URL}$document`, `@@|${CROSS_DOMAIN_URL}$document`],
         "allEventOptions",
-        "cross-domain-navigation.html",
+        async() => {
+          let tabId = await new Page("cross-domain-navigation.html").loaded;
+          // This page only has all the events we expect after it's done its
+          // navigations.
+          await wait(async() => {
+            let tab = await browser.tabs.get(tabId);
+            return tab.url.endsWith("image.html") && tab.status == "complete";
+          });
+          return tabId;
+        },
         [{
           filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}$document`),
           matchInfo: {

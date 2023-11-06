@@ -35,7 +35,7 @@ function getContext(details) {
   if (details.type == "main_frame" || details.type == "sub_frame") {
     let parentFrame = getParentFrameInfoFromWebrequestDetails(details);
     let {hostname: parentHostname} = parentFrame || {};
-    let initiator = sanitizeInitiator(details.initiator) || details.documentUrl;
+    let initiator = details.documentUrl || sanitizeInitiator(details.initiator);
     // In cross-origin requests, Chrome's initiator has the correct url domain
     let urlInfo = parseURL(initiator || details.url);
     let hostname = parentHostname || urlInfo.hostname;
@@ -65,10 +65,29 @@ function getContext(details) {
 
   let frame = getFrameInfoFromWebrequestDetails(details);
   if (!frame) {
+    let allowingDocumentFilter = null;
+    let specificOnly = false;
+    let docDomain = null;
+
+    let documentUrl = details.documentUrl ||
+        sanitizeInitiator(details.initiator);
+    if (documentUrl) {
+      let urlInfo = parseURL(documentUrl);
+      docDomain = urlInfo.hostname;
+
+      allowingDocumentFilter = filterEngine.defaultMatcher.match(
+        documentUrl, contentTypes.DOCUMENT, docDomain, null
+      );
+
+      specificOnly = Boolean(filterEngine.defaultMatcher.match(
+        documentUrl, contentTypes.GENERICBLOCK, docDomain, null
+      ));
+    }
+
     return {
-      allowingDocumentFilter: null,
-      specificOnly: false,
-      docDomain: null,
+      allowingDocumentFilter,
+      specificOnly,
+      docDomain,
       contentType
     };
   }

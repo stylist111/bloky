@@ -93,11 +93,20 @@ export function getFrameInfoFromWebrequestDetails(details) {
   let initiator = sanitizeInitiator(details.initiator) || details.documentUrl;
   let documentUrl = details.documentUrl || sanitizeInitiator(details.initiator);
 
-  return getFrameInfo(tabId, frameId, {
+  let frame = getFrameInfo(tabId, frameId, {
     initiator,
     parentFrameId,
     documentUrl
   });
+
+  if (!frame || frame.isChangingURL) {
+    // `isChangingURL` indicates that `onBeforeNavigate` was already
+    // triggered, but `onCommited` was not yet triggered. Thus we don't really
+    // know the actual allowlisting state.
+    return null;
+  }
+
+  return frame;
 }
 
 export function getParentFrameInfoFromWebrequestDetails(details) {
@@ -212,10 +221,7 @@ class BaseFilter {
 
     let frame = getFrameInfoFromWebrequestDetails(details);
 
-    if (!frame || frame.isChangingURL) {
-      // `isChangingURL` indicates that `onBeforeNavigate` was already
-      // triggered, but `onCommited` was not yet triggered. Thus we don't really
-      // know the actual allowlisting state.
+    if (!frame) {
       return;
     }
 
