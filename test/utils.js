@@ -252,7 +252,18 @@ export class Page {
     }
 
     let tabId = await this.created;
-    await browser.tabs.remove(tabId);
+    try {
+      await browser.tabs.remove(tabId);
+    }
+    catch (err) {
+      if (err.message == "Cannot remove NTP tab.") {
+        // https://answers.microsoft.com/en-us/microsoftedge/forum/all/latest-edge-version-1130177442-official-build-64/ca2ec400-c643-4e7a-a0b0-f158cc84af50
+        console.warn(err.message);
+      }
+      else {
+        throw err;
+      }
+    }
   }
 
   static async removeCurrent() {
@@ -771,7 +782,7 @@ export async function waitForSubscriptionsToDownload() {
 }
 
 export async function waitForSubscriptionToBeSynchronized(url) {
-  await wait(async() => {
+  await wait(() => {
     let changeEvents = getTestEvents("subscriptions.onChanged");
     return changeEvents.filter(event => {
       return event[0].url == url &&

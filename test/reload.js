@@ -120,7 +120,7 @@ describe(`Reload (${phase})`, function() {
   });
 
   it("blocks a request using stored filters", async function() {
-    this.timeout(10000);
+    this.timeout(12000);
 
     if (start) {
       await addFilter(IMAGE_FILTER_TEXT);

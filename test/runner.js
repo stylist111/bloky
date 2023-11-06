@@ -95,8 +95,8 @@ function parseArguments() {
       else if (argv.browser === "chromium") {
         let version = argv.version;
 
-        // chromium 102 is the minimum supported version for MV3.
-        if (!version || version === "dev" || version === "beta" || version.split(".")[0] >= 102) {
+        // Chromium 111 is the minimum supported version for MV3.
+        if (!version || version === "dev" || version === "beta" || version.split(".")[0] >= 111) {
           testKinds.push("mv2-mv3-migrate");
         }
       }

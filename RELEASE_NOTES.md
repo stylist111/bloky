@@ -1,6 +1,10 @@
 Unreleased
 ==========
 
+# Internal
+
+- Upgraded stable browser versions running in the CI. (EE-213)
+
 ☀ 1.1.1 - 2023/10/26 ☀
 ==================
 
