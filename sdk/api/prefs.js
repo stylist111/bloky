@@ -17,6 +17,7 @@
 
 import browser from "webextension-polyfill";
 import {EventEmitter} from "adblockpluscore/lib/events.js";
+import {MILLIS_IN_HOUR} from "adblockpluscore/lib/time.js";
 import {getDatabase} from "./io-idb.js";
 
 // MV2
@@ -50,6 +51,7 @@ export const defaults = Object.create({
   subscriptions_fallbackerrors: 5,
   subscriptions_fallbackurl: "https://adblockplus.org/getSubscription?version=%VERSION%&url=%SUBSCRIPTION%&downloadURL=%URL%&error=%ERROR%&responseStatus=%RESPONSESTATUS%",
   subscriptions_initial_delay: 1000, // 1 s
+  subscriptions_check_interval: 1 * MILLIS_IN_HOUR,
   migration_filter_errors: [],
   migration_subscription_errors: [],
   migration_state: MIGRATED_TO_MV2

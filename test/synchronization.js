@@ -151,7 +151,7 @@ describe("Synchronization", function() {
       await new Page("image.html").expectResource("image.png").toBeBlocked();
     });
 
-    it("uses diff updatable subscription expiration interval if provided", async function() {
+    it("uses diff updatable subscription expiration interval if provided [mv3-only]", async function() {
       if (!hasUpdateStaticRules()) {
         this.skip();
       }
@@ -191,7 +191,7 @@ describe("Synchronization", function() {
       expect(subscription.expires).toBeLessThan(limitExpiration);
     });
 
-    it("uses default diff updatable subscription expiration interval if not provided", async function() {
+    it("uses default diff updatable subscription expiration interval if not provided [mv3-only]", async function() {
       if (!hasUpdateStaticRules()) {
         this.skip();
       }
