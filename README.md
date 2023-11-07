@@ -59,14 +59,14 @@ the following versions:
 
 Manifest V2:
 
-* Chromium 77 & 111
-* Firefox 68 & 110
+* Chromium 77 and 118
+* Firefox 68 and 119
 * Edge 79
 
 Manifest V3:
 
-* Chromium 111
-* Edge 111
+* Chromium 111 and 118
+* Edge 118
 
 ### Manifest for V2
 
@@ -316,16 +316,6 @@ strings, in SPKI format.
 For more information, please refer to the [API documention][api-docs].
 
 ## Development
-
-### Tested Browsers
-
-The CI pipeline performs automated tests on the following browser versions:
-
-* Manifest v2: Chromium: 77 - 109
-* Manifest v3: Chromium 111
-* Firefox: 68 - 109
-* Edge v3 (linux): 108
-* Edge v2 (windows): 79
 
 ### Prerequisites
 
