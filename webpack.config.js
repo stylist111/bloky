@@ -41,6 +41,24 @@ const subscriptionsDir = path.join(dirname, "scriptsOutput", "rulesets");
 const fragmentFile = path.join(subscriptionsDir, "rulesets.json");
 const packageJsonPath = path.join(dirname, "package.json");
 
+// Ensures the filesystem syncs between SDK and test extension build steps
+class FSyncPlugin {
+  apply(compiler) {
+    compiler.hooks.assetEmitted.tapAsync(
+      "FSyncPlugin",
+      (file, {targetPath}, callback) => {
+        fs.open(targetPath, (err, fd) => {
+          if (err) {
+            callback(err);
+          }
+
+          fs.fsync(fd, callback);
+        });
+      }
+    );
+  }
+}
+
 const base = {
   eweConfigName: eweRegularConfigName,
   ewePath: eweRegularOutputPath
@@ -141,6 +159,7 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath) {
     },
     plugins: [
       new GenerateJsonPlugin("package.json", {type: "commonjs"}, null, 2),
+      new FSyncPlugin(),
       ...commonPlugins()
     ],
     externals: {

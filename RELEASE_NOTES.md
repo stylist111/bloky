@@ -10,6 +10,8 @@ Unreleased
 # Internal
 
 - Upgraded stable browser versions running in the CI. (EE-213)
+- Fixed an occasional build failure where generated files were not ready at OS
+  level for the remaining build steps. (EE-240)
 
 ☀ 1.1.1 - 2023/10/26 ☀
 ==================
