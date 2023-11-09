@@ -82,7 +82,7 @@ audit:
   before_script:
     - npm install
   script:
-    - npm audit --production
+    - npm audit --omit=dev
   allow_failure: true
   rules:
     - !reference [.avoid-flaky-run, rules]
