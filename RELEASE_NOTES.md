@@ -58,6 +58,8 @@ Unreleased
 - All the public API methods (eg. `EWE.filters.add(...)`) wait for the data 
   to be saved. (EE-44)
 - The `alarms` permission is no longer required to use telemetry. (EE-159)
+- The declared "adblockpluscore" dependency is removed, though it still
+  uses it behind the scene during the building (EE-219).
 
 # Fixes
 
