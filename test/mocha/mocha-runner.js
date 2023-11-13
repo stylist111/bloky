@@ -118,9 +118,15 @@ export function isFuzzingServiceWorker() {
 }
 
 export function start() {
+  let skipped = 0;
   let runner = mocha.run();
+
   runner.on("end", () => {
-    sendMessage("end", {failures: runner.failures, total: runner.total});
+    sendMessage("end", {failures: runner.failures, total: runner.total, skipped});
+  });
+
+  runner.on("pending", () => {
+    skipped++;
   });
 
   Mocha.reporters.Base.useColors = true;

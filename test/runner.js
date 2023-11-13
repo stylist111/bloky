@@ -441,7 +441,7 @@ async function runFuzzTests(driver, params, isMV3) {
 
   if (!isMV3) {
     console.warn("Service worker fuzzing tests are only for MV3");
-    return {failures: 0, total: 0, log: []};
+    return {failures: 0, totalPending: 0, total: 0, log: []};
   }
 
   let fuzzParams = {...params, fuzzServiceWorkers: true};
@@ -636,13 +636,27 @@ async function runTests() {
   }
 
   let totalTestsRun = 0;
+  let totalTestsSkipped = 0;
   let expectTestsForEveryKind = !(params && params.grep);
+
+  function isTestKindSkippable(testKind) {
+    const mv2SkippableTestKinds = ["mv2-mv3-migrate"];
+    const mv3SkippableTestKinds = [];
+    // eslint-disable-next-line max-len
+    const skippableTestKinds = isMV3 ? mv3SkippableTestKinds : mv2SkippableTestKinds;
+    return skippableTestKinds.includes(testKind);
+  }
+
   for (let testKind of testKinds) {
     if (!results[testKind]) {
       throw new Error(`Test Failure: ${testKind} tests did not run correctly`);
     }
 
-    if (expectTestsForEveryKind && results[testKind].total == 0) {
+    // eslint-disable-next-line max-len
+    const wereTestsSkipped = results[testKind].skipped === results[testKind].total && !isTestKindSkippable(testKind);
+    const didTestsRun = results[testKind].total > 0 && !wereTestsSkipped;
+
+    if (expectTestsForEveryKind && !didTestsRun) {
       throw new Error(`Test Failure: No ${testKind} tests ran`);
     }
 
@@ -651,9 +665,10 @@ async function runTests() {
     }
 
     totalTestsRun += results[testKind].total;
+    totalTestsSkipped += results[testKind].skipped;
   }
 
-  if (totalTestsRun == 0) {
+  if (totalTestsRun === 0 || totalTestsRun === totalTestsSkipped) {
     throw new Error("Test Failure: No tests ran");
   }
 
