@@ -120,7 +120,7 @@ describe(`Reload (${phase})`, function() {
   });
 
   it("blocks a request using stored filters", async function() {
-    this.timeout(12000);
+    this.timeout(8000);
 
     if (start) {
       await addFilter(IMAGE_FILTER_TEXT);
@@ -133,9 +133,8 @@ describe(`Reload (${phase})`, function() {
       return;
     }
 
-    // we have to give browser some time to load the page
-    await new Promise(resolve => setTimeout(resolve, 300));
-    await new Page("image.html").expectResource("image.png").toBeBlocked();
+    await new Page("image.html?delay=500").expectResource("image.png")
+      .toBeBlocked();
     await EWE.filters.remove([IMAGE_FILTER_TEXT]);
   });
 
