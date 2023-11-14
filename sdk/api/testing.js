@@ -143,7 +143,7 @@ export default {
    *                    restore the removed subscriptions and filters.
    */
   async _removeAllSubscriptions() {
-    for (let subscription of await subs.getDownloadable()) {
+    for (let subscription of await subs.getSubscriptions()) {
       await subs.remove(subscription.url);
     }
 

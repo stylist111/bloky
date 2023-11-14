@@ -205,7 +205,7 @@ function handleTestMessage(request, sender, sendResponse) {
 
     case "subscriptions.get": {
       let subscriptions = [];
-      EWE.subscriptions.getDownloadable().then(subs => {
+      EWE.subscriptions.getSubscriptions().then(subs => {
         for (let s of subs) {
           if (request.ignoreDisabled && !s.enabled) {
             continue;

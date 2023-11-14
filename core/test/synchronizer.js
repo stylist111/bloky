@@ -31,7 +31,7 @@ let filterStorage = null;
 let Prefs = null;
 let Subscription = null;
 let CountableSubscription = null;
-let DownloadableSubscription = null;
+let FullUpdatableSubscription = null;
 let manifestVersion;
 
 describe("Synchronizer", function() {
@@ -52,7 +52,7 @@ describe("Synchronizer", function() {
       {FilterStorage} = sandboxedRequire(LIB_FOLDER + "/filterStorage"),
       {Prefs} = sandboxedRequire("./stub-modules/prefs"),
       {manifestVersion} = sandboxedRequire("./stub-modules/info"),
-      {Subscription, CountableSubscription, DownloadableSubscription} =
+      {Subscription, CountableSubscription, FullUpdatableSubscription} =
         sandboxedRequire(LIB_FOLDER + "/subscriptionClasses")
     );
 
@@ -163,7 +163,7 @@ describe("Synchronizer", function() {
         let url = new URL(subscription.url);
 
         assert.ok(subscription instanceof CountableSubscription);
-        assert.ok(!(subscription instanceof DownloadableSubscription));
+        assert.ok(!(subscription instanceof FullUpdatableSubscription));
 
         let requests = [];
         runner.registerHandler(url.pathname, metadata => {

@@ -1,6 +1,22 @@
 Unreleased
 ==========
 
+# General
+
+- There is now a new method for getting a list of active subscriptions,
+  `EWE.subscriptions.getSubscriptions()`. This replaces
+  `EWE.subscriptions.getDownloadable()`. The data returned by `getSubscriptions`
+  is the same as `getDownloadable`, but with `updatable` and without
+  `downloadable` property. Some other functions that return subscriptions
+  (eg. `getForFilter`) or events that contain subscription object also provide
+  `updatable` property, while still having `downloadable`. (EE-212)
+
+# Updating your code
+
+- If you were using `EWE.subscriptions.getDownloadable`, switch to using
+  `EWE.subscriptions.getSubscriptions`. `getDownloadable` has been deprecated
+  and will be removed in the next major version.
+
 # Fixes
 
 - Fixed an edge case where onBlockableItem events in MV3 would be missing their

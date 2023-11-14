@@ -179,8 +179,8 @@ describe("Filter listener", function() {
       );
 
       // Disable the synchronizer for downloadable subscription
-      const {DownloadableSubscription} = sandboxedRequire(LIB_FOLDER + "/subscriptionClasses");
-      DownloadableSubscription.useSynchronizer(null);
+      const {FullUpdatableSubscription} = sandboxedRequire(LIB_FOLDER + "/subscriptionClasses");
+      FullUpdatableSubscription.useSynchronizer(null);
 
       let {FilterState} = sandboxedRequire(LIB_FOLDER + "/filterState");
       filterState = new FilterState();

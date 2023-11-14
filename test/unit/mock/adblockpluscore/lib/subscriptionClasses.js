@@ -22,7 +22,7 @@ export let Subscription = {
   }
 };
 export class RegularSubscription {}
-export class DownloadableSubscription {}
+export class FullUpdatableSubscription {}
 export class SpecialSubscription {}
 export class CountableSubscription {}
 export class DiffUpdatableSubscription {}

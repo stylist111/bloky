@@ -76,21 +76,21 @@ describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
       await EWE.subscriptions.add(EASYLIST_GERMANY_URL_MV2);
       await EWE.subscriptions.disable(EASYLIST_GERMANY_URL_MV2);
 
-      let downloadables = await EWE.subscriptions.getDownloadable();
-      expect(downloadables).toEqual(expect.arrayContaining([
+      let subs = await EWE.subscriptions.getSubscriptions();
+      expect(subs).toEqual(expect.arrayContaining([
         expect.objectContaining({
           url: TEST_MV3_SUBSCRIPTION.mv2_url,
-          downloadable: true,
+          updatable: true,
           enabled: true
         }),
         expect.objectContaining({
           url: EASYLIST_URL_MV2,
-          downloadable: true,
+          updatable: true,
           enabled: true
         }),
         expect.objectContaining({
           url: EASYLIST_GERMANY_URL_MV2,
-          downloadable: true,
+          updatable: true,
           enabled: false
         })
       ]));
@@ -114,21 +114,22 @@ describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
     await wait(async() => await EWE.testing._getPrefs("migration_state") === MIGRATED_TO_MV3,
                10000, "Prefs.migration_state was not set");
 
-    let downloadables = await EWE.subscriptions.getDownloadable();
-    expect(downloadables).toEqual(expect.arrayContaining([
+    let subs = await EWE.subscriptions.getSubscriptions();
+    expect(subs).toEqual(expect.arrayContaining([
       expect.objectContaining({
         url: TEST_MV3_SUBSCRIPTION.url,
-        downloadable: false,
+        updatable: false, // no `diff_url` provided
         enabled: true
       }),
       expect.objectContaining({
         url: EASYLIST_URL_MV3,
-        downloadable: false,
+        updatable: true,
+        diffURL: expect.any(String),
         enabled: true
       }),
       expect.objectContaining({
         url: EASYLIST_GERMANY_URL_MV3,
-        downloadable: false,
+        updatable: false, // no `diff_url` provided
         enabled: false
       })
     ]));
@@ -147,8 +148,8 @@ describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
       await EWE.debugging.ensureEverythingHasSaved();
 
       let meta = await wait(async() => {
-        let downloadables = await EWE.subscriptions.getDownloadable();
-        let sub = downloadables.find(it => it.url == EASYLIST_URL_MV2);
+        let subs = await EWE.subscriptions.getSubscriptions();
+        let sub = subs.find(it => it.url == EASYLIST_URL_MV2);
         return (sub.downloadCount ? {
             downloadCount: sub.downloadCount,
             version: sub.version
@@ -159,8 +160,8 @@ describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
     }
 
     let savedValues = await browser.storage.local.get("meta");
-    let downloadables = await EWE.subscriptions.getDownloadable();
-    let sub = downloadables.find(it => it.url == EASYLIST_URL_MV3);
+    let subs = await EWE.subscriptions.getSubscriptions();
+    let sub = subs.find(it => it.url == EASYLIST_URL_MV3);
     expect(sub.downloadCount >= savedValues.meta.downloadCount).toBe(true);
     expect(sub.version == savedValues.meta.version).toBe(true);
   });
@@ -171,11 +172,11 @@ describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
     if (start) {
       await EWE.subscriptions.add(TEST_ANTI_CV_SUBSCRIPTION.mv2_url); // MV2 URL
 
-      let downloadables = await EWE.subscriptions.getDownloadable();
-      expect(downloadables).toEqual(expect.arrayContaining([
+      let subs = await EWE.subscriptions.getSubscriptions();
+      expect(subs).toEqual(expect.arrayContaining([
         expect.objectContaining({
           url: TEST_ANTI_CV_SUBSCRIPTION.mv2_url,
-          downloadable: true, // DownloadableSubscription
+          updatable: true, // FullUpdatableSubscription,
           enabled: true
         })
       ]));
@@ -186,11 +187,12 @@ describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
 
     await new Promise(elapsed => setTimeout(elapsed, 1000));
 
-    let downloadables = await EWE.subscriptions.getDownloadable();
-    expect(downloadables).toEqual(expect.arrayContaining([
+    let subs = await EWE.subscriptions.getSubscriptions();
+    expect(subs).toEqual(expect.arrayContaining([
       expect.objectContaining({
         url: TEST_ANTI_CV_SUBSCRIPTION.url, // MV3 URL
-        downloadable: false, // DiffUpdatableSubscription
+        updatable: true, // DiffUpdatableSubscription,
+        diffURL: expect.any(String),
         enabled: true
       })
     ]));
@@ -282,11 +284,11 @@ describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
     if (start) {
       await EWE.subscriptions.add(URL);
 
-      let downloadables = await EWE.subscriptions.getDownloadable();
-      expect(downloadables).toEqual(expect.arrayContaining([
+      let subs = await EWE.subscriptions.getSubscriptions();
+      expect(subs).toEqual(expect.arrayContaining([
         expect.objectContaining({
           url: URL,
-          downloadable: true
+          updatable: true
         })
       ]));
       await EWE.debugging.ensureEverythingHasSaved();

@@ -590,7 +590,7 @@ describe("Test subscriptions update", function() {
 
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
 
-      let subs = await EWE.subscriptions.getDownloadable();
+      let subs = await EWE.subscriptions.getSubscriptions();
 
       expect(subs).toEqual(
         expect.arrayContaining([

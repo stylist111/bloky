@@ -25,12 +25,12 @@ import {getDatabase} from "./io-idb.js";
 export const MIGRATED_TO_MV2 = 0;
 
 // MV3 without diff updates
-// (anti-cv subscription is the only `DownloadableSubscription`)
+// (anti-cv subscription is the only `FullUpdatableSubscription`)
 export const MIGRATED_TO_MV3_WITHOUT_DIFF = 1;
 
 // MV3 with diff updates
 // (all subscriptions are either
-// `CountableSubscriptions` or `DiffUpdatableSubscriptions`)
+// `CountableSubscription` or `DiffUpdatableSubscriptions`)
 export const MIGRATED_TO_MV3 = 2;
 
 export const defaults = Object.create({

@@ -64,7 +64,7 @@ describe("Filter Engine setup", function() {
   let FilterEngine;
   let Subscription;
   let RegularSubscription;
-  let DownloadableSubscription;
+  let FullUpdatableSubscription;
 
   beforeEach(function() {
     // Sandbox is required here to get the stub io module.
@@ -72,8 +72,8 @@ describe("Filter Engine setup", function() {
     (
       {Features} = sandboxedRequire(LIB_FOLDER + "/features.js"),
       {FilterEngine} = sandboxedRequire(LIB_FOLDER + "/filterEngine.js"),
-      {Subscription, RegularSubscription,
-       DownloadableSubscription} = sandboxedRequire(LIB_FOLDER + "/subscriptionClasses.js")
+      {Subscription, RegularSubscription, FullUpdatableSubscription} =
+        sandboxedRequire(LIB_FOLDER + "/subscriptionClasses.js")
     );
   });
 
@@ -101,7 +101,7 @@ describe("Filter Engine setup", function() {
     assert.ok(Subscription.dnr);
 
     let subscription = Subscription.fromURL("https://easylist-downloads.adblockplus.org/easylist.txt");
-    assert.ok(!(subscription instanceof DownloadableSubscription));
+    assert.ok(!(subscription instanceof FullUpdatableSubscription));
     assert.ok(subscription instanceof RegularSubscription);
   });
 
@@ -116,7 +116,7 @@ describe("Filter Engine setup", function() {
     assert.ok(!Subscription.dnr);
 
     let subscription = Subscription.fromURL("https://easylist-downloads.adblockplus.org/easylist.txt");
-    assert.ok(subscription instanceof DownloadableSubscription);
+    assert.ok(subscription instanceof FullUpdatableSubscription);
   });
 
   describe("Using Manifest V3 subscription index", function() {

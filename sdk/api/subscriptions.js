@@ -20,7 +20,8 @@ import browser from "./browser.js";
 import {validate as validateSubscriptions} from "./subscriptions-validator.js";
 import {rulesetExistsInManifest} from "./subscriptions-utils.js";
 import {Subscription, CountableSubscription, RegularSubscription,
-        DownloadableSubscription, SpecialSubscription}
+        FullUpdatableSubscription, SpecialSubscription,
+        DiffUpdatableSubscription}
   from "adblockpluscore/lib/subscriptionClasses.js";
 import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {recommendations} from "adblockpluscore/lib/recommendations.js";
@@ -53,17 +54,21 @@ function convertSubscription(subscription) {
     softExpiration, expires, title, url, downloadable, downloadCount, diffURL,
     privileged} = subscription;
 
+  let updatable = (subscription instanceof FullUpdatableSubscription ||
+                   subscription instanceof DiffUpdatableSubscription);
+
   return {
     id,
     enabled: !disabled,
     privileged,
     homepage,
     downloadable,
+    updatable,
+    diffURL,
     title,
     url,
     downloadCount,
     version,
-    diffURL,
     downloading: isSynchronizing(url),
     downloadStatus,
     lastSuccess,
@@ -111,7 +116,7 @@ export async function hasAcceptableAdsEnabled() {
                    ACCEPTABLE_ADS_PRIVACY_MV2_URL,
                    ACCEPTABLE_ADS_PRIVACY_MV3_URL];
 
-  for (let subscription of await getDownloadable()) {
+  for (let subscription of await getSubscriptions()) {
     if (subscription.enabled && matches.includes(subscription.url)) {
       return true;
     }
@@ -205,7 +210,7 @@ function shouldAddDefaultSubscriptions() {
       }
     }
 
-    if (subscription instanceof DownloadableSubscription &&
+    if (subscription instanceof FullUpdatableSubscription &&
       subscription.url != ACCEPTABLE_ADS_MV2_URL) {
       return false;
     }
@@ -305,7 +310,7 @@ export async function updateFilterText() {
   }
 }
 
-async function getDownloadable() {
+function getSubscriptions() {
   let result = [];
 
   for (let subscription of filterEngine.filterStorage.subscriptions()) {
@@ -432,9 +437,9 @@ export async function migrate() {
     return;
   }
 
-  let downloadables = await getDownloadable();
+  let downloadables = await getSubscriptions();
   for (let downloadable of downloadables) {
-    // some subscriptions are already `CountableSubscriptions`,
+    // some subscriptions are already `CountableSubscription`,
     // that were migrated from MV2 to MV3 without diff updated.
     if (!downloadable.downloadable) {
       continue;
@@ -519,15 +524,19 @@ export default {
    * A resource that provides a list of filters that decide what to block.
    * @typedef {Object} Subscription
    * @property {boolean} downloadable Indicates whether this subscription is
-   *                                  downloaded and updated over the network.
-   *                                  If `false` the subscription is merely
-   *                                  a container for user-defined filters.
+   *                                  downloaded and updated with full update
+   *                                  over the network.
+   * @property {boolean} updatable Indicates whether this subscription can be
+   *                               updated with either full or diff update
+   *                               over the network.
+   * @property {?string} diffURL The URL of diff updates endpoint for
+   *                             DiffUpdatableSubscriptions in MV3.
    * @property {?boolean} downloading Indicates whether the subscription is
-   *                                  currently downloading (downloadble
+   *                                  currently downloading (updatable
    *                                  subscriptions only).
    * @property {?string} downloadStatus The {@link https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore/-/jobs/artifacts/0.6.0/file/build/docs/module-subscriptionClasses.DownloadableSubscription.html?job=docs#downloadStatus|status}
    *                                    of the most recent download attempt
-   *                                    (downloadble subscriptions only).
+   *                                    (updatable subscriptions only).
    * @property {boolean} enabled Indicates whether this subscription will
    *                             be applied.
    * @property {?number} expires Epoch time when the subscription must be
@@ -628,8 +637,28 @@ export default {
    * Returns an array of subscription objects for all subscriptions that are
    * downloaded and updated over the network.
    * @return {Promise<Array<Subscription>>}
+   * @deprecated Use {@link #getSubscriptions|getSubscriptions()} instead
    */
-  getDownloadable,
+  async getDownloadable() {
+    const subscriptions = getSubscriptions();
+    return subscriptions.map(each => {
+      delete each.updatable; // newly introduced
+      return each;
+    });
+  },
+
+  /**
+   * Returns an array of subscription objects for all subscriptions that are
+   * downloaded and updated over the network.
+   * @return {Promise<Array<Subscription>>}
+   */
+  async getSubscriptions() {
+    const subscriptions = getSubscriptions();
+    return subscriptions.map(each => {
+      delete each.downloadable; // deprecated
+      return each;
+    });
+  },
 
   /**
    * Returns an array of subscription objects for a given filter.

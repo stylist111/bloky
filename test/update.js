@@ -95,18 +95,20 @@ describe(`Update (${phase}) [runner-only]`, function() {
     }, 40000, "Events are not received");
     expect(filters.find(it => it.text == filter)).toBeDefined();
     try {
-      let downloadables = await EWE.subscriptions.getDownloadable();
-      expect(downloadables).toEqual(expect.arrayContaining([
+      let subs = await EWE.subscriptions.getSubscriptions();
+      expect(subs).toEqual(expect.arrayContaining([
         expect.objectContaining({
           url: TEST_MV3_SUBSCRIPTION.url,
-          downloadable: false,
+          updatable: false, // no `diff_url` provided
           enabled: true
         })
       ]));
       // Page load sometimes occurs while the system isn't ready
       await new Promise(r => setTimeout(r, 50));
 
-      await new Page("image-from-subscription.html").expectResource("image-from-subscription.png").toBeBlocked();
+      await new Page("image-from-subscription.html")
+        .expectResource("image-from-subscription.png")
+        .toBeBlocked();
     }
     finally {
       // restore from back-up

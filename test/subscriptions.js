@@ -40,7 +40,7 @@ describe("Subscriptions", function() {
   it("adds a subscription [fuzz]", async function() {
     await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
 
-    let subs = await EWE.subscriptions.getDownloadable();
+    let subs = await EWE.subscriptions.getSubscriptions();
     // homepage is `null` on MV2 until download
     let homepage = isMV3() ? "http://localhost:3000/subscription.txt" : null;
     expect(subs).toEqual([expect.objectContaining({
@@ -48,7 +48,7 @@ describe("Subscriptions", function() {
       enabled: true,
       title: isMV3() ? "Test MV3 Custom Subscription" : VALID_SUBSCRIPTION_URL,
       homepage,
-      downloadable: expect.any(Boolean)
+      updatable: expect.any(Boolean)
     })]);
   });
 
@@ -58,13 +58,13 @@ describe("Subscriptions", function() {
 
     await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL, {title, homepage});
 
-    let subs = await EWE.subscriptions.getDownloadable();
+    let subs = await EWE.subscriptions.getSubscriptions();
     expect(subs).toEqual([expect.objectContaining({
       url: VALID_SUBSCRIPTION_URL,
       enabled: true,
       title,
       homepage,
-      downloadable: expect.any(Boolean)
+      updatable: expect.any(Boolean)
     })]);
   });
 
@@ -75,7 +75,7 @@ describe("Subscriptions", function() {
     }
     await EWE.subscriptions.add(antiCvUrl);
 
-    let subs = await EWE.subscriptions.getDownloadable();
+    let subs = await EWE.subscriptions.getSubscriptions();
     expect(subs).toEqual([expect.objectContaining({
       url: antiCvUrl,
       privileged: true
@@ -89,7 +89,7 @@ describe("Subscriptions", function() {
     }
     await EWE.subscriptions.add(antiCvUrl, {privileged: false});
 
-    let subs = await EWE.subscriptions.getDownloadable();
+    let subs = await EWE.subscriptions.getSubscriptions();
     expect(subs).toEqual([expect.objectContaining({
       url: antiCvUrl,
       privileged: false
@@ -123,7 +123,7 @@ describe("Subscriptions", function() {
     }
     try {
       await EWE.subscriptions.add(subUrl);
-      let subs = await EWE.subscriptions.getDownloadable();
+      let subs = await EWE.subscriptions.getSubscriptions();
       expect(subs).toEqual([expect.objectContaining({
         url: subUrl,
         privileged: true
@@ -140,7 +140,7 @@ describe("Subscriptions", function() {
 
     await EWE.subscriptions.addDefaults("en");
 
-    let subs = await EWE.subscriptions.getDownloadable();
+    let subs = await EWE.subscriptions.getSubscriptions();
     expect(subs.length).toEqual(3);
 
     let compareUrl = "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt";
@@ -161,11 +161,11 @@ describe("Subscriptions", function() {
 
   it("adds downloadable subscriptions in MV2 and non-downloadable subscriptions in MV3", async function() {
     await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
-    let downloadable = !isMV3();
-    let subs = await EWE.subscriptions.getDownloadable();
+    let updatable = !isMV3();
+    let subs = await EWE.subscriptions.getSubscriptions();
     expect(subs).toEqual([expect.objectContaining({
       url: VALID_SUBSCRIPTION_URL,
-      downloadable
+      updatable
     })]);
   });
 
@@ -178,7 +178,7 @@ describe("Subscriptions", function() {
     await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
     await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL_2);
 
-    let subs = await EWE.subscriptions.getDownloadable();
+    let subs = await EWE.subscriptions.getSubscriptions();
     expect(subs).toEqual([
       expect.objectContaining({url: VALID_SUBSCRIPTION_URL}),
       expect.objectContaining({url: VALID_SUBSCRIPTION_URL_2})
@@ -234,7 +234,7 @@ describe("Subscriptions", function() {
     await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
     await EWE.subscriptions.disable(VALID_SUBSCRIPTION_URL);
 
-    let subs = await EWE.subscriptions.getDownloadable();
+    let subs = await EWE.subscriptions.getSubscriptions();
     expect(subs).toEqual([expect.objectContaining({
       url: VALID_SUBSCRIPTION_URL,
       enabled: false
@@ -246,7 +246,7 @@ describe("Subscriptions", function() {
     await EWE.subscriptions.disable(VALID_SUBSCRIPTION_URL);
     await EWE.subscriptions.enable(VALID_SUBSCRIPTION_URL);
 
-    let subs = await EWE.subscriptions.getDownloadable();
+    let subs = await EWE.subscriptions.getSubscriptions();
     expect(subs).toEqual([expect.objectContaining({
       url: VALID_SUBSCRIPTION_URL,
       enabled: true
@@ -257,7 +257,7 @@ describe("Subscriptions", function() {
     await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
     await EWE.subscriptions.enable(VALID_SUBSCRIPTION_URL);
 
-    let subs = await EWE.subscriptions.getDownloadable();
+    let subs = await EWE.subscriptions.getSubscriptions();
     expect(subs).toEqual([expect.objectContaining({
       url: VALID_SUBSCRIPTION_URL,
       enabled: true
@@ -276,7 +276,7 @@ describe("Subscriptions", function() {
     await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
     await EWE.subscriptions.remove(VALID_SUBSCRIPTION_URL);
 
-    expect(await EWE.subscriptions.getDownloadable()).toEqual([]);
+    expect(await EWE.subscriptions.getSubscriptions()).toEqual([]);
   });
 
   it("fails removing a nonexistent subscription", async function() {
@@ -294,7 +294,7 @@ describe("Subscriptions", function() {
     ]);
 
     await EWE.testing._removeAllSubscriptions();
-    expect(await EWE.subscriptions.getDownloadable()).toEqual([]);
+    expect(await EWE.subscriptions.getSubscriptions()).toEqual([]);
     expect(await EWE.filters.getUserFilters()).toEqual([]);
 
     if (DNR) {
@@ -371,8 +371,8 @@ describe("Subscriptions", function() {
     // starting events linked to calling `sync` with the download
     // starting events from just adding the sub.
     await wait(async() => {
-      let subs = await EWE.subscriptions.getDownloadable();
-      return subs.every(sub => (!sub.downloadable || sub.lastDownload));
+      let subs = await EWE.subscriptions.getSubscriptions();
+      return subs.every(sub => sub.lastDownload);
     }, 1000, "Subscriptions were not synced when added");
 
     clearTestEvents("subscriptions.onChanged");
@@ -438,6 +438,63 @@ describe("Subscriptions", function() {
     expect(actualAaPrivacyURL).toEqual(expectedAaPrivacyURL);
   });
 
+  it("still supports `getDownloadable()` in the API", async function() {
+    let downloadables = await EWE.subscriptions.getDownloadable();
+    let subscriptions = await EWE.subscriptions.getSubscriptions();
+    expect(downloadables.size).toEqual(subscriptions.size);
+    for (let i = 0; i < downloadables.size; i++) {
+      expect(downloadables[i]).toEqual(expect.objectContaining({
+        downloadable: expect.any(Boolean)
+      }));
+      expect(downloadables[i].updatable).toBeUndefined(); // not yet exposed
+
+      expect(subscriptions[i]).toEqual(expect.objectContaining({
+        updatable: expect.any(Boolean)
+      }));
+      expect(subscriptions[i].downloadable).toBeUndefined(); // deprecated
+
+      delete downloadables[i].downloadable;
+      delete subscriptions[i].updatable;
+      expect(subscriptions[i]).toEqual(downloadables[i]);
+    }
+  });
+
+  it("exposes `updatable` property in the `getSubscriptions()` response", async function() {
+    setMinTimeout(this, isFuzzingServiceWorker() ? 30000 : 10000);
+
+    if (isMV3()) {
+      const countableSubUrl = "http://localhost:3000/subscription-with-allowing-filter.txt";
+      const diffUpdatableSubUrl = "http://localhost:3003/updatable_subscription.txt";
+
+      await EWE.subscriptions.add(countableSubUrl);
+      await EWE.subscriptions.add(diffUpdatableSubUrl);
+
+      const subs = await EWE.subscriptions.getSubscriptions();
+      expect(subs).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          url: countableSubUrl,
+          updatable: false
+        }),
+        expect.objectContaining({
+          url: diffUpdatableSubUrl,
+          updatable: true
+        })
+      ]));
+    }
+    else {
+      const fullUpdatableUrl = "http://localhost:3003/mv2_anti-cv-subscription.txt";
+      await EWE.subscriptions.add(fullUpdatableUrl);
+
+      let subs = await EWE.subscriptions.getSubscriptions();
+      expect(subs).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          url: fullUpdatableUrl,
+          updatable: true
+        })
+      ]));
+    }
+  });
+
   describe("Filter list updates", function() {
     setMinTimeout(this, isFuzzingServiceWorker() ? 30000 : 10000);
 
@@ -452,7 +509,7 @@ describe("Subscriptions", function() {
         async() => {
           // wait for subscription to be added
           await new Promise(resolve => setTimeout(resolve, 100));
-          let subscriptions = await EWE.subscriptions.getDownloadable();
+          let subscriptions = await EWE.subscriptions.getSubscriptions();
           if (subscriptions.length > 0) {
             expect(subscriptions).toEqual(expect.arrayContaining([
               expect.objectContaining({url})

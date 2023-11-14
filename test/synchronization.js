@@ -39,10 +39,10 @@ describe("Synchronization", function() {
     await EWE.testing._removeAllSubscriptions();
     await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION_3.url, properties);
 
-    let downloadables = await EWE.subscriptions.getDownloadable();
-    expect(downloadables.length).toEqual(1);
-    expect(downloadables).toEqual([expect.objectContaining({
-      downloadable: false // Countable Sub
+    let subs = await EWE.subscriptions.getSubscriptions();
+    expect(subs.length).toEqual(1);
+    expect(subs).toEqual([expect.objectContaining({
+      updatable: false // CountableSubscription
     })]);
   }
 
@@ -176,9 +176,9 @@ describe("Synchronization", function() {
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
       await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
 
-      const allDownloadables = await EWE.subscriptions.getDownloadable();
+      const allSubscriptions = await EWE.subscriptions.getSubscriptions();
       const subscription =
-        allDownloadables.find(
+        allSubscriptions.find(
           eachSubscription => eachSubscription.url === testDiffSubscriptionUrl);
 
       // The subscription.expires should be 2 days (double the interval),
@@ -215,9 +215,9 @@ describe("Synchronization", function() {
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
       await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
 
-      const allDownloadables = await EWE.subscriptions.getDownloadable();
+      const allSubscriptions = await EWE.subscriptions.getSubscriptions();
       const subscription =
-        allDownloadables.find(
+        allSubscriptions.find(
           eachSubscription => eachSubscription.url === testDiffSubscriptionUrl);
 
       // 10 days - 1 hour in the future: it's double update interval - some gap

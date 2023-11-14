@@ -321,7 +321,7 @@ exports.Subscription = class Subscription {
 
   // Lots of this fromSynchronizer._onDownloadSuccess()
   /**
-   * Set parameters for Countable subscriptions.
+   * Set parameters for CountableSubscriptions.
    *
    * @param {object} params The params from the filter list. `params` is
    *   the `params` field as returned by
@@ -685,7 +685,7 @@ exports.Subscription.fromURL = function(url) {
     }
 
     if (downloadable) {
-      subscription = new DownloadableSubscription(url, title);
+      subscription = new FullUpdatableSubscription(url, title);
     }
     else if (updatableThroughDiffs) {
       subscription = new DiffUpdatableSubscription(url, title, params);
@@ -720,7 +720,7 @@ exports.Subscription.fromObject = function(obj) {
       }
     }
     else {
-      result = new DownloadableSubscription(obj.url, obj.title);
+      result = new FullUpdatableSubscription(obj.url, obj.title);
     }
 
     if (result.type) {
@@ -1344,19 +1344,19 @@ class CountableSubscription extends RegularSubscription {
   }
 };
 
-let DownloadableSubscription =
+let FullUpdatableSubscription =
 /**
- * The `DownloadableSubscription` class represents a regular filter
+ * The `FullUpdatableSubscription` class represents a regular filter
  * subscription whose content (filter text) is downloaded from a filter list
- * off the internet from `url`.
+ * off the internet from `url` with a full update.
  *
  * It will have its property `downloadable` set to `true`.
  *
  * @extends module:subscriptionClasses.CountableSubscription
  */
-exports.DownloadableSubscription =
-class DownloadableSubscription extends CountableSubscription {
-  /** Construct a new DownloadableSubscription
+exports.FullUpdatableSubscription =
+class FullUpdatableSubscription extends CountableSubscription {
+  /** Construct a new FullUpdatableSubscription
    *
    * @param {string} url The URL of the subscription.
    * @param {string} [title] The title of the subscription.
@@ -1382,8 +1382,8 @@ let DiffUpdatableSubscription =
  * The `DiffUpdatableSubscription` class represents a regular filter
  * subscription whose content (filter text) is downloaded from a filter list
  * off the internet from `url`. The key difference between this and a
- * `{@link CountableSubscription}` is that this class has a diffurl from where
- * updates will be handled
+ * `{@link CountableSubscription}` is that this class has a diffurl
+ * from where updates will be handled
  *
  * It will have its `downloadable` property set to `false`.
  *

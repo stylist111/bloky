@@ -140,11 +140,11 @@ describe("Initialization", function() {
 
     // The list of bundled subscriptions is passed as an
     // argument to EWE.start in the background.js file.
-    let subs = await EWE.subscriptions.getDownloadable();
+    let subs = await EWE.subscriptions.getSubscriptions();
     expect(subs).toEqual([
       expect.objectContaining({
         enabled: true,
-        downloadable: !isMV3(),
+        updatable: !isMV3(),
         id: isMV3() ? TEST_MV3_SUBSCRIPTION.id : null
       })
     ]);
@@ -178,7 +178,7 @@ describe("Initialization", function() {
 
       await EWE.subscriptions.addDefaults(language);
 
-      let activeSubs = await EWE.subscriptions.getDownloadable();
+      let activeSubs = await EWE.subscriptions.getSubscriptions();
 
       let expectedUrls;
       if (isMV3()) {
@@ -234,7 +234,7 @@ describe("Initialization", function() {
 
     await EWE.subscriptions.addDefaults("en");
 
-    let activeSubs = await EWE.subscriptions.getDownloadable();
+    let activeSubs = await EWE.subscriptions.getSubscriptions();
     expect(activeSubs).toEqual([
       expect.objectContaining({
         url: subUrl
@@ -269,7 +269,7 @@ describe("Initialization", function() {
     ]);
 
     await EWE.subscriptions.addDefaults("en");
-    let activeSubs = await EWE.subscriptions.getDownloadable();
+    let activeSubs = await EWE.subscriptions.getSubscriptions();
     expect(activeSubs).toEqual(expect.arrayContaining([
       expect.objectContaining({
         url: subAcceptableAds.url
@@ -306,7 +306,7 @@ describe("Initialization", function() {
     ]);
 
     await EWE.subscriptions.addDefaults("en");
-    let activeSubs = await EWE.subscriptions.getDownloadable();
+    let activeSubs = await EWE.subscriptions.getSubscriptions();
     expect(activeSubs).toEqual(expect.arrayContaining([
       expect.objectContaining({
         url: alternativeAAUrl1

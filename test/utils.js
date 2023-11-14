@@ -774,9 +774,9 @@ export async function clearEndpointResponse(url) {
 
 export async function waitForSubscriptionsToDownload() {
   await wait(async() => {
-    let subscriptions = await EWE.subscriptions.getDownloadable();
+    let subscriptions = await EWE.subscriptions.getSubscriptions();
     return subscriptions.every(
-      sub => !sub.downloadable || sub.downloadStatus == "synchronize_ok"
+      sub => sub.diffURL || sub.downloadStatus == "synchronize_ok"
     );
   }, 1000, "Subscriptions were not downloaded.");
 }
@@ -797,8 +797,7 @@ async function syncSubscription(
   subscriptionUrl, lastFilterChecker, errorMessageDetails) {
   await EWE.subscriptions.sync(subscriptionUrl);
   await wait(async() => {
-    let filters =
-      await EWE.subscriptions.getFilters(subscriptionUrl);
+    let filters = await EWE.subscriptions.getFilters(subscriptionUrl);
     const lastFilter = filters.slice(-1)[0];
 
     if (lastFilterChecker(lastFilter.text)) {

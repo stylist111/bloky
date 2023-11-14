@@ -22,7 +22,7 @@ const {LIB_FOLDER, createSandbox} = require("./_common");
 
 let Subscription = null;
 let SpecialSubscription = null;
-let DownloadableSubscription = null;
+let FullUpdatableSubscription = null;
 let DiffUpdatableSubscription = null;
 let RegularSubscription = null;
 let Filter = null;
@@ -54,10 +54,9 @@ describe("Subscription classes", function() {
     // setRecommendations modifies global state.
     let sandboxedRequire = createSandbox();
     (
-      {Subscription, SpecialSubscription,
-       DownloadableSubscription,
-       DiffUpdatableSubscription,
-       RegularSubscription} = sandboxedRequire(LIB_FOLDER + "/subscriptionClasses"),
+      {Subscription, SpecialSubscription, RegularSubscription,
+       FullUpdatableSubscription, DiffUpdatableSubscription} =
+         sandboxedRequire(LIB_FOLDER + "/subscriptionClasses"),
       {Filter} = sandboxedRequire(LIB_FOLDER + "/filterClasses")
     );
   });
@@ -79,7 +78,7 @@ describe("Subscription classes", function() {
     assert.equal(typeof Subscription, "function", "typeof Subscription");
     assert.equal(typeof SpecialSubscription, "function", "typeof SpecialSubscription");
     assert.equal(typeof RegularSubscription, "function", "typeof RegularSubscription");
-    assert.equal(typeof DownloadableSubscription, "function", "typeof DownloadableSubscription");
+    assert.equal(typeof FullUpdatableSubscription, "function", "typeof FullUpdatableSubscription");
     assert.equal(typeof DiffUpdatableSubscription, "function", "typeof DiffUpdatableSubscription");
   });
 
@@ -281,8 +280,8 @@ describe("DNR mode", function() {
     // setRecommendations modifies global state.
     let sandboxedRequire = createSandbox();
     (
-      {Subscription, RegularSubscription,
-       DownloadableSubscription} = sandboxedRequire(LIB_FOLDER + "/subscriptionClasses"),
+      {Subscription, RegularSubscription, FullUpdatableSubscription} =
+        sandboxedRequire(LIB_FOLDER + "/subscriptionClasses"),
       {setRecommendations} = sandboxedRequire(LIB_FOLDER + "/recommendations")
     );
 
@@ -307,7 +306,7 @@ describe("DNR mode", function() {
     assert.ok(sub1);
     assert.equal(sub1.url, "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt");
     assert.ok(sub1 instanceof RegularSubscription);
-    assert.ok(!(sub1 instanceof DownloadableSubscription));
+    assert.ok(!(sub1 instanceof FullUpdatableSubscription));
     assert.equal(sub1.id, "8C13E995-8F06-4927-BEA7-6C845FB7EEBF");
     assert.equal(sub1.type, "ads");
     assert.equal(sub1.downloadable, false);
@@ -331,7 +330,7 @@ describe("DNR mode", function() {
     // This subscription isn't in the "recommendations"
     let sub4 = Subscription.fromURL("https://test/default");
     assert.ok(sub4 instanceof RegularSubscription);
-    assert.ok(sub4 instanceof DownloadableSubscription);
+    assert.ok(sub4 instanceof FullUpdatableSubscription);
     // This one is unknown so is has no ID.
     assert.strictEqual(sub4.id, null);
     assert.notEqual(sub1, sub4);
