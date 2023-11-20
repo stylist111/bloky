@@ -22,9 +22,10 @@ import {MILLIS_IN_HOUR} from "adblockpluscore/lib/time.js";
 
 import {EWE, runInBackgroundPage, expectTestEvents} from "./messaging.js";
 import {clearRequestLogs, getRequestLogs, setMinTimeout, setEndpointResponse,
-        clearEndpointResponse, TEST_ADMIN_PAGES_URL, TEST_PAGES_URL, wait,
+        clearEndpointResponse, TEST_ADMIN_PAGES_URL, TEST_PAGES_URL,
         waitForAssertion, waitForSubscriptionToBeSynchronized}
   from "./utils.js";
+import {wait} from "./polling.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 
 describe("Telemetry", function() {

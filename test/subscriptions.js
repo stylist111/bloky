@@ -18,10 +18,11 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 
-import {Page, setMinTimeout, wait, waitForAssertion, isMV3, clearRequestLogs,
+import {Page, setMinTimeout, waitForAssertion, isMV3, clearRequestLogs,
         TEST_PAGES_URL, TEST_PAGES_DOMAIN, shouldBeLoaded, setEndpointResponse,
         TEST_ANTI_CV_SUBSCRIPTION}
   from "./utils.js";
+import {wait} from "./polling.js";
 import {addFilter, EWE, runInBackgroundPage, getTestEvents, clearTestEvents,
         expectTestEvents} from "./messaging.js";
 import {VALID_FILTER_TEXT, subCircumvention} from "./api-fixtures.js";

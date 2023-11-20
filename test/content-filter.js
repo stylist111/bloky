@@ -18,13 +18,14 @@
 import expect from "expect";
 
 import browser from "webextension-polyfill";
-import {Page, waitForInvisibleElement, executeScript, setMinTimeout, wait,
+import {Page, waitForInvisibleElement, executeScript, setMinTimeout,
         getVisibleElement, getVisibleElementInFrame, expectElemHideHidden,
         expectElemHideVisible, isFirefox, firefoxVersion, TEST_PAGES_DOMAIN,
         TEST_PAGES_URL, SITEKEY, UNHIDDENTIMEOUT, HIDETIMEOUT,
         TEST_MV3_SUBSCRIPTION, waitForHighlightedStyle, isEdge, edgeVersion,
         waitForSubscriptionsToDownload, chromiumVersion, isChromiumBased}
   from "./utils.js";
+import {wait} from "./polling.js";
 import {addFilter, EWE} from "./messaging.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 

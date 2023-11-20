@@ -17,7 +17,8 @@
 
 import expect from "expect";
 
-import {Page, setMinTimeout, wait} from "./utils.js";
+import {Page, setMinTimeout} from "./utils.js";
+import {wait} from "./polling.js";
 import {getTestEvents} from "./messaging.js";
 import {click, isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 

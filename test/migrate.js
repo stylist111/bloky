@@ -18,9 +18,10 @@
 import expect from "expect";
 import browser from "webextension-polyfill";
 
-import {isMV3, TEST_ANTI_CV_SUBSCRIPTION, wait, TEST_MV3_SUBSCRIPTION,
+import {isMV3, TEST_ANTI_CV_SUBSCRIPTION, TEST_MV3_SUBSCRIPTION,
         expectElemHideHidden}
   from "./utils.js";
+import {wait} from "./polling.js";
 import {EWE, runInBackgroundPage} from "./messaging.js";
 import {updateExtensionFiles, suspendServiceWorker}
   from "./mocha/mocha-runner.js";

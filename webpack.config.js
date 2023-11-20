@@ -29,6 +29,8 @@ import CopyPlugin from "copy-webpack-plugin";
 import ExtensionReloader from "webpack-ext-reloader";
 import Dotenv from "dotenv-webpack";
 
+import {wait} from "./test/polling.js";
+
 let dirname = path.dirname(url.fileURLToPath(import.meta.url));
 let htmlTemplate = path.join(dirname, "test", "template.html");
 const eweRegularConfigName = "engine";
@@ -42,18 +44,19 @@ const fragmentFile = path.join(subscriptionsDir, "rulesets.json");
 const packageJsonPath = path.join(dirname, "package.json");
 
 // Ensures the filesystem syncs between SDK and test extension build steps
-class FSyncPlugin {
+class FileAccessPlugin {
   apply(compiler) {
-    compiler.hooks.assetEmitted.tapAsync(
-      "FSyncPlugin",
-      (file, {targetPath}, callback) => {
-        fs.open(targetPath, (err, fd) => {
-          if (err) {
-            callback(err);
+    compiler.hooks.assetEmitted.tapPromise(
+      "FileAccessPlugin", (file, {targetPath}) => {
+        return wait(async() => {
+          try {
+            await fs.promises.access(targetPath);
+            return true;
           }
-
-          fs.fsync(fd, callback);
-        });
+          catch (e) {
+            return false;
+          }
+        }, 1000, `${file} can't be accessed`);
       }
     );
   }
@@ -88,8 +91,10 @@ const mv3 = {
   misc: {
     host_permissions: ["<all_urls>"],
     ...fs.existsSync(fragmentFile) ?
-      {declarative_net_request: JSON.parse(
-        fs.readFileSync(fragmentFile, "utf8"))} :
+      {
+        declarative_net_request: JSON.parse(
+          fs.readFileSync(fragmentFile, "utf8"))
+      } :
       {}
   },
   outputPath: "test-mv3"
@@ -159,7 +164,7 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath) {
     },
     plugins: [
       new GenerateJsonPlugin("package.json", {type: "commonjs"}, null, 2),
-      new FSyncPlugin(),
+      new FileAccessPlugin(),
       ...commonPlugins()
     ],
     externals: {

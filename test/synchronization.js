@@ -17,10 +17,11 @@
 
 import expect from "expect";
 
-import {wait, TEST_MV3_SUBSCRIPTION_3, getRequestLogs, clearRequestLogs,
+import {TEST_MV3_SUBSCRIPTION_3, getRequestLogs, clearRequestLogs,
         setEndpointResponse, setMinTimeout, Page,
         waitForSubscriptionToBeSynchronized, shouldBeLoaded,
         hasUpdateStaticRules} from "./utils.js";
+import {wait} from "./polling.js";
 import {EWE, addFilter} from "./messaging.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 import {MILLIS_IN_HOUR, MILLIS_IN_DAY} from "adblockpluscore/lib/time.js";

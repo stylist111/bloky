@@ -18,7 +18,8 @@
 import expect from "expect";
 
 import {Page, clickElement, executeScript, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
-        setMinTimeout, wait} from "./utils.js";
+        setMinTimeout} from "./utils.js";
+import {wait} from "./polling.js";
 import {EWE, addFilter, getTestEvents, clearTestEvents, runInBackgroundPage,
         fuzzSuspendServiceWorker} from "./messaging.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";

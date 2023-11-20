@@ -20,10 +20,11 @@ import expect from "expect";
 import {DnrMapper} from "adblockpluscore/lib/dnr/mapper.js";
 import {EWE, clearTestEvents, expectTestEvents, getTestEvents} from "./messaging.js";
 import {hasUpdateStaticRules, Page, setEndpointResponse, shouldBeLoaded,
-        setMinTimeout, wait, expectElemHideVisible, expectElemHideHidden,
+        setMinTimeout, expectElemHideVisible, expectElemHideHidden,
         syncSubHasLastFilter, syncSubHasNoLastFilter,
         waitForSubscriptionToBeSynchronized, clearRequestLogs, getRequestLogs}
   from "./utils.js";
+import {wait} from "./polling.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 

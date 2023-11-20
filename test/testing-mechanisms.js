@@ -20,7 +20,9 @@ import expect from "expect";
 import sinon from "sinon/pkg/sinon.js";
 
 import {setMinTimeout, waitForAssertion, setEndpointResponse,
-        clearEndpointResponse, TEST_ADMIN_PAGES_URL, TEST_PAGES_URL, wait, firefoxVersion, isFirefox} from "./utils.js";
+        clearEndpointResponse, TEST_ADMIN_PAGES_URL, TEST_PAGES_URL,
+        firefoxVersion, isFirefox} from "./utils.js";
+import {wait} from "./polling.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 import {runInBackgroundPage, waitForServiceWorkerInitialization, EWE}
   from "./messaging.js";

@@ -22,6 +22,7 @@ import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 import {fuzzSuspendServiceWorker, waitForServiceWorkerInitialization,
         EWE, getTestEvents, clearTestEvents}
   from "./messaging.js";
+import {wait} from "./polling.js";
 
 export const TEST_PAGES_DOMAIN = "localhost";
 export const CROSS_DOMAIN = "127.0.0.1";
@@ -503,55 +504,6 @@ export async function waitForInvisibleElement(tabId, id) {
     }, [id]);
     return result == null;
   }, 1000, `The element with id "${id}" is still visible`);
-}
-
-export function wait(condition, timeout = 0, message, pollTimeout = 100) {
-  if (typeof condition !== "function") {
-    throw TypeError("Wait condition must be a function");
-  }
-
-  function evaluateCondition() {
-    return new Promise((resolve, reject) => {
-      try {
-        resolve(condition(this));
-      }
-      catch (ex) {
-        reject(ex);
-      }
-    });
-  }
-
-  let result = new Promise((resolve, reject) => {
-    let startTime = performance.now();
-    let pollCondition = async() => {
-      evaluateCondition().then(value => {
-        let elapsed = performance.now() - startTime;
-        if (value) {
-          resolve(value);
-        }
-        else if (timeout && elapsed >= timeout) {
-          try {
-            let timeoutMessage = message ?
-              `${typeof message === "function" ? message() : message}\n` : "";
-            reject(
-              new Error(`${timeoutMessage}Wait timed out after ${elapsed}ms`)
-            );
-          }
-          catch (ex) {
-            reject(
-              new Error(`${ex.message}\nWait timed out after ${elapsed}ms`)
-            );
-          }
-        }
-        else {
-          setTimeout(pollCondition, pollTimeout);
-        }
-      }, reject);
-    };
-    pollCondition();
-  });
-
-  return result;
 }
 
 export function waitForAssertion(condition, timeout = 1000, pollTimeout = 100) {

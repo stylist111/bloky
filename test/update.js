@@ -19,7 +19,8 @@ import expect from "expect";
 import browser from "webextension-polyfill";
 
 import {Page, TEST_MV3_SUBSCRIPTION, isFirefox, readFile, writeFile,
-        setMinTimeout, wait, isIncognito, firefoxVersion} from "./utils.js";
+        setMinTimeout, isIncognito, firefoxVersion} from "./utils.js";
+import {wait} from "./polling.js";
 import {EWE, runInBackgroundPage} from "./messaging.js";
 import {updateExtensionFiles} from "./mocha/mocha-runner.js";
 

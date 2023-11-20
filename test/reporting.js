@@ -18,11 +18,12 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 
-import {Page, Popup, setMinTimeout, wait, waitForAssertion, isMV3, isEdge,
+import {Page, Popup, setMinTimeout, waitForAssertion, isMV3, isEdge,
         isMV2CustomSubsExtension, executeScript, getVisibleElement,
         setEndpointResponse, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
         CROSS_DOMAIN_URL, CROSS_DOMAIN, TEST_ADMIN_PAGES_URL}
   from "./utils.js";
+import {wait} from "./polling.js";
 import {EWE, addFilter, runInBackgroundPage, getTestEvents, clearTestEvents,
         addOnBlockableListener, removeOnBlockableListener,
         waitForServiceWorkerInitialization} from "./messaging.js";

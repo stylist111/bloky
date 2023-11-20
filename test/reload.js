@@ -18,10 +18,10 @@
 import expect from "expect";
 import browser from "webextension-polyfill";
 
-import {Page, wait, isMV3, isFirefox, TEST_MV3_SUBSCRIPTION,
-        waitForHighlightedStyle, isIncognito,
-        waitForSubscriptionToBeSynchronized}
+import {Page, isMV3, isFirefox, TEST_MV3_SUBSCRIPTION, waitForHighlightedStyle,
+        isIncognito, waitForSubscriptionToBeSynchronized}
   from "./utils.js";
+import {wait} from "./polling.js";
 import {addFilter, EWE, runInBackgroundPage}
   from "./messaging.js";
 

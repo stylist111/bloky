@@ -17,7 +17,8 @@
 
 import expect from "expect";
 
-import {setMinTimeout, wait, TEST_PAGES_URL} from "./utils.js";
+import {setMinTimeout, TEST_PAGES_URL} from "./utils.js";
+import {wait} from "./polling.js";
 import {EWE, runInBackgroundPage, expectTestEvents} from "./messaging.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
