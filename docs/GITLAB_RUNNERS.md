@@ -14,7 +14,7 @@ local machine.
 
 ### Registering a runner
 
-1. Get a registration token from the Runners section in the 
+**Step 1**. Get a registration token from the Runners section in the
 [CI/CD settings](https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution/-/settings/ci_cd):
 
 ![Registration token](/docs/registration_token_ui.png)
@@ -25,7 +25,8 @@ project runner" blue button.
 Note: Registration tokens are deprecated. [Authentication tokens](https://docs.gitlab.com/ee/ci/runners/runners_scope.html#create-a-project-runner-with-a-runner-authentication-token)
 should be the standard approach, but that currently [doesn't work](https://gitlab.com/gitlab-org/gitlab/-/issues/424239).
 
-2. Register a docker runner using the `TOKEN` from the previous step. Example:
+**Step 2**. Register a docker runner using the `TOKEN` from the previous step.
+Example:
 
 ```sh
 docker run --rm -it -v /srv/gitlab-runner/config:/etc/gitlab-runner gitlab/gitlab-runner register \
@@ -56,7 +57,7 @@ to the commands below.
 be added.
 - These notes apply to the next steps as well.
 
-3. Register a docker-in-docker (dind) runner:
+**Step 3**. Register a docker-in-docker (dind) runner:
 
 ```sh
 docker run --rm -it -v /srv/gitlab-runner/config:/etc/gitlab-runner gitlab/gitlab-runner register \
@@ -65,7 +66,7 @@ docker run --rm -it -v /srv/gitlab-runner/config:/etc/gitlab-runner gitlab/gitla
   --description "local test dind" --tag-list "local-test-dind"
 ```
 
-4. Start the runner process:
+**Step 4**. Start the runner process:
 
 ```sh
 docker run -it -v /srv/gitlab-runner/config:/etc/gitlab-runner \
@@ -74,7 +75,7 @@ docker run -it -v /srv/gitlab-runner/config:/etc/gitlab-runner \
 
 ### Running CI jobs locally
 
-1. Add tags to `.gitlab-ci.yml`:
+**Step 1**. Add tags to `.gitlab-ci.yml`:
 
 By default, the jobs defined in `.gitlab-ci.yml` run on SaaS runners hosted by
 Gitlab. Adding `tags` to any job will make it run on any registered runner with
@@ -92,7 +93,7 @@ func:v3:chromium:stable:
     - local-test-dind
 ```
 
-2. Trigger the CI pipeline.
+**Step 2**. Trigger the CI pipeline.
 
 The tagged jobs should now run on the local machine.
 
@@ -102,8 +103,8 @@ The tagged jobs should now run on the local machine.
 
 `docker exec` can be used to run any command into a running container.
 
-Now, the containers where CI jobs run get automatically deleted after the job has
-finished running. Gitlab has an [open issue to improve that behaviour](https://gitlab.com/gitlab-org/gitlab-runner/-/issues/3605).
+Now, the containers where CI jobs run get automatically deleted after the job
+has finished running. Gitlab has an [open issue to improve that behaviour](https://gitlab.com/gitlab-org/gitlab-runner/-/issues/3605).
 
 To artificially keep the container running, `sleep` can be used as the last
 script command. Example:
