@@ -18,6 +18,10 @@
 import http from "http";
 import https from "https";
 import fs from "fs";
+import url from "url";
+import path from "path";
+import {exec} from "child_process";
+import {promisify} from "util";
 
 export async function exists(filename) {
   try {
@@ -29,17 +33,17 @@ export async function exists(filename) {
   }
 }
 
-export async function download(url, toFile) {
-  console.info(`Downloading ${url} to ${toFile} ...`);
-  const proto = url.startsWith("https") ? https : http;
+export async function download(downloadUrl, toFile) {
+  console.info(`Downloading ${downloadUrl} to ${toFile} ...`);
+  const proto = downloadUrl.startsWith("https") ? https : http;
 
   return new Promise((resolve, reject) => {
     const file = fs.createWriteStream(toFile);
     let fileInfo = null;
 
-    const request = proto.get(url, response => {
+    const request = proto.get(downloadUrl, response => {
       if (response.statusCode !== 200) {
-        reject(new Error(`Failed to get '${url}' (${response.statusCode})`));
+        reject(new Error(`Failed to get '${downloadUrl}' (${response.statusCode})`));
         return;
       }
 
@@ -74,7 +78,7 @@ export async function download(url, toFile) {
  * also be called from the CLI by the developer to run immediately. This
  * function takes the url of the file where it was called from and compares it
  * with the process running.
- *  @param {string} url - The URL of the containing document, as provided by
+ *  @param {string} metaUrl - The URL of the containing document, as provided by
  * `import.meta.url`
  * @returns {boolean} True if the script was invoked directly from the CLI,
  * false otherwise.
@@ -84,7 +88,7 @@ export async function download(url, toFile) {
  * }
  *
  */
-export function isMain(url) {
+export function isMain(metaUrl) {
   let executableName = process.argv[1];
   if (fs.statSync(executableName).isSymbolicLink) {
     executableName = fs.realpathSync(executableName);
@@ -92,7 +96,7 @@ export function isMain(url) {
 
   const binUrl = generateBinUrl(executableName);
 
-  return url === binUrl;
+  return metaUrl === binUrl;
 }
 
 function generateBinUrl(executableName) {
@@ -102,4 +106,30 @@ function generateBinUrl(executableName) {
   }
 
   return binUrl;
+}
+
+export function projectRootPath() {
+  let scriptDir = path.dirname(url.fileURLToPath(import.meta.url));
+  let projectRoot = path.join(scriptDir, "..");
+  return path.normalize(projectRoot);
+}
+
+export async function currentVersion() {
+  let projectRoot = projectRootPath();
+  let versionResult = await promisify(exec)(
+    "npm pkg get version",
+    {cwd: projectRoot}
+  );
+  // json parse removes the extra quotes around the json string that npm returns
+  return JSON.parse(versionResult.stdout.trim());
+}
+
+export async function repositoryUrl() {
+  let projectRoot = projectRootPath();
+  let repoUrlResult = await promisify(exec)(
+    "npm pkg get repository.url",
+    {cwd: projectRoot}
+  );
+  // json parse removes the extra quotes around the json string that npm returns
+  return JSON.parse(repoUrlResult.stdout.trim());
 }

@@ -94,7 +94,10 @@
     "subs-generate": "node scripts/generateSubscriptionsFragment.js",
     "subs-run": "node scripts/prepare-mv3-files.js",
     "subs-clean": "node scripts/clean-mv3-files.js",
-    "create-allowlisting-keypair": "node scripts/createKeypair.js"
+    "create-allowlisting-keypair": "node scripts/createKeypair.js",
+    "preversion": "node scripts/preVersionConfirmation.js",
+    "version": "node scripts/versionBumpReleaseNotes.js",
+    "postversion": "node scripts/postVersionCleanup.js"
   },
   "bin": {
     "subs-init": "./scripts/initSubscriptions.js",
