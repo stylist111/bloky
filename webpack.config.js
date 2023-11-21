@@ -29,8 +29,6 @@ import CopyPlugin from "copy-webpack-plugin";
 import ExtensionReloader from "webpack-ext-reloader";
 import Dotenv from "dotenv-webpack";
 
-import {wait} from "./test/polling.js";
-
 let dirname = path.dirname(url.fileURLToPath(import.meta.url));
 let htmlTemplate = path.join(dirname, "test", "template.html");
 const eweRegularConfigName = "engine";
@@ -42,25 +40,6 @@ const eweTestSubscriptionsFile = "test/custom-subscriptions.json";
 const subscriptionsDir = path.join(dirname, "scriptsOutput", "rulesets");
 const fragmentFile = path.join(subscriptionsDir, "rulesets.json");
 const packageJsonPath = path.join(dirname, "package.json");
-
-// Ensures the filesystem syncs between SDK and test extension build steps
-class FileAccessPlugin {
-  apply(compiler) {
-    compiler.hooks.assetEmitted.tapPromise(
-      "FileAccessPlugin", (file, {targetPath}) => {
-        return wait(async() => {
-          try {
-            await fs.promises.access(targetPath);
-            return true;
-          }
-          catch (e) {
-            return false;
-          }
-        }, 1000, `${file} can't be accessed`);
-      }
-    );
-  }
-}
 
 const base = {
   eweConfigName: eweRegularConfigName,
@@ -122,9 +101,11 @@ function commonPlugins() {
   ];
 }
 
-function eweBuild(env, configName, subscriptionFile, silent, outputPath) {
+function eweBuild(env, configName, subscriptionFile, silent, outputPath,
+                  dependencies) {
   let build = {
     name: configName,
+    dependencies,
     entry: {
       api: {
         import: "./sdk/api/index.js",
@@ -164,7 +145,6 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath) {
     },
     plugins: [
       new GenerateJsonPlugin("package.json", {type: "commonjs"}, null, 2),
-      new FileAccessPlugin(),
       ...commonPlugins()
     ],
     externals: {
@@ -198,15 +178,11 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath) {
 }
 
 export default (env = {}) => {
-  if (fs.existsSync(eweDistPath)) {
-    fs.rmSync(eweDistPath, {recursive: true});
-  }
-
   let builds = [
     eweBuild(env, eweRegularConfigName, null,
              false, eweRegularOutputPath),
     eweBuild(env, eweCustomConfigName, eweTestSubscriptionsFile,
-             true, eweCustomOutputPath)
+             true, eweCustomOutputPath, [eweRegularConfigName])
   ];
 
   let extensionReloaderPort = 9090;
