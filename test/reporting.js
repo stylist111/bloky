@@ -1019,31 +1019,30 @@ describe("Reporting", function() {
           filter: expectedAllowingFilter(
             `@@${TEST_PAGES_URL}/nested-iframe-aborted-request.html$document`
           ),
-          matchInfo: {
-            ...allowingMatchInfo,
-            specificOnly: false
-          },
-          request: expectedRequestRelativeUrl("image.html")
-        }, {
-          filter: expectedAllowingFilter(
-            `@@${TEST_PAGES_URL}/nested-iframe-aborted-request.html$document`
-          ),
           matchInfo: {...allowingMatchInfo, specificOnly: false},
           request: expectedRequestRelativeUrl("image.png")
         }],
         {
-          // This event may appear depending on the order frames are
-          // loaded and then committed. If it's committed first (eg
-          // firefox), we correctly get this event before the frame
-          // ultimately errors. If it would only be committed later
-          // (eg chrome), we don't get this event. Blocking should
-          // be the same either way.
           optionalEvents: [{
+            // This event may appear depending on the order frames are
+            // loaded and then committed. If it's committed first (eg
+            // firefox), we correctly get this event before the frame
+            // ultimately errors. If it would only be committed later
+            // (eg chrome), we don't get this event. Blocking should
+            // be the same either way.
             filter: expectedAllowingFilter(
               `@@${TEST_PAGES_URL}/nested-iframe-aborted-request.html$document`
             ),
             matchInfo: {...allowingMatchInfo, specificOnly: false},
             request: expectedRequestRelativeUrl("iframe.html?delay=500")
+          }, {
+            // see getParentFrameInfoFromWebrequestDetails()
+            // https://bugs.chromium.org/p/chromium/issues/detail?id=725917
+            filter: expectedAllowingFilter(
+              `@@${TEST_PAGES_URL}/nested-iframe-aborted-request.html$document`
+            ),
+            matchInfo: {...allowingMatchInfo, specificOnly: false},
+            request: expectedRequestRelativeUrl("image.html")
           }]
         }
       );
