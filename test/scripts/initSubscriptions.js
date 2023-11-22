@@ -100,4 +100,28 @@ describe("initSubscriptions script", function() {
       });
     });
   }
+
+  it("uses overriden URL if provided", async function() {
+    const customBackend = "http://someCustomBackend/index.json";
+    const subscriptionsListData = createFile(tmpDir,
+      `[{
+        "type": "ads",
+        "languages": [
+          "en"
+        ],
+        "title": "Test Subscription",
+        "url": "someUrl2",
+        "homepage": "https://easylist.to/"
+      }]`);
+    const file = path.join(outDir, "file.tmp");
+
+    let customBackendUrl = new URL(customBackend);
+    nock(customBackendUrl.origin)
+      .get(customBackendUrl.pathname)
+      .reply(200, subscriptionsListData);
+
+    await init(file, customBackend);
+    expect(await fs.promises.readFile(file))
+      .toEqual(Buffer.from(subscriptionsListData, ENCODING));
+  });
 });

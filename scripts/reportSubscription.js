@@ -16,8 +16,8 @@
  */
 import {writeFile} from "fs/promises";
 import path from "path";
-import {asDNR} from "adblockpluscore/lib/dnr/index.js";
-import {parse, FilterParsingError} from "adblockpluscore/lib/filters/index.js";
+import {asDNR} from "../core/lib/dnr/index.js";
+import {parse, FilterParsingError} from "../core/lib/filters/index.js";
 
 // keeps all data per subscriptionId
 export let reports = new Map(); // subscriptionId -> subscriptionReport

@@ -10,6 +10,8 @@ Unreleased
   `downloadable` property. Some other functions that return subscriptions
   (eg. `getForFilter`) or events that contain subscription object also provide
   `updatable` property, while still having `downloadable`. (EE-212)
+- The rulesets-related scripts for MV3 are fixed and are working from command-line
+  (eg. `npx subs-convert`). (EE-267)
 
 # Updating your code
 

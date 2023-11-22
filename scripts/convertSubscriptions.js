@@ -19,8 +19,8 @@
 // the path is relative to adblockpluscore
 import {OUTPUT_DIR as inputDir}
   from "./fetchSubscriptions.js";
-import {processFile} from "adblockpluscore/scripts/text2dnr.js";
-import {parseFilterList} from "adblockpluscore/lib/filters/lists.js";
+import {processFile} from "../core/scripts/text2dnr.js";
+import {parseFilterList} from "../core/lib/filters/lists.js";
 import fs from "fs";
 import {readFile} from "fs/promises";
 import path from "path";

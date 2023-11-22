@@ -71,6 +71,10 @@ const BUILD_TIME_ROUTES = [
     })
   },
   {
+    url: "/index.json",
+    response: fs.readFileSync(dirname + "/pages/index.json")
+  },
+  {
     url: "/telemetry",
     response: () => JSON.stringify({
       token: new Date().toISOString()

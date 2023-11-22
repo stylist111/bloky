@@ -25,7 +25,7 @@ import {hideBin} from "yargs/helpers";
 export const backendUrl = "https://easylist-downloads.adblockplus.org/v3/index.json";
 export const filenameMv3 = "scriptsOutput/subscriptions_mv3.json";
 
-export async function init(filename) {
+export async function init(filename, url = backendUrl) {
   if (await exists(filename)) {
     console.warn("The output file exists and will be overwritten");
     await fs.promises.unlink(filename);
@@ -34,7 +34,7 @@ export async function init(filename) {
   if (!(await exists(toDir))) {
     await fs.promises.mkdir(toDir, {recursive: true});
   }
-  await download(backendUrl, filename);
+  await download(url, filename);
 }
 
 async function main() {
@@ -45,10 +45,17 @@ async function main() {
       requiresArg: true,
       description: "Output file"
     })
+    .option("url", {
+      alias: "u",
+      type: "string",
+      requiresArg: true,
+      description: "The index URL (to override the default URL)"
+    })
     .parse();
 
   let filename = args.output || filenameMv3;
-  await init(filename);
+  let url = args.url || backendUrl;
+  await init(filename, url);
   console.log(`Subscriptions file (${filename}) generated.`);
 }
 
