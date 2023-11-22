@@ -971,27 +971,26 @@ describe("Reporting", function() {
           filter: expectedAllowingFilter(
             `@@${TEST_PAGES_URL}/iframe.html$document`
           ),
-          matchInfo: {
-            ...allowingMatchInfo,
-            specificOnly: false
-          },
+          matchInfo: {...allowingMatchInfo, specificOnly: false},
           request: expectedRequestRelativeUrl("iframe.html")
-        }, {
-          filter: expectedAllowingFilter(
-            `@@${TEST_PAGES_URL}/iframe.html$document`
-          ),
-          matchInfo: {
-            ...allowingMatchInfo,
-            specificOnly: false
-          },
-          request: expectedRequestRelativeUrl("image.html")
         }, {
           filter: expectedAllowingFilter(
             `@@${TEST_PAGES_URL}/iframe.html$document`
           ),
           matchInfo: {...allowingMatchInfo, specificOnly: false},
           request: expectedRequestRelativeUrl("image.png")
-        }]
+        }],
+        {
+          // see getParentFrameInfoFromWebrequestDetails()
+          // https://bugs.chromium.org/p/chromium/issues/detail?id=725917
+          optionalEvents: [{
+            filter: expectedAllowingFilter(
+              `@@${TEST_PAGES_URL}/iframe.html$document`
+            ),
+            matchInfo: {...allowingMatchInfo, specificOnly: false},
+            request: expectedRequestRelativeUrl("image.html")
+          }]
+        }
       );
     });
 
@@ -1104,18 +1103,20 @@ describe("Reporting", function() {
           filter: expectedAllowingFilter(
             `@@${TEST_PAGES_URL}/nested-iframe-srcdoc.html$document`
           ),
-          matchInfo: {
-            ...allowingMatchInfo,
-            specificOnly: false
-          },
-          request: expectedRequestRelativeUrl("image.html")
-        }, {
-          filter: expectedAllowingFilter(
-            `@@${TEST_PAGES_URL}/nested-iframe-srcdoc.html$document`
-          ),
           matchInfo: {...allowingMatchInfo, specificOnly: false},
           request: expectedRequestRelativeUrl("image.png")
-        }]
+        }],
+        {
+          // see getParentFrameInfoFromWebrequestDetails()
+          // https://bugs.chromium.org/p/chromium/issues/detail?id=725917
+          optionalEvents: [{
+            filter: expectedAllowingFilter(
+              `@@${TEST_PAGES_URL}/nested-iframe-srcdoc.html$document`
+            ),
+            matchInfo: {...allowingMatchInfo, specificOnly: false},
+            request: expectedRequestRelativeUrl("image.html")
+          }]
+        }
       );
     });
 
