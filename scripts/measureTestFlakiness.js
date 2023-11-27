@@ -39,7 +39,7 @@ const args = yargs(hideBin(process.argv))
       })
       .option("dockerRunFlags", {
         type: "string",
-        default: "--cpus=2 --memory=8g --shm-size=512m",
+        default: "--cpus=2 --memory=8g --shm-size=1g",
         description: "extra flags to pass to docker run"
       })
       .option("runs", {

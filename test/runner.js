@@ -548,15 +548,6 @@ async function runTests() {
     customBrowserBinary = params.browserBinary;
   }
 
-  let extraArgs = [];
-  // auto-open-devtools-for-tabs is required to make MV3 service
-  // workers start up after being suspended in tests.
-  // See https://bugs.chromium.org/p/chromium/issues/detail?id=1325792#c8
-  if ((isMV3 || testKinds.includes("mv2-mv3-migrate")) &&
-    (browser == "chromium" || browser == "edge")) {
-    extraArgs.push("auto-open-devtools-for-tabs");
-  }
-
   console.log(`Getting ready to run ${browser} ${version} ...`);
 
   let versionNumber = version;
@@ -570,6 +561,17 @@ async function runTests() {
       console.log(`Installed ${browser} ${versionNumber} ...`);
       majorVersion = parseInt(versionNumber.split(".")[0], 10);
     }
+  }
+
+  let extraArgs = [];
+  // auto-open-devtools-for-tabs is required to make MV3 service
+  // workers start up after being suspended in tests.
+  // See https://bugs.chromium.org/p/chromium/issues/detail?id=1325792#c8
+  // This was fixed in Chromium 116.
+  if ((isMV3 || testKinds.includes("mv2-mv3-migrate")) &&
+      (browser == "chromium" || browser == "edge") &&
+      majorVersion < 116) {
+    extraArgs.push("auto-open-devtools-for-tabs");
   }
 
   // New headless mode was introduced in Chromium 111 and Edge 114. The old

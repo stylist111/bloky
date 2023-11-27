@@ -20,7 +20,7 @@ import expect from "expect";
 
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 import {fuzzSuspendServiceWorker, waitForServiceWorkerInitialization,
-        EWE, getTestEvents, clearTestEvents}
+        EWE, getTestEvents, clearTestEvents, runInBackgroundPage}
   from "./messaging.js";
 import {wait} from "./polling.js";
 
@@ -726,7 +726,15 @@ export async function clearEndpointResponse(url) {
 
 export async function waitForSubscriptionsToDownload() {
   await wait(async() => {
-    let subscriptions = await EWE.subscriptions.getSubscriptions();
+    // don't use the proxy because it will suspend the service worker, which
+    // will interrupt any download we're currently waiting for.
+    let subscriptions = await runInBackgroundPage([
+      {op: "getGlobal", arg: "EWE"},
+      {op: "getProp", arg: "subscriptions"},
+      {op: "callMethod", arg: "getSubscriptions"},
+      {op: "await"}
+    ], false);
+
     return subscriptions.every(
       sub => sub.diffURL || sub.downloadStatus == "synchronize_ok"
     );
