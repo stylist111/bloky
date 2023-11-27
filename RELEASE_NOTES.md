@@ -1,6 +1,9 @@
 Unreleased
 ==========
 
+🌻 1.2.0 - 2023-11-27 🌻
+========================
+
 # General
 
 - Added wildcard domains support for content filtering in elemHideEmulation. (EE-248)
