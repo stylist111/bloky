@@ -60,6 +60,34 @@ describe("Element hiding emulation", function() {
     }
 
     testSelectorMatches(
+      "Works with wildcards domain: *",
+      [
+        "example.*#?#:-abp-properties(foo)"
+      ],
+      "example.com",
+      ["example.*#?#:-abp-properties(foo)"]
+    );
+
+    testSelectorMatches(
+      "Ignore filters with example.* when domain is example.xyz.com",
+      [
+        "example.*#?#:-abp-properties(foo)"
+      ],
+      "www.example.com.xyz",
+      []
+    );
+
+    testSelectorMatches(
+      "Ignore filters with parent wildcard domain if exception matches subdomain",
+      [
+        "www.example.*#@#:-abp-properties(foo)",
+        "example.com#?#:-abp-properties(foo)"
+      ],
+      "www.example.com",
+      []
+    );
+
+    testSelectorMatches(
       "Ignore generic filters",
       [
         "#?#:-abp-properties(foo)", "example.com#?#:-abp-properties(foo)",
@@ -106,14 +134,83 @@ describe("Element hiding emulation", function() {
     );
   });
 
-  it("Filters container", function() {
-    function compareFilters(description, domain, expectedMatches) {
-      let result = elemHideEmulation.getFilters(domain)
-          .map(filter => filter.text);
-      expectedMatches = expectedMatches.map(filter => filter.text);
-      assert.deepEqual(result.sort(), expectedMatches.sort(), description);
-    }
+  function compareFilters(description, domain, expectedMatches) {
+    let result = elemHideEmulation.getFilters(domain)
+        .map(filter => filter.text);
+    expectedMatches = expectedMatches.map(filter => filter.text);
+    assert.deepEqual(result.sort(), expectedMatches.sort(), description);
+  }
 
+  describe("Wildcard domain flows", function() {
+    it("Removes wildcard filter while same domain filter exists", function() {
+      let wildcardDomainFilter = Filter.fromText("example.*#?#:-abp-properties(foo)");
+      let domainFilter = Filter.fromText("example.com#?#:-abp-properties(foo)");
+
+      elemHideEmulation.add(wildcardDomainFilter);
+      elemHideEmulation.add(domainFilter);
+      compareFilters(
+        "Return all matching filters",
+        "www.example.com",
+        [wildcardDomainFilter, domainFilter]
+      );
+
+      elemHideEmulation.remove(wildcardDomainFilter);
+      compareFilters(
+        "Return all matching filters after removing one",
+        "www.example.com",
+        [domainFilter]
+      );
+
+      elemHideEmulation.clear();
+      compareFilters(
+        "Return no filters after clearing",
+        "www.example.com",
+        []
+      );
+    });
+
+    it("Removes domain filter while same wildcard filter exists", function() {
+      let wildcardDomainFilter = Filter.fromText("example.*#?#:-abp-properties(foo)");
+      let domainFilter = Filter.fromText("example.com#?#:-abp-properties(foo)");
+
+      elemHideEmulation.add(wildcardDomainFilter);
+      elemHideEmulation.add(domainFilter);
+      compareFilters(
+        "Return all matching filters",
+        "www.example.com",
+        [wildcardDomainFilter, domainFilter]
+      );
+
+      elemHideEmulation.remove(domainFilter);
+      compareFilters(
+        "Return all matching filters after removing one",
+        "www.example.com",
+        [wildcardDomainFilter]
+      );
+
+      elemHideEmulation.clear();
+      compareFilters(
+        "Return no filters after clearing",
+        "www.example.com",
+        []
+      );
+    });
+
+    it("Allowlisting works while same wildcard filter exists", function() {
+      let wildcardDomainFilter = Filter.fromText("example.*#?#:-abp-properties(foo)");
+      let allowingDomainFilter = Filter.fromText("example.com#@#:-abp-properties(foo)");
+
+      elemHideEmulation.add(wildcardDomainFilter);
+      elemHideEmulation.add(allowingDomainFilter);
+      compareFilters(
+        "Return all matching filters",
+        "www.example.com",
+        [wildcardDomainFilter, allowingDomainFilter]
+      );
+    });
+  });
+
+  it("Filters container", function() {
     let domainFilter = Filter.fromText("example.com##filter1");
     let subdomainFilter = Filter.fromText("www.example.com##filter2");
     let otherDomainFilter = Filter.fromText("other.example.com##filter3");

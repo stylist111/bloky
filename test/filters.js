@@ -91,6 +91,27 @@ describe("Filters", function() {
       .toEqual([{...VALID_FILTER, text: WEBBUNDLE_FILTER_TEXT}]);
   });
 
+  it("adds a single filter with wildcards", async function() {
+    await addFilter("||foo^$domain=example.*");
+    expect(await EWE.filters.getUserFilters())
+      .toEqual([expect.objectContaining(
+        {text: "||foo^$domain=example.*"})]);
+  });
+
+  it("adds a single filter with multiple wildcards", async function() {
+    await addFilter("||foo^$domain=example.*|google.*");
+    expect(await EWE.filters.getUserFilters())
+      .toEqual([expect.objectContaining(
+        {text: "||foo^$domain=example.*|google.*"})]);
+  });
+
+  it("rejects to adds a single filter with invalid wildcards", async function() {
+    await expect(addFilter("||foo^$domain=*oogle.*"))
+        .rejects.toThrow("FilterError: {\"type\":\"invalid_filter\",\"reason\":\"filter_invalid_wildcard\",\"option\":null}");
+    await expect(addFilter("||foo^$domain=google.???"))
+      .rejects.toThrow("FilterError: {\"type\":\"invalid_filter\",\"reason\":\"filter_invalid_wildcard\",\"option\":null}");
+  });
+
   it("adds an allowing filter with sitekey option", async function() {
     const SITEKEY_ELEMHIDE_FILTER = `@@$elemhide,sitekey=${SITEKEY}`;
     await EWE.filters.add([SITEKEY_ELEMHIDE_FILTER]);

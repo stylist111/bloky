@@ -21,14 +21,21 @@ const {promises: {writeFile}} = require("fs");
 const got = require("got");
 
 const PSL_URL = "https://publicsuffix.org/list/public_suffix_list.dat";
-const FILENAME = "data/publicSuffixList.js";
+const ICANN_PSL_FILENAME = "data/icannPublicSuffixList.js";
+const NON_ICANN_PSL_FILENAME = "data/nonIcannPublicSuffixList.js";
 
 async function main() {
   let response = await got(PSL_URL);
   let psl = {};
+  let privatepsl = {};
+  let isPrivateDomain = false;
 
   for (let line of response.body.split(/\r?\n/)) {
-    if (line.startsWith("//") || !line.includes(".")) {
+    if (line.startsWith("// ===BEGIN PRIVATE DOMAINS===")) {
+      isPrivateDomain = true;
+      continue;
+    }
+    else if (line.length == 0 || line.startsWith("//")) {
       continue;
     }
 
@@ -43,13 +50,14 @@ async function main() {
       line = line.slice(1);
       value = 0;
     }
-
-    psl[new URL("http://" + line).hostname] = value;
+    let list = (isPrivateDomain ? privatepsl : psl);
+    list[new URL("http://" + line).hostname] = value;
   }
 
-  let keys = Object.keys(psl).sort();
-  await writeFile(FILENAME, "exports.publicSuffixes = " +
-                  JSON.stringify(psl, keys, 2));
+  await writeFile(NON_ICANN_PSL_FILENAME, "exports.nonIcannPublicSuffixes = " +
+    JSON.stringify(privatepsl, " ", 2));
+  await writeFile(ICANN_PSL_FILENAME, "exports.icannPublicSuffixes = " +
+    JSON.stringify(psl, " ", 2));
 }
 
 if (require.main == module) {

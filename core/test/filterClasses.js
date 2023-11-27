@@ -225,6 +225,32 @@ describe("Filter classes", function() {
     // $~third-party requires ||
     compareFilter("*example.com/ad.js$rewrite=abp-resource:noopjs,~third-party", ["type=invalid", "text=*example.com/ad.js$rewrite=abp-resource:noopjs,~third-party", "reason=filter_invalid_rewrite"]);
 
+    // Not supported wildcards
+    let invalidDomainWildcards = ["subdomain.*.example.com",
+                                  "do*ain.*",
+                                  "*",
+                                  "*domain.*",
+                                  "*domain",
+                                  "examp*",
+                                  "example.?",
+                                  "example.co*",
+                                  "example.or*",
+                                  "example.d*",
+                                  "example.**",
+                                  "*.example.*",
+                                  "example.com|example.**"];
+    for (let domain of invalidDomainWildcards) {
+      let invalidFilterText = "||foo^$domain=" + domain;
+      compareFilter(invalidFilterText, ["type=invalid", `text=${invalidFilterText}`, "reason=filter_invalid_wildcard"]);
+    }
+
+    let validDomainWildcards = ["example.*", "images.domain.*"];
+    for (let domain of validDomainWildcards) {
+      let validFilterText = "||bar^$domain=" + domain;
+      let filter = Filter.fromText(validFilterText);
+      assert.equal(filter instanceof InvalidFilter, false);
+    }
+
     function checkElemHideEmulationFilterInvalid(domains) {
       let filterText = domains + "#?#:-abp-properties(abc)";
       compareFilter(
@@ -446,7 +472,7 @@ describe("Filter classes", function() {
     assert.equal(Filter.normalize("   domain.c  om## # sele ctor   "),
                  "domain.com### sele ctor");
 
-    // Wildcard: "*" is allowed, though not supported (yet).
+    // Wildcard: "*" is allowed
     assert.equal(Filter.normalize("   domain.*## # sele ctor   "),
                  "domain.*### sele ctor");
 
@@ -454,7 +480,7 @@ describe("Filter classes", function() {
     assert.equal(Filter.normalize("   domain.c  om#?# # sele ctor   "),
                  "domain.com#?## sele ctor");
 
-    // Wildcard: "*" is allowed, though not supported (yet).
+    // Wildcard: "*" is allowed
     assert.equal(Filter.normalize("   domain.*#?# # sele ctor   "),
                  "domain.*#?## sele ctor");
 
@@ -472,7 +498,7 @@ describe("Filter classes", function() {
     assert.equal(Filter.normalize("   domain.c  om#@# # sele ctor   "),
                  "domain.com#@## sele ctor");
 
-    // Wildcard: "*" is allowed, though not supported (yet).
+    // Wildcard: "*" is allowed
     assert.equal(Filter.normalize("   domain.*#@# # sele ctor   "),
                  "domain.*#@## sele ctor");
 
@@ -487,7 +513,7 @@ describe("Filter classes", function() {
     assert.equal(Filter.normalize("   domain.c  om#$#  sni pp  et   "),
                  "domain.com#$#sni pp  et");
 
-    // Wildcard: "*" is allowed, though not supported (yet).
+    // Wildcard: "*" is allowed
     assert.equal(Filter.normalize("   domain.*#$#  sni pp  et   "),
                  "domain.*#$#sni pp  et");
 
@@ -991,5 +1017,34 @@ describe("isActiveFilter()", function() {
   it("should return false for example.com,,example.net##.foo", function() {
     // There must be no blank domain in the list.
     assert.strictEqual(isActiveFilter(Filter.fromText("example.com,,example.net##.foo")), false);
+  });
+});
+
+describe("ActiveFilter.isActiveOnDomain()", function() {
+  it("returns true for the exact match", function() {
+    let filter = Filter.fromText("foo$domain=example.com");
+    assert.equal(filter.isActiveOnDomain("example.com"), true);
+  });
+
+  it("returns true for the wildcarded match", function() {
+    let filter = Filter.fromText("foo$domain=example.*");
+    assert.equal(filter.isActiveOnDomain("example.com"), true);
+  });
+
+  it("returns false for the wildcarded match with negation", function() {
+    let filter = Filter.fromText("foo$domain=~example.*");
+    assert.equal(filter.isActiveOnDomain("example.com"), false);
+  });
+
+  it("prefers the result for the exact match over wildcarded match", function() {
+    let filter = Filter.fromText("foo$domain=example.com|~example.*");
+    assert.equal(filter.isActiveOnDomain("example.com"), true);
+    assert.equal(filter.isActiveOnDomain("images.example.com"), false);
+  });
+
+  it("prefers the result for the subdomain match over TLD match", function() {
+    let filter = Filter.fromText("foo$domain=example.*|~images.example.com");
+    assert.equal(filter.isActiveOnDomain("example.com"), true);
+    assert.equal(filter.isActiveOnDomain("images.example.com"), false);
   });
 });

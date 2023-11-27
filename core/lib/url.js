@@ -21,10 +21,12 @@
 
 const {Cache} = require("./caching");
 
-const {publicSuffixes} = require("../data/publicSuffixList.js");
+const {icannPublicSuffixes} = require("../data/icannPublicSuffixList.js");
+const {nonIcannPublicSuffixes} = require("../data/nonIcannPublicSuffixList.js");
 
 // ensure no conflict ever happens with inherited properties
-Object.setPrototypeOf(publicSuffixes, null);
+Object.setPrototypeOf(icannPublicSuffixes, null);
+Object.setPrototypeOf(nonIcannPublicSuffixes, null);
 
 /**
  * Cache of domain maps.
@@ -255,8 +257,11 @@ exports.isValidHostname = function isValidHostname(hostname) {
   }
 
   let labels = hostname.split(".");
-
-  for (let label of labels) {
+  for (let [index, label] of labels.entries()) {
+    // Wildcards support
+    if (label == "*" && index == (labels.length - 1)) {
+      return true;
+    }
     if (!/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/i.test(label)) {
       return false;
     }
@@ -287,7 +292,10 @@ exports.getBaseDomain = function getBaseDomain(hostname) {
   for (let suffix of domainSuffixes(hostname)) {
     slices.push(suffix);
 
-    let offset = publicSuffixes[suffix];
+    let offset = icannPublicSuffixes[suffix];
+    if (!(typeof offset == "number")) {
+      offset = nonIcannPublicSuffixes[suffix];
+    }
 
     if (typeof offset == "number") {
       cutoff = slices.length - 1 - offset;
@@ -501,4 +509,67 @@ exports.parseDomains = function parseDomains(source, separator) {
   domainsCache.set(source, domains);
 
   return domains;
+};
+
+exports.hasWildcard = function hasWildcard(string) {
+  return string.includes("*");
+};
+
+/**
+ * Checks whether domain URL matches wildcards mask.
+ * Note: PSL is taken into account (base domain is checked actually).
+ * @param {string} domain domain to check (assuming it's lower-cased)
+ * @param {string} domainWithWildcards domain mask (assuming it's lower-cased)
+ * @returns {boolean} `true` if domain matches the mask
+ */
+exports.matchesWildcards = function matchesWildcards(
+  domain, domainWithWildcards) {
+  // cut off the wildcard. Luckily we know exactly where it is already.
+  let expectedPrefix = domainWithWildcards.slice(0, -1);
+
+  for (let suffix of domainSuffixes(domain)) {
+    if (!suffix.startsWith(expectedPrefix)) {
+      continue;
+    }
+    let expectedTld = suffix.slice(expectedPrefix.length);
+    if (typeof icannPublicSuffixes[expectedTld] == "number") {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+exports.isValidDomainWildcard = function isValidDomainWildcard(domain) {
+  // ? are not supported
+  if (domain.includes("?")) {
+    return false;
+  }
+
+  // multiple * are not supported
+  let asteriskCount = (domain.match(/\*/g) || []).length;
+  if (asteriskCount > 1) {
+    return false;
+  }
+
+  if (asteriskCount == 1) {
+    let pos = domain.indexOf("*");
+
+    // * must be the last character in the string
+    if (pos < (domain.length - 1)) {
+      return false;
+    }
+
+    // but not the only character in the string
+    if (domain.length == 1) {
+      return false;
+    }
+
+    // * must be preceeded with .
+    if (pos > 0 && domain[pos - 1] != ".") {
+      return false;
+    }
+  }
+
+  return true;
 };

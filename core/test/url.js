@@ -19,10 +19,13 @@
 
 const assert = require("assert");
 const {LIB_FOLDER} = require("./_common");
-
-const {publicSuffixes} = require("../data/publicSuffixList.js");
+const {icannPublicSuffixes} = require("../data/icannPublicSuffixList.js");
+const {nonIcannPublicSuffixes} = require("../data/nonIcannPublicSuffixList.js");
+const publicSuffixes = {...icannPublicSuffixes, ...nonIcannPublicSuffixes};
 const {parseURL, isLocalhost, domainSuffixes, URLRequest, getBaseDomain,
-       parseDomains, isValidHostname} = require(LIB_FOLDER + "/url");
+       parseDomains, isValidHostname, matchesWildcards} =
+  require(LIB_FOLDER + "/url");
+
 
 describe("parseURL()", function() {
   function testURLParsing(url) {
@@ -986,6 +989,10 @@ describe("isValidHostname()", function() {
     assert.strictEqual(isValidHostname("www1.example.com"), true);
   });
 
+  it("should return true for example.*", function() {
+    assert.strictEqual(isValidHostname("example.*"), true);
+  });
+
   it("should return true for 10x.example.com", function() {
     assert.strictEqual(isValidHostname("10x.example.com"), true);
   });
@@ -1000,10 +1007,6 @@ describe("isValidHostname()", function() {
 
   it("should return false for \u262e.com", function() {
     assert.strictEqual(isValidHostname("\u262e.com"), false);
-  });
-
-  it("should return false for example.*", function() {
-    assert.strictEqual(isValidHostname("example.*"), false);
   });
 
   it("should return false for *.example.com", function() {
@@ -1054,3 +1057,61 @@ describe("isValidHostname()", function() {
     assert.strictEqual(isValidHostname("abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0.abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0.abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0.abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxy."), true);
   });
 });
+
+describe("matchesWildcards()", function() {
+  it("should return true for regular match with TLDs", function() {
+    assert.strictEqual(matchesWildcards("example.com", "example.*"), true);
+  });
+
+  it("should return true for regular match with ccSLD", function() {
+    assert.strictEqual(matchesWildcards("example.co.uk", "example.*"), true, "Assertion failed for co.uk");
+    assert.strictEqual(matchesWildcards("images.example.com.br", "example.*"), true, "Assertion failed for com.br");
+  });
+
+  it("should return true for regular match with TLD: foo", function() {
+    assert.strictEqual(matchesWildcards("example.foo", "example.*"), true);
+  });
+
+  it("should return true for regular match with subdomains", function() {
+    assert.strictEqual(matchesWildcards("images.example.com", "example.*"), true, "Assertion failed for third level subdomain");
+    assert.strictEqual(matchesWildcards("cdn.images.example.com", "example.*"), true, "Assertion failed for fourth level subdomain");
+  });
+
+  it("should return true for regular match for punycode", function() {
+    assert.strictEqual(matchesWildcards("xn--h1alffa9f.xn--p1ai", "xn--h1alffa9f.*"), true);
+  });
+
+  it("should return false for different second-level domain", function() {
+    assert.strictEqual(matchesWildcards("bar.com", "foo.*"), false);
+  });
+
+  it("should return false for prefixed domain match", function() {
+    assert.strictEqual(matchesWildcards("notbar.com", "bar.*"), false);
+    assert.strictEqual(matchesWildcards("notcdn.bar.com", "cdn.bar.*"), false);
+    assert.strictEqual(matchesWildcards("cdn.notbar.com", "bar.*"), false);
+  });
+
+  it("should return false for regular match for SLD", function() {
+    assert.strictEqual(matchesWildcards("example.br.com", "example.*"), false);
+  });
+
+  it("should return false for regular match for domain in private registry in PSL", function() {
+    assert.strictEqual(matchesWildcards("example.blogspot.com", "example.*"), false);
+  });
+
+  it("should return false for regular match for domain not in PSL", function() {
+    assert.strictEqual(matchesWildcards("example.evil.biz", "example.*"), false, "Assertion failed for evil.biz");
+    assert.strictEqual(matchesWildcards("example.evil", "example.*"), false, "Assertion failed for evil");
+  });
+
+  it("should return false for partial match of the domain", function() {
+    assert.strictEqual(matchesWildcards("images.notexample.com", "example.*"), false);
+  });
+
+  it("should return false for regular match for domain not punycoded", function() {
+    // left-hand side of elemhide filters, must be punycoded
+    assert.strictEqual(matchesWildcards("xn--h1alffa9f.xn--p1ai", "россия.*"), false);
+  });
+});
+
+

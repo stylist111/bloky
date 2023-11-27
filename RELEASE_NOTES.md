@@ -3,6 +3,7 @@ Unreleased
 
 # General
 
+- Added wildcard domains support for content filtering in elemHideEmulation. (EE-248)
 - There is now a new method for getting a list of active subscriptions,
   `EWE.subscriptions.getSubscriptions()`. This replaces
   `EWE.subscriptions.getDownloadable()`. The data returned by `getSubscriptions`

@@ -28,7 +28,8 @@ const {
 } = require("./contentTypes");
 const {CONTENT_FILTER} = require("./filters");
 const {Pattern} = require("./patterns");
-const {parseDomains, domainSuffixes} = require("./url");
+const {parseDomains, domainSuffixes, isValidDomainWildcard,
+       hasWildcard, matchesWildcards} = require("./url");
 const {parse, FilterParsingError} = require("./filters");
 
 const {resources} = require("../data/resources.js");
@@ -156,6 +157,18 @@ exports.Filter.fromText = function(text) {
     }
     else {
       filter = URLFilter.fromText(text);
+    }
+  }
+
+  if (filter.domains) {
+    for (let domainWithWildcard of filter.domains.keys()) {
+      if (domainWithWildcard == "") {
+        continue;
+      }
+
+      if (!isValidDomainWildcard(domainWithWildcard)) {
+        filter = new InvalidFilter(text, "filter_invalid_wildcard");
+      }
     }
   }
 
@@ -430,9 +443,19 @@ exports.ActiveFilter = class ActiveFilter extends Filter {
     }
 
     for (docDomain of domainSuffixes(docDomain)) {
+      // exact domain match
       let isDomainIncluded = domains.get(docDomain);
       if (typeof isDomainIncluded != "undefined") {
         return isDomainIncluded;
+      }
+
+      // domains with wildcards match
+      for (let [domain, isActiveOnDomain] of domains.entries()) {
+        if (hasWildcard(domain)) {
+          if (matchesWildcards(docDomain, domain)) {
+            return isActiveOnDomain;
+          }
+        }
       }
     }
 

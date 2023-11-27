@@ -137,6 +137,8 @@ export default {
    * @throws {FilterError|Error} The first filter to add that either failed
    *   validation (FilterError) or that is not supported by the DNR (Error).
    *   An error will be thrown for duplicated filters.
+   *   If the reason is "filter_invalid_wildcard" that means filter either has
+   *   more than 1 "*" or "*" is placed in an unsupported place.
    */
   async add(texts, metadata) {
     if (!Array.isArray(texts)) {
