@@ -11,8 +11,6 @@ Unreleased
   `downloadable` property. Some other functions that return subscriptions
   (eg. `getForFilter`) or events that contain subscription object also provide
   `updatable` property, while still having `downloadable`. (EE-212)
-- The rulesets-related scripts for MV3 are fixed and are working from command-line
-  (eg. `npx subs-convert`). (EE-267)
 
 # Updating your code
 
@@ -26,13 +24,17 @@ Unreleased
   allowlisting filter if the browser was loading resources before committing the
   frame the requests were for. (EE-221)
 - The declared "adblockpluscore" dependency is removed, though it still
-  uses it behind the scene during the building (EE-219).
+  uses it behind the scene during the building. (EE-219)
+- The rulesets-related scripts for MV3 are fixed and are working from command-line
+  (eg. `npx subs-convert`). (EE-267)
 
-# Internal
+# Browser Support Updates
 
 - Upgraded stable browser versions running in the CI. (EE-213)
-- Fixed an occasional build failure where generated files were not ready at OS
-  level for the remaining build steps. (EE-240)
+- This engine now supports up to:
+  - Chromium 118
+  - Edge 118
+  - Firefox 119
 
 0.13.3 - 2023/11/23
 ===================
