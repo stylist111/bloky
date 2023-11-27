@@ -33,6 +33,23 @@ Unreleased
 - Fixed an occasional build failure where generated files were not ready at OS
   level for the remaining build steps. (EE-240)
 
+0.13.3 - 2023/11/23
+===================
+
+# Fixes
+
+- The rulesets-related scripts for MV3 are fixed and are working from command-line
+  (eg. `npx subs-convert`). (EE-267)
+
+0.13.2 - 2023/11/15
+===================
+
+# General
+
+- Integrators should now be able to run npm install multiple times.
+  The declared "adblockpluscore" dependency is removed, though
+  the engine still uses it during building. (EE-219)
+
 ☀ 1.1.1 - 2023/10/26 ☀
 ==================
 
