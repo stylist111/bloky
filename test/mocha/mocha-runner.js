@@ -62,7 +62,7 @@ export function isConnected() {
   if (!isConnectedPromise) {
     isConnectedPromise = Promise.race([
       connected,
-      new Promise(resolve => setTimeout(resolve, 1000, false))
+      new Promise(resolve => setTimeout(resolve, 3000, false))
     ]);
   }
 
