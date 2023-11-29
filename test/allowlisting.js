@@ -18,7 +18,7 @@
 import expect from "expect";
 
 import {Page, clickElement, executeScript, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
-        setMinTimeout} from "./utils.js";
+        setMinTimeout, waitForAssertion} from "./utils.js";
 import {wait} from "./polling.js";
 import {EWE, addFilter, getTestEvents, clearTestEvents, runInBackgroundPage,
         fuzzSuspendServiceWorker} from "./messaging.js";
@@ -45,8 +45,10 @@ describe("One Click Allowlisting", function() {
     tabId = await page.loaded;
   });
 
-  async function reload() {
-    page = new Page("one-click-allowlisting.html");
+  async function reload(path = "one-click-allowlisting.html") {
+    // page.reload() is not used here because sometimes expectResource would
+    // struggle to tell if an event happened before or after the reload
+    page = new Page(path);
     expectImageResource = page.expectResource("image.png");
     tabId = await page.loaded;
   }
@@ -72,8 +74,12 @@ describe("One Click Allowlisting", function() {
       expect(getOnUnauthorizedEvents()).toEqual([]);
       return await getSuccessEventReceived() != null;
     }, timeout, "success event was not received");
-    await reload();
-    await expectImageResource.toBeLoaded();
+    // Using waitForAssertion to retry reload as a workaround
+    // https://jira.eyeo.com/browse/EE-258
+    await waitForAssertion(async() => {
+      await reload();
+      await expectImageResource.toBeLoaded();
+    });
   }
 
   async function expectUnsuccessfulAllowlist(errorMessage, expectedRequest) {
@@ -134,7 +140,7 @@ describe("One Click Allowlisting", function() {
       []
     );
 
-    await reload();
+    await reload("one-click-allowlisting-iframe.html");
     await expectImageResource.toBeBlocked();
   });
 
@@ -152,8 +158,12 @@ describe("One Click Allowlisting", function() {
     await addFilter(
       `@@|${TEST_PAGES_URL}/one-click-allowlisting.html$document`
     );
-    await reload();
-    await expectImageResource.toBeLoaded();
+    // Using waitForAssertion to retry reload as a workaround
+    // https://jira.eyeo.com/browse/EE-258
+    await waitForAssertion(async() => {
+      await reload();
+      await expectImageResource.toBeLoaded();
+    });
 
     await clickAllowlistButton("allowlist");
     await expectSuccessfulAllowlist();
