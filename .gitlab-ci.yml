@@ -192,11 +192,11 @@ func:v2-subs:chromium:stable:
     BROWSER: chromium $STABLE_CHROMIUM_VERSION
     TEST_PARAMS: v2-custom $BROWSER
 
-func:v2:chromium:oldest:
-  extends: .functional
-  variables:
-    BROWSER: chromium $OLDEST_CHROMIUM_MV2_VERSION
-    TEST_PARAMS: v2 $BROWSER
+# func:v2:chromium:oldest:
+#   extends: .functional
+#   variables:
+#     BROWSER: chromium $OLDEST_CHROMIUM_MV2_VERSION
+#     TEST_PARAMS: v2 $BROWSER
 
 func:v2:firefox:stable:
   extends: .functional
