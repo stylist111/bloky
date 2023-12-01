@@ -23,7 +23,8 @@
  * @file Element hiding implementation.
  */
 
-const {domainSuffixes} = require("./url");
+const {domainSuffixes, hasWildcard, matchesWildcards} =
+  require("./url");
 const {FiltersByDomain, FilterMap} = require("./filtersByDomain");
 const {Cache} = require("./caching");
 const {ElemHideExceptions} = require("./elemHideExceptions");
@@ -132,6 +133,13 @@ class ElemHide {
      */
     this._exceptionDomains = new Set();
 
+    /**
+     * All domain with wildcards known to occur in exceptions
+     * @type {Set<any>}
+     * @private
+     */
+    this._exceptionDomainsWithWildcards = new Set();
+
     this.elemHideExceptions.on("added", this._onExceptionAdded.bind(this));
   }
 
@@ -143,7 +151,8 @@ class ElemHide {
 
     for (let collection of [this._styleSheetCache, this._filtersByDomain,
                             this._filterBySelector, this._filters,
-                            this._exceptionDomains]) {
+                            this._exceptionDomains,
+                            this._exceptionDomainsWithWildcards]) {
       collection.clear();
     }
 
@@ -293,6 +302,12 @@ class ElemHide {
       if (this._filtersByDomain.has(suffix) ||
           this._exceptionDomains.has(suffix)) {
         return suffix;
+      }
+
+      for (let domainWithWildcards of this._exceptionDomainsWithWildcards) {
+        if (matchesWildcards(suffix, domainWithWildcards)) {
+          return suffix;
+        }
       }
     }
 
@@ -458,7 +473,12 @@ class ElemHide {
         // even when all the exceptions containing that domain are removed.
         // This is a best-case optimization.
         if (domain != "") {
-          this._exceptionDomains.add(domain);
+          if (hasWildcard(domain)) {
+            this._exceptionDomainsWithWildcards.add(domain);
+          }
+          else {
+            this._exceptionDomains.add(domain);
+          }
         }
       }
     }

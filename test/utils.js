@@ -36,7 +36,7 @@ export const SITEKEY = "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANGtTstne7" +
                        "e8MbmDHDiMFkGbcuBgXmiVesGOG3gtYeM1EkrzVhBj" +
                        "GUvKXYE4GLFwqty3v5MuWWbvItUWBTYoVVsCAwEAAQ";
 export const RECENT_FIREFOX_VERSION = 86; // Latest Firefox on February 2021
-export const HIDETIMEOUT = isFuzzingServiceWorker() ? 15000 : 1000;
+export const HIDETIMEOUT = isFuzzingServiceWorker() ? 15000 : 1500;
 export const UNHIDDENTIMEOUT = isFuzzingServiceWorker() ? 1000 : 200;
 export const FETCHED_TEST_SUBSCRIPTION_ID = "00000000-0000-0000-0000-000000000000";
 export const FETCHED_TEST_SUBSCRIPTION_ID_2 = "00000000-0000-0000-0000-000000000010";
@@ -134,23 +134,19 @@ export async function expectElemHideVisible({elemId = "elem-hide",
         () => getVisibleElementInFrame(tabId, elemId, frameIds) :
         () => getVisibleElement(tabId, elemId);
   // If we're expecting things to not be hidden, but we check before
-    // the filters have a chance to be applied, then we're not really
-    // testing anything.
+  // the filters have a chance to be applied, then we're not really
+  // testing anything.
   await new Promise(r => setTimeout(r, timeout));
 
   let elem = await getElem();
   expect(elem).not.toBeNull();
 }
 export class Page {
-  getFullPath(path, fullUrl) {
-    return fullUrl ? path : `${TEST_PAGES_URL}/${path}`;
-  }
-
-  constructor(path, fullUrl = false, forceBackground = false) {
+  constructor(path, forceBackground = false) {
     let removingCurrentPromise = Page.removeCurrent();
     Page.current = this;
 
-    this.url = this.getFullPath(path, fullUrl);
+    this.url = this.getUrl(path);
     this.created = (async() => {
       await removingCurrentPromise;
 
@@ -166,6 +162,10 @@ export class Page {
     })();
 
     this.loaded = this.waitForPageLoadAfterPromise(this.created);
+  }
+
+  getUrl(path) {
+    return path.includes(":") ? path : `${TEST_PAGES_URL}/${path}`;
   }
 
   waitForPageLoadAfterPromise(promise) {
@@ -213,8 +213,8 @@ export class Page {
     return tabId;
   }
 
-  async load(path, fullUrl = false) {
-    this.url = this.getFullPath(path, fullUrl);
+  async load(path) {
+    this.url = this.getUrl(path);
     let tabId = await this.created;
     let promise = browser.tabs.update(tabId, {url: this.url});
     await this.waitForPageLoadAfterPromise(promise.then(() => tabId));

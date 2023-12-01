@@ -19,6 +19,8 @@
 
 "use strict";
 
+const {hasWildcard, matchesWildcards} = require("./url");
+
 /**
  * Map to be used instead when a filter has a blank `domains` property.
  * @type {Map.<string, boolean>}
@@ -45,6 +47,20 @@ exports.FilterMap = class FilterMap extends Map {};
  * @package
  */
 exports.FiltersByDomain = class FiltersByDomain extends Map {
+  constructor(source) {
+    super(source);
+
+    // We keep concrete domains list (eg. "example.com") in `this` map
+    // and the domain with wildcards in internal `domainsWithWildcards` map
+    // because of different way of matching.
+    // `Map` uses "equals" implementation for `get()` and for
+    // wildcarded matching implementation we need to iterate existing entries
+    // and call our own `matchesWildcards(..)` implementation.
+    // So at filter adding to add it to the according map and override all the
+    // relevant methods (has, get) to run the wildcards-related logic.
+    this.domainsWithWildcards = new Map();
+  }
+
   /**
    * Adds a filter and all of its domains to the object.
    *
@@ -59,19 +75,86 @@ exports.FiltersByDomain = class FiltersByDomain extends Map {
         continue;
       }
 
-      let map = this.get(domain);
-      if (!map) {
-        this.set(domain, include ? filter : new FilterMap([[filter, false]]));
-      }
-      else if (map.size == 1 && !(map instanceof FilterMap)) {
-        if (filter != map) {
-          this.set(domain, new FilterMap([[map, true], [filter, include]]));
-        }
+      if (hasWildcard(domain)) {
+        this._addToMap(filter, domain, include, this.domainsWithWildcards);
       }
       else {
-        map.set(filter, include);
+        this._addToMap(filter, domain, include, this);
       }
     }
+  }
+
+  _addToMap(filter, domain, include, toMap) {
+    let map = toMap.get(domain, true);
+    if (!map) {
+      toMap.set(domain, include ? filter : new FilterMap([[filter, false]]));
+    }
+    else if (map.size == 1 && !(map instanceof FilterMap)) {
+      if (filter != map) {
+        toMap.set(domain, new FilterMap([[map, true], [filter, include]]));
+      }
+    }
+    else {
+      map.set(filter, include);
+    }
+  }
+
+  has(domain) {
+    let result = super.has(domain);
+    if (!result) {
+      // no filters for the concrete domain
+      for (let domainWithWildcards of this.domainsWithWildcards.keys()) {
+        if (matchesWildcards(domain, domainWithWildcards)) {
+          result = true;
+          break;
+        }
+      }
+    }
+    return result;
+  }
+
+  get(domain, skipWildcardCheck) {
+    let result = [];
+    let map = super.get(domain);
+    if (map) {
+      result.push(map);
+    }
+
+    if (!skipWildcardCheck) {
+      for (let [domainWithWildcards, filterOrMap] of
+        this.domainsWithWildcards.entries()) {
+        if (matchesWildcards(domain, domainWithWildcards)) {
+          result.push(filterOrMap);
+        }
+      }
+    }
+
+    if (result.length == 0) {
+      result = void 0;
+    }
+    else if (result.length == 1) {
+      result = result[0];
+    }
+    else {
+      // merge the results
+      let mergedMap = new FilterMap();
+      for (let filterOrMap of result) {
+        let fromMap = (filterOrMap instanceof Map ?
+          filterOrMap : new Map([[filterOrMap, true]]));
+
+        for (let [filter, isIncluded] of fromMap.entries()) {
+          mergedMap.set(filter, isIncluded);
+        }
+      }
+      result = mergedMap;
+    }
+
+    return result;
+  }
+
+  clear() {
+    super.clear();
+    this.domainsWithWildcards.clear();
   }
 
   /**
@@ -84,29 +167,38 @@ exports.FiltersByDomain = class FiltersByDomain extends Map {
    */
   remove(filter, domains = filter.domains) {
     for (let domain of (domains || defaultDomains).keys()) {
-      let map = this.get(domain);
-      if (map) {
-        if (map.size > 1 || map instanceof FilterMap) {
-          map.delete(filter);
+      if (hasWildcard(domain)) {
+        this._removeFromMap(filter, domain, this.domainsWithWildcards);
+      }
+      else {
+        this._removeFromMap(filter, domain, this);
+      }
+    }
+  }
 
-          if (map.size == 0) {
-            this.delete(domain);
-          }
-          else if (map.size == 1) {
-            for (let [lastFilter, include] of map.entries()) {
-              // Reduce Map { "example.com" => Map { filter => true } } to
-              // Map { "example.com" => filter }
-              if (include) {
-                this.set(domain, lastFilter);
-              }
+  _removeFromMap(filter, domain, fromMap) {
+    let map = fromMap.get(domain);
+    if (map) {
+      if (map.size > 1 || map instanceof FilterMap) {
+        map.delete(filter);
 
-              break;
+        if (map.size == 0) {
+          fromMap.delete(domain);
+        }
+        else if (map.size == 1) {
+          for (let [lastFilter, include] of map.entries()) {
+            // Reduce Map { "example.com" => Map { filter => true } } to
+            // Map { "example.com" => filter }
+            if (include) {
+              fromMap.set(domain, lastFilter);
             }
+
+            break;
           }
         }
-        else if (filter == map) {
-          this.delete(domain);
-        }
+      }
+      else if (filter == map) {
+        fromMap.delete(domain);
       }
     }
   }

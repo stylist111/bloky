@@ -1056,6 +1056,37 @@ describe("isValidHostname()", function() {
   it("should return true for 254-character hostname with trailing dot", function() {
     assert.strictEqual(isValidHostname("abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0.abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0.abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0.abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxy."), true);
   });
+
+  describe("wildcards", function() {
+    it("should return true for asterisk wildcard", function() {
+      assert.strictEqual(isValidHostname("example.*"), true, "Assertion failed for TLD");
+      assert.strictEqual(isValidHostname("cdn.example.*"), true, "Assertion failed for domain with subdomain");
+    });
+
+    it("should return false for multiple asterisk wildcard", function() {
+      assert.strictEqual(isValidHostname("example.**"), false, "Assertion failed for subsequent asterisks");
+      assert.strictEqual(isValidHostname("*.example.*"), false, "Assertion failed for asterisks in the beginning and in the end");
+      assert.strictEqual(isValidHostname("exa*mple.*"), false, "Assertion failed for asterisks in the beginning and in the middle");
+    });
+
+    it("should return false for multiple asterisk wildcard not preceeded with dot", function() {
+      assert.strictEqual(isValidHostname("example*"), false);
+    });
+
+    it("should return false for asterisk wildcard in unexpected place", function() {
+      assert.strictEqual(isValidHostname(".*example"), false, "Assertion failed for asterisk in the beginning");
+      assert.strictEqual(isValidHostname("*example"), false, "Assertion failed for asterisk in the beginning and not preceeded with dot");
+      assert.strictEqual(isValidHostname("exa.*mple"), false, "Assertion failed for asterisk in the middle");
+      assert.strictEqual(isValidHostname("exa*mple"), false, "Assertion failed for asterisk in the middle and not preceeded with dot");
+    });
+
+    it("should return false for question mark wildcard", function() {
+      assert.strictEqual(isValidHostname("example.?"), false, "Assertion failed for asterisk in the end");
+      assert.strictEqual(isValidHostname("example?"), false, "Assertion failed for asterisk in the end and not preceeded with dot");
+      assert.strictEqual(isValidHostname("exam?ple"), false, "Assertion failed for asterisk in the middle");
+      assert.strictEqual(isValidHostname("?example"), false, "Assertion failed for asterisk in the beginning");
+    });
+  });
 });
 
 describe("matchesWildcards()", function() {

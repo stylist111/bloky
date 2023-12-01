@@ -91,24 +91,36 @@ describe("Filters", function() {
       .toEqual([{...VALID_FILTER, text: WEBBUNDLE_FILTER_TEXT}]);
   });
 
-  it("adds a single filter with wildcards", async function() {
+  it("adds a single filter with wildcards in URL path", async function() {
+    await addFilter("example.*##foo");
+    expect(await EWE.filters.getUserFilters())
+      .toEqual([expect.objectContaining({text: "example.*##foo"})]);
+  });
+
+  it("adds a single filter with wildcards in $domain option", async function() {
     await addFilter("||foo^$domain=example.*");
     expect(await EWE.filters.getUserFilters())
-      .toEqual([expect.objectContaining(
-        {text: "||foo^$domain=example.*"})]);
+      .toEqual([expect.objectContaining({text: "||foo^$domain=example.*"})]);
   });
 
   it("adds a single filter with multiple wildcards", async function() {
-    await addFilter("||foo^$domain=example.*|google.*");
+    await addFilter("||foo^$domain=example.*|domain.*");
     expect(await EWE.filters.getUserFilters())
       .toEqual([expect.objectContaining(
-        {text: "||foo^$domain=example.*|google.*"})]);
+        {text: "||foo^$domain=example.*|domain.*"})]);
   });
 
-  it("rejects to adds a single filter with invalid wildcards", async function() {
-    await expect(addFilter("||foo^$domain=*oogle.*"))
+  it("rejects to adds a single filter with invalid wildcards in URL path", async function() {
+    await expect(addFilter("example.**##foo"))
+      .rejects.toThrow("FilterError: {\"type\":\"invalid_filter\",\"reason\":\"filter_invalid_wildcard\",\"option\":null}");
+    await expect(addFilter("example.??##foo"))
+      .rejects.toThrow("FilterError: {\"type\":\"invalid_filter\",\"reason\":\"filter_invalid_wildcard\",\"option\":null}");
+  });
+
+  it("rejects to adds a single filter with invalid wildcards in $domain option", async function() {
+    await expect(addFilter("||foo^$domain=*bar.*"))
         .rejects.toThrow("FilterError: {\"type\":\"invalid_filter\",\"reason\":\"filter_invalid_wildcard\",\"option\":null}");
-    await expect(addFilter("||foo^$domain=google.???"))
+    await expect(addFilter("||foo^$domain=bar.???"))
       .rejects.toThrow("FilterError: {\"type\":\"invalid_filter\",\"reason\":\"filter_invalid_wildcard\",\"option\":null}");
   });
 
@@ -588,7 +600,7 @@ describe("Filters", function() {
     });
 
     it("handles empty tabs", async function() {
-      let tabId = await new Page("about:blank", true).loaded;
+      let tabId = await new Page("about:blank").loaded;
       expect(await EWE.filters.getAllowingFilters(tabId)).toEqual([]);
     });
 
@@ -640,7 +652,7 @@ describe("Filters", function() {
 
       try {
         let url = `${TEST_PAGES_URL}/image.html`;
-        let tabId = await new Page(url, true).loaded;
+        let tabId = await new Page(url).loaded;
         expect(await EWE.filters.getAllowingFilters(tabId)).toEqual([]);
         expect(await EWE.filters.isResourceAllowlisted(
           url, "document", tabId)).toEqual(false);
@@ -720,7 +732,7 @@ describe("Filters", function() {
       // "loading", that's why Page is not awaited on `loaded` here,
       // but we need to wait a bit longer than just `created` for
       // the tab updated event to have happened.
-      let tabId = await new Page(url, true).created;
+      let tabId = await new Page(url).created;
       let timeout = isFuzzingServiceWorker() ? 80000 : 6000;
 
       await waitForAssertion(() => {

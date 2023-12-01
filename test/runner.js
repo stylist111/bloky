@@ -577,14 +577,26 @@ async function runTests() {
   // New headless mode was introduced in Chromium 111 and Edge 114. The old
   // headless mode does not support loading extensions.
   let isFirefox = browser == "firefox";
-  let isChromium = browser == "chromium" && majorVersion >= 111;
-  let isEdge = browser == "edge" && majorVersion >= 114;
+  let isChromium = browser == "chromium";
+  let isChromiumWithNewHeadlessMode = isChromium && majorVersion >= 111;
+  let isEdge = browser == "edge";
+  let isEdgeWithNewHeadlessMode = isEdge && majorVersion >= 114;
   let headless = !incognito && !forceHeadful &&
-    (isFirefox || isChromium || isEdge);
+    (isFirefox || isChromiumWithNewHeadlessMode || isEdgeWithNewHeadlessMode);
+
+  let insecure = false;
+  if (isChromium || isEdge) {
+    // DNS mapping (supported by Chromium-based only browsers)
+    extraArgs.push("host-resolver-rules=MAP webext.com 127.0.0.1");
+
+    // allow HTTP for webext.com
+    insecure = true;
+  }
 
   let driver = await BROWSERS[browser].getDriver(
     version,
-    {headless, extensionPaths, incognito, extraArgs, customBrowserBinary});
+    {headless, extensionPaths, incognito, insecure,
+     extraArgs, customBrowserBinary});
 
   let timeout = (params && typeof params.timeout != "undefined" ?
     params.timeout : 200000);

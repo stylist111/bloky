@@ -29,6 +29,13 @@ describe("Element hiding", function() {
   let elemHide = null;
   let elemHideExceptions = null;
 
+  const addFilter = filterText => elemHide.add(Filter.fromText(filterText));
+  const removeFilter = filterText => elemHide.remove(Filter.fromText(filterText));
+  const addException =
+    filterText => elemHideExceptions.add(Filter.fromText(filterText));
+  const removeException =
+    filterText => elemHideExceptions.remove(Filter.fromText(filterText));
+
   beforeEach(function() {
     elemHideExceptions = new ElemHideExceptions();
     elemHide = new ElemHide(elemHideExceptions);
@@ -74,13 +81,6 @@ describe("Element hiding", function() {
   }
 
   it("Generate style sheet for domain", function() {
-    let addFilter = filterText => elemHide.add(Filter.fromText(filterText));
-    let removeFilter = filterText => elemHide.remove(Filter.fromText(filterText));
-    let addException =
-      filterText => elemHideExceptions.add(Filter.fromText(filterText));
-    let removeException =
-      filterText => elemHideExceptions.remove(Filter.fromText(filterText));
-
     testResult("", []);
 
     addFilter("~foo.example.com,example.com##foo");
@@ -255,6 +255,53 @@ describe("Element hiding", function() {
     testResult("foo.com", ["hello"]);
     removeFilter("foo.com##hello");
     testResult("foo.com", []);
+  });
+
+  it("Generate style sheet for domain with wildcards", function() {
+    testResult("", []);
+
+    addFilter("~foo.example.*,example.*##foo");
+    testResult("barfoo.example.com", ["foo"]);
+    testResult("bar.foo.example.com", ["foo"]);
+    testResult("foo.example.com", ["foo"]);
+    testResult("example.com", ["foo"]);
+    testResult("com", []);
+    testResult("", []);
+
+    addFilter("bar.example.*##bar");
+    testResult("bar.example.com", ["bar", "foo"]);
+
+    testResult("example.co.uk", ["foo"]);
+    testResult("example.evil.com", []);
+
+    removeFilter("bar.example.*##bar");
+    testResult("bar.example.com", ["foo"]);
+
+    removeFilter("~foo.example.*,example.*##foo");
+    testResult("", []);
+
+    // exceptions
+
+    addFilter("##hello");
+    testResult("foo.com", [], {specificOnly: true});
+    testResult("foo.com", ["hello"]);
+    testResult("bar.com", [], {specificOnly: true});
+    testResult("bar.com", ["hello"]);
+
+    addException("foo.*#@#hello");
+    testResult("foo.com", [], {specificOnly: true});
+    testResult("foo.com", [], {expectedExceptions: ["foo.*#@#hello"]});
+    testResult("bar.com", [], {specificOnly: true});
+    testResult("bar.com", ["hello"]);
+
+    removeException("foo.*#@#hello");
+  });
+
+  it("Generate style sheet for domain with wildcards for known domain", function() {
+    addFilter("example.*###foo");
+    for (let suffix of [".com", ".co.uk", ".foo"]) {
+      testResult("example" + suffix, ["#foo"]);
+    }
   });
 
   it("Zero filter key", function() {

@@ -23,7 +23,8 @@ import {Page, waitForInvisibleElement, executeScript, setMinTimeout,
         expectElemHideVisible, isFirefox, firefoxVersion, TEST_PAGES_DOMAIN,
         TEST_PAGES_URL, SITEKEY, UNHIDDENTIMEOUT, HIDETIMEOUT,
         TEST_MV3_SUBSCRIPTION, waitForHighlightedStyle, isEdge, edgeVersion,
-        waitForSubscriptionsToDownload, chromiumVersion, isChromiumBased}
+        waitForSubscriptionsToDownload, chromiumVersion, isChromiumBased,
+        setEndpointResponse}
   from "./utils.js";
 import {wait} from "./polling.js";
 import {addFilter, EWE} from "./messaging.js";
@@ -38,6 +39,19 @@ describe("Element Hiding", function() {
   it("hides an element [fuzz]", async function() {
     await addFilter("###elem-hide");
     await expectElemHideHidden();
+  });
+
+  it("hides an element for the domain with wildcard", async function() {
+    // DNS mapping webext.com to 127.0.0.1 is configured
+    // for all Chromium-based browsers during the tests.
+    if (!isChromiumBased()) {
+      this.skip();
+    }
+
+    await addFilter("webext.*###elem-hide");
+    await expectElemHideHidden({
+      url: "http://webext.com:3000/element-hiding.html"
+    });
   });
 
   it("handled invalid selectors", async function() {
@@ -126,6 +140,29 @@ describe("Element Hiding", function() {
     await expectElemHideHidden();
   });
 
+  it("does not hide an element using subscriptions with filter with wildcards [mv2-only]", async function() {
+    // DNS mapping webext.com to 127.0.0.1 is configured
+    // for all Chromium-based browsers during the tests.
+    if (!isChromiumBased()) {
+      this.skip();
+    }
+
+    const validFilter = "webext.*#@##elem-hide"; // exception
+    const invalidFilter = "webext.**#@##elem-hide"; // exception
+    let updatedReply = [
+      "[Adblock Plus]",
+      invalidFilter,
+      validFilter
+    ].join("\n");
+    await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
+    await EWE.subscriptions.add("http://localhost:3003/anti-cv-subscription.txt");
+    await waitForSubscriptionsToDownload();
+
+    await expectElemHideVisible({
+      url: "http://webext.com:3000/element-hiding.html"
+    });
+  });
+
   it("does not hide an allowlisted element", async function() {
     await addFilter("###elem-hide");
     await addFilter("#@##elem-hide");
@@ -191,6 +228,21 @@ describe("Element Hiding", function() {
     await addFilter(
       `@@|${TEST_PAGES_URL}/*.html$elemhide,domain=${TEST_PAGES_DOMAIN}`);
     await expectElemHideVisible();
+  });
+
+  it("does not hide elements in document allowlisted for domain with wildcard", async function() {
+    // DNS mapping webext.com to 127.0.0.1 is configured
+    // for all Chromium-based browsers during the tests.
+    if (!isChromiumBased()) {
+      this.skip();
+    }
+
+    await addFilter("webext.*###elem-hide");
+    await addFilter("webext.*#@##elem-hide"); // exception
+
+    await expectElemHideVisible({
+      url: "http://webext.com:3000/element-hiding.html"
+    });
   });
 
   it("does not hide elements through generic filter in documents allowlisted by $generichide", async function() {
@@ -329,7 +381,7 @@ describe("Element Hiding", function() {
       await addFilter("/image.png^$image");
 
       let forceBg = isFirefox() && firefoxVersion() >= 97;
-      let tabId = await new Page("element-hiding.html", false, forceBg).loaded;
+      let tabId = await new Page("element-hiding.html", forceBg).loaded;
       await waitForInvisibleElement(tabId, "elem-hide-img-request");
     });
 

@@ -127,6 +127,9 @@ test-extension and by visiting various web pages (served by test-server).
 Important: All linux tests are run on Docker, all Windows tests are run on
 Windows shared runners on a pipeline.
 
+For Chromium-based browsers a DNS mapping entry (webext.com to 127.0.0.1)
+is added to browser configuration for domains testing.
+
 #### Serving the test pages on test-server
 
 Regardless of whether you're manually loading the test extension, or using the
