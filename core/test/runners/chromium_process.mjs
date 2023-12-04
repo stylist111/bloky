@@ -20,7 +20,7 @@ import "chromedriver";
 
 import {executeScript} from "./webdriver.mjs";
 
-const CHROMIUM_VERSION = "118.0.5993.117";
+const CHROMIUM_VERSION = "91.0.4472.114";
 
 async function runScript(script, scriptArgs) {
   // Headless doesn't seem to work on Windows.
