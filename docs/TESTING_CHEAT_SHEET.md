@@ -7,6 +7,14 @@
 npm run test-core
 ```
 
+## Benchmark core
+
+<!-- markdownlint-disable fenced-code-language -->
+```
+docker build -t benchmark -f test/dockerfiles/benchmark.Dockerfile .
+docker run --cpus=2 --memory=8g --shm-size=512m benchmark 
+```
+
 ## Unit tests webext build
 
 ```

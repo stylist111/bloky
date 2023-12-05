@@ -56,6 +56,7 @@ stages:
   - pages
   - unit
   - test
+  - benchmark
   - functional
   - fuzz
   - compliance
@@ -112,17 +113,22 @@ unit:core:
     - npm run test-core
     - npm run -w core test:dist
 
-unit:benchmark:core:
-  extends: .unit
-  script:
-    - npm run -w core benchmark
-    - npm run -w core benchmark:save
-    - npm run -w core benchmark:compare
-
 unit:webext:
   extends: .unit
   script:
     - npm run unittest
+
+# Benchmark
+
+benchmark:
+  extends: .docker-image
+  stage: benchmark
+  needs: []
+  script:
+    - docker build -t benchmark -f test/dockerfiles/benchmark.Dockerfile . 
+    - docker run --cpus=2 --memory=8g --shm-size=512m benchmark  
+  rules:
+    - !reference [.all-browsers-test-run, rules]
 
 # Functional Tests
 

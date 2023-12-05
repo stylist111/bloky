@@ -45,6 +45,22 @@ directory:
 npm run test-core
 ```
 
+### Benchmark
+
+Core has its own scripts for benchmarking performance (initialization time
+& heap consumption). On a pipeline we run those scripts to make sure
+happy path is working properly and measure basic metrics.
+If you want to run it locally, use the following commands:
+
+<!-- markdownlint-disable fenced-code-language -->
+```
+docker build -t benchmark -f test/dockerfiles/benchmark.Dockerfile .
+docker run --cpus=2 --memory=8g --shm-size=512m benchmark
+```
+
+For more commands and options to customize,
+please refer to [core documentation](/./core/README.md).
+
 ### Unit:webext
 
 In webext we mostly use functional tests to make sure everything works.
