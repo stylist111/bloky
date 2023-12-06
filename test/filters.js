@@ -405,6 +405,10 @@ describe("Filters", function() {
     expect(await EWE.filters.getUserFilters()).toEqual([]);
   });
 
+  it("normalizes a filter", async function() {
+    expect(await EWE.filters.normalize("\n\t\nad\ns")).toEqual("ads");
+  });
+
   it("validates a valid filter", async function() {
     expect(await EWE.filters.validate(VALID_FILTER_TEXT)).toBeNull();
   });

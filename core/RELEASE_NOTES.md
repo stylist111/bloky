@@ -433,8 +433,8 @@ filter instead of an array. #422
 ## Updating your code
 
 `Filter.normalize()` now has an optional parameter to skip the heavy
-normailization. If you are adding already normalized filters, you can
-pass `true` to `Fileter.normalize()` to avoid doing most of the
+normalization. If you are adding already normalized filters, you can
+pass `true` to `Filter.normalize()` to avoid doing most of the
 work. It's a bug to add a non normalized filter. See issue #313
 
 `Filter.fromText()` return sometime an `InvalidFilter` when there is

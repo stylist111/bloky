@@ -6,6 +6,7 @@ Unreleased
 - Added wildcard domains support for content filtering in elemHide. (EE-248)
 - URL filters with wildcards (.*) are not converted into DNR rules
   as Chromium does not support it. (EE-274)
+- Exposed `EWE.filters.normalize()` for filters normalizing. (EE-11)
 
 🌻 1.2.0 - 2023-11-27 🌻
 ========================

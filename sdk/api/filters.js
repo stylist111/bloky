@@ -393,6 +393,16 @@ export default {
   },
 
   /**
+   * Removes unnecessary whitespaces from filter text, will only return null if
+   * the input parameter is null.
+   * @param {string} text Filter text to be normalized
+   * @return {string} Normalized filter text
+   */
+  normalize(text) {
+    return Filter.normalize(text);
+  },
+
+  /**
    * Emitted when a new filter is added.
    * @event
    * @type {EventDispatcher<Filter>}
