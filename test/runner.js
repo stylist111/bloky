@@ -50,7 +50,7 @@ function parseArguments() {
       subparser.positional("version", {type: "string"});
     });
     parser.option("incognito", {
-      description: "Run the tests in incognito mode (Chrome) or private browsing (Firefox) - currently only supported on Firefox."
+      description: "Run the tests in incognito mode (Chrome) or private browsing (Firefox)."
     });
     parser.option("forceHeadful", {
       description: "Run the tests in non headless mode."
@@ -59,7 +59,7 @@ function parseArguments() {
       description: "Maximum running time for each test. 0 disables timeouts."
     });
     parser.option("testKinds", {
-      description: "Which kinds of tests to run (by default all are run)",
+      description: "Kinds of tests to run. On MV2, defaults to functional and reload tests. On MV3, defaults to all tests.",
       array: true,
       choices: ["functional", "reload", "update", "mv2-mv3-migrate", "fuzz"]
     });

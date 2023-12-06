@@ -370,13 +370,13 @@ func:v2:chromium:latest:
   extends: .functional-full
   variables:
     BROWSER: chromium
-    TEST_PARAMS: v2 $BROWSER --testKinds functional reload update
+    TEST_PARAMS: v2 $BROWSER --testKinds functional reload
 
 func:v2:chromium:beta:
   extends: .functional-full
   variables:
     BROWSER: chromium beta
-    TEST_PARAMS: v2 $BROWSER --testKinds functional reload update
+    TEST_PARAMS: v2 $BROWSER --testKinds functional reload
 
 func:v3:chromium:latest:
   extends: .functional-full
@@ -394,7 +394,7 @@ func:v2:firefox:latest:
   extends: .functional-full
   variables:
     BROWSER: firefox
-    TEST_PARAMS: v2 $BROWSER --testKinds functional reload update
+    TEST_PARAMS: v2 $BROWSER --testKinds functional reload
 
 func:v2:firefox:update:incognito:
   extends: .functional-full
@@ -407,7 +407,7 @@ func:v2:edge:linux:latest:
   extends: .functional-full
   variables:
     BROWSER: edge
-    TEST_PARAMS: v2 $BROWSER --testKinds functional reload update
+    TEST_PARAMS: v2 $BROWSER --testKinds functional reload
 
 func:v3:edge:linux:latest:
   extends: .functional-full
