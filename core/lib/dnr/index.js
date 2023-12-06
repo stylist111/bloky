@@ -20,7 +20,7 @@
 /** @module */
 
 const {Pattern} = require("../patterns");
-const {parseDomains} = require("../url");
+const {parseDomains, hasWildcard} = require("../url");
 const {contentTypes, RESOURCE_TYPES} = require("../contentTypes");
 const {
   generateCSPRules,
@@ -167,6 +167,22 @@ function asDNR(parsedFilter) {
       domains: domains === null ? null : parseDomains(
         domains.toLowerCase(), "|")
     };
+
+
+    // filter wildcards are not supported in DNR
+    // 1. URL part
+    if (urlFilter && hasWildcard(text)) {
+      return [];
+    }
+
+    if (filter.domains) {
+      // 2. $domain option part
+      for (let domain of filter.domains.keys()) {
+        if (hasWildcard(domain)) {
+          return [];
+        }
+      }
+    }
 
     let result;
     if (contentType & contentTypes.CSP) {

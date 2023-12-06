@@ -512,7 +512,7 @@ exports.parseDomains = function parseDomains(source, separator) {
 };
 
 exports.hasWildcard = function hasWildcard(string) {
-  return string.includes("*");
+  return string.includes(".*");
 };
 
 /**

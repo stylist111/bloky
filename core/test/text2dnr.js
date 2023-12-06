@@ -697,6 +697,69 @@ describe("convertFilter", function() {
     it("shouldn't do anything if there are no filters at all!", async function() {
       await testRules([], []);
     });
+
+    describe("wildcards", function() {
+      it("should ignore filters with wildcards in URL path", async function() {
+        await testRules(
+          ["example.*"],
+          []
+        );
+      });
+
+      it("should not ignore filters with \"any character\" wildcard in URL path", async function() {
+        await testRules(
+          ["domain.com/path/*"],
+          [
+            {
+              action: {
+                type: "block"
+              },
+              condition: {
+                isUrlFilterCaseSensitive: false,
+                urlFilter: "domain.com/path/"
+              },
+              priority: 1000
+            }
+          ]
+        );
+      });
+
+      it("should ignore content filters with wildcards", async function() {
+        await testRules(
+          ["example.*###elemhide"],
+          []
+        );
+      });
+
+      it("should not ignore regex filters with wildcards", async function() {
+        await testRules(
+          ["@@/Regexp*/"],
+          [{
+            priority: SPECIFIC_PRIORITY,
+            condition: {
+              isUrlFilterCaseSensitive: false,
+              regexFilter: "regexp*"
+            },
+            action: {
+              type: "allow"
+            }
+          }],
+          null, // no transformation
+          () => true
+        );
+      });
+
+      it("should ignore filters with wildcards in $domain option", async function() {
+        await testRules(
+          ["boo$domain=bar.*"],
+          []
+        );
+        await testRules(
+          ["boo$domain=foo|bar.*"],
+          []
+        );
+      });
+    });
   });
 
   describe("Filter options", function() {
