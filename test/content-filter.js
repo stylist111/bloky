@@ -54,6 +54,20 @@ describe("Element Hiding", function() {
     });
   });
 
+  it("hides an element for the domain with wildcard with attribute selector", async function() {
+    // DNS mapping webext.com to 127.0.0.1 is configured
+    // for all Chromium-based browsers during the tests.
+    if (!isChromiumBased()) {
+      this.skip();
+    }
+
+    await addFilter("webext.*##div[width=\"100\"]");
+    await expectElemHideHidden({
+      url: "http://webext.com:3000/element-hiding.html",
+      elemId: "elem-hide-wildcard"
+    });
+  });
+
   it("handled invalid selectors", async function() {
     await addFilter("####.wj-header-usercookies"); // invalid selector
     await addFilter("###elem-hide");
