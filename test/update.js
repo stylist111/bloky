@@ -19,7 +19,8 @@ import expect from "expect";
 import browser from "webextension-polyfill";
 
 import {Page, TEST_MV3_SUBSCRIPTION, isFirefox, readFile, writeFile,
-        setMinTimeout, isIncognito, firefoxVersion} from "./utils.js";
+        setMinTimeout, isIncognito, firefoxVersion}
+  from "./utils.js";
 import {wait} from "./polling.js";
 import {EWE, runInBackgroundPage} from "./messaging.js";
 import {updateExtensionFiles} from "./mocha/mocha-runner.js";
@@ -83,7 +84,17 @@ describe(`Update (${phase}) [runner-only]`, function() {
       ]);
       return;
     }
-    await new Promise(r => setTimeout(r, 50));
+
+    setMinTimeout(this, 20000);
+
+    // Wait for EWE to be started
+    // (loading filter text and applying DNR rulesets might take a while)
+    await wait(async() => {
+      let actualState = await browser.runtime.sendMessage({
+        type: "ewe-test:getState"
+      });
+      return actualState == "started";
+    }, 10000, "EWE not started");
 
     let filters;
 
@@ -104,8 +115,6 @@ describe(`Update (${phase}) [runner-only]`, function() {
           enabled: true
         })
       ]));
-      // Page load sometimes occurs while the system isn't ready
-      await new Promise(r => setTimeout(r, 50));
 
       await new Page("image-from-subscription.html")
         .expectResource("image-from-subscription.png")

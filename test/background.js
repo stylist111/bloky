@@ -184,6 +184,11 @@ function handleTestMessage(request, sender, sendResponse) {
       return true;
     }
 
+    case "ewe-test:getState": {
+      sendResponse(state);
+      return true;
+    }
+
     // Required for testing testpages
     case "filters.get": {
       EWE.filters.getUserFilters().then(userFilters => {
@@ -447,7 +452,11 @@ startupInfo.telemetry = {
   bearer: "SSBhbSBhIGJlYXIuLi4gZXIuLi4gUkFXUg=="
 };
 
+let state = "starting";
+
 EWE.start(startupInfo).then(async firstRun => {
+  state = "started";
+
   EWE.testing.enableDebugOutput(true);
   if (firstRun.warnings.length > 0) {
     console.warn("EWE startup warnings: ", firstRun.warnings);
