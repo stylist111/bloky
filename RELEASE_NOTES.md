@@ -8,6 +8,13 @@ Unreleased
   as Chromium does not support it. (EE-274)
 - Exposed `EWE.filters.normalize()` for filters normalizing. (EE-11)
 
+# Browser Support Updates
+
+- This engine now supports up to:
+  - Chromium 120
+  - Edge 120
+  - Firefox 120
+
 🌻 1.2.0 - 2023-11-27 🌻
 ========================
 
