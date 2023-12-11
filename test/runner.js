@@ -480,7 +480,7 @@ async function runWithRetry(fn, retryCount = 2) {
 
 async function suspendServiceWorker(driver, handle) {
   let browser = (await driver.getCapabilities()).getBrowserName();
-  if (browser != "chrome" && browser != "msedge") {
+  if (browser != "chrome" && browser != "msedge" && browser != "MicrosoftEdge") {
     throw new Error("Suspending service workers is not implemented for non Chromium-based browsers because we don't support MV3 in them");
   }
 
