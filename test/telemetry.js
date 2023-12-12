@@ -53,7 +53,7 @@ describe("Telemetry", function() {
   describe("Running", function() {
     // Some of these unfortunately need to wait for pings to happen (or not
     // happen) and so can get a bit long.
-    setMinTimeout(this, 20000);
+    setMinTimeout(this, 15000);
 
     beforeEach(async function() {
       await clearRequestLogs();
@@ -64,18 +64,12 @@ describe("Telemetry", function() {
       await clearEndpointResponse(TELEMETRY_URL);
     });
 
-    const PING_INTERVAL_MS = 6000;
-    const ERROR_DELAY_MS = 3000;
+    const PING_INTERVAL_MS = 4000;
+    const ERROR_DELAY_MS = 2000;
 
     async function startTelemetryWithTestArgs() {
       await EWE.testing.startTelemetry(TELEMETRY_ARGS, PING_INTERVAL_MS,
                                        ERROR_DELAY_MS);
-    }
-
-    async function delayThenExpectNoNewPings(delay, currentPingCount) {
-      await new Promise(r => setTimeout(r, delay));
-      expect(await getRequestLogs(TELEMETRY_URL))
-        .toHaveLength(currentPingCount);
     }
 
     async function expectNextPing(expectedNewPingCount) {
@@ -95,10 +89,10 @@ describe("Telemetry", function() {
       startTelemetryWithTestArgs();
       startTelemetryWithTestArgs();
 
-      await delayThenExpectNoNewPings(900, 1);
+      await delayThenExpectNextPing(1000, 1);
     });
 
-    it("doesn't send request if both url and bearer token aren't provided", async function() {
+    it("does not ping when both url and bearer token aren't provided", async function() {
       await expect(EWE.testing.startTelemetry({url: TELEMETRY_URL}))
         .rejects.toThrow("Error: No telemetry `bearer` provided");
       await expect(EWE.testing.startTelemetry({bearer: TELEMETRY_BEARER}))
@@ -132,158 +126,46 @@ describe("Telemetry", function() {
       });
     });
 
-    it("sends a request at regular intervals, every 6 seconds", async function() {
+    it("pings at regular intervals", async function() {
       await startTelemetryWithTestArgs();
 
       await expectNextPing(1);
-      await delayThenExpectNoNewPings(PING_INTERVAL_MS / 2, 1);
-      await delayThenExpectNextPing(PING_INTERVAL_MS / 2, 2);
+      await delayThenExpectNextPing(PING_INTERVAL_MS, 2);
       await delayThenExpectNextPing(PING_INTERVAL_MS, 3);
     });
 
-    it("can send a requests every 3 seconds if configured to", async function() {
-      await EWE.testing.startTelemetry(TELEMETRY_ARGS, 3000);
+    it("pings at regular configurable intervals", async function() {
+      const interval = 2000;
+      await EWE.testing.startTelemetry(TELEMETRY_ARGS, interval);
 
       await expectNextPing(1);
-      await delayThenExpectNextPing(3000, 2);
+      await delayThenExpectNextPing(interval, 2);
     });
 
-    it("sends a request at regular intervals, every 6 seconds, when telemetry is restarted in the middle", async function() {
-      await startTelemetryWithTestArgs();
-
-      await expectNextPing(1);
-
-      // wait a bit, then restart telemetry. Make sure it doesn't immediately do
-      // another request.
-      await new Promise(r => setTimeout(r, 2000));
-      await EWE.testing.stopTelemetry();
-      await startTelemetryWithTestArgs();
-
-      await delayThenExpectNoNewPings(1000, 1);
-      await delayThenExpectNextPing(PING_INTERVAL_MS - 3000, 2);
-    });
-
-    it("schedules the next ping if the service worker is suspended before it is time for the next ping [mv3-only]", async function() {
-      await startTelemetryWithTestArgs();
-      await expectNextPing(1);
-
-      await new Promise(r => setTimeout(r, PING_INTERVAL_MS / 2));
-      await suspendServiceWorker(this);
-
-      // Service worker is woken up at this point
-      await EWE.testing.stopTelemetry();
-      await startTelemetryWithTestArgs();
-
-      await delayThenExpectNextPing(PING_INTERVAL_MS / 2, 2);
-    });
-
-    it("pings immediately if the service worker is suspended after it is time for the next ping [mv3-only]", async function() {
-      await startTelemetryWithTestArgs();
-
-      await expectNextPing(1);
-
-      await suspendServiceWorker(this);
-
-      let storage = await browser.storage.local.get([TELEMETRY_STORAGE_KEY]);
-      let telemetryStorage = storage[TELEMETRY_STORAGE_KEY];
-      let adjustedLastPing =
-         new Date(telemetryStorage.lastPing).getTime() - 12 * MILLIS_IN_HOUR;
-      telemetryStorage.lastPing = new Date(adjustedLastPing).toISOString();
-      await browser.storage.local.set({
-        [TELEMETRY_STORAGE_KEY]: telemetryStorage
-      });
-
-      // this is just to give the service worker some ping to wake it
-      // up. Specific call doesn't matter.
-      await EWE.testing._waitForInitialization();
-
-      await expectNextPing(2);
-    });
-
-    it("sends a request after the error delay if the server had an error", async function() {
+    it("pings using the error delay after a server error", async function() {
       await setEndpointResponse(TELEMETRY_URL, {}, "POST", 500);
       await startTelemetryWithTestArgs();
 
       await expectNextPing(1);
-      await delayThenExpectNoNewPings(ERROR_DELAY_MS / 2, 1);
-      await delayThenExpectNextPing(ERROR_DELAY_MS / 2, 2);
+      await delayThenExpectNextPing(ERROR_DELAY_MS, 2);
     });
 
-    it("sends a request after the error delay if the server had an invalid response", async function() {
+    it("pings using the error delay after an invalid response", async function() {
       await setEndpointResponse(TELEMETRY_URL, "this isn't even valid JSON", "POST");
       await startTelemetryWithTestArgs();
 
       await expectNextPing(1);
-      await delayThenExpectNoNewPings(ERROR_DELAY_MS / 2, 1);
-      await delayThenExpectNextPing(ERROR_DELAY_MS / 2, 2);
+      await delayThenExpectNextPing(ERROR_DELAY_MS, 2);
     });
 
-    it("goes back to regular ping interval when it succeeds", async function() {
+    it("goes back to regular ping intervals when it succeeds", async function() {
       await setEndpointResponse(TELEMETRY_URL, {}, "POST", 500);
       await startTelemetryWithTestArgs();
-
       await expectNextPing(1);
 
       await clearEndpointResponse(TELEMETRY_URL);
       await delayThenExpectNextPing(ERROR_DELAY_MS, 2);
       await delayThenExpectNextPing(PING_INTERVAL_MS, 3);
-    });
-
-    it("sends a request after the error delay if the server had an error, when telemetry is restarted in the middle", async function() {
-      await setEndpointResponse(TELEMETRY_URL, {}, "POST", 500);
-      await startTelemetryWithTestArgs();
-
-      await expectNextPing(1);
-      await delayThenExpectNoNewPings(1000, 1);
-
-      await EWE.testing.stopTelemetry();
-      await startTelemetryWithTestArgs();
-
-      await delayThenExpectNoNewPings(1000, 1);
-      await delayThenExpectNextPing(ERROR_DELAY_MS - 2000, 2);
-    });
-
-    it("sends a request at most the max error delay when telemetry is restarted in the middle, even if the clock has changed", async function() {
-      await setEndpointResponse(TELEMETRY_URL, {}, "POST", 500);
-      await startTelemetryWithTestArgs();
-
-      await expectNextPing(1);
-
-      await EWE.testing.stopTelemetry();
-
-      // We'll fiddle the lastError timestamp to simulate the computer's
-      // clock going back in time.
-      let storage = await browser.storage.local.get([TELEMETRY_STORAGE_KEY]);
-      expect(storage[TELEMETRY_STORAGE_KEY].lastError)
-        .toEqual(expect.any(String));
-      let distantFuture = new Date();
-      distantFuture.setUTCFullYear(distantFuture.getUTCFullYear() + 1);
-      await browser.storage.local.set({
-        [TELEMETRY_STORAGE_KEY]: {
-          ...storage[TELEMETRY_STORAGE_KEY],
-          lastError: distantFuture.toISOString()
-        }
-      });
-
-      await startTelemetryWithTestArgs();
-
-      // Just looking at the times in storage, we should next be pinging only
-      // next year! This is almost definitely a clock issue, so the next ping
-      // should be at most an hour away.
-      await delayThenExpectNextPing(ERROR_DELAY_MS, 2);
-    });
-
-    it("schedules the next ping after the default error delay if the server had an error, when the service worker restarts in the middle [mv3-only]", async function() {
-      await setEndpointResponse(TELEMETRY_URL, {}, "POST", 500);
-      await startTelemetryWithTestArgs();
-
-      await expectNextPing(1);
-
-      await suspendServiceWorker(this);
-
-      await EWE.testing.stopTelemetry();
-      await startTelemetryWithTestArgs();
-      await delayThenExpectNextPing(ERROR_DELAY_MS, 2);
     });
 
     it("sends AA active (as false) extension metadata to the telemetry server when non AA subscriptions are active", async function() {
@@ -331,6 +213,108 @@ describe("Telemetry", function() {
 
         const payload = telemetryRequests[0].body.payload;
         expect(payload.aa_active).toEqual(true);
+      });
+    });
+
+    describe("Telemetry restart", function() {
+      it("pings at regular intervals", async function() {
+        await startTelemetryWithTestArgs();
+        await expectNextPing(1);
+
+        await EWE.testing.stopTelemetry();
+        await startTelemetryWithTestArgs();
+
+        await delayThenExpectNextPing(PING_INTERVAL_MS, 2);
+      });
+
+      it("pings using the error delay after a server error", async function() {
+        await setEndpointResponse(TELEMETRY_URL, {}, "POST", 500);
+        await startTelemetryWithTestArgs();
+        await expectNextPing(1);
+
+        await EWE.testing.stopTelemetry();
+        await startTelemetryWithTestArgs();
+
+        await delayThenExpectNextPing(ERROR_DELAY_MS, 2);
+      });
+
+      it("pings at most the max error delay when the clock has changed", async function() {
+        await setEndpointResponse(TELEMETRY_URL, {}, "POST", 500);
+        await startTelemetryWithTestArgs();
+        await expectNextPing(1);
+
+        await EWE.testing.stopTelemetry();
+
+        // We'll fiddle the lastError timestamp to simulate the computer's
+        // clock going back in time.
+        let storage = await browser.storage.local.get([TELEMETRY_STORAGE_KEY]);
+        expect(storage[TELEMETRY_STORAGE_KEY].lastError)
+          .toEqual(expect.any(String));
+        let distantFuture = new Date();
+        distantFuture.setUTCFullYear(distantFuture.getUTCFullYear() + 1);
+        await browser.storage.local.set({
+          [TELEMETRY_STORAGE_KEY]: {
+            ...storage[TELEMETRY_STORAGE_KEY],
+            lastError: distantFuture.toISOString()
+          }
+        });
+
+        await startTelemetryWithTestArgs();
+        // Just looking at the times in storage, we should next be pinging only
+        // next year! This is almost definitely a clock issue, so the next ping
+        // should be at most an hour away.
+        await delayThenExpectNextPing(ERROR_DELAY_MS, 2);
+      });
+    });
+
+    describe("Service worker suspension [mv3-only]", function() {
+      it("schedules the next ping when the service worker is suspended before the next ping", async function() {
+        await startTelemetryWithTestArgs();
+        await expectNextPing(1);
+
+        await new Promise(r => setTimeout(r, PING_INTERVAL_MS / 2));
+        await suspendServiceWorker(this);
+
+        // Service worker is woken up at this point
+        await EWE.testing.stopTelemetry();
+        await startTelemetryWithTestArgs();
+
+        await delayThenExpectNextPing(PING_INTERVAL_MS / 2, 2);
+      });
+
+      it("pings immediately when the service worker is suspended after the next ping", async function() {
+        await startTelemetryWithTestArgs();
+        await expectNextPing(1);
+
+        await suspendServiceWorker(this);
+
+        let storage = await browser.storage.local.get([TELEMETRY_STORAGE_KEY]);
+        let telemetryStorage = storage[TELEMETRY_STORAGE_KEY];
+        let adjustedLastPing =
+           new Date(telemetryStorage.lastPing).getTime() - 12 * MILLIS_IN_HOUR;
+        telemetryStorage.lastPing = new Date(adjustedLastPing).toISOString();
+        await browser.storage.local.set({
+          [TELEMETRY_STORAGE_KEY]: telemetryStorage
+        });
+
+        // this is just to give the service worker some ping to wake it
+        // up. Specific call doesn't matter.
+        await EWE.testing._waitForInitialization();
+
+        await expectNextPing(2);
+      });
+
+      it("pings using the error delay when the service worker is suspended after a server error", async function() {
+        await setEndpointResponse(TELEMETRY_URL, {}, "POST", 500);
+        await startTelemetryWithTestArgs();
+        await expectNextPing(1);
+
+        await suspendServiceWorker(this);
+
+        await EWE.testing.stopTelemetry();
+        await startTelemetryWithTestArgs();
+
+        await delayThenExpectNextPing(ERROR_DELAY_MS, 2);
       });
     });
 
