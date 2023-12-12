@@ -339,6 +339,20 @@ describe("Element Hiding", function() {
       await expectElemHideHidden({elemId: "elem-hide-emulation-contain"});
     });
 
+    it("hides abp-contains elements with wildcards", async function() {
+      // DNS mapping webext.com to 127.0.0.1 is configured
+      // for all Chromium-based browsers during the tests.
+      if (!isChromiumBased()) {
+        this.skip();
+      }
+
+      await addFilter("webext.*#?#span:-abp-contains(elem-hide-emulation-contain-target)");
+      await expectElemHideHidden({
+        url: "http://webext.com:3000/element-hiding.html",
+        elemId: "elem-hide-emulation-contain"
+      });
+    });
+
     it("hides the img element of a blocked request in element-hiding-aboutblank", async function() {
       setMinTimeout(this, 5000);
       await addFilter("##img");
