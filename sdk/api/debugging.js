@@ -73,6 +73,11 @@ export const LOG_LEVEL_ERROR = 2;
 /**
  * @ignore
  */
+export const LOG_LEVEL_TRACE = 3;
+
+/**
+ * @ignore
+ */
 export const LOG_COLOR_RED = "\x1b[31m";
 
 /**
@@ -108,8 +113,37 @@ export const LOG_COLOR_BLUE_BRIGHT = "\x1b[94m";
 const LEVEL_TO_COLOR = new Map([
   // no color for "LOG_LEVEL_INFO" level (using default)
   [LOG_LEVEL_WARNING, LOG_COLOR_YELLOW],
-  [LOG_LEVEL_ERROR, LOG_COLOR_RED]
+  [LOG_LEVEL_ERROR, LOG_COLOR_RED],
+  [LOG_LEVEL_TRACE, LOG_COLOR_BLUE]
 ]);
+
+/**
+ * Collects the debugging events until print() is called.
+ */
+class OnRequestLogger {
+  constructor(listener) {
+    this._wrappedListener = listener;
+    this._events = [];
+    let self = this;
+    this._listener = event => {
+      self._events.push(event);
+    };
+  }
+
+  print() {
+    for (let event of this._events) {
+      this._wrappedListener(event);
+    }
+  }
+
+  clear() {
+    this._events = [];
+  }
+
+  getListener() {
+    return this._listener;
+  }
+}
 
 class ConsoleLogger {
   constructor(
@@ -120,25 +154,7 @@ class ConsoleLogger {
     this._printTimeStamp = printTimeStamp;
     this._colorize = colorize;
     this._levelToColor = levelToColor;
-  }
-
-  colorizeMessage(message, color) {
-    return color ? `${color}${message}\x1b[0m` : message;
-  }
-
-  padStartZero(value, length = 2) {
-    return String(value).padStart(length, "0");
-  }
-
-  formatTime(ts) {
-    return this.padStartZero(ts.getHours()) + ":" +
-      this.padStartZero(ts.getMinutes()) + ":" +
-      this.padStartZero(ts.getSeconds()) + "." +
-      this.padStartZero(ts.getMilliseconds(), 3);
-  }
-
-  getListener() {
-    return ({message, level, timeStamp, color}) => {
+    this._listener = ({message, level, timeStamp, color}) => {
       // Using default level color if no specific color is passed
       let _color = color || this._levelToColor.get(level);
       let colorizedMessage = this._colorize ?
@@ -160,12 +176,46 @@ class ConsoleLogger {
         case LOG_LEVEL_ERROR:
           console.error(output);
           break;
+
+        case LOG_LEVEL_TRACE:
+          console.debug(output);
+          break;
       }
     };
   }
+
+  colorizeMessage(message, color) {
+    return color ? `${color}${message}\x1b[0m` : message;
+  }
+
+  padStartZero(value, length = 2) {
+    return String(value).padStart(length, "0");
+  }
+
+  formatTime(ts) {
+    return this.padStartZero(ts.getHours()) + ":" +
+      this.padStartZero(ts.getMinutes()) + ":" +
+      this.padStartZero(ts.getSeconds()) + "." +
+      this.padStartZero(ts.getMilliseconds(), 3);
+  }
+
+  getListener() {
+    return this._listener;
+  }
 }
 
-const CONSOLE_LOGGER = new ConsoleLogger().getListener();
+const CONSOLE_LOGGER = new ConsoleLogger();
+const ON_REQUEST_CONSOLE_LOGGER =
+  new OnRequestLogger(CONSOLE_LOGGER.getListener());
+
+function getStackTrace() {
+  const stack = new Error().stack.split("\n")
+    .slice(3) // skip "Error" line, getStackTrace() and trace()
+    .map(it => it
+      .trim()
+      .replace("at ", ""));
+  return stack;
+}
 
 /**
  * @ignore
@@ -214,6 +264,19 @@ export function warn(message, color) {
  */
 export function error(message, color) {
   emitLogEvent({message, level: LOG_LEVEL_ERROR, color});
+}
+
+/**
+ * Outputs call track and the arguments
+ * @ignore
+ * @param {Object} args Call arguments
+ * @param {*?} color Log output color
+ */
+export function trace(args, color) {
+  let stackTrace = getStackTrace();
+  stackTrace.push(JSON.stringify(args));
+  const message = stackTrace.join("\n\t");
+  emitLogEvent({message, level: LOG_LEVEL_TRACE, color});
 }
 
 /**
@@ -397,6 +460,16 @@ export default {
   /**
    * Default logger instance that outputs to console
    */
-  CONSOLE_LOGGER
+  CONSOLE_LOGGER,
+
+  /**
+   * On request logger, that outputs to wrapped logger on `print()`
+   */
+  OnRequestLogger,
+
+  /**
+   * Default logger instance, that outputs to console on `print()`
+   */
+  ON_REQUEST_CONSOLE_LOGGER
 };
 

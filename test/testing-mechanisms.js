@@ -130,6 +130,27 @@ describe("Testing Mechanisms", function() {
         });
       });
     }
+
+    it("outputs the tracing log", async function() {
+      const message = "trace message";
+
+      await EWE.testing._clearDebugLog();
+      await EWE.testing._trace(message);
+      await EWE.testing._printDebugLog();
+
+      let tracingOutput;
+      await wait(async() => {
+        // eslint-disable-next-line no-console
+        tracingOutput = console.log.getCalls();
+        return tracingOutput.length > 0;
+      }, 1000, "No console debug output");
+
+      expect(tracingOutput).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          args: ["Background (debug):", expect.stringContaining(message)]
+        })
+      ]));
+    });
   });
 
   describe("Endpoint manipulation", function() {

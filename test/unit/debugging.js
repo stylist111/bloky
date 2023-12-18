@@ -1,4 +1,3 @@
-
 // Configure the environment as test environment.
 // Warning: must be the first line in the tests!
 import env from "./environment.js";
@@ -65,16 +64,16 @@ describe("Debugging", function() {
     const colorEndToken = "[0m";
 
     beforeEach(async function() {
-      for (let method of ["info", "warn", "error"]) {
+      for (let method of ["debug", "info", "warn", "error"]) {
         sandbox.spy(console, method);
       }
       consoleLogger = api.default.CONSOLE_LOGGER;
-      api.default.onLogEvent.addListener(consoleLogger);
+      api.default.onLogEvent.addListener(consoleLogger.getListener());
     });
 
     afterEach(function() {
       sandbox.restore();
-      api.default.onLogEvent.removeListener(consoleLogger);
+      api.default.onLogEvent.removeListener(consoleLogger.getListener());
     });
 
     it("outputs to the console", function() {
@@ -83,6 +82,21 @@ describe("Debugging", function() {
       // eslint-disable-next-line no-console
       let consoleArgs = console.info.getCall(0).args;
       expect(consoleArgs[0].includes(message)).toEqual(true);
+    });
+
+    it("prints the stacktrace for trace()", function() {
+      let someArg = 10;
+
+      function someTracedFunction() {
+        api.trace({someArg});
+      }
+      someTracedFunction();
+
+      // eslint-disable-next-line no-console
+      let consoleArgs = console.debug.getCall(0).args;
+      let actualOutput = consoleArgs[0];
+      expect(actualOutput.includes("someTracedFunction")).toEqual(true);
+      expect(actualOutput.includes("debugging.js:")).toEqual(true);
     });
 
     it("prints the timestamp", function() {
@@ -129,14 +143,14 @@ describe("Debugging", function() {
       api.warn(message, api.LOG_COLOR_MAGENTA);
       expect(console.warn.callCount).toEqual(2);
 
-      api.default.onLogEvent.removeListener(consoleLogger);
+      api.default.onLogEvent.removeListener(consoleLogger.getListener());
 
       api.warn(message, api.LOG_COLOR_MAGENTA);
       expect(console.warn.callCount).toEqual(2); // not incremented
     });
 
     it("is configurable", function() {
-      api.default.onLogEvent.removeListener(consoleLogger);
+      api.default.onLogEvent.removeListener(consoleLogger.getListener());
 
       // don't print timestamp
       let noTimestampLogger = new api.default.ConsoleLogger(false)
@@ -169,6 +183,40 @@ describe("Debugging", function() {
       finally {
         api.default.onLogEvent.removeListener(noColorizeLogger);
       }
+    });
+  });
+
+  describe("OnRequest logger", function() {
+    beforeEach(async function() {
+      this.events = [];
+      let self = this;
+      this.logger = new api.default.OnRequestLogger(event => {
+        self.events.push(event);
+      });
+      api.default.onLogEvent.addListener(this.logger.getListener());
+    });
+
+    afterEach(function() {
+      api.default.onLogEvent.removeListener(this.logger.getListener());
+    });
+
+    it("calls the wrapped listener on print()", function() {
+      api.info("message");
+      expect(this.events.length).toEqual(0);
+      this.logger.print();
+      expect(this.events.length).toEqual(1);
+    });
+
+    it("clear the history on clear()", function() {
+      api.info("message1");
+      expect(this.events.length).toEqual(0);
+      this.logger.print();
+      expect(this.events.length).toEqual(1);
+      this.logger.clear();
+      this.events = [];
+      api.info("message2");
+      this.logger.print();
+      expect(this.events.length).toEqual(1);
     });
   });
 });

@@ -493,6 +493,23 @@ If tests are failing due to timeouts (of the tests or `wait()`), add `console.lo
 in each step of the test to see where test starts to "hang" and investigate
 this step.
 
+#### Code tracing to analyze flaky tests reasons
+
+Import `info()`, `log()`, `warn()`, `error()` or `trace()` from
+`sdk/api/debugging.js` to record that is happening in the solution and make it
+printed in the console when a test fails:
+
+```
+import {trace} from "./debugging.js";
+...
+function onBeforeNavigate(details) {
+  trace({details});
+...
+```
+
+By default debug output is enabled in test web extension and it can be changed with
+`EWE.testing.enableDebugOutput()` call.
+
 ### Checking your tests quality on a pipeline
 
 If you need to debug specific flaky tests on the pipeline, add [flaky] to the

@@ -24,6 +24,7 @@ import {notifications} from "adblockpluscore/lib/notifications.js";
 import {filterEngine} from "./core.js";
 import {Prefs, awaitSavingComplete, init as initPrefs} from "./prefs.js";
 import {default as debugging} from "./debugging.js";
+import {trace} from "./debugging.js";
 import {default as subs} from "./subscriptions.js";
 import {clearSkipInitRulesets, checkAndInitSubscriptions} from "./index.js";
 import {getDefaultSubscriptions, isSynchronizing} from "./subscriptions.js";
@@ -210,15 +211,28 @@ export default {
   },
 
   enableDebugOutput(enabled) {
+    let listener = debugging.ON_REQUEST_CONSOLE_LOGGER.getListener();
     if (enabled) {
-      debugging.onLogEvent.addListener(debugging.CONSOLE_LOGGER);
+      debugging.onLogEvent.addListener(listener);
     }
     else {
-      debugging.onLogEvent.removeListener(debugging.CONSOLE_LOGGER);
+      debugging.onLogEvent.removeListener(listener);
     }
   },
 
   CONSOLE_LOGGER: debugging.logger,
+
+  _trace(message) {
+    trace({message});
+  },
+
+  _clearDebugLog() {
+    debugging.ON_REQUEST_CONSOLE_LOGGER.clear();
+  },
+
+  _printDebugLog() {
+    debugging.ON_REQUEST_CONSOLE_LOGGER.print();
+  },
 
   /**
    * @ignore

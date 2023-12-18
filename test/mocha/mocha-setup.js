@@ -36,6 +36,24 @@ async function clearFilters() {
   ], false);
 }
 
+async function clearDebugLog() {
+  await runInBackgroundPage([
+    {op: "getGlobal", arg: "EWE"},
+    {op: "getProp", arg: "testing"},
+    {op: "callMethod", arg: "_clearDebugLog"},
+    {op: "await"}
+  ], false);
+}
+
+async function printDebugLog() {
+  await runInBackgroundPage([
+    {op: "getGlobal", arg: "EWE"},
+    {op: "getProp", arg: "testing"},
+    {op: "callMethod", arg: "_printDebugLog"},
+    {op: "await"}
+  ], false);
+}
+
 async function clearStorage() {
   await runInBackgroundPage([
     {op: "getGlobal", arg: "EWE"},
@@ -72,19 +90,28 @@ before(async function() {
 });
 
 beforeEach(async function() {
+  await clearDebugLog();
+
   let {fn} = this.currentTest;
   this.currentTest.fn = async function() {
-    await fn.call(this);
+    try {
+      await fn.call(this);
+      let error = await getLastError();
+      if (error) {
+        // https://github.com/mozilla/webextension-polyfill/issues/384
+        if (error.includes("A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received")) {
+          console.warn(error);
+        }
+        else {
+          throw new Error(error);
+        }
+      }
+    }
+    catch (e) {
+      console.warn("Test failed:", e.message, "\nDebug output:");
+      await printDebugLog();
 
-    let error = await getLastError();
-    if (error) {
-      // https://github.com/mozilla/webextension-polyfill/issues/384
-      if (error.includes("A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received")) {
-        console.warn(error);
-      }
-      else {
-        throw new Error(error);
-      }
+      throw e;
     }
   };
 });
