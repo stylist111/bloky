@@ -1350,26 +1350,22 @@ describe("Element hiding emulation", function() {
       "div#elem2"
     ];
 
-    if (await applyElemHideEmulation(selectors)) {
-      // The timeout(0)s here are to let the browser fire mutation
-      // events, which call queueFiltering. If you don't have the
-      // timeouts, then the queueFiltering is only actually called later
-      // and we don't test what we're trying to test.
-      let elem2 = createElement(null, "div", "elem2");
-      await timeout(0);
+    await applyElemHideEmulation(selectors);
+    // The timeout(0)s here are to let the browser fire mutation
+    // events, which call queueFiltering. If you don't have the
+    // timeouts, then the queueFiltering is only actually called later
+    // and we don't test what we're trying to test.
+    let elem2 = createElement(null, "div", "elem2");
+    await timeout(0);
 
-      // even though we just modified some elements, filtering should
-      // not happen immediately because it need to wait at least
-      // minInvocationInterval between filtering.
-      expectHidden(elem1, elem1.id);
-      expectVisible(elem2, elem2.id);
+    // even though we just modified some elements, filtering should
+    // not happen immediately because it need to wait at least
+    // minInvocationInterval between filtering.
+    expectHidden(elem1, elem1.id);
+    expectVisible(elem2, elem2.id);
 
-      await timeout(REFRESH_INTERVAL / 4);
-      expectVisible(elem2, elem2.id);
-
-      await timeout(REFRESH_INTERVAL);
-      expectHidden(elem2, elem2.id);
-    }
+    await timeout(REFRESH_INTERVAL);
+    expectHidden(elem2, elem2.id);
   });
 
   it("Hidden items are tracked, but not after being removed from the page", async function() {
