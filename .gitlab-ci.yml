@@ -471,7 +471,7 @@ fuzz:v3:edge:linux:
       artifacts: true
   script:
     - docker build -t compliance -f test/dockerfiles/compliance-test.Dockerfile --build-arg EXTENSION=copy .
-    - docker run --cpus=2 --memory=8g --shm-size=1g -e CUSTOM_BROWSER="$BROWSER" -e BROWSER_VERSION="$VERSION" -e MANIFEST="$MANIFEST" compliance
+    - docker run --cpus=2 --memory=8g --shm-size=1g -e CUSTOM_BROWSER="$BROWSER" -e BROWSER_VERSION="$VERSION" -e MANIFEST="$MANIFEST" -e TESTS_TO_INCLUDE="filters/wildcard-domain" compliance
   after_script:
     - docker cp $(docker ps -aqf ancestor=compliance):/testpages.adblockplus.org/test/screenshots .
       2> /dev/null
