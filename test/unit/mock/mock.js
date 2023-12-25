@@ -17,17 +17,33 @@
 
 import {getConfig} from "./webpack.config.js";
 import webpack from "webpack";
+import path from "path";
+import url from "url";
+
+let dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
 let counter = 0;
 
 /**
  * Get the module with mocked dependencies
  * @param {string} filename Production file name inside /sdk/api directory
+ * @param {string} deleteAliases The list of files to delete resolve aliases
+ * @param {string} addAliases The list of files to add resolve aliases
  * @returns {Promise<Module>} newly compiled module
  */
-export async function mock(filename) {
+export async function mock(filename, deleteAliases = null, addAliases = null) {
   // generate the mocked module file
   let config = getConfig(filename);
+  if (deleteAliases) {
+    for (let alias of deleteAliases) {
+      delete config.webpackConfig.resolve.alias[alias];
+    }
+  }
+  if (addAliases) {
+    for (let alias of addAliases) {
+      config.webpackConfig.resolve.alias[alias] = path.resolve(dirname, alias);
+    }
+  }
   await new Promise((resolve, reject) => {
     webpack(config.webpackConfig, (err, res) => {
       if (err) {

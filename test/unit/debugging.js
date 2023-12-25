@@ -42,6 +42,7 @@ describe("Debugging", function() {
       const map = new Map([
         ["log", api.LOG_LEVEL_INFO],
         ["info", api.LOG_LEVEL_INFO],
+        ["debug", api.LOG_LEVEL_DEBUG],
         ["warn", api.LOG_LEVEL_WARNING],
         ["error", api.LOG_LEVEL_ERROR]
       ]);
@@ -55,6 +56,53 @@ describe("Debugging", function() {
           timeStamp: expect.any(Date)
         })]);
       }
+    });
+
+    it("calls the callback if having listeners", function() {
+      let calls = 0;
+      let callback = () => {
+        calls += 1;
+        return message;
+      };
+
+      let listenerArgs = null;
+      let listener = (...args) => {
+        listenerArgs = args;
+      };
+      api.default.onLogEvent.addListener(listener);
+
+      api.info(callback);
+      expect(listenerArgs).toEqual([expect.objectContaining({
+        message,
+        level: api.LOG_LEVEL_INFO,
+        timeStamp: expect.any(Date)
+      })]);
+
+      calls = 0;
+      api.log(callback);
+      api.info(callback);
+      api.debug(callback);
+      api.warn(callback);
+      api.error(callback);
+
+      expect(calls).toEqual(5);
+    });
+
+    it("does not call the callback if having no listeners", function() {
+      let calls = 0;
+      let callback = () => {
+        calls += 1;
+      };
+
+      // no listener registered
+
+      api.log(callback);
+      api.info(callback);
+      api.debug(callback);
+      api.warn(callback);
+      api.error(callback);
+
+      expect(calls).toEqual(0);
     });
   });
 

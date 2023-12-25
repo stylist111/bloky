@@ -63,17 +63,22 @@ export const LOG_LEVEL_INFO = 0;
 /**
  * @ignore
  */
-export const LOG_LEVEL_WARNING = 1;
+export const LOG_LEVEL_DEBUG = 1;
 
 /**
  * @ignore
  */
-export const LOG_LEVEL_ERROR = 2;
+export const LOG_LEVEL_WARNING = 2;
 
 /**
  * @ignore
  */
-export const LOG_LEVEL_TRACE = 3;
+export const LOG_LEVEL_ERROR = 3;
+
+/**
+ * @ignore
+ */
+export const LOG_LEVEL_TRACE = 4;
 
 /**
  * @ignore
@@ -112,6 +117,7 @@ export const LOG_COLOR_BLUE_BRIGHT = "\x1b[94m";
 
 const LEVEL_TO_COLOR = new Map([
   // no color for "LOG_LEVEL_INFO" level (using default)
+  [LOG_LEVEL_DEBUG, LOG_COLOR_BLUE],
   [LOG_LEVEL_WARNING, LOG_COLOR_YELLOW],
   [LOG_LEVEL_ERROR, LOG_COLOR_RED],
   [LOG_LEVEL_TRACE, LOG_COLOR_BLUE]
@@ -177,6 +183,7 @@ class ConsoleLogger {
           console.error(output);
           break;
 
+        case LOG_LEVEL_DEBUG:
         case LOG_LEVEL_TRACE:
           console.debug(output);
           break;
@@ -217,6 +224,19 @@ function getStackTrace() {
   return stack;
 }
 
+function getMessage(messageOrCallback) {
+  return typeof messageOrCallback === "string" ?
+    messageOrCallback :
+    messageOrCallback();
+}
+
+function _trace(messageOrCallback, level, color) {
+  if (listeners.length) {
+    const message = getMessage(messageOrCallback);
+    emitLogEvent({message, level, color});
+  }
+}
+
 /**
  * @ignore
  */
@@ -229,41 +249,56 @@ export function emitLogEvent({message, level, color, timeStamp = new Date()}) {
 /**
  * Outputs 'information' message
  * @ignore
- * @param {string} message Log message
+ * @param {string|function} messageOrCallback Log message or a callback
+ *                                            that returns log message
  * @param {*} color Log output color
  */
-export function info(message, color) {
-  emitLogEvent({message, level: LOG_LEVEL_INFO, color});
+export function info(messageOrCallback, color) {
+  _trace(messageOrCallback, LOG_LEVEL_INFO, color);
+}
+
+/**
+ * Outputs 'debug' message
+ * @ignore
+ * @param {string|function} messageOrCallback Log message or a callback
+ *                                            that returns log message
+ * @param {*} color Log output color
+ */
+export function debug(messageOrCallback, color) {
+  _trace(messageOrCallback, LOG_LEVEL_DEBUG, color);
 }
 
 /**
  * Outputs 'log' message
  * @ignore
- * @param {string} message Log message
+ * @param {string|function} messageOrCallback Log message or a callback
+ *                                            that returns log message
  * @param {*} color Log output color
  */
-export function log(message, color) {
-  emitLogEvent({message, level: LOG_LEVEL_INFO, color}); // also "info" level
+export function log(messageOrCallback, color) {
+  _trace(messageOrCallback, LOG_LEVEL_INFO, color);
 }
 
 /**
  * Outputs 'warning' message
  * @ignore
- * @param {string} message Log message
+ * @param {string|function} messageOrCallback Log message or a callback
+ *                                            that returns log message
  * @param {*} color Log output color
  */
-export function warn(message, color) {
-  emitLogEvent({message, level: LOG_LEVEL_WARNING, color});
+export function warn(messageOrCallback, color) {
+  _trace(messageOrCallback, LOG_LEVEL_WARNING, color);
 }
 
 /**
  * Outputs 'error' message
  * @ignore
- * @param {string} message Log message
+ * @param {string|function} messageOrCallback Log message or a callback
+ *                                            that returns log message
  * @param {*} color Log output color
  */
-export function error(message, color) {
-  emitLogEvent({message, level: LOG_LEVEL_ERROR, color});
+export function error(messageOrCallback, color) {
+  _trace(messageOrCallback, LOG_LEVEL_ERROR, color);
 }
 
 /**
@@ -273,10 +308,12 @@ export function error(message, color) {
  * @param {*?} color Log output color
  */
 export function trace(args, color) {
-  let stackTrace = getStackTrace();
-  stackTrace.push(JSON.stringify(args));
-  const message = stackTrace.join("\n\t");
-  emitLogEvent({message, level: LOG_LEVEL_TRACE, color});
+  if (listeners.length) {
+    let stackTrace = getStackTrace();
+    stackTrace.push(JSON.stringify(args));
+    const message = stackTrace.join("\n\t");
+    _trace(message, LOG_LEVEL_TRACE, color);
+  }
 }
 
 /**

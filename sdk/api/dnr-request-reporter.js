@@ -28,6 +28,7 @@ import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 import {BlockingFilter, AllowingFilter}
   from "adblockpluscore/lib/filterClasses.js";
 import {parseURL} from "adblockpluscore/lib/url.js";
+import {trace} from "./debugging.js";
 
 function getContext(details) {
   let contentType = getRequestContentType(details);
@@ -105,6 +106,8 @@ function getContext(details) {
 }
 
 async function onBeforeRedirect(details) {
+  trace({details});
+
   if (!loggingEnabled(details.tabId)) {
     return;
   }
@@ -146,6 +149,8 @@ async function onBeforeRedirect(details) {
 }
 
 async function onErrorOccurred(details) {
+  trace({details});
+
   if (!loggingEnabled(details.tabId)) {
     return;
   }
@@ -178,6 +183,8 @@ async function onErrorOccurred(details) {
 }
 
 async function onCompleted(details) {
+  trace({details});
+
   if (!loggingEnabled(details.tabId)) {
     return;
   }

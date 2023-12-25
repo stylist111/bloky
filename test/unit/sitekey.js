@@ -18,13 +18,16 @@
 // Configure the environment as test environment.
 // Warning: must be the first line in the tests!
 import env from "./environment.js";
-
+import {mock} from "./mock/mock.js";
 import expect from "expect";
-import * as api from "../../sdk/api/sitekey.js";
 
 describe("Sitekeys", function() {
+  let api;
+
   beforeEach(async function() {
     await env.configure();
+    // don't mock the core as we need encryption functions working
+    api = await mock("sitekey.js", ["adblockpluscore"], ["./debugging.js"]);
   });
 
   let tabId = 1;

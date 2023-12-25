@@ -108,8 +108,10 @@ beforeEach(async function() {
       }
     }
     catch (e) {
-      console.warn("Test failed:", e.message, "\nDebug output:");
-      await printDebugLog();
+      if (e.message != "sync skip; aborting execution") {
+        console.warn("Test failed:", e.message, "\nDebug output:");
+        await printDebugLog();
+      }
 
       throw e;
     }

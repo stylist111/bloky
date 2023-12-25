@@ -23,6 +23,7 @@ import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 import {filterEngine} from "./core.js";
 import {logItem} from "./diagnostics.js";
 import {getFrameInfo, isTopLevelFrameId, BLANK_PAGE_URL} from "./frame-state.js";
+import {trace} from "./debugging.js";
 
 let loadingPopups = new Map();
 
@@ -58,6 +59,8 @@ function checkPotentialPopup(popupTabId, url, opener) {
 }
 
 function onPopupURLChanged({frameId, tabId, url}) {
+  trace({frameId, tabId, url});
+
   if (!isTopLevelFrameId(frameId)) {
     return;
   }
@@ -68,17 +71,22 @@ function onPopupURLChanged({frameId, tabId, url}) {
   }
 }
 
-function onCompleted({frameId, url, tabId}) {
+function onCompleted({frameId, tabId, url}) {
+  trace({frameId, tabId, url});
+
   if (isTopLevelFrameId(frameId) && url != BLANK_PAGE_URL) {
     forgetPopup(tabId);
   }
 }
 
 function onTabRemoved(tabId) {
+  trace({tabId});
   forgetPopup(tabId);
 }
 
 function onPopup({tabId, url, sourceTabId, sourceFrameId}) {
+  trace({tabId, url, sourceTabId, sourceFrameId});
+
   let frame = getFrameInfo(sourceTabId, sourceFrameId) || {};
 
   if (frame.allowlisted & contentTypes.DOCUMENT) {
@@ -110,6 +118,8 @@ function onPopup({tabId, url, sourceTabId, sourceFrameId}) {
 }
 
 function onTabCreated({id, url, openerTabId}) {
+  trace({id, url, openerTabId});
+
   if (openerTabId) {
     onPopup({tabId: id, url, sourceTabId: openerTabId, sourceFrameId: 0});
   }

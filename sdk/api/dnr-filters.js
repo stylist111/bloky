@@ -32,6 +32,7 @@ import {ERROR_DUPLICATE_FILTERS, ERROR_FILTER_NOT_FOUND,
 import {onChangedFilter, disableFilter} from "./filters.js";
 import {default as initializer} from "./initializer.js";
 import {calculateDiff} from "./filter-diffs.js";
+import {trace, debug, error} from "./debugging.js";
 
 import {FilterError} from "./types.js";
 import {Prefs} from "./prefs.js";
@@ -144,7 +145,9 @@ export function clearIsDnrSubscriptionUpdating() {
  * @private
  */
 export async function dnrSubscriptionUpdate(subscription, updates) {
+  debug("Diff update started");
   if (isDnrSubscriptionUpdating(subscription.url)) {
+    debug(`Already updating ${subscription.url}, skipping`);
     return;
   }
   dnrSubscriptionUpdating.add(subscription.url);
@@ -153,6 +156,7 @@ export async function dnrSubscriptionUpdate(subscription, updates) {
     await _dnrSubscriptionUpdate(subscription, updates);
   }
   catch (e) {
+    error(`Failed to diff update: ${error.message}`);
     if (e.type === ERROR_TOO_MANY_FILTERS){
       subscription.downloadStatus = "synchronize_diff_too_many_filters";
       e.rulesAvailable = await dynamicRulesAvailable();
@@ -168,6 +172,7 @@ export async function dnrSubscriptionUpdate(subscription, updates) {
   }
   finally {
     dnrSubscriptionUpdating.delete(subscription.url);
+    debug("Diff update finished");
   }
 }
 
@@ -211,6 +216,7 @@ export async function _dnrSubscriptionUpdate(
   if (!browser.declarativeNetRequest || !updates) {
     return;
   }
+  trace({subscription, updates});
 
   // For now we only want to handle subscriptions that are in the
   // recommendations.
@@ -611,9 +617,9 @@ async function processFilterTexts(texts, subscriptionId = null, mapper = null) {
     }
 
     let filter = Filter.fromText(text);
-    let error = validateFilter(filter);
-    if (error) {
-      throw error;
+    let filterError = validateFilter(filter);
+    if (filterError) {
+      throw filterError;
     }
 
     if (!filterEngine.filterStorage.filterState.isEnabled(text)) {

@@ -23,6 +23,7 @@ import {createStyleSheet} from "adblockpluscore/lib/elemHide.js";
 import {subscribeLinkClicked} from "./subscribe-links.js";
 import {logHiddenElements} from "./diagnostics.js";
 import {allowlistPage} from "./allowlisting.js";
+import {trace} from "./debugging.js";
 
 async function handleMessage(message, sender) {
   await initializer.start();
@@ -57,6 +58,11 @@ async function handleMessage(message, sender) {
 }
 
 function onMessage(message, sender) {
+  trace({message, sender: {
+    tabId: sender.tab.id,
+    frameId: sender.frameId,
+    url: sender.url
+  }});
   if (typeof message == "object" && message != null &&
       message.type && message.type.startsWith("ewe:")) {
     return handleMessage(message, sender);

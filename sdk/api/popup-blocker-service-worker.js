@@ -25,6 +25,7 @@ import {default as initializer} from "./initializer.js";
 import {logItem} from "./diagnostics.js";
 import {getFrameInfo, isTopLevelFrameId, BLANK_PAGE_URL}
   from "./frame-state.js";
+import {trace} from "./debugging.js";
 
 const SESSION_STORAGE_KEY = "ewe:popupBlocker:loadingPopups";
 
@@ -119,6 +120,8 @@ async function checkPotentialPopup(popupTabId, url, opener) {
 }
 
 async function onPopupURLChanged({frameId, tabId, url}) {
+  trace({frameId, tabId, url});
+
   if (!isTopLevelFrameId(frameId)) {
     return;
   }
@@ -130,6 +133,8 @@ async function onPopupURLChanged({frameId, tabId, url}) {
 }
 
 async function onCompleted({frameId, tabId, url}) {
+  trace({frameId, tabId, url});
+
   if (!isTopLevelFrameId(frameId) || url == BLANK_PAGE_URL) {
     return;
   }
@@ -142,10 +147,13 @@ async function onCompleted({frameId, tabId, url}) {
 }
 
 async function onTabRemoved(tabId) {
+  trace({tabId});
   await potentialPopups.remove(tabId);
 }
 
 async function onPopup({tabId, url, sourceTabId, sourceFrameId}) {
+  trace({tabId, url, sourceTabId, sourceFrameId});
+
   let openerPromise = (async() => {
     await initializer.start();
     let frame = getFrameInfo(sourceTabId, sourceFrameId) || {};

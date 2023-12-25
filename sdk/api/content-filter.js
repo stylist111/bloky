@@ -24,7 +24,7 @@ import {parseScript} from "adblockpluscore/lib/snippets.js";
 import {filterEngine} from "./core.js";
 import {getFrameInfo} from "./frame-state.js";
 import {logItem, tracingEnabled} from "./diagnostics.js";
-import {debugOptions} from "./debugging.js";
+import {debugOptions, trace, debug} from "./debugging.js";
 
 let isolatedLib;
 let injectedLib;
@@ -36,7 +36,7 @@ export function setSnippetLibrary({isolatedCode, injectedCode}) {
 
 function generateStylesheet(tabId, previousFrame, frame) {
   let specificOnly = (frame.allowlisted & contentTypes.GENERICHIDE) != 0;
-  let trace = tracingEnabled(tabId);
+  let tracing = tracingEnabled(tabId);
 
   let previousStylesheet;
   if (previousFrame &&
@@ -45,7 +45,7 @@ function generateStylesheet(tabId, previousFrame, frame) {
     previousStylesheet = filterEngine.elemHide.getStyleSheet(
       previousFrame.hostname,
       specificOnly,
-      trace);
+      tracing);
   }
   else {
     previousStylesheet = {
@@ -127,6 +127,7 @@ async function executeSnippets(tabId, frameId, previousFrame, frame) {
       if (isolatedDependencies.length) {
         let isolatedDepsPromises = [];
         for (let dependency of isolatedDependencies) {
+          debug(() => `Execute dependency script ${dependency}`);
           isolatedDepsPromises.push(browser.scripting.executeScript({
             target: details,
             world: "ISOLATED",
@@ -136,6 +137,7 @@ async function executeSnippets(tabId, frameId, previousFrame, frame) {
         await Promise.all(isolatedDepsPromises);
       }
 
+      debug(() => `Execute isolated script ${isolatedLib}`);
       execute.push(
         browser.scripting.executeScript({
           target: details,
@@ -147,6 +149,7 @@ async function executeSnippets(tabId, frameId, previousFrame, frame) {
     }
 
     if (main.length > 0) {
+      debug(() => `Execute main script ${isolatedLib}`);
       execute.push(
         browser.scripting.executeScript({
           target: details,
@@ -168,6 +171,7 @@ async function executeSnippets(tabId, frameId, previousFrame, frame) {
         }
       }
       code += `(${isolatedLib}).apply(null,${args})`;
+      debug(() => `Execute isolated script ${code}`);
       execute.push(
         browser.tabs.executeScript(
           tabId,
@@ -214,6 +218,7 @@ async function executeSnippets(tabId, frameId, previousFrame, frame) {
             const executable = ${code};
             injectSnippetsInMainContext(executable);
           }`;
+      debug(() => `Execute main script ${executable}`);
       execute.push(
         browser.tabs.executeScript(
           tabId,
@@ -242,6 +247,7 @@ export async function applyContentFilters(tabId, frameId, previousFrame) {
 
   if (frame) {
     let styleSheet = generateStylesheet(tabId, previousFrame, frame);
+    trace({frame, tabId, frameId, styleSheet});
 
     if (previousFrame && !(previousFrame.allowlisted & contentTypes.DOCUMENT)) {
       await removeCSS(tabId, frameId, styleSheet.removedCode);

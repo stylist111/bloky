@@ -26,6 +26,7 @@ import {logItem} from "./diagnostics.js";
 import {getSitekey, clearTabSitekeys,
         addListener as addOnSitekeyReceivedListener} from "./sitekey.js";
 import {applyContentFilters} from "./content-filter.js";
+import {trace, debug} from "./debugging.js";
 
 /**
  * The URL that browsers use to represent an empty page, about:blank.
@@ -211,11 +212,14 @@ function findAllowlistingFilters(frame, tabId, frameId) {
   // for the frame until the matcher doesn't return any more.
   while (true) {
     let typeMask = ~frame.allowlisted & ALLOWING_TYPES;
+    debug(`Check match tabId=${tabId}, url=${frame.url}, typeMask=${typeMask}, ` +
+      `docDomain=${matchInfo.docDomain}, sitekey=${frame.sitekey}`);
     let filter = filterEngine.defaultMatcher.match(
       frame.url, typeMask, matchInfo.docDomain, frame.sitekey
     );
 
     if (!filter) {
+      debug(`No filter for tabId=${tabId},frameId=${frameId}`);
       break;
     }
 
@@ -227,6 +231,7 @@ function findAllowlistingFilters(frame, tabId, frameId) {
     }
 
     let allowingReason = getAllowingReason(typeMask, filter);
+    debug(`Allowing tabId=${tabId}, frameId=${frameId} due to ${filter.text}`);
     logItem(details, filter, {...matchInfo, allowingReason});
   }
 }
@@ -283,6 +288,8 @@ async function discoverExistingFrames() {
 }
 
 function onSitekeyReceived(tabId, frameId, url, sitekey) {
+  trace({tabId, frameId, url, sitekey});
+
   let frame = getFrameInfo(tabId, frameId);
   let isSameFrame = frame && frame.url == url;
   if (isSameFrame) {
@@ -397,6 +404,8 @@ function recordFrameFromNavigationEvent(
 }
 
 function onBeforeNavigate(details) {
+  trace({details});
+
   // We know the current frame information is about to become
   // outdated, so we just delete the existing data.
   let frames = state.get(details.tabId);
@@ -429,11 +438,15 @@ function onBeforeNavigate(details) {
 }
 
 function onCommitted(details) {
+  trace({details});
+
   let frame = recordFrameFromNavigationEvent(details);
   frame.isChangingURL = false;
 }
 
 function onErrorOccurred(details) {
+  trace({details});
+
   // On Chrome, errored iframes are never committed, but they are
   // still on the page and their contents can still be manipulated
   // with Javascript so we need them in our frame state.
@@ -451,6 +464,8 @@ function onErrorOccurred(details) {
 }
 
 async function onHistoryStateUpdated(details) {
+  trace({details});
+
   let previousFrame = getFrameInfo(details.tabId, details.frameId);
   recordFrameFromNavigationEvent(details, {historyStateUpdated: true});
 
@@ -473,10 +488,12 @@ function handleOnRemoved(tabId) {
 }
 
 function onRemoved(tabId) {
+  trace({tabId});
   handleOnRemoved(tabId);
 }
 
 function onReplaced(addedTabId, removedTabId) {
+  trace({addedTabId, removedTabId});
   handleOnRemoved(removedTabId);
 }
 

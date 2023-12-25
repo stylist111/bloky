@@ -507,6 +507,15 @@ function onBeforeNavigate(details) {
 ...
 ```
 
+Use callback to avoid logging performance penalty if having no `EWE.debugging.onLogEvent`
+listeners:
+
+```
+...
+debug(() => `Some message with a long ${variable} that takes too much of CPU and memory`));
+...
+```
+
 By default debug output is enabled in test web extension and it can be changed with
 `EWE.testing.enableDebugOutput()` call.
 

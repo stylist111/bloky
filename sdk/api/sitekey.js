@@ -18,6 +18,7 @@
 import {verifySignatureSync} from "adblockpluscore/lib/rsa.js";
 import browser from "./browser.js";
 import {isRunningInServiceWorker} from "./browser-features.js";
+import {trace} from "./debugging.js";
 
 /**
  * All known sitekeys, that can be looked up by
@@ -47,6 +48,8 @@ function notifyAllSitekeys() {
 }
 
 function onHeadersReceived({tabId, frameId, url, responseHeaders}) {
+  trace({tabId, frameId, url, responseHeaders});
+
   let sitekey = setSitekeyFromHeaders(tabId, frameId, url, responseHeaders);
   if (sitekey) {
     notifySitekey(tabId, frameId, url, sitekey);

@@ -24,6 +24,7 @@ import {hasAcceptableAdsEnabled} from "./subscriptions.js";
 import {EventDispatcher} from "./types.js";
 import {Scheduler} from "./scheduler.js";
 import {default as initializer} from "./initializer.js";
+import {trace, error} from "./debugging.js";
 
 const TELEMETRY_STORAGE_KEY = "ewe:telemetry";
 
@@ -126,6 +127,7 @@ function truncateTimes(timestamp) {
 }
 
 async function ping(telemetry) {
+  trace({telemetry});
   await initializer.start();
 
   const storageResult = await browser.storage.local.get(
@@ -150,6 +152,8 @@ async function ping(telemetry) {
     );
   }
   catch (e) {
+    error(`Telemetry error: ${e.message}`);
+
     let lastError = (new Date()).toISOString();
     await browser.storage.local.set({
       [TELEMETRY_STORAGE_KEY]: {
@@ -177,6 +181,7 @@ async function ping(telemetry) {
 }
 
 async function fetchWithBearerToken(url, bearer, body) {
+  trace({url, bearer, body});
   const response = await fetch(url, {
     method: "POST",
     headers: {
