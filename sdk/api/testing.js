@@ -24,7 +24,7 @@ import {notifications} from "adblockpluscore/lib/notifications.js";
 import {filterEngine} from "./core.js";
 import {Prefs, awaitSavingComplete, init as initPrefs} from "./prefs.js";
 import {default as debugging} from "./debugging.js";
-import {trace} from "./debugging.js";
+import {info, log, debug, warn, error, trace} from "./debugging.js";
 import {default as subs} from "./subscriptions.js";
 import {clearSkipInitRulesets, checkAndInitSubscriptions} from "./index.js";
 import {getDefaultSubscriptions, isSynchronizing} from "./subscriptions.js";
@@ -222,9 +222,12 @@ export default {
 
   CONSOLE_LOGGER: debugging.logger,
 
-  _trace(message) {
-    trace({message});
-  },
+  _log: log,
+  _debug: debug,
+  _info: info,
+  _warn: warn,
+  _error: error,
+  _trace: trace,
 
   _clearDebugLog() {
     debugging.ON_REQUEST_CONSOLE_LOGGER.clear();

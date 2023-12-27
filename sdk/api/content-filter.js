@@ -24,7 +24,7 @@ import {parseScript} from "adblockpluscore/lib/snippets.js";
 import {filterEngine} from "./core.js";
 import {getFrameInfo} from "./frame-state.js";
 import {logItem, tracingEnabled} from "./diagnostics.js";
-import {debugOptions, trace, debug} from "./debugging.js";
+import {debugOptions, trace, debug, warn} from "./debugging.js";
 
 let isolatedLib;
 let injectedLib;
@@ -242,12 +242,13 @@ async function executeSnippets(tabId, frameId, previousFrame, frame) {
 
 export async function applyContentFilters(tabId, frameId, previousFrame) {
   let frame = getFrameInfo(tabId, frameId);
+  trace({tabId, frameId, previousFrame, frame});
   let emulatedPatterns = [];
   let tracedSelectors;
 
   if (frame) {
     let styleSheet = generateStylesheet(tabId, previousFrame, frame);
-    trace({frame, tabId, frameId, styleSheet});
+    debug(() => styleSheet);
 
     if (previousFrame && !(previousFrame.allowlisted & contentTypes.DOCUMENT)) {
       await removeCSS(tabId, frameId, styleSheet.removedCode);
@@ -276,6 +277,9 @@ export async function applyContentFilters(tabId, frameId, previousFrame) {
         }
       }
     }
+  }
+  else {
+    warn("No frame info");
   }
 
   let cssProperties;

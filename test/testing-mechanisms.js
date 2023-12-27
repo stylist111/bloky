@@ -135,21 +135,20 @@ describe("Testing Mechanisms", function() {
       const message = "trace message";
 
       await EWE.testing._clearDebugLog();
-      await EWE.testing._trace(message);
+      await EWE.testing._trace({message});
       await EWE.testing._printDebugLog();
 
-      let tracingOutput;
       await wait(async() => {
         // eslint-disable-next-line no-console
-        tracingOutput = console.log.getCalls();
-        return tracingOutput.length > 0;
+        let tracingOutput = console.log.getCalls();
+        for (let output of tracingOutput) {
+          if (output.args.length == 2 &&
+              output.args[0] == "Background (debug):" &&
+              output.args[1].includes(message)) {
+            return true;
+          }
+        }
       }, 1000, "No console debug output");
-
-      expect(tracingOutput).toEqual(expect.arrayContaining([
-        expect.objectContaining({
-          args: ["Background (debug):", expect.stringContaining(message)]
-        })
-      ]));
     });
   });
 
