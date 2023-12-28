@@ -8,6 +8,10 @@ Unreleased
   as Chromium does not support it. (EE-274)
 - Exposed a new `EWE.filters.normalize()` function. (EE-11)
 
+# Fixes
+
+- Fixed not sending a notification when subscription downloading is finished. (EE-285)
+
 # Browser Support Updates
 
 - This engine now supports up to:

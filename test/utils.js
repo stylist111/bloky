@@ -741,7 +741,7 @@ export async function waitForSubscriptionsToDownload() {
   }, 1000, "Subscriptions were not downloaded.");
 }
 
-export async function waitForSubscriptionToBeSynchronized(url) {
+export async function waitForSubscriptionToBeSynchronized(url, clear = true) {
   await wait(() => {
     let changeEvents = getTestEvents("subscriptions.onChanged");
     return changeEvents.filter(event => {
@@ -750,7 +750,9 @@ export async function waitForSubscriptionToBeSynchronized(url) {
     }).length > 0;
   }, 3000, "Subscription was not synchronized.");
 
-  clearTestEvents("subscriptions.onChanged");
+  if (clear) {
+    clearTestEvents("subscriptions.onChanged");
+  }
 }
 
 async function syncSubscription(

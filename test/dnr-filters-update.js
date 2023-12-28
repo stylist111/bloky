@@ -1206,5 +1206,51 @@ describe("Test subscriptions update", function() {
         await EWE.testing.testSetDynamicRulesAvailable(0);
       }
     });
+
+    it("notifies subscribed listeners", async function() {
+      if (!hasUpdateStaticRules()) {
+        this.skip();
+      }
+
+      setMinTimeout(this, 20000);
+
+      const testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
+      const testDiffUrlEndpoint = "/updatable_subscription/diff.json";
+
+      await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
+      await EWE.subscriptions.add(testDiffSubscriptionUrl);
+      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl, false);
+
+      await wait(async() => {
+        let hasDownloadingTrue = false;
+        let hasDownloadingFalse = false;
+        let hasLastDownload = false;
+        let hasDownloadStatus = false;
+
+        const events = getTestEvents("subscriptions.onChanged");
+        for (const event of events) {
+          const subscription = event[0];
+          const changedProperty = event[1];
+
+          if (subscription.url != testDiffSubscriptionUrl) {
+            continue;
+          }
+
+          if (changedProperty === "downloading") {
+            hasDownloadingTrue |= subscription.downloading === true;
+            hasDownloadingFalse |= subscription.downloading === false;
+          }
+          else if (changedProperty === "lastDownload") {
+            hasLastDownload = true;
+          }
+          else if (changedProperty === "downloadStatus") {
+            hasDownloadStatus = true;
+          }
+        }
+
+        return hasDownloadingTrue && hasDownloadingFalse &&
+          hasLastDownload && hasDownloadStatus;
+      }, 3000, "Not enough events");
+    });
   });
 });

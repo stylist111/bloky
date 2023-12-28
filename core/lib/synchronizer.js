@@ -220,6 +220,7 @@ class Synchronizer {
 
     let subscription = Subscription.fromURL(downloadable.redirectURL ||
       (isDiffUpdatable ? downloadable.originalUrl : downloadable.url));
+    filterNotifier.emit("subscription.downloading", subscription);
     subscription.mark("downloading.finished");
     subscription.mark("parsing.started");
 
@@ -377,6 +378,7 @@ class Synchronizer {
     subscription.mark("downloading.finished");
     subscription.lastDownload = Math.round(Date.now() / MILLIS_IN_SECOND);
     subscription.downloadStatus = error;
+    filterNotifier.emit("subscription.downloading", subscription);
 
     // Request fallback URL if necessary - for automatic updates only
     if (!downloadable.manual) {
