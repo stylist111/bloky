@@ -125,6 +125,17 @@ export async function expectElemHideHidden({elemId = "elem-hide",
   );
 }
 
+export async function expectElemHideRemoved({elemId = "elem-hide",
+                                             url = "element-hiding.html",
+                                             timeout = HIDETIMEOUT} = {}) {
+  const tabId = await new Page(url).loaded;
+  await wait(
+    async() => await getExistingElement(tabId, elemId) === null,
+    timeout,
+      `Expected element "${elemId}" on page "${url}" to be removed, but it still exists.`
+  );
+}
+
 export async function expectElemHideVisible({elemId = "elem-hide",
                                              url = "element-hiding.html",
                                              frameIds,
@@ -587,6 +598,13 @@ export function getVisibleElement(tabId, elemId) {
   return executeScript(tabId, id => {
     let el = document.getElementById(id);
     return el.offsetParent ? el.outerHTML : null;
+  }, [elemId]);
+}
+
+export function getExistingElement(tabId, elemId) {
+  return executeScript(tabId, id => {
+    let el = document.getElementById(id);
+    return el ? el.outerHTML : null;
   }, [elemId]);
 }
 

@@ -115,6 +115,10 @@ describe("Element hiding emulation", function() {
       `The element${withId} should not be tracked as hidden`);
   }
 
+  function expectRemoved(elementId) {
+    assert.isNull(testDocument.getElementById(elementId));
+  }
+
   function findUniqueId() {
     let id = "elemHideEmulationTest-" + Math.floor(Math.random() * 10000);
     if (!testDocument.getElementById(id)) {
@@ -160,8 +164,21 @@ describe("Element hiding emulation", function() {
     return element;
   }
 
-  // Create a new ElemHideEmulation instance with @selectors.
-  async function applyElemHideEmulation(selectors) {
+  function removeElementsCallback(elements) {
+    for (const element of elements) {
+      element.remove();
+    }
+  }
+
+  /**
+   * Create a new ElemHideEmulation instance with the given patterns.
+   *
+   * @param {Array<string|Object>} patterns An array of filters, with a
+   * selector, filter text and remove flag. If a string is passed instead of an
+   * object, it is converted to a pattern using the string as both the selector
+   * and filter text.
+   */
+  async function applyElemHideEmulation(patterns) {
     try {
       elemHideEmulation = new ElemHideEmulation(
         elems => {
@@ -179,12 +196,15 @@ describe("Element hiding emulation", function() {
               elem.style.display = "";
             }
           }
-        }
+        },
+        removeElementsCallback
       );
 
       elemHideEmulation.document = testDocument;
-      elemHideEmulation.apply(selectors.map(
-        selector => ({selector, text: selector})
+      elemHideEmulation.apply(patterns.map(pattern =>
+        typeof pattern === "string" ?
+          ({selector: pattern, text: pattern}) :
+          pattern
       ));
     }
     catch (error) {
@@ -1166,6 +1186,19 @@ describe("Element hiding emulation", function() {
     }
   });
 
+  it("Remove action: remove by element ID", async function() {
+    const elementId = "elementID";
+    const element = createElement(null, "div", elementId);
+    expectVisible(element);
+
+    await applyElemHideEmulation([{
+      selector: `#${elementId}`,
+      text: `#${elementId} {remove:true}`,
+      remove: true
+    }]);
+    expectRemoved(elementId);
+  });
+
   it("On DOM mutation: pseudo-classes that can be activated with attributes", async function() {
     let initiallyHidden = createElement(null, "input");
     initiallyHidden.setAttribute("disabled", "");
@@ -1175,16 +1208,15 @@ describe("Element hiding emulation", function() {
       "input:disabled"
     ];
 
-    if (await applyElemHideEmulation(selectors)) {
-      expectHidden(initiallyHidden);
-      expectVisible(hiddenLater);
+    await applyElemHideEmulation(selectors);
+    expectHidden(initiallyHidden);
+    expectVisible(hiddenLater);
 
-      hiddenLater.setAttribute("disabled", "");
+    hiddenLater.setAttribute("disabled", "");
 
-      await timeout(REFRESH_INTERVAL);
+    await timeout(REFRESH_INTERVAL);
 
-      expectHidden(hiddenLater);
-    }
+    expectHidden(hiddenLater);
   });
 
   it("On DOM mutation: xpath selectors activated with attributes", async function() {

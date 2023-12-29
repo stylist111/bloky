@@ -241,9 +241,9 @@ async function executeSnippets(tabId, frameId, previousFrame, frame) {
 }
 
 export async function applyContentFilters(tabId, frameId, previousFrame) {
-  let frame = getFrameInfo(tabId, frameId);
+  const frame = getFrameInfo(tabId, frameId);
   trace({tabId, frameId, previousFrame, frame});
-  let emulatedPatterns = [];
+  const emulatedPatterns = [];
   let tracedSelectors;
 
   if (frame) {
@@ -262,9 +262,9 @@ export async function applyContentFilters(tabId, frameId, previousFrame) {
       !(frame.allowlisted & contentTypes.ELEMHIDE)) {
       injectCSS(tabId, frameId, styleSheet.addedCode);
 
-      for (let {selector, text} of filterEngine.elemHideEmulation.getFilters(
-        frame.hostname)) {
-        emulatedPatterns.push({selector, text});
+      let filters = filterEngine.elemHideEmulation.getFilters(frame.hostname);
+      for (const {selector, text, remove} of filters) {
+        emulatedPatterns.push({selector, text, remove});
       }
 
       if (tracingEnabled(tabId)) {

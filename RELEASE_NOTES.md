@@ -7,6 +7,9 @@ Unreleased
 - URL filters with wildcards (.*) are no longer converted into DNR rules
   as Chromium does not support it. (EE-274)
 - Exposed a new `EWE.filters.normalize()` function. (EE-11)
+- Add support for a "remove" action on elemhide emulation filters with the
+  syntax `example.com#?##elem-id {remove: true;}`. Matched elements will be
+  removed from the DOM, rather than just hidden. (EE-255)
 
 # Fixes
 
@@ -106,17 +109,17 @@ Unreleased
 
 # General
 
-- Privileged is now a property of a subscription and not purely based on the 
-  type of that subscription. The privileged property allows for subscriptions 
-  to run snippets. You can add a privileged subscription by passing the 
-  `privileged` property in the options. 
+- Privileged is now a property of a subscription and not purely based on the
+  type of that subscription. The privileged property allows for subscriptions
+  to run snippets. You can add a privileged subscription by passing the
+  `privileged` property in the options.
   Ex: `EWE.subscription.add(url, {privileged: true})`
-  You can also add the privileged property to the recommendations file, and the 
-  subscriptions added by calling `EWE.subscriptions.addDefaults()` will have 
-  the specified privilege. If not provided, privileged will be true for 
+  You can also add the privileged property to the recommendations file, and the
+  subscriptions added by calling `EWE.subscriptions.addDefaults()` will have
+  the specified privilege. If not provided, privileged will be true for
   circumvention subscriptions. (EE-182, !840)
 - We now test on Edge 111. (!839)
-- All the public API methods (eg. `EWE.filters.add(...)`) wait for the data 
+- All the public API methods (eg. `EWE.filters.add(...)`) wait for the data
   to be saved. (EE-44)
 - The `alarms` permission is no longer required to use telemetry. (EE-159)
 
@@ -125,7 +128,7 @@ Unreleased
 - When a filter uses the `~third-party` flag, the `filter.thirdParty` property
   will now correctly be set to `false`. This bug was only in returning the
   filter externally, and did not affect request filter matching. (EE-220)
-- We no longer accidentally return the internal 'originalUrl' property on 
+- We no longer accidentally return the internal 'originalUrl' property on
   a subscription.
 
 🚀 1.0.0 - 2023/09/21 🚀
@@ -133,8 +136,8 @@ Unreleased
 
 # General
 
-- We updated the product name in the documentation and old release notes. 
-  The term "SDK" has broadly been replaced with "Engine". There's a new npm 
+- We updated the product name in the documentation and old release notes.
+  The term "SDK" has broadly been replaced with "Engine". There's a new npm
   module called `@eyeo/webext-ad-filtering-solution/`. (EE-189)
 
 ## Diff Updates
@@ -167,7 +170,7 @@ Unreleased
   `includeElementHiding: true`. (EE-204)
 - `isResourceAllowlisted()` is now consistent with `getAllowingFilters()`. (EE-141)
 - No more duplicates in element hiding filter hits reporting and invalid
-  CSS selectors will not break element hiding filter hits reporting anymore. 
+  CSS selectors will not break element hiding filter hits reporting anymore.
   (EE-187 and EE-185)
 - Updated the minimum supported version of Node to 18. Node 18 is the current
   LTS version of Node. This only affects code that runs in Node, such as build

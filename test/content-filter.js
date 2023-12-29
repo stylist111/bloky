@@ -24,7 +24,7 @@ import {Page, waitForInvisibleElement, executeScript, setMinTimeout,
         TEST_PAGES_URL, SITEKEY, UNHIDDENTIMEOUT, HIDETIMEOUT,
         TEST_MV3_SUBSCRIPTION, waitForHighlightedStyle, isEdge, edgeVersion,
         waitForSubscriptionsToDownload, chromiumVersion, isChromiumBased,
-        setEndpointResponse}
+        setEndpointResponse, expectElemHideRemoved}
   from "./utils.js";
 import {wait} from "./polling.js";
 import {addFilter, EWE} from "./messaging.js";
@@ -39,6 +39,11 @@ describe("Element Hiding", function() {
   it("hides an element [fuzz]", async function() {
     await addFilter("###elem-hide");
     await expectElemHideHidden();
+  });
+
+  it("removes a DOM element with a {remove: true;} filter", async function() {
+    await addFilter("###elem-hide {remove: true;}");
+    await expectElemHideRemoved();
   });
 
   it("hides an element for the domain with wildcard", async function() {
@@ -179,6 +184,12 @@ describe("Element Hiding", function() {
 
   it("does not hide an allowlisted element", async function() {
     await addFilter("###elem-hide");
+    await addFilter("#@##elem-hide");
+    await expectElemHideVisible();
+  });
+
+  it("does not remove an allowlisted element", async function() {
+    await addFilter("###elem-hide {remove: true;}");
     await addFilter("#@##elem-hide");
     await expectElemHideVisible();
   });
@@ -331,6 +342,23 @@ describe("Element Hiding", function() {
       await addFilter(
         `${TEST_PAGES_DOMAIN}#?#div:-abp-has(>span#elem-hide-emulation-has)`);
       await expectElemHideHidden({elemId: "elem-hide-emulation-has"});
+    });
+
+    it("removes a DOM element with a {remove: true;} filter", async function() {
+      const elemId = "remove-id";
+
+      await expectElemHideVisible({elemId});
+      await addFilter(`${TEST_PAGES_DOMAIN}#?##${elemId} {remove: true;}`);
+      await expectElemHideRemoved({elemId});
+    });
+
+    it("does not remove a DOM element with a {remove: true;} filter if it is allowlisted", async function() {
+      const elemId = "remove-id";
+
+      await expectElemHideVisible({elemId});
+      await addFilter(`${TEST_PAGES_DOMAIN}#?##${elemId} {remove: true;}`);
+      await addFilter(`${TEST_PAGES_DOMAIN}#@##${elemId}`);
+      await expectElemHideVisible({elemId});
     });
 
     it("hides abp-contains elements", async function() {

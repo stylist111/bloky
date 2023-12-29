@@ -47,6 +47,15 @@ function runTests(moduleNames) {
     oldLog.call(this, ...msg);
   };
 
+  let originalConsole = {...console};
+  for (let method of ["log", "debug", "info", "warn", "error"]) {
+    // eslint-disable-next-line no-console
+    console[method] = function(...args) {
+      window._consoleLogs.log.push(args);
+      originalConsole[method](...args);
+    };
+  }
+
   mocha.setup({ui: "bdd", reporter: WdReporter});
 
   for (let module of moduleNames) {

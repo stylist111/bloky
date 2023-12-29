@@ -919,18 +919,10 @@ exports.ContentFilter.fromText = function(text, domains, type, body) {
   let restrictedByDomain = /,[^~][^,.]*\.[^,]/.test("," + domains) ||
       ("," + domains + ",").includes(",localhost,");
 
-  if (type == "?" || type == "$") {
+  if (type == "$") {
     // Element hiding emulation and snippet filters are inefficient so we need
     // to make sure that they're only applied if they specify active domains.
     // The only exception is "hide-if-classifies" snippet (EE-138).
-
-    if (type == "?") {
-      if (!restrictedByDomain) {
-        return new InvalidFilter(text, "filter_elemhideemulation_nodomain");
-      }
-
-      return new ElemHideEmulationFilter(text, domains, body);
-    }
 
     let snippetFilter = new SnippetFilter(text, domains, body);
     if (!restrictedByDomain && !snippetFilter.script.startsWith("hide-if-classifies")) {
@@ -939,16 +931,41 @@ exports.ContentFilter.fromText = function(text, domains, type, body) {
     return snippetFilter;
   }
 
+  let selector = body;
+  let action = "{}";
+
+  let actionExtractingResult = /^(.*) ({[^{}]*})$/.exec(body);
+  if (actionExtractingResult) {
+    [, selector, action] = actionExtractingResult;
+  }
+
+  let remove = action.toLowerCase().includes("remove:true;");
+
+  if (type == "?") {
+    if (!restrictedByDomain) {
+      return new InvalidFilter(text, "filter_elemhideemulation_nodomain");
+    }
+
+    return new ElemHideEmulationFilter(text, domains, selector, remove);
+  }
+
   if (!restrictedByDomain &&
       body.length < MIN_GENERIC_CONTENT_FILTER_BODY_LENGTH) {
     return new InvalidFilter(text, "filter_elemhide_not_specific_enough");
   }
 
   if (type == "@") {
-    return new ElemHideException(text, domains, body);
+    return new ElemHideException(text, domains, selector);
   }
 
-  return new ElemHideFilter(text, domains, body);
+  if (remove) {
+    // Remove is only implemented for elemhide emulation filters, so if we want
+    // it to work on an elemhide filter then it needs to instantiate an elemhide
+    // emulation filter instead.
+    return new ElemHideEmulationFilter(text, domains, selector, remove);
+  }
+
+  return new ElemHideFilter(text, domains, selector);
 };
 
 let ElemHideBase =
@@ -1021,22 +1038,28 @@ let ElemHideEmulationFilter =
 exports.ElemHideEmulationFilter =
 class ElemHideEmulationFilter extends ElemHideBase {
   /**
-   * @param {string} text    see {@link module:filterClasses.Filter Filter()}
+   * @param {string} text see {@link module:filterClasses.Filter Filter()}
    * @param {string} domains see
    *   {@link module:filterClasses.ElemHideBase ElemHideBase()}
    * @param {string} selector see
    *   {@link module:filterClasses.ElemHideBase ElemHideBase()}
+   * @param {boolean} remove if the element should be removed from the DOM
    * @constructor
    * @extends module:filterClasses.ElemHideBase
    *
    * @private
    */
-  constructor(text, domains, selector) {
+  constructor(text, domains, selector, remove) {
     super(text, domains, selector);
+    this._remove = remove;
   }
 
   get type() {
     return "elemhideemulation";
+  }
+
+  get remove() {
+    return this._remove;
   }
 };
 

@@ -55,21 +55,32 @@ async function applyContentFeatures(response) {
     tracer = new ElementHidingTracer(response.tracedSelectors);
   }
 
+  const hideElements = (elements, filters) => {
+    for (let element of elements) {
+      hideElement(element, response.cssProperties);
+    }
+
+    if (tracer) {
+      tracer.log(filters);
+    }
+  };
+
+  const unhideElements = elements => {
+    for (let element of elements) {
+      unhideElement(element);
+    }
+  };
+
+  const removeElements = elements => {
+    for (const element of elements) {
+      element.remove();
+    }
+  };
+
   if (response.emulatedPatterns.length > 0) {
     if (!elemHideEmulation) {
-      elemHideEmulation = new ElemHideEmulation((elements, filters) => {
-        for (let element of elements) {
-          hideElement(element, response.cssProperties);
-        }
-
-        if (tracer) {
-          tracer.log(filters);
-        }
-      }, elements => {
-        for (let element of elements) {
-          unhideElement(element);
-        }
-      });
+      elemHideEmulation = new ElemHideEmulation(hideElements, unhideElements,
+                                                removeElements);
     }
     elemHideEmulation.apply(response.emulatedPatterns);
   }

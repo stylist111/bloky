@@ -99,6 +99,9 @@ describe("Filter classes", function() {
                     .filter(([domain, isIncluded]) => isIncluded)
                     .map(([domain]) => domain.toLowerCase()));
         result.push("selector=" + filter.selector);
+        if (filter instanceof ElemHideEmulationFilter) {
+          result.push("remove=" + filter.remove);
+        }
       }
       else if (filter instanceof SnippetFilter) {
         result.push("scriptDomains=" +
@@ -153,6 +156,9 @@ describe("Filter classes", function() {
         type == "elemhideemulation") {
       addProperty("selectorDomains", "");
       addProperty("domains", "");
+    }
+    if (type == "elemhideemulation") {
+      addProperty("remove", "false");
     }
     if (type == "snippet") {
       addProperty("scriptDomains", "");
@@ -403,6 +409,25 @@ describe("Filter classes", function() {
     compareFilter("foo.com,~baR#?#:-abp-properties(abc)", ["type=elemhideemulation", "text=foo.com,~baR#?#:-abp-properties(abc)", "selectorDomains=foo.com", "selector=:-abp-properties(abc)", "domains=foo.com|~bar"]);
     compareFilter("~foo.com,bar.com#?#:-abp-properties(abc)", ["type=elemhideemulation", "text=~foo.com,bar.com#?#:-abp-properties(abc)", "selectorDomains=bar.com", "selector=:-abp-properties(abc)", "domains=bar.com|~foo.com"]);
 
+    // Actions / Remove
+    compareFilter("example.net#?#abc {remove:true;}", [
+      "type=elemhideemulation",
+      "text=example.net#?#abc {remove:true;}",
+      "selectorDomains=example.net",
+      "selector=abc",
+      "domains=example.net",
+      "remove=true"
+    ]);
+    compareFilter("example.net#?#abc {ReMoVe:TrUe;}", [
+      "type=elemhideemulation",
+      "text=example.net#?#abc {ReMoVe:TrUe;}",
+      "selectorDomains=example.net",
+      "selector=abc",
+      "domains=example.net",
+      "remove=true"
+    ]);
+
+
     // Check some special cases
     compareFilter("#?#:-abp-properties(abc)", ["type=invalid", "text=#?#:-abp-properties(abc)", "reason=filter_elemhideemulation_nodomain"]);
     compareFilter("foo.com#?#abc", ["type=elemhideemulation", "text=foo.com#?#abc", "selectorDomains=foo.com", "selector=abc", "domains=foo.com"]);
@@ -433,11 +458,11 @@ describe("Filter classes", function() {
 
   it("Element hiding rules with braces", function() {
     compareFilter(
-      "###foo{color: red}", [
+      "###foo[style={color: red}]", [
         "type=elemhide",
-        "text=###foo{color: red}",
+        "text=###foo[style={color: red}]",
         "selectorDomains=",
-        "selector=#foo{color: red}",
+        "selector=#foo[style={color: red}]",
         "domains="
       ]
     );
@@ -480,6 +505,14 @@ describe("Filter classes", function() {
     assert.equal(Filter.normalize("   domain.c  om#?# # sele ctor   "),
                  "domain.com#?## sele ctor");
 
+    // Element hiding emulation filters with actions
+    assert.equal(Filter.normalize("   domain.c  om#?# # sele ctor  {  remove : true ; } "),
+                 "domain.com#?## sele ctor {remove:true;}");
+
+    // Element hiding emulation filters with actions missing the trailing semicolon
+    assert.equal(Filter.normalize("   domain.c  om#?# # sele ctor  {  remove : true  } "),
+                 "domain.com#?## sele ctor {remove:true;}");
+
     // Wildcard: "*" is allowed
     assert.equal(Filter.normalize("   domain.*#?# # sele ctor   "),
                  "domain.*#?## sele ctor");
@@ -512,6 +545,12 @@ describe("Filter classes", function() {
     // Snippet filters
     assert.equal(Filter.normalize("   domain.c  om#$#  sni pp  et   "),
                  "domain.com#$#sni pp  et");
+
+    // {remove:true;} is an elemhide or elemhide emulation syntax, and so should
+    // not have its whitespace removed in snippet filters where it might mean
+    // something else.
+    assert.equal(Filter.normalize("   domain.c  om#$#snippet {remove : true ;}"),
+                 "domain.com#$#snippet {remove : true ;}");
 
     // Wildcard: "*" is allowed
     assert.equal(Filter.normalize("   domain.*#$#  sni pp  et   "),

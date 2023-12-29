@@ -28,7 +28,7 @@ let minInvocationInterval = DEFAULT_MIN_INVOCATION_INTERVAL;
 const DEFAULT_MAX_SYCHRONOUS_PROCESSING_TIME = 50;
 let maxSynchronousProcessingTime = DEFAULT_MAX_SYCHRONOUS_PROCESSING_TIME;
 
-let abpSelectorRegexp = /:(-abp-[\w-]+|has|has-text|xpath|not)\(/;
+const abpSelectorRegexp = /:(-abp-[\w-]+|has|has-text|xpath|not)\(/;
 
 let testInfo = null;
 
@@ -549,9 +549,10 @@ class PropsSelector {
 }
 
 class Pattern {
-  constructor(selectors, text) {
+  constructor(selectors, text, remove = false) {
     this.selectors = selectors;
     this.text = text;
+    this.remove = remove;
   }
 
   get dependsOnStyles() {
@@ -765,6 +766,12 @@ function shouldObserveStyles(patterns) {
  * @param {Node[]} elements Elements on the page that should be hidden
  */
 
+/**
+ * @callback removeElemsFunc
+ * @param {Node[]} elements Elements on the page that should be
+ * removed from the DOM
+ */
+
 
 /**
  * Manages the front-end processing of element hiding emulation filters.
@@ -775,8 +782,14 @@ exports.ElemHideEmulation = class ElemHideEmulation {
    *   A callback that should be provided to do the actual element hiding.
    * @param {module:content/elemHideEmulation~unhideElemsFunc} unhideElemsFunc
    *   A callback that should be provided to unhide previously hidden elements.
-   */
-  constructor(hideElemsFunc = () => {}, unhideElemsFunc = () => {}) {
+   * @param {module:content/elemHideEmulation~removeElemsFunc} removeElemsFunc
+   *   A callback that should be provided to remove elements from the DOM.
+  */
+  constructor(
+    hideElemsFunc = () => {},
+    unhideElemsFunc = () => {},
+    removeElemsFunc = () => {}
+  ) {
     this._filteringInProgress = false;
     this._nextFilteringScheduled = false;
     this._lastInvocation = -minInvocationInterval;
@@ -785,6 +798,7 @@ exports.ElemHideEmulation = class ElemHideEmulation {
     this.document = document;
     this.hideElemsFunc = hideElemsFunc;
     this.unhideElemsFunc = unhideElemsFunc;
+    this.removeElemsFunc = removeElemsFunc;
     this.observer = new MutationObserver(this.observe.bind(this));
     this.hiddenElements = new Map();
   }
@@ -828,6 +842,7 @@ exports.ElemHideEmulation = class ElemHideEmulation {
                                    "due to unmatched parentheses."));
       return null;
     }
+
     if (match[1] == "-abp-properties") {
       selectors.push(new PropsSelector(content.text));
     }
@@ -973,8 +988,9 @@ exports.ElemHideEmulation = class ElemHideEmulation {
 
     let targets = extractMutationTargets(mutations);
 
-    let elementsToHide = [];
-    let elementFilters = [];
+    const elementsToHide = [];
+    const elementFilters = [];
+    const elementsToRemove = [];
     let elementsToUnhide = new Set(this.hiddenElements.keys());
 
     for (let pattern of patternsToCheck) {
@@ -992,7 +1008,11 @@ exports.ElemHideEmulation = class ElemHideEmulation {
       for (let selector of generator) {
         if (selector != null) {
           for (let element of this.document.querySelectorAll(selector)) {
-            if (!this.hiddenElements.has(element)) {
+            if (pattern.remove) {
+              elementsToRemove.push(element);
+              elementsToUnhide.delete(element);
+            }
+            else if (!this.hiddenElements.has(element)) {
               elementsToHide.push(element);
               elementFilters.push(pattern.text);
             }
@@ -1007,6 +1027,7 @@ exports.ElemHideEmulation = class ElemHideEmulation {
         }
       }
     }
+    this._removeElems(elementsToRemove);
     this._hideElems(elementsToHide, elementFilters);
 
     // The search for elements to hide it optimized to find new things
@@ -1033,6 +1054,17 @@ exports.ElemHideEmulation = class ElemHideEmulation {
       }
     }
     this._unhideElems(Array.from(elementsToUnhide));
+  }
+
+  _removeElems(elementsToRemove) {
+    if (elementsToRemove.length > 0) {
+      this.removeElemsFunc(elementsToRemove);
+      for (let elem of elementsToRemove) {
+        // they're not hidden anymore (if they ever were), they're
+        // removed. There's no unhiding these ones!
+        this.hiddenElements.delete(elem);
+      }
+    }
   }
 
   _hideElems(elementsToHide, elementFilters) {
@@ -1071,8 +1103,10 @@ exports.ElemHideEmulation = class ElemHideEmulation {
           "Tried to process filtering in parallel"
         );
       }
+
       return;
     }
+
     let params = this._scheduledProcessing || {};
     this._scheduledProcessing = null;
     this._filteringInProgress = true;
@@ -1243,7 +1277,9 @@ exports.ElemHideEmulation = class ElemHideEmulation {
     for (let pattern of patterns) {
       let selectors = this.parseSelector(pattern.selector);
       if (selectors != null && selectors.length > 0) {
-        this.patterns.push(new Pattern(selectors, pattern.text));
+        this.patterns.push(
+          new Pattern(selectors, pattern.text, pattern.remove)
+        );
       }
     }
 

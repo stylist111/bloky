@@ -333,6 +333,8 @@ exports.normalize = function(text, dontSanitize = false) {
   // Remove line breaks, tabs etc
   text = text.replace(/[^\S ]+/g, "");
 
+  let removeSpaces = s => s.replace(/ +/g, "");
+
   if (dontSanitize) {
     return text.trim();
   }
@@ -349,13 +351,33 @@ exports.normalize = function(text, dontSanitize = false) {
   // Special treatment for content filters, right side is allowed to contain
   // spaces
   if (CONTENT_FILTER.test(text)) {
-    let [, domains, separator, body] = /^(.*?)(#[@?$]?#?)(.*)$/.exec(text);
-    return domains.replace(/ +/g, "") + separator + body.trim();
+    const elemhideWithTrailingBracesMatches = /^(.*?)(#[@?]?#)(.*) +\{( *remove *: *true *(;?) *)\} *$/.exec(text);
+
+    if (elemhideWithTrailingBracesMatches) {
+      let [
+        ,
+        domains,
+        separator,
+        body,
+        actionBody,
+        trailingSemicolon
+      ] = elemhideWithTrailingBracesMatches;
+
+      return removeSpaces(domains) +
+        separator +
+        body.trim() +
+        " {" +
+        removeSpaces(actionBody) +
+        (trailingSemicolon ? "}" : ";}");
+    }
+
+    const [, domains, separator, body] = /^(.*?)(#[@?$]?#?)(.*)$/.exec(text);
+    return removeSpaces(domains) + separator + body.trim();
   }
 
   // For most regexp filters we strip all spaces, but $csp filter options
   // are allowed to contain single (non trailing) spaces.
-  let strippedText = text.replace(/ +/g, "");
+  let strippedText = removeSpaces(text);
   if (!strippedText.includes("$") || !/\b(csp|header)=/i.test(strippedText)) {
     return strippedText;
   }
@@ -383,11 +405,11 @@ exports.normalize = function(text, dontSanitize = false) {
     let option = options[i];
     let optionMatch = /^ *(c *s *p|h *e *a *d *e *r) *=/i.exec(option);
     if (optionMatch) {
-      options[i] = optionMatch[0].replace(/ +/g, "") +
-                   option.substring(optionMatch[0].length).trim().replace(/ +/g, " ");
+      options[i] = removeSpaces(optionMatch[0]) +
+        option.substring(optionMatch[0].length).trim().replace(/ +/g, " ");
     }
     else {
-      options[i] = option.replace(/ +/g, "");
+      options[i] = removeSpaces(option);
     }
   }
 
