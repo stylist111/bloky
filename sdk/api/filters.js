@@ -47,7 +47,8 @@ export function convertFilter(filter) {
     type: filter.type,
     thirdParty: filter.thirdParty != null ? filter.thirdParty : null,
     selector: filter.selector || null,
-    csp: filter.csp || null
+    csp: filter.csp || null,
+    remove: filter.remove || void 0
   };
 }
 
@@ -111,22 +112,22 @@ export default {
    * Represents a single filter rule and its state.
    * @typedef {Object} Filter
    * @property {string} text A {@link https://help.eyeo.com/adblockplus/how-to-write-filters|filter}
-   *                         rule that specifies what content
-   *                         to block or to allow. Used to identify a filter.
-   * @property {boolean|null} enabled Indicates whether this filter would
-   *                                  be applied. Filters are enabled by
-   *                                  default. For comment filters returned
-   *                                  value is null.
+   *   rule that specifies what content to block or to allow. Used to identify
+   *   a filter.
+   * @property {boolean|null} enabled Indicates whether this filter would be
+   *   applied. Filters are enabled by default. For comment filters returned
+   *   value is null.
    * @property {boolean} slow Indicates that this filter is not subject to an
-   *                          internal optimization. Filters that are
-   *                          considered slow should be avoided. Only URLFilters
-   *                          can be slow.
+   *   internal optimization. Filters that are considered slow should be
+   *   avoided. Only URLFilters can be slow.
    * @property {string} type The filter {@link https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore/-/jobs/artifacts/0.6.0/file/build/docs/module-filterClasses.Filter.html?job=docs#type|type}
    * @property {boolean|null} thirdParty True when the filter applies to
-   *                          third-party, false to first-party, null otherwise.
+   *   third-party, false to first-party, null otherwise.
    * @property {string|null} selector CSS selector for the HTML elements that
-   *                                  will be hidden.
+   *   will be hidden.
    * @property {string|null} csp Content Security Policy to be injected.
+   * @property {boolean?} remove For element hiding emulation filters, true if
+   *   the filter will remove elements from the DOM rather hiding them.
    */
 
   /**

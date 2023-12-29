@@ -769,6 +769,8 @@ function shouldObserveStyles(patterns) {
 /**
  * @callback removeElemsFunc
  * @param {Node[]} elements Elements on the page that should be
+ * @param {string[]} elementFilters
+ *   The filter text that caused the elements to be removed
  * removed from the DOM
  */
 
@@ -989,7 +991,8 @@ exports.ElemHideEmulation = class ElemHideEmulation {
     let targets = extractMutationTargets(mutations);
 
     const elementsToHide = [];
-    const elementFilters = [];
+    const elementsToHideFilters = [];
+    const elementsToRemoveFilters = [];
     const elementsToRemove = [];
     let elementsToUnhide = new Set(this.hiddenElements.keys());
 
@@ -1010,11 +1013,12 @@ exports.ElemHideEmulation = class ElemHideEmulation {
           for (let element of this.document.querySelectorAll(selector)) {
             if (pattern.remove) {
               elementsToRemove.push(element);
+              elementsToRemoveFilters.push(pattern.text);
               elementsToUnhide.delete(element);
             }
             else if (!this.hiddenElements.has(element)) {
               elementsToHide.push(element);
-              elementFilters.push(pattern.text);
+              elementsToHideFilters.push(pattern.text);
             }
             else {
               elementsToUnhide.delete(element);
@@ -1027,8 +1031,8 @@ exports.ElemHideEmulation = class ElemHideEmulation {
         }
       }
     }
-    this._removeElems(elementsToRemove);
-    this._hideElems(elementsToHide, elementFilters);
+    this._removeElems(elementsToRemove, elementsToRemoveFilters);
+    this._hideElems(elementsToHide, elementsToHideFilters);
 
     // The search for elements to hide it optimized to find new things
     // to hide quickly, by not checking all patterns and not checking
@@ -1056,9 +1060,9 @@ exports.ElemHideEmulation = class ElemHideEmulation {
     this._unhideElems(Array.from(elementsToUnhide));
   }
 
-  _removeElems(elementsToRemove) {
+  _removeElems(elementsToRemove, elementFilters) {
     if (elementsToRemove.length > 0) {
-      this.removeElemsFunc(elementsToRemove);
+      this.removeElemsFunc(elementsToRemove, elementFilters);
       for (let elem of elementsToRemove) {
         // they're not hidden anymore (if they ever were), they're
         // removed. There's no unhiding these ones!

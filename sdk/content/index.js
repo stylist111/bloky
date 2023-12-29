@@ -71,9 +71,13 @@ async function applyContentFeatures(response) {
     }
   };
 
-  const removeElements = elements => {
+  const removeElements = (elements, filters) => {
     for (const element of elements) {
       element.remove();
+    }
+
+    if (tracer) {
+      tracer.log(filters);
     }
   };
 

@@ -1132,6 +1132,23 @@ describe("Reporting", function() {
       );
     });
 
+    it("logs element hiding filter with remove filters", async function() {
+      await checkLogging(
+        ["###elem-hide {remove:true;}"],
+        "elemhideEventOptions",
+        "element-hiding.html",
+        [{
+          filter: {
+            ...expectedElemhideFilter("###elem-hide {remove:true;}"),
+            type: "elemhideemulation",
+            remove: true
+          },
+          matchInfo: elemhideMatchInfo,
+          request: expectedRequestRelativeUrl("element-hiding.html")
+        }]
+      );
+    });
+
     it("logs user element hiding filter that is also listed in a subscription once [mv2-only]", async function() {
       await EWE.subscriptions.add("http://localhost:3000/subscription.txt");
       await checkLogging(
@@ -1228,6 +1245,25 @@ describe("Reporting", function() {
           filter: {
             ...expectedElemhideFilter(text),
             type: "elemhideemulation"
+          },
+          matchInfo: elemhideMatchInfo,
+          request: expectedRequestRelativeUrl("element-hiding.html")
+        }]
+      );
+    });
+
+    it("logs element hiding emulation filter with remove", async function() {
+      let text = TEST_PAGES_DOMAIN +
+          "#?#.child1:-abp-properties(background-color: blue) {remove:true;}";
+      await checkLogging(
+        [text],
+        "elemhideEventOptions",
+        "element-hiding.html",
+        [{
+          filter: {
+            ...expectedElemhideFilter(text),
+            type: "elemhideemulation",
+            remove: true
           },
           matchInfo: elemhideMatchInfo,
           request: expectedRequestRelativeUrl("element-hiding.html")

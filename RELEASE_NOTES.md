@@ -10,6 +10,10 @@ Unreleased
 - Add support for a "remove" action on elemhide emulation filters with the
   syntax `example.com#?##elem-id {remove: true;}`. Matched elements will be
   removed from the DOM, rather than just hidden. (EE-255)
+- Elemhide emulation filters with the "remove" action now emit `onBlockableItem`
+  events when the element it removed, the same as normal element hiding
+  filters. They can be distinguished from normal element hiding because the
+  filter has the property `remove` set to `true`. (EE-293)
 
 # Fixes
 
