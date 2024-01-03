@@ -1,6 +1,9 @@
 Unreleased
 ==========
 
+📣 1.3.0 - 2024-01-03 📣
+========================
+
 # General
 
 - Added wildcard domains support for content filtering in elemHide. (EE-248)
