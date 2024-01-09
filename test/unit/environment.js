@@ -69,7 +69,7 @@ export let obj = {
   navigator,
   prefs,
 
-  async configure() {
+  configure() {
     this.browser = Object.create(testBrowserPrototype);
     this.browser.storage = {
       local: new StorageArea(),

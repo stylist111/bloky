@@ -23,9 +23,7 @@ import expect from "expect";
 import * as api from "../../sdk/api/subscriptions-validator.js";
 
 describe("Subscriptions validation", function() {
-  beforeEach(async function() {
-    await env.configure();
-  });
+  beforeEach(env.configure);
 
   it("returns no warnings for empty subscriptions list", async function() {
     let warnings = await api.validate([], "");

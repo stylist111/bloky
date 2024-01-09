@@ -25,7 +25,7 @@ describe("Sitekeys", function() {
   let api;
 
   beforeEach(async function() {
-    await env.configure();
+    env.configure();
     // don't mock the core as we need encryption functions working
     api = await mock("sitekey.js", ["adblockpluscore"], ["./debugging.js"]);
   });

@@ -59,7 +59,7 @@ describe("EWE.subscriptions", function() {
   }
 
   beforeEach(async function() {
-    await env.configure();
+    env.configure();
     await mockAndImport();
     env.setRecommendations([]);
     env.setFilterStorageSubscriptions([]);

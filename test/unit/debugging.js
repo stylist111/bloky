@@ -10,7 +10,7 @@ describe("Debugging", function() {
   let api;
 
   beforeEach(async function() {
-    await env.configure();
+    env.configure();
     api = await mock("debugging.js");
   });
 
