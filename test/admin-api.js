@@ -128,8 +128,14 @@ app.post("/setUrlResponse", (req, res) => {
 });
 
 app.all("*", requestLogger.logRequests, (req, res, next) => {
+  let isHeadRequest = req.method.toUpperCase() == "HEAD";
   let route = responses.get(req.path);
-  if (!route || req.method.toUpperCase() != route.method) {
+
+  let routeMatches = route &&
+    (req.method.toUpperCase() == route.method ||
+      (isHeadRequest && route.method == "GET"));
+
+  if (!routeMatches) {
     next();
     return;
   }
@@ -138,7 +144,10 @@ app.all("*", requestLogger.logRequests, (req, res, next) => {
     res.status(route.status);
   }
 
-  if (typeof route.response == "function") {
+  if (isHeadRequest) {
+    res.end();
+  }
+  else if (typeof route.response == "function") {
     res.send(route.response());
   }
   else if (route.response) {

@@ -176,6 +176,16 @@ describe("Testing Mechanisms", function() {
       expect(await objectOutput.json()).toEqual(objectResponse);
     });
 
+    it("responds to HEAD requests when you set the GET endpoint", async function() {
+      let stringResponse = "This is a string response";
+      await setEndpointResponse("/string", stringResponse);
+      let response = await fetch(`${TEST_ADMIN_PAGES_URL}/string`, {
+        method: "HEAD"
+      });
+      expect(response.status).toBe(200);
+      expect(await response.text()).toEqual("");
+    });
+
     it("clears dynamically set endpoints", async function() {
       let customResponse = {hey: ["what's", "up", "?"]};
       await setEndpointResponse("/test", customResponse);
