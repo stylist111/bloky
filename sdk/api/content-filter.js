@@ -149,11 +149,12 @@ async function executeSnippets(tabId, frameId, previousFrame, frame) {
     }
 
     if (main.length > 0) {
-      debug(() => `Execute main script ${isolatedLib}`);
+      debug(() => `Execute main script ${injectedLib}`);
       execute.push(
         browser.scripting.executeScript({
           target: details,
           world: "MAIN",
+          injectImmediately: true,
           func: injectedLib,
           args: [environment, ...main]
         })

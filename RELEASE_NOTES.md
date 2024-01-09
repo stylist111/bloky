@@ -1,6 +1,13 @@
 Unreleased
 ==========
 
+# General
+
+- Added the injectImmediately flag when injecting main context snippets in
+  MV3. This applies the snippets earlier in the page loading lifecycle. See
+  [MDN](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/scripting/executeScript#injectimmediately)
+  for more details. (CV-2037)
+
 📣 1.3.0 - 2024-01-03 📣
 ========================
 
