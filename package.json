@@ -86,7 +86,6 @@
     "test-bundle": "node test/bundle/run.js",
     "test-scripts": "mocha test/scripts/*.js",
     "test-core": "npm test -w core",
-    "measureTestFlakiness": "node scripts/measureTestFlakiness.js",
     "subs-init": "node scripts/initSubscriptions.js",
     "subs-merge": "node scripts/mergeSubscriptions.js",
     "subs-fetch": "node scripts/fetchSubscriptions.js",

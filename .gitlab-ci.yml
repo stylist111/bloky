@@ -5,7 +5,6 @@ variables:
   npm_config_audit: "false"
   npm_config_fund: "false"
   npm_config_prefer_offline: "true"
-  RUN_ONLY_FLAKY_TESTS: "false"
 
   # Browser versions we use:
   STABLE_CHROMIUM_VERSION: "120.0.6099.71"
@@ -165,21 +164,15 @@ func:bundle:
     COMMIT_FIRST_LINE=$(echo "$CI_COMMIT_MESSAGE" | head -1);
     if [ -z "${COMMIT_FIRST_LINE##*"[flaky]"*}" ]; then
       echo "The first line of the commit message contains the [flaky] tag!";
-      RUN_ONLY_FLAKY_TESTS=true;
-    else
-      RUN_ONLY_FLAKY_TESTS=false;
+      OTHER_PARAMS="-e ONLY_FLAKY=true";
     fi;
     if echo "$CHECKTESTS" | grep -q "true"; then
-      apk --update add nodejs npm;
-      npm install -g npm@latest;
-      npm install;
-      npm run measureTestFlakiness -- --testParams "$TEST_PARAMS" --buildFlags "SKIP_BUILD=1" --runOnlyFlaky "$RUN_ONLY_FLAKY_TESTS" --runs 10;
-    else
-      docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER="$BROWSER" --build-arg SKIP_BUILD=1 .;
-      docker run --cpus=2 --memory=8g --shm-size=1g -e TEST_PARAMS="$TEST_PARAMS" -e RUN_ONLY_FLAKY="$RUN_ONLY_FLAKY_TESTS" --name functional functional;
-      docker inspect functional | grep -i shm;
-      docker inspect functional | grep -i Memory;
-    fi
+      OTHER_PARAMS="$OTHER_PARAMS -e TEST_RUNS=10";
+    fi;
+    docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER="$BROWSER" --build-arg SKIP_BUILD=1 .;
+    docker run --cpus=2 --memory=8g --shm-size=1g -e TEST_PARAMS="$TEST_PARAMS" $OTHER_PARAMS --name functional functional;
+    docker inspect functional | grep -i shm;
+    docker inspect functional | grep -i Memory;
 
 func:v2:chromium:stable:
   extends: .functional
@@ -422,37 +415,19 @@ func:v3:edge:linux:latest:
   extends: .functional
   timeout: 4 hours 30 minutes
   stage: fuzz
-  script:
-    COMMIT_FIRST_LINE=$(echo "$CI_COMMIT_MESSAGE" | head -1);
-    if [ -z "${COMMIT_FIRST_LINE##*"[flaky]"*}" ]; then
-      echo "The first line of the commit message contains the [flaky] tag!";
-      RUN_ONLY_FLAKY_TESTS=true;
-    else
-      RUN_ONLY_FLAKY_TESTS=false;
-    fi;
-    if echo "$CHECKTESTS" | grep -q "true"; then
-      apk --update add nodejs npm;
-      npm install -g npm@latest;
-      npm install;
-      npm run measureTestFlakiness -- --testParams "v3 $BROWSER --testKinds fuzz" --buildFlags "SKIP_BUILD=1" --runOnlyFlaky "$RUN_ONLY_FLAKY_TESTS";
-    else
-      docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg SKIP_BUILD=1 .;
-      docker run --cpus=2 --memory=8g --shm-size=1g -e TEST_PARAMS="v3 $BROWSER --testKinds fuzz" -e RUN_ONLY_FLAKY="$RUN_ONLY_FLAKY_TESTS" --name functional functional;
-      docker inspect functional | grep -i shm;
-      docker inspect functional | grep -i Memory;
-    fi
+  variables:
+    TEST_PARAMS: v3 $BROWSER $INCOGNITO --testKinds fuzz
 
 fuzz:v3:chromium:stable:
   extends: .fuzz
   variables:
     BROWSER: chromium $STABLE_CHROMIUM_VERSION
-    TEST_PARAMS: $BROWSER
 
 fuzz:v3:chromium:stable:incognito:
   extends: .fuzz
   variables:
     BROWSER: chromium $STABLE_CHROMIUM_VERSION
-    TEST_PARAMS: $BROWSER  --incognito
+    INCOGNITO: --incognito
   rules:
     - !reference [.all-browsers-test-run, rules]
 
@@ -461,7 +436,6 @@ fuzz:v3:edge:linux:
   extends: .fuzz
   variables:
     BROWSER: edge $STABLE_EDGE_VERSION
-    TEST_PARAMS: $BROWSER
   rules:
     - !reference [.all-browsers-test-run, rules]
 

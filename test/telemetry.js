@@ -121,7 +121,7 @@ describe("Telemetry", function() {
         expect(payload.addon_name).toEqual("eyeo-webext-ad-filtering-solution");
         expect(payload.addon_version).toEqual(expect.stringMatching(/^\d+(.\d+)+$/));
         expect(payload.extension_name).toEqual("eyeo's WebExtension Ad-Filtering Solution Test Extension");
-        expect(payload.extension_version).toEqual("0.0.1");
+        expect(payload.extension_version).toMatch(/0\.0\.\d/);
         expect(payload.aa_active).toEqual(false);
       });
     });

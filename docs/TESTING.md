@@ -245,7 +245,7 @@ If multiple tags are applied to the same test, all are applied.
 - `[mv3-only]`: Only run this test when testing an MV3 extension.
 - `[runner-only]`: Only run this test when the test is run using Selenium
   Webdriver (ie it is launched from the console using `npm test` script).
-- `[flaky]`: Run this test when using the `RUN_ONLY_FLAKY="true"` option in the
+- `[flaky]`: Run this test when using the `ONLY_FLAKY="true"` option in the
   functional test docker container.
 - `[fuzz]`: Run this test in the service worker fuzz tests. By default, tests
   are not run in the service worker fuzz tests, so only the subset selected with
@@ -421,47 +421,29 @@ developer, a high priority ticket should be immediately created.
 
 ### Investigating/fixing functional flaky tests
 
-Best way of investigating flaky tests locally is using docker (instead of npm
-run).
+The best way of investigating flaky tests locally is using docker (instead of
+`npm test`).
 
-If you need to run specific test multiple times to investigate/reproduce
-flakiness, use [flaky] tag in the name of the test and then run following
-command:
-
-```
-// Building container
-docker build -t functional -f test/dockerfiles/functional.Dockerfile .
-
-// Running container in a mode that will run only tests that are tagged [flaky]
-docker run --cpus=2 --memory=8g --shm-size=512m -e TEST_PARAMS="v3 chromium" -e RUN_ONLY_FLAKY="true" functional
-```
-
-Code above will run tests only once. If you want to run docker multiple times in
-a row use the command below.
-
-### Measuring flakiness
-
-To help in measuring if a fix improves, you can run the measureTestFlakiness
-test to see the percentage of test runs that fail.
+If you need to run specific tests multiple times to investigate/reproduce
+flakiness, use the `[flaky]` tag in the name of the test, along with the
+`ONLY_FLAKY` parameter set to `true`. Example:
 
 ```
-npm run measureTestFlakiness
+docker run ... -e ONLY_FLAKY=true functional
 ```
 
-This script has various options to tweak how many runs to do, which tests to
-run, or the docker options to use. You can run the script with the `--help`
-option for a list of options.
+The `TEST_RUNS` parameter allows running tests multiple times in a row, while
+logging the amount of failures per test run. Example:
 
 ```
-npm run measureTestFlakiness -- --help
+docker run ... -e TEST_RUNS=10 functional
 ```
 
-Note! measureTestFlakiness code is running docker container multiple times in a
-row, so you can easily combine [flaky] tag approach with it, to run only one
-test multiple times in a row:
+Note: Combining both `ONLY_FLAKY` and `TEST_RUNS` parameters allows running only
+tests marked as `[flaky]` multiple times in a row:
 
 ```
-npm run measureTestFlakiness -- --testParams "v3 chromium" --runOnlyFlaky "true"
+docker run ... -e ONLY_FLAKY=true -e TEST_RUNS=10 functional
 ```
 
 ### Tips for debugging failing/ flaky tests

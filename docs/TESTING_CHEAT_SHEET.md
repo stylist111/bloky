@@ -98,24 +98,25 @@ docker build -t compliance -f test/dockerfiles/compliance-test.Dockerfile --buil
 ### Run docker for tests with [flaky] tag
 
 ```
-// Building container
+# Building container
 docker build -t functional -f test/dockerfiles/functional.Dockerfile .
 
-//Running container in a mode that will run only tests that are tagged [flaky]
-docker run --cpus=2 --memory=8g --shm-size=512m -e TEST_PARAMS="v3 chromium" -e RUN_ONLY_FLAKY="true" functional
+# Running container in a mode that will run only tests that are tagged [flaky]
+docker run --cpus=2 --memory=8g --shm-size=512m -e TEST_PARAMS="v3 chromium" -e ONLY_FLAKY="true" -it functional
 ```
 
-Code above will run tests only once. If you want to run docker multiple times
-in a row use the command below.
+The command above will run tests once. If you want to run tests multiple times
+in a row use the following command:
 
 ```
-npm run measureTestFlakiness -- --testParams "v3 chromium" --runOnlyFlaky "true"
+docker run --cpus=2 --memory=8g --shm-size=1g -e TEST_PARAMS="v3 chromium" -e ONLY_FLAKY="true" -e TEST_RUNS=10 -it functional
 ```
 
 ### Measure flakiness for whole test suite
 
 ```
-npm run measureTestFlakiness -- --testParams "v3 chromium" --dockerBuildFlag "--build-arg BROWSER=chromium"
+docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER=chromium .
+docker run --cpus=2 --memory=8g --shm-size=1g -e TEST_PARAMS="v3 chromium" -e TEST_RUNS=10 -it functional
 ```
 
 ## I just want to run the tests on my machine, give me the command
@@ -127,12 +128,6 @@ npm run test-server
 npm run test-core
 npm run unittest
 npm test -- {v2|v3|v2-custom} {chromium|firefox|edge}
-```
-
-### Measure flakiness for whole test suite
-
-```
-npm run measureTestFlakiness -- --testParams "v3 chromium"  
 ```
 
 ### Build and run tests
