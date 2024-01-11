@@ -825,6 +825,71 @@ describe("Test subscriptions update", function() {
         .toBeBlocked();
     });
 
+    it("disables and enables filter from static rulesets", async function() {
+      if (!hasUpdateStaticRules()) {
+        this.skip();
+      }
+
+      setMinTimeout(this, 20000);
+
+      const filter = "/image-from-subscription.png^$image";
+      const testDiffSubscriptionUrl = "http://localhost:3000/subscription.txt";
+
+      await EWE.subscriptions.add(testDiffSubscriptionUrl);
+      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+
+      await new Page("image-from-subscription.html")
+        .expectResource("image-from-subscription.png")
+        .toBeBlocked();
+
+      // not added by user
+      await EWE.filters.disable(filter);
+
+      await shouldBeLoaded(
+        "image-from-subscription.html",
+        "image-from-subscription.png",
+        "Image was blocked even though the filter was disabled by user");
+
+      await EWE.filters.enable(filter);
+
+      await new Page("image-from-subscription.html")
+        .expectResource("image-from-subscription.png")
+        .toBeBlocked();
+    });
+
+    it("disables and enables user filter that duplicates filter from static ruleset", async function() {
+      if (!hasUpdateStaticRules()) {
+        this.skip();
+      }
+
+      setMinTimeout(this, 20000);
+
+      const filter = "/image-from-subscription.png^$image";
+      const testDiffSubscriptionUrl = "http://localhost:3000/subscription.txt";
+
+      await EWE.subscriptions.add(testDiffSubscriptionUrl);
+      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+
+      await new Page("image-from-subscription.html")
+        .expectResource("image-from-subscription.png")
+        .toBeBlocked();
+
+      // user filter that is exactly the same as in static ruleset
+      await EWE.filters.add(filter);
+      await EWE.filters.disable(filter);
+
+      await shouldBeLoaded(
+        "image-from-subscription.html",
+        "image-from-subscription.png",
+        "Image was blocked even though the user filter was created and disabled by user");
+
+      await EWE.filters.enable(filter);
+
+      await new Page("image-from-subscription.html")
+        .expectResource("image-from-subscription.png")
+        .toBeBlocked();
+    });
+
     it("enables subscription filter when according disabled user filter is removed", async function() {
       if (!hasUpdateStaticRules()) {
         this.skip();

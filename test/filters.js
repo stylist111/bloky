@@ -182,8 +182,8 @@ describe("Filters", function() {
     expect(userFilters.length).toEqual(0);
 
     await new Page("image-from-subscription.html")
-          .expectResource("image-from-subscription.png")
-          .toBeBlocked();
+      .expectResource("image-from-subscription.png")
+      .toBeBlocked();
   });
 
   describe("Filters metadata", function() {

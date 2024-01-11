@@ -8,6 +8,10 @@ Unreleased
   [MDN](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/scripting/executeScript#injectimmediately)
   for more details. (CV-2037)
 
+# Fixes
+
+- Fixed not disabling rules from static rulesets. (EE-294)
+
 📣 1.3.0 - 2024-01-03 📣
 ========================
 
