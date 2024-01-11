@@ -816,10 +816,6 @@ async function removeOrDisableDynamicFilters(filterTexts, remove = true) {
   let ruleIdsToRemove = [];
 
   for (let text of filterTexts) {
-    for (let ruleId of dynamicFilters.get(text).ruleIds) {
-      ruleIdsToRemove.push(ruleId);
-    }
-
     let details = dynamicFilters.get(text);
 
     if (remove) {
@@ -836,6 +832,10 @@ async function removeOrDisableDynamicFilters(filterTexts, remove = true) {
       }
       // Removing filter only if subscriptionIds array is empty
       if (details.subscriptionIds && details.subscriptionIds.length == 0) {
+        for (let ruleId of details.ruleIds) {
+          ruleIdsToRemove.push(ruleId);
+        }
+
         filterEngine.filterStorage.removeFilter(Filter.fromText(text));
         dynamicFilters.delete(text);
       }
@@ -844,6 +844,10 @@ async function removeOrDisableDynamicFilters(filterTexts, remove = true) {
       }
     }
     else {
+      for (let ruleId of details.ruleIds) {
+        ruleIdsToRemove.push(ruleId);
+      }
+
       // Disabling filter
       filterEngine.filterStorage.filterState.setEnabled(text, false);
 

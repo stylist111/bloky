@@ -11,6 +11,7 @@ Unreleased
 # Fixes
 
 - Fixed not disabling rules from static rulesets. (EE-294)
+- Fixed a bug where removing a user filter ends up removing it from a subscription.
 
 📣 1.3.0 - 2024-01-03 📣
 ========================

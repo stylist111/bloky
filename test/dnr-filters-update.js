@@ -565,7 +565,7 @@ describe("Test subscriptions update", function() {
     });
   });
 
-  describe("Updates using the diffing mechanism", function() {
+  describe("Updates using the diffing mechanism [mv3-only]", function() {
     setMinTimeout(this, isFuzzingServiceWorker() ? 30000 : 10000);
 
     beforeEach(async function() {
@@ -650,6 +650,33 @@ describe("Test subscriptions update", function() {
       // now we block the image
       await new Page("image.html").expectResource("image.png").toBeBlocked();
     }
+
+    it("filters from diffs are not removed when removing the same user filter", async function() {
+      await EWE.filters.add("image.png");
+
+      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
+      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
+
+      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+        filters: {
+          add: ["image.png"],
+          remove: []
+        }
+      }));
+
+      await EWE.subscriptions.add(testDiffSubscriptionUrl);
+      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+
+      await new Page("image.html")
+        .expectResource("image.png")
+        .toBeBlocked();
+
+      await EWE.filters.remove("image.png");
+
+      await new Page("image.html")
+        .expectResource("image.png")
+        .toBeBlocked();
+    });
 
     it("applies and blocks with new request filters added in the diffs [mv3-only]", async function() {
       if (!hasUpdateStaticRules()) {
