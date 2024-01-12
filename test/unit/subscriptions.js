@@ -72,12 +72,6 @@ describe("EWE.subscriptions", function() {
         .rejects.toThrow("No default language subscription");
     });
 
-    it("throws if no current language subscription is provided", async function() {
-      env.setRecommendations([subEasylist]); // "en"
-      await expect(subscriptions.addDefaults("de"))
-        .rejects.toThrow("No current language subscription");
-    });
-
     it("throws if no anti-circumvention subscription is provided", async function() {
       env.setRecommendations([subEasylist, subAcceptableAds]);
       await expect(subscriptions.addDefaults("en"))

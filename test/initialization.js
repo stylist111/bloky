@@ -441,12 +441,6 @@ describe("Initialization", function() {
           .rejects.toThrow("No default language subscription");
       });
 
-      it("throws if no current language subscription is provided", async function() {
-        await EWE.testing._setSubscriptions([subEasylist]); // "en"
-        await expect(EWE.subscriptions.addDefaults("de"))
-          .rejects.toThrow("No current language subscription");
-      });
-
       it("throws if no anti-circumvention subscription is provided", async function() {
         await EWE.testing._setSubscriptions([subEasylist, subAcceptableAds]);
         await expect(EWE.subscriptions.addDefaults("en"))

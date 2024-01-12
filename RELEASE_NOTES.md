@@ -12,6 +12,8 @@ Unreleased
 
 - Fixed not disabling rules from static rulesets. (EE-294)
 - Fixed a bug where removing a user filter ends up removing it from a subscription.
+- `EWE.subscriptions.addDefaults()` no longer throws an error when there are no 
+  subscriptions tailored to the user's language. (EE-301)
 
 📣 1.3.0 - 2024-01-03 📣
 ========================

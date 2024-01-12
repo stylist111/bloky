@@ -597,7 +597,6 @@ export default {
    * browser.i18n.getUILanguage is unavailable, navigator.language is
    * used.
    * @throws {Error} No default language subscription
-   * @throws {Error} No current language subscription
    * @throws {Error} No anti-circumvention subscription
    * @throws {Error} No allowing subscription
    * @see {@link #start|start()}
@@ -610,10 +609,6 @@ export default {
       let defaultSubscriptions = getDefaultSubscriptions(uiLanguage);
       if (!defaultSubscriptions.hasDefaultLang) {
         throw Error("No default language subscription");
-      }
-
-      if (!defaultSubscriptions.hasCurrentLang) {
-        throw Error("No current language subscription");
       }
 
       if (!defaultSubscriptions.hasAntiCV) {
