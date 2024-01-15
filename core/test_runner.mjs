@@ -35,7 +35,6 @@ let unitFiles = [];
 let browserFiles = [];
 
 let runnerDefinitions = {
-  // Chromium with WebDriver (requires Chromium >= 63.0.3239)
   chromium: chromiumProcess,
   firefox: firefoxProcess
 };

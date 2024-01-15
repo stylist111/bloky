@@ -2,14 +2,12 @@
 
 ## Testing core
 
-<!-- markdownlint-disable fenced-code-language -->
 ```
 npm run test-core
 ```
 
 ## Benchmark core
 
-<!-- markdownlint-disable fenced-code-language -->
 ```
 docker build -t benchmark -f test/dockerfiles/benchmark.Dockerfile .
 docker run --cpus=2 --memory=8g --shm-size=512m benchmark 
@@ -57,10 +55,7 @@ npm test -- {v2|v3|v2-custom} {chromium|firefox|edge} [version|channel] --timeou
 
 ```
 docker build -t core -f test/dockerfiles/core.Dockerfile .
-```
-
-```
-docker run --cpus=2 --memory=8g --shm-size=512m TEST_PARAMS="(path to the test to run)" -e -it core
+docker run --cpus=2 --memory=8g --shm-size=512m -e TEST_PARAMS="(path to the test to run)" -it core
 ```
 
 ### Func:webext

@@ -49,7 +49,6 @@ should be fetched from.
 
 Example:
 
-<!-- markdownlint-disable fenced-code-language -->
 ```
 [
   {

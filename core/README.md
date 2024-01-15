@@ -64,69 +64,17 @@ You can specify specific test files or directories on the
 command line, e.g.:
 `npm test test/synchronizer.js test/browser/elemHideEmulation.js`.
 
-### Running the browser tests in a real browser
+### Running the browser tests
 
 The tests under `test/browser` require a browser environment. `npm test` will
 run these in a headless browser, with each module being loaded in a new frame.
 
-The default is to run in both Chromium (using the remote interface)
-and Firefox. You can select which runners to use by setting the
-BROWSER_TEST_RUNNERS environment, the default is
-"chromium_remote,firefox". Possible values (separated by a ',') are:
+The default is to run in both Chromium and Firefox. You can select which runners
+to use by setting the BROWSER_TEST_RUNNERS environment, the default is
+"chromium,firefox".
 
-* "chromium_remote": Chromium 60 (using the remote interface)
-* "chromium": Chromium 77 (using WebDriver)
-* "firefox": Firefox 57 (using WebDriver)
-
-You can not set a specific version of the browser at runtime.
-
-Browser tests run headless by default (except on Windows). If you want
-to disable headless mode on the WebDriver controlled tests, set the
+If you want to disable headless mode on the WebDriver controlled tests, set the
 BROWSER_TEST_HEADLESS environment to 0.
-
-### Integration tests
-
-[testpages](https://gitlab.com/eyeo/adblockplus/abc/testpages.adblockplus.org)
-tests check `adblockpluscore` integration with ABP.
-To run them locally, you need to install [Docker](https://www.docker.com/).
-
-If there are no breaking changes in adblockpluscore code, you should be able to build
-ABPUI extension with current codebase. To build and extract the custom extension
-on Docker run the following commands:
-
-```sh
-docker build -t extensionforcore -f test/dockerfiles/extension.Dockerfile .
-docker run extensionforcore
-docker cp $(docker ps -aqf ancestor=extensionforcore):/extension .
-```
-
-The extension code uses the most recently released ABPUI Tag by default.
-`extension` folder will contain two versions: mv2 and mv3.
-
-To run testpages integration tests on Docker with the custom extension previously
-created, you may clone the [Testpages project](testpages-project) and follow
-the instructions on [how to run tests with packed
-extensions](https://gitlab.com/eyeo/adblockplus/abc/testpages.adblockplus.org#packed-extensions).
-Example:
-
-```sh
-cd testpages.adblockplus.org
-cp <location/to/extension/> .
-docker build -t testpages --build-arg EXTENSION_FILE="extension/extensionmv<2|3>.zip" .
-docker run --shm-size=512m -e SKIP_EXTENSION_DOWNLOAD="true" -e GREP="^.*$BROWSER((?!Snippets).)*\$" testpages
-```
-
-Note: At the moment the custom extension won't support snippets. That's why it
-is recommended to [use the GREP parameter](https://gitlab.com/eyeo/adblockplus/abc/testpages.adblockplus.org#grep)
-to exclude those tests. On a `zsh` shell (default for MacOS), the `!` symbol
-from the example above needs to be escaped (`\!`).
-
-When `GREP` is not used, `firefox latest` is the default browser. Other browsers
-should run using `GREP` as follows:
-
-```sh
-docker run -e GREP="chromium latest" -it testpages
-```
 
 ## Linting
 

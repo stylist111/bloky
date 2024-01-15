@@ -16,16 +16,13 @@
  */
 
 import {BROWSERS} from "@eyeo/get-browser-binary";
-import "chromedriver";
-
 import {executeScript} from "./webdriver.mjs";
 
-const CHROMIUM_VERSION = "77.0.3865.0";
+const CHROMIUM_VERSION = "120.0.6099.71";
 
 async function runScript(script, scriptArgs) {
-  // Headless doesn't seem to work on Windows.
-  let headless =
-    process.platform != "win32" && process.env.BROWSER_TEST_HEADLESS != "0";
+  let headless = process.env.BROWSER_TEST_HEADLESS != "0";
+  console.log(`Getting ready to run Chromium ${CHROMIUM_VERSION} ...`);
   let driver = await BROWSERS.chromium.getDriver(CHROMIUM_VERSION, {headless});
 
   return executeScript(driver, "Chromium (WebDriver)", script, scriptArgs);

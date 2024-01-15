@@ -98,22 +98,24 @@ lint:
 # Unit tests
 
 .unit:
-  image: registry.gitlab.com/eyeo/docker/get-browser-binary:node18
   stage: unit
   needs: []
-  before_script:
-    - npm install
   rules:
     - !reference [.avoid-flaky-run, rules]
 
 unit:core:
-  extends: .unit
+  extends:
+    - .unit
+    - .docker-image
   script:
-    - npm run test-core
-    - npm run -w core test:dist
+    - docker build -t core -f test/dockerfiles/core.Dockerfile .
+    - docker run --cpus=2 --memory=8g --shm-size=512m -t core
 
 unit:webext:
+  image: registry.gitlab.com/eyeo/docker/get-browser-binary:node18
   extends: .unit
+  before_script:
+    - npm install
   script:
     - npm run unittest
 

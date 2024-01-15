@@ -2,5 +2,6 @@
   "default": true,
   "MD013": { "code_blocks": false },
   "MD024": { "siblings_only": true},
-  "MD033": { "allowed_elements": ["div"] }
+  "MD033": { "allowed_elements": ["div"] },
+  "MD040": null
 }

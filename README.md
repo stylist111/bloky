@@ -73,7 +73,6 @@ Manifest V3:
 For Manifest V2, the extension's `manifest.json` is required to
 include the following configuration:
 
-<!-- markdownlint-disable fenced-code-language -->
 ```
 {
   "manifest_version": 2,

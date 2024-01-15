@@ -16,14 +16,13 @@
  */
 
 import {BROWSERS} from "@eyeo/get-browser-binary";
-import "geckodriver";
-
 import {executeScript} from "./webdriver.mjs";
 
-const FIREFOX_VERSION = "68.0";
+const FIREFOX_VERSION = "120.0.1";
 
 async function runScript(script, scriptArgs) {
   let headless = process.env.BROWSER_TEST_HEADLESS != "0";
+  console.log(`Getting ready to run Firefox ${FIREFOX_VERSION} ...`);
   let driver = await BROWSERS.firefox.getDriver(FIREFOX_VERSION, {headless});
 
   return executeScript(driver, "Firefox", script, scriptArgs);

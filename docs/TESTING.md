@@ -36,13 +36,19 @@ eyeo's adBlocking products.
 ### Unit:core
 
 webext contains a Core repository and a lot of logic is done in Core. Core
-itself is fully covered by unit tests (no functional tests). To test
-adblockpluscore locally, you can run following command from the top level
-directory:
+itself is covered by both unit tests and browser tests. To test Core locally,
+you can run following command from the top level directory:
 
-<!-- markdownlint-disable fenced-code-language -->
 ```
 npm run test-core
+```
+
+On the CI, a minified version of the Core code is also tested. To run the CI
+tests locally use the following commands, which accept optional `TEST_PARAMS`:
+
+```
+docker build -t core -f test/dockerfiles/core.Dockerfile .
+docker run --cpus=2 --memory=8g --shm-size=512m -e TEST_PARAMS="(path to the test to run)" -it core
 ```
 
 ### Benchmark
@@ -52,7 +58,6 @@ Core has its own scripts for benchmarking performance (initialization time
 happy path is working properly and measure basic metrics.
 If you want to run it locally, use the following commands:
 
-<!-- markdownlint-disable fenced-code-language -->
 ```
 docker build -t benchmark -f test/dockerfiles/benchmark.Dockerfile .
 docker run --cpus=2 --memory=8g --shm-size=512m benchmark
