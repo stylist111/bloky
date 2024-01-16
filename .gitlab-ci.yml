@@ -109,7 +109,7 @@ unit:core:
     - .docker-image
   script:
     - docker build -t core -f test/dockerfiles/core.Dockerfile .
-    - docker run --cpus=2 --memory=8g --shm-size=512m -t core
+    - docker run --cpus=2 --memory=8g --shm-size=512m -e CHROMIUM_VERSION="$STABLE_CHROMIUM_VERSION" -e FIREFOX_VERSION="$STABLE_FIREFOX_VERSION" -t core
 
 unit:webext:
   image: registry.gitlab.com/eyeo/docker/get-browser-binary:node18

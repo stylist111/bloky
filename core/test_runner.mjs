@@ -38,22 +38,7 @@ let runnerDefinitions = {
   chromium: chromiumProcess,
   firefox: firefoxProcess
 };
-
-function configureRunners() {
-  let runners = "BROWSER_TEST_RUNNERS" in process.env ?
-                  process.env.BROWSER_TEST_RUNNERS.split(",") :
-                  [];
-
-  if (runners.length == 0) {
-    return ["chromium", "firefox"];
-  }
-
-  return runners.filter(
-    runner => Object.prototype.hasOwnProperty.call(runnerDefinitions, runner)
-  );
-}
-
-let runnerProcesses = configureRunners();
+let runnerProcesses = ["chromium", "firefox"];
 
 function addTestPaths(testPaths, recurse) {
   for (let testPath of testPaths) {
@@ -164,7 +149,7 @@ async function runBrowserTests(processes) {
   await Promise.all(
     processes.map(
       currentProcess => runnerDefinitions[currentProcess](
-        bundle, bundleFilename, browserFiles.map(
+        bundle, browserFiles.map(
           file => path.relative(path.join(dirname, "test", "browser"), file)
                   .replace(/\.js$/, "")
         )

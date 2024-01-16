@@ -15,7 +15,9 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export async function executeScript(driver, name, script, scriptArgs) {
+import {BROWSERS} from "@eyeo/get-browser-binary";
+
+async function executeScript(driver, name, script, scriptArgs) {
   let realScript = `${script}; let f = window.runTests;
                     let callback = arguments[arguments.length - 1];
                     return f(...arguments).then(() => callback());`;
@@ -24,7 +26,8 @@ export async function executeScript(driver, name, script, scriptArgs) {
     await driver.executeAsyncScript(realScript, ...scriptArgs);
     let result = await driver.executeScript("return window._consoleLogs;");
 
-    console.log(`\nBrowser tests in ${name}`);
+    let cap = await driver.getCapabilities();
+    console.log(`\nBrowser tests in ${cap.getBrowserName()} ${cap.getBrowserVersion()}`);
     for (let item of result.log) {
       console.log(...item);
     }
@@ -36,4 +39,12 @@ export async function executeScript(driver, name, script, scriptArgs) {
   finally {
     await driver.quit();
   }
+}
+
+export async function runScript(script, scriptArgs, browser, browserVersion) {
+  let headless = process.env.BROWSER_TEST_HEADLESS != "0";
+  console.log(`Getting ready to run ${browser} ${browserVersion} ...`);
+  let driver = await BROWSERS[browser].getDriver(browserVersion, {headless});
+
+  return executeScript(driver, browser, script, scriptArgs);
 }

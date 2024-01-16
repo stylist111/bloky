@@ -69,12 +69,12 @@ command line, e.g.:
 The tests under `test/browser` require a browser environment. `npm test` will
 run these in a headless browser, with each module being loaded in a new frame.
 
-The default is to run in both Chromium and Firefox. You can select which runners
-to use by setting the BROWSER_TEST_RUNNERS environment, the default is
-"chromium,firefox".
+By default tests run in the latest versions of Chromium and Firefox. The
+`CHROMIUM_VERSION` and `FIREFOX_VERSION` environment variables can be set to
+change the running browser versions.
 
-If you want to disable headless mode on the WebDriver controlled tests, set the
-BROWSER_TEST_HEADLESS environment to 0.
+If you want to disable headless mode on the browser tests, set the
+`BROWSER_TEST_HEADLESS` environment variable to 0.
 
 ## Linting
 

@@ -15,19 +15,10 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {BROWSERS} from "@eyeo/get-browser-binary";
-import {executeScript} from "./webdriver.mjs";
+import {runScript} from "./webdriver.mjs";
 
-const CHROMIUM_VERSION = "120.0.6099.71";
+const CHROMIUM_VERSION = process.env.CHROMIUM_VERSION || "latest";
 
-async function runScript(script, scriptArgs) {
-  let headless = process.env.BROWSER_TEST_HEADLESS != "0";
-  console.log(`Getting ready to run Chromium ${CHROMIUM_VERSION} ...`);
-  let driver = await BROWSERS.chromium.getDriver(CHROMIUM_VERSION, {headless});
-
-  return executeScript(driver, "Chromium (WebDriver)", script, scriptArgs);
-}
-
-export default function(script, scriptName, ...scriptArgs) {
-  return runScript(script, scriptArgs);
+export default function(script, ...scriptArgs) {
+  return runScript(script, scriptArgs, "chromium", CHROMIUM_VERSION);
 }
