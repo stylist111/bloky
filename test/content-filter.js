@@ -83,26 +83,26 @@ describe("Element Hiding", function() {
     await EWE.testing.clearAllSitekeys(false);
 
     try {
-      await EWE.testing._setSitekey(1, 1, "url1", "sitekey1", "sig1");
-      await EWE.testing._setSitekey(1, 1, "url2", "sitekey2", "sig2");
-      await EWE.testing._setSitekey(1, 2, "url3", "sitekey3", "sig3");
-      await EWE.testing._setSitekey(2, 3, "url4", "sitekey4", "sig4");
-      await EWE.testing._setSitekey(4, 5, "url5", null, null);
+      await EWE.testing._setSitekey(1, 1, "http://url1.com", "sitekey1", "sig1");
+      await EWE.testing._setSitekey(1, 1, "http://url2.com", "sitekey2", "sig2");
+      await EWE.testing._setSitekey(1, 2, "http://url3.com", "sitekey3", "sig3");
+      await EWE.testing._setSitekey(2, 3, "http://url4.com", "sitekey4", "sig4");
+      await EWE.testing._setSitekey(4, 5, "http://url5.com", null, null);
 
       await EWE.testing._doSaveSitekeys();
       await EWE.testing._awaitSavingComplete();
       await EWE.testing.clearAllSitekeys(false);
       await EWE.testing._loadSitekeys(false);
 
-      expect(await EWE.testing.getSitekey(1, 1, "url1")).toEqual("sitekey1");
-      expect(await EWE.testing._getSitekeySignature(1, 1, "url1")).toEqual("sig1");
-      expect(await EWE.testing.getSitekey(1, 1, "url2")).toEqual("sitekey2");
-      expect(await EWE.testing._getSitekeySignature(1, 1, "url2")).toEqual("sig2");
-      expect(await EWE.testing.getSitekey(1, 2, "url3")).toEqual("sitekey3");
-      expect(await EWE.testing._getSitekeySignature(1, 2, "url3")).toEqual("sig3");
-      expect(await EWE.testing.getSitekey(2, 3, "url4")).toEqual("sitekey4");
-      expect(await EWE.testing._getSitekeySignature(2, 3, "url4")).toEqual("sig4");
-      expect(await EWE.testing.getSitekey(4, 5, "url5")).toBeNull();
+      expect(await EWE.testing.getSitekey(1, 1, "http://url1.com")).toEqual("sitekey1");
+      expect(await EWE.testing._getSitekeySignature(1, 1, "http://url1.com")).toEqual("sig1");
+      expect(await EWE.testing.getSitekey(1, 1, "http://url2.com")).toEqual("sitekey2");
+      expect(await EWE.testing._getSitekeySignature(1, 1, "http://url2.com")).toEqual("sig2");
+      expect(await EWE.testing.getSitekey(1, 2, "http://url3.com")).toEqual("sitekey3");
+      expect(await EWE.testing._getSitekeySignature(1, 2, "http://url3.com")).toEqual("sig3");
+      expect(await EWE.testing.getSitekey(2, 3, "http://url4.com")).toEqual("sitekey4");
+      expect(await EWE.testing._getSitekeySignature(2, 3, "http://url4.com")).toEqual("sig4");
+      expect(await EWE.testing.getSitekey(4, 5, "http://url5.com")).toBeNull();
     }
     finally {
       await EWE.testing.clearAllSitekeys();

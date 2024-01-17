@@ -287,11 +287,19 @@ async function discoverExistingFrames() {
   ));
 }
 
-function onSitekeyReceived(tabId, frameId, url, sitekey) {
+export function onSitekeyReceived(tabId, frameId, url, sitekey) {
   trace({tabId, frameId, url, sitekey});
 
   let frame = getFrameInfo(tabId, frameId);
-  let isSameFrame = frame && frame.url == url;
+
+  // It can happen that sub-frame "onCommitted" event is triggered after it's
+  // resource loading event, meaning we don't have a frame information
+  // in frame state, thus skip finding allowlisting filters, resulting in
+  // frame resources are not allowlisted as expected.
+  if (!frame) {
+    frame = recordFrameFromNavigationEvent({tabId, frameId, url});
+  }
+  let isSameFrame = frame.url == url;
   if (isSameFrame) {
     frame.headersReceived = true;
   }
@@ -416,7 +424,7 @@ function onBeforeNavigate(details) {
     if (frame && frame.url != details.url) {
       // We need to skip processing the frame state events for now
       // (such as allowlisted for document) as it will be done later during
-      // the `onCommited`, but we also want to avoid allowlisting for some
+      // the `onCommitted`, but we also want to avoid allowlisting for some
       // resources that refer to this tabId/frameId as the URL is changed,
       // and the allowlisting state is currently undetermined.
 

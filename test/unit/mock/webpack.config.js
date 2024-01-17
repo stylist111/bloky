@@ -45,11 +45,17 @@ export function getConfig(filename) {
         "./io.js": path.resolve(dirname, "./webext-sdk.mock.js"),
         "./dnr-filters.js": path.resolve(dirname, "./webext-sdk.mock.js"),
         "./prefs.js": path.resolve(dirname, "./prefs.mock.js"),
-        "./sitekey.js": path.resolve(dirname, "./webext-sdk.mock.js")
+        "./sitekey.js": path.resolve(dirname, "./webext-sdk.mock.js"),
+        "io$": path.resolve(dirname, "../../../sdk/api/io.js"),
+        "info$": path.resolve(dirname, "../../../sdk/api/info.js"),
+        "prefs$": path.resolve(dirname, "./prefs.mock.js")
       }
     },
     optimization: {
       minimize: false
+    },
+    externals: {
+      perf_hooks: path.resolve(dirname, "./perf_hooks.mock.js")
     }
   };
   return {

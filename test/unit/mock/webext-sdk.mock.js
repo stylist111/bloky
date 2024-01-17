@@ -21,6 +21,11 @@ export let filterEngine = {
       // eslint-disable-next-line no-undef
       return global.filterStorageSubscriptions;
     }
+  },
+  defaultMatcher: {
+    match() {
+      return null;
+    }
   }
 };
 export function convertFilter() {}

@@ -14,6 +14,8 @@ Unreleased
 - Fixed a bug where removing a user filter ends up removing it from a subscription.
 - `EWE.subscriptions.addDefaults()` no longer throws an error when there are no 
   subscriptions tailored to the user's language. (EE-301)
+- Fixed a bug of not allowlisting with sitekey in case of unhappy events order
+  from the browser. (EE-281)
 
 📣 1.3.0 - 2024-01-03 📣
 ========================
