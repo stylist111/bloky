@@ -14,36 +14,45 @@ variables:
   STABLE_FIREFOX_BSL_INCOGNITO_VERSION: "114.0.2"
   OLDEST_FIREFOX_VERSION: "68.0"
   STABLE_EDGE_VERSION: "120.0.2210.61"
-  # until we use shared runners, this is default value
+  # Default value for Windows shared runners
   STABLE_EDGE_WINDOWS_VERSION: "79.0.309"
 
-# Jobs marked with that rule won't be triggered on pipelines for flaky
-# debugging
+# Pipeline rules
+workflow:
+  rules:
+    # Do not trigger merge request pipelines
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    - when: always
+
+# The following CI variables modify which jobs run in a pipeline:
+# - FULL: Full set of tests, including latest browsers. Used in nightly runs.
+# - CHECKTESTS: Check tests quality. Used in nightly runs.
+
+.full-run:
+  rules:
+    - if: $FULL == "true"
+
+.checktests-run:
+  rules:
+    - if: $CHECKTESTS == "true"
+
+.master-run:
+  rules:
+    - !reference [.full-run, rules]
+    - if: $CI_COMMIT_BRANCH == "master"
+
+# Won't be triggered on flaky debugging pipelines
 .avoid-flaky-run:
   rules:
-    # Run when "full" is specified because this is for nightly runs
-    - if: $FULL == 'true'
-      when: always
-    # Do not trigger a merge request pipeline
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: never
-     # Don't run automatically on commit that contains flaky 
-     # or is pipeline that checks tests quality
-    - if: $CHECKTESTS == 'true'
+    - !reference [.full-run, rules]
+    # Run manually on commits that contain [flaky] or checktests pipelines
+    - if: $CHECKTESTS == "true"
       when: manual
     - if: $CI_COMMIT_MESSAGE =~ /\[flaky]/
       when: manual
     # Run automatically if other conditions not filled
     - when: always
-
-# Used for jobs that will be included only in full set of tests
-.all-browsers-test-run:
-  rules:
-    # Do not trigger a merge request pipeline
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: never
-    # Run full set when FULL is true
-    - if: $FULL == 'true'
 
 .docker-image:
   image: docker:24.0.5
@@ -96,7 +105,6 @@ lint:
     - npm run lint
 
 # Unit tests
-
 .unit:
   stage: unit
   needs: []
@@ -112,49 +120,33 @@ unit:core:
     - docker run --cpus=2 --memory=8g --shm-size=512m -e CHROMIUM_VERSION="$STABLE_CHROMIUM_VERSION" -e FIREFOX_VERSION="$STABLE_FIREFOX_VERSION" -t core
 
 unit:webext:
-  image: registry.gitlab.com/eyeo/docker/get-browser-binary:node18
+  image: node:18-bullseye-slim
   extends: .unit
   before_script:
     - npm install
   script:
     - npm run unittest
 
-# Benchmark
+unit:scripts:
+  image: node:18-bullseye-slim
+  extends: .unit
+  before_script:
+    - npm install
+  script:
+    - npm run test-scripts
 
+# Benchmark
 benchmark:
   extends: .docker-image
   stage: benchmark
   needs: []
   script:
-    - docker build -t benchmark -f test/dockerfiles/benchmark.Dockerfile . 
-    - docker run --cpus=2 --memory=8g --shm-size=512m benchmark  
+    - docker build -t benchmark -f test/dockerfiles/benchmark.Dockerfile .
+    - docker run --cpus=2 --memory=8g --shm-size=512m benchmark
   rules:
-    - !reference [.all-browsers-test-run, rules]
+    - !reference [.full-run, rules]
 
 # Functional Tests
-
-func:scripts:
-  image: node:18-bullseye-slim
-  stage: functional
-  needs: []
-  before_script:
-    - npm install
-  script:
-    - npm run test-scripts
-  rules:
-    - !reference [.avoid-flaky-run, rules]
-
-func:bundle:
-  image: node:18-bullseye-slim
-  stage: functional
-  script:
-    - npm run test-bundle
-  needs:
-    - job: build
-      artifacts: true
-  rules:
-    - !reference [.avoid-flaky-run, rules]
-
 .functional:
   stage: functional
   timeout: 2 hours
@@ -172,17 +164,16 @@ func:bundle:
       OTHER_PARAMS="$OTHER_PARAMS -e TEST_RUNS=10";
     fi;
     docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER="$BROWSER" --build-arg SKIP_BUILD=1 .;
-    docker run --cpus=2 --memory=8g --shm-size=1g -e TEST_PARAMS="$TEST_PARAMS" $OTHER_PARAMS --name functional functional;
-    docker inspect functional | grep -i shm;
-    docker inspect functional | grep -i Memory;
+    docker run --cpus=2 --memory=8g --shm-size=1g -e TEST_PARAMS="$TEST_PARAMS" $OTHER_PARAMS functional;
 
+# Functional tests - MV2
 func:v2:chromium:stable:
   extends: .functional
   variables:
     BROWSER: chromium $STABLE_CHROMIUM_VERSION
     TEST_PARAMS: v2 $BROWSER
 
-func:v2:chromium:stable:incognito:
+func:v2:chromium:incognito:
   extends: .functional
   variables:
     BROWSER: chromium $STABLE_CHROMIUM_VERSION
@@ -218,7 +209,7 @@ func:v2:firefox:oldest:
     BROWSER: firefox $OLDEST_FIREFOX_VERSION
     TEST_PARAMS: v2 $BROWSER
 
-.func:v2:windows:edge:
+.functional-windows:
   stage: functional
   needs:
     - job: build
@@ -240,24 +231,23 @@ func:v2:firefox:oldest:
     - windows-1809
 
 func:v2:windows:edge:stable:
-  extends: .func:v2:windows:edge
+  extends: .functional-windows
   script:
     - npm test v2 edge -- $STABLE_EDGE_WINDOWS_VERSION --timeout=10000
 
 func:v2:windows:edge:incognito:
-  extends: .func:v2:windows:edge
+  extends: .functional-windows
   script:
     - npm test v2 edge -- $STABLE_EDGE_WINDOWS_VERSION --incognito --timeout=10000
 
-# Functional MV3 tests
-
+# Functional tests - MV3
 func:v3:chromium:stable:
   extends: .functional
   variables:
     BROWSER: chromium $STABLE_CHROMIUM_VERSION
     TEST_PARAMS: v3 $BROWSER --testKinds functional reload update
 
-func:v3:chromium:stable:incognito:
+func:v3:chromium:incognito:
   extends: .functional
   variables:
     BROWSER: chromium $STABLE_CHROMIUM_VERSION
@@ -269,14 +259,13 @@ func:v3:chromium:oldest:
     BROWSER: chromium $OLDEST_CHROMIUM_MV3_VERSION
     TEST_PARAMS: v3 $BROWSER --testKinds functional reload update
 
-func:v3:edge:linux:
+func:v3:edge:stable:
   extends: .functional
   variables:
     BROWSER: edge $STABLE_EDGE_VERSION
     TEST_PARAMS: v3 $BROWSER --testKinds functional reload update
 
-# This jobs will run only on "check tests quality" pipelines and jobs will ALWAYS
-# run all tests regardless of FLAKY tags
+# Functional tests - isolated
 .functional-isolated:
   extends: .functional
   stage: test
@@ -284,13 +273,7 @@ func:v3:edge:linux:
     - docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER="$BROWSER" --build-arg SKIP_BUILD=1 .
     - docker run --cpus=2 --memory=8g --shm-size=1g --memory-swap=16384m -e TEST_PARAMS="$TEST_PARAMS --grep $FUNCTIONAL_MODULE" functional
   rules:
-    # Do not trigger a merge request pipeline
-      - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-        when: never
-      - if: $CHECKTESTS == 'true'
-        when: always
-    # Do not trigger on other pipelines
-      - when: never
+    - !reference [.checktests-run, rules]
 
 .functional-isolated-mv3:
   extends: .functional-isolated  
@@ -298,22 +281,22 @@ func:v3:edge:linux:
     matrix:
       - FUNCTIONAL_MODULE:
         - "Initialization"
-        - "Console\\slogging"
-        - "Endpoint\\smanipulation"
+        - "Console.logging"
+        - "Endpoint.manipulation"
         - "Allowlisting"
-        - "Element\\sHiding"
+        - "Element.Hiding"
         - "Snippets"
         - "Notifications"
         - "^Blocking"
         - "Reporting"
         - "Subscriptions"
-        - "Filter\\slist\\supdates"
-        - "Subscription\\sevents"
+        - "Filter.list.updates"
+        - "Subscription.events"
         - "^Filters"
         - "Subscribe"
-        - "Pop-up\\sblocking"
-        # The jobs below are only run in mv3.
-        - "MV3\\sService\\sWorkers"
+        - "Pop-up.blocking"
+        # The jobs below only run in MV3
+        - "MV3.Service.Workers"
         - "Synchronization"
 
 .functional-isolated-mv2:
@@ -322,45 +305,45 @@ func:v3:edge:linux:
     matrix:
       - FUNCTIONAL_MODULE:
         - "Initialization"        
-        - "Console\\slogging"
-        - "Endpoint\\smanipulation"
+        - "Console.logging"
+        - "Endpoint.manipulation"
         - "Allowlisting"
-        - "Element\\sHiding"
+        - "Element.Hiding"
         - "Snippets"
         - "Notifications"
         - "^Blocking"
         - "Reporting"
         - "Subscriptions"
-        - "Filter\\slist\\supdates"
-        - "Subscription\\sevents"
+        - "Filter.list.updates"
+        - "Subscription.events"
         - "^Filters"        
         - "Subscribe"
-        - "Pop-up\\sblocking"
+        - "Pop-up.blocking"
 
-testquality:v3:chromium:stable:
+fi:v3:chromium:stable:
   extends: .functional-isolated-mv3
   variables:
     BROWSER: chromium $STABLE_CHROMIUM_VERSION
     TEST_PARAMS: v3 $BROWSER --testKinds functional 
 
-testquality:v3:edge:linux:
+fi:v3:edge:stable:
   extends: .functional-isolated-mv3
   variables:
     BROWSER: edge $STABLE_EDGE_VERSION
     TEST_PARAMS: v3 $BROWSER --testKinds functional
 
-testquality:v2:firefox:
+fi:v2:firefox:
   extends: .functional-isolated-mv2
   variables:
     BROWSER: firefox $STABLE_FIREFOX_VERSION
     TEST_PARAMS: v2 $BROWSER --testKinds functional
 
-# This jobs will be run on nightly runs of the pipeline or when triggered with "FULL" variable
+# Functional tests - full run
 .functional-full:
   extends: .functional
   allow_failure: true
   rules:
-    - !reference [.all-browsers-test-run, rules]
+    - !reference [.full-run, rules]
   
 func:v2:chromium:latest:
   extends: .functional-full
@@ -392,27 +375,26 @@ func:v2:firefox:latest:
     BROWSER: firefox
     TEST_PARAMS: v2 $BROWSER --testKinds functional reload
 
-func:v2:firefox:update:incognito:
+func:v2:firefox:incognito:update:
   extends: .functional-full
   variables:
     BROWSER: firefox $STABLE_FIREFOX_BSL_INCOGNITO_VERSION
     TEST_PARAMS: v2 $BROWSER --testKinds update --incognito
   allow_failure: false
 
-func:v2:edge:linux:latest:
+func:v2:edge:latest:
   extends: .functional-full
   variables:
     BROWSER: edge
     TEST_PARAMS: v2 $BROWSER --testKinds functional reload
 
-func:v3:edge:linux:latest:
+func:v3:edge:latest:
   extends: .functional-full
   variables:
     BROWSER: edge
     TEST_PARAMS: v3 $BROWSER --testKinds functional reload update
 
 # Fuzz tests
-
 .fuzz:
   extends: .functional
   timeout: 4 hours 30 minutes
@@ -425,22 +407,22 @@ fuzz:v3:chromium:stable:
   variables:
     BROWSER: chromium $STABLE_CHROMIUM_VERSION
 
-fuzz:v3:chromium:stable:incognito:
+fuzz:v3:chromium:incognito:
   extends: .fuzz
   variables:
     BROWSER: chromium $STABLE_CHROMIUM_VERSION
     INCOGNITO: --incognito
   rules:
-    - !reference [.all-browsers-test-run, rules]
+    - !reference [.full-run, rules]
 
-# Fuzz tests is running on Edge 108 only so we don't need to increase timeout
-fuzz:v3:edge:linux:
+fuzz:v3:edge:stable:
   extends: .fuzz
   variables:
     BROWSER: edge $STABLE_EDGE_VERSION
   rules:
-    - !reference [.all-browsers-test-run, rules]
+    - !reference [.full-run, rules]
 
+# Compliance tests
 .compliance:
   stage: compliance
   extends: .docker-image
@@ -459,41 +441,37 @@ fuzz:v3:edge:linux:
     when: always
     expire_in: 1 day
   rules:
-    # Do not trigger a merge request pipeline
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: never
-    # Run full set when FULL is true
-    - if: $FULL == 'true'
-    - if: $CI_COMMIT_BRANCH == "master"
+    - !reference [.master-run, rules]
 
-compliance:v2:firefox:
+comp:v2:firefox:
   extends: .compliance
   variables:
     VERSION: $STABLE_FIREFOX_VERSION
     BROWSER: firefox 
     MANIFEST: mv2
 
-compliance:v2:chromium:
+comp:v2:chromium:
   extends: .compliance
   variables:
     VERSION: $STABLE_CHROMIUM_VERSION
     BROWSER: chromium 
     MANIFEST: mv2
     
-compliance:v3:chromium:
+comp:v3:chromium:
   extends: .compliance
   variables:
     VERSION: $STABLE_CHROMIUM_VERSION
     BROWSER: chromium
     MANIFEST: mv3
 
-compliance:v3:edge:
+comp:v3:edge:
   extends: .compliance
   variables:
     VERSION: $STABLE_EDGE_VERSION
     BROWSER: edge
     MANIFEST: mv3
 
+# Integration tests
 int:scripts:
   image: node:18-bullseye-slim
   needs: []
@@ -508,6 +486,17 @@ int:scripts:
     - npm exec subs-fetch
     - npm exec subs-convert -- -r
     - npm exec subs-generate
+  rules:
+    - !reference [.avoid-flaky-run, rules]
+
+int:bundle:
+  image: node:18-bullseye-slim
+  stage: integration
+  script:
+    - npm run test-bundle
+  needs:
+    - job: build
+      artifacts: true
   rules:
     - !reference [.avoid-flaky-run, rules]
 
