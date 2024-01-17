@@ -140,28 +140,11 @@ let startupPromise;
  */
 class FrameInfo {
   constructor(tabId, frameId, parent, url) {
-    let {
-      allowlisted: parentAllowlisted,
-      sitekey: parentSitekey,
-      allowingDocumentFilter: parentAllowingDocumentFilter
-    } = parent || {};
-
-    let urlInfo = parseURL(url);
-
     this.tabId = tabId;
-    this.url = url;
-    this.hostname = urlInfo.hostname || (parent ? parent.hostname : "");
-    let sitekey = getSitekey(tabId, frameId, url);
-    this.sitekey = sitekey || parentSitekey;
-    this.headersReceived = (!!sitekey) || sitekey === null;
+    this.frameId = frameId;
     this.parent = parent;
 
-    // allowlisted and allowingDocumentFilter start with their parent
-    // value, but may have extra allowing filters added when we call
-    // findAllowlistingFilters
-    this.allowlisted = parentAllowlisted || 0;
-    this.allowingDocumentFilter = parentAllowingDocumentFilter;
-
+    initializeFrameWithUrl(this, url);
     findAllowlistingFilters(this, tabId, frameId);
   }
 }
@@ -180,6 +163,29 @@ function getAllowingReason(typeMask, filter) {
       return type.toLowerCase();
     }
   }
+}
+
+function initializeFrameWithUrl(frame, url) {
+  let {
+    allowlisted: parentAllowlisted,
+    sitekey: parentSitekey,
+    allowingDocumentFilter: parentAllowingDocumentFilter,
+    hostname: parentHostname
+  } = frame.parent || {};
+
+  let urlInfo = parseURL(url);
+  frame.url = url;
+  frame.hostname = urlInfo.hostname || parentHostname || "";
+
+  let sitekey = getSitekey(frame.tabId, frame.frameId, url);
+  frame.sitekey = sitekey || parentSitekey;
+  frame.headersReceived = (!!sitekey) || sitekey === null;
+
+  // allowlisted and allowingDocumentFilter start with their parent
+  // value, but may have extra allowing filters added when we call
+  // findAllowlistingFilters
+  frame.allowlisted = parentAllowlisted || 0;
+  frame.allowingDocumentFilter = parentAllowingDocumentFilter;
 }
 
 /**
@@ -427,11 +433,8 @@ function onBeforeNavigate(details) {
       // the `onCommitted`, but we also want to avoid allowlisting for some
       // resources that refer to this tabId/frameId as the URL is changed,
       // and the allowlisting state is currently undetermined.
-
       frame.isChangingURL = true;
-      frame.url = details.url;
-      frame.allowlisting = 0;
-      frame.allowingDocumentFilter = null;
+      initializeFrameWithUrl(frame, details.url);
     }
   }
 

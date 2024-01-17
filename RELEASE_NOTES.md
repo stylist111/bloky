@@ -10,6 +10,7 @@ Unreleased
 
 # Fixes
 
+- Handle first party requests in third party iframes correctly. (EE-304)
 - Fixed not disabling rules from static rulesets. (EE-294)
 - Fixed a bug where removing a user filter ends up removing it from a subscription.
 - `EWE.subscriptions.addDefaults()` no longer throws an error when there are no 
