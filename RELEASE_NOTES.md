@@ -1,15 +1,12 @@
 Unreleased
 ==========
 
-# General
+# Fixes
 
-- Added the injectImmediately flag when injecting main context snippets in
+- Added the `injectImmediately` flag when injecting main context snippets in
   MV3. This applies the snippets earlier in the page loading lifecycle. See
   [MDN](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/scripting/executeScript#injectimmediately)
   for more details. (CV-2037)
-
-# Fixes
-
 - Handle first party requests in third party iframes correctly. (EE-304)
 - Reverted "Content filters are now updated via the `history.pushState()` event, when
   single page apps navigate using the browser's history API (EE-14, EE-90)". (EE-300)
