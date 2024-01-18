@@ -41,7 +41,9 @@ async function createNewTag(version) {
 
   // exec doesn't provide a way to send stdin, which is the easiest way to pass
   // the release notes found for the release.
-  let subprocess = spawn("git", ["tag", "--file=-", version]);
+  let subprocess = spawn("git", [
+    "tag", "--file=-", "--cleanup=whitespace", version
+  ]);
   return new Promise((resolve, reject) => {
     subprocess.stdin.write(releaseNotes.notesForVersion(version));
     subprocess.stdin.end();
