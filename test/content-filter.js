@@ -404,6 +404,9 @@ describe("Element Hiding", function() {
     });
 
     it("hides an element on history.pushState with previous URL allowlisted", async function() {
+      // See EE-303
+      this.skip();
+
       setMinTimeout(this, 6000);
 
       await addFilter(`@@|${TEST_PAGES_URL}/history.html^$document`);
@@ -418,6 +421,9 @@ describe("Element Hiding", function() {
     });
 
     it("does not hide an element on history.pushState with new URL allowlisted", async function() {
+      // See EE-303
+      this.skip();
+
       setMinTimeout(this, 6000);
 
       await addFilter(`@@|${TEST_PAGES_URL}/history-after-pushState.html^$document`);
@@ -561,6 +567,9 @@ describe("Element Hiding", function() {
 
   it("hides an element on history.pushState with previous URL allowlisted",
      async function() {
+       // See EE-303
+       this.skip();
+
        setMinTimeout(this, 6000);
 
        await addFilter(`@@|${TEST_PAGES_URL}/history.html^$document`);
@@ -575,6 +584,9 @@ describe("Element Hiding", function() {
 
   it("does not hide an element on history.pushState with new URL allowlisted",
      async function() {
+       // See EE-303
+       this.skip();
+
        setMinTimeout(this, 6000);
 
        if ((isChromiumBased() && (chromiumVersion()[0] < 87)) ||
@@ -663,6 +675,9 @@ describe("Snippets", function() {
   });
 
   it("restarts snippets on history.pushState", async function() {
+    // See EE-303
+    this.skip();
+
     setMinTimeout(this, 6000);
 
     await addFilter(`${TEST_PAGES_DOMAIN}#$#${INJECTED_SNIPPET} true`);

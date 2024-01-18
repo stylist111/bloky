@@ -11,6 +11,8 @@ Unreleased
 # Fixes
 
 - Handle first party requests in third party iframes correctly. (EE-304)
+- Reverted "Content filters are now updated via the `history.pushState()` event, when
+  single page apps navigate using the browser's history API (EE-14, EE-90)". (EE-300)
 - Fixed not disabling rules from static rulesets. (EE-294)
 - Fixed a bug where removing a user filter ends up removing it from a subscription.
 - `EWE.subscriptions.addDefaults()` no longer throws an error when there are no 
