@@ -1,6 +1,9 @@
 Unreleased
 ==========
 
+📘 1.3.1 - 2024-01-19 📘
+========================
+
 # Fixes
 
 - Added the `injectImmediately` flag when injecting main context snippets in
