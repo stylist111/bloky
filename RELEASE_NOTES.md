@@ -1,6 +1,13 @@
 Unreleased
 ==========
 
+# General
+
+- Dramatically improved the performance on single-page websites that are
+  using History API (eg. Youtube). Reapplied "Content filters are now
+  updated via the `history.pushState()` event, when single page apps
+  navigate using the browser's history API (EE-14, EE-90)". (EE-300, EE-303)
+
 📘 1.3.1 - 2024-01-19 📘
 ========================
 

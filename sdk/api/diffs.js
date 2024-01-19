@@ -16,7 +16,7 @@
  */
 
 /**
- * A difference from filters.
+ * A difference from arrays or filters.
  * @typedef {Object} FilterDiffs
  * @property {?string} type The type. Only the value "diff" is
  *   supported, and denote this is a difference from the static
@@ -26,7 +26,27 @@
  */
 
 /**
- * Calculate the difference by removing the base
+ * Calculate the arrays difference
+ *
+ * @param {[string]} from The original array
+ * @param {[string]} to The eventual array
+ * @return {FilterDiffs}
+ */
+export function arraysDiff(from, to) {
+  const fromSet = new Set(from);
+  const toSet = new Set(to);
+
+  // No longer listed in eventual array
+  const removed = from.filter(item => !toSet.has(item));
+
+  // Not yet listed in original array
+  const added = to.filter(item => !fromSet.has(item));
+
+  return {added, removed};
+}
+
+/**
+ * Calculate the filters update difference by removing the base
  * from the update.
  *
  * @param {FilterDiffs} base The base diff, ie the state of the already
@@ -36,32 +56,15 @@
  * @throws {Error} Will throw an error if the updates are not of type
  *   "diff".
  */
-export function calculateDiff(base, update) {
-  let updateAdded = new Set(update.added);
-  let updateRemoved = new Set(update.removed);
-  let baseAdded = new Set(base.added);
-  let baseRemoved = new Set(base.removed);
-
-  // Symmetric difference of the added sets.
-  base.added.forEach(element => {
-    if (updateAdded.has(element)) {
-      updateAdded.delete(element);
-      baseAdded.delete(element);
-    }
-  });
-  // Symmetric difference of the removed sets.
-  base.removed.forEach(element => {
-    if (updateRemoved.has(element)) {
-      updateRemoved.delete(element);
-      baseRemoved.delete(element);
-    }
-  });
+export function filtersUpdateDiff(base, update) {
+  let addedDiff = arraysDiff(base.added, update.added);
+  let removedDiff = arraysDiff(base.removed, update.removed);
 
   // What is no longer removed must be added back.
-  let added = [...updateAdded.keys()].concat(...baseRemoved.keys());
+  let added = addedDiff.added.concat(removedDiff.removed);
 
   // What is no longer added must be removed.
-  let removed = [...updateRemoved.keys()].concat(...baseAdded.keys());
+  let removed = removedDiff.added.concat(addedDiff.removed);
 
   return {added, removed};
 }

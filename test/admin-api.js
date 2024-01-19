@@ -85,7 +85,7 @@ const BUILD_TIME_ROUTES = [
 
 let app = express();
 
-app.use(express.json());
+app.use(express.json({limit: "10MB"}));
 app.use(delay);
 
 // clear the requests list and reset replies

@@ -404,9 +404,6 @@ describe("Element Hiding", function() {
     });
 
     it("hides an element on history.pushState with previous URL allowlisted", async function() {
-      // See EE-303
-      this.skip();
-
       setMinTimeout(this, 6000);
 
       await addFilter(`@@|${TEST_PAGES_URL}/history.html^$document`);
@@ -420,10 +417,33 @@ describe("Element Hiding", function() {
       });
     });
 
-    it("does not hide an element on history.pushState with new URL allowlisted", async function() {
-      // See EE-303
-      this.skip();
+    it("calculates the selectors diff within reasonable time [mv2-only]", async function() {
+      setMinTimeout(this, 6000);
 
+      let response = [
+        "[Adblock Plus]",
+        ""
+      ];
+
+      let i = 0;
+      while (i++ < 30000) {
+        response.push("###elementHidingFilter" + i);
+      }
+      await setEndpointResponse("/large-subscription.txt", response.join("\n"));
+      await EWE.subscriptions.add("http://localhost:3003/large-subscription.txt");
+      await waitForSubscriptionsToDownload();
+
+      await addFilter(
+        `${TEST_PAGES_DOMAIN}#?#div:-abp-properties(background-color: red)`);
+
+      await expectElemHideHidden({
+        url: "history.html",
+        elemId: "elem-hide-emulation-props",
+        timeout: 4 * HIDETIMEOUT
+      });
+    });
+
+    it("does not hide an element on history.pushState with new URL allowlisted", async function() {
       setMinTimeout(this, 6000);
 
       await addFilter(`@@|${TEST_PAGES_URL}/history-after-pushState.html^$document`);
@@ -567,9 +587,6 @@ describe("Element Hiding", function() {
 
   it("hides an element on history.pushState with previous URL allowlisted",
      async function() {
-       // See EE-303
-       this.skip();
-
        setMinTimeout(this, 6000);
 
        await addFilter(`@@|${TEST_PAGES_URL}/history.html^$document`);
@@ -584,9 +601,6 @@ describe("Element Hiding", function() {
 
   it("does not hide an element on history.pushState with new URL allowlisted",
      async function() {
-       // See EE-303
-       this.skip();
-
        setMinTimeout(this, 6000);
 
        if ((isChromiumBased() && (chromiumVersion()[0] < 87)) ||

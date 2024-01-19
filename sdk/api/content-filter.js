@@ -25,6 +25,7 @@ import {filterEngine} from "./core.js";
 import {getFrameInfo} from "./frame-state.js";
 import {logItem, tracingEnabled} from "./diagnostics.js";
 import {debugOptions, trace, debug, warn} from "./debugging.js";
+import {arraysDiff} from "./diffs.js";
 
 let isolatedLib;
 let injectedLib;
@@ -32,6 +33,15 @@ let injectedLib;
 export function setSnippetLibrary({isolatedCode, injectedCode}) {
   isolatedLib = isolatedCode;
   injectedLib = injectedCode;
+}
+
+function calculateSelectorsDiff(previousStylesheet, styleSheet) {
+  let diff = arraysDiff(previousStylesheet.selectors, styleSheet.selectors);
+  styleSheet.removedSelectors = diff.removed;
+  styleSheet.addedSelectors = diff.added;
+
+  styleSheet.removedCode = createStyleSheet(styleSheet.removedSelectors);
+  styleSheet.addedCode = createStyleSheet(styleSheet.addedSelectors);
 }
 
 function generateStylesheet(tabId, previousFrame, frame) {
@@ -67,13 +77,7 @@ function generateStylesheet(tabId, previousFrame, frame) {
     };
   }
 
-  styleSheet.removedSelectors = previousStylesheet.selectors.filter(
-    element => !styleSheet.selectors.includes(element));
-  styleSheet.removedCode = createStyleSheet(styleSheet.removedSelectors);
-
-  styleSheet.addedSelectors = styleSheet.selectors.filter(
-    element => !previousStylesheet.selectors.includes(element));
-  styleSheet.addedCode = createStyleSheet(styleSheet.addedSelectors);
+  calculateSelectorsDiff(previousStylesheet, styleSheet);
 
   if (debugOptions.elemHide) {
     let declarationBlock = "{";

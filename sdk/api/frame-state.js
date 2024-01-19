@@ -477,23 +477,19 @@ function onErrorOccurred(details) {
 async function onHistoryStateUpdated(details) {
   trace({details});
 
+  let previousFrame = getFrameInfo(details.tabId, details.frameId);
   recordFrameFromNavigationEvent(details, {historyStateUpdated: true});
 
-  // See EE-303
-  const applyContentFiltersOnHistoryUpdate = false;
-  if (applyContentFiltersOnHistoryUpdate) {
-    let previousFrame = getFrameInfo(details.tabId, details.frameId);
-    let filterData = await applyContentFilters(
-      details.tabId, details.frameId, previousFrame);
-    try {
-      await browser.tabs.sendMessage(
-        details.tabId,
-        {type: "ewe:apply-content-features", ...filterData},
-        {frameId: details.frameId});
-    }
-    catch (e) {
-      console.error(e);
-    }
+  let filterData = await applyContentFilters(
+    details.tabId, details.frameId, previousFrame);
+  try {
+    await browser.tabs.sendMessage(
+      details.tabId,
+      {type: "ewe:apply-content-features", ...filterData},
+      {frameId: details.frameId});
+  }
+  catch (e) {
+    console.error(e);
   }
 }
 
