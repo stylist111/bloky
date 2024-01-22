@@ -8,6 +8,11 @@ Unreleased
   updated via the `history.pushState()` event, when single page apps
   navigate using the browser's history API (EE-14, EE-90)". (EE-300, EE-303)
 
+# Fixes
+
+- Fixed a bug where $document filters were not being applied to iframes if the
+  source URL of that iframe is set via javascript. (EE-307)
+
 📘 1.3.1 - 2024-01-19 📘
 ========================
 

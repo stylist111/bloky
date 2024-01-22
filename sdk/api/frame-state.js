@@ -145,7 +145,7 @@ class FrameInfo {
     this.parent = parent;
 
     initializeFrameWithUrl(this, url);
-    findAllowlistingFilters(this, tabId, frameId);
+    findAllowlistingFilters(this);
   }
 }
 
@@ -206,8 +206,9 @@ function initializeFrameWithUrl(frame, url) {
  *   logging.
  * @param {number} frameId The frameId of the frame. Used for logging.
  */
-function findAllowlistingFilters(frame, tabId, frameId) {
-  let details = {tabId, frameId, url: frame.url};
+function findAllowlistingFilters(frame) {
+  let {tabId, frameId, url} = frame;
+  let details = {tabId, frameId, url};
   // The docDomain for a frame is the hostname of the parent frame
   // (the loader). For top-level frames we use the current URL's hostname.
   let parentHostname = frame.parent && frame.parent.hostname;
@@ -320,7 +321,7 @@ export function onSitekeyReceived(tabId, frameId, url, sitekey) {
     // sitekey.
     if (isSameFrame && frame.sitekey != sitekey) {
       frame.sitekey = sitekey;
-      findAllowlistingFilters(frame, tabId, frameId);
+      findAllowlistingFilters(frame);
     }
   }
 }
@@ -452,6 +453,7 @@ function onCommitted(details) {
   trace({details});
 
   let frame = recordFrameFromNavigationEvent(details);
+  findAllowlistingFilters(frame);
   frame.isChangingURL = false;
 }
 

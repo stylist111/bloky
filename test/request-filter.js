@@ -160,6 +160,19 @@ describe("Blocking", function() {
     await page.expectResource(`${CROSS_DOMAIN_URL}/image.png`).toBeLoaded();
   });
 
+  it("supports allowlisting of a resource inside a deferred loading iframe", async function() {
+    await addFilter("image.png");
+    await new Page("iframe-cross-domain-deferred-navigation.html")
+      .expectResource(`${CROSS_DOMAIN_URL}/image.png`)
+      .toBeBlocked();
+
+    await addFilter(`@@${CROSS_DOMAIN_URL}/image.html$document`);
+
+    await new Page("iframe-cross-domain-deferred-navigation.html")
+      .expectResource(`${CROSS_DOMAIN_URL}/image.png`)
+      .toBeLoaded();
+  });
+
   it("handles $script requests", async function() {
     await addFilter(`|${TEST_PAGES_URL}/*.js$script`);
     await new Page("script.html").expectResource("script.js").toBeBlocked();
