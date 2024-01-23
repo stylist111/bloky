@@ -307,12 +307,11 @@ the service worker is suspended as part of running the test.
 
 ## Compliance tests
 
-Compliance tests are performed on local version of [testpages]( https://abptestpages.org)
-to assure compliance between webext-sdk and other eyeo adblocking solutions.
-They run the automated tests developed on the testpages project using the
-test extension built on the webext-sdk pipeline.
-They are performed on Firefox only, and skip Snippets and Subscriptions
-tests due to extension limitations.
+Compliance tests are performed on a local version of [testpages](https://abptestpages.org)
+to assure compliance between webext and other eyeo adblocking solutions. They
+run the automated tests developed on the testpages project using the engine test
+extension. Snippets and Subscriptions tests are skipped due to extension
+limitations.
 
 ----
 
@@ -362,19 +361,14 @@ described previously.
 #### Compliance
 
 ```
-docker build -t compliance -f test/dockerfiles/compliance-test.Dockerfile .
-docker run --shm-size=512m -e BROWSER="chromium latest" -e MANIFEST="mv2" -it compliance
+MANIFEST={mv2|mv3} ./test/scripts/compliance.sh
 ```
 
-Please notice that the BROWSER & MANIFEST argument can be changed
-according to your needs.
+Optional environment variables for the script:
 
-Please note that by default test extension will be built on docker. If you prefer
-to copy local one, pass `--build-arg EXTENSION=copy`:
-
-```
-docker build -t compliance -f test/dockerfiles/compliance-test.Dockerfile --build-arg EXTENSION=copy .
-```
+- TESTS_TO_INCLUDE
+- BROWSER
+- VERSION
 
 #### ARM architecture (M1/M2 Apple Silicon)
 

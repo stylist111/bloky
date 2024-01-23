@@ -77,17 +77,7 @@ docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg
 ### Compliance tests
 
 ```
-# Building container   
-docker build -t compliance -f test/dockerfiles/compliance-test.Dockerfile .
-
-# Running container
-docker run --cpus=2 --memory=8g --shm-size=512m -e BROWSER="chromium latest" -e MANIFEST="mv2" -it compliance
-```
-
-### Build compliance tests and copy local extension
-
-```
-docker build -t compliance -f test/dockerfiles/compliance-test.Dockerfile --build-arg EXTENSION=copy .
+MANIFEST="mv2" BROWSER="chromium" VERSION="latest" ./test/scripts/compliance.sh
 ```
 
 ### Run docker for tests with [flaky] tag

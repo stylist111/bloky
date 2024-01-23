@@ -429,9 +429,11 @@ fuzz:v3:edge:stable:
   needs:
     - job: build
       artifacts: true
+  before_script:
+    - apk add bash git zip
   script:
-    - docker build -t compliance -f test/dockerfiles/compliance-test.Dockerfile --build-arg EXTENSION=copy .
-    - docker run --cpus=2 --memory=8g --shm-size=1g -e CUSTOM_BROWSER="$BROWSER" -e BROWSER_VERSION="$VERSION" -e MANIFEST="$MANIFEST" -e TESTS_TO_INCLUDE="filters/wildcard-domain" compliance
+    # When fixing EE-288, TESTS_TO_INCLUDE="filters/wildcard-domain"
+    - TERMINAL="t" TESTS_TO_INCLUDE="" ./test/scripts/compliance.sh
   after_script:
     - docker cp $(docker ps -aqf ancestor=compliance):/testpages.adblockplus.org/test/screenshots .
       2> /dev/null
