@@ -144,6 +144,15 @@ app.all("*", requestLogger.logRequests, (req, res, next) => {
     res.status(route.status);
   }
 
+  if (route.headers) {
+    // Without this, cross origin requests can't access all the headers from
+    // scripts, although in our tests this restriction only actually applied to
+    // the oldest chromium we test.
+    res.set({"Access-Control-Expose-Headers": "*"});
+
+    res.set(route.headers);
+  }
+
   if (isHeadRequest) {
     res.end();
   }

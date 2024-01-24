@@ -231,7 +231,34 @@ describe("Testing Mechanisms", function() {
         expect(await response.text()).toEqual(updatedReply);
       }
       finally {
-        clearEndpointResponse(UPDATABLE_SUBSCRIPTION_URL);
+        await clearEndpointResponse(UPDATABLE_SUBSCRIPTION_URL);
+      }
+    });
+
+    it("supports overwriting status code", async function() {
+      const url = "http://localhost:3003/dynamic-endpoint";
+
+      try {
+        await setEndpointResponse(url, "", "GET", 500);
+        let response = await fetch(url);
+        expect(response.status).toBe(500);
+      }
+      finally {
+        await clearEndpointResponse(url);
+      }
+    });
+
+    it("supports overwriting headers", async function() {
+      const url = "http://localhost:3003/dynamic-endpoint";
+      const expectedDateHeader = "2024-01-01";
+
+      try {
+        await setEndpointResponse(url, "", "GET", 200, {date: expectedDateHeader});
+        let response = await fetch(url);
+        expect(response.headers.get("date")).toBe(expectedDateHeader);
+      }
+      finally {
+        await clearEndpointResponse(url);
       }
     });
   });

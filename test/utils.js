@@ -722,12 +722,19 @@ export async function getRequestLogs(url) {
   return requestLogs;
 }
 
-export async function setEndpointResponse(url, response, method, status) {
+export async function setEndpointResponse(url, response, method, status,
+                                          headers) {
   let adminApiResponse = await fetch(`${TEST_ADMIN_PAGES_URL}/setUrlResponse`, {
     method: "POST",
     cache: "no-cache",
     headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({url: stripAdminUrl(url), response, method, status})
+    body: JSON.stringify({
+      url: stripAdminUrl(url),
+      response,
+      method,
+      status,
+      headers
+    })
   });
   await throwHttpErrors(adminApiResponse);
 }

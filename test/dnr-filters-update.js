@@ -1222,35 +1222,36 @@ describe("Test subscriptions update", function() {
         this.skip();
       }
 
-      setMinTimeout(this, 130000);
-
       let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
       let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
 
-      await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
+      let firstDate = "Wed, 17 Jan 2024 10:30:27 GMT";
+      let expectedFirstVersion = "202401171030";
+      let secondDate = "Tue, 23 Jan 2024 10:40:27 GMT";
+      let expectedSecondVersion = "202401231040";
+
+      let checkLastVersionSentToEndpoint = async expectedLastVersion => {
+        await clearRequestLogs();
+        await EWE.subscriptions.sync(testDiffSubscriptionUrl);
+        await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+        let requests = await getRequestLogs(testDiffUrlEndpoint);
+        expect(requests[0].query["lastVersion"]).toBe(expectedLastVersion);
+      };
+
+      await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE, "GET",
+                                200, {date: firstDate});
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
       await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
 
-      let previousLastVersion = null;
-      for (let i = 0; i < 2; i++) {
-        await clearRequestLogs();
+      // Current version of the subscription should now be expectedFirstVersion,
+      // from the first sync.
+      await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE, "GET",
+                                200, {date: secondDate});
+      await checkLastVersionSentToEndpoint(expectedFirstVersion);
 
-        // 1 minute is the minimum time difference that can be detected
-        // as we use '..HHmm' format in the 'lastVersion'
-        await new Promise(r => setTimeout(r, 61000));
-
-        await EWE.subscriptions.sync(testDiffSubscriptionUrl);
-        await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
-
-        let request = (await getRequestLogs()).find(
-          eachRequest => eachRequest.url.includes(testDiffUrlEndpoint));
-
-        let nextLastVersion = parseInt(request.query["lastVersion"], 10);
-        if (previousLastVersion) {
-          expect(nextLastVersion).toBeGreaterThan(previousLastVersion);
-        }
-        previousLastVersion = nextLastVersion;
-      }
+      // When the last sync happened, it also updated the current version of the
+      // subscription to expectedSecondVersion.
+      await checkLastVersionSentToEndpoint(expectedSecondVersion);
     });
 
     it("notifies the error when the DNR limit is reached", async function() {
