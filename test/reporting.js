@@ -1149,6 +1149,23 @@ describe("Reporting", function() {
       );
     });
 
+    it("logs element hiding filter with inline CSS filters", async function() {
+      await checkLogging(
+        ["###inline-css-div {color:blue;}"],
+        "elemhideEventOptions",
+        "element-hiding.html",
+        [{
+          filter: {
+            ...expectedElemhideFilter("###inline-css-div {color:blue;}"),
+            type: "elemhideemulation",
+            css: {color: "blue"}
+          },
+          matchInfo: elemhideMatchInfo,
+          request: expectedRequestRelativeUrl("element-hiding.html")
+        }]
+      );
+    });
+
     it("logs user element hiding filter that is also listed in a subscription once [mv2-only]", async function() {
       await EWE.subscriptions.add("http://localhost:3000/subscription.txt");
       await checkLogging(

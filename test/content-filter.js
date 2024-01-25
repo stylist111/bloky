@@ -24,7 +24,8 @@ import {Page, waitForInvisibleElement, executeScript, setMinTimeout,
         TEST_PAGES_URL, SITEKEY, UNHIDDENTIMEOUT, HIDETIMEOUT,
         TEST_MV3_SUBSCRIPTION, waitForHighlightedStyle, isEdge, edgeVersion,
         waitForSubscriptionsToDownload, chromiumVersion, isChromiumBased,
-        setEndpointResponse, expectElemHideRemoved}
+        setEndpointResponse, expectElemHideRemoved,
+        expectElementToHaveInlineStyle}
   from "./utils.js";
 import {wait} from "./polling.js";
 import {addFilter, EWE} from "./messaging.js";
@@ -351,6 +352,33 @@ describe("Element Hiding", function() {
       await addFilter(`${TEST_PAGES_DOMAIN}#?##${elemId} {remove: true;}`);
       await expectElemHideRemoved({elemId});
     });
+
+    it("applies inline CSS to element", async function() {
+      const elemId = "inline-css-div";
+
+      await expectElementToHaveInlineStyle(elemId, "");
+      await expectElementToHaveInlineStyle("inline-css-div-2", "");
+
+      await addFilter(`${TEST_PAGES_DOMAIN}#?##${elemId} {margin-bottom: 0px; margin-top: 0px}`);
+
+      await expectElementToHaveInlineStyle(elemId, "margin-bottom: 0px !important; margin-top: 0px !important;");
+      await expectElementToHaveInlineStyle("inline-css-div-2", "");
+    });
+
+    it("only allows inline CSS filters for privileged subscriptions", async function() {
+      const elemId = "inline-css-div";
+
+      await EWE.subscriptions.add("http://localhost:3000/subscription.txt", {privileged: false});
+      await waitForSubscriptionsToDownload();
+      await expectElementToHaveInlineStyle(elemId, "");
+
+      await EWE.subscriptions.remove("http://localhost:3000/subscription.txt");
+
+      await EWE.subscriptions.add("http://localhost:3000/subscription.txt", {privileged: true});
+      await waitForSubscriptionsToDownload();
+      await expectElementToHaveInlineStyle(elemId, "margin-bottom: 0px !important;");
+    });
+
 
     it("does not remove a DOM element with a {remove: true;} filter if it is allowlisted", async function() {
       const elemId = "remove-id";

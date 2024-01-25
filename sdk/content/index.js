@@ -81,10 +81,26 @@ async function applyContentFeatures(response) {
     }
   };
 
+  const applyInlineCSS = (elements, cssPatterns) => {
+    for (let i = 0; i < elements.length; i++) {
+      const element = elements[i];
+      const pattern = cssPatterns[i];
+
+      for (const [key, value] of Object.entries(pattern.css)) {
+        element.style.setProperty(key, value, "important");
+      }
+    }
+
+    if (tracer) {
+      const filterTexts = cssPatterns.map(pattern => pattern.text);
+      tracer.log(filterTexts);
+    }
+  };
+
   if (response.emulatedPatterns.length > 0) {
     if (!elemHideEmulation) {
       elemHideEmulation = new ElemHideEmulation(hideElements, unhideElements,
-                                                removeElements);
+                                                removeElements, applyInlineCSS);
     }
     elemHideEmulation.apply(response.emulatedPatterns);
   }

@@ -549,10 +549,11 @@ class PropsSelector {
 }
 
 class Pattern {
-  constructor(selectors, text, remove = false) {
+  constructor(selectors, text, remove = false, css = null) {
     this.selectors = selectors;
     this.text = text;
     this.remove = remove;
+    this.css = css;
   }
 
   get dependsOnStyles() {
@@ -768,10 +769,17 @@ function shouldObserveStyles(patterns) {
 
 /**
  * @callback removeElemsFunc
- * @param {Node[]} elements Elements on the page that should be
+ * @param {Node[]} elements Elements on the page that should be removed
  * @param {string[]} elementFilters
  *   The filter text that caused the elements to be removed
  * removed from the DOM
+ */
+
+/**
+ * @callback cssElemsFunc
+ * @param {Node[]} elements Elements on the page that should
+ * apply inline CSS rules
+ * @param {string[]} cssPatterns The CSS patterns to be applied
  */
 
 
@@ -786,11 +794,14 @@ exports.ElemHideEmulation = class ElemHideEmulation {
    *   A callback that should be provided to unhide previously hidden elements.
    * @param {module:content/elemHideEmulation~removeElemsFunc} removeElemsFunc
    *   A callback that should be provided to remove elements from the DOM.
+   * @param {module:content/elemHideEmulation~cssElemsFunc} cssElemsFunc
+   *   A callback that should be provided to apply inline CSS rules to elements
   */
   constructor(
     hideElemsFunc = () => {},
     unhideElemsFunc = () => {},
-    removeElemsFunc = () => {}
+    removeElemsFunc = () => {},
+    cssElemsFunc = () => {}
   ) {
     this._filteringInProgress = false;
     this._nextFilteringScheduled = false;
@@ -801,6 +812,7 @@ exports.ElemHideEmulation = class ElemHideEmulation {
     this.hideElemsFunc = hideElemsFunc;
     this.unhideElemsFunc = unhideElemsFunc;
     this.removeElemsFunc = removeElemsFunc;
+    this.cssElemsFunc = cssElemsFunc;
     this.observer = new MutationObserver(this.observe.bind(this));
     this.hiddenElements = new Map();
   }
@@ -994,8 +1006,9 @@ exports.ElemHideEmulation = class ElemHideEmulation {
     const elementsToHideFilters = [];
     const elementsToRemoveFilters = [];
     const elementsToRemove = [];
+    const elementsToApplyCSS = [];
+    const cssPatterns = [];
     let elementsToUnhide = new Set(this.hiddenElements.keys());
-
     for (let pattern of patternsToCheck) {
       let evaluationTargets = targets;
 
@@ -1016,6 +1029,10 @@ exports.ElemHideEmulation = class ElemHideEmulation {
               elementsToRemoveFilters.push(pattern.text);
               elementsToUnhide.delete(element);
             }
+            else if (pattern.css) {
+              elementsToApplyCSS.push(element);
+              cssPatterns.push(pattern);
+            }
             else if (!this.hiddenElements.has(element)) {
               elementsToHide.push(element);
               elementsToHideFilters.push(pattern.text);
@@ -1032,6 +1049,7 @@ exports.ElemHideEmulation = class ElemHideEmulation {
       }
     }
     this._removeElems(elementsToRemove, elementsToRemoveFilters);
+    this._applyCSSToElems(elementsToApplyCSS, cssPatterns);
     this._hideElems(elementsToHide, elementsToHideFilters);
 
     // The search for elements to hide it optimized to find new things
@@ -1068,6 +1086,12 @@ exports.ElemHideEmulation = class ElemHideEmulation {
         // removed. There's no unhiding these ones!
         this.hiddenElements.delete(elem);
       }
+    }
+  }
+
+  _applyCSSToElems(elements, cssPatterns) {
+    if (elements.length > 0) {
+      this.cssElemsFunc(elements, cssPatterns);
     }
   }
 
@@ -1282,7 +1306,7 @@ exports.ElemHideEmulation = class ElemHideEmulation {
       let selectors = this.parseSelector(pattern.selector);
       if (selectors != null && selectors.length > 0) {
         this.patterns.push(
-          new Pattern(selectors, pattern.text, pattern.remove)
+          new Pattern(selectors, pattern.text, pattern.remove, pattern.css)
         );
       }
     }

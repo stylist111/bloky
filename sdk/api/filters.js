@@ -48,7 +48,8 @@ export function convertFilter(filter) {
     thirdParty: filter.thirdParty != null ? filter.thirdParty : null,
     selector: filter.selector || null,
     csp: filter.csp || null,
-    remove: filter.remove || void 0
+    remove: filter.remove || void 0,
+    css: filter.css || void 0
   };
 }
 
@@ -128,6 +129,9 @@ export default {
    * @property {string|null} csp Content Security Policy to be injected.
    * @property {boolean?} remove For element hiding emulation filters, true if
    *   the filter will remove elements from the DOM rather hiding them.
+   * @property {Object?} css For element hiding emulation filters. These are
+   *   the key-value pairs for the css properties to apply to the matched
+   *   element.
    */
 
   /**

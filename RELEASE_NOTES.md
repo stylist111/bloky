@@ -3,6 +3,10 @@ Unreleased
 
 # General
 
+- Add support for an inline CSS action on elemhide emulation filters with the
+  syntax `example.com#?##elem-id {property: value;}`. Multiple properties can be
+  included inside the curly braces. These filters are only allowed for privileged
+  subscriptions. (EE-261)
 - Dramatically improved the performance on single-page websites that are
   using History API (eg. Youtube). Reapplied "Content filters are now
   updated via the `history.pushState()` event, when single page apps
@@ -27,7 +31,7 @@ Unreleased
   single page apps navigate using the browser's history API (EE-14, EE-90)". (EE-300)
 - Fixed not disabling rules from static rulesets. (EE-294)
 - Fixed a bug where removing a user filter ends up removing it from a subscription.
-- `EWE.subscriptions.addDefaults()` no longer throws an error when there are no 
+- `EWE.subscriptions.addDefaults()` no longer throws an error when there are no
   subscriptions tailored to the user's language. (EE-301)
 - Fixed a bug of not allowlisting with sitekey in case of unhappy events order
   from the browser. (EE-281)

@@ -119,6 +119,12 @@ describe("Element hiding emulation", function() {
     assert.isNull(testDocument.getElementById(elementId));
   }
 
+  function expectToHaveCSSProperty(elementId, expectedCSS) {
+    const element = testDocument.getElementById(elementId);
+    const inlineStyles = element.style.cssText;
+    assert.equal(inlineStyles, expectedCSS);
+  }
+
   function findUniqueId() {
     let id = "elemHideEmulationTest-" + Math.floor(Math.random() * 10000);
     if (!testDocument.getElementById(id)) {
@@ -170,6 +176,18 @@ describe("Element hiding emulation", function() {
     }
   }
 
+
+  const applyInlineCSS = (elements, cssPatterns) => {
+    for (let i = 0; i < elements.length; i++) {
+      const element = elements[i];
+      const pattern = cssPatterns[i];
+
+      for (const [key, value] of Object.entries(pattern.css)) {
+        element.style.setProperty(key, value, "important");
+      }
+    }
+  };
+
   /**
    * Create a new ElemHideEmulation instance with the given patterns.
    *
@@ -197,7 +215,8 @@ describe("Element hiding emulation", function() {
             }
           }
         },
-        removeElementsCallback
+        removeElementsCallback,
+        applyInlineCSS
       );
 
       elemHideEmulation.document = testDocument;
@@ -1197,6 +1216,20 @@ describe("Element hiding emulation", function() {
       remove: true
     }]);
     expectRemoved(elementId);
+  });
+
+  it("Inline CSS: Applies CSS properties based on element ID", async function() {
+    const elementId = "elementID";
+    const element = createElement(null, "div", elementId);
+    expectVisible(element);
+
+    await applyElemHideEmulation([{
+      selector: `#${elementId}`,
+      text: `#${elementId} { margin-bottom: 10px; border: 1px solid black; }`,
+      css: {"margin-bottom": "10px", "border": "1px solid black"}
+    }]);
+
+    expectToHaveCSSProperty(elementId, "margin-bottom: 10px !important; border: 1px solid black !important;");
   });
 
   it("On DOM mutation: pseudo-classes that can be activated with attributes", async function() {

@@ -946,7 +946,12 @@ exports.ContentFilter.fromText = function(text, domains, type, body) {
       return new InvalidFilter(text, "filter_elemhideemulation_nodomain");
     }
 
-    return new ElemHideEmulationFilter(text, domains, selector, remove);
+    if (remove) {
+      return new ElemHideEmulationFilter(text, domains, selector, remove);
+    }
+
+    const css = extractCSSProperties(text);
+    return new ElemHideEmulationFilter(text, domains, selector, false, css);
   }
 
   if (!restrictedByDomain &&
@@ -965,7 +970,46 @@ exports.ContentFilter.fromText = function(text, domains, type, body) {
     return new ElemHideEmulationFilter(text, domains, selector, remove);
   }
 
+  const css = extractCSSProperties(text);
+  if (css) {
+    return new ElemHideEmulationFilter(text, domains, selector, false, css);
+  }
+
   return new ElemHideFilter(text, domains, selector);
+};
+
+const getTextInsideTrailingCurlyBraces = filter => {
+  const lastCharacter = filter.charAt(filter.length - 1);
+  if (lastCharacter !== "}") {
+    return null;
+  }
+
+  const openingBraceIndex = filter.lastIndexOf("{");
+  const closingBraceIndex = filter.length - 1;
+
+  return filter.substring(openingBraceIndex + 1, closingBraceIndex);
+};
+
+const extractCSSProperties = filter => {
+  const curlyBraceText = getTextInsideTrailingCurlyBraces(filter);
+
+  if (!curlyBraceText) {
+    return null;
+  }
+
+  const cssRules = curlyBraceText.split(";");
+  const properties = {};
+
+  for (const rule of cssRules) {
+    if (!rule) {
+      continue;
+    }
+
+    const [key, value] = rule.split(":");
+    properties[key] = value;
+  }
+
+  return properties;
 };
 
 let ElemHideBase =
@@ -1044,14 +1088,17 @@ class ElemHideEmulationFilter extends ElemHideBase {
    * @param {string} selector see
    *   {@link module:filterClasses.ElemHideBase ElemHideBase()}
    * @param {boolean} remove if the element should be removed from the DOM
+   * @param {?Object} css Key-Value pairs of Inline CSS properties
+   *   to be applied to the element
    * @constructor
    * @extends module:filterClasses.ElemHideBase
    *
    * @private
    */
-  constructor(text, domains, selector, remove) {
+  constructor(text, domains, selector, remove, css = null) {
     super(text, domains, selector);
     this._remove = remove;
+    this._css = css;
   }
 
   get type() {
@@ -1060,6 +1107,14 @@ class ElemHideEmulationFilter extends ElemHideBase {
 
   get remove() {
     return this._remove;
+  }
+
+  get css() {
+    return this._css;
+  }
+
+  get requiresPrivilegedSubscription() {
+    return this._css;
   }
 };
 

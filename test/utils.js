@@ -125,6 +125,18 @@ export async function expectElemHideHidden({elemId = "elem-hide",
   );
 }
 
+export async function expectElementToHaveInlineStyle(elemId, expectedStyle) {
+  const tabId = await new Page("element-hiding.html").loaded;
+  await wait(
+    async() => {
+      const inlineStyle = await getInlineElementStyle(tabId, elemId);
+      return inlineStyle === expectedStyle;
+    },
+    1500,
+    `Inline style for element with ID ${elemId} doesn't match ${expectedStyle}.`
+  );
+}
+
 export async function expectElemHideRemoved({elemId = "elem-hide",
                                              url = "element-hiding.html",
                                              timeout = HIDETIMEOUT} = {}) {
@@ -605,6 +617,14 @@ export function getExistingElement(tabId, elemId) {
   return executeScript(tabId, id => {
     let el = document.getElementById(id);
     return el ? el.outerHTML : null;
+  }, [elemId]);
+}
+
+export function getInlineElementStyle(tabId, elemId) {
+  return executeScript(tabId, id => {
+    const el = document.getElementById(id);
+    const inlineStyles = el.style.cssText;
+    return inlineStyles;
   }, [elemId]);
 }
 

@@ -333,7 +333,35 @@ exports.normalize = function(text, dontSanitize = false) {
   // Remove line breaks, tabs etc
   text = text.replace(/[^\S ]+/g, "");
 
-  let removeSpaces = s => s.replace(/ +/g, "");
+  const removeSpaces = s => s.replace(/ +/g, "");
+
+  const trimSpaces = action => {
+    if (!action.includes(":")) {
+      return "";
+    }
+
+    let [key, value] = action.split(":");
+    value = value.replace("!important", "");
+
+    // Required to allow CSS properties with spaces
+    // e.g. "border: 1px solid black"
+    return key.trimStart().trimEnd() + ":" + value.trimStart().trimEnd() + ";";
+  };
+
+  const formatInnerCurlyBraceText = actionBody => {
+    const actions = actionBody.split(";");
+    let formatted = "";
+
+    for (const action of actions) {
+      if (!action) {
+        continue;
+      }
+
+      formatted += trimSpaces(action);
+    }
+
+    return formatted;
+  };
 
   if (dontSanitize) {
     return text.trim();
@@ -351,24 +379,27 @@ exports.normalize = function(text, dontSanitize = false) {
   // Special treatment for content filters, right side is allowed to contain
   // spaces
   if (CONTENT_FILTER.test(text)) {
-    const elemhideWithTrailingBracesMatches = /^(.*?)(#[@?]?#)(.*) +\{( *remove *: *true *(;?) *)\} *$/.exec(text);
+    // Matches filter with multiple elements inside trailing curly braces
+    // with the form "{property}: {value};" with any whitespaces ignored
+    // Note: The semi-colon for the final element is optional
+    // i.e. "{property}: {value}" is also valid
+    const elemhideWithTrailingBracesMatches = /^(.*?)(#[@?]?#)(.*) +\{( *.* *: *[^;]+ *(;)? *)\} *$/.exec(text);
 
     if (elemhideWithTrailingBracesMatches) {
-      let [
+      const [
         ,
         domains,
         separator,
         body,
-        actionBody,
-        trailingSemicolon
+        textInsideCurlyBraces
       ] = elemhideWithTrailingBracesMatches;
 
       return removeSpaces(domains) +
         separator +
         body.trim() +
         " {" +
-        removeSpaces(actionBody) +
-        (trailingSemicolon ? "}" : ";}");
+        formatInnerCurlyBraceText(textInsideCurlyBraces) +
+        "}";
     }
 
     const [, domains, separator, body] = /^(.*?)(#[@?$]?#?)(.*)$/.exec(text);

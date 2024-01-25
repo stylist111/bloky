@@ -513,6 +513,14 @@ describe("Filter classes", function() {
     assert.equal(Filter.normalize("   domain.c  om#?# # sele ctor  {  remove : true  } "),
                  "domain.com#?## sele ctor {remove:true;}");
 
+    // Element Hiding Emulation with multiple inline CSS properties and missing final semicolon
+    assert.equal(Filter.normalize("   domain.c  om#?#sele ctor {margin-bottom : 0px ; color : blue }"),
+                 "domain.com#?#sele ctor {margin-bottom:0px;color:blue;}");
+
+    // Element Hiding Emulation with inline CSS removes "!important" property from values
+    assert.equal(Filter.normalize("domain.com#?#selector {margin-bottom: 0px !important}"),
+                 "domain.com#?#selector {margin-bottom:0px;}");
+
     // Wildcard: "*" is allowed
     assert.equal(Filter.normalize("   domain.*#?# # sele ctor   "),
                  "domain.*#?## sele ctor");

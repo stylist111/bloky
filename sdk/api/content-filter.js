@@ -268,8 +268,8 @@ export async function applyContentFilters(tabId, frameId, previousFrame) {
       injectCSS(tabId, frameId, styleSheet.addedCode);
 
       let filters = filterEngine.elemHideEmulation.getFilters(frame.hostname);
-      for (const {selector, text, remove} of filters) {
-        emulatedPatterns.push({selector, text, remove});
+      for (const {selector, text, remove, css} of filters) {
+        emulatedPatterns.push({selector, text, remove, css});
       }
 
       if (tracingEnabled(tabId)) {
