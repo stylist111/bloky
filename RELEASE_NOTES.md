@@ -1,6 +1,9 @@
 Unreleased
 ==========
 
+🔽 1.4.0 - 2024-01-26 🔽
+========================
+
 # General
 
 - Add support for an inline CSS action on elemhide emulation filters with the
