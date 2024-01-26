@@ -433,7 +433,7 @@ fuzz:v3:edge:stable:
     - apk add bash git zip
   script:
     # When fixing EE-288, TESTS_TO_INCLUDE="filters/wildcard-domain"
-    - TERMINAL="t" TESTS_TO_INCLUDE="filters/inline-css" ./test/scripts/compliance.sh
+    - TERMINAL="t" ./test/scripts/compliance.sh
   after_script:
     - docker cp $(docker ps -aqf ancestor=compliance):/testpages.adblockplus.org/test/screenshots .
       2> /dev/null
