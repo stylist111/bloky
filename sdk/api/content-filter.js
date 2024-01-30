@@ -25,7 +25,7 @@ import {filterEngine} from "./core.js";
 import {getFrameInfo} from "./frame-state.js";
 import {logItem, tracingEnabled} from "./diagnostics.js";
 import {debugOptions, trace, debug, warn} from "./debugging.js";
-import {arraysDiff} from "./diffs.js";
+import {arraysDiff} from "./set-operations.js";
 
 let isolatedLib;
 let injectedLib;
@@ -253,7 +253,7 @@ export async function applyContentFilters(tabId, frameId, previousFrame) {
 
   if (frame) {
     let styleSheet = generateStylesheet(tabId, previousFrame, frame);
-    debug(() => styleSheet);
+    debug(() => JSON.stringify(styleSheet));
 
     if (previousFrame && !(previousFrame.allowlisted & contentTypes.DOCUMENT)) {
       await removeCSS(tabId, frameId, styleSheet.removedCode);

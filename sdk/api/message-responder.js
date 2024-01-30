@@ -24,6 +24,7 @@ import {subscribeLinkClicked} from "./subscribe-links.js";
 import {logHiddenElements} from "./diagnostics.js";
 import {allowlistPage} from "./allowlisting.js";
 import {trace} from "./debugging.js";
+import {onContentHelloReceived} from "./content-message-deferrer.js";
 
 async function handleMessage(message, sender) {
   await initializer.start();
@@ -38,6 +39,7 @@ async function handleMessage(message, sender) {
         return;
       }
 
+      onContentHelloReceived(sender.tab.id, sender.frameId);
       let filterData = await applyContentFilters(sender.tab.id, sender.frameId);
       return {...filterData};
     case "ewe:subscribe-link-clicked":

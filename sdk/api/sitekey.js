@@ -19,6 +19,7 @@ import {verifySignatureSync} from "adblockpluscore/lib/rsa.js";
 import browser from "./browser.js";
 import {isRunningInServiceWorker} from "./browser-features.js";
 import {trace} from "./debugging.js";
+import {PersistentState} from "./persistence.js";
 
 /**
  * All known sitekeys, that can be looked up by
@@ -27,9 +28,14 @@ import {trace} from "./debugging.js";
  *
  * @type {Object}
  */
-let sitekeys = {};
+let sitekeys = new PersistentState("ewe:sitekeys");
 let startupPromise;
 let listeners = [];
+
+// for testing purposes
+export function _getSitekeys() {
+  return sitekeys;
+}
 
 function notifySitekey(tabId, frameId, url, sitekey) {
   for (let listener of listeners) {
@@ -38,7 +44,7 @@ function notifySitekey(tabId, frameId, url, sitekey) {
 }
 
 function notifyAllSitekeys() {
-  for (let [tabId, framesMap] of Object.entries(sitekeys)) {
+  for (let [tabId, framesMap] of Object.entries(sitekeys.getState())) {
     for (let [frameId, sitekeysMap] of Object.entries(framesMap)) {
       for (let [url, sitekeyInfo] of Object.entries(sitekeysMap)) {
         notifySitekey(tabId, frameId, url, sitekeyInfo.sitekey);
@@ -72,7 +78,7 @@ export function addListener(listener) {
  *   sitekey, undefined if we haven't seen any headers for this frame.
  */
 export function getSitekey(tabId, frameId, url) {
-  let sitekeysForTab = sitekeys[tabId];
+  let sitekeysForTab = sitekeys.getState()[tabId];
   if (!sitekeysForTab) {
     return null;
   }
@@ -85,14 +91,14 @@ export function getSitekey(tabId, frameId, url) {
 }
 
 export function _getSitekeySignature(tabId, frameId, url) {
-  return sitekeys[tabId][frameId][url].signature;
+  return sitekeys.getState()[tabId][frameId][url].signature;
 }
 
 export function _setSitekey(tabId, frameId, url, sitekey, signature) {
-  let sitekeysForTab = sitekeys[tabId];
+  let sitekeysForTab = sitekeys.getState()[tabId];
   if (!sitekeysForTab) {
     sitekeysForTab = {};
-    sitekeys[tabId] = sitekeysForTab;
+    sitekeys.getState()[tabId] = sitekeysForTab;
   }
 
   let sitekeysForFrame = sitekeysForTab[frameId];
@@ -105,14 +111,14 @@ export function _setSitekey(tabId, frameId, url, sitekey, signature) {
 }
 
 export function clearAllSitekeys(save = true) {
-  sitekeys = {};
+  sitekeys.clearState();
   if (save) {
     _saveSitekeys();
   }
 }
 
 export function clearTabSitekeys(tabId) {
-  delete sitekeys[tabId];
+  delete sitekeys.getState()[tabId];
   _saveSitekeys();
 }
 
@@ -189,8 +195,6 @@ function verifySitekey(sitekey, signature, url) {
   return verifySignatureSync(sitekey, signature, data);
 }
 
-const STORAGE_KEY = "ewe:sitekeys";
-
 function verifySitekeys(_sitekeys) {
   for (let [tabId, framesMap] of Object.entries(_sitekeys)) {
     for (let [frameId, sitekeysMap] of Object.entries(framesMap)) {
@@ -217,53 +221,13 @@ function verifySitekeys(_sitekeys) {
   }
 }
 
-export function merge(obj1, obj2) {
-  if (obj1 instanceof Array) {
-    return [...obj1, ...obj2];
-  }
-
-  if (!(obj1 instanceof Object)) {
-    return obj2;
-  }
-
-  let resultObj = {};
-
-  for (let [key, obj1Values] of Object.entries(obj1)) {
-    resultObj[key] = obj1Values;
-  }
-
-  for (let [key, obj2Values] of Object.entries(obj2)) {
-    let map1Values = resultObj[key];
-    resultObj[key] = map1Values ? merge(map1Values, obj2Values) : obj2Values;
-  }
-
-  return resultObj;
-}
-
 export async function _loadSitekeys(verify = true) {
-  let persistObj = await browser.storage.session.get(STORAGE_KEY);
-  if (!persistObj || !persistObj[STORAGE_KEY]) {
-    return;
-  }
-
-  let savedSitekeys = persistObj[STORAGE_KEY];
-
-  if (verify) {
-    verifySitekeys(savedSitekeys);
-  }
-
-  // We might have `onHeadersReceived` triggered earlier than Filter Engine
-  // loading is finished. Thus we might need to merge the saved and new
-  // sitekey maps.
-  sitekeys = merge(savedSitekeys, sitekeys);
-
+  await sitekeys.load(verify ? verifySitekeys : null);
   notifyAllSitekeys();
 }
 
 export function _doSaveSitekeys() {
-  let obj = {};
-  obj[STORAGE_KEY] = sitekeys;
-  trackSaving(browser.storage.session.set(obj));
+  sitekeys.save();
 }
 
 export function _saveSitekeys() {
@@ -274,29 +238,8 @@ export function _saveSitekeys() {
   _doSaveSitekeys();
 }
 
-let activeSaveActions = new Set();
-
-function trackSaving(savePromise) {
-  activeSaveActions.add(savePromise);
-  savePromise.finally(() => activeSaveActions.delete(savePromise));
-  return savePromise;
-}
-
 export async function _awaitSavingComplete() {
-  if (Promise.allSettled) {
-    await Promise.allSettled(activeSaveActions);
-    return;
-  }
-
-  // Promise.allSettled isn't supported in oldest Firefox.
-  // It was added in Firefox 71.
-  for (let saveAction of activeSaveActions) {
-    try {
-      await saveAction;
-    }
-    catch (e) {
-    }
-  }
+  await sitekeys.awaitSavingComplete();
 }
 
 export async function start() {

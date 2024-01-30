@@ -31,7 +31,7 @@ import {ERROR_DUPLICATE_FILTERS, ERROR_FILTER_NOT_FOUND,
         ERROR_TOO_MANY_FILTERS} from "../errors.js";
 import {onChangedFilter, disableFilter} from "./filters.js";
 import {default as initializer} from "./initializer.js";
-import {filtersUpdateDiff} from "./diffs.js";
+import {filtersUpdateDiff} from "./set-operations.js";
 import {trace, debug, error} from "./debugging.js";
 
 import {FilterError} from "./types.js";

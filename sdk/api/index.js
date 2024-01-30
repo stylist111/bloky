@@ -19,11 +19,13 @@ import browser from "webextension-polyfill";
 
 import {default as initializer} from "./initializer.js";
 import * as messageResponder from "./message-responder.js";
+import * as messageDeferrer from "./content-message-deferrer.js";
 import * as popupBlockerBackgroundPage from "./popup-blocker-background-page.js";
 import * as popupBlockerServiceWorker from "./popup-blocker-service-worker.js";
 import * as requestFilter from "./request-filter.js";
 import * as dnrRequestReporter from "./dnr-request-reporter.js";
 import * as sitekey from "./sitekey.js";
+import * as contentMessageDeferrer from "./content-message-deferrer.js";
 import * as telemetry from "./telemetry.js";
 import * as subscriptions from "./subscriptions.js";
 import * as debugging from "./debugging.js";
@@ -57,6 +59,7 @@ async function postApiCall() {
   await prefs.awaitSavingComplete();
   await filterEngine.filterStorage.awaitSavingComplete();
   await sitekey._awaitSavingComplete();
+  await contentMessageDeferrer._awaitSavingComplete();
 }
 
 function isAsync(func) {
@@ -254,6 +257,7 @@ function startSubmodulesWithListeners() {
   // to register their events in the first turn of the event loop to
   // register their event listeners.
   messageResponder.start();
+  messageDeferrer.start();
   if (isRunningInServiceWorker()) {
     popupBlockerServiceWorker.start();
   }

@@ -68,3 +68,35 @@ export function filtersUpdateDiff(base, update) {
 
   return {added, removed};
 }
+
+/**
+ * Merge objects. The merged object will have properties of both objects.
+ * The arrays will also be merged.
+ * @param {Object} obj1 Object 1 to merge
+ * @param {Object} obj2 Object 2 to merge
+ * @returns {Object} merged object
+ */
+export function mergeObjects(obj1, obj2) {
+  if (obj1 instanceof Array) {
+    return [...obj1, ...obj2];
+  }
+
+  if (!(obj1 instanceof Object)) {
+    return obj2;
+  }
+
+  let resultObj = {};
+
+  for (let [key, obj1Values] of Object.entries(obj1)) {
+    resultObj[key] = obj1Values;
+  }
+
+  for (let [key, obj2Values] of Object.entries(obj2)) {
+    let map1Values = resultObj[key];
+    resultObj[key] = map1Values ?
+      mergeObjects(map1Values, obj2Values) :
+      obj2Values;
+  }
+
+  return resultObj;
+}

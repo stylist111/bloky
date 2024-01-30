@@ -379,7 +379,8 @@ describe("Reporting", function() {
     async function checkLogging(filters, eventOptions, callbackOrPage,
                                 mandatoryEvents, {
                                   filterToCurrentTab = true,
-                                  optionalEvents = []
+                                  optionalEvents = [],
+                                  waitForContentHelloReceived = true
                                 } = {}) {
       let callback = callbackOrPage;
       if (typeof callbackOrPage == "string") {
@@ -401,6 +402,21 @@ describe("Reporting", function() {
       clearTestEvents(eventName);
 
       let tabId = await callback();
+
+      if (waitForContentHelloReceived) {
+        // Content script messages (such as "ewe:collapse") can be deferred,
+        // waiting for content script to be injected and ready. Thus we might
+        // need to wait for "ewe:content-hello" message to be received, deferred
+        // message sent and probably it will add more log items,
+        // such as elemhiding ones.
+        await waitForAssertion(async() => {
+          // "0" for main frame
+          let contentScriptReady =
+            await EWE.testing._isContentHelloReceived(tabId, 0);
+          expect(contentScriptReady).toEqual(true);
+        }, 3000);
+      }
+
       let getReceivedEvents =
         () => getReceivedEventsFromListener(
           eventName, tabId, filterToCurrentTab);
@@ -766,7 +782,8 @@ describe("Reporting", function() {
               allowingReason: "document"
             },
             request: expectedRequestUrl(TEST_PAGES_URL)
-          }]
+          }],
+          waitForContentHelloReceived: false
         }
       );
     });
@@ -1496,7 +1513,10 @@ describe("Reporting", function() {
           },
           request: expectedRequestRelativeUrl("image.png")
         }],
-        {filterToCurrentTab: false}
+        {
+          filterToCurrentTab: false,
+          waitForContentHelloReceived: false
+        }
       );
     });
 

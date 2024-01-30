@@ -21,40 +21,73 @@
 // https://developer.chrome.com/docs/extensions/reference/storage/#type-StorageArea
 import {default as StorageArea} from "mem-storage-area/StorageArea.js";
 
-const testBrowserPrototype = {
-  webRequest: {
-    onHeadersReceived: {
-      _callbacks: new Set(),
-      _trigger(args) {
-        for (let callback of this._callbacks) {
-          callback(args);
+class Event {
+  constructor() {
+    this._listeners = new Set();
+  }
+
+  addListener(listener) {
+    this._listeners.add(listener);
+  }
+
+  _trigger(args) {
+    for (const listener of this._listeners) {
+      listener(args);
+    }
+  }
+}
+
+class Browser {
+  constructor() {
+    this.webRequest = {
+      onHeadersReceived: new Event()
+    };
+
+    this.webNavigation = {
+      onBeforeNavigate: new Event()
+    };
+
+    this.runtime = {
+      manifest: {
+        declarative_net_request: {
+          rule_resources: []
         }
       },
 
-      addListener(callback, details, filter) {
-        this._callbacks.add(callback);
-      }
-    }
-  },
-  runtime: {
-    manifest: {
-      declarative_net_request: {
-        rule_resources: []
-      }
-    },
+      getManifest() {
+        return this.manifest;
+      },
 
-    getManifest() {
-      return this.manifest;
-    },
+      getURL(path) {
+        return path;
+      }
+    };
 
-    getURL(path) {
-      return path;
-    }
-  },
-  declarativeNetRequest: {
-    DYNAMIC_RULESET_ID: "_dynamicRuleset"
+    this.storage = {
+      local: new StorageArea(),
+      session: new StorageArea()
+    };
+
+    this.tabs = {
+      _messages: [],
+
+      getMessages() {
+        return this._messages;
+      },
+
+      sendMessage(tabId, message, options) {
+        this._messages.push({tabId, message, options});
+        return Promise.resolve();
+      },
+
+      onRemoved: new Event()
+    };
+
+    this.declarativeNetRequest = {
+      DYNAMIC_RULESET_ID: "_dynamicRuleset"
+    };
   }
-};
+}
 
 const testNavigatorPrototype = {
 
@@ -70,11 +103,7 @@ export let obj = {
   prefs,
 
   configure() {
-    this.browser = Object.create(testBrowserPrototype);
-    this.browser.storage = {
-      local: new StorageArea(),
-      session: new StorageArea()
-    };
+    this.browser = new Browser();
 
     // eslint-disable-next-line no-undef
     global.browser = this.browser;

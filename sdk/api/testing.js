@@ -41,6 +41,7 @@ import {FilterStorage} from "adblockpluscore/lib/filterStorage.js";
 import * as telemetry from "./telemetry.js";
 
 import * as sitekey from "./sitekey.js";
+import {getDeferredMessages} from "./content-message-deferrer.js";
 
 export default {
   ...sitekey, // everything exported from "sitekey.js"
@@ -269,5 +270,11 @@ export default {
 
   clearSkipInitRulesets,
   checkAndInitSubscriptions,
-  _cleanSubscriptionClassesCache
+  _cleanSubscriptionClassesCache,
+
+  // It must be called after frame loading is started,
+  // use `await new Page().loaded` for instance.
+  async _isContentHelloReceived(tabId, frameId) {
+    return !getDeferredMessages(tabId, frameId);
+  }
 };

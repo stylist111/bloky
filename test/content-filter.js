@@ -573,44 +573,6 @@ describe("Element Hiding", function() {
       await new Promise(r => setTimeout(r, unhiddenTimeout));
       expect(await getVisibleElement(tabId, "elem-hide")).not.toBeNull();
     });
-
-    it("properly merges the loaded and new sitekeys", async function() {
-      let obj1 =
-        {1: {2: {url1: {sitekey: "sitekey1", signature: "signature1"}}}};
-      let obj1PlusTabId =
-        {1: {3: {url1: {sitekey: "sitekey2", signature: "signature2"}}},
-         4: {5: {url1: {sitekey: "sitekey3", signature: "signature3"}}}};
-      expect(await EWE.testing.merge(obj1, obj1PlusTabId)).toEqual({
-        1: {
-          2: {url1: {sitekey: "sitekey1", signature: "signature1"}},
-          3: {url1: {sitekey: "sitekey2", signature: "signature2"}}
-        },
-        4: {
-          5: {url1: {sitekey: "sitekey3", signature: "signature3"}}
-        }
-      });
-
-      let obj2 =
-        {1: {2: {url1: {sitekey: "sitekey1", signature: "signature1"}}}};
-      let obj2PlusUrl =
-        {1: {2: {url2: {sitekey: "sitekey2", signature: "signature2"}}}};
-      expect(await EWE.testing.merge(obj2, obj2PlusUrl)).toEqual({
-        1: {
-          2: {
-            url1: {sitekey: "sitekey1", signature: "signature1"},
-            url2: {sitekey: "sitekey2", signature: "signature2"}
-          }
-        }
-      });
-
-      let obj3 =
-        {1: {2: {url: {sitekey: "sitekey1", signature: "signature1"}}}};
-      let obj3Clone =
-        {1: {2: {url: {sitekey: "sitekey1", signature: "signature1"}}}};
-      expect(await EWE.testing.merge(obj3, obj3Clone)).toEqual({
-        1: {2: {url: {sitekey: "sitekey1", signature: "signature1"}}}
-      });
-    });
   });
 
   it("hides an element on history.pushState with previous URL allowlisted",

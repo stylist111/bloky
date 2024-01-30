@@ -26,9 +26,10 @@ import {parseURL} from "adblockpluscore/lib/url.js";
 import {filterEngine} from "./core.js";
 import {getFrameInfo, isTopLevelFrameId, isValidChildFrameId, isValidFrameId}
   from "./frame-state.js";
-import {ignoreNoConnectionError} from "../errors.js";
 import {logItem} from "./diagnostics.js";
 import {getSitekey, setSitekeyFromHeaders} from "./sitekey.js";
+import {warn} from "./debugging.js";
+import {sendContentMessage} from "./content-message-deferrer.js";
 
 const EXTENSION_PROTOCOL = new URL(browser.runtime.getURL("")).protocol;
 
@@ -160,17 +161,14 @@ class BaseFilter {
     let selector = typeSelectors.get(getRequestContentType(details));
     let frameId = getFrameId(details);
 
-    let sendCollapseMessage = () => {
-      return browser.tabs.sendMessage(
-        details.tabId,
-        {type: "ewe:collapse", selector, url: details.url}, {frameId}
-      );
-    };
-
     if (selector && frameId != -1) {
-      // Retrying to fix a connection error on Chromium 90 and on Firefox
-      sendCollapseMessage()
-        .catch(() => ignoreNoConnectionError(sendCollapseMessage()));
+      sendContentMessage(
+        details.tabId, frameId,
+        {type: "ewe:collapse", selector, url: details.url}
+      );
+    }
+    else {
+      warn("No selector or frameId", JSON.stringify(details));
     }
   }
 

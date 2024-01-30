@@ -19,7 +19,8 @@
 /* eslint-disable array-bracket-spacing */
 
 import expect from "expect";
-import {arraysDiff, filtersUpdateDiff} from "../../sdk/api/diffs.js";
+import {arraysDiff, filtersUpdateDiff, mergeObjects}
+  from "../../sdk/api/set-operations.js";
 
 describe("Arrays diff", function() {
   it("returns empty", function() {
@@ -157,5 +158,89 @@ describe("DNR filter diff updates", function() {
     let diff = filtersUpdateDiff(BASE, UPDATE);
     expect(diff.added).toEqual(expect.arrayContaining(["D", "U"]));
     expect(diff.removed).toEqual(expect.arrayContaining(["C", "V"]));
+  });
+});
+
+describe("Objects merging", function() {
+  it("properly merges the loaded and new sitekeys", async function() {
+    let obj1 =
+      {1: {2: {url1: {sitekey: "sitekey1", signature: "signature1"}}}};
+    let obj1PlusTabId =
+       {1: {3: {url1: {sitekey: "sitekey2", signature: "signature2"}}},
+        4: {5: {url1: {sitekey: "sitekey3", signature: "signature3"}}}};
+    expect(await mergeObjects(obj1, obj1PlusTabId)).toEqual({
+      1: {
+        2: {url1: {sitekey: "sitekey1", signature: "signature1"}},
+        3: {url1: {sitekey: "sitekey2", signature: "signature2"}}
+      },
+      4: {
+        5: {url1: {sitekey: "sitekey3", signature: "signature3"}}
+      }
+    });
+
+    let obj2 =
+      {1: {2: {url1: {sitekey: "sitekey1", signature: "signature1"}}}};
+    let obj2PlusUrl =
+      {1: {2: {url2: {sitekey: "sitekey2", signature: "signature2"}}}};
+    expect(await mergeObjects(obj2, obj2PlusUrl)).toEqual({
+      1: {
+        2: {
+          url1: {sitekey: "sitekey1", signature: "signature1"},
+          url2: {sitekey: "sitekey2", signature: "signature2"}
+        }
+      }
+    });
+
+    let obj3 =
+      {1: {2: {url: {sitekey: "sitekey1", signature: "signature1"}}}};
+    let obj3Clone =
+      {1: {2: {url: {sitekey: "sitekey1", signature: "signature1"}}}};
+    expect(await mergeObjects(obj3, obj3Clone)).toEqual({
+      1: {2: {url: {sitekey: "sitekey1", signature: "signature1"}}}
+    });
+  });
+
+  it("merges saved deferred and runtime deferred messages", function() {
+    const message = {
+      type: "type",
+      content: "content1"
+    };
+
+    const savedMessages = {
+      1: {
+        0: [message]
+      },
+      2: {
+        3: [message]
+      }
+    };
+
+    const message2 = {
+      type: "type",
+      content: "content2"
+    };
+
+    const runtimeMessages = {
+      1: {
+        0: [message2],
+        3: [message, message2]
+      },
+      4: {
+        5: [message2]
+      }
+    };
+
+    expect(mergeObjects(savedMessages, runtimeMessages)).toEqual({
+      1: {
+        0: [message, message2],
+        3: [message, message2]
+      },
+      2: {
+        3: [message]
+      },
+      4: {
+        5: [message2]
+      }
+    });
   });
 });

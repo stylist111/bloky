@@ -26,6 +26,7 @@ import {addonBundledSubscriptions, addonBundledSubscriptionsPath,
 import {filterEngine} from "./core.js";
 import * as prefs from "./prefs.js";
 import * as sitekey from "./sitekey.js";
+import * as contentMessageDeferrer from "./content-message-deferrer.js";
 import {validate} from "./subscriptions.js";
 
 let defaultDebugOptions = {
@@ -460,6 +461,7 @@ export default {
     await prefs.awaitSavingComplete();
     await filterEngine.filterStorage.awaitSavingComplete();
     await sitekey._awaitSavingComplete();
+    await contentMessageDeferrer._awaitSavingComplete();
   },
 
   /**
