@@ -201,12 +201,12 @@ function handleTestMessage(request, sender, sendResponse) {
 
     case "filters.importRaw": {
       let lines = request.text.split("\n");
-      EWE.filters.add(lines).then(sendResponse({}));
+      EWE.filters.add(lines).finally(() => sendResponse({}));
       return true;
     }
 
     case "filters.remove": {
-      EWE.filters.remove(request.text).then(sendResponse({}));
+      EWE.filters.remove(request.text).finally(() => sendResponse({}));
       return true;
     }
 
@@ -232,7 +232,7 @@ function handleTestMessage(request, sender, sendResponse) {
     }
 
     case "subscriptions.remove": {
-      EWE.subscriptions.remove(request.url).then(sendResponse({}));
+      EWE.subscriptions.remove(request.url).finally(() => sendResponse({}));
       return true;
     }
 

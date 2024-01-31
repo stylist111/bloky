@@ -428,12 +428,6 @@ describe("Initialization", function() {
         [`No ruleset with ID=${subscription.id} declared in the manifest`]));
     });
 
-    it("validates adding a subscription without being provided to EWE.start", async function() {
-      let url = TEST_MV3_SUBSCRIPTION.url + "_missing";
-      await expect(EWE.subscriptions.add(url))
-        .rejects.toThrow(`Failed to find the subscription with URL=${url}`);
-    });
-
     describe("validates adding default subscriptions [mv3-only] [fuzz-skip]", function() {
       it("throws if no default language subscription is provided", async function() {
         await EWE.testing._setSubscriptions([]);

@@ -19,7 +19,8 @@ import browser from "webextension-polyfill";
 
 import {Filter, InvalidFilter, URLFilter, isActiveFilter}
   from "adblockpluscore/lib/filterClasses.js";
-import {SpecialSubscription} from "adblockpluscore/lib/subscriptionClasses.js";
+import {SpecialSubscription, DiffUpdatableSubscription}
+  from "adblockpluscore/lib/subscriptionClasses.js";
 import {isValidHostname} from "adblockpluscore/lib/url.js";
 import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {filterEngine} from "./core.js";
@@ -61,7 +62,7 @@ export async function restoreDynamicRules(subscriptionId) {
 
       let lastUpdate = lastDiffUpdates.get(subscription.id);
       if (lastUpdate) {
-        await _dnrSubscriptionUpdate(subscription, lastUpdate, true);
+        await _dnrDiffSubscriptionUpdate(subscription, lastUpdate, true);
       }
 
       break;
@@ -91,6 +92,19 @@ function findDynamicFilters(subscriptionId) {
   }
 
   return result;
+}
+
+function countRulesToRemove(subscriptionId, filtersToRemove) {
+  let rulesCount = 0;
+  for (let text of filtersToRemove) {
+    let detail = dynamicFilters.get(text);
+    if (detail && detail.ruleIds && detail.subscriptionIds &&
+        detail.subscriptionIds.length == 1 &&
+        detail.subscriptionIds[0] == subscriptionId) {
+      rulesCount += detail.ruleIds.length;
+    }
+  }
+  return rulesCount;
 }
 
 /**
@@ -136,7 +150,46 @@ export function clearIsDnrSubscriptionUpdating() {
 }
 
 /**
- * Update a DNR subscription.
+ * Update a DNR subscription using full update mechanism (similar to MV2).
+ *
+ * @param {Subscription} subscription The subscription updated.
+ * @param {?object} lines The most recent filter text.
+ *
+ * @private
+ */
+async function dnrFullSubscriptionUpdate(subscription, lines) {
+  debug("Full update started for subscription", subscription);
+
+  lines.shift();
+
+  let filterText = [];
+  for (let line of lines) {
+    line = Filter.normalize(line);
+    if (line) {
+      filterText.push(line);
+    }
+  }
+
+  try {
+    await _dnrFullSubscriptionUpdate(subscription, filterText);
+  }
+  catch (e) {
+    error(`Failed to full update: ${JSON.stringify(e)}`);
+    if (e.type === ERROR_TOO_MANY_FILTERS) {
+      subscription.downloadStatus = "synchronize_too_many_filters";
+      e.rulesAvailable = await dynamicRulesAvailable();
+    }
+    else {
+      subscription.downloadStatus = "synchronize_dnr_error";
+    }
+  }
+  finally {
+    debug("Full update finished");
+  }
+}
+
+/**
+ * Update a DNR subscription using diff mechanism.
  *
  * @param {Subscription} subscription The subscription updated.
  * @param {?object} updates The list of added and removed filter text. If
@@ -144,7 +197,7 @@ export function clearIsDnrSubscriptionUpdating() {
  *
  * @private
  */
-export async function dnrSubscriptionUpdate(subscription, updates) {
+export async function dnrDiffSubscriptionUpdate(subscription, updates) {
   debug("Diff update started");
   if (isDnrSubscriptionUpdating(subscription.url)) {
     debug(`Already updating ${subscription.url}, skipping`);
@@ -153,10 +206,10 @@ export async function dnrSubscriptionUpdate(subscription, updates) {
   dnrSubscriptionUpdating.add(subscription.url);
 
   try {
-    await _dnrSubscriptionUpdate(subscription, updates);
+    await _dnrDiffSubscriptionUpdate(subscription, updates);
   }
   catch (e) {
-    error(`Failed to diff update: ${error.message}`);
+    error(`Failed to diff update: ${JSON.stringify(e)}`);
     if (e.type === ERROR_TOO_MANY_FILTERS){
       subscription.downloadStatus = "synchronize_diff_too_many_filters";
       e.rulesAvailable = await dynamicRulesAvailable();
@@ -178,11 +231,9 @@ export async function dnrSubscriptionUpdate(subscription, updates) {
 
 export async function removeSubscriptionsDynamicFilters() {
   for (let subscription of filterEngine.filterStorage.subscriptions()) {
-    if (subscription instanceof SpecialSubscription) {
-      continue;
+    if (subscription instanceof DiffUpdatableSubscription) {
+      await disableDynamicRules(subscription.id);
     }
-
-    await disableDynamicRules(subscription.id);
   }
 }
 
@@ -211,7 +262,74 @@ export async function enableAllDisabledStaticRules() {
   }
 }
 
-export async function _dnrSubscriptionUpdate(
+async function _dnrFullSubscriptionUpdate(subscription, filterText) {
+  trace({subscription, filterText});
+
+  // With some path of code the filter engine might not be initialized
+  // if the service worker got awaken.
+  await initializer.start();
+
+  let plannedChanges = await processFilterTexts(filterText, subscription.url);
+
+  // All the dynamic filters for this subscription must be removed.
+  // User subscriptions don't have an ID, using URL instead
+  let knownDynamicFilters = findDynamicFilters(subscription.url);
+
+  if (knownDynamicFilters.size != 0) {
+    plannedChanges.relateToThisSubscription.forEach(
+      text => knownDynamicFilters.delete(text));
+
+    plannedChanges.relateToOtherSubscriptions.forEach(
+      text => knownDynamicFilters.delete(text));
+  }
+
+  let dynamicFiltersToRemove = [...knownDynamicFilters.keys()];
+
+  let removeRulesCount = countRulesToRemove(subscription.url,
+                                            dynamicFiltersToRemove);
+  if (plannedChanges.add.length - removeRulesCount >
+      await dynamicRulesAvailable()) {
+    throw new FilterError(ERROR_TOO_MANY_FILTERS);
+  }
+
+  // Adding subscription.id into existing filter
+  for (let text of plannedChanges.relateToOtherSubscriptions) {
+    let filter = dynamicFilters.get(text);
+    filter.subscriptionIds.push(subscription.url);
+  }
+
+  // Removing subscription.id from existing filters that are removed.
+  let {removeRuleIds} = removeDynamicFilters(
+    subscription.url, dynamicFiltersToRemove);
+
+  let subscriptionActive = (await subscriptions.has(subscription.url)) &&
+      !subscription.disabled;
+  let addRules = subscriptionActive ? plannedChanges.add : void 0;
+  await browser.declarativeNetRequest.updateDynamicRules(
+    {addRules, removeRuleIds}
+  );
+
+  if (subscriptionActive) {
+    plannedChanges.details.forEach(details => {
+      let {useFilterEngine, filter, ruleIds, enabled} = details;
+
+      setHighestRuleId(ruleIds);
+      dynamicFilters.set(filter.text,
+                         {ruleIds, useFilterEngine, enabled, metadata: {},
+                          subscriptionIds: [subscription.url]});
+    });
+  }
+
+  storeDynamicFilters();
+  let update = subscription.updateFilterText(filterText);
+  filterNotifier.emit(
+    "subscription.updated",
+    subscription,
+    update
+  );
+}
+
+export async function _dnrDiffSubscriptionUpdate(
   subscription, updates, skipEmitting) {
   if (!browser.declarativeNetRequest || !updates) {
     return;
@@ -270,7 +388,7 @@ export async function _dnrSubscriptionUpdate(
       if (!lastUpdate) {
         lastUpdate = {added: [], removed: []};
       }
-      await _dnrSubscriptionUpdate(subscription, lastUpdate);
+      await _dnrDiffSubscriptionUpdate(subscription, lastUpdate);
     };
   }
 
@@ -364,10 +482,10 @@ export async function _dnrSubscriptionUpdate(
   storeDynamicFilters();
 
   if (!skipEmitting) {
-    // `dnrSubscriptionUpdate()` is currently used for some internal routines,
-    // eg. restoring the dynamic rules for the subscription, which does not
-    // mean there was a subscription update actually (EE-163), so we might
-    // skip emitting the event.
+    // `dnrDiffSubscriptionUpdate()` is currently used for some internal
+    // routines, eg. restoring the dynamic rules for the subscription,
+    // which does not mean there was a subscription update actually (EE-163),
+    // so we might skip emitting the event.
     filterNotifier.emit("subscription.updated", subscription, storageUpdate);
   }
 }
@@ -513,8 +631,8 @@ export function init() {
         setHighestRuleId(ruleIds);
       }
 
-      filterNotifier.on("subscription.dnrUpdated", dnrSubscriptionUpdate);
-      filterNotifier.on("subscription.diffReceived", dnrSubscriptionUpdate);
+      filterNotifier.on("subscription.diffReceived", dnrDiffSubscriptionUpdate);
+      filterNotifier.on("subscription.fullUpdateReceived", dnrFullSubscriptionUpdate);
     })();
   }
 
@@ -554,8 +672,8 @@ async function getRules(filter) {
  *
  * @typedef {Object} ProcessedFilters
  * @property {Array.<Object>} add Rules to add to the dynamic ruleset
- * @property {Array.<string>} exist Filters that exists.
- * @property {Array.<string>} existOnOtherSubscription Filters that
+ * @property {Array.<string>} relateToThisSubscription Filters that exists.
+ * @property {Array.<string>} relateToOtherSubscriptions Filters that
  *   exist on other subscriptions.
  * @property {Array.<number>} staticRulesToEnable Static rules to enable.
  * @property {Array.<FilterDetails>} details Details of the filters.
@@ -645,7 +763,7 @@ async function processFilterTexts(texts, subscriptionId = null, mapper = null) {
   };
 }
 
-let TESTING_MAX_DYNAMIC_RULES = 0;
+const RULES_LIMIT_KEY = "EWE:Dynamic_Rules_Limit";
 
 /**
  * For testing purpose, set the a maximum number of dynamic
@@ -656,8 +774,8 @@ let TESTING_MAX_DYNAMIC_RULES = 0;
  *
  * @private
  */
-export function testSetDynamicRulesAvailable(num) {
-  TESTING_MAX_DYNAMIC_RULES = num;
+export async function testSetDynamicRulesAvailable(num) {
+  await browser.storage.session.set({[RULES_LIMIT_KEY]: num});
 }
 
 export async function dynamicRulesAvailable() {
@@ -666,18 +784,14 @@ export async function dynamicRulesAvailable() {
     return Infinity;
   }
 
-  let maxNumberAvailable;
-  if (TESTING_MAX_DYNAMIC_RULES > 0) {
-    maxNumberAvailable = TESTING_MAX_DYNAMIC_RULES;
-  }
-  else {
-    maxNumberAvailable =
+  let overriddenMaxRules = await browser.storage.session.get(RULES_LIMIT_KEY);
+  let maxRules = overriddenMaxRules[RULES_LIMIT_KEY] > 0 ?
+      overriddenMaxRules[RULES_LIMIT_KEY] :
       declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES;
-  }
 
   let used = (await declarativeNetRequest.getDynamicRules()).length +
-               (await declarativeNetRequest.getSessionRules()).length;
-  return maxNumberAvailable - used;
+      (await declarativeNetRequest.getSessionRules()).length;
+  return maxRules - used;
 }
 
 export async function addFilters(texts, metadata) {
@@ -777,7 +891,8 @@ async function enableStaticRules(filterTexts, enable) {
   for (let filterText of filterTexts) {
     for (let subscription of
       filterEngine.filterStorage.subscriptions(filterText)) {
-      if (subscription instanceof SpecialSubscription) {
+      if (subscription instanceof SpecialSubscription ||
+        !subscription.id) {
         continue;
       }
 

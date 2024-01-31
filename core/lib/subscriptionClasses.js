@@ -1238,9 +1238,21 @@ class CountableSubscription extends RegularSubscription {
   /**
    * The status of the last download.
    *
-   * A message ID which can have the following values: `synchronize_ok`,
-   * `synchronize_connection_error` or `synchronize_invalid_url`. If the
-   * initial download is not completed yet, then it is null.
+   * A message ID which can have the following values:
+   * - `synchronize_ok` - The subscription is perfectly fine.
+   * - `synchronize_connection_error` - An error has occurred when trying to
+   *    download the subscription.
+   * - `synchronize_invalid_url` - The subscription URL is invalid.
+   * - `synchronize_too_many_filters` - A custom user subscription cannot
+   *    update because there aren't enough dynamic rules available.
+   * - `synchronize_dnr_error` - Downloading succeeded but, an error occurred
+   *    while updating the custom subscription.
+   * - `synchronize_diff_too_many_filters` - A diff updatable subscription
+   *    cannot update because there aren't enough dynamic rules available.
+   * - `synchronize_diff_error` - Downloading succeeded but, an error occurred
+   *    while updating the diff updatable subscription.
+   *
+   * If the initial download is not completed yet, then it is null.
    *
    * @type {?string}
    * @default <code>null</code>

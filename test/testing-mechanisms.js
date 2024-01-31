@@ -50,7 +50,7 @@ const SECOND_VALID_FILTER = {
 
 describe("Testing Mechanisms", function() {
   describe("MV3 Service Workers [mv3-only]", function() {
-    after(async function() {
+    afterEach(async function() {
       setMinTimeout(this, 12000);
       // From our observations, after a service worker is suspended it starts
       // up again when a message is sent to it. However, that restart seems to
@@ -72,8 +72,8 @@ describe("Testing Mechanisms", function() {
         .toEqual(null);
     });
 
-    describe("mock dynamic rules available", function() {
-      after(async function() {
+    describe("Mock dynamic rules available", function() {
+      afterEach(async function() {
         await EWE.testing.testSetDynamicRulesAvailable(0);
       });
 

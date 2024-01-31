@@ -37,6 +37,7 @@ let manifestVersion;
 describe("Synchronizer", function() {
   let runner = {};
   let synchronizer = null;
+  let setRecommendations = {};
 
   beforeEach(function() {
     runner = {};
@@ -53,7 +54,8 @@ describe("Synchronizer", function() {
       {Prefs} = sandboxedRequire("./stub-modules/prefs"),
       {manifestVersion} = sandboxedRequire("./stub-modules/info"),
       {Subscription, CountableSubscription, FullUpdatableSubscription} =
-        sandboxedRequire(LIB_FOLDER + "/subscriptionClasses")
+        sandboxedRequire(LIB_FOLDER + "/subscriptionClasses"),
+      {setRecommendations} = sandboxedRequire(LIB_FOLDER + "/recommendations")
     );
 
     filterStorage = new FilterStorage();
@@ -86,7 +88,6 @@ describe("Synchronizer", function() {
 
     afterEach(function() {
       synchronizer.stop();
-      Subscription.dnr = false;
     });
 
     it("A disabled subscription gets a version update", function() {
@@ -147,13 +148,6 @@ describe("Synchronizer", function() {
         Subscription.dnr = false;
       });
 
-      /*
-       * In a Manifest V3 context, subscription are not updated (Downloadable)
-       * albeit they need to contact the server to count.
-       *
-       * Also to test this, we need to use a subscription that is known, so
-       * we can't use the example URL used in the other tests.
-       */
       it("Does not parse data", function() {
         let subscription = Subscription.fromURL("https://easylist-downloads.adblockplus.org/easylist.txt");
         filterStorage.addSubscription(subscription);
@@ -241,6 +235,48 @@ describe("Synchronizer", function() {
             [48 + initialDelay, "HEAD", url.pathname, "true", "0", "202101071005"]
           ], "Requests after 50 hours");
         }).catch(error => unexpectedError.call(assert, error));
+      });
+
+      it("Emits event on custom subscription update", async function() {
+        let subscription = Subscription.fromURL("https://example.com/subscription");
+        filterStorage.addSubscription(subscription);
+
+        runner.registerHandler("/subscription", () => {
+          return [200, "[Adblock]\n!"];
+        });
+
+        let notified = false;
+        filterNotifier.on("subscription.fullUpdateReceived", sub => {
+          notified = sub === subscription;
+        });
+
+        await runner.runScheduledTasks(12);
+        assert.equal(notified, true);
+      });
+
+      it("Emits event on custom subscription on diff update", async function() {
+        let recommendations = require("./data/v3_index.json");
+        setRecommendations(recommendations);
+
+        let subscription = Subscription.fromURL("https://easylist-downloads.adblockplus.org/v3/full/abpindo.txt");
+        filterStorage.addSubscription(subscription);
+        const EMPTY_DIFF_UPDATE = JSON.stringify({
+          filters: {
+            add: [],
+            remove: []
+          }
+        });
+        runner.registerHandler("/v3/diff/abpindo/187271f7a9a62cda9661034000d12367bdfbb78c.json", () => {
+          return [200, EMPTY_DIFF_UPDATE];
+        });
+
+        let notified = false;
+        filterNotifier.on("subscription.diffReceived", sub => {
+          notified = sub === subscription;
+        });
+
+        await runner.runScheduledTasks(12);
+        assert.equal(notified, true);
       });
     });
 
