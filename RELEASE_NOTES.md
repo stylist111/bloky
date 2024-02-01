@@ -4,6 +4,7 @@ Unreleased
 # Fixes
 
 - Fixed a bug where elements to be collapsed would stay visible on edge cases. (EE-282)
+- Fixed a crash on message sent from a popup. (EE-320)
 
 # Custom User Subscriptions
 

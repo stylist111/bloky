@@ -27,6 +27,13 @@ import {trace} from "./debugging.js";
 import {onContentHelloReceived} from "./content-message-deferrer.js";
 
 async function handleMessage(message, sender) {
+  trace({
+    message, sender: {
+      tabId: sender.tab ? sender.tab.id : null,
+      frameId: sender.frameId,
+      url: sender.url
+    }
+  });
   await initializer.start();
   switch (message.type) {
     case "ewe:content-hello":
@@ -60,11 +67,6 @@ async function handleMessage(message, sender) {
 }
 
 function onMessage(message, sender) {
-  trace({message, sender: {
-    tabId: sender.tab.id,
-    frameId: sender.frameId,
-    url: sender.url
-  }});
   if (typeof message == "object" && message != null &&
       message.type && message.type.startsWith("ewe:")) {
     return handleMessage(message, sender);
