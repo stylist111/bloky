@@ -1,6 +1,9 @@
 Unreleased
 ==========
 
+📠 1.4.1 - 2024-02-02 📠
+========================
+
 # Fixes
 
 - Fixed a bug where elements to be collapsed would stay visible on edge cases. (EE-282)
