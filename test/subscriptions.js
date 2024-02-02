@@ -18,12 +18,9 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 
-import {clearRequestLogs, isMV3, Page,
-        setEndpointResponse, shouldBeLoaded,
-        setMinTimeout, TEST_ADMIN_PAGES_URL, TEST_ANTI_CV_SUBSCRIPTION,
-        TEST_PAGES_DOMAIN, TEST_PAGES_URL,
-        waitForAssertion, waitForSubscriptionToBeSynchronized,
-        clearEndpointResponse}
+import {Page, setMinTimeout, waitForAssertion, isMV3, clearRequestLogs,
+        TEST_PAGES_URL, TEST_PAGES_DOMAIN, shouldBeLoaded, setEndpointResponse,
+        TEST_ANTI_CV_SUBSCRIPTION}
   from "./utils.js";
 import {wait} from "./polling.js";
 import {addFilter, EWE, runInBackgroundPage, getTestEvents, clearTestEvents,
@@ -33,10 +30,6 @@ import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 const VALID_SUBSCRIPTION_URL = `${TEST_PAGES_URL}/subscription.txt`;
 const VALID_SUBSCRIPTION_URL_2 = `${TEST_PAGES_URL}/subscription.txt?2`;
-
-// this subscription doesn't appear in background.js and isn't bundled
-const USER_SUBSCRIPTION_URL = `${TEST_ADMIN_PAGES_URL}/user-subscription.txt`;
-
 const INVALID_SUBSCRIPTION_URL = "invalidUrl";
 
 const VALID_REQUEST_FILTER_TEXT = `|${TEST_PAGES_URL}$image`;
@@ -73,19 +66,6 @@ describe("Subscriptions", function() {
       title,
       homepage,
       updatable: expect.any(Boolean)
-    })]);
-  });
-
-  it("adds a user subscription", async function() {
-    await EWE.subscriptions.add(USER_SUBSCRIPTION_URL);
-
-    let subs = await EWE.subscriptions.getSubscriptions();
-    expect(subs).toEqual([expect.objectContaining({
-      url: USER_SUBSCRIPTION_URL,
-      enabled: true,
-      title: USER_SUBSCRIPTION_URL,
-      homepage: null,
-      updatable: true
     })]);
   });
 
@@ -195,16 +175,6 @@ describe("Subscriptions", function() {
       .rejects.toThrow("Error: Invalid subscription URL provided: invalidUrl");
   });
 
-  it("adds user subscription when endpoint responds with 404", async function() {
-    // this endpoint is responding with 404
-    await EWE.subscriptions.add(USER_SUBSCRIPTION_URL);
-
-    await waitForAssertion(async() => {
-      expect(await EWE.subscriptions.getSubscriptions()).toEqual([
-        expect.objectContaining({downloadStatus: "synchronize_connection_error"})]);
-    });
-  });
-
   it("adds multiple subscriptions", async function() {
     await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
     await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL_2);
@@ -252,16 +222,6 @@ describe("Subscriptions", function() {
     expect(result).toEqual(expect.arrayContaining([expect.objectContaining(
       {text: "/image-from-subscription.png^$image"}
     )]));
-  });
-
-  it("gets filters from a user subscription [fuzz]", async function() {
-    await setEndpointResponse(USER_SUBSCRIPTION_URL,
-                              "[Adblock Plus 2.0]\n\n image.png");
-    await EWE.subscriptions.add(USER_SUBSCRIPTION_URL);
-    await waitForSubscriptionToBeSynchronized(USER_SUBSCRIPTION_URL);
-    expect(await EWE.subscriptions.getForFilter("image.png")).toEqual([
-      expect.objectContaining({url: USER_SUBSCRIPTION_URL})
-    ]);
   });
 
   it("checks if a subscription has been added [fuzz]", async function() {
@@ -316,20 +276,6 @@ describe("Subscriptions", function() {
   it("removes a subscription [fuzz]", async function() {
     await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
     await EWE.subscriptions.remove(VALID_SUBSCRIPTION_URL);
-
-    expect(await EWE.subscriptions.getSubscriptions()).toEqual([]);
-  });
-
-  it("removes an user subscription [fuzz]", async function() {
-    await setEndpointResponse(USER_SUBSCRIPTION_URL,
-                              "[Adblock Plus 2.0]\n\n image.png");
-    await EWE.subscriptions.add(USER_SUBSCRIPTION_URL);
-
-    expect(await EWE.subscriptions.getSubscriptions()).toEqual([
-      expect.objectContaining({url: USER_SUBSCRIPTION_URL})
-    ]);
-
-    await EWE.subscriptions.remove(USER_SUBSCRIPTION_URL);
 
     expect(await EWE.subscriptions.getSubscriptions()).toEqual([]);
   });
@@ -682,12 +628,6 @@ describe("Subscriptions", function() {
   });
 
   describe("Subscription events [fuzz]", function() {
-    const USER_SUBSCRIPTION_BODY = "[Adblock Plus 2.0]\nimage.png";
-
-    afterEach(async function() {
-      await clearEndpointResponse(USER_SUBSCRIPTION_URL);
-    });
-
     it("listens to onAdded events", async function() {
       await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
       await expectTestEvents("subscriptions.onAdded", [[
@@ -719,43 +659,6 @@ describe("Subscriptions", function() {
       await EWE.subscriptions.remove(VALID_SUBSCRIPTION_URL);
       await expectTestEvents("subscriptions.onRemoved", [[
         expect.objectContaining({url: VALID_SUBSCRIPTION_URL})
-      ]]);
-    });
-
-    it("listens to onAdded events for custom user subscriptions", async function() {
-      await setEndpointResponse(USER_SUBSCRIPTION_URL, USER_SUBSCRIPTION_BODY);
-      await EWE.subscriptions.add(USER_SUBSCRIPTION_URL);
-      await expectTestEvents("subscriptions.onAdded", [[
-        expect.objectContaining({
-          url: USER_SUBSCRIPTION_URL,
-          enabled: true,
-          title: USER_SUBSCRIPTION_URL
-        })
-      ]]);
-    });
-
-    it("listens to onChanged events for custom user subscriptions", async function() {
-      await setEndpointResponse(USER_SUBSCRIPTION_URL, USER_SUBSCRIPTION_BODY);
-      await EWE.subscriptions.add(USER_SUBSCRIPTION_URL);
-      await EWE.subscriptions.disable(USER_SUBSCRIPTION_URL);
-      await expectTestEvents(
-        "subscriptions.onChanged",
-        expect.arrayContaining([[
-          expect.objectContaining({
-            url: USER_SUBSCRIPTION_URL,
-            enabled: false
-          }),
-          "enabled"
-        ]])
-      );
-    });
-
-    it("listens to onRemoved events for custom user subscriptions", async function() {
-      await setEndpointResponse(USER_SUBSCRIPTION_URL, USER_SUBSCRIPTION_BODY);
-      await EWE.subscriptions.add(USER_SUBSCRIPTION_URL);
-      await EWE.subscriptions.remove(USER_SUBSCRIPTION_URL);
-      await expectTestEvents("subscriptions.onRemoved", [[
-        expect.objectContaining({url: USER_SUBSCRIPTION_URL})
       ]]);
     });
   });

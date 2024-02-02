@@ -278,16 +278,9 @@ async function remove(url) {
     throw new Error(`Subscription does not exist: ${url}`);
   }
 
-  if (browser.declarativeNetRequest) {
-    if (subscription instanceof FullUpdatableSubscription) {
-      await disableDynamicRules(subscription.url);
-    }
-    else {
-      await disableRuleset(subscription.id);
-    }
-  }
-
   filterEngine.filterStorage.removeSubscription(subscription);
+
+  await disableRuleset(subscription.id);
 }
 
 /**
@@ -348,20 +341,28 @@ async function add(url, properties = {}) {
 
   let subscription = Subscription.fromURL(url);
 
-  if (browser.declarativeNetRequest && !subscription.downloadable) {
+  if (browser.declarativeNetRequest) {
+    // This currently prevents us from adding user subscriptions, ie
+    // those we don't know about. See EE-117.
     let subscriptionInfo = addonBundledSubscriptions.find(x => x.url == url);
-    let filterText;
-    try {
-      filterText = await getFilterText(
-        subscriptionInfo, addonBundledSubscriptionsPath);
-    }
-    catch (e) {
-      // We already warn if the file doesn't exist on startup, so
-      // we can ignore an error loading the bundled file here.
+    if (!subscriptionInfo) {
+      throw new Error(`Failed to find the subscription with URL=${url}`);
     }
 
-    if (filterText) {
-      subscription.setFilterText(filterText);
+    if (!subscription.downloadable) {
+      let filterText;
+      try {
+        filterText = await getFilterText(
+          subscriptionInfo, addonBundledSubscriptionsPath);
+      }
+      catch (e) {
+        // We already warn if the file doesn't exist on startup, so
+        // we can ignore an error loading the bundled file here.
+      }
+
+      if (filterText) {
+        subscription.setFilterText(filterText);
+      }
     }
   }
 
@@ -386,9 +387,7 @@ async function add(url, properties = {}) {
 
   filterStorage.addSubscription(subscription);
 
-  if (browser.declarativeNetRequest && !subscription.downloadable) {
-    await enableRuleset(subscription.id);
-  }
+  await enableRuleset(subscription.id);
 
   if (!subscription.lastDownload &&
       !isSynchronizing(subscription.url)) {
@@ -405,14 +404,7 @@ async function disable(url) {
 
   subscription.disabled = true;
 
-  if (browser.declarativeNetRequest) {
-    if (subscription instanceof FullUpdatableSubscription) {
-      await disableDynamicRules(subscription.url);
-    }
-    else {
-      await disableRuleset(subscription.id);
-    }
-  }
+  await disableRuleset(subscription.id);
 }
 
 function migrationNeeded() {
@@ -542,22 +534,9 @@ export default {
    * @property {?boolean} downloading Indicates whether the subscription is
    *                                  currently downloading (updatable
    *                                  subscriptions only).
-   * @property {?string} downloadStatus The status of the most recent download
-   *   attempt (updatable subscriptions only). It can have the following values:
-   * - `synchronize_ok` - The subscription is perfectly fine.
-   * - `synchronize_connection_error` - An error has occurred when trying to
-   *   download the subscription.
-   * - `synchronize_invalid_url` - The subscription URL is invalid.
-   * - `synchronize_too_many_filters` - A custom user subscription cannot
-   *   update because there aren't enough dynamic rules available.
-   * - `synchronize_dnr_error` - Downloading succeeded but, an error occurred
-   *   while updating the custom subscription.
-   * - `synchronize_diff_too_many_filters` - A diff updatable subscription
-   *   cannot update because there aren't enough dynamic rules available.
-   * - `synchronize_diff_error` - Downloading succeeded but, an error occurred
-   *   while updating the diff updatable subscription.
-   * - null - The initial download is not completed yet, or the subscription is
-   *   not updatable.
+   * @property {?string} downloadStatus The {@link https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore/-/jobs/artifacts/0.6.0/file/build/docs/module-subscriptionClasses.DownloadableSubscription.html?job=docs#downloadStatus|status}
+   *                                    of the most recent download attempt
+   *                                    (updatable subscriptions only).
    * @property {boolean} enabled Indicates whether this subscription will
    *                             be applied.
    * @property {?number} expires Epoch time when the subscription must be
@@ -726,14 +705,7 @@ export default {
 
     subscription.disabled = false;
 
-    if (browser.declarativeNetRequest) {
-      if (subscription instanceof FullUpdatableSubscription) {
-        await restoreDynamicRules(subscription.url);
-      }
-      else {
-        await enableRuleset(subscription.id);
-      }
-    }
+    await enableRuleset(subscription.id);
   },
 
   /**

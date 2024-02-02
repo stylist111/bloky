@@ -366,9 +366,6 @@ class Synchronizer {
 
       filterNotifier.emit("subscription.diffReceived", subscription, {added, removed});
     }
-    else if (Subscription.dnr) {
-      filterNotifier.emit("subscription.fullUpdateReceived", subscription, lines);
-    }
     else {
       this._processFilters(subscription, lines);
     }

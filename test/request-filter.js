@@ -19,9 +19,7 @@ import expect from "expect";
 
 import {Page, Resource, executeScript, TEST_PAGES_URL,
         TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, SITEKEY, TEST_MV3_SUBSCRIPTION,
-        shouldBeLoaded, supportsWebBundle, waitForSubscriptionsToDownload,
-        setMinTimeout, setEndpointResponse,
-        waitForSubscriptionToBeSynchronized} from "./utils.js";
+        shouldBeLoaded, supportsWebBundle, waitForSubscriptionsToDownload, setMinTimeout} from "./utils.js";
 import {addFilter, EWE} from "./messaging.js";
 import browser from "webextension-polyfill";
 
@@ -36,25 +34,7 @@ describe("Blocking", function() {
     await waitForSubscriptionsToDownload();
 
     await new Page("image-from-subscription.html")
-      .expectResource("image-from-subscription.png")
-      .toBeBlocked();
-  });
-
-  it("blocks a request using custom user subscriptions [fuzz]", async function() {
-    let customUserSubscription =
-      "http://localhost:3003/custom-user-subscription.txt";
-
-    await setEndpointResponse(
-      customUserSubscription,
-      "[Adblock Plus]\n/image-from-subscription.png^$image"
-    );
-
-    await EWE.subscriptions.add(customUserSubscription);
-    await waitForSubscriptionToBeSynchronized(customUserSubscription);
-
-    await new Page("image-from-subscription.html")
-      .expectResource("image-from-subscription.png")
-      .toBeBlocked();
+      .expectResource("image-from-subscription.png").toBeBlocked();
   });
 
   it("does not block from subscription if allow filter is added", async function() {
@@ -63,8 +43,7 @@ describe("Blocking", function() {
     await waitForSubscriptionsToDownload();
 
     await new Page("image-from-subscription.html")
-      .expectResource("image-from-subscription.png")
-      .toBeLoaded();
+          .expectResource("image-from-subscription.png").toBeLoaded();
   });
 
   it("does not block a request using a disabled filter", async function() {

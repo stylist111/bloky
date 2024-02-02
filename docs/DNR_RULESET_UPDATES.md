@@ -41,8 +41,8 @@ the number of rules that are imposed by the _DeclarativeNetRequest_ API, which
 currently are a maxium 5000 dynamic rules. It's required to use Chrome 111+ in
 order to have a function that allows to disable rules in a static rulesets.
 
-In Manifest v3 there are two update paths available: DiffUpdatable subscriptions
-and FullUpdatable subscriptions.
+In Manifest v3 there is only one way to update a subscription, through a
+DiffUpdatable subscription.
 
 ### DiffUpdatable subscriptions
 
@@ -148,7 +148,7 @@ the filter notifier.
 
 #### Applying
 
-Applying the difference is done by `dnrDiffSubscriptionUpdate` in the
+Applying the difference is done by `dnrSubscriptionUpdate` in the
 `dnr-filters.js` module.
 
 It will check for the ability to add the rules checking against the limits. If
@@ -156,45 +156,10 @@ it can't, it will bail out and rollback to the previous state.
 
 It will also update the filter storage and the filter engine.
 
-### FullUpdatable subscriptions
-
-```mermaid
-sequenceDiagram
-    participant FD as Filter Delivery System
-    participant S as Synchronizer
-    participant FN as Filter Notifier
-    participant Filter Storage
-    participant DNR Update
-    participant RE as Chromium Rules Engine
-    S->>+FD: Give me the update
-    FD-->>-S: Filter list
-    S->>FN: subscription.fullUpdateReceived
-    Note over FN: Dispatch the event<br/>to all the listeners
-    FN-)+DNR Update: subscription.fullUpdateReceived
-    Note over DNR Update: Processing the<br/>new filter list
-    DNR Update->>DNR Update: Convert filters to DNR rules
-    DNR Update->>+RE: Update DNR dynamic rules
-    DNR Update->>+Filter Storage: Updates
-    Note over DNR Update, Filter Storage: Store the filters into the storage
-    DNR Update-)-FN: subscription.updated
-    Note over FN: Trigger deploy filters
-```
-
-FullUpdatable subscriptions are subscriptions added with
-`EWE.subscriptions.add()`, which are not bundled with the extension. In other
-words, they are the user's custom subscriptions, which the extension developers
-don't have any control over.
-
-From a hosting perspective, FullUpdatable subscriptions work the same as MV2
-subscriptions. The server needs to respond to GET requests with the full filter
-text every time.
-
-All of the DNR rules generated for request filters are dynamic DNR filters, and
-so the limits on the number of dynamic DNR filters apply. Custom user
-subscriptions are not suitable for large subscriptions in MV3.
-
 ## Limitations
 
+- Currently, in Manifest v3, we do not support users adding custom
+  subscriptions.
 - DiffUpdatable subscriptions will only be updated on Chromium 111 or newer.
 - Chromium imposes a limit to the number of dynamic rules we can store.
   When this limit is reached, we will no longer update subscriptions if they

@@ -800,50 +800,6 @@ export async function waitForSubscriptionToBeSynchronized(url, clear = true) {
   }
 }
 
-/**
- * Waits until we've received all of the events for a subscription trying to
- * sync, downloading successfully, and then having an error when processing the
- * update.
- * @param {string} subscriptionUrl
- * @param {string} expectedError
- */
-export async function waitForSubscriptionToFailToUpdate(
-  subscriptionUrl, expectedError = "synchronize_too_many_filters") {
-  await waitForAssertion(async() => {
-    let changeEvents = getTestEvents("subscriptions.onChanged");
-    expect(changeEvents).toContainEqual([
-      expect.objectContaining({
-        url: subscriptionUrl,
-        downloadStatus: "synchronize_ok"
-      }),
-      "downloadStatus"
-    ]);
-  });
-
-  await waitForAssertion(async() => {
-    let changeEvents = getTestEvents("subscriptions.onChanged");
-    expect(changeEvents).toContainEqual([
-      expect.objectContaining({
-        url: subscriptionUrl,
-        downloadStatus: expectedError
-      }),
-      "downloadStatus"
-    ]);
-  });
-}
-
-export async function waitForSubscriptionToBeRemoved(url) {
-  await wait(() => {
-    let changeEvents = getTestEvents("subscriptions.onRemoved");
-    return changeEvents.filter(event => {
-      return event[0].url == url &&
-        event[1] == null;
-    }).length > 0;
-  }, 3000, "Subscription was not removed.");
-
-  clearTestEvents("subscriptions.onRemoved");
-}
-
 async function syncSubscription(
   subscriptionUrl, lastFilterChecker, errorMessageDetails) {
   await EWE.subscriptions.sync(subscriptionUrl);
@@ -851,7 +807,7 @@ async function syncSubscription(
     let filters = await EWE.subscriptions.getFilters(subscriptionUrl);
     const lastFilter = filters.slice(-1)[0];
 
-    if (lastFilter && lastFilterChecker(lastFilter.text)) {
+    if (lastFilterChecker(lastFilter.text)) {
       return true;
     }
   }, 10000, `Subscription was not synchronised properly (${errorMessageDetails}).`);
