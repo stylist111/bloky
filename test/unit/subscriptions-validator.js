@@ -56,27 +56,29 @@ describe("Subscriptions validation", function() {
   });
 
   describe("Content files", function() {
-    it("returns a warning if content file is NOT found", async function() {
-      let id = 1;
+    const FILEPATH = "subscriptions";
 
-      env.setFetchResponse({
+    it("returns a warning if content file is NOT found", async function() {
+      let id = 3;
+
+      env.setFetchResponse(`${FILEPATH}/${id}`, {
         ok: false
       });
 
-      let warnings = await api.validate([{id}], "");
+      let warnings = await api.validate([{id}], FILEPATH);
       expect(warnings).toEqual(expect.arrayContaining([
         `No subscription content file for ID=${id}`
       ]));
     });
 
     it("does NOT return a warning, if content file is found", async function() {
-      let id = 1;
+      let id = 4;
 
-      env.setFetchResponse({
+      env.setFetchResponse(`${FILEPATH}/${id}`, {
         ok: true
       });
 
-      let warnings = await api.validate([{id}], "");
+      let warnings = await api.validate([{id}], FILEPATH);
       expect(warnings).not.toEqual(expect.arrayContaining([
         `No subscription content file for ID=${id}`
       ]));

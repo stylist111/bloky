@@ -15,6 +15,8 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* global global */
+
 // test environment: all the globals are mocked to have control in the tests
 
 // trivial in-memory implementation of `StorageArea`
@@ -93,52 +95,41 @@ const testNavigatorPrototype = {
 
 };
 
-let browser;
-let navigator;
-let prefs;
-
 export let obj = {
-  browser,
-  navigator,
-  prefs,
-
   configure() {
     this.browser = new Browser();
-
-    // eslint-disable-next-line no-undef
     global.browser = this.browser;
 
     this.navigator = Object.create(testNavigatorPrototype);
-    // eslint-disable-next-line no-undef
     global.navigator = this.navigator;
 
     // we could use `sinon` here for more opportunities of mocking and spying
-    // eslint-disable-next-line no-undef
-    global.fetchResponse = {ok: true};
-    // eslint-disable-next-line no-undef
-    global.fetch = async(url, options) => Promise.resolve(global.fetchResponse);
+    global.fetchResponses = new Map();
+    global.fetch = async(url, options) => {
+      let response = global.fetchResponses.get(url);
+      if (!response) {
+        response = {ok: true};
+      }
 
-    // eslint-disable-next-line no-undef
+      return Promise.resolve(response);
+    };
+
     global.prefs = this.prefs;
   },
 
-  setFetchResponse(value) {
-    // eslint-disable-next-line no-undef
-    global.fetchResponse = value;
+  setFetchResponse(url, value) {
+    global.fetchResponses.set(url, value);
   },
 
   setRecommendations(value) {
-    // eslint-disable-next-line no-undef
     global.recommendations = value;
   },
 
   setFilterStorageSubscriptions(value) {
-    // eslint-disable-next-line no-undef
     global.filterStorageSubscriptions = value;
   },
 
   setPrefs(value) {
-    // eslint-disable-next-line no-undef
     global.prefs = value;
   }
 };

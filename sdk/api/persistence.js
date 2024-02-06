@@ -22,6 +22,7 @@ export class PersistentState {
   constructor(storageKey) {
     this.storageKey = storageKey;
     this.activeSaveActions = new Set();
+    this.loaded = false;
 
     this.clearState();
   }
@@ -37,6 +38,7 @@ export class PersistentState {
   async load(savedStateCallback = null) {
     let persistObj = await browser.storage.session.get(this.storageKey);
     if (!persistObj || !persistObj[this.storageKey]) {
+      this.loaded = true;
       return;
     }
 
@@ -49,6 +51,7 @@ export class PersistentState {
     // We might have populated state until loading is finished.
     // Thus we might need to merge the saved and new runtime state.
     this.state = mergeObjects(savedState, this.state);
+    this.loaded = true;
   }
 
   async save() {

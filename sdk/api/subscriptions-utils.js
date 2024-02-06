@@ -16,6 +16,7 @@
  */
 
 import browser from "./browser.js";
+import {PersistentState} from "./persistence.js";
 
 function getRuleset(rulesetId) {
   let manifest = browser.runtime.getManifest();
@@ -36,14 +37,47 @@ export function rulesetExistsInManifest(rulesetId) {
 
 export async function subscriptionFileExists(subscription, path) {
   let subscriptionPath = `${path}/${subscription.id}`;
-  const url = browser.runtime.getURL(subscriptionPath);
-  try {
-    const fetchResult = await fetch(url, {method: "HEAD"});
-    return fetchResult.ok;
+  return memoizedFileExists(subscriptionPath);
+}
+
+let fileExistsCache = new PersistentState("ewe:fileExistsCache");
+
+/**
+ * Checks is a file is bundled in the extension. The results of calling this
+ * function are memoized in session storage to decrease the number of `fetch`
+ * requests made to the extension's resources.
+ *
+ * In our fuzz tests, we found that doing the full check of every subscription's
+ * files on every service worker startup lead to flaky tests where other network
+ * requests started failing.
+ *
+ * @param {string} filepath Path to the file, relative to the root of the
+ * extension.
+ * @returns {boolean} True if the filepath is bundled in the extension.
+ */
+async function memoizedFileExists(filepath) {
+  if (!fileExistsCache.loaded) {
+    await fileExistsCache.load();
   }
-  catch (error) {
-    return false;
+
+  let cache = fileExistsCache.getState();
+  if (typeof cache[filepath] == "undefined") {
+    const url = browser.runtime.getURL(filepath);
+
+    let fileExists;
+    try {
+      const fetchResult = await fetch(url, {method: "HEAD"});
+      fileExists = fetchResult.ok;
+    }
+    catch (error) {
+      fileExists = false;
+    }
+
+    cache[filepath] = fileExists;
+    await fileExistsCache.save();
   }
+
+  return cache[filepath];
 }
 
 /**
