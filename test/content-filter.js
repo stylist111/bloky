@@ -679,9 +679,6 @@ describe("Snippets", function() {
   });
 
   it("restarts snippets on history.pushState", async function() {
-    // See EE-303
-    this.skip();
-
     setMinTimeout(this, 6000);
 
     await addFilter(`${TEST_PAGES_DOMAIN}#$#${INJECTED_SNIPPET} true`);
