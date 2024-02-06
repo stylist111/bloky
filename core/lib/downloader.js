@@ -367,7 +367,25 @@ exports.Downloader = class Downloader {
       responseStatus = response.status;
 
       if (responseStatus != 200) {
-        errorCallback("synchronize_connection_error");
+        function isDiffTooOld(dateString) {
+          let date = new Date(dateString);
+          let currentDate = new Date();
+          let difference = currentDate - date;
+
+          // The maximum age for diff URLs is 6 weeks. This length was set
+          // somewhat arbitrarily, so it might be adjusted in the future
+          // by the FLOPS team
+          // https://jira.eyeo.com/browse/EE-297
+          const sixWeeksInMilliseconds = 6 * 7 * 24 * 60 * 60 * 1000;
+          return difference > sixWeeksInMilliseconds;
+        }
+
+        if (isDiffTooOld(downloadable.lastModified)) {
+          errorCallback("synchronize_diff_too_old");
+        }
+        else {
+          errorCallback("synchronize_connection_error");
+        }
         return;
       }
 

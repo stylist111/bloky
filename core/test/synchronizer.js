@@ -802,6 +802,20 @@ describe("Synchronizer", function() {
       }).catch(error => unexpectedError.call(assert, error));
     });
 
+    it("gives the right error message when diff is outdated", async function() {
+      Subscription.dnr = true;
+      let testDiffSubscriptionUrl = "https://example.com/subscription";
+      let invalidDiffUrl = "https://easylist-downloads.adblockplus.org/v3/diff/easylist/ef590f9ee92f557ca060bd567ed60381d24c73d5.json";
+      let subscription = Subscription.fromURL(testDiffSubscriptionUrl);
+      subscription.diffURL = invalidDiffUrl;
+      subscription.lastModified = "Last modified: 14 March 2023 00:06 UTC";
+      filterStorage.addSubscription(subscription);
+
+      return runner.runScheduledTasks(1).then(() => {
+        assert.equal(subscription.downloadStatus, "synchronize_diff_too_old");
+      });
+    });
+
     it("State fields", function() {
       let subscription = Subscription.fromURL("https://example.com/subscription");
       filterStorage.addSubscription(subscription);

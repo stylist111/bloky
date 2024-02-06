@@ -1,6 +1,17 @@
 Unreleased
 ==========
 
+# General
+
+- Subscriptions now have a new property `lastModified` to match the
+`! Last modified:` header from the filter lists. It is used to determine when a
+subscription is too old to receive new diffs. (EE-297)
+- The `downloadStatus` of the subscription has a new possible value. When the
+download of a diff fails, `downloadStatus` will be set to the new error 
+`synchronize_diff_too_old` if the diff is over 6 weeks old, or 
+`synchronize_connection_error` otherwise. (EE-297)
+
+
 📠 1.4.1 - 2024-02-02 📠
 ========================
 

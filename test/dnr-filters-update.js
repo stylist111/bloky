@@ -599,6 +599,7 @@ describe("Test subscriptions update", function() {
             diffURL: testDiffUrl,
             enabled: true,
             id: UPDATABLE_SUBSCRIPTION_ID,
+            lastModified: "14 March 2023 00:06 UTC",
             url: testDiffSubscriptionUrl
           })
         ])

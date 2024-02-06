@@ -52,7 +52,7 @@ function convertSubscription(subscription) {
   const {
     id, disabled, downloadStatus, homepage, version, lastDownload, lastSuccess,
     softExpiration, expires, title, url, downloadable, downloadCount, diffURL,
-    privileged} = subscription;
+    privileged, lastModified} = subscription;
 
   let updatable = (subscription instanceof FullUpdatableSubscription ||
                    subscription instanceof DiffUpdatableSubscription);
@@ -74,7 +74,8 @@ function convertSubscription(subscription) {
     lastSuccess,
     lastDownload,
     softExpiration,
-    expires
+    expires,
+    lastModified
   };
 }
 
@@ -249,7 +250,7 @@ async function disableRuleset(rulesetId) {
 async function getFilterText(subscription, path) {
   let subscriptionPath = `${path}/${subscription.id}`;
   let rawLines = await readFileContent(subscriptionPath);
-  let {lines, error} = parseFilterList(rawLines);
+  let {lines, params, error} = parseFilterList(rawLines);
   if (error) {
     throw new Error(error);
   }
@@ -257,7 +258,7 @@ async function getFilterText(subscription, path) {
     throw new Error("invalid filter list");
   }
   lines.shift();
-  return lines;
+  return {filterText: lines, params};
 }
 
 /**
@@ -295,7 +296,7 @@ export async function updateFilterText() {
         x => x.url == subscription.url);
 
       if (subscriptionInfo) {
-        let filterText = await getFilterText(
+        let {filterText} = await getFilterText(
           subscriptionInfo, addonBundledSubscriptionsPath);
         subscription.setFilterText(filterText);
       }
@@ -351,9 +352,10 @@ async function add(url, properties = {}) {
 
     if (!subscription.downloadable) {
       let filterText;
+      let params;
       try {
-        filterText = await getFilterText(
-          subscriptionInfo, addonBundledSubscriptionsPath);
+        ({filterText, params} = await getFilterText(
+          subscriptionInfo, addonBundledSubscriptionsPath));
       }
       catch (e) {
         // We already warn if the file doesn't exist on startup, so
@@ -362,6 +364,10 @@ async function add(url, properties = {}) {
 
       if (filterText) {
         subscription.setFilterText(filterText);
+      }
+
+      if (params) {
+        subscription.setParams(params);
       }
     }
   }
@@ -383,6 +389,12 @@ async function add(url, properties = {}) {
   }
   if ("privileged" in properties) {
     subscription.privileged = properties.privileged;
+  }
+  if ("diffURL" in properties) {
+    subscription.diffURL = properties.diffURL;
+  }
+  if ("lastModified" in properties) {
+    subscription.lastModified = properties.lastModified;
   }
 
   filterStorage.addSubscription(subscription);
@@ -535,20 +547,40 @@ export default {
    *                                  currently downloading (updatable
    *                                  subscriptions only).
    * @property {?string} downloadStatus The {@link https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore/-/jobs/artifacts/0.6.0/file/build/docs/module-subscriptionClasses.DownloadableSubscription.html?job=docs#downloadStatus|status}
-   *                                    of the most recent download attempt
-   *                                    (updatable subscriptions only).
+   * of the most recent download attempt (updatable subscriptions only). It can
+   * have the following values:
+   * - `synchronize_ok` - The subscription is perfectly fine.
+   * - `synchronize_connection_error` - An error has occurred when trying to
+   *   download the subscription.
+   * - `synchronize_invalid_url` - The subscription URL is invalid.
+   * - `synchronize_too_many_filters` - A custom user subscription cannot
+   *   update because there aren't enough dynamic rules available.
+   * - `synchronize_dnr_error` - Downloading succeeded but, an error occurred
+   *   while updating the custom subscription.
+   * - `synchronize_diff_too_many_filters` - A diff updatable subscription
+   *   cannot update because there aren't enough dynamic rules available.
+   * - `synchronize_diff_too_old` - An error occurred when trying to download
+   *   the diffs. The bundled subscription is too old.
+   * - `synchronize_diff_error` - Downloading succeeded but, an error occurred
+   *   while updating the diff updatable subscription.
+   * - null - The initial download is not completed yet, or the subscription is
+   *   not updatable.
    * @property {boolean} enabled Indicates whether this subscription will
    *                             be applied.
    * @property {?number} expires Epoch time when the subscription must be
-   *                             downloaded (downloadble subscriptions
+   *                             downloaded (downloadable subscriptions
    *                             only).
    * @property {?string} homepage Website of the project that manages
    *                              this filter list.
    * @property {?number} lastDownload Epoch time when the subscription
    *                                  was last downloaded to your machine
-   *                                  (downloadble subscriptions only).
+   *                                  (downloadable subscriptions only).
+   * @property {?string} lastModified String representation of the date when the
+   *                                  filter list was last modified. In case of
+   *                                  a DiffUpdatableSubscription, it is the
+   *                                  base date used to calculate the diffs.
    * @property {?number} lastSuccess Epoch time when this subscription was last
-   *                                 successfully downloaded (downloadble
+   *                                 successfully downloaded (downloadable
    *                                 subscriptions only).
    * @property {?boolean} privileged True if this subscription can load filters
    *                                 that require privileged access, like
@@ -557,7 +589,7 @@ export default {
    *                                    download the subscription. Can be
    *                                    updated even if the subscription was
    *                                    not downloaded. If `expires` is closer,
-   *                                    then `expires` prevail. (downloadble
+   *                                    then `expires` prevail. (downloadable
    *                                    subscriptions only).
    * @property {string} title The display name of the subscription.
    *                          If not provided, falls back to the URL.
@@ -842,7 +874,8 @@ export default {
     }
 
     let properties = ["disabled", "title", "homepage", "lastDownload",
-                      "downloadStatus", "downloading", "privileged"];
+                      "downloadStatus", "downloading", "privileged",
+                      "lastModified"];
     for (let property of properties) {
       filterNotifier.on(`subscription.${property}`,
                         makeChangeListener(property));

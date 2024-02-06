@@ -319,7 +319,6 @@ exports.Subscription = class Subscription {
     return this._filterText[Symbol.iterator]();
   }
 
-  // Lots of this fromSynchronizer._onDownloadSuccess()
   /**
    * Set parameters for CountableSubscriptions.
    *
@@ -360,6 +359,10 @@ exports.Subscription = class Subscription {
 
     if (params.diffURL) {
       this.diffURL = params.diffURL;
+    }
+
+    if (params.lastModified){
+      this.lastModified = params.lastModified;
     }
   }
 
@@ -1413,12 +1416,16 @@ class DiffUpdatableSubscription extends CountableSubscription {
    * @package
    */
   *serialize() {
-    let {diffURL} = this;
+    let {diffURL, lastModified} = this;
 
     yield* super.serialize();
 
     if (diffURL) {
       yield "diffURL=" + diffURL;
+    }
+
+    if (lastModified) {
+      yield "lastModified=" + lastModified;
     }
   }
 
@@ -1446,5 +1453,21 @@ class DiffUpdatableSubscription extends CountableSubscription {
     let oldValue = this._diffURL;
     this._diffURL = value;
     filterNotifier.emit("subscription.diffURL", this, value, oldValue);
+  }
+
+  /**
+   * The release date of this subscription, used as base date to calculate the
+   * diffs.
+   *
+   * @type {Date}
+   */
+  get lastModified() {
+    return this._lastModified;
+  }
+
+  set lastModified(value) {
+    let oldValue = this._lastModified;
+    this._lastModified = value;
+    filterNotifier.emit("subscription.lastModified", this, value, oldValue);
   }
 };

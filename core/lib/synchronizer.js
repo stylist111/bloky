@@ -155,7 +155,7 @@ class Synchronizer {
   _getDownloadable(subscription, manual) {
     let {url, lastDownload, lastSuccess, lastCheck, version, softExpiration,
          expires, downloadCount, disabled, downloadable,
-         countable, diffURL} = subscription;
+         countable, diffURL, lastModified} = subscription;
 
     let result;
 
@@ -185,6 +185,7 @@ class Synchronizer {
     result.manual = manual;
     result.downloadCount = downloadCount;
     result.disabled = disabled;
+    result.lastModified = lastModified;
     if (!diffURL && (disabled || (countable && !downloadable))) {
       result.method = "HEAD";
     }

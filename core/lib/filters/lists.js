@@ -44,7 +44,8 @@ function parseFilterList(filters) {
     version: null,
     expires: null,
     abtest: null,
-    diffurl: null
+    diffurl: null,
+    lastmodified: null
   };
 
   for (let {hasOwnProperty} = Object.prototype, i = 1; i < lines.length; i++) {
@@ -53,12 +54,15 @@ function parseFilterList(filters) {
       break;
     }
 
-    let keyword = match[1].toLowerCase();
+    let keyword = match[1].toLowerCase().replace(/\s/g, "");
     if (hasOwnProperty.call(params, keyword)) {
       params[keyword] = match[2];
       lines.splice(i--, 1);
     }
   }
+
+  params["lastModified"] = params.lastmodified;
+  delete params.lastmodified;
 
   return {lines, params, minVersion};
 }
