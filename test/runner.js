@@ -530,7 +530,7 @@ async function runTests() {
   let isMV3 = manifestIsMV3(manifest);
   // copy a targeted test web extension to a temporary directory `test-current`
   originalExtensionPath = path.resolve(process.cwd(), "dist", `test-m${manifest}`);
-  if (testKinds.includes("mv2-mv3-migrate")) {
+  if (testKinds.includes("mv2-mv3-migrate") || testKinds.includes("update")) {
     currentExtensionPath = path.resolve(process.cwd(), "dist", "test-current");
     await copyDir(originalExtensionPath, currentExtensionPath);
   }

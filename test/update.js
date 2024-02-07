@@ -105,7 +105,11 @@ describe(`Update (${phase}) [runner-only]`, function() {
         return filters;
       }
     }, 40000, "Events are not received");
-    expect(filters.find(it => it.text == filter)).toBeDefined();
+
+    expect(filters).toContainEqual(expect.objectContaining({
+      text: filter
+    }));
+
     try {
       let subs = await EWE.subscriptions.getSubscriptions();
       expect(subs).toEqual(expect.arrayContaining([
