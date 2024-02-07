@@ -26,6 +26,7 @@ const ALLOWED_DOMAINS = new Set([
   "adblock.gardar.net",
   "adblockplus.me",
   "adblockplus.org",
+  "abptestpages.org",
   "commentcamarche.net",
   "droit-finances.commentcamarche.com",
   "easylist.to",

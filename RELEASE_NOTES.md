@@ -10,7 +10,7 @@ subscription is too old to receive new diffs. (EE-297)
 download of a diff fails, `downloadStatus` will be set to the new error 
 `synchronize_diff_too_old` if the diff is over 6 weeks old, or 
 `synchronize_connection_error` otherwise. (EE-297)
-
+- Allow subscriptions on abptestpages.org for testing purpose. (EE-323)
 
 📠 1.4.1 - 2024-02-02 📠
 ========================
