@@ -31,7 +31,7 @@ import {getDefaultSubscriptions, isSynchronizing} from "./subscriptions.js";
 import {default as initializer} from "./initializer.js";
 import {setAddonInfo, addonBundledSubscriptionsPath, initializeDefaultAddonInfo}
   from "./info.js";
-import {dnrSubscriptionUpdate, dynamicRulesAvailable, getDynamicFilters,
+import {dnrDiffSubscriptionUpdate, dynamicRulesAvailable, getDynamicFilters,
         removeAllDynamicFilters, clearRulesetUpdates,
         testSetDynamicRulesAvailable, clearIsDnrSubscriptionUpdating}
   from "./dnr-filters.js";
@@ -162,13 +162,13 @@ export default {
 
   /**
    * @ignore
-   * Call dnrSubscriptionUpdate by subscription URL for testing. It
+   * Call dnrDiffSubscriptionUpdate by subscription URL for testing. It
    * will get an real subscription object before calling the API.
    *
    * @param {string} url The subscription URL.
    * @param {Object} updates The updates to apply.
    */
-  async _dnrSubscriptionUpdate(url, updates) {
+  async _dnrDiffSubscriptionUpdate(url, updates) {
     await this._waitForInitialization();
 
     const {filterStorage} = filterEngine;
@@ -177,7 +177,7 @@ export default {
     if (!subscription) {
       subscription = Subscription.fromURL(url);
     }
-    await dnrSubscriptionUpdate(subscription, updates);
+    await dnrDiffSubscriptionUpdate(subscription, updates);
   },
 
   getSubscriptionRulesetMap,

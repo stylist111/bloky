@@ -301,15 +301,14 @@ export class Resource {
   constructor(path, page) {
     this.path = path;
 
-    this.error = (async() => {
-      let tabId = page && await page.created;
+    this.error = new Promise((resolve, reject) => {
+      let tabIdPromise = page ? page.created : Promise.resolve(null);
       let url = new URL(path, TEST_PAGES_URL).href;
-      let onErrorOccurred;
-      let onCompleted;
 
-      function matches(details) {
+      function matches(details, tabId) {
         let requestUrl = new URL(details.url);
-        return requestUrl.origin + requestUrl.pathname == url;
+        return (details.tabId == tabId || !tabId) &&
+          requestUrl.origin + requestUrl.pathname == url;
       }
 
       function removeListeners() {
@@ -317,22 +316,27 @@ export class Resource {
         browser.webRequest.onCompleted.removeListener(onCompleted);
       }
 
-      let error = await new Promise((resolve, reject) => {
-        let filter = {urls: ["<all_urls>"], tabId};
+      async function onErrorOccurred(details) {
+        let tabId = await tabIdPromise;
+        handleConnection(details, tabId, removeListeners, reject);
+        if (matches(details, tabId)) {
+          removeListeners();
+          resolve(details);
+        }
+      }
 
-        onErrorOccurred = details => {
-          handleConnection(details, tabId, removeListeners, reject);
-          return matches(details) && resolve(details);
-        };
-        onCompleted = details => matches(details) && resolve();
+      async function onCompleted(details) {
+        let tabId = await tabIdPromise;
+        if (matches(details, tabId)) {
+          removeListeners();
+          resolve();
+        }
+      }
 
-        browser.webRequest.onErrorOccurred.addListener(onErrorOccurred, filter);
-        browser.webRequest.onCompleted.addListener(onCompleted, filter);
-      });
-
-      removeListeners();
-      return error;
-    })();
+      let filter = {urls: ["<all_urls>"]};
+      browser.webRequest.onErrorOccurred.addListener(onErrorOccurred, filter);
+      browser.webRequest.onCompleted.addListener(onCompleted, filter);
+    });
 
     this.completed = this.error.then(e => null);
   }
@@ -800,6 +804,50 @@ export async function waitForSubscriptionToBeSynchronized(url, clear = true) {
   }
 }
 
+/**
+ * Waits until we've received all of the events for a subscription trying to
+ * sync, downloading successfully, and then having an error when processing the
+ * update.
+ * @param {string} subscriptionUrl
+ * @param {string} expectedError
+ */
+export async function waitForSubscriptionToFailToUpdate(
+  subscriptionUrl, expectedError = "synchronize_too_many_filters") {
+  await waitForAssertion(async() => {
+    let changeEvents = getTestEvents("subscriptions.onChanged");
+    expect(changeEvents).toContainEqual([
+      expect.objectContaining({
+        url: subscriptionUrl,
+        downloadStatus: "synchronize_ok"
+      }),
+      "downloadStatus"
+    ]);
+  });
+
+  await waitForAssertion(async() => {
+    let changeEvents = getTestEvents("subscriptions.onChanged");
+    expect(changeEvents).toContainEqual([
+      expect.objectContaining({
+        url: subscriptionUrl,
+        downloadStatus: expectedError
+      }),
+      "downloadStatus"
+    ]);
+  });
+}
+
+export async function waitForSubscriptionToBeRemoved(url) {
+  await wait(() => {
+    let changeEvents = getTestEvents("subscriptions.onRemoved");
+    return changeEvents.filter(event => {
+      return event[0].url == url &&
+        event[1] == null;
+    }).length > 0;
+  }, 3000, "Subscription was not removed.");
+
+  clearTestEvents("subscriptions.onRemoved");
+}
+
 async function syncSubscription(
   subscriptionUrl, lastFilterChecker, errorMessageDetails) {
   await EWE.subscriptions.sync(subscriptionUrl);
@@ -807,7 +855,7 @@ async function syncSubscription(
     let filters = await EWE.subscriptions.getFilters(subscriptionUrl);
     const lastFilter = filters.slice(-1)[0];
 
-    if (lastFilterChecker(lastFilter.text)) {
+    if (lastFilter && lastFilterChecker(lastFilter.text)) {
       return true;
     }
   }, 10000, `Subscription was not synchronised properly (${errorMessageDetails}).`);

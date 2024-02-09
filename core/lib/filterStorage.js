@@ -383,13 +383,6 @@ class FilterStorage {
       subscription,
       update
     );
-    if (this.features & Features.DNR) {
-      filterNotifier.emit(
-        "subscription.dnrUpdated",
-        subscription,
-        update
-      );
-    }
   }
 
   /**

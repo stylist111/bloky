@@ -12,6 +12,21 @@ download of a diff fails, `downloadStatus` will be set to the new error
 `synchronize_connection_error` otherwise. (EE-297)
 - Allow subscriptions on abptestpages.org for testing purpose. (EE-323)
 
+# Custom User Subscriptions
+
+- Enabled custom user subscriptions in MV3 extensions. (EE-117)
+- If `EWE.subscriptions.add()` is called with a subscription URL that is not one
+  of the subscriptions bundled with the extension, then the subscription will be
+  added as a custom user subscription. The filter text will be downloaded from
+  the provided URL in the same manner as MV2 subscriptions.
+- Declarative Net Request rules applied by custom user subscriptions use dynamic
+  rules, and so there is a limit to how big these subscriptions can be. If the
+  subscription requires more rules to update than are available, it will no
+  longer update, and will have a `downloadStatus` of
+  `synchronize_too_many_filters`.
+- If there is an unexpected unknown error when applying the DNR updates,
+  `downloadStatus` will be set to `synchronize_dnr_error`.
+
 📠 1.4.1 - 2024-02-02 📠
 ========================
 

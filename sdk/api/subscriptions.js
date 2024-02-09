@@ -279,9 +279,16 @@ async function remove(url) {
     throw new Error(`Subscription does not exist: ${url}`);
   }
 
-  filterEngine.filterStorage.removeSubscription(subscription);
+  if (browser.declarativeNetRequest) {
+    if (subscription instanceof FullUpdatableSubscription) {
+      await disableDynamicRules(subscription.url);
+    }
+    else {
+      await disableRuleset(subscription.id);
+    }
+  }
 
-  await disableRuleset(subscription.id);
+  filterEngine.filterStorage.removeSubscription(subscription);
 }
 
 /**
@@ -291,7 +298,8 @@ export async function updateFilterText() {
   let removeUrls = [];
 
   for (let subscription of filterEngine.filterStorage.subscriptions()) {
-    if (subscription instanceof RegularSubscription) {
+    if (subscription instanceof DiffUpdatableSubscription ||
+        subscription instanceof CountableSubscription) {
       let subscriptionInfo = addonBundledSubscriptions.find(
         x => x.url == subscription.url);
 
@@ -342,33 +350,25 @@ async function add(url, properties = {}) {
 
   let subscription = Subscription.fromURL(url);
 
-  if (browser.declarativeNetRequest) {
-    // This currently prevents us from adding user subscriptions, ie
-    // those we don't know about. See EE-117.
+  if (browser.declarativeNetRequest && !subscription.downloadable) {
     let subscriptionInfo = addonBundledSubscriptions.find(x => x.url == url);
-    if (!subscriptionInfo) {
-      throw new Error(`Failed to find the subscription with URL=${url}`);
+    let filterText;
+    let params;
+    try {
+      ({filterText, params} = await getFilterText(
+        subscriptionInfo, addonBundledSubscriptionsPath));
+    }
+    catch (e) {
+      // We already warn if the file doesn't exist on startup, so
+      // we can ignore an error loading the bundled file here.
     }
 
-    if (!subscription.downloadable) {
-      let filterText;
-      let params;
-      try {
-        ({filterText, params} = await getFilterText(
-          subscriptionInfo, addonBundledSubscriptionsPath));
-      }
-      catch (e) {
-        // We already warn if the file doesn't exist on startup, so
-        // we can ignore an error loading the bundled file here.
-      }
+    if (filterText) {
+      subscription.setFilterText(filterText);
+    }
 
-      if (filterText) {
-        subscription.setFilterText(filterText);
-      }
-
-      if (params) {
-        subscription.setParams(params);
-      }
+    if (params) {
+      subscription.setParams(params);
     }
   }
 
@@ -399,7 +399,9 @@ async function add(url, properties = {}) {
 
   filterStorage.addSubscription(subscription);
 
-  await enableRuleset(subscription.id);
+  if (browser.declarativeNetRequest && !subscription.downloadable) {
+    await enableRuleset(subscription.id);
+  }
 
   if (!subscription.lastDownload &&
       !isSynchronizing(subscription.url)) {
@@ -416,7 +418,14 @@ async function disable(url) {
 
   subscription.disabled = true;
 
-  await disableRuleset(subscription.id);
+  if (browser.declarativeNetRequest) {
+    if (subscription instanceof FullUpdatableSubscription) {
+      await disableDynamicRules(subscription.url);
+    }
+    else {
+      await disableRuleset(subscription.id);
+    }
+  }
 }
 
 function migrationNeeded() {
@@ -546,9 +555,8 @@ export default {
    * @property {?boolean} downloading Indicates whether the subscription is
    *                                  currently downloading (updatable
    *                                  subscriptions only).
-   * @property {?string} downloadStatus The {@link https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore/-/jobs/artifacts/0.6.0/file/build/docs/module-subscriptionClasses.DownloadableSubscription.html?job=docs#downloadStatus|status}
-   * of the most recent download attempt (updatable subscriptions only). It can
-   * have the following values:
+   * @property {?string} downloadStatus The status of the most recent download
+   *   attempt (updatable subscriptions only). It can have the following values:
    * - `synchronize_ok` - The subscription is perfectly fine.
    * - `synchronize_connection_error` - An error has occurred when trying to
    *   download the subscription.
@@ -737,7 +745,14 @@ export default {
 
     subscription.disabled = false;
 
-    await enableRuleset(subscription.id);
+    if (browser.declarativeNetRequest) {
+      if (subscription instanceof FullUpdatableSubscription) {
+        await restoreDynamicRules(subscription.url);
+      }
+      else {
+        await enableRuleset(subscription.id);
+      }
+    }
   },
 
   /**
