@@ -5,6 +5,7 @@ variables:
   npm_config_audit: "false"
   npm_config_fund: "false"
   npm_config_prefer_offline: "true"
+  DOCKER_RESOURCE_FLAGS: "--cpus=2 --memory=8g --shm-size=2g"
 
   # Browser versions we use:
   STABLE_CHROMIUM_VERSION: "120.0.6099.71"
@@ -117,7 +118,7 @@ unit:core:
     - .docker-image
   script:
     - docker build -t core -f test/dockerfiles/core.Dockerfile .
-    - docker run --cpus=2 --memory=8g --shm-size=512m -e CHROMIUM_VERSION="$STABLE_CHROMIUM_VERSION" -e FIREFOX_VERSION="$STABLE_FIREFOX_VERSION" -t core
+    - docker run $DOCKER_RESOURCE_FLAGS -e CHROMIUM_VERSION="$STABLE_CHROMIUM_VERSION" -e FIREFOX_VERSION="$STABLE_FIREFOX_VERSION" -t core
 
 unit:webext:
   image: node:18-bullseye-slim
@@ -142,7 +143,7 @@ benchmark:
   needs: []
   script:
     - docker build -t benchmark -f test/dockerfiles/benchmark.Dockerfile .
-    - docker run --cpus=2 --memory=8g --shm-size=512m benchmark
+    - docker run $DOCKER_RESOURCE_FLAGS benchmark
   rules:
     - !reference [.full-run, rules]
 
@@ -164,7 +165,7 @@ benchmark:
       OTHER_PARAMS="$OTHER_PARAMS -e TEST_RUNS=10";
     fi;
     docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER="$BROWSER" --build-arg SKIP_BUILD=1 .;
-    docker run --cpus=2 --memory=8g --shm-size=1g -e TEST_PARAMS="$TEST_PARAMS" $OTHER_PARAMS functional;
+    docker run $DOCKER_RESOURCE_FLAGS -e TEST_PARAMS="$TEST_PARAMS" $OTHER_PARAMS functional;
 
 # Functional tests - MV2
 func:v2:chromium:stable:
@@ -271,7 +272,7 @@ func:v3:edge:stable:
   stage: test
   script:
     - docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER="$BROWSER" --build-arg SKIP_BUILD=1 .
-    - docker run --cpus=2 --memory=8g --shm-size=1g --memory-swap=16384m -e TEST_PARAMS="$TEST_PARAMS --grep $FUNCTIONAL_MODULE" functional
+    - docker run $DOCKER_RESOURCE_FLAGS --memory-swap=16384m -e TEST_PARAMS="$TEST_PARAMS --grep $FUNCTIONAL_MODULE" functional
   rules:
     - !reference [.checktests-run, rules]
 

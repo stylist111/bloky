@@ -48,7 +48,7 @@ tests locally use the following commands, which accept optional `TEST_PARAMS`:
 
 ```
 docker build -t core -f test/dockerfiles/core.Dockerfile .
-docker run --cpus=2 --memory=8g --shm-size=512m -e TEST_PARAMS="(path to the test to run)" -it core
+docker run --cpus=2 --memory=8g --shm-size=2g -e TEST_PARAMS="(path to the test to run)" -it core
 ```
 
 ### Benchmark
@@ -60,7 +60,7 @@ If you want to run it locally, use the following commands:
 
 ```
 docker build -t benchmark -f test/dockerfiles/benchmark.Dockerfile .
-docker run --cpus=2 --memory=8g --shm-size=512m benchmark
+docker run --cpus=2 --memory=8g --shm-size=2g benchmark
 ```
 
 For more commands and options to customize,
@@ -345,14 +345,14 @@ to run the same tests may be useful to recreate the infrastructure the CI uses.
 
 ```
 docker build -t core -f test/dockerfiles/core.Dockerfile .
-docker run --cpus=2 --memory=8g --shm-size=512m TEST_PARAMS="(path to the test to run)" -it core
+docker run --cpus=2 --memory=8g --shm-size=2g TEST_PARAMS="(path to the test to run)" -it core
 ```
 
 #### Func:webext
 
 ```
 docker build -t functional -f test/dockerfiles/functional.Dockerfile .
-docker run --cpus=2 --memory=8g --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" -it functional
+docker run --cpus=2 --memory=8g --shm-size=2g -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" -it functional
 ```
 
 Please notice that the TEST_PARAMS argument can also take the additional options
@@ -385,7 +385,7 @@ development"
 The `--platform` option should be used when running the image. Example:
 
 ```
-docker run --platform linux/amd64 --cpus=2 --memory=8g --shm-size=512m -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" -it functional
+docker run --platform linux/amd64 --cpus=2 --memory=8g --shm-size=2g -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" -it functional
 ```
 
 ### Maintaining browser cache

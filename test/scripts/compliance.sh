@@ -28,7 +28,7 @@ TERMINAL="${TERMINAL:-it}"
 TESTS_TO_INCLUDE="${TESTS_TO_INCLUDE:-}"
 BROWSER="${BROWSER:-chromium}"
 VERSION="${VERSION:-latest}"
-docker run --cpus=2 --memory=4g --shm-size=1g -$TERMINAL \
+docker run --cpus=2 --memory=8g --shm-size=2g -$TERMINAL \
   -e SKIP_EXTENSION_DOWNLOAD="true" -e CUSTOM_BROWSER=$BROWSER \
   -e BROWSER_VERSION="$VERSION" -e GREP="^.*$BROWSER$SKIP*\$" \
   -e TESTS_TO_INCLUDE="$TESTS_TO_INCLUDE" compliance
