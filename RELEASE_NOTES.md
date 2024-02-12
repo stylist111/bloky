@@ -31,6 +31,11 @@ download of a diff fails, `downloadStatus` will be set to the new error
 - If there is an unexpected unknown error when applying the DNR updates,
   `downloadStatus` will be set to `synchronize_dnr_error`.
 
+## Browser Support Updates
+
+- From now on, the latest versions of Chromium, Firefox and Edge are supported
+  by the engine (latest versions at the time of release).
+
 📠 1.4.1 - 2024-02-02 📠
 ========================
 

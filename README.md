@@ -59,14 +59,14 @@ the following versions:
 
 Manifest V2:
 
-* Chromium 77 and 118
-* Firefox 68 and 119
+* Chromium 77 and latest
+* Firefox 68 and latest
 * Edge 79
 
 Manifest V3:
 
-* Chromium 111 and 118
-* Edge 118
+* Chromium 111 and latest
+* Edge latest
 
 ### Manifest for V2
 

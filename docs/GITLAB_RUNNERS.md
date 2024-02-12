@@ -92,7 +92,7 @@ build:
   tags:
     - local-test
 
-func:v3:chromium:stable:
+func:v3:chromium:latest:
   ...
   tags:
     - local-test-dind
@@ -115,7 +115,7 @@ To artificially keep the container running, `sleep` can be used as the last
 script command. Example:
 
 ```yaml
-func:v3:chromium:stable:
+func:v3:chromium:latest:
   ...
   script:
     - docker build -t functional-local -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER="$BROWSER" --build-arg SKIP_BUILD=1 .;

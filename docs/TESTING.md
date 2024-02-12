@@ -462,7 +462,7 @@ to the job that is failing:
 
 ```
 
-func:v2:chromium:stable:
+func:v2:chromium:latest:
   tags: [ saas-linux-large-amd64 ]
 
 ```

@@ -6,17 +6,14 @@ variables:
   npm_config_fund: "false"
   npm_config_prefer_offline: "true"
   DOCKER_RESOURCE_FLAGS: "--cpus=2 --memory=8g --shm-size=2g"
-
-  # Browser versions we use:
-  STABLE_CHROMIUM_VERSION: "120.0.6099.71"
+  # Oldest supported versions
   OLDEST_CHROMIUM_MV2_VERSION: "77.0.3865.0"
   OLDEST_CHROMIUM_MV3_VERSION: "111.0.5563.64"
-  STABLE_FIREFOX_VERSION: "120.0.1"
-  STABLE_FIREFOX_BSL_INCOGNITO_VERSION: "114.0.2"
   OLDEST_FIREFOX_VERSION: "68.0"
-  STABLE_EDGE_VERSION: "120.0.2210.61"
+  # Latest Firefox version using browser local storage in incognito mode
+  BSL_FIREFOX_INCOGNITO_VERSION: "114.0.2"
   # Default value for Windows shared runners
-  STABLE_EDGE_WINDOWS_VERSION: "79.0.309"
+  WINDOWS_EDGE_VERSION: "79.0.309"
 
 # Pipeline rules
 workflow:
@@ -27,7 +24,7 @@ workflow:
     - when: always
 
 # The following CI variables modify which jobs run in a pipeline:
-# - FULL: Full set of tests, including latest browsers. Used in nightly runs.
+# - FULL: Full set of tests, including additional browsers. Used in nightly runs.
 # - CHECKTESTS: Check tests quality. Used in nightly runs.
 
 .full-run:
@@ -118,7 +115,7 @@ unit:core:
     - .docker-image
   script:
     - docker build -t core -f test/dockerfiles/core.Dockerfile .
-    - docker run $DOCKER_RESOURCE_FLAGS -e CHROMIUM_VERSION="$STABLE_CHROMIUM_VERSION" -e FIREFOX_VERSION="$STABLE_FIREFOX_VERSION" -t core
+    - docker run $DOCKER_RESOURCE_FLAGS -t core
 
 unit:webext:
   image: node:18-bullseye-slim
@@ -168,22 +165,22 @@ benchmark:
     docker run $DOCKER_RESOURCE_FLAGS -e TEST_PARAMS="$TEST_PARAMS" $OTHER_PARAMS functional;
 
 # Functional tests - MV2
-func:v2:chromium:stable:
+func:v2:chromium:latest:
   extends: .functional
   variables:
-    BROWSER: chromium $STABLE_CHROMIUM_VERSION
+    BROWSER: chromium latest
     TEST_PARAMS: v2 $BROWSER
 
 func:v2:chromium:incognito:
   extends: .functional
   variables:
-    BROWSER: chromium $STABLE_CHROMIUM_VERSION
+    BROWSER: chromium latest
     TEST_PARAMS: v2 $BROWSER --incognito
 
-func:v2-subs:chromium:stable:
+func:v2-subs:chromium:latest:
   extends: .functional
   variables:
-    BROWSER: chromium $STABLE_CHROMIUM_VERSION
+    BROWSER: chromium latest
     TEST_PARAMS: v2-custom $BROWSER
 
 func:v2:chromium:oldest:
@@ -192,16 +189,16 @@ func:v2:chromium:oldest:
     BROWSER: chromium $OLDEST_CHROMIUM_MV2_VERSION
     TEST_PARAMS: v2 $BROWSER
 
-func:v2:firefox:stable:
+func:v2:firefox:latest:
   extends: .functional
   variables:
-    BROWSER: firefox $STABLE_FIREFOX_VERSION
+    BROWSER: firefox latest
     TEST_PARAMS: v2 $BROWSER
 
 func:v2:firefox:incognito:
   extends: .functional
   variables:
-    BROWSER: firefox $STABLE_FIREFOX_VERSION
+    BROWSER: firefox latest
     TEST_PARAMS: v2 $BROWSER --incognito
 
 func:v2:firefox:oldest:
@@ -231,27 +228,27 @@ func:v2:firefox:oldest:
     - windows
     - windows-1809
 
-func:v2:windows:edge:stable:
+func:v2:windows:edge:
   extends: .functional-windows
   script:
-    - npm test v2 edge -- $STABLE_EDGE_WINDOWS_VERSION --timeout=10000
+    - npm test v2 edge -- $WINDOWS_EDGE_VERSION --timeout=10000
 
 func:v2:windows:edge:incognito:
   extends: .functional-windows
   script:
-    - npm test v2 edge -- $STABLE_EDGE_WINDOWS_VERSION --incognito --timeout=10000
+    - npm test v2 edge -- $WINDOWS_EDGE_VERSION --incognito --timeout=10000
 
 # Functional tests - MV3
-func:v3:chromium:stable:
+func:v3:chromium:latest:
   extends: .functional
   variables:
-    BROWSER: chromium $STABLE_CHROMIUM_VERSION
+    BROWSER: chromium latest
     TEST_PARAMS: v3 $BROWSER --testKinds functional reload update
 
 func:v3:chromium:incognito:
   extends: .functional
   variables:
-    BROWSER: chromium $STABLE_CHROMIUM_VERSION
+    BROWSER: chromium latest
     TEST_PARAMS: v3 $BROWSER --testKinds functional reload update --incognito
 
 func:v3:chromium:oldest:
@@ -260,10 +257,10 @@ func:v3:chromium:oldest:
     BROWSER: chromium $OLDEST_CHROMIUM_MV3_VERSION
     TEST_PARAMS: v3 $BROWSER --testKinds functional reload update
 
-func:v3:edge:stable:
+func:v3:edge:latest:
   extends: .functional
   variables:
-    BROWSER: edge $STABLE_EDGE_VERSION
+    BROWSER: edge latest
     TEST_PARAMS: v3 $BROWSER --testKinds functional reload update
 
 # Functional tests - isolated
@@ -321,22 +318,22 @@ func:v3:edge:stable:
         - "Subscribe"
         - "Pop-up.blocking"
 
-fi:v3:chromium:stable:
+fi:v3:chromium:latest:
   extends: .functional-isolated-mv3
   variables:
-    BROWSER: chromium $STABLE_CHROMIUM_VERSION
+    BROWSER: chromium latest
     TEST_PARAMS: v3 $BROWSER --testKinds functional 
 
-fi:v3:edge:stable:
+fi:v3:edge:latest:
   extends: .functional-isolated-mv3
   variables:
-    BROWSER: edge $STABLE_EDGE_VERSION
+    BROWSER: edge latest
     TEST_PARAMS: v3 $BROWSER --testKinds functional
 
 fi:v2:firefox:
   extends: .functional-isolated-mv2
   variables:
-    BROWSER: firefox $STABLE_FIREFOX_VERSION
+    BROWSER: firefox latest
     TEST_PARAMS: v2 $BROWSER --testKinds functional
 
 # Functional tests - full run
@@ -346,23 +343,11 @@ fi:v2:firefox:
   rules:
     - !reference [.full-run, rules]
   
-func:v2:chromium:latest:
-  extends: .functional-full
-  variables:
-    BROWSER: chromium
-    TEST_PARAMS: v2 $BROWSER --testKinds functional reload
-
 func:v2:chromium:beta:
   extends: .functional-full
   variables:
     BROWSER: chromium beta
     TEST_PARAMS: v2 $BROWSER --testKinds functional reload
-
-func:v3:chromium:latest:
-  extends: .functional-full
-  variables:
-    BROWSER: chromium
-    TEST_PARAMS: v3 $BROWSER --testKinds functional reload update
 
 func:v3:chromium:beta:
   extends: .functional-full
@@ -370,16 +355,10 @@ func:v3:chromium:beta:
     BROWSER: chromium beta
     TEST_PARAMS: v3 $BROWSER --testKinds functional reload update
 
-func:v2:firefox:latest:
-  extends: .functional-full
-  variables:
-    BROWSER: firefox
-    TEST_PARAMS: v2 $BROWSER --testKinds functional reload
-
 func:v2:firefox:incognito:update:
   extends: .functional-full
   variables:
-    BROWSER: firefox $STABLE_FIREFOX_BSL_INCOGNITO_VERSION
+    BROWSER: firefox $BSL_FIREFOX_INCOGNITO_VERSION
     TEST_PARAMS: v2 $BROWSER --testKinds update --incognito
   allow_failure: false
 
@@ -389,12 +368,6 @@ func:v2:edge:latest:
     BROWSER: edge
     TEST_PARAMS: v2 $BROWSER --testKinds functional reload
 
-func:v3:edge:latest:
-  extends: .functional-full
-  variables:
-    BROWSER: edge
-    TEST_PARAMS: v3 $BROWSER --testKinds functional reload update
-
 # Fuzz tests
 .fuzz:
   extends: .functional
@@ -403,23 +376,23 @@ func:v3:edge:latest:
   variables:
     TEST_PARAMS: v3 $BROWSER $INCOGNITO --testKinds fuzz
 
-fuzz:v3:chromium:stable:
+fuzz:v3:chromium:latest:
   extends: .fuzz
   variables:
-    BROWSER: chromium $STABLE_CHROMIUM_VERSION
+    BROWSER: chromium latest
 
 fuzz:v3:chromium:incognito:
   extends: .fuzz
   variables:
-    BROWSER: chromium $STABLE_CHROMIUM_VERSION
+    BROWSER: chromium latest
     INCOGNITO: --incognito
   rules:
     - !reference [.full-run, rules]
 
-fuzz:v3:edge:stable:
+fuzz:v3:edge:latest:
   extends: .fuzz
   variables:
-    BROWSER: edge $STABLE_EDGE_VERSION
+    BROWSER: edge latest
   rules:
     - !reference [.full-run, rules]
 
@@ -448,28 +421,28 @@ fuzz:v3:edge:stable:
 comp:v2:firefox:
   extends: .compliance
   variables:
-    VERSION: $STABLE_FIREFOX_VERSION
+    VERSION: latest
     BROWSER: firefox 
     MANIFEST: mv2
 
 comp:v2:chromium:
   extends: .compliance
   variables:
-    VERSION: $STABLE_CHROMIUM_VERSION
+    VERSION: latest
     BROWSER: chromium 
     MANIFEST: mv2
     
 comp:v3:chromium:
   extends: .compliance
   variables:
-    VERSION: $STABLE_CHROMIUM_VERSION
+    VERSION: latest
     BROWSER: chromium
     MANIFEST: mv3
 
 comp:v3:edge:
   extends: .compliance
   variables:
-    VERSION: $STABLE_EDGE_VERSION
+    VERSION: latest
     BROWSER: edge
     MANIFEST: mv3
 
