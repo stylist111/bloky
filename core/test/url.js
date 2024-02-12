@@ -1143,6 +1143,10 @@ describe("matchesWildcards()", function() {
     // left-hand side of elemhide filters, must be punycoded
     assert.strictEqual(matchesWildcards("xn--h1alffa9f.xn--p1ai", "россия.*"), false);
   });
+
+  it("should return true for wildcards with port", function() {
+    assert.strictEqual(matchesWildcards("abptestpages.org:5001", "abptestpages.*"), true);
+  });
 });
 
 

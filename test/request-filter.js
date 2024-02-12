@@ -20,7 +20,7 @@ import expect from "expect";
 import {Page, Resource, executeScript, TEST_PAGES_URL,
         TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, SITEKEY, TEST_MV3_SUBSCRIPTION,
         shouldBeLoaded, supportsWebBundle, waitForSubscriptionsToDownload,
-        setMinTimeout, setEndpointResponse,
+        setMinTimeout, setEndpointResponse, isChromiumBased,
         waitForSubscriptionToBeSynchronized} from "./utils.js";
 import {addFilter, EWE} from "./messaging.js";
 import browser from "webextension-polyfill";
@@ -126,6 +126,19 @@ describe("Blocking", function() {
   it("blocks $domain requests", async function() {
     await addFilter(`/image.png$domain=${TEST_PAGES_DOMAIN}`);
     await new Page("image.html").expectResource("image.png").toBeBlocked();
+  });
+
+  it("blocks the requests with ports and wildcards in $domain option [mv2-only]", async function() {
+    // DNS mapping webext.com to 127.0.0.1 is configured
+    // for all Chromium-based browsers during the tests.
+    if (!isChromiumBased()) {
+      this.skip();
+    }
+
+    await addFilter("/image.png$domain=webext.*");
+    await new Page("http://webext.com:3000/image.html")
+      .expectResource("http://webext.com:3000/image.png")
+      .toBeBlocked();
   });
 
   for (let testCase of [

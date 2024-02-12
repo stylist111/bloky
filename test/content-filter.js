@@ -74,6 +74,20 @@ describe("Element Hiding", function() {
     });
   });
 
+  it("hides an element for the domain with port and filter with wildcard and style attribute selector", async function() {
+    // DNS mapping webext.com to 127.0.0.1 is configured
+    // for all Chromium-based browsers during the tests.
+    if (!isChromiumBased()) {
+      this.skip();
+    }
+
+    await addFilter("webext.*##div[style=\"width: 200px\"]");
+    await expectElemHideHidden({
+      url: "http://webext.com:3000/element-hiding.html",
+      elemId: "elem-hide-wildcard-style"
+    });
+  });
+
   it("handled invalid selectors", async function() {
     await addFilter("####.wj-header-usercookies"); // invalid selector
     await addFilter("###elem-hide");
@@ -616,9 +630,10 @@ describe("Snippets", function() {
   const SNIPPET_NOT_APPLIED_ERROR = "Snippet was not applied";
   const MAIN_WORLD = "MAIN";
   const ISOLATED_WORLD = "ISOLATED";
+  const WEBPAGE_URL = "image.html";
 
-  async function assertSnippet(extractor, world, expectedArgument = "true") {
-    let tabId = await new Page("image.html").loaded;
+  async function assertSnippet(pageUrl, extractor, world, expectedArgument = "true") {
+    let tabId = await new Page(pageUrl).loaded;
 
     // If the service worker is suspended just before the new page is opened
     // (like the service worker fuzzing tests do),
@@ -637,9 +652,9 @@ describe("Snippets", function() {
     );
   }
 
-  async function addAndAssertSnippet(domain, snippet, func, world, snippetArgument = "true") {
+  async function addAndAssertSnippet(domain, pageUrl, snippet, func, world, snippetArgument = "true") {
     await addFilter(`${domain}#$#${snippet} ${snippetArgument}`);
-    await assertSnippet(func, world, snippetArgument);
+    await assertSnippet(pageUrl, func, world, snippetArgument);
   }
 
   const INJECTED_SNIPPET_ARG_EXTRACTOR = () => {
@@ -656,6 +671,22 @@ describe("Snippets", function() {
   it("applies an injected snippet [fuzz]", async function() {
     await addAndAssertSnippet(
       TEST_PAGES_DOMAIN,
+      WEBPAGE_URL,
+      INJECTED_SNIPPET,
+      INJECTED_SNIPPET_ARG_EXTRACTOR,
+      MAIN_WORLD);
+  });
+
+  it("applies an injected snippet for domain with port and wildcard", async function() {
+    // DNS mapping webext.com to 127.0.0.1 is configured
+    // for all Chromium-based browsers during the tests.
+    if (!isChromiumBased()) {
+      this.skip();
+    }
+
+    await addAndAssertSnippet(
+      "webext.*",
+      "http://webext.com:3000/" + WEBPAGE_URL,
       INJECTED_SNIPPET,
       INJECTED_SNIPPET_ARG_EXTRACTOR,
       MAIN_WORLD);
@@ -664,6 +695,7 @@ describe("Snippets", function() {
   it("applies 'hide-if-classifies' snippet with no domains", async function() {
     await addAndAssertSnippet(
       "", // no domains
+      WEBPAGE_URL,
       "hide-if-classifies",
       INJECTED_SNIPPET_ARG_EXTRACTOR,
       MAIN_WORLD,
@@ -673,6 +705,7 @@ describe("Snippets", function() {
   it("applies an isolated snippet", async function() {
     await addAndAssertSnippet(
       TEST_PAGES_DOMAIN,
+      WEBPAGE_URL,
       ISOLATED_SNIPPET,
       () => self.isolated_snippet_dependency && self.isolated_snippet_works,
       ISOLATED_WORLD);
@@ -704,7 +737,8 @@ describe("Snippets", function() {
   it("does not deploy snippets not from anti-cv subscription [mv2-only]", async function() {
     await EWE.subscriptions.add("http://localhost:3000/subscription.txt");
     await waitForSubscriptionsToDownload();
-    await expect(assertSnippet(INJECTED_SNIPPET_ARG_EXTRACTOR, MAIN_WORLD))
+    await expect(assertSnippet(
+      WEBPAGE_URL, INJECTED_SNIPPET_ARG_EXTRACTOR, MAIN_WORLD))
       .rejects.toThrow(SNIPPET_NOT_APPLIED_ERROR);
   });
 
@@ -712,7 +746,8 @@ describe("Snippets", function() {
     // subscription with injected-snippet
     await EWE.subscriptions.add("http://localhost:3000/subscription.txt", {privileged: true});
     await waitForSubscriptionsToDownload();
-    await expect(assertSnippet(INJECTED_SNIPPET_ARG_EXTRACTOR, MAIN_WORLD))
+    await expect(assertSnippet(
+      WEBPAGE_URL, INJECTED_SNIPPET_ARG_EXTRACTOR, MAIN_WORLD))
       .resolves.not.toThrow();
   });
 });

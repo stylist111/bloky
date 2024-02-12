@@ -527,6 +527,12 @@ exports.matchesWildcards = function matchesWildcards(
   // cut off the wildcard. Luckily we know exactly where it is already.
   let expectedPrefix = domainWithWildcards.slice(0, -1);
 
+  // cut off the port if specified
+  let portMatch = /^.+(:\d+)$/.exec(domain);
+  if (portMatch && portMatch.length > 1) {
+    domain = domain.slice(0, -portMatch[1].length);
+  }
+
   for (let suffix of domainSuffixes(domain)) {
     if (!suffix.startsWith(expectedPrefix)) {
       continue;
