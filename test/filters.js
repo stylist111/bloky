@@ -20,7 +20,7 @@ import expect from "expect";
 
 import {Page, setMinTimeout, waitForAssertion, isFirefox, isEdge, SITEKEY,
         TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN, setEndpointResponse,
-        waitForSubscriptionsToDownload} from "./utils.js";
+        waitForSubscriptionsToDownload, getMaxDynamicRulesAvailable} from "./utils.js";
 import {addFilter, EWE, getTestEvents, clearTestEvents, expectTestEvents}
   from "./messaging.js";
 import {VALID_FILTER_TEXT, COMMENT_FILTER_TEXT, SECOND_VALID_FILTER_TEXT,
@@ -760,17 +760,19 @@ describe("Filters", function() {
 });
 
 describe("Filters limit [mv3-only]", function() {
-  it("does not allow adding more than 5000 filters", async function() {
-    let timeout = isFuzzingServiceWorker() ? 60000 : 30000;
+  it("does not allow adding more than allowed number of filters", async function() {
+    const timeout = isFuzzingServiceWorker() ? 360000 : 180000;
     setMinTimeout(this, timeout);
-    let fiveThousandFilters = Array.from(
-      {length: 5000},
+
+    const maxNumber = getMaxDynamicRulesAvailable();
+    const maxAllowedFilters = Array.from(
+      {length: maxNumber},
       (_, x) => ("filter_" + x)
     );
-    await expect(EWE.filters.add(fiveThousandFilters))
+    await expect(EWE.filters.add(maxAllowedFilters))
       .resolves.not.toThrow();
 
-    await expect(EWE.filters.add("filter_5001")).rejects.toThrow(
+    await expect(EWE.filters.add("filter_out_of_quota")).rejects.toThrow(
       "FilterError: {\"type\":\"too_many_filters\",\"option\":null}");
   });
 });

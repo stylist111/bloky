@@ -21,7 +21,8 @@ import sinon from "sinon/pkg/sinon.js";
 
 import {setMinTimeout, waitForAssertion, setEndpointResponse,
         clearEndpointResponse, TEST_ADMIN_PAGES_URL, TEST_PAGES_URL,
-        firefoxVersion, isFirefox} from "./utils.js";
+        firefoxVersion, isFirefox, getMaxDynamicRulesAvailable}
+  from "./utils.js";
 import {wait} from "./polling.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 import {runInBackgroundPage, waitForServiceWorkerInitialization, EWE}
@@ -85,9 +86,9 @@ describe("Testing Mechanisms", function() {
           (await browser.declarativeNetRequest.getSessionRules()).length
         ).toEqual(0);
 
-        const MAX_NUMBER = await browser.declarativeNetRequest
-              .MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES;
-        expect(await EWE.testing.dynamicRulesAvailable()).toEqual(MAX_NUMBER);
+        const maxRulesAvailables = getMaxDynamicRulesAvailable();
+        expect(await EWE.testing.dynamicRulesAvailable()).toEqual(
+          maxRulesAvailables);
 
         await EWE.testing.testSetDynamicRulesAvailable(100);
 

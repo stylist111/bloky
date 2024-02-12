@@ -11,6 +11,8 @@ download of a diff fails, `downloadStatus` will be set to the new error
 `synchronize_diff_too_old` if the diff is over 6 weeks old, or 
 `synchronize_connection_error` otherwise. (EE-297)
 - Allow subscriptions on abptestpages.org for testing purpose. (EE-323)
+- Use the actual dynamic filters quota API property
+  (increase from 5K to 30K dynamic rules limit on Chrome/Edge 121+). (EE-315)
 
 # Fixes
 

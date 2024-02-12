@@ -37,6 +37,7 @@ import {trace, debug, error} from "./debugging.js";
 
 import {FilterError} from "./types.js";
 import {Prefs} from "./prefs.js";
+import {isFirefox, getBrowserVersion} from "./info.js";
 
 let highestRuleId = 1;
 
@@ -771,6 +772,9 @@ const RULES_LIMIT_KEY = "EWE:Dynamic_Rules_Limit";
  * @param {number} num The maximum number of dynamic rules. A value of
  *   `0` just unset it and uses the "system" default which is
  *   `browser.declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES`
+ *   on Chromium < 121/Firefox or
+ *   `browser.declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_RULES`
+ *   on more recent versions.
  *
  * @private
  */
@@ -787,7 +791,11 @@ export async function dynamicRulesAvailable() {
   let overriddenMaxRules = await browser.storage.session.get(RULES_LIMIT_KEY);
   let maxRules = overriddenMaxRules[RULES_LIMIT_KEY] > 0 ?
       overriddenMaxRules[RULES_LIMIT_KEY] :
-      declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES;
+      isFirefox() ?
+        declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES :
+        getBrowserVersion()[0] < 121 ? // Chromium or edge: EE-315
+          declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES :
+          declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_RULES;
 
   let used = (await declarativeNetRequest.getDynamicRules()).length +
       (await declarativeNetRequest.getSessionRules()).length;

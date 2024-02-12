@@ -585,9 +585,15 @@ export function isEdge() {
   return navigator.appVersion.indexOf("Edg") > -1;
 }
 
+function getBrowserVersion(pattern) {
+  return new RegExp(pattern)
+    .exec(navigator.userAgent)
+    .splice(1)
+    .map(str => parseInt(str, 10));
+}
+
 export function edgeVersion() {
-  return /Edg.?\/(\d*).(\d*).(\d*).(\d*)/.exec(
-    navigator.userAgent).splice(1);
+  return getBrowserVersion("Edg.?\\/(\\d*).(\\d*).(\\d*).(\\d*)");
 }
 
 export function isChromiumBased() {
@@ -595,8 +601,24 @@ export function isChromiumBased() {
 }
 
 export function chromiumVersion() {
-  return /Chrom.+\/(\d*).(\d*).(\d*).(\d*)\s.+/.exec(
-    navigator.userAgent).splice(1);
+  return getBrowserVersion("Chrom.+\\/(\\d*).(\\d*).(\\d*).(\\d*)\\s.+");
+}
+
+export function getMaxDynamicRulesAvailable() {
+  const dnr = browser.declarativeNetRequest;
+
+  // Chromium/Edge
+  if (isChromiumBased()) {
+    // The allowed number of dynamic rules depends on
+    // the Chromium version, see EE-315.
+    const browserVersion = isEdge() ? edgeVersion() : chromiumVersion();
+    return browserVersion[0] < 121 ?
+      dnr.MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES :
+      dnr.MAX_NUMBER_OF_DYNAMIC_RULES;
+  }
+
+  // Firefox
+  return dnr.MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES;
 }
 
 export function hasUpdateStaticRules() {

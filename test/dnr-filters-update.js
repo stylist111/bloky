@@ -559,7 +559,6 @@ describe("Test subscriptions update", function() {
       );
 
       await checkDynamicRuleCount(0);
-      await checkDynamicRuleCount(0);
       await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, EMPTY_UPDATE);
     });
   });

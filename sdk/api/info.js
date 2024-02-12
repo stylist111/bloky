@@ -31,6 +31,14 @@ export let manifestVersion;
 
 initializeDefaultAddonInfo();
 
+export function getBrowserVersion() {
+  return applicationVersion.split(".").map(str => parseInt(str, 10));
+}
+
+export function isFirefox() {
+  return application.includes("firefox");
+}
+
 export function initializeDefaultAddonInfo() {
   let manifest = browser.runtime.getManifest();
 
