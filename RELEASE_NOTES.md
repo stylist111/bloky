@@ -17,6 +17,8 @@ download of a diff fails, `downloadStatus` will be set to the new error
 # Fixes
 
 - Port is now ignored when matching with wildcards. (EE-288)
+- Subscription now have their diffs downloaded immediately after migration. We 
+  no longer   migrate `lastDownload` when going from MV2 to MV3. (EE-326)
 
 # Custom User Subscriptions
 

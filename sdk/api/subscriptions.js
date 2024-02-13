@@ -473,8 +473,7 @@ export async function migrate() {
       try {
         await add(subscriptionInfo.url, {
           downloadCount: downloadable.downloadCount,
-          version: downloadable.version,
-          lastDownload: downloadable.lastDownload
+          version: downloadable.version
         });
         if (!downloadable.enabled) {
           await disable(subscriptionInfo.url);

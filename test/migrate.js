@@ -194,6 +194,9 @@ describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
         url: TEST_ANTI_CV_SUBSCRIPTION.url, // MV3 URL
         updatable: true, // DiffUpdatableSubscription,
         diffURL: expect.any(String),
+        // This subscription has a valid/test diffURL so it should synchronize
+        // after being migrated.
+        downloadStatus: "synchronize_ok",
         enabled: true
       })
     ]));
