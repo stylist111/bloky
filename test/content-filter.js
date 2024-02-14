@@ -501,12 +501,26 @@ describe("Element Hiding", function() {
   });
 
   describe("Element collapsing", function() {
+    const forceBg = isFirefox() && firefoxVersion() >= 97;
+
     it("hides the img element of a blocked request [fuzz]", async function() {
       await addFilter("/image.png^$image");
 
-      let forceBg = isFirefox() && firefoxVersion() >= 97;
       let tabId = await new Page("element-hiding.html", forceBg).loaded;
       await waitForInvisibleElement(tabId, "elem-hide-img-request");
+    });
+
+    it("hides the img element of a blocked request on multiple slow requests", async function() {
+      // Two matching filters are added to test that sendMessage() in
+      // content-message-deferrer.js is called more than once
+      await EWE.filters.add([
+        "||abptestpages.org/testfiles/blocking/full-path.png",
+        "/testfiles/blocking/partial-path/"]);
+
+      // The page from abptestpages somehow provides the slow request conditions
+      let tabId = await new Page("https://abptestpages.org/en/filters/blocking",
+                                 forceBg).loaded;
+      await waitForInvisibleElement(tabId, "partial-path-fail-1");
     });
 
     for (let [testcase, frameIds] of [
