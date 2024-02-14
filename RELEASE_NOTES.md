@@ -58,7 +58,6 @@ download of a diff fails, `downloadStatus` will be set to the new error
 
 - Fixed a bug where elements to be collapsed would stay visible on edge cases. (EE-282)
 - Fixed a crash on message sent from a popup. (EE-320)
-- Port is now ignored when matching with wildcards. (EE-288)
 
 🔽 1.4.0 - 2024-01-26 🔽
 ========================
