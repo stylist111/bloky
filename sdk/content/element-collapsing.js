@@ -159,7 +159,7 @@ export function startElementCollapsing() {
 
   browser.runtime.onMessage.addListener((message, sender) => {
     if (!message || message.type != "ewe:collapse") {
-      return false;
+      return;
     }
 
     if (document.readyState == "loading") {
@@ -201,6 +201,6 @@ export function startElementCollapsing() {
 
       hideInAboutBlankFrames(message.selector, new Set([message.url]));
     }
-    return true;
+    return false;
   });
 }
