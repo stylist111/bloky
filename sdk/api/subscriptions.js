@@ -298,8 +298,7 @@ export async function updateFilterText() {
   let removeUrls = [];
 
   for (let subscription of filterEngine.filterStorage.subscriptions()) {
-    if (subscription instanceof DiffUpdatableSubscription ||
-        subscription instanceof CountableSubscription) {
+    if (subscription.hasBundledFilters) {
       let subscriptionInfo = addonBundledSubscriptions.find(
         x => x.url == subscription.url);
 
@@ -309,6 +308,8 @@ export async function updateFilterText() {
         subscription.setFilterText(filterText);
       }
       else {
+        // This sub which was previously bundled with the extension isn't
+        // bundled any more. Seems appropriate to drop it.
         removeUrls.push(subscription.url);
       }
     }
@@ -442,7 +443,7 @@ function migrationNeeded() {
   return false;
 }
 
-function saveMigrationError(subscription, error) {
+export function saveMigrationError(subscription, error) {
   let errors = Prefs.migration_subscription_errors;
   errors.push({subscription, error});
   Prefs.migration_subscription_errors = errors;
@@ -469,24 +470,18 @@ export async function migrate() {
     await remove(downloadable.url); // MV2 URL
     let subscriptionInfo = addonBundledSubscriptions.find(
       it => it.mv2_url == downloadable.url);
-    if (subscriptionInfo) {
-      try {
-        await add(subscriptionInfo.url, {
-          downloadCount: downloadable.downloadCount,
-          version: downloadable.version
-        });
-        if (!downloadable.enabled) {
-          await disable(subscriptionInfo.url);
-        }
-      }
-      catch (e) {
-        saveMigrationError(downloadable, e.message);
+    let url = subscriptionInfo ? subscriptionInfo.url : downloadable.url;
+    try {
+      await add(url, {
+        downloadCount: downloadable.downloadCount,
+        version: downloadable.version
+      });
+      if (!downloadable.enabled) {
+        await disable(url);
       }
     }
-    else {
-      saveMigrationError(
-        downloadable,
-        `Failed to find the subscription with URL=${downloadable.url}`);
+    catch (e) {
+      saveMigrationError(downloadable, e.message);
     }
   }
 }

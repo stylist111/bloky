@@ -25,7 +25,8 @@ import {filterEngine} from "./core.js";
 import {Prefs, awaitSavingComplete, init as initPrefs} from "./prefs.js";
 import {default as debugging} from "./debugging.js";
 import {info, log, debug, warn, error, trace} from "./debugging.js";
-import {default as subs} from "./subscriptions.js";
+import {default as subs, saveMigrationError as saveSubscriptionMigrationError}
+  from "./subscriptions.js";
 import {clearSkipInitRulesets, checkAndInitSubscriptions} from "./index.js";
 import {getDefaultSubscriptions, isSynchronizing} from "./subscriptions.js";
 import {default as initializer} from "./initializer.js";
@@ -276,5 +277,11 @@ export default {
   // use `await new Page().loaded` for instance.
   async _isContentHelloReceived(tabId, frameId) {
     return !getDeferredMessages(tabId, frameId);
+  },
+
+
+  async _saveSubscriptionMigrationError(subscription, errorMessage) {
+    await initializer.start();
+    saveSubscriptionMigrationError(subscription, errorMessage);
   }
 };

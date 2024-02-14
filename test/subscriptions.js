@@ -681,6 +681,28 @@ describe("Subscriptions", function() {
     });
   });
 
+  it("clears migration errors when clearMigrationErrors is called", async function() {
+    let subscription = {
+      url: INVALID_SUBSCRIPTION_URL
+    };
+    let error = "Invalid URL";
+
+    await EWE.testing._saveSubscriptionMigrationError(subscription, error);
+
+    let errorsBeforeClear = await EWE.subscriptions.getMigrationErrors();
+    expect(errorsBeforeClear).toEqual([
+      expect.objectContaining({
+        error,
+        subscription
+      })
+    ]);
+
+    await EWE.subscriptions.clearMigrationErrors();
+
+    let errorsAfterClear = await EWE.subscriptions.getMigrationErrors();
+    expect(errorsAfterClear).toEqual([]);
+  });
+
   describe("Subscription events [fuzz]", function() {
     const USER_SUBSCRIPTION_BODY = "[Adblock Plus 2.0]\nimage.png";
 

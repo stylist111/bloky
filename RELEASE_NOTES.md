@@ -20,7 +20,7 @@ download of a diff fails, `downloadStatus` will be set to the new error
 - Subscription now have their diffs downloaded immediately after migration. We 
   no longer   migrate `lastDownload` when going from MV2 to MV3. (EE-326)
 
-# Custom User Subscriptions
+# Custom User Subscriptions in MV3
 
 - Enabled custom user subscriptions in MV3 extensions. (EE-117)
 - If `EWE.subscriptions.add()` is called with a subscription URL that is not one
@@ -34,6 +34,16 @@ download of a diff fails, `downloadStatus` will be set to the new error
   `synchronize_too_many_filters`.
 - If there is an unexpected unknown error when applying the DNR updates,
   `downloadStatus` will be set to `synchronize_dnr_error`.
+- When an extension migrates from MV2 to MV3, any subscriptions that the user
+  had in the MV2 extension which are not bundled in the MV3 extension are
+  migrated to custom user subscriptions.
+- If an extension had previously upgraded from MV2 to MV3, these custom
+  subscriptions would have been saved as subscription migration errors. Please
+  do not clear these migration errors, as these subscriptions could be recovered
+  as custom subscriptions in future update.
+- When an MV3 extension is updated, and a previously bundled subscription is no
+  longer bundled in the new version of the extension, the subscription will not
+  be migrated to a custom user subscription. It will be removed entirely.
 
 ## Browser Support Updates
 

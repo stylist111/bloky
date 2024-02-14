@@ -285,6 +285,15 @@ exports.Subscription = class Subscription {
   }
 
   /**
+   * Has filters bundled along with the extension, which should be reloaded on
+   * extension update.
+   * @type {string}
+   */
+  get hasBundledFilters() {
+    return false;
+  }
+
+  /**
    * Whether the subscription is disabled.
    * @type {boolean}
    * @default <code>false</code>
@@ -1220,6 +1229,10 @@ class CountableSubscription extends RegularSubscription {
     return true;
   }
 
+  get hasBundledFilters() {
+    return true;
+  }
+
   /**
    * Whether the subscription is disabled. Once re-enabled, it ensures the
    * synchronizer downloads latest version of this subscription.
@@ -1389,6 +1402,10 @@ class FullUpdatableSubscription extends CountableSubscription {
    */
   get downloadable() {
     return true;
+  }
+
+  get hasBundledFilters() {
+    return false;
   }
 };
 

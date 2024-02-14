@@ -246,7 +246,7 @@ export async function enableAllDisabledStaticRules() {
 
   let disableRuleIds = [];
   for (let subscription of filterEngine.filterStorage.subscriptions()) {
-    if (subscription instanceof SpecialSubscription) {
+    if (!subscription.hasBundledFilters || !subscription.id) {
       continue;
     }
 

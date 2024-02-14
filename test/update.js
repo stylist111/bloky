@@ -19,7 +19,7 @@ import expect from "expect";
 import browser from "webextension-polyfill";
 
 import {Page, TEST_MV3_SUBSCRIPTION, isFirefox, readFile, writeFile,
-        setMinTimeout, isIncognito, firefoxVersion}
+        setMinTimeout, isIncognito, firefoxVersion, TEST_PAGES_URL}
   from "./utils.js";
 import {wait} from "./polling.js";
 import {EWE, runInBackgroundPage} from "./messaging.js";
@@ -31,10 +31,36 @@ let phase = start ? "preparation" : "check";
 const filter = "someFilterAddedInANewWebExtentionRelease";
 
 describe(`Update (${phase}) [runner-only]`, function() {
-  this.timeout(5000);
+  setMinTimeout(this, 5000);
+
+  before(async function() {
+    if (start) {
+      await EWE.testing._removeAllSubscriptions();
+      return;
+    }
+
+    setMinTimeout(this, 12000);
+    // Wait for EWE to be started
+    // (loading filter text and applying DNR rulesets might take a while)
+    await wait(async() => {
+      let actualState = await browser.runtime.sendMessage({
+        type: "ewe-test:getState"
+      });
+      return actualState == "started";
+    }, 10000, "EWE not started");
+  });
 
   after(async function() {
     if (start) {
+      await updateExtensionFiles([
+        {
+          method: "updateManifest",
+          args: {
+            version: "0.0.2"
+          }
+        }
+      ]);
+
       await browser.storage.local.set({"update-test-running": true});
       await browser.storage.local.set({search: document.location.search});
 
@@ -50,35 +76,17 @@ describe(`Update (${phase}) [runner-only]`, function() {
   });
 
   it("updates the subscription filter text when updating the extension [mv3-only]", async function() {
-    setMinTimeout(this, 12000);
-
     const subscriptionFile = `subscriptions/${TEST_MV3_SUBSCRIPTION.id}`;
-    const tmpSubscriptionFile = `${subscriptionFile}.tmp`;
 
     if (start) {
-      await EWE.testing._removeAllSubscriptions();
       await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.url);
 
       await updateExtensionFiles([
-        // back-up
-        {
-          method: "copyFile",
-          args: {
-            from: subscriptionFile,
-            to: tmpSubscriptionFile
-          }
-        },
         {
           method: "addLines",
           args: {
             file: subscriptionFile,
             lines: [filter]
-          }
-        },
-        {
-          method: "updateManifest",
-          args: {
-            version: "0.0.2"
           }
         }
       ]);
@@ -87,55 +95,46 @@ describe(`Update (${phase}) [runner-only]`, function() {
 
     setMinTimeout(this, 20000);
 
-    // Wait for EWE to be started
-    // (loading filter text and applying DNR rulesets might take a while)
-    await wait(async() => {
-      let actualState = await browser.runtime.sendMessage({
-        type: "ewe-test:getState"
-      });
-      return actualState == "started";
-    }, 10000, "EWE not started");
-
-    let filters;
-
-    await wait(async() => {
-      filters = await EWE.subscriptions.getFilters(
-        TEST_MV3_SUBSCRIPTION.url);
-      if (filters.length > 0) {
-        return filters;
-      }
-    }, 40000, "Events are not received");
-
+    let filters = await EWE.subscriptions.getFilters(TEST_MV3_SUBSCRIPTION.url);
     expect(filters).toContainEqual(expect.objectContaining({
       text: filter
     }));
 
-    try {
-      let subs = await EWE.subscriptions.getSubscriptions();
-      expect(subs).toEqual(expect.arrayContaining([
-        expect.objectContaining({
-          url: TEST_MV3_SUBSCRIPTION.url,
-          updatable: false, // no `diff_url` provided
-          enabled: true
-        })
-      ]));
+    let subs = await EWE.subscriptions.getSubscriptions();
+    expect(subs).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        url: TEST_MV3_SUBSCRIPTION.url,
+        updatable: false, // no `diff_url` provided
+        enabled: true
+      })
+    ]));
 
-      await new Page("image-from-subscription.html")
-        .expectResource("image-from-subscription.png")
-        .toBeBlocked();
+    await new Page("image-from-subscription.html")
+      .expectResource("image-from-subscription.png")
+      .toBeBlocked();
+  });
+
+  it("maintains custom user subscriptions in an update", async function() {
+    let subscriptionUrl = `${TEST_PAGES_URL}/custom-subscription-for-migration.txt`;
+
+    if (start) {
+      await EWE.subscriptions.add(subscriptionUrl);
+      return;
     }
-    finally {
-      // restore from back-up
-      await updateExtensionFiles([
-        {
-          method: "moveFile",
-          args: {
-            from: tmpSubscriptionFile,
-            to: subscriptionFile
-          }
-        }
-      ]);
-    }
+
+    let filters = await EWE.subscriptions.getFilters(subscriptionUrl);
+    expect(filters).toContainEqual(expect.objectContaining({
+      text: "/image.png^$image"
+    }));
+
+    let subs = await EWE.subscriptions.getSubscriptions();
+    expect(subs).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        url: subscriptionUrl,
+        updatable: true, // full updatable
+        enabled: true
+      })
+    ]));
   });
 
   it("fixes the IO/Prefs prefixes [mv2-only]", async function() {
