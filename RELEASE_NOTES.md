@@ -13,6 +13,8 @@ download of a diff fails, `downloadStatus` will be set to the new error
 - Allow subscriptions on abptestpages.org for testing purpose. (EE-323)
 - Use the actual dynamic filters quota API property
   (increase from 5K to 30K dynamic rules limit on Chrome/Edge 121+). (EE-315)
+- Bundled subscription information (including diffUrl) is now updated when the
+  extension is updated. (EE-328)
 
 # Fixes
 
