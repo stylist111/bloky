@@ -53,6 +53,19 @@ const BUILD_TIME_ROUTES = [
     response: fs.readFileSync(dirname + "/pages/updatable_subscription.txt")
   },
   {
+    url: "/mv3_diffurl_update.txt",
+    response: fs.readFileSync(dirname + "/pages/updatable_subscription.txt")
+  },
+  {
+    url: "/updatable_subscription/002.json",
+    response: JSON.stringify({
+      filters: {
+        add: [],
+        remove: []
+      }
+    })
+  },
+  {
     url: "/updatable_subscription/diff.json",
     response: JSON.stringify({
       filters: {

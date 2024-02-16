@@ -258,6 +258,16 @@ async function removeLines(file, lines) {
   }
 }
 
+async function findAndReplaceInFile(file, findRegex, replace) {
+  for (let extensionPath of extensionPaths) {
+    const fileToUpdate = path.resolve(extensionPath, file);
+    let content = (await fs.promises.readFile(fileToUpdate)).toString();
+    content = content.replace(new RegExp(findRegex, "gs"), replace);
+
+    await fs.promises.writeFile(fileToUpdate, content);
+  }
+}
+
 async function copyDir(fromDir, toDir) {
   if (await exists(toDir)) {
     await fs.promises.rmdir(toDir, {recursive: true});
@@ -277,6 +287,10 @@ async function runCommand(method, args) {
 
     case "addLines":
       await addLines(args.file, args.lines);
+      break;
+
+    case "findAndReplaceInFile":
+      await findAndReplaceInFile(args.file, args.findRegex, args.replace);
       break;
 
     case "removeLines":

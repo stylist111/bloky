@@ -36,8 +36,9 @@ import * as prefs from "./prefs.js";
 import {setSnippetLibrary} from "./content-filter.js";
 import {setAddonInfo} from "./info.js";
 import {filterEngine} from "./core.js";
-import {updateFilterText, validate as validateSubscriptions,
-        migrate as migrateSubscriptions, ensureDNRRulesetsEnabled}
+import {validate as validateSubscriptions,
+        migrate as migrateSubscriptions, ensureDNRRulesetsEnabled,
+        updateSubscriptionInformation}
   from "./subscriptions.js";
 import {migrateCustomFilters, clearRulesetUpdates,
         removeSubscriptionsDynamicFilters, enableAllDisabledStaticRules}
@@ -323,8 +324,10 @@ export async function checkAndInitSubscriptions(skipWipeOutDiffs) {
     await enableAllDisabledStaticRules();
   }
 
-  await updateFilterText();
+  await updateSubscriptionInformation();
   await ensureDNRRulesetsEnabled();
+
+  await subscriptions.default.sync();
 
   await browser.storage.local.set(
     {[SKIP_INIT_RULESETS_STORAGE_KEY]: true}

@@ -22,7 +22,8 @@ import {EWE, clearTestEvents, expectTestEvents, getTestEvents} from "./messaging
 import {hasUpdateStaticRules, Page, setEndpointResponse, shouldBeLoaded,
         setMinTimeout, expectElemHideVisible, expectElemHideHidden,
         syncSubHasLastFilter, syncSubHasNoLastFilter,
-        waitForSubscriptionToBeSynchronized, clearRequestLogs, getRequestLogs}
+        waitForSubscriptionToBeSynchronized, clearRequestLogs, getRequestLogs,
+        clearEndpointResponse}
   from "./utils.js";
 import {wait} from "./polling.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
@@ -1031,6 +1032,8 @@ describe("Test subscriptions update", function() {
         "image-from-subscription.png"
       );
 
+      await clearEndpointResponse(testDiffUrlEndpoint);
+
       // simulate webext restart
       await EWE.testing.clearSkipInitRulesets(); // called in `onInstalled()`
       await EWE.testing.checkAndInitSubscriptions(false);
@@ -1053,7 +1056,10 @@ describe("Test subscriptions update", function() {
         .toBeBlocked();
 
       let savedUpdates = await EWE.testing._getPrefs("ruleset_updates");
-      expect(savedUpdates).toEqual([]);
+      expect(savedUpdates).toEqual([["00000000-0000-0000-0000-000000000060", {
+        added: [],
+        removed: []
+      }]]);
     });
 
     it("does not wipe out user filters after webext update", async function() {

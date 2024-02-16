@@ -443,6 +443,20 @@ if (isMV3()) {
         homepage: "TestsAllowingFilterAndSubscription",
         url: "http://localhost:3000/subscription-with-allowing-filter.txt",
         mv2_url: "http://localhost:3000/subscription-with-allowing-filter.txt"
+      },
+      {
+        id: "00000000-0000-0000-0000-000000000080",
+        languages: [
+          "afr"
+        ],
+        type: "ads",
+        title: "Subscription that is used to test of MV3 updates",
+        homepage: "SomeHomepage",
+        privileged: true,
+        url: "http://localhost:3003/mv3_diffurl_update.txt",
+        mv2_url: "http://localhost:3003/mv3_diffurl_update.txt",
+        diff_url: "http://localhost:3003/updatable_subscription/001.json",
+        expires: "4 days (update frequency)"
       }
     ],
     bundledSubscriptionsPath: "subscriptions"

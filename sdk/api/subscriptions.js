@@ -294,7 +294,7 @@ async function remove(url) {
 /**
  * @ignore
  */
-export async function updateFilterText() {
+export async function updateSubscriptionInformation() {
   let removeUrls = [];
 
   for (let subscription of filterEngine.filterStorage.subscriptions()) {
@@ -306,6 +306,10 @@ export async function updateFilterText() {
         let {filterText} = await getFilterText(
           subscriptionInfo, addonBundledSubscriptionsPath);
         subscription.setFilterText(filterText);
+
+        subscription.diffURL = subscriptionInfo.diff_url;
+        subscription.title = subscriptionInfo.title;
+        subscription.homepage = subscriptionInfo.homepage;
       }
       else {
         // This sub which was previously bundled with the extension isn't

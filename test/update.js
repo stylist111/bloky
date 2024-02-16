@@ -24,6 +24,7 @@ import {Page, TEST_MV3_SUBSCRIPTION, isFirefox, readFile, writeFile,
 import {wait} from "./polling.js";
 import {EWE, runInBackgroundPage} from "./messaging.js";
 import {updateExtensionFiles} from "./mocha/mocha-runner.js";
+import {MILLIS_IN_DAY, MILLIS_IN_SECOND} from "adblockpluscore/lib/time.js";
 
 let start = new URLSearchParams(document.location.search).get("start");
 let phase = start ? "preparation" : "check";
@@ -73,6 +74,94 @@ describe(`Update (${phase}) [runner-only]`, function() {
 
     await browser.storage.local.remove("update-test-running");
     await browser.storage.local.remove("search");
+  });
+
+  it("updates subscription information when updating the extension [mv3-only]", async function() {
+    setMinTimeout(this, 12000);
+
+    const diffUrlUpdateSubscriptionId = "00000000-0000-0000-0000-000000000080";
+    const diffUrlUpdateSubscriptionWithTypeId = "00000000-0000-0000-0000-000000000030";
+
+    const replaceWithThisObject = {
+      id: "00000000-0000-0000-0000-000000000080",
+      languages: [
+        "ja"
+      ],
+      type: "ads",
+      title: "Updated Title",
+      homepage: "Updated Homepage",
+      privileged: false,
+      url: "http://localhost:3003/mv3_diffurl_update.txt",
+      mv2_url: "http://localhost:3003/mv3_diffurl_update.txt",
+      diff_url: "http://localhost:3003/updatable_subscription/002.json",
+      expires: "10 hours (update frequency)"
+    };
+
+    const replaceWithThisTypeChangingObject = {
+      id: "00000000-0000-0000-0000-000000000030",
+      type: "ads",
+      title: "ABP filters",
+      homepage: "https://github.com/abp-filters/abp-filters-anti-cv",
+      url: "http://localhost:3003/anti-cv-subscription.txt",
+      mv2_url: "http://localhost:3003/mv2_anti-cv-subscription.txt",
+      diff_url: "http://localhost:3003/anti-cv-subscription_diff.json"
+    };
+
+    const replaceWithThis = JSON.stringify(replaceWithThisObject, null, 2);
+    const replaceWithThisForType = JSON.stringify(
+      replaceWithThisTypeChangingObject, null, 2);
+
+    if (start) {
+      const hasJapaneseSubscription = (await EWE.testing._getDefaultSubscriptions("ja")).hasCurrentLang;
+      expect(hasJapaneseSubscription).toBeFalsy();
+
+      await EWE.subscriptions.add("http://localhost:3003/mv3_diffurl_update.txt");
+      await EWE.subscriptions.add("http://localhost:3003/anti-cv-subscription.txt");
+      await updateExtensionFiles([
+        {
+          method: "findAndReplaceInFile",
+          args: {
+            file: "background.js",
+            findRegex: /{\s*id:\s*"00000000-0000-0000-0000-000000000080".*?}/.source,
+            replace: replaceWithThis
+          }
+        },
+        {
+          method: "findAndReplaceInFile",
+          args: {
+            file: "background.js",
+            findRegex: /{\s*id:\s*"00000000-0000-0000-0000-000000000030".*?}/.source,
+            replace: replaceWithThisForType
+          }
+        }
+      ]);
+      return;
+    }
+
+    const subscriptions = await EWE.subscriptions.getSubscriptions();
+
+    const updatedSubscription = subscriptions.filter(
+      s => s.id === diffUrlUpdateSubscriptionId)[0];
+
+    const updatedTypeSubscription = subscriptions.filter(
+      s => s.id === diffUrlUpdateSubscriptionWithTypeId)[0];
+
+    expect(updatedSubscription.diffURL).toEqual("http://localhost:3003/updatable_subscription/002.json");
+    expect(updatedSubscription.title).toEqual("Updated Title");
+    expect(updatedSubscription.homepage).toEqual("Updated Homepage");
+    expect(updatedSubscription.privileged).toEqual(false);
+    expect(updatedTypeSubscription.privileged).toEqual(false);
+
+    const hasJapaneseSubscription = (await EWE.testing._getDefaultSubscriptions("ja")).hasCurrentLang;
+    expect(hasJapaneseSubscription).toBeTruthy();
+
+    const currentTimeInSeconds = Math.floor(Date.now() / 1000);
+    const ONE_DAY_IN_SECONDS = MILLIS_IN_DAY / MILLIS_IN_SECOND;
+    const twoDaysInTheFutureInSeconds = currentTimeInSeconds +
+       2 * ONE_DAY_IN_SECONDS;
+
+    expect(updatedSubscription.expires).toBeLessThanOrEqual(
+      twoDaysInTheFutureInSeconds);
   });
 
   it("updates the subscription filter text when updating the extension [mv3-only]", async function() {
