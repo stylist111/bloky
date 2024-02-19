@@ -47,8 +47,8 @@ On the CI, a minified version of the Core code is also tested. To run the CI
 tests locally use the following commands, which accept optional `TEST_PARAMS`:
 
 ```
-docker build -t core -f test/dockerfiles/core.Dockerfile .
-docker run --cpus=2 --memory=8g --shm-size=2g -e TEST_PARAMS="(path to the test to run)" -it core
+docker build -t basic -f test/dockerfiles/basic.Dockerfile .
+docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_PARAMS="(path to the test to run)" --entrypoint test/dockerfiles/core-entrypoint.sh basic
 ```
 
 ### Benchmark
@@ -59,8 +59,8 @@ happy path is working properly and measure basic metrics.
 If you want to run it locally, use the following commands:
 
 ```
-docker build -t benchmark -f test/dockerfiles/benchmark.Dockerfile .
-docker run --cpus=2 --memory=8g --shm-size=2g benchmark
+docker build -t basic -f test/dockerfiles/basic.Dockerfile .
+docker run --cpus=2 --memory=6g --shm-size=2g -it --entrypoint test/dockerfiles/benchmark-entrypoint.sh basic
 ```
 
 For more commands and options to customize,
@@ -322,14 +322,7 @@ everything will work fine. To run integration tests locally use the following
 command:
 
 ```
-npm install --production
-cd test/scripts/test-extension
-npm install
-npm exec subs-init
-npm exec subs-merge
-npm exec subs-fetch
-npm exec subs-convert -- -r
-npm exec subs-generate
+./test/dockerfiles/integration-entrypoint.sh
 ```
 
 ----
@@ -344,15 +337,15 @@ to run the same tests may be useful to recreate the infrastructure the CI uses.
 #### Unit:core
 
 ```
-docker build -t core -f test/dockerfiles/core.Dockerfile .
-docker run --cpus=2 --memory=8g --shm-size=2g TEST_PARAMS="(path to the test to run)" -it core
+docker build -t basic -f test/dockerfiles/basic.Dockerfile .
+docker run --cpus=2 --memory=6g --shm-size=2g -it --entrypoint test/dockerfiles/core-entrypoint.sh basic
 ```
 
 #### Func:webext
 
 ```
 docker build -t functional -f test/dockerfiles/functional.Dockerfile .
-docker run --cpus=2 --memory=8g --shm-size=2g -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" -it functional
+docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" functional
 ```
 
 Please notice that the TEST_PARAMS argument can also take the additional options
@@ -378,14 +371,11 @@ Requirements:
 
 - macOS >= 13 (Ventura)
 - Rosetta
-- Docker Desktop needs the feature "Use Rosetta for x86/amd64 emulation on Apple
-Silicon" enabled. It can be found in the settings section called "Features in
-development"
 
 The `--platform` option should be used when running the image. Example:
 
 ```
-docker run --platform linux/amd64 --cpus=2 --memory=8g --shm-size=2g -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" -it functional
+docker run --platform linux/amd64 ...
 ```
 
 ### Maintaining browser cache

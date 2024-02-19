@@ -5,7 +5,6 @@ variables:
   npm_config_audit: "false"
   npm_config_fund: "false"
   npm_config_prefer_offline: "true"
-  DOCKER_RESOURCE_FLAGS: "--cpus=2 --memory=8g --shm-size=2g"
   # Oldest supported versions
   OLDEST_CHROMIUM_MV2_VERSION: "77.0.3865.0"
   OLDEST_CHROMIUM_MV3_VERSION: "111.0.5563.64"
@@ -56,6 +55,11 @@ workflow:
   image: docker:24.0.5
   services:
     - docker:24.0.5-dind
+  variables:
+    BASIC_IMAGE: basic-image-$CI_PIPELINE_ID
+    FUNCTIONAL_IMAGE: functional-image-$CI_PIPELINE_ID
+    COMPLIANCE_IMAGE: compliance-image-$CI_JOB_ID
+    DOCKER_OPTIONS: --rm=true --cpus=2 --memory=6g --shm-size=2g -t
 
 stages:
   - build
@@ -68,7 +72,7 @@ stages:
   - compliance
   - integration
 
-build:
+build:src:
   image: node:18-bullseye-slim
   stage: build
   before_script:
@@ -102,56 +106,51 @@ lint:
   script:
     - npm run lint
 
+.basic-image:
+  extends: .docker-image
+  needs: []
+  before_script:
+    - docker build -t $BASIC_IMAGE -f test/dockerfiles/basic.Dockerfile .
+
 # Unit tests
 .unit:
   stage: unit
-  needs: []
+  extends: .basic-image
   rules:
     - !reference [.avoid-flaky-run, rules]
 
 unit:core:
-  extends:
-    - .unit
-    - .docker-image
+  extends: .unit
   script:
-    - docker build -t core -f test/dockerfiles/core.Dockerfile .
-    - docker run $DOCKER_RESOURCE_FLAGS -t core
+    - docker run $DOCKER_OPTIONS --entrypoint test/dockerfiles/core-entrypoint.sh $BASIC_IMAGE
 
 unit:webext:
-  image: node:18-bullseye-slim
   extends: .unit
-  before_script:
-    - npm install
   script:
-    - npm run unittest
+    - docker run $DOCKER_OPTIONS --entrypoint npm $BASIC_IMAGE run unittest
 
 unit:scripts:
-  image: node:18-bullseye-slim
   extends: .unit
-  before_script:
-    - npm install
   script:
-    - npm run test-scripts
+    - docker run $DOCKER_OPTIONS --entrypoint npm $BASIC_IMAGE run test-scripts
 
 # Benchmark
 benchmark:
-  extends: .docker-image
+  extends: .basic-image
   stage: benchmark
-  needs: []
   script:
-    - docker build -t benchmark -f test/dockerfiles/benchmark.Dockerfile .
-    - docker run $DOCKER_RESOURCE_FLAGS benchmark
+    - docker run $DOCKER_OPTIONS --entrypoint test/dockerfiles/benchmark-entrypoint.sh $BASIC_IMAGE
   rules:
     - !reference [.full-run, rules]
 
-# Functional Tests
+# Functional tests
 .functional:
   stage: functional
-  timeout: 2 hours
   extends: .docker-image
   needs:
-    - job: build
-      artifacts: true
+    - job: build:src
+  before_script:
+    - docker build -t $FUNCTIONAL_IMAGE -f test/dockerfiles/functional.Dockerfile --build-arg SKIP_BUILD=1 --build-arg BROWSER="$BROWSER" .
   script:
     COMMIT_FIRST_LINE=$(echo "$CI_COMMIT_MESSAGE" | head -1);
     if [ -z "${COMMIT_FIRST_LINE##*"[flaky]"*}" ]; then
@@ -161,8 +160,7 @@ benchmark:
     if echo "$CHECKTESTS" | grep -q "true"; then
       OTHER_PARAMS="$OTHER_PARAMS -e TEST_RUNS=10";
     fi;
-    docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER="$BROWSER" --build-arg SKIP_BUILD=1 .;
-    docker run $DOCKER_RESOURCE_FLAGS -e TEST_PARAMS="$TEST_PARAMS" $OTHER_PARAMS functional;
+    docker run $DOCKER_OPTIONS -e TEST_PARAMS="$TEST_PARAMS" $OTHER_PARAMS $FUNCTIONAL_IMAGE;
 
 # Functional tests - MV2
 func:v2:chromium:latest:
@@ -210,8 +208,7 @@ func:v2:firefox:oldest:
 .functional-windows:
   stage: functional
   needs:
-    - job: build
-      artifacts: true
+    - job: build:src
   variables:
     CI_PROJECT_ID_MAINSTREAM: 22365241
   before_script:
@@ -231,12 +228,12 @@ func:v2:firefox:oldest:
 func:v2:windows:edge:
   extends: .functional-windows
   script:
-    - npm test v2 edge -- $WINDOWS_EDGE_VERSION --timeout=10000
+    - npm test -- v2 edge $WINDOWS_EDGE_VERSION --timeout=10000
 
 func:v2:windows:edge:incognito:
   extends: .functional-windows
   script:
-    - npm test v2 edge -- $WINDOWS_EDGE_VERSION --incognito --timeout=10000
+    - npm test -- v2 edge $WINDOWS_EDGE_VERSION --incognito --timeout=10000
 
 # Functional tests - MV3
 func:v3:chromium:latest:
@@ -268,8 +265,7 @@ func:v3:edge:latest:
   extends: .functional
   stage: test
   script:
-    - docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER="$BROWSER" --build-arg SKIP_BUILD=1 .
-    - docker run $DOCKER_RESOURCE_FLAGS --memory-swap=16384m -e TEST_PARAMS="$TEST_PARAMS --grep $FUNCTIONAL_MODULE" functional
+    - docker run $DOCKER_OPTIONS -e TEST_PARAMS="$TEST_PARAMS --testKinds functional --grep $TEST_SUITE" $FUNCTIONAL_IMAGE
   rules:
     - !reference [.checktests-run, rules]
 
@@ -277,7 +273,7 @@ func:v3:edge:latest:
   extends: .functional-isolated  
   parallel:
     matrix:
-      - FUNCTIONAL_MODULE:
+      - TEST_SUITE:
         - "Initialization"
         - "Console.logging"
         - "Endpoint.manipulation"
@@ -301,8 +297,8 @@ func:v3:edge:latest:
   extends: .functional-isolated  
   parallel:
     matrix:
-      - FUNCTIONAL_MODULE:
-        - "Initialization"        
+      - TEST_SUITE:
+        - "Initialization"
         - "Console.logging"
         - "Endpoint.manipulation"
         - "Allowlisting"
@@ -314,27 +310,24 @@ func:v3:edge:latest:
         - "Subscriptions"
         - "Filter.list.updates"
         - "Subscription.events"
-        - "^Filters"        
+        - "^Filters"
         - "Subscribe"
         - "Pop-up.blocking"
 
 fi:v3:chromium:latest:
   extends: .functional-isolated-mv3
   variables:
-    BROWSER: chromium latest
-    TEST_PARAMS: v3 $BROWSER --testKinds functional 
+    TEST_PARAMS: v3 chromium latest
 
 fi:v3:edge:latest:
   extends: .functional-isolated-mv3
   variables:
-    BROWSER: edge latest
-    TEST_PARAMS: v3 $BROWSER --testKinds functional
+    TEST_PARAMS: v3 edge latest
 
 fi:v2:firefox:
   extends: .functional-isolated-mv2
   variables:
-    BROWSER: firefox latest
-    TEST_PARAMS: v2 $BROWSER --testKinds functional
+    TEST_PARAMS: v2 firefox latest
 
 # Functional tests - full run
 .functional-full:
@@ -371,7 +364,6 @@ func:v2:edge:latest:
 # Fuzz tests
 .fuzz:
   extends: .functional
-  timeout: 4 hours 30 minutes
   stage: fuzz
   variables:
     TEST_PARAMS: v3 $BROWSER $INCOGNITO --testKinds fuzz
@@ -401,15 +393,13 @@ fuzz:v3:edge:latest:
   stage: compliance
   extends: .docker-image
   needs:
-    - job: build
-      artifacts: true
+    - job: build:src
   before_script:
     - apk add bash git zip
   script:
     - TERMINAL="t" TESTS_TO_INCLUDE="filters/wildcard-domain" ./test/scripts/compliance.sh
   after_script:
-    - docker cp $(docker ps -aqf ancestor=compliance):/testpages.adblockplus.org/test/screenshots .
-      2> /dev/null
+    - docker cp $(docker ps -aqf ancestor=$COMPLIANCE_IMAGE):/testpages.adblockplus.org/test/screenshots .
   artifacts:
     paths:
       - screenshots/
@@ -448,19 +438,10 @@ comp:v3:edge:
 
 # Integration tests
 int:scripts:
-  image: node:18-bullseye-slim
-  needs: []
+  extends: .basic-image
   stage: integration
-  before_script:
-    - npm install --production
   script:
-    - cd test/scripts/test-extension
-    - npm install
-    - npm exec subs-init
-    - npm exec subs-merge
-    - npm exec subs-fetch
-    - npm exec subs-convert -- -r
-    - npm exec subs-generate
+    - docker run $DOCKER_OPTIONS --entrypoint test/dockerfiles/integration-entrypoint.sh $BASIC_IMAGE
   rules:
     - !reference [.avoid-flaky-run, rules]
 
@@ -470,8 +451,7 @@ int:bundle:
   script:
     - npm run test-bundle
   needs:
-    - job: build
-      artifacts: true
+    - job: build:src
   rules:
     - !reference [.avoid-flaky-run, rules]
 
@@ -479,7 +459,7 @@ int:bundle:
   image: node:18-bullseye-slim
   stage: pages
   dependencies:
-    - build
+    - build:src
 
 include:
   - ".gitlab-pages.yml"

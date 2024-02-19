@@ -9,8 +9,8 @@ npm run test-core
 ## Benchmark core
 
 ```
-docker build -t benchmark -f test/dockerfiles/benchmark.Dockerfile .
-docker run --cpus=2 --memory=8g --shm-size=2g benchmark
+docker build -t basic -f test/dockerfiles/basic.Dockerfile .
+docker run --cpus=2 --memory=6g --shm-size=2g -it --entrypoint test/dockerfiles/benchmark-entrypoint.sh basic
 ```
 
 ## Unit tests webext build
@@ -54,18 +54,15 @@ npm test -- {v2|v3|v2-custom} {chromium|firefox|edge} [version|channel] --timeou
 ### Unit:core
 
 ```
-docker build -t core -f test/dockerfiles/core.Dockerfile .
-docker run --cpus=2 --memory=8g --shm-size=2g -e TEST_PARAMS="(path to the test to run)" -it core
+docker build -t basic -f test/dockerfiles/basic.Dockerfile .
+docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_PARAMS="(path to the test to run)" --entrypoint test/dockerfiles/core-entrypoint.sh basic
 ```
 
 ### Func:webext
 
 ```
 docker build -t functional -f test/dockerfiles/functional.Dockerfile .
-```
-
-```
-docker run --cpus=2 --memory=8g --shm-size=2g -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" -it functional
+docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" functional
 ```
 
 ### Build container with browser cached in it
@@ -82,26 +79,23 @@ MANIFEST="mv2" BROWSER="chromium" VERSION="latest" ./test/scripts/compliance.sh
 
 ### Run docker for tests with [flaky] tag
 
-```
-# Building container
-docker build -t functional -f test/dockerfiles/functional.Dockerfile .
-
-# Running container in a mode that will run only tests that are tagged [flaky]
-docker run --cpus=2 --memory=8g --shm-size=2g -e TEST_PARAMS="v3 chromium" -e ONLY_FLAKY="true" -it functional
-```
-
-The command above will run tests once. If you want to run tests multiple times
-in a row use the following command:
+Running container in a mode that will run only tests that are tagged [flaky]:
 
 ```
-docker run --cpus=2 --memory=8g --shm-size=2g -e TEST_PARAMS="v3 chromium" -e ONLY_FLAKY="true" -e TEST_RUNS=10 -it functional
+docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_PARAMS="v3 chromium" -e ONLY_FLAKY="true" functional
+```
+
+Run [flaky] tests multiple times in a row:
+
+```
+docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_PARAMS="v3 chromium" -e ONLY_FLAKY="true" -e TEST_RUNS=10 functional
 ```
 
 ### Measure flakiness for whole test suite
 
 ```
 docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER=chromium .
-docker run --cpus=2 --memory=8g --shm-size=2g -e TEST_PARAMS="v3 chromium" -e TEST_RUNS=10 -it functional
+docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_PARAMS="v3 chromium" -e TEST_RUNS=10 functional
 ```
 
 ## I just want to run the tests on my machine, give me the command

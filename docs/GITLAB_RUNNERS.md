@@ -175,64 +175,32 @@ gcloud auth login
 
 Then make sure you have access to the [google cloud console][gcloud-console].
 
-For reference, a project called `eyeo-runner-sandbox` was previously created
+For reference, a project called `eyeo-ee-runner-sandbox` was previously created
 and the Compute Engine API was enabled for that project.
 
 ### Terraform config
 
 Terraform is used to interact with GCloud in order to create the VM instances.
 
-First of all, the [terraform-webext-gitlab-runner project](https://gitlab.com/eyeo/devops/terraform/projects/terraform-webext-gitlab-runner)
-needs to be cloned.
+First of all, the [terraform-gitlab-runner-compute-instance project](https://gitlab.com/eyeo/devops/playground/terraform-playground/terraform-gitlab-runner-compute-instance)
+needs to be cloned, and the WIP branch `webext-two-runners` checked out.
 
-Then the following files should be configured:
+`terraform/main.tf` holds the relevant configuration. Inside, the module
+`webext-instance` defines the VM instances setup, including the property
+`machine_type` sets the kind of machine that will be created.
 
-- `terraform/backend.tf`: In the future we may use that config to define a state
-file combined with a Google Cloud Storage bucket. For now,
-**the contents of the file should be commented**.
-
-- `terraform/main.tf`: The existing module `webext-instance` defines one VM
-instance. The property `machine_type` sets the kind of machine that will be
-created. GCloud provides a set of [general-purpose-machines](https://cloud.google.com/compute/docs/general-purpose-machines#e2_machine_types),
+GCloud provides a set of [general-purpose-machines](https://cloud.google.com/compute/docs/general-purpose-machines#e2_machine_types_table),
 for instance `e2-standard-2`. Custom machines can also be defined, as explained
 in the [terraform argument reference](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_instance#machine_type).
 Regarding disk size, the property `disk_config.size` sets the disk size in GB.
 
-  To create additional instances we need to define additional modules. The
-following properties need to have unique values: `module`,
-`module.instance_name` and `module.disk_config.name`.
+`terraform/variables.tf` holds the amount of instances to be created. If
+additional instances should be needed the variable `number_of_instances` can be
+modified accordingly.
 
-- `terraform/variables.tf`: A default value `eyeo-runner-sandbox` should be
-added to the `project_id` variable. On the other hand, the `gitlab_token`
-variable has the `sensitive` property. In that case it can be defined as an
-environment variables, as long as it has the prefix `TF_VAR_`. Example:
-
-```sh
-export TF_VAR_gitlab_token=<TOKEN>
-```
-
-Please check the [registration token](#registration-token) section to get one.
-
-- `terraform/scripts/startup.sh`: This script runs when the VM is created. Among
+The script `terraform/scripts/startup.sh` runs when the VM is created. Among
 other things, the script holds the gitlab runner config that will be applied and
-takes care of registering the project runner.
-
-Registering a specific docker-in-docker runner may be needed:
-
-```sh
-# docker executor config
-# https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#use-the-docker-executor-with-docker-socket-binding
-
-gitlab-runner register \
-  --non-interactive \
-  --name "runner-docker-1" \
-  --url "https://gitlab.com/" \
-  --registration-token "${GITLAB_TOKEN}" \
-  --executor docker \
-  --tag-list "docker-1" \
-  --docker-image "docker:24.0.5" \
-  --docker-volumes /var/run/docker.sock:/var/run/docker.sock
-```
+registers it to Gitlab.
 
 ### Applying changes to GCloud
 
@@ -240,6 +208,10 @@ After configuring the project, terraform commands must be executed inside the
 `terraform` folder:
 
 ```sh
+# Export the Gitlab token to avoid typing it manually on terraform commands
+# See the registration token section for how to get one
+export TF_VAR_gitlab_token=<TOKEN>
+
 # Downloads needed resources into "terraform/.terraform"
 terraform init
 
@@ -247,15 +219,13 @@ terraform init
 terraform plan
 
 # Applies changes to GCloud, creates/updates/removes VM instances
-terraform apply
+terraform apply -auto-approve
 
 # Destroys all the infrastructure previously created
-terraform destroy
+terraform destroy -auto-approve
 ```
 
 After `terraform apply` new runners should appear in the [Runners settings][runners-settings].
-If that didn't happen, the gitlab-runner command from `startup.sh` could be
-executed directly in the VM using an ssh connection.
 
 ### SSH connection to VM instances
 
@@ -264,11 +234,11 @@ With that information it is possible to do ssh connections to the VMs:
 
 ```sh
 # Connect to the created machine
-gcloud compute ssh <VM_NAME> --tunnel-through-iap --project=eyeo-runner-sandbox
+gcloud compute ssh <VM_NAME> --tunnel-through-iap --project=eyeo-ee-runner-sandbox
 
 # Become root in that machine
 sudo su
 ```
 
-[gcloud-console]: https://console.cloud.google.com/compute/instances?referrer=search&project=eyeo-runner-sandbox
+[gcloud-console]: https://console.cloud.google.com/compute/instances?referrer=search&project=eyeo-ee-runner-sandbox
 [runners-settings]: https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution/-/settings/ci_cd#js-runners-settings

@@ -16,7 +16,8 @@ zip -R ../../testpages.adblockplus.org/test-$MANIFEST.zip '*'
 popd
 
 pushd testpages.adblockplus.org
-docker build -t compliance --build-arg EXTENSION_FILE="test-$MANIFEST.zip" .
+COMPLIANCE_IMAGE="${COMPLIANCE_IMAGE:-compliance}"
+docker build -t $COMPLIANCE_IMAGE --build-arg EXTENSION_FILE="test-$MANIFEST.zip" .
 
 if [[ "$MANIFEST" == "mv2" ]]; then
   SKIP="((?!Subscriptions|Snippets).)"
@@ -28,7 +29,7 @@ TERMINAL="${TERMINAL:-it}"
 TESTS_TO_INCLUDE="${TESTS_TO_INCLUDE:-}"
 BROWSER="${BROWSER:-chromium}"
 VERSION="${VERSION:-latest}"
-docker run --cpus=2 --memory=8g --shm-size=2g -$TERMINAL \
+docker run --cpus=2 --memory=6g --shm-size=1g -$TERMINAL \
   -e SKIP_EXTENSION_DOWNLOAD="true" -e CUSTOM_BROWSER=$BROWSER \
   -e BROWSER_VERSION="$VERSION" -e GREP="^.*$BROWSER$SKIP*\$" \
-  -e TESTS_TO_INCLUDE="$TESTS_TO_INCLUDE" compliance
+  -e TESTS_TO_INCLUDE="$TESTS_TO_INCLUDE" $COMPLIANCE_IMAGE
