@@ -21,8 +21,8 @@ import expect from "expect";
 import {Page, setMinTimeout, waitForAssertion, isFirefox, isEdge, SITEKEY,
         TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN, setEndpointResponse,
         waitForSubscriptionsToDownload, getMaxDynamicRulesAvailable} from "./utils.js";
-import {addFilter, EWE, getTestEvents, clearTestEvents, expectTestEvents}
-  from "./messaging.js";
+import {addFilter, EWE, getTestEvents, clearTestEvents, expectTestEvents,
+        enableSendTestEvents} from "./messaging.js";
 import {VALID_FILTER_TEXT, COMMENT_FILTER_TEXT, SECOND_VALID_FILTER_TEXT,
         subCircumvention} from "./api-fixtures.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
@@ -761,18 +761,26 @@ describe("Filters", function() {
 
 describe("Filters limit [mv3-only]", function() {
   it("does not allow adding more than allowed number of filters", async function() {
-    const timeout = isFuzzingServiceWorker() ? 360000 : 180000;
+    const timeout = isFuzzingServiceWorker() ? 360000 : 18000;
     setMinTimeout(this, timeout);
 
-    const maxNumber = getMaxDynamicRulesAvailable();
-    const maxAllowedFilters = Array.from(
-      {length: maxNumber},
-      (_, x) => ("filter_" + x)
-    );
-    await expect(EWE.filters.add(maxAllowedFilters))
-      .resolves.not.toThrow();
+    // sending 30K of "filters.onAdded" takes a lot of time
+    await enableSendTestEvents(false);
 
-    await expect(EWE.filters.add("filter_out_of_quota")).rejects.toThrow(
-      "FilterError: {\"type\":\"too_many_filters\",\"option\":null}");
+    try {
+      const maxNumber = getMaxDynamicRulesAvailable();
+      const maxAllowedFilters = Array.from(
+        {length: maxNumber},
+        (_, x) => ("filter_" + x)
+      );
+      await expect(EWE.filters.add(maxAllowedFilters))
+        .resolves.not.toThrow();
+
+      await expect(EWE.filters.add("filter_out_of_quota")).rejects.toThrow(
+        "FilterError: {\"type\":\"too_many_filters\",\"option\":null}");
+    }
+    finally {
+      await enableSendTestEvents(true);
+    }
   });
 });

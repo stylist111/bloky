@@ -110,6 +110,13 @@ export function getTestEvents(name) {
   return [];
 }
 
+export async function enableSendTestEvents(enable) {
+  await browser.runtime.sendMessage({
+    type: "ewe-test:enableSendEventToMochaTests",
+    enable
+  });
+}
+
 export async function addOnBlockableListener(name, eventOptions) {
   return await runInBackgroundPage([
     {op: "getGlobal", arg: "self"},

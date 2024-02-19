@@ -87,18 +87,45 @@ async function runOperations(operations) {
   return stack.pop();
 }
 
+const ENABLE_SEND_EVENT_KEY = "EWE:enable_send_event";
+let enableSendEventToMochaTests = true;
+
+async function loadEnableSendEvent() {
+  if (!chrome.declarativeNetRequest || !chrome.storage.session) {
+    return;
+  }
+  let loadedValue = await chrome.storage.session.get(ENABLE_SEND_EVENT_KEY);
+  loadedValue = loadedValue[ENABLE_SEND_EVENT_KEY];
+  if (typeof loadedValue != "undefined") {
+    enableSendEventToMochaTests = loadedValue;
+  }
+}
+
+async function setEnableSendEvent(enable) {
+  enableSendEventToMochaTests = enable;
+
+  if (!chrome.declarativeNetRequest || !chrome.storage.session) {
+    return;
+  }
+  chrome.storage.session.set({
+    [ENABLE_SEND_EVENT_KEY]: enableSendEventToMochaTests
+  });
+}
+
 function sendEventToMochaTests(eventName, eventArgs) {
   EWE.testing._trace({eventName, eventArgs});
-  chrome.runtime.sendMessage(
-    {type: "ewe-test:event", eventName, eventArgs},
-    () => {
-      // this errors if there isn't a receiver (ie tests aren't
-      // running). It's safe to ignore that.
-      // eslint-disable-next-line no-unused-vars
-      let sendErrorToIgnore = chrome.runtime.lastError;
-      EWE.testing._debug(`Sent event for "${eventName}" with args ${JSON.stringify(eventArgs)}: lastError=${JSON.stringify(sendErrorToIgnore)}`);
-    }
-  );
+  if (enableSendEventToMochaTests) {
+    chrome.runtime.sendMessage(
+      {type: "ewe-test:event", eventName, eventArgs},
+      () => {
+        // this errors if there isn't a receiver (ie tests aren't
+        // running). It's safe to ignore that.
+        // eslint-disable-next-line no-unused-vars
+        let sendErrorToIgnore = chrome.runtime.lastError;
+        EWE.testing._debug(`Sent event for "${eventName}" with args ${JSON.stringify(eventArgs)}: lastError=${JSON.stringify(sendErrorToIgnore)}`);
+      }
+    );
+  }
 }
 
 self.listeners = new Map();
@@ -259,6 +286,17 @@ function handleTestMessage(request, sender, sendResponse) {
       let statusToIsAllowlisted = isResourceAllowlisted.get(request.url) ||
          new Map();
       sendResponse(statusToIsAllowlisted.get(request.status));
+      return true;
+    }
+
+    case "ewe-test:enableSendEventToMochaTests": {
+      setEnableSendEvent(request.enable);
+
+      // eslint-disable-next-line no-console
+      let log = (enableSendEventToMochaTests ? console.log : console.warn);
+      log((enableSendEventToMochaTests ? "Enabling" : "Disabling") +
+        " sending events to mocha tests");
+      sendResponse({});
       return true;
     }
   }
@@ -472,6 +510,7 @@ let state = "starting";
 
 EWE.start(startupInfo).then(async firstRun => {
   state = "started";
+  await loadEnableSendEvent();
 
   EWE.testing.enableDebugOutput(true);
   if (firstRun.warnings.length > 0) {
