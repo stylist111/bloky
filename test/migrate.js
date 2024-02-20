@@ -60,7 +60,8 @@ describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
 
   after(async function() {
     if (start) {
-      await browser.storage.local.set({"migrate-test-running": true});
+      await browser.storage.local.set({"mv2-mv3-migrate-test-running": true});
+      await browser.storage.local.set({search: document.location.search});
 
       return runInBackgroundPage([
         {op: "getGlobal", arg: "chrome"},
@@ -69,7 +70,8 @@ describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
       ]);
     }
 
-    await browser.storage.local.remove("migrate-test-running");
+    await browser.storage.local.remove("mv2-mv3-migrate-test-running");
+    await browser.storage.local.remove("search");
   });
 
   it("migrates user's subscriptions that are bundled in MV3", async function() {

@@ -533,29 +533,16 @@ EWE.start(startupInfo).then(async firstRun => {
     }
   });
 
-  const RELOAD_FLAG = "reload-test-running";
-  chrome.storage.local.get([RELOAD_FLAG], result => {
-    if (result[RELOAD_FLAG]) {
-      chrome.tabs.create({url: "reload.html"});
-    }
-  });
-
-  const UPDATE_FLAG = "update-test-running";
-  chrome.storage.local.get([UPDATE_FLAG], result => {
-    if (result[UPDATE_FLAG]) {
-      chrome.storage.local.get(["search"], searchResult => {
-        // We might need to be able to check some arguments, eg. "incognito"
-        chrome.tabs.create({url: `update.html${searchResult.search.replace("start=1&", "")}`});
-      });
-    }
-  });
-
-  const MIGRATE_FLAG = "migrate-test-running";
-  chrome.storage.local.get([MIGRATE_FLAG], result => {
-    if (result[MIGRATE_FLAG]) {
-      chrome.tabs.create({url: "mv2-mv3-migrate.html"});
-    }
-  });
+  for (let testKind of ["reload", "update", "mv2-mv3-migrate"]) {
+    const TEST_FLAG = `${testKind}-test-running`;
+    chrome.storage.local.get([TEST_FLAG], result => {
+      if (result[TEST_FLAG]) {
+        chrome.storage.local.get(["search"], searchResult => {
+          chrome.tabs.create({url: `${testKind}.html${searchResult.search.replace("start=1&", "")}`});
+        });
+      }
+    });
+  }
 });
 
 let injectedCode = (environment, ..._) => {

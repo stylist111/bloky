@@ -62,6 +62,7 @@ describe(`Reload (${phase})`, function() {
   after(async function() {
     if (start) {
       await browser.storage.local.set({"reload-test-running": true});
+      await browser.storage.local.set({search: document.location.search});
       // Even if we await for promise above, we still need to give browser time
       // to complete setting flag, in other case in next steps we won't have
       // flag set properly and reload.html won't load
@@ -75,6 +76,7 @@ describe(`Reload (${phase})`, function() {
     }
 
     await browser.storage.local.remove("reload-test-running");
+    await browser.storage.local.remove("search");
   });
 
   it("persists filter storage data", async function() {
