@@ -47,7 +47,7 @@ function parseArguments() {
     parser.command("$0 <manifest> <browser> [version]", "", subparser => {
       subparser.positional("manifest", {choices: ["v2", "v3", "v2-custom"]});
       subparser.positional("browser", {choices: Object.keys(BROWSERS)});
-      subparser.positional("version", {type: "string"});
+      subparser.positional("version", {type: "string", default: "latest"});
     });
     parser.option("incognito", {
       description: "Run the tests in incognito mode (Chrome) or private browsing (Firefox)."
@@ -59,7 +59,7 @@ function parseArguments() {
       description: "Maximum running time for each test. 0 disables timeouts."
     });
     parser.option("testKinds", {
-      description: "Kinds of tests to run. On MV2, defaults to functional and reload tests. On MV3, defaults to all tests.",
+      description: "Kinds of tests to run. On MV2, defaults to functional, reload and update tests. On MV3, defaults to all tests.",
       array: true,
       choices: ["functional", "reload", "update", "mv2-mv3-migrate", "fuzz"]
     });
@@ -87,16 +87,15 @@ function parseArguments() {
     // default is specified here rather than using a yargs default
     // because it depends on another yargs option (the manifest).
     if (!testKinds) {
-      testKinds = ["functional", "reload"];
+      testKinds = ["functional", "reload", "update"];
       if (manifestIsMV3(argv.manifest)) {
         testKinds.push("fuzz");
-        testKinds.push("update");
       }
       else if (argv.browser === "chromium" || argv.browser === "edge") {
         let version = argv.version;
-
         // Chromium 111 is the minimum supported version for MV3.
-        if (!version || version === "dev" || version === "beta" || version.split(".")[0] >= 111) {
+        if (version === "latest" || version === "dev" || version === "beta" ||
+            version.split(".")[0] >= 111) {
           testKinds.push("mv2-mv3-migrate");
         }
       }
@@ -104,7 +103,7 @@ function parseArguments() {
     return {
       manifest: argv.manifest,
       browser: argv.browser,
-      version: argv.version || "latest",
+      version: argv.version,
       testKinds,
       params
     };
@@ -270,7 +269,7 @@ async function findAndReplaceInFile(file, findRegex, replace) {
 
 async function copyDir(fromDir, toDir) {
   if (await exists(toDir)) {
-    await fs.promises.rmdir(toDir, {recursive: true});
+    await fs.promises.rm(toDir, {recursive: true});
   }
   await fs.promises.cp(fromDir, toDir, {recursive: true});
 }
