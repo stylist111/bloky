@@ -94,31 +94,29 @@ beforeEach(async function() {
 
   let {fn} = this.currentTest;
   this.currentTest.fn = async function() {
-    try {
-      await fn.call(this);
-      let error = await getLastError();
-      if (error) {
-        // https://github.com/mozilla/webextension-polyfill/issues/384
-        if (error.includes("A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received")) {
-          console.warn(error);
-        }
-        else {
-          throw new Error(error);
-        }
+    await fn.call(this);
+    let error = await getLastError();
+    if (error) {
+      // https://github.com/mozilla/webextension-polyfill/issues/384
+      if (error.includes("A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received")) {
+        console.warn(error);
       }
-    }
-    catch (e) {
-      if (e.message != "sync skip; aborting execution") {
-        console.warn("Test failed:", e.message, "\nDebug output:");
-        await printDebugLog();
+      else {
+        throw new Error(error);
       }
-
-      throw e;
     }
   };
 });
 
 afterEach(async function() {
+  if (this.currentTest.isFailed()) {
+    console.warn(`Test "${this.currentTest.title}" failed.\nDebug output:`);
+    await printDebugLog();
+
+    // wait for all the console messages (trace) to be printed
+    await new Promise(r => setTimeout(r, 1000));
+  }
+
   setMinTimeout(this, isFuzzingServiceWorker() ? 8000 : 6000);
   await clearFilters();
   await clearStorage();
