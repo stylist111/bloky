@@ -1,12 +1,13 @@
 # Gitlab runners
 
-This document shows how CI jobs can run in a [Gitlab runner](https://docs.gitlab.com/runner/)
-set up on a private machine, as an alternative to the SaaS runners hosted by
+This document shows how to set up [Gitlab runners](https://docs.gitlab.com/runner/)
+on a private machine, as an alternative to using the SaaS runners hosted by
 GitLab.
 
-The "Local run" section shows how to set up runers on your own machine, while
-the "GCloud run" section explains how runners can be managed in Google Cloud. In
-both cases a Gitlab registration token is needed beforehand.
+The [Local runners](#local-runners) section shows how to set up runners on your
+own machine, while the [GCloud runners](#gcloud-runners) section explains how
+runners are managed in Google Cloud. In both cases a Gitlab registration token
+is needed beforehand.
 
 ## Registration token
 
@@ -182,12 +183,12 @@ and the Compute Engine API was enabled for that project.
 
 Terraform is used to interact with GCloud in order to create the VM instances.
 
-First of all, the [terraform-gitlab-runner-compute-instance project](https://gitlab.com/eyeo/devops/playground/terraform-playground/terraform-gitlab-runner-compute-instance)
-needs to be cloned, and the WIP branch `webext-two-runners` checked out.
+First of all, the [terraform-gitlab-runner-compute-instance project](https://gitlab.com/eyeo/adblockplus/abc/terraform-gitlab-runner-compute-instance)
+needs to be cloned.
 
 `terraform/main.tf` holds the relevant configuration. Inside, the module
 `webext-instance` defines the VM instances setup, including the property
-`machine_type` sets the kind of machine that will be created.
+`machine_type` which sets the kind of machine that will be created.
 
 GCloud provides a set of [general-purpose-machines](https://cloud.google.com/compute/docs/general-purpose-machines#e2_machine_types_table),
 for instance `e2-standard-2`. Custom machines can also be defined, as explained
@@ -199,8 +200,9 @@ additional instances should be needed the variable `number_of_instances` can be
 modified accordingly.
 
 The script `terraform/scripts/startup.sh` runs when the VM is created. Among
-other things, the script holds the gitlab runner config that will be applied and
-registers it to Gitlab.
+other things, the script registers the runner to Gitlab and sets up a cron job
+to do a nightly cleanup of the machine. Finally, `terraform/scripts/shutdown.sh`
+unregisters the Gitlab runner when the VM is destroyed.
 
 ### Applying changes to GCloud
 
@@ -208,7 +210,7 @@ After configuring the project, terraform commands must be executed inside the
 `terraform` folder:
 
 ```sh
-# Export the Gitlab token to avoid typing it manually on terraform commands
+# Exports the Gitlab token to avoid typing it manually on terraform commands
 # See the registration token section for how to get one
 export TF_VAR_gitlab_token=<TOKEN>
 
@@ -238,6 +240,12 @@ gcloud compute ssh <VM_NAME> --tunnel-through-iap --project=eyeo-ee-runner-sandb
 
 # Become root in that machine
 sudo su
+
+# Check the existing gitlab runner config
+cat /etc/gitlab-runner/config.toml
+
+# System monitoring tool, ctrl+c to exit
+htop
 ```
 
 [gcloud-console]: https://console.cloud.google.com/compute/instances?referrer=search&project=eyeo-ee-runner-sandbox
