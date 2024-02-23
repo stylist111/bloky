@@ -703,7 +703,7 @@ async function processFilterTexts(texts, subscriptionId = null, mapper = null) {
   let staticRulesToEnable = [];
   let processedFilterTexts = new Set();
 
-  texts = texts.map(Filter.normalize);
+  texts = texts.map(text => Filter.normalize(text));
   for (let text of texts) {
     // skip processing possible filter text duplicates
     if (processedFilterTexts.has(text)) {
