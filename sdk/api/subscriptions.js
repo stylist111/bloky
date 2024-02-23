@@ -291,6 +291,44 @@ async function remove(url) {
   filterEngine.filterStorage.removeSubscription(subscription);
 }
 
+async function migrateSubscriptionToMv3(subscription) {
+  let subscriptionInfo = addonBundledSubscriptions.find(
+    it => it.mv2_url == subscription.url);
+  let url = subscriptionInfo ? subscriptionInfo.url : subscription.url;
+  await add(url, {
+    downloadCount: subscription.downloadCount,
+    version: subscription.version
+  });
+  if (!subscription.enabled) {
+    await disable(url);
+  }
+}
+
+/**
+ * @ignore
+ */
+export async function recoverMigrationErrorSubscriptions() {
+  let sucessfullyRecoveredIndices = [];
+
+  for (let i = 0; i < Prefs.migration_subscription_errors.length; i++) {
+    let migrationError = Prefs.migration_subscription_errors[i];
+
+    try {
+      await migrateSubscriptionToMv3(migrationError.subscription);
+      sucessfullyRecoveredIndices.push(i);
+    }
+    catch (e) {
+      // Nothing extra to do here. We just weren't able to recover this one.
+    }
+  }
+
+  if (sucessfullyRecoveredIndices.length > 0) {
+    Prefs.migration_subscription_errors =
+      Prefs.migration_subscription_errors.filter((_e, index) =>
+        !sucessfullyRecoveredIndices.includes(index));
+  }
+}
+
 /**
  * @ignore
  */
@@ -298,23 +336,42 @@ export async function updateSubscriptionInformation() {
   let removeUrls = [];
 
   for (let subscription of filterEngine.filterStorage.subscriptions()) {
-    if (subscription.hasBundledFilters) {
+    if (subscription instanceof RegularSubscription) {
       let subscriptionInfo = addonBundledSubscriptions.find(
         x => x.url == subscription.url);
 
-      if (subscriptionInfo) {
-        let {filterText} = await getFilterText(
-          subscriptionInfo, addonBundledSubscriptionsPath);
-        subscription.setFilterText(filterText);
+      if (subscription.hasBundledFilters) {
+        if (subscriptionInfo) {
+          // Existing bundled subscription, after the update it's still a
+          // bundled subscription.
 
-        subscription.diffURL = subscriptionInfo.diff_url;
-        subscription.title = subscriptionInfo.title;
-        subscription.homepage = subscriptionInfo.homepage;
+          let {filterText} = await getFilterText(
+            subscriptionInfo, addonBundledSubscriptionsPath);
+          subscription.setFilterText(filterText);
+
+          subscription.diffURL = subscriptionInfo.diff_url;
+          subscription.title = subscriptionInfo.title;
+          subscription.homepage = subscriptionInfo.homepage;
+        }
+        else {
+          // Existing bundled subscription, but after the update it's been
+          // removed from the extension's bundled subscriptions.
+
+          removeUrls.push(subscription.url);
+        }
       }
-      else {
-        // This sub which was previously bundled with the extension isn't
-        // bundled any more. Seems appropriate to drop it.
-        removeUrls.push(subscription.url);
+      else if (subscriptionInfo) {
+        // Existing custom user subscription, after the update it's now bundled
+        // so we should migrate to the bundled one.
+
+        await remove(subscription.url);
+        await add(subscriptionInfo.url, {
+          downloadCount: subscription.downloadCount,
+          version: subscription.version
+        });
+        if (!subscription.enabled) {
+          await disable(subscriptionInfo.url);
+        }
       }
     }
   }
@@ -472,17 +529,8 @@ export async function migrate() {
     }
 
     await remove(downloadable.url); // MV2 URL
-    let subscriptionInfo = addonBundledSubscriptions.find(
-      it => it.mv2_url == downloadable.url);
-    let url = subscriptionInfo ? subscriptionInfo.url : downloadable.url;
     try {
-      await add(url, {
-        downloadCount: downloadable.downloadCount,
-        version: downloadable.version
-      });
-      if (!downloadable.enabled) {
-        await disable(url);
-      }
+      migrateSubscriptionToMv3(downloadable);
     }
     catch (e) {
       saveMigrationError(downloadable, e.message);

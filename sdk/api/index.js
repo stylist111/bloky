@@ -38,7 +38,7 @@ import {setAddonInfo} from "./info.js";
 import {filterEngine} from "./core.js";
 import {validate as validateSubscriptions,
         migrate as migrateSubscriptions, ensureDNRRulesetsEnabled,
-        updateSubscriptionInformation}
+        updateSubscriptionInformation, recoverMigrationErrorSubscriptions}
   from "./subscriptions.js";
 import {migrateCustomFilters, clearRulesetUpdates,
         removeSubscriptionsDynamicFilters, enableAllDisabledStaticRules}
@@ -324,6 +324,7 @@ export async function checkAndInitSubscriptions(skipWipeOutDiffs) {
     await enableAllDisabledStaticRules();
   }
 
+  await recoverMigrationErrorSubscriptions();
   await updateSubscriptionInformation();
   await ensureDNRRulesetsEnabled();
 

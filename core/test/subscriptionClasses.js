@@ -466,4 +466,9 @@ describe("Subscription.isValidURL()", function() {
   it("should return true for data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==", function() {
     assert.strictEqual(Subscription.isValidURL("data:text/plain;base64,SGVsbG8sIFdvcmxkIQ=="), true);
   });
+
+  it("should return false for null or undefined urls", function() {
+    assert.strictEqual(Subscription.isValidURL(null), false);
+    assert.strictEqual(Subscription.isValidURL(void 0), false);
+  });
 });

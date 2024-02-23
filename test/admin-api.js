@@ -27,6 +27,14 @@ import {delay, apiErrorHandler} from "./api-middleware.js";
 
 const HTTP_ADMIN_PORT = 3003;
 let dirname = path.dirname(url.fileURLToPath(import.meta.url));
+
+const EMPTY_DIFF_RESPONSE = JSON.stringify({
+  filters: {
+    add: [],
+    remove: []
+  }
+});
+
 const BUILD_TIME_ROUTES = [
   {
     url: "/example-dynamic-endpoint",
@@ -57,31 +65,20 @@ const BUILD_TIME_ROUTES = [
     response: fs.readFileSync(dirname + "/pages/updatable_subscription.txt")
   },
   {
+    url: "/updatable_subscription/001.json",
+    response: EMPTY_DIFF_RESPONSE
+  },
+  {
     url: "/updatable_subscription/002.json",
-    response: JSON.stringify({
-      filters: {
-        add: [],
-        remove: []
-      }
-    })
+    response: EMPTY_DIFF_RESPONSE
   },
   {
     url: "/updatable_subscription/diff.json",
-    response: JSON.stringify({
-      filters: {
-        add: [],
-        remove: []
-      }
-    })
+    response: EMPTY_DIFF_RESPONSE
   },
   {
     url: "/anti-cv-subscription_diff.json",
-    response: JSON.stringify({
-      filters: {
-        add: [],
-        remove: []
-      }
-    })
+    response: EMPTY_DIFF_RESPONSE
   },
   {
     url: "/index.json",

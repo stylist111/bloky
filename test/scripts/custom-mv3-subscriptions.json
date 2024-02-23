@@ -107,5 +107,19 @@
     "url": "http://localhost:3003/mv3_diffurl_update.txt",
     "mv2_url": "http://localhost:3003/mv3_diffurl_update.txt",
     "diff_url": "http://localhost:3003/updatable_subscription/001.json"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000090",
+    "type": "ads",
+    "title": "Subscription that is currently bundled but will be removed later",
+    "url": "http://localhost:3000/currently-bundled-subscription.txt",
+    "mv2_url": "http://localhost:3000/currently-bundled-subscription.txt"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000092",
+    "type": "ads",
+    "title": "Subscription that is not bundled right now but will in an update",
+    "url": "http://localhost:3000/later-bundled-subscription.txt",
+    "mv2_url": "http://localhost:3000/later-bundled-subscription.txt"
   }
 ]

@@ -41,12 +41,18 @@ download of a diff fails, `downloadStatus` will be set to the new error
   had in the MV2 extension which are not bundled in the MV3 extension are
   migrated to custom user subscriptions.
 - If an extension had previously upgraded from MV2 to MV3, these custom
-  subscriptions would have been saved as subscription migration errors. Please
-  do not clear these migration errors, as these subscriptions could be recovered
-  as custom subscriptions in future update.
+  subscriptions would have been saved as subscription migration errors. When
+  updating the extension to this version of the SDK, these migration errors will
+  now be recovered into custom subscriptions. If you have not upgraded to this
+  version of the SDK yet, please avoid clearing the migration errors until after
+  updating and calling EWE.start.
 - When an MV3 extension is updated, and a previously bundled subscription is no
   longer bundled in the new version of the extension, the subscription will not
   be migrated to a custom user subscription. It will be removed entirely.
+- When an MV3 extension is updated, and user's custom subscription is now
+  bundled with the extension, their custom subscription will be converted into a
+  normal MV3 subscription, including using the bundled subscription's metadata,
+  static rules, and diff updates.
 
 ## Browser Support Updates
 

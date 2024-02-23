@@ -804,7 +804,8 @@ exports.Subscription.fromObject = function(obj) {
  * @returns {boolean} Whether the URL is a valid subscription URL.
  */
 exports.Subscription.isValidURL = function isValidURL(url) {
-  return url.startsWith("~user~") || Downloader.isValidURL(url);
+  return typeof url == "string" &&
+    (url.startsWith("~user~") || Downloader.isValidURL(url));
 };
 
 let SpecialSubscription =

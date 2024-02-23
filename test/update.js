@@ -18,9 +18,9 @@
 import expect from "expect";
 import browser from "webextension-polyfill";
 
-import {Page, TEST_MV3_SUBSCRIPTION, isFirefox, readFile, writeFile,
-        setMinTimeout, isIncognito, firefoxVersion, TEST_PAGES_URL}
-  from "./utils.js";
+import {Page, isFirefox, firefoxVersion, isIncognito, readFile, writeFile,
+        TEST_PAGES_URL, TEST_ADMIN_PAGES_URL, TEST_MV3_SUBSCRIPTION,
+        setMinTimeout, expectElemHideHidden} from "./utils.js";
 import {wait} from "./polling.js";
 import {EWE, runInBackgroundPage} from "./messaging.js";
 import {updateExtensionFiles} from "./mocha/mocha-runner.js";
@@ -224,6 +224,187 @@ describe(`Update (${phase}) [runner-only]`, function() {
         enabled: true
       })
     ]));
+
+    await new Page("image.html")
+      .expectResource("image.png")
+      .toBeBlocked();
+  });
+
+  it("recovers custom user subscriptions which previously failed to migrate [mv3-only]", async function() {
+    let url = `${TEST_PAGES_URL}/custom-subscription-for-migration-2.txt`;
+
+    if (start) {
+      await EWE.subscriptions.add(url);
+      let allSubscriptions = await EWE.subscriptions.getSubscriptions();
+      let subscription = allSubscriptions.find(sub => sub.url == url);
+      expect(subscription).toBeDefined();
+      await EWE.subscriptions.remove(url);
+
+      // In the newest version of our SDK these subscriptions will be migrated
+      // straight to custom user subscriptions. However, if the MV3 migration
+      // happened on an earlier version of the SDK, this would have instead
+      // created these migration errors.
+      await EWE.testing._saveSubscriptionMigrationError(
+        subscription, `Failed to find the subscription with URL=${url}`
+      );
+      return;
+    }
+
+    let subs = await EWE.subscriptions.getSubscriptions();
+    expect(subs).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        url,
+        updatable: true, // full updatable
+        enabled: true
+      })
+    ]));
+
+    await expectElemHideHidden();
+
+    let migrationErrors = await EWE.subscriptions.getMigrationErrors();
+    expect(migrationErrors).not.toContainEqual(expect.objectContaining({
+      subscription: expect.objectContaining({url})
+    }));
+  });
+
+  it("recovers bundled subscriptions which previously failed to migrate [mv3-only]", async function() {
+    let url = `${TEST_ADMIN_PAGES_URL}/subscription-that-shouldnt-be-moved-to-dnr-world.txt`;
+
+    if (start) {
+      await EWE.subscriptions.add(url);
+      await EWE.subscriptions.disable(url);
+      let allSubscriptions = await EWE.subscriptions.getSubscriptions();
+      let subscription = allSubscriptions.find(sub => sub.url == url);
+      expect(subscription).toBeDefined();
+      await EWE.subscriptions.remove(url);
+
+      // In the newest version of our SDK these subscriptions will be migrated
+      // straight to custom user subscriptions. However, if the MV3 migration
+      // happened on an earlier version of the SDK and the subscription wasn't
+      // in the bundled subscriptions yet, this would have instead created these
+      // migration errors.
+      await EWE.testing._saveSubscriptionMigrationError(
+        subscription, `Failed to find the subscription with URL=${url}`
+      );
+      return;
+    }
+
+    let subs = await EWE.subscriptions.getSubscriptions();
+    expect(subs).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        url,
+        updatable: false,
+        enabled: false
+      })
+    ]));
+
+    let migrationErrors = await EWE.subscriptions.getMigrationErrors();
+    expect(migrationErrors).not.toContainEqual(expect.objectContaining({
+      subscription: expect.objectContaining({url})
+    }));
+  });
+
+  it("unrecoverable migration errors are not removed [mv3-only]", async function() {
+    // subscriptions must use https, unless they are on localhost
+    let invalidSubscriptionUrl = "http://example.com";
+
+    if (start) {
+      await EWE.testing._saveSubscriptionMigrationError(
+        {url: invalidSubscriptionUrl},
+        `Failed to find the subscription with URL=${invalidSubscriptionUrl}`
+      );
+      return;
+    }
+
+    let migrationErrors = await EWE.subscriptions.getMigrationErrors();
+    expect(migrationErrors).toContainEqual(expect.objectContaining({
+      subscription: expect.objectContaining({url: invalidSubscriptionUrl})
+    }));
+  });
+
+  describe("subscription being bundled or unbundled", function() {
+    const oldBundledSubscription = {
+      id: "00000000-0000-0000-0000-000000000090",
+      url: "http://localhost:3000/currently-bundled-subscription.txt"
+    };
+    const newBundledSubscription = {
+      id: "00000000-0000-0000-0000-000000000092",
+      type: "ads",
+      title: "Subscription that is not bundled right now but will in an update",
+      url: "http://localhost:3000/later-bundled-subscription.txt",
+      mv2_url: "http://localhost:3000/later-bundled-subscription.txt"
+    };
+
+    after(async function() {
+      if (start) {
+        await updateExtensionFiles([
+          {
+            method: "findAndReplaceInFile",
+            args: {
+              file: "background.js",
+              findRegex: `{\\s*id:\\s*"${oldBundledSubscription.id}".*?}`,
+              replace: JSON.stringify(newBundledSubscription, null, 2)
+            }
+          }
+        ]);
+      }
+    });
+
+    it("converts custom user subscriptions to bundled subscriptions if it is bundled after an update [mv3-only]", async function() {
+      if (start) {
+        await EWE.subscriptions.add(newBundledSubscription.url);
+
+        let subs = await EWE.subscriptions.getSubscriptions();
+        expect(subs).toContainEqual(expect.objectContaining({
+          id: null,
+          url: newBundledSubscription.url
+        }));
+
+        return;
+      }
+
+      let subs = await EWE.subscriptions.getSubscriptions();
+      expect(subs).toContainEqual(expect.objectContaining({
+        id: newBundledSubscription.id,
+        url: newBundledSubscription.url,
+        updatable: false // no diff URL, and isn't a custom sub anymore
+      }));
+    });
+
+    it("removes bundled subscriptions which are no longer bundled after an update [mv3-only]", async function() {
+      if (start) {
+        await EWE.subscriptions.add(oldBundledSubscription.url);
+
+        let subs = await EWE.subscriptions.getSubscriptions();
+        expect(subs).toContainEqual(expect.objectContaining({
+          id: oldBundledSubscription.id,
+          url: oldBundledSubscription.url
+        }));
+
+        return;
+      }
+
+      let subs = await EWE.subscriptions.getSubscriptions();
+      expect(subs).not.toContainEqual(expect.objectContaining({
+        url: oldBundledSubscription.url
+      }));
+    });
+  });
+
+  it("maintains custom user filters across updates [mv3-only]", async function() {
+    // This test is mv3-only because in mv2 it clashes with the MV2 storage
+    // migration test below.
+
+    let filterText = "some-filter-text-which-should-not-be-lost";
+    if (start) {
+      await EWE.filters.add(filterText);
+      return;
+    }
+
+    let filters = await EWE.filters.getUserFilters();
+    expect(filters).toContainEqual(expect.objectContaining({
+      text: filterText
+    }));
   });
 
   it("fixes the IO/Prefs prefixes [mv2-only]", async function() {

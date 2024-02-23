@@ -495,6 +495,13 @@ if (isMV3()) {
         mv2_url: "http://localhost:3003/mv3_diffurl_update.txt",
         diff_url: "http://localhost:3003/updatable_subscription/001.json",
         expires: "4 days (update frequency)"
+      },
+      {
+        id: "00000000-0000-0000-0000-000000000090",
+        type: "ads",
+        title: "Subscription that is currently bundled but will be removed later",
+        url: "http://localhost:3000/currently-bundled-subscription.txt",
+        mv2_url: "http://localhost:3000/currently-bundled-subscription.txt"
       }
     ],
     bundledSubscriptionsPath: "subscriptions"
