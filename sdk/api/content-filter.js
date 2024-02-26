@@ -112,14 +112,14 @@ async function executeSnippets(tabId, frameId, previousFrame, frame) {
 
   for (let script of scripts) {
     for (let [snippet, ...args] of parseScript(script)) {
-      if (isolatedLib.has(snippet)) {
+      if (isolatedLib && isolatedLib.has(snippet)) {
         let dependency = isolatedLib.get(snippet);
         if (dependency) {
           isolatedDependencies.push(dependency);
         }
         isolated.push([snippet, ...args]);
       }
-      if (injectedLib.has(snippet)) {
+      if (injectedLib && injectedLib.has(snippet)) {
         main.push([snippet, ...args]);
       }
     }

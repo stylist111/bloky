@@ -22,6 +22,8 @@ download of a diff fails, `downloadStatus` will be set to the new error
 - Subscription now have their diffs downloaded immediately after migration. We 
   no longer   migrate `lastDownload` when going from MV2 to MV3. (EE-326)
 - Fixed a bug where blocked images might be not hidden in some cases. (EE-325)
+- We now check that the snippet library has been provided before trying to 
+  execute snippets. (EE-342)
 
 # Custom User Subscriptions in MV3
 
