@@ -69,7 +69,7 @@ function rewriteRequires(source) {
 /**
  * Creates a sandboxed module loader. This is needed if
  * - Modules being tested set global state
- * - Modules being tested require on of the stubs (io, prefs, info)
+ * - Modules being tested require one of the stubs (io, prefs, info)
  * - Modules being tested need to mock time or network requests
  *
  * Tests that don't need the sandbox shouldn't use it.
