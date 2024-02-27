@@ -1025,7 +1025,7 @@ function splitFilterTexts(filterTexts) {
   let dynamicFilterTexts = [];
   let staticFilterTexts = [];
 
-  let normalizedFilterTexts = filterTexts.map(Filter.normalize);
+  let normalizedFilterTexts = filterTexts.map(text => Filter.normalize(text));
   for (let filterText of normalizedFilterTexts) {
     if (dynamicFilters.has(filterText)) {
       dynamicFilterTexts.push(filterText);

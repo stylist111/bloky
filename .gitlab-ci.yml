@@ -435,7 +435,7 @@ fuzz:v3:edge:latest:
   before_script:
     - apk add bash git zip
   script:
-    - TERMINAL="t" TESTS_TO_INCLUDE="filters/wildcard-domain" ./test/scripts/compliance.sh
+    - TERMINAL="t" TESTS_TO_INCLUDE="filters/wildcard-domain,filters/remove,filters/remove-extended,filters/remove-on-DOM-mutation,filters/remove-extended-inversion,filters/inline-css,filters/inline-css-extended,filters/inline-css-on-DOM-mutation,filters/inline-css-extended-inversion,exceptions/inline-css" ./test/scripts/compliance.sh
   after_script:
     - docker cp $(docker ps -aqf ancestor=$COMPLIANCE_IMAGE):/testpages.adblockplus.org/test/screenshots .
   artifacts:
