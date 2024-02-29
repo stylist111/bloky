@@ -24,6 +24,9 @@ download of a diff fails, `downloadStatus` will be set to the new error
 - Fixed a bug where blocked images might be not hidden in some cases. (EE-325)
 - We now check that the snippet library has been provided before trying to 
   execute snippets. (EE-342)
+- We now wait for 1 second more (configurable in
+  `Prefs.edge_one_click_allowlisting_delay`) in one click allowlisting scenario
+  on Edge to let it actually finish adding allowlisting DNR rule. (EE-258)
 
 # Custom User Subscriptions in MV3
 

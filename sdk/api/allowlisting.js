@@ -15,6 +15,7 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import browser from "./browser.js";
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 import {parseURL} from "adblockpluscore/lib/url.js";
 import {MILLIS_IN_HOUR, MILLIS_IN_MINUTE} from "adblockpluscore/lib/time.js";
@@ -24,6 +25,8 @@ import {filterEngine} from "./core.js";
 import {getFrameInfo} from "./frame-state.js";
 import {default as filters} from "./filters.js";
 import {EventDispatcher} from "./types.js";
+import {isEdge} from "./info.js";
+import {Prefs} from "./prefs.js";
 
 // Allowlisting depends on comparing timestamps which may be generated on
 // different clocks on different servers across the internet. One day everyone
@@ -98,6 +101,13 @@ async function verifyAnySignatures(domain, timestamp, signature) {
 
 async function succeedAllowlisting(domain) {
   await allowlistingCallback(domain);
+  // EE-258: Edge adding dynamic DNR rules return promise earlier,
+  // than it actually processes the rules. So we workaround it by
+  // waiting for some time longer to let it actually finish the adding.
+  if (browser.declarativeNetRequest && isEdge()) {
+    const sleepIntervalMillis = Prefs.edge_one_click_allowlisting_delay;
+    await new Promise(r => setTimeout(r, sleepIntervalMillis));
+  }
   return true;
 }
 

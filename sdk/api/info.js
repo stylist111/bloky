@@ -39,6 +39,10 @@ export function isFirefox() {
   return application.includes("firefox");
 }
 
+export function isEdge() {
+  return application.includes("edg");
+}
+
 export function initializeDefaultAddonInfo() {
   let manifest = browser.runtime.getManifest();
 
