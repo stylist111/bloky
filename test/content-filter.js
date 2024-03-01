@@ -30,6 +30,7 @@ import {Page, waitForInvisibleElement, executeScript, setMinTimeout,
 import {wait} from "./polling.js";
 import {addFilter, EWE} from "./messaging.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
+import sinon from "sinon/pkg/sinon.js";
 
 let hideTimeout = isFuzzingServiceWorker() ? 15000 : 1000;
 let collapseTimeout = 2000;
@@ -681,6 +682,25 @@ describe("Snippets", function() {
       return null;
     }
   };
+
+  it("warns if snippets are not initialized", async function() {
+    const sandbox = sinon.createSandbox();
+    try {
+      sandbox.spy(console, "log");
+      await browser.runtime.sendMessage({type: "ewe-test:deinitSnippets"});
+
+      await new Page("element-hiding.html").loaded;
+      await wait(async() => {
+        // eslint-disable-next-line no-console
+        const calls = console.log.getCalls();
+        return calls.find(call => call.args[1].includes("Snippets are not initialized"));
+      }, 1000, "No warning output received");
+    }
+    finally {
+      sandbox.restore();
+      await browser.runtime.sendMessage({type: "ewe-test:initSnippets"});
+    }
+  });
 
   it("applies an injected snippet [fuzz]", async function() {
     await addAndAssertSnippet(

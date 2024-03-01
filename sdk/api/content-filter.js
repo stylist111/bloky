@@ -98,6 +98,11 @@ function generateStylesheet(tabId, previousFrame, frame) {
 }
 
 async function executeSnippets(tabId, frameId, previousFrame, frame) {
+  if (!isolatedLib || !injectedLib) {
+    console.warn("Snippets are not initialized. Use `setSnippetLibrary()` to initialize snippets.");
+    return;
+  }
+
   let details = {tabId, frameIds: [frameId]};
   let filters = filterEngine.snippets.getFilters(frame.hostname);
   let scripts = filters.map(({script}) => script);
@@ -112,14 +117,14 @@ async function executeSnippets(tabId, frameId, previousFrame, frame) {
 
   for (let script of scripts) {
     for (let [snippet, ...args] of parseScript(script)) {
-      if (isolatedLib && isolatedLib.has(snippet)) {
+      if (isolatedLib.has(snippet)) {
         let dependency = isolatedLib.get(snippet);
         if (dependency) {
           isolatedDependencies.push(dependency);
         }
         isolated.push([snippet, ...args]);
       }
-      if (injectedLib && injectedLib.has(snippet)) {
+      if (injectedLib.has(snippet)) {
         main.push([snippet, ...args]);
       }
     }

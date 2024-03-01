@@ -15,6 +15,8 @@ download of a diff fails, `downloadStatus` will be set to the new error
   (increase from 5K to 30K dynamic rules limit on Chrome/Edge 121+). (EE-315)
 - Bundled subscription information (including diffUrl) is now updated when the
   extension is updated. (EE-328)
+- Now we check whether snippets are initialized with `setSnippetLibrary()` and warn
+  if necessary. (EE-342)
 
 # Fixes
 
@@ -22,8 +24,6 @@ download of a diff fails, `downloadStatus` will be set to the new error
 - Subscription now have their diffs downloaded immediately after migration. We 
   no longer   migrate `lastDownload` when going from MV2 to MV3. (EE-326)
 - Fixed a bug where blocked images might be not hidden in some cases. (EE-325)
-- We now check that the snippet library has been provided before trying to 
-  execute snippets. (EE-342)
 - We now wait for 1 second more (configurable in
   `Prefs.edge_one_click_allowlisting_delay`) in one click allowlisting scenario
   on Edge to let it actually finish adding allowlisting DNR rule. (EE-258)
