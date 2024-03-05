@@ -442,4 +442,35 @@ describe(`Update (${phase}) [runner-only]`, function() {
     let actualData3 = await readFile(CURRENT_PREFIX, file);
     expect(actualData3.content).toEqual(Array.from(data1));
   });
+
+  it("reads the feature flags passed into EWE.start", async function() {
+    // The way that our Firefox currently loads extensions for tests means that
+    // it doesn't reload extension files we change in these tests.
+    // See https://jira.eyeo.com/browse/EE-348
+    if (isFirefox()) {
+      this.skip();
+    }
+
+    let feature = "example";
+    if (start) {
+      expect(await EWE.testing._isFeatureEnabled(feature))
+        .toBe(false);
+
+      await updateExtensionFiles([
+        {
+          method: "findAndReplaceInFile",
+          args: {
+            file: "background.js",
+            findRegex: /startupInfo\.featureFlags\s*=\s*{[^}]*}/.source,
+            replace: `startupInfo.featureFlags = { ${feature}: true }`
+          }
+        }
+      ]);
+
+      return;
+    }
+
+    expect(await EWE.testing._isFeatureEnabled(feature))
+      .toBe(true);
+  });
 });

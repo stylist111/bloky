@@ -31,6 +31,7 @@ const {Pattern} = require("./patterns");
 const {parseDomains, domainSuffixes, isValidDomainWildcard,
        hasWildcard, matchesWildcards} = require("./url");
 const {parse, FilterParsingError} = require("./filters");
+const {isFeatureEnabled} = require("./features.js");
 
 const {resources} = require("../data/resources.js");
 
@@ -932,14 +933,14 @@ exports.ContentFilter.fromText = function(text, domains, type, body) {
   }
 
   let selector = body;
-  let action = "{}";
+  let action;
 
   let actionExtractingResult = /^(.*) ({[^{}]*})$/.exec(body);
   if (actionExtractingResult) {
     [, selector, action] = actionExtractingResult;
   }
 
-  let remove = action.toLowerCase().includes("remove:true;");
+  let remove = action && action.toLowerCase().includes("remove:true;");
 
   if (type == "?") {
     if (!restrictedByDomain) {
@@ -950,8 +951,16 @@ exports.ContentFilter.fromText = function(text, domains, type, body) {
       return new ElemHideEmulationFilter(text, domains, selector, remove);
     }
 
-    const css = extractCSSProperties(text);
-    return new ElemHideEmulationFilter(text, domains, selector, false, css);
+    if (action) {
+      if (!isFeatureEnabled("inlineCss")) {
+        return new InvalidFilter(text, "filter_unknown_option");
+      }
+
+      const css = extractCSSProperties(text);
+      return new ElemHideEmulationFilter(text, domains, selector, false, css);
+    }
+
+    return new ElemHideEmulationFilter(text, domains, selector, false);
   }
 
   if (!restrictedByDomain &&
@@ -970,8 +979,12 @@ exports.ContentFilter.fromText = function(text, domains, type, body) {
     return new ElemHideEmulationFilter(text, domains, selector, remove);
   }
 
-  const css = extractCSSProperties(text);
-  if (css) {
+  if (action) {
+    if (!isFeatureEnabled("inlineCss")) {
+      return new InvalidFilter(text, "filter_unknown_option");
+    }
+
+    const css = extractCSSProperties(text);
     return new ElemHideEmulationFilter(text, domains, selector, false, css);
   }
 

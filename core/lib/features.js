@@ -20,7 +20,7 @@
 "use strict";
 
 /**
- * Feature flags for the filterEngine.
+ * Modes of operation for the filterEngine.
  *
  * @type {Object}
  *
@@ -33,3 +33,60 @@ exports.Features = {
   DNR: 1
 };
 
+let featureFlags = {};
+
+/**
+ * Resets all known feature flags back to their default values.
+ */
+let resetFeatureFlags =
+exports.resetFeatureFlags = function() {
+  // Add new feature flags here!
+
+  featureFlags.example = false;  // example feature used by tests
+  featureFlags.inlineCss = false;
+};
+
+resetFeatureFlags();
+
+/**
+ * Sets the active set of feature flags.
+ *
+ * @param {Object} newFlags An object where each property is a feature to be
+ * set.
+ * @throws {Error} If any of the feature are not known, and so could not be
+ * set. Any known features will still be set.
+ */
+exports.setFeatureFlags = function(newFlags) {
+  let unknownFeatures = [];
+
+  for (let feature in newFlags) {
+    if (!Object.hasOwnProperty.call(featureFlags, feature)) {
+      unknownFeatures.push(feature);
+    }
+    else {
+      featureFlags[feature] = newFlags[feature];
+    }
+  }
+
+  if (unknownFeatures.length > 0) {
+    throw new Error(`Unknown feature flags: ${unknownFeatures.join(", ")}`);
+  }
+};
+
+/**
+ * Gets the current status of a feature flag. Used to determine which codepath
+ * to take.
+ *
+ * @param {string} feature The name of the feature.
+ * @returns {bool} The value of the feature flag, either from its default value
+ * or as set by `setFeatureFlags`.
+ * @throws {Error} If the feature is not one of the features set in
+ * `resetFeatureFlags`.
+ */
+exports.isFeatureEnabled = function(feature) {
+  if (typeof featureFlags[feature] == "undefined") {
+    throw new Error(`Unknown feature flag: ${feature}`);
+  }
+
+  return featureFlags[feature];
+};

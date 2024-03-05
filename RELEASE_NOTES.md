@@ -17,6 +17,14 @@ download of a diff fails, `downloadStatus` will be set to the new error
   extension is updated. (EE-328)
 - Now we check whether snippets are initialized with `setSnippetLibrary()` and warn
   if necessary. (EE-342)
+- Added a new feature flagging mechanism. This adds a new property to the
+  configuration passed to `EWE.start()`, which can be used to turn on
+  features which are still in development. (EE-337)
+- Support for inline CSS filters is now behind a feature flag, and is disabled
+  by default. If you try to add an inline CSS filter with this feature disabled,
+  it will be an `InvalidFilter` with a reason of `filter_unknown_option`. This
+  can be enabled by setting the `inlineCss` feature flag to `true` when calling
+  `EWE.start()`. (EE-337)
 
 # Fixes
 

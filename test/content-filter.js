@@ -28,7 +28,7 @@ import {Page, waitForInvisibleElement, executeScript, setMinTimeout,
         expectElementToHaveInlineStyle}
   from "./utils.js";
 import {wait} from "./polling.js";
-import {addFilter, EWE} from "./messaging.js";
+import {addFilter, EWE, setFeatureFlags} from "./messaging.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 import sinon from "sinon/pkg/sinon.js";
 
@@ -368,7 +368,17 @@ describe("Element Hiding", function() {
       await expectElemHideRemoved({elemId});
     });
 
+    it("rejects inline CSS filters until the experiment is turned on", async function() {
+      await setFeatureFlags({inlineCss: false});
+
+      await expect(
+        EWE.filters.add(`${TEST_PAGES_DOMAIN}#?##inline-css-div {margin-bottom: 0px; margin-top: 0px}`)
+      ).rejects.toThrow("FilterError");
+    });
+
     it("applies inline CSS to element", async function() {
+      await setFeatureFlags({inlineCss: true});
+
       const elemId = "inline-css-div";
 
       await expectElementToHaveInlineStyle(elemId, "");
@@ -381,6 +391,8 @@ describe("Element Hiding", function() {
     });
 
     it("only allows inline CSS filters for privileged subscriptions", async function() {
+      await setFeatureFlags({inlineCss: true});
+
       const elemId = "inline-css-div";
 
       await EWE.subscriptions.add("http://localhost:3000/subscription.txt", {privileged: false});

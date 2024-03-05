@@ -215,19 +215,38 @@ async function onInstalled(details) {
  *   user active pings will be sent to.
  * @param {string} [addonInfo.telemetry.bearer] The Bearer token accompanying
  *   the telemetry URL.
+ * @param {Object?} [addonInfo.featureFlags] Boolean flags for enabling and
+ *   disabling features. If a flag is not set here, the default value will be
+ *   used. The default value is the correct state for the flag according to the
+ *   SDK at time of release, so under normal circumstances these flags do not
+ *   need to be set. Options may be removed from this object without it being
+ *   considered a breaking change as features stabilitze and can no longer by
+ *   dynamically enabled or disabled. If any features are set here which are
+ *   not known features, a warning will be added to the `warnings` property
+ *   of the returned `FirstRunInfo`.
+ * @param {bool?} [addonInfo.featureFlags.inlineCss] Enable inline CSS in
+ *   element hiding and element hiding emulation filters.
  * @return {Promise<FirstRunInfo>} Promise that is resolved after starting up
  *                                 is completed.
  */
 export async function start(addonInfo) {
-  setAddonInfo(addonInfo);
-  startSubmodulesWithListeners();
-
   let warnings = [];
+
+  let addonInfoResult = setAddonInfo(addonInfo);
+  if (addonInfoResult.warnings) {
+    warnings.push(...addonInfoResult.warnings);
+  }
+
+  startSubmodulesWithListeners();
 
   if (browser.declarativeNetRequest) {
     browser.runtime.onInstalled.addListener(onInstalled);
-    warnings = await validateSubscriptions(
+    let validateSubscriptionWarnings = await validateSubscriptions(
       addonInfo.bundledSubscriptions, addonInfo.bundledSubscriptionsPath);
+
+    if (validateSubscriptionWarnings) {
+      warnings.push(...validateSubscriptionWarnings);
+    }
   }
 
   await startSubmodules();

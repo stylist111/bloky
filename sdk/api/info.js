@@ -18,6 +18,7 @@
 import browser from "./browser.js";
 
 import {setRecommendations} from "adblockpluscore/lib/recommendations.js";
+import * as features from "adblockpluscore/lib/features.js";
 
 export let addonName;
 export let addonVersion;
@@ -99,6 +100,8 @@ function parseChromiumUserAgent() {
 }
 
 export function setAddonInfo(addonInfo) {
+  let warnings = [];
+
   if (browser.declarativeNetRequest) {
     if (!addonInfo) {
       throw new Error("No addonInfo provided to EWE.start");
@@ -114,7 +117,7 @@ export function setAddonInfo(addonInfo) {
   }
 
   if (!addonInfo) {
-    return;
+    return {warnings};
   }
 
   if (addonInfo.name) {
@@ -134,4 +137,15 @@ export function setAddonInfo(addonInfo) {
       addonBundledSubscriptions.length > 0) {
     setRecommendations(addonBundledSubscriptions);
   }
+
+  if (addonInfo.featureFlags) {
+    try {
+      features.setFeatureFlags(addonInfo.featureFlags);
+    }
+    catch (e) {
+      warnings.push(e.message);
+    }
+  }
+
+  return {warnings};
 }

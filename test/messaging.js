@@ -33,8 +33,16 @@ export async function runInBackgroundPage(operations, fuzzEnabled = true) {
     await fuzzSuspendServiceWorker();
   }
 
-  let {result, error} =
-    await browser.runtime.sendMessage({type: "ewe-test:run", operations});
+  let runResult =
+      await browser.runtime.sendMessage({type: "ewe-test:run", operations});
+
+  if (!runResult) {
+    console.warn("Call to ewe-test:run with these arguments didn't return a result",
+                 operations);
+    runResult = {};
+  }
+
+  let {result, error} = runResult;
   if (error) {
     throw new Error(error);
   }
@@ -169,4 +177,29 @@ export async function waitForServiceWorkerInitialization() {
 
 export async function getLastError() {
   return await runInBackgroundPage([{op: "getLastError"}], false);
+}
+
+export async function setFeatureFlags(featureFlags) {
+  let {result, error} = await browser.runtime.sendMessage({
+    type: "ewe-test:setFeatureFlags",
+    featureFlags
+  });
+
+  if (error) {
+    throw new Error(error);
+  }
+
+  return result;
+}
+
+export async function resetFeatureFlags() {
+  let {result, error} = await browser.runtime.sendMessage({
+    type: "ewe-test:resetFeatureFlags"
+  });
+
+  if (error) {
+    throw new Error(error);
+  }
+
+  return result;
 }

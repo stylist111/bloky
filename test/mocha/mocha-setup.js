@@ -21,8 +21,8 @@
 
 import {TEST_PAGES_URL, Page, Popup, setMinTimeout, isIncognito}
   from "../utils.js";
-import {runInBackgroundPage, getLastError, clearAllTestEvents}
-  from "../messaging.js";
+import {runInBackgroundPage, getLastError, clearAllTestEvents,
+        resetFeatureFlags} from "../messaging.js";
 import {isFuzzingServiceWorker} from "./mocha-runner.js";
 
 import "./mocha-setup-minimal.js";
@@ -80,6 +80,7 @@ before(async function() {
 
   await clearFilters();
   await clearStorage();
+  await resetFeatureFlags();
 
   // The incognito CI job would sometimes fail the first test case for no
   // apparent reason. Sleeping should allow more time for the test extension
@@ -117,9 +118,10 @@ afterEach(async function() {
     await new Promise(r => setTimeout(r, 1000));
   }
 
-  setMinTimeout(this, isFuzzingServiceWorker() ? 8000 : 6000);
+  setMinTimeout(this, isFuzzingServiceWorker() ? 12000 : 10000);
   await clearFilters();
   await clearStorage();
+  await resetFeatureFlags();
   await Page.removeCurrent();
   await Popup.removeCurrent();
   clearAllTestEvents();
