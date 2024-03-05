@@ -444,13 +444,6 @@ describe(`Update (${phase}) [runner-only]`, function() {
   });
 
   it("reads the feature flags passed into EWE.start", async function() {
-    // The way that our Firefox currently loads extensions for tests means that
-    // it doesn't reload extension files we change in these tests.
-    // See https://jira.eyeo.com/browse/EE-348
-    if (isFirefox()) {
-      this.skip();
-    }
-
     let feature = "example";
     if (start) {
       expect(await EWE.testing._isFeatureEnabled(feature))

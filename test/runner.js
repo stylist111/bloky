@@ -25,11 +25,6 @@ import yargs from "yargs";
 import webdriver from "selenium-webdriver";
 import {BROWSERS} from "@eyeo/get-browser-binary";
 
-// Required to start the driver on some platforms (e.g. Windows).
-import "chromedriver";
-import "geckodriver";
-import "msedgedriver";
-
 import {isMain} from "../scripts/utils.js";
 import {runTestServer, killTestServer} from "../scripts/test-server-manager.js";
 
