@@ -106,6 +106,15 @@ lint:
   script:
     - npm run lint
 
+typechecks:
+  image: node:18-bullseye-slim
+  stage: build
+  allow_failure: true
+  before_script:
+    - npm install
+  script:
+    - npm run types:check
+
 .build-basic:
   stage: build
   extends: .docker-image
@@ -308,7 +317,7 @@ func:v3:edge:latest:
     - !reference [.checktests-run, rules]
 
 .functional-isolated-mv3:
-  extends: .functional-isolated  
+  extends: .functional-isolated
   parallel:
     matrix:
       - TEST_SUITE:
@@ -332,7 +341,7 @@ func:v3:edge:latest:
         - "Synchronization"
 
 .functional-isolated-mv2:
-  extends: .functional-isolated  
+  extends: .functional-isolated
   parallel:
     matrix:
       - TEST_SUITE:
@@ -373,7 +382,7 @@ fi:v2:firefox:
   allow_failure: true
   rules:
     - !reference [.full-run, rules]
-  
+
 func:v2:chromium:beta:
   extends: .functional-full
   variables:
@@ -450,16 +459,16 @@ comp:v2:firefox:
   extends: .compliance
   variables:
     VERSION: latest
-    BROWSER: firefox 
+    BROWSER: firefox
     MANIFEST: mv2
 
 comp:v2:chromium:
   extends: .compliance
   variables:
     VERSION: latest
-    BROWSER: chromium 
+    BROWSER: chromium
     MANIFEST: mv2
-    
+
 comp:v3:chromium:
   extends: .compliance
   variables:

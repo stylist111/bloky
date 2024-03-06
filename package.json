@@ -35,9 +35,9 @@
     "webpack.config.js"
   ],
   "dependencies": {
+    "uuid": "^9.0.0",
     "webextension-polyfill": "^0.8.0",
-    "yargs": "^17.5.1",
-    "uuid": "^9.0.0"
+    "yargs": "^17.5.1"
   },
   "devDependencies": {
     "@eyeo/get-browser-binary": "^0.15.0",
@@ -66,6 +66,7 @@
     "selenium-webdriver": "^4.15.0",
     "sinon": "^11.1.1",
     "source-map-loader": "^3.0.0",
+    "typescript": "^5.3.3",
     "wbn": "^0.0.8",
     "webpack": "^5.37.1",
     "webpack-cli": "^4.7.0",
@@ -86,6 +87,8 @@
     "test-bundle": "node test/bundle/run.js",
     "test-scripts": "mocha test/scripts/*.js",
     "test-core": "npm test -w core",
+    "types:generate": "tsc",
+    "types:check": "tsc --checkJS true",
     "subs-init": "node scripts/initSubscriptions.js",
     "subs-merge": "node scripts/mergeSubscriptions.js",
     "subs-fetch": "node scripts/fetchSubscriptions.js",

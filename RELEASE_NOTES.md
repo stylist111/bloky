@@ -1,5 +1,6 @@
 Unreleased
 ==========
+- Start generating type definitions and include type checks in CI.
 
 🌳 1.5.0 - 2024-03-06 🌳
 ========================

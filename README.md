@@ -450,3 +450,20 @@ explanations.
 ## Testing
 
 For full documentation about testing please refer to our [testing document](./docs/TESTING.md).
+
+## Typings
+
+To provide an optimal DX to consumers of the SDK, we are generating typescript
+type definitions from JSDoc.  
+However when setting this up we noticed that the api had numerous type errors
+and JSDoc syntax errors.  
+
+So while typedef files are generated as part of the build script, they are not
+exported in the package.json.  
+First we want to fix the type errors found by typescript in the `/api` folder.
+You can check errors by running `npm run types:check`, and generate the
+typedefs by running `npm run types:generate`.  
+
+To make the typedefs available to consumers of the SDK, add the following to
+the package.json: `"types": "./dist/types/api/index.d.ts",` and run
+`npm run build`.
