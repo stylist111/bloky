@@ -1,6 +1,9 @@
 Unreleased
 ==========
 
+🌳 1.5.0 - 2024-03-06 🌳
+========================
+
 # General
 
 - Subscriptions now have a new property `lastModified` to match the
