@@ -30,17 +30,19 @@ download of a diff fails, `downloadStatus` will be set to the new error
 
 - Port is now ignored when matching with wildcards. (EE-288)
 - Subscription now have their diffs downloaded immediately after migration. We 
-  no longer   migrate `lastDownload` when going from MV2 to MV3. (EE-326)
+  no longer migrate `lastDownload` when going from MV2 to MV3. (EE-326)
 - Fixed a bug where blocked images might be not hidden in some cases. (EE-325)
 - We now wait for 1 second more (configurable in
   `Prefs.edge_one_click_allowlisting_delay`) in one click allowlisting scenario
-  on Edge to let it actually finish adding allowlisting DNR rule. (EE-258)
+  on Edge to let it actually finish adding allowlisting DNR rules. (EE-258)
+- Fixed a bug where filter normalization was incorrectly applied when using diff
+  updates in MV3. Un-normalized `remove` filters were not being applied.
 
 # Custom User Subscriptions in MV3
 
 - Enabled custom user subscriptions in MV3 extensions. (EE-117)
 - If `EWE.subscriptions.add()` is called with a subscription URL that is not one
-  of the subscriptions bundled with the extension, then the subscription will be
+  of the subscriptions bundled with the extension, the subscription will be
   added as a custom user subscription. The filter text will be downloaded from
   the provided URL in the same manner as MV2 subscriptions.
 - Declarative Net Request rules applied by custom user subscriptions use dynamic
@@ -69,7 +71,7 @@ download of a diff fails, `downloadStatus` will be set to the new error
 
 ## Browser Support Updates
 
-- From now on, the latest versions of Chromium, Firefox and Edge are supported
+- From now on, the latest versions of Chromium, Firefox, and Edge are supported
   by the engine (latest versions at the time of release).
 
 📠 1.4.1 - 2024-02-02 📠
