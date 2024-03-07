@@ -417,7 +417,7 @@ npm run lint
 [builds]: https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution/-/jobs/artifacts/master/browse/dist?job=build
 [snippet-filters]: https://help.eyeo.com/adblockplus/snippet-filters-tutorial
 [snippets-project]: https://gitlab.com/eyeo/adblockplus/abp-snippets
-[api-docs]: https://eyeo.gitlab.io/adblockplus/abc/webext-ad-filtering-solution/master/docs/#apis
+[api-docs]: https://eyeo.gitlab.io/adblockplus/abc/webext-ad-filtering-solution/#apis
 [dev]: https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution#development
 [notifications-module]: https://eyeo.gitlab.io/adblockplus/abc/webext-ad-filtering-solution/master/docs/#notifications
 [allowlisting-module]: https://eyeo.gitlab.io/adblockplus/abc/webext-ad-filtering-solution/master/docs/#allowlisting

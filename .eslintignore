@@ -1,6 +1,7 @@
 /node_modules/
 /dist/
 /docs/
+/public/
 /browser-snapshots/
 /test/bundle/dist/
 /test/unit/dist/

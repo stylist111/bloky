@@ -63,7 +63,6 @@ workflow:
 
 stages:
   - build
-  - pages
   - unit
   - test
   - benchmark
@@ -84,7 +83,7 @@ build:src:
   artifacts:
     paths:
       - dist/
-      - dist/docs
+      - public/
     expire_in: 1 week
 
 audit:
@@ -114,6 +113,24 @@ typechecks:
     - npm install
   script:
     - npm run types:check
+
+# Publishes the docs to https://eyeo.gitlab.io/adblockplus/abc/webext-ad-filtering-solution
+# and https://eyeo.gitlab.io/adblockplus/abc/webext-ad-filtering-solution/core/index.html
+# Requirements: https://docs.gitlab.com/ee/user/project/pages/introduction.html#gitlab-pages-requirements
+pages:
+  image: node:18-bullseye-slim
+  stage: build
+  needs:
+    - job: build:src
+  script:
+    # Check that docs folder exists
+    - "[ -d \"public\" ]"
+  artifacts:
+    paths:
+      - public
+  rules:
+    # Only publishes docs pushed to master
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
 
 .build-basic:
   stage: build
@@ -504,13 +521,6 @@ int:bundle:
   rules:
     - !reference [.avoid-flaky-run, rules]
 
-.pages:
-  image: node:18-bullseye-slim
-  stage: pages
-  dependencies:
-    - build:src
-
 include:
-  - ".gitlab-pages.yml"
   - template: Jobs/SAST.gitlab-ci.yml
   - template: Code-Quality.gitlab-ci.yml
