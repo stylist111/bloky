@@ -444,7 +444,7 @@ fuzz:v3:edge:latest:
   before_script:
     - apk add bash git zip
   script:
-    - TERMINAL="t" TESTS_TO_INCLUDE="filters/wildcard-domain,filters/remove,filters/remove-extended,filters/remove-on-DOM-mutation,filters/remove-extended-inversion" ./test/scripts/compliance.sh
+    - TERMINAL="t" TESTS_TO_INCLUDE="filters/wildcard-domain,filters/remove,filters/remove-extended,filters/remove-on-DOM-mutation,filters/remove-extended-inversion,$MV3_ONLY_TESTS" ./test/scripts/compliance.sh
   after_script:
     - docker cp $(docker ps -aqf ancestor=$COMPLIANCE_IMAGE):/testpages.adblockplus.org/test/screenshots .
   artifacts:
@@ -475,6 +475,7 @@ comp:v3:chromium:
     VERSION: latest
     BROWSER: chromium
     MANIFEST: mv3
+    MV3_ONLY_TESTS: exceptions/sitekey_mv3
 
 comp:v3:edge:
   extends: .compliance
@@ -482,6 +483,7 @@ comp:v3:edge:
     VERSION: latest
     BROWSER: edge
     MANIFEST: mv3
+    MV3_ONLY_TESTS: exceptions/sitekey_mv3
 
 # Integration tests
 int:scripts:

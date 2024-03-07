@@ -20,9 +20,9 @@ COMPLIANCE_IMAGE="${COMPLIANCE_IMAGE:-compliance}"
 docker build -t $COMPLIANCE_IMAGE --build-arg EXTENSION_FILE="test-$MANIFEST.zip" .
 
 if [[ "$MANIFEST" == "mv2" ]]; then
-  SKIP="((?!Subscriptions|Snippets).)"
+  SKIP="((?!Subscriptions|Snippets|Sitekey on MV3).)"
 else
-  SKIP="((?!Subscriptions|Snippets|Sitekey|Header).)"
+  SKIP="((?!Subscriptions|Snippets|Sitekey on MV2|Header).)"
 fi
 
 TERMINAL="${TERMINAL:-it}"
