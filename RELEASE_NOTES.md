@@ -1,6 +1,15 @@
 Unreleased
 ==========
+
+## General
+
 - Start generating type definitions and include type checks in CI.
+
+## Fixes
+
+- No longer log an error to the console when the history state updates on a page
+  where our content script is not injected, for example on an extension
+  page. (EE-349)
 
 🌳 1.5.0 - 2024-03-06 🌳
 ========================

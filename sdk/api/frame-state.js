@@ -27,6 +27,7 @@ import {getSitekey, clearTabSitekeys,
         addListener as addOnSitekeyReceivedListener} from "./sitekey.js";
 import {applyContentFilters} from "./content-filter.js";
 import {trace, debug} from "./debugging.js";
+import {ignoreNoConnectionError} from "../errors.js";
 
 /**
  * The URL that browsers use to represent an empty page, about:blank.
@@ -485,10 +486,12 @@ async function onHistoryStateUpdated(details) {
   let filterData = await applyContentFilters(
     details.tabId, details.frameId, previousFrame);
   try {
-    await browser.tabs.sendMessage(
-      details.tabId,
-      {type: "ewe:apply-content-features", ...filterData},
-      {frameId: details.frameId});
+    await ignoreNoConnectionError(
+      browser.tabs.sendMessage(
+        details.tabId,
+        {type: "ewe:apply-content-features", ...filterData},
+        {frameId: details.frameId})
+    );
   }
   catch (e) {
     console.error(e);
