@@ -4,6 +4,7 @@ Unreleased
 ## General
 
 - Start generating type definitions and include type checks in CI.
+- Remove core minification. (EE-314)
 
 ## Fixes
 

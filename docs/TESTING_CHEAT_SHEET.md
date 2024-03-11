@@ -55,7 +55,7 @@ npm test -- {v2|v3|v2-custom} {chromium|firefox|edge} [version|channel] --timeou
 
 ```
 docker build -t basic -f test/dockerfiles/basic.Dockerfile .
-docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_PARAMS="(path to the test to run)" --entrypoint test/dockerfiles/core-entrypoint.sh basic
+docker run --cpus=2 --memory=6g --shm-size=2g -it --entrypoint npm basic run test-core -- [test/path]
 ```
 
 ### Func:webext

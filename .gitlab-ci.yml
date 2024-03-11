@@ -185,7 +185,7 @@ build:functional-image-2:
 unit:core:
   extends: .unit
   script:
-    - docker run $DOCKER_OPTIONS --entrypoint test/dockerfiles/core-entrypoint.sh $BASIC_IMAGE
+    - docker run $DOCKER_OPTIONS --entrypoint npm $BASIC_IMAGE run test-core
 
 unit:webext:
   extends: .unit

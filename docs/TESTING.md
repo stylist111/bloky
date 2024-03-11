@@ -36,19 +36,17 @@ eyeo's adBlocking products.
 ### Unit:core
 
 webext contains a Core repository and a lot of logic is done in Core. Core
-itself is covered by both unit tests and browser tests. To test Core locally,
-you can run following command from the top level directory:
+itself is covered by both unit tests and browser tests. To run all core tests
+use the following command from the top level directory:
 
 ```
 npm run test-core
 ```
 
-On the CI, a minified version of the Core code is also tested. To run the CI
-tests locally use the following commands, which accept optional `TEST_PARAMS`:
+Optionaly use a test path to run a single test module. Example:
 
 ```
-docker build -t basic -f test/dockerfiles/basic.Dockerfile .
-docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_PARAMS="(path to the test to run)" --entrypoint test/dockerfiles/core-entrypoint.sh basic
+npm run test-core -- test/dnr.js
 ```
 
 ### Benchmark
@@ -338,7 +336,7 @@ to run the same tests may be useful to recreate the infrastructure the CI uses.
 
 ```
 docker build -t basic -f test/dockerfiles/basic.Dockerfile .
-docker run --cpus=2 --memory=6g --shm-size=2g -it --entrypoint test/dockerfiles/core-entrypoint.sh basic
+docker run --cpus=2 --memory=6g --shm-size=2g -it --entrypoint npm basic run test-core -- [test/path]
 ```
 
 #### Func:webext
