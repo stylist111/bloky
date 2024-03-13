@@ -159,7 +159,7 @@ export function clearIsDnrSubscriptionUpdating() {
  * @private
  */
 async function dnrFullSubscriptionUpdate(subscription, lines) {
-  debug("Full update started for subscription", subscription);
+  debug("Full update started");
 
   lines.shift();
 

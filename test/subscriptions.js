@@ -780,5 +780,31 @@ describe("Subscriptions", function() {
         expect.objectContaining({url: USER_SUBSCRIPTION_URL})
       ]]);
     });
+
+    it("stops emitting events for removed subscriptions", async function() {
+      await setEndpointResponse(USER_SUBSCRIPTION_URL, USER_SUBSCRIPTION_BODY);
+      await EWE.subscriptions.add(USER_SUBSCRIPTION_URL);
+
+      // wait for downloading started
+      await waitForAssertion(() => {
+        let changeEvents = getTestEvents("subscriptions.onChanged");
+        let downloadStartingEvents = changeEvents.filter(event => {
+          return event[0].downloading == true && event[1] == "downloading";
+        });
+        expect(downloadStartingEvents).toEqual([[
+          expect.objectContaining({url: USER_SUBSCRIPTION_URL}),
+          "downloading"
+        ]]);
+      }, 3000, 5);
+
+      // remove the subscription, the synchronization continues meanwhile
+      await EWE.subscriptions.remove(USER_SUBSCRIPTION_URL);
+      clearTestEvents("subscriptions.onChanged");
+
+      // await for the sync to be finished
+      await new Promise(r => setTimeout(r, 3000));
+
+      await expectTestEvents("subscriptions.onChanged", []);
+    });
   });
 });

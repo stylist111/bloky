@@ -928,7 +928,10 @@ export default {
       }
 
       return subscription => {
-        if (subscription instanceof RegularSubscription) {
+        // the subscription might be already removed,
+        // so we might need to skip emitting events
+        if ((subscription instanceof RegularSubscription) &&
+             getSubscription(subscription.url)) {
           dispatch(convertSubscription(subscription), property);
         }
       };
