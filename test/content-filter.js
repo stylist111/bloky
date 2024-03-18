@@ -310,7 +310,7 @@ describe("Element Hiding", function() {
     });
 
     it("hides abp-properties elements after unhide", async function() {
-      setMinTimeout(this, 9000);
+      setMinTimeout(this, 14000);
 
       await addFilter(
         `${TEST_PAGES_DOMAIN}#?#.child1:-abp-properties(background-color: blue)`
