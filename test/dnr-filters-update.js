@@ -21,7 +21,7 @@ import {DnrMapper} from "adblockpluscore/lib/dnr/mapper.js";
 import {EWE, clearTestEvents, expectTestEvents, getTestEvents} from "./messaging.js";
 import {hasUpdateStaticRules, Page, setEndpointResponse, shouldBeLoaded,
         setMinTimeout, expectElemHideVisible, expectElemHideHidden,
-        syncSubHasLastFilter, syncSubHasNoLastFilter,
+        syncSubHasLastFilter, syncSubHasNoLastFilter, waitForAssertion,
         waitForSubscriptionToBeSynchronized, clearRequestLogs, getRequestLogs,
         clearEndpointResponse}
   from "./utils.js";
@@ -1260,7 +1260,7 @@ describe("Test subscriptions update", function() {
     });
 
     it("notifies the error when the DNR limit is reached", async function() {
-      if (!hasUpdateStaticRules()){
+      if (!hasUpdateStaticRules()) {
         this.skip();
       }
       try {
@@ -1287,18 +1287,15 @@ describe("Test subscriptions update", function() {
           }).length > 0;
         }, 3000, "Subscription was not synchronized.");
 
-        const lastEvent = getTestEvents("subscriptions.onChanged").slice(-1);
-        expect(lastEvent).toEqual(
-          [
-            [
-              expect.objectContaining({
-                url: UPDATABLE_SUBSCRIPTION_URL,
-                downloadStatus: "synchronize_diff_too_many_filters"
-              }),
-              "downloadStatus"
-            ]
-          ]
-        );
+        await waitForAssertion(async() => {
+          const lastEvent = getTestEvents("subscriptions.onChanged").slice(-1);
+          expect(lastEvent).toEqual([[
+            expect.objectContaining({
+              url: UPDATABLE_SUBSCRIPTION_URL,
+              downloadStatus: "synchronize_diff_too_many_filters"
+            }),
+            "downloadStatus"]]);
+        });
       }
       finally {
         await EWE.testing.testSetDynamicRulesAvailable(0);
