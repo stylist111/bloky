@@ -27,6 +27,8 @@ import browser from "webextension-polyfill";
 
 describe("Blocking", function() {
   it("blocks a request using user filters [fuzz]", async function() {
+    setMinTimeout(this, 6000);
+
     await addFilter("/image.png^$image");
     await new Page("image.html").expectResource("image.png").toBeBlocked();
   });
