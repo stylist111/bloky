@@ -29,7 +29,8 @@ import {DnrMapper} from "adblockpluscore/lib/dnr/mapper.js";
 import {getSubscriptionRulesetMap} from "./subscriptions-utils.js";
 import subscriptions from "./subscriptions.js";
 import {ERROR_DUPLICATE_FILTERS, ERROR_FILTER_NOT_FOUND,
-        ERROR_TOO_MANY_FILTERS} from "../errors.js";
+        ERROR_TOO_MANY_FILTERS, ERROR_DISABLED_RULE_LIMIT_REACHED}
+  from "../errors.js";
 import {onChangedFilter, disableFilter} from "./filters.js";
 import {default as initializer} from "./initializer.js";
 import {filtersUpdateDiff} from "./set-operations.js";
@@ -435,6 +436,19 @@ export async function _dnrDiffSubscriptionUpdate(
     {addRules: subscriptionActive ? filters.add : void 0, removeRuleIds}
   );
 
+  removedDynamicFilters.forEach(text => dynamicFilters.delete(text));
+
+  if (subscriptionActive) {
+    filters.details.forEach(details => {
+      let {useFilterEngine, filter, ruleIds, enabled} = details;
+
+      setHighestRuleId(ruleIds);
+      dynamicFilters.set(filter.text,
+                         {ruleIds, useFilterEngine, enabled, metadata: {},
+                          subscriptionIds: [subscription.id]});
+    });
+  }
+
   if (needUpdateStaticRules) {
     if (removed.length > 0) {
       await filterTextToRuleIdsMapper.load();
@@ -456,24 +470,24 @@ export async function _dnrDiffSubscriptionUpdate(
     enableRuleIds.push(...disabledStaticRulesIds);
 
     // This is Chrome 111+ only.
-    await browser.declarativeNetRequest.updateStaticRules({
-      rulesetId: subscription.id,
-      disableRuleIds,
-      enableRuleIds
-    });
-  }
-
-  removedDynamicFilters.forEach(text => dynamicFilters.delete(text));
-
-  if (subscriptionActive) {
-    filters.details.forEach(details => {
-      let {useFilterEngine, filter, ruleIds, enabled} = details;
-
-      setHighestRuleId(ruleIds);
-      dynamicFilters.set(filter.text,
-                         {ruleIds, useFilterEngine, enabled, metadata: {},
-                          subscriptionIds: [subscription.id]});
-    });
+    try {
+      await browser.declarativeNetRequest.updateStaticRules({
+        rulesetId: subscription.id,
+        disableRuleIds,
+        enableRuleIds
+      });
+    }
+    catch (e) {
+      if (e.message == ERROR_DISABLED_RULE_LIMIT_REACHED) {
+        // This check is based on the error message because there doesn't
+        // currently seem to be another appropriate field it identify this case.
+        if (rollbackCallback) {
+          await rollbackCallback();
+        }
+        throw new FilterError(ERROR_TOO_MANY_FILTERS);
+      }
+      throw e;
+    }
   }
 
   let storageUpdate = await applyFilterTextUpdate(subscription, updates);

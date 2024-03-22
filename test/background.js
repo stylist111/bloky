@@ -464,6 +464,15 @@ if (isMV3()) {
         mv2_url: "http://localhost:3003/subscription.txt"
       },
       {
+        id: "00000000-0000-0000-0000-000000000110",
+        type: "ads",
+        title: "Test MV3 Subscription with many filters",
+        homepage: "http://localhost:3000/subscription-with-5000-disabled-filters.txt",
+        diff_url: "http://localhost:3000/subscription-with-5000-disabled-filters-diff.json",
+        url: "http://localhost:3000/subscription-with-5000-disabled-filters.txt",
+        mv2_url: "http://localhost:3000/subscription-with-5000-disabled-filters.txt"
+      },
+      {
         id: "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F",
         type: "allowing",
         title: "Allow nonintrusive advertising",

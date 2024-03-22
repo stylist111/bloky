@@ -22,14 +22,15 @@ import {EWE, clearTestEvents, expectTestEvents, getTestEvents} from "./messaging
 import {hasUpdateStaticRules, Page, setEndpointResponse, shouldBeLoaded,
         setMinTimeout, expectElemHideVisible, expectElemHideHidden,
         syncSubHasLastFilter, syncSubHasNoLastFilter, waitForAssertion,
-        waitForSubscriptionToBeSynchronized, clearRequestLogs, getRequestLogs,
-        clearEndpointResponse}
-  from "./utils.js";
+        waitForSubscriptionToBeSynchronized, waitForSubscriptionToFailToUpdate,
+        clearRequestLogs, getRequestLogs, clearEndpointResponse,
+        TEST_PAGES_URL} from "./utils.js";
 import {wait} from "./polling.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 const UPDATABLE_SUBSCRIPTION_ID = "00000000-0000-0000-0000-000000000060";
 const UPDATABLE_SUBSCRIPTION_URL = "http://localhost:3003/updatable_subscription.txt";
+const UPDATABLE_SUBSCRIPTION_DIFF_URL = "/updatable_subscription/diff.json";
 
 const DYNAMIC_FILTER = "||b5gxiibirp.invalid^";
 const DYNAMIC_FILTER2 = "||ttle10x9w7.invalid^";
@@ -1346,6 +1347,76 @@ describe("Test subscriptions update", function() {
         return hasDownloadingTrue && hasDownloadingFalse &&
           hasLastDownload && hasDownloadStatus;
       }, 3000, "Not enough events");
+    });
+
+    describe("Disabled rule limits", function() {
+      const BIG_DISABLED_SUBSCRIPTION =
+            `${TEST_PAGES_URL}/subscription-with-5000-disabled-filters.txt`;
+
+      beforeEach(async function() {
+        if (!hasUpdateStaticRules()) {
+          this.skip();
+        }
+
+        // This sub has 5000 disabled rules, which means after it's added we
+        // can't add any more disabled rules.
+        await EWE.subscriptions.add(BIG_DISABLED_SUBSCRIPTION);
+        await waitForSubscriptionToBeSynchronized(BIG_DISABLED_SUBSCRIPTION);
+
+        await setEndpointResponse(
+          UPDATABLE_SUBSCRIPTION_DIFF_URL, JSON.stringify({
+            filters: {
+              add: [],
+              remove: [
+                "/image-from-subscription.png^$image"
+              ]
+            }
+          }));
+      });
+
+      it("sets the download status to synchronize_diff_too_many_filters when the disabled static rules limit is reached", async function() {
+        await EWE.subscriptions.add(UPDATABLE_SUBSCRIPTION_URL);
+        await waitForSubscriptionToFailToUpdate(
+          UPDATABLE_SUBSCRIPTION_URL, "synchronize_diff_too_many_filters"
+        );
+      });
+
+      it("dynamic rules are not updated when the disabled limit is reached", async function() {
+        await setEndpointResponse(
+          UPDATABLE_SUBSCRIPTION_DIFF_URL, JSON.stringify({
+            filters: {
+              add: [
+                "image.png",
+                "#@##elem-hide"
+              ],
+              remove: [
+                "/image-from-subscription.png^$image"
+              ]
+            }
+          }));
+
+        await EWE.subscriptions.add(UPDATABLE_SUBSCRIPTION_URL);
+        await waitForSubscriptionToFailToUpdate(
+          UPDATABLE_SUBSCRIPTION_URL, "synchronize_diff_too_many_filters"
+        );
+
+        await new Page("image.html").expectResource("image.png").toBeLoaded();
+        await expectElemHideHidden();
+      });
+
+      it("disabled static rules do not contribute to the limit when the subscription is disabled", async function() {
+        await EWE.subscriptions.disable(BIG_DISABLED_SUBSCRIPTION);
+
+        await EWE.subscriptions.add(UPDATABLE_SUBSCRIPTION_URL);
+        await waitForSubscriptionToBeSynchronized(UPDATABLE_SUBSCRIPTION_URL);
+      });
+
+      it("disabled static rules do not contribute to the limit when the subscription is removed", async function() {
+        await EWE.subscriptions.remove(BIG_DISABLED_SUBSCRIPTION);
+
+        await EWE.subscriptions.add(UPDATABLE_SUBSCRIPTION_URL);
+        await waitForSubscriptionToBeSynchronized(UPDATABLE_SUBSCRIPTION_URL);
+      });
     });
   });
 });

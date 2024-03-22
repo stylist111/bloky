@@ -12,6 +12,11 @@ Unreleased
   where our content script is not injected, for example on an extension
   page. (EE-349)
 - No more events emitted for removed subscriptions. (EE-355)
+- When a subscription update fails because the limit on disabled static DNR
+  rules is reached, the subscription's download status will now be set to
+  `"synchronize_diff_too_many_filters"`. (EE-356)
+- Disabled static DNR rules no longer contribute to the disabled static DNR rule
+  limit after the subscription is disabled or removed. (EE-356)
 
 🌳 1.5.0 - 2024-03-06 🌳
 ========================

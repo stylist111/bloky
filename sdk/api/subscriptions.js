@@ -244,6 +244,15 @@ async function disableRuleset(rulesetId) {
     });
 
     await disableDynamicRules(rulesetId);
+
+    let enableRuleIds =
+      await browser.declarativeNetRequest.getDisabledRuleIds({
+        rulesetId
+      });
+    await browser.declarativeNetRequest.updateStaticRules({
+      rulesetId,
+      enableRuleIds
+    });
   }
 }
 
