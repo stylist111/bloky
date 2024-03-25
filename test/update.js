@@ -80,7 +80,7 @@ describe(`Update (${phase}) [runner-only]`, function() {
     setMinTimeout(this, 12000);
 
     const diffUrlUpdateSubscriptionId = "00000000-0000-0000-0000-000000000080";
-    const diffUrlUpdateSubscriptionWithTypeId = "00000000-0000-0000-0000-000000000030";
+    const diffUrlUpdateSubscriptionWithTypeId = "00000000-0000-0000-0000-000000000040";
 
     const replaceWithThisObject = {
       id: "00000000-0000-0000-0000-000000000080",
@@ -98,13 +98,12 @@ describe(`Update (${phase}) [runner-only]`, function() {
     };
 
     const replaceWithThisTypeChangingObject = {
-      id: "00000000-0000-0000-0000-000000000030",
-      type: "ads",
-      title: "ABP filters",
-      homepage: "https://github.com/abp-filters/abp-filters-anti-cv",
-      url: "http://localhost:3003/anti-cv-subscription.txt",
-      mv2_url: "http://localhost:3003/mv2_anti-cv-subscription.txt",
-      diff_url: "http://localhost:3003/anti-cv-subscription_diff.json"
+      id: "00000000-0000-0000-0000-000000000040",
+      type: "cookies",
+      title: "Non DNR filters",
+      homepage: "http://localhost:3003/subscription-that-shouldnt-be-moved-to-dnr-world.txt",
+      url: "http://localhost:3003/subscription-that-shouldnt-be-moved-to-dnr-world.txt",
+      mv2_url: "http://localhost:3003/mv2_subscription-that-shouldnt-be-moved-to-dnr-world.txt"
     };
 
     const replaceWithThis = JSON.stringify(replaceWithThisObject, null, 2);
@@ -130,7 +129,7 @@ describe(`Update (${phase}) [runner-only]`, function() {
           method: "findAndReplaceInFile",
           args: {
             file: "custom-mv3-subscriptions.js",
-            findRegex: /{\s*"id":\s*"00000000-0000-0000-0000-000000000030".*?}/.source,
+            findRegex: /{\s*"id":\s*"00000000-0000-0000-0000-000000000040".*?}/.source,
             replace: replaceWithThisForType
           }
         }
