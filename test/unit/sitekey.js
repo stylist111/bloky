@@ -21,6 +21,8 @@ import env from "./environment.js";
 import {mock} from "./mock/mock.js";
 import expect from "expect";
 
+import {TEST_PAGES_URL, SITEKEY} from "../test-server-urls.js";
+
 describe("Sitekeys", function() {
   let api;
 
@@ -32,8 +34,7 @@ describe("Sitekeys", function() {
 
   let tabId = 1;
   let frameId = 2;
-  let url = "http://localhost:3000/element-hiding.html?sitekey=1";
-  let sitekey = "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANGtTstne7e8MbmDHDiMFkGbcuBgXmiVesGOG3gtYeM1EkrzVhBjGUvKXYE4GLFwqty3v5MuWWbvItUWBTYoVVsCAwEAAQ";
+  let url = `${TEST_PAGES_URL}/element-hiding.html?sitekey=1`;
   let signature = "_gkDVYgtlLxUnfW0Jcq9t1MrUgZ4XhDTOmnkb+IptGQ7cEFM2XgqL2hy7PLTiCALWaRn+mHfV0C/L1NJE59VagA==";
   let userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36";
   let validSitekeyHeader = "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANGtTstne7e8MbmDHDiMFkGbcuBgXmiVesGOG3gtYeM1EkrzVhBjGUvKXYE4GLFwqty3v5MuWWbvItUWBTYoVVsCAwEAAQ==_gkDVYgtlLxUnfW0Jcq9t1MrUgZ4XhDTOmnkb+IptGQ7cEFM2XgqL2hy7PLTiCALWaRn+mHfV0C/L1NJE59VagA==";
@@ -65,7 +66,7 @@ describe("Sitekeys", function() {
   it("saves valid sitekey from the headers", async function() {
     let event = await configure();
     env.browser.webRequest.onHeadersReceived._trigger(event);
-    expect(api.getSitekey(tabId, frameId, url)).toEqual(sitekey);
+    expect(api.getSitekey(tabId, frameId, url)).toEqual(SITEKEY);
   });
 
   it("does NOT save invalid sitekey from the headers", async function() {
@@ -93,16 +94,16 @@ describe("Sitekeys", function() {
     api.addListener(callback);
     env.browser.webRequest.onHeadersReceived._trigger(event);
     expect(called).toEqual(true);
-    expect(callbackArg).toEqual({tabId, frameId, url, sitekey});
+    expect(callbackArg).toEqual({tabId, frameId, url, sitekey: SITEKEY});
   });
 
   it("saves and loads the sitekeys", async function() {
-    api._setSitekey(tabId, frameId, url, sitekey, signature);
+    api._setSitekey(tabId, frameId, url, SITEKEY, signature);
     api._doSaveSitekeys();
     await api._awaitSavingComplete();
     api.clearAllSitekeys(false);
     await api._loadSitekeys(false);
-    expect(api.getSitekey(tabId, frameId, url)).toEqual(sitekey);
+    expect(api.getSitekey(tabId, frameId, url)).toEqual(SITEKEY);
   });
 });
 

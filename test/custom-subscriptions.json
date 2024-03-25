@@ -1,8 +1,8 @@
 [
   {
-    "id": "00000000-0000-0000-0000-000000000060",
+    "id": "00000000-0000-0000-0000-000000000050",
     "type": "ads",
-    "title": "Test MV3 Updatable Subscription",
+    "title": "Test MV3 Diff Updatable Subscription 1",
     "homepage": "http://localhost:3003/updatable_subscription.txt",
     "diff_url": "http://localhost:3003/updatable_subscription/diff.json",
     "url": "http://localhost:3003/updatable_subscription.txt",
@@ -61,7 +61,7 @@
   {
     "id": "00000000-0000-0000-0000-000000000070",
     "type": "allowing",
-    "title": "Subscripion that contains allowing filter for tests",
+    "title": "Subscription that contains allowing filter for tests",
     "homepage": "TestsAllowingFilterAndSubscription",
     "url": "http://localhost:3000/subscription-with-allowing-filter.txt",
     "mv2_url": "http://localhost:3000/subscription-with-allowing-filter.txt"
@@ -86,7 +86,7 @@
   {
     "id": "00000000-0000-0000-0000-000000000092",
     "type": "ads",
-    "title": "Subscription that is not bundled right now but will in an update",
+    "title": "Subscription that is not bundled right now but will be in an update",
     "url": "http://localhost:3000/later-bundled-subscription.txt",
     "mv2_url": "http://localhost:3000/later-bundled-subscription.txt"
   }

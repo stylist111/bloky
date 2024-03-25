@@ -17,11 +17,13 @@
 
 import expect from "expect";
 
-import {Page, Popup, setMinTimeout, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
-        CROSS_DOMAIN, SITEKEY, setEndpointResponse,
+import {TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN, SITEKEY}
+  from "./test-server-urls.js";
+import {Page, Popup, setMinTimeout, setEndpointResponse,
         syncSubHasLastFilter, syncSubHasNoLastFilter, hasUpdateStaticRules,
         isEdge, waitForSubscriptionToBeSynchronized}
   from "./utils.js";
+import {emptyDiffResponse, subTestUpdatable1} from "./api-fixtures.js";
 import {EWE, waitForServiceWorkerInitialization, getLastError}
   from "./messaging.js";
 import {isFuzzingServiceWorker, suspendServiceWorker}
@@ -134,15 +136,6 @@ describe("Pop-up blocking", function() {
   describe("Diff updates [mv3-only]", function() {
     setMinTimeout(this, 30000);
 
-    const testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
-    const testDiffUrlEndpoint = "/updatable_subscription/diff.json";
-    const EMPTY_DIFF_RESPONSE = JSON.stringify({
-      filters: {
-        add: [],
-        remove: []
-      }
-    });
-
     let opener;
     beforeEach(async function() {
       opener = new Page("popup-opener.html");
@@ -155,9 +148,9 @@ describe("Pop-up blocking", function() {
         this.skip();
       }
 
-      await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_RESPONSE);
-      await EWE.subscriptions.add(testDiffSubscriptionUrl);
-      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+      await setEndpointResponse(subTestUpdatable1.diff_url, emptyDiffResponse);
+      await EWE.subscriptions.add(subTestUpdatable1.url);
+      await waitForSubscriptionToBeSynchronized(subTestUpdatable1.url);
 
       // no sync needed, the filter is in bundled subscription data
 
@@ -170,22 +163,22 @@ describe("Pop-up blocking", function() {
         this.skip();
       }
 
-      await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_RESPONSE);
-      await EWE.subscriptions.add(testDiffSubscriptionUrl);
-      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+      await setEndpointResponse(subTestUpdatable1.diff_url, emptyDiffResponse);
+      await EWE.subscriptions.add(subTestUpdatable1.url);
+      await waitForSubscriptionToBeSynchronized(subTestUpdatable1.url);
 
       expect(await new Popup("script-tab", opener).blocked).toBe(true);
 
-      const popupFilter = "http://localhost:3000/popup.html^$popup";
-      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+      const popupFilter = `${TEST_PAGES_URL}/popup.html^$popup`;
+      await setEndpointResponse(subTestUpdatable1.diff_url, JSON.stringify({
         filters: {
           add: [],
           remove: [popupFilter]
         }
       }));
 
-      await EWE.subscriptions.sync(testDiffSubscriptionUrl);
-      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+      await EWE.subscriptions.sync(subTestUpdatable1.url);
+      await waitForSubscriptionToBeSynchronized(subTestUpdatable1.url);
 
       expect(await new Popup("script-tab", opener).blocked).toBe(false);
     });
@@ -196,20 +189,20 @@ describe("Pop-up blocking", function() {
         this.skip();
       }
 
-      await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_RESPONSE);
-      await EWE.subscriptions.add(testDiffSubscriptionUrl);
-      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+      await setEndpointResponse(subTestUpdatable1.diff_url, emptyDiffResponse);
+      await EWE.subscriptions.add(subTestUpdatable1.url);
+      await waitForSubscriptionToBeSynchronized(subTestUpdatable1.url);
 
       expect(await new Popup("diff-script-tab", opener).blocked).toBe(false);
 
       const popupFilter = `|${TEST_PAGES_URL}/diff-popup.html^$popup`;
-      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+      await setEndpointResponse(subTestUpdatable1.diff_url, JSON.stringify({
         filters: {
           add: [popupFilter],
           remove: []
         }
       }));
-      await syncSubHasLastFilter(testDiffSubscriptionUrl, popupFilter);
+      await syncSubHasLastFilter(subTestUpdatable1.url, popupFilter);
 
       expect(await new Popup("diff-script-tab", opener).blocked).toBe(true);
     });
@@ -221,17 +214,17 @@ describe("Pop-up blocking", function() {
       }
 
       const popupFilter = `|${TEST_PAGES_URL}/diff-popup.html^$popup`;
-      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+      await setEndpointResponse(subTestUpdatable1.diff_url, JSON.stringify({
         filters: {
           add: [popupFilter],
           remove: []
         }
       }));
-      await EWE.subscriptions.add(testDiffSubscriptionUrl);
-      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+      await EWE.subscriptions.add(subTestUpdatable1.url);
+      await waitForSubscriptionToBeSynchronized(subTestUpdatable1.url);
 
-      await syncSubHasLastFilter(testDiffSubscriptionUrl, popupFilter);
-      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+      await syncSubHasLastFilter(subTestUpdatable1.url, popupFilter);
+      await waitForSubscriptionToBeSynchronized(subTestUpdatable1.url);
 
       expect(await new Popup("diff-script-tab", opener).blocked).toBe(true);
 
@@ -239,9 +232,9 @@ describe("Pop-up blocking", function() {
       // as the diff is between the bundled state and current
       // and there is no `popupFilter` in bundled state
       // so empty diff response will make the current state equal to bundled.
-      await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_RESPONSE);
+      await setEndpointResponse(subTestUpdatable1.diff_url, emptyDiffResponse);
 
-      await syncSubHasNoLastFilter(testDiffSubscriptionUrl, popupFilter);
+      await syncSubHasNoLastFilter(subTestUpdatable1.url, popupFilter);
 
       expect(await new Popup("diff-script-tab", opener).blocked).toBe(false);
     });

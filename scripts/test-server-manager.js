@@ -1,7 +1,7 @@
 import path from "path";
 
 import {spawn} from "child_process";
-import {HTTP_PORT as TEST_PAGES_HTTP_PORT} from "../test/test-pages-server.js";
+import {TEST_PAGES_URL} from "../test/test-server-urls.js";
 
 let testServer;
 
@@ -25,7 +25,7 @@ export function runTestServer() {
 
     function onData(data) {
       log.push(data);
-      if (data.includes(`listening at http://localhost:${TEST_PAGES_HTTP_PORT}`)) {
+      if (data.includes(`listening at ${TEST_PAGES_URL}`)) {
         testPagesServerStarted = true;
       }
 

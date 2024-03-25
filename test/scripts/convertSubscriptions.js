@@ -20,6 +20,7 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import {convert} from "../../scripts/convertSubscriptions.js";
+import {subTestUpdatable2} from "../api-fixtures.js";
 
 const encoding = "utf-8";
 
@@ -178,18 +179,11 @@ describe("convertSubscriptions script", function() {
   });
 
   it("should place a diff_url property on the subscription recommendations file", async function() {
-    let diffSubscriptionFilename = "00000000-0000-0000-0000-000000000050";
+    let diffSubscriptionFilename = subTestUpdatable2.id;
     createAbpRuleFile(diffSubscriptionFilename,
                       "[Adblock Plus 2.0]\n! DiffUrl: whereIShouldGetData.com\nrule1\nrule2");
 
-    let customSubscriptionsContent = JSON.stringify([{
-      id: "00000000-0000-0000-0000-000000000050",
-      type: "ads",
-      title: "Subscription with a DiffUrl",
-      homepage: "http://localhost:3003/diffSubscription.txt",
-      url: "http://localhost:3003/diffSubscription.txt",
-      mv2_url: "http://localhost:3003/mv2_diffSubscription.txt"
-    }]);
+    let customSubscriptionsContent = JSON.stringify([subTestUpdatable2]);
 
     fs.openSync(customSubscriptionsFilename, "w");
     fs.writeFileSync(customSubscriptionsFilename, customSubscriptionsContent,
@@ -203,17 +197,12 @@ describe("convertSubscriptions script", function() {
   });
 
   it("should place an 'expires' property on the subscription recommendations file", async function() {
-    let diffSubscriptionFilename = "00000000-0000-0000-0000-000000000050";
+    let diffSubscriptionFilename = subTestUpdatable2.id;
     createAbpRuleFile(diffSubscriptionFilename,
                       "[Adblock Plus 2.0]\n! Expires: 3 days\nrule1\nrule2");
 
     let customSubscriptionsContent = JSON.stringify([{
-      id: "00000000-0000-0000-0000-000000000050",
-      type: "ads",
-      title: "Subscription with a DiffUrl",
-      homepage: "http://localhost:3003/diffSubscription.txt",
-      url: "http://localhost:3003/diffSubscription.txt",
-      mv2_url: "http://localhost:3003/mv2_diffSubscription.txt",
+      ...subTestUpdatable2,
       expires: "3 days"
     }]);
 

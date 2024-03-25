@@ -21,6 +21,8 @@ import env from "./environment.js";
 import {mock} from "./mock/mock.js";
 import expect from "expect";
 
+import {SITEKEY} from "../test-server-urls.js";
+
 describe("Frame state", function() {
   let api;
 
@@ -46,17 +48,16 @@ describe("Frame state", function() {
 
   let tabId = 1;
   let frameId = 2;
-  let sitekey = "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANGtTstne7e8MbmDHDiMFkGbcuBgXmiVesGOG3gtYeM1EkrzVhBjGUvKXYE4GLFwqty3v5MuWWbvItUWBTYoVVsCAwEAAQ";
 
   it("records the frame information from onSitekeyReceived event", async function() {
     api.onSitekeyReceived(
       tabId,
       frameId,
       "http://url1.com",
-      sitekey
+      SITEKEY
     );
     let frame = api.getFrameInfo(tabId, frameId);
     expect(frame).toBeDefined();
-    expect(frame.sitekey).toEqual(sitekey);
+    expect(frame.sitekey).toEqual(SITEKEY);
   });
 });

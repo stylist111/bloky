@@ -24,6 +24,7 @@ import {exec} from "child_process";
 import os from "os";
 import path from "path";
 import {runTestServer, killTestServer} from "../../scripts/test-server-manager.js";
+import {TEST_PAGES_URL} from "../test-server-urls.js";
 
 let originalPath = process.cwd();
 let dirPath = path.join(os.tmpdir(), "subscriptionScripts-");
@@ -57,7 +58,7 @@ describe("npm module", function() {
     // scripts toolchain
     for (let cmd of [
       // override URL to reduce network usage and flakiness
-      "npx subs-init -u http://localhost:3000/index.json",
+      `npx subs-init -u ${TEST_PAGES_URL}/index.json`,
       "npx subs-merge",
       "npx subs-fetch",
       "npx subs-convert",

@@ -17,10 +17,11 @@
 
 import expect from "expect";
 
-import {TEST_MV3_SUBSCRIPTION_3, getRequestLogs, clearRequestLogs,
-        setEndpointResponse, setMinTimeout, Page,
-        waitForSubscriptionToBeSynchronized, shouldBeLoaded,
+import {getRequestLogs, clearRequestLogs, setEndpointResponse, setMinTimeout,
+        Page, waitForSubscriptionToBeSynchronized, shouldBeLoaded,
         hasUpdateStaticRules} from "./utils.js";
+import {subAntiCVLocal, subTestCustom3, subTestUpdatable1}
+  from "./api-fixtures.js";
 import {wait} from "./polling.js";
 import {EWE, addFilter} from "./messaging.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
@@ -31,14 +32,14 @@ describe("Synchronization", function() {
   const METHOD_HEAD = "HEAD";
 
   async function configure(properties = {}) {
-    await EWE.testing._setSubscriptions([TEST_MV3_SUBSCRIPTION_3]);
+    await EWE.testing._setSubscriptions([subTestCustom3]);
 
     await clearRequestLogs();
     await setEndpointResponse("/subscription.txt",
                               "[Adblock Plus]\n! Expires: 1 d");
 
     await EWE.testing._removeAllSubscriptions();
-    await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION_3.url, properties);
+    await EWE.subscriptions.add(subTestCustom3.url, properties);
 
     let subs = await EWE.subscriptions.getSubscriptions();
     expect(subs.length).toEqual(1);
@@ -56,13 +57,13 @@ describe("Synchronization", function() {
 
   it("sends HEAD requests for expired subscriptions after service worker restarts [mv3-only] [fuzz-skip]", async function() {
     await configure();
-    await requestsSent(TEST_MV3_SUBSCRIPTION_3.url);
+    await requestsSent(subTestCustom3.url);
     await clearRequestLogs();
 
     let now = Date.now();
     let softExpiration = now / 1000; // seconds, not millis
     await EWE.testing._setSubscriptionProperties(
-      TEST_MV3_SUBSCRIPTION_3.url, {
+      subTestCustom3.url, {
         softExpiration, expires: softExpiration,
         lastDownload: 1
       });
@@ -70,9 +71,9 @@ describe("Synchronization", function() {
     await suspendServiceWorker(this);
     await addFilter("someFilterToAwakeTheSW");
 
-    await requestsSent(TEST_MV3_SUBSCRIPTION_3.url);
+    await requestsSent(subTestCustom3.url);
 
-    let requests = await getRequestLogs(TEST_MV3_SUBSCRIPTION_3.url);
+    let requests = await getRequestLogs(subTestCustom3.url);
 
     expect(requests.length).toEqual(1);
     expect(requests).toEqual([expect.objectContaining({
@@ -108,25 +109,22 @@ describe("Synchronization", function() {
         this.skip();
       }
 
-      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
-      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
-
-      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+      await setEndpointResponse(subTestUpdatable1.diff_url, JSON.stringify({
         filters: {
           add: [],
           remove: []
         }
       }));
 
-      await EWE.subscriptions.add(testDiffSubscriptionUrl);
-      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+      await EWE.subscriptions.add(subTestUpdatable1.url);
+      await waitForSubscriptionToBeSynchronized(subTestUpdatable1.url);
 
       await shouldBeLoaded(
         "image.html",
         "image.png"
       );
 
-      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+      await setEndpointResponse(subTestUpdatable1.diff_url, JSON.stringify({
         filters: {
           add: ["image.png"],
           remove: []
@@ -137,7 +135,7 @@ describe("Synchronization", function() {
       let now = Date.now();
       let expiration = (now / 1000) + 1; // 1 second in the future
       await EWE.testing._setSubscriptionProperties(
-        testDiffSubscriptionUrl, {
+        subTestUpdatable1.url, {
           softExpiration: expiration, expires: expiration,
           lastDownload: 1
         }
@@ -148,7 +146,7 @@ describe("Synchronization", function() {
       await EWE.testing._setPrefs("subscriptions_initial_delay", 0);
       await EWE.testing._restartSynchronizer();
       // waiting for the subscription to be updated automatically
-      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+      await waitForSubscriptionToBeSynchronized(subTestUpdatable1.url);
       await new Page("image.html").expectResource("image.png").toBeBlocked();
     });
 
@@ -162,25 +160,21 @@ describe("Synchronization", function() {
         "subscriptions_default_expiration_interval",
         5 * MILLIS_IN_DAY);
 
-      // The subscription update interval is "1 day"
-      let testDiffSubscriptionUrl =
-        "http://localhost:3003/updatable_subscription.txt";
-      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
-
-      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+      // The subTestUpdatable1 update interval is "1 day"
+      await setEndpointResponse(subTestUpdatable1.diff_url, JSON.stringify({
         filters: {
           add: [],
           remove: []
         }
       }));
 
-      await EWE.subscriptions.add(testDiffSubscriptionUrl);
-      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+      await EWE.subscriptions.add(subTestUpdatable1.url);
+      await waitForSubscriptionToBeSynchronized(subTestUpdatable1.url);
 
       const allSubscriptions = await EWE.subscriptions.getSubscriptions();
       const subscription =
         allSubscriptions.find(
-          eachSubscription => eachSubscription.url === testDiffSubscriptionUrl);
+          eachSubscription => eachSubscription.url === subTestUpdatable1.url);
 
       // The subscription.expires should be 2 days (double the interval),
       // and the default value it's 10 days.
@@ -203,8 +197,8 @@ describe("Synchronization", function() {
         5 * MILLIS_IN_DAY);
 
       // The subscription update interval is expected to be NOT set.
-      let testDiffSubscriptionUrl = "http://localhost:3003/anti-cv-subscription.txt";
-      let testDiffUrlEndpoint = "http://localhost:3003/anti-cv-subscription_diff.json";
+      let testDiffSubscriptionUrl = subAntiCVLocal.url;
+      let testDiffUrlEndpoint = subAntiCVLocal.diff_url;
 
       await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
         filters: {

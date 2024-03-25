@@ -18,13 +18,15 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 
-import {Page, setMinTimeout, waitForAssertion, isFirefox, isEdge, SITEKEY,
-        TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN, setEndpointResponse,
-        waitForSubscriptionsToDownload, getMaxDynamicRulesAvailable} from "./utils.js";
+import {TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN, SITEKEY}
+  from "./test-server-urls.js";
+import {Page, setMinTimeout, waitForAssertion, isFirefox, isEdge,
+        setEndpointResponse, waitForSubscriptionsToDownload,
+        getMaxDynamicRulesAvailable} from "./utils.js";
 import {addFilter, EWE, getTestEvents, clearTestEvents, expectTestEvents,
         enableSendTestEvents} from "./messaging.js";
 import {VALID_FILTER_TEXT, COMMENT_FILTER_TEXT, SECOND_VALID_FILTER_TEXT,
-        subCircumvention} from "./api-fixtures.js";
+        subTestUpdatable1, subTestUpdatable2} from "./api-fixtures.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 const WEBBUNDLE_FILTER_TEXT = `|${TEST_PAGES_URL}$webbundle`;
@@ -132,14 +134,14 @@ describe("Filters", function() {
     ]));
   });
 
-  it("adds filter that is already on subscription", async function() {
+  it("adds filter that is already on a subscription", async function() {
     const filter = "/image-from-custom-filter.png^$image";
     let updatedReply = [
       "[Adblock Plus]",
       filter
     ].join("\n");
-    await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
-    await EWE.subscriptions.add(subCircumvention.url);
+    await setEndpointResponse("/subscription2.txt", updatedReply);
+    await EWE.subscriptions.add(subTestUpdatable2.url);
     await waitForSubscriptionsToDownload();
 
     await EWE.filters.add([filter]);
@@ -157,10 +159,7 @@ describe("Filters", function() {
   });
 
   it("remove custom filter that is already on subscription as a custom filter only", async function() {
-    const UPDATABLE_SUBSCRIPTION_URL =
-      "http://localhost:3003/updatable_subscription.txt";
-
-    await EWE.subscriptions.add(UPDATABLE_SUBSCRIPTION_URL);
+    await EWE.subscriptions.add(subTestUpdatable1.url);
     await waitForSubscriptionsToDownload();
 
     // this filter is already in the subscription

@@ -18,9 +18,10 @@
 import expect from "expect";
 import browser from "webextension-polyfill";
 
-import {isMV3, TEST_ANTI_CV_SUBSCRIPTION, TEST_MV3_SUBSCRIPTION,
-        expectElemHideHidden, TEST_PAGES_URL, Page}
-  from "./utils.js";
+import {TEST_PAGES_URL} from "./test-server-urls.js";
+import {isMV3, Page, expectElemHideHidden} from "./utils.js";
+import {subAntiCVLocal, subTestCustom1, subEasylistLive,
+        subEasylistPlusGermanyLive} from "./api-fixtures.js";
 import {wait} from "./polling.js";
 import {EWE, runInBackgroundPage} from "./messaging.js";
 import {updateExtensionFiles} from "./mocha/mocha-runner.js";
@@ -28,12 +29,6 @@ import {MIGRATED_TO_MV2, MIGRATED_TO_MV3} from "../sdk/api/prefs.js";
 
 let start = new URLSearchParams(document.location.search).get("start");
 let phase = start ? "preparation" : "check";
-
-const EASYLIST_URL_MV2 = "https://easylist-downloads.adblockplus.org/easylist.txt";
-const EASYLIST_GERMANY_URL_MV2 = "https://easylist-downloads.adblockplus.org/easylistgermany+easylist.txt";
-
-const EASYLIST_URL_MV3 = "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt";
-const EASYLIST_GERMANY_URL_MV3 = "https://easylist-downloads.adblockplus.org/v3/full/easylistgermany+easylist.txt";
 
 const RE2_UNSUPPORTED_FILTER = "/t(?=re)/$image";
 
@@ -84,25 +79,25 @@ describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
       // The subscription below does not work in MV2 (not synchronized),
       // but works in MV3 as we don't serve /mv2_subscription.txt,
       // but do serve /subscription.txt on localhost.
-      await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.mv2_url);
-      await EWE.subscriptions.add(EASYLIST_URL_MV2);
-      await EWE.subscriptions.add(EASYLIST_GERMANY_URL_MV2);
-      await EWE.subscriptions.disable(EASYLIST_GERMANY_URL_MV2);
+      await EWE.subscriptions.add(subTestCustom1.mv2_url);
+      await EWE.subscriptions.add(subEasylistLive.mv2_url);
+      await EWE.subscriptions.add(subEasylistPlusGermanyLive.mv2_url);
+      await EWE.subscriptions.disable(subEasylistPlusGermanyLive.mv2_url);
 
       let subs = await EWE.subscriptions.getSubscriptions();
       expect(subs).toEqual(expect.arrayContaining([
         expect.objectContaining({
-          url: TEST_MV3_SUBSCRIPTION.mv2_url,
+          url: subTestCustom1.mv2_url,
           updatable: true,
           enabled: true
         }),
         expect.objectContaining({
-          url: EASYLIST_URL_MV2,
+          url: subEasylistLive.mv2_url,
           updatable: true,
           enabled: true
         }),
         expect.objectContaining({
-          url: EASYLIST_GERMANY_URL_MV2,
+          url: subEasylistPlusGermanyLive.mv2_url,
           updatable: true,
           enabled: false
         })
@@ -130,18 +125,18 @@ describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
     let subs = await EWE.subscriptions.getSubscriptions();
     expect(subs).toEqual(expect.arrayContaining([
       expect.objectContaining({
-        url: TEST_MV3_SUBSCRIPTION.url,
+        url: subTestCustom1.url,
         updatable: false, // no `diff_url` provided
         enabled: true
       }),
       expect.objectContaining({
-        url: EASYLIST_URL_MV3,
+        url: subEasylistLive.url,
         updatable: true,
         diffURL: expect.any(String),
         enabled: true
       }),
       expect.objectContaining({
-        url: EASYLIST_GERMANY_URL_MV3,
+        url: subEasylistPlusGermanyLive.url,
         updatable: false, // no `diff_url` provided
         enabled: false
       })
@@ -179,14 +174,14 @@ describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
   it("migrates user subscriptions meta data", async function() {
     if (start) {
       // assuming it's added in the test above
-      await EWE.subscriptions.sync(EASYLIST_URL_MV2);
+      await EWE.subscriptions.sync(subEasylistLive.mv2_url);
 
       await new Promise(elapsed => setTimeout(elapsed, 1000));
       await EWE.debugging.ensureEverythingHasSaved();
 
       let meta = await wait(async() => {
         let subs = await EWE.subscriptions.getSubscriptions();
-        let sub = subs.find(it => it.url == EASYLIST_URL_MV2);
+        let sub = subs.find(it => it.url == subEasylistLive.mv2_url);
         return (sub.downloadCount ? {
             downloadCount: sub.downloadCount,
             version: sub.version
@@ -198,22 +193,23 @@ describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
 
     let savedValues = await browser.storage.local.get("meta");
     let subs = await EWE.subscriptions.getSubscriptions();
-    let sub = subs.find(it => it.url == EASYLIST_URL_MV3);
-    expect(sub.downloadCount >= savedValues.meta.downloadCount).toBe(true);
-    expect(sub.version == savedValues.meta.version).toBe(true);
+    let sub = subs.find(it => it.url == subEasylistLive.url);
+    expect(sub.downloadCount)
+      .toBeGreaterThanOrEqual(savedValues.meta.downloadCount);
+    expect(sub.version).toEqual(savedValues.meta.version);
   });
 
   it("migrates the anti-cv subscription", async function() {
     this.timeout(20000);
 
     if (start) {
-      await EWE.subscriptions.add(TEST_ANTI_CV_SUBSCRIPTION.mv2_url); // MV2 URL
+      await EWE.subscriptions.add(subAntiCVLocal.mv2_url);
 
       let subs = await EWE.subscriptions.getSubscriptions();
       expect(subs).toEqual(expect.arrayContaining([
         expect.objectContaining({
-          url: TEST_ANTI_CV_SUBSCRIPTION.mv2_url,
-          updatable: true, // FullUpdatableSubscription,
+          url: subAntiCVLocal.mv2_url,
+          updatable: true, // FullUpdatableSubscription
           enabled: true
         })
       ]));
@@ -227,8 +223,8 @@ describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
     let subs = await EWE.subscriptions.getSubscriptions();
     expect(subs).toEqual(expect.arrayContaining([
       expect.objectContaining({
-        url: TEST_ANTI_CV_SUBSCRIPTION.url, // MV3 URL
-        updatable: true, // DiffUpdatableSubscription,
+        url: subAntiCVLocal.url, // MV3 URL
+        updatable: true, // DiffUpdatableSubscription
         diffURL: expect.any(String),
         // This subscription has a valid/test diffURL so it should synchronize
         // after being migrated.

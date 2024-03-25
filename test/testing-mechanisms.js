@@ -19,10 +19,11 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 import sinon from "sinon/pkg/sinon.js";
 
+import {TEST_PAGES_URL, TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
 import {setMinTimeout, waitForAssertion, setEndpointResponse,
-        clearEndpointResponse, TEST_ADMIN_PAGES_URL, TEST_PAGES_URL,
-        firefoxVersion, isFirefox, getMaxDynamicRulesAvailable}
-  from "./utils.js";
+        clearEndpointResponse, firefoxVersion, isFirefox,
+        getMaxDynamicRulesAvailable} from "./utils.js";
+import {subTestCustom2, subTestUpdatable1} from "./api-fixtures.js";
 import {wait} from "./polling.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 import {runInBackgroundPage, waitForServiceWorkerInitialization, EWE,
@@ -263,22 +264,19 @@ describe("Testing Mechanisms", function() {
     });
 
     it("supports overwriting subscription routes", async function() {
-      const UPDATABLE_SUBSCRIPTION_URL =
-        "http://localhost:3003/updatable_subscription.txt";
-
       try {
         let updatedReply = "[New content of subscription]";
-        await setEndpointResponse(UPDATABLE_SUBSCRIPTION_URL, updatedReply, "GET");
-        let response = await fetch(UPDATABLE_SUBSCRIPTION_URL);
+        await setEndpointResponse(subTestUpdatable1.url, updatedReply, "GET");
+        let response = await fetch(subTestUpdatable1.url);
         expect(await response.text()).toEqual(updatedReply);
       }
       finally {
-        await clearEndpointResponse(UPDATABLE_SUBSCRIPTION_URL);
+        await clearEndpointResponse(subTestUpdatable1.url);
       }
     });
 
     it("supports overwriting status code", async function() {
-      const url = "http://localhost:3003/dynamic-endpoint";
+      const url = `${TEST_ADMIN_PAGES_URL}/dynamic-endpoint`;
 
       try {
         await setEndpointResponse(url, "", "GET", 500);
@@ -291,7 +289,7 @@ describe("Testing Mechanisms", function() {
     });
 
     it("supports overwriting headers", async function() {
-      const url = "http://localhost:3003/dynamic-endpoint";
+      const url = `${TEST_ADMIN_PAGES_URL}/dynamic-endpoint`;
       const expectedDateHeader = "2024-01-01";
 
       try {
@@ -330,7 +328,7 @@ describe("Testing Mechanisms", function() {
     });
 
     it("Gets and Removes Subscriptions", async function() {
-      await EWE.subscriptions.add(`${TEST_PAGES_URL}/subscription.txt?2`);
+      await EWE.subscriptions.add(subTestCustom2.url);
 
       // Get subscriptions
       let subs = await browser.runtime.sendMessage(
@@ -340,7 +338,7 @@ describe("Testing Mechanisms", function() {
 
       // Remove subscription
       await browser.runtime.sendMessage({type: "subscriptions.remove",
-                                         url: `${TEST_PAGES_URL}/subscription.txt?2`});
+                                         url: subTestCustom2.url});
       subs = await browser.runtime.sendMessage(
         {type: "subscriptions.get", ignoreDisabled: true, downloadable: true}
       );

@@ -22,9 +22,8 @@
 import {startAdminServer} from "./admin-api.js";
 import {startWebSocketServer} from "./web-socket-server.js";
 import {startTestPagesServer} from "./test-pages-server.js";
+import {TEST_PAGES_DOMAIN} from "./test-server-urls.js";
 
-const HOST = "localhost";
-
-startAdminServer(HOST);
-startWebSocketServer(HOST);
-startTestPagesServer(HOST);
+startAdminServer(TEST_PAGES_DOMAIN);
+startWebSocketServer(TEST_PAGES_DOMAIN);
+startTestPagesServer(TEST_PAGES_DOMAIN);

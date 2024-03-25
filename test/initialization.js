@@ -18,63 +18,16 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 
-import {setMinTimeout, isMV3, TEST_MV3_SUBSCRIPTION, TEST_MV3_SUBSCRIPTION_2,
-        TEST_MV3_SUBSCRIPTION_3} from "./utils.js";
-import {EWE, runInBackgroundPage}
-  from "./messaging.js";
-import {subCircumvention} from "./api-fixtures.js";
+import {setMinTimeout, isMV3} from "./utils.js";
+import {EWE, runInBackgroundPage} from "./messaging.js";
+import {subAntiCVLocal, subEasylistLocal, subEasylistLive,
+        subEasylistPlusGermanyLive, subAcceptableAdsLive, subTestUpdatable2,
+        subTestCustom1, subTestCustom2, subTestCustom3, subAntiCVLive}
+  from "./api-fixtures.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 const ADDON_NAME = "foo";
 const ADDON_VERSION = "2.1";
-
-let subEasylist = {
-  id: "8C13E995-8F06-4927-BEA7-6C845FB7EEBF",
-  type: "ads",
-  languages: [
-    "en"
-  ],
-  title: "EasyList",
-  homepage: "https://easylist.to/",
-  url: "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt",
-  mv2_url: "https://easylist-downloads.adblockplus.org/easylist.txt",
-  diff_url: "https://easylist-downloads.adblockplus.org/v3/diff/easylist/ef590f9ee92f557ca060bd567ed60381d24c73d5.json"
-};
-
-let subEasylistPlusGermany = {
-  id: "0CD3D105-D3B3-4652-8489-94163DE9A08F",
-  type: "ads",
-  languages: [
-    "de"
-  ],
-  title: "EasyList Germany+EasyList",
-  homepage: "https://easylist.to/",
-  includes: [
-    "8C13E995-8F06-4927-BEA7-6C845FB7EEBF",
-    "4337FB2B-A95C-44D5-B78D-11AD40F7711B"
-  ],
-  url: "https://easylist-downloads.adblockplus.org/v3/full/easylistgermany+easylist.txt",
-  mv2_url: "https://easylist-downloads.adblockplus.org/easylistgermany+easylist.txt"
-};
-
-let subAcceptableAds = {
-  id: "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F",
-  type: "allowing",
-  title: "Allow nonintrusive advertising",
-  homepage: "https://acceptableads.com/",
-  url: "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt",
-  mv2_url: "https://easylist-downloads.adblockplus.org/exceptionrules.txt"
-};
-
-let subDiffUpdatable = {
-  id: "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7A",
-  type: "ads",
-  homepage: "http://localhost:3003/subscription.txt",
-  title: "Test MV3 Custom Subscription 3",
-  url: "http://localhost:3003/subscription2.txt",
-  mv2_url: "http://localhost:3003/subscription2.txt",
-  diff_url: "http://localhost:3003/anti-cv-subscription_diff2.json"
-};
 
 describe("Initialization", function() {
   isFuzzingServiceWorker ?
@@ -97,10 +50,9 @@ describe("Initialization", function() {
          expect.objectContaining(
            {
              bundledSubscriptions: expect.arrayContaining([
-               TEST_MV3_SUBSCRIPTION, TEST_MV3_SUBSCRIPTION_2,
-               TEST_MV3_SUBSCRIPTION_3,
-               subEasylist, subEasylistPlusGermany, subCircumvention,
-               subAcceptableAds
+               subTestCustom1, subTestCustom2, subTestCustom3,
+               subEasylistLocal, subEasylistPlusGermanyLive,
+               subAntiCVLocal, subAcceptableAdsLive
              ]),
              bundledSubscriptionsPath: "subscriptions"
            })
@@ -136,7 +88,7 @@ describe("Initialization", function() {
   it("starts with the provided subscriptions enabled and correctly downloadable", async function() {
     // https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution/-/issues/545
     this.retries(3);
-    await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.url);
+    await EWE.subscriptions.add(subTestCustom1.url);
 
     // The list of bundled subscriptions is passed as an
     // argument to EWE.start in the background.js file.
@@ -145,36 +97,18 @@ describe("Initialization", function() {
       expect.objectContaining({
         enabled: true,
         updatable: !isMV3(),
-        id: isMV3() ? TEST_MV3_SUBSCRIPTION.id : null
+        id: isMV3() ? subTestCustom1.id : null
       })
     ]);
   });
 
   for (let [language, mv2subscriptionUrl, mv3subscriptionUrl, tags] of [
-    ["en",
-     "https://easylist-downloads.adblockplus.org/easylist.txt",
-     "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt",
-     "[fuzz]"],
-    ["de",
-     "https://easylist-downloads.adblockplus.org/easylistgermany+easylist.txt",
-     "https://easylist-downloads.adblockplus.org/v3/full/easylistgermany+easylist.txt",
-     ""]
+    ["en", subEasylistLive.mv2_url, subEasylistLocal.url, "[fuzz]"],
+    ["de", subEasylistPlusGermanyLive.mv2_url, subEasylistPlusGermanyLive.url, ""]
   ]) {
     it(`configures default subscriptions for ${language} ${tags}`, async function() {
       // Sometimes saving to storage takes more time
       setMinTimeout(this, 20000);
-
-      let startSubscriptions = [
-        subCircumvention,
-        subAcceptableAds
-      ];
-
-      // default language (required even for "de")
-      startSubscriptions.push(subEasylist);
-
-      if (language == "de") {
-        startSubscriptions.push(subEasylistPlusGermany);
-      }
 
       await EWE.subscriptions.addDefaults(language);
 
@@ -182,18 +116,15 @@ describe("Initialization", function() {
 
       let expectedUrls;
       if (isMV3()) {
-        expectedUrls = [
-          mv3subscriptionUrl,
-          "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt",
-          "http://localhost:3003/anti-cv-subscription.txt"
-        ];
+        expectedUrls = [mv3subscriptionUrl, subAcceptableAdsLive.url,
+                        subAntiCVLocal.url];
+        if (mv3subscriptionUrl == subEasylistLocal.url) {
+          expectedUrls.push(subEasylistLive.url);
+        }
       }
       else {
-        expectedUrls = [
-          mv2subscriptionUrl,
-          "https://easylist-downloads.adblockplus.org/exceptionrules.txt",
-          "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt"
-        ];
+        expectedUrls = [mv2subscriptionUrl, subAcceptableAdsLive.mv2_url,
+                        subAntiCVLive.mv2_url];
       }
 
       expect(activeSubs).toEqual(
@@ -225,10 +156,10 @@ describe("Initialization", function() {
 
   async function skipsAddingDefaultSubscriptions(subUrl, hasDiffUrl) {
     await EWE.testing._setSubscriptions([
-      subEasylistPlusGermany,
-      subAcceptableAds,
-      subCircumvention,
-      subDiffUpdatable
+      subEasylistPlusGermanyLive,
+      subAcceptableAdsLive,
+      subAntiCVLocal,
+      subTestUpdatable2
     ]);
     await EWE.subscriptions.add(subUrl);
 
@@ -245,34 +176,34 @@ describe("Initialization", function() {
 
   it("skips adding default subscriptions if there is a CountableSubscription [mv3-only] [fuzz-skip]", async function() {
     await skipsAddingDefaultSubscriptions(
-      subEasylistPlusGermany.url, false); // CountableSubscription
+      subEasylistPlusGermanyLive.url, false); // CountableSubscription
   });
 
   it("skips adding default subscriptions if there is a DiffUpdatableSubscription [mv3-only] [fuzz-skip]", async function() {
     await skipsAddingDefaultSubscriptions(
-      subDiffUpdatable.url, true); // DiffUpdatableSubscription
+      subTestUpdatable2.url, true); // DiffUpdatableSubscription
   });
 
   it("adds only one preferred AA subscription when multiple provided [mv3-only] [fuzz-skip]", async function() {
     let alternativeAAUrl = "https://easylist-downloads.adblockplus.org/exceptionrules-privacy-friendly.txt";
 
     await EWE.testing._setSubscriptions([
-      subEasylist,
-      subAcceptableAds,
+      subEasylistLocal,
+      subAcceptableAdsLive,
       {
         type: "allowing",
         title: "Allow nonintrusive advertising without third-party tracking",
         url: alternativeAAUrl,
         homepage: "https://acceptableads.com/"
       },
-      subCircumvention
+      subAntiCVLocal
     ]);
 
     await EWE.subscriptions.addDefaults("en");
     let activeSubs = await EWE.subscriptions.getSubscriptions();
     expect(activeSubs).toEqual(expect.arrayContaining([
       expect.objectContaining({
-        url: subAcceptableAds.url
+        url: subAcceptableAdsLive.url
       })
     ]));
     expect(activeSubs).not.toEqual(expect.arrayContaining([
@@ -287,7 +218,7 @@ describe("Initialization", function() {
     let alternativeAAUrl2 = "https://easylist-downloads.adblockplus.org/exceptionrules-privacy-friendly-2.txt";
 
     await EWE.testing._setSubscriptions([
-      subEasylist,
+      subEasylistLocal,
       {
         id: "ID1",
         type: "allowing",
@@ -302,7 +233,7 @@ describe("Initialization", function() {
         url: alternativeAAUrl2,
         homepage: "https://acceptableads.com/"
       },
-      subCircumvention
+      subAntiCVLocal
     ]);
 
     await EWE.subscriptions.addDefaults("en");
@@ -328,8 +259,8 @@ describe("Initialization", function() {
     let result = await runInBackgroundPage([
       {op: "getGlobal", arg: "EWE"},
       {op: "pushArg", arg: {
-        bundledSubscriptions: [subEasylist, subCircumvention,
-                               subAcceptableAds],
+        bundledSubscriptions: [subEasylistLocal, subAntiCVLocal,
+                               subAcceptableAdsLive],
         bundledSubscriptionsPath: "subscriptions"}},
       {op: "callMethod", arg: "start"},
       {op: "await"}
@@ -344,8 +275,8 @@ describe("Initialization", function() {
     result = await runInBackgroundPage([
       {op: "getGlobal", arg: "EWE"},
       {op: "pushArg", arg: {
-        bundledSubscriptions: [subEasylist, subCircumvention,
-                               subAcceptableAds],
+        bundledSubscriptions: [subEasylistLocal, subAntiCVLocal,
+                               subAcceptableAdsLive],
         bundledSubscriptionsPath: "subscriptions"}},
       {op: "callMethod", arg: "start"},
       {op: "await"}
@@ -436,20 +367,21 @@ describe("Initialization", function() {
       });
 
       it("throws if no anti-circumvention subscription is provided", async function() {
-        await EWE.testing._setSubscriptions([subEasylist, subAcceptableAds]);
+        await EWE.testing._setSubscriptions([subEasylistLocal,
+                                             subAcceptableAdsLive]);
         await expect(EWE.subscriptions.addDefaults("en"))
           .rejects.toThrow("No anti-circumvention subscription");
       });
 
       it("throws if no allowing subscription is provided", async function() {
-        await EWE.testing._setSubscriptions([subEasylist, subCircumvention]);
+        await EWE.testing._setSubscriptions([subEasylistLocal, subAntiCVLocal]);
         await expect(EWE.subscriptions.addDefaults("en"))
           .rejects.toThrow("No allowing subscription");
       });
 
       it("does not throw if everything needed is provided", async function() {
         await EWE.testing._setSubscriptions([
-          subEasylist, subCircumvention, subAcceptableAds]);
+          subEasylistLocal, subAntiCVLocal, subAcceptableAdsLive]);
         await EWE.subscriptions.addDefaults("en");
       });
     });

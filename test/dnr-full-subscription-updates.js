@@ -17,11 +17,11 @@
 
 import expect from "expect";
 import {EWE, clearTestEvents, getTestEvents} from "./messaging.js";
+import {TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
 import {Page, setEndpointResponse, clearEndpointResponse,
         setMinTimeout, expectElemHideVisible, expectElemHideHidden,
         syncSubHasLastFilter, syncSubHasNoLastFilter,
-        waitForSubscriptionToBeSynchronized, waitForSubscriptionToFailToUpdate,
-        TEST_ADMIN_PAGES_URL}
+        waitForSubscriptionToBeSynchronized, waitForSubscriptionToFailToUpdate}
   from "./utils.js";
 
 describe("Update using the full update mechanism [mv3-only]", function() {

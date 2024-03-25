@@ -17,8 +17,9 @@
 
 import expect from "expect";
 
-import {Page, clickElement, executeScript, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
-        setMinTimeout, waitForAssertion} from "./utils.js";
+import {TEST_PAGES_URL, TEST_PAGES_DOMAIN} from "./test-server-urls.js";
+import {Page, clickElement, executeScript, setMinTimeout, waitForAssertion}
+  from "./utils.js";
 import {wait} from "./polling.js";
 import {EWE, addFilter, getTestEvents, clearTestEvents, runInBackgroundPage,
         fuzzSuspendServiceWorker} from "./messaging.js";

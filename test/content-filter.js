@@ -16,17 +16,19 @@
  */
 
 import expect from "expect";
-
 import browser from "webextension-polyfill";
+
+import {TEST_PAGES_URL, TEST_PAGES_DOMAIN, SITEKEY, TEST_ADMIN_PAGES_URL}
+  from "./test-server-urls.js";
 import {Page, waitForInvisibleElement, executeScript, setMinTimeout,
         getVisibleElement, getVisibleElementInFrame, expectElemHideHidden,
-        expectElemHideVisible, isFirefox, firefoxVersion, TEST_PAGES_DOMAIN,
-        TEST_PAGES_URL, SITEKEY, UNHIDDENTIMEOUT, HIDETIMEOUT,
-        TEST_MV3_SUBSCRIPTION, waitForHighlightedStyle, isEdge, edgeVersion,
-        waitForSubscriptionsToDownload, chromiumVersion, isChromiumBased,
-        setEndpointResponse, expectElemHideRemoved,
+        expectElemHideVisible, isFirefox, firefoxVersion,
+        UNHIDDENTIMEOUT, HIDETIMEOUT, waitForHighlightedStyle, isEdge,
+        edgeVersion, waitForSubscriptionsToDownload, chromiumVersion,
+        isChromiumBased, setEndpointResponse, expectElemHideRemoved,
         expectElementToHaveInlineStyle}
   from "./utils.js";
+import {subTestCustom1, subAntiCVLocal} from "./api-fixtures.js";
 import {wait} from "./polling.js";
 import {addFilter, EWE, setFeatureFlags} from "./messaging.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
@@ -169,7 +171,7 @@ describe("Element Hiding", function() {
   });
 
   it("hides an element using subscriptions [fuzz]", async function() {
-    await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.url);
+    await EWE.subscriptions.add(subTestCustom1.url);
     await waitForSubscriptionsToDownload();
 
     await expectElemHideHidden();
@@ -189,8 +191,8 @@ describe("Element Hiding", function() {
       invalidFilter,
       validFilter
     ].join("\n");
-    await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
-    await EWE.subscriptions.add("http://localhost:3003/anti-cv-subscription.txt");
+    await setEndpointResponse(subAntiCVLocal.url, updatedReply);
+    await EWE.subscriptions.add(subAntiCVLocal.url);
     await waitForSubscriptionsToDownload();
 
     await expectElemHideVisible({
@@ -395,13 +397,13 @@ describe("Element Hiding", function() {
 
       const elemId = "inline-css-div";
 
-      await EWE.subscriptions.add("http://localhost:3000/subscription.txt", {privileged: false});
+      await EWE.subscriptions.add(subTestCustom1.url, {privileged: false});
       await waitForSubscriptionsToDownload();
       await expectElementToHaveInlineStyle(elemId, "");
 
-      await EWE.subscriptions.remove("http://localhost:3000/subscription.txt");
+      await EWE.subscriptions.remove(subTestCustom1.url);
 
-      await EWE.subscriptions.add("http://localhost:3000/subscription.txt", {privileged: true});
+      await EWE.subscriptions.add(subTestCustom1.url, {privileged: true});
       await waitForSubscriptionsToDownload();
       await expectElementToHaveInlineStyle(elemId, "margin-bottom: 0px !important;");
     });
@@ -485,7 +487,7 @@ describe("Element Hiding", function() {
         response.push("###elementHidingFilter" + i);
       }
       await setEndpointResponse("/large-subscription.txt", response.join("\n"));
-      await EWE.subscriptions.add("http://localhost:3003/large-subscription.txt");
+      await EWE.subscriptions.add(`${TEST_ADMIN_PAGES_URL}/large-subscription.txt`);
       await waitForSubscriptionsToDownload();
 
       await addFilter(
@@ -781,7 +783,7 @@ describe("Snippets", function() {
   });
 
   it("does not deploy snippets not from anti-cv subscription [mv2-only]", async function() {
-    await EWE.subscriptions.add("http://localhost:3000/subscription.txt");
+    await EWE.subscriptions.add(subTestCustom1.url);
     await waitForSubscriptionsToDownload();
     await expect(assertSnippet(
       WEBPAGE_URL, INJECTED_SNIPPET_ARG_EXTRACTOR, MAIN_WORLD))
@@ -790,7 +792,7 @@ describe("Snippets", function() {
 
   it("runs a snippet in a privileged subscription", async function() {
     // subscription with injected-snippet
-    await EWE.subscriptions.add("http://localhost:3000/subscription.txt", {privileged: true});
+    await EWE.subscriptions.add(subTestCustom1.url, {privileged: true});
     await waitForSubscriptionsToDownload();
     await expect(assertSnippet(
       WEBPAGE_URL, INJECTED_SNIPPET_ARG_EXTRACTOR, MAIN_WORLD))

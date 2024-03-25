@@ -18,9 +18,10 @@
 import expect from "expect";
 import browser from "webextension-polyfill";
 
+import {TEST_PAGES_URL, TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
 import {Page, isFirefox, firefoxVersion, isIncognito, readFile, writeFile,
-        TEST_PAGES_URL, TEST_ADMIN_PAGES_URL, TEST_MV3_SUBSCRIPTION,
         setMinTimeout, expectElemHideHidden} from "./utils.js";
+import {subTestCustom1, subTestNoDNR} from "./api-fixtures.js";
 import {wait} from "./polling.js";
 import {EWE, runInBackgroundPage} from "./messaging.js";
 import {updateExtensionFiles} from "./mocha/mocha-runner.js";
@@ -80,10 +81,8 @@ describe(`Update (${phase}) [runner-only]`, function() {
     setMinTimeout(this, 12000);
 
     const diffUrlUpdateSubscriptionId = "00000000-0000-0000-0000-000000000080";
-    const diffUrlUpdateSubscriptionWithTypeId = "00000000-0000-0000-0000-000000000040";
-
     const replaceWithThisObject = {
-      id: "00000000-0000-0000-0000-000000000080",
+      id: diffUrlUpdateSubscriptionId,
       languages: [
         "ja"
       ],
@@ -91,20 +90,12 @@ describe(`Update (${phase}) [runner-only]`, function() {
       title: "Updated Title",
       homepage: "Updated Homepage",
       privileged: false,
-      url: "http://localhost:3003/mv3_diffurl_update.txt",
-      mv2_url: "http://localhost:3003/mv3_diffurl_update.txt",
-      diff_url: "http://localhost:3003/updatable_subscription/002.json",
+      url: `${TEST_ADMIN_PAGES_URL}/mv3_diffurl_update.txt`,
+      mv2_url: `${TEST_ADMIN_PAGES_URL}/mv3_diffurl_update.txt`,
+      diff_url: `${TEST_ADMIN_PAGES_URL}/updatable_subscription/002.json`,
       expires: "10 hours (update frequency)"
     };
-
-    const replaceWithThisTypeChangingObject = {
-      id: "00000000-0000-0000-0000-000000000040",
-      type: "cookies",
-      title: "Non DNR filters",
-      homepage: "http://localhost:3003/subscription-that-shouldnt-be-moved-to-dnr-world.txt",
-      url: "http://localhost:3003/subscription-that-shouldnt-be-moved-to-dnr-world.txt",
-      mv2_url: "http://localhost:3003/mv2_subscription-that-shouldnt-be-moved-to-dnr-world.txt"
-    };
+    const replaceWithThisTypeChangingObject = {...subTestNoDNR, type: "cookies"};
 
     const replaceWithThis = JSON.stringify(replaceWithThisObject, null, 2);
     const replaceWithThisForType = JSON.stringify(
@@ -114,14 +105,14 @@ describe(`Update (${phase}) [runner-only]`, function() {
       const hasJapaneseSubscription = (await EWE.testing._getDefaultSubscriptions("ja")).hasCurrentLang;
       expect(hasJapaneseSubscription).toBeFalsy();
 
-      await EWE.subscriptions.add("http://localhost:3003/mv3_diffurl_update.txt");
-      await EWE.subscriptions.add("http://localhost:3003/anti-cv-subscription.txt");
+      await EWE.subscriptions.add(`${TEST_ADMIN_PAGES_URL}/mv3_diffurl_update.txt`);
+      await EWE.subscriptions.add(subTestNoDNR.url);
       await updateExtensionFiles([
         {
           method: "findAndReplaceInFile",
           args: {
             file: "custom-mv3-subscriptions.js",
-            findRegex: /{\s*"id":\s*"00000000-0000-0000-0000-000000000080".*?}/.source,
+            findRegex: RegExp(String.raw`{\s*"id":\s*"${diffUrlUpdateSubscriptionId}".*?}`).source,
             replace: replaceWithThis
           }
         },
@@ -129,7 +120,7 @@ describe(`Update (${phase}) [runner-only]`, function() {
           method: "findAndReplaceInFile",
           args: {
             file: "custom-mv3-subscriptions.js",
-            findRegex: /{\s*"id":\s*"00000000-0000-0000-0000-000000000040".*?}/.source,
+            findRegex: RegExp(String.raw`{\s*"id":\s*"${subTestNoDNR.id}".*?}`).source,
             replace: replaceWithThisForType
           }
         }
@@ -143,13 +134,19 @@ describe(`Update (${phase}) [runner-only]`, function() {
       s => s.id === diffUrlUpdateSubscriptionId)[0];
 
     const updatedTypeSubscription = subscriptions.filter(
-      s => s.id === diffUrlUpdateSubscriptionWithTypeId)[0];
+      s => s.id === subTestNoDNR.id)[0];
 
-    expect(updatedSubscription.diffURL).toEqual("http://localhost:3003/updatable_subscription/002.json");
-    expect(updatedSubscription.title).toEqual("Updated Title");
-    expect(updatedSubscription.homepage).toEqual("Updated Homepage");
-    expect(updatedSubscription.privileged).toEqual(false);
-    expect(updatedTypeSubscription.privileged).toEqual(false);
+    expect(updatedSubscription).toEqual(expect.objectContaining({
+      diffURL: `${TEST_ADMIN_PAGES_URL}/updatable_subscription/002.json`,
+      title: "Updated Title",
+      homepage: "Updated Homepage",
+      privileged: false,
+      downloadStatus: "synchronize_ok"
+    }));
+    expect(updatedTypeSubscription).toEqual(expect.objectContaining({
+      privileged: false,
+      downloadStatus: "synchronize_ok"
+    }));
 
     const hasJapaneseSubscription = (await EWE.testing._getDefaultSubscriptions("ja")).hasCurrentLang;
     expect(hasJapaneseSubscription).toBeTruthy();
@@ -164,10 +161,10 @@ describe(`Update (${phase}) [runner-only]`, function() {
   });
 
   it("updates the subscription filter text when updating the extension [mv3-only]", async function() {
-    const subscriptionFile = `subscriptions/${TEST_MV3_SUBSCRIPTION.id}`;
+    const subscriptionFile = `subscriptions/${subTestCustom1.id}`;
 
     if (start) {
-      await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.url);
+      await EWE.subscriptions.add(subTestCustom1.url);
 
       await updateExtensionFiles([
         {
@@ -183,7 +180,7 @@ describe(`Update (${phase}) [runner-only]`, function() {
 
     setMinTimeout(this, 20000);
 
-    let filters = await EWE.subscriptions.getFilters(TEST_MV3_SUBSCRIPTION.url);
+    let filters = await EWE.subscriptions.getFilters(subTestCustom1.url);
     expect(filters).toContainEqual(expect.objectContaining({
       text: filter
     }));
@@ -191,7 +188,7 @@ describe(`Update (${phase}) [runner-only]`, function() {
     let subs = await EWE.subscriptions.getSubscriptions();
     expect(subs).toEqual(expect.arrayContaining([
       expect.objectContaining({
-        url: TEST_MV3_SUBSCRIPTION.url,
+        url: subTestCustom1.url,
         updatable: false, // no `diff_url` provided
         enabled: true
       })
@@ -267,7 +264,7 @@ describe(`Update (${phase}) [runner-only]`, function() {
   });
 
   it("recovers bundled subscriptions which previously failed to migrate [mv3-only]", async function() {
-    let url = `${TEST_ADMIN_PAGES_URL}/subscription-that-shouldnt-be-moved-to-dnr-world.txt`;
+    let url = subTestNoDNR.url;
 
     if (start) {
       await EWE.subscriptions.add(url);
@@ -324,14 +321,14 @@ describe(`Update (${phase}) [runner-only]`, function() {
   describe("subscription being bundled or unbundled", function() {
     const oldBundledSubscription = {
       id: "00000000-0000-0000-0000-000000000090",
-      url: "http://localhost:3000/currently-bundled-subscription.txt"
+      url: `${TEST_PAGES_URL}/currently-bundled-subscription.txt`
     };
     const newBundledSubscription = {
       id: "00000000-0000-0000-0000-000000000092",
       type: "ads",
-      title: "Subscription that is not bundled right now but will in an update",
-      url: "http://localhost:3000/later-bundled-subscription.txt",
-      mv2_url: "http://localhost:3000/later-bundled-subscription.txt"
+      title: "Subscription that is not bundled right now but will be in an update",
+      url: `${TEST_PAGES_URL}/later-bundled-subscription.txt`,
+      mv2_url: `${TEST_PAGES_URL}/later-bundled-subscription.txt`
     };
 
     after(async function() {

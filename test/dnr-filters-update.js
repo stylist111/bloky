@@ -19,18 +19,16 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 import {DnrMapper} from "adblockpluscore/lib/dnr/mapper.js";
 import {EWE, clearTestEvents, expectTestEvents, getTestEvents} from "./messaging.js";
+import {TEST_PAGES_URL, TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
 import {hasUpdateStaticRules, Page, setEndpointResponse, shouldBeLoaded,
         setMinTimeout, expectElemHideVisible, expectElemHideHidden,
         syncSubHasLastFilter, syncSubHasNoLastFilter, waitForAssertion,
-        waitForSubscriptionToBeSynchronized, waitForSubscriptionToFailToUpdate,
-        clearRequestLogs, getRequestLogs, clearEndpointResponse,
-        TEST_PAGES_URL} from "./utils.js";
+        waitForSubscriptionToBeSynchronized, clearRequestLogs, getRequestLogs,
+        clearEndpointResponse, waitForSubscriptionToFailToUpdate}
+  from "./utils.js";
+import {subTestCustom1, subTestUpdatable1} from "./api-fixtures.js";
 import {wait} from "./polling.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
-
-const UPDATABLE_SUBSCRIPTION_ID = "00000000-0000-0000-0000-000000000060";
-const UPDATABLE_SUBSCRIPTION_URL = "http://localhost:3003/updatable_subscription.txt";
-const UPDATABLE_SUBSCRIPTION_DIFF_URL = "/updatable_subscription/diff.json";
 
 const DYNAMIC_FILTER = "||b5gxiibirp.invalid^";
 const DYNAMIC_FILTER2 = "||ttle10x9w7.invalid^";
@@ -181,10 +179,10 @@ describe("Test subscriptions update", function() {
     await EWE.testing.clearIsDnrSubscriptionUpdating();
 
     // Ensure it is enabled.
-    await EWE.subscriptions.add(UPDATABLE_SUBSCRIPTION_URL);
+    await EWE.subscriptions.add(subTestUpdatable1.url);
 
     if (hasUpdateStaticRules()) {
-      await waitForSubscriptionToBeSynchronized(UPDATABLE_SUBSCRIPTION_URL);
+      await waitForSubscriptionToBeSynchronized(subTestUpdatable1.url);
     }
   });
 
@@ -198,7 +196,7 @@ describe("Test subscriptions update", function() {
 
     // The case of the first update.
     await EWE.testing._dnrDiffSubscriptionUpdate(
-      UPDATABLE_SUBSCRIPTION_URL, UPDATES);
+      subTestUpdatable1.url, UPDATES);
 
     // There should have been no dyamic rules added.
     let added = await browser.declarativeNetRequest.getDynamicRules();
@@ -207,7 +205,7 @@ describe("Test subscriptions update", function() {
     let savedUpdates = await EWE.testing._getPrefs("ruleset_updates");
     expect(savedUpdates).not.toEqual(
       expect.arrayContaining([expect.arrayContaining([
-        UPDATABLE_SUBSCRIPTION_ID
+        subTestUpdatable1.id
       ])])
     );
   });
@@ -219,7 +217,7 @@ describe("Test subscriptions update", function() {
     }
 
     let mapper = new DnrMapper(async() =>
-      await EWE.testing.getSubscriptionRulesetMap(UPDATABLE_SUBSCRIPTION_ID)
+      await EWE.testing.getSubscriptionRulesetMap(subTestUpdatable1.id)
     );
     await mapper.load();
 
@@ -230,12 +228,12 @@ describe("Test subscriptions update", function() {
     let ids = UPDATES.removed.flatMap(text => mapper.get(text));
     expect(ids.length).toEqual(2);
     await EWE.testing._dnrDiffSubscriptionUpdate(
-      UPDATABLE_SUBSCRIPTION_URL, UPDATES);
-    await checkRulesAreDisabled(UPDATABLE_SUBSCRIPTION_ID, ids);
+      subTestUpdatable1.url, UPDATES);
+    await checkRulesAreDisabled(subTestUpdatable1.id, ids);
     // Check that 4 dynamic rules have been added.
     let added = await browser.declarativeNetRequest.getDynamicRules();
     expect(added.length).toEqual(4);
-    await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, UPDATES);
+    await checkUpdateStateSaved(subTestUpdatable1.id, UPDATES);
 
     // Check that these are not reported as user filter.
     let userFilters = await EWE.filters.getUserFilters();
@@ -245,71 +243,71 @@ describe("Test subscriptions update", function() {
     ids = UPDATES2.removed.flatMap(text => mapper.get(text));
     expect(ids.length).toEqual(3);
     await EWE.testing._dnrDiffSubscriptionUpdate(
-      UPDATABLE_SUBSCRIPTION_URL, UPDATES2);
-    await checkRulesAreDisabled(UPDATABLE_SUBSCRIPTION_ID, ids);
+      subTestUpdatable1.url, UPDATES2);
+    await checkRulesAreDisabled(subTestUpdatable1.id, ids);
     // Check that we have 5 dynamic rules.
     added = await browser.declarativeNetRequest.getDynamicRules();
     expect(added.length).toEqual(5);
-    await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, UPDATES2);
+    await checkUpdateStateSaved(subTestUpdatable1.id, UPDATES2);
 
     // The case of the update reenabling a previously disabled static
     // rule STATIC_FILTER_TO_DISABLE
     ids = mapper.get(STATIC_FILTER_TO_DISABLE);
     await EWE.testing._dnrDiffSubscriptionUpdate(
-      UPDATABLE_SUBSCRIPTION_URL, UPDATES3);
-    await checkRulesAreNotDisabled(UPDATABLE_SUBSCRIPTION_ID, ids);
-    await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, UPDATES3);
+      subTestUpdatable1.url, UPDATES3);
+    await checkRulesAreNotDisabled(subTestUpdatable1.id, ids);
+    await checkUpdateStateSaved(subTestUpdatable1.id, UPDATES3);
 
     // Add a user dynamic filter. This will be used to check overlaps with
     // subscription. This is DYNAMIC_FILTER2
     await EWE.filters.add([DYNAMIC_FILTER2]);
     await checkDynamicRuleCount(6);
     // Still the same update state
-    await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, UPDATES3);
+    await checkUpdateStateSaved(subTestUpdatable1.id, UPDATES3);
 
     userFilters = await EWE.filters.getUserFilters();
     expect(userFilters.length).toEqual(1);
 
     // Update that also bring rule DYNAMIC_FILTER2
     let dynFilter = await getDynamicFilter(DYNAMIC_FILTER2);
-    expect(dynFilter.subscriptionIds.indexOf(UPDATABLE_SUBSCRIPTION_ID))
+    expect(dynFilter.subscriptionIds.indexOf(subTestUpdatable1.id))
       .toEqual(-1);
     await EWE.testing._dnrDiffSubscriptionUpdate(
-      UPDATABLE_SUBSCRIPTION_URL, UPDATES4);
+      subTestUpdatable1.url, UPDATES4);
     await checkDynamicRuleCount(6);
     let dynFilter2 = await getDynamicFilter(DYNAMIC_FILTER2);
-    expect(dynFilter2.subscriptionIds.indexOf(UPDATABLE_SUBSCRIPTION_ID))
+    expect(dynFilter2.subscriptionIds.indexOf(subTestUpdatable1.id))
       .not.toEqual(-1);
-    await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, UPDATES4);
+    await checkUpdateStateSaved(subTestUpdatable1.id, UPDATES4);
 
     // Revert the update so that DYNAMIC_FILTER2 is no longer part of
     // this but is still present.
     await EWE.testing._dnrDiffSubscriptionUpdate(
-      UPDATABLE_SUBSCRIPTION_URL, UPDATES3);
+      subTestUpdatable1.url, UPDATES3);
     await checkDynamicRuleCount(6);
     dynFilter2 = await getDynamicFilter(DYNAMIC_FILTER2);
     expect(dynFilter).toEqual(dynFilter2);
-    await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, UPDATES3);
+    await checkUpdateStateSaved(subTestUpdatable1.id, UPDATES3);
 
     // This update will try to enable a static rules that is enabled.
     // It should not change the dynamic rules.
 
     await EWE.testing._dnrDiffSubscriptionUpdate(
-      UPDATABLE_SUBSCRIPTION_URL, UPDATES5);
+      subTestUpdatable1.url, UPDATES5);
     await checkDynamicRuleCount(6);
 
     let dynFilter3 = await getDynamicFilter(STATIC_FILTER_TO_DISABLE);
     expect(dynFilter3).toBeUndefined();
-    await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, UPDATES5);
+    await checkUpdateStateSaved(subTestUpdatable1.id, UPDATES5);
 
     // Empty update: no disabled rules, no dynamic rules.
     await EWE.testing._dnrDiffSubscriptionUpdate(
-      UPDATABLE_SUBSCRIPTION_URL, EMPTY_UPDATE);
+      subTestUpdatable1.url, EMPTY_UPDATE);
     let disabled = await browser.declarativeNetRequest.getDisabledRuleIds(
-      {rulesetId: UPDATABLE_SUBSCRIPTION_ID}
+      {rulesetId: subTestUpdatable1.id}
     );
     expect(disabled.length).toBe(0);
-    await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, EMPTY_UPDATE);
+    await checkUpdateStateSaved(subTestUpdatable1.id, EMPTY_UPDATE);
 
     // DYNAMIC_FILTER2 is the last one left.
     await checkDynamicRuleCount(1);
@@ -328,30 +326,30 @@ describe("Test subscriptions update", function() {
     }
 
     await EWE.testing._dnrDiffSubscriptionUpdate(
-      UPDATABLE_SUBSCRIPTION_URL, UPDATES4);
+      subTestUpdatable1.url, UPDATES4);
     await checkDynamicRuleCount(6);
     let dynFilter = await getDynamicFilter(DYNAMIC_FILTER2);
-    expect(dynFilter.subscriptionIds.indexOf(UPDATABLE_SUBSCRIPTION_ID))
+    expect(dynFilter.subscriptionIds.indexOf(subTestUpdatable1.id))
       .not.toEqual(-1);
-    await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, UPDATES4);
+    await checkUpdateStateSaved(subTestUpdatable1.id, UPDATES4);
 
     expect(await hasFilterInSubscription(
-      UPDATABLE_SUBSCRIPTION_URL, "###elem-hide")).toBe(true);
+      subTestUpdatable1.url, "###elem-hide")).toBe(true);
     expect(await hasFilterInSubscription(
-      UPDATABLE_SUBSCRIPTION_URL, DYNAMIC_FILTER2)).toBe(true);
+      subTestUpdatable1.url, DYNAMIC_FILTER2)).toBe(true);
     expect(await hasFilterInSubscription(
-      UPDATABLE_SUBSCRIPTION_URL, "1u2pp.invalid##.ads")).toBe(true);
+      subTestUpdatable1.url, "1u2pp.invalid##.ads")).toBe(true);
 
     await EWE.testing._dnrDiffSubscriptionUpdate(
-      UPDATABLE_SUBSCRIPTION_URL, UPDATES5);
+      subTestUpdatable1.url, UPDATES5);
     await checkDynamicRuleCount(6);
 
     let dynFilter2 = await getDynamicFilter(STATIC_FILTER_TO_DISABLE);
     expect(dynFilter2).toBeUndefined();
-    await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, UPDATES5);
+    await checkUpdateStateSaved(subTestUpdatable1.id, UPDATES5);
     // This filter is removed in that update
     expect(await hasFilterInSubscription(
-      UPDATABLE_SUBSCRIPTION_URL, "###elem-hide")).toBe(false);
+      subTestUpdatable1.url, "###elem-hide")).toBe(false);
   });
 
   it("does not add dynamic rules when not added", async function() {
@@ -359,10 +357,10 @@ describe("Test subscriptions update", function() {
       this.skip();
     }
 
-    await EWE.subscriptions.remove(UPDATABLE_SUBSCRIPTION_URL);
+    await EWE.subscriptions.remove(subTestUpdatable1.url);
 
     await EWE.testing._dnrDiffSubscriptionUpdate(
-      UPDATABLE_SUBSCRIPTION_URL, UPDATES4);
+      subTestUpdatable1.url, UPDATES4);
     await checkDynamicRuleCount(0);
   });
 
@@ -371,9 +369,9 @@ describe("Test subscriptions update", function() {
       this.skip();
     }
 
-    await EWE.subscriptions.disable(UPDATABLE_SUBSCRIPTION_URL);
+    await EWE.subscriptions.disable(subTestUpdatable1.url);
     await EWE.testing._dnrDiffSubscriptionUpdate(
-      UPDATABLE_SUBSCRIPTION_URL, UPDATES4);
+      subTestUpdatable1.url, UPDATES4);
     await checkDynamicRuleCount(0);
   });
 
@@ -383,12 +381,12 @@ describe("Test subscriptions update", function() {
     }
 
     await EWE.testing._dnrDiffSubscriptionUpdate(
-      UPDATABLE_SUBSCRIPTION_URL, UPDATES4);
+      subTestUpdatable1.url, UPDATES4);
     await checkDynamicRuleCount(6);
 
     // If we remove the subscription all the dynamic rules should be
     // removed.
-    await EWE.subscriptions.remove(UPDATABLE_SUBSCRIPTION_URL);
+    await EWE.subscriptions.remove(subTestUpdatable1.url);
     await checkDynamicRuleCount(0);
   });
 
@@ -398,12 +396,12 @@ describe("Test subscriptions update", function() {
     }
 
     await EWE.testing._dnrDiffSubscriptionUpdate(
-      UPDATABLE_SUBSCRIPTION_URL, UPDATES4);
+      subTestUpdatable1.url, UPDATES4);
     await checkDynamicRuleCount(6);
 
     // If we disable the subscription all the dynamic rules should be
     // removed.
-    await EWE.subscriptions.disable(UPDATABLE_SUBSCRIPTION_URL);
+    await EWE.subscriptions.disable(subTestUpdatable1.url);
     await checkDynamicRuleCount(0);
   });
 
@@ -413,15 +411,15 @@ describe("Test subscriptions update", function() {
     }
 
     await EWE.testing._dnrDiffSubscriptionUpdate(
-      UPDATABLE_SUBSCRIPTION_URL, UPDATES4);
+      subTestUpdatable1.url, UPDATES4);
     await checkDynamicRuleCount(6);
 
     // If we disable the subscription all the dynamic rules should be
     // removed.
-    await EWE.subscriptions.disable(UPDATABLE_SUBSCRIPTION_URL);
+    await EWE.subscriptions.disable(subTestUpdatable1.url);
     await checkDynamicRuleCount(0);
 
-    await EWE.subscriptions.enable(UPDATABLE_SUBSCRIPTION_URL);
+    await EWE.subscriptions.enable(subTestUpdatable1.url);
     await checkDynamicRuleCount(6);
   });
 
@@ -461,15 +459,15 @@ describe("Test subscriptions update", function() {
       await checkDynamicRuleCount(1);
 
       await EWE.testing._dnrDiffSubscriptionUpdate(
-        UPDATABLE_SUBSCRIPTION_URL, UPDATES);
+        subTestUpdatable1.url, UPDATES);
       await checkDynamicRuleCount(5);
-      await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, UPDATES);
+      await checkUpdateStateSaved(subTestUpdatable1.id, UPDATES);
 
       // UPDATES2 will add DYNAMIC_FILTER, but it's already there.
       await EWE.testing._dnrDiffSubscriptionUpdate(
-        UPDATABLE_SUBSCRIPTION_URL, UPDATES2);
+        subTestUpdatable1.url, UPDATES2);
       await checkDynamicRuleCount(5);
-      await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, UPDATES2);
+      await checkUpdateStateSaved(subTestUpdatable1.id, UPDATES2);
       let dynFilters = await EWE.testing.getDynamicFilters();
 
       {
@@ -482,7 +480,7 @@ describe("Test subscriptions update", function() {
       clearTestEvents("subscriptions.onChanged");
       // This update should fail
       await EWE.testing._dnrDiffSubscriptionUpdate(
-        UPDATABLE_SUBSCRIPTION_URL, UPDATES2A
+        subTestUpdatable1.url, UPDATES2A
       );
 
       const lastEvent = getTestEvents("subscriptions.onChanged").slice(-1);
@@ -490,7 +488,7 @@ describe("Test subscriptions update", function() {
         [
           [
             expect.objectContaining({
-              url: UPDATABLE_SUBSCRIPTION_URL,
+              url: subTestUpdatable1.url,
               downloadStatus: "synchronize_diff_too_many_filters"
             }),
             "downloadStatus"
@@ -500,7 +498,7 @@ describe("Test subscriptions update", function() {
 
       await checkDynamicRuleCount(5);
       // The previous update state should have been kept
-      await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, UPDATES2);
+      await checkUpdateStateSaved(subTestUpdatable1.id, UPDATES2);
 
       // Check that DYNAMIC_FILTER is still here
       let dynFilters2 = await EWE.testing.getDynamicFilters();
@@ -516,17 +514,17 @@ describe("Test subscriptions update", function() {
       areDynamicFiltersEquivalent(dynFilters, dynFilters2);
 
       await EWE.testing._dnrDiffSubscriptionUpdate(
-        UPDATABLE_SUBSCRIPTION_URL, UPDATES2B);
+        subTestUpdatable1.url, UPDATES2B);
       await checkDynamicRuleCount(5);
       dynFilters2 = await EWE.testing.getDynamicFilters();
-      await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, UPDATES2B);
+      await checkUpdateStateSaved(subTestUpdatable1.id, UPDATES2B);
 
       // Check that DYNAMIC_FILTERS has the proper subscriptions, ie NOT
       // just `null`
       let f2 = dynFilters2.find(element => element[0] == DYNAMIC_FILTER);
       expect(f2);
       expect(f2[1].subscriptionIds).toEqual(
-        expect.not.arrayContaining([UPDATABLE_SUBSCRIPTION_ID])
+        expect.not.arrayContaining([subTestUpdatable1.id])
       );
       expect(f2[1].subscriptionIds.length).toBe(1);
       expect(f2[1].subscriptionIds).toEqual(
@@ -544,7 +542,7 @@ describe("Test subscriptions update", function() {
       clearTestEvents("subscriptions.onChanged");
       // This update should fail
       await EWE.testing._dnrDiffSubscriptionUpdate(
-        UPDATABLE_SUBSCRIPTION_URL, UPDATES
+        subTestUpdatable1.url, UPDATES
       );
 
       const lastEvent = getTestEvents("subscriptions.onChanged").slice(-1);
@@ -552,7 +550,7 @@ describe("Test subscriptions update", function() {
         [
           [
             expect.objectContaining({
-              url: UPDATABLE_SUBSCRIPTION_URL,
+              url: subTestUpdatable1.url,
               downloadStatus: "synchronize_diff_too_many_filters"
             }),
             "downloadStatus"
@@ -561,15 +559,19 @@ describe("Test subscriptions update", function() {
       );
 
       await checkDynamicRuleCount(0);
-      await checkUpdateStateSaved(UPDATABLE_SUBSCRIPTION_ID, EMPTY_UPDATE);
+      await checkUpdateStateSaved(subTestUpdatable1.id, EMPTY_UPDATE);
     });
   });
 
   describe("Updates using the diffing mechanism [mv3-only]", function() {
     setMinTimeout(this, isFuzzingServiceWorker() ? 30000 : 10000);
 
+    const testDiffSubscriptionUrl = `${TEST_ADMIN_PAGES_URL}/updatable_subscription.txt`;
+    const testDiffUrlEndpoint = "/updatable_subscription/diff.json";
+    const testDiffUrl = TEST_ADMIN_PAGES_URL + testDiffUrlEndpoint;
+
     beforeEach(async function() {
-      await EWE.subscriptions.remove(UPDATABLE_SUBSCRIPTION_URL);
+      await EWE.subscriptions.remove(subTestUpdatable1.url);
       await EWE.testing.clearIsDnrSubscriptionUpdating();
       clearTestEvents("subscriptions.onChanged");
     });
@@ -579,9 +581,6 @@ describe("Test subscriptions update", function() {
         this.skip();
       }
 
-      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
-      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
-      let testDiffUrl = "http://localhost:3003" + testDiffUrlEndpoint;
       await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
         filters: {
           add: ["###elem-hide-img-request"],
@@ -598,7 +597,7 @@ describe("Test subscriptions update", function() {
           expect.objectContaining({
             diffURL: testDiffUrl,
             enabled: true,
-            id: UPDATABLE_SUBSCRIPTION_ID,
+            id: subTestUpdatable1.id,
             lastModified: "14 March 2023 00:06 UTC",
             url: testDiffSubscriptionUrl
           })
@@ -619,13 +618,12 @@ describe("Test subscriptions update", function() {
       );
     });
 
-    async function diffUpdateIsApplied(
-      testDiffSubscriptionUrl, testDiffUrlEndpoint) {
+    async function diffUpdateIsApplied(subscription, endpoint) {
       // start with empty diffs
-      await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
+      await setEndpointResponse(endpoint, EMPTY_DIFF_UPDATE);
 
-      await EWE.subscriptions.add(testDiffSubscriptionUrl);
-      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+      await EWE.subscriptions.add(subscription);
+      await waitForSubscriptionToBeSynchronized(subscription);
 
       await shouldBeLoaded(
         "image.html",
@@ -633,13 +631,13 @@ describe("Test subscriptions update", function() {
       );
 
       // new filters added to the diffs
-      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+      await setEndpointResponse(endpoint, JSON.stringify({
         filters: {
           add: ["image.png"],
           remove: []
         }
       }));
-      await EWE.subscriptions.sync(testDiffSubscriptionUrl);
+      await EWE.subscriptions.sync(subscription);
 
       await wait(async() => {
         let newDNRrules = await browser.declarativeNetRequest.getDynamicRules();
@@ -654,9 +652,6 @@ describe("Test subscriptions update", function() {
 
     it("filters from diffs are not removed when removing the same user filter", async function() {
       await EWE.filters.add("image.png");
-
-      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
-      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
 
       await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
         filters: {
@@ -684,18 +679,6 @@ describe("Test subscriptions update", function() {
         this.skip();
       }
 
-      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
-      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
-      await diffUpdateIsApplied(testDiffSubscriptionUrl, testDiffUrlEndpoint);
-    });
-
-    it("applies and blocks with new request filters added in the diffs for anti-cv subscription [mv3-only]", async function() {
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
-      let testDiffSubscriptionUrl = "http://localhost:3003/anti-cv-subscription.txt";
-      let testDiffUrlEndpoint = "/anti-cv-subscription_diff.json";
       await diffUpdateIsApplied(testDiffSubscriptionUrl, testDiffUrlEndpoint);
     });
 
@@ -705,9 +688,6 @@ describe("Test subscriptions update", function() {
       }
 
       setMinTimeout(this, 30000);
-
-      const testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
-      const testDiffUrlEndpoint = "/updatable_subscription/diff.json";
 
       await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
@@ -746,9 +726,6 @@ describe("Test subscriptions update", function() {
         this.skip();
       }
 
-      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
-      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
-
       await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
 
       await shouldBeLoaded(
@@ -766,9 +743,6 @@ describe("Test subscriptions update", function() {
       if (!hasUpdateStaticRules()) {
         this.skip();
       }
-
-      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
-      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
 
       await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
@@ -799,8 +773,6 @@ describe("Test subscriptions update", function() {
       setMinTimeout(this, 20000);
 
       let filter = "/image-from-custom-filter.png^$image";
-      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
-      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
       await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
         filters: {
           add: [filter],
@@ -861,10 +833,9 @@ describe("Test subscriptions update", function() {
       setMinTimeout(this, 20000);
 
       const filter = "/image-from-subscription.png^$image";
-      const testDiffSubscriptionUrl = "http://localhost:3000/subscription.txt";
 
-      await EWE.subscriptions.add(testDiffSubscriptionUrl);
-      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+      await EWE.subscriptions.add(subTestCustom1.url);
+      await waitForSubscriptionToBeSynchronized(subTestCustom1.url);
 
       await new Page("image-from-subscription.html")
         .expectResource("image-from-subscription.png")
@@ -893,10 +864,9 @@ describe("Test subscriptions update", function() {
       setMinTimeout(this, 20000);
 
       const filter = "/image-from-subscription.png^$image";
-      const testDiffSubscriptionUrl = "http://localhost:3000/subscription.txt";
 
-      await EWE.subscriptions.add(testDiffSubscriptionUrl);
-      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+      await EWE.subscriptions.add(subTestCustom1.url);
+      await waitForSubscriptionToBeSynchronized(subTestCustom1.url);
 
       await new Page("image-from-subscription.html")
         .expectResource("image-from-subscription.png")
@@ -936,8 +906,6 @@ describe("Test subscriptions update", function() {
         enabled: false
       }));
 
-      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
-      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
       await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
         filters: {
           add: [filter],
@@ -972,8 +940,6 @@ describe("Test subscriptions update", function() {
       if (!hasUpdateStaticRules()) {
         this.skip();
       }
-      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
-      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
       let filter = "someFilter";
       await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
         filters: {
@@ -1000,8 +966,6 @@ describe("Test subscriptions update", function() {
 
       setMinTimeout(this, 15000);
 
-      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
-      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
       let filterToAdd = "image.png";
       let filterToDisable = "/image-from-subscription.png^$image";
 
@@ -1057,7 +1021,7 @@ describe("Test subscriptions update", function() {
         .toBeBlocked();
 
       let savedUpdates = await EWE.testing._getPrefs("ruleset_updates");
-      expect(savedUpdates).toEqual([["00000000-0000-0000-0000-000000000060", {
+      expect(savedUpdates).toEqual([[subTestUpdatable1.id, {
         added: [],
         removed: []
       }]]);
@@ -1070,8 +1034,6 @@ describe("Test subscriptions update", function() {
 
       setMinTimeout(this, 15000);
 
-      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
-      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
       let filterToAdd = "image.png";
 
       await EWE.filters.add(filterToAdd);
@@ -1101,9 +1063,6 @@ describe("Test subscriptions update", function() {
       if (!hasUpdateStaticRules()) {
         this.skip();
       }
-
-      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
-      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
 
       await clearRequestLogs();
       await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
@@ -1142,9 +1101,6 @@ describe("Test subscriptions update", function() {
         delete analytics.data; // removes the "firstVersion"
         await EWE.testing._setPrefs("analytics", analytics);
 
-        let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
-        let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
-
         await clearRequestLogs();
         await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
         await EWE.subscriptions.add(testDiffSubscriptionUrl);
@@ -1177,9 +1133,6 @@ describe("Test subscriptions update", function() {
         this.skip();
       }
 
-      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
-      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
-
       await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
       await EWE.subscriptions.add(testDiffSubscriptionUrl, {}, "add() from test");
       await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
@@ -1204,9 +1157,6 @@ describe("Test subscriptions update", function() {
         this.skip();
       }
 
-      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
-      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
-
       await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
       await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
@@ -1227,9 +1177,6 @@ describe("Test subscriptions update", function() {
       if (!hasUpdateStaticRules()) {
         this.skip();
       }
-
-      let testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
-      let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
 
       let firstDate = "Wed, 17 Jan 2024 10:30:27 GMT";
       let expectedFirstVersion = "202401171030";
@@ -1265,8 +1212,6 @@ describe("Test subscriptions update", function() {
         this.skip();
       }
       try {
-        let testDiffUrlEndpoint = "/updatable_subscription/diff.json";
-
         await EWE.testing.testSetDynamicRulesAvailable(1);
         await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
           filters: {
@@ -1276,14 +1221,14 @@ describe("Test subscriptions update", function() {
         }));
 
         clearTestEvents("subscriptions.onChanged");
-        await EWE.subscriptions.add(UPDATABLE_SUBSCRIPTION_URL);
+        await EWE.subscriptions.add(subTestUpdatable1.url);
 
         // this is the same as waitForSubscriptionToBeSynchronized() but without
         // cleaning the test events
         await wait(async() => {
           let changeEvents = getTestEvents("subscriptions.onChanged");
           return changeEvents.filter(event => {
-            return event[0].url === UPDATABLE_SUBSCRIPTION_URL &&
+            return event[0].url === subTestUpdatable1.url &&
               event[1] === null; // whole subscription update, not property
           }).length > 0;
         }, 3000, "Subscription was not synchronized.");
@@ -1292,7 +1237,7 @@ describe("Test subscriptions update", function() {
           const lastEvent = getTestEvents("subscriptions.onChanged").slice(-1);
           expect(lastEvent).toEqual([[
             expect.objectContaining({
-              url: UPDATABLE_SUBSCRIPTION_URL,
+              url: subTestUpdatable1.url,
               downloadStatus: "synchronize_diff_too_many_filters"
             }),
             "downloadStatus"]]);
@@ -1309,9 +1254,6 @@ describe("Test subscriptions update", function() {
       }
 
       setMinTimeout(this, 20000);
-
-      const testDiffSubscriptionUrl = "http://localhost:3003/updatable_subscription.txt";
-      const testDiffUrlEndpoint = "/updatable_subscription/diff.json";
 
       await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
@@ -1364,7 +1306,7 @@ describe("Test subscriptions update", function() {
         await waitForSubscriptionToBeSynchronized(BIG_DISABLED_SUBSCRIPTION);
 
         await setEndpointResponse(
-          UPDATABLE_SUBSCRIPTION_DIFF_URL, JSON.stringify({
+          subTestUpdatable1.diff_url, JSON.stringify({
             filters: {
               add: [],
               remove: [
@@ -1375,15 +1317,15 @@ describe("Test subscriptions update", function() {
       });
 
       it("sets the download status to synchronize_diff_too_many_filters when the disabled static rules limit is reached", async function() {
-        await EWE.subscriptions.add(UPDATABLE_SUBSCRIPTION_URL);
+        await EWE.subscriptions.add(subTestUpdatable1.url);
         await waitForSubscriptionToFailToUpdate(
-          UPDATABLE_SUBSCRIPTION_URL, "synchronize_diff_too_many_filters"
+          subTestUpdatable1.url, "synchronize_diff_too_many_filters"
         );
       });
 
       it("dynamic rules are not updated when the disabled limit is reached", async function() {
         await setEndpointResponse(
-          UPDATABLE_SUBSCRIPTION_DIFF_URL, JSON.stringify({
+          subTestUpdatable1.diff_url, JSON.stringify({
             filters: {
               add: [
                 "image.png",
@@ -1395,9 +1337,9 @@ describe("Test subscriptions update", function() {
             }
           }));
 
-        await EWE.subscriptions.add(UPDATABLE_SUBSCRIPTION_URL);
+        await EWE.subscriptions.add(subTestUpdatable1.url);
         await waitForSubscriptionToFailToUpdate(
-          UPDATABLE_SUBSCRIPTION_URL, "synchronize_diff_too_many_filters"
+          subTestUpdatable1.url, "synchronize_diff_too_many_filters"
         );
 
         await new Page("image.html").expectResource("image.png").toBeLoaded();
@@ -1407,15 +1349,15 @@ describe("Test subscriptions update", function() {
       it("disabled static rules do not contribute to the limit when the subscription is disabled", async function() {
         await EWE.subscriptions.disable(BIG_DISABLED_SUBSCRIPTION);
 
-        await EWE.subscriptions.add(UPDATABLE_SUBSCRIPTION_URL);
-        await waitForSubscriptionToBeSynchronized(UPDATABLE_SUBSCRIPTION_URL);
+        await EWE.subscriptions.add(subTestUpdatable1.url);
+        await waitForSubscriptionToBeSynchronized(subTestUpdatable1.url);
       });
 
       it("disabled static rules do not contribute to the limit when the subscription is removed", async function() {
         await EWE.subscriptions.remove(BIG_DISABLED_SUBSCRIPTION);
 
-        await EWE.subscriptions.add(UPDATABLE_SUBSCRIPTION_URL);
-        await waitForSubscriptionToBeSynchronized(UPDATABLE_SUBSCRIPTION_URL);
+        await EWE.subscriptions.add(subTestUpdatable1.url);
+        await waitForSubscriptionToBeSynchronized(subTestUpdatable1.url);
       });
     });
   });

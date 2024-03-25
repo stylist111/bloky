@@ -18,9 +18,10 @@
 import expect from "expect";
 import browser from "webextension-polyfill";
 
-import {Page, isMV3, isFirefox, TEST_MV3_SUBSCRIPTION, waitForHighlightedStyle,
+import {Page, isMV3, isFirefox, waitForHighlightedStyle,
         isIncognito, waitForSubscriptionToBeSynchronized}
   from "./utils.js";
+import {subTestCustom1} from "./api-fixtures.js";
 import {wait} from "./polling.js";
 import {addFilter, EWE, runInBackgroundPage}
   from "./messaging.js";
@@ -193,8 +194,8 @@ describe(`Reload (${phase})`, function() {
     this.timeout(15000);
 
     if (start) {
-      await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.url);
-      await waitForSubscriptionToBeSynchronized(TEST_MV3_SUBSCRIPTION.url);
+      await EWE.subscriptions.add(subTestCustom1.url);
+      await waitForSubscriptionToBeSynchronized(subTestCustom1.url);
       await EWE.debugging.ensureEverythingHasSaved();
       return;
     }
@@ -207,7 +208,7 @@ describe(`Reload (${phase})`, function() {
         .toBeBlocked();
     }
     finally {
-      await EWE.subscriptions.remove(TEST_MV3_SUBSCRIPTION.url);
+      await EWE.subscriptions.remove(subTestCustom1.url);
     }
   });
 

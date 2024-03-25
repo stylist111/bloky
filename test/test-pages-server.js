@@ -24,8 +24,7 @@ import express from "express";
 
 import requestLogger from "./request-logger.js";
 import {bypassCache, sitekeyHeader, invalidSitekeyHeader, delay, testHeader, webbundleResponseType} from "./api-middleware.js";
-
-export const HTTP_PORT = 3000;
+import {TEST_PAGES_PORT} from "./test-server-urls.js";
 
 let app = express();
 let dirname = path.dirname(url.fileURLToPath(import.meta.url));
@@ -42,8 +41,8 @@ app.use(express.static(path.join(dirname, "pages")));
 app.post("/ping-handler", (req, res) => res.sendStatus(200));
 
 export function startTestPagesServer(host) {
-  app.listen(HTTP_PORT, () => {
-    console.log(`Test pages server listening at http://${host}:${HTTP_PORT}`);
+  app.listen(TEST_PAGES_PORT, () => {
+    console.log(`Test pages server listening at http://${host}:${TEST_PAGES_PORT}`);
   });
 }
 

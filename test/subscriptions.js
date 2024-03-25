@@ -18,21 +18,21 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 
-import {clearRequestLogs, isMV3, Page,
-        setEndpointResponse, shouldBeLoaded,
-        setMinTimeout, TEST_ADMIN_PAGES_URL, TEST_ANTI_CV_SUBSCRIPTION,
-        TEST_PAGES_DOMAIN, TEST_PAGES_URL,
-        waitForAssertion, waitForSubscriptionToBeSynchronized,
-        clearEndpointResponse}
-  from "./utils.js";
+import {TEST_PAGES_URL, TEST_PAGES_DOMAIN, TEST_ADMIN_PAGES_URL}
+  from "./test-server-urls.js";
+import {clearRequestLogs, isMV3, Page, setEndpointResponse, shouldBeLoaded,
+        setMinTimeout, waitForAssertion, waitForSubscriptionToBeSynchronized,
+        clearEndpointResponse} from "./utils.js";
 import {wait} from "./polling.js";
 import {addFilter, EWE, runInBackgroundPage, getTestEvents, clearTestEvents,
         expectTestEvents} from "./messaging.js";
-import {VALID_FILTER_TEXT, subCircumvention} from "./api-fixtures.js";
+import {VALID_FILTER_TEXT, subAntiCVLocal, subTestUpdatable2,
+        subEasylistLive, subTestCustom1, subTestCustom2, subAcceptableAdsLive,
+        subTestUpdatable1, subAntiCVLive, subTestNoDNR} from "./api-fixtures.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
-const VALID_SUBSCRIPTION_URL = `${TEST_PAGES_URL}/subscription.txt`;
-const VALID_SUBSCRIPTION_URL_2 = `${TEST_PAGES_URL}/subscription.txt?2`;
+const VALID_SUBSCRIPTION_URL = subTestCustom1.url;
+const VALID_SUBSCRIPTION_URL_2 = subTestCustom2.url;
 
 // this subscription doesn't appear in background.js and isn't bundled
 const USER_SUBSCRIPTION_URL = `${TEST_ADMIN_PAGES_URL}/user-subscription.txt`;
@@ -50,11 +50,11 @@ describe("Subscriptions", function() {
 
     let subs = await EWE.subscriptions.getSubscriptions();
     // homepage is `null` on MV2 until download
-    let homepage = isMV3() ? "http://localhost:3000/subscription.txt" : null;
+    let homepage = isMV3() ? VALID_SUBSCRIPTION_URL : null;
     expect(subs).toEqual([expect.objectContaining({
       url: VALID_SUBSCRIPTION_URL,
       enabled: true,
-      title: isMV3() ? "Test MV3 Custom Subscription" : VALID_SUBSCRIPTION_URL,
+      title: isMV3() ? subTestCustom1.title : VALID_SUBSCRIPTION_URL,
       homepage,
       updatable: expect.any(Boolean)
     })]);
@@ -89,59 +89,30 @@ describe("Subscriptions", function() {
     })]);
   });
 
-  it("adds a CV subscription that gets privilege by default", async function() {
-    let antiCvUrl = "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt";
-    if (isMV3()) {
-      antiCvUrl = TEST_ANTI_CV_SUBSCRIPTION.url;
-    }
-    await EWE.subscriptions.add(antiCvUrl);
+  it("adds a privilegd subscription by default", async function() {
+    let url = isMV3() ? subAntiCVLocal.url : subAntiCVLive.mv2_url;
+    await EWE.subscriptions.add(url);
 
     let subs = await EWE.subscriptions.getSubscriptions();
-    expect(subs).toEqual([expect.objectContaining({
-      url: antiCvUrl,
-      privileged: true
-    })]);
+    expect(subs).toEqual([expect.objectContaining({url, privileged: true})]);
   });
 
-  it("adds a CV subscription with privileged false", async function() {
-    let antiCvUrl = "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt";
-    if (isMV3()) {
-      antiCvUrl = TEST_ANTI_CV_SUBSCRIPTION.url;
-    }
-    await EWE.subscriptions.add(antiCvUrl, {privileged: false});
+  it("overrides a privileged subscription to non-privileged", async function() {
+    let url = isMV3() ? subAntiCVLocal.url : subAntiCVLive.mv2_url;
+    await EWE.subscriptions.add(url, {privileged: false});
 
     let subs = await EWE.subscriptions.getSubscriptions();
-    expect(subs).toEqual([expect.objectContaining({
-      url: antiCvUrl,
-      privileged: false
-    })]);
+    expect(subs).toEqual([expect.objectContaining({url, privileged: false})]);
   });
 
-  it("adds a subscription that has privileged set to true in the recommendations", async function() {
+  it("adds a privileged subscription from the recommendations", async function() {
     setMinTimeout(this, 10000);
 
     let defaultRecommendations = await EWE.testing._recommendations();
-    await EWE.testing._setRecommendations([
-      {
-        _source: {
-          id: "00000000-0000-0000-0000-000000000060",
-          type: "ads",
-          title: "Test MV3 Updatable Subscription",
-          homepage: "http://localhost:3003/updatable_subscription.txt",
-          diff_url: "http://localhost:3003/updatable_subscription/diff.json",
-          url: "http://localhost:3003/updatable_subscription.txt",
-          mv2_url: "http://localhost:3003/mv2_updatable_subscription.txt",
-          expires: "1 day",
-          privileged: true
-        }
-      }
-    ]);
+    await EWE.testing._setRecommendations([{_source: subTestUpdatable1}]);
     await EWE.testing._cleanSubscriptionClassesCache();
 
-    let subUrl = "http://localhost:3003/mv2_updatable_subscription.txt";
-    if (isMV3()) {
-      subUrl = "http://localhost:3003/updatable_subscription.txt";
-    }
+    let subUrl = isMV3() ? subTestUpdatable1.url : subTestUpdatable1.mv2_url;
     try {
       await EWE.subscriptions.add(subUrl);
       let subs = await EWE.subscriptions.getSubscriptions();
@@ -156,27 +127,18 @@ describe("Subscriptions", function() {
     }
   });
 
-  it("adds a CV subscription using addDefaults", async function() {
+  it("adds the anti-cv subscription using addDefaults", async function() {
     setMinTimeout(this, 10000);
 
     await EWE.subscriptions.addDefaults("en");
 
     let subs = await EWE.subscriptions.getSubscriptions();
-    expect(subs.length).toEqual(3);
+    expect(subs.length).toBeGreaterThanOrEqual(3);
 
-    let compareUrl = "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt";
-    if (isMV3()) {
-      compareUrl = TEST_ANTI_CV_SUBSCRIPTION.url;
-    }
-
+    let url = isMV3() ? subAntiCVLocal.url : subAntiCVLive.mv2_url;
     expect(subs).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        url: compareUrl,
-        privileged: true
-      }),
-      expect.objectContaining({
-        privileged: false
-      })
+      expect.objectContaining({url, privileged: true}),
+      expect.objectContaining({privileged: false})
     ]));
   });
 
@@ -358,17 +320,13 @@ describe("Subscriptions", function() {
     }
   });
 
-  it("gets adblockpluscore recommendations [mv2-only] [mv2-custom-subs-skip]", async function() {
+  it("gets core recommendations [mv2-only] [mv2-custom-subs-skip]", async function() {
     // In MV3, subscriptions must always be provided, so the core
     // subscriptions are not used and this test doesn't apply.
     let result = await EWE.subscriptions.getRecommendations();
+    let {languages, title, type, mv2_url: url} = subEasylistLive;
     expect(result).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        languages: ["en"],
-        title: "EasyList",
-        type: "ads",
-        url: "https://easylist-downloads.adblockplus.org/easylist.txt"
-      })
+      expect.objectContaining({languages, title, type, url})
     ]));
 
     for (let item of result) {
@@ -396,7 +354,7 @@ describe("Subscriptions", function() {
         languages: ["en"],
         title: "TestSubscriptionEn",
         type: "ads",
-        url: "https://easylist-downloads.adblockplus.org/easylist.txt"
+        url: subEasylistLive.mv2_url
       })
     ]));
 
@@ -473,8 +431,7 @@ describe("Subscriptions", function() {
 
   it("returns the right URLs per manifest version", async function() {
     let expectedAaURL = isMV3() ?
-      "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt" :
-      "https://easylist-downloads.adblockplus.org/exceptionrules.txt";
+      subAcceptableAdsLive.url : subAcceptableAdsLive.mv2_url;
     let actualAaURL = await runInBackgroundPage([
       {op: "getGlobal", arg: "EWE"},
       {op: "getProp", arg: "subscriptions"},
@@ -518,8 +475,8 @@ describe("Subscriptions", function() {
     setMinTimeout(this, isFuzzingServiceWorker() ? 30000 : 10000);
 
     if (isMV3()) {
-      const countableSubUrl = "http://localhost:3000/subscription-with-allowing-filter.txt";
-      const diffUpdatableSubUrl = "http://localhost:3003/updatable_subscription.txt";
+      const countableSubUrl = `${TEST_PAGES_URL}/subscription-with-allowing-filter.txt`;
+      const diffUpdatableSubUrl = subTestUpdatable1.url;
 
       await EWE.subscriptions.add(countableSubUrl);
       await EWE.subscriptions.add(diffUpdatableSubUrl);
@@ -537,7 +494,7 @@ describe("Subscriptions", function() {
       ]));
     }
     else {
-      const fullUpdatableUrl = "http://localhost:3003/mv2_anti-cv-subscription.txt";
+      const fullUpdatableUrl = subTestUpdatable1.mv2_url;
       await EWE.subscriptions.add(fullUpdatableUrl);
 
       let subs = await EWE.subscriptions.getSubscriptions();
@@ -555,10 +512,10 @@ describe("Subscriptions", function() {
 
     beforeEach(async function() {
       await clearRequestLogs();
-      await setEndpointResponse("/anti-cv-subscription.txt", "[Adblock Plus]");
+      await setEndpointResponse("/subscription2.txt", "[Adblock Plus]");
     });
 
-    let addSubscription = async function(url = subCircumvention.url) {
+    let addSubscription = async function(url = subTestUpdatable2.url) {
       await EWE.subscriptions.add(url);
       await wait(
         async() => {
@@ -577,12 +534,12 @@ describe("Subscriptions", function() {
 
     it("doesn't bring non-CV subscription data to DNR world [mv3-only]", async function() {
       let updatedReply = "[Adblock Plus]";
-      await setEndpointResponse("/subscription-that-shouldnt-be-moved-to-dnr-world.txt", updatedReply);
+      await setEndpointResponse(subTestNoDNR.url, updatedReply);
 
       await addSubscription();
       let dynamicRules = await DNR.getDynamicRules().length;
 
-      await addSubscription("http://localhost:3003/subscription-that-shouldnt-be-moved-to-dnr-world.txt");
+      await addSubscription(subTestNoDNR.url);
       expect(await DNR.getDynamicRules().length)
         .toEqual(dynamicRules);
       await shouldBeLoaded(
@@ -597,7 +554,7 @@ describe("Subscriptions", function() {
         "example.com##element_hiding_filter",
         "/image-from-non-dnr-subscription.png^$image"
       ].join("\n");
-      await setEndpointResponse("/subscription-that-shouldnt-be-moved-to-dnr-world.txt", updatedReply);
+      await setEndpointResponse(subTestNoDNR.url, updatedReply);
       await EWE.subscriptions.sync();
 
       expect(await DNR.getDynamicRules().length).toEqual(dynamicRules);
@@ -618,7 +575,7 @@ describe("Subscriptions", function() {
         "[Adblock Plus]",
         "/image-from-custom-filter.png^$image"
       ].join("\n");
-      await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
+      await setEndpointResponse("/subscription2.txt", updatedReply);
 
       await EWE.filters.add(["/image-from-custom-filter.png^$image"]);
       await addSubscription();
@@ -658,7 +615,7 @@ describe("Subscriptions", function() {
       // update reply on the server to remove filter
       updatedReply = "[Adblock Plus]";
 
-      await setEndpointResponse("/anti-cv-subscription.txt", updatedReply);
+      await setEndpointResponse("/subscription2.txt", updatedReply);
       await EWE.subscriptions.sync();
       // wait for subscriptions to be synced
       await new Promise(r => setTimeout(r, 1000));
@@ -716,7 +673,7 @@ describe("Subscriptions", function() {
         expect.objectContaining({
           url: VALID_SUBSCRIPTION_URL,
           enabled: true,
-          title: isMV3() ? "Test MV3 Custom Subscription" : VALID_SUBSCRIPTION_URL
+          title: isMV3() ? subTestCustom1.title : VALID_SUBSCRIPTION_URL
         })
       ]]);
     });

@@ -19,8 +19,8 @@
 
 /* eslint-disable mocha/no-top-level-hooks */
 
-import {TEST_PAGES_URL, Page, Popup, setMinTimeout, isIncognito}
-  from "../utils.js";
+import {TEST_PAGES_URL} from "../test-server-urls.js";
+import {Page, Popup, setMinTimeout, isIncognito} from "../utils.js";
 import {runInBackgroundPage, getLastError, clearAllTestEvents,
         resetFeatureFlags} from "../messaging.js";
 import {isFuzzingServiceWorker} from "./mocha-runner.js";

@@ -21,6 +21,7 @@ import os from "os";
 import path from "path";
 
 import {checkPreviousRun} from "../../scripts/prepare-mv3-files.js";
+import {subTestCustom1, subTestCustom2} from "../api-fixtures.js";
 
 describe("prepare MV3 files script", function() {
   let tmpOutDir;
@@ -36,22 +37,7 @@ describe("prepare MV3 files script", function() {
     scriptsOutputDir = path.join(tmpOutDir, "scriptsOutput");
     subsOutput = path.join(scriptsOutputDir, "custom-subscriptions.json");
 
-    subsContent = [{
-      id: "00000000-0000-0000-0000-000000000000",
-      type: "ads",
-      title: "Test MV3 Custom Subscription",
-      homepage: "http://localhost:3000/subscription.txt",
-      url: "http://localhost:3000/subscription.txt",
-      mv2_url: "http://localhost:3000/mv2_subscription.txt"
-    }, {
-      id: "00000000-0000-0000-0000-000000000010",
-      type: "ads",
-      title: "Test MV3 Custom Subscription 2",
-      homepage: "http://localhost:3000/subscription.txt?2",
-      url: "http://localhost:3000/subscription.txt?2",
-      mv2_url: "http://localhost:3000/mv2_subscription.txt?2"
-    }];
-
+    subsContent = [subTestCustom1, subTestCustom2];
     await fs.promises.writeFile(subsInput, JSON.stringify(subsContent));
   });
 
@@ -95,7 +81,7 @@ describe("prepare MV3 files script", function() {
     await createExpectedOutput();
 
     await fs.promises.rm(path.join(
-      scriptsOutputDir, "rulesets", "00000000-0000-0000-0000-000000000000"
+      scriptsOutputDir, "rulesets", "00000000-0000-0000-0000-000000000010"
     ));
 
     expect(await checkPreviousRun(subsInput, scriptsOutputDir, subsOutput))
@@ -106,7 +92,7 @@ describe("prepare MV3 files script", function() {
     await createExpectedOutput();
 
     await fs.promises.rm(path.join(
-      scriptsOutputDir, "subscriptions", "00000000-0000-0000-0000-000000000010"
+      scriptsOutputDir, "subscriptions", "00000000-0000-0000-0000-000000000020"
     ));
 
     expect(await checkPreviousRun(subsInput, scriptsOutputDir, subsOutput))

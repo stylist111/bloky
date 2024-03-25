@@ -17,11 +17,12 @@
 
 import expect from "expect";
 
-import {Page, Resource, executeScript, TEST_PAGES_URL,
-        TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, SITEKEY, TEST_MV3_SUBSCRIPTION,
-        shouldBeLoaded, supportsWebBundle, waitForSubscriptionsToDownload,
-        setMinTimeout, setEndpointResponse, isChromiumBased,
-        waitForSubscriptionToBeSynchronized} from "./utils.js";
+import {TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, SITEKEY,
+        TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
+import {Page, Resource, executeScript, shouldBeLoaded, supportsWebBundle,
+        waitForSubscriptionsToDownload, setMinTimeout, setEndpointResponse,
+        isChromiumBased, waitForSubscriptionToBeSynchronized} from "./utils.js";
+import {subTestCustom1} from "./api-fixtures.js";
 import {addFilter, EWE} from "./messaging.js";
 import browser from "webextension-polyfill";
 
@@ -34,7 +35,7 @@ describe("Blocking", function() {
   });
 
   it("blocks a request using subscriptions [fuzz]", async function() {
-    await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.url);
+    await EWE.subscriptions.add(subTestCustom1.url);
     await waitForSubscriptionsToDownload();
 
     await new Page("image-from-subscription.html")
@@ -43,8 +44,7 @@ describe("Blocking", function() {
   });
 
   it("blocks a request using custom user subscriptions [fuzz]", async function() {
-    let customUserSubscription =
-      "http://localhost:3003/custom-user-subscription.txt";
+    let customUserSubscription = `${TEST_ADMIN_PAGES_URL}/custom-user-subscription.txt`;
 
     await setEndpointResponse(
       customUserSubscription,
@@ -60,7 +60,7 @@ describe("Blocking", function() {
   });
 
   it("does not block from subscription if allow filter is added", async function() {
-    await EWE.subscriptions.add(TEST_MV3_SUBSCRIPTION.url);
+    await EWE.subscriptions.add(subTestCustom1.url);
     await EWE.filters.add("@@image-from-subscription.png");
     await waitForSubscriptionsToDownload();
 

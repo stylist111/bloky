@@ -23,57 +23,11 @@ import {fuzzSuspendServiceWorker, waitForServiceWorkerInitialization,
         EWE, getTestEvents, clearTestEvents, runInBackgroundPage}
   from "./messaging.js";
 import {wait} from "./polling.js";
+import {TEST_PAGES_URL, TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
 
-export const TEST_PAGES_DOMAIN = "localhost";
-export const CROSS_DOMAIN = "127.0.0.1";
-export const TEST_PAGES_URL = `http://${TEST_PAGES_DOMAIN}:3000`;
-// The admin port should be in-sync with "start-server.js"
-export const TEST_ADMIN_PAGES_URL = `http://${TEST_PAGES_DOMAIN}:3003`;
-export const CROSS_DOMAIN_URL = `http://${CROSS_DOMAIN}:3000`;
-// the page will be served with this sitekey if you pass in sitekey=1
-// as a query param. Eg http://localhost:3000/image.html?sitekey=1
-export const SITEKEY = "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANGtTstne7" +
-                       "e8MbmDHDiMFkGbcuBgXmiVesGOG3gtYeM1EkrzVhBj" +
-                       "GUvKXYE4GLFwqty3v5MuWWbvItUWBTYoVVsCAwEAAQ";
 export const RECENT_FIREFOX_VERSION = 86; // Latest Firefox on February 2021
 export const HIDETIMEOUT = isFuzzingServiceWorker() ? 15000 : 1500;
 export const UNHIDDENTIMEOUT = isFuzzingServiceWorker() ? 1000 : 200;
-export const FETCHED_TEST_SUBSCRIPTION_ID = "00000000-0000-0000-0000-000000000000";
-export const FETCHED_TEST_SUBSCRIPTION_ID_2 = "00000000-0000-0000-0000-000000000010";
-export const FETCHED_TEST_SUBSCRIPTION_ID_3 = "00000000-0000-0000-0000-000000000020";
-export const TEST_MV3_SUBSCRIPTION = {
-  id: FETCHED_TEST_SUBSCRIPTION_ID,
-  homepage: TEST_PAGES_URL + "/subscription.txt",
-  url: TEST_PAGES_URL + "/subscription.txt",
-  title: "Test MV3 Custom Subscription",
-  type: "ads",
-  mv2_url: TEST_PAGES_URL + "/mv2_subscription.txt"
-};
-export const TEST_MV3_SUBSCRIPTION_2 = {
-  id: FETCHED_TEST_SUBSCRIPTION_ID_2,
-  homepage: TEST_PAGES_URL + "/subscription.txt?2",
-  url: TEST_PAGES_URL + "/subscription.txt?2",
-  title: "Test MV3 Custom Subscription 2",
-  type: "ads",
-  mv2_url: TEST_PAGES_URL + "/mv2_subscription.txt?2"
-};
-export const TEST_MV3_SUBSCRIPTION_3 = {
-  id: FETCHED_TEST_SUBSCRIPTION_ID_3,
-  type: "ads",
-  homepage: "http://localhost:3003/subscription.txt",
-  title: "Test MV3 Custom Subscription 3",
-  url: "http://localhost:3003/subscription.txt",
-  mv2_url: "http://localhost:3003/mv2_subscription.txt"
-};
-export const TEST_ANTI_CV_SUBSCRIPTION = {
-  id: "00000000-0000-0000-0000-000000000030",
-  type: "circumvention",
-  title: "ABP filters",
-  homepage: "https://github.com/abp-filters/abp-filters-anti-cv",
-  url: "http://localhost:3003/anti-cv-subscription.txt",
-  mv2_url: "http://localhost:3003/mv2_anti-cv-subscription.txt",
-  diff_url: "http://localhost:3003/anti-cv-subscription_diff.json"
-};
 
 function handleConnection(details, tabId, removeListeners, reject) {
   if ((details.tabId == tabId || !tabId) &&

@@ -24,16 +24,10 @@ import url from "url";
 import express from "express";
 import requestLogger from "./request-logger.js";
 import {delay, apiErrorHandler} from "./api-middleware.js";
+import {TEST_ADMIN_PAGES_PORT} from "./test-server-urls.js";
+import {emptyDiffResponse} from "./api-fixtures.js";
 
-const HTTP_ADMIN_PORT = 3003;
 let dirname = path.dirname(url.fileURLToPath(import.meta.url));
-
-const EMPTY_DIFF_RESPONSE = JSON.stringify({
-  filters: {
-    add: [],
-    remove: []
-  }
-});
 
 const BUILD_TIME_ROUTES = [
   {
@@ -53,6 +47,14 @@ const BUILD_TIME_ROUTES = [
     response: "[Adblock Plus]\nlocalhost###migrate-diff-elem-item"
   },
   {
+    url: "/easylist.txt",
+    response: "[Adblock Plus]\n"
+  },
+  {
+    url: "/exceptionrules.txt",
+    response: "[Adblock Plus]\n"
+  },
+  {
     url: "/updatable_subscription.txt",
     response: fs.readFileSync(dirname + "/pages/updatable_subscription.txt")
   },
@@ -66,19 +68,15 @@ const BUILD_TIME_ROUTES = [
   },
   {
     url: "/updatable_subscription/001.json",
-    response: EMPTY_DIFF_RESPONSE
+    response: emptyDiffResponse
   },
   {
     url: "/updatable_subscription/002.json",
-    response: EMPTY_DIFF_RESPONSE
+    response: emptyDiffResponse
   },
   {
     url: "/updatable_subscription/diff.json",
-    response: EMPTY_DIFF_RESPONSE
-  },
-  {
-    url: "/anti-cv-subscription_diff.json",
-    response: EMPTY_DIFF_RESPONSE
+    response: emptyDiffResponse
   },
   {
     url: "/index.json",
@@ -178,8 +176,8 @@ app.all("*", requestLogger.logRequests, (req, res, next) => {
 });
 
 export function startAdminServer(host) {
-  app.listen(HTTP_ADMIN_PORT, () => {
-    console.log(`Admin commands server listening at http://${host}:${HTTP_ADMIN_PORT}`);
+  app.listen(TEST_ADMIN_PAGES_PORT, () => {
+    console.log(`Admin commands server listening at http://${host}:${TEST_ADMIN_PAGES_PORT}`);
   });
 
   for (let route of BUILD_TIME_ROUTES) {

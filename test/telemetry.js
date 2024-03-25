@@ -21,10 +21,11 @@ import expect from "expect";
 import {MILLIS_IN_HOUR} from "adblockpluscore/lib/time.js";
 
 import {EWE, runInBackgroundPage, expectTestEvents} from "./messaging.js";
+import {TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
 import {clearRequestLogs, getRequestLogs, setMinTimeout, setEndpointResponse,
-        clearEndpointResponse, TEST_ADMIN_PAGES_URL, TEST_PAGES_URL,
-        waitForAssertion, waitForSubscriptionToBeSynchronized}
-  from "./utils.js";
+        clearEndpointResponse, waitForAssertion,
+        waitForSubscriptionToBeSynchronized} from "./utils.js";
+import {subTestCustom1} from "./api-fixtures.js";
 import {wait} from "./polling.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 
@@ -169,7 +170,7 @@ describe("Telemetry", function() {
     });
 
     it("sends AA active (as false) extension metadata to the telemetry server when non AA subscriptions are active", async function() {
-      const notAnAAUrl = `${TEST_PAGES_URL}/subscription.txt`;
+      const notAnAAUrl = subTestCustom1.url;
       await EWE.subscriptions.add(notAnAAUrl);
       await waitForSubscriptionToBeSynchronized(notAnAAUrl);
 
@@ -197,7 +198,7 @@ describe("Telemetry", function() {
       ]);
       await EWE.subscriptions.add(aaUrl);
 
-      const notAnAAUrl = `${TEST_PAGES_URL}/subscription.txt`;
+      const notAnAAUrl = subTestCustom1.url;
       await EWE.subscriptions.add(notAnAAUrl);
 
       await EWE.testing.startTelemetry(TELEMETRY_ARGS);

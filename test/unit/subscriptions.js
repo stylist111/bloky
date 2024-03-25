@@ -21,35 +21,8 @@ import env from "./environment.js";
 import {mock} from "./mock/mock.js";
 import expect from "expect";
 
-let subCircumvention = {
-  id: "D4028CDD-3D39-4624-ACC7-8140F4EC3238",
-  type: "circumvention",
-  title: "ABP filters",
-  homepage: "https://github.com/abp-filters/abp-filters-anti-cv",
-  url: "https://easylist-downloads.adblockplus.org/v3/full/abp-filters-anti-cv.txt",
-  mv2_url: "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt"
-};
-
-let subEasylist = {
-  id: "8C13E995-8F06-4927-BEA7-6C845FB7EEBF",
-  type: "ads",
-  languages: [
-    "en"
-  ],
-  title: "EasyList",
-  homepage: "https://easylist.to/",
-  url: "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt",
-  mv2_url: "https://easylist-downloads.adblockplus.org/easylist.txt"
-};
-
-let subAcceptableAds = {
-  id: "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F",
-  type: "allowing",
-  title: "Allow nonintrusive advertising",
-  homepage: "https://acceptableads.com/",
-  url: "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt",
-  mv2_url: "https://easylist-downloads.adblockplus.org/exceptionrules.txt"
-};
+import {subAntiCVLocal, subEasylistLocal, subAcceptableAdsLocal}
+  from "../api-fixtures.js";
 
 describe("EWE.subscriptions", function() {
   let subscriptions;
@@ -73,13 +46,13 @@ describe("EWE.subscriptions", function() {
     });
 
     it("throws if no anti-circumvention subscription is provided", async function() {
-      env.setRecommendations([subEasylist, subAcceptableAds]);
+      env.setRecommendations([subEasylistLocal, subAcceptableAdsLocal]);
       await expect(subscriptions.addDefaults("en"))
         .rejects.toThrow("No anti-circumvention subscription");
     });
 
     it("throws if no allowing subscription is provided", async function() {
-      env.setRecommendations([subEasylist, subCircumvention]);
+      env.setRecommendations([subEasylistLocal, subAntiCVLocal]);
       await expect(subscriptions.addDefaults("en"))
         .rejects.toThrow("No allowing subscription");
     });
