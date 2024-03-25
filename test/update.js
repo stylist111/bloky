@@ -121,16 +121,16 @@ describe(`Update (${phase}) [runner-only]`, function() {
         {
           method: "findAndReplaceInFile",
           args: {
-            file: "background.js",
-            findRegex: /{\s*id:\s*"00000000-0000-0000-0000-000000000080".*?}/.source,
+            file: "custom-mv3-subscriptions.js",
+            findRegex: /{\s*"id":\s*"00000000-0000-0000-0000-000000000080".*?}/.source,
             replace: replaceWithThis
           }
         },
         {
           method: "findAndReplaceInFile",
           args: {
-            file: "background.js",
-            findRegex: /{\s*id:\s*"00000000-0000-0000-0000-000000000030".*?}/.source,
+            file: "custom-mv3-subscriptions.js",
+            findRegex: /{\s*"id":\s*"00000000-0000-0000-0000-000000000030".*?}/.source,
             replace: replaceWithThisForType
           }
         }
@@ -342,8 +342,8 @@ describe(`Update (${phase}) [runner-only]`, function() {
             method: "findAndReplaceInFile",
             args: {
               file: "background.js",
-              findRegex: `{\\s*id:\\s*"${oldBundledSubscription.id}".*?}`,
-              replace: JSON.stringify(newBundledSubscription, null, 2)
+              findRegex: newBundledSubscription.id,
+              replace: oldBundledSubscription.id
             }
           }
         ]);

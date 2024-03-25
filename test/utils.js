@@ -63,7 +63,7 @@ export const TEST_MV3_SUBSCRIPTION_3 = {
   homepage: "http://localhost:3003/subscription.txt",
   title: "Test MV3 Custom Subscription 3",
   url: "http://localhost:3003/subscription.txt",
-  mv2_url: "http://localhost:3003/subscription.txt"
+  mv2_url: "http://localhost:3003/mv2_subscription.txt"
 };
 export const TEST_ANTI_CV_SUBSCRIPTION = {
   id: "00000000-0000-0000-0000-000000000030",

@@ -20,7 +20,7 @@
 "use strict";
 
 if (typeof EWE == "undefined" && typeof importScripts != "undefined") {
-  importScripts("ewe-api.js");
+  importScripts("ewe-api.js", "custom-mv3-subscriptions.js");
 }
 
 let callbackIdCounter = 0;
@@ -435,147 +435,13 @@ function isMV3() {
 let startupInfo = {};
 
 if (isMV3()) {
-  startupInfo = {
-    // This object should be in sync with the data in
-    // test/scripts/custom-mv3-subscriptions.json
-    bundledSubscriptions: [
-      {
-        id: "00000000-0000-0000-0000-000000000000",
-        type: "ads",
-        title: "Test MV3 Custom Subscription",
-        homepage: "http://localhost:3000/subscription.txt",
-        url: "http://localhost:3000/subscription.txt",
-        mv2_url: "http://localhost:3000/mv2_subscription.txt"
-      },
-      {
-        id: "00000000-0000-0000-0000-000000000010",
-        type: "ads",
-        title: "Test MV3 Custom Subscription 2",
-        homepage: "http://localhost:3000/subscription.txt?2",
-        url: "http://localhost:3000/subscription.txt?2",
-        mv2_url: "http://localhost:3000/mv2_subscription.txt?2"
-      },
-      {
-        id: "00000000-0000-0000-0000-000000000020",
-        type: "ads",
-        title: "Test MV3 Custom Subscription 3",
-        homepage: "http://localhost:3003/subscription.txt",
-        url: "http://localhost:3003/subscription.txt",
-        mv2_url: "http://localhost:3003/subscription.txt"
-      },
-      {
-        id: "00000000-0000-0000-0000-000000000110",
-        type: "ads",
-        title: "Test MV3 Subscription with many filters",
-        homepage: "http://localhost:3000/subscription-with-5000-disabled-filters.txt",
-        diff_url: "http://localhost:3000/subscription-with-5000-disabled-filters-diff.json",
-        url: "http://localhost:3000/subscription-with-5000-disabled-filters.txt",
-        mv2_url: "http://localhost:3000/subscription-with-5000-disabled-filters.txt"
-      },
-      {
-        id: "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F",
-        type: "allowing",
-        title: "Allow nonintrusive advertising",
-        homepage: "https://acceptableads.com/",
-        url: "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt",
-        mv2_url: "https://easylist-downloads.adblockplus.org/exceptionrules.txt"
-      },
-      {
-        id: "F12E0801-A00B-49DE-B1E3-52C9C4F90C8C",
-        type: "allowing",
-        title: "Allow nonintrusive advertising without third-party tracking",
-        homepage: "https://acceptableads.com/",
-        url: "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules-privacy-friendly.txt",
-        mv2_url: "https://easylist-downloads.adblockplus.org/exceptionrules-privacy-friendly.txt"
-      },
-      {
-        id: "8C13E995-8F06-4927-BEA7-6C845FB7EEBF",
-        type: "ads",
-        languages: [
-          "en"
-        ],
-        title: "EasyList",
-        homepage: "https://easylist.to/",
-        url: "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt",
-        mv2_url: "https://easylist-downloads.adblockplus.org/easylist.txt",
-        diff_url: "https://easylist-downloads.adblockplus.org/v3/diff/easylist/ef590f9ee92f557ca060bd567ed60381d24c73d5.json"
-      },
-      {
-        id: "0CD3D105-D3B3-4652-8489-94163DE9A08F",
-        type: "ads",
-        languages: [
-          "de"
-        ],
-        title: "EasyList Germany+EasyList",
-        homepage: "https://easylist.to/",
-        includes: [
-          "8C13E995-8F06-4927-BEA7-6C845FB7EEBF",
-          "4337FB2B-A95C-44D5-B78D-11AD40F7711B"
-        ],
-        url: "https://easylist-downloads.adblockplus.org/v3/full/easylistgermany+easylist.txt",
-        mv2_url: "https://easylist-downloads.adblockplus.org/easylistgermany+easylist.txt"
-      },
-      {
-        id: "00000000-0000-0000-0000-000000000030",
-        type: "circumvention",
-        title: "ABP filters",
-        homepage: "https://github.com/abp-filters/abp-filters-anti-cv",
-        url: "http://localhost:3003/anti-cv-subscription.txt",
-        mv2_url: "http://localhost:3003/mv2_anti-cv-subscription.txt",
-        diff_url: "http://localhost:3003/anti-cv-subscription_diff.json"
-        // no ".expires" property provided
-      },
-      {
-        id: "00000000-0000-0000-0000-000000000040",
-        type: "ads",
-        title: "Non DNR filters",
-        homepage: "http://localhost:3003/subscription-that-shouldnt-be-moved-to-dnr-world.txt",
-        url: "http://localhost:3003/subscription-that-shouldnt-be-moved-to-dnr-world.txt",
-        mv2_url: "http://localhost:3003/mv2_subscription-that-shouldnt-be-moved-to-dnr-world.txt"
-      },
-      {
-        id: "00000000-0000-0000-0000-000000000060",
-        type: "ads",
-        title: "Test MV3 Updatable Subscription",
-        homepage: "http://localhost:3003/updatable_subscription.txt",
-        diff_url: "http://localhost:3003/updatable_subscription/diff.json",
-        url: "http://localhost:3003/updatable_subscription.txt",
-        mv2_url: "http://localhost:3003/mv2_updatable_subscription.txt",
-        expires: "1 day",
-        privileged: true
-      },
-      {
-        id: "00000000-0000-0000-0000-000000000070",
-        type: "allowing",
-        title: "Subscripion that contains allowing filter for tests",
-        homepage: "TestsAllowingFilterAndSubscription",
-        url: "http://localhost:3000/subscription-with-allowing-filter.txt",
-        mv2_url: "http://localhost:3000/subscription-with-allowing-filter.txt"
-      },
-      {
-        id: "00000000-0000-0000-0000-000000000080",
-        languages: [
-          "afr"
-        ],
-        type: "ads",
-        title: "Subscription that is used to test of MV3 updates",
-        homepage: "SomeHomepage",
-        privileged: true,
-        url: "http://localhost:3003/mv3_diffurl_update.txt",
-        mv2_url: "http://localhost:3003/mv3_diffurl_update.txt",
-        diff_url: "http://localhost:3003/updatable_subscription/001.json",
-        expires: "4 days (update frequency)"
-      },
-      {
-        id: "00000000-0000-0000-0000-000000000090",
-        type: "ads",
-        title: "Subscription that is currently bundled but will be removed later",
-        url: "http://localhost:3000/currently-bundled-subscription.txt",
-        mv2_url: "http://localhost:3000/currently-bundled-subscription.txt"
-      }
-    ],
-    bundledSubscriptionsPath: "subscriptions"
-  };
+  startupInfo.bundledSubscriptionsPath = "subscriptions";
+  // `customMV3Subscriptions` is bundled as a json object by
+  // scripts/prepare-mv3-files.js
+  // eslint-disable-next-line no-undef
+  startupInfo.bundledSubscriptions = customMV3Subscriptions.filter(
+    // The update tests need this subscription to be removed
+    sub => sub.id != "00000000-0000-0000-0000-000000000092");
 }
 
 startupInfo.telemetry = {
