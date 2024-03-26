@@ -128,7 +128,7 @@ describe("Subscriptions", function() {
   });
 
   it("adds the anti-cv subscription using addDefaults", async function() {
-    setMinTimeout(this, 15000);
+    setMinTimeout(this, 10000);
 
     await EWE.subscriptions.addDefaults("en");
 
@@ -143,7 +143,7 @@ describe("Subscriptions", function() {
   });
 
   it("adds default live subscriptions", async function() {
-    setMinTimeout(this, 10000);
+    setMinTimeout(this, 15000);
 
     for (let sub of [subEasylistLive, subAntiCVLive, subAcceptableAdsLive]) {
       await EWE.subscriptions.add(isMV3() ? sub.url : sub.mv2_url);
