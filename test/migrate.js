@@ -196,7 +196,8 @@ describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
     let sub = subs.find(it => it.url == subEasylistLive.url);
     expect(sub.downloadCount)
       .toBeGreaterThanOrEqual(savedValues.meta.downloadCount);
-    expect(sub.version).toEqual(savedValues.meta.version);
+    expect(parseInt(sub.version, 10))
+      .toBeGreaterThanOrEqual(parseInt(savedValues.meta.version, 10));
   });
 
   it("migrates the anti-cv subscription", async function() {

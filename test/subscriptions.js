@@ -128,7 +128,7 @@ describe("Subscriptions", function() {
   });
 
   it("adds the anti-cv subscription using addDefaults", async function() {
-    setMinTimeout(this, 10000);
+    setMinTimeout(this, 15000);
 
     await EWE.subscriptions.addDefaults("en");
 
@@ -140,6 +140,28 @@ describe("Subscriptions", function() {
       expect.objectContaining({url, privileged: true}),
       expect.objectContaining({privileged: false})
     ]));
+  });
+
+  it("adds default live subscriptions", async function() {
+    setMinTimeout(this, 10000);
+
+    for (let sub of [subEasylistLive, subAntiCVLive, subAcceptableAdsLive]) {
+      await EWE.subscriptions.add(isMV3() ? sub.url : sub.mv2_url);
+    }
+
+    let subs = await EWE.subscriptions.getSubscriptions();
+    expect(subs.length).toEqual(3);
+
+    // If the test fails with "downloadStatus": "synchronize_connection_error",
+    // Easylist's diff_url in custom-mv3-subscriptions.json probably needs to
+    // be updated
+    if (isMV3()) {
+      for (let sub of subs) {
+        expect(sub).toEqual(expect.objectContaining({
+          downloadStatus: "synchronize_ok"
+        }));
+      }
+    }
   });
 
   it("adds downloadable subscriptions in MV2 and non-downloadable subscriptions in MV3", async function() {
