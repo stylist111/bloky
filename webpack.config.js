@@ -29,16 +29,17 @@ import CopyPlugin from "copy-webpack-plugin";
 import ExtensionReloader from "webpack-ext-reloader";
 import Dotenv from "dotenv-webpack";
 
-let dirname = path.dirname(url.fileURLToPath(import.meta.url));
-let htmlTemplate = path.join(dirname, "test", "template.html");
+const dirname = path.dirname(url.fileURLToPath(import.meta.url));
+const extensionPath = path.join(dirname, "test", "extension");
+const template = path.join(extensionPath, "template.html");
 const eweRegularConfigName = "engine";
 const eweCustomConfigName = "engine-subs";
 const eweDistPath = path.join(dirname, "dist");
 const eweRegularOutputPath = eweDistPath;
 const eweCustomOutputPath = path.join(eweDistPath, "ewe-subs");
-const eweTestSubscriptionsFile = "test/custom-subscriptions.json";
-const subscriptionsDir = path.join(dirname, "scriptsOutput", "rulesets");
-const fragmentFile = path.join(subscriptionsDir, "rulesets.json");
+const customSubscriptionsPath = path.join(dirname, "test", "custom-subscriptions.json");
+const scriptsOutputPath = path.join(dirname, "scriptsOutput");
+const rulesetsPath = path.join(scriptsOutputPath, "rulesets", "rulesets.json");
 const packageJsonPath = path.join(dirname, "package.json");
 
 const base = {
@@ -69,10 +70,10 @@ const mv3 = {
   ],
   misc: {
     host_permissions: ["<all_urls>"],
-    ...fs.existsSync(fragmentFile) ?
+    ...fs.existsSync(rulesetsPath) ?
       {
         declarative_net_request: JSON.parse(
-          fs.readFileSync(fragmentFile, "utf8"))
+          fs.readFileSync(rulesetsPath, "utf8"))
       } :
       {}
   },
@@ -181,7 +182,7 @@ export default (env = {}) => {
   let builds = [
     eweBuild(env, eweRegularConfigName, null,
              false, eweRegularOutputPath),
-    eweBuild(env, eweCustomConfigName, eweTestSubscriptionsFile,
+    eweBuild(env, eweCustomConfigName, customSubscriptionsPath,
              true, eweCustomOutputPath, [eweRegularConfigName])
   ];
 
@@ -225,41 +226,40 @@ export default (env = {}) => {
         filename: "functional.html",
         inject: "body",
         chunks: ["functional"],
-        template: htmlTemplate
+        template
       }),
       new HtmlWebpackPlugin({
         title: "Reload tests",
         filename: "reload.html",
         inject: "body",
         chunks: ["reload"],
-        template: htmlTemplate
+        template
       }),
       new HtmlWebpackPlugin({
         title: "Update tests",
         filename: "update.html",
         inject: "body",
         chunks: ["update"],
-        template: htmlTemplate
+        template
       }),
       new HtmlWebpackPlugin({
         title: "MV2 MV3 migrate tests",
         filename: "mv2-mv3-migrate.html",
         inject: "body",
         chunks: ["migrate"],
-        template: htmlTemplate
+        template
       }),
       new MiniCssExtractPlugin(),
       new GenerateJsonPlugin("manifest.json", manifest, null, 2),
       new CopyPlugin({
         patterns: [
           {from: "ewe-*", context: buildVariant.ewePath},
-          {from: path.join(dirname, "test", "background.js")},
-          {from: path.join(dirname, "test", "index.html")},
-          {from: path.join(dirname, "test", "options.html")},
-          {from: path.join(dirname, "test", "index-options.js")},
+          {from: path.join(extensionPath, "background.js")},
+          {from: path.join(extensionPath, "index.html")},
+          {from: path.join(extensionPath, "options.html")},
+          {from: path.join(extensionPath, "index-options.js")},
           ...buildVariant.manifestVersion >= 3 &&
-            fs.existsSync(path.join(dirname, "scriptsOutput")) ?
-            [{from: path.join(dirname, "scriptsOutput")}] : []
+            fs.existsSync(scriptsOutputPath) ? [{from: scriptsOutputPath}] : []
         ]
       }),
       ...commonPlugins()
