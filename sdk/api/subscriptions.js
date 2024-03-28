@@ -129,7 +129,13 @@ export async function hasAcceptableAdsEnabled() {
 /**
  * @ignore
  * @param {string} uiLanguage UI language
- * @return {Array<*>}
+ * @returns {{
+*   chosenSubscriptions: Subscription[],
+*   hasAA: boolean,
+*   hasAntiCV: boolean,
+*   hasCurrentLang: boolean,
+*   hasDefaultLang: boolean
+* }}
  */
 export function getDefaultSubscriptions(uiLanguage) {
   let hasCurrentLang = false;
@@ -898,7 +904,7 @@ export default {
   /**
    * Returns an array of MV2 to MV3 migration errors and the related
    * subscription.
-   * @return {Promise<array<Subscription, string>>} The migration errors.
+   * @return {Promise<Array<Subscription, string>>} The migration errors.
    */
   async getMigrationErrors() {
     return Prefs.migration_subscription_errors;
