@@ -146,21 +146,21 @@ async function runBrowserTests(processes) {
 
   let errors = [];
 
-  await Promise.all(
-    processes.map(
-      currentProcess => runnerDefinitions[currentProcess](
+  for (const process of processes) {
+    try {
+      await runnerDefinitions[process](
         bundle, browserFiles.map(
           file => path.relative(path.join(dirname, "test", "browser"), file)
-                  .replace(/\.js$/, "")
+                .replace(/\.js$/, "")
         )
-      )
-      // We need to convert rejected promise to a resolved one
-      // or the test will not let close the webdriver.
-      .catch(error => {
-        errors.push(error);
-      })
-    )
-  );
+      );
+    }
+    // We need to convert rejected promises to a resolved one
+    // or the test will not let the webdriver close.
+    catch (error) {
+      errors.push(error);
+    }
+  }
 
   if (errors.length > 0) {
     throw `Browser tests failed: ${errors.join(", ")}`;
