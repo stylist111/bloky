@@ -277,10 +277,10 @@ export default (env = {}) => {
       dependencies: [buildVariant.eweConfigName],
       mode: "development",
       entry: {
-        functional: path.join(dirname, "test", "functional.js"),
-        reload: path.join(dirname, "test", "reload-wrap.js"),
-        update: path.join(dirname, "test", "update-wrap.js"),
-        migrate: path.join(dirname, "test", "migrate-wrap.js")
+        functional: path.join(extensionPath, "functional.js"),
+        reload: path.join(extensionPath, "reload-wrap.js"),
+        update: path.join(extensionPath, "update-wrap.js"),
+        migrate: path.join(extensionPath, "migrate-wrap.js")
       },
       output: {
         path: path.resolve(dirname, "dist", buildVariant.outputPath),
