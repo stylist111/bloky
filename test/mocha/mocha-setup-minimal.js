@@ -15,7 +15,7 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {isMV3, isMV2CustomSubsExtension, isIncognito} from "../utils.js";
+import {isMV3, isIncognito} from "../utils.js";
 import {isConnected, isFuzzingServiceWorker} from "./mocha-runner.js";
 
 mocha.setup("bdd");
@@ -46,9 +46,6 @@ beforeEach(async function() {
   }, {
     id: "mv3",
     condition: () => isMV3()
-  }, {
-    id: "mv2-custom-subs",
-    condition: () => isMV2CustomSubsExtension()
   }, {
     id: "runner",
     condition: () => isConnected()

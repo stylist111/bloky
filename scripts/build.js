@@ -53,9 +53,8 @@ async function generateTypeDefs() {
   console.log("✅ Type definitions generated");
 }
 
-async function subsRun(args) {
+async function subsRunMV3(args) {
   let configNames = args["config-name"];
-  // we only need subs-run for test-mv3 at this point.
   if (configNames && !configNames.includes("test-mv3")) {
     return;
   }
@@ -71,7 +70,7 @@ async function subsRun(args) {
 
   try {
     console.log("Downloading bundled subscriptions...");
-    await runCommand("npm run subs-run");
+    await runCommand("npm run subs-run-mv3");
   }
   finally {
     if (isScriptInvokedFromCLI) {
@@ -108,9 +107,7 @@ export async function run() {
         })
         .option("config-name", {
           description: "Name of the configuration to use.",
-          choices: [
-            "engine", "engine-subs", "test-mv2", "test-mv2-custom", "test-mv3"
-          ],
+          choices: ["engine", "test-mv2", "test-mv3"],
           array: true
         })
         .option("no-devtool", {
@@ -127,7 +124,10 @@ export async function run() {
         })
         .parse();
 
-  await subsRun(args);
+  await subsRunMV3(args);
+  // subsRunMV3 cleans the whole scriptsOutput directory.
+  // That's why subs-run-mv2 needs to run afterwards
+  await runCommand("npm run subs-run-mv2");
   await build(args);
   await generateTypeDefs();
 }

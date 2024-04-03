@@ -18,6 +18,8 @@ Unreleased
 - Disabled static DNR rules no longer contribute to the disabled static DNR rule
   limit after the subscription is disabled or removed. (EE-356)
 - The wildcards in request rules are now working in MV3 as before 1.2.4. (EE-366)
+- Changed the default output of the scripts from `scriptsOutput/custom-subscriptions.json`
+  to `scriptsOutput/custom-mv3-subscriptions.json` (!1017)
 
 🌳 1.5.0 - 2024-03-06 🌳
 ========================

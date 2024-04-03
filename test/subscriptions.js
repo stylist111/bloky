@@ -28,7 +28,8 @@ import {addFilter, EWE, runInBackgroundPage, getTestEvents, clearTestEvents,
         expectTestEvents} from "./messaging.js";
 import {VALID_FILTER_TEXT, subAntiCVLocal, subTestUpdatable2,
         subEasylistLive, subTestCustom1, subTestCustom2, subAcceptableAdsLive,
-        subTestUpdatable1, subAntiCVLive, subTestNoDNR} from "./api-fixtures.js";
+        subTestUpdatable1, subAntiCVLive, subTestNoDNR, subTestAllowingFilter}
+  from "./api-fixtures.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 const VALID_SUBSCRIPTION_URL = subTestCustom1.url;
@@ -342,59 +343,24 @@ describe("Subscriptions", function() {
     }
   });
 
-  it("gets core recommendations [mv2-only] [mv2-custom-subs-skip]", async function() {
-    // In MV3, subscriptions must always be provided, so the core
-    // subscriptions are not used and this test doesn't apply.
+  it("gets core and custom recommendations [mv2-only]", async function() {
+    const expectedRecommendations = [
+      // core recommendations should at least contain the default subscriptions
+      subEasylistLive, subAcceptableAdsLive, subAntiCVLive,
+      // custom recommendation
+      subTestAllowingFilter
+    ];
+
     let result = await EWE.subscriptions.getRecommendations();
-    let {languages, title, type, mv2_url: url} = subEasylistLive;
-    expect(result).toEqual(expect.arrayContaining([
-      expect.objectContaining({languages, title, type, url})
-    ]));
 
-    for (let item of result) {
-      if (item.id) {
-        continue;
+    for (const subscription of expectedRecommendations) {
+      let {languages, title, type, mv2_url: url} = subscription;
+      if (!languages) {
+        languages = [];
       }
-      expect(item).toEqual({
-        languages: expect.any(Object),
-        title: expect.any(String),
-        type: expect.any(String),
-        url: expect.any(String),
-        mv2URL: expect.any(String)
-      });
-
-      for (let language of item.languages) {
-        expect(language).toEqual(expect.any(String));
-      }
-    }
-  });
-
-  it("gets recommendations from overridden subscriptions file [mv2-custom-subs-only]", async function() {
-    let result = await EWE.subscriptions.getRecommendations();
-    expect(result).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        languages: ["en"],
-        title: "TestSubscriptionEn",
-        type: "ads",
-        url: subEasylistLive.mv2_url
-      })
-    ]));
-
-    for (let item of result) {
-      if (item.id) {
-        continue;
-      }
-      expect(item).toEqual({
-        languages: expect.any(Object),
-        title: expect.any(String),
-        type: expect.any(String),
-        url: expect.any(String),
-        mv2URL: expect.any(String)
-      });
-
-      for (let language of item.languages) {
-        expect(language).toEqual(expect.any(String));
-      }
+      expect(result).toEqual(expect.arrayContaining([
+        expect.objectContaining({languages, title, type, url})
+      ]));
     }
   });
 
@@ -497,7 +463,7 @@ describe("Subscriptions", function() {
     setMinTimeout(this, isFuzzingServiceWorker() ? 30000 : 10000);
 
     if (isMV3()) {
-      const countableSubUrl = `${TEST_PAGES_URL}/subscription-with-allowing-filter.txt`;
+      const countableSubUrl = subTestAllowingFilter.url;
       const diffUpdatableSubUrl = subTestUpdatable1.url;
 
       await EWE.subscriptions.add(countableSubUrl);

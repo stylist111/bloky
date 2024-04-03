@@ -40,7 +40,7 @@ function parseArguments() {
     parser.version(false);
     parser.strict();
     parser.command("$0 <manifest> <browser> [version]", "", subparser => {
-      subparser.positional("manifest", {choices: ["v2", "v3", "v2-custom"]});
+      subparser.positional("manifest", {choices: ["v2", "v3"]});
       subparser.positional("browser", {choices: Object.keys(BROWSERS)});
       subparser.positional("version", {type: "string", default: "latest"});
     });
@@ -424,7 +424,7 @@ async function runReloadTests(
     // Reloading with an update has the same performance impact as
     // loading the first time. This is worst in incognito mode and
     // when an MV3 extension has many subscriptions and rulesets.
-    handle = await getHandle(driver, page, 25000);
+    handle = await getHandle(driver, page, 30000);
     try {
       results = await pollMessages(driver, handle, isMV3);
     }

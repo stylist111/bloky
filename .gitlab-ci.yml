@@ -239,12 +239,6 @@ func:v2:chromium:incognito:
     BROWSER: chromium latest
     TEST_PARAMS: v2 $BROWSER --incognito
 
-func:v2-subs:chromium:latest:
-  extends: .functional
-  variables:
-    BROWSER: chromium latest
-    TEST_PARAMS: v2-custom $BROWSER
-
 func:v2:chromium:oldest:
   extends: .functional
   variables:

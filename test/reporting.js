@@ -21,8 +21,8 @@ import expect from "expect";
 import {TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN,
         TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
 import {Page, Popup, setMinTimeout, waitForAssertion, isMV3, isEdge,
-        isMV2CustomSubsExtension, executeScript, getVisibleElement,
-        setEndpointResponse} from "./utils.js";
+        executeScript, getVisibleElement, setEndpointResponse}
+  from "./utils.js";
 import {wait} from "./polling.js";
 import {EWE, addFilter, runInBackgroundPage, getTestEvents, clearTestEvents,
         addOnBlockableListener, removeOnBlockableListener,
@@ -108,13 +108,6 @@ describe("Reporting", function() {
         2000,
         "No resource has been downloaded yet."
       );
-
-      // When using the MV2 custom subs extension, getFirstVersion() returns
-      // the creation date of that file, which may not be today.
-      // Returning here ensures at least that getFirstVersion() is not 0.
-      if (isMV2CustomSubsExtension()) {
-        return;
-      }
 
       let date = new Date();
       let today = date.toISOString().substring(0, 10).replace(/-/g, "");

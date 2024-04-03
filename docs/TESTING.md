@@ -97,7 +97,7 @@ rather than on the mechanisms behind these reactions.
 ### Run All Tests
 
 ```
-npm run build-then-test {v2|v3|v2-custom} {chromium|firefox|edge}
+npm run build-then-test {v2|v3} {chromium|firefox|edge}
 ```
 
 This script runs the test server and the test suite. You can also run each of
@@ -111,7 +111,7 @@ npm run test
 In order to pass additional arguments, use the following syntax:
 
 ```
-npm run build-then-test {v2|v3|v2-custom} {chromium|firefox|edge} -- --argName="{ARGUMENT}"
+npm run build-then-test {v2|v3} {chromium|firefox|edge} -- --argName="{ARGUMENT}"
 ```
 
 For example:
@@ -171,8 +171,6 @@ Notes:
 
 - test-mv2 contains a manifest version 2 extension, and test-mv3 contains a
 manifest version 3 extension.
-- test-mv2-custom contains a manifest version 2 extension using custom (test)
-subscriptions.
 - For the popup tests to work, you have to disable the browser's built-in popup
 blocking (on localhost).
 
@@ -187,7 +185,7 @@ can use on UI.
 For local runs you can trigger test runner to run tests you desire:
 
 ```
-npm test -- {v2|v3|v2-custom} {chromium|firefox|edge} [version|channel] [options]
+npm test -- {v2|v3} {chromium|firefox|edge} [version|channel] [options]
 ```
 
 Runner options need to be preceded by two dashes (`--`), for example
@@ -243,8 +241,6 @@ If multiple tags are applied to the same test, all are applied.
 #### The tags and their functionality
 
 - `[mv2-only]`: Only run this test when testing an MV2 extension.
-- `[mv2-custom-subs-only]`: Only run this test when testing an MV2 extension
-  that uses custom subscriptions.
 - `[mv3-only]`: Only run this test when testing an MV3 extension.
 - `[runner-only]`: Only run this test when the test is run using Selenium
   Webdriver (ie it is launched from the console using `npm test` script).
@@ -343,7 +339,7 @@ docker run --cpus=2 --memory=6g --shm-size=2g -it --entrypoint npm basic run tes
 
 ```
 docker build -t functional -f test/dockerfiles/functional.Dockerfile .
-docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" functional
+docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_PARAMS="{v2|v3} {chromium|firefox|edge}" functional
 ```
 
 Please notice that the TEST_PARAMS argument can also take the additional options

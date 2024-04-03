@@ -57,9 +57,8 @@ async function convert(inDir, outDir,
     fs.mkdirSync(repDir, {recursive: true});
   }
 
-  // check if custom-subscriptions.json file exists
   if (!fs.existsSync(recommendedSubscriptions)) {
-    throw new Error(`customs-subscriptions.json file (${recommendedSubscriptions}) does not exist.`);
+    throw new Error(`${recommendedSubscriptions} does not exist.`);
   }
 
   let customSubscriptions =
@@ -121,7 +120,6 @@ async function convert(inDir, outDir,
     }
   }
 
-  // re-write the custom-subscriptions.json file
   await fs.promises.writeFile(recommendedSubscriptions,
                               JSON.stringify(customSubscriptions, null, 2));
 
@@ -159,7 +157,7 @@ async function main() {
       alias: "s",
       type: "string",
       requiresArg: true,
-      description: "Path to the recommended subscriptions. The default is 'scriptsOutput/custom-subscriptions.json'"
+      description: "Path to the recommended subscriptions. The default is 'scriptsOutput/custom-mv3-subscriptions.json'"
     })
     .parse();
 

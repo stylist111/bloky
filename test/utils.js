@@ -628,11 +628,6 @@ export function isIncognito() {
   return incognito == "true";
 }
 
-export function isMV2CustomSubsExtension() {
-  let manifest = browser.runtime.getManifest();
-  return manifest.description.endsWith("custom subscriptions");
-}
-
 export async function writeFile(prefix, fileName, data) {
   return browser.storage.local.set({
     [prefix + fileName]: {

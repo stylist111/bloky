@@ -32,24 +32,20 @@ import Dotenv from "dotenv-webpack";
 const dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const extensionPath = path.join(dirname, "test", "extension");
 const template = path.join(extensionPath, "template.html");
-const eweRegularConfigName = "engine";
+const eweConfigName = "engine";
 const eweCustomConfigName = "engine-subs";
 const eweDistPath = path.join(dirname, "dist");
-const eweRegularOutputPath = eweDistPath;
 const eweCustomOutputPath = path.join(eweDistPath, "ewe-subs");
-const customSubscriptionsPath = path.join(dirname, "test", "custom-subscriptions.json");
 const scriptsOutputPath = path.join(dirname, "scriptsOutput");
+const customMV2SubscriptionsPath =
+  path.join(scriptsOutputPath, "custom-mv2-subscriptions.json");
 const rulesetsPath = path.join(scriptsOutputPath, "rulesets", "rulesets.json");
 const packageJsonPath = path.join(dirname, "package.json");
 
-const base = {
-  eweConfigName: eweRegularConfigName,
-  ewePath: eweRegularOutputPath
-};
-
 // Canonical Manifest V2
 const mv2 = {
-  ...base,
+  eweConfigName: eweCustomConfigName,
+  ewePath: eweCustomOutputPath,
   manifestVersion: 2,
   background: {scripts: ["ewe-api.js", "background.js"]},
   permissions: ["webRequestBlocking", "<all_urls>"],
@@ -61,7 +57,8 @@ const mv2 = {
 
 // Canonical Manifest V3
 const mv3 = {
-  ...base,
+  eweConfigName,
+  ewePath: eweDistPath,
   manifestVersion: 3,
   background: {service_worker: "background.js"},
   permissions: [
@@ -78,14 +75,6 @@ const mv3 = {
       {}
   },
   outputPath: "test-mv3"
-};
-
-// Manifest V2 + custom subscriptions list file
-const mv2Custom = {
-  ...mv2,
-  eweConfigName: eweCustomConfigName,
-  ewePath: eweCustomOutputPath,
-  outputPath: "test-mv2-custom"
 };
 
 function commonPlugins() {
@@ -180,20 +169,15 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath,
 
 export default (env = {}) => {
   let builds = [
-    eweBuild(env, eweRegularConfigName, null,
-             false, eweRegularOutputPath),
-    eweBuild(env, eweCustomConfigName, customSubscriptionsPath,
-             true, eweCustomOutputPath, [eweRegularConfigName])
+    eweBuild(env, eweConfigName, null, false, eweDistPath),
+    eweBuild(env, eweCustomConfigName, customMV2SubscriptionsPath,
+             true, eweCustomOutputPath, [eweConfigName])
   ];
 
   let extensionReloaderPort = 9090;
 
-  for (let buildVariant of [mv2, mv3, mv2Custom]) {
+  for (let buildVariant of [mv2, mv3]) {
     let description = `Manifest version: ${buildVariant.manifestVersion}`;
-    if (buildVariant.eweConfigName == eweCustomConfigName) {
-      description = `${description} - custom subscriptions`;
-    }
-
     let manifest = {
       name: "eyeo's WebExtension Ad-Filtering Solution Test Extension",
       version: "0.0.1",

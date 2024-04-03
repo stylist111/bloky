@@ -30,7 +30,7 @@ export const emptyDiffResponse = JSON.stringify({
 
 // 00000000-0000-0000-0000-00000000000X ids are used separately
 
-// Subscriptions listed in custom-mv3-subscriptions.json
+// Subscriptions listed in test/scripts/custom-subscriptions.json
 export const subTestCustom1 = {
   id: "00000000-0000-0000-0000-000000000010",
   type: "ads",
@@ -67,6 +67,27 @@ export const subTestNoDNR = {
   mv2_url: `${TEST_ADMIN_PAGES_URL}/mv2_subscription-that-shouldnt-be-moved-to-dnr-world.txt`
 };
 
+export const subTestUpdatable1 = {
+  id: "00000000-0000-0000-0000-000000000050",
+  type: "ads",
+  title: "Test MV3 Diff Updatable Subscription 1",
+  homepage: `${TEST_ADMIN_PAGES_URL}/updatable_subscription.txt`,
+  url: `${TEST_ADMIN_PAGES_URL}/updatable_subscription.txt`,
+  mv2_url: `${TEST_ADMIN_PAGES_URL}/mv2_updatable_subscription.txt`,
+  diff_url: `${TEST_ADMIN_PAGES_URL}/updatable_subscription/diff.json`,
+  expires: "1 day",
+  privileged: true
+};
+
+export const subTestAllowingFilter = {
+  id: "00000000-0000-0000-0000-000000000070",
+  type: "allowing",
+  title: "Subscription that contains allowing filter for tests",
+  homepage: "TestsAllowingFilterAndSubscription",
+  url: `${TEST_PAGES_URL}/subscription-with-allowing-filter.txt`,
+  mv2_url: `${TEST_PAGES_URL}/mv2_subscription-with-allowing-filter.txt`
+};
+
 export const subAntiCVLocal = {
   id: "00000000-0000-0000-0000-000000000100",
   type: "circumvention",
@@ -99,29 +120,8 @@ export const subAcceptableAdsLocal = {
   diff_url: `${TEST_ADMIN_PAGES_URL}/updatable_subscription/diff.json`
 };
 
-// Subscriptions listed in custom-subscriptions.json
-export const subAntiCVLive = {
-  id: "D4028CDD-3D39-4624-ACC7-8140F4EC3238",
-  type: "circumvention",
-  title: "ABP filters",
-  homepage: "https://github.com/abp-filters/abp-filters-anti-cv",
-  url: "https://easylist-downloads.adblockplus.org/v3/full/abp-filters-anti-cv.txt",
-  mv2_url: "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt"
-};
-
-// Subscriptions listed in custom-subscriptions.json and
-// custom-mv3.subscriptions.json
-export const subTestUpdatable1 = {
-  id: "00000000-0000-0000-0000-000000000050",
-  type: "ads",
-  title: "Test MV3 Diff Updatable Subscription 1",
-  homepage: `${TEST_ADMIN_PAGES_URL}/updatable_subscription.txt`,
-  url: `${TEST_ADMIN_PAGES_URL}/updatable_subscription.txt`,
-  mv2_url: `${TEST_ADMIN_PAGES_URL}/mv2_updatable_subscription.txt`,
-  diff_url: `${TEST_ADMIN_PAGES_URL}/updatable_subscription/diff.json`,
-  expires: "1 day",
-  privileged: true
-};
+// Subscriptions listed in test/scripts/custom-subscriptions.json and
+// core/data/subscriptions.json
 
 export const subEasylistLive = {
   id: "8C13E995-8F06-4927-BEA7-6C845FB7EEBF",
@@ -156,6 +156,16 @@ export const subAcceptableAdsLive = {
   homepage: "https://acceptableads.com/",
   url: "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt",
   mv2_url: "https://easylist-downloads.adblockplus.org/exceptionrules.txt"
+};
+
+// Subscriptions listed in core/data/subscriptions.json
+export const subAntiCVLive = {
+  id: "D4028CDD-3D39-4624-ACC7-8140F4EC3238",
+  type: "circumvention",
+  title: "ABP filters",
+  homepage: "https://github.com/abp-filters/abp-filters-anti-cv",
+  url: "https://easylist-downloads.adblockplus.org/v3/full/abp-filters-anti-cv.txt",
+  mv2_url: "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt"
 };
 
 // Subscriptions not listed anywhere else

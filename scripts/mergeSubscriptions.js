@@ -24,7 +24,7 @@ import {hideBin} from "yargs/helpers";
 import {filenameMv3} from "./initSubscriptions.js";
 import {isMain} from "./utils.js";
 
-export const filename = path.join("scriptsOutput", "custom-subscriptions.json");
+export const filename = path.join("scriptsOutput", "custom-mv3-subscriptions.json");
 
 export async function merge(fromFiles, toFile, space = 2) {
   let result = [];

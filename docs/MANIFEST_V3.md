@@ -162,12 +162,12 @@ scripts calls chain might look as follows:
 npm exec subs-init
 
 # merge all given subscription lists into
-# "scriptsOutput/custom-subscriptions.json"
+# "scriptsOutput/custom-mv3-subscriptions.json"
 # in this case, there is only one subscription list, so effectively it is just
 # renamed.
 npm exec subs-merge
 
-# download subscriptions defined in "scriptsOutput/custom-subscriptions.json" to
+# download subscriptions defined in "scriptsOutput/custom-mv3-subscriptions.json" to
 # "scriptsOutput/subscriptions"
 npm exec subs-fetch
 
@@ -222,7 +222,7 @@ Options:
 
 * `input`/`i`: Input file(s). Default: `"scriptsOutput/subscriptions_mv3.json"`
 * `output`/`o`: Output file. Default:
-  `"scriptsOutput/custom-subscriptions.json"`
+  `"scriptsOutput/custom-mv3-subscriptions.json"`
 * `space`/`s`: Number of spaces to be used for indentation in the output file.
   Default: `0`
 
@@ -247,7 +247,7 @@ npm exec subs-fetch -- [--input/-i input_file...]
 Options:
 
 * `input`/`i`: Input file(s). Default:
-  `"scriptsOutput/custom-subscriptions.json"`
+  `"scriptsOutput/custom-mv3-subscriptions.json"`
 * `output`/`o`: Output directory. Default: `"scriptsOutput/subscriptions"`
 * `ignoreFetchErrors`/`ife`: Whether to ignore fetching errors. This is useful
   when download URL might be unreliable. Default: `false`
@@ -288,7 +288,7 @@ Default: `false`
 * `report-output`/`O`: Report directory. Default: `"scriptsOutput/report"`
 * `recommended-subscriptions`/`s`: Path to the file with the recommended
 subscriptions. Usually should be the same value as the `--output` from
-`subs-merge`. Default: `"scriptsOutput/custom-subscriptions.json"`
+`subs-merge`. Default: `"scriptsOutput/custom-mv3-subscriptions.json"`
 
 Example:
 
@@ -329,16 +329,16 @@ run the above scripts to create a meaningful subset of data used in our tests.
 ### Custom subscriptions list
 
 The default provided subscriptions can be overridden by adding a file called
-`custom-subscriptions.json` in the `scriptsOutput` directory and then using the
+`custom-mv3-subscriptions.json` in the `scriptsOutput` directory and then using the
 following command:
-`npm run subs-merge -- [-i ...] -o $(pwd)/scriptsOutput/custom-subscriptions.json`
+`npm run subs-merge -- [-i ...] -o $(pwd)/scriptsOutput/custom-mv3-subscriptions.json`
 to merge the files.
 
 Note the following:
 
 * use `-i` argument to add a file to the list of input files if necessary
 * one can use `$(pwd)` on nix-based environments or
-  `../../custom-subscriptions.json` for convenience
+  `../../custom-mv3-subscriptions.json` for convenience
 * By default these scripts output ruleset files into a folder called
   `scriptsOutput/rulesets` and the full subscription files into
   `scriptsOutput/subscriptions`.
@@ -350,7 +350,7 @@ Examples:
 ```
 npm run subs-merge -- \
   -i /tmp/product-subscriptions.json \
-  -o $(pwd)/scriptsOutput/custom-subscriptions.json
+  -o $(pwd)/scriptsOutput/custom-mv3-subscriptions.json
 ```
 
 * merge two subscriptions files:
@@ -359,7 +359,7 @@ npm run subs-merge -- \
 npm run subs-merge -- \
   -i /tmp/product-subscriptions.json \
   -i /tmp/language_en-subscriptions.json \
-  -o $(pwd)/scriptsOutput/custom-subscriptions.json
+  -o $(pwd)/scriptsOutput/custom-mv3-subscriptions.json
 ```
 
 The scripts are also available via npm symlinks:

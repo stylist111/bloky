@@ -22,7 +22,7 @@ import {TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, SITEKEY,
 import {Page, Resource, executeScript, shouldBeLoaded, supportsWebBundle,
         waitForSubscriptionsToDownload, setMinTimeout, setEndpointResponse,
         isChromiumBased, waitForSubscriptionToBeSynchronized} from "./utils.js";
-import {subTestCustom1} from "./api-fixtures.js";
+import {subTestCustom1, subTestAllowingFilter} from "./api-fixtures.js";
 import {addFilter, EWE} from "./messaging.js";
 import browser from "webextension-polyfill";
 
@@ -503,7 +503,6 @@ describe("Blocking", function() {
 
     let url = "image.html";
     let allowingFilter = ["@@||localhost^$document"];
-    let subscriptionWithAllowingFilter = `${TEST_PAGES_URL}/subscription-with-allowing-filter.txt`;
     let resource = "image.png";
 
     // Add filter to show that allowlisting is working
@@ -511,11 +510,11 @@ describe("Blocking", function() {
     await browser.runtime.sendMessage({type: "ewe-test:subscribeTabsOnUpdated"});
 
     try {
-      await EWE.subscriptions.add(subscriptionWithAllowingFilter);
+      await EWE.subscriptions.add(subTestAllowingFilter.url);
       await waitForSubscriptionsToDownload();
       await expectResourceAllowedByFilter(url, resource, allowingFilter);
 
-      await EWE.subscriptions.disable(subscriptionWithAllowingFilter);
+      await EWE.subscriptions.disable(subTestAllowingFilter.url);
       await expectResourceBlocked(url, resource);
 
       await addFilter(allowingFilter[0]);

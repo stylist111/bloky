@@ -102,43 +102,42 @@ describe("Initialization", function() {
     ]);
   });
 
-  for (let [language, mv2subscriptionUrl, mv3subscriptionUrl, tags] of [
-    ["en", subEasylistLive.mv2_url, subEasylistLocal.url, "[fuzz]"],
-    ["de", subEasylistPlusGermanyLive.mv2_url, subEasylistPlusGermanyLive.url, ""]
+  for (let [language, languageSubscription, tags] of [
+    ["en", subEasylistLive, "[fuzz]"],
+    ["de", subEasylistPlusGermanyLive, ""]
   ]) {
     it(`configures default subscriptions for ${language} ${tags}`, async function() {
       // Sometimes saving to storage takes more time
       setMinTimeout(this, 20000);
 
       await EWE.subscriptions.addDefaults(language);
-
       let activeSubs = await EWE.subscriptions.getSubscriptions();
 
-      let expectedUrls;
-      if (isMV3()) {
-        expectedUrls = [mv3subscriptionUrl, subAcceptableAdsLive.url,
-                        subAntiCVLocal.url];
-        if (mv3subscriptionUrl == subEasylistLocal.url) {
-          expectedUrls.push(subEasylistLive.url);
-        }
+      let expectedSubs = [languageSubscription, subAcceptableAdsLive,
+                          subAntiCVLocal];
+      if (languageSubscription.url == subEasylistLive.url) {
+        expectedSubs.push(subEasylistLocal);
       }
-      else {
-        expectedUrls = [mv2subscriptionUrl, subAcceptableAdsLive.mv2_url,
-                        subAntiCVLive.mv2_url];
+      if (!isMV3()) {
+        expectedSubs.push(subAntiCVLive);
       }
 
-      expect(activeSubs).toEqual(
-        expect.arrayContaining(expectedUrls.map(
-          url => expect.objectContaining({url, enabled: true})
-        )));
+      expect(activeSubs).toEqual(expect.arrayContaining(
+        expectedSubs.map(sub => expect.objectContaining({
+          url: isMV3() ? sub.url : sub.mv2_url,
+          enabled: true
+        }))
+      ));
 
       for (let subscription of activeSubs) {
+        let expectedUrls =
+          expectedSubs.map(sub => isMV3() ? sub.url : sub.mv2_url);
         expect(expectedUrls).toContain(subscription.url);
       }
     });
   }
 
-  it("configures AA in default subscriptions from built-in adblockpluscore list", async function() {
+  it("configures AA in default subscriptions from built-in core list", async function() {
     let recommendations = await EWE.testing._recommendations();
 
     // Force load from the default list (core/data/subscriptions.json)

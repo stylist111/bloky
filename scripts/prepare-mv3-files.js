@@ -40,7 +40,7 @@ async function readFile(filePath) {
 }
 
 async function writeCustomMV3Subscriptions() {
-  let data = await readFile(path.join(process.cwd(), "test", "scripts", "custom-mv3-subscriptions.json"));
+  let data = await readFile(path.join(process.cwd(), "test", "scripts", "custom-subscriptions.json"));
   let text = `const customMV3Subscriptions = ${data.toString()};`;
   await fs.promises.writeFile(path.join(process.cwd(), "scriptsOutput", "custom-mv3-subscriptions.js"), text, {encoding: "utf-8"});
 }
@@ -76,10 +76,10 @@ export async function checkPreviousRun(subsInput, scriptsOutputDir,
 
 async function run() {
   let subsInput = path.join(
-    process.cwd(), "test", "scripts", "custom-mv3-subscriptions.json"
+    process.cwd(), "test", "scripts", "custom-subscriptions.json"
   );
   let scriptsOutputDir = path.join(process.cwd(), "scriptsOutput");
-  let subsOutput = path.join(scriptsOutputDir, "custom-subscriptions.json");
+  let subsOutput = path.join(scriptsOutputDir, "custom-mv3-subscriptions.json");
 
   if (await checkPreviousRun(subsInput, scriptsOutputDir, subsOutput)) {
     console.log("✅ Using already generated rulesets and subscriptions.");

@@ -46,7 +46,7 @@ describe("npm module", function() {
   });
 
   it("exposes scripts to be available on command line", async function() {
-    this.timeout(18000);
+    this.timeout(20000);
 
     let tmpOutDir = await fs.promises.mkdtemp(dirPath);
     process.chdir(tmpOutDir);

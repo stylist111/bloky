@@ -46,7 +46,7 @@ npm run test-server
 ## Run tests with test-runner
 
 ```
-npm test -- {v2|v3|v2-custom} {chromium|firefox|edge} [version|channel] --timeout 10000 --incognito
+npm test -- {v2|v3} {chromium|firefox|edge} [version|channel] --timeout 10000 --incognito
 ```
 
 ## Docker runs
@@ -62,7 +62,7 @@ docker run --cpus=2 --memory=6g --shm-size=2g -it --entrypoint npm basic run tes
 
 ```
 docker build -t functional -f test/dockerfiles/functional.Dockerfile .
-docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_PARAMS="{v2|v3|v2-custom} {chromium|firefox|edge}" functional
+docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_PARAMS="{v2|v3} {chromium|firefox|edge}" functional
 ```
 
 ### Build container with browser cached in it
@@ -106,13 +106,13 @@ npm run build
 npm run test-server
 npm run test-core
 npm run unittest
-npm test -- {v2|v3|v2-custom} {chromium|firefox|edge}
+npm test -- {v2|v3} {chromium|firefox|edge}
 ```
 
 ### Build and run tests
 
 ```
-npm run build-then-test {v2|v3|v2-custom} {chromium|firefox|edge}
+npm run build-then-test {v2|v3} {chromium|firefox|edge}
 ```
 
 ### Build and run a specific test

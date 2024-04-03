@@ -366,8 +366,8 @@ further information on these flags.
 In MV3 extensions (and the MV3 test extension), subscriptions are
 bundled statically at build time. The bundled subscriptions are based
 on [the custom subscriptions
-file](./test/scripts/custom-mv3-subscriptions.json). Bundled
-subscription are updated by the build script if this file changes.
+file](./test/scripts/custom-subscriptions.json). Bundled
+subscriptions are updated by the build script if this file changes.
 
 One case to look out for when working with bundled subscriptions in
 tests is that subscriptions are NOT re-fetched if their filters have
