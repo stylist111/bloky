@@ -55,7 +55,7 @@ export const defaults = Object.create({
   migration_filter_errors: [],
   migration_subscription_errors: [],
   migration_state: MIGRATED_TO_MV2,
-  edge_one_click_allowlisting_delay: 1000 // 1 s
+  edge_one_click_allowlisting_delay: 2000 // 1 s
 });
 
 export let Prefs = {
