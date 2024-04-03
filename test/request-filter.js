@@ -143,6 +143,24 @@ describe("Blocking", function() {
       .toBeBlocked();
   });
 
+  it("blocks the requests with wildcards in URL part", async function() {
+    // DNS mapping webext.com to 127.0.0.1 is configured
+    // for all Chromium-based browsers during the tests.
+    if (!isChromiumBased()) {
+      this.skip();
+    }
+
+    // The ".*" wildcard in URL part of request filter is interpreted as
+    // "dot followed a sequence of any characters" wildcard,
+    // not as "TLD wildcard" that is applied to domains list in content filters
+    // and in `$domain` option, so it's converted directly.
+    // The filters with ".*" wildcards are not converted into DNR rules.
+    await addFilter("||webext.*/image.png");
+    await new Page("http://webext.com:3000/image.html")
+      .expectResource("http://webext.com:3000/image.png")
+      .toBeBlocked();
+  });
+
   for (let testCase of [
     {name: "nested iframe", file: "nested-iframe.html", tags: "[fuzz]"},
     {name: "nested iframe using srcdoc", file: "nested-iframe-srcdoc.html"},

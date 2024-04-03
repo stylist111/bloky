@@ -17,6 +17,7 @@ Unreleased
   `"synchronize_diff_too_many_filters"`. (EE-356)
 - Disabled static DNR rules no longer contribute to the disabled static DNR rule
   limit after the subscription is disabled or removed. (EE-356)
+- The wildcards in request rules are now working in MV3 as before 1.2.4. (EE-366)
 
 🌳 1.5.0 - 2024-03-06 🌳
 ========================

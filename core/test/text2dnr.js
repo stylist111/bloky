@@ -699,10 +699,21 @@ describe("convertFilter", function() {
     });
 
     describe("wildcards", function() {
-      it("should ignore filters with wildcards in URL path", async function() {
+      it("should convert request filters with .* wildcards in URL path", async function() {
         await testRules(
-          ["example.*"],
-          []
+          ["example.*/image.png"],
+          [
+            {
+              action: {
+                type: "block"
+              },
+              condition: {
+                isUrlFilterCaseSensitive: false,
+                urlFilter: "example.*/image.png"
+              },
+              priority: 1000
+            }
+          ]
         );
       });
 

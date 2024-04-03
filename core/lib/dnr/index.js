@@ -169,14 +169,13 @@ function asDNR(parsedFilter) {
     };
 
 
-    // filter wildcards are not supported in DNR
-    // 1. URL part
-    if (urlFilter && hasWildcard(text)) {
-      return [];
-    }
-
+    // Filter TLD wildcards are not supported in DNR,
+    // However ".*" in URL part of request filters are interpreted as
+    // "dot followed by sequence of characters" and are supported by Chromium:
+    // https://developer.chrome.com/docs/extensions/reference/api/declarativeNetRequest#property-RuleCondition-urlFilter
+    // The TLD wildcards in domains list are not supported by Chromium
+    // and thus are not converted into DNR rules.
     if (filter.domains) {
-      // 2. $domain option part
       for (let domain of filter.domains.keys()) {
         if (hasWildcard(domain)) {
           return [];
