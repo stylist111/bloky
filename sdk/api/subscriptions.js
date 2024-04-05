@@ -519,6 +519,11 @@ function migrationNeeded() {
   return false;
 }
 
+/**
+ * @ignore
+ * @param {Subscription} subscription
+ * @param {string} error
+ */
 export function saveMigrationError(subscription, error) {
   let errors = Prefs.migration_subscription_errors;
   errors.push({subscription, error});
@@ -622,6 +627,8 @@ export default {
    * - `synchronize_connection_error` - An error has occurred when trying to
    *   download the subscription.
    * - `synchronize_invalid_url` - The subscription URL is invalid.
+   * - `synchronize_invalid_data` - The downloaded data does not have the
+   *   expected format.
    * - `synchronize_too_many_filters` - A custom user subscription cannot
    *   update because there aren't enough dynamic rules available.
    * - `synchronize_dnr_error` - Downloading succeeded but, an error occurred

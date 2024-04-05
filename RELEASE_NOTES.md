@@ -20,6 +20,14 @@ Unreleased
 - The wildcards in request rules are now working in MV3 as before 1.2.4. (EE-366)
 - Changed the default output of the scripts from `scriptsOutput/custom-subscriptions.json`
   to `scriptsOutput/custom-mv3-subscriptions.json` (!1017)
+- Fixed documentation errors. (!1021)
+  - `saveMigrationError` is not publicly accessible and should not have appeared
+    in the API docs.
+  - The snippets injection code example in the readme was incorrectly updated
+    suggesting that the parameters passed to `EWE.snippets.setSnippetLibrary`
+    had changed when they had not.
+  - Added the `synchronize_invalid_data` status to the documented list of values
+    for `downloadStatus` on subscriptions.
 
 🌳 1.5.0 - 2024-03-06 🌳
 ========================

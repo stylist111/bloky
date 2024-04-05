@@ -239,8 +239,11 @@ In order to enable support for [snippet filters][snippet-filters] you have to ge
 the [snippets library][snippets-project] separately and make it available to `EWE`:
 
 ```
-import {isolated, main} from "@eyeo/snippets";
-EWE.snippets.setLibrary({isolated, main});
+import * as snippets from "@eyeo/snippets";
+EWE.snippets.setLibrary({
+  injectedCode: snippets.main,
+  isolatedCode: snippets.isolated
+});
 ```
 
 The integration of the machine learning models is expected to be done by clients
