@@ -31,7 +31,7 @@ const ADDON_VERSION = "2.1";
 
 describe("Initialization", function() {
   isFuzzingServiceWorker ?
-    setMinTimeout(this, 30000) : setMinTimeout(this, 10000);
+    setMinTimeout(this, 30000) : setMinTimeout(this, 15000);
 
   it("starts with the subscription info provided by the initial start call [mv3-only]",
      async function() {

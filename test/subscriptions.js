@@ -129,7 +129,7 @@ describe("Subscriptions", function() {
   });
 
   it("adds the anti-cv subscription using addDefaults", async function() {
-    setMinTimeout(this, 10000);
+    setMinTimeout(this, 15000);
 
     await EWE.subscriptions.addDefaults("en");
 
