@@ -1,6 +1,9 @@
 Unreleased
 ==========
 
+🍥 1.6.0 - 2024-04-08 🍥
+========================
+
 ## General
 
 - Start generating type definitions and include type checks in CI. (!941)
