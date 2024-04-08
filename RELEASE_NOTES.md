@@ -3,23 +3,28 @@ Unreleased
 
 ## General
 
-- Start generating type definitions and include type checks in CI.
-- Remove core minification. (EE-314)
+- Start generating type definitions and include type checks in CI. (!941)
+- Remove unused minification build of the core project. (EE-314)
+- Changed the default output of the scripts from `scriptsOutput/custom-subscriptions.json`
+  to `scriptsOutput/custom-mv3-subscriptions.json` (!1017)
 
 ## Fixes
 
+- We now wait for 2 seconds more (configurable in
+  `Prefs.edge_one_click_allowlisting_delay`) in the one click allowlisting 
+  scenario on Edge to let it actually finish adding allowlisting DNR rules. 
+  This is an increase from 1 second. (EE-258)
 - No longer log an error to the console when the history state updates on a page
   where our content script is not injected, for example on an extension
   page. (EE-349)
-- No more events emitted for removed subscriptions. (EE-355)
+- Events are no longer emitted for removed subscriptions. (EE-355)
 - When a subscription update fails because the limit on disabled static DNR
   rules is reached, the subscription's download status will now be set to
-  `"synchronize_diff_too_many_filters"`. (EE-356)
+  `synchronize_diff_too_many_filters`. (EE-356)
 - Disabled static DNR rules no longer contribute to the disabled static DNR rule
   limit after the subscription is disabled or removed. (EE-356)
-- The wildcards in request rules are now working in MV3 as before 1.2.4. (EE-366)
-- Changed the default output of the scripts from `scriptsOutput/custom-subscriptions.json`
-  to `scriptsOutput/custom-mv3-subscriptions.json` (!1017)
+- The wildcards in the URL portion of request filters are now working in MV3 as 
+  before 1.2.4. This impacts the generation of DNR rules. (EE-366)
 - Fixed documentation errors. (!1021)
   - `saveMigrationError` is not publicly accessible and should not have appeared
     in the API docs.
