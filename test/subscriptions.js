@@ -154,12 +154,13 @@ describe("Subscriptions", function() {
     expect(subs.length).toEqual(3);
 
     // If the test fails with "downloadStatus": "synchronize_connection_error",
-    // Easylist's diff_url in custom-mv3-subscriptions.json probably needs to
-    // be updated
+    // the diff_url property from live subscriptions in
+    // test/scripts/custom-subscriptions.json probably needs to be updated
     if (isMV3()) {
       for (let sub of subs) {
         expect(sub).toEqual(expect.objectContaining({
-          downloadStatus: "synchronize_ok"
+          downloadStatus: "synchronize_ok",
+          diffURL: expect.stringMatching(/.*diff.*/)
         }));
       }
     }

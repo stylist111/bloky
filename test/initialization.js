@@ -22,7 +22,8 @@ import {setMinTimeout, isMV3} from "./utils.js";
 import {EWE, runInBackgroundPage} from "./messaging.js";
 import {subAntiCVLocal, subEasylistLocal, subEasylistLive,
         subEasylistPlusGermanyLive, subAcceptableAdsLive, subTestUpdatable2,
-        subTestCustom1, subTestCustom2, subTestCustom3, subAntiCVLive}
+        subTestCustom1, subTestCustom2, subTestCustom3, subAntiCVLive,
+        subAcceptableAdsLocal}
   from "./api-fixtures.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
@@ -52,7 +53,7 @@ describe("Initialization", function() {
              bundledSubscriptions: expect.arrayContaining([
                subTestCustom1, subTestCustom2, subTestCustom3,
                subEasylistLocal, subEasylistPlusGermanyLive,
-               subAntiCVLocal, subAcceptableAdsLive
+               subAntiCVLocal, subAcceptableAdsLocal
              ]),
              bundledSubscriptionsPath: "subscriptions"
            })
@@ -114,12 +115,9 @@ describe("Initialization", function() {
       let activeSubs = await EWE.subscriptions.getSubscriptions();
 
       let expectedSubs = [languageSubscription, subAcceptableAdsLive,
-                          subAntiCVLocal];
+                          subAntiCVLocal, subAntiCVLive];
       if (languageSubscription.url == subEasylistLive.url) {
         expectedSubs.push(subEasylistLocal);
-      }
-      if (!isMV3()) {
-        expectedSubs.push(subAntiCVLive);
       }
 
       expect(activeSubs).toEqual(expect.arrayContaining(

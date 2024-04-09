@@ -158,7 +158,6 @@ export const subAcceptableAdsLive = {
   mv2_url: "https://easylist-downloads.adblockplus.org/exceptionrules.txt"
 };
 
-// Subscriptions listed in core/data/subscriptions.json
 export const subAntiCVLive = {
   id: "D4028CDD-3D39-4624-ACC7-8140F4EC3238",
   type: "circumvention",
