@@ -104,14 +104,35 @@ describe("Blocking", function() {
     await new Page("srcdoc.html").expectResource("image.png").toBeLoaded();
   });
 
-  it("handles requests from service workers [mv2-only] [incognito-skip]", async function() {
+  it("blocks requests from service workers [incognito-skip]", async function() {
     // Firefox doesn't allow service workers in pages when in Incognito Mode
     // See: https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API
 
-    await addFilter(`|${TEST_PAGES_URL}/image.png^`);
+    await EWE.filters.add(`|${TEST_PAGES_URL}/image.png^`);
     new Page("service-worker.html");
     await new Resource("image.png").expectToBeBlocked();
-    await addFilter(`@@|${TEST_PAGES_URL}^$document`);
+  });
+
+  it("does not block allowlisted requests from service workers [incognito-skip]", async function() {
+    // Firefox doesn't allow service workers in pages when in Incognito Mode
+    // See: https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API
+
+    await EWE.filters.add([
+      `|${TEST_PAGES_URL}/image.png^`,
+      `@@|${TEST_PAGES_URL}/image.png^`
+    ]);
+    new Page("service-worker.html");
+    await new Resource("image.png").expectToBeLoaded();
+  });
+
+  it("does not block requests from service workers on an allowlisted frame [mv2-only] [incognito-skip]", async function() {
+    // Firefox doesn't allow service workers in pages when in Incognito Mode
+    // See: https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API
+
+    await EWE.filters.add([
+      `|${TEST_PAGES_URL}/image.png^`,
+      `@@|${TEST_PAGES_URL}^$document`
+    ]);
     new Page("service-worker.html");
     await new Resource("image.png").expectToBeLoaded();
   });
