@@ -1164,14 +1164,14 @@ describe("Reporting", function() {
       await setFeatureFlags({inlineCss: true});
 
       await checkLogging(
-        ["###inline-css-div {color:blue;}"],
+        ["###inline-css-div {color:#0000bb;}"],
         "elemhideEventOptions",
         "element-hiding.html",
         [{
           filter: {
-            ...expectedElemhideFilter("###inline-css-div {color:blue;}"),
+            ...expectedElemhideFilter("###inline-css-div {color:#0000bb;}"),
             type: "elemhideemulation",
-            css: {color: "blue"}
+            css: {color: "#0000bb"}
           },
           matchInfo: elemhideMatchInfo,
           request: expectedRequestRelativeUrl("element-hiding.html")

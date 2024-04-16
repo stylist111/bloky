@@ -26,12 +26,12 @@
 const {
   contentTypes, RESOURCE_TYPES, CONTEXT_TYPES
 } = require("./contentTypes");
-const {CONTENT_FILTER} = require("./filters");
+const {CONTENT_FILTER, parse, FilterParsingError} = require("./filters");
 const {Pattern} = require("./patterns");
 const {parseDomains, domainSuffixes, isValidDomainWildcard,
        hasWildcard, matchesWildcards} = require("./url");
-const {parse, FilterParsingError} = require("./filters");
 const {isFeatureEnabled} = require("./features.js");
+const {verifyCSSProperties} = require("./filters/inlineCssValidation");
 
 const {resources} = require("../data/resources.js");
 
@@ -933,34 +933,39 @@ exports.ContentFilter.fromText = function(text, domains, type, body) {
   }
 
   let selector = body;
-  let action;
+  let propertiesList;
+  let css = null;
+  let remove = false;
 
-  let actionExtractingResult = /^(.*) ({[^{}]*})$/.exec(body);
-  if (actionExtractingResult) {
-    [, selector, action] = actionExtractingResult;
+  if (selector.startsWith("@") && isFeatureEnabled("inlineCss")) {
+    return new InvalidFilter(text, "filter_elemhide_invalid_selector");
   }
 
-  let remove = action && action.toLowerCase().includes("remove:true;");
+  let propertiesListExtractingResult = /^(.*[^ ]) +{([^{]*)}$/.exec(body);
+  if (propertiesListExtractingResult) {
+    [, selector, propertiesList] = propertiesListExtractingResult;
+    propertiesList = propertiesList.toLowerCase();
+    remove = propertiesList.includes("remove:true;");
+
+    if (!remove) {
+      if (!isFeatureEnabled("inlineCss")) {
+        return new InvalidFilter(text, "filter_unknown_option");
+      }
+      css = extractCSSProperties(propertiesList);
+      if (!verifyCSSProperties(css)) {
+        return new InvalidFilter(text, "filter_elemhide_invalid_inline_css");
+      }
+    }
+  }
+
+
 
   if (type == "?") {
     if (!restrictedByDomain) {
       return new InvalidFilter(text, "filter_elemhideemulation_nodomain");
     }
 
-    if (remove) {
-      return new ElemHideEmulationFilter(text, domains, selector, remove);
-    }
-
-    if (action) {
-      if (!isFeatureEnabled("inlineCss")) {
-        return new InvalidFilter(text, "filter_unknown_option");
-      }
-
-      const css = extractCSSProperties(text);
-      return new ElemHideEmulationFilter(text, domains, selector, false, css);
-    }
-
-    return new ElemHideEmulationFilter(text, domains, selector, false);
+    return new ElemHideEmulationFilter(text, domains, selector, remove, css);
   }
 
   if (!restrictedByDomain &&
@@ -972,58 +977,57 @@ exports.ContentFilter.fromText = function(text, domains, type, body) {
     return new ElemHideException(text, domains, selector);
   }
 
-  if (remove) {
+  if (remove || css) {
     // Remove is only implemented for elemhide emulation filters, so if we want
     // it to work on an elemhide filter then it needs to instantiate an elemhide
     // emulation filter instead.
-    return new ElemHideEmulationFilter(text, domains, selector, remove);
-  }
-
-  if (action) {
-    if (!isFeatureEnabled("inlineCss")) {
-      return new InvalidFilter(text, "filter_unknown_option");
-    }
-
-    const css = extractCSSProperties(text);
-    return new ElemHideEmulationFilter(text, domains, selector, false, css);
+    //
+    // Inline CSS is also currently only implemented for
+    // ElemHideEmulationFilter, but should be implemented for normal
+    // ElemHideFilter later.
+    return new ElemHideEmulationFilter(text, domains, selector, remove, css);
   }
 
   return new ElemHideFilter(text, domains, selector);
 };
 
-const getTextInsideTrailingCurlyBraces = filter => {
-  const lastCharacter = filter.charAt(filter.length - 1);
-  if (lastCharacter !== "}") {
-    return null;
-  }
+function extractCSSProperties(propertiesList) {
+  const importantFlag = "!important";
 
-  const openingBraceIndex = filter.lastIndexOf("{");
-  const closingBraceIndex = filter.length - 1;
+  const properties = propertiesList.split(";");
+  let css = Object.create(null);
 
-  return filter.substring(openingBraceIndex + 1, closingBraceIndex);
-};
-
-const extractCSSProperties = filter => {
-  const curlyBraceText = getTextInsideTrailingCurlyBraces(filter);
-
-  if (!curlyBraceText) {
-    return null;
-  }
-
-  const cssRules = curlyBraceText.split(";");
-  const properties = {};
-
-  for (const rule of cssRules) {
-    if (!rule) {
+  for (const property of properties) {
+    if (!property) {
       continue;
     }
 
-    const [key, value] = rule.split(":");
-    properties[key] = value;
+    let colonIndex = property.indexOf(":");
+
+    let name;
+    let value;
+
+    if (colonIndex < 0) {
+      name = property;
+      value = "";
+    }
+    else {
+      name = property.substring(0, colonIndex);
+      value = property.substring(colonIndex + 1);
+    }
+
+    name = name.trim();
+    value = value.trim();
+
+    if (value.endsWith(importantFlag)) {
+      value = value.substring(0, value.length - importantFlag.length).trimEnd();
+    }
+
+    css[name] = value;
   }
 
-  return properties;
-};
+  return css;
+}
 
 let ElemHideBase =
 /**

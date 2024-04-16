@@ -26,6 +26,7 @@ const {Filter, InvalidFilter, CommentFilter, ActiveFilter, URLFilter,
        ElemHideFilter, ElemHideException, ElemHideEmulationFilter,
        SnippetFilter, isActiveFilter} = require(LIB_FOLDER + "/filterClasses");
 const {FilterState} = require(LIB_FOLDER + "/filterState");
+const {setFeatureFlags} = require(LIB_FOLDER + "/features.js");
 
 describe("Filter classes", function() {
   beforeEach(function() {
@@ -101,6 +102,17 @@ describe("Filter classes", function() {
         result.push("selector=" + filter.selector);
         if (filter instanceof ElemHideEmulationFilter) {
           result.push("remove=" + filter.remove);
+          if (filter.css) {
+            let css = "{";
+            for (let cssPropertyName in filter.css) {
+              css += `${cssPropertyName}:${filter.css[cssPropertyName]};`;
+            }
+            css += "}";
+            result.push("css=" + css);
+          }
+          else {
+            result.push("css=null");
+          }
         }
       }
       else if (filter instanceof SnippetFilter) {
@@ -161,6 +173,7 @@ describe("Filter classes", function() {
     }
     if (type == "elemhideemulation") {
       addProperty("remove", "false");
+      addProperty("css", "null");
     }
     if (type == "snippet") {
       addProperty("scriptDomains", "");
@@ -475,6 +488,120 @@ describe("Filter classes", function() {
     );
   });
 
+  it("Inline CSS filters", function() {
+    setFeatureFlags({inlineCss: true});
+
+    compareFilter(
+      "foo.com#?##banner {margin:0}", [
+        "type=elemhideemulation",
+        "selectorDomains=foo.com",
+        "selector=#banner",
+        "domains=foo.com",
+        "css={margin:0;}"
+      ]
+    );
+
+    compareFilter(
+      "foo.com#?##banner {margin:0 0 auto unset}", [
+        "type=elemhideemulation",
+        "selectorDomains=foo.com",
+        "selector=#banner",
+        "domains=foo.com",
+        "css={margin:0 0 auto unset;}"
+      ]
+    );
+
+    compareFilter(
+      "foo.com#?##banner  {  background   : #00ff00  }", [
+        "type=elemhideemulation",
+        "selectorDomains=foo.com",
+        "selector=#banner",
+        "domains=foo.com",
+        "css={background:#00ff00;}"
+      ]
+    );
+
+    compareFilter(
+      "foo.com#?##banner {background:#00ff00 !important}", [
+        "type=elemhideemulation",
+        "selectorDomains=foo.com",
+        "selector=#banner",
+        "domains=foo.com",
+        "css={background:#00ff00;}"
+      ]
+    );
+
+    compareFilter(
+      "foo.com##@font-face", [
+        "type=invalid",
+        "reason=filter_elemhide_invalid_selector"
+      ]
+    );
+
+    compareFilter(
+      "foo.com#?#.advert {}", [
+        "type=invalid",
+        "reason=filter_elemhide_invalid_inline_css"
+      ]
+    );
+
+    compareFilter(
+      "foo.com#?#.advert {--custom-property:0}", [
+        "type=invalid",
+        "reason=filter_elemhide_invalid_inline_css"
+      ]
+    );
+
+    compareFilter(
+      "foo.com#?#.advert {margin\\}suspicious-property:0}", [
+        "type=invalid",
+        "reason=filter_elemhide_invalid_inline_css"
+      ]
+    );
+
+    compareFilter(
+      "foo.com#?#.advert {background}", [
+        "type=invalid",
+        "reason=filter_elemhide_invalid_inline_css"
+      ]
+    );
+
+    compareFilter(
+      "foo.com#?#.advert {margin:0;background:url(http://example.com)}", [
+        "type=invalid",
+        "reason=filter_elemhide_invalid_inline_css"
+      ]
+    );
+
+    compareFilter(
+      "foo.com#?#.advert {content:\"Hello\"}", [
+        "type=invalid",
+        "reason=filter_elemhide_invalid_inline_css"
+      ]
+    );
+
+    compareFilter(
+      "foo.com#?#.advert {margin:something-malicious-and12px}", [
+        "type=invalid",
+        "reason=filter_elemhide_invalid_inline_css"
+      ]
+    );
+
+    compareFilter(
+      "foo.com#?#.advert {margin:12pxand-something-malicious}", [
+        "type=invalid",
+        "reason=filter_elemhide_invalid_inline_css"
+      ]
+    );
+
+    compareFilter(
+      "foo.com#?##banner {margin:0 0 auto invalid}", [
+        "type=invalid",
+        "reason=filter_elemhide_invalid_inline_css"
+      ]
+    );
+  });
+
   it("Snippet filters", function() {
     compareFilter("foo.com#$#abc", ["type=snippet", "scriptDomains=foo.com", "script=abc", "domains=foo.com"]);
     compareFilter("foo.com,~bar.com#$#abc", ["type=snippet", "scriptDomains=foo.com", "script=abc", "domains=foo.com|~bar.com"]);
@@ -518,6 +645,11 @@ describe("Filter classes", function() {
     // Element Hiding Emulation with inline CSS removes "!important" property from values
     assert.equal(Filter.normalize("domain.com#?#selector {margin-bottom: 0px !important}"),
                  "domain.com#?#selector {margin-bottom:0px;}");
+
+    // Element Hiding Emulation with inline CSS removes spaces around property
+    // values, but not inside the values.
+    assert.equal(Filter.normalize("domain.com#?#selector { margin : 0px 0px auto 1em }"),
+                 "domain.com#?#selector {margin:0px 0px auto 1em;}");
 
     // Wildcard: "*" is allowed
     assert.equal(Filter.normalize("   domain.*#?# # sele ctor   "),

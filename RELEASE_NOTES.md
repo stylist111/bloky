@@ -1,6 +1,20 @@
 Unreleased
 ==========
 
+## General
+
+- Restrict the syntax for inline CSS filters to only values known to be
+  safe. Inline CSS filters are still restricted to privileged filter lists, and
+  are still behind a feature flag which disables them by default. (EE-341)
+  - Two new reasons have been added for `InvalidFilter`
+    - `filter_elemhide_invalid_selector` indicates that an element hiding or
+      element hiding emulation filter's selector is invalid. Currently,
+      selectors that begin with an `@` are considered invalid.
+    - `filter_elemhide_invalid_inline_css` indicates that the inline CSS is
+      invalid. This could be from using invalid syntax, or by using a CSS value
+      which is not allowed.
+  - See the filter syntax spec for details on which values are allowed: https://gitlab.com/eyeo/adblockplus/ad-filtering-working-group/-/blob/da0f0d97a5e7b4717788676c6c0091cdd1ec8bee/filter-syntax.md#element-hiding
+
 🍥 1.6.0 - 2024-04-08 🍥
 ========================
 
