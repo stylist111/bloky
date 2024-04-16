@@ -26,6 +26,17 @@ import url from "url";
 let dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
 export function bypassCache(req, res, next) {
+  // don't cache the images
+  if (req.path.includes(".png")) {
+    res.set({
+      "Pragma-directive": "no-cache",
+      "Cache-directive": "no-cache",
+      "Cache-control": "no-cache, max-age=0",
+      "Pragma": "no-cache",
+      "Expires": "0"
+    });
+  }
+
   let userAgent = req.get("User-Agent");
   // We also want to avoid caching of the webbundle for the purpose of testing
   if ((userAgent && userAgent.includes("Gecko/") && req.path == "/csp.html") ||
