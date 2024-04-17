@@ -323,54 +323,53 @@ func:v3:edge:latest:
   extends: .functional
   stage: test
   script:
-    - docker run $DOCKER_OPTIONS -e TEST_PARAMS="$TEST_PARAMS --testKinds functional --grep $TEST_SUITE" $FUNCTIONAL_IMAGE
+    - docker run $DOCKER_OPTIONS -e TEST_SUITES="$TEST_SUITES" -e TEST_PARAMS="$TEST_PARAMS" --entrypoint "test/dockerfiles/isolated-entrypoint.sh" $FUNCTIONAL_IMAGE
   rules:
     - !reference [.checktests-run, rules]
 
 .functional-isolated-mv3:
   extends: .functional-isolated
-  parallel:
-    matrix:
-      - TEST_SUITE:
-        - "Initialization"
-        - "Console.logging"
-        - "Endpoint.manipulation"
-        - "Allowlisting"
-        - "Element.Hiding"
-        - "Snippets"
-        - "Notifications"
-        - "^Blocking"
-        - "Reporting"
-        - "Subscriptions"
-        - "Filter.list.updates"
-        - "Subscription.events"
-        - "^Filters"
-        - "Subscribe"
-        - "Pop-up.blocking"
-        # The jobs below only run in MV3
-        - "MV3.Service.Workers"
-        - "Synchronization"
+  variables:
+    # > removes interior line-breaks 
+    # - removes the line-break at the end of TEST_SUITES
+    TEST_SUITES: >-
+      Initialization
+      Console.logging
+      Endpoint.manipulation
+      Allowlisting
+      Element.Hiding
+      Snippets
+      ^Blocking
+      Notifications
+      Reporting
+      Subscriptions
+      Filter.list.updates
+      Subscription.events
+      ^Filters
+      Subscribe
+      Pop-up.blocking
+      MV3.Service.Workers
+      Synchronization
 
 .functional-isolated-mv2:
   extends: .functional-isolated
-  parallel:
-    matrix:
-      - TEST_SUITE:
-        - "Initialization"
-        - "Console.logging"
-        - "Endpoint.manipulation"
-        - "Allowlisting"
-        - "Element.Hiding"
-        - "Snippets"
-        - "Notifications"
-        - "^Blocking"
-        - "Reporting"
-        - "Subscriptions"
-        - "Filter.list.updates"
-        - "Subscription.events"
-        - "^Filters"
-        - "Subscribe"
-        - "Pop-up.blocking"
+  variables:
+    TEST_SUITES: >-
+      Initialization
+      Console.logging
+      Endpoint.manipulation
+      Allowlisting
+      Element.Hiding
+      Snippets
+      ^Blocking
+      Notifications
+      Reporting
+      Subscriptions
+      Filter.list.updates
+      Subscription.events
+      ^Filters
+      Subscribe
+      Pop-up.blocking
 
 fi:v3:chromium:latest:
   extends: .functional-isolated-mv3

@@ -98,6 +98,13 @@ docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg
 docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_PARAMS="v3 chromium" -e TEST_RUNS=10 functional
 ```
 
+### Functional Isolated Tests
+
+```
+docker build -t functional -f test/dockerfiles/functional.Dockerfile .
+docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_SUITES="suite_1 suite_2" -e TEST_PARAMS="v3 chromium" --entrypoint test/dockerfiles/isolated-entrypoint.sh functional
+```
+
 ## I just want to run the tests on my machine, give me the command
 
 ```

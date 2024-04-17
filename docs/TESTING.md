@@ -510,3 +510,15 @@ tests are good quality (no flaky and independent from each other)
 
 You can also use our [webext sdk cheat sheet](TESTING_CHEAT_SHEET.md) for short
 version of commands commonly used by webext devs.
+
+### Functional Isolated Tests
+
+Isolated tests run the tests one-by-one, which prevents them potentially intefering
+with each other if they are run concurrently.
+
+To run test suites locally in isolation, run the following docker commands:
+
+```
+docker build -t functional -f test/dockerfiles/functional.Dockerfile .
+docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_SUITES="suite_1 suite_2" -e TEST_PARAMS="v3 chromium" --entrypoint test/dockerfiles/isolated-entrypoint.sh functional
+```
