@@ -4,7 +4,7 @@ The Manifest V3 request blocking mechanism, _DeclarativeNetRequest_ (DNR)
 requires a set of static rules that are provided when the extension is installed
 or updated. The static rules cannot be changed without an extension update, only
 enabled or disabled. Also in Manifest V3, there is a dynamic ruleset that allow
-adding persistent filtering rules, ruleset that has a limit of 5000 rules.
+adding persistent filtering rules, ruleset that has a limit of 30000 rules.
 
 In Manifest V2 all the subscriptions have a URL where to download the
 filter list from. The filter list contains all the filters for the
@@ -38,8 +38,11 @@ The updates in Manifest V3 have a more complicated process. They are constrained
 by the filter list delivery system that will provide update data built from the
 original state and the updated version of the sources, and the limitations on
 the number of rules that are imposed by the _DeclarativeNetRequest_ API, which
-currently are a maxium 5000 dynamic rules. It's required to use Chrome 111+ in
-order to have a function that allows to disable rules in a static rulesets.
+currently are a maximum 30000 dynamic rules, and 5000 disabled static rules.
+It's required to use Chrome 111+ in order to have a function that allows to
+disable rules in a static rulesets. However, Chrome 124+ is actually required
+to properly load static rulesets. See this [related Chromium bug](https://issues.chromium.org/issues/40285683)
+for more info.
 
 In Manifest v3 there are two update paths available: DiffUpdatable subscriptions
 and FullUpdatable subscriptions.

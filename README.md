@@ -65,7 +65,7 @@ Manifest V2:
 
 Manifest V3:
 
-* Chromium 111 and latest
+* Chromium 124 and latest
 * Edge latest
 
 ### Manifest for V2

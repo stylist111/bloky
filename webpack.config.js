@@ -67,6 +67,7 @@ const mv3 = {
   ],
   misc: {
     host_permissions: ["<all_urls>"],
+    minimum_chrome_version: "124",
     ...fs.existsSync(rulesetsPath) ?
       {
         declarative_net_request: JSON.parse(
