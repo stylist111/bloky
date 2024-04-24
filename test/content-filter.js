@@ -140,7 +140,7 @@ describe("Element Hiding", function() {
 
       // simulate a fake signature injection
       let key = "ewe:sitekeys";
-      let data = await browser.storage.session.get(key);
+      let data = await browser.storage.local.get(key);
       data = data[key];
       expect(data).not.toBeNull();
       expect(data[tabId]).not.toBeNull(); // valid sitekey
@@ -154,7 +154,7 @@ describe("Element Hiding", function() {
       data[fakeTabId] = fakeFrameIdMap;
       let obj = {};
       obj[key] = data;
-      await browser.storage.session.set(obj);
+      await browser.storage.local.set(obj);
 
       await EWE.testing.clearAllSitekeys(false);
 

@@ -21,6 +21,8 @@ import {isRunningInServiceWorker} from "./browser-features.js";
 import {trace} from "./debugging.js";
 import {PersistentState} from "./persistence.js";
 
+const TOP_LEVEL_FRAME_ID = 0;
+
 /**
  * All known sitekeys, that can be looked up by
  * `tabId`, and then by `frameId`, and then by `url`
@@ -28,7 +30,7 @@ import {PersistentState} from "./persistence.js";
  *
  * @type {Object}
  */
-let sitekeys = new PersistentState("ewe:sitekeys");
+let sitekeys = new PersistentState("ewe:sitekeys", browser.storage.local);
 let startupPromise;
 let listeners = [];
 
@@ -53,8 +55,16 @@ function notifyAllSitekeys() {
   }
 }
 
-function onHeadersReceived({tabId, frameId, url, responseHeaders}) {
-  trace({tabId, frameId, url, responseHeaders});
+function onHeadersReceived({tabId, frameId, url, responseHeaders, frameType}) {
+  trace({tabId, frameId, url, responseHeaders, frameType});
+
+  if (frameId == TOP_LEVEL_FRAME_ID &&
+     (frameType == null || frameType == "outermost_frame")) {
+    // "frameType" is supported starting Chromium 106+.
+    // If it's a new navigation and top level frame headers received,
+    // we don't need sitekeys for all the previous frames of the tab.
+    clearTabSitekeys(tabId);
+  }
 
   let sitekey = setSitekeyFromHeaders(tabId, frameId, url, responseHeaders);
   if (sitekey) {

@@ -25,6 +25,7 @@ import {Page, Resource, executeScript, shouldBeLoaded, supportsWebBundle,
 import {subTestCustom1, subTestAllowingFilter} from "./api-fixtures.js";
 import {addFilter, EWE} from "./messaging.js";
 import browser from "webextension-polyfill";
+import sinon from "sinon/pkg/sinon.js";
 
 describe("Blocking", function() {
   it("blocks a request using user filters [fuzz]", async function() {
@@ -392,65 +393,151 @@ describe("Blocking", function() {
        });
   });
 
-  describe("Sitekey allowlisting [mv2-only]", function() {
-    it("does not block a request", async function() {
-      await addFilter("/image.png^$image");
-      await addFilter(`@@$sitekey=${SITEKEY}`);
-      let page = new Page("image.html?sitekey=1");
-      await page.expectResource("image.png").toBeLoaded();
+  describe("Sitekey allowlisting", function() {
+    describe("on MV3 [mv3-only]", function() {
+      async function fillSessionStorage(keys) {
+        const key = "ewe:test";
+
+        // b.s.s storage limit is 10 Mb, so
+        // we start filling from the largest power of 2, less than 10 Mb.
+        let currentValueSize = 8 * 1024 * 1024;
+        let i = 0;
+        while (true) {
+          let value = "0".repeat(currentValueSize);
+
+          try {
+            let thisKey = key + (i++);
+            keys.push(thisKey);
+            await EWE.testing._saveSessionStorage(thisKey, value);
+          }
+          catch (e) {
+            if (e.message.includes("Session storage quota bytes exceeded")) {
+              currentValueSize /= 2;
+              if (currentValueSize <= 16) {
+                // now we know we can't write one more pair of 16 characters
+                break;
+              }
+            }
+            else {
+              throw e;
+            }
+          }
+        }
+      }
+
+      it("saves the sitekeys independent of b.s.s limit reached", async function() {
+        setMinTimeout(this, 20000);
+
+        const sandbox = sinon.createSandbox();
+        sandbox.spy(console, "log");
+
+        let keys = [];
+
+        try {
+          // fill the `b.s.s` fully so the next write will fail
+          await fillSessionStorage(keys);
+
+          await new Page("image.html?sitekey=1").loaded;
+
+          // wait for saving to be finished and console output to be received
+          await new Promise(r => setTimeout(r, 1000));
+
+          // eslint-disable-next-line no-console
+          const calls = console.log.getCalls();
+          const possibleErrorOutput = calls.find(call =>
+            call.args.length > 3 &&
+            call.args[0].includes("error") &&
+            call.args[2].includes("ewe:sitekeys") &&
+            call.args[3].includes("Session storage quota bytes exceeded"));
+          expect(possibleErrorOutput).toBeUndefined();
+        }
+        finally {
+          await EWE.testing._removeSessionStorage(keys);
+          sandbox.restore();
+        }
+      });
     });
 
-    it("does not block a request from document", async function() {
-      await addFilter("/image.png^$image");
-      await addFilter(`@@$document,sitekey=${SITEKEY}`);
-      let page = new Page("image.html?sitekey=1");
-      await page.expectResource("image.png").toBeLoaded();
-    });
+    describe("on MV2 [mv2-only]", function() {
+      it("does not block a request", async function() {
+        await addFilter("/image.png^$image");
+        await addFilter(`@@$sitekey=${SITEKEY}`);
+        let page = new Page("image.html?sitekey=1");
+        await page.expectResource("image.png").toBeLoaded();
+      });
 
-    it("does not inject header", async function() {
-      await addFilter(CSP_FILTER);
-      await addFilter(`@@$csp,sitekey=${SITEKEY}`);
-      expect(await checkViolatedDirective("?sitekey=1")).toBeFalsy();
-    });
+      it("cleans the sitekeys before new navigation in existing tab", async function() {
+        await addFilter("/image.png^$image");
+        await addFilter(`@@$sitekey=${SITEKEY}`);
+        let page = new Page("image.html?sitekey=1");
+        await page.expectResource("image.png").toBeLoaded();
 
-    it("does not block a request from iframe", async function() {
-      await addFilter("/image.png^$image");
-      await addFilter(`@@$document,sitekey=${SITEKEY}`);
-      await new Page("iframe-sitekey.html").expectResource("image.png")
-        .toBeLoaded();
-    });
+        const tabId = await page.loaded;
+        const topFrameId = 0;
 
-    it("does not block a request after a reload", async function() {
-      await addFilter("/image.png^$image");
-      await addFilter(`@@$sitekey=${SITEKEY}`);
-      let page = new Page("image.html?sitekey=1");
-      await page.loaded;
-      page.reload();
-      await page.expectResource("image.png").toBeLoaded();
-    });
+        let sitekeys = (await EWE.testing._getSitekeys()).state;
+        expect(Object.keys(sitekeys[tabId]).length).toEqual(1);
+        expect(Object.keys(sitekeys[tabId][topFrameId]).length).toEqual(1);
 
-    it("blocks a request after a reload if sitekey filter was removed", async function() {
-      await addFilter("/image.png^$image");
-      await addFilter(`@@$sitekey=${SITEKEY}`);
-      let page = new Page("image.html?sitekey=1");
-      await page.expectResource("image.png").toBeLoaded();
+        await page.load("iframe.html?sitekey=1");
 
-      await EWE.filters.remove([`@@$sitekey=${SITEKEY}`]);
-      page.reload();
-      await page.expectResource("image.png").toBeBlocked();
-    });
+        sitekeys = (await EWE.testing._getSitekeys()).state;
+        expect(Object.keys(sitekeys[tabId]).length).toEqual(2);
+        expect(Object.keys(sitekeys[tabId][topFrameId]).length).toEqual(1);
+      });
 
-    it("injects header if sitekey signature is invalild", async function() {
-      await addFilter(CSP_FILTER);
-      await addFilter(`@@$csp,sitekey=${SITEKEY}`);
-      expect(await checkViolatedDirective("?invalid-sitekey=1")).toEqual("img-src");
-    });
+      it("does not block a request from document", async function() {
+        await addFilter("/image.png^$image");
+        await addFilter(`@@$document,sitekey=${SITEKEY}`);
+        let page = new Page("image.html?sitekey=1");
+        await page.expectResource("image.png").toBeLoaded();
+      });
 
-    it("blocks a request if sitekey signature is invalild", async function() {
-      await addFilter("/image.png^$image");
-      await addFilter(`@@$sitekey=${SITEKEY}`);
-      let page = new Page("image.html?invalid-sitekey=1");
-      await page.expectResource("image.png").toBeBlocked();
+      it("does not inject header", async function() {
+        await addFilter(CSP_FILTER);
+        await addFilter(`@@$csp,sitekey=${SITEKEY}`);
+        expect(await checkViolatedDirective("?sitekey=1")).toBeFalsy();
+      });
+
+      it("does not block a request from iframe", async function() {
+        await addFilter("/image.png^$image");
+        await addFilter(`@@$document,sitekey=${SITEKEY}`);
+        await new Page("iframe-sitekey.html").expectResource("image.png")
+          .toBeLoaded();
+      });
+
+      it("does not block a request after a reload", async function() {
+        await addFilter("/image.png^$image");
+        await addFilter(`@@$sitekey=${SITEKEY}`);
+        let page = new Page("image.html?sitekey=1");
+        await page.loaded;
+        page.reload();
+        await page.expectResource("image.png").toBeLoaded();
+      });
+
+      it("blocks a request after a reload if sitekey filter was removed", async function() {
+        await addFilter("/image.png^$image");
+        await addFilter(`@@$sitekey=${SITEKEY}`);
+        let page = new Page("image.html?sitekey=1");
+        await page.expectResource("image.png").toBeLoaded();
+
+        await EWE.filters.remove([`@@$sitekey=${SITEKEY}`]);
+        page.reload();
+        await page.expectResource("image.png").toBeBlocked();
+      });
+
+      it("injects header if sitekey signature is invalild", async function() {
+        await addFilter(CSP_FILTER);
+        await addFilter(`@@$csp,sitekey=${SITEKEY}`);
+        expect(await checkViolatedDirective("?invalid-sitekey=1")).toEqual("img-src");
+      });
+
+      it("blocks a request if sitekey signature is invalild", async function() {
+        await addFilter("/image.png^$image");
+        await addFilter(`@@$sitekey=${SITEKEY}`);
+        let page = new Page("image.html?invalid-sitekey=1");
+        await page.expectResource("image.png").toBeBlocked();
+      });
     });
   });
 

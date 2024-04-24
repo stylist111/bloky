@@ -15,6 +15,7 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import browser from "webextension-polyfill";
 import {Subscription, _clean as _cleanSubscriptionClassesCache}
   from "adblockpluscore/lib/subscriptionClasses.js";
 import {setRecommendations, recommendations}
@@ -308,5 +309,15 @@ export default {
   async _saveSubscriptionMigrationError(subscription, errorMessage) {
     await initializer.start();
     saveSubscriptionMigrationError(subscription, errorMessage);
+  },
+
+  async _saveSessionStorage(key, value) {
+    let obj = {};
+    obj[key] = value;
+    await browser.storage.session.set(obj);
+  },
+
+  async _removeSessionStorage(keys) {
+    await browser.storage.session.remove(keys);
   }
 };

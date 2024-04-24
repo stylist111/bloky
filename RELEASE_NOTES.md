@@ -15,6 +15,12 @@ Unreleased
       which is not allowed.
   - See the filter syntax spec for details on which values are allowed: https://gitlab.com/eyeo/adblockplus/ad-filtering-working-group/-/blob/da0f0d97a5e7b4717788676c6c0091cdd1ec8bee/filter-syntax.md#element-hiding
 
+## Fixes
+
+- We now save the sitekeys in `browser.storage.local` to avoid filling
+  `browser.storage.session` fully and clean the outdated frames
+  sitekeys early. (EE-64)
+
 🍥 1.6.0 - 2024-04-08 🍥
 ========================
 

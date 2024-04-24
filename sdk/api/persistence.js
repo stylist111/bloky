@@ -19,8 +19,9 @@ import browser from "./browser.js";
 import {mergeObjects} from "./set-operations.js";
 
 export class PersistentState {
-  constructor(storageKey) {
+  constructor(storageKey, storage = browser.storage.session) {
     this.storageKey = storageKey;
+    this.storage = storage;
     this.activeSaveActions = new Set();
     this.loaded = false;
 
@@ -36,7 +37,7 @@ export class PersistentState {
   }
 
   async load(savedStateCallback = null) {
-    let persistObj = await browser.storage.session.get(this.storageKey);
+    let persistObj = await this.storage.get(this.storageKey);
     if (!persistObj || !persistObj[this.storageKey]) {
       this.loaded = true;
       return;
@@ -57,7 +58,9 @@ export class PersistentState {
   async save() {
     let obj = {};
     obj[this.storageKey] = this.state;
-    return this._trackSaving(browser.storage.session.set(obj));
+    return this._trackSaving(this.storage.set(obj)
+      .catch(e => console.error("Failed to save the state for",
+                                this.storageKey, ": " + e.message)));
   }
 
   async awaitSavingComplete() {
