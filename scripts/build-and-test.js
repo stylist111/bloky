@@ -1,5 +1,5 @@
 import {run as runBuild} from "./build.js";
-import {run as runTests} from "../test/runner.js";
+import {run as runTests} from "../test/runners/functional.js";
 import {runTestServer, killTestServer} from "./test-server-manager.js";
 
 async function run() {

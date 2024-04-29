@@ -25,8 +25,9 @@ import yargs from "yargs";
 import webdriver from "selenium-webdriver";
 import {BROWSERS} from "@eyeo/get-browser-binary";
 
-import {isMain} from "../scripts/utils.js";
-import {runTestServer, killTestServer} from "../scripts/test-server-manager.js";
+import {isMain} from "../../scripts/utils.js";
+import {getHandle, switchToHandle, getDriver} from "./utils.js";
+import {runTestServer, killTestServer} from "../../scripts/test-server-manager.js";
 
 const isScriptInvokedFromCLI = isMain(import.meta.url);
 
@@ -124,37 +125,6 @@ function regexpFromGrep(grep) {
     }
   }
   return new RegExp(greppedString);
-}
-
-async function switchToHandle(driver, testFn) {
-  for (let handle of await driver.getAllWindowHandles()) {
-    let url;
-    try {
-      await driver.switchTo().window(handle);
-      url = await driver.getCurrentUrl();
-    }
-    catch (e) {
-      continue;
-    }
-
-    if (testFn(url)) {
-      return handle;
-    }
-  }
-}
-
-async function getHandle(driver, page, timeout = 8000) {
-  let url;
-  let handle = await driver.wait(() => switchToHandle(driver, handleUrl => {
-    if (!handleUrl) {
-      return false;
-    }
-
-    url = new URL(handleUrl);
-    return url.pathname == page;
-  }), timeout, `${page} did not open`);
-
-  return handle;
 }
 
 function manifestIsMV3(manifest) {
@@ -533,8 +503,7 @@ export async function run() {
 }
 
 async function runTests() {
-  let {manifest, browser, version, params, testKinds} =
-      parseArguments();
+  let {manifest, browser, version, params, testKinds} = parseArguments();
   let isMV3 = manifestIsMV3(manifest);
   // copy a targeted test web extension to a temporary directory `test-current`
   originalExtensionPath = path.resolve(process.cwd(), "dist", `test-m${manifest}`);
@@ -564,8 +533,7 @@ async function runTests() {
   if (!customBrowserBinary){
     // On Windows, Edge is assumed to be already installed
     if (browser != "edge" || process.platform != "win32") {
-      ({versionNumber} =
-            await BROWSERS[browser].installBrowser(version));
+      ({versionNumber} = await BROWSERS[browser].installBrowser(version));
       console.log(`Installed ${browser} ${versionNumber} ...`);
       majorVersion = parseInt(versionNumber.split(".")[0], 10);
     }
@@ -577,8 +545,7 @@ async function runTests() {
   // See https://bugs.chromium.org/p/chromium/issues/detail?id=1325792#c8
   // This was fixed in Chromium 116.
   if ((isMV3 || testKinds.includes("mv2-mv3-migrate")) &&
-      (browser == "chromium" || browser == "edge") &&
-      majorVersion < 116) {
+      (browser == "chromium" || browser == "edge") && majorVersion < 116) {
     extraArgs.push("auto-open-devtools-for-tabs");
   }
 
@@ -601,20 +568,17 @@ async function runTests() {
     insecure = true;
   }
 
-  let driver = await BROWSERS[browser].getDriver(
-    version,
-    {headless, extensionPaths, incognito, insecure,
-     extraArgs, customBrowserBinary});
-
-  let timeout = (params && typeof params.timeout != "undefined" ?
-    params.timeout : 200000);
-  await setMinDriverTimeout(driver, timeout);
-
   let results = {};
-
+  let driver;
+  const options = {headless, extensionPaths, incognito, insecure, extraArgs,
+                   customBrowserBinary};
   try {
-    let cap = await driver.getCapabilities();
-    console.log(`Browser used for tests: ${cap.getBrowserName()} ${cap.getBrowserVersion()}`);
+    driver = await getDriver(browser, version, options);
+
+    let timeout = (params && typeof params.timeout != "undefined" ?
+      params.timeout : 200000);
+    await setMinDriverTimeout(driver, timeout);
+
     if (incognito) {
       await BROWSERS[browser].enableExtensionInIncognito(
         driver, "eyeo's WebExtension Ad-Filtering Solution Test Extension");

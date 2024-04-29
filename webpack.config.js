@@ -30,17 +30,24 @@ import ExtensionReloader from "webpack-ext-reloader";
 import Dotenv from "dotenv-webpack";
 
 const dirname = path.dirname(url.fileURLToPath(import.meta.url));
-const extensionPath = path.join(dirname, "test", "extension");
-const template = path.join(extensionPath, "template.html");
+const extensionFunctionalPath = path.join(dirname, "test", "extension-functional");
+const extensionPerformancePath = path.join(dirname, "test", "extension-performance");
+const template = path.join(extensionFunctionalPath, "template.html");
 const eweConfigName = "engine";
 const eweCustomConfigName = "engine-subs";
 const eweDistPath = path.join(dirname, "dist");
 const eweCustomOutputPath = path.join(eweDistPath, "ewe-subs");
 const scriptsOutputPath = path.join(dirname, "scriptsOutput");
+const scriptsOutputMV3Path = path.join(dirname, "scriptsOutput", "test-mv3");
 const customMV2SubscriptionsPath =
   path.join(scriptsOutputPath, "custom-mv2-subscriptions.json");
-const rulesetsPath = path.join(scriptsOutputPath, "rulesets", "rulesets.json");
+const scriptsOutputPerformancePath = path.join(dirname, "scriptsOutput", "performance-mv3");
+const rulesetsMV3Path = path.join(scriptsOutputMV3Path, "rulesets", "rulesets.json");
+const rulesetsPerformancePath = path.join(scriptsOutputPerformancePath, "rulesets", "rulesets.json");
 const packageJsonPath = path.join(dirname, "package.json");
+const snippetsPath =
+  path.join(dirname, "node_modules", "@eyeo", "snippets", "index.mjs");
+const pollingPath = path.join(dirname, "test", "polling.js");
 
 // Canonical Manifest V2
 const mv2 = {
@@ -52,7 +59,22 @@ const mv2 = {
   misc: {
     /* nothing */
   },
+  options: {
+    open_in_tab: true,
+    page: "options.html"
+  },
   outputPath: "test-mv2"
+};
+
+const performanceMV2 = {
+  ...mv2,
+  eweConfigName,
+  ewePath: eweDistPath,
+  background: {scripts: ["ewe-api.js", "background.js", "snippets.js",
+                         "polling.js"]},
+  options: null,
+  outputPath: "performance-mv2",
+  performance: true
 };
 
 // Canonical Manifest V3
@@ -68,14 +90,35 @@ const mv3 = {
   misc: {
     host_permissions: ["<all_urls>"],
     minimum_chrome_version: "124",
-    ...fs.existsSync(rulesetsPath) ?
+    ...fs.existsSync(rulesetsMV3Path) ?
       {
         declarative_net_request: JSON.parse(
-          fs.readFileSync(rulesetsPath, "utf8"))
+          fs.readFileSync(rulesetsMV3Path, "utf8"))
       } :
       {}
   },
+  options: {
+    open_in_tab: true,
+    page: "options.html"
+  },
   outputPath: "test-mv3"
+};
+
+const performanceMV3 = {
+  ...mv3,
+  misc: {
+    host_permissions: ["<all_urls>"],
+    minimum_chrome_version: "124",
+    ...fs.existsSync(rulesetsPerformancePath) ?
+      {
+        declarative_net_request: JSON.parse(
+          fs.readFileSync(rulesetsPerformancePath, "utf8"))
+      } :
+      {}
+  },
+  outputPath: "performance-mv3",
+  options: null,
+  performance: true
 };
 
 function commonPlugins() {
@@ -177,18 +220,18 @@ export default (env = {}) => {
 
   let extensionReloaderPort = 9090;
 
-  for (let buildVariant of [mv2, mv3]) {
+  for (let buildVariant of [mv2, mv3, performanceMV2, performanceMV3]) {
     let description = `Manifest version: ${buildVariant.manifestVersion}`;
+    if (buildVariant.performance) {
+      description = `${description} - performance`;
+    }
     let manifest = {
       name: "eyeo's WebExtension Ad-Filtering Solution Test Extension",
       version: "0.0.1",
       description,
       manifest_version: buildVariant.manifestVersion,
       background: buildVariant.background,
-      options_ui: {
-        open_in_tab: true,
-        page: "options.html"
-      },
+      options_ui: buildVariant.options,
       content_scripts: [
         {
           all_frames: true,
@@ -239,16 +282,34 @@ export default (env = {}) => {
       new CopyPlugin({
         patterns: [
           {from: "ewe-*", context: buildVariant.ewePath},
-          {from: path.join(extensionPath, "background.js")},
-          {from: path.join(extensionPath, "index.html")},
-          {from: path.join(extensionPath, "options.html")},
-          {from: path.join(extensionPath, "index-options.js")},
+          {from: path.join(extensionFunctionalPath, "background.js")},
+          {from: path.join(extensionFunctionalPath, "index.html")},
+          {from: path.join(extensionFunctionalPath, "options.html")},
+          {from: path.join(extensionFunctionalPath, "index-options.js")},
           ...buildVariant.manifestVersion >= 3 &&
-            fs.existsSync(scriptsOutputPath) ? [{from: scriptsOutputPath}] : []
+            fs.existsSync(scriptsOutputMV3Path) ?
+            [{from: scriptsOutputMV3Path}] : []
         ]
       }),
       ...commonPlugins()
     ];
+
+    if (buildVariant.performance) {
+      plugins = [
+        new MiniCssExtractPlugin(),
+        new GenerateJsonPlugin("manifest.json", manifest, null, 2),
+        new CopyPlugin({
+          patterns: [
+            {from: "ewe-*", context: buildVariant.ewePath},
+            {from: path.join(extensionPerformancePath, "background.js")},
+            {from: path.join(extensionPerformancePath, "status.html")},
+            {from: path.join(extensionPerformancePath, "status.js")},
+            ...buildVariant.manifestVersion >= 3 &&
+              fs.existsSync(scriptsOutputPerformancePath) ?
+              [{from: scriptsOutputPerformancePath}] : []
+          ]
+        })];
+    }
 
     if (env.development) {
       plugins.push(
@@ -261,11 +322,20 @@ export default (env = {}) => {
       name: buildVariant.outputPath,
       dependencies: [buildVariant.eweConfigName],
       mode: "development",
-      entry: {
-        functional: path.join(extensionPath, "functional.js"),
-        reload: path.join(extensionPath, "reload-wrap.js"),
-        update: path.join(extensionPath, "update-wrap.js"),
-        migrate: path.join(extensionPath, "migrate-wrap.js")
+      entry: buildVariant.performance ? {
+        snippets: {
+          import: snippetsPath,
+          library: {name: "snippets", type: "umd"}
+        },
+        polling: {
+          import: pollingPath,
+          library: {name: "polling", type: "umd"}
+        }
+      } : {
+        functional: path.join(extensionFunctionalPath, "functional.js"),
+        reload: path.join(extensionFunctionalPath, "reload-wrap.js"),
+        update: path.join(extensionFunctionalPath, "update-wrap.js"),
+        migrate: path.join(extensionFunctionalPath, "migrate-wrap.js")
       },
       output: {
         path: path.resolve(dirname, "dist", buildVariant.outputPath),

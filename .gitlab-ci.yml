@@ -65,11 +65,11 @@ stages:
   - build
   - unit
   - test
-  - benchmark
   - functional
   - fuzz
   - compliance
   - integration
+  - performance
 
 build:src:
   image: node:18-bullseye-slim
@@ -196,15 +196,6 @@ unit:scripts:
   extends: .unit
   script:
     - docker run $DOCKER_OPTIONS --entrypoint npm $BASIC_IMAGE run test-scripts
-
-# Benchmark
-benchmark:
-  extends: .basic-image
-  stage: benchmark
-  script:
-    - docker run $DOCKER_OPTIONS --entrypoint test/dockerfiles/benchmark-entrypoint.sh $BASIC_IMAGE
-  rules:
-    - !reference [.full-run, rules]
 
 # Functional tests
 .functional:
@@ -513,6 +504,21 @@ int:bundle:
     - job: build:src
   rules:
     - !reference [.avoid-flaky-run, rules]
+
+# Performance tests
+performance:v3:chromium:
+  extends: .functional
+  stage: performance
+  script:
+    - docker run $DOCKER_OPTIONS --entrypoint npm $FUNCTIONAL_IMAGE run test-performance v3 chromium
+
+performance:benchmark:
+  extends: .basic-image
+  stage: performance
+  script:
+    - docker run $DOCKER_OPTIONS --entrypoint test/dockerfiles/benchmark-entrypoint.sh $BASIC_IMAGE
+  rules:
+    - !reference [.full-run, rules]
 
 include:
   - template: Jobs/SAST.gitlab-ci.yml

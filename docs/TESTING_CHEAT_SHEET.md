@@ -49,6 +49,12 @@ npm run test-server
 npm test -- {v2|v3} {chromium|firefox|edge} [version|channel] --timeout 10000 --incognito
 ```
 
+## Performance
+
+```
+npm run test-performance {v2|v3} {chromium|edge}
+```
+
 ## Docker runs
 
 ### Unit:core
@@ -71,10 +77,17 @@ docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_PARAMS="{v2|v3} {chrom
 docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER=<chromium> .
 ```
 
-### Compliance tests
+### Compliance
 
 ```
 MANIFEST="mv2" BROWSER="chromium" VERSION="latest" ./test/scripts/compliance.sh
+```
+
+### Performance
+
+```
+docker build -t functional -f test/dockerfiles/functional.Dockerfile .
+docker run --cpus=2 --memory=6g --shm-size=2g -it --entrypoint npm functional run test-performance {v2|v3} {chromium|edge}
 ```
 
 ### Run docker for tests with [flaky] tag

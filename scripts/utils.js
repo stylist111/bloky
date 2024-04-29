@@ -33,6 +33,11 @@ export async function exists(filename) {
   }
 }
 
+export async function readFile(filePath) {
+  let contents = await fs.promises.readFile(filePath, {encoding: "utf-8"});
+  return contents.trim();
+}
+
 export async function download(downloadUrl, toFile) {
   console.info(`Downloading ${downloadUrl} to ${toFile} ...`);
   const proto = downloadUrl.startsWith("https") ? https : http;

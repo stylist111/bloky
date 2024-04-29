@@ -37,7 +37,7 @@ describe("Subscribe links [runner-only]", function() {
       await wait(() => getTestEvents(event).length > 0, delay);
     }
     catch (e) {
-      // driver.executeScript in test/runner.js might throw which
+      // driver.executeScript in test/runners/functional.js might throw which
       // prevents this click from happening. Retrying usually helps.
       await click(page.url, selector);
       await wait(() => getTestEvents(event).length > 0, delay,

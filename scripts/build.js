@@ -55,7 +55,8 @@ async function generateTypeDefs() {
 
 async function subsRunMV3(args) {
   let configNames = args["config-name"];
-  if (configNames && !configNames.includes("test-mv3")) {
+  // we only need subs-run for test-mv3 and performance-mv3 at this point.
+  if (configNames && !configNames.toString().includes("mv3")) {
     return;
   }
 
@@ -70,7 +71,9 @@ async function subsRunMV3(args) {
 
   try {
     console.log("Downloading bundled subscriptions...");
+
     await runCommand("npm run subs-run-mv3");
+    await runCommand("npm run subs-run-performance-mv3");
   }
   finally {
     if (isScriptInvokedFromCLI) {
@@ -107,7 +110,7 @@ export async function run() {
         })
         .option("config-name", {
           description: "Name of the configuration to use.",
-          choices: ["engine", "test-mv2", "test-mv3"],
+          choices: ["engine", "test-mv2", "test-mv3", "performance-mv3"],
           array: true
         })
         .option("no-devtool", {

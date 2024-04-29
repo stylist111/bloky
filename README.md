@@ -318,7 +318,7 @@ For more information, please refer to the [API documention][api-docs].
 
 ### Prerequisites
 
-* Node >= 18
+* Node >= 18.16
 * npm >= 9
 
 ### Installing/Updating dependencies

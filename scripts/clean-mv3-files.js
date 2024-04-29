@@ -18,17 +18,15 @@
 /* eslint-env node */
 
 import fs from "fs";
-import path from "path";
 
-import {isMain} from "./utils.js";
+import {isMain, exists} from "./utils.js";
 
-export async function cleanup() {
-  for (let item of ["scriptsOutput"]) {
-    let pathToRemove = path.join(process.cwd(), item);
-    if (fs.existsSync(pathToRemove)) {
-      await fs.promises.rm(pathToRemove, {recursive: true});
-    }
+export async function cleanup(pathToClean) {
+  if (await exists(pathToClean)) {
+    await fs.promises.rm(pathToClean, {recursive: true});
   }
+
+  await fs.promises.mkdir(pathToClean, {recursive: true});
 }
 
 if (isMain(import.meta.url)) {

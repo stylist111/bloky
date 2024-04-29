@@ -1,19 +1,21 @@
 # eyeo's WebExtension Ad-Filtering Solution Testing
 
-This project is automatically tested by functional, unit and integration tests:
+This project is automatically tested by unit, functional, integration and
+performance tests:
 
+- Unit tests check isolated functions at code level.
 - Functional tests cover most of the functionality and run in a browser
 environment.
-- Unit tests check isolated functions at code level.
 - Integration tests check that the SDK integrates smoothly from an extension
   developer point of view.
+- Performance tests check that SDK performance metrics do not degrade.
 
-All test kinds run on the CI pipeline. They can also be executed on a
-development local environment.
+All test kinds run on the CI pipeline. They can also be executed on a local
+development environment.
 
 ## Pipelines structure
 
-Pipeline has 6 stages:
+The CI pipeline has the following stages:
 
 - Build - stage where webextension-sdk is built, and tested statically by audit
 and linting.
@@ -28,16 +30,16 @@ suspending the service worker regularly to determine how the system behaves.
 - [Compliance tests](#compliance-tests) - tests ensuring compliance between
 eyeo's adBlocking products.
 - [Integration tests](#integration-tests) - tests of the integration scripts.
-
-![Pipeline structure](/docs/pipeline_structure.png "Pipeline structure")
+- [Performance tests](#performance-tests) - measure the performance of the
+engine.
 
 ## Unit Tests
 
 ### Unit:core
 
-webext contains a Core repository and a lot of logic is done in Core. Core
-itself is covered by both unit tests and browser tests. To run all core tests
-use the following command from the top level directory:
+The engine contains a core repository responsible for the core ad-filtering
+logic, which is tested at unit and browser levels. To run all core tests use
+the following command from the top level directory:
 
 ```
 npm run test-core
@@ -49,12 +51,13 @@ Optionaly use a test path to run a single test module. Example:
 npm run test-core -- test/dnr.js
 ```
 
-### Benchmark
+### Benchmark:core
 
-Core has its own scripts for benchmarking performance (initialization time
-& heap consumption). On a pipeline we run those scripts to make sure
-happy path is working properly and measure basic metrics.
-If you want to run it locally, use the following commands:
+Core has test scripts for benchmarking the performance of initialization
+time and heap consumption. Those scripts run on CI to make sure the happy path
+is working properly and to measure basic metrics.
+
+To run core benchmark tests locally use the following commands:
 
 ```
 docker build -t basic -f test/dockerfiles/basic.Dockerfile .
@@ -73,9 +76,15 @@ webext-sdk unit tests mock browser API. On a high level all our tests and
 production code uses `browser.js`, which will either be the actual webextension
 polyfill or our unit tests mock based on our webpack config.
 
-Some tests require mocking of production files. Mocked files are automatically
-generated right in the test with `mock(...)` or `cachedMock(...)`. However, one
-can generate the mocked file passing the filename from /sdk/api/ directory:
+To run the webext unit tests use the following command:
+
+```
+npm run unittest
+```
+
+The mocked files used by the tests are automatically generated with `mock(...)`
+and `cachedMock(...)` functions. It is also possible to generate mocked files
+by passing the filename from the `/sdk/api/` directory:
 
 ```
 npx webpack --config ./test/unit/mock/webpack.config.js --env filename="subscriptions.js"
@@ -86,8 +95,6 @@ npx webpack --config ./test/unit/mock/webpack.config.js --env filename="subscrip
 ```
 npm run unittest
 ```
-
-----
 
 ## Functional tests
 
@@ -122,7 +129,7 @@ npm run build-then-test v3 chromium -- --grep="Test Name"
 
 ### Func:bundle
 
-Checks that the bundled code can be imported and re-bundled
+Checks that the bundled code can be imported and re-bundled:
 
 ```
 npm run test-bundle
@@ -255,8 +262,6 @@ All `-only` tags have an equivalent `-skip` tag, which does the opposite. For
 example, a test tagged with `[mv2-skip]` will only be run when NOT testing an
 MV2 extension.
 
-----
-
 ## Fuzz Functional tests
 
 One of the major changes that Google has introduced in Chrome with the Manifest
@@ -297,8 +302,6 @@ they were enabled in the future.
 The `[fuzz-skip]` tag can be applied to tests which are not expected to pass if
 the service worker is suspended as part of running the test.
 
-----
-
 ## Compliance tests
 
 Compliance tests are performed on a local version of [testpages](https://abptestpages.org)
@@ -306,8 +309,6 @@ to assure compliance between webext and other eyeo adblocking solutions. They
 run the automated tests developed on the testpages project using the engine test
 extension. Snippets and Subscriptions tests are skipped due to extension
 limitations.
-
-----
 
 ## Integration tests
 
@@ -319,7 +320,18 @@ command:
 ./test/dockerfiles/integration-entrypoint.sh
 ```
 
-----
+## Performance tests
+
+The performace of the engine is measured using
+[lightnouse metrics](https://developer.chrome.com/docs/lighthouse/performance/performance-scoring#metrics).
+
+To run the performance tests:
+
+```
+npm run test-performance {v2|v3} {chromium|edge}
+```
+
+Note: Firefox is not supported by the performance tests.
 
 ## Docker local runs
 
@@ -357,6 +369,13 @@ Optional environment variables for the script:
 - BROWSER
 - VERSION
 
+#### Performance
+
+```
+docker build -t functional -f test/dockerfiles/functional.Dockerfile .
+docker run --cpus=2 --memory=6g --shm-size=2g -it --entrypoint npm functional run test-performance {v2|v3} {chromium|edge}
+```
+
 #### ARM architecture (M1/M2 Apple Silicon)
 
 The previous examples assume an Intel/AMD architecture on the running machine.
@@ -389,8 +408,6 @@ browser download cache from the host machine:
 ```
 -v $(pwd)/browser-snapshots:/webext-sdk/browser-snapshots
 ```
-
-----
 
 ## Flaky Tests
 

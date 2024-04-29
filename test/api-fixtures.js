@@ -130,7 +130,8 @@ export const subEasylistLive = {
   title: "EasyList",
   homepage: "https://easylist.to/",
   url: "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt",
-  mv2_url: "https://easylist-downloads.adblockplus.org/easylist.txt"
+  mv2_url: "https://easylist-downloads.adblockplus.org/easylist.txt",
+  diff_url: "https://easylist-downloads.adblockplus.org/v3/diff/easylist/73aebdec6d5a5105e332286a93873f0d346f5d83.json"
 };
 
 export const subEasylistPlusGermanyLive = {
@@ -155,7 +156,8 @@ export const subAcceptableAdsLive = {
   title: "Allow nonintrusive advertising",
   homepage: "https://acceptableads.com/",
   url: "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt",
-  mv2_url: "https://easylist-downloads.adblockplus.org/exceptionrules.txt"
+  mv2_url: "https://easylist-downloads.adblockplus.org/exceptionrules.txt",
+  diff_url: "https://easylist-downloads.adblockplus.org/v3/diff/exceptionrules/73aebdec6d5a5105e332286a93873f0d346f5d83.json"
 };
 
 export const subAntiCVLive = {
@@ -164,7 +166,8 @@ export const subAntiCVLive = {
   title: "ABP filters",
   homepage: "https://github.com/abp-filters/abp-filters-anti-cv",
   url: "https://easylist-downloads.adblockplus.org/v3/full/abp-filters-anti-cv.txt",
-  mv2_url: "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt"
+  mv2_url: "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt",
+  diff_url: "https://easylist-downloads.adblockplus.org/v3/diff/abp-filters-anti-cv/73aebdec6d5a5105e332286a93873f0d346f5d83.json"
 };
 
 // Subscriptions not listed anywhere else
