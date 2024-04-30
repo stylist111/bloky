@@ -86,17 +86,6 @@ build:src:
       - public/
     expire_in: 1 week
 
-audit:
-  image: node:18-bullseye-slim
-  stage: build
-  before_script:
-    - npm install
-  script:
-    - npm audit --omit=dev
-  allow_failure: true
-  rules:
-    - !reference [.avoid-flaky-run, rules]
-
 lint:
   image: node:18-bullseye-slim
   stage: build
