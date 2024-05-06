@@ -389,12 +389,14 @@ export default {
   },
 
   /**
-   * Validates a list of filters.
+   * Validates a filter.
    * @param {string} text Filter to be validated
    * @return {null|FilterError}
    */
   validate(text) {
-    return validateFilter(Filter.fromText(text));
+    let normalized = Filter.normalize(text);
+    let filter = Filter.fromText(normalized);
+    return validateFilter(filter);
   },
 
   /**

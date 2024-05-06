@@ -412,6 +412,10 @@ describe("Filters", function() {
     expect(await EWE.filters.validate(VALID_FILTER_TEXT)).toBeNull();
   });
 
+  it("validates a valid filter that needs normalization", async function() {
+    expect(await EWE.filters.validate("example.com###adverts { remove : true }")).toBeNull();
+  });
+
   it("validates a filter with unknown option [fuzz]", async function() {
     let result = await EWE.filters.validate("@@||example.com^$foo");
     expect(result).toEqual("FilterError: {\"type\":\"invalid_filter\"," +

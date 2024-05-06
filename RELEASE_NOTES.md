@@ -21,6 +21,8 @@ Unreleased
   `browser.storage.session` fully and clean the outdated frames
   sitekeys early. (EE-64)
 - Fixed adding dynamic rules twice after subscription enabling. (EE-428)
+- Fixed issue where `EWE.filters.validate` reported filters as invalid when in
+  fact the filters were just not normalized. (EE-444)
 
 🍥 1.6.0 - 2024-04-08 🍥
 ========================
