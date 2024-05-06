@@ -811,8 +811,6 @@ export default {
       throw new Error(`Subscription does not exist: ${url}`);
     }
 
-    subscription.disabled = false;
-
     if (browser.declarativeNetRequest) {
       if (subscription instanceof FullUpdatableSubscription) {
         await restoreDynamicRules(subscription.url);
@@ -821,6 +819,13 @@ export default {
         await enableRuleset(subscription.id);
       }
     }
+
+    // Note: we must mark the subscription as enabled after
+    // we actually finish with the restoring of dynamic rules
+    // as marking subscription as enabled triggers the subscription update,
+    // and the diff update processing which includes dynamic rules operations
+    // can happen in parallel with restoring of dynamic rules here.
+    subscription.disabled = false;
   },
 
   /**

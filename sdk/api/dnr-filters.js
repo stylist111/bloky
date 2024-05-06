@@ -430,8 +430,10 @@ export async function _dnrDiffSubscriptionUpdate(
     removeRuleIds = void 0;
   }
 
-  let subscriptionActive = (await subscriptions.has(subscription.url)) &&
-      !subscription.disabled;
+  // `skipEmitting` signals that's the restoring of dynamic filters,
+  // so the subscription is about to be enabled.
+  let subscriptionActive = skipEmitting ||
+    ((await subscriptions.has(subscription.url)) && !subscription.disabled);
   await browser.declarativeNetRequest.updateDynamicRules(
     {addRules: subscriptionActive ? filters.add : void 0, removeRuleIds}
   );

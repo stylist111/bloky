@@ -761,14 +761,15 @@ export async function waitForSubscriptionsToDownload() {
   }, 1000, "Subscriptions were not downloaded.");
 }
 
-export async function waitForSubscriptionToBeSynchronized(url, clear = true) {
+export async function waitForSubscriptionToBeSynchronized(
+  url, clear = true, timeout = 3000) {
   await wait(() => {
     let changeEvents = getTestEvents("subscriptions.onChanged");
     return changeEvents.filter(event => {
       return event[0].url == url &&
         event[1] == null; // whole subscription update, not property
     }).length > 0;
-  }, 3000, "Subscription was not synchronized.");
+  }, timeout, "Subscription was not synchronized.");
 
   if (clear) {
     clearTestEvents("subscriptions.onChanged");

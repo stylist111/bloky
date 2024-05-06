@@ -20,6 +20,7 @@ Unreleased
 - We now save the sitekeys in `browser.storage.local` to avoid filling
   `browser.storage.session` fully and clean the outdated frames
   sitekeys early. (EE-64)
+- Fixed adding dynamic rules twice after subscription enabling. (EE-428)
 
 🍥 1.6.0 - 2024-04-08 🍥
 ========================

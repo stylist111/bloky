@@ -26,7 +26,7 @@ import {hasUpdateStaticRules, Page, setEndpointResponse, shouldBeLoaded,
         waitForSubscriptionToBeSynchronized, clearRequestLogs, getRequestLogs,
         clearEndpointResponse, waitForSubscriptionToFailToUpdate}
   from "./utils.js";
-import {subTestCustom1, subTestUpdatable1} from "./api-fixtures.js";
+import {subTestCustom1, subTestUpdatable1, subEasylistLive} from "./api-fixtures.js";
 import {wait} from "./polling.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
@@ -126,15 +126,15 @@ describe("Test subscriptions update", function() {
   // Check the dynamic rule count. It will check consistency with the
   // content of the dynamicFilters.
   async function checkDynamicRuleCount(count) {
-    let dynamicRules = await browser.declarativeNetRequest.getDynamicRules();
-    expect(dynamicRules.length).toEqual(count, "dynamic rules count mismatch");
+    let dynamicRules = await EWE.testing.getDynamicRules();
+    expect(dynamicRules.length).toEqual(count);
 
     // We count the number of rules in the dynamicFilters and compare that.
     let dynamicFilterRuleCount = 0;
     (await EWE.testing.getDynamicFilters()).forEach(
       dynamicFilter => dynamicFilterRuleCount += dynamicFilter[1].ruleIds.length
     );
-    expect(dynamicFilterRuleCount).toEqual(count, "dynamic filters count mismatch");
+    expect(dynamicFilterRuleCount).toEqual(count);
   }
 
   async function getDynamicFilter(text) {
@@ -414,13 +414,36 @@ describe("Test subscriptions update", function() {
       subTestUpdatable1.url, UPDATES4);
     await checkDynamicRuleCount(6);
 
-    // If we disable the subscription all the dynamic rules should be
-    // removed.
+    // If we disable the subscription all the dynamic rules should be removed
     await EWE.subscriptions.disable(subTestUpdatable1.url);
     await checkDynamicRuleCount(0);
 
     await EWE.subscriptions.enable(subTestUpdatable1.url);
     await checkDynamicRuleCount(6);
+  });
+
+  it("adds correct number of dynamic rules when reenabled", async function() {
+    setMinTimeout(this, 10000);
+
+    if (!hasUpdateStaticRules()) {
+      this.skip();
+    }
+
+    expect((await EWE.testing.getDynamicRules()).length)
+      .toEqual(0);
+
+    await EWE.subscriptions.add(subEasylistLive.url);
+    await waitForSubscriptionToBeSynchronized(subEasylistLive.url, true, 8000);
+    const originalRulesCount = (await EWE.testing.getDynamicRules()).length;
+    expect(originalRulesCount).not.toEqual(0);
+
+    await EWE.subscriptions.disable(subEasylistLive.url);
+    expect((await EWE.testing.getDynamicRules()).length)
+      .toEqual(0);
+
+    await EWE.subscriptions.enable(subEasylistLive.url);
+    expect((await EWE.testing.getDynamicRules()).length)
+      .toEqual(originalRulesCount);
   });
 
   // Specific test cases for rollback.
