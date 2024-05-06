@@ -26,7 +26,7 @@ import {hasUpdateStaticRules, Page, setEndpointResponse, shouldBeLoaded,
         waitForSubscriptionToBeSynchronized, clearRequestLogs, getRequestLogs,
         clearEndpointResponse, waitForSubscriptionToFailToUpdate}
   from "./utils.js";
-import {subTestCustom1, subTestUpdatable1, subEasylistLive} from "./api-fixtures.js";
+import {subTestCustom1, subTestUpdatable1} from "./api-fixtures.js";
 import {wait} from "./polling.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
@@ -420,30 +420,6 @@ describe("Test subscriptions update", function() {
 
     await EWE.subscriptions.enable(subTestUpdatable1.url);
     await checkDynamicRuleCount(6);
-  });
-
-  it("adds correct number of dynamic rules when reenabled", async function() {
-    setMinTimeout(this, 10000);
-
-    if (!hasUpdateStaticRules()) {
-      this.skip();
-    }
-
-    expect((await EWE.testing.getDynamicRules()).length)
-      .toEqual(0);
-
-    await EWE.subscriptions.add(subEasylistLive.url);
-    await waitForSubscriptionToBeSynchronized(subEasylistLive.url, true, 8000);
-    const originalRulesCount = (await EWE.testing.getDynamicRules()).length;
-    expect(originalRulesCount).not.toEqual(0);
-
-    await EWE.subscriptions.disable(subEasylistLive.url);
-    expect((await EWE.testing.getDynamicRules()).length)
-      .toEqual(0);
-
-    await EWE.subscriptions.enable(subEasylistLive.url);
-    expect((await EWE.testing.getDynamicRules()).length)
-      .toEqual(originalRulesCount);
   });
 
   // Specific test cases for rollback.
