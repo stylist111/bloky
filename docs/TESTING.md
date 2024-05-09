@@ -151,7 +151,8 @@ Most exhaustive tests on our pipeline testing webext-sdk integrated into
 test-extension and by visiting various web pages (served by test-server).
 
 Important: All linux tests are run on Docker, all Windows tests are run on
-Windows shared runners on a pipeline.
+[Windows shared runners](https://docs.gitlab.com/ee/ci/runners/hosted_runners/windows.html)
+on a pipeline.
 
 For Chromium-based browsers a DNS mapping entry (webext.com to 127.0.0.1)
 is added to browser configuration for domains testing.
