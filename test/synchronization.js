@@ -18,8 +18,8 @@
 import expect from "expect";
 
 import {getRequestLogs, clearRequestLogs, setEndpointResponse, setMinTimeout,
-        Page, waitForSubscriptionToBeSynchronized, shouldBeLoaded,
-        hasUpdateStaticRules} from "./utils.js";
+        Page, waitForSubscriptionToBeSynchronized, shouldBeLoaded}
+  from "./utils.js";
 import {subAntiCVLocal, subTestCustom3, subTestUpdatable1}
   from "./api-fixtures.js";
 import {wait} from "./polling.js";
@@ -105,10 +105,6 @@ describe("Synchronization", function() {
     it("runs diff updates when a subscription expires [mv3-only]", async function() {
       setMinTimeout(this, 10000);
 
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
       await setEndpointResponse(subTestUpdatable1.diff_url, JSON.stringify({
         filters: {
           add: [],
@@ -151,10 +147,6 @@ describe("Synchronization", function() {
     });
 
     it("uses diff updatable subscription expiration interval if provided [mv3-only]", async function() {
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
       // The default interval is set to "5 days"
       await EWE.testing._setPrefs(
         "subscriptions_default_expiration_interval",
@@ -187,10 +179,6 @@ describe("Synchronization", function() {
     });
 
     it("uses default diff updatable subscription expiration interval if not provided [mv3-only]", async function() {
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
       // The default interval is 5 days
       await EWE.testing._setPrefs(
         "subscriptions_default_expiration_interval",

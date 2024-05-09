@@ -20,7 +20,7 @@ import expect from "expect";
 import {TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN, SITEKEY}
   from "./test-server-urls.js";
 import {Page, Popup, setMinTimeout, setEndpointResponse,
-        syncSubHasLastFilter, syncSubHasNoLastFilter, hasUpdateStaticRules,
+        syncSubHasLastFilter, syncSubHasNoLastFilter,
         isEdge, waitForSubscriptionToBeSynchronized}
   from "./utils.js";
 import {emptyDiffResponse, subTestUpdatable1} from "./api-fixtures.js";
@@ -143,11 +143,6 @@ describe("Pop-up blocking", function() {
     });
 
     it("blocks a script-based popup tab with filter from bundled subscription data", async function() {
-      // This is MV3 only and we need Chrome 111+ API for this.
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
       await setEndpointResponse(subTestUpdatable1.diff_url, emptyDiffResponse);
       await EWE.subscriptions.add(subTestUpdatable1.url);
       await waitForSubscriptionToBeSynchronized(subTestUpdatable1.url);
@@ -158,11 +153,6 @@ describe("Pop-up blocking", function() {
     });
 
     it("stops blocking a script-based popup tab after filter from bundled subscription data is disabled", async function() {
-      // This is MV3 only and we need Chrome 111+ API for this.
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
       await setEndpointResponse(subTestUpdatable1.diff_url, emptyDiffResponse);
       await EWE.subscriptions.add(subTestUpdatable1.url);
       await waitForSubscriptionToBeSynchronized(subTestUpdatable1.url);
@@ -184,11 +174,6 @@ describe("Pop-up blocking", function() {
     });
 
     it("blocks a script-based popup tab with filter from diff update", async function() {
-      // This is MV3 only and we need Chrome 111+ API for this.
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
       await setEndpointResponse(subTestUpdatable1.diff_url, emptyDiffResponse);
       await EWE.subscriptions.add(subTestUpdatable1.url);
       await waitForSubscriptionToBeSynchronized(subTestUpdatable1.url);
@@ -208,11 +193,6 @@ describe("Pop-up blocking", function() {
     });
 
     it("stops blocking a script-based popup tab with filter from diff update", async function() {
-      // This is MV3 only and we need Chrome 111+ API for this.
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
       const popupFilter = `|${TEST_PAGES_URL}/diff-popup.html^$popup`;
       await setEndpointResponse(subTestUpdatable1.diff_url, JSON.stringify({
         filters: {

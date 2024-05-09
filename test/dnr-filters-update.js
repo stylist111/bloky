@@ -20,7 +20,7 @@ import expect from "expect";
 import {DnrMapper} from "adblockpluscore/lib/dnr/mapper.js";
 import {EWE, clearTestEvents, expectTestEvents, getTestEvents} from "./messaging.js";
 import {TEST_PAGES_URL, TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
-import {hasUpdateStaticRules, Page, setEndpointResponse, shouldBeLoaded,
+import {Page, setEndpointResponse, shouldBeLoaded,
         setMinTimeout, expectElemHideVisible, expectElemHideHidden,
         syncSubHasLastFilter, syncSubHasNoLastFilter, waitForAssertion,
         waitForSubscriptionToBeSynchronized, clearRequestLogs, getRequestLogs,
@@ -104,7 +104,7 @@ const UPDATES5 = {
   ]
 };
 
-describe("Test subscriptions update", function() {
+describe("Test subscriptions update [mv3-only]", function() {
   async function checkRulesAreDisabled(rulesetId, ruleIds) {
     let disabled = await browser.declarativeNetRequest.getDisabledRuleIds(
       {rulesetId}
@@ -181,41 +181,10 @@ describe("Test subscriptions update", function() {
     // Ensure it is enabled.
     await EWE.subscriptions.add(subTestUpdatable1.url);
 
-    if (hasUpdateStaticRules()) {
-      await waitForSubscriptionToBeSynchronized(subTestUpdatable1.url);
-    }
+    await waitForSubscriptionToBeSynchronized(subTestUpdatable1.url);
   });
 
-  // The purpose of this test is to make sure we change nothing
-  // if the static rules update API isn't available.
-  it("Doesn't update without the static rules updates [fuzz] [mv3-only]", async function() {
-    // If we are on Chrome 111+ we don't run this test.
-    if (hasUpdateStaticRules()) {
-      this.skip();
-    }
-
-    // The case of the first update.
-    await EWE.testing._dnrDiffSubscriptionUpdate(
-      subTestUpdatable1.url, UPDATES);
-
-    // There should have been no dyamic rules added.
-    let added = await browser.declarativeNetRequest.getDynamicRules();
-    expect(added.length).toEqual(0);
-
-    let savedUpdates = await EWE.testing._getPrefs("ruleset_updates");
-    expect(savedUpdates).not.toEqual(
-      expect.arrayContaining([expect.arrayContaining([
-        subTestUpdatable1.id
-      ])])
-    );
-  });
-
-  it("Updates subscriptions [fuzz] [mv3-only]", async function() {
-    // This is MV3 only and we need Chrome 111+ API for this.
-    if (!hasUpdateStaticRules()) {
-      this.skip();
-    }
-
+  it("Updates subscriptions [fuzz]", async function() {
     let mapper = new DnrMapper(async() =>
       await EWE.testing.getSubscriptionRulesetMap(subTestUpdatable1.id)
     );
@@ -319,12 +288,7 @@ describe("Test subscriptions update", function() {
     return !!subscription;
   }
 
-  it("does update the filterStorage [mv3-only]", async function() {
-    // This is MV3 only and we need Chrome 111+ API for this.
-    if (!hasUpdateStaticRules()) {
-      this.skip();
-    }
-
+  it("does update the filterStorage", async function() {
     await EWE.testing._dnrDiffSubscriptionUpdate(
       subTestUpdatable1.url, UPDATES4);
     await checkDynamicRuleCount(6);
@@ -353,10 +317,6 @@ describe("Test subscriptions update", function() {
   });
 
   it("does not add dynamic rules when not added", async function() {
-    if (!hasUpdateStaticRules()) {
-      this.skip();
-    }
-
     await EWE.subscriptions.remove(subTestUpdatable1.url);
 
     await EWE.testing._dnrDiffSubscriptionUpdate(
@@ -365,10 +325,6 @@ describe("Test subscriptions update", function() {
   });
 
   it("does not add dynamic rules when not enabled", async function() {
-    if (!hasUpdateStaticRules()) {
-      this.skip();
-    }
-
     await EWE.subscriptions.disable(subTestUpdatable1.url);
     await EWE.testing._dnrDiffSubscriptionUpdate(
       subTestUpdatable1.url, UPDATES4);
@@ -376,10 +332,6 @@ describe("Test subscriptions update", function() {
   });
 
   it("removes dynamic rules when removed", async function() {
-    if (!hasUpdateStaticRules()) {
-      this.skip();
-    }
-
     await EWE.testing._dnrDiffSubscriptionUpdate(
       subTestUpdatable1.url, UPDATES4);
     await checkDynamicRuleCount(6);
@@ -391,10 +343,6 @@ describe("Test subscriptions update", function() {
   });
 
   it("removes dynamic rules when disabled", async function() {
-    if (!hasUpdateStaticRules()) {
-      this.skip();
-    }
-
     await EWE.testing._dnrDiffSubscriptionUpdate(
       subTestUpdatable1.url, UPDATES4);
     await checkDynamicRuleCount(6);
@@ -406,10 +354,6 @@ describe("Test subscriptions update", function() {
   });
 
   it("restores dynamic rules when reenabled", async function() {
-    if (!hasUpdateStaticRules()) {
-      this.skip();
-    }
-
     await EWE.testing._dnrDiffSubscriptionUpdate(
       subTestUpdatable1.url, UPDATES4);
     await checkDynamicRuleCount(6);
@@ -442,16 +386,12 @@ describe("Test subscriptions update", function() {
     ]
   };
 
-  describe("Rollback updates [mv3-only]", function() {
+  describe("Rollback updates", function() {
     afterEach(async function() {
       await EWE.testing.testSetDynamicRulesAvailable(0);
     });
 
     it("Rollback on maximum subscriptions after update", async function() {
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
       await EWE.testing.testSetDynamicRulesAvailable(5);
 
       await EWE.filters.add([DYNAMIC_FILTER]);
@@ -532,10 +472,6 @@ describe("Test subscriptions update", function() {
     });
 
     it("Rollback on maximum subscriptions with no updates", async function() {
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
       await EWE.testing.testSetDynamicRulesAvailable(3);
 
       clearTestEvents("subscriptions.onChanged");
@@ -562,7 +498,7 @@ describe("Test subscriptions update", function() {
     });
   });
 
-  describe("Updates using the diffing mechanism [mv3-only]", function() {
+  describe("Updates using the diffing mechanism", function() {
     setMinTimeout(this, isFuzzingServiceWorker() ? 30000 : 10000);
 
     const testDiffSubscriptionUrl = `${TEST_ADMIN_PAGES_URL}/updatable_subscription.txt`;
@@ -576,10 +512,6 @@ describe("Test subscriptions update", function() {
     });
 
     it("creates a diff enabled subscription when adding one [mv3-only]", async function() {
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
       await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
         filters: {
           add: ["###elem-hide-img-request"],
@@ -674,18 +606,10 @@ describe("Test subscriptions update", function() {
     });
 
     it("applies and blocks with new request filters added in the diffs [mv3-only]", async function() {
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
       await diffUpdateIsApplied(testDiffSubscriptionUrl, testDiffUrlEndpoint);
     });
 
     it("applies and blocks with new content filters added in the diffs [mv3-only]", async function() {
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
       setMinTimeout(this, 30000);
 
       await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
@@ -721,10 +645,6 @@ describe("Test subscriptions update", function() {
     });
 
     it("Subscriptions with empty diffs still block with normal filters [mv3-only]", async function() {
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
       await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
 
       await shouldBeLoaded(
@@ -739,10 +659,6 @@ describe("Test subscriptions update", function() {
     });
 
     it("doesnt apply filters removed by the diffs [mv3-only]", async function() {
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
       await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
       await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
@@ -765,10 +681,6 @@ describe("Test subscriptions update", function() {
     });
 
     it("doesn't remove enabled user filters which conflict with subscription filters", async function() {
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
       setMinTimeout(this, 20000);
 
       let filter = "/image-from-custom-filter.png^$image";
@@ -825,10 +737,6 @@ describe("Test subscriptions update", function() {
     });
 
     it("disables and enables filter from static rulesets", async function() {
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
       setMinTimeout(this, 20000);
 
       const filter = "/image-from-subscription.png^$image";
@@ -856,10 +764,6 @@ describe("Test subscriptions update", function() {
     });
 
     it("disables and enables user filter that duplicates filter from static ruleset", async function() {
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
       setMinTimeout(this, 20000);
 
       const filter = "/image-from-subscription.png^$image";
@@ -888,10 +792,6 @@ describe("Test subscriptions update", function() {
     });
 
     it("enables subscription filter when according disabled user filter is removed", async function() {
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
       setMinTimeout(this, 20000);
 
       let filter = "/image-from-custom-filter.png^$image";
@@ -936,9 +836,6 @@ describe("Test subscriptions update", function() {
     it("doesn't synchronize the same DiffUpdatable subscription concurrently", async function() {
       setMinTimeout(this, 40000);
 
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
       let filter = "someFilter";
       await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
         filters: {
@@ -959,10 +856,6 @@ describe("Test subscriptions update", function() {
     });
 
     it("wipes out diff updates after webext update", async function() {
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
       setMinTimeout(this, 15000);
 
       let filterToAdd = "image.png";
@@ -1027,10 +920,6 @@ describe("Test subscriptions update", function() {
     });
 
     it("does not wipe out user filters after webext update", async function() {
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
       setMinTimeout(this, 15000);
 
       let filterToAdd = "image.png";
@@ -1059,10 +948,6 @@ describe("Test subscriptions update", function() {
     });
 
     it("passes users counting data to back-end", async function() {
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
       await clearRequestLogs();
       await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
@@ -1087,10 +972,6 @@ describe("Test subscriptions update", function() {
     });
 
     it("passes firstVersion and lastVersion", async function() {
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
       let analytics = await EWE.testing._getPrefs("analytics");
       let previousTrustedHosts = analytics.trustHosts;
       try {
@@ -1128,10 +1009,6 @@ describe("Test subscriptions update", function() {
     });
 
     it("passes users counting data to back-end even for disabled subscriptions", async function() {
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
       await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
       await EWE.subscriptions.add(testDiffSubscriptionUrl, {}, "add() from test");
       await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
@@ -1152,10 +1029,6 @@ describe("Test subscriptions update", function() {
     });
 
     it("increments downloadCount", async function() {
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
       await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
       await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
@@ -1173,10 +1046,6 @@ describe("Test subscriptions update", function() {
     });
 
     it("increments lastVersion", async function() {
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
       let firstDate = "Wed, 17 Jan 2024 10:30:27 GMT";
       let expectedFirstVersion = "202401171030";
       let secondDate = "Tue, 23 Jan 2024 10:40:27 GMT";
@@ -1207,9 +1076,6 @@ describe("Test subscriptions update", function() {
     });
 
     it("notifies the error when the DNR limit is reached", async function() {
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
       try {
         await EWE.testing.testSetDynamicRulesAvailable(1);
         await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
@@ -1248,10 +1114,6 @@ describe("Test subscriptions update", function() {
     });
 
     it("notifies subscribed listeners", async function() {
-      if (!hasUpdateStaticRules()) {
-        this.skip();
-      }
-
       setMinTimeout(this, 20000);
 
       await setEndpointResponse(testDiffUrlEndpoint, EMPTY_DIFF_UPDATE);
@@ -1295,10 +1157,6 @@ describe("Test subscriptions update", function() {
             `${TEST_PAGES_URL}/subscription-with-5000-disabled-filters.txt`;
 
       beforeEach(async function() {
-        if (!hasUpdateStaticRules()) {
-          this.skip();
-        }
-
         // This sub has 5000 disabled rules, which means after it's added we
         // can't add any more disabled rules.
         await EWE.subscriptions.add(BIG_DISABLED_SUBSCRIPTION);

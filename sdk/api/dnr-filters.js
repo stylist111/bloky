@@ -240,11 +240,6 @@ export async function removeSubscriptionsDynamicFilters() {
 }
 
 export async function enableAllDisabledStaticRules() {
-  // Requires Chrome 111+ API
-  if (!browser.declarativeNetRequest.updateStaticRules) {
-    return;
-  }
-
   let disableRuleIds = [];
   for (let subscription of filterEngine.filterStorage.subscriptions()) {
     if (!subscription.hasBundledFilters || !subscription.id) {
@@ -341,13 +336,6 @@ export async function _dnrDiffSubscriptionUpdate(
   // For now we only want to handle subscriptions that are in the
   // recommendations.
   if (!subscription.type) {
-    return;
-  }
-
-  // We don't have the Chrome 111+ API to update the static rules
-  // but this subscription isn't downloadable. So we just can't update.
-  if (!subscription.downloadable &&
-      !browser.declarativeNetRequest.updateStaticRules) {
     return;
   }
 
@@ -471,7 +459,6 @@ export async function _dnrDiffSubscriptionUpdate(
     // properly.
     enableRuleIds.push(...disabledStaticRulesIds);
 
-    // This is Chrome 111+ only.
     try {
       await browser.declarativeNetRequest.updateStaticRules({
         rulesetId: subscription.id,
@@ -903,11 +890,6 @@ export async function removeOrDisableFilters(filterTexts, remove = true) {
 }
 
 async function enableStaticRules(filterTexts, enable) {
-  // Requires Chrome 111+ API
-  if (!browser.declarativeNetRequest.updateStaticRules) {
-    return;
-  }
-
   let dnrMappers = new Map();
   let rulesetIdToRuleIds = new Map();
 

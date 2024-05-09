@@ -575,11 +575,6 @@ export function getMaxDynamicRulesAvailable() {
   return dnr.MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES;
 }
 
-export function hasUpdateStaticRules() {
-  return browser.declarativeNetRequest &&
-    browser.declarativeNetRequest.updateStaticRules;
-}
-
 // Feature detection for web bundle support.
 export function supportsWebBundle() {
   // HTMLScriptElement.supports is only Chrome 96+ or Firefox 94+
@@ -794,7 +789,7 @@ export async function waitForSubscriptionToFailToUpdate(
       }),
       "downloadStatus"
     ]);
-  });
+  }, 2000);
 
   await waitForAssertion(async() => {
     let changeEvents = getTestEvents("subscriptions.onChanged");

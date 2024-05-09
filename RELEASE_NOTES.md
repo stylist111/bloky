@@ -14,6 +14,8 @@ Unreleased
       invalid. This could be from using invalid syntax, or by using a CSS value
       which is not allowed.
   - See the filter syntax spec for details on which values are allowed: https://gitlab.com/eyeo/adblockplus/ad-filtering-working-group/-/blob/da0f0d97a5e7b4717788676c6c0091cdd1ec8bee/filter-syntax.md#element-hiding
+- Removed `declarativeNetRequest.updateStaticRules` checks, since Chrome 124 is
+  the minimum required version for MV3. (!1036)
 
 ## Fixes
 

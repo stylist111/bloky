@@ -39,9 +39,8 @@ by the filter list delivery system that will provide update data built from the
 original state and the updated version of the sources, and the limitations on
 the number of rules that are imposed by the _DeclarativeNetRequest_ API, which
 currently are a maximum 30000 dynamic rules, and 5000 disabled static rules.
-It's required to use Chrome 111+ in order to have a function that allows to
-disable rules in a static rulesets. However, Chrome 124+ is actually required
-to properly load static rulesets. See this [related Chromium bug](https://issues.chromium.org/issues/40285683)
+Chrome 124+ is required to properly load static rulesets. See this
+[related Chromium bug](https://issues.chromium.org/issues/40285683)
 for more info.
 
 In Manifest v3 there are two update paths available: DiffUpdatable subscriptions

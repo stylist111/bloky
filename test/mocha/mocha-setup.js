@@ -110,6 +110,10 @@ beforeEach(async function() {
 });
 
 afterEach(async function() {
+  if (this.currentTest.isPending()) {
+    return;
+  }
+
   if (this.currentTest.isFailed()) {
     console.warn(`Test "${this.currentTest.title}" failed.\nDebug output:`);
     await printDebugLog();
