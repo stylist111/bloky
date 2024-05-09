@@ -615,7 +615,9 @@ async function runTests() {
     }
   }
   finally {
-    await driver.quit();
+    if (driver) {
+      await driver.quit();
+    }
   }
 
   let totalTestsRun = 0;
