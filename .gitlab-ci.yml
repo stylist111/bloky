@@ -505,14 +505,6 @@ performance:v3:chromium:
   script:
     - docker run $DOCKER_OPTIONS --entrypoint npm $FUNCTIONAL_IMAGE run test-performance v3 chromium
 
-performance:benchmark:
-  extends: .basic-image
-  stage: performance
-  script:
-    - docker run $DOCKER_OPTIONS --entrypoint test/dockerfiles/benchmark-entrypoint.sh $BASIC_IMAGE
-  rules:
-    - !reference [.full-run, rules]
-
 include:
   - template: Jobs/SAST.gitlab-ci.yml
   - template: Code-Quality.gitlab-ci.yml

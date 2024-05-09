@@ -6,13 +6,6 @@
 npm run test-core
 ```
 
-## Benchmark core
-
-```
-docker build -t basic -f test/dockerfiles/basic.Dockerfile .
-docker run --cpus=2 --memory=6g --shm-size=2g -it --entrypoint test/dockerfiles/benchmark-entrypoint.sh basic
-```
-
 ## Unit tests webext build
 
 ```

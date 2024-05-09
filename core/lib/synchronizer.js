@@ -211,7 +211,6 @@ class Synchronizer {
     let subscription = Subscription.fromURL(
       downloadable.originalUrl || downloadable.url);
     filterNotifier.emit("subscription.downloading", subscription);
-    subscription.mark("downloading.started");
   }
 
   _onDownloadSuccess(downloadable, responseText, errorCallback,
@@ -222,8 +221,6 @@ class Synchronizer {
     let subscription = Subscription.fromURL(downloadable.redirectURL ||
       (isDiffUpdatable ? downloadable.originalUrl : downloadable.url));
     filterNotifier.emit("subscription.downloading", subscription);
-    subscription.mark("downloading.finished");
-    subscription.mark("parsing.started");
 
     let isHEAD = downloadable.method === "HEAD";
 
@@ -238,8 +235,6 @@ class Synchronizer {
     if (params.redirect) {
       return redirectCallback(params.redirect);
     }
-
-    subscription.mark("parsing.finished");
 
     // Handle redirects
     if (downloadable.redirectURL &&
@@ -379,7 +374,6 @@ class Synchronizer {
                    redirectCallback) {
     let subscription = Subscription.fromURL(
       downloadable.originalUrl || downloadable.url);
-    subscription.mark("downloading.finished");
     subscription.lastDownload = Math.round(Date.now() / MILLIS_IN_SECOND);
     subscription.downloadStatus = error;
     filterNotifier.emit("subscription.downloading", subscription);
@@ -465,8 +459,6 @@ class Synchronizer {
    will be skipped over as it is supposed to contain the header.
   */
   _processFilters(subscription, lines) {
-    subscription.mark("processing.started");
-
     lines.shift();
     let filterText = [];
     for (let line of lines) {
@@ -477,8 +469,6 @@ class Synchronizer {
     }
 
     this._filterStorage.updateSubscriptionFilters(subscription, filterText);
-
-    subscription.mark("processing.finished");
   }
 }
 

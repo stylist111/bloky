@@ -28,7 +28,6 @@ const {ElemHideEmulation} = require("./elemHideEmulation");
 const {ElemHideExceptions} = require("./elemHideExceptions");
 const {setRecommendations} = require("./recommendations");
 const {Snippets} = require("./snippets");
-const {profiler} = require("./profiler");
 const {Features} = require("./features");
 
 /**
@@ -49,10 +48,6 @@ class FilterEngine {
    * @param {?FilterEngineOptions} options The options to create the engine.
    */
   constructor(options) {
-    this.p = profiler("FilterEngine");
-
-    this.p.start();
-
     /** Activated features
      * @type {Features}
      */
@@ -118,7 +113,6 @@ class FilterEngine {
    * @public
    */
   initialize(filterSource) {
-    this.p.mark("initialize");
     if (!this._initializationPromise) {
       if (typeof filterSource == "undefined") {
         // Note: filterListener.js and filterStorage.js must be loaded
@@ -144,8 +138,6 @@ class FilterEngine {
               }
             }
           }
-        }).finally(() => {
-          this.p.mark("download_done");
         });
       }
     }

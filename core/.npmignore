@@ -4,5 +4,4 @@
 /coverage/
 /docs/
 /test/
-benchmark.js
 test_runner.mjs

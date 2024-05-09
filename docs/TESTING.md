@@ -51,22 +51,6 @@ Optionaly use a test path to run a single test module. Example:
 npm run test-core -- test/dnr.js
 ```
 
-### Benchmark:core
-
-Core has test scripts for benchmarking the performance of initialization
-time and heap consumption. Those scripts run on CI to make sure the happy path
-is working properly and to measure basic metrics.
-
-To run core benchmark tests locally use the following commands:
-
-```
-docker build -t basic -f test/dockerfiles/basic.Dockerfile .
-docker run --cpus=2 --memory=6g --shm-size=2g -it --entrypoint test/dockerfiles/benchmark-entrypoint.sh basic
-```
-
-For more commands and options to customize,
-please refer to [core documentation](/./core/README.md).
-
 ### Unit:webext
 
 In webext we mostly use functional tests to make sure everything works.

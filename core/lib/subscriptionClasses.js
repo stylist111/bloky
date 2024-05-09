@@ -27,7 +27,6 @@ const {recommendations} = require("./recommendations");
 const {isActiveFilter, Filter} = require("./filterClasses");
 const {filterNotifier} = require("./filterNotifier");
 const {Downloader} = require("./downloader");
-const {profiler} = require("./profiler");
 
 let _recommendationsByURL = null;
 
@@ -1213,9 +1212,6 @@ class CountableSubscription extends RegularSubscription {
      * @default <code>0</code>
      */
     this.downloadCount = 0;
-
-    this._p = profiler(`CountableSubscription@${url}`);
-    this._p.start();
   }
 
   /**
@@ -1362,14 +1358,6 @@ class CountableSubscription extends RegularSubscription {
     if (downloadCount) {
       yield "downloadCount=" + downloadCount;
     }
-  }
-
-  /**
-   * Put a benchmarking event
-   * @param {string} event benchmarking event
-   */
-  mark(event) {
-    this._p.mark(event);
   }
 };
 

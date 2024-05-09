@@ -180,10 +180,7 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath,
     plugins: [
       new GenerateJsonPlugin("package.json", {type: "commonjs"}, null, 2),
       ...commonPlugins()
-    ],
-    externals: {
-      perf_hooks: "self"
-    }
+    ]
   };
 
   if (env.release) {
