@@ -11,15 +11,8 @@ is needed beforehand.
 
 ## Registration token
 
-Get a registration token from [Runners settings][runners-settings]:
-
-![Registration token](/docs/registration_token_ui.png)
-
-Please make sure that you click the three vertical dots button, not the "New
-project runner" blue button.
-
-Note: Registration tokens are deprecated. [Authentication tokens](https://docs.gitlab.com/ee/ci/runners/runners_scope.html#create-a-project-runner-with-a-runner-authentication-token)
-should be the standard approach, but that currently [doesn't work](https://gitlab.com/gitlab-org/gitlab/-/issues/424239).
+Access [GitLab Runner Authentication Token](https://eyeo.atlassian.net/wiki/spaces/DEVOPS/pages/59179948/GitLab+Runner+Authentication+Token)
+for a step-by-step on how to get the token for your runner.
 
 ## Local runners
 
@@ -187,22 +180,23 @@ First of all, the [terraform-gitlab-runner-compute-instance project](https://git
 needs to be cloned.
 
 `terraform/main.tf` holds the relevant configuration. Inside, the module
-`webext-instance` defines the VM instances setup, including the property
-`machine_type` which sets the kind of machine that will be created.
+`custom_gitlab_runner_config` defines all custom settings used for this runner
+setup, including the following properties:
+
+- `gitlab_worker_instance_type` sets the kind of machine that will be created.
+- `gitlab_runner_concurrency` holds the number of gitlab-runner worker machines
+that will be created.
+- `gitlab_runner_version` holds the gitlab-runner version.
+- `gitlab_worker_idle_time` sets the idle time (in seconds) before runners are
+stopped and removed.
 
 GCloud provides a set of [general-purpose-machines](https://cloud.google.com/compute/docs/general-purpose-machines#e2_machine_types_table),
 for instance `e2-standard-2`. Custom machines can also be defined, as explained
 in the [terraform argument reference](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_instance#machine_type).
-Regarding disk size, the property `disk_config.size` sets the disk size in GB.
+Regarding disk size, property `gitlab_runner_disk_size` sets the size in GB.
+The current setup defaults to 20GB per gitlab worker instance.
 
-`terraform/variables.tf` holds the amount of instances to be created. If
-additional instances should be needed the variable `number_of_instances` can be
-modified accordingly.
-
-The script `terraform/scripts/startup.sh` runs when the VM is created. Among
-other things, the script registers the runner to Gitlab and sets up a cron job
-to do a nightly cleanup of the machine. Finally, `terraform/scripts/shutdown.sh`
-unregisters the Gitlab runner when the VM is destroyed.
+More options are available [here](https://gitlab.com/eyeo/devops/terraform/modules/terraform-google-gitlab-runner-autoscaler)
 
 ### Applying changes to GCloud
 

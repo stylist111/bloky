@@ -1,7 +1,7 @@
 default:
   interruptible: true
   tags:
-    - runner-webext
+    - runner-webext-dev
 
 variables:
   npm_config_audit: "false"
@@ -54,11 +54,16 @@ workflow:
 
 .docker-image:
   image: docker:24.0.5
+  services:
+    - "docker:24.0.5-dind"
+  before_script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   variables:
-    BASIC_IMAGE: basic-image-$CI_PIPELINE_ID
-    FUNCTIONAL_IMAGE: functional-image-$CI_PIPELINE_ID
-    COMPLIANCE_IMAGE: compliance-image-$CI_JOB_ID
-    DOCKER_OPTIONS: --rm=true --cpus=2 --memory=6g --shm-size=2g -t
+    IMAGE_TAG: $CI_REGISTRY_IMAGE
+    BASIC_IMAGE: $IMAGE_TAG:basic-image-$CI_PIPELINE_ID
+    FUNCTIONAL_IMAGE: $IMAGE_TAG:functional-image-$CI_PIPELINE_ID
+    COMPLIANCE_IMAGE: $IMAGE_TAG:compliance-image-$CI_JOB_ID
+    DOCKER_OPTIONS: --shm-size=2g -t
 
 stages:
   - build
@@ -126,16 +131,10 @@ pages:
   needs: []
   script:
     - docker build -t $BASIC_IMAGE -f test/dockerfiles/basic.Dockerfile .
+    - docker push $BASIC_IMAGE
 
-build:basic-image-1:
+build:basic-image:
   extends: .build-basic
-  tags:
-    - runner-webext-default-0
-
-build:basic-image-2:
-  extends: .build-basic
-  tags:
-    - runner-webext-default-1
 
 .build-functional:
   stage: build
@@ -144,24 +143,15 @@ build:basic-image-2:
     - job: build:src
   script:
     - docker build -t $FUNCTIONAL_IMAGE -f test/dockerfiles/functional.Dockerfile --build-arg SKIP_BUILD=1 --build-arg BROWSER=chromium .
+    - docker push $FUNCTIONAL_IMAGE
 
-build:functional-image-1:
+build:functional-image:
   extends: .build-functional
-  tags:
-    - runner-webext-default-0
-
-build:functional-image-2:
-  extends: .build-functional
-  tags:
-    - runner-webext-default-1
 
 .basic-image:
   extends: .docker-image
   needs:
-    - job: build:basic-image-1
-      artifacts: false
-    - job: build:basic-image-2
-      artifacts: false
+    - job: build:basic-image
 
 # Unit tests
 .unit:
@@ -190,9 +180,7 @@ unit:scripts:
   stage: functional
   extends: .docker-image
   needs:
-    - job: build:functional-image-1
-      artifacts: false
-    - job: build:functional-image-2
+    - job: build:functional-image
       artifacts: false
   script:
     COMMIT_FIRST_LINE=$(echo "$CI_COMMIT_MESSAGE" | head -1);
