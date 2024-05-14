@@ -242,6 +242,21 @@ func:v2:firefox:oldest:
     BROWSER: firefox $OLDEST_FIREFOX_VERSION
     TEST_PARAMS: v2 $BROWSER
 
+.edge_install_windows: &edge_install_windows
+  - Invoke-WebRequest
+      -Uri "${Env:CI_API_V4_URL}/projects/${Env:CI_PROJECT_ID_MAINSTREAM}/packages/generic/microsoft-edge/79.0.309/MicrosoftEdgeEnterpriseX64.msi"
+      -Headers @{'JOB-TOKEN' = $Env:CI_JOB_TOKEN}
+      -OutFile 'MicrosoftEdgeEnterpriseX64.msi'
+  - Start-Process msiexec -ArgumentList "/i MicrosoftEdgeEnterpriseX64.msi /norestart /qn" -Wait
+  - $Env:EdgePath = "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
+  - if (!(Test-Path $Env:EdgePath)) {
+      Write-Warning "Edge not found on `"$Env:EdgePath`". Retrying Edge install...";
+      Start-Process msiexec -ArgumentList "/i MicrosoftEdgeEnterpriseX64.msi /norestart /qn" -Wait;
+      if (!(Test-Path $Env:EdgePath)) {
+        throw "Edge not found on `"$Env:EdgePath`" after retrying install"
+      }
+    }
+
 # Replaces nodejs v21.2.0 (default) with v18.17.1
 .nodejs_install_windows: &nodejs_install_windows
   - choco uninstall -y nodejs nodejs.install
@@ -256,12 +271,7 @@ func:v2:firefox:oldest:
   variables:
     CI_PROJECT_ID_MAINSTREAM: 22365241
   before_script:
-    - Invoke-WebRequest
-        -Uri "${Env:CI_API_V4_URL}/projects/${Env:CI_PROJECT_ID_MAINSTREAM}/packages/generic/microsoft-edge/79.0.309/MicrosoftEdgeEnterpriseX64.msi"
-        -Headers @{'JOB-TOKEN' = $Env:CI_JOB_TOKEN}
-        -OutFile 'MicrosoftEdgeEnterpriseX64.msi'
-    - Start-Process msiexec
-        -ArgumentList "/i MicrosoftEdgeEnterpriseX64.msi /norestart /qn" -Wait
+    - *edge_install_windows
     - *nodejs_install_windows
     - npm install
   tags:
