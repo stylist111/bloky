@@ -113,8 +113,7 @@ typechecks:
 pages:
   image: node:18-bullseye-slim
   stage: build
-  needs:
-    - job: build:src
+  needs: ["build:src"]
   script:
     # Check that docs folder exists
     - "[ -d \"public\" ]"
@@ -125,7 +124,7 @@ pages:
     # Only publishes docs pushed to master
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
 
-.build-basic:
+build:basic-image:
   stage: build
   extends: .docker-image
   needs: []
@@ -133,25 +132,17 @@ pages:
     - docker build -t $BASIC_IMAGE -f test/dockerfiles/basic.Dockerfile .
     - docker push $BASIC_IMAGE
 
-build:basic-image:
-  extends: .build-basic
-
-.build-functional:
+build:functional-image:
   stage: build
   extends: .docker-image
-  needs:
-    - job: build:src
+  needs: ["build:src"]
   script:
     - docker build -t $FUNCTIONAL_IMAGE -f test/dockerfiles/functional.Dockerfile --build-arg SKIP_BUILD=1 --build-arg BROWSER=chromium .
     - docker push $FUNCTIONAL_IMAGE
 
-build:functional-image:
-  extends: .build-functional
-
 .basic-image:
   extends: .docker-image
-  needs:
-    - job: build:basic-image
+  needs: ["build:basic-image"]
 
 # Unit tests
 .unit:
@@ -179,9 +170,7 @@ unit:scripts:
 .functional:
   stage: functional
   extends: .docker-image
-  needs:
-    - job: build:functional-image
-      artifacts: false
+  needs: ["build:functional-image"]
   script:
     COMMIT_FIRST_LINE=$(echo "$CI_COMMIT_MESSAGE" | head -1);
     if [ -z "${COMMIT_FIRST_LINE##*"[flaky]"*}" ]; then
@@ -254,8 +243,7 @@ func:v2:firefox:oldest:
 
 .functional-windows:
   stage: functional
-  needs:
-    - job: build:src
+  needs: ["build:src"]
   variables:
     CI_PROJECT_ID_MAINSTREAM: 22365241
   before_script:
@@ -431,8 +419,7 @@ fuzz:v3:edge:latest:
 .compliance:
   stage: compliance
   extends: .docker-image
-  needs:
-    - job: build:src
+  needs: ["build:src"]
   before_script:
     - apk add bash git zip
   script:
@@ -491,8 +478,7 @@ int:bundle:
   stage: integration
   script:
     - npm run test-bundle
-  needs:
-    - job: build:src
+  needs: ["build:src"]
   rules:
     - !reference [.avoid-flaky-run, rules]
 
