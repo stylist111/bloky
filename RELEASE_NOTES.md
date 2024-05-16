@@ -26,6 +26,11 @@ Unreleased
 - Fixed issue where `EWE.filters.validate` reported filters as invalid when in
   fact the filters were just not normalized. (EE-444)
 
+## Internal
+
+- Introduced CDP feature flag and "user opted out" setting
+  (opted out by default). (EE-473)
+
 🍥 1.6.0 - 2024-04-08 🍥
 ========================
 
