@@ -759,14 +759,14 @@ describe("Snippets", function() {
       ISOLATED_WORLD);
   });
 
-  it("restarts snippets on history.pushState", async function() {
+  it("does not restart the snippets on history.pushState", async function() {
     setMinTimeout(this, 6000);
 
     await addFilter(`${TEST_PAGES_DOMAIN}#$#${INJECTED_SNIPPET} true`);
     let tabId = await new Page("history.html").loaded;
-    // Snippet is expected to be called 2 times:
-    // 1 for "history.html" and 1 for "history-after-pushState.html",
-    // initiated by `history.pushState(..)` code.
+    // Snippet is expected to be called only once (EE-507):
+    // only when "history.html" is loaded and not called
+    // on History event pushed
     await wait(
       async() => await executeScript(tabId, () => {
         try {
@@ -777,9 +777,9 @@ describe("Snippets", function() {
           // may not exist yet
           return null;
         }
-      }, null, MAIN_WORLD) == "2",
+      }, null, MAIN_WORLD) == "1",
       4 * HIDETIMEOUT,
-      "Snippet was not called 2 times");
+      "Snippet was not called exactly once");
   });
 
   it("does not deploy snippets not from anti-cv subscription [mv2-only]", async function() {

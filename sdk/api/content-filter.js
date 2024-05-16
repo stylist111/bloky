@@ -250,7 +250,8 @@ async function executeSnippets(tabId, frameId, previousFrame, frame) {
   }), () => {});
 }
 
-export async function applyContentFilters(tabId, frameId, previousFrame) {
+export async function applyContentFilters(
+  tabId, frameId, previousFrame, skipSnippets) {
   const frame = getFrameInfo(tabId, frameId);
   trace({tabId, frameId, previousFrame, frame});
   const emulatedPatterns = [];
@@ -264,7 +265,7 @@ export async function applyContentFilters(tabId, frameId, previousFrame) {
       await removeCSS(tabId, frameId, styleSheet.removedCode);
     }
 
-    if (!(frame.allowlisted & contentTypes.DOCUMENT)) {
+    if (!skipSnippets && !(frame.allowlisted & contentTypes.DOCUMENT)) {
       executeSnippets(tabId, frameId, previousFrame, frame);
     }
 

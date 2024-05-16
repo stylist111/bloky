@@ -483,8 +483,9 @@ async function onHistoryStateUpdated(details) {
   let previousFrame = getFrameInfo(details.tabId, details.frameId);
   recordFrameFromNavigationEvent(details, {historyStateUpdated: true});
 
+  // Don't rerun the snippets due to possible performance penalty (EE-507)
   let filterData = await applyContentFilters(
-    details.tabId, details.frameId, previousFrame);
+    details.tabId, details.frameId, previousFrame, true);
   try {
     await ignoreNoConnectionError(
       browser.tabs.sendMessage(
