@@ -1,6 +1,9 @@
 Unreleased
 ==========
 
+🍿 1.7.0 - 2024-05-20 🍿
+========================
+
 ## General
 
 - Restrict the syntax for inline CSS filters to only values known to be
