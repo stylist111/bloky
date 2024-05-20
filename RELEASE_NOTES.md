@@ -18,6 +18,8 @@ Unreleased
   the minimum required version for MV3. (!1036)
 - We no longer rerun the snippets on History event pushed to prevent
   performance drop. (EE-507)
+- Introduced CDP feature flag and "user opted out" setting
+  (opted out by default). It does not have an effect if turned on. (EE-473)
 
 ## Fixes
 
@@ -27,11 +29,6 @@ Unreleased
 - Fixed adding dynamic rules twice after subscription enabling. (EE-428)
 - Fixed issue where `EWE.filters.validate` reported filters as invalid when in
   fact the filters were just not normalized. (EE-444)
-
-## Internal
-
-- Introduced CDP feature flag and "user opted out" setting
-  (opted out by default). (EE-473)
 
 🍥 1.6.0 - 2024-04-08 🍥
 ========================
