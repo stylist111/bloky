@@ -707,7 +707,10 @@ describe("Snippets", function() {
       await wait(async() => {
         // eslint-disable-next-line no-console
         const calls = console.log.getCalls();
-        return calls.find(call => call.args[1].includes("Snippets are not initialized"));
+        return calls.find(call => call.args &&
+          call.args.length > 1 &&
+          typeof call.args[1] == "string" &&
+          call.args[1].includes("Snippets are not initialized"));
       }, 1000, "No warning output received");
     }
     finally {
