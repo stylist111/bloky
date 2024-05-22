@@ -119,13 +119,19 @@ export async function expectElemHideVisible({elemId = "elem-hide",
   expect(elem).not.toBeNull();
 }
 export class Page {
-  constructor(path, forceBackground = false) {
-    let removingCurrentPromise = Page.removeCurrent();
-    Page.current = this;
+  constructor(path, forceBackground = false, removeCurrent = true) {
+    let removingCurrentPromise = removeCurrent ?
+      Page.removeCurrent() : Promise.resolve();
+
+    if (!Page.current) {
+      Page.current = new Set();
+    }
+    const newPage = this;
 
     this.url = this.getUrl(path);
     this.created = (async() => {
       await removingCurrentPromise;
+      Page.current.add(newPage);
 
       // Firefox appears to have an issue where if a tab is opened in
       // the background (not active), the browser forgets that blocked
@@ -225,9 +231,7 @@ export class Page {
   }
 
   async remove() {
-    if (Page.current == this) {
-      Page.current = null;
-    }
+    Page.current.delete(this);
 
     let tabId = await this.created;
     try {
@@ -246,7 +250,9 @@ export class Page {
 
   static async removeCurrent() {
     if (Page.current) {
-      await Page.current.remove();
+      for (const page of Page.current) {
+        await page.remove();
+      }
     }
   }
 }

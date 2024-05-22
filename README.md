@@ -442,6 +442,7 @@ The library provides the listeners to observe the events:
   * `onRemoved`: Emitted when a subscription is removed
 * `EWE.debugging.onLogEvent`: Emitted when having debug output
 * `EWE.reporting.onBlockableItem`: Emitted when any blockable item is matched
+* `EWE.cdp.onCdpItem`: Emitted when any CDP event happened
 
 Use `addListener(...)` to subscribe and `removeListener(...)` to unsubscribe.
 

@@ -11,6 +11,7 @@ import "../filters.js";
 import "../initialization.js";
 import "../notifications.js";
 import "../reporting.js";
+import "../cdp.js";
 import "../synchronization.js";
 import "../popup-blocker.js";
 import "../subscribe-links.js";

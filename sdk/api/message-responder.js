@@ -25,6 +25,7 @@ import {logHiddenElements} from "./diagnostics.js";
 import {allowlistPage} from "./allowlisting.js";
 import {trace} from "./debugging.js";
 import {onContentHelloReceived} from "./content-message-deferrer.js";
+import {markActive} from "./cdp.js";
 
 async function handleMessage(message, sender) {
   trace({
@@ -63,6 +64,9 @@ async function handleMessage(message, sender) {
       return allowlistPage(
         sender.tab.id, sender.frameId, message.timestamp, message.signature
       );
+    case "ewe:cdp-session-active":
+      await markActive(sender.tab.id, sender.frameId);
+      break;
   }
 }
 

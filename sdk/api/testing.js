@@ -46,6 +46,8 @@ import * as telemetry from "./telemetry.js";
 
 import * as sitekey from "./sitekey.js";
 import {getDeferredMessages} from "./content-message-deferrer.js";
+import {getData, clearData, clearActivity} from "./cdp.js";
+import {_clear} from "./frame-state.js";
 
 export default {
   ...sitekey, // everything exported from "sitekey.js"
@@ -322,5 +324,10 @@ export default {
 
   async getDynamicRules() {
     return await browser.declarativeNetRequest.getDynamicRules();
-  }
+  },
+
+  _getCdpData: getData,
+  _clearCdpData: clearData,
+  _clearCdpActivity: clearActivity,
+  _clearFrameState: _clear
 };

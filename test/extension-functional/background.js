@@ -411,6 +411,28 @@ EWE.reporting.onBlockableItem.addListener(
   }
 );
 
+EWE.cdp.onCdpItem.addListener(
+  createTestEventListener("cdp.onCdpItem.all")
+);
+EWE.cdp.onCdpItem.addListener(
+  createTestEventListener("cdp.onCdpItem.page_view"),
+  {
+    eventType: "page_view"
+  }
+);
+EWE.cdp.onCdpItem.addListener(
+  createTestEventListener("cdp.onCdpItem.session_start"),
+  {
+    eventType: "session_start"
+  }
+);
+EWE.cdp.onCdpItem.addListener(
+  createTestEventListener("cdp.onCdpItem.blocking"),
+  {
+    eventType: "blocking"
+  }
+);
+
 async function checkTabAllowlisted(tabId, changeInfo, tab) {
   let result = {
     tabId,

@@ -17,7 +17,8 @@
 
 import browser from "webextension-polyfill";
 import {EventEmitter} from "adblockpluscore/lib/events.js";
-import {MILLIS_IN_HOUR} from "adblockpluscore/lib/time.js";
+import {MILLIS_IN_SECOND, MILLIS_IN_MINUTE, MILLIS_IN_HOUR}
+  from "adblockpluscore/lib/time.js";
 import {getDatabase} from "./io-idb.js";
 
 // MV2
@@ -55,8 +56,10 @@ export const defaults = Object.create({
   migration_filter_errors: [],
   migration_subscription_errors: [],
   migration_state: MIGRATED_TO_MV2,
-  edge_one_click_allowlisting_delay: 2000, // 2s
-  cdp_user_opted_out: true
+  edge_one_click_allowlisting_delay: 2 * MILLIS_IN_SECOND,
+  cdp_user_opted_out: true,
+  cdp_domains: [],
+  session_expiration_interval: 30 * MILLIS_IN_MINUTE
 });
 
 export let Prefs = {

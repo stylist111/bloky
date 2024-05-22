@@ -63,6 +63,15 @@ async function clearStorage() {
   ], false);
 }
 
+async function clearFrameState() {
+  await runInBackgroundPage([
+    {op: "getGlobal", arg: "EWE"},
+    {op: "getProp", arg: "testing"},
+    {op: "callMethod", arg: "_clearFrameState"},
+    {op: "await"}
+  ], false);
+}
+
 before(async function() {
   setMinTimeout(this, 7000);
 
@@ -127,6 +136,7 @@ afterEach(async function() {
   await clearStorage();
   await resetFeatureFlags();
   await Page.removeCurrent();
+  await clearFrameState();
   await Popup.removeCurrent();
   clearAllTestEvents();
 });

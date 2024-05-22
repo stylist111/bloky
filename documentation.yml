@@ -26,12 +26,15 @@ toc:
       - snippets
       - subscriptions
       - telemetry
+      - cdp
   - name: Objects
     children:
       - allowlistingCallback
       - AllowlistingAuthorizationError
       - BlockableEventDispatcher
       - BlockableEventOptions
+      - CdpEventDispatcher
+      - CdpEventOptions
       - EventDispatcher
       - Filter
       - FilterError

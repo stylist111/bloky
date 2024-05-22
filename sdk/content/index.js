@@ -26,6 +26,7 @@ import {startElementCollapsing, hideElement, unhideElement}
 import {startOneClickAllowlisting} from "./allowlisting.js";
 import {ElementHidingTracer} from "./element-hiding-tracer.js";
 import {subscribeLinksEnabled, handleSubscribeLinks} from "./subscribe-links.js";
+import {startNotifyActive} from "./cdp-session.js";
 
 let tracer;
 let elemHideEmulation;
@@ -106,6 +107,10 @@ async function applyContentFeatures(response) {
   }
   else if (elemHideEmulation) {
     elemHideEmulation.apply(response.emulatedPatterns);
+  }
+
+  if (response.notifyActive) {
+    startNotifyActive();
   }
 }
 

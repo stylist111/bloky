@@ -562,9 +562,13 @@ async function runTests() {
   let insecure = false;
   if (isChromium || isEdge) {
     // DNS mapping (supported by Chromium-based only browsers)
-    extraArgs.push("host-resolver-rules=MAP webext.com 127.0.0.1");
+    extraArgs.push("host-resolver-rules=" + [
+      "webext.com",
+      "sub.webext.com",
+      "webext.co.uk"
+    ].map(domain => `MAP ${domain} 127.0.0.1`).join(", "));
 
-    // allow HTTP for webext.com
+    // allow HTTP
     insecure = true;
   }
 

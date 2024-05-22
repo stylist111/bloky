@@ -33,6 +33,7 @@ import * as filters from "./filters.js";
 import * as reporting from "./reporting.js";
 import * as testing from "./testing.js";
 import * as prefs from "./prefs.js";
+import * as cdp from "./cdp.js";
 import {setSnippetLibrary} from "./content-filter.js";
 import {setAddonInfo} from "./info.js";
 import {filterEngine} from "./core.js";
@@ -61,6 +62,7 @@ async function postApiCall() {
   await filterEngine.filterStorage.awaitSavingComplete();
   await sitekey._awaitSavingComplete();
   await contentMessageDeferrer._awaitSavingComplete();
+  await cdp._awaitSavingComplete();
 }
 
 function isAsync(func) {
@@ -126,6 +128,13 @@ export {wrappedTesting as testing};
 
 // "Notifications" namespace is already a Proxy
 export {notifications} from "./notifications.js";
+
+/**
+ * @ignore
+ */
+const wrappedCdp = wrapApiNamespace(cdp.default);
+export {wrappedCdp as cdp};
+
 
 export let snippets = {
   /**

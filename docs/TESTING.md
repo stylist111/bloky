@@ -138,8 +138,8 @@ Important: All linux tests are run on Docker, all Windows tests are run on
 [Windows shared runners](https://docs.gitlab.com/ee/ci/runners/hosted_runners/windows.html)
 on a pipeline.
 
-For Chromium-based browsers a DNS mapping entry (webext.com to 127.0.0.1)
-is added to browser configuration for domains testing.
+For Chromium-based browsers a DNS mapping entry (webext.com, sub.webext.com
+and webext.co.uk to 127.0.0.1) is added to browser configuration for domains testing.
 
 #### Serving the test pages on test-server
 

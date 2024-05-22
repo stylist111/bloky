@@ -46,6 +46,7 @@ export function getConfig(filename) {
         "./dnr-filters.js": path.resolve(dirname, "./webext-sdk.mock.js"),
         "./prefs.js": path.resolve(dirname, "./prefs.mock.js"),
         "./sitekey.js": path.resolve(dirname, "./webext-sdk.mock.js"),
+        "./cdp.js": path.resolve(dirname, "./webext-sdk.mock.js"),
         "io$": path.resolve(dirname, "../../../sdk/api/io.js"),
         "info$": path.resolve(dirname, "../../../sdk/api/info.js"),
         "prefs$": path.resolve(dirname, "./prefs.mock.js")

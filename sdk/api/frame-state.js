@@ -499,6 +499,13 @@ async function onHistoryStateUpdated(details) {
   }
 }
 
+/**
+ * @ignore
+ */
+export function _clear() {
+  state.clear();
+}
+
 function handleOnRemoved(tabId) {
   state.delete(tabId);
   clearTabSitekeys(tabId);

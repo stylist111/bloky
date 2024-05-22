@@ -26,6 +26,7 @@ import {getFrameInfo} from "./frame-state.js";
 import {logItem, tracingEnabled} from "./diagnostics.js";
 import {debugOptions, trace, debug, warn} from "./debugging.js";
 import {arraysDiff} from "./set-operations.js";
+import {shouldNotifyActive} from "./cdp.js";
 
 let isolatedLib;
 let injectedLib;
@@ -297,7 +298,10 @@ export async function applyContentFilters(
   if (debugOptions.elemHide) {
     cssProperties = debugOptions.cssProperties;
   }
-  return {emulatedPatterns, cssProperties, tracedSelectors};
+
+  const notifyActive = shouldNotifyActive(tabId, frameId);
+
+  return {emulatedPatterns, cssProperties, tracedSelectors, notifyActive};
 }
 
 export function injectCSS(tabId, frameId, code) {
