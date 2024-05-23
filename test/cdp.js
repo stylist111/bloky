@@ -23,6 +23,8 @@ import {isChromiumBased, Page, setMinTimeout, executeScript, waitForAssertion}
 
 describe("CDP", function() {
   const WEBEXT_DOT_COM = "webext.com";
+  const SUB_DOT_WEBEXT_DOT_COM = "sub." + WEBEXT_DOT_COM;
+  const WEBEXT_WILDCARD = "webext.*";
 
   const EVENT_PAGE_VIEW = "page_view";
   const EVENT_SESSION_START = "session_start";
@@ -79,15 +81,15 @@ describe("CDP", function() {
   });
 
   it("supports domain wildcards", async function() {
-    const domainWildcard = "webext.*";
-    await EWE.testing._setPrefs(cdpDomainsPrefsKey, [domainWildcard]);
+    await EWE.testing._setPrefs(cdpDomainsPrefsKey, [WEBEXT_WILDCARD]);
     await new Page(`http:/${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-    await assertEvents(domainWildcard, EVENT_PAGE_VIEW, 1);
+    await assertEvents(WEBEXT_WILDCARD, EVENT_PAGE_VIEW, 1);
   });
 
   it("tracks tracked domains subdomains, but reports exactly tracked domain", async function() {
-    await new Page(`http://sub.${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+    await new Page(`http://${SUB_DOT_WEBEXT_DOT_COM}:3000/image.html`).loaded;
     await assertEvents(WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 1);
+    await assertEvents(SUB_DOT_WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 0);
   });
 
   it("does not track if feature flag is off", async function() {
@@ -240,13 +242,12 @@ describe("CDP", function() {
     // we consider it to be the same session
     setMinTimeout(this, 30 * 1000);
 
-    const domainWithWildcard = "webext.*";
-    await EWE.testing._setPrefs(cdpDomainsPrefsKey, [domainWithWildcard]);
+    await EWE.testing._setPrefs(cdpDomainsPrefsKey, [WEBEXT_WILDCARD]);
 
     await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`, false, false).loaded;
     await new Page("http://webext.co.uk:3000/image.html", false, false).loaded;
 
-    await assertEvents(domainWithWildcard, EVENT_SESSION_START, 1);
+    await assertEvents(WEBEXT_WILDCARD, EVENT_SESSION_START, 1);
   });
 
   it("tracks same subdomain navigation in different tabs as the same session", async function() {
@@ -255,9 +256,10 @@ describe("CDP", function() {
     setMinTimeout(this, 10 * 1000);
 
     await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`, false, false).loaded;
-    await new Page(`http://sub.${WEBEXT_DOT_COM}:3000/image.html`, false, false).loaded;
+    await new Page(`http://${SUB_DOT_WEBEXT_DOT_COM}:3000/image.html`, false, false).loaded;
 
     await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
+    await assertEvents(SUB_DOT_WEBEXT_DOT_COM, EVENT_SESSION_START, 0);
   });
 
   it("tracks same subdomain with wildcard navigation in different tabs as the same session", async function() {
@@ -265,13 +267,13 @@ describe("CDP", function() {
     // we consider it to be the same session
     setMinTimeout(this, 10 * 1000);
 
-    const domainWithWildcard = "webext.*";
-    await EWE.testing._setPrefs(cdpDomainsPrefsKey, [domainWithWildcard]);
+    await EWE.testing._setPrefs(cdpDomainsPrefsKey, [WEBEXT_WILDCARD]);
 
     await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`, false, false).loaded;
-    await new Page(`http://sub.${WEBEXT_DOT_COM}:3000/image.html`, false, false).loaded;
+    await new Page(`http://${SUB_DOT_WEBEXT_DOT_COM}:3000/image.html`, false, false).loaded;
 
-    await assertEvents(domainWithWildcard, EVENT_SESSION_START, 1);
+    await assertEvents(WEBEXT_WILDCARD, EVENT_SESSION_START, 1);
+    await assertEvents(SUB_DOT_WEBEXT_DOT_COM, EVENT_SESSION_START, 0);
   });
 
   it("tracks different domain navigations in different tabs as different sessions", async function() {
@@ -317,6 +319,85 @@ describe("CDP", function() {
     }
 
     await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
+  });
+
+  it("prefers exact match over wildcarded and reports for one entry only", async function() {
+    await EWE.testing._setPrefs(cdpDomainsPrefsKey, [
+      /*
+      WARNING: the order makes a difference:
+      * exact matches should come earlier than wildcarded
+        (eg. exact comain earlier than it's wildcarded flavour)
+      */
+      WEBEXT_DOT_COM,
+      WEBEXT_WILDCARD
+    ]);
+
+    await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+
+    await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
+
+    // technically it also matches wildcarded entry too,
+    // but we report for only one entry
+    await assertEvents(WEBEXT_WILDCARD, EVENT_SESSION_START, 0);
+  });
+
+  it("prefers subdomain match over higher-level domain and reports for one entry only", async function() {
+    await EWE.testing._setPrefs(cdpDomainsPrefsKey, [
+      /*
+      WARNING: the order makes a difference:
+      * more specific site buckets should come earlier
+        (eg. subdomain earlier than it's more higher level domain)
+      */
+      SUB_DOT_WEBEXT_DOT_COM,
+      WEBEXT_DOT_COM
+    ]);
+
+    await new Page(`http://${SUB_DOT_WEBEXT_DOT_COM}:3000/image.html`).loaded;
+
+    await assertEvents(SUB_DOT_WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
+
+    // technically it also matches higher-level domain entry too,
+    // but we report for only one entry
+    await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 0);
+  });
+
+  it("supports separate site buckets for search use case", async function() {
+    // we might want to track "search.domain.com" separate from
+    // ["domain.com", "domain.co.uk", etc.]
+
+    setMinTimeout(this, 10 * 1000);
+
+    // bucket 1
+    const SEARCH_WEBEXT_DOT_COM = "search." + WEBEXT_DOT_COM;
+
+    // bucket 2 (wildcard)
+
+    // technically it means we keep 2 separate match entries in Prefs.cdp_domain
+    await EWE.testing._setPrefs(cdpDomainsPrefsKey, [
+      /*
+      WARNING: the order makes a difference:
+      * more specific site buckets should come earlier
+        (eg. subdomain earlier than it's more higher level domain)
+      * exact matches should come earlier than wildcarded
+        (eg. exact comain earlier than it's wildcarded flavour)
+      */
+      SEARCH_WEBEXT_DOT_COM,
+      WEBEXT_WILDCARD
+    ]);
+
+    // bucket 1
+    await new Page(`http://${SEARCH_WEBEXT_DOT_COM}:3000/image.html`).loaded;
+
+    // bucket 2
+    await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+    await new Page("http://webext.co.uk:3000/image.html").loaded; // regional
+    await new Page(`http://${SUB_DOT_WEBEXT_DOT_COM}:3000/image.html`).loaded; // subdomain
+
+    await assertEvents(SEARCH_WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 1);
+    await assertEvents(WEBEXT_WILDCARD, EVENT_PAGE_VIEW, 3);
+
+    await assertEvents(SEARCH_WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
+    await assertEvents(WEBEXT_WILDCARD, EVENT_SESSION_START, 1);
   });
 
   it("supports History API", async function() {

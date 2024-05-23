@@ -103,19 +103,19 @@ export class CdpEventDispatcher {
 }
 
 function getTrackedDomain(domain) {
-  // wildcard match
-  for (const exactDomainOrWildcard of Prefs.cdp_domains) {
-    if (hasWildcard(exactDomainOrWildcard) &&
-        matchesWildcards(domain, exactDomainOrWildcard)) {
-      return exactDomainOrWildcard;
-    }
-  }
-
-  // exact match
+  // exact match first!
   // (subdomains count as matched to top-level domain)
   for (const suffix of domainSuffixes(domain)) {
     if (Prefs.cdp_domains.includes(suffix)) {
       return suffix;
+    }
+  }
+
+  // wildcard match
+  for (const exactDomainOrWildcard of Prefs.cdp_domains) {
+    if (hasWildcard(exactDomainOrWildcard) &&
+      matchesWildcards(domain, exactDomainOrWildcard)) {
+      return exactDomainOrWildcard;
     }
   }
 
@@ -282,19 +282,19 @@ function isNewSession(domainOrDomainWildcard) {
   const lastActivity = activity.getState()[domainOrDomainWildcard];
   if (!lastActivity) {
     // new navigation to domain, new session
-    debug("New session");
+    debug(`New session for ${domainOrDomainWildcard}`);
     return true;
   }
 
   const actuallyPassed = Date.now() - lastActivity;
   if (actuallyPassed > Prefs.cdp_session_expiration_interval) {
     // session expired
-    debug("Session expired");
+    debug(`Session expired for ${domainOrDomainWildcard}`);
     return true;
   }
 
   // pending session
-  debug("Pending session");
+  debug(`Pending session for ${domainOrDomainWildcard}`);
   return false;
 }
 

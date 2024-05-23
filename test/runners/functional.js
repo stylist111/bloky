@@ -565,6 +565,7 @@ async function runTests() {
     extraArgs.push("host-resolver-rules=" + [
       "webext.com",
       "sub.webext.com",
+      "search.webext.com",
       "webext.co.uk"
     ].map(domain => `MAP ${domain} 127.0.0.1`).join(", "));
 
