@@ -17,7 +17,9 @@
 
 import browser from "./browser.js";
 
-import {Prefs} from "./prefs.js";
+import {Prefs, CDP_OPTED_IN, CDP_OPTED_OUT,
+        CDP_OPTED_IN_BY_USER, CDP_OPTED_OUT_BY_USER}
+  from "./prefs.js";
 import {domainSuffixes} from "adblockpluscore/lib/url.js";
 import {isFeatureEnabled} from "adblockpluscore/lib/features.js";
 import {matchesWildcards, hasWildcard} from "adblockpluscore/lib/url.js";
@@ -25,6 +27,7 @@ import {getFrameInfo} from "./frame-state.js";
 import {BlockableEventDispatcher} from "./diagnostics.js";
 import {PersistentState} from "./persistence.js";
 import {trace, debug} from "./debugging.js";
+import {isFirefox} from "./info.js";
 
 const FEATURE_FLAG = "cdp";
 
@@ -78,7 +81,7 @@ export class CdpEventDispatcher {
   /**
    * Attaches a listener function to a event. This listener will be called
    * when the CDP event is emitted if the feature is ON and user did not
-   * opt out (`Prefs.cdp_user_opted_out`).
+   * opt out (`Prefs.cdp_opt_in_out`).
    * @param {function} listener The user defined function that will be called
    *                            once the specified event is emitted.
    * @param {CdpEventOptions} filterOptions The filtering conditions to apply
@@ -152,7 +155,7 @@ async function count(eventType, domain, timeStamp) {
 }
 
 async function onBlockableItem({request}) {
-  if (!isFeatureEnabled(FEATURE_FLAG) || Prefs.cdp_user_opted_out) {
+  if (!isFeatureEnabled(FEATURE_FLAG) || isOptedOut()) {
     return;
   }
 
@@ -250,7 +253,7 @@ export async function clearData(eventType, domain, timeStamp) {
 let startupPromise;
 
 function onCommitted(details) {
-  if (!isFeatureEnabled(FEATURE_FLAG) || Prefs.cdp_user_opted_out) {
+  if (!isFeatureEnabled(FEATURE_FLAG) || isOptedOut()) {
     return;
   }
 
@@ -298,8 +301,13 @@ function isNewSession(domainOrDomainWildcard) {
   return false;
 }
 
+function isOptedOut() {
+  return Prefs.cdp_opt_in_out == CDP_OPTED_OUT ||
+         Prefs.cdp_opt_in_out == CDP_OPTED_OUT_BY_USER;
+}
+
 function onHistoryStateUpdated(details) {
-  if (!isFeatureEnabled(FEATURE_FLAG) || Prefs.cdp_user_opted_out) {
+  if (!isFeatureEnabled(FEATURE_FLAG) || isOptedOut()) {
     return;
   }
 
@@ -358,7 +366,7 @@ export async function markActive(tabId, frameId) {
 export function shouldNotifyActive(tabId, frameId) {
   trace({tabId, frameId});
 
-  if (!isFeatureEnabled(FEATURE_FLAG) || Prefs.cdp_user_opted_out) {
+  if (!isFeatureEnabled(FEATURE_FLAG) || isOptedOut()) {
     return false;
   }
 
@@ -386,6 +394,13 @@ export async function start() {
     startupPromise = (async() => {
       // assuming `Prefs` are initialized and loaded as
       // we use "user opted out" and "domains" settings
+
+      // CDP must be disabled for Firefox by default
+      // and enabled on other browsers. Also we can't override
+      // the value if it was set by user intentionally.
+      if (isFirefox() && Prefs.cdp_opt_in_out == CDP_OPTED_IN) {
+        Prefs.cdp_opt_in_out = CDP_OPTED_OUT;
+      }
 
       new BlockableEventDispatcher().addListener(onBlockableItem, {
         filterType: "blocking"
@@ -422,7 +437,8 @@ export default {
    * @param {boolean} value Pass `true` to opt-out
    */
   async setOptOut(value) {
-    Prefs.cdp_user_opted_out = value;
+    Prefs.cdp_opt_in_out = (value ?
+      CDP_OPTED_OUT_BY_USER : CDP_OPTED_IN_BY_USER);
   },
 
   /**
@@ -430,7 +446,8 @@ export default {
    * @returns {boolean} Returns `true` is user opted out from CDP
    */
   async isOptOut() {
-    return Prefs.cdp_user_opted_out;
+    return Prefs.cdp_opt_in_out == CDP_OPTED_OUT ||
+           Prefs.cdp_opt_in_out == CDP_OPTED_OUT_BY_USER;
   }
 };
 

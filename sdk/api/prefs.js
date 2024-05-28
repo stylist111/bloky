@@ -34,6 +34,11 @@ export const MIGRATED_TO_MV3_WITHOUT_DIFF = 1;
 // `CountableSubscription` or `DiffUpdatableSubscriptions`)
 export const MIGRATED_TO_MV3 = 2;
 
+export const CDP_OPTED_IN = 0;
+export const CDP_OPTED_OUT = 1;
+export const CDP_OPTED_IN_BY_USER = 2;
+export const CDP_OPTED_OUT_BY_USER = 3;
+
 export const defaults = Object.create({
   analytics: {trustedHosts: ["adblockplus.org",
                              "notification.adblockplus.org",
@@ -57,7 +62,7 @@ export const defaults = Object.create({
   migration_subscription_errors: [],
   migration_state: MIGRATED_TO_MV2,
   edge_one_click_allowlisting_delay: 2 * MILLIS_IN_SECOND,
-  cdp_user_opted_out: true,
+  cdp_opt_in_out: CDP_OPTED_IN,
   /*
   WARNING: the order makes a difference:
   * more specific site buckets should come earlier

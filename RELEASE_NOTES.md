@@ -6,6 +6,7 @@ Unreleased
 - Added a CDP subsystem (only collecting and persisting part). (EE-473)
   Exported `EWE.cdp` namespace with `onCdpItem` dispatcher
   and `setOptOut()`, `isOptOut()` methods.
+- CDP is disabled for Firefox only by default. (EE-461)
 
 🍿 1.7.0 - 2024-05-20 🍿
 ========================

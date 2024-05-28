@@ -18,18 +18,71 @@
 import expect from "expect";
 import {EWE, addFilter, setFeatureFlags, resetFeatureFlags, getTestEvents}
   from "./messaging.js";
-import {isChromiumBased, Page, setMinTimeout, executeScript, waitForAssertion}
+import {isChromiumBased, isFirefox, Page, setMinTimeout,
+        executeScript, waitForAssertion}
   from "./utils.js";
 
-describe("CDP", function() {
-  const WEBEXT_DOT_COM = "webext.com";
-  const SUB_DOT_WEBEXT_DOT_COM = "sub." + WEBEXT_DOT_COM;
-  const WEBEXT_WILDCARD = "webext.*";
+const WEBEXT_DOT_COM = "webext.com";
+const SUB_DOT_WEBEXT_DOT_COM = "sub." + WEBEXT_DOT_COM;
+const WEBEXT_WILDCARD = "webext.*";
 
-  const EVENT_PAGE_VIEW = "page_view";
-  const EVENT_SESSION_START = "session_start";
-  const EVENT_BLOCKING = "blocking";
+const EVENT_PAGE_VIEW = "page_view";
+const EVENT_SESSION_START = "session_start";
+const EVENT_BLOCKING = "blocking";
 
+async function assertEvents(domain, eventType, size) {
+  await EWE.debugging.ensureEverythingHasSaved();
+
+  let data;
+  await waitForAssertion(async() => {
+    data = await EWE.testing._getCdpData(eventType, domain);
+    expect(data.length).toEqual(size);
+  });
+  return data;
+}
+
+describe("CDP opt-out", function() {
+  const KEY = "cdp_opt_in_out";
+
+  it("is disabled by default for Firefox only", async function() {
+    expect(await EWE.cdp.isOptOut()).toEqual(isFirefox());
+  });
+
+  it("checks to be opted out on Firefox by default", async function() {
+    if (!isFirefox()) {
+      this.skip();
+    }
+
+    expect(await EWE.cdp.isOptOut()).toEqual(true);
+  });
+
+  it("checks to be opted in on Firefox by user", async function() {
+    if (!isFirefox()) {
+      this.skip();
+    }
+
+    await EWE.cdp.setOptOut(false);
+    expect(await EWE.cdp.isOptOut()).toEqual(false);
+    expect(await EWE.testing._getPrefs(KEY)).toEqual(2); // OPTED_IN_BY_USER
+  });
+
+  it("checks to be opted in not on Firefox by default", async function() {
+    if (isFirefox()) {
+      this.skip();
+    }
+
+    expect(await EWE.cdp.isOptOut()).toEqual(false);
+  });
+
+  it("checks to be opted out by user", async function() {
+    await EWE.cdp.setOptOut(true);
+
+    expect(await EWE.cdp.isOptOut()).toEqual(true);
+    expect(await EWE.testing._getPrefs(KEY)).toEqual(3); // OPTED_OUT_BY_USER
+  });
+});
+
+describe("CDP on Chromium-based browsers", function() {
   const cdpDomainsPrefsKey = "cdp_domains";
   const intervalPrefsKey = "cdp_session_expiration_interval";
   let originalCdpDomains;
@@ -64,17 +117,6 @@ describe("CDP", function() {
     await EWE.cdp.setOptOut(originalUserOptedOut);
   });
 
-  async function assertEvents(domain, eventType, size) {
-    await EWE.debugging.ensureEverythingHasSaved();
-
-    let data;
-    await waitForAssertion(async() => {
-      data = await EWE.testing._getCdpData(eventType, domain);
-      expect(data.length).toEqual(size);
-    });
-    return data;
-  }
-
   it("tracks only 'Prefs.cdp_domains' list", async function() {
     await new Page("http://localhost:3000/image.html").loaded;
     await assertEvents(WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 0);
@@ -94,15 +136,21 @@ describe("CDP", function() {
 
   it("does not track if feature flag is off", async function() {
     await setFeatureFlags({cdp: false});
+    await addFilter(`image.png$domain=${WEBEXT_DOT_COM}`);
     await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
     await assertEvents(WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 0);
+    await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 0);
+    await assertEvents(WEBEXT_DOT_COM, EVENT_BLOCKING, 0);
   });
 
-  it("does not track if user opted out", async function() {
+  it("does not track if opted out by user", async function() {
     await EWE.cdp.setOptOut(true);
     expect(await EWE.cdp.isOptOut()).toEqual(true);
+    await addFilter(`image.png$domain=${WEBEXT_DOT_COM}`);
     await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
     await assertEvents(WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 0);
+    await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 0);
+    await assertEvents(WEBEXT_DOT_COM, EVENT_BLOCKING, 0);
   });
 
   it("tracks 'blocking' events", async function() {
