@@ -11,7 +11,6 @@ variables:
   OLDEST_CHROMIUM_MV2_VERSION: "77.0.3865.0"
   OLDEST_CHROMIUM_MV3_VERSION: "124.0.6367.60"
   OLDEST_FIREFOX_VERSION: "68.0"
-  OLDEST_WINDOWS_EDGE_VERSION: "79.0.309"
   # Latest Firefox version using browser local storage in incognito mode
   BSL_FIREFOX_INCOGNITO_VERSION: "114.0.2"
 
@@ -220,17 +219,18 @@ func:v2:firefox:oldest:
     TEST_PARAMS: v2 $BROWSER
 
 .edge_install_windows: &edge_install_windows
-  - Invoke-WebRequest
-      -Uri "${Env:CI_API_V4_URL}/projects/${Env:CI_PROJECT_ID_MAINSTREAM}/packages/generic/microsoft-edge/79.0.309/MicrosoftEdgeEnterpriseX64.msi"
-      -Headers @{'JOB-TOKEN' = $Env:CI_JOB_TOKEN}
-      -OutFile 'MicrosoftEdgeEnterpriseX64.msi'
-  - Start-Process msiexec -ArgumentList "/i MicrosoftEdgeEnterpriseX64.msi /norestart /qn" -Wait
   - $Env:EdgePath = "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
-  - if (!(Test-Path $Env:EdgePath)) {
-      Write-Warning "Edge not found on `"$Env:EdgePath`". Retrying Edge install...";
-      Start-Process msiexec -ArgumentList "/i MicrosoftEdgeEnterpriseX64.msi /norestart /qn" -Wait;
+  - try {
+      choco install -y microsoft-edge;
       if (!(Test-Path $Env:EdgePath)) {
-        throw "Edge not found on `"$Env:EdgePath`" after retrying install"
+        throw "Edge not found on `"$Env:EdgePath`"";
+      }
+    }
+    catch {
+      Write-Warning "$_ - Retrying Edge install...";
+      choco install -y microsoft-edge;
+      if (!(Test-Path $Env:EdgePath)) {
+        throw "Edge not found on `"$Env:EdgePath`"";
       }
     }
 
@@ -256,12 +256,12 @@ func:v2:firefox:oldest:
 func:v2:windows:edge:
   extends: .functional-windows
   script:
-    - npm test -- v2 edge $OLDEST_WINDOWS_EDGE_VERSION --timeout=10000
+    - npm test -- v2 edge latest --timeout=10000
 
 func:v2:windows:edge:incognito:
   extends: .functional-windows
   script:
-    - npm test -- v2 edge $OLDEST_WINDOWS_EDGE_VERSION --incognito --timeout=10000
+    - npm test -- v2 edge latest --incognito --timeout=10000
 
 # Functional tests - MV3
 func:v3:chromium:latest:

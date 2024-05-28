@@ -61,7 +61,7 @@ Manifest V2:
 
 * Chromium 77 and latest
 * Firefox 68 and latest
-* Edge 79
+* Edge latest
 
 Manifest V3:
 

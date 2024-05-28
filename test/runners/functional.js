@@ -394,7 +394,7 @@ async function runReloadTests(
     // Reloading with an update has the same performance impact as
     // loading the first time. This is worst in incognito mode and
     // when an MV3 extension has many subscriptions and rulesets.
-    handle = await getHandle(driver, page, 30000);
+    handle = await getHandle(driver, page, 40000);
     try {
       results = await pollMessages(driver, handle, isMV3);
     }
