@@ -59,11 +59,12 @@ function parseArguments() {
   }
 }
 
-async function runPerformanceTests(driver, browser) {
+async function waitForPerformanceExtension(driver, browser) {
   if (browser == "firefox") {
     throw new Error("Firefox is not supported by the performance tests");
   }
 
+  console.log("Waiting for performance extension ...");
   await getHandle(driver, "/status.html", 25000);
   let elem = await driver.findElement(webdriver.By.id("status"));
   if ((await elem.getAttribute("errors")) == "true") {
@@ -73,10 +74,10 @@ async function runPerformanceTests(driver, browser) {
     }
     throw new Error(errors.join("\n"));
   }
+}
 
+async function runLighthouseTest(driver) {
   const url = "https://www.example.com";
-  await driver.navigate().to(url);
-
   const options = {
     logLevel: "silent",
     output: "json",
@@ -84,7 +85,7 @@ async function runPerformanceTests(driver, browser) {
     port: remoteDebuggingPort
   };
 
-  console.log(`Running lighthouse on ${url} ...`);
+  console.log(`\nRunning lighthouse on ${url} ...`);
   const {lhr} = await lighthouse(url, options);
 
   console.log({runWarnings: lhr.runWarnings});
@@ -109,7 +110,8 @@ export async function run() {
   const options = {extensionPaths, extraArgs, headless};
   try {
     driver = await getDriver(browser, version, options);
-    await runPerformanceTests(driver, browser);
+    await waitForPerformanceExtension(driver, browser);
+    await runLighthouseTest(driver);
   }
   finally {
     if (driver) {

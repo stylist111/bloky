@@ -24,7 +24,8 @@ import {cleanup} from "./clean-mv3-files.js";
 import {isMain} from "./utils.js";
 import {commonRun} from "./prepare-mv3-common.js";
 
-import {subAntiCVLive, subEasylistLive, subAcceptableAdsLive} from "../test/api-fixtures.js";
+import {subAntiCVLive, subEasylistLive, subAcceptableAdsLive,
+        subIDontCareAboutCookiesLive} from "../test/api-fixtures.js";
 
 async function run() {
   const scriptsOutputDir = path.join(process.cwd(), "scriptsOutput", "performance-mv3");
@@ -32,7 +33,8 @@ async function run() {
 
   await cleanup(scriptsOutputDir);
 
-  const subs = [subAntiCVLive, subEasylistLive, subAcceptableAdsLive];
+  const subs = [subAntiCVLive, subEasylistLive, subAcceptableAdsLive,
+                subIDontCareAboutCookiesLive];
   await fs.promises.writeFile(subsInput, JSON.stringify(subs, null, 2), {encoding: "utf-8"});
 
   await commonRun(subsInput, scriptsOutputDir);

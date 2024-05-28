@@ -120,6 +120,18 @@ export const subAcceptableAdsLocal = {
   diff_url: `${TEST_ADMIN_PAGES_URL}/updatable_subscription/diff.json`
 };
 
+// Subscriptions listed in core/data/subscriptions.json
+
+export const subIDontCareAboutCookiesLive = {
+  id: "2090F374-29D9-4202-B2CE-139D6492D95E",
+  type: "cookies",
+  title: "I don't care about cookies",
+  homepage: "https://www.i-dont-care-about-cookies.eu/",
+  url: "https://easylist-downloads.adblockplus.org/v3/full/i_dont_care_about_cookies.txt",
+  mv2_url: "https://easylist-downloads.adblockplus.org/i_dont_care_about_cookies.txt",
+  diff_url: "https://easylist-downloads.adblockplus.org/v3/diff/i_dont_care_about_cookies/80f68ab902e84e22fec62dae473ba69bc74019c8.json"
+};
+
 // Subscriptions listed in test/scripts/custom-subscriptions.json and
 // core/data/subscriptions.json
 
@@ -131,7 +143,7 @@ export const subEasylistLive = {
   homepage: "https://easylist.to/",
   url: "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt",
   mv2_url: "https://easylist-downloads.adblockplus.org/easylist.txt",
-  diff_url: "https://easylist-downloads.adblockplus.org/v3/diff/easylist/94c5ce779bc0e71e92a2996a9c775099a5cb9182.json"
+  diff_url: "https://easylist-downloads.adblockplus.org/v3/diff/easylist/80f68ab902e84e22fec62dae473ba69bc74019c8.json"
 };
 
 export const subEasylistPlusGermanyLive = {
@@ -157,7 +169,7 @@ export const subAcceptableAdsLive = {
   homepage: "https://acceptableads.com/",
   url: "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt",
   mv2_url: "https://easylist-downloads.adblockplus.org/exceptionrules.txt",
-  diff_url: "https://easylist-downloads.adblockplus.org/v3/diff/exceptionrules/94c5ce779bc0e71e92a2996a9c775099a5cb9182.json"
+  diff_url: "https://easylist-downloads.adblockplus.org/v3/diff/exceptionrules/80f68ab902e84e22fec62dae473ba69bc74019c8.json"
 };
 
 export const subAntiCVLive = {
@@ -167,7 +179,7 @@ export const subAntiCVLive = {
   homepage: "https://github.com/abp-filters/abp-filters-anti-cv",
   url: "https://easylist-downloads.adblockplus.org/v3/full/abp-filters-anti-cv.txt",
   mv2_url: "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt",
-  diff_url: "https://easylist-downloads.adblockplus.org/v3/diff/abp-filters-anti-cv/94c5ce779bc0e71e92a2996a9c775099a5cb9182.json"
+  diff_url: "https://easylist-downloads.adblockplus.org/v3/diff/abp-filters-anti-cv/80f68ab902e84e22fec62dae473ba69bc74019c8.json"
 };
 
 // Subscriptions not listed anywhere else

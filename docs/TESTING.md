@@ -313,7 +313,7 @@ The performace of the engine is measured using
 To run the performance tests:
 
 ```
-npm run test-performance {v2|v3} {chromium|edge}
+npm run test-performance -- {v2|v3} {chromium|edge} [--forceHeadful]
 ```
 
 Note: Firefox is not supported by the performance tests.

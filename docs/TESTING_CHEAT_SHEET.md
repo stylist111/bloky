@@ -45,7 +45,7 @@ npm test -- {v2|v3} {chromium|firefox|edge} [version|channel] --timeout 10000 --
 ## Performance
 
 ```
-npm run test-performance {v2|v3} {chromium|edge}
+npm run test-performance -- {v2|v3} {chromium|edge} [--forceHeadful]
 ```
 
 ## Docker runs
