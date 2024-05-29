@@ -15,9 +15,15 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* eslint-env node */
 /* eslint-disable no-console */
 
+import fs from "fs";
+import path from "path";
+
 import {BROWSERS} from "@eyeo/get-browser-binary";
+
+const screenshotsPath = path.join(process.cwd(), "test", "screenshots");
 
 export async function getHandle(driver, page, timeout = 8000) {
   let url;
@@ -57,4 +63,14 @@ export async function getDriver(browser, version, options) {
   console.log(`Browser used for tests: ${cap.getBrowserName()} ${cap.getBrowserVersion()}`);
 
   return driver;
+}
+
+export async function writeScreenshot(driver, filename) {
+  const data = await driver.takeScreenshot();
+  const base64Data = data.replace(/^data:image\/png;base64,/, "");
+
+  await fs.promises.mkdir(screenshotsPath, {recursive: true});
+  const screenshotFile = path.join(screenshotsPath, filename);
+  await fs.promises.writeFile(screenshotFile, base64Data, "base64");
+  console.warn(`Screenshot written to ${screenshotFile}`);
 }

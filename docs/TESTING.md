@@ -361,6 +361,13 @@ docker build -t functional -f test/dockerfiles/functional.Dockerfile .
 docker run --cpus=2 --memory=6g --shm-size=2g -it --entrypoint npm functional run test-performance {v2|v3} {chromium|edge}
 ```
 
+In order to access the screenshots for failing tests run the following command,
+which copies the screenshots to the `<destination>` folder:
+
+```shell
+docker cp $(docker ps -aqf ancestor=functional | head -n 1):/webext-sdk/test/screenshots <destination>
+```
+
 #### ARM architecture (M1/M2 Apple Silicon)
 
 The previous examples assume an Intel/AMD architecture on the running machine.

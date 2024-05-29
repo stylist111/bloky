@@ -78,7 +78,7 @@ EWE.start(startupInfo).then(async firstRun => {
         }
 
         return errors.length == 0;
-      }, 3000);
+      }, 5000);
     }
     catch (err) {
       // The errors array will be populated with the error message

@@ -22,10 +22,10 @@ import path from "path";
 
 import yargs from "yargs";
 import lighthouse from "lighthouse";
-import webdriver from "selenium-webdriver";
+import {By, until} from "selenium-webdriver";
 import {BROWSERS} from "@eyeo/get-browser-binary";
 
-import {getHandle, getDriver} from "./utils.js";
+import {getHandle, getDriver, writeScreenshot} from "./utils.js";
 
 const remoteDebuggingPort = 33559;
 
@@ -66,10 +66,10 @@ async function waitForPerformanceExtension(driver, browser) {
 
   console.log("Waiting for performance extension ...");
   await getHandle(driver, "/status.html", 25000);
-  let elem = await driver.findElement(webdriver.By.id("status"));
+  let elem = await driver.findElement(By.id("status"));
   if ((await elem.getAttribute("errors")) == "true") {
     let errors = [];
-    for (let error of await elem.findElements(webdriver.By.css("ul"))) {
+    for (let error of await elem.findElements(By.css("ul"))) {
       errors.push(await error.getAttribute("innerText"));
     }
     throw new Error(errors.join("\n"));
@@ -97,12 +97,66 @@ async function runLighthouseTest(driver) {
   }
 }
 
+async function runHistoryTest(driver) {
+  const failure = "History test FAILED";
+
+  const url = "https://dev.motiv.fm";
+  console.log(`\nRunning history test on ${url} ...`);
+  await driver.navigate().to(url);
+
+  const sidebarCss = ".layout-sidebar__menu > .layout-menu-menu-list__item > a";
+  let sidebarLinks = await driver.findElements(By.css(sidebarCss));
+
+  // Make sure sidebar elements are not initially stale
+  let becameStale = false;
+  for (let elem of sidebarLinks) {
+    try {
+      await driver.wait(until.stalenessOf(elem), 500);
+      becameStale = true;
+    }
+    catch (e) {} // Sidebar elements may never become stale
+  }
+  if (becameStale) {
+    sidebarLinks = await driver.findElements(By.css(sidebarCss));
+  }
+
+  if (sidebarLinks.length < 3) {
+    throw new Error(`${failure}: At least 3 sidebar links are expected`);
+  }
+
+  let currentUrl;
+  for (let elem of sidebarLinks) {
+    try {
+      await elem.click();
+    }
+    catch (err) {
+      await writeScreenshot(driver, "screenshot.png");
+      if (err.name == "StaleElementReferenceError") {
+        throw new Error(`${failure}: Clicking on a stale element`);
+      }
+      else {
+        throw err;
+      }
+    }
+
+    let nextUrl;
+    await driver.wait(async() => {
+      nextUrl = await driver.getCurrentUrl();
+      return nextUrl != currentUrl;
+    }, 1000, `${failure}: Clicking an element didn't load a new URL. Current: ${currentUrl}`);
+    currentUrl = nextUrl;
+  }
+
+  console.log("History test OK.");
+}
+
 export async function run() {
   const {manifest, browser, version, params} = parseArguments();
   const headless = !params.forceHeadful;
   const extensionPaths =
     [path.resolve(process.cwd(), "dist", `performance-m${manifest}`)];
-  const extraArgs = [`--remote-debugging-port=${remoteDebuggingPort}`];
+  const extraArgs = [`--remote-debugging-port=${remoteDebuggingPort}`,
+                     "--window-size=1920,1080"];
 
   console.log(`Getting ready to run ${browser} ${version} ...`);
 
@@ -112,6 +166,7 @@ export async function run() {
     driver = await getDriver(browser, version, options);
     await waitForPerformanceExtension(driver, browser);
     await runLighthouseTest(driver);
+    await runHistoryTest(driver);
   }
   finally {
     if (driver) {

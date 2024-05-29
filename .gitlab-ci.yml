@@ -483,11 +483,21 @@ int:bundle:
     - !reference [.avoid-flaky-run, rules]
 
 # Performance tests
-performance:v3:chromium:
+.performance:
   extends: .functional
   stage: performance
   script:
-    - docker run $DOCKER_OPTIONS --entrypoint npm $FUNCTIONAL_IMAGE run test-performance v3 chromium
+    - docker run $DOCKER_OPTIONS --entrypoint npm $FUNCTIONAL_IMAGE run test-performance $PARAMS
+
+perf:v2:chromium:
+  extends: .performance
+  variables:
+    PARAMS: v2 chromium
+
+perf:v3:chromium:
+  extends: .performance
+  variables:
+    PARAMS: v3 chromium
 
 include:
   - template: Jobs/SAST.gitlab-ci.yml
