@@ -360,9 +360,15 @@ export async function updateSubscriptionInformation() {
           // Existing bundled subscription, after the update it's still a
           // bundled subscription.
 
-          let {filterText} = await getFilterText(
-            subscriptionInfo, addonBundledSubscriptionsPath);
-          subscription.setFilterText(filterText);
+          try {
+            let {filterText} = await getFilterText(
+              subscriptionInfo, addonBundledSubscriptionsPath);
+            subscription.setFilterText(filterText);
+          }
+          catch (e) {
+            // We already warn if the file doesn't exist on startup, so
+            // we can ignore an error loading the bundled file here.
+          }
 
           subscription.diffURL = subscriptionInfo.diff_url;
           subscription.title = subscriptionInfo.title;

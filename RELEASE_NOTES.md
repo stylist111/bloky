@@ -1,6 +1,11 @@
 Unreleased
 ==========
 
+## Fixes
+
+- Now we handle "Failed to fetch subscription content" and eyeometry
+  is started anyway. (EE-556)
+
 ## Internal
 
 - Added a CDP subsystem (only collecting and persisting part). (EE-473)
