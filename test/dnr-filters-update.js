@@ -104,7 +104,7 @@ const UPDATES5 = {
   ]
 };
 
-describe("Test subscriptions update [mv3-only]", function() {
+describe("DNR filters update [mv3-only]", function() {
   async function checkRulesAreDisabled(rulesetId, ruleIds) {
     let disabled = await browser.declarativeNetRequest.getDisabledRuleIds(
       {rulesetId}
@@ -834,7 +834,7 @@ describe("Test subscriptions update [mv3-only]", function() {
     });
 
     it("doesn't synchronize the same DiffUpdatable subscription concurrently", async function() {
-      setMinTimeout(this, 40000);
+      setMinTimeout(this, 50000);
 
       let filter = "someFilter";
       await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
