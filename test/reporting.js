@@ -19,7 +19,7 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 
 import {TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN,
-        TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
+        TEST_ADMIN_PAGES_URL, TEST_PAGES_PORT} from "./test-server-urls.js";
 import {Page, Popup, setMinTimeout, waitForAssertion, isMV3, isEdge,
         executeScript, getVisibleElement, setEndpointResponse}
   from "./utils.js";
@@ -802,6 +802,18 @@ describe("Reporting", function() {
             let tab = await browser.tabs.get(tabId);
             return tab.url.endsWith("image.html") && tab.status == "complete";
           });
+
+          // Sometimes "image.html" page loading is finished before "image.png"
+          // is loaded, so awaiting for it to avoid the flakiness. (EE-221)
+          await waitForAssertion(async() => {
+            const logs = getTestEvents("reporting.onBlockableItem.unmatchedEventOptions");
+            expect(logs).toEqual(expect.arrayContaining([
+              expect.arrayContaining([expect.objectContaining({
+                request: expectedRequestUrl(`http://${CROSS_DOMAIN}:${TEST_PAGES_PORT}/image.png`)
+              })])
+            ]));
+          });
+
           return tabId;
         },
         [{
