@@ -30,6 +30,9 @@ export let platform;
 export let platformVersion;
 export let manifestVersion;
 
+export let sdkName = "eyeo-webext-ad-filtering-solution";
+export let sdkVersion = webpackDotenvPlugin.VERSION;
+
 initializeDefaultAddonInfo();
 
 export function getBrowserVersion() {

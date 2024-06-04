@@ -6,12 +6,22 @@ Unreleased
 - Now we handle "Failed to fetch subscription content" and eyeometry
   is started anyway. (EE-556)
 
-## Internal
+## CDP
 
-- Added a CDP subsystem (only collecting and persisting part). (EE-473)
-  Exported `EWE.cdp` namespace with `onCdpItem` dispatcher
-  and `setOptOut()`, `isOptOut()` methods.
-- CDP is disabled for Firefox only by default. (EE-461)
+- CDP is still behind the CDP feature flag introduced in an earlier release, and
+  is inactive unless the feature flag is enabled. See
+  https://gitlab.com/adblockinc/ext/adblockplus/adblockplus/-/issues/1683 for
+  more information on CDP.
+- A new property has been added to the argument object passed to
+  `EWE.start()`. The `cdp` property is used to specify URLs and credentials for
+  the CDP telemetry server. (EE-473)
+- The number of sessions for configured partner's domains is now gathered to be
+  sent to the CDP telemetry server. (EE-473)
+- Exported `EWE.cdp` namespace with `onCdpItem` dispatcher and `setOptOut()`,
+  `isOptOut()` methods for allowing users to opt out of data
+  collection. (EE-461)
+- Firefox users are opted out of CDP by default. Chrome and other browser users
+  are opted in by default. (EE-461)
 
 🍿 1.7.0 - 2024-05-20 🍿
 ========================

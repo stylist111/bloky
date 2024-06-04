@@ -15,8 +15,12 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* eslint-env node */
+
 import path from "path";
 import url from "url";
+import fs from "fs";
+import Dotenv from "dotenv-webpack";
 
 let dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
@@ -24,6 +28,16 @@ export function getConfig(filename) {
   let inputFilepath = path.join("../../../sdk/api", filename);
   let mockedFilename = filename.replace(".js", ".mocked.js");
   let outputFilepath = path.join("../test/unit/dist", mockedFilename);
+
+  // package.env.VERSION is used by the Dotenv plugin in to inject version
+  // information into code like info.js at build time.
+  const packageJson = JSON.parse(
+    fs.readFileSync(
+      path.join(dirname, "../../../package.json"),
+      "utf8"
+    )
+  );
+  process.env.VERSION = packageJson.version;
 
   let webpackConfig = {
     mode: "production", // preserves the names for easier debugging
@@ -57,7 +71,13 @@ export function getConfig(filename) {
     },
     externals: {
       perf_hooks: path.resolve(dirname, "./perf_hooks.mock.js")
-    }
+    },
+    plugins: [
+      new Dotenv({
+        systemvars: true,
+        prefix: "webpackDotenvPlugin."
+      })
+    ]
   };
   return {
     outputFilepath: "../dist/" + mockedFilename,

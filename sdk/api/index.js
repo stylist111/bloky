@@ -34,6 +34,7 @@ import * as reporting from "./reporting.js";
 import * as testing from "./testing.js";
 import * as prefs from "./prefs.js";
 import * as cdp from "./cdp.js";
+import * as cdpMetricsUploader from "./cdp-metrics-uploader.js";
 import {setSnippetLibrary} from "./content-filter.js";
 import {setAddonInfo} from "./info.js";
 import {filterEngine} from "./core.js";
@@ -220,10 +221,16 @@ async function onInstalled(details) {
  *   experimental feature. If used, this will send a single POST request on
  *   first start to the specified telemetry URL, using the specified bearer
  *   token for authentication, with metadata about the extension.
- * @param {string} [addonInfo.telemetry.url] The URL of the location where
- *   user active pings will be sent to.
+ * @param {string} [addonInfo.telemetry.url] The URL of the location where user
+ * active pings will be sent to.
  * @param {string} [addonInfo.telemetry.bearer] The Bearer token accompanying
- *   the telemetry URL.
+ *   telemetry API calls.
+ * @param {string} [addonInfo.cdp.aggregateUrl] The URL to send aggregate
+ *   metrics to CDP.
+ * @param {string} [addonInfo.cdp.pingUrl] The URL to do the user counting ping
+ *   to CDP.
+ * @param {string} [addonInfo.cdp.bearer] The Bearer token accompanying CDP API
+ *   calls.
  * @param {Object?} [addonInfo.featureFlags] Boolean flags for enabling and
  *   disabling features. If a flag is not set here, the default value will be
  *   used. The default value is the correct state for the flag according to the
@@ -276,6 +283,10 @@ export async function start(addonInfo) {
 
   if (addonInfo && addonInfo.telemetry) {
     telemetry.start(addonInfo.telemetry);
+  }
+
+  if (addonInfo && addonInfo.cdp) {
+    await cdpMetricsUploader.start(addonInfo.cdp);
   }
 
   return firstRun;

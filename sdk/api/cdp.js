@@ -125,7 +125,7 @@ function getTrackedDomain(domain) {
   return null;
 }
 
-function emitEvent(eventType, domain, timeStamp) {
+async function emitEvent(eventType, domain, timeStamp) {
   for (const [listener, filterOptions] of listeners) {
     if (filterOptions.eventType && filterOptions.eventType != eventType) {
       continue;
@@ -135,7 +135,7 @@ function emitEvent(eventType, domain, timeStamp) {
       continue;
     }
 
-    listener({eventType, domain, timeStamp});
+    await listener({eventType, domain, timeStamp});
   }
 }
 
@@ -151,7 +151,7 @@ async function count(eventType, domain, timeStamp) {
   timestamps.push(timeStamp);
   await state.save();
 
-  emitEvent(eventType, domain, timeStamp);
+  await emitEvent(eventType, domain, timeStamp);
 }
 
 async function onBlockableItem({request}) {
@@ -177,6 +177,27 @@ export async function _awaitSavingComplete() {
     await state.awaitSavingComplete();
   }
   await activity.awaitSavingComplete();
+}
+
+/**
+ * Set the events. This is for use in testing, in real use the data is set by
+ * listening to events.
+ * @param {string} eventType The type of event (see EVENT_...)
+ * @param {string} domain The domain to get events for
+ * @param {Array<Number>} timestamps Event timestamps for the event type and
+ *   domain
+ * @ignore
+ */
+export async function setData(eventType, domain, timestamps) {
+  trace({eventType, domain});
+
+  if (!isFeatureEnabled(FEATURE_FLAG)) {
+    return;
+  }
+
+  const state = events.get(eventType);
+  state.getState()[domain] = timestamps;
+  await state.save();
 }
 
 /**

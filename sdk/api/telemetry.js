@@ -145,11 +145,16 @@ async function ping(telemetry) {
 
   let pingToken;
   try {
-    pingToken = await fetchWithBearerToken(
+    let serverResponse = await postWithBearerToken(
       telemetry.url,
       telemetry.bearer,
       {payload}
     );
+    pingToken = serverResponse.token;
+
+    if (!pingToken) {
+      throw new Error("Telemetry server response did not include a token.");
+    }
   }
   catch (e) {
     error(`Telemetry error: ${e.message}`);
@@ -180,7 +185,17 @@ async function ping(telemetry) {
   return true;
 }
 
-async function fetchWithBearerToken(url, bearer, body) {
+/**
+ * Uses the fetch API to make a POST request to the specified endpoint.
+ *
+ * @param {string} url URL for the request.
+ * @param {string} bearer Bearer token for use in Authentication header.
+ * @param {Object} body Request body, will be serialized into JSON to send.
+ * @return {Promise<Object>} Promise resolves with the object returned from the
+ *   server. Rejects if the request fails, or the response has an error status.
+ * @ignore
+ */
+export async function postWithBearerToken(url, bearer, body) {
   trace({url, bearer, body});
   const response = await fetch(url, {
     method: "POST",
@@ -197,14 +212,7 @@ async function fetchWithBearerToken(url, bearer, body) {
     );
   }
 
-  const data = await response.json();
-  let pingToken = data.token;
-
-  if (!pingToken) {
-    throw new Error("Telemetry server response did not include a token.");
-  }
-
-  return pingToken;
+  return await response.json();
 }
 
 async function getExtensionMetadata() {
@@ -239,10 +247,10 @@ async function getExtensionMetadata() {
     application_version: info.applicationVersion,
 
     // Used to identify this specific project.
-    addon_name: "eyeo-webext-ad-filtering-solution",
+    addon_name: info.sdkName,
 
     // The Engine's current version. See the Dotenv plugin in webpack.config.js
-    addon_version: webpackDotenvPlugin.VERSION,
+    addon_version: info.sdkVersion,
 
     // The name of the extension using the Engine.
     extension_name: info.addonName,

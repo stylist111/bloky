@@ -43,10 +43,11 @@ import {getSubscriptionRulesetMap} from "./subscriptions-utils.js";
 import {IO} from "./io.js";
 import {FilterStorage} from "adblockpluscore/lib/filterStorage.js";
 import * as telemetry from "./telemetry.js";
+import * as cdpMetricsUploader from "./cdp-metrics-uploader.js";
 
 import * as sitekey from "./sitekey.js";
 import {getDeferredMessages} from "./content-message-deferrer.js";
-import {getData, clearData, clearActivity} from "./cdp.js";
+import {setData, getData, clearData, clearActivity} from "./cdp.js";
 import {_clear} from "./frame-state.js";
 
 export default {
@@ -296,6 +297,9 @@ export default {
   stopTelemetry: telemetry.stop,
   startTelemetry: telemetry.start,
   resetTelemetry: telemetry.reset,
+  stopCdpMetricsUploader: cdpMetricsUploader.stop,
+  startCdpMetricsUploader: cdpMetricsUploader.start,
+  resetCdpMetricsUploader: cdpMetricsUploader.reset,
 
   clearSkipInitRulesets,
   checkAndInitSubscriptions,
@@ -326,6 +330,7 @@ export default {
     return await browser.declarativeNetRequest.getDynamicRules();
   },
 
+  _setCdpData: setData,
   _getCdpData: getData,
   _clearCdpData: clearData,
   _clearCdpActivity: clearActivity,

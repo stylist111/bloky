@@ -15,12 +15,16 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import browser from "webextension-polyfill";
 import expect from "expect";
-import {EWE, addFilter, setFeatureFlags, resetFeatureFlags, getTestEvents}
-  from "./messaging.js";
-import {isChromiumBased, isFirefox, Page, setMinTimeout,
-        executeScript, waitForAssertion}
-  from "./utils.js";
+import {v4 as uuidv4} from "uuid";
+import {MILLIS_IN_MINUTE, MILLIS_IN_DAY, MILLIS_IN_HOUR} from "adblockpluscore/lib/time.js";
+
+import {EWE, addFilter, setFeatureFlags, getTestEvents} from "./messaging.js";
+import {TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
+import {isChromiumBased, isFirefox, Page, setMinTimeout, executeScript,
+        waitForAssertion, clearRequestLogs, getRequestLogs, setEndpointResponse,
+        clearEndpointResponse} from "./utils.js";
 
 const WEBEXT_DOT_COM = "webext.com";
 const SUB_DOT_WEBEXT_DOT_COM = "sub." + WEBEXT_DOT_COM;
@@ -83,6 +87,17 @@ describe("CDP opt-out", function() {
 });
 
 describe("CDP on Chromium-based browsers", function() {
+  const PING_URL = `${TEST_ADMIN_PAGES_URL}/cdp-ping`;
+  const AGGREGATE_URL = `${TEST_ADMIN_PAGES_URL}/cdp-aggregate`;
+  const CDP_BEARER = "SSBhbSBhIGJlYXIuLi4gZXIuLi4gUkFXUg==";
+  const CDP_STORAGE_KEY = "ewe:cdp-metrics-uploader";
+
+  const CDP_ARGS = {
+    pingUrl: PING_URL,
+    aggregateUrl: AGGREGATE_URL,
+    bearer: CDP_BEARER
+  };
+
   const cdpDomainsPrefsKey = "cdp_domains";
   const intervalPrefsKey = "cdp_session_expiration_interval";
   let originalCdpDomains;
@@ -100,6 +115,8 @@ describe("CDP on Chromium-based browsers", function() {
   });
 
   beforeEach(async function() {
+    setMinTimeout(this, 6000);
+
     await EWE.testing._clearCdpData();
     await EWE.testing._clearCdpActivity();
     await setFeatureFlags({cdp: true});
@@ -109,7 +126,6 @@ describe("CDP on Chromium-based browsers", function() {
 
   afterEach(async function() {
     await EWE.testing._clearCdpData();
-    await resetFeatureFlags();
   });
 
   after(async function() {
@@ -613,5 +629,401 @@ describe("CDP on Chromium-based browsers", function() {
         eventType: EVENT_SESSION_START
       }])
     ]));
+  });
+
+  describe("Metric Upload Startup", function() {
+    beforeEach(async function() {
+      // This beforeEach resetting the uploader is needed because of the feature
+      // flag being off by default and turned on in a beforeEach in this test
+      // suite. When the feature flag is gone, then this block can be removed.
+      await EWE.testing.resetCdpMetricsUploader();
+      await EWE.testing.startCdpMetricsUploader(CDP_ARGS);
+    });
+
+    it("assigns a random cutoff time of day for session bucketing on first run", async function() {
+      let storage = await browser.storage.local.get([CDP_STORAGE_KEY]);
+
+      expect(storage[CDP_STORAGE_KEY]).toHaveProperty("dayCutoffMinutes");
+
+      let dayCutoffMinutes = storage[CDP_STORAGE_KEY].dayCutoffMinutes;
+
+      expect(dayCutoffMinutes).toBeGreaterThanOrEqual(0);
+      expect(dayCutoffMinutes).toBeLessThan(MILLIS_IN_DAY / MILLIS_IN_MINUTE);
+    });
+  });
+
+  describe("Metric Upload Running", function() {
+    // Some of these unfortunately need to wait for pings to happen (or not
+    // happen) and so can get a bit long.
+    setMinTimeout(this, 15000);
+
+    beforeEach(async function() {
+      await clearRequestLogs();
+      await EWE.testing.resetCdpMetricsUploader();
+    });
+
+    afterEach(async function() {
+      await clearEndpointResponse(AGGREGATE_URL);
+    });
+
+    const ERROR_DELAY_MS = MILLIS_IN_HOUR;
+
+    async function startMetricsUploaderWithTestArgs() {
+      await EWE.testing.startCdpMetricsUploader(CDP_ARGS, ERROR_DELAY_MS);
+    }
+
+    function createBundleToSend() {
+      let now = Date.now();
+      return {
+        siteId: WEBEXT_DOT_COM,
+        referenceDateLocal: "2024-05-13",
+        utid: uuidv4(),
+        scheduledSendTimestamp: now
+      };
+    }
+
+    function createBundleNotToSendYet() {
+      let now = Date.now();
+      return {
+        siteId: WEBEXT_DOT_COM,
+        referenceDateLocal: "2024-05-14",
+        utid: uuidv4(),
+        scheduledSendTimestamp: now + MILLIS_IN_DAY
+      };
+    }
+
+    it("creates a scheduled aggregate metrics upload on the first visit to a site", async function() {
+      await startMetricsUploaderWithTestArgs();
+
+      await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+
+      await waitForAssertion(async() => {
+        let storageResult =
+          await browser.storage.local.get([CDP_STORAGE_KEY]);
+        let storage = storageResult[CDP_STORAGE_KEY];
+        expect(storage.bundles).toEqual([{
+          siteId: WEBEXT_DOT_COM,
+          referenceDateLocal: expect.stringMatching(/\d{4}-\d{2}-\d{2}/),
+          utid: expect.any(String),
+          scheduledSendTimestamp: expect.any(Number)
+        }]);
+
+        let minScheduledSend =
+            new Date(storage.bundles[0].referenceDateLocal).getTime() +
+            storage.dayCutoffMinutes * MILLIS_IN_MINUTE +
+            MILLIS_IN_DAY;
+        expect(storage.bundles[0].scheduledSendTimestamp)
+          .toBeGreaterThanOrEqual(minScheduledSend);
+        expect(storage.bundles[0].scheduledSendTimestamp)
+          .toBeLessThanOrEqual(minScheduledSend + 12 * MILLIS_IN_HOUR);
+      });
+    });
+
+    it("does not create a new scheduled aggregate metrics upload on the second session on a site on the same day", async function() {
+      let now = new Date();
+      let nowMinutes = now.getHours() * 60 + now.getMinutes();
+      let minutesInDay = MILLIS_IN_DAY / MILLIS_IN_MINUTE;
+      let minutesInHour = MILLIS_IN_HOUR / MILLIS_IN_MINUTE;
+
+      // I want to control the dayCutoffMinutes for this test to make sure that
+      // the multiple sessions that we have here will never cross the boundary
+      // into a new day.
+      await browser.storage.local.set({
+        [CDP_STORAGE_KEY]: {
+          dayCutoffMinutes: (nowMinutes + 12 * minutesInHour) % minutesInDay
+        }
+      });
+
+      await startMetricsUploaderWithTestArgs();
+
+      const defaultInterval = await EWE.testing._getPrefs(intervalPrefsKey);
+      try {
+        // 0 second, so sessions end immediately
+        await EWE.testing._setPrefs(intervalPrefsKey, 0);
+
+        let page = new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`);
+        await page.loaded;
+        // Larger than session expiration interval of 0, so it's considered as a
+        // new session
+        await page.reload();
+
+        // We need to make sure we wait long enough for the second session to
+        // have been picked up.
+        await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 2);
+
+        let storageResult =
+          await browser.storage.local.get([CDP_STORAGE_KEY]);
+        let storage = storageResult[CDP_STORAGE_KEY];
+        expect(storage.bundles).toHaveLength(1);
+      }
+      finally {
+        await EWE.testing._setPrefs(intervalPrefsKey, defaultInterval);
+      }
+    });
+
+    it("creates a new scheduled aggregate metrics upload when a session happens on a new day", async function() {
+      await browser.storage.local.set({
+        [CDP_STORAGE_KEY]: {
+          dayCutoffMinutes: 0,
+          bundles: [createBundleNotToSendYet()]
+        }
+      });
+
+      await startMetricsUploaderWithTestArgs();
+
+      await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+
+      await waitForAssertion(async() => {
+        let storageResult =
+          await browser.storage.local.get([CDP_STORAGE_KEY]);
+        let storage = storageResult[CDP_STORAGE_KEY];
+        expect(storage.bundles).toHaveLength(2);
+      });
+    });
+
+    it("sends scheduled aggregate metrics", async function() {
+      let dayCutoffMinutes = 0;
+      let bundleToSend = createBundleToSend();
+      await browser.storage.local.set({
+        [CDP_STORAGE_KEY]: {
+          dayCutoffMinutes,
+          bundles: [bundleToSend]
+        }
+      });
+
+      let dayStart = new Date(bundleToSend.referenceDateLocal).getTime();
+      await EWE.testing._setCdpData(EVENT_SESSION_START, WEBEXT_DOT_COM, [
+        dayStart,
+        dayStart + 3 * MILLIS_IN_HOUR,
+        dayStart + 24 * MILLIS_IN_HOUR // this one shouldn't be included
+      ]);
+
+      await startMetricsUploaderWithTestArgs();
+
+      let payload;
+
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(CDP_ARGS.aggregateUrl);
+        expect(requestLogs).toHaveLength(1);
+        payload = requestLogs[0].body.payload;
+      });
+
+      expect(payload.site_id).toEqual(bundleToSend.siteId);
+      expect(payload.sessions_count).toEqual(2);
+      expect(payload.reference_date_local)
+        .toEqual(bundleToSend.referenceDateLocal);
+      expect(payload.utid).toEqual(bundleToSend.utid);
+
+      expect(payload.application)
+        .toEqual(expect.oneOf(["firefox", "chrome", "headlesschrome", "edg"]));
+      expect(payload.application_version).toEqual(expect.stringMatching(/^\d+(.\d+)+$/));
+      expect(payload.addon_name).toEqual("eyeo-webext-ad-filtering-solution");
+      expect(payload.addon_version).toEqual(expect.stringMatching(/^\d+(.\d+)+$/));
+
+      let storageResult =
+          await browser.storage.local.get([CDP_STORAGE_KEY]);
+      let storage = storageResult[CDP_STORAGE_KEY];
+
+      expect(storage.dayCutoffMinutes).toEqual(dayCutoffMinutes);
+      expect(storage.bundles).toHaveLength(0);
+
+      expect(await EWE.testing._getCdpData(EVENT_SESSION_START, WEBEXT_DOT_COM))
+        .toEqual([dayStart + 24 * MILLIS_IN_HOUR]);
+    });
+
+    it("does not send aggregate metrics that aren't scheduled to send yet", async function() {
+      let dayCutoffMinutes = 0;
+      let bundleToSend = createBundleToSend();
+      let bundleToNotSendYet = createBundleNotToSendYet();
+      await browser.storage.local.set({
+        [CDP_STORAGE_KEY]: {
+          dayCutoffMinutes,
+          bundles: [bundleToNotSendYet, bundleToSend]
+        }
+      });
+
+      await startMetricsUploaderWithTestArgs();
+
+      // We include one that IS sent in this test case to make sure we don't get
+      // a false positive by checking too early.
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(CDP_ARGS.aggregateUrl);
+        expect(requestLogs).toHaveLength(1);
+        let payload = requestLogs[0].body.payload;
+        expect(payload.utid).toEqual(bundleToSend.utid);
+      });
+
+      await waitForAssertion(async() => {
+        let storageResult =
+          await browser.storage.local.get([CDP_STORAGE_KEY]);
+        let storage = storageResult[CDP_STORAGE_KEY];
+
+        expect(storage.dayCutoffMinutes).toEqual(dayCutoffMinutes);
+        expect(storage.bundles).toEqual([bundleToNotSendYet]);
+      });
+    });
+
+    it("clears metrics without sending them if user has opted out", async function() {
+      await EWE.cdp.setOptOut(true);
+
+      let dayCutoffMinutes = 0;
+      let bundleToSend = createBundleToSend();
+      await browser.storage.local.set({
+        [CDP_STORAGE_KEY]: {
+          dayCutoffMinutes,
+          bundles: [bundleToSend]
+        }
+      });
+
+      await startMetricsUploaderWithTestArgs();
+
+      await waitForAssertion(async() => {
+        let storageResult =
+          await browser.storage.local.get([CDP_STORAGE_KEY]);
+        let storage = storageResult[CDP_STORAGE_KEY];
+        expect(storage.bundles).toHaveLength(0);
+      });
+
+      let requestLogs = await getRequestLogs(CDP_ARGS.aggregateUrl);
+      expect(requestLogs).toHaveLength(0);
+    });
+
+    it("sets an error timestamp if the server has an error", async function() {
+      await setEndpointResponse(AGGREGATE_URL, {}, "POST", 500);
+
+      let dayCutoffMinutes = 0;
+      let bundleToSend = createBundleToSend();
+      await browser.storage.local.set({
+        [CDP_STORAGE_KEY]: {
+          dayCutoffMinutes,
+          bundles: [bundleToSend]
+        }
+      });
+
+      await startMetricsUploaderWithTestArgs();
+
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(CDP_ARGS.aggregateUrl);
+        expect(requestLogs).toHaveLength(1);
+      });
+
+      let storageResult =
+          await browser.storage.local.get([CDP_STORAGE_KEY]);
+      let storage = storageResult[CDP_STORAGE_KEY];
+
+      expect(storage.lastError).toEqual(expect.any(Number));
+      // We expect the lastError to be in the form of a date that is close to
+      // now, but there are multiple threads and this test is async so it won't
+      // be exactly equal.
+      expect(Math.abs(storage.lastError - Date.now()))
+        .toBeLessThan(MILLIS_IN_MINUTE);
+      expect(storage.bundles).toHaveLength(1);
+    });
+
+    it("does not send again if the error resend interval has not passed yet", async function() {
+      let now = Date.now();
+      let dayCutoffMinutes = 0;
+      let bundleToSend = createBundleToSend();
+      let originalStorage = {
+        dayCutoffMinutes,
+        bundles: [bundleToSend],
+        lastError: now - ERROR_DELAY_MS / 2
+      };
+      await browser.storage.local.set({
+        [CDP_STORAGE_KEY]: originalStorage
+      });
+
+      await startMetricsUploaderWithTestArgs();
+
+      // Unfortunately no better condition to wait for here, because what we
+      // expect is that nothing changes.
+      await new Promise(r => setTimeout(r, 1000));
+
+      let requestLogs = await getRequestLogs(CDP_ARGS.aggregateUrl);
+      expect(requestLogs).toHaveLength(0);
+
+      let storageResult =
+        await browser.storage.local.get([CDP_STORAGE_KEY]);
+      let storage = storageResult[CDP_STORAGE_KEY];
+      expect(storage).toEqual(originalStorage);
+    });
+
+    it("resumes sending bundles after the error resend interval passed yet", async function() {
+      let now = Date.now();
+      let dayCutoffMinutes = 0;
+      let bundleToSend = createBundleToSend();
+      await browser.storage.local.set({
+        [CDP_STORAGE_KEY]: {
+          dayCutoffMinutes,
+          bundles: [bundleToSend],
+          lastError: now - ERROR_DELAY_MS - MILLIS_IN_MINUTE
+        }
+      });
+
+      await startMetricsUploaderWithTestArgs();
+
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(CDP_ARGS.aggregateUrl);
+        expect(requestLogs).toHaveLength(1);
+      });
+
+      let storageResult =
+        await browser.storage.local.get([CDP_STORAGE_KEY]);
+      let storage = storageResult[CDP_STORAGE_KEY];
+      expect(storage.bundles).toEqual([]);
+      expect(storage).not.toHaveProperty("lastError");
+    });
+  });
+
+  describe("Metric Upload Integration", function() {
+    it("can successfully send an aggregation payload to the eyeometry staging server", async function() {
+      setMinTimeout(this, 11000);
+      await EWE.testing.resetCdpMetricsUploader();
+
+      // These credentials can be set by setting the environment variables with
+      // the same name before running webpack.
+      let cdpArgs = {
+        pingUrl: webpackDotenvPlugin.EWE_CDP_PING_URL,
+        aggregateUrl: webpackDotenvPlugin.EWE_CDP_AGGREGATE_URL,
+        bearer: webpackDotenvPlugin.EWE_CDP_BEARER
+      };
+      if (!cdpArgs.pingUrl || !cdpArgs.aggregateUrl || !cdpArgs.bearer) {
+        this.skip();
+      }
+
+      let now = Date.now();
+
+      let dayCutoffMinutes = 0;
+      let bundleToSend = {
+        siteId: WEBEXT_DOT_COM,
+        referenceDateLocal: "2024-05-13",
+        utid: uuidv4(),
+        scheduledSendTimestamp: now
+      };
+
+      await browser.storage.local.set({
+        [CDP_STORAGE_KEY]: {
+          dayCutoffMinutes,
+          bundles: [bundleToSend]
+        }
+      });
+
+      let dayStart = new Date(bundleToSend.referenceDateLocal).getTime();
+      await EWE.testing._setCdpData(EVENT_SESSION_START, WEBEXT_DOT_COM, [
+        dayStart,
+        dayStart + 3 * MILLIS_IN_HOUR
+      ]);
+
+      await EWE.testing.startCdpMetricsUploader(cdpArgs);
+
+      await waitForAssertion(async() => {
+        let storageResult =
+          await browser.storage.local.get([CDP_STORAGE_KEY]);
+        let storage = storageResult[CDP_STORAGE_KEY];
+
+        expect(storage.bundles).toEqual([]);
+        expect(storage).not.toHaveProperty("lastError");
+      }, 10000);
+    });
   });
 });

@@ -88,6 +88,16 @@ const BUILD_TIME_ROUTES = [
       token: new Date().toISOString()
     }),
     method: "POST"
+  },
+  {
+    url: "/cdp-ping",
+    response: () => "{}",
+    method: "POST"
+  },
+  {
+    url: "/cdp-aggregate",
+    response: () => "{}",
+    method: "POST"
   }
 ];
 

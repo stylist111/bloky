@@ -471,6 +471,12 @@ startupInfo.telemetry = {
   bearer: "SSBhbSBhIGJlYXIuLi4gZXIuLi4gUkFXUg=="
 };
 
+startupInfo.cdp = {
+  pingUrl: "http://localhost:3003/cdp-ping",
+  aggregateUrl: "http://localhost:3003/cdp-aggregate",
+  bearer: "SSBhbSBhIGJlYXIuLi4gZXIuLi4gUkFXUg=="
+};
+
 // This line is here to be overridden in the update tests, which tests that when
 // we pass a different value here it's actually set. Generally, our test
 // extension should use our SDK's default features when running tests unless the
