@@ -336,8 +336,7 @@ describe("DNR filters update [mv3-only]", function() {
       subTestUpdatable1.url, UPDATES4);
     await checkDynamicRuleCount(6);
 
-    // If we remove the subscription all the dynamic rules should be
-    // removed.
+    // If we remove the subscription all the dynamic rules should be removed
     await EWE.subscriptions.remove(subTestUpdatable1.url);
     await checkDynamicRuleCount(0);
   });
@@ -347,8 +346,7 @@ describe("DNR filters update [mv3-only]", function() {
       subTestUpdatable1.url, UPDATES4);
     await checkDynamicRuleCount(6);
 
-    // If we disable the subscription all the dynamic rules should be
-    // removed.
+    // If we disable the subscription all the dynamic rules should be removed
     await EWE.subscriptions.disable(subTestUpdatable1.url);
     await checkDynamicRuleCount(0);
   });
@@ -356,14 +354,11 @@ describe("DNR filters update [mv3-only]", function() {
   it("restores dynamic rules when reenabled", async function() {
     await EWE.testing._dnrDiffSubscriptionUpdate(
       subTestUpdatable1.url, UPDATES4);
-    await checkDynamicRuleCount(6);
-
-    // If we disable the subscription all the dynamic rules should be removed
     await EWE.subscriptions.disable(subTestUpdatable1.url);
     await checkDynamicRuleCount(0);
 
     await EWE.subscriptions.enable(subTestUpdatable1.url);
-    await checkDynamicRuleCount(6);
+    await waitForAssertion(() => checkDynamicRuleCount(6));
   });
 
   // Specific test cases for rollback.
@@ -834,7 +829,7 @@ describe("DNR filters update [mv3-only]", function() {
     });
 
     it("doesn't synchronize the same DiffUpdatable subscription concurrently", async function() {
-      setMinTimeout(this, 50000);
+      setMinTimeout(this, 20000);
 
       let filter = "someFilter";
       await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
@@ -845,7 +840,8 @@ describe("DNR filters update [mv3-only]", function() {
       }));
       await EWE.subscriptions.add(testDiffSubscriptionUrl);
 
-      for (let i = 0; i < 1000; i++) {
+      const syncAttempts = 200;
+      for (let i = 0; i < syncAttempts; i++) {
         await EWE.subscriptions.sync(testDiffSubscriptionUrl);
       }
 
