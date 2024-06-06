@@ -47,7 +47,9 @@ import * as cdpMetricsUploader from "./cdp-metrics-uploader.js";
 
 import * as sitekey from "./sitekey.js";
 import {getDeferredMessages} from "./content-message-deferrer.js";
-import {setData, getData, clearData, clearActivity} from "./cdp.js";
+import {setData, getData, clearData, clearActivity,
+        _restoreConfig, _setConfig}
+  from "./cdp.js";
 import {_clear} from "./frame-state.js";
 
 export default {
@@ -330,6 +332,8 @@ export default {
     return await browser.declarativeNetRequest.getDynamicRules();
   },
 
+  _setCdpConfig: _setConfig,
+  _restoreCdpConfig: _restoreConfig,
   _setCdpData: setData,
   _getCdpData: getData,
   _clearCdpData: clearData,

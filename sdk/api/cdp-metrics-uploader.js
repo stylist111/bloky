@@ -90,7 +90,7 @@ async function onCdpItem(event) {
   }
 
   let bundleExists = state.bundles.some(
-    bundle => bundle.siteId == event.domain &&
+    bundle => bundle.siteId == event.siteId &&
       bundle.referenceDateLocal == referenceDateLocal
   );
 
@@ -104,7 +104,7 @@ async function onCdpItem(event) {
       Math.random() * 12 * MILLIS_IN_HOUR; // random delay of up to 12 hours
 
   state.bundles.push({
-    siteId: event.domain,
+    siteId: event.siteId,
     referenceDateLocal,
     utid: uuidv4(),
     scheduledSendTimestamp

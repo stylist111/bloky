@@ -29,17 +29,18 @@ import {isChromiumBased, isFirefox, Page, setMinTimeout, executeScript,
 const WEBEXT_DOT_COM = "webext.com";
 const SUB_DOT_WEBEXT_DOT_COM = "sub." + WEBEXT_DOT_COM;
 const WEBEXT_WILDCARD = "webext.*";
+const SITE_ID = "siteId";
 
 const EVENT_PAGE_VIEW = "page_view";
 const EVENT_SESSION_START = "session_start";
 const EVENT_BLOCKING = "blocking";
 
-async function assertEvents(domain, eventType, size) {
+async function assertEvents(siteId, eventType, size) {
   await EWE.debugging.ensureEverythingHasSaved();
 
   let data;
   await waitForAssertion(async() => {
-    data = await EWE.testing._getCdpData(eventType, domain);
+    data = await EWE.testing._getCdpData(eventType, siteId);
     expect(data.length).toEqual(size);
   });
   return data;
@@ -98,9 +99,7 @@ describe("CDP on Chromium-based browsers", function() {
     bearer: CDP_BEARER
   };
 
-  const cdpDomainsPrefsKey = "cdp_domains";
   const intervalPrefsKey = "cdp_session_expiration_interval";
-  let originalCdpDomains;
   let originalUserOptedOut;
 
   before(async function() {
@@ -109,8 +108,6 @@ describe("CDP on Chromium-based browsers", function() {
     if (!isChromiumBased()) {
       this.skip();
     }
-
-    originalCdpDomains = await EWE.testing._getPrefs(cdpDomainsPrefsKey);
     originalUserOptedOut = await EWE.cdp.isOptOut();
   });
 
@@ -120,7 +117,7 @@ describe("CDP on Chromium-based browsers", function() {
     await EWE.testing._clearCdpData();
     await EWE.testing._clearCdpActivity();
     await setFeatureFlags({cdp: true});
-    await EWE.testing._setPrefs(cdpDomainsPrefsKey, [WEBEXT_DOT_COM]);
+    await EWE.testing._setCdpConfig([[[WEBEXT_DOT_COM], SITE_ID]]);
     await EWE.cdp.setOptOut(false);
   });
 
@@ -129,34 +126,74 @@ describe("CDP on Chromium-based browsers", function() {
   });
 
   after(async function() {
-    await EWE.testing._setPrefs(cdpDomainsPrefsKey, originalCdpDomains);
+    await EWE.testing._restoreCdpConfig();
     await EWE.cdp.setOptOut(originalUserOptedOut);
   });
 
-  it("tracks only 'Prefs.cdp_domains' list", async function() {
+  it("tracks only listed domains", async function() {
     await new Page("http://localhost:3000/image.html").loaded;
-    await assertEvents(WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 0);
+    await assertEvents(SITE_ID, EVENT_PAGE_VIEW, 0);
   });
 
   it("supports domain wildcards", async function() {
-    await EWE.testing._setPrefs(cdpDomainsPrefsKey, [WEBEXT_WILDCARD]);
+    await EWE.testing._setCdpConfig([
+      [[WEBEXT_WILDCARD], SITE_ID]
+    ]);
     await new Page(`http:/${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-    await assertEvents(WEBEXT_WILDCARD, EVENT_PAGE_VIEW, 1);
+    await assertEvents(SITE_ID, EVENT_PAGE_VIEW, 1);
   });
 
-  it("tracks tracked domains subdomains, but reports exactly tracked domain", async function() {
+  it("tracks domains and subdomains, but reports siteIds", async function() {
+    setMinTimeout(this, 10000);
+
+    await EWE.testing._setCdpConfig([
+      [[WEBEXT_DOT_COM], SITE_ID]
+    ]);
+
+    await addFilter(`image.png$domain=${WEBEXT_DOT_COM}`);
+
     await new Page(`http://${SUB_DOT_WEBEXT_DOT_COM}:3000/image.html`).loaded;
-    await assertEvents(WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 1);
+
+    await assertEvents(WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 0);
+    await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 0);
     await assertEvents(SUB_DOT_WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 0);
+
+    await assertEvents(SITE_ID, EVENT_PAGE_VIEW, 1);
+    await assertEvents(SITE_ID, EVENT_SESSION_START, 1);
+    await assertEvents(SITE_ID, EVENT_BLOCKING, 1);
+  });
+
+  it("reports same siteId for different domains", async function() {
+    const LOCALHOST = "localhost";
+
+    await EWE.testing._setCdpConfig([
+      [[WEBEXT_DOT_COM, LOCALHOST], SITE_ID] // multiple domains, one siteId
+    ]);
+    await addFilter("image.png");
+
+    await new Page(`http://${SUB_DOT_WEBEXT_DOT_COM}:3000/image.html`).loaded;
+    await new Page(`http://${LOCALHOST}:3000/image.html`).loaded;
+
+    for (const eachSiteId of
+      [WEBEXT_DOT_COM, SUB_DOT_WEBEXT_DOT_COM, LOCALHOST]) {
+      for (const eachEventType of
+        [EVENT_PAGE_VIEW, EVENT_SESSION_START, EVENT_BLOCKING]) {
+        await assertEvents(eachSiteId, eachEventType, 0);
+      }
+    }
+
+    await assertEvents(SITE_ID, EVENT_PAGE_VIEW, 2);
+    await assertEvents(SITE_ID, EVENT_SESSION_START, 1);
+    await assertEvents(SITE_ID, EVENT_BLOCKING, 2);
   });
 
   it("does not track if feature flag is off", async function() {
     await setFeatureFlags({cdp: false});
     await addFilter(`image.png$domain=${WEBEXT_DOT_COM}`);
     await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-    await assertEvents(WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 0);
-    await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 0);
-    await assertEvents(WEBEXT_DOT_COM, EVENT_BLOCKING, 0);
+    await assertEvents(SITE_ID, EVENT_PAGE_VIEW, 0);
+    await assertEvents(SITE_ID, EVENT_SESSION_START, 0);
+    await assertEvents(SITE_ID, EVENT_BLOCKING, 0);
   });
 
   it("does not track if opted out by user", async function() {
@@ -164,31 +201,31 @@ describe("CDP on Chromium-based browsers", function() {
     expect(await EWE.cdp.isOptOut()).toEqual(true);
     await addFilter(`image.png$domain=${WEBEXT_DOT_COM}`);
     await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-    await assertEvents(WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 0);
-    await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 0);
-    await assertEvents(WEBEXT_DOT_COM, EVENT_BLOCKING, 0);
+    await assertEvents(SITE_ID, EVENT_PAGE_VIEW, 0);
+    await assertEvents(SITE_ID, EVENT_SESSION_START, 0);
+    await assertEvents(SITE_ID, EVENT_BLOCKING, 0);
   });
 
   it("tracks 'blocking' events", async function() {
     await addFilter(`image.png$domain=${WEBEXT_DOT_COM}`);
     await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-    await assertEvents(WEBEXT_DOT_COM, EVENT_BLOCKING, 1);
+    await assertEvents(SITE_ID, EVENT_BLOCKING, 1);
   });
 
   it("tracks 'page_view' events", async function() {
     await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-    await assertEvents(WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 1);
+    await assertEvents(SITE_ID, EVENT_PAGE_VIEW, 1);
   });
 
   it("tracks 'session_start' events", async function() {
     await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-    await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
+    await assertEvents(SITE_ID, EVENT_SESSION_START, 1);
   });
 
   it("return events timestamps", async function() {
     await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
 
-    const data = await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
+    const data = await assertEvents(SITE_ID, EVENT_SESSION_START, 1);
 
     // every item is an event timestamp
     expect(data).toEqual(expect.arrayContaining([expect.any(Number)]));
@@ -202,13 +239,13 @@ describe("CDP on Chromium-based browsers", function() {
     const page = new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`);
     await page.loaded;
 
-    await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
+    await assertEvents(SITE_ID, EVENT_SESSION_START, 1);
 
     // within session expiration interval,
     // so it's considered as session continuation, not a new session
     await page.reload();
 
-    await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
+    await assertEvents(SITE_ID, EVENT_SESSION_START, 1);
   });
 
   it("considers tab reload larger than default expiration interval as a new session", async function() {
@@ -225,7 +262,7 @@ describe("CDP on Chromium-based browsers", function() {
       // so it's considered as a new session
       await page.reload();
 
-      await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 2);
+      await assertEvents(SITE_ID, EVENT_SESSION_START, 2);
     }
     finally {
       await EWE.testing._setPrefs(intervalPrefsKey, defaultInterval);
@@ -254,7 +291,7 @@ describe("CDP on Chromium-based browsers", function() {
       // so reload is considered as a new session
       await page1.reload();
 
-      await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 2);
+      await assertEvents(SITE_ID, EVENT_SESSION_START, 2);
     }
     finally {
       await EWE.testing._setPrefs(intervalPrefsKey, defaultInterval);
@@ -278,7 +315,7 @@ describe("CDP on Chromium-based browsers", function() {
 
       await new Page(url).loaded;
 
-      await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 2);
+      await assertEvents(SITE_ID, EVENT_SESSION_START, 2);
     }
     finally {
       await EWE.testing._setPrefs(intervalPrefsKey, defaultInterval);
@@ -298,7 +335,7 @@ describe("CDP on Chromium-based browsers", function() {
       await new Page(url, false, false).loaded;
     }
 
-    await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
+    await assertEvents(SITE_ID, EVENT_SESSION_START, 1);
   });
 
   it("tracks same domain with wildcard navigation in different tabs as the same session", async function() {
@@ -306,12 +343,14 @@ describe("CDP on Chromium-based browsers", function() {
     // we consider it to be the same session
     setMinTimeout(this, 30 * 1000);
 
-    await EWE.testing._setPrefs(cdpDomainsPrefsKey, [WEBEXT_WILDCARD]);
+    await EWE.testing._setCdpConfig([
+      [[WEBEXT_WILDCARD], SITE_ID]
+    ]);
 
     await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`, false, false).loaded;
     await new Page("http://webext.co.uk:3000/image.html", false, false).loaded;
 
-    await assertEvents(WEBEXT_WILDCARD, EVENT_SESSION_START, 1);
+    await assertEvents(SITE_ID, EVENT_SESSION_START, 1);
   });
 
   it("tracks same subdomain navigation in different tabs as the same session", async function() {
@@ -322,8 +361,7 @@ describe("CDP on Chromium-based browsers", function() {
     await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`, false, false).loaded;
     await new Page(`http://${SUB_DOT_WEBEXT_DOT_COM}:3000/image.html`, false, false).loaded;
 
-    await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
-    await assertEvents(SUB_DOT_WEBEXT_DOT_COM, EVENT_SESSION_START, 0);
+    await assertEvents(SITE_ID, EVENT_SESSION_START, 1);
   });
 
   it("tracks same subdomain with wildcard navigation in different tabs as the same session", async function() {
@@ -331,25 +369,31 @@ describe("CDP on Chromium-based browsers", function() {
     // we consider it to be the same session
     setMinTimeout(this, 10 * 1000);
 
-    await EWE.testing._setPrefs(cdpDomainsPrefsKey, [WEBEXT_WILDCARD]);
+    await EWE.testing._setCdpConfig([
+      [[WEBEXT_WILDCARD], SITE_ID]
+    ]);
 
     await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`, false, false).loaded;
     await new Page(`http://${SUB_DOT_WEBEXT_DOT_COM}:3000/image.html`, false, false).loaded;
 
-    await assertEvents(WEBEXT_WILDCARD, EVENT_SESSION_START, 1);
-    await assertEvents(SUB_DOT_WEBEXT_DOT_COM, EVENT_SESSION_START, 0);
+    await assertEvents(SITE_ID, EVENT_SESSION_START, 1);
   });
 
   it("tracks different domain navigations in different tabs as different sessions", async function() {
     setMinTimeout(this, 10 * 1000);
 
-    await EWE.testing._setPrefs(cdpDomainsPrefsKey, [WEBEXT_DOT_COM, "localhost"]);
+    const LOCALHOST = "localhost";
+    const LOCALHOST_SITE_ID = "localhostSiteId";
+    await EWE.testing._setCdpConfig([
+      [[WEBEXT_DOT_COM], SITE_ID],
+      [[LOCALHOST], LOCALHOST_SITE_ID]
+    ]);
 
     await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`, false, false).loaded;
-    await new Page("http://localhost:3000/image.html", false, false).loaded;
+    await new Page(`http://${LOCALHOST}:3000/image.html`, false, false).loaded;
 
-    await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
-    await assertEvents("localhost", EVENT_SESSION_START, 1);
+    await assertEvents(SITE_ID, EVENT_SESSION_START, 1);
+    await assertEvents(LOCALHOST_SITE_ID, EVENT_SESSION_START, 1);
   });
 
   it("does not consider the session finished if having other tabs for the host after one tab closed", async function() {
@@ -362,12 +406,12 @@ describe("CDP on Chromium-based browsers", function() {
     const page2 = new Page(url, false, false);
     await page2.loaded;
 
-    await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
+    await assertEvents(SITE_ID, EVENT_SESSION_START, 1);
 
     await page2.remove();
     await page1.reload();
 
-    await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
+    await assertEvents(SITE_ID, EVENT_SESSION_START, 1);
   });
 
   it("does not consider the session finished when all the tabs are closed", async function() {
@@ -382,47 +426,110 @@ describe("CDP on Chromium-based browsers", function() {
       await new Page(url).loaded;
     }
 
-    await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
+    await assertEvents(SITE_ID, EVENT_SESSION_START, 1);
   });
 
-  it("prefers exact match over wildcarded and reports for one entry only", async function() {
-    await EWE.testing._setPrefs(cdpDomainsPrefsKey, [
+  it("prefers exact entries over wildcarded and reports for one entry only", async function() {
+    const WILDCARD_SITE_ID = "wildcardSiteId";
+
+    await EWE.testing._setCdpConfig([
       /*
       WARNING: the order makes a difference:
       * exact matches should come earlier than wildcarded
         (eg. exact comain earlier than it's wildcarded flavour)
       */
-      WEBEXT_DOT_COM,
-      WEBEXT_WILDCARD
+      [[WEBEXT_DOT_COM], SITE_ID],
+      [[WEBEXT_WILDCARD], WILDCARD_SITE_ID]
     ]);
 
     await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
 
-    await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
+    await assertEvents(SITE_ID, EVENT_SESSION_START, 1);
 
     // technically it also matches wildcarded entry too,
     // but we report for only one entry
-    await assertEvents(WEBEXT_WILDCARD, EVENT_SESSION_START, 0);
+    await assertEvents(WILDCARD_SITE_ID, EVENT_SESSION_START, 0);
   });
 
-  it("prefers subdomain match over higher-level domain and reports for one entry only", async function() {
-    await EWE.testing._setPrefs(cdpDomainsPrefsKey, [
-      /*
-      WARNING: the order makes a difference:
-      * more specific site buckets should come earlier
-        (eg. subdomain earlier than it's more higher level domain)
-      */
-      SUB_DOT_WEBEXT_DOT_COM,
-      WEBEXT_DOT_COM
+  it("prefers subdomain entries over higher level domain with exact match", async function() {
+    setMinTimeout(this, 15 * 1000);
+
+    const SUBDOMAIN_SITE_ID = "subdomainSiteId";
+
+    /*
+    WARNING: the order makes a difference:
+    * more specific site buckets should come earlier
+      (eg. subdomain earlier than it's higher level domain)
+    */
+
+    // The right order
+    await EWE.testing._setCdpConfig([
+      [[SUB_DOT_WEBEXT_DOT_COM], SUBDOMAIN_SITE_ID], // before WEBEXT_DOT_COM
+      [[WEBEXT_DOT_COM], SITE_ID]
     ]);
 
     await new Page(`http://${SUB_DOT_WEBEXT_DOT_COM}:3000/image.html`).loaded;
 
-    await assertEvents(SUB_DOT_WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
+    await assertEvents(SUBDOMAIN_SITE_ID, EVENT_SESSION_START, 1);
 
-    // technically it also matches higher-level domain entry too,
-    // but we report for only one entry
-    await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 0);
+    // technically it also matches higher level domain entry too,
+    // but we report for only one entry (the first wins)
+    await assertEvents(SITE_ID, EVENT_SESSION_START, 0);
+
+    await EWE.testing._clearCdpData(EVENT_SESSION_START, SITE_ID);
+    await EWE.testing._clearCdpData(EVENT_SESSION_START, SUBDOMAIN_SITE_ID);
+
+    // The wrong order
+    await EWE.testing._setCdpConfig([
+      [[WEBEXT_DOT_COM], SITE_ID], // it should come after more specific
+      [[SUB_DOT_WEBEXT_DOT_COM], SUBDOMAIN_SITE_ID]
+    ]);
+
+    await new Page(`http://${SUB_DOT_WEBEXT_DOT_COM}:3000/image.html`).loaded;
+
+    await assertEvents(SUBDOMAIN_SITE_ID, EVENT_SESSION_START, 0);
+    await assertEvents(SITE_ID, EVENT_SESSION_START, 1);
+  });
+
+  it("prefers subdomain entries over higher level domain with wildcarded match", async function() {
+    setMinTimeout(this, 15 * 1000);
+
+    const SUB_DOT_WEBEXT_WILDCARD = "sub." + WEBEXT_WILDCARD;
+    const SUBDOMAIN_SITE_ID = "subdomainSiteId";
+
+    /*
+    WARNING: the order makes a difference:
+    * more specific site buckets should come earlier
+      (eg. subdomain earlier than it's higher level domain)
+    */
+
+    // The right order
+    await EWE.testing._setCdpConfig([
+      [[SUB_DOT_WEBEXT_WILDCARD], SUBDOMAIN_SITE_ID], // before WEBEXT_WILDCARD
+      [[WEBEXT_WILDCARD], SITE_ID]
+    ]);
+
+    await new Page(`http://${SUB_DOT_WEBEXT_DOT_COM}:3000/image.html`).loaded;
+
+    await assertEvents(SUBDOMAIN_SITE_ID, EVENT_SESSION_START, 1);
+
+    // technically it also matches higher level domain entry too,
+    // but we report for only one entry (the first wins)
+    await assertEvents(SITE_ID, EVENT_SESSION_START, 0);
+
+    await EWE.testing._clearCdpData(EVENT_SESSION_START, SITE_ID);
+    await EWE.testing._clearCdpData(EVENT_SESSION_START, SUBDOMAIN_SITE_ID);
+
+    // The wrong order
+    await EWE.testing._setCdpConfig([
+      [[WEBEXT_WILDCARD], SITE_ID], // it should come after more specific
+      [[SUB_DOT_WEBEXT_WILDCARD], SUBDOMAIN_SITE_ID]
+    ]);
+
+    await new Page(`http://${SUB_DOT_WEBEXT_DOT_COM}:3000/image.html`).loaded;
+
+    await assertEvents(SUBDOMAIN_SITE_ID, EVENT_SESSION_START, 0);
+    await assertEvents(SITE_ID, EVENT_SESSION_START, 1);
   });
 
   it("supports separate site buckets for search use case", async function() {
@@ -433,20 +540,20 @@ describe("CDP on Chromium-based browsers", function() {
 
     // bucket 1
     const SEARCH_WEBEXT_DOT_COM = "search." + WEBEXT_DOT_COM;
+    const SEARCH_SITE_ID = "searchSiteId";
 
     // bucket 2 (wildcard)
-
-    // technically it means we keep 2 separate match entries in Prefs.cdp_domain
-    await EWE.testing._setPrefs(cdpDomainsPrefsKey, [
+    // technically it means we keep 2 separate match entries in CDP config
+    await EWE.testing._setCdpConfig([
       /*
       WARNING: the order makes a difference:
       * more specific site buckets should come earlier
-        (eg. subdomain earlier than it's more higher level domain)
+        (eg. subdomain earlier than it's higher level domain)
       * exact matches should come earlier than wildcarded
         (eg. exact comain earlier than it's wildcarded flavour)
       */
-      SEARCH_WEBEXT_DOT_COM,
-      WEBEXT_WILDCARD
+      [[SEARCH_WEBEXT_DOT_COM], SEARCH_SITE_ID],
+      [[WEBEXT_WILDCARD], SITE_ID]
     ]);
 
     // bucket 1
@@ -457,11 +564,11 @@ describe("CDP on Chromium-based browsers", function() {
     await new Page("http://webext.co.uk:3000/image.html").loaded; // regional
     await new Page(`http://${SUB_DOT_WEBEXT_DOT_COM}:3000/image.html`).loaded; // subdomain
 
-    await assertEvents(SEARCH_WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 1);
-    await assertEvents(WEBEXT_WILDCARD, EVENT_PAGE_VIEW, 3);
+    await assertEvents(SEARCH_SITE_ID, EVENT_PAGE_VIEW, 1);
+    await assertEvents(SITE_ID, EVENT_PAGE_VIEW, 3);
 
-    await assertEvents(SEARCH_WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
-    await assertEvents(WEBEXT_WILDCARD, EVENT_SESSION_START, 1);
+    await assertEvents(SEARCH_SITE_ID, EVENT_SESSION_START, 1);
+    await assertEvents(SITE_ID, EVENT_SESSION_START, 1);
   });
 
   it("supports History API", async function() {
@@ -470,10 +577,10 @@ describe("CDP on Chromium-based browsers", function() {
     await new Page(`http://${WEBEXT_DOT_COM}:3000/history.html`).loaded;
 
     // 1 event for "history.html" and 1 event for "history-after-pushState.js"
-    await assertEvents(WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 2);
+    await assertEvents(SITE_ID, EVENT_PAGE_VIEW, 2);
 
     // still the same session
-    await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
+    await assertEvents(SITE_ID, EVENT_SESSION_START, 1);
   });
 
   it("extends session expiration time due to user actions", async function() {
@@ -505,7 +612,7 @@ describe("CDP on Chromium-based browsers", function() {
       await page.reload();
       await page.remove();
 
-      await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
+      await assertEvents(SITE_ID, EVENT_SESSION_START, 1);
     }
 
     try {
@@ -542,11 +649,11 @@ describe("CDP on Chromium-based browsers", function() {
 
     await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
 
-    await assertEvents(WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 1);
+    await assertEvents(SITE_ID, EVENT_PAGE_VIEW, 1);
 
-    await EWE.testing._clearCdpData(EVENT_PAGE_VIEW, WEBEXT_DOT_COM);
+    await EWE.testing._clearCdpData(EVENT_PAGE_VIEW, SITE_ID);
 
-    await assertEvents(WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 0);
+    await assertEvents(SITE_ID, EVENT_PAGE_VIEW, 0);
   });
 
   it("clears the events for the domain with timestamp older than passed", async function() {
@@ -556,36 +663,41 @@ describe("CDP on Chromium-based browsers", function() {
     await page.loaded;
     await EWE.debugging.ensureEverythingHasSaved();
 
-    let data = await EWE.testing._getCdpData(EVENT_PAGE_VIEW, WEBEXT_DOT_COM);
+    let data = await EWE.testing._getCdpData(EVENT_PAGE_VIEW, SITE_ID);
     expect(data).not.toEqual([]);
     const firstTs = data[0];
 
-    await EWE.testing._clearCdpData(EVENT_PAGE_VIEW, WEBEXT_DOT_COM, firstTs);
-    data = await EWE.testing._getCdpData(EVENT_PAGE_VIEW, WEBEXT_DOT_COM);
+    await EWE.testing._clearCdpData(EVENT_PAGE_VIEW, SITE_ID, firstTs);
+    data = await EWE.testing._getCdpData(EVENT_PAGE_VIEW, SITE_ID);
     expect(data).not.toEqual([]);
     expect(data[0]).toEqual(firstTs);
 
     await EWE.testing._clearCdpData(
-      EVENT_PAGE_VIEW, WEBEXT_DOT_COM, firstTs + 1);
+      EVENT_PAGE_VIEW, SITE_ID, firstTs + 1);
 
-    await assertEvents(WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 0);
+    await assertEvents(SITE_ID, EVENT_PAGE_VIEW, 0);
   });
 
   it("clears the events for the domain", async function() {
     await addFilter(`image.png$domain=${WEBEXT_DOT_COM}`);
 
-    await EWE.testing._setPrefs(cdpDomainsPrefsKey, [WEBEXT_DOT_COM, "localhost"]);
+    const LOCALHOST = "localhost";
+    const LOCALHOST_SITE_ID = "localhostSiteId";
+    await EWE.testing._setCdpConfig([
+      [[WEBEXT_DOT_COM], SITE_ID],
+      [[LOCALHOST], LOCALHOST_SITE_ID]
+    ]);
 
     await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-    await new Page("http://localhost:3000/image.html").loaded;
+    await new Page(`http://${LOCALHOST}:3000/image.html`).loaded;
 
-    await assertEvents(WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 1);
-    await assertEvents("localhost", EVENT_PAGE_VIEW, 1);
+    await assertEvents(SITE_ID, EVENT_PAGE_VIEW, 1);
+    await assertEvents(LOCALHOST_SITE_ID, EVENT_PAGE_VIEW, 1);
 
-    await EWE.testing._clearCdpData(EVENT_PAGE_VIEW, WEBEXT_DOT_COM);
+    await EWE.testing._clearCdpData(EVENT_PAGE_VIEW, SITE_ID);
 
-    await assertEvents(WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 0); // cleared
-    await assertEvents("localhost", EVENT_PAGE_VIEW, 1); // not cleared
+    await assertEvents(SITE_ID, EVENT_PAGE_VIEW, 0); // cleared
+    await assertEvents(LOCALHOST_SITE_ID, EVENT_PAGE_VIEW, 1); // not cleared
   });
 
   it("notifies the listeners", async function() {
@@ -596,36 +708,36 @@ describe("CDP on Chromium-based browsers", function() {
 
     expect(getTestEvents("cdp.onCdpItem.page_view")).toEqual([[{
       timeStamp: expect.any(Number),
-      domain: WEBEXT_DOT_COM,
+      siteId: SITE_ID,
       eventType: EVENT_PAGE_VIEW
     }]]);
 
     expect(getTestEvents("cdp.onCdpItem.blocking")).toEqual([[{
       timeStamp: expect.any(Number),
-      domain: WEBEXT_DOT_COM,
+      siteId: SITE_ID,
       eventType: EVENT_BLOCKING
     }]]);
 
     expect(getTestEvents("cdp.onCdpItem.session_start")).toEqual([[{
       timeStamp: expect.any(Number),
-      domain: WEBEXT_DOT_COM,
+      siteId: SITE_ID,
       eventType: EVENT_SESSION_START
     }]]);
 
     expect(getTestEvents("cdp.onCdpItem.all")).toEqual(expect.arrayContaining([
       expect.arrayContaining([{
         timeStamp: expect.any(Number),
-        domain: WEBEXT_DOT_COM,
+        siteId: SITE_ID,
         eventType: EVENT_PAGE_VIEW
       }]),
       expect.arrayContaining([{
         timeStamp: expect.any(Number),
-        domain: WEBEXT_DOT_COM,
+        siteId: SITE_ID,
         eventType: EVENT_BLOCKING
       }]),
       expect.arrayContaining([{
         timeStamp: expect.any(Number),
-        domain: WEBEXT_DOT_COM,
+        siteId: SITE_ID,
         eventType: EVENT_SESSION_START
       }])
     ]));
@@ -675,7 +787,7 @@ describe("CDP on Chromium-based browsers", function() {
     function createBundleToSend() {
       let now = Date.now();
       return {
-        siteId: WEBEXT_DOT_COM,
+        siteId: SITE_ID,
         referenceDateLocal: "2024-05-13",
         utid: uuidv4(),
         scheduledSendTimestamp: now
@@ -685,7 +797,7 @@ describe("CDP on Chromium-based browsers", function() {
     function createBundleNotToSendYet() {
       let now = Date.now();
       return {
-        siteId: WEBEXT_DOT_COM,
+        siteId: SITE_ID,
         referenceDateLocal: "2024-05-14",
         utid: uuidv4(),
         scheduledSendTimestamp: now + MILLIS_IN_DAY
@@ -702,7 +814,7 @@ describe("CDP on Chromium-based browsers", function() {
           await browser.storage.local.get([CDP_STORAGE_KEY]);
         let storage = storageResult[CDP_STORAGE_KEY];
         expect(storage.bundles).toEqual([{
-          siteId: WEBEXT_DOT_COM,
+          siteId: SITE_ID,
           referenceDateLocal: expect.stringMatching(/\d{4}-\d{2}-\d{2}/),
           utid: expect.any(String),
           scheduledSendTimestamp: expect.any(Number)
@@ -749,7 +861,7 @@ describe("CDP on Chromium-based browsers", function() {
 
         // We need to make sure we wait long enough for the second session to
         // have been picked up.
-        await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 2);
+        await assertEvents(SITE_ID, EVENT_SESSION_START, 2);
 
         let storageResult =
           await browser.storage.local.get([CDP_STORAGE_KEY]);
@@ -792,7 +904,7 @@ describe("CDP on Chromium-based browsers", function() {
       });
 
       let dayStart = new Date(bundleToSend.referenceDateLocal).getTime();
-      await EWE.testing._setCdpData(EVENT_SESSION_START, WEBEXT_DOT_COM, [
+      await EWE.testing._setCdpData(EVENT_SESSION_START, SITE_ID, [
         dayStart,
         dayStart + 3 * MILLIS_IN_HOUR,
         dayStart + 24 * MILLIS_IN_HOUR // this one shouldn't be included
@@ -827,7 +939,7 @@ describe("CDP on Chromium-based browsers", function() {
       expect(storage.dayCutoffMinutes).toEqual(dayCutoffMinutes);
       expect(storage.bundles).toHaveLength(0);
 
-      expect(await EWE.testing._getCdpData(EVENT_SESSION_START, WEBEXT_DOT_COM))
+      expect(await EWE.testing._getCdpData(EVENT_SESSION_START, SITE_ID))
         .toEqual([dayStart + 24 * MILLIS_IN_HOUR]);
     });
 
@@ -995,7 +1107,7 @@ describe("CDP on Chromium-based browsers", function() {
 
       let dayCutoffMinutes = 0;
       let bundleToSend = {
-        siteId: WEBEXT_DOT_COM,
+        siteId: SITE_ID,
         referenceDateLocal: "2024-05-13",
         utid: uuidv4(),
         scheduledSendTimestamp: now
@@ -1009,7 +1121,7 @@ describe("CDP on Chromium-based browsers", function() {
       });
 
       let dayStart = new Date(bundleToSend.referenceDateLocal).getTime();
-      await EWE.testing._setCdpData(EVENT_SESSION_START, WEBEXT_DOT_COM, [
+      await EWE.testing._setCdpData(EVENT_SESSION_START, SITE_ID, [
         dayStart,
         dayStart + 3 * MILLIS_IN_HOUR
       ]);
@@ -1024,6 +1136,21 @@ describe("CDP on Chromium-based browsers", function() {
         expect(storage.bundles).toEqual([]);
         expect(storage).not.toHaveProperty("lastError");
       }, 10000);
+    });
+  });
+
+  describe("Specific sites", function() {
+    it("counts amazon visitors", async function() {
+      setMinTimeout(this, 30 * 1000);
+
+      const AMAZON_SITE_ID = "amazon.*";
+
+      await new Page("https://amazon.com").loaded;
+      await new Page("https://amazon.co.uk").loaded;   // regional
+      await new Page("https://docs.aws.amazon.com").loaded; // subdomain
+
+      assertEvents(AMAZON_SITE_ID, EVENT_PAGE_VIEW, 3);
+      assertEvents(AMAZON_SITE_ID, EVENT_SESSION_START, 1);
     });
   });
 });

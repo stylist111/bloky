@@ -70,7 +70,6 @@ export const defaults = Object.create({
   * exact matches should come earlier than wildcarded
     (eg. exact comain earlier than it's wildcarded flavour)
   */
-  cdp_domains: [],
   session_expiration_interval: 30 * MILLIS_IN_MINUTE
 });
 

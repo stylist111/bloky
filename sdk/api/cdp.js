@@ -49,7 +49,52 @@ export const EVENT_SESSION_START = "session_start";
  */
 export const EVENT_BLOCKING = "blocking";
 
-// Map<String(event type), Map<String(domain), Array<Number>(event timestamp)>>
+// Array<Array<String(domainWithWildcard)>>, String(siteId)>
+const defaultConfig = [
+  [["amazon.*"], "amazon.*"]
+];
+// Map<String(domainWithWildcard), String(siteId)
+let cdpDomains;
+
+/**
+ * Configure CDP
+ * @ignore
+ * @param {Array} newConfig An array of array(domain, siteId).
+ *                WARNING: the order makes a difference:
+                  more specific site buckets should come earlier
+                  (eg. subdomain earlier than it's more higher level domain)
+ */
+export function _setConfig(newConfig) {
+  cdpDomains = new Map();
+
+  for (const mapping of newConfig) {
+    const domainsList = mapping[0];
+    const siteId = mapping[1];
+    for (const eachDomain of domainsList) {
+      /*
+      WARNING: in order to handle more specific site buckets first,
+      we need to preserve the original entries order, so we rely on `Map`
+      promise (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#objects_vs._maps):
+      > Iteration happens in insertion order, which corresponds to the order
+      > in which each key-value pair was first inserted into the map
+      > by the set() method.
+      */
+      cdpDomains.set(eachDomain, siteId);
+    }
+  }
+}
+
+/**
+ * Restore the default CDP configuration
+ * @ignore
+ */
+export function _restoreConfig() {
+  _setConfig(defaultConfig);
+}
+
+_restoreConfig();
+
+// Map<String(event type), Map<String(siteId), Array<Number>(event timestamp)>>
 let events = new Map([
   [EVENT_PAGE_VIEW, new PersistentState("ewe:cdp-page-view", browser.storage.local)],
   [EVENT_SESSION_START, new PersistentState("ewe:cdp-session", browser.storage.local)],
@@ -72,10 +117,9 @@ export class CdpEventDispatcher {
   * @param {string} [eventType]
   *   The optional filter for event types. Skip for all the event types.
   *   The supported event types are "page_view", "session_start" and "blocking".
-  * @param {string} [domain]
-  *   The optional filter for SLD or domain with wildcard.
-  *   The domain or wildcard must be listed in `Prefs.cdp_domains`.
-  *   Skip for all the domains.
+  * @param {string?} [siteId]
+  *   The optional filter for siteIds.
+  *   Skip for all the siteIds.
   */
 
   /**
@@ -93,7 +137,7 @@ export class CdpEventDispatcher {
    * // Log all "session_start" items on "webext.com"
    * EWE.reporting.onCdpItem.addListener(
    *   console.log,
-   *   {eventType: "session_start", domain: "webext.com"}
+   *   {eventType: "session_start", siteId: "webext.com"}
    * );
    */
   addListener(listener, filterOptions = {}) {
@@ -105,53 +149,55 @@ export class CdpEventDispatcher {
   }
 }
 
-function getTrackedDomain(domain) {
-  // exact match first!
-  // (subdomains count as matched to top-level domain)
-  for (const suffix of domainSuffixes(domain)) {
-    if (Prefs.cdp_domains.includes(suffix)) {
-      return suffix;
+function findSiteId(domain) {
+  // prefer exact match over wildcard match
+  const suffixes = [...domainSuffixes(domain)];
+  for (const [eachDomain, siteId] of cdpDomains) {
+    if (suffixes.includes(eachDomain)) {
+      return siteId;
     }
   }
 
   // wildcard match
-  for (const exactDomainOrWildcard of Prefs.cdp_domains) {
-    if (hasWildcard(exactDomainOrWildcard) &&
-      matchesWildcards(domain, exactDomainOrWildcard)) {
-      return exactDomainOrWildcard;
+  for (const [domainWildcard, siteId] of cdpDomains) {
+    // the order of iteration corresponds the order of inserting,
+    // we so assume the more specific entries come first in CDP config
+    if (hasWildcard(domainWildcard) &&
+        matchesWildcards(domain, domainWildcard)) {
+      return siteId;
     }
   }
 
   return null;
 }
 
-async function emitEvent(eventType, domain, timeStamp) {
+async function emitEvent(eventType, siteId, timeStamp) {
   for (const [listener, filterOptions] of listeners) {
     if (filterOptions.eventType && filterOptions.eventType != eventType) {
       continue;
     }
 
-    if (filterOptions.domain && filterOptions.domain != domain) {
+    if (filterOptions.siteId && filterOptions.siteId != siteId) {
       continue;
     }
 
-    await listener({eventType, domain, timeStamp});
+    await listener({eventType, siteId, timeStamp});
   }
 }
 
-async function count(eventType, domain, timeStamp) {
-  trace({eventType, domain, timeStamp});
+async function count(eventType, siteId, timeStamp) {
+  trace({eventType, siteId, timeStamp});
 
   const state = events.get(eventType);
-  let timestamps = state.getState()[domain];
+  let timestamps = state.getState()[siteId];
   if (!timestamps) {
     timestamps = [];
-    state.getState()[domain] = timestamps;
+    state.getState()[siteId] = timestamps;
   }
   timestamps.push(timeStamp);
   await state.save();
 
-  await emitEvent(eventType, domain, timeStamp);
+  await emitEvent(eventType, siteId, timeStamp);
 }
 
 async function onBlockableItem({request}) {
@@ -159,13 +205,12 @@ async function onBlockableItem({request}) {
     return;
   }
 
-  let {hostname} = new URL(request.url);
-  hostname = getTrackedDomain(hostname);
-  if (!hostname) {
+  const siteId = findSiteId(new URL(request.url).hostname);
+  if (!siteId) {
     return;
   }
 
-  await count(EVENT_BLOCKING, hostname, request.timeStamp);
+  await count(EVENT_BLOCKING, siteId, request.timeStamp);
 }
 
 /**
@@ -203,19 +248,19 @@ export async function setData(eventType, domain, timestamps) {
 /**
  * Return the events
  * @param {string} eventType The type of event (see EVENT_...)
- * @param {string} domain The domain to get events for
+ * @param {string} siteId The domain to get events for
  * @returns {Array<Number>} Event timestamps for the event type and domain
  * @ignore
  */
-export function getData(eventType, domain) {
-  trace({eventType, domain});
+export function getData(eventType, siteId) {
+  trace({eventType, siteId});
 
   if (!isFeatureEnabled(FEATURE_FLAG)) {
     return [];
   }
 
-  const timestamps = events.get(eventType).getState()[domain] || [];
-  debug("Got " + timestamps.length + " events");
+  const timestamps = events.get(eventType).getState()[siteId] || [];
+  debug(`Got ${timestamps.length} events`);
   return timestamps;
 }
 
@@ -232,14 +277,14 @@ export async function clearActivity() {
 /**
  * Delete all the events (of type)
  * @param {string?} eventType The optional type of event (see EVENT_...)
- * @param {string?} domain The optional domain to clear the events
+ * @param {string?} siteId The optional siteId to clear the events
  * @param {Number?} timeStamp The optional timestamp to remove the event,
  *                            that happened earlier than timestamp.
  * @returns {Promise}
  * @ignore
  */
-export async function clearData(eventType, domain, timeStamp) {
-  trace({eventType, domain, timeStamp});
+export async function clearData(eventType, siteId, timeStamp) {
+  trace({eventType, siteId, timeStamp});
 
   if (!isFeatureEnabled(FEATURE_FLAG)) {
     return;
@@ -248,22 +293,22 @@ export async function clearData(eventType, domain, timeStamp) {
   const eventTypes = eventType ? [eventType] : [...events.keys()];
   for (const eachEventType of eventTypes) {
     const state = events.get(eachEventType);
-    if (!domain && !timeStamp) {
+    if (!siteId && !timeStamp) {
       state.clearState();
     }
     else {
-      const domains = domain ? [domain] : [...state.keys()];
-      for (const eachDomain of domains) {
+      const siteIds = siteId ? [siteId] : [...state.keys()];
+      for (const eachSiteId of siteIds) {
         if (timeStamp) {
-          let timeStamps = state.getState()[eachDomain];
+          let timeStamps = state.getState()[eachSiteId];
           if (timeStamps) {
             timeStamps = timeStamps.filter(
               eactTimestamp => eactTimestamp >= timeStamp);
-            state.getState()[domain] = timeStamps;
+            state.getState()[siteId] = timeStamps;
           }
         }
         else {
-          delete state.getState()[domain];
+          delete state.getState()[siteId];
         }
       }
     }
@@ -284,41 +329,40 @@ function onCommitted(details) {
     return;
   }
 
-  let {hostname} = new URL(frameInfo.url);
-  hostname = getTrackedDomain(hostname);
-  if (!hostname) {
+  const siteId = findSiteId(frameInfo.hostname);
+  if (!siteId) {
     return;
   }
 
-  const newSession = isNewSession(hostname);
+  const newSession = isNewSession(siteId);
   // mark first as awaiting might take some time
   // and another onCommited call can happen in between
   markActive(tabId, frameId);
-  count(EVENT_PAGE_VIEW, hostname, timeStamp);
+  count(EVENT_PAGE_VIEW, siteId, timeStamp);
   if (newSession) {
-    count(EVENT_SESSION_START, hostname, timeStamp);
+    count(EVENT_SESSION_START, siteId, timeStamp);
   }
 }
 
-function isNewSession(domainOrDomainWildcard) {
-  trace({domainOrDomainWildcard});
+function isNewSession(siteId) {
+  trace({siteId});
 
-  const lastActivity = activity.getState()[domainOrDomainWildcard];
+  const lastActivity = activity.getState()[siteId];
   if (!lastActivity) {
     // new navigation to domain, new session
-    debug(`New session for ${domainOrDomainWildcard}`);
+    debug(`New session for ${siteId}`);
     return true;
   }
 
   const actuallyPassed = Date.now() - lastActivity;
   if (actuallyPassed > Prefs.cdp_session_expiration_interval) {
     // session expired
-    debug(`Session expired for ${domainOrDomainWildcard}`);
+    debug(`Session expired for ${siteId}`);
     return true;
   }
 
   // pending session
-  debug(`Pending session for ${domainOrDomainWildcard}`);
+  debug(`Pending session for ${siteId}`);
   return false;
 }
 
@@ -338,17 +382,16 @@ function onHistoryStateUpdated(details) {
     return;
   }
 
-  let {hostname} = new URL(frameInfo.url);
-  hostname = getTrackedDomain(hostname);
-  if (!hostname) {
+  const siteId = findSiteId(new URL(frameInfo.url).hostname);
+  if (!siteId) {
     return;
   }
 
-  const newSession = isNewSession(hostname);
-  count(EVENT_PAGE_VIEW, hostname, details.timeStamp);
+  const newSession = isNewSession(siteId);
+  count(EVENT_PAGE_VIEW, siteId, details.timeStamp);
   // we don't mark frame as active here as it's not user action
   if (newSession) {
-    count(EVENT_SESSION_START, hostname, details.timeStamp);
+    count(EVENT_SESSION_START, siteId, details.timeStamp);
   }
 }
 
@@ -366,13 +409,12 @@ export async function markActive(tabId, frameId) {
     return;
   }
 
-  let {hostname} = new URL(frameInfo.url);
-  hostname = getTrackedDomain(hostname);
-  if (!hostname) {
+  const siteId = findSiteId(frameInfo.hostname);
+  if (!siteId) {
     return;
   }
 
-  activity.getState()[hostname] = Date.now();
+  activity.getState()[siteId] = Date.now();
 
   await activity.save();
 }
@@ -396,9 +438,8 @@ export function shouldNotifyActive(tabId, frameId) {
     return false;
   }
 
-  let {hostname} = new URL(frameInfo.url);
-  hostname = getTrackedDomain(hostname);
-  return hostname != null;
+  const siteId = findSiteId(new URL(frameInfo.url).hostname);
+  return siteId != null;
 }
 
 async function loadEvents() {
@@ -445,10 +486,10 @@ export default {
    * @event
    * @param {string} eventType Event type
    *                           ("page_view", "session_start", "blocking")
-   * @param {domain} domain SLD or domain with wildcard
+   * @param {string} siteId SiteId
    * @param {FilterMatchInfo} timestamp Event timestamp
    * @type {CdpEventDispatcher<{eventType: string,
-   *                           domain: string,
+   *                           siteId: string,
    *                           timeStamp: Number}>}
    */
   onCdpItem: new CdpEventDispatcher(),
