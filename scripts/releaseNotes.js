@@ -18,14 +18,13 @@
 import {readFile, writeFile} from "fs/promises";
 import path from "path";
 
+import {randomInteger} from "adblockpluscore/lib/random.js";
+
 import {projectRootPath} from "./utils.js";
 
 function chooseEmoji() {
   // https://www.compart.com/en/unicode/block/U+1F300
-  let min = 0x1F300;
-  let max = 0x1F600;
-  let range = max - min;
-  let codePoint = Math.floor(Math.random() * range + min);
+  let codePoint = randomInteger(0x1F300, 0x1F600);
   return String.fromCodePoint(codePoint);
 }
 

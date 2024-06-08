@@ -19,6 +19,7 @@
 
 const assert = require("assert");
 const {LIB_FOLDER, createSandbox} = require("./_common");
+const {randomInteger} = require(LIB_FOLDER + "/random");
 
 let recommendations = null;
 let setRecommendations = null;
@@ -85,7 +86,7 @@ describe("Recommendations", function() {
 
       // Modify an existing element.
       if (value.length > 0) {
-        value[Math.floor(Math.random() * value.length)] = null;
+        value[randomInteger(0, value.length)] = null;
         assert.notDeepEqual(value, recommendation[name]);
         assert.notDeepEqual(value, source[name]);
       }

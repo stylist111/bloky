@@ -20,6 +20,7 @@
 
 const {ElemHideEmulation, setTestMode, clearTestMode,
        getTestInfo} = require("../../lib/content/elemHideEmulation");
+const {randomInteger} = require("../../lib/random");
 const {timeout, waitFor} = require("./_utils");
 
 const {assert} = chai;
@@ -126,7 +127,7 @@ describe("Element hiding emulation", function() {
   }
 
   function findUniqueId() {
-    let id = "elemHideEmulationTest-" + Math.floor(Math.random() * 10000);
+    let id = "elemHideEmulationTest-" + randomInteger(0, 10000);
     if (!testDocument.getElementById(id)) {
       return id;
     }

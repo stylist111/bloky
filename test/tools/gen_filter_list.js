@@ -22,6 +22,8 @@
 
 /* eslint no-console: "off" */
 
+import {randomInteger} from "adblockpluscore/lib/random.js";
+
 /**
  * Generate a random string.
  * @param {number} length The length of the string wanted.
@@ -33,7 +35,7 @@ function randomString(length) {
 
   let result = "";
   for (let i = 0; i < length; i++) {
-    result += CHARS.charAt(Math.floor(Math.random() * NUM_CHARS));
+    result += CHARS.charAt(randomInteger(0, NUM_CHARS));
   }
 
   return result;
@@ -41,7 +43,7 @@ function randomString(length) {
 
 for (let i = 0; i < 100; i++) {
   /* Get a random length of at least 5 */
-  let length = 5 + Math.floor(Math.random() * 12);
+  let length = randomInteger(5, 17);
   let random = randomString(length);
   console.log(`||${random}.invalid^`);
 }

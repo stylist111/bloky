@@ -19,6 +19,7 @@ import browser from "webextension-polyfill";
 import {v4 as uuidv4} from "uuid";
 import {MILLIS_IN_MINUTE, MILLIS_IN_HOUR, MILLIS_IN_DAY}
   from "adblockpluscore/lib/time.js";
+import {randomInteger} from "adblockpluscore/lib/random.js";
 import {isFeatureEnabled} from "adblockpluscore/lib/features.js";
 
 import * as info from "./info.js";
@@ -68,7 +69,7 @@ export async function start(cdp, errorRetryDelay = 1 * MILLIS_IN_HOUR) {
 async function initializeTimeOffset() {
   if (typeof storage.getState().dayCutoffMinutes == "undefined") {
     let minutesInDay = MILLIS_IN_DAY / MILLIS_IN_MINUTE;
-    let dayCutoffMinutes = Math.floor(Math.random() * minutesInDay);
+    let dayCutoffMinutes = randomInteger(0, minutesInDay);
     storage.getState().dayCutoffMinutes = dayCutoffMinutes;
     await storage.save();
   }
@@ -101,7 +102,7 @@ async function onCdpItem(event) {
   let scheduledSendTimestamp = new Date(referenceDateLocal).getTime() +
       state.dayCutoffMinutes * MILLIS_IN_MINUTE + // to start of day
       MILLIS_IN_DAY + // add a day to get to the end of the day
-      Math.random() * 12 * MILLIS_IN_HOUR; // random delay of up to 12 hours
+      randomInteger(0, 12 * MILLIS_IN_HOUR); // random delay of up to 12 hours
 
   state.bundles.push({
     siteId: event.siteId,
