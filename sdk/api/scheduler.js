@@ -22,16 +22,17 @@ const MAX_POLL_TIMEOUT = MILLIS_IN_HOUR;
 export class Scheduler {
   constructor(config) {
     this.config = config;
-    this.callListenerInProgress = false;
+    this.checkInProgress = false;
     this.stopped = false;
 
-    let check = async() => {
+    this._check = async() => {
+      this.checkInProgress = true;
       let nextPollTimeout;
       try {
         nextPollTimeout = await this.callListenerIfItsTime();
       }
       finally {
-        if (!nextPollTimeout) {
+        if (typeof nextPollTimeout == "undefined") {
           nextPollTimeout = this.config.errorRetryDelay;
         }
 
@@ -42,11 +43,12 @@ export class Scheduler {
         // If stop was called while currently triggering something, don't
         // schedule the next timeout.
         if (!this.stopped) {
-          this.timeout = setTimeout(check, nextPollTimeout);
+          this.timeout = setTimeout(this._check, nextPollTimeout);
         }
+        this.checkInProgress = false;
       }
     };
-    check();
+    this._check();
   }
 
   async callListenerIfItsTime() {
@@ -73,6 +75,13 @@ export class Scheduler {
     if (this.timeout) {
       clearTimeout(this.timeout);
       this.timeout = null;
+    }
+  }
+
+  checkNow() {
+    if (!this.stopped && !this.checkInProgress) {
+      clearTimeout(this.timeout);
+      this._check();
     }
   }
 }

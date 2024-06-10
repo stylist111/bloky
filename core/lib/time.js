@@ -50,3 +50,19 @@ exports.MILLIS_IN_HOUR = 3600000;
  * @package
  */
 exports.MILLIS_IN_DAY = 86400000;
+
+/**
+ * Number of minutes in an hour.
+ * @const {number}
+ * @default 60
+ * @package
+ */
+exports.MINUTES_IN_HOUR = 60;
+
+/**
+ * Number of minutes in a day.
+ * @const {number}
+ * @default 1440
+ * @package
+ */
+exports.MINUTES_IN_DAY = 1440;

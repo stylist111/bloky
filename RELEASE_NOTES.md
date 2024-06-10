@@ -15,6 +15,9 @@ Unreleased
 - A new property has been added to the argument object passed to
   `EWE.start()`. The `cdp` property is used to specify URLs and credentials for
   the CDP telemetry server. (EE-473)
+- A ping is made to the telemetry server the first time a partner's domain is
+  visited each day, to allow tracking the number of users who visit partners'
+  domains. (EE-474)
 - The number of sessions for configured partner's domains is now gathered to be
   sent to the CDP telemetry server. (EE-473)
 - Exported `EWE.cdp` namespace with `onCdpItem` dispatcher and `setOptOut()`,

@@ -20,8 +20,8 @@
 const assert = require("assert");
 
 const {LIB_FOLDER} = require("./_common");
-const {MILLIS_IN_SECOND, MILLIS_IN_MINUTE, MILLIS_IN_HOUR,
-       MILLIS_IN_DAY} = require(LIB_FOLDER + "/time");
+const {MILLIS_IN_SECOND, MILLIS_IN_MINUTE, MILLIS_IN_HOUR, MILLIS_IN_DAY,
+       MINUTES_IN_DAY, MINUTES_IN_HOUR} = require(LIB_FOLDER + "/time");
 
 describe("MILLIS_IN_SECOND", function() {
   it("should be equal to 1000", function() {
@@ -44,5 +44,17 @@ describe("MILLIS_IN_HOUR", function() {
 describe("MILLIS_IN_DAY", function() {
   it("should be equal to 24 times MILLIS_IN_HOUR", function() {
     assert.equal(MILLIS_IN_DAY, 24 * MILLIS_IN_HOUR);
+  });
+});
+
+describe("MINUTES_IN_HOUR", function() {
+  it("should be equal to 60", function() {
+    assert.equal(MINUTES_IN_HOUR, 60);
+  });
+});
+
+describe("MINUTES_IN_DAY", function() {
+  it("should be equal to 24 times MINUTES_IN_HOUR", function() {
+    assert.equal(MINUTES_IN_DAY, 24 * MINUTES_IN_HOUR);
   });
 });

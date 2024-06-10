@@ -18,7 +18,8 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 import {v4 as uuidv4} from "uuid";
-import {MILLIS_IN_MINUTE, MILLIS_IN_DAY, MILLIS_IN_HOUR} from "adblockpluscore/lib/time.js";
+import {MILLIS_IN_MINUTE, MILLIS_IN_DAY, MILLIS_IN_HOUR, MINUTES_IN_DAY,
+        MINUTES_IN_HOUR} from "adblockpluscore/lib/time.js";
 
 import {EWE, addFilter, setFeatureFlags, getTestEvents} from "./messaging.js";
 import {TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
@@ -760,7 +761,7 @@ describe("CDP on Chromium-based browsers", function() {
       let dayCutoffMinutes = storage[CDP_STORAGE_KEY].dayCutoffMinutes;
 
       expect(dayCutoffMinutes).toBeGreaterThanOrEqual(0);
-      expect(dayCutoffMinutes).toBeLessThan(MILLIS_IN_DAY / MILLIS_IN_MINUTE);
+      expect(dayCutoffMinutes).toBeLessThan(MINUTES_IN_DAY);
     });
   });
 
@@ -776,6 +777,7 @@ describe("CDP on Chromium-based browsers", function() {
 
     afterEach(async function() {
       await clearEndpointResponse(AGGREGATE_URL);
+      await clearEndpointResponse(PING_URL);
     });
 
     const ERROR_DELAY_MS = MILLIS_IN_HOUR;
@@ -784,7 +786,7 @@ describe("CDP on Chromium-based browsers", function() {
       await EWE.testing.startCdpMetricsUploader(CDP_ARGS, ERROR_DELAY_MS);
     }
 
-    function createBundleToSend() {
+    function createAggregateBundleToSend() {
       let now = Date.now();
       return {
         siteId: SITE_ID,
@@ -794,7 +796,7 @@ describe("CDP on Chromium-based browsers", function() {
       };
     }
 
-    function createBundleNotToSendYet() {
+    function createAggregateBundleNotToSendYet() {
       let now = Date.now();
       return {
         siteId: SITE_ID,
@@ -831,18 +833,42 @@ describe("CDP on Chromium-based browsers", function() {
       });
     });
 
+    it("immediately sends a request to the ping url on the first visit to a site", async function() {
+      await startMetricsUploaderWithTestArgs();
+
+      await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+
+      let payload;
+
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(CDP_ARGS.pingUrl);
+        expect(requestLogs).toHaveLength(1);
+        payload = requestLogs[0].body.payload;
+      });
+
+      let storageResult =
+        await browser.storage.local.get([CDP_STORAGE_KEY]);
+      let storage = storageResult[CDP_STORAGE_KEY];
+
+      expect(payload.site_id).toEqual(SITE_ID);
+      expect(payload.site_client_id).toEqual(storage.clientIds[SITE_ID]);
+      expect(payload.application)
+        .toEqual(expect.oneOf(["firefox", "chrome", "headlesschrome", "edg"]));
+      expect(payload.application_version).toEqual(expect.stringMatching(/^\d+(.\d+)+$/));
+      expect(payload.addon_name).toEqual("eyeo-webext-ad-filtering-solution");
+      expect(payload.addon_version).toEqual(expect.stringMatching(/^\d+(.\d+)+$/));
+    });
+
     it("does not create a new scheduled aggregate metrics upload on the second session on a site on the same day", async function() {
       let now = new Date();
       let nowMinutes = now.getHours() * 60 + now.getMinutes();
-      let minutesInDay = MILLIS_IN_DAY / MILLIS_IN_MINUTE;
-      let minutesInHour = MILLIS_IN_HOUR / MILLIS_IN_MINUTE;
 
       // I want to control the dayCutoffMinutes for this test to make sure that
       // the multiple sessions that we have here will never cross the boundary
       // into a new day.
       await browser.storage.local.set({
         [CDP_STORAGE_KEY]: {
-          dayCutoffMinutes: (nowMinutes + 12 * minutesInHour) % minutesInDay
+          dayCutoffMinutes: (nowMinutes + 12 * MINUTES_IN_HOUR) % MINUTES_IN_DAY
         }
       });
 
@@ -863,10 +889,61 @@ describe("CDP on Chromium-based browsers", function() {
         // have been picked up.
         await assertEvents(SITE_ID, EVENT_SESSION_START, 2);
 
-        let storageResult =
-          await browser.storage.local.get([CDP_STORAGE_KEY]);
-        let storage = storageResult[CDP_STORAGE_KEY];
-        expect(storage.bundles).toHaveLength(1);
+        await waitForAssertion(async() => {
+          let storageResult =
+            await browser.storage.local.get([CDP_STORAGE_KEY]);
+          let storage = storageResult[CDP_STORAGE_KEY];
+          expect(storage.bundles).toHaveLength(1);
+        });
+      }
+      finally {
+        await EWE.testing._setPrefs(intervalPrefsKey, defaultInterval);
+      }
+    });
+
+    it("does not send a second ping to the ping url if there's a second session on the same day", async function() {
+      let now = new Date();
+      let nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+      // I want to control the dayCutoffMinutes for this test to make sure that
+      // the multiple sessions that we have here will never cross the boundary
+      // into a new day.
+      await browser.storage.local.set({
+        [CDP_STORAGE_KEY]: {
+          dayCutoffMinutes: (nowMinutes + 12 * MINUTES_IN_HOUR) % MINUTES_IN_DAY
+        }
+      });
+
+      await startMetricsUploaderWithTestArgs();
+
+      const defaultInterval = await EWE.testing._getPrefs(intervalPrefsKey);
+      try {
+        // 0 second, so sessions end immediately
+        await EWE.testing._setPrefs(intervalPrefsKey, 0);
+
+        let page = new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`);
+        await page.loaded;
+        // Larger than session expiration interval of 0, so it's considered as a
+        // new session
+        await page.reload();
+
+        // We need to make sure we wait long enough for the second session to
+        // have been picked up.
+        await assertEvents(SITE_ID, EVENT_SESSION_START, 2);
+
+        // Only one ping sent, and the storage doesn't have others lined up to
+        // send later.
+        await waitForAssertion(async() => {
+          let requestLogs = await getRequestLogs(CDP_ARGS.pingUrl);
+          expect(requestLogs).toHaveLength(1);
+        });
+
+        await waitForAssertion(async() => {
+          let storageResult =
+            await browser.storage.local.get([CDP_STORAGE_KEY]);
+          let storage = storageResult[CDP_STORAGE_KEY];
+          expect(storage.pingBundles).toHaveLength(0);
+        });
       }
       finally {
         await EWE.testing._setPrefs(intervalPrefsKey, defaultInterval);
@@ -877,7 +954,7 @@ describe("CDP on Chromium-based browsers", function() {
       await browser.storage.local.set({
         [CDP_STORAGE_KEY]: {
           dayCutoffMinutes: 0,
-          bundles: [createBundleNotToSendYet()]
+          bundles: [createAggregateBundleNotToSendYet()]
         }
       });
 
@@ -893,9 +970,29 @@ describe("CDP on Chromium-based browsers", function() {
       });
     });
 
+    it("sends a new ping if the previous one happened the previous day", async function() {
+      // An aggregate bundle existing is the symbol that a ping happened already
+      // on that day. But the date in the bundle is not today.
+      await browser.storage.local.set({
+        [CDP_STORAGE_KEY]: {
+          dayCutoffMinutes: 0,
+          bundles: [createAggregateBundleNotToSendYet()]
+        }
+      });
+
+      await startMetricsUploaderWithTestArgs();
+
+      await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(CDP_ARGS.pingUrl);
+        expect(requestLogs).toHaveLength(1);
+      });
+    });
+
     it("sends scheduled aggregate metrics", async function() {
       let dayCutoffMinutes = 0;
-      let bundleToSend = createBundleToSend();
+      let bundleToSend = createAggregateBundleToSend();
       await browser.storage.local.set({
         [CDP_STORAGE_KEY]: {
           dayCutoffMinutes,
@@ -907,7 +1004,7 @@ describe("CDP on Chromium-based browsers", function() {
       await EWE.testing._setCdpData(EVENT_SESSION_START, SITE_ID, [
         dayStart,
         dayStart + 3 * MILLIS_IN_HOUR,
-        dayStart + 24 * MILLIS_IN_HOUR // this one shouldn't be included
+        dayStart + MILLIS_IN_DAY // this one shouldn't be included
       ]);
 
       await startMetricsUploaderWithTestArgs();
@@ -932,21 +1029,23 @@ describe("CDP on Chromium-based browsers", function() {
       expect(payload.addon_name).toEqual("eyeo-webext-ad-filtering-solution");
       expect(payload.addon_version).toEqual(expect.stringMatching(/^\d+(.\d+)+$/));
 
-      let storageResult =
+      await waitForAssertion(async() => {
+        let storageResult =
           await browser.storage.local.get([CDP_STORAGE_KEY]);
-      let storage = storageResult[CDP_STORAGE_KEY];
+        let storage = storageResult[CDP_STORAGE_KEY];
 
-      expect(storage.dayCutoffMinutes).toEqual(dayCutoffMinutes);
-      expect(storage.bundles).toHaveLength(0);
+        expect(storage.dayCutoffMinutes).toEqual(dayCutoffMinutes);
+        expect(storage.bundles).toHaveLength(0);
 
-      expect(await EWE.testing._getCdpData(EVENT_SESSION_START, SITE_ID))
-        .toEqual([dayStart + 24 * MILLIS_IN_HOUR]);
+        expect(await EWE.testing._getCdpData(EVENT_SESSION_START, SITE_ID))
+          .toEqual([dayStart + MILLIS_IN_DAY]);
+      });
     });
 
     it("does not send aggregate metrics that aren't scheduled to send yet", async function() {
       let dayCutoffMinutes = 0;
-      let bundleToSend = createBundleToSend();
-      let bundleToNotSendYet = createBundleNotToSendYet();
+      let bundleToSend = createAggregateBundleToSend();
+      let bundleToNotSendYet = createAggregateBundleNotToSendYet();
       await browser.storage.local.set({
         [CDP_STORAGE_KEY]: {
           dayCutoffMinutes,
@@ -979,7 +1078,7 @@ describe("CDP on Chromium-based browsers", function() {
       await EWE.cdp.setOptOut(true);
 
       let dayCutoffMinutes = 0;
-      let bundleToSend = createBundleToSend();
+      let bundleToSend = createAggregateBundleToSend();
       await browser.storage.local.set({
         [CDP_STORAGE_KEY]: {
           dayCutoffMinutes,
@@ -1000,11 +1099,11 @@ describe("CDP on Chromium-based browsers", function() {
       expect(requestLogs).toHaveLength(0);
     });
 
-    it("sets an error timestamp if the server has an error", async function() {
+    it("sets an error timestamp if the server has an error when sending an aggregate", async function() {
       await setEndpointResponse(AGGREGATE_URL, {}, "POST", 500);
 
       let dayCutoffMinutes = 0;
-      let bundleToSend = createBundleToSend();
+      let bundleToSend = createAggregateBundleToSend();
       await browser.storage.local.set({
         [CDP_STORAGE_KEY]: {
           dayCutoffMinutes,
@@ -1019,23 +1118,132 @@ describe("CDP on Chromium-based browsers", function() {
         expect(requestLogs).toHaveLength(1);
       });
 
-      let storageResult =
+      await waitForAssertion(async() => {
+        let storageResult =
           await browser.storage.local.get([CDP_STORAGE_KEY]);
-      let storage = storageResult[CDP_STORAGE_KEY];
+        let storage = storageResult[CDP_STORAGE_KEY];
 
-      expect(storage.lastError).toEqual(expect.any(Number));
-      // We expect the lastError to be in the form of a date that is close to
-      // now, but there are multiple threads and this test is async so it won't
-      // be exactly equal.
-      expect(Math.abs(storage.lastError - Date.now()))
-        .toBeLessThan(MILLIS_IN_MINUTE);
-      expect(storage.bundles).toHaveLength(1);
+        expect(storage.lastError).toEqual(expect.any(Number));
+        // We expect the lastError to be in the form of a date that is close to
+        // now, but there are multiple threads and this test is async so it
+        // won't be exactly equal.
+        expect(Math.abs(storage.lastError - Date.now()))
+          .toBeLessThan(MILLIS_IN_MINUTE);
+        expect(storage.bundles).toHaveLength(1);
+      });
+    });
+
+    it("sets an error timestamp and schedules the ping if the server has an error when sending an ping", async function() {
+      await setEndpointResponse(PING_URL, {}, "POST", 500);
+      await startMetricsUploaderWithTestArgs();
+      await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(CDP_ARGS.pingUrl);
+        expect(requestLogs).toHaveLength(1);
+      });
+
+      await waitForAssertion(async() => {
+        let storageResult =
+          await browser.storage.local.get([CDP_STORAGE_KEY]);
+        let storage = storageResult[CDP_STORAGE_KEY];
+
+        expect(storage.pingBundles).toHaveLength(1);
+
+        expect(storage.lastError).toEqual(expect.any(Number));
+        // We expect the lastError to be in the form of a date that is close to
+        // now, but there are multiple threads and this test is async so it
+        // won't be exactly equal.
+        expect(Math.abs(storage.lastError - Date.now()))
+          .toBeLessThan(MILLIS_IN_MINUTE);
+        expect(storage.bundles).toHaveLength(1);
+      });
+    });
+
+    it("schedules the ping without sending it if there was previously an error", async function() {
+      await browser.storage.local.set({
+        [CDP_STORAGE_KEY]: {
+          dayCutoffMinutes: 0,
+          lastError: Date.now()
+        }
+      });
+
+      await startMetricsUploaderWithTestArgs();
+      await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+
+      await waitForAssertion(async() => {
+        let storageResult =
+          await browser.storage.local.get([CDP_STORAGE_KEY]);
+        let storage = storageResult[CDP_STORAGE_KEY];
+
+        expect(storage.pingBundles).toHaveLength(1);
+      });
+
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(CDP_ARGS.pingUrl);
+        expect(requestLogs).toHaveLength(0);
+      });
+    });
+
+    it("does not schedule a new ping if there is still one unsent", async function() {
+      await browser.storage.local.set({
+        [CDP_STORAGE_KEY]: {
+          dayCutoffMinutes: 0,
+          lastError: Date.now(),
+          pingBundles: [{
+            siteId: SITE_ID,
+            clientId: uuidv4(),
+            scheduledSendTimestamp: Date.now() - MILLIS_IN_DAY
+          }]
+        }
+      });
+
+      await startMetricsUploaderWithTestArgs();
+      await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+
+      await waitForAssertion(async() => {
+        let storageResult =
+          await browser.storage.local.get([CDP_STORAGE_KEY]);
+        let storage = storageResult[CDP_STORAGE_KEY];
+
+        expect(storage.pingBundles).toHaveLength(1);
+      });
+    });
+
+    it("sends the ping after the error resend interval has passed", async function() {
+      await browser.storage.local.set({
+        [CDP_STORAGE_KEY]: {
+          dayCutoffMinutes: 0,
+          lastError: Date.now() - ERROR_DELAY_MS,
+          pingBundles: [{
+            siteId: SITE_ID,
+            clientId: uuidv4(),
+            scheduledSendTimestamp: Date.now() - MILLIS_IN_DAY
+          }]
+        }
+      });
+
+      await startMetricsUploaderWithTestArgs();
+
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(CDP_ARGS.pingUrl);
+        expect(requestLogs).toHaveLength(1);
+      });
+
+      await waitForAssertion(async() => {
+        let storageResult =
+          await browser.storage.local.get([CDP_STORAGE_KEY]);
+        let storage = storageResult[CDP_STORAGE_KEY];
+
+        expect(storage.pingBundles).toHaveLength(0);
+        expect(storage).not.toHaveProperty("lastError");
+      });
     });
 
     it("does not send again if the error resend interval has not passed yet", async function() {
       let now = Date.now();
       let dayCutoffMinutes = 0;
-      let bundleToSend = createBundleToSend();
+      let bundleToSend = createAggregateBundleToSend();
       let originalStorage = {
         dayCutoffMinutes,
         bundles: [bundleToSend],
@@ -1060,10 +1268,10 @@ describe("CDP on Chromium-based browsers", function() {
       expect(storage).toEqual(originalStorage);
     });
 
-    it("resumes sending bundles after the error resend interval passed yet", async function() {
+    it("resumes sending bundles after the error resend interval passed", async function() {
       let now = Date.now();
       let dayCutoffMinutes = 0;
-      let bundleToSend = createBundleToSend();
+      let bundleToSend = createAggregateBundleToSend();
       await browser.storage.local.set({
         [CDP_STORAGE_KEY]: {
           dayCutoffMinutes,
@@ -1079,11 +1287,13 @@ describe("CDP on Chromium-based browsers", function() {
         expect(requestLogs).toHaveLength(1);
       });
 
-      let storageResult =
-        await browser.storage.local.get([CDP_STORAGE_KEY]);
-      let storage = storageResult[CDP_STORAGE_KEY];
-      expect(storage.bundles).toEqual([]);
-      expect(storage).not.toHaveProperty("lastError");
+      await waitForAssertion(async() => {
+        let storageResult =
+          await browser.storage.local.get([CDP_STORAGE_KEY]);
+        let storage = storageResult[CDP_STORAGE_KEY];
+        expect(storage.bundles).toEqual([]);
+        expect(storage).not.toHaveProperty("lastError");
+      });
     });
   });
 
@@ -1134,6 +1344,42 @@ describe("CDP on Chromium-based browsers", function() {
         let storage = storageResult[CDP_STORAGE_KEY];
 
         expect(storage.bundles).toEqual([]);
+        expect(storage).not.toHaveProperty("lastError");
+      }, 10000);
+    });
+
+    it("can successfully send a ping payload to the eyeometry staging server", async function() {
+      setMinTimeout(this, 11000);
+      await EWE.testing.resetCdpMetricsUploader();
+
+      // These credentials can be set by setting the environment variables with
+      // the same name before running webpack.
+      let cdpArgs = {
+        pingUrl: webpackDotenvPlugin.EWE_CDP_PING_URL,
+        aggregateUrl: webpackDotenvPlugin.EWE_CDP_AGGREGATE_URL,
+        bearer: webpackDotenvPlugin.EWE_CDP_BEARER
+      };
+      if (!cdpArgs.pingUrl || !cdpArgs.aggregateUrl || !cdpArgs.bearer) {
+        this.skip();
+      }
+
+      await EWE.testing.startCdpMetricsUploader(cdpArgs);
+
+      await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+
+      await waitForAssertion(async() => {
+        let storageResult =
+          await browser.storage.local.get([CDP_STORAGE_KEY]);
+        let storage = storageResult[CDP_STORAGE_KEY];
+
+        // this clientId is created at the same time that the pingBundle is
+        // scheduled, so we know it's been scheduled
+        expect(storage.clientIds).toEqual({
+          [SITE_ID]: expect.any(String)
+        });
+        // and this being empty means that it has definitely been sent at this
+        // point
+        expect(storage.pingBundles).toEqual([]);
         expect(storage).not.toHaveProperty("lastError");
       }, 10000);
     });

@@ -17,8 +17,9 @@
 
 import browser from "webextension-polyfill";
 import {v4 as uuidv4} from "uuid";
-import {MILLIS_IN_MINUTE, MILLIS_IN_HOUR, MILLIS_IN_DAY}
+import {MILLIS_IN_MINUTE, MILLIS_IN_HOUR, MILLIS_IN_DAY, MINUTES_IN_DAY}
   from "adblockpluscore/lib/time.js";
+import {toLocalISODateStringWithCutoffTime} from "adblockpluscore/lib/date.js";
 import {randomInteger} from "adblockpluscore/lib/random.js";
 import {isFeatureEnabled} from "adblockpluscore/lib/features.js";
 
@@ -68,26 +69,26 @@ export async function start(cdp, errorRetryDelay = 1 * MILLIS_IN_HOUR) {
 
 async function initializeTimeOffset() {
   if (typeof storage.getState().dayCutoffMinutes == "undefined") {
-    let minutesInDay = MILLIS_IN_DAY / MILLIS_IN_MINUTE;
-    let dayCutoffMinutes = randomInteger(0, minutesInDay);
+    let dayCutoffMinutes = randomInteger(0, MINUTES_IN_DAY);
     storage.getState().dayCutoffMinutes = dayCutoffMinutes;
     await storage.save();
   }
 }
 
-async function onCdpItem(event) {
+async function onCdpSessionStart(event) {
   let state = storage.getState();
   let now = new Date();
-  let nowTimeOfDay = now.getHours() * 60 + now.getMinutes();
-  let dayBucket = now;
-  if (nowTimeOfDay > state.dayCutoffMinutes) {
-    dayBucket.setDate(dayBucket.getDate() - 1);
-  }
 
-  let referenceDateLocal = formatReferenceDate(dayBucket);
+  let referenceDateLocal = toLocalISODateStringWithCutoffTime(
+    now, state.dayCutoffMinutes
+  );
 
   if (!state.bundles) {
     state.bundles = [];
+  }
+
+  if (!state.pingBundles) {
+    state.pingBundles = [];
   }
 
   let bundleExists = state.bundles.some(
@@ -111,22 +112,43 @@ async function onCdpItem(event) {
     scheduledSendTimestamp
   });
 
+  let existingPingBundle = state.pingBundles.find(
+    bundle => bundle.siteId == event.siteId
+  );
+
+  // We use the aggregate bundles to see if this is the first session of a day,
+  // which would mean scheduling a ping. However, if there is a ping which
+  // hasn't managed to send yet (eg because there are errors) then don't queue
+  // another one.
+  if (existingPingBundle) {
+    existingPingBundle.scheduledSendTimestamp = Date.now();
+  }
+  else {
+    if (!state.clientIds) {
+      state.clientIds = {};
+    }
+
+    if (!state.clientIds[event.siteId]) {
+      state.clientIds[event.siteId] = uuidv4();
+    }
+
+    state.pingBundles.push({
+      siteId: event.siteId,
+      clientId: state.clientIds[event.siteId],
+      scheduledSendTimestamp: Date.now()
+    });
+  }
+
   await storage.save();
+
+  scheduler.checkNow();
 }
 
 
 function initializeNewSessionListener() {
-  cdpMod.onCdpItem.addListener(onCdpItem, {
+  cdpMod.onCdpItem.addListener(onCdpSessionStart, {
     eventType: EVENT_SESSION_START
   });
-}
-
-function formatReferenceDate(date) {
-  let year = String(date.getFullYear()).padStart(4, "0");
-  let month = String(date.getMonth() + 1).padStart(2, "0");
-  let day = String(date.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
 }
 
 function initializeScheduler(cdp, errorRetryDelay) {
@@ -135,20 +157,43 @@ function initializeScheduler(cdp, errorRetryDelay) {
   }
 
   scheduler = new Scheduler({
-    interval: MILLIS_IN_HOUR,
-    errorRetryDelay: 0,
+    interval: 0, // this causes the scheduler to always call getNextTimestamp
+    errorRetryDelay,
     listener: () => uploadPendingSessionBundles(cdp),
     async getNextTimestamp() {
       let state = storage.getState();
       let lastError = state.lastError;
-      let hasAnyBundles = state.bundles &&
+      let hasAnyAggregateBundles = state.bundles &&
           state.bundles.length > 0;
 
+      let hasAnyPingBundles = state.pingBundles &&
+          state.pingBundles.length > 0;
+
       let nextRetryAfterError = null;
-      let nextScheduledBundleSend = hasAnyBundles &&
+      let nextScheduledAggregateBundleSend = hasAnyAggregateBundles &&
           state.bundles
           .map(bundle => bundle.scheduledSendTimestamp)
           .reduce((a, b) => Math.min(a, b));
+
+      let nextScheduledPingBundleSend = hasAnyPingBundles &&
+          state.pingBundles
+          .map(bundle => bundle.scheduledSendTimestamp)
+          .reduce((a, b) => Math.min(a, b));
+
+      let nextScheduledBundleSend = null;
+
+      if (nextScheduledAggregateBundleSend && nextScheduledPingBundleSend) {
+        nextScheduledBundleSend = Math.min(
+          nextScheduledAggregateBundleSend,
+          nextScheduledPingBundleSend
+        );
+      }
+      else if (nextScheduledAggregateBundleSend) {
+        nextScheduledBundleSend = nextScheduledAggregateBundleSend;
+      }
+      else if (nextScheduledPingBundleSend) {
+        nextScheduledBundleSend = nextScheduledPingBundleSend;
+      }
 
       let now = Date.now();
       if (!nextScheduledBundleSend) {
@@ -190,12 +235,34 @@ async function uploadPendingSessionBundles(cdp) {
 
   // slice here does a shallow clone, so we can remove elements from the
   // original in the loop
-  let bundlesSnapshot = state.bundles.slice(0);
+  let pingBundlesSnapshot = (state.pingBundles || []).slice(0);
+  let aggregateBundlesSnapshot = (state.bundles || []).slice(0);
 
   let now = Date.now();
 
   try {
-    for (let bundle of bundlesSnapshot) {
+    for (let bundle of pingBundlesSnapshot) {
+      if (bundle.scheduledSendTimestamp > now) {
+        continue;
+      }
+
+      if (!optOut) {
+        let payload = {
+          site_id: bundle.siteId,
+          site_client_id: bundle.clientId,
+          addon_name: info.sdkName,
+          addon_version: info.sdkVersion,
+          application: info.application,
+          application_version: info.applicationVersion
+        };
+        await postWithBearerToken(cdp.pingUrl, cdp.bearer, {payload});
+      }
+
+      state.pingBundles = state.pingBundles.filter(b => b != bundle);
+      await storage.save();
+    }
+
+    for (let bundle of aggregateBundlesSnapshot) {
       if (bundle.scheduledSendTimestamp > now) {
         continue;
       }
@@ -205,8 +272,8 @@ async function uploadPendingSessionBundles(cdp) {
 
       if (!optOut) {
         let sessionsCount = getData(EVENT_SESSION_START, bundle.siteId)
-            .filter(t => t >= startTimestamp && t < endTimestamp)
-            .length;
+          .filter(t => t >= startTimestamp && t < endTimestamp)
+          .length;
 
         let payload = {
           site_id: bundle.siteId,
@@ -222,10 +289,14 @@ async function uploadPendingSessionBundles(cdp) {
       }
 
       state.bundles = state.bundles.filter(b => b != bundle);
-      delete state.lastError;
       await storage.save();
 
       await clearData(EVENT_SESSION_START, bundle.siteId, endTimestamp);
+    }
+
+    if (state.lastError) {
+      delete state.lastError;
+      await storage.save();
     }
   }
   catch (e) {
@@ -259,5 +330,5 @@ export function stop() {
 
   scheduler.stop();
   scheduler = null;
-  cdpMod.onCdpItem.removeListener(onCdpItem);
+  cdpMod.onCdpItem.removeListener(onCdpSessionStart);
 }
