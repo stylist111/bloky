@@ -21,7 +21,7 @@ import {v4 as uuidv4} from "uuid";
 import {MILLIS_IN_MINUTE, MILLIS_IN_DAY, MILLIS_IN_HOUR, MINUTES_IN_DAY,
         MINUTES_IN_HOUR} from "adblockpluscore/lib/time.js";
 
-import {EWE, addFilter, setFeatureFlags, getTestEvents} from "./messaging.js";
+import {EWE, addFilter, getTestEvents} from "./messaging.js";
 import {TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
 import {isChromiumBased, isFirefox, Page, setMinTimeout, executeScript,
         waitForAssertion, clearRequestLogs, getRequestLogs, setEndpointResponse,
@@ -120,7 +120,6 @@ describe("CDP on Chromium-based browsers", function() {
       EXPIRATION_INTERVAL_KEY);
     await EWE.testing._clearCdpData();
     await EWE.testing._clearCdpActivity();
-    await setFeatureFlags({cdp: true});
     await EWE.testing._setCdpConfig([[[WEBEXT_DOT_COM], SITE_ID]]);
     await EWE.cdp.setOptOut(false);
   });
@@ -195,15 +194,6 @@ describe("CDP on Chromium-based browsers", function() {
     await assertEvents(SITE_ID, EVENT_PAGE_VIEW, 2);
     await assertEvents(SITE_ID, EVENT_SESSION_START, 1);
     await assertEvents(SITE_ID, EVENT_BLOCKING, 2);
-  });
-
-  it("does not track if feature flag is off", async function() {
-    await setFeatureFlags({cdp: false});
-    await addFilter(`image.png$domain=${WEBEXT_DOT_COM}`);
-    await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-    await assertEvents(SITE_ID, EVENT_PAGE_VIEW, 0);
-    await assertEvents(SITE_ID, EVENT_SESSION_START, 0);
-    await assertEvents(SITE_ID, EVENT_BLOCKING, 0);
   });
 
   it("does not track if opted out by user", async function() {
@@ -744,14 +734,6 @@ describe("CDP on Chromium-based browsers", function() {
   });
 
   describe("Metric Upload Startup", function() {
-    beforeEach(async function() {
-      // This beforeEach resetting the uploader is needed because of the feature
-      // flag being off by default and turned on in a beforeEach in this test
-      // suite. When the feature flag is gone, then this block can be removed.
-      await EWE.testing.resetCdpMetricsUploader();
-      await EWE.testing.startCdpMetricsUploader(CDP_ARGS);
-    });
-
     it("assigns a random cutoff time of day for session bucketing on first run", async function() {
       let storage = await browser.storage.local.get([CDP_STORAGE_KEY]);
 

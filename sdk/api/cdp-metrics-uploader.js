@@ -21,7 +21,6 @@ import {MILLIS_IN_MINUTE, MILLIS_IN_HOUR, MILLIS_IN_DAY, MINUTES_IN_DAY}
   from "adblockpluscore/lib/time.js";
 import {toLocalISODateStringWithCutoffTime} from "adblockpluscore/lib/date.js";
 import {randomInteger} from "adblockpluscore/lib/random.js";
-import {isFeatureEnabled} from "adblockpluscore/lib/features.js";
 
 import * as info from "./info.js";
 import {Scheduler} from "./scheduler.js";
@@ -45,10 +44,6 @@ let scheduler = null;
  * @ignore
  */
 export async function start(cdp, errorRetryDelay = 1 * MILLIS_IN_HOUR) {
-  if (!isFeatureEnabled("cdp")) {
-    return;
-  }
-
   if (!cdp.pingUrl) {
     throw new Error("No CDP `pingUrl` provided");
   }

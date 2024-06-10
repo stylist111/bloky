@@ -8,8 +8,7 @@ Unreleased
 
 ## CDP
 
-- CDP is still behind the CDP feature flag introduced in an earlier release, and
-  is inactive unless the feature flag is enabled. See
+- The CDP feature flag has been removed. It is now enabled by default. See
   https://gitlab.com/adblockinc/ext/adblockplus/adblockplus/-/issues/1683 for
   more information on CDP.
 - A new property has been added to the argument object passed to

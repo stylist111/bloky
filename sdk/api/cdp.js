@@ -21,15 +21,12 @@ import {Prefs, CDP_OPTED_IN, CDP_OPTED_OUT,
         CDP_OPTED_IN_BY_USER, CDP_OPTED_OUT_BY_USER}
   from "./prefs.js";
 import {domainSuffixes} from "adblockpluscore/lib/url.js";
-import {isFeatureEnabled} from "adblockpluscore/lib/features.js";
 import {matchesWildcards, hasWildcard} from "adblockpluscore/lib/url.js";
 import {getFrameInfo, TOP_LEVEL_FRAME_ID} from "./frame-state.js";
 import {BlockableEventDispatcher} from "./diagnostics.js";
 import {PersistentState} from "./persistence.js";
 import {trace, debug} from "./debugging.js";
 import {isFirefox} from "./info.js";
-
-const FEATURE_FLAG = "cdp";
 
 /**
  * "Page view" event type
@@ -207,7 +204,7 @@ async function count(eventType, siteId, timeStamp) {
 }
 
 async function onBlockableItem({request}) {
-  if (!isFeatureEnabled(FEATURE_FLAG) || isOptedOut()) {
+  if (isOptedOut()) {
     return;
   }
 
@@ -242,10 +239,6 @@ export async function _awaitSavingComplete() {
 export async function setData(eventType, domain, timestamps) {
   trace({eventType, domain});
 
-  if (!isFeatureEnabled(FEATURE_FLAG)) {
-    return;
-  }
-
   const state = events.get(eventType);
   state.getState()[domain] = timestamps;
   await state.save();
@@ -260,10 +253,6 @@ export async function setData(eventType, domain, timestamps) {
  */
 export function getData(eventType, siteId) {
   trace({eventType, siteId});
-
-  if (!isFeatureEnabled(FEATURE_FLAG)) {
-    return [];
-  }
 
   const timestamps = events.get(eventType).getState()[siteId] || [];
   debug(`Got ${timestamps.length} events`);
@@ -291,10 +280,6 @@ export async function clearActivity() {
  */
 export async function clearData(eventType, siteId, timeStamp) {
   trace({eventType, siteId, timeStamp});
-
-  if (!isFeatureEnabled(FEATURE_FLAG)) {
-    return;
-  }
 
   const eventTypes = eventType ? [eventType] : [...events.keys()];
   for (const eachEventType of eventTypes) {
@@ -327,7 +312,7 @@ let startupPromise;
 function handleBrowserEvent(details, doMarkActive) {
   trace(details);
 
-  if (!isFeatureEnabled(FEATURE_FLAG) || isOptedOut()) {
+  if (isOptedOut()) {
     return;
   }
 
@@ -426,7 +411,7 @@ export async function markActive(tabId, frameId) {
 export function shouldNotifyActive(tabId, frameId) {
   trace({tabId, frameId});
 
-  if (!isFeatureEnabled(FEATURE_FLAG) || isOptedOut()) {
+  if (isOptedOut()) {
     return false;
   }
 

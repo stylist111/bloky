@@ -44,7 +44,6 @@ exports.resetFeatureFlags = function() {
 
   featureFlags.example = false;  // example feature used by tests
   featureFlags.inlineCss = false;
-  featureFlags.cdp = false;
 };
 
 resetFeatureFlags();
