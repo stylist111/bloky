@@ -112,7 +112,7 @@ describe("CDP on Chromium-based browsers", function() {
   });
 
   beforeEach(async function() {
-    setMinTimeout(this, 6000);
+    setMinTimeout(this, 10 * 1000);
 
     await EWE.testing._clearCdpData();
     await EWE.testing._clearCdpActivity();
@@ -1140,6 +1140,10 @@ describe("CDP on Chromium-based browsers", function() {
   });
 
   describe("Specific sites", function() {
+    beforeEach(async function() {
+      await EWE.testing._restoreCdpConfig();
+    });
+
     it("counts amazon visitors", async function() {
       setMinTimeout(this, 30 * 1000);
 
@@ -1149,8 +1153,21 @@ describe("CDP on Chromium-based browsers", function() {
       await new Page("https://amazon.co.uk").loaded;   // regional
       await new Page("https://docs.aws.amazon.com").loaded; // subdomain
 
-      assertEvents(AMAZON_SITE_ID, EVENT_PAGE_VIEW, 3);
-      assertEvents(AMAZON_SITE_ID, EVENT_SESSION_START, 1);
+      await assertEvents(AMAZON_SITE_ID, EVENT_PAGE_VIEW, 3);
+      await assertEvents(AMAZON_SITE_ID, EVENT_SESSION_START, 1);
+    });
+
+    it("counts yahoo visitors", async function() {
+      setMinTimeout(this, 60 * 1000);
+
+      const YAHOO_SITE_ID = "yahoo.com";
+      const SEARCH_YAHOO_SITE_ID = "search.yahoo.com";
+
+      await new Page("https://yahoo.com").loaded;
+      await new Page("https://search.yahoo.com").loaded; // search
+
+      await assertEvents(SEARCH_YAHOO_SITE_ID, EVENT_SESSION_START, 1);
+      await assertEvents(YAHOO_SITE_ID, EVENT_SESSION_START, 1);
     });
   });
 });

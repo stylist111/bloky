@@ -23,6 +23,7 @@ Unreleased
 - Firefox users are opted out of CDP by default. Chrome and other browser users
   are opted in by default. (EE-461)
 - Now we count amazon visitors for CDP. (EE-474)
+- Now we count yahoo visitors for CDP. (EE-529)
 
 🍿 1.7.0 - 2024-05-20 🍿
 ========================

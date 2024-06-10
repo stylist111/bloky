@@ -51,7 +51,9 @@ export const EVENT_BLOCKING = "blocking";
 
 // Array<Array<String(domainWithWildcard)>>, String(siteId)>
 const defaultConfig = [
-  [["amazon.*"], "amazon.*"]
+  [["amazon.*"], "amazon.*"],
+  [["search.yahoo.com"], "search.yahoo.com"], // the order matters: earlier than "yahoo.com" below
+  [["yahoo.com"], "yahoo.com"]
 ];
 // Map<String(domainWithWildcard), String(siteId)
 let cdpDomains;
@@ -318,26 +320,22 @@ export async function clearData(eventType, siteId, timeStamp) {
 
 let startupPromise;
 
-function onCommitted(details) {
+function onBeforeNavigate(details) {
+  trace({details});
   if (!isFeatureEnabled(FEATURE_FLAG) || isOptedOut()) {
     return;
   }
 
-  const {tabId, frameId, timeStamp} = details;
-  const frameInfo = getFrameInfo(tabId, frameId);
-  if (!frameInfo) {
-    return;
-  }
-
-  const siteId = findSiteId(frameInfo.hostname);
+  const siteId = findSiteId(new URL(details.url).hostname);
   if (!siteId) {
     return;
   }
 
   const newSession = isNewSession(siteId);
   // mark first as awaiting might take some time
-  // and another onCommited call can happen in between
-  markActive(tabId, frameId);
+  // and another onCommitted call can happen in between
+  const {timeStamp} = details;
+  markActiveForSiteId(siteId);
   count(EVENT_PAGE_VIEW, siteId, timeStamp);
   if (newSession) {
     count(EVENT_SESSION_START, siteId, timeStamp);
@@ -349,7 +347,7 @@ function isNewSession(siteId) {
 
   const lastActivity = activity.getState()[siteId];
   if (!lastActivity) {
-    // new navigation to domain, new session
+    // new navigation to site, new session
     debug(`New session for ${siteId}`);
     return true;
   }
@@ -376,13 +374,7 @@ function onHistoryStateUpdated(details) {
     return;
   }
 
-  const {tabId, frameId} = details;
-  const frameInfo = getFrameInfo(tabId, frameId);
-  if (!frameInfo) {
-    return;
-  }
-
-  const siteId = findSiteId(new URL(frameInfo.url).hostname);
+  const siteId = findSiteId(new URL(details.url).hostname);
   if (!siteId) {
     return;
   }
@@ -393,6 +385,11 @@ function onHistoryStateUpdated(details) {
   if (newSession) {
     count(EVENT_SESSION_START, siteId, details.timeStamp);
   }
+}
+
+async function markActiveForSiteId(siteId) {
+  activity.getState()[siteId] = Date.now();
+  await activity.save();
 }
 
 /**
@@ -414,9 +411,7 @@ export async function markActive(tabId, frameId) {
     return;
   }
 
-  activity.getState()[siteId] = Date.now();
-
-  await activity.save();
+  await markActiveForSiteId(siteId);
 }
 
 /**
@@ -468,7 +463,7 @@ export async function start() {
         filterType: "blocking"
       });
 
-      browser.webNavigation.onCommitted.addListener(onCommitted);
+      browser.webNavigation.onBeforeNavigate.addListener(onBeforeNavigate);
       browser.webNavigation.onHistoryStateUpdated.addListener(
         onHistoryStateUpdated);
 
