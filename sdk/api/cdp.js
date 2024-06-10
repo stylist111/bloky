@@ -102,9 +102,13 @@ let events = new Map([
   [EVENT_SESSION_START, new PersistentState("ewe:cdp-session", browser.storage.local)],
   [EVENT_BLOCKING, new PersistentState("ewe:cdp-blocking", browser.storage.local)]
 ]);
+for (const state of events.values()) {
+  state.doDebounce();
+}
 
 // Map<String(domain), Number(last user activity timestamp)>
 let activity = new PersistentState("ewe:cdp-activity", browser.storage.local);
+activity.doDebounce();
 
 // Map<Listener, Object (filter options)>
 let listeners = new Map();

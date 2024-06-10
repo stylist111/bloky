@@ -24,8 +24,13 @@ export class PersistentState {
     this.storage = storage;
     this.activeSaveActions = new Set();
     this.loaded = false;
+    this.debounce = false;
 
     this.clearState();
+  }
+
+  doDebounce() {
+    this.debounce = true;
   }
 
   clearState() {
@@ -56,6 +61,20 @@ export class PersistentState {
   }
 
   async save() {
+    if (this.debounce) {
+      if (!this.debounceTimer) {
+        this.debounceTimer = setTimeout(() => {
+          this.debounceTimer = null;
+          this.saveImmediate();
+        }, 0);
+      }
+    }
+    else {
+      await this.saveImmediate();
+    }
+  }
+
+  async saveImmediate() {
     let obj = {};
     obj[this.storageKey] = this.state;
     return this._trackSaving(this.storage.set(obj)
