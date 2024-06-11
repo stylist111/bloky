@@ -23,7 +23,7 @@ import {Prefs, CDP_OPTED_IN, CDP_OPTED_OUT,
 import {domainSuffixes} from "adblockpluscore/lib/url.js";
 import {isFeatureEnabled} from "adblockpluscore/lib/features.js";
 import {matchesWildcards, hasWildcard} from "adblockpluscore/lib/url.js";
-import {getFrameInfo} from "./frame-state.js";
+import {getFrameInfo, TOP_LEVEL_FRAME_ID} from "./frame-state.js";
 import {BlockableEventDispatcher} from "./diagnostics.js";
 import {PersistentState} from "./persistence.js";
 import {trace, debug} from "./debugging.js";
@@ -324,9 +324,15 @@ export async function clearData(eventType, siteId, timeStamp) {
 
 let startupPromise;
 
-function onBeforeNavigate(details) {
-  trace({details});
+function handleBrowserEvent(details, doMarkActive) {
+  trace(details);
+
   if (!isFeatureEnabled(FEATURE_FLAG) || isOptedOut()) {
+    return;
+  }
+
+  if (details.frameId != TOP_LEVEL_FRAME_ID) {
+    // Counting only outer-most frames
     return;
   }
 
@@ -336,14 +342,20 @@ function onBeforeNavigate(details) {
   }
 
   const newSession = isNewSession(siteId);
-  // mark first as awaiting might take some time
-  // and another onCommitted call can happen in between
   const {timeStamp} = details;
-  markActiveForSiteId(siteId);
   count(EVENT_PAGE_VIEW, siteId, timeStamp);
+  if (doMarkActive) {
+    markActiveForSiteId(siteId);
+  }
   if (newSession) {
     count(EVENT_SESSION_START, siteId, timeStamp);
   }
+
+  return siteId;
+}
+
+function onBeforeNavigate(details) {
+  handleBrowserEvent(details, true);
 }
 
 function isNewSession(siteId) {
@@ -374,21 +386,7 @@ function isOptedOut() {
 }
 
 function onHistoryStateUpdated(details) {
-  if (!isFeatureEnabled(FEATURE_FLAG) || isOptedOut()) {
-    return;
-  }
-
-  const siteId = findSiteId(new URL(details.url).hostname);
-  if (!siteId) {
-    return;
-  }
-
-  const newSession = isNewSession(siteId);
-  count(EVENT_PAGE_VIEW, siteId, details.timeStamp);
-  // we don't mark frame as active here as it's not user action
-  if (newSession) {
-    count(EVENT_SESSION_START, siteId, details.timeStamp);
-  }
+  handleBrowserEvent(details, false);
 }
 
 async function markActiveForSiteId(siteId) {

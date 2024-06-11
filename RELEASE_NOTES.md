@@ -28,6 +28,7 @@ Unreleased
 - Now we count amazon visitors for CDP. (EE-474)
 - Now we count yahoo visitors for CDP. (EE-529)
 - CDP events performance improvement (debouncing). (EE-473)
+- Count only CDP events for outer most frames.
 
 🍿 1.7.0 - 2024-05-20 🍿
 ========================

@@ -232,6 +232,17 @@ describe("CDP on Chromium-based browsers", function() {
     await assertEvents(SITE_ID, EVENT_SESSION_START, 1);
   });
 
+  it("counts only main frames", async function() {
+    const LOCALHOST = "localhost";
+    const LOCALHOST_SITE_ID = "localhostSiteId";
+    await EWE.testing._setCdpConfig([
+      [[LOCALHOST], LOCALHOST_SITE_ID]
+    ]);
+
+    await new Page(`http://${LOCALHOST}:3000/iframe.html`).loaded;
+    await assertEvents(LOCALHOST_SITE_ID, EVENT_PAGE_VIEW, 1);
+  });
+
   it("return events timestamps", async function() {
     await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
 
