@@ -100,8 +100,9 @@ describe("CDP on Chromium-based browsers", function() {
     bearer: CDP_BEARER
   };
 
-  const intervalPrefsKey = "cdp_session_expiration_interval";
+  const EXPIRATION_INTERVAL_KEY = "cdp_session_expiration_interval";
   let originalUserOptedOut;
+  let originalExpirationInterval;
 
   before(async function() {
     // DNS mapping webext.com to 127.0.0.1 is configured
@@ -115,6 +116,8 @@ describe("CDP on Chromium-based browsers", function() {
   beforeEach(async function() {
     setMinTimeout(this, 10 * 1000);
 
+    originalExpirationInterval = await EWE.testing._getPrefs(
+      EXPIRATION_INTERVAL_KEY);
     await EWE.testing._clearCdpData();
     await EWE.testing._clearCdpActivity();
     await setFeatureFlags({cdp: true});
@@ -122,8 +125,14 @@ describe("CDP on Chromium-based browsers", function() {
     await EWE.cdp.setOptOut(false);
   });
 
+  async function restoreSessionExpirationInterval() {
+    await EWE.testing._setPrefs(
+      EXPIRATION_INTERVAL_KEY, originalExpirationInterval);
+  }
+
   afterEach(async function() {
     await EWE.testing._clearCdpData();
+    await restoreSessionExpirationInterval();
   });
 
   after(async function() {
@@ -252,75 +261,59 @@ describe("CDP on Chromium-based browsers", function() {
   it("considers tab reload larger than default expiration interval as a new session", async function() {
     setMinTimeout(this, 10 * 1000);
 
-    const defaultInterval = await EWE.testing._getPrefs(intervalPrefsKey);
-    try {
-      await EWE.testing._setPrefs(intervalPrefsKey, 0); // 0 second
+    await EWE.testing._setPrefs(EXPIRATION_INTERVAL_KEY, 0); // 0 second
 
-      const page = new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`);
-      await page.loaded;
+    const page = new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`);
+    await page.loaded;
 
-      // Larger than session expiration interval,
-      // so it's considered as a new session
-      await page.reload();
+    // Larger than session expiration interval,
+    // so it's considered as a new session
+    await page.reload();
 
-      await assertEvents(SITE_ID, EVENT_SESSION_START, 2);
-    }
-    finally {
-      await EWE.testing._setPrefs(intervalPrefsKey, defaultInterval);
-    }
+    await assertEvents(SITE_ID, EVENT_SESSION_START, 2);
   });
 
   it("considers tab reload larger than default expiration interval as a new session having another tab with the same domain", async function() {
     setMinTimeout(this, 10 * 1000);
 
-    const defaultInterval = await EWE.testing._getPrefs(intervalPrefsKey);
     const sessionExpirationInterval = 1000; // 1 second
-    try {
-      await EWE.testing._setPrefs(intervalPrefsKey, sessionExpirationInterval);
+    await EWE.testing._setPrefs(
+      EXPIRATION_INTERVAL_KEY, sessionExpirationInterval);
 
-      const page1 = new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`, false, false);
-      await page1.loaded;
+    const page1 = new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`, false, false);
+    await page1.loaded;
 
-      // immediately (less then expiration interval),
-      // so it's not considered as a new session
-      await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`, false, false).loaded;
+    // immediately (less then expiration interval),
+    // so it's not considered as a new session
+    await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`, false, false).loaded;
 
-      // wait longer than session expiration interval
-      const sleepInterval = 2 * sessionExpirationInterval;
-      await new Promise(r => setTimeout(r, sleepInterval));
+    // wait longer than session expiration interval
+    const sleepInterval = 2 * sessionExpirationInterval;
+    await new Promise(r => setTimeout(r, sleepInterval));
 
-      // so reload is considered as a new session
-      await page1.reload();
+    // so reload is considered as a new session
+    await page1.reload();
 
-      await assertEvents(SITE_ID, EVENT_SESSION_START, 2);
-    }
-    finally {
-      await EWE.testing._setPrefs(intervalPrefsKey, defaultInterval);
-    }
+    await assertEvents(SITE_ID, EVENT_SESSION_START, 2);
   });
 
   it("considers same website navigation with larger than default expiration interval as a new session", async function() {
     setMinTimeout(this, 10 * 1000);
 
-    const defaultInterval = await EWE.testing._getPrefs(intervalPrefsKey);
     const sessionExpirationInterval = 1000; // 1 second
     const url = `http://${WEBEXT_DOT_COM}:3000/image.html`;
-    try {
-      await EWE.testing._setPrefs(intervalPrefsKey, sessionExpirationInterval);
+    await EWE.testing._setPrefs(
+      EXPIRATION_INTERVAL_KEY, sessionExpirationInterval);
 
-      await new Page(url).loaded;
+    await new Page(url).loaded;
 
-      // wait longer than session expiration interval
-      const sleepInterval = 2 * sessionExpirationInterval;
-      await new Promise(r => setTimeout(r, sleepInterval));
+    // wait longer than session expiration interval
+    const sleepInterval = 2 * sessionExpirationInterval;
+    await new Promise(r => setTimeout(r, sleepInterval));
 
-      await new Page(url).loaded;
+    await new Page(url).loaded;
 
-      await assertEvents(SITE_ID, EVENT_SESSION_START, 2);
-    }
-    finally {
-      await EWE.testing._setPrefs(intervalPrefsKey, defaultInterval);
-    }
+    await assertEvents(SITE_ID, EVENT_SESSION_START, 2);
   });
 
   it("tracks same domain navigation in different tabs as the same session", async function() {
@@ -587,7 +580,6 @@ describe("CDP on Chromium-based browsers", function() {
   it("extends session expiration time due to user actions", async function() {
     setMinTimeout(this, 30 * 1000);
 
-    const defaultInterval = await EWE.testing._getPrefs(intervalPrefsKey);
     const sessionExpirationInterval = 2000; // 2 seconds
     const sleepInterval = sessionExpirationInterval / 4.0;
 
@@ -616,33 +608,29 @@ describe("CDP on Chromium-based browsers", function() {
       await assertEvents(SITE_ID, EVENT_SESSION_START, 1);
     }
 
-    try {
-      await EWE.testing._setPrefs(intervalPrefsKey, sessionExpirationInterval);
+    await EWE.testing._setPrefs(
+      EXPIRATION_INTERVAL_KEY, sessionExpirationInterval);
 
-      await addFilter("image.png");
+    await addFilter("image.png");
 
-      // click
-      await assertUserActionsExtendSession(() => {
-        const image = document.getElementById("image");
-        image.click();
-      });
+    // click
+    await assertUserActionsExtendSession(() => {
+      const image = document.getElementById("image");
+      image.click();
+    });
 
-      // scrolling
-      await assertUserActionsExtendSession(() => {
-        const e = document.createEvent("UIEvents");
-        e.initUIEvent("scroll", true, true, window, 1);
-        document.body.dispatchEvent(e);
-      });
+    // scrolling
+    await assertUserActionsExtendSession(() => {
+      const e = document.createEvent("UIEvents");
+      e.initUIEvent("scroll", true, true, window, 1);
+      document.body.dispatchEvent(e);
+    });
 
-      // typing
-      await assertUserActionsExtendSession(() => {
-        const inputBox = document.getElementById("inputBox");
-        inputBox.dispatchEvent(new KeyboardEvent("keypress", {key: "1"}));
-      });
-    }
-    finally {
-      await EWE.testing._setPrefs(intervalPrefsKey, defaultInterval);
-    }
+    // typing
+    await assertUserActionsExtendSession(() => {
+      const inputBox = document.getElementById("inputBox");
+      inputBox.dispatchEvent(new KeyboardEvent("keypress", {key: "1"}));
+    });
   });
 
   it("clears the events", async function() {
@@ -874,31 +862,25 @@ describe("CDP on Chromium-based browsers", function() {
 
       await startMetricsUploaderWithTestArgs();
 
-      const defaultInterval = await EWE.testing._getPrefs(intervalPrefsKey);
-      try {
-        // 0 second, so sessions end immediately
-        await EWE.testing._setPrefs(intervalPrefsKey, 0);
+      // 0 second, so sessions end immediately
+      await EWE.testing._setPrefs(EXPIRATION_INTERVAL_KEY, 0);
 
-        let page = new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`);
-        await page.loaded;
-        // Larger than session expiration interval of 0, so it's considered as a
-        // new session
-        await page.reload();
+      let page = new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`);
+      await page.loaded;
+      // Larger than session expiration interval of 0, so it's considered as a
+      // new session
+      await page.reload();
 
-        // We need to make sure we wait long enough for the second session to
-        // have been picked up.
-        await assertEvents(SITE_ID, EVENT_SESSION_START, 2);
+      // We need to make sure we wait long enough for the second session to
+      // have been picked up.
+      await assertEvents(SITE_ID, EVENT_SESSION_START, 2);
 
-        await waitForAssertion(async() => {
-          let storageResult =
-            await browser.storage.local.get([CDP_STORAGE_KEY]);
-          let storage = storageResult[CDP_STORAGE_KEY];
-          expect(storage.bundles).toHaveLength(1);
-        });
-      }
-      finally {
-        await EWE.testing._setPrefs(intervalPrefsKey, defaultInterval);
-      }
+      await waitForAssertion(async() => {
+        let storageResult =
+          await browser.storage.local.get([CDP_STORAGE_KEY]);
+        let storage = storageResult[CDP_STORAGE_KEY];
+        expect(storage.bundles).toHaveLength(1);
+      });
     });
 
     it("does not send a second ping to the ping url if there's a second session on the same day", async function() {
@@ -916,38 +898,32 @@ describe("CDP on Chromium-based browsers", function() {
 
       await startMetricsUploaderWithTestArgs();
 
-      const defaultInterval = await EWE.testing._getPrefs(intervalPrefsKey);
-      try {
-        // 0 second, so sessions end immediately
-        await EWE.testing._setPrefs(intervalPrefsKey, 0);
+      // 0 second, so sessions end immediately
+      await EWE.testing._setPrefs(EXPIRATION_INTERVAL_KEY, 0);
 
-        let page = new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`);
-        await page.loaded;
-        // Larger than session expiration interval of 0, so it's considered as a
-        // new session
-        await page.reload();
+      let page = new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`);
+      await page.loaded;
+      // Larger than session expiration interval of 0, so it's considered as a
+      // new session
+      await page.reload();
 
-        // We need to make sure we wait long enough for the second session to
-        // have been picked up.
-        await assertEvents(SITE_ID, EVENT_SESSION_START, 2);
+      // We need to make sure we wait long enough for the second session to
+      // have been picked up.
+      await assertEvents(SITE_ID, EVENT_SESSION_START, 2);
 
-        // Only one ping sent, and the storage doesn't have others lined up to
-        // send later.
-        await waitForAssertion(async() => {
-          let requestLogs = await getRequestLogs(CDP_ARGS.pingUrl);
-          expect(requestLogs).toHaveLength(1);
-        });
+      // Only one ping sent, and the storage doesn't have others lined up to
+      // send later.
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(CDP_ARGS.pingUrl);
+        expect(requestLogs).toHaveLength(1);
+      });
 
-        await waitForAssertion(async() => {
-          let storageResult =
-            await browser.storage.local.get([CDP_STORAGE_KEY]);
-          let storage = storageResult[CDP_STORAGE_KEY];
-          expect(storage.pingBundles).toHaveLength(0);
-        });
-      }
-      finally {
-        await EWE.testing._setPrefs(intervalPrefsKey, defaultInterval);
-      }
+      await waitForAssertion(async() => {
+        let storageResult =
+          await browser.storage.local.get([CDP_STORAGE_KEY]);
+        let storage = storageResult[CDP_STORAGE_KEY];
+        expect(storage.pingBundles).toHaveLength(0);
+      });
     });
 
     it("creates a new scheduled aggregate metrics upload when a session happens on a new day", async function() {
