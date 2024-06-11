@@ -1,6 +1,9 @@
 Unreleased
 ==========
 
+🏰 1.8.0 - 2024-06-11 🏰
+========================
+
 ## Fixes
 
 - Now we handle "Failed to fetch subscription content" and eyeometry
