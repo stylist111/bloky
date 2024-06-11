@@ -63,13 +63,6 @@ export const defaults = Object.create({
   migration_state: MIGRATED_TO_MV2,
   edge_one_click_allowlisting_delay: 2 * MILLIS_IN_SECOND,
   cdp_opt_in_out: CDP_OPTED_IN,
-  /*
-  WARNING: the order makes a difference:
-  * more specific site buckets should come earlier
-    (eg. subdomain earlier than it's more higher level domain)
-  * exact matches should come earlier than wildcarded
-    (eg. exact comain earlier than it's wildcarded flavour)
-  */
   cdp_session_expiration_interval: 30 * MILLIS_IN_MINUTE
 });
 
