@@ -19,7 +19,7 @@ Unreleased
   domains. (EE-474)
 - The number of sessions for configured partner's domains is now gathered to be
   sent to the CDP telemetry server. (EE-473)
-- Exported `EWE.cdp` namespace with `onCdpItem` dispatcher and `setOptOut()`,
+- Exported `EWE.cdp` namespace with `onCdpItem` dispatcher, `setOptOut()`, and
   `isOptOut()` methods for allowing users to opt out of data
   collection. (EE-461)
 - Firefox users are opted out of CDP by default. Chrome and other browser users
@@ -27,7 +27,7 @@ Unreleased
 - Now we count amazon visitors for CDP. (EE-474)
 - Now we count yahoo visitors for CDP. (EE-529)
 - CDP events performance improvement (debouncing). (EE-473)
-- Count only CDP events for outer most frames.
+- Count only CDP events for outer most frames. (EE-473)
 
 🍿 1.7.0 - 2024-05-20 🍿
 ========================

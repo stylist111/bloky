@@ -479,6 +479,7 @@ export default {
   /**
    * Opt-out from CDP. Default is `true` (used opted out)
    * @param {boolean} value Pass `true` to opt-out
+   * @returns {Promise} Promise that resolves when the setting is set.
    */
   async setOptOut(value) {
     Prefs.cdp_opt_in_out = (value ?
@@ -487,7 +488,7 @@ export default {
 
   /**
    * Check whether user is opted out from CDP
-   * @returns {boolean} Returns `true` is user opted out from CDP
+   * @returns {Promise<boolean>} Returns `true` is user opted out from CDP
    */
   async isOptOut() {
     return Prefs.cdp_opt_in_out == CDP_OPTED_OUT ||

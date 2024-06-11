@@ -225,6 +225,7 @@ async function onInstalled(details) {
  * active pings will be sent to.
  * @param {string} [addonInfo.telemetry.bearer] The Bearer token accompanying
  *   telemetry API calls.
+ * @param {Object?} [addonInfo.cdp] Settings for CDP.
  * @param {string} [addonInfo.cdp.aggregateUrl] The URL to send aggregate
  *   metrics to CDP.
  * @param {string} [addonInfo.cdp.pingUrl] The URL to do the user counting ping
