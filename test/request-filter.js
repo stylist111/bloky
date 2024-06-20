@@ -21,7 +21,8 @@ import {TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, SITEKEY,
         TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
 import {Page, Resource, executeScript, shouldBeLoaded, supportsWebBundle,
         waitForSubscriptionsToDownload, setMinTimeout, setEndpointResponse,
-        isChromiumBased, waitForSubscriptionToBeSynchronized} from "./utils.js";
+        isChromiumBased, waitForSubscriptionToBeSynchronized, waitForAssertion}
+  from "./utils.js";
 import {subTestCustom1, subTestAllowingFilter} from "./api-fixtures.js";
 import {addFilter, EWE} from "./messaging.js";
 import browser from "webextension-polyfill";
@@ -581,17 +582,18 @@ describe("Blocking", function() {
     });
   });
 
-  async function expectResourceAllowedByFilter(url, resource, allowingFilter) {
-    await shouldBeLoaded(url, resource);
-    let isResourceAllowlisted = await browser.runtime.sendMessage({
-      type: "ewe-test:isResourceAllowlisted",
-      url: `${TEST_PAGES_URL}/${url}`,
-      status: "loading"
-    });
-    expect(await isResourceAllowlisted).toEqual(true);
+  async function expectUrlLoadingAllowlisted(url, allowingFilters) {
+    await waitForAssertion(async() => {
+      const isResourceAllowlisted = await browser.runtime.sendMessage({
+        type: "ewe-test:isResourceAllowlisted",
+        url: `${TEST_PAGES_URL}/${url}`,
+        status: "loading"
+      });
+      expect(isResourceAllowlisted).toEqual(true);
+    }, 2000);
     let tabId = await new Page(url).loaded;
     expect(await EWE.filters.getAllowingFilters(tabId))
-      .toEqual(allowingFilter);
+      .toEqual(allowingFilters);
   }
 
   async function expectResourceBlocked(url, resource) {
@@ -610,7 +612,7 @@ describe("Blocking", function() {
     setMinTimeout(this, 10000);
 
     let url = "image.html";
-    let allowingFilter = ["@@||localhost^$document"];
+    let allowingFilters = ["@@||localhost^$document"];
     let resource = "image.png";
 
     // Add filter to show that allowlisting is working
@@ -620,13 +622,15 @@ describe("Blocking", function() {
     try {
       await EWE.subscriptions.add(subTestAllowingFilter.url);
       await waitForSubscriptionsToDownload();
-      await expectResourceAllowedByFilter(url, resource, allowingFilter);
+      await shouldBeLoaded(url, resource);
+      await expectUrlLoadingAllowlisted(url, allowingFilters);
 
       await EWE.subscriptions.disable(subTestAllowingFilter.url);
       await expectResourceBlocked(url, resource);
 
-      await addFilter(allowingFilter[0]);
-      await expectResourceAllowedByFilter(url, resource, allowingFilter, true);
+      await addFilter(allowingFilters[0]);
+      await shouldBeLoaded(url, resource);
+      await expectUrlLoadingAllowlisted(url, allowingFilters, true);
     }
     finally {
       await browser.runtime.sendMessage({

@@ -76,6 +76,10 @@ function wrapApiNamespace(target) {
       // wrapping only asynchronous functions
       if (typeof _target[prop] === "function" && isAsync(_target[prop])) {
         return async function(...args) {
+          debugging.debug(() => "API call: " + JSON.stringify({
+            method: prop,
+            args: [...args]})
+          , debugging.LOG_COLOR_CYAN);
           await preApiCall();
           let result = await _target[prop](...args);
           await postApiCall();
