@@ -10,6 +10,10 @@ Unreleased
 - This change will require rebuilding on the rules list to apply new safe
 query parameter for easylist.
 
+## Fixes
+
+- Fixed failing `npm run build -- --force-subscription-update` script. 
+
 🏰 1.8.0 - 2024-06-11 🏰
 ========================
 

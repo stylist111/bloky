@@ -18,6 +18,7 @@
 /* eslint-env node */
 
 import fs from "fs";
+import path from "path";
 
 import {isMain, exists} from "./utils.js";
 
@@ -30,5 +31,5 @@ export async function cleanup(pathToClean) {
 }
 
 if (isMain(import.meta.url)) {
-  cleanup();
+  cleanup(path.join(process.cwd(), "scriptsOutput", "test-mv3"));
 }
