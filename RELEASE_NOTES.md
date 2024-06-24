@@ -13,6 +13,13 @@ query parameter for easylist.
 ## Fixes
 
 - Fixed failing `npm run build -- --force-subscription-update` script. 
+- When updating subscriptions in MV3 (both diff updates and full updates), no
+  longer fail the full update if there are invalid filters. Valid filters will
+  now be applied, and the invalid filters will be ignored. (EE-565)
+- Fix validation of regex filters in DNR rule conversion. It was previously
+  marking all regexes as valid when using the browser's isRegexSupported
+  function, which would then result in an unexpected error later in the process
+  when trying to add the resulting DNR rules. (EE-565)
 
 🏰 1.8.0 - 2024-06-11 🏰
 ========================

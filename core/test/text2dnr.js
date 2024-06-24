@@ -31,7 +31,7 @@ async function testRules(filters, expected, transformFunction, isRegexSupported)
   const converter = createConverter(options);
 
   async function convertFilter(filter) {
-    let result = converter(filter);
+    let result = await converter(filter);
     if (result instanceof FilterParsingError) {
       // If there is an error, we return empty rules.
       return [];

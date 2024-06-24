@@ -1148,6 +1148,46 @@ describe("DNR filters update [mv3-only]", function() {
       }, 3000, "Not enough events");
     });
 
+    it("adds valid diff update filters even if other filters are invalid", async function() {
+      setMinTimeout(this, 20000);
+
+      let invalidUnicodeElemhide = "invalid-unicode-🔥.com###example";
+      let invalidUnicodeRequest = "foo$domain=invalid-unicode-🔥.com";
+      let invalidRegex = "/^https?://.*/[a-z0-9A-Z_]{2,15}.(php|jx|jsx|1ph|jsf|jz|jsm|j$)/";
+      let invalidWildcardDomain = "foo$domain=example.*.*";
+      let valid = "image.png";
+
+      let addedFilters = [
+        invalidUnicodeElemhide,
+        invalidUnicodeRequest,
+        invalidRegex,
+        invalidWildcardDomain,
+        valid
+      ];
+
+      await setEndpointResponse(
+        subTestUpdatable1.diff_url, JSON.stringify({
+          filters: {
+            add: addedFilters,
+            remove: []
+          }
+        }));
+
+      await EWE.subscriptions.add(subTestUpdatable1.url);
+      await waitForSubscriptionToBeSynchronized(subTestUpdatable1.url);
+
+      await new Page("image-from-subscription.html")
+        .expectResource("image-from-subscription.png")
+        .toBeBlocked();
+
+      let filters = await EWE.subscriptions.getFilters(subTestUpdatable1.url);
+      expect(filters).toEqual(expect.arrayContaining(
+        addedFilters.map(text => expect.objectContaining({text}))
+      ));
+
+      await new Page("image.html").expectResource("image.png").toBeBlocked();
+    });
+
     describe("Disabled rule limits", function() {
       const BIG_DISABLED_SUBSCRIPTION =
             `${TEST_PAGES_URL}/subscription-with-5000-disabled-filters.txt`;

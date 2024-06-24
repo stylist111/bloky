@@ -46,23 +46,30 @@ const ENCODING = {encoding: "utf-8"};
  *
  * @ignore
  */
-function processContent(converter, lines) {
+async function processContent(converter, lines) {
   lines.shift();
   let dnrMap = [];
-  return Promise.resolve({
-    rules: lines
-      .flatMap(filter => {
-        let normalized = normalize(filter);
-        let rules = converter(normalized);
-        if (Array.isArray(rules) && rules.length > 0) {
-          let ids = rules.map(r => r.id);
-          dnrMap.push([normalized, ids]);
+  let rules = [];
+
+  for (let filter of lines) {
+    let normalized = normalize(filter);
+    let newRules = await converter(normalized);
+    if (Array.isArray(newRules) && newRules.length > 0) {
+      let ids = newRules.map(r => r.id);
+      dnrMap.push([normalized, ids]);
+
+      for (let rule of newRules) {
+        if (!(rule instanceof Error)) {
+          rules.push(rule);
         }
-        return rules;
-      })
-      .filter(o => !(o instanceof Error)),
+      }
+    }
+  }
+
+  return {
+    rules,
     dnrMap
-  });
+  };
 }
 
 function parseArgs(cliArgv) {

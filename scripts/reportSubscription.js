@@ -132,7 +132,7 @@ export function accountForRule(rule, filterText, subsId) {
 // substitute the default convert function from adblockpluscore
 // with a custom one that does the same thing + allow us to
 // count the content/url filters while the filters are parsed
-function customConvert(text, outputfile) {
+async function customConvert(text, outputfile) {
   const result = parse(text);
   const report = this.reports.get(this.subsId);
   if (result instanceof FilterParsingError) {
@@ -146,7 +146,7 @@ function customConvert(text, outputfile) {
   if (this.generateReport) {
     report.urlFilterCounter++;
   }
-  return asDNR.call(this, result, outputfile);
+  return await asDNR.call(this, result, outputfile);
 }
 
 export let customCreateConverter = options => customConvert.bind({

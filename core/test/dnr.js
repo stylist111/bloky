@@ -45,7 +45,7 @@ describe("DeclarativeNetRequest", function() {
     modifyRule: (rule, context) => rule
   });
 
-  it("Returns error for sitekey filters", function() {
+  it("Returns error for sitekey filters", async function() {
     let parsedSitekey = Object.assign(
       {},
       preParsedRule,
@@ -57,13 +57,13 @@ describe("DeclarativeNetRequest", function() {
         sitekeys: "SiTeK3y"
       });
 
-    let result = convert(parsedSitekey);
+    let result = await convert(parsedSitekey);
     assert(result instanceof Error);
     assert.equal(result.message, "filter_unknown_option");
     assert.equal(result.detail.text, "abcd$sitekey=SiTeK3y");
   });
 
-  it("Returns error for header filters", function() {
+  it("Returns error for header filters", async function() {
     let parsedHeaderFiltering = Object.assign(
       {},
       preParsedRule,
@@ -78,36 +78,36 @@ describe("DeclarativeNetRequest", function() {
         }
       });
 
-    let result = convert(parsedHeaderFiltering);
+    let result = await convert(parsedHeaderFiltering);
     assert(result instanceof Error);
     assert.equal(result.message, "filter_unknown_option");
     assert.equal(result.detail.text, "abcd$header=content-type=application/pdf");
   });
 
-  it("Return error for invalid regexp", function() {
+  it("Return error for invalid regexp", async function() {
     // This converter will reject the case maching /InVaLiD/i regexp
     let converter = createConverter({
       isRegexSupported: re => re.regex != "InVaLiD"
     });
 
     // This regexp is rejected by parse()
-    let result = converter("/??/");
+    let result = await converter("/??/");
     assert(result instanceof Error);
     assert.equal(result.message, "filter_invalid_regexp");
     assert.equal(result.detail.text, "/??/");
 
-    result = converter("pass");
+    result = await converter("pass");
     assert(!(result instanceof Error));
     assert.equal(result[0].action.type, "block");
 
     // The regexp is accepted by parse() but not by asDNR()
-    result = converter("/InVaLiD/$match-case");
+    result = await converter("/InVaLiD/$match-case");
     assert(result instanceof Error);
     assert.equal(result.message, "filter_invalid_regexp");
     assert.equal(result.detail.text, "/InVaLiD/$match-case");
   });
 
-  it("Return error for invalid rewrite", function() {
+  it("Return error for invalid rewrite", async function() {
     let rule = Object.assign(
       {},
       preParsedRule,
@@ -120,11 +120,11 @@ describe("DeclarativeNetRequest", function() {
         rewrite: "blank-mp42"
       });
 
-    let result = convert(rule);
+    let result = await convert(rule);
     assert.equal(result.length, 0);
   });
 
-  it("Convert easylist blocking rules", function() {
+  it("Convert easylist blocking rules", async function() {
     let rule1 = Object.assign(
       {},
       preParsedRule,
@@ -133,7 +133,7 @@ describe("DeclarativeNetRequest", function() {
         text: "-ad-300x600px.",
         regexpSource: "-ad-300x600px."
       });
-    let result = convert(rule1);
+    let result = await convert(rule1);
     assert.equal(result.length, 1);
     assert.equal(result[0].priority, GENERIC_PRIORITY);
     assert.equal(result[0].action.type, "block");
@@ -148,7 +148,7 @@ describe("DeclarativeNetRequest", function() {
         regexpSource: "-adwords.",
         domains: "~consultant-adwords.com|~consultant-adwords.fr|~expert-adwords.com|~freelance-adwords.com|~freelance-adwords.fr"
       });
-    result = convert(rule2);
+    result = await convert(rule2);
     assert.equal(result.length, 1);
     assert.equal(result[0].priority, GENERIC_PRIORITY);
     assert.equal(result[0].action.type, "block");
@@ -173,7 +173,7 @@ describe("DeclarativeNetRequest", function() {
         regexpSource: ".openx.",
         domains: "~openx.com|~openx.solar"
       });
-    result = convert(rule3);
+    result = await convert(rule3);
     assert.equal(result.length, 1);
     assert.equal(result[0].priority, GENERIC_PRIORITY);
     assert.equal(result[0].action.type, "block");
@@ -195,7 +195,7 @@ describe("DeclarativeNetRequest", function() {
         regexpSource: "||contentpass.net/stats?",
         thirdParty: true
       });
-    result = convert(rule4);
+    result = await convert(rule4);
     assert.equal(result.length, 1);
     assert.equal(result[0].priority, GENERIC_PRIORITY);
     assert.equal(result[0].action.type, "block");
@@ -206,7 +206,7 @@ describe("DeclarativeNetRequest", function() {
     });
   });
 
-  it("Convert easylist regexp blocking rules", function() {
+  it("Convert easylist regexp blocking rules", async function() {
     let rule = Object.assign(
       {},
       preParsedRule,
@@ -215,7 +215,7 @@ describe("DeclarativeNetRequest", function() {
         text: "/^https?://(.+?.)?anotherexample.com/images/uploads/[a-zA-Z]{6,15}-.*/",
         regexpSource: "/^https?://(.+?.)?anotherexample.com/images/uploads/[a-zA-Z]{6,15}-.*/"
       });
-    let result = convert(rule);
+    let result = await convert(rule);
     assert.equal(result.length, 1);
     assert.equal(result[0].priority, GENERIC_PRIORITY);
     assert.equal(result[0].action.type, "block");
@@ -225,7 +225,7 @@ describe("DeclarativeNetRequest", function() {
     });
   });
 
-  it("Convert easylist allowing rules", function() {
+  it("Convert easylist allowing rules", async function() {
     let rule1 = Object.assign(
       {},
       preParsedRule,
@@ -236,7 +236,7 @@ describe("DeclarativeNetRequest", function() {
         contentType: 2,
         domains: "example.com"
       });
-    let result = convert(rule1);
+    let result = await convert(rule1);
     assert.equal(result.length, 1);
     assert.equal(result[0].priority, SPECIFIC_PRIORITY);
     assert.equal(result[0].action.type, "allow");
@@ -259,7 +259,7 @@ describe("DeclarativeNetRequest", function() {
         regexpSource: "||ads.microsoft.com^",
         contentType: 16777216
       });
-    result = convert(rule2);
+    result = await convert(rule2);
     assert.equal(result.length, 0);
 
 
@@ -273,7 +273,7 @@ describe("DeclarativeNetRequest", function() {
         contentType: 134217728
       });
 
-    result = convert(rule3);
+    result = await convert(rule3);
     assert.equal(result.length, 1);
     assert.equal(result[0].priority, SPECIFIC_ALLOW_ALL_PRIORITY);
     assert.equal(result[0].action.type, "allowAllRequests");
@@ -296,7 +296,7 @@ describe("DeclarativeNetRequest", function() {
         contentType: 402653184
       });
 
-    result = convert(rule4);
+    result = await convert(rule4);
     assert.equal(result.length, 1);
     assert.equal(result[0].priority, GENERIC_ALLOW_ALL_PRIORITY);
     assert.equal(result[0].action.type, "allowAllRequests");
@@ -310,7 +310,7 @@ describe("DeclarativeNetRequest", function() {
     });
   });
 
-  it("Convert easylist rewrite rules", function() {
+  it("Convert easylist rewrite rules", async function() {
     const {resources} = require("../data/resources.js");
 
     let rule = Object.assign(
@@ -325,7 +325,7 @@ describe("DeclarativeNetRequest", function() {
         rewrite: "blank-mp3"
       });
 
-    let result = convert(rule);
+    let result = await convert(rule);
     assert.equal(result.length, 1);
     assert.equal(result[0].priority, SPECIFIC_PRIORITY);
     assert.deepEqual(result[0].action, {type: "redirect", redirect: {
@@ -339,7 +339,7 @@ describe("DeclarativeNetRequest", function() {
     });
   });
 
-  it("Convert easylist CSP blocking rules", function() {
+  it("Convert easylist CSP blocking rules", async function() {
     let rule = Object.assign(
       {},
       preParsedRule,
@@ -351,7 +351,7 @@ describe("DeclarativeNetRequest", function() {
         csp: "script-src 'self' * 'unsafe-inline'"
       });
 
-    let result = convert(rule);
+    let result = await convert(rule);
     assert.equal(result.length, 1);
     assert.equal(result[0].priority, GENERIC_PRIORITY);
     assert.deepEqual(result[0].condition, {
@@ -372,7 +372,7 @@ describe("DeclarativeNetRequest", function() {
     });
   });
 
-  it("Convert easylist CSP allowing rules", function() {
+  it("Convert easylist CSP allowing rules", async function() {
     let rule = Object.assign(
       {},
       preParsedRule,
@@ -384,7 +384,7 @@ describe("DeclarativeNetRequest", function() {
         thirdParty: false
       });
 
-    let result = convert(rule);
+    let result = await convert(rule);
     assert.equal(result.length, 1);
     assert.equal(result[0].priority, SPECIFIC_PRIORITY);
     assert.equal(result[0].action.type, "allow");
@@ -399,7 +399,7 @@ describe("DeclarativeNetRequest", function() {
     });
   });
 
-  it("Convert easylist match-case rules", function() {
+  it("Convert easylist match-case rules", async function() {
     let rule = Object.assign(
       {},
       preParsedRule,
@@ -409,7 +409,7 @@ describe("DeclarativeNetRequest", function() {
         regexpSource: "||example.com",
         matchCase: true
       });
-    let result = convert(rule);
+    let result = await convert(rule);
     assert.equal(result.length, 1);
     assert.equal(result[0].priority, GENERIC_PRIORITY);
     assert.equal(result[0].action.type, "block");

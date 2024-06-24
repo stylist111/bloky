@@ -66,16 +66,16 @@ exports.createConverter = options => convert.bind({
  * Returns an array with DNR Rules if the text is network related, or an Error
  * if no suitable rule can be created.
  * @param {string} text the filter text to convert or the generated error.
- * @returns {Rule[]|FilterParsingError}
+ * @returns {Promise<Rule[]|FilterParsingError>}
  */
-function convert(text) {
+async function convert(text) {
   const result = parse(text);
 
   if (result instanceof FilterParsingError) {
     return result;
   }
 
-  return asDNR.call(this, result);
+  return await asDNR.call(this, result);
 }
 
 /** Convert a parsed filter to a DeclarativeNetRequest
@@ -90,9 +90,9 @@ function convert(text) {
  *
  * @param {module:filters/index~ParsedFilter} parsedFilter The parsed filter
  *   object.
- * @return {Rule[]|Error}
+ * @return {Promise<Rule[]|Error>}
  */
-function asDNR(parsedFilter) {
+async function asDNR(parsedFilter) {
   let {
     blocking,
     text,
@@ -143,7 +143,7 @@ function asDNR(parsedFilter) {
       }
     }
     else if (urlPattern.regexp) {
-      checkValidRegExp = this.isRegexSupported({
+      checkValidRegExp = await this.isRegexSupported({
         regex: urlPattern.regexp.source,
         isCaseSensitive: matchCase
       });

@@ -210,24 +210,6 @@ describe("Update using the full update mechanism [mv3-only]", function() {
       .toBeLoaded();
   });
 
-  it("notifies the error on update from subscription with invalid filters", async function() {
-    await setEndpointResponse(USER_SUBSCRIPTION_URL, RESPONSE_HEADER);
-    await EWE.subscriptions.add(USER_SUBSCRIPTION_URL);
-    await waitForSubscriptionToBeSynchronized(USER_SUBSCRIPTION_URL);
-
-    await setEndpointResponse(USER_SUBSCRIPTION_URL, [
-      RESPONSE_HEADER,
-      "filterThatFits",
-      "image.png",
-      "webext.**#@##elem-hide"
-    ].join("\n"));
-
-    await EWE.subscriptions.add(USER_SUBSCRIPTION_URL);
-    clearTestEvents("subscriptions.onChanged");
-    await EWE.subscriptions.sync(USER_SUBSCRIPTION_URL);
-    await waitForSubscriptionToFailToUpdate(USER_SUBSCRIPTION_URL, "synchronize_dnr_error");
-  });
-
   it("sets an error state on the subscription when the DNR limit is reached in the full update", async function() {
     await EWE.testing.testSetDynamicRulesAvailable(1);
     await setEndpointResponse(USER_SUBSCRIPTION_URL, [

@@ -191,6 +191,39 @@ describe("Subscriptions", function() {
     });
   });
 
+  it("adds user subscription and synchronizes successfully even if there are some invalid filters", async function() {
+    let invalidUnicodeElemhide = "invalid-unicode-🔥.com###example";
+    let invalidUnicodeRequest = "foo$domain=invalid-unicode-🔥.com";
+    // This is an invalid regex in MV3 only. The regex comes from a real filter
+    // list.
+    let invalidRegex = "/^https?://.*/[a-z0-9A-Z_]{2,15}.(php|jx|jsx|1ph|jsf|jz|jsm|j$)/";
+    let invalidWildcardDomain = "foo$domain=example.*.*";
+    let valid = "image.png";
+
+    let filterTexts = [
+      invalidUnicodeElemhide,
+      invalidUnicodeRequest,
+      invalidRegex,
+      invalidWildcardDomain,
+      valid
+    ];
+
+    await setEndpointResponse(
+      USER_SUBSCRIPTION_URL,
+      "[Adblock Plus 2.0]\n" + filterTexts.join("\n")
+    );
+
+    await EWE.subscriptions.add(USER_SUBSCRIPTION_URL);
+    await waitForSubscriptionToBeSynchronized(USER_SUBSCRIPTION_URL);
+
+    let filters = await EWE.subscriptions.getFilters(USER_SUBSCRIPTION_URL);
+    expect(filters).toEqual(
+      filterTexts.map(text => expect.objectContaining({text}))
+    );
+
+    await new Page("image.html").expectResource("image.png").toBeBlocked();
+  });
+
   it("adds multiple subscriptions", async function() {
     await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
     await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL_2);

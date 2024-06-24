@@ -50,10 +50,13 @@ let lastDiffUpdates = null;
 
 let initializationPromise;
 
-let getRulesFromFilter = () => {};
+let getRulesFromFilter = () => Promise.resolve({});
 if (browser.declarativeNetRequest) {
   getRulesFromFilter = createConverter({
-    isRegexSupported: browser.declarativeNetRequest.isRegexSupported
+    async isRegexSupported(regex) {
+      let result = await browser.declarativeNetRequest.isRegexSupported(regex);
+      return result.isSupported;
+    }
   });
 }
 
@@ -676,6 +679,7 @@ async function getRules(filter) {
  *
  * @typedef {Object} ProcessedFilters
  * @property {Array.<Object>} add Rules to add to the dynamic ruleset
+ * @property {Array.<Error>} invalid Invalid filters
  * @property {Array.<string>} relateToThisSubscription Filters that exists.
  * @property {Array.<string>} relateToOtherSubscriptions Filters that
  *   exist on other subscriptions.
@@ -691,11 +695,12 @@ async function getRules(filter) {
  *   this doesn't check for static rules to enable or disable.
  *
  * @ignore
- * @returns {ProcessedFilters} The processed filters.
+ * @returns {Promise<ProcessedFilters>} The processed filters.
  */
 async function processFilterTexts(texts, subscriptionId = null, mapper = null) {
   let details = [];
   let add = [];
+  let invalid = [];
 
   // known filter texts that relate to this subscription
   let relateToThisSubscription = [];
@@ -741,18 +746,24 @@ async function processFilterTexts(texts, subscriptionId = null, mapper = null) {
     let filter = Filter.fromText(text);
     let filterError = validateFilter(filter);
     if (filterError) {
-      throw filterError;
+      invalid.push(filterError);
+      continue;
     }
 
     if (!filterEngine.filterStorage.filterState.isEnabled(text)) {
       details.push({filter, ruleIds: [], enabled: false});
     }
     else {
-      let {filterRules, ruleIds} = await getRules(filter);
-      if (filterRules) {
-        add.push(...filterRules);
+      try {
+        let {filterRules, ruleIds} = await getRules(filter);
+        if (filterRules) {
+          add.push(...filterRules);
+        }
+        details.push({filter, ruleIds, enabled: true});
       }
-      details.push({filter, ruleIds, enabled: true});
+      catch (e) {
+        invalid.push(e);
+      }
     }
 
     processedFilterTexts.add(text);
@@ -760,6 +771,7 @@ async function processFilterTexts(texts, subscriptionId = null, mapper = null) {
 
   return {
     add,
+    invalid,
     relateToThisSubscription,
     relateToOtherSubscriptions,
     staticRulesToEnable,
@@ -808,6 +820,10 @@ export async function dynamicRulesAvailable() {
 export async function addFilters(texts, metadata) {
   await init();
   let filters = await processFilterTexts(texts);
+  if (filters.invalid.length > 0) {
+    throw filters.invalid[0];
+  }
+
   if (filters.relateToThisSubscription.length > 0) {
     throw new FilterError(ERROR_DUPLICATE_FILTERS);
   }
