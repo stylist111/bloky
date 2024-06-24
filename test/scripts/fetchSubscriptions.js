@@ -95,7 +95,33 @@ describe("fetchSubscriptions script", function() {
         "homepage": "https://easylist.to/"
       }]`);
 
-    nock(origin).get(urlPath).reply(200, data);
+    nock(origin).get(urlPath + "?safe=true").reply(200, data);
+
+    fs.mkdirSync(outDir);
+    await fetchSubscriptions(subscriptionsFile, outDir);
+    let files = fs.readdirSync(outDir);
+    expect(files.length).toEqual(1);
+    expect(await fs.promises.readFile(path.join(outDir, files[0])))
+      .toEqual(Buffer.from(data, ENCODING));
+  });
+
+  it("should add safe parameter properly when url contains already search sign", async function() {
+    const urlPath = "/test_subscription.txt?some=test";
+    const data = "subscription data";
+    const origin = "http://localhost";
+    const subscriptionsFile = createFile(tmpDir,
+      `[{
+        "type": "ads",
+        "languages": [
+          "en"
+        ],
+        "id": "${VALID_RULESET_FILE}",
+        "title": "Test Subscription",
+        "url": "${origin + urlPath}",
+        "homepage": "https://easylist.to/"
+      }]`);
+
+    nock(origin).get(urlPath + "&safe=true").reply(200, data);
 
     fs.mkdirSync(outDir);
     await fetchSubscriptions(subscriptionsFile, outDir);
@@ -133,8 +159,8 @@ describe("fetchSubscriptions script", function() {
         "homepage": "https://easylist.to/"
       }]`);
 
-    nock(origin).get(urlPath1).reply(200, data1);
-    nock(origin).get(urlPath2).reply(200, data2);
+    nock(origin).get(urlPath1 + "?safe=true").reply(200, data1);
+    nock(origin).get(urlPath2 + "?safe=true").reply(200, data2);
 
     fs.mkdirSync(outDir);
     await fetchSubscriptions(subscriptionsFile, outDir);
@@ -267,7 +293,7 @@ describe("fetchSubscriptions script", function() {
         "homepage": "https://easylist.to/"
       }]`);
 
-    nock(origin).get(urlPath).reply(404); // simulate HTTP error
+    nock(origin).get(urlPath + "?safe=true").reply(404); // simulate HTTP error
 
     fs.mkdirSync(outDir);
     let filename = path.join(outDir, VALID_RULESET_FILE);
@@ -309,8 +335,8 @@ describe("fetchSubscriptions script", function() {
         "homepage": "https://easylist.to/"
       }]`);
 
-    nock(origin).get(urlPath1).reply(404);
-    nock(origin).get(urlPath2).reply(200, data1);
+    nock(origin).get(urlPath1 + "?safe=true").reply(404);
+    nock(origin).get(urlPath2 + "?safe=true").reply(200, data1);
 
     fs.mkdirSync(outDir);
     await expect(await fetchSubscriptions(subscriptionsFile, outDir, true))

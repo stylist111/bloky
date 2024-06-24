@@ -294,7 +294,8 @@ exports.Downloader = class Downloader {
            "&lastVersion=" + encodeURIComponent(downloadable.lastVersion) +
            "&downloadCount=" + encodeURIComponent(downloadCount) +
            "&disabled=" + String(disabled) +
-           "&manifestVersion=" + encodeURIComponent(manifestVersion);
+           "&manifestVersion=" + encodeURIComponent(manifestVersion) +
+           "&safe=true";
 
     if (downloadable.firstVersion && !downloadable.redirectURL) {
       url += "&firstVersion=" + encodeURIComponent(downloadable.firstVersion);

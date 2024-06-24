@@ -1,6 +1,15 @@
 Unreleased
 ==========
 
+## General
+
+- Implemented a new query parameter in `downloader` to support safe filter lists. (EE-511)
+
+## Updating your code
+
+- This change will require rebuilding on the rules list to apply new safe
+query parameter for easylist.
+
 🏰 1.8.0 - 2024-06-11 🏰
 ========================
 

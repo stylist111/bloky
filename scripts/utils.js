@@ -42,6 +42,8 @@ export async function download(downloadUrl, toFile) {
   console.info(`Downloading ${downloadUrl} to ${toFile} ...`);
   const proto = downloadUrl.startsWith("https") ? https : http;
 
+  downloadUrl += downloadUrl.includes("?") ? "&safe=true" : "?safe=true";
+
   return new Promise((resolve, reject) => {
     const file = fs.createWriteStream(toFile);
     let fileInfo = null;
