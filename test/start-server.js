@@ -19,11 +19,23 @@
 /* eslint-env node */
 /* eslint-disable no-console */
 
+import yargs from "yargs";
+import {hideBin} from "yargs/helpers";
+
 import {startAdminServer} from "./admin-api.js";
 import {startWebSocketServer} from "./web-socket-server.js";
 import {startTestPagesServer} from "./test-pages-server.js";
 import {TEST_PAGES_DOMAIN} from "./test-server-urls.js";
 
-startAdminServer(TEST_PAGES_DOMAIN);
+const args = yargs(hideBin(process.argv))
+  .option("verbose", {
+    alias: "v",
+    type: "boolean",
+    requiresArg: false,
+    description: "Verbose console logging, including all requests"
+  })
+  .parse();
+
+startAdminServer(TEST_PAGES_DOMAIN, args.verbose);
 startWebSocketServer(TEST_PAGES_DOMAIN);
-startTestPagesServer(TEST_PAGES_DOMAIN);
+startTestPagesServer(TEST_PAGES_DOMAIN, args.verbose);

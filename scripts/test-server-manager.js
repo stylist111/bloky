@@ -5,17 +5,22 @@ import {TEST_PAGES_URL} from "../test/test-server-urls.js";
 
 let testServer;
 
-export function runTestServer() {
+export function runTestServer(verbose) {
   if (testServer) {
     return;
   }
 
   console.log("Test server starting...");
-  testServer = spawn("node", [path.join(process.cwd(), "test", "start-server.js")]);
+  let args = [path.join(process.cwd(), "test", "start-server.js")];
+  if (verbose) {
+    args.push("--verbose");
+  }
+  testServer = spawn("node", args);
 
   return new Promise((resolve, reject) => {
     let log = [];
     let testPagesServerStarted = false;
+    let skipProcessingOutput = false;
 
     function removeListeners() {
       testServer.stderr.off("data", onData);
@@ -24,6 +29,18 @@ export function runTestServer() {
     }
 
     function onData(data) {
+      if (verbose) {
+        for (const line of data.toString().split("\n")) {
+          if (line.length > 0) {
+            console.log("Server (debug):", line);
+          }
+        }
+      }
+      if (skipProcessingOutput) {
+        // in verbose mode we're still listening the process output,
+        // but skip processing it
+        return;
+      }
       log.push(data);
       if (data.includes(`listening at ${TEST_PAGES_URL}`)) {
         testPagesServerStarted = true;
@@ -31,14 +48,23 @@ export function runTestServer() {
 
       if (testPagesServerStarted) {
         console.log("✅ Test server started");
-        removeListeners();
+        if (verbose) {
+          // keep listening the std output from child process just
+          // to be able to forward it to console, but skip processing
+          skipProcessingOutput = true;
+        }
+        else {
+          removeListeners();
+        }
         resolve();
       }
     }
 
     function onClose(code) {
-      if (code != 0) {
-        console.log(log.join("\n"));
+      if (code && code != 0) {
+        if (!verbose) {
+          console.log(log.join("\n"));
+        }
         removeListeners();
         reject(new Error("Failed to start test server"));
       }

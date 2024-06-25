@@ -40,7 +40,8 @@ app.use(express.static(path.join(dirname, "pages")));
 
 app.post("/ping-handler", (req, res) => res.sendStatus(200));
 
-export function startTestPagesServer(host) {
+export function startTestPagesServer(host, verbose) {
+  requestLogger.setVerbose(verbose);
   app.listen(TEST_PAGES_PORT, () => {
     console.log(`Test pages server listening at http://${host}:${TEST_PAGES_PORT}`);
   });

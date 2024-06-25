@@ -201,6 +201,7 @@ update tests by running tests with
 - The `browserBinary` option allow to pass installed browser binary
 to use custom versions. For example:
 `npm run test v3 chromium -- --browserBinary="/Users/user/Documents/repo/webext-sdk/browser-snapshots/chromium/chromium-darwin-x64-1097561/chrome-mac/Chromium.app/Contents/MacOS/Chromium"`
+- The `verbose` option prints local test servers (admin and pages) requests
 
 #### Web bundle regeneration
 

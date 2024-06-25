@@ -185,7 +185,8 @@ app.all("*", requestLogger.logRequests, (req, res, next) => {
   }
 });
 
-export function startAdminServer(host) {
+export function startAdminServer(host, verbose) {
+  requestLogger.setVerbose(verbose);
   app.listen(TEST_ADMIN_PAGES_PORT, () => {
     console.log(`Admin commands server listening at http://${host}:${TEST_ADMIN_PAGES_PORT}`);
   });

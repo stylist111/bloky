@@ -18,30 +18,25 @@
 /* eslint-env node */
 /* eslint-disable no-console */
 
-import yargs from "yargs";
-import {hideBin} from "yargs/helpers";
-
-const args = yargs(hideBin(process.argv))
-      .option("verbose", {
-        alias: "v",
-        type: "boolean",
-        requiresArg: false,
-        description: "Verbose console logging, including all requests"
-      })
-      .parse();
-
 class RequestLogger {
   constructor() {
     this.requests = [];
     this.logRequests = this.logRequests.bind(this);
   }
 
+  setVerbose(verbose) {
+    this.verbose = verbose;
+  }
+
   getRequests() {
+    if (this.verbose) {
+      console.log("Get requests", this.requests);
+    }
     return this.requests;
   }
 
   logRequests(req, res, next) {
-    if (args.verbose) {
+    if (this.verbose) {
       console.log(new Date().toISOString(), req.method, req.url);
     }
 
@@ -57,6 +52,9 @@ class RequestLogger {
   }
 
   clearRequests() {
+    if (this.verbose) {
+      console.log("Clear requests");
+    }
     this.requests = [];
   }
 }

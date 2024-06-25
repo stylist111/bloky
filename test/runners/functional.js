@@ -65,10 +65,16 @@ function parseArguments() {
     parser.option("grep"), {
       array: true
     };
+    parser.option("verbose", {
+      alias: "v",
+      type: "boolean",
+      requiresArg: false,
+      description: "Verbose console logging, including admin test server requests"
+    });
 
     let {argv} = parser;
     let params;
-    for (let param of ["timeout", "grep", "incognito", "forceHeadful", "browserBinary"]) {
+    for (let param of ["timeout", "grep", "incognito", "forceHeadful", "browserBinary", "verbose"]) {
       let value = argv[param];
       if (typeof value != "undefined") {
         (params || (params = {}))[param] = value;
@@ -489,12 +495,13 @@ async function suspendServiceWorker(driver, handle) {
 }
 
 export async function run() {
+  const args = parseArguments();
   try {
     if (isScriptInvokedFromCLI) {
-      await runTestServer();
+      await runTestServer(args.params ? args.params.verbose : false);
     }
 
-    await runTests();
+    await runTests(args);
   }
   finally {
     if (isScriptInvokedFromCLI) {
@@ -503,8 +510,7 @@ export async function run() {
   }
 }
 
-async function runTests() {
-  let {manifest, browser, version, params, testKinds} = parseArguments();
+async function runTests({manifest, browser, version, params, testKinds}) {
   let isMV3 = manifestIsMV3(manifest);
   // copy a targeted test web extension to a temporary directory `test-current`
   originalExtensionPath = path.resolve(process.cwd(), "dist", `test-m${manifest}`);

@@ -261,7 +261,7 @@ func:v2:windows:edge:
 func:v2:windows:edge:incognito:
   extends: .functional-windows
   script:
-    - npm test -- v2 edge latest --incognito --timeout=10000
+    - npm test -- v2 edge latest --incognito --timeout=10000 --verbose
 
 # Functional tests - MV3
 func:v3:chromium:latest:
