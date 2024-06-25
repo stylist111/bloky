@@ -1,6 +1,9 @@
 Unreleased
 ==========
 
+💅 1.9.0 - 2024-06-25 💅
+========================
+
 ## General
 
 - Implemented a new query parameter in `downloader` to support safe filter lists. (EE-511)
