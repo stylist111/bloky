@@ -23,7 +23,7 @@ import fs from "fs";
 
 import yargs from "yargs";
 import webdriver from "selenium-webdriver";
-import {BROWSERS} from "@eyeo/get-browser-binary";
+import {BROWSERS, getMajorVersion} from "@eyeo/get-browser-binary";
 
 import {isMain} from "../../scripts/utils.js";
 import {getHandle, switchToHandle, getDriver} from "./utils.js";
@@ -530,14 +530,20 @@ async function runTests() {
 
   let versionNumber = version;
   let majorVersion;
-
-  if (!customBrowserBinary){
-    // On Windows, Edge is assumed to be already installed
-    if (browser != "edge" || process.platform != "win32") {
-      ({versionNumber} = await BROWSERS[browser].installBrowser(version));
-      console.log(`Installed ${browser} ${versionNumber} ...`);
-      majorVersion = parseInt(versionNumber.split(".")[0], 10);
-    }
+  if (customBrowserBinary) {
+    const installedVersion =
+      await BROWSERS[browser].getInstalledVersion(customBrowserBinary);
+    // versionNumber parsing should not be needed after this issue is fixed
+    // https://gitlab.com/eyeo/developer-experience/get-browser-binary/-/issues/81
+    versionNumber = installedVersion.split(" ")[1] || installedVersion;
+    console.log(`Found ${browser} ${versionNumber} ...`);
+    majorVersion = getMajorVersion(versionNumber);
+  }
+  // On Windows, Edge is assumed to be already installed
+  else if (browser != "edge" || process.platform != "win32") {
+    ({versionNumber} = await BROWSERS[browser].installBrowser(version));
+    console.log(`Installed ${browser} ${versionNumber} ...`);
+    majorVersion = getMajorVersion(versionNumber);
   }
 
   let extraArgs = [];
