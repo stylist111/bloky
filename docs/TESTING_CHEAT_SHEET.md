@@ -125,17 +125,17 @@ npm test -- {v2|v3} {chromium|firefox|edge}
 ### Build and run tests
 
 ```
-npm run build-then-test {v2|v3} {chromium|firefox|edge}
+npm run build-then-test -- {v2|v3} {chromium|firefox|edge}
 ```
 
 ### Build and run a specific test
 
 ```
-npm run build-then-test v3 chromium -- --grep="test name"
+npm run build-then-test -- v3 chromium --grep="test name"
 ```
 
 ### Build and run all tests of a specific type
 
 ```
-npm run build-then-test v3 chromium -- --testKinds="{functional|reload|update|mv2-mv3-migrate|fuzz}"
+npm run build-then-test -- v3 chromium --testKinds="{functional|reload|update|mv2-mv3-migrate|fuzz}"
 ```

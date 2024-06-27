@@ -88,7 +88,7 @@ rather than on the mechanisms behind these reactions.
 ### Run All Tests
 
 ```
-npm run build-then-test {v2|v3} {chromium|firefox|edge}
+npm run build-then-test -- {v2|v3} {chromium|firefox|edge}
 ```
 
 This script runs the test server and the test suite. You can also run each of
@@ -102,13 +102,13 @@ npm run test
 In order to pass additional arguments, use the following syntax:
 
 ```
-npm run build-then-test {v2|v3} {chromium|firefox|edge} -- --argName="{ARGUMENT}"
+npm run build-then-test -- {v2|v3} {chromium|firefox|edge} --argName="{ARGUMENT}"
 ```
 
 For example:
 
 ```
-npm run build-then-test v3 chromium -- --grep="Test Name" 
+npm run build-then-test -- v3 chromium --grep="Test Name" 
 ```
 
 ### Func:bundle
