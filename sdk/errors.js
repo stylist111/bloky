@@ -26,7 +26,6 @@ const ERROR_MANAGER_DISCONNECTED = "Message manager disconnected";
 export const ERROR_DISABLED_RULE_LIMIT_REACHED = "The number of disabled static " +
       "rules exceeds the disabled rule count limit.";
 
-export const ERROR_DUPLICATE_FILTERS = "storage_duplicate_filters";
 export const ERROR_FILTER_NOT_FOUND = "filter_not_found";
 export const ERROR_TOO_MANY_FILTERS = "too_many_filters";
 

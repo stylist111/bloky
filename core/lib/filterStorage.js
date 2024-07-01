@@ -386,64 +386,61 @@ class FilterStorage {
   }
 
   /**
-   * Check the filters pass and return the list of the filters that exist.
+   * Checks if a filter exists in any active special subscription.
    *
-   * @param {Array.<Filter>} filters The filters to check.
-   * @return {Array.<Filter>} The list of filters that exists. An empty
-   *   list mean that none do exist.
+   * @param {Filter} filter The filter to check.
+   * @return {bool} True if the filter appears in a special subscription.
    */
-  filtersExist(filters) {
-    let exist = [];
-
-    for (let filter of filters) {
-      for (let currentSubscription of this._knownSubscriptions.values()) {
-        if (currentSubscription instanceof SpecialSubscription &&
-            !currentSubscription.disabled &&
-            currentSubscription.hasFilterText(filter.text)) {
-          exist.push(filter);
-        }
+  filterExists(filter) {
+    for (let currentSubscription of this._knownSubscriptions.values()) {
+      if (currentSubscription instanceof SpecialSubscription &&
+          !currentSubscription.disabled &&
+          currentSubscription.hasFilterText(filter.text)) {
+        return true;
       }
     }
 
-    return exist;
+    return false;
   }
 
   /**
-   * Adds user-defined filters to the storage with metadata.
+   * Adds user-defined filters to the storage with metadata. Filters which
+   * already exist in a special subscription are skipped.
    *
    * @async
    * @param {Filter|Array<Filter>} filters Filter(s) to add. If the list
    *   contains duplicate entries, they'll be skipped.
    * @param {Object} metadata The metadata block.
    *
-   * @return {Promise<module:subscriptionClasses.SpecialSubscription>} the
-   *   subscription the filter is in, or throw an error if any of the filter
-   *   is already present in a `SpecialSubscription`.
+   * @return {Promise<module:subscriptionClasses.SpecialSubscription|null>}
+   *   Promise resolves to the subscription the new filters are in, or null if
+   *   no filters were added.
    */
   async addFiltersWithMetadata(filters, metadata) {
     let list = Array.isArray(filters) ? filters : [filters];
 
-    let exist = this.filtersExist(list);
-    if (exist.length != 0) {
-      throw new FilterStorageError("storage_duplicate_filters", {exist});
+    let newFilters = list.filter(filter => !this.filterExists(filter));
+
+    if (newFilters.length == 0) {
+      return null;
     }
 
     let subscription = null;
 
-    for (let filter of list) {
+    for (let filter of newFilters) {
       if (!subscription) {
         subscription = SpecialSubscription.createForFilter(filter);
       }
       // We make sure we don't have a duplicate already from `filters`.
       else if (!subscription.hasFilterText(filter.text)) {
-        subscription.addFilter(filter);
+        subscription.addFilterText(filter.text);
       }
     }
 
     this._metadataSubscriptions.set(subscription.url, subscription);
     this.addSubscription(subscription);
 
-    for (let filter of list) {
+    for (let filter of newFilters) {
       if (this.filterState.isDisabledForSubscription(
         filter.text, subscription.url)) {
         this.filterState.setDisabledForSubscription(
@@ -536,8 +533,7 @@ class FilterStorage {
         if (currentSubscription instanceof SpecialSubscription &&
             !currentSubscription.disabled &&
             currentSubscription.hasFilterText(filter.text)) {
-          throw new FilterStorageError("storage_duplicate_filters",
-                                       {exist: [filter]});  // No need to add
+          return currentSubscription;
         }
       }
       subscription = this.getGroupForFilter(filter);

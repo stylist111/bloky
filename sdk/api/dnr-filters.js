@@ -28,8 +28,8 @@ import {createConverter} from "adblockpluscore/lib/dnr/index.js";
 import {DnrMapper} from "adblockpluscore/lib/dnr/mapper.js";
 import {getSubscriptionRulesetMap} from "./subscriptions-utils.js";
 import subscriptions from "./subscriptions.js";
-import {ERROR_DUPLICATE_FILTERS, ERROR_FILTER_NOT_FOUND,
-        ERROR_TOO_MANY_FILTERS, ERROR_DISABLED_RULE_LIMIT_REACHED}
+import {ERROR_FILTER_NOT_FOUND, ERROR_TOO_MANY_FILTERS,
+        ERROR_DISABLED_RULE_LIMIT_REACHED}
   from "../errors.js";
 import {onChangedFilter, disableFilter} from "./filters.js";
 import {default as initializer} from "./initializer.js";
@@ -824,10 +824,6 @@ export async function addFilters(texts, metadata) {
     throw filters.invalid[0];
   }
 
-  if (filters.relateToThisSubscription.length > 0) {
-    throw new FilterError(ERROR_DUPLICATE_FILTERS);
-  }
-
   let {length} = filters.add;
   if (length > 0) {
     // always false when !browser.declarativeNetRequest
@@ -863,6 +859,12 @@ export async function addFilters(texts, metadata) {
   }
 
   storeDynamicFilters();
+
+  return {
+    added: filters.details.map(detail => detail.filter.text)
+      .concat(filters.relateToOtherSubscriptions),
+    exists: filters.relateToThisSubscription
+  };
 }
 
 export function setMetadataForFilter(text, metadata) {

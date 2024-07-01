@@ -20,6 +20,7 @@ import {TEST_PAGES_URL, TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
 export const VALID_FILTER_TEXT = `|${TEST_PAGES_URL}$image`;
 export const COMMENT_FILTER_TEXT = "!comment";
 export const SECOND_VALID_FILTER_TEXT = "another-filter";
+export const THIRD_VALID_FILTER_TEXT = "yet-another-filter";
 
 export const emptyDiffResponse = JSON.stringify({
   filters: {

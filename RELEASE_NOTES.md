@@ -1,6 +1,14 @@
 Unreleased
 ==========
 
+## General
+
+- Attempting to add a filter that has already been added no longer throws an
+  error. Instead, those filters are ignored and not added again. If the new
+  filter has different metadata from an existing filter, the metadata will not
+  be updated. The error reason `storage_duplicate_filters` is no longer
+  used. (EE-361)
+
 💅 1.9.0 - 2024-06-25 💅
 ========================
 

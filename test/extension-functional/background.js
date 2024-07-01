@@ -267,6 +267,12 @@ function handleTestMessage(request, sender, sendResponse) {
       return true;
     }
 
+    case "ewe-test:error": {
+      Promise.reject("test error");
+      sendResponse({result: {}});
+      return true;
+    }
+
     // Required for testing testpages
     case "filters.get": {
       EWE.filters.getUserFilters().then(userFilters => {

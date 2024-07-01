@@ -21,8 +21,7 @@ import sinon from "sinon/pkg/sinon.js";
 
 import {TEST_PAGES_URL, TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
 import {setMinTimeout, waitForAssertion, setEndpointResponse,
-        clearEndpointResponse, firefoxVersion, isFirefox,
-        getMaxDynamicRulesAvailable} from "./utils.js";
+        clearEndpointResponse, getMaxDynamicRulesAvailable} from "./utils.js";
 import {subTestCustom2, subTestUpdatable1} from "./api-fixtures.js";
 import {wait} from "./polling.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
@@ -346,26 +345,8 @@ describe("Testing Mechanisms", function() {
     });
 
     it("Responses with last error", async function() {
-      // For firefox 68 this test will fail
-      // To be unskipped once fix will land in get-browser-binary
-      // More details: https://gitlab.com/eyeo/developer-experience/get-browser-binary/-/issues/49
-      if (isFirefox() && firefoxVersion() == 68) {
-        this.skip();
-      }
-
-      // Get error by invoking calling same endpoint twice with same argument
-      await browser.runtime.sendMessage({type: "filters.importRaw", text: `${VALID_FILTER_TEXT} `});
-      // In MV3 we need to wait for filter to be added
-      // before calling add one more time to trigger error
-      await wait(async() => {
-        let userFilters = await browser.runtime.sendMessage({type: "filters.get"});
-        if (typeof userFilters == "object" && userFilters.length > 0) {
-          return userFilters;
-        }
-        return false;
-      }, 1000, "First filter wasn't added properly");
-
-      await browser.runtime.sendMessage({type: "filters.importRaw", text: `${VALID_FILTER_TEXT} `});
+      // Get error by invoking calling test endpoint
+      await browser.runtime.sendMessage({type: "ewe-test:error"});
 
       let errors;
       await wait(async() => {

@@ -31,7 +31,7 @@ import {addFilters, getMetadataForFilter, setMetadataForFilter,
         validateFilter, getDynamicUserFilters,
         removeOrDisableFilters, enableFilters}
   from "./dnr-filters.js";
-import {ERROR_DUPLICATE_FILTERS, ERROR_FILTER_NOT_FOUND} from "../errors.js";
+import {ERROR_FILTER_NOT_FOUND} from "../errors.js";
 import {Prefs} from "./prefs.js";
 
 /**
@@ -135,15 +135,30 @@ export default {
    */
 
   /**
-   * Adds one or multiple filters from texts.
+   * Represents the results of calling the `add` function.
+   * @typedef {Object} FilterAddResult
+   * @property {Array<string>} added The filter texts that were added.
+   * @property {Array<string>} exists The filter texts that already exist. They
+   *   have not been added, and their metadata has not been updated.
+   */
+
+  /**
+   * Adds one or multiple filters from texts. Filters which have been previously
+   * added are skipped without updating their metadata.
+   *
+   * If the metadata should be updated for a filter which already exists, this
+   * can be achieved by calling `setMetadata`. To see which filters have not had
+   * their metadata updated, see the `exists` property on the result of this
+   * function call.
+   *
    * @param {string|[string]} texts The filter rules to be added.
    * @param {?Object} metadata Extra data to associate with a filter.
-   * @return {Promise}
+   * @return {Promise<FilterAddResult>} A report of which filters were added,
+   *   and which were not added because they already exist.
    * @throws {FilterError|Error} The first filter to add that either failed
    *   validation (FilterError) or that is not supported by the DNR (Error).
-   *   An error will be thrown for duplicated filters.
    *   If the reason is "filter_invalid_wildcard" that means filter either has
-   *   more than 1 "*" or "*" is placed in an unsupported place.
+   *   more than 1 `*` or `*` is placed in an unsupported place.
    */
   async add(texts, metadata) {
     if (!Array.isArray(texts)) {
@@ -151,12 +166,22 @@ export default {
     }
 
     if (browser.declarativeNetRequest) {
-      await addFilters(texts, metadata);
-      return;
+      return await addFilters(texts, metadata);
     }
+
+    let {filterStorage} = filterEngine;
+
+    let added = [];
+    let exists = [];
 
     let filters = [];
     for (let text of texts) {
+      if (added.includes(text) || exists.includes(text)) {
+        // Duplicates within the texts passed into this function don't get
+        // duplicated in the returned value.
+        continue;
+      }
+
       let normalized = Filter.normalize(text);
       let filter = Filter.fromText(normalized);
       let error = validateFilter(filter);
@@ -165,16 +190,16 @@ export default {
         throw error;
       }
 
-      filters.push(filter);
+      if (filterStorage.filterExists(filter)) {
+        exists.push(text);
+      }
+      else {
+        filters.push(filter);
+        added.push(text);
+      }
     }
 
-    let {filterStorage} = filterEngine;
-
     if (!metadata) {
-      if (filterStorage.filtersExist(filters).length > 0) {
-        throw new FilterError(ERROR_DUPLICATE_FILTERS);
-      }
-
       for (let filter of filters) {
         await filterStorage.addFilter(filter);
       }
@@ -187,6 +212,11 @@ export default {
         throw new FilterError(e.message);
       }
     }
+
+    return {
+      added,
+      exists
+    };
   },
 
   /**
@@ -213,7 +243,7 @@ export default {
         // so we're trying to make it working in a non-surprising way:
         // by removing the existing filter and readding it with a metadata.
         let filter = Filter.fromText(Filter.normalize(text));
-        if (filterStorage.filtersExist([filter]).length > 0) {
+        if (filterStorage.filterExists(filter)) {
           await filterStorage.removeFilter(filter);
           await this.add([text], metadata);
           return;

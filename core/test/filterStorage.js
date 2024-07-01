@@ -297,7 +297,7 @@ describe("Filter storage", function() {
     assert.deepEqual(changes, ["filter.added !foobar"], "Received changes");
 
     changes = [];
-    await assert.rejects(filterStorage.addFilter(Filter.fromText("foobar")), "FilterStorageError");
+    await filterStorage.addFilter(Filter.fromText("foobar"));
     compareFiltersList("Adding already added filter", [["foobar", "!foobar"], ["@@bars", "foo##bar", "foo#@#bar"], ["example.com#$#foobar"]]);
     assert.deepEqual(changes, [], "Received changes");
 
@@ -378,11 +378,17 @@ describe("Filter storage", function() {
     assert.deepEqual(await filterStorage.getMetadataForFilter("bar3"), null);
   });
 
-  it("passes filters array to filtersExist()", async function() {
+  it("skips adding duplicate filters", async function() {
     let commentFilter = Filter.fromText("!comment");
     let metadata = {meta: "foo"};
+    let subscription = await filterStorage.addFiltersWithMetadata(
+      commentFilter, metadata
+    );
     await filterStorage.addFiltersWithMetadata(commentFilter, metadata);
-    await assert.rejects(filterStorage.addFiltersWithMetadata(commentFilter, metadata), "FilterStorageError");
+    assert.equal(subscription.filterCount, 1);
+    compareSubscriptionList("Check for duplicates",
+                            [subscription],
+                            [subscription]);
   });
 
   it("Removing filters", function() {
