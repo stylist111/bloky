@@ -842,3 +842,16 @@ export async function syncSubHasLastFilter(url, filter) {
 export async function syncSubHasNoLastFilter(url, filter) {
   await syncSubscription(url, lastFilter => lastFilter !== filter, "filter removed");
 }
+
+/**
+ * Waits for a given number of milliseconds.
+ *
+ * @param {number} ms - The number of milliseconds to sleep for.
+ * @returns {Promise<unknown>}
+ */
+export async function sleep(ms) {
+  const start = performance.now();
+  // Use polling instead of setTimeout since we had inconsistent results
+  // on devices with high CPU usage
+  return wait(() => performance.now() - start >= ms);
+}

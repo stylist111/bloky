@@ -21,7 +21,8 @@ import {TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, SITEKEY,
         TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
 import {Page, Resource, executeScript, shouldBeLoaded, supportsWebBundle,
         waitForSubscriptionsToDownload, setMinTimeout, setEndpointResponse,
-        isChromiumBased, waitForSubscriptionToBeSynchronized, waitForAssertion}
+        isChromiumBased, waitForSubscriptionToBeSynchronized, sleep,
+        waitForAssertion}
   from "./utils.js";
 import {subTestCustom1, subTestAllowingFilter} from "./api-fixtures.js";
 import {addFilter, EWE} from "./messaging.js";
@@ -539,6 +540,113 @@ describe("Blocking", function() {
         let page = new Page("image.html?invalid-sitekey=1");
         await page.expectResource("image.png").toBeBlocked();
       });
+    });
+  });
+
+  describe("Smart allowlisting", function() {
+    it("blocks request after filter expiration [fuzz]", async function() {
+      setMinTimeout(this, 30000);
+      const expiresAt = Date.now() + 5000;
+
+      await addFilter("/image.png^$image");
+      await addFilter(`@@||${TEST_PAGES_DOMAIN}^$document`, {expiresAt});
+
+      // wait for filter expiration
+      await sleep(6000);
+      await new Page("image.html").expectResource("image.png").toBeBlocked();
+    });
+
+    it("blocks request after filter expiration, set with setMetadata [fuzz]", async function() {
+      setMinTimeout(this, 30000);
+      const allowlistingFilter = `@@||${TEST_PAGES_DOMAIN}^$document`;
+
+      await addFilter("/image.png^$image");
+      await addFilter(allowlistingFilter);
+
+      // check that allowlisting filter is active
+      // note: for Edge browser it takes a bit longer to apply the allowlisting
+      //       filter, so we need to wait for it to be applied.
+      await waitForAssertion(async() => {
+        await new Page("image.html").expectResource("image.png").toBeLoaded();
+      });
+
+      // set filter expiration, in 5 seconds
+      const expiresAt = Date.now() + 5000;
+      await EWE.filters.setMetadata(allowlistingFilter, {expiresAt});
+
+      // wait for filter expiration
+      await sleep(6000);
+      await new Page("image.html").expectResource("image.png").toBeBlocked();
+    });
+
+    it("blocks request after extended expiration [fuzz]", async function() {
+      setMinTimeout(this, 30000);
+
+      const autoExtendMs = 5000;
+      const expiresAt = Date.now() + autoExtendMs;
+
+      await addFilter("/image.png^$image");
+      await addFilter(`@@||${TEST_PAGES_DOMAIN}^$document`, {
+        expiresAt,
+        autoExtendMs
+      });
+
+      // Visit the website before filter expiration to extend filter's expiry
+      await sleep(3000);
+      await waitForAssertion(async() => {
+        await new Page("image.html").expectResource("image.png").toBeLoaded();
+      });
+
+      // Revisit the website to make sure the filter is still active, and it
+      // was extended, it will cause another filter expiration extension
+      await sleep(3000);
+      await waitForAssertion(async() => {
+        await new Page("image.html").expectResource("image.png").toBeLoaded();
+      });
+
+      // Wait for the filter to expire
+      await sleep(autoExtendMs + 1000);
+      await new Page("image.html").expectResource("image.png").toBeBlocked();
+    });
+
+    it("blocks request after extended expiration, set with setMetadata [fuzz]", async function() {
+      setMinTimeout(this, 30000);
+      const allowlistingFilter = `@@||${TEST_PAGES_DOMAIN}^$document`;
+
+      await addFilter("/image.png^$image");
+      await addFilter(allowlistingFilter);
+
+      // check that allowlisting filter is active
+      // note: for edge browser it takes a bit longer to apply the allowlisting
+      //       filter, so we need to wait for it to be applied.
+      await waitForAssertion(async() => {
+        await new Page("image.html").expectResource("image.png").toBeLoaded();
+      });
+
+      // set filter expiration, in 5 seconds + 5 seconds auto extension
+      const autoExtendMs = 5000;
+      const expiresAt = Date.now() + autoExtendMs;
+      await EWE.filters.setMetadata(allowlistingFilter, {
+        expiresAt,
+        autoExtendMs
+      });
+
+      // Visit the website before filter expiration to extend filter's expiry
+      await sleep(3000);
+      await waitForAssertion(async() => {
+        await new Page("image.html").expectResource("image.png").toBeLoaded();
+      });
+
+      // Revisit the website to make sure the filter is still active, and it
+      // was extended, it will cause another filter expiration extension
+      await sleep(3000);
+      await waitForAssertion(async() => {
+        await new Page("image.html").expectResource("image.png").toBeLoaded();
+      });
+
+      // Wait for the filter to expire
+      await sleep(autoExtendMs + 1000);
+      await new Page("image.html").expectResource("image.png").toBeBlocked();
     });
   });
 

@@ -22,7 +22,7 @@ import {TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN, SITEKEY}
   from "./test-server-urls.js";
 import {Page, setMinTimeout, waitForAssertion, isFirefox, isEdge,
         setEndpointResponse, waitForSubscriptionsToDownload,
-        getMaxDynamicRulesAvailable} from "./utils.js";
+        getMaxDynamicRulesAvailable, sleep} from "./utils.js";
 import {addFilter, EWE, getTestEvents, clearTestEvents, expectTestEvents,
         enableSendTestEvents} from "./messaging.js";
 import {VALID_FILTER_TEXT, COMMENT_FILTER_TEXT, SECOND_VALID_FILTER_TEXT,
@@ -831,6 +831,49 @@ describe("Filters", function() {
 
       await expect(EWE.filters.add("#?#:-abp-properties(foo)"))
         .rejects.toThrow("FilterError: {\"type\":\"invalid_filter\",\"reason\":\"filter_elemhideemulation_nodomain\",\"option\":null}");
+    });
+  });
+
+  describe("Smart allowlisting", function() {
+    const ALLOWING_DOC_FILTER =
+      `@@|${TEST_PAGES_URL}^$document`;
+
+    it("removes expired filter", async function() {
+      setMinTimeout(this, 30000);
+      await addFilter(ALLOWING_DOC_FILTER, {expiresAt: Date.now() + 5000});
+
+      let tabId = await new Page("image.html").loaded;
+      expect(await EWE.filters.getAllowingFilters(tabId))
+        .toEqual([ALLOWING_DOC_FILTER]);
+
+      await sleep(6000);
+
+      tabId = await new Page("image.html").loaded;
+      expect(await EWE.filters.getAllowingFilters(tabId)).toEqual([]);
+    });
+
+    it("extends filter expiration", async function() {
+      setMinTimeout(this, 30000);
+
+      const autoExtendMs = 7000;
+      const expiresAt = Date.now() + autoExtendMs;
+      const waitMs = 2500;
+      await addFilter(ALLOWING_DOC_FILTER, {
+        expiresAt,
+        autoExtendMs
+      });
+
+      let tabId = await new Page("image.html").loaded;
+      expect(await EWE.filters.getAllowingFilters(tabId))
+        .toEqual([ALLOWING_DOC_FILTER]);
+
+      await sleep(waitMs);
+
+      await new Page("image.html").loaded;
+      const metadata = await EWE.filters.getMetadata(ALLOWING_DOC_FILTER);
+
+      expect(metadata.expiresAt).toBeGreaterThan(expiresAt + waitMs);
+      expect(metadata.expiresAt).toBeLessThanOrEqual(Date.now() + autoExtendMs);
     });
   });
 });

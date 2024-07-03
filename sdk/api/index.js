@@ -312,6 +312,7 @@ function startSubmodulesWithListeners() {
   }
 
   sitekey.start();
+  filters.start();
 }
 
 async function startSubmodules() {

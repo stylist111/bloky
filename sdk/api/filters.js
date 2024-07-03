@@ -23,16 +23,19 @@ import {SpecialSubscription} from "adblockpluscore/lib/subscriptionClasses.js";
 import {isSlowFilter} from "adblockpluscore/lib/matcher.js";
 import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
+import {MILLIS_IN_HOUR} from "adblockpluscore/lib/time.js";
 
+import {default as initializer} from "./initializer.js";
 import {filterEngine} from "./core.js";
 import {EventDispatcher, FilterError} from "./types.js";
-import {getFrameInfo} from "./frame-state.js";
+import {getFrameInfo, isTopLevelFrameId} from "./frame-state.js";
 import {addFilters, getMetadataForFilter, setMetadataForFilter,
         validateFilter, getDynamicUserFilters,
         removeOrDisableFilters, enableFilters}
   from "./dnr-filters.js";
 import {ERROR_FILTER_NOT_FOUND} from "../errors.js";
 import {Prefs} from "./prefs.js";
+import {Scheduler} from "./scheduler.js";
 
 /**
  * @ignore
@@ -108,7 +111,10 @@ let onChanged = new EventDispatcher(dispatch => {
  */
 export let onChangedFilter = onChanged;
 
-export default {
+/**
+ * @namespace filters
+ */
+const namespace = {
   /**
    * Represents a single filter rule and its state.
    * @typedef {Object} Filter
@@ -153,12 +159,23 @@ export default {
    *
    * @param {string|[string]} texts The filter rules to be added.
    * @param {?Object} metadata Extra data to associate with a filter.
+   * @param {Number} [metadata.expiresAt] The timestamp when the filter should
+   *   expire.
+   * @param {Number} [metadata.autoExtendMs] The number of milliseconds to
+   *   extend the filter's expiry when the user navigated to a URL that matches
+   *   the filter. This parameter is used together with `expiresAt` and when the
+   *   user navigates to a URL that matches this filter and is not expired,
+   *   the `expiresAt` value will be updated to `Date.now() + autoExtendMs`.
+   *
+   *   _**Note:** This only applies to document allowlisting filters._
+   *
    * @return {Promise<FilterAddResult>} A report of which filters were added,
    *   and which were not added because they already exist.
    * @throws {FilterError|Error} The first filter to add that either failed
    *   validation (FilterError) or that is not supported by the DNR (Error).
    *   If the reason is "filter_invalid_wildcard" that means filter either has
    *   more than 1 `*` or `*` is placed in an unsupported place.
+   * @memberof filters
    */
   async add(texts, metadata) {
     if (!Array.isArray(texts)) {
@@ -166,7 +183,9 @@ export default {
     }
 
     if (browser.declarativeNetRequest) {
-      return await addFilters(texts, metadata);
+      const result = await addFilters(texts, metadata);
+      updateSchedulerIfNeeded(metadata);
+      return result;
     }
 
     let {filterStorage} = filterEngine;
@@ -207,6 +226,7 @@ export default {
     else {
       try {
         await filterStorage.addFiltersWithMetadata(filters, metadata);
+        updateSchedulerIfNeeded(metadata);
       }
       catch (e) {
         throw new FilterError(e.message);
@@ -225,10 +245,12 @@ export default {
    * @param {Object} metadata Extra data to associate with a filter.
    * @returns {Promise<void>} Nothing is done for not added filter.
    * @throws {FilterError} An error will be thrown for not added filter.
+   * @memberof filters
    */
   async setMetadata(text, metadata) {
     if (browser.declarativeNetRequest) {
       setMetadataForFilter(text, metadata);
+      updateSchedulerIfNeeded(metadata);
       return;
     }
 
@@ -236,6 +258,7 @@ export default {
 
     try {
       await filterStorage.setMetadataForFilter(text, metadata);
+      updateSchedulerIfNeeded(metadata);
     }
     catch (e) {
       if (e.message == ERROR_FILTER_NOT_FOUND) {
@@ -257,6 +280,7 @@ export default {
    * Returns an extra data associated with a filter.
    * @param {string} text The filter text to get metadata for.
    * @return {Promise<?Object>}
+   * @memberof filters
    */
   async getMetadata(text) {
     if (browser.declarativeNetRequest) {
@@ -269,6 +293,7 @@ export default {
   /**
    * Returns an array of user filter objects.
    * @return {Promise<Array<Filter>>}
+   * @memberof filters
    */
   async getUserFilters() {
     let result = [];
@@ -305,6 +330,7 @@ export default {
    *   to consider. These can be any of "document", "elemhide", "genericblock",
    *   and "generichide".
    * @return {Promise<Array<string>>}
+   * @memberof filters
    */
   async getAllowingFilters(tabId, options = {}) {
     let {frameId, types} = {frameId: 0, types: ["document"], ...options};
@@ -337,6 +363,7 @@ export default {
    * @param {number} tabId The id of resource's tab.
    * @param {number} frameId=0 The id of the resource's frame.
    * @return {Promise<bool>}
+   * @memberof filters
    */
   async isResourceAllowlisted(url, type, tabId, frameId = 0) {
     let mask = contentTypes[type.toUpperCase()];
@@ -371,6 +398,7 @@ export default {
    * will again be applied.
    * @param {string|[string]} texts The filter rules to be enabled.
    * @return {Promise}
+   * @memberof filters
    */
   async enable(texts) {
     if (!Array.isArray(texts)) {
@@ -393,6 +421,7 @@ export default {
    * any effect but will be returned by `filters.getUserFilters()`.
    * @param {string|[string]} texts The filter rules to be disabled.
    * @return {Promise}
+   * @memberof filters
    */
   disable,
 
@@ -401,6 +430,7 @@ export default {
    * any effect and won't be returned by `filters.getUserFilters()`.
    * @param {string|[string]} texts The filter rules to be removed.
    * @return {Promise}
+   * @memberof filters
    */
   async remove(texts) {
     if (!Array.isArray(texts)) {
@@ -422,6 +452,7 @@ export default {
    * Validates a filter.
    * @param {string} text Filter to be validated
    * @return {null|FilterError}
+   * @memberof filters
    */
   validate(text) {
     let normalized = Filter.normalize(text);
@@ -434,6 +465,7 @@ export default {
    * the input parameter is null.
    * @param {string} text Filter text to be normalized
    * @return {string} Normalized filter text
+   * @memberof filters
    */
   normalize(text) {
     return Filter.normalize(text);
@@ -443,6 +475,7 @@ export default {
    * Emitted when a new filter is added.
    * @event
    * @type {EventDispatcher<Filter>}
+   * @memberof filters
    */
   onAdded: new EventDispatcher(dispatch => {
     filterNotifier.on("filter.added", makeFilterListener(dispatch));
@@ -455,6 +488,7 @@ export default {
    * "metadata" and optionally "oldMetadata" is provided.
    * @event
    * @type {EventDispatcher<Filter, string>}
+   * @memberof filters
    */
   onChanged,
 
@@ -462,6 +496,7 @@ export default {
    * Emitted when a filter is removed.
    * @event
    * @type {EventDispatcher<Filter>}
+   * @memberof filters
    */
   onRemoved: new EventDispatcher(dispatch => {
     filterNotifier.on("filter.removed", makeFilterListener(dispatch));
@@ -471,6 +506,7 @@ export default {
   /**
    * Returns an array of MV2 to MV3 migration errors and the related filters.
    * @return {Promise<array<Filter, string>>} The migration errors.
+   * @memberof filters
    */
   async getMigrationErrors() {
     return Prefs.migration_filter_errors;
@@ -479,8 +515,126 @@ export default {
   /**
    * Clears the migration errors.
    * @return {Promise}
+   * @memberof filters
    */
   async clearMigrationErrors() {
     Prefs.migration_filter_errors = [];
   }
 };
+
+export default namespace;
+
+
+async function removeExpiredFilters() {
+  try {
+    // Retrieve the list of user filters
+    const filters = await namespace.getUserFilters();
+    const now = Date.now();
+
+    const filtersToRemove = [];
+    // Iterate over each filter to check for expiration
+    for (const filter of filters) {
+      const metadata = await namespace.getMetadata(filter.text) || {};
+      const {expiresAt} = metadata;
+
+      // If the filter is expired, add it to the list of filters to remove
+      if (expiresAt && now > expiresAt) {
+        filtersToRemove.push(filter.text);
+      }
+    }
+
+    // Remove all expired filters
+    await namespace.remove(filtersToRemove);
+  }
+  catch (e) {
+    console.error("Error while removing expired filters:", e);
+  }
+}
+
+
+async function onCompleted(details) {
+  await initializer.start();
+
+  const {frameId, tabId} = details;
+
+  // Only proceed if the navigation is in the main frame
+  if (!isTopLevelFrameId(frameId)) {
+    return;
+  }
+
+  try {
+    // Retrieve the list of user filters
+    const filters = await namespace.getAllowingFilters(tabId);
+    const now = Date.now();
+
+    // Iterate over each filter to check if its expiry should be extended
+    for (const filterText of filters) {
+      const metadata = await namespace.getMetadata(filterText) || {};
+      const {expiresAt, autoExtendMs} = metadata;
+
+      // If the filter is set to auto-extend, and it is not expired,
+      // extend its expiration date
+      const isExtendableFilter = autoExtendMs && expiresAt;
+      if (isExtendableFilter && now < expiresAt) {
+        await namespace.setMetadata(filterText, {
+          ...metadata,
+          expiresAt: now + autoExtendMs
+        });
+      }
+    }
+  }
+  catch (e) {
+    console.error("Error while extending expiry for filters:", e);
+  }
+}
+
+let scheduler;
+
+/**
+ * Checks if the scheduler is running and updates the next timestamp if needed.
+ *
+ * @param {?Object} metadata Extra data to associate with a filter.
+ * @param {Number} [metadata.expiresAt] The timestamp when the filter should
+ *   expire.
+ */
+function updateSchedulerIfNeeded(metadata) {
+  if (scheduler && metadata && metadata.expiresAt) {
+    scheduler.checkNow();
+  }
+}
+
+/**
+ * Starts listening for navigation events to remove expired filters
+ * or renew the expiry of filters that are set to auto-extend.
+ * @ignore
+ */
+export function start() {
+  if (scheduler) {
+    return;
+  }
+  // Listen for navigation events to extend the expiry of filters
+  browser.webNavigation.onCompleted.addListener(onCompleted);
+
+  // initialize the scheduler to remove expired filters
+  scheduler = new Scheduler({
+    interval: 0,
+    listener: () => removeExpiredFilters(),
+    async getNextTimestamp() {
+      await initializer.start();
+
+      const filters = await namespace.getUserFilters();
+      let nextTimestamp = Date.now() + MILLIS_IN_HOUR; // 1h from now
+
+      for (const filter of filters) {
+        const metadata = await namespace.getMetadata(filter.text) || {};
+        const {expiresAt} = metadata;
+
+        if (expiresAt && expiresAt < nextTimestamp) {
+          nextTimestamp = expiresAt;
+        }
+      }
+
+      return nextTimestamp;
+    }
+  });
+}

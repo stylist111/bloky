@@ -1,6 +1,16 @@
 Unreleased
 ==========
 
+## SMART ALLOWLISTING
+
+- Added 2 special optional properties to the filter's metadata.
+  `metadata?.expiresAt` allows to set an expiration timestamp for the
+  associated filter.
+  `metadata?.autoExtendMs` used together with `metadata?.expiresAt` (applicable
+  only to allowlisting filters), this property will automatically extend the
+  filter's expiration time by the specified number of milliseconds if the user
+  visits the associated allowlisted website before filter expiration.
+
 ## General
 
 - Attempting to add a filter that has already been added no longer throws an
@@ -23,7 +33,7 @@ query parameter for easylist.
 
 ## Fixes
 
-- Fixed failing `npm run build -- --force-subscription-update` script. 
+- Fixed failing `npm run build -- --force-subscription-update` script.
 - When updating subscriptions in MV3 (both diff updates and full updates), no
   longer fail the update if there are invalid filters. Valid filters will
   now be applied, and the invalid filters will be ignored. (EE-565)
@@ -108,8 +118,8 @@ query parameter for easylist.
 ## Fixes
 
 - We now wait for 2 seconds more (configurable in
-  `Prefs.edge_one_click_allowlisting_delay`) in the one click allowlisting 
-  scenario on Edge to let it actually finish adding allowlisting DNR rules. 
+  `Prefs.edge_one_click_allowlisting_delay`) in the one click allowlisting
+  scenario on Edge to let it actually finish adding allowlisting DNR rules.
   This is an increase from 1 second. (EE-258)
 - No longer log an error to the console when the history state updates on a page
   where our content script is not injected, for example on an extension
@@ -120,7 +130,7 @@ query parameter for easylist.
   `synchronize_diff_too_many_filters`. (EE-356)
 - Disabled static DNR rules no longer contribute to the disabled static DNR rule
   limit after the subscription is disabled or removed. (EE-356)
-- The wildcards in the URL portion of request filters are now working in MV3 as 
+- The wildcards in the URL portion of request filters are now working in MV3 as
   before 1.2.4. This impacts the generation of DNR rules. (EE-366)
 - Fixed documentation errors. (!1021)
   - `saveMigrationError` is not publicly accessible and should not have appeared
@@ -140,8 +150,8 @@ query parameter for easylist.
 `! Last modified:` header from the filter lists. It is used to determine when a
 subscription is too old to receive new diffs. (EE-297)
 - The `downloadStatus` of the subscription has a new possible value. When the
-download of a diff fails, `downloadStatus` will be set to the new error 
-`synchronize_diff_too_old` if the diff is over 6 weeks old, or 
+download of a diff fails, `downloadStatus` will be set to the new error
+`synchronize_diff_too_old` if the diff is over 6 weeks old, or
 `synchronize_connection_error` otherwise. (EE-297)
 - Allow subscriptions on abptestpages.org for testing purpose. (EE-323)
 - Use the actual dynamic filters quota API property
@@ -162,7 +172,7 @@ download of a diff fails, `downloadStatus` will be set to the new error
 ## Fixes
 
 - Port is now ignored when matching with wildcards. (EE-288)
-- Subscription now have their diffs downloaded immediately after migration. We 
+- Subscription now have their diffs downloaded immediately after migration. We
   no longer migrate `lastDownload` when going from MV2 to MV3. (EE-326)
 - Fixed a bug where blocked images might be not hidden in some cases. (EE-325)
 - We now wait for 1 second more (configurable in
@@ -537,10 +547,10 @@ download of a diff fails, `downloadStatus` will be set to the new error
 
 Don't use this yet unless you want an initial sense of what the integration will
 be like.
-  
+
 Assuming you want to start using it. Integrators need to add a new property to
 the addonInfo object passed into the EWE.start function.
-  
+
 ```js
 addonInfo.telemetry = {url: "", bearer: ""}
 ```

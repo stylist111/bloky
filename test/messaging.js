@@ -80,8 +80,8 @@ export const EWE = Object.fromEntries([
 ].map(name => [name, proxy([name])]));
 EWE.reporting.contentTypesMap = proxy(["reporting", "contentTypesMap"]);
 
-export async function addFilter(text) {
-  let result = await EWE.filters.add([text]);
+export async function addFilter(text, metadata) {
+  let result = await EWE.filters.add([text], metadata);
   return result;
 }
 
