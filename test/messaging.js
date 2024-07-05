@@ -76,7 +76,8 @@ export const EWE = Object.fromEntries([
   "allowlisting",
   "reporting",
   "testing",
-  "cdp"
+  "cdp",
+  "telemetry"
 ].map(name => [name, proxy([name])]));
 EWE.reporting.contentTypesMap = proxy(["reporting", "contentTypesMap"]);
 

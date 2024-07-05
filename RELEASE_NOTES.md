@@ -18,6 +18,16 @@ Unreleased
   filter has different metadata from an existing filter, the metadata will not
   be updated. The error reason `storage_duplicate_filters` is no longer
   used. (EE-361)
+- User counting telemetry now has an opt out mechanism. Users are opted out of
+  telemetry by default, to avoid accidentally sending pings for users who have
+  opted out before an extension can set the opt-out status. Set opt-out by
+  calling `EWE.telemetry.setOptOut`. (EE-579)
+
+## Updating your code
+
+- All extensions that provide `telemetry` credentials to `EWE.start` should now
+  be calling `EWE.telemetry.setOptOut` as well to opt users in for sending
+  user counting telemetry. (EE-579)
 
 💅 1.9.0 - 2024-06-25 💅
 ========================

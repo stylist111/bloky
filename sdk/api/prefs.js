@@ -63,7 +63,8 @@ export const defaults = Object.create({
   migration_state: MIGRATED_TO_MV2,
   edge_one_click_allowlisting_delay: 2 * MILLIS_IN_SECOND,
   cdp_opt_in_out: CDP_OPTED_IN,
-  cdp_session_expiration_interval: 30 * MILLIS_IN_MINUTE
+  cdp_session_expiration_interval: 30 * MILLIS_IN_MINUTE,
+  telemetry_opt_out: true
 });
 
 export let Prefs = {

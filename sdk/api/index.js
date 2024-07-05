@@ -221,10 +221,10 @@ async function onInstalled(details) {
  *   A path to subscription files provided by the integrator. Cannot be
  *   undefined for MV3.
  * @param {Object?} [addonInfo.telemetry] Settings for telemetry. The telemetry
- *   module will only be started if this is provided. This is currently an
- *   experimental feature. If used, this will send a single POST request on
- *   first start to the specified telemetry URL, using the specified bearer
- *   token for authentication, with metadata about the extension.
+ *   module will only be started if this is provided. This module will send a
+ *   POST request to the specified telemetry URL every 24 hours with metadata
+ *   about the extension. Pings will only happen if `EWE.telemetry.setOptOut`
+ *   has been called to opt the user in.
  * @param {string} [addonInfo.telemetry.url] The URL of the location where user
  * active pings will be sent to.
  * @param {string} [addonInfo.telemetry.bearer] The Bearer token accompanying
@@ -287,7 +287,7 @@ export async function start(addonInfo) {
   }
 
   if (addonInfo && addonInfo.telemetry) {
-    telemetry.start(addonInfo.telemetry);
+    await telemetry.start(addonInfo.telemetry);
   }
 
   if (addonInfo && addonInfo.cdp) {

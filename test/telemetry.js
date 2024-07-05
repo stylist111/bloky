@@ -18,7 +18,7 @@
 
 import browser from "webextension-polyfill";
 import expect from "expect";
-import {MILLIS_IN_HOUR} from "adblockpluscore/lib/time.js";
+import {MILLIS_IN_HOUR, MILLIS_IN_SECOND} from "adblockpluscore/lib/time.js";
 
 import {EWE, runInBackgroundPage, expectTestEvents} from "./messaging.js";
 import {TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
@@ -39,7 +39,13 @@ describe("Telemetry", function() {
   };
 
   describe("Startup", function() {
-    it("pings the telemetry server at startup", async function() {
+    it("does not ping the telemetry server on first startup until opted in", async function() {
+      let startupResult =
+          await browser.storage.local.get([TELEMETRY_STORAGE_KEY]);
+      expect(startupResult[TELEMETRY_STORAGE_KEY]).toBeUndefined();
+
+      await EWE.telemetry.setOptOut(false);
+
       await waitForAssertion(async() => {
         let result = await browser.storage.local.get([TELEMETRY_STORAGE_KEY]);
         expect(result[TELEMETRY_STORAGE_KEY]).toEqual(expect.objectContaining({
@@ -59,6 +65,7 @@ describe("Telemetry", function() {
     beforeEach(async function() {
       await clearRequestLogs();
       await EWE.testing.resetTelemetry();
+      await EWE.telemetry.setOptOut(false);
     });
 
     afterEach(async function() {
@@ -141,6 +148,27 @@ describe("Telemetry", function() {
 
       await expectNextPing(1);
       await delayThenExpectNextPing(interval, 2);
+    });
+
+    it("stops pinging when opted out", async function() {
+      await startTelemetryWithTestArgs();
+
+      await expectNextPing(1);
+      await EWE.telemetry.setOptOut(true);
+
+      await new Promise(r =>
+        setTimeout(r, PING_INTERVAL_MS + MILLIS_IN_SECOND));
+      expect(await getRequestLogs(TELEMETRY_URL))
+        .toHaveLength(1);
+    });
+
+    it("does not ping if started opted out", async function() {
+      await EWE.telemetry.setOptOut(true);
+      await startTelemetryWithTestArgs();
+
+      await new Promise(r => setTimeout(r, PING_INTERVAL_MS));
+      expect(await getRequestLogs(TELEMETRY_URL))
+        .toHaveLength(0);
     });
 
     it("pings using the error delay after a server error", async function() {
@@ -281,6 +309,24 @@ describe("Telemetry", function() {
         await startTelemetryWithTestArgs();
 
         await delayThenExpectNextPing(PING_INTERVAL_MS / 2, 2);
+      });
+
+      it("does not ping after service worker activates if opted out", async function() {
+        await startTelemetryWithTestArgs();
+        await expectNextPing(1);
+
+        await EWE.telemetry.setOptOut(true);
+        await suspendServiceWorker(this);
+
+        // Service worker is woken up at this point. Should be opted out still,
+        // so no pings will occur.
+        await EWE.testing.stopTelemetry();
+        await startTelemetryWithTestArgs();
+
+        await new Promise(r =>
+          setTimeout(r, PING_INTERVAL_MS + MILLIS_IN_SECOND));
+        expect(await getRequestLogs(TELEMETRY_URL))
+          .toHaveLength(1);
       });
 
       it("pings immediately when the service worker is suspended after the next ping", async function() {

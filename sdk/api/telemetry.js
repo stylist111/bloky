@@ -17,8 +17,9 @@
 
 import browser from "webextension-polyfill";
 import {v4 as uuidv4} from "uuid";
-import {MILLIS_IN_HOUR} from "adblockpluscore/lib/time.js";
+import {MILLIS_IN_HOUR, MILLIS_IN_DAY} from "adblockpluscore/lib/time.js";
 
+import {Prefs, init as initPrefs} from "./prefs.js";
 import * as info from "./info.js";
 import {hasAcceptableAdsEnabled} from "./subscriptions.js";
 import {EventDispatcher} from "./types.js";
@@ -41,8 +42,8 @@ let onError = new EventDispatcher(dispatch => {});
  * @param {number} [errorRetryDelay]
  *        Error retry interval in milliseconds (default: 1 hour)
  */
-export function start(telemetry, interval = 12 * MILLIS_IN_HOUR,
-                      errorRetryDelay = 1 * MILLIS_IN_HOUR) {
+export async function start(telemetry, interval = 12 * MILLIS_IN_HOUR,
+                            errorRetryDelay = 1 * MILLIS_IN_HOUR) {
   if (!telemetry.url) {
     throw new Error("No telemetry `url` provided");
   }
@@ -55,11 +56,17 @@ export function start(telemetry, interval = 12 * MILLIS_IN_HOUR,
     return;
   }
 
+  await initPrefs();
+
   scheduler = new Scheduler({
     interval,
     errorRetryDelay,
     listener: () => ping(telemetry),
     async getNextTimestamp() {
+      if (Prefs.telemetry_opt_out) {
+        return Date.now() + MILLIS_IN_DAY;
+      }
+
       let storageResult = await browser.storage.local.get(
         [TELEMETRY_STORAGE_KEY]
       );
@@ -129,6 +136,14 @@ function truncateTimes(timestamp) {
 async function ping(telemetry) {
   trace({telemetry});
   await initializer.start();
+
+  // This is a last line to ensure that we don't ever send a ping if someone has
+  // opted out, even if the details of the scheduler change in the future. The
+  // main opt out mechanism is telling the scheduler if it's time to ping or
+  // not.
+  if (Prefs.telemetry_opt_out) {
+    return false;
+  }
 
   const storageResult = await browser.storage.local.get(
     [TELEMETRY_STORAGE_KEY]
@@ -263,7 +278,6 @@ async function getExtensionMetadata() {
   };
 }
 
-
 export default {
   /**
   * @typedef {Object} TelemetryPingError
@@ -277,5 +291,18 @@ export default {
    * @event
    * @type {EventDispatcher<TelemetryPingError>}
    */
-  onError
+  onError,
+
+  /**
+   * Opt-out from telemetry. Default is `true` (used opted out)
+   * @param {boolean} value Pass `true` to opt-out, pass `false` to opt in.
+   * @returns {Promise} Promise that resolves when the setting is set.
+   */
+  async setOptOut(value) {
+    Prefs.telemetry_opt_out = value;
+
+    if (scheduler && !value) {
+      scheduler.checkNow();
+    }
+  }
 };
