@@ -1,6 +1,9 @@
 Unreleased
 ==========
 
+🙈 1.10.0 - 2024-07-09 🙈
+=========================
+
 ## Smart Allowlisting
 
 - Added 2 special optional properties to the filter's metadata.
