@@ -63,3 +63,16 @@ export function wait(condition, timeout = 0, message, pollTimeout = 100) {
 
   return result;
 }
+
+export function limitPromiseDuration(promise, message, timeout) {
+  let startTime = performance.now();
+  return Promise.race([
+    promise,
+    new Promise((resolve, reject) => {
+      setTimeout(() => {
+        let elapsed = performance.now() - startTime;
+        reject(new Error(`${message}\nWait timed out after ${elapsed}ms`));
+      }, timeout);
+    })
+  ]);
+}

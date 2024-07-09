@@ -21,6 +21,13 @@ import expect from "expect";
 import {isFuzzingServiceWorker, suspendServiceWorker}
   from "./mocha/mocha-runner.js";
 import {waitForAssertion} from "./utils.js";
+import {limitPromiseDuration} from "./polling.js";
+import {MILLIS_IN_SECOND} from "adblockpluscore/lib/time.js";
+
+// This is fairly arbitrary, mostly to capture calls that don't ever respond and
+// hang the tests. However, 30 seconds is also the longest time we reliably have
+// in MV3 for handling an event before the service worker might be suspended.
+const MAX_API_CALL_DURATION = 30 * MILLIS_IN_SECOND;
 
 export async function fuzzSuspendServiceWorker() {
   if (isFuzzingServiceWorker()) {
@@ -33,8 +40,13 @@ export async function runInBackgroundPage(operations, fuzzEnabled = true) {
     await fuzzSuspendServiceWorker();
   }
 
-  let runResult =
-      await browser.runtime.sendMessage({type: "ewe-test:run", operations});
+  let runResultPromise =
+      browser.runtime.sendMessage({type: "ewe-test:run", operations});
+
+  let runResult = await limitPromiseDuration(
+    runResultPromise,
+    `Calling ewe-test:run with these operations did not resolve: ${JSON.stringify(operations)}`,
+    MAX_API_CALL_DURATION);
 
   if (!runResult) {
     console.warn("Call to ewe-test:run with these arguments didn't return a result",

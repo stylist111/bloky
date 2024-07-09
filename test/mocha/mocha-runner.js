@@ -18,10 +18,12 @@
 /* global Mocha */
 
 import {EventEmitter} from "adblockpluscore/lib/events.js";
+import {MILLIS_IN_SECOND} from "adblockpluscore/lib/time.js";
 
 import browser from "webextension-polyfill";
 
 import {increaseMinTimeout} from "../utils.js";
+import {limitPromiseDuration} from "../polling.js";
 
 let messages = [];
 let emit = () => {};
@@ -69,33 +71,38 @@ export function isConnected() {
   return isConnectedPromise;
 }
 
+async function waitForWebdriverEvent(eventName) {
+  let eventReceivedPromise = new Promise(resolve => {
+    function done() {
+      webdriverEventEmitter.off(eventName, done);
+      resolve();
+    }
+    webdriverEventEmitter.on(eventName, done);
+  });
+
+  const timeout = 10 * MILLIS_IN_SECOND;
+
+  await limitPromiseDuration(
+    eventReceivedPromise,
+    `Did not receive a '${eventName}' event from the webdriver runner`,
+    timeout
+  );
+}
+
 export async function click(url, selector) {
   let target = {url, selector};
   sendMessage("click", target);
-  await new Promise(resolve => {
-    function done(arg) {
-      if (arg && arg.url == target.url && arg.selector == target.selector) {
-        webdriverEventEmitter.off("clicked", done);
-        resolve();
-      }
-    }
-    webdriverEventEmitter.on("clicked", done);
-  });
+  await waitForWebdriverEvent("clicked");
 }
 
 export async function updateExtensionFiles(commands) {
   sendMessage("updateExtensionFiles", JSON.stringify(commands));
-  await new Promise(resolve => {
-    function done() {
-      webdriverEventEmitter.off("extensionUpdated", done);
-      resolve();
-    }
-    webdriverEventEmitter.on("extensionUpdated", done);
-  });
+  await waitForWebdriverEvent("extensionUpdated");
 }
 
 export async function suspendServiceWorker(runnable) {
   sendMessage("suspendServiceWorker");
+
   if (runnable) {
     if (!await isConnected()) {
       runnable.skip();
@@ -104,13 +111,7 @@ export async function suspendServiceWorker(runnable) {
     increaseMinTimeout(runnable, 3000);
   }
 
-  await new Promise(resolve => {
-    function done() {
-      webdriverEventEmitter.off("serviceWorkerSuspended", done);
-      resolve();
-    }
-    webdriverEventEmitter.on("serviceWorkerSuspended", done);
-  });
+  await waitForWebdriverEvent("serviceWorkerSuspended");
 }
 
 export function isFuzzingServiceWorker() {
