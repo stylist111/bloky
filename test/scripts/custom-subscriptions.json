@@ -124,7 +124,7 @@
     "homepage": "https://acceptableads.com/",
     "url": "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt",
     "mv2_url": "https://easylist-downloads.adblockplus.org/exceptionrules.txt",
-    "diff_url": "https://easylist-downloads.adblockplus.org/v3/diff/exceptionrules/80f68ab902e84e22fec62dae473ba69bc74019c8.json"
+    "diff_url": "https://easylist-downloads.adblockplus.org/v3/diff/exceptionrules/9c3ca735314e63ea07070b52f7ca03e98656cb62.json"
   },
   {
     "id": "F12E0801-A00B-49DE-B1E3-52C9C4F90C8C",
@@ -168,6 +168,6 @@
     "homepage": "https://github.com/abp-filters/abp-filters-anti-cv",
     "url": "https://easylist-downloads.adblockplus.org/v3/full/abp-filters-anti-cv.txt",
     "mv2_url": "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt",
-    "diff_url": "https://easylist-downloads.adblockplus.org/v3/diff/abp-filters-anti-cv/80f68ab902e84e22fec62dae473ba69bc74019c8.json"
+    "diff_url": "https://easylist-downloads.adblockplus.org/v3/diff/abp-filters-anti-cv/9c3ca735314e63ea07070b52f7ca03e98656cb62.json"
   }
 ]

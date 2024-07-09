@@ -61,8 +61,9 @@ async function handleMessage(message, sender) {
       injectCSS(sender.tab.id, sender.frameId, styleSheet);
       break;
     case "ewe:allowlist-page":
+      const {timestamp, signature, options} = message;
       return allowlistPage(
-        sender.tab.id, sender.frameId, message.timestamp, message.signature
+        sender.tab.id, sender.frameId, timestamp, signature, options
       );
     case "ewe:cdp-session-active":
       await markActive(sender.tab.id, sender.frameId);

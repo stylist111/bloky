@@ -18,7 +18,8 @@
 import browser from "./browser.js";
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
 import {parseURL} from "adblockpluscore/lib/url.js";
-import {MILLIS_IN_HOUR, MILLIS_IN_MINUTE} from "adblockpluscore/lib/time.js";
+import {MILLIS_IN_HOUR, MILLIS_IN_MINUTE,
+        MILLIS_IN_DAY} from "adblockpluscore/lib/time.js";
 import {base64ToArrayBuffer} from "adblockpluscore/lib/rsa.js";
 
 import {filterEngine} from "./core.js";
@@ -41,8 +42,12 @@ const CLOCK_SKEW_TOLERANCE = 5 * MILLIS_IN_MINUTE;
 // Note that this is a default implementation, but it might be
 // replaced using `setAllowlistingCallback`. Don't rely on this
 // behaviour.
-let allowlistingCallback = function(domain) {
-  return filters.add([`@@||${domain}^$document`]);
+let allowlistingCallback = function(domain, options) {
+  let metadata = null;
+  if (options && options.expiresAt) {
+    metadata = {expiresAt: options.expiresAt};
+  }
+  return filters.add([`@@||${domain}^$document`], metadata);
 };
 let dispatchUnauthorized = () => {};
 
@@ -99,8 +104,32 @@ async function verifyAnySignatures(domain, timestamp, signature) {
   return false;
 }
 
-async function succeedAllowlisting(domain) {
-  await allowlistingCallback(domain);
+function verifyOptions(options) {
+  if (!options) {
+    return true;
+  }
+
+  const keys = Object.keys(options);
+  if (keys.length !== 1 || keys[0] !== "expiresAt") {
+    return false;
+  }
+
+  if (!Number.isInteger(options.expiresAt)) {
+    return false;
+  }
+
+  const now = Date.now();
+  const minExpiresAt = now + MILLIS_IN_DAY - CLOCK_SKEW_TOLERANCE;
+  const maxExpiresAt = now + 365 * MILLIS_IN_DAY + CLOCK_SKEW_TOLERANCE;
+  if (options.expiresAt < minExpiresAt || options.expiresAt > maxExpiresAt) {
+    return false;
+  }
+
+  return true;
+}
+
+async function succeedAllowlisting(domain, options) {
+  await allowlistingCallback(domain, options);
   // EE-258: Edge adding dynamic DNR rules return promise earlier,
   // than it actually processes the rules. So we workaround it by
   // waiting for some time longer to let it actually finish the adding.
@@ -116,7 +145,9 @@ function failAllowlisting(error) {
   return false;
 }
 
-export async function allowlistPage(tabId, frameId, timestamp, signature) {
+export async function allowlistPage(
+  tabId, frameId, timestamp, signature, options
+) {
   let frame = getFrameInfo(tabId, frameId);
   if (!frame) {
     return failAllowlisting({
@@ -149,6 +180,14 @@ export async function allowlistPage(tabId, frameId, timestamp, signature) {
     });
   }
 
+  let validOptions = verifyOptions(options);
+  if (!validOptions) {
+    return failAllowlisting({
+      reason: "invalid_options",
+      request
+    });
+  }
+
   let validTimestamp = verifyTimestamp(timestamp);
   if (!validTimestamp) {
     return failAllowlisting({
@@ -165,7 +204,7 @@ export async function allowlistPage(tabId, frameId, timestamp, signature) {
     });
   }
 
-  return await succeedAllowlisting(domain);
+  return await succeedAllowlisting(domain, options);
 }
 
 async function setAuthorizedKeys(keys) {
@@ -210,6 +249,9 @@ export default {
   /**
    * @callback allowlistingCallback
    * @param {string} domain The domain to allowlist.
+   * @param {?Object} options Additional options for the allowlisting.
+   * @param {Number} [options.expiresAt] The timestamp when the filter should
+   *  expire (allowed 1 day - 365 days in the future).
    */
 
   /**
@@ -230,7 +272,7 @@ export default {
    * @typedef {Object} AllowlistingAuthorizationError
    * @property {string} reason The reason a request to allowlist was
    *   rejected. Can be "invalid_frame", "already_allowlisted",
-   *   "invalid_timestamp", or "invalid_signature".
+   *   "invalid_timestamp", "invalid_signature" or "invalid_options".
    * @property {Object} request The rejected request.
    * @property {string} [request.domain] The domain of the page that
    *   the request came from. This is also the domain that the request

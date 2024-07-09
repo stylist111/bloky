@@ -11,6 +11,23 @@ Unreleased
   filter's expiration time by the specified number of milliseconds if the user
   visits the associated allowlisted website before filter expiration.
 
+## One Click Allowlisting
+
+- Added support for time bound filters added via 1 click allowlisting. Pages can
+  send an additional `options` object which contains an `expiresAt` timestamp.
+  The default allowlisting callback will add this as filter metadata, so that
+  the filter will automatically expire. (EE-752)
+- Added a new reason `invalid_options` for `AllowlistingAuthorizationError`
+
+## Updating your code
+
+- If you provide your own 1 click allowlisting callback with
+  `EWE.allowlisting.setAllowlistingCallback`, then your callback should be
+  updated to accept the new optional `options` parameter, and add
+  `options.expiresAt` as metadata on the allowlisting filter it creates. (EE-752)
+
+
+
 ## General
 
 - Attempting to add a filter that has already been added no longer throws an

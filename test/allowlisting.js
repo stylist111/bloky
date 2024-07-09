@@ -170,6 +170,63 @@ describe("One Click Allowlisting", function() {
     await expectSuccessfulAllowlist();
   });
 
+  it("unblocks when allowlist with expiration is clicked [fuzz]", async function() {
+    setMinTimeout(this, 30000);
+    await clickAllowlistButton("allowlist_with_expiration");
+    await expectSuccessfulAllowlist();
+
+    const filters = await EWE.filters.getAllowingFilters(tabId, {types: ["document"]});
+    expect(filters).toHaveLength(1);
+
+    const metadata = await EWE.filters.getMetadata(filters[0]);
+    const {expiresAt, autoExtendMs} = metadata;
+    expect(expiresAt).toBeGreaterThan(Date.now());
+    // autoExtendMs is not allowed through the OC API
+    expect(autoExtendMs).toBeUndefined();
+  });
+
+  describe("Invalid options parameter", function() {
+    it("blocks when options doesn't have expiresAt property", async function() {
+      await clickAllowlistButton("allowlist_with_invalid_options");
+      await expectUnsuccessfulAllowlist("invalid_options");
+    });
+
+    it("blocks when expiresAt is string", async function() {
+      await clickAllowlistButton("allowlist_with_invalid_expiration_string");
+      await expectUnsuccessfulAllowlist("invalid_options");
+    });
+
+    it("blocks when expiresAt is object", async function() {
+      await clickAllowlistButton("allowlist_with_invalid_expiration_object");
+      await expectUnsuccessfulAllowlist("invalid_options");
+    });
+
+    it("blocks when expiresAt is null", async function() {
+      await clickAllowlistButton("allowlist_with_invalid_expiration_null");
+      await expectUnsuccessfulAllowlist("invalid_options");
+    });
+
+    it("blocks when expiresAt is array", async function() {
+      await clickAllowlistButton("allowlist_with_invalid_expiration_array");
+      await expectUnsuccessfulAllowlist("invalid_options");
+    });
+
+    it("blocks when expiresAt is boolean", async function() {
+      await clickAllowlistButton("allowlist_with_invalid_expiration_boolean");
+      await expectUnsuccessfulAllowlist("invalid_options");
+    });
+
+    it("blocks when expiresAt is below the range [fuzz]", async function() {
+      await clickAllowlistButton("allowlist_with_expiration_below_range");
+      await expectUnsuccessfulAllowlist("invalid_options");
+    });
+
+    it("blocks when expiresAt is above the range  [fuzz]", async function() {
+      await clickAllowlistButton("allowlist_with_expiration_above_range");
+      await expectUnsuccessfulAllowlist("invalid_options");
+    });
+  });
+
   describe("Invalid signature", function() {
     it("blocks when signature key is unauthorized [fuzz]", async function() {
       await clickAllowlistButton("allowlist_unauthorized_key");

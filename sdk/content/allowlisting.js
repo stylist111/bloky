@@ -41,7 +41,8 @@ async function allowlistDomain(event) {
     browser.runtime.sendMessage({
       type: "ewe:allowlist-page",
       timestamp: event.detail.timestamp,
-      signature: event.detail.signature
+      signature: event.detail.signature,
+      options: event.detail.options
     })
   );
 }

@@ -2,6 +2,15 @@
 
 <ul>
   <li><a id="allowlist" href="#">Allowlist page</a></li>
+  <li><a id="allowlist_with_expiration" href="#">Allowlist page with an expiration data attached</a></li>
+  <li><a id="allowlist_with_invalid_options" href="#">Allowlist page with an invalid expiration property name</a></li>
+  <li><a id="allowlist_with_invalid_expiration_string" href="#">Allowlist page with an expiration as string</a></li>
+  <li><a id="allowlist_with_invalid_expiration_object" href="#">Allowlist page with an expiration as object</a></li>
+  <li><a id="allowlist_with_invalid_expiration_null" href="#">Allowlist page with an expiration as null</a></li>
+  <li><a id="allowlist_with_invalid_expiration_array" href="#">Allowlist page with an expiration as array</a></li>
+  <li><a id="allowlist_with_invalid_expiration_boolean" href="#">Allowlist page with an expiration as boolean</a></li>
+  <li><a id="allowlist_with_expiration_below_range" href="#">Allowlist page with an expiration below the range</a></li>
+  <li><a id="allowlist_with_expiration_above_range" href="#">Allowlist page with an expiration above the range</a></li>
   <li><a id="allowlist_second_key" href="#">Allowlist page with the second valid key</a></li>
   <li><a id="allowlist_unauthorized_key" href="#">Allowlist page with an unauthorized key</a></li>
   <li><a id="allowlist_old_timestamp" href="#">Allowlist page with invalid timestamp (too old)</a></li>
@@ -68,7 +77,7 @@
     return arrayBufferToBase64(abSignature);
   }
 
-  async function createAllowlistEvent(hostname, timestamp, privateKey) {
+  async function createAllowlistEvent(hostname, timestamp, privateKey, options) {
     // NB: THIS TEST CODE IS INSECURE!
     // This code demonstrated the signing flow, but by doing the
     // signing in the browser it exposes the private key to anyone who
@@ -89,15 +98,18 @@
     return new CustomEvent("domain_allowlisting_request", {
       detail: {
         signature,
-        timestamp
+        timestamp,
+        options
       }
     });
   }
 
   async function allowlist({hostname = location.hostname,
                             timestamp = Date.now(),
-                            privateKey = validPrivateKey} = {}) {
-    let event = await createAllowlistEvent(hostname, timestamp, privateKey);
+                            privateKey = validPrivateKey,
+                            options} = {}) {
+    let event = await createAllowlistEvent(
+      hostname, timestamp, privateKey, options);
     document.dispatchEvent(event);
   }
 
@@ -233,16 +245,37 @@
     }
   }
 
+  const now = Date.now();
+  const oneDay = 24 * 60 * 60 * 1000;
+
   document.getElementById("allowlist")
     .addEventListener("click", () => allowlist());
+  document.getElementById("allowlist_with_expiration")
+    .addEventListener("click", () => allowlist({options: {expiresAt: now + oneDay}}));
+  document.getElementById("allowlist_with_invalid_options")
+    .addEventListener("click", () => allowlist({options: {expires: now}}));
+  document.getElementById("allowlist_with_invalid_expiration_string")
+    .addEventListener("click", () => allowlist({options: {expiresAt: "Thu, 01 Jan 2070 00:00:00 GMT"}}));
+  document.getElementById("allowlist_with_invalid_expiration_object")
+    .addEventListener("click", () => allowlist({options: {expiresAt: {value: now + oneDay}}}));
+  document.getElementById("allowlist_with_invalid_expiration_null")
+    .addEventListener("click", () => allowlist({options: {expiresAt: null}}));
+  document.getElementById("allowlist_with_invalid_expiration_array")
+    .addEventListener("click", () => allowlist({options: {expiresAt: [1, 2]}}));
+  document.getElementById("allowlist_with_invalid_expiration_boolean")
+    .addEventListener("click", () => allowlist({options: {expiresAt: true}}));
+  document.getElementById("allowlist_with_expiration_below_range")
+    .addEventListener("click", () => allowlist({options: {expiresAt: now}}));
+  document.getElementById("allowlist_with_expiration_above_range")
+    .addEventListener("click", () => allowlist({options: {expiresAt: now + 366 * oneDay}}));
   document.getElementById("allowlist_second_key")
     .addEventListener("click", () => allowlist({privateKey: validPrivateKey2}));
   document.getElementById("allowlist_unauthorized_key")
     .addEventListener("click", () => allowlist({privateKey: unauthorizedPrivateKey}));
   document.getElementById("allowlist_old_timestamp")
-    .addEventListener("click", () => allowlist({timestamp: Date.now() - 4200000}));
+    .addEventListener("click", () => allowlist({timestamp: now - 4200000}));
   document.getElementById("allowlist_future_timestamp")
-    .addEventListener("click", () => allowlist({timestamp: Date.now() + 600000}));
+    .addEventListener("click", () => allowlist({timestamp: now + 600000}));
   document.getElementById("allowlist_nonsense_timestamp")
     .addEventListener("click", () => allowlist({timestamp: "fakeTimestamp"}));
   document.getElementById("allowlist_different_domain")
