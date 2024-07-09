@@ -37,6 +37,7 @@ toc:
       - CdpEventOptions
       - EventDispatcher
       - Filter
+      - FilterAddResult
       - FilterError
       - FilterMatchInfo
       - FirstRunInfo

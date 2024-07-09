@@ -1,15 +1,15 @@
 Unreleased
 ==========
 
-## SMART ALLOWLISTING
+## Smart Allowlisting
 
 - Added 2 special optional properties to the filter's metadata.
   `metadata?.expiresAt` allows to set an expiration timestamp for the
-  associated filter.
+  associated filter. (EE-735)
   `metadata?.autoExtendMs` used together with `metadata?.expiresAt` (applicable
   only to allowlisting filters), this property will automatically extend the
   filter's expiration time by the specified number of milliseconds if the user
-  visits the associated allowlisted website before filter expiration.
+  visits the associated allowlisted website before filter expiration. (EE-735)
 
 ## One Click Allowlisting
 
@@ -17,16 +17,7 @@ Unreleased
   send an additional `options` object which contains an `expiresAt` timestamp.
   The default allowlisting callback will add this as filter metadata, so that
   the filter will automatically expire. (EE-752)
-- Added a new reason `invalid_options` for `AllowlistingAuthorizationError`
-
-## Updating your code
-
-- If you provide your own 1 click allowlisting callback with
-  `EWE.allowlisting.setAllowlistingCallback`, then your callback should be
-  updated to accept the new optional `options` parameter, and add
-  `options.expiresAt` as metadata on the allowlisting filter it creates. (EE-752)
-
-
+- Added a new reason `invalid_options` for `AllowlistingAuthorizationError`. (EE-752)
 
 ## General
 
@@ -35,7 +26,7 @@ Unreleased
   filter has different metadata from an existing filter, the metadata will not
   be updated. The error reason `storage_duplicate_filters` is no longer
   used. (EE-361)
-- User counting telemetry now has an opt out mechanism. Users are opted out of
+- User counting telemetry now has an opt-out mechanism. Users are opted out of
   telemetry by default, to avoid accidentally sending pings for users who have
   opted out before an extension can set the opt-out status. Set opt-out by
   calling `EWE.telemetry.setOptOut`. (EE-579)
@@ -45,6 +36,11 @@ Unreleased
 - All extensions that provide `telemetry` credentials to `EWE.start` should now
   be calling `EWE.telemetry.setOptOut` as well to opt users in for sending
   user counting telemetry. (EE-579)
+- If you provide your own 1 click allowlisting callback with
+  `EWE.allowlisting.setAllowlistingCallback`, then your callback should be
+  updated to accept the new optional `options` parameter, and add
+  `options.expiresAt` as metadata on the allowlisting filter it creates. (EE-752)
+
 
 💅 1.9.0 - 2024-06-25 💅
 ========================
