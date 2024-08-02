@@ -154,6 +154,22 @@ describe("Blocking", function() {
     await new Page("image.html").expectResource("image.png").toBeBlocked();
   });
 
+  it("allowlists a site based on a $domain", async function() {
+    await EWE.filters.add([
+      "image.png",
+      `@@*$document,domain=${TEST_PAGES_DOMAIN}`
+    ]);
+    await new Page("image.html").expectResource("image.png").toBeLoaded();
+  });
+
+  it("blocks requests when the allowlist filter excludes using $domain", async function() {
+    await EWE.filters.add([
+      "image.png",
+      `@@*$document,domain=~${TEST_PAGES_DOMAIN}`
+    ]);
+    await new Page("image.html").expectResource("image.png").toBeBlocked();
+  });
+
   it("blocks the requests with ports and wildcards in $domain option [mv2-only]", async function() {
     // DNS mapping webext.com to 127.0.0.1 is configured
     // for all Chromium-based browsers during the tests.
@@ -393,6 +409,11 @@ describe("Blocking", function() {
          await addFilter(`@@|${TEST_PAGES_URL}/csp.html^$document`);
          expect(await checkViolatedDirective()).toBeFalsy();
        });
+
+    it("injects header for filter with $domain option", async function() {
+      await addFilter(`|${TEST_PAGES_URL}$csp=img-src 'none',domain=${TEST_PAGES_DOMAIN}`);
+      expect(await checkViolatedDirective()).toEqual("img-src");
+    });
   });
 
   describe("Sitekey allowlisting", function() {

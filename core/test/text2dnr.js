@@ -579,11 +579,15 @@ describe("convertFilter", function() {
       await testRules(
         ["@@||example.com^$genericblock",
          "@@||example.com^$genericblock,domain=foo.com",
-         "@@ad.jpg$image", "@@bar.com$domain=foo.com",
-         "@@ad.jpg$document", "@@bar.com$document,domain=foo.com"],
+         "@@ad.jpg$image",
+         "@@bar.com$domain=foo.com",
+         "@@ad.jpg$document",
+         "@@bar.com$document,domain=foo.com"],
         [GENERIC_ALLOW_ALL_PRIORITY,
-         GENERIC_ALLOW_ALL_PRIORITY,
-         SPECIFIC_PRIORITY, SPECIFIC_PRIORITY,
+         GENERIC_ALLOW_ALL_PRIORITY, GENERIC_ALLOW_ALL_PRIORITY,
+         SPECIFIC_PRIORITY,
+         SPECIFIC_PRIORITY,
+         SPECIFIC_ALLOW_ALL_PRIORITY,
          SPECIFIC_ALLOW_ALL_PRIORITY, SPECIFIC_ALLOW_ALL_PRIORITY],
         rule => rule.priority
       );
@@ -599,7 +603,7 @@ describe("convertFilter", function() {
       await testRules(
         ["ad.bar.com$csp=foo", "$csp=foo,domain=foo.com",
          "@@ad.bar.com$csp", "@@ad.bar.com$csp,genericblock"],
-        [GENERIC_PRIORITY, SPECIFIC_PRIORITY,
+        [GENERIC_PRIORITY, SPECIFIC_PRIORITY, SPECIFIC_PRIORITY,
          SPECIFIC_PRIORITY, GENERIC_PRIORITY],
         rule => rule.priority
       );
@@ -775,7 +779,10 @@ describe("convertFilter", function() {
 
   describe("Filter options", function() {
     it("should honour the $domain option", async function() {
-      await testRules(["1$domain=foo.com"], [["foo.com"]], rule => rule.condition.domains);
+      await testRules(
+        ["1$domain=foo.com"],
+        [["foo.com"]],
+        rule => rule.condition.initiatorDomains);
     });
     it("should honour the $third-party option", async function() {
       await testRules(["2.js$third-party"], ["thirdParty"], rule => rule.condition.domainType);
@@ -817,12 +824,12 @@ describe("convertFilter", function() {
           {
             urlFilter: "/foo",
             isUrlFilterCaseSensitive: false,
-            domains: ["domain.com"]
+            initiatorDomains: ["domain.com"]
           },
           {
             urlFilter: "/Foo",
             isUrlFilterCaseSensitive: true,
-            domains: ["domain.com"]
+            initiatorDomains: ["domain.com"]
           },
           {
             urlFilter: "||foo.com",
@@ -856,8 +863,8 @@ describe("convertFilter", function() {
           condition: {
             urlFilter: "1",
             isUrlFilterCaseSensitive: false,
-            domains: ["foo.com"],
-            excludedDomains: ["bar.foo.com"]
+            initiatorDomains: ["foo.com"],
+            excludedInitiatorDomains: ["bar.foo.com"]
           },
           action: {type: "block"}
         }
@@ -875,7 +882,7 @@ describe("convertFilter", function() {
             condition: {
               urlFilter: "||bar.com/ad.js",
               isUrlFilterCaseSensitive: false,
-              domains: ["foo.com"],
+              initiatorDomains: ["foo.com"],
               resourceTypes: ["script"]
             },
             action: {
@@ -968,12 +975,51 @@ describe("convertFilter", function() {
       ]);
     });
 
-    it("should workaround the domain/excludedDomain limitation Chromium has " +
-       "for main_frame requests", async function() {
+    it("uses requestDomain and initiatorDomain appropriately for main_frame requests", async function() {
       await testRules(
         ["$csp=img-src 'none',domain=~foo.com",
          "ad$csp=img-src 'none',domain=foo.com"],
-        []
+        [
+          {
+            excludedRequestDomains: [
+              "foo.com"
+            ],
+            isUrlFilterCaseSensitive: false,
+            resourceTypes: [
+              "main_frame"
+            ]
+          },
+          {
+            excludedInitiatorDomains: [
+              "foo.com"
+            ],
+            isUrlFilterCaseSensitive: false,
+            resourceTypes: [
+              "sub_frame"
+            ]
+          },
+          {
+            isUrlFilterCaseSensitive: false,
+            requestDomains: [
+              "foo.com"
+            ],
+            resourceTypes: [
+              "main_frame"
+            ],
+            urlFilter: "ad"
+          },
+          {
+            initiatorDomains: [
+              "foo.com"
+            ],
+            isUrlFilterCaseSensitive: false,
+            resourceTypes: [
+              "sub_frame"
+            ],
+            urlFilter: "ad"
+          }
+        ],
+        rule => rule.condition
       );
 
       await testRules(
@@ -981,13 +1027,23 @@ describe("convertFilter", function() {
         [
           {
             isUrlFilterCaseSensitive: false,
-            resourceTypes: ["main_frame", "sub_frame"],
-            urlFilter: "||a.com^"
+            requestDomains: [
+              "a.com",
+              "b.com"
+            ],
+            resourceTypes: [
+              "main_frame"
+            ]
           },
           {
+            initiatorDomains: [
+              "a.com",
+              "b.com"
+            ],
             isUrlFilterCaseSensitive: false,
-            resourceTypes: ["main_frame", "sub_frame"],
-            urlFilter: "||b.com^"
+            resourceTypes: [
+              "sub_frame"
+            ]
           }
         ],
         rule => rule.condition

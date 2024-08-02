@@ -1,6 +1,12 @@
 Unreleased
 ==========
 
+## Fixes
+
+- In MV3, use the `requestDomains` condition in DNR rules for main frames, so
+  that `$document` filters work correctly together with the `$domain` filter
+  option. (EXT-55)
+
 🙈 1.10.0 - 2024-07-09 🙈
 =========================
 

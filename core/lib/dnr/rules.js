@@ -93,39 +93,84 @@ function getDomains(filterDomains) {
   return {domains, excludedDomains, isGenericFilter};
 }
 
-function getCondition(filter, urlFilter, resourceTypes, matchCase) {
-  let condition = {};
+function getConditions(filter, urlFilter, resourceTypes, matchCase) {
+  let baseCondition = {};
 
   if (urlFilter) {
-    condition.urlFilter = urlFilter;
+    baseCondition.urlFilter = urlFilter;
   }
   else if (filter.regexp) {
-    condition.regexFilter = filter.regexp.source;
-  }
-
-  if (resourceTypes) {
-    condition.resourceTypes = resourceTypes;
+    baseCondition.regexFilter = filter.regexp.source;
   }
 
   // Before Chromium 118, the default for isUrlFilterCaseSensitive is true. From
   // Chromium 118, the default is false. If we at some point make our minimum
   // supported Chromium 118, then we can leave this undefined if !matchCase.
-  condition.isUrlFilterCaseSensitive = matchCase;
+  baseCondition.isUrlFilterCaseSensitive = matchCase;
 
   if (filter.thirdParty != null) {
-    condition.domainType = filter.thirdParty ? "thirdParty" : "firstParty";
+    baseCondition.domainType = filter.thirdParty ? "thirdParty" : "firstParty";
   }
 
   let {domains, excludedDomains, isGenericFilter} = getDomains(filter.domains);
 
-  if (domains.length) {
-    condition.domains = domains;
+  let conditions = [];
+
+  if (resourceTypes && (domains.length || excludedDomains.length)) {
+    let mainFrameResourceTypes = resourceTypes.filter(t => t == "main_frame");
+    let otherResourceTypes = resourceTypes.filter(t => t != "main_frame");
+
+    if (mainFrameResourceTypes.length) {
+      let condition = {
+        resourceTypes: mainFrameResourceTypes,
+        ...baseCondition
+      };
+
+      if (domains.length) {
+        condition.requestDomains = domains;
+      }
+      if (excludedDomains.length) {
+        condition.excludedRequestDomains = excludedDomains;
+      }
+
+      conditions.push(condition);
+    }
+
+    if (otherResourceTypes.length) {
+      let condition = {
+        resourceTypes: otherResourceTypes,
+        ...baseCondition
+      };
+
+      if (domains.length) {
+        condition.initiatorDomains = domains;
+      }
+      if (excludedDomains.length) {
+        condition.excludedInitiatorDomains = excludedDomains;
+      }
+
+      conditions.push(condition);
+    }
   }
-  if (excludedDomains.length) {
-    condition.excludedDomains = excludedDomains;
+  else {
+    let condition = {
+      ...baseCondition
+    };
+
+    if (resourceTypes) {
+      condition.resourceTypes = resourceTypes;
+    }
+    if (domains.length) {
+      condition.initiatorDomains = domains;
+    }
+    if (excludedDomains.length) {
+      condition.excludedInitiatorDomains = excludedDomains;
+    }
+
+    conditions.push(condition);
   }
 
-  return [condition, isGenericFilter];
+  return {conditions, isGenericFilter};
 }
 
 exports.generateRedirectRules = function(filter, urlFilter, matchCase) {
@@ -144,26 +189,28 @@ exports.generateRedirectRules = function(filter, urlFilter, matchCase) {
     return [];
   }
 
-  let [condition, isGenericFilter] = getCondition(
+  let {conditions, isGenericFilter} = getConditions(
     filter, urlFilter, resourceTypes, matchCase
   );
 
-  return [{
-    priority: isGenericFilter ? GENERIC_PRIORITY : SPECIFIC_PRIORITY,
-    condition,
-    action: {
-      type: "redirect",
-      redirect: {url}
-    }
-  }];
+  return conditions.map(condition => {
+    return {
+      priority: isGenericFilter ? GENERIC_PRIORITY : SPECIFIC_PRIORITY,
+      condition,
+      action: {
+        type: "redirect",
+        redirect: {url}
+      }
+    };
+  });
 };
 
 exports.generateCSPRules = function(filter, urlFilter, matchCase) {
-  let [condition, isGenericFilter] = getCondition(
+  let {conditions, isGenericFilter} = getConditions(
     filter, urlFilter, ["main_frame", "sub_frame"], matchCase
   );
 
-  let rule;
+  let rules;
 
   if (!filter.blocking) {
     // The DNR makes no distinction between CSP rules and main_frame/sub_frame
@@ -180,65 +227,35 @@ exports.generateCSPRules = function(filter, urlFilter, matchCase) {
     // accept that $csp exception filters might wrongly prevent frame-blocking
     // filters from matching. If this compromise proves problematic, we might
     // need to reconsider this in the future.
-    rule = {
-      action: {
-        type: "allow"
-      },
-      condition,
-      priority: filter.contentType & contentTypes.GENERICBLOCK ?
-                  GENERIC_PRIORITY : SPECIFIC_PRIORITY
-    };
+    rules = conditions.map(condition => {
+      return {
+        action: {
+          type: "allow"
+        },
+        condition,
+        priority: filter.contentType & contentTypes.GENERICBLOCK ?
+          GENERIC_PRIORITY : SPECIFIC_PRIORITY
+      };
+    });
   }
   else {
-    rule = {
-      action: {
-        type: "modifyHeaders",
-        responseHeaders: [{
-          header: "Content-Security-Policy",
-          operation: "append",
-          value: filter.csp
-        }]
-      },
-      condition,
-      priority: isGenericFilter ? GENERIC_PRIORITY : SPECIFIC_PRIORITY
-    };
+    rules = conditions.map(condition => {
+      return {
+        action: {
+          type: "modifyHeaders",
+          responseHeaders: [{
+            header: "Content-Security-Policy",
+            operation: "append",
+            value: filter.csp
+          }]
+        },
+        condition,
+        priority: isGenericFilter ? GENERIC_PRIORITY : SPECIFIC_PRIORITY
+      };
+    });
   }
 
-  // Chromium doesn't consider main_frame requests to have initiated from their
-  // URL, so the domains/excludedDomains rule conditions won't work as expected
-  // for main_frame requests. This is a problem for $csp filters which also use
-  // the $domain option. As a partial workaround, we generate a separate
-  // urlFilter rule for each domain. But note, we can't support excludedDomains
-  // ($csp=...$~domain=...) or urlFilter conditions (||...$csp=...,domain=...).
-  // See https://bugs.chromium.org/p/chromium/issues/detail?id=1207326
-  //
-  // Note: Hopefully, this workaround won't be necessary for long, but if we
-  // need it long-term, then perhaps we should generate one rule with a longer
-  // regexFilter condition instead. But if we do that, we will need to be
-  // careful not to hit the memory limit for regular expression rule conditions
-  // and also to match subdomains correctly.
-  if (rule.condition.excludedDomains) {
-    return [];
-  }
-  if (rule.condition.domains) {
-    if (condition.urlFilter) {
-      return [];
-    }
-
-    let {domains} = condition;
-    delete condition.domains;
-
-    let rules = [];
-    for (let domain of domains) {
-      let domainRule = JSON.parse(JSON.stringify(rule));
-      domainRule.condition.urlFilter = "||" + domain + "^";
-      rules.push(domainRule);
-    }
-
-    return rules;
-  }
-
-  return [rule];
+  return rules;
 };
 
 exports.generateBlockingRules = function(filter, urlFilter, matchCase) {
@@ -250,17 +267,19 @@ exports.generateBlockingRules = function(filter, urlFilter, matchCase) {
     return [];
   }
 
-  let [condition, isGenericFilter] = getCondition(
+  let {conditions, isGenericFilter} = getConditions(
     filter, urlFilter, resourceTypes, matchCase
   );
 
-  return [{
-    priority: isGenericFilter ? GENERIC_PRIORITY : SPECIFIC_PRIORITY,
-    condition,
-    action: {
-      type: "block"
-    }
-  }];
+  return conditions.map(condition => {
+    return {
+      priority: isGenericFilter ? GENERIC_PRIORITY : SPECIFIC_PRIORITY,
+      condition,
+      action: {
+        type: "block"
+      }
+    };
+  });
 };
 
 exports.generateAllowingRules = function(filter, urlFilter, matchCase) {
@@ -272,26 +291,37 @@ exports.generateAllowingRules = function(filter, urlFilter, matchCase) {
   if (contentType & contentTypes.DOCUMENT || genericBlock) {
     contentType &= ~contentTypes.SUBDOCUMENT;
 
-    rules.push({
-      priority: genericBlock ?
-                  GENERIC_ALLOW_ALL_PRIORITY : SPECIFIC_ALLOW_ALL_PRIORITY,
-      condition: getCondition(
-        filter, urlFilter, ["main_frame", "sub_frame"], matchCase)[0],
-      action: {
-        type: "allowAllRequests"
-      }
-    });
+    let {conditions} = getConditions(filter,
+                                     urlFilter,
+                                     ["main_frame", "sub_frame"],
+                                     matchCase);
+
+    for (let condition of conditions) {
+      rules.push({
+        priority: genericBlock ?
+          GENERIC_ALLOW_ALL_PRIORITY : SPECIFIC_ALLOW_ALL_PRIORITY,
+        condition,
+        action: {
+          type: "allowAllRequests"
+        }
+      });
+    }
   }
 
   let resourceTypes = getResourceTypes(contentType);
   if (!resourceTypes || resourceTypes.length) {
-    rules.push({
-      priority: genericBlock ? GENERIC_PRIORITY : SPECIFIC_PRIORITY,
-      condition: getCondition(filter, urlFilter, resourceTypes, matchCase)[0],
-      action: {
-        type: "allow"
-      }
-    });
+    let {conditions} =
+        getConditions(filter, urlFilter, resourceTypes, matchCase);
+
+    for (let condition of conditions) {
+      rules.push({
+        priority: genericBlock ? GENERIC_PRIORITY : SPECIFIC_PRIORITY,
+        condition,
+        action: {
+          type: "allow"
+        }
+      });
+    }
   }
 
   return rules;

@@ -155,7 +155,7 @@ describe("DeclarativeNetRequest", function() {
     assert.deepEqual(result[0].condition, {
       urlFilter: "-adwords.",
       isUrlFilterCaseSensitive: false,
-      excludedDomains: [
+      excludedInitiatorDomains: [
         "consultant-adwords.com",
         "consultant-adwords.fr",
         "expert-adwords.com",
@@ -180,7 +180,7 @@ describe("DeclarativeNetRequest", function() {
     assert.deepEqual(result[0].condition, {
       urlFilter: ".openx.",
       isUrlFilterCaseSensitive: false,
-      excludedDomains: [
+      excludedInitiatorDomains: [
         "openx.com",
         "openx.solar"
       ]
@@ -243,7 +243,7 @@ describe("DeclarativeNetRequest", function() {
     assert.deepEqual(result[0].condition, {
       urlFilter: "||g.doubleclick.net/gpt/pubads_impl_",
       isUrlFilterCaseSensitive: false,
-      domains: ["example.com"],
+      initiatorDomains: ["example.com"],
       resourceTypes: [
         "script"
       ]
@@ -335,7 +335,7 @@ describe("DeclarativeNetRequest", function() {
       urlFilter: "||example.com^*/getspot/?spotid=",
       resourceTypes: ["media"],
       isUrlFilterCaseSensitive: false,
-      domains: ["example.com"]
+      initiatorDomains: ["example.com"]
     });
   });
 

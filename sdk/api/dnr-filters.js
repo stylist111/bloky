@@ -34,7 +34,7 @@ import {ERROR_FILTER_NOT_FOUND, ERROR_TOO_MANY_FILTERS,
 import {onChangedFilter, disableFilter} from "./filters.js";
 import {default as initializer} from "./initializer.js";
 import {filtersUpdateDiff} from "./set-operations.js";
-import {trace, debug, error} from "./debugging.js";
+import {debug, error} from "./debugging.js";
 
 import {FilterError} from "./types.js";
 import {Prefs} from "./prefs.js";
@@ -263,8 +263,6 @@ export async function enableAllDisabledStaticRules() {
 }
 
 async function _dnrFullSubscriptionUpdate(subscription, filterText) {
-  trace({subscription, filterText});
-
   // With some path of code the filter engine might not be initialized
   // if the service worker got awaken.
   await initializer.start();
@@ -334,7 +332,6 @@ export async function _dnrDiffSubscriptionUpdate(
   if (!browser.declarativeNetRequest || !updates) {
     return;
   }
-  trace({subscription, updates});
 
   // For now we only want to handle subscriptions that are in the
   // recommendations.
