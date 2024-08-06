@@ -1,6 +1,10 @@
 Unreleased
 ==========
 
+## General
+
+- Reverted a new query parameter in `downloader`. (EE-511)
+
 ## Fixes
 
 - In MV3, use the `requestDomains` condition in DNR rules for main frames, so

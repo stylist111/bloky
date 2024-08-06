@@ -78,7 +78,7 @@ describe("initSubscriptions script", function() {
     const file = path.join(outDir, "file.tmp");
 
     nock(backendUrl.origin)
-      .get(backendUrl.pathname + "?safe=true")
+      .get(backendUrl.pathname)
       .reply(200, subscriptionsListData);
 
     await init(file);
@@ -90,19 +90,19 @@ describe("initSubscriptions script", function() {
     it(`should handle request ${statusCode} on download`, async function() {
       const file = path.join(outDir, "file.tmp");
 
-      nock(backendUrl.origin + "?safe=true")
-        .get(backendUrl.pathname + "?safe=true")
+      nock(backendUrl.origin)
+        .get(backendUrl.pathname)
         .reply(statusCode);
 
       await expect(init(file)).rejects.toThrow({
         name: "Error",
-        message: `Failed to get '${backendUrl}?safe=true' (${statusCode})`
+        message: `Failed to get '${backendUrl}' (${statusCode})`
       });
     });
   }
 
   it("uses overriden URL if provided", async function() {
-    const customBackend = "http://somecustombackend/index.json";
+    const customBackend = "http://someCustomBackend/index.json";
     const subscriptionsListData = createFile(tmpDir,
       `[{
         "type": "ads",
@@ -117,7 +117,7 @@ describe("initSubscriptions script", function() {
 
     let customBackendUrl = new URL(customBackend);
     nock(customBackendUrl.origin)
-      .get(customBackendUrl.pathname + "?safe=true")
+      .get(customBackendUrl.pathname)
       .reply(200, subscriptionsListData);
 
     await init(file, customBackend);
