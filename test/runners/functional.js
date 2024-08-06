@@ -593,9 +593,12 @@ async function runTests({manifest, browser, version, params, testKinds}) {
   try {
     driver = await getDriver(browser, version, options);
 
-    let timeout = (params && typeof params.timeout != "undefined" ?
-      params.timeout : 200000);
-    await setMinDriverTimeout(driver, timeout);
+    let driverTimeout = 200000;
+    if (params && typeof params.timeout != "undefined" &&
+        params.timeout > driverTimeout) {
+      driverTimeout = params.timeout;
+    }
+    await setMinDriverTimeout(driver, driverTimeout);
 
     if (incognito) {
       await BROWSERS[browser].enableExtensionInIncognito(
