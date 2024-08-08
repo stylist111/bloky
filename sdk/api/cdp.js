@@ -25,7 +25,7 @@ import {matchesWildcards, hasWildcard} from "adblockpluscore/lib/url.js";
 import {getFrameInfo, TOP_LEVEL_FRAME_ID} from "./frame-state.js";
 import {BlockableEventDispatcher} from "./diagnostics.js";
 import {PersistentState} from "./persistence.js";
-import {trace, debug} from "./debugging.js";
+import {trace, debug, warn} from "./debugging.js";
 import {isFirefox} from "./info.js";
 
 /**
@@ -54,6 +54,18 @@ const defaultConfig = [
 ];
 // Map<String(domainWithWildcard), String(siteId)
 let cdpDomains;
+let deferredEvents = [];
+
+// CDP events and pages user activity loading delay (for testing)
+let _loadDelay = 0;
+
+/**
+ * @param {Number} millis Number of milliseconds to delay data loading
+ * @ignore
+ */
+export function setLoadDelay(millis) {
+  _loadDelay = millis;
+}
 
 /**
  * Configure CDP
@@ -94,18 +106,30 @@ export function _restoreConfig() {
 _restoreConfig();
 
 // Map<String(event type), Map<String(siteId), Array<Number>(event timestamp)>>
-let events = new Map([
-  [EVENT_PAGE_VIEW, new PersistentState("ewe:cdp-page-view", browser.storage.local)],
-  [EVENT_SESSION_START, new PersistentState("ewe:cdp-session", browser.storage.local)],
-  [EVENT_BLOCKING, new PersistentState("ewe:cdp-blocking", browser.storage.local)]
-]);
-for (const state of events.values()) {
-  state.doDebounce();
+let events;
+
+function initializeEvents() {
+  events = new Map([
+    [EVENT_PAGE_VIEW, new PersistentState("ewe:cdp-page-view", browser.storage.local)],
+    [EVENT_SESSION_START, new PersistentState("ewe:cdp-session", browser.storage.local)],
+    [EVENT_BLOCKING, new PersistentState("ewe:cdp-blocking", browser.storage.local)]
+  ]);
+  for (const state of events.values()) {
+    state.doDebounce();
+  }
 }
 
+initializeEvents();
+
 // Map<String(domain), Number(last user activity timestamp)>
-let activity = new PersistentState("ewe:cdp-activity", browser.storage.local);
-activity.doDebounce();
+let activity;
+
+function initializeActivity() {
+  activity = new PersistentState("ewe:cdp-activity", browser.storage.local);
+  activity.doDebounce();
+}
+
+initializeActivity();
 
 // Map<Listener, Object (filter options)>
 let listeners = new Map();
@@ -198,7 +222,10 @@ async function count(eventType, siteId, timeStamp) {
     state.getState()[siteId] = timestamps;
   }
   timestamps.push(timeStamp);
-  await state.save();
+
+  if (isStateLoaded()) {
+    await state.save();
+  }
 
   await emitEvent(eventType, siteId, timeStamp);
 }
@@ -316,6 +343,12 @@ function handleBrowserEvent(details, doMarkActive) {
     return;
   }
 
+  if (!isStateLoaded()) {
+    warn(() => `Deferring browser event: ${JSON.stringify(details)}`);
+    deferredEvents.push({details, doMarkActive});
+    return;
+  }
+
   if (details.frameId != TOP_LEVEL_FRAME_ID) {
     // Counting only outer-most frames
     return;
@@ -430,6 +463,47 @@ async function loadEvents() {
   }
 }
 
+function isStateLoaded() {
+  for (const state of events.values()) {
+    if (!state.loaded) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function handleDeferredEvents() {
+  if (deferredEvents.length > 0) {
+    for (const eachEvent of deferredEvents) {
+      handleBrowserEvent(eachEvent.details, eachEvent.doMarkActive);
+    }
+    warn(`Processed ${deferredEvents.length} deferred events`);
+    deferredEvents = [];
+  }
+}
+
+/**
+ * @ignore
+ */
+export function stop() {
+  if (!startupPromise) {
+    return;
+  }
+
+  startupPromise = null;
+
+  new BlockableEventDispatcher().removeListener(onBlockableItem, {
+    filterType: "blocking"
+  });
+
+  browser.webNavigation.onBeforeNavigate.removeListener(onBeforeNavigate);
+  browser.webNavigation.onHistoryStateUpdated.removeListener(
+    onHistoryStateUpdated);
+
+  initializeEvents();
+  initializeActivity();
+}
+
 /**
  * @ignore
  */
@@ -454,8 +528,19 @@ export async function start() {
       browser.webNavigation.onHistoryStateUpdated.addListener(
         onHistoryStateUpdated);
 
-      await loadEvents();
-      await activity.load();
+      async function loadData() {
+        await loadEvents();
+        await activity.load();
+        handleDeferredEvents();
+      }
+
+      if (_loadDelay == 0) {
+        await loadData();
+      }
+      else {
+        // for testing purpose
+        setTimeout(loadData, _loadDelay);
+      }
     })();
   }
 

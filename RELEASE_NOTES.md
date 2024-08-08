@@ -10,8 +10,8 @@ Unreleased
 - In MV3, use the `requestDomains` condition in DNR rules for main frames, so
   that `$document` filters work correctly together with the `$domain` filter
   option. (EXT-55)
-- Fixed the time frame for CDP events that resulted into no sessions found
-  for the reference date. (EXT-10)
+- Fixed the CDP sessions counting (now using the correct the time frame
+  and deferring the browser events processing until the sessions data is loaded). (EXT-10)
 - Fix issue where diff updates in MV3 would sometimes get into a state where
   diffs would no longer be applied because the system had stored that
   update had already been applied. The diff update mechanism will now always

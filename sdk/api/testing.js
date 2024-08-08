@@ -47,9 +47,7 @@ import * as cdpMetricsUploader from "./cdp-metrics-uploader.js";
 
 import * as sitekey from "./sitekey.js";
 import {getDeferredMessages} from "./content-message-deferrer.js";
-import {setData, getData, clearData, clearActivity,
-        _restoreConfig, _setConfig}
-  from "./cdp.js";
+import * as cdp from "./cdp.js";
 import {_clear} from "./frame-state.js";
 
 export default {
@@ -298,10 +296,22 @@ export default {
   stopTelemetry: telemetry.stop,
   startTelemetry: telemetry.start,
   resetTelemetry: telemetry.reset,
+
   stopCdpMetricsUploader: cdpMetricsUploader.stop,
   startCdpMetricsUploader: cdpMetricsUploader.start,
   resetCdpMetricsUploader: cdpMetricsUploader.reset,
   setForceEarlyCdpUploads: cdpMetricsUploader.setForceEarlyUploads,
+
+  stopCdp: cdp.stop,
+  startCdp: cdp.start,
+  setCdpLoadDelay: cdp.setLoadDelay,
+  _setCdpConfig: cdp._setConfig,
+  _restoreCdpConfig: cdp._restoreConfig,
+  _setCdpData: cdp.setData,
+  _getCdpData: cdp.getData,
+  _clearCdpData: cdp.clearData,
+  _clearCdpActivity: cdp.clearActivity,
+
 
   clearSkipInitRulesets,
   checkAndInitSubscriptions,
@@ -332,11 +342,5 @@ export default {
     return await browser.declarativeNetRequest.getDynamicRules();
   },
 
-  _setCdpConfig: _setConfig,
-  _restoreCdpConfig: _restoreConfig,
-  _setCdpData: setData,
-  _getCdpData: getData,
-  _clearCdpData: clearData,
-  _clearCdpActivity: clearActivity,
   _clearFrameState: _clear
 };

@@ -634,6 +634,32 @@ describe("CDP on Chromium-based browsers", function() {
     });
   });
 
+  it("defers and processes the browser events when the data is loaded", async function() {
+    const loadDelay = 1000;
+
+    await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+    await assertEvents(SITE_ID, EVENT_SESSION_START, 1);
+
+    await EWE.testing.stopCdp();
+    try {
+      await EWE.testing.setCdpLoadDelay(loadDelay);
+      await EWE.testing.startCdp();
+
+      // If there is no data (existing sessions) loaded,
+      // it's considered to be a new session.
+      // Otherwise we know there is a pending session.
+      await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+
+      // the deferred events are processed now
+      await new Promise(r => setTimeout(r, loadDelay));
+
+      await assertEvents(SITE_ID, EVENT_SESSION_START, 1); // not a new session
+    }
+    finally {
+      await EWE.testing.setCdpLoadDelay(0);
+    }
+  });
+
   it("clears the events", async function() {
     await addFilter(`image.png$domain=${WEBEXT_DOT_COM}`);
 
