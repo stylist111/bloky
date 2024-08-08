@@ -1,6 +1,9 @@
 Unreleased
 ==========
 
+🐫 1.11.0 - 2024-08-08 🐫
+=========================
+
 ## General
 
 - Reverted a new query parameter in `downloader`. (EE-511, EE-837)
