@@ -302,6 +302,7 @@ export default {
   stopCdpMetricsUploader: cdpMetricsUploader.stop,
   startCdpMetricsUploader: cdpMetricsUploader.start,
   resetCdpMetricsUploader: cdpMetricsUploader.reset,
+  setForceEarlyCdpUploads: cdpMetricsUploader.setForceEarlyUploads,
 
   clearSkipInitRulesets,
   checkAndInitSubscriptions,

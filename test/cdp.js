@@ -42,7 +42,7 @@ async function assertEvents(siteId, eventType, size) {
   let data;
   await waitForAssertion(async() => {
     data = await EWE.testing._getCdpData(eventType, siteId);
-    expect(data.length).toEqual(size);
+    expect(data).toHaveLength(size);
   });
   return data;
 }
@@ -937,6 +937,40 @@ describe("CDP on Chromium-based browsers", function() {
         let storage = storageResult[CDP_STORAGE_KEY];
         expect(storage.bundles).toHaveLength(2);
       });
+    });
+
+    it("collects the data for the sessions that relate to previous day", async function() {
+      let now = new Date();
+      let nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+      // the session relates to previous day (not today)
+      await browser.storage.local.set({
+        [CDP_STORAGE_KEY]: {
+          dayCutoffMinutes: (nowMinutes + 10) // after "now"
+        }
+      });
+
+      await EWE.testing.setForceEarlyCdpUploads(true);
+      try {
+        await startMetricsUploaderWithTestArgs();
+
+        await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+
+        let requestLogs;
+        await waitForAssertion(async() => {
+          requestLogs = await getRequestLogs(CDP_ARGS.aggregateUrl);
+          expect(requestLogs).toHaveLength(1);
+        }, 3000);
+
+        expect(requestLogs).toEqual([expect.objectContaining({body: {
+          payload: expect.objectContaining({
+            sessions_count: 1
+          })
+        }})]);
+      }
+      finally {
+        await EWE.testing.setForceEarlyCdpUploads(false);
+      }
     });
 
     it("sends a new ping if the previous one happened the previous day", async function() {

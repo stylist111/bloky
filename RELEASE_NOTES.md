@@ -10,6 +10,8 @@ Unreleased
 - In MV3, use the `requestDomains` condition in DNR rules for main frames, so
   that `$document` filters work correctly together with the `$domain` filter
   option. (EXT-55)
+- Fixed the time frame for CDP events that resulted into no sessions found
+  for the reference date. (EXT-10)
 
 🙈 1.10.0 - 2024-07-09 🙈
 =========================

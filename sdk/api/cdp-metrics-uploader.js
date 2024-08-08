@@ -32,6 +32,12 @@ import {PersistentState} from "./persistence.js";
 const CDP_STORAGE_KEY = "ewe:cdp-metrics-uploader";
 let storage = new PersistentState(CDP_STORAGE_KEY, browser.storage.local);
 
+let _forceEarlyUploads = false;
+
+export function setForceEarlyUploads(value) {
+  _forceEarlyUploads = value;
+}
+
 let scheduler = null;
 
 /**
@@ -259,10 +265,13 @@ async function uploadPendingSessionBundles(cdp) {
 
     for (let bundle of aggregateBundlesSnapshot) {
       if (bundle.scheduledSendTimestamp > now) {
-        continue;
+        if (!_forceEarlyUploads) { // for testing purpose
+          continue;
+        }
       }
 
-      let startTimestamp = new Date(bundle.referenceDateLocal).getTime();
+      let startTimestamp = new Date(bundle.referenceDateLocal).getTime() +
+        storage.getState().dayCutoffMinutes * MILLIS_IN_MINUTE;
       let endTimestamp = startTimestamp + MILLIS_IN_DAY;
 
       if (!optOut) {
