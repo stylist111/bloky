@@ -118,7 +118,7 @@ const namespace = {
   /**
    * Represents a single filter rule and its state.
    * @typedef {Object} Filter
-   * @property {string} text A {@link https://help.eyeo.com/adblockplus/how-to-write-filters|filter}
+   * @property {string} text A {@link https://help.adblockplus.org/hc/en-us/articles/360062733293|filter}
    *   rule that specifies what content to block or to allow. Used to identify
    *   a filter.
    * @property {boolean|null} enabled Indicates whether this filter would be
