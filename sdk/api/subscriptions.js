@@ -18,7 +18,7 @@
 import browser from "./browser.js";
 
 import {validate as validateSubscriptions} from "./subscriptions-validator.js";
-import {rulesetExistsInManifest} from "./subscriptions-utils.js";
+import {rulesetExistsInManifest, getFilterText} from "./subscriptions-utils.js";
 import {Subscription, CountableSubscription, RegularSubscription,
         FullUpdatableSubscription, SpecialSubscription,
         DiffUpdatableSubscription}
@@ -26,18 +26,14 @@ import {Subscription, CountableSubscription, RegularSubscription,
 import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {recommendations} from "adblockpluscore/lib/recommendations.js";
 import {Filter} from "adblockpluscore/lib/filterClasses.js";
-import {parseFilterList} from "adblockpluscore/lib/filters/lists.js";
 
-import {addonBundledSubscriptions, addonBundledSubscriptionsPath}
-  from "./info.js";
+import {addonBundledSubscriptions} from "./info.js";
 import {default as initializer} from "./initializer.js";
 import {filterEngine} from "./core.js";
 import {EventDispatcher} from "./types.js";
 import {convertFilter} from "./filters.js";
-import {disableDynamicRules, restoreDynamicRules,
-        isDnrSubscriptionUpdating} from "./dnr-filters.js";
+import {disableDynamicRules, isDnrSubscriptionUpdating} from "./dnr-filters.js";
 
-import {readFileContent} from "./io.js";
 import {Prefs} from "./prefs.js";
 
 const ACCEPTABLE_ADS_ID = "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F";
@@ -237,8 +233,6 @@ async function enableRuleset(rulesetId) {
       await browser.declarativeNetRequest.updateEnabledRulesets({
         enableRulesetIds: [rulesetId]
       });
-
-      await restoreDynamicRules(rulesetId);
     }
   }
 }
@@ -260,20 +254,6 @@ async function disableRuleset(rulesetId) {
       enableRuleIds
     });
   }
-}
-
-async function getFilterText(subscription, path) {
-  let subscriptionPath = `${path}/${subscription.id}`;
-  let rawLines = await readFileContent(subscriptionPath);
-  let {lines, params, error} = parseFilterList(rawLines);
-  if (error) {
-    throw new Error(error);
-  }
-  if (!lines) {
-    throw new Error("invalid filter list");
-  }
-  lines.shift();
-  return {filterText: lines, params};
 }
 
 /**
@@ -361,8 +341,7 @@ export async function updateSubscriptionInformation() {
           // bundled subscription.
 
           try {
-            let {filterText} = await getFilterText(
-              subscriptionInfo, addonBundledSubscriptionsPath);
+            let {filterText} = await getFilterText(subscriptionInfo);
             subscription.setFilterText(filterText);
           }
           catch (e) {
@@ -438,8 +417,7 @@ async function add(url, properties = {}) {
     let filterText;
     let params;
     try {
-      ({filterText, params} = await getFilterText(
-        subscriptionInfo, addonBundledSubscriptionsPath));
+      ({filterText, params} = await getFilterText(subscriptionInfo));
     }
     catch (e) {
       // We already warn if the file doesn't exist on startup, so
@@ -818,12 +796,7 @@ export default {
     }
 
     if (browser.declarativeNetRequest) {
-      if (subscription instanceof FullUpdatableSubscription) {
-        await restoreDynamicRules(subscription.url);
-      }
-      else {
-        await enableRuleset(subscription.id);
-      }
+      await enableRuleset(subscription.id);
     }
 
     // Note: we must mark the subscription as enabled after

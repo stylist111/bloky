@@ -18,12 +18,20 @@
 // Configure the environment as test environment.
 // Warning: must be the first line in the tests!
 import env from "./environment.js";
-
+import {mock} from "./mock/mock.js";
 import expect from "expect";
-import * as api from "../../sdk/api/subscriptions-validator.js";
 
 describe("Subscriptions validation", function() {
-  beforeEach(env.configure);
+  let api;
+
+  async function mockAndImport() {
+    api = await mock("subscriptions-validator.js");
+  }
+
+  beforeEach(async function() {
+    env.configure();
+    await mockAndImport();
+  });
 
   it("returns no warnings for empty subscriptions list", async function() {
     let warnings = await api.validate([], "");

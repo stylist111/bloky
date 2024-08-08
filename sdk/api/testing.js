@@ -36,8 +36,8 @@ import {default as initializer} from "./initializer.js";
 import {setAddonInfo, addonBundledSubscriptionsPath, initializeDefaultAddonInfo}
   from "./info.js";
 import {dnrDiffSubscriptionUpdate, dynamicRulesAvailable, getDynamicFilters,
-        removeAllDynamicFilters, clearRulesetUpdates,
-        testSetDynamicRulesAvailable, clearIsDnrSubscriptionUpdating}
+        removeAllDynamicFilters, testSetDynamicRulesAvailable,
+        clearIsDnrSubscriptionUpdating}
   from "./dnr-filters.js";
 import {getSubscriptionRulesetMap} from "./subscriptions-utils.js";
 import {IO} from "./io.js";
@@ -182,7 +182,6 @@ export default {
     }
 
     await removeAllDynamicFilters();
-    await clearRulesetUpdates();
     clearIsDnrSubscriptionUpdating();
 
     const {filterStorage} = filterEngine;

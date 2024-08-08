@@ -17,6 +17,9 @@
 
 import browser from "./browser.js";
 import {PersistentState} from "./persistence.js";
+import {parseFilterList} from "adblockpluscore/lib/filters/lists.js";
+import {readFileContent} from "./io.js";
+import {addonBundledSubscriptionsPath} from "./info.js";
 
 function getRuleset(rulesetId) {
   let manifest = browser.runtime.getManifest();
@@ -99,4 +102,18 @@ export async function getSubscriptionRulesetMap(id) {
   const url = browser.runtime.getURL(dnrSub.path + ".map");
   let response = await fetch(url);
   return await response.json();
+}
+
+export async function getFilterText(subscription) {
+  let subscriptionPath = `${addonBundledSubscriptionsPath}/${subscription.id}`;
+  let rawLines = await readFileContent(subscriptionPath);
+  let {lines, params, error} = parseFilterList(rawLines);
+  if (error) {
+    throw new Error(error);
+  }
+  if (!lines) {
+    throw new Error("invalid filter list");
+  }
+  lines.shift();
+  return {filterText: lines, params};
 }

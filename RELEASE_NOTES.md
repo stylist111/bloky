@@ -12,6 +12,12 @@ Unreleased
   option. (EXT-55)
 - Fixed the time frame for CDP events that resulted into no sessions found
   for the reference date. (EXT-10)
+- Fix issue where diff updates in MV3 would sometimes get into a state where
+  diffs would no longer be applied because the system had stored that
+  update had already been applied. The diff update mechanism will now always
+  apply the diff to the base version of the subscription that is bundled with
+  the extension. If the base version cannot be loaded, then the update will fail
+  with a `downloadStatus` of `synchronize_diff_error`. (EXT-54)
 
 🙈 1.10.0 - 2024-07-09 🙈
 =========================

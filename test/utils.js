@@ -698,6 +698,24 @@ function stripAdminUrl(url) {
   return url;
 }
 
+export async function fetchFilterText(url) {
+  let response = await fetch(url);
+  await throwHttpErrors(response);
+
+  let requestText = await response.text();
+  let lines = requestText.split(/[\r?\n]+/);
+
+  let filters = lines
+    .map(filter => filter.trim())
+      .filter((line, index) =>
+        index > 0 && // first line is a header
+          line.length > 0 && // skip empty lines
+          line[0] != "!" // skip comments
+      );
+
+  return filters;
+}
+
 /**
  * Gets the list of requests that happened on the test server.
  *

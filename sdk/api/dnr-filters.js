@@ -17,6 +17,7 @@
 
 import browser from "webextension-polyfill";
 
+import {getFilterText} from "./subscriptions-utils.js";
 import {Filter, InvalidFilter, URLFilter, isActiveFilter}
   from "adblockpluscore/lib/filterClasses.js";
 import {SpecialSubscription, DiffUpdatableSubscription}
@@ -33,7 +34,6 @@ import {ERROR_FILTER_NOT_FOUND, ERROR_TOO_MANY_FILTERS,
   from "../errors.js";
 import {onChangedFilter, disableFilter} from "./filters.js";
 import {default as initializer} from "./initializer.js";
-import {filtersUpdateDiff} from "./set-operations.js";
 import {debug, error} from "./debugging.js";
 
 import {FilterError} from "./types.js";
@@ -45,9 +45,6 @@ let highestRuleId = 1;
 // Filter text to related details (enabled, rule ids, subscription ids, etc) map
 let dynamicFilters = new Map();
 
-// Subscription id to last diff update map
-let lastDiffUpdates = null;
-
 let initializationPromise;
 
 let getRulesFromFilter = () => Promise.resolve({});
@@ -58,21 +55,6 @@ if (browser.declarativeNetRequest) {
       return result.isSupported;
     }
   });
-}
-
-export async function restoreDynamicRules(subscriptionId) {
-  for (let subscription of filterEngine.filterStorage.subscriptions()) {
-    if (subscription.id == subscriptionId) {
-      ensureRulesetUpdatesLoaded();
-
-      let lastUpdate = lastDiffUpdates.get(subscription.id);
-      if (lastUpdate) {
-        await _dnrDiffSubscriptionUpdate(subscription, lastUpdate, true);
-      }
-
-      break;
-    }
-  }
 }
 
 export async function disableDynamicRules(subscriptionId) {
@@ -327,8 +309,7 @@ async function _dnrFullSubscriptionUpdate(subscription, filterText) {
   );
 }
 
-export async function _dnrDiffSubscriptionUpdate(
-  subscription, updates, skipEmitting) {
+export async function _dnrDiffSubscriptionUpdate(subscription, updates) {
   if (!browser.declarativeNetRequest || !updates) {
     return;
   }
@@ -348,7 +329,6 @@ export async function _dnrDiffSubscriptionUpdate(
   // if the service worker got awaken.
   await initializer.start();
 
-  let rollbackCallback = null;
   let filterTextToRuleIdsMapper = null; // to static rules ids
 
   // The already disabled static rules ids.
@@ -367,76 +347,31 @@ export async function _dnrDiffSubscriptionUpdate(
         rulesetId: subscription.id
       });
 
-    ensureRulesetUpdatesLoaded();
-
-    let lastUpdate = lastDiffUpdates.get(subscription.id);
-
     // All the dynamic filters for this subscription must be removed.
     knownDynamicFilters = findDynamicFilters(subscription.id);
-
-    rollbackCallback = async() => {
-      if (!lastUpdate) {
-        lastUpdate = {added: [], removed: []};
-      }
-      await _dnrDiffSubscriptionUpdate(subscription, lastUpdate);
-    };
   }
 
-  let filters = await processFilterTexts(
+  let plannedChanges = await processFilterTexts(
     added, subscription.id, filterTextToRuleIdsMapper);
-  if (knownDynamicFilters.size != 0) {
-    filters.relateToThisSubscription.forEach(
-      text => knownDynamicFilters.delete(text));
-  }
 
-  // Adding subscription.id into existing filter
-  for (let text of filters.relateToOtherSubscriptions) {
-    let filter = dynamicFilters.get(text);
-    knownDynamicFilters.delete(text);
-    filter.subscriptionIds.push(subscription.id);
+  if (knownDynamicFilters.size != 0) {
+    plannedChanges.relateToThisSubscription.forEach(
+      text => knownDynamicFilters.delete(text));
+
+    plannedChanges.relateToOtherSubscriptions.forEach(
+      text => knownDynamicFilters.delete(text));
   }
 
   // A union of what is explicitly listed in `removed`
   // and dynamic filters that we had for this subscription previously
   // and not listed in `added` anymore
   let dynamicFiltersToRemove = removed.concat(...knownDynamicFilters.keys());
+  let removeRulesCount = countRulesToRemove(subscription.url,
+                                            dynamicFiltersToRemove);
 
-  // Removing subscription.id from existing filters that are removed.
-  let {removedDynamicFilters, removeRuleIds} =
-      removeDynamicFilters(subscription.id, dynamicFiltersToRemove);
-
-  if (filters.add.length - removeRuleIds.length >
+  if (plannedChanges.add.length - removeRulesCount >
       await dynamicRulesAvailable()) {
-    if (rollbackCallback) {
-      await rollbackCallback();
-    }
     throw new FilterError(ERROR_TOO_MANY_FILTERS);
-  }
-
-  // Empty array cause exceptions. Make it `undefined`.
-  if (removeRuleIds.length == 0) {
-    removeRuleIds = void 0;
-  }
-
-  // `skipEmitting` signals that's the restoring of dynamic filters,
-  // so the subscription is about to be enabled.
-  let subscriptionActive = skipEmitting ||
-    ((await subscriptions.has(subscription.url)) && !subscription.disabled);
-  await browser.declarativeNetRequest.updateDynamicRules(
-    {addRules: subscriptionActive ? filters.add : void 0, removeRuleIds}
-  );
-
-  removedDynamicFilters.forEach(text => dynamicFilters.delete(text));
-
-  if (subscriptionActive) {
-    filters.details.forEach(details => {
-      let {useFilterEngine, filter, ruleIds, enabled} = details;
-
-      setHighestRuleId(ruleIds);
-      dynamicFilters.set(filter.text,
-                         {ruleIds, useFilterEngine, enabled, metadata: {},
-                          subscriptionIds: [subscription.id]});
-    });
   }
 
   if (needUpdateStaticRules) {
@@ -453,7 +388,7 @@ export async function _dnrDiffSubscriptionUpdate(
       disableRuleIds = void 0;
     }
 
-    let enableRuleIds = [...filters.staticRulesToEnable];
+    let enableRuleIds = [...plannedChanges.staticRulesToEnable];
     // Reenable the disabled rules to reset the state:
     // `browser.declarativeNetRequest.updateStaticRules` will handle this
     // properly.
@@ -470,28 +405,48 @@ export async function _dnrDiffSubscriptionUpdate(
       if (e.message == ERROR_DISABLED_RULE_LIMIT_REACHED) {
         // This check is based on the error message because there doesn't
         // currently seem to be another appropriate field it identify this case.
-        if (rollbackCallback) {
-          await rollbackCallback();
-        }
         throw new FilterError(ERROR_TOO_MANY_FILTERS);
       }
       throw e;
     }
   }
 
-  let storageUpdate = await applyFilterTextUpdate(subscription, updates);
-
-  lastDiffUpdates.set(subscription.id, updates);
-  storeRulesetUpdates();
-  storeDynamicFilters();
-
-  if (!skipEmitting) {
-    // `dnrDiffSubscriptionUpdate()` is currently used for some internal
-    // routines, eg. restoring the dynamic rules for the subscription,
-    // which does not mean there was a subscription update actually (EE-163),
-    // so we might skip emitting the event.
-    filterNotifier.emit("subscription.updated", subscription, storageUpdate);
+  // Adding subscription.id into existing filter
+  for (let text of plannedChanges.relateToOtherSubscriptions) {
+    let filter = dynamicFilters.get(text);
+    filter.subscriptionIds.push(subscription.id);
   }
+
+  // Removing subscription.id from existing filters that are removed.
+  let {removedDynamicFilters, removeRuleIds} =
+      removeDynamicFilters(subscription.id, dynamicFiltersToRemove);
+
+  // Empty array cause exceptions. Make it `undefined`.
+  if (removeRuleIds.length == 0) {
+    removeRuleIds = void 0;
+  }
+
+  let subscriptionActive = (await subscriptions.has(subscription.url)) &&
+      !subscription.disabled;
+  await browser.declarativeNetRequest.updateDynamicRules(
+    {addRules: subscriptionActive ? plannedChanges.add : void 0, removeRuleIds}
+  );
+
+  removedDynamicFilters.forEach(text => dynamicFilters.delete(text));
+
+  if (subscriptionActive) {
+    plannedChanges.details.forEach(details => {
+      let {useFilterEngine, filter, ruleIds, enabled} = details;
+
+      setHighestRuleId(ruleIds);
+      dynamicFilters.set(filter.text,
+                         {ruleIds, useFilterEngine, enabled, metadata: {},
+                          subscriptionIds: [subscription.id]});
+    });
+  }
+
+  await applyFilterTextUpdate(subscription, updates);
+  storeDynamicFilters();
 }
 
 /**
@@ -500,35 +455,22 @@ export async function _dnrDiffSubscriptionUpdate(
  * @param {object} subscription The subscription to apply the update to
  * @param {FilterDiffs} updates The update to apply.
  */
-export async function applyFilterTextUpdate(subscription, updates) {
-  ensureRulesetUpdatesLoaded();
+async function applyFilterTextUpdate(subscription, updates) {
+  let {filterText} = await getFilterText(subscription);
 
-  // apply the update to the storage
-  let base = lastDiffUpdates.get(subscription.id);
-  let storageUpdate;
-  if (base) {
-    storageUpdate = filtersUpdateDiff(base, updates);
-  }
-  else {
-    storageUpdate = {
-      added: updates.added,
-      removed: updates.removed
-    };
-  }
-
-  for (let text of storageUpdate.removed) {
-    let index = subscription.findFilterTextIndex(text);
+  for (let removeText of updates.removed) {
+    let index = filterText.indexOf(removeText);
     if (index >= 0) {
-      subscription.deleteFilterAt(index);
+      filterText.splice(index, 1);
     }
   }
 
-  for (let text of storageUpdate.added) {
-    subscription.addFilterText(text);
+  for (let addText of updates.added) {
+    filterText.push(addText);
   }
 
-  await filterEngine.filterStorage.saveToDisk();
-  return storageUpdate;
+  let storageUpdate = subscription.updateFilterText(filterText);
+  filterNotifier.emit("subscription.updated", subscription, storageUpdate);
 }
 
 export function validateFilter(filter) {
@@ -585,30 +527,8 @@ function storeDynamicFilters() {
   Prefs.dynamic_filters = storageArray;
 }
 
-function storeRulesetUpdates() {
-  let storageArray = [];
-  storageArray.push(...lastDiffUpdates);
-  Prefs.ruleset_updates = storageArray;
-}
-
-function ensureRulesetUpdatesLoaded() {
-  if (!lastDiffUpdates) {
-    loadRulesetUpdates();
-  }
-}
-
-function loadRulesetUpdates() {
-  let rulesetUpdatesArray = Prefs.ruleset_updates;
-  if (!Array.isArray(rulesetUpdatesArray)) {
-    rulesetUpdatesArray = [];
-  }
-
-  lastDiffUpdates = new Map(rulesetUpdatesArray);
-}
-
 export function clearRulesetUpdates() {
-  ensureRulesetUpdatesLoaded();
-  lastDiffUpdates.clear();
+  // This isn't used anymore. It can be cleared out to save storage.
   Prefs.ruleset_updates = [];
 }
 
