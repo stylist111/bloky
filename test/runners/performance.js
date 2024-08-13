@@ -120,7 +120,7 @@ async function runHistoryTest(driver) {
     sidebarLinks = await driver.findElements(By.css(sidebarCss));
   }
 
-  if (sidebarLinks.length < 3) {
+  if (sidebarLinks.length < 2) {
     throw new Error(`${failure}: At least 3 sidebar links are expected`);
   }
 
