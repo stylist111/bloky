@@ -22,7 +22,7 @@ import {MILLIS_IN_MINUTE, MILLIS_IN_DAY, MILLIS_IN_HOUR, MINUTES_IN_DAY,
         MINUTES_IN_HOUR} from "adblockpluscore/lib/time.js";
 
 import {EWE, addFilter, getTestEvents} from "./messaging.js";
-import {TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
+import {TEST_ADMIN_PAGES_URL, TEST_PAGES_PORT} from "./test-server-urls.js";
 import {isChromiumBased, isFirefox, Page, setMinTimeout, executeScript,
         waitForAssertion, clearRequestLogs, getRequestLogs, setEndpointResponse,
         clearEndpointResponse} from "./utils.js";
@@ -1419,8 +1419,8 @@ describe("CDP on Chromium-based browsers", function() {
       await EWE.testing._restoreCdpConfig();
     });
 
-    it("counts amazon visitors", async function() {
-      setMinTimeout(this, 30 * 1000);
+    it("counts Amazon visitors", async function() {
+      setMinTimeout(this, 10 * 1000);
 
       const AMAZON_SITE_ID = "amazon.*";
 
@@ -1432,7 +1432,7 @@ describe("CDP on Chromium-based browsers", function() {
       await assertEvents(AMAZON_SITE_ID, EVENT_SESSION_START, 1);
     });
 
-    it("counts yahoo visitors", async function() {
+    it("counts Yahoo visitors", async function() {
       setMinTimeout(this, 60 * 1000);
 
       const YAHOO_SITE_ID = "yahoo.com";
@@ -1443,6 +1443,18 @@ describe("CDP on Chromium-based browsers", function() {
 
       await assertEvents(SEARCH_YAHOO_SITE_ID, EVENT_SESSION_START, 1);
       await assertEvents(YAHOO_SITE_ID, EVENT_SESSION_START, 1);
+    });
+
+    it("counts Expedia visitors", async function() {
+      setMinTimeout(this, 10 * 1000);
+
+      // The domains are mapped using browser start DNS args
+      // to locally hosted test server, running on a specific port
+      await new Page(`http://expedia.com:${TEST_PAGES_PORT}`).loaded;
+      await new Page(`http://hotels.com:${TEST_PAGES_PORT}`).loaded;
+
+      await assertEvents("expedia.*", EVENT_SESSION_START, 1);
+      await assertEvents("hotels.*", EVENT_SESSION_START, 1);
     });
   });
 });

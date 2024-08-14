@@ -1,6 +1,10 @@
 Unreleased
 ==========
 
+## General
+
+- Now we count Expedia visitors for CDP. (EXT-132)
+
 🐫 1.11.0 - 2024-08-08 🐫
 =========================
 
@@ -115,8 +119,8 @@ query parameter for easylist.
   collection. (EE-461)
 - Firefox users are opted out of CDP by default. Chrome and other browser users
   are opted in by default. (EE-461)
-- Now we count amazon visitors for CDP. (EE-474)
-- Now we count yahoo visitors for CDP. (EE-529)
+- Now we count Amazon visitors for CDP. (EE-474)
+- Now we count Yahoo visitors for CDP. (EE-529)
 - CDP events performance improvement (debouncing). (EE-473)
 - Count only CDP events for outer most frames. (EE-473)
 

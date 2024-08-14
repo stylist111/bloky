@@ -579,7 +579,9 @@ async function runTests({manifest, browser, version, params, testKinds}) {
       "webext.com",
       "sub.webext.com",
       "search.webext.com",
-      "webext.co.uk"
+      "webext.co.uk",
+      "expedia.com",
+      "hotels.com"
     ].map(domain => `MAP ${domain} 127.0.0.1`).join(", "));
 
     // allow HTTP

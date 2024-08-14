@@ -48,9 +48,14 @@ export const EVENT_BLOCKING = "blocking";
 
 // Array<Array<String(domainWithWildcard)>>, String(siteId)>
 const defaultConfig = [
+  // Amazon
   [["amazon.*"], "amazon.*"],
+  // Yahoo
   [["search.yahoo.com"], "search.yahoo.com"], // the order matters: earlier than "yahoo.com" below
-  [["yahoo.com"], "yahoo.com"]
+  [["yahoo.com"], "yahoo.com"],
+  // Expedia
+  [["expedia.*"], "expedia.*"],
+  [["hotels.*", "hoteles.com"], "hotels.*"]
 ];
 // Map<String(domainWithWildcard), String(siteId)
 let cdpDomains;
