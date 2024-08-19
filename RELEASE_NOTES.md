@@ -4,6 +4,18 @@ Unreleased
 ## General
 
 - Now we count Expedia visitors for CDP. (EXT-132)
+- Enable using the `browser.scripting` API for injecting snippets in Firefox MV2
+  extensions. This allows injecting snippets in pages which set a restrictive
+  content security policy against inline scripts. If the scripting API is not
+  available, the engine will still fallback to the previous approach. This
+  requires adding the `scripting` permission. The `browser.scripting` API is not
+  available MV2 for Chromium-based browsers, so this is only needed for
+  Firefox. (CV-3174)
+
+## Updating your code
+
+- Add the `scripting` permission for Firefox MV2 extensions, to allow snippets
+  to be injected using the `browser.scripting` API. (CV-3174)
 
 🐫 1.11.0 - 2024-08-08 🐫
 =========================

@@ -99,6 +99,7 @@ include the following configuration:
     "webNavigation",
     "webRequest",
     "webRequestBlocking",
+    "scripting",
     "storage",
     "unlimitedStorage",
     "tabs",
@@ -192,8 +193,8 @@ Here is why we need each one:
   limit.
 * `tabs`: Gives access to some tab metadata, including the tab's URL, which is
   used to apply document-level allowing filters to the tab.
-* `scripting` (MV3 only): Used to apply content filters, including element
-  hiding filters and snippet filters.
+* `scripting`: (MV3 and Firefox MV2 only) Used to apply content filters,
+  including element hiding filters and snippet filters.
 * `<all_urls>`: Allows the WebExt Ad-Filtering Solution to act on all websites.
   Note that in MV2 manifests this goes in the `permissions`, but in MV3
   manifests this goes in the new `host_permissions` section.

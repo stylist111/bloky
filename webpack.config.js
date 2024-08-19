@@ -84,7 +84,6 @@ const mv3 = {
   manifestVersion: 3,
   background: {service_worker: "background.js"},
   permissions: [
-    "scripting",
     "declarativeNetRequest"
   ],
   misc: {
@@ -239,7 +238,8 @@ export default (env = {}) => {
         }
       ],
       permissions: [
-        "webNavigation", "webRequest", "storage", "unlimitedStorage", "tabs",
+        "webNavigation", "webRequest", "scripting", "storage",
+        "unlimitedStorage", "tabs",
         ...buildVariant.permissions
       ],
       ...buildVariant.misc

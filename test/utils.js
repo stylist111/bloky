@@ -41,8 +41,9 @@ function handleConnection(details, tabId, removeListeners, reject) {
   }
 }
 
-export async function executeScript(tabId, func, args, world) {
-  if (browser.scripting) {
+export async function executeScript(tabId, func, args, world = "ISOLATED") {
+  if (browser.scripting &&
+      Object.values(browser.scripting.ExecutionWorld).includes(world)) {
     let out =
       await browser.scripting.executeScript(
         {target: {tabId}, func, world, args});

@@ -131,6 +131,47 @@ async function executeSnippets(tabId, frameId, previousFrame, frame) {
     }
   }
 
+  // This is necessary when browser.scripting is not available.
+  // tabs.executeScript does not allow injecting scripts to main context.
+  // So we resort to creating an inline script element.
+  function prepareInlineScriptForSnippets() {
+    const args = JSON.stringify([environment, ...main]);
+    // stringify injectedLib to escape backticks
+    let code = JSON.stringify(injectedLib.toString());
+    code = `"(${code.slice(1, -1)}).apply(null,${JSON.stringify(args).slice(1, -1)});"`;
+    let executable =
+      `function injectSnippetsInMainContext(executable)
+        {
+          // injecting phases
+          let script = document.createElement("script");
+          script.type = "application/javascript";
+          script.async = false;
+
+          // Firefox 58 only bypasses site CSPs when assigning to 'src',
+          // while Chrome 67 and Microsoft Edge (tested on 44.17763.1.0)
+          // only bypass site CSPs when using 'textContent'.
+          if (typeof netscape != "undefined" && typeof browser != "undefined")
+          {
+            let url = URL.createObjectURL(new Blob([executable]));
+            script.src = url;
+            document.documentElement.appendChild(script);
+            URL.revokeObjectURL(url);
+          }
+          else
+          {
+            script.textContent = executable;
+            document.documentElement.appendChild(script);
+          }
+
+          document.documentElement.removeChild(script);
+        };
+        {
+          const executable = ${code};
+          injectSnippetsInMainContext(executable);
+        }`;
+    return executable;
+  }
+
   let execute = [];
   if (browser.scripting && browser.scripting.executeScript) {
     if (isolated.length > 0) {
@@ -159,16 +200,35 @@ async function executeSnippets(tabId, frameId, previousFrame, frame) {
     }
 
     if (main.length > 0) {
-      debug(() => `Execute main script ${injectedLib}`);
-      execute.push(
-        browser.scripting.executeScript({
-          target: details,
-          world: "MAIN",
-          injectImmediately: true,
-          func: injectedLib,
-          args: [environment, ...main]
-        })
-      );
+      // Firefox 108 - 128 does not support injection into main world.
+      // We fallback to injecting snippets with inline script in those cases.
+      // https://bugzilla.mozilla.org/show_bug.cgi?id=1736575
+      if (Object.values(browser.scripting.ExecutionWorld).includes("MAIN")) {
+        debug(() => `Execute main script ${injectedLib}`);
+        execute.push(
+          browser.scripting.executeScript({
+            target: details,
+            world: "MAIN",
+            injectImmediately: true,
+            func: injectedLib,
+            args: [environment, ...main]
+          })
+        );
+      }
+      else {
+        const executable = prepareInlineScriptForSnippets();
+        debug(() => `Execute main script ${executable}`);
+        execute.push(
+          browser.tabs.executeScript(
+            tabId,
+            {
+              frameId,
+              code: executable,
+              matchAboutBlank: true,
+              runAt: "document_start"
+            })
+        );
+      }
     }
   }
   else {
@@ -195,40 +255,7 @@ async function executeSnippets(tabId, frameId, previousFrame, frame) {
     }
 
     if (main.length > 0) {
-      const args = JSON.stringify([environment, ...main]);
-      // stringify injectedLib to escape backticks
-      let code = JSON.stringify(injectedLib.toString());
-      code = `"(${code.slice(1, -1)}).apply(null,${JSON.stringify(args).slice(1, -1)});"`;
-      let executable =
-        `function injectSnippetsInMainContext(executable)
-          {
-            // injecting phases
-            let script = document.createElement("script");
-            script.type = "application/javascript";
-            script.async = false;
-
-            // Firefox 58 only bypasses site CSPs when assigning to 'src',
-            // while Chrome 67 and Microsoft Edge (tested on 44.17763.1.0)
-            // only bypass site CSPs when using 'textContent'.
-            if (typeof netscape != "undefined" && typeof browser != "undefined")
-            {
-              let url = URL.createObjectURL(new Blob([executable]));
-              script.src = url;
-              document.documentElement.appendChild(script);
-              URL.revokeObjectURL(url);
-            }
-            else
-            {
-              script.textContent = executable;
-              document.documentElement.appendChild(script);
-            }
-
-            document.documentElement.removeChild(script);
-          };
-          {
-            const executable = ${code};
-            injectSnippetsInMainContext(executable);
-          }`;
+      const executable = prepareInlineScriptForSnippets();
       debug(() => `Execute main script ${executable}`);
       execute.push(
         browser.tabs.executeScript(
@@ -238,7 +265,8 @@ async function executeSnippets(tabId, frameId, previousFrame, frame) {
             code: executable,
             matchAboutBlank: true,
             runAt: "document_start"
-          }));
+          })
+      );
     }
   }
 
