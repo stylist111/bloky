@@ -27,6 +27,7 @@ import {BlockableEventDispatcher} from "./diagnostics.js";
 import {PersistentState} from "./persistence.js";
 import {trace, debug, warn} from "./debugging.js";
 import {isFirefox} from "./info.js";
+import {MaxLengthMetricsDict} from "./domains-trimming.js";
 
 /**
  * "Page view" event type
@@ -507,6 +508,62 @@ export function stop() {
 
   initializeEvents();
   initializeActivity();
+}
+
+// event type to backend metric token mapping
+const EVENT_TYPE_TO_METRIC = new Map([
+  [EVENT_SESSION_START, "sessions_count"],
+  [EVENT_PAGE_VIEW, "pageviews_count"]
+]);
+
+/**
+ * Format the "domain_stats" property with domains trimming
+ *
+ * @param {Array<String>} metrics Event types (the default value is sessions)
+ * @param {Number} limit Payload length limit (the default value is 100Kb)
+ * @returns {string} Formatted and trimmed "domain_stats" object
+ * @ignore
+ */
+export function getDomainStats(
+  metrics = [
+    EVENT_TYPE_TO_METRIC.get(EVENT_SESSION_START)
+  ],
+  limit = 100 * 1024) {
+  const domains = new Set();
+
+  // collect all the domains
+  for (const state of events.values()) {
+    for (const domain of Object.keys(state.getState())) {
+      domains.add(domain);
+    }
+  }
+
+  function getSessions(domain) {
+    return (events.get(EVENT_SESSION_START).getState()[domain] || []).length;
+  }
+
+  // EVENT_SESSION_START is the most important metric
+  const sortedDomains = Array.from(domains).sort((domain1, domain2) =>
+    getSessions(domain2) - getSessions(domain1));
+
+  // No JSON indentation to prefer more data instead of readability
+  const dict = new MaxLengthMetricsDict(limit, metrics, null);
+
+  for (const domain of sortedDomains) {
+    for (const [eventType, state] of events) {
+      const metric = EVENT_TYPE_TO_METRIC.get(eventType);
+
+      // report exactly the metrics needed from backend
+      if (!metrics.includes(metric)) {
+        continue;
+      }
+
+      const domainEvents = state.getState()[domain] || [];
+      dict.addMetric(domain, metric, domainEvents.length);
+    }
+  }
+
+  return dict.serialize();
 }
 
 /**

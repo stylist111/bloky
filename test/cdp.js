@@ -1414,6 +1414,30 @@ describe("CDP on Chromium-based browsers", function() {
     });
   });
 
+  describe("Domains trimming", function() {
+    it("generates \"domain_stats\" payload", async function() {
+      await EWE.testing._setCdpData(EVENT_SESSION_START, SITE_ID, [1, 2, 3]);
+      const stats = await EWE.testing._getCdpDomainStats();
+      expect(stats).toEqual(
+        `[{"site_id":"${SITE_ID}","sessions_count":3}]`);
+    });
+
+    it("sorts \"domain_stats\" payload for sessions count", async function() {
+      const SITE_ID1 = SITE_ID;
+      const SITE_ID2 = SITE_ID + "2";
+      const SITE_ID3 = SITE_ID + "3";
+      await EWE.testing._setCdpData(EVENT_SESSION_START, SITE_ID1, [1]);
+      await EWE.testing._setCdpData(EVENT_SESSION_START, SITE_ID2, [1, 2, 3]);
+      await EWE.testing._setCdpData(EVENT_SESSION_START, SITE_ID3, [1, 2]);
+      const stats = await EWE.testing._getCdpDomainStats();
+      expect(stats).toEqual("[" +
+        `{"site_id":"${SITE_ID2}","sessions_count":3},` +
+        `{"site_id":"${SITE_ID3}","sessions_count":2},` +
+        `{"site_id":"${SITE_ID1}","sessions_count":1}` +
+        "]");
+    });
+  });
+
   describe("Specific sites", function() {
     beforeEach(async function() {
       await EWE.testing._restoreCdpConfig();

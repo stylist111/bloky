@@ -311,7 +311,7 @@ export default {
   _getCdpData: cdp.getData,
   _clearCdpData: cdp.clearData,
   _clearCdpActivity: cdp.clearActivity,
-
+  _getCdpDomainStats: cdp.getDomainStats,
 
   clearSkipInitRulesets,
   checkAndInitSubscriptions,
