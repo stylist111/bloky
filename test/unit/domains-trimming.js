@@ -110,7 +110,7 @@ describe("Domains trimming", function() {
     expect(fsmd.getLength()).toEqual(expected.length);
   });
 
-  it("trims a short domain if exceeds the limit", function() {
+  it("trims a domain if exceeds the limit", function() {
     const fsmd = new MaxLengthMetricsDict(50, [SESSIONS_COUNT]);
     const expected =
 `[
@@ -124,13 +124,14 @@ describe("Domains trimming", function() {
     expect(fsmd.getLength()).toEqual(expected.length);
   });
 
-  it("does not trim a long domain even if exceeds the limit", function() {
-    // "long" is meant to be longer than 25 characters
-    const fsmd = new MaxLengthMetricsDict(50, [SESSIONS_COUNT]);
+  it("always trims long domains", function() {
+    // trims all the domains longer than 25 characters,
+    // even if it fits into the payload limit
+    const fsmd = new MaxLengthMetricsDict(1000, [SESSIONS_COUNT]);
     const expected =
-      `[
+`[
   {
-    "site_id": "alongdomainthatexceedsthe25charslimit.com",
+    "site_id": "UNKNOWN",
     "sessions_count": 1
   }
 ]`;
@@ -138,9 +139,20 @@ describe("Domains trimming", function() {
     expect(fsmd.serialize()).toEqual(expected);
     let calculatedSize = fsmd.getLength();
     expect(calculatedSize).toEqual(expected.length);
+
+    fsmd.addMetric("someotherlongdomainthatexceedsthe25charslimit.com", SESSIONS_COUNT, 2);
+    const expected2 =
+`[
+  {
+    "site_id": "UNKNOWN",
+    "sessions_count": 3
+  }
+]`;
+    expect(fsmd.serialize()).toEqual(expected2);
+    expect(fsmd.getLength()).toEqual(expected2.length);
   });
 
-  it("trims all the short domains if exceeds the limit", function() {
+  it("trims all the domains if exceeds the limit", function() {
     const fsmd = new MaxLengthMetricsDict(50, [SESSIONS_COUNT]);
     const expected =
 `[
@@ -156,7 +168,7 @@ describe("Domains trimming", function() {
     expect(calculatedSize).toEqual(expected.length);
   });
 
-  it("trims a short domain if exceeds the limit at some point", function() {
+  it("trims a domain if exceeds the limit at some point", function() {
     const fsmd = new MaxLengthMetricsDict(100, [SESSIONS_COUNT]);
     const expected =
 `[
@@ -203,7 +215,7 @@ describe("Domains trimming", function() {
   });
 
   it("does not trim for existing multiple metrics even if exceeds the limit at some point", function() {
-    const fsmd = new MaxLengthMetricsDict(170, [SESSIONS_COUNT, PAGE_VIEWS]);
+    const fsmd = new MaxLengthMetricsDict(150, [SESSIONS_COUNT, PAGE_VIEWS]);
     const expected =
 `[
   {

@@ -134,15 +134,14 @@ export class MaxLengthMetricsDict {
     if (!this.metricsDict.has(domain)) {
       const additionalLength = this._calcAdditionalLength(domain);
       if ((domain.length > _MAX_DOMAIN_LENGTH) ||
-          (this.length + additionalLength) < this.maxLength) {
-        this.length += additionalLength;
-      }
-      else {
-        // exceeds the limit, fall back to "unknown"
+          (this.length + additionalLength) > this.maxLength) {
         domain = _UNKNOWN;
         if (!this.metricsDict.has(domain)) {
           this.length += this._calcAdditionalLength(domain);
         }
+      }
+      else {
+        this.length += additionalLength;
       }
 
       // init stats
