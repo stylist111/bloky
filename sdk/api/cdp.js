@@ -20,14 +20,15 @@ import browser from "./browser.js";
 import {Prefs, CDP_OPTED_IN, CDP_OPTED_OUT,
         CDP_OPTED_IN_BY_USER, CDP_OPTED_OUT_BY_USER}
   from "./prefs.js";
-import {domainSuffixes} from "adblockpluscore/lib/url.js";
-import {matchesWildcards, hasWildcard} from "adblockpluscore/lib/url.js";
 import {getFrameInfo, TOP_LEVEL_FRAME_ID} from "./frame-state.js";
 import {BlockableEventDispatcher} from "./diagnostics.js";
 import {PersistentState} from "./persistence.js";
+
 import {trace, debug, warn} from "./debugging.js";
 import {isFirefox} from "./info.js";
 import {MaxLengthMetricsDict} from "./domains-trimming.js";
+import {OnlySupportedDomainsProcessor}
+  from "./cdp-processor.js";
 
 /**
  * "Page view" event type
@@ -47,23 +48,14 @@ export const EVENT_SESSION_START = "session_start";
  */
 export const EVENT_BLOCKING = "blocking";
 
-// Array<Array<String(domainWithWildcard)>>, String(siteId)>
-const defaultConfig = [
-  // Amazon
-  [["amazon.*"], "amazon.*"],
-  // Yahoo
-  [["search.yahoo.com"], "search.yahoo.com"], // the order matters: earlier than "yahoo.com" below
-  [["yahoo.com"], "yahoo.com"],
-  // Expedia
-  [["expedia.*"], "expedia.*"],
-  [["hotels.*", "hoteles.com"], "hotels.*"]
-];
-// Map<String(domainWithWildcard), String(siteId)
-let cdpDomains;
-let deferredEvents = [];
-
 // CDP events and pages user activity loading delay (for testing)
 let _loadDelay = 0;
+
+let deferredEvents = [];
+
+// incapsulates domain to site grouping logics
+let processor = new OnlySupportedDomainsProcessor();
+processor.restoreConfig();
 
 /**
  * @param {Number} millis Number of milliseconds to delay data loading
@@ -74,31 +66,11 @@ export function setLoadDelay(millis) {
 }
 
 /**
- * Configure CDP
+ * @param {Object} config Custom CDP config used for testing
  * @ignore
- * @param {Array} newConfig An array of array(domain, siteId).
- *                WARNING: the order makes a difference:
-                  more specific site buckets should come earlier
-                  (eg. subdomain earlier than it's more higher level domain)
  */
-export function _setConfig(newConfig) {
-  cdpDomains = new Map();
-
-  for (const mapping of newConfig) {
-    const domainsList = mapping[0];
-    const siteId = mapping[1];
-    for (const eachDomain of domainsList) {
-      /*
-      WARNING: in order to handle more specific site buckets first,
-      we need to preserve the original entries order, so we rely on `Map`
-      promise (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#objects_vs._maps):
-      > Iteration happens in insertion order, which corresponds to the order
-      > in which each key-value pair was first inserted into the map
-      > by the set() method.
-      */
-      cdpDomains.set(eachDomain, siteId);
-    }
-  }
+export function _setConfig(config) {
+  processor.setConfig(config);
 }
 
 /**
@@ -106,10 +78,8 @@ export function _setConfig(newConfig) {
  * @ignore
  */
 export function _restoreConfig() {
-  _setConfig(defaultConfig);
+  processor.restoreConfig();
 }
-
-_restoreConfig();
 
 // Map<String(event type), Map<String(siteId), Array<Number>(event timestamp)>>
 let events;
@@ -182,28 +152,6 @@ export class CdpEventDispatcher {
   }
 }
 
-function findSiteId(domain) {
-  // prefer exact match over wildcard match
-  const suffixes = [...domainSuffixes(domain)];
-  for (const [eachDomain, siteId] of cdpDomains) {
-    if (suffixes.includes(eachDomain)) {
-      return siteId;
-    }
-  }
-
-  // wildcard match
-  for (const [domainWildcard, siteId] of cdpDomains) {
-    // the order of iteration corresponds the order of inserting,
-    // we so assume the more specific entries come first in CDP config
-    if (hasWildcard(domainWildcard) &&
-        matchesWildcards(domain, domainWildcard)) {
-      return siteId;
-    }
-  }
-
-  return null;
-}
-
 async function emitEvent(eventType, siteId, timeStamp) {
   for (const [listener, filterOptions] of listeners) {
     if (filterOptions.eventType && filterOptions.eventType != eventType) {
@@ -241,7 +189,8 @@ async function onBlockableItem({request}) {
     return;
   }
 
-  const siteId = findSiteId(new URL(request.url).hostname);
+  const siteId = processor.getSiteId(
+    new URL(request.url).hostname);
   if (!siteId) {
     return;
   }
@@ -360,7 +309,8 @@ function handleBrowserEvent(details, doMarkActive) {
     return;
   }
 
-  const siteId = findSiteId(new URL(details.url).hostname);
+  const siteId = processor.getSiteId(
+    new URL(details.url).hostname);
   if (!siteId) {
     return;
   }
@@ -432,7 +382,7 @@ export async function markActive(tabId, frameId) {
     return;
   }
 
-  const siteId = findSiteId(frameInfo.hostname);
+  const siteId = processor.getSiteId(frameInfo.hostname);
   if (!siteId) {
     return;
   }
@@ -459,8 +409,7 @@ export function shouldNotifyActive(tabId, frameId) {
     return false;
   }
 
-  const siteId = findSiteId(new URL(frameInfo.url).hostname);
-  return siteId != null;
+  return processor.shouldProcess(new URL(frameInfo.url));
 }
 
 async function loadEvents() {
