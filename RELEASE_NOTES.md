@@ -1,6 +1,9 @@
 Unreleased
 ==========
 
+🗃 1.12.0 - 2024-08-27 🗃
+=========================
+
 ## General
 
 - Now we count Expedia visitors for CDP. (EXT-132)
