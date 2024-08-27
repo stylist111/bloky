@@ -784,6 +784,7 @@ describe("convertFilter", function() {
         [["foo.com"]],
         rule => rule.condition.initiatorDomains);
     });
+
     it("should honour the $third-party option", async function() {
       await testRules(["2.js$third-party"], ["thirdParty"], rule => rule.condition.domainType);
     });

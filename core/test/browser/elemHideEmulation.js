@@ -1569,10 +1569,12 @@ describe("Element hiding emulation", function() {
 
   describe("Element hiding emulation on older browsers", function() {
     let requestIdleCallback = window.requestIdleCallback;
+
     before(function() {
       // older browsers don't support requestIdleCallback
       delete window.requestIdleCallback;
     });
+
     after(function() {
       window.requestIdleCallback = requestIdleCallback;
     });

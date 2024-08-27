@@ -32,6 +32,7 @@ import {isFuzzingServiceWorker, suspendServiceWorker}
 describe("Pop-up blocking", function() {
   describe("Blocking", function() {
     let opener;
+
     beforeEach(async function() {
       opener = new Page("popup-opener.html");
       await opener.loaded;
@@ -137,6 +138,7 @@ describe("Pop-up blocking", function() {
     setMinTimeout(this, 30000);
 
     let opener;
+
     beforeEach(async function() {
       opener = new Page("popup-opener.html");
       await opener.loaded;

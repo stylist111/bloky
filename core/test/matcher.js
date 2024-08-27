@@ -27,6 +27,7 @@ const {parseURL} = require(LIB_FOLDER + "/url");
 
 describe("Matcher", function() {
   let defaultMatcher = null;
+
   beforeEach(function() {
     defaultMatcher = newDefaultMatcher();
   });

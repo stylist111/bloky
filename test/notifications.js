@@ -27,6 +27,7 @@ describe("Notifications", function() {
   if (isFuzzingServiceWorker()) {
     setMinTimeout(this, 100000);
   }
+
   afterEach(async function() {
     await EWE.testing._clearNotifications();
   });

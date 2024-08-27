@@ -1481,4 +1481,32 @@ describe("CDP on Chromium-based browsers", function() {
       await assertEvents("hotels.*", EVENT_SESSION_START, 1);
     });
   });
+
+  describe("Encryption", function() {
+    const PEM_ENCODED_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
+MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEA6D2rA84PYRZQFv4NL4V5
+UMCivHsmRE8JticuyWzTAx7vyptEjsstuk/oW3v25+glc4Jr0zi8z9IzUUJ097tX
+RioZ9fc5bCtUFLU0+XbxiUiMBYsocPkFr/XkDClWDF7OcCvZcltZfbRnOsui8v5W
+zEK1nWFTv3PPHhpBbKjnP+acnI9mxxbjC9kYzytyH03vLEGPayDujP5QyZAH6U9v
+3RB6pS/46vrVbYbNuMHYrUQGSNAXotweKqx/iMs7kur5Xp0ugUoyR6mrBftmk2vP
+Z5y4mIqwUhGMX1XLzQRVhT+7ngKK1QhxB0ruQuX/Dvn8Y6bIE+ola8B3txJ31l5I
+8+05Dcr4AAmkq67KQUTcce/+0Nz7MWWMObf12+S/j95b4nqROGrNlwtV83MoYH8e
+QtJr9Ejt+zdl/OAahyp4zvAiPFLA8fRQGoHhPXt/fYHsxySG7OPMazLJxFarmWT/
+UlvVm112lG9ij3Mc/f64cKzmenKoIe0c2HSGMxFagEDnAgMBAAE=
+-----END PUBLIC KEY-----`;
+
+    const PUBLIC_KEY_MD5_HASH = "b37abd21b08989c5c958ab07b69bb30b";
+
+    it("imports public RSA key", async function() {
+      const publicKey = await EWE.testing._importRSAPublicKey(
+        PEM_ENCODED_PUBLIC_KEY);
+      expect(publicKey).not.toBeNull();
+      expect(publicKey.byteLength).not.toEqual(0);
+    });
+
+    it("checks the public key hash", async function() {
+      expect(await EWE.testing._md5hash(PEM_ENCODED_PUBLIC_KEY))
+        .toEqual(PUBLIC_KEY_MD5_HASH);
+    });
+  });
 });

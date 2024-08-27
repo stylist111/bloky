@@ -44,6 +44,7 @@ import {IO} from "./io.js";
 import {FilterStorage} from "adblockpluscore/lib/filterStorage.js";
 import * as telemetry from "./telemetry.js";
 import * as cdpMetricsUploader from "./cdp-metrics-uploader.js";
+import * as cdpEncryption from "./cdp-encryption.js";
 
 import * as sitekey from "./sitekey.js";
 import {getDeferredMessages} from "./content-message-deferrer.js";
@@ -312,6 +313,8 @@ export default {
   _clearCdpData: cdp.clearData,
   _clearCdpActivity: cdp.clearActivity,
   _getCdpDomainStats: cdp.getDomainStats,
+  _importRSAPublicKey: cdpEncryption.importRSAPublicKey,
+  _md5hash: cdpEncryption.md5hash,
 
   clearSkipInitRulesets,
   checkAndInitSubscriptions,

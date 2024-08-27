@@ -35,6 +35,7 @@
     "webpack.config.js"
   ],
   "dependencies": {
+    "md5": "^2.3.0",
     "uuid": "^9.0.0",
     "webextension-polyfill": "^0.8.0",
     "yargs": "^17.5.1"
