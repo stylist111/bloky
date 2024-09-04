@@ -509,7 +509,13 @@ const namespace = {
    * @memberof filters
    */
   async getMigrationErrors() {
-    return Prefs.migration_filter_errors;
+    let errors = Prefs.migration_filter_errors;
+
+    if (!Array.isArray(errors)) {
+      errors = [];
+    }
+
+    return errors;
   },
 
   /**

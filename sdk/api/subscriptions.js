@@ -305,8 +305,14 @@ async function migrateSubscriptionToMv3(subscription) {
 export async function recoverMigrationErrorSubscriptions() {
   let sucessfullyRecoveredIndices = [];
 
-  for (let i = 0; i < Prefs.migration_subscription_errors.length; i++) {
-    let migrationError = Prefs.migration_subscription_errors[i];
+  let errors = Prefs.migration_subscription_errors;
+
+  if (!Array.isArray(errors)) {
+    errors = [];
+  }
+
+  for (let i = 0; i < errors.length; i++) {
+    let migrationError = errors[i];
 
     try {
       await migrateSubscriptionToMv3(migrationError.subscription);
@@ -318,9 +324,9 @@ export async function recoverMigrationErrorSubscriptions() {
   }
 
   if (sucessfullyRecoveredIndices.length > 0) {
-    Prefs.migration_subscription_errors =
-      Prefs.migration_subscription_errors.filter((_e, index) =>
-        !sucessfullyRecoveredIndices.includes(index));
+    errors = errors.filter((_e, index) =>
+      !sucessfullyRecoveredIndices.includes(index));
+    Prefs.migration_subscription_errors = errors;
   }
 }
 
@@ -898,7 +904,13 @@ export default {
    * @return {Promise<Array<Subscription, string>>} The migration errors.
    */
   async getMigrationErrors() {
-    return Prefs.migration_subscription_errors;
+    let errors = Prefs.migration_subscription_errors;
+
+    if (!Array.isArray(errors)) {
+      errors = [];
+    }
+
+    return errors;
   },
 
   /**

@@ -1,6 +1,14 @@
 Unreleased
 ==========
 
+## Fixes
+
+- `EWE.filters.getMigrationErrors()` and
+  `EWE.subscriptions.getMigrationErrors()` will now always return a promise that
+  resolves to an array. Previously, if the user had the wrong type in storage,
+  then the wrong type could be returned, which lead to type errors downstream in
+  the extensions. (EXT-118)
+
 🗃 1.12.0 - 2024-08-27 🗃
 =========================
 

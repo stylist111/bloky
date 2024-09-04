@@ -225,6 +225,23 @@ describe("Filters", function() {
       .toBeBlocked();
   });
 
+  describe("getMigrationErrors", function() {
+    afterEach(async function() {
+      await EWE.filters.clearMigrationErrors();
+    });
+
+    it("returns an empty array when there are no errors [fuzz]", async function() {
+      let migrationErrors = await EWE.filters.getMigrationErrors();
+      expect(migrationErrors).toEqual([]);
+    });
+
+    it("returns an empty array when there is invalid data in prefs", async function() {
+      await EWE.testing._setPrefs("migration_filter_errors", {});
+      let migrationErrors = await EWE.filters.getMigrationErrors();
+      expect(migrationErrors).toEqual([]);
+    });
+  });
+
   describe("Filters metadata", function() {
     const filterText = VALID_FILTER_TEXT;
 

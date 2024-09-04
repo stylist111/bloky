@@ -660,26 +660,43 @@ describe("Subscriptions", function() {
     });
   });
 
-  it("clears migration errors when clearMigrationErrors is called", async function() {
-    let subscription = {
-      url: INVALID_SUBSCRIPTION_URL
-    };
-    let error = "Invalid URL";
+  describe("getMigrationErrors", function() {
+    afterEach(async function() {
+      await EWE.subscriptions.clearMigrationErrors();
+    });
 
-    await EWE.testing._saveSubscriptionMigrationError(subscription, error);
+    it("getMigrationErrors returns an empty array when there are no errors [fuzz]", async function() {
+      let migrationErrors = await EWE.subscriptions.getMigrationErrors();
+      expect(migrationErrors).toEqual([]);
+    });
 
-    let errorsBeforeClear = await EWE.subscriptions.getMigrationErrors();
-    expect(errorsBeforeClear).toEqual([
-      expect.objectContaining({
-        error,
-        subscription
-      })
-    ]);
+    it("returns an empty array when there is invalid data in prefs", async function() {
+      await EWE.testing._setPrefs("migration_subscription_errors", {});
+      let migrationErrors = await EWE.subscriptions.getMigrationErrors();
+      expect(migrationErrors).toEqual([]);
+    });
 
-    await EWE.subscriptions.clearMigrationErrors();
+    it("clears migration errors when clearMigrationErrors is called", async function() {
+      let subscription = {
+        url: INVALID_SUBSCRIPTION_URL
+      };
+      let error = "Invalid URL";
 
-    let errorsAfterClear = await EWE.subscriptions.getMigrationErrors();
-    expect(errorsAfterClear).toEqual([]);
+      await EWE.testing._saveSubscriptionMigrationError(subscription, error);
+
+      let errorsBeforeClear = await EWE.subscriptions.getMigrationErrors();
+      expect(errorsBeforeClear).toEqual([
+        expect.objectContaining({
+          error,
+          subscription
+        })
+      ]);
+
+      await EWE.subscriptions.clearMigrationErrors();
+
+      let errorsAfterClear = await EWE.subscriptions.getMigrationErrors();
+      expect(errorsAfterClear).toEqual([]);
+    });
   });
 
   describe("Subscription events [fuzz]", function() {

@@ -1025,6 +1025,11 @@ export async function migrateCustomFilters() {
     }
     catch (e) {
       let errors = Prefs.migration_filter_errors;
+
+      if (!Array.isArray(errors)) {
+        errors = [];
+      }
+
       errors.push({error: e.message, filter});
       Prefs.migration_filter_errors = errors;
     }
