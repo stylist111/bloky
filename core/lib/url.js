@@ -185,6 +185,16 @@ exports.isLocalhost = function isLocalhost(hostname) {
 };
 
 /**
+ * Checks whether URL is of HTTP or HTTPS protocol
+ * @param {*} URL url to check
+ * @returns {boolean} `true` if url is of HTTPS or HTTPS protocol
+ */
+exports.isHttpOrHttps = function(URL) {
+  const protocol = URL.protocol;
+  return protocol == "http:" || protocol == "https:";
+};
+
+/**
  * Checks whether the given hostname is an IP address.
  *
  * Unlike `{@link module:url~isValidIPv4Address isValidIPv4Address()}`, this

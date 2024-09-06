@@ -480,6 +480,7 @@ startupInfo.telemetry = {
 startupInfo.cdp = {
   pingUrl: "http://localhost:3003/cdp-ping",
   aggregateUrl: "http://localhost:3003/cdp-aggregate",
+  publicKeyUrl: "http://localhost:3003/public-key",
   bearer: "SSBhbSBhIGJlYXIuLi4gZXIuLi4gUkFXUg=="
 };
 

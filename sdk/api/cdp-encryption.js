@@ -15,7 +15,6 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import md5 from "md5";
 import {base64ToArrayBuffer} from "adblockpluscore/lib/rsa.js";
 
 const RSA_ALGORITHM = {
@@ -28,17 +27,6 @@ const PEM_PUBLIC_KEY_FOOTER = "-----END PUBLIC KEY-----";
 
 function toArrayBuffer(dataString) {
   return Uint8Array.from(dataString, x => x.charCodeAt(0));
-}
-
-/**
- * Calculate MD5 hash for the string
- *
- * @param {String} data Data to calculate MD5 hash on
- * @returns {String} MD5 hash
- * @ignore
- */
-export function md5hash(data) {
-  return md5(data);
 }
 
 /**
@@ -66,7 +54,7 @@ export async function importRSAPublicKey(pem) {
  * Encrypt data with RSA
  *
  * @param {CryptoKey} publicKey Public key
- * @param {String} data Data to encrypt
+ * @param {String|ArrayBuffer} data Data to encrypt
  * @returns {ArrayBuffer} Encrypted data
  * @ignore
  */
@@ -74,7 +62,7 @@ export async function encryptRSA(publicKey, data) {
   return await crypto.subtle.encrypt(
     RSA_ALGORITHM,
     publicKey,
-    toArrayBuffer(data));
+    typeof data == "string" ? toArrayBuffer(data) : data);
 }
 
 /**
@@ -92,9 +80,11 @@ export async function decryptRSA(privateKey, data) {
     data);
 }
 
+export const AES_LENGTH = 256;
+
 const CREATE_AES_KEY_ALGORITHM = {
   name: "AES-GCM",
-  length: 256
+  length: AES_LENGTH
 };
 
 /**
@@ -124,7 +114,7 @@ export async function AESkeyToBinary(key) {
  * Generate AES nonce
  * @returns {Uint8Array} Generated nonce
  */
-export async function generateAESNonce() {
+export function generateAESNonce() {
   return crypto.getRandomValues(new Uint8Array(16));
 }
 
@@ -133,7 +123,7 @@ export async function generateAESNonce() {
  *
  * @param {Uint8Array} nonce Nonce
  * @param {CryptoKey} key Key
- * @param {String} data Data to encrypt
+ * @param {String|ArrayBuffer} data Data to encrypt
  * @returns {ArrayBuffer} Encrypted data
  * @ignore
  */
@@ -145,7 +135,7 @@ export async function encryptAES(nonce, key, data) {
   return await crypto.subtle.encrypt(
     ENCRYPT_ALGORITHM,
     key,
-    toArrayBuffer(data));
+    typeof data == "string" ? toArrayBuffer(data) : data);
 }
 
 /**

@@ -1,6 +1,12 @@
 Unreleased
 ==========
 
+## General
+
+- Now tracking all the domains sessions for CDP and apply all the phase 3 logics
+  including domains trimming, splitting and data encryption. A new feature flag
+  for it is introduced while staying disabled by default. (EXT-175)
+
 ## Fixes
 
 - `EWE.filters.getMigrationErrors()` and

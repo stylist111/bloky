@@ -1,6 +1,6 @@
 
 import {domainSuffixes, getBaseDomain,
-        matchesWildcards, hasWildcard} from "adblockpluscore/lib/url.js";
+        matchesWildcards, hasWildcard, isHttpOrHttps} from "adblockpluscore/lib/url.js";
 
 /**
  * CDP processor, that keeps a list of supported domains (and their wildcards).
@@ -103,8 +103,7 @@ export class SpecialDomainsProcessor {
 
   shouldProcess(URL) {
     // ignore chrome://, about:// etc
-    const protocol = URL.protocol;
-    return protocol == "http:" || protocol == "https:";
+    return isHttpOrHttps(URL);
   }
 
   getSiteId(domain) {

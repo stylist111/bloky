@@ -35,6 +35,7 @@ const {Subscription,
 const {analytics} = require("./analytics");
 const {parseFilterList} = require("./filters/lists.js");
 const {recommendations} = require("./recommendations");
+const {isHttpOrHttps} = require("./url.js");
 
 const INITIAL_DELAY = 1 * MILLIS_IN_MINUTE;
 const CHECK_INTERVAL = 1 * MILLIS_IN_HOUR;
@@ -275,7 +276,7 @@ class Synchronizer {
         url = null;
       }
 
-      if (url && (url.protocol == "http:" || url.protocol == "https:")) {
+      if (url && isHttpOrHttps(url)) {
         subscription.homepage = url.href;
       }
     }

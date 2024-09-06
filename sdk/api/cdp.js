@@ -27,7 +27,9 @@ import {PersistentState} from "./persistence.js";
 import {trace, debug, warn} from "./debugging.js";
 import {isFirefox} from "./info.js";
 import {MaxLengthMetricsDict} from "./domains-trimming.js";
-import {OnlySupportedDomainsProcessor}
+import {isFeatureEnabled} from "adblockpluscore/lib/features.js";
+import {isHttpOrHttps} from "adblockpluscore/lib/url.js";
+import {OnlySupportedDomainsProcessor, SpecialDomainsProcessor}
   from "./cdp-processor.js";
 
 /**
@@ -48,14 +50,19 @@ export const EVENT_SESSION_START = "session_start";
  */
 export const EVENT_BLOCKING = "blocking";
 
+const FEATURE_FLAG = "cdpPhase3";
+
 // CDP events and pages user activity loading delay (for testing)
 let _loadDelay = 0;
 
 let deferredEvents = [];
 
 // incapsulates domain to site grouping logics
-let processor = new OnlySupportedDomainsProcessor();
-processor.restoreConfig();
+let processor;
+
+function isPhase3() {
+  return isFeatureEnabled(FEATURE_FLAG);
+}
 
 /**
  * @param {Number} millis Number of milliseconds to delay data loading
@@ -78,7 +85,9 @@ export function _setConfig(config) {
  * @ignore
  */
 export function _restoreConfig() {
-  processor.restoreConfig();
+  if (processor) {
+    processor.restoreConfig();
+  }
 }
 
 // Map<String(event type), Map<String(siteId), Array<Number>(event timestamp)>>
@@ -170,12 +179,18 @@ async function count(eventType, siteId, timeStamp) {
   trace({eventType, siteId, timeStamp});
 
   const state = events.get(eventType);
-  let timestamps = state.getState()[siteId];
-  if (!timestamps) {
-    timestamps = [];
-    state.getState()[siteId] = timestamps;
+  if (isPhase3()) {
+    let counter = toCounter(state.getState()[siteId]);
+    state.getState()[siteId] = counter + 1;
   }
-  timestamps.push(timeStamp);
+  else {
+    let timestamps = state.getState()[siteId];
+    if (!timestamps) {
+      timestamps = [];
+      state.getState()[siteId] = timestamps;
+    }
+    timestamps.push(timeStamp);
+  }
 
   if (isStateLoaded()) {
     await state.save();
@@ -214,15 +229,15 @@ export async function _awaitSavingComplete() {
  * listening to events.
  * @param {string} eventType The type of event (see EVENT_...)
  * @param {string} domain The domain to get events for
- * @param {Array<Number>} timestamps Event timestamps for the event type and
- *   domain
+ * @param {Number|Array<Number>} counterOrTimestamps Events counter (Number)
+ * on Phase 3 or event timestamps (Array<Number>) on Phase 2
  * @ignore
  */
-export async function setData(eventType, domain, timestamps) {
+export async function setData(eventType, domain, counterOrTimestamps) {
   trace({eventType, domain});
 
   const state = events.get(eventType);
-  state.getState()[domain] = timestamps;
+  state.getState()[domain] = counterOrTimestamps;
   await state.save();
 }
 
@@ -230,11 +245,18 @@ export async function setData(eventType, domain, timestamps) {
  * Return the events
  * @param {string} eventType The type of event (see EVENT_...)
  * @param {string} siteId The domain to get events for
- * @returns {Array<Number>} Event timestamps for the event type and domain
+ * @returns {Number|Array<Number>} Events counter (Number) on Phase 3 or
+ *                                 event timestamps on Phase 2
  * @ignore
  */
 export function getData(eventType, siteId) {
   trace({eventType, siteId});
+
+  if (isPhase3()) {
+    let counter = toCounter(events.get(eventType).getState()[siteId]);
+    debug("counter=" + counter);
+    return counter;
+  }
 
   const timestamps = events.get(eventType).getState()[siteId] || [];
   debug(`Got ${timestamps.length} events`);
@@ -252,16 +274,47 @@ export async function clearActivity() {
 }
 
 /**
+ * @ignore
+ */
+export async function clearExpiredActivity() {
+  trace({});
+
+  let state = activity.getState();
+  let saveNeeded = false;
+
+  for (const domain of Object.keys(state)) {
+    const lastActivity = state[domain];
+    const actuallyPassed = Date.now() - lastActivity;
+    if (actuallyPassed > Prefs.cdp_session_expiration_interval) {
+      // session expired
+      debug(() => `Remove expired session for ${domain}`);
+      delete state[domain];
+      saveNeeded = true;
+    }
+  }
+
+  if (saveNeeded) {
+    await activity.save();
+  }
+}
+
+/**
  * Delete all the events (of type)
  * @param {string?} eventType The optional type of event (see EVENT_...)
  * @param {string?} siteId The optional siteId to clear the events
  * @param {Number?} timeStamp The optional timestamp to remove the event,
- *                            that happened earlier than timestamp.
+ *                            that happened earlier than timestamp on Phase 2.
+
  * @returns {Promise}
  * @ignore
  */
 export async function clearData(eventType, siteId, timeStamp) {
   trace({eventType, siteId, timeStamp});
+
+  if (isPhase3()) {
+    // Timestamps are not supported on Phase 3
+    timeStamp = null;
+  }
 
   const eventTypes = eventType ? [eventType] : [...events.keys()];
   for (const eachEventType of eventTypes) {
@@ -281,7 +334,7 @@ export async function clearData(eventType, siteId, timeStamp) {
           }
         }
         else {
-          delete state.getState()[siteId];
+          delete state.getState()[eachSiteId];
         }
       }
     }
@@ -306,6 +359,12 @@ function handleBrowserEvent(details, doMarkActive) {
 
   if (details.frameId != TOP_LEVEL_FRAME_ID) {
     // Counting only outer-most frames
+    return;
+  }
+
+  const url = new URL(details.url);
+  if (!isHttpOrHttps(url)) {
+    warn(`Ignore ${details.url}`);
     return;
   }
 
@@ -480,15 +539,22 @@ export function getDomainStats(
   limit = 100 * 1024) {
   const domains = new Set();
 
-  // collect all the domains
-  for (const state of events.values()) {
+  // collect all the domains from required metrics events
+  for (const [eventType, state] of events) {
+    const metric = EVENT_TYPE_TO_METRIC.get(eventType);
+
+    // report exactly the metrics needed from backend
+    if (!metrics.includes(metric)) {
+      continue;
+    }
+
     for (const domain of Object.keys(state.getState())) {
       domains.add(domain);
     }
   }
 
   function getSessions(domain) {
-    return (events.get(EVENT_SESSION_START).getState()[domain] || []).length;
+    return toCounter(events.get(EVENT_SESSION_START).getState()[domain]);
   }
 
   // EVENT_SESSION_START is the most important metric
@@ -507,12 +573,22 @@ export function getDomainStats(
         continue;
       }
 
-      const domainEvents = state.getState()[domain] || [];
-      dict.addMetric(domain, metric, domainEvents.length);
+      const arrayOrCounter = state.getState()[domain];
+      dict.addMetric(domain, metric, toCounter(arrayOrCounter));
     }
   }
 
   return dict.serialize();
+}
+
+function toCounter(numberOrArray) {
+  if (numberOrArray) {
+    // In Phase 2 we saved an array of events (timestamps).
+    // In Phase 3 we start tracking all the domains, so now
+    // we save just a counter to reduce data amount to save.
+    return Array.isArray(numberOrArray) ? numberOrArray.length : numberOrArray;
+  }
+  return 0;
 }
 
 /**
@@ -521,6 +597,10 @@ export function getDomainStats(
 export async function start() {
   if (!startupPromise) {
     startupPromise = (async() => {
+      processor = isPhase3() ?
+        new SpecialDomainsProcessor() :
+        new OnlySupportedDomainsProcessor();
+
       // assuming `Prefs` are initialized and loaded as
       // we use "user opted out" and "domains" settings
 
@@ -542,6 +622,7 @@ export async function start() {
       async function loadData() {
         await loadEvents();
         await activity.load();
+        await clearExpiredActivity();
         handleDeferredEvents();
       }
 
@@ -565,7 +646,7 @@ export default {
    * @param {string} eventType Event type
    *                           ("page_view", "session_start", "blocking")
    * @param {string} siteId SiteId
-   * @param {FilterMatchInfo} timestamp Event timestamp
+   * @param {Number} timestamp Event timestamp
    * @type {CdpEventDispatcher<{eventType: string,
    *                           siteId: string,
    *                           timeStamp: Number}>}

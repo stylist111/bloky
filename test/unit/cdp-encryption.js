@@ -18,18 +18,46 @@
 import crypto from "crypto";
 import expect from "expect";
 import * as cdpEncrypt from "../../sdk/api/cdp-encryption.js";
+import {base64ToArrayBuffer} from "adblockpluscore/lib/rsa.js";
 
 const PEM_ENCODED_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
-MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEA6D2rA84PYRZQFv4NL4V5
-UMCivHsmRE8JticuyWzTAx7vyptEjsstuk/oW3v25+glc4Jr0zi8z9IzUUJ097tX
-RioZ9fc5bCtUFLU0+XbxiUiMBYsocPkFr/XkDClWDF7OcCvZcltZfbRnOsui8v5W
-zEK1nWFTv3PPHhpBbKjnP+acnI9mxxbjC9kYzytyH03vLEGPayDujP5QyZAH6U9v
-3RB6pS/46vrVbYbNuMHYrUQGSNAXotweKqx/iMs7kur5Xp0ugUoyR6mrBftmk2vP
-Z5y4mIqwUhGMX1XLzQRVhT+7ngKK1QhxB0ruQuX/Dvn8Y6bIE+ola8B3txJ31l5I
-8+05Dcr4AAmkq67KQUTcce/+0Nz7MWWMObf12+S/j95b4nqROGrNlwtV83MoYH8e
-QtJr9Ejt+zdl/OAahyp4zvAiPFLA8fRQGoHhPXt/fYHsxySG7OPMazLJxFarmWT/
-UlvVm112lG9ij3Mc/f64cKzmenKoIe0c2HSGMxFagEDnAgMBAAE=
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1o/kPjEWAnTlUmAXHHgj
+S+5sHNjzIGQ9vzs6jv2FanstDhVhRqoOvpHliYfoQHhmvQP2YGroBYCYLelA1PvJ
+IlWJahwEnxapCdvV2Gd7QtkKJUU/ecqcTb69gOjHtERD5OSmPKo0qynv4YMo3+KY
+1rWDAyC5WYsoBw2w4rSsTGSDmdez3kQYCacCVerHbxQz+h/Ngg7AZPhdCk8Q4dtw
+jcMVJ2fosp+/XPAyEoy/sMO/aYrA9VzA+9ZcCdekPs66aLYJP2b7OjbiR/CYq5hD
+9Fon1ARmmLmSi3ns+RuIXeN2S/v+RLQ4J0rFRdq+RjD71rxN6sk/lhOHCoMaxZeV
+JwIDAQAB
 -----END PUBLIC KEY-----`;
+
+const PEM_ENCODED_PRIVATE_KEY = `-----BEGIN PRIVATE KEY-----
+MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDL+uCy/FopkZbG
+Dw0zWhoGxOUpI9iHxC7wYBZHcKRSAslYxy2ugUzK1+1jXzc3ab+g+5SBCDBFQCoO
+vcWuegfXOzD+h6FnSZnA+lPqakuJrtsrwHBiebibEhSPKS68TfP/XuE3oyxgtP9b
+zMlbf88iYQbQ7MJjaCJ7KvtWtEOBbFVbbqX6AcTrGLbx8zR6zkT0LEL1FwIOwS0G
+w+IEHqatekQqYJaJ8BP/g1Ngagc8L4fcm0mDtdrgt5W22sSa0kDBVhXSfnzYXm+n
+7brhUqgz3pfaQr/Xztc85DuvaS5sAFgd86gQyX66LsOg3ElaWcSpBrJY8l+rbmOc
+sm/aNZDrAgMBAAECgf9yjRNv+UfcQ4i1flgFD784p42BlZdRDcH5KuvgmTbhxnuh
+zp/QV6qMyBzEIIoMada0AC5uSBFcJ+hDXwtHG1HlhKUHoTSUTLh64wjW1/z6O6cv
+JpZc+2TbbNz8u/lHTypqv13MchItLADElYmyJaWcSxQZ6v5Qod2qTcXYWkFsqArk
+MPFwq4Iy87f5EKnFVBW+whe2q8eTGleRQ21K4GTBVqmjm/xh34Nwjd6QewJGNDmK
+d/B/scMtU8eoYVTa0eu5fOoanEowkjmjqbX0qUiUU/bUA4zVW6JtejY/doH4lAHr
+5LasSVDlJCXB838R0975m7Kh4srq95rpXXamrMkCgYEA1Ldy0JN3/xL0vmOQYlaI
+yK5oWaq+ZhCvE9skymhjoDnl9KFtBKWKBBd7M36R2V5iM9ER2Qqr5Av0TIpaw3/v
+QZ5rS6ujZRtMMQiNM0MFtJEsmSCLsA/DxmASpEzrlw3JQ787e4eJSxKV2+vjjhF9
+ZBqWDdgvsFilQnPLTqamA4MCgYEA9XxVZhza0zH0wHryRy+fjAx4SNf5PMOyNaeL
+wJzK9RApQtA6ViLatABdo7yokHofEADONTwjrL88NcqTQTS7vzDKbki0DEhUR90C
+XLsE4js34fTuepipx7P2BkZmo/NIJyCDZ2rNMMd87qdSf+RjhDlrtIQdCeSiVFyn
+i4md+HkCgYAtxy0WZiY05sd1EchI4YaeaapbYbuIC58iDs9kIAMQwGUUuIjVryp8
+pvEErACHXyCTNjM5GmrTsR7qOfw+hpHe9VDyAAYyBCXph4WbupjHu1Z1veNSCJKB
+ZrucUFGDOJxP0B/k/c42MdG+eo2GTY1GtdIFOLlKokkue+0NCCBCMQKBgQCazBJV
+17AtKP07Osv4E5G6EErxNC9YH9cKemJnzPc2XUCHfyKqGkRq6SgjDd4FbNyVjMx7
+STb9wYFIMjt1DLmvMCcWMAZJEHsE7dqFevDzb4AnnfmbmRTGdzaWcmJa1BgVhC0Y
+U4KcVc7z9tLRDsWqJUNDi2N8T44FQH/uP5M7kQKBgQCgwzMLLupfgxjf32OX3A1S
+na0Nxxf69L+dENVnOnaMz0Y5Myts9xlX6r9IkKLHgtB0Q7bkTKvvf2fDT8U8f0S0
+JgGb8puSlgrzZpG9L++MB14LxL2f3pRQgLDoqhb+llYKqrUWxT2Ic1h47sodozH4
+86lbywX4ujDY0tK148e8gA==
+-----END PRIVATE KEY-----`;
 
 describe("CDP encryption", function() {
   before(function() {
@@ -47,11 +75,33 @@ describe("CDP encryption", function() {
     publicExponent: new Uint8Array([1, 0, 1])
   };
 
+  const PEM_PRIVATE_KEY_HEADER = "-----BEGIN PRIVATE KEY-----";
+  const PEM_PRIVATE_KEY_FOOTER = "-----END PRIVATE KEY-----";
+
   async function createRSAKeypair() {
     return await crypto.subtle.generateKey(
       CREATE_RSA_KEY_PAIR_ALGORITHM,
       true,
       ["encrypt", "decrypt"]);
+  }
+
+  const IMPORT_RSA_PRIVATE_KEY = {
+    name: "RSA-OAEP",
+    hash: "SHA-256"
+  };
+
+  async function importRSAPrivateKey(pem) {
+    // fetch the part of the PEM string between header and footer
+    const pemContents = pem.substring(
+      PEM_PRIVATE_KEY_HEADER.length,
+      pem.length - PEM_PRIVATE_KEY_FOOTER.length - 1);
+
+    return await crypto.subtle.importKey(
+      "pkcs8",
+      base64ToArrayBuffer(pemContents),
+      IMPORT_RSA_PRIVATE_KEY,
+      true,
+      ["decrypt"]);
   }
 
   const DATA = JSON.stringify([{
@@ -78,6 +128,11 @@ describe("CDP encryption", function() {
     const decoder = new TextDecoder("utf-8");
     const actualDomainStats = decoder.decode(buffer);
     expect(actualDomainStats).toEqual(DATA);
+  });
+
+  it("imports RSA private key", async function() {
+    const privateKey = await importRSAPrivateKey(PEM_ENCODED_PRIVATE_KEY);
+    expect(privateKey).not.toBeNull();
   });
 
   it("generates AES key", async function() {

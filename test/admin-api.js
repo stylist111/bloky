@@ -98,6 +98,14 @@ const BUILD_TIME_ROUTES = [
     url: "/cdp-aggregate",
     response: () => "{}",
     method: "POST"
+  },
+  {
+    url: "/public-key",
+    response: fs.readFileSync(dirname + "/pages/public-key.txt"),
+    method: "GET",
+    headers: {
+      "Pubkey-Id": "aeec16f98f5c69aca7a91c77c494a135"
+    }
   }
 ];
 

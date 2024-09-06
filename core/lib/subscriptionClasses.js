@@ -27,6 +27,7 @@ const {recommendations} = require("./recommendations");
 const {isActiveFilter, Filter} = require("./filterClasses");
 const {filterNotifier} = require("./filterNotifier");
 const {Downloader} = require("./downloader");
+const {isHttpOrHttps} = require("./url");
 
 let _recommendationsByURL = null;
 
@@ -344,7 +345,7 @@ exports.Subscription = class Subscription {
         url = null;
       }
 
-      if (url && (url.protocol == "http:" || url.protocol == "https:")) {
+      if (url && isHttpOrHttps(url)) {
         this.homepage = url.href;
       }
     }
