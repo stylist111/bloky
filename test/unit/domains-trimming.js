@@ -252,7 +252,7 @@ describe("Domains trimming", function() {
       SESSIONS_COUNT,
       PAGE_VIEWS
     ];
-    const defaultProductionPayloadLimit = 100 * 1024; // 100 Kb
+    const defaultProductionPayloadLimit = 90 * 1024; // 90 Kb
     const fsmd = new MaxLengthMetricsDict(
       defaultProductionPayloadLimit, metrics, null);
     for (const domain of domains) {

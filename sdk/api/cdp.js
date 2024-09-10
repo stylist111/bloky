@@ -528,7 +528,7 @@ const EVENT_TYPE_TO_METRIC = new Map([
  * Format the "domain_stats" property with domains trimming
  *
  * @param {Array<String>} metrics Event types (the default value is sessions)
- * @param {Number} limit Payload length limit (the default value is 100Kb)
+ * @param {Number} limit Payload length limit (the default value is 90Kb)
  * @returns {string} Formatted and trimmed "domain_stats" object
  * @ignore
  */
@@ -536,7 +536,7 @@ export function getDomainStats(
   metrics = [
     EVENT_TYPE_TO_METRIC.get(EVENT_SESSION_START)
   ],
-  limit = 100 * 1024) {
+  limit = 90 * 1024) {
   const domains = new Set();
 
   // collect all the domains from required metrics events
