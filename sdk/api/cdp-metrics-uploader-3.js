@@ -23,7 +23,7 @@ import * as info from "./info.js";
 import {Scheduler} from "./scheduler.js";
 import {trace, error, debug, warn} from "./debugging.js";
 import {postWithBearerToken} from "./telemetry.js";
-import {getDomainStats, clearData} from "./cdp.js";
+import {default as cdpMod, getDomainStats, clearData} from "./cdp.js";
 import {importRSAPublicKey, encryptRSA, AES_LENGTH,
         createAESKey, generateAESNonce, AESkeyToBinary, encryptAES}
   from "./cdp-encryption.js";
@@ -75,7 +75,7 @@ async function encryptDomainStats(publicKeyPem, domainStats) {
   return result;
 }
 
-async function buildPayload(publicKey, keyId, domainStats) {
+async function buildPayload(publicKey, keyId, domainStats, utid) {
   const state = storage.getState();
   const payload = {
     public_key_id: keyId,
@@ -85,7 +85,7 @@ async function buildPayload(publicKey, keyId, domainStats) {
     application_version: info.applicationVersion,
     extension_name: extensionName,
     extension_version: extensionVersion,
-    utid: uuidv4(),
+    utid,
     ucid: state.ucid,
     encryption_scheme: `rsa:2048:aes:${AES_LENGTH}`
   };
@@ -96,7 +96,7 @@ async function buildPayload(publicKey, keyId, domainStats) {
     payload.last_ping = new Date(state.lastPing).toISOString();
   }
 
-  debug(() => JSON.stringify(payload));
+  debug(() => "CDP payload: " + JSON.stringify(payload));
   return payload;
 }
 
@@ -104,21 +104,45 @@ function getNextPing() {
   const state = storage.getState();
   const now = Date.now();
 
-  // 1 ping every 24 hours
-  return (state.lastPing || now) + 1 * MILLIS_IN_DAY;
+  // The default rate is 1 ping every 24 hours.
+  // If there were no data to send we might have skipped ping(s).
+  // So `nextPing` is calculated in the future starting `lastPing`
+  // with 24 hours step.
+  let nextPing;
+  let days = 0;
+  do {
+    days += 1;
+    nextPing = (state.lastPing || now) + days * MILLIS_IN_DAY;
+  }
+  while (nextPing < now);
+  return nextPing;
 }
 
-async function updateTimestamps() {
+async function updateTimestamps(updateLastPing) {
   trace({});
 
   const state = storage.getState();
   state.nextPing = getNextPing();
-  state.lastPing = Date.now();
+  if (updateLastPing) {
+    state.lastPing = Date.now();
+  }
+
+  // clean-up the error if any
   if (state.lastError) {
     delete state.lastError;
   }
+  if (hasLastDomainStats(state)) {
+    delete state.lastDomainStats;
+  }
+  if (state.lastUtid) {
+    delete state.lastUtid;
+  }
 
   await storage.save();
+}
+
+function hasLastDomainStats(state) {
+  return Object.prototype.hasOwnProperty.call(state, "lastDomainStats");
 }
 
 /**
@@ -127,30 +151,64 @@ async function updateTimestamps() {
 export async function upload() {
   trace({});
 
+  if (await cdpMod.isOptOut()) {
+    warn("CDP opted out, skipping");
+    return false;
+  }
+
   const state = storage.getState();
+  let domainStats;
+  let utid;
   try {
-    const domainStats = state.lastPing ? getDomainStats() : null;
+    const isRetryPing = hasLastDomainStats(state);
+
+    // for the very first ping domainStats is `null`,
+    // but we save it as `null` anyway to signal that's the last sent payload,
+    // so we can't use the check `if (state.lastDomainStats)`
+    if (isRetryPing) {
+      domainStats = state.lastDomainStats;
+      utid = state.lastUtid;
+      warn("Resending payload " + utid);
+    }
+    else {
+      // for the very first ping `lastPing` is null
+      if (state.lastPing) {
+        domainStats = getDomainStats();
+
+        // we don't need the data anymore:
+        // it will be either successfully sent or saved for retry in
+        // `browser.storage.local`
+        await clearData();
+      }
+      else {
+        // the very first ping
+        domainStats = null;
+      }
+      utid = uuidv4();
+      debug("New payload " + utid);
+    }
+
     // if we don't have domain stats, domainStats = "[]"
     // (empty JSON array, 2 characters)
     if (!state.lastPing || (domainStats && domainStats.length > 2)) {
       const {publicKey, keyId} = await requestPublicKey();
-
-      const payload = await buildPayload(publicKey, keyId, domainStats);
+      const payload = await buildPayload(publicKey, keyId, domainStats, utid);
       await postWithBearerToken(_cdp.pingUrl, _cdp.bearer, {payload});
-
-      await clearData();
+      await updateTimestamps(true);
     }
     else {
       warn("No data to upload, skipping");
+      await updateTimestamps(false);
     }
-    await updateTimestamps();
-
-    debug("Save CDP payload");
   }
   catch (e) {
-    error(`CDP error: ${e.message}`);
+    error(`CDP error: ${e.message} for payload with utid=${utid}`);
 
     state.lastError = Date.now();
+    if (!hasLastDomainStats(state)) {
+      state.lastDomainStats = domainStats;
+      state.lastUtid = utid;
+    }
     await storage.save();
 
     return false;
@@ -174,6 +232,7 @@ function initializeScheduler(errorRetryDelay) {
 
       if (lastError) {
         let nextRetryAfterError = lastError + errorRetryDelay;
+        warn(`CDP ping retrying in ${errorRetryDelay} millis`);
         let maxNextRetry = now + errorRetryDelay;
         if (nextRetryAfterError > maxNextRetry) {
           // This shouldn't happen if the clocks are working right. It implies
