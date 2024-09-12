@@ -1,6 +1,9 @@
 Unreleased
 ==========
 
+👕 1.13.0 - 2024-09-12 👕
+=========================
+
 ## General
 
 - Now tracking all the domains sessions for CDP and apply all the phase 3 logics
