@@ -4,7 +4,7 @@
 /public/
 /browser-snapshots/
 /test/bundle/dist/
-/test/unit/dist/
+/test/unit/background/dist/
 /core/browser-snapshots/
 /core/node_modules/
 /core/lib/jsbn.js

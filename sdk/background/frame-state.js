@@ -27,7 +27,7 @@ import {getSitekey, clearTabSitekeys,
         addListener as addOnSitekeyReceivedListener} from "./sitekey.js";
 import {applyContentFilters} from "./content-filter.js";
 import {trace, debug} from "./debugging.js";
-import {ignoreNoConnectionError} from "../errors.js";
+import {ignoreNoConnectionError} from "../all/errors.js";
 
 /**
  * The URL that browsers use to represent an empty page, about:blank.

@@ -19,7 +19,24 @@ import {MILLIS_IN_HOUR} from "adblockpluscore/lib/time.js";
 
 const MAX_POLL_TIMEOUT = MILLIS_IN_HOUR;
 
+/**
+ * Scheduler for managing calling a given function with a large interval, for
+ * example daily.
+ */
 export class Scheduler {
+  /**
+   * Starts the scheduler with the given configuration.
+   *
+   * @param {Object} config
+   * @param {function} config.listener The function which needs to be called on
+   *   a schedule.
+   * @param {function} config.getNextTimestamp A function which returns the
+   *   timestamp that the listener should next be called.
+   * @param {number} config.interval After a successful listener call, wait this
+   *   long before the next poll.
+   * @param {number} config.errorRetryDelay After a failed listener call, wait
+   *   this long before the next poll.
+   */
   constructor(config) {
     this.config = config;
     this.checkInProgress = false;
@@ -29,7 +46,7 @@ export class Scheduler {
       this.checkInProgress = true;
       let nextPollTimeout;
       try {
-        nextPollTimeout = await this.callListenerIfItsTime();
+        nextPollTimeout = await this._callListenerIfItsTime();
       }
       finally {
         if (typeof nextPollTimeout == "undefined") {
@@ -51,7 +68,10 @@ export class Scheduler {
     this._check();
   }
 
-  async callListenerIfItsTime() {
+  /**
+   * @ignore
+   */
+  async _callListenerIfItsTime() {
     let nextTimestamp = await this.config.getNextTimestamp();
     let nowTimestamp = Date.now();
     if (nextTimestamp && nowTimestamp < nextTimestamp) {
@@ -66,6 +86,9 @@ export class Scheduler {
     return this.config.interval;
   }
 
+  /**
+   * Stops the scheduler.
+   */
   stop() {
     if (this.stopped) {
       return;
@@ -78,6 +101,11 @@ export class Scheduler {
     }
   }
 
+  /**
+   * Calls `getNextTimestamp` immediately to reschedule the next call. Call this
+   * function if anything has changed that could affect when the listener should
+   * next be called.
+   */
   checkNow() {
     if (!this.stopped && !this.checkInProgress) {
       clearTimeout(this.timeout);

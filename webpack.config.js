@@ -141,7 +141,7 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath,
     dependencies,
     entry: {
       api: {
-        import: "./sdk/api/index.js",
+        import: "./sdk/background/index.js",
         library: {name: "EWE", type: "umd"}
       },
       content: "./sdk/content/index.js"
@@ -162,9 +162,9 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath,
     },
     resolve: {
       alias: {
-        io$: path.resolve(dirname, "./sdk/api/io.js"),
-        prefs$: path.resolve(dirname, "./sdk/api/prefs.js"),
-        info$: path.resolve(dirname, "./sdk/api/info.js")
+        io$: path.resolve(dirname, "./sdk/background/io.js"),
+        prefs$: path.resolve(dirname, "./sdk/background/prefs.js"),
+        info$: path.resolve(dirname, "./sdk/background/info.js")
       }
     },
     module: {
@@ -184,15 +184,15 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath,
 
   if (env.release) {
     // "testing.js" API should not be exposed publicly
-    let testingJsPath = path.resolve(dirname, "./sdk/api/testing.js");
-    let testingJsStubPath = path.resolve(dirname, "./sdk/api/testing-stub.js");
+    let testingJsPath = path.resolve(dirname, "./sdk/background/testing.js");
+    let testingJsStubPath = path.resolve(dirname, "./sdk/background/testing-stub.js");
     build.module.rules[0].exclude = [testingJsPath];
     build.resolve.alias["./testing.js"] = testingJsStubPath;
   }
 
   // It helps to use webextension-polyfill `browser` in production and
   // inject test `browser` in unit tests.
-  build.resolve.alias["./browser.js"] = path.resolve(dirname, "./sdk/api/webext-browser.js");
+  build.resolve.alias["./browser.js"] = path.resolve(dirname, "./sdk/background/webext-browser.js");
 
   if (subscriptionFile) {
     let customSubsFile = path.resolve(dirname, subscriptionFile);

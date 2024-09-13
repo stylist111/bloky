@@ -16,7 +16,7 @@
  */
 
 import expect from "expect";
-import {MaxLengthMetricsDict} from "../../sdk/api/domains-trimming.js";
+import {MaxLengthMetricsDict} from "../../../sdk/background/domains-trimming.js";
 
 const SESSIONS_COUNT = "sessions_count";
 const PAGE_VIEWS = "page_views";

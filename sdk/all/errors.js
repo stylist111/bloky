@@ -23,12 +23,16 @@ const ERROR_CLOSED_CONNECTION = "A listener indicated an asynchronous " +
 // https://bugzilla.mozilla.org/show_bug.cgi?id=1578697
 const ERROR_MANAGER_DISCONNECTED = "Message manager disconnected";
 
-export const ERROR_DISABLED_RULE_LIMIT_REACHED = "The number of disabled static " +
-      "rules exceeds the disabled rule count limit.";
-
-export const ERROR_FILTER_NOT_FOUND = "filter_not_found";
-export const ERROR_TOO_MANY_FILTERS = "too_many_filters";
-
+/**
+ * Filters out `browser.runtime.sendMessage` errors to do with the receiving end
+ * no longer existing.
+ *
+ * @param {Promise} promise The promise that should have "no connection" errors
+ *   ignored. Generally this would be the promise returned by
+ *   `browser.runtime.sendMessage`.
+ * @return {Promise} The same promise, but will resolve with `undefined` instead
+ *   of rejecting if the receiving end no longer exists.
+ */
 export function ignoreNoConnectionError(promise) {
   return promise.catch(error => {
     if (typeof error == "object" &&

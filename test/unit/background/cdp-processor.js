@@ -17,7 +17,7 @@
 
 import expect from "expect";
 import {SpecialDomainsProcessor, OnlySupportedDomainsProcessor}
-  from "../../sdk/api/cdp-processor.js";
+  from "../../../sdk/background/cdp-processor.js";
 
 describe("CDP processors", function() {
   describe("SpecialDomainsProcessor", function() {

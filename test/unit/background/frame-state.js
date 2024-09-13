@@ -21,7 +21,7 @@ import env from "./environment.js";
 import {mock} from "./mock/mock.js";
 import expect from "expect";
 
-import {SITEKEY} from "../test-server-urls.js";
+import {SITEKEY} from "../../test-server-urls.js";
 
 describe("Frame state", function() {
   let api;

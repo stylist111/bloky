@@ -23,7 +23,7 @@ import {Prefs, init as initPrefs} from "./prefs.js";
 import * as info from "./info.js";
 import {hasAcceptableAdsEnabled} from "./subscriptions.js";
 import {EventDispatcher} from "./types.js";
-import {Scheduler} from "./scheduler.js";
+import {Scheduler} from "../all/scheduler.js";
 import {default as initializer} from "./initializer.js";
 import {trace, error} from "./debugging.js";
 

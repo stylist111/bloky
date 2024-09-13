@@ -23,7 +23,7 @@ import {toLocalISODateStringWithCutoffTime} from "adblockpluscore/lib/date.js";
 import {randomInteger} from "adblockpluscore/lib/random.js";
 
 import * as info from "./info.js";
-import {Scheduler} from "./scheduler.js";
+import {Scheduler} from "../all/scheduler.js";
 import {trace, error} from "./debugging.js";
 import {postWithBearerToken} from "./telemetry.js";
 import {default as cdpMod, EVENT_SESSION_START, getData, clearData} from "./cdp.js";

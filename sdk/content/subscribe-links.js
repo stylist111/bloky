@@ -16,7 +16,7 @@
  */
 
 import browser from "webextension-polyfill";
-import {ignoreNoConnectionError} from "../errors.js";
+import {ignoreNoConnectionError} from "../all/errors.js";
 
 const ALLOWED_DOMAINS = new Set([
   "abpchina.org",

@@ -48,6 +48,9 @@ The library comes in two parts, `ewe-api.js` to be included in the extension's
 background page, and `ewe-content.js` to be loaded as a content script. Please
 download the [latest build][builds] (or [build the library yourself][dev]).
 
+Additionally, the SDK provides standalone utilities that can work in both
+browser extension contexts, as well as other Javascript contexts.
+
 With two versions of the API, Manifest V2 and Manifest V3, there are
 two different manifest that are needed depending on which API you
 target.
@@ -232,6 +235,20 @@ EWE.start();
 ```
 import * as EWE from "@eyeo/webext-ad-filtering-solution";
 EWE.start();
+```
+
+You can also import the content script. This should only be included once by an
+extension, since it starts running the content scripts without the need to call
+any sort of "start" function.
+
+```
+import "@eyeo/webext-ad-filtering-solution/content";
+```
+
+Individual utilities that can be used in any context can also be imported.
+
+```
+import {Scheduler} from "@eyeo/webext-ad-filtering-solution/all/scheduler.js";
 ```
 
 ### Snippet filters support

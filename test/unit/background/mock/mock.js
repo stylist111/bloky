@@ -26,7 +26,8 @@ let counter = 0;
 
 /**
  * Get the module with mocked dependencies
- * @param {string} filename Production file name inside /sdk/api directory
+ * @param {string} filename Production file name inside the /sdk/background
+ *   directory
  * @param {string} deleteAliases The list of files to delete resolve aliases
  * @param {string} addAliases The list of files to add resolve aliases
  * @returns {Promise<Module>} newly compiled module

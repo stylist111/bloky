@@ -1,6 +1,6 @@
 {
   "include": [
-    "sdk/api/**/*"
+    "sdk/background/**/*"
   ],
   "compilerOptions": {
     "allowJs": true,

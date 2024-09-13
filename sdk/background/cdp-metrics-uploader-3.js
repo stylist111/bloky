@@ -20,7 +20,7 @@ import {v4 as uuidv4} from "uuid";
 import {MILLIS_IN_HOUR, MILLIS_IN_DAY} from "adblockpluscore/lib/time.js";
 
 import * as info from "./info.js";
-import {Scheduler} from "./scheduler.js";
+import {Scheduler} from "../all/scheduler.js";
 import {trace, error, debug, warn} from "./debugging.js";
 import {postWithBearerToken} from "./telemetry.js";
 import {default as cdpMod, getDomainStats, clearData} from "./cdp.js";

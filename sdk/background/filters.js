@@ -33,9 +33,18 @@ import {addFilters, getMetadataForFilter, setMetadataForFilter,
         validateFilter, getDynamicUserFilters,
         removeOrDisableFilters, enableFilters}
   from "./dnr-filters.js";
-import {ERROR_FILTER_NOT_FOUND} from "../errors.js";
 import {Prefs} from "./prefs.js";
-import {Scheduler} from "./scheduler.js";
+import {Scheduler} from "../all/scheduler.js";
+
+/**
+ * @ignore
+ */
+export const ERROR_FILTER_NOT_FOUND = "filter_not_found";
+
+/**
+ * @ignore
+ */
+export const ERROR_TOO_MANY_FILTERS = "too_many_filters";
 
 /**
  * @ignore

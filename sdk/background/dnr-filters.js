@@ -29,16 +29,17 @@ import {createConverter} from "adblockpluscore/lib/dnr/index.js";
 import {DnrMapper} from "adblockpluscore/lib/dnr/mapper.js";
 import {getSubscriptionRulesetMap} from "./subscriptions-utils.js";
 import subscriptions from "./subscriptions.js";
-import {ERROR_FILTER_NOT_FOUND, ERROR_TOO_MANY_FILTERS,
-        ERROR_DISABLED_RULE_LIMIT_REACHED}
-  from "../errors.js";
-import {onChangedFilter, disableFilter} from "./filters.js";
+import {onChangedFilter, disableFilter, ERROR_FILTER_NOT_FOUND,
+        ERROR_TOO_MANY_FILTERS} from "./filters.js";
 import {default as initializer} from "./initializer.js";
 import {debug, error} from "./debugging.js";
 
 import {FilterError} from "./types.js";
 import {Prefs} from "./prefs.js";
 import {isFirefox, getBrowserVersion} from "./info.js";
+
+const ERROR_DISABLED_RULE_LIMIT_REACHED = "The number of disabled static " +
+      "rules exceeds the disabled rule count limit.";
 
 let highestRuleId = 1;
 

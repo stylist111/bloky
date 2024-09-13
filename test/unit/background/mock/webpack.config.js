@@ -25,15 +25,14 @@ import Dotenv from "dotenv-webpack";
 let dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
 export function getConfig(filename) {
-  let inputFilepath = path.join("../../../sdk/api", filename);
+  let inputFilepath = path.join("../../../../sdk/background", filename);
   let mockedFilename = filename.replace(".js", ".mocked.js");
-  let outputFilepath = path.join("../test/unit/dist", mockedFilename);
 
   // package.env.VERSION is used by the Dotenv plugin in to inject version
   // information into code like info.js at build time.
   const packageJson = JSON.parse(
     fs.readFileSync(
-      path.join(dirname, "../../../package.json"),
+      path.join(dirname, "../../../../package.json"),
       "utf8"
     )
   );
@@ -43,7 +42,8 @@ export function getConfig(filename) {
     mode: "production", // preserves the names for easier debugging
     entry: path.resolve(dirname, inputFilepath),
     output: {
-      filename: outputFilepath,
+      path: path.resolve(dirname, "../dist"),
+      filename: mockedFilename,
       library: {type: "module"}
     },
     experiments: {
@@ -61,8 +61,8 @@ export function getConfig(filename) {
         "./prefs.js": path.resolve(dirname, "./prefs.mock.js"),
         "./sitekey.js": path.resolve(dirname, "./webext-sdk.mock.js"),
         "./cdp.js": path.resolve(dirname, "./webext-sdk.mock.js"),
-        "io$": path.resolve(dirname, "../../../sdk/api/io.js"),
-        "info$": path.resolve(dirname, "../../../sdk/api/info.js"),
+        "io$": path.resolve(dirname, "../../../../sdk/background/io.js"),
+        "info$": path.resolve(dirname, "../../../../sdk/background/info.js"),
         "prefs$": path.resolve(dirname, "./prefs.mock.js")
       }
     },

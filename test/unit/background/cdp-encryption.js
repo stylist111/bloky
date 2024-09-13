@@ -15,9 +15,9 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import crypto from "crypto";
+import {webcrypto} from "crypto";
 import expect from "expect";
-import * as cdpEncrypt from "../../sdk/api/cdp-encryption.js";
+import * as cdpEncrypt from "../../../sdk/background/cdp-encryption.js";
 import {base64ToArrayBuffer} from "adblockpluscore/lib/rsa.js";
 
 const PEM_ENCODED_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
@@ -61,7 +61,11 @@ JgGb8puSlgrzZpG9L++MB14LxL2f3pRQgLDoqhb+llYKqrUWxT2Ic1h47sodozH4
 
 describe("CDP encryption", function() {
   before(function() {
-    global.crypto = crypto; // eslint-disable-line no-undef
+    if (!global.crypto) { // eslint-disable-line no-undef
+      // This is needed for Node < 19. After that, Node has it in the global
+      // exports, same as the browsers.
+      global.crypto = webcrypto; // eslint-disable-line no-undef
+    }
   });
 
   const RSA_ALGORITHM = {

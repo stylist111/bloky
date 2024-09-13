@@ -54,11 +54,18 @@ npm run test-core -- test/dnr.js
 ### Unit:webext
 
 In webext we mostly use functional tests to make sure everything works.
-However it gets complicated when some specific state of the system is required.
 
-webext-sdk unit tests mock browser API. On a high level all our tests and
-production code uses `browser.js`, which will either be the actual webextension
-polyfill or our unit tests mock based on our webpack config.
+Additionally, two specific areas lend themselves to unit tests.
+
+1. For utilities in the `sdk/all` folder. These may be individual imported by
+   users of the SDK, and should not depend on any browser-specific APIs, and so
+   are good candidates for unit testing. These unit tests go in the
+   `test/unit/all` folder.
+2. When background API functionality gets complicated and when testing some
+   specific state of the system is required. These unit tests go in
+   `test/unit/background`, and mock browser API. On a high level all our tests
+   and production code uses `browser.js`, which will either be the actual
+   webextension polyfill or our unit tests mock based on our webpack config.
 
 To run the webext unit tests use the following command:
 
@@ -66,9 +73,12 @@ To run the webext unit tests use the following command:
 npm run unittest
 ```
 
-The mocked files used by the tests are automatically generated with `mock(...)`
-and `cachedMock(...)` functions. It is also possible to generate mocked files
-by passing the filename from the `/sdk/api/` directory:
+#### Mocking browser APIs
+
+The mocked files used by the background unit tests are automatically generated
+with `mock(...)`  and `cachedMock(...)` functions. It is also possible to
+generate mocked files by passing the filename from the `/sdk/background/`
+directory:
 
 ```
 npx webpack --config ./test/unit/mock/webpack.config.js --env filename="subscriptions.js"
@@ -471,8 +481,8 @@ this step.
 #### Code tracing to analyze flaky tests reasons
 
 Import `info()`, `log()`, `warn()`, `error()` or `trace()` from
-`sdk/api/debugging.js` to record that is happening in the solution and make it
-printed in the console when a test fails:
+`sdk/background/debugging.js` to record that is happening in the solution and
+make it printed in the console when a test fails:
 
 ```
 import {trace} from "./debugging.js";

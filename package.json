@@ -19,7 +19,9 @@
   "main": "./dist/ewe-api.js",
   "exports": {
     ".": "./dist/ewe-api.js",
+    "./background": "./dist/ewe-api.js",
     "./content": "./dist/ewe-content.js",
+    "./all/*": "./sdk/all/*",
     "./sdk/*": "./sdk/*",
     "./adblockpluscore/*": "./core/*"
   },
@@ -75,13 +77,13 @@
   },
   "scripts": {
     "lint": "node scripts/lint.js",
-    "docs": "documentation build --document-exported --sort-order alpha -f html -o public --config documentation.yml sdk/api/index.js sdk/api/filters.js sdk/api/subscriptions.js sdk/api/reporting.js sdk/api/cdp.js sdk/api/debugging.js sdk/api/telemetry.js sdk/api/types.js",
+    "docs": "documentation build --document-exported --sort-order alpha -f html -o public --config documentation.yml sdk/background/index.js sdk/background/filters.js sdk/background/subscriptions.js sdk/background/reporting.js sdk/background/cdp.js sdk/background/debugging.js sdk/background/telemetry.js sdk/background/types.js",
     "docs-core": "jsdoc --configure core/.jsdoc.conf --destination public/core core/lib",
     "updatepsl": "npm run -w core updatepsl",
     "build": "node scripts/build.js",
     "prepack": "npm run build",
     "build-then-test": "node scripts/build-and-test.js",
-    "unittest": "mocha ./test/unit/*.js",
+    "unittest": "mocha ./test/unit/**/*.js",
     "test-server": "node test/start-server.js",
     "test": "node test/runners/functional.js",
     "test-bundle": "node test/bundle/run.js",

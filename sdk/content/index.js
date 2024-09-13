@@ -20,7 +20,7 @@ import browser from "webextension-polyfill";
 import {ElemHideEmulation}
   from "adblockpluscore/lib/content/elemHideEmulation.js";
 
-import {ignoreNoConnectionError} from "../errors.js";
+import {ignoreNoConnectionError} from "../all/errors.js";
 import {startElementCollapsing, hideElement, unhideElement}
   from "./element-collapsing.js";
 import {startOneClickAllowlisting} from "./allowlisting.js";

@@ -1,6 +1,17 @@
 Unreleased
 ==========
 
+## General
+
+- Add a type of exported code to the SDK: utilities which can run in any
+  Javascript context. These are exported in the
+  `@eyeo/webext-ad-filtering-solution/all/*` namespace. See the "Module
+  bundlers" section of the readme for more details. (EXT-121)
+  - The Scheduler utility can be used for repeatedly calling functions with a
+    large timeout.
+  - The Errors utility has functionality for suppressing communication errors
+    between the background script and pages which may no longer exist.
+
 👕 1.13.0 - 2024-09-12 👕
 =========================
 

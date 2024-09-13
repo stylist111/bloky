@@ -25,7 +25,7 @@ import {subAntiCVLocal, subTestCustom1, subEasylistLive,
 import {wait} from "./polling.js";
 import {EWE, runInBackgroundPage} from "./messaging.js";
 import {updateExtensionFiles} from "./mocha/mocha-runner.js";
-import {MIGRATED_TO_MV2, MIGRATED_TO_MV3} from "../sdk/api/prefs.js";
+import {MIGRATED_TO_MV2, MIGRATED_TO_MV3} from "../sdk/background/prefs.js";
 
 let start = new URLSearchParams(document.location.search).get("start");
 let phase = start ? "preparation" : "check";

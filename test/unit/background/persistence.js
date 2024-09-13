@@ -21,7 +21,7 @@ import env from "./environment.js";
 import expect from "expect";
 import sinon from "sinon/pkg/sinon.js";
 
-import {PersistentState} from "../../sdk/api/persistence.js";
+import {PersistentState} from "../../../sdk/background/persistence.js";
 
 describe("PersistentState", function() {
   const sandbox = sinon.createSandbox();

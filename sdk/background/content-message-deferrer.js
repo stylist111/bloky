@@ -17,7 +17,7 @@
 
 import browser from "./browser.js";
 import {isRunningInServiceWorker} from "./browser-features.js";
-import {ignoreNoConnectionError} from "../errors.js";
+import {ignoreNoConnectionError} from "../all/errors.js";
 import {trace, debug, warn} from "./debugging.js";
 import {PersistentState} from "./persistence.js";
 

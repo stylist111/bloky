@@ -22,7 +22,7 @@ import {mock} from "./mock/mock.js";
 import expect from "expect";
 
 import {subAntiCVLocal, subEasylistLocal, subAcceptableAdsLocal}
-  from "../api-fixtures.js";
+  from "../../api-fixtures.js";
 
 describe("EWE.subscriptions", function() {
   let subscriptions;
