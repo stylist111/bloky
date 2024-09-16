@@ -24,7 +24,7 @@ import {getFrameInfo, TOP_LEVEL_FRAME_ID} from "./frame-state.js";
 import {BlockableEventDispatcher} from "./diagnostics.js";
 import {PersistentState} from "./persistence.js";
 
-import {trace, debug, warn} from "./debugging.js";
+import {trace, debug, warn, error} from "./debugging.js";
 import {isFirefox} from "./info.js";
 import {MaxLengthMetricsDict} from "./domains-trimming.js";
 import {isFeatureEnabled} from "adblockpluscore/lib/features.js";
@@ -362,14 +362,20 @@ function handleBrowserEvent(details, doMarkActive) {
     return;
   }
 
-  const url = new URL(details.url);
+  let url;
+  try {
+    url = new URL(details.url);
+  }
+  catch (e) {
+    error(e.message);
+    return;
+  }
   if (!isHttpOrHttps(url)) {
     warn(`Ignore ${details.url}`);
     return;
   }
 
-  const siteId = processor.getSiteId(
-    new URL(details.url).hostname);
+  const siteId = processor.getSiteId(url.hostname);
   if (!siteId) {
     return;
   }
