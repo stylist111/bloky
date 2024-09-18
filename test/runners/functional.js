@@ -102,6 +102,13 @@ function parseArguments() {
         }
       }
     }
+    // Chromium 128 is the latest supported version for MV2
+    if (argv.browser === "chromium" &&
+        argv.manifest === "v2" &&
+        argv.version === "latest") {
+      console.warn("Warning: using Chromium 128 as the latest supported version for MV2");
+      argv.version = "128.0.6613.0";
+    }
     return {
       manifest: argv.manifest,
       browser: argv.browser,

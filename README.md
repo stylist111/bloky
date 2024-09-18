@@ -66,6 +66,9 @@ Manifest V2:
 * Firefox 68 and latest
 * Edge latest
 
+Chromium 129 and newer do not support MV2 web extensions, so version "128.0.6613.0"
+is used for MV2 testing.
+
 Manifest V3:
 
 * Chromium 124 and latest
