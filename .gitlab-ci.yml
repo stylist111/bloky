@@ -11,6 +11,8 @@ variables:
   OLDEST_CHROMIUM_MV2_VERSION: "77.0.3865.0"
   OLDEST_CHROMIUM_MV3_VERSION: "124.0.6367.60"
   OLDEST_FIREFOX_VERSION: "68.0"
+  # Latest Chromium version that still supports MV2
+  LATEST_CHROMIUM_MV2_VERSION: "128.0.6613.0"
   # Latest Firefox version using browser local storage in incognito mode
   BSL_FIREFOX_INCOGNITO_VERSION: "114.0.2"
 
@@ -444,7 +446,7 @@ comp:v2:firefox:
 comp:v2:chromium:
   extends: .compliance
   variables:
-    VERSION: latest
+    VERSION: $LATEST_CHROMIUM_MV2_VERSION
     BROWSER: chromium
     MANIFEST: mv2
 
