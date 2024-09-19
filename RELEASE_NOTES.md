@@ -11,6 +11,7 @@ Unreleased
     large timeout.
   - The Errors utility has functionality for suppressing communication errors
     between the background script and pages which may no longer exist.
+- Now using the actual timestamp instead of request timestamp for CDP. (EXT-266)
 
 👕 1.13.0 - 2024-09-12 👕
 =========================

@@ -210,7 +210,7 @@ async function onBlockableItem({request}) {
     return;
   }
 
-  await count(EVENT_BLOCKING, siteId, request.timeStamp);
+  await count(EVENT_BLOCKING, siteId, Date.now());
 }
 
 /**
@@ -381,7 +381,7 @@ function handleBrowserEvent(details, doMarkActive) {
   }
 
   const newSession = isNewSession(siteId);
-  const {timeStamp} = details;
+  const timeStamp = Date.now();
   count(EVENT_PAGE_VIEW, siteId, timeStamp);
   if (doMarkActive) {
     markActiveForSiteId(siteId);
