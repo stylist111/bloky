@@ -452,7 +452,13 @@ export async function markActive(tabId, frameId) {
     return;
   }
 
+  const timeStamp = Date.now();
+  const newSession = isNewSession(siteId);
   await markActiveForSiteId(siteId);
+  if (newSession) {
+    count(EVENT_PAGE_VIEW, siteId, timeStamp);
+    count(EVENT_SESSION_START, siteId, timeStamp);
+  }
 }
 
 /**

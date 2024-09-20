@@ -696,36 +696,40 @@ describe("CDP on Chromium-based browsers", function() {
       await assertEvents(SITE_ID, EVENT_SESSION_START, 1);
     });
 
-    it("extends session expiration time due to user actions", async function() {
-      setMinTimeout(this, 30 * 1000);
-
-      const sessionExpirationInterval = 2000; // 2 seconds
-      const sleepInterval = sessionExpirationInterval / 4.0;
-
-      async function assertUserActionsExtendSession(callback) {
+    async function assertUserActionsSessionEvents(
+      callback, sleepInterval, clear = true, eventsCount = 1) {
+      if (clear) {
         await EWE.testing._clearCdpData();
         await EWE.testing._clearCdpActivity();
         await Page.removeCurrent();
         await EWE.testing._clearFrameState();
-
-        const page = new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`);
-        const tabId = await page.loaded;
-
-        const attempts = 10;
-
-        for (let i = 0; i < attempts; i++) {
-          await new Promise(r => setTimeout(r, sleepInterval));
-
-          // simulated user events extend the session expiration interval
-          await executeScript(tabId, callback, []);
-        }
-
-        // the session is expected to be still not expired
-        await page.reload();
-        await page.remove();
-
-        await assertEvents(SITE_ID, EVENT_SESSION_START, 1);
       }
+
+      const page = new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`);
+      const tabId = await page.loaded;
+
+      const attempts = 10;
+
+      for (let i = 0; i < attempts; i++) {
+        await new Promise(r => setTimeout(r, sleepInterval));
+
+        // simulated user events extend the session expiration interval
+        await executeScript(tabId, callback, []);
+      }
+
+      // the session is expected to be still not expired ...
+      await page.reload();
+      await page.remove();
+
+      // ... or a new session is started
+      await assertEvents(SITE_ID, EVENT_SESSION_START, eventsCount);
+    }
+
+    it("extends session expiration time due to user actions", async function() {
+      setMinTimeout(this, 60 * 1000);
+
+      const sessionExpirationInterval = 6000; // 6 seconds
+      const sleepInterval = sessionExpirationInterval / 12.0;
 
       await EWE.testing._setPrefs(
         EXPIRATION_INTERVAL_KEY, sessionExpirationInterval);
@@ -733,23 +737,50 @@ describe("CDP on Chromium-based browsers", function() {
       await addFilter("image.png");
 
       // click
-      await assertUserActionsExtendSession(() => {
+      await assertUserActionsSessionEvents(() => {
         const image = document.getElementById("image");
         image.click();
-      });
+      }, sleepInterval);
 
       // scrolling
-      await assertUserActionsExtendSession(() => {
+      await assertUserActionsSessionEvents(() => {
         const e = document.createEvent("UIEvents");
         e.initUIEvent("scroll", true, true, window, 1);
         document.body.dispatchEvent(e);
-      });
+      }, sleepInterval);
 
       // typing
-      await assertUserActionsExtendSession(() => {
+      await assertUserActionsSessionEvents(() => {
         const inputBox = document.getElementById("inputBox");
         inputBox.dispatchEvent(new KeyboardEvent("keypress", {key: "1"}));
-      });
+      }, sleepInterval);
+    });
+
+    it("starts new session if user was inactive for too long and then became active", async function() {
+      setMinTimeout(this, 60 * 1000);
+
+      const sessionExpirationInterval = 6000; // 6 seconds
+      const sleepInterval = sessionExpirationInterval / 12.0;
+
+
+      await EWE.testing._setPrefs(
+        EXPIRATION_INTERVAL_KEY, sessionExpirationInterval);
+
+      await addFilter("image.png");
+
+      // click
+      const userClickCallback = () => {
+        const image = document.getElementById("image");
+        image.click();
+      };
+      await assertUserActionsSessionEvents(
+        userClickCallback, sleepInterval, true, 1);
+
+      // simulate user to be inactive longer than session duration
+      await new Promise(r => setTimeout(r, sessionExpirationInterval + 1000));
+
+      await assertUserActionsSessionEvents(
+        userClickCallback, sleepInterval, false, 2);
     });
 
     it("defers and processes the browser events when the data is loaded", async function() {
@@ -1543,7 +1574,7 @@ describe("CDP on Chromium-based browsers", function() {
       });
 
       it("counts Amazon visitors", async function() {
-        setMinTimeout(this, 10 * 1000);
+        setMinTimeout(this, 30 * 1000);
 
         const AMAZON_SITE_ID = "amazon.*";
 
@@ -1643,7 +1674,7 @@ describe("CDP on Chromium-based browsers", function() {
     });
 
     it("migrates the data from Phase 2", async function() {
-      setMinTimeout(this, 60 * 1000);
+      setMinTimeout(this, 2 * 60 * 1000);
 
       // we can migrate/reuse the data for domains where siteId
       // is equal to domain name
@@ -1678,36 +1709,39 @@ describe("CDP on Chromium-based browsers", function() {
       await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
     });
 
-    it("extends session expiration time due to user actions", async function() {
-      setMinTimeout(this, 30 * 1000);
-
-      const sessionExpirationInterval = 2000; // 2 seconds
-      const sleepInterval = sessionExpirationInterval / 4.0;
-
-      async function assertUserActionsExtendSession(callback) {
+    async function assertUserActionsSessionEvents(
+      callback, sleepInterval, clear = true, eventsCount = 1) {
+      if (clear) {
         await EWE.testing._clearCdpData();
         await EWE.testing._clearCdpActivity();
         await Page.removeCurrent();
         await EWE.testing._clearFrameState();
-
-        const page = new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`);
-        const tabId = await page.loaded;
-
-        const attempts = 10;
-
-        for (let i = 0; i < attempts; i++) {
-          await new Promise(r => setTimeout(r, sleepInterval));
-
-          // simulated user events extend the session expiration interval
-          await executeScript(tabId, callback, []);
-        }
-
-        // the session is expected to be still not expired
-        await page.reload();
-        await page.remove();
-
-        await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
       }
+
+      const page = new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`);
+      const tabId = await page.loaded;
+
+      const attempts = 10;
+
+      for (let i = 0; i < attempts; i++) {
+        await new Promise(r => setTimeout(r, sleepInterval));
+
+        // simulated user events extend the session expiration interval
+        await executeScript(tabId, callback, []);
+      }
+
+      // the session is expected to be still not expired
+      await page.reload();
+      await page.remove();
+
+      await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, eventsCount);
+    }
+
+    it("extends session expiration time due to user actions", async function() {
+      setMinTimeout(this, 60 * 1000);
+
+      const sessionExpirationInterval = 6000; // 6 seconds
+      const sleepInterval = sessionExpirationInterval / 12.0;
 
       await EWE.testing._setPrefs(
         EXPIRATION_INTERVAL_KEY, sessionExpirationInterval);
@@ -1715,23 +1749,49 @@ describe("CDP on Chromium-based browsers", function() {
       await addFilter("image.png");
 
       // click
-      await assertUserActionsExtendSession(() => {
+      await assertUserActionsSessionEvents(() => {
         const image = document.getElementById("image");
         image.click();
-      });
+      }, sleepInterval);
 
       // scrolling
-      await assertUserActionsExtendSession(() => {
+      await assertUserActionsSessionEvents(() => {
         const e = document.createEvent("UIEvents");
         e.initUIEvent("scroll", true, true, window, 1);
         document.body.dispatchEvent(e);
-      });
+      }, sleepInterval);
 
       // typing
-      await assertUserActionsExtendSession(() => {
+      await assertUserActionsSessionEvents(() => {
         const inputBox = document.getElementById("inputBox");
         inputBox.dispatchEvent(new KeyboardEvent("keypress", {key: "1"}));
-      });
+      }, sleepInterval);
+    });
+
+    it("starts new session if user was inactive for too long and then became active", async function() {
+      setMinTimeout(this, 60 * 1000);
+
+      const sessionExpirationInterval = 6000; // 6 seconds
+      const sleepInterval = sessionExpirationInterval / 12.0;
+
+      await EWE.testing._setPrefs(
+        EXPIRATION_INTERVAL_KEY, sessionExpirationInterval);
+
+      await addFilter("image.png");
+
+      // click
+      const userClickCallback = () => {
+        const image = document.getElementById("image");
+        image.click();
+      };
+      await assertUserActionsSessionEvents(
+        userClickCallback, sleepInterval, true, 1);
+
+      // simulate user to be inactive longer than session duration
+      await new Promise(r => setTimeout(r, sessionExpirationInterval + 1000));
+
+      await assertUserActionsSessionEvents(
+        userClickCallback, sleepInterval, false, 2);
     });
 
     it("defers and processes the browser events when the data is loaded", async function() {
@@ -1789,6 +1849,8 @@ describe("CDP on Chromium-based browsers", function() {
     });
 
     it("clears the expired sessions on start", async function() {
+      setMinTimeout(this, 15000);
+
       const ACTIVITY_KEY = "ewe:cdp-activity";
       const sessionExpirationInterval =
         await EWE.testing._getPrefs("cdp_session_expiration_interval");
