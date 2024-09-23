@@ -46,5 +46,4 @@ export function startNotifyActive() {
   document.addEventListener("scroll", markActive, true);
   document.addEventListener("click", markActive);
   document.addEventListener("keypress", markActive, true);
-  document.addEventListener("mousemove", markActive);
 }
