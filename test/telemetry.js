@@ -20,7 +20,8 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 import {MILLIS_IN_HOUR, MILLIS_IN_SECOND} from "adblockpluscore/lib/time.js";
 
-import {EWE, runInBackgroundPage, expectTestEvents} from "./messaging.js";
+import {EWE, runInBackgroundPage, expectTestEvents, setFeatureFlags}
+  from "./messaging.js";
 import {TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
 import {clearRequestLogs, getRequestLogs, setMinTimeout, setEndpointResponse,
         clearEndpointResponse, waitForAssertion,
@@ -132,6 +133,101 @@ describe("Telemetry", function() {
         expect(payload.extension_version).toMatch(/0\.0\.\d/);
         expect(payload.aa_active).toEqual(false);
       });
+    });
+
+    it("does not send UCID to the telemetry server if turned off", async function() {
+      await setFeatureFlags({
+        eyeometryUcid: false
+      });
+      startTelemetryWithTestArgs();
+
+      await waitForAssertion(async() => {
+        let requests = await getRequestLogs(TELEMETRY_URL);
+        expect(requests).toEqual([expect.objectContaining({
+          url: "/telemetry",
+          method: "POST",
+          authorization: `Bearer ${TELEMETRY_BEARER}`
+        })]);
+
+        const payload = requests[0].body.payload;
+        expect(payload).not.toHaveProperty("ucid");
+      });
+    });
+
+    it("sends UCID to the telemetry server if turned on", async function() {
+      await setFeatureFlags({
+        eyeometryUcid: true
+      });
+      startTelemetryWithTestArgs();
+
+      await waitForAssertion(async() => {
+        let requests = await getRequestLogs(TELEMETRY_URL);
+        expect(requests).toEqual([expect.objectContaining({
+          url: "/telemetry",
+          method: "POST",
+          authorization: `Bearer ${TELEMETRY_BEARER}`
+        })]);
+
+        const payload = requests[0].body.payload;
+        expect(payload).toHaveProperty("ucid");
+      });
+    });
+
+    it("reuses existing UCID between restarts if generated once", async function() {
+      setMinTimeout(this, 20 * 1000);
+
+      await setFeatureFlags({
+        eyeometryUcid: true
+      });
+
+      startTelemetryWithTestArgs();
+
+      let ucid;
+      await waitForAssertion(async() => {
+        let requests = await getRequestLogs(TELEMETRY_URL);
+        expect(requests).toEqual([expect.objectContaining({
+          url: "/telemetry",
+          method: "POST",
+          authorization: `Bearer ${TELEMETRY_BEARER}`
+        })]);
+
+        const payload = requests[0].body.payload;
+        expect(payload).toHaveProperty("ucid");
+        ucid = payload.ucid;
+      }, 3000);
+
+      // clean-up
+      await EWE.testing.stopTelemetry();
+
+      await clearRequestLogs();
+
+      await waitForAssertion(async() => {
+        let storage = await browser.storage.local.get([TELEMETRY_STORAGE_KEY]);
+        let telemetryStorage = storage[TELEMETRY_STORAGE_KEY];
+        expect(telemetryStorage).toHaveProperty("ucid");
+        let adjustedLastPing =
+          new Date(telemetryStorage.lastPing).getTime() - 24 * MILLIS_IN_HOUR;
+        telemetryStorage.lastPing = new Date(adjustedLastPing).toISOString();
+        await browser.storage.local.set({
+          [TELEMETRY_STORAGE_KEY]: telemetryStorage
+        });
+      }, 3000);
+
+      // restart
+      startTelemetryWithTestArgs();
+
+      await waitForAssertion(async() => {
+        let requests = await getRequestLogs(TELEMETRY_URL);
+        expect(requests).toEqual([expect.objectContaining({
+          url: "/telemetry",
+          method: "POST",
+          authorization: `Bearer ${TELEMETRY_BEARER}`
+        })]);
+
+        const payload = requests[0].body.payload;
+        expect(payload).toHaveProperty("ucid");
+        expect(payload.ucid).toEqual(ucid);
+      }, 3000);
     });
 
     it("pings at regular intervals", async function() {

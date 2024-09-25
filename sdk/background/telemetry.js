@@ -19,18 +19,39 @@ import browser from "webextension-polyfill";
 import {v4 as uuidv4} from "uuid";
 import {MILLIS_IN_HOUR, MILLIS_IN_DAY} from "adblockpluscore/lib/time.js";
 
-import {Prefs, init as initPrefs} from "./prefs.js";
+import {Prefs, init as initializePrefs} from "./prefs.js";
 import * as info from "./info.js";
 import {hasAcceptableAdsEnabled} from "./subscriptions.js";
 import {EventDispatcher} from "./types.js";
 import {Scheduler} from "../all/scheduler.js";
 import {default as initializer} from "./initializer.js";
 import {trace, error} from "./debugging.js";
+import {isFeatureEnabled} from "adblockpluscore/lib/features.js";
 
 const TELEMETRY_STORAGE_KEY = "ewe:telemetry";
+const TELEMETRY_UCID_FEATURE_FLAG = "eyeometryUcid";
 
 let scheduler = null;
+let ucid = null;
 let onError = new EventDispatcher(dispatch => {});
+
+async function initializeUcid() {
+  let storageResult = await browser.storage.local.get(
+    [TELEMETRY_STORAGE_KEY]
+  );
+  let storage = storageResult[TELEMETRY_STORAGE_KEY];
+  ucid = storage && storage.ucid;
+  if (!ucid) {
+    ucid = uuidv4();
+    storage = {
+      ...storage,
+      ucid
+    };
+    await browser.storage.local.set({
+      [TELEMETRY_STORAGE_KEY]: storage
+    });
+  }
+}
 
 /**
  * @ignore
@@ -56,7 +77,10 @@ export async function start(telemetry, interval = 12 * MILLIS_IN_HOUR,
     return;
   }
 
-  await initPrefs();
+  await initializePrefs();
+  if (isFeatureEnabled(TELEMETRY_UCID_FEATURE_FLAG)) {
+    await initializeUcid();
+  }
 
   scheduler = new Scheduler({
     interval,
@@ -158,6 +182,10 @@ async function ping(telemetry) {
     payload.last_ping_tag = storage.lastPingTag;
   }
 
+  if (isFeatureEnabled(TELEMETRY_UCID_FEATURE_FLAG)) {
+    payload.ucid = ucid;
+  }
+
   let pingToken;
   try {
     let serverResponse = await postWithBearerToken(
@@ -189,13 +217,18 @@ async function ping(telemetry) {
     return false;
   }
 
+  let newStorage = {
+    firstPing: (storage && storage.firstPing) || pingToken,
+    lastPing: pingToken,
+    previousLastPing: storage && storage.lastPing,
+    lastPingTag: uuidv4()
+  };
+  if (isFeatureEnabled(TELEMETRY_UCID_FEATURE_FLAG)) {
+    newStorage.ucid = ucid;
+  }
+
   await browser.storage.local.set({
-    [TELEMETRY_STORAGE_KEY]: {
-      firstPing: (storage && storage.firstPing) || pingToken,
-      lastPing: pingToken,
-      previousLastPing: storage && storage.lastPing,
-      lastPingTag: uuidv4()
-    }
+    [TELEMETRY_STORAGE_KEY]: newStorage
   });
   return true;
 }

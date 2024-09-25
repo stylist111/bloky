@@ -15,6 +15,9 @@ Unreleased
 - Now if user was inactive for more than 30 minutes on a website and then
   became active, we consider it as a new CDP session. (EXT-323)
 - Now user cursor move does not extend the CDP session. (EXT-328)
+- Now eyeometry request includes UCID (unique client identifier).
+  A new feature flag for it is introduced while staying disabled by default.
+  (EXT-347)
 
 👕 1.13.0 - 2024-09-12 👕
 =========================
