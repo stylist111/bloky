@@ -490,7 +490,6 @@ int:bundle:
   stage: performance
   script:
     - docker run $DOCKER_OPTIONS --entrypoint npm $FUNCTIONAL_IMAGE run test-performance $PARAMS
-  when: manual
 
 perf:v2:chromium:
   extends: .performance
