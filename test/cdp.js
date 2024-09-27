@@ -1987,6 +1987,9 @@ describe("CDP on Chromium-based browsers", function() {
         expect(payload.addon_version).toEqual(expect.stringMatching(/^\d+(.\d+)+$/));
         expect(payload).not.toHaveProperty("last_ping");
         expect(payload.public_key_id).toEqual("aeec16f98f5c69aca7a91c77c494a135");
+        expect(payload).toHaveProperty("extension_name");
+        expect(payload.extension_name).toEqual(browser.runtime.id);
+        expect(payload.extension_version).toEqual(expect.any(String));
         expect(payload.utid).not.toBeNull();
         expect(payload.ucid).not.toBeNull();
 

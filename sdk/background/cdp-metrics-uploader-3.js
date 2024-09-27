@@ -30,7 +30,6 @@ import {importRSAPublicKey, encryptRSA, AES_LENGTH,
 import {PersistentState} from "./persistence.js";
 
 let manifest = browser.runtime.getManifest();
-const extensionName = manifest.name;
 const extensionVersion = manifest.version;
 
 const CDP_STORAGE_KEY = "ewe:cdp-metrics-uploader-3";
@@ -83,7 +82,7 @@ async function buildPayload(publicKey, keyId, domainStats, utid) {
     addon_version: info.sdkVersion,
     application: info.application,
     application_version: info.applicationVersion,
-    extension_name: extensionName,
+    extension_name: browser.runtime.id,
     extension_version: extensionVersion,
     utid,
     ucid: state.ucid,
