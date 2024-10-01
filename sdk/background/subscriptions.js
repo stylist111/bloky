@@ -689,21 +689,21 @@ export default {
    * subscriptions from the EWE.start() call.
    * Subscriptions are selected based on relevant language, type of
    * circumvention, and type of allowing.
-   * @param {string} [uiLanguage] The relevant language used for
-   * determining which subscriptions to add. If omitted,
-   * browser.i18n.getUILanguage will be used. If
-   * browser.i18n.getUILanguage is unavailable, navigator.language is
-   * used.
+   * @param {string} [uiLanguage] The relevant language used for determining
+   * which subscriptions to add. If omitted or null, browser.i18n.getUILanguage
+   * will be used. If browser.i18n.getUILanguage is unavailable,
+   * navigator.language is used.
+   * @param {bool} [force = false]
    * @throws {Error} No default language subscription
    * @throws {Error} No anti-circumvention subscription
    * @throws {Error} No allowing subscription
    * @see {@link #start|start()}
    * @return {Promise}
    */
-  async addDefaults(uiLanguage) {
+  async addDefaults(uiLanguage, force = false) {
     let subscriptions = [];
 
-    if (shouldAddDefaultSubscriptions()) {
+    if (force || shouldAddDefaultSubscriptions()) {
       let defaultSubscriptions = getDefaultSubscriptions(uiLanguage);
       if (!defaultSubscriptions.hasDefaultLang) {
         throw Error("No default language subscription");

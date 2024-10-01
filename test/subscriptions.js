@@ -143,6 +143,35 @@ describe("Subscriptions", function() {
     ]));
   });
 
+  it("does not add defaults if subscriptions are already added", async function() {
+    setMinTimeout(this, 15000);
+
+    await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
+    await EWE.subscriptions.addDefaults();
+
+    let subs = await EWE.subscriptions.getSubscriptions();
+    expect(subs).toEqual([
+      expect.objectContaining({url: VALID_SUBSCRIPTION_URL})
+    ]);
+  });
+
+  it("adds defaults if the force flag is passed to addDefaults", async function() {
+    setMinTimeout(this, 15000);
+
+    await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
+    await EWE.subscriptions.addDefaults(null, true);
+
+    let subs = await EWE.subscriptions.getSubscriptions();
+    expect(subs.length).toBeGreaterThanOrEqual(4);
+
+    let url = isMV3() ? subAntiCVLocal.url : subAntiCVLive.mv2_url;
+    expect(subs).toEqual(expect.arrayContaining([
+      expect.objectContaining({url: VALID_SUBSCRIPTION_URL}),
+      expect.objectContaining({url, privileged: true}),
+      expect.objectContaining({privileged: false})
+    ]));
+  });
+
   it("adds default live subscriptions", async function() {
     setMinTimeout(this, 15000);
 

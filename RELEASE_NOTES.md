@@ -1,6 +1,12 @@
 Unreleased
 ==========
 
+## General
+
+- Add a `force` flag to `EWE.subscriptions.addDefaults()`, to allow re-adding
+  the default subscriptions regardless of any current subscriptions or user
+  filters. (EXT-375)
+
 🏇 1.14.0 - 2024-09-26 🏇
 =========================
 
