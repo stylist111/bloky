@@ -6,6 +6,7 @@ Unreleased
 - Add a `force` flag to `EWE.subscriptions.addDefaults()`, to allow re-adding
   the default subscriptions regardless of any current subscriptions or user
   filters. (EXT-375)
+- Now passing web extension id as `extension_name` CDP phase 3 pings. (EXT-74)
 
 ## Fixes
 
@@ -33,7 +34,6 @@ Unreleased
 - Now eyeometry request includes UCID (unique client identifier).
   A new feature flag for it is introduced while staying disabled by default.
   (EXT-347)
-- Now passing web extension id as `extension_name` CDP phase 3 pings. (EXT-74)
 
 👕 1.13.0 - 2024-09-12 👕
 =========================
