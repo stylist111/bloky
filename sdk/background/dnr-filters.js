@@ -63,6 +63,7 @@ export async function disableDynamicRules(subscriptionId) {
   let {removedDynamicFilters, removeRuleIds} = removeDynamicFilters(
     subscriptionId, [...subscriptionDynRules.keys()]);
   removedDynamicFilters.forEach(text => dynamicFilters.delete(text));
+  storeDynamicFilters();
   await browser.declarativeNetRequest.updateDynamicRules({removeRuleIds});
 }
 

@@ -28,7 +28,7 @@ import {Page, setEndpointResponse, shouldBeLoaded, setMinTimeout,
   from "./utils.js";
 import {subTestCustom1, subTestUpdatable1} from "./api-fixtures.js";
 import {wait} from "./polling.js";
-import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
+import {isFuzzingServiceWorker, suspendServiceWorker} from "./mocha/mocha-runner.js";
 
 const DYNAMIC_FILTER = "||b5gxiibirp.invalid^";
 const DYNAMIC_FILTER2 = "||ttle10x9w7.invalid^";
@@ -880,6 +880,30 @@ describe("DNR filters update [mv3-only]", function() {
       await new Page("image-from-custom-filter.html")
         .expectResource("image-from-custom-filter.png")
         .toBeBlocked();
+    });
+
+    it("fetches the dynamic filters if a subscription is removed and readded", async function() {
+      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+        filters: {
+          add: ["any-dnr-filter"],
+          remove: []
+        }
+      }));
+
+      await EWE.subscriptions.add(testDiffSubscriptionUrl);
+      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+
+      expect(await await browser.declarativeNetRequest.getDynamicRules())
+        .toHaveLength(1);
+
+      await EWE.subscriptions.remove(testDiffSubscriptionUrl);
+      await suspendServiceWorker();
+
+      await EWE.subscriptions.add(testDiffSubscriptionUrl);
+      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+
+      expect(await await browser.declarativeNetRequest.getDynamicRules())
+        .toHaveLength(1);
     });
 
     it("doesn't synchronize the same DiffUpdatable subscription concurrently", async function() {

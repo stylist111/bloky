@@ -7,6 +7,12 @@ Unreleased
   the default subscriptions regardless of any current subscriptions or user
   filters. (EXT-375)
 
+## Fixes
+
+- Fix a bug where dynamic rule state was not being properly persisted when a
+  subscription is removed, potentially causing issues if the subscription is
+  readded.
+
 🏇 1.14.0 - 2024-09-26 🏇
 =========================
 
