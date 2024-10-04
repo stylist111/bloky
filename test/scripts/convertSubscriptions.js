@@ -151,6 +151,12 @@ describe("convertSubscriptions script", function() {
       });
   }
 
+  function isPrettyPrinted(filename) {
+    let fullFilename = path.join(tmpOutDir, filename);
+    let content = fs.readFileSync(fullFilename, encoding);
+    return content !== JSON.stringify(JSON.parse(content));
+  }
+
   it("does not filter regex rules", async function() {
     let filename = "foo.txt";
     createAbpRuleFile(filename, "[Adblock Plus 2.0]\n/rule1/\nrule2");
@@ -215,6 +221,22 @@ describe("convertSubscriptions script", function() {
     let result =
       JSON.parse(fs.readFileSync(customSubscriptionsFilename, encoding));
     expect(result[0].expires).toEqual("3 days");
+  });
+
+  it("pretty-prints JSON files", async function() {
+    let filename = "foo.txt";
+    createAbpRuleFile(filename, "[Adblock Plus 2.0]\n/rule1/\nrule2");
+    await convert(tmpInDir, tmpOutDir, false, "", customSubscriptionsFilename);
+    expect(isPrettyPrinted(filename)).toEqual(true);
+    expect(isPrettyPrinted(`${filename}.map`)).toEqual(true);
+  });
+
+  it("minifies JSON files", async function() {
+    let filename = "foo.txt";
+    createAbpRuleFile(filename, "[Adblock Plus 2.0]\n/rule1/\nrule2");
+    await convert(tmpInDir, tmpOutDir, false, "", customSubscriptionsFilename, 0);
+    expect(isPrettyPrinted(filename)).toEqual(false);
+    expect(isPrettyPrinted(`${filename}.map`)).toEqual(false);
   });
 
   it("generates a summary report file", async function() {

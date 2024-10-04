@@ -48,7 +48,8 @@ function generateRuleId() {
 
 async function convert(inDir, outDir,
                        generateReport = false, repDir = reportDir,
-                       recommendedSubscriptions = customSubscriptionsFilename) {
+                       recommendedSubscriptions = customSubscriptionsFilename,
+                       spaces = 2) {
   let files = fs.readdirSync(inDir);
   if (!fs.existsSync(outDir)) {
     fs.mkdirSync(outDir, {recursive: true});
@@ -114,7 +115,7 @@ async function convert(inDir, outDir,
       }
     }
 
-    await processFile(converter, lines, outFileAbs);
+    await processFile(converter, lines, outFileAbs, spaces);
     if (generateReport) {
       await writeSubsReport(subsId, reportFileAbs);
     }
@@ -159,6 +160,11 @@ async function main() {
       requiresArg: true,
       description: "Path to the recommended subscriptions. The default is 'scriptsOutput/custom-mv3-subscriptions.json'"
     })
+    .option("pretty-print", {
+      alias: "p",
+      boolean: true,
+      description: "Pretty-print JSON files"
+    })
     .parse();
 
   let inDir = args.input || inputDir;
@@ -167,8 +173,9 @@ async function main() {
   let generateReport = args.report || false;
   let recommendedSubscriptions =
     args.recommendedSubscriptions || customSubscriptionsFilename;
+  let spaces = args.prettyPrint ? 2 : 0;
   await convert(inDir, outDir, generateReport,
-                repDir, recommendedSubscriptions);
+                repDir, recommendedSubscriptions, spaces);
 }
 
 if (isMain(import.meta.url)) {

@@ -1,6 +1,17 @@
 Unreleased
 ==========
 
+## General
+
+- Added `-p`/`--pretty-print` argument (default: `false`) to `subs-convert`
+  script to specify whether generated JSON files should be pretty-printed or
+  minified (EXT-395).
+
+## Updating your code
+
+- If JSON files generated via the `subs-convert` script should not be minified,
+  pass the `-p`/`--pretty-print` argument to the `subs-convert` script.
+
 🎄 1.15.0 - 2024-10-01 🎄
 =========================
 

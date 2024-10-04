@@ -276,6 +276,7 @@ npm exec subs-convert -- [--input/-i input_dir]
                          [--report/-r]
                          [--report-output/-O report_dir]
                          [--recommended-subscriptions/-s custom_subscriptions_filename]
+                         [--pretty-print/-p]
 ```
 
 Options:
@@ -289,6 +290,8 @@ Default: `false`
 * `recommended-subscriptions`/`s`: Path to the file with the recommended
 subscriptions. Usually should be the same value as the `--output` from
 `subs-merge`. Default: `"scriptsOutput/custom-mv3-subscriptions.json"`
+* `pretty-print`/`p`: Whether generated files should be pretty-printed.
+Default: `false`
 
 Example:
 

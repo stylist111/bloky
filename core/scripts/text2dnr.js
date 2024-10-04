@@ -112,21 +112,21 @@ async function readAndProcessFile(converter, filename, outputfile) {
   return await processFile(converter, lines, outputfile);
 }
 
-async function processFile(converter, lines, outputfile) {
+async function processFile(converter, lines, outputfile, spaces = 2) {
   let results = await processContent(converter, lines);
   if (typeof outputfile != "undefined") {
     await writeFile(
       outputfile,
-      JSON.stringify(results.rules, null, 2),
+      JSON.stringify(results.rules, null, spaces),
       ENCODING
     );
     return await writeFile(
       outputfile + ".map",
-      JSON.stringify(results.dnrMap, null, 2),
+      JSON.stringify(results.dnrMap, null, spaces),
       ENCODING
     );
   }
-  return process.stdout.write(JSON.stringify(results, null, 2));
+  return process.stdout.write(JSON.stringify(results, null, spaces));
 }
 
 async function main() {
