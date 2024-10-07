@@ -382,6 +382,8 @@ addEventListener("unhandledrejection", ({reason}) => {
 EWE.filters.onAdded.addListener(createTestEventListener("filters.onAdded"));
 EWE.filters.onChanged.addListener(createTestEventListener("filters.onChanged"));
 EWE.filters.onRemoved.addListener(createTestEventListener("filters.onRemoved"));
+EWE.filters.onExpired.addListener(createTestEventListener("filters.onExpired"));
+EWE.filters.onRenewed.addListener(createTestEventListener("filters.onRenewed"));
 EWE.subscriptions.onAdded.addListener(createTestEventListener("subscriptions.onAdded"));
 EWE.subscriptions.onChanged.addListener(createTestEventListener("subscriptions.onChanged"));
 EWE.subscriptions.onRemoved.addListener(createTestEventListener("subscriptions.onRemoved"));

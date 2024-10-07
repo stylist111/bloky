@@ -72,7 +72,7 @@ export class EventDispatcher {
 
   /**
    * Call listeners with the provided arguments.
-   * @param {[Object]} listener arguments
+   * @param {[Object]} args arguments
    */
   emit(...args) {
     for (let listener of this._listeners) {

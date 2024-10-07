@@ -855,9 +855,11 @@ describe("Filters", function() {
     const ALLOWING_DOC_FILTER =
       `@@|${TEST_PAGES_URL}^$document`;
 
-    it("removes expired filter", async function() {
+    it("removes expired filter and sends expiry event", async function() {
       setMinTimeout(this, 30000);
-      await addFilter(ALLOWING_DOC_FILTER, {expiresAt: Date.now() + 5000});
+      const metadata = {expiresAt: Date.now() + 5000};
+      const EVENT = "filters.onExpired";
+      await addFilter(ALLOWING_DOC_FILTER, metadata);
 
       let tabId = await new Page("image.html").loaded;
       expect(await EWE.filters.getAllowingFilters(tabId))
@@ -866,15 +868,21 @@ describe("Filters", function() {
       await sleep(6000);
 
       tabId = await new Page("image.html").loaded;
+
       expect(await EWE.filters.getAllowingFilters(tabId)).toEqual([]);
+      await expectTestEvents(EVENT, [[expect.objectContaining({
+        text: ALLOWING_DOC_FILTER,
+        metadata
+      })]]);
     });
 
-    it("extends filter expiration", async function() {
+    it("extends filter expiration and sends renewal event", async function() {
       setMinTimeout(this, 30000);
 
       const autoExtendMs = 7000;
       const expiresAt = Date.now() + autoExtendMs;
       const waitMs = 2500;
+      const EVENT = "filters.onRenewed";
       await addFilter(ALLOWING_DOC_FILTER, {
         expiresAt,
         autoExtendMs
@@ -885,12 +893,18 @@ describe("Filters", function() {
         .toEqual([ALLOWING_DOC_FILTER]);
 
       await sleep(waitMs);
+      // Ingore all the other renew events and only look at the last one.
+      clearTestEvents(EVENT);
 
       await new Page("image.html").loaded;
       const metadata = await EWE.filters.getMetadata(ALLOWING_DOC_FILTER);
 
       expect(metadata.expiresAt).toBeGreaterThan(expiresAt + waitMs);
       expect(metadata.expiresAt).toBeLessThanOrEqual(Date.now() + autoExtendMs);
+      await expectTestEvents(EVENT, [[expect.objectContaining({
+        text: ALLOWING_DOC_FILTER,
+        metadata
+      })]]);
     });
   });
 });

@@ -9,6 +9,9 @@ Unreleased
 - Ruleset files no longer include `"isUrlFilterCaseSensitive": false` for
   filters that don't specify `$match-case` because it is no longer needed
   (EXT-383).
+- Added 2 more events for smart allowlisting, that are sending the filter with it's metadata (EXT-376):
+  - `EWE.filters.onRenewed` emitted when a smart allowlist filter is extended.
+  - `EWE.filters.onExpired` emitted when a smart allowlist filter has expired.  
 
 ## Updating your code
 

@@ -513,6 +513,34 @@ const namespace = {
   }),
 
   /**
+   * Emitted when a filter expiration date is extended.
+   * This event also contains the metadata for the filter.
+   * @event
+   * @type {EventDispatcher<Filter>}
+   * @memberof filters
+   */
+  onRenewed: new EventDispatcher(dispatch => {
+    filterNotifier.on("filter.renewed", (filter, metadata) => dispatch({
+      ...convertFilter(filter),
+      metadata
+    }));
+  }),
+
+  /**
+   * Emitted when a filter expires.
+   * This event also contains the metadata for the filter.
+   * @event
+   * @type {EventDispatcher<Filter>}
+   * @memberof filters
+   */
+  onExpired: new EventDispatcher(dispatch => {
+    filterNotifier.on("filter.expired", (filter, metadata) => dispatch({
+      ...convertFilter(filter),
+      metadata
+    }));
+  }),
+
+  /**
    * Returns an array of MV2 to MV3 migration errors and the related filters.
    * @return {Promise<array<Filter, string>>} The migration errors.
    * @memberof filters
@@ -555,6 +583,7 @@ async function removeExpiredFilters() {
       // If the filter is expired, add it to the list of filters to remove
       if (expiresAt && now > expiresAt) {
         filtersToRemove.push(filter.text);
+        filterNotifier.emit("filter.expired", filter, metadata);
       }
     }
 
@@ -591,10 +620,12 @@ async function onCompleted(details) {
       // extend its expiration date
       const isExtendableFilter = autoExtendMs && expiresAt;
       if (isExtendableFilter && now < expiresAt) {
-        await namespace.setMetadata(filterText, {
+        const newMetadata = {
           ...metadata,
           expiresAt: now + autoExtendMs
-        });
+        };
+        await namespace.setMetadata(filterText, newMetadata);
+        filterNotifier.emit("filter.renewed", Filter.fromText(Filter.normalize(filterText)), newMetadata);
       }
     }
   }
