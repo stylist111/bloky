@@ -103,10 +103,9 @@ function getConditions(filter, urlFilter, resourceTypes, matchCase) {
     baseCondition.regexFilter = filter.regexp.source;
   }
 
-  // Before Chromium 118, the default for isUrlFilterCaseSensitive is true. From
-  // Chromium 118, the default is false. If we at some point make our minimum
-  // supported Chromium 118, then we can leave this undefined if !matchCase.
-  baseCondition.isUrlFilterCaseSensitive = matchCase;
+  if (matchCase) {
+    baseCondition.isUrlFilterCaseSensitive = matchCase;
+  }
 
   if (filter.thirdParty != null) {
     baseCondition.domainType = filter.thirdParty ? "thirdParty" : "firstParty";

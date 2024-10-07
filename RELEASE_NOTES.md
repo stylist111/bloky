@@ -6,6 +6,9 @@ Unreleased
 - Added `-p`/`--pretty-print` argument (default: `false`) to `subs-convert`
   script to specify whether generated JSON files should be pretty-printed or
   minified (EXT-395).
+- Ruleset files no longer include `"isUrlFilterCaseSensitive": false` for
+  filters that don't specify `$match-case` because it is no longer needed
+  (EXT-383).
 
 ## Updating your code
 

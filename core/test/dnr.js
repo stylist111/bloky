@@ -137,7 +137,7 @@ describe("DeclarativeNetRequest", function() {
     assert.equal(result.length, 1);
     assert.equal(result[0].priority, GENERIC_PRIORITY);
     assert.equal(result[0].action.type, "block");
-    assert.deepEqual(result[0].condition, {urlFilter: "-ad-300x600px.", isUrlFilterCaseSensitive: false});
+    assert.deepEqual(result[0].condition, {urlFilter: "-ad-300x600px."});
 
     let rule2 = Object.assign(
       {},
@@ -154,7 +154,6 @@ describe("DeclarativeNetRequest", function() {
     assert.equal(result[0].action.type, "block");
     assert.deepEqual(result[0].condition, {
       urlFilter: "-adwords.",
-      isUrlFilterCaseSensitive: false,
       excludedInitiatorDomains: [
         "consultant-adwords.com",
         "consultant-adwords.fr",
@@ -179,7 +178,6 @@ describe("DeclarativeNetRequest", function() {
     assert.equal(result[0].action.type, "block");
     assert.deepEqual(result[0].condition, {
       urlFilter: ".openx.",
-      isUrlFilterCaseSensitive: false,
       excludedInitiatorDomains: [
         "openx.com",
         "openx.solar"
@@ -201,7 +199,6 @@ describe("DeclarativeNetRequest", function() {
     assert.equal(result[0].action.type, "block");
     assert.deepEqual(result[0].condition, {
       urlFilter: "||contentpass.net/stats?",
-      isUrlFilterCaseSensitive: false,
       domainType: "thirdParty"
     });
   });
@@ -220,8 +217,7 @@ describe("DeclarativeNetRequest", function() {
     assert.equal(result[0].priority, GENERIC_PRIORITY);
     assert.equal(result[0].action.type, "block");
     assert.deepEqual(result[0].condition, {
-      regexFilter: "^https?:\\/\\/(.+?.)?anotherexample.com\\/images\\/uploads\\/[a-za-z]{6,15}-.*",
-      isUrlFilterCaseSensitive: false
+      regexFilter: "^https?:\\/\\/(.+?.)?anotherexample.com\\/images\\/uploads\\/[a-za-z]{6,15}-.*"
     });
   });
 
@@ -242,7 +238,6 @@ describe("DeclarativeNetRequest", function() {
     assert.equal(result[0].action.type, "allow");
     assert.deepEqual(result[0].condition, {
       urlFilter: "||g.doubleclick.net/gpt/pubads_impl_",
-      isUrlFilterCaseSensitive: false,
       initiatorDomains: ["example.com"],
       resourceTypes: [
         "script"
@@ -279,7 +274,6 @@ describe("DeclarativeNetRequest", function() {
     assert.equal(result[0].action.type, "allowAllRequests");
     assert.deepEqual(result[0].condition, {
       urlFilter: "||optout.exampleadvertising.org^",
-      isUrlFilterCaseSensitive: false,
       resourceTypes: [
         "main_frame",
         "sub_frame"
@@ -302,7 +296,6 @@ describe("DeclarativeNetRequest", function() {
     assert.equal(result[0].action.type, "allowAllRequests");
     assert.deepEqual(result[0].condition, {
       urlFilter: "||optout.exampleadvertising.org^",
-      isUrlFilterCaseSensitive: false,
       resourceTypes: [
         "main_frame",
         "sub_frame"
@@ -334,7 +327,6 @@ describe("DeclarativeNetRequest", function() {
     assert.deepEqual(result[0].condition, {
       urlFilter: "||example.com^*/getspot/?spotid=",
       resourceTypes: ["media"],
-      isUrlFilterCaseSensitive: false,
       initiatorDomains: ["example.com"]
     });
   });
@@ -356,7 +348,6 @@ describe("DeclarativeNetRequest", function() {
     assert.equal(result[0].priority, GENERIC_PRIORITY);
     assert.deepEqual(result[0].condition, {
       urlFilter: "||example.com^",
-      isUrlFilterCaseSensitive: false,
       resourceTypes: [
         "main_frame",
         "sub_frame"
@@ -394,7 +385,6 @@ describe("DeclarativeNetRequest", function() {
         "main_frame",
         "sub_frame"
       ],
-      isUrlFilterCaseSensitive: false,
       domainType: "firstParty"
     });
   });

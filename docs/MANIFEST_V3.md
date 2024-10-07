@@ -94,8 +94,7 @@ Example:
   {
     "priority": 1000,
     "condition": {
-      "urlFilter": "&werbemittel=",
-      "isUrlFilterCaseSensitive": false
+      "urlFilter": "&werbemittel="
     },
     "action": {
       "type": "block"

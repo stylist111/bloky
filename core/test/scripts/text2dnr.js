@@ -171,8 +171,7 @@ describe("text2dnr script", function() {
         type: "block"
       },
       condition: {
-        urlFilter: "https://www.abc.com",
-        isUrlFilterCaseSensitive: false
+        urlFilter: "https://www.abc.com"
       },
       priority: 1000
     }]);
@@ -264,8 +263,7 @@ describe("text2dnr script", function() {
     assertIsValid({
       priority: 1001,
       condition: {
-        urlFilter: "http://abc.com",
-        isUrlFilterCaseSensitive: false
+        urlFilter: "http://abc.com"
       },
       action: {
         type: "block"
@@ -275,8 +273,7 @@ describe("text2dnr script", function() {
     assertIsValid({
       priority: 1001,
       condition: {
-        regexFilter: "http://abc.com",
-        isUrlFilterCaseSensitive: false
+        regexFilter: "http://abc.com"
       },
       action: {
         type: "block"
@@ -286,8 +283,7 @@ describe("text2dnr script", function() {
     assertIsValid({
       priority: 1000,
       condition: {
-        urlFilter: "http://abc.xn--?q=-zedud", // punycode
-        isUrlFilterCaseSensitive: false
+        urlFilter: "http://abc.xn--?q=-zedud" // punycode
       },
       action: {
         type: "block"
@@ -297,8 +293,7 @@ describe("text2dnr script", function() {
     assertIsValid({
       priority: 1000,
       condition: {
-        regexFilter: "http://abc.xn--?q=-zedud", // punycode
-        isUrlFilterCaseSensitive: false
+        regexFilter: "http://abc.xn--?q=-zedud" // punycode
       },
       action: {
         type: "block"

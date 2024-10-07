@@ -70,8 +70,7 @@ describe("convertFilter", function() {
         {
           priority: GENERIC_PRIORITY,
           condition: {
-            urlFilter: "||example.com",
-            isUrlFilterCaseSensitive: false
+            urlFilter: "||example.com"
           },
           action: {type: "block"}
         }
@@ -83,32 +82,28 @@ describe("convertFilter", function() {
         {
           priority: GENERIC_PRIORITY,
           condition: {
-            urlFilter: "/foo",
-            isUrlFilterCaseSensitive: false
+            urlFilter: "/foo"
           },
           action: {type: "block"}
         },
         {
           priority: GENERIC_PRIORITY,
           condition: {
-            urlFilter: "||test.com^",
-            isUrlFilterCaseSensitive: false
+            urlFilter: "||test.com^"
           },
           action: {type: "block"}
         },
         {
           priority: GENERIC_PRIORITY,
           condition: {
-            urlFilter: "http://example.com/foo",
-            isUrlFilterCaseSensitive: false
+            urlFilter: "http://example.com/foo"
           },
           action: {type: "block"}
         },
         {
           priority: GENERIC_PRIORITY,
           condition: {
-            urlFilter: "^foo^",
-            isUrlFilterCaseSensitive: false
+            urlFilter: "^foo^"
           },
           action: {type: "block"}
         }
@@ -128,8 +123,7 @@ describe("convertFilter", function() {
             priority: GENERIC_PRIORITY,
             condition: {
               urlFilter: "*example.js",
-              resourceTypes: ["script"],
-              isUrlFilterCaseSensitive: false
+              resourceTypes: ["script"]
             },
             action: {type: "block"}
           }
@@ -150,7 +144,6 @@ describe("convertFilter", function() {
           {
             priority: GENERIC_PRIORITY,
             condition: {
-              isUrlFilterCaseSensitive: false,
               regexFilter: "\\.example\\.com\\/.*[a-z0-9]{4}",
               resourceTypes: ["script"]
             },
@@ -171,7 +164,6 @@ describe("convertFilter", function() {
           {
             priority: SPECIFIC_PRIORITY,
             condition: {
-              isUrlFilterCaseSensitive: false,
               regexFilter: "regexp"
             },
             action: {
@@ -189,8 +181,7 @@ describe("convertFilter", function() {
         {
           priority: SPECIFIC_PRIORITY,
           condition: {
-            urlFilter: "example.com",
-            isUrlFilterCaseSensitive: false
+            urlFilter: "example.com"
           },
           action: {type: "allow"}
         }
@@ -212,8 +203,7 @@ describe("convertFilter", function() {
             priority: SPECIFIC_PRIORITY,
             condition: {
               urlFilter: "*example.js",
-              resourceTypes: ["script"],
-              isUrlFilterCaseSensitive: false
+              resourceTypes: ["script"]
             },
             action: {type: "allow"}
           }
@@ -229,7 +219,6 @@ describe("convertFilter", function() {
           priority: SPECIFIC_ALLOW_ALL_PRIORITY,
           condition: {
             urlFilter: "||example.com^",
-            isUrlFilterCaseSensitive: false,
             resourceTypes: ["main_frame", "sub_frame"]
           },
           action: {type: "allowAllRequests"}
@@ -240,7 +229,6 @@ describe("convertFilter", function() {
           priority: SPECIFIC_ALLOW_ALL_PRIORITY,
           condition: {
             urlFilter: "||example.com^",
-            isUrlFilterCaseSensitive: false,
             resourceTypes: ["main_frame", "sub_frame"]
           },
           action: {type: "allowAllRequests"}
@@ -249,7 +237,6 @@ describe("convertFilter", function() {
           priority: SPECIFIC_PRIORITY,
           condition: {
             urlFilter: "||example.com^",
-            isUrlFilterCaseSensitive: false,
             resourceTypes: ["image"]
           },
           action: {type: "allow"}
@@ -262,7 +249,6 @@ describe("convertFilter", function() {
             priority: SPECIFIC_ALLOW_ALL_PRIORITY,
             condition: {
               urlFilter: "||bar.com^",
-              isUrlFilterCaseSensitive: false,
               resourceTypes: ["main_frame", "sub_frame"]
             },
             action: {type: "allowAllRequests"}
@@ -271,7 +257,6 @@ describe("convertFilter", function() {
             priority: SPECIFIC_PRIORITY,
             condition: {
               urlFilter: "||bar.com^",
-              isUrlFilterCaseSensitive: false,
               resourceTypes: ["image"]
             },
             action: {type: "allow"}
@@ -280,7 +265,6 @@ describe("convertFilter", function() {
             priority: SPECIFIC_ALLOW_ALL_PRIORITY,
             condition: {
               urlFilter: "||foo.com^",
-              isUrlFilterCaseSensitive: false,
               resourceTypes: ["main_frame", "sub_frame"]
             },
             action: {type: "allowAllRequests"}
@@ -295,7 +279,6 @@ describe("convertFilter", function() {
           priority: SPECIFIC_PRIORITY,
           condition: {
             urlFilter: "||example.com/path^",
-            isUrlFilterCaseSensitive: false,
             resourceTypes: ["font"]
           },
           action: {type: "allow"}
@@ -309,7 +292,6 @@ describe("convertFilter", function() {
           priority: SPECIFIC_ALLOW_ALL_PRIORITY,
           condition: {
             urlFilter: "||example.com/path",
-            isUrlFilterCaseSensitive: false,
             resourceTypes: ["main_frame", "sub_frame"]
           },
           action: {type: "allowAllRequests"}
@@ -321,7 +303,6 @@ describe("convertFilter", function() {
           priority: SPECIFIC_PRIORITY,
           condition: {
             urlFilter: "||example.com/path",
-            isUrlFilterCaseSensitive: false,
             resourceTypes: ["sub_frame"]
           },
           action: {type: "allow"}
@@ -333,7 +314,6 @@ describe("convertFilter", function() {
           priority: SPECIFIC_ALLOW_ALL_PRIORITY,
           condition: {
             urlFilter: "||example.com/path",
-            isUrlFilterCaseSensitive: false,
             resourceTypes: ["main_frame", "sub_frame"]
           },
           action: {type: "allowAllRequests"}
@@ -345,7 +325,6 @@ describe("convertFilter", function() {
           priority: SPECIFIC_ALLOW_ALL_PRIORITY,
           condition: {
             urlFilter: "||example.com",
-            isUrlFilterCaseSensitive: false,
             resourceTypes: ["main_frame", "sub_frame"]
           },
           action: {type: "allowAllRequests"}
@@ -356,8 +335,7 @@ describe("convertFilter", function() {
         {
           priority: SPECIFIC_PRIORITY,
           condition: {
-            urlFilter: "||example.com",
-            isUrlFilterCaseSensitive: false
+            urlFilter: "||example.com"
           },
           action: {type: "allow"}
         }
@@ -367,8 +345,7 @@ describe("convertFilter", function() {
         {
           priority: SPECIFIC_PRIORITY,
           condition: {
-            urlFilter: "||example.com/path",
-            isUrlFilterCaseSensitive: false
+            urlFilter: "||example.com/path"
           },
           action: {type: "allow"}
         }
@@ -385,7 +362,6 @@ describe("convertFilter", function() {
           priority: SPECIFIC_ALLOW_ALL_PRIORITY,
           condition: {
             urlFilter: "https://a.com",
-            isUrlFilterCaseSensitive: false,
             resourceTypes: ["main_frame", "sub_frame"]
           },
           action: {type: "allowAllRequests"}
@@ -394,7 +370,6 @@ describe("convertFilter", function() {
           priority: SPECIFIC_ALLOW_ALL_PRIORITY,
           condition: {
             urlFilter: "https://b.com",
-            isUrlFilterCaseSensitive: false,
             resourceTypes: ["main_frame", "sub_frame"]
           },
           action: {type: "allowAllRequests"}
@@ -403,7 +378,6 @@ describe("convertFilter", function() {
           priority: SPECIFIC_ALLOW_ALL_PRIORITY,
           condition: {
             urlFilter: "https://c.com",
-            isUrlFilterCaseSensitive: false,
             resourceTypes: ["main_frame", "sub_frame"]
           },
           action: {type: "allowAllRequests"}
@@ -412,7 +386,6 @@ describe("convertFilter", function() {
           priority: SPECIFIC_ALLOW_ALL_PRIORITY,
           condition: {
             urlFilter: "https://d.com",
-            isUrlFilterCaseSensitive: false,
             resourceTypes: ["main_frame", "sub_frame"]
           },
           action: {type: "allowAllRequests"}
@@ -421,7 +394,6 @@ describe("convertFilter", function() {
           priority: SPECIFIC_ALLOW_ALL_PRIORITY,
           condition: {
             urlFilter: "https://e.com",
-            isUrlFilterCaseSensitive: false,
             resourceTypes: ["main_frame", "sub_frame"]
           },
           action: {type: "allowAllRequests"}
@@ -436,7 +408,6 @@ describe("convertFilter", function() {
           priority: SPECIFIC_ALLOW_ALL_PRIORITY,
           condition: {
             urlFilter: "https://a.com",
-            isUrlFilterCaseSensitive: false,
             resourceTypes: ["main_frame", "sub_frame"]
           },
           action: {type: "allowAllRequests"}
@@ -445,7 +416,6 @@ describe("convertFilter", function() {
           priority: SPECIFIC_ALLOW_ALL_PRIORITY,
           condition: {
             urlFilter: "https://b.com^",
-            isUrlFilterCaseSensitive: false,
             resourceTypes: ["main_frame", "sub_frame"]
           },
           action: {type: "allowAllRequests"}
@@ -454,7 +424,6 @@ describe("convertFilter", function() {
           priority: SPECIFIC_ALLOW_ALL_PRIORITY,
           condition: {
             urlFilter: "https://c.com?",
-            isUrlFilterCaseSensitive: false,
             resourceTypes: ["main_frame", "sub_frame"]
           },
           action: {type: "allowAllRequests"}
@@ -463,7 +432,6 @@ describe("convertFilter", function() {
           priority: SPECIFIC_ALLOW_ALL_PRIORITY,
           condition: {
             urlFilter: "https://d.com/",
-            isUrlFilterCaseSensitive: false,
             resourceTypes: ["main_frame", "sub_frame"]
           },
           action: {type: "allowAllRequests"}
@@ -472,7 +440,6 @@ describe("convertFilter", function() {
           priority: SPECIFIC_ALLOW_ALL_PRIORITY,
           condition: {
             urlFilter: "https://e.com|",
-            isUrlFilterCaseSensitive: false,
             resourceTypes: ["main_frame", "sub_frame"]
           },
           action: {type: "allowAllRequests"}
@@ -487,8 +454,7 @@ describe("convertFilter", function() {
             priority: SPECIFIC_ALLOW_ALL_PRIORITY,
             condition: {
               urlFilter: "https://a.com*/",
-              resourceTypes: ["main_frame", "sub_frame"],
-              isUrlFilterCaseSensitive: false
+              resourceTypes: ["main_frame", "sub_frame"]
             },
             action: {type: "allowAllRequests"}
           },
@@ -496,8 +462,7 @@ describe("convertFilter", function() {
             priority: SPECIFIC_ALLOW_ALL_PRIORITY,
             condition: {
               urlFilter: "https://b.com^a",
-              resourceTypes: ["main_frame", "sub_frame"],
-              isUrlFilterCaseSensitive: false
+              resourceTypes: ["main_frame", "sub_frame"]
             },
             action: {type: "allowAllRequests"}
           },
@@ -505,8 +470,7 @@ describe("convertFilter", function() {
             priority: SPECIFIC_ALLOW_ALL_PRIORITY,
             condition: {
               urlFilter: "https://c.com?a",
-              resourceTypes: ["main_frame", "sub_frame"],
-              isUrlFilterCaseSensitive: false
+              resourceTypes: ["main_frame", "sub_frame"]
             },
             action: {type: "allowAllRequests"}
           },
@@ -514,8 +478,7 @@ describe("convertFilter", function() {
             priority: SPECIFIC_ALLOW_ALL_PRIORITY,
             condition: {
               urlFilter: "https://d.com/1",
-              resourceTypes: ["main_frame", "sub_frame"],
-              isUrlFilterCaseSensitive: false
+              resourceTypes: ["main_frame", "sub_frame"]
             },
             action: {type: "allowAllRequests"}
           },
@@ -523,8 +486,7 @@ describe("convertFilter", function() {
             priority: SPECIFIC_ALLOW_ALL_PRIORITY,
             condition: {
               urlFilter: "https://e.com|2",
-              resourceTypes: ["main_frame", "sub_frame"],
-              isUrlFilterCaseSensitive: false
+              resourceTypes: ["main_frame", "sub_frame"]
             },
             action: {type: "allowAllRequests"}
           }
@@ -544,8 +506,7 @@ describe("convertFilter", function() {
             priority: GENERIC_ALLOW_ALL_PRIORITY,
             condition: {
               urlFilter: "foo.bar.com",
-              resourceTypes: ["main_frame", "sub_frame"],
-              isUrlFilterCaseSensitive: false
+              resourceTypes: ["main_frame", "sub_frame"]
             }
           },
           {
@@ -555,8 +516,7 @@ describe("convertFilter", function() {
             priority: GENERIC_ALLOW_ALL_PRIORITY,
             condition: {
               urlFilter: "foo.bar.com",
-              resourceTypes: ["main_frame", "sub_frame"],
-              isUrlFilterCaseSensitive: false
+              resourceTypes: ["main_frame", "sub_frame"]
             }
           },
           {
@@ -564,7 +524,6 @@ describe("convertFilter", function() {
               type: "allow"
             },
             condition: {
-              isUrlFilterCaseSensitive: false,
               resourceTypes: ["script"],
               urlFilter: "foo.bar.com"
             },
@@ -712,7 +671,6 @@ describe("convertFilter", function() {
                 type: "block"
               },
               condition: {
-                isUrlFilterCaseSensitive: false,
                 urlFilter: "example.*/image.png"
               },
               priority: 1000
@@ -730,7 +688,6 @@ describe("convertFilter", function() {
                 type: "block"
               },
               condition: {
-                isUrlFilterCaseSensitive: false,
                 urlFilter: "domain.com/path/"
               },
               priority: 1000
@@ -752,7 +709,6 @@ describe("convertFilter", function() {
           [{
             priority: SPECIFIC_PRIORITY,
             condition: {
-              isUrlFilterCaseSensitive: false,
               regexFilter: "regexp*"
             },
             action: {
@@ -791,22 +747,31 @@ describe("convertFilter", function() {
 
     it("should honour the $match-case option", async function() {
       await testRules(
-        ["||test.com"], [false], rule => rule.condition.isUrlFilterCaseSensitive
+        ["||test.com"], [undefined], rule => rule.condition.isUrlFilterCaseSensitive
       );
       await testRules(
         ["||test.com$match-case"], [true], rule => rule.condition.isUrlFilterCaseSensitive
       );
       await testRules(
-        ["||test.com/foo"], [false], rule => rule.condition.isUrlFilterCaseSensitive
+        ["||test.com$~match-case"], [undefined], rule => rule.condition.isUrlFilterCaseSensitive
+      );
+      await testRules(
+        ["||test.com/foo"], [undefined], rule => rule.condition.isUrlFilterCaseSensitive
       );
       await testRules(
         ["||test.com/foo$match-case"], [true], rule => rule.condition.isUrlFilterCaseSensitive
       );
       await testRules(
-        ["||test.com/Foo"], [false], rule => rule.condition.isUrlFilterCaseSensitive
+        ["||test.com/foo$~match-case"], [undefined], rule => rule.condition.isUrlFilterCaseSensitive
+      );
+      await testRules(
+        ["||test.com/Foo"], [undefined], rule => rule.condition.isUrlFilterCaseSensitive
       );
       await testRules(
         ["||test.com/Foo$match-case"], [true], rule => rule.condition.isUrlFilterCaseSensitive
+      );
+      await testRules(
+        ["||test.com/Foo$~match-case"], [undefined], rule => rule.condition.isUrlFilterCaseSensitive
       );
     });
 
@@ -824,7 +789,6 @@ describe("convertFilter", function() {
         [
           {
             urlFilter: "/foo",
-            isUrlFilterCaseSensitive: false,
             initiatorDomains: ["domain.com"]
           },
           {
@@ -833,20 +797,17 @@ describe("convertFilter", function() {
             initiatorDomains: ["domain.com"]
           },
           {
-            urlFilter: "||foo.com",
-            isUrlFilterCaseSensitive: false
+            urlFilter: "||foo.com"
           },
           {
             urlFilter: "||foo.com",
             isUrlFilterCaseSensitive: true
           },
           {
-            urlFilter: "||foo.com/1",
-            isUrlFilterCaseSensitive: false
+            urlFilter: "||foo.com/1"
           },
           {
-            urlFilter: "||foo.com/a",
-            isUrlFilterCaseSensitive: false
+            urlFilter: "||foo.com/a"
           },
           {
             urlFilter: "||foo.com/A",
@@ -863,7 +824,6 @@ describe("convertFilter", function() {
           priority: SPECIFIC_PRIORITY,
           condition: {
             urlFilter: "1",
-            isUrlFilterCaseSensitive: false,
             initiatorDomains: ["foo.com"],
             excludedInitiatorDomains: ["bar.foo.com"]
           },
@@ -882,7 +842,6 @@ describe("convertFilter", function() {
             priority: SPECIFIC_PRIORITY,
             condition: {
               urlFilter: "||bar.com/ad.js",
-              isUrlFilterCaseSensitive: false,
               initiatorDomains: ["foo.com"],
               resourceTypes: ["script"]
             },
@@ -930,7 +889,6 @@ describe("convertFilter", function() {
           priority: GENERIC_PRIORITY,
           condition: {
             urlFilter: "foo.bar.com",
-            isUrlFilterCaseSensitive: false,
             resourceTypes: ["websocket"]
           },
           action: {type: "block"}
@@ -947,8 +905,7 @@ describe("convertFilter", function() {
           priority: GENERIC_PRIORITY,
           condition: {
             urlFilter: "foo.bar.com",
-            resourceTypes: ["main_frame", "sub_frame"],
-            isUrlFilterCaseSensitive: false
+            resourceTypes: ["main_frame", "sub_frame"]
           },
           action: {
             type: "modifyHeaders",
@@ -966,8 +923,7 @@ describe("convertFilter", function() {
           priority: SPECIFIC_PRIORITY,
           condition: {
             urlFilter: "||abptestpages.org^",
-            resourceTypes: ["main_frame", "sub_frame"],
-            isUrlFilterCaseSensitive: false
+            resourceTypes: ["main_frame", "sub_frame"]
           },
           action: {
             type: "allow"
@@ -985,7 +941,6 @@ describe("convertFilter", function() {
             excludedRequestDomains: [
               "foo.com"
             ],
-            isUrlFilterCaseSensitive: false,
             resourceTypes: [
               "main_frame"
             ]
@@ -994,13 +949,11 @@ describe("convertFilter", function() {
             excludedInitiatorDomains: [
               "foo.com"
             ],
-            isUrlFilterCaseSensitive: false,
             resourceTypes: [
               "sub_frame"
             ]
           },
           {
-            isUrlFilterCaseSensitive: false,
             requestDomains: [
               "foo.com"
             ],
@@ -1013,7 +966,6 @@ describe("convertFilter", function() {
             initiatorDomains: [
               "foo.com"
             ],
-            isUrlFilterCaseSensitive: false,
             resourceTypes: [
               "sub_frame"
             ],
@@ -1027,7 +979,6 @@ describe("convertFilter", function() {
         ["$csp=img-src 'none',domain=a.com|b.com"],
         [
           {
-            isUrlFilterCaseSensitive: false,
             requestDomains: [
               "a.com",
               "b.com"
@@ -1041,7 +992,6 @@ describe("convertFilter", function() {
               "a.com",
               "b.com"
             ],
-            isUrlFilterCaseSensitive: false,
             resourceTypes: [
               "sub_frame"
             ]
