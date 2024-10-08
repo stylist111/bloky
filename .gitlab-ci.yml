@@ -155,17 +155,17 @@ build:functional-image:
 unit:core:
   extends: .unit
   script:
-    - docker run $DOCKER_OPTIONS --entrypoint npm $BASIC_IMAGE run test-core
+    - docker run $DOCKER_OPTIONS --entrypoint npm $BASIC_IMAGE run test:unit:core
 
 unit:webext:
   extends: .unit
   script:
-    - docker run $DOCKER_OPTIONS --entrypoint npm $BASIC_IMAGE run unittest
+    - docker run $DOCKER_OPTIONS --entrypoint npm $BASIC_IMAGE run test:unit:webext
 
 unit:scripts:
   extends: .unit
   script:
-    - docker run $DOCKER_OPTIONS --entrypoint npm $BASIC_IMAGE run test-scripts
+    - docker run $DOCKER_OPTIONS --entrypoint npm $BASIC_IMAGE run test:unit:scripts
 
 # Functional tests
 .functional:
@@ -188,37 +188,37 @@ func:v2:chromium:latest:
   extends: .functional
   variables:
     BROWSER: chromium latest
-    TEST_PARAMS: v2 $BROWSER
+    TEST_PARAMS: 2 $BROWSER
 
 func:v2:chromium:incognito:
   extends: .functional
   variables:
     BROWSER: chromium latest
-    TEST_PARAMS: v2 $BROWSER --incognito
+    TEST_PARAMS: 2 $BROWSER --incognito
 
 func:v2:chromium:oldest:
   extends: .functional
   variables:
     BROWSER: chromium $OLDEST_CHROMIUM_MV2_VERSION
-    TEST_PARAMS: v2 $BROWSER
+    TEST_PARAMS: 2 $BROWSER
 
 func:v2:firefox:latest:
   extends: .functional
   variables:
     BROWSER: firefox latest
-    TEST_PARAMS: v2 $BROWSER
+    TEST_PARAMS: 2 $BROWSER
 
 func:v2:firefox:incognito:
   extends: .functional
   variables:
     BROWSER: firefox latest
-    TEST_PARAMS: v2 $BROWSER --incognito
+    TEST_PARAMS: 2 $BROWSER --incognito
 
 func:v2:firefox:oldest:
   extends: .functional
   variables:
     BROWSER: firefox $OLDEST_FIREFOX_VERSION
-    TEST_PARAMS: v2 $BROWSER
+    TEST_PARAMS: 2 $BROWSER
 
 .edge_install_windows: &edge_install_windows
   - $Env:EdgePath = "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
@@ -258,37 +258,37 @@ func:v2:firefox:oldest:
 func:v2:windows:edge:
   extends: .functional-windows
   script:
-    - npm test -- v2 edge latest --timeout=10000
+    - npm run test:functional -- 2 edge latest --timeout=10000
 
 func:v2:windows:edge:incognito:
   extends: .functional-windows
   script:
-    - npm test -- v2 edge latest --incognito --timeout=10000 --verbose
+    - npm run test:functional -- 2 edge latest --incognito --timeout=10000 --verbose
 
 # Functional tests - MV3
 func:v3:chromium:latest:
   extends: .functional
   variables:
     BROWSER: chromium latest
-    TEST_PARAMS: v3 $BROWSER --testKinds functional reload update
+    TEST_PARAMS: 3 $BROWSER --testKinds functional reload update
 
 func:v3:chromium:incognito:
   extends: .functional
   variables:
     BROWSER: chromium latest
-    TEST_PARAMS: v3 $BROWSER --testKinds functional reload update --incognito
+    TEST_PARAMS: 3 $BROWSER --testKinds functional reload update --incognito
 
 func:v3:chromium:oldest:
   extends: .functional
   variables:
     BROWSER: chromium $OLDEST_CHROMIUM_MV3_VERSION
-    TEST_PARAMS: v3 $BROWSER --testKinds functional reload update
+    TEST_PARAMS: 3 $BROWSER --testKinds functional reload update
 
 func:v3:edge:latest:
   extends: .functional
   variables:
     BROWSER: edge latest
-    TEST_PARAMS: v3 $BROWSER --testKinds functional reload update
+    TEST_PARAMS: 3 $BROWSER --testKinds functional reload update
 
 # Functional tests - isolated
 .functional-isolated:
@@ -346,17 +346,17 @@ func:v3:edge:latest:
 fi:v3:chromium:latest:
   extends: .functional-isolated-mv3
   variables:
-    TEST_PARAMS: v3 chromium latest
+    TEST_PARAMS: 3 chromium latest
 
 fi:v3:edge:latest:
   extends: .functional-isolated-mv3
   variables:
-    TEST_PARAMS: v3 edge latest
+    TEST_PARAMS: 3 edge latest
 
 fi:v2:firefox:
   extends: .functional-isolated-mv2
   variables:
-    TEST_PARAMS: v2 firefox latest
+    TEST_PARAMS: 2 firefox latest
 
 # Functional tests - full run
 .functional-full:
@@ -369,33 +369,33 @@ func:v2:chromium:beta:
   extends: .functional-full
   variables:
     BROWSER: chromium beta
-    TEST_PARAMS: v2 $BROWSER --testKinds functional reload
+    TEST_PARAMS: 2 $BROWSER --testKinds functional reload
 
 func:v3:chromium:beta:
   extends: .functional-full
   variables:
     BROWSER: chromium beta
-    TEST_PARAMS: v3 $BROWSER --testKinds functional reload update
+    TEST_PARAMS: 3 $BROWSER --testKinds functional reload update
 
 func:v2:firefox:incognito:update:
   extends: .functional-full
   variables:
     BROWSER: firefox $BSL_FIREFOX_INCOGNITO_VERSION
-    TEST_PARAMS: v2 $BROWSER --testKinds update --incognito
+    TEST_PARAMS: 2 $BROWSER --testKinds update --incognito
   allow_failure: false
 
 func:v2:edge:latest:
   extends: .functional-full
   variables:
     BROWSER: edge
-    TEST_PARAMS: v2 $BROWSER --testKinds functional reload
+    TEST_PARAMS: 2 $BROWSER --testKinds functional reload
 
 # Fuzz tests
 .fuzz:
   extends: .functional
   stage: fuzz
   variables:
-    TEST_PARAMS: v3 $BROWSER $INCOGNITO --testKinds fuzz
+    TEST_PARAMS: 3 $BROWSER $INCOGNITO --testKinds fuzz
 
 fuzz:v3:chromium:latest:
   extends: .fuzz
@@ -479,7 +479,7 @@ int:bundle:
   image: node:18-bullseye-slim
   stage: integration
   script:
-    - npm run test-bundle
+    - npm run test:bundle
   needs: ["build:src"]
   rules:
     - !reference [.avoid-flaky-run, rules]
@@ -489,17 +489,17 @@ int:bundle:
   extends: .functional
   stage: performance
   script:
-    - docker run $DOCKER_OPTIONS --entrypoint npm $FUNCTIONAL_IMAGE run test-performance $PARAMS
+    - docker run $DOCKER_OPTIONS --entrypoint npm $FUNCTIONAL_IMAGE run test:performance $PARAMS
 
 perf:v2:chromium:
   extends: .performance
   variables:
-    PARAMS: v2 chromium
+    PARAMS: 2 chromium
 
 perf:v3:chromium:
   extends: .performance
   variables:
-    PARAMS: v3 chromium
+    PARAMS: 3 chromium
 
 include:
   - template: Jobs/SAST.gitlab-ci.yml

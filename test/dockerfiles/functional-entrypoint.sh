@@ -20,7 +20,7 @@ for ((i=1; i<=$TEST_RUNS; i++)); do
     echo "--- Running attempt $i out of $TEST_RUNS. $failureCount failures so far ---"
   fi
 
-  $XVFB_CMD npm test -- $TEST_PARAMS
+  $XVFB_CMD npm run test:functional -- $TEST_PARAMS
   exitCode=$?
 
   if [ $exitCode -ne 0 ]; then

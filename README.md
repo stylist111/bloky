@@ -421,7 +421,7 @@ By default, debug builds are created. If building the library to be used
 in another project you would want to create a release build.
 
 ```
-npm run build -- --env release
+npm run build:release
 ```
 
 ### Building the documentation

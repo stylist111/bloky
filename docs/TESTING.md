@@ -42,13 +42,13 @@ logic, which is tested at unit and browser levels. To run all core tests use
 the following command from the top level directory:
 
 ```
-npm run test-core
+npm run test:unit:core
 ```
 
 Optionaly use a test path to run a single test module. Example:
 
 ```
-npm run test-core -- test/dnr.js
+npm run test:unit:core -- test/dnr.js
 ```
 
 ### Unit:webext
@@ -70,7 +70,17 @@ Additionally, two specific areas lend themselves to unit tests.
 To run the webext unit tests use the following command:
 
 ```
-npm run unittest
+npm run test:unit:webext
+```
+
+### Unit:scripts
+
+To be able to use webext in extension integrator has to generate files
+(containing f.ex subscriptions) using our scripts. To test if scripts work
+properly use following command:
+
+```
+npm run test:unit:scripts
 ```
 
 #### Mocking browser APIs
@@ -98,7 +108,7 @@ rather than on the mechanisms behind these reactions.
 ### Run All Tests
 
 ```
-npm run build-then-test -- {v2|v3} {chromium|firefox|edge}
+npm run build-then-test -- {2|3} {chromium|firefox|edge}
 ```
 
 This script runs the test server and the test suite. You can also run each of
@@ -106,13 +116,13 @@ these independentally using:
 
 ```
 npm run test-server
-npm run test
+npm run test:functional
 ```
 
 In order to pass additional arguments, use the following syntax:
 
 ```
-npm run build-then-test -- {v2|v3} {chromium|firefox|edge} --argName="{ARGUMENT}"
+npm run build-then-test -- {2|3} {chromium|firefox|edge} --argName="{ARGUMENT}"
 ```
 
 For example:
@@ -126,17 +136,7 @@ npm run build-then-test -- v3 chromium --grep="Test Name"
 Checks that the bundled code can be imported and re-bundled:
 
 ```
-npm run test-bundle
-```
-
-### Func:scripts
-
-To be able to use webext in extension integrator has to generate files
-(containing f.ex subscriptions) using our scripts. To test if scripts work
-properly use following command:
-
-```
-npm run test-scripts
+npm run test:bundle
 ```
 
 ### Functional tests on browsers
@@ -187,7 +187,7 @@ can use on UI.
 For local runs you can trigger test runner to run tests you desire:
 
 ```
-npm test -- {v2|v3} {chromium|firefox|edge} [version|channel] [options]
+npm run test:functional -- {2|3} {chromium|firefox|edge} [version|channel] [options]
 ```
 
 Runner options need to be preceded by two dashes (`--`), for example
@@ -210,7 +210,7 @@ update tests by running tests with
 `--testKinds functional reload update mv2-mv3-migrate`.
 - The `browserBinary` option allow to pass installed browser binary
 to use custom versions. For example:
-`npm run test v3 chromium -- --browserBinary="/Users/user/Documents/repo/webext-sdk/browser-snapshots/chromium/chromium-darwin-x64-1097561/chrome-mac/Chromium.app/Contents/MacOS/Chromium"`
+`npm run test:functional v3 chromium -- --browserBinary="/Users/user/Documents/repo/webext-sdk/browser-snapshots/chromium/chromium-darwin-x64-1097561/chrome-mac/Chromium.app/Contents/MacOS/Chromium"`
 - The `verbose` option prints local test servers (admin and pages) requests
 
 #### Web bundle regeneration
@@ -324,7 +324,7 @@ The performace of the engine is measured using
 To run the performance tests:
 
 ```
-npm run test-performance -- {v2|v3} {chromium|edge} [--forceHeadful]
+npm run test:performance -- {2|3} {chromium|edge} [--forceHeadful]
 ```
 
 Note: Firefox is not supported by the performance tests.
@@ -340,14 +340,14 @@ to run the same tests may be useful to recreate the infrastructure the CI uses.
 
 ```
 docker build -t basic -f test/dockerfiles/basic.Dockerfile .
-docker run --cpus=2 --memory=6g --shm-size=2g -it --entrypoint npm basic run test-core -- [test/path]
+docker run --cpus=2 --memory=6g --shm-size=2g -it --entrypoint npm basic run test:core -- [test/path]
 ```
 
 #### Func:webext
 
 ```
 docker build -t functional -f test/dockerfiles/functional.Dockerfile .
-docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_PARAMS="{v2|v3} {chromium|firefox|edge}" functional
+docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_PARAMS="{2|3} {chromium|firefox|edge}" functional
 ```
 
 Please notice that the TEST_PARAMS argument can also take the additional options
@@ -369,7 +369,7 @@ Optional environment variables for the script:
 
 ```
 docker build -t functional -f test/dockerfiles/functional.Dockerfile .
-docker run --cpus=2 --memory=6g --shm-size=2g -it --entrypoint npm functional run test-performance {v2|v3} {chromium|edge}
+docker run --cpus=2 --memory=6g --shm-size=2g -it --entrypoint npm functional run test:performance {2|3} {chromium|edge}
 ```
 
 In order to access the screenshots for failing tests run the following command,

@@ -35,7 +35,7 @@ function parseArguments() {
     parser.version(false);
     parser.strict();
     parser.command("$0 <manifest> <browser> [version]", "", subparser => {
-      subparser.positional("manifest", {choices: ["v2", "v3"]});
+      subparser.positional("manifest", {choices: [2, 3]});
       subparser.positional("browser", {choices: Object.keys(BROWSERS)});
       subparser.positional("version", {type: "string", default: "latest"});
     });
@@ -54,7 +54,7 @@ function parseArguments() {
 
     // Chromium 128 is the latest supported version for MV2
     if (browser === "chromium" &&
-        manifest === "v2" &&
+        manifest === 2 &&
         version === "latest") {
       console.warn("Warning: using Chromium 128 as the latest supported version for MV2");
       version = "128.0.6613.0";
@@ -162,7 +162,7 @@ export async function run() {
   const {manifest, browser, version, params} = parseArguments();
   const headless = !params.forceHeadful;
   const extensionPaths =
-    [path.resolve(process.cwd(), "dist", `performance-m${manifest}`)];
+    [path.resolve(process.cwd(), "dist", `performance-mv${manifest}`)];
   const extraArgs = [`--remote-debugging-port=${remoteDebuggingPort}`,
                      "--window-size=1920,1080"];
 

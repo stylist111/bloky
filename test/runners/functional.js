@@ -41,7 +41,7 @@ function parseArguments() {
     parser.version(false);
     parser.strict();
     parser.command("$0 <manifest> <browser> [version]", "", subparser => {
-      subparser.positional("manifest", {choices: ["v2", "v3"]});
+      subparser.positional("manifest", {choices: [2, 3]});
       subparser.positional("browser", {choices: Object.keys(BROWSERS)});
       subparser.positional("version", {type: "string", default: "latest"});
     });
@@ -104,7 +104,7 @@ function parseArguments() {
     }
     // Chromium 128 is the latest supported version for MV2
     if (argv.browser === "chromium" &&
-        argv.manifest === "v2" &&
+        argv.manifest === 2 &&
         argv.version === "latest") {
       console.warn("Warning: using Chromium 128 as the latest supported version for MV2");
       argv.version = "128.0.6613.0";
@@ -141,7 +141,7 @@ function regexpFromGrep(grep) {
 }
 
 function manifestIsMV3(manifest) {
-  return manifest.startsWith("v3");
+  return manifest === 3;
 }
 
 async function setMinDriverTimeout(driver, timeout) {
@@ -520,7 +520,7 @@ export async function run() {
 async function runTests({manifest, browser, version, params, testKinds}) {
   let isMV3 = manifestIsMV3(manifest);
   // copy a targeted test web extension to a temporary directory `test-current`
-  originalExtensionPath = path.resolve(process.cwd(), "dist", `test-m${manifest}`);
+  originalExtensionPath = path.resolve(process.cwd(), "dist", `test-mv${manifest}`);
   if (testKinds.includes("mv2-mv3-migrate") || testKinds.includes("update")) {
     currentExtensionPath = path.resolve(process.cwd(), "dist", "test-current");
     await copyDir(originalExtensionPath, currentExtensionPath);
