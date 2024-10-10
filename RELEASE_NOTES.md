@@ -1,6 +1,9 @@
 Unreleased
 ==========
 
+🐱 1.16.0 - 2024-10-10 🐱
+=========================
+
 ## General
 
 - Added `-p`/`--pretty-print` argument (default: `false`) to `subs-convert`
