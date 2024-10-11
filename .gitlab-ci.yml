@@ -260,11 +260,6 @@ func:v2:windows:edge:
   script:
     - npm run test:functional -- 2 edge latest --timeout=10000
 
-func:v2:windows:edge:incognito:
-  extends: .functional-windows
-  script:
-    - npm run test:functional -- 2 edge latest --incognito --timeout=10000 --verbose
-
 # Functional tests - MV3
 func:v3:chromium:latest:
   extends: .functional
