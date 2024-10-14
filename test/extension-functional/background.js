@@ -113,7 +113,6 @@ async function setEnableSendEvent(enable) {
 }
 
 function sendEventToMochaTests(eventName, eventArgs) {
-  EWE.testing._trace({eventName, eventArgs});
   if (enableSendEventToMochaTests) {
     chrome.runtime.sendMessage(
       {type: "ewe-test:event", eventName, eventArgs},
@@ -122,7 +121,6 @@ function sendEventToMochaTests(eventName, eventArgs) {
         // running). It's safe to ignore that.
         // eslint-disable-next-line no-unused-vars
         let sendErrorToIgnore = chrome.runtime.lastError;
-        EWE.testing._debug(`Sent event for "${eventName}" with args ${JSON.stringify(eventArgs)}: lastError=${JSON.stringify(sendErrorToIgnore)}`);
       }
     );
   }
