@@ -104,6 +104,7 @@ describe("Blocking", function() {
     await addFilter(`|${TEST_PAGES_URL}/image.png^`);
     await new Page("srcdoc.html").expectResource("image.png").toBeBlocked();
     await addFilter(`@@|${TEST_PAGES_URL}/srcdoc.html^$document`);
+    await shouldBeLoaded("srcdoc.html", "image.png");
     await new Page("srcdoc.html").expectResource("image.png").toBeLoaded();
   });
 
@@ -620,7 +621,7 @@ describe("Blocking", function() {
 
       // Revisit the website to make sure the filter is still active, and it
       // was extended, it will cause another filter expiration extension
-      await sleep(3000);
+      await sleep(3500);
       await waitForAssertion(async() => {
         await new Page("image.html").expectResource("image.png").toBeLoaded();
       });

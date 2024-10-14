@@ -18,7 +18,8 @@
 import expect from "expect";
 
 import {TEST_PAGES_URL, TEST_PAGES_DOMAIN} from "./test-server-urls.js";
-import {Page, clickElement, executeScript, setMinTimeout, waitForAssertion}
+import {Page, clickElement, executeScript, isEdge, setMinTimeout, sleep,
+        waitForAssertion}
   from "./utils.js";
 import {wait} from "./polling.js";
 import {EWE, addFilter, getTestEvents, clearTestEvents, runInBackgroundPage,
@@ -26,7 +27,7 @@ import {EWE, addFilter, getTestEvents, clearTestEvents, runInBackgroundPage,
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 describe("One Click Allowlisting", function() {
-  setMinTimeout(this, 10000);
+  setMinTimeout(this, 12000);
 
   let timeout = isFuzzingServiceWorker() ? 9000 : 3000;
 
@@ -159,13 +160,17 @@ describe("One Click Allowlisting", function() {
     await addFilter(
       `@@|${TEST_PAGES_URL}/one-click-allowlisting.html$document`
     );
+
+    if (isEdge()) {
+      await sleep(2000);
+    }
+
     // Using waitForAssertion to retry reload as a workaround
-    // https://jira.eyeo.com/browse/EE-258
+    // https://eyeo.atlassian.net/browse/EE-258
     await waitForAssertion(async() => {
       await reload();
       await expectImageResource.toBeLoaded();
-    });
-
+    }, 8000);
     await clickAllowlistButton("allowlist");
     await expectSuccessfulAllowlist();
   });

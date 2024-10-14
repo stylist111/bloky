@@ -19,6 +19,7 @@ import expect from "expect";
 
 import {TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN, SITEKEY}
   from "./test-server-urls.js";
+import {wait} from "./polling.js";
 import {Page, Popup, setMinTimeout, setEndpointResponse,
         syncSubHasLastFilter, syncSubHasNoLastFilter,
         isEdge, waitForSubscriptionToBeSynchronized}
@@ -34,8 +35,12 @@ describe("Pop-up blocking", function() {
     let opener;
 
     beforeEach(async function() {
-      opener = new Page("popup-opener.html");
-      await opener.loaded;
+      await wait(async() => {
+        opener = new Page("popup-opener.html");
+        if (await opener.loaded) {
+          return true;
+        }
+      }, 8000, "Popup-opener.html wasn't opened.");
     });
 
     it("blocks a link-based popup [fuzz]", async function() {

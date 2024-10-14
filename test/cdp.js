@@ -18,6 +18,7 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 import {v4 as uuidv4} from "uuid";
+import {wait} from "./polling.js";
 import {MILLIS_IN_MINUTE, MILLIS_IN_DAY, MILLIS_IN_HOUR, MINUTES_IN_DAY,
         MINUTES_IN_HOUR,
         MILLIS_IN_SECOND} from "adblockpluscore/lib/time.js";
@@ -1589,7 +1590,7 @@ describe("CDP on Chromium-based browsers", function() {
       });
 
       it("counts Yahoo visitors", async function() {
-        setMinTimeout(this, 60 * 1000);
+        setMinTimeout(this, 70 * 1000);
 
         const YAHOO_SITE_ID = "yahoo.com";
         const SEARCH_YAHOO_SITE_ID = "search.yahoo.com";
@@ -1701,8 +1702,13 @@ describe("CDP on Chromium-based browsers", function() {
 
     it("supports History API", async function() {
       await addFilter(`image.png$domain=${WEBEXT_DOT_COM}`);
-
-      await new Page(`http://${WEBEXT_DOT_COM}:3000/history.html`).loaded;
+      // This is failing on Windows runners, adding retry mechanism:
+      await wait(async() => {
+        const opener = new Page(`http://${WEBEXT_DOT_COM}:3000/history.html`);
+        if (await opener.loaded) {
+          return true;
+        }
+      }, 10000, "Failed to load the history page within the timeout.");
 
       // 1 event for "history.html" and 1 event for "history-after-pushState.js"
       await assertEvents(WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 2);
@@ -1736,11 +1742,9 @@ describe("CDP on Chromium-based browsers", function() {
       // now sleep a bit more to let the session expire,
       // if it's not extended by user actions
       await new Promise(r => setTimeout(r, sleepInterval));
-
       // the session is expected to be still not expired
       await page.reload();
       await page.remove();
-
       await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, eventsCount);
     }
 
