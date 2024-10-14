@@ -220,7 +220,7 @@ function initializeScheduler(cdp, errorRetryDelay) {
         }
       }
 
-      if (nextScheduledBundleSend) {
+      if (nextRetryAfterError) {
         return Math.max(
           nextRetryAfterError,
           nextScheduledBundleSend
