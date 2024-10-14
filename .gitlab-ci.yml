@@ -360,12 +360,6 @@ fi:v2:firefox:
   rules:
     - !reference [.full-run, rules]
 
-func:v2:chromium:beta:
-  extends: .functional-full
-  variables:
-    BROWSER: chromium beta
-    TEST_PARAMS: 2 $BROWSER --testKinds functional reload
-
 func:v3:chromium:beta:
   extends: .functional-full
   variables:
