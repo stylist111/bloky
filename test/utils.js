@@ -533,6 +533,15 @@ export function waitForAssertion(condition, timeout = 1000, pollTimeout = 100) {
   return result;
 }
 
+export function conditionallyRetryAssertion(allowRetries, condition,
+                                            timeout = 1000) {
+  if (allowRetries) {
+    return waitForAssertion(condition, timeout);
+  }
+
+  return condition();
+}
+
 export function isFirefox() {
   return typeof netscape != "undefined";
 }

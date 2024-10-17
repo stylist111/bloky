@@ -2,12 +2,12 @@ FROM registry.gitlab.com/eyeo/docker/get-browser-binary:node18
 
 ARG SKIP_BUILD=
 ARG BROWSER=
-COPY package*.json webext-sdk/
-RUN cd webext-sdk/ && npm install
+COPY .npmrc package*.json webext-sdk/
+COPY core/package.json webext-sdk/core/
+RUN cd webext-sdk/ && npm ci
 
 COPY . webext-sdk/
 WORKDIR webext-sdk/
-RUN npm install
 RUN if [ -z "$SKIP_BUILD" ]; then npm run build; fi
 RUN if [ ! -z "$BROWSER" ]; then node test/dockerfiles/get-browser-binaries.js $BROWSER; fi
 

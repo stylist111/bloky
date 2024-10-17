@@ -22,7 +22,7 @@ import {TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, SITEKEY,
 import {Page, Resource, executeScript, shouldBeLoaded, supportsWebBundle,
         waitForSubscriptionsToDownload, setMinTimeout, setEndpointResponse,
         isChromiumBased, waitForSubscriptionToBeSynchronized, sleep,
-        waitForAssertion}
+        waitForAssertion, isMV3, conditionallyRetryAssertion}
   from "./utils.js";
 import {subTestCustom1, subTestAllowingFilter} from "./api-fixtures.js";
 import {addFilter, EWE} from "./messaging.js";
@@ -160,7 +160,17 @@ describe("Blocking", function() {
       "image.png",
       `@@*$document,domain=${TEST_PAGES_DOMAIN}`
     ]);
-    await new Page("image.html").expectResource("image.png").toBeLoaded();
+
+    // See https://eyeo.atlassian.net/issues/EXT-446. It appears that DNR
+    // implementation ends up being eventually correct, but might take a moment
+    // to start applying the the $document filter, even though it is added at
+    // the same time as the blocking filter. We saw this as well in the 1CA
+    // implementation, which in MV3 (especially Edge) needs to wait a short time
+    // before the allowlisting takes effect.
+    await conditionallyRetryAssertion(
+      isMV3(),
+      () => new Page("image.html").expectResource("image.png").toBeLoaded()
+    );
   });
 
   it("blocks requests when the allowlist filter excludes using $domain", async function() {

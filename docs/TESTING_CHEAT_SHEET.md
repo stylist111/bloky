@@ -82,27 +82,27 @@ docker run --cpus=2 --memory=6g --shm-size=2g -it --entrypoint npm functional ru
 Running container in a mode that will run only tests that are tagged [flaky]:
 
 ```
-docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_PARAMS="v3 chromium" -e ONLY_FLAKY="true" functional
+docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_PARAMS="3 chromium" -e ONLY_FLAKY="true" functional
 ```
 
 Run [flaky] tests multiple times in a row:
 
 ```
-docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_PARAMS="v3 chromium" -e ONLY_FLAKY="true" -e TEST_RUNS=10 functional
+docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_PARAMS="3 chromium" -e ONLY_FLAKY="true" -e TEST_RUNS=10 functional
 ```
 
 ### Measure flakiness for whole test suite
 
 ```
 docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER=chromium .
-docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_PARAMS="v3 chromium" -e TEST_RUNS=10 functional
+docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_PARAMS="3 chromium" -e TEST_RUNS=10 functional
 ```
 
 ### Functional Isolated Tests
 
 ```
 docker build -t functional -f test/dockerfiles/functional.Dockerfile .
-docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_SUITES="suite_1 suite_2" -e TEST_PARAMS="v3 chromium" --entrypoint test/dockerfiles/isolated-entrypoint.sh functional
+docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_SUITES="suite_1 suite_2" -e TEST_PARAMS="3 chromium" --entrypoint test/dockerfiles/isolated-entrypoint.sh functional
 ```
 
 ## I just want to run the tests on my machine, give me the command
