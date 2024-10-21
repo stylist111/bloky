@@ -99,15 +99,6 @@ lint:
   script:
     - npm run lint
 
-typechecks:
-  image: node:18-bullseye-slim
-  stage: build
-  allow_failure: true
-  before_script:
-    - npm install
-  script:
-    - npm run types:check
-
 # Publishes the docs to https://eyeo.gitlab.io/adblockplus/abc/webext-ad-filtering-solution
 # and https://eyeo.gitlab.io/adblockplus/abc/webext-ad-filtering-solution/core/index.html
 # Requirements: https://docs.gitlab.com/ee/user/project/pages/introduction.html#gitlab-pages-requirements

@@ -47,12 +47,6 @@ function runCommand(command) {
   });
 }
 
-async function generateTypeDefs() {
-  console.log("Generating type definitions...");
-  await runCommand("npm run types:generate");
-  console.log("✅ Type definitions generated");
-}
-
 async function subsRunMV3(args) {
   let configNames = args["config-name"];
   // we only need subs-run for test-mv3 and performance-mv3 at this point.
@@ -132,7 +126,6 @@ export async function run() {
   // That's why subs-run-mv2 needs to run afterwards
   await runCommand("npm run subs-run-mv2");
   await build(args);
-  await generateTypeDefs();
 }
 
 if (isScriptInvokedFromCLI) {
