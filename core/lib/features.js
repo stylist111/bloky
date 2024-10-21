@@ -46,6 +46,7 @@ exports.resetFeatureFlags = function() {
   featureFlags.inlineCss = false;
   featureFlags.eyeometryUcid = false;
   featureFlags.cdpPhase3 = false;
+  featureFlags.debugCdp = false;
 };
 
 resetFeatureFlags();

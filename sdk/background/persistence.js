@@ -25,12 +25,17 @@ export class PersistentState {
     this.activeSaveActions = new Set();
     this.loaded = false;
     this.debounce = false;
+    this.debounceInterval = 0;
 
     this.clearState();
   }
 
   doDebounce() {
     this.debounce = true;
+  }
+
+  setDebounceInterval(interval) {
+    this.debounceInterval = interval;
   }
 
   clearState() {
@@ -66,7 +71,7 @@ export class PersistentState {
         this.debounceTimer = setTimeout(() => {
           this.debounceTimer = null;
           this.saveImmediate();
-        }, 0);
+        }, this.debounceInterval);
       }
     }
     else {

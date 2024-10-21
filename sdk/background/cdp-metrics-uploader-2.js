@@ -17,6 +17,7 @@
 
 import browser from "webextension-polyfill";
 import {v4 as uuidv4} from "uuid";
+import {compressToUTF16} from "lz-string";
 import {MILLIS_IN_MINUTE, MILLIS_IN_HOUR, MILLIS_IN_DAY, MINUTES_IN_DAY}
   from "adblockpluscore/lib/time.js";
 import {toLocalISODateStringWithCutoffTime} from "adblockpluscore/lib/date.js";
@@ -24,14 +25,24 @@ import {randomInteger} from "adblockpluscore/lib/random.js";
 
 import * as info from "./info.js";
 import {Scheduler} from "../all/scheduler.js";
-import {trace, error} from "./debugging.js";
+import {trace, warn, error} from "./debugging.js";
 import {postWithBearerToken} from "./telemetry.js";
-import {default as cdpMod, EVENT_SESSION_START, getData, clearData} from "./cdp.js";
+import {default as cdpMod, EVENT_SESSION_START, getData, clearData,
+        log as logCdp, getLog as getCdpLog, clearLog as clearCdpLog}
+  from "./cdp.js";
 import {PersistentState} from "./persistence.js";
+import {isFeatureEnabled} from "adblockpluscore/lib/features.js";
 
 const CDP_STORAGE_KEY = "ewe:cdp-metrics-uploader";
-let storage = new PersistentState(CDP_STORAGE_KEY, browser.storage.local);
 
+// Payload limit before compression:
+// assuming the compression ratio is rougly 4.6,
+// so the compessed payload limit is 10 Kb
+const PAYLOAD_LIMIT = 46 * 1024;
+
+const DEBUG_CDP_FEATURE_FLAG = "debugCdp";
+
+let storage = new PersistentState(CDP_STORAGE_KEY, browser.storage.local);
 let _forceEarlyUploads = false;
 
 /**
@@ -75,6 +86,7 @@ async function _start(cdp, errorRetryDelay = 1 * MILLIS_IN_HOUR) {
 async function initializeTimeOffset() {
   if (typeof storage.getState().dayCutoffMinutes == "undefined") {
     let dayCutoffMinutes = randomInteger(0, MINUTES_IN_DAY);
+    logCdp(`dayCutoffMinutes=${dayCutoffMinutes}`);
     storage.getState().dayCutoffMinutes = dayCutoffMinutes;
     await storage.save();
   }
@@ -87,6 +99,7 @@ async function onCdpSessionStart(event) {
   let referenceDateLocal = toLocalISODateStringWithCutoffTime(
     now, state.dayCutoffMinutes
   );
+  logCdp(`refDateLocal=${referenceDateLocal} for ${JSON.stringify(event)} (dayCutoffMinutes=${state.dayCutoffMinutes})`);
 
   if (!state.bundles) {
     state.bundles = [];
@@ -102,6 +115,7 @@ async function onCdpSessionStart(event) {
   );
 
   if (bundleExists) {
+    logCdp("Bundle already exists");
     return;
   }
 
@@ -110,12 +124,14 @@ async function onCdpSessionStart(event) {
       MILLIS_IN_DAY + // add a day to get to the end of the day
       randomInteger(0, 12 * MILLIS_IN_HOUR); // random delay of up to 12 hours
 
-  state.bundles.push({
+  const newAggBundle = {
     siteId: event.siteId,
     referenceDateLocal,
     utid: uuidv4(),
     scheduledSendTimestamp
-  });
+  };
+  logCdp(`New agg bundle: ${JSON.stringify(newAggBundle)}`);
+  state.bundles.push(newAggBundle);
 
   let existingPingBundle = state.pingBundles.find(
     bundle => bundle.siteId == event.siteId
@@ -137,11 +153,13 @@ async function onCdpSessionStart(event) {
       state.clientIds[event.siteId] = uuidv4();
     }
 
-    state.pingBundles.push({
+    const newPingBundle = {
       siteId: event.siteId,
       clientId: state.clientIds[event.siteId],
       scheduledSendTimestamp: Date.now()
-    });
+    };
+    logCdp(`New ping bundle: ${JSON.stringify(newPingBundle)}`);
+    state.pingBundles.push(newPingBundle);
   }
 
   await storage.save();
@@ -166,6 +184,8 @@ function initializeScheduler(cdp, errorRetryDelay) {
     errorRetryDelay,
     listener: () => uploadPendingSessionBundles(cdp),
     async getNextTimestamp() {
+      logCdp("getNextTimestamp()");
+
       let state = storage.getState();
       let lastError = state.lastError;
       let hasAnyAggregateBundles = state.bundles &&
@@ -200,9 +220,14 @@ function initializeScheduler(cdp, errorRetryDelay) {
         nextScheduledBundleSend = nextScheduledPingBundleSend;
       }
 
+      logCdp(`nextScheduledAggBundleSend=${nextScheduledAggregateBundleSend}, ` +
+        `nextScheduledPingBundleSend=${nextScheduledPingBundleSend}, ` +
+        `nextScheduledBundleSend=${nextScheduledBundleSend}`);
+
       let now = Date.now();
       if (!nextScheduledBundleSend) {
         // Nothing to send right now, try again in an hour.
+        logCdp("Nothing to send, try in 1h");
         return now + MILLIS_IN_HOUR;
       }
 
@@ -221,12 +246,15 @@ function initializeScheduler(cdp, errorRetryDelay) {
       }
 
       if (nextRetryAfterError) {
-        return Math.max(
+        const result = Math.max(
           nextRetryAfterError,
           nextScheduledBundleSend
         );
+        logCdp(`return ${result}`);
+        return result;
       }
 
+      logCdp(`return ${nextScheduledBundleSend}`);
       return nextScheduledBundleSend;
     }
   });
@@ -235,6 +263,7 @@ function initializeScheduler(cdp, errorRetryDelay) {
 async function uploadPendingSessionBundles(cdp) {
   let optOut = await cdpMod.isOptOut();
   trace({cdp, optOut});
+  logCdp("uploadPendingSessionBundles()");
 
   let state = storage.getState();
 
@@ -248,6 +277,7 @@ async function uploadPendingSessionBundles(cdp) {
   try {
     for (let bundle of pingBundlesSnapshot) {
       if (bundle.scheduledSendTimestamp > now) {
+        logCdp(`Skipping ${bundle} as it's too early (${now})`);
         continue;
       }
 
@@ -260,7 +290,10 @@ async function uploadPendingSessionBundles(cdp) {
           application: info.application,
           application_version: info.applicationVersion
         };
-        await postWithBearerToken(cdp.pingUrl, cdp.bearer, {payload});
+
+        const body = {payload};
+        logCdp(`postWithBearerToken(${cdp.pingUrl})`);
+        await postWithBearerToken(cdp.pingUrl, cdp.bearer, body);
       }
 
       state.pingBundles = state.pingBundles.filter(b => b != bundle);
@@ -294,7 +327,30 @@ async function uploadPendingSessionBundles(cdp) {
           application: info.application,
           application_version: info.applicationVersion
         };
-        await postWithBearerToken(cdp.aggregateUrl, cdp.bearer, {payload});
+
+        if (isFeatureEnabled(DEBUG_CDP_FEATURE_FLAG)) {
+          // EXT-414
+          if (sessionsCount == 0 || sessionsCount > 48) {
+            logCdp(`Anomalous sessions number: ${sessionsCount} for ${bundle.siteId} on ${bundle.referenceDateLocal}`);
+            const logMessages = getCdpLog();
+            if (logMessages) {
+              let rawLog = logMessages.join("\n");
+              if (rawLog.length > PAYLOAD_LIMIT) {
+                const originalLength = rawLog.length;
+                rawLog = rawLog.substring(rawLog.length - PAYLOAD_LIMIT);
+                warn(`Shrinked the CDP debug log from ${originalLength} to ${rawLog.length}`);
+              }
+              const compressedLog = compressToUTF16(rawLog);
+              payload.debug = compressedLog;
+              logCdp(`Compressed CDP log is of ${compressedLog.length} size instead of ${rawLog.length} size`);
+            }
+          }
+          clearCdpLog();
+        }
+
+        const body = {payload};
+        logCdp(`postWithBearerToken(${cdp.aggregateUrl})`);
+        await postWithBearerToken(cdp.aggregateUrl, cdp.bearer, body);
       }
 
       state.bundles = state.bundles.filter(b => b != bundle);
@@ -309,7 +365,9 @@ async function uploadPendingSessionBundles(cdp) {
     }
   }
   catch (e) {
-    error(`CDP error: ${e.message}`);
+    const message = `CDP error: ${e.message}`;
+    logCdp(message);
+    error(message);
 
     state.lastError = Date.now();
     await storage.save();

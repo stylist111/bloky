@@ -28,7 +28,7 @@ import {trace, debug, warn, error} from "./debugging.js";
 import {isFirefox} from "./info.js";
 import {MaxLengthMetricsDict} from "./domains-trimming.js";
 import {isFeatureEnabled} from "adblockpluscore/lib/features.js";
-import {isHttpOrHttps} from "adblockpluscore/lib/url.js";
+import {isHttpOrHttps, stripQuery} from "adblockpluscore/lib/url.js";
 import {OnlySupportedDomainsProcessor, SpecialDomainsProcessor}
   from "./cdp-processor.js";
 
@@ -50,7 +50,8 @@ export const EVENT_SESSION_START = "session_start";
  */
 export const EVENT_BLOCKING = "blocking";
 
-const FEATURE_FLAG = "cdpPhase3";
+const CDP_PHASE3_FEATURE_FLAG = "cdpPhase3";
+const DEBUG_CDP_FEATURE_FLAG = "debugCdp";
 
 // CDP events and pages user activity loading delay (for testing)
 let _loadDelay = 0;
@@ -60,8 +61,59 @@ let deferredEvents = [];
 // incapsulates domain to site grouping logics
 let processor;
 
+let logMessages = new PersistentState("ewe:cdp_log", browser.storage.local);
+logMessages.doDebounce();
+logMessages.setDebounceInterval(5000); // to avoid performance penalty
+
+/**
+ * Put a message into CDP log
+ * @param {string} message Message to log
+ * @ignore
+ */
+export function log(message) {
+  if (!isFeatureEnabled(DEBUG_CDP_FEATURE_FLAG)) {
+    return;
+  }
+
+  debug(message);
+
+  const tsMessage = `${Date.now()}:${message}`;
+  const state = logMessages.getState();
+  if (!state.messages) {
+    state.messages = [];
+  }
+  state.messages.push(tsMessage);
+  logMessages.save();
+}
+
+/**
+ * Returns an array of CDP log messages
+ * @returns {Array<string>}
+ * @ignore
+ */
+export function getLog() {
+  return logMessages.getState().messages;
+}
+
+/**
+ * Set log messages for testing
+ * @param {Array<string>} messages Log messages
+ */
+export function setLog(messages) {
+  logMessages.getState().messages = messages;
+}
+
+/**
+ * Clear the CDP log
+ * @ignore
+ */
+export function clearLog() {
+  logMessages.clearState();
+  logMessages.save();
+}
+
 function isPhase3() {
-  return isFeatureEnabled(FEATURE_FLAG);
+  return isFeatureEnabled(CDP_PHASE3_FEATURE_FLAG);
 }
 
 /**
@@ -177,6 +229,7 @@ async function emitEvent(eventType, siteId, timeStamp) {
 
 async function count(eventType, siteId, timeStamp) {
   trace({eventType, siteId, timeStamp});
+  log(`count(${eventType}, ${siteId}, ${timeStamp})`);
 
   const state = events.get(eventType);
   if (isPhase3()) {
@@ -190,6 +243,7 @@ async function count(eventType, siteId, timeStamp) {
       state.getState()[siteId] = timestamps;
     }
     timestamps.push(timeStamp);
+    log(`events: ${timestamps}`);
   }
 
   if (isStateLoaded()) {
@@ -251,6 +305,7 @@ export async function setData(eventType, domain, counterOrTimestamps) {
  */
 export function getData(eventType, siteId) {
   trace({eventType, siteId});
+  log(`getData(${eventType}, ${siteId})`);
 
   if (isPhase3()) {
     let counter = toCounter(events.get(eventType).getState()[siteId]);
@@ -259,7 +314,7 @@ export function getData(eventType, siteId) {
   }
 
   const timestamps = events.get(eventType).getState()[siteId] || [];
-  debug(`Got ${timestamps.length} events`);
+  log(`Got ${timestamps.length} events for ${siteId}`);
   return timestamps;
 }
 
@@ -268,6 +323,7 @@ export function getData(eventType, siteId) {
  */
 export async function clearActivity() {
   trace({});
+  log("clearActivity");
 
   activity.clearState();
   await activity.save();
@@ -310,6 +366,7 @@ export async function clearExpiredActivity() {
  */
 export async function clearData(eventType, siteId, timeStamp) {
   trace({eventType, siteId, timeStamp});
+  log(`clearData(${eventType}, ${siteId}, ${timeStamp})`);
 
   if (isPhase3()) {
     // Timestamps are not supported on Phase 3
@@ -371,7 +428,7 @@ function handleBrowserEvent(details, doMarkActive) {
     return;
   }
   if (!isHttpOrHttps(url)) {
-    warn(`Ignore ${details.url}`);
+    warn(`Ignore ${stripQuery(details.url)}`);
     return;
   }
 
@@ -379,6 +436,8 @@ function handleBrowserEvent(details, doMarkActive) {
   if (!siteId) {
     return;
   }
+
+  log(`handleBrowserEvent() url*=${stripQuery(details.url)}, hostname=${url.hostname}, siteId=${siteId}`);
 
   const newSession = isNewSession(siteId);
   const timeStamp = Date.now();
@@ -403,19 +462,19 @@ function isNewSession(siteId) {
   const lastActivity = activity.getState()[siteId];
   if (!lastActivity) {
     // new navigation to site, new session
-    debug(`New session for ${siteId}`);
+    log(`New session for ${siteId}`);
     return true;
   }
 
   const actuallyPassed = Date.now() - lastActivity;
   if (actuallyPassed > Prefs.cdp_session_expiration_interval) {
     // session expired
-    debug(`Session expired for ${siteId}`);
+    log(`Session expired for ${siteId} (lastActive=${lastActivity}, actuallyPassed=${actuallyPassed})`);
     return true;
   }
 
   // pending session
-  debug(`Pending session for ${siteId}`);
+  log(`Pending session for ${siteId} (lastActive=${lastActivity}, actuallyPassed=${actuallyPassed})`);
   return false;
 }
 
@@ -429,7 +488,9 @@ function onHistoryStateUpdated(details) {
 }
 
 async function markActiveForSiteId(siteId) {
-  activity.getState()[siteId] = Date.now();
+  const now = Date.now();
+  activity.getState()[siteId] = now;
+  log(`markActiveForSiteId siteId=${siteId}, now=${now}`);
   await activity.save();
 }
 
@@ -448,6 +509,7 @@ export async function markActive(tabId, frameId) {
   }
 
   const siteId = processor.getSiteId(frameInfo.hostname);
+  log(`markActive() hostname=${frameInfo.hostname}, siteId=${siteId}`);
   if (!siteId) {
     return;
   }
@@ -634,6 +696,9 @@ export async function start() {
       async function loadData() {
         await loadEvents();
         await activity.load();
+        if (isFeatureEnabled(DEBUG_CDP_FEATURE_FLAG)) {
+          await logMessages.load();
+        }
         await clearExpiredActivity();
         handleDeferredEvents();
       }

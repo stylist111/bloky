@@ -589,3 +589,12 @@ exports.isValidDomainWildcard = function isValidDomainWildcard(domain) {
 
   return true;
 };
+
+/**
+ * Strip query string from the URL if included
+ * @param {string} url URL with possible query string
+ * @returns {string} URL without query string
+ */
+exports.stripQuery = function(url) {
+  return url.split("?")[0];
+};

@@ -19,6 +19,7 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 import {v4 as uuidv4} from "uuid";
 import {wait} from "./polling.js";
+import {decompressFromUTF16} from "lz-string";
 import {MILLIS_IN_MINUTE, MILLIS_IN_DAY, MILLIS_IN_HOUR, MINUTES_IN_DAY,
         MINUTES_IN_HOUR,
         MILLIS_IN_SECOND} from "adblockpluscore/lib/time.js";
@@ -219,6 +220,7 @@ describe("CDP on Chromium-based browsers", function() {
       EXPIRATION_INTERVAL_KEY);
     await EWE.testing._clearCdpData();
     await EWE.testing._clearCdpActivity();
+    await EWE.testing._clearCdpLog();
     await EWE.testing._setCdpConfig([[[WEBEXT_DOT_COM], SITE_ID]]);
     await EWE.cdp.setOptOut(false);
   });
@@ -931,6 +933,7 @@ describe("CDP on Chromium-based browsers", function() {
 
       beforeEach(async function() {
         await clearRequestLogs();
+        await EWE.testing._clearCdpLog();
         await EWE.testing.resetCdpMetricsUploader();
       });
 
@@ -1257,6 +1260,94 @@ describe("CDP on Chromium-based browsers", function() {
           expect(storage.dayCutoffMinutes).toEqual(dayCutoffMinutes);
           expect(storage.bundles).toEqual([bundleToNotSendYet]);
         });
+      });
+
+      it("does not send CDP log in 'debug' payload property by default", async function() {
+        let dayCutoffMinutes = 0;
+        // createAggregateBundleToSend does not create CDP events
+        let bundleToSend = createAggregateBundleToSend();
+        let bundleToNotSendYet = createAggregateBundleNotToSendYet();
+        await browser.storage.local.set({
+          [CDP_STORAGE_2_KEY]: {
+            dayCutoffMinutes,
+            bundles: [bundleToNotSendYet, bundleToSend]
+          }
+        });
+
+        await startMetricsUploaderWithTestArgs();
+
+        let payload;
+        await waitForAssertion(async() => {
+          let requestLogs = await getRequestLogs(CDP_PHASE_2_ARGS.aggregateUrl);
+          expect(requestLogs).toHaveLength(1);
+          payload = requestLogs[0].body.payload;
+          expect(payload.utid).toEqual(bundleToSend.utid);
+        });
+
+        expect(payload).not.toHaveProperty("debug");
+      });
+
+      it("sends CDP log in 'debug' payload property if sessions number is anomalous and feature is ON", async function() {
+        let dayCutoffMinutes = 0;
+        // createAggregateBundleToSend does not create CDP events
+        let bundleToSend = createAggregateBundleToSend();
+        let bundleToNotSendYet = createAggregateBundleNotToSendYet();
+        await browser.storage.local.set({
+          [CDP_STORAGE_2_KEY]: {
+            dayCutoffMinutes,
+            bundles: [bundleToNotSendYet, bundleToSend]
+          }
+        });
+
+        await setFeatureFlags({debugCdp: true});
+        await startMetricsUploaderWithTestArgs();
+
+        let payload;
+        await waitForAssertion(async() => {
+          let requestLogs = await getRequestLogs(CDP_PHASE_2_ARGS.aggregateUrl);
+          expect(requestLogs).toHaveLength(1);
+          payload = requestLogs[0].body.payload;
+          expect(payload.utid).toEqual(bundleToSend.utid);
+        });
+
+        expect(payload).toHaveProperty("debug");
+        const rawLog = decompressFromUTF16(payload.debug);
+        expect(rawLog.includes("getNextTimestamp()")).toEqual(true);
+      });
+
+      it("limits the debug log to 10Kb", async function() {
+        let dayCutoffMinutes = 0;
+        // createAggregateBundleToSend does not create CDP events
+        let bundleToSend = createAggregateBundleToSend();
+        let bundleToNotSendYet = createAggregateBundleNotToSendYet();
+        await browser.storage.local.set({
+          [CDP_STORAGE_2_KEY]: {
+            dayCutoffMinutes,
+            bundles: [bundleToNotSendYet, bundleToSend]
+          }
+        });
+
+        let cdpLog = Array.from(
+          {length: 50 * 1000 + 1}, (_, i) => i.toString());
+        const originalLogLength = cdpLog.join("\n").length;
+        expect(originalLogLength > 50 * 1024).toEqual(true);
+        await EWE.testing._setCdpLog(cdpLog);
+
+        await setFeatureFlags({debugCdp: true});
+        await startMetricsUploaderWithTestArgs();
+
+        let payload;
+        await waitForAssertion(async() => {
+          let requestLogs = await getRequestLogs(CDP_PHASE_2_ARGS.aggregateUrl);
+          expect(requestLogs).toHaveLength(1);
+          payload = requestLogs[0].body.payload;
+          expect(payload.utid).toEqual(bundleToSend.utid);
+        });
+
+        expect(payload).toHaveProperty("debug");
+        expect(payload.debug.length < 10 * 1024).toEqual(true);
+        const rawLog = decompressFromUTF16(payload.debug);
+        expect(rawLog.length < originalLogLength).toEqual(true);
       });
 
       it("clears metrics without sending them if user has opted out", async function() {
@@ -1639,6 +1730,7 @@ describe("CDP on Chromium-based browsers", function() {
 
     beforeEach(async function() {
       await EWE.testing.resetCdpMetricsUploader();
+      await EWE.testing._clearCdpLog();
       await setFeatureFlags({cdpPhase3: true});
       await EWE.testing.stopCdp();
       await EWE.testing.startCdp();
@@ -1970,6 +2062,7 @@ describe("CDP on Chromium-based browsers", function() {
         await clearRequestLogs();
         await clearState();
         await clearEndpointResponses();
+        await EWE.testing._clearCdpLog();
       });
 
       afterEach(async function() {

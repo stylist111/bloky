@@ -1,6 +1,11 @@
 Unreleased
 ==========
 
+## General
+
+- Added CDP event logging to fix numbers anomaly. A new feature flag for it is
+  introduced while staying disabled by default. (EXT-414)
+
 🐱 1.16.0 - 2024-10-10 🐱
 =========================
 

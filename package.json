@@ -37,6 +37,7 @@
     "webpack.config.js"
   ],
   "dependencies": {
+    "lz-string": "^1.5.0",
     "uuid": "^9.0.0",
     "webextension-polyfill": "^0.8.0",
     "yargs": "^17.5.1"

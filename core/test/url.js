@@ -23,7 +23,7 @@ const {icannPublicSuffixes} = require("../data/icannPublicSuffixList.js");
 const {nonIcannPublicSuffixes} = require("../data/nonIcannPublicSuffixList.js");
 const publicSuffixes = {...icannPublicSuffixes, ...nonIcannPublicSuffixes};
 const {parseURL, isLocalhost, domainSuffixes, URLRequest, getBaseDomain,
-       parseDomains, isValidHostname, matchesWildcards} =
+       parseDomains, isValidHostname, matchesWildcards, stripQuery} =
   require(LIB_FOLDER + "/url");
 
 
@@ -1146,6 +1146,23 @@ describe("matchesWildcards()", function() {
 
   it("should return true for wildcards with port", function() {
     assert.strictEqual(matchesWildcards("abptestpages.org:5001", "abptestpages.*"), true);
+  });
+});
+
+describe("stripQuery", function() {
+  it("should return string as-is if query is not included", function() {
+    const url = "https://www.domain.com";
+    assert.strictEqual(stripQuery(url), url);
+  });
+
+  it("should strip query string if it is included", function() {
+    const url = "https://www.domain.com";
+    assert.strictEqual(stripQuery(`${url}?search=my_search`), url);
+  });
+
+  it("supports special URLs", function() {
+    const url = "chrome://about";
+    assert.strictEqual(stripQuery(url), url);
   });
 });
 
