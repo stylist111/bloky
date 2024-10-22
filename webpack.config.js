@@ -23,7 +23,6 @@ import fs from "fs";
 
 import TerserPlugin from "terser-webpack-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
-import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import GenerateJsonPlugin from "generate-json-webpack-plugin";
 import CopyPlugin from "copy-webpack-plugin";
 import ExtensionReloader from "webpack-ext-reloader";
@@ -48,6 +47,7 @@ const packageJsonPath = path.join(dirname, "package.json");
 const snippetsPath =
   path.join(dirname, "node_modules", "@eyeo", "snippets", "index.mjs");
 const pollingPath = path.join(dirname, "test", "polling.js");
+const mochaCssPath = path.join(dirname, "node_modules", "mocha", "mocha.css");
 
 // Canonical Manifest V2
 const mv2 = {
@@ -274,7 +274,6 @@ export default (env = {}) => {
         chunks: ["migrate"],
         template
       }),
-      new MiniCssExtractPlugin(),
       new GenerateJsonPlugin("manifest.json", manifest, null, 2),
       new CopyPlugin({
         patterns: [
@@ -285,7 +284,8 @@ export default (env = {}) => {
           {from: path.join(extensionFunctionalPath, "index-options.js")},
           ...buildVariant.manifestVersion >= 3 &&
             fs.existsSync(scriptsOutputMV3Path) ?
-            [{from: scriptsOutputMV3Path}] : []
+            [{from: scriptsOutputMV3Path}] : [],
+          {from: mochaCssPath}
         ]
       }),
       ...commonPlugins()
@@ -293,7 +293,6 @@ export default (env = {}) => {
 
     if (buildVariant.performance) {
       plugins = [
-        new MiniCssExtractPlugin(),
         new GenerateJsonPlugin("manifest.json", manifest, null, 2),
         new CopyPlugin({
           patterns: [
@@ -342,14 +341,6 @@ export default (env = {}) => {
         minimize: false
       },
       devtool: "inline-source-map",
-      module: {
-        rules: [
-          {
-            test: /\.css$/,
-            use: [MiniCssExtractPlugin.loader, "css-loader"]
-          }
-        ]
-      },
       plugins,
       watchOptions: {
         ignored: ["**/dist", "**/node_modules"]
