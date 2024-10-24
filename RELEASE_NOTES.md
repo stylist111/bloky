@@ -1,6 +1,9 @@
 Unreleased
 ==========
 
+🎥 1.17.0 - 2024-10-24 🎥
+=========================
+
 ## General
 
 - Added CDP event logging to fix numbers anomaly. A new feature flag for it is
