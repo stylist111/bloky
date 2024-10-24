@@ -18,7 +18,6 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 import {v4 as uuidv4} from "uuid";
-import {wait} from "./polling.js";
 import {decompressFromUTF16} from "lz-string";
 import {MILLIS_IN_MINUTE, MILLIS_IN_DAY, MILLIS_IN_HOUR, MINUTES_IN_DAY,
         MINUTES_IN_HOUR,
@@ -31,6 +30,7 @@ import {isChromiumBased, isFirefox, Page, setMinTimeout, executeScript,
         clearEndpointResponse} from "./utils.js";
 import {setFeatureFlags} from "./messaging.js";
 import {base64ToArrayBuffer} from "adblockpluscore/lib/rsa.js";
+import {limitPromiseDuration} from "./polling.js";
 
 const WEBEXT_DOT_COM = "webext.com";
 const SUB_DOT_WEBEXT_DOT_COM = "sub." + WEBEXT_DOT_COM;
@@ -1768,6 +1768,17 @@ describe("CDP on Chromium-based browsers", function() {
       await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
     });
 
+    async function loadPageWithTimeout(url, timeout = 10 * MILLIS_IN_SECOND) {
+      const page = new Page(url);
+      try {
+        await limitPromiseDuration(page.loaded, `Failed to load ${url}`, timeout);
+      }
+      catch (e) {
+        await page.remove();
+        throw e;
+      }
+    }
+
     it("migrates the data from Phase 2", async function() {
       setMinTimeout(this, 2 * 60 * 1000);
 
@@ -1780,7 +1791,7 @@ describe("CDP on Chromium-based browsers", function() {
       await setFeatureFlags({cdpPhase3: false});
       await EWE.testing.startCdp();
 
-      await new Page(`https://${YAHOO_COM}`).loaded;
+      await loadPageWithTimeout(`https://${YAHOO_COM}`, 60 * MILLIS_IN_SECOND);
       await assertEventsPhase2(YAHOO_COM, EVENT_PAGE_VIEW, 1);
 
       // Phase 3
@@ -1788,19 +1799,14 @@ describe("CDP on Chromium-based browsers", function() {
       await setFeatureFlags({cdpPhase3: true});
       await EWE.testing.startCdp();
 
-      await new Page(`https://${YAHOO_COM}`).loaded;
+      await loadPageWithTimeout(`https://${YAHOO_COM}`, 60 * MILLIS_IN_SECOND);
       await assertEvents(YAHOO_COM, EVENT_PAGE_VIEW, 2);
     });
 
     it("supports History API", async function() {
       await addFilter(`image.png$domain=${WEBEXT_DOT_COM}`);
-      // This is failing on Windows runners, adding retry mechanism:
-      await wait(async() => {
-        const opener = new Page(`http://${WEBEXT_DOT_COM}:3000/history.html`);
-        if (await opener.loaded) {
-          return true;
-        }
-      }, 10000, "Failed to load the history page within the timeout.");
+
+      await loadPageWithTimeout(`http://${WEBEXT_DOT_COM}:3000/history.html`);
 
       // 1 event for "history.html" and 1 event for "history-after-pushState.js"
       await assertEvents(WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 2);
