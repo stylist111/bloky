@@ -212,20 +212,7 @@ func:v2:firefox:oldest:
     TEST_PARAMS: 2 $BROWSER
 
 .edge_install_windows: &edge_install_windows
-  - $Env:EdgePath = "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
-  - try {
-      choco install -y microsoft-edge;
-      if (!(Test-Path $Env:EdgePath)) {
-        throw "Edge not found on `"$Env:EdgePath`"";
-      }
-    }
-    catch {
-      Write-Warning "$_ - Retrying Edge install...";
-      choco install -y microsoft-edge;
-      if (!(Test-Path $Env:EdgePath)) {
-        throw "Edge not found on `"$Env:EdgePath`"";
-      }
-    }
+  - choco install -y microsoft-edge
 
 # Replaces nodejs v21.2.0 (default) with v18.17.1
 .nodejs_install_windows: &nodejs_install_windows
@@ -250,6 +237,8 @@ func:v2:windows:edge:
   extends: .functional-windows
   script:
     - npm run test:functional -- 2 edge latest --timeout=10000
+  # Retrying to mitigate Edge install issues
+  retry: 1
 
 # Functional tests - MV3
 func:v3:chromium:latest:
