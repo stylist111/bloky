@@ -230,9 +230,17 @@ function shouldAddDefaultSubscriptions() {
 async function enableRuleset(rulesetId) {
   if (browser.declarativeNetRequest) {
     if (rulesetExistsInManifest(rulesetId)) {
-      await browser.declarativeNetRequest.updateEnabledRulesets({
-        enableRulesetIds: [rulesetId]
-      });
+      try {
+        await browser.declarativeNetRequest.updateEnabledRulesets({
+          enableRulesetIds: [rulesetId]
+        });
+      }
+      catch (e) {
+        // Update the error message with the rulesetId. Helpful for tracking
+        // the Internal Error: https://issues.chromium.org/issues/367440970
+        e.message = `${e.message} (enableRuleset: ${rulesetId})`;
+        throw e;
+      }
     }
   }
 }

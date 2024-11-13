@@ -1,6 +1,9 @@
 Unreleased
 ==========
 
+- Extended the error message with the ruleset ID, in case of a failure when
+  trying to update the enabled rulesets.
+
 🎥 1.17.0 - 2024-10-24 🎥
 =========================
 
