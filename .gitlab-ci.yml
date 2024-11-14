@@ -231,7 +231,7 @@ func:v2:firefox:oldest:
     - *nodejs_install_windows
     - npm install
   tags:
-    - saas-windows-medium-amd64
+    - eyeo-windows
 
 func:v2:windows:edge:
   extends: .functional-windows
