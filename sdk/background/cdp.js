@@ -52,6 +52,7 @@ export const EVENT_BLOCKING = "blocking";
 
 const CDP_PHASE3_FEATURE_FLAG = "cdpPhase3";
 const DEBUG_CDP_FEATURE_FLAG = "debugCdp";
+const DEBOUNCE_INTERVAL = 5000;
 
 // CDP events and pages user activity loading delay (for testing)
 let _loadDelay = 0;
@@ -63,7 +64,7 @@ let processor;
 
 let logMessages = new PersistentState("ewe:cdp_log", browser.storage.local);
 logMessages.doDebounce();
-logMessages.setDebounceInterval(5000); // to avoid performance penalty
+logMessages.setDebounceInterval(DEBOUNCE_INTERVAL);
 
 /**
  * Put a message into CDP log
@@ -71,11 +72,11 @@ logMessages.setDebounceInterval(5000); // to avoid performance penalty
  * @ignore
  */
 export function log(message) {
+  debug(message);
+
   if (!isFeatureEnabled(DEBUG_CDP_FEATURE_FLAG)) {
     return;
   }
-
-  debug(message);
 
   const tsMessage = `${Date.now()}:${message}`;
   const state = logMessages.getState();
@@ -83,6 +84,13 @@ export function log(message) {
     state.messages = [];
   }
   state.messages.push(tsMessage);
+
+  // We can collect too much data in between the CDP aggregate pings
+  // (EXT-588)
+  const CDP_LOG_LIMIT = 10000;
+  if (state.messages.length > CDP_LOG_LIMIT) {
+    state.messages.splice(0, state.messages.length - CDP_LOG_LIMIT);
+  }
   logMessages.save();
 }
 
@@ -244,7 +252,7 @@ async function count(eventType, siteId, timeStamp) {
       state.getState()[siteId] = timestamps;
     }
     timestamps.push(timeStamp);
-    log(`events: ${timestamps}`);
+    log(`events count: ${timestamps.length}`);
   }
 
   if (isStateLoaded()) {

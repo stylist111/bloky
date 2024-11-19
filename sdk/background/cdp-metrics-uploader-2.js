@@ -356,7 +356,7 @@ async function uploadPendingSessionBundles(cdp) {
       state.bundles = state.bundles.filter(b => b != bundle);
       await storage.save();
 
-      await clearData(EVENT_SESSION_START, bundle.siteId, endTimestamp);
+      await clearData(null, bundle.siteId, endTimestamp);
     }
 
     if (state.lastError) {

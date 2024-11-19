@@ -316,6 +316,7 @@ export default {
   _clearCdpActivity: cdp.clearActivity,
   _clearCdpLog: cdp.clearLog,
   _setCdpLog: cdp.setLog,
+  _getCdpLog: cdp.getLog,
   _getCdpDomainStats: cdp.getDomainStats,
   _importRSAPublicKey: cdpEncryption.importRSAPublicKey,
   _requestPublicKey: cdpMetricsUploader3.requestPublicKey,

@@ -1,6 +1,11 @@
 Unreleased
 ==========
 
+## Fixes
+
+-  Fixed the bug of printing too much of CDP log which slowed down
+   user devices. (EXT-588)
+
 👄 1.17.1 - 2024-11-13 👄
 =========================
 

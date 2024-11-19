@@ -949,10 +949,10 @@ describe("CDP on Chromium-based browsers", function() {
           CDP_PHASE_2_ARGS, ERROR_DELAY_MS);
       }
 
-      function createAggregateBundleToSend() {
+      function createAggregateBundleToSend(siteId = SITE_ID) {
         let now = Date.now();
         return {
-          siteId: SITE_ID,
+          siteId,
           referenceDateLocal: "2024-05-13",
           utid: uuidv4(),
           scheduledSendTimestamp: now
@@ -1313,6 +1313,11 @@ describe("CDP on Chromium-based browsers", function() {
         expect(payload).toHaveProperty("debug");
         const rawLog = decompressFromUTF16(payload.debug);
         expect(rawLog.includes("getNextTimestamp()")).toEqual(true);
+
+        // make sure the log is cleared after sending.
+        // few entries are there as they were added after sending.
+        const cdpLog = await EWE.testing._getCdpLog();
+        expect(cdpLog.length <= 6).toEqual(true);
       });
 
       it("limits the debug log to 10Kb", async function() {
@@ -1571,6 +1576,42 @@ describe("CDP on Chromium-based browsers", function() {
           expect(storage.bundles).toEqual([]);
           expect(storage).not.toHaveProperty("lastError");
         });
+      });
+
+      it("clears the events after sending", async function() {
+        let dayCutoffMinutes = 0;
+        let bundleToSend = createAggregateBundleToSend(WEBEXT_DOT_COM);
+        await browser.storage.local.set({
+          [CDP_STORAGE_2_KEY]: {
+            dayCutoffMinutes,
+            bundles: [bundleToSend]
+          }
+        });
+
+        let dayStart = new Date(bundleToSend.referenceDateLocal).getTime();
+
+        await EWE.testing._setCdpData(
+          EVENT_PAGE_VIEW, WEBEXT_DOT_COM, [dayStart]);
+        await EWE.testing._setCdpData(
+          EVENT_SESSION_START, WEBEXT_DOT_COM, [dayStart]);
+        await EWE.testing._setCdpData(
+          EVENT_BLOCKING, WEBEXT_DOT_COM, [dayStart]);
+
+        await assertEvents(WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 1);
+        await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
+        await assertEvents(WEBEXT_DOT_COM, EVENT_BLOCKING, 1);
+
+        await startMetricsUploaderWithTestArgs();
+
+        await waitForAssertion(async() => {
+          let requestLogs = await getRequestLogs(
+            CDP_PHASE_2_ARGS.aggregateUrl);
+          expect(requestLogs).toHaveLength(1);
+        });
+
+        await assertEvents(WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 0);
+        await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 0);
+        await assertEvents(WEBEXT_DOT_COM, EVENT_BLOCKING, 0);
       });
     });
 
