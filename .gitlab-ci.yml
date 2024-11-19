@@ -249,6 +249,7 @@ func:v3:chromium:latest:
 
 func:v3:chromium:incognito:
   extends: .functional
+  allow_failure: true # https://eyeo.atlassian.net/browse/EXT-584
   variables:
     BROWSER: chromium latest
     TEST_PARAMS: 3 $BROWSER --testKinds functional reload update --incognito
@@ -373,6 +374,7 @@ fuzz:v3:chromium:latest:
 
 fuzz:v3:chromium:incognito:
   extends: .fuzz
+  allow_failure: true  # https://eyeo.atlassian.net/browse/EXT-584
   variables:
     BROWSER: chromium latest
     INCOGNITO: --incognito
