@@ -1,6 +1,9 @@
 Unreleased
 ==========
 
+🗧 1.17.2 - 2024-11-19 🗧
+=========================
+
 ## Fixes
 
 -  Fixed the bug of printing too much of CDP log which slowed down
