@@ -98,6 +98,7 @@ export function getLog() {
 /**
  * Set log messages for testing
  * @param {Array<string>} messages Log messages
+ * @ignore
  */
 export function setLog(messages) {
   logMessages.getState().messages = messages;
