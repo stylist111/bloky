@@ -1,6 +1,6 @@
 {
   "name": "@eyeo/webext-ad-filtering-solution",
-  "version": "1.17.2",
+  "version": "1.18.0",
   "description": "eyeo's WebExtension Ad-Filtering Solution",
   "repository": {
     "type": "git",

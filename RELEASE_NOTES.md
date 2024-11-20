@@ -1,6 +1,9 @@
 Unreleased
 ==========
 
+📔 1.18.0 - 2024-11-20 📔
+=========================
+
 ## Split experiments
 
 - Added a mechanism to dynamically run split experiments. Users are assigned to 
