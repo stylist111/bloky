@@ -42,6 +42,14 @@ export class PersistentState {
     this.state = {};
   }
 
+  async getStateLoaded() {
+    if (!this.loaded) {
+      await this.load();
+    }
+
+    return this.state;
+  }
+
   getState() {
     return this.state;
   }

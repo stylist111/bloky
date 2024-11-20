@@ -35,6 +35,7 @@ import * as testing from "./testing.js";
 import * as prefs from "./prefs.js";
 import * as cdp from "./cdp.js";
 import * as cdpMetricsUploader from "./cdp-metrics-uploader.js";
+import * as experiments from "./experiments.js";
 import {setSnippetLibrary} from "./content-filter.js";
 import {setAddonInfo} from "./info.js";
 import {filterEngine} from "./core.js";
@@ -140,6 +141,11 @@ export {notifications} from "./notifications.js";
 const wrappedCdp = wrapApiNamespace(cdp.default);
 export {wrappedCdp as cdp};
 
+/**
+ * @ignore
+ */
+const wrappedExperiments = wrapApiNamespace(experiments.default);
+export {wrappedExperiments as experiments};
 
 export let snippets = {
   /**
@@ -247,6 +253,9 @@ async function onInstalled(details) {
  *   of the returned `FirstRunInfo`.
  * @param {bool?} [addonInfo.featureFlags.inlineCss] Enable inline CSS in
  *   element hiding and element hiding emulation filters.
+ * @param {Object?} [addonInfo.experiments] Settings for split experiments.
+ * @param {string} [addonInfo.experiments.url] The URL to make a GET request to
+ *   for getting experiment data.
  * @return {Promise<FirstRunInfo>} Promise that is resolved after starting up
  *                                 is completed.
  */
@@ -270,7 +279,7 @@ export async function start(addonInfo) {
     }
   }
 
-  await startSubmodules();
+  await startSubmodules(addonInfo);
 
   let {filterStorage} = filterEngine;
   let firstRun = {
@@ -315,7 +324,7 @@ function startSubmodulesWithListeners() {
   filters.start();
 }
 
-async function startSubmodules() {
+async function startSubmodules(addonInfo) {
   await initializer.start();
 
   // MV2-style popup and request blocking assume that initializer is
@@ -329,6 +338,10 @@ async function startSubmodules() {
   }
 
   filterEngine.filterStorage.synchronizer.start();
+
+  if (addonInfo && addonInfo.experiments && addonInfo.experiments.url) {
+    experiments.start(addonInfo.experiments.url);
+  }
 }
 
 async function checkAndMigrateSubscriptions() {

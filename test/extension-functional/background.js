@@ -472,6 +472,10 @@ if (isMV3()) {
     sub => sub.id != "00000000-0000-0000-0000-000000000092");
 }
 
+startupInfo.experiments = {
+  url: "http://localhost:3003/experiments.json"
+};
+
 startupInfo.telemetry = {
   url: "http://localhost:3003/telemetry",
   bearer: "SSBhbSBhIGJlYXIuLi4gZXIuLi4gUkFXUg=="

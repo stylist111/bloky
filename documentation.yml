@@ -19,14 +19,15 @@ toc:
       </style>
     children:
       - allowlisting
+      - cdp
       - debugging
+      - experiments
       - filters
       - notifications
       - reporting
       - snippets
       - subscriptions
       - telemetry
-      - cdp
   - name: Objects
     children:
       - allowlistingCallback
@@ -36,6 +37,7 @@ toc:
       - CdpEventDispatcher
       - CdpEventOptions
       - EventDispatcher
+      - ExperimentSyncStatus
       - Filter
       - FilterAddResult
       - FilterError

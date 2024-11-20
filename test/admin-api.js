@@ -106,6 +106,13 @@ const BUILD_TIME_ROUTES = [
     headers: {
       "Pubkey-Id": "aeec16f98f5c69aca7a91c77c494a135"
     }
+  },
+  {
+    url: "/experiments.json",
+    response: JSON.stringify({
+      schemaId: "1",
+      experiments: []
+    })
   }
 ];
 

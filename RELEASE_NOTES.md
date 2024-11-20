@@ -1,6 +1,12 @@
 Unreleased
 ==========
 
+## Split experiments
+
+- Added a mechanism to dynamically run split experiments. Users are assigned to 
+  experiments and variants uniformly. Functionalities for interacting with split
+  experiments are exposed through the `EWE.experiments` API. (EXT-531)
+
 🗧 1.17.2 - 2024-11-19 🗧
 =========================
 

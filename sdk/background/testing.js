@@ -52,6 +52,7 @@ import * as sitekey from "./sitekey.js";
 import {getDeferredMessages} from "./content-message-deferrer.js";
 import * as cdp from "./cdp.js";
 import {_clear} from "./frame-state.js";
+import * as experiments from "./experiments.js";
 
 export default {
   ...sitekey, // everything exported from "sitekey.js"
@@ -351,5 +352,12 @@ export default {
     return await browser.declarativeNetRequest.getDynamicRules();
   },
 
-  _clearFrameState: _clear
+  _clearFrameState: _clear,
+
+  restartExperiments(url, syncInterval, errorRetryDelay) {
+    experiments.stop();
+    experiments.start(url, syncInterval, errorRetryDelay);
+  },
+  setExperimentsSeed: experiments.setSeed,
+  resetExperimentData: experiments.reset
 };
