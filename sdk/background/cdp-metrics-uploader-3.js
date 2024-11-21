@@ -22,6 +22,7 @@ import {MILLIS_IN_HOUR, MILLIS_IN_DAY} from "adblockpluscore/lib/time.js";
 
 import * as info from "./info.js";
 import {Scheduler} from "../all/scheduler.js";
+import {hasAcceptableAdsEnabled} from "./subscriptions.js";
 import {trace, error, debug, warn} from "./debugging.js";
 import {postWithBearerToken} from "./telemetry.js";
 import {default as cdpMod, getDomainStats, clearData} from "./cdp.js";
@@ -92,7 +93,9 @@ async function buildPayload(publicKey, keyId, domainStats, utid) {
     extension_version: extensionVersion,
     utid,
     ucid: state.ucid,
-    encryption_scheme: `rsa:2048:aes:${AES_LENGTH}`
+    encryption_scheme: `rsa:2048:aes:${AES_LENGTH}`,
+    // schema #4
+    aa_active: await hasAcceptableAdsEnabled()
   };
 
   // the very first run is expected not to have `encrypted_data` and `last_ping`

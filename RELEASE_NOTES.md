@@ -5,6 +5,8 @@ Unreleased
 
 - CDP payload is now shrinked and compressed, the retry count is limited.
   It requires CDP active ping backend URL schema #3. (EXT-452)
+- Added CDP request property whether AA is active and it requires CDP active ping
+  backend URL schema #4. (EXT-428)
 
 📔 1.18.0 - 2024-11-20 📔
 =========================

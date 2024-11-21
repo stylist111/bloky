@@ -1827,6 +1827,39 @@ describe("CDP on Chromium-based browsers", function() {
       }
     }
 
+    it("sends aa_active property", async function() {
+      const ACCEPTABLE_ADS_MV3_URL =
+        "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt";
+
+      await startMetricsUploaderWithTestArgs();
+
+      await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+
+      let payload;
+
+      async function assertAAActive(isActive) {
+        await waitForAssertion(async() => {
+          let requestLogs = await getRequestLogs(CDP_PHASE_2_ARGS.pingUrl);
+          expect(requestLogs).toHaveLength(1);
+          payload = requestLogs[0].body.payload;
+        });
+
+        expect(payload.aa_active).toEqual(isActive);
+      }
+
+      await assertAAActive(false);
+      await clearRequestLogs();
+
+      await EWE.testing.stopCdpMetricsUploader();
+      await EWE.subscriptions.add(ACCEPTABLE_ADS_MV3_URL);
+      await startMetricsUploaderWithTestArgs();
+
+      await new Page("http://localhost:3000/image.html").loaded;
+      await EWE.testing._uploadCdp();
+
+      await assertAAActive(true);
+    });
+
     it("migrates the data from Phase 2", async function() {
       setMinTimeout(this, 2 * 60 * 1000);
 
