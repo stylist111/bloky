@@ -18,6 +18,7 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 import {v4 as uuidv4} from "uuid";
+import pako from "pako";
 import {decompressFromUTF16} from "lz-string";
 import {MILLIS_IN_MINUTE, MILLIS_IN_DAY, MILLIS_IN_HOUR, MINUTES_IN_DAY,
         MINUTES_IN_HOUR,
@@ -141,8 +142,10 @@ Uf3EQna7+viKeGOEpe2PDqH3V/g4XZeksCpKHOtS9QjGkF28Pl03z7odu3LcYnJ5
 
   const decryptedDataArray = await decryptAES(
     aesNonce, aesKey, encryptedDataArray);
+  const ungzippedArray = pako.ungzip(decryptedDataArray);
   const decoder = new TextDecoder("utf-8");
-  return JSON.parse(decoder.decode(decryptedDataArray));
+  const domainStatsString = decoder.decode(ungzippedArray.buffer);
+  return JSON.parse(domainStatsString);
 }
 
 describe("CDP opt-out", function() {
@@ -1769,12 +1772,16 @@ describe("CDP on Chromium-based browsers", function() {
       return counter;
     }
 
-    beforeEach(async function() {
+    async function cleanUp() {
       await EWE.testing.resetCdpMetricsUploader();
       await EWE.testing._clearCdpLog();
       await setFeatureFlags({cdpPhase3: true});
       await EWE.testing.stopCdp();
       await EWE.testing.startCdp();
+    }
+
+    beforeEach(async function() {
+      await cleanUp();
     });
 
     async function startMetricsUploaderWithTestArgs() {
@@ -2552,9 +2559,9 @@ describe("CDP on Chromium-based browsers", function() {
 
           const errorPayload = requestLogs[1].body.payload;
           const errorDomainStats = await decryptDomainStats(errorPayload);
-          expect(errorDomainStats).toEqual([{
-            site_id: WEBEXT_DOT_COM,
-            sessions_count: 1
+          expect(errorDomainStats.ds).toEqual([{
+            i: WEBEXT_DOT_COM,
+            s: 1
           }]);
 
           // configure backend to return ok
@@ -2592,9 +2599,9 @@ describe("CDP on Chromium-based browsers", function() {
           const regularPayload = requestLogs[3].body.payload;
           const regularDomainStats = await decryptDomainStats(regularPayload);
           // no "webext.com" sessions is expected here
-          expect(regularDomainStats).toEqual([{
-            site_id: LOCALHOST,
-            sessions_count: 1
+          expect(regularDomainStats.ds).toEqual([{
+            i: LOCALHOST,
+            s: 1
           }]);
         }
         finally {
@@ -2623,7 +2630,7 @@ describe("CDP on Chromium-based browsers", function() {
         await EWE.testing._setCdpData(EVENT_SESSION_START, SITE_ID, [1, 2, 3]);
         const stats = await EWE.testing._getCdpDomainStats();
         expect(stats).toEqual(
-          `[{"site_id":"${SITE_ID}","sessions_count":3}]`);
+          `{"ds":[{"i":"${SITE_ID}","s":3}]}`);
       });
 
       it("sorts \"domain_stats\" payload for sessions count", async function() {
@@ -2634,11 +2641,11 @@ describe("CDP on Chromium-based browsers", function() {
         await EWE.testing._setCdpData(EVENT_SESSION_START, SITE_ID2, [1, 2, 3]);
         await EWE.testing._setCdpData(EVENT_SESSION_START, SITE_ID3, [1, 2]);
         const stats = await EWE.testing._getCdpDomainStats();
-        expect(stats).toEqual("[" +
-          `{"site_id":"${SITE_ID2}","sessions_count":3},` +
-          `{"site_id":"${SITE_ID3}","sessions_count":2},` +
-          `{"site_id":"${SITE_ID1}","sessions_count":1}` +
-          "]");
+        expect(stats).toEqual("{\"ds\":[" +
+          `{"i":"${SITE_ID2}","s":3},` +
+          `{"i":"${SITE_ID3}","s":2},` +
+          `{"i":"${SITE_ID1}","s":1}` +
+          "]}");
       });
 
       it("skips sending 0 sessions_count if having pageviews_count", async function() {
@@ -2648,7 +2655,7 @@ describe("CDP on Chromium-based browsers", function() {
         // the reported list, so we might occasionally add 0
         // as a sessions count for it.
         const stats = await EWE.testing._getCdpDomainStats();
-        expect(stats).toEqual("[]");
+        expect(stats).toEqual("{\"ds\":[]}");
       });
     });
 
@@ -2679,10 +2686,11 @@ UlvVm112lG9ij3Mc/f64cKzmenKoIe0c2HSGMxFagEDnAgMBAAE=
         expect(keyId).not.toBeNull();
       });
 
-      it("is able to decrypt the payload", async function() {
+      it("is able to decrypt and decompress the payload", async function() {
         setMinTimeout(this, 20 * 1000);
 
         await clearRequestLogs();
+        await cleanUp();
 
         await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
         await startMetricsUploaderWithTestArgs();
@@ -2710,13 +2718,119 @@ UlvVm112lG9ij3Mc/f64cKzmenKoIe0c2HSGMxFagEDnAgMBAAE=
         expect(payload).toHaveProperty("public_key_id");
 
         const domainStats = await decryptDomainStats(payload);
-        expect(domainStats).toEqual(expect.arrayContaining([{
-          site_id: WEBEXT_DOT_COM,
-          sessions_count: 1
+        expect(domainStats.ds).toEqual(expect.arrayContaining([{
+          i: WEBEXT_DOT_COM,
+          s: 1
         }, {
-          site_id: LOCALHOST,
-          sessions_count: 1
+          i: LOCALHOST,
+          s: 1
         }]));
+      });
+
+      it("stops retry sending after reaching the limit", async function() {
+        await clearRequestLogs();
+        await cleanUp();
+
+        await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+        await startMetricsUploaderWithTestArgs();
+
+        let payload;
+        await waitForAssertion(async() => {
+          let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+          expect(requestLogs).toHaveLength(1);
+          payload = requestLogs[0].body.payload;
+        }, LOGS_WAIT_INTERVAL_MS);
+        expect(payload).not.toHaveProperty("encrypted_data"); // the very first ping
+
+        // simulate backend is down
+        await setEndpointResponse(PING_URL, {}, "POST", 500);
+
+        // retry to ping several times and make sure same utid is used
+        let attempt = 0;
+        let lastUtid;
+        const MAX_RETRIES = 3;
+        while (attempt++ < MAX_RETRIES) {
+          await EWE.testing._uploadCdp();
+
+          await waitForAssertion(async() => {
+            let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+            expect(requestLogs).toHaveLength(1 + attempt);
+            payload = requestLogs[requestLogs.length - 1].body.payload;
+          }, LOGS_WAIT_INTERVAL_MS);
+
+          // make sure we resend the last domains stats
+          const utid = payload.utid;
+          if (lastUtid) {
+            expect(utid).toEqual(lastUtid);
+          }
+          lastUtid = utid;
+        }
+        const failedDomainStats = await decryptDomainStats(payload);
+        expect(failedDomainStats.ds).toHaveLength(1);
+
+        // simulate backend is up again
+        await setEndpointResponse(PING_URL, {}, "POST", 200);
+
+        // We need to navigate to another domain, as the session for webext.com
+        // is pending and will be not counted in domains_stats
+        await new Page(`http://${LOCALHOST}:3000/image.html`).loaded;
+
+        await EWE.testing._uploadCdp();
+
+        await waitForAssertion(async() => {
+          let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+          expect(requestLogs).toHaveLength(1 + MAX_RETRIES + 1);
+          payload = requestLogs[requestLogs.length - 1].body.payload;
+        }, LOGS_WAIT_INTERVAL_MS);
+
+        // new domains stats is sent
+        expect(payload.utid).not.toEqual(lastUtid);
+        const successfulDomainStats = await decryptDomainStats(payload);
+        expect(successfulDomainStats.ds).toEqual([{
+          i: LOCALHOST,
+          s: 1
+        }]);
+      });
+
+      it("limits the payload to 50Kb", async function() {
+        async function populateCdpData(length) {
+          let domains = [];
+          let counters = [];
+          for (let i = 0; i < length; i++) {
+            domains.push(SITE_ID + i);
+            counters.push(i);
+          }
+          await EWE.testing._setCdpDataArray(
+            EVENT_SESSION_START, domains, counters);
+        }
+
+        await clearRequestLogs();
+        await cleanUp();
+
+        // populate the data
+        await populateCdpData(100 * 1000); // domains visited
+
+        await startMetricsUploaderWithTestArgs();
+
+        // Wait for first ping
+        let payload;
+        await waitForAssertion(async() => {
+          let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+          expect(requestLogs).toHaveLength(1);
+          payload = requestLogs[0].body.payload;
+        }, LOGS_WAIT_INTERVAL_MS);
+
+        // ping with actual data
+        await EWE.testing._uploadCdp();
+
+        await waitForAssertion(async() => {
+          let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+          expect(requestLogs).toHaveLength(2);
+          payload = requestLogs[requestLogs.length - 1].body.payload;
+        }, LOGS_WAIT_INTERVAL_MS);
+
+        // payload should be limited
+        expect(payload.encrypted_data.length < 50 * 1024).toEqual(true);
       });
     });
   });

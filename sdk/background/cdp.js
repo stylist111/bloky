@@ -305,6 +305,25 @@ export async function setData(eventType, domain, counterOrTimestamps) {
 }
 
 /**
+ * Set the events array. This is for use in testing, in real use the data is
+ * set by listening to events.
+ * @param {string} eventType The type of event (see EVENT_...)
+ * @param {Array<string>} domains The domain to get events for
+ * @param {Array<Number>} counters Events counter.
+ *                                 The size must be equal to domains size.
+ * @ignore
+ */
+export async function setDataArray(eventType, domains, counters) {
+  const state = events.get(eventType);
+  for (let i = 0; i < domains.length; i++) {
+    const domain = domains[i];
+    const counter = counters[i];
+    state.getState()[domain] = counter;
+  }
+  await state.save();
+}
+
+/**
  * Return the events
  * @param {string} eventType The type of event (see EVENT_...)
  * @param {string} siteId The domain to get events for
@@ -603,8 +622,8 @@ export function stop() {
 
 // event type to backend metric token mapping
 const EVENT_TYPE_TO_METRIC = new Map([
-  [EVENT_SESSION_START, "sessions_count"],
-  [EVENT_PAGE_VIEW, "pageviews_count"]
+  [EVENT_SESSION_START, "s"], // sessions_count
+  [EVENT_PAGE_VIEW, "p"] // pageviews_count
 ]);
 
 /**

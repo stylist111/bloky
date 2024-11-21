@@ -109,8 +109,8 @@ describe("CDP encryption", function() {
   }
 
   const DATA = JSON.stringify([{
-    site_id: "domain1.com",
-    sessions: 1
+    i: "domain1.com",
+    s: 1
   }]);
 
   it("imports public RSA key", async function() {

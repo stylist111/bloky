@@ -55,16 +55,18 @@ export class MaxLengthMetricsDict {
     this.newLineLength = this.indentationLength > 0 ? 1 : 0;
 
     // serialized object (result) length
-    this.length = 2; // array opening and closing brackets
+    this.length = 9 +
+      this.indentationLength * 2 + (this.indentationLength > 0 ? 1 : 0);
+    // "{ds:[]}" with indentation
 
     this._calcMetricsLength();
   }
 
   _calcLineLength(property, value) {
     // __"property": value
-    // _"site_id" : "UNKNOWN"
-    return this.indentationLength * 2 +
-      // * 2 as it's 2nd level of indentation: (array/object)
+    // _"i" : "UNKNOWN"
+    return this.indentationLength * 3 +
+      // * 2 as it's 3rd level of indentation: (array/object)
       2 + // quotes
       property.length +
       1 + // colon
@@ -98,22 +100,22 @@ export class MaxLengthMetricsDict {
     /* Example:
   ,
   {
-    "site_id": "UNKNOWN",
-    "sessions_count": 0
+    "i": "UNKNOWN",
+    "s": 0
   }
     */
     return (this.metricsDict.size > 0 ?
         1 /* comma */ :
-        this.newLineLength /* new line between [] */) +
+      this.newLineLength /* new line between [] */) +
       this.newLineLength +
-      this.indentationLength + 1 + // opening curly bracket
+      this.indentationLength * 2 + 1 + // opening curly bracket
       this.newLineLength + // \n
-      this._calcLineLength("site_id", `"${domain}"`) +
-      1 + // commas between site_id line and metrics lines
+      this._calcLineLength("i", `"${domain}"`) +
+      1 + // commas between `i` line and metrics lines
       this.newLineLength + // \n
       this.metricsLength +
       // metrics section length assuming all the values are "0"s
-      this.indentationLength + this.newLineLength + // \n
+      this.indentationLength * 2 + this.newLineLength + // \n
       1; // closing curly bracket
   }
 
@@ -122,7 +124,7 @@ export class MaxLengthMetricsDict {
    * If there isn't enough space, it updates the metrics for the UNKNOWN domain.
    *
    * @param {String} domain Domain
-   * @param {String} metric Metric. It must known metrics
+   * @param {String} metric Metric. It must be known metrics
    * @param {Number} increment Increment
    * @throws {Error} "Unknown metric"
    */
@@ -132,6 +134,9 @@ export class MaxLengthMetricsDict {
     }
 
     if (!this.metricsDict.has(domain)) {
+      if (this.metricsDict.size == 0) {
+        this.length += (this.indentationLength > 0 ? 1 : 0) * 2;
+      }
       const additionalLength = this._calcAdditionalLength(domain);
       if ((domain.length > _MAX_DOMAIN_LENGTH) ||
           (this.length + additionalLength) > this.maxLength) {
@@ -172,14 +177,15 @@ export class MaxLengthMetricsDict {
    * @returns {String} String representation of the dictionary
    */
   serialize() {
-    let result = [];
+    let results = [];
     for (const [domain, stats] of this.metricsDict) {
-      result.push({
-        site_id: domain,
+      results.push({
+        i: domain,
         ...stats
       });
     }
 
+    const result = {ds: results};
     return JSON.stringify(result, null, this.space);
   }
 }

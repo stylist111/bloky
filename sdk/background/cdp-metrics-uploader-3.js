@@ -17,6 +17,7 @@
 
 import browser from "webextension-polyfill";
 import {v4 as uuidv4} from "uuid";
+import pako from "pako";
 import {MILLIS_IN_HOUR, MILLIS_IN_DAY} from "adblockpluscore/lib/time.js";
 
 import * as info from "./info.js";
@@ -47,6 +48,11 @@ export async function requestPublicKey() {
   const publicKey = await response.text();
   const keyId = response.headers.get("PubKey-Id");
   return {publicKey, keyId};
+}
+
+async function compressDomainStats(domainStats) {
+  const gzippedArray = pako.gzip(domainStats, {level: 9});
+  return gzippedArray.buffer;
 }
 
 async function encryptDomainStats(publicKeyPem, domainStats) {
@@ -91,7 +97,8 @@ async function buildPayload(publicKey, keyId, domainStats, utid) {
 
   // the very first run is expected not to have `encrypted_data` and `last_ping`
   if (state.lastPing) {
-    payload.encrypted_data = await encryptDomainStats(publicKey, domainStats);
+    const gzippedDS = await compressDomainStats(domainStats);
+    payload.encrypted_data = await encryptDomainStats(publicKey, gzippedDS);
     payload.last_ping = new Date(state.lastPing).toISOString();
   }
 
@@ -135,6 +142,10 @@ async function updateTimestamps(updateLastPing) {
   }
   if (state.lastUtid) {
     delete state.lastUtid;
+  }
+
+  if (state.retryCounter) {
+    delete state.retryCounter;
   }
 
   await storage.save();
@@ -187,9 +198,9 @@ export async function upload() {
       debug("New payload " + utid);
     }
 
-    // if we don't have domain stats, domainStats = "[]"
+    // if we don't have domain stats, domainStats = "{"ds":[]}"
     // (empty JSON array, 2 characters)
-    if (!state.lastPing || (domainStats && domainStats.length > 2)) {
+    if (!state.lastPing || (domainStats && domainStats.length > 9)) {
       const {publicKey, keyId} = await requestPublicKey();
       const payload = await buildPayload(publicKey, keyId, domainStats, utid);
       await postWithBearerToken(_cdp.pingUrl, _cdp.bearer, {payload});
@@ -202,6 +213,14 @@ export async function upload() {
   }
   catch (e) {
     error(`CDP error: ${e.message} for payload with utid=${utid}`);
+
+    state.retryCounter = (state.retryCounter || 0) + 1;
+    if (state.retryCounter >= 3) {
+      error("Retried sending too much times");
+      await updateTimestamps(true);
+      await storage.save();
+      return true;
+    }
 
     state.lastError = Date.now();
     if (!hasLastDomainStats(state)) {

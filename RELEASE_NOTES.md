@@ -1,6 +1,11 @@
 Unreleased
 ==========
 
+## Updating your code
+
+- CDP payload is now shrinked and compressed, the retry count is limited.
+  It requires CDP active ping backend URL schema #3. (EXT-452)
+
 📔 1.18.0 - 2024-11-20 📔
 =========================
 

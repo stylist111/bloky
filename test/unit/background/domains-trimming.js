@@ -16,15 +16,16 @@
  */
 
 import expect from "expect";
+import {Validator} from "jsonschema";
 import {MaxLengthMetricsDict} from "../../../sdk/background/domains-trimming.js";
 
-const SESSIONS_COUNT = "sessions_count";
-const PAGE_VIEWS = "page_views";
+const SESSIONS_COUNT = "s";
+const PAGE_VIEWS = "p";
 
 describe("Domains trimming", function() {
   it("serializes empty dictionary", function() {
     const fsmd = new MaxLengthMetricsDict(100, [SESSIONS_COUNT]);
-    const expected = "[]";
+    const expected = "{\n  \"ds\": []\n}";
     expect(fsmd.serialize()).toEqual(expected);
     expect(fsmd.getLength()).toEqual(expected.length);
   });
@@ -37,44 +38,52 @@ describe("Domains trimming", function() {
       expect(fsmd.getLength()).toEqual(expected.length);
     }
 
-    const noIndentationString = "[{\"site_id\":\"domain1.com\",\"sessions_count\":0}]";
+    const noIndentationString = "{\"ds\":[{\"i\":\"domain1.com\",\"s\":0}]}";
     assertFormatted(null, noIndentationString);
     assertFormatted(0, noIndentationString);
     assertFormatted("", noIndentationString);
 
     const singleSpaceIndentationString =
-`[
- {
-  "site_id": "domain1.com",
-  "sessions_count": 0
- }
-]`;
+`{
+ "ds": [
+  {
+   "i": "domain1.com",
+   "s": 0
+  }
+ ]
+}`;
     assertFormatted(1, singleSpaceIndentationString);
     assertFormatted(" ", singleSpaceIndentationString);
     assertFormatted("\t",
-`[
-\t{
-\t\t"site_id": "domain1.com",
-\t\t"sessions_count": 0
-\t}
-]`);
+`{
+\t"ds": [
+\t\t{
+\t\t\t"i": "domain1.com",
+\t\t\t"s": 0
+\t\t}
+\t]
+}`);
     const doubleSpaceIndentationString =
-`[
-  {
-    "site_id": "domain1.com",
-    "sessions_count": 0
-  }
-]`;
+`{
+  "ds": [
+    {
+      "i": "domain1.com",
+      "s": 0
+    }
+  ]
+}`;
     assertFormatted(2, doubleSpaceIndentationString);
     assertFormatted("  ", doubleSpaceIndentationString);
 
     const fourSpacesIndentationString =
-`[
-    {
-        "site_id": "domain1.com",
-        "sessions_count": 0
-    }
-]`;
+`{
+    "ds": [
+        {
+            "i": "domain1.com",
+            "s": 0
+        }
+    ]
+}`;
     assertFormatted(4, fourSpacesIndentationString);
     assertFormatted("    ", fourSpacesIndentationString);
   });
@@ -82,12 +91,14 @@ describe("Domains trimming", function() {
   it("adds a domain separately if does not exceed the limit", function() {
     const fsmd = new MaxLengthMetricsDict(1000, [SESSIONS_COUNT]);
     const expected =
-`[
-  {
-    "site_id": "domain.com",
-    "sessions_count": 1
-  }
-]`;
+`{
+  "ds": [
+    {
+      "i": "domain.com",
+      "s": 1
+    }
+  ]
+}`;
     fsmd.addMetric("domain.com", SESSIONS_COUNT, 1);
     const actual = fsmd.serialize();
     expect(actual).toEqual(expected);
@@ -97,13 +108,15 @@ describe("Domains trimming", function() {
   it("adds a domain separately if does not exceed the limit with multiple metrics", function() {
     const fsmd = new MaxLengthMetricsDict(1000, [SESSIONS_COUNT, PAGE_VIEWS]);
     const expected =
-`[
-  {
-    "site_id": "domain.com",
-    "sessions_count": 1,
-    "page_views": 0
-  }
-]`;
+`{
+  "ds": [
+    {
+      "i": "domain.com",
+      "s": 1,
+      "p": 0
+    }
+  ]
+}`;
     fsmd.addMetric("domain.com", SESSIONS_COUNT, 1);
     const actual = fsmd.serialize();
     expect(actual).toEqual(expected);
@@ -111,14 +124,16 @@ describe("Domains trimming", function() {
   });
 
   it("trims a domain if exceeds the limit", function() {
-    const fsmd = new MaxLengthMetricsDict(50, [SESSIONS_COUNT]);
+    const fsmd = new MaxLengthMetricsDict(40, [SESSIONS_COUNT]);
     const expected =
-`[
-  {
-    "site_id": "UNKNOWN",
-    "sessions_count": 1
-  }
-]`;
+`{
+  "ds": [
+    {
+      "i": "UNKNOWN",
+      "s": 1
+    }
+  ]
+}`;
     fsmd.addMetric("domain.com", SESSIONS_COUNT, 1);
     expect(fsmd.serialize()).toEqual(expected);
     expect(fsmd.getLength()).toEqual(expected.length);
@@ -129,12 +144,14 @@ describe("Domains trimming", function() {
     // even if it fits into the payload limit
     const fsmd = new MaxLengthMetricsDict(1000, [SESSIONS_COUNT]);
     const expected =
-`[
-  {
-    "site_id": "UNKNOWN",
-    "sessions_count": 1
-  }
-]`;
+`{
+  "ds": [
+    {
+      "i": "UNKNOWN",
+      "s": 1
+    }
+  ]
+}`;
     fsmd.addMetric("alongdomainthatexceedsthe25charslimit.com", SESSIONS_COUNT, 1);
     expect(fsmd.serialize()).toEqual(expected);
     let calculatedSize = fsmd.getLength();
@@ -142,25 +159,29 @@ describe("Domains trimming", function() {
 
     fsmd.addMetric("someotherlongdomainthatexceedsthe25charslimit.com", SESSIONS_COUNT, 2);
     const expected2 =
-`[
-  {
-    "site_id": "UNKNOWN",
-    "sessions_count": 3
-  }
-]`;
+`{
+  "ds": [
+    {
+      "i": "UNKNOWN",
+      "s": 3
+    }
+  ]
+}`;
     expect(fsmd.serialize()).toEqual(expected2);
     expect(fsmd.getLength()).toEqual(expected2.length);
   });
 
   it("trims all the domains if exceeds the limit", function() {
-    const fsmd = new MaxLengthMetricsDict(50, [SESSIONS_COUNT]);
+    const fsmd = new MaxLengthMetricsDict(40, [SESSIONS_COUNT]);
     const expected =
-`[
-  {
-    "site_id": "UNKNOWN",
-    "sessions_count": 3
-  }
-]`;
+`{
+  "ds": [
+    {
+      "i": "UNKNOWN",
+      "s": 3
+    }
+  ]
+}`;
     fsmd.addMetric("domain1.com", SESSIONS_COUNT, 1);
     fsmd.addMetric("domain2.com", SESSIONS_COUNT, 2);
     expect(fsmd.serialize()).toEqual(expected);
@@ -169,18 +190,20 @@ describe("Domains trimming", function() {
   });
 
   it("trims a domain if exceeds the limit at some point", function() {
-    const fsmd = new MaxLengthMetricsDict(100, [SESSIONS_COUNT]);
+    const fsmd = new MaxLengthMetricsDict(80, [SESSIONS_COUNT]);
     const expected =
-`[
-  {
-    "site_id": "domain1.com",
-    "sessions_count": 1
-  },
-  {
-    "site_id": "UNKNOWN",
-    "sessions_count": 2
-  }
-]`;
+`{
+  "ds": [
+    {
+      "i": "domain1.com",
+      "s": 1
+    },
+    {
+      "i": "UNKNOWN",
+      "s": 2
+    }
+  ]
+}`;
     // does not exceed, thus added separately
     fsmd.addMetric("domain1.com", SESSIONS_COUNT, 1);
     // exceeds, thus added as unknown
@@ -191,18 +214,20 @@ describe("Domains trimming", function() {
   });
 
   it("does not trim for existing only metrics even if exceeds the limit at some point", function() {
-    const fsmd = new MaxLengthMetricsDict(100, [SESSIONS_COUNT]);
+    const fsmd = new MaxLengthMetricsDict(80, [SESSIONS_COUNT]);
     const expected =
-`[
-  {
-    "site_id": "domain1.com",
-    "sessions_count": 4
-  },
-  {
-    "site_id": "UNKNOWN",
-    "sessions_count": 2
-  }
-]`;
+`{
+  "ds": [
+    {
+      "i": "domain1.com",
+      "s": 4
+    },
+    {
+      "i": "UNKNOWN",
+      "s": 2
+    }
+  ]
+}`;
     // does not exceed, thus added separately
     fsmd.addMetric("domain1.com", SESSIONS_COUNT, 1);
     // exceeds, thus added as unknown
@@ -215,20 +240,22 @@ describe("Domains trimming", function() {
   });
 
   it("does not trim for existing multiple metrics even if exceeds the limit at some point", function() {
-    const fsmd = new MaxLengthMetricsDict(150, [SESSIONS_COUNT, PAGE_VIEWS]);
+    const fsmd = new MaxLengthMetricsDict(100, [SESSIONS_COUNT, PAGE_VIEWS]);
     const expected =
-`[
-  {
-    "site_id": "domain1.com",
-    "sessions_count": 1,
-    "page_views": 2
-  },
-  {
-    "site_id": "UNKNOWN",
-    "sessions_count": 2,
-    "page_views": 0
-  }
-]`;
+`{
+  "ds": [
+    {
+      "i": "domain1.com",
+      "s": 1,
+      "p": 2
+    },
+    {
+      "i": "UNKNOWN",
+      "s": 2,
+      "p": 0
+    }
+  ]
+}`;
     // does not exceed, thus added separately
     fsmd.addMetric("domain1.com", SESSIONS_COUNT, 1);
     // exceeds, thus added as unknown
@@ -261,11 +288,11 @@ describe("Domains trimming", function() {
       }
     }
 
-    const expected = "[" +
+    const expected = "{\"ds\":[" +
       domains
-        .map(domain => `{"site_id":"${domain}","sessions_count":1,"page_views":1}`)
+        .map(domain => `{"i":"${domain}","s":1,"p":1}`)
         .join(",") +
-      "]";
+      "]}";
     expect(fsmd.serialize()).toEqual(expected);
   });
 
@@ -278,5 +305,73 @@ describe("Domains trimming", function() {
     const fsmd = new MaxLengthMetricsDict(100, [SESSIONS_COUNT]);
     expect(() => fsmd.addMetric("domain.com", PAGE_VIEWS, 1))
       .toThrow("Unknown metric");
+  });
+
+  it("generates a valid JSON", function() {
+    const domains = [
+      "domain1.com",
+      "domain2.com",
+      "domain3.com",
+      "domain4.com",
+      "domain5.com"
+    ];
+    const metrics = [
+      SESSIONS_COUNT,
+      PAGE_VIEWS
+    ];
+    const defaultProductionPayloadLimit = 90 * 1024; // 90 Kb
+    const fsmd = new MaxLengthMetricsDict(
+      defaultProductionPayloadLimit, metrics, null);
+    for (const domain of domains) {
+      for (const metric of metrics) {
+        fsmd.addMetric(domain, metric, 1);
+      }
+    }
+
+    // https://gitlab.com/eyeo/data/engineering/data-infrastructure/-/blob/main/projects/eyeo-data-eyeometry/metadata/stage/schema/cdp_activeping_noipc/3-encrypted_data.json.md
+    const schema =
+`{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemaregistry.data.eyeo.it/topic/cdp_encrypted_aggregate_noipc/encrypted_data-1",
+  "title": "CDP encrypted aggregate ping protocol",
+  "type": "object",
+  "additionalProperties": false,
+   "properties": {
+    "ds": {
+      "description": "Aggregate statistics for accessing domains.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "i": {
+            "description": "Identifier for the site. Example: 'yahoo.com'",
+            "type": "string"
+          },
+          "s": {
+            "description": "Count of session for client Y on domain X. Example: '3'",
+            "type": "integer"
+          },
+          "p": {
+            "description": "Count of page views for client Y on domain X. Example: '7'",
+            "type": "integer"
+          }
+        },
+        "required": ["i", "s"]
+      }
+    }
+  },
+   "required": [
+     "ds"
+    ]
+ }
+`;
+
+    const json = fsmd.serialize();
+    const validator = new Validator();
+    validator.addSchema(schema, "https://schemaregistry.data.eyeo.it/topic/cdp_encrypted_aggregate_noipc/encrypted_data-1");
+    const jsonObject = JSON.parse(json);
+    const schemaObject = JSON.parse(schema);
+    const result = validator.validate(jsonObject, schemaObject);
+    expect(result.valid).toEqual(true);
   });
 });

@@ -312,6 +312,7 @@ export default {
   _setCdpConfig: cdp._setConfig,
   _restoreCdpConfig: cdp._restoreConfig,
   _setCdpData: cdp.setData,
+  _setCdpDataArray: cdp.setDataArray,
   _getCdpData: cdp.getData,
   _clearCdpData: cdp.clearData,
   _clearCdpActivity: cdp.clearActivity,
