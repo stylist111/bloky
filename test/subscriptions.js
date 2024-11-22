@@ -312,6 +312,20 @@ describe("Subscriptions", function() {
     ]);
   });
 
+  it("disables a single filter in a subscription", async function() {
+    await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
+    await waitForSubscriptionToBeSynchronized(VALID_SUBSCRIPTION_URL);
+
+    let filterText = "/image-from-subscription.png^$image";
+    await EWE.filters.disable([filterText]);
+
+    expect(await EWE.subscriptions.getFilters(VALID_SUBSCRIPTION_URL))
+      .toContainEqual(expect.objectContaining({
+        text: filterText,
+        enabled: false
+      }));
+  });
+
   it("checks if a subscription has been added [fuzz]", async function() {
     expect(await EWE.subscriptions.has(VALID_SUBSCRIPTION_URL)).toBe(false);
 

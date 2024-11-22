@@ -85,6 +85,14 @@ describe("Blocking", function() {
     await new Page("image.html").expectResource("image.png").toBeBlocked();
   });
 
+  it("does not block a request using a disabled filter that appears in a subscription", async function() {
+    await EWE.subscriptions.add(subTestCustom1.url);
+    await waitForSubscriptionsToDownload();
+    await EWE.filters.disable(["/image-from-subscription.png^$image"]);
+    await new Page("image-from-subscription.html")
+      .expectResource("image-from-subscription.png").toBeLoaded();
+  });
+
   it("does not block an allowlisted request", async function() {
     await addFilter("/image.png^$image");
     await addFilter("@@/image.png^$image");

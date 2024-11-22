@@ -86,7 +86,6 @@ async function disable(texts) {
 
   if (browser.declarativeNetRequest) {
     await removeOrDisableFilters(texts, false);
-    return;
   }
 
   for (let text of texts) {
@@ -416,7 +415,6 @@ const namespace = {
 
     if (browser.declarativeNetRequest) {
       await enableFilters(texts);
-      return;
     }
 
     for (let text of texts) {

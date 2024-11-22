@@ -1,6 +1,12 @@
 Unreleased
 ==========
 
+## Fixes
+
+- Fixed disabling filters in MV3 only updating the rules but not updating the
+  engine's filter state. This lead to inconsistent reporting, since the engine
+  thought that filters were active even if they had been disabled. (EXT-249)
+
 ## Updating your code
 
 - CDP payload is now shrinked and compressed, the retry count is limited.
