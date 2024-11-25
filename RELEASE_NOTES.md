@@ -1,6 +1,9 @@
 Unreleased
 ==========
 
+💾 1.19.0 - 2024-11-25 💾
+=========================
+
 ## Fixes
 
 - Fixed disabling filters in MV3 only updating the rules but not updating the
