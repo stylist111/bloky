@@ -210,10 +210,16 @@ async function downloadExperimentsFile() {
  * @returns {Promise<void>}
  */
 async function syncData() {
+  const state = await experimentData.getStateLoaded();
+
+  if (!experimentUrl) {
+    state.lastNetworkError = new Date().toISOString();
+    await experimentData.save();
+    return;
+  }
+
   const {downloadError, cacheFresh, newExperimentData: data, date, etag} =
         await downloadExperimentsFile();
-
-  const state = await experimentData.getStateLoaded();
 
   if (downloadError) {
     state.lastNetworkError = new Date().toISOString();
@@ -354,6 +360,6 @@ export default {
    */
   async getAssignments() {
     const state = await experimentData.getStateLoaded();
-    return state.assignments;
+    return state.assignments || {};
   }
 };

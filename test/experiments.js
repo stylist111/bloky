@@ -42,6 +42,8 @@ const LOWER_HALF_USER_ID = "f47ac10b-58cc-4372-a567-0e02b2c3d479";  // Hashes wi
 const UPPER_HALF_USER_ID = "e5c619b9-7928-4d8a-b25c-84e5df2080c2";  // Hashes with experimentid-1 to 907
 const ISO_DATE_REGEX = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/;
 const SCHEMA_ID = "1";
+const ERROR_BACKOFF_MS = 2 * MILLIS_IN_SECOND;
+const PING_INTERVAL_MS = MILLIS_IN_SECOND;
 
 function oneVariantConfig(flag) {
   return JSON.stringify({
@@ -85,10 +87,17 @@ async function setConfig(config, status = 200, etag) {
   await setEndpointResponse(EXPERIMENT_URL, config, "GET", status, {etag});
 }
 
+async function startWithTestArgs() {
+  await EWE.testing.restartExperiments(
+    EXPERIMENT_URL, PING_INTERVAL_MS, ERROR_BACKOFF_MS
+  );
+}
+
 describe("Split Experiments", function() {
   afterEach(async function() {
     await clearEndpointResponse(EXPERIMENT_URL);
     await EWE.experiments.clearFlagOverrides();
+    await startWithTestArgs();
   });
 
   describe("Variant assignment", function() {
@@ -108,6 +117,11 @@ describe("Split Experiments", function() {
       expect(await EWE.experiments.getSyncStatus()).toEqual({
         errors: []
       });
+    });
+
+    it("returns an empty assignment before first sync", async function() {
+      await EWE.testing.resetExperimentData();
+      expect(await EWE.experiments.getAssignments()).toEqual({});
     });
 
     it("gets the value of the flag in the experiment the user is assigned to", async function() {
@@ -368,15 +382,6 @@ describe("Split Experiments", function() {
   });
 
   describe("Scheduled updates", function() {
-    const PING_INTERVAL_MS = MILLIS_IN_SECOND;
-    const ERROR_BACKOFF_MS = 2 * MILLIS_IN_SECOND;
-
-    async function startWithTestArgs() {
-      await EWE.testing.restartExperiments(
-        EXPERIMENT_URL, PING_INTERVAL_MS, ERROR_BACKOFF_MS
-      );
-    }
-
     async function expectNextPing(expectedNewPingCount, expectedFlags) {
       await waitForAssertion(async() => {
         expect(await getRequestLogs(EXPERIMENT_URL))
@@ -510,6 +515,26 @@ describe("Split Experiments", function() {
       expect(logs[1].headers["if-none-match"]).toBe("initial");
       expect(logs[2].headers["if-none-match"]).toBe("initial");
       expect(logs[3].headers["if-none-match"]).toBe("updated");
+    });
+
+    it("sync fails with error if no experiment data URL is given", async function() {
+      await EWE.experiments.sync();
+      expect(await EWE.experiments.getSyncStatus()).toEqual({
+        lastDownloaded: expect.stringMatching(ISO_DATE_REGEX),
+        errors: []
+      });
+
+      await EWE.testing.restartExperiments(
+        void 0,
+        PING_INTERVAL_MS,
+        ERROR_BACKOFF_MS
+      );
+      await EWE.experiments.sync();
+      expect(await EWE.experiments.getSyncStatus()).toEqual({
+        lastDownloaded: expect.stringMatching(ISO_DATE_REGEX),
+        lastNetworkError: expect.stringMatching(ISO_DATE_REGEX),
+        errors: []
+      });
     });
   });
 
