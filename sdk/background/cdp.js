@@ -31,6 +31,7 @@ import {isFeatureEnabled} from "adblockpluscore/lib/features.js";
 import {isHttpOrHttps, stripQuery} from "adblockpluscore/lib/url.js";
 import {OnlySupportedDomainsProcessor, SpecialDomainsProcessor}
   from "./cdp-processor.js";
+import {setPremiumStatusCallback} from "./callbacks.js";
 
 /**
  * "Page view" event type
@@ -775,6 +776,17 @@ export default {
   async isOptOut() {
     return Prefs.cdp_opt_in_out == CDP_OPTED_OUT ||
            Prefs.cdp_opt_in_out == CDP_OPTED_OUT_BY_USER;
-  }
-};
+  },
 
+  /**
+  * Set the premium status callback to be called when CDP data
+  * is to be uploaded.
+  *
+  * @param {function():Promise<string>} callback The user defined function
+  *   that will be called to fill the premium status. This function should
+  *   be called as soon as possible after EWE start. The callback must
+  *   return a status of the license as a string.
+  *   Options supported: “free”, “premium”, null.
+  */
+  setPremiumStatusCallback
+};

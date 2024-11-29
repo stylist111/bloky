@@ -27,6 +27,7 @@ import {Scheduler} from "../all/scheduler.js";
 import {default as initializer} from "./initializer.js";
 import {trace, error} from "./debugging.js";
 import {isFeatureEnabled} from "adblockpluscore/lib/features.js";
+import {premiumStatusCallback} from "./callbacks.js";
 
 const TELEMETRY_STORAGE_KEY = "ewe:telemetry";
 const TELEMETRY_UCID_FEATURE_FLAG = "eyeometryUcid";
@@ -281,7 +282,7 @@ async function getExtensionMetadata() {
     platform = platformInfo.os;
   }
 
-  return {
+  const payload = {
     // The OS. Windows, Linux, etc.
     platform,
 
@@ -309,6 +310,15 @@ async function getExtensionMetadata() {
     // Depends on having the acceptable ads subscription enabled.
     aa_active: await hasAcceptableAdsEnabled()
   };
+
+  if (premiumStatusCallback) {
+    const premiumStatus = await premiumStatusCallback();
+    if (premiumStatus) {
+      payload.premium_status = premiumStatus;
+    }
+  }
+
+  return payload;
 }
 
 export default {

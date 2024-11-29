@@ -1,5 +1,16 @@
 Unreleased
 ==========
+## General
+
+- Added `premiumStatus` to the CDP and active ping payload. This status is retrieved
+from extension by calling callback set by extension 
+through `setPremiumStatusCallback(callback)`. (EXT-543)
+
+## Updating your code
+
+- `EWE.cdp.setPremiumStatusCallback(...)` has to be called once the extension initialize
+to set a callback for premium status check, use it in CDP and active ping payload.
+CDP and telemetry endpoint URLs should be updated to point to most recent versions of the schema. (EXT-543)
 
 💾 1.19.0 - 2024-11-25 💾
 =========================

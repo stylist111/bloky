@@ -29,7 +29,7 @@ import {TEST_ADMIN_PAGES_URL, TEST_PAGES_PORT} from "./test-server-urls.js";
 import {isChromiumBased, isFirefox, Page, setMinTimeout, executeScript,
         waitForAssertion, clearRequestLogs, getRequestLogs, setEndpointResponse,
         clearEndpointResponse} from "./utils.js";
-import {setFeatureFlags} from "./messaging.js";
+import {setFeatureFlags, setPremiumStatus, resetPremiumStatus} from "./messaging.js";
 import {base64ToArrayBuffer} from "adblockpluscore/lib/rsa.js";
 import {limitPromiseDuration} from "./polling.js";
 
@@ -1789,6 +1789,51 @@ describe("CDP on Chromium-based browsers", function() {
       await EWE.testing.startCdpMetricsUploader(
         CDP_PHASE_3_ARGS, ERROR_DELAY_MS);
     }
+
+    it("sets premium status to premium when callback used", async function() {
+      await clearRequestLogs();
+      await EWE.testing.resetCdpMetricsUploader();
+
+      await setPremiumStatus("premium");
+      await startMetricsUploaderWithTestArgs();
+      await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+        expect(requestLogs.length).toBeGreaterThan(0);
+        expect(requestLogs[0].body.payload.premium_status).toEqual("premium");
+      });
+    });
+
+    it("does not add premium status to payload if callback returns null", async function() {
+      await clearRequestLogs();
+      await EWE.testing.resetCdpMetricsUploader();
+
+      await setPremiumStatus(null);
+      await startMetricsUploaderWithTestArgs();
+      await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+        expect(requestLogs.length).toBeGreaterThan(0);
+        expect(requestLogs[0].body.payload).not.toHaveProperty("premium_status");
+      });
+    });
+
+    it("does not add premium status to payload if no callback is set", async function() {
+      await clearRequestLogs();
+      await EWE.testing.resetCdpMetricsUploader();
+      await resetPremiumStatus();
+
+      await startMetricsUploaderWithTestArgs();
+      await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+        expect(requestLogs.length).toBeGreaterThan(0);
+        expect(requestLogs[0].body.payload).not.toHaveProperty("premium_status");
+      });
+    });
 
     it("does not track if opted out by user", async function() {
       await EWE.cdp.setOptOut(true);

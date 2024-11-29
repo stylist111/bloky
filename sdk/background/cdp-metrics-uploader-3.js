@@ -26,6 +26,7 @@ import {hasAcceptableAdsEnabled} from "./subscriptions.js";
 import {trace, error, debug, warn} from "./debugging.js";
 import {postWithBearerToken} from "./telemetry.js";
 import {default as cdpMod, getDomainStats, clearData} from "./cdp.js";
+import {premiumStatusCallback} from "./callbacks.js";
 import {importRSAPublicKey, encryptRSA, AES_LENGTH,
         createAESKey, generateAESNonce, AESkeyToBinary, encryptAES}
   from "./cdp-encryption.js";
@@ -97,6 +98,13 @@ async function buildPayload(publicKey, keyId, domainStats, utid) {
     // schema #4
     aa_active: await hasAcceptableAdsEnabled()
   };
+
+  if (premiumStatusCallback) {
+    const premiumStatus = await premiumStatusCallback();
+    if (premiumStatus) {
+      payload.premium_status = premiumStatus;
+    }
+  }
 
   // the very first run is expected not to have `encrypted_data` and `last_ping`
   if (state.lastPing) {

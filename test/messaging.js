@@ -94,6 +94,14 @@ export const EWE = Object.fromEntries([
 ].map(name => [name, proxy([name])]));
 EWE.reporting.contentTypesMap = proxy(["reporting", "contentTypesMap"]);
 
+export async function setPremiumStatus(status) {
+  await browser.runtime.sendMessage({type: "ewe-test:setPremiumResponse", status});
+}
+
+export async function resetPremiumStatus() {
+  await browser.runtime.sendMessage({type: "ewe-test:resetPremiumResponse"});
+}
+
 export async function addFilter(text, metadata) {
   let result = await EWE.filters.add([text], metadata);
   return result;

@@ -364,6 +364,18 @@ function handleTestMessage(request, sender, sendResponse) {
       sendResponse({});
       return true;
     }
+    case "ewe-test:setPremiumResponse": {
+      EWE.cdp.setPremiumStatusCallback(async() => {
+        return request.status;
+      });
+      sendResponse({});
+      return true;
+    }
+    case "ewe-test:resetPremiumResponse": {
+      EWE.cdp.setPremiumStatusCallback(null);
+      sendResponse({});
+      return true;
+    }
   }
   return true;
 }

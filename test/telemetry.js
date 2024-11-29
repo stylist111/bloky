@@ -20,7 +20,8 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 import {MILLIS_IN_HOUR, MILLIS_IN_SECOND} from "adblockpluscore/lib/time.js";
 
-import {EWE, runInBackgroundPage, expectTestEvents, setFeatureFlags}
+import {EWE, runInBackgroundPage, expectTestEvents, setFeatureFlags,
+        setPremiumStatus}
   from "./messaging.js";
 import {TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
 import {clearRequestLogs, getRequestLogs, setMinTimeout, setEndpointResponse,
@@ -132,6 +133,7 @@ describe("Telemetry", function() {
         expect(payload.extension_name).toEqual("eyeo's WebExtension Ad-Filtering Solution Test Extension");
         expect(payload.extension_version).toMatch(/0\.0\.\d/);
         expect(payload.aa_active).toEqual(false);
+        expect(payload).not.toHaveProperty("premium_status");
       });
     });
 
@@ -338,6 +340,25 @@ describe("Telemetry", function() {
 
         const payload = telemetryRequests[0].body.payload;
         expect(payload.aa_active).toEqual(true);
+      });
+    });
+
+    it("sends premium_status as premium to the telemetry server when an callback returns premium", async function() {
+      await clearRequestLogs();
+      await setPremiumStatus("premium");
+      await EWE.testing.startTelemetry(TELEMETRY_ARGS);
+
+      await waitForAssertion(async() => {
+        let telemetryRequests = await getRequestLogs(TELEMETRY_URL);
+
+        expect(telemetryRequests).toEqual([expect.objectContaining({
+          url: "/telemetry",
+          method: "POST",
+          authorization: `Bearer ${TELEMETRY_BEARER}`
+        })]);
+
+        const payload = telemetryRequests[0].body.payload;
+        expect(payload.premium_status).toEqual("premium");
       });
     });
 
