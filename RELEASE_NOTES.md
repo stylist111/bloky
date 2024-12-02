@@ -1,6 +1,9 @@
 Unreleased
 ==========
 
+🐄 1.20.0 - 2024-12-02 🐄
+=========================
+
 ## General
 
 - Added `premiumStatus` to the CDP and active ping payload. This status is
