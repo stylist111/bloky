@@ -572,6 +572,22 @@ describe("Subscriptions", function() {
     }
   });
 
+  it("exposes hasAcceptableAdsEnabled()", async function() {
+    let actualAaURL = await runInBackgroundPage([
+      {op: "getGlobal", arg: "EWE"},
+      {op: "getProp", arg: "subscriptions"},
+      {op: "getProp", arg: "ACCEPTABLE_ADS_URL"}
+    ]);
+
+    await EWE.subscriptions.add(actualAaURL);
+    expect(await EWE.subscriptions.hasAcceptableAdsEnabled())
+      .toEqual(true);
+
+    await EWE.subscriptions.remove(actualAaURL);
+    expect(await EWE.subscriptions.hasAcceptableAdsEnabled())
+      .toEqual(false);
+  });
+
   describe("Filter list updates", function() {
     setMinTimeout(this, isFuzzingServiceWorker() ? 30000 : 10000);
 

@@ -907,6 +907,13 @@ export default {
   },
 
   /**
+   * Returns whether Acceptable Ads or Acceptable Ads Privacy subscription
+   * is added and enabled.
+   * @return {Boolean}
+   */
+  hasAcceptableAdsEnabled,
+
+  /**
    * Returns an array of MV2 to MV3 migration errors and the related
    * subscription.
    * @return {Promise<Array<Subscription, string>>} The migration errors.

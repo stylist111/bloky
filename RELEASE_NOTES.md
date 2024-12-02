@@ -1,6 +1,10 @@
 Unreleased
 ==========
 
+## General
+
+- Now exposing `EWE.subscriptions.hasAcceptableAdsEnabled()` method. (EXT-607)
+
 🐄 1.20.0 - 2024-12-02 🐄
 =========================
 
