@@ -5,15 +5,22 @@ Unreleased
 
 - Added `premiumStatus` to the CDP and active ping payload. This status is
   retrieved from extension by calling callback set by extension through
-  `setPremiumStatusCallback(callback)`. (EXT-543)
+  `EWE.cdp.setPremiumStatusCallback(callback)`. (EXT-543)
 - Added split experiments assignments to CDP and telemetry pings. (EXT-540)
+
+## Fixes
+
+- `EWE.experiments.getAssignments` will now always return an object, even if the
+  experiments have not been downloaded yet. (EXT-622)
+- Calling `EWE.experiments.sync()` when the experiments module has not been
+  started will now be treated as a network error, instead of trying to fetch an
+  undefined url. (EXT-622)
 
 ## Updating your code
 
-- `EWE.cdp.setPremiumStatusCallback(...)` has to be called once the extension
-  initialize to set a callback for premium status check, use it in CDP and
-  active ping payload. CDP and telemetry endpoint URLs should be updated to
-  point to most recent versions of the schema. (EXT-543)
+- `EWE.cdp.setPremiumStatusCallback(callback)` has to be called once the
+  extension initialize to set a callback for premium status check, use it in CDP
+  and active ping payload. (EXT-543)
 - This update requires also updating to the specified versions of the Telemetry
   active ping URL to version 3. This new URL version is backwards compatible,
   and so the update can be done at any time before the upgrade to this version
