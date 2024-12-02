@@ -110,6 +110,7 @@ describe("Telemetry", function() {
     });
 
     it("sends extension metadata to the telemetry server", async function() {
+      await EWE.testing.resetExperimentData();
       startTelemetryWithTestArgs();
 
       await waitForAssertion(async() => {
@@ -134,6 +135,7 @@ describe("Telemetry", function() {
         expect(payload.extension_version).toMatch(/0\.0\.\d/);
         expect(payload.aa_active).toEqual(false);
         expect(payload).not.toHaveProperty("premium_status");
+        expect(payload.experiments).toEqual([]);
       });
     });
 
@@ -359,6 +361,65 @@ describe("Telemetry", function() {
 
         const payload = telemetryRequests[0].body.payload;
         expect(payload.premium_status).toEqual("premium");
+      });
+    });
+
+    it("sends experiments extension metadata to the telemetry server when there are experiments", async function() {
+      const EXPERIMENT_URL = `${TEST_ADMIN_PAGES_URL}/experiments.json`;
+
+      await setEndpointResponse(EXPERIMENT_URL, {
+        schemaId: "1",
+        experiments: [
+          {
+            experimentId: "a",
+            variants: [
+              {
+                variantId: "aa",
+                flags: {},
+                mods: [0, 1000]
+              }
+            ]
+          },
+          {
+            experimentId: "b",
+            variants: [
+              {
+                variantId: "bb",
+                flags: {},
+                mods: [0, 1000]
+              }
+            ]
+          }
+        ]
+      }, "GET", 200);
+      await EWE.testing.restartExperiments(
+        EXPERIMENT_URL,
+        MILLIS_IN_SECOND,
+        2 * MILLIS_IN_SECOND
+      );
+      await EWE.experiments.sync();
+      await EWE.testing.startTelemetry(TELEMETRY_ARGS);
+
+      await waitForAssertion(async() => {
+        let telemetryRequests = await getRequestLogs(TELEMETRY_URL);
+
+        expect(telemetryRequests).toEqual([expect.objectContaining({
+          url: "/telemetry",
+          method: "POST",
+          authorization: `Bearer ${TELEMETRY_BEARER}`
+        })]);
+
+        const payload = telemetryRequests[0].body.payload;
+        expect(payload.experiments).toEqual([
+          {
+            experiment_id: "a",
+            variant_id: "aa"
+          },
+          {
+            experiment_id: "b",
+            variant_id: "bb"
+          }
+        ]);
       });
     });
 
@@ -590,9 +651,13 @@ describe("Telemetry", function() {
   });
 
   describe("Integration", function() {
+    beforeEach(async function() {
+      await EWE.testing.resetTelemetry();
+      await EWE.telemetry.setOptOut(false);
+    });
+
     it("can successfully send a payload to the eyeometry staging server", async function() {
       setMinTimeout(this, 11000);
-      await EWE.testing.resetTelemetry();
 
       // These credentials can be set by setting the environment variables with
       // the same name before running webpack.

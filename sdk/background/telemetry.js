@@ -26,6 +26,7 @@ import {EventDispatcher} from "./types.js";
 import {Scheduler} from "../all/scheduler.js";
 import {default as initializer} from "./initializer.js";
 import {trace, error} from "./debugging.js";
+import {default as experiments} from "./experiments.js";
 import {isFeatureEnabled} from "adblockpluscore/lib/features.js";
 import {premiumStatusCallback} from "./callbacks.js";
 
@@ -264,6 +265,16 @@ export async function postWithBearerToken(url, bearer, body) {
   return await response.json();
 }
 
+async function getExperimentsAssignments() {
+  const assignments = await experiments.getAssignments();
+  return Object.entries(assignments).map(assignment => {
+    return {
+      experiment_id: assignment[0],
+      variant_id: assignment[1]
+    };
+  });
+}
+
 async function getExtensionMetadata() {
   let platform;
   let platformVersion;
@@ -308,7 +319,10 @@ async function getExtensionMetadata() {
     extension_version: info.addonVersion,
 
     // Depends on having the acceptable ads subscription enabled.
-    aa_active: await hasAcceptableAdsEnabled()
+    aa_active: await hasAcceptableAdsEnabled(),
+
+    // The currently assigned split experiments
+    experiments: await getExperimentsAssignments()
   };
 
   if (premiumStatusCallback) {

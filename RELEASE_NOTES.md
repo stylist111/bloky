@@ -12,6 +12,17 @@ through `setPremiumStatusCallback(callback)`. (EXT-543)
 to set a callback for premium status check, use it in CDP and active ping payload.
 CDP and telemetry endpoint URLs should be updated to point to most recent versions of the schema. (EXT-543)
 
+## General
+
+- Added split experiments assignments to CDP and telemetry pings. (EXT-540)
+
+## Updating your code
+
+- This update requires also updating to the specified versions of the Telemetry
+  active ping URL to version 3. This new URL version is backwards compatible,
+  and so the update can be done at any time before the upgrade to this version
+  of the SDK. (EXT-540)
+
 💾 1.19.0 - 2024-11-25 💾
 =========================
 

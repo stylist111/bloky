@@ -1905,6 +1905,80 @@ describe("CDP on Chromium-based browsers", function() {
       await assertAAActive(true);
     });
 
+    it("sends experiments property", async function() {
+      const EXPERIMENT_URL = `${TEST_ADMIN_PAGES_URL}/experiments.json`;
+      const PING_INTERVAL_MS = MILLIS_IN_SECOND;
+      const ERROR_BACKOFF_MS = 2 * MILLIS_IN_SECOND;
+
+      await EWE.testing.restartExperiments(
+        EXPERIMENT_URL, PING_INTERVAL_MS, ERROR_BACKOFF_MS
+      );
+      await EWE.experiments.sync();
+      await startMetricsUploaderWithTestArgs();
+
+      await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+
+      let payload;
+
+      async function assertAssignments(assignments) {
+        await waitForAssertion(async() => {
+          let requestLogs = await getRequestLogs(CDP_PHASE_2_ARGS.pingUrl);
+          expect(requestLogs).toHaveLength(1);
+          payload = requestLogs[0].body.payload;
+        });
+
+        expect(payload.experiments).toEqual(assignments);
+      }
+
+      await assertAssignments([]);
+      await clearRequestLogs();
+
+      await EWE.testing.stopCdpMetricsUploader();
+      await setEndpointResponse(EXPERIMENT_URL, {
+        schemaId: "1",
+        experiments: [
+          {
+            experimentId: "a",
+            variants: [
+              {
+                variantId: "aa",
+                flags: {},
+                mods: [0, 1000]
+              }
+            ]
+          },
+          {
+            experimentId: "b",
+            variants: [
+              {
+                variantId: "bb",
+                flags: {},
+                mods: [0, 1000]
+              }
+            ]
+          }
+        ]
+      }, "GET", 200);
+      await EWE.experiments.sync();
+      await startMetricsUploaderWithTestArgs();
+
+      await new Page("http://localhost:3000/image.html").loaded;
+      await EWE.testing._uploadCdp();
+
+      await assertAssignments([
+        {
+          experiment_id: "a",
+          variant_id: "aa"
+        },
+        {
+          experiment_id: "b",
+          variant_id: "bb"
+        }
+      ]);
+
+      await clearEndpointResponse(EXPERIMENT_URL);
+    });
+
     it("migrates the data from Phase 2", async function() {
       setMinTimeout(this, 2 * 60 * 1000);
 

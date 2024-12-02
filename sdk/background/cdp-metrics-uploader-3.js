@@ -24,6 +24,7 @@ import * as info from "./info.js";
 import {Scheduler} from "../all/scheduler.js";
 import {hasAcceptableAdsEnabled} from "./subscriptions.js";
 import {trace, error, debug, warn} from "./debugging.js";
+import {default as experiments} from "./experiments.js";
 import {postWithBearerToken} from "./telemetry.js";
 import {default as cdpMod, getDomainStats, clearData} from "./cdp.js";
 import {premiumStatusCallback} from "./callbacks.js";
@@ -82,6 +83,16 @@ async function encryptDomainStats(publicKeyPem, domainStats) {
   return result;
 }
 
+async function getExperimentsAssignments() {
+  const assignments = await experiments.getAssignments();
+  return Object.entries(assignments).map(assignment => {
+    return {
+      experiment_id: assignment[0],
+      variant_id: assignment[1]
+    };
+  });
+}
+
 async function buildPayload(publicKey, keyId, domainStats, utid) {
   const state = storage.getState();
   const payload = {
@@ -96,7 +107,8 @@ async function buildPayload(publicKey, keyId, domainStats, utid) {
     ucid: state.ucid,
     encryption_scheme: `rsa:2048:aes:${AES_LENGTH}`,
     // schema #4
-    aa_active: await hasAcceptableAdsEnabled()
+    aa_active: await hasAcceptableAdsEnabled(),
+    experiments: await getExperimentsAssignments()
   };
 
   if (premiumStatusCallback) {
