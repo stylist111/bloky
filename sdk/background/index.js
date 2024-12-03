@@ -303,6 +303,11 @@ export async function start(addonInfo) {
     await cdpMetricsUploader.start(addonInfo.cdp);
   }
 
+  // This function is invoked at the latest
+  // possible moment during engine startup processing to prevent
+  // errors when getting and removing custom rules.
+  filters.deferredStart();
+
   return firstRun;
 }
 

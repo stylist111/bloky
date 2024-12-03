@@ -1,6 +1,12 @@
 Unreleased
 ==========
 
+- Added functionality to remove temporary document allowlisting filters
+when a user closes a tab or navigates away from the domain in the allowlist
+rule.  
+To use this functionality, the "expiresByTabId" needs to be included
+in the rules metadata when the filter is added. (EXT-413)
+
 ## General
 
 - Now exposing `EWE.subscriptions.hasAcceptableAdsEnabled()` method. (EXT-607)
@@ -54,7 +60,7 @@ Unreleased
 
 ## Split experiments
 
-- Added a mechanism to dynamically run split experiments. Users are assigned to 
+- Added a mechanism to dynamically run split experiments. Users are assigned to
   experiments and variants uniformly. Functionalities for interacting with split
   experiments are exposed through the `EWE.experiments` API. (EXT-531)
 
@@ -93,7 +99,7 @@ Unreleased
   (EXT-383).
 - Added 2 more events for smart allowlisting, that are sending the filter with it's metadata (EXT-376):
   - `EWE.filters.onRenewed` emitted when a smart allowlist filter is extended.
-  - `EWE.filters.onExpired` emitted when a smart allowlist filter has expired.  
+  - `EWE.filters.onExpired` emitted when a smart allowlist filter has expired.
 
 ## Updating your code
 

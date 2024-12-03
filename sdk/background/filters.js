@@ -120,6 +120,101 @@ let onChanged = new EventDispatcher(dispatch => {
 export let onChangedFilter = onChanged;
 
 /**
+ * Returns an array of objects containing allowlist
+ * filters (filter text only) and related metadata.
+ */
+let getAllowingFiltersWithMetadata = async function() {
+  const allowlistingFilters = (
+    await namespace.getUserFilters()
+  ).filter(filter => filter.type === "allowing");
+  return await Promise.all(
+    allowlistingFilters.flatMap(async filter => {
+      const metadata = await namespace.getMetadata(filter.text);
+      return {filterText: filter.text, metadata};
+    }));
+};
+
+/**
+ * Returns an array of objects containing all allowlist filters
+ * and related metadata - IF the metadata contains a
+ * 'expiresByTabId' property.
+ */
+let getAllTabExpirationFiltersWithMetadata = async function() {
+  const containerArray = await getAllowingFiltersWithMetadata();
+  return containerArray.filter(container =>
+    container.metadata &&
+    typeof container.metadata.expiresByTabId !== "undefined"
+  );
+};
+
+/**
+ * Returns an array of filter texts containing allowlist filters
+ * IF the metadata: contains a 'expiresByTabId' property that
+ * matches the provided tabId.
+ * @param {number} tabId The identifier a tab.
+ */
+let getTabExpirationFilters = async function(tabId) {
+  const containerArray = await getAllowingFiltersWithMetadata();
+  const allowlistingFiltersForTab = containerArray.filter(container =>
+    container.metadata &&
+    container.metadata.expiresByTabId === tabId
+  );
+  return allowlistingFiltersForTab.
+    map(container => container.filterText);
+};
+
+/**
+ * When a tab's URL is updated, check to see if the
+ * any pause rules need to be removed.
+ * This function will remove the temporary allowlist filter when
+ *  - a user navigates to non-allowlisted page.
+ * This function will not remove the temporary allowlist filter when:
+ *  - a user navigates within same domain
+ *  - a user navigates to other allowlisted domain
+ *
+ * @param {number} tabId The identifier for the affected tab.
+ * @param {object} changeInfo The information which changed on the tab.
+ */
+let tabNavigationHandler = async function(tabId, changeInfo) {
+  if (tabId === browser.tabs.TAB_ID_NONE ||
+     !changeInfo.url ||
+     !changeInfo.status) {
+    return;
+  }
+
+  if ((await namespace.getAllowingFilters(tabId)).length) {
+    return;
+  }
+
+  const filterTexts = await getTabExpirationFilters(tabId);
+  await namespace.remove(filterTexts);
+};
+
+/**
+ * When a tab is removed, remove any existing pause rules
+ * tab/domain pause rules
+ * @param {number} tabId The identifier for the affected tab.
+ */
+let tabClosedTabHandler = async function(tabId) {
+  if (tabId === browser.tabs.TAB_ID_NONE) {
+    return;
+  }
+
+  const filterTexts = await getTabExpirationFilters(tabId);
+  await namespace.remove(filterTexts);
+};
+
+/**
+ * Add tab event handlers to clean up any temporary allowlist rules
+ */
+let addTabEventListeners = async function() {
+  browser.tabs.onUpdated.removeListener(tabNavigationHandler);
+  browser.tabs.onRemoved.removeListener(tabClosedTabHandler);
+  browser.tabs.onUpdated.addListener(tabNavigationHandler);
+  browser.tabs.onRemoved.addListener(tabClosedTabHandler);
+};
+
+/**
  * @namespace filters
  */
 const namespace = {
@@ -174,6 +269,12 @@ const namespace = {
    *   the filter. This parameter is used together with `expiresAt` and when the
    *   user navigates to a URL that matches this filter and is not expired,
    *   the `expiresAt` value will be updated to `Date.now() + autoExtendMs`.
+   *
+   *   _**Note:** This only applies to document allowlisting filters._
+   * @param {?Number} [metadata.expiresByTabId] The tabId of a tab which will
+   *    be allowlisted by the rule being added.  If this optional property is
+   *    provided, then the allowlist rule will be removed when the tab is
+   *    closed, or the host (URL) of that tab is updated.
    *
    *   _**Note:** This only applies to document allowlisting filters._
    *
@@ -645,6 +746,43 @@ function updateSchedulerIfNeeded(metadata) {
   if (scheduler && metadata && metadata.expiresAt) {
     scheduler.checkNow();
   }
+}
+
+/**
+ * If host extension was paused on shutdown, remove
+ * all session only based allowlisting filters at startup.
+ * @ignore
+ */
+export const removeTabExpirationFilters = async function() {
+  // get all allowlist rules that have meta data
+  const allowlistingFiltersWithMetadata =
+    await getAllTabExpirationFiltersWithMetadata();
+
+  // find any rules that have the 'expiresByTabId' property on the metadata
+  // and remove them
+  for (const container of allowlistingFiltersWithMetadata) {
+    const tabId = container.metadata.expiresByTabId;
+    const aTab = await browser.tabs.get(tabId).catch(() => {
+      // return nothing
+    });
+    // if the tab doesn't exist, remove the filter
+    if (!aTab) {
+      await namespace.remove(container.filterText);
+    }
+  }
+};
+
+/**
+ * The following initialization functions are delayed to allow
+ * the extension engine to be initialized and avoid race conditions
+ * at start up
+ * - Remove any existing expire by tab, if the tab is no longer found
+ * - Add tab events listeners
+ * @ignore
+ */
+export function deferredStart() {
+  removeTabExpirationFilters();
+  addTabEventListeners();
 }
 
 /**

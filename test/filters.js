@@ -851,6 +851,89 @@ describe("Filters", function() {
     });
   });
 
+  describe("Pause (allowlist) a tab", function() {
+    const domain = new URL(TEST_PAGES_URL).hostname;
+    const ALLOWING_FILTER_TEXT = `@@||${domain}$document`;
+
+    const addExtraTestRules = async() => {
+      let metadata = {created: 123};
+      await EWE.filters.add([
+        VALID_FILTER_TEXT,
+        VALID_FILTER_TEXT,
+        SECOND_VALID_FILTER_TEXT
+      ], metadata);
+    };
+
+    const pauseDomainAndTest = async() => {
+      let page = new Page("image.html");
+      let tabId = await page.loaded;
+      // pause the tab
+      await EWE.filters.add(ALLOWING_FILTER_TEXT, {expiresByTabId: tabId});
+      const metadata = await EWE.filters.getMetadata(ALLOWING_FILTER_TEXT);
+      expect(metadata).toEqual({expiresByTabId: tabId});
+      expect(await EWE.filters.getAllowingFilters(tabId))
+        .toEqual([ALLOWING_FILTER_TEXT]);
+      const userFilters = await EWE.filters.getUserFilters();
+      expect(userFilters.length).toEqual(1);
+      return page;
+    };
+
+    it("pauses (allowlists) a tab with the correct metadata", async function() {
+      await pauseDomainAndTest();
+    });
+
+    it("remove allowlists rule when a paused tab is closed", async function() {
+      const page = await pauseDomainAndTest();
+      const tabId = await page.loaded;
+      await addExtraTestRules();
+      await page.remove();
+      expect((await EWE.filters.getUserFilters()).length).toEqual(2);
+      expect(await EWE.filters.getAllowingFilters(tabId)).toEqual([]);
+    });
+
+    it("remove allowlists rule when a paused tab's URL is updated", async function() {
+      const page = await pauseDomainAndTest();
+      let tabId = await page.loaded;
+
+      // navigate to a differ page on the same domain
+      await page.load("image-from-custom-filter.html");
+      tabId = await page.loaded;
+      expect(await EWE.filters.getAllowingFilters(tabId))
+        .toEqual([ALLOWING_FILTER_TEXT]);
+
+      await addExtraTestRules();
+      const ALLOWLIST_TEST_RULE_TEXT = "@@||example.com$document";
+      await EWE.filters.add(ALLOWLIST_TEST_RULE_TEXT);
+      // navigate to a different site that is allowlisted
+      await page.load("https://example.com");
+      tabId = await page.loaded;
+      expect(await EWE.filters.getAllowingFilters(tabId))
+        .toEqual([ALLOWLIST_TEST_RULE_TEXT]);
+      expect((await EWE.filters.getUserFilters()).length).toEqual(4);
+
+      // navigate to a different site that is not allowlisted
+      await page.load("https://google.com");
+      expect((await EWE.filters.getUserFilters()).length).toEqual(3);
+      expect(await EWE.filters.getAllowingFilters(tabId)).toEqual([]);
+    });
+
+    it("remove all temporary allowlists rules at start up", async function() {
+      await pauseDomainAndTest();
+      // Add a bunch of types of rules
+      await EWE.filters.add("@@||testedone.com$document", {expiresByTabId: 123});
+      await EWE.filters.add("@@||testedtwo.com$document", {expiresByTabId: 432});
+      await EWE.filters.add("testblockingrule", {expiresByTabId: 432});
+      await EWE.filters.add("testing.com/badad", {expiresByTabId: 432});
+      await EWE.filters.add("justasillytest");
+      await EWE.filters.add("@@||testedfour.com$document");
+      await EWE.filters.add("@@||tesetedfive.com$document");
+      await addExtraTestRules();
+      // execute the code that should be run at start up
+      await EWE.testing.removeTabExpirationFilters();
+      expect((await EWE.filters.getUserFilters()).length).toEqual(8);
+    });
+  });
+
   describe("Smart allowlisting", function() {
     const ALLOWING_DOC_FILTER =
       `@@|${TEST_PAGES_URL}^$document`;

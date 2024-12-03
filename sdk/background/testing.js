@@ -47,6 +47,7 @@ import * as cdpMetricsUploader from "./cdp-metrics-uploader.js";
 import * as cdpMetricsUploader2 from "./cdp-metrics-uploader-2.js";
 import * as cdpMetricsUploader3 from "./cdp-metrics-uploader-3.js";
 import * as cdpEncryption from "./cdp-encryption.js";
+import * as filters from "./filters.js";
 
 import * as sitekey from "./sitekey.js";
 import {getDeferredMessages} from "./content-message-deferrer.js";
@@ -327,6 +328,8 @@ export default {
   clearSkipInitRulesets,
   checkAndInitSubscriptions,
   _cleanSubscriptionClassesCache,
+
+  removeTabExpirationFilters: filters.removeTabExpirationFilters,
 
   // It must be called after frame loading is started,
   // use `await new Page().loaded` for instance.
