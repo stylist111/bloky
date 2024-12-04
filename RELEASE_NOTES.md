@@ -1,6 +1,9 @@
 Unreleased
 ==========
 
+👵 1.21.0 - 2024-12-04 👵
+=========================
+
 - Added functionality to remove temporary document allowlisting filters
 when a user closes a tab or navigates away from the domain in the allowlist
 rule.  
