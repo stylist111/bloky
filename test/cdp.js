@@ -1618,94 +1618,6 @@ describe("CDP on Chromium-based browsers", function() {
       });
     });
 
-    describe("Metric Upload Integration", function() {
-      it("can successfully send an aggregation payload to the eyeometry staging server", async function() {
-        setMinTimeout(this, 11000);
-        await EWE.testing.resetCdpMetricsUploader();
-
-        // These credentials can be set by setting the environment
-        // variables with the same name before running webpack.
-        let cdpArgs = {
-          pingUrl: webpackDotenvPlugin.EWE_CDP_PING_URL,
-          aggregateUrl: webpackDotenvPlugin.EWE_CDP_AGGREGATE_URL,
-          bearer: webpackDotenvPlugin.EWE_CDP_BEARER
-        };
-        if (!cdpArgs.pingUrl || !cdpArgs.aggregateUrl || !cdpArgs.bearer) {
-          this.skip();
-        }
-
-        let now = Date.now();
-
-        let dayCutoffMinutes = 0;
-        let bundleToSend = {
-          siteId: SITE_ID,
-          referenceDateLocal: "2024-05-13",
-          utid: uuidv4(),
-          scheduledSendTimestamp: now
-        };
-
-        await browser.storage.local.set({
-          [CDP_STORAGE_2_KEY]: {
-            dayCutoffMinutes,
-            bundles: [bundleToSend]
-          }
-        });
-
-        let dayStart = new Date(bundleToSend.referenceDateLocal).getTime();
-        await EWE.testing._setCdpData(EVENT_SESSION_START, SITE_ID, [
-          dayStart,
-          dayStart + 3 * MILLIS_IN_HOUR
-        ]);
-
-        await EWE.testing.startCdpMetricsUploader(cdpArgs);
-
-        await waitForAssertion(async() => {
-          let storageResult =
-            await browser.storage.local.get([CDP_STORAGE_2_KEY]);
-          let storage = storageResult[CDP_STORAGE_2_KEY];
-
-          expect(storage.bundles).toEqual([]);
-          expect(storage).not.toHaveProperty("lastError");
-        }, 10000);
-      });
-
-      it("can successfully send a ping payload to the eyeometry staging server", async function() {
-        setMinTimeout(this, 11000);
-        await EWE.testing.resetCdpMetricsUploader();
-
-        // These credentials can be set by setting the environment
-        // variables with the same name before running webpack.
-        let cdpArgs = {
-          pingUrl: webpackDotenvPlugin.EWE_CDP_PING_URL,
-          aggregateUrl: webpackDotenvPlugin.EWE_CDP_AGGREGATE_URL,
-          bearer: webpackDotenvPlugin.EWE_CDP_BEARER
-        };
-        if (!cdpArgs.pingUrl || !cdpArgs.aggregateUrl || !cdpArgs.bearer) {
-          this.skip();
-        }
-
-        await EWE.testing.startCdpMetricsUploader(cdpArgs);
-
-        await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-
-        await waitForAssertion(async() => {
-          let storageResult =
-            await browser.storage.local.get([CDP_STORAGE_2_KEY]);
-          let storage = storageResult[CDP_STORAGE_2_KEY];
-
-          // this clientId is created at the same time that the pingBundle is
-          // scheduled, so we know it's been scheduled
-          expect(storage.clientIds).toEqual({
-            [SITE_ID]: expect.any(String)
-          });
-          // and this being empty means that it has definitely been sent at this
-          // point
-          expect(storage.pingBundles).toEqual([]);
-          expect(storage).not.toHaveProperty("lastError");
-        }, 10000);
-      });
-    });
-
     describe("Specific sites", function() {
       beforeEach(async function() {
         await EWE.testing._restoreCdpConfig();
@@ -2246,6 +2158,57 @@ describe("CDP on Chromium-based browsers", function() {
           eventType: EVENT_SESSION_START
         }])
       ]));
+    });
+
+    describe("Metric Upload Integration", function() {
+      it("can successfully send a ping payload to the eyeometry staging server", async function() {
+        setMinTimeout(this, 11000);
+
+        await cleanUp();
+        await clearState();
+        await EWE.testing.resetCdpMetricsUploader();
+
+        // These credentials can be set by setting the environment
+        // variables with the same name before running webpack.
+        let cdpArgs = {
+          pingUrl: webpackDotenvPlugin.EWE_CDP_PING_URL,
+          publicKeyUrl: webpackDotenvPlugin.EWE_CDP_PUBLIC_KEY_URL,
+          bearer: webpackDotenvPlugin.EWE_CDP_BEARER
+        };
+        if (!cdpArgs.pingUrl || !cdpArgs.publicKeyUrl || !cdpArgs.bearer) {
+          this.skip();
+        }
+
+        await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+        await EWE.testing.startCdpMetricsUploader(cdpArgs);
+
+        // wait for the very first ping sent
+        let openPingTimestamp;
+        await waitForAssertion(async() => {
+          let storageResult =
+            await browser.storage.local.get([CDP_STORAGE_3_KEY]);
+          let storage = storageResult[CDP_STORAGE_3_KEY];
+          expect(storage).toHaveProperty("lastPing");
+          openPingTimestamp = storage.lastPing;
+        });
+
+        // We need to navigate to another domain, as the session for webext.com
+        // is pending and will be not counted in domains_stats
+        await new Page(`http://${LOCALHOST}:3000/image.html`).loaded;
+
+        // force send the ping
+        await EWE.testing._uploadCdp();
+
+        // wait for the data ping sent
+        await waitForAssertion(async() => {
+          let storageResult =
+            await browser.storage.local.get([CDP_STORAGE_3_KEY]);
+          let storage = storageResult[CDP_STORAGE_3_KEY];
+
+          expect(storage.lastPing).toBeGreaterThan(openPingTimestamp);
+          expect(storage).not.toHaveProperty("lastError");
+        }, 10000);
+      });
     });
 
     async function clearState() {
