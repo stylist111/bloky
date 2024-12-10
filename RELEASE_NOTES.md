@@ -1,6 +1,8 @@
 Unreleased
 ==========
 
+## General
+
 - Now sending page views in CDP data. (EXT-653)
 - Added `EWE.experiments.getExperiments()` method to retrieve a list of all
   current split experiments and their variants. (EXT-658)
@@ -11,7 +13,7 @@ Unreleased
 
 ## Fixes
 
-- Array items returns from `EWE.experiments.getAssignments()` and
+- Array items returned from `EWE.experiments.getAssignments()` and
   `EWE.experiments.getFlag()` methods were being duplicated. We now check
   whether the data is already being loaded before attempting to load it, so that
   parallel data accesses during initialization don't lead to multiple attempts
