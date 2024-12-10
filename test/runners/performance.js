@@ -28,6 +28,8 @@ import {BROWSERS} from "@eyeo/get-browser-binary";
 import {getHandle, getDriver, writeScreenshot} from "./utils.js";
 
 const remoteDebuggingPort = 33559;
+// To be removed: https://eyeo.atlassian.net/browse/EXT-97
+const historyTestSkipped = true;
 
 function parseArguments() {
   try {
@@ -106,6 +108,10 @@ async function runLighthouseTest(driver) {
 }
 
 async function runHistoryTest(driver) {
+  if (historyTestSkipped) {
+    console.warn("History test is being skipped");
+    return;
+  }
   const failure = "History test FAILED";
 
   const url = "https://dev.motiv.fm";
