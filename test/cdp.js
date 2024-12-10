@@ -1927,6 +1927,13 @@ describe("CDP on Chromium-based browsers", function() {
       await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
     });
 
+    it("counts page redirects", async function() {
+      await new Page(`http://${WEBEXT_DOT_COM}:3000/redirect.html`).loaded;
+
+      // 1 event for original load and 1 after redirection
+      await assertEvents(WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 2);
+    });
+
     async function assertUserActionsSessionEvents(
       callback, sessionDuration, clear = true, eventsCount = 1) {
       if (clear) {
@@ -2676,7 +2683,8 @@ describe("CDP on Chromium-based browsers", function() {
           const errorDomainStats = await decryptDomainStats(errorPayload);
           expect(errorDomainStats.ds).toEqual([{
             i: WEBEXT_DOT_COM,
-            s: 1
+            s: 1,
+            p: 1
           }]);
 
           // configure backend to return ok
@@ -2716,7 +2724,8 @@ describe("CDP on Chromium-based browsers", function() {
           // no "webext.com" sessions is expected here
           expect(regularDomainStats.ds).toEqual([{
             i: LOCALHOST,
-            s: 1
+            s: 1,
+            p: 1
           }]);
         }
         finally {
@@ -2743,9 +2752,10 @@ describe("CDP on Chromium-based browsers", function() {
     describe("Domains trimming", function() {
       it("generates \"domain_stats\" payload", async function() {
         await EWE.testing._setCdpData(EVENT_SESSION_START, SITE_ID, [1, 2, 3]);
+        await EWE.testing._setCdpData(EVENT_PAGE_VIEW, SITE_ID, 4);
         const stats = await EWE.testing._getCdpDomainStats();
         expect(stats).toEqual(
-          `{"ds":[{"i":"${SITE_ID}","s":3}]}`);
+          `{"ds":[{"i":"${SITE_ID}","s":3,"p":4}]}`);
       });
 
       it("sorts \"domain_stats\" payload for sessions count", async function() {
@@ -2753,24 +2763,17 @@ describe("CDP on Chromium-based browsers", function() {
         const SITE_ID2 = SITE_ID + "2";
         const SITE_ID3 = SITE_ID + "3";
         await EWE.testing._setCdpData(EVENT_SESSION_START, SITE_ID1, [1]);
+        await EWE.testing._setCdpData(EVENT_PAGE_VIEW, SITE_ID1, 2);
         await EWE.testing._setCdpData(EVENT_SESSION_START, SITE_ID2, [1, 2, 3]);
+        await EWE.testing._setCdpData(EVENT_PAGE_VIEW, SITE_ID2, 1);
         await EWE.testing._setCdpData(EVENT_SESSION_START, SITE_ID3, [1, 2]);
+        await EWE.testing._setCdpData(EVENT_PAGE_VIEW, SITE_ID3, 5);
         const stats = await EWE.testing._getCdpDomainStats();
         expect(stats).toEqual("{\"ds\":[" +
-          `{"i":"${SITE_ID2}","s":3},` +
-          `{"i":"${SITE_ID3}","s":2},` +
-          `{"i":"${SITE_ID1}","s":1}` +
+          `{"i":"${SITE_ID2}","s":3,"p":1},` +
+          `{"i":"${SITE_ID3}","s":2,"p":5},` +
+          `{"i":"${SITE_ID1}","s":1,"p":2}` +
           "]}");
-      });
-
-      it("skips sending 0 sessions_count if having pageviews_count", async function() {
-        await EWE.testing._setCdpData(EVENT_PAGE_VIEW, SITE_ID, 1);
-        // At the moment we pass only sessions count,
-        // but having page_view events might add the domain to
-        // the reported list, so we might occasionally add 0
-        // as a sessions count for it.
-        const stats = await EWE.testing._getCdpDomainStats();
-        expect(stats).toEqual("{\"ds\":[]}");
       });
     });
 
@@ -2821,6 +2824,9 @@ UlvVm112lG9ij3Mc/f64cKzmenKoIe0c2HSGMxFagEDnAgMBAAE=
         // We need to navigate to another domain, as the session for webext.com
         // is pending and will be not counted in domains_stats
         await new Page(`http://${LOCALHOST}:3000/image.html`).loaded;
+        // increase page views counter
+        await new Page(`http://${LOCALHOST}:3000/image.html`).loaded;
+        await new Page("https://adblockplus.org").loaded;
         await EWE.testing._uploadCdp();
 
         await waitForAssertion(async() => {
@@ -2835,10 +2841,16 @@ UlvVm112lG9ij3Mc/f64cKzmenKoIe0c2HSGMxFagEDnAgMBAAE=
         const domainStats = await decryptDomainStats(payload);
         expect(domainStats.ds).toEqual(expect.arrayContaining([{
           i: WEBEXT_DOT_COM,
-          s: 1
+          s: 1,
+          p: 1
         }, {
           i: LOCALHOST,
-          s: 1
+          s: 1,
+          p: 2
+        }, {
+          i: "adblockplus.org",
+          s: 1,
+          p: expect.any(Number)
         }]));
       });
 
@@ -2903,7 +2915,8 @@ UlvVm112lG9ij3Mc/f64cKzmenKoIe0c2HSGMxFagEDnAgMBAAE=
         const successfulDomainStats = await decryptDomainStats(payload);
         expect(successfulDomainStats.ds).toEqual([{
           i: LOCALHOST,
-          s: 1
+          s: 1,
+          p: 1
         }]);
       });
 

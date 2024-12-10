@@ -637,7 +637,8 @@ const EVENT_TYPE_TO_METRIC = new Map([
  */
 export function getDomainStats(
   metrics = [
-    EVENT_TYPE_TO_METRIC.get(EVENT_SESSION_START)
+    EVENT_TYPE_TO_METRIC.get(EVENT_SESSION_START),
+    EVENT_TYPE_TO_METRIC.get(EVENT_PAGE_VIEW)
   ],
   limit = 90 * 1024) {
   const domains = new Set();
