@@ -1,6 +1,9 @@
 Unreleased
 ==========
 
+🔿 1.22.0 - 2024-12-10 🔿
+=========================
+
 ## General
 
 - Now sending page views in CDP data. (EXT-653)
