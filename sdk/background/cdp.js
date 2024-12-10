@@ -27,10 +27,8 @@ import {PersistentState} from "./persistence.js";
 import {trace, debug, warn, error} from "./debugging.js";
 import {isFirefox} from "./info.js";
 import {MaxLengthMetricsDict} from "./domains-trimming.js";
-import {isFeatureEnabled} from "adblockpluscore/lib/features.js";
 import {isHttpOrHttps, stripQuery} from "adblockpluscore/lib/url.js";
-import {OnlySupportedDomainsProcessor, SpecialDomainsProcessor}
-  from "./cdp-processor.js";
+import {SpecialDomainsProcessor} from "./cdp-processor.js";
 import {setPremiumStatusCallback} from "./callbacks.js";
 
 /**
@@ -51,21 +49,13 @@ export const EVENT_SESSION_START = "session_start";
  */
 export const EVENT_BLOCKING = "blocking";
 
-const CDP_PHASE3_FEATURE_FLAG = "cdpPhase3";
-const DEBUG_CDP_FEATURE_FLAG = "debugCdp";
-const DEBOUNCE_INTERVAL = 5000;
-
 // CDP events and pages user activity loading delay (for testing)
 let _loadDelay = 0;
 
 let deferredEvents = [];
 
 // incapsulates domain to site grouping logics
-let processor;
-
-let logMessages = new PersistentState("ewe:cdp_log", browser.storage.local);
-logMessages.doDebounce();
-logMessages.setDebounceInterval(DEBOUNCE_INTERVAL);
+let processor = new SpecialDomainsProcessor();
 
 /**
  * Put a message into CDP log
@@ -74,56 +64,6 @@ logMessages.setDebounceInterval(DEBOUNCE_INTERVAL);
  */
 export function log(message) {
   debug(message);
-
-  if (!isFeatureEnabled(DEBUG_CDP_FEATURE_FLAG)) {
-    return;
-  }
-
-  const tsMessage = `${Date.now()}:${message}`;
-  const state = logMessages.getState();
-  if (!state.messages) {
-    state.messages = [];
-  }
-  state.messages.push(tsMessage);
-
-  // We can collect too much data in between the CDP aggregate pings
-  // (EXT-588)
-  const CDP_LOG_LIMIT = 10000;
-  if (state.messages.length > CDP_LOG_LIMIT) {
-    state.messages.splice(0, state.messages.length - CDP_LOG_LIMIT);
-  }
-  logMessages.save();
-}
-
-/**
- * Returns an array of CDP log messages
- * @returns {Array<string>}
- * @ignore
- */
-export function getLog() {
-  return logMessages.getState().messages;
-}
-
-/**
- * Set log messages for testing
- * @param {Array<string>} messages Log messages
- * @ignore
- */
-export function setLog(messages) {
-  logMessages.getState().messages = messages;
-}
-
-/**
- * Clear the CDP log
- * @ignore
- */
-export function clearLog() {
-  logMessages.clearState();
-  logMessages.save();
-}
-
-function isPhase3() {
-  return isFeatureEnabled(CDP_PHASE3_FEATURE_FLAG);
 }
 
 /**
@@ -242,19 +182,8 @@ async function count(eventType, siteId, timeStamp) {
   log(`count(${eventType}, ${siteId}, ${timeStamp})`);
 
   const state = events.get(eventType);
-  if (isPhase3()) {
-    let counter = toCounter(state.getState()[siteId]);
-    state.getState()[siteId] = counter + 1;
-  }
-  else {
-    let timestamps = state.getState()[siteId];
-    if (!timestamps) {
-      timestamps = [];
-      state.getState()[siteId] = timestamps;
-    }
-    timestamps.push(timeStamp);
-    log(`events count: ${timestamps.length}`);
-  }
+  let counter = toCounter(state.getState()[siteId]);
+  state.getState()[siteId] = counter + 1;
 
   if (isStateLoaded()) {
     await state.save();
@@ -336,15 +265,9 @@ export function getData(eventType, siteId) {
   trace({eventType, siteId});
   log(`getData(${eventType}, ${siteId})`);
 
-  if (isPhase3()) {
-    let counter = toCounter(events.get(eventType).getState()[siteId]);
-    debug("counter=" + counter);
-    return counter;
-  }
-
-  const timestamps = events.get(eventType).getState()[siteId] || [];
-  log(`Got ${timestamps.length} events for ${siteId}`);
-  return timestamps;
+  let counter = toCounter(events.get(eventType).getState()[siteId]);
+  debug("counter=" + counter);
+  return counter;
 }
 
 /**
@@ -393,37 +316,12 @@ export async function clearExpiredActivity() {
  * @returns {Promise}
  * @ignore
  */
-export async function clearData(eventType, siteId, timeStamp) {
-  trace({eventType, siteId, timeStamp});
-  log(`clearData(${eventType}, ${siteId}, ${timeStamp})`);
+export async function clearData() {
+  trace({});
+  log("clearData()");
 
-  if (isPhase3()) {
-    // Timestamps are not supported on Phase 3
-    timeStamp = null;
-  }
-
-  const eventTypes = eventType ? [eventType] : [...events.keys()];
-  for (const eachEventType of eventTypes) {
-    const state = events.get(eachEventType);
-    if (!siteId && !timeStamp) {
-      state.clearState();
-    }
-    else {
-      const siteIds = siteId ? [siteId] : [...state.keys()];
-      for (const eachSiteId of siteIds) {
-        if (timeStamp) {
-          let timeStamps = state.getState()[eachSiteId];
-          if (timeStamps) {
-            timeStamps = timeStamps.filter(
-              eactTimestamp => eactTimestamp >= timeStamp);
-            state.getState()[siteId] = timeStamps;
-          }
-        }
-        else {
-          delete state.getState()[eachSiteId];
-        }
-      }
-    }
+  for (const state of events.values()) {
+    state.clearState();
     await state.save();
   }
 }
@@ -701,10 +599,6 @@ function toCounter(numberOrArray) {
 export async function start() {
   if (!startupPromise) {
     startupPromise = (async() => {
-      processor = isPhase3() ?
-        new SpecialDomainsProcessor() :
-        new OnlySupportedDomainsProcessor();
-
       // assuming `Prefs` are initialized and loaded as
       // we use "user opted out" and "domains" settings
 
@@ -726,9 +620,6 @@ export async function start() {
       async function loadData() {
         await loadEvents();
         await activity.load();
-        if (isFeatureEnabled(DEBUG_CDP_FEATURE_FLAG)) {
-          await logMessages.load();
-        }
         await clearExpiredActivity();
         handleDeferredEvents();
       }

@@ -16,7 +16,7 @@
  */
 
 import expect from "expect";
-import {SpecialDomainsProcessor, OnlySupportedDomainsProcessor}
+import {SpecialDomainsProcessor}
   from "../../../sdk/background/cdp-processor.js";
 
 describe("CDP processors", function() {
@@ -128,34 +128,6 @@ describe("CDP processors", function() {
       it("does not group hotels.com and hoteles.com", function() {
         assertDoesNotGroup(["hotels.com", "hoteles.com"]);
       });
-    });
-  });
-
-  describe("OnlySupportedDomainsProcessor", function() {
-    const processor = new OnlySupportedDomainsProcessor();
-
-    it("returns siteId for supported domain", function() {
-      processor.setConfig([[["domain.*"], "siteid.*"]]);
-      expect(processor.getSiteId("domain.com"))
-        .toEqual("siteid.*");
-      expect(processor.getSiteId("domain.co.uk"))
-        .toEqual("siteid.*");
-    });
-
-    it("returns nothing for unsupported domain", function() {
-      processor.setConfig([]);
-      expect(processor.getSiteId("domain.com"))
-        .toBeNull();
-    });
-
-    it("notifies supported domains", function() {
-      processor.setConfig([[["domain.*"], "siteid.*"]]);
-      expect(processor.shouldProcess(new URL("http://domain.com"))).toEqual(true);
-    });
-
-    it("does not notify unsupported domains", function() {
-      processor.setConfig([]);
-      expect(processor.shouldProcess(new URL("http://domain.com"))).toEqual(false);
     });
   });
 });

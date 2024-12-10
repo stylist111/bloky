@@ -3,6 +3,11 @@ Unreleased
 
 - Now sending page views in CDP data. (EXT-653)
 
+## Updating your code
+
+- As CDP is switched to Phase 3, Phase 1 & 2 code is removed.
+  CDP-related feature flags are removed, don't use them anymore. (EXT-615)
+
 👵 1.21.0 - 2024-12-04 👵
 =========================
 

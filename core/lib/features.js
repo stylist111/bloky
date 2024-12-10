@@ -45,8 +45,6 @@ exports.resetFeatureFlags = function() {
   featureFlags.example = false;  // example feature used by tests
   featureFlags.inlineCss = false;
   featureFlags.eyeometryUcid = false;
-  featureFlags.cdpPhase3 = false;
-  featureFlags.debugCdp = false;
 };
 
 resetFeatureFlags();
