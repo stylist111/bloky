@@ -17,7 +17,7 @@
 
 import expect from "expect";
 
-import {EWE} from "./messaging.js";
+import {EWE, expectTestEvents} from "./messaging.js";
 import {TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
 import {
   clearEndpointResponse,
@@ -100,6 +100,24 @@ describe("Split Experiments", function() {
     await startWithTestArgs();
   });
 
+  it("returns an empty state before first sync", async function() {
+    await EWE.testing.resetExperimentData();
+
+    expect(await EWE.experiments.getAssignments()).toEqual({});
+    expect(await EWE.experiments.getExperiments()).toEqual([]);
+    expect(await EWE.experiments.getRevisionId()).toBeNull();
+    expect(await EWE.experiments.getSyncStatus()).toEqual({
+      errors: []
+    });
+  });
+
+  it("returns revision ID", async function() {
+    await EWE.experiments.sync();
+
+    // Hash corresponding to {"schemaId":"1","experiments":[]}
+    expect(await EWE.experiments.getRevisionId()).toEqual("BpNHg1PA");
+  });
+
   describe("Variant assignment", function() {
     it("initially returns null for a flag", async function() {
       let flag = await EWE.experiments.getFlag(EXPERIMENT_FLAG);
@@ -112,16 +130,21 @@ describe("Split Experiments", function() {
       expect(flag).toBe("potato");
     });
 
-    it("returns an empty state before first sync", async function() {
-      await EWE.testing.resetExperimentData();
-      expect(await EWE.experiments.getSyncStatus()).toEqual({
-        errors: []
-      });
-    });
+    it("returns experiments with assignments", async function() {
+      await setConfig(oneVariantConfig("test"));
+      await EWE.experiments.sync();
 
-    it("returns an empty assignment before first sync", async function() {
-      await EWE.testing.resetExperimentData();
-      expect(await EWE.experiments.getAssignments()).toEqual({});
+      expect(await EWE.experiments.getExperiments()).toEqual([
+        {
+          id: EXPERIMENT_ID,
+          variants: [
+            {
+              assigned: true,
+              id: "variant1"
+            }
+          ]
+        }
+      ]);
     });
 
     it("gets the value of the flag in the experiment the user is assigned to", async function() {
@@ -578,6 +601,32 @@ describe("Split Experiments", function() {
         lastDownloaded: expect.stringMatching(ISO_DATE_REGEX),
         errors: []
       });
+    });
+  });
+
+  describe("Experiments events", function() {
+    it("listens to onChanged events", async function() {
+      await EWE.testing.resetExperimentData();
+
+      await expectTestEvents("experiments.updated", []);
+      expect(await EWE.experiments.getExperiments()).toEqual([]);
+
+      await setConfig(oneVariantConfig("test"));
+      await EWE.experiments.sync();
+
+      await expectTestEvents("experiments.updated", [[
+        [
+          {
+            id: EXPERIMENT_ID,
+            variants: [
+              {
+                assigned: true,
+                id: "variant1"
+              }
+            ]
+          }
+        ]
+      ]]);
     });
   });
 });

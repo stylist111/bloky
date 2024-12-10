@@ -2,6 +2,20 @@ Unreleased
 ==========
 
 - Now sending page views in CDP data. (EXT-653)
+- Added `EWE.experiments.getExperiments()` method to retrieve a list of all
+  current split experiments and their variants. (EXT-658)
+- Added `EWE.experiments.getRevisionId()` method to retrieve the unique ID for
+  the current split experiments. (EXT-658)
+- Added `EWE.experiments.onChanged` API to listen to incoming split experiments
+  changes. (EXT-658)
+
+## Fixes
+
+- Array items returns from `EWE.experiments.getAssignments()` and
+  `EWE.experiments.getFlag()` methods were being duplicated. We now check
+  whether the data is already being loaded before attempting to load it, so that
+  parallel data accesses during initialization don't lead to multiple attempts
+  to load data from storage. (EXT-658)
 
 ## Updating your code
 
@@ -13,7 +27,7 @@ Unreleased
 
 - Added functionality to remove temporary document allowlisting filters
 when a user closes a tab or navigates away from the domain in the allowlist
-rule.  
+rule.
 To use this functionality, the "expiresByTabId" needs to be included
 in the rules metadata when the filter is added. (EXT-413)
 

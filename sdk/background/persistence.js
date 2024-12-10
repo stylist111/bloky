@@ -26,6 +26,7 @@ export class PersistentState {
     this.loaded = false;
     this.debounce = false;
     this.debounceInterval = 0;
+    this.untilLoaded = null;
 
     this.clearState();
   }
@@ -43,7 +44,10 @@ export class PersistentState {
   }
 
   async getStateLoaded() {
-    if (!this.loaded) {
+    if (this.untilLoaded) {
+      await this.untilLoaded;
+    }
+    else {
       await this.load();
     }
 
@@ -54,23 +58,9 @@ export class PersistentState {
     return this.state;
   }
 
-  async load(savedStateCallback = null) {
-    let persistObj = await this.storage.get(this.storageKey);
-    if (!persistObj || !persistObj[this.storageKey]) {
-      this.loaded = true;
-      return;
-    }
-
-    let savedState = persistObj[this.storageKey];
-
-    if (savedStateCallback) {
-      savedStateCallback(savedState);
-    }
-
-    // We might have populated state until loading is finished.
-    // Thus we might need to merge the saved and new runtime state.
-    this.state = mergeObjects(savedState, this.state);
-    this.loaded = true;
+  async load(savedStateCallback) {
+    this.untilLoaded = this._load(savedStateCallback);
+    await this.untilLoaded;
   }
 
   async save() {
@@ -110,6 +100,25 @@ export class PersistentState {
       catch (e) {
       }
     }
+  }
+
+  async _load(savedStateCallback = null) {
+    let persistObj = await this.storage.get(this.storageKey);
+    if (!persistObj || !persistObj[this.storageKey]) {
+      this.loaded = true;
+      return;
+    }
+
+    let savedState = persistObj[this.storageKey];
+
+    if (savedStateCallback) {
+      savedStateCallback(savedState);
+    }
+
+    // We might have populated state until loading is finished.
+    // Thus we might need to merge the saved and new runtime state.
+    this.state = mergeObjects(savedState, this.state);
+    this.loaded = true;
   }
 
   _trackSaving(savePromise) {

@@ -18,16 +18,35 @@
 import browser from "webextension-polyfill";
 import {v4 as uuidv4} from "uuid";
 
+import {EventEmitter} from "adblockpluscore/lib/events.js";
 import {MILLIS_IN_MINUTE, MILLIS_IN_HOUR} from "adblockpluscore/lib/time.js";
 import {PersistentState} from "./persistence.js";
+import {EventDispatcher} from "./types.js";
 import {Scheduler} from "../all/scheduler.js";
 import {validateExperimentData} from "../all/experiment-validation.js";
 
+let emitter = new EventEmitter();
 let experimentData = new PersistentState("ewe:split_experiments", browser.storage.local);
 let experimentUrl;
 let scheduler;
 
+let onChanged = new EventDispatcher(dispatch => {
+  emitter.on("updated", async() => {
+    dispatch(await getExperimentsInternal());
+  });
+});
+
 async function hashString(str) {
+  const sha1Buffer = await crypto.subtle.digest(
+    "SHA-1",
+    new TextEncoder().encode(str)
+  );
+  const bytes = new Uint8Array(sha1Buffer);
+  const base64 = btoa(String.fromCharCode(...bytes));
+  return base64.substring(0, 8);
+}
+
+async function modHashString(str) {
   const sha1Buffer = await crypto.subtle.digest(
     "SHA-1",
     new TextEncoder().encode(str)
@@ -81,7 +100,7 @@ async function assignVariants(experiments) {
       continue;
     }
 
-    const mod = await hashString(`${seed}:${experiment.experimentId}`);
+    const mod = await modHashString(`${seed}:${experiment.experimentId}`);
 
     for (const variant of experiment.variants) {
       if (mod >= variant.mods[0] && mod < variant.mods[1]) {
@@ -93,6 +112,28 @@ async function assignVariants(experiments) {
   }
 
   return {flags, assignments};
+}
+
+async function getExperimentsInternal() {
+  const state = await experimentData.getStateLoaded();
+  const assignments = state.assignments || {};
+  const rawData = state.rawData || {experiments: []};
+
+  const experiments = rawData.experiments.map(experiment => {
+    const variants = experiment.variants.map(variant => {
+      return {
+        id: variant.variantId,
+        assigned: assignments[experiment.experimentId] === variant.variantId
+      };
+    });
+
+    return {
+      id: experiment.experimentId,
+      variants
+    };
+  });
+
+  return experiments;
 }
 
 /**
@@ -197,8 +238,9 @@ async function downloadExperimentsFile() {
     }
 
     const data = await response.json();
+    const revisionId = await hashString(JSON.stringify(data));
 
-    return {newExperimentData: data, date, etag};
+    return {newExperimentData: data, date, etag, revisionId};
   }
   catch (e) {
     return {downloadError: true};
@@ -218,8 +260,14 @@ async function syncData() {
     return;
   }
 
-  const {downloadError, cacheFresh, newExperimentData: data, date, etag} =
-        await downloadExperimentsFile();
+  const {
+    downloadError,
+    cacheFresh,
+    newExperimentData: data,
+    date,
+    etag,
+    revisionId
+  } = await downloadExperimentsFile();
 
   if (downloadError) {
     state.lastNetworkError = new Date().toISOString();
@@ -255,11 +303,14 @@ async function syncData() {
   }
 
   state.errors = [];
+  state.revisionId = revisionId;
   const {flags, assignments} = await assignVariants(data.experiments);
   state.flags = flags;
   state.assignments = assignments;
 
   await experimentData.save();
+
+  emitter.emit("updated");
 }
 
 /**
@@ -267,6 +318,13 @@ async function syncData() {
  * @namespace experiments
  */
 export default {
+  /**
+   * Represents an experiment
+   * @typedef {Object} Experiment
+   * @property {string} id Experiment ID.
+   * @property {Array.<ExperimentVariant>} variants Experiment variants.
+   */
+
   /**
    * Represents the experiment data synchronization status
    * @typedef {Object} ExperimentSyncStatus
@@ -279,6 +337,14 @@ export default {
    * @property {string?} lastNetworkError ISO formatting timestamp of the last
    *   download attempt if that attempt had a network error. Undefined if the
    *   last sync was successful.
+   */
+
+  /**
+   * Represents a variant of an experiment
+   * @typedef {Object} ExperimentVariant
+   * @property {string} id Experiment variant ID.
+   * @property {boolean} assigned Indicates whether current user is assigned to
+   *   the experiment variant.
    */
 
   /**
@@ -298,9 +364,9 @@ export default {
     const state = await experimentData.getStateLoaded();
 
     return {
-      lastNetworkError: state.lastNetworkError,
+      errors: state.errors || [],
       lastDownloaded: state.lastDownloaded,
-      errors: state.errors || []
+      lastNetworkError: state.lastNetworkError
     };
   },
 
@@ -361,5 +427,38 @@ export default {
   async getAssignments() {
     const state = await experimentData.getStateLoaded();
     return state.assignments || {};
-  }
+  },
+
+  /**
+   * Retrieves current experiments
+   * @returns {Promise<Array.<Experiment>>} Current experiments
+   * @example
+   * await ewe.experiments.getExperiments();
+   * // returns [ {
+   * //   "id": "experiment1",
+   * //   "variants": [ {
+   * //     "id": "variant1",
+   * //     "assigned": true
+   * //   } ]
+   * // } ]
+   */
+  async getExperiments() {
+    return getExperimentsInternal();
+  },
+
+  /**
+   * Retrieves current experiment data revision ID
+   * @returns {string?} Experiment data revision ID
+   */
+  async getRevisionId() {
+    const state = await experimentData.getStateLoaded();
+    return state.revisionId || null;
+  },
+
+  /**
+   * Emitted when experiment data has changed
+   * @event
+   * @type {EventDispatcher<Array<Experiment>>}
+   */
+  onChanged
 };

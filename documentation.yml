@@ -37,7 +37,9 @@ toc:
       - CdpEventDispatcher
       - CdpEventOptions
       - EventDispatcher
+      - Experiment
       - ExperimentSyncStatus
+      - ExperimentVariant
       - Filter
       - FilterAddResult
       - FilterError

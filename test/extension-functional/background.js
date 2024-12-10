@@ -389,6 +389,7 @@ addEventListener("unhandledrejection", ({reason}) => {
   lastError = typeof reason == "object" ? reason.message : reason;
 });
 
+EWE.experiments.onChanged.addListener(createTestEventListener("experiments.updated"));
 EWE.filters.onAdded.addListener(createTestEventListener("filters.onAdded"));
 EWE.filters.onChanged.addListener(createTestEventListener("filters.onChanged"));
 EWE.filters.onRemoved.addListener(createTestEventListener("filters.onRemoved"));
