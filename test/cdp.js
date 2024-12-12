@@ -977,6 +977,159 @@ describe("CDP on Chromium-based browsers", function() {
         }
       });
 
+      async function assertCdpError() {
+        let storage;
+        await waitForAssertion(async() => {
+          let storageResult =
+            await browser.storage.local.get([CDP_STORAGE_3_KEY]);
+          storage = storageResult[CDP_STORAGE_3_KEY];
+
+          expect(storage.lastError).toEqual(expect.any(Number));
+          // We expect the lastError to be in the form of a date that is
+          // close to now, but there are multiple threads and this test is
+          // async so it won't be exactly equal.
+          expect(Math.abs(storage.lastError - Date.now()))
+            .toBeLessThan(MILLIS_IN_MINUTE);
+        });
+        return storage;
+      }
+
+      it("sets an error timestamp if public key server has an error", async function() {
+        const response = await fetch(PUBLIC_KEY_URL);
+        const pubKeyResponseText = await response.text();
+        const pubKeyResponseHeaders = Object.fromEntries(
+          response.headers.entries());
+        await setEndpointResponse(PUBLIC_KEY_URL, {}, "GET", 404);
+
+        try {
+          await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+          await startMetricsUploaderWithTestArgs();
+          await assertCdpError();
+        }
+        finally {
+          await setEndpointResponse(
+            PUBLIC_KEY_URL, pubKeyResponseText, "GET", 200, pubKeyResponseHeaders);
+        }
+      });
+
+      it("sets an error timestamp if public key server returns no \"pubkey-id\" header", async function() {
+        const response = await fetch(PUBLIC_KEY_URL);
+        const pubKeyResponseText = await response.text();
+        const pubKeyResponseHeaders = Object.fromEntries(
+          response.headers.entries());
+        await setEndpointResponse(
+          PUBLIC_KEY_URL, pubKeyResponseText, "GET", 200, {"pubkey-id": ""});
+
+        try {
+          await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+          await startMetricsUploaderWithTestArgs();
+
+          await assertCdpError();
+        }
+        finally {
+          await setEndpointResponse(
+            PUBLIC_KEY_URL, pubKeyResponseText, "GET", 200, pubKeyResponseHeaders);
+        }
+      });
+
+      it("sends the very first retry ping after public key server is up again", async function() {
+        const response = await fetch(PUBLIC_KEY_URL);
+        const pubKeyResponseText = await response.text();
+        const pubKeyResponseHeaders = Object.fromEntries(
+          response.headers.entries());
+        await setEndpointResponse(
+          PUBLIC_KEY_URL, pubKeyResponseText, "GET", 404);
+
+        try {
+          await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+          await startMetricsUploaderWithTestArgs();
+
+          await assertCdpError();
+        }
+        finally {
+          await setEndpointResponse(
+            PUBLIC_KEY_URL, pubKeyResponseText, "GET", 200, pubKeyResponseHeaders);
+        }
+
+        // force upload (happens in 1h)
+        await EWE.testing._uploadCdp();
+
+        let requestLogs;
+        await waitForAssertion(async() => {
+          requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+          expect(requestLogs).toHaveLength(1);
+        }, 2 * 1000);
+        const retryPayload = requestLogs[0].body.payload;
+        expect(retryPayload).toHaveProperty("public_key_id");
+        expect(retryPayload).not.toHaveProperty("encrypted_data"); // very first ping
+
+        let storageResult =
+          await browser.storage.local.get([CDP_STORAGE_3_KEY]);
+        let storage = storageResult[CDP_STORAGE_3_KEY];
+
+        expect(storage).not.toHaveProperty("lastError");
+        expect(storage).not.toHaveProperty("lastDomainStats");
+        expect(storage).not.toHaveProperty("lastUtid");
+      });
+
+      it("sends the data in retry ping after public key server is up again", async function() {
+        const response = await fetch(PUBLIC_KEY_URL);
+        const pubKeyResponseText = await response.text();
+        const pubKeyResponseHeaders = Object.fromEntries(
+          response.headers.entries());
+
+        await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+        await startMetricsUploaderWithTestArgs();
+
+        let requestLogs;
+        await waitForAssertion(async() => {
+          requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+
+          // the very first ping does not include domain stats
+          expect(requestLogs).toHaveLength(1);
+          const veryFirstPingPayload = requestLogs[0].body.payload;
+          expect(veryFirstPingPayload).not.toHaveProperty("encrypted_data");
+        });
+
+        await new Page(`http://${LOCALHOST}:3000/image.html`).loaded;
+
+        try {
+          // simulate public key server is down
+          await setEndpointResponse(
+            PUBLIC_KEY_URL, pubKeyResponseText, "GET", 404);
+
+          // force data upload
+          await EWE.testing._uploadCdp();
+
+          await assertCdpError();
+        }
+        finally {
+          await setEndpointResponse(
+            PUBLIC_KEY_URL, pubKeyResponseText, "GET", 200, pubKeyResponseHeaders);
+        }
+
+        await clearRequestLogs();
+
+        // force upload (happens in 1h)
+        await EWE.testing._uploadCdp();
+
+        await waitForAssertion(async() => {
+          requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+          expect(requestLogs).toHaveLength(1);
+        }, 2 * 1000);
+        const retryPayload = requestLogs[0].body.payload;
+        expect(retryPayload).toHaveProperty("public_key_id");
+        expect(retryPayload).toHaveProperty("encrypted_data");
+
+        let storageResult =
+          await browser.storage.local.get([CDP_STORAGE_3_KEY]);
+        let storage = storageResult[CDP_STORAGE_3_KEY];
+
+        expect(storage).not.toHaveProperty("lastError");
+        expect(storage).not.toHaveProperty("lastDomainStats");
+        expect(storage).not.toHaveProperty("lastUtid");
+      });
+
       it("sends the same 'utid' and data in the retry ping for the very first ping", async function() {
         setMinTimeout(this, 20 * 1000);
 
@@ -1003,20 +1156,9 @@ describe("CDP on Chromium-based browsers", function() {
           });
           const errorPayload = requestLogs[0].body.payload;
 
-          await waitForAssertion(async() => {
-            let storageResult =
-              await browser.storage.local.get([CDP_STORAGE_3_KEY]);
-            let storage = storageResult[CDP_STORAGE_3_KEY];
-
-            expect(storage.lastError).toEqual(expect.any(Number));
-            // We expect the lastError to be in the form of a date that is
-            // close to now, but there are multiple threads and this test is
-            // async so it won't be exactly equal.
-            expect(Math.abs(storage.lastError - Date.now()))
-              .toBeLessThan(MILLIS_IN_MINUTE);
-            expect(storage).toHaveProperty("lastDomainStats");
-            expect(storage).toHaveProperty("lastUtid");
-          });
+          let storage = await assertCdpError();
+          expect(storage).toHaveProperty("lastDomainStats");
+          expect(storage).toHaveProperty("lastUtid");
 
           // configure backend to return ok
           await setEndpointResponse(PING_URL, JSON.stringify({
@@ -1033,7 +1175,7 @@ describe("CDP on Chromium-based browsers", function() {
 
           let storageResult =
             await browser.storage.local.get([CDP_STORAGE_3_KEY]);
-          let storage = storageResult[CDP_STORAGE_3_KEY];
+          storage = storageResult[CDP_STORAGE_3_KEY];
 
           expect(storage).not.toHaveProperty("lastError");
           expect(storage).not.toHaveProperty("lastDomainStats");

@@ -47,9 +47,15 @@ let _scheduler = null;
  * @ignore
  */
 export async function requestPublicKey() {
-  let response = await fetch(_cdp.publicKeyUrl);
+  const response = await fetch(_cdp.publicKeyUrl);
+  if (!response.ok) {
+    throw new Error(`Failed to get public key: ${response.status}`);
+  }
   const publicKey = await response.text();
   const keyId = response.headers.get("PubKey-Id");
+  if (!keyId) {
+    throw new Error("Failed to get public key: no pubkey-id");
+  }
   return {publicKey, keyId};
 }
 
@@ -94,6 +100,8 @@ async function getExperimentsAssignments() {
 }
 
 async function buildPayload(publicKey, keyId, domainStats, utid) {
+  trace({publicKey, keyId, utid});
+
   const state = storage.getState();
   const payload = {
     public_key_id: keyId,

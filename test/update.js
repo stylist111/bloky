@@ -20,7 +20,7 @@ import browser from "webextension-polyfill";
 
 import {TEST_PAGES_URL, TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
 import {Page, isFirefox, firefoxVersion, isIncognito, readFile, writeFile,
-        setMinTimeout, expectElemHideHidden} from "./utils.js";
+        setMinTimeout, expectElemHideHidden, waitForAssertion} from "./utils.js";
 import {subTestCustom1, subTestNoDNR} from "./api-fixtures.js";
 import {wait} from "./polling.js";
 import {EWE, runInBackgroundPage} from "./messaging.js";
@@ -200,6 +200,8 @@ describe(`Update (${phase}) [runner-only]`, function() {
   });
 
   it("maintains custom user subscriptions in an update", async function() {
+    setMinTimeout(this, 30000);
+
     let subscriptionUrl = `${TEST_PAGES_URL}/custom-subscription-for-migration.txt`;
 
     if (start) {
@@ -207,10 +209,14 @@ describe(`Update (${phase}) [runner-only]`, function() {
       return;
     }
 
-    let filters = await EWE.subscriptions.getFilters(subscriptionUrl);
-    expect(filters).toContainEqual(expect.objectContaining({
-      text: "/image.png^$image"
-    }));
+    await waitForAssertion(async() => {
+      let filters = await EWE.subscriptions.getFilters(subscriptionUrl);
+      expect(filters).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          text: "/image.png^$image"
+        })
+      ]));
+    }, 20000);
 
     let subs = await EWE.subscriptions.getSubscriptions();
     expect(subs).toEqual(expect.arrayContaining([

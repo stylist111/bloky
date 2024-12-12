@@ -62,7 +62,7 @@ the following versions:
 
 Manifest V2:
 
-* Chromium 77 and latest
+* Chromium 79 and latest
 * Firefox 68 and latest
 * Edge latest
 
