@@ -110,6 +110,10 @@ export let IO = {
               throw e;
             }
           }
+          else if (e.message.includes("Internal error opening backing store for indexedDB.open")) {
+            initializationPromise = null;
+            throw new Error("IndexedDB init error", {cause: e});
+          }
           else {
             initializationPromise = null;
             throw e;
