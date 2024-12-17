@@ -19,8 +19,8 @@ import expect from "expect";
 import browser from "webextension-polyfill";
 
 import {TEST_PAGES_URL, TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
-import {Page, isFirefox, firefoxVersion, isIncognito, readFile, writeFile,
-        setMinTimeout, expectElemHideHidden, waitForAssertion} from "./utils.js";
+import {Page, isFirefox, firefoxVersion, isIncognito, readFile,
+        writeFile, setMinTimeout, expectElemHideHidden, waitForAssertion, waitForSubscriptionsToDownload} from "./utils.js";
 import {subTestCustom1, subTestNoDNR} from "./api-fixtures.js";
 import {wait} from "./polling.js";
 import {EWE, runInBackgroundPage} from "./messaging.js";
@@ -206,6 +206,7 @@ describe(`Update (${phase}) [runner-only]`, function() {
 
     if (start) {
       await EWE.subscriptions.add(subscriptionUrl);
+      await waitForSubscriptionsToDownload();
       return;
     }
 
