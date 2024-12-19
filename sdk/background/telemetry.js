@@ -27,32 +27,15 @@ import {Scheduler} from "../all/scheduler.js";
 import {default as initializer} from "./initializer.js";
 import {trace, error} from "./debugging.js";
 import {default as experiments} from "./experiments.js";
-import {isFeatureEnabled} from "adblockpluscore/lib/features.js";
 import {premiumStatusCallback} from "./callbacks.js";
 
 const TELEMETRY_STORAGE_KEY = "ewe:telemetry";
-const TELEMETRY_UCID_FEATURE_FLAG = "eyeometryUcid";
 
 let scheduler = null;
-let ucid = null;
 let onError = new EventDispatcher(dispatch => {});
 
-async function initializeUcid() {
-  let storageResult = await browser.storage.local.get(
-    [TELEMETRY_STORAGE_KEY]
-  );
-  let storage = storageResult[TELEMETRY_STORAGE_KEY];
-  ucid = storage && storage.ucid;
-  if (!ucid) {
-    ucid = uuidv4();
-    storage = {
-      ...storage,
-      ucid
-    };
-    await browser.storage.local.set({
-      [TELEMETRY_STORAGE_KEY]: storage
-    });
-  }
+async function clearStorage() {
+  await browser.storage.local.remove(TELEMETRY_STORAGE_KEY);
 }
 
 /**
@@ -80,9 +63,6 @@ export async function start(telemetry, interval = 12 * MILLIS_IN_HOUR,
   }
 
   await initializePrefs();
-  if (isFeatureEnabled(TELEMETRY_UCID_FEATURE_FLAG)) {
-    await initializeUcid();
-  }
 
   scheduler = new Scheduler({
     interval,
@@ -183,10 +163,7 @@ async function ping(telemetry) {
     payload.previous_last_ping = truncateTimes(storage.previousLastPing);
     payload.last_ping_tag = storage.lastPingTag;
   }
-
-  if (isFeatureEnabled(TELEMETRY_UCID_FEATURE_FLAG)) {
-    payload.ucid = ucid;
-  }
+  payload.ucid = (storage && storage.ucid) || uuidv4();
 
   let pingToken;
   try {
@@ -223,11 +200,9 @@ async function ping(telemetry) {
     firstPing: (storage && storage.firstPing) || pingToken,
     lastPing: pingToken,
     previousLastPing: storage && storage.lastPing,
-    lastPingTag: uuidv4()
+    lastPingTag: uuidv4(),
+    ucid: payload.ucid
   };
-  if (isFeatureEnabled(TELEMETRY_UCID_FEATURE_FLAG)) {
-    newStorage.ucid = ucid;
-  }
 
   await browser.storage.local.set({
     [TELEMETRY_STORAGE_KEY]: newStorage
@@ -360,6 +335,10 @@ export default {
 
     if (scheduler && !value) {
       scheduler.checkNow();
+    }
+
+    if (value) {
+      await clearStorage();
     }
   }
 };

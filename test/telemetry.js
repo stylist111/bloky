@@ -20,8 +20,7 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 import {MILLIS_IN_HOUR, MILLIS_IN_SECOND} from "adblockpluscore/lib/time.js";
 
-import {EWE, runInBackgroundPage, expectTestEvents, setFeatureFlags,
-        setPremiumStatus}
+import {EWE, runInBackgroundPage, expectTestEvents, setPremiumStatus}
   from "./messaging.js";
 import {TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
 import {clearRequestLogs, getRequestLogs, setMinTimeout, setEndpointResponse,
@@ -139,29 +138,7 @@ describe("Telemetry", function() {
       });
     });
 
-    it("does not send UCID to the telemetry server if turned off", async function() {
-      await setFeatureFlags({
-        eyeometryUcid: false
-      });
-      startTelemetryWithTestArgs();
-
-      await waitForAssertion(async() => {
-        let requests = await getRequestLogs(TELEMETRY_URL);
-        expect(requests).toEqual([expect.objectContaining({
-          url: "/telemetry",
-          method: "POST",
-          authorization: `Bearer ${TELEMETRY_BEARER}`
-        })]);
-
-        const payload = requests[0].body.payload;
-        expect(payload).not.toHaveProperty("ucid");
-      });
-    });
-
     it("sends UCID to the telemetry server if turned on", async function() {
-      await setFeatureFlags({
-        eyeometryUcid: true
-      });
       startTelemetryWithTestArgs();
 
       await waitForAssertion(async() => {
@@ -179,10 +156,6 @@ describe("Telemetry", function() {
 
     it("reuses existing UCID between restarts if generated once", async function() {
       setMinTimeout(this, 20 * 1000);
-
-      await setFeatureFlags({
-        eyeometryUcid: true
-      });
 
       startTelemetryWithTestArgs();
 
@@ -260,6 +233,10 @@ describe("Telemetry", function() {
         setTimeout(r, PING_INTERVAL_MS + MILLIS_IN_SECOND));
       expect(await getRequestLogs(TELEMETRY_URL))
         .toHaveLength(1);
+
+      let storage = await browser.storage.local.get([TELEMETRY_STORAGE_KEY]);
+      storage = storage[TELEMETRY_STORAGE_KEY];
+      expect(storage).toBeUndefined();
     });
 
     it("does not ping if started opted out", async function() {
@@ -269,6 +246,10 @@ describe("Telemetry", function() {
       await new Promise(r => setTimeout(r, PING_INTERVAL_MS));
       expect(await getRequestLogs(TELEMETRY_URL))
         .toHaveLength(0);
+
+      let storage = await browser.storage.local.get([TELEMETRY_STORAGE_KEY]);
+      storage = storage[TELEMETRY_STORAGE_KEY];
+      expect(storage).toBeUndefined();
     });
 
     it("pings using the error delay after a server error", async function() {

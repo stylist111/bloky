@@ -5,6 +5,8 @@ Unreleased
 
 - Now we test starting Chromium 79 for MV2. Update required minimum browser versions,
   eg. "minimum_chrome_version" and "minimum_opera_version". (EXT-667)
+- Feature flag for UCID in telemetry data is removed and it's sent by default,
+  don't use it anymore. Now telemetry ping data contains `UCID` field. (DATA-2841)
 
 🔿 1.22.0 - 2024-12-10 🔿
 =========================
