@@ -573,6 +573,8 @@ describe("Subscriptions", function() {
   });
 
   it("exposes hasAcceptableAdsEnabled()", async function() {
+    setMinTimeout(this, isFuzzingServiceWorker() ? 30000 : 10000);
+
     let actualAaURL = await runInBackgroundPage([
       {op: "getGlobal", arg: "EWE"},
       {op: "getProp", arg: "subscriptions"},
@@ -580,6 +582,7 @@ describe("Subscriptions", function() {
     ]);
 
     await EWE.subscriptions.add(actualAaURL);
+    await waitForSubscriptionToBeSynchronized(actualAaURL);
     expect(await EWE.subscriptions.hasAcceptableAdsEnabled())
       .toEqual(true);
 
