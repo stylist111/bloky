@@ -1,5 +1,7 @@
 # Unreleased
 
+- Removed machine learning snippets from extension (refs EXT-541)
+
 # 4.10.0 - 2024-12-10
 
 - Updated webext-ad-filtering-solution to 1.22.0
