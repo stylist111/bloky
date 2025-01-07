@@ -646,12 +646,15 @@ describe("DNR filters update [mv3-only]", function() {
       await new Page("image.html")
         .expectResource("image.png")
         .toBeBlocked();
+      expect(await EWE.filters.getUserFilters())
+        .toEqual([expect.objectContaining({text: "image.png"})]);
 
       await EWE.filters.remove("image.png");
 
       await new Page("image.html")
         .expectResource("image.png")
         .toBeBlocked();
+      expect(await EWE.filters.getUserFilters()).toEqual([]);
     });
 
     it("applies and blocks with new request filters added in the diffs [mv3-only]", async function() {
@@ -1015,6 +1018,26 @@ describe("DNR filters update [mv3-only]", function() {
       await new Page("image.html")
         .expectResource("image.png")
         .toBeBlocked();
+    });
+
+    it("removes user filters that are also diff filters", async function() {
+      let filterText = "image.png";
+
+      await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
+        filters: {
+          add: [filterText],
+          remove: []
+        }
+      }));
+      await EWE.subscriptions.add(testDiffSubscriptionUrl);
+      await waitForSubscriptionToBeSynchronized(testDiffSubscriptionUrl);
+
+      await EWE.filters.add(filterText);
+      expect(await EWE.filters.getUserFilters())
+        .toEqual([expect.objectContaining({text: filterText})]);
+
+      await EWE.filters.remove(filterText);
+      expect(await EWE.filters.getUserFilters()).toEqual([]);
     });
 
     it("passes users counting data to back-end", async function() {

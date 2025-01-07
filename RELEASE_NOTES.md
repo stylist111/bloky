@@ -1,6 +1,11 @@
 Unreleased
 ==========
 
+## Fixes
+
+- Fix bug where user filters that also appeared as diff updates on subscriptions
+  could not be removed. (EXT-231)
+
 ## Updating your code
 
 - Now we test starting Chromium 79 for MV2. Update required minimum browser versions,

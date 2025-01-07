@@ -738,15 +738,14 @@ export async function dynamicRulesAvailable() {
 
 export async function addFilters(texts, metadata) {
   await init();
-  let filters = await processFilterTexts(texts);
-  if (filters.invalid.length > 0) {
-    throw filters.invalid[0];
+  let plannedChanges = await processFilterTexts(texts);
+  if (plannedChanges.invalid.length > 0) {
+    throw plannedChanges.invalid[0];
   }
 
-  let {length} = filters.add;
-  if (length > 0) {
+  if (plannedChanges.add.length > 0) {
     // always false when !browser.declarativeNetRequest
-    if (length > await dynamicRulesAvailable()) {
+    if (plannedChanges.add.length > await dynamicRulesAvailable()) {
       throw new FilterError(ERROR_TOO_MANY_FILTERS);
     }
 
@@ -754,23 +753,29 @@ export async function addFilters(texts, metadata) {
     // browser.declarativeNetRequest doesn't exist or if
     // the API returned a different error instead
     await browser.declarativeNetRequest.updateDynamicRules({
-      addRules: filters.add
+      addRules: plannedChanges.add
     });
   }
 
-  for (let text of filters.relateToOtherSubscriptions) {
-    let filter = dynamicFilters.get(text);
-    if (!filter.subscriptionIds) {
-      filter.subscriptionIds = [];
+  let subscription;
+  for (let text of plannedChanges.relateToOtherSubscriptions) {
+    subscription = await filterEngine.filterStorage.addFilter(
+      Filter.fromText(text),
+      subscription
+    );
+
+    let detail = dynamicFilters.get(text);
+    if (!detail.subscriptionIds) {
+      detail.subscriptionIds = [];
     }
-    filter.subscriptionIds.push(null);
+    detail.subscriptionIds.push(null);
   }
 
-  let subscription;
-  for (let filterDetails of filters.details) {
+  for (let filterDetails of plannedChanges.details) {
     let {filter, ruleIds, enabled} = filterDetails;
     subscription = await filterEngine.filterStorage
       .addFilter(filter, subscription);
+
 
     setHighestRuleId(ruleIds);
     dynamicFilters.set(filter.text, {ruleIds, enabled, metadata,
@@ -780,9 +785,9 @@ export async function addFilters(texts, metadata) {
   storeDynamicFilters();
 
   return {
-    added: filters.details.map(detail => detail.filter.text)
-      .concat(filters.relateToOtherSubscriptions),
-    exists: filters.relateToThisSubscription
+    added: plannedChanges.details.map(detail => detail.filter.text)
+      .concat(plannedChanges.relateToOtherSubscriptions),
+    exists: plannedChanges.relateToThisSubscription
   };
 }
 
@@ -878,6 +883,8 @@ async function removeOrDisableDynamicFilters(filterTexts, remove = true) {
 
     if (remove) {
       // Removing existing filter
+      filterEngine.filterStorage.removeFilter(Filter.fromText(text));
+
       if (details) {
         if (!details.subscriptionIds) {
           details.subscriptionIds = [];
@@ -887,18 +894,22 @@ async function removeOrDisableDynamicFilters(filterTexts, remove = true) {
         if (index !== -1) {
           details.subscriptionIds.splice(index, 1);
         }
-      }
-      // Removing filter only if subscriptionIds array is empty
-      if (details.subscriptionIds && details.subscriptionIds.length == 0) {
-        for (let ruleId of details.ruleIds) {
-          ruleIdsToRemove.push(ruleId);
-        }
 
-        filterEngine.filterStorage.removeFilter(Filter.fromText(text));
-        dynamicFilters.delete(text);
-      }
-      else if (!details.enabled) {
-        await enableFilters([text]);
+        // Removing filter only if subscriptionIds array is empty
+        if (details.subscriptionIds && details.subscriptionIds.length == 0) {
+          for (let ruleId of details.ruleIds) {
+            ruleIdsToRemove.push(ruleId);
+          }
+
+          dynamicFilters.delete(text);
+        }
+        else if (!details.enabled) {
+          // Disabling filters is something we do to user filters, not filters
+          // in subscriptions. If the disabled user filter is removed, but it
+          // still exists in a subscription, then the subscription one needs to
+          // be reenabled.
+          await enableFilters([text]);
+        }
       }
     }
     else {
