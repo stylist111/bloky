@@ -1,6 +1,9 @@
 # Unreleased
 
+# 4.10.1 - 2025-01-07
+
 - Removed machine learning snippets from extension (refs EXT-541)
+- This release also contains minor updates and under-the-hood changes.
 
 # 4.10.0 - 2024-12-10
 
