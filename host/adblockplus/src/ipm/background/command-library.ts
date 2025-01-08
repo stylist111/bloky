@@ -351,9 +351,18 @@ export function executeIPMCommands(
   const executableCommands = Array.from(actorByExecutableCommand.keys());
   storeCommands(executableCommands);
 
-  for (const [executableCommand, actor] of actorByExecutableCommand) {
-    void actor.handleCommand(executableCommand.ipm_id);
-  }
+  const commandHandlingPromises = Array.from(actorByExecutableCommand).map(
+    async ([executableCommand, actor]) => {
+      await actor.handleCommand(executableCommand.ipm_id);
+    }
+  );
+
+  void Promise.all(commandHandlingPromises).then(() => {
+    // let actors know that we're done process incoming commands
+    knownCommandsList
+      .map((name) => actorByCommandName.get(name))
+      .forEach((actor) => actor?.onCommandsProcessed());
+  });
 }
 
 /**

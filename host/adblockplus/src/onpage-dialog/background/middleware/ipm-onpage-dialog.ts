@@ -166,6 +166,7 @@ export function setDialogCommandHandler(handler: CommandHandler): void {
     getBehavior,
     getContent,
     handleCommand: handler,
-    isValidCommand: isDialogCommand
+    isValidCommand: isDialogCommand,
+    onCommandsProcessed: () => {}
   });
 }

@@ -42,6 +42,11 @@ export enum CreationMethod {
 export const defaultCreationMethod = CreationMethod.default;
 
 /**
+ * The default priority for new tab commands.
+ */
+export const defaultPriority = 1;
+
+/**
  * New tab behavior
  */
 export interface NewTabBehavior extends LicenseStateBehavior {
@@ -53,6 +58,24 @@ export interface NewTabBehavior extends LicenseStateBehavior {
    * The method to use for opening the tab creation.
    */
   method: CreationMethod;
+  /**
+   * The priority of the opening request.
+   */
+  priority: number;
+}
+
+/**
+ * This interface holds all information about a new tab
+ */
+export interface NewTab {
+  /**
+   * The new tab behavior
+   */
+  behavior: NewTabBehavior;
+  /**
+   * IPM ID
+   */
+  ipmId: string;
 }
 
 /**
@@ -62,6 +85,7 @@ export interface NewTabParams {
   url: string;
   license_state_list?: string;
   method?: `${CreationMethod}`;
+  priority?: number;
 }
 
 /**

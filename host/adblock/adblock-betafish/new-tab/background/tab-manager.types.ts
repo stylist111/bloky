@@ -22,6 +22,18 @@
 export const blockCountQueryParameter = "bc";
 
 /**
+ * The key under which we store the timestamp of the last time we opened a
+ * tab.
+ */
+export const lastShownKey = "new_tab_last_shown";
+
+/**
+ * The key under which we store the minimum amount of time between two
+ * tabs being opened.
+ */
+export const coolDownPeriodKey = "new_tab_cool_down";
+
+/**
  * New tab event names
  */
 export enum NewTabEventType {

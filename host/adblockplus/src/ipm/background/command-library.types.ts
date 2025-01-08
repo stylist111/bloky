@@ -56,7 +56,7 @@ export enum CommandName {
  */
 export const CommandVersion: Record<CommandName, number> = {
   [CommandName.createOnPageDialog]: 6,
-  [CommandName.createTab]: 5,
+  [CommandName.createTab]: 6,
   [CommandName.deleteCommands]: 2
 };
 
@@ -138,6 +138,11 @@ export interface CommandActor {
    * @returns whether the given command is valid for the actor
    */
   isValidCommand: (command: Command) => boolean;
+  /**
+   * Get's called by the IPM system after all commands of a ping have been
+   * processed.
+   */
+  onCommandsProcessed: () => void;
 }
 
 /**

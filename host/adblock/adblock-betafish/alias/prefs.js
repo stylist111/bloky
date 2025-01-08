@@ -245,6 +245,16 @@ defaults.onpage_dialog_last_shown = 0;
 defaults.onpage_dialog_cool_down = 24 * 60 * 60 * 1000;
 
 /**
+ * The timestamp of the last time we opened a new tab.
+ */
+defaults.new_tab_last_shown = 0;
+
+/**
+ * The minimum amount of time between two new tabs being opened.
+ */
+defaults.new_tab_cool_down = 24 * 60 * 60 * 1000;
+
+/**
  * Map of on-page dialog timing configurations
  *
  * @type {Object}

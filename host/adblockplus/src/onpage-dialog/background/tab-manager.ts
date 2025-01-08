@@ -97,9 +97,9 @@ export function compareDialogsByPriority(
     return 1;
   }
 
-  const lowPriorityFallbackValue = "x";
-  const ipmIdA = (dialogA.ipmId ?? lowPriorityFallbackValue).toUpperCase();
-  const ipmIdB = (dialogB.ipmId ?? lowPriorityFallbackValue).toUpperCase();
+  const lowPriorityFallbackValue = "z"; // "z" is the lowest alphanumeric value
+  const ipmIdA = dialogA.ipmId ?? lowPriorityFallbackValue;
+  const ipmIdB = dialogB.ipmId ?? lowPriorityFallbackValue;
 
   if (ipmIdA < ipmIdB) {
     return -1;

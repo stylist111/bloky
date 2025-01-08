@@ -107,5 +107,6 @@ export function setDeleteCommandHandler(handler: CommandHandler): void {
     getContent,
     handleCommand: handler,
     isValidCommand: isDeleteCommand,
+    onCommandsProcessed: () => {},
   });
 }

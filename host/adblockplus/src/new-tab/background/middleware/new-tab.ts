@@ -25,12 +25,14 @@ import {
   isValidLicenseStateList,
   setCommandActor,
   validateParams,
-  type Content
+  type Content,
+  isEmptyOrPositiveNumber
 } from "../../../ipm/background";
 import * as logger from "../../../logger/background";
 import {
   CreationMethod,
   defaultCreationMethod,
+  defaultPriority,
   type NewTabBehavior,
   type NewTabCommand,
   type NewTabParams
@@ -56,6 +58,10 @@ const paramDefinitionList: ParamDefinitionList<NewTabParams> = [
         Object.values(CreationMethod)
           .map((method) => String(method))
           .includes(param))
+  },
+  {
+    name: "priority",
+    validate: isEmptyOrPositiveNumber
   }
 ];
 
@@ -92,7 +98,8 @@ export function isNewTabBehavior(
     candidate !== null &&
     typeof candidate === "object" &&
     "target" in candidate &&
-    "method" in candidate
+    "method" in candidate &&
+    "priority" in candidate
   );
 }
 
@@ -116,7 +123,9 @@ function getBehavior(command: Command): NewTabBehavior | null {
   return {
     target: command.url,
     licenseStateList: command.license_state_list ?? defaultLicenseState,
-    method
+    method,
+    priority:
+      typeof command.priority === "number" ? command.priority : defaultPriority
   };
 }
 
@@ -137,12 +146,18 @@ function getContent(): Content {
  * Sets new tab command handler
  *
  * @param handler - Command handler
+ * @param onCommandsProcessed - Called when all commands in a ping are
+ *  processed
  */
-export function setNewTabCommandHandler(handler: CommandHandler): void {
+export function setNewTabCommandHandler(
+  handler: CommandHandler,
+  onCommandsProcessed: () => void
+): void {
   setCommandActor(CommandName.createTab, {
     getBehavior,
     getContent,
     handleCommand: handler,
-    isValidCommand: isNewTabCommand
+    isValidCommand: isNewTabCommand,
+    onCommandsProcessed
   });
 }
