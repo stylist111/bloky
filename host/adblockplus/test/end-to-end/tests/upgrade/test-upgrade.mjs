@@ -19,7 +19,7 @@ import {
   beforeSequence,
   getTabId,
   switchToABPOptionsTab,
-  enablePremiumByMockServer,
+  enablePremiumProgrammatically,
   waitForAssertion,
   waitForExtension,
   isEdge
@@ -91,7 +91,7 @@ export default () => {
       const totalCount = await getTotalCount();
 
       // activate premium
-      await enablePremiumByMockServer();
+      await enablePremiumProgrammatically();
 
       // Uncheck "show number of ads blocked in icon" checkbox
       await advancedPage.init();

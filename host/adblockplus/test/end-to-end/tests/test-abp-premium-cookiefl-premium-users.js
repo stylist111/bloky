@@ -19,7 +19,7 @@
 
 const {
   beforeSequence,
-  enablePremiumByMockServer,
+  enablePremiumProgrammatically,
   getTabId,
   globalRetriesNumber,
   switchToABPOptionsTab
@@ -39,7 +39,7 @@ describe("test cookie consent filterlist setting for premium users", function ()
 
   // eslint-disable-next-line max-len
   it("should enable/disable cookie filterlist for premium user from the Advanced page", async function () {
-    await enablePremiumByMockServer();
+    await enablePremiumProgrammatically();
     await switchToABPOptionsTab();
     const advancedPage = new AdvancedPage(browser);
     await advancedPage.init();
@@ -112,7 +112,7 @@ describe("test cookie consent filterlist setting for premium users", function ()
 
   // eslint-disable-next-line max-len
   it("should enable/disable cookie filterlist for premium user from the General tab", async function () {
-    await enablePremiumByMockServer();
+    await enablePremiumProgrammatically();
     const generalPage = new GeneralPage(browser);
     await switchToABPOptionsTab();
     expect(await generalPage.isBlockCookieConsentPopupsCheckboxSelected()).to.be
@@ -161,7 +161,7 @@ describe("test cookie consent filterlist setting for premium users", function ()
 
   // eslint-disable-next-line max-len
   it("should enable/disable cookie filterlist for premium user from the Popup page", async function () {
-    await enablePremiumByMockServer();
+    await enablePremiumProgrammatically();
     await browser.newWindow("https://example.com");
     const advancedPage = new AdvancedPage(browser);
     await advancedPage.switchToTab("Example Domain");

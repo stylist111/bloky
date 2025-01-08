@@ -23,7 +23,7 @@ const {
   waitForNewWindow,
   switchToABPOptionsTab,
   executeAsyncScript,
-  enablePremiumByMockServer
+  enablePremiumProgrammatically
 } = require("../helpers");
 const { expect } = require("chai");
 const abpDomInjectionData =
@@ -46,7 +46,7 @@ describe("test abp DOM injection for premium user", function () {
       "return browser.runtime." +
         "sendMessage({type: 'prefs.get', key: 'installation_id'});"
     );
-    await enablePremiumByMockServer();
+    await enablePremiumProgrammatically();
   });
 
   afterEach(async function () {

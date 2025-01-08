@@ -38,7 +38,7 @@ import {
   getPopupBlockedAdsTotalCount,
   getSubscriptionInfo,
   setCustomFilters,
-  enableTemporaryPremium,
+  enablePremiumProgrammatically,
   initOptionsPremiumFlTab,
   getCustomFilters,
   waitForAdsBlockedToBeInRange,
@@ -82,7 +82,7 @@ export default () => {
     const maxAdsBlocked = 15;
 
     // activate premium
-    await enableTemporaryPremium();
+    await enablePremiumProgrammatically();
 
     // enable premium filterlists
     await initOptionsPremiumFlTab(getOptionsHandle());

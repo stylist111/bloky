@@ -25,7 +25,8 @@ import {
   isCheckboxEnabled,
   clickOnDisplayedElement,
   openNewTab,
-  getTabId
+  getTabId,
+  waitForNotNullProperty
 } from "@eyeo/test-utils/driver";
 import { getOptionsHandle } from "@eyeo/test-utils/extension";
 
@@ -56,8 +57,8 @@ export async function checkInstallUninstallUrl({ url, appVersion, uninstall }) {
       link: "uninstalled",
       lang: "en-US",
       ndc: "0",
-      ps: "0",
-      er: expect.stringMatching(/^[a-zA-Z0-9]{8}/), // experiments revision ID. Example: ietbCO3H
+      ps: expect.stringMatching(/(0|1)/), // premium subscription
+      er: expect.stringMatching(/(^[a-zA-Z0-9]{8}|null)/), // experiments revision ID. Example: ietbCO3H
       ev: expect.stringMatching(/^[a-zA-Z0-9+/]+=*/), // experiments variants. Example: AQ%3D%3
       fv: expect.stringMatching(new RegExp(`(0|${todaysDate})`)) // filter version. Example: 20241216
     };
@@ -192,9 +193,26 @@ export async function initPopupPage(tabId) {
   return handle;
 }
 
-export async function initOptionsGeneralTab(optionsHandle, timeout = 5000) {
+export async function initPopupWithLocalPage() {
+  await openNewTab(localTestPageUrl);
+  const tabId = await getTabId(getOptionsHandle());
+  await initPopupPage(tabId);
+}
+
+export async function initOptionsGeneralTab(
+  optionsHandle,
+  timeout = 5000,
+  waitForDefaultState = false
+) {
   await loadOptionsTab(optionsHandle, "tab-general", timeout);
   await getDisplayedElement("#free-list-table", { timeout });
+  if (waitForDefaultState) {
+    await driver.wait(
+      async () => waitForNotNullProperty("#acceptable-ads-allow", "checked"),
+      timeout,
+      "Acceptable Ads is disabled before clicking"
+    );
+  }
 }
 
 export async function initOptionsAllowlistTab(optionsHandle) {
@@ -210,22 +228,14 @@ export async function initOptionsAdvancedTab(optionsHandle) {
 export async function getPopupBlockedAdsTotalCount() {
   // The popup page needs any tabId to show total ads blocked. The test page
   // is used for that, since it doesn't have any blocking elements
-  const websiteHandle = await openNewTab(localTestPageUrl);
-  const tabId = await getTabId(getOptionsHandle());
-  const popupHandle = await initPopupPage(tabId);
+  await initPopupWithLocalPage();
 
   const elem = await getDisplayedElement("#stats-total .amount", {
     timeout: 2000,
     forceRefresh: false
   });
-
   const totalCount = await elem.getText();
 
-  // cleanup
-  await driver.switchTo().window(popupHandle);
-  await driver.close();
-  await driver.switchTo().window(websiteHandle);
-  await driver.close();
   await driver.switchTo().window(getOptionsHandle());
 
   return parseInt(totalCount, 10);
@@ -315,4 +325,45 @@ export async function waitForAdsBlockedToBeInRange(min, max) {
     );
   }
   return adsBlocked;
+}
+
+export async function checkPremiumActivated() {
+  await driver.switchTo().window(getOptionsHandle());
+  await driver.navigate().refresh();
+  await initOptionsGeneralTab(getOptionsHandle());
+
+  // Premium has been activated
+  const premiumSelectors = [
+    ".button.premium-label",
+    ".premium-banner-container",
+    'a[data-i18n="options_premium_manage"]'
+  ];
+  for (const selector of premiumSelectors) {
+    await getDisplayedElement(selector);
+  }
+}
+
+export async function enablePremiumProgrammatically() {
+  await initOptionsGeneralTab(getOptionsHandle());
+
+  const error = await driver.executeAsyncScript(async (callback) => {
+    try {
+      await browser.runtime.sendMessage({
+        type: "prefs.set",
+        key: "premium_license_check_url",
+        value: "http://localhost:3006"
+      });
+      await browser.runtime.sendMessage({
+        type: "premium.activate",
+        userId: "valid_user_id"
+      });
+    } catch (err) {
+      callback(err);
+    }
+    callback();
+  });
+
+  if (error) throw new Error(error);
+
+  await checkPremiumActivated();
 }

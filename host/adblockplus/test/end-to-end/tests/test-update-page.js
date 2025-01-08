@@ -20,7 +20,7 @@
 const {
   beforeSequence,
   doesTabExist,
-  enablePremiumByMockServer,
+  enablePremiumProgrammatically,
   globalRetriesNumber,
   isFirefox
 } = require("../helpers");
@@ -83,7 +83,7 @@ describe("test update page", function () {
     if (!isFirefox()) this.skip();
     await browser.newWindow("about:blank");
     await browser.url(`${globalOrigin}/desktop-options.html`);
-    await enablePremiumByMockServer();
+    await enablePremiumProgrammatically();
     const extensionsPage = new ExtensionsPage(browser);
     await extensionsPage.init();
     await extensionsPage.clickReloadExtensionButton();

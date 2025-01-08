@@ -19,7 +19,7 @@
 
 const {
   beforeSequence,
-  enablePremiumByMockServer,
+  enablePremiumProgrammatically,
   globalRetriesNumber,
   switchToABPOptionsTab
 } = require("../helpers");
@@ -35,7 +35,7 @@ describe("test cookie consent filterlist blocking for premium users", function (
   });
 
   it("should block cookie banner", async function () {
-    await enablePremiumByMockServer();
+    await enablePremiumProgrammatically();
     const generalPage = new GeneralPage(browser);
     await browser.newWindow(
       "https://shaack.com/projekte/cookie-consent-js/examples/cookie-consent-example.html"

@@ -19,7 +19,7 @@
 
 const {
   beforeSequence,
-  enablePremiumByMockServer,
+  enablePremiumProgrammatically,
   getTabId,
   globalRetriesNumber,
   switchToABPOptionsTab
@@ -41,7 +41,7 @@ describe("test abp premium downgrade", function () {
   });
 
   it("should downgrade premium user", async function () {
-    await enablePremiumByMockServer();
+    await enablePremiumProgrammatically();
 
     const result = await browser.executeAsync(async (done) => {
       try {

@@ -20,7 +20,7 @@
 const {
   afterSequence,
   beforeSequence,
-  enablePremiumByMockServer
+  enablePremiumProgrammatically
 } = require("../helpers");
 const { expect } = require("chai");
 const ManagePremiumAccountPage = require("../page-objects/managePremiumAccount.page");
@@ -46,7 +46,7 @@ describe("test premium links for free users", function () {
       if (dataSet.testName == "Options page - Premium button") {
         lastTest = true;
       }
-      await enablePremiumByMockServer();
+      await enablePremiumProgrammatically();
       const premiumHeaderChunk = new PremiumHeaderChunk(browser);
       await dataSet.clickOnLink(premiumHeaderChunk);
       await premiumHeaderChunk.switchToTab("accounts.adblockplus.org");

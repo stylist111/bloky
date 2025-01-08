@@ -19,7 +19,7 @@
 
 const {
   beforeSequence,
-  enablePremiumByMockServer,
+  enablePremiumProgrammatically,
   switchToABPOptionsTab
 } = require("../helpers");
 const { expect } = require("chai");
@@ -32,7 +32,7 @@ describe("test abp premium license check retries", function () {
   });
 
   it("should retry the request 3 times in 1 minute intervals", async function () {
-    await enablePremiumByMockServer();
+    await enablePremiumProgrammatically();
     const serviceWorkerPage = new ServiceWorkerPage(browser);
     await serviceWorkerPage.init();
     await switchToABPOptionsTab();

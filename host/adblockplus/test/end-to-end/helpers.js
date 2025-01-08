@@ -142,7 +142,7 @@ async function doesTabExist(tabName, timeout = 3000, countThreshold = 1) {
   return false;
 }
 
-async function enablePremiumByMockServer() {
+async function enablePremiumProgrammatically() {
   await switchToABPOptionsTab();
   await browser.executeScript(
     `
@@ -744,7 +744,7 @@ module.exports = {
   beforeSequence,
   doesTabExist,
   executeAsyncScript,
-  enablePremiumByMockServer,
+  enablePremiumProgrammatically,
   getChromiumMV2Extension,
   getHelperExtension,
   getCurrentDate,

@@ -121,10 +121,6 @@ export async function openNewTab(url) {
   return driver.getWindowHandle();
 }
 
-export function randomIntFromInterval(min, max) {
-  return Math.floor(Math.random() * (max - min + 1) + min);
-}
-
 export function waitForNotDisplayed(cssText, timeout = 1000) {
   return driver.wait(
     async () => {
@@ -143,31 +139,29 @@ export function waitForNotDisplayed(cssText, timeout = 1000) {
   );
 }
 
-export async function waitForNotNullAttribute(cssSelector, attribute, timeout = 1000) {
+export async function waitForNotNullProperty(cssSelector, property, timeout = 1000) {
   let value;
   await driver.wait(
     async () => {
       try {
-        // The attribute value of hidden elements is not always returned by
-        // element.getAttribute(). Using a script as a workaround
         value = await driver.executeScript(
-          (selector, attr) => {
-            return document.querySelector(selector)[attr];
+          (selector, prop) => {
+            return document.querySelector(selector)[prop];
           },
           cssSelector,
-          attribute,
+          property,
         );
         return value !== null;
       } catch (e) {}
     },
     timeout,
-    `Null attribute "${attribute}" for element "${cssSelector}"`,
+    `Null property "${property}" for element "${cssSelector}"`,
   );
   return value;
 }
 
 export function isCheckboxEnabled(inputId) {
-  return waitForNotNullAttribute(`#${inputId}`, "checked");
+  return waitForNotNullProperty(`#${inputId}`, "checked");
 }
 
 export async function clickOnDisplayedElement(
@@ -215,6 +209,11 @@ export async function clickOnDisplayedElement(
   );
 
   return elem;
+}
+
+export async function clickAndSendKeys(cssSelector, text, options) {
+  const elem = await clickOnDisplayedElement(cssSelector, options);
+  await elem.sendKeys(text);
 }
 
 export async function clickAndNavigateBack(selector, expectedURL) {

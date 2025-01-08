@@ -21,7 +21,6 @@ import flDropdown from "./test-built-in-filter-list-dropdown.mjs";
 import optionsPageAA from "./test-options-page-acceptable-ads.mjs";
 import popupMain from "./test-popup-main.mjs";
 import publicAPI from "./public-api/index.mjs";
-import unlockPremium from "./test-unlock-premium.mjs";
 import eyeometry from "./test-eyeometry.mjs";
 import youtubeAutoAllowlist from "./test-youtube-auto-allowlist.mjs";
 import testServer from "./smoke-main/test-server.js";
@@ -48,7 +47,6 @@ export default () => {
     describe("Options Page - General Tab Acceptable Ads", optionsPageAA);
     describe("Popup Tests - Main", popupMain);
     describe("Public API", publicAPI);
-    describe("Premium - Unlock Premium", unlockPremium);
     describe("Eyeometry", eyeometry);
     describe("YouTube Auto-allowlist", youtubeAutoAllowlist);
   });

@@ -24,6 +24,7 @@ import {
   findUrl,
   waitForNotDisplayed,
   clickOnDisplayedElement,
+  clickAndSendKeys,
 } from "@eyeo/test-utils/driver";
 import { getOptionsHandle } from "@eyeo/test-utils/extension";
 
@@ -38,8 +39,7 @@ import {
 import { getDefaultFilterLists, languageFilterLists } from "../../utils/dataset.js";
 
 async function setFilterListUrl(url) {
-  const customFLElem = await clickOnDisplayedElement("#txtNewSubscriptionUrl");
-  await customFLElem.sendKeys(url);
+  await clickAndSendKeys("#txtNewSubscriptionUrl", url);
   await clickOnDisplayedElement("#btnNewSubscriptionUrl");
 }
 

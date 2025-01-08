@@ -19,7 +19,7 @@
 
 const {
   beforeSequence,
-  enablePremiumByMockServer,
+  enablePremiumProgrammatically,
   globalRetriesNumber,
   switchToABPOptionsTab
 } = require("../helpers");
@@ -36,7 +36,7 @@ describe("test abp premium license checks for downgraded user", function () {
   });
 
   it("should display expired license for downgraded user", async function () {
-    await enablePremiumByMockServer();
+    await enablePremiumProgrammatically();
     await browser.executeAsync(async (done) => {
       try {
         const response = await browser.runtime.sendMessage({

@@ -263,3 +263,16 @@ export async function uninstallExtension(initOptionsFn) {
     browser.management.uninstallSelf();
   });
 }
+
+function randomIntFromInterval(min, max) {
+  return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
+export function getPremiumEmail() {
+  const formattedDateYMD = new Date()
+    .toLocaleDateString("en-US", { year: "numeric", month: "numeric", day: "numeric" })
+    .replace(/\D/g, "");
+  const randomNumber = randomIntFromInterval(1000000, 9999999);
+
+  return `test_automation${formattedDateYMD}${randomNumber}@adblock.org`;
+}

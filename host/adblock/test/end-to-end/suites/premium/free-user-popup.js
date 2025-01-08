@@ -17,11 +17,10 @@
 
 import { expect } from "expect";
 
-import { getDisplayedElement, getTabId, openNewTab, findUrl } from "@eyeo/test-utils/driver";
-import { localTestPageUrl } from "@eyeo/test-utils/urls";
+import { getDisplayedElement, findUrl } from "@eyeo/test-utils/driver";
 
 import { getOptionsHandle } from "@eyeo/test-utils/extension";
-import { getUserIdFromStorage, initPopupPage } from "../../utils/page.js";
+import { getUserIdFromStorage, initPopupWithLocalPage } from "../../utils/page.js";
 import { premiumUrl } from "../../utils/urls.js";
 
 export default () => {
@@ -39,9 +38,7 @@ export default () => {
     ];
 
     for (const { selector, title } of premiumFeatures) {
-      await openNewTab(localTestPageUrl);
-      const tabId = await getTabId(getOptionsHandle());
-      await initPopupPage(tabId);
+      await initPopupWithLocalPage();
 
       const titleElem = await getDisplayedElement(`${selector} .title`, { forceRefresh: false });
       expect(await titleElem.getText()).toEqual(title);

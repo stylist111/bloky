@@ -19,7 +19,7 @@
 
 const {
   beforeSequence,
-  enablePremiumByMockServer,
+  enablePremiumProgrammatically,
   globalRetriesNumber,
   switchToABPOptionsTab
 } = require("../helpers");
@@ -36,7 +36,7 @@ describe("should test onboarding page for premium user", function () {
   });
 
   it("should display onboarding page for premium user", async function () {
-    await enablePremiumByMockServer();
+    await enablePremiumProgrammatically();
     await browser.newWindow(`${globalOrigin}/premium-onboarding.html`);
     const welcomeToPremiumPage = new WelcomeToPremiumPage(browser);
     await welcomeToPremiumPage.switchToTab("Welcome to Adblock Plus Premium");

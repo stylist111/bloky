@@ -23,7 +23,7 @@ import {
   getDisplayedElement,
   openNewTab,
   waitForNotDisplayed,
-  waitForNotNullAttribute
+  waitForNotNullProperty
 } from "@eyeo/test-utils/driver";
 import { getOptionsHandle, reloadExtension } from "@eyeo/test-utils/extension";
 import {
@@ -114,7 +114,7 @@ export default () => {
     const actualFilterLists = [];
     for (const { name } of defaultFilterLists) {
       const toggleSelector = `#all-filter-lists-table [data-recommended="${name}"] io-toggle`;
-      const value = await waitForNotNullAttribute(toggleSelector, "checked");
+      const value = await waitForNotNullProperty(toggleSelector, "checked");
       actualFilterLists.push({ name, enabled: value });
     }
     expect(actualFilterLists).toEqual(defaultFilterLists);

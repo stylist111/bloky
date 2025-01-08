@@ -20,7 +20,7 @@
 const {
   beforeSequence,
   switchToABPOptionsTab,
-  enablePremiumByMockServer
+  enablePremiumProgrammatically
 } = require("../helpers");
 const { expect } = require("chai");
 const ServiceWorkerPage = require("../page-objects/serviceWorker.page");
@@ -36,7 +36,7 @@ describe("test abp premium license server responses", function () {
   serverResponsesData.forEach(async (dataSet) => {
     it("should display response for: " + dataSet.testName, async function () {
       await switchToABPOptionsTab();
-      await enablePremiumByMockServer();
+      await enablePremiumProgrammatically();
       const serviceWorkerPage = new ServiceWorkerPage(browser);
       await serviceWorkerPage.init();
       await switchToABPOptionsTab();

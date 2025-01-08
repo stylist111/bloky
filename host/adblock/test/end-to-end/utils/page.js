@@ -23,7 +23,7 @@ import {
   getDisplayedElement,
   openNewTab,
   findUrl,
-  waitForNotNullAttribute,
+  waitForNotNullProperty,
   isCheckboxEnabled,
   waitForNotDisplayed,
   clickAndCloseNewTab,
@@ -48,6 +48,12 @@ export async function initPopupPage(tabId) {
   const handle = await openNewTab(url);
   await getDisplayedElement(".header-logo", { timeout: 5000 });
   return handle;
+}
+
+export async function initPopupWithLocalPage() {
+  await openNewTab(localTestPageUrl);
+  const tabId = await getTabId(getOptionsHandle());
+  await initPopupPage(tabId);
 }
 
 async function loadOptionsTab(optionsHandle, id) {
@@ -94,7 +100,7 @@ export async function initOptionsCustomizeTab(optionsHandle) {
 
 export async function initOptionsGeneralTab(optionsHandle) {
   await loadOptionsTab(optionsHandle, "general");
-  await waitForNotNullAttribute("#acceptable_ads", "checked");
+  await waitForNotNullProperty("#acceptable_ads", "checked");
   await driver.sleep(optionsPageSleep); // https://eyeo.atlassian.net/browse/EXT-335
 }
 
@@ -122,7 +128,7 @@ export async function initOptionsPremiumFlTab(optionsHandle) {
 }
 
 export async function getCustomFilters() {
-  const filters = await waitForNotNullAttribute("#txtFiltersAdvanced", "value", 2000);
+  const filters = await waitForNotNullProperty("#txtFiltersAdvanced", "value", 2000);
   return filters.split("\n");
 }
 
@@ -412,28 +418,20 @@ export async function setPausedStateFromPopup(url, paused = true) {
 export async function getPopupBlockedAdsTotalCount() {
   // The popup page needs any tabId to show total ads blocked. The test page
   // is used for that, since it doesn't have any blocking elements
-  const websiteHandle = await openNewTab(localTestPageUrl);
-  const tabId = await getTabId(getOptionsHandle());
-  const popupHandle = await initPopupPage(tabId);
+  await initPopupWithLocalPage();
 
   const elem = await getDisplayedElement(
     "#popup_sections popup-detail-stats > div:nth-child(2) > span",
     { timeout: 2000, forceRefresh: false },
   );
-
   const totalCount = await elem.getText();
 
-  // cleanup
-  await driver.switchTo().window(popupHandle);
-  await driver.close();
-  await driver.switchTo().window(websiteHandle);
-  await driver.close();
   await driver.switchTo().window(getOptionsHandle());
 
   return parseInt(totalCount, 10);
 }
 
-export async function enableTemporaryPremium() {
+export async function enablePremiumProgrammatically() {
   const currentDate = new Date();
   const options = { year: "numeric", month: "long" };
   const formattedDate = currentDate.toLocaleDateString("en-US", options).toUpperCase();

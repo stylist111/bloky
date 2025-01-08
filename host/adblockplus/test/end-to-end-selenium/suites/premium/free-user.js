@@ -19,31 +19,26 @@ import { expect } from "expect";
 
 import {
   getDisplayedElement,
-  getTabId,
-  openNewTab,
   findUrl,
   clickOnDisplayedElement,
   getCSSProperty,
   waitForNotDisplayed
 } from "@eyeo/test-utils/driver";
-import { localTestPageUrl } from "@eyeo/test-utils/urls";
 
 import { getOptionsHandle } from "@eyeo/test-utils/extension";
-import { initOptionsGeneralTab, initPopupPage } from "../../utils/page.js";
+import {
+  initOptionsGeneralTab,
+  initPopupWithLocalPage
+} from "../../utils/page.js";
 import { premiumUrl } from "../../utils/urls.js";
+import { premiumLinkButtons, premiumToggles } from "../../utils/dataset.js";
 
 export default () => {
   it("displays free user popup premium elements", async function () {
-    await openNewTab(localTestPageUrl);
-    const tabId = await getTabId(getOptionsHandle());
-    await initPopupPage(tabId);
+    await initPopupWithLocalPage();
 
-    const premiumToggles = [
-      "#premium-cookie-toggle",
-      "#premium-distractions-toggle"
-    ];
-    for (const toggle of premiumToggles) {
-      await waitForNotDisplayed(toggle);
+    for (const { selector } of premiumToggles) {
+      await waitForNotDisplayed(selector);
     }
 
     const premiumTitles = [
@@ -70,19 +65,7 @@ export default () => {
     await initOptionsGeneralTab(getOptionsHandle());
 
     // Premium link/button checks
-    const premiumLinkButtonSelectors = [
-      { selector: "#premium-upgrade-description > a", text: "Learn more" },
-      {
-        selector:
-          '.premium-banner-container [data-i18n="options_upgrade_button"]',
-        text: "Upgrade"
-      },
-      {
-        selector: '#content-general [data-i18n="options_upgrade_button"]',
-        text: "Upgrade"
-      }
-    ];
-    for (const { selector, text } of premiumLinkButtonSelectors) {
+    for (const { selector, text } of premiumLinkButtons) {
       const elem = await getDisplayedElement(selector, { forceRefresh: false });
       expect(await elem.getText()).toEqual(text);
 

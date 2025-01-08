@@ -18,7 +18,7 @@
 import {
   clickOnDisplayedElement,
   findUrl,
-  waitForNotNullAttribute
+  waitForNotNullProperty
 } from "@eyeo/test-utils/driver";
 import {
   checkInstallUninstallUrl,
@@ -42,12 +42,7 @@ export default () => {
     });
 
     // disable AA
-    await initOptionsGeneralTab(getOptionsHandle());
-    await driver.wait(
-      async () => waitForNotNullAttribute("#acceptable-ads-allow", "checked"),
-      2000,
-      "Acceptable Ads is disabled before clicking"
-    );
+    await initOptionsGeneralTab(getOptionsHandle(), 5000, true);
     await clickCheckbox("acceptable-ads-allow", false);
 
     // disable easylist
@@ -57,7 +52,7 @@ export default () => {
     await clickOnDisplayedElement(toggleSelector);
     await driver.wait(
       async () => {
-        const value = await waitForNotNullAttribute(toggleSelector, "checked");
+        const value = await waitForNotNullProperty(toggleSelector, "checked");
         return value === false;
       },
       2000,

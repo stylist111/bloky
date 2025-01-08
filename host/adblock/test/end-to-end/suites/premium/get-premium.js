@@ -21,35 +21,29 @@ import {
   getDisplayedElement,
   findUrl,
   openNewTab,
-  getTabId,
-  randomIntFromInterval,
   waitForNotDisplayed,
   scrollToBottom,
   clickOnDisplayedElement,
+  clickAndSendKeys,
 } from "@eyeo/test-utils/driver";
-import { localTestPageUrl, dcTestPageUrl } from "@eyeo/test-utils/urls";
-import { getOptionsHandle } from "@eyeo/test-utils/extension";
+import { dcTestPageUrl } from "@eyeo/test-utils/urls";
+import { getOptionsHandle, getPremiumEmail } from "@eyeo/test-utils/extension";
 
 import {
-  initOptionsGeneralTab,
   initOptionsPremiumTab,
-  initPopupPage,
-  enableTemporaryPremium,
+  enablePremiumProgrammatically,
+  initPopupWithLocalPage,
 } from "../../utils/page.js";
 import { premiumPopupToggleItems } from "../../utils/dataset.js";
 import { premiumUrl } from "../../utils/urls.js";
 
 export default () => {
-  it("activates premium", async function () {
+  it("activates premium by UI", async function () {
     this.timeout(80000); // See driver.sleep below
 
-    const currentDate = new Date();
-    const formattedDate = currentDate
+    const formattedDate = new Date()
       .toLocaleDateString("en-US", { year: "numeric", month: "long" })
       .toUpperCase();
-    const formattedDateYMD = currentDate
-      .toLocaleDateString("en-US", { year: "numeric", month: "numeric", day: "numeric" })
-      .replace(/\D/g, "");
 
     await initOptionsPremiumTab(getOptionsHandle());
     await clickOnDisplayedElement("#get-it-now-mab");
@@ -71,30 +65,19 @@ export default () => {
 
     // First paying page
     // The first field of the loaded frame may take a while to appear
-    const emailField = await clickOnDisplayedElement("#email > input", { timeout: 10000 });
-    await emailField.sendKeys(
-      `test_automation${formattedDateYMD}${randomIntFromInterval(1000000, 9999999).toString()}@adblock.org`,
-    );
+    clickAndSendKeys("#email > input", getPremiumEmail(), { timeout: 10000 });
     try {
-      const zipField = await clickOnDisplayedElement('[data-testid="postcodeInput"]', {
+      await clickAndSendKeys('[data-testid="postcodeInput"]', "10115", {
         timeout: 5000,
       });
-      await zipField.sendKeys("10115");
     } catch (e) {} // Depending on the location, the ZIP may be required or not
-
     await clickOnDisplayedElement('[type="submit"]');
 
     // Second paying page
-    const cardNumberField = await clickOnDisplayedElement("#cardNumber", {
-      timeout: 5000,
-    });
-    await cardNumberField.sendKeys("4242424242424242");
-    const cardHolderField = await clickOnDisplayedElement("#cardHolder");
-    await cardHolderField.sendKeys("Test Automation");
-    const expiryField = await clickOnDisplayedElement("#expiry");
-    await expiryField.sendKeys("0528");
-    const cvvField = await clickOnDisplayedElement("#cvv");
-    await cvvField.sendKeys("295");
+    await clickAndSendKeys("#cardNumber", "4242424242424242", { timeout: 5000 });
+    await clickAndSendKeys("#cardHolder", "Test Automation");
+    await clickAndSendKeys("#expiry", "0528");
+    await clickAndSendKeys("#cvv", "295");
     await clickOnDisplayedElement('[data-testid="cardPaymentFormSubmitButton"]');
 
     await driver.switchTo().defaultContent();
@@ -109,7 +92,7 @@ export default () => {
   });
 
   it("has premium features", async function () {
-    await enableTemporaryPremium();
+    await enablePremiumProgrammatically();
 
     await clickOnDisplayedElement('[href="#mab-image-swap"]');
     await getDisplayedElement("#cats");
@@ -120,9 +103,7 @@ export default () => {
     await getDisplayedElement("#dark_theme");
 
     await clickOnDisplayedElement('[data-key="popup_menu"][data-theme="dark_theme"]');
-    await openNewTab(localTestPageUrl);
-    const tabId = await getTabId(getOptionsHandle());
-    await initPopupPage(tabId);
+    await initPopupWithLocalPage();
     // Check theme is displayed on popup page
     await getDisplayedElement("#dark_theme");
 
@@ -149,8 +130,7 @@ export default () => {
         `${actionSelector} was still displayed after clicking on it`,
       );
 
-      await initOptionsGeneralTab(getOptionsHandle());
-      await initPopupPage(tabId);
+      await initPopupWithLocalPage();
     }
 
     const actualValues = {};

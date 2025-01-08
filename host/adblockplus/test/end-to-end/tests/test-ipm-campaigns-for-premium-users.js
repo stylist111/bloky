@@ -24,7 +24,7 @@ const {
   executeAsyncScript,
   doesTabExist,
   switchToABPOptionsTab,
-  enablePremiumByMockServer
+  enablePremiumProgrammatically
 } = require("../helpers");
 const { expect } = require("chai");
 const IPMChunk = require("../page-objects/ipm.chunk");
@@ -41,7 +41,7 @@ describe("test ABP IPM campaigns for premium users", function () {
 
   before(async function () {
     await beforeSequence();
-    await enablePremiumByMockServer();
+    await enablePremiumProgrammatically();
   });
 
   beforeEach(async function () {

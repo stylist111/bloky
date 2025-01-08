@@ -19,7 +19,7 @@
 
 const {
   beforeSequence,
-  enablePremiumByMockServer,
+  enablePremiumProgrammatically,
   switchToABPOptionsTab,
   globalRetriesNumber,
   getTabId
@@ -39,7 +39,7 @@ describe("test DC filterlist setting for premium users", function () {
 
   // eslint-disable-next-line max-len
   it("should disable/enable distraction control for premium user from the General tab", async function () {
-    await enablePremiumByMockServer();
+    await enablePremiumProgrammatically();
     const generalPage = new GeneralPage(browser);
     await switchToABPOptionsTab();
     expect(await generalPage.isBlockMoreDistractionsCheckboxSelected()).to.be
@@ -75,7 +75,7 @@ describe("test DC filterlist setting for premium users", function () {
 
   // eslint-disable-next-line max-len
   it("should disable/enable distraction control for premium user from the Popup page", async function () {
-    await enablePremiumByMockServer();
+    await enablePremiumProgrammatically();
     await browser.newWindow("https://example.com");
     const advancedPage = new AdvancedPage(browser);
     await advancedPage.switchToTab("Example Domain");
@@ -113,7 +113,7 @@ describe("test DC filterlist setting for premium users", function () {
 
   // eslint-disable-next-line max-len
   it("should disable/enable distraction control for premium user from the Advanced page", async function () {
-    await enablePremiumByMockServer();
+    await enablePremiumProgrammatically();
     await switchToABPOptionsTab();
     const advancedPage = new AdvancedPage(browser);
     await advancedPage.init();

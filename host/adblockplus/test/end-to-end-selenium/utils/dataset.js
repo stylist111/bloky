@@ -20,3 +20,24 @@ export const defaultFilterLists = [
   { name: "ads", enabled: true },
   { name: "allowing", enabled: true }
 ];
+
+export const premiumLinkButtons = [
+  { selector: "#premium-upgrade-description > a", text: "Learn more" },
+  {
+    selector: '.premium-banner-container [data-i18n="options_upgrade_button"]',
+    text: "Upgrade"
+  },
+  {
+    selector: '#content-general [data-i18n="options_upgrade_button"]',
+    text: "Upgrade"
+  }
+];
+
+export const premiumToggles = [
+  { name: "cookie", selector: "#premium-cookie-toggle svg", enabled: "false" },
+  {
+    name: "distractions",
+    selector: "#premium-distractions-toggle svg",
+    enabled: "true"
+  }
+];
