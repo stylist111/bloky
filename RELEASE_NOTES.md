@@ -1,5 +1,4 @@
-Unreleased
-==========
+# Unreleased
 
 ## Fixes
 
@@ -13,8 +12,7 @@ Unreleased
 - Feature flag for UCID in telemetry data is removed and it's sent by default,
   don't use it anymore. Now telemetry ping data contains `UCID` field. (DATA-2841)
 
-🔿 1.22.0 - 2024-12-10 🔿
-=========================
+# 🔿 1.22.0 - 2024-12-10 🔿
 
 ## General
 
@@ -39,21 +37,19 @@ Unreleased
 - As CDP is switched to Phase 3, Phase 1 & 2 code is removed.
   CDP-related feature flags are removed, don't use them anymore. (EXT-615)
 
-👵 1.21.0 - 2024-12-04 👵
-=========================
+# 👵 1.21.0 - 2024-12-04 👵
 
 - Added functionality to remove temporary document allowlisting filters
-when a user closes a tab or navigates away from the domain in the allowlist
-rule.
-To use this functionality, the "expiresByTabId" needs to be included
-in the rules metadata when the filter is added. (EXT-413)
+  when a user closes a tab or navigates away from the domain in the allowlist
+  rule.
+  To use this functionality, the "expiresByTabId" needs to be included
+  in the rules metadata when the filter is added. (EXT-413)
 
 ## General
 
 - Now exposing `EWE.subscriptions.hasAcceptableAdsEnabled()` method. (EXT-607)
 
-🐄 1.20.0 - 2024-12-02 🐄
-=========================
+# 🐄 1.20.0 - 2024-12-02 🐄
 
 ## General
 
@@ -80,8 +76,7 @@ in the rules metadata when the filter is added. (EXT-413)
   and so the update can be done at any time before the upgrade to this version
   of the SDK. (EXT-540)
 
-💾 1.19.0 - 2024-11-25 💾
-=========================
+# 💾 1.19.0 - 2024-11-25 💾
 
 ## Fixes
 
@@ -96,8 +91,7 @@ in the rules metadata when the filter is added. (EXT-413)
 - Added CDP request property whether AA is active and it requires CDP active ping
   backend URL schema #4. (EXT-428)
 
-📔 1.18.0 - 2024-11-20 📔
-=========================
+# 📔 1.18.0 - 2024-11-20 📔
 
 ## Split experiments
 
@@ -105,30 +99,26 @@ in the rules metadata when the filter is added. (EXT-413)
   experiments and variants uniformly. Functionalities for interacting with split
   experiments are exposed through the `EWE.experiments` API. (EXT-531)
 
-🗧 1.17.2 - 2024-11-19 🗧
-=========================
+# 🗧 1.17.2 - 2024-11-19 🗧
 
 ## Fixes
 
--  Fixed the bug of printing too much of CDP log which slowed down
-   user devices. (EXT-588)
+- Fixed the bug of printing too much of CDP log which slowed down
+  user devices. (EXT-588)
 
-👄 1.17.1 - 2024-11-13 👄
-=========================
+# 👄 1.17.1 - 2024-11-13 👄
 
 - Extended the error message with the ruleset ID, in case of a failure when
   trying to update the enabled rulesets.
 
-🎥 1.17.0 - 2024-10-24 🎥
-=========================
+# 🎥 1.17.0 - 2024-10-24 🎥
 
 ## General
 
 - Added CDP event logging to fix numbers anomaly. A new feature flag for it is
   introduced while staying disabled by default. (EXT-414)
 
-🐱 1.16.0 - 2024-10-10 🐱
-=========================
+# 🐱 1.16.0 - 2024-10-10 🐱
 
 ## General
 
@@ -138,7 +128,8 @@ in the rules metadata when the filter is added. (EXT-413)
 - Ruleset files no longer include `"isUrlFilterCaseSensitive": false` for
   filters that don't specify `$match-case` because it is no longer needed
   (EXT-383).
-- Added 2 more events for smart allowlisting, that are sending the filter with it's metadata (EXT-376):
+- Added 2 more events for smart allowlisting, that are sending the filter with
+  it's metadata (EXT-376):
   - `EWE.filters.onRenewed` emitted when a smart allowlist filter is extended.
   - `EWE.filters.onExpired` emitted when a smart allowlist filter has expired.
 
@@ -147,8 +138,7 @@ in the rules metadata when the filter is added. (EXT-413)
 - If JSON files generated via the `subs-convert` script should not be minified,
   pass the `-p`/`--pretty-print` argument to the `subs-convert` script.
 
-🎄 1.15.0 - 2024-10-01 🎄
-=========================
+# 🎄 1.15.0 - 2024-10-01 🎄
 
 ## General
 
@@ -163,8 +153,7 @@ in the rules metadata when the filter is added. (EXT-413)
   subscription is removed, potentially causing issues if the subscription is
   readded.
 
-🏇 1.14.0 - 2024-09-26 🏇
-=========================
+# 🏇 1.14.0 - 2024-09-26 🏇
 
 ## General
 
@@ -184,8 +173,7 @@ in the rules metadata when the filter is added. (EXT-413)
   A new feature flag for it is introduced while staying disabled by default.
   (EXT-347)
 
-👕 1.13.0 - 2024-09-12 👕
-=========================
+# 👕 1.13.0 - 2024-09-12 👕
 
 ## General
 
@@ -201,8 +189,7 @@ in the rules metadata when the filter is added. (EXT-413)
   then the wrong type could be returned, which lead to type errors downstream in
   the extensions. (EXT-118)
 
-🗃 1.12.0 - 2024-08-27 🗃
-=========================
+# 🗃 1.12.0 - 2024-08-27 🗃
 
 ## General
 
@@ -220,8 +207,7 @@ in the rules metadata when the filter is added. (EXT-413)
 - Add the `scripting` permission for Firefox MV2 extensions, to allow snippets
   to be injected using the `browser.scripting` API. (CV-3174)
 
-🐫 1.11.0 - 2024-08-08 🐫
-=========================
+# 🐫 1.11.0 - 2024-08-08 🐫
 
 ## General
 
@@ -232,8 +218,9 @@ in the rules metadata when the filter is added. (EXT-413)
 - In MV3, use the `requestDomains` condition in DNR rules for main frames, so
   that `$document` filters work correctly together with the `$domain` filter
   option. (EXT-55)
-- Fixed the CDP sessions counting (now using the correct time frame
-  and deferring the browser events processing until the sessions data is loaded). (EXT-10)
+- Fixed the CDP sessions counting (now using the correct time frame and
+  deferring the browser events processing until the sessions data is
+  loaded). (EXT-10)
 - Fix issue where diff updates in MV3 would sometimes get into a state where
   diffs would no longer be applied because the system had stored that
   update had already been applied. The diff update mechanism will now always
@@ -241,8 +228,7 @@ in the rules metadata when the filter is added. (EXT-413)
   the extension. If the base version cannot be loaded, then the update will fail
   with a `downloadStatus` of `synchronize_diff_error`. (EXT-54)
 
-🙈 1.10.0 - 2024-07-09 🙈
-=========================
+# 🙈 1.10.0 - 2024-07-09 🙈
 
 ## Smart Allowlisting
 
@@ -284,18 +270,17 @@ in the rules metadata when the filter is added. (EXT-413)
   updated to accept the new optional `options` parameter, and add
   `options.expiresAt` as metadata on the allowlisting filter it creates. (EE-752)
 
-
-💅 1.9.0 - 2024-06-25 💅
-========================
+# 💅 1.9.0 - 2024-06-25 💅
 
 ## General
 
-- Implemented a new query parameter in `downloader` to support safe filter lists. (EE-511)
+- Implemented a new query parameter in `downloader` to support safe filter
+  lists. (EE-511)
 
 ## Updating your code
 
 - This change will require rebuilding on the rules list to apply new safe
-query parameter for easylist.
+  query parameter for easylist.
 
 ## Fixes
 
@@ -308,8 +293,7 @@ query parameter for easylist.
   function, which would then result in an unexpected error later in the process
   when trying to add the resulting DNR rules. (EE-565)
 
-🏰 1.8.0 - 2024-06-11 🏰
-========================
+# 🏰 1.8.0 - 2024-06-11 🏰
 
 ## Fixes
 
@@ -319,7 +303,7 @@ query parameter for easylist.
 ## CDP
 
 - The CDP feature flag has been removed. It is now enabled by default. See
-  https://gitlab.com/adblockinc/ext/adblockplus/adblockplus/-/issues/1683 for
+  <https://gitlab.com/adblockinc/ext/adblockplus/adblockplus/-/issues/1683> for
   more information on CDP.
 - A new property has been added to the argument object passed to
   `EWE.start()`. The `cdp` property is used to specify URLs and credentials for
@@ -339,8 +323,7 @@ query parameter for easylist.
 - CDP events performance improvement (debouncing). (EE-473)
 - Count only CDP events for outer most frames. (EE-473)
 
-🍿 1.7.0 - 2024-05-20 🍿
-========================
+# 🍿 1.7.0 - 2024-05-20 🍿
 
 ## General
 
@@ -354,7 +337,7 @@ query parameter for easylist.
     - `filter_elemhide_invalid_inline_css` indicates that the inline CSS is
       invalid. This could be from using invalid syntax, or by using a CSS value
       which is not allowed.
-  - See the filter syntax spec for details on which values are allowed: https://gitlab.com/eyeo/adblockplus/ad-filtering-working-group/-/blob/da0f0d97a5e7b4717788676c6c0091cdd1ec8bee/filter-syntax.md#element-hiding
+  - See the filter syntax spec for details on which values are allowed: <https://gitlab.com/eyeo/adblockplus/ad-filtering-working-group/-/blob/da0f0d97a5e7b4717788676c6c0091cdd1ec8bee/filter-syntax.md#element-hiding>
 - Removed `declarativeNetRequest.updateStaticRules` checks, since Chrome 124 is
   the minimum required version for MV3. (!1036)
 - We no longer rerun the snippets on History event pushed to prevent
@@ -371,8 +354,7 @@ query parameter for easylist.
 - Fixed issue where `EWE.filters.validate` reported filters as invalid when in
   fact the filters were just not normalized. (EE-444)
 
-🍥 1.6.0 - 2024-04-08 🍥
-========================
+# 🍥 1.6.0 - 2024-04-08 🍥
 
 ## General
 
@@ -407,18 +389,17 @@ query parameter for easylist.
   - Added the `synchronize_invalid_data` status to the documented list of values
     for `downloadStatus` on subscriptions.
 
-🌳 1.5.0 - 2024-03-06 🌳
-========================
+# 🌳 1.5.0 - 2024-03-06 🌳
 
 ## General
 
 - Subscriptions now have a new property `lastModified` to match the
-`! Last modified:` header from the filter lists. It is used to determine when a
-subscription is too old to receive new diffs. (EE-297)
+  `! Last modified:` header from the filter lists. It is used to determine when a
+  subscription is too old to receive new diffs. (EE-297)
 - The `downloadStatus` of the subscription has a new possible value. When the
-download of a diff fails, `downloadStatus` will be set to the new error
-`synchronize_diff_too_old` if the diff is over 6 weeks old, or
-`synchronize_connection_error` otherwise. (EE-297)
+  download of a diff fails, `downloadStatus` will be set to the new error
+  `synchronize_diff_too_old` if the diff is over 6 weeks old, or
+  `synchronize_connection_error` otherwise. (EE-297)
 - Allow subscriptions on abptestpages.org for testing purpose. (EE-323)
 - Use the actual dynamic filters quota API property
   (increase from 5K to 30K dynamic rules limit on Chrome/Edge 121+). (EE-315)
@@ -483,16 +464,14 @@ download of a diff fails, `downloadStatus` will be set to the new error
 - From now on, the latest versions of Chromium, Firefox, and Edge are supported
   by the engine (latest versions at the time of release).
 
-📠 1.4.1 - 2024-02-02 📠
-========================
+# 📠 1.4.1 - 2024-02-02 📠
 
 ## Fixes
 
 - Fixed a bug where elements to be collapsed would stay visible on edge cases. (EE-282)
 - Fixed a crash on message sent from a popup. (EE-320)
 
-🔽 1.4.0 - 2024-01-26 🔽
-========================
+# 🔽 1.4.0 - 2024-01-26 🔽
 
 ## General
 
@@ -510,8 +489,7 @@ download of a diff fails, `downloadStatus` will be set to the new error
 - Fixed a bug where $document filters were not being applied to iframes if the
   source URL of that iframe is set via javascript. (EE-307)
 
-📘 1.3.1 - 2024-01-19 📘
-========================
+# 📘 1.3.1 - 2024-01-19 📘
 
 ## Fixes
 
@@ -520,8 +498,9 @@ download of a diff fails, `downloadStatus` will be set to the new error
   [MDN](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/scripting/executeScript#injectimmediately)
   for more details. (CV-2037)
 - Handle first party requests in third party iframes correctly. (EE-304)
-- Reverted "Content filters are now updated via the `history.pushState()` event, when
-  single page apps navigate using the browser's history API (EE-14, EE-90)". (EE-300)
+- Reverted "Content filters are now updated via the `history.pushState()` event,
+  when single page apps navigate using the browser's history API (EE-14,
+  EE-90)". (EE-300)
 - Fixed not disabling rules from static rulesets. (EE-294)
 - Fixed a bug where removing a user filter ends up removing it from a subscription.
 - `EWE.subscriptions.addDefaults()` no longer throws an error when there are no
@@ -529,8 +508,7 @@ download of a diff fails, `downloadStatus` will be set to the new error
 - Fixed a bug of not allowlisting with sitekey in case of unhappy events order
   from the browser. (EE-281)
 
-📣 1.3.0 - 2024-01-03 📣
-========================
+# 📣 1.3.0 - 2024-01-03 📣
 
 ## General
 
@@ -557,8 +535,7 @@ download of a diff fails, `downloadStatus` will be set to the new error
   - Edge 120
   - Firefox 120
 
-🌻 1.2.0 - 2023-11-27 🌻
-========================
+# 🌻 1.2.0 - 2023-11-27 🌻
 
 ## General
 
@@ -595,16 +572,14 @@ download of a diff fails, `downloadStatus` will be set to the new error
   - Edge 118
   - Firefox 119
 
-0.13.3 - 2023/11/23
-===================
+# 0.13.3 - 2023/11/23
 
 ## Fixes
 
 - The rulesets-related scripts for MV3 are fixed and are working from command-line
   (eg. `npx subs-convert`). (EE-267)
 
-0.13.2 - 2023/11/15
-===================
+# 0.13.2 - 2023/11/15
 
 ## General
 
@@ -612,8 +587,7 @@ download of a diff fails, `downloadStatus` will be set to the new error
   The declared "adblockpluscore" dependency is removed, though
   the engine still uses it during building. (EE-219)
 
-☀ 1.1.1 - 2023/10/26 ☀
-==================
+# ☀ 1.1.1 - 2023/10/26 ☀
 
 ## Fixes
 
@@ -634,8 +608,7 @@ download of a diff fails, `downloadStatus` will be set to the new error
 - The `onBlockableItem` event will now use the initiator when setting the request's
   `docDomain` when loading cross-domain iframes in MV3. (EE-217)
 
-🎃 1.1.0 - 2023/10/10 🎃
-========================
+# 🎃 1.1.0 - 2023/10/10 🎃
 
 ## Documentation
 
@@ -666,8 +639,7 @@ download of a diff fails, `downloadStatus` will be set to the new error
 - We no longer accidentally return the internal 'originalUrl' property on
   a subscription.
 
-🚀 1.0.0 - 2023/09/21 🚀
-========================
+# 🚀 1.0.0 - 2023/09/21 🚀
 
 ## General
 
@@ -714,7 +686,8 @@ download of a diff fails, `downloadStatus` will be set to the new error
 
 ## Update your code
 
-- If you're using the npm module you should now use `@eyeo/webext-ad-filtering-solution/` instead. (EE-189)
+- If you're using the npm module you should now use
+  `@eyeo/webext-ad-filtering-solution/` instead. (EE-189)
 - If you're building your product using the `--config-name` option please update
   the value accordingly to using the correct name(s). (EE-189)
 - If you're using the `EWE.subscriptions.onChanged` API to listen to changes
@@ -734,15 +707,15 @@ download of a diff fails, `downloadStatus` will be set to the new error
 - Fix flaky Fuzz Edge test in MV3 "does not hide an element on a sitekey
   allowlisted page". (EE-120)
 
-🌶 0.13.1 - 2023/09/27 🌶
-===================
+# 🌶 0.13.1 - 2023/09/27 🌶
 
 ## Fixes
 
-- Fix a bug that was making the element hiding filters to not work when extensions didn't add a listener to onBlockableItem with includeElementHiding: true. (EE-204)
+- Fix a bug that was making the element hiding filters to not work when
+  extensions didn't add a listener to onBlockableItem with
+  `includeElementHiding: true`. (EE-204)
 
-0.13.0 - 2023/08/28
-===================
+# 0.13.0 - 2023/08/28
 
 ## General
 
@@ -791,8 +764,7 @@ download of a diff fails, `downloadStatus` will be set to the new error
   subscriptions on MV3 (EE-153).
 - Update get-browser-binary version to 0.13.0
 
-0.12.0 - 2023/08/03
-===================
+# 0.12.0 - 2023/08/03
 
 ## Fixes
 
@@ -818,14 +790,13 @@ Assuming you want to start using it. Integrators need to add a new property to
 the addonInfo object passed into the EWE.start function.
 
 ```js
-addonInfo.telemetry = {url: "", bearer: ""}
+addonInfo.telemetry = { url: "", bearer: "" };
 ```
 
 The current implementation pings the specified server once at startup. Nothing
 happens if the telemetry object isn't provided. (EE-159)
 
-0.11.0 - 2023/07/13
-===================
+# 0.11.0 - 2023/07/13
 
 This release also includes fixes from 0.10.1
 
@@ -999,7 +970,7 @@ Reach out to [Maria Henkhaus](mailto:m.henkhaus@eyeo.com).**
   string as a parameters if you only need to apply it to a single
   filter. (#188)
 - The static DNR ruleset must be regenerated with `npm run
-  subs-convert`. Make sure your build process also copies the
+subs-convert`. Make sure your build process also copies the
   corresponding `.map` files. (#528)
 - The scripts were updated to read the `DiffUrl` property in the
   subscriptions and add a `diff_url` property to the generated
@@ -1007,8 +978,7 @@ Reach out to [Maria Henkhaus](mailto:m.henkhaus@eyeo.com).**
   this new `diff_url` property. (#503)
 - For MV3, Chromium 111 is the new minimum supported version. (#563)
 
-0.10.1 - 2023/02/24
-===================
+# 0.10.1 - 2023/02/24
 
 ## Fixes
 
@@ -1016,8 +986,7 @@ Reach out to [Maria Henkhaus](mailto:m.henkhaus@eyeo.com).**
   individual Engine modules: adblockpluscore is again a dependency with
   internal file location. (#518)
 
-0.10.0 - 2023/02/20
-===================
+# 0.10.0 - 2023/02/20
 
 ## General
 
@@ -1049,11 +1018,10 @@ Reach out to [Maria Henkhaus](mailto:m.henkhaus@eyeo.com).**
 - For web bundle support in MV3, the static rulesets must be
   re-generated. In MV2, an unreleased (at the time of writing) version of
   Chrome is necessary. We're confident that this release will work once
-  <https://chromium-review.googlesource.com/c/chromium/src/+/4199620>  is
+  <https://chromium-review.googlesource.com/c/chromium/src/+/4199620> is
   merged.
 
-0.9.0 - 2023/02/14
-==================
+# 0.9.0 - 2023/02/14
 
 This release also includes fixes from 0.8.1
 
@@ -1104,8 +1072,7 @@ This release also includes fixes from 0.8.1
 - Added test to check that ignored notification categories are
   saved. (#456)
 
-0.8.1 - 2023/02/01
-==================
+# 0.8.1 - 2023/02/01
 
 ## General
 
@@ -1129,8 +1096,7 @@ This release also includes fixes from 0.8.1
 - Fixed version flaky test by increasing timeouts. (#428, #446)
 - Limit the Edge fuzz test to Edge 108.
 
-0.8.0 - 2023/01/10
-==================
+# 0.8.0 - 2023/01/10
 
 This release includes the changes in 0.7.1, 0.7.2 and 0.7.3. Please
 see also the corresponding sections below.
@@ -1235,8 +1201,7 @@ see also the corresponding sections below.
   No DNR ruleset will be created by the subscription conversion
   process. (#343)
 
-0.7.3 - 2022/12/22
-==================
+# 0.7.3 - 2022/12/22
 
 ## Bug fixes
 
@@ -1250,8 +1215,7 @@ see also the corresponding sections below.
 - `getMigrationErrors` in the subscriptions and filters namespaces now
   contain the full `subscription` and `filter` objects respectively.
 
-0.7.2 - 2022/11/24
-==================
+# 0.7.2 - 2022/11/24
 
 ## General
 
@@ -1267,8 +1231,7 @@ see also the corresponding sections below.
   filters. If you used tooling that doesn't use the Engine code, then
   you might want to update it as well.
 
-0.7.1 - 2022/11/03
-==================
+# 0.7.1 - 2022/11/03
 
 ## Bug fixes
 
@@ -1278,8 +1241,7 @@ see also the corresponding sections below.
 - Make sure the DNR rulesets are enabled when reloading the extension,
   including when changing permission like "incognito mode". (#387)
 
-0.7.0 - 2022/10/17
-==================
+# 0.7.0 - 2022/10/17
 
 Chrome 102 is now the minimum supported version for Manifest V3.
 
@@ -1362,15 +1324,13 @@ Chrome 102 is now the minimum supported version for Manifest V3.
   `subscriptions.ACCEPTABLE_ADS_PRIVACY_ID` have been added to return the ID
   of these subscriptions. (#358)
 
-0.6.1 - 2022/10/11
-==================
+# 0.6.1 - 2022/10/11
 
 ## Bug fixes
 
 - Fix duplicated preferences stored in local storage (#369)
 
-0.6.0 - 2022/09/06
-==================
+# 0.6.0 - 2022/09/06
 
 ## General
 
@@ -1443,8 +1403,7 @@ Chrome 102 is now the minimum supported version for Manifest V3.
 
 - Any change related to the update to adblockpluscore 0.9.1.
 
-0.5.0 - 2022/07/29
-==================
+# 0.5.0 - 2022/07/29
 
 ## General
 
@@ -1503,8 +1462,7 @@ Chrome 102 is now the minimum supported version for Manifest V3.
 - A `too_many_filters` error can be returned by `addFilters` in Manifest V3
   if the dynamic filter limit is reached. (#243)
 
-0.4.1 - 2022/05/19
-==================
+# 0.4.1 - 2022/05/19
 
 ## General
 
@@ -1524,8 +1482,7 @@ Chrome 102 is now the minimum supported version for Manifest V3.
 - Also ensure the latest webext-ad-filtering-solution is used
   for testpages.
 
-0.4.0 - 2022/04/21
-==================
+# 0.4.0 - 2022/04/21
 
 ## General
 
@@ -1539,8 +1496,7 @@ Chrome 102 is now the minimum supported version for Manifest V3.
 - Add an `npm audit` pipeline on CI (#207)
 - Use plain functions in mocha test (#159)
 
-0.3.0 - 2022/04/12
-==================
+# 0.3.0 - 2022/04/12
 
 ## General
 
@@ -1563,8 +1519,7 @@ Chrome 102 is now the minimum supported version for Manifest V3.
   webext-ad-filtering-solution (#199)
 - Dockerize MSEdge tests for more reliable CI (#195)
 
-0.2.1 - 2022/03/30
-==================
+# 0.2.1 - 2022/03/30
 
 This is a bugfix release.
 
@@ -1586,8 +1541,7 @@ EWE.start({
 });
 ```
 
-0.2.0 - 2022/03/14
-==================
+# 0.2.0 - 2022/03/14
 
 ## General
 
@@ -1610,15 +1564,13 @@ EWE.start({
 - Test: Increase timeout for test to pass in Edge (#192)
 - Download the right Firefox beta version (!286)
 
-0.1.1 - 2022/02/18
-==================
+# 0.1.1 - 2022/02/18
 
 ## Bug fixes
 
 - Fix module dependency for abp2dnr (#178)
 - Update repository URL in `package.json`
 
-0.1.0 - 2022/02/09
-==================
+# 0.1.0 - 2022/02/09
 
 Initial Release

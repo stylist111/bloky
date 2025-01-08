@@ -1,5 +1,4 @@
-0.11.1 - 2023/01/16
-===================
+# 0.11.1 - 2023/01/16
 
 ## Bug fixes
 
@@ -8,8 +7,7 @@
   and `fixedTtitle` properties in the subscription in case of a
   recommended subscription that is "user countable". #484
 
-0.11.0 - 2022/12/14
-===================
+# 0.11.0 - 2022/12/14
 
 ## Changes
 
@@ -46,15 +44,13 @@
     a different behaviour: `notifications_check_interval`,
     `notifications_expiration_interval` and `notifications_initial_delay`.
 
-0.10.1 - 2022/11/02
-===================
+# 0.10.1 - 2022/11/02
 
 ## Bug fixes
 
 - Restore Easylist China on the default subscriptions. #472
 
-0.10.0 - 2022/10/13
-===================
+# 0.10.0 - 2022/10/13
 
 ## Changes
 
@@ -79,16 +75,14 @@
   compatible. This might change some of the assumptions made about the
   defaults.
 
-0.9.1 - 2022/09/02
-==================
+# 0.9.1 - 2022/09/02
 
 ## Bug fix
 
 - The subscription updated event no longer throw if there is no
   differences. This could happen when counting subscriptions. #456
 
-0.9.0 - 2022/09/01
-==================
+# 0.9.0 - 2022/09/01
 
 ## Changes
 
@@ -168,8 +162,7 @@ for Manifest v3 support:
     storage. The is useful for loading the static filter list that get
     shipped along the DNR ruleset.
 
-0.8.0 - 2022/07/25
-==================
+# 0.8.0 - 2022/07/25
 
 ## Changes
 
@@ -208,6 +201,7 @@ for Manifest v3 support:
   - `synchronizer` is accessed as a property of `filterStorage`
 
 Example:
+
 ```JavaScript
 
 let {FilterEngine} = require("adblockpluscore");
@@ -228,8 +222,7 @@ filterEngine.initialize()
         });
 ```
 
-0.7.2 - 2022/05/18
-==================
+# 0.7.2 - 2022/05/18
 
 ## Bug fixes
 
@@ -242,19 +235,16 @@ filterEngine.initialize()
 - If you need synchronous `verifiySignature` just use `verifySignatureSync`.
   `verifySignature` is unchanged from 0.6.0.
 
-0.7.1 - 2022/04/22
-==================
+# 0.7.1 - 2022/04/22
 
 ## Bug fixes
 
 - `filterStorage.addFiltersWithMetadata()` would fail if passing a single
-filter instead of an array. #422
+  filter instead of an array. #422
 - Loading metadata from storage would fail with an exception. #423
 - Fix inline documentation for `filtersExist()`.
 
-
-0.7.0 - 2022/04/04
-==================
+# 0.7.0 - 2022/04/04
 
 ## Changes
 
@@ -285,8 +275,7 @@ filter instead of an array. #422
 - Changed FilterStorage.hasSubscription() to accept a URL in addition
   to the subscription itself.
 
-0.6.0 - 2022/02/16
-==================
+# 0.6.0 - 2022/02/16
 
 ## Changes
 
@@ -342,16 +331,14 @@ filter instead of an array. #422
   (`contentTypes.HEADER` or `contentTypes.CSP`) combined with the request
   resource type using the bitwise or operator.
 
-0.5.1 - 2022/01/06
-==================
+# 0.5.1 - 2022/01/06
 
 ## Bug fixes
 
 - Fix a regression on loading stylesheet in the ElementHidingEmulation
   code. Issue #390
 
-0.5.0 - 2021/10/07
-==================
+# 0.5.0 - 2021/10/07
 
 ## Changes
 
@@ -423,12 +410,12 @@ filter instead of an array. #422
 
 ## Bug fixes
 
-  - Avoid uppercasing sitekeys. Issue #303
-  - Fix various problems with elements that are hidden when they should
-    no longer be. Issues #202, #339, #348.
-  - Fix a problem where an invalid CSS rule would disable all the element
-    hiding. Issue #104
-  - Fix some timing issues with the engine initialization. Issue #344
+- Avoid uppercasing sitekeys. Issue #303
+- Fix various problems with elements that are hidden when they should
+  no longer be. Issues #202, #339, #348.
+- Fix a problem where an invalid CSS rule would disable all the element
+  hiding. Issue #104
+- Fix some timing issues with the engine initialization. Issue #344
 
 ## Updating your code
 
@@ -447,8 +434,8 @@ would be deemed too broad. In these cases it returns `InvalidFilter`
 with a `Filter.reason` set to `"filter_url_not_specific_enough"` if
 the pattern is 3 characters or less, or
 `"filter_elemhide_not_specific_enough"` for a generic element hiding
-filter whose body (CSS selector) is 2 characters or less. See issue
-#264. However a wildcard `*` in a URL filter allow short filters to
+filter whose body (CSS selector) is 2 characters or less. See issue #264.
+However a wildcard `*` in a URL filter allow short filters to
 still be valid. See issue #370.
 
 When instantiating `ElemHideEmulation`, you can now pass as the second
@@ -461,6 +448,7 @@ to grab the file from the snippet library.
 
 To use the new parameters for the `Synchronizer`, set the following
 values in your `Prefs` object:
+
 - `subscriptions_check_interval` how long the recheck for a list in
   case of error, in milliseconds.
 - `subscriptions_initial_delay` the initial delay in milliseconds before
@@ -470,8 +458,7 @@ values in your `Prefs` object:
 - `subscriptions_default_expiration_interval`: how long before the
   list expires, by default, in milliseconds.
 
-0.4.0 - 2021/09/10
-==================
+# 0.4.0 - 2021/09/10
 
 ## Changes
 

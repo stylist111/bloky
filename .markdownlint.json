@@ -1,7 +1,9 @@
 {
   "default": true,
-  "MD013": { "code_blocks": false },
-  "MD024": { "siblings_only": true},
-  "MD033": { "allowed_elements": ["div"] },
-  "MD040": null
+  "header-style": { "style": "atx" },
+  "line-length": { "code_blocks": false },
+  "no-duplicate-header": { "siblings_only": true},
+  "single-h1": null,
+  "no-inline-html": { "allowed_elements": ["div"] },
+  "fenced-code-language": null
 }

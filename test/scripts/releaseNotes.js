@@ -22,24 +22,34 @@ const NORMAL_FILE_LINES = [
   "This is maybe some preamble, which could be explaining the headings like ",
   "unreleased",
   "",
-  "Unreleased",
-  "==========",
+  "# Unreleased",
   "",
   "- Did some stuff",
   "",
-  "🎃 1.1.0 - 2023/10/10 🎃",
-  "========================",
+  "# 1.1.0 - 2023-10-10",
   "",
   "- Did some other stuff",
   "- And another thing",
   "",
-  "🚀 1.0.0 - 2023/09/21 🚀",
-  "========================",
+  "# 1.0.0 - 2023-09-21",
   "",
   "- Would you believe it, more stuff!",
   ""
 ];
 const NORMAL_FILE = NORMAL_FILE_LINES.join("\n");
+
+const NON_SERMVER_RELEASE_NOTES_LINES = [
+  "# 1.1.1 - 2023-10-10",
+  "",
+  "- Did some other stuff",
+  "- And another thing",
+  "",
+  "# 1.1 - 2023-09-21",
+  "",
+  "- Would you believe it, more stuff!",
+  ""
+];
+const NON_SERMVER_RELEASE_NOTES = NON_SERMVER_RELEASE_NOTES_LINES.join("\n");
 
 const NO_WHITESPACE_LINES = NORMAL_FILE_LINES.filter(l => l.length > 0);
 const NO_WHITESPACE = NO_WHITESPACE_LINES.join("\n");
@@ -55,13 +65,13 @@ describe("ReleaseNotes script", function() {
       let releaseNotes = new ReleaseNotes(NORMAL_FILE);
       let previousUnreleasedNotes = releaseNotes.unreleasedNotes();
 
-      releaseNotes.insertNewVersionHeading("1.2.0", new Date("2023-11-15"), "🍂");
+      releaseNotes.insertNewVersionHeading("1.2.0", new Date("2023-11-15"));
 
-      let unreleasedHeading = NORMAL_FILE_LINES.slice(3, 5).join("\n");
+      let unreleasedHeading = NORMAL_FILE_LINES.slice(3, 4).join("\n");
 
       let expectedNotes = previousUnreleasedNotes.replace(
         unreleasedHeading,
-        "🍂 1.2.0 - 2023-11-15 🍂\n========================"
+        "# 1.2.0 - 2023-11-15"
       );
 
       expect(releaseNotes.unreleasedNotes())
@@ -74,13 +84,13 @@ describe("ReleaseNotes script", function() {
       let releaseNotes = new ReleaseNotes(NO_WHITESPACE);
       let previousUnreleasedNotes = releaseNotes.unreleasedNotes();
 
-      releaseNotes.insertNewVersionHeading("1.2.0", new Date("2023-11-15"), "🍂");
+      releaseNotes.insertNewVersionHeading("1.2.0", new Date("2023-11-15"));
 
-      let unreleasedHeading = NO_WHITESPACE_LINES.slice(2, 4).join("\n");
+      let unreleasedHeading = NO_WHITESPACE_LINES.slice(2, 3).join("\n");
 
       let expectedNotes = previousUnreleasedNotes.replace(
         unreleasedHeading,
-        "🍂 1.2.0 - 2023-11-15 🍂\n========================\n"
+        "# 1.2.0 - 2023-11-15\n"
       );
 
       expect(releaseNotes.unreleasedNotes())
@@ -91,34 +101,40 @@ describe("ReleaseNotes script", function() {
   });
 
   describe("getting notes for a specific version", function() {
-    it("can get the unreleased notes from a normal file", function() {
+    it("gets the unreleased notes from a normal file", function() {
       let releaseNotes = new ReleaseNotes(NORMAL_FILE);
-      expect(releaseNotes.unreleasedNotes())
-        .toEqual(NORMAL_FILE_LINES.slice(3, 7).join("\n"));
+      expect(releaseNotes.notesForVersion("Unreleased"))
+        .toEqual(NORMAL_FILE_LINES.slice(3, 6).join("\n"));
     });
 
-    it("can get the release notes for a version in the middle of a normal file", function() {
+    it("gets the release notes for a version in the middle of a normal file", function() {
       let releaseNotes = new ReleaseNotes(NORMAL_FILE);
       expect(releaseNotes.notesForVersion("1.1.0"))
-        .toEqual(NORMAL_FILE_LINES.slice(8, 13).join("\n"));
+        .toEqual(NORMAL_FILE_LINES.slice(7, 11).join("\n"));
     });
 
-    it("can get the release notes for a version at the end of a normal file", function() {
+    it("gets the release notes for a version at the end of a normal file", function() {
       let releaseNotes = new ReleaseNotes(NORMAL_FILE);
       expect(releaseNotes.notesForVersion("1.0.0"))
-        .toEqual(NORMAL_FILE_LINES.slice(14, 18).join("\n"));
+        .toEqual(NORMAL_FILE_LINES.slice(12, 15).join("\n"));
     });
 
-    it("can get the release notes for a version at the end of a file with no empty lines", function() {
+    it("gets the release notes for a version at the end of a file with no empty lines", function() {
       let releaseNotes = new ReleaseNotes(NO_WHITESPACE);
       expect(releaseNotes.notesForVersion("1.0.0"))
-        .toEqual(NO_WHITESPACE_LINES.slice(9, 12).join("\n"));
+        .toEqual(NO_WHITESPACE_LINES.slice(7, 9).join("\n"));
     });
 
     it("throws an error if you try to get the release notes for a version which doesn't exist", function() {
       let releaseNotes = new ReleaseNotes(NORMAL_FILE);
       expect(() => releaseNotes.notesForVersion("9.9.9"))
         .toThrow("Could not find notes for version 9.9.9");
+    });
+
+    it("gets the correct release notes when one version is a prefix of another", function() {
+      let releaseNotes = new ReleaseNotes(NON_SERMVER_RELEASE_NOTES);
+      expect(releaseNotes.notesForVersion("1.1"))
+         .toEqual(NON_SERMVER_RELEASE_NOTES_LINES.slice(5, 8).join("\n"));
     });
   });
 });

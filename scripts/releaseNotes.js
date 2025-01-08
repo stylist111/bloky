@@ -18,46 +18,29 @@
 import {readFile, writeFile} from "fs/promises";
 import path from "path";
 
-import {randomInteger} from "adblockpluscore/lib/random.js";
-
 import {projectRootPath} from "./utils.js";
-
-function chooseEmoji() {
-  // https://www.compart.com/en/unicode/block/U+1F300
-  let codePoint = randomInteger(0x1F300, 0x1F600);
-  return String.fromCodePoint(codePoint);
-}
-
-function isUnderline(line) {
-  return line && /^=+$/.test(line.trim());
-}
 
 export class ReleaseNotes {
   constructor(fileContent) {
     this.lines = fileContent.split("\n");
   }
 
-  insertNewVersionHeading(version, now, emoji = chooseEmoji()) {
-    let unreleasedLine = this.lines.findIndex((line, index, allLines) => {
-      let nextLine = allLines[index + 1];
-      if (!isUnderline(nextLine)) {
-        return false;
-      }
-      return line.trim().toLowerCase().includes("unreleased");
+  insertNewVersionHeading(version, now) {
+    let unreleasedLine = this.lines.findIndex(currentLine => {
+      const line = currentLine.toLowerCase();
+      const headingStart = "# unreleased";
+
+      return line.startsWith(headingStart + " ") || line == headingStart;
     });
 
-    let newHeadingLine = 0;
-    if (unreleasedLine >= 0) {
-      newHeadingLine = unreleasedLine + 2;
-    }
+    let newHeadingLine = unreleasedLine >= 0 ? unreleasedLine + 1 : 0;
 
     let date = now.toISOString().substring(0, 10);
-    let versionHeading = `${emoji} ${version} - ${date} ${emoji}`;
+    let versionHeading = `# ${version} - ${date}`;
 
     let newHeading = [
       "",
-      versionHeading,
-      "=".repeat(versionHeading.length)
+      versionHeading
     ];
 
     this.lines.splice(newHeadingLine, 0, ...newHeading);
@@ -77,29 +60,23 @@ export class ReleaseNotes {
   }
 
   notesForVersion(version) {
-    let start = this.lines.findIndex((line, index, allLines) => {
-      let nextLine = allLines[index + 1];
-      if (!isUnderline(nextLine)) {
-        return false;
-      }
-      return line.trim().toLowerCase().includes(version);
+    const start = this.lines.findIndex(currentLine => {
+      const line = currentLine.toLowerCase();
+      const headingStart = "# " + version.toLowerCase();
+
+      return line.startsWith(headingStart + " ") || line == headingStart;
     });
 
     if (start < 0) {
       throw new Error(`Could not find notes for version ${version}`);
     }
 
-    let end = this.lines.findIndex((line, index, allLines) => {
+    let end = this.lines.findIndex((line, index) => {
       if (index <= start) {
         return false;
       }
 
-      let nextLine = allLines[index + 1];
-      if (!isUnderline(nextLine)) {
-        return false;
-      }
-
-      return line.trim().length > 0;
+      return line.startsWith("# ");
     });
 
     if (end < 0) {
