@@ -140,10 +140,6 @@ class GeneralPage extends BasePage {
     return $("//a[@data-i18n='options_footer_contribute']");
   }
 
-  get doNotTrackNoteParagraph() {
-    return $("#dnt");
-  }
-
   get deutschPlusEnglischLanguageTableItem() {
     return $("//li[@aria-label='Deutsch + Englisch']");
   }
@@ -232,10 +228,6 @@ class GeneralPage extends BasePage {
 
   get okGotItTrackingWarningButton() {
     return $("//button[@data-i18n='options_tracking_warning_acknowledgment']");
-  }
-
-  get onlyAllowAdsWithoutTrackingCheckbox() {
-    return $("#acceptable-ads-privacy-allow");
   }
 
   get predefinedDialogTitle() {
@@ -354,12 +346,6 @@ class GeneralPage extends BasePage {
 
   async clickNotifyLanguageFilterListsTooltipIcon() {
     await (await this.notifyLanguageFilterListsTooltipIcon).click();
-  }
-
-  async clickOnlyAllowAdsWithoutTrackingCheckbox() {
-    await this.waitForEnabledThenClick(
-      this.onlyAllowAdsWithoutTrackingCheckbox
-    );
   }
 
   async clickOkGotItTrackingWarningButton() {
@@ -546,10 +532,6 @@ class GeneralPage extends BasePage {
     return await (await this.deutschPlusEnglishLanguageTrashIcon).isDisplayed();
   }
 
-  async isDoNotTrackNoteParagraphDisplayed() {
-    return await (await this.doNotTrackNoteParagraph).isDisplayed();
-  }
-
   async isEnglishLanguageChangeButtonDisplayed() {
     return await this.waitForDisplayedNoError(this.englishLanguageChangeButton);
   }
@@ -618,24 +600,6 @@ class GeneralPage extends BasePage {
     return await this.waitForDisplayedNoError(
       this.notifyLanguageFilterListsTooltipText,
       reverseOption
-    );
-  }
-
-  async isOnlyAllowAdsWithoutTrackingCheckboxEnabled() {
-    return (
-      (await (
-        await this.onlyAllowAdsWithoutTrackingCheckbox
-      ).getAttribute("aria-disabled")) == "false"
-    );
-  }
-
-  async isOnlyAllowAdsWithoutTrackingCheckboxSelected(reverse = false) {
-    await (
-      await this.onlyAllowAdsWithoutTrackingCheckbox
-    ).waitForEnabled({ timeout: 3000 });
-    return await this.waitForSelectedNoError(
-      this.onlyAllowAdsWithoutTrackingCheckbox,
-      reverse
     );
   }
 

@@ -62,10 +62,6 @@ export default () => {
     await uninstallExtension(initOptionsGeneralTab);
     const { url } = await findUrl(uninstallUrl);
 
-    await checkInstallUninstallUrl({
-      url,
-      appVersion,
-      uninstall: true
-    });
+    await checkInstallUninstallUrl({ url, appVersion, uninstall: true });
   });
 };

@@ -22,11 +22,11 @@ import { localTestPageUrl } from "@eyeo/test-utils/urls";
 import {
   getDisplayedElement,
   waitForNotDisplayed,
+  waitForNotNullProperty,
   isCheckboxEnabled,
   clickOnDisplayedElement,
   openNewTab,
-  getTabId,
-  waitForNotNullProperty
+  getTabId
 } from "@eyeo/test-utils/driver";
 import { getOptionsHandle } from "@eyeo/test-utils/extension";
 
@@ -261,6 +261,39 @@ export async function setCustomFilters(filters) {
     await waitForNotDisplayed("#custom-filters button[disabled]");
     await clickOnDisplayedElement("#custom-filters button");
   }
+}
+
+export async function setPausedStateFromPopup(url, paused = true) {
+  const websiteAllowlistBtnSelector = `#page-status > div:first-of-type > io-circle-toggle`;
+  const websiteHandle = await openNewTab(url);
+  const tabId = await getTabId(getOptionsHandle());
+
+  await initPopupPage(tabId);
+  // Clicking right after the popup is loaded may be ineffective, sleeping as a workaround
+  await driver.sleep(1000);
+  await clickOnDisplayedElement(websiteAllowlistBtnSelector, {
+    timeout: 5000
+  });
+  // Check that the refresh message is shown
+  await getDisplayedElement("#page-refresh", {
+    forceRefresh: false,
+    timeout: 1000
+  });
+
+  await getDisplayedElement(websiteAllowlistBtnSelector, {
+    timeout: 5000,
+    forceRefresh: false
+  });
+  const isToggleSelected = await waitForNotNullProperty(
+    websiteAllowlistBtnSelector,
+    "checked"
+  );
+  expect(isToggleSelected).not.toEqual(paused);
+  await driver.close();
+
+  await driver.switchTo().window(websiteHandle);
+  await driver.close();
+  await driver.switchTo().window(getOptionsHandle());
 }
 
 export async function addAllowlistFilters(filters) {
