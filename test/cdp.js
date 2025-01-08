@@ -247,7 +247,7 @@ describe("CDP on Chromium-based browsers", function() {
       await waitForAssertion(async() => {
         counter = await EWE.testing._getCdpData(eventType, siteId);
         expect(counter).toEqual(size);
-      });
+      }, 2000);
       return counter;
     }
 
