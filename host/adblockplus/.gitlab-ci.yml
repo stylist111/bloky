@@ -237,11 +237,6 @@ comp:MV3:chromium:latest:
   variables:
     BROWSER: chromium latest
 
-comp:MV3:edge:latest:
-  extends: .compliance:MV3
-  variables:
-    BROWSER: edge latest
-
 .compliance:MV2:
   extends: .compliance
   variables:

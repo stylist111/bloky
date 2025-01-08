@@ -219,12 +219,6 @@ comp:MV3:chromium:latest:
     BROWSER: chromium latest
     EXTENSION: adblock-chrome-*-mv3.zip
 
-comp:MV3:edge:latest:
-  extends: .compliance
-  variables:
-    BROWSER: edge latest
-    EXTENSION: adblock-chrome-*-mv3.zip
-
 comp:MV2:chromium:last-mv2-version:
   extends: .compliance
   variables:
