@@ -40,7 +40,7 @@ export const snippetFilter = "testpages.eyeo.com#$#hide-if-contains 'filter not 
 // By default AdBlock has AA enabled on Chrome/Edge and disabled on Firefox
 export const expectAAEnabled = runnerConfig.browserName !== "firefox";
 
-const optionsPageSleep = 2000;
+const optionsPageSleep = 3000;
 
 export async function initPopupPage(tabId) {
   const tabIdParam = tabId ? `?tabId=${tabId}` : "";
