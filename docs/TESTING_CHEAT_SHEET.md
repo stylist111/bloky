@@ -1,27 +1,21 @@
 # eyeo's WebExtension Ad-Filtering Solution Testing Cheat Sheet
 
-## Testing core
+## Unit tests
 
 ```
-npm run test:unit:core
+npm test
 ```
 
-## Run the unit tests
+## Core browser tests
 
 ```
-npm run test:unit:webext
+npm run test:core:browser
 ```
 
-## Functional tests: bundle
+## Bundle tests
 
 ```
 npm run test:bundle
-```
-
-## Functional tests: scripts
-
-```
-npm run test:unit:scripts
 ```
 
 ## Start test server

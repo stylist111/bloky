@@ -29,7 +29,8 @@
     "jsdoc": "jsdoc --configure .jsdoc.conf --destination build/docs lib",
     "docs": "npm run jsdoc",
     "unit-tests": "c8 --include=lib/*.js --include=scripts/*.js --include=lib/filters/*.js --include=lib/dnr/*.js --exclude=lib/index.js --exclude=lib/jsbn.js --exclude=lib/rusha.js --all mocha --check-leaks",
-    "test": "LIB_FOLDER=lib node test_runner.mjs",
+    "test:browser": "node test_runner_browser.mjs",
+    "test:unit": "node test_runner_unit.mjs",
     "update-resources": "node scripts/updateResources.js",
     "updatepsl": "node scripts/updatepsl.js",
     "update-subscriptions": "node scripts/updateSubscriptions.js"

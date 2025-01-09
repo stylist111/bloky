@@ -1,23 +1,22 @@
 /*
- * This file is part of Adblock Plus <https://adblockplus.org/>,
+ * This file is part of eyeo's Web Extension Ad Blocking Toolkit (EWE),
  * Copyright (C) 2006-present eyeo GmbH
  *
- * Adblock Plus is free software: you can redistribute it and/or modify
+ * EWE is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
  *
- * Adblock Plus is distributed in the hope that it will be useful,
+ * EWE is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
+ * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 /* eslint-env node */
 
-import {spawn} from "child_process";
 import fs from "fs";
 import path from "path";
 import {fileURLToPath} from "url";
@@ -28,10 +27,9 @@ import webpack from "webpack";
 
 import chromiumProcess from "./test/runners/chromium_process.mjs";
 import firefoxProcess from "./test/runners/firefox_process.mjs";
+import {getTestPaths} from "./test/_utils.mjs";
 
 let dirname = path.dirname(fileURLToPath(import.meta.url));
-
-let unitFiles = [];
 let browserFiles = [];
 
 let runnerDefinitions = {
@@ -39,31 +37,6 @@ let runnerDefinitions = {
   firefox: firefoxProcess
 };
 let runnerProcesses = ["chromium", "firefox"];
-
-function addTestPaths(testPaths, recurse) {
-  for (let testPath of testPaths) {
-    let stat = fs.statSync(testPath);
-    if (stat.isDirectory()) {
-      if (recurse) {
-        addTestPaths(fs.readdirSync(testPath).map(
-          file => path.join(testPath, file))
-        );
-      }
-      continue;
-    }
-    if (path.basename(testPath).startsWith("_")) {
-      continue;
-    }
-    if (path.extname(testPath) == ".js") {
-      if (testPath.split(path.sep).includes("browser")) {
-        browserFiles.push(testPath);
-      }
-      else {
-        unitFiles.push(testPath);
-      }
-    }
-  }
-}
 
 async function webpackInMemory(bundleFilename, options) {
   // Based on this example
@@ -101,7 +74,7 @@ async function webpackInMemory(bundleFilename, options) {
 
 async function runBrowserTests(processes) {
   if (browserFiles.length == 0) {
-    return;
+    throw new Error("Browser files length was 0");
   }
 
   let bundleFilename = "bundle.js";
@@ -167,36 +140,13 @@ async function runBrowserTests(processes) {
   }
 }
 
-function spawnScript(name, ...args) {
-  return new Promise((resolve, reject) => {
-    let script = spawn("npm",
-                       ["run", name, ...args],
-                       {stdio: ["inherit", "inherit", "inherit"]});
-    script.on("error", reject);
-    script.on("close", code => {
-      if (code == 0) {
-        resolve();
-      }
-      else {
-        reject();
-      }
-    });
-  });
-}
-
 (async function() {
   let paths = process.argv.length > 2 ? process.argv.slice(2) :
-                [path.join(dirname, "test"),
-                 path.join(dirname, "test", "browser"),
-                 path.join(dirname, "test", "scripts")];
-  addTestPaths(paths, true);
+                [path.join(dirname, "test", "browser")];
+  browserFiles = getTestPaths(paths, true);
 
   try {
     await runBrowserTests(runnerProcesses);
-
-    if (unitFiles.length > 0) {
-      await spawnScript("unit-tests", ...unitFiles);
-    }
   }
   catch (error) {
     if (error) {

@@ -54,20 +54,16 @@ In order to run the unit test suite you need
 please run `npm install` in the repository directory in order to install the
 required dependencies.
 
-### Running all tests
+### Running unit tests
 
-`npm test` will run all tests in the `test` directory of the repository.
+`npm run test:unit` will run unit tests in the `test` directory of the
+repository.
 
-### Running specific tests
+### Running browser tests
 
-You can specify specific test files or directories on the
-command line, e.g.:
-`npm test test/synchronizer.js test/browser/elemHideEmulation.js`.
-
-### Running the browser tests
-
-The tests under `test/browser` require a browser environment. `npm test` will
-run these in a headless browser, with each module being loaded in a new frame.
+The tests under `test/browser` require a browser environment.
+`npm run test:browser` will run these in a headless browser, with each module
+being loaded in a new frame.
 
 By default tests run in the latest versions of Chromium and Firefox. The
 `CHROMIUM_VERSION` and `FIREFOX_VERSION` environment variables can be set to

@@ -35,23 +35,35 @@ engine.
 
 ## Unit Tests
 
-### Unit:core
+### Run all tests
+
+The following suites run all together with `npm test`:
+
+- Core unit tests
+- Webext unit tests
+- Scripts tests
+
+Please notice the core browser tests run separately. For details please see the
+following sections.
+
+### Core
 
 The engine contains a core repository responsible for the core ad-filtering
 logic, which is tested at unit and browser levels. To run all core tests use
-the following command from the top level directory:
+the following commands from the top level directory:
 
 ```
-npm run test:unit:core
+npm run test:core:unit
+npm run test:core:browser
 ```
 
-Optionaly use a test path to run a single test module. Example:
+Optionaly use a test path to run a single unit test module. Example:
 
 ```
-npm run test:unit:core -- test/dnr.js
+npm run test:core:unit -- test/dnr.js
 ```
 
-### Unit:webext
+### Unit (webext)
 
 In webext we mostly use functional tests to make sure everything works.
 
@@ -70,17 +82,7 @@ Additionally, two specific areas lend themselves to unit tests.
 To run the webext unit tests use the following command:
 
 ```
-npm run test:unit:webext
-```
-
-### Unit:scripts
-
-To be able to use webext in extension integrator has to generate files
-(containing f.ex subscriptions) using our scripts. To test if scripts work
-properly use following command:
-
-```
-npm run test:unit:scripts
+npm run test:unit
 ```
 
 #### Mocking browser APIs
@@ -91,13 +93,17 @@ generate mocked files by passing the filename from the `/sdk/background/`
 directory:
 
 ```
-npx webpack --config ./test/unit/mock/webpack.config.js --env filename="subscriptions.js"
+npx webpack --config ./test/unit/background/mock/webpack.config.js --env filename="subscriptions.js"
 ```
 
-#### Run the unit tests
+### Scripts
+
+To be able to use webext in extension integrator has to generate files
+(containing f.ex subscriptions) using our scripts. To test if scripts work
+properly use following command:
 
 ```
-npm run unittest
+npm run test:scripts
 ```
 
 ## Functional tests

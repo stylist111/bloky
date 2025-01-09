@@ -1,5 +1,6 @@
 default:
   interruptible: true
+  image: node:18.17.1
   tags:
     - runner-webext-dev
 
@@ -77,7 +78,6 @@ stages:
   - performance
 
 build:src:
-  image: node:18.17.1
   stage: build
   before_script:
     - npm install
@@ -92,7 +92,6 @@ build:src:
     expire_in: 1 week
 
 lint:
-  image: node:18.17.1
   stage: build
   before_script:
     - npm install
@@ -103,7 +102,6 @@ lint:
 # and https://eyeo.gitlab.io/adblockplus/abc/webext-ad-filtering-solution/core/index.html
 # Requirements: https://docs.gitlab.com/ee/user/project/pages/introduction.html#gitlab-pages-requirements
 pages:
-  image: node:18.17.1
   stage: build
   needs: ["build:src"]
   script:
@@ -137,26 +135,24 @@ build:functional-image:
   needs: ["build:basic-image"]
 
 # Unit tests
-.unit:
+
+unit:
   stage: unit
-  extends: .basic-image
+  needs: []
+  before_script:
+    - npm install
+  script:
+    - npm test
   rules:
     - !reference [.avoid-flaky-run, rules]
 
-unit:core:
-  extends: .unit
+core:browser:
+  stage: unit
+  extends: .basic-image
   script:
-    - docker run $DOCKER_OPTIONS --entrypoint npm $BASIC_IMAGE run test:unit:core
-
-unit:webext:
-  extends: .unit
-  script:
-    - docker run $DOCKER_OPTIONS --entrypoint npm $BASIC_IMAGE run test:unit:webext
-
-unit:scripts:
-  extends: .unit
-  script:
-    - docker run $DOCKER_OPTIONS --entrypoint npm $BASIC_IMAGE run test:unit:scripts
+    - docker run $DOCKER_OPTIONS --entrypoint npm $BASIC_IMAGE run test:core:browser
+  rules:
+    - !reference [.avoid-flaky-run, rules]
 
 # Functional tests
 .functional:
@@ -445,7 +441,6 @@ int:scripts:
     - !reference [.avoid-flaky-run, rules]
 
 int:bundle:
-  image: node:18.17.1
   stage: integration
   script:
     - npm run test:bundle
