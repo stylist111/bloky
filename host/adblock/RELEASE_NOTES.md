@@ -1,5 +1,7 @@
 # Unreleased
 
+- Removed machine learning snippets from extension (refs EXT-710)
+
 # 6.13.1 - 2025-01-07
 
 This release contains only minor updates and under-the-hood changes.
