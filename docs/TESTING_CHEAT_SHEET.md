@@ -6,10 +6,10 @@
 npm test
 ```
 
-## Core browser tests
+## Adblockpluscore browser tests
 
 ```
-npm run test:core:browser
+npm run test:adblockpluscore:browser
 ```
 
 ## Bundle tests
@@ -38,11 +38,11 @@ npm run test:performance -- {2|3} {chromium|edge} [--forceHeadful]
 
 ## Docker runs
 
-### Unit:core
+### Unit:adblockpluscore
 
 ```
 docker build -t basic -f test/dockerfiles/basic.Dockerfile .
-docker run --cpus=2 --memory=6g --shm-size=2g -it --entrypoint npm basic run test:core -- [test/path]
+docker run --cpus=2 --memory=6g --shm-size=2g -it --entrypoint npm basic run test:adblockpluscore -- [test/path]
 ```
 
 ### Func:webext

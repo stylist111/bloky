@@ -1,7 +1,7 @@
 # Prefs
 
-The module `prefs` is provided by *core* consumers, and it should return at
-least a `Prefs` object literal, with the following properties:
+The module `prefs` is provided by *adblockpluscore* consumers, and it should
+return at least a `Prefs` object literal, with the following properties:
 
 * `acceptable_ads_enabled`, *boolean* value, indicating [AAX](https://www.aax.media/)
 is preferred: `true` by default.
@@ -10,7 +10,7 @@ allowed. All, if empty string, which is the default.
 * `analytics`, an optional *object* with properties used mostly during
 subscriptions synchronization.
 * `currentVersion`, an optional *string* pointing at the preferences version.
-Not relevant in core.
+Not relevant in adblockpluscore.
 * `documentation_link`, a *string* representing the URL with documentation.
 Currently pointing at [ABP](https://adblockplus.org/) documentation.
 * `enabled`, a *boolean* value, indicating that preferences are to be
@@ -25,29 +25,29 @@ synchronization and notifications.
 * `notifications_ignoredcategories`, the list of categories, as *array* of
 *strings*, that should not receive notifications.
 * `notifications_check_interval`, a *number*, in milliseconds, representing how
-long core should wait between checking if it's time to download remote
+long adblockpluscore should wait between checking if it's time to download remote
 notifications. It's `3600000`, 1 hour, by default.
 * `notifications_expiration_interval`, a *number*, in milliseconds, representing
-how long core should wait before fetching remote notifications again. It's
-`86400000`, 1 day, by default.
+how long adblockpluscore should wait before fetching remote notifications again.
+It's `86400000`, 1 day, by default.
 * `notifications_initial_delay`, a *number*, in milliseconds, representing how
-long core should wait after starting before initial fetching remote
+long adblockpluscore should wait after starting before initial fetching remote
 notifications. It's `60000`, 1 minute, by default.
 * `patternsbackups`, a *number* that specifies how many different backups of the
 `patterns.ini` file should be created.
 * `patternsbackupinterval` a *number* that defines how long it should take
 between different `saveToDisk` operations, before new backups are created. It
 represents *hours* and it defaults to `24`.
-* `privateBrowsing`, a *boolean* describing if the core should work when on
-*private* mode. It's `false` by default.
+* `privateBrowsing`, a *boolean* describing if the adblockpluscore should work
+when on *private* mode. It's `false` by default.
 * `savestats`, a *boolean* indicating if filters hit should be counted. It's
 `true` on Desktop extension, usually `false` on Mobile.
 * `subscriptions_autoupdate`, a *boolean* indicating if subscriptions should
 update automatically through the synchronizer.
 * `subscriptions_check_interval`, a *number*, in milliseconds, representing how
-long core should wait between updates. It's `3600000`, 1 hour, by default.
+long adblockpluscore should wait between updates. It's `3600000`, 1 hour, by default.
 * `subscriptions_default_expiration_interval`, a *number*, in milliseconds,
-representing how long core should wait before expiration. It's `432000000`,
+representing how long adblockpluscore should wait before expiration. It's `432000000`,
 5 days, by default.
 * `subscriptions_exceptionsurl`, a *string* representing a URL where exceptions
 should be found.
@@ -56,10 +56,10 @@ re-try attempts, before falling back to the fallbackurl.
 * `subscriptions_fallbackurl`, a *string* URL, representing the end point to hit
 when a subscription download attempt has failed many times.
 * `subscriptions_head_expiration_interval`, a *number*, in milliseconds,
-representing how long core should wait before head expiration. It's `86400000`,
+representing how long adblockpluscore should wait before head expiration. It's `86400000`,
 1 day, by default.
 * `subscriptions_initial_delay`, a *number*, in milliseconds, representing how
-long core should wait before initial synchronization. It's `60000`, 1 minute,
-by default.
+long adblockpluscore should wait before initial synchronization. It's `60000`,
+1 minute, by default.
 * `synchronization_enabled`, a *boolean* indicating if the synchronizer should
 handle updates or not.

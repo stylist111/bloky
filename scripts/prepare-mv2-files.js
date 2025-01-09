@@ -26,7 +26,7 @@ import {isMain} from "./utils.js";
 
 async function run() {
   let subsInput = [
-    path.join(process.cwd(), "core", "data", "subscriptions.json"),
+    path.join(process.cwd(), "adblockpluscore", "data", "subscriptions.json"),
     path.join(process.cwd(), "test", "scripts", "custom-subscriptions.json")
   ];
   let scriptsOutputDir = path.join(process.cwd(), "scriptsOutput");

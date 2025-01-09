@@ -84,7 +84,7 @@ build:src:
   script:
     - npm run build
     - DOCS_ERROR=$(npm run docs 2>&1 >/dev/null) && if [ ! -z "$DOCS_ERROR" ]; then echo $DOCS_ERROR && false; fi
-    - npm run docs-core
+    - npm run docs-adblockpluscore
   artifacts:
     paths:
       - dist/
@@ -99,7 +99,7 @@ lint:
     - npm run lint
 
 # Publishes the docs to https://eyeo.gitlab.io/adblockplus/abc/webext-ad-filtering-solution
-# and https://eyeo.gitlab.io/adblockplus/abc/webext-ad-filtering-solution/core/index.html
+# and https://eyeo.gitlab.io/adblockplus/abc/webext-ad-filtering-solution/adblockpluscore/index.html
 # Requirements: https://docs.gitlab.com/ee/user/project/pages/introduction.html#gitlab-pages-requirements
 pages:
   stage: build
@@ -146,11 +146,11 @@ unit:
   rules:
     - !reference [.avoid-flaky-run, rules]
 
-core:browser:
+adblockpluscore:browser:
   stage: unit
   extends: .basic-image
   script:
-    - docker run $DOCKER_OPTIONS --entrypoint npm $BASIC_IMAGE run test:core:browser
+    - docker run $DOCKER_OPTIONS --entrypoint npm $BASIC_IMAGE run test:adblockpluscore:browser
   rules:
     - !reference [.avoid-flaky-run, rules]
 

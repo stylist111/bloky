@@ -563,9 +563,10 @@ describe("Reporting", function() {
     it("logs unmatched for invalid rewrite filter", async function() {
       // At time of writing, rewrite filters are not allowed to
       // redirect to arbitrary resources. It's only ever data urls
-      // defined in core. This means when we redirect, we don't have
-      // to deal with the redirected request, because it's a data
-      // url. This test is meant to catch if this assumption is
+      // defined in adblockpluscore. This means when we redirect,
+      // we don't have to deal with the redirected request,
+      // because it's a data url.
+      // This test is meant to catch if this assumption is
       // broken in future and an arbitrary redirect is allowed.
       await expect(addFilter(
         `*.js$rewrite=${TEST_PAGES_URL}/script.js,domain=localhost`

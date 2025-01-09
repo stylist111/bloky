@@ -19,7 +19,7 @@ The CI pipeline has the following stages:
 
 - Build - stage where webextension-sdk is built, and tested statically by audit
 and linting.
-- [Unit](#unit-tests) - unit tests for both core & webext-sdk.
+- [Unit](#unit-tests) - unit tests for both adblockpluscore & webext-sdk.
 - [Functional tests](#functional-tests) - most extensive tests. It contains
 functional tests on web bundles, scripts and functional tests on various
 combinations of browsers and manifests. Note: the set of browsers varies for
@@ -39,28 +39,29 @@ engine.
 
 The following suites run all together with `npm test`:
 
-- Core unit tests
+- Adblockpluscore unit tests
 - Webext unit tests
 - Scripts tests
 
-Please notice the core browser tests run separately. For details please see the
-following sections.
+Please notice the adblockpluscore browser tests run separately. For details please
+see the following sections.
 
-### Core
+### Adblockpluscore
 
-The engine contains a core repository responsible for the core ad-filtering
-logic, which is tested at unit and browser levels. To run all core tests use
-the following commands from the top level directory:
+The engine contains a adblockpluscore repository responsible for
+the adblockpluscore ad-filtering logic, which is tested at unit and browser levels.
+To run all adblockpluscore tests use the following commands from the top level
+directory:
 
 ```
-npm run test:core:unit
-npm run test:core:browser
+npm run test:adblockpluscore:unit
+npm run test:adblockpluscore:browser
 ```
 
 Optionaly use a test path to run a single unit test module. Example:
 
 ```
-npm run test:core:unit -- test/dnr.js
+npm run test:adblockpluscore:unit -- test/dnr.js
 ```
 
 ### Unit (webext)
@@ -342,11 +343,11 @@ Note: Firefox is not supported by the performance tests.
 The CI/CD pipeline runs the tests using this docker image. Using docker locally
 to run the same tests may be useful to recreate the infrastructure the CI uses.
 
-#### Unit:core
+#### Unit:adblockpluscore
 
 ```
 docker build -t basic -f test/dockerfiles/basic.Dockerfile .
-docker run --cpus=2 --memory=6g --shm-size=2g -it --entrypoint npm basic run test:core -- [test/path]
+docker run --cpus=2 --memory=6g --shm-size=2g -it --entrypoint npm basic run test:adblockpluscore -- [test/path]
 ```
 
 #### Func:webext

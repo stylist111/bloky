@@ -5,7 +5,7 @@ Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](.
 
 This is a library that provides integration of eyeo's Ad Blocking Core
 for Chromium and Firefox extensions (like [Adblock Plus][abpui]). The Ad
-Blocking Core is in the `core` directory. See the content of that directory
+Blocking Core is in the `adblockpluscore` directory. See the content of that directory
 for further information.
 
 <div class="no-docs">

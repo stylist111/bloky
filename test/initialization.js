@@ -135,10 +135,11 @@ describe("Initialization", function() {
     });
   }
 
-  it("configures AA in default subscriptions from built-in core list", async function() {
+  it("configures AA in default subscriptions from built-in adblockpluscore list", async function() {
     let recommendations = await EWE.testing._recommendations();
 
-    // Force load from the default list (core/data/subscriptions.json)
+    // Force load from the default list
+    // (adblockpluscore/data/subscriptions.json)
     await EWE.testing._setRecommendations(null);
 
     try {

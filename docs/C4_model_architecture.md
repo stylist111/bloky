@@ -86,7 +86,7 @@ Person(anticv, "Anti-Circumvention Team")
 System_Boundary(code, "code repositories") {
 Container(ui, "AdBlock Plus UI", "JavaScript")
 Container(ewe, "Web extension Ad-Filtering Solution", "JavaScript", "Most of the internal functionality for an adblocking browser extension. Supports both V2 and V3 manifest formats.")
-Container(core, "AdBlock Plus Core", "JavaScript", "Environment-agnostic adblocking logic. Mostly developed with MV2 constraints in mind and so might not all support MV3 constraints.")
+Container(adblockpluscore, "AdBlock Plus Core", "JavaScript", "Environment-agnostic adblocking logic. Mostly developed with MV2 constraints in mind and so might not all support MV3 constraints.")
 Container(snippets, "Snippets", "JavaScript", "Code that can be executed as snippet filters")
 }
 
@@ -98,11 +98,11 @@ Rel(adblockinc, ui, "develops")
 Rel(adblockinc, firefox_ext, "bundles and submits to Firefox Web Store")
 Rel(adblockinc, chrome_ext, "bundles and submits to Chrome Web Store")
 Rel_R(desktop, ewe, "develops")
-Rel_R(desktop, core, "develops")
+Rel_R(desktop, adblockpluscore, "develops")
 Rel_L(anticv, snippets, "develops")
 
 Rel_D(ui, ewe, "uses")
-Rel_D(ewe, core, "uses, mostly to support MV2 mode")
+Rel_D(ewe, adblockpluscore, "uses, mostly to support MV2 mode")
 Rel_R(ewe, snippets, "uses")
 
 
@@ -218,7 +218,7 @@ title Web extension components diagram
 
 ' container itself
 Container_Boundary(webext, "Web extension") {
-  ' core
+  ' adblockpluscore
   Component(analytics, "Analytics", "", "(?)")
   Component(events, "Events", "", "(essentially EventEmitter, wires the components")
   Component(filters, "Filters", "", "(whole classes hierarchy)")
@@ -300,7 +300,7 @@ title Filter origin server components
 
 ' container itself
 Container_Boundary(webext, "Filter origin server") {
-  ' core  
+  ' adblockpluscore  
   Component(parser, "Filter parser", "Python (subscriptionParser.py)", "Filter parsing utils")
   Component(validator, "Filter validator", "Python", "Automated filter checks")
   ComponentDb(fileSystem, "File system", "", "Templates, full filter lists, diffs")

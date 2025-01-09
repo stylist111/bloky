@@ -29,11 +29,12 @@ features.
 
 ## How to add a feature flag
 
-- Find the `resetFeatureFlags` function in `core/lib/features.js`. Add your new
-  feature flag by setting a new value on `featureFlags` in the function, with a
-  value of `false` for the feature being disabled by default.
+- Find the `resetFeatureFlags` function in `adblockpluscore/lib/features.js`.
+  Add your new feature flag by setting a new value on `featureFlags`
+  in the function, with a value of `false` for the feature being disabled by
+  default.
 - Wherever braches are needed in the production code for different features, use
-  `isFeatureEnabled("myFeature")` (defined in `core/lib/features.js`).
+  `isFeatureEnabled("myFeature")` (defined in `adblockpluscore/lib/features.js`).
 - For tests which need a feature in a specific state, call `await
   setFeatureFlags({myFeature: true});` (defined in `test/messaging.js`) at the
   start of the test. There should be tests for both the enabled and disabled
@@ -43,14 +44,14 @@ features.
 
 ## How to change the default value of a feature flag
 
-- Find the `defaultFeatureFlags` object in `core/lib/features.js`, and update
-  its default value.
+- Find the `defaultFeatureFlags` object in `adblockpluscore/lib/features.js`,
+  and update its default value.
 - Update the release notes to indicate the change in default functionality.
 
 ## How to remove a feature flag
 
-- Find the `defaultFeatureFlags` object in `core/lib/features.js`. Remove the
-  feature from the object.
+- Find the `defaultFeatureFlags` object in `adblockpluscore/lib/features.js`.
+  Remove the feature from the object.
 - Replace any calls to `isFeatureEnabled()` with the appropriate static `false`
   (disabled) or `true` (enabled) value for the feature being removed. Then
   refactor the code to delete the unreachable codepaths.

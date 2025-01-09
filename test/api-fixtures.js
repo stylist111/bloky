@@ -121,7 +121,7 @@ export const subAcceptableAdsLocal = {
   diff_url: `${TEST_ADMIN_PAGES_URL}/updatable_subscription/diff.json`
 };
 
-// Subscriptions listed in core/data/subscriptions.json
+// Subscriptions listed in adblockpluscore/data/subscriptions.json
 
 export const subIDontCareAboutCookiesLive = {
   id: "2090F374-29D9-4202-B2CE-139D6492D95E",
@@ -134,7 +134,7 @@ export const subIDontCareAboutCookiesLive = {
 };
 
 // Subscriptions listed in test/scripts/custom-subscriptions.json and
-// core/data/subscriptions.json
+// adblockpluscore/data/subscriptions.json
 
 export const subEasylistLive = {
   id: "8C13E995-8F06-4927-BEA7-6C845FB7EEBF",

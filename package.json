@@ -7,7 +7,7 @@
     "url": "https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution"
   },
   "workspaces": [
-    "./core"
+    "./adblockpluscore"
   ],
   "author": "eyeo GmbH",
   "license": "GPL-3.0",
@@ -23,14 +23,14 @@
     "./content": "./dist/ewe-content.js",
     "./all/*": "./sdk/all/*",
     "./sdk/*": "./sdk/*",
-    "./adblockpluscore/*": "./core/*"
+    "./adblockpluscore/*": "./adblockpluscore/*"
   },
   "files": [
     "dist/*.js*",
-    "core/data",
-    "core/lib",
-    "core/scripts",
-    "core/package.json",
+    "adblockpluscore/data",
+    "adblockpluscore/lib",
+    "adblockpluscore/scripts",
+    "adblockpluscore/package.json",
     "RELEASE_NOTES.md",
     "scripts",
     "sdk",
@@ -78,18 +78,18 @@
   "scripts": {
     "lint": "node scripts/lint.js",
     "docs": "documentation build --document-exported --sort-order alpha -f html -o public --config documentation.yml sdk/background/index.js sdk/background/filters.js sdk/background/subscriptions.js sdk/background/reporting.js sdk/background/cdp.js sdk/background/debugging.js sdk/background/telemetry.js sdk/background/types.js sdk/background/experiments.js",
-    "docs-core": "jsdoc --configure core/.jsdoc.conf --destination public/core core/lib",
-    "updatepsl": "npm run -w core updatepsl",
+    "docs-adblockpluscore": "jsdoc --configure adblockpluscore/.jsdoc.conf --destination public/adblockpluscore adblockpluscore/lib",
+    "updatepsl": "npm run -w adblockpluscore updatepsl",
     "prepack": "npm run build",
     "build": "node scripts/build.js",
     "build:release": "npm run build -- --env release",
     "build-then-test": "node scripts/build-and-test.js",
-    "test": "npm run test:core:unit && npm run test:unit && npm run test:scripts",
+    "test": "npm run test:adblockpluscore:unit && npm run test:unit && npm run test:scripts",
     "test:bundle": "node test/bundle/run.js",
     "test:functional": "node test/runners/functional.js",
     "test:performance": "node test/runners/performance.js",
-    "test:core:unit": "npm run -w core test:unit",
-    "test:core:browser": "npm run -w core test:browser",
+    "test:adblockpluscore:unit": "npm run -w adblockpluscore test:unit",
+    "test:adblockpluscore:browser": "npm run -w adblockpluscore test:browser",
     "test:scripts": "mocha test/scripts/*.js",
     "test:unit": "mocha ./test/unit/**/*.js",
     "test-server": "node test/start-server.js",
