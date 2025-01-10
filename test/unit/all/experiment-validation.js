@@ -16,7 +16,7 @@
  */
 
 import expect from "expect";
-import {validateExperimentData} from "../../../sdk/all/experiment-validation.js";
+import {validateExperimentData} from "../../../src/all/experiment-validation.js";
 
 const SCHEMA_ID = "1";
 

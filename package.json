@@ -21,8 +21,8 @@
     ".": "./dist/ewe-api.js",
     "./background": "./dist/ewe-api.js",
     "./content": "./dist/ewe-content.js",
-    "./all/*": "./sdk/all/*",
-    "./sdk/*": "./sdk/*",
+    "./all/*": "./src/all/*",
+    "./src/*": "./src/*",
     "./adblockpluscore/*": "./adblockpluscore/*"
   },
   "files": [
@@ -77,7 +77,7 @@
   },
   "scripts": {
     "lint": "node scripts/lint.js",
-    "docs": "documentation build --document-exported --sort-order alpha -f html -o public --config documentation.yml sdk/background/index.js sdk/background/filters.js sdk/background/subscriptions.js sdk/background/reporting.js sdk/background/cdp.js sdk/background/debugging.js sdk/background/telemetry.js sdk/background/types.js sdk/background/experiments.js",
+    "docs": "documentation build --document-exported --sort-order alpha -f html -o public --config documentation.yml src/background/index.js src/background/filters.js src/background/subscriptions.js src/background/reporting.js src/background/cdp.js srck/background/debugging.js src/background/telemetry.js src/background/types.js src/background/experiments.js",
     "docs-adblockpluscore": "jsdoc --configure adblockpluscore/.jsdoc.conf --destination public/adblockpluscore adblockpluscore/lib",
     "updatepsl": "npm run -w adblockpluscore updatepsl",
     "prepack": "npm run build",

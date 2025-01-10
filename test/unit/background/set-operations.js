@@ -20,7 +20,7 @@
 
 import expect from "expect";
 import {arraysDiff, filtersUpdateDiff, mergeObjects}
-  from "../../../sdk/background/set-operations.js";
+  from "../../../src/background/set-operations.js";
 
 describe("Arrays diff", function() {
   it("returns empty", function() {

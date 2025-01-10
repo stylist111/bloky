@@ -70,7 +70,7 @@ In webext we mostly use functional tests to make sure everything works.
 
 Additionally, two specific areas lend themselves to unit tests.
 
-1. For utilities in the `sdk/all` folder. These may be individual imported by
+1. For utilities in the `src/all` folder. These may be individual imported by
    users of the SDK, and should not depend on any browser-specific APIs, and so
    are good candidates for unit testing. These unit tests go in the
    `test/unit/all` folder.
@@ -90,7 +90,7 @@ npm run test:unit
 
 The mocked files used by the background unit tests are automatically generated
 with `mock(...)`  and `cachedMock(...)` functions. It is also possible to
-generate mocked files by passing the filename from the `/sdk/background/`
+generate mocked files by passing the filename from the `/src/background/`
 directory:
 
 ```
@@ -488,7 +488,7 @@ this step.
 #### Code tracing to analyze flaky tests reasons
 
 Import `info()`, `log()`, `warn()`, `error()` or `trace()` from
-`sdk/background/debugging.js` to record that is happening in the solution and
+`src/background/debugging.js` to record that is happening in the solution and
 make it printed in the console when a test fails:
 
 ```

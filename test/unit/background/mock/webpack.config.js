@@ -25,7 +25,7 @@ import Dotenv from "dotenv-webpack";
 let dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
 export function getConfig(filename) {
-  let inputFilepath = path.join("../../../../sdk/background", filename);
+  let inputFilepath = path.join("../../../../src/background", filename);
   let mockedFilename = filename.replace(".js", ".mocked.js");
 
   // package.env.VERSION is used by the Dotenv plugin in to inject version
@@ -61,8 +61,8 @@ export function getConfig(filename) {
         "./prefs.js": path.resolve(dirname, "./prefs.mock.js"),
         "./sitekey.js": path.resolve(dirname, "./webext-sdk.mock.js"),
         "./cdp.js": path.resolve(dirname, "./webext-sdk.mock.js"),
-        "io$": path.resolve(dirname, "../../../../sdk/background/io.js"),
-        "info$": path.resolve(dirname, "../../../../sdk/background/info.js"),
+        "io$": path.resolve(dirname, "../../../../src/background/io.js"),
+        "info$": path.resolve(dirname, "../../../../src/background/info.js"),
         "prefs$": path.resolve(dirname, "./prefs.mock.js")
       }
     },

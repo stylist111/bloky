@@ -16,7 +16,7 @@
  */
 
 import expect from "expect";
-import {ignoreNoConnectionError} from "../../../sdk/all/errors.js";
+import {ignoreNoConnectionError} from "../../../src/all/errors.js";
 
 describe("Errors", function() {
   it("ignores could not establish connection errors", async function() {
