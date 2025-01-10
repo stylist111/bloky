@@ -215,10 +215,6 @@ export async function start() {
   await addSubscriptionsAndNotifyUser();
   revalidateAllowlistingStates();
 
-  // We have to require the "uninstall" module on demand,
-  // as the "uninstall" module in turn requires this module.
-  await (await import("./uninstall.js")).setUninstallURL();
-
   await initDisabledFilterCounters();
   initElementHidingDebugMode();
   await initNotifications(firstRun);
