@@ -17,6 +17,7 @@
   },
   "type": "module",
   "main": "./dist/ewe-api.js",
+  "types": "./src/types/index.d.ts",
   "exports": {
     ".": "./dist/ewe-api.js",
     "./background": "./dist/ewe-api.js",

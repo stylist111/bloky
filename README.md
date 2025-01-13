@@ -24,6 +24,7 @@ for further information.
   * [Shared resources](#shared-resources)
   * [Notifications support](#notifications-support)
   * [One Click Allowlisting support](#one-click-allowlisting-support)
+  * [TypeScript](#typescript)
 * [Documentation](#documentation)
 * [Development](#development)
   * [Prerequisites](#prerequisites)
@@ -330,6 +331,12 @@ passed to `setAuthorizedKeys`, the keys should be base64 encoded
 strings, in SPKI format.
 
 <div class="no-docs">
+
+### TypeScript
+
+Type declarations are currently manually generated and are located in the  
+```/src/types/index.d.ts``` file.
+Please make sure to update this file each time you want to create or update a type.
 
 ## Documentation
 

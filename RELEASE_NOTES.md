@@ -1,5 +1,10 @@
 # Unreleased
 
+## General
+
+- Moved the declared TypeScript types for webext-ad-filtering-solution  
+  from the extensions repo into the SDK. (EXT-662)
+
 ## Fixes
 
 - Fix bug where user filters that also appeared as diff updates on subscriptions
