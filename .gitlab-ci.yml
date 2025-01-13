@@ -221,6 +221,9 @@ func:v2:firefox:oldest:
   stage: functional
   needs: ["build:src"]
   variables:
+    # The eyeo windows CI runners fail to check out large numbers of packages,
+    # like the extensions monorepo, if npm can't retry fetching dependencies.
+    npm_config_fetch_retries: 2
     CI_PROJECT_ID_MAINSTREAM: 22365241
   before_script:
     - *edge_install_windows
