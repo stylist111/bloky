@@ -23,7 +23,7 @@ import uninstall from "./smoke/uninstall.js";
 import optionsPageAA from "./options-page/acceptable-ads.js";
 import optionsPageFL from "./options-page/filter-lists.js";
 import getPremium from "./premium/get-premium.js";
-import popupPage from "./popup-page.js";
+import popupElements from "./popup-page/popup-elements.js";
 import freeUserOptions from "./premium/free-user-options.js";
 import freeUserPopup from "./premium/free-user-popup.js";
 import testServer from "./test-server.js";
@@ -31,6 +31,7 @@ import oneClickAllowlisting from "./public-api/one-click-allowlisting.js";
 import bypassAPI from "./public-api/bypass-api.js";
 import eyeometry from "./data-collection/eyeometry.js";
 import youtubeAutoAllowlist from "./youtube-auto-allowlist.js";
+import helpFlow from "./popup-page/helpflow.js";
 
 export default () => {
   beforeEach(async function () {
@@ -44,7 +45,10 @@ export default () => {
     describe("Ad Filtering", adFiltering);
   });
 
-  describe("Popup Page", popupPage);
+  describe("Popup Page", function () {
+    describe("Popup elements", popupElements);
+    describe("Helpflow", helpFlow);
+  });
 
   describe("Options Page", function () {
     describe("Acceptable Ads", optionsPageAA);
