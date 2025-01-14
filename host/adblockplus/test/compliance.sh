@@ -2,7 +2,8 @@
 
 set -xeu
 
-SKIP="Subscriptions|hide-if-*|abort-*|Snippets.*JSON|override-property-read|skip-video|strip-fetch-query-parameter"
+# From the Snippets tests, only "simulate-mouse-event" will run by using a nested negation (?!)
+TESTS_TO_EXCLUDE="Subscriptions|Snippets.(?!simulate-mouse-event)"
 
 rm -rf testpages.adblockplus.org
 git clone https://gitlab.com/eyeo/developer-experience/testpages.adblockplus.org
@@ -17,5 +18,5 @@ TERMINAL="${TERMINAL:-it}"
 BROWSER="${BROWSER:-chromium latest}"
 docker run --shm-size=1g -$TERMINAL \
   -e SKIP_EXTENSION_DOWNLOAD="true"  \
-  -e GREP="^.*$BROWSER((?!$SKIP).)*\$" \
+  -e GREP="^.*$BROWSER((?!$TESTS_TO_EXCLUDE).)*\$" \
   $IMAGE_NAME
