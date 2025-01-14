@@ -2109,6 +2109,14 @@
     "message": "Блокирует уведомления о файлах cookie. Вы отказываетесь от своего права узнавать, используются ли на сайте файлы cookie.",
     "description": "A filter list explanation"
   },
+  "filter_free_distraction_control": {
+    "message": "Базовый контроль отвлекающих факторов",
+    "description": "A filter list"
+  },
+  "filter_free_distraction_control_explained": {
+    "message": "Блокируйте окна с видео в углу экрана и запросы на оплату/подписку, установку, рекомендации для покупки и т.д.",
+    "description": "A filter list explanation"
+  },
   "filterlistsrock2": {
     "message": "Списки фильтров блокируют большую часть рекламы в Интернете. Вы также можете...",
     "description": "Header text on the Customize tab"
@@ -3572,6 +3580,14 @@
   "distraction_control": {
     "message": "Никаких отвлечений",
     "description": "Name of a Premium option"
+  },
+  "enhanced_distraction_control": {
+    "message": "Улучшенный контроль отвлекающих факторов",
+    "description": "Name of a Premium option"
+  },
+  "enhanced_distraction_control_description": {
+    "message": "Возьмите браузер под контроль и просматривайте страницы, как вам нравится! Выберите «Улучшенный контроль отвлекающих факторов» и забудьте о выскакивающих окнах с рассылками, всплывающих видео, уведомлениях c сайтов и предложениях пройти опрос.",
+    "description": "Description of the Premium filter lists"
   },
   "premium_filters_title": {
     "message": "Фильтры Premium",

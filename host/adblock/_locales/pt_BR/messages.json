@@ -2109,6 +2109,14 @@
     "message": "bloqueia notificações de cookies, o que significa que você renuncia seu direito de ser notificado sobre o uso de cookies nos sites visitados",
     "description": "A filter list explanation"
   },
+  "filter_free_distraction_control": {
+    "message": "Controle de distrações básico",
+    "description": "A filter list"
+  },
+  "filter_free_distraction_control_explained": {
+    "message": "Bloqueie caixas de vídeo nos cantos e solicitações que pedem para você pagar/assinar, instalar, comprar itens recomendados e muito mais.",
+    "description": "A filter list explanation"
+  },
   "filterlistsrock2": {
     "message": "A listas de filtros bloqueia a maioria dos anúncios na internet. Você também pode...",
     "description": "Header text on the Customize tab"
@@ -3572,6 +3580,14 @@
   "distraction_control": {
     "message": "Controle de distrações",
     "description": "Name of a Premium option"
+  },
+  "enhanced_distraction_control": {
+    "message": "Controle de distrações aprimorado",
+    "description": "Name of a Premium option"
+  },
+  "enhanced_distraction_control_description": {
+    "message": "Assuma o controle do seu navegador e navegue como quiser! Diga adeus a janelas pop-up de newsletters, vídeos flutuantes e outras distrações irritantes com o Controle de distrações aprimorado.",
+    "description": "Description of the Premium filter lists"
   },
   "premium_filters_title": {
     "message": "Filtros do Premium",

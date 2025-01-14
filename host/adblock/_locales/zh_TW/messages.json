@@ -2101,6 +2101,14 @@
     "message": "阻擋 Cookie 通知，即表示您放棄瀏覽網站時收到使用 Cookie 通知的權利",
     "description": "A filter list explanation"
   },
+  "filter_free_distraction_control": {
+    "message": "基本干擾控制",
+    "description": "A filter list"
+  },
+  "filter_free_distraction_control_explained": {
+    "message": "攔截角落影片播放框及含有要求您付費/訂閱、安裝、購買推薦品項等內容的提示訊息。",
+    "description": "A filter list explanation"
+  },
   "filterlistsrock2": {
     "message": "過濾清單可以阻擋網路上大部分的廣告。您也可以……",
     "description": "Header text on the Customize tab"
@@ -3564,6 +3572,14 @@
   "distraction_control": {
     "message": "干擾控制",
     "description": "Name of a Premium option"
+  },
+  "enhanced_distraction_control": {
+    "message": "進階干擾控制",
+    "description": "Name of a Premium option"
+  },
+  "enhanced_distraction_control_description": {
+    "message": "您的瀏覽器由您掌控，以您想要的方式悠遊網路！進階干擾控制功能可助您輕鬆揮別電子報訂閱彈出視窗、浮動式影片、網站通知和問卷調查請求等惱人的干擾。",
+    "description": "Description of the Premium filter lists"
   },
   "premium_filters_title": {
     "message": "Premium篩選器",

@@ -65,14 +65,15 @@ const SyncService = (function getSyncService() {
   // with an ID of 'url:...' instead of the id in the betafish-subscriptions.json file
   // any adds to the the betafish-subscriptions.json file should be added here as well.
   const sendFilterListByURL = [
-    "nordic",
     "annoyances",
-    "fb_notifications",
-    "easylist_plus_romanian",
-    "idcac",
     "cookies-premium",
-    "turkish",
+    "easylist_plus_romanian",
+    "fb_notifications",
+    "free_distraction_control",
+    "idcac",
     "japanese",
+    "nordic",
+    "turkish",
   ];
   const { flavor } = getUserAgentInfo();
   const { os } = getUserAgentInfo();

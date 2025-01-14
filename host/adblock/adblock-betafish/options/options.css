@@ -139,6 +139,10 @@ a .link-text-color:hover {
   font-style: italic;
 }
 
+.lowercase {
+  text-transform: lowercase;
+}
+
 .left {
   float: left;
 }

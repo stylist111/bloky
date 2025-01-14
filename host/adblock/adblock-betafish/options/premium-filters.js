@@ -24,8 +24,8 @@
 const premiumFiltersUIitems = [
   {
     id: "distraction-control",
-    title: translate("distraction_control"),
-    description: `${translate("distraction_control_description_I")} ${translate("distraction_control_description_II")}`,
+    title: translate("enhanced_distraction_control"),
+    description: translate("enhanced_distraction_control_description"),
     disclaimer: `${translate("please_note")} ${translate("distraction_control_new")} ${translate("your_participation")} ${translate("dc_more_information")}`,
     urlToOpen:
       "https://help.getadblock.com/support/solutions/articles/6000250028-about-distraction-control",

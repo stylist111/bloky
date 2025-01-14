@@ -15,6 +15,7 @@
  * along with AdBlock.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+const addTestId = (el) => ({ ...el, testId: `filters_${el.name}` });
 export const languageFilterLists = [
   {
     name: "easylist_plus_arabic_plus_french",
@@ -141,7 +142,7 @@ export const languageFilterLists = [
     text: "Vietnamese + EasyList",
     inputId: "languageFilterList_24",
   },
-];
+].map(addTestId);
 
 export function getDefaultFilterLists(aaEnabled) {
   return [
@@ -206,15 +207,15 @@ export function getDefaultFilterLists(aaEnabled) {
       text: "I Don't Care About Cookies",
       enabled: false,
     },
-  ];
+  ].map(addTestId);
 }
 
 export const premiumFilterLists = [
   { inputId: "distraction-control", text: "Distraction Control" },
   { inputId: "cookies-premium", text: "Cookie Consent Cutter" },
-];
+].map(addTestId);
 
 export const premiumPopupToggleItems = [
   { name: "cookies-premium", action: "confirmCookie" },
   { name: "distraction-control", action: "confirmDistractions" },
-];
+].map(addTestId);

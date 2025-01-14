@@ -2109,6 +2109,14 @@
     "message": "blokkeert cookiemeldingen, wat betekent dat je afziet van je recht om meldingen te ontvangen over cookiegebruik op de websites die je bezoekt",
     "description": "A filter list explanation"
   },
+  "filter_free_distraction_control": {
+    "message": "Basisafleidingscontrole",
+    "description": "A filter list"
+  },
+  "filter_free_distraction_control_explained": {
+    "message": "Blokkeer video's en prompts waarin u wordt gevraagd om te betalen/u te abonneren, iets te installeren, aanbevolen items te kopen en nog veel meer.",
+    "description": "A filter list explanation"
+  },
   "filterlistsrock2": {
     "message": "Met de filterlijsten blokkeer je de meeste advertenties op internet. Je kunt ook...",
     "description": "Header text on the Customize tab"
@@ -3572,6 +3580,14 @@
   "distraction_control": {
     "message": "Afleidingscontrole",
     "description": "Name of a Premium option"
+  },
+  "enhanced_distraction_control": {
+    "message": "Verbeterde afleidingscontrole",
+    "description": "Name of a Premium option"
+  },
+  "enhanced_distraction_control_description": {
+    "message": "Neem de controle over uw browser en surf zoals u dat wilt! Zeg vaarwel tegen pop-ups voor nieuwsbrieven, zwevende video's, sitemeldingen en enquêteverzoeken met de verbeterde afleidingscontrole.",
+    "description": "Description of the Premium filter lists"
   },
   "premium_filters_title": {
     "message": "Premium filters",

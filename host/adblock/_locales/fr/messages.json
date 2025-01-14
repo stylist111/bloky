@@ -2109,6 +2109,14 @@
     "message": "bloque les notifications de cookies, vous renoncez donc à votre droit de recevoir une notification relative à l'utilisation des cookies sur les sites web que vous visitez",
     "description": "A filter list explanation"
   },
+  "filter_free_distraction_control": {
+    "message": "Contrôle des sources de distractions courantes",
+    "description": "A filter list"
+  },
+  "filter_free_distraction_control_explained": {
+    "message": "Bloquez les vidéos et les fenêtres contextuelles qui apparaissent dans le coin de votre écran pour vous demander de payer, de vous abonner, d'installer ou d'acheter des produits et bien plus encore.",
+    "description": "A filter list explanation"
+  },
   "filterlistsrock2": {
     "message": "Les listes de filtres bloquent la plupart des publicités sur le web. Vous pouvez également...",
     "description": "Header text on the Customize tab"
@@ -3572,6 +3580,14 @@
   "distraction_control": {
     "message": "Contrôle des distractions",
     "description": "Name of a Premium option"
+  },
+  "enhanced_distraction_control": {
+    "message": "Contrôle des sources de distractions amélioré",
+    "description": "Name of a Premium option"
+  },
+  "enhanced_distraction_control_description": {
+    "message": "Prenez le contrôle de votre navigateur et naviguez comme vous le souhaitez ! Dites au adieu aux pop-ups de lettres d'information, aux vidéos flottantes, aux notifications des sites web et aux demandes de sondage grâce au contrôle amélioré des sources de distractions.",
+    "description": "Description of the Premium filter lists"
   },
   "premium_filters_title": {
     "message": "Filtres Premium",

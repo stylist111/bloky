@@ -177,7 +177,7 @@ const removeBottomLine = function (section) {
 // Utility class for filter lists.
 function FilterListUtil() {}
 
-FilterListUtil.sortFilterListArrays = () => {
+FilterListUtil.sortFilterListArrays = (newFilters) => {
   // Sort alphabetically
   for (const filterList in filterListSections) {
     filterListSections[filterList].array.sort((a, b) => (a.label > b.label ? 1 : -1));
@@ -192,36 +192,47 @@ FilterListUtil.sortFilterListArrays = () => {
       aaSection.splice((aaIndex += 1), 0, aaPrivacyFilter);
     }
   }
+
+  // Move new filters to top of Other Filters section
+  const otherSection = filterListSections.otherFilterList.array;
+  const newFilterArray = newFilters
+    .map((filterId) => otherSection.find(({ adblockId }) => adblockId === filterId))
+    .filter(Boolean);
+  const filteredSection = otherSection.filter(({ adblockId }) => !newFilters.includes(adblockId));
+
+  filterListSections.otherFilterList.array = [...newFilterArray, ...filteredSection];
 };
 
 // Prepare filterListSections.
 // Inputs:
 //    subs:object - Map for subscription lists taken from the background.
 FilterListUtil.getFilterListType = (filterList) => {
-  let filterListType = "";
-  if (
-    filterList.adblockId === "easylist" ||
-    filterList.adblockId === "anticircumvent" ||
-    filterList.adblockId === "acceptable_ads" ||
-    filterList.adblockId === "acceptable_ads_privacy"
-  ) {
-    filterListType = "adblockFilterList";
-  } else if (
-    filterList.adblockId === "easyprivacy" ||
-    filterList.adblockId === "antisocial" ||
-    filterList.adblockId === "annoyances" ||
-    filterList.adblockId === "bitcoin_mining_protection" ||
-    filterList.adblockId === "warning_removal" ||
-    filterList.adblockId === "idcac" ||
-    filterList.adblockId === "fb_notifications"
-  ) {
-    filterListType = "otherFilterList";
-  } else if (filterList.language === true) {
-    filterListType = "languageFilterList";
-  } else {
-    filterListType = "customFilterList";
+  const { adblockId } = filterList;
+  const adblockFilters = ["easylist", "anticircumvent", "acceptable_ads", "acceptable_ads_privacy"];
+  const otherFilters = [
+    "annoyances",
+    "antisocial",
+    "bitcoin_mining_protection",
+    "easyprivacy",
+    "fb_notifications",
+    "free_distraction_control",
+    "idcac",
+    "warning_removal",
+  ];
+
+  if (adblockFilters.includes(adblockId)) {
+    return "adblockFilterList";
   }
-  return filterListType;
+
+  if (otherFilters.includes(adblockId)) {
+    return "otherFilterList";
+  }
+
+  if (filterList.language === true) {
+    return "languageFilterList";
+  }
+
+  return "customFilterList";
 };
 
 // Prepare Subscriptions
@@ -230,9 +241,11 @@ FilterListUtil.getFilterListType = (filterList) => {
 //   -- adds additional properties for the UI
 //   -- calls function to categorize the subscriptions
 //   -- sorts the subscriptions alphabetically by category
+//   -- moves the lists called out for highlighting to the top of their section
 // Inputs:
 //    subs:object - Map for subscription lists taken from the background.
-FilterListUtil.prepareSubscriptions = (subs) => {
+//    toHightlight:array - An array of filter list names to be moved to the top of their section.
+FilterListUtil.prepareSubscriptions = (subs, toHighlight) => {
   const subsAsArray = Object.entries(subs);
   const cleanedSubs = cleanUpSubs(subsAsArray);
   // eslint-disable-next-line arrow-body-style
@@ -242,7 +255,7 @@ FilterListUtil.prepareSubscriptions = (subs) => {
 
   FilterListUtil.cachedSubscriptions = Object.fromEntries(processedSubs);
   filterListSections = addFiltersToArray(filterListSections, processedSubs);
-  FilterListUtil.sortFilterListArrays();
+  FilterListUtil.sortFilterListArrays(toHighlight);
 };
 
 // Returns the subscription info object for the custom filter list specified by |url|,
@@ -547,6 +560,7 @@ function getDefaultFilterUI(filterList, checkboxID, filterListType) {
   const isAcceptableAdsVal = isAcceptableAds(filterList);
   const isLanguageFilter = filterListType === "languageFilterList";
   const aaPrivacy = FilterListUtil.cachedSubscriptions.acceptable_ads_privacy;
+  const testId = `filters_${filterList.adblockId}`;
   let isSelected = filterList.subscribed;
   let filterListUrl = filterList.url;
 
@@ -566,6 +580,7 @@ function getDefaultFilterUI(filterList, checkboxID, filterListType) {
     .attr("type", "checkbox")
     .attr("adblockId", checkboxID)
     .attr("id", checkboxID)
+    .attr("data-testid", testId)
     .prop("checked", isSelected);
 
   const $checkBoxIcons = $(`
@@ -604,6 +619,7 @@ function getDefaultFilterUI(filterList, checkboxID, filterListType) {
   const $extraInformation = $("<div>")
     .addClass("extra-info")
     .addClass("italic")
+    .addClass("lowercase")
     .text(translate(`filter_${filterList.adblockId}_explained`));
 
   const $filterInfo = $("<div>").append($filterHeader).append($extraInformation);
@@ -1155,7 +1171,9 @@ $(async () => {
   const subs = await SubscriptionAdapter.getAllSubscriptionsMinusText();
   // Initialize page using subscriptions from the background.
   // Copy from update subscription list + setsubscriptionlist
-  FilterListUtil.prepareSubscriptions(subs);
+  // Move highlighted filters to top of Other Filters section
+  const otherFiltersToHightlight = ["free_distraction_control"];
+  FilterListUtil.prepareSubscriptions(subs, otherFiltersToHightlight);
 
   for (const adblockId in filterListSections) {
     const sectionHandler = new SectionHandler(filterListSections[adblockId], adblockId);

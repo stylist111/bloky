@@ -363,13 +363,13 @@ export async function setAADefaultState() {
 export async function waitForSubscribed(
   name,
   inputId,
-  { timeout = 3000, allowFetching = false } = {},
+  { timeout = 3000, allowFetching = false, selectorOverride = false } = {},
 ) {
   const regexp = allowFetching ? /updated|Subscribed|Fetching/ : /updated|Subscribed/;
 
   await driver.wait(
     async () => {
-      const flEnabled = await isCheckboxEnabled(inputId);
+      const flEnabled = await isCheckboxEnabled(inputId, { selectorOverride });
       const text = await getSubscriptionInfo(name);
       return flEnabled && regexp.test(text);
     },

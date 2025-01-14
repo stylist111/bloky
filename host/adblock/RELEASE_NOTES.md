@@ -1,5 +1,7 @@
 # Unreleased
 
+- Added new free basic distraction control filter list
+
 - Removed machine learning snippets from extension (refs EXT-710)
 
 # 6.13.1 - 2025-01-07

@@ -160,8 +160,9 @@ export async function waitForNotNullProperty(cssSelector, property, timeout = 10
   return value;
 }
 
-export function isCheckboxEnabled(inputId) {
-  return waitForNotNullProperty(`#${inputId}`, "checked");
+export function isCheckboxEnabled(inputId, { selectorOverride = false } = {}) {
+  const selector = selectorOverride ? inputId : `#${inputId}`;
+  return waitForNotNullProperty(selector, "checked");
 }
 
 export async function clickOnDisplayedElement(

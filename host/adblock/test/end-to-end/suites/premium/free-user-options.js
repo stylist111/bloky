@@ -161,7 +161,7 @@ export default () => {
     );
 
     const listTitles = await Promise.all(listTitlesElems.map((e) => e.getText()));
-    expect(listTitles).toEqual(["Distraction Control", "Cookie Consent Cutter"]);
+    expect(listTitles).toEqual(["Enhanced Distraction Control", "Cookie Consent Cutter"]);
 
     // check distraction control link
     await clickAndCloseNewTab("#premium-filter-lists > div:nth-child(1)", fullPremiumUrl);
