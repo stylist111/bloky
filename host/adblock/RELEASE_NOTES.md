@@ -3,6 +3,9 @@
 - Added new free basic distraction control filter list
 
 - Removed machine learning snippets from extension (refs EXT-710)
+- Updated webext-ad-filtering-solution to 1.23.0
+- Updated minimum Chrome version to 79 for MV2 extensions
+- Updated minimum Opera version to 66 for MV2 extensions
 
 # 6.13.1 - 2025-01-07
 

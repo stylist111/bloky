@@ -50,7 +50,8 @@ export default () => {
     expect(Object.keys(data)).to.have.members([
       "firstPing",
       "lastPing",
-      "lastPingTag"
+      "lastPingTag",
+      "ucid"
     ]);
   });
 

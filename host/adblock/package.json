@@ -137,7 +137,7 @@
     "@eyeo-fragments/yt-wall-detection": "*",
     "@eyeo/ext-ui-components": "*",
     "@eyeo/snippets": "1.7.1",
-    "@eyeo/webext-ad-filtering-solution": "1.22.0",
+    "@eyeo/webext-ad-filtering-solution": "1.23.0",
     "@rollup/plugin-typescript": "8.3.2",
     "@types/dompurify": "3.0.2",
     "@types/webextension-polyfill": "0.8.0",

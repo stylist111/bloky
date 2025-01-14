@@ -256,7 +256,9 @@ comp:MV2:edge:latest:
 comp:MV2:chromium:oldest:
   extends: .compliance:MV2
   variables:
-    BROWSER: chromium 77.0.3865.0
+    BROWSER: chromium 79.0.3945.0
+    CUSTOM_BROWSER: chromium
+    BROWSER_VERSION: 79.0.3945.0
 
 comp:MV2:firefox:latest:
   extends: .compliance:MV2

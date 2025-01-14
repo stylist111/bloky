@@ -1,4 +1,4 @@
-chrome >= 77
-edge >= 77
+chrome >= 79
+edge >= 79
 firefox >= 68
-opera >= 64
+opera >= 66
