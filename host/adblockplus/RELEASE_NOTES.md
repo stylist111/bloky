@@ -1,8 +1,13 @@
 # Unreleased
 
+# 4.11.0 - 2025-01-15
+
+Increased the minimum supported browser versions for chromium and opera. Attempt to fix
+the scheduled IPM pings.
+
 - Updated webext-ad-filtering-solution to 1.23.1
-- Updated minimum Chrome version to 79 for MV2 extensions
-- Updated minimum Opera version to 66 for MV2 extensions
+- Updated minimum Chrome version to 79 for MV2 extensions (EXT-667)
+- Updated minimum Opera version to 66 for MV2 extensions (EXT-667)
 - Moved SDK types into the webext-ad-filtering-solution repo (EXT-662)
 
 # 4.10.1 - 2025-01-07
