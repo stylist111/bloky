@@ -15,11 +15,10 @@
  * along with Web Extensions CU.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* eslint-disable no-console */
-
 import fs from "fs";
 import path from "path";
-import { pipeline } from "stream/promises";
+
+import { download } from "@eyeo/get-browser-binary";
 
 /**
  * Sleep for a given amount of time
@@ -52,23 +51,6 @@ export function findProjectRoot(startDir = process.cwd(), lookupFile = "package.
   }
 
   return findProjectRoot(parentDir);
-}
-
-/**
- * Downloads a file from a URL and saves it to the output path
- *
- * @param {string} url - The URL to download the file from
- * @param {string} outputPath - The path to save the file to
- * @returns {Promise<void>}
- */
-async function downloadFile(url, outputPath) {
-  console.log(`Downloading ${url} to ${outputPath} ...`);
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${url}: ${response.statusText}`);
-  }
-  const fileStream = fs.createWriteStream(outputPath);
-  await pipeline(response.body, fileStream);
 }
 
 /**
@@ -124,11 +106,10 @@ export async function downloadLatestReleaseBuilds({
   }
 
   const promises = [];
-  for (const link of latestRelease.assets.links) {
-    const fileName = link.name;
-    if (fileName.includes(browserName) && fileName.includes(`mv${manifestVersion}`)) {
-      console.log(`Downloading ${fileName}...`);
-      promises.push(downloadFile(link.url, path.join(outputDirPath, link.name)));
+  for (const { name, url } of latestRelease.assets.links) {
+    if (name.includes(browserName) && name.includes(`mv${manifestVersion}`)) {
+      console.log(`Downloading ${url} ...`); // eslint-disable-line no-console
+      promises.push(download(url, path.join(outputDirPath, name)));
     }
   }
   await Promise.all(promises);

@@ -10,5 +10,6 @@ module.exports = {
   rules: {
     "no-console": ["error", { allow: ["warn", "error"] }],
     "no-undef": "error",
+    "no-unused-vars": "error",
   },
 };
