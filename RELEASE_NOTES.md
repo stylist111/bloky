@@ -1,5 +1,7 @@
 # Unreleased
 
+# 1.23.1 - 2025-01-15
+
 ## General
 
 - Moved the declared TypeScript types for webext-ad-filtering-solution  
