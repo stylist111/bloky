@@ -467,7 +467,3 @@ perf:v3:chromium:
   extends: .performance
   variables:
     PARAMS: 3 chromium
-
-include:
-  - template: Jobs/SAST.gitlab-ci.yml
-  - template: Code-Quality.gitlab-ci.yml
