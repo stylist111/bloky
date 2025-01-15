@@ -84,13 +84,19 @@ async function enablePremiumByUI() {
   // Premium onboarding
   await driver.switchTo().defaultContent();
   await clickOnDisplayedElement('[data-extension-page="premium-onboarding"]', {
-    timeout: 20000
+    timeout: 30000
   });
   await findUrl(`${extension.origin}/premium-onboarding.html`);
 }
 
 export default () => {
   it("activates premium by UI", async function () {
+    // This flow is slow, as it takes some time for the payment provider
+    // to inform our backend about the payment status.
+    // Therefore, we need to increase the timeout for this test.
+    // See: https://eyeo.atlassian.net/issues/EXT-518
+    this.timeout(0);
+
     await enablePremiumByUI();
     await checkPremiumActivated();
   });

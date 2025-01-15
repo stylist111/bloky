@@ -360,7 +360,11 @@ export async function waitForAdsBlockedToBeInRange(min, max) {
   return adsBlocked;
 }
 
-export async function checkPremiumActivated() {
+export async function checkPremiumActivated({
+  timeout = 30000,
+  retry = 0,
+  maxRetries = 10
+} = {}) {
   await driver.switchTo().window(getOptionsHandle());
   await driver.navigate().refresh();
   await initOptionsGeneralTab(getOptionsHandle());
@@ -371,8 +375,21 @@ export async function checkPremiumActivated() {
     ".premium-banner-container",
     'a[data-i18n="options_premium_manage"]'
   ];
-  for (const selector of premiumSelectors) {
-    await getDisplayedElement(selector);
+
+  try {
+    for (const selector of premiumSelectors) {
+      await getDisplayedElement(selector);
+    }
+  } catch (e) {
+    if (retry >= maxRetries) {
+      throw new Error("Premium elements not found after 3 retries");
+    }
+
+    console.warn(
+      `Premium elements not found, wait ${timeout}ms and retry... [${retry + 1}]`
+    );
+    await driver.sleep(timeout);
+    return checkPremiumActivated({ timeout, maxRetries, retry: retry + 1 });
   }
 }
 
