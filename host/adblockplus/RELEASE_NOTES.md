@@ -1,9 +1,10 @@
 # Unreleased
 
+- Added new free basic distraction control filter list (refs EXT-598)
+
 # 4.11.0 - 2025-01-15
 
-Increased the minimum supported browser versions for chromium and opera. Attempt to fix
-the scheduled IPM pings.
+Increased the minimum supported browser versions for chromium and opera. Attempt to fix the scheduled IPM pings.
 
 - Updated webext-ad-filtering-solution to 1.23.1
 - Updated minimum Chrome version to 79 for MV2 extensions (EXT-667)

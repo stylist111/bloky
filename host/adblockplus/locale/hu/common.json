@@ -38,6 +38,9 @@
   "common_feature_social_title": {
     "message": "Közösségimédia-ikonok követésének tiltása"
   },
+  "common_feature_videos_title": {
+    "message": "Leggyakoribb zavarások blokkolása"
+  },
   "common_notification_hide": {
     "message": "Értesítés bezárása"
   },

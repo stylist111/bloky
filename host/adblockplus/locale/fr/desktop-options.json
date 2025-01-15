@@ -405,7 +405,7 @@
     "message": "Évaluez-nous"
   },
   "options_recommended_annoyances_description": {
-    "message": "Bloquez les vidéos flottantes, les popups de newsletter, les demandes d’enquête et les notifications de site."
+    "message": "Prenez le contrôle de votre navigateur et naviguez comme vous le souhaitez ! Dites au adieu aux pop-ups de lettres d'information, aux vidéos flottantes, aux notifications des sites web et aux demandes de sondage grâce au contrôle amélioré des sources de distractions."
   },
   "options_recommended_cookies_premium_description": {
     "message": "Naviguer sur les sites web sans que les notifications de cookies s'affichent."
@@ -418,6 +418,9 @@
   },
   "options_recommended_social_description": {
     "message": "Empêchez les réseaux sociaux de créer un profil de vous basé sur vos habitudes de navigation."
+  },
+  "options_recommended_videos_description": {
+    "message": "Bloquez les vidéos et les fenêtres contextuelles qui apparaissent dans le coin de votre écran pour vous demander de payer, de vous abonner, d'installer ou d'acheter des produits."
   },
   "options_report_bug": {
     "message": "Vous avez trouvé un bogue ? <a>Envoyez-nous un rapport de bogue</a>"

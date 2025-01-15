@@ -15,7 +15,7 @@
     }
   },
   "common_feature_annoyances_title": {
-    "message": "Mehr Ablenkungen blockieren"
+    "message": "Verbesserte Ablenkungskontrolle"
   },
   "common_feature_anti_adblock_title": {
     "message": "Adblock-Warnmeldungen verbergen"
@@ -37,6 +37,9 @@
   },
   "common_feature_social_title": {
     "message": "Blockieren von Tracking mittels Social-Media-Symbolen"
+  },
+  "common_feature_videos_title": {
+    "message": "Blockiere einfache Ablenkungen"
   },
   "common_notification_hide": {
     "message": "Benachrichtigung schließen"

@@ -448,6 +448,7 @@ function addSubscription(subscription) {
     case "notifications":
     case "privacy":
     case "social":
+    case "videos":
       collection = collections.recommendedFreeList;
       break;
     default:

@@ -15,7 +15,7 @@
     }
   },
   "common_feature_annoyances_title": {
-    "message": "Blocca altre distrazioni"
+    "message": "Controllo Distrazioni Avanzato"
   },
   "common_feature_anti_adblock_title": {
     "message": "Nascondere i messaggi di avviso di Adblock"
@@ -37,6 +37,9 @@
   },
   "common_feature_social_title": {
     "message": "Bloccare il tracciamento delle icone per i social media"
+  },
+  "common_feature_videos_title": {
+    "message": "Blocca le distrazioni di base"
   },
   "common_notification_hide": {
     "message": "Chiudi questa notifica"

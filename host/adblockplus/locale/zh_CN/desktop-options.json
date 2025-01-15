@@ -405,7 +405,7 @@
     "message": "评价我们"
   },
   "options_recommended_annoyances_description": {
-    "message": "拦截浮动视频、新闻通讯弹出窗口、调查请求和网站通知。"
+    "message": "掌控浏览器，按您想要的方式浏览信息！使用增强的干扰控制功能，告别新闻通讯弹出窗口、浮动视频和调查请求。"
   },
   "options_recommended_cookies_premium_description": {
     "message": "浏览网站时不会看到 Cookie 通知。"
@@ -418,6 +418,9 @@
   },
   "options_recommended_social_description": {
     "message": "防止社交媒体网络根据您的浏览习惯建立您的个人档案。"
+  },
+  "options_recommended_videos_description": {
+    "message": "B拦截角落视频，以及要求您支付、订阅、安装或购买推荐商品的弹出窗口。"
   },
   "options_report_bug": {
     "message": "发现错误？<a>向我们发送错误报告</a>"

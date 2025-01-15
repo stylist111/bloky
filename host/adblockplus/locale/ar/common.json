@@ -38,6 +38,9 @@
   "common_feature_social_title": {
     "message": "حجب تعقب رموز مواقع التواصل الاجتماعي"
   },
+  "common_feature_videos_title": {
+    "message": "حجب عوامل التشتيت الأساسية"
+  },
   "common_notification_hide": {
     "message": "أغلق التنبيه"
   },

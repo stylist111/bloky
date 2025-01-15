@@ -15,7 +15,7 @@
     }
   },
   "common_feature_annoyances_title": {
-    "message": "Blokkeer meer afleidingen"
+    "message": "Verbeterde afleidingscontrole"
   },
   "common_feature_anti_adblock_title": {
     "message": "Adblock-waarschuwingsberichten verbergen"
@@ -37,6 +37,9 @@
   },
   "common_feature_social_title": {
     "message": "Tracking via sociale-mediapictogrammen blokkeren"
+  },
+  "common_feature_videos_title": {
+    "message": "Blokkeer basisafleidingen"
   },
   "common_notification_hide": {
     "message": "Melding sluiten"

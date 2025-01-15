@@ -34,8 +34,8 @@
     "message": "ABP Anti-Circumvention Filter List"
   },
   "common_feature_annoyances_title": {
-    "description": "https://gitlab.com/adblockinc/ext/adblockplus/spec/blob/174961bed1ed95f9118bd08df0d6ad6e267e567d/spec/abp/desktop-settings/general-tab.md#premium-features-1",
-    "message": "Block more distractions"
+    "description": "Title for the enhanced distraction control (premium) filter list",
+    "message": "Enhanced distraction control"
   },
   "common_feature_cookies_premium_title": {
     "description": "https://gitlab.com/adblockinc/ext/adblockplus/spec/blob/ab27c2fcfbde533411185c88190a108f21f6496b/spec/abp/desktop-settings/general-tab.md#premium-features-1",
@@ -52,6 +52,10 @@
   "common_feature_social_title": {
     "description": "Feature title for social media blocking filter list",
     "message": "Block social media icons tracking"
+  },
+  "common_feature_videos_title": {
+    "description": "Title of basic distraction control filter list option, a free option",
+    "message": "Basic distraction control"
   },
   "common_feature_notifications_title": {
     "description": "https://gitlab.com/eyeo/specs/spec/blob/52243bc8596b06107461034c745a6ecdaa42f1f6/spec/abp/desktop-settings/general-tab.md#list-of-recommended-filter-lists",

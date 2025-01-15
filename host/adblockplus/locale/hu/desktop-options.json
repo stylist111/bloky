@@ -419,6 +419,9 @@
   "options_recommended_social_description": {
     "message": "Akadályozza meg, hogy a közösségi média hálózatok profilt készíthessenek a böngészési szokásai alapján."
   },
+  "options_recommended_videos_description": {
+    "message": "A sarokban megjelenő videók és a fizetést, feliratkozást, telepítést vagy üzlet által ajánlott cikkek megvásárlását kérő előugró ablakok blokkolása."
+  },
   "options_report_bug": {
     "message": "Hibát talált? <a>Küldjön hibajelentést nekünk</a>"
   },

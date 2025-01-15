@@ -76,8 +76,8 @@
     "message": "Free features"
   },
   "options_recommended_annoyances_description": {
-    "description": "https://gitlab.com/adblockinc/ext/adblockplus/spec/blob/174961bed1ed95f9118bd08df0d6ad6e267e567d/spec/abp/desktop-settings/general-tab.md#premium-features-1",
-    "message": "Block floating videos, newsletter pop-ups, survey requests and site notifications."
+    "description": "Description of enhanced distraction control filter list option, a premium option",
+    "message": "Take control of your browser and browse the way you want to! Say goodbye to newsletter pop-ups, floating videos, site notifications and survey requests with Enhanced Distraction Control."
   },
   "options_recommended_cookies_premium_description": {
     "description": "https://gitlab.com/adblockinc/ext/adblockplus/spec/blob/ab27c2fcfbde533411185c88190a108f21f6496b/spec/abp/desktop-settings/general-tab.md#premium-features-1",
@@ -90,6 +90,10 @@
   "options_recommended_social_description": {
     "description": "https://gitlab.com/adblockinc/ext/adblockplus/spec/blob/174961bed1ed95f9118bd08df0d6ad6e267e567d/spec/abp/desktop-settings/general-tab.md#list-of-free-features",
     "message": "Prevent social media networks from building a profile of you based on your browsing habits."
+  },
+  "options_recommended_videos_description": {
+    "description": "Description for basic distraction control filter list option, a free option",
+    "message": "Block corner video boxes and prompts asking you to pay/subscribe, install, shop recommended items and more."
   },
   "options_recommended_notifications_description": {
     "description": "https://gitlab.com/eyeo/specs/spec/blob/52243bc8596b06107461034c745a6ecdaa42f1f6/spec/abp/desktop-settings/general-tab.md#list-of-recommended-filter-lists",

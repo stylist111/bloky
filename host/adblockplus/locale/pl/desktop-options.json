@@ -419,6 +419,9 @@
   "options_recommended_social_description": {
     "message": "Zablokuj sieciom społecznościowym możliwość budowania Twojego profilu w oparciu o nawyki w przeglądaniu stron."
   },
+  "options_recommended_videos_description": {
+    "message": "Blokuj filmy oraz wyskakujące okienka, które proszą o zapłatę, subskrypcję, instalację lub zakup polecanych produktów."
+  },
   "options_report_bug": {
     "message": "Widzisz błąd? <a>Wyślij do nas zgłoszenie</a>"
   },

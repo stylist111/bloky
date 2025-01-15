@@ -15,7 +15,7 @@
     }
   },
   "common_feature_annoyances_title": {
-    "message": "Заблокируйте еще больше помех"
+    "message": "Улучшенный контроль отвлекающих факторов"
   },
   "common_feature_anti_adblock_title": {
     "message": "Скрывать предупреждения об использовании блокировщика рекламы"
@@ -37,6 +37,9 @@
   },
   "common_feature_social_title": {
     "message": "Блокировать отслеживание через значки социальных сетей"
+  },
+  "common_feature_videos_title": {
+    "message": "Блокируйте основные отвлекающие факторы"
   },
   "common_notification_hide": {
     "message": "Закрыть уведомление"

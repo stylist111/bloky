@@ -419,6 +419,9 @@
   "options_recommended_social_description": {
     "message": "Sosyal medya ağlarının, gezinme alışkanlıklarınıza bakarak size ait profil oluşturmasını önleyin."
   },
+  "options_recommended_videos_description": {
+    "message": "Sizden belirli bir ödeme yapmanızı, abone olmanızı, bir uygulama ya da yazılımı cihazınıza kurmanızı ya da önerilen ögeleri satın almanızı isteyen köşe videolarını ve açılır pencereleri engelleyin."
+  },
   "options_report_bug": {
     "message": "Hataya mı rastladınız? <a>Sorunu bize bildirin.</a>"
   },

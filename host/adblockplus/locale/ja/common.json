@@ -15,7 +15,7 @@
     }
   },
   "common_feature_annoyances_title": {
-    "message": "さらに迷惑な要素をブロック"
+    "message": "迷惑要素の管理強化"
   },
   "common_feature_anti_adblock_title": {
     "message": "Adblock に対する警告メッセージを隠す"
@@ -37,6 +37,9 @@
   },
   "common_feature_social_title": {
     "message": "ソーシャルメディア アイコン トラッキングのブロック"
+  },
+  "common_feature_videos_title": {
+    "message": "基本的な迷惑要素をブロックする"
   },
   "common_notification_hide": {
     "message": "通知を閉じる"

@@ -405,7 +405,7 @@
     "message": "Dacci un voto"
   },
   "options_recommended_annoyances_description": {
-    "message": "Blocca i video fluttuanti, i pop-up delle newsletter, le richieste di sondaggi e le notifiche dei siti."
+    "message": "Riprenditi il controllo del tuo browser e naviga come vuoi tu! Dì addio ai pop-up delle newsletter, ai video fluttuanti, alle notifiche dei siti e alle richieste di sondaggi con il Controllo Distrazioni Avanzato."
   },
   "options_recommended_cookies_premium_description": {
     "message": "Naviga i siti web senza vedere le notifiche dei cookie."
@@ -418,6 +418,9 @@
   },
   "options_recommended_social_description": {
     "message": "Impedisci ai social network di creare un tuo profilo in base alle tue abitudini di navigazione."
+  },
+  "options_recommended_videos_description": {
+    "message": "Blocca i video fluttuanti e i pop-up che ti chiedono di pagare, abbonarti, installare o acquistare articoli consigliati."
   },
   "options_report_bug": {
     "message": "Hai trovato un bug? <a>Inviaci un bug report</a>"

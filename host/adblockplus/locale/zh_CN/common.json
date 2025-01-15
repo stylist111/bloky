@@ -15,7 +15,7 @@
     }
   },
   "common_feature_annoyances_title": {
-    "message": "拦截更多干扰内容"
+    "message": "E增强的干扰控制"
   },
   "common_feature_anti_adblock_title": {
     "message": "隐藏 Adblock 警告消息"
@@ -37,6 +37,9 @@
   },
   "common_feature_social_title": {
     "message": "禁止社交媒体图标跟踪"
+  },
+  "common_feature_videos_title": {
+    "message": "拦截基本干扰"
   },
   "common_notification_hide": {
     "message": "关闭通知"

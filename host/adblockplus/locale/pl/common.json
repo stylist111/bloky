@@ -38,6 +38,9 @@
   "common_feature_social_title": {
     "message": "Blokowanie śledzenia przez media społecznościowe"
   },
+  "common_feature_videos_title": {
+    "message": "Blokuj podstawowe elementy rozpraszające uwagę"
+  },
   "common_notification_hide": {
     "message": "Zamknij powiadomienie"
   },

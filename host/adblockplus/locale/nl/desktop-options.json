@@ -405,7 +405,7 @@
     "message": "Beoordeel ons"
   },
   "options_recommended_annoyances_description": {
-    "message": "Blokkeer zwevende videovensters, nieuwsbriefpop-ups, enquêteverzoeken en websitemeldingen"
+    "message": "Neem de controle over uw browser en surf zoals u dat wilt! Zeg vaarwel tegen pop-ups voor nieuwsbrieven, zwevende video's, sitemeldingen en enquêteverzoeken met de verbeterde afleidingscontrole."
   },
   "options_recommended_cookies_premium_description": {
     "message": "Surf op websites zonder cookiemeldingen te hoeven zien."
@@ -418,6 +418,9 @@
   },
   "options_recommended_social_description": {
     "message": "Voorkom dat sociale medianetwerken een profiel van u opbouwen op basis van uw surfgewoonten."
+  },
+  "options_recommended_videos_description": {
+    "message": "Blokkeer video's en pop-ups waarin u wordt gevraagd om te betalen, u te abonneren, iets te installeren of aanbevolen items te kopen."
   },
   "options_report_bug": {
     "message": "Een bug gevonden? <a>Stuur ons een bugrapport</a>"

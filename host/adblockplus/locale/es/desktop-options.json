@@ -405,7 +405,7 @@
     "message": "Valóranos"
   },
   "options_recommended_annoyances_description": {
-    "message": "Bloquear vídeos flotantes, ventanas emergentes de boletines de noticias, solicitudes de encuestas y notificaciones de sitios."
+    "message": "Toma el control de tu navegador y navega como quieras. Despídete de los elementos emergentes de boletines, vídeos flotantes, notificaciones de sitios y solicitudes de encuestas con el control de distracciones mejorado."
   },
   "options_recommended_cookies_premium_description": {
     "message": "Navega por los sitios web sin tener que ver las notificaciones de cookies."
@@ -418,6 +418,9 @@
   },
   "options_recommended_social_description": {
     "message": "Evita que las redes sociales construyan un perfil tuyo basado en tus hábitos de navegación."
+  },
+  "options_recommended_videos_description": {
+    "message": "Bloquea los vídeos de las esquinas y los elementos emergentes que te piden que pagues, te suscribas, instales algo o compres productos recomendados."
   },
   "options_report_bug": {
     "message": "¿Encontraste un error? <a>Envíanos un informe de error</a>"

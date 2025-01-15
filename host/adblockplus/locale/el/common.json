@@ -31,5 +31,8 @@
   },
   "common_feature_social_title": {
     "message": "Αποκλεισμός παρακολούθησης εικονιδίων κοινωνικών μέσων"
+  },
+  "common_feature_videos_title": {
+    "message": "Αποκλείστε βασικούς περισπασμούς"
   }
 }

@@ -191,7 +191,7 @@ export default () => {
         {
           method: () => generalPage.isBlockMoreDistractionsCheckboxSelected(),
           expected: true,
-          text: "Block More Distractions"
+          text: "Enhanced Distraction Control"
         },
         {
           method: () =>

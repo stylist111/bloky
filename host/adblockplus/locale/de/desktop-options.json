@@ -405,7 +405,7 @@
     "message": "Bewerte uns"
   },
   "options_recommended_annoyances_description": {
-    "message": "Blockiere Bild-in-Bild-Videos, Newsletter-Pop-Ups, Umfragen und Benachrichtigungen von Websites."
+    "message": "Behalte die Kontrolle über deinen Browser und surfe nach Belieben im Internet! Schluss mit Newsletter-Pop-ups, Videoeinblendungen, Website-Benachrichtigungen und Umfragen mit der verbesserten Ablenkungskontrolle."
   },
   "options_recommended_cookies_premium_description": {
     "message": "Webseiten besuchen, ohne Cookie-Benachrichtigungen sehen zu müssen."
@@ -418,6 +418,9 @@
   },
   "options_recommended_social_description": {
     "message": "Verhindere, dass Social Media-Netzwerke ein Profil auf Grundlage deiner Browsing-Gewohnheiten erstellen."
+  },
+  "options_recommended_videos_description": {
+    "message": "Blockiere Videoanzeigen in den Ecken und Aufforderungen zum Bezahlen, Abonnieren, Installieren oder Kaufen empfohlener Artikel."
   },
   "options_report_bug": {
     "message": "Hast du einen Fehler gefunden? <a>Sende uns einen Fehlerbericht</a>"

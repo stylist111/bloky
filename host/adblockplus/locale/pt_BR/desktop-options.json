@@ -405,7 +405,7 @@
     "message": "Avalie-nos"
   },
   "options_recommended_annoyances_description": {
-    "message": "Bloquear vídeos em janela flutuante, pop-ups de boletins informativos, solicitações de pesquisas e notificações de sites."
+    "message": "Assuma o controle do seu navegador e navegue como quiser! Diga adeus a janelas pop-up de newsletters, vídeos flutuantes e outras distrações irritantes com o Controle de distrações aprimorado."
   },
   "options_recommended_cookies_premium_description": {
     "message": "Navegue pelos sites sem precisar ver notificações de cookies."
@@ -418,6 +418,9 @@
   },
   "options_recommended_social_description": {
     "message": "Impedir que redes de mídias sociais criem um perfil seu perfil com base em seus hábitos de navegação."
+  },
+  "options_recommended_videos_description": {
+    "message": "Bloqueie caixas de vídeo nos cantos e janelas pop-up que pedem para você pagar, assinar, instalar ou comprar itens recomendados."
   },
   "options_report_bug": {
     "message": "Encontrou um erro? <a>Envie um relatório de erros</a>"

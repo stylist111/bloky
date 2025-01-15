@@ -99,7 +99,7 @@ class GeneralPage extends BasePage {
   }
 
   get blockMoreDistractionsCheckbox() {
-    return $("//li[@aria-label='Block more distractions']/button");
+    return $("//li[@aria-label='Enhanced distraction control']/button");
   }
 
   get blockMoreDistractionsItem() {
