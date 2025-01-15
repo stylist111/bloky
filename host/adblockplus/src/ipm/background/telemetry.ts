@@ -15,17 +15,16 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import browser from "webextension-polyfill";
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import {
-  ScheduleType,
-  setListener,
-  setSchedule,
-  hasSchedule
+  hasSchedule,
+  removeSchedule
 } from "../../core/scheduled-event-emitter/background";
-import { executeIPMCommands } from "./command-library";
-import { getPayload, clearEvents } from "./data-collection";
 import { error as logError } from "../../logger/background";
-import { intervalKey, serverUrlKey, scheduleName } from "./telemetry.types";
+import { executeIPMCommands } from "./command-library";
+import { clearEvents, getPayload } from "./data-collection";
+import { intervalKey, scheduleName, serverUrlKey } from "./telemetry.types";
 
 /**
  * Processes a response from the IPM server. Will request command execution
@@ -103,18 +102,28 @@ export async function sendPing(): Promise<void> {
  * Will schedule pings.
  */
 export async function start(): Promise<void> {
-  void setListener(scheduleName, () => {
+  // We used to use the ScheduledEventEmitter for scheduling pings, so let's
+  // clean up in case this is the first time we get here after changing that.
+  if (hasSchedule(scheduleName)) {
+    void removeSchedule(scheduleName);
+  }
+
+  await Prefs.untilLoaded;
+  const intervalTime = Prefs.get(intervalKey);
+  if (typeof intervalTime !== "number") {
+    return;
+  }
+
+  browser.alarms.onAlarm.addListener((alarm: browser.Alarms.Alarm) => {
+    if (alarm.name !== scheduleName) {
+      return;
+    }
     void sendPing();
   });
 
-  if (!hasSchedule(scheduleName)) {
-    await Prefs.untilLoaded;
-    const intervalTime = Prefs.get(intervalKey);
-    if (typeof intervalTime !== "number") {
-      return;
-    }
+  browser.alarms.create(scheduleName, {
+    periodInMinutes: intervalTime / 1000 / 60
+  });
 
-    void sendPing();
-    void setSchedule(scheduleName, intervalTime, ScheduleType.interval);
-  }
+  void sendPing();
 }

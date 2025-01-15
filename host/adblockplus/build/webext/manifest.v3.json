@@ -17,6 +17,7 @@
   "minimum_opera_version": "112.0",
   "declarative_net_request": {},
   "permissions": [
+    "alarms",
     "contextMenus",
     "declarativeNetRequestWithHostAccess",
     "notifications",
