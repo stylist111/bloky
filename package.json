@@ -35,7 +35,8 @@
     "RELEASE_NOTES.md",
     "scripts",
     "sdk",
-    "webpack.config.js"
+    "webpack.config.js",
+    "src/types/index.d.ts"
   ],
   "dependencies": {
     "pako": "^2.1.0",

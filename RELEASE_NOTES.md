@@ -1,11 +1,11 @@
 # Unreleased
 
-# 1.23.0 - 2025-01-13
-
 ## General
 
 - Moved the declared TypeScript types for webext-ad-filtering-solution  
   from the extensions repo into the SDK. (EXT-662)
+
+# 1.23.0 - 2025-01-13
 
 ## Fixes
 
