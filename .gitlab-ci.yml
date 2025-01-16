@@ -54,6 +54,7 @@ release-utils:
         paths:
           - $WORKSPACEPATH/**/*
           - test-utils/**/*
+          - core/**/*
           - '*'
         compare_to: 'refs/heads/main'
       when: on_success
@@ -78,3 +79,9 @@ adblockplus:
   extends: .child
   variables:
     WORKSPACEPATH: host/adblockplus
+
+sdk:
+  extends: .child
+  variables:
+    WORKSPACEPATH: core/sdk
+
