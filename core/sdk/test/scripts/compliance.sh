@@ -11,8 +11,8 @@ rm -rf testpages.adblockplus.org
 git clone https://gitlab.com/eyeo/developer-experience/testpages.adblockplus.org
 
 # Zipping the test extension
-pushd dist/test-$MANIFEST
-zip -R ../../testpages.adblockplus.org/test-$MANIFEST.zip '*'
+pushd core/sdk/dist/test-$MANIFEST
+zip -R ../../../../testpages.adblockplus.org/test-$MANIFEST.zip '*'
 popd
 
 pushd testpages.adblockplus.org

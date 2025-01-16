@@ -8,6 +8,10 @@ COPY host/adblock/*.json extensions/host/adblock/
 COPY host/adblockplus/*.json extensions/host/adblockplus/
 COPY ui-components/*.json extensions/ui-components/
 COPY test-utils/*.json extensions/test-utils/
+COPY core/sdk/*.json extensions/core/sdk/
+# scripts and adblockpluscore folders are used by the postinstall host scripts
+COPY core/sdk/scripts extensions/core/sdk/scripts
+COPY core/sdk/adblockpluscore extensions/core/sdk/adblockpluscore
 RUN cd extensions && npm ci
 
 COPY . extensions/
