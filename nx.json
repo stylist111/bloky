@@ -33,6 +33,12 @@
         "^build"
       ]
     },
+    "test": {
+      "cache": false,
+      "dependsOn": [
+        "^build"
+      ]
+    },
     "test:end-to-end": {
       "parallelism": false
     }

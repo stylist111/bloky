@@ -5,6 +5,7 @@
     "host/*",
     "fragment/*",
     "core/*",
+    "core/sdk/adblockpluscore",
     "ui-components",
     "test-utils", 
     "scripts/*"

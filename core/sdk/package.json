@@ -4,11 +4,8 @@
   "description": "eyeo's WebExtension Ad-Filtering Solution",
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution"
+    "url": "https://gitlab.com/eyeo/browser-extensions-and-premium/extensions/extensions"
   },
-  "workspaces": [
-    "./adblockpluscore"
-  ],
   "author": "eyeo GmbH",
   "license": "GPL-3.0",
   "engines": {
@@ -39,6 +36,7 @@
     "src/types/index.d.ts"
   ],
   "dependencies": {
+    "adblockpluscore": "*",
     "pako": "^2.1.0",
     "uuid": "^9.0.0",
     "webextension-polyfill": "^0.8.0",
