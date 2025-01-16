@@ -17,7 +17,6 @@
 
 /* eslint-env node */
 
-import fs from "fs";
 import path from "path";
 import {fileURLToPath} from "url";
 import {promisify} from "util";
@@ -28,6 +27,9 @@ import webpack from "webpack";
 import chromiumProcess from "./test/runners/chromium_process.mjs";
 import firefoxProcess from "./test/runners/firefox_process.mjs";
 import {getTestPaths} from "./test/_utils.mjs";
+
+import {createRequire} from "module";
+const require = createRequire(import.meta.url);
 
 let dirname = path.dirname(fileURLToPath(import.meta.url));
 let browserFiles = [];
@@ -78,16 +80,8 @@ async function runBrowserTests(processes) {
   }
 
   let bundleFilename = "bundle.js";
-  let mochaPath = path.join(dirname, "node_modules", "mocha", "mocha.js");
-  let chaiPath = path.join(dirname, "node_modules", "chai", "chai.js");
-  // If we run in a workspace we need to get one level up.
-  // No idea how to determine if we run in a workspace.
-  if (!fs.existsSync(mochaPath)) {
-    mochaPath = path.join(dirname, "..", "node_modules", "mocha", "mocha.js");
-  }
-  if (!fs.existsSync(chaiPath)) {
-    chaiPath = path.join(dirname, "..", "node_modules", "chai", "chai.js");
-  }
+  let mochaPath = require.resolve("mocha/mocha.js");
+  let chaiPath = require.resolve("chai/chai.js");
 
   let bundle = await webpackInMemory(bundleFilename, {
     entry: path.join(dirname, "test", "browser", "_bootstrap.js"),

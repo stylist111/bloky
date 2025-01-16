@@ -27,6 +27,8 @@ import GenerateJsonPlugin from "generate-json-webpack-plugin";
 import CopyPlugin from "copy-webpack-plugin";
 import ExtensionReloader from "webpack-ext-reloader";
 import Dotenv from "dotenv-webpack";
+import {createRequire} from "module";
+const require = createRequire(import.meta.url);
 
 const dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const extensionFunctionalPath = path.join(dirname, "test", "extension-functional");
@@ -44,10 +46,18 @@ const scriptsOutputPerformancePath = path.join(dirname, "scriptsOutput", "perfor
 const rulesetsMV3Path = path.join(scriptsOutputMV3Path, "rulesets", "rulesets.json");
 const rulesetsPerformancePath = path.join(scriptsOutputPerformancePath, "rulesets", "rulesets.json");
 const packageJsonPath = path.join(dirname, "package.json");
-const snippetsPath =
-  path.join(dirname, "node_modules", "@eyeo", "snippets", "index.mjs");
 const pollingPath = path.join(dirname, "test", "polling.js");
-const mochaCssPath = path.join(dirname, "node_modules", "mocha", "mocha.css");
+
+// Strangely, snippets module only exports index.mjs if you import it using ESM
+// imports, but require.resolve is getting the CJS module path. Snippets does
+// export package.json to all module systems. If we update to Node v20.6.0 or
+// newer, we can replace this with import.meta.resolve.
+const snippetsPath = path.join(
+  require.resolve("@eyeo/snippets/package.json"),
+  "..",
+  "index.mjs"
+);
+const mochaCssPath = require.resolve("mocha/mocha.css");
 
 // Canonical Manifest V2
 const mv2 = {
