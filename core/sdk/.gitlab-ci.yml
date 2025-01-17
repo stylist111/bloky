@@ -100,18 +100,19 @@ build:src:
     expire_in: 1 week
 
 
-# Publishes the docs to https://eyeo.gitlab.io/adblockplus/abc/webext-ad-filtering-solution
-# and https://eyeo.gitlab.io/adblockplus/abc/webext-ad-filtering-solution/adblockpluscore/index.html
+# Publishes the docs to https://eyeo.gitlab.io/browser-extensions-and-premium/extensions/extensions/sdk/
+# and https://eyeo.gitlab.io/browser-extensions-and-premium/extensions/extensions/sdk/adblockpluscore/
 # Requirements: https://docs.gitlab.com/ee/user/project/pages/introduction.html#gitlab-pages-requirements
 pages:
   stage: build
   needs: ["build:src"]
   script:
     # Check that docs folder exists
-    - "[ -d \"public\" ]"
+    - "[ -d \"core/sdk/public\" ]"
+    - cp -r core/sdk/public/ public/sdk/
   artifacts:
     paths:
-      - public
+      - public/
   rules:
     # Only publishes docs pushed to main
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH

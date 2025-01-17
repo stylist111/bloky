@@ -448,10 +448,10 @@ npm run lint
 [builds]: https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution/-/jobs/artifacts/master/browse/dist?job=build
 [snippet-filters]: https://help.eyeo.com/adblockplus/snippet-filters-tutorial
 [snippets-project]: https://gitlab.com/eyeo/adblockplus/abp-snippets
-[api-docs]: https://eyeo.gitlab.io/adblockplus/abc/webext-ad-filtering-solution/#apis
+[api-docs]: https://eyeo.gitlab.io/browser-extensions-and-premium/extensions/extensions/sdk/#apis
 [dev]: https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution#development
-[notifications-module]: https://eyeo.gitlab.io/adblockplus/abc/webext-ad-filtering-solution/master/docs/#notifications
-[allowlisting-module]: https://eyeo.gitlab.io/adblockplus/abc/webext-ad-filtering-solution/master/docs/#allowlisting
+[notifications-module]: https://eyeo.gitlab.io/browser-extensions-and-premium/extensions/extensions/sdk/#notifications
+[allowlisting-module]: https://eyeo.gitlab.io/browser-extensions-and-premium/extensions/extensions/sdk/#allowlisting
 [abpui]:https://gitlab.com/adblockinc/ext/adblockplus/adblockplusui
 
 ## Events
