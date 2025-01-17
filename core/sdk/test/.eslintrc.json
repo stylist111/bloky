@@ -1,0 +1,10 @@
+{
+  "env": {
+    "browser": true,
+    "mocha": true,
+    "webextensions": true
+  },
+  "globals": {
+    "EWE": "readonly"
+  }
+}

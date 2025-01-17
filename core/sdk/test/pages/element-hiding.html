@@ -1,0 +1,28 @@
+<div id="elem-hide" style="display: block !important;">Target</div>
+<div id="elem-hide-wildcard" width="100">Target with wildcard and width</div>
+<div id="elem-hide-wildcard-style" style="width: 200px">Target with wildcard and style (width)</div>
+<div id="diff-elem-item" style="display: block !important;">Diff Target</div>
+<div id="migrate-diff-elem-item" style="display: block !important;">Migrate diff target</div>
+<div id="elem-hide-specific">Specific target</div>
+<style>
+#elem-hide-emulation-props {
+  background-color: red;
+}
+</style>
+<div id="elem-hide-emulation-props">Properties target</div>
+<div><span id="elem-hide-emulation-has">Has target</span></div>
+<div><span id="elem-hide-emulation-contain">elem-hide-emulation-contain-target</span></div>
+<img id="elem-hide-img-request" src="image.png">
+<style>
+.parent1 > .child1 {
+  background-color: blue
+}
+.parent2 > .child2 {
+  background-color: lime
+}
+</style>
+<div class="parent1"><div id="unhide1" class="child1">Child target 1</div></div>
+<div class="parent2"><div id="unhide2" class="child2">Child target 2</div></div>
+<div id="remove-id">Remove</div>
+<div class="inline-css" id="inline-css-div">Inline CSS</div>
+<div class="inline-css" id="inline-css-div-2">Inline CSS 2</div>

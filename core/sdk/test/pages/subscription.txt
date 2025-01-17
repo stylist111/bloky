@@ -1,0 +1,6 @@
+[Adblock Plus]
+
+/image-from-subscription.png^$image
+###elem-hide
+localhost#$#injected-snippet true
+localhost#?##inline-css-div {margin-bottom: 0px;}

@@ -1,0 +1,10 @@
+/node_modules/
+/browser-snapshots/
+/coverage/
+foo*.json
+foo*.json.map
+/build/docs/
+/build/
+/dist/
+.DS_Store
+/package-lock.json

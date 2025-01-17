@@ -1,0 +1,14 @@
+{
+  "rules": {
+    "function-call-argument-newline": ["error", "consistent"]
+  },
+  "parserOptions": {
+    "sourceType": "script"
+  },
+  "overrides": [{
+      "files": ["*.mjs"],
+      "parserOptions": {
+        "sourceType": "module"
+      }
+  }]
+}

@@ -1,0 +1,173 @@
+[
+  {
+    "id": "00000000-0000-0000-0000-000000000010",
+    "type": "ads",
+    "title": "Test MV3 Custom Subscription 1",
+    "homepage": "http://localhost:3000/subscription.txt",
+    "url": "http://localhost:3000/subscription.txt",
+    "mv2_url": "http://localhost:3000/mv2_subscription.txt"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000020",
+    "type": "ads",
+    "title": "Test MV3 Custom Subscription 2",
+    "homepage": "http://localhost:3000/subscription.txt?2",
+    "url": "http://localhost:3000/subscription.txt?2",
+    "mv2_url": "http://localhost:3000/mv2_subscription.txt?2"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000030",
+    "type": "ads",
+    "title": "Test MV3 Custom Subscription 3",
+    "homepage": "http://localhost:3003/subscription.txt",
+    "url": "http://localhost:3003/subscription.txt",
+    "mv2_url": "http://localhost:3003/mv2_subscription.txt"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000040",
+    "type": "ads",
+    "title": "Non DNR filters",
+    "homepage": "http://localhost:3003/subscription-that-shouldnt-be-moved-to-dnr-world.txt",
+    "url": "http://localhost:3003/subscription-that-shouldnt-be-moved-to-dnr-world.txt",
+    "mv2_url": "http://localhost:3003/mv2_subscription-that-shouldnt-be-moved-to-dnr-world.txt"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000050",
+    "type": "ads",
+    "title": "Test MV3 Diff Updatable Subscription 1",
+    "homepage": "http://localhost:3003/updatable_subscription.txt",
+    "url": "http://localhost:3003/updatable_subscription.txt",
+    "mv2_url": "http://localhost:3003/mv2_updatable_subscription.txt",
+    "diff_url": "http://localhost:3003/updatable_subscription/diff.json",
+    "expires": "1 day",
+    "privileged": true
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000055",
+    "type": "ads",
+    "title": "Test MV3 Subscription with many filters",
+    "homepage": "http://localhost:3000/subscription-with-5000-disabled-filters.txt",
+    "url": "http://localhost:3000/subscription-with-5000-disabled-filters.txt",
+    "mv2_url": "http://localhost:3000/subscription-with-5000-disabled-filters.txt",
+    "diff_url": "http://localhost:3000/subscription-with-5000-disabled-filters-diff.json"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000070",
+    "type": "allowing",
+    "title": "Subscription that contains allowing filter for tests",
+    "homepage": "http://localhost:3000/subscription-with-allowing-filter.txt",
+    "url": "http://localhost:3000/subscription-with-allowing-filter.txt",
+    "mv2_url": "http://localhost:3000/mv2_subscription-with-allowing-filter.txt"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000080",
+    "languages": [
+      "afr"
+    ],
+    "type": "ads",
+    "title": "Subscription that is used for test of MV3 update",
+    "homepage": "SomeHomepage",
+    "privileged": true,
+    "url": "http://localhost:3003/mv3_diffurl_update.txt",
+    "mv2_url": "http://localhost:3003/mv3_diffurl_update.txt",
+    "diff_url": "http://localhost:3003/updatable_subscription/001.json",
+    "expires": "4 days (update frequency)"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000090",
+    "type": "ads",
+    "title": "Subscription that is currently bundled but will be removed later",
+    "url": "http://localhost:3000/currently-bundled-subscription.txt",
+    "mv2_url": "http://localhost:3000/currently-bundled-subscription.txt"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000092",
+    "type": "ads",
+    "title": "Subscription that is not bundled right now but will be in an update",
+    "url": "http://localhost:3000/later-bundled-subscription.txt",
+    "mv2_url": "http://localhost:3000/later-bundled-subscription.txt"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000100",
+    "type": "circumvention",
+    "title": "ABP filters (localhost)",
+    "homepage": "https://github.com/abp-filters/abp-filters-anti-cv",
+    "url": "http://localhost:3003/anti-cv-subscription.txt",
+    "mv2_url": "http://localhost:3003/mv2_anti-cv-subscription.txt",
+    "diff_url": "http://localhost:3003/updatable_subscription/diff.json"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000110",
+    "type": "ads",
+    "languages": [
+      "en"
+    ],
+    "title": "EasyList (localhost)",
+    "homepage": "https://easylist.to/",
+    "url": "http://localhost:3003/easylist.txt",
+    "mv2_url": "http://localhost:3003/easylist.txt",
+    "diff_url": "http://localhost:3003/updatable_subscription/diff.json"
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000120",
+    "type": "allowing",
+    "title": "Allow nonintrusive advertising (localhost)",
+    "homepage": "https://acceptableads.com/",
+    "url": "http://localhost:3003/exceptionrules.txt",
+    "mv2_url": "http://localhost:3003/exceptionrules.txt",
+    "diff_url": "http://localhost:3003/updatable_subscription/diff.json"
+  },
+  {
+    "id": "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F",
+    "type": "allowing",
+    "title": "Allow nonintrusive advertising",
+    "homepage": "https://acceptableads.com/",
+    "url": "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt",
+    "mv2_url": "https://easylist-downloads.adblockplus.org/exceptionrules.txt",
+    "diff_url": "https://easylist-downloads.adblockplus.org/v3/diff/exceptionrules/da4b368178dd039b669c5a88d363ecc7c0e1a62d.json"
+  },
+  {
+    "id": "F12E0801-A00B-49DE-B1E3-52C9C4F90C8C",
+    "type": "allowing",
+    "title": "Allow nonintrusive advertising without third-party tracking",
+    "homepage": "https://acceptableads.com/",
+    "url": "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules-privacy-friendly.txt",
+    "mv2_url": "https://easylist-downloads.adblockplus.org/exceptionrules-privacy-friendly.txt"
+  },
+  {
+    "id": "8C13E995-8F06-4927-BEA7-6C845FB7EEBF",
+    "type": "ads",
+    "languages": [
+      "en"
+    ],
+    "title": "EasyList",
+    "homepage": "https://easylist.to/",
+    "url": "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt",
+    "mv2_url": "https://easylist-downloads.adblockplus.org/easylist.txt",
+    "diff_url": "https://easylist-downloads.adblockplus.org/v3/diff/easylist/da4b368178dd039b669c5a88d363ecc7c0e1a62d.json"
+  },
+  {
+    "id": "0CD3D105-D3B3-4652-8489-94163DE9A08F",
+    "type": "ads",
+    "languages": [
+      "de"
+    ],
+    "title": "EasyList Germany+EasyList",
+    "homepage": "https://easylist.to/",
+    "includes": [
+      "8C13E995-8F06-4927-BEA7-6C845FB7EEBF",
+      "4337FB2B-A95C-44D5-B78D-11AD40F7711B"
+    ],
+    "url": "https://easylist-downloads.adblockplus.org/v3/full/easylistgermany+easylist.txt",
+    "mv2_url": "https://easylist-downloads.adblockplus.org/easylistgermany+easylist.txt"
+  },
+  {
+    "id": "D4028CDD-3D39-4624-ACC7-8140F4EC3238",
+    "type": "circumvention",
+    "title": "ABP filters",
+    "homepage": "https://github.com/abp-filters/abp-filters-anti-cv",
+    "url": "https://easylist-downloads.adblockplus.org/v3/full/abp-filters-anti-cv.txt",
+    "mv2_url": "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt",
+    "diff_url": "https://easylist-downloads.adblockplus.org/v3/diff/abp-filters-anti-cv/da4b368178dd039b669c5a88d363ecc7c0e1a62d.json"
+  }
+]

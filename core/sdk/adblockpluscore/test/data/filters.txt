@@ -1,0 +1,8 @@
+[Adblock Plus 2.0]
+!
+!
+
+&act=ads_
+&ad.vid=$~xmlhttprequest
+
+someFilter

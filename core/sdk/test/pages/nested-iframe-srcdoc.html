@@ -1,0 +1,6 @@
+<iframe srcdoc=""></iframe>
+<script>
+  let {contentDocument} = document.querySelectorAll("iframe")[0];
+  contentDocument.write("<iframe src='http://localhost:3000/image.html'></iframe>");
+  contentDocument.close();
+</script>

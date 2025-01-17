@@ -1,0 +1,27 @@
+<a href="popup.html" target="_blank" id="link">Link-based popup</a>
+<a href="#" id="script-tab">Script-based tab</a>
+<a href="#" id="diff-script-tab">Script-based tab</a>
+<a href="#" id="script-window">Script-based window</a>
+<a href="#" id="script-deferred">Script-based deferred navigation</a>
+<a href="http://127.0.0.1:3000/popup.html" target="_blank" id="third-party-link">Third-party Link-based popup</a>
+
+<script>
+  document.getElementById("script-tab").addEventListener("click", () => {
+    window.open("popup.html");
+  });
+
+  document.getElementById("diff-script-tab").addEventListener("click", () => {
+    window.open("diff-popup.html");
+  });
+
+  document.getElementById("script-window").addEventListener("click", () => {
+    window.open("popup.html", "some-popup", "resizable");
+  });
+
+  document.getElementById("script-deferred").addEventListener("click", () => {
+    let popup = window.open("about:blank");
+    setTimeout(() => {
+      popup.location = new URL("popup.html", document.baseURI);
+    }, 200);
+  });
+</script>

@@ -1,0 +1,17 @@
+<div id="elem-hide" style="display: block !important;">Target</div>
+<style>
+  #elem-hide-emulation-props {
+    background-color: red;
+  }
+</style>
+<div id="elem-hide-emulation-props">Properties target</div>
+
+<script>
+history.pushState(null, "", "/history-after-pushState.html");
+
+setTimeout(() => {
+  let img = document.createElement("img");
+  img.src = "image.png";
+  document.documentElement.append(img);
+}, 100);
+</script>

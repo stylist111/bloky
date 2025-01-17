@@ -1,0 +1,15 @@
+<script>
+  navigator.serviceWorker.register("service-worker.js",
+                                   {scope: location.pathname});
+
+  new Promise(resolve => {
+    if (navigator.serviceWorker.controller) {
+      resolve();
+    }
+    else {
+      navigator.serviceWorker.addEventListener("controllerchange", resolve);
+    }
+  }).then(() => {
+    navigator.serviceWorker.controller.postMessage(null);
+  });
+</script>

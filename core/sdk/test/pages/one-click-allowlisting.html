@@ -1,0 +1,301 @@
+<img src="image.png">
+
+<ul>
+  <li><a id="allowlist" href="#">Allowlist page</a></li>
+  <li><a id="allowlist_with_expiration" href="#">Allowlist page with an expiration data attached</a></li>
+  <li><a id="allowlist_with_invalid_options" href="#">Allowlist page with an invalid expiration property name</a></li>
+  <li><a id="allowlist_with_invalid_expiration_string" href="#">Allowlist page with an expiration as string</a></li>
+  <li><a id="allowlist_with_invalid_expiration_object" href="#">Allowlist page with an expiration as object</a></li>
+  <li><a id="allowlist_with_invalid_expiration_null" href="#">Allowlist page with an expiration as null</a></li>
+  <li><a id="allowlist_with_invalid_expiration_array" href="#">Allowlist page with an expiration as array</a></li>
+  <li><a id="allowlist_with_invalid_expiration_boolean" href="#">Allowlist page with an expiration as boolean</a></li>
+  <li><a id="allowlist_with_expiration_below_range" href="#">Allowlist page with an expiration below the range</a></li>
+  <li><a id="allowlist_with_expiration_above_range" href="#">Allowlist page with an expiration above the range</a></li>
+  <li><a id="allowlist_second_key" href="#">Allowlist page with the second valid key</a></li>
+  <li><a id="allowlist_unauthorized_key" href="#">Allowlist page with an unauthorized key</a></li>
+  <li><a id="allowlist_old_timestamp" href="#">Allowlist page with invalid timestamp (too old)</a></li>
+  <li><a id="allowlist_future_timestamp" href="#">Allowlist page with invalid timestamp (in the future)</a></li>
+  <li><a id="allowlist_nonsense_timestamp" href="#">Allowlist page with invalid timestamp (not a number)</a></li>
+  <li><a id="allowlist_different_domain" href="#">Allowlist page with an invalid domain</a></li>
+  <li><a id="malicious_subclass" href="#">Malicious Allowlist Event: Subclass</a></li>
+  <li><a id="malicious_override" href="#">Malicious Allowlist Event: Override</a></li>
+  <li><a id="malicious_has_own_property" href="#">Malicious Allowlist Event: Has Own Property</a></li>
+  <li><a id="malicious_replaced_custom_event" href="#">Malicious Allowlist Event: Replaced CustomEvent</a></li>
+  <li><a id="malicious_get_prototype_of" href="#">Malicious Allowlist Event: Get Prototype Of</a></li>
+  <li><a id="malicious_custom_event_prototype" href="#">Malicious Allowlist Event: Custom Event Prototype</a></li>
+  <li><a id="malicious_proxy_object" href="#">Malicious Allowlist Event: Proxy Object</a></li>
+  <li><a id="malicious_dos_attempt" href="#">Malicious Allowlist Event: Denial of Service attempt</a></li>
+  <li><a id="malicious_dos_attempt_valid_signature" href="#">Malicious Allowlist Event: Denial of Service attempt with a valid signature</a></li>
+</ul>
+
+<script>
+  // This is the keypair that the test extension has authorized.
+  // eslint-disable-next-line max-len
+  // let validPublicKey = "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAorAkyGHnzZkVE0TGcU7Sl6/LlH9j3udDNvHv/fSzplLMdqkw0HZNV9zaBFQ0Rw73AJ7MQ8JQm2hex9DEss3xsrlpHEi/nC7C1authg1rt5Xo4K0P5Bo+j6y41UtgQoL9xKJ6RlYGBq4uBHaq/xRyp/7zUxOiViTdnVZRhSkmyBCIQ+5l8/mTk5yyMLfH7QM0KFKdJbnnTU8HEGzHaFi33vAwWPpJjCohYUzYxgXOgSZYV6xNPycQj4U/D4k+7UT+d4zzrj7fSz08/ijfHLB8G6dr1nx7+Pydt3ijhKEX2mKaAWgKtyM2wTgFXys4rnAbdr340FpQaVebNF0bwGsqluBNdvZ6fPgN9dLlpVDQKXlOKdfOyc64Yw82/jHKdYC7NO1bg13hqo7JWM10Gklt2FY5ekfDBZagPbYCH780C8w0aMceBs3NBTI6SAPI8xhyu7LwL7vw/vMwz8kfIsKOCPFqf0qPlvJCaryIAA7Ca6SHfBqaTzyivEEqn6tWphCpYSODfPRO4Udg+l/o/PCJuly41b4QF2x8H+LvJnr7HFknmFYwisbIofC/2ucO2sfJDP4EOHKeDV9mexHSJIfjyFYV0f0ALj1eKl9Viz37qLefzXFhTG4wzoK5F/QM1ZhIWjN+0DBn6GTQxuWc4eAuASoh07JG4M+i2rWcUTYvgOECAwEAAQ==";
+  // eslint-disable-next-line max-len
+  let validPrivateKey = "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";
+
+  // This is a second keypair that the test extension has authorized.
+  // eslint-disable-next-line max-len
+  // let validPublicKey2 = "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAz0zHgcXEoGyk4iZHUCfrhU3j7JiHi1EhAtMONxFfmeN4bp6zOWQaMz8cU4S+2jOFD/3oKJGTYNqYH9hBXMG1GzA7nzjNBsONTE64TMxQBt8ksT0bTwqTZ4nqTRWJsjo3XPzB+qkC7a1vXmujcfRsQMY7xbBnhZ6VVGMGtpUIPXNjtjGk3JOD1rKUU8Efq2lZmQlBf63s6u6EDnX6WcdgwlLpQwewO8BrXDBurdH83ZaVrx3zOQVQyJTj0+CAkammJ04Aq1golgddz4qRzr5vmB0FQkibr3oh79HfaqByKHsqgBFeAcdSbSg/pzqeNjnH0+a6GNx31V8UoDC3cRa/Uqet+t55QTSwWI4Iu11CZrKb3HX78swDkHW9/pyG2KZeUViFLe3EqInzH7jTZPTuQR4zGXMZji/WtqWxONjt37PKReJSTnMJSh2GyVUk3tZGb1fNtgthiu711uPh8/qjiuWPiaECRnCAc6sRgblxVRD4tIYgLmbbUsTPwlBFw6iZ/2HjqowA4/S5og1M3JAp4KBr7QYRz30Ji3TUjg5rWJdzO/WNx46W1Ro08PkfidvjdQ2PJvQkCtNCgnRbyAgPLJ1hMDycsKYduKO8Y5AszVgD/RBipYg9HVkuCnYChCspu8cq6gaR1sx3IcqZZs9kZUIqAT1bxMdYkKCm0igciAkCAwEAAQ==";
+  // eslint-disable-next-line max-len
+  let validPrivateKey2 = "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";
+
+  // This is the keypair that is real keypair, but the test extension
+  // hasn't authorized it.
+  // eslint-disable-next-line max-len
+  // let unauthorizedPublicKey = "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA6mc6zzQQK76SJxhS2YMUGb8ug1gMmeEjqwfPFIkGe2phYGZQgWMtLpoXYLiAU04Io0/QQxl7q1joVDHelBQt2OC7MUbLgVdpcP0m4tnreq0ut8ahsue0303/SgRryC39FEhzTSAcjay0GhCtLgo1yuTbNaCjJ+ATT3AhqQE7KxYGAgOQQ5n/RDBVtssSxzPj885Xx2aoeKGoQYcP0iGPnWzs4FK5jJYZW6Xb6rYfX31eoOeqnO3AUuHpDW9ChJ8rAJEep3T0WY5BisHGshxnBTPUwEhgy+4H/gd8VUnkwm+VPkKrigUa/+KLGINyyYHa4iVEl/OInfzMeS5XBzQvF3EZzlrvYNcX7KXKnjDLrFeWpMEwEOnr8SbnH19AwA7sL4HpjiPJslt+YPIQWeQeWqYooXwwanf1QBPNAyR9n+tSznyNBF6Xg43ZmeYLSpbXQ4MFS4TxjgnHpDPRs9CI7TLeY1OMEAd+hAVPuIeoF3src0vx5p2dGLP5WcHAF1zYLIGqTu5kUxJ9ArxmwkGmWUlnqcFz+HBzVOF/KTchYWCsZ7VktpdgFfZkh7Ve2kfDtQuDHAMNJpjaCKX+y+BF5lSBml1z5Y2YgE0SmlljYPML+gAo7q/WIXX7C4MC/qzOTb3GZgLMZc2ORFW1Vz7WKGfkQtNt/tM3H1OGkhcXXCsCAwEAAQ==";
+  // eslint-disable-next-line max-len
+  let unauthorizedPrivateKey = "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";
+
+  function base64ToArrayBuffer(str) {
+    let decodedData = atob(str);
+    return Uint8Array.from(decodedData, c => c.charCodeAt(0));
+  }
+
+  function arrayBufferToBase64(buffer) {
+    let binary = "";
+    let bytes = new Uint8Array(buffer);
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+
+    return btoa(binary);
+  }
+
+  async function sign(key, algorithm, data) {
+    let abKey = base64ToArrayBuffer(key);
+    let importedKey = await crypto.subtle.importKey(
+      "pkcs8",
+      abKey,
+      algorithm,
+      false,
+      ["sign"]
+    );
+    let abData = (new TextEncoder()).encode(data);
+    let abSignature = await crypto.subtle.sign(algorithm, importedKey, abData);
+    return arrayBufferToBase64(abSignature);
+  }
+
+  async function createAllowlistEvent(hostname, timestamp, privateKey, options) {
+    // NB: THIS TEST CODE IS INSECURE!
+    // This code demonstrated the signing flow, but by doing the
+    // signing in the browser it exposes the private key to anyone who
+    // opens the dev tools. This is fine for functional tests, but a real
+    // website should NEVER do this. The allowlisting event should
+    // always be signed on the server.
+
+    let data = `${hostname},${timestamp}`;
+
+    let algorithm = {
+      name: "RSASSA-PKCS1-v1_5",
+      modulusLength: 4096,
+      publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+      hash: {name: "SHA-512"}
+    };
+
+    let signature = await sign(privateKey, algorithm, data);
+    return new CustomEvent("domain_allowlisting_request", {
+      detail: {
+        signature,
+        timestamp,
+        options
+      }
+    });
+  }
+
+  async function allowlist({hostname = location.hostname,
+                            timestamp = Date.now(),
+                            privateKey = validPrivateKey,
+                            options} = {}) {
+    let event = await createAllowlistEvent(
+      hostname, timestamp, privateKey, options);
+    document.dispatchEvent(event);
+  }
+
+  document.addEventListener("domain_allowlisting_success", () => {
+    let element = document.createElement("div");
+    element.id = "domain_allowlisting_success_received";
+    element.text = "Allowlisting Success Event Received";
+    document.body.appendChild(element);
+  });
+
+  function eventHandlerDetected() {
+    let element = document.createElement("div");
+    element.id = "event_handler_detected";
+    element.text = "Event Handler Detected";
+    document.body.appendChild(element);
+  }
+
+  function maliciousSubclass() {
+    class UntrustedEvent extends CustomEvent {
+      get detail() {
+        eventHandlerDetected();
+        return super.detail;
+      }
+    }
+    let event = new UntrustedEvent("domain_allowlisting_request", {
+      detail: "ev"
+    });
+    document.dispatchEvent(event);
+  }
+
+  function maliciousOverride() {
+    let event = new CustomEvent("domain_allowlisting_request", {detail: "ev"});
+    Object.defineProperty(event, "detail", {
+      get() {
+        eventHandlerDetected();
+        return super.detail;
+      }
+    });
+    document.dispatchEvent(event);
+  }
+
+  function maliciousHasOwnProperty() {
+    let ev = new CustomEvent("domain_allowlisting_request");
+    Object.defineProperty(ev, "detail", {
+      get() {
+        eventHandlerDetected();
+        return "ev";
+      }
+    });
+    Object.defineProperty(ev, "hasOwnProperty", {
+      value(name) {
+        eventHandlerDetected();
+        if (name === "hasOwnProperty" || name === "detail") {
+          return false;
+        }
+
+        // eslint-disable-next-line no-prototype-builtins
+        return super.hasOwnProperty(name);
+      }
+    });
+    document.dispatchEvent(ev);
+  }
+
+  function maliciousReplacedCustomEvent() {
+    window.CustomEvent = class extends Event {
+      get detail() {
+        eventHandlerDetected();
+        return super.detail;
+      }
+    };
+    let ev = new CustomEvent("domain_allowlisting_request");
+    document.dispatchEvent(ev);
+  }
+
+  function maliciousGetPrototypeOf() {
+    let origGetPrototypeOf = Object.getPrototypeOf;
+    let ev = new CustomEvent("domain_allowlisting_request", {detail: "ev"});
+    Object.defineProperty(Object, "getPrototypeOf", {
+      value(obj) {
+        if (obj === ev) {
+          eventHandlerDetected();
+        }
+        return origGetPrototypeOf(obj);
+      }
+    });
+    document.dispatchEvent(ev);
+  }
+
+  function maliciousCustomEventPrototype() {
+    let origPrototype = CustomEvent.prototype;
+    let ev = new CustomEvent("domain_allowlisting_request", {detail: "ev"});
+    Object.defineProperty(CustomEvent, "prototype", {
+      get() {
+        eventHandlerDetected();
+        return origPrototype;
+      }
+    });
+    document.dispatchEvent(ev);
+  }
+
+  function maliciousProxyObject() {
+    let ev = new CustomEvent("domain_allowlisting_request");
+    let proxy = new Proxy(ev, {
+      get(target, property, receiver) {
+        if (property === "detail") {
+          eventHandlerDetected();
+        }
+
+        return target[property];
+      }
+    });
+    document.dispatchEvent(proxy);
+  }
+
+  function maliciousDOSAttempt() {
+    let event = new CustomEvent("domain_allowlisting_request", {
+      detail: {
+        signature: "bad signature",
+        timestamp: Date.now()
+      }
+    });
+    for (let i = 0; i < 100000; ++i) {
+      document.dispatchEvent(event);
+    }
+  }
+
+  async function maliciousDOSAttemptWithValidSignature() {
+    let event = await createAllowlistEvent(
+      location.hostname, Date.now(), validPrivateKey
+    );
+    for (let i = 0; i < 100000; ++i) {
+      document.dispatchEvent(event);
+    }
+  }
+
+  const now = Date.now();
+  const oneDay = 24 * 60 * 60 * 1000;
+
+  document.getElementById("allowlist")
+    .addEventListener("click", () => allowlist());
+  document.getElementById("allowlist_with_expiration")
+    .addEventListener("click", () => allowlist({options: {expiresAt: now + oneDay}}));
+  document.getElementById("allowlist_with_invalid_options")
+    .addEventListener("click", () => allowlist({options: {expires: now}}));
+  document.getElementById("allowlist_with_invalid_expiration_string")
+    .addEventListener("click", () => allowlist({options: {expiresAt: "Thu, 01 Jan 2070 00:00:00 GMT"}}));
+  document.getElementById("allowlist_with_invalid_expiration_object")
+    .addEventListener("click", () => allowlist({options: {expiresAt: {value: now + oneDay}}}));
+  document.getElementById("allowlist_with_invalid_expiration_null")
+    .addEventListener("click", () => allowlist({options: {expiresAt: null}}));
+  document.getElementById("allowlist_with_invalid_expiration_array")
+    .addEventListener("click", () => allowlist({options: {expiresAt: [1, 2]}}));
+  document.getElementById("allowlist_with_invalid_expiration_boolean")
+    .addEventListener("click", () => allowlist({options: {expiresAt: true}}));
+  document.getElementById("allowlist_with_expiration_below_range")
+    .addEventListener("click", () => allowlist({options: {expiresAt: now}}));
+  document.getElementById("allowlist_with_expiration_above_range")
+    .addEventListener("click", () => allowlist({options: {expiresAt: now + 366 * oneDay}}));
+  document.getElementById("allowlist_second_key")
+    .addEventListener("click", () => allowlist({privateKey: validPrivateKey2}));
+  document.getElementById("allowlist_unauthorized_key")
+    .addEventListener("click", () => allowlist({privateKey: unauthorizedPrivateKey}));
+  document.getElementById("allowlist_old_timestamp")
+    .addEventListener("click", () => allowlist({timestamp: now - 4200000}));
+  document.getElementById("allowlist_future_timestamp")
+    .addEventListener("click", () => allowlist({timestamp: now + 600000}));
+  document.getElementById("allowlist_nonsense_timestamp")
+    .addEventListener("click", () => allowlist({timestamp: "fakeTimestamp"}));
+  document.getElementById("allowlist_different_domain")
+    .addEventListener("click", () => allowlist({hostname: "example.com"}));
+  document.getElementById("malicious_subclass")
+    .addEventListener("click", maliciousSubclass);
+  document.getElementById("malicious_override")
+    .addEventListener("click", maliciousOverride);
+  document.getElementById("malicious_has_own_property")
+    .addEventListener("click", maliciousHasOwnProperty);
+  document.getElementById("malicious_replaced_custom_event")
+    .addEventListener("click", maliciousReplacedCustomEvent);
+  document.getElementById("malicious_get_prototype_of")
+    .addEventListener("click", maliciousGetPrototypeOf);
+  document.getElementById("malicious_custom_event_prototype")
+    .addEventListener("click", maliciousCustomEventPrototype);
+  document.getElementById("malicious_proxy_object")
+    .addEventListener("click", maliciousProxyObject);
+  document.getElementById("malicious_dos_attempt")
+    .addEventListener("click", maliciousDOSAttempt);
+  document.getElementById("malicious_dos_attempt_valid_signature")
+    .addEventListener("click", maliciousDOSAttemptWithValidSignature);
+</script>

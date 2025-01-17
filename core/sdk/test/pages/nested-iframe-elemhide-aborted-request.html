@@ -1,0 +1,12 @@
+<!-- In Chrome if you write content to an iframe while it's loading,
+it cancels the request, and the frame is no longer returned in the
+webNavigation API. However, it may still turn up as a parent frame
+depending on what was written into the iframe. See also
+https://bugs.chromium.org/p/chromium/issues/detail?id=725917 -->
+<iframe id="elem-hide-parent-frame" src="http://localhost:3000/iframe-elemhide.html?delay=500"></iframe>
+<script>
+  let {contentDocument} = document.querySelectorAll("iframe")[0];
+  contentDocument.write("<iframe id='elem-hide-frame' src='http://localhost:3000/element-hiding.html'>");
+  contentDocument.write("<p>Body has been replaced</p>");
+  contentDocument.close();
+</script>

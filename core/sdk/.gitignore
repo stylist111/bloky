@@ -1,0 +1,11 @@
+node_modules
+dist
+public
+browser-snapshots
+test/bundle/package-lock.json
+testpages.adblockplus.org
+scriptsOutput
+test/scripts/test-extension/package-lock.json
+test/screenshots
+.idea
+.DS_Store

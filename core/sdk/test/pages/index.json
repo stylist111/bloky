@@ -1,0 +1,10 @@
+[{
+  "type": "ads",
+  "languages": [
+    "en"
+  ],
+  "id": "03648752-31EE-4FD0-85C1-20B07C5551C3",
+  "title": "Test Subscription",
+  "url": "http://localhost:3000/subscription-with-allowing-filter.txt",
+  "homepage": "https://easylist.to/"
+}]

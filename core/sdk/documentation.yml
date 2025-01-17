@@ -1,0 +1,51 @@
+toc:
+  - name: README
+    file: README.md
+  - name: Manifest V3
+    file: docs/MANIFEST_V3.md
+  - name: APIs
+    description: |
+      <style>
+        #readme, .no-docs {
+          display: none;
+        }
+        h1 {
+          margin-top: 0;
+        }
+        a.caps {
+          letter-spacing: .0em;
+          text-transform: none;
+        }
+      </style>
+    children:
+      - allowlisting
+      - cdp
+      - debugging
+      - experiments
+      - filters
+      - notifications
+      - reporting
+      - snippets
+      - subscriptions
+      - telemetry
+  - name: Objects
+    children:
+      - allowlistingCallback
+      - AllowlistingAuthorizationError
+      - BlockableEventDispatcher
+      - BlockableEventOptions
+      - CdpEventDispatcher
+      - CdpEventOptions
+      - EventDispatcher
+      - Experiment
+      - ExperimentSyncStatus
+      - ExperimentVariant
+      - Filter
+      - FilterAddResult
+      - FilterError
+      - FilterMatchInfo
+      - FirstRunInfo
+      - Recommendation
+      - Subscription
+      - SnippetCallback
+      - TelemetryPingError
