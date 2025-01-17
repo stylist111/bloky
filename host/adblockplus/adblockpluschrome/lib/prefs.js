@@ -273,6 +273,13 @@ defaults.ipm_server_url = "https://ipm.adblockplus.dev/api/stats";
 defaults.ipm_ping_interval = 24 * 60 * 60 * 1000;
 
 /**
+ * The timestamp of the last attempt to reach the IPM ping server.
+ *
+ * @type {number}
+ */
+defaults.ipm_last_ping = 0;
+
+/**
  * List of user events
  *
  * @type {array}

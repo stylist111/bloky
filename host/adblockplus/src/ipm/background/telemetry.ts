@@ -21,10 +21,15 @@ import {
   hasSchedule,
   removeSchedule
 } from "../../core/scheduled-event-emitter/background";
-import { error as logError } from "../../logger/background";
+import { error as logError, warn as logWarning } from "../../logger/background";
 import { executeIPMCommands } from "./command-library";
 import { clearEvents, getPayload } from "./data-collection";
-import { intervalKey, scheduleName, serverUrlKey } from "./telemetry.types";
+import {
+  intervalKey,
+  lastPingKey,
+  scheduleName,
+  serverUrlKey
+} from "./telemetry.types";
 
 /**
  * Processes a response from the IPM server. Will request command execution
@@ -73,6 +78,15 @@ export async function sendPing(): Promise<void> {
     return;
   }
 
+  // Check if enough time has passed to actually ping
+  const lastPingTimestamp = Prefs.get(lastPingKey);
+  const intervalTime = Prefs.get(intervalKey);
+  if (Date.now() - lastPingTimestamp < intervalTime) {
+    // We haven't reached our desired interval time yet.
+    logWarning("[Telemetry]: Ping time too early, not pinging.");
+    return;
+  }
+
   const payload = await getPayload();
 
   // We're deleting user events regardless of whether sending them will be
@@ -83,6 +97,9 @@ export async function sendPing(): Promise<void> {
   if (typeof url !== "string") {
     return;
   }
+
+  // Update timestamp for latest ping
+  void Prefs.set(lastPingKey, Date.now());
 
   void fetch(url, {
     method: "POST",

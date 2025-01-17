@@ -1,6 +1,7 @@
 # Unreleased
 
 - Added new free basic distraction control filter list (refs EXT-598)
+- Added a fix to prevent excessive pinging
 
 # 4.11.0 - 2025-01-15
 
