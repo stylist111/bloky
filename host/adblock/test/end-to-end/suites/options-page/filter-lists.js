@@ -51,8 +51,8 @@ export default () => {
   it("displays the default state", async function () {
     const defaultFilterLists = getDefaultFilterLists(expectAAEnabled);
 
-    for (const { name, inputId, text, enabled } of defaultFilterLists) {
-      const flEnabled = await isCheckboxEnabled(inputId);
+    for (const { name, checkboxSelector, text, enabled } of defaultFilterLists) {
+      const flEnabled = await isCheckboxEnabled(checkboxSelector);
       const selector =
         name === "acceptable_ads_privacy"
           ? `[name="${name}"] > label`
@@ -120,11 +120,11 @@ export default () => {
         : "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt";
 
     const enableAdvancedUser = async () => {
-      const advancedUserEnabled = await isCheckboxEnabled("enable_show_advanced_options");
+      const advancedUserEnabled = await isCheckboxEnabled("#enable_show_advanced_options");
       if (!advancedUserEnabled) {
         await clickOnDisplayedElement("span:has(> #enable_show_advanced_options)");
         await driver.wait(
-          async () => isCheckboxEnabled("enable_show_advanced_options"),
+          async () => isCheckboxEnabled("#enable_show_advanced_options"),
           2000,
           "The advanced user was not enabled after clicking",
         );
@@ -142,12 +142,14 @@ export default () => {
 
   for (const name of ["anticircumvent", "easylist"]) {
     it(`disables and reenables the ${name} filter list`, async function () {
-      const { inputId } = getDefaultFilterLists(expectAAEnabled).find((fl) => fl.name === name);
+      const { checkboxSelector } = getDefaultFilterLists(expectAAEnabled).find(
+        (fl) => fl.name === name,
+      );
 
-      const flEnabled = await isCheckboxEnabled(inputId);
+      const flEnabled = await isCheckboxEnabled(checkboxSelector);
       expect(flEnabled).toEqual(true);
 
-      await clickFilterlist(name, inputId, false);
+      await clickFilterlist(name, checkboxSelector, false);
       const text = await getSubscriptionInfo(name);
       expect(text).toEqual("Unsubscribed.");
 
@@ -163,17 +165,17 @@ export default () => {
       }
 
       await driver.sleep(1000); // Clicking right after unsubscribed may be ineffective
-      await clickFilterlist(name, inputId, true);
-      await waitForSubscribed(name, inputId);
+      await clickFilterlist(name, checkboxSelector, true);
+      await waitForSubscribed(name, checkboxSelector);
     });
   }
 
   it("adds and removes a language filter list", async function () {
     const name = "easylist_plus_vietnamese";
-    const inputId = "languageFilterList_24";
+    const { checkboxSelector } = languageFilterLists.find((fl) => fl.name === name);
 
     await clickOnDisplayedElement(`#language_select > option[value="${name}"]`);
-    await waitForSubscribed(name, inputId, { allowFetching: true });
+    await waitForSubscribed(name, checkboxSelector, { allowFetching: true });
 
     await driver.sleep(1500); // Clicking right after subscribed may be ineffective
     await clickFilterlist(name);
@@ -183,12 +185,12 @@ export default () => {
   it("adds and removes a filter list via URL", async function () {
     const subscriptionUrl = "https://abptestpages.org/en/abp-testcase-subscription.txt";
     const name = `url:${subscriptionUrl}`;
-    const inputId = "customFilterList_1";
+    const checkboxSelector = "#customFilterList_1";
 
     await setFilterListUrl(subscriptionUrl);
-    await waitForSubscribed(name, inputId, { allowFetching: true });
+    await waitForSubscribed(name, checkboxSelector, { allowFetching: true });
 
-    await clickFilterlist(name, inputId, false);
+    await clickFilterlist(name, checkboxSelector, false);
     await clickOnDisplayedElement(`[name="${name}"] a.remove_filterList`);
     await waitForNotDisplayed(`[name="${name}"]`);
   });

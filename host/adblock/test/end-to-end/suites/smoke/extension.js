@@ -133,23 +133,23 @@ export default () => {
 
     await initOptionsFiltersTab(getOptionsHandle());
 
-    let lastInputId;
+    let lastCheckboxSelector;
     // Disable the initially enabled filterlists
     const amount = enabledFilterLists.length;
-    for (const [i, { name, inputId }] of enabledFilterLists.entries()) {
-      let id = inputId;
+    for (const [i, { name, checkboxSelector }] of enabledFilterLists.entries()) {
+      let selector = checkboxSelector;
       if (i + 1 === amount) {
         // Disabling the last filterlist raises an alert. Passing a null id to
         // prevent clickFilterlist() doing any checks after clicking
-        id = null;
-        lastInputId = inputId;
+        selector = null;
+        lastCheckboxSelector = checkboxSelector;
       }
 
-      await clickFilterlist(name, id, false);
+      await clickFilterlist(name, selector, false);
     }
 
     await handleDisabledFilterlistsAlert();
-    const aaEnabled = await isCheckboxEnabled(lastInputId);
+    const aaEnabled = await isCheckboxEnabled(lastCheckboxSelector);
     expect(aaEnabled).toEqual(false);
 
     // If the extension is reloaded right after AA is disabled,

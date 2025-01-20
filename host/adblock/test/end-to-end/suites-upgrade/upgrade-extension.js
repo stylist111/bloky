@@ -86,9 +86,9 @@ export default () => {
 
     // enable premium filterlists
     await initOptionsPremiumFlTab(getOptionsHandle());
-    for (const list of premiumFilterLists) {
-      await clickOnDisplayedElement(`span:has(> #${list.inputId})`);
-      await driver.wait(isCheckboxEnabled(list.inputId), 2000, `${list.text} is not enabled`);
+    for (const { checkboxSelector, text } of premiumFilterLists) {
+      await clickOnDisplayedElement(`span:has(> ${checkboxSelector})`);
+      await driver.wait(isCheckboxEnabled(checkboxSelector), 2000, `${text} is not enabled`);
     }
 
     // turn off the counter on the extension icon
@@ -96,7 +96,7 @@ export default () => {
     await clickOnDisplayedElement("span:has(> #prefs__show_statsinicon)");
     await driver.wait(
       async () => {
-        return !(await isCheckboxEnabled("prefs__show_statsinicon"));
+        return !(await isCheckboxEnabled("#prefs__show_statsinicon"));
       },
       2000,
       "Counter on the extension icon is still on",
@@ -107,22 +107,22 @@ export default () => {
     const lists = getDefaultFilterLists(expectAAEnabled).filter((list) =>
       ["easyprivacy", "acceptable_ads", "easylist"].includes(list.name),
     );
-    for (const list of lists) {
+    for (const { checkboxSelector, enabled, text, name } of lists) {
       // Easyprivacy is down below the page, therefore scrollIntoView is needed
-      await clickOnDisplayedElement(`span:has(> #${list.inputId})`, { scrollIntoView: true });
+      await clickOnDisplayedElement(`span:has(> ${checkboxSelector})`, { scrollIntoView: true });
 
-      if (list.enabled) {
+      if (enabled) {
         // if list is enabled by default, it should be unsubscribed
         await driver.wait(
           async () => {
-            return (await getSubscriptionInfo(list.name)) === "Unsubscribed.";
+            return (await getSubscriptionInfo(name)) === "Unsubscribed.";
           },
           2000,
-          `${list.text} is still subscribed`,
+          `${text} is still subscribed`,
         );
       } else {
         // if list is disabled by default, it should be subscribed
-        await waitForSubscribed(list.name, list.inputId);
+        await waitForSubscribed(name, checkboxSelector);
       }
     }
 
@@ -131,8 +131,12 @@ export default () => {
     const langList = languageFilterLists.find((list) => list.name === "easylist_plus_german");
     await getDisplayedElement("#language_select");
     await driver.findElement(By.css(`#language_select > option[value="${langList.name}"]`)).click();
-    await driver.wait(isCheckboxEnabled(langList.inputId), 2000, `${langList.text} is not enabled`);
-    await waitForSubscribed(langList.name, langList.inputId);
+    await driver.wait(
+      isCheckboxEnabled(langList.checkboxSelector),
+      2000,
+      `${langList.text} is not enabled`,
+    );
+    await waitForSubscribed(langList.name, langList.checkboxSelector);
 
     // Add custom filter. Needs to be added before blocking ads
     await initOptionsCustomizeTab(getOptionsHandle());
@@ -165,14 +169,14 @@ export default () => {
 
     // check if premium filterlists are still enabled and can be changed
     await initOptionsPremiumFlTab(getOptionsHandle());
-    for (const list of premiumFilterLists) {
-      await clickOnDisplayedElement(`span:has(> #${list.inputId})`);
+    for (const { checkboxSelector, text } of premiumFilterLists) {
+      await clickOnDisplayedElement(`span:has(> ${checkboxSelector})`);
       await driver.wait(
         async () => {
-          return !(await isCheckboxEnabled(list.inputId));
+          return !(await isCheckboxEnabled(checkboxSelector));
         },
         2000,
-        `${list.text} is still enabled`,
+        `${text} is still enabled`,
       );
     }
 
@@ -180,7 +184,7 @@ export default () => {
     await initOptionsGeneralTab(getOptionsHandle());
     await clickOnDisplayedElement("span:has(> #prefs__show_statsinicon)");
     await driver.wait(
-      isCheckboxEnabled("prefs__show_statsinicon"),
+      isCheckboxEnabled("#prefs__show_statsinicon"),
       2000,
       "Counter on the extension icon is still off",
     );
@@ -198,9 +202,7 @@ export default () => {
 
       if (list.enabled) {
         // if list is enabled by default, it should be subscribed
-        await waitForSubscribed(list.name, `[data-testid='${list.testId}']`, {
-          selectorOverride: true,
-        });
+        await waitForSubscribed(list.name, `[data-testid='${list.testId}']`);
       } else {
         // if list is disabled by default, it should be unsubscribed
         await driver.wait(
@@ -211,9 +213,7 @@ export default () => {
           `${list.text} is still subscribed`,
         );
       }
-      expect(
-        await isCheckboxEnabled(`[data-testid='${list.testId}']`, { selectorOverride: true }),
-      ).toEqual(list.enabled);
+      expect(await isCheckboxEnabled(`[data-testid='${list.testId}']`)).toEqual(list.enabled);
     }
 
     // check if custom filters are still there and can be changed

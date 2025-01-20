@@ -38,10 +38,10 @@ export default () => {
 
   it("displays AA default state", async function () {
     await initOptionsGeneralTab(getOptionsHandle());
-    const aaEnabled = await isCheckboxEnabled("acceptable-ads-allow");
+    const aaEnabled = await isCheckboxEnabled("#acceptable-ads-allow");
     expect(aaEnabled).toEqual(true);
     const aaPrivacyEnabled = await isCheckboxEnabled(
-      "acceptable-ads-privacy-allow"
+      "#acceptable-ads-privacy-allow"
     );
     expect(aaPrivacyEnabled).toEqual(false);
 
@@ -55,11 +55,11 @@ export default () => {
   it("only allows ads without third-party tracking", async function () {
     await initOptionsGeneralTab(getOptionsHandle());
     let aaPrivacyEnabled = await isCheckboxEnabled(
-      "acceptable-ads-privacy-allow"
+      "#acceptable-ads-privacy-allow"
     );
     expect(aaPrivacyEnabled).toEqual(false);
     await clickOnDisplayedElement("#acceptable-ads-privacy-allow");
-    aaPrivacyEnabled = await isCheckboxEnabled("acceptable-ads-privacy-allow");
+    aaPrivacyEnabled = await isCheckboxEnabled("#acceptable-ads-privacy-allow");
     expect(aaPrivacyEnabled).toEqual(true);
     const aaPrivacyHelper = await getDisplayedElement("#dnt", {
       timeout: 4000
@@ -77,7 +77,7 @@ export default () => {
 
   it("disables allow AA", async function () {
     await initOptionsGeneralTab(getOptionsHandle());
-    const aaEnabled = await isCheckboxEnabled("acceptable-ads-allow");
+    const aaEnabled = await isCheckboxEnabled("#acceptable-ads-allow");
     const aaCheckbox = await getDisplayedElement("#acceptable-ads-allow");
     if (!aaEnabled) {
       // Enables AA so it can be disabled afterwards to get the info message
@@ -98,7 +98,7 @@ export default () => {
     await waitForNotDisplayed("#acceptable-ads-why-not");
 
     const aaPrivacyEnabled = await isCheckboxEnabled(
-      "acceptable-ads-privacy-allow"
+      "#acceptable-ads-privacy-allow"
     );
     expect(aaPrivacyEnabled).toEqual(false);
 

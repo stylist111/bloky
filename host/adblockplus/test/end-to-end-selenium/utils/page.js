@@ -173,15 +173,15 @@ async function loadOptionsTab(optionsHandle, id, timeout = 5000) {
 }
 
 // This function assumes initOptionsGeneralTab() being called beforehand
-export async function clickCheckbox(checkboxId, enabledAfterClick) {
-  await clickOnDisplayedElement(`#${checkboxId}`);
+export async function clickCheckbox(cssSelector, enabledAfterClick) {
+  await clickOnDisplayedElement(cssSelector);
   const text = enabledAfterClick ? "enabled" : "disabled";
   await driver.wait(
     async () => {
-      return (await isCheckboxEnabled(checkboxId)) === enabledAfterClick;
+      return (await isCheckboxEnabled(cssSelector)) === enabledAfterClick;
     },
     1000,
-    `The filterlist "${checkboxId}" was not ${text} after clicking`
+    `The filterlist "${cssSelector}" was not ${text} after clicking`
   );
 }
 
@@ -242,12 +242,12 @@ export async function getPopupBlockedAdsTotalCount() {
 }
 
 export async function setAADefaultState() {
-  const checkboxId = "acceptable-ads-allow";
+  const checkboxSelector = "#acceptable-ads-allow";
 
   await initOptionsGeneralTab(getOptionsHandle());
-  const aaEnabled = await isCheckboxEnabled(checkboxId);
+  const aaEnabled = await isCheckboxEnabled(checkboxSelector);
   if (!aaEnabled) {
-    await clickCheckbox(checkboxId, true);
+    await clickCheckbox(checkboxSelector, true);
   }
 }
 

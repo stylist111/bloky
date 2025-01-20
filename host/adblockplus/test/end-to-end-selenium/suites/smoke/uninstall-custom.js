@@ -43,7 +43,7 @@ export default () => {
 
     // disable AA
     await initOptionsGeneralTab(getOptionsHandle(), 5000, true);
-    await clickCheckbox("acceptable-ads-allow", false);
+    await clickCheckbox("#acceptable-ads-allow", false);
 
     // disable easylist
     await initOptionsAdvancedTab(getOptionsHandle());

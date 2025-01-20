@@ -147,7 +147,7 @@ export default () => {
     await getDisplayedElement(visibleSelector);
 
     await initOptionsGeneralTab(getOptionsHandle());
-    await clickCheckbox("acceptable-ads-allow", false);
+    await clickCheckbox("#acceptable-ads-allow", false);
     await driver.switchTo().window(websiteHandle);
     await driver.wait(
       async () => {

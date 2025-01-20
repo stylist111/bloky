@@ -131,13 +131,13 @@ export default () => {
   it("displays acceptable ads", async function () {
     const visibleSelector = "#control-element";
     const hiddenSelector = "#test-aa";
-    const aaFLButtonId = "adblockFilterList_0";
+    const aaFLButtonSelector = "#adblockFilterList_0";
 
     await initOptionsFiltersTab(getOptionsHandle());
     await driver.wait(
       // https://eyeo.atlassian.net/browse/EXT-446
       async () => {
-        return (await isCheckboxEnabled(aaFLButtonId)) === expectAAEnabled;
+        return (await isCheckboxEnabled(aaFLButtonSelector)) === expectAAEnabled;
       },
       2000,
       `Acceptable Ads is not in the default state. Expected state: ${expectAAEnabled}`,
@@ -151,7 +151,7 @@ export default () => {
     await getDisplayedElement(visibleSelector);
 
     await initOptionsFiltersTab(getOptionsHandle());
-    await clickFilterlist("acceptable_ads", aaFLButtonId, !expectAAEnabled);
+    await clickFilterlist("acceptable_ads", aaFLButtonSelector, !expectAAEnabled);
     await driver.switchTo().window(websiteHandle);
     await driver.wait(
       async () => {

@@ -212,19 +212,19 @@ export async function getSubscriptionInfo(name, timeout = 5000) {
 }
 
 // This function assumes initOptionsFiltersTab() being called beforehand
-export async function clickFilterlist(name, id, enabledAfterClick) {
+export async function clickFilterlist(name, checkboxSelector, enabledAfterClick) {
   await clickOnDisplayedElement(`[name="${name}"]`);
 
   // Language filter lists get removed from the UI after disabling them.
   // In that case no further checks are done here
-  if (!id) {
+  if (!checkboxSelector) {
     return;
   }
 
   const text = enabledAfterClick ? "enabled" : "disabled";
   await driver.wait(
     async () => {
-      return (await isCheckboxEnabled(id)) === enabledAfterClick;
+      return (await isCheckboxEnabled(checkboxSelector)) === enabledAfterClick;
     },
     1000,
     `The filterlist "${name}" was not ${text} after clicking`,
@@ -350,26 +350,26 @@ export async function checkPremiumPageHeader(ctaTextSelector, ctaLinkSelector, p
 
 export async function setAADefaultState() {
   const name = "acceptable_ads";
-  const inputId = "adblockFilterList_0";
+  const checkboxSelector = "#adblockFilterList_0";
 
   await initOptionsFiltersTab(getOptionsHandle());
-  const aaEnabled = await isCheckboxEnabled(inputId);
+  const aaEnabled = await isCheckboxEnabled(checkboxSelector);
   // Cleanup setting the AA default state
   if ((expectAAEnabled && !aaEnabled) || (!expectAAEnabled && aaEnabled)) {
-    await clickFilterlist(name, inputId, expectAAEnabled);
+    await clickFilterlist(name, checkboxSelector, expectAAEnabled);
   }
 }
 
 export async function waitForSubscribed(
   name,
-  inputId,
-  { timeout = 3000, allowFetching = false, selectorOverride = false } = {},
+  checkboxSelector,
+  { timeout = 3000, allowFetching = false } = {},
 ) {
   const regexp = allowFetching ? /updated|Subscribed|Fetching/ : /updated|Subscribed/;
 
   await driver.wait(
     async () => {
-      const flEnabled = await isCheckboxEnabled(inputId, { selectorOverride });
+      const flEnabled = await isCheckboxEnabled(checkboxSelector);
       const text = await getSubscriptionInfo(name);
       return flEnabled && regexp.test(text);
     },
