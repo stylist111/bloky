@@ -1,5 +1,9 @@
 # Unreleased
 
+# 6.14.0 - 2025-01-20
+
+This release contains minor UI update and under-the-hood changes.
+
 - Added new free basic distraction control filter list
 - Removed machine learning snippets from extension (refs EXT-710)
 - Updated webext-ad-filtering-solution to 1.23.1
