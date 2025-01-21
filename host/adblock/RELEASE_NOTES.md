@@ -1,6 +1,12 @@
 # Unreleased
 
-# 6.14.0 - 2025-01-20
+# 6.14.1 - 2025-01-21
+
+This release contains minor UI update and under-the-hood changes.
+
+- Fixed loading bug for the new free basic distraction control filter list
+
+# 6.14.0 - 2025-01-20 (internal)
 
 This release contains minor UI update and under-the-hood changes.
 
