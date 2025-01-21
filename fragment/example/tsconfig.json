@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "allowJs": true,
+    "checkJs": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "outDir": "./dist/"
+  },
+  "include": ["src/background/index.js"],
+  "exclude": ["node_modules", "src/content/*.js", "src/shared/*.js"]
+}
