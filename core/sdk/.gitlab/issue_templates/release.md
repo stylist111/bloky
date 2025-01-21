@@ -10,7 +10,7 @@
 
 Detailed steps: [Release Process](https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution/-/wikis/Release-process)
 
-- [ ] (major release only) Run `npm run updatepsl` and commit the result. (ref this issue)
+- [ ] (major release only) Run `npm run -w adblockpluscore updatepsl` and commit the result. (ref this issue)
 - [ ] Update version in `package.json`, run `npm install`, and commit the result. (ref this issue)
 - [ ] Update Release notes
 - [ ] Cleanup Milestone issues

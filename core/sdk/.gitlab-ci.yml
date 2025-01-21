@@ -143,7 +143,7 @@ adblockpluscore:browser:
   stage: unit
   extends: .basic-image
   script:
-    - docker run $DOCKER_OPTIONS --entrypoint npm $BASIC_IMAGE run -w=@eyeo/webext-ad-filtering-solution test:adblockpluscore:browser 
+    - docker run $DOCKER_OPTIONS --entrypoint npm $BASIC_IMAGE run -w adblockpluscore test:browser
   rules:
     - !reference [.avoid-flaky-run, rules]
 

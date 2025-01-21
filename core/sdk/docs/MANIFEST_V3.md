@@ -325,7 +325,8 @@ Example:
 npm exec subs-generate -- -i data/rulesets -o data/rulesets.json -p path/to/rulesets/
 ```
 
-For convenience and testing purposes, running `npm run build` will automatically
+For convenience and testing purposes, running
+`npm run -w @eyeo/webext-ad-filtering-solution build` will automatically
 run the above scripts to create a meaningful subset of data used in our tests.
 
 ### Custom subscriptions list
@@ -333,7 +334,7 @@ run the above scripts to create a meaningful subset of data used in our tests.
 The default provided subscriptions can be overridden by adding a file called
 `custom-mv3-subscriptions.json` in the `scriptsOutput` directory and then using the
 following command:
-`npm run subs-merge -- [-i ...] -o $(pwd)/scriptsOutput/custom-mv3-subscriptions.json`
+`npm exec subs-merge -- [-i ...] -o $(pwd)/scriptsOutput/custom-mv3-subscriptions.json`
 to merge the files.
 
 Note the following:
@@ -350,7 +351,7 @@ Examples:
 * merge product-specific subscriptions file with default subscriptions:
 
 ```
-npm run subs-merge -- \
+npm exec subs-merge -- \
   -i /tmp/product-subscriptions.json \
   -o $(pwd)/scriptsOutput/custom-mv3-subscriptions.json
 ```
@@ -358,7 +359,7 @@ npm run subs-merge -- \
 * merge two subscriptions files:
 
 ```
-npm run subs-merge -- \
+npm exec subs-merge -- \
   -i /tmp/product-subscriptions.json \
   -i /tmp/language_en-subscriptions.json \
   -o $(pwd)/scriptsOutput/custom-mv3-subscriptions.json

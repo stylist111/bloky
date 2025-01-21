@@ -12,7 +12,8 @@ By default most of the style is enforced by the linter, eslint. We use
 the style provided by the `eslint-config-eyeo` package, with some
 overrides, notably the position of the open curly brace. (see below)
 
-Run `npm run lint` to run the linter on the code base.
+Run `npm run lint -- --scope adblockpluscore` to run the linter on the code
+base.
 
 ## Formatting
 
@@ -196,8 +197,8 @@ flavour. Private symbols should be labelled as such with `@private`.
 It is important to document both the internals and the public API of
 package.
 
-You can generate the documentation with `npm run docs`. It is done
-automatically prior to running the tests.
+You can generate the documentation with `npm run -w adblockpluscore docs`. It is
+done automatically prior to running the tests.
 
 ## Tests
 

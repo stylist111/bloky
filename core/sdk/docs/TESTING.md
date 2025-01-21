@@ -22,8 +22,8 @@ and linting.
 - [Unit](#unit-tests) - unit tests for both adblockpluscore & webext-sdk.
 - [Functional tests](#functional-tests) - most extensive tests. It contains
 functional tests on web bundles, scripts and functional tests on various
-combinations of browsers and manifests. Note: the set of browsers varies for
-branch master.
+combinations of browsers and manifests. Note: the set of browsers varies for the
+main branch.
 - [Fuzz Functional tests](#fuzz-functional-tests) - MV3 related service workers
 tests based on functional suite. Runs a subset of the functional tests, while
 suspending the service worker regularly to determine how the system behaves.
@@ -54,14 +54,14 @@ To run all adblockpluscore tests use the following commands from the top level
 directory:
 
 ```
-npm run test:adblockpluscore:unit
-npm run test:adblockpluscore:browser
+npm run -w adblockpluscore test:unit
+npm run -w adblockpluscore test:browser
 ```
 
 Optionaly use a test path to run a single unit test module. Example:
 
 ```
-npm run test:adblockpluscore:unit -- test/dnr.js
+npm run -w adblockpluscore test:unit -- test/dnr.js
 ```
 
 ### Unit (webext)
@@ -83,7 +83,7 @@ Additionally, two specific areas lend themselves to unit tests.
 To run the webext unit tests use the following command:
 
 ```
-npm run test:unit
+npm run -w @eyeo/webext-ad-filtering-solution test:unit
 ```
 
 #### Mocking browser APIs
@@ -94,6 +94,7 @@ generate mocked files by passing the filename from the `/src/background/`
 directory:
 
 ```
+cd core/sdk/
 npx webpack --config ./test/unit/background/mock/webpack.config.js --env filename="subscriptions.js"
 ```
 
@@ -104,7 +105,7 @@ To be able to use webext in extension integrator has to generate files
 properly use following command:
 
 ```
-npm run test:scripts
+npm run -w @eyeo/webext-ad-filtering-solution test:scripts
 ```
 
 ## Functional tests
@@ -115,27 +116,27 @@ rather than on the mechanisms behind these reactions.
 ### Run All Tests
 
 ```
-npm run build-then-test -- {2|3} {chromium|firefox|edge}
+npm run -w @eyeo/webext-ad-filtering-solution build-then-test -- {2|3} {chromium|firefox|edge}
 ```
 
 This script runs the test server and the test suite. You can also run each of
 these independentally using:
 
 ```
-npm run test-server
-npm run test:functional
+npm run -w @eyeo/webext-ad-filtering-solution test-server
+npm run -w @eyeo/webext-ad-filtering-solution test:functional
 ```
 
 In order to pass additional arguments, use the following syntax:
 
 ```
-npm run build-then-test -- {2|3} {chromium|firefox|edge} --argName="{ARGUMENT}"
+npm run -w @eyeo/webext-ad-filtering-solution build-then-test -- {2|3} {chromium|firefox|edge} --argName="{ARGUMENT}"
 ```
 
 For example:
 
 ```
-npm run build-then-test -- v3 chromium --grep="Test Name" 
+npm run -w @eyeo/webext-ad-filtering-solution build-then-test -- v3 chromium --grep="Test Name"
 ```
 
 ### Func:bundle
@@ -143,7 +144,7 @@ npm run build-then-test -- v3 chromium --grep="Test Name"
 Checks that the bundled code can be imported and re-bundled:
 
 ```
-npm run test:bundle
+npm run -w @eyeo/webext-ad-filtering-solution test:bundle
 ```
 
 ### Functional tests on browsers
@@ -166,7 +167,7 @@ When running tests on Docker, the test-server is run automatically on Docker
 container, no need to run it locally.
 
 ```
-npm run test-server
+npm run -w @eyeo/webext-ad-filtering-solution test-server
 ```
 
 #### Using the test extension
@@ -194,7 +195,7 @@ can use on UI.
 For local runs you can trigger test runner to run tests you desire:
 
 ```
-npm run test:functional -- {2|3} {chromium|firefox|edge} [version|channel] [options]
+npm run -w @eyeo/webext-ad-filtering-solution test:functional -- {2|3} {chromium|firefox|edge} [version|channel] [options]
 ```
 
 Runner options need to be preceded by two dashes (`--`), for example
@@ -217,14 +218,14 @@ update tests by running tests with
 `--testKinds functional reload update mv2-mv3-migrate`.
 - The `browserBinary` option allow to pass installed browser binary
 to use custom versions. For example:
-`npm run test:functional v3 chromium -- --browserBinary="/Users/user/Documents/repo/webext-sdk/browser-snapshots/chromium/chromium-darwin-x64-1097561/chrome-mac/Chromium.app/Contents/MacOS/Chromium"`
+`npm run -w @eyeo/webext-ad-filtering-solution test:functional v3 chromium -- --browserBinary="/Users/user/Documents/repo/webext-sdk/browser-snapshots/chromium/chromium-darwin-x64-1097561/chrome-mac/Chromium.app/Contents/MacOS/Chromium"`
 - The `verbose` option prints local test servers (admin and pages) requests
 
 #### Web bundle regeneration
 
 The tests for the web bundle blocking require a .wbn file. The one currently
 used is provided in the tree. However, if it needs to be regenerated, there is
-`test/tools/webbundle-builder.js` to be run from the top-level. The content is
+`test/tools/webbundle-builder.js` to be run from the SDK root. The content is
 fixed in the script, so simply re-running it shouldn't yield any difference.
 It relies on the wbn module that will be installed as a development dependency.
 
@@ -253,7 +254,8 @@ If multiple tags are applied to the same test, all are applied.
 - `[mv2-only]`: Only run this test when testing an MV2 extension.
 - `[mv3-only]`: Only run this test when testing an MV3 extension.
 - `[runner-only]`: Only run this test when the test is run using Selenium
-  Webdriver (ie it is launched from the console using `npm test` script).
+  Webdriver (ie it is launched from the console using
+  `npm run -w @eyeo/webext-ad-filtering-solution test:functional` script).
 - `[flaky]`: Run this test when using the `ONLY_FLAKY="true"` option in the
   functional test docker container.
 - `[fuzz]`: Run this test in the service worker fuzz tests. By default, tests
@@ -320,7 +322,7 @@ everything will work fine. To run integration tests locally use the following
 command:
 
 ```
-./test/dockerfiles/integration-entrypoint.sh
+./core/sdk/test/dockerfiles/integration-entrypoint.sh
 ```
 
 ## Performance tests
@@ -331,7 +333,7 @@ The performace of the engine is measured using
 To run the performance tests:
 
 ```
-npm run test:performance -- {2|3} {chromium|edge} [--forceHeadful]
+npm run -w @eyeo/webext-ad-filtering-solution test:performance -- {2|3} {chromium|edge} [--forceHeadful]
 ```
 
 Note: Firefox is not supported by the performance tests.
@@ -343,17 +345,10 @@ Note: Firefox is not supported by the performance tests.
 The CI/CD pipeline runs the tests using this docker image. Using docker locally
 to run the same tests may be useful to recreate the infrastructure the CI uses.
 
-#### Unit:adblockpluscore
-
-```
-docker build -t basic -f test/dockerfiles/basic.Dockerfile .
-docker run --cpus=2 --memory=6g --shm-size=2g -it --entrypoint npm basic run test:adblockpluscore -- [test/path]
-```
-
 #### Func:webext
 
 ```
-docker build -t functional -f test/dockerfiles/functional.Dockerfile .
+docker build -t functional -f core/sdk/test/dockerfiles/functional.Dockerfile .
 docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_PARAMS="{2|3} {chromium|firefox|edge}" functional
 ```
 
@@ -363,7 +358,7 @@ described previously.
 #### Compliance
 
 ```
-MANIFEST={mv2|mv3} ./test/scripts/compliance.sh
+MANIFEST={mv2|mv3} ./core/sdk/test/scripts/compliance.sh
 ```
 
 Optional environment variables for the script:
@@ -375,15 +370,15 @@ Optional environment variables for the script:
 #### Performance
 
 ```
-docker build -t functional -f test/dockerfiles/functional.Dockerfile .
-docker run --cpus=2 --memory=6g --shm-size=2g -it --entrypoint npm functional run test:performance {2|3} {chromium|edge}
+docker build -t functional -f core/sdk/test/dockerfiles/functional.Dockerfile .
+docker run --cpus=2 --memory=6g --shm-size=2g -it --entrypoint functional npm -w @eyeo/webext-ad-filtering-solution run test:performance {2|3} {chromium|edge}
 ```
 
 In order to access the screenshots for failing tests run the following command,
 which copies the screenshots to the `<destination>` folder:
 
 ```shell
-docker cp $(docker ps -aqf ancestor=functional | head -n 1):/webext-sdk/test/screenshots <destination>
+docker cp $(docker ps -aqf ancestor=functional | head -n 1):/extensions/core/sdk/test/screenshots <destination>
 ```
 
 #### ARM architecture (M1/M2 Apple Silicon)
@@ -408,7 +403,7 @@ flakiness) you can download it to the docker image and cache it. To do so please
 add the `BROWSER` argument to the build command as follow:
 
 ```
-docker build -t functional -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER=<chromium> .
+docker build -t functional -f core/sdk/test/dockerfiles/functional.Dockerfile --build-arg BROWSER=<chromium> .
 ```
 
 For linux machines only: If you have a slow internet connection or are running
@@ -416,7 +411,7 @@ the test many times, you can add the following flags to docker run to use the
 browser download cache from the host machine:
 
 ```
--v $(pwd)/browser-snapshots:/webext-sdk/browser-snapshots
+-v $(pwd)/browser-snapshots:/extensions/core/sdk/browser-snapshots
 ```
 
 ## Flaky Tests
@@ -432,7 +427,7 @@ developer, a high priority ticket should be immediately created.
 ### Investigating/fixing functional flaky tests
 
 The best way of investigating flaky tests locally is using docker (instead of
-`npm test`).
+`npm -w @eyeo/webext-ad-filtering-solution test:functional`).
 
 If you need to run specific tests multiple times to investigate/reproduce
 flakiness, use the `[flaky]` tag in the name of the test, along with the
@@ -522,17 +517,17 @@ are working on.
 This will trigger "measure flakiness" scripts & check that will run
 test modules in isolation:
 
-- Go to: <https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution/-/pipelines>
+- Go to: <https://gitlab.com/eyeo/browser-extensions-and-premium/extensions/extensions/-/pipelines>
 then press “Run pipelines”.
 - Select branch you want to run pipeline on
 - Provide variable: CHECKTESTS: true
 - Provide variable FULL: true if you wish to run full set of browsers (as on
-master)
+main)
 - Run pipeline
 
 ![Run pipeline](/docs/run_pipeline_ui.png "Run pipeline from UI")
 
-Note: this setup is run on master on our Nightly Runs - checking if our
+Note: this setup is run on main on our Nightly Runs - checking if our
 tests are good quality (no flaky and independent from each other)
 
 You can also use our [webext sdk cheat sheet](TESTING_CHEAT_SHEET.md) for short
@@ -546,6 +541,6 @@ with each other if they are run concurrently.
 To run test suites locally in isolation, run the following docker commands:
 
 ```
-docker build -t functional -f test/dockerfiles/functional.Dockerfile .
-docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_SUITES="suite_1 suite_2" -e TEST_PARAMS="v3 chromium" --entrypoint test/dockerfiles/isolated-entrypoint.sh functional
+docker build -t functional -f core/sdk/test/dockerfiles/functional.Dockerfile .
+docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_SUITES="suite_1 suite_2" -e TEST_PARAMS="v3 chromium" --entrypoint core/sdk/test/dockerfiles/isolated-entrypoint.sh functional
 ```

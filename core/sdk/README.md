@@ -46,8 +46,8 @@ All contributors to this project are required to read, and follow, our
 ## Getting started
 
 The library comes in two parts, `ewe-api.js` to be included in the extension's
-background page, and `ewe-content.js` to be loaded as a content script. Please
-download the [latest build][builds] (or [build the library yourself][dev]).
+background page, and `ewe-content.js` to be loaded as a content script. You can
+get it from [npm][npm-package].
 
 Additionally, the SDK provides standalone utilities that can work in both
 browser extension contexts, as well as other Javascript contexts.
@@ -320,7 +320,7 @@ New keypairs can be created with the correct algorithm and settings by
 using our keypair creation script.
 
 ```
-npm run create-allowlisting-keypair
+npm run -w @eyeo/webext-ad-filtering-solution create-allowlisting-keypair
 ```
 
 See the Development section below for details on running our scripts
@@ -358,12 +358,13 @@ npm install
 ### Building the library
 
 ```
-npm run build
+npm run build -- --scope @eyeo/webext-ad-filtering-solution
 ```
 
 ### Running Locally (and watch for changes)
 
 ```
+cd core/sdk/
 npx webpack --watch
 ```
 
@@ -374,7 +375,7 @@ be passed to it. It can list the options available if you ask for
 `--help`.
 
 ```
-npm run build -- --help
+npm run build -- --scope @eyeo/webext-ad-filtering-solution -- --help
 ```
 
 There are some specific flags which might be useful to customise the
@@ -382,10 +383,10 @@ build:
 
 ```
 # Build only engine, no test extensions
-npm run build -- --config-name engine
+npm run build -- --scope @eyeo/webext-ad-filtering-solution -- --config-name engine
 
 # Don't generate any sourcemaps
-npm run build -- --no-devtool
+npm run build -- --scope @eyeo/webext-ad-filtering-solution -- --no-devtool
 ```
 
 In the background, this script is using Webpack. You can also see the
@@ -407,7 +408,7 @@ subscriptions hasn't changed, you can use the
 `--force-subscription-update` flag to the build script.
 
 ```
-npm run build -- --force-subscription-update
+npm run build -- --scope @eyeo/webext-ad-filtering-solution -- --force-subscription-update
 ```
 
 ##### Using your own test-server instance
@@ -418,8 +419,8 @@ which is already running, you can use the `--use-external-server`
 flag.
 
 ```
-npm run test-server&
-npm run build -- --use-external-server
+npm run -w @eyeo/webext-ad-filtering-solution test-server&
+npm run build -- --scope @eyeo/webext-ad-filtering-solution -- --use-external-server
 ```
 
 #### Release builds
@@ -428,29 +429,28 @@ By default, debug builds are created. If building the library to be used
 in another project you would want to create a release build.
 
 ```
-npm run build:release
+npm run build:release -- --scope @eyeo/webext-ad-filtering-solution
 ```
 
 ### Building the documentation
 
 ```
-npm run docs
+npm run -w @eyeo/webext-ad-filtering-solution docs
 ```
 
 ### Linting the code
 
 ```
-npm run lint
+npm run lint -- --scope @eyeo/webext-ad-filtering-solution
 ```
 
 </div>
 
-[builds]: https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution/-/jobs/artifacts/master/browse/dist?job=build
 [snippet-filters]: https://help.eyeo.com/adblockplus/snippet-filters-tutorial
 [snippets-project]: https://gitlab.com/eyeo/adblockplus/abp-snippets
 [api-docs]: https://eyeo.gitlab.io/browser-extensions-and-premium/extensions/extensions/sdk/#apis
-[dev]: https://gitlab.com/eyeo/adblockplus/abc/webext-ad-filtering-solution#development
 [notifications-module]: https://eyeo.gitlab.io/browser-extensions-and-premium/extensions/extensions/sdk/#notifications
+[npm-package]: https://www.npmjs.com/package/@eyeo/webext-ad-filtering-solution
 [allowlisting-module]: https://eyeo.gitlab.io/browser-extensions-and-premium/extensions/extensions/sdk/#allowlisting
 [abpui]:https://gitlab.com/adblockinc/ext/adblockplus/adblockplusui
 
