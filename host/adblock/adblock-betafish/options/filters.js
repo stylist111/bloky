@@ -677,6 +677,7 @@ function getToggleFilterUI(filterList, checkboxID) {
     .attr("type", "checkbox")
     .attr("adblockId", checkboxID)
     .attr("id", checkboxID)
+    .attr("data-testid", `filters_${filterList.adblockId}`)
     .prop("checked", !!filterList.subscribed);
 
   const $spanSlider = $("<span>").addClass("slider").addClass("round");
