@@ -546,7 +546,7 @@ select#language_select optgroup {
 
 /* Visually hide the timestamp - screen readers only. */
 .timestamp_info {
-  opacity: 0;
+  display: none;
   position: absolute;
   color: var(--help-icon-color);
 }
