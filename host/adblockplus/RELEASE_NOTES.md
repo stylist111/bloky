@@ -1,5 +1,8 @@
 # Unreleased
 
+- Saving of downloaded filters to IndexedDB can now continue if the database was
+  previously corrupted. (EXT-679)
+
 # 4.11.1 - 2025-01-17
 
 - Added new free basic distraction control filter list (refs EXT-598)

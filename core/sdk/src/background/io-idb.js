@@ -22,7 +22,7 @@ let database;
 function clearContent(filename, entryStore, contentStore) {
   entryStore.get(filename).onsuccess = event => {
     let entry = event.target.result;
-    if (entry) {
+    if (entry && entry.content) {
       contentStore.delete(entry.content);
     }
   };
@@ -77,7 +77,7 @@ export let IO = {
 
       entryStore.get(filename).onsuccess = entryEvent => {
         let entry = entryEvent.target.result;
-        if (!entry) {
+        if (!entry || !entry.content) {
           reject(new Error("File does not exist"));
           return;
         }
@@ -144,6 +144,10 @@ export let IO = {
         let entry = event.target.result;
         if (!entry) {
           reject(new Error("File does not exist"));
+          return;
+        }
+
+        if (oldName == newName) {
           return;
         }
 

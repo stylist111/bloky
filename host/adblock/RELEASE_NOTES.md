@@ -1,5 +1,8 @@
 # Unreleased
 
+- Saving of downloaded filters to IndexedDB can now continue if the database was
+  previously corrupted. (EXT-679)
+
 # 6.14.1 - 2025-01-21
 
 This release contains minor UI update and under-the-hood changes.
