@@ -191,18 +191,18 @@ export default () => {
 
     // check if German + English filterlist is still subscribed
     await initOptionsFiltersTab(getOptionsHandle());
-    await clickOnDisplayedElement(`span:has(> [data-testid='${langList.testId}'])`);
-    await waitForNotDisplayed(`span:has(> [data-testid='${langList.testId}'])`);
+    await clickOnDisplayedElement(`span:has(> ${langList.checkboxSelector})`);
+    await waitForNotDisplayed(`span:has(> ${langList.checkboxSelector})`);
 
     // acceptable ads (on), easylist (on), easyprivacy (off)
     for (const list of lists) {
-      await clickOnDisplayedElement(`span:has(> [data-testid='${list.testId}'])`, {
+      await clickOnDisplayedElement(`span:has(> ${list.checkboxSelector})`, {
         scrollIntoView: true,
       });
 
       if (list.enabled) {
         // if list is enabled by default, it should be subscribed
-        await waitForSubscribed(list.name, `[data-testid='${list.testId}']`);
+        await waitForSubscribed(list.name, list.checkboxSelector);
       } else {
         // if list is disabled by default, it should be unsubscribed
         await driver.wait(
@@ -213,7 +213,7 @@ export default () => {
           `${list.text} is still subscribed`,
         );
       }
-      expect(await isCheckboxEnabled(`[data-testid='${list.testId}']`)).toEqual(list.enabled);
+      expect(await isCheckboxEnabled(list.checkboxSelector)).toEqual(list.enabled);
     }
 
     // check if custom filters are still there and can be changed
