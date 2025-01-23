@@ -1,23 +1,23 @@
 /*
- * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-present eyeo GmbH
+ * This file is part of eyeo's In Product Messaging (IPM) fragment,
+ * Copyright (C) 2024-present eyeo GmbH
  *
- * Adblock Plus is free software: you can redistribute it and/or modify
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
  *
- * Adblock Plus is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { getPremiumState } from "../../premium/background";
 import { type LicenseStateBehavior } from "./command-library.types";
 import { LicenseState } from "./data-collection.types";
+import { licensing } from "./context";
 
 /**
  * The default license state for the license_state_list command parameter.
@@ -31,7 +31,7 @@ export const defaultLicenseState = LicenseState.inactive;
  * @returns whether the parameter is a LicenseState
  */
 export function isValidLicenseState(
-  candidate: unknown
+  candidate: unknown,
 ): candidate is LicenseState {
   return (
     typeof candidate === "string" &&
@@ -48,14 +48,14 @@ export function isValidLicenseState(
  *   command
  */
 export async function doesLicenseStateMatch(
-  behavior: LicenseStateBehavior
+  behavior: LicenseStateBehavior,
 ): Promise<boolean> {
   if (!behavior.licenseStateList) {
     return true;
   }
 
   const licenseStates = behavior.licenseStateList.split(",");
-  const { isActive } = getPremiumState();
+  const isActive = licensing.isLicenseValid(); // getPremiumState();
 
   for (const licenseState of licenseStates) {
     if (licenseState === LicenseState.inactive && !isActive) {

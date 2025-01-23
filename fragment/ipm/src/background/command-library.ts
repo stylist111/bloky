@@ -1,18 +1,18 @@
 /*
- * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-present eyeo GmbH
+ * This file is part of eyeo's In Product Messaging (IPM) fragment,
+ * Copyright (C) 2024-present eyeo GmbH
  *
- * Adblock Plus is free software: you can redistribute it and/or modify
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
  *
- * Adblock Plus is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 import browser from "webextension-polyfill";
@@ -25,14 +25,19 @@ import {
   CommandVersion,
   type Content,
   DeleteEventType,
-  maximumProcessableCommands
+  maximumProcessableCommands,
 } from "./command-library.types";
-import * as logger from "../../logger/background";
-import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import { isDeleteBehavior, setDeleteCommandHandler } from "./delete-commands";
 import { recordEvent, recordGenericEvent } from "./event-recording";
 import { isValidDate } from "./param-validator";
 import { checkLanguage } from "./language-check";
+import { prefs, logger, init as contextInit } from "./context";
+import {
+  type Licensing,
+  type Logger,
+  type Preferences,
+  type UserAndHostInformation,
+} from "./context.types";
 
 /**
  * A list of known commands.
@@ -81,7 +86,7 @@ function isCommand(candidate: unknown): candidate is Command {
  * @returns whether candidate is a map of commands
  */
 export function isCommandMap(
-  candidate: unknown
+  candidate: unknown,
 ): candidate is Record<string, Command> {
   return (
     typeof candidate === "object" &&
@@ -99,7 +104,7 @@ export function isCommandMap(
  */
 export function setCommandActor(
   commandName: CommandName,
-  actor: CommandActor
+  actor: CommandActor,
 ): void {
   actorByCommandName.set(commandName, actor);
   retryExecuteCommands(commandName);
@@ -116,12 +121,12 @@ export function dismissCommand(ipmId: string): void {
     return;
   }
 
-  const commandStorage = Prefs.get(commandStorageKey);
+  const commandStorage = prefs.get(commandStorageKey);
   // We can't use a Map or Set for `commandStorage`, so we need dynamic
   // deletion here.
   // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
   delete commandStorage[command.ipm_id];
-  void Prefs.set(commandStorageKey, commandStorage);
+  void prefs.set(commandStorageKey, commandStorage);
 }
 
 /**
@@ -153,7 +158,7 @@ export function getBehavior(ipmId: string): Behavior | null {
  * @returns command
  */
 export function getCommand(ipmId: string): Command | null {
-  const commandStorage = Prefs.get(commandStorageKey);
+  const commandStorage = prefs.get(commandStorageKey);
   return commandStorage[ipmId] || null;
 }
 
@@ -163,7 +168,7 @@ export function getCommand(ipmId: string): Command | null {
  * @returns An array with command IDs or empty array if there's no commands
  */
 export function getStoredCommandIds(): string[] {
-  const commandStorage = Prefs.get(commandStorageKey);
+  const commandStorage = prefs.get(commandStorageKey);
 
   if (!isCommandMap(commandStorage)) {
     return [];
@@ -201,7 +206,7 @@ export function getContent(ipmId: string): Content | null {
  * @returns Whether the command with the given id has already been processed
  */
 function hasProcessedCommand(ipmId: string): boolean {
-  const commandStorage = Prefs.get(commandStorageKey);
+  const commandStorage = prefs.get(commandStorageKey);
   return ipmId in commandStorage;
 }
 
@@ -249,13 +254,13 @@ function retryExecuteCommands(commandName: CommandName): void {
  * @param commands A list of commands from the IPM server
  */
 function storeCommands(commands: Command[]): void {
-  const storage = Prefs.get(commandStorageKey);
+  const storage = prefs.get(commandStorageKey);
 
   for (const command of commands) {
     storage[command.ipm_id] = command;
   }
 
-  void Prefs.set(commandStorageKey, storage);
+  void prefs.set(commandStorageKey, storage);
 }
 
 /**
@@ -267,7 +272,7 @@ function storeCommands(commands: Command[]): void {
  */
 export function executeIPMCommands(
   commands: unknown[],
-  isInitialization: boolean = false
+  isInitialization: boolean = false,
 ): void {
   const actorByExecutableCommand = new Map<Command, CommandActor>();
 
@@ -286,7 +291,7 @@ export function executeIPMCommands(
     if (!knownCommandsList.includes(command.command_name)) {
       logger.error(
         "[ipm]: Unknown command name received:",
-        command.command_name
+        command.command_name,
       );
       continue;
     }
@@ -297,7 +302,7 @@ export function executeIPMCommands(
           command.command_name
         }". Requested version was ${command.version}, version present is ${
           CommandVersion[command.command_name]
-        }`
+        }`,
       );
       continue;
     }
@@ -307,7 +312,7 @@ export function executeIPMCommands(
       recordEvent(
         command.ipm_id,
         command.command_name,
-        CommandEventType.expired
+        CommandEventType.expired,
       );
 
       // cleanup commands that have expired from local storage
@@ -334,7 +339,7 @@ export function executeIPMCommands(
     if (!("attributes" in command)) {
       command.attributes = {
         received: Date.now(),
-        language: browser.i18n.getUILanguage()
+        language: browser.i18n.getUILanguage(),
       };
     }
 
@@ -354,7 +359,7 @@ export function executeIPMCommands(
   const commandHandlingPromises = Array.from(actorByExecutableCommand).map(
     async ([executableCommand, actor]) => {
       await actor.handleCommand(executableCommand.ipm_id);
-    }
+    },
   );
 
   void Promise.all(commandHandlingPromises).then(() => {
@@ -373,7 +378,7 @@ export function executeIPMCommands(
  */
 function registerDeleteEvent(
   ipmId: string,
-  name: CommandEventType | DeleteEventType
+  name: CommandEventType | DeleteEventType,
 ): void {
   recordEvent(ipmId, CommandName.deleteCommands, name);
 }
@@ -422,14 +427,14 @@ async function handleDeleteCommand(ipmId: string): Promise<void> {
       success = false;
       logger.error(
         "[delete-commands]: Error trying to delete command with ID ",
-        commandId
+        commandId,
       );
     }
   }
 
   registerDeleteEvent(
     ipmId,
-    success ? DeleteEventType.sucess : DeleteEventType.error
+    success ? DeleteEventType.sucess : DeleteEventType.error,
   );
   dismissCommand(ipmId);
 }
@@ -437,13 +442,19 @@ async function handleDeleteCommand(ipmId: string): Promise<void> {
 /**
  * Initializes command library
  */
-export async function start(): Promise<void> {
-  await Prefs.untilLoaded;
+export async function start(
+  preferences: Preferences,
+  logger: Logger,
+  licensing: Licensing,
+  info: UserAndHostInformation,
+): Promise<void> {
+  contextInit(preferences, logger, licensing, info);
+  await prefs.untilLoaded;
 
   setDeleteCommandHandler(handleDeleteCommand);
 
   // Reinitialize commands from storage
-  const commandStorage = Prefs.get(commandStorageKey);
+  const commandStorage = prefs.get(commandStorageKey);
 
   if (!isCommandMap(commandStorage)) {
     return;

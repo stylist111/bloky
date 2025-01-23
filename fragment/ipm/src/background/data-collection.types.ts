@@ -1,18 +1,18 @@
 /*
- * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-present eyeo GmbH
+ * This file is part of eyeo's In Product Messaging (IPM) fragment,
+ * Copyright (C) 2024-present eyeo GmbH
  *
- * Adblock Plus is free software: you can redistribute it and/or modify
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
  *
- * Adblock Plus is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 /**
@@ -30,7 +30,7 @@ export enum DataType {
   /**
    * The event data type.
    */
-  event = "event"
+  event = "event",
 }
 
 /**
@@ -85,7 +85,7 @@ interface EventAttributes extends BaseAttributes {
  * An enum containing all known types of Platforms.
  */
 export enum PlatformType {
-  web = "web"
+  web = "web",
 }
 
 /**
@@ -125,7 +125,7 @@ export interface EventData {
  */
 export enum LicenseState {
   active = "premium",
-  inactive = "free"
+  inactive = "free",
 }
 
 /**
@@ -162,7 +162,7 @@ export interface DeviceData {
  * An enum containing all known Platform statuses.
  */
 export enum PlatformStatus {
-  true = "true"
+  true = "true",
 }
 
 /**

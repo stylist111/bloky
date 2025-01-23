@@ -1,24 +1,25 @@
 /*
- * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-present eyeo GmbH
+ * This file is part of eyeo's In Product Messaging (IPM) fragment,
+ * Copyright (C) 2024-present eyeo GmbH
  *
- * Adblock Plus is free software: you can redistribute it and/or modify
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
  *
- * Adblock Plus is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 import * as eventRecording from "./event-recording";
-import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import { CommandName, type Command } from "./command-library.types";
 import { checkLanguage } from "./language-check";
+import * as browser from "webextension-polyfill";
+import { prefs } from "./context";
 
 const ipmId = "__ipm_id__";
 const oldIpmId = "__old_ipm__";
@@ -29,7 +30,7 @@ const mockCommandStorage: Record<string, Command> = {
     version: 1,
     command_name: CommandName.createTab,
     ipm_id: ipmId,
-    expiry: ""
+    expiry: "",
   },
   [ipmId]: {
     version: 1,
@@ -38,15 +39,15 @@ const mockCommandStorage: Record<string, Command> = {
     expiry: "",
     attributes: {
       language,
-      received: 0
-    }
-  }
+      received: 0,
+    },
+  },
 };
 
 describe("language-check", () => {
   beforeEach(() => {
     jest.spyOn(eventRecording, "recordEvent").mockImplementation();
-    jest.spyOn(Prefs, "get").mockReturnValue(mockCommandStorage);
+    jest.spyOn(prefs, "get").mockReturnValue(mockCommandStorage);
   });
 
   describe("checkLanguage", () => {
@@ -74,7 +75,7 @@ describe("language-check", () => {
       expect(eventRecording.recordEvent).toHaveBeenCalledWith(
         ipmId,
         CommandName.createOnPageDialog,
-        "language_skew"
+        "language_skew",
       );
     });
   });

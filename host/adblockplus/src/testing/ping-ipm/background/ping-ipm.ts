@@ -16,6 +16,7 @@
  */
 
 import { sendPing } from "../../../ipm/background/telemetry";
+
 import { port } from "~/core/messaging/background";
 import { Prefs } from "../../../../adblockpluschrome/lib/prefs";
 

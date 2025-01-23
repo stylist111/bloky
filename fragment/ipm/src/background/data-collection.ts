@@ -1,23 +1,22 @@
 /*
- * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-present eyeo GmbH
+ * This file is part of eyeo's In Product Messaging (IPM) fragment,
+ * Copyright (C) 2024-present eyeo GmbH
  *
- * Adblock Plus is free software: you can redistribute it and/or modify
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
  *
- * Adblock Plus is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 import * as browser from "webextension-polyfill";
 
-import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import { getStoredCommandIds } from "./command-library";
 import { CommandName, CommandVersion } from "./command-library.types";
 import {
@@ -32,11 +31,9 @@ import {
   PlatformStatus,
   PlatformType,
   type UserData,
-  eventStorageKey
+  eventStorageKey,
 } from "./data-collection.types";
-import { getPremiumState } from "../../premium/background";
-import { getInstallationId } from "../../id/background";
-import { info } from "../../info/background";
+import { info, licensing, prefs } from "./context";
 
 /**
  * Takes a number, turns it into a string, and pads it if necessary to create
@@ -69,7 +66,7 @@ function getLocalTimeStamp(): string {
     ":",
     leftPad(date.getMinutes()),
     ":",
-    leftPad(date.getSeconds())
+    leftPad(date.getSeconds()),
   ].join("");
 }
 
@@ -80,12 +77,12 @@ function getLocalTimeStamp(): string {
  */
 async function getBaseAttributes(): Promise<BaseAttributes> {
   return {
-    app_name: info.baseName,
-    browser_name: info.application,
+    app_name: info.getAppName(),
+    browser_name: info.getBrowserName(),
     os: (await browser.runtime.getPlatformInfo()).os,
     language_tag: browser.i18n.getUILanguage(),
-    app_version: info.addonVersion,
-    install_type: (await browser.management.getSelf()).installType
+    app_version: info.getAppVersion(),
+    install_type: (await browser.management.getSelf()).installType,
   };
 }
 
@@ -102,21 +99,21 @@ async function getEventData(
   ipmId: string,
   commandName: string,
   commandVersion: number,
-  name: string
+  name: string,
 ): Promise<EventData> {
   return {
     type: DataType.event,
-    device_id: await getInstallationId(),
+    device_id: await info.getId(),
     action: name,
     platform: PlatformType.web,
-    app_version: info.addonVersion,
+    app_version: info.getAppVersion(),
     user_time: getLocalTimeStamp(),
     attributes: {
       ...(await getBaseAttributes()),
       ipm_id: ipmId,
       command_name: commandName,
-      command_version: commandVersion
-    }
+      command_version: commandVersion,
+    },
   };
 }
 
@@ -126,17 +123,17 @@ async function getEventData(
  * @returns An object containing device data
  */
 async function getDeviceData(): Promise<DeviceData> {
-  await Prefs.untilLoaded;
+  await prefs.untilLoaded;
   return {
     type: DataType.device,
-    device_id: await getInstallationId(),
+    device_id: await info.getId(),
     attributes: {
       ...(await getBaseAttributes()),
       blocked_total: 0, // We're not sending block count to protect user privacy
-      license_status: getPremiumState().isActive
+      license_status: licensing.isLicenseValid()
         ? LicenseState.active
-        : LicenseState.inactive
-    }
+        : LicenseState.inactive,
+    },
   };
 }
 
@@ -149,7 +146,7 @@ async function getUserData(): Promise<UserData> {
   return {
     type: DataType.customer,
     platforms: [{ platform: PlatformType.web, active: PlatformStatus.true }],
-    attributes: await getBaseAttributes()
+    attributes: await getBaseAttributes(),
   };
 }
 
@@ -162,7 +159,7 @@ export function getSupportedCommandsData(): IpmCapability[] {
   const commandNames = Object.values(CommandName);
   const supportedCommandsData = commandNames.map((name) => ({
     name,
-    version: CommandVersion[name]
+    version: CommandVersion[name],
   }));
 
   return supportedCommandsData;
@@ -179,10 +176,10 @@ function getIpmData(): IpmData {
     capabilities: [
       {
         name: "multi_ipm_response",
-        version: 1
+        version: 1,
       },
-      ...getSupportedCommandsData()
-    ]
+      ...getSupportedCommandsData(),
+    ],
   };
 }
 
@@ -192,10 +189,10 @@ function getIpmData(): IpmData {
  * @returns An object containing the payload
  */
 export async function getPayload(): Promise<PayloadData> {
-  await Prefs.untilLoaded;
+  await prefs.untilLoaded;
   const user = await getUserData();
   const device = await getDeviceData();
-  const events = Prefs.get(eventStorageKey);
+  const events = prefs.get(eventStorageKey);
   const ipm = getIpmData();
   return { user, device, events, ipm };
 }
@@ -204,8 +201,8 @@ export async function getPayload(): Promise<PayloadData> {
  * Clears all recorded user events.
  */
 export async function clearEvents(): Promise<void> {
-  await Prefs.untilLoaded;
-  void Prefs.set(eventStorageKey, []);
+  await prefs.untilLoaded;
+  void prefs.set(eventStorageKey, []);
 }
 
 /**
@@ -223,16 +220,16 @@ export async function storeEvent(
   ipmId: string,
   commandName: string,
   commandVersion: number,
-  name: string
+  name: string,
 ): Promise<void> {
-  await Prefs.untilLoaded;
+  await prefs.untilLoaded;
   const eventData = await getEventData(
     ipmId,
     commandName,
     commandVersion,
-    name
+    name,
   );
-  const eventStorage = Prefs.get(eventStorageKey) as EventData[];
+  const eventStorage = prefs.get(eventStorageKey) as EventData[];
   eventStorage.push(eventData);
-  void Prefs.set(eventStorageKey, eventStorage);
+  void prefs.set(eventStorageKey, eventStorage);
 }

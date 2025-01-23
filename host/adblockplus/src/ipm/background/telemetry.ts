@@ -22,8 +22,11 @@ import {
   removeSchedule
 } from "../../core/scheduled-event-emitter/background";
 import { error as logError, warn as logWarning } from "../../logger/background";
-import { executeIPMCommands } from "./command-library";
-import { clearEvents, getPayload } from "./data-collection";
+import {
+  executeIPMCommands,
+  getPayload,
+  clearEvents
+} from "@eyeo-fragments/ipm/background";
 import {
   intervalKey,
   lastPingKey,

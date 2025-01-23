@@ -19,12 +19,11 @@
 
 import rulesIndex from "@adblockinc/rules/adblockplus";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
-
 import {
-  startTelemetry,
   initializeCDP,
-  initializeEyeometryMACCounting
-} from "../../src/ipm/background/index.ts";
+  initializeEyeometryMACCounting,
+  startTelemetry
+} from "../../src/ipm/background";
 import * as premium from "../../src/premium/background/index.ts";
 import { startOptionLinkListener } from "../../src/options/background";
 import { info } from "../../src/info/background";

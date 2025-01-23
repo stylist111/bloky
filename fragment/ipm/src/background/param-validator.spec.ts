@@ -1,18 +1,18 @@
 /*
- * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-present eyeo GmbH
+ * This file is part of eyeo's In Product Messaging (IPM) fragment,
+ * Copyright (C) 2024-present eyeo GmbH
  *
- * Adblock Plus is free software: you can redistribute it and/or modify
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
  *
- * Adblock Plus is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 import { LicenseState } from "./data-collection.types";
@@ -23,9 +23,9 @@ import {
   isValidLicenseStateList,
   isValidDomainList,
   isValidDate,
-  isEmptyOrPositiveNumber
+  isEmptyOrPositiveNumber,
 } from "./param-validator";
-import { Prefs } from "../../../adblockpluschrome/lib/prefs";
+import { prefs } from "./context";
 
 describe("param-validator", () => {
   describe("isNumeric", () => {
@@ -94,7 +94,7 @@ describe("param-validator", () => {
 
       expect(isValidLicenseStateList(`${active},${inactive}`)).toBe(true);
       expect(isValidLicenseStateList(`${active},${active},${inactive}`)).toBe(
-        true
+        true,
       );
       expect(isValidLicenseStateList(`${inactive}`)).toBe(true);
     });
@@ -121,20 +121,20 @@ describe("param-validator", () => {
     });
 
     it("returns true if the url is a an 'IPM safe' url", async () => {
-      const prefsGetMock = jest.spyOn(Prefs, "get");
+      const prefsGetMock = jest.spyOn(prefs, "get");
       prefsGetMock.mockReturnValue("https://adblock.org");
-      const ipmSafeOrigin = Prefs.get("ipm_safe_origin");
+      const ipmSafeOrigin = prefs.get("ipm_safe_origin");
 
       expect(isSafeUrl(`${ipmSafeOrigin}/en/welcome`)).toBe(true);
       expect(isSafeUrl(`${ipmSafeOrigin}/fr/foo/bar`)).toBe(true);
       expect(isSafeUrl(`${ipmSafeOrigin}`)).toBe(true);
       expect(isSafeUrl(`${ipmSafeOrigin}?tracking=isBad&not=cool#indeed`)).toBe(
-        true
+        true,
       );
     });
 
     it("returns false if the url is not an 'IPM safe' url", () => {
-      const prefsGetMock = jest.spyOn(Prefs, "get");
+      const prefsGetMock = jest.spyOn(prefs, "get");
       prefsGetMock.mockReturnValue("https://adblock.org");
 
       expect(isSafeUrl(`https://welcome.adblock.org`)).toBe(false);

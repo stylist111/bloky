@@ -28,7 +28,7 @@ import {
   isValidLicenseStateList,
   setCommandActor,
   validateParams
-} from "../../../ipm/background";
+} from "@eyeo-fragments/ipm/background";
 import * as logger from "../../../logger/background";
 import { type DialogContent } from "../../shared";
 import { type DialogBehavior } from "../dialog.types";

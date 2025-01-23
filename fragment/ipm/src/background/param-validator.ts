@@ -1,28 +1,27 @@
 /*
- * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-present eyeo GmbH
+ * This file is part of eyeo's In Product Messaging (IPM) fragment,
+ * Copyright (C) 2024-present eyeo GmbH
  *
- * Adblock Plus is free software: you can redistribute it and/or modify
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
  *
- * Adblock Plus is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { isDomainList } from "../../core/url/shared";
+import { isDomainList, createSafeOriginUrl } from "./url";
 import { type Command } from "./command-library.types";
 import { isValidLicenseState } from "./license";
 import {
   type ParamDefinitionList,
-  type ParamValidator
+  type ParamValidator,
 } from "./param-validator.types";
-import { createSafeOriginUrl } from "./url";
 
 /**
  * Regular expression for checking if a string has a valid date shape
@@ -63,7 +62,7 @@ export const isEmptyOrPositiveNumber: ParamValidator = (param) =>
  * @returns Whether the parameter contains only values of type LicenseState
  */
 export const isValidLicenseStateList: ParamValidator = (
-  param: unknown
+  param: unknown,
 ): boolean => {
   if (!param) {
     return true;
@@ -151,7 +150,7 @@ export const isValidDate: ParamValidator = (param: unknown): boolean => {
  */
 export function validateParams<T>(
   command: Command,
-  paramDefinitions: ParamDefinitionList<T>
+  paramDefinitions: ParamDefinitionList<T>,
 ): string[] {
   return paramDefinitions
     .map((definition) => {

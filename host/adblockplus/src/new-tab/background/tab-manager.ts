@@ -17,6 +17,7 @@
 
 import * as browser from "webextension-polyfill";
 import {
+  checkLanguage,
   CommandEventType,
   CommandName,
   createSafeOriginUrl,
@@ -26,7 +27,7 @@ import {
   getCommand,
   isCommandExpired,
   recordEvent
-} from "../../ipm/background";
+} from "@eyeo-fragments/ipm/background";
 import * as logger from "../../logger/background";
 import {
   CreationMethod,
@@ -44,7 +45,6 @@ import {
   lastShownKey,
   coolDownPeriodKey
 } from "./tab-manager.types";
-import { checkLanguage } from "~/ipm/background/language-check";
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 
 /**
@@ -436,5 +436,6 @@ function onCommandsProcessed(): void {
  */
 export async function start(): Promise<void> {
   logger.debug("[new-tab]: tab manager start");
+  /* eslint-disable-next-line @typescript-eslint/no-misused-promises */
   setNewTabCommandHandler(handleCommand, onCommandsProcessed);
 }

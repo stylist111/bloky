@@ -18,7 +18,6 @@
 import { error as logError } from "../../logger/background";
 import * as logger from "../../logger/background";
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
-
 import { start as startContentFiltering } from "../../../adblockpluschrome/lib/contentFiltering.js";
 import { start as startDebug } from "../../../adblockpluschrome/lib/debug.js";
 import { start as startDevTools } from "../../../adblockpluschrome/lib/devtools.js";
@@ -37,7 +36,7 @@ import { start as startRecommendedLanguage } from "../../../lib/recommendLanguag
 import { start as startAllowListing } from "../../allowlisting/background";
 import { start as startBypass } from "../../bypass/background";
 import { start as startComposer } from "../../composer/background";
-import { start as startIPM } from "../../ipm/background";
+import { start as startIPM } from "@eyeo-fragments/ipm/background";
 import { start as startNewTab } from "../../new-tab/background";
 import { start as startOnPageDialog } from "../../onpage-dialog/background";
 import { start as startPremiumOnboarding } from "../../premium-onboarding/background";
@@ -53,7 +52,13 @@ import { start as startFiltersMigration } from "../../filters/background/";
 import { start as startPublicAPI } from "@eyeo-fragments/public-api";
 import { port, addTrustedMessageTypes } from "~/core/messaging/background";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
-import { getAuthPayload, hasActiveLicense } from "~/premium/background";
+import {
+  getAuthPayload,
+  getPremiumState,
+  hasActiveLicense
+} from "~/premium/background";
+import { getInstallationId } from "~/id/background";
+import { info } from "~/info/background";
 
 function reportAndLogError(e: Error): void {
   reportError(e);
@@ -67,7 +72,30 @@ async function bootstrap(): Promise<void> {
     startTabSessionStorage();
     startDevTools();
     startDebug();
-    void startIPM().catch(reportAndLogError);
+    startIPM(
+      Prefs,
+      logger,
+      {
+        isLicenseValid() {
+          const { isActive } = getPremiumState();
+          return isActive;
+        }
+      },
+      {
+        async getId() {
+          return await getInstallationId();
+        },
+        getAppName() {
+          return info.baseName;
+        },
+        getBrowserName() {
+          return info.application;
+        },
+        getAppVersion() {
+          return info.addonVersion;
+        }
+      }
+    ).catch(reportAndLogError);
     startReadyState();
     startFilterConfiguration();
     startStats();

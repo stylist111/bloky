@@ -1,18 +1,18 @@
 /*
- * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-present eyeo GmbH
+ * This file is part of eyeo's In Product Messaging (IPM) fragment,
+ * Copyright (C) 2024-present eyeo GmbH
  *
- * Adblock Plus is free software: you can redistribute it and/or modify
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
  *
- * Adblock Plus is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 import { getStoredCommandIds, setCommandActor } from "./command-library";
@@ -20,17 +20,17 @@ import {
   type Command,
   type CommandHandler,
   CommandName,
-  type Content
+  type Content,
 } from "./command-library.types";
 import {
   deleteAllKey,
   type DeleteBehavior,
   type DeleteCommand,
-  type DeleteParams
+  type DeleteParams,
 } from "./delete-commands.types";
-import * as logger from "../../logger/background";
 import { validateParams } from "./param-validator";
 import type { ParamDefinitionList } from "./param-validator.types";
+import { logger } from "./context";
 
 /**
  * List of delete-commands parameter definitions
@@ -39,8 +39,8 @@ const paramDefinitionList: ParamDefinitionList<DeleteParams> = [
   {
     name: "commands",
     validate: (param): boolean =>
-      typeof param === "string" && param.trim() !== ""
-  }
+      typeof param === "string" && param.trim() !== "",
+  },
 ];
 
 /**
@@ -58,7 +58,7 @@ function isDeleteCommand(command: Command): command is DeleteCommand {
 
   logger.error(
     "[delete-commands]: Invalid parameteres received:",
-    validationErrors.join(" ")
+    validationErrors.join(" "),
   );
   return false;
 }
@@ -70,7 +70,7 @@ function isDeleteCommand(command: Command): command is DeleteCommand {
  * @returns whether given candidate is delete-commands behavior
  */
 export function isDeleteBehavior(
-  candidate: unknown
+  candidate: unknown,
 ): candidate is DeleteBehavior {
   return (
     candidate !== null &&
@@ -127,6 +127,6 @@ export function setDeleteCommandHandler(handler: CommandHandler): void {
     getContent,
     handleCommand: handler,
     isValidCommand: isDeleteCommand,
-    onCommandsProcessed: () => {}
+    onCommandsProcessed: () => {},
   });
 }

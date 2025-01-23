@@ -29,6 +29,7 @@ import { EventEmitter } from "../../../adblockpluschrome/lib/events";
 import { getLocaleInfo } from "../../i18n/background";
 import { info } from "../../info/background";
 import {
+  checkLanguage,
   CommandEventType,
   CommandName,
   createSafeOriginUrl,
@@ -39,7 +40,7 @@ import {
   getContent,
   isCommandExpired,
   recordEvent
-} from "../../ipm/background";
+} from "@eyeo-fragments/ipm/background";
 import * as logger from "../../logger/background";
 import { type Message, isMessage } from "~/core/messaging/shared";
 import { type TabRemovedEventData } from "../../polyfills/background";
@@ -59,7 +60,6 @@ import {
   shouldBeShown,
   start as setupTimings
 } from "./timing";
-import { checkLanguage } from "~/ipm/background/language-check";
 import { isTabPage, pageEmitter } from "~/core/pages/background";
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import { Timing } from "./timing.types";
@@ -581,5 +581,6 @@ export async function start(): Promise<void> {
 
   // Handle commands
   pageEmitter.on("loaded", handlePageLoadedEvent);
+  /* eslint-disable-next-line @typescript-eslint/no-misused-promises */
   setDialogCommandHandler(handleDialogCommand);
 }

@@ -1,18 +1,18 @@
 /*
- * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-present eyeo GmbH
+ * This file is part of eyeo's In Product Messaging (IPM) fragment,
+ * Copyright (C) 2024-present eyeo GmbH
  *
- * Adblock Plus is free software: you can redistribute it and/or modify
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
  *
- * Adblock Plus is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 /**
@@ -48,7 +48,7 @@ export type CommandHandler = (ipmId: string) => Promise<void>;
 export enum CommandName {
   createOnPageDialog = "create_on_page_dialog",
   createTab = "create_tab",
-  deleteCommands = "delete_commands"
+  deleteCommands = "delete_commands",
 }
 
 /**
@@ -57,7 +57,7 @@ export enum CommandName {
 export const CommandVersion: Record<CommandName, number> = {
   [CommandName.createOnPageDialog]: 6,
   [CommandName.createTab]: 6,
-  [CommandName.deleteCommands]: 2
+  [CommandName.deleteCommands]: 2,
 };
 
 /**
@@ -149,7 +149,7 @@ export interface CommandActor {
  * General Command events
  */
 export enum CommandEventType {
-  expired = "command_expired"
+  expired = "command_expired",
 }
 
 /**
@@ -157,5 +157,5 @@ export enum CommandEventType {
  */
 export enum DeleteEventType {
   sucess = "deletion_success",
-  error = "deletion_error"
+  error = "deletion_error",
 }

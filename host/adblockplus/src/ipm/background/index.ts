@@ -15,15 +15,6 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from "./command-library";
-export * from "./command-library.types";
-export * from "./data-collection";
-export * from "./data-collection.types";
-export * from "./license";
-export * from "./param-validator";
-export * from "./param-validator.types";
-export { start as startTelemetry } from "./telemetry";
 export { initialize as initializeCDP } from "./cdp";
 export { initialize as initializeEyeometryMACCounting } from "./eyeometry-mac-counting";
-export * from "./url";
-export * from "./event-recording";
+export { sendPing, start as startTelemetry } from "./telemetry";

@@ -27,7 +27,7 @@ import {
   validateParams,
   type Content,
   isEmptyOrPositiveNumber
-} from "../../../ipm/background";
+} from "@eyeo-fragments/ipm/background";
 import * as logger from "../../../logger/background";
 import {
   CreationMethod,

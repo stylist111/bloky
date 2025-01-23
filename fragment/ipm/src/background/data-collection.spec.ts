@@ -1,18 +1,18 @@
 /*
- * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-present eyeo GmbH
+ * This file is part of eyeo's In Product Messaging (IPM) fragment,
+ * Copyright (C) 2024-present eyeo GmbH
  *
- * Adblock Plus is free software: you can redistribute it and/or modify
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
  *
- * Adblock Plus is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 import * as commandLibraryTypes from "./command-library.types";
@@ -39,16 +39,16 @@ describe("data-collection", () => {
     it("should return a list of commands data objects when the extension supports IPM commands", () => {
       mockCommandLibraryTypes.CommandName = {
         commandTypeA: "command_type_A",
-        commandTypeB: "command_type_B"
+        commandTypeB: "command_type_B",
       };
       mockCommandLibraryTypes.CommandVersion = {
         command_type_A: 1,
-        command_type_B: 2
+        command_type_B: 2,
       };
 
       expect(getSupportedCommandsData()).toStrictEqual([
         { name: "command_type_A", version: 1 },
-        { name: "command_type_B", version: 2 }
+        { name: "command_type_B", version: 2 },
       ]);
     });
   });

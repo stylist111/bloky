@@ -1,25 +1,25 @@
 /*
- * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-present eyeo GmbH
+ * This file is part of eyeo's In Product Messaging (IPM) fragment,
+ * Copyright (C) 2024-present eyeo GmbH
  *
- * Adblock Plus is free software: you can redistribute it and/or modify
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
  *
- * Adblock Plus is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 import browser from "webextension-polyfill";
-import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import { commandStorageKey } from "./command-library";
 import { recordEvent } from "./event-recording";
 import { type Command } from "./command-library.types";
+import { prefs } from "./context";
 
 /**
  * Runs a check to see whether the current user language still matches the
@@ -29,8 +29,8 @@ import { type Command } from "./command-library.types";
  * @param ipmId The ID of the IPM command to run the check for
  */
 export async function checkLanguage(ipmId: string): Promise<void> {
-  await Prefs.untilLoaded;
-  const commandStorage = Prefs.get(commandStorageKey);
+  await prefs.untilLoaded;
+  const commandStorage = prefs.get(commandStorageKey);
   if (!(ipmId in commandStorage)) {
     return;
   }
