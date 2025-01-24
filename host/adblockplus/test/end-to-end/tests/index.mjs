@@ -16,8 +16,6 @@
  */
 
 import { afterSequence, beforeSequence } from "../helpers.js";
-import advancedTabFL from "./test-advanced-tab-filter-lists.mjs";
-import flDropdown from "./test-built-in-filter-list-dropdown.mjs";
 import publicAPI from "./public-api/index.mjs";
 import eyeometry from "./test-eyeometry.mjs";
 import youtubeAutoAllowlist from "./test-youtube-auto-allowlist.mjs";
@@ -40,8 +38,6 @@ export default () => {
     });
 
     describe("Test Server", testServer);
-    describe("Advanced Tab - Filter Lists", advancedTabFL);
-    describe("Filter List Dropdown - Default Filter Lists", flDropdown);
     describe("Public API", publicAPI);
     describe("Eyeometry", eyeometry);
     describe("YouTube Auto-allowlist", youtubeAutoAllowlist);

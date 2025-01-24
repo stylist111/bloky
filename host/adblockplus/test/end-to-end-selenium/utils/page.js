@@ -30,10 +30,6 @@ import {
 } from "@eyeo/test-utils/driver";
 import { getOptionsHandle } from "@eyeo/test-utils/extension";
 
-export const allowlistedWebsite = "testpages.eyeo.com";
-export const snippetFilter =
-  "testpages.eyeo.com#$#hide-if-contains 'filter not applied' p[id]";
-
 const optionsPageSleep = 2000;
 
 export async function checkInstallUninstallUrl({ url, appVersion, uninstall }) {
@@ -172,8 +168,7 @@ async function loadOptionsTab(optionsHandle, id, timeout = 5000) {
   );
 }
 
-// This function assumes initOptionsGeneralTab() being called beforehand
-export async function clickCheckbox(cssSelector, enabledAfterClick) {
+export async function clickFLToggleAndCheck(cssSelector, enabledAfterClick) {
   await clickOnDisplayedElement(cssSelector);
   const text = enabledAfterClick ? "enabled" : "disabled";
   await driver.wait(
@@ -183,6 +178,7 @@ export async function clickCheckbox(cssSelector, enabledAfterClick) {
     1000,
     `The filterlist "${cssSelector}" was not ${text} after clicking`
   );
+  await driver.sleep(500); // let the UI toggle move
 }
 
 export async function initPopupPage(tabId) {
@@ -247,7 +243,7 @@ export async function setAADefaultState() {
   await initOptionsGeneralTab(getOptionsHandle());
   const aaEnabled = await isCheckboxEnabled(checkboxSelector);
   if (!aaEnabled) {
-    await clickCheckbox(checkboxSelector, true);
+    await clickFLToggleAndCheck(checkboxSelector, true);
   }
 }
 
@@ -416,4 +412,48 @@ export async function enablePremiumProgrammatically() {
   if (error) throw new Error(error);
 
   await checkPremiumActivated();
+}
+
+export function getFLSelectors(name) {
+  const flSelector = `#all-filter-lists-table [aria-label="${name}"]`;
+
+  return {
+    filterlist: flSelector,
+    toggle: `${flSelector} io-toggle`,
+    title: `${flSelector} span[data-display]`,
+    gear: `${flSelector} [type="menubar"]`,
+    sourceLink: `${flSelector} [type="menubar"] [data-i18n="options_filterList_source"]`,
+    trashBtn: `${flSelector} [data-action="remove-subscription"]`,
+    lastUpdate: `${flSelector}  .last-update`,
+    tooltip: `${flSelector} [type="tooltip"]`
+  };
+}
+
+export async function waitForSubscriptionUpdated(
+  name,
+  { timeout = 2000, regexp = /Just now|minutes ago/ } = {}
+) {
+  const { toggle, lastUpdate } = getFLSelectors(name);
+
+  await driver.wait(
+    async () => {
+      // Filterlist status may be stuck on 'Updating' unless the page is reloaded
+      // https://eyeo.atlassian.net/browse/EXT-402
+      await driver.navigate().refresh();
+      await initOptionsAdvancedTab(getOptionsHandle());
+
+      const flEnabled = await isCheckboxEnabled(toggle);
+      try {
+        const lastUpdatedElem = await getDisplayedElement(lastUpdate, {
+          timeout: 800,
+          forceRefresh: false
+        });
+        const text = await lastUpdatedElem.getText();
+
+        return flEnabled && regexp.test(text);
+      } catch (e) {}
+    },
+    timeout,
+    `${name} was not updated`
+  );
 }

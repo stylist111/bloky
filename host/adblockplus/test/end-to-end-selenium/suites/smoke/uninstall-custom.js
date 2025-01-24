@@ -24,7 +24,8 @@ import {
   checkInstallUninstallUrl,
   initOptionsGeneralTab,
   initOptionsAdvancedTab,
-  clickCheckbox
+  clickFLToggleAndCheck,
+  getFLSelectors
 } from "../../utils/page.js";
 import {
   getOptionsHandle,
@@ -43,16 +44,16 @@ export default () => {
 
     // disable AA
     await initOptionsGeneralTab(getOptionsHandle(), 5000, true);
-    await clickCheckbox("#acceptable-ads-allow", false);
+    await clickFLToggleAndCheck("#acceptable-ads-allow", false);
 
     // disable easylist
     await initOptionsAdvancedTab(getOptionsHandle());
-    const name = "ads";
-    const toggleSelector = `#all-filter-lists-table [data-recommended="${name}"] io-toggle`;
-    await clickOnDisplayedElement(toggleSelector);
+    const name = "EasyList";
+    const { toggle } = getFLSelectors(name);
+    await clickOnDisplayedElement(toggle);
     await driver.wait(
       async () => {
-        const value = await waitForNotNullProperty(toggleSelector, "checked");
+        const value = await waitForNotNullProperty(toggle, "checked");
         return value === false;
       },
       2000,

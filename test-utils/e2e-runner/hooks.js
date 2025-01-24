@@ -58,7 +58,7 @@ async function startBrowser(extensionPath, retry = 0) {
     let options;
     let extraArgs;
     if (browserName === "firefox") {
-      extraArgs = ["-width=1400", "-height=1000"];
+      extraArgs = ["-width=1400", "-height=1500"];
       // EXT-497: we need to bind "testpages.eyeo.com" to "localhost"
       // to be able to test with locally hosted page. For FF we use PAC file
       // to set proxy
@@ -66,7 +66,7 @@ async function startBrowser(extensionPath, retry = 0) {
       options = { headless, extensionPaths, extraArgs, proxy };
     } else {
       extraArgs = [
-        "--window-size=1400,1000",
+        "--window-size=1400,1500",
         // EXT-497: we need to bind "testpages.eyeo.com" to "localhost"
         // to be able to test with locally hosted page.
         "--host-resolver-rules=MAP testpages.eyeo.com 127.0.0.1",

@@ -35,8 +35,6 @@ import { getOptionsHandle, sendExtMessage } from "@eyeo/test-utils/extension";
 import { installUrl } from "./urls.js";
 import { runnerConfig } from "../runners/config.js";
 
-export const allowlistingFilter = "@@||testpages.eyeo.com^$document";
-export const snippetFilter = "testpages.eyeo.com#$#hide-if-contains 'filter not applied' p[id]";
 // By default AdBlock has AA enabled on Chrome/Edge and disabled on Firefox
 export const expectAAEnabled = runnerConfig.browserName !== "firefox";
 

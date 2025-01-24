@@ -25,7 +25,8 @@ import {
   waitForNotDisplayed,
 } from "@eyeo/test-utils/driver";
 import { blockHideUrl, aaTestPageUrl, snippetTestPageUrl } from "@eyeo/test-utils/urls";
-import { getOptionsHandle } from "@eyeo/test-utils/extension";
+import { allowlistingFilter, snippetFilter } from "@eyeo/test-utils/filters";
+import { getOptionsHandle, removeAllFilters } from "@eyeo/test-utils/extension";
 
 import {
   programaticallyAddFilters,
@@ -34,8 +35,6 @@ import {
   initOptionsFiltersTab,
   clickFilterlist,
   setAADefaultState,
-  allowlistingFilter,
-  snippetFilter,
   expectAAEnabled,
 } from "../../utils/page.js";
 
@@ -62,19 +61,6 @@ export default () => {
       return filters.join("\n");
     };
 
-    const programaticallyRemoveAllFilters = async () => {
-      return driver.executeAsyncScript(async (callback) => {
-        const filters = await browser.runtime.sendMessage({ type: "filters.get" });
-        await Promise.all(
-          filters.map((filter) =>
-            browser.runtime.sendMessage({ type: "filters.remove", text: filter.text }),
-          ),
-        );
-
-        callback();
-      });
-    };
-
     const websiteHandle = await openNewTab(url);
     // A failing element is displayed before applying the filters
     await getDisplayedElement("#sitekey-fail-1");
@@ -99,7 +85,7 @@ export default () => {
     }
 
     await driver.switchTo().window(getOptionsHandle());
-    await programaticallyRemoveAllFilters();
+    await removeAllFilters();
   });
 
   it("blocks and hides ads", async function () {

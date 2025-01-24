@@ -26,7 +26,7 @@ import {
   clickOnDisplayedElement,
   clickAndSendKeys,
 } from "@eyeo/test-utils/driver";
-import { getOptionsHandle } from "@eyeo/test-utils/extension";
+import { getOptionsHandle, subscriptionUrl } from "@eyeo/test-utils/extension";
 
 import {
   initOptionsGeneralTab,
@@ -183,7 +183,6 @@ export default () => {
   });
 
   it("adds and removes a filter list via URL", async function () {
-    const subscriptionUrl = "https://abptestpages.org/en/abp-testcase-subscription.txt";
     const name = `url:${subscriptionUrl}`;
     const checkboxSelector = "#customFilterList_1";
 

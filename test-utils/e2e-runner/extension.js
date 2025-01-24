@@ -22,6 +22,8 @@ import AdmZip from "adm-zip";
 import { openNewTab } from "./driver.js";
 import { localTestPageUrl } from "../test-server/urls.js";
 
+export const subscriptionUrl = "https://abptestpages.org/en/abp-testcase-subscription.txt";
+
 let optionsHandle;
 
 /**
@@ -275,4 +277,18 @@ export function getPremiumEmail() {
   const randomNumber = randomIntFromInterval(1000000, 9999999);
 
   return `test_automation${formattedDateYMD}${randomNumber}@adblock.org`;
+}
+
+// Removes all user filters programmatically
+export async function removeAllFilters() {
+  return driver.executeAsyncScript(async (callback) => {
+    const filters = await browser.runtime.sendMessage({ type: "filters.get" });
+    await Promise.all(
+      filters.map((filter) =>
+        browser.runtime.sendMessage({ type: "filters.remove", text: filter.text }),
+      ),
+    );
+
+    callback();
+  });
 }

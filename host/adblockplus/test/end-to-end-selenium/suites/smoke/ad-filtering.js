@@ -28,23 +28,23 @@ import {
   blockHideUrl,
   snippetTestPageUrl
 } from "@eyeo/test-utils/urls";
+import { snippetFilter, allowlistedDomain } from "@eyeo/test-utils/filters";
 import {
   initOptionsGeneralTab,
   programaticallyAddFilters,
   checkBlockHidePage,
   setAADefaultState,
-  allowlistedWebsite,
-  snippetFilter,
-  clickCheckbox,
+  clickFLToggleAndCheck,
   setCustomFilters,
   addAllowlistFilters,
   deleteFirstAllowlistFilter
 } from "../../utils/page.js";
-import { getOptionsHandle } from "@eyeo/test-utils/extension";
+import { getOptionsHandle, removeAllFilters } from "@eyeo/test-utils/extension";
 
 export default () => {
   after(async function () {
     await setAADefaultState();
+    await removeAllFilters();
   });
 
   it("uses sitekey to allowlist content", async function () {
@@ -63,24 +63,6 @@ export default () => {
       }
 
       return filters.join("\n");
-    };
-
-    const programaticallyRemoveAllFilters = async () => {
-      return driver.executeAsyncScript(async (callback) => {
-        const filters = await browser.runtime.sendMessage({
-          type: "filters.get"
-        });
-        await Promise.all(
-          filters.map((filter) =>
-            browser.runtime.sendMessage({
-              type: "filters.remove",
-              text: filter.text
-            })
-          )
-        );
-
-        callback();
-      });
     };
 
     const websiteHandle = await openNewTab(url);
@@ -105,9 +87,6 @@ export default () => {
     } else {
       await getDisplayedElement("#inframe-image");
     }
-
-    await driver.switchTo().window(getOptionsHandle());
-    await programaticallyRemoveAllFilters();
   });
 
   it("blocks and hides ads", async function () {
@@ -128,7 +107,7 @@ export default () => {
   });
 
   it("allowlists websites", async function () {
-    await addAllowlistFilters([allowlistedWebsite]);
+    await addAllowlistFilters([allowlistedDomain]);
     const websiteHandle = await openNewTab(blockHideUrl);
     await checkBlockHidePage(true);
     await deleteFirstAllowlistFilter();
@@ -147,7 +126,8 @@ export default () => {
     await getDisplayedElement(visibleSelector);
 
     await initOptionsGeneralTab(getOptionsHandle());
-    await clickCheckbox("#acceptable-ads-allow", false);
+    await clickFLToggleAndCheck("#acceptable-ads-allow", false);
+
     await driver.switchTo().window(websiteHandle);
     await driver.wait(
       async () => {

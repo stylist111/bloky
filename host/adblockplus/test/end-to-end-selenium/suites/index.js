@@ -20,6 +20,7 @@ import testServer from "./test-server.js";
 import extension from "./smoke/extension.js";
 import adFiltering from "./smoke/ad-filtering.js";
 import optionsPageAA from "./options-page/acceptable-ads.js";
+import optionsPageFL from "./options-page/filter-lists.js";
 import popupPage from "./popup-page.js";
 import uninstallDefault from "./smoke/uninstall-default.js";
 import freeUser from "./premium/free-user.js";
@@ -41,6 +42,7 @@ export default () => {
 
   describe("Options Page", function () {
     describe("Acceptable Ads", optionsPageAA);
+    describe("Filter Lists", optionsPageFL);
   });
 
   describe("Premium", function () {

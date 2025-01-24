@@ -31,11 +31,12 @@ import {
   waitForAdsBlockedToBeInRange,
   initOptionsAdvancedTab,
   initPopupPage,
-  initOptionsGeneralTab
+  initOptionsGeneralTab,
+  getFLSelectors
 } from "../../utils/page.js";
 import { blockHideUrl } from "@eyeo/test-utils/urls";
 import { installUrl } from "../../utils/urls.js";
-import { defaultFilterLists } from "../../utils/dataset.js";
+import { getDefaultFilterLists } from "../../utils/dataset.js";
 
 export default () => {
   it("opens the install url", async function () {
@@ -67,7 +68,10 @@ export default () => {
     await initOptionsAdvancedTab(getOptionsHandle());
 
     const timeout = 2000;
-    const firstFLSelector = `#all-filter-lists-table [data-recommended="${defaultFilterLists[0].name}"]`;
+    const defaultFilterLists = getDefaultFilterLists(extension.manifestVersion);
+    const { filterlist: firstFLSelector } = getFLSelectors(
+      defaultFilterLists[0].name
+    );
     // Wait for the first filter list to be displayed
     await getDisplayedElement(firstFLSelector, {
       timeout,
@@ -76,13 +80,13 @@ export default () => {
 
     // Remove default filter lists
     for (const { name } of defaultFilterLists) {
-      const trashBtnSelector = `#all-filter-lists-table [data-recommended="${name}"] [data-action="remove-subscription"]`;
+      const { trashBtn } = getFLSelectors(name);
       // Right after extension initialisation clicking on the trash button may not work, retrying as a workaround
       await driver.wait(
         async () => {
-          await clickOnDisplayedElement(trashBtnSelector, { timeout });
+          await clickOnDisplayedElement(trashBtn, { timeout });
           try {
-            await waitForNotDisplayed(trashBtnSelector, timeout);
+            await waitForNotDisplayed(trashBtn, timeout);
             return true;
           } catch (err) {
             if (err.name !== "TimeoutError") throw err;
@@ -113,8 +117,8 @@ export default () => {
     // check default filter lists are enabled
     const actualFilterLists = [];
     for (const { name } of defaultFilterLists) {
-      const toggleSelector = `#all-filter-lists-table [data-recommended="${name}"] io-toggle`;
-      const value = await waitForNotNullProperty(toggleSelector, "checked");
+      const { toggle } = getFLSelectors(name);
+      const value = await waitForNotNullProperty(toggle, "checked");
       actualFilterLists.push({ name, enabled: value });
     }
     expect(actualFilterLists).toEqual(defaultFilterLists);

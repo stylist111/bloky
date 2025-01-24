@@ -19,6 +19,7 @@ import { expect } from "expect";
 
 import { openNewTab } from "@eyeo/test-utils/driver";
 import { blockHideUrl } from "@eyeo/test-utils/urls";
+import { allowlistingFilter } from "@eyeo/test-utils/filters";
 import { reloadExtension } from "@eyeo/test-utils/extension";
 
 import { sendExtCommand, updateExtPrefAPIKey } from "./shared/helpers.js";
@@ -26,7 +27,6 @@ import {
   addFilter,
   removeFilter,
   checkBlockHidePage,
-  allowlistingFilter,
   initOptionsGeneralTab,
 } from "../../utils/page.js";
 
