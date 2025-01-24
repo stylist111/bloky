@@ -1,5 +1,10 @@
 # Unreleased
 
+## General
+
+- Release builds are now unminified, and have inline source maps. This matches
+  the configuration that we were uploading to NPM. (EXT-741)
+
 ## Fixes
 
 - Saving of downloaded filters to IndexedDB can now continue if the database was

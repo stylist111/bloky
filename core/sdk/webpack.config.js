@@ -21,7 +21,6 @@ import path from "path";
 import url from "url";
 import fs from "fs";
 
-import TerserPlugin from "terser-webpack-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import GenerateJsonPlugin from "generate-json-webpack-plugin";
 import CopyPlugin from "copy-webpack-plugin";
@@ -161,12 +160,12 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath,
       path: outputPath,
       clean: true
     },
-    mode: env.release ? "production" : "development",
     optimization: {
-      minimize: !!env.release,
-      minimizer: [new TerserPlugin({extractComments: false})]
+      minimize: false
     },
-    devtool: env.release ? "source-map" : "inline-source-map",
+    // This has to be inline-source-map for debugging the content script to
+    // work, since the .js.map file isn't web accessible.
+    devtool: "inline-source-map",
     performance: {
       hints: false
     },
