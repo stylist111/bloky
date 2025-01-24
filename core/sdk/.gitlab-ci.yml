@@ -200,16 +200,6 @@ func:v2:firefox:oldest:
     BROWSER: firefox $OLDEST_FIREFOX_VERSION
     TEST_PARAMS: 2 $BROWSER
 
-.edge_install_windows: &edge_install_windows
-  - choco install -y microsoft-edge
-
-# Replaces nodejs v21.2.0 (default) with v18.17.1
-.nodejs_install_windows: &nodejs_install_windows
-  - choco uninstall -y nodejs nodejs.install
-  - choco install -y --no-progress nodejs --version 18.17.1
-  - Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
-  - refreshenv
-
 .functional-windows:
   stage: functional
   needs: ["build:src"]
@@ -219,8 +209,7 @@ func:v2:firefox:oldest:
     npm_config_fetch_retries: 2
     CI_PROJECT_ID_MAINSTREAM: 22365241
   before_script:
-    - *edge_install_windows
-    - *nodejs_install_windows
+    - choco install -y microsoft-edge
     - npm install
   tags:
     - eyeo-windows

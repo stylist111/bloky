@@ -184,10 +184,16 @@ That could be solved by installing Python 3.11 locally, and
 
 ### Runners
 
-Pipeline jobs use self-managed runners from Google Cloud Platform (GCP). The
-the setup of the runner is defined in [the devops runner project](https://gitlab.com/eyeo/devops/terraform/projects/gitlab-runners/terraform-adblock-inc-runner/), and the runner status can be checked
-[here](https://gitlab.com/groups/eyeo/extensions/-/runners). Access to GCP
-resources like the GCloud console can be granted by devops as well.
+Pipeline jobs use self-managed runners from Google Cloud Platform (GCP):
+
+**Linux runners** are managed by the [terraform-eyeo-runner project](https://gitlab.com/eyeo/devops/terraform/projects/gitlab-runners/terraform-eyeo-runner).
+
+**Windows runners** are managed by the [terraform-eyeo-windows-runner project](https://gitlab.com/eyeo/devops/terraform/projects/gitlab-runners/terraform-eyeo-windows-runner). Packages installed by default can
+be found [here](https://gitlab.com/eyeo/devops/terraform/projects/gitlab-runners/terraform-eyeo-windows-runner/-/blob/main/packer/scripts/install-base-packages.ps1).
+
+The status of the runners can be checked [here](https://gitlab.com/eyeo/browser-extensions-and-premium/extensions/extensions/-/settings/ci_cd#js-runners-settings)
+in the `Group runners` section. Access to GCP resources like the GCloud console
+may be granted by devops.
 
 ## Contributing
 
