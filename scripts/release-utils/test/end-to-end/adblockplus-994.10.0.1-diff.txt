@@ -1,0 +1,14 @@
+diff --git a/host/adblockplus/RELEASE_NOTES.md b/host/adblockplus/RELEASE_NOTES.md
+index bdee9f366f3a71ec2904dc638d819fb85fa4792a..a9e003460ecedaf516d1e55293ba759671f78647 100644
+--- a/host/adblockplus/RELEASE_NOTES.md
++++ b/host/adblockplus/RELEASE_NOTES.md
+@@ -2,0 +3,2 @@
++# 994.10.0.1 - 2024-12-16
++
+diff --git a/host/adblockplus/build/webext/config/base.mjs b/host/adblockplus/build/webext/config/base.mjs
+index 239931cb1a95d8a870f84ad04ac88288af3c0625..7cab8164252d51c8021cc6e8a2961988f3fc5f72 100644
+--- a/host/adblockplus/build/webext/config/base.mjs
++++ b/host/adblockplus/build/webext/config/base.mjs
+@@ -20 +20 @@ export default {
+-  version: "4.10.0",
++  version: "994.10.0.1",

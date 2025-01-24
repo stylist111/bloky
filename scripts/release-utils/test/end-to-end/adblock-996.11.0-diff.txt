@@ -1,14 +1,14 @@
 diff --git a/host/adblock/RELEASE_NOTES.md b/host/adblock/RELEASE_NOTES.md
-index e461cc5dac488d95f743a739df6ae199333ee79d..b438ef5cd56ce6e58e4c2e64781ea12e0de9146f 100644
+index e461cc5dac488d95f743a739df6ae199333ee79d..6ea183168eb1d9d33e007893fccf75b4c84864c1 100644
 --- a/host/adblock/RELEASE_NOTES.md
 +++ b/host/adblock/RELEASE_NOTES.md
 @@ -2,0 +3,2 @@
-+# 99.6.11.0 - 2024-10-30
++# 996.11.0 - 2024-10-30
 +
 diff --git a/host/adblock/build/config/base.mjs b/host/adblock/build/config/base.mjs
-index a08cb7e89e8ee3b111288c9d178794b746b15e59..985b2b42e1304eb6b7275bd821b5ba48f332f396 100644
+index a08cb7e89e8ee3b111288c9d178794b746b15e59..f681cef46869f8d220c87cf847f29b05010e1a72 100644
 --- a/host/adblock/build/config/base.mjs
 +++ b/host/adblock/build/config/base.mjs
 @@ -20 +20 @@ export default {
 -  version: "6.10.0",
-+  version: "99.6.11.0",
++  version: "996.11.0",

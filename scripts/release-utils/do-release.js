@@ -33,7 +33,7 @@ async function executeMaybe(command, dryRun) {
 }
 
 async function run() {
-  const validVersionRegex = /^\d+(\.\d+){2,}$/;
+  const validVersionRegex = /^\d+(\.\d+){1,3}$/;
 
   const args = yargs(hideBin(process.argv))
     .version(false)
@@ -105,7 +105,6 @@ async function run() {
 
   args.commit = args.commit || await input({
     message: 'What is the git commit to release?',
-    default: "origin/main",
     validate: async ref => await checkIfGitRefExists(ref) || "That is not a known git reference."
   });
 
@@ -133,6 +132,22 @@ async function run() {
     let shouldContinue = false;
 
     while (!shouldContinue) {
+      if (releaseNotes.hasUnreleasedNotes()) {
+        console.log('\n---------------------------------\n');
+        console.log('🤖 No release notes found.');
+        console.log(`\n🤖 Add a brief one line summary and edit ${releaseNotesPath} to continue the release`);
+        console.log('\n---------------------------------\n');
+
+        const answer = await confirm({
+          message: 'Are you ready to reload the release notes?'
+        });
+        if (answer) {
+          console.log('🤖 Reloading release notes file');
+          releaseNotes = await ReleaseNotes.readFromHostFilepath(args.host);
+        }
+        continue;
+      }
+
       console.log('\n---------------------------------\n');
       console.log('🤖 Please proof-read these release notes. They should:');
       console.log('- Have a brief one line summary.');
@@ -174,6 +189,9 @@ async function run() {
         process.exit(1);
       }
     }
+  } else if (releaseNotes.hasUnreleasedNotes()) {
+    console.log(`🔥 No release notes found. Add a brief one line summary, edit ${releaseNotesPath} and try again.`);
+    process.exit(1);
   }
 
   console.log(`🤖 Updating release notes file: ${releaseNotesPath}`);

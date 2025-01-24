@@ -127,16 +127,16 @@ describe("Do-release script", function() {
   });
 
   it("recreates the 4.9 release for adblockplus", async function() {
-    await executeShellCommand("npm run do-release -- adblockplus 99.4.9 01debaf19 --yes --release-date=2024-10-31", checkoutDir);
+    await executeShellCommand("npm run do-release -- adblockplus 994.9 01debaf19 --yes --release-date=2024-10-31", checkoutDir);
 
     const diff = await executeShellCommand("git diff --full-index --unified=0 HEAD^..HEAD", checkoutDir);
-    const expectedDiff = await loadTestFile("adblockplus-99.4.9-diff.txt");
+    const expectedDiff = await loadTestFile("adblockplus-994.9-diff.txt");
     expect(diff).toEqual(expectedDiff);
 
     const newCommit = await executeShellCommand("git rev-parse --short HEAD", checkoutDir);
     const checkoutReleaseBranchCommit = await executeShellCommand("git rev-parse --short adblockplus-release", checkoutDir);
     const originReleaseBranchCommit = await executeShellCommand("git rev-parse --short adblockplus-release", originDir);
-    const originTagCommit = await executeShellCommand("git rev-parse --short adblockplus-99.4.9^{commit}", originDir);
+    const originTagCommit = await executeShellCommand("git rev-parse --short adblockplus-994.9^{commit}", originDir);
 
     expect(checkoutReleaseBranchCommit).toEqual(newCommit);
     expect(originReleaseBranchCommit).toEqual(newCommit);
@@ -144,16 +144,39 @@ describe("Do-release script", function() {
   });
 
   it("recreates the 6.11.0 release for adblock", async function() {
-    await executeShellCommand("npm run do-release -- adblock 99.6.11.0 05a2e33a5 --yes --release-date=2024-10-30", checkoutDir);
+    await executeShellCommand("npm run do-release -- adblock 996.11.0 05a2e33a5 --yes --release-date=2024-10-30", checkoutDir);
 
     const diff = await executeShellCommand("git diff --full-index --unified=0 HEAD^..HEAD", checkoutDir);
-    const expectedDiff = await loadTestFile("adblock-99.6.11.0-diff.txt");
+    const expectedDiff = await loadTestFile("adblock-996.11.0-diff.txt");
     expect(diff).toEqual(expectedDiff);
 
     const newCommit = await executeShellCommand("git rev-parse --short HEAD", checkoutDir);
     const checkoutReleaseBranchCommit = await executeShellCommand("git rev-parse --short adblock-release", checkoutDir);
     const originReleaseBranchCommit = await executeShellCommand("git rev-parse --short adblock-release", originDir);
-    const originTagCommit = await executeShellCommand("git rev-parse --short adblock-99.6.11.0^{commit}", originDir);
+    const originTagCommit = await executeShellCommand("git rev-parse --short adblock-996.11.0^{commit}", originDir);
+
+    expect(checkoutReleaseBranchCommit).toEqual(newCommit);
+    expect(originReleaseBranchCommit).toEqual(newCommit);
+    expect(originTagCommit).toEqual(newCommit);
+  });
+
+  it("recreates the 4.10.0.1 release for adblockplus", async function() {
+    await executeShellCommand("git checkout 4427af61a", checkoutDir);
+    await executeShellCommand("sed -i 's/# Unreleased/# Unreleased\\n\\nThis release contains only rules updates for Manifest v3 extensions./g' ./host/adblockplus/RELEASE_NOTES.md", checkoutDir);
+    await executeShellCommand("git add ./host/adblockplus/RELEASE_NOTES.md", checkoutDir);
+    await executeShellCommand("git commit -m 'Updated release notes'", checkoutDir);
+    const hash = await executeShellCommand("git rev-parse HEAD", checkoutDir);
+
+    await executeShellCommand(`npm run do-release -- adblockplus 994.10.0.1 ${hash} --yes --release-date=2024-12-16`, checkoutDir);
+
+    const diff = await executeShellCommand("git diff --full-index --unified=0 HEAD^..HEAD", checkoutDir);
+    const expectedDiff = await loadTestFile("adblockplus-994.10.0.1-diff.txt");
+    expect(diff).toEqual(expectedDiff);
+
+    const newCommit = await executeShellCommand("git rev-parse --short HEAD", checkoutDir);
+    const checkoutReleaseBranchCommit = await executeShellCommand("git rev-parse --short adblockplus-release", checkoutDir);
+    const originReleaseBranchCommit = await executeShellCommand("git rev-parse --short adblockplus-release", originDir);
+    const originTagCommit = await executeShellCommand("git rev-parse --short adblockplus-994.10.0.1^{commit}", originDir);
 
     expect(checkoutReleaseBranchCommit).toEqual(newCommit);
     expect(originReleaseBranchCommit).toEqual(newCommit);
@@ -163,5 +186,11 @@ describe("Do-release script", function() {
   it("exits if a version already exists", async function() {
     expect(() => executeShellCommand("npm run do-release -- adblock 6.10.0 HEAD --yes", checkoutDir))
       .rejects.toThrowError("already exists");
+  });
+
+  it("exits if no release notes exist", async function() {
+    // Attempt to recreate 4.10.0.1 but without adding release notes
+    expect(() => executeShellCommand(`npm run do-release -- adblockplus 994.10.0.1 4427af61a --yes --release-date=2024-12-16`, checkoutDir))
+      .rejects.toThrowError("No release notes found");
   });
 });

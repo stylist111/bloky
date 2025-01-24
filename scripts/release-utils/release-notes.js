@@ -58,7 +58,12 @@ export class ReleaseNotes {
   unreleasedNotes() {
     return this.notesForVersion("unreleased");
   }
-  
+
+  hasUnreleasedNotes() {
+    const unreleasedNotes = this.unreleasedNotes();
+    return /^# unreleased$/i.test(unreleasedNotes);
+  }
+
   insertNewVersionHeading(version, now) {
     let unreleasedLine = this.lines.findIndex((currentLine) => {
       const line = currentLine.toLowerCase();
