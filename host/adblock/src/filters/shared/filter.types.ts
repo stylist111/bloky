@@ -22,4 +22,5 @@ export enum FilterOrigin {
   wizard = "wizard",
   youtube = "youtube",
   customize = "customize",
+  context = "context",
 }

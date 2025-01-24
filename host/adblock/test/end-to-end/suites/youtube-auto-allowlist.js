@@ -43,9 +43,9 @@ export default () => {
     );
 
     await initPopupPage(tabId);
-    const domainPausedText = await getDisplayedElement('[i18n="status_allowlisted"]');
+    const domainPausedText = await getDisplayedElement('[i18n="status_domain_paused"]');
     expect(await domainPausedText.getText()).toEqual(
-      "You’ve configured AdBlock to remain paused on this site for every visit.",
+      "AdBlock is paused for this visit. You may need to refresh the page to see your changes.",
     );
   });
 };

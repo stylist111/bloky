@@ -28,12 +28,11 @@ import { Prefs } from "./alias/prefs";
 import { getCustomFilterMetaData, getDebugInfo } from "./debug/background";
 import { getUserFilters } from "./filter-utils";
 import {
-  adblockIsDomainPaused,
+  isTabTemporaryAllowlisted,
   adblockIsPaused,
   pausedFilterText1,
   pausedFilterText2,
-  saveDomainPauses,
-} from "./pause/background";
+} from "../src/pause/background";
 import { start as startContentFiltering } from "./alias/contentFiltering";
 import { NEW_BADGE_REASONS, getNewBadgeTextReason, showIconBadgeCTA } from "./alias/icon";
 
@@ -216,41 +215,6 @@ const addCustomFilter = async function (filterText, origin) {
     // it back to content scripts
     return ex.toString();
   }
-};
-
-// UNWHITELISTING
-
-// Look for a custom filter that would whitelist the 'url' parameter
-// and if any exist, remove the first one.
-// Inputs: url:string - a URL that may be allowlisted by a custom filter
-//         tabId: integer - tab id of the tab that may be allowlisted by a custom filter
-// Returns: true if a filter was found and removed; false otherwise.
-const tryToUnwhitelist = async function (pageUrl, tabId) {
-  const url = pageUrl.replace(/#.*$/, ""); // Whitelist ignores anchors
-  const customFilters = await getUserFilters();
-  if (!customFilters || !customFilters.length === 0) {
-    return false;
-  }
-
-  /* eslint-disable no-await-in-loop */
-  for (let i = 0; i < customFilters.length; i++) {
-    const { text } = customFilters[i];
-    const whitelist = text.search(/@@\*\$document,domain=~/);
-    // Blacklist site, which is whitelisted by global @@*&document,domain=~
-    // filter
-    if (whitelist > -1) {
-      // Remove protocols
-      const [finalUrl] = url.replace(/((http|https):\/\/)?(www.)?/, "").split(/[/?#]/);
-      await ewe.filters.remove([text]);
-      await ewe.filters.remove([`${text}|~${finalUrl}`]);
-      return true;
-    }
-    if (isAllowlistFilter(text) && (await ewe.filters.getAllowingFilters(tabId)).includes(text)) {
-      await ewe.filters.remove([text]);
-      return true;
-    }
-  }
-  return false;
 };
 
 // Removes a custom filter entry.
@@ -464,14 +428,13 @@ const getCurrentTabInfo = function (secondTime, tabId) {
         const page = new ext.Page(tab);
         const disabledSite = pageIsUnblockable(page.url.href);
         const customFilterCheckUrl = disabledSite ? undefined : page.url.hostname;
-
         const result = {
           disabledSite,
           url: String(page.url || tab.url),
           id: page.id,
           settings: getSettings(),
           paused: adblockIsPaused(),
-          domainPaused: adblockIsDomainPaused({ url: page.url.href, id: page.id }),
+          domainPaused: await isTabTemporaryAllowlisted(page.id),
           blockCountPage: await getBlockedPerPage(tab),
           blockCountTotal: Stats.blocked_total,
           customFilterCount: countCache.getCustomFilterCount(customFilterCheckUrl),
@@ -707,7 +670,6 @@ initialize
     revalidateAllowlistingStates();
     prefs.migrateUserData();
     startYtWallDetection({
-      allowlistTab: adblockIsDomainPaused,
       addTrustedMessageTypes: ext.addTrustedMessageTypes,
       ewe,
       logger,
@@ -767,13 +729,10 @@ Object.assign(self, {
   checkUpdateProgress,
   getDebugInfo,
   openTab,
-  saveDomainPauses,
-  adblockIsDomainPaused,
   pageIsWhitelisted,
   pageIsUnblockable,
   getCurrentTabInfo,
   getAdblockUserId,
-  tryToUnwhitelist,
   addCustomFilter,
   removeCustomFilter,
   countCache,

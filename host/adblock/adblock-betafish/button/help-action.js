@@ -88,9 +88,8 @@ const popupMenuHelpActionMap = {
   removeWhitelistAction() {
     if (pageInfo.url) {
       browser.runtime.sendMessage({
-        command: "tryToUnwhitelist",
-        url: pageInfo.url.href,
-        id: pageInfo.id,
+        command: "removeAllAllowlistRulesForTab",
+        tabId: pageInfo.id,
       });
     }
     transitionTo("removeWhitelist", false);
@@ -101,9 +100,8 @@ const popupMenuHelpActionMap = {
   removeWhitelistDistractionAction() {
     if (pageInfo.url) {
       browser.runtime.sendMessage({
-        command: "tryToUnwhitelist",
-        url: pageInfo.url.href,
-        id: pageInfo.id,
+        command: "removeAllAllowlistRulesForTab",
+        tabId: pageInfo.id,
       });
     }
     transitionTo("removeWhitelistDistraction", false);
@@ -169,9 +167,8 @@ const popupMenuHelpActionMap = {
     } else if (pageInfo.url) {
       browser.runtime
         .sendMessage({
-          command: "adblockIsDomainPaused",
-          activeTab: { url: pageInfo.url.href, id: pageInfo.id },
-          newValue: false,
+          command: "removeAllAllowlistRulesForTab",
+          tabId: pageInfo.id,
         })
         .then(() => {
           browser.tabs.reload(pageInfo.id);
@@ -198,9 +195,8 @@ const popupMenuHelpActionMap = {
     } else if (pageInfo.url) {
       browser.runtime
         .sendMessage({
-          command: "adblockIsDomainPaused",
-          activeTab: { url: pageInfo.url.href, id: pageInfo.id },
-          newValue: false,
+          command: "removeAllAllowlistRulesForTab",
+          tabId: pageInfo.id,
         })
         .then(() => {
           browser.tabs.reload(pageInfo.id);

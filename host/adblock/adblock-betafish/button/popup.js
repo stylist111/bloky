@@ -507,9 +507,8 @@ const start = async function () {
     sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "domain_unpause_clicked" });
     if (pageInfo.url) {
       await browser.runtime.sendMessage({
-        command: "adblockIsDomainPaused",
-        activeTab: { url: pageInfo.url.href, id: pageInfo.id },
-        newValue: false,
+        command: "removeAllAllowlistRulesForTab",
+        tabId: pageInfo.id,
       });
       await browser.runtime.sendMessage({ command: "updateButtonUIAndContextMenus" });
       closePopup();

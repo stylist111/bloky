@@ -415,6 +415,14 @@ declare namespace filters {
    * @param texts - The filter rules to be removed.
    */
   const remove: (texts: string | string[]) => Promise<void>;
+  /**
+   * Adds one or multiple filters. The filters will be applied to all
+   * requests.
+   * @param text - The filter rule to be added.
+   * @param metadata - Metadata to be associated with the filter.
+   * @returns A promise that resolves when the filter has been added.
+   */
+  const add: (text: string | string[], metadata?: FilterMetadata) => Promise<void>;
 }
 
 declare namespace experiments {

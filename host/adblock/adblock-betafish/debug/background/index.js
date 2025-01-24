@@ -23,7 +23,7 @@ import { Prefs } from "~/alias/prefs";
 import { getUserFilters } from "~/filter-utils";
 import { getUserId } from "~/id/background/index";
 import LocalDataCollection from "~/localdatacollection";
-import { adblockIsPaused } from "~/pause/background";
+import { adblockIsPaused } from "../../../src/pause/background/index";
 import { License, channels } from "~/picreplacement/check";
 import SyncService from "~/picreplacement/sync-service";
 import { getSettings } from "~/prefs/background";

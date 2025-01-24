@@ -2,6 +2,7 @@
 
 - Saving of downloaded filters to IndexedDB can now continue if the database was
   previously corrupted. (EXT-679)
+- Removed unused code from the extension (EXT-668)
 
 # 6.14.1 - 2025-01-21
 

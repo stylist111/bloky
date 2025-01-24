@@ -16,29 +16,26 @@
  */
 
 /* For ESLint: List any global identifiers used in this file below */
-/* global browser, ext, adblockIsPaused, adblockIsDomainPaused
-   License, reloadTab, getSettings, tryToUnwhitelist */
+/* global browser, ext, adblockIsPaused,
+   License, reloadTab, getSettings, */
 
 import { Prefs } from "prefs";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
+import { allowlistTab, removeAllAllowlistRulesForTab } from "../src/pause/background";
+import { FilterOrigin } from "../src/filters/shared";
 import { setBadge } from "../adblockplusui/adblockpluschrome/lib/browserAction";
 import ServerMessages from "./servermessages";
 import { log } from "./utilities/background/bg-functions";
 
 import messageValidator from "./messaging/messagevalidator";
 
-const updateBadge = async function (tabArg) {
-  if (tabArg) {
-    const tab = tabArg;
-    tab.url = tab.url ? tab.url : tab.pendingUrl;
-    if (
-      tab.active &&
-      (adblockIsPaused() ||
-        adblockIsDomainPaused({ url: tab.url.href, id: tab.id }) ||
-        !!(await ewe.filters.getAllowingFilters(tab.id)).length)
-    ) {
-      setBadge(tab.id, { number: "" });
-    }
+const updateBadge = async function (tab) {
+  if (!tab || !tab.active) {
+    return;
+  }
+
+  if (adblockIsPaused() || !!(await ewe.filters.getAllowingFilters(tab.id)).length) {
+    setBadge(tab.id, { number: "" });
   }
 };
 
@@ -184,17 +181,12 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
         break;
       case "resume_blocking_ads_unallow":
         ServerMessages.recordGeneralMessage("cm_unpause_clicked");
-        await tryToUnwhitelist(info.pageUrl, tab.id);
+        await removeAllAllowlistRulesForTab(tab.id);
         updateButtonUIAndContextMenus(tab);
         break;
       case "domain_pause_adblock":
         ServerMessages.recordGeneralMessage("cm_domain_pause_clicked");
-        adblockIsDomainPaused({ url: tab.url, id: tab.id }, true, false, "context");
-        updateButtonUIAndContextMenus(tab);
-        break;
-      case "resume_blocking_ads_domain":
-        ServerMessages.recordGeneralMessage("cm_domain_unpause_clicked");
-        adblockIsDomainPaused({ url: tab.url, id: tab.id }, false);
+        await allowlistTab(tab.url, FilterOrigin.context);
         updateButtonUIAndContextMenus(tab);
         break;
       case "block_this_ad":
@@ -249,11 +241,6 @@ const contextMenuItem = (() => ({
     id: "domain_pause_adblock",
     contexts: ["all"],
   },
-  unpauseDomain: {
-    title: browser.i18n.getMessage("resume_blocking_ads"),
-    id: "resume_blocking_ads_domain",
-    contexts: ["all"],
-  },
   blockThisAd: {
     title: browser.i18n.getMessage("block_this_ad"),
     id: "block_this_ad",
@@ -278,12 +265,12 @@ let updateContextMenuItems = async function (page) {
   if (!Prefs.shouldShowBlockElementMenu) {
     return;
   }
-  const domainIsPaused = adblockIsDomainPaused({ url: page.url.href, id: page.id });
+
+  const isTabAllowlisted = !!(await ewe.filters.getAllowingFilters(page.id)).length;
+
   if (adblockIsPaused()) {
     await browser.contextMenus.create(contextMenuItem.unpauseAll, checkLastError);
-  } else if (domainIsPaused) {
-    await browser.contextMenus.create(contextMenuItem.unpauseDomain, checkLastError);
-  } else if ((await ewe.filters.getAllowingFilters(page.id)).length) {
+  } else if (isTabAllowlisted) {
     await browser.contextMenus.create(contextMenuItem.unAllowList, checkLastError);
   } else {
     await browser.contextMenus.create(contextMenuItem.blockThisAd, checkLastError);

@@ -36,11 +36,6 @@ async function cleanCustomFilter(filtersArg) {
         ),
     );
   }
-  // Remove the domain pause white-list items
-  const domainPauses = await send("adblockIsDomainPaused");
-  for (const aDomain in domainPauses) {
-    filters = filters.filter((element) => element.text !== `@@${aDomain}$document`);
-  }
   return filters;
 }
 
