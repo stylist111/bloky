@@ -1,7 +1,11 @@
 # Unreleased
 
+# 4.12.0 - 2025-01-27
+
 - Saving of downloaded filters to IndexedDB can now continue if the database was
-  previously corrupted. (EXT-679)
+  previously corrupted (EXT-679)
+- Moved the SDK to the core folder (EXT-279)
+- Extract Extension IPM code from adblockplus to the fragment folder (IM-187)
 
 # 4.11.1 - 2025-01-17
 
