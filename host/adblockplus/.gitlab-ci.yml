@@ -282,7 +282,7 @@ comp:MV2:firefox:oldest:
     # EYEOMETRY_BEARER should be set the same way the build job does it, this is:
     # echo "EYEOMETRY_BEARER=\"$ADBLOCKPLUS_EYEOMETRY_BEARER\"" >> host/adblockplus/.env
     # Passing it as a docker run env variable as a workaround.
-    - docker run --cpus=6 --shm-size=2g -t -e MANIFEST_VERSION -e BROWSER -e CI -e EYEOMETRY_BEARER="$ADBLOCKPLUS_EYEOMETRY_BEARER" end-to-end
+    - docker run --shm-size=2g -t -e MANIFEST_VERSION -e BROWSER -e CI -e EYEOMETRY_BEARER="$ADBLOCKPLUS_EYEOMETRY_BEARER" end-to-end
   after_script:
     - IMAGE_ID=$(docker ps -aqf ancestor=end-to-end)
     - docker cp $IMAGE_ID:/extensions/host/adblockplus/test/$E2E_FOLDER/screenshots host/adblockplus 2> /dev/null

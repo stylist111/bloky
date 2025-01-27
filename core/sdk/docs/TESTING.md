@@ -349,7 +349,7 @@ to run the same tests may be useful to recreate the infrastructure the CI uses.
 
 ```
 docker build -t functional -f core/sdk/test/dockerfiles/functional.Dockerfile .
-docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_PARAMS="{2|3} {chromium|firefox|edge}" functional
+docker run --shm-size=2g -it -e TEST_PARAMS="{2|3} {chromium|firefox|edge}" functional
 ```
 
 Please notice that the TEST_PARAMS argument can also take the additional options
@@ -371,7 +371,7 @@ Optional environment variables for the script:
 
 ```
 docker build -t functional -f core/sdk/test/dockerfiles/functional.Dockerfile .
-docker run --cpus=2 --memory=6g --shm-size=2g -it --entrypoint functional npm -w @eyeo/webext-ad-filtering-solution run test:performance {2|3} {chromium|edge}
+docker run --shm-size=2g -it --entrypoint functional npm -w @eyeo/webext-ad-filtering-solution run test:performance {2|3} {chromium|edge}
 ```
 
 In order to access the screenshots for failing tests run the following command,
@@ -542,5 +542,5 @@ To run test suites locally in isolation, run the following docker commands:
 
 ```
 docker build -t functional -f core/sdk/test/dockerfiles/functional.Dockerfile .
-docker run --cpus=2 --memory=6g --shm-size=2g -it -e TEST_SUITES="suite_1 suite_2" -e TEST_PARAMS="v3 chromium" --entrypoint core/sdk/test/dockerfiles/isolated-entrypoint.sh functional
+docker run --shm-size=2g -it -e TEST_SUITES="suite_1 suite_2" -e TEST_PARAMS="v3 chromium" --entrypoint core/sdk/test/dockerfiles/isolated-entrypoint.sh functional
 ```

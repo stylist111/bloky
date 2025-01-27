@@ -96,14 +96,14 @@ Screenshots for failing tests are stored in `host/adblock/test/end-to-end/screen
 ```sh
 npm run build:release -- --scope=adblock
 docker build -t end-to-end -f host/adblock/test/end-to-end/Dockerfile .
-docker run --cpus=6 --shm-size=2g -it -e BROWSER={chromium|firefox|edge} -e MANIFEST_VERSION={2|3} end-to-end
+docker run --shm-size=2g -it -e BROWSER={chromium|firefox|edge} -e MANIFEST_VERSION={2|3} end-to-end
 ```
 
 To use mocha command line options the `--entrypoint` parameter needs to be set.
 Example:
 
 ```sh
-docker run --cpus=6 --shm-size=2g -it -e BROWSER={chromium|firefox|edge} -e MANIFEST_VERSION={2|3} --entrypoint npm end-to-end run -w host/adblock test:end-to-end-local -- --grep "Smoke"
+docker run --shm-size=2g -it -e BROWSER={chromium|firefox|edge} -e MANIFEST_VERSION={2|3} --entrypoint npm end-to-end run -w host/adblock test:end-to-end-local -- --grep "Smoke"
 ```
 
 To access the screenshots for failing tests run the following command, which

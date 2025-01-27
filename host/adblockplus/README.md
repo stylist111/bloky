@@ -205,7 +205,7 @@ docker build -t end-to-end -f host/adblockplus/test/end-to-end/Dockerfile .
 # Selenium
 docker build -t end-to-end -f host/adblockplus/test/end-to-end-selenium/Dockerfile .
 
-docker run --cpus=6 --shm-size=2g -it -e BROWSER={chromium|firefox|edge} -e MANIFEST_VERSION={2|3} end-to-end
+docker run --shm-size=2g -it -e BROWSER={chromium|firefox|edge} -e MANIFEST_VERSION={2|3} end-to-end
 ```
 
 To use mocha command line options the `--entrypoint` parameter needs to be set.
@@ -213,9 +213,9 @@ Example:
 
 ```sh
 # WebdriverIO
-docker run --cpus=6 --shm-size=2g -it -e BROWSER={chromium|firefox|edge} -e MANIFEST_VERSION={2|3} --entrypoint npm end-to-end run -w host/adblockplus test:end-to-end-wdio -- --grep "Smoke"
+docker run --shm-size=2g -it -e BROWSER={chromium|firefox|edge} -e MANIFEST_VERSION={2|3} --entrypoint npm end-to-end run -w host/adblockplus test:end-to-end-wdio -- --grep "Smoke"
 # Selenium
-docker run --cpus=6 --shm-size=2g -it -e BROWSER={chromium|firefox|edge} -e MANIFEST_VERSION={2|3} --entrypoint npm end-to-end run -w host/adblockplus test:end-to-end-selenium -- --grep "Smoke"
+docker run --shm-size=2g -it -e BROWSER={chromium|firefox|edge} -e MANIFEST_VERSION={2|3} --entrypoint npm end-to-end run -w host/adblockplus test:end-to-end-selenium -- --grep "Smoke"
 ```
 
 To access the screenshots for failing tests run the following command, which

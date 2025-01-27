@@ -260,7 +260,7 @@ comp:MV2:chromium:oldest:
   script:
     - echo "EYEOMETRY_BEARER=\"$ADBLOCK_EYEOMETRY_BEARER\"" >> host/adblock/.env
     - docker build -t end-to-end -f host/adblock/test/end-to-end/Dockerfile .
-    - docker run --cpus=6 --shm-size=2g -t -e BROWSER -e MANIFEST_VERSION -e CI end-to-end
+    - docker run --shm-size=2g -t -e BROWSER -e MANIFEST_VERSION -e CI end-to-end
   after_script:
     - IMAGE_ID=$(docker ps -aqf ancestor=end-to-end)
     - docker cp $IMAGE_ID:/extensions/host/adblock/test/end-to-end/screenshots host/adblock/ 2> /dev/null
