@@ -115,6 +115,18 @@ check_parameter_set "--project" "$PROJECT"
 check_parameter_set "--source-branch" "$SOURCE_BRANCH"
 check_parameter_set "--target-path" "$TARGET_PATH"
 
+if [ -n "$(git status --porcelain)" ]; then
+    echo "You have uncommitted changes."
+    echo "Commit them or stash them and try again."
+    exit 1
+fi
+
+if [ -e "$TARGET_PATH" ]; then
+    echo "The target path, $TARGET_PATH, already exists in the target repo."
+    echo "Choose a target path that does not exist and try again."
+    exit 1
+fi
+
 set -x
 
 MONOREPO=$PWD
@@ -130,6 +142,16 @@ git clone --bare "$UPSTREAM" "$CHECKOUT"
 
 git fetch "$CHECKOUT" "refs/heads/$SOURCE_BRANCH"
 git checkout -B "$PROJECT-$SOURCE_BRANCH" FETCH_HEAD
+git clean -xdf
+
+TARGET_PATH_FIRST_ELEMENT=$(echo "$TARGET_PATH" | cut -d'/' -f1)
+
+if [ -e "$TARGET_PATH_FIRST_ELEMENT" ]; then
+    set +x
+    echo "The target path's top directory, $TARGET_PATH_FIRST_ELEMENT, already exists in the source repo."
+    echo "Choose a target path that does not exist and try again."
+    exit 1
+fi
 
 mkdir -p "$TARGET_PATH"
 
