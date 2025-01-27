@@ -42,7 +42,6 @@ import {
   initOptionsPremiumFlTab,
   getCustomFilters,
   waitForAdsBlockedToBeInRange,
-  expectAAEnabled,
 } from "../utils/page.js";
 import {
   getDefaultFilterLists,
@@ -80,6 +79,7 @@ export default () => {
 
     const customBlockingFilter = "localhost*js/test-script.js";
     const maxAdsBlocked = 15;
+    const prevExtVersion = extension.version;
 
     // activate premium
     await enablePremiumProgrammatically();
@@ -102,11 +102,24 @@ export default () => {
       "Counter on the extension icon is still on",
     );
 
-    // acceptable ads (off), easyList (off), easyprivacy (on)
+    // switch existing default states for lists: acceptable ads, easyList, easyprivacy
     await initOptionsFiltersTab(getOptionsHandle());
-    const lists = getDefaultFilterLists(expectAAEnabled).filter((list) =>
-      ["easyprivacy", "acceptable_ads", "easylist"].includes(list.name),
-    );
+    const lists = getDefaultFilterLists()
+      .filter((list) => ["easyprivacy", "acceptable_ads", "easylist"].includes(list.name))
+      .map((list) => {
+        // In 16.14.1 acceptable_ads was previously disabled by default FF and should remain that way after upgrade
+        // Note: This should be removed after releasing the new version
+        if (
+          list.name === "acceptable_ads" &&
+          browserDetails.browserName === "firefox" &&
+          prevExtVersion === "6.14.1"
+        ) {
+          return { ...list, enabled: false };
+        }
+
+        return list;
+      });
+
     for (const { checkboxSelector, enabled, text, name } of lists) {
       // Easyprivacy is down below the page, therefore scrollIntoView is needed
       await clickOnDisplayedElement(`span:has(> ${checkboxSelector})`, { scrollIntoView: true });
@@ -151,7 +164,6 @@ export default () => {
     await setPausedStateFromPopup(aaTestPageUrl, true);
 
     // upgrade extension
-    const prevExtVersion = extension.version;
     await upgradeExtension(initOptionsGeneralTab);
 
     // check the extension version has changed
@@ -194,7 +206,7 @@ export default () => {
     await clickOnDisplayedElement(`span:has(> ${langList.checkboxSelector})`);
     await waitForNotDisplayed(`span:has(> ${langList.checkboxSelector})`);
 
-    // acceptable ads (on), easylist (on), easyprivacy (off)
+    // switch back to the existing default states for lists: acceptable ads, easyList, easyprivacy
     for (const list of lists) {
       await clickOnDisplayedElement(`span:has(> ${list.checkboxSelector})`, {
         scrollIntoView: true,

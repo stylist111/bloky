@@ -35,7 +35,6 @@ import {
   initOptionsFiltersTab,
   clickFilterlist,
   setAADefaultState,
-  expectAAEnabled,
 } from "../../utils/page.js";
 
 export default () => {
@@ -122,33 +121,23 @@ export default () => {
     await initOptionsFiltersTab(getOptionsHandle());
     await driver.wait(
       // https://eyeo.atlassian.net/browse/EXT-446
-      async () => {
-        return (await isCheckboxEnabled(aaFLButtonSelector)) === expectAAEnabled;
-      },
+      isCheckboxEnabled(aaFLButtonSelector),
       2000,
-      `Acceptable Ads is not in the default state. Expected state: ${expectAAEnabled}`,
+      `Acceptable Ads is not enabled by default`,
     );
     const websiteHandle = await openNewTab(aaTestPageUrl);
-    if (expectAAEnabled) {
-      await getDisplayedElement(hiddenSelector);
-    } else {
-      await waitForNotDisplayed(hiddenSelector);
-    }
+    await getDisplayedElement(hiddenSelector);
     await getDisplayedElement(visibleSelector);
 
     await initOptionsFiltersTab(getOptionsHandle());
-    await clickFilterlist("acceptable_ads", aaFLButtonSelector, !expectAAEnabled);
+    await clickFilterlist("acceptable_ads", aaFLButtonSelector, false);
     await driver.switchTo().window(websiteHandle);
     await driver.wait(
       async () => {
         await driver.navigate().refresh();
         try {
           await getDisplayedElement(visibleSelector);
-          if (!expectAAEnabled) {
-            await getDisplayedElement(hiddenSelector);
-          } else {
-            await waitForNotDisplayed(hiddenSelector, 500);
-          }
+          await waitForNotDisplayed(hiddenSelector, 500);
           return true;
         } catch (e) {}
       },

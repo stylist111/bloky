@@ -161,13 +161,6 @@ async function addSubscriptions() {
         console.error(`Failed to add additional subscription: ${url}`);
       }
     }
-    if (info.platform === "gecko") {
-      try {
-        await ewe.subscriptions.remove(ewe.subscriptions.ACCEPTABLE_ADS_URL);
-      } catch (ex) {
-        console.error(`Failed to remove AA subscription`);
-      }
-    }
   }
 }
 

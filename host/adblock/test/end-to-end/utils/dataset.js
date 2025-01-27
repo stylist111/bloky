@@ -124,12 +124,12 @@ export const languageFilterLists = [
   },
 ].map(addTestIdAndCheckboxSelector);
 
-export function getDefaultFilterLists(aaEnabled) {
+export function getDefaultFilterLists() {
   return [
     {
       name: "acceptable_ads",
       text: "Acceptable Ads",
-      enabled: aaEnabled,
+      enabled: true,
     },
     {
       name: "acceptable_ads_privacy",

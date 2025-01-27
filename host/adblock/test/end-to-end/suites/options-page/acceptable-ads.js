@@ -28,7 +28,6 @@ import {
   initOptionsGeneralTab,
   initOptionsFiltersTab,
   setAADefaultState,
-  expectAAEnabled,
 } from "../../utils/page.js";
 
 export default () => {
@@ -39,19 +38,16 @@ export default () => {
   it("displays AA default state", async function () {
     await initOptionsGeneralTab(getOptionsHandle());
     await driver.wait(
-      async () => {
-        const aaEnabled = await isCheckboxEnabled("#acceptable_ads");
-        return aaEnabled === expectAAEnabled;
-      },
+      isCheckboxEnabled("#acceptable_ads"),
       5000,
-      `Acceptable Ads is not in the default state. Expected state: ${expectAAEnabled}`,
+      `Acceptable Ads is not enabled by default`,
     );
     const aaPrivacyEnabled = await isCheckboxEnabled("#acceptable_ads_privacy");
     expect(aaPrivacyEnabled).toEqual(false);
 
     await initOptionsFiltersTab(getOptionsHandle());
     const aaFLEnabled = await isCheckboxEnabled("#adblockFilterList_0");
-    expect(aaFLEnabled).toEqual(expectAAEnabled);
+    expect(aaFLEnabled).toEqual(true);
     const aaFLPrivacyEnabled = await isCheckboxEnabled("#adblockFilterList_1");
     expect(aaFLPrivacyEnabled).toEqual(false);
   });

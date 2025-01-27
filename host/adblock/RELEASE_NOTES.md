@@ -3,6 +3,7 @@
 - Saving of downloaded filters to IndexedDB can now continue if the database was
   previously corrupted. (EXT-679)
 - Removed unused code from the extension (EXT-668)
+- Turn on Acceptable Ads by default on Firefox (EXT-750)
 
 # 6.14.1 - 2025-01-21
 

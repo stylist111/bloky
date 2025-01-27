@@ -33,10 +33,6 @@ import {
 import { getOptionsHandle, sendExtMessage } from "@eyeo/test-utils/extension";
 
 import { installUrl } from "./urls.js";
-import { runnerConfig } from "../runners/config.js";
-
-// By default AdBlock has AA enabled on Chrome/Edge and disabled on Firefox
-export const expectAAEnabled = runnerConfig.browserName !== "firefox";
 
 const optionsPageSleep = 3000;
 
@@ -353,8 +349,8 @@ export async function setAADefaultState() {
   await initOptionsFiltersTab(getOptionsHandle());
   const aaEnabled = await isCheckboxEnabled(checkboxSelector);
   // Cleanup setting the AA default state
-  if ((expectAAEnabled && !aaEnabled) || (!expectAAEnabled && aaEnabled)) {
-    await clickFilterlist(name, checkboxSelector, expectAAEnabled);
+  if (!aaEnabled) {
+    await clickFilterlist(name, checkboxSelector, true);
   }
 }
 

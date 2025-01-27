@@ -27,7 +27,6 @@ import {
   getSubscriptionInfo,
   clickFilterlist,
   waitForAdsBlockedToBeInRange,
-  expectAAEnabled,
   initOptionsGeneralTab,
 } from "../../utils/page.js";
 import { getDefaultFilterLists } from "../../utils/dataset.js";
@@ -106,9 +105,7 @@ export default () => {
   it("resets settings", async function () {
     this.timeout(50000); // The options page may take long time to appear after reloading the extension
 
-    const enabledFilterLists = getDefaultFilterLists(expectAAEnabled).filter(
-      ({ enabled }) => enabled,
-    );
+    const enabledFilterLists = getDefaultFilterLists().filter(({ enabled }) => enabled);
 
     const handleDisabledFilterlistsAlert = async () => {
       let alert;
