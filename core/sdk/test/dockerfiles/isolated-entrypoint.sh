@@ -8,7 +8,7 @@ failureCount=0
 for suite in $TEST_SUITES; do
   echo "Running $suite in isolation"
   TEST_PARAMS="$INITIAL_TEST_PARAMS --grep $suite --testKinds functional" 
-  test/dockerfiles/functional-entrypoint.sh 
+  core/sdk/test/dockerfiles/functional-entrypoint.sh 
   exitCode=$?
 
   if [ $exitCode -ne 0 ]; then
