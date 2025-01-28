@@ -35,7 +35,7 @@ import {
   clickFilterlist,
   waitForSubscribed,
 } from "../../utils/page.js";
-import { getDefaultFilterLists, languageFilterLists } from "../../utils/dataset.js";
+import { defaultFilterLists, languageFilterLists } from "../../utils/dataset.js";
 
 async function setFilterListUrl(url) {
   await clickAndSendKeys("#txtNewSubscriptionUrl", url);
@@ -48,8 +48,6 @@ export default () => {
   });
 
   it("displays the default state", async function () {
-    const defaultFilterLists = getDefaultFilterLists();
-
     for (const { name, checkboxSelector, text, enabled } of defaultFilterLists) {
       const flEnabled = await isCheckboxEnabled(checkboxSelector);
       const selector =
@@ -84,13 +82,13 @@ export default () => {
   it("updates all filter lists", async function () {
     this.timeout(40000); // Updating all filter list may take longer depending on network conditions
 
-    const defaultFilterLists = getDefaultFilterLists().filter(({ enabled }) => enabled);
+    const defaultEnabledFilterLists = defaultFilterLists.filter(({ enabled }) => enabled);
 
     const checkDefaultSubscriptionsInfo = async (updatedWhen, timeout) => {
       await driver.wait(
         async () => {
           try {
-            for (const { name } of defaultFilterLists) {
+            for (const { name } of defaultEnabledFilterLists) {
               const text = await getSubscriptionInfo(name);
               expect(text).toMatch(new RegExp(`updated.*${updatedWhen}`));
             }
@@ -139,7 +137,7 @@ export default () => {
 
   for (const name of ["anticircumvent", "easylist"]) {
     it(`disables and reenables the ${name} filter list`, async function () {
-      const { checkboxSelector } = getDefaultFilterLists().find((fl) => fl.name === name);
+      const { checkboxSelector } = defaultFilterLists.find((fl) => fl.name === name);
 
       const flEnabled = await isCheckboxEnabled(checkboxSelector);
       expect(flEnabled).toEqual(true);

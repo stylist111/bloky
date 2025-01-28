@@ -43,11 +43,7 @@ import {
   getCustomFilters,
   waitForAdsBlockedToBeInRange,
 } from "../utils/page.js";
-import {
-  getDefaultFilterLists,
-  premiumFilterLists,
-  languageFilterLists,
-} from "../utils/dataset.js";
+import { defaultFilterLists, premiumFilterLists, languageFilterLists } from "../utils/dataset.js";
 
 async function blockAds(expectedMinBlocked, expectedMaxBlocked) {
   const timeout = 8000;
@@ -104,7 +100,7 @@ export default () => {
 
     // switch existing default states for lists: acceptable ads, easyList, easyprivacy
     await initOptionsFiltersTab(getOptionsHandle());
-    const lists = getDefaultFilterLists()
+    const lists = defaultFilterLists
       .filter((list) => ["easyprivacy", "acceptable_ads", "easylist"].includes(list.name))
       .map((list) => {
         // In 16.14.1 acceptable_ads was previously disabled by default FF and should remain that way after upgrade

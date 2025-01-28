@@ -29,7 +29,7 @@ import {
   waitForAdsBlockedToBeInRange,
   initOptionsGeneralTab,
 } from "../../utils/page.js";
-import { getDefaultFilterLists } from "../../utils/dataset.js";
+import { defaultFilterLists } from "../../utils/dataset.js";
 import { installUrl } from "../../utils/urls.js";
 
 export default () => {
@@ -105,7 +105,7 @@ export default () => {
   it("resets settings", async function () {
     this.timeout(50000); // The options page may take long time to appear after reloading the extension
 
-    const enabledFilterLists = getDefaultFilterLists().filter(({ enabled }) => enabled);
+    const enabledFilterLists = defaultFilterLists.filter(({ enabled }) => enabled);
 
     const handleDisabledFilterlistsAlert = async () => {
       let alert;

@@ -124,66 +124,64 @@ export const languageFilterLists = [
   },
 ].map(addTestIdAndCheckboxSelector);
 
-export function getDefaultFilterLists() {
-  return [
-    {
-      name: "acceptable_ads",
-      text: "Acceptable Ads",
-      enabled: true,
-    },
-    {
-      name: "acceptable_ads_privacy",
-      text: "Only allow ads without third-party tracking",
-      enabled: false,
-    },
-    {
-      name: "anticircumvent",
-      text: "Anti-Circumvention filters",
-      enabled: true,
-    },
-    { name: "easylist", checkboxSelector: "#adblockFilterList_3", text: "EasyList", enabled: true },
-    {
-      name: "free_distraction_control",
-      text: "Basic Distraction Control",
-      enabled: false,
-    },
-    {
-      name: "warning_removal",
-      text: "Adblock Warning Removal list",
-      enabled: false,
-    },
-    {
-      name: "antisocial",
-      text: "Antisocial filter list",
-      enabled: false,
-    },
-    {
-      name: "bitcoin_mining_protection",
-      text: "Cryptocurrency (Bitcoin) Mining Protection List",
-      enabled: false,
-    },
-    {
-      name: "easyprivacy",
-      text: "EasyPrivacy (privacy protection)",
-      enabled: false,
-    },
-    {
-      name: "annoyances",
-      text: "Fanboy's Annoyances",
-      enabled: false,
-    },
-    {
-      name: "fb_notifications",
-      text: "Fanboy's Notifications (blocks in-page pop-ups, social media and related widgets, and other annoyances)",
-      enabled: false,
-    },
-    {
-      name: "idcac",
-      text: "I Don't Care About Cookies",
-      enabled: false,
-    },
-  ].map(addTestIdAndCheckboxSelector);
-}
+export const defaultFilterLists = [
+  {
+    name: "acceptable_ads",
+    text: "Acceptable Ads",
+    enabled: true,
+  },
+  {
+    name: "acceptable_ads_privacy",
+    text: "Only allow ads without third-party tracking",
+    enabled: false,
+  },
+  {
+    name: "anticircumvent",
+    text: "Anti-Circumvention filters",
+    enabled: true,
+  },
+  { name: "easylist", checkboxSelector: "#adblockFilterList_3", text: "EasyList", enabled: true },
+  {
+    name: "free_distraction_control",
+    text: "Basic Distraction Control",
+    enabled: false,
+  },
+  {
+    name: "warning_removal",
+    text: "Adblock Warning Removal list",
+    enabled: false,
+  },
+  {
+    name: "antisocial",
+    text: "Antisocial filter list",
+    enabled: false,
+  },
+  {
+    name: "bitcoin_mining_protection",
+    text: "Cryptocurrency (Bitcoin) Mining Protection List",
+    enabled: false,
+  },
+  {
+    name: "easyprivacy",
+    text: "EasyPrivacy (privacy protection)",
+    enabled: false,
+  },
+  {
+    name: "annoyances",
+    text: "Fanboy's Annoyances",
+    enabled: false,
+  },
+  {
+    name: "fb_notifications",
+    text: "Fanboy's Notifications (blocks in-page pop-ups, social media and related widgets, and other annoyances)",
+    enabled: false,
+  },
+  {
+    name: "idcac",
+    text: "I Don't Care About Cookies",
+    enabled: false,
+  },
+].map(addTestIdAndCheckboxSelector);
 
 export const premiumFilterLists = [
   { checkboxSelector: "#distraction-control", text: "Distraction Control" },
