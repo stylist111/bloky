@@ -29,7 +29,7 @@ export async function findUrl(expectedUrl, timeout = 5000) {
         for (handle of await driver.getAllWindowHandles()) {
           await driver.switchTo().window(handle);
           url = await driver.getCurrentUrl();
-          if (url.includes(expectedUrl)) {
+          if (url && url.includes(expectedUrl)) {
             return true;
           }
         }
@@ -160,8 +160,34 @@ export async function waitForNotNullProperty(cssSelector, property, timeout = 10
   return value;
 }
 
-export function isCheckboxEnabled(cssSelector) {
+export function isCheckboxPropertyEnabled(cssSelector) {
   return waitForNotNullProperty(cssSelector, "checked");
+}
+
+export async function isCheckboxAttributeEnabled(cssSelector) {
+  const elem = await getDisplayedElement(cssSelector, { forceRefresh: false });
+  const attr = await elem.getAttribute("aria-checked");
+  return attr === "true";
+}
+
+export async function waitForCheckboxStatus(
+  cssSelector,
+  { timeout = 1000, expectEnabled = true, isProperty = true, name, action = "after click" } = {},
+) {
+  const enabledDisabled = expectEnabled ? "enabled" : "disabled";
+  const timeoutMsg = `"${name || cssSelector}" was not ${enabledDisabled} ${action}`;
+
+  await driver.wait(
+    async () => {
+      if (isProperty) {
+        return (await isCheckboxPropertyEnabled(cssSelector)) === expectEnabled;
+      } else {
+        return (await isCheckboxAttributeEnabled(cssSelector)) === expectEnabled;
+      }
+    },
+    timeout,
+    timeoutMsg,
+  );
 }
 
 export async function clickOnDisplayedElement(

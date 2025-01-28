@@ -22,6 +22,10 @@ import { installUrl } from "../utils/urls.js";
 const endToEndPath = path.join(process.cwd(), "test", "end-to-end-selenium");
 // Path to extension zip files from the current build
 const buildsDirPath = path.join(process.cwd(), "dist", "release");
+// Path to downloaded extension zip files from the latest released build
+const liveBuildsDirPath = path.join(process.cwd(), "dist", "live");
+// Name of the host extension folder in /hosts
+const hostname = "adblockplus";
 
 export const runnerConfig = {
   // The browser name to use for the tests
@@ -41,8 +45,13 @@ export const runnerConfig = {
   ),
   buildsDirPath,
   // Path to the unpacked extension
-  unpackedDirPath: path.join(buildsDirPath, "adblock-unpacked"),
-  // Name of the host extension folder in /hosts
-  hostname: "adblockplus",
+  unpackedDirPath: path.join(buildsDirPath, `${hostname}-unpacked`),
+  liveBuildsDirPath,
+  // Path to the unpacked upgrade extension
+  unpackedUpgradeDirPath: path.join(
+    liveBuildsDirPath,
+    `${hostname}-upgrade-unpacked`
+  ),
+  hostname,
   installUrl
 };

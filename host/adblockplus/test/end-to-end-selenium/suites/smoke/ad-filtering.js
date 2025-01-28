@@ -34,8 +34,8 @@ import {
   programaticallyAddFilters,
   checkBlockHidePage,
   setAADefaultState,
-  clickFLToggleAndCheck,
-  setCustomFilters,
+  clickFLCheckboxAndCheck,
+  addCustomFilters,
   addAllowlistFilters,
   deleteFirstAllowlistFilter
 } from "../../utils/page.js";
@@ -99,7 +99,7 @@ export default () => {
     const snippetElem = await getDisplayedElement("#snippet-filter");
     expect(await snippetElem.getText()).toEqual("Snippet filter not applied");
 
-    await setCustomFilters([snippetFilter]);
+    await addCustomFilters([snippetFilter]);
     await openNewTab(snippetTestPageUrl);
     await driver.navigate().refresh();
     await waitForNotDisplayed("#snippet-filter", 2000);
@@ -126,7 +126,10 @@ export default () => {
     await getDisplayedElement(visibleSelector);
 
     await initOptionsGeneralTab(getOptionsHandle());
-    await clickFLToggleAndCheck("#acceptable-ads-allow", false);
+    await clickFLCheckboxAndCheck("#acceptable-ads-allow", {
+      enable: false,
+      name: "Acceptable Ads"
+    });
 
     await driver.switchTo().window(websiteHandle);
     await driver.wait(

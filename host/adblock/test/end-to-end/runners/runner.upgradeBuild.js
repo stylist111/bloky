@@ -26,10 +26,10 @@ import {
   setupBrowserHook,
 } from "@eyeo/test-utils/hooks";
 
-import defineTestSuitesAfterUpgrade from "../suites-upgrade/index.js";
+import defineTestSuitesAfterUpgrade from "../suites/index-upgrade.js";
 import { runnerConfig } from "./config.js";
 
-describe("AdBlock upgrade end-to-end tests", function () {
+describe("AdBlock end-to-end tests - Upgrade extension", function () {
   before(() => setGlobalOptionsHook(runnerConfig));
 
   before(async function () {

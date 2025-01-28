@@ -19,7 +19,7 @@ import { expect } from "expect";
 import { By } from "selenium-webdriver";
 
 import {
-  isCheckboxEnabled,
+  isCheckboxPropertyEnabled,
   getDisplayedElement,
   findUrl,
   waitForNotDisplayed,
@@ -49,7 +49,7 @@ export default () => {
 
   it("displays the default state", async function () {
     for (const { name, checkboxSelector, text, enabled } of defaultFilterLists) {
-      const flEnabled = await isCheckboxEnabled(checkboxSelector);
+      const flEnabled = await isCheckboxPropertyEnabled(checkboxSelector);
       const selector =
         name === "acceptable_ads_privacy"
           ? `[name="${name}"] > label`
@@ -115,11 +115,11 @@ export default () => {
         : "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt";
 
     const enableAdvancedUser = async () => {
-      const advancedUserEnabled = await isCheckboxEnabled("#enable_show_advanced_options");
+      const advancedUserEnabled = await isCheckboxPropertyEnabled("#enable_show_advanced_options");
       if (!advancedUserEnabled) {
         await clickOnDisplayedElement("span:has(> #enable_show_advanced_options)");
         await driver.wait(
-          async () => isCheckboxEnabled("#enable_show_advanced_options"),
+          async () => isCheckboxPropertyEnabled("#enable_show_advanced_options"),
           2000,
           "The advanced user was not enabled after clicking",
         );
@@ -139,7 +139,7 @@ export default () => {
     it(`disables and reenables the ${name} filter list`, async function () {
       const { checkboxSelector } = defaultFilterLists.find((fl) => fl.name === name);
 
-      const flEnabled = await isCheckboxEnabled(checkboxSelector);
+      const flEnabled = await isCheckboxPropertyEnabled(checkboxSelector);
       expect(flEnabled).toEqual(true);
 
       await clickFilterlist(name, checkboxSelector, false);

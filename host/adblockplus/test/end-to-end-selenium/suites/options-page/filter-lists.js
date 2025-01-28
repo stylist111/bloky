@@ -16,10 +16,9 @@
  */
 
 import { expect } from "expect";
-import { By } from "selenium-webdriver";
 
 import {
-  isCheckboxEnabled,
+  isCheckboxPropertyEnabled,
   getDisplayedElement,
   clickOnDisplayedElement,
   findUrl,
@@ -34,7 +33,9 @@ import {
   initOptionsGeneralTab,
   getFLSelectors,
   waitForSubscriptionUpdated,
-  clickFLToggleAndCheck
+  clickFLCheckboxAndCheck,
+  getLanguageFilterLists,
+  addLanguageFilterList
 } from "../../utils/page.js";
 import {
   getDefaultFilterLists,
@@ -47,61 +48,6 @@ async function setFilterListUrl(url) {
   await clickOnDisplayedElement('[data-i18n="options_dialog_import_title"]');
 }
 
-async function getLanguageFilterlists(isOptionsGeneralTab) {
-  const boxSelector = isOptionsGeneralTab ? "#languages-box" : "#filters-box";
-  await clickOnDisplayedElement(boxSelector, { scrollIntoView: true });
-
-  const popupSelector = isOptionsGeneralTab
-    ? "#languages-boxpopup"
-    : "#filters-boxpopup";
-
-  // Poll until elements are not stale
-  let languageElems;
-  await driver.wait(
-    async () => {
-      languageElems = await driver.findElements(By.css(`${popupSelector} li`));
-      try {
-        await languageElems[0].getText();
-        return true;
-      } catch (err) {
-        if (err.name !== "StaleElementReferenceError") {
-          throw err;
-        }
-      }
-    },
-    2000,
-    "Language elements text is not avaliable"
-  );
-
-  return languageElems;
-}
-
-async function addLanguageFilterlist(langName, isOptionsGeneralTab) {
-  const languageElems = await getLanguageFilterlists(isOptionsGeneralTab);
-
-  let langElem;
-  for (const elem of languageElems) {
-    if ((await elem.getText()).startsWith(langName)) {
-      langElem = elem;
-      break;
-    }
-  }
-  if (!langElem) {
-    const text = isOptionsGeneralTab ? "languages box" : "filters box";
-    throw new Error(`${langName} EasyList was not found on ${text}`);
-  }
-  await langElem.click();
-
-  // Check language list was added
-  const tableSelector = isOptionsGeneralTab
-    ? "#blocking-languages-table"
-    : "#all-filter-lists-table";
-  await getDisplayedElement(`${tableSelector} [aria-label="${langName}"]`, {
-    timeout: 2000,
-    forceRefresh: false
-  });
-}
-
 export default () => {
   beforeEach(async function () {
     await initOptionsAdvancedTab(getOptionsHandle());
@@ -112,7 +58,7 @@ export default () => {
 
     for (const { name, enabled } of defaultFilterLists) {
       const { toggle, title } = getFLSelectors(name);
-      const flEnabled = await isCheckboxEnabled(toggle);
+      const flEnabled = await isCheckboxPropertyEnabled(toggle);
       const flTitleElem = await getDisplayedElement(title);
       const flTitle = await flTitleElem.getText();
 
@@ -121,7 +67,7 @@ export default () => {
   });
 
   it("shows the built in filter list dropdown", async function () {
-    const languageElems = await getLanguageFilterlists(false);
+    const languageElems = await getLanguageFilterLists(false);
 
     const actualFilterLists = [];
     for (const elem of languageElems) {
@@ -201,14 +147,22 @@ export default () => {
     const { toggle } = getFLSelectors(name);
 
     // Check default state
-    const enabled = await isCheckboxEnabled(toggle);
+    const enabled = await isCheckboxPropertyEnabled(toggle);
     expect({ name, enabled }).toEqual({ name, enabled: true });
 
     // Disable FL
-    await clickFLToggleAndCheck(toggle, false);
+    await clickFLCheckboxAndCheck(toggle, {
+      enable: false,
+      isToggle: true,
+      name
+    });
 
     // Reenable FL
-    await clickFLToggleAndCheck(toggle, true);
+    await clickFLCheckboxAndCheck(toggle, {
+      enable: true,
+      isToggle: true,
+      name
+    });
 
     await waitForSubscriptionUpdated(name, { timeout: 5000 });
   });
@@ -216,7 +170,7 @@ export default () => {
   it("removes and adds back a filter list", async function () {
     const name = "EasyList";
     const langName = "English";
-    const { filterlist, trashBtn, toggle } = getFLSelectors(name);
+    const { filterlist, trashBtn } = getFLSelectors(name);
 
     // Remove EasyList
     await clickOnDisplayedElement(trashBtn);
@@ -232,14 +186,10 @@ export default () => {
     );
 
     // Add EasyList back
-    await addLanguageFilterlist(langName, true);
+    await addLanguageFilterList(langName, { isOptionsGeneralTab: true });
 
     // Check EasyList on advanced tab
-    await initOptionsAdvancedTab(getOptionsHandle());
-    const enabled = await isCheckboxEnabled(toggle);
-    expect({ name, enabled }).toEqual({ name, enabled: true });
-
-    await waitForSubscriptionUpdated(name);
+    await waitForSubscriptionUpdated(name, { timeout: 3000 });
   });
 
   it("adds and removes a built in language filter list", async function () {
@@ -247,7 +197,9 @@ export default () => {
     const langNameGeneralTab = "polski + English";
 
     // Add filterlist on advanced tab
-    await addLanguageFilterlist(langNameAdvancedTab, false);
+    await addLanguageFilterList(langNameAdvancedTab, {
+      isOptionsGeneralTab: false
+    });
 
     // Check filterlist was added on general tab
     await initOptionsGeneralTab(getOptionsHandle());
@@ -281,7 +233,7 @@ export default () => {
     const { toggle, tooltip } = getFLSelectors(name);
 
     // Check that EasyList is enabled
-    let enabled = await isCheckboxEnabled(toggle);
+    let enabled = await isCheckboxPropertyEnabled(toggle);
     expect({ name, enabled }).toEqual({ name, enabled: true });
 
     // Add and disable easylist filter
@@ -302,7 +254,7 @@ export default () => {
       await initOptionsAdvancedTab(getOptionsHandle());
       await clickOnDisplayedElement(firstFilterSelector, { timeout: 1000 });
     }
-    enabled = await isCheckboxEnabled(firstFilterSelector);
+    enabled = await isCheckboxPropertyEnabled(firstFilterSelector);
     expect({ easylistFilter, enabled }).toEqual({
       easylistFilter,
       enabled: false
@@ -318,7 +270,7 @@ export default () => {
     // Reenable filter through tooltip link
     await clickOnDisplayedElement(`${tooltip} [data-action="enable-filters"]`);
     await waitForNotDisplayed(tooltip);
-    enabled = await isCheckboxEnabled(firstFilterSelector);
+    enabled = await isCheckboxPropertyEnabled(firstFilterSelector);
     expect({ easylistFilter, enabled }).toEqual({
       easylistFilter,
       enabled: true

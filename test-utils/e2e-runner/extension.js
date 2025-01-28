@@ -20,7 +20,7 @@ import fs from "fs";
 import AdmZip from "adm-zip";
 
 import { openNewTab } from "./driver.js";
-import { localTestPageUrl } from "../test-server/urls.js";
+import { localTestPageUrl, blockHideLocalhostUrl } from "../test-server/urls.js";
 
 export const subscriptionUrl = "https://abptestpages.org/en/abp-testcase-subscription.txt";
 
@@ -208,8 +208,8 @@ export async function reloadExtension(initOptionsFn, suppressUpdatePage = true) 
       try {
         await driver.navigate().to(`${extension.origin}/options.html`);
         setOptionsHandle(await driver.getWindowHandle());
-        // The timeout parameter is only used by ABP
-        await initOptionsFn(getOptionsHandle(), 10000);
+        // The options parameter is only used by ABP
+        await initOptionsFn(getOptionsHandle(), { timeout: 10000 });
         return true;
       } catch (e) {
         await driver.navigate().refresh();
@@ -291,4 +291,49 @@ export async function removeAllFilters() {
 
     callback();
   });
+}
+
+// Waits for a number to be in range. The number is obtained by executing getNumberFunction
+export async function waitForNumberToBeInRange(min, max, getNumberFunction) {
+  const timeout = 5000;
+
+  let value;
+  try {
+    await driver.wait(async () => {
+      value = await getNumberFunction();
+      return value > min && value <= max;
+    }, timeout);
+  } catch (err) {
+    throw new Error(`Expected value: ${min} < value <= ${max}. Actual value: ${value}`);
+  }
+  return value;
+}
+
+// Blocks ads on blockHideLocalhostUrl between a range, including checking
+export async function blockAds(expectedMinBlocked, expectedMaxBlocked, getPopupBlockedAds) {
+  const timeout = 8000;
+
+  let errorMessage;
+  let adsBlocked;
+  try {
+    // under certain conditions the ads are not being blocked after loading blockHideUrl,
+    // so we have to retry until ads are blocked
+    await driver.wait(async () => {
+      await openNewTab(blockHideLocalhostUrl);
+      try {
+        adsBlocked = await waitForNumberToBeInRange(
+          expectedMinBlocked,
+          expectedMaxBlocked,
+          getPopupBlockedAds,
+        );
+        return true;
+      } catch (err) {
+        errorMessage = err.message;
+      }
+    }, timeout);
+  } catch (e) {
+    throw new Error(`${errorMessage}\nTimed out after ${timeout}ms`);
+  }
+
+  return adsBlocked;
 }

@@ -17,17 +17,21 @@
 
 import { expect } from "expect";
 
-import { findUrl, openNewTab, isCheckboxEnabled } from "@eyeo/test-utils/driver";
+import { findUrl, openNewTab, isCheckboxPropertyEnabled } from "@eyeo/test-utils/driver";
 import { blockHideUrl } from "@eyeo/test-utils/urls";
-import { getOptionsHandle, reloadExtension } from "@eyeo/test-utils/extension";
+import {
+  getOptionsHandle,
+  reloadExtension,
+  waitForNumberToBeInRange,
+} from "@eyeo/test-utils/extension";
 
 import {
   initOptionsFiltersTab,
   getUserIdFromInstallPage,
   getSubscriptionInfo,
   clickFilterlist,
-  waitForAdsBlockedToBeInRange,
   initOptionsGeneralTab,
+  getPopupBlockedAdsTotalCount,
 } from "../../utils/page.js";
 import { defaultFilterLists } from "../../utils/dataset.js";
 import { installUrl } from "../../utils/urls.js";
@@ -94,12 +98,16 @@ export default () => {
     const maxAdsBlocked = 15;
 
     const websiteHandle = await openNewTab(blockHideUrl);
-    const blockedFirst = await waitForAdsBlockedToBeInRange(0, maxAdsBlocked);
+    const blockedFirst = await waitForNumberToBeInRange(
+      0,
+      maxAdsBlocked,
+      getPopupBlockedAdsTotalCount,
+    );
 
     await driver.switchTo().window(websiteHandle);
     await driver.navigate().refresh();
 
-    await waitForAdsBlockedToBeInRange(blockedFirst, maxAdsBlocked);
+    await waitForNumberToBeInRange(blockedFirst, maxAdsBlocked, getPopupBlockedAdsTotalCount);
   });
 
   it("resets settings", async function () {
@@ -146,7 +154,7 @@ export default () => {
     }
 
     await handleDisabledFilterlistsAlert();
-    const aaEnabled = await isCheckboxEnabled(lastCheckboxSelector);
+    const aaEnabled = await isCheckboxPropertyEnabled(lastCheckboxSelector);
     expect(aaEnabled).toEqual(false);
 
     // If the extension is reloaded right after AA is disabled,

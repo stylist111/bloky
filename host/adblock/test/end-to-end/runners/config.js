@@ -1,3 +1,20 @@
+/*
+ * This file is part of AdBlock  <https://getadblock.com/>,
+ * Copyright (C) 2024-present  Adblock, Inc.
+ *
+ * AdBlock is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * AdBlock is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AdBlock.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import path from "path";
 import { installUrl } from "../utils/urls.js";
 
@@ -7,6 +24,8 @@ const endToEndPath = path.join(process.cwd(), "test", "end-to-end");
 const buildsDirPath = path.join(process.cwd(), "dist", "release");
 // Path to downloaded extension zip files from the latest released build
 const liveBuildsDirPath = path.join(process.cwd(), "dist", "live");
+// Name of the host extension folder in /hosts
+const hostname = "adblock";
 
 export const runnerConfig = {
   // The browser name to use for the tests
@@ -21,11 +40,10 @@ export const runnerConfig = {
   helperExtensionPath: path.join(process.cwd(), "dist", "devenv", "helper-extension"),
   buildsDirPath,
   // Path to the unpacked extension
-  unpackedDirPath: path.join(buildsDirPath, "adblock-unpacked"),
+  unpackedDirPath: path.join(buildsDirPath, `${hostname}-unpacked`),
   liveBuildsDirPath,
   // Path to the unpacked upgrade extension
-  unpackedUpgradeDirPath: path.join(liveBuildsDirPath, "adblock-upgrade-unpacked"),
-  // Name of the host extension folder in /hosts
-  hostname: "adblock",
+  unpackedUpgradeDirPath: path.join(liveBuildsDirPath, `${hostname}-upgrade-unpacked`),
+  hostname,
   installUrl,
 };

@@ -21,13 +21,13 @@ import { By } from "selenium-webdriver";
 
 import {
   getDisplayedElement,
-  isCheckboxEnabled,
-  openNewTab,
+  isCheckboxPropertyEnabled,
   waitForNotDisplayed,
   clickOnDisplayedElement,
 } from "@eyeo/test-utils/driver";
-import { blockHideLocalhostUrl, aaTestPageUrl } from "@eyeo/test-utils/urls";
-import { getOptionsHandle, upgradeExtension } from "@eyeo/test-utils/extension";
+import { aaTestPageUrl } from "@eyeo/test-utils/urls";
+import { getOptionsHandle, upgradeExtension, blockAds } from "@eyeo/test-utils/extension";
+import { customBlockingFilter } from "@eyeo/test-utils/filters";
 
 import {
   initOptionsGeneralTab,
@@ -41,39 +41,13 @@ import {
   enablePremiumProgrammatically,
   initOptionsPremiumFlTab,
   getCustomFilters,
-  waitForAdsBlockedToBeInRange,
 } from "../utils/page.js";
 import { defaultFilterLists, premiumFilterLists, languageFilterLists } from "../utils/dataset.js";
-
-async function blockAds(expectedMinBlocked, expectedMaxBlocked) {
-  const timeout = 8000;
-
-  let errorMessage;
-  let adsBlocked;
-  try {
-    // under certain conditions the ads are not being blocked after loading blockHideUrl,
-    // so we have to retry until ads are blocked
-    await driver.wait(async () => {
-      await openNewTab(blockHideLocalhostUrl);
-      try {
-        adsBlocked = await waitForAdsBlockedToBeInRange(expectedMinBlocked, expectedMaxBlocked);
-        return true;
-      } catch (err) {
-        errorMessage = err.message;
-      }
-    }, timeout);
-  } catch (e) {
-    throw new Error(`${errorMessage}\nTimed out after ${timeout}ms`);
-  }
-
-  return adsBlocked;
-}
 
 export default () => {
   it("keeps settings after upgrade", async function () {
     this.timeout(100000); // Long test with many checks, including the extension reload
 
-    const customBlockingFilter = "localhost*js/test-script.js";
     const maxAdsBlocked = 15;
     const prevExtVersion = extension.version;
 
@@ -84,7 +58,11 @@ export default () => {
     await initOptionsPremiumFlTab(getOptionsHandle());
     for (const { checkboxSelector, text } of premiumFilterLists) {
       await clickOnDisplayedElement(`span:has(> ${checkboxSelector})`);
-      await driver.wait(isCheckboxEnabled(checkboxSelector), 2000, `${text} is not enabled`);
+      await driver.wait(
+        async () => isCheckboxPropertyEnabled(checkboxSelector),
+        2000,
+        `${text} is not enabled`,
+      );
     }
 
     // turn off the counter on the extension icon
@@ -92,7 +70,7 @@ export default () => {
     await clickOnDisplayedElement("span:has(> #prefs__show_statsinicon)");
     await driver.wait(
       async () => {
-        return !(await isCheckboxEnabled("#prefs__show_statsinicon"));
+        return !(await isCheckboxPropertyEnabled("#prefs__show_statsinicon"));
       },
       2000,
       "Counter on the extension icon is still on",
@@ -141,7 +119,7 @@ export default () => {
     await getDisplayedElement("#language_select");
     await driver.findElement(By.css(`#language_select > option[value="${langList.name}"]`)).click();
     await driver.wait(
-      isCheckboxEnabled(langList.checkboxSelector),
+      async () => isCheckboxPropertyEnabled(langList.checkboxSelector),
       2000,
       `${langList.text} is not enabled`,
     );
@@ -152,7 +130,7 @@ export default () => {
     await setCustomFilters([customBlockingFilter], true);
 
     // ads should be blocked before the domain is allowlisted
-    const blockedBeforeUpgrade = await blockAds(0, maxAdsBlocked);
+    const blockedBeforeUpgrade = await blockAds(0, maxAdsBlocked, getPopupBlockedAdsTotalCount);
 
     // allowlist the page
     // The URL used here cannot be localTestPageUrl because it interferes with
@@ -173,7 +151,7 @@ export default () => {
     expect(await getPopupBlockedAdsTotalCount()).toBeGreaterThanOrEqual(blockedBeforeUpgrade);
 
     // check if blocked ads are still increasing
-    await blockAds(blockedBeforeUpgrade, maxAdsBlocked);
+    await blockAds(blockedBeforeUpgrade, maxAdsBlocked, getPopupBlockedAdsTotalCount);
 
     // check if premium filterlists are still enabled and can be changed
     await initOptionsPremiumFlTab(getOptionsHandle());
@@ -181,7 +159,7 @@ export default () => {
       await clickOnDisplayedElement(`span:has(> ${checkboxSelector})`);
       await driver.wait(
         async () => {
-          return !(await isCheckboxEnabled(checkboxSelector));
+          return !(await isCheckboxPropertyEnabled(checkboxSelector));
         },
         2000,
         `${text} is still enabled`,
@@ -192,7 +170,7 @@ export default () => {
     await initOptionsGeneralTab(getOptionsHandle());
     await clickOnDisplayedElement("span:has(> #prefs__show_statsinicon)");
     await driver.wait(
-      isCheckboxEnabled("#prefs__show_statsinicon"),
+      async () => isCheckboxPropertyEnabled("#prefs__show_statsinicon"),
       2000,
       "Counter on the extension icon is still off",
     );
@@ -221,7 +199,7 @@ export default () => {
           `${list.text} is still subscribed`,
         );
       }
-      expect(await isCheckboxEnabled(list.checkboxSelector)).toEqual(list.enabled);
+      expect(await isCheckboxPropertyEnabled(list.checkboxSelector)).toEqual(list.enabled);
     }
 
     // check if custom filters are still there and can be changed

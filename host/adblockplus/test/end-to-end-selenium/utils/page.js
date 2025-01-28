@@ -16,14 +16,15 @@
  */
 
 import { expect } from "expect";
+import { By } from "selenium-webdriver";
 import moment from "moment";
 
 import { localTestPageUrl } from "@eyeo/test-utils/urls";
 import {
   getDisplayedElement,
   waitForNotDisplayed,
-  waitForNotNullProperty,
-  isCheckboxEnabled,
+  waitForCheckboxStatus,
+  isCheckboxPropertyEnabled,
   clickOnDisplayedElement,
   openNewTab,
   getTabId
@@ -168,17 +169,28 @@ async function loadOptionsTab(optionsHandle, id, timeout = 5000) {
   );
 }
 
-export async function clickFLToggleAndCheck(cssSelector, enabledAfterClick) {
-  await clickOnDisplayedElement(cssSelector);
-  const text = enabledAfterClick ? "enabled" : "disabled";
-  await driver.wait(
-    async () => {
-      return (await isCheckboxEnabled(cssSelector)) === enabledAfterClick;
-    },
-    1000,
-    `The filterlist "${cssSelector}" was not ${text} after clicking`
-  );
-  await driver.sleep(500); // let the UI toggle move
+export async function clickFLCheckboxAndCheck(
+  checkboxSelector,
+  { enable = true, isToggle = false, name } = {}
+) {
+  const enabledBeforeClick = !enable;
+
+  const enabled = await isCheckboxPropertyEnabled(checkboxSelector);
+  expect({ name, enabledBeforeClick: enabled }).toEqual({
+    name,
+    enabledBeforeClick
+  });
+
+  await clickOnDisplayedElement(checkboxSelector);
+  await waitForCheckboxStatus(checkboxSelector, {
+    expectEnabled: enable,
+    isProperty: true,
+    name
+  });
+
+  if (isToggle) {
+    await driver.sleep(500); // let the UI toggle move
+  }
 }
 
 export async function initPopupPage(tabId) {
@@ -197,14 +209,13 @@ export async function initPopupWithLocalPage() {
 
 export async function initOptionsGeneralTab(
   optionsHandle,
-  timeout = 5000,
-  waitForDefaultState = false
+  { timeout = 5000, waitForDefaultState = false } = {}
 ) {
   await loadOptionsTab(optionsHandle, "tab-general", timeout);
   await getDisplayedElement("#free-list-table", { timeout });
   if (waitForDefaultState) {
     await driver.wait(
-      async () => waitForNotNullProperty("#acceptable-ads-allow", "checked"),
+      async () => isCheckboxPropertyEnabled("#acceptable-ads-allow"),
       timeout,
       "Acceptable Ads is disabled before clicking"
     );
@@ -241,13 +252,30 @@ export async function setAADefaultState() {
   const checkboxSelector = "#acceptable-ads-allow";
 
   await initOptionsGeneralTab(getOptionsHandle());
-  const aaEnabled = await isCheckboxEnabled(checkboxSelector);
+  const aaEnabled = await isCheckboxPropertyEnabled(checkboxSelector);
   if (!aaEnabled) {
-    await clickFLToggleAndCheck(checkboxSelector, true);
+    await clickFLCheckboxAndCheck(checkboxSelector, {
+      enable: true,
+      name: "Acceptable Ads"
+    });
   }
 }
 
-export async function setCustomFilters(filters) {
+export async function getCustomFilters() {
+  await initOptionsAdvancedTab(getOptionsHandle());
+
+  const filterElems = await driver.findElements(
+    By.css('#custom-filters io-filter-list tr [data-column="rule"] .content')
+  );
+  const filters = [];
+  for (const elem of filterElems) {
+    filters.push(await elem.getText());
+  }
+
+  return filters;
+}
+
+export async function addCustomFilters(filters) {
   await initOptionsAdvancedTab(getOptionsHandle());
 
   const customFiltersInput = await getDisplayedElement("#custom-filters input");
@@ -257,6 +285,28 @@ export async function setCustomFilters(filters) {
     await waitForNotDisplayed("#custom-filters button[disabled]");
     await clickOnDisplayedElement("#custom-filters button");
   }
+}
+
+export async function deleteCustomFilters() {
+  await initOptionsAdvancedTab(getOptionsHandle());
+
+  const checkboxSelector =
+    '#custom-filters thead [data-column="selected"] button';
+  await clickOnDisplayedElement(checkboxSelector, { scrollIntoView: true });
+  await waitForCheckboxStatus(checkboxSelector, {
+    expectEnabled: true,
+    isProperty: false
+  });
+
+  // even if displayed, the delete button may be ineffective right after
+  // checking the filters. Sleeping as a workaround
+  await driver.sleep(1000);
+  await clickOnDisplayedElement("#custom-filters button.delete");
+  await driver.wait(
+    async () => (await getCustomFilters()).length === 0,
+    1000,
+    "Custom filters were not deleted"
+  );
 }
 
 export async function setPausedStateFromPopup(url, paused = true) {
@@ -280,11 +330,8 @@ export async function setPausedStateFromPopup(url, paused = true) {
     timeout: 5000,
     forceRefresh: false
   });
-  const isToggleSelected = await waitForNotNullProperty(
-    websiteAllowlistBtnSelector,
-    "checked"
-  );
-  expect(isToggleSelected).not.toEqual(paused);
+  const enabled = await isCheckboxPropertyEnabled(websiteAllowlistBtnSelector);
+  expect(enabled).not.toEqual(paused);
   await driver.close();
 
   await driver.switchTo().window(websiteHandle);
@@ -339,23 +386,6 @@ export async function programaticallyAddFilters(filters) {
   }
 }
 
-export async function waitForAdsBlockedToBeInRange(min, max) {
-  const timeout = 5000;
-
-  let adsBlocked;
-  try {
-    await driver.wait(async () => {
-      adsBlocked = await getPopupBlockedAdsTotalCount();
-      return adsBlocked > min && adsBlocked <= max;
-    }, timeout);
-  } catch (err) {
-    throw new Error(
-      `Unexpected ads blocked count after ${timeout}ms. Expected: ${min} < value <= ${max}. Actual: ${adsBlocked}`
-    );
-  }
-  return adsBlocked;
-}
-
 export async function checkPremiumActivated({
   timeout = 30000,
   retry = 0,
@@ -390,7 +420,9 @@ export async function checkPremiumActivated({
 }
 
 export async function enablePremiumProgrammatically() {
-  await initOptionsGeneralTab(getOptionsHandle());
+  await initOptionsGeneralTab(getOptionsHandle(), {
+    waitForDefaultState: true
+  });
 
   const error = await driver.executeAsyncScript(async (callback) => {
     try {
@@ -442,7 +474,7 @@ export async function waitForSubscriptionUpdated(
       await driver.navigate().refresh();
       await initOptionsAdvancedTab(getOptionsHandle());
 
-      const flEnabled = await isCheckboxEnabled(toggle);
+      const flEnabled = await isCheckboxPropertyEnabled(toggle);
       try {
         const lastUpdatedElem = await getDisplayedElement(lastUpdate, {
           timeout: 800,
@@ -456,4 +488,119 @@ export async function waitForSubscriptionUpdated(
     timeout,
     `${name} was not updated`
   );
+}
+
+async function getPopupLanguageFilterLists(isOptionsGeneralTab) {
+  const popupSelector = isOptionsGeneralTab
+    ? "#languages-boxpopup"
+    : "#filters-boxpopup";
+
+  // Poll until elements are not stale
+  let languageElems;
+  await driver.wait(
+    async () => {
+      languageElems = await driver.findElements(By.css(`${popupSelector} li`));
+      try {
+        await languageElems[languageElems.length - 1].getText();
+        return true;
+      } catch (err) {
+        if (err.name !== "StaleElementReferenceError") {
+          throw err;
+        }
+      }
+    },
+    2000,
+    "Language elements text is not avaliable"
+  );
+
+  return languageElems;
+}
+
+export async function getLanguageFilterLists(isOptionsGeneralTab) {
+  const boxSelector = isOptionsGeneralTab ? "#languages-box" : "#filters-box";
+  await clickOnDisplayedElement(boxSelector, { scrollIntoView: true });
+
+  return await getPopupLanguageFilterLists(isOptionsGeneralTab);
+}
+
+async function checkLanguageFilterList(
+  langName,
+  { isAdded = true, isOptionsGeneralTab = true } = {}
+) {
+  const timeout = 2000;
+  const tableSelector = isOptionsGeneralTab
+    ? "#blocking-languages-table"
+    : "#all-filter-lists-table";
+  const filterlistSelector = `${tableSelector} [aria-label="${langName}"]`;
+  if (isAdded) {
+    await getDisplayedElement(filterlistSelector, {
+      timeout,
+      forceRefresh: false
+    });
+  } else {
+    await waitForNotDisplayed(filterlistSelector, timeout);
+  }
+
+  return filterlistSelector;
+}
+
+export async function addLanguageFilterList(
+  langName,
+  { isOptionsGeneralTab = true, isLanguagesPopupOpen = false } = {}
+) {
+  const languageElems = isLanguagesPopupOpen
+    ? await getPopupLanguageFilterLists(isOptionsGeneralTab)
+    : await getLanguageFilterLists(isOptionsGeneralTab);
+
+  let langElem;
+  let prevText;
+  for (const elem of languageElems) {
+    let text;
+    try {
+      text = await elem.getText();
+    } catch (err) {
+      if (err.name !== "StaleElementReferenceError") {
+        throw err;
+      }
+
+      console.warn(
+        `The element after "${prevText}" threw a StaleElementReferenceError. Skipping it`
+      );
+      continue;
+    }
+
+    if (text.startsWith(langName)) {
+      langElem = elem;
+      prevText = text;
+      break;
+    }
+  }
+  if (!langElem) {
+    const text = isOptionsGeneralTab ? "languages box" : "filters box";
+    throw new Error(`${langName} EasyList was not found on ${text}`);
+  }
+  await langElem.click();
+
+  await checkLanguageFilterList(langName, { isOptionsGeneralTab });
+}
+
+export async function changeLanguageFilterList(langNameBefore, langNameAfter) {
+  const isOptionsGeneralTab = true;
+  const flSelector = await checkLanguageFilterList(langNameBefore, {
+    isAdded: true,
+    isOptionsGeneralTab
+  });
+
+  const changeFilterlistSelector = `${flSelector} [data-action="open-languages-box"]`;
+  await clickOnDisplayedElement(changeFilterlistSelector);
+  // Clicking on changeFilterlistSelector opens the languages popup
+  await addLanguageFilterList(langNameAfter, {
+    isOptionsGeneralTab,
+    isLanguagesPopupOpen: true
+  });
+  // Check langNameBefore list has been removed
+  await checkLanguageFilterList(langNameBefore, {
+    isAdded: false,
+    isOptionsGeneralTab
+  });
 }

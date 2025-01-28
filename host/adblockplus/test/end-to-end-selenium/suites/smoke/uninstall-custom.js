@@ -18,13 +18,13 @@
 import {
   clickOnDisplayedElement,
   findUrl,
-  waitForNotNullProperty
+  isCheckboxPropertyEnabled
 } from "@eyeo/test-utils/driver";
 import {
   checkInstallUninstallUrl,
   initOptionsGeneralTab,
   initOptionsAdvancedTab,
-  clickFLToggleAndCheck,
+  clickFLCheckboxAndCheck,
   getFLSelectors
 } from "../../utils/page.js";
 import {
@@ -43,8 +43,13 @@ export default () => {
     });
 
     // disable AA
-    await initOptionsGeneralTab(getOptionsHandle(), 5000, true);
-    await clickFLToggleAndCheck("#acceptable-ads-allow", false);
+    await initOptionsGeneralTab(getOptionsHandle(), {
+      waitForDefaultState: true
+    });
+    await clickFLCheckboxAndCheck("#acceptable-ads-allow", {
+      enable: false,
+      name: "Acceptable Ads"
+    });
 
     // disable easylist
     await initOptionsAdvancedTab(getOptionsHandle());
@@ -52,10 +57,7 @@ export default () => {
     const { toggle } = getFLSelectors(name);
     await clickOnDisplayedElement(toggle);
     await driver.wait(
-      async () => {
-        const value = await waitForNotNullProperty(toggle, "checked");
-        return value === false;
-      },
+      async () => !(await isCheckboxPropertyEnabled(toggle)),
       2000,
       "Easylist still enabled after clicking on the toggle"
     );

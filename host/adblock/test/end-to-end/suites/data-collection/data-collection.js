@@ -17,7 +17,7 @@
 
 import { expect } from "expect";
 
-import { isCheckboxEnabled, waitForNotDisplayed } from "@eyeo/test-utils/driver";
+import { isCheckboxPropertyEnabled, waitForNotDisplayed } from "@eyeo/test-utils/driver";
 import { getOptionsHandle } from "@eyeo/test-utils/extension";
 
 import { initOptionsGeneralTab } from "../../utils/page.js";
@@ -29,7 +29,7 @@ export default () => {
     }
 
     await initOptionsGeneralTab(getOptionsHandle());
-    const dataCollectionOptOut = await isCheckboxEnabled("#prefs__data_collection_opt_out");
+    const dataCollectionOptOut = await isCheckboxPropertyEnabled("#prefs__data_collection_opt_out");
     expect(dataCollectionOptOut).toEqual(true);
     await waitForNotDisplayed("//label[@for='enable_data_collection_v2']");
     await waitForNotDisplayed("//label[@for='prefs__send_ad_wall_messages']");

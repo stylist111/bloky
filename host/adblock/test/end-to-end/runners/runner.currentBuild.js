@@ -26,7 +26,7 @@ import {
 import { runnerConfig } from "./config.js";
 import defineTestSuites from "../suites/index.js";
 
-describe("AdBlock end-to-end tests", function () {
+describe("AdBlock end-to-end tests - Regular", function () {
   before(() => setGlobalOptionsHook(runnerConfig));
 
   before(async function () {

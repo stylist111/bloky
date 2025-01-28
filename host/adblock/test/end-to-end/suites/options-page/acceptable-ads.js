@@ -18,7 +18,7 @@
 import { expect } from "expect";
 
 import {
-  isCheckboxEnabled,
+  isCheckboxPropertyEnabled,
   getDisplayedElement,
   clickOnDisplayedElement,
 } from "@eyeo/test-utils/driver";
@@ -38,26 +38,26 @@ export default () => {
   it("displays AA default state", async function () {
     await initOptionsGeneralTab(getOptionsHandle());
     await driver.wait(
-      isCheckboxEnabled("#acceptable_ads"),
+      async () => isCheckboxPropertyEnabled("#acceptable_ads"),
       5000,
       `Acceptable Ads is not enabled by default`,
     );
-    const aaPrivacyEnabled = await isCheckboxEnabled("#acceptable_ads_privacy");
+    const aaPrivacyEnabled = await isCheckboxPropertyEnabled("#acceptable_ads_privacy");
     expect(aaPrivacyEnabled).toEqual(false);
 
     await initOptionsFiltersTab(getOptionsHandle());
-    const aaFLEnabled = await isCheckboxEnabled("#adblockFilterList_0");
+    const aaFLEnabled = await isCheckboxPropertyEnabled("#adblockFilterList_0");
     expect(aaFLEnabled).toEqual(true);
-    const aaFLPrivacyEnabled = await isCheckboxEnabled("#adblockFilterList_1");
+    const aaFLPrivacyEnabled = await isCheckboxPropertyEnabled("#adblockFilterList_1");
     expect(aaFLPrivacyEnabled).toEqual(false);
   });
 
   it("only allows ads without third-party tracking", async function () {
     await initOptionsGeneralTab(getOptionsHandle());
-    let aaPrivacyEnabled = await isCheckboxEnabled("#acceptable_ads_privacy");
+    let aaPrivacyEnabled = await isCheckboxPropertyEnabled("#acceptable_ads_privacy");
     expect(aaPrivacyEnabled).toEqual(false);
     await clickOnDisplayedElement("label:has(> #acceptable_ads_privacy)");
-    aaPrivacyEnabled = await isCheckboxEnabled("#acceptable_ads_privacy");
+    aaPrivacyEnabled = await isCheckboxPropertyEnabled("#acceptable_ads_privacy");
     expect(aaPrivacyEnabled).toEqual(true);
     const aaPrivacyHelper = await getDisplayedElement("#aa-privacy-helper > span", {
       timeout: 4000,
@@ -67,13 +67,13 @@ export default () => {
     );
 
     await initOptionsFiltersTab(getOptionsHandle());
-    const aaFLPrivacyEnabled = await isCheckboxEnabled("#adblockFilterList_1");
+    const aaFLPrivacyEnabled = await isCheckboxPropertyEnabled("#adblockFilterList_1");
     expect(aaFLPrivacyEnabled).toEqual(true);
   });
 
   it("disables allow AA", async function () {
     await initOptionsGeneralTab(getOptionsHandle());
-    const aaEnabled = await isCheckboxEnabled("#acceptable_ads");
+    const aaEnabled = await isCheckboxPropertyEnabled("#acceptable_ads");
     const aaCheckbox = await getDisplayedElement("span:has(> #acceptable_ads)");
     if (!aaEnabled) {
       // Enables AA so it can be disabled afterwards to get the info message
@@ -88,11 +88,11 @@ export default () => {
     expect(await aaInfo.getText()).toEqual(
       "You're no longer subscribed to the Acceptable Ads filter list.",
     );
-    const aaPrivacyEnabled = await isCheckboxEnabled("#acceptable_ads_privacy");
+    const aaPrivacyEnabled = await isCheckboxPropertyEnabled("#acceptable_ads_privacy");
     expect(aaPrivacyEnabled).toEqual(false);
 
     await initOptionsFiltersTab(getOptionsHandle());
-    const aaFLEnabled = await isCheckboxEnabled("#adblockFilterList_0");
+    const aaFLEnabled = await isCheckboxPropertyEnabled("#adblockFilterList_0");
     expect(aaFLEnabled).toEqual(false);
   });
 };

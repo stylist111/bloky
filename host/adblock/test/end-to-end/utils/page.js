@@ -24,7 +24,7 @@ import {
   openNewTab,
   findUrl,
   waitForNotNullProperty,
-  isCheckboxEnabled,
+  isCheckboxPropertyEnabled,
   waitForNotDisplayed,
   clickAndCloseNewTab,
   getTabId,
@@ -218,7 +218,7 @@ export async function clickFilterlist(name, checkboxSelector, enabledAfterClick)
   const text = enabledAfterClick ? "enabled" : "disabled";
   await driver.wait(
     async () => {
-      return (await isCheckboxEnabled(checkboxSelector)) === enabledAfterClick;
+      return (await isCheckboxPropertyEnabled(checkboxSelector)) === enabledAfterClick;
     },
     1000,
     `The filterlist "${name}" was not ${text} after clicking`,
@@ -347,7 +347,7 @@ export async function setAADefaultState() {
   const checkboxSelector = "#adblockFilterList_0";
 
   await initOptionsFiltersTab(getOptionsHandle());
-  const aaEnabled = await isCheckboxEnabled(checkboxSelector);
+  const aaEnabled = await isCheckboxPropertyEnabled(checkboxSelector);
   // Cleanup setting the AA default state
   if (!aaEnabled) {
     await clickFilterlist(name, checkboxSelector, true);
@@ -363,7 +363,7 @@ export async function waitForSubscribed(
 
   await driver.wait(
     async () => {
-      const flEnabled = await isCheckboxEnabled(checkboxSelector);
+      const flEnabled = await isCheckboxPropertyEnabled(checkboxSelector);
       const text = await getSubscriptionInfo(name);
       return flEnabled && regexp.test(text);
     },
@@ -462,21 +462,4 @@ export async function enablePremiumProgrammatically() {
   if (!expectedValues.includes(premiumStatusText)) {
     throw new Error(`Unexpected premium status after activation: ${premiumStatusText}`);
   }
-}
-
-export async function waitForAdsBlockedToBeInRange(min, max) {
-  const timeout = 5000;
-
-  let adsBlocked;
-  try {
-    await driver.wait(async () => {
-      adsBlocked = await getPopupBlockedAdsTotalCount();
-      return adsBlocked > min && adsBlocked <= max;
-    }, timeout);
-  } catch (err) {
-    throw new Error(
-      `Unexpected ads blocked count after ${timeout}ms. Expected: ${min} < value <= ${max}. Actual: ${adsBlocked}`,
-    );
-  }
-  return adsBlocked;
 }

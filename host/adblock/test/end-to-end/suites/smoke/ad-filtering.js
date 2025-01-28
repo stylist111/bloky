@@ -21,7 +21,7 @@ import { By } from "selenium-webdriver";
 import {
   getDisplayedElement,
   openNewTab,
-  isCheckboxEnabled,
+  isCheckboxPropertyEnabled,
   waitForNotDisplayed,
 } from "@eyeo/test-utils/driver";
 import { blockHideUrl, aaTestPageUrl, snippetTestPageUrl } from "@eyeo/test-utils/urls";
@@ -120,8 +120,7 @@ export default () => {
 
     await initOptionsFiltersTab(getOptionsHandle());
     await driver.wait(
-      // https://eyeo.atlassian.net/browse/EXT-446
-      isCheckboxEnabled(aaFLButtonSelector),
+      async () => isCheckboxPropertyEnabled(aaFLButtonSelector),
       2000,
       `Acceptable Ads is not enabled by default`,
     );

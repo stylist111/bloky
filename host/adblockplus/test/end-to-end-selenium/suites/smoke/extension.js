@@ -21,18 +21,22 @@ import {
   clickOnDisplayedElement,
   findUrl,
   getDisplayedElement,
+  isCheckboxPropertyEnabled,
   openNewTab,
-  waitForNotDisplayed,
-  waitForNotNullProperty
+  waitForNotDisplayed
 } from "@eyeo/test-utils/driver";
-import { getOptionsHandle, reloadExtension } from "@eyeo/test-utils/extension";
+import {
+  getOptionsHandle,
+  reloadExtension,
+  waitForNumberToBeInRange
+} from "@eyeo/test-utils/extension";
 import {
   checkInstallUninstallUrl,
-  waitForAdsBlockedToBeInRange,
   initOptionsAdvancedTab,
   initPopupPage,
   initOptionsGeneralTab,
-  getFLSelectors
+  getFLSelectors,
+  getPopupBlockedAdsTotalCount
 } from "../../utils/page.js";
 import { blockHideUrl } from "@eyeo/test-utils/urls";
 import { installUrl } from "../../utils/urls.js";
@@ -54,12 +58,20 @@ export default () => {
     const maxAdsBlocked = 15;
 
     const websiteHandle = await openNewTab(blockHideUrl);
-    const blockedFirst = await waitForAdsBlockedToBeInRange(0, maxAdsBlocked);
+    const blockedFirst = await waitForNumberToBeInRange(
+      0,
+      maxAdsBlocked,
+      getPopupBlockedAdsTotalCount
+    );
 
     await driver.switchTo().window(websiteHandle);
     await driver.navigate().refresh();
 
-    await waitForAdsBlockedToBeInRange(blockedFirst, maxAdsBlocked);
+    await waitForNumberToBeInRange(
+      blockedFirst,
+      maxAdsBlocked,
+      getPopupBlockedAdsTotalCount
+    );
   });
 
   it("resets settings", async function () {
@@ -118,14 +130,16 @@ export default () => {
     const actualFilterLists = [];
     for (const { name } of defaultFilterLists) {
       const { toggle } = getFLSelectors(name);
-      const value = await waitForNotNullProperty(toggle, "checked");
-      actualFilterLists.push({ name, enabled: value });
+      const enabled = await isCheckboxPropertyEnabled(toggle);
+      actualFilterLists.push({ name, enabled });
     }
     expect(actualFilterLists).toEqual(defaultFilterLists);
 
     // check reset settings notification in popup
     await initPopupPage();
-    const notification = await getDisplayedElement("#notification-message");
+    const notification = await getDisplayedElement("#notification-message", {
+      timeout: 1000
+    });
     expect(await notification.getText()).toContain(
       "An issue has caused your ABP settings to be reset to default"
     );
