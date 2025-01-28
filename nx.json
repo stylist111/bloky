@@ -27,12 +27,6 @@
         "{projectRoot}/dist/devenv/local-mv2"
       ]
     },
-    "test": {
-      "cache": true,
-      "dependsOn": [
-        "build"
-      ]
-    },
     "lint": {
       "cache": false,
       "dependsOn": [
