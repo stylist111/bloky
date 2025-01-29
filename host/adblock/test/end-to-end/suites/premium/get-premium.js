@@ -22,7 +22,6 @@ import {
   findUrl,
   openNewTab,
   waitForNotDisplayed,
-  scrollToBottom,
   clickOnDisplayedElement,
   clickAndSendKeys,
 } from "@eyeo/test-utils/driver";
@@ -50,22 +49,12 @@ export default () => {
 
     const { url } = await findUrl(premiumUrl);
     await driver.navigate().to(`${url}&testmode`);
-    await clickOnDisplayedElement('[data-plan="me"]');
+    await clickOnDisplayedElement("#get-premium-monthly");
 
-    await scrollToBottom();
-
-    await clickOnDisplayedElement('[i18n="complete_purchase"]', { timeout: 5000 });
-    try {
-      await driver.switchTo().frame("paddle_frame");
-    } catch (err) {
-      // First click didn't work, retrying
-      await clickOnDisplayedElement('[i18n="complete_purchase"]', { timeout: 5000 });
-      await driver.switchTo().frame("paddle_frame");
-    }
-
+    await driver.switchTo().frame("paddle_frame");
     // First paying page
     // The first field of the loaded frame may take a while to appear
-    clickAndSendKeys("#email > input", getPremiumEmail(), { timeout: 10000 });
+    await clickAndSendKeys("#email > input", getPremiumEmail(), { timeout: 10000 });
     try {
       await clickAndSendKeys('[data-testid="postcodeInput"]', "10115", {
         timeout: 5000,
@@ -81,7 +70,7 @@ export default () => {
     await clickOnDisplayedElement('[data-testid="cardPaymentFormSubmitButton"]');
 
     await driver.switchTo().defaultContent();
-    await clickOnDisplayedElement('[i18n="get_started_cta"]', { timeout: 20000 });
+    await clickOnDisplayedElement("#premium-activation-features-link", { timeout: 20000 });
 
     await driver.switchTo().window(getOptionsHandle());
     await driver.navigate().refresh();
@@ -100,7 +89,7 @@ export default () => {
 
     await clickOnDisplayedElement('[data-key="options_page"][data-theme="dark_theme"]');
     // Check dark theme is displayed on options page
-    await getDisplayedElement("#dark_theme");
+    await getDisplayedElement("#dark_theme", { timeout: 5000 });
 
     await clickOnDisplayedElement('[data-key="popup_menu"][data-theme="dark_theme"]');
     await initPopupWithLocalPage();
