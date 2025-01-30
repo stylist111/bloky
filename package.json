@@ -5,6 +5,7 @@
   "workspaces": [
     "host/*",
     "fragment/*",
+    "fragment/test/test-extension",
     "core/*",
     "core/sdk/adblockpluscore",
     "ui-components",
