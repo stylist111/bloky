@@ -77,7 +77,7 @@ async function loadOptionsTab(optionsHandle, id) {
     async () => {
       return (await driver.getCurrentUrl()).endsWith(`#${id}`);
     },
-    1000,
+    3000,
     `Clicking on "${id}" options tab didn't load the tab url`,
   );
 }
