@@ -418,9 +418,10 @@ const SyncService = (function getSyncService() {
     const metadataList = await Promise.all(metadataPromises);
 
     // Remove the temporary allowlist filters and global pause filters
-    return metadataList.filter(
-      ({ filter, metadata = {} }) => metadata.expiresByTabId || globalPauseFilters.has(filter),
-    );
+    return filters.filter((filter, index) => {
+      const { metadata = {} } = metadataList[index];
+      return !metadata.expiresByTabId && !globalPauseFilters.has(filter);
+    });
   }
 
   const processSyncUpdate = async function (payload) {
