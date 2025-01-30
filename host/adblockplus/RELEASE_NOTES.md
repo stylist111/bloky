@@ -1,5 +1,7 @@
 # Unreleased
 
+- Open new tab campaigns per extension release for all browsers (IM-230)
+
 # 4.12.0 - 2025-01-27
 
 - Saving of downloaded filters to IndexedDB can now continue if the database was

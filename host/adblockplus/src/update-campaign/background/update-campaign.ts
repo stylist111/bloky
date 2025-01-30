@@ -56,11 +56,6 @@ async function openUpdatePage(): Promise<void> {
 async function handleUpdateCampaign(): Promise<void> {
   await Prefs.untilLoaded;
 
-  // Only open campaign for Firefox users
-  if (info.platform !== "gecko") {
-    return;
-  }
-
   // For testing purposes, we can block opening campaigns on extension updates
   if (Prefs.get("suppress_first_run_page")) {
     return;
