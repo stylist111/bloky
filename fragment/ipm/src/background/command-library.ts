@@ -277,38 +277,41 @@ export function executeIPMCommands(
   const actorByExecutableCommand = new Map<Command, CommandActor>();
 
   if (commands.length > maximumProcessableCommands) {
-    logger.error("[ipm]: Too many commands received.");
+    logger.reportAndLogError(new Error("[ipm]: Too many commands received."));
     recordGenericEvent("too_many_commands");
     return;
   }
 
   for (const command of commands) {
     if (!isCommand(command)) {
-      logger.error("[ipm]: Invalid command received.");
+      logger.reportAndLogError(new Error("[ipm]: Invalid command received."));
       continue;
     }
 
     if (!knownCommandsList.includes(command.command_name)) {
-      logger.error(
-        "[ipm]: Unknown command name received:",
-        command.command_name,
+      logger.reportAndLogError(
+        new Error(
+          `[ipm]: Unknown command name received: ${command.command_name}`,
+        ),
       );
       continue;
     }
 
     if (command.version !== CommandVersion[command.command_name]) {
-      logger.error(
-        `[ipm]: Command version mismatch for command "${
-          command.command_name
-        }". Requested version was ${command.version}, version present is ${
-          CommandVersion[command.command_name]
-        }`,
+      logger.reportAndLogError(
+        new Error(
+          `[ipm]: Command version mismatch for command "${
+            command.command_name
+          }". Requested version was ${command.version}, version present is ${
+            CommandVersion[command.command_name]
+          }`,
+        ),
       );
       continue;
     }
 
     if (isCommandExpired(command)) {
-      logger.error("[ipm]: Command has expired.");
+      logger.reportAndLogError(new Error("[ipm]: Command has expired."));
       recordEvent(
         command.ipm_id,
         command.command_name,
@@ -331,7 +334,9 @@ export function executeIPMCommands(
     }
 
     if (!actor.isValidCommand(command)) {
-      logger.error("[ipm]: Invalid parameters received.");
+      logger.reportAndLogError(
+        new Error("[ipm]: Invalid parameters received."),
+      );
       continue;
     }
 
@@ -345,7 +350,9 @@ export function executeIPMCommands(
 
     if (!isInitialization) {
       if (hasProcessedCommand(command.ipm_id)) {
-        logger.error("[ipm]: Campaign already processed:", command.ipm_id);
+        logger.reportAndLogError(
+          new Error(`[ipm]: Campaign already processed: ${command.ipm_id}`),
+        );
         continue;
       }
 
@@ -398,7 +405,9 @@ async function handleDeleteCommand(ipmId: string): Promise<void> {
   const behavior = getBehavior(ipmId);
 
   if (!isDeleteBehavior(behavior)) {
-    logger.error("[delete-commands]: Invalid command behavior.");
+    logger.reportAndLogError(
+      new Error("[delete-commands]: Invalid command behavior."),
+    );
     return;
   }
 
@@ -407,7 +416,9 @@ async function handleDeleteCommand(ipmId: string): Promise<void> {
 
   // Ignore and dismiss command if it has expired
   if (isCommandExpired(command)) {
-    logger.error("[delete-commands]: Command has expired.");
+    logger.reportAndLogError(
+      new Error("[delete-commands]: Command has expired."),
+    );
     registerDeleteEvent(ipmId, CommandEventType.expired);
     dismissCommand(ipmId);
     return;
@@ -425,9 +436,10 @@ async function handleDeleteCommand(ipmId: string): Promise<void> {
       }
     } catch (error) {
       success = false;
-      logger.error(
-        "[delete-commands]: Error trying to delete command with ID ",
-        commandId,
+      logger.reportAndLogError(
+        new Error(
+          `[delete-commands]: Error trying to delete command with ID ${commandId}`,
+        ),
       );
     }
   }

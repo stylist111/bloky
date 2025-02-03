@@ -18,7 +18,7 @@
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
-import { error as logError } from "../../logger/background";
+import { reportAndLogError } from "../../logger/background";
 
 async function applyOptOut(): Promise<void> {
   const isOptedOut = Prefs.get("data_collection_opt_out");
@@ -40,6 +40,6 @@ export async function initialize(): Promise<void> {
   try {
     await initOptOut();
   } catch (error) {
-    logError("CDP initialization failed with error: ", error);
+    reportAndLogError(error as Error, "CDP initialization failed");
   }
 }

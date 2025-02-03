@@ -34,7 +34,7 @@ export let prefs: Preferences = {
 
 export let logger: Logger = {
   debug(_) {},
-  error(_) {},
+  reportAndLogError(_e, _logContext) {},
 };
 
 export let licensing: Licensing = {

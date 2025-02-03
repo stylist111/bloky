@@ -17,7 +17,7 @@
 
 /**
  * A interface to capture are the needed external functionalities needed by
- * the IPM system to work. These functionalities are tipically implemented
+ * the IPM system to work. These functionalities are typically implemented
  * by hosting extensions.
  */
 export interface Context {
@@ -26,10 +26,6 @@ export interface Context {
   getPreference: (key: string) => any;
   setPreference: (key: string, value: any) => Promise<void>;
   onPreferenceChanged: (key: string, f: () => Promise<void>) => void;
-
-  // Logger
-  logDebug: (...args: any[]) => void;
-  logError: (...args: any[]) => void;
 
   // Licenses and Premium
   isLicenseValid: () => boolean;
@@ -53,7 +49,7 @@ export interface Preferences {
 
 export interface Logger {
   debug: (...data: unknown[]) => void;
-  error: (...data: unknown[]) => void;
+  reportAndLogError: (e: Error, logContext?: string) => void;
 }
 
 export interface Licensing {

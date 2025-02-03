@@ -21,7 +21,7 @@ import {
   hasSchedule,
   removeSchedule
 } from "../../core/scheduled-event-emitter/background";
-import { error as logError, warn as logWarning } from "../../logger/background";
+import { warn as logWarning, reportAndLogError } from "../../logger/background";
 import {
   executeIPMCommands,
   getPayload,
@@ -42,7 +42,8 @@ import {
  */
 async function processResponse(response: Response): Promise<void> {
   if (!response.ok) {
-    logError(
+    reportAndLogError(
+      new Error(`Bad response status from IPM server: ${response.status}`),
       `[Telemetry]: Bad response status from IPM server: ${response.status}`
     );
     return;
@@ -68,7 +69,10 @@ async function processResponse(response: Response): Promise<void> {
 
     executeIPMCommands(commands);
   } catch (error) {
-    logError("[Telemetry]: Error parsing IPM response.", error);
+    reportAndLogError(
+      error as Error,
+      "[Telemetry]: Error parsing IPM response."
+    );
   }
 }
 
@@ -112,7 +116,10 @@ export async function sendPing(): Promise<void> {
   })
     .then(processResponse)
     .catch((error) => {
-      logError("[Telemetry]: Ping sending failed with error:", error);
+      reportAndLogError(
+        error as Error,
+        "[Telemetry]: Ping sending failed with error:"
+      );
     });
 }
 

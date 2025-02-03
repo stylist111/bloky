@@ -17,6 +17,7 @@
 
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import { type LogFunction, LogLevel } from "./logger.types";
+import { reportError } from "../../error-reporter/background";
 
 /**
  * Logs given data using provided log function
@@ -43,6 +44,8 @@ export const debug = log.bind(null, LogLevel.debug, console.debug);
 /**
  * Logs error messages
  *
+ * When logging exceptions, consider `reportAndLogError` instead.
+ *
  * @param ...data - Data to log
  */
 export const error = log.bind(null, LogLevel.error, console.error);
@@ -60,3 +63,19 @@ export const info = log.bind(null, LogLevel.info, console.info);
  * @param ...data - Data to log
  */
 export const warn = log.bind(null, LogLevel.warn, console.warn);
+
+/**
+ * Reports an error to Sentry and logs it to the console
+ *
+ * @param e - The error to send to Sentry.
+ * @param logContext - Additional context to log on the console.
+ */
+export function reportAndLogError(e: Error, logContext?: string): void {
+  reportError(e);
+
+  if (logContext) {
+    error(logContext, e);
+  } else {
+    error(e);
+  }
+}

@@ -56,9 +56,10 @@ function isDeleteCommand(command: Command): command is DeleteCommand {
     return true;
   }
 
-  logger.error(
-    "[delete-commands]: Invalid parameteres received:",
-    validationErrors.join(" "),
+  logger.reportAndLogError(
+    new Error(
+      `[delete-commands]: Invalid parameters received: ${validationErrors.join(" ")}`,
+    ),
   );
   return false;
 }
