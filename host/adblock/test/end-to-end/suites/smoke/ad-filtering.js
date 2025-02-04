@@ -26,10 +26,13 @@ import {
 } from "@eyeo/test-utils/driver";
 import { blockHideUrl, aaTestPageUrl, snippetTestPageUrl } from "@eyeo/test-utils/urls";
 import { allowlistingFilter, snippetFilter } from "@eyeo/test-utils/filters";
-import { getOptionsHandle, removeAllFilters } from "@eyeo/test-utils/extension";
+import {
+  addFiltersProgrammatically,
+  getOptionsHandle,
+  removeAllFilters,
+} from "@eyeo/test-utils/extension";
 
 import {
-  programaticallyAddFilters,
   checkBlockHidePage,
   setCustomFilters,
   initOptionsFiltersTab,
@@ -65,8 +68,7 @@ export default () => {
     await getDisplayedElement("#sitekey-fail-1");
 
     const filters = await getTestpagesFilters();
-    await driver.switchTo().window(getOptionsHandle());
-    await programaticallyAddFilters(filters);
+    await addFiltersProgrammatically(initOptionsFiltersTab, filters);
 
     await driver.switchTo().window(websiteHandle);
     await driver.navigate().refresh();

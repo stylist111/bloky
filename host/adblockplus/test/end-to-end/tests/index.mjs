@@ -16,9 +16,6 @@
  */
 
 import { afterSequence, beforeSequence } from "../helpers.js";
-import publicAPI from "./public-api/index.mjs";
-import eyeometry from "./test-eyeometry.mjs";
-import youtubeAutoAllowlist from "./test-youtube-auto-allowlist.mjs";
 import testServer from "./smoke-main/test-server.js";
 
 export default () => {
@@ -38,8 +35,5 @@ export default () => {
     });
 
     describe("Test Server", testServer);
-    describe("Public API", publicAPI);
-    describe("Eyeometry", eyeometry);
-    describe("YouTube Auto-allowlist", youtubeAutoAllowlist);
   });
 };

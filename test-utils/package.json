@@ -6,6 +6,7 @@
     "./driver": "./e2e-runner/driver.js",
     "./extension": "./e2e-runner/extension.js",
     "./hooks": "./e2e-runner/hooks.js",
+    "./public-api": "./e2e-runner/public-api.js",
     "./filters": "./test-server/filters.js",
     "./urls": "./test-server/urls.js"
   },

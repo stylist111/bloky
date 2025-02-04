@@ -21,16 +21,6 @@ import path from "path";
 import { download } from "@eyeo/get-browser-binary";
 
 /**
- * Sleep for a given amount of time
- *
- * @param {number} ms - The time to sleep in milliseconds
- * @returns {Promise<unknown>}
- */
-export async function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-/**
  * Finds the project root directory by looking for a package.json file.
  *
  * @param {string} [startDir] - The directory to start looking in
@@ -113,20 +103,4 @@ export async function downloadLatestReleaseBuilds({
     }
   }
   await Promise.all(promises);
-}
-
-/**
- * Converts an array buffer byte array into a base64 string.
- *
- * @param {Uint8Array|ArrayBuffer} buffer - Byte array of any data.
- * @return {string} The same data, encoded as a base64 string.
- */
-export function arrayBufferToBase64(buffer) {
-  let binary = "";
-  const bytes = new Uint8Array(buffer);
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-
-  return btoa(binary);
 }

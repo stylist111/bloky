@@ -172,10 +172,10 @@ export async function isCheckboxAttributeEnabled(cssSelector) {
 
 export async function waitForCheckboxStatus(
   cssSelector,
-  { timeout = 1000, expectEnabled = true, isProperty = true, name, action = "after click" } = {},
+  { timeout = 1000, expectEnabled = true, isProperty = true, name, action = "click" } = {},
 ) {
   const enabledDisabled = expectEnabled ? "enabled" : "disabled";
-  const timeoutMsg = `"${name || cssSelector}" was not ${enabledDisabled} ${action}`;
+  const timeoutMsg = `"${name || cssSelector}" was not ${enabledDisabled} after ${action}`;
 
   await driver.wait(
     async () => {

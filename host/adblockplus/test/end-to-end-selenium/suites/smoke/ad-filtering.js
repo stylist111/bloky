@@ -31,7 +31,6 @@ import {
 import { snippetFilter, allowlistedDomain } from "@eyeo/test-utils/filters";
 import {
   initOptionsGeneralTab,
-  programaticallyAddFilters,
   checkBlockHidePage,
   setAADefaultState,
   clickFLCheckboxAndCheck,
@@ -39,7 +38,11 @@ import {
   addAllowlistFilters,
   deleteFirstAllowlistFilter
 } from "../../utils/page.js";
-import { getOptionsHandle, removeAllFilters } from "@eyeo/test-utils/extension";
+import {
+  getOptionsHandle,
+  removeAllFilters,
+  addFiltersProgrammatically
+} from "@eyeo/test-utils/extension";
 
 export default () => {
   after(async function () {
@@ -70,8 +73,7 @@ export default () => {
     await getDisplayedElement("#sitekey-fail-1");
 
     const filters = await getTestpagesFilters();
-    await driver.switchTo().window(getOptionsHandle());
-    await programaticallyAddFilters(filters);
+    await addFiltersProgrammatically(initOptionsGeneralTab, filters);
 
     await driver.switchTo().window(websiteHandle);
     await driver.navigate().refresh();

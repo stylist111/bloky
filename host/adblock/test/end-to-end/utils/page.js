@@ -226,30 +226,6 @@ export async function clickFilterlist(name, checkboxSelector, enabledAfterClick)
 }
 
 /**
- * Add filters to AdBlock
- *
- * @param {string} filters - The filter rules to add
- * @returns {Promise<void>}
- */
-export async function programaticallyAddFilters(filters) {
-  const err = await driver.executeAsyncScript(async (filtersToAdd, callback) => {
-    const errors = await browser.runtime.sendMessage({
-      type: "filters.importRaw",
-      text: filtersToAdd,
-    });
-    if (typeof errors !== "undefined" && errors[0]) {
-      callback(errors[0]);
-    }
-
-    callback();
-  }, filters);
-
-  if (err) {
-    throw new Error(err);
-  }
-}
-
-/**
  * Checked that the elements from the blockHideUrl are allowlisted or not.
  *
  * @param {boolean} [expectAllowlisted=false] - Whether the page is allowlisted
@@ -288,42 +264,6 @@ export async function checkBlockHidePage(expectAllowlisted) {
     await waitForNotDisplayed("#test-element-id", timeout);
     await waitForNotDisplayed("#script-id-regex", timeout);
   }
-}
-
-/**
- * Removes a filter.
- * @param {string} filterText The filter text.
- */
-export async function removeFilter(filterText) {
-  return sendExtMessage(initOptionsGeneralTab, {
-    type: "filters.remove",
-    text: filterText,
-  });
-}
-
-/**
- * Adds a filter.
- * @param {string} filterText The filter text.
- */
-export async function addFilter(filterText) {
-  return sendExtMessage(initOptionsGeneralTab, {
-    type: "filters.add",
-    text: filterText,
-  });
-}
-
-/**
- * Changes a pref by sending a message to the extension on the settings page.
- *
- * @param {string} key The pref key name
- * @param {*} value The pref value
- */
-export async function updatePrefs(key, value) {
-  return sendExtMessage(initOptionsGeneralTab, {
-    type: "prefs.set",
-    key,
-    value,
-  });
 }
 
 export async function checkPremiumPageHeader(ctaTextSelector, ctaLinkSelector, premiumURL) {

@@ -357,35 +357,6 @@ export async function deleteFirstAllowlistFilter() {
   await clickOnDisplayedElement("#allowlisting-table button");
 }
 
-export async function programaticallyAddFilters(filters) {
-  const err = await driver.executeAsyncScript(
-    async (filtersToAdd, callback) => {
-      let errors = null;
-      errors = await browser.runtime.sendMessage({
-        type: "filters.importRaw",
-        text: filtersToAdd
-      });
-      if (typeof errors != "undefined") errors = errors[0];
-      // ABP changed the return of filters.importRaw to [errors, filterTexts]
-      // https://gitlab.com/adblockinc/ext/adblockplus/adblockplus/-/merge_requests/1064
-      if (
-        typeof errors != "undefined" &&
-        errors[0] &&
-        errors[0].constructor === Array
-      )
-        errors = errors[0];
-
-      if (typeof errors != "undefined") callback(errors[0]);
-      else callback();
-    },
-    filters
-  );
-
-  if (err) {
-    throw new Error(err);
-  }
-}
-
 export async function checkPremiumActivated({
   timeout = 30000,
   retry = 0,

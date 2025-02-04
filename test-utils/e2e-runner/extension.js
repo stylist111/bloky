@@ -19,7 +19,7 @@ import path from "path";
 import fs from "fs";
 import AdmZip from "adm-zip";
 
-import { openNewTab } from "./driver.js";
+import { openNewTab, getTabId, getFromStorage } from "./driver.js";
 import { localTestPageUrl, blockHideLocalhostUrl } from "../test-server/urls.js";
 
 export const subscriptionUrl = "https://abptestpages.org/en/abp-testcase-subscription.txt";
@@ -170,6 +170,44 @@ async function updateSettings(initOptionsFn, name, isEnabled) {
 }
 
 /**
+ * Changes a pref by sending a message to the extension on the settings page.
+ *
+ * @param {string} key The pref key name
+ * @param {*} value The pref value
+ */
+export async function updatePrefs(initOptionsFn, key, value) {
+  return sendExtMessage(initOptionsFn, {
+    type: "prefs.set",
+    key,
+    value,
+  });
+}
+
+/**
+ * Add filters to the extension
+ *
+ * @param {string} filters - The filter rules to add
+ * @returns {Promise<void>}
+ */
+export async function addFiltersProgrammatically(initOptionsFn, filtersText) {
+  return sendExtMessage(initOptionsFn, {
+    type: "filters.importRaw",
+    text: filtersText,
+  });
+}
+
+/**
+ * Removes a filter.
+ * @param {string} filterText The filter text.
+ */
+export async function removeFilterProgrammatically(initOptionsFn, filterText) {
+  return sendExtMessage(initOptionsFn, {
+    type: "filters.remove",
+    text: filterText,
+  });
+}
+
+/**
  * Reload the extension and wait for the options page to be displayed
  *
  * @param {Function} initOptionsFn - Function that initialises the options page, specific to each host
@@ -277,6 +315,53 @@ export function getPremiumEmail() {
   const randomNumber = randomIntFromInterval(1000000, 9999999);
 
   return `test_automation${formattedDateYMD}${randomNumber}@adblock.org`;
+}
+
+// Opens a YT video and triggers auto-allowlisting
+export async function autoAllowlistsYoutube() {
+  const websiteHandle = await openNewTab("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+  const tabId = await getTabId(getOptionsHandle());
+  await driver.switchTo().window(websiteHandle);
+
+  await driver.executeScript(() => {
+    const ytElement = document.createElement("ytd-enforcement-message-view-model");
+    document.body.appendChild(ytElement);
+  });
+  await driver.wait(
+    async () => {
+      const readyState = await driver.executeScript("return document.readyState");
+      return readyState === "complete";
+    },
+    2000,
+    "Page did not refresh within the expected time",
+  );
+  return tabId;
+}
+
+export async function getEyeometryDataChromium() {
+  // 10 seconds is a safe number to assume telemetry is not enabled
+  const timeout = 10000;
+
+  return await driver.wait(
+    async () => getFromStorage("local", "ewe:telemetry"),
+    timeout,
+    `No storage data found after ${timeout}ms`,
+  );
+}
+
+export async function getEyeometryDataFirefox() {
+  // 10 seconds is a safe number to assume telemetry is not enabled
+  const timeout = 10000;
+
+  try {
+    return await driver.wait(async () => getFromStorage("local", "ewe:telemetry"), timeout);
+  } catch (err) {
+    if (err.name === "TimeoutError") {
+      // Timeout exceeded, no telemetry data saved, all good
+      return null;
+    }
+    throw err;
+  }
 }
 
 // Removes all user filters programmatically

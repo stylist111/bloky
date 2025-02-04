@@ -17,30 +17,16 @@
 
 import { expect } from "expect";
 
-import { getDisplayedElement, openNewTab, getTabId } from "@eyeo/test-utils/driver";
-import { getOptionsHandle } from "@eyeo/test-utils/extension";
+import { getDisplayedElement } from "@eyeo/test-utils/driver";
+import { getOptionsHandle, autoAllowlistsYoutube } from "@eyeo/test-utils/extension";
 
 import { initOptionsGeneralTab, initPopupPage } from "../utils/page.js";
 
 export default () => {
-  it("should auto-allowlist YouTube", async function () {
+  it("auto-allowlists YouTube", async function () {
     await initOptionsGeneralTab(getOptionsHandle());
-    const websiteHandle = await openNewTab("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
-    const tabId = await getTabId(getOptionsHandle());
-    await driver.switchTo().window(websiteHandle);
 
-    await driver.executeScript(() => {
-      const ytElement = document.createElement("ytd-enforcement-message-view-model");
-      document.body.appendChild(ytElement);
-    });
-    await driver.wait(
-      async () => {
-        const readyState = await driver.executeScript("return document.readyState");
-        return readyState === "complete";
-      },
-      2000,
-      "Page did not refresh within the expected time",
-    );
+    const tabId = await autoAllowlistsYoutube();
 
     await initPopupPage(tabId);
     const domainPausedText = await getDisplayedElement('[i18n="status_domain_paused"]');

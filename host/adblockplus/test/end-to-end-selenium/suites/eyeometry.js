@@ -1,6 +1,6 @@
 /*
  * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-present eyeo GmbH
+ * Copyright (C) 2024-present eyeo GmbH
  *
  * Adblock Plus is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -15,14 +15,14 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { expect } from "chai";
+import { expect } from "expect";
 
-import { isFirefox, getFromStorage } from "../helpers.js";
+import {
+  getEyeometryDataChromium,
+  getEyeometryDataFirefox
+} from "@eyeo/test-utils/extension";
 
 export default () => {
-  // 10 seconds is a safe number to assume telemetry is not enabled
-  const timeout = 10000;
-
   // Eyeometry tests require eyeometry credentials filled in .env
   before(function () {
     if (!process.env.EYEOMETRY_BEARER) {
@@ -40,40 +40,28 @@ export default () => {
   });
 
   it("sends the request in Chrome and Edge", async function () {
-    if (isFirefox()) this.skip();
+    if (browserDetails.browserName === "firefox") {
+      this.skip();
+    }
 
-    const data = await browser.waitUntil(
-      async () => getFromStorage("local", "ewe:telemetry"),
-      { timeout, timeoutMsg: `No storage data found after ${timeout}ms` }
+    const data = await getEyeometryDataChromium();
+
+    expect(data).toEqual(
+      expect.objectContaining({
+        firstPing: expect.any(String),
+        lastPing: expect.any(String),
+        lastPingTag: expect.any(String),
+        ucid: expect.any(String)
+      })
     );
-
-    expect(Object.keys(data)).to.have.members([
-      "firstPing",
-      "lastPing",
-      "lastPingTag",
-      "ucid"
-    ]);
   });
 
   it("does not send the request in Firefox", async function () {
-    if (!isFirefox()) this.skip();
-
-    let data;
-    try {
-      data = await browser.waitUntil(
-        async () => getFromStorage("local", "ewe:telemetry"),
-        { timeout }
-      );
-    } catch (err) {
-      if (err.name === "TimeoutError") {
-        // Timeout exceeded, no telemetry data saved, all good
-        return;
-      }
-
-      throw err;
+    if (browserDetails.browserName !== "firefox") {
+      this.skip();
     }
 
-    // In case getFromStorage doesn't timeout, at least data should be null
-    expect(data).to.be(null);
+    const data = await getEyeometryDataFirefox();
+    expect(data).toEqual(null);
   });
 };

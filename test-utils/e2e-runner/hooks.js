@@ -26,7 +26,6 @@ import {
   extractExtension,
   getExtensionInfo,
 } from "./extension.js";
-import { sleep } from "../helpers.js";
 
 /**
  * Hook to set the E2E tests global options
@@ -86,7 +85,7 @@ async function startBrowser(extensionPath, retry = 0) {
   } catch (e) {
     if (retry < 5) {
       console.warn(`Failed to start the browser, retrying (${retry})...`);
-      await sleep(1000);
+      await new Promise((r) => setTimeout(r, 1000));
       return startBrowser(extensionPath, retry + 1);
     }
 
@@ -127,11 +126,14 @@ export async function prepareExtensionHook() {
   setOptionsHandle(handle);
 
   const { name, version, manifestVersion, origin, popupUrl } = await getExtensionInfo();
+  // the name of the extension from the Flattr payload is the extension name in lowercase without spaces
+  const flattrName = name.toLowerCase().replace(" ", "");
   console.log(`Extension: ${name} ${version} MV${manifestVersion}`);
 
   // Set global variables for the tests
   global.extension = {
     name,
+    flattrName,
     manifestVersion,
     origin,
     version,
@@ -168,15 +170,18 @@ async function cleanupOpenTabs() {
   const { installUrl } = global.config;
 
   for (const handle of await driver.getAllWindowHandles()) {
-    await driver.switchTo().window(handle);
-
-    let url = "";
     try {
-      url = await driver.getCurrentUrl();
-    } catch (e) {}
+      await driver.switchTo().window(handle);
+      const url = await driver.getCurrentUrl();
 
-    if (handle !== getOptionsHandle() && !url.includes(installUrl) && !url.includes("data:")) {
-      driver.close();
+      if (handle !== getOptionsHandle() && !url.includes(installUrl) && !url.includes("data:")) {
+        await driver.close();
+      }
+    } catch (err) {
+      if (err.name !== "NoSuchWindowError") throw err;
+
+      // If the tab no longer exists there's nothing to be closed
+      continue;
     }
   }
 }

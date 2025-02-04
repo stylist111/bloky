@@ -1,19 +1,50 @@
+/*
+ * This file is part of AdBlock  <https://getadblock.com/>,
+ * Copyright (C) 2024-present  Adblock, Inc.
+ *
+ * AdBlock is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * AdBlock is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AdBlock.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import { expect } from "expect";
 
 import { openNewTab } from "@eyeo/test-utils/driver";
 import { blockHideUrl } from "@eyeo/test-utils/urls";
+import { beforeEachTasks } from "@eyeo/test-utils/hooks";
 import { allowlistingFilter } from "@eyeo/test-utils/filters";
-import { reloadExtension, sendExtMessage } from "@eyeo/test-utils/extension";
+import {
+  removeFilterProgrammatically,
+  reloadExtension,
+  sendExtMessage,
+} from "@eyeo/test-utils/extension";
+import { sendExtCommand, updateExtPrefAPIKey } from "@eyeo/test-utils/public-api";
+import { checkBlockHidePage, initOptionsGeneralTab } from "../../utils/page.js";
 
-import { sendExtCommand, updateExtPrefAPIKey } from "./shared/helpers.js";
-import { checkBlockHidePage, removeFilter, initOptionsGeneralTab } from "../../utils/page.js";
+const allowlistingCommand = {
+  triggerEventName: "domain_allowlisting_request",
+  responseEventName: "domain_allowlisting_success",
+};
 
-/**
- * Validates the filter metadata.
- *
- * @param {object} debugInfo - The debug info response from the extension.
- * @param expiresAt
- */
+async function allowlistPageAndCheck(command) {
+  await openNewTab(blockHideUrl);
+
+  // trigger allowlisting without expiration
+  const allowlistingSuccess = await sendExtCommand(command);
+  expect({ allowlistingSuccess }).toEqual({ allowlistingSuccess: true });
+
+  await driver.navigate().refresh();
+  await checkBlockHidePage(true);
+}
+
 function validateFilterMetadata(debugInfo, expiresAt = null) {
   expect(debugInfo).not.toBeNull();
   expect(debugInfo.otherInfo).not.toBeNull();
@@ -41,64 +72,33 @@ function validateFilterMetadata(debugInfo, expiresAt = null) {
 
 export default () => {
   before(async function () {
-    // update prefs and reload extension
-    await updateExtPrefAPIKey("allowlisting_authorizedKeys");
+    // beforeEach hook in index.js executes after this before hook. Calling beforeEachTasks ensures the options page is opened and focused before updating preferences
+    await beforeEachTasks();
+
+    await updateExtPrefAPIKey(initOptionsGeneralTab, "allowlisting_authorizedKeys");
     // Suppress the opening of the update page when the extension is reloaded.
     await reloadExtension(initOptionsGeneralTab);
   });
 
   afterEach(async function () {
-    await removeFilter(allowlistingFilter);
+    await removeFilterProgrammatically(initOptionsGeneralTab, allowlistingFilter);
   });
 
   it("allowlists the page forever", async function () {
-    // open the block-hide page
-    await openNewTab(blockHideUrl);
+    // allowlisting without expiration
+    await allowlistPageAndCheck(allowlistingCommand);
 
-    // trigger allowlisting with expiration
-    const allowlisted = await sendExtCommand({
-      triggerEventName: "domain_allowlisting_request",
-      responseEventName: "domain_allowlisting_success",
-    });
-
-    // verify that the page received the allowlisting successfully event
-    expect(allowlisted).not.toBeNull();
-
-    // refresh the page to ensure the allowlisting is applied
-    await driver.navigate().refresh();
-
-    // verify that the page is allowlisted
-    await checkBlockHidePage(true);
-
-    // check filter metadata
     const debugInfo = await sendExtMessage(initOptionsGeneralTab, { command: "getDebugInfo" });
     validateFilterMetadata(debugInfo);
   });
 
   it("allowlists the page with expiration", async function () {
-    // open the block-hide page
-    await openNewTab(blockHideUrl);
-
-    // trigger allowlisting with expiration
     const expiresAt = Date.now() + 1000 * 60 * 60 * 24 * 30; // 30 days
-    const allowlisted = await sendExtCommand({
-      triggerEventName: "domain_allowlisting_request",
-      responseEventName: "domain_allowlisting_success",
-      options: {
-        expiresAt,
-      },
-    });
+    const commandWithExpiration = { ...allowlistingCommand, options: { expiresAt } };
 
-    // verify that the page received the allowlisting successfully event
-    expect(allowlisted).not.toBeNull();
+    // allowlisting with expiration
+    await allowlistPageAndCheck(commandWithExpiration);
 
-    // refresh the page to ensure the allowlisting is applied
-    await driver.navigate().refresh();
-
-    // verify that the page is allowlisted
-    await checkBlockHidePage(true);
-
-    // check filter metadata
     const debugInfo = await sendExtMessage(initOptionsGeneralTab, { command: "getDebugInfo" });
     validateFilterMetadata(debugInfo, expiresAt);
   });

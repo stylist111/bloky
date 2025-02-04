@@ -25,6 +25,10 @@ import popupPage from "./popup-page.js";
 import uninstallDefault from "./smoke/uninstall-default.js";
 import freeUser from "./premium/free-user.js";
 import getPremium from "./premium/get-premium.js";
+import eyeometry from "./eyeometry.js";
+import youtubeAllowlist from "./youtube-auto-allowlist.js";
+import oneClickAllowlisting from "./public-api/one-click-allowlisting.js";
+import bypassAPI from "./public-api/bypass-api.js";
 
 export default () => {
   beforeEach(async function () {
@@ -43,6 +47,15 @@ export default () => {
   describe("Options Page", function () {
     describe("Acceptable Ads", optionsPageAA);
     describe("Filter Lists", optionsPageFL);
+  });
+
+  describe("Eyeometry", eyeometry);
+
+  describe("Youtube Allowlist", youtubeAllowlist);
+
+  describe("Public API", function () {
+    describe("One click allowlisting", oneClickAllowlisting);
+    describe("Bypass API", bypassAPI);
   });
 
   describe("Premium", function () {

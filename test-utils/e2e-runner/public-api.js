@@ -1,8 +1,24 @@
+/*
+ * This file is part of Web Extensions Core Utilities (Web Extensions CU),
+ * Copyright (C) 2024-present eyeo GmbH
+ *
+ * Web Extensions CU is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * Web Extensions CU is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Web Extensions CU.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import crypto from "crypto";
 
-import { arrayBufferToBase64 } from "@eyeo/test-utils";
 import { blockHideUrl } from "@eyeo/test-utils/urls";
-import { updatePrefs } from "../../../utils/page.js";
+import { updatePrefs } from "@eyeo/test-utils/extension";
 
 const algorithm = {
   name: "RSASSA-PKCS1-v1_5",
@@ -29,6 +45,22 @@ async function generateEncryptionKeys() {
 }
 
 /**
+ * Converts an array buffer byte array into a base64 string.
+ *
+ * @param {Uint8Array|ArrayBuffer} buffer - Byte array of any data.
+ * @return {string} The same data, encoded as a base64 string.
+ */
+function arrayBufferToBase64(buffer) {
+  let binary = "";
+  const bytes = new Uint8Array(buffer);
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+
+  return btoa(binary);
+}
+
+/**
  * Encrypts the message using the private key.
  *
  * @param {string} message - The message to encrypt.
@@ -44,7 +76,7 @@ async function encryptMessage(message) {
  * Replaces the default public key in the extension used for signing the messages
  * @param {string} prefsKeyName The pref key name.
  */
-export async function updateExtPrefAPIKey(prefsKeyName) {
+export async function updateExtPrefAPIKey(initOptionsFn, prefsKeyName) {
   if (!keyPair) {
     await generateEncryptionKeys();
   }
@@ -52,7 +84,7 @@ export async function updateExtPrefAPIKey(prefsKeyName) {
   // update the allowlisting authorized keys
   const publicKeyBase64 = arrayBufferToBase64(publicKey);
 
-  return updatePrefs(prefsKeyName, [publicKeyBase64]);
+  return updatePrefs(initOptionsFn, prefsKeyName, [publicKeyBase64]);
 }
 
 /**

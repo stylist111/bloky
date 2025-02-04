@@ -294,27 +294,6 @@ comp:MV2:firefox:oldest:
   rules:
     - !reference [.always, rules]
 
-end-to-end:wdio:MV2:firefox:
-  extends: .end-to-end
-  variables:
-    MANIFEST_VERSION: 2
-    BROWSER: firefox
-    E2E_FOLDER: end-to-end
-
-end-to-end:wdio:MV2:edge:
-  extends: .end-to-end
-  variables:
-    MANIFEST_VERSION: 2
-    BROWSER: edge
-    E2E_FOLDER: end-to-end
-
-end-to-end:wdio:MV3:chromium:
-  extends: .end-to-end
-  variables:
-    MANIFEST_VERSION: 3
-    BROWSER: chromium
-    E2E_FOLDER: end-to-end
-
 end-to-end:selenium:MV2:firefox:
   extends: .end-to-end
   variables:

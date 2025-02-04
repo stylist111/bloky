@@ -17,12 +17,9 @@
 
 import { expect } from "expect";
 
-import { getFromStorage } from "@eyeo/test-utils/driver";
+import { getEyeometryDataChromium, getEyeometryDataFirefox } from "@eyeo/test-utils/extension";
 
 export default () => {
-  // 10 seconds is a safe number to assume telemetry is not enabled
-  const timeout = 10000;
-
   // Eyeometry tests require eyeometry credentials filled in .env
   before(function () {
     if (!process.env.EYEOMETRY_BEARER) {
@@ -42,11 +39,7 @@ export default () => {
       this.skip();
     }
 
-    const data = await driver.wait(
-      async () => getFromStorage("local", "ewe:telemetry"),
-      timeout,
-      `No storage data found after ${timeout}ms`,
-    );
+    const data = await getEyeometryDataChromium();
 
     expect(data).toEqual(
       expect.objectContaining({
@@ -62,19 +55,8 @@ export default () => {
       this.skip();
     }
 
-    let data;
-    try {
-      data = await driver.wait(async () => getFromStorage("local", "ewe:telemetry"), timeout);
-    } catch (err) {
-      if (err.name === "TimeoutError") {
-        // Timeout exceeded, no telemetry data saved, all good
-        return;
-      }
+    const data = await getEyeometryDataFirefox();
 
-      throw err;
-    }
-
-    // In case getFromStorage doesn't timeout, at least data should be null
-    expect(data).to.equal(null);
+    expect(data).toEqual(null);
   });
 };

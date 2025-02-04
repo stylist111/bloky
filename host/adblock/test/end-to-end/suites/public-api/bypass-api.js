@@ -19,29 +19,31 @@ import { expect } from "expect";
 
 import { openNewTab } from "@eyeo/test-utils/driver";
 import { blockHideUrl } from "@eyeo/test-utils/urls";
+import { beforeEachTasks } from "@eyeo/test-utils/hooks";
 import { allowlistingFilter } from "@eyeo/test-utils/filters";
-import { reloadExtension } from "@eyeo/test-utils/extension";
-
-import { sendExtCommand, updateExtPrefAPIKey } from "./shared/helpers.js";
 import {
-  addFilter,
-  removeFilter,
-  checkBlockHidePage,
-  initOptionsGeneralTab,
-} from "../../utils/page.js";
+  addFiltersProgrammatically,
+  removeFilterProgrammatically,
+  reloadExtension,
+} from "@eyeo/test-utils/extension";
+import { sendExtCommand, updateExtPrefAPIKey } from "@eyeo/test-utils/public-api";
+
+import { checkBlockHidePage, initOptionsGeneralTab } from "../../utils/page.js";
 
 export default () => {
   before(async function () {
-    await updateExtPrefAPIKey("bypass_authorizedKeys");
+    // beforeEach hook in index.js executes after this before hook. Calling beforeEachTasks ensures the options page is opened and focused before updating preferences
+    await beforeEachTasks();
+
+    await updateExtPrefAPIKey(initOptionsGeneralTab, "bypass_authorizedKeys");
     await reloadExtension(initOptionsGeneralTab);
   });
 
   afterEach(async function () {
-    await removeFilter(allowlistingFilter);
+    await removeFilterProgrammatically(initOptionsGeneralTab, allowlistingFilter);
   });
 
   it("returns adblocking is active extension info", async function () {
-    // open the block-hide page
     await openNewTab(blockHideUrl);
 
     // send request extension info command
@@ -51,7 +53,7 @@ export default () => {
     });
 
     const expectedExtensionInfo = {
-      name: extension.name.toLowerCase(),
+      name: extension.flattrName,
       version: extension.version,
       allowlistState: {
         oneCA: true,
@@ -64,16 +66,10 @@ export default () => {
   });
 
   it("returns allowlisted page extension info", async function () {
-    // open the block-hide page
     await openNewTab(blockHideUrl);
-
-    // ensure the page looks as it should before allowlisting
     await checkBlockHidePage(false);
+    await addFiltersProgrammatically(initOptionsGeneralTab, allowlistingFilter);
 
-    // Allowlist the page
-    await addFilter(allowlistingFilter);
-
-    // Check that the page was allowlisted
     await checkBlockHidePage(true);
 
     // send request extension info command
@@ -83,7 +79,7 @@ export default () => {
     });
 
     const expectedExtensionInfo = {
-      name: extension.name.toLowerCase(),
+      name: extension.flattrName,
       version: extension.version,
       allowlistState: {
         oneCA: true,
