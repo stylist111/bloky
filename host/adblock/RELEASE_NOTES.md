@@ -1,5 +1,7 @@
 # Unreleased
 
+- Attempt to fix IPM initialization issue (IM-175)
+
 # 6.14.2 - 2025-02-03
 
 This release contains minor UI update and under-the-hood changes.

@@ -17,10 +17,12 @@
 
 import {
   commandStorageKey,
+  executeIPMCommands,
   getStoredCommandIds,
   isCommandExpired,
+  setCommandActor,
 } from "./command-library";
-import { CommandName } from "./command-library.types";
+import { type CommandActor, CommandName } from "./command-library.types";
 import { prefs } from "./context";
 
 describe("command-library", () => {
@@ -102,6 +104,48 @@ describe("command-library", () => {
     it("should return false when expiry date is in the future", () => {
       expect(isCommandExpired({ ...commandBase, expiry: "1996-01-16" })).toBe(
         false,
+      );
+    });
+  });
+
+  describe("executeIPMCommands", () => {
+    const commandBase = {
+      version: 6,
+      command_name: CommandName.createTab,
+      ipm_id: "command_1",
+      expiry: "2050-01-16",
+    };
+
+    let createTabActor: CommandActor;
+
+    beforeEach(() => {
+      // Mock prefs.get to return an empty object
+      jest.spyOn(prefs, "get").mockReturnValue({});
+
+      createTabActor = {
+        handleCommand: jest.fn(),
+        onCommandsProcessed: jest.fn(),
+        getBehavior: jest.fn(),
+        getContent: jest.fn(),
+        // Always validate the command
+        isValidCommand: jest.fn().mockReturnValue(true),
+      };
+      setCommandActor(CommandName.createTab, createTabActor);
+    });
+
+    it("initializes properly", () => {
+      const commands = [{ ...commandBase }];
+      executeIPMCommands(commands, true);
+      expect(createTabActor.handleCommand).toHaveBeenCalledWith(
+        commandBase.ipm_id,
+      );
+    });
+
+    it("executes properly after ping", () => {
+      const commands = [{ ...commandBase }];
+      executeIPMCommands(commands);
+      expect(createTabActor.handleCommand).toHaveBeenCalledWith(
+        commandBase.ipm_id,
       );
     });
   });

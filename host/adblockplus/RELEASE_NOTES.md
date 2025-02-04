@@ -1,5 +1,7 @@
 # Unreleased
 
+- Attempt to fix IPM initialization issue (IM-175)
+
 # 4.12.0 - 2025-01-27
 
 - Saving of downloaded filters to IndexedDB can now continue if the database was

@@ -182,18 +182,6 @@ export function getContent(ipmId: string): Content | null {
 }
 
 /**
- * Checks whether the command with the given id has already been processed
- * at an earlier time.
- *
- * @param ipmId The IPM id
- * @returns Whether the command with the given id has already been processed
- */
-function hasProcessedCommand(ipmId: string): boolean {
-  const commandStorage = Prefs.get(commandStorageKey);
-  return ipmId in commandStorage;
-}
-
-/**
  * Checks whether the IPM command has expired or not
  *
  * @param command The IPM command
@@ -237,13 +225,22 @@ function retryExecuteCommands(commandName: CommandName): void {
  * @param commands A list of commands from the IPM server
  */
 function storeCommands(commands: Command[]): void {
+  let changed = false;
   const storage = Prefs.get(commandStorageKey);
 
   for (const command of commands) {
+    if (storage[command.ipm_id]) {
+      logger.debug("[ipm]: Campaign already stored:", command.ipm_id);
+      continue;
+    }
+
     storage[command.ipm_id] = command;
+    changed = true;
   }
 
-  void Prefs.set(commandStorageKey, storage);
+  if (changed) {
+    void Prefs.set(commandStorageKey, storage);
+  }
 }
 
 /**
@@ -317,18 +314,16 @@ export function executeIPMCommands(commands: unknown[], isInitialization: boolea
       };
     }
 
-    if (!isInitialization) {
-      if (hasProcessedCommand(command.ipm_id)) {
-        logger.error("[ipm]: Campaign already processed:", command.ipm_id);
-        continue;
-      }
-
-      actorByExecutableCommand.set(command, actor);
-    }
+    // queue command for execution
+    actorByExecutableCommand.set(command, actor);
   }
 
   const executableCommands = Array.from(actorByExecutableCommand.keys());
-  storeCommands(executableCommands);
+
+  // store the valid commands, if just received from the server
+  if (!isInitialization && executableCommands.length > 0) {
+    storeCommands(executableCommands);
+  }
 
   const commandHandlingPromises = Array.from(actorByExecutableCommand).map(
     async ([executableCommand, actor]) => {
