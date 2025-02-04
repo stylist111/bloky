@@ -41,7 +41,7 @@
     },
     {
       "all_frames": true,
-      "js": ["globals-front.js", "adblock-getadblock.js"],
+      "js": ["polyfill.js", "globals-front.js", "adblock-functions.js", "adblock-getadblock.js"],
       "matches": ["*://*.getadblock.com/*", "*://*.getadblockpremium.com/*"],
       "run_at": "document_start"
     },
