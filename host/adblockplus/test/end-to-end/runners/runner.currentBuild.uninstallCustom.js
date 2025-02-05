@@ -26,7 +26,7 @@ import { runnerConfig } from "./config.js";
 
 import defineTestSuites from "../suites/index-uninstall-custom.js";
 
-describe("Adblock Plus end-to-end tests - Uninstall custom (selenium)", function () {
+describe("Adblock Plus end-to-end tests - Uninstall custom", function () {
   before(() => setGlobalOptionsHook(runnerConfig));
 
   before(async function () {

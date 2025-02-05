@@ -172,10 +172,7 @@ To run the end-to-end tests locally:
 
 ```sh
 npm run build:release -- --scope=adblockplus
-# WebdriverIO
-BROWSER={chromium|firefox|edge} MANIFEST_VERSION={2|3} npm run --workspace host/adblockplus test:end-to-end-wdio
-# Selenium
-BROWSER={chromium|firefox|edge} MANIFEST_VERSION={2|3} npm run --workspace host/adblockplus test:end-to-end-selenium
+npm run test:end-to-end -- --scope=adblockplus -- {chromium|edge|firefox} {2|3}
 ```
 
 By default browsers run headless. Setting the environment variable
@@ -185,10 +182,7 @@ Mocha [command line options](https://mochajs.org/#command-line-usage) are
 supported. Example:
 
 ```sh
-# WebdriverIO
-BROWSER={chromium|firefox|edge} MANIFEST_VERSION={2|3} npm run --workspace host/adblockplus test:end-to-end-wdio -- --grep "Smoke"
-# Selenium
-BROWSER={chromium|firefox|edge} MANIFEST_VERSION={2|3} npm run --workspace host/adblockplus test:end-to-end-selenium -- --grep "Smoke"
+BROWSER={chromium|firefox|edge} MANIFEST_VERSION={2|3} npm run --workspace host/adblockplus test:end-to-end-local -- --grep "Smoke"
 ```
 
 Screenshots for failing tests are stored in `host/adblockplus/test/end-to-end/screenshots`.
@@ -199,12 +193,7 @@ Prerequisites: Docker
 
 ```sh
 npm run build:release -- --scope=adblockplus
-
-# WebdriverIO
 docker build -t end-to-end -f host/adblockplus/test/end-to-end/Dockerfile .
-# Selenium
-docker build -t end-to-end -f host/adblockplus/test/end-to-end-selenium/Dockerfile .
-
 docker run --shm-size=2g -it -e BROWSER={chromium|firefox|edge} -e MANIFEST_VERSION={2|3} end-to-end
 ```
 
@@ -212,20 +201,14 @@ To use mocha command line options the `--entrypoint` parameter needs to be set.
 Example:
 
 ```sh
-# WebdriverIO
-docker run --shm-size=2g -it -e BROWSER={chromium|firefox|edge} -e MANIFEST_VERSION={2|3} --entrypoint npm end-to-end run -w host/adblockplus test:end-to-end-wdio -- --grep "Smoke"
-# Selenium
-docker run --shm-size=2g -it -e BROWSER={chromium|firefox|edge} -e MANIFEST_VERSION={2|3} --entrypoint npm end-to-end run -w host/adblockplus test:end-to-end-selenium -- --grep "Smoke"
+docker run --shm-size=2g -it -e BROWSER={chromium|firefox|edge} -e MANIFEST_VERSION={2|3} --entrypoint npm end-to-end run -w host/adblockplus test:end-to-end-local -- --grep "Smoke"
 ```
 
 To access the screenshots for failing tests run the following command, which
-copies them to the `host/adblockplus/test/end-to-end/screenshots` folder for WebdriverIO, or `host/adblockplus/test/end-to-end-selenium/screenshots` folder for Selenium:
+copies them to the `host/adblockplus/test/end-to-end/screenshots` folder:
 
 ```shell
-# WebdriverIO
 docker cp $(docker ps -aqf ancestor=end-to-end | head -n 1):/extensions/host/adblockplus/test/end-to-end/screenshots ./host/adblockplus/test/end-to-end
-# Selenium
-docker cp $(docker ps -aqf ancestor=end-to-end | head -n 1):/extensions/host/adblockplus/test/end-to-end-selenium/screenshots ./host/adblockplus/test/end-to-end-selenium
 ```
 
 ### Compliance tests

@@ -74,6 +74,8 @@ Notes:
 
 #### Local run
 
+To run the end-to-end tests locally:
+
 ```sh
 npm run build:release -- --scope=adblock
 npm run test:end-to-end -- --scope=adblock -- {chromium|edge|firefox} {2|3}

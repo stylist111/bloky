@@ -30,10 +30,8 @@
     "sentry:release-finalize": "sentry-cli releases finalize $VERSION --org eyeo --project adblock-plus",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org eyeo --project adblock-plus ./dist/release/sourcemaps-mv3 && sentry-cli sourcemaps upload --release=$VERSION --org eyeo --project adblock-plus ./dist/release/sourcemaps-mv3",
     "test": "npm run $ test.unit",
-    "test:end-to-end": "echo 'ERROR: There is no single command to run all E2E ABP tests at the same time. Please look at the README' && exit 1",
-    "test:end-to-end:build": "node test/end-to-end/helper-extension/build.mjs",
-    "test:end-to-end-wdio": "npm run test:end-to-end:build && cd test/end-to-end && node runTests.mjs",
-    "test:end-to-end-selenium": "node test/end-to-end-selenium/runTests.js"
+    "test:end-to-end": "npm run $ test.end-to-end",
+    "test:end-to-end-local": "node test/end-to-end/runTests.js"
   },
   "$": {
     "build": {
@@ -158,11 +156,6 @@
     "@types/webextension-polyfill": "0.8.0",
     "@typescript-eslint/eslint-plugin": "6.11.0",
     "@typescript-eslint/parser": "6.11.0",
-    "@wdio/cli": "8.32.3",
-    "@wdio/firefox-profile-service": "8.32.2",
-    "@wdio/local-runner": "8.32.3",
-    "@wdio/mocha-framework": "8.32.3",
-    "@wdio/spec-reporter": "8.32.2",
     "@xmldom/xmldom": "0.8.10",
     "adm-zip": "0.5.9",
     "babel-jest": "28.1.3",

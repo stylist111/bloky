@@ -12,7 +12,7 @@ import {
 } from "./helpers.mjs";
 
 const rootDir = findProjectRoot();
-const testDir = path.join(rootDir, "test", "end-to-end");
+const testDir = path.join(rootDir, "test", "end-to-end-deprecated");
 const screenshotsPath = path.join(testDir, "screenshots");
 
 // Removes the screenshots folder

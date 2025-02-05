@@ -33,7 +33,7 @@ const helperExtensionDestZip = {
 const helperExtensionSrcPath = path.join(
   process.cwd(),
   "test",
-  "end-to-end",
+  "end-to-end-deprecated",
   "helper-extension"
 );
 

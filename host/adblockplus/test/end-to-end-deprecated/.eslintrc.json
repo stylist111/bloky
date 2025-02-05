@@ -1,0 +1,36 @@
+{
+  "env": {
+    "mocha": true
+  },
+  "rules": {
+    "prettier/prettier": "off",
+    "eqeqeq": "off"
+  },
+  "globals": {
+    "$": true,
+    "$$": true,
+    "driver": true
+  },
+  "overrides": [
+    {
+      "files": ["*.mjs"],
+      "rules": {
+        "max-len": ["error", { "code": 120, "ignoreUrls": true }],
+        "comma-dangle": ["warn", "only-multiline"],
+        "quote-props": ["error", "as-needed"],
+        "object-curly-spacing": ["error", "always"],
+        "prefer-arrow-callback": "off",
+        "brace-style": ["error", "1tbs", { "allowSingleLine": true }],
+        "object-shorthand": ["error", "always"],
+        "space-before-function-paren": [
+          "error",
+          {
+            "anonymous": "always",
+            "named": "never",
+            "asyncArrow": "always"
+          }
+        ]
+      }
+    }
+  ]
+}

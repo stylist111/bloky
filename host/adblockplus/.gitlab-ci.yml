@@ -278,14 +278,14 @@ comp:MV2:firefox:oldest:
   stage: end-to-end
   extends: .docker
   script:
-    - docker build -t end-to-end -f host/adblockplus/test/$E2E_FOLDER/Dockerfile .
+    - docker build -t end-to-end -f host/adblockplus/test/end-to-end/Dockerfile .
     # EYEOMETRY_BEARER should be set the same way the build job does it, this is:
     # echo "EYEOMETRY_BEARER=\"$ADBLOCKPLUS_EYEOMETRY_BEARER\"" >> host/adblockplus/.env
     # Passing it as a docker run env variable as a workaround.
     - docker run --shm-size=2g -t -e MANIFEST_VERSION -e BROWSER -e CI -e EYEOMETRY_BEARER="$ADBLOCKPLUS_EYEOMETRY_BEARER" end-to-end
   after_script:
     - IMAGE_ID=$(docker ps -aqf ancestor=end-to-end)
-    - docker cp $IMAGE_ID:/extensions/host/adblockplus/test/$E2E_FOLDER/screenshots host/adblockplus 2> /dev/null
+    - docker cp $IMAGE_ID:/extensions/host/adblockplus/test/end-to-end/screenshots host/adblockplus 2> /dev/null
   artifacts:
     paths:
       - host/adblockplus/screenshots/
@@ -294,26 +294,23 @@ comp:MV2:firefox:oldest:
   rules:
     - !reference [.always, rules]
 
-end-to-end:selenium:MV2:firefox:
+end-to-end:MV2:firefox:
   extends: .end-to-end
   variables:
     MANIFEST_VERSION: 2
     BROWSER: firefox
-    E2E_FOLDER: end-to-end-selenium
 
-end-to-end:selenium:MV2:edge:
+end-to-end:MV2:edge:
   extends: .end-to-end
   variables:
     MANIFEST_VERSION: 2
     BROWSER: edge
-    E2E_FOLDER: end-to-end-selenium
 
-end-to-end:selenium:MV3:chromium:
+end-to-end:MV3:chromium:
   extends: .end-to-end
   variables:
     MANIFEST_VERSION: 3
     BROWSER: chromium
-    E2E_FOLDER: end-to-end-selenium
 
 ################################################################################
 # Release

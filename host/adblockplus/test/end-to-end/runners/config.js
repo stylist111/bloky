@@ -19,7 +19,7 @@ import path from "path";
 import { installUrl } from "../utils/urls.js";
 
 // Path to end to end test code
-const endToEndPath = path.join(process.cwd(), "test", "end-to-end-selenium");
+const endToEndPath = path.join(process.cwd(), "test", "end-to-end");
 // Path to extension zip files from the current build
 const buildsDirPath = path.join(process.cwd(), "dist", "release");
 // Path to downloaded extension zip files from the latest released build

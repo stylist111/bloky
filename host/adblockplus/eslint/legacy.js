@@ -53,13 +53,13 @@ module.exports = {
       }
     },
     {
-      files: ["test/end-to-end/tests/*.js"],
+      files: ["test/end-to-end-deprecated/tests/*.js"],
       rules: {
         "prefer-arrow-callback": "off"
       }
     },
     {
-      files: ["test/end-to-end/page-objects/*.js"],
+      files: ["test/end-to-end-deprecated/page-objects/*.js"],
       env: {
         jquery: true
       },

@@ -29,7 +29,7 @@ import {
 import defineTestSuitesAfterUpgrade from "../suites/index-upgrade.js";
 import { runnerConfig } from "./config.js";
 
-describe("Adblock Plus end-to-end tests - Upgrade extension (selenium)", function () {
+describe("Adblock Plus end-to-end tests - Upgrade extension", function () {
   before(() => setGlobalOptionsHook(runnerConfig));
 
   before(async function () {

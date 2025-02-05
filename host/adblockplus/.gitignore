@@ -3,7 +3,6 @@
 
 /skin/icons/toolbar/*.png
 /test/end-to-end/screenshots/
-/test/end-to-end-selenium/screenshots/
 /testpages.adblockplus.org/
 browser-snapshots/
 
