@@ -162,6 +162,11 @@ adblockpluscore:browser:
       OTHER_PARAMS="$OTHER_PARAMS -e TEST_RUNS=10";
     fi;
     docker run $DOCKER_OPTIONS -e TEST_PARAMS="$TEST_PARAMS" $OTHER_PARAMS $FUNCTIONAL_IMAGE;
+  # We set a custom timeout here to allow for more time to run functional tests
+  # in scheduled pipelines, as they can take longer than one hour.
+  # Note that we cannot apply it ot the entire pipeline by adding it to the
+  # "default" section: https://gitlab.com/gitlab-org/gitlab/-/issues/213634
+  timeout: 2h
 
 # Functional tests - MV2
 func:v2:chromium:latest:
@@ -213,6 +218,11 @@ func:v2:firefox:oldest:
     - npm install
   tags:
     - eyeo-windows
+  # We set a custom timeout here to allow for more time to run functional tests
+  # in scheduled pipelines, as they can take longer than one hour.
+  # Note that we cannot apply it ot the entire pipeline by adding it to the
+  # "default" section: https://gitlab.com/gitlab-org/gitlab/-/issues/213634
+  timeout: 2h
 
 func:v2:windows:edge:
   extends: .functional-windows
