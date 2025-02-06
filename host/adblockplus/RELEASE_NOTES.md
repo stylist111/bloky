@@ -1,6 +1,7 @@
 # Unreleased
 
 - Attempt to fix IPM initialization issue (IM-175)
+- Updated snippets to 2.0.0
 
 # 4.12.0 - 2025-01-27
 

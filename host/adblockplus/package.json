@@ -114,7 +114,7 @@
     "@eyeo-fragments/public-api": "*",
     "@eyeo-fragments/yt-wall-detection": "*",
     "@eyeo/ext-ui-components": "*",
-    "@eyeo/snippets": "1.7.1",
+    "@eyeo/snippets": "2.0.0",
     "@eyeo/webext-ad-filtering-solution": "*",
     "@sentry/browser": "8.2.1",
     "@sentry/cli": "2.37.0",
