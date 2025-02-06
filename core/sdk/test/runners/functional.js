@@ -480,7 +480,7 @@ async function suspendServiceWorker(driver, handle) {
     async() => {
       await driver.switchTo().newWindow("tab");
       await driver.get("chrome://serviceworker-internals/");
-      let stopButtons = await driver.findElements(webdriver.By.className("stop"));
+      let stopButtons = await driver.findElements(webdriver.By.css(".stop,[data-command=stop]"));
 
       if (stopButtons.length == 0) {
         throw new Error("No service workers to stop.");
