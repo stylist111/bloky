@@ -211,6 +211,10 @@ copies them to the `host/adblockplus/test/end-to-end/screenshots` folder:
 docker cp $(docker ps -aqf ancestor=end-to-end | head -n 1):/extensions/host/adblockplus/test/end-to-end/screenshots ./host/adblockplus/test/end-to-end
 ```
 
+#### Deprecated webdriverIO tests
+
+Old tests using WebdriverIO were removed in February 2025. However, they can still be accessed via the following git tag: [abp-wdio-e2e-removal](https://gitlab.com/eyeo/browser-extensions-and-premium/extensions/extensions/-/tags/abp-wdio-e2e-removal).
+
 ### Compliance tests
 
 Compliance tests run on a local version of [testpages](https://abptestpages.org)

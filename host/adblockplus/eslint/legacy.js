@@ -51,22 +51,6 @@ module.exports = {
       parserOptions: {
         sourceType: "script"
       }
-    },
-    {
-      files: ["test/end-to-end-deprecated/tests/*.js"],
-      rules: {
-        "prefer-arrow-callback": "off"
-      }
-    },
-    {
-      files: ["test/end-to-end-deprecated/page-objects/*.js"],
-      env: {
-        jquery: true
-      },
-      globals: {
-        $: true,
-        $$: true
-      }
     }
   ],
   rules: {

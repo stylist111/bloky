@@ -1,7 +1,0 @@
-{
-  "name": "Helper extension",
-  "version": "0.0.1",
-  "description": "Opens the ABP options page",
-  "permissions": ["management", "tabs", "webNavigation", "webRequest"],
-  "host_permissions": ["<all_urls>"]
-}
