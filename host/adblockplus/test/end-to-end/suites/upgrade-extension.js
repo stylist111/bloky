@@ -90,9 +90,6 @@ async function clickAdsCounterAndCheck({ enable = true } = {}) {
 
 export default () => {
   it("keeps settings after upgrade", async function () {
-    // https://eyeo.atlassian.net/browse/EXT-153
-    if (browserDetails.browserName === "edge") this.skip();
-
     this.timeout(100000); // Long test with many checks, including the extension reload
 
     const maxAdsBlocked = 15;

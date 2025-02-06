@@ -35,9 +35,6 @@ import { uninstallUrl } from "../../utils/urls.js";
 
 export default () => {
   it("uninstalls the extension with custom settings", async function () {
-    // https://eyeo.atlassian.net/browse/EXT-153
-    if (browserDetails.browserName === "edge") this.skip();
-
     const appVersion = await driver.executeScript(() => {
       return browser.runtime.getManifest().version;
     });

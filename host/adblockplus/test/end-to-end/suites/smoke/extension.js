@@ -75,9 +75,6 @@ export default () => {
   });
 
   it("resets settings", async function () {
-    // https://eyeo.atlassian.net/browse/EXT-153
-    if (browserDetails.browserName === "edge") this.skip();
-
     this.timeout(50000); // The options page may take long time to appear after reloading the extension
 
     await initOptionsAdvancedTab(getOptionsHandle());

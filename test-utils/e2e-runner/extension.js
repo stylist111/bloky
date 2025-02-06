@@ -225,7 +225,13 @@ export async function reloadExtension(initOptionsFn, suppressUpdatePage = true) 
 
   // reload the extension
   await initOptionsFn(getOptionsHandle());
-  await driver.executeScript(() => browser.runtime.reload());
+  await driver.executeScript(() => {
+    // Unloading the extension leads to an ECONNREFUSED error, so in order to
+    // ensure that we have enough time to switch to a safe window handle,
+    // we're delaying the triggering of the reload
+    // https://eyeo.atlassian.net/browse/EXT-153
+    setTimeout(() => browser.runtime.reload(), 1000);
+  });
   // Workaround for `target window already closed`
   await driver.switchTo().window(safeHandle);
 
@@ -297,11 +303,32 @@ export async function upgradeExtension(initOptionsFn) {
  * @returns {Promise<void>}
  */
 export async function uninstallExtension(initOptionsFn) {
+  // Extension pages will be closed during uninstall,
+  // create a new tab to avoid the "target window already closed" error
+  const safeHandle = await openNewTab(localTestPageUrl);
+
   await initOptionsFn(getOptionsHandle());
 
   await driver.executeScript(() => {
-    browser.management.uninstallSelf();
+    // Unloading the extension leads to an ECONNREFUSED error, so in order to
+    // ensure that we have enough time to switch to a safe window handle,
+    // we're delaying the triggering of the uninstall
+    // https://eyeo.atlassian.net/browse/EXT-153
+    setTimeout(() => browser.management.uninstallSelf(), 1000);
   });
+  // Workaround for `target window already closed`
+  await driver.switchTo().window(safeHandle);
+
+  // Wait until the current option page is closed by the uninstall
+  // otherwise the next step will fail
+  await driver.wait(
+    async () => {
+      const handlers = await driver.getAllWindowHandles();
+      return !handlers.includes(getOptionsHandle());
+    },
+    5000,
+    "Current option page was not closed in time",
+  );
 }
 
 function randomIntFromInterval(min, max) {
