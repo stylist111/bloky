@@ -159,7 +159,7 @@
     "webextension-polyfill": "0.8.0",
     "webpack": "5.93.0",
     "webpack-merge": "6.0.1",
-    "webpack-stream": "6.1.1"
+    "webpack-stream": "7.0.0"
   },
   "nx": {
     "targets": {

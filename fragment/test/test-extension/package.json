@@ -20,7 +20,7 @@
     "@eyeo/webext-ad-filtering-solution": "*"
   },
   "devDependencies": {
-    "webpack": "^5.88.2",
+    "webpack": "5.97.1",
     "webpack-cli": "^5.1.4"
   }
 }
