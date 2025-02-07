@@ -344,6 +344,11 @@ async function pollMessages(driver, handle, isMV3) {
           webdriverEvents.push({id: "serviceWorkerSuspended"});
           break;
 
+        case "reloadExtension":
+          await reloadExtension(driver, handle);
+          result = {extensionReloaded: true, log};
+          break;
+
         case "end":
           result = arg;
           result.log = log;
@@ -402,8 +407,7 @@ async function runReloadTests(
   let handle;
 
   await startTestRun(driver, id, params);
-  while (!results ||
-         results.log.toString().includes(`${testOutputToken} (preparation)`)) {
+  while (!results || results.extensionReloaded) {
     // Reloading with an update has the same performance impact as
     // loading the first time. This is worst in incognito mode and
     // when an MV3 extension has many subscriptions and rulesets, and on the
@@ -498,6 +502,35 @@ async function suspendServiceWorker(driver, handle) {
       await driver.close();
       await driver.switchTo().window(handle);
     }
+  );
+}
+
+export async function reloadExtension(driver, currentHandle) {
+  // Extension pages will be closed during reload,
+  // create a new tab to avoid the "target window already closed" error
+  await driver.switchTo().newWindow("tab");
+  const safeHandle = await driver.getWindowHandle();
+
+  await driver.switchTo().window(currentHandle);
+  await driver.executeScript(() => {
+    // Unloading the extension leads to an ECONNREFUSED error, so in order to
+    // ensure that we have enough time to switch to a safe window handle,
+    // we're delaying the triggering of the reload
+    // https://eyeo.atlassian.net/browse/EXT-153
+    setTimeout(() => chrome.runtime.reload(), 1000);
+  });
+  // Workaround for `target window already closed`
+  await driver.switchTo().window(safeHandle);
+
+  // Wait until the current page closes, otherwise we might switch back to it
+  // thinking that the reload is complete.
+  await driver.wait(
+    async() => {
+      const handlers = await driver.getAllWindowHandles();
+      return !handlers.includes(currentHandle);
+    },
+    5000,
+    "The extension page not closed in time"
   );
 }
 

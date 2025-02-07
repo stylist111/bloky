@@ -23,8 +23,8 @@ import {Page, isMV3, isFirefox, waitForHighlightedStyle,
   from "./utils.js";
 import {subTestCustom1} from "./api-fixtures.js";
 import {wait} from "./polling.js";
-import {addFilter, EWE, runInBackgroundPage}
-  from "./messaging.js";
+import {addFilter, EWE} from "./messaging.js";
+import {reloadExtension} from "./mocha/mocha-runner.js";
 
 const METADATA_FILTER_TEXT = "reload###metadata-test";
 const METADATA_FILTER = {
@@ -62,18 +62,7 @@ describe(`Reload (${phase})`, function() {
 
   after(async function() {
     if (start) {
-      await browser.storage.local.set({"reload-test-running": true});
-      await browser.storage.local.set({search: document.location.search});
-      // Even if we await for promise above, we still need to give browser time
-      // to complete setting flag, in other case in next steps we won't have
-      // flag set properly and reload.html won't load
-      await new Promise(r => setTimeout(r, 4500));
-
-      return runInBackgroundPage([
-        {op: "getGlobal", arg: "chrome"},
-        {op: "getProp", arg: "runtime"},
-        {op: "callMethod", arg: "reload"}
-      ]);
+      return await reloadExtension("reload-test-running");
     }
 
     await browser.storage.local.remove("reload-test-running");

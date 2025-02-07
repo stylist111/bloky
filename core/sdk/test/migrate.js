@@ -23,8 +23,8 @@ import {isMV3, Page, expectElemHideHidden} from "./utils.js";
 import {subAntiCVLocal, subTestCustom1, subEasylistLive,
         subEasylistPlusGermanyLive} from "./api-fixtures.js";
 import {wait} from "./polling.js";
-import {EWE, runInBackgroundPage} from "./messaging.js";
-import {updateExtensionFiles} from "./mocha/mocha-runner.js";
+import {EWE} from "./messaging.js";
+import {updateExtensionFiles, reloadExtension} from "./mocha/mocha-runner.js";
 import {MIGRATED_TO_MV2, MIGRATED_TO_MV3} from "../src/background/prefs.js";
 
 let start = new URLSearchParams(document.location.search).get("start");
@@ -55,14 +55,7 @@ describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
 
   after(async function() {
     if (start) {
-      await browser.storage.local.set({"mv2-mv3-migrate-test-running": true});
-      await browser.storage.local.set({search: document.location.search});
-
-      return runInBackgroundPage([
-        {op: "getGlobal", arg: "chrome"},
-        {op: "getProp", arg: "runtime"},
-        {op: "callMethod", arg: "reload"}
-      ]);
+      return await reloadExtension("mv2-mv3-migrate-test-running");
     }
 
     await browser.storage.local.remove("mv2-mv3-migrate-test-running");

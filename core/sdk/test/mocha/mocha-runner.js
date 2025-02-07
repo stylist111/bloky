@@ -118,6 +118,20 @@ export function isFuzzingServiceWorker() {
   return serviceWorkerFuzzingEnabled;
 }
 
+export async function reloadExtension(testKey) {
+  await browser.storage.local.set({[testKey]: true});
+  await browser.storage.local.set({search: document.location.search});
+  // Even if we await for promise above, we still need to give browser time
+  // to complete setting flag, in other case in next steps we won't have
+  // flag set properly and reload.html won't load
+  await new Promise(r => setTimeout(r, 4500));
+
+  sendMessage("reloadExtension");
+  // From the perspective of this function, waiting for the extension to be
+  // reloaded is the same as waiting for this extension page to be killed.
+  await new Promise(_ => {});
+}
+
 export function start() {
   let skipped = 0;
   let runner = mocha.run();

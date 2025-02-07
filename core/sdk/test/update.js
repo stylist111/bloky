@@ -23,8 +23,8 @@ import {Page, isFirefox, firefoxVersion, isIncognito, readFile,
         writeFile, setMinTimeout, expectElemHideHidden, waitForAssertion, waitForSubscriptionsToDownload} from "./utils.js";
 import {subTestCustom1, subTestNoDNR} from "./api-fixtures.js";
 import {wait} from "./polling.js";
-import {EWE, runInBackgroundPage} from "./messaging.js";
-import {updateExtensionFiles} from "./mocha/mocha-runner.js";
+import {EWE} from "./messaging.js";
+import {updateExtensionFiles, reloadExtension} from "./mocha/mocha-runner.js";
 import {MILLIS_IN_DAY, MILLIS_IN_SECOND} from "adblockpluscore/lib/time.js";
 
 let start = new URLSearchParams(document.location.search).get("start");
@@ -63,14 +63,7 @@ describe(`Update (${phase}) [runner-only]`, function() {
         }
       ]);
 
-      await browser.storage.local.set({"update-test-running": true});
-      await browser.storage.local.set({search: document.location.search});
-
-      return runInBackgroundPage([
-        {op: "getGlobal", arg: "chrome"},
-        {op: "getProp", arg: "runtime"},
-        {op: "callMethod", arg: "reload"}
-      ]);
+      return await reloadExtension("update-test-running");
     }
 
     await browser.storage.local.remove("update-test-running");
