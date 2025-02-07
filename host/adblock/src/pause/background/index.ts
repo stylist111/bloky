@@ -122,7 +122,11 @@ async function start(): Promise<void> {
   const domainPausedKey = "domainPaused";
   void browser.storage.local.remove(domainPausedKey);
 }
-void start();
+
+function handleExtensionStartup(): void {
+  void start();
+}
+browser.runtime.onStartup.addListener(handleExtensionStartup);
 
 browser.commands.onCommand.addListener((command) => {
   if (command === "toggle_pause") {
