@@ -15,6 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import {
   commandStorageKey,
   executeIPMCommands,
@@ -121,6 +122,9 @@ describe("command-library", () => {
     beforeEach(() => {
       // Mock prefs.get to return an empty object
       jest.spyOn(prefs, "get").mockReturnValue({});
+      jest
+        .spyOn(ewe.experiments, "getFlag")
+        .mockReturnValue(Promise.resolve(true));
 
       createTabActor = {
         handleCommand: jest.fn(),
@@ -133,17 +137,17 @@ describe("command-library", () => {
       setCommandActor(CommandName.createTab, createTabActor);
     });
 
-    it("initializes properly", () => {
+    it("initializes properly", async () => {
       const commands = [{ ...commandBase }];
-      executeIPMCommands(commands, true);
+      await executeIPMCommands(commands, true);
       expect(createTabActor.handleCommand).toHaveBeenCalledWith(
         commandBase.ipm_id,
       );
     });
 
-    it("executes properly after ping", () => {
+    it("executes properly after ping", async () => {
       const commands = [{ ...commandBase }];
-      executeIPMCommands(commands);
+      await executeIPMCommands(commands);
       expect(createTabActor.handleCommand).toHaveBeenCalledWith(
         commandBase.ipm_id,
       );

@@ -194,6 +194,15 @@ defaults.premium_user_id = "";
 defaults.ipm_commands = {};
 
 /**
+ * TODO: Remove this after new IPM initialization is enabled and reaches the
+ * majority of users. See: https://eyeo.atlassian.net/browse/IM-238
+ * Whether the IPM commands have been reset.
+ *
+ * @type {boolean}
+ */
+defaults.ipm_commands_reset_completed = false;
+
+/**
  * Map of command stats
  *
  * @type {Object}

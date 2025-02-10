@@ -16,8 +16,9 @@
  */
 
 import browser from "webextension-polyfill";
+import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import * as logger from "../../utilities/background";
-import { Prefs } from "../../alias/prefs";
+import { Prefs } from "~/alias/prefs";
 import {
   Behavior,
   Command,
@@ -215,7 +216,7 @@ function retryExecuteCommands(commandName: CommandName): void {
     }
 
     unexecutableCommands.delete(command);
-    executeIPMCommands([command], isInitialization);
+    void executeIPMCommands([command], isInitialization);
   }
 }
 
@@ -244,13 +245,163 @@ function storeCommands(commands: Command[]): void {
 }
 
 /**
+ * TODO: remove this after deciding to use the new IPM initialization
+ * See: https://eyeo.atlassian.net/browse/IM-237
+ * Uses the A/B test framework to checks whether the new IPM initialization is enabled
+ */
+async function isNewIPMInitEnabled(): Promise<boolean> {
+  const enabled = await ewe.experiments.getFlag("new-ipm-init-enabled");
+  return !!enabled;
+}
+
+/**
+ * TODO: remove this after deciding to use the new IPM initialization
+ * See: https://eyeo.atlassian.net/browse/IM-237
+ * Checks whether the command with the given id has already been processed
+ * at an earlier time.
+ *
+ * @param ipmId The IPM id
+ * @returns Whether the command with the given id has already been processed
+ */
+function hasProcessedCommand(ipmId: string): boolean {
+  const commandStorage = Prefs.get(commandStorageKey);
+  return ipmId in commandStorage;
+}
+
+/**
+ * TODO: remove this after deciding to use the new IPM initialization
+ * See: https://eyeo.atlassian.net/browse/IM-237
+ * Stores the commands data to persistent storage.
+ *
+ * @param commands A list of commands from the IPM server
+ */
+function storeCommandsOld(commands: Command[]): void {
+  const storage = Prefs.get(commandStorageKey);
+
+  for (const command of commands) {
+    storage[command.ipm_id] = command;
+  }
+
+  void Prefs.set(commandStorageKey, storage);
+}
+
+/**
+ * TODO: remove this after deciding to use the new IPM initialization
+ * See: https://eyeo.atlassian.net/browse/IM-237
  * Executes a list of commands sent by the IPM server.
  *
  * @param commands A list of commands from the IPM server
  * @param isInitialization Whether the commands are being restored when the
  *   module initializes
  */
-export function executeIPMCommands(commands: unknown[], isInitialization: boolean = false): void {
+function executeIPMCommandsOld(commands: unknown[], isInitialization: boolean = false): void {
+  const actorByExecutableCommand = new Map<Command, CommandActor>();
+
+  if (commands.length > maximumProcessableCommands) {
+    logger.error("[ipm]: Too many commands received.");
+    recordGenericEvent("too_many_commands");
+    return;
+  }
+
+  for (const command of commands) {
+    if (!isCommand(command)) {
+      logger.error("[ipm]: Invalid command received.");
+      continue;
+    }
+
+    if (!knownCommandsList.includes(command.command_name)) {
+      logger.error("[ipm]: Unknown command name received:", command.command_name);
+      continue;
+    }
+
+    if (command.version !== CommandVersion[command.command_name]) {
+      logger.error(
+        `[ipm]: Command version mismatch for command "${
+          command.command_name
+        }". Requested version was ${command.version}, version present is ${
+          CommandVersion[command.command_name]
+        }`,
+      );
+      continue;
+    }
+
+    if (isCommandExpired(command)) {
+      logger.error("[ipm]: Command has expired.");
+      recordEvent(command.ipm_id, command.command_name, CommandEventType.expired);
+
+      // cleanup commands that have expired from local storage
+      if (isInitialization) {
+        dismissCommand(command.ipm_id);
+      }
+      continue;
+    }
+
+    const actor = actorByCommandName.get(command.command_name);
+    if (!actor) {
+      logger.warn("[ipm]: No actor found:", command.command_name);
+      unexecutableCommands.set(command, isInitialization);
+      continue;
+    }
+
+    if (!actor.isValidCommand(command)) {
+      logger.error("[ipm]: Invalid parameters received.");
+      continue;
+    }
+
+    // add timestamp and language information
+    if (!("attributes" in command)) {
+      // eslint-disable-next-line no-param-reassign
+      command.attributes = {
+        received: Date.now(),
+        language: browser.i18n.getUILanguage(),
+      };
+    }
+
+    if (!isInitialization) {
+      if (hasProcessedCommand(command.ipm_id)) {
+        logger.error("[ipm]: Campaign already processed:", command.ipm_id);
+        continue;
+      }
+
+      actorByExecutableCommand.set(command, actor);
+    }
+  }
+
+  const executableCommands = Array.from(actorByExecutableCommand.keys());
+  storeCommandsOld(executableCommands);
+
+  const commandHandlingPromises = Array.from(actorByExecutableCommand).map(
+    async ([executableCommand, actor]) => {
+      await actor.handleCommand(executableCommand.ipm_id, isInitialization);
+    },
+  );
+
+  void Promise.all(commandHandlingPromises).then(() => {
+    // let actors know that we're done process incoming commands
+    knownCommandsList
+      .map((name) => actorByCommandName.get(name))
+      .forEach((actor) => actor?.onCommandsProcessed());
+  });
+}
+
+/**
+ * Executes a list of commands sent by the IPM server.
+ *
+ * @param commands A list of commands from the IPM server
+ * @param isInitialization Whether the commands are being restored when the
+ *   module initializes
+ */
+export async function executeIPMCommands(
+  commands: unknown[],
+  isInitialization: boolean = false,
+): Promise<void> {
+  // TODO: remove this after deciding to use the new IPM initialization
+  // See: https://eyeo.atlassian.net/browse/IM-237
+  if (!(await isNewIPMInitEnabled())) {
+    executeIPMCommandsOld(commands, isInitialization);
+    return;
+  }
+
   const actorByExecutableCommand = new Map<Command, CommandActor>();
 
   if (commands.length > maximumProcessableCommands) {
@@ -419,10 +570,33 @@ async function handleDeleteCommand(ipmId: string): Promise<void> {
 }
 
 /**
+ * TODO: Remove this after new IPM initialization is enabled and reaches the
+ * majority of users. See: https://eyeo.atlassian.net/browse/IM-238
+ * Reset IPM commands, as part of IM-175, since there might be multiple
+ * commands stored that should not execute anymore
+ */
+async function resetIPMCommands(): Promise<void> {
+  await Prefs.untilLoaded;
+
+  const ipmCommandsReset = Prefs.get("ipm_commands_reset_completed");
+  if ((await isNewIPMInitEnabled()) && !ipmCommandsReset) {
+    await Prefs.set(commandStorageKey, {});
+    await Prefs.set("ipm_commands_reset_completed", true);
+  }
+}
+
+/**
  * Initializes command library
  */
 async function start(): Promise<void> {
   await Prefs.untilLoaded;
+
+  // TODO: Remove this after new IPM initialization is enabled and reaches the
+  // majority of users. See: https://eyeo.atlassian.net/browse/IM-238
+  await resetIPMCommands();
+  ewe.experiments.onChanged.addListener(async () => {
+    await resetIPMCommands();
+  });
 
   setDeleteCommandHandler(handleDeleteCommand);
 
@@ -434,7 +608,7 @@ async function start(): Promise<void> {
   }
 
   const commands = Object.values(commandStorage);
-  executeIPMCommands(commands, true);
+  await executeIPMCommands(commands, true);
 }
 
 start().catch(logger.error);

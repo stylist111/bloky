@@ -67,7 +67,7 @@ async function processResponse(response: Response): Promise<void> {
       commands = [bodyJSON];
     }
 
-    executeIPMCommands(commands);
+    await executeIPMCommands(commands);
   } catch (error) {
     reportAndLogError(
       error as Error,

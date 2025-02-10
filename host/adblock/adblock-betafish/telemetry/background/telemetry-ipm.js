@@ -60,7 +60,7 @@ class IPMTelemetry extends TelemetryBase {
         commands = [bodyJSON];
       }
 
-      executeIPMCommands(commands);
+      await executeIPMCommands(commands);
     } catch (error) {
       logger.error("[Telemetry]: Error parsing IPM response.", error);
     }
