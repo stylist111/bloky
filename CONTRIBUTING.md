@@ -48,7 +48,13 @@ If you see a change that should probably have release notes, shout!
 
 The specifics will be defined in the release process, but on a high level the release manager is reviewing existing release notes and giving them a version number, not writing them from scratch.
 
+## Environment Variables
 
+Generally, environment variables are host specific. Each host (ADBLOCK and ADBLOCKPLUS) has its own set of required environment variables in GitLab CI. These variables must have the correct prefix matching their host ("ADBLOCK_" or "ADBLOCKPLUS_").
+
+Each host maintains its own list of required variables in a file located in their directory (e.g., host/adblock/variables or host/adblockplus/variables). These files contain the complete CI variable names including prefixes, matching exactly what's configured in GitLab.
+
+When using these variables in the actual code, the host part should be omitted. For example, use `SOME_VARIABLE` instead of `ADBLOCK_SOME_VARIABLE`. To see how this works, refer to the `/scripts/release-utils/create-environment-variables.sh` file.
 
 [convcomms]: https://www.conventionalcommits.org/en/v1.0.0/
 [convcomms-angular]: https://github.com/angular/angular/blob/22b96b9/CONTRIBUTING.md#type

@@ -69,12 +69,8 @@ stages:
 build:
   extends: .build
   script:
-    # Create .env file from CI variables
-    - echo "CDP_PUBLIC_KEY_URL=\"$ADBLOCK_CDP_PUBLIC_KEY_URL\"" >> host/adblock/.env
-    - echo "CDP_BEARER=\"$ADBLOCK_CDP_BEARER\"" >> host/adblock/.env
-    - echo "CDP_PING_URL=\"$ADBLOCK_CDP_PING_URL\"" >> host/adblock/.env
-    - echo "EYEOMETRY_BEARER=\"$ADBLOCK_EYEOMETRY_BEARER\"" >> host/adblock/.env
-    - echo "EYEOMETRY_URL=\"$ADBLOCK_EYEOMETRY_URL\"" >> host/adblock/.env
+    # Create .env file from CI variables and confirm they have values
+    - ./scripts/release-utils/create-environment-variables.sh ADBLOCK host/adblock/environment-variables > host/adblock/.env
     # Create source archive
     - npm run build:source -- --scope=adblock
     # Create extension builds
