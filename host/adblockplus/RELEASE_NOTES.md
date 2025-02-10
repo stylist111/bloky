@@ -1,5 +1,7 @@
 # Unreleased
 
+# 4.13.0 - 2025-02-10
+
 - Attempt to fix IPM initialization issue; with split experiment (IM-175)
 - Updated snippets to 2.0.0
 
