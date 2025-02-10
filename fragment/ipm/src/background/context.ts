@@ -16,6 +16,7 @@
  */
 
 import {
+  type getExperimentsFunction,
   type Licensing,
   type Logger,
   type Preferences,
@@ -58,14 +59,30 @@ export let info: UserAndHostInformation = {
   },
 };
 
+/**
+ * A reference to the `getExperiments` function
+ */
+export let getExperiments = async (): Promise<string> => "";
+
+/**
+ * Sets dependencies for the IPM fragment.
+ *
+ * @param prefs_ A reference to the prefs module
+ * @param logger_ A reference to the logger module
+ * @param licensing_ A reference to the licensing module
+ * @param info_ A reference to the info module
+ * @param getExperiments_ A reference to the `getExperiments` function
+ */
 export function init(
   prefs_: Preferences,
   logger_: Logger,
   licensing_: Licensing,
   info_: UserAndHostInformation,
+  getExperiments_: getExperimentsFunction,
 ): void {
   prefs = prefs_;
   logger = logger_;
   licensing = licensing_;
   info = info_;
+  getExperiments = getExperiments_;
 }

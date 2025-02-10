@@ -63,7 +63,7 @@ function bnToBytes(bn) {
  *
  * @returns {string} split experiments assignments
  */
-async function getExperiments() {
+export async function getExperiments() {
   let variantsBitmap = 0n;
 
   const experiments = await ewe.experiments.getExperiments();

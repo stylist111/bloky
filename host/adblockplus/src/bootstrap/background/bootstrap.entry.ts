@@ -27,7 +27,10 @@ import { start as startStats } from "../../../adblockpluschrome/lib/stats.js";
 import { start as startTabSessionStorage } from "../../../adblockpluschrome/lib/storage/tab-session";
 import { start as startSubscriptionInit } from "../../../adblockpluschrome/lib/subscriptionInit.js";
 import { start as startErrorReporting } from "../../error-reporter/background";
-import { start as startUninstall } from "~/uninstall/background";
+import {
+  getExperiments,
+  start as startUninstall
+} from "~/uninstall/background";
 import { start as startInit } from "../../../lib/init.js";
 import { start as startRecommendedLanguage } from "../../../lib/recommendLanguage.js";
 import { start as startAllowListing } from "../../allowlisting/background";
@@ -86,7 +89,8 @@ async function bootstrap(): Promise<void> {
         getAppVersion() {
           return info.addonVersion;
         }
-      }
+      },
+      getExperiments
     ).catch(reportAndLogError);
     startReadyState();
     startFilterConfiguration();

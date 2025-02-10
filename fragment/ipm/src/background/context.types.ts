@@ -62,3 +62,8 @@ export interface UserAndHostInformation {
   getBrowserName: () => string;
   getAppVersion: () => string;
 }
+
+/**
+ * Function signature of the host's getExperiments(), as of 2025-02-05
+ */
+export type getExperimentsFunction = () => Promise<string>;

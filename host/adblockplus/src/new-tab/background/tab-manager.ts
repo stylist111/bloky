@@ -17,6 +17,7 @@
 
 import * as browser from "webextension-polyfill";
 import {
+  addExperimentsSearchParams,
   checkLanguage,
   CommandEventType,
   CommandName,
@@ -238,6 +239,13 @@ async function openNewTab(): Promise<void> {
       continue;
     }
 
+    // Add experiment query params to target URL.
+    let url = await addExperimentsSearchParams(targetUrl);
+    if (url === null) {
+      logger.debug("[new-tab]: Failed to append experiments search params.");
+      url = targetUrl;
+    }
+
     // Ignore and dismiss command if it has expired
     const command = getCommand(ipmId);
     if (!command) {
@@ -254,7 +262,7 @@ async function openNewTab(): Promise<void> {
     const loadEventListener = onNewTabUpdated.bind(null);
     browser.tabs.onUpdated.addListener(loadEventListener);
 
-    const tab = await browser.tabs.create({ url: targetUrl }).catch((error) => {
+    const tab = await browser.tabs.create({ url }).catch((error) => {
       logger.error("[new-tab]: create tab error", error);
       return null;
     });

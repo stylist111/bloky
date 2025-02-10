@@ -18,6 +18,7 @@
 import * as browser from "webextension-polyfill";
 import { ExtendedInstallType } from "~/management";
 import {
+  addExperimentsSearchParams,
   CommandEventType,
   CommandName,
   createSafeOriginUrl,
@@ -225,6 +226,7 @@ async function openNewtab(): Promise<void> {
       dismissCommand(ipmId);
       continue;
     }
+
     // Ignore and dismiss command if License states doesn't match the license state of the command
     // eslint-disable-next-line no-await-in-loop
     if (!(await doesLicenseStateMatch(behavior))) {
@@ -234,19 +236,30 @@ async function openNewtab(): Promise<void> {
       continue;
     }
 
+    // Ignore and dismiss command if given target URL doesn't meet safe
+    // origin requirements.
     const targetUrl = createSafeOriginUrl(behavior.target);
     if (!targetUrl) {
       registerEvent(ipmId, NewTabErrorEventType.noUrlFound);
+      logger.debug("[new-tab]: Invalid target URL.");
       dismissCommand(ipmId);
       continue;
     }
 
+    // Add experiment query params to target URL.
     // eslint-disable-next-line no-await-in-loop
-    const url = await addBlockCountToURL(targetUrl);
+    let url = await addExperimentsSearchParams(targetUrl);
+    if (url === null) {
+      logger.debug("[new-tab]: Failed to append experiments search params.");
+      url = targetUrl;
+    }
+
+    // eslint-disable-next-line no-await-in-loop
+    url = await addBlockCountToURL(url);
     if (url === null) {
       recordEvent(ipmId, CommandName.createTab, NewTabErrorEventType.noUrlFound);
       dismissCommand(ipmId);
-      logger.debug("[new-tab]: Invalid URL.");
+      logger.debug("[new-tab]: Invalid target URL.");
       continue;
     }
 

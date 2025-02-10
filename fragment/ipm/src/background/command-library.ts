@@ -28,17 +28,18 @@ import {
   DeleteEventType,
   maximumProcessableCommands,
 } from "./command-library.types";
-import { isDeleteBehavior, setDeleteCommandHandler } from "./delete-commands";
-import { recordEvent, recordGenericEvent } from "./event-recording";
-import { isValidDate } from "./param-validator";
-import { checkLanguage } from "./language-check";
-import { prefs, logger, init as contextInit } from "./context";
+import { init as initializeContext, logger, prefs } from "./context";
 import {
+  type getExperimentsFunction,
   type Licensing,
   type Logger,
   type Preferences,
   type UserAndHostInformation,
 } from "./context.types";
+import { isDeleteBehavior, setDeleteCommandHandler } from "./delete-commands";
+import { recordEvent, recordGenericEvent } from "./event-recording";
+import { checkLanguage } from "./language-check";
+import { isValidDate } from "./param-validator";
 
 /**
  * A list of known commands.
@@ -633,8 +634,10 @@ export async function start(
   logger: Logger,
   licensing: Licensing,
   info: UserAndHostInformation,
+  getExperiments: getExperimentsFunction,
 ): Promise<void> {
-  contextInit(preferences, logger, licensing, info);
+  initializeContext(preferences, logger, licensing, info, getExperiments);
+
   await prefs.untilLoaded;
 
   // TODO: Remove this after new IPM initialization is enabled and reaches the

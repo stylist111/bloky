@@ -15,8 +15,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { createSafeOriginUrl } from "./url";
-import { prefs } from "./context";
+import * as ewe from "@eyeo/webext-ad-filtering-solution";
+import * as context from "./context";
+import { addExperimentsSearchParams, createSafeOriginUrl } from "./url";
+import { ExperimentSearchParameterKeys } from "./url.types";
 
 describe("url", () => {
   describe("createSafeOriginUrl", () => {
@@ -24,7 +26,7 @@ describe("url", () => {
     const safeOrigins = [defaultOrigin, "https://origin2.com"];
 
     beforeEach(() => {
-      jest.spyOn(prefs, "get").mockImplementation((preference) => {
+      jest.spyOn(context.prefs, "get").mockImplementation((preference) => {
         switch (preference) {
           case "ipm_default_origin":
             return defaultOrigin;
@@ -65,6 +67,53 @@ describe("url", () => {
         const url = createSafeOriginUrl(link);
         expect(url).toBe(link);
       }
+    });
+  });
+
+  describe("addExperimentsSearchParams", () => {
+    const experiments = "__exp__";
+    const revision = "__rev__";
+    beforeEach(() => {
+      jest
+        .spyOn(context, "getExperiments")
+        .mockImplementation(async () => experiments);
+      jest
+        .spyOn(ewe.experiments, "getRevisionId")
+        .mockImplementation(async () => revision);
+    });
+
+    it("should return a string if a valid URL is given", async () => {
+      const result = await addExperimentsSearchParams("http://example.com");
+      expect(typeof result).toBe("string");
+    });
+
+    it("should return null if an invalid URL is given", async () => {
+      const result = await addExperimentsSearchParams("__invalid_url__");
+      expect(result).toBe(null);
+    });
+
+    it("should add the correct params", async () => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const result = (await addExperimentsSearchParams("http://example.com"))!;
+      console.log(result);
+      expect(result).toContain(
+        `${ExperimentSearchParameterKeys.revision}=${revision}`,
+      );
+      expect(result).toContain(
+        `${ExperimentSearchParameterKeys.variants}=${experiments}`,
+      );
+    });
+
+    it("should keep path, query params, matrix params and fragment identifiers", async () => {
+      const path = "http://example.com/level1;name=foo/level2;name=bar/?";
+      const query = "query=1";
+      const fragment = "#fragment1";
+      const url = `${path}${query}${fragment}`;
+      const result = (await addExperimentsSearchParams(url)) ?? "";
+
+      expect(result.startsWith(path)).toBe(true);
+      expect(result.endsWith(fragment)).toBe(true);
+      expect(result).toContain(query);
     });
   });
 });

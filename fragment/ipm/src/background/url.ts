@@ -15,7 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { prefs } from "./context";
+import * as ewe from "@eyeo/webext-ad-filtering-solution";
+import { getExperiments, prefs } from "./context";
+import { ExperimentSearchParameterKeys, noRevisionId } from "./url.types";
 
 /**
  * Constructs a URL based on the given URL and a trusted origin. If `url` is
@@ -46,6 +48,36 @@ export function createSafeOriginUrl(url: string): string | null {
   }
 
   return safeOriginUrl.href;
+}
+
+/**
+ * Adds search params from the split experiment framework to the given URL.
+ *
+ * @param url The URL to add the params to
+ * @returns The URL with the added params if the given URL is a valid URL,
+ *  or `null` if it is not
+ */
+export async function addExperimentsSearchParams(
+  url: string,
+): Promise<string | null> {
+  let extendedUrl: URL;
+
+  try {
+    extendedUrl = new URL(url);
+  } catch (ex) {
+    return null;
+  }
+
+  extendedUrl.searchParams.append(
+    ExperimentSearchParameterKeys.revision,
+    (await ewe.experiments.getRevisionId()) ?? noRevisionId,
+  );
+  extendedUrl.searchParams.append(
+    ExperimentSearchParameterKeys.variants,
+    await getExperiments(),
+  );
+
+  return extendedUrl.href;
 }
 
 /**

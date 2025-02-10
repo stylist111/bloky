@@ -111,7 +111,7 @@ function bnToBytes(num: bigint): Uint8Array {
  *
  * @returns split experiments assignments
  */
-async function getExperiments(): Promise<string> {
+export async function getExperiments(): Promise<string> {
   // TypeScript only supports *n notation when targeting es2020, but we still
   // support older browser versions that don't support all those features
   // (e.g. optional chaining). Therefore we're using BigInt() notation instead.
