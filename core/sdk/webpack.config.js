@@ -150,7 +150,10 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath,
     dependencies,
     entry: {
       api: {
-        import: "./src/background/index.js",
+        import: [
+          "./src/background/browser-polyfill.js",
+          "./src/background/index.js"
+        ],
         library: {name: "EWE", type: "umd"}
       },
       content: "./src/content/index.js"
@@ -198,10 +201,6 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath,
     build.module.rules[0].exclude = [testingJsPath];
     build.resolve.alias["./testing.js"] = testingJsStubPath;
   }
-
-  // It helps to use webextension-polyfill `browser` in production and
-  // inject test `browser` in unit tests.
-  build.resolve.alias["./browser.js"] = path.resolve(dirname, "./src/background/webext-browser.js");
 
   if (subscriptionFile) {
     let customSubsFile = path.resolve(dirname, subscriptionFile);

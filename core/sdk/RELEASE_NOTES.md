@@ -4,11 +4,21 @@
 
 - Release builds are now unminified, and have inline source maps. This matches
   the configuration that we were uploading to NPM. (EXT-741)
+- Added `EWE.sentry.*` API for reporting errors to Sentry (EXT-754).
 
 ## Fixes
 
 - Saving of downloaded filters to IndexedDB can now continue if the database was
   previously corrupted. (EXT-679)
+
+## Updating your code
+
+- For automatic error reporting to be active, make sure to do the following
+  (EXT-754):
+  - Call `EWE.sentry.start()` as early in the initialization flow as possible.
+  - Call `EWE.sentry.reportError()` whenever an error should be reported that
+    are caught before they can propagate further, where they could be caught
+    by Sentry automatically.
 
 # 1.23.1 - 2025-01-15
 

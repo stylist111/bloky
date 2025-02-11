@@ -252,13 +252,6 @@ defaults.premium_upgrade_page_url =
 defaults.premium_user_id = "";
 
 /**
- * Sentry user ID
- *
- * @type {string}
- */
-defaults.sentry_user_id = "";
-
-/**
  * The URL of the IPM server.
  *
  * @type {string}

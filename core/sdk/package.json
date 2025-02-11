@@ -36,6 +36,7 @@
     "src/types/index.d.ts"
   ],
   "dependencies": {
+    "@sentry/browser": "8.54.0",
     "adblockpluscore": "*",
     "pako": "^2.1.0",
     "uuid": "^9.0.0",

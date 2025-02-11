@@ -25,6 +25,7 @@ toc:
       - filters
       - notifications
       - reporting
+      - sentry
       - snippets
       - subscriptions
       - telemetry

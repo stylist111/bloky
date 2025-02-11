@@ -23,6 +23,8 @@ if (typeof EWE == "undefined" && typeof importScripts != "undefined") {
   importScripts("ewe-api.js", "custom-mv3-subscriptions.js");
 }
 
+const sentryErrorMessage = "This is an expected error for Sentry";
+
 let callbackIdCounter = 0;
 let callbacks = new Map();
 let lastError;
@@ -271,6 +273,14 @@ function handleTestMessage(request, sender, sendResponse) {
       return true;
     }
 
+    case "ewe-test:sentry-error": {
+      setTimeout(() => {
+        throw new Error(sentryErrorMessage);
+      }, 0);
+      sendResponse({result: {}});
+      return true;
+    }
+
     // Required for testing testpages
     case "filters.get": {
       EWE.filters.getUserFilters().then(userFilters => {
@@ -382,6 +392,10 @@ function handleTestMessage(request, sender, sendResponse) {
 chrome.runtime.onMessage.addListener(handleTestMessage);
 
 addEventListener("error", ({error}) => {
+  if (error.message === sentryErrorMessage) {
+    return;
+  }
+
   lastError = typeof error == "object" ? error.message : error;
 });
 

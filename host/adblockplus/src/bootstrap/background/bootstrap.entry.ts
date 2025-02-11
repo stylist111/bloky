@@ -26,7 +26,6 @@ import { start as startMessageResponder } from "../../../adblockpluschrome/lib/m
 import { start as startStats } from "../../../adblockpluschrome/lib/stats.js";
 import { start as startTabSessionStorage } from "../../../adblockpluschrome/lib/storage/tab-session";
 import { start as startSubscriptionInit } from "../../../adblockpluschrome/lib/subscriptionInit.js";
-import { start as startErrorReporting } from "../../error-reporter/background";
 import {
   getExperiments,
   start as startUninstall
@@ -61,7 +60,12 @@ import { getInstallationId } from "~/id/background";
 import { info } from "~/info/background";
 
 async function bootstrap(): Promise<void> {
-  startErrorReporting();
+  void ewe.sentry.start(
+    webpackDotenvPlugin.SENTRY_DSN,
+    webpackDotenvPlugin.SENTRY_ENVIRONMENT,
+    info.addonVersion,
+    hasActiveLicense()
+  );
   try {
     startPages();
     startTabSessionStorage();

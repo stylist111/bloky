@@ -15,8 +15,6 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* global global */
-
 // `global.browser` is expected to be set in test environment.
 // see "test/unit/environment.js"
 
@@ -24,4 +22,4 @@
 // so in the production code it's "webextension-polyfill" browser.
 // see "./webext-browser.js"
 
-export default global.browser;
+export default globalThis.browser;

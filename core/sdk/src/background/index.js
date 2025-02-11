@@ -49,6 +49,16 @@ import {migrateCustomFilters, clearRulesetUpdates,
 import {MIGRATED_TO_MV2, MIGRATED_TO_MV3, Prefs} from "./prefs.js";
 import {isRunningInServiceWorker} from "./browser-features.js";
 
+// "Allowlisting" might be used before EWE is actually started
+// and it does not require pre- and post- actions.
+export {default as allowlisting} from "./allowlisting.js";
+
+// "Notifications" namespace is already a Proxy
+export {notifications} from "./notifications.js";
+
+// "Sentry" might be used before EWE is actually started
+export {default as sentry} from "./sentry.js";
+
 async function preApiCall() {
   // Service worker can be shut down and we might need
   // to initialize it before the usage.
@@ -116,10 +126,6 @@ export {wrappedReporting as reporting};
 const wrappedDebugging = wrapApiNamespace(debugging.default);
 export {wrappedDebugging as debugging};
 
-// "Allowlisting" might be used before EWE is actually started
-// and it does not require pre- and post- actions.
-export {default as allowlisting} from "./allowlisting.js";
-
 /**
  * @ignore
  */
@@ -131,9 +137,6 @@ export {wrappedTelemetry as telemetry};
  */
 const wrappedTesting = wrapApiNamespace(testing.default);
 export {wrappedTesting as testing};
-
-// "Notifications" namespace is already a Proxy
-export {notifications} from "./notifications.js";
 
 /**
  * @ignore

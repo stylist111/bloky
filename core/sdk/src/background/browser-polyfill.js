@@ -17,4 +17,5 @@
 
 // reexport polyfill browser
 import browser from "webextension-polyfill";
-export default browser;
+
+globalThis.browser = browser;

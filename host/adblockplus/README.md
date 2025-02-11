@@ -66,7 +66,7 @@ configured by default.
 
 If testing Sentry reporting locally, ensure that
 `SENTRY_ENVIRONMENT=development`. You may also need to temporarily modify
-`host/adblockplus/src/error-reporter/background/sentry.ts` to override the
+`core/sdk/src/background/sentry.js` to override the
 `sampleRate` to ensure that more of your test error events get through. A
 `sampleRate` of `1` will report all error events to Sentry.
 

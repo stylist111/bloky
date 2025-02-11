@@ -52,6 +52,7 @@ import {getDeferredMessages} from "./content-message-deferrer.js";
 import * as cdp from "./cdp.js";
 import {_clear} from "./frame-state.js";
 import * as experiments from "./experiments.js";
+import * as sentry from "./sentry.js";
 
 export default {
   ...sitekey, // everything exported from "sitekey.js"
@@ -357,5 +358,7 @@ export default {
     experiments.start(url, syncInterval, errorRetryDelay);
   },
   setExperimentsSeed: experiments.setSeed,
-  resetExperimentData: experiments.reset
+  resetExperimentData: experiments.reset,
+  getLastSentryEvent: sentry.getLastEvent,
+  setSentrySampleRate: sentry.setSampleRate
 };

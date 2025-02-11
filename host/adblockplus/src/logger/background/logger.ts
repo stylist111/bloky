@@ -15,9 +15,10 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import * as ewe from "@eyeo/webext-ad-filtering-solution";
+
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import { type LogFunction, LogLevel } from "./logger.types";
-import { reportError } from "../../error-reporter/background";
 
 /**
  * Logs given data using provided log function
@@ -71,7 +72,7 @@ export const warn = log.bind(null, LogLevel.warn, console.warn);
  * @param logContext - Additional context to log on the console.
  */
 export function reportAndLogError(e: Error, logContext?: string): void {
-  reportError(e);
+  ewe.sentry.reportError(e);
 
   if (logContext) {
     error(logContext, e);

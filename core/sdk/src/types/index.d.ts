@@ -356,6 +356,30 @@ declare namespace allowlisting {
   const setAuthorizedKeys: (keys: string[]) => Promise<void>;
 }
 
+declare namespace sentry {
+ /**
+  * Report error to Sentry
+  *
+  * @param error - Error to send to Sentry.
+  */
+  const reportError: (error: Error) => void;
+  /**
+   * Initialize and start Sentry
+   *
+   * @param dsn - Sentry DSN URL
+   * @param environment - Sentry environment. Normally "development" or
+   *                      "production"
+   * @param hostVersion - Host extension version
+   * @param isPremiumUser - Whether the user is a Premium user
+   */
+  const start: (
+    dsn?: string,
+    environment?: string,
+    hostVersion: string,
+    isPremiumUser: boolean
+  ) => Promise<void>;
+}
+
 declare namespace filters {
   /**
    * Returns the allowing filters that will be effective when the given
