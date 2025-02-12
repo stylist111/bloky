@@ -80,6 +80,10 @@ const syncErrorIds = new Map([
     "synchronize_diff_too_many_filters",
     "options_filterList_lastDownload_diffTooManyFilters"
   ],
+  [
+    "synchronize_too_many_filters",
+    "options_filterList_lastDownload_tooManyFilters"
+  ],
   ["synchronize_diff_too_old", "options_filterList_lastDownload_diffTooOld"],
   ["synchronize_dnr_error", "options_filterList_lastDownload_dnrError"]
 ]);
