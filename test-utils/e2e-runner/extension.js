@@ -323,8 +323,8 @@ export async function uninstallExtension(initOptionsFn) {
   // otherwise the next step will fail
   await driver.wait(
     async () => {
-      const handlers = await driver.getAllWindowHandles();
-      return !handlers.includes(getOptionsHandle());
+      const handles = await driver.getAllWindowHandles();
+      return !handles.includes(getOptionsHandle());
     },
     5000,
     "Current option page was not closed in time",

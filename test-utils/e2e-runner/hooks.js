@@ -19,7 +19,7 @@
 
 import { BROWSERS, getMajorVersion } from "@eyeo/get-browser-binary";
 
-import { findUrl, openNewTab, screenshot } from "./driver.js";
+import { findUrl, openNewTab, safeGetAllWindowHandles, screenshot } from "./driver.js";
 import {
   getOptionsHandle,
   setOptionsHandle,
@@ -169,7 +169,7 @@ export async function cleanupHook() {
 async function cleanupOpenTabs() {
   const { installUrl } = global.config;
 
-  for (const handle of await driver.getAllWindowHandles()) {
+  for (const handle of await safeGetAllWindowHandles()) {
     try {
       await driver.switchTo().window(handle);
       const url = await driver.getCurrentUrl();
