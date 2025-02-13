@@ -23,7 +23,7 @@ import * as premium from "../../premium/background";
 import { type AllowlistOptions } from "./public-api.types";
 import { FilterOrigin } from "~/filters/shared";
 
-const trustedSoftonicDomains = [
+const trustedDomains = [
   "softonic-ar.com",
   "softonic-id.com",
   "softonic-th.com",
@@ -37,28 +37,21 @@ const trustedSoftonicDomains = [
   "softonic.pl",
   "softonic.ru",
   "softonic.vn",
-  "softoniclabs.com"
+  "softoniclabs.com",
+  "fandom.com"
 ];
 
 /**
- * Return a root domain to allowlist for Softonic subdomains
+ * Return a domain to allowlist based on the hostname
  *
  * @param hostname - hostname to parse
  */
 function getAllowlistingDomain(hostname: string): string {
-  // Softonic generates subdomains for various software
-  // (e.g., chrome.softonic.com, minecraft.softonic.com).
-  // Allowlisting the subdomains of the trusted Softonic domains list
-  // is intended to affect other subdomains.
-  if (hostname.includes("softonic")) {
-    const domainParts = hostname.split(".");
-    while (domainParts.length > 0) {
-      const subdomain = domainParts.join(".");
-      if (trustedSoftonicDomains.includes(subdomain)) {
-        return subdomain;
-      }
-
-      domainParts.shift();
+  // if the hostname is a trusted domain, or a subdomain of a trusted domain,
+  // allowlist the root domain, this way we allowlist all subdomains as well.
+  for (const trustedDomain of trustedDomains) {
+    if (hostname.endsWith(`.${trustedDomain}`) || hostname === trustedDomain) {
+      return trustedDomain;
     }
   }
 
