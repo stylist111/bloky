@@ -55,7 +55,6 @@ export const License = (function getLicense() {
   const sevenDayAlarmName = "sevenDayLicenseAlarm";
 
   let theLicense;
-  const fiveMinutes = 300000;
   const initialized = false;
   let ajaxRetryCount = 0;
   let readyComplete;
@@ -127,47 +126,6 @@ export const License = (function getLicense() {
     cleanUpSevenDayAlarm();
     showIconBadgeCTA(NEW_BADGE_REASONS.SEVEN_DAY);
   };
-
-  browser.alarms.onAlarm.addListener((alarm) => {
-    if (alarm && alarm.name === licenseAlarmName) {
-      // At this point, no alarms exists, so
-      // create an temporary alarm to avoid race condition issues
-      browser.alarms.create(licenseAlarmName, { delayInMinutes: 24 * 60 });
-      License.ready().then(() => {
-        License.updatePeriodically();
-      });
-    }
-    if (alarm && alarm.name === sevenDayAlarmName) {
-      processSevenDayAlarm();
-    }
-  });
-
-  // Check if the computer was woken up, and if there was a pending alarm
-  // that should fired during the sleep, then
-  // remove it, and fire the update ourselves.
-  // see - https://bugs.chromium.org/p/chromium/issues/detail?id=471524
-  browser.idle.onStateChanged.addListener((newState) => {
-    if (newState === "active") {
-      browser.alarms.get(licenseAlarmName).then((alarm) => {
-        if (alarm && Date.now() > alarm.scheduledTime) {
-          browser.alarms.clear(licenseAlarmName).then(() => {
-            License.updatePeriodically();
-          });
-        } else if (alarm) {
-          // if the alarm should fire in the future,
-          // re-add the license so it fires at the correct time
-          const originalTime = alarm.scheduledTime;
-          browser.alarms.clear(licenseAlarmName).then((wasCleared) => {
-            if (wasCleared) {
-              browser.alarms.create(licenseAlarmName, { when: originalTime });
-            }
-          });
-        } else {
-          License.updatePeriodically();
-        }
-      });
-    }
-  });
 
   // check the 7 alarm when the browser starts
   // or is woken up
@@ -281,6 +239,7 @@ export const License = (function getLicense() {
     licenseAlarmName,
     sevenDayAlarmName,
     checkSevenDayAlarm,
+    processSevenDayAlarm,
     addSevenDayAlarmStateListener,
     removeSevenDayAlarmStateListener,
     cleanUpSevenDayAlarm,
@@ -407,31 +366,32 @@ export const License = (function getLicense() {
     ready() {
       return licensePromise;
     },
-    updatePeriodically() {
+    async create24HourAlarm() {
       if (!License.isActiveLicense()) {
         return;
       }
-      License.update();
-      browser.storage.local.get(installTimestampStorageKey).then((response) => {
-        let installTimestamp = response[installTimestampStorageKey];
-        const originalInstallTimestamp = installTimestamp || Date.now();
-        // If the installation timestamp is missing from storage,
-        // save an updated version
-        if (!response[installTimestampStorageKey]) {
-          installTimestamp = Date.now();
-          browser.storage.local.set({ install_timestamp: installTimestamp });
-        }
-        const originalInstallDate = new Date(originalInstallTimestamp);
-        let nextLicenseCheck = new Date();
-        if (originalInstallDate.getHours() <= nextLicenseCheck.getHours()) {
-          nextLicenseCheck.setDate(nextLicenseCheck.getDate() + 1);
-        }
-        nextLicenseCheck.setHours(originalInstallDate.getHours());
-        nextLicenseCheck.setMinutes(originalInstallDate.getMinutes());
-        // Add 5 minutes to the 'minutes' to make sure we've allowed enought time for '1' day
-        nextLicenseCheck = new Date(nextLicenseCheck.getTime() + fiveMinutes);
-        browser.alarms.create(licenseAlarmName, { when: nextLicenseCheck.getTime() });
-      });
+
+      // If the license is active, we should update it every 24 hours
+      // We double check the alarm is set correctly, because it was used with
+      // different parameters in the past and we need to migrate it.
+      const oneDayInMinutes = 24 * 60;
+      const licenseAlarm = await browser.alarms.get(License.licenseAlarmName);
+      if (!licenseAlarm || licenseAlarm.periodInMinutes !== oneDayInMinutes) {
+        browser.alarms.create(License.licenseAlarmName, { periodInMinutes: oneDayInMinutes });
+      }
+    },
+
+    async updatePeriodically() {
+      if (!License.isActiveLicense()) {
+        return;
+      }
+      await License.update();
+      await License.create24HourAlarm();
+
+      const response = await browser.storage.local.get(installTimestampStorageKey);
+      if (!response[installTimestampStorageKey]) {
+        await browser.storage.local.set({ [installTimestampStorageKey]: Date.now() });
+      }
     },
     async getLicenseInstallationDate() {
       const response = await browser.storage.local.get(installTimestampStorageKey);
@@ -619,12 +579,26 @@ Promise.all([onInstalledPromise, License.ready(), initialize]).then((detailsArra
   }
 });
 
+// Make sure the 24 hour license update alarm is set when the browser starts
+// just in case it was removed or not set correctly
+browser.runtime.onStartup.addListener(async () => {
+  await License.ready();
+  await License.create24HourAlarm();
+});
+
+browser.alarms.onAlarm.addListener(async (alarm) => {
+  if (alarm.name === License.licenseAlarmName) {
+    await License.ready();
+    await License.updatePeriodically();
+  }
+
+  if (alarm.name === License.sevenDayAlarmName) {
+    License.processSevenDayAlarm();
+  }
+});
+
 License.ready().then(() => {
   License.checkSevenDayAlarm();
-
-  if (License.isActiveLicense()) {
-    License.updatePeriodically();
-  }
 });
 
 License.initialize(() => {

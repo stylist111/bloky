@@ -2,6 +2,7 @@
 
 - Attempt to fix IPM initialization issue; with split experiment (IM-175)
 - Updated snippets to 2.0.0
+- Fixed license check to run every 24h (EXT-746)
 - Fixed an issue with the Pause on all tabs feature (EXT-782)
 
 # 6.14.2 - 2025-02-03
