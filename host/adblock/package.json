@@ -29,6 +29,10 @@
     "postinstall": "npx @adblockinc/rules adblock",
     "prettier": "npm run $ lint.prettier",
     "prettier-fix": "npm run $ lint-fix.prettier",
+    "sentry:login": "sentry-cli login",
+    "sentry:release-new": "sentry-cli releases new $VERSION --org eyeo --project adblock",
+    "sentry:release-finalize": "sentry-cli releases finalize $VERSION --org eyeo --project adblock",
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org eyeo --project adblock ./dist/release/sourcemaps-mv3 && sentry-cli sourcemaps upload --release=$VERSION --org eyeo --project adblock ./dist/release/sourcemaps-mv3",
     "test": "echo 'No unit test setup yet'",
     "test:end-to-end": "npm run $ test.end-to-end",
     "test:end-to-end-local": "node test/end-to-end/runTests.js"
@@ -94,6 +98,7 @@
     "@eyeo/test-utils": "*",
     "@rollup/plugin-commonjs": "22.0.2",
     "@rollup/plugin-node-resolve": "13.3.0",
+    "@sentry/cli": "2.37.0",
     "@types/jest": "28.1.6",
     "@typescript-eslint/eslint-plugin": "6.11.0",
     "@typescript-eslint/parser": "6.11.0",

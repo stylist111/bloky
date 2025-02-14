@@ -370,13 +370,11 @@ declare namespace sentry {
    * @param environment - Sentry environment. Normally "development" or
    *                      "production"
    * @param hostVersion - Host extension version
-   * @param isPremiumUser - Whether the user is a Premium user
    */
   const start: (
     dsn?: string,
     environment?: string,
     hostVersion: string,
-    isPremiumUser: boolean
   ) => Promise<void>;
 }
 

@@ -27,7 +27,8 @@ import {
   logging,
 } from "../../utilities/background/bg-functions";
 
-export const settingsNotifier = new EventEmitter();
+/* eslint-disable-next-line import/no-mutable-exports */
+export let settingsNotifier;
 const abpPrefPropertyNames = [
   "show_statsinicon",
   "shouldShowBlockElementMenu",
@@ -135,7 +136,8 @@ Settings.prototype = {
   },
 };
 
-export const settings = new Settings();
+/* eslint-disable-next-line import/no-mutable-exports */
+export let settings;
 
 export const getSettings = function () {
   return settings.getAll();
@@ -155,14 +157,19 @@ const disableSetting = function (name) {
 
 export const isValidTheme = (themeName) => validThemes.includes(themeName);
 
-// Attach methods to window
-// eslint-disable-next-line no-restricted-globals
-Object.assign(self, {
-  disableSetting,
-  getSettings,
-  setSetting,
-  settings,
-  settingsNotifier,
-  abpPrefPropertyNames,
-  isValidTheme,
-});
+export function start() {
+  settingsNotifier = new EventEmitter();
+  settings = new Settings();
+
+  // Attach methods to window
+  // eslint-disable-next-line no-restricted-globals
+  Object.assign(self, {
+    disableSetting,
+    getSettings,
+    setSetting,
+    settings,
+    settingsNotifier,
+    abpPrefPropertyNames,
+    isValidTheme,
+  });
+}

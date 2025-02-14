@@ -101,9 +101,8 @@ export default {
    * @param {string?} environment - Sentry environment. Normally "development"
    *                               or "production"
    * @param {string} hostVersion - Host extension version
-   * @param {boolean} isPremiumUser - Whether the user is a Premium user
    */
-  async start(dsn, environment, hostVersion, isPremiumUser) {
+  async start(dsn, environment, hostVersion) {
     if (dsn == null || environment == null) {
       console.warn("Sentry is not initialized.");
       return;
@@ -165,9 +164,5 @@ export default {
     scope.setUser({
       id: userId
     });
-
-    // We may want to send the premium status (as we do with CDP and IPM) at
-    // some point, but for now we are keeping it simple here
-    scope.setTag("is_premium", isPremiumUser);
   }
 };

@@ -51,17 +51,16 @@ describe("Sentry", function() {
   it("emits a Sentry event event when an error occurs with the given metadata", async function() {
     const environment = "space";
     const hostVersion = "5.4";
-    const isPremiumUser = true;
-    await EWE.sentry.start("", environment, hostVersion, isPremiumUser);
+
+    await EWE.sentry.start("", environment, hostVersion);
 
     const event = await createNewErrorEvent();
     expect(event.environment).toEqual(environment);
     expect(event.release).toEqual(hostVersion);
-    expect(event.tags.is_premium).toEqual(isPremiumUser);
   });
 
   it("generates and maintains a single user id through multiple errors", async function() {
-    await EWE.sentry.start("", "", "1.0", false);
+    await EWE.sentry.start("", "", "1.0");
 
     const firstEvent = await createNewErrorEvent();
     const secondEvent = await createNewErrorEvent();

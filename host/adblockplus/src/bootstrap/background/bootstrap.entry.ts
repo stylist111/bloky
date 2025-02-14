@@ -63,8 +63,7 @@ async function bootstrap(): Promise<void> {
   void ewe.sentry.start(
     webpackDotenvPlugin.SENTRY_DSN,
     webpackDotenvPlugin.SENTRY_ENVIRONMENT,
-    info.addonVersion,
-    hasActiveLicense()
+    info.addonVersion
   );
   try {
     startPages();

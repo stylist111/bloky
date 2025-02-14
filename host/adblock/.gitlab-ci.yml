@@ -313,3 +313,19 @@ create_release_mr_back_to_main:
     - git checkout -B $CI_COMMIT_TAG-merge-back-to-main refs/tags/$CI_COMMIT_TAG
     - git push origin $CI_COMMIT_TAG-merge-back-to-main
     - glab mr create --title "AdBlock $version release back to main" --description "Automatically bringing release changes back to the main branch" --remove-source-branch --yes
+
+upload_sourcemaps:
+  stage: release
+  needs: ["build"]
+  rules:
+    - !reference [.release-tag, rules]
+  script:
+    - npm i
+    - cd host/adblock
+    - npm run sentry:login -- --auth-token $SENTRY_AUTH_TOKEN
+    - version="${CI_COMMIT_TAG/adblock-/""}"
+    - echo "Uploading the sourcemaps for AdBlock $version"
+    - VERSION=$version npm run sentry:release-new
+    - mkdir ./dist/release/sourcemaps-mv3 && unzip dist/release/adblock-*mv3.zip -d ./dist/release/sourcemaps-mv3
+    - VERSION=$version npm run sentry:sourcemaps
+    - VERSION=$version npm run sentry:release-finalize

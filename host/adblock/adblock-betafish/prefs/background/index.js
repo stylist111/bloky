@@ -17,6 +17,13 @@
 
 import migration from "./migration";
 
-export { getSettings, isValidTheme, setSetting, settings, settingsNotifier } from "./settings";
+export {
+  getSettings,
+  isValidTheme,
+  setSetting,
+  settings,
+  settingsNotifier,
+  start,
+} from "./settings";
 
 export const { migrateUserData } = migration;

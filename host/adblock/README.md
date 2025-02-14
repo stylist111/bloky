@@ -30,6 +30,22 @@ Copy the `.env.defaults` file in the `host/adblock` directory to a `.env` file
 and fill in the variables accordingly. This step can be skipped, and is only
 required if you wish to enable the sending of telemetry.
 
+### Error reporting
+
+We use [Sentry](https://sentry.io/) to report the errors. In order to initialize it
+during the build one has to pass `SENTRY_DSN` and `SENTRY_ENVIRONMENT`
+variables in either `.env` file or as environment variable during the (CI) build. If not
+initialized, console warning is shown. By default `SENTRY_ENVIRONMENT=production`.
+User emails are cut on client side and data scrubbing on
+[server side](https://docs.sentry.io/security-legal-pii/scrubbing/server-side-scrubbing/) is
+configured by default.
+
+If testing Sentry reporting locally, ensure that
+`SENTRY_ENVIRONMENT=development`. You may also need to temporarily modify
+`core/sdk/src/background/sentry.js` to override the
+`sampleRate` to ensure that more of your test error events get through. A
+`sampleRate` of `1` will report all error events to Sentry.
+
 ## Testing
 
 ### Compliance tests
