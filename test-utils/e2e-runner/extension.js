@@ -253,7 +253,7 @@ export async function reloadExtension(initOptionsFn, suppressUpdatePage = true) 
         await driver.navigate().to(`${extension.origin}/options.html`);
         setOptionsHandle(await driver.getWindowHandle());
         // The options parameter is only used by ABP
-        await initOptionsFn(getOptionsHandle(), { timeout: 10000 });
+        await initOptionsFn(getOptionsHandle(), { timeout: 10000, waitForDefaultState: true });
         return true;
       } catch (e) {
         await driver.navigate().refresh();

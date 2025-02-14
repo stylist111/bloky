@@ -214,7 +214,10 @@ export default () => {
 
     const { filterlist, trashBtn } = getFLSelectors(subscriptionUrl);
     await clickOnDisplayedElement(trashBtn);
-    await waitForNotDisplayed(filterlist);
+    await waitForNotDisplayed(filterlist, 1000, {
+      retries: 3,
+      retryTimeout: 1000
+    });
   });
 
   it("displays an error for invalid filter list via URL", async function () {

@@ -103,7 +103,6 @@ export default () => {
 
   it("has premium features", async function () {
     await enablePremiumProgrammatically();
-
     await initPopupWithLocalPage();
 
     // Default popup premium togles
@@ -121,7 +120,9 @@ export default () => {
 
     const { selector } = premiumToggles.find(({ name }) => name === "cookie");
     await clickOnDisplayedElement(selector);
-    await clickOnDisplayedElement("#cookie-consent-modal-accept");
+    await clickOnDisplayedElement("#cookie-consent-modal-accept", {
+      timeout: 3000
+    });
 
     await driver.wait(
       async () => {

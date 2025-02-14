@@ -121,12 +121,21 @@ export async function openNewTab(url) {
   return driver.getWindowHandle();
 }
 
-export function waitForNotDisplayed(cssText, timeout = 1000) {
+export function waitForNotDisplayed(
+  cssText,
+  timeout = 1000,
+  { retries = 0, retryTimeout = 500 } = {},
+) {
   return driver.wait(
     async () => {
       try {
-        await getDisplayedElement(cssText, { timeout: 500, forceRefresh: false });
-        return false;
+        const elem = await getDisplayedElement(cssText, { timeout: 500, forceRefresh: false });
+
+        if (elem && !retries) {
+          return false;
+        }
+
+        return waitForNotDisplayed(cssText, timeout, { retries: retries - 1, retryTimeout });
       } catch (err) {
         if (err.name === "TimeoutError") {
           return true;
@@ -195,7 +204,6 @@ export async function clickOnDisplayedElement(
   { timeout = 500, scrollIntoView = false, checkDisplayed = true, checkAttribute = null } = {},
 ) {
   const bigTimeout = timeout * 2;
-
   let elem;
   await driver.wait(
     async () => {

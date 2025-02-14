@@ -777,15 +777,13 @@ body.premium .premium-block {
   right: 0;
   bottom: 0;
   left: 0;
-  opacity: 0;
+  display: none;
   background-color: rgba(0, 0, 0, 0.2);
   transition: opacity 0.2s ease-in;
-  pointer-events: none;
 }
 
 .cookie-consent-modal-container.visible {
-  opacity: 1;
-  pointer-events: auto;
+  display: block;
 }
 
 .cookie-consent-modal {
