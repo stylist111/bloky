@@ -5,6 +5,9 @@
 - Release builds are now unminified, and have inline source maps. This matches
   the configuration that we were uploading to NPM. (EXT-741)
 - Added `EWE.sentry.*` API for reporting errors to Sentry (EXT-754).
+- Removed "blocking" events from CDP, as they were not currently being used
+  anywhere. Any code that was using `EWE.cdp.onCdpItem` to watch for blocking
+  events should rather be using `EWE.reporting.onBlockableItem`.
 
 ## Fixes
 
@@ -12,6 +15,9 @@
   previously corrupted. (EXT-679)
 - `EWE.experiments.onChanged` will now also emit events when the flag values are
   overridden.
+- In CDP, page views are now counted based on onCommitted events rather than
+  onBeforeNavigate. This prevents double counted page view on redirect in
+  Firefox.
 
 ## Updating your code
 

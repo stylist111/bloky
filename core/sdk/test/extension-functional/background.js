@@ -459,12 +459,6 @@ EWE.cdp.onCdpItem.addListener(
     eventType: "session_start"
   }
 );
-EWE.cdp.onCdpItem.addListener(
-  createTestEventListener("cdp.onCdpItem.blocking"),
-  {
-    eventType: "blocking"
-  }
-);
 
 async function checkTabAllowlisted(tabId, changeInfo, tab) {
   let result = {

@@ -21,7 +21,6 @@ import {Prefs, CDP_OPTED_IN, CDP_OPTED_OUT,
         CDP_OPTED_IN_BY_USER, CDP_OPTED_OUT_BY_USER}
   from "./prefs.js";
 import {getFrameInfo, TOP_LEVEL_FRAME_ID} from "./frame-state.js";
-import {BlockableEventDispatcher} from "./diagnostics.js";
 import {PersistentState} from "./persistence.js";
 
 import {trace, debug, warn, error} from "./debugging.js";
@@ -42,12 +41,6 @@ export const EVENT_PAGE_VIEW = "page_view";
  * @ignore
  */
 export const EVENT_SESSION_START = "session_start";
-
-/**
- * "Resource blocked" event type
- * @ignore
- */
-export const EVENT_BLOCKING = "blocking";
 
 // CDP events and pages user activity loading delay (for testing)
 let _loadDelay = 0;
@@ -95,11 +88,16 @@ export function _restoreConfig() {
 // Map<String(event type), Map<String(siteId), Array<Number>(event timestamp)>>
 let events;
 
+async function removeUnusedLegacyEvents() {
+  // ewe:cdp-blocking was previously used for counting onBlockableItem
+  // events.
+  await browser.storage.local.remove("ewe:cdp-blocking");
+}
+
 function initializeEvents() {
   events = new Map([
     [EVENT_PAGE_VIEW, new PersistentState("ewe:cdp-page-view", browser.storage.local)],
-    [EVENT_SESSION_START, new PersistentState("ewe:cdp-session", browser.storage.local)],
-    [EVENT_BLOCKING, new PersistentState("ewe:cdp-blocking", browser.storage.local)]
+    [EVENT_SESSION_START, new PersistentState("ewe:cdp-session", browser.storage.local)]
   ]);
   for (const state of events.values()) {
     state.doDebounce();
@@ -190,20 +188,6 @@ async function count(eventType, siteId, timeStamp) {
   }
 
   await emitEvent(eventType, siteId, timeStamp);
-}
-
-async function onBlockableItem({request}) {
-  if (isOptedOut()) {
-    return;
-  }
-
-  const siteId = processor.getSiteId(
-    new URL(request.url).hostname);
-  if (!siteId) {
-    return;
-  }
-
-  await count(EVENT_BLOCKING, siteId, Date.now());
 }
 
 /**
@@ -379,7 +363,7 @@ function handleBrowserEvent(details, doMarkActive) {
   return siteId;
 }
 
-function onBeforeNavigate(details) {
+function onCommitted(details) {
   handleBrowserEvent(details, true);
 }
 
@@ -507,11 +491,7 @@ export function stop() {
 
   startupPromise = null;
 
-  new BlockableEventDispatcher().removeListener(onBlockableItem, {
-    filterType: "blocking"
-  });
-
-  browser.webNavigation.onBeforeNavigate.removeListener(onBeforeNavigate);
+  browser.webNavigation.onCommitted.removeListener(onCommitted);
   browser.webNavigation.onHistoryStateUpdated.removeListener(
     onHistoryStateUpdated);
 
@@ -609,11 +589,7 @@ export async function start() {
         Prefs.cdp_opt_in_out = CDP_OPTED_OUT;
       }
 
-      new BlockableEventDispatcher().addListener(onBlockableItem, {
-        filterType: "blocking"
-      });
-
-      browser.webNavigation.onBeforeNavigate.addListener(onBeforeNavigate);
+      browser.webNavigation.onCommitted.addListener(onCommitted);
       browser.webNavigation.onHistoryStateUpdated.addListener(
         onHistoryStateUpdated);
 
@@ -622,6 +598,7 @@ export async function start() {
         await activity.load();
         await clearExpiredActivity();
         handleDeferredEvents();
+        await removeUnusedLegacyEvents();
       }
 
       if (_loadDelay == 0) {

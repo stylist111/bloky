@@ -21,7 +21,8 @@ import pako from "pako";
 import {MILLIS_IN_MINUTE, MILLIS_IN_HOUR, MILLIS_IN_SECOND} from "adblockpluscore/lib/time.js";
 
 import {EWE, addFilter, getTestEvents} from "./messaging.js";
-import {TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
+import {CROSS_DOMAIN, TEST_ADMIN_PAGES_URL, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
+        CROSS_DOMAIN_URL} from "./test-server-urls.js";
 import {isChromiumBased, isFirefox, Page, setMinTimeout, executeScript,
         waitForAssertion, clearRequestLogs, getRequestLogs, setEndpointResponse,
         clearEndpointResponse, waitForSubscriptionToBeSynchronized} from "./utils.js";
@@ -29,12 +30,10 @@ import {setPremiumStatus, resetPremiumStatus} from "./messaging.js";
 import {base64ToArrayBuffer} from "adblockpluscore/lib/rsa.js";
 import {limitPromiseDuration} from "./polling.js";
 
-const WEBEXT_DOT_COM = "webext.com";
 const SITE_ID = "siteId";
 
 const EVENT_PAGE_VIEW = "page_view";
 const EVENT_SESSION_START = "session_start";
-const EVENT_BLOCKING = "blocking";
 
 const PEM_PRIVATE_KEY_HEADER = "-----BEGIN PRIVATE KEY-----";
 const PEM_PRIVATE_KEY_FOOTER = "-----END PRIVATE KEY-----";
@@ -142,104 +141,108 @@ Uf3EQna7+viKeGOEpe2PDqH3V/g4XZeksCpKHOtS9QjGkF28Pl03z7odu3LcYnJ5
   return JSON.parse(domainStatsString);
 }
 
-describe("CDP opt-out", function() {
-  const KEY = "cdp_opt_in_out";
+const PING_URL = `${TEST_ADMIN_PAGES_URL}/cdp-ping`;
+const PUBLIC_KEY_URL = `${TEST_ADMIN_PAGES_URL}/public-key`;
+const CDP_BEARER = "SSBhbSBhIGJlYXIuLi4gZXIuLi4gUkFXUg==";
 
-  it("is disabled by default for Firefox only", async function() {
-    expect(await EWE.cdp.isOptOut()).toEqual(isFirefox());
-  });
+const CDP_PHASE_3_ARGS = {
+  pingUrl: PING_URL,
+  publicKeyUrl: PUBLIC_KEY_URL,
+  bearer: CDP_BEARER
+};
 
-  it("checks to be opted out on Firefox by default", async function() {
-    if (!isFirefox()) {
-      this.skip();
-    }
+const ERROR_DELAY_MS = MILLIS_IN_HOUR;
+const LOGS_WAIT_INTERVAL_MS = 5 * MILLIS_IN_SECOND;
 
-    expect(await EWE.cdp.isOptOut()).toEqual(true);
-  });
+async function startMetricsUploaderWithTestArgs() {
+  await EWE.testing.stopCdpMetricsUploader();
+  await EWE.testing.startCdpMetricsUploader(
+    CDP_PHASE_3_ARGS, ERROR_DELAY_MS);
+}
 
-  it("checks to be opted in on Firefox by user", async function() {
-    if (!isFirefox()) {
-      this.skip();
-    }
+const CDP_STORAGE_3_KEY = "ewe:cdp-metrics-uploader-3";
+async function clearCdpStorage() {
+  await browser.storage.local.remove(CDP_STORAGE_3_KEY);
+}
 
-    await EWE.cdp.setOptOut(false);
-    expect(await EWE.cdp.isOptOut()).toEqual(false);
-    expect(await EWE.testing._getPrefs(KEY)).toEqual(2); // OPTED_IN_BY_USER
-  });
-
-  it("checks to be opted in not on Firefox by default", async function() {
-    if (isFirefox()) {
-      this.skip();
-    }
-
-    expect(await EWE.cdp.isOptOut()).toEqual(false);
-  });
-
-  it("checks to be opted out by user", async function() {
-    await EWE.cdp.setOptOut(true);
-
-    expect(await EWE.cdp.isOptOut()).toEqual(true);
-    expect(await EWE.testing._getPrefs(KEY)).toEqual(3); // OPTED_OUT_BY_USER
-  });
-});
-
-describe("CDP on Chromium-based browsers", function() {
-  const PING_URL = `${TEST_ADMIN_PAGES_URL}/cdp-ping`;
-  const PUBLIC_KEY_URL = `${TEST_ADMIN_PAGES_URL}/public-key`;
-  const CDP_BEARER = "SSBhbSBhIGJlYXIuLi4gZXIuLi4gUkFXUg==";
-  const CDP_STORAGE_3_KEY = "ewe:cdp-metrics-uploader-3";
-
+describe("CDP", function() {
   const EXPIRATION_INTERVAL_KEY = "cdp_session_expiration_interval";
+
   let originalUserOptedOut;
   let originalExpirationInterval;
 
   before(async function() {
-    // DNS mapping webext.com to 127.0.0.1 is configured
-    // for all Chromium-based browsers during the tests.
-    if (!isChromiumBased()) {
-      this.skip();
-    }
     originalUserOptedOut = await EWE.cdp.isOptOut();
-  });
-
-  beforeEach(async function() {
-    setMinTimeout(this, 10 * 1000);
-
     originalExpirationInterval = await EWE.testing._getPrefs(
-      EXPIRATION_INTERVAL_KEY);
-    await EWE.testing._clearCdpData();
-    await EWE.testing._clearCdpActivity();
-    await EWE.testing._setCdpConfig([[[WEBEXT_DOT_COM], SITE_ID]]);
-    await EWE.cdp.setOptOut(false);
-    await clearRequestLogs();
-  });
-
-  async function restoreSessionExpirationInterval() {
-    await EWE.testing._setPrefs(
-      EXPIRATION_INTERVAL_KEY, originalExpirationInterval);
-  }
-
-  afterEach(async function() {
-    await EWE.testing._clearCdpData();
-    await restoreSessionExpirationInterval();
+      EXPIRATION_INTERVAL_KEY
+    );
   });
 
   after(async function() {
-    await EWE.testing._restoreCdpConfig();
     await EWE.cdp.setOptOut(originalUserOptedOut);
+    await EWE.testing._setPrefs(
+      EXPIRATION_INTERVAL_KEY, originalExpirationInterval
+    );
   });
 
+  beforeEach(async function() {
+    await EWE.testing._clearCdpData();
+    await EWE.testing._clearCdpActivity();
+  });
 
-  describe("Phase 3", function() {
-    const CDP_PHASE_3_ARGS = {
-      pingUrl: PING_URL,
-      publicKeyUrl: PUBLIC_KEY_URL,
-      bearer: CDP_BEARER
-    };
+  describe("Opt-out", function() {
+    const KEY = "cdp_opt_in_out";
 
-    const ERROR_DELAY_MS = MILLIS_IN_HOUR;
-    const LOCALHOST = "localhost";
+    it("is disabled by default for Firefox only", async function() {
+      expect(await EWE.cdp.isOptOut()).toEqual(isFirefox());
+    });
 
+    it("checks to be opted in on Firefox by user", async function() {
+      await EWE.cdp.setOptOut(false);
+      expect(await EWE.cdp.isOptOut()).toEqual(false);
+      expect(await EWE.testing._getPrefs(KEY)).toEqual(2); // OPTED_IN_BY_USER
+    });
+
+    it("checks to be opted out by user", async function() {
+      await EWE.cdp.setOptOut(true);
+      expect(await EWE.cdp.isOptOut()).toEqual(true);
+      expect(await EWE.testing._getPrefs(KEY)).toEqual(3); // OPTED_OUT_BY_USER
+    });
+  });
+
+  describe("Domains trimming", function() {
+    it("generates \"domain_stats\" payload", async function() {
+      await EWE.testing._setCdpData(
+        EVENT_SESSION_START, SITE_ID, [1, 2, 3]
+      );
+      await EWE.testing._setCdpData(EVENT_PAGE_VIEW, SITE_ID, 4);
+      const stats = await EWE.testing._getCdpDomainStats();
+      expect(stats).toEqual(
+        `{"ds":[{"i":"${SITE_ID}","s":3,"p":4}]}`);
+    });
+
+    it("sorts \"domain_stats\" payload for sessions count", async function() {
+      const SITE_ID1 = SITE_ID;
+      const SITE_ID2 = SITE_ID + "2";
+      const SITE_ID3 = SITE_ID + "3";
+      await EWE.testing._setCdpData(EVENT_SESSION_START, SITE_ID1, [1]);
+      await EWE.testing._setCdpData(EVENT_PAGE_VIEW, SITE_ID1, 2);
+      await EWE.testing._setCdpData(
+        EVENT_SESSION_START, SITE_ID2, [1, 2, 3]
+      );
+      await EWE.testing._setCdpData(EVENT_PAGE_VIEW, SITE_ID2, 1);
+      await EWE.testing._setCdpData(EVENT_SESSION_START, SITE_ID3, [1, 2]);
+      await EWE.testing._setCdpData(EVENT_PAGE_VIEW, SITE_ID3, 5);
+      const stats = await EWE.testing._getCdpDomainStats();
+      expect(stats).toEqual("{\"ds\":[" +
+        `{"i":"${SITE_ID2}","s":3,"p":1},` +
+        `{"i":"${SITE_ID3}","s":2,"p":5},` +
+        `{"i":"${SITE_ID1}","s":1,"p":2}` +
+        "]}");
+    });
+  });
+
+  describe("Event tracking", function() {
     async function assertEvents(siteId, eventType, size) {
       await EWE.debugging.ensureEverythingHasSaved();
 
@@ -250,94 +253,6 @@ describe("CDP on Chromium-based browsers", function() {
       }, 2000);
       return counter;
     }
-
-    async function cleanUp() {
-      await EWE.testing.resetCdpMetricsUploader();
-      await EWE.testing.stopCdp();
-      await EWE.testing.startCdp();
-      await clearRequestLogs();
-    }
-
-    beforeEach(async function() {
-      await cleanUp();
-    });
-
-    async function startMetricsUploaderWithTestArgs() {
-      await EWE.testing.stopCdpMetricsUploader();
-      await EWE.testing.startCdpMetricsUploader(
-        CDP_PHASE_3_ARGS, ERROR_DELAY_MS);
-    }
-
-    it("sets premium status to premium when callback used", async function() {
-      await clearRequestLogs();
-      await EWE.testing.resetCdpMetricsUploader();
-
-      await setPremiumStatus("premium");
-      await startMetricsUploaderWithTestArgs();
-      await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-
-      await waitForAssertion(async() => {
-        let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-        expect(requestLogs.length).toBeGreaterThan(0);
-        expect(requestLogs[0].body.payload.premium_status).toEqual("premium");
-      });
-    });
-
-    it("does not add premium status to payload if callback returns null", async function() {
-      await clearRequestLogs();
-      await EWE.testing.resetCdpMetricsUploader();
-
-      await setPremiumStatus(null);
-      await startMetricsUploaderWithTestArgs();
-      await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-
-      await waitForAssertion(async() => {
-        let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-        expect(requestLogs.length).toBeGreaterThan(0);
-        expect(requestLogs[0].body.payload).not.toHaveProperty("premium_status");
-      });
-    });
-
-    it("does not add premium status to payload if no callback is set", async function() {
-      await clearRequestLogs();
-      await EWE.testing.resetCdpMetricsUploader();
-      await resetPremiumStatus();
-
-      await startMetricsUploaderWithTestArgs();
-      await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-
-      await waitForAssertion(async() => {
-        let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-        expect(requestLogs.length).toBeGreaterThan(0);
-        expect(requestLogs[0].body.payload).not.toHaveProperty("premium_status");
-      });
-    });
-
-    it("does not track if opted out by user", async function() {
-      await EWE.cdp.setOptOut(true);
-      expect(await EWE.cdp.isOptOut()).toEqual(true);
-      await addFilter(`image.png$domain=${WEBEXT_DOT_COM}`);
-      await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-      await assertEvents(WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 0);
-      await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 0);
-      await assertEvents(WEBEXT_DOT_COM, EVENT_BLOCKING, 0);
-    });
-
-    it("tracks 'blocking' events", async function() {
-      await addFilter("image.png");
-      await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-      await assertEvents(WEBEXT_DOT_COM, EVENT_BLOCKING, 1);
-    });
-
-    it("tracks 'page_view' events", async function() {
-      await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-      await assertEvents(WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 1);
-    });
-
-    it("tracks 'session_start' events", async function() {
-      await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-      await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
-    });
 
     async function loadPageWithTimeout(url, timeout = 10 * MILLIS_IN_SECOND) {
       const page = new Page(url);
@@ -350,15 +265,328 @@ describe("CDP on Chromium-based browsers", function() {
       }
     }
 
+    async function assertUserActionsSessionEvents(
+      callback, sessionDuration, clear = true, eventsCount = 1) {
+      if (clear) {
+        await EWE.testing._clearCdpData();
+        await EWE.testing._clearCdpActivity();
+        await Page.removeCurrent();
+        await EWE.testing._clearFrameState();
+      }
+
+      const page = new Page(`${TEST_PAGES_URL}/image.html`);
+      const tabId = await page.loaded;
+
+      const sleepInterval = 100;
+
+      let startTime = performance.now();
+      while (performance.now() - startTime < sessionDuration) {
+        await new Promise(r => setTimeout(r, sleepInterval));
+
+        // simulated user events extend the session expiration interval
+        await executeScript(tabId, callback, []);
+      }
+
+      // now sleep a bit more to let the session expire,
+      // if it's not extended by user actions
+      await new Promise(r => setTimeout(r, sleepInterval));
+      // the session is expected to be still not expired
+      await page.reload();
+      await page.remove();
+      await assertEvents(TEST_PAGES_DOMAIN, EVENT_SESSION_START, eventsCount);
+    }
+
+    beforeEach(async function() {
+      await EWE.cdp.setOptOut(false);
+      await clearCdpStorage();
+      await EWE.testing.stopCdp();
+      await EWE.testing.startCdp();
+    });
+
+    it("does not track if opted out by user", async function() {
+      await EWE.cdp.setOptOut(true);
+      expect(await EWE.cdp.isOptOut()).toEqual(true);
+      await addFilter(`image.png$domain=${TEST_PAGES_DOMAIN}`);
+      await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
+      await assertEvents(TEST_PAGES_DOMAIN, EVENT_PAGE_VIEW, 0);
+      await assertEvents(TEST_PAGES_DOMAIN, EVENT_SESSION_START, 0);
+    });
+
+    it("tracks 'page_view' events", async function() {
+      await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
+      await assertEvents(TEST_PAGES_DOMAIN, EVENT_PAGE_VIEW, 1);
+    });
+
+    it("tracks 'session_start' events", async function() {
+      await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
+      await assertEvents(TEST_PAGES_DOMAIN, EVENT_SESSION_START, 1);
+    });
+
+    it("supports History API", async function() {
+      await addFilter(`image.png$domain=${TEST_PAGES_DOMAIN}`);
+
+      await loadPageWithTimeout(`${TEST_PAGES_URL}/history.html`);
+
+      // 1 event for "history.html", 1 event for "history-after-pushState.js"
+      await assertEvents(TEST_PAGES_DOMAIN, EVENT_PAGE_VIEW, 2);
+
+      // still the same session
+      await assertEvents(TEST_PAGES_DOMAIN, EVENT_SESSION_START, 1);
+    });
+
+    it("counts page redirects", async function() {
+      await new Page(`${TEST_PAGES_URL}/redirect.html`).loaded;
+
+      // 1 event for original load and 1 after redirection
+      await assertEvents(TEST_PAGES_DOMAIN, EVENT_PAGE_VIEW, 2);
+    });
+
+    it("extends session expiration time due to user actions", async function() {
+      setMinTimeout(this, 60 * 1000);
+
+      const sessionExpirationInterval = 6 * MILLIS_IN_SECOND;
+
+      await EWE.testing._setPrefs(
+        EXPIRATION_INTERVAL_KEY, sessionExpirationInterval);
+
+      // click
+      await assertUserActionsSessionEvents(() => {
+        const image = document.getElementById("image");
+        image.click();
+      }, sessionExpirationInterval);
+
+      // scrolling
+      await assertUserActionsSessionEvents(() => {
+        const e = document.createEvent("UIEvents");
+        e.initUIEvent("scroll", true, true, window, 1);
+        document.body.dispatchEvent(e);
+      }, sessionExpirationInterval);
+
+      // typing
+      await assertUserActionsSessionEvents(() => {
+        const inputBox = document.getElementById("inputBox");
+        inputBox.dispatchEvent(new KeyboardEvent("keypress", {key: "1"}));
+      }, sessionExpirationInterval);
+    });
+
+    it("starts new session if user was inactive for too long and then became active", async function() {
+      setMinTimeout(this, 60 * 1000);
+
+      const sessionExpirationInterval = 6 * MILLIS_IN_SECOND;
+
+      await EWE.testing._setPrefs(
+        EXPIRATION_INTERVAL_KEY, sessionExpirationInterval);
+
+      await addFilter("image.png");
+
+      // click
+      const userClickCallback = () => {
+        const image = document.getElementById("image");
+        image.click();
+      };
+      await assertUserActionsSessionEvents(
+        userClickCallback, sessionExpirationInterval, true, 1);
+
+      // simulate user to be inactive longer than session duration
+      await new Promise(r => setTimeout(r, sessionExpirationInterval + 1000));
+
+      await assertUserActionsSessionEvents(
+        userClickCallback, sessionExpirationInterval, false, 2);
+    });
+
+    it("defers and processes the browser events when the data is loaded", async function() {
+      const loadDelay = 1000;
+
+      await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
+      await assertEvents(TEST_PAGES_DOMAIN, EVENT_SESSION_START, 1);
+
+      await EWE.testing.stopCdp();
+      try {
+        await EWE.testing.setCdpLoadDelay(loadDelay);
+        await EWE.testing.startCdp();
+
+        // If there is no data (existing sessions) loaded,
+        // it's considered to be a new session.
+        // Otherwise we know there is a pending session.
+        await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
+
+        // the deferred events are processed now
+        await new Promise(r => setTimeout(r, loadDelay));
+
+        // not a new session
+        await assertEvents(TEST_PAGES_DOMAIN, EVENT_SESSION_START, 1);
+      }
+      finally {
+        await EWE.testing.setCdpLoadDelay(0);
+      }
+    });
+
+    it("clears the events", async function() {
+      await addFilter(`image.png$domain=${TEST_PAGES_DOMAIN}`);
+
+      await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
+
+      await assertEvents(TEST_PAGES_DOMAIN, EVENT_PAGE_VIEW, 1);
+
+      await EWE.testing._clearCdpData();
+
+      await assertEvents(TEST_PAGES_DOMAIN, EVENT_PAGE_VIEW, 0);
+    });
+
+    it("clears the expired sessions on start", async function() {
+      setMinTimeout(this, 15000);
+
+      const ACTIVITY_KEY = "ewe:cdp-activity";
+      const sessionExpirationInterval =
+          await EWE.testing._getPrefs("cdp_session_expiration_interval");
+
+      const newSessionExpirationInterval = 1 * MILLIS_IN_SECOND;
+
+      try {
+        await EWE.testing._setPrefs(
+          EXPIRATION_INTERVAL_KEY, newSessionExpirationInterval);
+        await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
+        await assertEvents(TEST_PAGES_DOMAIN, EVENT_SESSION_START, 1);
+
+        // wait for the session to expire
+        await new Promise(r =>
+          setTimeout(r, 2 * newSessionExpirationInterval)
+        );
+
+        await EWE.testing.stopCdp();
+
+        // Make sure the session is saved
+        let activity = await browser.storage.local.get([ACTIVITY_KEY]);
+        activity = activity[ACTIVITY_KEY];
+        expect(activity).toHaveProperty(TEST_PAGES_DOMAIN);
+        expect(activity[TEST_PAGES_DOMAIN]).toEqual(expect.any(Number));
+
+        await EWE.testing.startCdp();
+
+        // Make sure the session is cleaned during the start,
+        // so new navigation is treated as a new session
+        await waitForAssertion(async() => {
+          activity = await browser.storage.local.get([ACTIVITY_KEY]);
+          activity = activity[ACTIVITY_KEY];
+          expect(activity).not.toHaveProperty(TEST_PAGES_DOMAIN);
+        });
+        await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
+
+        await assertEvents(TEST_PAGES_DOMAIN, EVENT_SESSION_START, 2);
+      }
+      finally {
+        await EWE.testing._setPrefs(
+          EXPIRATION_INTERVAL_KEY, sessionExpirationInterval);
+      }
+    });
+
+    it("ignores Chromium service URLs", async function() {
+      if (!isChromiumBased()) {
+        this.skip();
+      }
+
+      await new Page("chrome://version").loaded;
+      await assertEvents("version", EVENT_SESSION_START, 0);
+    });
+
+    it("notifies the listeners", async function() {
+      await addFilter(`image.png$domain=${TEST_PAGES_DOMAIN}`);
+
+      await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
+      await EWE.debugging.ensureEverythingHasSaved();
+
+      await waitForAssertion(() => {
+        expect(getTestEvents("cdp.onCdpItem.page_view")).toEqual([[{
+          timeStamp: expect.any(Number),
+          siteId: TEST_PAGES_DOMAIN,
+          eventType: EVENT_PAGE_VIEW
+        }]]);
+
+        expect(getTestEvents("cdp.onCdpItem.session_start")).toEqual([[{
+          timeStamp: expect.any(Number),
+          siteId: TEST_PAGES_DOMAIN,
+          eventType: EVENT_SESSION_START
+        }]]);
+
+        expect(getTestEvents("cdp.onCdpItem.all")).toEqual(expect.arrayContaining([
+          expect.arrayContaining([{
+            timeStamp: expect.any(Number),
+            siteId: TEST_PAGES_DOMAIN,
+            eventType: EVENT_PAGE_VIEW
+          }]),
+          expect.arrayContaining([{
+            timeStamp: expect.any(Number),
+            siteId: TEST_PAGES_DOMAIN,
+            eventType: EVENT_SESSION_START
+          }])
+        ]));
+      });
+    });
+  });
+
+  describe("Metric Upload", function() {
+    beforeEach(async function() {
+      setMinTimeout(this, 10 * 1000);
+
+      await clearCdpStorage();
+      await EWE.cdp.setOptOut(false);
+
+      await EWE.testing.resetCdpMetricsUploader();
+      await EWE.testing.stopCdp();
+      await EWE.testing.startCdp();
+      await clearRequestLogs();
+    });
+
+    afterEach(async function() {
+      await clearEndpointResponse(PING_URL);
+      await clearEndpointResponse(PUBLIC_KEY_URL);
+    });
+
+    it("sets premium status to premium when callback used", async function() {
+      await setPremiumStatus("premium");
+      await startMetricsUploaderWithTestArgs();
+      await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
+
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+        expect(requestLogs.length).toBeGreaterThan(0);
+        expect(requestLogs[0].body.payload.premium_status).toEqual("premium");
+      });
+    });
+
+    it("does not add premium status to payload if callback returns null", async function() {
+      await setPremiumStatus(null);
+      await startMetricsUploaderWithTestArgs();
+      await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
+
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+        expect(requestLogs.length).toBeGreaterThan(0);
+        expect(requestLogs[0].body.payload).not.toHaveProperty("premium_status");
+      });
+    });
+
+    it("does not add premium status to payload if no callback is set", async function() {
+      await resetPremiumStatus();
+      await startMetricsUploaderWithTestArgs();
+      await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
+
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+        expect(requestLogs.length).toBeGreaterThan(0);
+        expect(requestLogs[0].body.payload).not.toHaveProperty("premium_status");
+      });
+    });
+
     it("sends \"aa_active\" property", async function() {
       setMinTimeout(this, 10 * 1000);
 
       const ACCEPTABLE_ADS_MV3_URL =
-        "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt";
+          "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt";
 
       await startMetricsUploaderWithTestArgs();
 
-      await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+      await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
 
       let payload;
 
@@ -398,7 +626,7 @@ describe("CDP on Chromium-based browsers", function() {
       await EWE.experiments.sync();
       await startMetricsUploaderWithTestArgs();
 
-      await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+      await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
 
       let payload;
 
@@ -461,250 +689,662 @@ describe("CDP on Chromium-based browsers", function() {
       await clearEndpointResponse(EXPERIMENT_URL);
     });
 
-    it("supports History API", async function() {
-      await addFilter(`image.png$domain=${WEBEXT_DOT_COM}`);
+    it("sends the request for the very first time with missing 'last_ping' and 'encrypted_data'", async function() {
+      await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
+      await startMetricsUploaderWithTestArgs();
 
-      await loadPageWithTimeout(`http://${WEBEXT_DOT_COM}:3000/history.html`);
+      let payload;
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+        expect(requestLogs).toHaveLength(1);
+        payload = requestLogs[0].body.payload;
+      }, LOGS_WAIT_INTERVAL_MS);
 
-      // 1 event for "history.html" and 1 event for "history-after-pushState.js"
-      await assertEvents(WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 2);
+      expect(payload).not.toHaveProperty("encrypted_data");
+      expect(payload.application)
+          .toEqual(expect.oneOf(["firefox", "chrome", "headlesschrome", "edg"]));
+      expect(payload.application_version).toEqual(expect.stringMatching(/^\d+(.\d+)+$/));
+      expect(payload.addon_name).toEqual("eyeo-webext-ad-filtering-solution");
+      expect(payload.addon_version).toEqual(expect.stringMatching(/^\d+(.\d+)+$/));
+      expect(payload).not.toHaveProperty("last_ping");
+      expect(payload.public_key_id).toEqual("aeec16f98f5c69aca7a91c77c494a135");
+      expect(payload).toHaveProperty("extension_name");
+      expect(payload.extension_name).toEqual(browser.runtime.id);
+      expect(payload.extension_version).toEqual(expect.any(String));
+      expect(payload.utid).not.toBeNull();
+      expect(payload.ucid).not.toBeNull();
 
-      // still the same session
-      await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
+      await waitForAssertion(async() => {
+        let storageResult =
+            await browser.storage.local.get([CDP_STORAGE_3_KEY]);
+        let storage = storageResult[CDP_STORAGE_3_KEY];
+
+        expect(storage).not.toHaveProperty("lastError");
+      });
     });
 
-    it("counts page redirects", async function() {
-      await new Page(`http://${WEBEXT_DOT_COM}:3000/redirect.html`).loaded;
+    it("sends the request for the second time with filled 'last_ping' and 'encrypted_data'", async function() {
+      await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
+      await startMetricsUploaderWithTestArgs();
 
-      // 1 event for original load and 1 after redirection
-      await assertEvents(WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 2);
+      let payload;
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+        expect(requestLogs).toHaveLength(1);
+        payload = requestLogs[0].body.payload;
+      }, LOGS_WAIT_INTERVAL_MS);
+
+      // request #1
+      expect(payload).not.toHaveProperty("encrypted_data");
+      expect(payload).not.toHaveProperty("last_ping");
+
+      await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
+      await EWE.testing._uploadCdp();
+
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+        expect(requestLogs).toHaveLength(2);
+        payload = requestLogs[1].body.payload;
+      }, LOGS_WAIT_INTERVAL_MS);
+
+      // request #2
+      expect(payload).toHaveProperty("encrypted_data");
+      expect(payload).toHaveProperty("encryption_scheme");
+      expect(payload.encryption_scheme).toEqual("rsa:2048:aes:256");
+      expect(payload.application)
+          .toEqual(expect.oneOf(["firefox", "chrome", "headlesschrome", "edg"]));
+      expect(payload.application_version).toEqual(expect.stringMatching(/^\d+(.\d+)+$/));
+      expect(payload.addon_name).toEqual("eyeo-webext-ad-filtering-solution");
+      expect(payload.addon_version).toEqual(expect.stringMatching(/^\d+(.\d+)+$/));
+      expect(payload).toHaveProperty("last_ping");
+      expect(payload.public_key_id).toEqual("aeec16f98f5c69aca7a91c77c494a135");
+      expect(payload.utid).not.toBeNull();
+      expect(payload.ucid).not.toBeNull();
     });
 
-    async function assertUserActionsSessionEvents(
-      callback, sessionDuration, clear = true, eventsCount = 1) {
-      if (clear) {
-        await EWE.testing._clearCdpData();
-        await EWE.testing._clearCdpActivity();
-        await Page.removeCurrent();
-        await EWE.testing._clearFrameState();
+    it("skips sending empty requests", async function() {
+      await startMetricsUploaderWithTestArgs();
+
+      // very first ping
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+        expect(requestLogs).toHaveLength(1);
+      }, LOGS_WAIT_INTERVAL_MS);
+
+      // first data ping
+      await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
+      await EWE.testing._uploadCdp();
+
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+        expect(requestLogs).toHaveLength(2);
+      }, LOGS_WAIT_INTERVAL_MS);
+
+      // possible second data ping: no new navigation, thus no new data
+      await EWE.testing._uploadCdp();
+
+      let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+      expect(requestLogs).toHaveLength(2);
+    });
+
+    it("sends the ping after the error resend interval has passed", async function() {
+      const lastError = Date.now() - ERROR_DELAY_MS;
+      await browser.storage.local.set({
+        [CDP_STORAGE_3_KEY]: {
+          lastError
+        }
+      });
+
+      await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
+      await startMetricsUploaderWithTestArgs();
+      // no need to `await EWE.testing._uploadCdp()` as it's expected
+      // to be scheduled immediately
+
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+        expect(requestLogs).toHaveLength(1);
+      });
+
+      await waitForAssertion(async() => {
+        let storageResult =
+            await browser.storage.local.get([CDP_STORAGE_3_KEY]);
+        let storage = storageResult[CDP_STORAGE_3_KEY];
+
+        expect(storage).not.toHaveProperty("lastError");
+      }, LOGS_WAIT_INTERVAL_MS);
+    });
+
+    it("does not send again if the error resend interval has not passed yet", async function() {
+      let now = Date.now();
+      let originalStorage = {
+        lastError: now - ERROR_DELAY_MS / 2
+      };
+      await browser.storage.local.set({
+        [CDP_STORAGE_3_KEY]: originalStorage
+      });
+
+      await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
+      await startMetricsUploaderWithTestArgs();
+
+      // Unfortunately no better condition to wait for here, because what we
+      // expect is that nothing changes.
+      await new Promise(r => setTimeout(r, 1000));
+
+      let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+      expect(requestLogs).toHaveLength(0);
+
+      let storageResult =
+          await browser.storage.local.get([CDP_STORAGE_3_KEY]);
+      let storage = storageResult[CDP_STORAGE_3_KEY];
+      expect(storage.lastError).toEqual(originalStorage.lastError);
+    });
+
+    it("resumes sending data after the error resend interval passed", async function() {
+      await browser.storage.local.set({
+        [CDP_STORAGE_3_KEY]: {
+          lastError: Date.now() - ERROR_DELAY_MS - MILLIS_IN_MINUTE
+        }
+      });
+
+      await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
+      await startMetricsUploaderWithTestArgs();
+      // no need to `await EWE.testing._uploadCdp()` as it's expected
+      // to be scheduled immediately
+
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+        expect(requestLogs).toHaveLength(1);
+      });
+
+      await waitForAssertion(async() => {
+        let storageResult =
+            await browser.storage.local.get([CDP_STORAGE_3_KEY]);
+        let storage = storageResult[CDP_STORAGE_3_KEY];
+        expect(storage).not.toHaveProperty("lastError");
+      });
+    });
+
+    it("sets an error timestamp if the server has an error", async function() {
+      await setEndpointResponse(PING_URL, {}, "POST", 500);
+      try {
+        await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
+        await startMetricsUploaderWithTestArgs();
+
+        await waitForAssertion(async() => {
+          let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+          expect(requestLogs).toHaveLength(1);
+        });
+
+        await waitForAssertion(async() => {
+          let storageResult =
+              await browser.storage.local.get([CDP_STORAGE_3_KEY]);
+          let storage = storageResult[CDP_STORAGE_3_KEY];
+
+          expect(storage.lastError).toEqual(expect.any(Number));
+          // We expect the lastError to be in the form of a date that is
+          // close to now, but there are multiple threads and this test is
+          // async so it won't be exactly equal.
+          expect(Math.abs(storage.lastError - Date.now()))
+              .toBeLessThan(MILLIS_IN_MINUTE);
+        });
       }
-
-      const page = new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`);
-      const tabId = await page.loaded;
-
-      const sleepInterval = 100;
-      const attempts = sessionDuration / sleepInterval;
-
-      for (let i = 0; i < attempts; i++) {
-        await new Promise(r => setTimeout(r, sleepInterval));
-
-        // simulated user events extend the session expiration interval
-        await executeScript(tabId, callback, []);
+      finally {
+        await setEndpointResponse(PING_URL, JSON.stringify({
+          token: "someToken"
+        }), "POST", 200);
       }
+    });
 
-      // now sleep a bit more to let the session expire,
-      // if it's not extended by user actions
-      await new Promise(r => setTimeout(r, sleepInterval));
-      // the session is expected to be still not expired
-      await page.reload();
-      await page.remove();
-      await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, eventsCount);
+    async function assertCdpError() {
+      let storage;
+      await waitForAssertion(async() => {
+        let storageResult =
+            await browser.storage.local.get([CDP_STORAGE_3_KEY]);
+        storage = storageResult[CDP_STORAGE_3_KEY];
+
+        expect(storage.lastError).toEqual(expect.any(Number));
+        // We expect the lastError to be in the form of a date that is
+        // close to now, but there are multiple threads and this test is
+        // async so it won't be exactly equal.
+        expect(Math.abs(storage.lastError - Date.now()))
+            .toBeLessThan(MILLIS_IN_MINUTE);
+      });
+      return storage;
     }
 
-    it("extends session expiration time due to user actions", async function() {
-      setMinTimeout(this, 60 * 1000);
+    it("sets an error timestamp if public key server has an error", async function() {
+      const response = await fetch(PUBLIC_KEY_URL);
+      const pubKeyResponseText = await response.text();
+      const pubKeyResponseHeaders = Object.fromEntries(
+        response.headers.entries());
+      await setEndpointResponse(PUBLIC_KEY_URL, {}, "GET", 404);
 
-      const sessionExpirationInterval = 6 * MILLIS_IN_SECOND;
-
-      await EWE.testing._setPrefs(
-        EXPIRATION_INTERVAL_KEY, sessionExpirationInterval);
-
-      await addFilter("image.png");
-
-      // click
-      await assertUserActionsSessionEvents(() => {
-        const image = document.getElementById("image");
-        image.click();
-      }, sessionExpirationInterval);
-
-      // scrolling
-      await assertUserActionsSessionEvents(() => {
-        const e = document.createEvent("UIEvents");
-        e.initUIEvent("scroll", true, true, window, 1);
-        document.body.dispatchEvent(e);
-      }, sessionExpirationInterval);
-
-      // typing
-      await assertUserActionsSessionEvents(() => {
-        const inputBox = document.getElementById("inputBox");
-        inputBox.dispatchEvent(new KeyboardEvent("keypress", {key: "1"}));
-      }, sessionExpirationInterval);
-    });
-
-    it("starts new session if user was inactive for too long and then became active", async function() {
-      setMinTimeout(this, 60 * 1000);
-
-      const sessionExpirationInterval = 6 * MILLIS_IN_SECOND;
-
-      await EWE.testing._setPrefs(
-        EXPIRATION_INTERVAL_KEY, sessionExpirationInterval);
-
-      await addFilter("image.png");
-
-      // click
-      const userClickCallback = () => {
-        const image = document.getElementById("image");
-        image.click();
-      };
-      await assertUserActionsSessionEvents(
-        userClickCallback, sessionExpirationInterval, true, 1);
-
-      // simulate user to be inactive longer than session duration
-      await new Promise(r => setTimeout(r, sessionExpirationInterval + 1000));
-
-      await assertUserActionsSessionEvents(
-        userClickCallback, sessionExpirationInterval, false, 2);
-    });
-
-    it("defers and processes the browser events when the data is loaded", async function() {
-      const loadDelay = 1000;
-
-      await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-      await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
-
-      await EWE.testing.stopCdp();
       try {
-        await EWE.testing.setCdpLoadDelay(loadDelay);
-        await EWE.testing.startCdp();
-
-        // If there is no data (existing sessions) loaded,
-        // it's considered to be a new session.
-        // Otherwise we know there is a pending session.
-        await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-
-        // the deferred events are processed now
-        await new Promise(r => setTimeout(r, loadDelay));
-
-        // not a new session
-        await assertEvents(WEBEXT_DOT_COM, EVENT_SESSION_START, 1);
+        await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
+        await startMetricsUploaderWithTestArgs();
+        await assertCdpError();
       }
       finally {
-        await EWE.testing.setCdpLoadDelay(0);
+        await setEndpointResponse(
+          PUBLIC_KEY_URL, pubKeyResponseText, "GET", 200, pubKeyResponseHeaders);
       }
     });
 
-    it("clears the events", async function() {
-      await addFilter(`image.png$domain=${WEBEXT_DOT_COM}`);
-
-      await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-
-      await assertEvents(WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 1);
-
-      await EWE.testing._clearCdpData();
-
-      await assertEvents(WEBEXT_DOT_COM, EVENT_PAGE_VIEW, 0);
-    });
-
-    it("clears the expired sessions on start", async function() {
-      setMinTimeout(this, 15000);
-
-      const ACTIVITY_KEY = "ewe:cdp-activity";
-      const sessionExpirationInterval =
-        await EWE.testing._getPrefs("cdp_session_expiration_interval");
-
-      const newSessionExpirationInterval = 1 * MILLIS_IN_SECOND;
+    it("sets an error timestamp if public key server returns no \"pubkey-id\" header", async function() {
+      const response = await fetch(PUBLIC_KEY_URL);
+      const pubKeyResponseText = await response.text();
+      const pubKeyResponseHeaders = Object.fromEntries(
+        response.headers.entries());
+      await setEndpointResponse(
+        PUBLIC_KEY_URL, pubKeyResponseText, "GET", 200, {"pubkey-id": ""});
 
       try {
-        await EWE.testing._setPrefs(
-          EXPIRATION_INTERVAL_KEY, newSessionExpirationInterval);
-        await new Page(`http://${LOCALHOST}:3000/image.html`).loaded;
-        await assertEvents(LOCALHOST, EVENT_SESSION_START, 1);
+        await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
+        await startMetricsUploaderWithTestArgs();
 
-        // wait for the session to expire
-        await new Promise(r => setTimeout(r, 2 * newSessionExpirationInterval));
+        await assertCdpError();
+      }
+      finally {
+        await setEndpointResponse(
+          PUBLIC_KEY_URL, pubKeyResponseText, "GET", 200, pubKeyResponseHeaders);
+      }
+    });
 
-        await EWE.testing.stopCdp();
+    it("sends the very first retry ping after public key server is up again", async function() {
+      const response = await fetch(PUBLIC_KEY_URL);
+      const pubKeyResponseText = await response.text();
+      const pubKeyResponseHeaders = Object.fromEntries(
+        response.headers.entries());
+      await setEndpointResponse(
+        PUBLIC_KEY_URL, pubKeyResponseText, "GET", 404);
 
-        // Make sure the session is saved
-        let activity = await browser.storage.local.get([ACTIVITY_KEY]);
-        activity = activity[ACTIVITY_KEY];
-        expect(activity).toHaveProperty(LOCALHOST);
-        expect(activity[LOCALHOST]).toEqual(expect.any(Number));
+      try {
+        await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
+        await startMetricsUploaderWithTestArgs();
 
-        await EWE.testing.startCdp();
+        await assertCdpError();
+      }
+      finally {
+        await setEndpointResponse(
+          PUBLIC_KEY_URL, pubKeyResponseText, "GET", 200, pubKeyResponseHeaders);
+      }
 
-        // Make sure the session is cleaned during the start,
-        // so new navigation is treated as a new session
+      // force upload (happens in 1h)
+      await EWE.testing._uploadCdp();
+
+      let requestLogs;
+      await waitForAssertion(async() => {
+        requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+        expect(requestLogs).toHaveLength(1);
+      }, 2 * 1000);
+      const retryPayload = requestLogs[0].body.payload;
+      expect(retryPayload).toHaveProperty("public_key_id");
+      expect(retryPayload).not.toHaveProperty("encrypted_data"); // very first ping
+
+      let storageResult =
+          await browser.storage.local.get([CDP_STORAGE_3_KEY]);
+      let storage = storageResult[CDP_STORAGE_3_KEY];
+
+      expect(storage).not.toHaveProperty("lastError");
+      expect(storage).not.toHaveProperty("lastDomainStats");
+      expect(storage).not.toHaveProperty("lastUtid");
+    });
+
+    it("sends the data in retry ping after public key server is up again", async function() {
+      const response = await fetch(PUBLIC_KEY_URL);
+      const pubKeyResponseText = await response.text();
+      const pubKeyResponseHeaders = Object.fromEntries(
+        response.headers.entries());
+
+      await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
+      await startMetricsUploaderWithTestArgs();
+
+      let requestLogs;
+      await waitForAssertion(async() => {
+        requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+
+        // the very first ping does not include domain stats
+        expect(requestLogs).toHaveLength(1);
+        const veryFirstPingPayload = requestLogs[0].body.payload;
+        expect(veryFirstPingPayload).not.toHaveProperty("encrypted_data");
+      });
+
+      await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
+
+      try {
+        // simulate public key server is down
+        await setEndpointResponse(
+          PUBLIC_KEY_URL, pubKeyResponseText, "GET", 404);
+
+        // force data upload
+        await EWE.testing._uploadCdp();
+
+        await assertCdpError();
+      }
+      finally {
+        await setEndpointResponse(
+          PUBLIC_KEY_URL, pubKeyResponseText, "GET", 200, pubKeyResponseHeaders);
+      }
+
+      await clearRequestLogs();
+
+      // force upload (happens in 1h)
+      await EWE.testing._uploadCdp();
+
+      await waitForAssertion(async() => {
+        requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+        expect(requestLogs).toHaveLength(1);
+      }, 2 * 1000);
+      const retryPayload = requestLogs[0].body.payload;
+      expect(retryPayload).toHaveProperty("public_key_id");
+      expect(retryPayload).toHaveProperty("encrypted_data");
+
+      let storageResult =
+          await browser.storage.local.get([CDP_STORAGE_3_KEY]);
+      let storage = storageResult[CDP_STORAGE_3_KEY];
+
+      expect(storage).not.toHaveProperty("lastError");
+      expect(storage).not.toHaveProperty("lastDomainStats");
+      expect(storage).not.toHaveProperty("lastUtid");
+    });
+
+    it("sends the same 'utid' and data in the retry ping for the very first ping", async function() {
+      setMinTimeout(this, 20 * 1000);
+
+      const SHORT_ERROR_DELAY_MS = 2 * MILLIS_IN_SECOND;
+
+      try {
+        await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
+
+        await EWE.testing.stopCdpMetricsUploader();
+        await clearRequestLogs();
+
+        // configure backend to return error
+        await setEndpointResponse(PING_URL, {}, "POST", 500);
+
+        await EWE.testing.startCdpMetricsUploader(
+          CDP_PHASE_3_ARGS, SHORT_ERROR_DELAY_MS);
+
+        let requestLogs;
         await waitForAssertion(async() => {
-          activity = await browser.storage.local.get([ACTIVITY_KEY]);
-          activity = activity[ACTIVITY_KEY];
-          expect(activity).not.toHaveProperty(LOCALHOST);
-        });
-        await new Page(`http://${LOCALHOST}:3000/image.html`).loaded;
+          requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
 
-        await assertEvents(LOCALHOST, EVENT_SESSION_START, 2);
+          // the very first ping does not include domain stats
+          expect(requestLogs).toHaveLength(1);
+        });
+        const errorPayload = requestLogs[0].body.payload;
+
+        let storage = await assertCdpError();
+        expect(storage).toHaveProperty("lastDomainStats");
+        expect(storage).toHaveProperty("lastUtid");
+
+        // configure backend to return ok
+        await setEndpointResponse(PING_URL, JSON.stringify({
+          token: "someToken"
+        }), "POST", 200);
+
+        // retry ping
+        await waitForAssertion(async() => {
+          requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+          expect(requestLogs).toHaveLength(2);
+        }, 2 * SHORT_ERROR_DELAY_MS);
+        const retryPayload = requestLogs[1].body.payload;
+        expect(retryPayload).toEqual(errorPayload);
+
+        let storageResult =
+            await browser.storage.local.get([CDP_STORAGE_3_KEY]);
+        storage = storageResult[CDP_STORAGE_3_KEY];
+
+        expect(storage).not.toHaveProperty("lastError");
+        expect(storage).not.toHaveProperty("lastDomainStats");
+        expect(storage).not.toHaveProperty("lastUtid");
       }
       finally {
-        await EWE.testing._setPrefs(
-          EXPIRATION_INTERVAL_KEY, sessionExpirationInterval);
+        await setEndpointResponse(PING_URL, JSON.stringify({
+          token: "someToken"
+        }), "POST", 200);
       }
     });
 
-    it("ignores service URLs", async function() {
-      await new Page("chrome://version").loaded;
-      await assertEvents("version", EVENT_SESSION_START, 0);
+    it("sends the 'last_ping' of the last successful ping in retry ping", async function() {
+      setMinTimeout(this, 20 * 1000);
+
+      const SHORT_ERROR_DELAY_MS = 2 * MILLIS_IN_SECOND;
+
+      try {
+        await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
+
+        await EWE.testing.stopCdpMetricsUploader();
+        await clearRequestLogs();
+
+        await EWE.testing.startCdpMetricsUploader(
+          CDP_PHASE_3_ARGS, SHORT_ERROR_DELAY_MS);
+
+        let requestLogs;
+        await waitForAssertion(async() => {
+          requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+
+          // the very first ping does not include domain stats
+          expect(requestLogs).toHaveLength(1);
+        });
+        let storageResult1 =
+            await browser.storage.local.get([CDP_STORAGE_3_KEY]);
+        let storage1 = storageResult1[CDP_STORAGE_3_KEY];
+        expect(storage1).toHaveProperty("lastPing");
+        const lastSuccessFulPing = storage1.lastPing;
+
+        // Populate domain stats
+        await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
+
+        // Configure backend to return error
+        await setEndpointResponse(PING_URL, {}, "POST", 500);
+
+        // Force the second ping with domain stats included (to fail)
+        await EWE.testing._uploadCdp();
+
+        await waitForAssertion(async() => {
+          requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+          expect(requestLogs).toHaveLength(2);
+        });
+        const errorPayload = requestLogs[1].body.payload;
+        expect(errorPayload).toHaveProperty("encrypted_data");
+
+        // Configure backend to return ok
+        await setEndpointResponse(PING_URL, JSON.stringify({
+          token: "someToken"
+        }), "POST", 200);
+
+        // Retry ping
+        // Rorce the third ping
+        await EWE.testing._uploadCdp();
+
+        await waitForAssertion(async() => {
+          requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+          expect(requestLogs).toHaveLength(3);
+        });
+        const retryPayload = requestLogs[2].body.payload;
+        expect(retryPayload).toHaveProperty("encrypted_data");
+        expect(retryPayload).toHaveProperty("last_ping");
+        expect(retryPayload.last_ping).toEqual(
+          new Date(lastSuccessFulPing).toISOString());
+
+        let storageResult =
+            await browser.storage.local.get([CDP_STORAGE_3_KEY]);
+        let storage = storageResult[CDP_STORAGE_3_KEY];
+
+        expect(storage).not.toHaveProperty("lastError");
+        expect(storage).not.toHaveProperty("lastDomainStats");
+        expect(storage).not.toHaveProperty("lastUtid");
+      }
+      finally {
+        await setEndpointResponse(PING_URL, JSON.stringify({
+          token: "someToken"
+        }), "POST", 200);
+      }
     });
 
-    it("notifies the listeners", async function() {
-      await addFilter(`image.png$domain=${WEBEXT_DOT_COM}`);
+    it("does not use 'last_ping' of skipped pings", async function() {
+      await startMetricsUploaderWithTestArgs();
 
-      await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-      await EWE.debugging.ensureEverythingHasSaved();
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+        expect(requestLogs).toHaveLength(1); // the very first ping
+      }, LOGS_WAIT_INTERVAL_MS);
 
-      expect(getTestEvents("cdp.onCdpItem.page_view")).toEqual([[{
-        timeStamp: expect.any(Number),
-        siteId: WEBEXT_DOT_COM,
-        eventType: EVENT_PAGE_VIEW
-      }]]);
+      let storageResult =
+          await browser.storage.local.get([CDP_STORAGE_3_KEY]);
+      let storage = storageResult[CDP_STORAGE_3_KEY];
+      expect(storage).toHaveProperty("lastPing");
 
-      expect(getTestEvents("cdp.onCdpItem.blocking")).toEqual([[{
-        timeStamp: expect.any(Number),
-        siteId: WEBEXT_DOT_COM,
-        eventType: EVENT_BLOCKING
-      }]]);
+      const firstPingTimestamp = storage.lastPing;
 
-      expect(getTestEvents("cdp.onCdpItem.session_start")).toEqual([[{
-        timeStamp: expect.any(Number),
-        siteId: WEBEXT_DOT_COM,
-        eventType: EVENT_SESSION_START
-      }]]);
+      // No new navigation, thus no new data. The ping is skipped
+      await EWE.testing._uploadCdp();
 
-      expect(getTestEvents("cdp.onCdpItem.all")).toEqual(expect.arrayContaining([
-        expect.arrayContaining([{
-          timeStamp: expect.any(Number),
-          siteId: WEBEXT_DOT_COM,
-          eventType: EVENT_PAGE_VIEW
-        }]),
-        expect.arrayContaining([{
-          timeStamp: expect.any(Number),
-          siteId: WEBEXT_DOT_COM,
-          eventType: EVENT_BLOCKING
-        }]),
-        expect.arrayContaining([{
-          timeStamp: expect.any(Number),
-          siteId: WEBEXT_DOT_COM,
-          eventType: EVENT_SESSION_START
-        }])
-      ]));
+      storageResult =
+          await browser.storage.local.get([CDP_STORAGE_3_KEY]);
+      storage = storageResult[CDP_STORAGE_3_KEY];
+      expect(storage).toHaveProperty("lastPing");
+      expect(firstPingTimestamp).toEqual(firstPingTimestamp);
+
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+        expect(requestLogs).toHaveLength(1); // no new pings are sent
+      });
+
+      await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
+      // Has navigation, thus has new data
+      await EWE.testing._uploadCdp();
+
+      let secondPingLastPing;
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+        expect(requestLogs).toHaveLength(2);
+        secondPingLastPing = requestLogs[1].body.payload.last_ping;
+      });
+
+      expect(secondPingLastPing).toEqual(
+        new Date(firstPingTimestamp).toISOString());
+    });
+
+    it("does not send the sessions twice - in both failed ping and retry ping", async function() {
+      setMinTimeout(this, 20 * 1000);
+
+      try {
+        await EWE.testing.stopCdpMetricsUploader();
+        await clearRequestLogs();
+
+        await EWE.testing.startCdpMetricsUploader(
+          CDP_PHASE_3_ARGS, ERROR_DELAY_MS);
+
+        let requestLogs;
+        await waitForAssertion(async() => {
+          requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+
+          // the very first ping
+          expect(requestLogs).toHaveLength(1);
+        });
+
+        await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
+
+        // configure backend to return error
+        await setEndpointResponse(PING_URL, {}, "POST", 500);
+        await EWE.testing._uploadCdp(); // force ping
+
+        await waitForAssertion(async() => {
+          requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+
+          // the very first ping + forced ping
+          expect(requestLogs).toHaveLength(2);
+        });
+
+        await waitForAssertion(async() => {
+          let storageResult =
+              await browser.storage.local.get([CDP_STORAGE_3_KEY]);
+          let storage = storageResult[CDP_STORAGE_3_KEY];
+
+          expect(storage.lastError).toEqual(expect.any(Number));
+          // We expect the lastError to be in the form of a date that is
+          // close to now, but there are multiple threads and this test is
+          // async so it won't be exactly equal.
+          expect(Math.abs(storage.lastError - Date.now()))
+              .toBeLessThan(MILLIS_IN_MINUTE);
+          expect(storage).toHaveProperty("lastDomainStats");
+          expect(storage).toHaveProperty("lastUtid");
+        });
+
+        const errorPayload = requestLogs[1].body.payload;
+        const errorDomainStats = await decryptDomainStats(errorPayload);
+        expect(errorDomainStats.ds).toEqual([{
+          i: CROSS_DOMAIN,
+          s: 1,
+          p: 1
+        }]);
+
+        // configure backend to return ok
+        await setEndpointResponse(PING_URL, JSON.stringify({
+          token: "someToken"
+        }), "POST", 200);
+
+        // navigation that shouldn't be counted in retry ping,
+        // but should be counted in the next regular ping
+        await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
+
+        // simulate retry ping
+        await EWE.testing._uploadCdp();
+
+        await waitForAssertion(async() => {
+          requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+          expect(requestLogs).toHaveLength(3);
+        });
+
+        let storageResult =
+            await browser.storage.local.get([CDP_STORAGE_3_KEY]);
+        let storage = storageResult[CDP_STORAGE_3_KEY];
+
+        expect(storage).not.toHaveProperty("lastError");
+        expect(storage).not.toHaveProperty("lastDomainStats");
+        expect(storage).not.toHaveProperty("lastUtid");
+
+        // regular ping
+        await EWE.testing._uploadCdp();
+
+        await waitForAssertion(async() => {
+          requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+          expect(requestLogs).toHaveLength(4);
+        });
+        const regularPayload = requestLogs[3].body.payload;
+        const regularDomainStats = await decryptDomainStats(regularPayload);
+        // no "cross domain" sessions is expected here
+        expect(regularDomainStats.ds).toEqual([{
+          i: TEST_PAGES_DOMAIN,
+          s: 1,
+          p: 1
+        }]);
+      }
+      finally {
+        await setEndpointResponse(PING_URL, JSON.stringify({
+          token: "someToken"
+        }), "POST", 200);
+      }
+    });
+
+    it("does not send the ping if user has opted out", async function() {
+      await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
+
+      await EWE.cdp.setOptOut(true);
+
+      await startMetricsUploaderWithTestArgs();
+
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+        expect(requestLogs).toHaveLength(0);
+      });
     });
 
     describe("Metric Upload Integration", function() {
       it("can successfully send a ping payload to the eyeometry staging server", async function() {
         setMinTimeout(this, 11000);
-
-        await cleanUp();
-        await clearState();
-        await EWE.testing.resetCdpMetricsUploader();
 
         // These credentials can be set by setting the environment
         // variables with the same name before running webpack.
@@ -717,7 +1357,7 @@ describe("CDP on Chromium-based browsers", function() {
           this.skip();
         }
 
-        await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+        await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
         await EWE.testing.startCdpMetricsUploader(cdpArgs);
 
         // wait for the very first ping sent
@@ -730,9 +1370,9 @@ describe("CDP on Chromium-based browsers", function() {
           openPingTimestamp = storage.lastPing;
         });
 
-        // We need to navigate to another domain, as the session for webext.com
-        // is pending and will be not counted in domains_stats
-        await new Page(`http://${LOCALHOST}:3000/image.html`).loaded;
+        // We need to navigate to another domain, as the session for
+        // "cross domain" is pending and will be not counted in domains_stats
+        await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
 
         // force send the ping
         await EWE.testing._uploadCdp();
@@ -746,715 +1386,6 @@ describe("CDP on Chromium-based browsers", function() {
           expect(storage.lastPing).toBeGreaterThan(openPingTimestamp);
           expect(storage).not.toHaveProperty("lastError");
         }, 10000);
-      });
-    });
-
-    async function clearState() {
-      await browser.storage.local.remove(CDP_STORAGE_3_KEY);
-    }
-
-    const LOGS_WAIT_INTERVAL_MS = 5 * MILLIS_IN_SECOND;
-
-    describe("Metric Upload Running", function() {
-      // Some of these unfortunately need to wait for pings to happen (or not
-      // happen) and so can get a bit long.
-      setMinTimeout(this, 15000);
-
-      async function clearEndpointResponses() {
-        await clearEndpointResponse(PING_URL);
-        await clearEndpointResponse(PUBLIC_KEY_URL);
-      }
-
-      beforeEach(async function() {
-        await clearRequestLogs();
-        await clearState();
-        await clearEndpointResponses();
-      });
-
-      afterEach(async function() {
-        await clearEndpointResponses();
-        await clearState();
-      });
-
-      it("sends the request for the very first time with missing 'last_ping' and 'encrypted_data'", async function() {
-        await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-        await startMetricsUploaderWithTestArgs();
-
-        let payload;
-        await waitForAssertion(async() => {
-          let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-          expect(requestLogs).toHaveLength(1);
-          payload = requestLogs[0].body.payload;
-        }, LOGS_WAIT_INTERVAL_MS);
-
-        expect(payload).not.toHaveProperty("encrypted_data");
-        expect(payload.application)
-          .toEqual(expect.oneOf(["firefox", "chrome", "headlesschrome", "edg"]));
-        expect(payload.application_version).toEqual(expect.stringMatching(/^\d+(.\d+)+$/));
-        expect(payload.addon_name).toEqual("eyeo-webext-ad-filtering-solution");
-        expect(payload.addon_version).toEqual(expect.stringMatching(/^\d+(.\d+)+$/));
-        expect(payload).not.toHaveProperty("last_ping");
-        expect(payload.public_key_id).toEqual("aeec16f98f5c69aca7a91c77c494a135");
-        expect(payload).toHaveProperty("extension_name");
-        expect(payload.extension_name).toEqual(browser.runtime.id);
-        expect(payload.extension_version).toEqual(expect.any(String));
-        expect(payload.utid).not.toBeNull();
-        expect(payload.ucid).not.toBeNull();
-
-        await waitForAssertion(async() => {
-          let storageResult =
-            await browser.storage.local.get([CDP_STORAGE_3_KEY]);
-          let storage = storageResult[CDP_STORAGE_3_KEY];
-
-          expect(storage).not.toHaveProperty("lastError");
-        });
-      });
-
-      it("sends the request for the second time with filled 'last_ping' and 'encrypted_data'", async function() {
-        await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-        await startMetricsUploaderWithTestArgs();
-
-        let payload;
-        await waitForAssertion(async() => {
-          let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-          expect(requestLogs).toHaveLength(1);
-          payload = requestLogs[0].body.payload;
-        }, LOGS_WAIT_INTERVAL_MS);
-
-        // request #1
-        expect(payload).not.toHaveProperty("encrypted_data");
-        expect(payload).not.toHaveProperty("last_ping");
-
-        await new Page(`http://${LOCALHOST}:3000/image.html`).loaded;
-        await EWE.testing._uploadCdp();
-
-        await waitForAssertion(async() => {
-          let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-          expect(requestLogs).toHaveLength(2);
-          payload = requestLogs[1].body.payload;
-        }, LOGS_WAIT_INTERVAL_MS);
-
-        // request #2
-        expect(payload).toHaveProperty("encrypted_data");
-        expect(payload).toHaveProperty("encryption_scheme");
-        expect(payload.encryption_scheme).toEqual("rsa:2048:aes:256");
-        expect(payload.application)
-          .toEqual(expect.oneOf(["firefox", "chrome", "headlesschrome", "edg"]));
-        expect(payload.application_version).toEqual(expect.stringMatching(/^\d+(.\d+)+$/));
-        expect(payload.addon_name).toEqual("eyeo-webext-ad-filtering-solution");
-        expect(payload.addon_version).toEqual(expect.stringMatching(/^\d+(.\d+)+$/));
-        expect(payload).toHaveProperty("last_ping");
-        expect(payload.public_key_id).toEqual("aeec16f98f5c69aca7a91c77c494a135");
-        expect(payload.utid).not.toBeNull();
-        expect(payload.ucid).not.toBeNull();
-      });
-
-      it("skips sending empty requests", async function() {
-        await startMetricsUploaderWithTestArgs();
-
-        // very first ping
-        await waitForAssertion(async() => {
-          let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-          expect(requestLogs).toHaveLength(1);
-        }, LOGS_WAIT_INTERVAL_MS);
-
-        // first data ping
-        await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-        await EWE.testing._uploadCdp();
-
-        await waitForAssertion(async() => {
-          let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-          expect(requestLogs).toHaveLength(2);
-        }, LOGS_WAIT_INTERVAL_MS);
-
-        // possible second data ping: no new navigation, thus no new data
-        await EWE.testing._uploadCdp();
-
-        let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-        expect(requestLogs).toHaveLength(2);
-      });
-
-      it("sends the ping after the error resend interval has passed", async function() {
-        const lastError = Date.now() - ERROR_DELAY_MS;
-        await browser.storage.local.set({
-          [CDP_STORAGE_3_KEY]: {
-            lastError
-          }
-        });
-
-        await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-        await startMetricsUploaderWithTestArgs();
-        // no need to `await EWE.testing._uploadCdp()` as it's expected
-        // to be scheduled immediately
-
-        await waitForAssertion(async() => {
-          let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-          expect(requestLogs).toHaveLength(1);
-        });
-
-        await waitForAssertion(async() => {
-          let storageResult =
-            await browser.storage.local.get([CDP_STORAGE_3_KEY]);
-          let storage = storageResult[CDP_STORAGE_3_KEY];
-
-          expect(storage).not.toHaveProperty("lastError");
-        }, LOGS_WAIT_INTERVAL_MS);
-      });
-
-      it("does not send again if the error resend interval has not passed yet", async function() {
-        let now = Date.now();
-        let originalStorage = {
-          lastError: now - ERROR_DELAY_MS / 2
-        };
-        await browser.storage.local.set({
-          [CDP_STORAGE_3_KEY]: originalStorage
-        });
-
-        await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-        await startMetricsUploaderWithTestArgs();
-
-        // Unfortunately no better condition to wait for here, because what we
-        // expect is that nothing changes.
-        await new Promise(r => setTimeout(r, 1000));
-
-        let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-        expect(requestLogs).toHaveLength(0);
-
-        let storageResult =
-          await browser.storage.local.get([CDP_STORAGE_3_KEY]);
-        let storage = storageResult[CDP_STORAGE_3_KEY];
-        expect(storage.lastError).toEqual(originalStorage.lastError);
-      });
-
-      it("resumes sending data after the error resend interval passed", async function() {
-        await browser.storage.local.set({
-          [CDP_STORAGE_3_KEY]: {
-            lastError: Date.now() - ERROR_DELAY_MS - MILLIS_IN_MINUTE
-          }
-        });
-
-        await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-        await startMetricsUploaderWithTestArgs();
-        // no need to `await EWE.testing._uploadCdp()` as it's expected
-        // to be scheduled immediately
-
-        await waitForAssertion(async() => {
-          let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-          expect(requestLogs).toHaveLength(1);
-        });
-
-        await waitForAssertion(async() => {
-          let storageResult =
-            await browser.storage.local.get([CDP_STORAGE_3_KEY]);
-          let storage = storageResult[CDP_STORAGE_3_KEY];
-          expect(storage).not.toHaveProperty("lastError");
-        });
-      });
-
-      it("sets an error timestamp if the server has an error", async function() {
-        await setEndpointResponse(PING_URL, {}, "POST", 500);
-        try {
-          await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-          await startMetricsUploaderWithTestArgs();
-
-          await waitForAssertion(async() => {
-            let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-            expect(requestLogs).toHaveLength(1);
-          });
-
-          await waitForAssertion(async() => {
-            let storageResult =
-              await browser.storage.local.get([CDP_STORAGE_3_KEY]);
-            let storage = storageResult[CDP_STORAGE_3_KEY];
-
-            expect(storage.lastError).toEqual(expect.any(Number));
-            // We expect the lastError to be in the form of a date that is
-            // close to now, but there are multiple threads and this test is
-            // async so it won't be exactly equal.
-            expect(Math.abs(storage.lastError - Date.now()))
-              .toBeLessThan(MILLIS_IN_MINUTE);
-          });
-        }
-        finally {
-          await setEndpointResponse(PING_URL, JSON.stringify({
-            token: "someToken"
-          }), "POST", 200);
-        }
-      });
-
-      async function assertCdpError() {
-        let storage;
-        await waitForAssertion(async() => {
-          let storageResult =
-            await browser.storage.local.get([CDP_STORAGE_3_KEY]);
-          storage = storageResult[CDP_STORAGE_3_KEY];
-
-          expect(storage.lastError).toEqual(expect.any(Number));
-          // We expect the lastError to be in the form of a date that is
-          // close to now, but there are multiple threads and this test is
-          // async so it won't be exactly equal.
-          expect(Math.abs(storage.lastError - Date.now()))
-            .toBeLessThan(MILLIS_IN_MINUTE);
-        });
-        return storage;
-      }
-
-      it("sets an error timestamp if public key server has an error", async function() {
-        const response = await fetch(PUBLIC_KEY_URL);
-        const pubKeyResponseText = await response.text();
-        const pubKeyResponseHeaders = Object.fromEntries(
-          response.headers.entries());
-        await setEndpointResponse(PUBLIC_KEY_URL, {}, "GET", 404);
-
-        try {
-          await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-          await startMetricsUploaderWithTestArgs();
-          await assertCdpError();
-        }
-        finally {
-          await setEndpointResponse(
-            PUBLIC_KEY_URL, pubKeyResponseText, "GET", 200, pubKeyResponseHeaders);
-        }
-      });
-
-      it("sets an error timestamp if public key server returns no \"pubkey-id\" header", async function() {
-        const response = await fetch(PUBLIC_KEY_URL);
-        const pubKeyResponseText = await response.text();
-        const pubKeyResponseHeaders = Object.fromEntries(
-          response.headers.entries());
-        await setEndpointResponse(
-          PUBLIC_KEY_URL, pubKeyResponseText, "GET", 200, {"pubkey-id": ""});
-
-        try {
-          await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-          await startMetricsUploaderWithTestArgs();
-
-          await assertCdpError();
-        }
-        finally {
-          await setEndpointResponse(
-            PUBLIC_KEY_URL, pubKeyResponseText, "GET", 200, pubKeyResponseHeaders);
-        }
-      });
-
-      it("sends the very first retry ping after public key server is up again", async function() {
-        const response = await fetch(PUBLIC_KEY_URL);
-        const pubKeyResponseText = await response.text();
-        const pubKeyResponseHeaders = Object.fromEntries(
-          response.headers.entries());
-        await setEndpointResponse(
-          PUBLIC_KEY_URL, pubKeyResponseText, "GET", 404);
-
-        try {
-          await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-          await startMetricsUploaderWithTestArgs();
-
-          await assertCdpError();
-        }
-        finally {
-          await setEndpointResponse(
-            PUBLIC_KEY_URL, pubKeyResponseText, "GET", 200, pubKeyResponseHeaders);
-        }
-
-        // force upload (happens in 1h)
-        await EWE.testing._uploadCdp();
-
-        let requestLogs;
-        await waitForAssertion(async() => {
-          requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-          expect(requestLogs).toHaveLength(1);
-        }, 2 * 1000);
-        const retryPayload = requestLogs[0].body.payload;
-        expect(retryPayload).toHaveProperty("public_key_id");
-        expect(retryPayload).not.toHaveProperty("encrypted_data"); // very first ping
-
-        let storageResult =
-          await browser.storage.local.get([CDP_STORAGE_3_KEY]);
-        let storage = storageResult[CDP_STORAGE_3_KEY];
-
-        expect(storage).not.toHaveProperty("lastError");
-        expect(storage).not.toHaveProperty("lastDomainStats");
-        expect(storage).not.toHaveProperty("lastUtid");
-      });
-
-      it("sends the data in retry ping after public key server is up again", async function() {
-        const response = await fetch(PUBLIC_KEY_URL);
-        const pubKeyResponseText = await response.text();
-        const pubKeyResponseHeaders = Object.fromEntries(
-          response.headers.entries());
-
-        await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-        await startMetricsUploaderWithTestArgs();
-
-        let requestLogs;
-        await waitForAssertion(async() => {
-          requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-
-          // the very first ping does not include domain stats
-          expect(requestLogs).toHaveLength(1);
-          const veryFirstPingPayload = requestLogs[0].body.payload;
-          expect(veryFirstPingPayload).not.toHaveProperty("encrypted_data");
-        });
-
-        await new Page(`http://${LOCALHOST}:3000/image.html`).loaded;
-
-        try {
-          // simulate public key server is down
-          await setEndpointResponse(
-            PUBLIC_KEY_URL, pubKeyResponseText, "GET", 404);
-
-          // force data upload
-          await EWE.testing._uploadCdp();
-
-          await assertCdpError();
-        }
-        finally {
-          await setEndpointResponse(
-            PUBLIC_KEY_URL, pubKeyResponseText, "GET", 200, pubKeyResponseHeaders);
-        }
-
-        await clearRequestLogs();
-
-        // force upload (happens in 1h)
-        await EWE.testing._uploadCdp();
-
-        await waitForAssertion(async() => {
-          requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-          expect(requestLogs).toHaveLength(1);
-        }, 2 * 1000);
-        const retryPayload = requestLogs[0].body.payload;
-        expect(retryPayload).toHaveProperty("public_key_id");
-        expect(retryPayload).toHaveProperty("encrypted_data");
-
-        let storageResult =
-          await browser.storage.local.get([CDP_STORAGE_3_KEY]);
-        let storage = storageResult[CDP_STORAGE_3_KEY];
-
-        expect(storage).not.toHaveProperty("lastError");
-        expect(storage).not.toHaveProperty("lastDomainStats");
-        expect(storage).not.toHaveProperty("lastUtid");
-      });
-
-      it("sends the same 'utid' and data in the retry ping for the very first ping", async function() {
-        setMinTimeout(this, 20 * 1000);
-
-        const SHORT_ERROR_DELAY_MS = 2 * MILLIS_IN_SECOND;
-
-        try {
-          await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-
-          await EWE.testing.stopCdpMetricsUploader();
-          await clearRequestLogs();
-
-          // configure backend to return error
-          await setEndpointResponse(PING_URL, {}, "POST", 500);
-
-          await EWE.testing.startCdpMetricsUploader(
-            CDP_PHASE_3_ARGS, SHORT_ERROR_DELAY_MS);
-
-          let requestLogs;
-          await waitForAssertion(async() => {
-            requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-
-            // the very first ping does not include domain stats
-            expect(requestLogs).toHaveLength(1);
-          });
-          const errorPayload = requestLogs[0].body.payload;
-
-          let storage = await assertCdpError();
-          expect(storage).toHaveProperty("lastDomainStats");
-          expect(storage).toHaveProperty("lastUtid");
-
-          // configure backend to return ok
-          await setEndpointResponse(PING_URL, JSON.stringify({
-            token: "someToken"
-          }), "POST", 200);
-
-          // retry ping
-          await waitForAssertion(async() => {
-            requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-            expect(requestLogs).toHaveLength(2);
-          }, 2 * SHORT_ERROR_DELAY_MS);
-          const retryPayload = requestLogs[1].body.payload;
-          expect(retryPayload).toEqual(errorPayload);
-
-          let storageResult =
-            await browser.storage.local.get([CDP_STORAGE_3_KEY]);
-          storage = storageResult[CDP_STORAGE_3_KEY];
-
-          expect(storage).not.toHaveProperty("lastError");
-          expect(storage).not.toHaveProperty("lastDomainStats");
-          expect(storage).not.toHaveProperty("lastUtid");
-        }
-        finally {
-          await setEndpointResponse(PING_URL, JSON.stringify({
-            token: "someToken"
-          }), "POST", 200);
-        }
-      });
-
-      it("sends the 'last_ping' of the last successful ping in retry ping", async function() {
-        setMinTimeout(this, 20 * 1000);
-
-        const SHORT_ERROR_DELAY_MS = 2 * MILLIS_IN_SECOND;
-
-        try {
-          await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-
-          await EWE.testing.stopCdpMetricsUploader();
-          await clearRequestLogs();
-
-          await EWE.testing.startCdpMetricsUploader(
-            CDP_PHASE_3_ARGS, SHORT_ERROR_DELAY_MS);
-
-          let requestLogs;
-          await waitForAssertion(async() => {
-            requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-
-            // the very first ping does not include domain stats
-            expect(requestLogs).toHaveLength(1);
-          });
-          let storageResult1 =
-            await browser.storage.local.get([CDP_STORAGE_3_KEY]);
-          let storage1 = storageResult1[CDP_STORAGE_3_KEY];
-          expect(storage1).toHaveProperty("lastPing");
-          const lastSuccessFulPing = storage1.lastPing;
-
-          // Populate domain stats
-          await new Page(`http://${LOCALHOST}:3000/image.html`).loaded;
-
-          // Configure backend to return error
-          await setEndpointResponse(PING_URL, {}, "POST", 500);
-
-          // Force the second ping with domain stats included (to fail)
-          await EWE.testing._uploadCdp();
-
-          await waitForAssertion(async() => {
-            requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-            expect(requestLogs).toHaveLength(2);
-          });
-          const errorPayload = requestLogs[1].body.payload;
-          expect(errorPayload).toHaveProperty("encrypted_data");
-
-          // Configure backend to return ok
-          await setEndpointResponse(PING_URL, JSON.stringify({
-            token: "someToken"
-          }), "POST", 200);
-
-          // Retry ping
-          // Rorce the third ping
-          await EWE.testing._uploadCdp();
-
-          await waitForAssertion(async() => {
-            requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-            expect(requestLogs).toHaveLength(3);
-          });
-          const retryPayload = requestLogs[2].body.payload;
-          expect(retryPayload).toHaveProperty("encrypted_data");
-          expect(retryPayload).toHaveProperty("last_ping");
-          expect(retryPayload.last_ping).toEqual(
-            new Date(lastSuccessFulPing).toISOString());
-
-          let storageResult =
-            await browser.storage.local.get([CDP_STORAGE_3_KEY]);
-          let storage = storageResult[CDP_STORAGE_3_KEY];
-
-          expect(storage).not.toHaveProperty("lastError");
-          expect(storage).not.toHaveProperty("lastDomainStats");
-          expect(storage).not.toHaveProperty("lastUtid");
-        }
-        finally {
-          await setEndpointResponse(PING_URL, JSON.stringify({
-            token: "someToken"
-          }), "POST", 200);
-        }
-      });
-
-      it("does not use 'last_ping' of skipped pings", async function() {
-        await startMetricsUploaderWithTestArgs();
-
-        await waitForAssertion(async() => {
-          let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-          expect(requestLogs).toHaveLength(1); // the very first ping
-        }, LOGS_WAIT_INTERVAL_MS);
-
-        let storageResult =
-          await browser.storage.local.get([CDP_STORAGE_3_KEY]);
-        let storage = storageResult[CDP_STORAGE_3_KEY];
-        expect(storage).toHaveProperty("lastPing");
-
-        const firstPingTimestamp = storage.lastPing;
-
-        // No new navigation, thus no new data. The ping is skipped
-        await EWE.testing._uploadCdp();
-
-        storageResult =
-          await browser.storage.local.get([CDP_STORAGE_3_KEY]);
-        storage = storageResult[CDP_STORAGE_3_KEY];
-        expect(storage).toHaveProperty("lastPing");
-        expect(firstPingTimestamp).toEqual(firstPingTimestamp);
-
-        await waitForAssertion(async() => {
-          let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-          expect(requestLogs).toHaveLength(1); // no new pings are sent
-        });
-
-        await new Page(`http://${LOCALHOST}:3000/image.html`).loaded;
-        // Has navigation, thus has new data
-        await EWE.testing._uploadCdp();
-
-        let secondPingLastPing;
-        await waitForAssertion(async() => {
-          let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-          expect(requestLogs).toHaveLength(2);
-          secondPingLastPing = requestLogs[1].body.payload.last_ping;
-        });
-
-        expect(secondPingLastPing).toEqual(
-          new Date(firstPingTimestamp).toISOString());
-      });
-
-      it("does not send the sessions twice - in both failed ping and retry ping", async function() {
-        setMinTimeout(this, 20 * 1000);
-
-        try {
-          await EWE.testing.stopCdpMetricsUploader();
-          await clearRequestLogs();
-
-          await EWE.testing.startCdpMetricsUploader(
-            CDP_PHASE_3_ARGS, ERROR_DELAY_MS);
-
-          let requestLogs;
-          await waitForAssertion(async() => {
-            requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-
-            // the very first ping
-            expect(requestLogs).toHaveLength(1);
-          });
-
-          await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-
-          // configure backend to return error
-          await setEndpointResponse(PING_URL, {}, "POST", 500);
-          await EWE.testing._uploadCdp(); // force ping
-
-          await waitForAssertion(async() => {
-            requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-
-            // the very first ping + forced ping
-            expect(requestLogs).toHaveLength(2);
-          });
-
-          await waitForAssertion(async() => {
-            let storageResult =
-              await browser.storage.local.get([CDP_STORAGE_3_KEY]);
-            let storage = storageResult[CDP_STORAGE_3_KEY];
-
-            expect(storage.lastError).toEqual(expect.any(Number));
-            // We expect the lastError to be in the form of a date that is
-            // close to now, but there are multiple threads and this test is
-            // async so it won't be exactly equal.
-            expect(Math.abs(storage.lastError - Date.now()))
-              .toBeLessThan(MILLIS_IN_MINUTE);
-            expect(storage).toHaveProperty("lastDomainStats");
-            expect(storage).toHaveProperty("lastUtid");
-          });
-
-          const errorPayload = requestLogs[1].body.payload;
-          const errorDomainStats = await decryptDomainStats(errorPayload);
-          expect(errorDomainStats.ds).toEqual([{
-            i: WEBEXT_DOT_COM,
-            s: 1,
-            p: 1
-          }]);
-
-          // configure backend to return ok
-          await setEndpointResponse(PING_URL, JSON.stringify({
-            token: "someToken"
-          }), "POST", 200);
-
-          // navigation that shouldn't be counted in retry ping,
-          // but should be counted in the next regular ping
-          await new Page(`http://${LOCALHOST}:3000/image.html`).loaded;
-
-          // simulate retry ping
-          await EWE.testing._uploadCdp();
-
-          await waitForAssertion(async() => {
-            requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-            expect(requestLogs).toHaveLength(3);
-          });
-
-          let storageResult =
-            await browser.storage.local.get([CDP_STORAGE_3_KEY]);
-          let storage = storageResult[CDP_STORAGE_3_KEY];
-
-          expect(storage).not.toHaveProperty("lastError");
-          expect(storage).not.toHaveProperty("lastDomainStats");
-          expect(storage).not.toHaveProperty("lastUtid");
-
-          // regular ping
-          await EWE.testing._uploadCdp();
-
-          await waitForAssertion(async() => {
-            requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-            expect(requestLogs).toHaveLength(4);
-          });
-          const regularPayload = requestLogs[3].body.payload;
-          const regularDomainStats = await decryptDomainStats(regularPayload);
-          // no "webext.com" sessions is expected here
-          expect(regularDomainStats.ds).toEqual([{
-            i: LOCALHOST,
-            s: 1,
-            p: 1
-          }]);
-        }
-        finally {
-          await setEndpointResponse(PING_URL, JSON.stringify({
-            token: "someToken"
-          }), "POST", 200);
-        }
-      });
-
-      it("does not send the ping if user has opted out", async function() {
-        await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
-
-        await EWE.cdp.setOptOut(true);
-
-        await startMetricsUploaderWithTestArgs();
-
-        await waitForAssertion(async() => {
-          let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
-          expect(requestLogs).toHaveLength(0);
-        });
-      });
-    });
-
-    describe("Domains trimming", function() {
-      it("generates \"domain_stats\" payload", async function() {
-        await EWE.testing._setCdpData(EVENT_SESSION_START, SITE_ID, [1, 2, 3]);
-        await EWE.testing._setCdpData(EVENT_PAGE_VIEW, SITE_ID, 4);
-        const stats = await EWE.testing._getCdpDomainStats();
-        expect(stats).toEqual(
-          `{"ds":[{"i":"${SITE_ID}","s":3,"p":4}]}`);
-      });
-
-      it("sorts \"domain_stats\" payload for sessions count", async function() {
-        const SITE_ID1 = SITE_ID;
-        const SITE_ID2 = SITE_ID + "2";
-        const SITE_ID3 = SITE_ID + "3";
-        await EWE.testing._setCdpData(EVENT_SESSION_START, SITE_ID1, [1]);
-        await EWE.testing._setCdpData(EVENT_PAGE_VIEW, SITE_ID1, 2);
-        await EWE.testing._setCdpData(EVENT_SESSION_START, SITE_ID2, [1, 2, 3]);
-        await EWE.testing._setCdpData(EVENT_PAGE_VIEW, SITE_ID2, 1);
-        await EWE.testing._setCdpData(EVENT_SESSION_START, SITE_ID3, [1, 2]);
-        await EWE.testing._setCdpData(EVENT_PAGE_VIEW, SITE_ID3, 5);
-        const stats = await EWE.testing._getCdpDomainStats();
-        expect(stats).toEqual("{\"ds\":[" +
-          `{"i":"${SITE_ID2}","s":3,"p":1},` +
-          `{"i":"${SITE_ID3}","s":2,"p":5},` +
-          `{"i":"${SITE_ID1}","s":1,"p":2}` +
-          "]}");
       });
     });
 
@@ -1475,7 +1406,6 @@ UlvVm112lG9ij3Mc/f64cKzmenKoIe0c2HSGMxFagEDnAgMBAAE=
         const publicKey = await EWE.testing._importRSAPublicKey(
           PEM_ENCODED_PUBLIC_KEY);
         expect(publicKey).not.toBeNull();
-        expect(publicKey.byteLength).not.toEqual(0);
       });
 
       it("requests public key", async function() {
@@ -1488,10 +1418,7 @@ UlvVm112lG9ij3Mc/f64cKzmenKoIe0c2HSGMxFagEDnAgMBAAE=
       it("is able to decrypt and decompress the payload", async function() {
         setMinTimeout(this, 20 * 1000);
 
-        await clearRequestLogs();
-        await cleanUp();
-
-        await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+        await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
         await startMetricsUploaderWithTestArgs();
 
         let payload;
@@ -1502,11 +1429,11 @@ UlvVm112lG9ij3Mc/f64cKzmenKoIe0c2HSGMxFagEDnAgMBAAE=
         }, LOGS_WAIT_INTERVAL_MS);
         expect(payload).not.toHaveProperty("encrypted_data"); // the very first ping
 
-        // We need to navigate to another domain, as the session for webext.com
-        // is pending and will be not counted in domains_stats
-        await new Page(`http://${LOCALHOST}:3000/image.html`).loaded;
+        // We need to navigate to another domain, as the session for
+        // "cross domain" is pending and will be not counted in domains_stats
+        await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
         // increase page views counter
-        await new Page(`http://${LOCALHOST}:3000/image.html`).loaded;
+        await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
         await new Page("https://adblockplus.org").loaded;
         await EWE.testing._uploadCdp();
 
@@ -1521,11 +1448,11 @@ UlvVm112lG9ij3Mc/f64cKzmenKoIe0c2HSGMxFagEDnAgMBAAE=
 
         const domainStats = await decryptDomainStats(payload);
         expect(domainStats.ds).toEqual(expect.arrayContaining([{
-          i: WEBEXT_DOT_COM,
+          i: CROSS_DOMAIN,
           s: 1,
           p: 1
         }, {
-          i: LOCALHOST,
+          i: TEST_PAGES_DOMAIN,
           s: 1,
           p: 2
         }, {
@@ -1536,10 +1463,7 @@ UlvVm112lG9ij3Mc/f64cKzmenKoIe0c2HSGMxFagEDnAgMBAAE=
       });
 
       it("stops retry sending after reaching the limit", async function() {
-        await clearRequestLogs();
-        await cleanUp();
-
-        await new Page(`http://${WEBEXT_DOT_COM}:3000/image.html`).loaded;
+        await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
         await startMetricsUploaderWithTestArgs();
 
         let payload;
@@ -1579,9 +1503,9 @@ UlvVm112lG9ij3Mc/f64cKzmenKoIe0c2HSGMxFagEDnAgMBAAE=
         // simulate backend is up again
         await setEndpointResponse(PING_URL, {}, "POST", 200);
 
-        // We need to navigate to another domain, as the session for webext.com
-        // is pending and will be not counted in domains_stats
-        await new Page(`http://${LOCALHOST}:3000/image.html`).loaded;
+        // We need to navigate to another domain, as the session for
+        // "cross domain" is pending and will be not counted in domains_stats
+        await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
 
         await EWE.testing._uploadCdp();
 
@@ -1595,7 +1519,7 @@ UlvVm112lG9ij3Mc/f64cKzmenKoIe0c2HSGMxFagEDnAgMBAAE=
         expect(payload.utid).not.toEqual(lastUtid);
         const successfulDomainStats = await decryptDomainStats(payload);
         expect(successfulDomainStats.ds).toEqual([{
-          i: LOCALHOST,
+          i: TEST_PAGES_DOMAIN,
           s: 1,
           p: 1
         }]);
@@ -1612,9 +1536,6 @@ UlvVm112lG9ij3Mc/f64cKzmenKoIe0c2HSGMxFagEDnAgMBAAE=
           await EWE.testing._setCdpDataArray(
             EVENT_SESSION_START, domains, counters);
         }
-
-        await clearRequestLogs();
-        await cleanUp();
 
         // populate the data
         await populateCdpData(100 * 1000); // domains visited
