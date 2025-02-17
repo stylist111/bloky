@@ -10,6 +10,8 @@
 
 - Saving of downloaded filters to IndexedDB can now continue if the database was
   previously corrupted. (EXT-679)
+- `EWE.experiments.onChanged` will now also emit events when the flag values are
+  overridden.
 
 ## Updating your code
 

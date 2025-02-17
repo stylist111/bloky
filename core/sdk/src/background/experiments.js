@@ -402,8 +402,14 @@ export default {
       state.overrides = {};
     }
 
+    if (state.overrides[flagId] === value) {
+      return;
+    }
+
     state.overrides[flagId] = value;
     await experimentData.save();
+
+    emitter.emit("updated");
   },
 
   /**
@@ -412,8 +418,15 @@ export default {
    */
   async clearFlagOverrides() {
     const state = await experimentData.getStateLoaded();
+
+    if (!state.overrides || Object.keys(state.overrides).length === 0) {
+      return;
+    }
+
     state.overrides = {};
     await experimentData.save();
+
+    emitter.emit("updated");
   },
 
   /**

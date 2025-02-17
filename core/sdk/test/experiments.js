@@ -17,7 +17,7 @@
 
 import expect from "expect";
 
-import {EWE, expectTestEvents} from "./messaging.js";
+import {EWE, expectTestEvents, clearTestEvents} from "./messaging.js";
 import {TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
 import {
   clearEndpointResponse,
@@ -126,8 +126,10 @@ describe("Split Experiments", function() {
 
     it("can override and retrieve a flag value", async function() {
       await EWE.experiments.overrideFlag(EXPERIMENT_FLAG, "potato");
-      let flag = await EWE.experiments.getFlag(EXPERIMENT_FLAG);
-      expect(flag).toBe("potato");
+      expect(await EWE.experiments.getFlag(EXPERIMENT_FLAG)).toBe("potato");
+
+      await EWE.experiments.overrideFlag(EXPERIMENT_FLAG, "chips");
+      expect(await EWE.experiments.getFlag(EXPERIMENT_FLAG)).toBe("chips");
     });
 
     it("returns experiments with assignments", async function() {
@@ -605,9 +607,12 @@ describe("Split Experiments", function() {
   });
 
   describe("Experiments events", function() {
-    it("listens to onChanged events", async function() {
+    beforeEach(async function() {
       await EWE.testing.resetExperimentData();
+      clearTestEvents("experiments.updated");
+    });
 
+    it("fires an onChanged event when a new config is downloaded", async function() {
       await expectTestEvents("experiments.updated", []);
       expect(await EWE.experiments.getExperiments()).toEqual([]);
 
@@ -627,6 +632,27 @@ describe("Split Experiments", function() {
           }
         ]
       ]]);
+    });
+
+    it("fires an onChanged event when a flag is overridden", async function() {
+      await EWE.experiments.overrideFlag(EXPERIMENT_FLAG, "potato");
+      await expectTestEvents("experiments.updated", [[[]]]);
+
+      await EWE.experiments.clearFlagOverrides();
+      await expectTestEvents("experiments.updated", [[[]], [[]]]);
+    });
+
+    it("does not fire an onChanged event for flag override functions when there is no change", async function() {
+      await expectTestEvents("experiments.updated", []);
+
+      await EWE.experiments.clearFlagOverrides();
+      await expectTestEvents("experiments.updated", []);
+
+      await EWE.experiments.overrideFlag(EXPERIMENT_FLAG, "potato");
+      await expectTestEvents("experiments.updated", [[[]]]);
+
+      await EWE.experiments.overrideFlag(EXPERIMENT_FLAG, "potato");
+      await expectTestEvents("experiments.updated", [[[]]]);
     });
   });
 });
