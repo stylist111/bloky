@@ -520,8 +520,8 @@ test modules in isolation:
 - Go to: <https://gitlab.com/eyeo/browser-extensions-and-premium/extensions/extensions/-/pipelines>
 then press “Run pipelines”.
 - Select branch you want to run pipeline on
-- Provide variable: CHECKTESTS: true
-- Provide variable FULL: true if you wish to run full set of browsers (as on
+- Provide variable: SDK_CHECKTESTS: true
+- Provide variable SDK_FULL: true if you wish to run full set of browsers (as on
 main)
 - Run pipeline
 

@@ -34,16 +34,16 @@ workflow:
     - when: always
 
 # The following CI variables modify which jobs run in a pipeline:
-# - FULL: Full set of tests, including additional browsers. Used in nightly runs.
-# - CHECKTESTS: Check tests quality. Used in nightly runs.
+# - SDK_FULL: Full set of tests, including additional browsers. Used in nightly runs.
+# - SDK_CHECKTESTS: Check tests quality. Used in nightly runs.
 
 .full-run:
   rules:
-    - if: $FULL == "true"
+    - if: $SDK_FULL == "true"
 
 .checktests-run:
   rules:
-    - if: $CHECKTESTS == "true"
+    - if: $SDK_CHECKTESTS == "true"
 
 .main-run:
   rules:
@@ -54,9 +54,7 @@ workflow:
 .avoid-flaky-run:
   rules:
     - !reference [.full-run, rules]
-    # Run manually on commits that contain [flaky] or checktests pipelines
-    - if: $CHECKTESTS == "true"
-      when: manual
+    # Run manually on commits that contain [flaky]
     - if: $CI_COMMIT_MESSAGE =~ /\[flaky]/
       when: manual
     # Run automatically if other conditions not filled
@@ -158,7 +156,7 @@ adblockpluscore:browser:
       echo "The first line of the commit message contains the [flaky] tag!";
       OTHER_PARAMS="-e ONLY_FLAKY=true";
     fi;
-    if echo "$CHECKTESTS" | grep -q "true"; then
+    if echo "$SDK_CHECKTESTS" | grep -q "true"; then
       OTHER_PARAMS="$OTHER_PARAMS -e TEST_RUNS=10";
     fi;
     docker run $DOCKER_OPTIONS -e TEST_PARAMS="$TEST_PARAMS" $OTHER_PARAMS $FUNCTIONAL_IMAGE;
