@@ -105,7 +105,7 @@ export async function checkBlockHidePage(expectAllowlisted) {
             forceRefresh: false
           });
         } else {
-          await waitForNotDisplayed("#script-id-full-path", timeout);
+          await waitForNotDisplayed("#script-id-full-path", { timeout });
         }
         return true;
       } catch (e) {
@@ -136,9 +136,9 @@ export async function checkBlockHidePage(expectAllowlisted) {
       forceRefresh: false
     });
   } else {
-    await waitForNotDisplayed("#test-element-class", timeout);
-    await waitForNotDisplayed("#test-element-id", timeout);
-    await waitForNotDisplayed("#script-id-regex", timeout);
+    await waitForNotDisplayed("#test-element-class", { timeout });
+    await waitForNotDisplayed("#test-element-id", { timeout });
+    await waitForNotDisplayed("#script-id-regex", { timeout });
   }
 }
 
@@ -517,7 +517,7 @@ async function checkLanguageFilterList(
       forceRefresh: false
     });
   } else {
-    await waitForNotDisplayed(filterlistSelector, timeout);
+    await waitForNotDisplayed(filterlistSelector, { timeout });
   }
 
   return filterlistSelector;

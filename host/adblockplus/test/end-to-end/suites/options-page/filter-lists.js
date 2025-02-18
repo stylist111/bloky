@@ -214,9 +214,9 @@ export default () => {
 
     const { filterlist, trashBtn } = getFLSelectors(subscriptionUrl);
     await clickOnDisplayedElement(trashBtn);
-    await waitForNotDisplayed(filterlist, 1000, {
-      retries: 3,
-      retryTimeout: 1000
+    await waitForNotDisplayed(filterlist, {
+      timeout: 3000,
+      displayedTimeout: 1000
     });
   });
 

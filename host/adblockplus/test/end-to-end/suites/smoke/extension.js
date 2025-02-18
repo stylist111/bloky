@@ -98,7 +98,7 @@ export default () => {
         async () => {
           await clickOnDisplayedElement(trashBtn, { timeout });
           try {
-            await waitForNotDisplayed(trashBtn, timeout);
+            await waitForNotDisplayed(trashBtn, { timeout });
             return true;
           } catch (err) {
             if (err.name !== "TimeoutError") throw err;

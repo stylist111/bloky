@@ -241,7 +241,7 @@ export async function checkBlockHidePage(expectAllowlisted) {
         if (expectAllowlisted) {
           await getDisplayedElement("#script-id-full-path", { timeout, forceRefresh: false });
         } else {
-          await waitForNotDisplayed("#script-id-full-path", timeout);
+          await waitForNotDisplayed("#script-id-full-path", { timeout });
         }
         return true;
       } catch (e) {
@@ -260,9 +260,9 @@ export async function checkBlockHidePage(expectAllowlisted) {
     await getDisplayedElement("#test-element-id", { timeout, forceRefresh: false });
     await getDisplayedElement("#script-id-regex", { timeout, forceRefresh: false });
   } else {
-    await waitForNotDisplayed("#test-element-class", timeout);
-    await waitForNotDisplayed("#test-element-id", timeout);
-    await waitForNotDisplayed("#script-id-regex", timeout);
+    await waitForNotDisplayed("#test-element-class", { timeout });
+    await waitForNotDisplayed("#test-element-id", { timeout });
+    await waitForNotDisplayed("#script-id-regex", { timeout });
   }
 }
 

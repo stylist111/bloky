@@ -121,21 +121,27 @@ export async function openNewTab(url) {
   return driver.getWindowHandle();
 }
 
-export function waitForNotDisplayed(
-  cssText,
-  timeout = 1000,
-  { retries = 0, retryTimeout = 500 } = {},
-) {
+/**
+ * Waits for an element to not be displayed is usually used on elements that
+ * were previously displayed and expected to become hidden after a certain action
+ *
+ * @param {string} cssText - The CSS locator of the element
+ * @param {Object} options - Options object
+ * @param {number} options.timeout - Overall polling timeout in ms
+ * @param {number} options.displayedTimeout - Timeout in ms for the displayed element to be hidden
+ * @returns {Promise<void>}
+ * @example
+ * timeout=1000, displayedTimeout=500 will produce up to 2 driver.wait() retries
+ * timeout=1500, displayedTimeout=500 will produce up to 3 retries
+ * timeout=3000, displayedTimeout=1000 will also produce up to 3 retries, but
+ *   waiting longer for the displayed element to be hidden
+ */
+export function waitForNotDisplayed(cssText, { timeout = 1000, displayedTimeout = 500 } = {}) {
   return driver.wait(
     async () => {
       try {
-        const elem = await getDisplayedElement(cssText, { timeout: 500, forceRefresh: false });
-
-        if (elem && !retries) {
-          return false;
-        }
-
-        return waitForNotDisplayed(cssText, timeout, { retries: retries - 1, retryTimeout });
+        await getDisplayedElement(cssText, { timeout: displayedTimeout, forceRefresh: false });
+        return false;
       } catch (err) {
         if (err.name === "TimeoutError") {
           return true;
@@ -144,7 +150,7 @@ export function waitForNotDisplayed(
       }
     },
     timeout,
-    `Element "${cssText}" was still displayed after ${timeout}ms`,
+    `Element "${cssText}" is still displayed`,
   );
 }
 

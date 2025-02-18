@@ -104,7 +104,7 @@ export default () => {
     await addCustomFilters([snippetFilter]);
     await openNewTab(snippetTestPageUrl);
     await driver.navigate().refresh();
-    await waitForNotDisplayed("#snippet-filter", 2000);
+    await waitForNotDisplayed("#snippet-filter", { timeout: 2000 });
     await getDisplayedElement("#control-element");
   });
 
@@ -139,7 +139,7 @@ export default () => {
         await driver.navigate().refresh();
         try {
           await getDisplayedElement(visibleSelector);
-          await waitForNotDisplayed(hiddenSelector, 500);
+          await waitForNotDisplayed(hiddenSelector);
           return true;
         } catch (e) {}
       },
