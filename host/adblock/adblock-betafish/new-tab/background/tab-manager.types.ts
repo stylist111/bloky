@@ -60,3 +60,13 @@ export enum NewTabExitEventType {
   admin = "newtab_admin",
   disabled = "newtab_disabled",
 }
+
+/** TODO: remove this after deciding to use the new IPM initialization
+ * Return type for shouldForce.
+ * See: https://eyeo.atlassian.net/browse/IM-237
+ */
+export enum ForceExperimentState {
+  default = "default",
+  force = "force",
+  ignore = "ignore",
+}

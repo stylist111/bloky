@@ -578,10 +578,10 @@ async function handleDeleteCommand(ipmId: string): Promise<void> {
 async function resetIPMCommands(): Promise<void> {
   await Prefs.untilLoaded;
 
-  const ipmCommandsReset = Prefs.get("ipm_commands_reset_completed");
+  const ipmCommandsReset = Prefs.get("ipm_commands_second_reset_completed");
   if ((await isNewIPMInitEnabled()) && !ipmCommandsReset) {
     await Prefs.set(commandStorageKey, {});
-    await Prefs.set("ipm_commands_reset_completed", true);
+    await Prefs.set("ipm_commands_second_reset_completed", true);
   }
 }
 

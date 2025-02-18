@@ -70,3 +70,13 @@ export enum CreationError {
 export enum CreationRejection {
   admin = "newtab_admin"
 }
+
+/** TODO: remove this after deciding to use the new IPM initialization
+ * Return type for shouldForce.
+ * See: https://eyeo.atlassian.net/browse/IM-237
+ */
+export enum ForceExperimentState {
+  default = "default",
+  force = "force",
+  ignore = "ignore"
+}

@@ -15,13 +15,25 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { experiments } from "@eyeo/webext-ad-filtering-solution";
+import * as ipm from "@eyeo-fragments/ipm/background";
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import {
   compareNewTabRequestsByPriority,
-  isCoolDownPeriodOngoing
+  handleCommand,
+  isCoolDownPeriodOngoing,
+  shouldForce
 } from "./tab-manager";
 import { newTabRequests } from "./tab-manager.spec-data";
-import { coolDownPeriodKey, lastShownKey } from "./tab-manager.types";
+import {
+  coolDownPeriodKey,
+  ForceExperimentState,
+  lastShownKey
+} from "./tab-manager.types";
+import { CreationMethod } from "./middleware";
+
+jest.mock("@eyeo-fragments/ipm/background");
+const getBehaviorSpy = jest.spyOn(ipm, "getBehavior");
 
 describe("TabManager", () => {
   describe("compareNewTabRequestsByPriority", () => {
@@ -133,6 +145,44 @@ describe("TabManager", () => {
 
       const result = await isCoolDownPeriodOngoing();
       expect(result).toBe(false);
+    });
+  });
+
+  describe("shouldForce", () => {
+    it("should return ignore if the test is not there", async () => {
+      jest.spyOn(experiments, "getFlag").mockResolvedValue(null);
+      const result = await shouldForce();
+      expect(result).toBe(ForceExperimentState.ignore);
+    });
+
+    it("should return default if the flag is false", async () => {
+      jest.spyOn(experiments, "getFlag").mockResolvedValue(false);
+      const result = await shouldForce();
+      expect(result).toBe(ForceExperimentState.default);
+    });
+
+    it("should return force if the flag is true", async () => {
+      jest.spyOn(experiments, "getFlag").mockResolvedValue(true);
+      const result = await shouldForce();
+      expect(result).toBe(ForceExperimentState.force);
+    });
+  });
+
+  describe("forceMethodBasedOnExperimet", () => {
+    it("should use the force method if new-ipm-init-force is true", async () => {
+      const behavior = {
+        priority: 5,
+        target: "",
+        method: CreationMethod.default
+      };
+
+      jest.spyOn(experiments, "getFlag").mockResolvedValue(true);
+      getBehaviorSpy.mockImplementation((_) => {
+        console.log("Returning the behavior");
+        return behavior;
+      });
+      await handleCommand("b");
+      expect(behavior.method).toBe(CreationMethod.force);
     });
   });
 });

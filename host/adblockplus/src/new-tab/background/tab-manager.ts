@@ -29,6 +29,7 @@ import {
   isCommandExpired,
   recordEvent
 } from "@eyeo-fragments/ipm/background";
+import { experiments } from "@eyeo/webext-ad-filtering-solution";
 import * as logger from "../../logger/background";
 import {
   CreationMethod,
@@ -43,6 +44,7 @@ import {
   CreationError,
   CreationSuccess,
   CreationRejection,
+  ForceExperimentState, // Remove after IM-237
   lastShownKey,
   coolDownPeriodKey
 } from "./tab-manager.types";
@@ -377,12 +379,26 @@ function removeListeners(ipmId: string): void {
   browser.tabs.onRemoved.removeListener(listeners[ListenerType.remove]);
 }
 
+/** TODO: remove this after deciding to use the new IPM initialization
+ * See: https://eyeo.atlassian.net/browse/IM-237
+ * Uses the split experiment framework to checks whether the new-tab command
+ * should be forced.
+ */
+export async function shouldForce(): Promise<ForceExperimentState> {
+  const force = await experiments.getFlag("new-ipm-init-force");
+  if (typeof force !== "boolean") {
+    return ForceExperimentState.ignore;
+  }
+
+  return force ? ForceExperimentState.force : ForceExperimentState.default;
+}
+
 /**
  * Handles new tab command
  *
  * @param ipmId - IPM ID
  */
-async function handleCommand(ipmId: string): Promise<void> {
+export async function handleCommand(ipmId: string): Promise<void> {
   logger.debug("[new-tab]: tab manager handleCommand", ipmId);
 
   // Don't open new tabs if we're in an automation scenario.
@@ -400,11 +416,22 @@ async function handleCommand(ipmId: string): Promise<void> {
 
   // Don't open new tabs if something's wrong with the data we got.
   const behavior = getBehavior(ipmId);
+
   if (!isNewTabBehavior(behavior)) {
     logger.debug("[new-tab]: Invalid command behavior.");
     registerEvent(ipmId, CreationError.invalidBehavior);
     dismissCommand(ipmId);
     return;
+  }
+
+  // TODO: remove this after deciding to use the new IPM initialization
+  // See: https://eyeo.atlassian.net/browse/IM-237
+  const force = await shouldForce();
+  if (force !== ForceExperimentState.ignore) {
+    behavior.method =
+      force === ForceExperimentState.force
+        ? CreationMethod.force
+        : CreationMethod.default;
   }
 
   waitingTabs[ipmId] = { behavior, ipmId };

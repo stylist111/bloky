@@ -288,12 +288,12 @@ defaults.ipm_commands = {};
 
 /**
  * TODO: Remove this after new IPM initialization is enabled and reaches the
- * majority of users. See: https://eyeo.atlassian.net/browse/IM-238
+ * majority of users. See: https://eyeo.atlassian.net/browse/IM-244
  * Whether the IPM commands have been reset.
  *
  * @type {boolean}
  */
-defaults.ipm_commands_reset_completed = false;
+defaults.ipm_commands_second_reset_completed = false;
 
 /**
  * Default trusted origin for URLs used in IPMs. This is the base URL used when

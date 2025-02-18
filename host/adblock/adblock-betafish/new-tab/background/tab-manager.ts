@@ -16,6 +16,7 @@
  */
 
 import * as browser from "webextension-polyfill";
+import { experiments } from "@eyeo/webext-ad-filtering-solution";
 import { ExtendedInstallType } from "~/management";
 import {
   addExperimentsSearchParams,
@@ -34,6 +35,7 @@ import * as logger from "../../utilities/background";
 import { getSettings, settings } from "../../prefs/background/settings";
 import { CreationMethod, isNewTabBehavior, NewTab, setNewTabCommandHandler } from "./middleware";
 import {
+  ForceExperimentState,
   NewTabEventType,
   NewTabErrorEventType,
   NewTabExitEventType,
@@ -392,6 +394,20 @@ const onUpdated = (
   openNotificationTab();
 };
 
+/** TODO: remove this after deciding to use the new IPM initialization
+ * See: https://eyeo.atlassian.net/browse/IM-237
+ * Uses the split experiment framework to checks whether the new-tab command
+ * should be forced.
+ */
+export async function shouldForce(): Promise<ForceExperimentState> {
+  const force = await experiments.getFlag("new-ipm-init-force");
+  if (typeof force !== "boolean") {
+    return ForceExperimentState.ignore;
+  }
+
+  return force ? ForceExperimentState.force : ForceExperimentState.default;
+}
+
 /**
  * Handles new tab command
  *
@@ -428,6 +444,14 @@ async function handleCommand(ipmId: string): Promise<void> {
 
   // Let the IPM know we received the command.
   registerEvent(ipmId, NewTabEventType.received);
+
+  // TODO: remove this after deciding to use the new IPM initialization
+  // See: https://eyeo.atlassian.net/browse/IM-237
+  const force = await shouldForce();
+  if (force !== ForceExperimentState.ignore) {
+    behavior.method =
+      force === ForceExperimentState.force ? CreationMethod.force : CreationMethod.default;
+  }
 
   waitingTabs[ipmId] = { behavior, ipmId };
 
