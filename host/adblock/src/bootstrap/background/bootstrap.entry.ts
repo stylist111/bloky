@@ -27,17 +27,7 @@ async function bootstrap(): Promise<void> {
     info.addonVersion,
   );
 
-  try {
-    // This is where new code should be initialized. This is not just for Sentry.
-    startSettings();
-  } catch (error) {
-    if (!(error instanceof Error)) {
-      console.error("Ignored error", error);
-      return;
-    }
-
-    ewe.sentry.reportError(error);
-  }
+  startSettings();
 }
 
 void bootstrap();

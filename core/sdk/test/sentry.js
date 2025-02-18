@@ -21,22 +21,25 @@ import expect from "expect";
 import {EWE} from "./messaging.js";
 import {wait} from "./polling.js";
 
-async function createNewErrorEvent() {
+async function createNewErrorEvent(errorType) {
   const oldEvent = await EWE.testing.getLastSentryEvent();
-  void browser.runtime.sendMessage({type: "ewe-test:sentry-error"});
+  void browser.runtime.sendMessage({
+    type: "ewe-test:sentry-error",
+    errorType
+  });
 
   let newEvent;
 
   await wait(async() => {
     newEvent = await EWE.testing.getLastSentryEvent();
-    return newEvent !== oldEvent;
+    return (newEvent && newEvent.event_id) !== (oldEvent && oldEvent.event_id);
   }, 6000, "Sentry error not received");
 
   expect(newEvent.exception.values[0].value).toEqual(
-    "This is an expected error for Sentry"
+    `This is an expected error for Sentry (${errorType})`
   );
 
-  return await EWE.testing.getLastSentryEvent();
+  return newEvent;
 }
 
 describe("Sentry", function() {
@@ -48,22 +51,28 @@ describe("Sentry", function() {
     await EWE.testing.setSentrySampleRate(null);
   });
 
-  it("emits a Sentry event event when an error occurs with the given metadata", async function() {
+  it("emits a Sentry event when an error occurs with the given metadata", async function() {
     const environment = "space";
     const hostVersion = "5.4";
 
     await EWE.sentry.start("", environment, hostVersion);
 
-    const event = await createNewErrorEvent();
+    const event = await createNewErrorEvent("error");
     expect(event.environment).toEqual(environment);
     expect(event.release).toEqual(hostVersion);
+  });
+
+  it("emits a Sentry event when a rejection occurs", async function() {
+    await EWE.sentry.start("", "", "1.0");
+
+    await createNewErrorEvent("rejection");
   });
 
   it("generates and maintains a single user id through multiple errors", async function() {
     await EWE.sentry.start("", "", "1.0");
 
-    const firstEvent = await createNewErrorEvent();
-    const secondEvent = await createNewErrorEvent();
+    const firstEvent = await createNewErrorEvent("error");
+    const secondEvent = await createNewErrorEvent("error");
     expect(firstEvent.user.id).toStrictEqual(secondEvent.user.id);
   });
 });

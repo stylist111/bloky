@@ -15,7 +15,6 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { reportAndLogError } from "../../logger/background";
 import * as logger from "../../logger/background";
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import { start as startContentFiltering } from "../../../adblockpluschrome/lib/contentFiltering.js";
@@ -65,75 +64,72 @@ async function bootstrap(): Promise<void> {
     webpackDotenvPlugin.SENTRY_ENVIRONMENT,
     info.addonVersion
   );
-  try {
-    startPages();
-    startTabSessionStorage();
-    startDevTools();
-    startDebug();
-    startIPM(
-      Prefs,
-      logger,
-      {
-        isLicenseValid() {
-          const { isActive } = getPremiumState();
-          return isActive;
-        }
+
+  startPages();
+  startTabSessionStorage();
+  startDevTools();
+  startDebug();
+  void startIPM(
+    Prefs,
+    logger,
+    {
+      isLicenseValid() {
+        const { isActive } = getPremiumState();
+        return isActive;
+      }
+    },
+    {
+      async getId() {
+        return await getInstallationId();
       },
-      {
-        async getId() {
-          return await getInstallationId();
-        },
-        getAppName() {
-          return info.baseName;
-        },
-        getBrowserName() {
-          return info.application;
-        },
-        getAppVersion() {
-          return info.addonVersion;
-        }
+      getAppName() {
+        return info.baseName;
       },
-      getExperiments
-    ).catch(reportAndLogError);
-    startReadyState();
-    startFilterConfiguration();
-    startStats();
-    void startSubscriptionInit().catch(reportAndLogError);
-    startInit();
-    void startRecommendedLanguage().catch(reportAndLogError);
-    startComposer();
-    startUninstall();
-    void startContentFiltering().catch(reportAndLogError);
-    startMessageResponder();
-    void startAllowListing().catch(reportAndLogError);
-    startBypass();
-    void startOnPageDialog().catch(reportAndLogError);
-    void startNewTab().catch(reportAndLogError);
-    startPremiumOnboarding();
-    startPremiumSubscriptions();
-    startYTWallDetection();
-    startYTWallDetectionAndAllowlisting({
-      addTrustedMessageTypes,
-      ewe,
-      logger,
-      port,
-      prefs: Prefs,
-      sendAdWallEvents: undefined
-    });
-    startInfoInjector();
-    startUpdateCampaign();
-    startGlobals();
-    void startFiltersMigration();
-    startPublicAPI({
-      ewe,
-      port,
-      addTrustedMessageTypes,
-      isPremiumActive: hasActiveLicense,
-      getEncodedLicense: getAuthPayload
-    });
-  } catch (error) {
-    reportAndLogError(error as Error);
-  }
+      getBrowserName() {
+        return info.application;
+      },
+      getAppVersion() {
+        return info.addonVersion;
+      }
+    },
+    getExperiments
+  );
+  startReadyState();
+  startFilterConfiguration();
+  startStats();
+  void startSubscriptionInit();
+  startInit();
+  void startRecommendedLanguage();
+  startComposer();
+  startUninstall();
+  void startContentFiltering();
+  startMessageResponder();
+  void startAllowListing();
+  startBypass();
+  void startOnPageDialog();
+  void startNewTab();
+  startPremiumOnboarding();
+  startPremiumSubscriptions();
+  startYTWallDetection();
+  startYTWallDetectionAndAllowlisting({
+    addTrustedMessageTypes,
+    ewe,
+    logger,
+    port,
+    prefs: Prefs,
+    sendAdWallEvents: undefined
+  });
+  startInfoInjector();
+  startUpdateCampaign();
+  startGlobals();
+  void startFiltersMigration();
+  startPublicAPI({
+    ewe,
+    port,
+    addTrustedMessageTypes,
+    isPremiumActive: hasActiveLicense,
+    getEncodedLicense: getAuthPayload
+  });
 }
 
 void bootstrap();

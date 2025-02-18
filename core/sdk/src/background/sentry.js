@@ -154,6 +154,15 @@ export default {
       reportErrorInternal(error);
     });
 
+    self.addEventListener("unhandledrejection", event => {
+      const {reason} = event;
+      if (!(reason instanceof Error)) {
+        return;
+      }
+
+      reportErrorInternal(reason);
+    });
+
     const state = await reporterData.getStateLoaded();
     userId = state.userId;
     if (!userId) {

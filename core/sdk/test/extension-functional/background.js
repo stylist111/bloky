@@ -23,8 +23,6 @@ if (typeof EWE == "undefined" && typeof importScripts != "undefined") {
   importScripts("ewe-api.js", "custom-mv3-subscriptions.js");
 }
 
-const sentryErrorMessage = "This is an expected error for Sentry";
-
 let callbackIdCounter = 0;
 let callbacks = new Map();
 let lastError;
@@ -126,6 +124,10 @@ function sendEventToMochaTests(eventName, eventArgs) {
       }
     );
   }
+}
+
+function getSentryErrorMessage(errorType) {
+  return `This is an expected error for Sentry (${errorType})`;
 }
 
 self.listeners = new Map();
@@ -275,7 +277,14 @@ function handleTestMessage(request, sender, sendResponse) {
 
     case "ewe-test:sentry-error": {
       setTimeout(() => {
-        throw new Error(sentryErrorMessage);
+        const error = new Error(getSentryErrorMessage(request.errorType));
+        if (request.errorType === "error") {
+          throw error;
+        }
+
+        if (request.errorType === "rejection") {
+          Promise.reject(error);
+        }
       }, 0);
       sendResponse({result: {}});
       return true;
@@ -392,7 +401,7 @@ function handleTestMessage(request, sender, sendResponse) {
 chrome.runtime.onMessage.addListener(handleTestMessage);
 
 addEventListener("error", ({error}) => {
-  if (error.message === sentryErrorMessage) {
+  if (error.message === getSentryErrorMessage("error")) {
     return;
   }
 
@@ -400,6 +409,10 @@ addEventListener("error", ({error}) => {
 });
 
 addEventListener("unhandledrejection", ({reason}) => {
+  if (reason.message === getSentryErrorMessage("rejection")) {
+    return;
+  }
+
   lastError = typeof reason == "object" ? reason.message : reason;
 });
 
