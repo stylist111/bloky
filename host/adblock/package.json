@@ -137,7 +137,7 @@
     "npm": "9"
   },
   "dependencies": {
-    "@adblockinc/rules": "gitlab:eyeo/browser-extensions-and-premium/extensions/rules#f9704e59f66a7edf51b0145120e8517b46aca274",
+    "@adblockinc/rules": "gitlab:eyeo/browser-extensions-and-premium/extensions/rules#e93bd9c637db523cb9b45d942b42147149af3987",
     "@eyeo-fragments/public-api": "*",
     "@eyeo-fragments/yt-wall-detection": "*",
     "@eyeo/ext-ui-components": "*",
