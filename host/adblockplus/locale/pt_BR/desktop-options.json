@@ -246,6 +246,10 @@
   "options_filterList_lastDownload_diffTooManyFilters": {
     "message": "A atualização de lista de filtros não pode ser aplicada devido às limitações do navegador. Atualizar para uma versão mais recente da extensão pode resolver o problema."
   },
+  "options_filterList_lastDownload_tooManyFilters": {
+    "description": "Mensagem de erro na aba avançada quando o limite de regras dinâmicas foi excedido",
+    "message": "A atualização da lista de filtros não pode ser aplicada devido a limitações do navegador. Reduzir o número de listas de filtros e filtros personalizados pode resolver o problema."
+  },
   "options_filterList_lastDownload_diffTooOld": {
     "message": "A atualização de listas de filtros não pode ser aplicada devido à versão da extensão estar desatualizada. Atualizar a extensão para uma versão mais recente pode resolver o problema."
   },

@@ -246,6 +246,10 @@
   "options_filterList_lastDownload_diffTooManyFilters": {
     "message": "由于浏览器限制，无法应用筛选清单更新。更新到较新版本的扩展程序可能会解决此问题。"
   },
+  "options_filterList_lastDownload_tooManyFilters": {
+    "description": "当超出动态规则限制时，高级选项卡中显示错误信息",
+    "message": "由于浏览器的限制，无法应用筛选清单更新。减少筛选清单和自定义筛选器的数量可能会解决此问题。"
+  },
   "options_filterList_lastDownload_diffTooOld": {
     "message": "由于扩展程序版本过时，无法应用筛选清单更新。更新到更新版本的扩展程序有可能解决此问题。"
   },

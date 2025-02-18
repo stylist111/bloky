@@ -246,6 +246,10 @@
   "options_filterList_lastDownload_diffTooManyFilters": {
     "message": "De update van de filterlijst kon niet worden toegepast vanwege browserbeperkingen. Updaten naar een nieuwere extensieversie kan dit probleem verhelpen."
   },
+  "options_filterList_lastDownload_tooManyFilters": {
+        "description": "Foutmelding op het tabblad 'Geavanceerd' wanneer de limiet voor dynamische regels is overschreden ",
+        "message": "Het bijwerken van de filterlijst kon niet worden toegepast vanwege browserbeperkingen. Het verminderen van het aantal filterlijsten en aangepaste filters kan dit probleem oplossen."
+  },
   "options_filterList_lastDownload_diffTooOld": {
     "message": "De update van de filterlijst kon niet worden toegepast vanwege een verouderde extensieversie. Het bijwerken van de extensie naar een nieuwere versie kan dit probleem verhelpen."
   },

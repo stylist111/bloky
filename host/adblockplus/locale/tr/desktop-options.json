@@ -246,6 +246,10 @@
   "options_filterList_lastDownload_diffTooManyFilters": {
     "message": "Filtre listesi güncellemesi tarayıcı sınırlamaları nedeniyle uygulanamadı. Uzantının daha yeni bir sürüme güncellenmesi bu sorunu çözümleyebilir."
   },
+  "options_filterList_lastDownload_tooManyFilters": {
+    "description": "Dinamik kural sınırı aşıldığında gelişmiş sekmesinde hata mesajı",
+    "message": "Tarayıcı sınırlamaları nedeniyle filtre listesi güncellemesi uygulanamadı. Filtre listelerinin ve özel filtrelerin sayısını azaltmak bu sorunu çözebilir."
+  },
   "options_filterList_lastDownload_diffTooOld": {
     "message": "Uzantı sürümü eski olduğu için filtre listesi güncellemesi uygulanamadı. Daha yeni bir uzantı sürümüne güncelleme yapmak bu sorunu çözebilir."
   },

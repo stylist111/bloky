@@ -246,6 +246,10 @@
   "options_filterList_lastDownload_diffTooManyFilters": {
     "message": "La mise à jour de la liste de filtrage n’a pas pu être effectuée en raison des limitations du navigateur. Vous pouvez résoudre ce problème en mettant à jour l’extension."
   },
+  "options_filterList_lastDownload_tooManyFilters": {
+    "description": "Message d'erreur dans l'onglet avancé lorsque la limite de règles dynamiques a été dépassée",
+    "message": "La mise à jour de la liste de filtres n'a pas pu être appliquée en raison des limitations du navigateur. Réduisez le nombre de listes de filtres et de filtres personnalisés peut résoudre ce problème."
+  },
   "options_filterList_lastDownload_diffTooOld": {
     "message": "La mise à jour de la liste de filtrage n’a pas pu être effectuée, car la version de l’extension n’est pas à jour. Pour résoudre ce problème, veuillez mettre à jour l’extension."
   },

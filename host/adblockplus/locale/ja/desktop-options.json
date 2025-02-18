@@ -234,6 +234,10 @@
   "options_filterList_lastDownload_diffTooManyFilters": {
     "message": "ブラウザーの制限のためフィルターリストの更新が適用できません。新しい拡張機能バージョンに更新すると、問題が解決する場合があります。"
   },
+  "options_filterList_lastDownload_tooManyFilters": {
+    "description": "動的ルールの制限を超えた場合、高度なタブにエラーメッセージが表示されます",
+    "message": "ブラウザーの制限により、フィルターリストの更新を適用できませんでした。この問題は、フィルターリストとカスタムフィルターの数を減らすと解決する場合があります。"
+  },
   "options_filterList_lastDownload_diffTooOld": {
     "message": "拡張機能のバージョンが古いため、フィルターリストの更新を適用できませんでした。拡張機能のバージョンを更新すると、この問題が解決する場合があります。"
   },
