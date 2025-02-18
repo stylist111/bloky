@@ -1,5 +1,11 @@
 # Unreleased
 
+# 4.14.0 - 2025-02-18
+
+This release contains under-the-hood changes.
+
+- Second attempt to fix IPM initialization issue with split experiment (IM-175)
+
 # 4.13.0 - 2025-02-10
 
 - Attempt to fix IPM initialization issue; with split experiment (IM-175)
