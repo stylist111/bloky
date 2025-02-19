@@ -3,6 +3,7 @@
   [data-extension='adblock'] [data-theme='default'] {
     --theme-primary: var(--white);
     --theme-secondary: var(--gray6);
+    --theme-premium: var(--yellow3);
     --theme-text-primary: var(--gray1);
     --theme-text-secondary: var(--gray3);
     --theme-link-color: var(--blue1);
@@ -22,6 +23,7 @@
   [data-extension='adblock'] [data-theme='dark'] {
     --theme-primary: var(--gray2);
     --theme-secondary: var(--gray1);
+    --theme-premium: var(--yellow3);
     --theme-text-primary: var(--gray6);
     --theme-text-secondary: var(--gray4);
     --theme-link-color: var(--blue3);
@@ -52,6 +54,7 @@
   [data-extension='adblock'] [data-theme='solarized'] {
     --theme-primary: var(--solarized-teal2);
     --theme-secondary: var(--solarized-teal1);
+    --theme-premium: var(--yellow3);
     --theme-text-primary: var(--solarized-gray1);
     --theme-text-secondary: var(--solarized-gray1);
     --theme-link-color: var(--solarized-teal4);
@@ -71,6 +74,7 @@
   [data-extension='adblock'] [data-theme='solarized_light'] {
     --theme-primary: var(--solarized-yellow3);
     --theme-secondary: var(--solarized-yellow2);
+    --theme-premium: var(--yellow3);
     --theme-text-primary: var(--solarized-gray1l);
     --theme-text-secondary: var(--solarized-gray2l);
     --theme-link-color: var(--solarized-teal4);
@@ -90,6 +94,7 @@
   [data-extension='adblock'] [data-theme='rebecca_purple'] {
     --theme-primary: var(--purple2);
     --theme-secondary: var(--purple1);
+    --theme-premium: var(--yellow3);
     --theme-text-primary: var(--white);
     --theme-text-secondary: var(--white);
     --theme-link-color: var(--blue3);
@@ -109,6 +114,7 @@
   [data-extension='adblock'] [data-theme='watermelon'] {
     --theme-primary: var(--red2);
     --theme-secondary: var(--red1);
+    --theme-premium: var(--yellow3);
     --theme-text-primary: var(--white);
     --theme-text-secondary: var(--white);
     --theme-link-color: var(--white);
@@ -140,6 +146,7 @@
   [data-extension='adblock'] [data-theme='ocean'] {
     --theme-primary: var(--blue2);
     --theme-secondary: var(--blue1);
+    --theme-premium: var(--yellow3);
     --theme-text-primary: var(--white);
     --theme-text-secondary: var(--white);
     --theme-link-color: var(--white);
@@ -164,6 +171,7 @@
   [data-extension='adblock'] [data-theme='sunshine'] {
     --theme-primary: var( --yellow2);
     --theme-secondary: var(--yellow1);
+    --theme-premium: var(--yellow3);
     --theme-text-primary: var(--white);
     --theme-text-secondary: var(--white);
     --theme-link-color: var(--white);

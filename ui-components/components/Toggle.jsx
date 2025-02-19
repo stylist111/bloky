@@ -33,11 +33,20 @@ export const ToggleSwitch = ({
 }) => {
   const [isChecked, setIsChecked] = useState(checked);
 
-  const onChangeHandler = (evt) => {
+  const onChangeHandler = async (evt) => {
     setIsChecked(evt.target.checked);
-    onChange(evt);
     evt.target.blur();
+    await onChange(evt);
   };
+
+  // Override the internal state when external state changes
+  // This allows simple implementations not to have to control the state
+  // while allowing more complex interactions when needed.
+  const [prevExternalChecked, setPrevExternalChecked] = useState(checked);
+  if (checked !== prevExternalChecked) {
+    setPrevExternalChecked(checked);
+    setIsChecked(checked);
+  }
 
   const checkedStylesByKind = {
     [INSET]: {

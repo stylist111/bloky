@@ -1,36 +1,72 @@
+import { useEffect, useState } from "react";
 import { translate } from "../shared/utils";
+import {
+  globalInfo as info,
+  globalMABPayment as MABPayment,
+  globalPrefs as Prefs,
+  globalPrefsNotifier as prefsNotifier,
+  globalSettingsNotifier as settingsNotifier,
+} from "../shared/globals";
 import { OptionsList } from "../shared/OptionsList";
-import { optionsData } from "./data";
+import { getOptionsData, eventsList } from "./data";
+import { AcceptableAdsList } from "./AcceptableAdsList";
+
+const useSyncListeners = (setCheckedItems) => {
+  useEffect(() => {
+    const updateSettingOrPref = (name, newValue) => {
+      setCheckedItems((prevCheckedItems) => ({
+        ...prevCheckedItems,
+        [name]: newValue,
+      }));
+    };
+
+    settingsNotifier.on("settings.changed", updateSettingOrPref);
+    prefsNotifier.on("prefs.changed", updateSettingOrPref);
+
+    return () => {
+      settingsNotifier.off("settings.changed", updateSettingOrPref);
+      prefsNotifier.off("prefs.changed", updateSettingOrPref);
+    };
+  }, []);
+};
 
 const getCheckedFn = (data) => (name) => {
-  console.log("👾", data);
   const dataOptOutKey = "data_collection_opt_out";
   const dataCollectionSubKeys = ["data_collection_v2", "send_ad_wall_messages", "onpageMessages"];
 
-  if (dataOptOutKey && dataCollectionSubKeys.includes(name)) {
+  if (data[dataOptOutKey] && dataCollectionSubKeys.includes(name)) {
     return false;
   }
 
   return data[name];
 };
 
-export function GeneralOptionsTab({ subs, settings, prefsNames }) {
-  const acceptableAdsData = {
-    // If subscribed to acceptable_ads_privacy, then acceptable_ads is not present in subs,
-    // but we still need to check the box
-    acceptable_ads: subs.acceptable_ads?.subscribed || subs.acceptable_ads_privacy?.subscribed,
-    acceptable_ads_privacy: subs.acceptable_ads_privacy?.subscribed,
-  };
+export function GeneralOptionsTab({ subs, settings, prefs }) {
   // Change from array to object to match format of settings
-  const prefsNamesIntoObject = Object.fromEntries(prefsNames.map((el) => [el, true]));
-  const unifiedSettingsData = { ...acceptableAdsData, ...settings, ...prefsNamesIntoObject };
+  const prefsIntoObject = Object.fromEntries(prefs.map((el) => [el, Prefs[el]]));
+  const unifiedSettingsData = { ...settings, ...prefsIntoObject };
+  const optionsData = getOptionsData(info.application);
 
-  const isChecked = getCheckedFn(unifiedSettingsData);
+  const [checkedItems, setCheckedItems] = useState(unifiedSettingsData);
+  const isChecked = getCheckedFn(checkedItems);
+
+  const updateItem = (name, evt) => {
+    MABPayment.displaySyncCTAs(true);
+    eventsList[name]({ name, evt }, setCheckedItems);
+  };
+
+  useSyncListeners(setCheckedItems);
 
   return (
-    <div className="option-page-content">
+    <div data-testid="general_options_tab">
       <h1>{translate("generaloptions2")}</h1>
-      <OptionsList className="option-page-content" items={optionsData} isChecked={isChecked} />
+      <AcceptableAdsList subs={subs} />
+      <OptionsList
+        className="option-page-content"
+        items={optionsData}
+        isChecked={isChecked}
+        onItemChange={updateItem}
+      />
     </div>
   );
 }

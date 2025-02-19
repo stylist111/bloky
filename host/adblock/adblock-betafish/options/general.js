@@ -29,6 +29,9 @@
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
 // Handle incoming clicks from content scripts on getadblock.com
+// NOTE: Based on the resolution of https://eyeo.atlassian.net/browse/WEBS-384
+// this either needs to be removed or expanded to the React code
+// It is not currently being called.
 try {
   if (parseUri.parseSearch(window.location.search).aadisabled === "true") {
     $("#acceptable_ads_info").show();
@@ -44,6 +47,26 @@ function setDataCollectionOptionsVisibility(visibility) {
     $(".data-collection-option-container").hide(200);
   }
 }
+
+const toggleDataCollectionOptPref = function (value) {
+  if (value) {
+    // eslint-disable-next-line camelcase
+    settings.data_collection_v2 = false;
+    DataCollectionV2.end();
+    // eslint-disable-next-line camelcase
+    Prefs.send_ad_wall_messages = false;
+    settings.onpageMessages = false;
+  } else {
+    // eslint-disable-next-line camelcase
+    settings.data_collection_v2 = false;
+    DataCollectionV2.end();
+    // eslint-disable-next-line camelcase
+    Prefs.send_ad_wall_messages = true;
+    settings.onpageMessages = true;
+  }
+
+  setDataCollectionOptionsVisibility(!value);
+};
 
 // Check or uncheck each loaded DOM option checkbox according to the
 // user's saved settings.
@@ -75,7 +98,6 @@ const initialize = async function init() {
     const name = abpPrefPropertyNames[inx];
     $(`#prefs__${name}`).prop("checked", Prefs[name]);
   }
-
   const acceptableAdsPrivacyClicked = async function (isEnabled) {
     if (isEnabled) {
       await SubscriptionsProxy.add(SubscriptionsProxy.ACCEPTABLE_ADS_PRIVACY_URL);
@@ -112,18 +134,15 @@ const initialize = async function init() {
 
   $("input.feature[type='checkbox']").on("change", async function onOptionSelectionChange() {
     const isEnabled = $(this).is(":checked");
-
     // This change of settings causes the Options page to be automatically reloaded
     // so the CTA display logic is handled on the Options page unload/load time
     if (this.id !== "enable_show_advanced_options") {
       MABPayment.displaySyncCTAs(true);
     }
-
     if (this.id === "acceptable_ads") {
       acceptableAdsClicked(isEnabled);
       return;
     }
-
     if (this.id === "acceptable_ads_privacy") {
       acceptableAdsPrivacyClicked(isEnabled);
       return;
@@ -242,35 +261,10 @@ function addUIChangeListeners() {
       window.location.reload();
     }, 50);
   });
-
   $("#prefs__data_collection_opt_out").on("change", function onDataCollectionOptionChange() {
     setDataCollectionOptionsVisibility(!this.checked);
   });
 }
-
-$(async () => {
-  await initializeProxies();
-  initialize();
-  showSeparators();
-  addUIChangeListeners();
-
-  if (!License || $.isEmptyObject(License) || !MABPayment) {
-    return;
-  }
-  const payInfo = MABPayment.initialize("general");
-  if (License.shouldShowMyAdBlockEnrollment()) {
-    MABPayment.freeUserLogic(payInfo);
-  } else if (License.isActiveLicense()) {
-    MABPayment.paidUserLogic(payInfo);
-  }
-
-  MABPayment.displaySyncCTAs();
-  $(".sync-cta #get-it-now-general").on("click", MABPayment.userClickedSyncCTA);
-  $(".sync-cta #close-sync-cta-general").on("click", MABPayment.userClosedSyncCTA);
-  $("a.link-to-tab").on("click", (event) => {
-    activateTab($(event.target).attr("href"));
-  });
-});
 
 const onSettingsChanged = function (name, currentValue, previousValue) {
   const checkBoxElement = $(`#enable_${name}`);
@@ -282,28 +276,6 @@ const onSettingsChanged = function (name, currentValue, previousValue) {
   }
 };
 
-settingsNotifier.on("settings.changed", onSettingsChanged);
-
-const toggleDataCollectionOptPref = function (value) {
-  if (value) {
-    // eslint-disable-next-line camelcase
-    settings.data_collection_v2 = false;
-    DataCollectionV2.end();
-    // eslint-disable-next-line camelcase
-    Prefs.send_ad_wall_messages = false;
-    settings.onpageMessages = false;
-  } else {
-    // eslint-disable-next-line camelcase
-    settings.data_collection_v2 = false;
-    DataCollectionV2.end();
-    // eslint-disable-next-line camelcase
-    Prefs.send_ad_wall_messages = true;
-    settings.onpageMessages = true;
-  }
-
-  setDataCollectionOptionsVisibility(!value);
-};
-
 const onPrefsChanged = function (name, currentValue) {
   $(`#prefs__${name}`).prop("checked", currentValue);
 
@@ -311,8 +283,6 @@ const onPrefsChanged = function (name, currentValue) {
     setDataCollectionOptionsVisibility(!currentValue);
   }
 };
-
-prefsNotifier.on("prefs.changed", onPrefsChanged);
 
 const onSubAdded = function (items) {
   let item = items;
@@ -328,7 +298,6 @@ const onSubAdded = function (items) {
     updateAcceptableAdsUI(true, true);
   }
 };
-SubscriptionsProxy.onAdded.addListener(onSubAdded);
 
 const onSubRemoved = async function (items) {
   let item = items;
@@ -350,4 +319,46 @@ const onSubRemoved = async function (items) {
     updateAcceptableAdsUI(true, false);
   }
 };
-SubscriptionsProxy.onRemoved.addListener(onSubRemoved);
+
+const addDataListeners = () => {
+  settingsNotifier.on("settings.changed", onSettingsChanged);
+  prefsNotifier.on("prefs.changed", onPrefsChanged);
+  SubscriptionsProxy.onAdded.addListener(onSubAdded);
+  SubscriptionsProxy.onRemoved.addListener(onSubRemoved);
+};
+
+const handlePremiumEnrollmentCTAs = () => {
+  if (!License || $.isEmptyObject(License) || !MABPayment) {
+    return;
+  }
+  const payInfo = MABPayment.initialize("general");
+  if (License.shouldShowMyAdBlockEnrollment()) {
+    MABPayment.freeUserLogic(payInfo);
+  } else if (License.isActiveLicense()) {
+    MABPayment.paidUserLogic(payInfo);
+  }
+
+  MABPayment.displaySyncCTAs();
+  $(".sync-cta #get-it-now-general").on("click", MABPayment.userClickedSyncCTA);
+  $(".sync-cta #close-sync-cta-general").on("click", MABPayment.userClosedSyncCTA);
+  $("a.link-to-tab").on("click", (event) => {
+    activateTab($(event.target).attr("href"));
+  });
+};
+
+$(async () => {
+  await initializeProxies(); // still needed for MAB callouts, regardless of list UI
+
+  const url = new URL(window.top.location.href);
+  const showNewUI = url.searchParams.has("newUi");
+
+  // TODO(newUi): Delete calls and listeners when transition complete
+  if (!showNewUI) {
+    initialize();
+    showSeparators();
+    addUIChangeListeners();
+    addDataListeners();
+  }
+
+  handlePremiumEnrollmentCTAs();
+});

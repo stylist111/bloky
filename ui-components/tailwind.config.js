@@ -22,6 +22,7 @@ module.exports = {
       colors: {
         "theme-primary": "var(--theme-primary)",
         "theme-secondary": "var(--theme-secondary)",
+        "theme-premium": "var(--theme-premium)",
         "theme-text-primary": "var(--theme-text-primary)",
         "theme-text-secondary": "var(--theme-text-secondary)",
         "theme-link-color": "var(--theme-link-color)",

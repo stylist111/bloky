@@ -10,6 +10,7 @@
 :root {
   --white: rgb(255 255 255); /* #ffffff */
   --black: rgb(0 0 0); /* #000000 */
+  --yellow3: rgb(255 202 0); /* #ffca00 */
 
   /* Note: These theme colors names need to be updated. */
   /* Theme colors default */

@@ -23,9 +23,18 @@ export const Checkbox = ({
   }
 
   const [isChecked, setIsChecked] = useState(checked);
-  const onChangeHandler = (e) => {
+  const onChangeHandler = async (e) => {
     setIsChecked(e.target.checked);
-    onChange(e);
+    await onChange(e);
+  }
+
+  // Override the internal state when external state changes
+  // This allows simple implementations not to have to control the state
+  // while allowing more complex interactions when needed.
+  const [prevExternalChecked, setPrevExternalChecked] = useState(checked);
+  if (checked !== prevExternalChecked) {
+    setPrevExternalChecked(checked);
+    setIsChecked(checked);
   }
 
   const defaultStyles = [
