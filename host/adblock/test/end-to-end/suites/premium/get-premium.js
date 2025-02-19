@@ -24,6 +24,7 @@ import {
   waitForNotDisplayed,
   clickOnDisplayedElement,
   clickAndSendKeys,
+  wait,
 } from "@eyeo/test-utils/driver";
 import { dcTestPageUrl } from "@eyeo/test-utils/urls";
 import { getOptionsHandle, getPremiumEmail } from "@eyeo/test-utils/extension";
@@ -105,7 +106,7 @@ export default () => {
 
       const actionSelector = `[data-action="${action}"] > button`;
       // A sliding animation of the action button makes polling needed
-      await driver.wait(
+      await wait(
         async () => {
           try {
             await clickOnDisplayedElement(actionSelector);

@@ -24,6 +24,7 @@ import {
   isCheckboxPropertyEnabled,
   waitForNotDisplayed,
   clickOnDisplayedElement,
+  wait,
 } from "@eyeo/test-utils/driver";
 import { aaTestPageUrl } from "@eyeo/test-utils/urls";
 import { getOptionsHandle, upgradeExtension, blockAds } from "@eyeo/test-utils/extension";
@@ -58,7 +59,7 @@ export default () => {
     await initOptionsPremiumFlTab(getOptionsHandle());
     for (const { checkboxSelector, text } of premiumFilterLists) {
       await clickOnDisplayedElement(`span:has(> ${checkboxSelector})`);
-      await driver.wait(
+      await wait(
         async () => isCheckboxPropertyEnabled(checkboxSelector),
         2000,
         `${text} is not enabled`,
@@ -68,7 +69,7 @@ export default () => {
     // turn off the counter on the extension icon
     await initOptionsGeneralTab(getOptionsHandle());
     await clickOnDisplayedElement("span:has(> #prefs__show_statsinicon)");
-    await driver.wait(
+    await wait(
       async () => {
         return !(await isCheckboxPropertyEnabled("#prefs__show_statsinicon"));
       },
@@ -100,7 +101,7 @@ export default () => {
 
       if (enabled) {
         // if list is enabled by default, it should be unsubscribed
-        await driver.wait(
+        await wait(
           async () => {
             return (await getSubscriptionInfo(name)) === "Unsubscribed.";
           },
@@ -118,7 +119,7 @@ export default () => {
     const langList = languageFilterLists.find((list) => list.name === "easylist_plus_german");
     await getDisplayedElement("#language_select");
     await driver.findElement(By.css(`#language_select > option[value="${langList.name}"]`)).click();
-    await driver.wait(
+    await wait(
       async () => isCheckboxPropertyEnabled(langList.checkboxSelector),
       2000,
       `${langList.text} is not enabled`,
@@ -157,7 +158,7 @@ export default () => {
     await initOptionsPremiumFlTab(getOptionsHandle());
     for (const { checkboxSelector, text } of premiumFilterLists) {
       await clickOnDisplayedElement(`span:has(> ${checkboxSelector})`);
-      await driver.wait(
+      await wait(
         async () => {
           return !(await isCheckboxPropertyEnabled(checkboxSelector));
         },
@@ -169,7 +170,7 @@ export default () => {
     // check if the counter on the extension icon is still off
     await initOptionsGeneralTab(getOptionsHandle());
     await clickOnDisplayedElement("span:has(> #prefs__show_statsinicon)");
-    await driver.wait(
+    await wait(
       async () => isCheckboxPropertyEnabled("#prefs__show_statsinicon"),
       2000,
       "Counter on the extension icon is still off",
@@ -191,7 +192,7 @@ export default () => {
         await waitForSubscribed(list.name, list.checkboxSelector);
       } else {
         // if list is disabled by default, it should be unsubscribed
-        await driver.wait(
+        await wait(
           async () => {
             return (await getSubscriptionInfo(list.name)) === "Unsubscribed.";
           },
@@ -205,7 +206,7 @@ export default () => {
     // check if custom filters are still there and can be changed
     await initOptionsCustomizeTab(getOptionsHandle());
     let customFilters;
-    await driver.wait(
+    await wait(
       async () => {
         customFilters = await getCustomFilters();
         return customFilters[0] !== "";

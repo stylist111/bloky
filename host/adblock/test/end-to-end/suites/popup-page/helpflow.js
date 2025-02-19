@@ -7,6 +7,7 @@ import {
   getTabId,
   clickOnDisplayedElement,
   waitForNotDisplayed,
+  wait,
 } from "@eyeo/test-utils/driver";
 import { initPopupPage, initOptionsGeneralTab, setPausedStateFromPopup } from "../../utils/page.js";
 
@@ -36,7 +37,7 @@ async function clickHelpIcon() {
 }
 
 async function clickThenWaitForAnimation(selector) {
-  await driver.wait(
+  await wait(
     async () => {
       try {
         await clickOnDisplayedElement(selector);

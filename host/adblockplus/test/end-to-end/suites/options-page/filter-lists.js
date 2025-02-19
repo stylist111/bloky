@@ -23,7 +23,8 @@ import {
   clickOnDisplayedElement,
   findUrl,
   clickAndSendKeys,
-  waitForNotDisplayed
+  waitForNotDisplayed,
+  wait
 } from "@eyeo/test-utils/driver";
 import { getOptionsHandle, subscriptionUrl } from "@eyeo/test-utils/extension";
 import { easylistFilter } from "@eyeo/test-utils/filters";
@@ -106,7 +107,7 @@ export default () => {
     const defaultFilterLists = getDefaultFilterLists(extension.manifestVersion);
 
     const waitForAllUpdated = async (regexp, timeout) => {
-      await driver.wait(
+      await wait(
         async () => {
           try {
             for (const { name } of defaultFilterLists) {

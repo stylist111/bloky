@@ -23,7 +23,7 @@ import { expect } from "expect";
 export async function findUrl(expectedUrl, timeout = 5000) {
   let url;
   let handle;
-  await driver.wait(
+  await wait(
     async () => {
       try {
         for (handle of await safeGetAllWindowHandles()) {
@@ -84,7 +84,7 @@ export async function getDisplayedElement(
 ) {
   let elem;
   const findElement = async () => {
-    await driver.wait(
+    await wait(
       async () => {
         try {
           elem = await driver.findElement(By.css(cssSelector));
@@ -95,7 +95,7 @@ export async function getDisplayedElement(
         } catch (e) {}
       },
       timeout,
-      `Element "${cssSelector}" was not displayed after ${timeout}ms`,
+      `Element "${cssSelector}" was not displayed`,
     );
   };
 
@@ -131,13 +131,13 @@ export async function openNewTab(url) {
  * @param {number} options.displayedTimeout - Timeout in ms for the displayed element to be hidden
  * @returns {Promise<void>}
  * @example
- * timeout=1000, displayedTimeout=500 will produce up to 2 driver.wait() retries
+ * timeout=1000, displayedTimeout=500 will produce up to 2 wait() retries
  * timeout=1500, displayedTimeout=500 will produce up to 3 retries
  * timeout=3000, displayedTimeout=1000 will also produce up to 3 retries, but
  *   waiting longer for the displayed element to be hidden
  */
 export function waitForNotDisplayed(cssText, { timeout = 1000, displayedTimeout = 500 } = {}) {
-  return driver.wait(
+  return wait(
     async () => {
       try {
         await getDisplayedElement(cssText, { timeout: displayedTimeout, forceRefresh: false });
@@ -156,7 +156,7 @@ export function waitForNotDisplayed(cssText, { timeout = 1000, displayedTimeout 
 
 export async function waitForNotNullProperty(cssSelector, property, timeout = 1000) {
   let value;
-  await driver.wait(
+  await wait(
     async () => {
       try {
         value = await driver.executeScript(
@@ -192,7 +192,7 @@ export async function waitForCheckboxStatus(
   const enabledDisabled = expectEnabled ? "enabled" : "disabled";
   const timeoutMsg = `"${name || cssSelector}" was not ${enabledDisabled} after ${action}`;
 
-  await driver.wait(
+  await wait(
     async () => {
       if (isProperty) {
         return (await isCheckboxPropertyEnabled(cssSelector)) === expectEnabled;
@@ -211,7 +211,7 @@ export async function clickOnDisplayedElement(
 ) {
   const bigTimeout = timeout * 2;
   let elem;
-  await driver.wait(
+  await wait(
     async () => {
       try {
         elem = await getDisplayedElement(cssSelector, {
@@ -274,7 +274,7 @@ export async function clickAndCloseNewTab(selector, expectedURL) {
   const initialWindowHandles = await safeGetAllWindowHandles();
 
   await clickOnDisplayedElement(selector, { timeout: 2000, scrollIntoView: true });
-  await driver.wait(
+  await wait(
     async () => {
       const currentWindowHandles = await safeGetAllWindowHandles();
       return currentWindowHandles.length > initialWindowHandles.length;
@@ -294,7 +294,7 @@ export async function clickAndCloseNewTab(selector, expectedURL) {
 
   await driver.switchTo().window(newWindowHandle);
 
-  await driver.wait(
+  await wait(
     async () => {
       const newWindowURL = await driver.getCurrentUrl();
       return newWindowURL === expectedURL;
@@ -387,4 +387,28 @@ export async function getCSSProperty(element, cssProperty, pseudoElement) {
     cssProperty,
     pseudoElement,
   );
+}
+
+async function fullStacktraceOnError(promise) {
+  try {
+    return await promise;
+  } catch (err) {
+    const errorMessage = err.message || err.toString();
+    const capturedError = new Error(errorMessage, { cause: err });
+    capturedError.name = err.name || "Error";
+    // Removes the fullStacktraceOnError call from the stacktrace
+    Error.captureStackTrace(capturedError, fullStacktraceOnError);
+
+    throw capturedError;
+  }
+}
+
+/**
+ * Wraps driver.wait to preserve the full stacktrace in case of error
+ *
+ * @see {@link https://www.selenium.dev/selenium/docs/api/javascript/WebDriver.html#wait}
+ * @see {@link https://github.com/SeleniumHQ/selenium/issues/11080}
+ */
+export async function wait(condition, timeout = 0, message, pollTimeout = 200) {
+  return fullStacktraceOnError(driver.wait(condition, timeout, message, pollTimeout));
 }

@@ -21,7 +21,8 @@ import { By } from "selenium-webdriver";
 import {
   openNewTab,
   getDisplayedElement,
-  waitForNotDisplayed
+  waitForNotDisplayed,
+  wait
 } from "@eyeo/test-utils/driver";
 import {
   aaTestPageUrl,
@@ -134,7 +135,7 @@ export default () => {
     });
 
     await driver.switchTo().window(websiteHandle);
-    await driver.wait(
+    await wait(
       async () => {
         await driver.navigate().refresh();
         try {

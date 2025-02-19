@@ -17,7 +17,7 @@
 
 import { expect } from "expect";
 
-import { findUrl, openNewTab, isCheckboxPropertyEnabled } from "@eyeo/test-utils/driver";
+import { findUrl, openNewTab, isCheckboxPropertyEnabled, wait } from "@eyeo/test-utils/driver";
 import { blockHideUrl } from "@eyeo/test-utils/urls";
 import {
   getOptionsHandle,
@@ -117,7 +117,7 @@ export default () => {
 
     const handleDisabledFilterlistsAlert = async () => {
       let alert;
-      await driver.wait(async () => {
+      await wait(async () => {
         try {
           alert = await driver.switchTo().alert();
           return true;

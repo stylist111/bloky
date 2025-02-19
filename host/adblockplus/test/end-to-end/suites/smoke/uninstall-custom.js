@@ -18,7 +18,8 @@
 import {
   clickOnDisplayedElement,
   findUrl,
-  isCheckboxPropertyEnabled
+  isCheckboxPropertyEnabled,
+  wait
 } from "@eyeo/test-utils/driver";
 import {
   checkInstallUninstallUrl,
@@ -53,7 +54,7 @@ export default () => {
     const name = "EasyList";
     const { toggle } = getFLSelectors(name);
     await clickOnDisplayedElement(toggle);
-    await driver.wait(
+    await wait(
       async () => !(await isCheckboxPropertyEnabled(toggle)),
       2000,
       "Easylist still enabled after clicking on the toggle"

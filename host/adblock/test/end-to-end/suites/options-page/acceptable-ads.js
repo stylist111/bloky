@@ -21,6 +21,7 @@ import {
   isCheckboxPropertyEnabled,
   getDisplayedElement,
   clickOnDisplayedElement,
+  wait,
 } from "@eyeo/test-utils/driver";
 import { getOptionsHandle } from "@eyeo/test-utils/extension";
 
@@ -37,7 +38,7 @@ export default () => {
 
   it("displays AA default state", async function () {
     await initOptionsGeneralTab(getOptionsHandle());
-    await driver.wait(
+    await wait(
       async () => isCheckboxPropertyEnabled("#acceptable_ads"),
       5000,
       `Acceptable Ads is not enabled by default`,

@@ -22,7 +22,8 @@ import {
   findUrl,
   clickOnDisplayedElement,
   getCSSProperty,
-  waitForNotDisplayed
+  waitForNotDisplayed,
+  wait
 } from "@eyeo/test-utils/driver";
 
 import { getOptionsHandle } from "@eyeo/test-utils/extension";
@@ -82,7 +83,7 @@ export default () => {
         `#premium-list-table [data-recommended="${title}"]`
       );
 
-      await driver.wait(
+      await wait(
         async () => {
           const btnElem = getDisplayedElement(
             `#premium-list-table [data-recommended="${title}"] > button`

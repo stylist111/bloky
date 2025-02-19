@@ -27,7 +27,8 @@ import {
   isCheckboxPropertyEnabled,
   clickOnDisplayedElement,
   openNewTab,
-  getTabId
+  getTabId,
+  wait
 } from "@eyeo/test-utils/driver";
 import { getOptionsHandle } from "@eyeo/test-utils/extension";
 
@@ -96,7 +97,7 @@ export async function checkBlockHidePage(expectAllowlisted) {
   const timeout = 1000;
 
   // we want to wait until the extension starts applying EasyList before continuing with the other checks
-  await driver.wait(
+  await wait(
     async () => {
       try {
         if (expectAllowlisted) {
@@ -145,7 +146,7 @@ export async function checkBlockHidePage(expectAllowlisted) {
 async function loadOptionsTab(optionsHandle, id, timeout = 5000) {
   await driver.switchTo().window(optionsHandle);
 
-  await driver.wait(
+  await wait(
     async () => {
       try {
         await driver.switchTo().frame("content");
@@ -214,7 +215,7 @@ export async function initOptionsGeneralTab(
   await loadOptionsTab(optionsHandle, "tab-general", timeout);
   await getDisplayedElement("#free-list-table", { timeout });
   if (waitForDefaultState) {
-    await driver.wait(
+    await wait(
       async () => isCheckboxPropertyEnabled("#acceptable-ads-allow"),
       timeout,
       "Acceptable Ads is disabled before clicking"
@@ -310,7 +311,7 @@ export async function deleteCustomFilters() {
   // checking the filters. Sleeping as a workaround
   await driver.sleep(1000);
   await clickOnDisplayedElement("#custom-filters button.delete");
-  await driver.wait(
+  await wait(
     async () => (await getCustomFilters()).length === 0,
     1000,
     "Custom filters were not deleted"
@@ -446,7 +447,7 @@ export async function waitForSubscriptionUpdated(
 ) {
   const { toggle, lastUpdate } = getFLSelectors(name);
 
-  await driver.wait(
+  await wait(
     async () => {
       // Filterlist status may be stuck on 'Updating' unless the page is reloaded
       // https://eyeo.atlassian.net/browse/EXT-402
@@ -476,7 +477,7 @@ async function getPopupLanguageFilterLists(isOptionsGeneralTab) {
 
   // Poll until elements are not stale
   let languageElems;
-  await driver.wait(
+  await wait(
     async () => {
       languageElems = await driver.findElements(By.css(`${popupSelector} li`));
       try {

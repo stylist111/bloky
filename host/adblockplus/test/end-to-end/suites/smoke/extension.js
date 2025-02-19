@@ -23,7 +23,8 @@ import {
   getDisplayedElement,
   isCheckboxPropertyEnabled,
   openNewTab,
-  waitForNotDisplayed
+  waitForNotDisplayed,
+  wait
 } from "@eyeo/test-utils/driver";
 import {
   getOptionsHandle,
@@ -94,7 +95,7 @@ export default () => {
     for (const { name } of defaultFilterLists) {
       const { trashBtn } = getFLSelectors(name);
       // Right after extension initialisation clicking on the trash button may not work, retrying as a workaround
-      await driver.wait(
+      await wait(
         async () => {
           await clickOnDisplayedElement(trashBtn, { timeout });
           try {

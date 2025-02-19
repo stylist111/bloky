@@ -29,6 +29,7 @@ import {
   clickAndCloseNewTab,
   getTabId,
   clickOnDisplayedElement,
+  wait,
 } from "@eyeo/test-utils/driver";
 import { getOptionsHandle, sendExtMessage } from "@eyeo/test-utils/extension";
 
@@ -53,7 +54,7 @@ export async function initPopupWithLocalPage() {
 async function loadOptionsTab(optionsHandle, id) {
   await driver.switchTo().window(optionsHandle);
 
-  await driver.wait(
+  await wait(
     async () => {
       try {
         await clickOnDisplayedElement(`[href="#${id}"]`);
@@ -73,7 +74,7 @@ async function loadOptionsTab(optionsHandle, id) {
   );
 
   // Make sure the URL is updated
-  await driver.wait(
+  await wait(
     async () => {
       return (await driver.getCurrentUrl()).endsWith(`#${id}`);
     },
@@ -133,7 +134,7 @@ export async function setCustomFilters(filters, append = false) {
   // The edit button functionality may take some time to be ready.
   // Retrying as a workaround
   let saveButton;
-  await driver.wait(
+  await wait(
     async () => {
       try {
         await editButton.click();
@@ -161,7 +162,7 @@ export async function getUserIdFromInstallPage() {
   await findUrl(installUrl);
 
   let userId;
-  await driver.wait(
+  await wait(
     async () => {
       try {
         userId = await driver.executeScript(() => {
@@ -192,7 +193,7 @@ export async function getUserIdFromStorage(optionsHandle) {
 
 export async function getSubscriptionInfo(name, timeout = 5000) {
   let text;
-  await driver.wait(
+  await wait(
     async () => {
       const info = await driver.findElement(By.css(`[name="${name}"] .subscription_info`));
       text = await info.getText();
@@ -216,7 +217,7 @@ export async function clickFilterlist(name, checkboxSelector, enabledAfterClick)
   }
 
   const text = enabledAfterClick ? "enabled" : "disabled";
-  await driver.wait(
+  await wait(
     async () => {
       return (await isCheckboxPropertyEnabled(checkboxSelector)) === enabledAfterClick;
     },
@@ -235,7 +236,7 @@ export async function checkBlockHidePage(expectAllowlisted) {
   const timeout = 1000;
 
   // we want to wait until the extension starts applying EasyList before continuing with the other checks
-  await driver.wait(
+  await wait(
     async () => {
       try {
         if (expectAllowlisted) {
@@ -301,7 +302,7 @@ export async function waitForSubscribed(
 ) {
   const regexp = allowFetching ? /updated|Subscribed|Fetching/ : /updated|Subscribed/;
 
-  await driver.wait(
+  await wait(
     async () => {
       const flEnabled = await isCheckboxPropertyEnabled(checkboxSelector);
       const text = await getSubscriptionInfo(name);
@@ -374,7 +375,7 @@ export async function enablePremiumProgrammatically() {
   let premiumStatus;
   // Occasionally the `adblock:activate` message has no effect in the premium
   // status. In that case the activation flow is retried.
-  await driver.wait(
+  await wait(
     async () => {
       await sendExtMessage(initOptionsGeneralTab, { type: "adblock:activate" }); // activate premium
       await initOptionsPremiumTab(getOptionsHandle());

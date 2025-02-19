@@ -17,7 +17,7 @@
 
 import { expect } from "expect";
 
-import { openNewTab } from "@eyeo/test-utils/driver";
+import { openNewTab, wait } from "@eyeo/test-utils/driver";
 import { blockHideUrl } from "@eyeo/test-utils/urls";
 import { beforeEachTasks } from "@eyeo/test-utils/hooks";
 import { allowlistingFilter } from "@eyeo/test-utils/filters";
@@ -44,7 +44,7 @@ async function allowlistPageAndCheck(command) {
 
   // Even though there's allowlistingSuccess confirmation, sometimes the filter
   // may take a while to be effective on the page (seen in Firefox)
-  await driver.wait(
+  await wait(
     async () => {
       await driver.navigate().refresh();
       try {

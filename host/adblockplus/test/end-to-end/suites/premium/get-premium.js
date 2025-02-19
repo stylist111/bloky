@@ -23,7 +23,8 @@ import {
   clickAndSendKeys,
   getDisplayedElement,
   openNewTab,
-  waitForNotDisplayed
+  waitForNotDisplayed,
+  wait
 } from "@eyeo/test-utils/driver";
 import { getOptionsHandle, getPremiumEmail } from "@eyeo/test-utils/extension";
 import { dcTestPageUrl } from "@eyeo/test-utils/urls";
@@ -51,7 +52,7 @@ async function enablePremiumByUI() {
   await clickOnDisplayedElement('[data-plan="monthly"]');
   await clickOnDisplayedElement('[type="submit"]');
 
-  await driver.wait(
+  await wait(
     async () => {
       try {
         await driver.switchTo().frame("paddle_frame");
@@ -124,7 +125,7 @@ export default () => {
       timeout: 3000
     });
 
-    await driver.wait(
+    await wait(
       async () => {
         const elem = await getDisplayedElement(selector);
         return (await elem.getAttribute("aria-checked")) === "true";

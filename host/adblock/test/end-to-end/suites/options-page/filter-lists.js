@@ -25,6 +25,7 @@ import {
   waitForNotDisplayed,
   clickOnDisplayedElement,
   clickAndSendKeys,
+  wait,
 } from "@eyeo/test-utils/driver";
 import { getOptionsHandle, subscriptionUrl } from "@eyeo/test-utils/extension";
 
@@ -85,7 +86,7 @@ export default () => {
     const defaultEnabledFilterLists = defaultFilterLists.filter(({ enabled }) => enabled);
 
     const checkDefaultSubscriptionsInfo = async (updatedWhen, timeout) => {
-      await driver.wait(
+      await wait(
         async () => {
           try {
             for (const { name } of defaultEnabledFilterLists) {
@@ -118,7 +119,7 @@ export default () => {
       const advancedUserEnabled = await isCheckboxPropertyEnabled("#enable_show_advanced_options");
       if (!advancedUserEnabled) {
         await clickOnDisplayedElement("span:has(> #enable_show_advanced_options)");
-        await driver.wait(
+        await wait(
           async () => isCheckboxPropertyEnabled("#enable_show_advanced_options"),
           2000,
           "The advanced user was not enabled after clicking",

@@ -19,7 +19,7 @@ import path from "path";
 import fs from "fs";
 import AdmZip from "adm-zip";
 
-import { openNewTab, getTabId, getFromStorage } from "./driver.js";
+import { openNewTab, getTabId, getFromStorage, wait } from "./driver.js";
 import { localTestPageUrl, blockHideLocalhostUrl } from "../test-server/urls.js";
 
 export const subscriptionUrl = "https://abptestpages.org/en/abp-testcase-subscription.txt";
@@ -237,7 +237,7 @@ export async function reloadExtension(initOptionsFn, suppressUpdatePage = true) 
 
   // Wait until the current option page is closed by the reload
   // otherwise the next step will fail
-  await driver.wait(
+  await wait(
     async () => {
       const handlers = await driver.getAllWindowHandles();
       return !handlers.includes(getOptionsHandle());
@@ -247,7 +247,7 @@ export async function reloadExtension(initOptionsFn, suppressUpdatePage = true) 
   );
 
   // wait for the extension to be ready and the options page to be displayed
-  await driver.wait(
+  await wait(
     async () => {
       try {
         await driver.navigate().to(`${extension.origin}/options.html`);
@@ -321,7 +321,7 @@ export async function uninstallExtension(initOptionsFn) {
 
   // Wait until the current option page is closed by the uninstall
   // otherwise the next step will fail
-  await driver.wait(
+  await wait(
     async () => {
       const handles = await driver.getAllWindowHandles();
       return !handles.includes(getOptionsHandle());
@@ -354,7 +354,7 @@ export async function autoAllowlistsYoutube() {
     const ytElement = document.createElement("ytd-enforcement-message-view-model");
     document.body.appendChild(ytElement);
   });
-  await driver.wait(
+  await wait(
     async () => {
       const readyState = await driver.executeScript("return document.readyState");
       return readyState === "complete";
@@ -369,7 +369,7 @@ export async function getEyeometryDataChromium() {
   // 10 seconds is a safe number to assume telemetry is not enabled
   const timeout = 10000;
 
-  return await driver.wait(
+  return await wait(
     async () => getFromStorage("local", "ewe:telemetry"),
     timeout,
     `No storage data found after ${timeout}ms`,
@@ -381,7 +381,7 @@ export async function getEyeometryDataFirefox() {
   const timeout = 10000;
 
   try {
-    return await driver.wait(async () => getFromStorage("local", "ewe:telemetry"), timeout);
+    return await wait(async () => getFromStorage("local", "ewe:telemetry"), timeout);
   } catch (err) {
     if (err.name === "TimeoutError") {
       // Timeout exceeded, no telemetry data saved, all good
@@ -411,7 +411,7 @@ export async function waitForNumberToBeInRange(min, max, getNumberFunction) {
 
   let value;
   try {
-    await driver.wait(async () => {
+    await wait(async () => {
       value = await getNumberFunction();
       return value > min && value <= max;
     }, timeout);
@@ -430,7 +430,7 @@ export async function blockAds(expectedMinBlocked, expectedMaxBlocked, getPopupB
   try {
     // under certain conditions the ads are not being blocked after loading blockHideUrl,
     // so we have to retry until ads are blocked
-    await driver.wait(async () => {
+    await wait(async () => {
       await openNewTab(blockHideLocalhostUrl);
       try {
         adsBlocked = await waitForNumberToBeInRange(

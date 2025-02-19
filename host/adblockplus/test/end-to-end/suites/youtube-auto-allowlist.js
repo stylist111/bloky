@@ -15,7 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { waitForCheckboxStatus } from "@eyeo/test-utils/driver";
+import { waitForCheckboxStatus, wait } from "@eyeo/test-utils/driver";
 import {
   getOptionsHandle,
   autoAllowlistsYoutube
@@ -31,7 +31,7 @@ export default () => {
 
     const websiteAllowlistBtnSelector = `#page-status > div:first-of-type > io-circle-toggle`;
 
-    await driver.wait(
+    await wait(
       async () => {
         await initPopupPage(tabId);
         try {

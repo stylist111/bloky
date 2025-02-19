@@ -23,6 +23,7 @@ import {
   openNewTab,
   isCheckboxPropertyEnabled,
   waitForNotDisplayed,
+  wait,
 } from "@eyeo/test-utils/driver";
 import { blockHideUrl, aaTestPageUrl, snippetTestPageUrl } from "@eyeo/test-utils/urls";
 import { allowlistingFilter, snippetFilter } from "@eyeo/test-utils/filters";
@@ -121,7 +122,7 @@ export default () => {
     const aaFLButtonSelector = "#adblockFilterList_0";
 
     await initOptionsFiltersTab(getOptionsHandle());
-    await driver.wait(
+    await wait(
       async () => isCheckboxPropertyEnabled(aaFLButtonSelector),
       2000,
       `Acceptable Ads is not enabled by default`,
@@ -133,7 +134,7 @@ export default () => {
     await initOptionsFiltersTab(getOptionsHandle());
     await clickFilterlist("acceptable_ads", aaFLButtonSelector, false);
     await driver.switchTo().window(websiteHandle);
-    await driver.wait(
+    await wait(
       async () => {
         await driver.navigate().refresh();
         try {
