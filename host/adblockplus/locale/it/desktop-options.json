@@ -247,8 +247,7 @@
     "message": "Non è stato possibile applicare l'aggiornamento dell'elenco filtri a causa delle limitazioni del browser. L'aggiornamento a una versione più recente dell'estensione può risolvere il problema."
   },
   "options_filterList_lastDownload_tooManyFilters": {
-        "description": "Messaggio di errore nella sezione avanzata quando il limite delle regole dinamiche è stato superato",
-        "message": "L'aggiornamento dell'elenco dei filtri non può essere applicato a causa delle limitazioni del browser. Ridurre il numero di elenchi di filtri e filtri personalizzati potrebbe risolvere questo problema."
+    "message": "L'aggiornamento dell'elenco dei filtri non può essere applicato a causa delle limitazioni del browser. Ridurre il numero di elenchi di filtri e filtri personalizzati potrebbe risolvere questo problema."
   },
   "options_filterList_lastDownload_diffTooOld": {
     "message": "Non è stato possibile completare l'aggiornamento della lista dei filtri a causa della versione obsoleta dell'estensione. L'aggiornamento dell'estensione potrebbe risolvere il problema."

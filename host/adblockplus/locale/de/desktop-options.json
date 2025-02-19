@@ -247,7 +247,6 @@
     "message": "Die Filterliste konnte aufgrund von Browser-Einschränkungen nicht aktualisiert werden. Durch Aktualisierung der Erweiterung auf eine neuere Version lässt sich dieses Problem möglicherweise beheben."
   },
   "options_filterList_lastDownload_tooManyFilters": {
-    "description": "Fehlermeldung auf der Registerkarte „Erweitert“, wenn das Limit für dynamische Regeln überschritten wurde",
     "message": "Die Aktualisierung der Filterliste konnte aufgrund von Browserbeschränkungen nicht angewendet werden. Eine Reduzierung der Anzahl der Filterlisten und benutzerdefinierten Filter könnte dieses Problem beheben."
   }, 
   "options_filterList_lastDownload_diffTooOld": {

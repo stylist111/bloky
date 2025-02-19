@@ -247,7 +247,6 @@
     "message": "No se ha podido aplicar la actualización de la lista de filtros debido a las limitaciones del navegador. Este problema puede solucionarse actualizando la extensión a una versión más reciente."
   },
   "options_filterList_lastDownload_tooManyFilters": {
-    "description": "Mensaje de error en la pestaña avanzada cuando se ha superado el límite de la regla dinámica",
     "message": "No se pudo aplicar la actualización de la lista de filtros debido a limitaciones del navegador. Reducir el número de listas de filtros y filtros personalizados puede solucionar este problema."
   },
   "options_filterList_lastDownload_diffTooOld": {

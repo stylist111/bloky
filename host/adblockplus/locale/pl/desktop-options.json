@@ -247,8 +247,7 @@
     "message": "Nie można zastosować aktualizacji listy filtrów ze względu na ograniczenia przeglądarki. Aktualizacja do nowszej wersji rozszerzenia może rozwiązać ten problem."
   },
   "options_filterList_lastDownload_tooManyFilters": {
-    "description": "Komunikat o błędzie w zakładce zaawansowane po przekroczeniu limitu reguły dynamicznej",
-    "message": "Aktualizacja listy filtrów nie mogła zostać zastosowana z powodu ograniczeń przeglądarki. Zmniejszenie liczby list filtrów i filtrów niestandardowych może rozwiązać ten problem."
+   "message": "Aktualizacja listy filtrów nie mogła zostać zastosowana z powodu ograniczeń przeglądarki. Zmniejszenie liczby list filtrów i filtrów niestandardowych może rozwiązać ten problem."
   },
   "options_filterList_lastDownload_diffTooOld": {
     "message": "Aktualizacja listy filtrów nie mogła zostać wykonana z powodu nieaktualnej wersji rozszerzenia. Aktualizacja do nowszej wersji rozszerzenia może rozwiązać ten problem."

@@ -161,7 +161,6 @@
     "message": "Updating"
   },
   "options_filterList_lastDownload_tooManyFilters": {
-    "description": "Error message in advanced tab when the dynamic rule limit has been exceeded",
     "message": "Filter list update could not be applied due to browser limitations. Reducing number of filter lists and custom filters may fix this problem."
   },
   "options_filterList_lastDownload_invalidData": {

@@ -247,7 +247,6 @@
     "message": "A szűrőlista a böngésző korlátozásai miatt nem alkalmazható. Az újabb bővítményverzióra való frissítés megoldhatja ezt a problémát."
   },
   "options_filterList_lastDownload_tooManyFilters": {
-    "description": "A dinamikus szabály korlát túllépése esetén a Speciális lapon megjelenő hibaüzenet.",
     "message": "A böngésző korlátai miatt nem lehet elvégezni a Szűrőlista frissítését. A szűrőlisták és az egyéni szűrők számának csökkentése megoldhatja ezt a problémát."
   },
   "options_filterList_lastDownload_diffTooOld": {
