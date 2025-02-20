@@ -75,12 +75,6 @@ export interface StartInfo {
   addTrustedMessageTypes: addTrustedMessageTypesFunction;
 
   /**
-   * A reference to the webext-ad-filtering-solution
-   *
-   */
-  ewe: any;
-
-  /**
    * A reference to the logger object
    *
    */

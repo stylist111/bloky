@@ -32,15 +32,24 @@ import {
   youTubeNavigation,
 } from "../../src/shared/index.js";
 import { type MessageSender, type AdWallMessage } from "@eyeo/polyfills/all";
-import { start } from "../../src/background/index";
 
-const addFiltersMock = mockFn();
-const ewe = {
+vi.mock("@eyeo/webext-ad-filtering-solution", () => ({
   filters: {
-    add: addFiltersMock
-  }
-};
+    add: mockFn(),
+    onRemoved: {
+      addListener: mockFn(),
+    },
+  },
+  experiments: {
+    getFlag: mockFn(),
+    onChanged: {
+      addListener: mockFn(),
+    },
+  },
+}));
 
+import * as ewe from "@eyeo/webext-ad-filtering-solution";
+import { start } from "../../src/background/index";
 
 const logger = {};
 
@@ -67,7 +76,7 @@ const startInfo: StartInfo = {
 /**
  * Invoked the imported "start" function with the provided parameters
  */
-const invokeAndTestStart = (startParameters: StartInfo):void => {
+const invokeAndTestStart = (startParameters: StartInfo): void => {
   expect(chrome.runtime.onInstalled.hasListeners()).toBe(false);
 
   start(startParameters);
@@ -135,7 +144,9 @@ describe("Fragment / YT Ad Wall Detection", () => {
       if (arg1 === youTubeWallDetected) {
         processYouTubeWallDetected = arg2;
         let message: AdWallMessage = { userLoggedIn: "0" };
-        let sender: MessageSender = { page: { id: 1, url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' } };
+        let sender: MessageSender = {
+          page: { id: 1, url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
+        };
 
         const jestChrome = chrome as any as JestChrome;
         jestChrome.tabs.reload.mockImplementation((argumentOne: any) => {
@@ -145,14 +156,14 @@ describe("Fragment / YT Ad Wall Detection", () => {
         processYouTubeWallDetected(message, sender);
         sendAdWallEventsFNMock.calledWith(youTubeWallDetected, "0", "0");
         ewe.filters.add.calledWith(`@@||www.youtube.com$document`, {
-            expiresByTabId: 1,
-            origin: "auto"
+          expiresByTabId: 1,
+          origin: "auto",
         });
       }
     };
 
     startInfo.ewe.filters.getAllowingFilters = function () {
-        return Promise.resolve([]);
+      return Promise.resolve([]);
     };
 
     invokeAndTestStart(startInfo);
@@ -178,27 +189,34 @@ describe("Fragment / YT Ad Wall Detection", () => {
 
       if (arg1 === youTubeWallDetected) {
         processYouTubeWallDetected = arg2;
-        let message: AdWallMessage = { userLoggedIn: "0", currentPlaybackTime: 50 };
-        let sender: MessageSender = { page: { id: 1, url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' } };
+        let message: AdWallMessage = {
+          userLoggedIn: "0",
+          currentPlaybackTime: 50,
+        };
+        let sender: MessageSender = {
+          page: { id: 1, url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
+        };
 
         const jestChrome = chrome as any as JestChrome;
-        jestChrome.tabs.update.mockImplementation((argumentOne: any, argumentTwo: any) => {
-          expect(argumentOne).toEqual(sender.page.id);
-          expect(argumentTwo.url).toEqual(`${sender.page.url}&t=50`);
-        });
+        jestChrome.tabs.update.mockImplementation(
+          (argumentOne: any, argumentTwo: any) => {
+            expect(argumentOne).toEqual(sender.page.id);
+            expect(argumentTwo.url).toEqual(`${sender.page.url}&t=50`);
+          },
+        );
 
         processYouTubeWallDetected(message, sender);
         sendAdWallEventsFNMock.calledWith(youTubeWallDetected, "0", "0");
         ewe.filters.add.calledWith(`@@||www.youtube.com$document`, {
           expiresByTabId: 1,
-          origin: "auto"
+          origin: "auto",
         });
       }
     };
 
     startInfo.ewe.filters.getAllowingFilters = function () {
       return Promise.resolve([]);
-  };
+    };
 
     invokeAndTestStart(startInfo);
   });

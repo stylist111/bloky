@@ -23,6 +23,14 @@ import { chrome } from "vitest-chrome/lib/index.esm";
 Object.assign(global, { chrome });
 chrome.runtime.id = "test id";
 
+chrome.storage.local = {
+  data: {},
+  get: vi.fn(async (key) => ({ [key]: mockLocalStorage.data[key] || 0 })),
+  set: vi.fn(async (obj) => {
+    Object.assign(mockLocalStorage.data, obj);
+  }),
+};
+
 const invokeAndResetMock = (...args) => {
   const callback = args[args.length - 1]; // the last argument is always the callback
   callback(); // call the callback with your expected callback args
@@ -34,6 +42,10 @@ chrome.runtime.sendMessage.mockImplementation((...args) => {
 
 chrome.tabs.sendMessage.mockImplementation((...args) => {
   invokeAndResetMock(args);
+});
+
+chrome.runtime.getManifest.mockImplementation(() => {
+  return { short_name: "AdBlock" };
 });
 
 chrome.tabs.reload.mockImplementation((...args) => {

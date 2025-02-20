@@ -53,7 +53,12 @@
     },
     {
       "all_frames": true,
-      "js": ["adblock-yt-cs.js", "yt-auto-allowlist.preload.js"],
+      "js": ["adblock-yt-cs.js"],
+      "matches": ["*://*.youtube.com/*"],
+      "run_at": "document_start"
+    },
+    {
+      "js": ["yt-auto-allowlist.preload.js"],
       "matches": ["*://*.youtube.com/*"],
       "run_at": "document_start"
     },

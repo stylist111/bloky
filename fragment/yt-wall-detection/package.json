@@ -24,7 +24,11 @@
     "build": "tsc --project tsconfig.json",
     "build:release": "tsc --project tsconfig.json",
     "lint": "eslint --ext .ts src/",
+    "prettier-fix": "prettier --write .",
     "test": "vitest"
+  },
+  "peerDependencies": {
+    "@eyeo/webext-ad-filtering-solution": "*"
   },
   "dependencies": {
     "@eyeo/polyfills": "*",

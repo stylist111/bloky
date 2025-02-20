@@ -671,7 +671,6 @@ initialize
     prefs.migrateUserData();
     startYtWallDetection({
       addTrustedMessageTypes: ext.addTrustedMessageTypes,
-      ewe,
       logger,
       port,
       prefs: Prefs,

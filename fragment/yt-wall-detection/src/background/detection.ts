@@ -18,6 +18,8 @@
 
 import type Browser from "webextension-polyfill";
 import * as browser from "webextension-polyfill";
+import * as ewe from "@eyeo/webext-ad-filtering-solution";
+import { type Filter } from "@eyeo/webext-ad-filtering-solution";
 
 import { type MessageSender, type AdWallMessage } from "@eyeo/polyfills/all";
 import {
@@ -31,6 +33,10 @@ import {
   youTubeAutoAllowlisted,
   youTubeWallDetected,
   youTubeNavigation,
+  ytHavenIframeFlag,
+  ytHavenModalFlag,
+  ytHavenOverlayFlag,
+  matchingElementFoundKey,
 } from "../shared/index.js";
 
 /**
@@ -62,6 +68,19 @@ const captureDateOnUpdate = (
 };
 
 /**
+ * Checks if the user is in one of the Haven experiments
+ */
+const isInHavenExperiment = async (): Promise<boolean> => {
+  const expFlags = await Promise.all([
+    ewe.experiments.getFlag(ytHavenIframeFlag),
+    ewe.experiments.getFlag(ytHavenModalFlag),
+    ewe.experiments.getFlag(ytHavenOverlayFlag),
+  ]);
+
+  return expFlags.some((flag) => Boolean(flag));
+};
+
+/**
  * Process the YouTube Wall Detected message from the content script
  *
  */
@@ -77,7 +96,7 @@ const processYouTubeWallMessage = async (
   }
   const { sendAdWallEvents = noop } = parameters;
 
-  const filters = await parameters.ewe.filters.getAllowingFilters(tabId);
+  const filters = await ewe.filters.getAllowingFilters(tabId);
   const isAllowListed = !!filters.length;
   if (isAllowListed) {
     sendAdWallEvents(
@@ -97,7 +116,15 @@ const processYouTubeWallMessage = async (
     origin: "yt-auto",
     created: Date.now(),
   };
-  await parameters.ewe.filters.add(ruleText, metadata);
+  await ewe.filters.add(ruleText, metadata);
+
+  // Store the allowlist in the local storage so that we know it on the second run
+  if (await isInHavenExperiment()) {
+    await browser.storage.local.set({
+      [matchingElementFoundKey]: true,
+    });
+  }
+
   if (message.currentPlaybackTime > 5) {
     senderURL.searchParams.set(
       "t",
@@ -128,6 +155,16 @@ export function start(parameters: StartInfo): void {
     parameters,
   );
   browser.runtime.onInstalled.addListener(captureDateOnUpdatedWithParameters);
+
+  // Remove the allowlisting state from storage when the filter is removed
+  ewe.filters.onRemoved.addListener(async (filter: Filter) => {
+    if (
+      filter.text.endsWith("youtube.com^$document") &&
+      filter.type === "allowing"
+    ) {
+      await browser.storage.local.remove(matchingElementFoundKey);
+    }
+  });
 
   const processYouTubeWallMessageWithParameters =
     processYouTubeWallMessage.bind(null, parameters);

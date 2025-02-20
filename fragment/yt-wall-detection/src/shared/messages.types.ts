@@ -20,3 +20,9 @@ export const youTubeAlreadyAllowLlisted = "yt-site.already.allowlisted";
 export const youTubeAutoAllowlisted = "yt-auto.allowlisted";
 export const youTubeWallDetected = "yt-site.ad-wall-detected";
 export const youTubeNavigation = "yt-site.navigation";
+
+export const ytHavenOverlayFlag = "yt-haven-overlay-iframe-enabled";
+export const ytHavenModalFlag = "yt-haven-overlay-modal-enabled";
+export const ytHavenIframeFlag = "yt-haven-iframe-enabled";
+
+export const matchingElementFoundKey = "matchingElementFound";

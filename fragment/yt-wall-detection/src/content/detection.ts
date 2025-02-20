@@ -30,6 +30,11 @@ const adWallSelector = "ytd-enforcement-message-view-model";
 const userAvatarSelector = "button#avatar-btn";
 
 /**
+ * Ad wall mutation observer
+ */
+let adWallObserver: MutationObserver;
+
+/**
  * Checks whether given candidate is a DOM element
  *
  * @param candidate - Candidate
@@ -38,6 +43,22 @@ const userAvatarSelector = "button#avatar-btn";
  */
 function isElement(candidate: unknown): candidate is Element {
   return candidate instanceof Element;
+}
+
+/**
+ * Send a message to SW when the add wall has been found
+ */
+async function adWallSelectorFound(): Promise<void> {
+  adWallObserver.disconnect();
+
+  const videoPlayer = document.querySelector("video");
+  const currentPlaybackTime = videoPlayer?.currentTime ?? 0;
+  const userLoggedIn = document.querySelectorAll(userAvatarSelector).length > 0;
+  void browser.runtime.sendMessage({
+    type: youTubeWallDetected,
+    userLoggedIn,
+    currentPlaybackTime,
+  });
 }
 
 /**
@@ -55,22 +76,14 @@ function handleMutations(mutations: MutationRecord[]): void {
   });
 
   if (matchingElementFound) {
-    const videoPlayer = document.querySelector("video");
-    const currentPlaybackTime = videoPlayer?.currentTime ?? 0;
-    const userLoggedIn =
-      document.querySelectorAll(userAvatarSelector).length > 0;
-    void browser.runtime.sendMessage({
-      type: youTubeWallDetected,
-      userLoggedIn,
-      currentPlaybackTime,
-    });
+    void adWallSelectorFound();
   }
 }
 
 /**
  * Initializes YouTube ad wall detection feature
  */
-function initializeObserver(): void {
+function initializeObserver(): MutationObserver {
   /**
    * Mutation observer to detect when a matching element gets added to the DOM
    */
@@ -81,6 +94,8 @@ function initializeObserver(): void {
     characterData: false,
     subtree: true,
   });
+
+  return observer;
 }
 
 /**
@@ -94,7 +109,7 @@ function logInitialEvent(): void {
 /**
  * Handle the load event
  */
-function handleLoadEvent(event: any): void {
+function handleLoadEvent(): void {
   window.onload = null;
   setTimeout(() => {
     logInitialEvent();
@@ -116,8 +131,6 @@ function checkWindow(): void {
  * Initializes YouTube ad wall detection feature
  */
 export function start(): void {
-  initializeObserver();
+  adWallObserver = initializeObserver();
   checkWindow();
 }
-
-start();
