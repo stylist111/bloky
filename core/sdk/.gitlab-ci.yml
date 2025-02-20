@@ -115,17 +115,21 @@ pages:
     # Only publishes docs pushed to main
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
 
-build:basic-image:
+.build-image:
   stage: build
   extends: .docker-image
   needs: []
+  # Occasional network issues may prevent docker images from building
+  retry: 1
+
+build:basic-image:
+  extends: .build-image
   script:
     - docker build -t $BASIC_IMAGE -f core/sdk/test/dockerfiles/basic.Dockerfile .
     - docker push $BASIC_IMAGE
 
 build:functional-image:
-  stage: build
-  extends: .docker-image
+  extends: .build-image
   needs: ["build:src"]
   script:
     - docker build -t $FUNCTIONAL_IMAGE -f core/sdk/test/dockerfiles/functional.Dockerfile --build-arg SKIP_BUILD=1 --build-arg BROWSER=chromium .
