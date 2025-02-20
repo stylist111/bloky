@@ -210,9 +210,7 @@ func:v2:firefox:oldest:
     # The eyeo windows CI runners fail to check out large numbers of packages,
     # like the extensions monorepo, if npm can't retry fetching dependencies.
     npm_config_fetch_retries: 2
-    CI_PROJECT_ID_MAINSTREAM: 22365241
   before_script:
-    - choco install -y microsoft-edge
     - npm install
   tags:
     - eyeo-windows
@@ -226,8 +224,6 @@ func:v2:windows:edge:
   extends: .functional-windows
   script:
     - npm run -w=@eyeo/webext-ad-filtering-solution test:functional -- 2 edge latest --timeout=10000
-  # Retrying to mitigate Edge install issues
-  retry: 1
 
 # Functional tests - MV3
 func:v3:chromium:latest:
