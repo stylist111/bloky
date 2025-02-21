@@ -19,9 +19,15 @@
 
 /**
  * This file is extending the browser object created by jest-webextension-mock.
- * jest-webextension-mock misses a few webext APIs that are used in our
- * codebase, so we add them during the jest setup.
  */
+
+// jest-webextension-mock doesn't set the extension ID, but it needs to be set
+// in order to make webextension-polyfill believe that it's running in an
+// extension environment
+browser.runtime.id = "unit-testing-extension";
+
+// jest-webextension-mock misses a few webext APIs that are used in our
+// codebase, so we add them during the jest setup
 
 Object.assign(browser.tabs, {
   onRemoved: {

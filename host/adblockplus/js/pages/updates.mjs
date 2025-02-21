@@ -17,10 +17,10 @@
 
 import { bind, wire } from "hyperhtml";
 
-import * as messaging from "~/core/messaging/front/index.ts";
+import * as messaging from "~/core/messaging/front";
 import { convertDoclinks } from "../common.mjs";
 import { $ } from "../dom.mjs";
-import { initI18n } from "../../src/i18n/index.ts";
+import { initI18n } from "~/i18n/ui";
 
 import "../../src/updates/ui/updates.css";
 // We need to import io-element to initialize the i18n intent we're using

@@ -43,7 +43,8 @@ export async function getUserId(): Promise<string> {
     userId = result.join("") + timeSuffix;
     await browser.storage.local.set({ [userIdStorageKey]: userId });
   } else {
-    userId = response[userIdStorageKey];
+    const value = response[userIdStorageKey];
+    userId = typeof value === "string" ? value : "";
   }
   return userId;
 }

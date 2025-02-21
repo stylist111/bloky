@@ -35,7 +35,7 @@ let overlay: HTMLElement | null = null;
  *
  * @param message - Message
  */
-function handleMessage(message: unknown): void {
+function handleMessage(message: unknown): true | Promise<unknown> | undefined {
   if (!isMessage(message)) {
     return;
   }

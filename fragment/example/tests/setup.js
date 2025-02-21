@@ -31,6 +31,8 @@ const mockStorage = {
 const browser = {
   storage: mockStorage,
   runtime: {
+    // This ID needs to be set in order to make webextension-polyfill believe that it's running in an extension environment
+    id: "unit-testing-extension",
     sendMessage: vi.fn(),
     onMessage: {
       addListener: vi.fn(),
@@ -38,4 +40,7 @@ const browser = {
   },
 };
 
-Object.assign(global, { browser });
+Object.assign(global, {
+  chrome: browser,
+  browser,
+});

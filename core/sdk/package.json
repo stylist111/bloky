@@ -40,7 +40,7 @@
     "adblockpluscore": "*",
     "pako": "^2.1.0",
     "uuid": "^9.0.0",
-    "webextension-polyfill": "^0.8.0",
+    "webextension-polyfill": "0.12.0",
     "yargs": "^17.5.1"
   },
   "devDependencies": {
@@ -74,7 +74,6 @@
     "wbn": "^0.0.8",
     "webpack": "5.97.1",
     "webpack-cli": "^4.7.0",
-    "webpack-ext-reloader": "^1.1.9",
     "ws": "^7.4.6"
   },
   "scripts": {

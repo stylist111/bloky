@@ -15,9 +15,9 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as messaging from "~/core/messaging/front/index.ts";
-import { FilterOrigin } from "~/filters/shared/index.ts";
-import { initI18n, setElementText } from "../../../src/i18n/index.ts";
+import * as messaging from "~/core/messaging/front";
+import { FilterOrigin } from "~/filters/shared";
+import { initI18n, setElementText } from "~/i18n/ui";
 import records from "./records.mjs";
 
 import "../../../src/devtools-panel/ui/devtools-panel.css";

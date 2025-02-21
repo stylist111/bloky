@@ -24,7 +24,6 @@ import fs from "fs";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import GenerateJsonPlugin from "generate-json-webpack-plugin";
 import CopyPlugin from "copy-webpack-plugin";
-import ExtensionReloader from "webpack-ext-reloader";
 import Dotenv from "dotenv-webpack";
 import {createRequire} from "module";
 const require = createRequire(import.meta.url);
@@ -222,8 +221,6 @@ export default (env = {}) => {
              true, eweCustomOutputPath, [eweConfigName])
   ];
 
-  let extensionReloaderPort = 9090;
-
   for (let buildVariant of [mv2, mv3, performanceMV2, performanceMV3]) {
     let description = `Manifest version: ${buildVariant.manifestVersion}`;
     if (buildVariant.performance) {
@@ -315,13 +312,6 @@ export default (env = {}) => {
         })];
     }
 
-    if (env.development) {
-      plugins.push(
-        new ExtensionReloader({
-          port: extensionReloaderPort
-        }));
-    }
-
     builds.push({
       name: buildVariant.outputPath,
       dependencies: [buildVariant.eweConfigName],
@@ -354,8 +344,6 @@ export default (env = {}) => {
         ignored: ["**/dist", "**/node_modules"]
       }
     });
-
-    extensionReloaderPort++;
   }
 
   return builds;

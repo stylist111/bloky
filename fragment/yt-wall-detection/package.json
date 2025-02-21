@@ -25,14 +25,14 @@
     "build:release": "tsc --project tsconfig.json",
     "lint": "eslint --ext .ts src/",
     "prettier-fix": "prettier --write .",
-    "test": "vitest"
+    "test": "vitest run --reporter=verbose"
   },
   "peerDependencies": {
     "@eyeo/webext-ad-filtering-solution": "*"
   },
   "dependencies": {
     "@eyeo/polyfills": "*",
-    "@types/webextension-polyfill": "0.8.0",
+    "@types/webextension-polyfill": "0.12.0",
     "typescript": "5.6.3"
   },
   "devDependencies": {

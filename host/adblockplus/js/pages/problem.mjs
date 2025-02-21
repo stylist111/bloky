@@ -15,10 +15,10 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as messaging from "~/core/messaging/front/index.ts";
+import * as messaging from "~/core/messaging/front";
 import { convertDoclinks } from "../common.mjs";
 import { $ } from "../dom.mjs";
-import { initI18n } from "../../src/i18n/index.ts";
+import { initI18n } from "~/i18n/ui";
 
 import "../../src/problem/ui/problem.css";
 import "../landing.mjs";

@@ -15,6 +15,8 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import type Browser from "webextension-polyfill";
+
 import { EventEmitter } from "../../../../adblockpluschrome/lib/events";
 import {
   type Message,
@@ -184,7 +186,7 @@ function isTrustedMessageType(origin: string | null, type: string): boolean {
  *  @returns whether given message sender can be trusted
  */
 export function isTrustedSender(
-  sender: browser.Runtime.MessageSender
+  sender: Browser.Runtime.MessageSender
 ): boolean {
   return getSenderOrigin(sender) === selfOrigin;
 }
@@ -198,7 +200,7 @@ export function isTrustedSender(
  */
 function onMessage(
   message: unknown,
-  rawSender: browser.Runtime.MessageSender
+  rawSender: Browser.Runtime.MessageSender
 ): Promise<unknown> | undefined {
   // Ignore invalid messages
   if (!isMessage(message)) {

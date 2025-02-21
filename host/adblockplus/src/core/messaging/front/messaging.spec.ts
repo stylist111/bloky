@@ -15,6 +15,8 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import type Browser from "webextension-polyfill";
+
 const mockAddDisconnectListener = jest.fn();
 const mockAddMessageListener = jest.fn();
 
@@ -25,7 +27,7 @@ const listenMessageType = "foo";
 const nonEventMessageType = "foo.other";
 const unhandledMessageType = "foo (no response)";
 
-let mockPort: browser.Runtime.Port;
+let mockPort: Browser.Runtime.Port;
 
 jest.mock("../shared", () => {
   return {
@@ -66,13 +68,13 @@ describe("Messaging functionality", () => {
         hasListener: () => false,
         hasListeners: () => false,
         removeListener() {}
-      },
+      } as any,
       onMessage: {
         addListener: mockAddMessageListener,
         hasListener: () => false,
         hasListeners: () => false,
         removeListener() {}
-      },
+      } as any,
       postMessage: () => {}
     };
 
@@ -96,7 +98,7 @@ describe("Messaging functionality", () => {
   });
 
   it("connect listener should be called", async () => {
-    let disconnectPort = (port: browser.Runtime.Port): void => {};
+    let disconnectPort = (port: Browser.Runtime.Port): void => {};
     mockPort.onDisconnect.addListener = (listener) => {
       disconnectPort = listener;
     };
@@ -116,7 +118,7 @@ describe("Messaging functionality", () => {
   });
 
   it("disconnect listener should be called", async () => {
-    let disconnectPort = (port: browser.Runtime.Port): void => {};
+    let disconnectPort = (port: Browser.Runtime.Port): void => {};
     mockPort.onDisconnect.addListener = (listener) => {
       disconnectPort = listener;
     };
@@ -147,7 +149,7 @@ describe("Messaging functionality", () => {
 
   it("incoming messages are handled", async () => {
     /* eslint-disable-next-line @typescript-eslint/no-invalid-void-type */
-    let sendMessage = (message: any, sender: any): void | Promise<any> => {};
+    let sendMessage: any = () => {};
     jest
       .spyOn(browser.runtime.onMessage, "addListener")
       .mockImplementation((listener) => {
@@ -168,7 +170,7 @@ describe("Messaging functionality", () => {
   });
 
   it("message listener should be called for *.respond messages", async () => {
-    let sendMessage = (message: any, port: browser.Runtime.Port): void => {};
+    let sendMessage = (message: any, port: Browser.Runtime.Port): void => {};
     mockPort.onMessage.addListener = (listener) => {
       sendMessage = listener;
     };
@@ -190,7 +192,7 @@ describe("Messaging functionality", () => {
   });
 
   it("listen messages should be sent on connect", async () => {
-    let disconnectPort = (port: browser.Runtime.Port): void => {};
+    let disconnectPort = (port: Browser.Runtime.Port): void => {};
     mockPort.onDisconnect.addListener = (listener) => {
       disconnectPort = listener;
     };

@@ -17,6 +17,8 @@
 
 import Browser from "webextension-polyfill";
 
+import { isMessage } from "~/polyfills/shared";
+
 import type { ListenProps, MessageProps, Port, PortEventListener } from "./api.types";
 
 declare const browser: Browser.Browser;
@@ -93,7 +95,11 @@ export const connect = (): Port | null => {
     return port;
   }
 
-  port.onMessage.addListener((message: MessageProps) => {
+  port.onMessage.addListener((message: unknown) => {
+    if (!isMessage(message)) {
+      return;
+    }
+
     onMessage(message);
   });
 

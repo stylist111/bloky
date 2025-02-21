@@ -15,10 +15,10 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { getUUID } from "../../../src/id/shared/index.ts";
+import { getUUID } from "~/id/shared";
 import { convertDoclinks } from "../../common.mjs";
 import { $, asIndentedString } from "../../dom.mjs";
-import { initI18n, setElementLinks } from "../../../src/i18n/index.ts";
+import { initI18n, setElementLinks } from "~/i18n/ui";
 import {
   collectData,
   closeRequestsCollectingTab,

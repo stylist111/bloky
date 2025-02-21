@@ -58,12 +58,14 @@ export async function getPage(tab: TabDescriptor): Promise<TabPage | null> {
   // the onBeforeRequest handler.
   if (!url) {
     const frames = await browser.webNavigation.getAllFrames({ tabId: tab.id });
-    for (const frame of frames) {
-      if (frame.frameId !== 0) {
-        continue;
-      }
+    if (frames) {
+      for (const frame of frames) {
+        if (frame.frameId !== 0) {
+          continue;
+        }
 
-      url = frame.url;
+        url = frame.url;
+      }
     }
   }
 

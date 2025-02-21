@@ -25,9 +25,9 @@
 import "./composer.css";
 import * as messaging from "~/core/messaging/front";
 import { FilterOrigin } from "~/filters/shared";
-import { closeCurrentTab } from "../../polyfills/ui";
+import { closeCurrentTab } from "~/polyfills/ui";
 import { getErrorMessage } from "../../../js/common.mjs";
-import { initI18n, stripTagsUnsafe } from "../../i18n";
+import { initI18n, stripTagsUnsafe } from "~/i18n/ui";
 
 let initialFilterText = "";
 let targetPageId = null;

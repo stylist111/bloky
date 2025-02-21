@@ -15,10 +15,10 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as messaging from "~/core/messaging/front/index.ts";
+import * as messaging from "~/core/messaging/front";
 import { getSourceAttribute } from "../../common.mjs";
 import { $ } from "../../dom.mjs";
-import { initI18n } from "../../../src/i18n/index.ts";
+import { initI18n } from "~/i18n/ui";
 import setupBlock from "./block-element.mjs";
 import setupToggles from "./toggles.mjs";
 import { activeTab, reportIssue, whenPageReady } from "./utils.mjs";

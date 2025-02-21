@@ -19,7 +19,7 @@ import * as messaging from "~/core/messaging/front/index.ts";
 import { FilterOrigin } from "~/filters/shared/index.ts";
 import { getErrorMessage } from "./common.mjs";
 import { $ } from "./dom.mjs";
-import { stripTagsUnsafe } from "../src/i18n/index.ts";
+import { stripTagsUnsafe } from "~/i18n/ui";
 import IOElement from "./io-element.mjs";
 import IOFilterBase from "./io-filter-base.mjs";
 

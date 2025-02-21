@@ -111,7 +111,11 @@ const connect = (): Port | null => {
     return port;
   }
 
-  port.onMessage.addListener((message: Message) => {
+  port.onMessage.addListener((message: unknown) => {
+    if (!isMessage(message)) {
+      return;
+    }
+
     onMessage(message);
   });
 

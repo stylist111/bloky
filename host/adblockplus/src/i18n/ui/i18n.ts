@@ -14,7 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 import browser from "webextension-polyfill";
+
+import { type LocaleInfo } from "./i18n.types";
 
 const i18nAttributes = ["alt", "placeholder", "title", "value"];
 
@@ -100,7 +103,7 @@ export function stripTagsUnsafe(text: string): string {
 export function setElementText(
   element: HTMLElement,
   stringName: string,
-  args: any,
+  args: string | string[] | null,
   children: Element[] = []
 ): void {
   function processString(str: string, currentElement: HTMLElement): void {
@@ -131,7 +134,10 @@ export function setElementText(
     element.removeChild(element.lastChild);
   }
 
-  processString(browser.i18n.getMessage(stringName, args), element);
+  processString(
+    browser.i18n.getMessage(stringName, args ?? undefined),
+    element
+  );
 }
 
 function loadI18nStrings(): void {
@@ -169,11 +175,30 @@ function loadI18nStrings(): void {
   }
 }
 
+/**
+ * Checks whether given candidate is locale info
+ *
+ * @param candidate - Candidate
+ * @returns whether given candidate is locale info
+ */
+function isLocaleInfo(candidate: unknown): candidate is LocaleInfo {
+  return (
+    candidate !== null &&
+    typeof candidate === "object" &&
+    "bidiDir" in candidate &&
+    "locale" in candidate
+  );
+}
+
 async function setLanguageAttributes(): Promise<void> {
   const localeInfo = await browser.runtime.sendMessage({
     type: "app.get",
     what: "localeInfo"
   });
+
+  if (!isLocaleInfo(localeInfo)) {
+    return;
+  }
 
   document.documentElement.lang = localeInfo.locale;
   document.documentElement.dir = localeInfo.bidiDir;

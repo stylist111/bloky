@@ -16,7 +16,7 @@
  */
 
 import { getDoclink } from "./common.mjs";
-import { setElementLinks } from "../src/i18n/index.ts";
+import { setElementLinks } from "~/i18n/ui";
 import IOElement from "./io-element.mjs";
 
 class IOPopout extends IOElement {

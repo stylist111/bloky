@@ -24,10 +24,10 @@ import {
   getRawItemTitle,
   loadLanguageNames
 } from "./titles.mjs";
-import * as messaging from "~/core/messaging/front/index.ts";
-import { FilterOrigin } from "~/filters/shared/index.ts";
-import * as premiumSubscriptions from "../../../src/premium-subscriptions/ui/index.ts";
-import { premiumTypes } from "../../../src/premium-subscriptions/shared/index.ts";
+import * as messaging from "~/core/messaging/front";
+import { FilterOrigin } from "~/filters/shared";
+import * as premiumSubscriptions from "~/premium-subscriptions/ui";
+import { premiumTypes } from "~/premium-subscriptions/shared";
 import {
   convertDoclinks,
   getDoclink,
@@ -41,7 +41,7 @@ import {
   setElementLinks,
   setElementText,
   stripTagsUnsafe
-} from "../../../src/i18n/index.ts";
+} from "~/i18n/ui";
 
 import "../../../src/desktop-options/ui/desktop-options.css";
 import "../../io-filter-table.mjs";

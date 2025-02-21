@@ -15,13 +15,15 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import type Browser from "webextension-polyfill";
+
 import { type Message, type MessageEmitter } from "../shared";
 
 /**
  * Observed web extension API message sender object due to outdated type package
  */
 export interface BrowserMessageSenderWithOrigin
-  extends browser.Runtime.MessageSender {
+  extends Browser.Runtime.MessageSender {
   origin?: string;
 }
 
@@ -52,9 +54,9 @@ export interface MessageSender {
   /**
    * Sender frame ID
    */
-  frameId: browser.Runtime.MessageSender["frameId"];
+  frameId: Browser.Runtime.MessageSender["frameId"];
   /**
    * Sender tab information
    */
-  tab: browser.Runtime.MessageSender["tab"];
+  tab: Browser.Runtime.MessageSender["tab"];
 }

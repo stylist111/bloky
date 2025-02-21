@@ -17,11 +17,13 @@
  */
 
 import * as browser from "webextension-polyfill";
+
 import {
   ytHavenIframeFlag,
   ytHavenOverlayFlag,
   ytHavenModalFlag,
 } from "../shared/index.js";
+import { type PartialPrivateExperimentsData } from "./shared.types.js";
 
 /**
  * Storage key for the experiments
@@ -37,7 +39,7 @@ export async function getExperimentFlag(flagId: string): Promise<any> {
   const storedData = await browser.storage.local.get(expStorageKey);
   const experiments = storedData[expStorageKey];
 
-  if (!storedData || !experiments) {
+  if (!isPartialPrivateExperimentsData(experiments)) {
     return null;
   }
 
@@ -66,4 +68,24 @@ export async function isInHavenExperiment(): Promise<boolean> {
   ]);
 
   return ytHeavenFlags.some((result) => Boolean(result));
+}
+
+/**
+ * Checks whether given candidate represents relevants parts of stored split
+ * experiments data
+ *
+ * @param candidate - Candidate
+ *
+ * @returns whether given candidate represents relevants parts of stored split
+ * experiments data
+ */
+function isPartialPrivateExperimentsData(
+  candidate: unknown,
+): candidate is PartialPrivateExperimentsData {
+  return (
+    candidate !== null &&
+    typeof candidate === "object" &&
+    "flags" in candidate &&
+    "overrides" in candidate
+  );
 }

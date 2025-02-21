@@ -15,12 +15,14 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import type Browser from "webextension-polyfill";
+
 import { type MessageEmitter } from "../shared";
 
 /**
  * Message emitter in front context
  */
-export type FrontMessageEmitter = MessageEmitter<browser.Runtime.MessageSender>;
+export type FrontMessageEmitter = MessageEmitter<Browser.Runtime.MessageSender>;
 
 /**
  * Options for listening to events on port
@@ -46,4 +48,4 @@ export interface ListenOptions {
 /**
  * Port to access the browser runtime. Null if not set yet.
  */
-export type Port = browser.Runtime.Port | null;
+export type Port = Browser.Runtime.Port | null;

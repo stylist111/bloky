@@ -12,10 +12,10 @@
     "build": "npx tsc",
     "lint": "eslint .",
     "prettier-fix": "prettier --write .",
-    "test": "vitest"
+    "test": "vitest run --reporter=verbose"
   },
   "dependencies": {
-    "webextension-polyfill": "0.8.0"
+    "webextension-polyfill": "0.12.0"
   },
   "devDependencies": {
     "eslint": "8.34.0",

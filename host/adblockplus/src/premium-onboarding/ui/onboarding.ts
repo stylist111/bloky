@@ -15,10 +15,10 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { initI18n } from "../../i18n";
+import { initI18n } from "~/i18n/ui";
 import { $, $$ } from "../../../js/dom.mjs";
 import * as messaging from "~/core/messaging/front";
-import { closeCurrentTab } from "../../polyfills/ui";
+import { closeCurrentTab } from "~/polyfills/ui";
 
 import "../../components/ui/io-checkbox.css";
 import IOCheckbox from "../../../js/io-checkbox.mjs";

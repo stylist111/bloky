@@ -15,6 +15,8 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import type Browser from "webextension-polyfill";
+
 // The declared types are manually generated for now.
 // Please update this file when creating or updating a type.
 /**
@@ -148,8 +150,8 @@ export interface BlockableItem {
    * properties frameId , tabId and url.
    */
   request:
-    | browser.WebRequest.OnBeforeRequestDetailsType
-    | browser.WebRequest.OnHeadersReceivedDetailsType
+    | Browser.WebRequest.OnBeforeRequestDetailsType
+    | Browser.WebRequest.OnHeadersReceivedDetailsType
     | VirtualBlockableItemRequest;
 }
 
@@ -327,11 +329,11 @@ export interface VirtualBlockableItemRequest {
   /**
    * ID of frame from which request originated
    */
-  frameId: browser.Runtime.MessageSender["frameId"];
+  frameId: Browser.Runtime.MessageSender["frameId"];
   /**
    * ID of tab from which request originated
    */
-  tabId: browser.Tabs.Tab["id"];
+  tabId: Browser.Tabs.Tab["id"];
   /**
    * Request URL
    */

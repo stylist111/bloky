@@ -287,7 +287,7 @@ const showDialog = async function (message: StartInfo) {
  *
  * @param message - Message
  */
-function handleMessage(message: any) {
+function handleMessage(message: unknown): true | Promise<unknown> | undefined {
   if (!isMessage(message)) {
     return;
   }
@@ -301,12 +301,27 @@ function handleMessage(message: any) {
 }
 
 /**
+ * Checks whether given candidate is start info
+ *
+ * @param candidate - Candidate
+ * @returns whether given candidate is start info
+ */
+function isStartInfo(candidate: unknown): candidate is StartInfo {
+  return (
+    candidate !== null &&
+    typeof candidate === "object" &&
+    "content" in candidate &&
+    "localeInfo" in candidate
+  );
+}
+
+/**
  * Initializes on-page dialog
  */
 async function start() {
   browser.runtime.onMessage.addListener(handleMessage);
   const startInfo = await sendMessage({ type: "onpage-dialog.get" });
-  if (startInfo && startInfo.content) {
+  if (isStartInfo(startInfo)) {
     showDialog(startInfo);
   }
   // Clean up after extension unloads

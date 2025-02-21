@@ -18,10 +18,9 @@
 
 import { chrome } from "vitest-chrome/lib/index.esm";
 
-// The following code will initialize the 'chrome' proxy correctly
-// so that the webextension-polyfill throw an error when loaded below
+// This ID needs to be set in order to make webextension-polyfill believe that it's running in an extension environment
 Object.assign(global, { chrome });
-chrome.runtime.id = "test id";
+chrome.runtime.id = "unit-testing-extension";
 
 chrome.storage.local = {
   data: {},
