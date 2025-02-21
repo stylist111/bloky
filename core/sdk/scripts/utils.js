@@ -38,42 +38,56 @@ export async function readFile(filePath) {
   return contents.trim();
 }
 
-export async function download(downloadUrl, toFile) {
-  console.info(`Downloading ${downloadUrl} to ${toFile} ...`);
+export async function download(downloadUrl, toFile, retries = 3) {
   const proto = downloadUrl.startsWith("https") ? https : http;
 
-  return new Promise((resolve, reject) => {
-    const file = fs.createWriteStream(toFile);
-    let fileInfo = null;
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      console.info(`Downloading ${downloadUrl} to ${toFile}${attempt > 1 ? ` (attempt ${attempt}/${retries})` : ""}`);
 
-    const request = proto.get(downloadUrl, response => {
-      if (response.statusCode !== 200) {
-        reject(new Error(`Failed to get '${downloadUrl}' (${response.statusCode})`));
-        return;
+      await new Promise((resolve, reject) => {
+        const file = fs.createWriteStream(toFile);
+        let fileInfo = null;
+
+        const request = proto.get(downloadUrl, {timeout: 60000}, response => {
+          if (response.statusCode !== 200) {
+            reject(new Error(`Failed to get '${downloadUrl}' (${response.statusCode})`));
+            return;
+          }
+
+          fileInfo = {
+            mime: response.headers["content-type"],
+            size: parseInt(response.headers["content-length"], 10)
+          };
+
+          response.pipe(file);
+        });
+
+        file.on("finish", () => resolve(fileInfo));
+
+        request.on("error", err => {
+          fs.promises.unlink(toFile)
+          .finally(() => reject(err));
+        });
+
+        file.on("error", err => {
+          fs.promises.unlink(toFile)
+          .finally(() => reject(err));
+        });
+
+        request.end();
+      });
+
+      return;
+    }
+    catch (err) {
+      if (err.code === "ETIMEDOUT" && attempt < retries) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        continue;
       }
-
-      fileInfo = {
-        mime: response.headers["content-type"],
-        size: parseInt(response.headers["content-length"], 10)
-      };
-
-      response.pipe(file);
-    });
-
-    file.on("finish", () => resolve(fileInfo));
-
-    request.on("error", err => {
-      fs.promises.unlink(toFile)
-        .finally(() => reject(err));
-    });
-
-    file.on("error", err => {
-      fs.promises.unlink(toFile)
-        .finally(() => reject(err));
-    });
-
-    request.end();
-  });
+      throw err;
+    }
+  }
 }
 
 /**
