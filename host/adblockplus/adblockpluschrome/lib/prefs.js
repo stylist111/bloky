@@ -360,20 +360,6 @@ defaults.update_campaign_url =
   "https://adblockplus.org/%LANG%/update?an=%ADDON_NAME%&av=%ADDON_VERSION%&ap=%APPLICATION_NAME%&apv=%APPLICATION_VERSION%&p=%PLATFORM_NAME%&pv=%PLATFORM_VERSION%";
 
 /**
- * Whether user has interacted with YouTube wall detection dialog
- *
- * @type {boolean}
- */
-defaults.ytWallDetection_dialog_interacted = false;
-
-/**
- * Where the dialog for the YouTube wall should link users to
- *
- * @type {string}
- */
-defaults.ytWallDetection_dialog_url = "https://adblockplus.org/youtube";
-
-/**
  * Map of on-page dialog timing configurations
  *
  * @see src/onpage-dialog/background/middleware/ipm-onpage-dialog.types.ts

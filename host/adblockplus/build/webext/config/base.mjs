@@ -116,10 +116,6 @@ export default {
         src: ["js/pages/updates.mjs"]
       },
       {
-        dest: "yt-wall-detection.preload.js",
-        src: ["src/yt-wall-detection/content/index.ts"]
-      },
-      {
         dest: "info-injector.preload.js",
         src: ["src/info-injector/content/index.ts"]
       },
