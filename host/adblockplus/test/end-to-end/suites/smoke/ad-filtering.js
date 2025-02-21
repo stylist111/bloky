@@ -102,7 +102,7 @@ export default () => {
     const snippetElem = await getDisplayedElement("#snippet-filter");
     expect(await snippetElem.getText()).toEqual("Snippet filter not applied");
 
-    await addCustomFilters([snippetFilter]);
+    await addCustomFilters([snippetFilter], { switchToAdvancedTab: true });
     await openNewTab(snippetTestPageUrl);
     await driver.navigate().refresh();
     await waitForNotDisplayed("#snippet-filter", { timeout: 2000 });

@@ -27,7 +27,7 @@ import {
   wait
 } from "@eyeo/test-utils/driver";
 import { getOptionsHandle, subscriptionUrl } from "@eyeo/test-utils/extension";
-import { easylistFilter } from "@eyeo/test-utils/filters";
+import { easylistFilter, customBlockingFilter } from "@eyeo/test-utils/filters";
 
 import {
   initOptionsAdvancedTab,
@@ -36,7 +36,11 @@ import {
   waitForSubscriptionUpdated,
   clickFLCheckboxAndCheck,
   getLanguageFilterLists,
-  addLanguageFilterList
+  addLanguageFilterList,
+  addCustomFilters,
+  getCustomFilters,
+  deleteCustomFilters,
+  clickOnCustomFilterToggleAndCheck
 } from "../../utils/page.js";
 import {
   getDefaultFilterLists,
@@ -229,6 +233,14 @@ export default () => {
     expect(await elem.getText()).toEqual("URL must start with https://.");
   });
 
+  it("adds and removes custom filters", async function () {
+    await addCustomFilters([customBlockingFilter]);
+    expect(await getCustomFilters()).toContain(customBlockingFilter);
+
+    await deleteCustomFilters();
+    expect(await getCustomFilters()).not.toContain(customBlockingFilter);
+  });
+
   it("displays an error for disabled filters", async function () {
     const name = "EasyList";
     const errorMsg =
@@ -240,29 +252,12 @@ export default () => {
     let enabled = await isCheckboxPropertyEnabled(toggle);
     expect({ name, enabled }).toEqual({ name, enabled: true });
 
-    // Add and disable easylist filter
-    await clickAndSendKeys("io-filter-search > input", easylistFilter, {
-      scrollIntoView: true
-    });
-    await driver.sleep(500); // The add button takes a while to become effective
-    await clickOnDisplayedElement("io-filter-search > button");
-
-    // Disable first filter
-    const firstFilterSelector = "io-filter-list tr io-toggle";
-    try {
-      await clickOnDisplayedElement(firstFilterSelector, { timeout: 1000 });
-    } catch (e) {
-      // The toggle may not appear right after extension installation.
-      // Refreshing as a workaround
-      await driver.navigate().refresh();
-      await initOptionsAdvancedTab(getOptionsHandle());
-      await clickOnDisplayedElement(firstFilterSelector, { timeout: 1000 });
-    }
-    enabled = await isCheckboxPropertyEnabled(firstFilterSelector);
-    expect({ easylistFilter, enabled }).toEqual({
+    await addCustomFilters([easylistFilter]);
+    // Disable custom filter
+    const customSelector = await clickOnCustomFilterToggleAndCheck(
       easylistFilter,
-      enabled: false
-    });
+      { enable: false }
+    );
 
     // Check error message
     await clickOnDisplayedElement(tooltip);
@@ -271,10 +266,10 @@ export default () => {
     );
     expect(await tooltipMsgElem.getText()).toEqual(errorMsg);
 
-    // Reenable filter through tooltip link
+    // Reenable custom filter through tooltip link
     await clickOnDisplayedElement(`${tooltip} [data-action="enable-filters"]`);
     await waitForNotDisplayed(tooltip);
-    enabled = await isCheckboxPropertyEnabled(firstFilterSelector);
+    enabled = await isCheckboxPropertyEnabled(customSelector);
     expect({ easylistFilter, enabled }).toEqual({
       easylistFilter,
       enabled: true

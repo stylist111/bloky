@@ -39,7 +39,7 @@ import {
   changeLanguageFilterList,
   addCustomFilters,
   getCustomFilters,
-  deleteCustomFilters,
+  clickOnCustomFilterToggleAndCheck,
   setPausedStateFromPopup,
   getPopupBlockedAdsTotalCount,
   clickFLCheckboxAndCheck
@@ -121,7 +121,9 @@ export default () => {
     await clickAdsCounterAndCheck({ enable: false });
 
     // Add custom filter. Needs to be added before blocking ads
-    await addCustomFilters([customBlockingFilter]);
+    await addCustomFilters([customBlockingFilter], {
+      switchToAdvancedTab: true
+    });
 
     // ads should be blocked before the domain is allowlisted
     const blockedBeforeUpgrade = await blockAds(
@@ -182,8 +184,11 @@ export default () => {
     await clickAdsCounterAndCheck({ enable: true });
 
     // check if custom filters are still there and can be changed
-    expect(await getCustomFilters()).toContain(customBlockingFilter);
-    await deleteCustomFilters();
-    expect(await getCustomFilters()).not.toContain(customBlockingFilter);
+    expect(await getCustomFilters({ switchToAdvancedTab: true })).toContain(
+      customBlockingFilter
+    );
+    await clickOnCustomFilterToggleAndCheck(customBlockingFilter, {
+      enable: false
+    });
   });
 };

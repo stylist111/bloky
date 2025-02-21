@@ -270,34 +270,108 @@ export async function initOptionsGeneralTabAfterChanges(
   await getDisplayedElement("#free-list-table", { timeout });
 }
 
-export async function getCustomFilters() {
-  await initOptionsAdvancedTab(getOptionsHandle());
+async function getElemTextSafe(elem) {
+  let text;
+  try {
+    text = await elem.getText();
+  } catch (err) {
+    if (err.name !== "StaleElementReferenceError") {
+      throw err;
+    }
+
+    console.warn("An element threw a StaleElementReferenceError. Skipping it");
+  }
+
+  return text;
+}
+
+export async function getCustomFilters({ switchToAdvancedTab = false } = {}) {
+  if (switchToAdvancedTab) {
+    await initOptionsAdvancedTab(getOptionsHandle());
+  }
 
   const filterElems = await driver.findElements(
     By.css('#custom-filters io-filter-list tr [data-column="rule"] .content')
   );
   const filters = [];
   for (const elem of filterElems) {
-    filters.push(await elem.getText());
+    const text = await getElemTextSafe(elem);
+    if (text) {
+      filters.push(text);
+    }
   }
 
   return filters;
 }
 
-export async function addCustomFilters(filters) {
-  await initOptionsAdvancedTab(getOptionsHandle());
+export async function addCustomFilters(
+  filters,
+  { switchToAdvancedTab = false } = {}
+) {
+  if (switchToAdvancedTab) {
+    await initOptionsAdvancedTab(getOptionsHandle());
+  }
 
-  const customFiltersInput = await getDisplayedElement("#custom-filters input");
+  const customFiltersInput = await getDisplayedElement(
+    "#custom-filters input",
+    { forceRefresh: false }
+  );
 
   for (const filter of filters) {
     await customFiltersInput.sendKeys(filter);
     await waitForNotDisplayed("#custom-filters button[disabled]");
     await clickOnDisplayedElement("#custom-filters button");
+
+    await wait(
+      async () => (await getCustomFilters()).includes(filter),
+      1000,
+      `The filter "${filter}" was not shown after being added`
+    );
   }
 }
 
-export async function deleteCustomFilters() {
-  await initOptionsAdvancedTab(getOptionsHandle());
+export async function clickOnCustomFilterToggleAndCheck(
+  filter,
+  { switchToAdvancedTab = false, enable = true } = {}
+) {
+  if (switchToAdvancedTab) {
+    await initOptionsAdvancedTab(getOptionsHandle());
+  }
+
+  const toggleSelector = `io-filter-list tr:has([title="${filter}"]) io-toggle`;
+  const enabledBeforeClick = !enable;
+
+  let enabled = await isCheckboxPropertyEnabled(toggleSelector);
+  expect({ filter, enabledBeforeClick: enabled }).toEqual({
+    filter,
+    enabledBeforeClick
+  });
+
+  try {
+    await clickOnDisplayedElement(toggleSelector, { timeout: 1000 });
+  } catch (e) {
+    // The toggle may not appear right after extension installation.
+    // Refreshing as a workaround
+    await driver.navigate().refresh();
+    await initOptionsAdvancedTab(getOptionsHandle());
+    await clickOnDisplayedElement(toggleSelector, { timeout: 1000 });
+  }
+
+  enabled = await isCheckboxPropertyEnabled(toggleSelector);
+  expect({ filter, enabledAfterclick: enabled }).toEqual({
+    filter,
+    enabledAfterclick: enable
+  });
+
+  return toggleSelector;
+}
+
+export async function deleteCustomFilters({
+  switchToAdvancedTab = false
+} = {}) {
+  if (switchToAdvancedTab) {
+    await initOptionsAdvancedTab(getOptionsHandle());
+  }
 
   const checkboxSelector =
     '#custom-filters thead [data-column="selected"] button';
@@ -533,25 +607,10 @@ export async function addLanguageFilterList(
     : await getLanguageFilterLists(isOptionsGeneralTab);
 
   let langElem;
-  let prevText;
   for (const elem of languageElems) {
-    let text;
-    try {
-      text = await elem.getText();
-    } catch (err) {
-      if (err.name !== "StaleElementReferenceError") {
-        throw err;
-      }
-
-      console.warn(
-        `The element after "${prevText}" threw a StaleElementReferenceError. Skipping it`
-      );
-      continue;
-    }
-
-    if (text.startsWith(langName)) {
+    const text = await getElemTextSafe(elem);
+    if (text && text.startsWith(langName)) {
       langElem = elem;
-      prevText = text;
       break;
     }
   }
@@ -572,7 +631,9 @@ export async function changeLanguageFilterList(langNameBefore, langNameAfter) {
   });
 
   const changeFilterlistSelector = `${flSelector} [data-action="open-languages-box"]`;
-  await clickOnDisplayedElement(changeFilterlistSelector);
+  await clickOnDisplayedElement(changeFilterlistSelector, {
+    scrollIntoView: true
+  });
   // Clicking on changeFilterlistSelector opens the languages popup
   await addLanguageFilterList(langNameAfter, {
     isOptionsGeneralTab,
