@@ -83,6 +83,7 @@ async function onBlockableItem({ filter, request }) {
   if (!filter || filter.type != "blocking") return;
 
   let { tabId } = request;
+  if (tabId === browser.tabs.TAB_ID_NONE) return;
 
   await blockedPerPage.transaction(async () => {
     let blocked = (await blockedPerPage.get(tabId)) || 0;
