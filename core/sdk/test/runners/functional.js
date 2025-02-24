@@ -26,7 +26,7 @@ import webdriver from "selenium-webdriver";
 import {BROWSERS, getMajorVersion} from "@eyeo/get-browser-binary";
 
 import {isMain} from "../../scripts/utils.js";
-import {getHandle, switchToHandle, getDriver} from "./utils.js";
+import {getHandle, switchToHandle, getDriver, writeScreenshot} from "./utils.js";
 import {runTestServer, killTestServer} from "../../scripts/test-server-manager.js";
 
 const isScriptInvokedFromCLI = isMain(import.meta.url);
@@ -381,7 +381,13 @@ async function startTestRun(driver, id, params) {
     }
   }
 
-  await driver.findElement(webdriver.By.id(id)).click();
+  try {
+    await driver.findElement(webdriver.By.id(id)).click();
+  }
+  catch (err) {
+    await writeScreenshot(driver, "startTestRun.png");
+    throw err;
+  }
 }
 
 async function runFunctionalTests(driver, params, isMV3) {

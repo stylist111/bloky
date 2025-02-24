@@ -201,6 +201,10 @@ npm run -w @eyeo/webext-ad-filtering-solution test:functional -- {2|3} {chromium
 Runner options need to be preceded by two dashes (`--`), for example
 `--timeout 10000`.
 
+Screenshots for test runner commands that failed (i.e. `driver.findElement(...)`)
+are stored in `host/core/sdk/test/screenshots`. Please notice that doesn't
+include functional tests failures, which run embedded in the test extension.
+
 #### Test options
 
 - The `timeout` option overrides the per-test timeout in milliseconds.
@@ -354,6 +358,13 @@ docker run --shm-size=2g -it -e TEST_PARAMS="{2|3} {chromium|firefox|edge}" func
 
 Please notice that the TEST_PARAMS argument can also take the additional options
 described previously.
+
+To access the screenshots for test runner commands that failed, run the following
+command, which copies them to the `host/core/sdk/test/screenshots` folder:
+
+```
+docker cp $(docker ps -aqf ancestor=functional | head -n 1):/extensions/host/core/sdk/test/screenshots ./host/core/sdk/test
+```
 
 #### Compliance
 

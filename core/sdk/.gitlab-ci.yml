@@ -164,6 +164,13 @@ adblockpluscore:browser:
       OTHER_PARAMS="$OTHER_PARAMS -e TEST_RUNS=10";
     fi;
     docker run $DOCKER_OPTIONS -e TEST_PARAMS="$TEST_PARAMS" $OTHER_PARAMS $FUNCTIONAL_IMAGE;
+  after_script:
+    - docker cp $(docker ps -aqf ancestor=$FUNCTIONAL_IMAGE):/extensions/core/sdk/test/screenshots core/sdk/
+  artifacts:
+    paths:
+      - core/sdk/screenshots/
+    when: on_failure
+    expire_in: 1 week
   # We set a custom timeout here to allow for more time to run functional tests
   # in scheduled pipelines, as they can take longer than one hour.
   # Note that we cannot apply it ot the entire pipeline by adding it to the
