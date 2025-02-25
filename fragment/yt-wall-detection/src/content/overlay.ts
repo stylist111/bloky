@@ -24,6 +24,7 @@ import {
   ytHavenWatchCTAClicked,
 } from "../shared/index.js";
 import { getExperimentFlag } from "./shared.js";
+import { addVideoModal } from "./modal-player.js";
 import { abpLogo } from "../img/abp-logo.js";
 import { abLogo } from "../img/ab-logo.js";
 
@@ -232,8 +233,10 @@ export async function insertOverlayExp(
       // TODO: insert video iframe on page here
       // insertIframeOnPage();
     } else {
-      // TODO: Add insert modal experiment here
-      // openModal()
+      const body = document.querySelector<HTMLElement>("body");
+      if (body) {
+        addVideoModal(body);
+      }
     }
 
     void browser.runtime.sendMessage({
