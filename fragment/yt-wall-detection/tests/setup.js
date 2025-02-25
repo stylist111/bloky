@@ -35,6 +35,14 @@ const invokeAndResetMock = (...args) => {
   callback(); // call the callback with your expected callback args
 };
 
+chrome.storage.local = {
+  data: {},
+  get: vi.fn(async (key) => ({ [key]: mockLocalStorage.data[key] || 0 })),
+  set: vi.fn(async (obj) => {
+    Object.assign(mockLocalStorage.data, obj);
+  }),
+};
+
 chrome.runtime.sendMessage.mockImplementation((...args) => {
   invokeAndResetMock(args);
 });

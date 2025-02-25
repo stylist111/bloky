@@ -35,8 +35,7 @@ export interface TabDescriptor {
  */
 export type sendAdWallEventsFunction = (
   eventMessage: string,
-  userLoggedIn?: string,
-  isAllowListed?: string,
+  additionalParams?: any,
 ) => void;
 
 /**

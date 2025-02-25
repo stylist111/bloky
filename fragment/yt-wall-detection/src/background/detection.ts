@@ -37,6 +37,8 @@ import {
   ytHavenModalFlag,
   ytHavenOverlayFlag,
   matchingElementFoundKey,
+  ytHavenWatchCTAClicked,
+  ytHavenNeverShowOverlayClick,
 } from "../shared/index.js";
 
 /**
@@ -99,14 +101,16 @@ const processYouTubeWallMessage = async (
   const filters = await ewe.filters.getAllowingFilters(tabId);
   const isAllowListed = !!filters.length;
   if (isAllowListed) {
-    sendAdWallEvents(
-      youTubeAlreadyAllowLlisted,
-      message.userLoggedIn ? "1" : "0",
-      "1",
-    );
+    sendAdWallEvents(youTubeAlreadyAllowLlisted, {
+      userLoggedIn: message.userLoggedIn ? "1" : "0",
+      isAllowListed: "1",
+    });
     return;
   }
-  sendAdWallEvents(youTubeWallDetected, message.userLoggedIn ? "1" : "0", "0");
+  sendAdWallEvents(youTubeWallDetected, {
+    userLoggedIn: message.userLoggedIn ? "1" : "0",
+    isAllowListed: "0",
+  });
 
   const senderURL = new URL(tabURL);
   const host = senderURL.hostname.replace(/^www\./, "");
@@ -173,15 +177,39 @@ export function start(parameters: StartInfo): void {
     processYouTubeWallMessageWithParameters,
   );
   parameters.port.on(youTubeNavigation, (message: AdWallMessage): void => {
-    sendAdWallEvents(youTubeNavigation, message.userLoggedIn ? "1" : "0");
+    sendAdWallEvents(youTubeNavigation, {
+      userLoggedIn: message.userLoggedIn ? "1" : "0",
+    });
+  });
+
+  parameters.port.on(ytHavenWatchCTAClicked, async (): Promise<void> => {
+    const assignments = await ewe.experiments.getAssignments();
+    sendAdWallEvents(ytHavenWatchCTAClicked, {
+      experimentVariant: assignments["yt-heaven"],
+    });
+  });
+
+  parameters.port.on(ytHavenNeverShowOverlayClick, async (): Promise<void> => {
+    const assignments = await ewe.experiments.getAssignments();
+    sendAdWallEvents(ytHavenNeverShowOverlayClick, {
+      experimentVariant: assignments["yt-heaven"],
+    });
+
+    // Disable the experiment flags to not show the overlay in content script again
+    await ewe.experiments.overrideFlag(ytHavenOverlayFlag, false);
+    await ewe.experiments.overrideFlag(ytHavenModalFlag, false);
   });
 
   parameters.addTrustedMessageTypes("https://youtube.com", [
     youTubeWallDetected,
     youTubeNavigation,
+    ytHavenWatchCTAClicked,
+    ytHavenNeverShowOverlayClick,
   ]);
   parameters.addTrustedMessageTypes("https://www.youtube.com", [
     youTubeWallDetected,
     youTubeNavigation,
+    ytHavenWatchCTAClicked,
+    ytHavenNeverShowOverlayClick,
   ]);
 }

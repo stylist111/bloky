@@ -465,6 +465,10 @@ declare namespace experiments {
     flag: string
   ) => Promise<boolean | string | number | string[] | null>;
   /**
+   * Overrides a feature flag value
+   */
+  const overrideFlag: (flagId: string, value: any) => Promise<void>;
+  /**
    * Retrieves current experiment data revision ID
    */
   const getRevisionId: () => Promise<string | null>;

@@ -18,21 +18,12 @@
 import * as browser from "webextension-polyfill";
 import { matchingElementFoundKey } from "../shared/index.js";
 import { isInHavenExperiment } from "./shared.js";
+import { insertOverlayExp, removeOverlayExperiment } from "./overlay.js";
 
 /**
  * CSS selector identifying YouTube player element
  */
 const ytPlayerSelector = "ytd-player";
-
-/**
- * Extend the window object to store a global variable used
- * for understanding if we should keep pausing the videos
- */
-declare global {
-  interface Window {
-    shouldPauseVideos?: boolean;
-  }
-}
 
 /**
  * Checks if a video is from the YT player
@@ -111,15 +102,17 @@ const addExperiments = async (): Promise<void> => {
     return;
   }
 
-  // TODO: Insert experiments
-  await Promise.all([]);
+  await Promise.all([
+    insertOverlayExp(targetElement),
+    // TODO insert embedded iframe experiment here
+  ]);
 };
 
 /**
  * Removes the YT Haven experiments
  */
 const removeExperiments = (): void => {
-  // TODO: remove experiments
+  removeOverlayExperiment();
 };
 
 /**

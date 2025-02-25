@@ -26,3 +26,6 @@ export const ytHavenModalFlag = "yt-haven-overlay-modal-enabled";
 export const ytHavenIframeFlag = "yt-haven-iframe-enabled";
 
 export const matchingElementFoundKey = "matchingElementFound";
+export const ytHavenNeverShowOverlayClick =
+  "yt-haven.never-show-overlay-clicked";
+export const ytHavenWatchCTAClicked = "yt-haven.watch-cta-clicked";

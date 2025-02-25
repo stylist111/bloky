@@ -24,3 +24,13 @@ export interface PartialPrivateExperimentsData {
   flags: Record<string, unknown>;
   overrides: Record<string, unknown>;
 }
+
+/**
+ * Extend the window object to store a global variable used
+ * for understanding if we should keep pausing the videos
+ */
+declare global {
+  interface Window {
+    shouldPauseVideos?: boolean;
+  }
+}

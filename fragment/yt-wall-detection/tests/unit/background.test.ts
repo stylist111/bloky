@@ -30,6 +30,8 @@ import {
   youTubeAutoAllowlisted,
   youTubeWallDetected,
   youTubeNavigation,
+  ytHavenNeverShowOverlayClick,
+  ytHavenWatchCTAClicked,
 } from "../../src/shared/index.js";
 import { type MessageSender, type AdWallMessage } from "@eyeo/polyfills/all";
 
@@ -66,7 +68,6 @@ const sendAdWallEventsFNMock = mockFn<sendAdWallEventsFunction>();
 
 const startInfo: StartInfo = {
   addTrustedMessageTypes: addTrustedMessageTypesFNMock,
-  ewe,
   logger,
   prefs,
   port,
@@ -99,8 +100,9 @@ describe("Fragment / YT Ad Wall Detection", () => {
 
   it("respond correctly to a YT navigation message", async () => {
     let message: AdWallMessage = {
-      eventMessage: youTubeNavigation,
+      type: youTubeNavigation,
       userLoggedIn: "0",
+      currentPlaybackTime: 0,
     };
 
     startInfo.port.on = function (arg1, arg2) {
@@ -109,13 +111,17 @@ describe("Fragment / YT Ad Wall Detection", () => {
         youTubeAutoAllowlisted,
         youTubeWallDetected,
         youTubeNavigation,
+        ytHavenNeverShowOverlayClick,
+        ytHavenWatchCTAClicked,
       ]).toContain(arg1);
 
       expectTypeOf(arg2).toBeFunction();
 
       if (arg1 === youTubeNavigation) {
         arg2(message);
-        sendAdWallEventsFNMock.calledWith(message);
+        sendAdWallEventsFNMock.calledWith(youTubeNavigation, {
+          userLoggedIn: "0",
+        });
       }
     };
 
@@ -138,6 +144,8 @@ describe("Fragment / YT Ad Wall Detection", () => {
         youTubeAutoAllowlisted,
         youTubeWallDetected,
         youTubeNavigation,
+        ytHavenNeverShowOverlayClick,
+        ytHavenWatchCTAClicked,
       ]).toContain(arg1);
       expectTypeOf(arg2).toBeFunction();
 
@@ -154,7 +162,10 @@ describe("Fragment / YT Ad Wall Detection", () => {
         });
 
         processYouTubeWallDetected(message, sender);
-        sendAdWallEventsFNMock.calledWith(youTubeWallDetected, "0", "0");
+        sendAdWallEventsFNMock.calledWith(youTubeWallDetected, {
+          userLoggedIn: "0",
+          isAllowListed: "0",
+        });
         ewe.filters.add.calledWith(`@@||www.youtube.com$document`, {
           expiresByTabId: 1,
           origin: "auto",
@@ -162,7 +173,7 @@ describe("Fragment / YT Ad Wall Detection", () => {
       }
     };
 
-    startInfo.ewe.filters.getAllowingFilters = function () {
+    ewe.filters.getAllowingFilters = function () {
       return Promise.resolve([]);
     };
 
@@ -184,6 +195,8 @@ describe("Fragment / YT Ad Wall Detection", () => {
         youTubeAutoAllowlisted,
         youTubeWallDetected,
         youTubeNavigation,
+        ytHavenNeverShowOverlayClick,
+        ytHavenWatchCTAClicked,
       ]).toContain(arg1);
       expectTypeOf(arg2).toBeFunction();
 
@@ -206,7 +219,10 @@ describe("Fragment / YT Ad Wall Detection", () => {
         );
 
         processYouTubeWallDetected(message, sender);
-        sendAdWallEventsFNMock.calledWith(youTubeWallDetected, "0", "0");
+        sendAdWallEventsFNMock.calledWith(youTubeWallDetected, {
+          userLoggedIn: "0",
+          isAllowListed: "0",
+        });
         ewe.filters.add.calledWith(`@@||www.youtube.com$document`, {
           expiresByTabId: 1,
           origin: "auto",
@@ -214,7 +230,7 @@ describe("Fragment / YT Ad Wall Detection", () => {
       }
     };
 
-    startInfo.ewe.filters.getAllowingFilters = function () {
+    ewe.filters.getAllowingFilters = function () {
       return Promise.resolve([]);
     };
 
@@ -231,15 +247,20 @@ describe("Fragment / YT Ad Wall Detection", () => {
         youTubeAutoAllowlisted,
         youTubeWallDetected,
         youTubeNavigation,
+        ytHavenNeverShowOverlayClick,
+        ytHavenWatchCTAClicked,
       ]).toContain(arg1);
       expectTypeOf(arg2).toBeFunction();
 
       if (arg1 === youTubeWallDetected) {
         arg2(message, sender);
-        sendAdWallEventsFNMock.calledWith(youTubeAlreadyAllowLlisted, "1", "1");
+        sendAdWallEventsFNMock.calledWith(youTubeAlreadyAllowLlisted, {
+          userLoggedIn: "1",
+          isAllowListed: "1",
+        });
       }
     };
-    startInfo.ewe.filters.getAllowingFilters = function () {
+    ewe.filters.getAllowingFilters = function () {
       return Promise.resolve(["dummy rule"]);
     };
 
