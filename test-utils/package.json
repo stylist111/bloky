@@ -20,6 +20,7 @@
   "scripts": {
     "lint": "npx eslint . && npx prettier --check .",
     "prettier-fix": "npx prettier --write .",
-    "start-server": "node test-server/start.js"
+    "start-server": "node test-server/start.js",
+    "test": "echo 'No unit tests in test-utils'"
   }
 }

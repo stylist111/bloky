@@ -26,7 +26,7 @@ export async function findUrl(expectedUrl, timeout = 5000) {
   await wait(
     async () => {
       try {
-        for (handle of await safeGetAllWindowHandles()) {
+        for (handle of await driver.getAllWindowHandles()) {
           await driver.switchTo().window(handle);
           url = await driver.getCurrentUrl();
           if (url && url.includes(expectedUrl)) {
@@ -271,19 +271,19 @@ export async function clickAndNavigateBack(selector, expectedURL) {
 
 export async function clickAndCloseNewTab(selector, expectedURL) {
   const currentWindowHandle = await driver.getWindowHandle();
-  const initialWindowHandles = await safeGetAllWindowHandles();
+  const initialWindowHandles = await driver.getAllWindowHandles();
 
   await clickOnDisplayedElement(selector, { timeout: 2000, scrollIntoView: true });
   await wait(
     async () => {
-      const currentWindowHandles = await safeGetAllWindowHandles();
+      const currentWindowHandles = await driver.getAllWindowHandles();
       return currentWindowHandles.length > initialWindowHandles.length;
     },
     5000,
     `The element "${selector}" did not open a new tab with the URL "${expectedURL}"`,
   );
 
-  const currentWindowHandles = await safeGetAllWindowHandles();
+  const currentWindowHandles = await driver.getAllWindowHandles();
   const newWindowHandle = currentWindowHandles.find(
     (handle) => !initialWindowHandles.includes(handle),
   );
@@ -306,44 +306,6 @@ export async function clickAndCloseNewTab(selector, expectedURL) {
   // Close the new tab and switch back to the original window
   await driver.close();
   await driver.switchTo().window(currentWindowHandle);
-}
-
-// As of Microsoft Edge 133 (possibly even Chromium 133), getWindowHandle() also
-// returns the extensions' background pages, so we need to ignore them, in order
-// not to accidentally interact with those.
-export async function safeGetAllWindowHandles() {
-  if (global.config.browserName === "firefox") {
-    return await driver.getAllWindowHandles();
-  }
-
-  const previousHandle = await driver.getWindowHandle();
-
-  const allHandles = await driver.getAllWindowHandles();
-  const safeHandles = [];
-  for (const handle of allHandles) {
-    try {
-      await driver.switchTo().window(handle);
-      const url = await driver.getCurrentUrl();
-      if (url.includes("_generated_background_page.html")) {
-        continue;
-      }
-
-      safeHandles.push(handle);
-    } catch (e) {
-      // Ignoring errors here, as they have no impact on anything that comes
-      // after it
-    }
-  }
-
-  if (previousHandle) {
-    try {
-      await driver.switchTo().window(previousHandle);
-    } catch (err) {
-      console.error("Failed to switch back to previous handle", err);
-    }
-  }
-
-  return safeHandles;
 }
 
 export async function scrollToBottom() {
