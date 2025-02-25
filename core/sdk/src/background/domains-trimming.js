@@ -97,13 +97,16 @@ export class MaxLengthMetricsDict {
    * @returns {Number} Bytes
    */
   _calcAdditionalLength(domain) {
-    /* Example:
-  ,
-  {
-    "i": "UNKNOWN",
-    "s": 0
-  }
-    */
+    /* The new domain will add a metrics object in this format, with <domain>
+     * being per the domain passed into this function and <metrics> being the
+     * serialized list of metrics as passed to the contructor:
+     *
+     * ,
+     * {
+     *   "i": "<domain>",
+     *   <metrics>
+     * }
+     */
     return (this.metricsDict.size > 0 ?
         1 /* comma */ :
       this.newLineLength /* new line between [] */) +
@@ -113,8 +116,7 @@ export class MaxLengthMetricsDict {
       this._calcLineLength("i", `"${domain}"`) +
       1 + // commas between `i` line and metrics lines
       this.newLineLength + // \n
-      this.metricsLength +
-      // metrics section length assuming all the values are "0"s
+      this.metricsLength + // metrics section length assuming all values are "0"
       this.indentationLength * 2 + this.newLineLength + // \n
       1; // closing curly bracket
   }

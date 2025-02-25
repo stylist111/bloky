@@ -31,21 +31,34 @@ import {SpecialDomainsProcessor} from "./cdp-processor.js";
 import {setPremiumStatusCallback} from "./callbacks.js";
 
 /**
- * "Page view" event type
+ * "Page view" event type. These are triggered whenever a new page is viewed,
+ * both using a full page refresh or a single page app navigation.
  * @ignore
  */
 export const EVENT_PAGE_VIEW = "page_view";
 
 /**
- * "Session started" event type
+ * "Session started" event type. These are triggered when the user starts a new
+ * session on a site. A session is considered over if there has been no activity
+ * on that site for 30 minutes (configurable in Prefs).
  * @ignore
  */
 export const EVENT_SESSION_START = "session_start";
 
+/**
+ * "Blockthrough AAPV" event type. This is a page view, on which the
+ * Blockthrough tag is loaded, detects the presence of an adblocker, and
+ * indicates that Acceptable Ads is active.
+ * @ignore
+ */
+export const EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW =
+  "blockthrough_acceptable_ads_page_view";
+
 // CDP events and pages user activity loading delay (for testing)
 let _loadDelay = 0;
 
-let deferredEvents = [];
+let deferredBrowserEvents = [];
+let deferredBlockthroughEvents = [];
 
 // incapsulates domain to site grouping logics
 let processor = new SpecialDomainsProcessor();
@@ -97,7 +110,13 @@ async function removeUnusedLegacyEvents() {
 function initializeEvents() {
   events = new Map([
     [EVENT_PAGE_VIEW, new PersistentState("ewe:cdp-page-view", browser.storage.local)],
-    [EVENT_SESSION_START, new PersistentState("ewe:cdp-session", browser.storage.local)]
+    [EVENT_SESSION_START, new PersistentState("ewe:cdp-session", browser.storage.local)],
+    [
+      EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW,
+      new PersistentState(
+        "ewe:cdp-blockthrough-acceptable-ads-page-view", browser.storage.local
+      )
+    ]
   ]);
   for (const state of events.values()) {
     state.doDebounce();
@@ -321,7 +340,7 @@ function handleBrowserEvent(details, doMarkActive) {
 
   if (!isStateLoaded()) {
     warn(() => `Deferring browser event: ${JSON.stringify(details)}`);
-    deferredEvents.push({details, doMarkActive});
+    deferredBrowserEvents.push({details, doMarkActive});
     return;
   }
 
@@ -456,6 +475,45 @@ export function shouldNotifyActive(tabId, frameId) {
   return processor.shouldProcess(new URL(frameInfo.url));
 }
 
+export function onBlockthroughAcceptableAdsPageView(url) {
+  trace({url});
+
+  if (isOptedOut()) {
+    return;
+  }
+
+  if (!isStateLoaded()) {
+    warn(() => `Deferring blockthrough acceptable ads page view event: ${JSON.stringify({url})}`);
+    deferredBlockthroughEvents.push({url});
+    return;
+  }
+
+  let parsedUrl;
+  try {
+    parsedUrl = new URL(url);
+  }
+  catch (e) {
+    error(e.message);
+    return;
+  }
+  if (!isHttpOrHttps(parsedUrl)) {
+    warn(`Ignore ${stripQuery(parsedUrl)}`);
+    return;
+  }
+
+  const siteId = processor.getSiteId(parsedUrl.hostname);
+  if (!siteId) {
+    return;
+  }
+
+  log(`onBlockthroughAcceptableAdsPageView() url*=${stripQuery(url)}, hostname=${parsedUrl.hostname}, siteId=${siteId}`);
+
+  const timeStamp = Date.now();
+  count(EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW, siteId, timeStamp);
+
+  return siteId;
+}
+
 async function loadEvents() {
   for (const state of events.values()) {
     await state.load();
@@ -472,12 +530,20 @@ function isStateLoaded() {
 }
 
 function handleDeferredEvents() {
-  if (deferredEvents.length > 0) {
-    for (const eachEvent of deferredEvents) {
+  if (deferredBrowserEvents.length > 0) {
+    for (const eachEvent of deferredBrowserEvents) {
       handleBrowserEvent(eachEvent.details, eachEvent.doMarkActive);
     }
-    warn(`Processed ${deferredEvents.length} deferred events`);
-    deferredEvents = [];
+    warn(`Processed ${deferredBrowserEvents.length} deferred browser events`);
+    deferredBrowserEvents = [];
+  }
+
+  if (deferredBlockthroughEvents.length > 0) {
+    for (const eachEvent of deferredBlockthroughEvents) {
+      onBlockthroughAcceptableAdsPageView(eachEvent.url);
+    }
+    warn(`Processed ${deferredBlockthroughEvents.length} deferred blockthrough events`);
+    deferredBlockthroughEvents = [];
   }
 }
 
@@ -501,8 +567,9 @@ export function stop() {
 
 // event type to backend metric token mapping
 const EVENT_TYPE_TO_METRIC = new Map([
-  [EVENT_SESSION_START, "s"], // sessions_count
-  [EVENT_PAGE_VIEW, "p"] // pageviews_count
+  [EVENT_SESSION_START, "s"],
+  [EVENT_PAGE_VIEW, "p"],
+  [EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW, "b"]
 ]);
 
 /**
@@ -516,7 +583,8 @@ const EVENT_TYPE_TO_METRIC = new Map([
 export function getDomainStats(
   metrics = [
     EVENT_TYPE_TO_METRIC.get(EVENT_SESSION_START),
-    EVENT_TYPE_TO_METRIC.get(EVENT_PAGE_VIEW)
+    EVENT_TYPE_TO_METRIC.get(EVENT_PAGE_VIEW),
+    EVENT_TYPE_TO_METRIC.get(EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW)
   ],
   limit = 90 * 1024) {
   const domains = new Set();

@@ -25,7 +25,7 @@ import {logHiddenElements} from "./diagnostics.js";
 import {allowlistPage} from "./allowlisting.js";
 import {trace} from "./debugging.js";
 import {onContentHelloReceived} from "./content-message-deferrer.js";
-import {markActive} from "./cdp.js";
+import {markActive, onBlockthroughAcceptableAdsPageView} from "./cdp.js";
 
 async function handleMessage(message, sender) {
   trace({
@@ -67,6 +67,9 @@ async function handleMessage(message, sender) {
       );
     case "ewe:cdp-session-active":
       await markActive(sender.tab.id, sender.frameId);
+      break;
+    case "ewe:blockthrough-acceptable-ads-page-view":
+      await onBlockthroughAcceptableAdsPageView(sender.tab.url);
       break;
   }
 }

@@ -27,6 +27,7 @@ import {startOneClickAllowlisting} from "./allowlisting.js";
 import {ElementHidingTracer} from "./element-hiding-tracer.js";
 import {subscribeLinksEnabled, handleSubscribeLinks} from "./subscribe-links.js";
 import {startNotifyActive} from "./cdp-session.js";
+import {startWatchingBlockthroughTag} from "./blockthrough-tag.js";
 
 let tracer;
 let elemHideEmulation;
@@ -126,3 +127,4 @@ browser.runtime.onMessage.addListener(onMessage);
 startElementCollapsing();
 startOneClickAllowlisting();
 initContentFeatures();
+startWatchingBlockthroughTag();

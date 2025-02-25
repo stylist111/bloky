@@ -8,6 +8,7 @@
 - Removed "blocking" events from CDP, as they were not currently being used
   anywhere. Any code that was using `EWE.cdp.onCdpItem` to watch for blocking
   events should rather be using `EWE.reporting.onBlockableItem`.
+- Now sending Blockthrough Acceptable Ads Page Views to CDP data payload. (EXT-739)
 
 ## Fixes
 

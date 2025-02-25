@@ -34,6 +34,7 @@ const SITE_ID = "siteId";
 
 const EVENT_PAGE_VIEW = "page_view";
 const EVENT_SESSION_START = "session_start";
+const EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW = "blockthrough_acceptable_ads_page_view";
 
 const PEM_PRIVATE_KEY_HEADER = "-----BEGIN PRIVATE KEY-----";
 const PEM_PRIVATE_KEY_FOOTER = "-----END PRIVATE KEY-----";
@@ -218,7 +219,7 @@ describe("CDP", function() {
       await EWE.testing._setCdpData(EVENT_PAGE_VIEW, SITE_ID, 4);
       const stats = await EWE.testing._getCdpDomainStats();
       expect(stats).toEqual(
-        `{"ds":[{"i":"${SITE_ID}","s":3,"p":4}]}`);
+        `{"ds":[{"i":"${SITE_ID}","s":3,"p":4,"b":0}]}`);
     });
 
     it("sorts \"domain_stats\" payload for sessions count", async function() {
@@ -233,11 +234,14 @@ describe("CDP", function() {
       await EWE.testing._setCdpData(EVENT_PAGE_VIEW, SITE_ID2, 1);
       await EWE.testing._setCdpData(EVENT_SESSION_START, SITE_ID3, [1, 2]);
       await EWE.testing._setCdpData(EVENT_PAGE_VIEW, SITE_ID3, 5);
+      await EWE.testing._setCdpData(
+        EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW, SITE_ID3, 2
+      );
       const stats = await EWE.testing._getCdpDomainStats();
       expect(stats).toEqual("{\"ds\":[" +
-        `{"i":"${SITE_ID2}","s":3,"p":1},` +
-        `{"i":"${SITE_ID3}","s":2,"p":5},` +
-        `{"i":"${SITE_ID1}","s":1,"p":2}` +
+        `{"i":"${SITE_ID2}","s":3,"p":1,"b":0},` +
+        `{"i":"${SITE_ID3}","s":2,"p":5,"b":2},` +
+        `{"i":"${SITE_ID1}","s":1,"p":2,"b":0}` +
         "]}");
     });
   });
@@ -320,6 +324,46 @@ describe("CDP", function() {
     it("tracks 'session_start' events", async function() {
       await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
       await assertEvents(TEST_PAGES_DOMAIN, EVENT_SESSION_START, 1);
+    });
+
+    it("tracks 'blockthrough_acceptable_ads_page_view' events", async function() {
+      await new Page(`${TEST_PAGES_URL}/blockthrough-aapv.html`).loaded;
+      await assertEvents(TEST_PAGES_DOMAIN,
+                         EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW,
+                         1);
+    });
+
+    it("does not track 'blockthrough_acceptable_ads_page_view' events for page views where an adblocker is not detected", async function() {
+      await new Page(`${TEST_PAGES_URL}/blockthrough-aapv.html?bt-aapv-ab=false`).loaded;
+      await assertEvents(TEST_PAGES_DOMAIN,
+                         EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW,
+                         0);
+    });
+
+    it("does not track 'blockthrough_acceptable_ads_page_view' events for page views where acceptable ads is not detected", async function() {
+      await new Page(`${TEST_PAGES_URL}/blockthrough-aapv.html?bt-aapv-acceptable=false`).loaded;
+      await assertEvents(TEST_PAGES_DOMAIN,
+                         EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW,
+                         0);
+    });
+
+    it("tracks 'blockthrough_acceptable_ads_page_view' events for history API navigation where the tag is injected per history state update", async function() {
+      await new Page(`${TEST_PAGES_URL}/blockthrough-aapv-history-page-view-per-history-state.html`).loaded;
+      await assertEvents(TEST_PAGES_DOMAIN,
+                         EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW,
+                         2);
+    });
+
+    it("tracks 'blockthrough_acceptable_ads_page_view' events for each history API navigation where the tag is injected once per full page load", async function() {
+      // Note that in this case we only count one event, because the tag only
+      // emits one event. This is consistent with Blockthrough's counting, even
+      // though it doesn't match our other definition of a 'page view', which
+      // would include all history API navigations as new page views.
+
+      await new Page(`${TEST_PAGES_URL}/blockthrough-aapv-history-page-view-per-page-load.html`).loaded;
+      await assertEvents(TEST_PAGES_DOMAIN,
+                         EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW,
+                         1);
     });
 
     it("supports History API", async function() {
@@ -415,6 +459,35 @@ describe("CDP", function() {
 
         // not a new session
         await assertEvents(TEST_PAGES_DOMAIN, EVENT_SESSION_START, 1);
+      }
+      finally {
+        await EWE.testing.setCdpLoadDelay(0);
+      }
+    });
+
+    it("defers and processes blockthrough events when the data is loaded", async function() {
+      const loadDelay = 1000;
+
+      await new Page(`${TEST_PAGES_URL}/blockthrough-aapv.html`).loaded;
+      await assertEvents(
+        TEST_PAGES_DOMAIN, EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW, 1
+      );
+
+      await EWE.testing.stopCdp();
+      try {
+        await EWE.testing.setCdpLoadDelay(loadDelay);
+        await EWE.testing.startCdp();
+
+        // If there is no data loaded, then it could miscount by starting the
+        // count from 0 again.
+        await new Page(`${TEST_PAGES_URL}/blockthrough-aapv.html`).loaded;
+
+        // the deferred events are processed now
+        await new Promise(r => setTimeout(r, loadDelay));
+
+        await assertEvents(
+          TEST_PAGES_DOMAIN, EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW, 2
+        );
       }
       finally {
         await EWE.testing.setCdpLoadDelay(0);
@@ -1278,7 +1351,8 @@ describe("CDP", function() {
         expect(errorDomainStats.ds).toEqual([{
           i: CROSS_DOMAIN,
           s: 1,
-          p: 1
+          p: 1,
+          b: 0
         }]);
 
         // configure backend to return ok
@@ -1319,7 +1393,8 @@ describe("CDP", function() {
         expect(regularDomainStats.ds).toEqual([{
           i: TEST_PAGES_DOMAIN,
           s: 1,
-          p: 1
+          p: 1,
+          b: 0
         }]);
       }
       finally {
@@ -1434,6 +1509,8 @@ UlvVm112lG9ij3Mc/f64cKzmenKoIe0c2HSGMxFagEDnAgMBAAE=
         await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
         // increase page views counter
         await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
+        // add a blockthrough aa pageview
+        await new Page(`${TEST_PAGES_URL}/blockthrough-aapv.html?ab=true&acceptable=true`).loaded;
         await new Page("https://adblockplus.org").loaded;
         await EWE.testing._uploadCdp();
 
@@ -1450,15 +1527,18 @@ UlvVm112lG9ij3Mc/f64cKzmenKoIe0c2HSGMxFagEDnAgMBAAE=
         expect(domainStats.ds).toEqual(expect.arrayContaining([{
           i: CROSS_DOMAIN,
           s: 1,
-          p: 1
+          p: 1,
+          b: 0
         }, {
           i: TEST_PAGES_DOMAIN,
           s: 1,
-          p: 2
+          p: 3,
+          b: 1
         }, {
           i: "adblockplus.org",
           s: 1,
-          p: expect.any(Number)
+          p: expect.any(Number),
+          b: 0
         }]));
       });
 
@@ -1521,7 +1601,8 @@ UlvVm112lG9ij3Mc/f64cKzmenKoIe0c2HSGMxFagEDnAgMBAAE=
         expect(successfulDomainStats.ds).toEqual([{
           i: TEST_PAGES_DOMAIN,
           s: 1,
-          p: 1
+          p: 1,
+          b: 0
         }]);
       });
 
