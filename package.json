@@ -10,7 +10,8 @@
     "core/sdk/adblockpluscore",
     "ui-components",
     "test-utils",
-    "scripts/*"
+    "scripts/*",
+    "vendor/*"
   ],
   "scripts": {
     "build": "lerna run build",

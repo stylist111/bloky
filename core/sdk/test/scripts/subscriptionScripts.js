@@ -53,7 +53,7 @@ describe("npm module", function() {
     let scriptsOutputDir = path.join(tmpOutDir, "scriptsOutput");
 
     await fs.promises.mkdir(scriptsOutputDir);
-    await execute(`npm install ${originalPath} --install-links`);
+    await execute(`npm install ${originalPath}`);
 
     // scripts toolchain
     for (let cmd of [

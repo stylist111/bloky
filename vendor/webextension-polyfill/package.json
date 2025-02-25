@@ -1,0 +1,7 @@
+{
+  "name": "@eyeo/webextension-polyfill",
+  "version": "0.12.0",
+  "license": "MPL-2.0",
+  "private": true,
+  "main": "src/browser-polyfill.js"
+}
