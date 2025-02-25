@@ -18,8 +18,8 @@
 import browser from "webextension-polyfill";
 import expect from "expect";
 
-import {TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN, SITEKEY}
-  from "./test-server-urls.js";
+import {TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN, SITEKEY,
+        CROSS_DOMAIN_URL} from "./test-server-urls.js";
 import {Page, setMinTimeout, waitForAssertion, isFirefox, isEdge,
         setEndpointResponse, waitForSubscriptionsToDownload,
         getMaxDynamicRulesAvailable, sleep} from "./utils.js";
@@ -891,30 +891,47 @@ describe("Filters", function() {
       expect(await EWE.filters.getAllowingFilters(tabId)).toEqual([]);
     });
 
-    it("remove allowlists rule when a paused tab's URL is updated", async function() {
+    it("remove allowlists rule when a paused tab navigates to another domain", async function() {
       const page = await pauseDomainAndTest();
       let tabId = await page.loaded;
 
       // navigate to a differ page on the same domain
       await page.load("image-from-custom-filter.html");
-      tabId = await page.loaded;
+
       expect(await EWE.filters.getAllowingFilters(tabId))
         .toEqual([ALLOWING_FILTER_TEXT]);
 
       await addExtraTestRules();
-      const ALLOWLIST_TEST_RULE_TEXT = "@@||example.com$document";
-      await EWE.filters.add(ALLOWLIST_TEST_RULE_TEXT);
+
       // navigate to a different site that is allowlisted
-      await page.load("https://example.com");
-      tabId = await page.loaded;
+      await page.load(`${CROSS_DOMAIN_URL}/image.html`);
+      expect(await EWE.filters.getAllowingFilters(tabId))
+        .toEqual([]);
+      expect(await EWE.filters.getUserFilters()).toHaveLength(2);
+    });
+
+    it("does not remove allowlists rule when a paused tab navigates to another allowlisted domain", async function() {
+      const page = await pauseDomainAndTest();
+      let tabId = await page.loaded;
+
+      // navigate to a differ page on the same domain
+      await page.load("image-from-custom-filter.html");
+      expect(await EWE.filters.getAllowingFilters(tabId))
+        .toEqual([ALLOWING_FILTER_TEXT]);
+
+      await addExtraTestRules();
+
+      // navigate to a different site that is allowlisted
+      const ALLOWLIST_TEST_RULE_TEXT = `@@||${CROSS_DOMAIN}$document`;
+      await EWE.filters.add(ALLOWLIST_TEST_RULE_TEXT);
+      await page.load(`${CROSS_DOMAIN_URL}/image.html`);
       expect(await EWE.filters.getAllowingFilters(tabId))
         .toEqual([ALLOWLIST_TEST_RULE_TEXT]);
-      expect((await EWE.filters.getUserFilters()).length).toEqual(4);
 
-      // navigate to a different site that is not allowlisted
-      await page.load("https://google.com");
-      expect((await EWE.filters.getUserFilters()).length).toEqual(3);
-      expect(await EWE.filters.getAllowingFilters(tabId)).toEqual([]);
+      const userFiltersAfterNavigation = await EWE.filters.getUserFilters();
+      expect(userFiltersAfterNavigation).toHaveLength(4);
+      expect(userFiltersAfterNavigation)
+        .toContainEqual(expect.objectContaining({text: ALLOWING_FILTER_TEXT}));
     });
 
     it("remove all temporary allowlists rules at start up", async function() {
