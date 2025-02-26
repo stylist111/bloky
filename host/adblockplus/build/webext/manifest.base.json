@@ -38,6 +38,12 @@
       "run_at": "document_start"
     },
     {
+      "all_frames": true,
+      "js": ["yt-player-controls.preload.js"],
+      "matches": ["*://*.youtube-nocookie.com/embed/*"],
+      "run_at": "document_start"
+    },
+    {
       "js": [
         "polyfill.js",
         "premium.preload.js",

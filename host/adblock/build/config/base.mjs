@@ -81,6 +81,11 @@ export default {
         src: "/content",
       },
       {
+        dest: "yt-player-controls.preload.js",
+        package: "@eyeo-fragments/yt-wall-detection",
+        src: "/content/player-controls/index.js",
+      },
+      {
         dest: "public-api.preload.js",
         package: "@eyeo-fragments/public-api",
         src: "/content",

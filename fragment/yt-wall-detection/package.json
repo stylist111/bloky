@@ -18,7 +18,8 @@
   ],
   "exports": {
     "./background": "./dist/background/index.js",
-    "./content": "./dist/content/index.js"
+    "./content": "./dist/content/index.js",
+    "./content/*": "./dist/content/*"
   },
   "scripts": {
     "build": "tsc --project tsconfig.json",

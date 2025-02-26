@@ -128,6 +128,11 @@ export default {
         dest: "yt-auto-allowlist.preload.js",
         package: "@eyeo-fragments/yt-wall-detection",
         src: "/content"
+      },
+      {
+        dest: "yt-player-controls.preload.js",
+        package: "@eyeo-fragments/yt-wall-detection",
+        src: "/content/player-controls/index.js"
       }
     ]
   },
