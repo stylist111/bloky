@@ -104,7 +104,6 @@ describe("optionsList", () => {
           youtube_channel_whitelist: true,
           youtube_manage_subscribed: true,
           show_advanced_options: true,
-          show_block_counts_help_link: true,
           display_menu_stats: true,
           onpageMessages: true,
           twitch_channel_allowlist: true,

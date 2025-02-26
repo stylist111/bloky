@@ -72,7 +72,6 @@ module.exports = {
           "youtube_channel_whitelist",
           "youtube_manage_subscribed",
           "show_advanced_options",
-          "show_block_counts_help_link",
           "show_statsinpopup",
           "display_menu_stats",
           "show_survey",

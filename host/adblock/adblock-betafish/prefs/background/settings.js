@@ -55,7 +55,6 @@ function Settings() {
     youtube_channel_whitelist: true,
     youtube_manage_subscribed: true,
     show_advanced_options: false,
-    show_block_counts_help_link: true,
     display_menu_stats: true,
     show_survey: true,
     picreplacement: false,
