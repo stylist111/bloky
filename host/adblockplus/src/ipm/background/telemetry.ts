@@ -41,10 +41,11 @@ import {
  * @param response The response from the IPM server
  */
 async function processResponse(response: Response): Promise<void> {
-  if (!response.ok) {
+  if (!response || !response.ok) {
+    const status = response?.status || "no status";
     reportAndLogError(
-      new Error(`Bad response status from IPM server: ${response.status}`),
-      `[Telemetry]: Bad response status from IPM server: ${response.status}`
+      new Error(`Bad response status from IPM server: ${status}`),
+      `[Telemetry]: Bad response status from IPM server: ${status}`
     );
     return;
   }

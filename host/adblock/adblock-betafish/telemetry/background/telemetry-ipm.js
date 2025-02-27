@@ -36,8 +36,9 @@ class IPMTelemetry extends TelemetryBase {
    * @param response The response from the IPM server
    */
   static async processResponse(response) {
-    if (!response.ok) {
-      logger.error(`[Telemetry]: Bad response status from IPM server: ${response.status}`);
+    if (!response || !response.ok) {
+      const status = (response && response.status) || "no status";
+      logger.error(`[Telemetry]: Bad response status from IPM server: ${status}`);
       return;
     }
     telemetryNotifier.emit("ipm.ping.complete");

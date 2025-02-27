@@ -1,5 +1,7 @@
 # Unreleased
 
+- Fixed an null response issue with the IPM server response
+
 # 6.15.0 - 2025-02-18
 
 This release contains bugfixes and under-the-hood changes.
