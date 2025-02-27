@@ -82,7 +82,9 @@ function removeSubscriptions() {
           for (let key in items) {
             if (key === "remove_subscriptions" && Array.isArray(items[key]) && items[key].length) {
               for (let inx = 0; inx < items[key].length; inx++) {
-                await ewe.subscriptions.remove(items[key][inx]);
+                if (await ewe.subscriptions.has(items[key][inx])) {
+                  await ewe.subscriptions.remove(items[key][inx]);
+                }
               }
             }
           }
