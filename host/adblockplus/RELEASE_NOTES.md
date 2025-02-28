@@ -1,5 +1,7 @@
 # Unreleased
 
+- Fixed an issue when an incognito tab isn't found
+
 # 4.15.0 - 2025-02-25
 
 This release contains bugfixes and under-the-hood changes.

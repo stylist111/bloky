@@ -103,12 +103,14 @@ async function onBlockableItem({ filter, request }) {
     eventEmitter.emit("blocked_per_page", { tabId, blocked });
   });
 
-  // Don't update the total for incognito tabs.
-  let tab = await browser.tabs.get(tabId).catch(() => {
-    return null;
-  });
-
-  if (!tab || tab.incognito) return;
+  try {
+    // Don't update the total for incognito tabs.
+    let tab = await browser.tabs.get(tabId);
+    if (tab.incognito) return;
+  } catch {
+    // Ignore if the tab isn't found
+    return;
+  }
 
   // Make sure blocked_total is only read after the storage was loaded.
   await Prefs.untilLoaded;

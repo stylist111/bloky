@@ -3,6 +3,7 @@
 - Fixed an issue with the Premium Sync feature
 - Fixed an issue with attempting to remove a filter list subscription when the user wasn't subscribed
 - Fixed an null response issue with the IPM server response
+- Fixed an issue when an incognito tab isn't found
 
 # 6.15.0 - 2025-02-18
 
