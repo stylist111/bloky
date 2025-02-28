@@ -218,6 +218,7 @@ export async function start() {
   initElementHidingDebugMode();
   await initNotifications(firstRun);
   premium.start();
+  ewe.cdp.setPremiumStatusCallback(async () => premium.hasActiveLicense());
   startOptionLinkListener();
   void startTelemetry();
   void initializeCDP();

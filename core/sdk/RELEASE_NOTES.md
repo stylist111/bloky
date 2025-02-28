@@ -9,6 +9,8 @@
   anywhere. Any code that was using `EWE.cdp.onCdpItem` to watch for blocking
   events should rather be using `EWE.reporting.onBlockableItem`.
 - Now sending Blockthrough Acceptable Ads Page Views to CDP data payload. (EXT-739)
+- `EWE.cdp.setPremiumStatusCallback(callback)` now accepts boolean instead of
+  "premium"/"free" as a callback return. (EXT-779)
 
 ## Fixes
 
@@ -28,6 +30,8 @@
   - Call `EWE.sentry.reportError()` whenever an error should be reported that
     are caught before they can propagate further, where they could be caught
     by Sentry automatically.
+- Callback used in `EWE.cdp.setPremiumStatusCallback(callback)` has to return
+  boolean instead of string. (EXT-779)
 
 # 1.23.1 - 2025-01-15
 

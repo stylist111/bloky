@@ -660,6 +660,10 @@ function addAllowlistingListeners() {
 initialize
   .then(async () => {
     await startContentFiltering();
+    ewe.cdp.setPremiumStatusCallback(async () => {
+      await License.ready();
+      return Boolean(License.isActiveLicense());
+    });
     await getUserId();
     TELEMETRY.start();
     setUninstallURL();

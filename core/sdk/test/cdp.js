@@ -615,8 +615,8 @@ describe("CDP", function() {
       await clearEndpointResponse(PUBLIC_KEY_URL);
     });
 
-    it("sets premium status to premium when callback used", async function() {
-      await setPremiumStatus("premium");
+    it("sets premium status to premium when callback set to true", async function() {
+      await setPremiumStatus(true);
       await startMetricsUploaderWithTestArgs();
       await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
 
@@ -627,15 +627,15 @@ describe("CDP", function() {
       });
     });
 
-    it("does not add premium status to payload if callback returns null", async function() {
-      await setPremiumStatus(null);
+    it("sets premium status to free when callback set to false", async function() {
+      await setPremiumStatus(false);
       await startMetricsUploaderWithTestArgs();
       await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
 
       await waitForAssertion(async() => {
         let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
         expect(requestLogs.length).toBeGreaterThan(0);
-        expect(requestLogs[0].body.payload).not.toHaveProperty("premium_status");
+        expect(requestLogs[0].body.payload.premium_status).toEqual("free");
       });
     });
 

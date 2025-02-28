@@ -121,9 +121,7 @@ async function buildPayload(publicKey, keyId, domainStats, utid) {
 
   if (premiumStatusCallback) {
     const premiumStatus = await premiumStatusCallback();
-    if (premiumStatus) {
-      payload.premium_status = premiumStatus;
-    }
+    payload.premium_status = premiumStatus ? "premium" : "free";
   }
 
   // the very first run is expected not to have `encrypted_data` and `last_ping`

@@ -326,9 +326,9 @@ describe("Telemetry", function() {
       });
     });
 
-    it("sends premium_status as premium to the telemetry server when an callback returns premium", async function() {
+    it("sends premium_status as premium to the telemetry server when an callback returns true ", async function() {
       await clearRequestLogs();
-      await setPremiumStatus("premium");
+      await setPremiumStatus(true);
       await EWE.testing.startTelemetry(TELEMETRY_ARGS);
 
       await waitForAssertion(async() => {

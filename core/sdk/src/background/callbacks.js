@@ -19,7 +19,7 @@ export let premiumStatusCallback;
 
 /**
  * Set a callback
- * @param {function():Promise<string>} callback Callback
+ * @param {function():Promise<boolean>} callback Callback
  * that returns premium status from web extension
  * @ignore
  */

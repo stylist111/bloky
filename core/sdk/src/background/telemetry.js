@@ -302,9 +302,7 @@ async function getExtensionMetadata() {
 
   if (premiumStatusCallback) {
     const premiumStatus = await premiumStatusCallback();
-    if (premiumStatus) {
-      payload.premium_status = premiumStatus;
-    }
+    payload.premium_status = premiumStatus ? "premium" : "free";
   }
 
   return payload;

@@ -559,6 +559,13 @@ declare namespace cdp {
    * Returns whether opted out from CDP
    */
   const isOptOut: () => Promise<boolean>;
+
+ /**
+   * Function called to set a callback for retrieving premium status.
+   *
+   * @param callback - Function that will be called to retrieve premium status.
+   */
+ const setPremiumStatusCallback: (callback: () => Promise<boolean>) => void;
 }
 
 declare namespace telemetry {
