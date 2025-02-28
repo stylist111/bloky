@@ -1,5 +1,6 @@
 # Unreleased
 
+- Fixed an issue with the Premium Sync feature
 - Fixed an issue with attempting to remove a filter list subscription when the user wasn't subscribed
 - Fixed an null response issue with the IPM server response
 

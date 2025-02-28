@@ -490,8 +490,8 @@ const SyncService = (function getSyncService() {
     if (payload.customFilterRules) {
       // capture, then remove all current custom filters, account for pause filters in
       // current processing
-      let currentUserFilters = await getUserFilters();
-      const onlyUserFilters = currentUserFilters.map((filter) => filter.text);
+      const currentUserFilters = await getUserFilters();
+      let onlyUserFilters = currentUserFilters.map((filter) => filter.text);
       let results = [];
       for (const inx in payload.customFilterRules) {
         if (
@@ -503,21 +503,18 @@ const SyncService = (function getSyncService() {
       }
       await Promise.all(results);
       results = [];
-      if (currentUserFilters && currentUserFilters.length) {
-        currentUserFilters = await cleanCustomFilter(currentUserFilters);
+      if (onlyUserFilters && onlyUserFilters.length) {
+        onlyUserFilters = await cleanCustomFilter(onlyUserFilters);
         // Delete / remove filters the user removed...
-        if (currentUserFilters) {
-          for (let i = 0; i < currentUserFilters.length; i++) {
-            const filter = currentUserFilters[i];
-            if (!payload.customFilterRules.includes(filter.text)) {
-              if (filter.text.length > 0) {
-                if (!ewe.filters.validate(filter.text)) {
-                  results.push(ewe.filters.remove([filter.text]));
-                }
-              }
-            }
+        onlyUserFilters.forEach((filterText) => {
+          if (
+            filterText.length > 0 &&
+            !payload.customFilterRules.includes(filterText) &&
+            !ewe.filters.validate(filterText)
+          ) {
+            results.push(ewe.filters.remove([filterText]));
           }
-        }
+        });
       }
       await Promise.all(results);
     }
