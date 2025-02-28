@@ -241,7 +241,8 @@ export default {
       },
       {
         dest: "ui-components-styles.css",
-        src: "../../node_modules/@eyeo/ext-ui-components/dist/styles.css"
+        package: "@eyeo/ext-ui-components",
+        src: "dist/styles.css"
       }
     ]
   },
