@@ -33,7 +33,7 @@ npm run -w @eyeo/webext-ad-filtering-solution test:functional -- {2|3} {chromium
 ## Performance
 
 ```
-npm run -w @eyeo/webext-ad-filtering-solution test:performance -- {2|3} {chromium|edge} [--forceHeadful]
+npm run -w @eyeo/webext-ad-filtering-solution test:performance -- {2|3} {chromium|edge} [--forceHeadful] [--slow]
 ```
 
 ## Docker runs
@@ -68,7 +68,7 @@ MANIFEST="mv2" BROWSER="chromium" VERSION="latest" ./core/sdk/test/scripts/compl
 
 ```
 docker build -t functional -f core/sdk/test/dockerfiles/functional.Dockerfile .
-docker run --shm-size=2g -it --entrypoint functional npm run -w @eyeo/webext-ad-filtering-solution test:performance {2|3} {chromium|edge}
+docker run --shm-size=2g -it --entrypoint functional npm run -w @eyeo/webext-ad-filtering-solution test:performance {2|3} {chromium|edge} [--slow]
 ```
 
 ### Run docker for tests with [flaky] tag

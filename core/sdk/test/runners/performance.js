@@ -23,7 +23,6 @@ import path from "path";
 import yargs from "yargs";
 import lighthouse from "lighthouse";
 import {By, until} from "selenium-webdriver";
-import {BROWSERS} from "@eyeo/get-browser-binary";
 
 import {getHandle, getDriver, writeScreenshot} from "./utils.js";
 
@@ -38,16 +37,19 @@ function parseArguments() {
     parser.strict();
     parser.command("$0 <manifest> <browser> [version]", "", subparser => {
       subparser.positional("manifest", {choices: [2, 3]});
-      subparser.positional("browser", {choices: Object.keys(BROWSERS)});
+      subparser.positional("browser", {choices: ["chromium", "edge"]});
       subparser.positional("version", {type: "string", default: "latest"});
     });
     parser.option("forceHeadful", {
       description: "Run the tests in non headless mode."
     });
+    parser.option("slow", {
+      description: "Run the tests using the slow performance extension."
+    });
 
     let {manifest, browser, version} = parser.argv;
     let params = {};
-    for (let param of ["forceHeadful"]) {
+    for (let param of ["forceHeadful", "slow"]) {
       let value = parser.argv[param];
       if (typeof value != "undefined") {
         params[param] = value;
@@ -62,6 +64,10 @@ function parseArguments() {
       version = "128.0.6613.0";
     }
 
+    if (params.slow && manifest === 2) {
+      throw new Error("The slow performance extension is not supported on MV2");
+    }
+
     return {manifest, browser, version, params};
   }
   catch (error) {
@@ -70,10 +76,6 @@ function parseArguments() {
 }
 
 async function waitForPerformanceExtension(driver, browser) {
-  if (browser == "firefox") {
-    throw new Error("Firefox is not supported by the performance tests");
-  }
-
   console.log("Waiting for performance extension ...");
   await getHandle(driver, "/status.html", 25000);
   let elem = await driver.findElement(By.id("status"));
@@ -167,12 +169,16 @@ async function runHistoryTest(driver) {
 export async function run() {
   const {manifest, browser, version, params} = parseArguments();
   const headless = !params.forceHeadful;
+  const extensionName = params.slow ? "slow-performance" : "performance";
   const extensionPaths =
-    [path.resolve(process.cwd(), "dist", `performance-mv${manifest}`)];
+    [path.resolve(process.cwd(), "dist", `${extensionName}-mv${manifest}`)];
   const extraArgs = [`--remote-debugging-port=${remoteDebuggingPort}`,
                      "--window-size=1920,1080"];
 
   console.log(`Getting ready to run ${browser} ${version} ...`);
+  if (params.slow) {
+    console.warn("WARNING: The slow performance extension is being used");
+  }
 
   let driver;
   const options = {extensionPaths, extraArgs, headless};

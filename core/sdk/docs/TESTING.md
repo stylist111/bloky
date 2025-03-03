@@ -337,10 +337,14 @@ The performace of the engine is measured using
 To run the performance tests:
 
 ```
-npm run -w @eyeo/webext-ad-filtering-solution test:performance -- {2|3} {chromium|edge} [--forceHeadful]
+npm run -w @eyeo/webext-ad-filtering-solution test:performance -- {2|3} {chromium|edge} [--forceHeadful] [--slow]
 ```
 
 Note: Firefox is not supported by the performance tests.
+
+The `slow` option uses a slow performance extension, which contains modified
+content scripts code that has a negative impact on the EWE performance. Please
+note `slow` is not supported for MV2.
 
 ## Docker local runs
 
@@ -382,7 +386,7 @@ Optional environment variables for the script:
 
 ```
 docker build -t functional -f core/sdk/test/dockerfiles/functional.Dockerfile .
-docker run --shm-size=2g -it --entrypoint functional npm -w @eyeo/webext-ad-filtering-solution run test:performance {2|3} {chromium|edge}
+docker run --shm-size=2g -it --entrypoint functional npm -w @eyeo/webext-ad-filtering-solution run test:performance {2|3} {chromium|edge} [--slow]
 ```
 
 In order to access the screenshots for failing tests run the following command,

@@ -34,12 +34,13 @@ const extensionPerformancePath = path.join(dirname, "test", "extension-performan
 const template = path.join(extensionFunctionalPath, "template.html");
 const eweConfigName = "engine";
 const eweCustomConfigName = "engine-subs";
+const eweSlowPerformanceConfigName = "engine-slow";
 const eweDistPath = path.join(dirname, "dist");
 const eweCustomOutputPath = path.join(eweDistPath, "ewe-subs");
+const eweSlowPerformanceOutputPath = path.join(eweDistPath, "ewe-slow");
 const scriptsOutputPath = path.join(dirname, "scriptsOutput");
 const scriptsOutputMV3Path = path.join(dirname, "scriptsOutput", "test-mv3");
-const customMV2SubscriptionsPath =
-  path.join(scriptsOutputPath, "custom-mv2-subscriptions.json");
+const customMV2SubscriptionsPath = path.join(scriptsOutputPath, "custom-mv2-subscriptions.json");
 const scriptsOutputPerformancePath = path.join(dirname, "scriptsOutput", "performance-mv3");
 const rulesetsMV3Path = path.join(scriptsOutputMV3Path, "rulesets", "rulesets.json");
 const rulesetsPerformancePath = path.join(scriptsOutputPerformancePath, "rulesets", "rulesets.json");
@@ -128,6 +129,14 @@ const performanceMV3 = {
   performance: true
 };
 
+const slowPerformanceMV3 = {
+  ...performanceMV3,
+  eweConfigName: eweSlowPerformanceConfigName,
+  ewePath: eweSlowPerformanceOutputPath,
+  outputPath: "slow-performance-mv3",
+  slow: true
+};
+
 function commonPlugins() {
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
   process.env.VERSION = packageJson.version;
@@ -144,6 +153,9 @@ function commonPlugins() {
 
 function eweBuild(env, configName, subscriptionFile, silent, outputPath,
                   dependencies) {
+  const content = configName === "engine-slow" ?
+    "./src/content/slow-performance-index.js" : "./src/content/index.js";
+
   let build = {
     name: configName,
     dependencies,
@@ -155,7 +167,7 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath,
         ],
         library: {name: "EWE", type: "umd"}
       },
-      content: "./src/content/index.js"
+      content
     },
     output: {
       filename: "ewe-[name].js",
@@ -217,15 +229,23 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath,
 export default (env = {}) => {
   let builds = [
     eweBuild(env, eweConfigName, null, false, eweDistPath),
-    eweBuild(env, eweCustomConfigName, customMV2SubscriptionsPath,
-             true, eweCustomOutputPath, [eweConfigName])
+    eweBuild(env, eweCustomConfigName, customMV2SubscriptionsPath, true,
+             eweCustomOutputPath, [eweConfigName]),
+    eweBuild(env, eweSlowPerformanceConfigName, null, false,
+             eweSlowPerformanceOutputPath, [eweConfigName])
   ];
 
-  for (let buildVariant of [mv2, mv3, performanceMV2, performanceMV3]) {
+  for (let buildVariant of [
+    mv2, mv3, performanceMV2, performanceMV3, slowPerformanceMV3
+  ]) {
     let description = `Manifest version: ${buildVariant.manifestVersion}`;
     if (buildVariant.performance) {
       description = `${description} - performance`;
     }
+    else if (buildVariant.slow) {
+      description = `${description} - performance SLOW`;
+    }
+
     let manifest = {
       name: "eyeo's WebExtension Ad-Filtering Solution Test Extension",
       version: "0.0.1",
