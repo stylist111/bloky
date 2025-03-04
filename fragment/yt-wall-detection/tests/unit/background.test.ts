@@ -26,12 +26,14 @@ import {
   type sendAdWallEventsFunction,
 } from "../../src/background/detection.types.js";
 import {
-  youTubeAlreadyAllowLlisted,
+  youTubeAlreadyAllowListed,
   youTubeAutoAllowlisted,
   youTubeWallDetected,
   youTubeNavigation,
   ytHavenNeverShowOverlayClick,
   ytHavenWatchCTAClicked,
+  ytHavenNextVideoNotFound,
+  ytHavenNonEmbeddableFound,
 } from "../../src/shared/index.js";
 import { type MessageSender, type AdWallMessage } from "@eyeo/polyfills/all";
 
@@ -107,12 +109,14 @@ describe("Fragment / YT Ad Wall Detection", () => {
 
     startInfo.port.on = function (arg1, arg2) {
       expect([
-        youTubeAlreadyAllowLlisted,
+        youTubeAlreadyAllowListed,
         youTubeAutoAllowlisted,
         youTubeWallDetected,
         youTubeNavigation,
         ytHavenNeverShowOverlayClick,
         ytHavenWatchCTAClicked,
+        ytHavenNextVideoNotFound,
+        ytHavenNonEmbeddableFound
       ]).toContain(arg1);
 
       expectTypeOf(arg2).toBeFunction();
@@ -140,12 +144,14 @@ describe("Fragment / YT Ad Wall Detection", () => {
 
     startInfo.port.on = function (arg1, arg2) {
       expect([
-        youTubeAlreadyAllowLlisted,
+        youTubeAlreadyAllowListed,
         youTubeAutoAllowlisted,
         youTubeWallDetected,
         youTubeNavigation,
         ytHavenNeverShowOverlayClick,
         ytHavenWatchCTAClicked,
+        ytHavenNextVideoNotFound,
+        ytHavenNonEmbeddableFound
       ]).toContain(arg1);
       expectTypeOf(arg2).toBeFunction();
 
@@ -191,12 +197,14 @@ describe("Fragment / YT Ad Wall Detection", () => {
 
     startInfo.port.on = function (arg1, arg2) {
       expect([
-        youTubeAlreadyAllowLlisted,
+        youTubeAlreadyAllowListed,
         youTubeAutoAllowlisted,
         youTubeWallDetected,
         youTubeNavigation,
         ytHavenNeverShowOverlayClick,
         ytHavenWatchCTAClicked,
+        ytHavenNextVideoNotFound,
+        ytHavenNonEmbeddableFound
       ]).toContain(arg1);
       expectTypeOf(arg2).toBeFunction();
 
@@ -243,18 +251,20 @@ describe("Fragment / YT Ad Wall Detection", () => {
 
     startInfo.port.on = function (arg1, arg2) {
       expect([
-        youTubeAlreadyAllowLlisted,
+        youTubeAlreadyAllowListed,
         youTubeAutoAllowlisted,
         youTubeWallDetected,
         youTubeNavigation,
         ytHavenNeverShowOverlayClick,
         ytHavenWatchCTAClicked,
+        ytHavenNextVideoNotFound,
+        ytHavenNonEmbeddableFound
       ]).toContain(arg1);
       expectTypeOf(arg2).toBeFunction();
 
       if (arg1 === youTubeWallDetected) {
         arg2(message, sender);
-        sendAdWallEventsFNMock.calledWith(youTubeAlreadyAllowLlisted, {
+        sendAdWallEventsFNMock.calledWith(youTubeAlreadyAllowListed, {
           userLoggedIn: "1",
           isAllowListed: "1",
         });

@@ -25,6 +25,37 @@ export interface PartialPrivateExperimentsData {
   overrides: Record<string, unknown>;
 }
 
+export interface YTVideoInfo {
+  playableInEmbed: boolean;
+  videoId: string;
+}
+
+export interface YTNextVideoInfo {
+  nextVideoId: string;
+  currentVideoId: string;
+}
+
+interface YTProgressState {
+  current: number;
+  duration: number;
+}
+
+interface YTInfo {
+  videoData: any;
+  progressState: YTProgressState;
+}
+
+export interface YTEventData {
+  info: YTInfo;
+  event?: string;
+}
+
+declare global {
+  interface WindowEventMap {
+    "yt-navigate-finish": CustomEvent;
+  }
+}
+
 /**
  * Extend the window object to store a global variable used
  * for understanding if we should keep pausing the videos
@@ -32,5 +63,9 @@ export interface PartialPrivateExperimentsData {
 declare global {
   interface Window {
     shouldPauseVideos?: boolean;
+    currentVideoId?: string;
+    playableInEmbed?: boolean;
+    nextVideoId?: string;
+    videoLoading?: boolean;
   }
 }

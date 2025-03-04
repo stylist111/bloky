@@ -29,7 +29,7 @@ import {
 } from "./detection.types.js";
 
 import {
-  youTubeAlreadyAllowLlisted,
+  youTubeAlreadyAllowListed,
   youTubeAutoAllowlisted,
   youTubeWallDetected,
   youTubeNavigation,
@@ -38,6 +38,8 @@ import {
   ytHavenOverlayFlag,
   matchingElementFoundKey,
   ytHavenWatchCTAClicked,
+  ytHavenNextVideoNotFound,
+  ytHavenNonEmbeddableFound,
   ytHavenNeverShowOverlayClick,
 } from "../shared/index.js";
 
@@ -101,7 +103,7 @@ const processYouTubeWallMessage = async (
   const filters = await ewe.filters.getAllowingFilters(tabId);
   const isAllowListed = !!filters.length;
   if (isAllowListed) {
-    sendAdWallEvents(youTubeAlreadyAllowLlisted, {
+    sendAdWallEvents(youTubeAlreadyAllowListed, {
       userLoggedIn: message.userLoggedIn ? "1" : "0",
       isAllowListed: "1",
     });
@@ -198,6 +200,20 @@ export function start(parameters: StartInfo): void {
     // Disable the experiment flags to not show the overlay in content script again
     await ewe.experiments.overrideFlag(ytHavenOverlayFlag, false);
     await ewe.experiments.overrideFlag(ytHavenModalFlag, false);
+  });
+
+  parameters.port.on(ytHavenNonEmbeddableFound, async (): Promise<void> => {
+    const assignments = await ewe.experiments.getAssignments();
+    sendAdWallEvents(ytHavenNonEmbeddableFound, {
+      experimentVariant: assignments["yt-heaven"],
+    });
+  });
+
+  parameters.port.on(ytHavenNextVideoNotFound, async (): Promise<void> => {
+    const assignments = await ewe.experiments.getAssignments();
+    sendAdWallEvents(ytHavenNextVideoNotFound, {
+      experimentVariant: assignments["yt-heaven"],
+    });
   });
 
   parameters.addTrustedMessageTypes("https://youtube.com", [

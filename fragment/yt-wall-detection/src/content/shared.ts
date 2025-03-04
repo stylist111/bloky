@@ -66,7 +66,6 @@ export async function isInHavenExperiment(): Promise<boolean> {
     getExperimentFlag(ytHavenOverlayFlag),
     getExperimentFlag(ytHavenModalFlag),
   ]);
-
   return ytHeavenFlags.some((result) => Boolean(result));
 }
 

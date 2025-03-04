@@ -18,6 +18,7 @@
 import * as browser from "webextension-polyfill";
 import { matchingElementFoundKey } from "../shared/index.js";
 import { isInHavenExperiment } from "./shared.js";
+import { start as startEmbedExperiment } from "./embed-haven.js";
 import { insertOverlayExp, removeOverlayExperiment } from "./overlay.js";
 
 /**
@@ -66,6 +67,10 @@ const pauseVideo = (video: HTMLVideoElement): void => {
     return;
   }
 
+  if (!window.shouldPauseVideos) {
+    return;
+  }
+
   if (!video.paused) {
     video.pause();
   }
@@ -86,11 +91,18 @@ const pauseVideo = (video: HTMLVideoElement): void => {
 /**
  * Pauses all YT videos
  */
-const pauseAllVideos = (): void => {
+export const pauseAllVideos = (): void => {
   const videos = document.querySelectorAll("video");
   videos.forEach(pauseVideo);
 
   observeVideos();
+};
+
+/**
+ * Sets the variable 'shouldPauseVideos' to false
+ */
+export const unpauseAllVideos = (): void => {
+  window.shouldPauseVideos = false;
 };
 
 /**
@@ -104,7 +116,7 @@ const addExperiments = async (): Promise<void> => {
 
   await Promise.all([
     insertOverlayExp(targetElement),
-    // TODO insert embedded iframe experiment here
+    startEmbedExperiment(targetElement),
   ]);
 };
 
@@ -141,7 +153,7 @@ export async function start(): Promise<void> {
   await addExperiments();
 
   // Add experiments when the watch page is updated
-  window.addEventListener("yt-player-updated", (): void => {
+  window.addEventListener("yt-player-updated", (event): void => {
     if (window.location.href.includes("watch")) {
       removeExperiments();
       void addExperiments();

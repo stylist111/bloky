@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-export const youTubeAlreadyAllowLlisted = "yt-site.already.allowlisted";
+export const youTubeAlreadyAllowListed = "yt-site.already.allowlisted";
 export const youTubeAutoAllowlisted = "yt-auto.allowlisted";
 export const youTubeWallDetected = "yt-site.ad-wall-detected";
 export const youTubeNavigation = "yt-site.navigation";
@@ -26,6 +26,9 @@ export const ytHavenModalFlag = "yt-haven-overlay-modal-enabled";
 export const ytHavenIframeFlag = "yt-haven-iframe-enabled";
 
 export const matchingElementFoundKey = "matchingElementFound";
+
 export const ytHavenNeverShowOverlayClick =
   "yt-haven.never-show-overlay-clicked";
+export const ytHavenNextVideoNotFound = "yt-haven.next-video-not-found";
+export const ytHavenNonEmbeddableFound = "yt-haven.non-embeddable-found";
 export const ytHavenWatchCTAClicked = "yt-haven.watch-cta-clicked";
