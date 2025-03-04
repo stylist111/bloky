@@ -132,7 +132,7 @@ build:functional-image:
   extends: .build-image
   needs: ["build:src"]
   script:
-    - docker build -t $FUNCTIONAL_IMAGE -f core/sdk/test/dockerfiles/functional.Dockerfile --build-arg SKIP_BUILD=1 --build-arg BROWSER=chromium .
+    - docker build -t $FUNCTIONAL_IMAGE -f core/sdk/test/dockerfiles/functional.Dockerfile --build-arg BROWSER=chromium .
     - docker push $FUNCTIONAL_IMAGE
 
 .basic-image:

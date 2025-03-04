@@ -1,8 +1,5 @@
 FROM registry.gitlab.com/eyeo/docker/get-browser-binary:node18
 
-ARG SKIP_BUILD=
-ARG BROWSER=
-
 # Doing early `npm install` to cache those files on further image builds If this
 # fails saying that the package-lock.json is out of sync, it could mean that a
 # new package.json was added which isn't copied here.
@@ -20,7 +17,7 @@ RUN cd extensions && npm ci
 COPY . extensions/
 WORKDIR extensions/
 
-RUN if [ -z "$SKIP_BUILD" ]; then npm run build -- --scope=@eyeo/webext-ad-filtering-solution; fi
+ARG BROWSER=
 RUN if [ ! -z "$BROWSER" ]; then node core/sdk/test/dockerfiles/get-browser-binaries.js $BROWSER; fi
 
 ENV TEST_PARAMS="3 chromium"

@@ -112,7 +112,7 @@ script command. Example:
 func:v3:chromium:latest:
   ...
   script:
-    - docker build -t functional-local -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER="$BROWSER" --build-arg SKIP_BUILD=1 .;
+    - docker build -t functional-local -f test/dockerfiles/functional.Dockerfile --build-arg BROWSER="$BROWSER" .;
     - sleep 600
   tags:
     - local-test-dind

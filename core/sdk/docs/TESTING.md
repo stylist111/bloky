@@ -123,8 +123,8 @@ This script runs the test server and the test suite. You can also run each of
 these independentally using:
 
 ```
-npm run -w @eyeo/webext-ad-filtering-solution test-server
-npm run -w @eyeo/webext-ad-filtering-solution test:functional
+npm run -w @eyeo/webext-ad-filtering-solution build
+npm run -w @eyeo/webext-ad-filtering-solution test:functional -- {2|3} {chromium|firefox|edge}
 ```
 
 In order to pass additional arguments, use the following syntax:
@@ -136,7 +136,7 @@ npm run -w @eyeo/webext-ad-filtering-solution build-then-test -- {2|3} {chromium
 For example:
 
 ```
-npm run -w @eyeo/webext-ad-filtering-solution build-then-test -- v3 chromium --grep="Test Name"
+npm run -w @eyeo/webext-ad-filtering-solution build-then-test -- 3 chromium --grep="Test Name"
 ```
 
 ### Func:bundle
@@ -222,7 +222,7 @@ update tests by running tests with
 `--testKinds functional reload update mv2-mv3-migrate`.
 - The `browserBinary` option allow to pass installed browser binary
 to use custom versions. For example:
-`npm run -w @eyeo/webext-ad-filtering-solution test:functional v3 chromium -- --browserBinary="/Users/user/Documents/repo/webext-sdk/browser-snapshots/chromium/chromium-darwin-x64-1097561/chrome-mac/Chromium.app/Contents/MacOS/Chromium"`
+`npm run -w @eyeo/webext-ad-filtering-solution test:functional 3 chromium -- --browserBinary="/Users/user/Documents/repo/webext-sdk/browser-snapshots/chromium/chromium-darwin-x64-1097561/chrome-mac/Chromium.app/Contents/MacOS/Chromium"`
 - The `verbose` option prints local test servers (admin and pages) requests
 
 #### Web bundle regeneration
@@ -353,9 +353,13 @@ note `slow` is not supported for MV2.
 The CI/CD pipeline runs the tests using this docker image. Using docker locally
 to run the same tests may be useful to recreate the infrastructure the CI uses.
 
+Note: Any `docker build` commands listed here expect that the SDK has already
+been built into `./core/sdk/dist`.
+
 #### Func:webext
 
 ```
+npm run -w @eyeo/webext-ad-filtering-solution build
 docker build -t functional -f core/sdk/test/dockerfiles/functional.Dockerfile .
 docker run --shm-size=2g -it -e TEST_PARAMS="{2|3} {chromium|firefox|edge}" functional
 ```
@@ -385,7 +389,6 @@ Optional environment variables for the script:
 #### Performance
 
 ```
-docker build -t functional -f core/sdk/test/dockerfiles/functional.Dockerfile .
 docker run --shm-size=2g -it --entrypoint functional npm -w @eyeo/webext-ad-filtering-solution run test:performance {2|3} {chromium|edge} [--slow]
 ```
 
@@ -556,6 +559,5 @@ with each other if they are run concurrently.
 To run test suites locally in isolation, run the following docker commands:
 
 ```
-docker build -t functional -f core/sdk/test/dockerfiles/functional.Dockerfile .
 docker run --shm-size=2g -it -e TEST_SUITES="suite_1 suite_2" -e TEST_PARAMS="v3 chromium" --entrypoint core/sdk/test/dockerfiles/isolated-entrypoint.sh functional
 ```

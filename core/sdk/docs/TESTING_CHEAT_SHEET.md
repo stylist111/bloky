@@ -48,6 +48,7 @@ docker run --shm-size=2g -it --entrypoint basic npm run -w adblockpluscore test:
 ### Func:webext
 
 ```
+npm run -w @eyeo/webext-ad-filtering-solution build
 docker build -t functional -f core/sdk/test/dockerfiles/functional.Dockerfile .
 docker run --shm-size=2g -it -e TEST_PARAMS="{2|3} {chromium|firefox|edge}" functional
 ```
@@ -67,7 +68,6 @@ MANIFEST="mv2" BROWSER="chromium" VERSION="latest" ./core/sdk/test/scripts/compl
 ### Performance
 
 ```
-docker build -t functional -f core/sdk/test/dockerfiles/functional.Dockerfile .
 docker run --shm-size=2g -it --entrypoint functional npm run -w @eyeo/webext-ad-filtering-solution test:performance {2|3} {chromium|edge} [--slow]
 ```
 
@@ -88,14 +88,12 @@ docker run --shm-size=2g -it -e TEST_PARAMS="3 chromium" -e ONLY_FLAKY="true" -e
 ### Measure flakiness for whole test suite
 
 ```
-docker build -t functional -f core/sdk/test/dockerfiles/functional.Dockerfile --build-arg BROWSER=chromium .
 docker run --shm-size=2g -it -e TEST_PARAMS="3 chromium" -e TEST_RUNS=10 functional
 ```
 
 ### Functional Isolated Tests
 
 ```
-docker build -t functional -f core/sdk/test/dockerfiles/functional.Dockerfile .
 docker run --shm-size=2g -it -e TEST_SUITES="suite_1 suite_2" -e TEST_PARAMS="3 chromium" --entrypoint core/sdk/test/dockerfiles/isolated-entrypoint.sh functional
 ```
 
