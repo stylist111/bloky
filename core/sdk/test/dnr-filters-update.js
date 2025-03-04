@@ -1202,6 +1202,7 @@ describe("DNR filters update [mv3-only]", function() {
         let hasDownloadingFalse = false;
         let hasLastDownload = false;
         let hasDownloadStatus = false;
+        let lastDownloadingFalse = false;
 
         const events = getTestEvents("subscriptions.onChanged");
         for (const event of events) {
@@ -1211,6 +1212,11 @@ describe("DNR filters update [mv3-only]", function() {
           if (subscription.url != testDiffSubscriptionUrl) {
             continue;
           }
+
+          // Check that the last subscription update event
+          // has the correct downloading property.
+          // Fixed in https://eyeo.atlassian.net/browse/EXT-402
+          lastDownloadingFalse = subscription.downloading === false;
 
           if (changedProperty === "downloading") {
             hasDownloadingTrue |= subscription.downloading === true;
@@ -1225,7 +1231,7 @@ describe("DNR filters update [mv3-only]", function() {
         }
 
         return hasDownloadingTrue && hasDownloadingFalse &&
-          hasLastDownload && hasDownloadStatus;
+          hasLastDownload && hasDownloadStatus && lastDownloadingFalse;
       }, 3000, "Not enough events");
     });
 

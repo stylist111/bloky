@@ -32,7 +32,7 @@ import {default as initializer} from "./initializer.js";
 import {filterEngine} from "./core.js";
 import {EventDispatcher} from "./types.js";
 import {convertFilter} from "./filters.js";
-import {disableDynamicRules, isDnrSubscriptionUpdating} from "./dnr-filters.js";
+import {disableDynamicRules} from "./dnr-filters.js";
 
 import {Prefs} from "./prefs.js";
 
@@ -413,8 +413,7 @@ function getSubscriptions() {
  * @returns {boolean}
  */
 export function isSynchronizing(url) {
-  return filterEngine.filterStorage.synchronizer
-    .isExecuting(url) || isDnrSubscriptionUpdating(url);
+  return filterEngine.filterStorage.synchronizer.isExecuting(url);
 }
 
 async function add(url, properties = {}) {
