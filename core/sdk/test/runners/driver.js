@@ -25,9 +25,44 @@ import {BROWSERS} from "@eyeo/get-browser-binary";
 
 const screenshotsPath = path.join(process.cwd(), "test", "screenshots");
 
-export async function getHandle(driver, page, timeout = 8000) {
+let driver;
+
+export async function quitDriver() {
+  if (driver) {
+    await driver.quit();
+  }
+}
+
+export async function getNewDriver(browser, version, options) {
+  await quitDriver();
+
+  driver = await BROWSERS[browser].getDriver(version, options);
+
+  let cap = await driver.getCapabilities();
+  console.log(`Browser used for tests: ${cap.getBrowserName()} ${cap.getBrowserVersion()}`);
+
+  return driver;
+}
+
+export async function setMinDriverTimeout(timeout) {
+  let driverTimeouts = await driver.manage().getTimeouts();
+  let paramsTimeout = parseInt(timeout, 10);
+  if (paramsTimeout == 0) {
+    // 0 is a mocha special case to disable timeouts
+    await driver.manage().setTimeouts({
+      script: null
+    });
+  }
+  else if (driverTimeouts.script && paramsTimeout > driverTimeouts.script) {
+    await driver.manage().setTimeouts({
+      script: paramsTimeout
+    });
+  }
+}
+
+export async function getHandle(page, timeout = 8000) {
   let url;
-  let handle = await driver.wait(() => switchToHandle(driver, handleUrl => {
+  let handle = await driver.wait(() => switchToHandle(handleUrl => {
     if (!handleUrl) {
       return false;
     }
@@ -39,7 +74,7 @@ export async function getHandle(driver, page, timeout = 8000) {
   return handle;
 }
 
-export async function switchToHandle(driver, testFn) {
+export async function switchToHandle(testFn) {
   for (let handle of await driver.getAllWindowHandles()) {
     let url;
     try {
@@ -56,16 +91,7 @@ export async function switchToHandle(driver, testFn) {
   }
 }
 
-export async function getDriver(browser, version, options) {
-  let driver = await BROWSERS[browser].getDriver(version, options);
-
-  let cap = await driver.getCapabilities();
-  console.log(`Browser used for tests: ${cap.getBrowserName()} ${cap.getBrowserVersion()}`);
-
-  return driver;
-}
-
-export async function writeScreenshot(driver, filename) {
+export async function writeScreenshot(filename) {
   const data = await driver.takeScreenshot();
   const base64Data = data.replace(/^data:image\/png;base64,/, "");
 

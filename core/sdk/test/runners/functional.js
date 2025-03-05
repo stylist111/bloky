@@ -26,7 +26,7 @@ import webdriver from "selenium-webdriver";
 import {BROWSERS, getMajorVersion} from "@eyeo/get-browser-binary";
 
 import {isMain} from "../../scripts/utils.js";
-import {getHandle, switchToHandle, getDriver, writeScreenshot} from "./utils.js";
+import {getHandle, switchToHandle, getNewDriver, writeScreenshot, setMinDriverTimeout, quitDriver} from "./driver.js";
 import {runTestServer, killTestServer} from "../../scripts/test-server-manager.js";
 
 const isScriptInvokedFromCLI = isMain(import.meta.url);
@@ -142,22 +142,6 @@ function regexpFromGrep(grep) {
 
 function manifestIsMV3(manifest) {
   return manifest === 3;
-}
-
-async function setMinDriverTimeout(driver, timeout) {
-  let driverTimeouts = await driver.manage().getTimeouts();
-  let paramsTimeout = parseInt(timeout, 10);
-  if (paramsTimeout == 0) {
-    // 0 is a mocha special case to disable timeouts
-    await driver.manage().setTimeouts({
-      script: null
-    });
-  }
-  else if (driverTimeouts.script && paramsTimeout > driverTimeouts.script) {
-    await driver.manage().setTimeouts({
-      script: paramsTimeout
-    });
-  }
 }
 
 async function updateManifest(version) {
@@ -328,7 +312,7 @@ async function pollMessages(driver, handle, isMV3) {
           break;
 
         case "click":
-          await switchToHandle(driver, handleUrl => handleUrl == arg.url);
+          await switchToHandle(handleUrl => handleUrl == arg.url);
           await driver.findElement(webdriver.By.css(arg.selector)).click();
           await driver.switchTo().window(handle);
           webdriverEvents.push({id: "clicked", arg});
@@ -370,7 +354,7 @@ async function startTestRun(driver, id, params) {
   // starting the extension can sometimes be really slow. This is
   // worst in incognito mode and when an MV3 extension has many
   // subscriptions and rulesets.
-  await getHandle(driver, "/index.html", 25000);
+  await getHandle("/index.html", 25000);
   if (search) {
     let url = await driver.getCurrentUrl();
     let urlComponents = url.split("?");
@@ -385,7 +369,7 @@ async function startTestRun(driver, id, params) {
     await driver.findElement(webdriver.By.id(id)).click();
   }
   catch (err) {
-    await writeScreenshot(driver, "startTestRun.png");
+    await writeScreenshot("startTestRun.png");
     throw err;
   }
 }
@@ -396,7 +380,7 @@ async function runFunctionalTests(driver, params, isMV3) {
   console.log("================");
 
   await startTestRun(driver, "functional", params);
-  let handle = await getHandle(driver, "/functional.html");
+  let handle = await getHandle("/functional.html");
   let results = await pollMessages(driver, handle, isMV3);
   await driver.switchTo().window(handle);
   await driver.close();
@@ -418,7 +402,7 @@ async function runReloadTests(
     // loading the first time. This is worst in incognito mode and
     // when an MV3 extension has many subscriptions and rulesets, and on the
     // lastest Edge on Windows
-    handle = await getHandle(driver, page, 100000);
+    handle = await getHandle(page, 100000);
     try {
       results = await pollMessages(driver, handle, isMV3);
     }
@@ -446,11 +430,11 @@ async function runFuzzTests(driver, params, isMV3) {
   let fuzzParams = {...params, fuzzServiceWorkers: true};
   if (typeof fuzzParams.timeout == "undefined") {
     fuzzParams.timeout = 240000;
-    await setMinDriverTimeout(driver, fuzzParams.timeout);
+    await setMinDriverTimeout(fuzzParams.timeout);
   }
 
   await startTestRun(driver, "functional", fuzzParams);
-  let handle = await getHandle(driver, "/functional.html");
+  let handle = await getHandle("/functional.html");
   let results = await pollMessages(driver, handle, isMV3);
   await driver.switchTo().window(handle);
   await driver.close();
@@ -635,18 +619,17 @@ async function runTests({manifest, browser, version, params, testKinds}) {
   }
 
   let results = {};
-  let driver;
   const options = {headless, extensionPaths, incognito, insecure, extraArgs,
                    customBrowserBinary};
   try {
-    driver = await getDriver(browser, version, options);
+    const driver = await getNewDriver(browser, version, options);
 
     let driverTimeout = 200000;
     if (params && typeof params.timeout != "undefined" &&
         params.timeout > driverTimeout) {
       driverTimeout = params.timeout;
     }
-    await setMinDriverTimeout(driver, driverTimeout);
+    await setMinDriverTimeout(driverTimeout);
 
     if (incognito) {
       await BROWSERS[browser].enableExtensionInIncognito(
@@ -684,9 +667,7 @@ async function runTests({manifest, browser, version, params, testKinds}) {
     }
   }
   finally {
-    if (driver) {
-      await driver.quit();
-    }
+    await quitDriver();
   }
 
   let totalTestsRun = 0;

@@ -24,7 +24,7 @@ import yargs from "yargs";
 import lighthouse from "lighthouse";
 import {By, until} from "selenium-webdriver";
 
-import {getHandle, getDriver, writeScreenshot} from "./utils.js";
+import {getHandle, getNewDriver, writeScreenshot, quitDriver} from "./driver.js";
 
 const remoteDebuggingPort = 33559;
 // To be removed: https://eyeo.atlassian.net/browse/EXT-97
@@ -75,9 +75,9 @@ function parseArguments() {
   }
 }
 
-async function waitForPerformanceExtension(driver, browser) {
+async function waitForPerformanceExtension(driver) {
   console.log("Waiting for performance extension ...");
-  await getHandle(driver, "/status.html", 25000);
+  await getHandle("/status.html", 25000);
   let elem = await driver.findElement(By.id("status"));
   if ((await elem.getAttribute("errors")) == "true") {
     let errors = [];
@@ -88,7 +88,7 @@ async function waitForPerformanceExtension(driver, browser) {
   }
 }
 
-async function runLighthouseTest(driver) {
+async function runLighthouseTest() {
   const url = "https://www.example.com";
   const options = {
     logLevel: "silent",
@@ -146,7 +146,7 @@ async function runHistoryTest(driver) {
       await elem.click();
     }
     catch (err) {
-      await writeScreenshot(driver, "screenshot.png");
+      await writeScreenshot("screenshot.png");
       if (err.name == "StaleElementReferenceError") {
         throw new Error(`${failure}: Clicking on a stale element`);
       }
@@ -180,18 +180,15 @@ export async function run() {
     console.warn("WARNING: The slow performance extension is being used");
   }
 
-  let driver;
   const options = {extensionPaths, extraArgs, headless};
   try {
-    driver = await getDriver(browser, version, options);
-    await waitForPerformanceExtension(driver, browser);
-    await runLighthouseTest(driver);
+    const driver = await getNewDriver(browser, version, options);
+    await waitForPerformanceExtension(driver);
+    await runLighthouseTest();
     await runHistoryTest(driver);
   }
   finally {
-    if (driver) {
-      await driver.quit();
-    }
+    await quitDriver();
   }
 }
 
