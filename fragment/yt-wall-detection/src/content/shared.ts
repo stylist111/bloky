@@ -70,6 +70,15 @@ export async function isInHavenExperiment(): Promise<boolean> {
 }
 
 /**
+ * Checks if the current path is /watch
+ */
+export function isWatchPage(): boolean {
+  const pathName = window.location.pathname;
+
+  return pathName === "/watch" || pathName.startsWith("/watch/");
+}
+
+/**
  * Checks whether given candidate represents relevants parts of stored split
  * experiments data
  *

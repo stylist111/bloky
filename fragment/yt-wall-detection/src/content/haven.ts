@@ -17,93 +17,15 @@
  */
 import * as browser from "webextension-polyfill";
 import { matchingElementFoundKey } from "../shared/index.js";
-import { isInHavenExperiment } from "./shared.js";
+import { isInHavenExperiment, isWatchPage } from "./shared.js";
 import { start as startEmbedExperiment } from "./embed-haven.js";
 import { insertOverlayExp, removeOverlayExperiment } from "./overlay.js";
+import { startPause, unpauseCurrentVideo } from "./pause-video.js";
 
 /**
  * CSS selector identifying YouTube player element
  */
 const ytPlayerSelector = "ytd-player";
-
-/**
- * Checks if a video is from the YT player
- *
- * @param video The video to be checked
- */
-const isVideoFromYoutubePlayer = (video: HTMLElement): boolean => {
-  return Boolean(video && video.classList.contains("html5-main-video"));
-};
-
-/**
- * Observes the DOM for changes by adding new videos
- */
-const observeVideos = (): void => {
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      mutation.addedNodes.forEach((node) => {
-        if (node instanceof HTMLElement) {
-          if (node.tagName === "VIDEO") {
-            pauseVideo(node as HTMLVideoElement);
-          }
-        }
-      });
-    });
-  });
-
-  observer.observe(document.documentElement || document.body, {
-    childList: true,
-    subtree: true,
-  });
-};
-
-/**
- * Pause a video and add a lister to pause it when it's state changes
- *
- * @param video The video to pause
- */
-const pauseVideo = (video: HTMLVideoElement): void => {
-  if (!isVideoFromYoutubePlayer(video)) {
-    return;
-  }
-
-  if (!window.shouldPauseVideos) {
-    return;
-  }
-
-  if (!video.paused) {
-    video.pause();
-  }
-
-  const playListener = (): void => {
-    if (!window.shouldPauseVideos) {
-      video.removeEventListener("play", playListener);
-      return;
-    }
-
-    video.pause();
-  };
-
-  // Prevent play attempts
-  video.addEventListener("play", playListener);
-};
-
-/**
- * Pauses all YT videos
- */
-export const pauseAllVideos = (): void => {
-  const videos = document.querySelectorAll("video");
-  videos.forEach(pauseVideo);
-
-  observeVideos();
-};
-
-/**
- * Sets the variable 'shouldPauseVideos' to false
- */
-export const unpauseAllVideos = (): void => {
-  window.shouldPauseVideos = false;
-};
 
 /**
  * Adds the YT Haven experiments
@@ -128,42 +50,51 @@ const removeExperiments = (): void => {
 };
 
 /**
- * Starts the YT Haven experiments
+ * Only start the experiment if the page was allowlisted and the user is in
+ * the haven experiment
  */
-export async function start(): Promise<void> {
-  // Do nothing if the user is not on the watch video page
-  if (!window.location.href.includes("watch")) {
-    return;
-  }
-
+const shouldStartExperiment = async (): Promise<boolean> => {
   const matchingElementFound = await browser.storage.local.get(
     matchingElementFoundKey,
   );
 
-  // Do nothing if the user is not in experiment or if the page was not allowlisted
-  if (
-    !(await isInHavenExperiment()) ||
-    typeof matchingElementFound[matchingElementFoundKey] === "undefined"
-  ) {
+  return (
+    (await isInHavenExperiment()) &&
+    typeof matchingElementFound[matchingElementFoundKey] !== "undefined"
+  );
+};
+
+/**
+ * Starts the YT Haven experiments
+ */
+export async function start(): Promise<void> {
+  if (!(await shouldStartExperiment())) {
     return;
   }
 
-  window.shouldPauseVideos = true;
-  pauseAllVideos();
-  await addExperiments();
+  startPause();
 
-  // Add experiments when the watch page is updated
-  window.addEventListener("yt-player-updated", (event): void => {
-    if (window.location.href.includes("watch")) {
-      removeExperiments();
-      void addExperiments();
-    }
-  });
+  const navigateListener = async (event: CustomEvent): Promise<void> => {
+    removeExperiments();
 
-  // Remove experiments when the user navigates outside the watch page
-  window.addEventListener("yt-navigate-finish", () => {
-    if (!window.location.href.includes("watch")) {
-      removeExperiments();
+    if (!isWatchPage() || !(await shouldStartExperiment())) {
+      return;
     }
+
+    const isEmbeddable =
+      event?.detail?.response?.playerResponse?.playabilityStatus
+        ?.playableInEmbed;
+
+    // Unpause the current Video if is not embeddable
+    if (!isEmbeddable) {
+      unpauseCurrentVideo();
+      return;
+    }
+
+    await addExperiments();
+  };
+
+  window.addEventListener("yt-navigate-finish", (event: CustomEvent) => {
+    void navigateListener(event);
   });
 }

@@ -17,11 +17,11 @@
  */
 import * as browser from "webextension-polyfill";
 import { type YTEventData } from "./shared.types.js";
-import { unpauseAllVideos } from "./haven.js";
 import {
   ytHavenNextVideoNotFound,
   ytHavenNonEmbeddableFound,
 } from "../shared/index.js";
+import { unpauseCurrentVideo } from "./pause-video.js";
 
 /**
  * Removes the embedded player from the DOM
@@ -78,7 +78,7 @@ async function handleEmbeddedVideoEnding(): Promise<void> {
     return;
   }
   removeEmbedPlayer();
-  unpauseAllVideos();
+  unpauseCurrentVideo();
   void browser.runtime.sendMessage({
     type: ytHavenNextVideoNotFound,
   });
@@ -86,7 +86,7 @@ async function handleEmbeddedVideoEnding(): Promise<void> {
 
 /**
  * Process messages from the embedded YT iFrame
- * @param MessageEvent The event message from the embedded player
+ * @param {MessageEvent} event The event message from the embedded player
  */
 const iFrameMessageListener = (event: MessageEvent): void => {
   const iFramePlayer = document.getElementById("embed-player");
@@ -190,9 +190,7 @@ export async function start(targetElement: HTMLElement): Promise<void> {
   const queryString = new URLSearchParams(window.location.search);
   const videoId = queryString.get("v");
   if (window.currentVideoId === videoId && window.playableInEmbed === false) {
-    unpauseAllVideos();
-    const videos = document.querySelectorAll("video");
-    void videos[0].play();
+    unpauseCurrentVideo();
     void browser.runtime.sendMessage({
       type: ytHavenNonEmbeddableFound,
     });
@@ -214,7 +212,6 @@ window.addEventListener("yt-navigate-finish", (event: CustomEvent) => {
     window.nextVideoId = undefined;
     window.videoLoading = undefined;
     removeEmbedPlayer();
-    unpauseAllVideos();
     return;
   }
   const queryString = new URLSearchParams(window.location.search);

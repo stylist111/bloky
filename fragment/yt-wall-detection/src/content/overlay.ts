@@ -27,6 +27,7 @@ import { getExperimentFlag } from "./shared.js";
 import { addVideoModal } from "./modal-player.js";
 import { abpLogo } from "../img/abp-logo.js";
 import { abLogo } from "../img/ab-logo.js";
+import { stopPause } from "./pause-video.js";
 
 /**
  * The extension name from manifest
@@ -49,7 +50,7 @@ function createOverlayUI(): HTMLDivElement {
   overlay.style.flexDirection = "column";
   overlay.style.justifyContent = "center";
   overlay.style.zIndex = "900";
-  overlay.style.backgroundColor = "#000";
+  overlay.style.backgroundColor = "rgba(0,0,0,0.9)";
   overlay.style.flexWrap = "wrap";
   overlay.style.alignContent = "center";
   overlay.style.fontFamily = "'Roboto', 'Arial', sans-serif";
@@ -245,12 +246,11 @@ export async function insertOverlayExp(
   };
 
   const neverShowHandler = (): void => {
-    window.shouldPauseVideos = false;
-
     void browser.runtime.sendMessage({
       type: ytHavenNeverShowOverlayClick,
     });
 
+    stopPause();
     videoOverlay?.parentElement?.removeChild(videoOverlay);
   };
 

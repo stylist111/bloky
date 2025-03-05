@@ -116,7 +116,7 @@ describe("Fragment / YT Ad Wall Detection", () => {
         ytHavenNeverShowOverlayClick,
         ytHavenWatchCTAClicked,
         ytHavenNextVideoNotFound,
-        ytHavenNonEmbeddableFound
+        ytHavenNonEmbeddableFound,
       ]).toContain(arg1);
 
       expectTypeOf(arg2).toBeFunction();
@@ -151,7 +151,7 @@ describe("Fragment / YT Ad Wall Detection", () => {
         ytHavenNeverShowOverlayClick,
         ytHavenWatchCTAClicked,
         ytHavenNextVideoNotFound,
-        ytHavenNonEmbeddableFound
+        ytHavenNonEmbeddableFound,
       ]).toContain(arg1);
       expectTypeOf(arg2).toBeFunction();
 
@@ -204,7 +204,7 @@ describe("Fragment / YT Ad Wall Detection", () => {
         ytHavenNeverShowOverlayClick,
         ytHavenWatchCTAClicked,
         ytHavenNextVideoNotFound,
-        ytHavenNonEmbeddableFound
+        ytHavenNonEmbeddableFound,
       ]).toContain(arg1);
       expectTypeOf(arg2).toBeFunction();
 
@@ -258,7 +258,7 @@ describe("Fragment / YT Ad Wall Detection", () => {
         ytHavenNeverShowOverlayClick,
         ytHavenWatchCTAClicked,
         ytHavenNextVideoNotFound,
-        ytHavenNonEmbeddableFound
+        ytHavenNonEmbeddableFound,
       ]).toContain(arg1);
       expectTypeOf(arg2).toBeFunction();
 

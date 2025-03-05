@@ -62,7 +62,6 @@ declare global {
  */
 declare global {
   interface Window {
-    shouldPauseVideos?: boolean;
     currentVideoId?: string;
     playableInEmbed?: boolean;
     nextVideoId?: string;
