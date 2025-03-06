@@ -50,7 +50,7 @@ export default () => {
 
     const { url } = await findUrl(premiumUrl);
     await driver.navigate().to(`${url}&testmode`);
-    await clickOnDisplayedElement("#get-premium-monthly");
+    await clickOnDisplayedElement("#get-premium-monthly", { timeout: 2000, scrollIntoView: true });
 
     await driver.switchTo().frame("paddle_frame");
     // First paying page
