@@ -95,16 +95,19 @@ export const startPause = (): void => {
 export const stopPause = (): void => {
   pauseObserver?.disconnect();
   pauseObserver = null;
-  unpauseCurrentVideo();
+  resumeCurrentVideo();
 };
 
 /**
- * Unpauses the last paused video on the page
+ * Resume the last paused video on the page.
  * This is in case we don't need to fully stop the pausing logic but
  * only to resume playing the current video
  */
-export const unpauseCurrentVideo = (): void => {
+export const resumeCurrentVideo = (): void => {
   const videos = document.querySelectorAll("video");
+
+  // Cleanup stop-play listeners from all videos on the page in order
+  // to allow the last paused video to play
   videos.forEach((video) => {
     video.removeEventListener("play", playListener);
   });

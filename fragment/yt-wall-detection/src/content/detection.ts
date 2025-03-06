@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import * as browser from "webextension-polyfill";
+import browser from "webextension-polyfill";
 import { youTubeWallDetected, youTubeNavigation } from "../shared/index.js";
 
 /**

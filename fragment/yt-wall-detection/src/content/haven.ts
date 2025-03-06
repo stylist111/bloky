@@ -15,12 +15,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import * as browser from "webextension-polyfill";
-import { matchingElementFoundKey } from "../shared/index.js";
-import { isInHavenExperiment, isWatchPage } from "./shared.js";
-import { start as startEmbedExperiment } from "./embed-haven.js";
-import { insertOverlayExp, removeOverlayExperiment } from "./overlay.js";
-import { startPause, unpauseCurrentVideo } from "./pause-video.js";
+import browser from "webextension-polyfill";
+import {
+  matchingElementFoundKey,
+  ytHavenNonEmbeddableFound,
+} from "../shared/index.js";
+import {
+  isInHavenExperiment,
+  isWatchPage,
+  videoContextStore,
+} from "./shared.js";
+import {
+  removeEmbedPlayer,
+  start as startEmbedExperiment,
+} from "./embed-haven.js";
+import { insertOverlayExp, removeVideoOverlay } from "./overlay.js";
+import { startPause, resumeCurrentVideo } from "./pause-video.js";
 
 /**
  * CSS selector identifying YouTube player element
@@ -46,7 +56,53 @@ const addExperiments = async (): Promise<void> => {
  * Removes the YT Haven experiments
  */
 const removeExperiments = (): void => {
-  removeOverlayExperiment();
+  removeVideoOverlay();
+  removeEmbedPlayer();
+};
+
+/**
+ * Listens on the navigation event. Updates the video context.
+ * Adds or removes the experiments
+ *
+ * @param event The navigation event
+ */
+const navigationListener = async (event: CustomEvent): Promise<void> => {
+  const videoId = event?.detail?.endpoint?.watchEndpoint?.videoId;
+
+  if (!isWatchPage() || !(await shouldStartExperiment()) || !videoId) {
+    removeExperiments();
+    return;
+  }
+
+  const playlistId = event?.detail?.endpoint?.watchEndpoint?.playlistId;
+  const isEmbeddable =
+    event?.detail?.response?.playerResponse?.playabilityStatus?.playableInEmbed;
+  const nextVideoId =
+    event?.detail?.response?.response?.contents?.twoColumnWatchNextResults
+      ?.autoplay?.autoplay?.sets[0]?.autoplayVideo?.watchEndpoint?.videoId;
+  // The current time of the video e.g ?t=100
+  const startSeconds =
+    event?.detail?.response?.endpoint?.watchEndpoint?.startTimeSeconds;
+
+  // update the video context, as this will be used in other parts of the fragment
+  videoContextStore.setVideoContext({
+    playlistId,
+    isEmbeddable,
+    videoId,
+    nextVideoId,
+    startSeconds,
+  });
+
+  // Unpause the current Video if is not embeddable
+  if (!isEmbeddable) {
+    resumeCurrentVideo();
+    void browser.runtime.sendMessage({
+      type: ytHavenNonEmbeddableFound,
+    });
+    return;
+  }
+
+  await addExperiments();
 };
 
 /**
@@ -74,27 +130,7 @@ export async function start(): Promise<void> {
 
   startPause();
 
-  const navigateListener = async (event: CustomEvent): Promise<void> => {
-    removeExperiments();
-
-    if (!isWatchPage() || !(await shouldStartExperiment())) {
-      return;
-    }
-
-    const isEmbeddable =
-      event?.detail?.response?.playerResponse?.playabilityStatus
-        ?.playableInEmbed;
-
-    // Unpause the current Video if is not embeddable
-    if (!isEmbeddable) {
-      unpauseCurrentVideo();
-      return;
-    }
-
-    await addExperiments();
-  };
-
   window.addEventListener("yt-navigate-finish", (event: CustomEvent) => {
-    void navigateListener(event);
+    void navigationListener(event);
   });
 }

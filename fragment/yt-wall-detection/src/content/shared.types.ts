@@ -25,24 +25,39 @@ export interface PartialPrivateExperimentsData {
   overrides: Record<string, unknown>;
 }
 
-export interface YTVideoInfo {
-  playableInEmbed: boolean;
+/**
+ * Configuration of the iframe embedded player
+ */
+export interface IframePlayerConfig {
   videoId: string;
+  playlistId?: string;
+  showWatchingWith?: boolean;
+  showInModal?: boolean;
+  startSeconds?: number;
 }
 
-export interface YTNextVideoInfo {
-  nextVideoId: string;
-  currentVideoId: string;
+/**
+ * The context of the current video
+ */
+export interface VideoContext {
+  playlistId?: string;
+  isEmbeddable: boolean;
+  videoId: string;
+  nextVideoId?: string;
+  startSeconds?: number;
 }
 
-interface YTProgressState {
-  current: number;
-  duration: number;
+/**
+ * The video context store
+ */
+export interface VideoContextStoreType {
+  _videoContext: VideoContext | null;
+  setVideoContext: (newContext: VideoContext) => void;
+  getVideoContext: () => VideoContext;
 }
 
 interface YTInfo {
-  videoData: any;
-  progressState: YTProgressState;
+  playerState: number;
 }
 
 export interface YTEventData {

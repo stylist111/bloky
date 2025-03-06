@@ -17,7 +17,7 @@
  */
 
 import type Browser from "webextension-polyfill";
-import * as browser from "webextension-polyfill";
+import browser from "webextension-polyfill";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { type Filter } from "@eyeo/webext-ad-filtering-solution";
 
@@ -187,14 +187,14 @@ export function start(parameters: StartInfo): void {
   parameters.port.on(ytHavenWatchCTAClicked, async (): Promise<void> => {
     const assignments = await ewe.experiments.getAssignments();
     sendAdWallEvents(ytHavenWatchCTAClicked, {
-      experimentVariant: assignments["yt-heaven"],
+      experimentVariant: assignments["yt-haven"],
     });
   });
 
   parameters.port.on(ytHavenNeverShowOverlayClick, async (): Promise<void> => {
     const assignments = await ewe.experiments.getAssignments();
     sendAdWallEvents(ytHavenNeverShowOverlayClick, {
-      experimentVariant: assignments["yt-heaven"],
+      experimentVariant: assignments["yt-haven"],
     });
 
     // Disable the experiment flags to not show the overlay in content script again
@@ -205,14 +205,14 @@ export function start(parameters: StartInfo): void {
   parameters.port.on(ytHavenNonEmbeddableFound, async (): Promise<void> => {
     const assignments = await ewe.experiments.getAssignments();
     sendAdWallEvents(ytHavenNonEmbeddableFound, {
-      experimentVariant: assignments["yt-heaven"],
+      experimentVariant: assignments["yt-haven"],
     });
   });
 
   parameters.port.on(ytHavenNextVideoNotFound, async (): Promise<void> => {
     const assignments = await ewe.experiments.getAssignments();
     sendAdWallEvents(ytHavenNextVideoNotFound, {
-      experimentVariant: assignments["yt-heaven"],
+      experimentVariant: assignments["yt-haven"],
     });
   });
 

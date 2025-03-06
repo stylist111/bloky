@@ -17,7 +17,21 @@
  */
 
 import { closeIcon } from "../img/close.js";
+import {
+  createIframePlayer,
+  createBackdrop,
+  videoContextStore,
+} from "./shared.js";
 
+/**
+ * The modal ID with the embedded player
+ */
+const modalId = "yt-haven-modal";
+
+/**
+ * Creates a close button for the modal
+ * @returns The close button element
+ */
 function createCloseButton(): HTMLElement {
   const closeButton = document.createElement("button");
   closeButton.ariaLabel = "close overlay";
@@ -31,70 +45,56 @@ function createCloseButton(): HTMLElement {
   return closeButton;
 }
 
-function createModalBackground(): HTMLDivElement {
-  const overlay = document.createElement("div");
-  overlay.setAttribute("id", "overlay");
-  overlay.style.position = "absolute";
-  overlay.style.top = "0";
-  overlay.style.left = "0";
-  overlay.style.width = "100%";
-  overlay.style.height = "100%";
-  overlay.style.display = "flex";
-  overlay.style.flexDirection = "column";
-  overlay.style.justifyContent = "center";
-  overlay.style.zIndex = "9000";
-  overlay.style.backgroundColor = "rgba(55,55,55,0.9)";
-  overlay.style.flexWrap = "wrap";
-  overlay.style.alignContent = "center";
-  overlay.style.fontFamily = "'Roboto', 'Arial', sans-serif"; // depends on extension
-  overlay.style.alignItems = "center";
-
-  return overlay;
-}
-
-function createVideoPlayer(): HTMLElement {
-  const url = new URL(window.top?.location?.href ?? "");
-  const videoId = url.searchParams.get("v");
-
-  const player = document.createElement("iframe");
-  player.src = `https://www.youtube-nocookie.com/embed/${videoId}?controls=1&autoplay=1`;
-  player.allow =
-    "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
-  player.allowFullscreen = true;
-  player.style.width = "80%";
-  player.style.aspectRatio = "16/9";
-  return player;
-}
-
-export function addVideoModal(body: HTMLElement): void {
-  const overlay = createModalBackground();
+/**
+ * Adds the video modal to the target element
+ * @param targetElement
+ */
+export function addVideoModal(targetElement: HTMLElement): void {
+  const modalContainer = createBackdrop(modalId);
   const closeButton = createCloseButton();
-  const player = createVideoPlayer();
 
-  overlay.appendChild(closeButton);
-  overlay.appendChild(player);
-  body.appendChild(overlay);
+  const { videoId, playlistId, startSeconds } =
+    videoContextStore.getVideoContext();
+
+  const playerElem = createIframePlayer({
+    videoId,
+    playlistId,
+    startSeconds,
+    showInModal: true,
+  });
+
+  modalContainer.appendChild(closeButton);
+  modalContainer.appendChild(playerElem);
+  targetElement.appendChild(modalContainer);
 
   function closeModalOnKeydown(evt: KeyboardEvent): void {
     if (evt.key === "Escape") {
-      body.removeChild(overlay);
-      body.removeEventListener("keydown", closeModalOnKeydown);
+      targetElement.removeChild(modalContainer);
+      targetElement.removeEventListener("keydown", closeModalOnKeydown);
     }
   }
 
   function closeModalOnClick(evt: MouseEvent): void {
-    if ((evt.target as HTMLDivElement)?.id === "overlay") {
-      body.removeChild(overlay);
-      body.removeEventListener("click", closeModalOnClick);
+    if ((evt.target as HTMLDivElement)?.id === modalId) {
+      targetElement.removeChild(modalContainer);
+      targetElement.removeEventListener("click", closeModalOnClick);
     }
   }
 
   function closeModalButtonClick(): void {
-    body.removeChild(overlay);
+    targetElement.removeChild(modalContainer);
     closeButton.removeEventListener("click", closeModalButtonClick);
   }
 
   closeButton.addEventListener("click", closeModalButtonClick);
-  body.addEventListener("keydown", closeModalOnKeydown);
-  body.addEventListener("click", closeModalOnClick);
+  targetElement.addEventListener("keydown", closeModalOnKeydown);
+  targetElement.addEventListener("click", closeModalOnClick);
+}
+
+/**
+ * Remove the video modal
+ */
+export function removeVideoModal(): void {
+  const modalContainer = document.getElementById(modalId);
+  modalContainer?.parentElement?.removeChild(modalContainer);
 }

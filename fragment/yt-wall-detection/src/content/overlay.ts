@@ -16,18 +16,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import * as browser from "webextension-polyfill";
+import browser from "webextension-polyfill";
 import {
   ytHavenModalFlag,
   ytHavenNeverShowOverlayClick,
   ytHavenOverlayFlag,
   ytHavenWatchCTAClicked,
 } from "../shared/index.js";
-import { getExperimentFlag } from "./shared.js";
-import { addVideoModal } from "./modal-player.js";
+import {
+  createIframePlayer,
+  createBackdrop,
+  getExperimentFlag,
+  videoContextStore,
+} from "./shared.js";
+import { addVideoModal, removeVideoModal } from "./modal-player.js";
 import { abpLogo } from "../img/abp-logo.js";
 import { abLogo } from "../img/ab-logo.js";
 import { stopPause } from "./pause-video.js";
+import { removeEmbedPlayer } from "./embed-haven.js";
 
 /**
  * The extension name from manifest
@@ -35,29 +41,6 @@ import { stopPause } from "./pause-video.js";
 const { short_name: extName } = browser.runtime.getManifest();
 
 let videoOverlay: HTMLElement;
-
-/**
- * Creates the background overlay UI
- */
-function createOverlayUI(): HTMLDivElement {
-  const overlay = document.createElement("div");
-  overlay.style.position = "absolute";
-  overlay.style.top = "0";
-  overlay.style.left = "0";
-  overlay.style.width = "100%";
-  overlay.style.height = "100%";
-  overlay.style.display = "flex";
-  overlay.style.flexDirection = "column";
-  overlay.style.justifyContent = "center";
-  overlay.style.zIndex = "900";
-  overlay.style.backgroundColor = "rgba(0,0,0,0.9)";
-  overlay.style.flexWrap = "wrap";
-  overlay.style.alignContent = "center";
-  overlay.style.fontFamily = "'Roboto', 'Arial', sans-serif";
-  overlay.style.alignItems = "center";
-
-  return overlay;
-}
 
 /**
  * Creates the extension logo
@@ -205,18 +188,18 @@ function getVideoOverlay(
   watchHandler: () => void,
   neverShowHandler: () => void,
 ): HTMLDivElement {
-  const overlay = createOverlayUI();
-  const logo = createLogo();
-  const title = createTitle();
-  const message = createMessage();
+  const backdropElem = createBackdrop();
+  const logoElem = createLogo();
+  const titleElem = createTitle();
+  const descriptionElem = createMessage();
   const buttonContainer = createCTAButtons(watchHandler, neverShowHandler);
 
-  overlay.appendChild(logo);
-  overlay.appendChild(title);
-  overlay.appendChild(message);
-  overlay.appendChild(buttonContainer);
+  backdropElem.appendChild(logoElem);
+  backdropElem.appendChild(titleElem);
+  backdropElem.appendChild(descriptionElem);
+  backdropElem.appendChild(buttonContainer);
 
-  return overlay;
+  return backdropElem;
 }
 
 export async function insertOverlayExp(
@@ -229,15 +212,30 @@ export async function insertOverlayExp(
     return;
   }
 
+  // Remove any previous added video overlay
+  removeVideoOverlay();
+
   const watchHandler = (): void => {
     if (isOverlayIframeExp) {
-      // TODO: insert video iframe on page here
-      // insertIframeOnPage();
+      // Cleanup previous video overlays (if any), we only want to this here because
+      // if the user is in the modal experiment, we want to keep the overlay
+      // after the modal is closed
+      removeVideoOverlay();
+
+      const { videoId, playlistId, startSeconds } =
+        videoContextStore.getVideoContext();
+
+      const playerElem = createIframePlayer({
+        videoId,
+        playlistId,
+        startSeconds,
+        showWatchingWith: true,
+      });
+
+      videoContainer.appendChild(playerElem);
     } else {
-      const body = document.querySelector<HTMLElement>("body");
-      if (body) {
-        addVideoModal(body);
-      }
+      // show modal with the embedded player
+      addVideoModal(document.body);
     }
 
     void browser.runtime.sendMessage({
@@ -262,8 +260,11 @@ export async function insertOverlayExp(
 }
 
 /**
- * Removes the video overlay
+ * Removes the video overlay and depending on which experiment the user might be in,
+ * it cleans up the modal and the embedded player.
  */
-export function removeOverlayExperiment(): void {
+export function removeVideoOverlay(): void {
   videoOverlay?.parentElement?.removeChild(videoOverlay);
+  removeEmbedPlayer();
+  removeVideoModal();
 }
