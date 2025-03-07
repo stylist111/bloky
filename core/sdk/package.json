@@ -44,7 +44,7 @@
     "yargs": "^17.5.1"
   },
   "devDependencies": {
-    "@eyeo/get-browser-binary": "0.20.1",
+    "@eyeo/get-browser-binary": "0.20.2",
     "@eyeo/snippets": "1.2.2",
     "copy-webpack-plugin": "^9.0.1",
     "css-loader": "^5.2.6",
