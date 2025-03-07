@@ -45,7 +45,10 @@ export default {
       },
       {
         dest: "desktop-options.js",
-        src: ["js/pages/desktop-options/index.mjs"]
+        src: [
+          "src/bootstrap/ui/desktop-options.entry.ts",
+          "js/pages/desktop-options/index.mjs"
+        ]
       },
       {
         dest: "react-desktop-options.js",

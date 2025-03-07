@@ -19,6 +19,7 @@
     ".": "./dist/ewe-api.js",
     "./background": "./dist/ewe-api.js",
     "./content": "./dist/ewe-content.js",
+    "./ui": "./dist/ewe-ui.js",
     "./all/*": "./src/all/*",
     "./src/*": "./src/*",
     "./adblockpluscore/*": "./adblockpluscore/*"
@@ -33,7 +34,7 @@
     "scripts",
     "sdk",
     "webpack.config.js",
-    "src/types/index.d.ts"
+    "src/types/*.d.ts"
   ],
   "dependencies": {
     "@sentry/browser": "8.54.0",

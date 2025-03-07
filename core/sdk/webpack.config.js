@@ -167,7 +167,11 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath,
         ],
         library: {name: "EWE", type: "umd"}
       },
-      content
+      content,
+      ui: {
+        import: "./src/ui/index.js",
+        library: {name: "EWE", type: "umd"}
+      }
     },
     output: {
       filename: "ewe-[name].js",
@@ -307,6 +311,8 @@ export default (env = {}) => {
           {from: path.join(extensionFunctionalPath, "index.html")},
           {from: path.join(extensionFunctionalPath, "options.html")},
           {from: path.join(extensionFunctionalPath, "index-options.js")},
+          {from: path.join(extensionFunctionalPath, "sentry-test.html")},
+          {from: path.join(extensionFunctionalPath, "sentry-test.js")},
           ...buildVariant.manifestVersion >= 3 &&
             fs.existsSync(scriptsOutputMV3Path) ?
             [{from: scriptsOutputMV3Path}] : [],

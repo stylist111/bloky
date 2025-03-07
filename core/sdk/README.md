@@ -45,9 +45,13 @@ All contributors to this project are required to read, and follow, our
 
 ## Getting started
 
-The library comes in two parts, `ewe-api.js` to be included in the extension's
-background page, and `ewe-content.js` to be loaded as a content script. You can
-get it from [npm][npm-package].
+The library comes in three parts:
+
+* `ewe-api.js` to be included in the extension's background page
+* `ewe-content.js` to be loaded as a content script
+* `ewe-ui.js` to be loaded in the extension's various UI pages
+
+You can get it from [npm][npm-package].
 
 Additionally, the SDK provides standalone utilities that can work in both
 browser extension contexts, as well as other Javascript contexts.
@@ -213,18 +217,22 @@ and [MV3 permissions](https://developer.chrome.com/docs/extensions/mv3/declare_p
 
 ### API
 
-The API will be available in your own background scripts through the
-global `EWE` object. Please call `EWE.start()` to start blocking ads.
+The API will be available in your own background scripts and UI pages through
+the global `EWE` object. In the background scripts, please call `EWE.start()`
+to start blocking ads.
 
 Note that in MV3 extensions, `EWE.start()` must be called in the first
-turn of the event loop so that it can attach event listeners.
+turn of the event loop of the service worker, so that it can attach
+event listeners.
 
 ### Module bundlers (optional)
 
-`ewe-api.js` is built as a UMD module (Universal Module Definition),
-and so it can also be used with module bundlers.
+`ewe-api.js` and `ewe-ui.js` are built as a UMD module (Universal Module
+Definition), and so they can also be used with module bundlers.
 
-If using a module bundler **do not** add `ewe-api.js` to your `manifest.json`.
+If using a module bundler for the background script, **do not** add `ewe-api.js`
+to your `manifest.json`. Similarly, if using a module bundler for scripts on
+UI pages, **do not** add `ewe-ui.js` to your UI pages.
 Consequently, there won't be a global `EWE` object.
 
 #### CommonJS
@@ -253,6 +261,20 @@ Individual utilities that can be used in any context can also be imported.
 
 ```
 import {Scheduler} from "@eyeo/webext-ad-filtering-solution/all/scheduler.js";
+```
+
+Functionality that is intended to run in a UI context (popup, options, etc.)
+will use the `ewe-ui.js` file. This can be imported in those pages either by
+using the mechanism below in a ui page:
+
+```
+import * as EWE from "@eyeo/webext-ad-filtering-solution/ui";
+```
+
+or by handling the bundling and importing the generated file directly:
+
+```
+<script src="ewe-ui.js"></script>
 ```
 
 ### Snippet filters support

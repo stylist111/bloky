@@ -64,6 +64,10 @@ export default {
         src: ["adblock-betafish/onpage-dialog/content/dialog.ts"],
       },
       {
+        dest: "options.js",
+        src: ["src/bootstrap/ui/options.entry.ts"],
+      },
+      {
         dest: "info-injector.preload.js",
         src: ["src/info-injector/content/index.ts"],
       },

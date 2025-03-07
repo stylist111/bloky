@@ -1,6 +1,7 @@
 # Unreleased
 
 - Fixed an issue when an incognito tab isn't found
+- Added Sentry exception handling to the options UI page (EXT-755)
 
 # 4.15.0 - 2025-02-25
 

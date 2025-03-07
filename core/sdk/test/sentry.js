@@ -21,12 +21,30 @@ import expect from "expect";
 import {EWE} from "./messaging.js";
 import {wait} from "./polling.js";
 
-async function createNewErrorEvent(errorType) {
+async function createNewErrorEvent(errorType, context) {
   const oldEvent = await EWE.testing.getLastSentryEvent();
-  void browser.runtime.sendMessage({
-    type: "ewe-test:sentry-error",
-    errorType
-  });
+  if (context === "background") {
+    void browser.runtime.sendMessage({
+      type: "ewe-test:sentry-error",
+      errorType
+    });
+  }
+  else if (context === "ui") {
+    function handleConnect(port) {
+      if (port.name !== "sentry-test") {
+        return;
+      }
+
+      browser.runtime.onConnect.removeListener(handleConnect);
+      port.postMessage(errorType);
+    }
+
+    browser.runtime.onConnect.addListener(handleConnect);
+    void browser.tabs.create({url: "sentry-test.html"});
+  }
+  else {
+    throw new Error(`Invalid context when calling createNewErrorEvent(): ${context}`);
+  }
 
   let newEvent;
 
@@ -55,24 +73,36 @@ describe("Sentry", function() {
     const environment = "space";
     const hostVersion = "5.4";
 
-    await EWE.sentry.start("", environment, hostVersion);
+    await EWE.sentry.start("test-url", environment, hostVersion);
 
-    const event = await createNewErrorEvent("error");
+    const event = await createNewErrorEvent("error", "background");
     expect(event.environment).toEqual(environment);
     expect(event.release).toEqual(hostVersion);
   });
 
   it("emits a Sentry event when a rejection occurs", async function() {
-    await EWE.sentry.start("", "", "1.0");
+    await EWE.sentry.start("test-url", "test-env", "1.0");
 
-    await createNewErrorEvent("rejection");
+    await createNewErrorEvent("rejection", "background");
+  });
+
+  it("emits a Sentry event when an errors occurs in a UI page", async function() {
+    await EWE.sentry.start("test-url", "test-env", "1.0");
+
+    await createNewErrorEvent("error", "ui");
+  });
+
+  it("emits a Sentry event when a rejection occurs in a UI page", async function() {
+    await EWE.sentry.start("test-url", "test-env", "1.0");
+
+    await createNewErrorEvent("rejection", "ui");
   });
 
   it("generates and maintains a single user id through multiple errors", async function() {
-    await EWE.sentry.start("", "", "1.0");
+    await EWE.sentry.start("test-url", "test-env", "1.0");
 
-    const firstEvent = await createNewErrorEvent("error");
-    const secondEvent = await createNewErrorEvent("error");
+    const firstEvent = await createNewErrorEvent("error", "background");
+    const secondEvent = await createNewErrorEvent("error", "background");
     expect(firstEvent.user.id).toStrictEqual(secondEvent.user.id);
   });
 });

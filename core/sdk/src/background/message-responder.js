@@ -17,6 +17,7 @@
 
 import browser from "webextension-polyfill";
 
+import {fromSerializableError} from "../all/errors.js";
 import {default as initializer} from "./initializer.js";
 import {applyContentFilters, injectCSS} from "./content-filter.js";
 import {createStyleSheet} from "adblockpluscore/lib/elemHide.js";
@@ -26,6 +27,7 @@ import {allowlistPage} from "./allowlisting.js";
 import {trace} from "./debugging.js";
 import {onContentHelloReceived} from "./content-message-deferrer.js";
 import {markActive, onBlockthroughAcceptableAdsPageView} from "./cdp.js";
+import {default as sentry} from "./sentry.js";
 
 async function handleMessage(message, sender) {
   trace({
@@ -70,6 +72,10 @@ async function handleMessage(message, sender) {
       break;
     case "ewe:blockthrough-acceptable-ads-page-view":
       await onBlockthroughAcceptableAdsPageView(sender.tab.url);
+      break;
+    case "ewe:sentry-error":
+      const error = fromSerializableError(message.error);
+      sentry.reportError(error);
       break;
   }
 }

@@ -62,6 +62,14 @@ function reportErrorInternal(error) {
   if (scope) {
     scope.captureException(error);
   }
+  else {
+    // This is useful in local dev where Sentry auth hasn't been set up, but you
+    // want to see the errors that would have been sent to Sentry if it were.
+    console.warn(
+      "Would have gone to Sentry:",
+      {error}
+    );
+  }
 }
 
 /**
@@ -103,7 +111,7 @@ export default {
    * @param {string} hostVersion - Host extension version
    */
   async start(dsn, environment, hostVersion) {
-    if (dsn == null || environment == null) {
+    if (!dsn || !environment) {
       console.warn("Sentry is not initialized.");
       return;
     }

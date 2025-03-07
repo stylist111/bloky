@@ -24,6 +24,22 @@ const ERROR_CLOSED_CONNECTION = "A listener indicated an asynchronous " +
 const ERROR_MANAGER_DISCONNECTED = "Message manager disconnected";
 
 /**
+ * Reconstructs an error from a serializable error object
+ *
+ * @param {string} errorData - Error object
+ *
+ * @returns {Error} error
+ */
+export function fromSerializableError(errorData) {
+  const error = new Error(errorData.message);
+  error.cause = errorData.cause;
+  error.name = errorData.name;
+  error.stack = errorData.stack;
+
+  return error;
+}
+
+/**
  * Filters out `browser.runtime.sendMessage` errors to do with the receiving end
  * no longer existing.
  *
@@ -44,4 +60,22 @@ export function ignoreNoConnectionError(promise) {
 
     throw error;
   });
+}
+
+/**
+ * Creates serializable error object from given error
+ *
+ * @param {Error} error - Error
+ *
+ * @returns {string} serializable error object
+ */
+export function toSerializableError(error) {
+  return {
+    cause: error.cause instanceof Error ?
+      toSerializableError(error.cause) :
+      error.cause,
+    message: error.message,
+    name: error.name,
+    stack: error.stack
+  };
 }
