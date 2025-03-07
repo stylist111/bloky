@@ -42,7 +42,7 @@ npm run -w @eyeo/webext-ad-filtering-solution test:performance -- {2|3} {chromiu
 
 ```
 docker build -t basic -f core/sdk/test/dockerfiles/basic.Dockerfile .
-docker run --shm-size=2g -it --entrypoint basic npm run -w adblockpluscore test:unit -- [test/path]
+docker run --shm-size=2g -it --entrypoint npm basic run -w adblockpluscore test:unit -- [test/path]
 ```
 
 ### Func:webext

@@ -12,7 +12,7 @@
     "yargs": "17.3.0"
   },
   "devDependencies": {
-    "@eyeo/get-browser-binary": "0.19.0",
+    "@eyeo/get-browser-binary": "0.20.1",
     "c8": "^7.1.2",
     "chai": "^4.2.0",
     "got": "^11.1.3",
