@@ -326,6 +326,6 @@ upload_sourcemaps:
     - version="${CI_COMMIT_TAG/adblock-/""}"
     - echo "Uploading the sourcemaps for AdBlock $version"
     - VERSION=$version npm run sentry:release-new
-    - mkdir ./dist/release/sourcemaps-mv3 && unzip dist/release/adblock-*mv3.zip -d ./dist/release/sourcemaps-mv3
+    - mkdir ./dist/sourcemaps/chrome-mv3 && unzip dist/release/adblock-chrome-*-mv3.zip -d ./dist/sourcemaps/chrome-mv3
     - VERSION=$version npm run sentry:sourcemaps
     - VERSION=$version npm run sentry:release-finalize

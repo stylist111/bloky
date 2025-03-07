@@ -32,7 +32,7 @@
     "sentry:login": "sentry-cli login",
     "sentry:release-new": "sentry-cli releases new $VERSION --org eyeo --project adblock",
     "sentry:release-finalize": "sentry-cli releases finalize $VERSION --org eyeo --project adblock",
-    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org eyeo --project adblock ./dist/release/sourcemaps-mv3 && sentry-cli sourcemaps upload --release=$VERSION --org eyeo --project adblock ./dist/release/sourcemaps-mv3",
+    "sentry:sourcemaps": "sentry-cli sourcemaps upload --release=$VERSION --org eyeo --project adblock ./dist/sourcemaps/chrome-mv3",
     "test": "vitest run test/unit",
     "test:watch": "vitest test/unit",
     "test:end-to-end": "npm run $ test.end-to-end",

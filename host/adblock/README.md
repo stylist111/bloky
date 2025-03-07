@@ -222,3 +222,23 @@ Each page can contain any combination of the following:
   - `action`: function from `help-action.js` to be called on click
   - `icon`: material icons key of icon to be displayed on button, displayed before text
 - `footer`: displayed at bottom of page, i18n string key, max one per page
+
+## Uploading sourcemaps to Sentry
+
+The gitlab CI configuration has `release` stage and `upload_sourcemaps` job
+which is runs for tags like `adblock-<number>` and uploads the releases sourcemaps to Sentry.
+It requires `SENTRY_AUTH_TOKEN` global variable configured for the project.
+To do the same manually on the command line one has to:
+
+1. Login to Sentry with `npm run sentry:login` and provide Sentry auth token.
+2. Create a release with `VERSION=<version> npm run sentry:release-new`
+3. Prepare unzipped file:
+
+```
+mkdir ./dist/sourcemaps/chrome-mv3
+&& unzip dist/release/adblock-chrome-*-mv3.zip -d ./dist/sourcemaps/chrome-mv3
+```
+
+4. Upload the sourcemaps with `VERSION=<version> npm run sentry:sourcemaps`.
+   The sourcemaps are overwritten.
+5. Finalize the release with `VERSION=<version> npm run sentry:release-finalize`
