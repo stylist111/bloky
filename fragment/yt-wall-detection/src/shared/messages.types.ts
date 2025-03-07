@@ -32,3 +32,7 @@ export const ytHavenNeverShowOverlayClick =
 export const ytHavenNextVideoNotFound = "yt-haven.next-video-not-found";
 export const ytHavenNonEmbeddableFound = "yt-haven.non-embeddable-found";
 export const ytHavenWatchCTAClicked = "yt-haven.watch-cta-clicked";
+
+// Events sent by the player control on the embedded video
+export const ytHavenLabelWatchingDisable = "yt-haven.label-watching-disable";
+export const ytHavenLabelWatchingIgnore = "yt-haven.watching-label-ignore";

@@ -1,5 +1,9 @@
 import browser from "webextension-polyfill";
 import { isInHavenExperiment } from "../shared.js";
+import {
+  ytHavenLabelWatchingDisable,
+  ytHavenLabelWatchingIgnore,
+} from "../../shared/index.js";
 
 const manifest = browser.runtime.getManifest();
 
@@ -82,9 +86,12 @@ async function start(): Promise<void> {
       `Disabling ${manifest.short_name} player might result in more ads. Do you want to proceed?`,
     );
 
-    if (response) {
-      // TODO: Disable YT Haven
-    }
+    const eventName = response
+      ? ytHavenLabelWatchingDisable
+      : ytHavenLabelWatchingIgnore;
+    void browser.runtime.sendMessage({
+      type: eventName,
+    });
   });
 
   // Insert the button as the first child of the container

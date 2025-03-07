@@ -41,6 +41,8 @@ import {
   ytHavenNextVideoNotFound,
   ytHavenNonEmbeddableFound,
   ytHavenNeverShowOverlayClick,
+  ytHavenLabelWatchingDisable,
+  ytHavenLabelWatchingIgnore,
 } from "../shared/index.js";
 
 /**
@@ -155,6 +157,14 @@ export function start(parameters: StartInfo): void {
    * no longer need to be passed in but imported.
    */
   const { sendAdWallEvents = noop } = parameters;
+
+  const sendEventWithExperiment = async (eventName: string): Promise<void> => {
+    const assignments = await ewe.experiments.getAssignments();
+    sendAdWallEvents(eventName, {
+      experimentVariant: assignments["yt-haven"],
+    });
+  };
+
   // Capture the start date for the YT auto allowlist logic
   const captureDateOnUpdatedWithParameters = captureDateOnUpdate.bind(
     null,
@@ -185,17 +195,11 @@ export function start(parameters: StartInfo): void {
   });
 
   parameters.port.on(ytHavenWatchCTAClicked, async (): Promise<void> => {
-    const assignments = await ewe.experiments.getAssignments();
-    sendAdWallEvents(ytHavenWatchCTAClicked, {
-      experimentVariant: assignments["yt-haven"],
-    });
+    await sendEventWithExperiment(ytHavenWatchCTAClicked);
   });
 
   parameters.port.on(ytHavenNeverShowOverlayClick, async (): Promise<void> => {
-    const assignments = await ewe.experiments.getAssignments();
-    sendAdWallEvents(ytHavenNeverShowOverlayClick, {
-      experimentVariant: assignments["yt-haven"],
-    });
+    await sendEventWithExperiment(ytHavenNeverShowOverlayClick);
 
     // Disable the experiment flags to not show the overlay in content script again
     await ewe.experiments.overrideFlag(ytHavenOverlayFlag, false);
@@ -203,29 +207,58 @@ export function start(parameters: StartInfo): void {
   });
 
   parameters.port.on(ytHavenNonEmbeddableFound, async (): Promise<void> => {
-    const assignments = await ewe.experiments.getAssignments();
-    sendAdWallEvents(ytHavenNonEmbeddableFound, {
-      experimentVariant: assignments["yt-haven"],
-    });
+    await sendEventWithExperiment(ytHavenNonEmbeddableFound);
   });
 
   parameters.port.on(ytHavenNextVideoNotFound, async (): Promise<void> => {
-    const assignments = await ewe.experiments.getAssignments();
-    sendAdWallEvents(ytHavenNextVideoNotFound, {
-      experimentVariant: assignments["yt-haven"],
-    });
+    await sendEventWithExperiment(ytHavenNextVideoNotFound);
   });
 
-  parameters.addTrustedMessageTypes("https://youtube.com", [
+  parameters.port.on(
+    ytHavenLabelWatchingDisable,
+    async (message: any, sender: MessageSender): Promise<void> => {
+      const tabId = sender?.tab?.id;
+
+      if (!tabId) {
+        return;
+      }
+
+      await sendEventWithExperiment(ytHavenLabelWatchingDisable);
+
+      // Disable the experiment flags to not show the overlay/embed in content script again
+      await ewe.experiments.overrideFlag(ytHavenOverlayFlag, false);
+      await ewe.experiments.overrideFlag(ytHavenIframeFlag, false);
+
+      // Reload the tab so that the experiment is removed from content script
+      await browser.tabs.reload(tabId);
+    },
+  );
+
+  parameters.port.on(ytHavenLabelWatchingIgnore, async (): Promise<void> => {
+    await sendEventWithExperiment(ytHavenLabelWatchingIgnore);
+  });
+
+  const trustedEventNames = [
     youTubeWallDetected,
     youTubeNavigation,
     ytHavenWatchCTAClicked,
     ytHavenNeverShowOverlayClick,
-  ]);
-  parameters.addTrustedMessageTypes("https://www.youtube.com", [
-    youTubeWallDetected,
-    youTubeNavigation,
-    ytHavenWatchCTAClicked,
-    ytHavenNeverShowOverlayClick,
-  ]);
+    ytHavenNonEmbeddableFound,
+    ytHavenNextVideoNotFound,
+    ytHavenLabelWatchingDisable,
+    ytHavenLabelWatchingIgnore,
+  ];
+  parameters.addTrustedMessageTypes("https://youtube.com", trustedEventNames);
+  parameters.addTrustedMessageTypes(
+    "https://www.youtube.com",
+    trustedEventNames,
+  );
+  parameters.addTrustedMessageTypes(
+    "https://youtube-nocookie.com",
+    trustedEventNames,
+  );
+  parameters.addTrustedMessageTypes(
+    "https://www.youtube-nocookie.com",
+    trustedEventNames,
+  );
 }
