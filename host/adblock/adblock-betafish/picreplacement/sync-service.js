@@ -420,7 +420,7 @@ const SyncService = (function getSyncService() {
     // Remove the temporary allowlist filters and global pause filters
     return filters.filter((filter, index) => {
       const { metadata = {} } = metadataList[index];
-      return !metadata.expiresByTabId && !globalPauseFilters.has(filter);
+      return !(metadata && metadata.expiresByTabId) && !globalPauseFilters.has(filter);
     });
   }
 

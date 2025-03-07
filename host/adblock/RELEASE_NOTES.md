@@ -1,5 +1,7 @@
 # Unreleased
 
+- Fixed an issue with the Premium Sync feature
+
 # 6.15.1 - 2025-03-04
 
 This release contains bugfixes and under-the-hood changes.
