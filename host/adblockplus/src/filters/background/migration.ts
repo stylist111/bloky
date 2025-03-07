@@ -21,10 +21,16 @@ import { port } from "~/core/messaging/background";
 import { FilterOrigin } from "../shared";
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 
-async function isMigrationActive(): Promise<boolean> {
-  const flagName = "allowlist-migration-disabled-locale";
-  const locales = await ewe.experiments.getFlag(flagName);
+async function isMigrationActive(experimentFlag: string): Promise<boolean> {
+  const locales = await ewe.experiments.getFlag(experimentFlag);
   if (!Array.isArray(locales)) {
+    return false;
+  }
+
+  const migrationDisabledFlag = await ewe.experiments.getFlag(
+    "allowlist-migration-disabled"
+  );
+  if (migrationDisabledFlag) {
     return false;
   }
 
@@ -32,14 +38,14 @@ async function isMigrationActive(): Promise<boolean> {
   return !locales.includes(userLocale);
 }
 
-async function migrateToSmartAllowlisting(): Promise<boolean> {
-  if (!(await isMigrationActive())) {
+async function migratePopupAllowlistsToSmartAllowlisting(): Promise<boolean> {
+  if (!(await isMigrationActive("allowlist-migration-disabled-locale"))) {
     return false;
   }
 
   const filters = await ewe.filters.getUserFilters();
   const documentAllowLists = filters.filter(
-    (filter) => filter.type === "allowing" && filter.text.includes("document")
+    (filter) => filter.type === "allowing" && filter.text.includes("$document")
   );
   const documentAllowListsWithMetadata = await Promise.all(
     documentAllowLists.map(async (filter) => {
@@ -70,26 +76,83 @@ async function migrateToSmartAllowlisting(): Promise<boolean> {
   return true;
 }
 
+async function migrateAllAllowlistsToSmartAllowlisting(): Promise<boolean> {
+  if (!(await isMigrationActive("all-allowlists-migration-disabled-locale"))) {
+    return false;
+  }
+
+  const filters = await ewe.filters.getUserFilters();
+  const documentAllowLists = filters.filter(
+    (filter) => filter.type === "allowing" && filter.text.includes("$document")
+  );
+  const documentAllowListsWithMetadata = await Promise.all(
+    documentAllowLists.map(async (filter) => {
+      const metadata = await ewe.filters.getMetadata(filter.text);
+      return { ...filter, metadata };
+    })
+  );
+
+  const allowlistsToTransition = documentAllowListsWithMetadata.filter(
+    ({ metadata }) =>
+      !metadata?.autoExtendMs && !metadata?.expiresAt && !metadata?.origin
+  );
+
+  // transition to smart allowlisting
+  const autoExtendMs = Prefs.get("allowlisting_auto_extend_ms");
+  await Promise.all(
+    allowlistsToTransition.map(async ({ text: filterText, metadata }) => {
+      await ewe.filters.setMetadata(filterText, {
+        ...metadata,
+        autoExtendMs,
+        expiresAt: Date.now() + autoExtendMs
+      });
+    })
+  );
+
+  return true;
+}
+
 /**
  * Initializes the migration module
  */
 export async function start(): Promise<void> {
   port.on("filters.isMigrationActive", async () => {
-    return await isMigrationActive();
+    const isPopupMigrationActive = await isMigrationActive(
+      "allowlist-migration-disabled-locale"
+    );
+    const isAllMigrationActive = await isMigrationActive(
+      "all-allowlists-migration-disabled-locale"
+    );
+    return isPopupMigrationActive || isAllMigrationActive;
   });
 
   await Prefs.untilLoaded;
-  const prefsKey = "migration_popup_to_smart_allowlist_complete";
+  const prefsKeyPopupMigration = "migration_popup_to_smart_allowlist_complete";
+  const prefsKeyAllMigration = "migration_all_to_smart_allowlist_complete";
 
-  if (Prefs.get(prefsKey)) {
-    return;
+  if (!Prefs.get(prefsKeyPopupMigration)) {
+    try {
+      const migrated = await migratePopupAllowlistsToSmartAllowlisting();
+      await Prefs.set(prefsKeyPopupMigration, migrated);
+    } catch (error) {
+      await Prefs.set(prefsKeyPopupMigration, false);
+      console.error(
+        "Failed to migrate allowlists from popup to smart allowlisting",
+        error
+      );
+    }
   }
 
-  try {
-    const migrated = await migrateToSmartAllowlisting();
-    await Prefs.set(prefsKey, migrated);
-  } catch (error) {
-    await Prefs.set(prefsKey, false);
-    console.error("Failed to migrate to smart allowlisting", error);
+  if (!Prefs.get(prefsKeyAllMigration)) {
+    try {
+      const migrated = await migrateAllAllowlistsToSmartAllowlisting();
+      await Prefs.set(prefsKeyAllMigration, migrated);
+    } catch (error) {
+      await Prefs.set(prefsKeyAllMigration, false);
+      console.error(
+        "Failed to migrate all allowlists to smart allowlisting",
+        error
+      );
+    }
   }
 }

@@ -405,11 +405,18 @@ defaults.data_collection_opt_out = false;
 defaults.allowlisting_auto_extend_ms = 1000 * 60 * 60 * 24 * 7; // 7 days
 
 /**
- * Whether all historic allowlisting filters were transitioned to smart allowlisting
- *
+ * Whether all historic allowlisting filters with "popup" source were
+ * transitioned to smart allowlisting
  * @type {boolean}
  */
 defaults.migration_popup_to_smart_allowlist_complete = false;
+
+/**
+ * Whether all historic allowlisting filters were transitioned to smart allowlisting
+ * no matter the source (except for "web" source).
+ * @type {boolean}
+ */
+defaults.migration_all_to_smart_allowlist_complete = false;
 
 /**
  * @namespace
