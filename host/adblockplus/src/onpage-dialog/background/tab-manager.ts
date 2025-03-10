@@ -351,10 +351,15 @@ async function handlePageLoadedEvent(page: unknown): Promise<void> {
     return;
   }
 
-  const tab = await browser.tabs.get(page.id);
-
   if (unassignedDialogs.size === 0) {
     logger.debug("[onpage-dialog]: No command");
+    return;
+  }
+
+  let tab = null;
+  try {
+    tab = await browser.tabs.get(page.id);
+  } catch (ex) {
     return;
   }
 
