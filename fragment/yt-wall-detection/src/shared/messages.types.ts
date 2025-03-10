@@ -29,6 +29,7 @@ export const matchingElementFoundKey = "matchingElementFound";
 
 export const ytHavenNeverShowOverlayClick =
   "yt-haven.never-show-overlay-clicked";
+export const ytHavenMetaTagFound = "yt-haven.meta-tag.found";
 export const ytHavenNextVideoNotFound = "yt-haven.next-video-not-found";
 export const ytHavenNonEmbeddableFound = "yt-haven.non-embeddable-found";
 export const ytHavenWatchCTAClicked = "yt-haven.watch-cta-clicked";

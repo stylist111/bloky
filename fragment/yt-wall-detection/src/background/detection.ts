@@ -38,6 +38,7 @@ import {
   ytHavenOverlayFlag,
   matchingElementFoundKey,
   ytHavenWatchCTAClicked,
+  ytHavenMetaTagFound,
   ytHavenNextVideoNotFound,
   ytHavenNonEmbeddableFound,
   ytHavenNeverShowOverlayClick,
@@ -214,6 +215,10 @@ export function start(parameters: StartInfo): void {
     await sendEventWithExperiment(ytHavenNextVideoNotFound);
   });
 
+  parameters.port.on(ytHavenMetaTagFound, async (): Promise<void> => {
+    await sendEventWithExperiment(ytHavenMetaTagFound);
+  });
+
   parameters.port.on(
     ytHavenLabelWatchingDisable,
     async (message: any, sender: MessageSender): Promise<void> => {
@@ -244,6 +249,7 @@ export function start(parameters: StartInfo): void {
     ytHavenWatchCTAClicked,
     ytHavenNeverShowOverlayClick,
     ytHavenNonEmbeddableFound,
+    ytHavenMetaTagFound,
     ytHavenNextVideoNotFound,
     ytHavenLabelWatchingDisable,
     ytHavenLabelWatchingIgnore,

@@ -18,6 +18,7 @@
 import browser from "webextension-polyfill";
 import {
   matchingElementFoundKey,
+  ytHavenMetaTagFound,
   ytHavenNonEmbeddableFound,
 } from "../shared/index.js";
 import {
@@ -106,6 +107,21 @@ const navigationListener = async (event: CustomEvent): Promise<void> => {
 };
 
 /**
+ * check if the YT Haven DOM element exists, if not - creates and adds it
+ */
+const havenElementExits = (): boolean => {
+  let metaTag = document.getElementById("yt-haven");
+  if (metaTag) {
+    return true;
+  }
+
+  metaTag = document.createElement("meta");
+  metaTag.id = "yt-haven";
+  (document.head || document.documentElement).prepend(metaTag);
+  return false;
+};
+
+/**
  * Only start the experiment if the page was allowlisted and the user is in
  * the haven experiment
  */
@@ -125,6 +141,13 @@ const shouldStartExperiment = async (): Promise<boolean> => {
  */
 export async function start(): Promise<void> {
   if (!(await shouldStartExperiment())) {
+    return;
+  }
+
+  if (havenElementExits()) {
+    void browser.runtime.sendMessage({
+      type: ytHavenMetaTagFound,
+    });
     return;
   }
 
