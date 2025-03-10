@@ -272,7 +272,17 @@
         framesOfTabs.set(tab.id, frames);
 
         for (let detail of details) {
-          let frame = { url: new URL(detail.url), state: Object.create(null) };
+          let url = null;
+          try {
+            url = new URL(detail.url);
+          } catch (ex) {
+            // We need to record the frame regardless of whether we are able to
+            // determine its URL. For debugging purposes, we still want to log
+            // the error though, but don't need to report it to Sentry.
+            console.error("Invalid frame URL", detail.url);
+          }
+
+          let frame = { url, state: Object.create(null) };
           frames.set(detail.frameId, frame);
 
           if (detail.parentFrameId > -1) {
