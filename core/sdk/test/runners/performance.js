@@ -21,14 +21,10 @@
 import path from "path";
 
 import yargs from "yargs";
-import lighthouse from "lighthouse";
-import {By, until} from "selenium-webdriver";
 
-import {getHandle, getNewDriver, writeScreenshot, quitDriver} from "./driver.js";
-
-const remoteDebuggingPort = 33559;
-// To be removed: https://eyeo.atlassian.net/browse/EXT-97
-const historyTestSkipped = true;
+import {getNewDriver, quitDriver, remoteDebuggingPort, waitForPerformanceExtension} from "./driver.js";
+import {historyTest} from "../performance/history.js";
+import {baselineRunsPerUrl, lighthouseTests} from "../performance/lighthouse.js";
 
 function parseArguments() {
   try {
@@ -46,10 +42,13 @@ function parseArguments() {
     parser.option("slow", {
       description: "Run the tests using the slow performance extension."
     });
+    parser.option("saveBaseline", {
+      description: `Run lighthouse ${baselineRunsPerUrl} times per URL and save the baseline file. Performance tests are skipped when this option is used.`
+    });
 
     let {manifest, browser, version} = parser.argv;
     let params = {};
-    for (let param of ["forceHeadful", "slow"]) {
+    for (let param of ["forceHeadful", "slow", "saveBaseline"]) {
       let value = parser.argv[param];
       if (typeof value != "undefined") {
         params[param] = value;
@@ -75,97 +74,6 @@ function parseArguments() {
   }
 }
 
-async function waitForPerformanceExtension(driver) {
-  console.log("Waiting for performance extension ...");
-  await getHandle("/status.html", 25000);
-  let elem = await driver.findElement(By.id("status"));
-  if ((await elem.getAttribute("errors")) == "true") {
-    let errors = [];
-    for (let error of await elem.findElements(By.css("ul"))) {
-      errors.push(await error.getAttribute("innerText"));
-    }
-    throw new Error(errors.join("\n"));
-  }
-}
-
-async function runLighthouseTest() {
-  const url = "https://www.example.com";
-  const options = {
-    logLevel: "silent",
-    output: "json",
-    onlyCategories: ["performance"],
-    port: remoteDebuggingPort
-  };
-
-  console.log(`\nRunning lighthouse on ${url} ...`);
-  const {lhr} = await lighthouse(url, options);
-
-  console.log({runWarnings: lhr.runWarnings});
-  const metrics = ["first-contentful-paint", "interactive", "total-blocking-time"];
-
-  for (let metric of metrics) {
-    let value = Math.trunc(lhr.audits[metric].numericValue);
-    console.log(`${metric}: ${value}ms`);
-  }
-}
-
-async function runHistoryTest(driver) {
-  if (historyTestSkipped) {
-    console.warn("History test is being skipped");
-    return;
-  }
-  const failure = "History test FAILED";
-
-  const url = "https://dev.motiv.fm";
-  console.log(`\nRunning history test on ${url} ...`);
-  await driver.navigate().to(url);
-
-  const sidebarCss = ".layout-sidebar__menu > .layout-menu-menu-list__item > a";
-  let sidebarLinks = await driver.findElements(By.css(sidebarCss));
-
-  // Make sure sidebar elements are not initially stale
-  let becameStale = false;
-  for (let elem of sidebarLinks) {
-    try {
-      await driver.wait(until.stalenessOf(elem), 500);
-      becameStale = true;
-    }
-    catch (e) {} // Sidebar elements may never become stale
-  }
-  if (becameStale) {
-    sidebarLinks = await driver.findElements(By.css(sidebarCss));
-  }
-
-  if (sidebarLinks.length < 2) {
-    throw new Error(`${failure}: At least 3 sidebar links are expected`);
-  }
-
-  let currentUrl;
-  for (let elem of sidebarLinks) {
-    try {
-      await elem.click();
-    }
-    catch (err) {
-      await writeScreenshot("screenshot.png");
-      if (err.name == "StaleElementReferenceError") {
-        throw new Error(`${failure}: Clicking on a stale element`);
-      }
-      else {
-        throw err;
-      }
-    }
-
-    let nextUrl;
-    await driver.wait(async() => {
-      nextUrl = await driver.getCurrentUrl();
-      return nextUrl != currentUrl;
-    }, 1000, `${failure}: Clicking an element didn't load a new URL. Current: ${currentUrl}`);
-    currentUrl = nextUrl;
-  }
-
-  console.log("History test OK.");
-}
-
 export async function run() {
   const {manifest, browser, version, params} = parseArguments();
   const headless = !params.forceHeadful;
@@ -181,11 +89,15 @@ export async function run() {
   }
 
   const options = {extensionPaths, extraArgs, headless};
+
   try {
-    const driver = await getNewDriver(browser, version, options);
-    await waitForPerformanceExtension(driver);
-    await runLighthouseTest();
-    await runHistoryTest(driver);
+    await getNewDriver(browser, version, options);
+    await waitForPerformanceExtension(browser);
+
+    await lighthouseTests(params.saveBaseline, {browser, version, options});
+    if (!params.saveBaseline) {
+      await historyTest();
+    }
   }
   finally {
     await quitDriver();

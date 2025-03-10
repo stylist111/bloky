@@ -453,7 +453,7 @@ int:bundle:
   extends: .functional
   stage: performance
   script:
-    - docker run $DOCKER_OPTIONS --entrypoint npm $FUNCTIONAL_IMAGE run -w=@eyeo/webext-ad-filtering-solution test:performance $PARAMS
+    - docker run $DOCKER_OPTIONS --entrypoint npm $FUNCTIONAL_IMAGE run -w @eyeo/webext-ad-filtering-solution test:performance -- $PARAMS
 
 perf:v2:chromium:
   extends: .performance
@@ -464,3 +464,17 @@ perf:v3:chromium:
   extends: .performance
   variables:
     PARAMS: 3 chromium
+
+perf:save-baseline:v3:chromium:
+  extends: .performance
+  after_script:
+    - docker cp $(docker ps -aqf ancestor=$FUNCTIONAL_IMAGE | head -n 1):/extensions/core/sdk/test/performance/baseline_docker.json ./core/sdk/test/performance/baseline_docker.json
+  artifacts:
+    paths:
+      - core/sdk/test/performance/baseline_docker.json
+    when: on_success
+    expire_in: 1 day
+  variables:
+    PARAMS: 3 chromium --saveBaseline
+  rules:
+    - if: $SAVE_BASELINE == "true"

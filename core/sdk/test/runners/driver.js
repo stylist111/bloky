@@ -21,9 +21,11 @@
 import fs from "fs";
 import path from "path";
 
+import {By} from "selenium-webdriver";
 import {BROWSERS} from "@eyeo/get-browser-binary";
 
 const screenshotsPath = path.join(process.cwd(), "test", "screenshots");
+export const remoteDebuggingPort = 33560; // used by lighthouse
 
 let driver;
 
@@ -36,11 +38,23 @@ export async function quitDriver() {
 export async function getNewDriver(browser, version, options) {
   await quitDriver();
 
-  driver = await BROWSERS[browser].getDriver(version, options);
+  try {
+    driver = await BROWSERS[browser].getDriver(version, options);
+  }
+  catch (err) {
+    if (err.name === "SessionNotCreatedError") {
+      console.warn(`SessionNotCreatedError was thrown. Please check if port ${remoteDebuggingPort} is already in use`);
+    }
+    throw err;
+  }
 
   let cap = await driver.getCapabilities();
   console.log(`Browser used for tests: ${cap.getBrowserName()} ${cap.getBrowserVersion()}`);
 
+  return driver;
+}
+
+export function getCurrentDriver() {
   return driver;
 }
 
@@ -99,4 +113,18 @@ export async function writeScreenshot(filename) {
   const screenshotFile = path.join(screenshotsPath, filename);
   await fs.promises.writeFile(screenshotFile, base64Data, "base64");
   console.warn(`Screenshot written to ${screenshotFile}`);
+}
+
+export async function waitForPerformanceExtension() {
+  console.log("Waiting for performance extension ...");
+
+  await getHandle("/status.html", 25000);
+  const elem = await driver.findElement(By.id("status"));
+  if ((await elem.getAttribute("errors")) == "true") {
+    const errors = [];
+    for (const error of await elem.findElements(By.css("ul"))) {
+      errors.push(await error.getAttribute("innerText"));
+    }
+    throw new Error(errors.join("\n"));
+  }
 }

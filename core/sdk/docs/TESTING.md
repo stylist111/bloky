@@ -331,20 +331,48 @@ command:
 
 ## Performance tests
 
-The performace of the engine is measured using
+The performance of the engine is measured using
 [lightnouse metrics](https://developer.chrome.com/docs/lighthouse/performance/performance-scoring#metrics).
 
 To run the performance tests:
 
 ```
-npm run -w @eyeo/webext-ad-filtering-solution test:performance -- {2|3} {chromium|edge} [--forceHeadful] [--slow]
+npm run -w @eyeo/webext-ad-filtering-solution test:performance -- {2|3} {chromium|edge} [--forceHeadful] [--slow] [--saveBaseline]
 ```
 
-Note: Firefox is not supported by the performance tests.
+The `slow` option (MV3 only) uses a slow performance extension, which contains
+modified content scripts code that has a negative impact on the EWE performance.
+Lighthouse tests are expected to fail when that option is used.
 
-The `slow` option uses a slow performance extension, which contains modified
-content scripts code that has a negative impact on the EWE performance. Please
-note `slow` is not supported for MV2.
+The `saveBaseline` option runs lighthouse several times per URL and saves the
+baseline file, which is the file used by the performance checks to decide if a
+certain metric is higher than the expected performance.
+
+Notes:
+
+- Firefox is not supported by the performance tests.
+- Performance checks are skipped when the `saveBaseline` option is used.
+
+### Lighthouse checks math
+
+To decide whether a metric value is within the expected performance or not,
+the actual value obtained with lighthouse is checked against a baseline file,
+which contains median and maximum values per metric per URL.
+
+Here's how the maximum allowed value is obtained, depending on the type of
+metric:
+
+- Factor metrics: `maximum_allowed_value = baseline_median * factor`. Each URL
+has its own hardcoded factor, depending on the nature of the URL.
+- Scaling metrics: `maximum_allowed_value = scaling(baseline_median)`. Those
+metrics tend to need a higher allowance, therefore a scaling function with
+[exponential decay](https://en.wikipedia.org/wiki/Exponential_decay) is used.
+- Health metrics: `maximum_allowed_value = baseline_max * factor`. Used to
+decide if the lightouse results are relevant. When they are not, metrics checks
+on that URL will be skipped.
+
+URL factors and scaling constants have been adjusted by running the tests
+multiple times.
 
 ## Docker local runs
 
@@ -388,8 +416,8 @@ Optional environment variables for the script:
 
 #### Performance
 
-```
-docker run --shm-size=2g -it --entrypoint functional npm -w @eyeo/webext-ad-filtering-solution run test:performance {2|3} {chromium|edge} [--slow]
+```shell
+docker run --shm-size=2g -it --entrypoint npm functional run -w @eyeo/webext-ad-filtering-solution test:performance -- {2|3} {chromium|edge} [--slow] [--saveBaseline]
 ```
 
 In order to access the screenshots for failing tests run the following command,
@@ -398,6 +426,17 @@ which copies the screenshots to the `<destination>` folder:
 ```shell
 docker cp $(docker ps -aqf ancestor=functional | head -n 1):/extensions/core/sdk/test/screenshots <destination>
 ```
+
+When the `saveBaseline` option is used, please use the following command to
+replace the local baseline docker file with the one generated in the docker
+container:
+
+```shell
+docker cp $(docker ps -aqf ancestor=functional | head -n 1):/extensions/core/sdk/test/performance/baseline_docker.json ./core/sdk/test/performance/baseline_docker.json
+```
+
+On the CI, setting the `SAVE_BASELINE` pipeline variable to `true` will trigger
+the `perf:save-baseline:v3:chromium` job.
 
 #### ARM architecture (M1/M2 Apple Silicon)
 

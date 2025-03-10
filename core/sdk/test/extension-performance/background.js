@@ -45,12 +45,12 @@ EWE.start(startupInfo).then(async firstRun => {
     "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt",
     "https://easylist-downloads.adblockplus.org/v3/full/abp-filters-anti-cv.txt",
     "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt",
-    "https://easylist-downloads.adblockplus.org/v3/full/i_dont_care_about_cookies.txt"
+    "https://easylist-downloads.adblockplus.org/v3/full/cookie-filter-list.txt"
   ] : [
     "https://easylist-downloads.adblockplus.org/easylist.txt",
     "https://easylist-downloads.adblockplus.org/abp-filters-anti-cv.txt",
     "https://easylist-downloads.adblockplus.org/exceptionrules.txt",
-    "https://easylist-downloads.adblockplus.org/i_dont_care_about_cookies.txt"
+    "https://easylist-downloads.adblockplus.org/cookie-filter-list.txt"
   ];
 
   let errors = [];

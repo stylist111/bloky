@@ -20,6 +20,7 @@ WORKDIR extensions/
 ARG BROWSER=
 RUN if [ ! -z "$BROWSER" ]; then node core/sdk/test/dockerfiles/get-browser-binaries.js $BROWSER; fi
 
+ENV IS_DOCKER_RUN="true"
 ENV TEST_PARAMS="3 chromium"
 ENV ONLY_FLAKY="false"
 ENV TEST_RUNS=1
