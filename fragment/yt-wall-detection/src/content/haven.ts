@@ -158,7 +158,8 @@ const iFrameErrorListener = (event: MessageEvent): void => {
     const eventData: YTEventData = JSON.parse(event.data);
     const errorCode = eventData?.info?.videoData?.errorCode;
 
-    if (eventData?.event === "infoDelivery" && errorCode) {
+    // Detect private videos/playlists or bot detection
+    if (eventData?.event === "initialDelivery" && errorCode) {
       void browser.runtime.sendMessage({
         type: ytHavenEmbeddedPlayerIssue,
         errorCode,
