@@ -34,7 +34,7 @@ export default () => {
       wafc: "0", // always 0 as we don't do that anymore
       aa: expect.stringMatching(/(u|0|1|2)/),
       ps: expect.stringMatching(/(0|1)/),
-      er: expect.stringMatching(/^[a-zA-Z0-9]{8}/), // experiments revision ID. Example: ietbCO3H
+      er: expect.stringMatching(/^([a-zA-Z0-9+/,_=]{8}|null)$/), // experiments revision ID. Example: ietbCO3H
       ev: expect.stringMatching(/^[a-zA-Z0-9+/]+=*/), // experiments variants. Example: AQ%3D%3
     };
 

@@ -38,7 +38,7 @@ export async function readFile(filePath) {
   return contents.trim();
 }
 
-export async function download(downloadUrl, toFile, retries = 3) {
+export async function download(downloadUrl, toFile, retries = 5) {
   const proto = downloadUrl.startsWith("https") ? https : http;
 
   for (let attempt = 1; attempt <= retries; attempt++) {
@@ -81,8 +81,9 @@ export async function download(downloadUrl, toFile, retries = 3) {
       return;
     }
     catch (err) {
-      if (err.code === "ETIMEDOUT" && attempt < retries) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+      if ((err.code === "ETIMEDOUT" || err.code === "ECONNRESET") &&
+          attempt < retries) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
         continue;
       }
       throw err;
