@@ -19,6 +19,7 @@ import browser from "webextension-polyfill";
 import type { YTEventData } from "./shared.types.js";
 import {
   ytHavenIframeFlag,
+  ytHavenIframeShown,
   ytHavenNextVideoNotFound,
 } from "../shared/index.js";
 import { resumeCurrentVideo } from "./pause-video.js";
@@ -116,6 +117,13 @@ export async function addEmbedVideoOnTop(
   if (!(playerElem instanceof HTMLIFrameElement)) {
     removeEmbedPlayer();
   }
+
+  // This event will be triggered when the iframe is first added,
+  // but also when the user navigates to another video and the iframe
+  // already exists in the DOM
+  void browser.runtime.sendMessage({
+    type: ytHavenIframeShown,
+  });
 
   if (playerElem && playerElem instanceof HTMLIFrameElement) {
     // This message is being sent to the YT JS code in the embedded iframe.

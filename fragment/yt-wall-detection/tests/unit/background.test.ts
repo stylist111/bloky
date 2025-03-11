@@ -38,6 +38,10 @@ import {
   ytHavenNonEmbeddableFound,
   ytHavenLabelWatchingDisable,
   ytHavenLabelWatchingIgnore,
+  ytHavenNonPlayableFound,
+  ytHavenModalClosed,
+  ytHavenOverlayShown,
+  ytHavenIframeShown,
 } from "../../src/shared/index.js";
 import { type MessageSender, type AdWallMessage } from "@eyeo/polyfills/all";
 
@@ -88,9 +92,13 @@ const trustedEventNames = [
   ytHavenMetaTagFound,
   ytHavenNeverShowOverlayClick,
   ytHavenNonEmbeddableFound,
+  ytHavenNonPlayableFound,
   ytHavenNextVideoNotFound,
   ytHavenLabelWatchingDisable,
   ytHavenLabelWatchingIgnore,
+  ytHavenModalClosed,
+  ytHavenOverlayShown,
+  ytHavenIframeShown,
 ];
 
 /**

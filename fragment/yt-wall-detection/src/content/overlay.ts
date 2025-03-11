@@ -21,6 +21,7 @@ import {
   ytHavenModalFlag,
   ytHavenNeverShowOverlayClick,
   ytHavenOverlayFlag,
+  ytHavenOverlayShown,
   ytHavenWatchCTAClicked,
 } from "../shared/index.js";
 import {
@@ -130,7 +131,7 @@ function createWatchButton(clickHandler: () => void): HTMLElement {
  */
 function createNeverShowButton(clickHandler: () => void): HTMLElement {
   const neverShowButton = createButton(clickHandler);
-  neverShowButton.style.backgroundColor = "#ffffff1a";
+  neverShowButton.style.backgroundColor = "#333";
   neverShowButton.style.color = "#fff";
   neverShowButton.style.marginLeft = "10px";
   neverShowButton.innerText = browser.i18n.getMessage(
@@ -138,11 +139,11 @@ function createNeverShowButton(clickHandler: () => void): HTMLElement {
   );
 
   neverShowButton.addEventListener("mouseover", () => {
-    neverShowButton.style.backgroundColor = "#ffffff33";
+    neverShowButton.style.backgroundColor = "#555";
   });
 
   neverShowButton.addEventListener("mouseout", () => {
-    neverShowButton.style.backgroundColor = "#ffffff1a";
+    neverShowButton.style.backgroundColor = "#333";
   });
 
   return neverShowButton;
@@ -250,6 +251,10 @@ export async function insertOverlayExp(
   videoContainer.style.position = "relative";
   videoContainer.style.overflow = "hidden";
   videoContainer.appendChild(videoOverlay);
+
+  void browser.runtime.sendMessage({
+    type: ytHavenOverlayShown,
+  });
 }
 
 /**

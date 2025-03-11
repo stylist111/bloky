@@ -210,6 +210,9 @@ export function createIframePlayer(
     iframe.style.left = "0";
     iframe.style.width = "100%";
     iframe.style.height = "100%";
+    // The z-index is set to 500 to make sure that the iframe is above the video
+    // when 3rd party extensions like Enhancer for YouTube are used
+    iframe.style.zIndex = "500";
   }
 
   // Notify the iframe player API that main window is ready to listen for events
@@ -239,7 +242,15 @@ export function createBackdrop(id?: string): HTMLDivElement {
   backdropElem.style.display = "flex";
   backdropElem.style.flexDirection = "column";
   backdropElem.style.justifyContent = "center";
-  backdropElem.style.zIndex = "9999";
+
+  // YouTube is using certain z-index values for its elements like notifications
+  // or dialogs, so we need to make sure that the backdrop is not above them, but above
+  // the video and 3rd party elements added by other extensions. e.g.:
+  // yt premium promo = 2202
+  // yt members dialog = 2202
+  // 3rd party ext player controls = 300
+  backdropElem.style.zIndex = "1500";
+
   backdropElem.style.backgroundColor = "rgba(0, 0, 0, 0.9)";
   backdropElem.style.flexWrap = "nowrap";
   backdropElem.style.alignContent = "center";

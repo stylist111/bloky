@@ -49,6 +49,10 @@ import {
   ytHavenNeverShowOverlayClick,
   ytHavenLabelWatchingDisable,
   ytHavenLabelWatchingIgnore,
+  ytHavenNonPlayableFound,
+  ytHavenModalClosed,
+  ytHavenOverlayShown,
+  ytHavenIframeShown,
 } from "../shared/index.js";
 
 /**
@@ -158,7 +162,7 @@ const processYouTubeWallMessage = async (
 export function start(parameters: StartInfo): void {
   /**
    * The following StartInfo properties are passed into the start function
-   * as a temporary solution because core utillities for those objects are missing.
+   * as a temporary solution because core utilities for those objects are missing.
    * Once a core utility for these objects are created, it is expected that they would
    * no longer need to be passed in but imported.
    */
@@ -216,9 +220,23 @@ export function start(parameters: StartInfo): void {
     await ewe.experiments.overrideFlag(ytHavenModalFlag, false);
   });
 
-  parameters.port.on(ytHavenNonEmbeddableFound, async (): Promise<void> => {
-    await sendEventWithExperiment(ytHavenNonEmbeddableFound);
-  });
+  parameters.port.on(
+    ytHavenNonEmbeddableFound,
+    async (message: YTHavenPlayerErrorMessage): Promise<void> => {
+      await sendEventWithExperiment(ytHavenNonEmbeddableFound, {
+        errorCode: message.errorCode,
+      });
+    },
+  );
+
+  parameters.port.on(
+    ytHavenNonPlayableFound,
+    async (message: YTHavenPlayerErrorMessage): Promise<void> => {
+      await sendEventWithExperiment(ytHavenNonPlayableFound, {
+        errorCode: message.errorCode,
+      });
+    },
+  );
 
   parameters.port.on(ytHavenNextVideoNotFound, async (): Promise<void> => {
     await sendEventWithExperiment(ytHavenNextVideoNotFound);
@@ -261,17 +279,33 @@ export function start(parameters: StartInfo): void {
     await sendEventWithExperiment(ytHavenLabelWatchingIgnore);
   });
 
+  parameters.port.on(ytHavenModalClosed, async (): Promise<void> => {
+    await sendEventWithExperiment(ytHavenModalClosed);
+  });
+
+  parameters.port.on(ytHavenOverlayShown, async (): Promise<void> => {
+    await sendEventWithExperiment(ytHavenOverlayShown);
+  });
+
+  parameters.port.on(ytHavenIframeShown, async (): Promise<void> => {
+    await sendEventWithExperiment(ytHavenIframeShown);
+  });
+
   const trustedEventNames = [
     youTubeWallDetected,
     youTubeNavigation,
     ytHavenWatchCTAClicked,
     ytHavenNeverShowOverlayClick,
     ytHavenNonEmbeddableFound,
+    ytHavenNonPlayableFound,
     ytHavenEmbeddedPlayerIssue,
     ytHavenMetaTagFound,
     ytHavenNextVideoNotFound,
     ytHavenLabelWatchingDisable,
     ytHavenLabelWatchingIgnore,
+    ytHavenModalClosed,
+    ytHavenOverlayShown,
+    ytHavenIframeShown,
   ];
   parameters.addTrustedMessageTypes("https://youtube.com", trustedEventNames);
   parameters.addTrustedMessageTypes(

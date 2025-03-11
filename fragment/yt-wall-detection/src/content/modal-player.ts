@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import browser from "webextension-polyfill";
 import { closeIcon } from "../img/close.js";
 import {
   createIframePlayer,
@@ -23,7 +24,7 @@ import {
   videoContextStore,
   createLogoSVG,
 } from "./shared.js";
-import browser from "webextension-polyfill";
+import { ytHavenModalClosed } from "../shared/index.js";
 
 /**
  * The modal ID with the embedded player
@@ -76,6 +77,7 @@ function createBrandingElement(): HTMLElement {
 export function addVideoModal(targetElement: HTMLElement): void {
   const modalContainer = createBackdrop(modalId);
   modalContainer.style.position = "fixed";
+  modalContainer.style.zIndex = "999999";
 
   const closeButton = createCloseButton();
   const brandingElem = createBrandingElement();
@@ -95,22 +97,29 @@ export function addVideoModal(targetElement: HTMLElement): void {
   modalContainer.appendChild(brandingElem);
   targetElement.appendChild(modalContainer);
 
+  function handleModalClose(): void {
+    targetElement.removeChild(modalContainer);
+    void browser.runtime.sendMessage({
+      type: ytHavenModalClosed,
+    });
+  }
+
   function closeModalOnKeydown(evt: KeyboardEvent): void {
     if (evt.key === "Escape") {
-      targetElement.removeChild(modalContainer);
+      handleModalClose();
       targetElement.removeEventListener("keydown", closeModalOnKeydown);
     }
   }
 
   function closeModalOnClick(evt: MouseEvent): void {
     if ((evt.target as HTMLDivElement)?.id === modalId) {
-      targetElement.removeChild(modalContainer);
+      handleModalClose();
       targetElement.removeEventListener("click", closeModalOnClick);
     }
   }
 
   function closeModalButtonClick(): void {
-    targetElement.removeChild(modalContainer);
+    handleModalClose();
     closeButton.removeEventListener("click", closeModalButtonClick);
   }
 

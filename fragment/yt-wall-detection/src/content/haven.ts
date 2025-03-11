@@ -21,6 +21,7 @@ import {
   ytHavenEmbeddedPlayerIssue,
   ytHavenMetaTagFound,
   ytHavenNonEmbeddableFound,
+  ytHavenNonPlayableFound,
 } from "../shared/index.js";
 import {
   getIframePlayer,
@@ -40,6 +41,16 @@ import type { YTEventData } from "./shared.types";
  * CSS selector identifying YouTube player element
  */
 const ytPlayerSelector = "ytd-player";
+
+/**
+ * The playability status of the video
+ */
+enum PlayabilityStatus {
+  OK = "OK",
+  // UNPLAYABLE = "UNPLAYABLE", // members only (without access)
+  // LOGIN_REQUIRED = "LOGIN_REQUIRED", // private video
+  // ERROR = "ERROR", // video not found (maybe private)
+}
 
 /**
  * Adds the YT Haven experiments
@@ -81,6 +92,20 @@ const navigationListener = async (event: CustomEvent): Promise<void> => {
   const playlistId = event?.detail?.endpoint?.watchEndpoint?.playlistId;
   const isEmbeddable =
     event?.detail?.response?.playerResponse?.playabilityStatus?.playableInEmbed;
+  const playabilityStatus =
+    event?.detail?.response?.playerResponse?.playabilityStatus?.status;
+
+  // Unpause the current Video if is not embeddable
+  // or if it's unplayable (e.g. members only without access)
+  if (!isEmbeddable || playabilityStatus !== PlayabilityStatus.OK) {
+    resumeCurrentVideo();
+    void browser.runtime.sendMessage({
+      type: !isEmbeddable ? ytHavenNonEmbeddableFound : ytHavenNonPlayableFound,
+      errorCode: playabilityStatus,
+    });
+    return;
+  }
+
   const nextVideoId =
     event?.detail?.response?.response?.contents?.twoColumnWatchNextResults
       ?.autoplay?.autoplay?.sets[0]?.autoplayVideo?.watchEndpoint?.videoId;
@@ -96,15 +121,6 @@ const navigationListener = async (event: CustomEvent): Promise<void> => {
     nextVideoId,
     startSeconds,
   });
-
-  // Unpause the current Video if is not embeddable
-  if (!isEmbeddable) {
-    resumeCurrentVideo();
-    void browser.runtime.sendMessage({
-      type: ytHavenNonEmbeddableFound,
-    });
-    return;
-  }
 
   await addExperiments();
 };

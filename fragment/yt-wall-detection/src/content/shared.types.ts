@@ -75,16 +75,3 @@ declare global {
     "yt-navigate-finish": CustomEvent;
   }
 }
-
-/**
- * Extend the window object to store a global variable used
- * for understanding if we should keep pausing the videos
- */
-declare global {
-  interface Window {
-    currentVideoId?: string;
-    playableInEmbed?: boolean;
-    nextVideoId?: string;
-    videoLoading?: boolean;
-  }
-}
