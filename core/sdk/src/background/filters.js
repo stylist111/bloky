@@ -668,30 +668,27 @@ export default namespace;
 
 
 async function removeExpiredFilters() {
-  try {
-    // Retrieve the list of user filters
-    const filters = await namespace.getUserFilters();
-    const now = Date.now();
+  // Retrieve the list of user filters
+  const filters = await namespace.getUserFilters();
+  const now = Date.now();
 
-    const filtersToRemove = [];
-    // Iterate over each filter to check for expiration
-    for (const filter of filters) {
-      const metadata = await namespace.getMetadata(filter.text) || {};
-      const {expiresAt} = metadata;
+  const filtersToRemove = [];
+  // Iterate over each filter to check for expiration
+  for (const filter of filters) {
+    const metadata = await namespace.getMetadata(filter.text) || {};
+    const {expiresAt} = metadata;
 
-      // If the filter is expired, add it to the list of filters to remove
-      if (expiresAt && now > expiresAt) {
-        filtersToRemove.push(filter.text);
-        filterNotifier.emit("filter.expired", filter, metadata);
-      }
+    // If the filter is expired, add it to the list of filters to remove
+    if (expiresAt && now > expiresAt) {
+      filtersToRemove.push(filter.text);
+      filterNotifier.emit("filter.expired", filter, metadata);
     }
+  }
 
-    // Remove all expired filters
-    await namespace.remove(filtersToRemove);
-  }
-  catch (e) {
-    console.error("Error while removing expired filters:", e);
-  }
+  // Remove all expired filters
+  await namespace.remove(filtersToRemove);
+
+  return true;
 }
 
 
@@ -705,31 +702,26 @@ async function onCompleted(details) {
     return;
   }
 
-  try {
-    // Retrieve the list of user filters
-    const filters = await namespace.getAllowingFilters(tabId);
-    const now = Date.now();
+  // Retrieve the list of user filters
+  const filters = await namespace.getAllowingFilters(tabId);
+  const now = Date.now();
 
-    // Iterate over each filter to check if its expiry should be extended
-    for (const filterText of filters) {
-      const metadata = await namespace.getMetadata(filterText) || {};
-      const {expiresAt, autoExtendMs} = metadata;
+  // Iterate over each filter to check if its expiry should be extended
+  for (const filterText of filters) {
+    const metadata = await namespace.getMetadata(filterText) || {};
+    const {expiresAt, autoExtendMs} = metadata;
 
-      // If the filter is set to auto-extend, and it is not expired,
-      // extend its expiration date
-      const isExtendableFilter = autoExtendMs && expiresAt;
-      if (isExtendableFilter && now < expiresAt) {
-        const newMetadata = {
-          ...metadata,
-          expiresAt: now + autoExtendMs
-        };
-        await namespace.setMetadata(filterText, newMetadata);
-        filterNotifier.emit("filter.renewed", Filter.fromText(Filter.normalize(filterText)), newMetadata);
-      }
+    // If the filter is set to auto-extend, and it is not expired,
+    // extend its expiration date
+    const isExtendableFilter = autoExtendMs && expiresAt;
+    if (isExtendableFilter && now < expiresAt) {
+      const newMetadata = {
+        ...metadata,
+        expiresAt: now + autoExtendMs
+      };
+      await namespace.setMetadata(filterText, newMetadata);
+      filterNotifier.emit("filter.renewed", Filter.fromText(Filter.normalize(filterText)), newMetadata);
     }
-  }
-  catch (e) {
-    console.error("Error while extending expiry for filters:", e);
   }
 }
 
@@ -800,6 +792,7 @@ export function start() {
   // initialize the scheduler to remove expired filters
   scheduler = new Scheduler({
     interval: 0,
+    errorRetryDelay: MILLIS_IN_HOUR,
     listener: () => removeExpiredFilters(),
     async getNextTimestamp() {
       await initializer.start();

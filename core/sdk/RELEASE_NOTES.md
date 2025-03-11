@@ -11,6 +11,8 @@
 - Now sending Blockthrough Acceptable Ads Page Views to CDP data payload. (EXT-739)
 - `EWE.cdp.setPremiumStatusCallback(callback)` now accepts boolean instead of
   "premium"/"free" as a callback return. (EXT-779)
+- Several errors which would have previously only been logged to the console are
+  now reported to our Sentry instance. (EXT-742)
 
 ## Fixes
 

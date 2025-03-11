@@ -33,6 +33,7 @@ import {onChangedFilter, disableFilter, ERROR_FILTER_NOT_FOUND,
         ERROR_TOO_MANY_FILTERS} from "./filters.js";
 import {default as initializer} from "./initializer.js";
 import {debug, error} from "./debugging.js";
+import {default as sentry} from "./sentry.js";
 
 import {FilterError} from "./types.js";
 import {Prefs} from "./prefs.js";
@@ -169,6 +170,7 @@ async function dnrFullSubscriptionUpdate(subscription, lines) {
       e.rulesAvailable = await dynamicRulesAvailable();
     }
     else {
+      sentry.reportError(e);
       subscription.downloadStatus = "synchronize_dnr_error";
     }
   }
@@ -204,13 +206,9 @@ export async function dnrDiffSubscriptionUpdate(subscription, updates) {
       e.rulesAvailable = await dynamicRulesAvailable();
     }
     else {
+      sentry.reportError(e);
       subscription.downloadStatus = "synchronize_diff_error";
     }
-    // Here we have to decide what to do with this error
-    // Some options:
-    //  * add the entire error object as a new property of the subscription
-    //  * create a new event under EWE.subscription to notify the error
-    //  * leave it as it is, the "too_many_filters" status will be enough
   }
   finally {
     dnrSubscriptionUpdating.delete(subscription.url);

@@ -80,9 +80,7 @@ export class PersistentState {
   async saveImmediate() {
     let obj = {};
     obj[this.storageKey] = this.state;
-    return this._trackSaving(this.storage.set(obj)
-      .catch(e => console.error("Failed to save the state for",
-                                this.storageKey, ": " + e.message)));
+    return this._trackSaving(this.storage.set(obj));
   }
 
   async awaitSavingComplete() {

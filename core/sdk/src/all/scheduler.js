@@ -109,6 +109,9 @@ export class Scheduler {
   checkNow() {
     if (!this.stopped && !this.checkInProgress) {
       clearTimeout(this.timeout);
+      // The promise returned by _check() is deliberately not awaited
+      // here. We're kicking off a check now, not propagating the results of
+      // this schedule check up to the caller.
       this._check();
     }
   }
