@@ -60,7 +60,10 @@ function getWatchingButton(): HTMLButtonElement {
   });
 
   const btnText = document.createElement("span");
-  btnText.innerHTML = `Watching with <b>${manifest.short_name}</b>`;
+  btnText.textContent = browser.i18n.getMessage(
+    "yt_haven_player_watching_with_label",
+    manifest.short_name,
+  );
   btnText.style.borderBottom = "2px #e1002d solid";
   btnText.style.paddingBottom = "2px";
 
@@ -83,7 +86,10 @@ async function start(): Promise<void> {
   const watchingBtn = getWatchingButton();
   watchingBtn.addEventListener("click", () => {
     const response = confirm(
-      `Disabling ${manifest.short_name} player might result in more ads. Do you want to proceed?`,
+      browser.i18n.getMessage(
+        "yt_haven_player_watching_with_confirmation",
+        manifest.short_name,
+      ),
     );
 
     const eventName = response

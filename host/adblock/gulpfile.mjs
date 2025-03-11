@@ -40,6 +40,7 @@ if (args.outputDirectory) {
 }
 
 async function getBuildSteps(options) {
+  const translations = options.target == "chrome" ? tasks.chromeTranslations : tasks.translations;
   const buildSteps = [];
   const addonName = `${options.basename}${options.target}`;
 
@@ -63,6 +64,7 @@ async function getBuildSteps(options) {
       skipTypeChecks: args["skip_type_checks"] === "true",
     }),
     tasks.createManifest(options.manifest),
+    translations(options.translations, options.manifest),
   );
 
   return buildSteps;
@@ -110,6 +112,7 @@ async function getBuildOptions(isDevenv, isSource) {
   opts.unitTests = configParser.getSection(configName, "unitTests");
   opts.basename = configParser.getSection(configName, "basename");
   opts.version = configParser.getSection(configName, "version");
+  opts.translations = configParser.getSection(configName, "translations");
   if (args.basename) {
     opts.basename = args.basename;
   }

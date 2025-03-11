@@ -251,6 +251,10 @@ export default {
   },
   translations: {
     dest: "_locales",
-    src: ["locale/**/*.json", "!locale/*/mobile-options.json"]
+    src: [
+      "locale/**/*.json",
+      "../../node_modules/@eyeo-fragments/*/locales/**/*.json",
+      "!locale/*/mobile-options.json"
+    ]
   }
 };

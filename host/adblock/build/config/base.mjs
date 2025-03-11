@@ -108,10 +108,6 @@ export default {
   mapping: {
     copy: [
       {
-        dest: "_locales",
-        src: ["_locales/**/*.json"],
-      },
-      {
         dest: "button",
         src: [
           "adblock-betafish/button/**/*.html",
@@ -650,7 +646,7 @@ export default {
     ],
   },
   translations: {
-    dest: "",
-    src: [],
+    dest: "_locales",
+    src: ["_locales/**/*.json", "../../node_modules/@eyeo-fragments/*/locales/**/*.json"],
   },
 };

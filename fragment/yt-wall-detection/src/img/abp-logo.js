@@ -1,4 +1,4 @@
-export const abpLogo = `<svg width="184" height="33" viewBox="0 0 184 33" fill="none" xmlns="http://www.w3.org/2000/svg">
+export const abpLogo = `<svg viewBox="0 0 184 33" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M9.65145 0L0 9.59244V23.1585L9.65145 32.7509H23.3005L32.9523 23.1585V9.59244L23.3005 0H9.65145Z" fill="#D8D9D9"/>
 <path fill-rule="evenodd" clip-rule="evenodd" d="M9.74181 0.216309L0.217529 9.68203V23.0688L9.74181 32.5345H23.211L32.7349 23.0688V9.68203L23.211 0.216309H9.74181Z" fill="white"/>
 <path fill-rule="evenodd" clip-rule="evenodd" d="M10.3699 31.0273L1.73413 22.4443V10.3066L10.3699 1.72363H22.5827L31.2181 10.3066V22.4443L22.5827 31.0273H10.3699Z" fill="#ED1E45"/>

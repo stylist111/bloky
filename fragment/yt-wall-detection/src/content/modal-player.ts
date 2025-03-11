@@ -21,7 +21,9 @@ import {
   createIframePlayer,
   createBackdrop,
   videoContextStore,
+  createLogoSVG,
 } from "./shared.js";
+import browser from "webextension-polyfill";
 
 /**
  * The modal ID with the embedded player
@@ -46,12 +48,37 @@ function createCloseButton(): HTMLElement {
 }
 
 /**
+ * Creates the branding element
+ */
+function createBrandingElement(): HTMLElement {
+  const logo = createLogoSVG();
+  logo.style.height = "1.875rem";
+
+  const brandingElement = document.createElement("div");
+  brandingElement.style.marginTop = "2rem";
+  brandingElement.style.color = "#FFF";
+  brandingElement.style.fontSize = "1.25rem";
+  brandingElement.style.display = "flex";
+  brandingElement.style.alignItems = "center";
+  brandingElement.style.gap = "1rem";
+  brandingElement.innerText = browser.i18n.getMessage(
+    "yt_haven_player_watching_with_label",
+  );
+  brandingElement.appendChild(logo);
+
+  return brandingElement;
+}
+
+/**
  * Adds the video modal to the target element
  * @param targetElement
  */
 export function addVideoModal(targetElement: HTMLElement): void {
   const modalContainer = createBackdrop(modalId);
+  modalContainer.style.position = "fixed";
+
   const closeButton = createCloseButton();
+  const brandingElem = createBrandingElement();
 
   const { videoId, playlistId, startSeconds } =
     videoContextStore.getVideoContext();
@@ -65,6 +92,7 @@ export function addVideoModal(targetElement: HTMLElement): void {
 
   modalContainer.appendChild(closeButton);
   modalContainer.appendChild(playerElem);
+  modalContainer.appendChild(brandingElem);
   targetElement.appendChild(modalContainer);
 
   function closeModalOnKeydown(evt: KeyboardEvent): void {

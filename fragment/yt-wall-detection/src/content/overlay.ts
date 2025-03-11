@@ -28,10 +28,9 @@ import {
   createBackdrop,
   getExperimentFlag,
   videoContextStore,
+  createLogoSVG,
 } from "./shared.js";
 import { addVideoModal, removeVideoModal } from "./modal-player.js";
-import { abpLogo } from "../img/abp-logo.js";
-import { abLogo } from "../img/ab-logo.js";
 import { stopPause } from "./pause-video.js";
 import { removeEmbedPlayer } from "./embed-haven.js";
 
@@ -43,28 +42,11 @@ const { short_name: extName } = browser.runtime.getManifest();
 let videoOverlay: HTMLElement;
 
 /**
- * Creates the extension logo
- */
-function createLogo(): HTMLElement {
-  let extLogo = abLogo;
-  if (extName === "Adblock Plus") {
-    extLogo = abpLogo;
-  }
-
-  // Create the logo image
-  const logo = document.createElement("div");
-  logo.innerHTML = extLogo;
-  logo.style.marginBottom = "20px";
-
-  return logo;
-}
-
-/**
  * Creates the title
  */
 function createTitle(): HTMLElement {
   const title = document.createElement("span");
-  title.innerText = "Oops, we detected some ads. We got you!";
+  title.innerText = browser.i18n.getMessage("yt_haven_overlay_title", extName);
   title.style.fontWeight = "500";
   title.style.fontSize = "20px";
   title.style.marginBottom = "20px";
@@ -85,8 +67,10 @@ function createMessage(): HTMLElement {
   message.style.fontFamily = "'Roboto', 'Arial', sans-serif";
   message.style.textAlign = "center";
   message.style.marginBottom = "20px";
-  message.innerText = `You know who, wants to show you ads, but we think you deserve better.
-   With us, you can watch your favorite videos without interruptions — just press watch and enjoy.`;
+  message.innerText = browser.i18n.getMessage(
+    "yt_haven_overlay_description",
+    extName,
+  );
 
   return message;
 }
@@ -123,7 +107,10 @@ function createWatchButton(clickHandler: () => void): HTMLElement {
   const watchButton = createButton(clickHandler);
   watchButton.style.color = "#000";
   watchButton.style.background = "#f1f1f1";
-  watchButton.innerText = `Watch with ${extName}`;
+  watchButton.innerText = browser.i18n.getMessage(
+    "yt_haven_overlay_cta_button",
+    extName,
+  );
 
   watchButton.addEventListener("mouseover", () => {
     watchButton.style.backgroundColor = "#d9d9d9";
@@ -146,7 +133,9 @@ function createNeverShowButton(clickHandler: () => void): HTMLElement {
   neverShowButton.style.backgroundColor = "#ffffff1a";
   neverShowButton.style.color = "#fff";
   neverShowButton.style.marginLeft = "10px";
-  neverShowButton.innerText = "Never show this again";
+  neverShowButton.innerText = browser.i18n.getMessage(
+    "yt_haven_overlay_never_button",
+  );
 
   neverShowButton.addEventListener("mouseover", () => {
     neverShowButton.style.backgroundColor = "#ffffff33";
@@ -189,7 +178,11 @@ function getVideoOverlay(
   neverShowHandler: () => void,
 ): HTMLDivElement {
   const backdropElem = createBackdrop();
-  const logoElem = createLogo();
+  const logoElem = createLogoSVG();
+  logoElem.style.marginBottom = "1.25rem";
+  logoElem.style.display = "block";
+  logoElem.style.height = "3.75rem";
+
   const titleElem = createTitle();
   const descriptionElem = createMessage();
   const buttonContainer = createCTAButtons(watchHandler, neverShowHandler);

@@ -34,8 +34,12 @@ function mergeTranslations(options = {}) {
   }
 
   function truncate(text, limit) {
-    if (text.length <= limit) return text;
-    return text.slice(0, limit - 1).concat("\u2026");
+    // Disabled truncation for now, assuming that whoever changes the locales
+    // will take care of the strings' length.
+    return text;
+
+    // if (text.length <= limit) return text;
+    // return text.slice(0, limit - 1).concat("\u2026");
   }
 
   function groupByLocale(file) {

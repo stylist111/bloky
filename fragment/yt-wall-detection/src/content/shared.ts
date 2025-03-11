@@ -29,6 +29,8 @@ import type {
   VideoContext,
   VideoContextStoreType,
 } from "./shared.types.js";
+import { abpLogo } from "../img/abp-logo.js";
+import { abLogo } from "../img/ab-logo.js";
 
 /**
  * Storage key for the experiments
@@ -239,10 +241,28 @@ export function createBackdrop(id?: string): HTMLDivElement {
   backdropElem.style.justifyContent = "center";
   backdropElem.style.zIndex = "9999";
   backdropElem.style.backgroundColor = "rgba(0, 0, 0, 0.9)";
-  backdropElem.style.flexWrap = "wrap";
+  backdropElem.style.flexWrap = "nowrap";
   backdropElem.style.alignContent = "center";
   backdropElem.style.alignItems = "center";
   backdropElem.style.fontFamily = "'Roboto', 'Arial', sans-serif";
 
   return backdropElem;
+}
+
+/**
+ * Creates the extension logo
+ */
+export function createLogoSVG(): HTMLElement {
+  const { short_name: extName } = browser.runtime.getManifest();
+
+  let extLogo = abLogo;
+  if (extName === "Adblock Plus") {
+    extLogo = abpLogo;
+  }
+
+  // Create the logo image
+  const logo = document.createElement("div");
+  logo.innerHTML = extLogo;
+
+  return logo.firstChild as HTMLElement;
 }

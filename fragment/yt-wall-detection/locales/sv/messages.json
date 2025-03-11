@@ -1,0 +1,50 @@
+{
+  "yt_haven_overlay_title": {
+    "description": "YouTube Haven overlay title",
+    "message": "Vibe-koll: vi märkte att $short_name$ har satts på paus.",
+    "placeholders": {
+      "short_name": {
+        "content": "$1",
+        "example": "AdBlock or Adblock Plus"
+      }
+    }
+  },
+  "yt_haven_overlay_description": {
+    "description": "YouTube Haven overlay description",
+    "message": "Vissa människor har ingen chill–men vi fixar det."
+  },
+  "yt_haven_overlay_cta_button": {
+    "description": "YouTube Haven overlay CTA button",
+    "message": "Titta med $short_name$",
+    "placeholders": {
+      "short_name": {
+        "content": "$1",
+        "example": "AdBlock or Adblock Plus"
+      }
+    }
+  },
+  "yt_haven_overlay_never_button": {
+    "description": "YouTube Haven overlay never show this again button",
+    "message": "Jag gillar reklam - Fråga inte igen"
+  },
+  "yt_haven_player_watching_with_label": {
+    "description": "YouTube Haven player controls watching with label",
+    "message": "Tittar med $short_name$",
+    "placeholders": {
+      "short_name": {
+        "content": "$1",
+        "example": "AdBlock or Adblock Plus"
+      }
+    }
+  },
+  "yt_haven_player_watching_with_confirmation": {
+    "description": "YouTube Haven player controls on click disable confirmation message",
+    "message": "Om Watch with $short_name$ avaktiveras kan det resultera i mer reklam. Vill du fortsätta?",
+    "placeholders": {
+      "short_name": {
+        "content": "$1",
+        "example": "AdBlock or Adblock Plus"
+      }
+    }
+  }
+}

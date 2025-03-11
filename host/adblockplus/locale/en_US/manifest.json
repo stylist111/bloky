@@ -6,6 +6,9 @@
   "name": {
     "message": "Adblock Plus"
   },
+  "short_name": {
+    "message": "Adblock Plus"
+  },
   "name_releasebuild": {
     "description": "Extension name to be shown for release builds. Note: this cannot be longer than 45 characters.",
     "message": "Adblock Plus - free ad blocker"
