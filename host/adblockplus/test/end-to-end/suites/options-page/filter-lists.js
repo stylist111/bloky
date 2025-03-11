@@ -126,11 +126,31 @@ export default () => {
       );
     };
 
-    // Wait for filterlists to be updated "minutes ago"
-    await waitForAllUpdated(/minutes ago/, longTimeout);
+    try {
+      // Wait for filterlists to be updated "minutes ago"
+      await waitForAllUpdated(/minutes ago/, longTimeout);
+      await clickOnDisplayedElement("#update");
+      await waitForAllUpdated(/Just now/, 5000);
+    } catch (err) {
+      if (err.name === "TimeoutError") {
+        for (const { name } of defaultFilterLists) {
+          const { tooltip } = getFLSelectors(name);
 
-    await clickOnDisplayedElement("#update");
-    await waitForAllUpdated(/Just now/, 5000);
+          try {
+            await clickOnDisplayedElement(tooltip);
+          } catch (e) {
+            // continue when the filterlist does not have errors
+            continue;
+          }
+          const tooltipMsgElem = await getDisplayedElement(
+            `${tooltip} [role="tooltip"]`
+          );
+          const tooltipMsgText = await tooltipMsgElem.getText();
+          err.message = `${err.message}\nFilterlist ${name}, error: ${tooltipMsgText}`;
+        }
+      }
+      throw err;
+    }
   });
 
   it("goes to a filter list source page", async function () {
