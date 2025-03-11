@@ -210,6 +210,13 @@ export function createIframePlayer(
     iframe.style.height = "100%";
   }
 
+  // Notify the iframe player API that main window is ready to listen for events
+  iframe.onload = function () {
+    setTimeout(() => {
+      iframe?.contentWindow?.postMessage('{"event":"listening"}', "*");
+    });
+  };
+
   return iframe;
 }
 

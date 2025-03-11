@@ -56,8 +56,13 @@ export interface VideoContextStoreType {
   getVideoContext: () => VideoContext;
 }
 
+interface YTVideoData {
+  errorCode: string;
+}
+
 interface YTInfo {
   playerState: number;
+  videoData?: YTVideoData;
 }
 
 export interface YTEventData {

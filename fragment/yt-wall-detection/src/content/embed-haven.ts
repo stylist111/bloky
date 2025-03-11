@@ -141,12 +141,6 @@ export async function addEmbedVideoOnTop(
     showWatchingWith: true,
   });
 
-  playerElem.onload = function () {
-    setTimeout(() => {
-      playerElem?.contentWindow?.postMessage('{"event":"listening"}', "*");
-    });
-  };
-
   window.addEventListener("message", (event: MessageEvent): void => {
     iFrameMessageListener(event);
   });

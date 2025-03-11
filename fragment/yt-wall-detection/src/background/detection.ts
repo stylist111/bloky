@@ -21,7 +21,11 @@ import browser from "webextension-polyfill";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { type Filter } from "@eyeo/webext-ad-filtering-solution";
 
-import { type MessageSender, type AdWallMessage } from "@eyeo/polyfills/all";
+import {
+  type MessageSender,
+  type AdWallMessage,
+  type YTHavenPlayerErrorMessage,
+} from "@eyeo/polyfills/all";
 import {
   noop,
   type StartInfo,
@@ -38,6 +42,7 @@ import {
   ytHavenOverlayFlag,
   matchingElementFoundKey,
   ytHavenWatchCTAClicked,
+  ytHavenEmbeddedPlayerIssue,
   ytHavenMetaTagFound,
   ytHavenNextVideoNotFound,
   ytHavenNonEmbeddableFound,
@@ -159,10 +164,14 @@ export function start(parameters: StartInfo): void {
    */
   const { sendAdWallEvents = noop } = parameters;
 
-  const sendEventWithExperiment = async (eventName: string): Promise<void> => {
+  const sendEventWithExperiment = async (
+    eventName: string,
+    options: object = {},
+  ): Promise<void> => {
     const assignments = await ewe.experiments.getAssignments();
     sendAdWallEvents(eventName, {
       experimentVariant: assignments["yt-haven"],
+      ...options,
     });
   };
 
@@ -220,6 +229,15 @@ export function start(parameters: StartInfo): void {
   });
 
   parameters.port.on(
+    ytHavenEmbeddedPlayerIssue,
+    async (message: YTHavenPlayerErrorMessage): Promise<void> => {
+      await sendEventWithExperiment(ytHavenEmbeddedPlayerIssue, {
+        errorCode: message.errorCode,
+      });
+    },
+  );
+
+  parameters.port.on(
     ytHavenLabelWatchingDisable,
     async (message: any, sender: MessageSender): Promise<void> => {
       const tabId = sender?.tab?.id;
@@ -249,6 +267,7 @@ export function start(parameters: StartInfo): void {
     ytHavenWatchCTAClicked,
     ytHavenNeverShowOverlayClick,
     ytHavenNonEmbeddableFound,
+    ytHavenEmbeddedPlayerIssue,
     ytHavenMetaTagFound,
     ytHavenNextVideoNotFound,
     ytHavenLabelWatchingDisable,

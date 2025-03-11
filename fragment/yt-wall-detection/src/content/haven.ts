@@ -18,10 +18,12 @@
 import browser from "webextension-polyfill";
 import {
   matchingElementFoundKey,
+  ytHavenEmbeddedPlayerIssue,
   ytHavenMetaTagFound,
   ytHavenNonEmbeddableFound,
 } from "../shared/index.js";
 import {
+  getIframePlayer,
   isInHavenExperiment,
   isWatchPage,
   videoContextStore,
@@ -32,6 +34,7 @@ import {
 } from "./embed-haven.js";
 import { insertOverlayExp, removeVideoOverlay } from "./overlay.js";
 import { startPause, resumeCurrentVideo } from "./pause-video.js";
+import type { YTEventData } from "./shared.types";
 
 /**
  * CSS selector identifying YouTube player element
@@ -122,6 +125,33 @@ const havenElementExits = (): boolean => {
 };
 
 /**
+ * Listens for any error on embedding the video inside the iFrame.
+ *
+ * @param event The message event sent by the iframe player
+ */
+const iFrameErrorListener = (event: MessageEvent): void => {
+  const playerElem = getIframePlayer();
+
+  if (
+    playerElem &&
+    playerElem instanceof HTMLIFrameElement &&
+    event.source === playerElem.contentWindow &&
+    "data" in event &&
+    typeof event.data === "string"
+  ) {
+    const eventData: YTEventData = JSON.parse(event.data);
+    const errorCode = eventData?.info?.videoData?.errorCode;
+
+    if (eventData?.event === "infoDelivery" && errorCode) {
+      void browser.runtime.sendMessage({
+        type: ytHavenEmbeddedPlayerIssue,
+        errorCode,
+      });
+    }
+  }
+};
+
+/**
  * Only start the experiment if the page was allowlisted and the user is in
  * the haven experiment
  */
@@ -155,5 +185,10 @@ export async function start(): Promise<void> {
 
   window.addEventListener("yt-navigate-finish", (event: CustomEvent) => {
     void navigationListener(event);
+  });
+
+  // Listens for any errors in the iframe player
+  window.addEventListener("message", (event: MessageEvent): void => {
+    iFrameErrorListener(event);
   });
 }

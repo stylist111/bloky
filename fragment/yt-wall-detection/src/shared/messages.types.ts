@@ -27,6 +27,7 @@ export const ytHavenIframeFlag = "yt-haven-iframe-enabled";
 
 export const matchingElementFoundKey = "matchingElementFound";
 
+export const ytHavenEmbeddedPlayerIssue = "yt-haven.embed-issue";
 export const ytHavenNeverShowOverlayClick =
   "yt-haven.never-show-overlay-clicked";
 export const ytHavenMetaTagFound = "yt-haven.meta-tag.found";

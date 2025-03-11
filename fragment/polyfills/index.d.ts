@@ -66,3 +66,13 @@ export interface AdWallMessage extends Message {
    */
   currentPlaybackTime: number
 }
+
+/**
+ * Interface for the Message sent when the iFramePlayer fails with error
+ */
+export interface YTHavenPlayerErrorMessage extends Message {
+  /**
+   * The error code for the player
+   */
+  errorCode: string;
+}
