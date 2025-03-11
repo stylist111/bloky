@@ -3,6 +3,7 @@
 - Fixed an issue when an incognito tab isn't found
 - Added Sentry exception handling to the options UI page (EXT-755)
 - Add Haven experiment with 3 variants (EXT-794)
+- Remove leftover OPDs on pages that perform synthetic navigation (IM-216)
 
 # 4.15.0 - 2025-02-25
 

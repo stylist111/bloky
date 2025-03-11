@@ -122,6 +122,16 @@ export async function isCoolDownPeriodOngoing(): Promise<boolean> {
 }
 
 /**
+ * Removes the frame containing the on-page dialog
+ *
+ * @param tabId - Tab ID
+ */
+async function removeDialogFrame(tabId: number): Promise<void> {
+  const message: HideMessage = { type: "onpage-dialog.hide" };
+  await sendMessage(tabId, message);
+}
+
+/**
  * Removes on-page dialog
  *
  * @param tabId - Tab ID
@@ -135,8 +145,7 @@ async function removeDialog(tabId: number): Promise<void> {
   }
 
   try {
-    const message: HideMessage = { type: "onpage-dialog.hide" };
-    await sendMessage(tabId, message);
+    await removeDialogFrame(tabId);
     await assignedDialogs.delete(tabId);
   } catch (ex) {
     // Ignore if tab has already been removed
@@ -349,6 +358,14 @@ async function handlePageLoadedEvent(page: unknown): Promise<void> {
 
   if (!page.id) {
     return;
+  }
+
+  // Clean any leftover dialog from pages being loaded in unusual ways,
+  // e.g. pages that simulate navigation by changing browser session history
+  try {
+    await removeDialogFrame(page.id);
+  } catch (ex) {
+    // Ignore if there's no dialog to remove
   }
 
   if (unassignedDialogs.size === 0) {
