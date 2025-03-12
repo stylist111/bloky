@@ -40,7 +40,9 @@ import {
   addCustomFilters,
   getCustomFilters,
   deleteCustomFilters,
-  clickOnCustomFilterToggleAndCheck
+  clickOnCustomFilterToggleAndCheck,
+  getTooltipMsg,
+  getActualFilterListsInfo
 } from "../../utils/page.js";
 import {
   getDefaultFilterLists,
@@ -56,19 +58,6 @@ async function setFilterListUrl(url) {
 export default () => {
   beforeEach(async function () {
     await initOptionsAdvancedTab(getOptionsHandle());
-  });
-
-  it("displays the default state", async function () {
-    const defaultFilterLists = getDefaultFilterLists(extension.manifestVersion);
-
-    for (const { name, enabled } of defaultFilterLists) {
-      const { toggle, title } = getFLSelectors(name);
-      const flEnabled = await isCheckboxPropertyEnabled(toggle);
-      const flTitleElem = await getDisplayedElement(title);
-      const flTitle = await flTitleElem.getText();
-
-      expect({ name: flTitle, enabled: flEnabled }).toEqual({ name, enabled });
-    }
   });
 
   it("shows the built in filter list dropdown", async function () {
@@ -133,22 +122,10 @@ export default () => {
       await waitForAllUpdated(/Just now/, 5000);
     } catch (err) {
       if (err.name === "TimeoutError") {
-        for (const { name } of defaultFilterLists) {
-          const { tooltip } = getFLSelectors(name);
-
-          try {
-            await clickOnDisplayedElement(tooltip);
-          } catch (e) {
-            // continue when the filterlist does not have errors
-            continue;
-          }
-          const tooltipMsgElem = await getDisplayedElement(
-            `${tooltip} [role="tooltip"]`
-          );
-          const tooltipMsgText = await tooltipMsgElem.getText();
-          err.message = `${err.message}\nFilterlist ${name}, error: ${tooltipMsgText}`;
-        }
+        const info = await getActualFilterListsInfo();
+        err.message = `${err.message}\nActual filter lists:\n${JSON.stringify(info, null, 2)}`;
       }
+
       throw err;
     }
   });
@@ -280,11 +257,7 @@ export default () => {
     );
 
     // Check error message
-    await clickOnDisplayedElement(tooltip);
-    const tooltipMsgElem = await getDisplayedElement(
-      `${tooltip} [role="tooltip"]`
-    );
-    expect(await tooltipMsgElem.getText()).toEqual(errorMsg);
+    expect(await getTooltipMsg(tooltip)).toEqual(errorMsg);
 
     // Reenable custom filter through tooltip link
     await clickOnDisplayedElement(`${tooltip} [data-action="enable-filters"]`);

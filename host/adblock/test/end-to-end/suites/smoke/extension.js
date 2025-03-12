@@ -17,7 +17,13 @@
 
 import { expect } from "expect";
 
-import { findUrl, openNewTab, isCheckboxPropertyEnabled, wait } from "@eyeo/test-utils/driver";
+import {
+  findUrl,
+  openNewTab,
+  isCheckboxPropertyEnabled,
+  wait,
+  getDisplayedElement,
+} from "@eyeo/test-utils/driver";
 import { blockHideUrl } from "@eyeo/test-utils/urls";
 import {
   getOptionsHandle,
@@ -92,6 +98,22 @@ export default () => {
     const actualParams = Object.fromEntries(params);
 
     expect(actualParams).toEqual(expectedParams);
+  });
+
+  it("displays the default filter lists state", async function () {
+    await initOptionsFiltersTab(getOptionsHandle());
+
+    for (const { name, checkboxSelector, text, enabled } of defaultFilterLists) {
+      const flEnabled = await isCheckboxPropertyEnabled(checkboxSelector);
+      const selector =
+        name === "acceptable_ads_privacy"
+          ? `[name="${name}"] > label`
+          : `[name="${name}"] > label h1`;
+      const flElem = await getDisplayedElement(selector);
+      const flText = await flElem.getText();
+
+      expect({ name, text: flText, enabled: flEnabled }).toEqual({ name, text, enabled });
+    }
   });
 
   it("displays total ad block count", async function () {

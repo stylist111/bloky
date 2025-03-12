@@ -510,9 +510,45 @@ export function getFLSelectors(name) {
     gear: `${flSelector} [type="menubar"]`,
     sourceLink: `${flSelector} [type="menubar"] [data-i18n="options_filterList_source"]`,
     trashBtn: `${flSelector} [data-action="remove-subscription"]`,
-    lastUpdate: `${flSelector}  .last-update`,
+    lastUpdate: `${flSelector} .last-update`,
     tooltip: `${flSelector} [type="tooltip"]`
   };
+}
+
+export async function getTooltipMsg(tooltipSelector) {
+  try {
+    await clickOnDisplayedElement(tooltipSelector);
+  } catch (err) {
+    if (err.name === "TimeoutError") {
+      return;
+    }
+    throw err;
+  }
+
+  const tooltipMsgElem = await getDisplayedElement(
+    `${tooltipSelector} [role="tooltip"]`
+  );
+  return await tooltipMsgElem.getText();
+}
+
+export async function getActualFilterListsInfo() {
+  const allFLRowsSelector = "#all-filter-lists-table [aria-label]";
+
+  const info = [];
+  for (const flElem of await driver.findElements(By.css(allFLRowsSelector))) {
+    const actualName = await flElem.getAttribute("aria-label");
+    const { tooltip, lastUpdate } = getFLSelectors(actualName);
+    const lastUpdatedElem = await getDisplayedElement(lastUpdate, {
+      timeout: 800,
+      forceRefresh: false
+    });
+    const lastUpdatedTxt = await lastUpdatedElem.getText();
+    const tooltipMsg = await getTooltipMsg(tooltip);
+
+    info.push({ actualName, lastUpdatedTxt, tooltipMsg });
+  }
+
+  return info;
 }
 
 export async function waitForSubscriptionUpdated(

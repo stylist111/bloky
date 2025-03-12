@@ -48,20 +48,6 @@ export default () => {
     await initOptionsFiltersTab(getOptionsHandle());
   });
 
-  it("displays the default state", async function () {
-    for (const { name, checkboxSelector, text, enabled } of defaultFilterLists) {
-      const flEnabled = await isCheckboxPropertyEnabled(checkboxSelector);
-      const selector =
-        name === "acceptable_ads_privacy"
-          ? `[name="${name}"] > label`
-          : `[name="${name}"] > label h1`;
-      const flElem = await getDisplayedElement(selector);
-      const flText = await flElem.getText();
-
-      expect({ name, text: flText, enabled: flEnabled }).toEqual({ name, text, enabled });
-    }
-  });
-
   it("shows the built in language filter list dropdown", async function () {
     const dropdown = await getDisplayedElement("#language_select");
     const actualLanguageLists = [];

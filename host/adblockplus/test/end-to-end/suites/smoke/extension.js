@@ -37,7 +37,8 @@ import {
   initPopupPage,
   initOptionsGeneralTab,
   getFLSelectors,
-  getPopupBlockedAdsTotalCount
+  getPopupBlockedAdsTotalCount,
+  getActualFilterListsInfo
 } from "../../utils/page.js";
 import { blockHideUrl } from "@eyeo/test-utils/urls";
 import { installUrl } from "../../utils/urls.js";
@@ -53,6 +54,31 @@ export default () => {
     });
 
     await checkInstallUninstallUrl({ url, appVersion, uninstall: false });
+  });
+
+  it("displays the default filter lists state", async function () {
+    await initOptionsAdvancedTab(getOptionsHandle());
+
+    const defaultFilterLists = getDefaultFilterLists(extension.manifestVersion);
+    for (const { name, enabled } of defaultFilterLists) {
+      let flEnabled;
+      let flTitleElem;
+      try {
+        const { toggle, title } = getFLSelectors(name);
+        flEnabled = await isCheckboxPropertyEnabled(toggle);
+        flTitleElem = await getDisplayedElement(title);
+      } catch (err) {
+        if (err.name === "TimeoutError") {
+          const info = await getActualFilterListsInfo();
+          err.message = `${err.message}\nActual filter lists:\n${JSON.stringify(info, null, 2)}`;
+        }
+
+        throw err;
+      }
+
+      const flTitle = await flTitleElem.getText();
+      expect({ name: flTitle, enabled: flEnabled }).toEqual({ name, enabled });
+    }
   });
 
   it("displays total ad block count", async function () {
