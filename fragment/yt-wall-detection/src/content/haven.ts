@@ -34,7 +34,11 @@ import {
   start as startEmbedExperiment,
 } from "./embed-haven.js";
 import { insertOverlayExp, removeVideoOverlay } from "./overlay.js";
-import { startPause, resumeCurrentVideo } from "./pause-video.js";
+import {
+  startPause,
+  resumeCurrentVideo,
+  pauseCurrentVideos,
+} from "./pause-video.js";
 import type { YTEventData } from "./shared.types";
 
 /**
@@ -89,6 +93,7 @@ const navigationListener = async (event: CustomEvent): Promise<void> => {
     return;
   }
 
+  pauseCurrentVideos();
   const playlistId = event?.detail?.endpoint?.watchEndpoint?.playlistId;
   const isEmbeddable =
     event?.detail?.response?.playerResponse?.playabilityStatus?.playableInEmbed;
@@ -99,6 +104,7 @@ const navigationListener = async (event: CustomEvent): Promise<void> => {
   // or if it's unplayable (e.g. members only without access)
   if (!isEmbeddable || playabilityStatus !== PlayabilityStatus.OK) {
     resumeCurrentVideo();
+    removeExperiments();
     void browser.runtime.sendMessage({
       type: !isEmbeddable ? ytHavenNonEmbeddableFound : ytHavenNonPlayableFound,
       errorCode: playabilityStatus,
