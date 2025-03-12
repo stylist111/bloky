@@ -1,5 +1,7 @@
 # Unreleased
 
+# 6.16.0 - 2025-03-12
+
 - Fixed an issue with the Premium Sync feature
 - Add Haven experiment with 3 variants (EXT-794)
 - Remove leftover OPDs on pages that perform synthetic navigation (IM-216)
