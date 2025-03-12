@@ -1,5 +1,7 @@
 # Unreleased
 
+# 4.16.0 - 2025-03-12
+
 - Fixed an issue when an incognito tab isn't found
 - Added Sentry exception handling to the options UI page (EXT-755)
 - Add Haven experiment with 3 variants (EXT-794)
