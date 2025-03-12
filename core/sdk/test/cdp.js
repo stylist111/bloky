@@ -1448,6 +1448,7 @@ describe("CDP", function() {
         // We need to navigate to another domain, as the session for
         // "cross domain" is pending and will be not counted in domains_stats
         await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
+        await new Page(`${TEST_PAGES_URL}/blockthrough-aapv.html`).loaded;
 
         // force send the ping
         await EWE.testing._uploadCdp();
@@ -1510,7 +1511,7 @@ UlvVm112lG9ij3Mc/f64cKzmenKoIe0c2HSGMxFagEDnAgMBAAE=
         // increase page views counter
         await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
         // add a blockthrough aa pageview
-        await new Page(`${TEST_PAGES_URL}/blockthrough-aapv.html?ab=true&acceptable=true`).loaded;
+        await new Page(`${TEST_PAGES_URL}/blockthrough-aapv.html`).loaded;
         await new Page("https://adblockplus.org").loaded;
         await EWE.testing._uploadCdp();
 
