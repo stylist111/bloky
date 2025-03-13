@@ -27,6 +27,7 @@ import {
   wait,
 } from "@eyeo/test-utils/driver";
 import { dcTestPageUrl } from "@eyeo/test-utils/urls";
+import { dcFilters } from "@eyeo/test-utils/filters";
 import { getOptionsHandle, getPremiumEmail } from "@eyeo/test-utils/extension";
 
 import {
@@ -85,22 +86,25 @@ export default () => {
     await enablePremiumProgrammatically();
 
     await clickOnDisplayedElement('[href="#mab-image-swap"]');
-    await getDisplayedElement("#cats");
-    await clickOnDisplayedElement('[href="#mab-themes"]');
+    await getDisplayedElement("#cats", { forceRefresh: false });
 
+    await clickOnDisplayedElement('[href="#mab-themes"]');
+    // Waiting for the selected icon to avoid the next click being ineffective
+    await getDisplayedElement(".theme-selection .theme-selected-icon", { forceRefresh: false });
     await clickOnDisplayedElement('[data-key="options_page"][data-theme="dark_theme"]');
     // Check dark theme is displayed on options page
-    await getDisplayedElement("#dark_theme", { timeout: 5000 });
+    await getDisplayedElement("#dark_theme", { forceRefresh: false });
 
     await clickOnDisplayedElement('[data-key="popup_menu"][data-theme="dark_theme"]');
     await initPopupWithLocalPage();
     // Check theme is displayed on popup page
-    await getDisplayedElement("#dark_theme");
+    await getDisplayedElement("#dark_theme", { forceRefresh: false });
 
     const timeout = 1000;
     for (const { name, action } of premiumPopupToggleItems) {
       await clickOnDisplayedElement(`[data-name="${name}"]`, {
         timeout,
+        checkDisplayed: false, // Edge headless on macOS gets the element as "not displayed"
         checkAttribute: { name: "data-is-checked", value: null },
       });
 
@@ -109,10 +113,9 @@ export default () => {
       await wait(
         async () => {
           try {
-            await clickOnDisplayedElement(actionSelector);
-            // The button may be clicked while it's still animated, making the
-            // click ineffective. That's why the next check is needed
-            await waitForNotDisplayed(actionSelector);
+            // Edge headless on macOS would click on a "button not interactable",
+            // that's why the jsClick option is used
+            await clickOnDisplayedElement(actionSelector, { checkDisplayed: false, jsClick: true });
             return true;
           } catch (e) {}
         },
@@ -130,6 +133,8 @@ export default () => {
 
       const toggleElement = await getDisplayedElement(`[data-name="${name}"]`, {
         timeout,
+        forceRefresh: false,
+        checkDisplayed: false,
       });
       actualValues[name] = await toggleElement.getAttribute("data-is-checked");
     }
@@ -137,9 +142,13 @@ export default () => {
 
     await openNewTab(dcTestPageUrl);
     await getDisplayedElement("#control-element");
-    const dcFilters = ["#script-id-dc", "#element-id-dc"];
     for (const dcFilter of dcFilters) {
-      await waitForNotDisplayed(dcFilter);
+      // Reload the page when premium filterlists haven't finished downloading
+      await waitForNotDisplayed(dcFilter, {
+        timeout: 5000,
+        displayedTimeout: 1000,
+        forceRefresh: true,
+      });
     }
   });
 };

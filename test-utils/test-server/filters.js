@@ -24,3 +24,4 @@ export const snippetFilter = "testpages.eyeo.com#$#hide-if-contains 'filter not 
 export const allowlistedDomain = "testpages.eyeo.com";
 export const easylistFilter = "testpages.eyeo.com*js/test-script.js";
 export const customBlockingFilter = "localhost*js/test-script.js";
+export const dcFilters = ["#script-id-dc", "#element-id-dc"];

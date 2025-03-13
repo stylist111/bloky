@@ -28,6 +28,7 @@ import {
 } from "@eyeo/test-utils/driver";
 import { getOptionsHandle, getPremiumEmail } from "@eyeo/test-utils/extension";
 import { dcTestPageUrl } from "@eyeo/test-utils/urls";
+import { dcFilters } from "@eyeo/test-utils/filters";
 
 import {
   initOptionsGeneralTab,
@@ -137,7 +138,6 @@ export default () => {
     // Distraction Control
     await openNewTab(dcTestPageUrl);
     await getDisplayedElement("#control-element");
-    const dcFilters = ["#script-id-dc", "#element-id-dc"];
     for (const dcFilter of dcFilters) {
       await waitForNotDisplayed(dcFilter);
     }

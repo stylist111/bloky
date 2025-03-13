@@ -76,6 +76,12 @@ export async function getTabId(optionsHandle) {
   return tabId;
 }
 
+async function doForceRefresh(warnMsg) {
+  // eslint-disable-next-line no-console
+  console.warn(`${warnMsg}, refreshing the page and retrying...`);
+  await driver.navigate().refresh();
+}
+
 // The forceRefresh property is a temporary workaround, to be removed when fixing
 // https://eyeo.atlassian.net/browse/EXT-335
 export async function getDisplayedElement(
@@ -105,10 +111,7 @@ export async function getDisplayedElement(
     if (!forceRefresh) {
       throw err;
     }
-
-    // eslint-disable-next-line no-console
-    console.warn(`Element "${cssSelector}" is not displayed, refreshing the page and retrying...`);
-    await driver.navigate().refresh();
+    await doForceRefresh(`Element "${cssSelector}" is not displayed`);
     await findElement();
   }
 
@@ -125,10 +128,11 @@ export async function openNewTab(url) {
  * Waits for an element to not be displayed is usually used on elements that
  * were previously displayed and expected to become hidden after a certain action
  *
- * @param {string} cssText - The CSS locator of the element
+ * @param {string} cssSelector - The CSS locator of the element
  * @param {Object} options - Options object
  * @param {number} options.timeout - Overall polling timeout in ms
  * @param {number} options.displayedTimeout - Timeout in ms for the displayed element to be hidden
+ * @param {boolean} options.forceRefresh - Refresh the page if the element is found
  * @returns {Promise<void>}
  * @example
  * timeout=1000, displayedTimeout=500 will produce up to 2 wait() retries
@@ -136,11 +140,19 @@ export async function openNewTab(url) {
  * timeout=3000, displayedTimeout=1000 will also produce up to 3 retries, but
  *   waiting longer for the displayed element to be hidden
  */
-export function waitForNotDisplayed(cssText, { timeout = 1000, displayedTimeout = 500 } = {}) {
+export function waitForNotDisplayed(
+  cssSelector,
+  { timeout = 1000, displayedTimeout = 500, forceRefresh = false } = {},
+) {
   return wait(
     async () => {
       try {
-        await getDisplayedElement(cssText, { timeout: displayedTimeout, forceRefresh: false });
+        // getDisplayedElement is expected to fail to ensure the element is not
+        // displayed, therefore forceRefresh must always be false here
+        await getDisplayedElement(cssSelector, { timeout: displayedTimeout, forceRefresh: false });
+        if (forceRefresh) {
+          await doForceRefresh(`Element "${cssSelector}" is displayed`);
+        }
         return false;
       } catch (err) {
         if (err.name === "TimeoutError") {
@@ -150,7 +162,7 @@ export function waitForNotDisplayed(cssText, { timeout = 1000, displayedTimeout 
       }
     },
     timeout,
-    `Element "${cssText}" is still displayed`,
+    `Element "${cssSelector}" is still displayed`,
   );
 }
 
@@ -207,7 +219,13 @@ export async function waitForCheckboxStatus(
 
 export async function clickOnDisplayedElement(
   cssSelector,
-  { timeout = 500, scrollIntoView = false, checkDisplayed = true, checkAttribute = null } = {},
+  {
+    timeout = 500,
+    scrollIntoView = false,
+    checkDisplayed = true,
+    checkAttribute = null,
+    jsClick = false,
+  } = {},
 ) {
   const bigTimeout = timeout * 2;
   let elem;
@@ -229,7 +247,15 @@ export async function clickOnDisplayedElement(
         // make sure the element is interactable
         await elem.isEnabled();
 
-        await elem.click();
+        if (jsClick) {
+          // Workaround when elem.click() doesn't work
+          await driver.executeScript((selector) => {
+            document.querySelector(selector).click();
+          }, cssSelector);
+        } else {
+          await elem.click();
+        }
+
         return true;
       } catch (err) {
         // Other element would receive the click
