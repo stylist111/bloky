@@ -20,6 +20,7 @@ import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { port } from "~/core/messaging/background";
 import { FilterOrigin } from "../shared";
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
+import { reportAndLogError } from "~/logger/background";
 
 async function isMigrationActive(experimentFlag: string): Promise<boolean> {
   const locales = await ewe.experiments.getFlag(experimentFlag);
@@ -136,9 +137,9 @@ export async function start(): Promise<void> {
       await Prefs.set(prefsKeyPopupMigration, migrated);
     } catch (error) {
       await Prefs.set(prefsKeyPopupMigration, false);
-      console.error(
-        "Failed to migrate allowlists from popup to smart allowlisting",
-        error
+      reportAndLogError(
+        error,
+        "Failed to migrate allowlists from popup to smart allowlisting"
       );
     }
   }
@@ -149,9 +150,9 @@ export async function start(): Promise<void> {
       await Prefs.set(prefsKeyAllMigration, migrated);
     } catch (error) {
       await Prefs.set(prefsKeyAllMigration, false);
-      console.error(
-        "Failed to migrate all allowlists to smart allowlisting",
-        error
+      reportAndLogError(
+        error,
+        "Failed to migrate all allowlists to smart allowlisting"
       );
     }
   }

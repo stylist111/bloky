@@ -21,6 +21,8 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import * as ewe from "@eyeo/webext-ad-filtering-solution";
+
 import { EventEmitter } from "../events.js";
 import { SessionStorage } from "./session.js";
 
@@ -143,7 +145,7 @@ export class TabSessionStorage extends EventEmitter {
   async transaction(fn) {
     this._queue = this._queue
       // Necessary to avoid breakage of promise chain
-      .catch(console.error)
+      .catch((e) => ewe.sentry.reportError(e))
       .then(fn);
     return this._queue;
   }

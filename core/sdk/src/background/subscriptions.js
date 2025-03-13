@@ -33,6 +33,7 @@ import {filterEngine} from "./core.js";
 import {EventDispatcher} from "./types.js";
 import {convertFilter} from "./filters.js";
 import {disableDynamicRules} from "./dnr-filters.js";
+import {default as sentry} from "./sentry.js";
 
 import {Prefs} from "./prefs.js";
 
@@ -550,6 +551,7 @@ export async function migrate() {
       migrateSubscriptionToMv3(downloadable);
     }
     catch (e) {
+      sentry.reportError(e);
       saveMigrationError(downloadable, e.message);
     }
   }

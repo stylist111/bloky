@@ -23,6 +23,7 @@ import {
 } from "../../notifications/background";
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import { getPremiumState } from "../../premium/background";
+import { reportAndLogError } from "../../logger/background";
 
 // Locales that the update campaign will target
 const targetedLocales = ["en", "fr", "de", "es", "nl"];
@@ -46,7 +47,10 @@ async function openUpdatePage(): Promise<void> {
   try {
     await browser.tabs.create({ url: parsedURL });
   } catch (error) {
-    console.error("A new tab couldn't be created for the update campaign");
+    reportAndLogError(
+      error,
+      "A new tab couldn't be created for the update campaign"
+    );
   }
 }
 

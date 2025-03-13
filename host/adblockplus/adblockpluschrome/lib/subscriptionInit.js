@@ -38,6 +38,7 @@ import { initNotifications } from "./notificationHelper.js";
 import { Prefs } from "./prefs.js";
 import { start as startUnloadCleanup } from "../../src/unload-cleanup/background/index.ts";
 import { start as startIPMPingListener } from "../../src/testing/ping-ipm/background";
+import { reportAndLogError } from "../../src/logger/background";
 
 let firstRun;
 let userNotificationCallback = null;
@@ -111,7 +112,7 @@ async function addSubscriptionsAndNotifyUser() {
       await ewe.subscriptions.add(url);
       await ewe.subscriptions.sync(url);
     } catch (ex) {
-      console.error(`Failed to add additional subscription: ${url}`);
+      reportAndLogError(ex, `Failed to add additional subscription: ${url}`);
     }
   }
 

@@ -172,8 +172,11 @@ function openNotificationLink(link) {
       });
       return;
     }
-
-    console.error("No recommended subscription found");
+    ewe.sentry.reportError(
+      new Error(
+        `Can not process notification link ${link}, no recommended subscription found`
+      )
+    );
     return;
   }
 

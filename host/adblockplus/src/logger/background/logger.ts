@@ -68,11 +68,14 @@ export const warn = log.bind(null, LogLevel.warn, console.warn);
 /**
  * Reports an error to Sentry and logs it to the console
  *
- * @param e - The error to send to Sentry.
+ * @param e - The error to send to Sentry. This will only send the error to
+ * sentry if it is of type Error.
  * @param logContext - Additional context to log on the console.
  */
-export function reportAndLogError(e: Error, logContext?: string): void {
-  ewe.sentry.reportError(e);
+export function reportAndLogError(e: unknown, logContext?: string): void {
+  if (e instanceof Error) {
+    ewe.sentry.reportError(e);
+  }
 
   if (logContext) {
     error(logContext, e);

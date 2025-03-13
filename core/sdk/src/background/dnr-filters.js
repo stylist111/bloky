@@ -1035,6 +1035,7 @@ export async function migrateCustomFilters() {
       }
     }
     catch (e) {
+      sentry.reportError(e);
       let errors = Prefs.migration_filter_errors;
 
       if (!Array.isArray(errors)) {

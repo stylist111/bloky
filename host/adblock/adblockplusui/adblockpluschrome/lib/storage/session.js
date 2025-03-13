@@ -21,6 +21,8 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import * as ewe from "@eyeo/webext-ad-filtering-solution";
+
 /**
  * In-memory storage for use outside of service worker context.
  * @type {Map<string,any>}
@@ -107,7 +109,7 @@ export class SessionStorage {
   async transaction(fn) {
     this._queue = this._queue
       // Necessary to avoid breakage of promise chain
-      .catch(console.error)
+      .catch((e) => ewe.sentry.reportError(e))
       .then(fn);
     return this._queue;
   }

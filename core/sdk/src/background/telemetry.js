@@ -179,6 +179,9 @@ async function ping(telemetry) {
     }
   }
   catch (e) {
+    // Not being sent to Sentry for now. If we do, we should find a way to
+    // filter between unavoidable network errors and something actually being
+    // wrong on the server.
     error(`Telemetry error: ${e.message}`);
 
     let lastError = (new Date()).toISOString();
