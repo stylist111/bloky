@@ -38,7 +38,7 @@ import {
   initOptionsGeneralTab,
   getFLSelectors,
   getPopupBlockedAdsTotalCount,
-  getActualFilterListsInfo
+  manageFilterListsError
 } from "../../utils/page.js";
 import { blockHideUrl } from "@eyeo/test-utils/urls";
 import { installUrl } from "../../utils/urls.js";
@@ -66,14 +66,9 @@ export default () => {
       try {
         const { toggle, title } = getFLSelectors(name);
         flEnabled = await isCheckboxPropertyEnabled(toggle);
-        flTitleElem = await getDisplayedElement(title);
+        flTitleElem = await getDisplayedElement(title, { forceRefresh: false });
       } catch (err) {
-        if (err.name === "TimeoutError") {
-          const info = await getActualFilterListsInfo();
-          err.message = `${err.message}\nActual filter lists:\n${JSON.stringify(info, null, 2)}`;
-        }
-
-        throw err;
+        await manageFilterListsError(err);
       }
 
       const flTitle = await flTitleElem.getText();
@@ -149,10 +144,14 @@ export default () => {
 
     await initOptionsAdvancedTab(getOptionsHandle());
     // Wait for the first filter list to be displayed
-    await getDisplayedElement(firstFLSelector, {
-      timeout,
-      forceRefresh: false
-    });
+    try {
+      await getDisplayedElement(firstFLSelector, {
+        timeout,
+        forceRefresh: false
+      });
+    } catch (err) {
+      await manageFilterListsError(err);
+    }
     // check default filter lists are enabled
     const actualFilterLists = [];
     for (const { name } of defaultFilterLists) {

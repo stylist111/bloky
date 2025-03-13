@@ -42,7 +42,7 @@ import {
   deleteCustomFilters,
   clickOnCustomFilterToggleAndCheck,
   getTooltipMsg,
-  getActualFilterListsInfo
+  manageFilterListsError
 } from "../../utils/page.js";
 import {
   getDefaultFilterLists,
@@ -121,12 +121,7 @@ export default () => {
       await clickOnDisplayedElement("#update");
       await waitForAllUpdated(/Just now/, 5000);
     } catch (err) {
-      if (err.name === "TimeoutError") {
-        const info = await getActualFilterListsInfo();
-        err.message = `${err.message}\nActual filter lists:\n${JSON.stringify(info, null, 2)}`;
-      }
-
-      throw err;
+      await manageFilterListsError(err);
     }
   });
 

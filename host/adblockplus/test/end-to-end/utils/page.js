@@ -531,24 +531,37 @@ export async function getTooltipMsg(tooltipSelector) {
   return await tooltipMsgElem.getText();
 }
 
-export async function getActualFilterListsInfo() {
+async function getActualFilterListsInfo() {
   const allFLRowsSelector = "#all-filter-lists-table [aria-label]";
 
   const info = [];
   for (const flElem of await driver.findElements(By.css(allFLRowsSelector))) {
     const actualName = await flElem.getAttribute("aria-label");
     const { tooltip, lastUpdate } = getFLSelectors(actualName);
-    const lastUpdatedElem = await getDisplayedElement(lastUpdate, {
-      timeout: 800,
-      forceRefresh: false
-    });
-    const lastUpdatedTxt = await lastUpdatedElem.getText();
+
+    let lastUpdatedTxt;
+    try {
+      const lastUpdatedElem = await getDisplayedElement(lastUpdate, {
+        forceRefresh: false
+      });
+      lastUpdatedTxt = await lastUpdatedElem.getText();
+    } catch (e) {} // lastUpdatedElem doesn't exist
+
     const tooltipMsg = await getTooltipMsg(tooltip);
 
     info.push({ actualName, lastUpdatedTxt, tooltipMsg });
   }
 
   return info;
+}
+
+export async function manageFilterListsError(err) {
+  if (err.name === "TimeoutError") {
+    const info = await getActualFilterListsInfo();
+    err.message = `${err.message}\nActual filter lists:\n${JSON.stringify(info, null, 2)}`;
+  }
+
+  throw err;
 }
 
 export async function waitForSubscriptionUpdated(
