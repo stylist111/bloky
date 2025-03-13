@@ -1,5 +1,7 @@
 # Unreleased
 
+- Fixed branding on Firefox for the modal variant
+
 # 6.16.0 - 2025-03-12
 
 - Fixed an issue with the Premium Sync feature

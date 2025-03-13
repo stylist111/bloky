@@ -62,8 +62,10 @@ function createBrandingElement(): HTMLElement {
   brandingElement.style.display = "flex";
   brandingElement.style.alignItems = "center";
   brandingElement.style.gap = "1rem";
+  // On FF if we not give the parameter value it will show null
   brandingElement.innerText = browser.i18n.getMessage(
     "yt_haven_player_watching_with_label",
+    "",
   );
   brandingElement.appendChild(logo);
 

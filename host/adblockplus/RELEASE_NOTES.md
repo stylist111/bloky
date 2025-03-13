@@ -1,5 +1,7 @@
 # Unreleased
 
+- Fixed branding on Firefox for the modal variant
+
 # 4.16.0 - 2025-03-12
 
 - Fixed an issue when an incognito tab isn't found
