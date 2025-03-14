@@ -25,7 +25,7 @@ import {
 } from "../shared/index.js";
 import type {
   IframePlayerConfig,
-  PartialPrivateExperimentsData,
+  PartialExperimentsData,
   VideoContext,
   VideoContextStoreType,
 } from "./shared.types.js";
@@ -82,7 +82,7 @@ export async function getExperimentFlag(flagId: string): Promise<any> {
   const storedData = await browser.storage.local.get(expStorageKey);
   const experiments = storedData[expStorageKey];
 
-  if (!isPartialPrivateExperimentsData(experiments)) {
+  if (!isPartialExperimentsData(experiments)) {
     return null;
   }
 
@@ -127,22 +127,21 @@ export function isWatchPage(): boolean {
 }
 
 /**
- * Checks whether given candidate represents relevants parts of stored split
+ * Checks whether given candidate represents relevant parts of stored split
  * experiments data
  *
  * @param candidate - Candidate
  *
- * @returns whether given candidate represents relevants parts of stored split
+ * @returns whether given candidate represents relevant parts of stored split
  * experiments data
  */
-function isPartialPrivateExperimentsData(
+function isPartialExperimentsData(
   candidate: unknown,
-): candidate is PartialPrivateExperimentsData {
+): candidate is PartialExperimentsData {
   return (
     candidate !== null &&
     typeof candidate === "object" &&
-    "flags" in candidate &&
-    "overrides" in candidate
+    ("flags" in candidate || "overrides" in candidate)
   );
 }
 

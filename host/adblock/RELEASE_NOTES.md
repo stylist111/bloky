@@ -1,6 +1,7 @@
 # Unreleased
 
 - Fixed branding on Firefox for the modal variant
+- Fixed Haven experiment is active check
 
 # 6.16.0 - 2025-03-12
 
