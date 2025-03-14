@@ -39,6 +39,45 @@ release-utils:
 
 .child:
   stage: children
+  trigger:
+    include:
+      - local: '$WORKSPACEPATH/.gitlab-ci.yml'
+        inputs:
+          parent_pipeline_source: $PARENT_PIPELINE_SOURCE
+    strategy: depend
+    forward:
+      pipeline_variables: true
+  variables:
+    PARENT_PIPELINE_SOURCE: $CI_PIPELINE_SOURCE
+  needs: []
+
+.child-host:
+  extends: .child
+  rules:
+    # Do not trigger merge request event pipelines
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    # Always run everything on the main branch and tags
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: on_success
+    - if: $CI_COMMIT_TAG
+      when: on_success
+    # On feature branches, only run pipelines for a workspace if there are changes 
+    # either in that workspace or in shared test utils
+    - changes:
+        paths:
+          - $WORKSPACEPATH/**/*
+          - fragment/**/*
+          - ui-components/**/*
+          - core/**/*
+          - test-utils/**/*
+          - vendor/**/*
+          - '*'
+        compare_to: 'refs/heads/main'
+      when: on_success
+
+.child-core:
+  extends: .child
   rules:
     # Do not trigger merge request event pipelines
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -54,34 +93,23 @@ release-utils:
         paths:
           - $WORKSPACEPATH/**/*
           - test-utils/**/*
-          - core/**/*
+          - vendor/**/*
           - '*'
         compare_to: 'refs/heads/main'
       when: on_success
-  trigger:
-    include:
-      - local: '$WORKSPACEPATH/.gitlab-ci.yml'
-        inputs:
-          parent_pipeline_source: $PARENT_PIPELINE_SOURCE
-    strategy: depend
-    forward:
-      pipeline_variables: true
-  variables:
-    PARENT_PIPELINE_SOURCE: $CI_PIPELINE_SOURCE
-  needs: []
 
 adblock:
-  extends: .child
+  extends: .child-host
   variables:
     WORKSPACEPATH: host/adblock
 
 adblockplus:
-  extends: .child
+  extends: .child-host
   variables:
     WORKSPACEPATH: host/adblockplus
 
 sdk:
-  extends: .child
+  extends: .child-core
   variables:
     WORKSPACEPATH: core/sdk
 

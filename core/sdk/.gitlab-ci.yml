@@ -58,7 +58,7 @@ workflow:
     - if: $CI_COMMIT_MESSAGE =~ /\[flaky]/
       when: manual
     # Run automatically if other conditions not filled
-    - when: always
+    - when: on_success
 
 .docker-image:
   image: docker:24.0.5
