@@ -13,8 +13,8 @@
     "lint": "eslint .",
     "prettier-fix": "prettier --write ."
   },
-  "dependencies": {
-    "webextension-polyfill": "npm:@eyeo/webextension-polyfill"
+  "peerDependencies": {
+    "webextension-polyfill": "*"
   },
   "devDependencies": {
     "eslint": "8.34.0",

@@ -29,11 +29,11 @@
     "test": "vitest run --reporter=verbose"
   },
   "peerDependencies": {
-    "@eyeo/webext-ad-filtering-solution": "*"
+    "@eyeo/webext-ad-filtering-solution": "*",
+    "webextension-polyfill": "*"
   },
   "dependencies": {
     "@eyeo/polyfills": "*",
-    "webextension-polyfill": "npm:@eyeo/webextension-polyfill",
     "typescript": "5.6.3"
   },
   "devDependencies": {

@@ -26,7 +26,7 @@
     "@eyeo/webext-ad-filtering-solution": "*",
     "@types/webextension-polyfill": "0.12.0",
     "typescript": "5.6.3",
-    "webextension-polyfill": "npm:@eyeo/webextension-polyfill"
+    "webextension-polyfill": "*"
   },
   "devDependencies": {
     "@babel/core": "7.26.0",

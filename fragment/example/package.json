@@ -14,8 +14,8 @@
     "prettier-fix": "prettier --write .",
     "test": "vitest run --reporter=verbose"
   },
-  "dependencies": {
-    "webextension-polyfill": "npm:@eyeo/webextension-polyfill"
+  "peerDependencies": {
+    "webextension-polyfill": "*"
   },
   "devDependencies": {
     "eslint": "8.34.0",
