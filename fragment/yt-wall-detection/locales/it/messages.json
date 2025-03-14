@@ -1,7 +1,7 @@
 {
   "yt_haven_overlay_title": {
     "description": "YouTube Haven overlay title",
-    "message": "Vibe check: abbiamo rilevato che $short_name$ è in pausa.",
+    "message": "Piccola verifica: abbiamo rilevato che $short_name$ é in pausa.",
     "placeholders": {
       "short_name": {
         "content": "$1",
@@ -11,7 +11,7 @@
   },
   "yt_haven_overlay_description": {
     "description": "YouTube Haven overlay description",
-    "message": "La pazienza è una virtù, ma ci siamo noi a coprirti le spalle."
+    "message": "Anche se a qualcuno non importa, ci siamo noi a coprirti le spalle!"
   },
   "yt_haven_overlay_cta_button": {
     "description": "YouTube Haven overlay CTA button",

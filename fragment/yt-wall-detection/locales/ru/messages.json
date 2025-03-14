@@ -1,7 +1,7 @@
 {
   "yt_haven_overlay_title": {
     "description": "YouTube Haven overlay title",
-    "message": "Проверка, проверка, раз-два: мы обнаружили, что $short_name$ приостановлен.",
+    "message": "Проверка связи: мы обнаружили, что $short_name$ приостановлен.",
     "placeholders": {
       "short_name": {
         "content": "$1",
@@ -11,7 +11,7 @@
   },
   "yt_haven_overlay_description": {
     "description": "YouTube Haven overlay description",
-    "message": "Некоторые любят нервничать сверх меры, но не волнуйтесь – мы о вас позаботимся."
+    "message": "Некоторые совсем не умеют расслабляться, но не волнуйтесь — мы обо всём позаботимся."
   },
   "yt_haven_overlay_cta_button": {
     "description": "YouTube Haven overlay CTA button",
