@@ -109,7 +109,7 @@
     }
   },
   "dependencies": {
-    "@adblockinc/rules": "gitlab:eyeo/browser-extensions-and-premium/extensions/rules#13aeec9ffb5eed9f3a121dcebf8b7abb29e1fdba",
+    "@adblockinc/rules": "gitlab:eyeo/browser-extensions-and-premium/extensions/rules#2fdaa75ba6dfd5506a55e222c9f6766536909240",
     "@eyeo-fragments/ipm": "*",
     "@eyeo-fragments/public-api": "*",
     "@eyeo-fragments/yt-wall-detection": "*",
