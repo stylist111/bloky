@@ -1,6 +1,0 @@
-{
-  "hello_world": {
-    "description": "This is a simple hello world message. Any translation keys that are added here, will be merged with the host locales, if the host has this fragment installed.",
-    "message": "Hello world!"
-  }
-}
