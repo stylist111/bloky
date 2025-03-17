@@ -73,6 +73,13 @@ https://github.com/chartjs/Chart.js/releases/tag/v2.9.4
 
 jQuery (version 3.5.1)
 https://code.jquery.com/jquery-3.5.1.min.js
+
+webextension-polyfill 0.12.0 (fork of Mozilla's webextension-polyfill 0.12.0)
+The fork fixes the stack trace for `browser.runtime.lastError`, this is intended as a temporary solution
+until the original issue is fixed in the upstream repository.
+Original: https://github.com/mozilla/webextension-polyfill/blob/0.12.0/src/browser-polyfill.js
+Fork: /vendor/webextension-polyfill/src/browser-polyfill.js
+Merge request: https://github.com/mozilla/webextension-polyfill/pull/719
 ```
 
 # Opera notes for reviewers
