@@ -1,5 +1,7 @@
 # Unreleased
 
+# 4.17.0 - 2025-03-17
+
 - Fixed branding on Firefox for the modal variant
 - Fixed Haven experiment is active check
 - Extend allowlisting public API to allow for any TLD+(x > 0) of the current hostname (EXT-770)
