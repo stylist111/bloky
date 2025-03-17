@@ -26,7 +26,6 @@ const name = getIntegrationName(short_name);
 
 /**
  * @typedef {Object} StartParams
- * @property {any} ewe The filter engine.
  * @property {any} port A reference to the port object
  * @property {addTrustedMessageTypesFunction} addTrustedMessageTypes Function to add the trusted message types
  * @property {Function} isPremiumActive Function to get the premium state of the user
@@ -47,7 +46,6 @@ const name = getIntegrationName(short_name);
  * @param {StartParams} StartParams The start parameters
  */
 export function start({
-  ewe,
   port,
   addTrustedMessageTypes,
   isPremiumActive,
@@ -79,7 +77,7 @@ export function start({
     const response = {};
     try {
       response.result = await handler.bind(
-        { ewe, isPremiumActive, getEncodedLicense, sender },
+        { isPremiumActive, getEncodedLicense, sender },
         params,
       )();
     } catch (e) {

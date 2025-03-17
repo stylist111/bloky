@@ -121,7 +121,6 @@ async function bootstrap(): Promise<void> {
   startGlobals();
   void startFiltersMigration();
   startPublicAPI({
-    ewe,
     port,
     addTrustedMessageTypes,
     isPremiumActive: hasActiveLicense,

@@ -14,6 +14,7 @@
     "prettier-fix": "prettier --write ."
   },
   "peerDependencies": {
+    "@eyeo/webext-ad-filtering-solution": "*",
     "webextension-polyfill": "*"
   },
   "devDependencies": {

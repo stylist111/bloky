@@ -16,15 +16,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import * as ewe from "@eyeo/webext-ad-filtering-solution";
+
 /**
  * Retrieves the allowlisting status of a tab
  *
  * @param {Object} params - Input parameter
  * @param {number} params.tabId The id of the tab
- * @param {any} params.ewe The filter engine
  * @returns {Promise<any>} The allowlisting state for the current tab
  */
-async function getAllowlistStatus({ tabId, ewe }) {
+async function getAllowlistStatus({ tabId }) {
   const allowlistingFilters = await ewe.filters.getAllowingFilters(tabId);
   let metadata = {};
 
@@ -54,8 +55,8 @@ async function getAllowlistStatus({ tabId, ewe }) {
  */
 export async function getStatus() {
   const tabId = this.sender.tab.id;
-  const allowlist = await getAllowlistStatus({ tabId, ewe: this.ewe });
-  const aa = await this.ewe.subscriptions.hasAcceptableAdsEnabled();
+  const allowlist = await getAllowlistStatus({ tabId });
+  const aa = await ewe.subscriptions.hasAcceptableAdsEnabled();
   const license = this.isPremiumActive() ? this.getEncodedLicense() : null;
 
   return {

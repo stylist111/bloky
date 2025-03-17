@@ -681,7 +681,6 @@ initialize
       sendAdWallEvents: ServerMessages.recordAdWallMessage,
     });
     startPublicAPI({
-      ewe,
       port,
       addTrustedMessageTypes: ext.addTrustedMessageTypes,
       isPremiumActive: License.isActiveLicense,
