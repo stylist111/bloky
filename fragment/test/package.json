@@ -15,8 +15,10 @@
   "license": "GPL-3.0",
   "dependencies": {
     "@eyeo-fragments/example": "*",
-    "@eyeo/webext-ad-filtering-solution": "*",
-    "webextension-polyfill": "^0.8.0"
+    "@eyeo/webext-ad-filtering-solution": "*"
+  },
+  "peerDependencies": {
+    "webextension-polyfill": "*"
   },
   "devDependencies": {
     "webpack": "5.97.1",

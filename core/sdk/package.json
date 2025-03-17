@@ -41,8 +41,10 @@
     "adblockpluscore": "*",
     "pako": "^2.1.0",
     "uuid": "^9.0.0",
-    "webextension-polyfill": "npm:@eyeo/webextension-polyfill",
     "yargs": "^17.5.1"
+  },
+  "peerDependencies": {
+    "webextension-polyfill": "*"
   },
   "devDependencies": {
     "@eyeo/get-browser-binary": "0.20.2",
