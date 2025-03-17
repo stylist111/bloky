@@ -20,10 +20,6 @@ adblock-betafish/telemetry/background/telemetry-ipm.js
 
 AdBlock source code is available in the attached tar file.
 
-More instructions regarding how to build AdBlock can be found here:
-
-https://gitlab.com/adblockinc/ext/adblock/adblock
-
 ## Requirements
 
 node: 18.17.1
@@ -36,30 +32,29 @@ Then install the above requirements and run the commands below from within Bash.
 
 ## Updating the dependencies
 
-In order to build the extension, you need to run the following command (install the required npm packages)
+In order to build the extension, run the following command (install the required npm packages)
 
     npm install
 
 ## Building the extension
 
-Run the following command in the project directory to build the Firefox version of AdBlock
+Run the following command to build the Firefox version of AdBlock
 
     npm run build:release -- --scope=adblock -- firefox 2
 
 This will create a build with a name in the form
 _host/adblock/dist/release/adblock-firefox-n.n.n-mv2.xpi_. These builds
-are unsigned. They can be submitted as-is to the extension stores, or if
-unpacked loaded in development mode for testing (same as devenv builds below).
+are unsigned. They can be submitted as-is or if unpacked,
+loaded in development mode for testing.
 
 ## Development environment
 
-To simplify the process of testing your changes you can create an unpacked
-development environment. For that run one of the following command:
+For testing purposes, create an unpacked development environment with the following command:
 
     npm run build -- --scope=adblock -- firefox 2
 
-This will create a _host/adblock/devenv/firefox-mv2_ directory in the project directory. You can load
-the directory as an unpacked extension under _about:debugging_ in Firefox. After making
+This will create a _host/adblock/devenv/firefox-mv2_ directory. You can load
+it as an unpacked extension under _about:debugging_ in Firefox. After making
 changes to the source code re-run the command to update the development
 environment, and reload the extension in the browser.
 
