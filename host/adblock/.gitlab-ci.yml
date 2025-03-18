@@ -42,17 +42,6 @@ stages:
   - release
 
 # Pipeline rules
-.release-or-main:
-  rules:
-    # Do not trigger merge request pipelines
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: never
-    # Run automatically on release and main branch
-    - if: $CI_COMMIT_BRANCH == "adblock-release" || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_TAG =~ /^(adblock)-v?\d+(\.\d+)*$/
-    # Run manually on all other branches
-    - when: manual
-      allow_failure: true
-
 .release-tag:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^(adblock)-v?\d+(\.\d+)*$/'
@@ -85,8 +74,6 @@ buildfromsource:
       - host/adblock/dist/source/adblock-chrome-*-mv2.zip
       - host/adblock/dist/source/adblock-chrome-*-mv3.zip
       - host/adblock/dist/source/adblock-firefox-*-mv2.xpi
-  rules:
-    - !reference [.release-or-main, rules]
 
 ################################################################################
 # Check filesizes
@@ -148,8 +135,6 @@ checkfilesizes:firefox_mv2:
       echo "Build from source archive and build from the repository are the same size" &&
       exit 0;
       fi
-  rules:
-    - !reference [.release-or-main, rules]
 
 checkbuildsizes:MV3:chrome:
   extends: .checkbuildsizes
