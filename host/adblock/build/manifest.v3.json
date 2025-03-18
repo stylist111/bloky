@@ -58,19 +58,23 @@
         "purify.min.js",
         "adblock-deny-push-notifications-requests.js"
       ],
-      "matches": ["http://*/*", "https://*/*"]
+      "matches": ["http://*/*", "https://*/*"],
+      "use_dynamic_url": true
     },
     {
       "resources": ["adblock-yt-capture-requests.js"],
-      "matches": ["*://*.youtube.com/*"]
+      "matches": ["*://*.youtube.com/*"],
+      "use_dynamic_url": true
     },
     {
       "resources": ["adblock-twitch-capture-requests.js"],
-      "matches": ["*://*.twitch.tv/*"]
+      "matches": ["*://*.twitch.tv/*"],
+      "use_dynamic_url": true
     },
     {
       "resources": ["adblock-yt-capture-events.js"],
-      "matches": ["*://*.youtube.com/*"]
+      "matches": ["*://*.youtube.com/*"],
+      "use_dynamic_url": true
     }
   ]
 }

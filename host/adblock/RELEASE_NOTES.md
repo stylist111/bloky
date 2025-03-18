@@ -1,5 +1,7 @@
 # Unreleased
 
+- Added the `use_dynamic_url` property to entries under the `web_accessible_resources` key in AdBlock's manifest file (MV3 only). (EXT-871)
+
 # 6.17.0 - 2025-03-17
 
 - Fixed branding on Firefox for the modal variant
