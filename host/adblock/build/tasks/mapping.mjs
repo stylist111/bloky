@@ -46,12 +46,10 @@ function resolveBundleSrc(bundle) {
 export default function mapping(bundles) {
   return merge(
     bundles.copy.map((bundle) => {
-      return gulp.src(resolveBundleSrc(bundle), { encoding: false }).pipe(changePath(bundle.dest));
+      return gulp.src(resolveBundleSrc(bundle)).pipe(changePath(bundle.dest));
     }),
     bundles.rename.map((bundle) =>
-      gulp
-        .src(resolveBundleSrc(bundle), { encoding: false })
-        .pipe(changePath(bundle.dest, { rename: true })),
+      gulp.src(resolveBundleSrc(bundle)).pipe(changePath(bundle.dest, { rename: true })),
     ),
   );
 }
