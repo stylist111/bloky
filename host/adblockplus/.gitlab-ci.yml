@@ -20,6 +20,8 @@ spec:
       description: "Value of CI_PIPELINE_SOURCE in the parent pipeline"
 
 ---
+include: "/.gitlab/ci-common.yml"
+
 default:
   image: node:18.17.1
   cache: # Cache modules using lock file
@@ -36,7 +38,8 @@ default:
   image: docker:24.0.5
   services:
     - docker:24.0.5-dind
-  needs: ["build"]
+  needs:
+    - !reference [.needs-parent-build-release, needs]
 
 stages:
   - build
@@ -75,32 +78,10 @@ stages:
 # Build
 ################################################################################
 
-.build:
-  stage: build
-  before_script:
-    # Update dependencies
-    - npm ci --cache .npm --prefer-offline
-
-build:
-  extends: .build
-  script:
-    # Create .env file from CI variables and confirm they have values
-    - ./scripts/release-utils/create-environment-variables.sh ADBLOCKPLUS host/adblockplus/environment-variables > host/adblockplus/.env
-    # Create source archive
-    - npm run build:source -- --scope=adblockplus
-    # Create extension builds
-    - npm run build:release -- --scope=adblockplus
-  artifacts:
-    name: "adblockplus-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHORT_SHA}"
-    paths:
-      - host/adblockplus/dist/release/adblockplus-*.tar.gz
-      - host/adblockplus/dist/release/adblockplus-chrome-*-mv2.zip
-      - host/adblockplus/dist/release/adblockplus-chrome-*-mv3.zip
-      - host/adblockplus/dist/release/adblockplus-firefox-*-mv2.xpi
-
 buildfromsource:
   stage: build
-  needs: ["build"]
+  needs:
+    - !reference [.needs-parent-build-release, needs]
   script:
     # We need to generate the builds outside of the git repo to avoid any
     # implicit dependencies to git in our build scripts
@@ -129,6 +110,8 @@ buildfromsource:
 .checkfilesizes:
   image: alpine:latest
   stage: checkfilesizes
+  needs:
+    - !reference [.needs-parent-build-release, needs]
   script:
     - unzip -d unpacked-extension/ host/adblockplus/dist/release/$EXTENSION
     - cd unpacked-extension/
@@ -162,7 +145,9 @@ checkfilesizes:MV2:firefox:
 
 .checkbuildsizes:
   stage: checkfilesizes
-  needs: ["build", "buildfromsource"]
+  needs:
+    - !reference [.needs-parent-build-release, needs]
+    - "buildfromsource"
   before_script:
     - if [ ! -f $SOURCE_BUILD ] || [ ! -f $REPOSITORY_BUILD ]; then
       echo "File not found" &&
@@ -323,7 +308,8 @@ end-to-end:MV3:chromium:
 
 create_release:
   extends: .gitlab-api-release-automation
-  needs: ["build"]
+  needs:
+    - !reference [.needs-parent-build-release, needs]
   script:
     - release_notes=$(node scripts/release-utils/get-release-notes.js adblockplus $version)
     - glab release create $CI_COMMIT_TAG -n "Adblock Plus $version" host/adblockplus/dist/release/* -N "$release_notes"
@@ -338,7 +324,8 @@ create_release_mr_back_to_main:
 
 upload_sourcemaps:
   stage: release
-  needs: ["build"]
+  needs:
+    - !reference [.needs-parent-build-release, needs]
   rules:
     - !reference [.release-tag, rules]
   script:

@@ -6,6 +6,8 @@ spec:
 
 ---
 
+include: "/.gitlab/ci-common.yml"
+
 default:
   interruptible: true
   image: node:18.17.1
@@ -83,27 +85,24 @@ stages:
   - integration
   - performance
 
-build:src:
+build:docs:
   stage: build
   before_script:
     - npm install
   script:
-    - npm run build -- --scope=@eyeo/webext-ad-filtering-solution
     - DOCS_ERROR=$(npm run -w=@eyeo/webext-ad-filtering-solution docs 2>&1 >/dev/null) && if [ ! -z "$DOCS_ERROR" ]; then echo $DOCS_ERROR && false; fi
     - npm run -w=@eyeo/webext-ad-filtering-solution docs-adblockpluscore
   artifacts:
     paths:
-      - core/sdk/dist/
       - core/sdk/public/
     expire_in: 1 week
-
 
 # Publishes the docs to https://eyeo.gitlab.io/browser-extensions-and-premium/extensions/extensions/sdk/
 # and https://eyeo.gitlab.io/browser-extensions-and-premium/extensions/extensions/sdk/adblockpluscore/
 # Requirements: https://docs.gitlab.com/ee/user/project/pages/introduction.html#gitlab-pages-requirements
 pages:
   stage: build
-  needs: ["build:src"]
+  needs: ["build:docs"]
   script:
     # Check that docs folder exists
     - "[ -d \"core/sdk/public\" ]"
@@ -130,7 +129,8 @@ build:basic-image:
 
 build:functional-image:
   extends: .build-image
-  needs: ["build:src"]
+  needs:
+    - !reference [.needs-parent-build, needs]
   script:
     - docker build -t $FUNCTIONAL_IMAGE -f core/sdk/test/dockerfiles/functional.Dockerfile --build-arg BROWSER=chromium .
     - docker push $FUNCTIONAL_IMAGE
@@ -216,7 +216,8 @@ func:v2:firefox:oldest:
 
 .functional-windows:
   stage: functional
-  needs: ["build:src"]
+  needs:
+    - !reference [.needs-parent-build, needs]
   variables:
     # The eyeo windows CI runners fail to check out large numbers of packages,
     # like the extensions monorepo, if npm can't retry fetching dependencies.
@@ -386,7 +387,8 @@ fuzz:v3:edge:latest:
 .compliance:
   stage: compliance
   extends: .docker-image
-  needs: ["build:src"]
+  needs:
+    - !reference [.needs-parent-build, needs]
   before_script:
     - apk add bash git zip
   script:
@@ -443,8 +445,9 @@ int:scripts:
 int:bundle:
   stage: integration
   script:
-    - npm run -w=@eyeo/webext-ad-filtering-solution test:bundle 
-  needs: ["build:src"]
+    - npm run -w=@eyeo/webext-ad-filtering-solution test:bundle
+  needs:
+    - !reference [.needs-parent-build, needs]
   rules:
     - !reference [.avoid-flaky-run, rules]
 

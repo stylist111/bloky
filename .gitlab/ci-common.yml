@@ -1,0 +1,9 @@
+.needs-parent-build:
+  needs:
+    - pipeline: $PARENT_PIPELINE_ID
+      job: build
+
+.needs-parent-build-release:
+  needs:
+    - pipeline: $PARENT_PIPELINE_ID
+      job: build:release

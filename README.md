@@ -182,6 +182,18 @@ That could be solved by installing Python 3.11 locally, and
 
 ## CI pipeline
 
+### Adding CI config for a new package
+
+There are already jobs configured on the CI pipelines to run `npm run build`,
+`npm run build:release`, `npm run lint` and `npm run test` for all npm packages
+in the monorepo's workspace. If your new module is in the workspace, and only
+needs these jobs, then there is no additional CI config needed.
+
+If your new package has other types of tests that it needs to run in the
+pipelines, then you can create a child `.gitlab-ci.yml` in your package, and add
+it as a child pipeline in [the root `.gitlab-ci.yml`](./gitlab-ci.yml). See [the
+SDK config](./core/sdk/.gitlab-ci.yml) as an example.
+
 ### Runners
 
 Pipeline jobs use self-managed runners from Google Cloud Platform (GCP):

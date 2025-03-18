@@ -20,6 +20,38 @@ stages:
     - npm ci --cache .npm --prefer-offline
     - if [[ "$CI_COMMIT_REF_NAME" != "main" ]]; then SINCE="--since origin/main"; fi
 
+.build:
+  stage: root
+  before_script:
+    - npm ci --cache .npm --prefer-offline
+    # Create .env file from CI variables and confirm they have values
+    - ./scripts/release-utils/create-environment-variables.sh ADBLOCK host/adblock/environment-variables > host/adblock/.env
+    - ./scripts/release-utils/create-environment-variables.sh ADBLOCKPLUS host/adblockplus/environment-variables > host/adblockplus/.env
+
+build:
+  extends: .build
+  script:
+    - npm run build
+  artifacts:
+    name: "extensions-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - core/sdk/dist/
+      - host/adblock/dist/devenv/
+      - host/adblockplus/dist/devenv/
+    expire_in: 1 month
+
+build:release:
+  extends: .build
+  script:
+    - npm run build:source
+    - npm run build:release
+  artifacts:
+    name: "extensions-release-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - host/adblock/dist/release/
+      - host/adblockplus/dist/release/
+    expire_in: 1 month
+
 lint:
   extends: .base
   script:
@@ -49,7 +81,14 @@ release-utils:
       pipeline_variables: true
   variables:
     PARENT_PIPELINE_SOURCE: $CI_PIPELINE_SOURCE
-  needs: []
+    PARENT_PIPELINE_ID: $CI_PIPELINE_ID
+  needs:
+    # We need these artifacts in the downstream pipelines themselves so we need
+    # to wait for the jobs to finish before triggering downstream.
+    - job: "build"
+      artifacts: false
+    - job: "build:release"
+      artifacts: false
 
 .child-host:
   extends: .child
