@@ -92,7 +92,7 @@
     "test:functional": "node test/runners/functional.js",
     "test:performance": "node test/runners/performance.js",
     "test:scripts": "mocha test/scripts/*.js",
-    "test:unit": "mocha ./test/unit/**/*.js",
+    "test:unit": "mocha --config ./test/unit/.mocharc.json ./test/unit/**/*.js",
     "test-server": "node test/start-server.js",
     "subs-init": "node scripts/initSubscriptions.js",
     "subs-merge": "node scripts/mergeSubscriptions.js",
