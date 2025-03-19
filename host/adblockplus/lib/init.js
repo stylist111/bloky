@@ -121,7 +121,10 @@ async function openFirstRunPage(shouldShowWarning = false, forceLocal = false) {
   const showLocal = shouldShowWarning || forceLocal;
 
   let firstRunTabId = null;
-  let waitForRemotePage = Promise.resolve();
+  let waitForRemotePage = {
+    promise: Promise.resolve(),
+    stop() {}
+  };
   let url = localFirstRunPageUrl;
 
   if (!showLocal) {
