@@ -33,6 +33,7 @@ import {
   initOptionsGeneralTab,
   initOptionsFiltersTab,
   getSubscriptionInfo,
+  checkSubscriptionsInfo,
   clickFilterlist,
   waitForSubscribed,
 } from "../../utils/page.js";
@@ -71,28 +72,10 @@ export default () => {
 
     const defaultEnabledFilterLists = defaultFilterLists.filter(({ enabled }) => enabled);
 
-    const checkDefaultSubscriptionsInfo = async (updatedWhen, timeout) => {
-      await wait(
-        async () => {
-          try {
-            for (const { name } of defaultEnabledFilterLists) {
-              const text = await getSubscriptionInfo(name);
-              expect(text).toMatch(new RegExp(`updated.*${updatedWhen}`));
-            }
-            return true;
-          } catch (e) {}
-        },
-        timeout,
-        `Filter lists were not updated "${updatedWhen}" after ${timeout}ms`,
-        500,
-      );
-    };
-
-    await checkDefaultSubscriptionsInfo("ago", 20000);
-
+    await checkSubscriptionsInfo(defaultEnabledFilterLists, "ago", { timeout: 20000 });
     await clickOnDisplayedElement("#btnUpdateNow");
-    await checkDefaultSubscriptionsInfo("right now", 10000);
-    await checkDefaultSubscriptionsInfo("seconds ago", 20000);
+    await checkSubscriptionsInfo(defaultEnabledFilterLists, "right now", { timeout: 10000 });
+    await checkSubscriptionsInfo(defaultEnabledFilterLists, "seconds ago", { timeout: 20000 });
   });
 
   it("goes to a filter list source page", async function () {

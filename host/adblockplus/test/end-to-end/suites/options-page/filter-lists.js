@@ -105,6 +105,9 @@ export default () => {
         async () => {
           try {
             for (const { name } of defaultFilterLists) {
+              // the text does not automatically update from 'Just now' to 'minutes ago'
+              // so wee need to reload the page in between checks
+              await driver.navigate().refresh();
               await waitForSubscriptionUpdated(name, { regexp });
             }
             return true;

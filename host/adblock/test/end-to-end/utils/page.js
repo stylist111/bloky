@@ -292,6 +292,27 @@ export async function setAADefaultState() {
   }
 }
 
+export async function checkSubscriptionsInfo(
+  filterlistArray,
+  updatedWhen,
+  { timeout = 3000 } = {},
+) {
+  await wait(
+    async () => {
+      try {
+        for (const { name } of filterlistArray) {
+          const text = await getSubscriptionInfo(name);
+          expect(text).toMatch(new RegExp(`updated.*${updatedWhen}`));
+        }
+        return true;
+      } catch (err) {}
+    },
+    timeout,
+    `Filter lists were not updated with "${updatedWhen}" after ${timeout}ms`,
+    500,
+  );
+}
+
 export async function waitForSubscribed(
   name,
   checkboxSelector,

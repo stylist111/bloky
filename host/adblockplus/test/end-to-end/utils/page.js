@@ -545,13 +545,9 @@ export async function waitForSubscriptionUpdated(
 ) {
   const { toggle, lastUpdate } = getFLSelectors(name);
 
+  await initOptionsAdvancedTab(getOptionsHandle());
   await wait(
     async () => {
-      // Filterlist status may be stuck on 'Updating' unless the page is reloaded
-      // https://eyeo.atlassian.net/browse/EXT-402
-      await driver.navigate().refresh();
-      await initOptionsAdvancedTab(getOptionsHandle());
-
       const flEnabled = await isCheckboxPropertyEnabled(toggle);
       try {
         const lastUpdatedElem = await getDisplayedElement(lastUpdate, {

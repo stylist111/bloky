@@ -18,11 +18,12 @@
 import { expect } from "expect";
 
 import {
+  wait,
   findUrl,
   openNewTab,
   isCheckboxPropertyEnabled,
-  wait,
   getDisplayedElement,
+  clickOnDisplayedElement,
 } from "@eyeo/test-utils/driver";
 import { blockHideUrl } from "@eyeo/test-utils/urls";
 import {
@@ -35,6 +36,7 @@ import {
   initOptionsFiltersTab,
   getUserIdFromInstallPage,
   getSubscriptionInfo,
+  checkSubscriptionsInfo,
   clickFilterlist,
   initOptionsGeneralTab,
   getPopupBlockedAdsTotalCount,
@@ -113,6 +115,20 @@ export default () => {
       const flText = await flElem.getText();
 
       expect({ name, text: flText, enabled: flEnabled }).toEqual({ name, text, enabled });
+    }
+    const defaultEnabledFilterLists = defaultFilterLists.filter(({ enabled }) => enabled);
+    const lastUpdatedText = "(right now|ago)";
+    try {
+      await checkSubscriptionsInfo(defaultEnabledFilterLists, lastUpdatedText);
+    } catch (err) {
+      if (err.name !== "TimeoutError") {
+        throw err;
+      }
+      // Workaround for when filter lists fail to download,
+      // see: https://eyeo.atlassian.net/browse/EXT-874
+      await clickOnDisplayedElement("#btnUpdateNow");
+      console.warn("Some default subscriptions failed to download. Updating them as a workaround");
+      await checkSubscriptionsInfo(defaultEnabledFilterLists, lastUpdatedText);
     }
   });
 
