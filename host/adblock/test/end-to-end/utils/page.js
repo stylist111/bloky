@@ -138,7 +138,7 @@ export async function setCustomFilters(filters, append = false) {
     async () => {
       try {
         await editButton.click();
-        saveButton = await getDisplayedElement("#btnSaveAdvancedFilters", { forceRefresh: false });
+        saveButton = await getDisplayedElement("#btnSaveAdvancedFilters");
         return true;
       } catch (e) {}
     },
@@ -240,7 +240,7 @@ export async function checkBlockHidePage(expectAllowlisted) {
     async () => {
       try {
         if (expectAllowlisted) {
-          await getDisplayedElement("#script-id-full-path", { timeout, forceRefresh: false });
+          await getDisplayedElement("#script-id-full-path", { timeout });
         } else {
           await waitForNotDisplayed("#script-id-full-path", { timeout });
         }
@@ -254,12 +254,12 @@ export async function checkBlockHidePage(expectAllowlisted) {
     `filters were not applied on page when expectAllowlisted=${expectAllowlisted}`,
   );
 
-  await getDisplayedElement("#control-element", { timeout, forceRefresh: false });
+  await getDisplayedElement("#control-element", { timeout });
 
   if (expectAllowlisted) {
-    await getDisplayedElement("#test-element-class", { timeout, forceRefresh: false });
-    await getDisplayedElement("#test-element-id", { timeout, forceRefresh: false });
-    await getDisplayedElement("#script-id-regex", { timeout, forceRefresh: false });
+    await getDisplayedElement("#test-element-class", { timeout });
+    await getDisplayedElement("#test-element-id", { timeout });
+    await getDisplayedElement("#script-id-regex", { timeout });
   } else {
     await waitForNotDisplayed("#test-element-class", { timeout });
     await waitForNotDisplayed("#test-element-id", { timeout });
@@ -269,10 +269,7 @@ export async function checkBlockHidePage(expectAllowlisted) {
 
 export async function checkPremiumPageHeader(ctaTextSelector, ctaLinkSelector, premiumURL) {
   // sometimes the elements are displayed with a delay
-  const ctaText = await getDisplayedElement(ctaTextSelector, {
-    timeout: 4000,
-    forceRefresh: false,
-  });
+  const ctaText = await getDisplayedElement(ctaTextSelector, { timeout: 4000 });
   expect(await ctaText.getText()).toEqual(
     "You’ll be an ad blocking pro with these easy-to-use add-ons.",
   );
@@ -337,11 +334,7 @@ export async function setPausedStateFromPopup(url, paused = true) {
 
   // re-open the popup and check state changed
   await initPopupPage(tabId);
-  await getDisplayedElement(afterClickBtn, {
-    timeout: 5000,
-    forceRefresh: false,
-    checkDisplayed: false,
-  });
+  await getDisplayedElement(afterClickBtn, { timeout: 5000, checkDisplayed: false });
   await driver.close();
 
   // switch to the page
@@ -357,7 +350,7 @@ export async function getPopupBlockedAdsTotalCount() {
 
   const elem = await getDisplayedElement(
     "#popup_sections popup-detail-stats > div:nth-child(2) > span",
-    { timeout: 2000, forceRefresh: false },
+    { timeout: 2000 },
   );
   const totalCount = await elem.getText();
 
@@ -383,7 +376,6 @@ export async function enablePremiumProgrammatically() {
       try {
         premiumStatus = await getDisplayedElement("#premium_status_msg", {
           timeout: 4000, // Premium status message may take a while to appear
-          forceRefresh: false,
         });
         return true;
       } catch (err) {

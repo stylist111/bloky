@@ -40,7 +40,7 @@ export default () => {
     for (const { selector, title } of premiumFeatures) {
       await initPopupWithLocalPage();
 
-      const titleElem = await getDisplayedElement(`${selector} .title`, { forceRefresh: false });
+      const titleElem = await getDisplayedElement(`${selector} .title`);
       expect(await titleElem.getText()).toEqual(title);
 
       const learnMoreBtn = await getDisplayedElement(`${selector} button`);

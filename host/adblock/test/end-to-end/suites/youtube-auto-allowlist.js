@@ -29,7 +29,9 @@ export default () => {
     const tabId = await autoAllowlistsYoutube();
 
     await initPopupPage(tabId);
-    const domainPausedText = await getDisplayedElement('[i18n="status_domain_paused"]');
+    const domainPausedText = await getDisplayedElement('[i18n="status_domain_paused"]', {
+      forceRefresh: true,
+    });
     expect(await domainPausedText.getText()).toEqual(
       "AdBlock is paused for this visit. You may need to refresh the page to see your changes.",
     );

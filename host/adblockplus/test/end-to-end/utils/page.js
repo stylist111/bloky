@@ -101,10 +101,7 @@ export async function checkBlockHidePage(expectAllowlisted) {
     async () => {
       try {
         if (expectAllowlisted) {
-          await getDisplayedElement("#script-id-full-path", {
-            timeout,
-            forceRefresh: false
-          });
+          await getDisplayedElement("#script-id-full-path", { timeout });
         } else {
           await waitForNotDisplayed("#script-id-full-path", { timeout });
         }
@@ -118,24 +115,12 @@ export async function checkBlockHidePage(expectAllowlisted) {
     `filters were not applied on page when expectAllowlisted=${expectAllowlisted}`
   );
 
-  await getDisplayedElement("#control-element", {
-    timeout,
-    forceRefresh: false
-  });
+  await getDisplayedElement("#control-element", { timeout });
 
   if (expectAllowlisted) {
-    await getDisplayedElement("#test-element-class", {
-      timeout,
-      forceRefresh: false
-    });
-    await getDisplayedElement("#test-element-id", {
-      timeout,
-      forceRefresh: false
-    });
-    await getDisplayedElement("#script-id-regex", {
-      timeout,
-      forceRefresh: false
-    });
+    await getDisplayedElement("#test-element-class", { timeout });
+    await getDisplayedElement("#test-element-id", { timeout });
+    await getDisplayedElement("#script-id-regex", { timeout });
   } else {
     await waitForNotDisplayed("#test-element-class", { timeout });
     await waitForNotDisplayed("#test-element-id", { timeout });
@@ -239,8 +224,7 @@ export async function getPopupBlockedAdsTotalCount() {
   await initPopupWithLocalPage();
 
   const elem = await getDisplayedElement("#stats-total .amount", {
-    timeout: 2000,
-    forceRefresh: false
+    timeout: 2000
   });
   const totalCount = await elem.getText();
 
@@ -270,7 +254,7 @@ export async function initOptionsGeneralTabAfterChanges(
   await getDisplayedElement("#free-list-table", { timeout });
 }
 
-async function getElemTextSafe(elem) {
+export async function getElemTextSafe(elem) {
   let text;
   try {
     text = await elem.getText();
@@ -312,11 +296,7 @@ export async function addCustomFilters(
     await initOptionsAdvancedTab(getOptionsHandle());
   }
 
-  const customFiltersInput = await getDisplayedElement(
-    "#custom-filters input",
-    { forceRefresh: false }
-  );
-
+  const customFiltersInput = await getDisplayedElement("#custom-filters input");
   for (const filter of filters) {
     await customFiltersInput.sendKeys(filter);
     await waitForNotDisplayed("#custom-filters button[disabled]");
@@ -404,15 +384,9 @@ export async function setPausedStateFromPopup(url, paused = true) {
     timeout: 5000
   });
   // Check that the refresh message is shown
-  await getDisplayedElement("#page-refresh", {
-    forceRefresh: false,
-    timeout: 1000
-  });
+  await getDisplayedElement("#page-refresh", { timeout: 1000 });
 
-  await getDisplayedElement(websiteAllowlistBtnSelector, {
-    timeout: 5000,
-    forceRefresh: false
-  });
+  await getDisplayedElement(websiteAllowlistBtnSelector, { timeout: 5000 });
   const enabled = await isCheckboxPropertyEnabled(websiteAllowlistBtnSelector);
   expect(enabled).not.toEqual(paused);
   await driver.close();
@@ -462,7 +436,7 @@ export async function checkPremiumActivated({
     }
   } catch (e) {
     if (retry >= maxRetries) {
-      throw new Error("Premium elements not found after 3 retries");
+      throw new Error(`Premium elements not found after ${maxRetries} retries`);
     }
 
     console.warn(
@@ -500,8 +474,11 @@ export async function enablePremiumProgrammatically() {
   await checkPremiumActivated();
 }
 
-export function getFLSelectors(name) {
-  const flSelector = `#all-filter-lists-table [aria-label="${name}"]`;
+export function getFLSelectors(name, { isOptionsGeneralTab = false } = {}) {
+  const tableSelector = isOptionsGeneralTab
+    ? "#blocking-languages-table"
+    : "#all-filter-lists-table";
+  const flSelector = `${tableSelector} [aria-label="${name}"]`;
 
   return {
     filterlist: flSelector,
@@ -541,9 +518,7 @@ async function getActualFilterListsInfo() {
 
     let lastUpdatedTxt;
     try {
-      const lastUpdatedElem = await getDisplayedElement(lastUpdate, {
-        forceRefresh: false
-      });
+      const lastUpdatedElem = await getDisplayedElement(lastUpdate);
       lastUpdatedTxt = await lastUpdatedElem.getText();
     } catch (e) {} // lastUpdatedElem doesn't exist
 
@@ -580,8 +555,7 @@ export async function waitForSubscriptionUpdated(
       const flEnabled = await isCheckboxPropertyEnabled(toggle);
       try {
         const lastUpdatedElem = await getDisplayedElement(lastUpdate, {
-          timeout: 800,
-          forceRefresh: false
+          timeout: 800
         });
         const text = await lastUpdatedElem.getText();
 
@@ -631,20 +605,14 @@ async function checkLanguageFilterList(
   { isAdded = true, isOptionsGeneralTab = true } = {}
 ) {
   const timeout = 2000;
-  const tableSelector = isOptionsGeneralTab
-    ? "#blocking-languages-table"
-    : "#all-filter-lists-table";
-  const filterlistSelector = `${tableSelector} [aria-label="${langName}"]`;
+  const { filterlist } = getFLSelectors(langName, { isOptionsGeneralTab });
   if (isAdded) {
-    await getDisplayedElement(filterlistSelector, {
-      timeout,
-      forceRefresh: false
-    });
+    await getDisplayedElement(filterlist, { timeout });
   } else {
-    await waitForNotDisplayed(filterlistSelector, { timeout });
+    await waitForNotDisplayed(filterlist, { timeout });
   }
 
-  return filterlistSelector;
+  return filterlist;
 }
 
 export async function addLanguageFilterList(
@@ -670,6 +638,17 @@ export async function addLanguageFilterList(
   await langElem.click();
 
   await checkLanguageFilterList(langName, { isOptionsGeneralTab });
+}
+
+export async function removeLanguageFilterList(
+  langName,
+  { isOptionsGeneralTab = true } = {}
+) {
+  const { filterlist, trashBtn } = getFLSelectors(langName, {
+    isOptionsGeneralTab
+  });
+  await clickOnDisplayedElement(trashBtn);
+  await waitForNotDisplayed(filterlist);
 }
 
 export async function changeLanguageFilterList(langNameBefore, langNameAfter) {

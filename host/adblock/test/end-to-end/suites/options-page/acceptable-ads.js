@@ -84,7 +84,6 @@ export default () => {
 
     const aaInfo = await getDisplayedElement("#acceptable_ads_info > span", {
       timeout: 3000,
-      forceRefresh: false,
     });
     expect(await aaInfo.getText()).toEqual(
       "You're no longer subscribed to the Acceptable Ads filter list.",

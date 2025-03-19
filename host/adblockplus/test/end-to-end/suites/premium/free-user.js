@@ -67,7 +67,7 @@ export default () => {
 
     // Premium link/button checks
     for (const { selector, text } of premiumLinkButtons) {
-      const elem = await getDisplayedElement(selector, { forceRefresh: false });
+      const elem = await getDisplayedElement(selector);
       expect(await elem.getText()).toEqual(text);
 
       await elem.click();

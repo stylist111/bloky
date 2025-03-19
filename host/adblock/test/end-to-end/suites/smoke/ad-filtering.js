@@ -136,10 +136,9 @@ export default () => {
     await driver.switchTo().window(websiteHandle);
     await wait(
       async () => {
-        await driver.navigate().refresh();
         try {
           await getDisplayedElement(visibleSelector);
-          await waitForNotDisplayed(hiddenSelector);
+          await waitForNotDisplayed(hiddenSelector, { forceRefresh: true });
           return true;
         } catch (e) {}
       },

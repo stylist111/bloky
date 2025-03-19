@@ -78,7 +78,10 @@ export default () => {
     await driver.navigate().refresh();
 
     const expectedStatus = new RegExp(`SUPPORTER SINCE ${formattedDate}|ACTIVE`);
-    const premiumStatus = await getDisplayedElement("#premium_status_msg", { timeout: 4000 });
+    const premiumStatus = await getDisplayedElement("#premium_status_msg", {
+      timeout: 4000,
+      forceRefresh: true,
+    });
     expect(await premiumStatus.getText()).toMatch(expectedStatus);
   });
 
@@ -86,19 +89,19 @@ export default () => {
     await enablePremiumProgrammatically();
 
     await clickOnDisplayedElement('[href="#mab-image-swap"]');
-    await getDisplayedElement("#cats", { forceRefresh: false });
+    await getDisplayedElement("#cats");
 
     await clickOnDisplayedElement('[href="#mab-themes"]');
     // Waiting for the selected icon to avoid the next click being ineffective
-    await getDisplayedElement(".theme-selection .theme-selected-icon", { forceRefresh: false });
+    await getDisplayedElement(".theme-selection .theme-selected-icon");
     await clickOnDisplayedElement('[data-key="options_page"][data-theme="dark_theme"]');
     // Check dark theme is displayed on options page
-    await getDisplayedElement("#dark_theme", { forceRefresh: false });
+    await getDisplayedElement("#dark_theme");
 
     await clickOnDisplayedElement('[data-key="popup_menu"][data-theme="dark_theme"]');
     await initPopupWithLocalPage();
     // Check theme is displayed on popup page
-    await getDisplayedElement("#dark_theme", { forceRefresh: false });
+    await getDisplayedElement("#dark_theme");
 
     const timeout = 1000;
     for (const { name, action } of premiumPopupToggleItems) {
@@ -133,7 +136,6 @@ export default () => {
 
       const toggleElement = await getDisplayedElement(`[data-name="${name}"]`, {
         timeout,
-        forceRefresh: false,
         checkDisplayed: false,
       });
       actualValues[name] = await toggleElement.getAttribute("data-is-checked");

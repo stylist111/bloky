@@ -66,7 +66,7 @@ export default () => {
       try {
         const { toggle, title } = getFLSelectors(name);
         flEnabled = await isCheckboxPropertyEnabled(toggle);
-        flTitleElem = await getDisplayedElement(title, { forceRefresh: false });
+        flTitleElem = await getDisplayedElement(title);
       } catch (err) {
         await manageFilterListsError(err);
       }
@@ -107,10 +107,7 @@ export default () => {
       defaultFilterLists[0].name
     );
     // Wait for the first filter list to be displayed
-    await getDisplayedElement(firstFLSelector, {
-      timeout,
-      forceRefresh: false
-    });
+    await getDisplayedElement(firstFLSelector, { timeout });
 
     // Remove default filter lists
     for (const { name } of defaultFilterLists) {
@@ -145,10 +142,7 @@ export default () => {
     await initOptionsAdvancedTab(getOptionsHandle());
     // Wait for the first filter list to be displayed
     try {
-      await getDisplayedElement(firstFLSelector, {
-        timeout,
-        forceRefresh: false
-      });
+      await getDisplayedElement(firstFLSelector, { timeout });
     } catch (err) {
       await manageFilterListsError(err);
     }

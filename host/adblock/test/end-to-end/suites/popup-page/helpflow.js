@@ -32,8 +32,11 @@ async function clickHelpIcon() {
   await clickOnDisplayedElement("#help_link", { timeout: 2000 });
 
   // Ensure the right helpflow UI has effectively loaded
-  await getDisplayedElement(seeAdSelector, { timeout: 5000, checkDisplayed: false });
-  // Adding a slight delay before clicking the seeAdSelector
+  await getDisplayedElement(seeAdSelector, {
+    timeout: 5000,
+    checkDisplayed: false,
+    forceRefresh: true,
+  });
 }
 
 async function clickThenWaitForAnimation(selector) {

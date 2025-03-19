@@ -82,11 +82,19 @@ async function doForceRefresh(warnMsg) {
   await driver.navigate().refresh();
 }
 
-// The forceRefresh property is a temporary workaround, to be removed when fixing
-// https://eyeo.atlassian.net/browse/EXT-335
+/**
+ * Waits for an element to be displayed and returns it.
+ *
+ * @param {string} cssSelector - The CSS locator of the element
+ * @param {Object} options - Options object
+ * @param {number} options.timeout - polling timeout in ms
+ * @param {boolean} options.forceRefresh - Refresh the page if the element is not found
+ * @param {boolean} options.checkDisplayed - When false, the element doesn't need to be displayed
+ * @returns {Promise<Object>} - The webdriver element found in the page
+ */
 export async function getDisplayedElement(
   cssSelector,
-  { timeout = 500, forceRefresh = true, checkDisplayed = true } = {},
+  { timeout = 500, forceRefresh = false, checkDisplayed = true } = {},
 ) {
   let elem;
   const findElement = async () => {
@@ -125,8 +133,8 @@ export async function openNewTab(url) {
 }
 
 /**
- * Waits for an element to not be displayed is usually used on elements that
- * were previously displayed and expected to become hidden after a certain action
+ * Waits for an element to not be displayed. Usually used on elements that were
+ * previously displayed and expected to become hidden after a certain action
  *
  * @param {string} cssSelector - The CSS locator of the element
  * @param {Object} options - Options object
@@ -147,14 +155,13 @@ export function waitForNotDisplayed(
   return wait(
     async () => {
       try {
-        // getDisplayedElement is expected to fail to ensure the element is not
-        // displayed, therefore forceRefresh must always be false here
-        await getDisplayedElement(cssSelector, { timeout: displayedTimeout, forceRefresh: false });
+        await getDisplayedElement(cssSelector, { timeout: displayedTimeout });
         if (forceRefresh) {
           await doForceRefresh(`Element "${cssSelector}" is displayed`);
         }
         return false;
       } catch (err) {
+        // getDisplayedElement is expected to fail to ensure the element is not displayed
         if (err.name === "TimeoutError") {
           return true;
         }
@@ -192,7 +199,7 @@ export function isCheckboxPropertyEnabled(cssSelector) {
 }
 
 export async function isCheckboxAttributeEnabled(cssSelector) {
-  const elem = await getDisplayedElement(cssSelector, { forceRefresh: false });
+  const elem = await getDisplayedElement(cssSelector);
   const attr = await elem.getAttribute("aria-checked");
   return attr === "true";
 }
@@ -232,11 +239,7 @@ export async function clickOnDisplayedElement(
   await wait(
     async () => {
       try {
-        elem = await getDisplayedElement(cssSelector, {
-          timeout,
-          forceRefresh: false,
-          checkDisplayed,
-        });
+        elem = await getDisplayedElement(cssSelector, { timeout, checkDisplayed });
         if (scrollIntoView) {
           await driver.executeScript("arguments[0].scrollIntoView();", elem);
         }

@@ -88,8 +88,7 @@ export default () => {
     await aaCheckbox.click(); // disables AA
 
     const aaInfo = await getDisplayedElement("#acceptable-ads-why-not", {
-      timeout: 3000,
-      forceRefresh: false
+      timeout: 3000
     });
     expect(await aaInfo.getText()).toContain(
       "To help us improve Adblock Plus, mind sharing why you’ve turned off Acceptable Ads?"

@@ -37,12 +37,14 @@ import {
   clickFLCheckboxAndCheck,
   getLanguageFilterLists,
   addLanguageFilterList,
+  removeLanguageFilterList,
   addCustomFilters,
   getCustomFilters,
   deleteCustomFilters,
   clickOnCustomFilterToggleAndCheck,
   getTooltipMsg,
-  manageFilterListsError
+  manageFilterListsError,
+  getElemTextSafe
 } from "../../utils/page.js";
 import {
   getDefaultFilterLists,
@@ -65,8 +67,7 @@ export default () => {
 
     const actualFilterLists = [];
     for (const elem of languageElems) {
-      let text = await elem.getText();
-
+      let text = await getElemTextSafe(elem);
       if (!text) {
         // premium filterlists are not shown, so they return an empty string
         continue;
@@ -164,6 +165,26 @@ export default () => {
     await waitForSubscriptionUpdated(name, { timeout: 5000 });
   });
 
+  it("adds and removes a built in language filter list", async function () {
+    const langNameAdvancedTab = "EasyList Polish+EasyList";
+    const langNameGeneralTab = "polski + English";
+
+    // Add filterlist on advanced tab
+    await addLanguageFilterList(langNameAdvancedTab, {
+      isOptionsGeneralTab: false
+    });
+
+    // Check filterlist was added on general tab
+    await initOptionsGeneralTab(getOptionsHandle());
+    const { filterlist } = getFLSelectors(langNameGeneralTab, {
+      isOptionsGeneralTab: true
+    });
+    await getDisplayedElement(filterlist);
+
+    // Remove filterlist in general tab
+    await removeLanguageFilterList(langNameGeneralTab);
+  });
+
   it("removes and adds back a filter list", async function () {
     const name = "EasyList";
     const langName = "English";
@@ -187,22 +208,6 @@ export default () => {
 
     // Check EasyList on advanced tab
     await waitForSubscriptionUpdated(name, { timeout: 3000 });
-  });
-
-  it("adds and removes a built in language filter list", async function () {
-    const langNameAdvancedTab = "EasyList Polish+EasyList";
-    const langNameGeneralTab = "polski + English";
-
-    // Add filterlist on advanced tab
-    await addLanguageFilterList(langNameAdvancedTab, {
-      isOptionsGeneralTab: false
-    });
-
-    // Check filterlist was added on general tab
-    await initOptionsGeneralTab(getOptionsHandle());
-    await getDisplayedElement(
-      `#blocking-languages-table [aria-label="${langNameGeneralTab}"]`
-    );
   });
 
   it("adds and removes a filter list via URL", async function () {
