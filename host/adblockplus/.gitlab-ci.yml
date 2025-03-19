@@ -296,7 +296,7 @@ create_release:
   needs:
     - !reference [.needs-parent-build-release, needs]
   script:
-    - release_notes=$(node scripts/release-utils/get-release-notes.js adblockplus $version)
+    - release_notes=$(node tools/release/get-release-notes.js adblockplus $version)
     - glab release create $CI_COMMIT_TAG -n "Adblock Plus $version" host/adblockplus/dist/release/* -N "$release_notes"
 
 create_release_mr_back_to_main:

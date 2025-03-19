@@ -54,7 +54,7 @@ Generally, environment variables are host specific. Each host (ADBLOCK and ADBLO
 
 Each host maintains its own list of required variables in a file located in their directory (e.g., host/adblock/variables or host/adblockplus/variables). These files contain the complete CI variable names including prefixes, matching exactly what's configured in GitLab.
 
-When using these variables in the actual code, the host part should be omitted. For example, use `SOME_VARIABLE` instead of `ADBLOCK_SOME_VARIABLE`. To see how this works, refer to the `/scripts/release-utils/create-environment-variables.sh` file.
+When using these variables in the actual code, the host part should be omitted. For example, use `SOME_VARIABLE` instead of `ADBLOCK_SOME_VARIABLE`. To see how this works, refer to the `/tools/release/create-environment-variables.sh` file.
 
 [convcomms]: https://www.conventionalcommits.org/en/v1.0.0/
 [convcomms-angular]: https://github.com/angular/angular/blob/22b96b9/CONTRIBUTING.md#type

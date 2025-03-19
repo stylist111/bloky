@@ -2,14 +2,13 @@
   "$schema": "node_modules/lerna/schemas/lerna-schema.json",
   "version": "0.0.0",
   "packages": [
-    "host/*",
-    "fragment/*",
-    "fragment/test/test-extension",
     "core/*",
     "core/sdk/adblockpluscore",
+    "fragment/*",
+    "fragment/test/test-extension",
+    "host/*",
+    "tools/*",
     "ui-components",
-    "test-utils", 
-    "scripts/*",
     "vendor/*"
   ]
 }

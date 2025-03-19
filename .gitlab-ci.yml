@@ -25,8 +25,8 @@ stages:
   before_script:
     - npm ci --cache .npm --prefer-offline
     # Create .env file from CI variables and confirm they have values
-    - ./scripts/release-utils/create-environment-variables.sh ADBLOCK host/adblock/environment-variables > host/adblock/.env
-    - ./scripts/release-utils/create-environment-variables.sh ADBLOCKPLUS host/adblockplus/environment-variables > host/adblockplus/.env
+    - ./tools/release/create-environment-variables.sh ADBLOCK host/adblock/environment-variables > host/adblock/.env
+    - ./tools/release/create-environment-variables.sh ADBLOCKPLUS host/adblockplus/environment-variables > host/adblockplus/.env
 
 build:
   extends: .build
@@ -66,7 +66,7 @@ release-utils:
   extends: .base
   stage: children
   script:
-    - npm run -w scripts/release-utils test:end-to-end
+    - npm run -w @eyeo/release-utils test:end-to-end
   needs: []
 
 .child:
@@ -106,10 +106,10 @@ release-utils:
     - changes:
         paths:
           - $WORKSPACEPATH/**/*
-          - fragment/**/*
-          - ui-components/**/*
           - core/**/*
-          - test-utils/**/*
+          - fragment/**/*
+          - tools/**/*
+          - ui-components/**/*
           - vendor/**/*
           - '*'
         compare_to: 'refs/heads/main'
@@ -131,7 +131,7 @@ release-utils:
     - changes:
         paths:
           - $WORKSPACEPATH/**/*
-          - test-utils/**/*
+          - tools/test/**/*
           - vendor/**/*
           - '*'
         compare_to: 'refs/heads/main'

@@ -3,12 +3,10 @@
 ## Main architectural components
 
 There are three main types of architectural components:
-
-| Component type | Owner           |
-|:---------------|:----------------|
-| Core utilities | Extensions team |
-| Fragment       | Any             |
-| Host extension | Extensions team |
+- Core utilities
+- Fragments
+- Host extensions
+- Tools
 
 ### Core utilities
 
@@ -41,6 +39,12 @@ The extension that composes core packages and extension fragments together. What
 we ship to the stores.
 
 Examples: AdBlock, Adblock Plus.
+
+### Tools 
+
+Utilities used throughout the Extensions repository
+
+Examples: Common test runner, release scripts, repository importing.
 
 ### Component relationship
 
