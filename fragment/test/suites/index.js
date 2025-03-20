@@ -16,10 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-document.addEventListener("DOMContentLoaded", () => {
-  const startTestsButton = document.getElementById("start-tests");
+import sampleTest from "./sample-test.js";
 
-  startTestsButton.addEventListener("click", async () => {
-    await import("./suites.js");
-  });
-});
+export default () => {
+  describe("Sample Test", sampleTest);
+};

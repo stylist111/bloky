@@ -20,11 +20,8 @@ import path from "path";
 import url from "url";
 import GenerateJsonPlugin from "generate-json-webpack-plugin";
 import CopyWebpackPlugin from "copy-webpack-plugin";
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
 
 const dirname = path.dirname(url.fileURLToPath(import.meta.url));
-const mochaCssPath = require.resolve("mocha/mocha.css");
 
 const baseManifest = {
   name: "Fragments Test Extension",
@@ -52,7 +49,7 @@ const baseManifest = {
     },
   ],
   options_ui: {
-    page: "index.html",
+    page: "options.html",
     open_in_tab: true,
   },
 };
@@ -70,6 +67,18 @@ export default (env = {}) => {
     permissions: isManifestV3
       ? baseManifest.permissions
       : [...baseManifest.permissions, "<all_urls>"],
+    optional_permissions: isManifestV3 ? ["management"] : undefined,
+    ...(isManifestV3
+      ? {
+          action: {
+            default_popup: "popup.html",
+          },
+        }
+      : {
+          browser_action: {
+            default_popup: "popup.html",
+          },
+        }),
   };
 
   return {
@@ -77,7 +86,7 @@ export default (env = {}) => {
     entry: {
       background: "./test-extension/src/background.js",
       examplePreload: "@eyeo-fragments/example/content",
-      suites: ["./suites.js"],
+      options: "./test-extension/src/options.js",
     },
     output: {
       path: path.resolve(
@@ -95,9 +104,9 @@ export default (env = {}) => {
       new GenerateJsonPlugin("manifest.json", manifest, null, 2),
       new CopyWebpackPlugin({
         patterns: [
-          { from: "test-extension/src/index.html", to: "index.html" },
-          { from: "test-extension/src/start-tests.js", to: "start-tests.js" },
-          { from: mochaCssPath },
+          { from: "test-extension/src/options.html", to: "options.html" },
+          { from: "test-extension/src/options.js", to: "options.js" },
+          { from: "test-extension/src/popup.html", to: "popup.html" },
         ],
       }),
     ],

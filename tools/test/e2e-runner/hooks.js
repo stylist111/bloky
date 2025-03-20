@@ -17,6 +17,8 @@
 
 /* eslint-disable no-console */
 
+import path from "path";
+
 import { BROWSERS, getMajorVersion } from "@eyeo/get-browser-binary";
 
 import { findUrl, openNewTab, screenshot } from "./driver.js";
@@ -101,7 +103,18 @@ async function startBrowser(extensionPath, retry = 0) {
  * @returns {Promise<void>}
  */
 export async function setupBrowserHook(buildsDirPath, unpackedDirPath) {
-  const extensionPath = await extractExtension(buildsDirPath, unpackedDirPath);
+  let extensionPath;
+  // buildsDirPath is not used when running Fragments tests
+  if (buildsDirPath) {
+    extensionPath = await extractExtension(buildsDirPath, unpackedDirPath);
+  } else {
+    const { manifestVersion } = global.config;
+    if (manifestVersion === "3") {
+      extensionPath = path.join(unpackedDirPath, "mv3");
+    } else {
+      extensionPath = path.join(unpackedDirPath, "mv2");
+    }
+  }
 
   const [driver, browserName, fullBrowserVersion, majorBrowserVersion] =
     await startBrowser(extensionPath);

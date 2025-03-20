@@ -16,4 +16,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-mocha.setup("bdd");
+import path from "path";
+
+// Path to end-to-end test code
+const endToEndPath = process.cwd();
+
+export const runnerConfig = {
+  // The browser name to use for the tests
+  browserName: process.env.BROWSER,
+  // The manifest version passed as command line argument
+  manifestVersion: process.env.MANIFEST_VERSION,
+  // Screenshots folder path
+  screenshotsPath: path.join(endToEndPath, "screenshots"),
+  // Runners path
+  runnersPath: path.join(endToEndPath, "runner.js"),
+  // Path to build the helper extension
+  helperExtensionPath: path.join(process.cwd(), "dist/devenv/helper-extension"),
+  // Path to the unpacked extension
+  unpackedDirPath: path.join(process.cwd(), "test-extension/dist"),
+};

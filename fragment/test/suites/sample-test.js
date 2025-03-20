@@ -16,9 +16,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-export function start() {
-  let runner = mocha.run();
+import expect from "expect";
 
-  Mocha.reporters.Base.useColors = true;
-  new Mocha.reporters.Spec(runner);
-}
+export default () => {
+  it("should always pass 1", async function () {
+    const result = await driver.executeScript(() =>
+      browser.runtime.sendMessage({
+        method: "ewe.filters.add",
+        args: ["test"],
+      }),
+    );
+    expect(result).toEqual({ added: ["test"], exists: [] });
+  });
+};

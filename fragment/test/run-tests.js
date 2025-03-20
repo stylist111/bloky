@@ -16,10 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import "mocha/mocha.js";
+import { runE2ETests } from "@eyeo/test-utils";
 
-import "./mocha/mocha-setup.js";
-import "./sample-test.js";
+import { runnerConfig } from "./config.js";
 
-import { start } from "./mocha/mocha-runner.js";
-start();
+runE2ETests(runnerConfig).catch((error) => {
+  console.error("Error running tests:", error);
+  process.exit(1);
+});
