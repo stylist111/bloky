@@ -20,7 +20,6 @@ import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { allowlist } from "../../../adblockpluschrome/lib/allowlisting";
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import * as premium from "../../premium/background";
-import { type AllowlistOptions } from "./public-api.types";
 import { FilterOrigin } from "~/filters/shared";
 
 const trustedDomains = [
@@ -69,7 +68,7 @@ function getAllowlistingDomain(hostname: string): string {
  */
 async function onAllowlisting(
   domain: string,
-  options: AllowlistOptions
+  options: ewe.AllowlistingOptions
 ): Promise<void> {
   if (premium.getPremiumState().isActive) return;
 

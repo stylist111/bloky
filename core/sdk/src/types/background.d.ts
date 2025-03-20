@@ -22,9 +22,24 @@ import type Browser from "webextension-polyfill";
 /**
  * Function called when allowlisting succeeds
  *
- * @param domain - Domain to allowlist
+ * @param domain - The domain to allowlist.
+ * @param options - Additional options for the allowlisting.
  */
-export const AllowlistingCallback: (domain: string) => void;
+export type AllowlistingCallback = (
+  domain: string,
+  options: AllowlistingOptions
+) => unknown;
+
+/**
+ * Additional options for allowlisting
+ */
+export interface AllowlistingOptions {
+  /**
+   * The timestamp when the filter should expire
+   * (allowed 1 day - 365 days in the future).
+   */
+  expiresAt?: number;
+}
 
 /**
  * The EventDispatcher class allows users to listen to certain events that are emitted.
@@ -375,8 +390,8 @@ declare module "@eyeo/webext-ad-filtering-solution" {
      * @param hostVersion - Host extension version
      */
     const start: (
-      dsn?: string,
-      environment?: string,
+      dsn: string | undefined,
+      environment: string | undefined,
       hostVersion: string,
     ) => Promise<void>;
   }
@@ -403,7 +418,7 @@ declare module "@eyeo/webext-ad-filtering-solution" {
      *
      * @returns filter metadata
      */
-    const getMetadata: (text: string) => Promise<?FilterMetadata>;
+    const getMetadata: (text: string) => Promise<FilterMetadata | null | undefined>;
     /**
      * Sets metadata for a filter
      *
