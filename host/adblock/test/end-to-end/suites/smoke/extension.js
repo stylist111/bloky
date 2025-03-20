@@ -35,8 +35,7 @@ import {
 import {
   initOptionsFiltersTab,
   getUserIdFromInstallPage,
-  getSubscriptionInfo,
-  checkSubscriptionsInfo,
+  checkSubscriptionsState,
   clickFilterlist,
   initOptionsGeneralTab,
   getPopupBlockedAdsTotalCount,
@@ -117,9 +116,8 @@ export default () => {
       expect({ name, text: flText, enabled: flEnabled }).toEqual({ name, text, enabled });
     }
     const defaultEnabledFilterLists = defaultFilterLists.filter(({ enabled }) => enabled);
-    const lastUpdatedText = "(right now|ago)";
     try {
-      await checkSubscriptionsInfo(defaultEnabledFilterLists, lastUpdatedText);
+      await checkSubscriptionsState(defaultEnabledFilterLists);
     } catch (err) {
       if (err.name !== "TimeoutError") {
         throw err;
@@ -128,7 +126,7 @@ export default () => {
       // see: https://eyeo.atlassian.net/browse/EXT-874
       await clickOnDisplayedElement("#btnUpdateNow");
       console.warn("Some default subscriptions failed to download. Updating them as a workaround");
-      await checkSubscriptionsInfo(defaultEnabledFilterLists, lastUpdatedText);
+      await checkSubscriptionsState(defaultEnabledFilterLists);
     }
   });
 
@@ -203,9 +201,6 @@ export default () => {
     await reloadExtension(initOptionsGeneralTab);
 
     await initOptionsFiltersTab(getOptionsHandle());
-    for (const { name } of enabledFilterLists) {
-      const text = await getSubscriptionInfo(name);
-      expect(text).toMatch(/(updated|Subscribed)/);
-    }
+    await checkSubscriptionsState(enabledFilterLists, { regexp: /(updated|Subscribed)/ });
   });
 };

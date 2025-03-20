@@ -33,15 +33,14 @@ import { customBlockingFilter } from "@eyeo/test-utils/filters";
 import {
   initOptionsGeneralTab,
   initOptionsFiltersTab,
-  waitForSubscribed,
   setPausedStateFromPopup,
   initOptionsCustomizeTab,
   getPopupBlockedAdsTotalCount,
-  getSubscriptionInfo,
   setCustomFilters,
   enablePremiumProgrammatically,
   initOptionsPremiumFlTab,
   getCustomFilters,
+  checkSubscriptionsState,
 } from "../utils/page.js";
 import { defaultFilterLists, premiumFilterLists, languageFilterLists } from "../utils/dataset.js";
 
@@ -95,23 +94,13 @@ export default () => {
         return list;
       });
 
-    for (const { checkboxSelector, enabled, text, name } of lists) {
+    for (const { checkboxSelector, enabled, name } of lists) {
       // Easyprivacy is down below the page, therefore scrollIntoView is needed
       await clickOnDisplayedElement(`span:has(> ${checkboxSelector})`, { scrollIntoView: true });
 
-      if (enabled) {
-        // if list is enabled by default, it should be unsubscribed
-        await wait(
-          async () => {
-            return (await getSubscriptionInfo(name)) === "Unsubscribed.";
-          },
-          2000,
-          `${text} is still subscribed`,
-        );
-      } else {
-        // if list is disabled by default, it should be subscribed
-        await waitForSubscribed(name, checkboxSelector);
-      }
+      // if list is enabled by default, it should be unsubscribed
+      const regexp = enabled ? /Unsubscribed/ : /updated|Subscribed/;
+      await checkSubscriptionsState([{ name, enabled: !enabled, checkboxSelector }], { regexp });
     }
 
     // note: we need easylist to be off, otherwise there is no enough space for all the filters (MV3)
@@ -119,12 +108,9 @@ export default () => {
     const langList = languageFilterLists.find((list) => list.name === "easylist_plus_german");
     await getDisplayedElement("#language_select");
     await driver.findElement(By.css(`#language_select > option[value="${langList.name}"]`)).click();
-    await wait(
-      async () => isCheckboxPropertyEnabled(langList.checkboxSelector),
-      2000,
-      `${langList.text} is not enabled`,
-    );
-    await waitForSubscribed(langList.name, langList.checkboxSelector);
+    await checkSubscriptionsState([{ ...langList, enabled: true }], {
+      regexp: /updated|Subscribed/,
+    });
 
     // Add custom filter. Needs to be added before blocking ads
     await initOptionsCustomizeTab(getOptionsHandle());
@@ -182,25 +168,14 @@ export default () => {
     await waitForNotDisplayed(`span:has(> ${langList.checkboxSelector})`);
 
     // switch back to the existing default states for lists: acceptable ads, easyList, easyprivacy
-    for (const list of lists) {
-      await clickOnDisplayedElement(`span:has(> ${list.checkboxSelector})`, {
+    for (const { name, enabled, checkboxSelector } of lists) {
+      await clickOnDisplayedElement(`span:has(> ${checkboxSelector})`, {
         scrollIntoView: true,
       });
 
-      if (list.enabled) {
-        // if list is enabled by default, it should be subscribed
-        await waitForSubscribed(list.name, list.checkboxSelector);
-      } else {
-        // if list is disabled by default, it should be unsubscribed
-        await wait(
-          async () => {
-            return (await getSubscriptionInfo(list.name)) === "Unsubscribed.";
-          },
-          2000,
-          `${list.text} is still subscribed`,
-        );
-      }
-      expect(await isCheckboxPropertyEnabled(list.checkboxSelector)).toEqual(list.enabled);
+      // if list is enabled by default, it should be subscribed
+      const regexp = enabled ? /updated|Subscribed/ : /Unsubscribed/;
+      await checkSubscriptionsState([{ name, enabled, checkboxSelector }], { regexp });
     }
 
     // check if custom filters are still there and can be changed

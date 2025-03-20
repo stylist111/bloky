@@ -39,30 +39,11 @@ import {
   getFLSelectors,
   getPopupBlockedAdsTotalCount,
   manageFilterListsError,
-  waitForSubscriptionUpdated
+  checkSubscriptionsState
 } from "../../utils/page.js";
 import { blockHideUrl } from "@eyeo/test-utils/urls";
 import { installUrl } from "../../utils/urls.js";
 import { getDefaultFilterLists } from "../../utils/dataset.js";
-
-async function checkDefaultFilterLists() {
-  const defaultFilterLists = getDefaultFilterLists(extension.manifestVersion);
-
-  for (const { name, enabled } of defaultFilterLists) {
-    let flEnabled;
-    let flTitleElem;
-    try {
-      await waitForSubscriptionUpdated(name, { timeout: 500 });
-      const { toggle, title } = getFLSelectors(name);
-      flEnabled = await isCheckboxPropertyEnabled(toggle);
-      flTitleElem = await getDisplayedElement(title);
-    } catch (err) {
-      await manageFilterListsError(err);
-    }
-    const flTitle = await flTitleElem.getText();
-    expect({ name: flTitle, enabled: flEnabled }).toEqual({ name, enabled });
-  }
-}
 
 export default () => {
   it("opens the install url", async function () {
@@ -79,18 +60,19 @@ export default () => {
   it("displays the default filter lists state", async function () {
     await initOptionsAdvancedTab(getOptionsHandle());
 
+    const defaultFilterLists = getDefaultFilterLists(extension.manifestVersion);
     try {
-      await checkDefaultFilterLists();
+      await checkSubscriptionsState(defaultFilterLists);
     } catch (err) {
       // Workaround for when filter lists fail to download,
       // see: https://eyeo.atlassian.net/browse/EXT-874
+      console.warn(
+        `There were issues with some of the default subscriptions:\n${err.message}\nUpdating them as a workaround`
+      );
       await clickOnDisplayedElement("#update");
       // sleeping to let the button click be effective
-      await driver.sleep();
-      console.warn(
-        `There were issues with some of the default subscriptions, ${err.message}. Updating them as a workaround`
-      );
-      await checkDefaultFilterLists();
+      await driver.sleep(200);
+      await checkSubscriptionsState(defaultFilterLists);
     }
   });
 

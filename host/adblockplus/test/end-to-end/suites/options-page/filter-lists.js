@@ -23,8 +23,7 @@ import {
   clickOnDisplayedElement,
   findUrl,
   clickAndSendKeys,
-  waitForNotDisplayed,
-  wait
+  waitForNotDisplayed
 } from "@eyeo/test-utils/driver";
 import { getOptionsHandle, subscriptionUrl } from "@eyeo/test-utils/extension";
 import { easylistFilter, customBlockingFilter } from "@eyeo/test-utils/filters";
@@ -33,7 +32,6 @@ import {
   initOptionsAdvancedTab,
   initOptionsGeneralTab,
   getFLSelectors,
-  waitForSubscriptionUpdated,
   clickFLCheckboxAndCheck,
   getLanguageFilterLists,
   addLanguageFilterList,
@@ -44,7 +42,8 @@ import {
   clickOnCustomFilterToggleAndCheck,
   getTooltipMsg,
   manageFilterListsError,
-  getElemTextSafe
+  getElemTextSafe,
+  checkSubscriptionsState
 } from "../../utils/page.js";
 import {
   getDefaultFilterLists,
@@ -95,35 +94,22 @@ export default () => {
     // already pass before we get to this test, but when running it locally in isolation,
     // it will need more than a minute to run
     const longTimeout = 65000;
-
     this.timeout(longTimeout + 10000);
 
     const defaultFilterLists = getDefaultFilterLists(extension.manifestVersion);
-
-    const waitForAllUpdated = async (regexp, timeout) => {
-      await wait(
-        async () => {
-          try {
-            for (const { name } of defaultFilterLists) {
-              // the text does not automatically update from 'Just now' to 'minutes ago'
-              // so wee need to reload the page in between checks
-              await driver.navigate().refresh();
-              await waitForSubscriptionUpdated(name, { regexp });
-            }
-            return true;
-          } catch (e) {}
-        },
-        timeout,
-        `Default filter lists were not updated ${regexp}`,
-        500
-      );
-    };
-
     try {
-      // Wait for filterlists to be updated "minutes ago"
-      await waitForAllUpdated(/minutes ago/, longTimeout);
+      // Wait for filterlists to be updated "minutes ago". Refreshing because
+      // the text does not automatically update from "Just now" to "minutes ago"
+      await checkSubscriptionsState(defaultFilterLists, {
+        timeout: longTimeout,
+        regexp: /minutes ago/,
+        refresh: true
+      });
       await clickOnDisplayedElement("#update");
-      await waitForAllUpdated(/Just now/, 5000);
+      await checkSubscriptionsState(defaultFilterLists, {
+        timeout: 5000,
+        regexp: /Just now/
+      });
     } catch (err) {
       await manageFilterListsError(err);
     }
@@ -165,7 +151,9 @@ export default () => {
       name
     });
 
-    await waitForSubscriptionUpdated(name, { timeout: 5000 });
+    await checkSubscriptionsState([{ name, enabled: true }], {
+      timeout: 5000
+    });
   });
 
   it("adds and removes a built in language filter list", async function () {
@@ -210,12 +198,12 @@ export default () => {
     await addLanguageFilterList(langName, { isOptionsGeneralTab: true });
 
     // Check EasyList on advanced tab
-    await waitForSubscriptionUpdated(name, { timeout: 3000 });
+    await checkSubscriptionsState([{ name, enabled: true }], { timeout: 3000 });
   });
 
   it("adds and removes a filter list via URL", async function () {
     await setFilterListUrl(subscriptionUrl);
-    await waitForSubscriptionUpdated(subscriptionUrl);
+    await checkSubscriptionsState([{ name: subscriptionUrl, enabled: true }]);
 
     const { filterlist, trashBtn } = getFLSelectors(subscriptionUrl);
     await clickOnDisplayedElement(trashBtn);

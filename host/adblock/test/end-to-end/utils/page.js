@@ -191,21 +191,6 @@ export async function getUserIdFromStorage(optionsHandle) {
   return userId;
 }
 
-export async function getSubscriptionInfo(name, timeout = 5000) {
-  let text;
-  await wait(
-    async () => {
-      const info = await driver.findElement(By.css(`[name="${name}"] .subscription_info`));
-      text = await info.getText();
-      return text !== "";
-    },
-    timeout,
-    `Getting subscription ${name} info timeod out after ${timeout}ms`,
-  );
-
-  return text;
-}
-
 // This function assumes initOptionsFiltersTab() being called beforehand
 export async function clickFilterlist(name, checkboxSelector, enabledAfterClick) {
   await clickOnDisplayedElement(`[name="${name}"]`);
@@ -292,43 +277,42 @@ export async function setAADefaultState() {
   }
 }
 
-export async function checkSubscriptionsInfo(
-  filterlistArray,
-  updatedWhen,
-  { timeout = 3000 } = {},
+export async function checkSubscriptionsState(
+  filterlists,
+  { timeout = 3000, regexp = /(right now|ago)/ } = {},
 ) {
-  await wait(
-    async () => {
-      try {
-        for (const { name } of filterlistArray) {
-          const text = await getSubscriptionInfo(name);
-          expect(text).toMatch(new RegExp(`updated.*${updatedWhen}`));
+  let lastWaitError;
+  try {
+    await wait(
+      async () => {
+        try {
+          const actualSubs = [];
+          const expectedSubs = [];
+          for (const { name, enabled, checkboxSelector } of filterlists) {
+            expectedSubs.push({ name, enabled, lastUpdated: expect.stringMatching(regexp) });
+
+            const infoElem = await driver.findElement(
+              By.css(`[name="${name}"] .subscription_info`),
+            );
+            const lastUpdated = await infoElem.getText();
+            const flEnabled = await isCheckboxPropertyEnabled(checkboxSelector);
+            actualSubs.push({ name, enabled: flEnabled, lastUpdated });
+          }
+
+          expect(actualSubs).toEqual(expectedSubs);
+          return true;
+        } catch (e) {
+          lastWaitError = e;
         }
-        return true;
-      } catch (err) {}
-    },
-    timeout,
-    `Filter lists were not updated with "${updatedWhen}" after ${timeout}ms`,
-    500,
-  );
-}
-
-export async function waitForSubscribed(
-  name,
-  checkboxSelector,
-  { timeout = 3000, allowFetching = false } = {},
-) {
-  const regexp = allowFetching ? /updated|Subscribed|Fetching/ : /updated|Subscribed/;
-
-  await wait(
-    async () => {
-      const flEnabled = await isCheckboxPropertyEnabled(checkboxSelector);
-      const text = await getSubscriptionInfo(name);
-      return flEnabled && regexp.test(text);
-    },
-    timeout,
-    `${name} was not updated/subscribed/fetching after adding it`,
-  );
+      },
+      timeout,
+      "Unexpected filter lists state",
+      500,
+    );
+  } catch (err) {
+    err.message = `${err.message}\n${lastWaitError.message}`;
+    throw err;
+  }
 }
 
 export async function setPausedStateFromPopup(url, paused = true) {

@@ -539,28 +539,58 @@ export async function manageFilterListsError(err) {
   throw err;
 }
 
-export async function waitForSubscriptionUpdated(
-  name,
-  { timeout = 2000, regexp = /Just now|minutes ago/ } = {}
+export async function checkSubscriptionsState(
+  filterlists,
+  { timeout = 3000, regexp = /(Just now|minutes ago)/, refresh = false } = {}
 ) {
-  const { toggle, lastUpdate } = getFLSelectors(name);
-
   await initOptionsAdvancedTab(getOptionsHandle());
-  await wait(
-    async () => {
-      const flEnabled = await isCheckboxPropertyEnabled(toggle);
-      try {
-        const lastUpdatedElem = await getDisplayedElement(lastUpdate, {
-          timeout: 800
-        });
-        const text = await lastUpdatedElem.getText();
 
-        return flEnabled && regexp.test(text);
-      } catch (e) {}
-    },
-    timeout,
-    `${name} was not updated`
-  );
+  let lastWaitError;
+  try {
+    await wait(
+      async () => {
+        if (refresh) {
+          await driver.navigate().refresh();
+          await initOptionsAdvancedTab(getOptionsHandle());
+        }
+
+        try {
+          const actualSubs = [];
+          const expectedSubs = [];
+          for (const { name, enabled } of filterlists) {
+            expectedSubs.push({
+              name,
+              enabled,
+              lastUpdated: expect.stringMatching(regexp)
+            });
+
+            const { toggle, lastUpdate } = getFLSelectors(name);
+            const flEnabled = await isCheckboxPropertyEnabled(toggle);
+            const lastUpdatedElem = await getDisplayedElement(lastUpdate, {
+              timeout: 800
+            });
+            const lastUpdatedTxt = await lastUpdatedElem.getText();
+            actualSubs.push({
+              name,
+              enabled: flEnabled,
+              lastUpdated: lastUpdatedTxt
+            });
+          }
+
+          expect(actualSubs).toEqual(expectedSubs);
+          return true;
+        } catch (e) {
+          lastWaitError = e;
+        }
+      },
+      timeout,
+      "Unexpected filter lists state",
+      500
+    );
+  } catch (err) {
+    err.message = `${err.message}:\n${lastWaitError.message}`;
+    throw err;
+  }
 }
 
 async function getPopupLanguageFilterLists(isOptionsGeneralTab) {

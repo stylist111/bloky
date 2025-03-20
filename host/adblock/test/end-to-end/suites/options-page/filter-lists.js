@@ -32,10 +32,8 @@ import { getOptionsHandle, subscriptionUrl } from "@eyeo/test-utils/extension";
 import {
   initOptionsGeneralTab,
   initOptionsFiltersTab,
-  getSubscriptionInfo,
-  checkSubscriptionsInfo,
+  checkSubscriptionsState,
   clickFilterlist,
-  waitForSubscribed,
 } from "../../utils/page.js";
 import { defaultFilterLists, languageFilterLists } from "../../utils/dataset.js";
 
@@ -71,11 +69,17 @@ export default () => {
     this.timeout(40000); // Updating all filter list may take longer depending on network conditions
 
     const defaultEnabledFilterLists = defaultFilterLists.filter(({ enabled }) => enabled);
+    await checkSubscriptionsState(defaultEnabledFilterLists, { timeout: 20000, regexp: /ago/ });
 
-    await checkSubscriptionsInfo(defaultEnabledFilterLists, "ago", { timeout: 20000 });
     await clickOnDisplayedElement("#btnUpdateNow");
-    await checkSubscriptionsInfo(defaultEnabledFilterLists, "right now", { timeout: 10000 });
-    await checkSubscriptionsInfo(defaultEnabledFilterLists, "seconds ago", { timeout: 20000 });
+    await checkSubscriptionsState(defaultEnabledFilterLists, {
+      timeout: 10000,
+      regexp: /right now/,
+    });
+    await checkSubscriptionsState(defaultEnabledFilterLists, {
+      timeout: 20000,
+      regexp: /seconds ago/,
+    });
   });
 
   it("goes to a filter list source page", async function () {
@@ -113,8 +117,9 @@ export default () => {
       expect(flEnabled).toEqual(true);
 
       await clickFilterlist(name, checkboxSelector, false);
-      const text = await getSubscriptionInfo(name);
-      expect(text).toEqual("Unsubscribed.");
+      await checkSubscriptionsState([{ name, enabled: false, checkboxSelector }], {
+        regexp: /Unsubscribed/,
+      });
 
       if (name === "easylist") {
         const mainInfo = await getDisplayedElement("#easylist_info > b");
@@ -129,7 +134,9 @@ export default () => {
 
       await driver.sleep(1000); // Clicking right after unsubscribed may be ineffective
       await clickFilterlist(name, checkboxSelector, true);
-      await waitForSubscribed(name, checkboxSelector);
+      await checkSubscriptionsState([{ name, enabled: true, checkboxSelector }], {
+        regexp: /updated|Subscribed/,
+      });
     });
   }
 
@@ -138,7 +145,9 @@ export default () => {
     const { checkboxSelector } = languageFilterLists.find((fl) => fl.name === name);
 
     await clickOnDisplayedElement(`#language_select > option[value="${name}"]`);
-    await waitForSubscribed(name, checkboxSelector, { allowFetching: true });
+    await checkSubscriptionsState([{ name, enabled: true, checkboxSelector }], {
+      regexp: /updated|Subscribed|Fetching/,
+    });
 
     await driver.sleep(1500); // Clicking right after subscribed may be ineffective
     await clickFilterlist(name);
@@ -150,7 +159,9 @@ export default () => {
     const checkboxSelector = "#customFilterList_1";
 
     await setFilterListUrl(subscriptionUrl);
-    await waitForSubscribed(name, checkboxSelector, { allowFetching: true });
+    await checkSubscriptionsState([{ name, enabled: true, checkboxSelector }], {
+      regexp: /updated|Subscribed|Fetching/,
+    });
 
     await clickFilterlist(name, checkboxSelector, false);
     await clickOnDisplayedElement(`[name="${name}"] a.remove_filterList`);
