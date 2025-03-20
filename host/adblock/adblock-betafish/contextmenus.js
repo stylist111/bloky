@@ -302,7 +302,14 @@ browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 });
 
 browser.tabs.onActivated.addListener(async (activeInfo) => {
-  const tab = await browser.tabs.get(activeInfo.tabId);
+  let tab = null;
+
+  try {
+    tab = await browser.tabs.get(activeInfo.tabId);
+  } catch (ex) {
+    // The tab may be closed, so we need to continue without it
+  }
+
   updateButtonUIAndContextMenus(tab);
 });
 
