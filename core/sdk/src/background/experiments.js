@@ -390,6 +390,22 @@ export default {
   },
 
   /**
+   * Retrieves all feature flags, including overridden flags
+   * @returns {Promise<Object>} Object specifying all of
+   *          the feature flag IDs and their values
+   *          (or an empty object)
+   */
+  async getFlags() {
+    let state = await experimentData.getStateLoaded();
+
+    if (!state) {
+      return {};
+    }
+
+    return {...state.flags, ...state.overrides};
+  },
+
+  /**
    * Overrides a feature flag value
    * @param {string} flagId - Identifier of the feature flag to override
    * @param {*} value - New value for the feature flag

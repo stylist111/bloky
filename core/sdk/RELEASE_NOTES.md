@@ -1,5 +1,8 @@
 # Unreleased
 
+- Added the `EWE.experiments.getFlags()` method to retrieve a list of all
+  current split experiment flags and their values. (EXT-867)
+
 ## General
 
 - Release builds are now unminified, and have inline source maps. This matches
@@ -39,7 +42,7 @@
 
 ## General
 
-- Moved the declared TypeScript types for webext-ad-filtering-solution  
+- Moved the declared TypeScript types for webext-ad-filtering-solution
   from the extensions repo into the SDK. (EXT-662)
 
 # 1.23.0 - 2025-01-13

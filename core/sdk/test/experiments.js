@@ -118,6 +118,12 @@ describe("Split Experiments", function() {
     expect(await EWE.experiments.getRevisionId()).toEqual("BpNHg1PA");
   });
 
+  it("initially returns an empty object for get all flags", async function() {
+    await EWE.testing.resetExperimentData();
+    let flags = await EWE.experiments.getFlags();
+    expect(flags).toEqual({});
+  });
+
   describe("Variant assignment", function() {
     it("initially returns null for a flag", async function() {
       let flag = await EWE.experiments.getFlag(EXPERIMENT_FLAG);
@@ -128,8 +134,10 @@ describe("Split Experiments", function() {
       await EWE.experiments.overrideFlag(EXPERIMENT_FLAG, "potato");
       expect(await EWE.experiments.getFlag(EXPERIMENT_FLAG)).toBe("potato");
 
-      await EWE.experiments.overrideFlag(EXPERIMENT_FLAG, "chips");
-      expect(await EWE.experiments.getFlag(EXPERIMENT_FLAG)).toBe("chips");
+      let flags = await EWE.experiments.getFlags();
+      expect(flags).toEqual({
+        [EXPERIMENT_FLAG]: "potato"
+      });
     });
 
     it("returns experiments with assignments", async function() {
@@ -147,6 +155,16 @@ describe("Split Experiments", function() {
           ]
         }
       ]);
+    });
+
+    it("returns one flag with value", async function() {
+      await setConfig(oneVariantConfig("test"));
+      await EWE.experiments.sync();
+
+      let flags = await EWE.experiments.getFlags();
+      expect(flags).toEqual({
+        [EXPERIMENT_FLAG]: "test"
+      });
     });
 
     it("gets the value of the flag in the experiment the user is assigned to", async function() {
@@ -184,6 +202,36 @@ describe("Split Experiments", function() {
       expect(await EWE.experiments.getFlag("array_flag")).toEqual(["item1", "item2"]);
       expect(await EWE.experiments.getFlag("boolean_flag")).toBe(true);
       expect(await EWE.experiments.getFlag("object_flag")).toEqual({key: "value"});
+    });
+
+    it("gets all values for all flags regardless of its type", async function() {
+      await setConfig(JSON.stringify({
+        schemaId: SCHEMA_ID,
+        experiments: [{
+          experimentId: "test1",
+          variants: [{
+            variantId: "variant1",
+            flags: {
+              string_flag: "value1",
+              number_flag: 42,
+              array_flag: ["item1", "item2"],
+              boolean_flag: true,
+              object_flag: {key: "value"}
+            },
+            mods: [0, 1000]
+          }]
+        }]
+      }));
+
+      await EWE.experiments.sync();
+      let flags = await EWE.experiments.getFlags();
+      expect(flags).toEqual({
+        string_flag: "value1",
+        number_flag: 42,
+        array_flag: ["item1", "item2"],
+        boolean_flag: true,
+        object_flag: {key: "value"}
+      });
     });
 
     it("deterministically assigns users to variants based on their seed", async function() {

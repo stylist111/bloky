@@ -481,6 +481,10 @@ declare module "@eyeo/webext-ad-filtering-solution" {
       flag: string
     ) => Promise<boolean | string | number | string[] | null>;
     /**
+     * Retrieves all feature flags, including overridden flags and their values
+     */
+    const getFlags: () => Promise<Record<string, unknown>>
+    /**
      * Overrides a feature flag value
      */
     const overrideFlag: (flagId: string, value: any) => Promise<void>;
