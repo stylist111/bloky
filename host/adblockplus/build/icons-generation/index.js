@@ -17,12 +17,9 @@
 
 "use strict";
 
-const nodeCanvas = require("canvas");
 const fs = require("fs");
 const path = require("path");
-const { promisify } = require("util");
-
-const fsWriteFile = promisify(fs.writeFile);
+const sharp = require("sharp");
 
 const baseIcons = {
   abp: { width: 59, height: 25 },
@@ -31,77 +28,80 @@ const baseIcons = {
 };
 const iconSizes = [16, 20, 32, 40];
 const iconVariants = [
-  { type: "default", content: "abp", color: "ED1E45" },
-  { type: "disabled", content: "abp", color: "A7A7A7" },
-  { type: "notification", content: "bell", color: "0797E1" }
+  { type: "default", content: "abp", color: "#ED1E45" },
+  { type: "disabled", content: "abp", color: "#A7A7A7" },
+  { type: "notification", content: "bell", color: "#0797E1" }
 ];
 const inputDir = "skin/icons/toolbar";
 const outputDir = inputDir;
 
-function hexToRGB(hex) {
-  const r = parseInt(hex.slice(0, 2), 16);
-  const g = parseInt(hex.slice(2, 4), 16);
-  const b = parseInt(hex.slice(4, 6), 16);
-  return [r, g, b];
-}
-
-function setColor(ctx, width, height, hexColor) {
-  const rgbColor = hexToRGB(hexColor);
-  const imageData = ctx.getImageData(0, 0, width, height);
-  const { data } = imageData;
-  const len = data.length;
-
-  for (let i = 0; i < len; i += 4) {
-    if (data[i + 3] === 0) continue;
-
-    data[i] = rgbColor[0];
-    data[i + 1] = rgbColor[1];
-    data[i + 2] = rgbColor[2];
-  }
-
-  ctx.putImageData(imageData, 0, 0);
-}
-
-async function loadImage(name) {
+/**
+ * Load an SVG file and modify its color
+ * @param {string} name - File name without extension
+ * @param {string} hexColor - Hex color code e.g. "#FF0000"
+ * @returns {Promise<Buffer<ArrayBufferLike>>}
+ */
+async function loadAndColorizeSVG(name, hexColor) {
   const filepath = path.join(inputDir, `${name}.svg`);
-  return nodeCanvas.loadImage(filepath);
+  let svgContent = fs.readFileSync(filepath, "utf8");
+
+  // Replace fill="..." or style="fill:..." with new color
+  svgContent = svgContent.replace(/fill="[^"]*"/g, `fill="${hexColor}"`);
+  svgContent = svgContent.replace(
+    /style="[^"]*"/g,
+    `style="fill:${hexColor};"`
+  );
+
+  return Buffer.from(svgContent);
 }
 
+/**
+ * Create an icon with a given variant and size
+ * @param {{color: string, content: string, type: string}} variant
+ * @param {number} size
+ * @returns {Promise<void>}
+ */
 async function createIcon(variant, size) {
   const { color, content, type } = variant;
   const { width: bgWidth, height: bgHeight } = baseIcons.background;
   const { width: contentWidth, height: contentHeight } = baseIcons[content];
 
-  const canvas = nodeCanvas.createCanvas(size, size);
-  const ctx = canvas.getContext("2d");
-  ctx.scale(size / bgWidth, size / bgHeight);
-
-  const bgImage = await loadImage("background");
-  ctx.drawImage(bgImage, 0, 0, bgWidth, bgHeight);
-  setColor(ctx, bgWidth, bgHeight, color);
-
-  const canvasContent = nodeCanvas.createCanvas(contentWidth, contentHeight);
-  const ctxContent = canvasContent.getContext("2d");
-
-  const contentImage = await loadImage(content);
-  ctxContent.drawImage(contentImage, 0, 0, contentWidth, contentHeight);
-  setColor(ctxContent, contentWidth, contentHeight, "FFFFFF");
-
-  ctx.drawImage(
-    canvasContent,
-    (bgWidth - contentWidth) / 2,
-    (bgHeight - contentHeight) / 2,
-    contentWidth,
-    contentHeight
-  );
-
   const outputFilepath = path.join(outputDir, `${type}-${size}.png`);
-  const pngBuffer = canvas.toBuffer();
-  await fsWriteFile(outputFilepath, pngBuffer);
+
+  // Load and colorize background and content SVGs
+  const bgSVG = await loadAndColorizeSVG("background", color);
+  const contentSVG = await loadAndColorizeSVG(content, "#FFFFFF"); // Always white
+
+  // Process background image
+  const bgImage = await sharp(bgSVG).resize(size, size).toBuffer();
+
+  // Process content image (always white color)
+  const contentImage = await sharp(contentSVG)
+    .resize(
+      Math.floor((contentWidth / bgWidth) * size),
+      Math.floor((contentHeight / bgHeight) * size)
+    )
+    .toBuffer();
+
+  // Composite content over background
+  await sharp(bgImage)
+    .composite([
+      {
+        input: contentImage,
+        gravity: "center" // Center the content inside the background
+      }
+    ])
+    .toFormat("png")
+    .toFile(outputFilepath);
+
   // eslint-disable-next-line no-console
   console.log(`Created icon ${outputFilepath}`);
 }
 
+/**
+ * Create all icons with different variants and sizes
+ * @returns {Promise<Awaited<unknown>[]>}
+ */
 function createIcons() {
   const promises = [];
   for (const variant of iconVariants) {
@@ -112,6 +112,7 @@ function createIcons() {
   return Promise.all(promises);
 }
 
+// Run the icon generation script
 createIcons().catch((err) => {
   console.error(err);
   process.exit(1);

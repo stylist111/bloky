@@ -118,7 +118,6 @@
     "@eyeo/webext-ad-filtering-solution": "*",
     "@types/webextension-polyfill": "0.12.0",
     "argparse": "1.0.10",
-    "canvas": "2.11.2",
     "css-loader": "6.8.1",
     "del": "7.0.0",
     "glob": "8.0.3",
@@ -181,7 +180,8 @@
     "moment": "2.29.4",
     "node-fetch": "2.7.0",
     "prettier": "3.3.3",
-    "selenium-webdriver": "4.23.0"
+    "selenium-webdriver": "4.23.0",
+    "sharp": "0.33.5"
   },
   "nx": {
     "targets": {
