@@ -522,9 +522,7 @@ function setHighestRuleId(ruleIds) {
 }
 
 function storeDynamicFilters() {
-  let storageArray = [];
-  storageArray.push(...dynamicFilters);
-  Prefs.dynamic_filters = storageArray;
+  Prefs.dynamic_filters = Array.from(dynamicFilters);
 }
 
 export function clearRulesetUpdates() {
