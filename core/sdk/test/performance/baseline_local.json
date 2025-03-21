@@ -54,7 +54,7 @@
     ]
   },
   {
-    "url": "https://www.bing.com/search?q=hotels",
+    "url": "https://www.bing.com/search?q=hotels&rdr=1&rdrig=9CD9B92BAD5040239D3AE448A7A9AABD",
     "baselineMetrics": [
       {
         "metric": "server-response-time",

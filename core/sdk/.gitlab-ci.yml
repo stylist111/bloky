@@ -165,7 +165,9 @@ adblockpluscore:browser:
     fi;
     docker run $DOCKER_OPTIONS -e TEST_PARAMS="$TEST_PARAMS" $OTHER_PARAMS $FUNCTIONAL_IMAGE;
   after_script:
-    - docker cp $(docker ps -aqf ancestor=$FUNCTIONAL_IMAGE):/extensions/core/sdk/test/screenshots core/sdk/
+    if [[ $CI_JOB_STATUS == "failed" ]]; then
+      docker cp $(docker ps -aqf ancestor=$FUNCTIONAL_IMAGE):/extensions/core/sdk/test/screenshots core/sdk/;
+    fi;
   artifacts:
     paths:
       - core/sdk/screenshots/

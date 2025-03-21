@@ -42,7 +42,7 @@ const metrics = [
 ];
 const websiteUrls = [
   {url: "https://www.example.com", factor: 2},
-  {url: "https://www.bing.com/search?q=hotels", factor: 2.5},
+  {url: "https://www.bing.com/search?q=hotels&rdr=1&rdrig=9CD9B92BAD5040239D3AE448A7A9AABD", factor: 2.5},
   {url: "https://en.m.wikipedia.org/wiki/Cat", factor: 3},
   {url: "https://harrypotter.fandom.com/wiki/Main_Page", factor: 2.5},
   {url: "https://m.youtube.com/watch?v=dQw4w9WgXcQ", factor: 2},

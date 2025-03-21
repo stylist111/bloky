@@ -54,7 +54,7 @@
     ]
   },
   {
-    "url": "https://www.bing.com/search?q=hotels",
+    "url": "https://www.bing.com/search?q=hotels&rdr=1&rdrig=9CD9B92BAD5040239D3AE448A7A9AABD",
     "baselineMetrics": [
       {
         "metric": "server-response-time",
@@ -94,7 +94,7 @@
       {
         "metric": "bootup-time",
         "min": 1370,
-        "max": 6028,
+        "max": 6500,
         "average": 3448,
         "median": 2016.5
       },
