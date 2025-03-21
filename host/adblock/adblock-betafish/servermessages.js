@@ -18,9 +18,20 @@
 /* For ESLint: List any global identifiers used in this file below */
 /* global browser  */
 
+import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { log, determineUserLanguage, getUserAgentInfo } from "./utilities/background/index";
 import { getUserId } from "./id/background/index";
 import { Prefs } from "~/alias/prefs";
+
+async function getExperimentsAssignments() {
+  const assignments = await ewe.experiments.getAssignments();
+  return Object.entries(assignments).map((assignment) => {
+    return {
+      experiment_id: assignment[0],
+      variant_id: assignment[1],
+    };
+  });
+}
 
 // Log an 'error' message on GAB log server.
 const ServerMessages = (function serverMessages() {
@@ -65,6 +76,7 @@ const ServerMessages = (function serverMessages() {
       l: determineUserLanguage(),
       t: queryType,
       v: browser.runtime.getManifest().version,
+      experiments: await getExperimentsAssignments(),
     };
     if (typeof additionalParams === "object") {
       for (const prop in additionalParams) {

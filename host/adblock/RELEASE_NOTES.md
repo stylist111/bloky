@@ -1,6 +1,7 @@
 # Unreleased
 
 - Added the `use_dynamic_url` property to entries under the `web_accessible_resources` key in AdBlock's manifest file (MV3 only). (EXT-871)
+- Added split experiment data to event log requests. (EXT-865)
 
 # 6.17.0 - 2025-03-17
 
