@@ -35,7 +35,6 @@ export function getBuiltinFilterLists(manifestVersion) {
     "Fanboy's Notifications Blocking List (Block push notifications)",
     "EasyPrivacy (Block additional tracking)",
     "Fanboy's Social Blocking List (Block social media icons tracking)",
-    "LANGUAGE FILTER LISTS",
     "Liste AR+Liste FR+EasyList (العربية + English)",
     // Some non-ascii characters of the Indian list title seem to vary on
     // different environments. Simplifying the title as a workaround
