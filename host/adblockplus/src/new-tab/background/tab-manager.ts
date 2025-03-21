@@ -264,18 +264,26 @@ async function openNewTab(): Promise<void> {
     const loadEventListener = onNewTabUpdated.bind(null);
     browser.tabs.onUpdated.addListener(loadEventListener);
 
-    const tab = await browser.tabs.create({ url }).catch((error) => {
-      logger.error("[new-tab]: create tab error", error);
-      return null;
-    });
+    const tabCreationResult: number | Error = await browser.tabs
+      .create({ url })
+      .then((tab) =>
+        typeof tab.id === "number"
+          ? tab.id
+          : new Error("Invalid ID for created tab")
+      )
+      .catch((error) => error);
 
-    if (tab === null || typeof tab.id !== "number") {
+    if (typeof tabCreationResult !== "number") {
       // There was an error during tab creation. Let's retry later.
+      logger.reportAndLogError(
+        tabCreationResult,
+        `[new-tab]: Tab creation error for IPM id "${ipmId}"`
+      );
       registerEvent(ipmId, CreationError.tabCreationError);
       continue;
     }
 
-    createdTabsMap.set(tab.id, ipmId);
+    createdTabsMap.set(tabCreationResult, ipmId);
     newTabUpdateListeners.set(ipmId, loadEventListener);
 
     await Prefs.set(lastShownKey, Date.now());
