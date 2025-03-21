@@ -69,11 +69,25 @@ export default () => {
     expect(await aaPrivacyHelper.getText()).toEqual(
       "Note: You have Do Not Track (DNT) disabled in your browser settings. For this feature to work properly, please enable DNT in your browser preferences. Find out how to enable DNT."
     );
-
     await initOptionsAdvancedTab(getOptionsHandle());
-    await getDisplayedElement(
-      "[aria-label='Allow nonintrusive advertising without third-party tracking']"
-    );
+    try {
+      await getDisplayedElement(
+        "[aria-label='Allow nonintrusive advertising without third-party tracking']",
+        {
+          timeout: 4000
+        }
+      );
+    } catch (e) {
+      // Update the filter lists and retry
+      // see: https://eyeo.atlassian.net/browse/EXT-874
+      await clickOnDisplayedElement("#update");
+      await getDisplayedElement(
+        "[aria-label='Allow nonintrusive advertising without third-party tracking']",
+        {
+          timeout: 4000
+        }
+      );
+    }
     await waitForNotDisplayed("[aria-label='Allow nonintrusive advertising']");
   });
 
