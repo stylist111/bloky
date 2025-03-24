@@ -185,7 +185,6 @@ Collection.prototype.addItem = function (item) {
     listItem.setAttribute("aria-label", this._getItemTitle(item, j));
     listItem.setAttribute("data-recommended", item.recommended);
     listItem.setAttribute("data-access", item.url || item.text);
-    listItem.setAttribute("role", "section");
 
     const tooltip = $("io-popout[type='tooltip']", listItem);
     if (tooltip) {
