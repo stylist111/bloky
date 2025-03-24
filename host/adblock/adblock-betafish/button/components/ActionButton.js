@@ -73,6 +73,10 @@ async function undoAllowlist() {
 }
 
 async function addSubscription(id) {
+  await sendMessageWithNoResponse({
+    command: "recordGeneralMessage",
+    msg: `popup_sub_clicked_${id}`,
+  });
   await browser.runtime.sendMessage({ command: "subscribe", id });
   returnToIndex();
 }
