@@ -22,6 +22,7 @@
     "./content/*": "./dist/content/*"
   },
   "scripts": {
+    "build:types": "tsc --project tsconfig.json --emitDeclarationOnly",
     "build": "tsc --project tsconfig.json",
     "build:release": "tsc --project tsconfig.json",
     "lint": "eslint --ext .ts src/",

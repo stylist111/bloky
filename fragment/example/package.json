@@ -9,7 +9,9 @@
     "./content": "./src/content/index.js"
   },
   "scripts": {
-    "build": "npx tsc",
+    "build:types": "tsc --emitDeclarationOnly",
+    "build": "npm run build:types",
+    "build:release": "npm run build:types",
     "lint": "eslint .",
     "prettier-fix": "prettier --write .",
     "test": "vitest run --reporter=verbose"

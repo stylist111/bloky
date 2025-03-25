@@ -27,10 +27,16 @@
         "{projectRoot}/dist/devenv/local-mv2"
       ]
     },
+    "build:types": {
+      "cache": true,
+      "outputs": [
+        "{projectRoot}/dist/**/*.d.ts"
+      ]
+    },
     "lint": {
       "cache": false,
       "dependsOn": [
-        "^build"
+        "^build:types"
       ]
     },
     "test": {

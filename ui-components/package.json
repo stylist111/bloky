@@ -10,7 +10,8 @@
     "types": "dist/types/index.d.ts",
     "scripts": {
         "dev": "storybook dev -p 6006",
-        "build": "vite build && npx tsc",
+        "build:types": "tsc",
+        "build": "vite build && npm run build:types",
         "build:watch": "vite build --watch",
         "build:release": "npm run build",
         "test": "vitest run --reporter=verbose",

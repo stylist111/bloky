@@ -155,6 +155,30 @@ npm run --workspace host/adblockplus start
 
 See the package-specific README.md files for instructions on these scripts.
 
+#### Significant npm scripts
+
+When adding a new package, consider adding the following npm scripts. This will
+make your new package work out of the box in our CI configuration, and will have
+it automatically work together with the rest of the monorepo.
+
+All of these scripts are optional.
+
+- `build`: Compile the package in development mode. This should also generate
+  typescript type declarations if applicable.
+- `build:release`: Compile the package in release mode. If your package needs a
+  `build` script, then it must also implement `build:release`, even if its
+  implementation is just `npm run build`.
+- `build:types`: Generate the typescript type declarations for your
+  package. This is probably combined with the `types` or `typesVersions`
+  property in your `package.json`. This is called automatically as a dependency
+  of the `lint` script, since some lint scripts do type checking.
+- `lint`: Do any static analysis of the code, such as eslint, prettier, or
+  typescript type checking.
+- `test`: Run unit tests. This is highly recommended for all packages.
+
+The orchestration of these tasks, for example having the `lint` script run
+`build:types`, is defined in [nx.json](./nx.json).
+
 ## Code Style
 
 The code style of the monorepo is yet to be unified between the
