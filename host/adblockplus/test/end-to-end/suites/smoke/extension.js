@@ -161,7 +161,8 @@ export default () => {
     // check reset settings notification in popup
     await initPopupPage();
     const notification = await getDisplayedElement("#notification-message", {
-      timeout: 1000
+      timeout: 1000,
+      forceRefresh: true
     });
     expect(await notification.getText()).toContain(
       "An issue has caused your ABP settings to be reset to default"
