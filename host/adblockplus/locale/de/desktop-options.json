@@ -248,7 +248,7 @@
   },
   "options_filterList_lastDownload_tooManyFilters": {
     "message": "Die Aktualisierung der Filterliste konnte aufgrund von Browserbeschränkungen nicht angewendet werden. Eine Reduzierung der Anzahl der Filterlisten und benutzerdefinierten Filter könnte dieses Problem beheben."
-  }, 
+  },
   "options_filterList_lastDownload_diffTooOld": {
     "message": "Die Filterliste konnte aufgrund einer veralteten Erweiterung nicht aktualisiert werden. Durch Aktualisierung der Erweiterung auf eine neuere Version lässt sich dieses Problem möglicherweise beheben."
   },
@@ -408,7 +408,7 @@
     "message": "Bewerte uns"
   },
   "options_recommended_annoyances_description": {
-    "message": "Behalte die Kontrolle über deinen Browser und surfe nach Belieben im Internet! Schluss mit Newsletter-Pop-ups, Videoeinblendungen, Website-Benachrichtigungen und Umfragen mit der verbesserten Ablenkungskontrolle."
+    "message": "Behalte die Kontrolle über deinen Browser und surfe nach Belieben im Internet! Schluss mit Newsletter-Pop-ups, Videoeinblendungen, Website-Benachrichtigungen und Umfragen mit Enhanced Distraction Control."
   },
   "options_recommended_cookies_premium_description": {
     "message": "Webseiten besuchen, ohne Cookie-Benachrichtigungen sehen zu müssen."
