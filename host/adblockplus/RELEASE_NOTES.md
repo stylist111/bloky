@@ -1,5 +1,7 @@
 # Unreleased
 
+# 4.18.0 - 2025-03-25
+
 - Added the ability to retrieve an experiment flag from content/ui scripts. (EXT-877)
 
 # 4.17.0 - 2025-03-17
