@@ -90,11 +90,13 @@ async function doForceRefresh(warnMsg) {
  * @param {number} options.timeout - polling timeout in ms
  * @param {boolean} options.forceRefresh - Refresh the page if the element is not found
  * @param {boolean} options.checkDisplayed - When false, the element doesn't need to be displayed
+ * @param {boolean} options.verboseLogging - When true, selector of the element that is not displayed
+ *                                           is logged in the console
  * @returns {Promise<Object>} - The webdriver element found in the page
  */
 export async function getDisplayedElement(
   cssSelector,
-  { timeout = 500, forceRefresh = false, checkDisplayed = true } = {},
+  { timeout = 500, forceRefresh = false, checkDisplayed = true, verboseLogging = false } = {},
 ) {
   let elem;
   const findElement = async () => {
@@ -103,7 +105,11 @@ export async function getDisplayedElement(
         try {
           elem = await driver.findElement(By.css(cssSelector));
           if (checkDisplayed) {
-            return await elem.isDisplayed();
+            const isDisplayed = await elem.isDisplayed();
+            if (verboseLogging && !isDisplayed) {
+              console.warn(`The element ${cssSelector} is not displayed`);
+            }
+            return isDisplayed;
           }
           return true;
         } catch (e) {}

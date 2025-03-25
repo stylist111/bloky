@@ -142,7 +142,10 @@ export default () => {
     await initOptionsAdvancedTab(getOptionsHandle());
     // Wait for the first filter list to be displayed
     try {
-      await getDisplayedElement(firstFLSelector, { timeout });
+      await getDisplayedElement(firstFLSelector, {
+        timeout: 4000,
+        verboseLogging: true
+      });
     } catch (err) {
       await manageFilterListsError(err);
     }
