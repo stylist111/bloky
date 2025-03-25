@@ -15,6 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { getInstallationId } from "../../id/background";
 import { info } from "../../info/background";
 import { type InjectionInfo, injectionOrigins } from "../shared";
@@ -34,7 +35,8 @@ async function handleGetInjectionInfo(): Promise<InjectionInfo> {
   const id = await getInstallationId();
   const premiumId = Prefs.get("premium_user_id");
   const blockCount = Prefs.get("blocked_total");
-  return { isPremium, version, id, premiumId, blockCount };
+  const experimentFlags = await ewe.experiments.getFlags();
+  return { isPremium, version, id, premiumId, blockCount, experimentFlags };
 }
 
 /**

@@ -16,6 +16,7 @@
  */
 
 import * as info from "info";
+import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { type InjectionInfo } from "../shared";
 import { getUserId } from "../../../adblock-betafish/id/background/index";
 import { License } from "../../../adblock-betafish/picreplacement/check";
@@ -32,6 +33,7 @@ export async function getInjectionInfo(): Promise<InjectionInfo> {
   const version = info.addonVersion;
   const id = await getUserId();
   const blockCount = Prefs.get("blocked_total");
+  const experimentFlags = await ewe.experiments.getFlags();
 
-  return { isPremium, version, id, blockCount };
+  return { isPremium, version, id, blockCount, experimentFlags };
 }

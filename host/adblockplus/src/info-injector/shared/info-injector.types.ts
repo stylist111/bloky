@@ -51,4 +51,8 @@ export interface InjectionInfo {
    * The number of blocked requests
    */
   blockCount: number;
+  /**
+   * All feature flags for the user, including overridden flags and their values
+   */
+  experimentFlags: Record<string, unknown>;
 }
