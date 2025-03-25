@@ -22,6 +22,8 @@ import * as premium from "../../premium/background";
 import {
   ANNOYANCE_SUBSCRIPTION_TYPE,
   COOKIES_PREMIUM_SUBSCRIPTION_TYPE,
+  PRIVACY_PREMIUM_FLAG,
+  PRIVACY_SUBSCRIPTION_TYPE,
   premiumTypes,
   type PremiumSubscriptionType,
   type PremiumSubscriptionsState
@@ -37,11 +39,16 @@ import {
  *
  * @returns A list of premium subscriptions
  */
-function getPremiumSubscriptions(): ewe.Recommendation[] {
+async function getPremiumSubscriptions(): Promise<ewe.Recommendation[]> {
+  const isPrivacyPremium = await ewe.experiments.getFlag(PRIVACY_PREMIUM_FLAG);
   // The subscription of the "annoyances" type is the DC subscription
   return ewe.subscriptions
     .getRecommendations()
-    .filter(({ type }) => premiumTypes.has(type));
+    .filter(
+      ({ type }) =>
+        premiumTypes.has(type) ||
+        (type === PRIVACY_SUBSCRIPTION_TYPE && isPrivacyPremium)
+    );
 }
 
 /**
@@ -50,16 +57,25 @@ function getPremiumSubscriptions(): ewe.Recommendation[] {
  * @returns A Promise that settles after the process of adding
  * the subscriptions gets fulfilled or rejected
  */
-async function addOptoutPremiumSubscriptions(): Promise<void> {
-  const subscriptions = getPremiumSubscriptions();
+async function addDefaultPremiumSubscriptions(): Promise<void> {
+  const subscriptions = await getPremiumSubscriptions();
+  const isPrivacyPremium = await ewe.experiments.getFlag(PRIVACY_PREMIUM_FLAG);
 
   for (const subscription of subscriptions) {
     if (
       !(await ewe.subscriptions.has(subscription.url)) &&
-      subscription.type === "annoyances"
+      subscription.type === ANNOYANCE_SUBSCRIPTION_TYPE
     ) {
       await addSubscription(subscription);
-      break;
+    } else if (
+      subscription.type === PRIVACY_SUBSCRIPTION_TYPE &&
+      isPrivacyPremium
+    ) {
+      // whether the privacy subscription should be enabled by default,
+      // in premium, as an experiment. If the user previously had privacy added,
+      // but disabled, we should enable it back.
+      await addSubscription(subscription);
+      await ewe.subscriptions.enable(subscription.url);
     }
   }
 }
@@ -71,7 +87,7 @@ async function addOptoutPremiumSubscriptions(): Promise<void> {
  * the subscriptions gets fulfilled or rejected
  */
 async function removePremiumSubscriptions(): Promise<void> {
-  const subscriptions = getPremiumSubscriptions();
+  const subscriptions = await getPremiumSubscriptions();
 
   for (const subscription of subscriptions) {
     if (await ewe.subscriptions.has(subscription.url)) {
@@ -106,9 +122,8 @@ export function computePremiumState(
 export async function addPremiumSubscription(
   type: PremiumSubscriptionType
 ): Promise<void> {
-  const subscription = getPremiumSubscriptions().find(
-    (sub) => sub.type === type
-  );
+  const premiumSubscriptions = await getPremiumSubscriptions();
+  const subscription = premiumSubscriptions.find((sub) => sub.type === type);
 
   if (subscription !== undefined) {
     await addSubscription(subscription);
@@ -119,9 +134,8 @@ export async function addPremiumSubscription(
 export async function removePremiumSubscription(
   type: PremiumSubscriptionType
 ): Promise<void> {
-  const subscription = getPremiumSubscriptions().find(
-    (sub) => sub.type === type
-  );
+  const premiumSubscriptions = await getPremiumSubscriptions();
+  const subscription = premiumSubscriptions.find((sub) => sub.type === type);
 
   if (subscription === undefined) {
     return;
@@ -134,11 +148,8 @@ export async function removePremiumSubscription(
   }
 }
 
-export async function getPremiumSubscriptionsState(): Promise<{
-  [ANNOYANCE_SUBSCRIPTION_TYPE]: boolean;
-  [COOKIES_PREMIUM_SUBSCRIPTION_TYPE]: boolean;
-}> {
-  const premiumSubscriptions = getPremiumSubscriptions();
+export async function getPremiumSubscriptionsState(): Promise<PremiumSubscriptionsState> {
+  const premiumSubscriptions = await getPremiumSubscriptions();
   const activeSubscriptions = await ewe.subscriptions.getSubscriptions();
   return computePremiumState(premiumSubscriptions, activeSubscriptions);
 }
@@ -152,7 +163,7 @@ export function start(): void {
   });
 
   premium.emitter.on("activated", () => {
-    void addOptoutPremiumSubscriptions();
+    void addDefaultPremiumSubscriptions();
   });
 
   port.on("premium.subscriptions.add", (msg: Message) => {

@@ -712,6 +712,10 @@ describe("Split Experiments", function() {
 
     const getFlagFromUI = flagId => {
       return new Promise((resolve, reject) => {
+        // Currently we check if an element is displayed on the page by
+        // injecting a script into the page via browser.tab.executeScript.
+        // For extension pages we cannot use this, so we pass the information
+        // retrieved on the UI page via a message.
         function handleConnect(port) {
           if (port.name !== "experiments-ui-test") {
             return;

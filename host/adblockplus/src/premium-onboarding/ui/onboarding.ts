@@ -15,6 +15,8 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import * as ewe from "@eyeo/webext-ad-filtering-solution/ui";
+import { PRIVACY_PREMIUM_FLAG } from "~/premium-subscriptions/shared";
 import { initI18n } from "~/i18n/ui";
 import { $, $$ } from "../../../js/dom.mjs";
 import * as messaging from "~/core/messaging/front";
@@ -92,7 +94,17 @@ function initOptionsPageLink(): void {
  * Initializes Premium state
  */
 async function initPremiumState(): Promise<void> {
-  const state = await messaging.premium.get();
+  const [state, isPrivacyPremium] = await Promise.all([
+    messaging.premium.get(),
+    ewe.experiments.getFlag(PRIVACY_PREMIUM_FLAG)
+  ]);
+
+  // Experiment: whether to show the privacy as a premium section
+  if (isPrivacyPremium) {
+    const privacySection = $("#privacy-premium");
+    privacySection.style.display = "block";
+  }
+
   if (!state.isActive) {
     return;
   }

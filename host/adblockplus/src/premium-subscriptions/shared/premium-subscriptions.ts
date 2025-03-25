@@ -21,6 +21,12 @@ import {
 } from "./premium-subscriptions.types";
 
 /**
+ * Flag ID to used to check if privacy should be shown
+ * as a premium subscription
+ */
+export const PRIVACY_PREMIUM_FLAG = "is_privacy_premium";
+
+/**
  * Premium subscription types
  */
 export const premiumTypes = new Set([

@@ -15,6 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import * as ewe from "@eyeo/webext-ad-filtering-solution/ui";
 import {
   closeAddFiltersByURL,
   setupAddFiltersByURL
@@ -27,7 +28,11 @@ import {
 import * as messaging from "~/core/messaging/front";
 import { FilterOrigin } from "~/filters/shared";
 import * as premiumSubscriptions from "~/premium-subscriptions/ui";
-import { premiumTypes } from "~/premium-subscriptions/shared";
+import {
+  premiumTypes,
+  PRIVACY_PREMIUM_FLAG,
+  PRIVACY_SUBSCRIPTION_TYPE
+} from "~/premium-subscriptions/shared";
 import {
   convertDoclinks,
   getDoclink,
@@ -438,7 +443,7 @@ collections.filterLists = new Collection([
   }
 ]);
 
-function addSubscription(subscription) {
+async function addSubscription(subscription) {
   const { disabled, recommended, url } = subscription;
   let collection = null;
   switch (recommended) {
@@ -448,8 +453,15 @@ function addSubscription(subscription) {
       const ioListBox = $("#languages-box");
       ioListBox.items = ioListBox.items.concat(subscription);
       break;
+    case PRIVACY_SUBSCRIPTION_TYPE:
+      // Whether the privacy subscription type belongs in the premium lists
+      const isPrivacyPremium =
+        await ewe.experiments.getFlag(PRIVACY_PREMIUM_FLAG);
+      collection = isPrivacyPremium
+        ? collections.recommendedPremiumList
+        : collections.recommendedFreeList;
+      break;
     case "notifications":
-    case "privacy":
     case "social":
     case "videos":
       collection = collections.recommendedFreeList;
@@ -555,7 +567,7 @@ async function loadResources() {
       };
 
       subscriptions.push(subscription);
-      addSubscription(subscription);
+      await addSubscription(subscription);
     }
   } catch (ex) {
     dispatchError(ex);
@@ -1039,7 +1051,11 @@ function getListBoxItems(subscriptions) {
     const key = recommended === "ads" ? recommended : "others";
     const label = getPrettyItemTitle(subscription, true);
     const selected = urls.has(url);
+
+    // If subscription is premium, then it will not appear in the
+    // advanced built-in filters
     const premium = premiumTypes.has(recommended);
+
     const overrides = { unselectable: selected, label, selected, premium };
     groups[key].push(Object.assign({}, subscription, overrides));
   }
@@ -1475,8 +1491,11 @@ function onSubscriptionMessage(action, subscription, ...args) {
           if (/^~user/.test(url)) {
             loadCustomFilters(subscription.filters);
             return;
-          } else if (url in subscriptionsMap) updateSubscription(subscription);
-          else addSubscription(subscription);
+          } else if (url in subscriptionsMap) {
+            updateSubscription(subscription);
+          } else {
+            addSubscription(subscription);
+          }
 
           if (isAcceptableAds(url)) {
             setAcceptableAds();

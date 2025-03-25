@@ -29,4 +29,13 @@ declare module "@eyeo/webext-ad-filtering-solution/ui" {
      */
     const start: () => void;
   }
+
+  namespace experiments {
+    /**
+     * Returns the value of the flag
+     */
+    const getFlag: (
+      flagId: string
+    ) => Promise<boolean | string | number | string[] | null>;
+  }
 }
