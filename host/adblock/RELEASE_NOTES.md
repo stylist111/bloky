@@ -3,6 +3,7 @@
 - Added the `use_dynamic_url` property to entries under the `web_accessible_resources` key in AdBlock's manifest file (MV3 only). (EXT-871)
 - Added a new event log message to the popup menu when a user subscribes to a filter list (EXT-878)
 - Added split experiment data to event log requests. (EXT-865)
+- Added the ability to retrieve an experiment flag from content/ui scripts. (EXT-877)
 
 # 6.17.0 - 2025-03-17
 

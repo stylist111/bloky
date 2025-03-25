@@ -15,6 +15,7 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import browser from "webextension-polyfill";
 import expect from "expect";
 
 import {EWE, expectTestEvents, clearTestEvents} from "./messaging.js";
@@ -701,6 +702,47 @@ describe("Split Experiments", function() {
 
       await EWE.experiments.overrideFlag(EXPERIMENT_FLAG, "potato");
       await expectTestEvents("experiments.updated", [[[]]]);
+    });
+  });
+
+  describe("ui-tests", function() {
+    afterEach(async function() {
+      await EWE.testing.resetExperimentData();
+    });
+
+    const getFlagFromUI = flagId => {
+      return new Promise((resolve, reject) => {
+        function handleConnect(port) {
+          if (port.name !== "experiments-ui-test") {
+            return;
+          }
+          browser.runtime.onConnect.removeListener(handleConnect);
+
+          port.postMessage(flagId);
+          port.onMessage.addListener(message => {
+            resolve(message);
+          });
+
+          port.onDisconnect.addListener(() => {
+            reject(new Error("Port disconnected without receiving the flag value"));
+          });
+        }
+
+        browser.runtime.onConnect.addListener(handleConnect);
+        void browser.tabs.create({url: "experiments-test.html"});
+      });
+    };
+
+    it("should display UI experiment when flag is set", async function() {
+      await setConfig(oneVariantConfig("test-ui-flag"));
+      await EWE.experiments.sync();
+      const flagValue = await getFlagFromUI(EXPERIMENT_FLAG);
+      expect(flagValue).toBe("test-ui-flag");
+    });
+
+    it("should NOT display UI experiment when flag is NOT set", async function() {
+      const flagValue = await getFlagFromUI(EXPERIMENT_FLAG);
+      expect(flagValue).toBeNull();
     });
   });
 });

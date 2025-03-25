@@ -28,6 +28,7 @@ import {trace} from "./debugging.js";
 import {onContentHelloReceived} from "./content-message-deferrer.js";
 import {markActive, onBlockthroughAcceptableAdsPageView} from "./cdp.js";
 import {default as sentry} from "./sentry.js";
+import {default as experiments} from "./experiments.js";
 
 async function handleMessage(message, sender) {
   trace({
@@ -77,6 +78,9 @@ async function handleMessage(message, sender) {
       const error = fromSerializableError(message.error);
       sentry.reportError(error);
       break;
+    case "ewe:get-experiment-flag":
+      const {flagId} = message;
+      return await experiments.getFlag(flagId);
   }
 }
 
