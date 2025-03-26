@@ -458,7 +458,7 @@ int:bundle:
   extends: .functional
   stage: performance
   script:
-    - docker run $DOCKER_OPTIONS --entrypoint npm $FUNCTIONAL_IMAGE run -w @eyeo/webext-ad-filtering-solution test:performance -- $PARAMS
+    - docker run $DOCKER_OPTIONS -e NODE_OPTIONS="--max-old-space-size=4096" --entrypoint npm $FUNCTIONAL_IMAGE run -w @eyeo/webext-ad-filtering-solution test:performance -- $PARAMS
 
 perf:v2:chromium:
   extends: .performance

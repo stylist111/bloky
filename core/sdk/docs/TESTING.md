@@ -336,7 +336,7 @@ The performance of the engine is measured using
 
 To run the performance tests:
 
-```
+```shell
 npm run -w @eyeo/webext-ad-filtering-solution test:performance -- {2|3} {chromium|edge} [--forceHeadful] [--slow] [--saveBaseline]
 ```
 
@@ -417,7 +417,7 @@ Optional environment variables for the script:
 #### Performance
 
 ```shell
-docker run --shm-size=2g -it --entrypoint npm functional run -w @eyeo/webext-ad-filtering-solution test:performance -- {2|3} {chromium|edge} [--slow] [--saveBaseline]
+docker run --shm-size=2g -it -e NODE_OPTIONS="--max-old-space-size=4096" --entrypoint npm functional run -w @eyeo/webext-ad-filtering-solution test:performance -- {2|3} {chromium|edge} [--slow] [--saveBaseline]
 ```
 
 In order to access the screenshots for failing tests run the following command,
