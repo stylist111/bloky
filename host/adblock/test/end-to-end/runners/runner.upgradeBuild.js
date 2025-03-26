@@ -24,6 +24,7 @@ import {
   prepareExtensionHook,
   screenshotsHook,
   setupBrowserHook,
+  skipWhenSmokeTestsFailed,
 } from "@eyeo/test-utils/hooks";
 
 import defineTestSuitesAfterUpgrade from "../suites/index-upgrade.js";
@@ -31,6 +32,8 @@ import { runnerConfig } from "./config.js";
 
 describe("AdBlock end-to-end tests - Upgrade extension", function () {
   before(() => setGlobalOptionsHook(runnerConfig));
+
+  before(skipWhenSmokeTestsFailed);
 
   before(async function () {
     // This section downloads the browser, which could take a long time

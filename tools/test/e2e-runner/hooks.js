@@ -29,6 +29,8 @@ import {
   getExtensionInfo,
 } from "./extension.js";
 
+let smokeTestsFailed;
+
 /**
  * Hook to set the E2E tests global options
  *
@@ -155,6 +157,26 @@ export async function prepareExtensionHook() {
 }
 
 /**
+ * Hook to set a variable smokeTestsFailed to true if a smoke test failed
+ * Should only be used inside the Smoke test suite
+ */
+export function setSmokeTestsFailed() {
+  if (this.currentTest.state === "failed") {
+    smokeTestsFailed = true;
+  }
+}
+
+/**
+ * Hook to skip test suites if variable smokeTestsFailed is true
+ */
+export function skipWhenSmokeTestsFailed() {
+  if (smokeTestsFailed) {
+    console.warn("Skipping subsequent tests due to failure in one or more Smoke tests");
+    this.skip();
+  }
+}
+
+/**
  * Hook to take a screenshot after each test if the test failed
  *
  * @returns {Promise<void>}
@@ -174,8 +196,9 @@ export async function screenshotsHook() {
  * @returns {Promise<void>}
  */
 export async function cleanupHook() {
-  if (driver) {
+  if (global.driver) {
     await driver.quit();
+    delete global.driver;
   }
 }
 
