@@ -185,7 +185,7 @@ export default () => {
     const { filterlist, trashBtn } = getFLSelectors(name);
 
     // Remove EasyList
-    await clickOnDisplayedElement(trashBtn);
+    await clickOnDisplayedElement(trashBtn, { timeout: 4000 });
     await waitForNotDisplayed(filterlist);
 
     // Check no language-specific filters message
