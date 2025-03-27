@@ -62,6 +62,12 @@ test:
   script:
     - npm test -- $SINCE
 
+check_package_lock:
+  stage: root
+  cache: []
+  script:
+    - ./tools/release/check-package-lock.sh package-lock.json
+
 release-utils:
   extends: .base
   stage: children
