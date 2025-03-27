@@ -152,6 +152,9 @@ export default () => {
     // check default filter lists are enabled
     const actualFilterLists = [];
     for (const { name } of defaultFilterLists) {
+      const { filterlist } = getFLSelectors(name);
+      // FLs sometimes take time to load after extension reload
+      await getDisplayedElement(filterlist, { timeout: 4000 });
       const { toggle } = getFLSelectors(name);
       const enabled = await isCheckboxPropertyEnabled(toggle);
       actualFilterLists.push({ name, enabled });
