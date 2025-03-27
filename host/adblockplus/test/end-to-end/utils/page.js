@@ -494,7 +494,7 @@ export function getFLSelectors(name, { isOptionsGeneralTab = false } = {}) {
 
 export async function getTooltipMsg(tooltipSelector) {
   try {
-    await clickOnDisplayedElement(tooltipSelector);
+    await clickOnDisplayedElement(tooltipSelector, { timeout: 1000 });
   } catch (err) {
     if (err.name === "TimeoutError") {
       return;
