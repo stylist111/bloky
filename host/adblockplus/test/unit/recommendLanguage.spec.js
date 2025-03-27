@@ -45,12 +45,6 @@ const defaultGlobals = {
       }
     }
   },
-  async fetch() {
-    return {
-      json: async () => languageFile,
-      text: async () => ""
-    };
-  },
   URL: class {
     get hostname() {
       return `${visitCounter++ % 5}.example.pl`;
@@ -85,6 +79,7 @@ const defaultModules = {
       }
     }
   },
+  "../data/locales.json": languageFile,
   "../src/info/background": {
     info: {
       application: "firefox"
@@ -117,15 +112,7 @@ describe("Test language filter list recommendation", () => {
   });
 
   it("Should load successfully", async () => {
-    const loadedFiles = new Set();
     let addsListener = false;
-
-    env.setGlobals({
-      fetch(path) {
-        loadedFiles.add(path);
-        return defaultGlobals.fetch();
-      }
-    });
 
     env.override(
       env.globals.browser.webNavigation.onCompleted,
@@ -140,19 +127,10 @@ describe("Test language filter list recommendation", () => {
     await recommendLanguage.start();
 
     ok(addsListener, "Navigation events listener installed");
-    ok(loadedFiles.has("data/locales.json"), "Language data fetched");
   });
 
   it("Should not load for certain languages", async () => {
-    const loadedFiles = new Set();
     let addsListener = false;
-
-    env.setGlobals({
-      fetch(path) {
-        loadedFiles.add(path);
-        return defaultGlobals.fetch();
-      }
-    });
 
     env.override(env.globals.browser.i18n, "getUILanguage", () => "de");
 
@@ -169,19 +147,10 @@ describe("Test language filter list recommendation", () => {
     await recommendLanguage.start();
 
     nok(addsListener, "Navigation events listener installed");
-    nok(loadedFiles.has("data/locales.json"), "Language data fetched");
   });
 
   it("Should not load on Opera", async () => {
-    const loadedFiles = new Set();
     let addsListener = false;
-
-    env.setGlobals({
-      fetch(path) {
-        loadedFiles.add(path);
-        return defaultGlobals.fetch();
-      }
-    });
 
     env.override(
       env.modules["../src/info/background"].info,
@@ -202,19 +171,10 @@ describe("Test language filter list recommendation", () => {
     await recommendLanguage.start();
 
     nok(addsListener, "Navigation events listener installed");
-    nok(loadedFiles.has("data/locales.json"), "Language data fetched");
   });
 
   it("Should not load on Firefox Mobile", async () => {
-    const loadedFiles = new Set();
     let addsListener = false;
-
-    env.setGlobals({
-      fetch(path) {
-        loadedFiles.add(path);
-        return defaultGlobals.fetch();
-      }
-    });
 
     env.override(env.globals.browser.runtime, "getPlatformInfo", async () => ({
       os: "android"
@@ -233,7 +193,6 @@ describe("Test language filter list recommendation", () => {
     await recommendLanguage.start();
 
     nok(addsListener, "Navigation events listener installed");
-    nok(loadedFiles.has("data/locales.json"), "Language data fetched");
   });
 
   it("Should be disabled if user opted out", () => {
@@ -501,19 +460,8 @@ describe("Test language filter list recommendation", () => {
     return new Promise((resolve, reject) => {
       let notified = false;
 
-      env.setGlobals({
-        async fetch() {
-          return {
-            async json() {
-              return {
-                nativeNames: {
-                  en: "[en]"
-                }
-              };
-            },
-            text: async () => ""
-          };
-        }
+      env.override(env.modules["../data/locales.json"], "nativeNames", {
+        en: "[en]"
       });
 
       env.override(env.modules[moduleEWE].notifications, "showNext", () => {

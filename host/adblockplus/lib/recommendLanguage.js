@@ -20,6 +20,7 @@
 const ewe = require("@eyeo/webext-ad-filtering-solution");
 
 const { SessionStorage } = require("storage/session");
+const languages = require("../data/locales.json");
 const { info } = require("../src/info/background");
 const { Prefs } = require("prefs");
 
@@ -36,7 +37,6 @@ const lastVisitsKey = "lastVisits";
 
 const session = new SessionStorage("recommendLanguage");
 
-let promisedLanguages;
 let recommendationByLocale;
 let recommendationUrls;
 
@@ -151,7 +151,6 @@ async function onNavigation(details) {
 
   // We need to know the name of the language in order to display
   // the notification properly
-  const languages = await promisedLanguages;
   const languageName = languages.nativeNames[locale];
   if (!languageName) return;
 
@@ -196,7 +195,6 @@ exports.start = async () => {
   const platformInfo = await browser.runtime.getPlatformInfo();
   if (platformInfo.os === "android") return;
 
-  promisedLanguages = fetch("data/locales.json").then((resp) => resp.json());
   initRecommendations();
 
   browser.webNavigation.onCompleted.addListener(onNavigation);
