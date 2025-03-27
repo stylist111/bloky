@@ -1,35 +1,42 @@
-<!-- Provide a general summary of your changes in the Title above -->
+<!-- Title: "type: Message [issue-number]". Please see CONTRIBUTING.md for details -->
 <!-- If this is a draft: add "Draft:" to the Title. -->
+
+## Context
+
+<!-- Why is this change required? What problem does it solve? -->
+<!-- If this is a draft: explain the reasoning for it to be a draft. -->
 
 ## Description
 
 <!-- Describe your changes -->
 
-## Motivation and Context
-
-<!-- Why is this change required? What problem does it solve? -->
-<!-- If it fixes an open issue, please link to the issue here. -->
-<!-- If this is a draft: Explain the reasoning for it to be a draft -->
-<!-- and what input you are looking for to get from your teammates -->
-
 ## Checklist:
 
-<!-- Go over all the following points, keep those that apply and mark them with an `x` whenever the task is completed -->
+<!-- Go over all the following points, keep those that apply and mark them with an `x` whenever the task is completed. -->
 
 - [ ] I have updated the release notes
+      <br>_\- or -_
+- [ ] My changes didn't require updating the release notes
 
 ---
 
-- [ ] My changes require a documentation update and I have updated the documentation accordingly
+- [ ] I have updated the documentation
       <br>_\- or -_
 - [ ] My changes didn't require a documentation update
 
 ---
 
-- [ ] I have added tests to cover my changes
+<!-- A debugging pipeline runs debugging code that won't be included in the final version of the MR. -->
+<!-- Hint: Add `paralell: 10` to any `.gitlab-ci.yml` job to make it run 10 times in a row. -->
+
+- [ ] I have added/updated tests to cover my changes
+  - [ ] I have run the related test jobs 10 times in a debugging pipeline to avoid introducing flakiness.
+  - [ ] Added/updated tests always passed: (please add a link to the debugging pipeline)
       <br>_\- or -_
-- [ ] My changes didn't require new tests
+- [ ] My changes didn't require adding/updating tests
 
 ---
 
-- [ ] All new and existing tests passed
+- [ ] All pipeline jobs passed
+      <br>_\- or -_
+- [ ] Not all pipeline jobs passed, but this is the reason why a force merge is needed: (please add the reason why)
