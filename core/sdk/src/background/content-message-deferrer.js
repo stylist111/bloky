@@ -43,6 +43,12 @@ export function getDeferredMessages(tabId, frameId) {
 }
 
 async function sendMessage(tabId, frameId, message) {
+  // We cannot send messages to tab, if we don't have a tab ID,
+  // so there's nothing for us to do here
+  if (tabId === browser.tabs.TAB_ID_NONE) {
+    return;
+  }
+
   const doSendMessage = () => {
     trace({tabId, frameId, message});
     return browser.tabs.sendMessage(tabId, message, {frameId});
