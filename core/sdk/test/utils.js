@@ -798,7 +798,7 @@ export async function waitForSubscriptionToBeSynchronized(
       return event[0].url == url &&
         event[1] == null; // whole subscription update, not property
     }).length > 0;
-  }, timeout, "Subscription was not synchronized.");
+  }, timeout, `Subscription ${url} was not synchronized`);
 
   if (clear) {
     clearTestEvents("subscriptions.onChanged");

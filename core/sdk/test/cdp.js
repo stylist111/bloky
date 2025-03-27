@@ -23,12 +23,13 @@ import {MILLIS_IN_MINUTE, MILLIS_IN_HOUR, MILLIS_IN_SECOND} from "adblockpluscor
 import {EWE, addFilter, getTestEvents} from "./messaging.js";
 import {CROSS_DOMAIN, TEST_ADMIN_PAGES_URL, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
         CROSS_DOMAIN_URL} from "./test-server-urls.js";
-import {isChromiumBased, isFirefox, Page, setMinTimeout, executeScript,
+import {isChromiumBased, isFirefox, Page, setMinTimeout, executeScript, isMV3,
         waitForAssertion, clearRequestLogs, getRequestLogs, setEndpointResponse,
         clearEndpointResponse, waitForSubscriptionToBeSynchronized} from "./utils.js";
 import {setPremiumStatus, resetPremiumStatus} from "./messaging.js";
 import {base64ToArrayBuffer} from "adblockpluscore/lib/rsa.js";
 import {limitPromiseDuration} from "./polling.js";
+import {subAcceptableAdsLive} from "./api-fixtures.js";
 
 const SITE_ID = "siteId";
 
@@ -651,19 +652,20 @@ describe("CDP", function() {
       });
     });
 
-    it("sends \"aa_active\" property", async function() {
+    it("sends aa_active property", async function() {
       setMinTimeout(this, 10 * 1000);
 
-      const ACCEPTABLE_ADS_MV3_URL =
-          "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt";
+      // aa_active is being set by hasAcceptableAdsEnabled, which checks for the
+      // live AA URLs
+      const aaUrl = isMV3() ? subAcceptableAdsLive.url :
+        subAcceptableAdsLive.mv2_url;
 
       await startMetricsUploaderWithTestArgs();
 
       await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
 
-      let payload;
-
       async function assertAAActive(isActive) {
+        let payload;
         await waitForAssertion(async() => {
           let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
           expect(requestLogs).toHaveLength(1);
@@ -678,8 +680,10 @@ describe("CDP", function() {
       await EWE.testing.stopCdpMetricsUploader();
       await clearRequestLogs();
 
-      await EWE.subscriptions.add(ACCEPTABLE_ADS_MV3_URL);
-      await waitForSubscriptionToBeSynchronized(ACCEPTABLE_ADS_MV3_URL);
+      await waitForAssertion(async() => {
+        await EWE.subscriptions.add(aaUrl);
+        await waitForSubscriptionToBeSynchronized(aaUrl);
+      }, 6000);
       await startMetricsUploaderWithTestArgs();
 
       await new Page("http://localhost:3000/image.html").loaded;
