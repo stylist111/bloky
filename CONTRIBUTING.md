@@ -56,5 +56,13 @@ Each host maintains its own list of required variables in a file located in thei
 
 When using these variables in the actual code, the host part should be omitted. For example, use `SOME_VARIABLE` instead of `ADBLOCK_SOME_VARIABLE`. To see how this works, refer to the `/tools/release/create-environment-variables.sh` file.
 
+## Contribution License
+
+When submitting a merge request to this repository as an external contributor, you need to confirm that you read and accept our [contributor license](CONTRIBUTOR_LICENSE.md) by adding the following to the merge request's description: 
+
+```
+ I confirm that I have read and accept [contributor license](CONTRIBUTOR_LICENSE.md) of this repository.
+```
+
 [convcomms]: https://www.conventionalcommits.org/en/v1.0.0/
 [convcomms-angular]: https://github.com/angular/angular/blob/22b96b9/CONTRIBUTING.md#type
