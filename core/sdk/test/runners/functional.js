@@ -366,7 +366,16 @@ async function startTestRun(driver, id, params) {
   }
 
   try {
-    await driver.findElement(webdriver.By.id(id)).click();
+    await driver.wait(async() => {
+      try {
+        await driver.findElement(webdriver.By.id(id)).click();
+        return true;
+      }
+      catch (e) {
+        console.warn(`${e.message}, reloading index.html as a workaround`);
+        await driver.navigate().refresh();
+      }
+    }, 3000, `Unable to locate element with id="${id}"`, 500);
   }
   catch (err) {
     await writeScreenshot("startTestRun.png");

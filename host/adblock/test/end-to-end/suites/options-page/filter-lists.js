@@ -66,7 +66,7 @@ export default () => {
   });
 
   it("updates all filter lists", async function () {
-    this.timeout(40000); // Updating all filter list may take longer depending on network conditions
+    this.timeout(60000); // Updating all filter list may take longer depending on network conditions
 
     const defaultEnabledFilterLists = defaultFilterLists.filter(({ enabled }) => enabled);
     await checkSubscriptionsState(defaultEnabledFilterLists, { timeout: 20000, regexp: /ago/ });

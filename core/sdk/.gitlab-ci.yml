@@ -276,7 +276,7 @@ func:v3:edge:latest:
 .functional-isolated-mv3:
   extends: .functional-isolated
   variables:
-    # > removes interior line-breaks 
+    # > removes interior line-breaks
     # - removes the line-break at the end of TEST_SUITES
     TEST_SUITES: >-
       Initialization

@@ -27,7 +27,7 @@
 ---
 
 <!-- A debugging pipeline runs debugging code that won't be included in the final version of the MR. -->
-<!-- Hint: Add `paralell: 10` to any `.gitlab-ci.yml` job to make it run 10 times in a row. -->
+<!-- Hint: Add `parallel: 10` to any `.gitlab-ci.yml` job to make it run 10 times in a row. -->
 
 - [ ] I have added/updated tests to cover my changes
   - [ ] I have run the related test jobs 10 times in a debugging pipeline to avoid introducing flakiness.
