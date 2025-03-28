@@ -198,7 +198,7 @@ export default {
     rename: [
       {
         dest: "data/rules/index.json",
-        package: "@adblockinc/rules",
+        package: "@eyeo/rules-utils",
         src: "dist/adblock/index/adblock.json",
       },
       {

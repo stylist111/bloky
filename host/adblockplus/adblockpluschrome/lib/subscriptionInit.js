@@ -17,7 +17,7 @@
 
 /** @module subscriptionInit */
 
-import rulesIndex from "@adblockinc/rules/adblockplus";
+import rulesIndex from "@eyeo/rules-utils/adblockplus/index/adblockplus.json";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import {
   initializeCDP,

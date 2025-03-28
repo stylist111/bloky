@@ -208,6 +208,32 @@ async function onInstalled(details) {
 */
 
 /**
+ * Defines the recommended filter subscriptions per language.
+ * @typedef {Object} BundledSubscription
+ * @property {string} id The identifier for this subscription.
+ * @property {Array<string>} languages The languages that this subscription
+ *   would match to.
+ * @property {string} title The display name of the recommended subscription.
+ * @property {string} homepage The home page of the recommended subscription.
+ * @property {Array<string>} requires A list of subscriptions that this one
+ *   depends on.
+ * @property {Array<string>} includes A list of subscriptions that this
+ *   one also contains.
+ * @property {?boolean} privileged True if this subscription can load filters
+ *   that require privileged access, like snippets.
+ * @property {string} type The kind of content targeted by this recommended
+ *   subscription.
+ * @property {string} url Where the recommended subscription can be found in
+ *   plain text.
+ * @property {?string} mv2_url Where the recommended subscription can be found
+ *   for MV2 in plain text (Manifest V3 only).
+ * @property {?string} diff_url Where this recommendation will get updates
+ *   from. Required for MV3 subscriptions to update.
+ * @property {?string} expires Expiration interval from the subscription
+ *   header. Usually the number of days or hours between expirations.
+ */
+
+/**
  * Initializes the filter engine and starts blocking content.
  *
  * Calling this function is required for the other API calls to work, except for
@@ -223,7 +249,7 @@ async function onInstalled(details) {
  *   name and version will default to the extension's name and version.
  * @param {string} [addonInfo.name] Name of the addon/extension.
  * @param {string} [addonInfo.version] Version of the addon/extension.
- * @param {Array<Recommendation>?} [addonInfo.bundledSubscriptions]
+ * @param {Array<BundledSubscription>?} [addonInfo.bundledSubscriptions]
  *   A list of subscriptions provided by the integrator. Cannot be undefined
  *   for MV3.
  * @param {string?} [addonInfo.bundledSubscriptionsPath]

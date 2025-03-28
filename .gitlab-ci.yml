@@ -38,6 +38,7 @@ build:
       - core/sdk/dist/
       - host/adblock/dist/devenv/
       - host/adblockplus/dist/devenv/
+      - tools/rules/dist/
     expire_in: 1 month
 
 build:release:
@@ -68,12 +69,13 @@ check_package_lock:
   script:
     - ./tools/release/check-package-lock.sh package-lock.json
 
-release-utils:
+tools:
   extends: .base
   stage: children
   script:
     - npm run -w @eyeo/release-utils test:end-to-end
-  needs: []
+    - npm run -w @eyeo/rules-utils test:end-to-end
+  needs: ["build"]
 
 .child:
   stage: children

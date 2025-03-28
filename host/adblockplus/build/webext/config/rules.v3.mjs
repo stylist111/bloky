@@ -20,12 +20,12 @@ export default {
     copy: [
       {
         dest: "data/rules/abp",
-        package: "@adblockinc/rules",
+        package: "@eyeo/rules-utils",
         src: "dist/adblockplus/rules/abp/*"
       },
       {
         dest: "data/rules/dnr",
-        package: "@adblockinc/rules",
+        package: "@eyeo/rules-utils",
         src: "dist/adblockplus/rules/dnr/*"
       }
     ],

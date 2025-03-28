@@ -1,0 +1,22 @@
+{
+  "name": "@eyeo/rules-utils",
+  "type": "module",
+  "exports": {
+    "./adblock/*": "./dist/adblock/*",
+    "./adblockplus/*": "./dist/adblockplus/*"
+  },
+  "scripts": {
+    "build": "node src/node/build.js",
+    "build:release": "npm run build",
+    "lint": "eslint .",
+    "test": "vitest run --exclude test/end-to-end --reporter=verbose",
+    "test:end-to-end": "vitest run --root test/end-to-end --reporter=verbose"
+  },
+  "dependencies": {
+    "@eyeo/filterlists": "1.0.19",
+    "vitest": "3.0.9"
+  },
+  "peerDependencies": {
+    "@eyeo/webext-ad-filtering-solution": "*"
+  }
+}

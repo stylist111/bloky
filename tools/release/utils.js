@@ -15,25 +15,10 @@
  * along with Web Extensions CU.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import fs from "fs";
 import url from "url";
 import path from "path";
 import {exec} from "child_process";
 import {promisify} from "util";
-
-export async function readFile(filePath) {
-  return fs.promises.readFile(filePath, {encoding: "utf-8"});
-}
-
-export async function writeFile(filePath, contents) {
-  return fs.promises.writeFile(
-    filePath,
-    contents,
-    {
-      encoding: "utf-8"
-    }
-  );
-}
 
 export function projectRootPath() {
   const scriptDir = path.dirname(url.fileURLToPath(import.meta.url));  

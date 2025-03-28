@@ -26,7 +26,6 @@
     "html-hint": "npm run $ lint.html",
     "json-bundle": "node build/jsonBundle.cjs",
     "lint": "npm run $ lint",
-    "postinstall": "npx @adblockinc/rules adblock",
     "prettier": "npm run $ lint.prettier",
     "prettier-fix": "npm run $ lint-fix.prettier",
     "sentry:login": "sentry-cli login",
@@ -136,17 +135,17 @@
     "selenium-webdriver": "4.23.0",
     "source-map-loader": "4.0.0",
     "vite": "6.0.11",
-    "vitest": "3.0.4"
+    "vitest": "3.0.9"
   },
   "engines": {
     "node": ">=18.17.1 <19",
     "npm": "9"
   },
   "dependencies": {
-    "@adblockinc/rules": "gitlab:eyeo/browser-extensions-and-premium/extensions/rules#bab56fde17f3ecb6949022b7bb98ee76b9bd5d12",
     "@eyeo-fragments/public-api": "*",
     "@eyeo-fragments/yt-wall-detection": "*",
     "@eyeo/ext-ui-components": "*",
+    "@eyeo/rules-utils": "*",
     "@eyeo/snippets": "2.0.0",
     "@eyeo/webext-ad-filtering-solution": "*",
     "@rollup/plugin-typescript": "8.3.2",

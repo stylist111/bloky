@@ -21,7 +21,6 @@
     "eslint:legacy": "eslint --ext .js,.mjs --ignore-path .gitignore --ignore-pattern /adblockpluschrome/ ./",
     "eslint:love": "eslint --ext .ts --ignore-path .gitignore src/",
     "lint": "npm run $ lint",
-    "postinstall": "npx @adblockinc/rules adblockplus",
     "prettier": "npm run $ lint.prettier",
     "prettier-fix": "npm run $ lint-fix.prettier",
     "start": "http-server ./dist/devenv/local-mv2/",
@@ -109,11 +108,11 @@
     }
   },
   "dependencies": {
-    "@adblockinc/rules": "gitlab:eyeo/browser-extensions-and-premium/extensions/rules#bab56fde17f3ecb6949022b7bb98ee76b9bd5d12",
     "@eyeo-fragments/ipm": "*",
     "@eyeo-fragments/public-api": "*",
     "@eyeo-fragments/yt-wall-detection": "*",
     "@eyeo/ext-ui-components": "*",
+    "@eyeo/rules-utils": "*",
     "@eyeo/snippets": "2.0.0",
     "@eyeo/webext-ad-filtering-solution": "*",
     "@types/webextension-polyfill": "0.12.0",

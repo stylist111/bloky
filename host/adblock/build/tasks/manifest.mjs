@@ -20,6 +20,8 @@ import fs from "fs";
 import { Readable } from "stream";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import Vinyl from "vinyl";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 
 let manifest;
 
@@ -55,15 +57,7 @@ async function editManifest(dataParam, version, channel, target, extensionId) {
   }
 
   if ("declarative_net_request" in data) {
-    let rulesPath = "node_modules/@adblockinc/rules/dist/adblock/manifest/adblock.json";
-
-    if (!fs.existsSync(rulesPath)) {
-      rulesPath = "../../node_modules/@adblockinc/rules/dist/adblock/manifest/adblock.json";
-    }
-
-    if (!fs.existsSync(rulesPath)) {
-      throw new Error("@adblockinc/rules not found. Maybe npm install?");
-    }
+    let rulesPath = require.resolve("@eyeo/rules-utils/adblock/manifest/adblock.json");
 
     const rules = await getJSON(rulesPath);
     data.declarative_net_request = rules;

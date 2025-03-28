@@ -11,8 +11,8 @@
     "@inquirer/prompts": "7.0.1",
     "yargs": "^17.7.2"
   },
-  "devDependencies": {    
+  "devDependencies": {
     "ignore": "6.0.2",
-    "vitest": "^2.0.5"    
+    "vitest": "3.0.9"
   }
 }

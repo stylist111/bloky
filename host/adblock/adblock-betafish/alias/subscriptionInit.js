@@ -24,7 +24,7 @@
 import { Prefs } from "./prefs";
 import * as info from "info";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
-import rulesIndex from "@adblockinc/rules/adblock";
+import rulesIndex from "@eyeo/rules-utils/adblock/index/adblock.json";
 import { port } from "../../adblockplusui/adblockpluschrome/lib/messaging/port.js";
 import {
   setReadyState,

@@ -21,12 +21,12 @@ import path from "path";
 import os from "os";
 import ignore from "ignore";
 
-import { readFile, executeShellCommand, getCurrentFileDir, projectRootPath,
+import { executeShellCommand, getCurrentFileDir, projectRootPath,
        gitRepoHasChanges } from "../../utils.js";
 
 async function loadGitignore() {
   const gitignorePath = path.join(projectRootPath(), '.gitignore');
-  const gitignoreContent = await readFile(gitignorePath);
+  const gitignoreContent = await fs.readFile(gitignorePath, "utf8");
 
   const ig = ignore();
   ig.add(gitignoreContent);
@@ -82,7 +82,10 @@ async function recursiveSymlinkNodeModules(src, dest) {
 }
 
 async function loadTestFile(relativePath) {
-  return await readFile(path.join(getCurrentFileDir(import.meta.url), relativePath));
+  return await fs.readFile(
+    path.join(getCurrentFileDir(import.meta.url), relativePath),
+    "utf8"
+  );
 }
 
 async function configureTestGitUser(repoDir) {

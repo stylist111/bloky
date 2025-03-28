@@ -15,9 +15,10 @@
  * along with Web Extensions CU.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { readFile, writeFile } from "fs/promises";
 import path from "path";
 
-import {projectRootPath, readFile, writeFile} from "./utils.js";
+import {projectRootPath} from "./utils.js";
 
 export class ReleaseNotes {
   constructor(fileContent) {
@@ -93,7 +94,8 @@ export class ReleaseNotes {
   async writeToHostFilepath(host) {
     await writeFile(
       ReleaseNotes.hostFilePath(host),
-      this.toString()
+      this.toString(),
+      "utf8"
     );
   }
 }
@@ -103,6 +105,6 @@ ReleaseNotes.hostFilePath = function(host) {
 };
 
 ReleaseNotes.readFromHostFilepath = async function(host) {
-  let releaseNotesContent = await readFile(ReleaseNotes.hostFilePath(host));
+  let releaseNotesContent = await readFile(ReleaseNotes.hostFilePath(host), "utf8");
   return new ReleaseNotes(releaseNotesContent);
 };

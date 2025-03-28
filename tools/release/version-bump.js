@@ -15,9 +15,10 @@
  * along with Web Extensions CU.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import path from 'path';
+import { readFile, writeFile } from "fs/promises";
+import path from "path";
 
-import { projectRootPath, readFile, writeFile } from "./utils.js";
+import { projectRootPath } from "./utils.js";
 
 export function updateVersionInConfigContent(content, version) {
   const regex = /(version:\s*)\"[^\"]+\"/;
@@ -35,7 +36,7 @@ export async function updateVersionInConfig(host, version) {
     : 'host/adblockplus/build/webext/config/base.mjs';
 
   const fullPath = path.join(projectRootPath(), configPath);
-  const content = await readFile(fullPath);
+  const content = await readFile(fullPath, "utf8");
   const updatedContent = updateVersionInConfigContent(content, version);
-  await writeFile(fullPath, updatedContent);
+  await writeFile(fullPath, updatedContent, "utf8");
 }
