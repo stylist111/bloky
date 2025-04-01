@@ -7,3 +7,14 @@
   needs:
     - pipeline: $PARENT_PIPELINE_ID
       job: build:release
+
+.only-run-on-update-rules-trigger:
+  rules:
+    - if: $UPDATE_RULES == "true"
+      when: on_success
+    - when: never
+
+.never-run-on-update-rules-trigger:
+  rules:
+    - if: $UPDATE_RULES == "true"
+      when: never
