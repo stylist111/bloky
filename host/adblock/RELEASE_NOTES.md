@@ -1,5 +1,7 @@
 # Unreleased
 
+# 6.18.0 - 2025-04-01
+
 - Added experiment flag data to the information injected into our websites. (EXT-867)
 - Added the `use_dynamic_url` property to entries under the `web_accessible_resources` key in AdBlock's manifest file (MV3 only). (EXT-871)
 - Added a new event log message to the popup menu when a user subscribes to a filter list (EXT-878)
