@@ -393,7 +393,7 @@ describe("Reporting", function() {
         eventName = await addNewOnBlockableListener(eventOptions);
       }
 
-      clearTestEvents(eventName);
+      await clearTestEvents(eventName);
 
       let tabId = await callback();
 
@@ -434,7 +434,7 @@ describe("Reporting", function() {
       await expectCalled(listenerName);
 
       await removeOnBlockableListener(listenerName);
-      clearTestEvents(listenerName);
+      await clearTestEvents(listenerName);
 
       await page.reload();
       await expectNotCalled(listenerName);

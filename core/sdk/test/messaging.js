@@ -17,6 +17,7 @@
 
 import browser from "webextension-polyfill";
 import expect from "expect";
+import {v4 as uuidv4} from "uuid";
 
 import {isFuzzingServiceWorker, suspendServiceWorker}
   from "./mocha/mocha-runner.js";
@@ -108,15 +109,33 @@ export async function addFilter(text, metadata) {
   return result;
 }
 
+let activeLocks = {
+  global: null,
+  eventSpecific: {}
+};
+
 let data = {};
 browser.runtime.onMessage.addListener(message => {
-  if (message.type == "ewe-test:event") {
-    let {eventName, eventArgs} = message;
-    if (!data[eventName]) {
-      data[eventName] = [];
+  if (message.type == "ewe-test:eventUnlock") {
+    if (message.global && message.global === activeLocks.global) {
+      activeLocks.global = null;
     }
 
-    data[eventName].push(eventArgs);
+    if (message.eventName &&
+        message.value === activeLocks.eventSpecific[message.eventName]) {
+      delete activeLocks.eventSpecific[message.eventName];
+    }
+  }
+
+  if (message.type == "ewe-test:event") {
+    let {eventName, eventArgs} = message;
+    if (!activeLocks.global && !activeLocks.eventSpecific[eventName]) {
+      if (!data[eventName]) {
+        data[eventName] = [];
+      }
+
+      data[eventName].push(eventArgs);
+    }
   }
 });
 
@@ -168,12 +187,37 @@ export async function removeOnBlockableListener(name) {
   ], false);
 }
 
-export function clearTestEvents(name) {
+export async function clearTestEvents(name) {
+  let lock = uuidv4();
+  activeLocks.eventSpecific[name] = lock;
+
   delete data[name];
+
+  await browser.runtime.sendMessage({
+    type: "ewe-test:echoEventLock",
+    eventName: name,
+    value: lock
+  });
 }
 
-export function clearAllTestEvents() {
+export async function clearAllTestEvents() {
+  let lock = uuidv4();
+  activeLocks.global = lock;
+
   data = {};
+
+  await browser.runtime.sendMessage({
+    type: "ewe-test:echoEventLock",
+    global: lock
+  });
+}
+
+export async function triggerTestEvent(eventName, eventArgs) {
+  await browser.runtime.sendMessage({
+    type: "ewe-test:triggerTestEvent",
+    eventName,
+    eventArgs
+  });
 }
 
 /**

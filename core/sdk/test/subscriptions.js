@@ -453,7 +453,7 @@ describe("Subscriptions", function() {
       return subs.every(sub => sub.lastDownload);
     }, 1000, "Subscriptions were not synced when added");
 
-    clearTestEvents("subscriptions.onChanged");
+    await clearTestEvents("subscriptions.onChanged");
   }
 
   // Disabled on MV3 as the subscriptions are not downloaded.
@@ -857,7 +857,7 @@ describe("Subscriptions", function() {
 
       // remove the subscription, the synchronization continues meanwhile
       await EWE.subscriptions.remove(USER_SUBSCRIPTION_URL);
-      clearTestEvents("subscriptions.onChanged");
+      await clearTestEvents("subscriptions.onChanged");
 
       // await for the sync to be finished
       await new Promise(r => setTimeout(r, 3000));

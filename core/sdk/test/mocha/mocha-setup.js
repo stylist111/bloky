@@ -138,5 +138,5 @@ afterEach(async function() {
   await Page.removeCurrent();
   await clearFrameState();
   await Popup.removeCurrent();
-  clearAllTestEvents();
+  await clearAllTestEvents();
 });

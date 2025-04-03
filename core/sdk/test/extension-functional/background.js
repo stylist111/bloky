@@ -372,6 +372,32 @@ function handleTestMessage(request, sender, sendResponse) {
       return true;
     }
 
+    case "ewe-test:triggerTestEvent": {
+      sendEventToMochaTests(request.eventName, request.eventArgs);
+      sendResponse({});
+      return true;
+    }
+
+    case "ewe-test:echoEventLock": {
+      chrome.runtime.sendMessage(
+        {
+          type: "ewe-test:eventUnlock",
+          global: request.global,
+          eventName: request.eventName,
+          value: request.value
+        },
+        () => {
+          // this errors if there isn't a receiver (ie tests aren't
+          // running). It's safe to ignore that.
+          // eslint-disable-next-line no-unused-vars
+          let sendErrorToIgnore = chrome.runtime.lastError;
+        }
+      );
+
+      sendResponse({});
+      return true;
+    }
+
     case "ewe-test:initSnippets": {
       initSnippets();
       sendResponse({});

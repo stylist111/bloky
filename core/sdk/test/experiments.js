@@ -658,7 +658,7 @@ describe("Split Experiments", function() {
   describe("Experiments events", function() {
     beforeEach(async function() {
       await EWE.testing.resetExperimentData();
-      clearTestEvents("experiments.updated");
+      await clearTestEvents("experiments.updated");
     });
 
     it("fires an onChanged event when a new config is downloaded", async function() {

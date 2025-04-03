@@ -586,7 +586,7 @@ describe("Filters", function() {
         text: VALID_FILTER_TEXT, metadata: META1
       }), "metadata"]]);
       const META2 = {a: "2"};
-      clearTestEvents(EVENT);
+      await clearTestEvents(EVENT);
       await EWE.filters.setMetadata(VALID_FILTER_TEXT, META2);
       await expectTestEvents(EVENT, [[expect.objectContaining({
         text: VALID_FILTER_TEXT, oldMetadata: META1, metadata: META2
@@ -994,7 +994,7 @@ describe("Filters", function() {
 
       await sleep(waitMs);
       // Ingore all the other renew events and only look at the last one.
-      clearTestEvents(EVENT);
+      await clearTestEvents(EVENT);
 
       await new Page("image.html").loaded;
       const metadata = await EWE.filters.getMetadata(ALLOWING_DOC_FILTER);

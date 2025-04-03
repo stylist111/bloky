@@ -37,8 +37,8 @@ describe("One Click Allowlisting", function() {
 
   let getOnUnauthorizedEvents = () =>
     getTestEvents("allowlisting.onUnauthorized");
-  let clearOnUnauthorizedEvents = () =>
-    clearTestEvents("allowlisting.onUnauthorized");
+  let clearOnUnauthorizedEvents = async() =>
+    await clearTestEvents("allowlisting.onUnauthorized");
 
   beforeEach(async function() {
     await addFilter(`|${TEST_PAGES_URL}$image`);
@@ -150,7 +150,7 @@ describe("One Click Allowlisting", function() {
     await clickAllowlistButton("allowlist");
     await expectSuccessfulAllowlist();
 
-    clearOnUnauthorizedEvents();
+    await clearOnUnauthorizedEvents();
 
     await clickAllowlistButton("allowlist");
     await expectUnsuccessfulAllowlist("already_allowlisted");

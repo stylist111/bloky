@@ -465,7 +465,7 @@ describe("DNR filters update [mv3-only]", function() {
         expect(detail.subscriptionIds.length).toBe(2);
       }
 
-      clearTestEvents("subscriptions.onChanged");
+      await clearTestEvents("subscriptions.onChanged");
       // This update should fail
       await EWE.testing._dnrDiffSubscriptionUpdate(
         subTestUpdatable1.url, UPDATES2A
@@ -523,7 +523,7 @@ describe("DNR filters update [mv3-only]", function() {
     it("Rollback on maximum subscriptions with no updates", async function() {
       await EWE.testing.testSetDynamicRulesAvailable(3);
 
-      clearTestEvents("subscriptions.onChanged");
+      await clearTestEvents("subscriptions.onChanged");
       // This update should fail
       await EWE.testing._dnrDiffSubscriptionUpdate(
         subTestUpdatable1.url, UPDATES
@@ -557,7 +557,7 @@ describe("DNR filters update [mv3-only]", function() {
     beforeEach(async function() {
       await EWE.subscriptions.remove(subTestUpdatable1.url);
       await EWE.testing.clearIsDnrSubscriptionUpdating();
-      clearTestEvents("subscriptions.onChanged");
+      await clearTestEvents("subscriptions.onChanged");
     });
 
     it("creates a diff enabled subscription when adding one [mv3-only]", async function() {
@@ -1178,7 +1178,7 @@ describe("DNR filters update [mv3-only]", function() {
           }
         }));
 
-        clearTestEvents("subscriptions.onChanged");
+        await clearTestEvents("subscriptions.onChanged");
         await EWE.subscriptions.add(subTestUpdatable1.url);
 
         await waitForSubscriptionToFailToUpdate(

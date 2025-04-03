@@ -56,7 +56,7 @@ describe("Update using the full update mechanism [mv3-only]", function() {
     await setEndpointResponse(USER_SUBSCRIPTION_URL,
                               RESPONSE_HEADER + IMAGE);
 
-    clearTestEvents("subscriptions.onChanged");
+    await clearTestEvents("subscriptions.onChanged");
     await EWE.subscriptions.sync(USER_SUBSCRIPTION_URL);
     await waitForSubscriptionToBeSynchronized(USER_SUBSCRIPTION_URL);
 
@@ -67,7 +67,7 @@ describe("Update using the full update mechanism [mv3-only]", function() {
 
     // remove filters
     await setEndpointResponse(USER_SUBSCRIPTION_URL, RESPONSE_HEADER);
-    clearTestEvents("subscriptions.onChanged");
+    await clearTestEvents("subscriptions.onChanged");
     await EWE.subscriptions.sync(USER_SUBSCRIPTION_URL);
     await waitForSubscriptionToBeSynchronized(USER_SUBSCRIPTION_URL);
 
@@ -218,7 +218,7 @@ describe("Update using the full update mechanism [mv3-only]", function() {
       "filterThatDoesNotFitIntoTheLimit"
     ].join("\n"));
 
-    clearTestEvents("subscriptions.onChanged");
+    await clearTestEvents("subscriptions.onChanged");
     await EWE.subscriptions.add(USER_SUBSCRIPTION_URL);
 
     await waitForSubscriptionToFailToUpdate(USER_SUBSCRIPTION_URL);

@@ -801,7 +801,7 @@ export async function waitForSubscriptionToBeSynchronized(
   }, timeout, `Subscription ${url} was not synchronized`);
 
   if (clear) {
-    clearTestEvents("subscriptions.onChanged");
+    await clearTestEvents("subscriptions.onChanged");
   }
 }
 
@@ -846,7 +846,7 @@ export async function waitForSubscriptionToBeRemoved(url) {
     }).length > 0;
   }, 3000, "Subscription was not removed.");
 
-  clearTestEvents("subscriptions.onRemoved");
+  await clearTestEvents("subscriptions.onRemoved");
 }
 
 async function syncSubscription(

@@ -26,7 +26,8 @@ import {subTestCustom2, subTestUpdatable1} from "./api-fixtures.js";
 import {wait} from "./polling.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 import {runInBackgroundPage, waitForServiceWorkerInitialization, EWE,
-        setFeatureFlags} from "./messaging.js";
+        setFeatureFlags, clearAllTestEvents, getTestEvents, triggerTestEvent,
+        clearTestEvents} from "./messaging.js";
 
 const VALID_FILTER_TEXT = `|${TEST_PAGES_URL}$image`;
 const SECOND_VALID_FILTER_TEXT = "another-filter";
@@ -150,6 +151,30 @@ describe("Testing Mechanisms", function() {
           }
         }
       }, 1000, "No console debug output");
+    });
+  });
+
+  describe("Events", function() {
+    it("does not let events leak between tests", async function() {
+      for (let i = 0; i < 10; i++) {
+        await triggerTestEvent("test-event", [i]);
+        await clearAllTestEvents();
+        await triggerTestEvent("test-event", [i + 1]);
+        await waitForAssertion(async() => {
+          expect(getTestEvents("test-event")).toEqual([[i + 1]]);
+        });
+      }
+    });
+
+    it("does not let specific events leak after clearing them", async function() {
+      for (let i = 0; i < 10; i++) {
+        await triggerTestEvent("test-event", [i]);
+        await clearTestEvents("test-event");
+        await triggerTestEvent("test-event", [i + 1]);
+        await waitForAssertion(async() => {
+          expect(getTestEvents("test-event")).toEqual([[i + 1]]);
+        });
+      }
     });
   });
 
