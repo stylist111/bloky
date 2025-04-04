@@ -15,19 +15,17 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @module browserAction */
-
 import { TabSessionStorage } from "./storage/tab-session.js";
 
-let badgeStateByPage = new TabSessionStorage("browserAction:blockedState");
-let changesByPage = new TabSessionStorage("browserAction:changes");
+let badgeStateByPage = new TabSessionStorage("action:badgeState");
+let changesByPage = new TabSessionStorage("action:changes");
 
 async function setBadgeState(tabId, key, value) {
   return badgeStateByPage.transaction(async () => {
     let badgeState = await badgeStateByPage.get(tabId);
 
     if (!badgeState) {
-      badgeState = {
+      return {
         hiddenState: "visible",
         text: ""
       };

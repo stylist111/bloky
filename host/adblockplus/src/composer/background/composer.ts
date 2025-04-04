@@ -39,11 +39,9 @@ import { info } from "../../info/background";
  */
 const activeDialogKey = "activeDialog";
 
-const session = new SessionStorage("filterComposer");
+const session = new SessionStorage("composer");
 
-const readyActivePages = new TabSessionStorage(
-  "filterComposer:readyActivePages"
-);
+const readyByPage = new TabSessionStorage("composer:ready");
 let showingContextMenu = false;
 
 function isValidString(s): boolean {
@@ -505,8 +503,7 @@ async function showOrHideContextMenu(activePage): Promise<void> {
   }
 
   const shouldShowContextMenu =
-    Prefs.shouldShowBlockElementMenu &&
-    (await readyActivePages.get(activePage.id));
+    Prefs.shouldShowBlockElementMenu && (await readyByPage.get(activePage.id));
 
   if (shouldShowContextMenu && !showingContextMenu) {
     void browser.contextMenus.create({
@@ -548,9 +545,9 @@ function handleFocusChanged(windowId): void {
  * @param {boolean} isAllowlisted - New allowlisting state
  */
 function handleAllowlistingStateChanged(page, isAllowlisted): void {
-  void readyActivePages.transaction(async () => {
-    if (await readyActivePages.has(page.id)) {
-      await readyActivePages.set(page.id, !isAllowlisted);
+  void readyByPage.transaction(async () => {
+    if (await readyByPage.has(page.id)) {
+      await readyByPage.setFlag(page.id, !isAllowlisted);
       void updateContextMenu(page);
     }
   });
@@ -565,7 +562,7 @@ function handleAllowlistingStateChanged(page, isAllowlisted): void {
  * @returns {boolean}
  */
 async function handleIsPageReadyMessage(message): Promise<boolean> {
-  return await readyActivePages.has(message.pageId);
+  return await readyByPage.has(message.pageId);
 }
 
 async function initializeReadyState(page): Promise<void> {
@@ -574,7 +571,7 @@ async function initializeReadyState(page): Promise<void> {
     "document",
     page.id
   );
-  await readyActivePages.set(page.id, !isAllowlisted);
+  await readyByPage.setFlag(page.id, !isAllowlisted);
   void updateContextMenu(page);
 }
 
