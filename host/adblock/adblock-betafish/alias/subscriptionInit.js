@@ -31,6 +31,7 @@ import {
   ReadyState,
 } from "../../adblock-betafish/testing/ready-state/background/index.ts";
 import ServerMessages from "~/servermessages";
+import * as logger from "~/utilities/background";
 
 let firstRun;
 let reinitialized = false;
@@ -103,6 +104,31 @@ function removeSubscriptions() {
   });
 }
 
+async function addAdditionalSubscriptions() {
+  const urls = Prefs.additional_subscriptions;
+  if (!Array.isArray(urls)) {
+    logger.error("Invalid additional subscriptions preference");
+    return;
+  }
+
+  for (const url of urls) {
+    if (typeof url !== "string") {
+      logger.error(`Invalid additional subscription URL: ${url}`);
+      continue;
+    }
+
+    try {
+      if (await ewe.subscriptions.has(url)) {
+        continue;
+      }
+
+      await ewe.subscriptions.add(url);
+    } catch (ex) {
+      logger.error(`Failed to add additional subscription: ${url}\n${ex}`);
+    }
+  }
+}
+
 async function addSubscriptions() {
   if (firstRun || reinitialized) {
     await ewe.subscriptions.addDefaults();
@@ -154,16 +180,7 @@ async function addSubscriptions() {
     }
   }
 
-  // Remove "acceptable ads" if Gecko
-  if (firstRun) {
-    for (let url of Prefs.additional_subscriptions) {
-      try {
-        await ewe.subscriptions.add(url);
-      } catch (ex) {
-        console.error(`Failed to add additional subscription: ${url}`);
-      }
-    }
-  }
+  await addAdditionalSubscriptions();
 }
 
 /**

@@ -38,7 +38,7 @@ import { initNotifications } from "./notificationHelper.js";
 import { Prefs } from "./prefs.js";
 import { start as startUnloadCleanup } from "../../src/unload-cleanup/background/index.ts";
 import { start as startIPMPingListener } from "../../src/testing/ping-ipm/background";
-import { reportAndLogError } from "../../src/logger/background";
+import * as logger from "../../src/logger/background";
 
 let firstRun;
 let userNotificationCallback = null;
@@ -81,6 +81,29 @@ function setDataCorrupted(value) {
   ewe.notifications.ignored = value;
 }
 
+async function addAdditionalSubscriptions() {
+  const urls = Prefs.additional_subscriptions;
+  if (!Array.isArray(urls)) {
+    logger.error("Invalid additional subscriptions preference");
+    return;
+  }
+
+  for (const url of urls) {
+    if (typeof url !== "string") {
+      logger.error(`Invalid additional subscription URL: ${url}`);
+      continue;
+    }
+
+    try {
+      if (await ewe.subscriptions.has(url)) continue;
+
+      await ewe.subscriptions.add(url);
+    } catch (ex) {
+      logger.error(`Failed to add additional subscription: ${url}\n${ex}`);
+    }
+  }
+}
+
 async function addSubscriptionsAndNotifyUser() {
   if (firstRun || reinitialized) await ewe.subscriptions.addDefaults();
 
@@ -107,14 +130,7 @@ async function addSubscriptionsAndNotifyUser() {
     }
   }
 
-  for (let url of Prefs.additional_subscriptions) {
-    try {
-      await ewe.subscriptions.add(url);
-      await ewe.subscriptions.sync(url);
-    } catch (ex) {
-      reportAndLogError(ex, `Failed to add additional subscription: ${url}`);
-    }
-  }
+  await addAdditionalSubscriptions();
 
   if (userNotificationCallback)
     userNotificationCallback({ dataCorrupted, firstRun, reinitialized });

@@ -49,7 +49,6 @@ export async function addFilter(filterText, origin) {
 async function addSubscription(details) {
   try {
     await ewe.subscriptions.add(details.url, details);
-    await ewe.subscriptions.sync(details.url);
   } catch (ex) {
     return false;
   }

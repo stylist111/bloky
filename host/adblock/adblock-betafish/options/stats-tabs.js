@@ -1310,7 +1310,6 @@ $("#aTrackersEnable, #btnTrackersEnable").on("click", async () => {
   SubscriptionsProxy.onAdded.addListener(onStatsSubUpdated);
   SubscriptionsProxy.onChanged.addListener(onStatsSubUpdated);
   await SubscriptionsProxy.add(easyPrivacyURL);
-  await SubscriptionsProxy.sync(easyPrivacyURL);
 });
 
 $("#btnGetPremium").on("click", () => {

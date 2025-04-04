@@ -486,7 +486,6 @@ SubscriptionUtil.subscribe = async (adblockId, title) => {
     subscription = newSub;
   }
   await SubscriptionsProxy.add(subscription.correctedURL);
-  await SubscriptionsProxy.sync(subscription.correctedURL);
 
   if (isAcceptableAds(cachedSubscription)) {
     updateAcceptableAdsUI(true, false);

@@ -23,7 +23,6 @@ export const toggleAcceptableAds = async ({ evt }, setCheckedItems) => {
   if (isEnabled) {
     setCheckedItems((prevCheckedItems) => ({ ...prevCheckedItems, acceptable_ads: true }));
     await SubscriptionsProxy.add(SubscriptionsProxy.ACCEPTABLE_ADS_URL);
-    await SubscriptionsProxy.sync(SubscriptionsProxy.ACCEPTABLE_ADS_URL);
   } else {
     setCheckedItems((prevCheckedItems) => ({
       ...prevCheckedItems,
@@ -43,11 +42,9 @@ export const toggleAcceptableAdsPrivacy = async ({ evt }, setCheckedItems) => {
   const isEnabled = evt.target.checked;
   if (isEnabled) {
     await SubscriptionsProxy.add(SubscriptionsProxy.ACCEPTABLE_ADS_PRIVACY_URL);
-    await SubscriptionsProxy.sync(SubscriptionsProxy.ACCEPTABLE_ADS_PRIVACY_URL);
     SubscriptionsProxy.remove(SubscriptionsProxy.ACCEPTABLE_ADS_URL);
   } else {
     await SubscriptionsProxy.add(SubscriptionsProxy.ACCEPTABLE_ADS_URL);
-    await SubscriptionsProxy.sync(SubscriptionsProxy.ACCEPTABLE_ADS_URL);
     SubscriptionsProxy.remove(SubscriptionsProxy.ACCEPTABLE_ADS_PRIVACY_URL);
   }
   setCheckedItems((prevCheckedItems) => ({

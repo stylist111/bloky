@@ -481,7 +481,6 @@ const SyncService = (function getSyncService() {
             log("sync - adding subscription ", url);
             // eslint-disable-next-line no-await-in-loop
             await ewe.subscriptions.add(url);
-            ewe.subscriptions.sync(url);
           }
         }
       }

@@ -101,14 +101,12 @@ const initialize = async function init() {
   const acceptableAdsPrivacyClicked = async function (isEnabled) {
     if (isEnabled) {
       await SubscriptionsProxy.add(SubscriptionsProxy.ACCEPTABLE_ADS_PRIVACY_URL);
-      await SubscriptionsProxy.sync(SubscriptionsProxy.ACCEPTABLE_ADS_PRIVACY_URL);
       if (await SubscriptionsProxy.has(SubscriptionsProxy.ACCEPTABLE_ADS_URL)) {
         SubscriptionsProxy.remove(SubscriptionsProxy.ACCEPTABLE_ADS_URL);
       }
       updateAcceptableAdsUI(true, true);
     } else {
       await SubscriptionsProxy.add(SubscriptionsProxy.ACCEPTABLE_ADS_URL);
-      await SubscriptionsProxy.sync(SubscriptionsProxy.ACCEPTABLE_ADS_URL);
       if (await SubscriptionsProxy.has(SubscriptionsProxy.ACCEPTABLE_ADS_PRIVACY_URL)) {
         SubscriptionsProxy.remove(SubscriptionsProxy.ACCEPTABLE_ADS_PRIVACY_URL);
       }
@@ -119,7 +117,6 @@ const initialize = async function init() {
   const acceptableAdsClicked = async function (isEnabled) {
     if (isEnabled) {
       await SubscriptionsProxy.add(SubscriptionsProxy.ACCEPTABLE_ADS_URL);
-      await SubscriptionsProxy.sync(SubscriptionsProxy.ACCEPTABLE_ADS_URL);
       updateAcceptableAdsUI(true, false);
     } else {
       if (await SubscriptionsProxy.has(SubscriptionsProxy.ACCEPTABLE_ADS_URL)) {
