@@ -1,5 +1,7 @@
 # Unreleased
 
+- Fixed various UI breakages that could occur if too many tabs are open.
+
 # 6.18.0 - 2025-04-01
 
 - Added experiment flag data to the information injected into our websites. (EXT-867)

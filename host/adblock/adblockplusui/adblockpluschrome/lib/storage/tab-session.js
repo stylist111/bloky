@@ -138,6 +138,17 @@ export class TabSessionStorage extends EventEmitter {
   }
 
   /**
+   * Sets flag value for given tab ID.
+   * @param {number} tabId
+   * @param {boolean} value
+   * @return {Promise}
+   */
+  async setFlag(tabId, value) {
+    if (value) await this.set(tabId, true);
+    else await this.delete(tabId);
+  }
+
+  /**
    * Executes given function as a transaction to avoid race conditions.
    * @param {Function} fn
    * @return {Promise}

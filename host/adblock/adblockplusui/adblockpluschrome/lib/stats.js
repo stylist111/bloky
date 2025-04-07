@@ -22,7 +22,7 @@ import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { installHandler } from "./messaging/events.js";
 import { port } from "./messaging/port.js";
 import { TabSessionStorage } from "./storage/tab-session.js";
-import { setBadge } from "./browserAction.js";
+import { setBadge } from "./action.js";
 import { EventEmitter } from "./events.js";
 import { Prefs } from "./prefs.js";
 import * as scheduledEventEmitter from "../../src/core/scheduled-event-emitter/background/scheduled-event-emitter.ts"; // eslint-disable-next-line max-len
@@ -32,7 +32,7 @@ const badgeRefreshRate = 4;
 const badgeUpdateTopic = "stats.badgeUpdate";
 
 let eventEmitter = new EventEmitter();
-let blockedPerPage = new TabSessionStorage("stats:blocked");
+let blockedByPage = new TabSessionStorage("stats:blocked");
 
 /**
  * Gets the number of requests blocked on the given page.
@@ -41,7 +41,7 @@ let blockedPerPage = new TabSessionStorage("stats:blocked");
  * @return {Number}
  */
 export async function getBlockedPerPage(page) {
-  return (await blockedPerPage.get(page.id)) || 0;
+  return (await blockedByPage.get(page.id)) || 0;
 }
 
 let activeTabIds = new Set();
@@ -53,7 +53,7 @@ async function updateBadge(tabId) {
   if (!Prefs.show_statsinicon) return;
 
   for (let id of typeof tabId == "undefined" ? activeTabIds : [tabId]) {
-    let blockedCount = await blockedPerPage.get(id);
+    let blockedCount = await blockedByPage.get(id);
 
     setBadge(
       id,
@@ -93,11 +93,11 @@ async function onBlockableItem({ filter, request }) {
 
   let { tabId } = request;
 
-  await blockedPerPage.transaction(async () => {
-    let blocked = (await blockedPerPage.get(tabId)) || 0;
+  await blockedByPage.transaction(async () => {
+    let blocked = (await blockedByPage.get(tabId)) || 0;
     ++blocked;
 
-    await blockedPerPage.set(tabId, blocked);
+    await blockedByPage.set(tabId, blocked);
     scheduleBadgeUpdate(tabId);
 
     eventEmitter.emit("blocked_per_page", { tabId, blocked });

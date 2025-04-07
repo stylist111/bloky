@@ -505,7 +505,7 @@ export const License = (function getLicense() {
   };
 })();
 
-const replacedPerPage = new TabSessionStorage("ab:premium:replacedPerPage");
+const replacedByPage = new TabSessionStorage("ab:premium:replaced");
 
 // Records how many ads have been replaced by AdBlock.  This is used
 // by the AdBlock to display statistics to the user.
@@ -537,8 +537,8 @@ export const replacedCounts = (function getReplacedCount() {
         data.total += 1;
         chromeStorageSetHelper(key, data);
         browser.tabs.get(tabId).then(async (tab) => {
-          let replaced = (await replacedPerPage.get(tabId)) || 0;
-          await replacedPerPage.set(tabId, (replaced += 1));
+          let replaced = (await replacedByPage.get(tabId)) || 0;
+          await replacedByPage.set(tabId, (replaced += 1));
           adReplacedNotifier.emit("adReplaced", tabId, tab.url);
         });
       });
@@ -548,7 +548,7 @@ export const replacedCounts = (function getReplacedCount() {
     },
     async getTotalAdsReplaced(tabId) {
       if (tabId) {
-        return replacedPerPage.get(tabId);
+        return replacedByPage.get(tabId);
       }
       return this.get().then((data) => data.total);
     },

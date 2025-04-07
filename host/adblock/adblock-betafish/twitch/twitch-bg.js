@@ -19,7 +19,7 @@
 /* global browser, addCustomFilter */
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
-import { setBadge } from "~/../adblockplusui/adblockpluschrome/lib/browserAction";
+import { setBadge } from "~/../adblockplusui/adblockpluschrome/lib/action";
 import { getSettings, settings } from "../prefs/background";
 
 const twitchChannelNamePages = new Map();

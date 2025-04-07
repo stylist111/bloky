@@ -35,7 +35,7 @@ import {
   setIconImageData,
   toggleBadge,
   setBadge,
-} from "../../adblockplusui/adblockpluschrome/lib/browserAction";
+} from "../../adblockplusui/adblockpluschrome/lib/action";
 
 import {
   chromeStorageSetHelper,
@@ -57,7 +57,7 @@ let frameOpacitiesCritical = calculateFrameOpacities(5, 3);
 let stopRequested = false;
 let canUpdateIcon = true;
 let notRunning = Promise.resolve();
-let allowlistedState = new TabSessionStorage("icon:allowlistedState");
+let allowlistedByPage = new TabSessionStorage("icon:allowlisted");
 
 let icons = [null, null];
 
@@ -120,7 +120,7 @@ async function renderIcons() {
 
 async function setIcon(page, opacity, frames) {
   opacity = opacity || 0;
-  let allowlisted = !!(await allowlistedState.get(page.id));
+  let allowlisted = !!(await allowlistedByPage.get(page.id));
 
   if (!frames) {
     if (opacity > 0.5) {
@@ -139,11 +139,11 @@ async function setIcon(page, opacity, frames) {
 }
 
 allowlistingState.addListener("changed", (page, isAllowlisted) => {
-  void allowlistedState.transaction(async () => {
-    const wasAllowlisted = await allowlistedState.get(page.id);
+  void allowlistedByPage.transaction(async () => {
+    const wasAllowlisted = await allowlistedByPage.get(page.id);
     if (wasAllowlisted === isAllowlisted) return;
 
-    await allowlistedState.set(page.id, isAllowlisted);
+    await allowlistedByPage.setFlag(page.id, isAllowlisted);
     if (canUpdateIcon) await setIcon(page);
   });
 });
@@ -220,7 +220,7 @@ async function animateIcon(opacities, frames) {
 
       if (opacity != oldOpacity) {
         for (let page of pages) {
-          if (await allowlistedState.has(page.id)) await setIcon(page, opacity, frames);
+          if (await allowlistedByPage.has(page.id)) await setIcon(page, opacity, frames);
         }
       }
 

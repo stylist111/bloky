@@ -23,7 +23,7 @@ import { Prefs } from "prefs";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { allowlistTab, removeAllAllowlistRulesForTab } from "../src/pause/background";
 import { FilterOrigin } from "../src/filters/shared";
-import { setBadge } from "../adblockplusui/adblockpluschrome/lib/browserAction";
+import { setBadge } from "../adblockplusui/adblockpluschrome/lib/action";
 import ServerMessages from "./servermessages";
 import { log } from "./utilities/background/bg-functions";
 
