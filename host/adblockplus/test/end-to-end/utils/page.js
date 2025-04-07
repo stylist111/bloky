@@ -564,7 +564,9 @@ export async function checkSubscriptionsState(
               lastUpdated: expect.stringMatching(regexp)
             });
 
-            const { toggle, lastUpdate } = getFLSelectors(name);
+            const { filterlist, toggle, lastUpdate } = getFLSelectors(name);
+            // FLs sometimes take time to properly load
+            await getDisplayedElement(filterlist, { timeout: 4000 });
             const flEnabled = await isCheckboxPropertyEnabled(toggle);
             const lastUpdatedElem = await getDisplayedElement(lastUpdate, {
               timeout: 800
