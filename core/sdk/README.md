@@ -79,6 +79,8 @@ Manifest V3:
 * Chromium 124 and latest
 * Edge latest
 
+List of browsers supported by extension and webext can be found in the [supported-browsers].
+
 ### Manifest for V2
 
 For Manifest V2, the extension's `manifest.json` is required to
@@ -468,13 +470,14 @@ npm run lint -- --scope @eyeo/webext-ad-filtering-solution
 
 </div>
 
-[snippet-filters]: https://help.eyeo.com/adblockplus/snippet-filters-tutorial
-[snippets-project]: https://gitlab.com/eyeo/adblockplus/abp-snippets
+[abpui]:https://gitlab.com/adblockinc/ext/adblockplus/adblockplusui
 [api-docs]: https://eyeo.gitlab.io/browser-extensions-and-premium/extensions/extensions/sdk/#apis
+[allowlisting-module]: https://eyeo.gitlab.io/browser-extensions-and-premium/extensions/extensions/sdk/#allowlisting
 [notifications-module]: https://eyeo.gitlab.io/browser-extensions-and-premium/extensions/extensions/sdk/#notifications
 [npm-package]: https://www.npmjs.com/package/@eyeo/webext-ad-filtering-solution
-[allowlisting-module]: https://eyeo.gitlab.io/browser-extensions-and-premium/extensions/extensions/sdk/#allowlisting
-[abpui]:https://gitlab.com/adblockinc/ext/adblockplus/adblockplusui
+[snippet-filters]: https://help.eyeo.com/adblockplus/snippet-filters-tutorial
+[snippets-project]: https://gitlab.com/eyeo/adblockplus/abp-snippets
+[supported-browsers]: ../../README.md#supported-browsers
 
 ## Events
 

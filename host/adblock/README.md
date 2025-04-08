@@ -242,3 +242,7 @@ mkdir ./dist/sourcemaps/chrome-mv3
 4. Upload the sourcemaps with `VERSION=<version> npm run sentry:sourcemaps`.
    The sourcemaps are overwritten.
 5. Finalize the release with `VERSION=<version> npm run sentry:release-finalize`
+
+## Supported browsers
+
+List of browsers supported by extension can be found in the [README on the root](../../README.md#supported-browsers).

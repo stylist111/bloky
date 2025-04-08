@@ -292,6 +292,10 @@ mkdir ./dist/release/sourcemaps-mv3
 
 [Extension releases (prior to 3.11)][abp-webext-releases]
 
+## Supported browsers
+
+List of browsers supported by extension can be found in the [supported-browsers].
+
 [abp-ext]: https://gitlab.com/adblockinc/ext/adblockplus/adblockplus
 [abp-ext-nightlies]: https://gitlab.com/adblockinc/ext/adblockplus/adblockplus/-/pipelines?scope=branches
 [abp-ext-tags]: https://gitlab.com/adblockinc/ext/adblockplus/adblockplus/-/tags
@@ -309,5 +313,6 @@ mkdir ./dist/release/sourcemaps-mv3
 [nodejs]: https://nodejs.org/en/
 [npm]: https://www.npmjs.com/get-npm
 [npx]: https://medium.com/@maybekatz/introducing-npx-an-npm-package-runner-55f7d4bd282b
+[supported-browsers]: ../../README.md#supported-browsers
 [wiki-branches]: https://gitlab.com/adblockinc/ext/adblockplus/adblockplus/-/wikis/development-workflow#branches
 [wiki-utils]: https://gitlab.com/adblockinc/ext/adblockplus/adblockplus/-/wikis/utilities
