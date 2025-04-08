@@ -1,5 +1,7 @@
 # Unreleased
 
+# 4.19.0 - 2025-04-08
+
 - Added experiment flag data to the information injected into our websites. (EXT-867)
 - Added privacy as premium, under an experiment flag (EXT-847)
 - Fixed various UI breakages that could occur if too many tabs are open.
