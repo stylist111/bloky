@@ -9,6 +9,7 @@
 - Added a new event log message to the popup menu when a user subscribes to a filter list (EXT-878)
 - Added split experiment data to event log requests. (EXT-865)
 - Added the ability to retrieve an experiment flag from content/ui scripts. (EXT-877)
+- Added experiment information to debug data. (no-issue)
 
 # 6.17.0 - 2025-03-17
 

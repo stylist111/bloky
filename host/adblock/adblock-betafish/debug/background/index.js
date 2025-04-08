@@ -32,6 +32,22 @@ import { TELEMETRY } from "~/telemetry/background";
 
 import { IPM_CONSTANTS, NO_DATA } from "./constants";
 
+async function getExperimentsAssignments() {
+  const assignments = await ewe.experiments.getAssignments();
+  return Object.entries(assignments).map((assignment) => {
+    return {
+      experiment_id: assignment[0],
+      variant_id: assignment[1],
+    };
+  });
+}
+
+async function getExperimentData() {
+  const experimentFlags = await ewe.experiments.getFlags();
+  const experimentAssignments = await getExperimentsAssignments();
+  return { experimentAssignments, experimentFlags };
+}
+
 const getAdblockSettings = function () {
   const adblockSettings = {};
   const settingsObj = getSettings();
@@ -273,6 +289,8 @@ const getDebugInfo = function () {
     if (blockageStats && blockageStats.start) {
       otherInfo.extensionInstallTimestamp = new Date(blockageStats.start).toLocaleString();
     }
+    otherInfo.experimentData = await getExperimentData();
+
     resolve(response);
   });
 };
