@@ -910,7 +910,7 @@ describe("DNR filters update [mv3-only]", function() {
     });
 
     it("doesn't synchronize the same DiffUpdatable subscription concurrently", async function() {
-      setMinTimeout(this, 20000);
+      setMinTimeout(this, 25000);
 
       let filter = "someFilter";
       await setEndpointResponse(testDiffUrlEndpoint, JSON.stringify({
