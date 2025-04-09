@@ -246,23 +246,35 @@ export async function reloadExtension(initOptionsFn, suppressUpdatePage = true) 
     "Current option page was not closed in time",
   );
 
-  // wait for the extension to be ready and the options page to be displayed
-  await wait(
-    async () => {
-      try {
-        await driver.navigate().to(`${extension.origin}/options.html`);
-        setOptionsHandle(await driver.getWindowHandle());
-        // The options parameter is only used by ABP
-        await initOptionsFn(getOptionsHandle(), { timeout: 10000, waitForDefaultState: true });
-        return true;
-      } catch (e) {
-        await driver.navigate().refresh();
-      }
-    },
-    20000,
-    "Options page not found after reload",
-    1000,
-  );
+  // If the extension on Firefox is not ready by the time we try to open the options page,
+  // the navigation will not proceed, and the execution will hang until the default pageLoad
+  // timeout is reached, which is 5 minutes by default. We are temporarily changing pageLoad
+  // timeout to prevent driver.navigate from hanging
+  // https://www.selenium.dev/documentation/webdriver/drivers/options/#page-load-timeout
+  const { pageLoad } = await driver.manage().getTimeouts();
+  await driver.manage().setTimeouts({ pageLoad: 3000 });
+
+  try {
+    // wait for the extension to be ready and the options page to be displayed
+    await wait(
+      async () => {
+        try {
+          await driver.navigate().to(`${extension.origin}/options.html`);
+          setOptionsHandle(await driver.getWindowHandle());
+          // The options parameter is only used by ABP
+          await initOptionsFn(getOptionsHandle(), { timeout: 10000, waitForDefaultState: true });
+          return true;
+        } catch (e) {
+          await driver.navigate().refresh();
+        }
+      },
+      20000,
+      "Options page not found after reload",
+      1000,
+    );
+  } finally {
+    await driver.manage().setTimeouts({ pageLoad });
+  }
 }
 
 /**
