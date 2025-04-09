@@ -168,17 +168,6 @@ export function start(parameters: StartInfo): void {
    */
   const { sendAdWallEvents = noop } = parameters;
 
-  const sendEventWithExperiment = async (
-    eventName: string,
-    options: object = {},
-  ): Promise<void> => {
-    const assignments = await ewe.experiments.getAssignments();
-    sendAdWallEvents(eventName, {
-      experimentVariant: assignments["yt-haven"],
-      ...options,
-    });
-  };
-
   // Capture the start date for the YT auto allowlist logic
   const captureDateOnUpdatedWithParameters = captureDateOnUpdate.bind(
     null,
@@ -208,12 +197,12 @@ export function start(parameters: StartInfo): void {
     });
   });
 
-  parameters.port.on(ytHavenWatchCTAClicked, async (): Promise<void> => {
-    await sendEventWithExperiment(ytHavenWatchCTAClicked);
+  parameters.port.on(ytHavenWatchCTAClicked, (): void => {
+    sendAdWallEvents(ytHavenWatchCTAClicked);
   });
 
   parameters.port.on(ytHavenNeverShowOverlayClick, async (): Promise<void> => {
-    await sendEventWithExperiment(ytHavenNeverShowOverlayClick);
+    sendAdWallEvents(ytHavenNeverShowOverlayClick);
 
     // Disable the experiment flags to not show the overlay in content script again
     await ewe.experiments.overrideFlag(ytHavenOverlayFlag, false);
@@ -222,8 +211,8 @@ export function start(parameters: StartInfo): void {
 
   parameters.port.on(
     ytHavenNonEmbeddableFound,
-    async (message: YTHavenPlayerErrorMessage): Promise<void> => {
-      await sendEventWithExperiment(ytHavenNonEmbeddableFound, {
+    (message: YTHavenPlayerErrorMessage): void => {
+      sendAdWallEvents(ytHavenNonEmbeddableFound, {
         errorCode: message.errorCode,
       });
     },
@@ -231,25 +220,25 @@ export function start(parameters: StartInfo): void {
 
   parameters.port.on(
     ytHavenNonPlayableFound,
-    async (message: YTHavenPlayerErrorMessage): Promise<void> => {
-      await sendEventWithExperiment(ytHavenNonPlayableFound, {
+    (message: YTHavenPlayerErrorMessage): void => {
+      sendAdWallEvents(ytHavenNonPlayableFound, {
         errorCode: message.errorCode,
       });
     },
   );
 
-  parameters.port.on(ytHavenNextVideoNotFound, async (): Promise<void> => {
-    await sendEventWithExperiment(ytHavenNextVideoNotFound);
+  parameters.port.on(ytHavenNextVideoNotFound, (): void => {
+    sendAdWallEvents(ytHavenNextVideoNotFound);
   });
 
-  parameters.port.on(ytHavenMetaTagFound, async (): Promise<void> => {
-    await sendEventWithExperiment(ytHavenMetaTagFound);
+  parameters.port.on(ytHavenMetaTagFound, (): void => {
+    sendAdWallEvents(ytHavenMetaTagFound);
   });
 
   parameters.port.on(
     ytHavenEmbeddedPlayerIssue,
-    async (message: YTHavenPlayerErrorMessage): Promise<void> => {
-      await sendEventWithExperiment(ytHavenEmbeddedPlayerIssue, {
+    (message: YTHavenPlayerErrorMessage): void => {
+      sendAdWallEvents(ytHavenEmbeddedPlayerIssue, {
         errorCode: message.errorCode,
       });
     },
@@ -264,7 +253,7 @@ export function start(parameters: StartInfo): void {
         return;
       }
 
-      await sendEventWithExperiment(ytHavenLabelWatchingDisable);
+      sendAdWallEvents(ytHavenLabelWatchingDisable);
 
       // Disable the experiment flags to not show the overlay/embed in content script again
       await ewe.experiments.overrideFlag(ytHavenOverlayFlag, false);
@@ -275,20 +264,20 @@ export function start(parameters: StartInfo): void {
     },
   );
 
-  parameters.port.on(ytHavenLabelWatchingIgnore, async (): Promise<void> => {
-    await sendEventWithExperiment(ytHavenLabelWatchingIgnore);
+  parameters.port.on(ytHavenLabelWatchingIgnore, (): void => {
+    sendAdWallEvents(ytHavenLabelWatchingIgnore);
   });
 
-  parameters.port.on(ytHavenModalClosed, async (): Promise<void> => {
-    await sendEventWithExperiment(ytHavenModalClosed);
+  parameters.port.on(ytHavenModalClosed, (): void => {
+    sendAdWallEvents(ytHavenModalClosed);
   });
 
-  parameters.port.on(ytHavenOverlayShown, async (): Promise<void> => {
-    await sendEventWithExperiment(ytHavenOverlayShown);
+  parameters.port.on(ytHavenOverlayShown, (): void => {
+    sendAdWallEvents(ytHavenOverlayShown);
   });
 
-  parameters.port.on(ytHavenIframeShown, async (): Promise<void> => {
-    await sendEventWithExperiment(ytHavenIframeShown);
+  parameters.port.on(ytHavenIframeShown, (): void => {
+    sendAdWallEvents(ytHavenIframeShown);
   });
 
   const trustedEventNames = [
