@@ -279,25 +279,25 @@ async function openNewtab(): Promise<void> {
     const loadEventListener = openNewtabOnUpdated.bind(null);
     browser.tabs.onUpdated.addListener(loadEventListener);
 
-    // eslint-disable-next-line no-await-in-loop
-    const tabCreationResult: number | Error = await browser.tabs
-      .create({ url })
-      .then((tab) =>
-        typeof tab.id === "number" ? tab.id : new Error("Invalid ID for created tab"),
-      )
-      .catch((error) => error);
-
-    if (typeof tabCreationResult !== "number") {
+    let tabId: browser.Tabs.Tab["id"];
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      const tab = await browser.tabs.create({ url });
+      tabId = tab.id;
+    } catch (ex) {
       // There was an error during tab creation. Let's retry later.
-      logger.reportAndLogError(
-        tabCreationResult,
-        `[new-tab]: Tab creation error for IPM id "${ipmId}"`,
-      );
+      logger.error(`[new-tab]: Tab creation error for IPM id "${ipmId}"`, ex);
       registerEvent(ipmId, NewTabErrorEventType.tabCreationError);
       continue;
     }
 
-    createdTabsMap.set(tabCreationResult, ipmId);
+    if (typeof tabId === "undefined") {
+      logger.error(`[new-tab]: Invalid ID "${tabId}" for created tab for IPM ID "${ipmId}"`);
+      registerEvent(ipmId, NewTabErrorEventType.tabCreationError);
+      continue;
+    }
+
+    createdTabsMap.set(tabId, ipmId);
     openNewtabOnUpdatedHandlerByIPMids.set(ipmId, loadEventListener);
 
     // eslint-disable-next-line no-await-in-loop
