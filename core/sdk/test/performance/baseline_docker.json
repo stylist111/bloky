@@ -295,10 +295,10 @@
       },
       {
         "metric": "speed-index",
-        "min": 4075,
-        "max": 7973,
-        "average": 4667,
-        "median": 4324
+        "min": 4262,
+        "max": 14082,
+        "average": 6851,
+        "median": 4712.5
       },
       {
         "metric": "total-blocking-time",
@@ -309,17 +309,17 @@
       },
       {
         "metric": "bootup-time",
-        "min": 1504,
-        "max": 1724,
-        "average": 1583,
-        "median": 1568.5
+        "min": 6117,
+        "max": 31771,
+        "average": 12770,
+        "median": 12458.5
       },
       {
         "metric": "mainthread-work-breakdown",
-        "min": 7556,
-        "max": 8021,
-        "average": 7726,
-        "median": 7636
+        "min": 12301,
+        "max": 43581,
+        "average": 21005,
+        "median": 20487
       }
     ]
   }
