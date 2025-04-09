@@ -17,6 +17,7 @@
  */
 
 import browser from "webextension-polyfill";
+import * as ewe from "@eyeo/webext-ad-filtering-solution/content-api";
 
 import {
   ytHavenIframeFlag,
@@ -25,17 +26,11 @@ import {
 } from "../shared/index.js";
 import type {
   IframePlayerConfig,
-  PartialExperimentsData,
   VideoContext,
   VideoContextStoreType,
 } from "./shared.types.js";
 import { abpLogo } from "../img/abp-logo.js";
 import { abLogo } from "../img/ab-logo.js";
-
-/**
- * Storage key for the experiments
- */
-const expStorageKey = "ewe:split_experiments";
 
 /**
  * The embedded iframe player ID
@@ -74,40 +69,13 @@ export const videoContextStore: VideoContextStoreType = {
 };
 
 /**
- * Retrieves the experiment flag from local storage
- *
- * @param flagId The the experiment flag
- */
-export async function getExperimentFlag(flagId: string): Promise<any> {
-  const storedData = await browser.storage.local.get(expStorageKey);
-  const experiments = storedData[expStorageKey];
-
-  if (!isPartialExperimentsData(experiments)) {
-    return null;
-  }
-
-  if (
-    experiments.overrides &&
-    typeof experiments.overrides[flagId] !== "undefined"
-  ) {
-    return experiments.overrides[flagId];
-  }
-
-  if (experiments.flags && typeof experiments.flags[flagId] !== "undefined") {
-    return experiments.flags[flagId];
-  }
-
-  return null;
-}
-
-/**
  * Checks if the user is in one of the YT Haven experiments
  */
 export async function isInHavenExperiment(): Promise<boolean> {
   const ytHavenFlags = await Promise.all([
-    getExperimentFlag(ytHavenIframeFlag),
-    getExperimentFlag(ytHavenOverlayFlag),
-    getExperimentFlag(ytHavenModalFlag),
+    ewe.experiments.getFlag(ytHavenIframeFlag),
+    ewe.experiments.getFlag(ytHavenOverlayFlag),
+    ewe.experiments.getFlag(ytHavenModalFlag),
   ]);
   return ytHavenFlags.some((result) => Boolean(result));
 }
@@ -124,25 +92,6 @@ export function isWatchPage(): boolean {
   const rightPath = pathname === "/watch" || pathname.startsWith("/watch/");
 
   return rightDomain && rightPath;
-}
-
-/**
- * Checks whether given candidate represents relevant parts of stored split
- * experiments data
- *
- * @param candidate - Candidate
- *
- * @returns whether given candidate represents relevant parts of stored split
- * experiments data
- */
-function isPartialExperimentsData(
-  candidate: unknown,
-): candidate is PartialExperimentsData {
-  return (
-    candidate !== null &&
-    typeof candidate === "object" &&
-    ("flags" in candidate || "overrides" in candidate)
-  );
 }
 
 /**

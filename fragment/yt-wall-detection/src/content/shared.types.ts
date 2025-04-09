@@ -17,15 +17,6 @@
  */
 
 /**
- * Parts of stored split experiments data that are needed for this fragment,
- * while the split experiments API isn't exposed to content scripts
- */
-export interface PartialExperimentsData {
-  flags: Record<string, unknown>;
-  overrides: Record<string, unknown>;
-}
-
-/**
  * Configuration of the iframe embedded player
  */
 export interface IframePlayerConfig {

@@ -19,6 +19,7 @@
     ".": "./dist/ewe-api.js",
     "./background": "./dist/ewe-api.js",
     "./content": "./dist/ewe-content.js",
+    "./content-api": "./dist/ewe-content-api.js",
     "./ui": "./dist/ewe-ui.js",
     "./all/*": "./src/all/*",
     "./src/*": "./src/*",

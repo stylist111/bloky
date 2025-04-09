@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import browser from "webextension-polyfill";
+import * as ewe from "@eyeo/webext-ad-filtering-solution/content-api";
+
 import type { YTEventData } from "./shared.types.js";
 import {
   ytHavenIframeFlag,
@@ -25,7 +27,6 @@ import {
 import { resumeCurrentVideo } from "./pause-video.js";
 import {
   createIframePlayer,
-  getExperimentFlag,
   getIframePlayer,
   videoContextStore,
 } from "./shared.js";
@@ -162,7 +163,7 @@ export async function addEmbedVideoOnTop(
  * Initializes YouTube embedded video player
  */
 export async function start(targetElement: HTMLElement): Promise<void> {
-  const isIframeEmbedExp = await getExperimentFlag(ytHavenIframeFlag);
+  const isIframeEmbedExp = await ewe.experiments.getFlag(ytHavenIframeFlag);
 
   // Do nothing if the user is not in experiment
   if (!isIframeEmbedExp) {

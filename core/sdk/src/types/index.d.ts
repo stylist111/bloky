@@ -20,3 +20,6 @@ export * from "./background";
 
 // Type definitions for ewe-ui.js
 import "./ui";
+
+// Type definitions for ewe-content-api.js
+import "./content-api";

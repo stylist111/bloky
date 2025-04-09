@@ -17,6 +17,8 @@
  */
 
 import browser from "webextension-polyfill";
+import * as ewe from "@eyeo/webext-ad-filtering-solution/content-api";
+
 import {
   ytHavenModalFlag,
   ytHavenNeverShowOverlayClick,
@@ -27,7 +29,6 @@ import {
 import {
   createIframePlayer,
   createBackdrop,
-  getExperimentFlag,
   videoContextStore,
   createLogoSVG,
 } from "./shared.js";
@@ -199,8 +200,8 @@ function getVideoOverlay(
 export async function insertOverlayExp(
   videoContainer: HTMLElement,
 ): Promise<void> {
-  const isOverlayIframeExp = await getExperimentFlag(ytHavenOverlayFlag);
-  const isOverlayModalExp = await getExperimentFlag(ytHavenModalFlag);
+  const isOverlayIframeExp = await ewe.experiments.getFlag(ytHavenOverlayFlag);
+  const isOverlayModalExp = await ewe.experiments.getFlag(ytHavenModalFlag);
 
   if (!isOverlayIframeExp && !isOverlayModalExp) {
     return;

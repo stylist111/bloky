@@ -26,6 +26,7 @@ import GenerateJsonPlugin from "generate-json-webpack-plugin";
 import CopyPlugin from "copy-webpack-plugin";
 import Dotenv from "dotenv-webpack";
 import {createRequire} from "module";
+
 const require = createRequire(import.meta.url);
 
 const dirname = path.dirname(url.fileURLToPath(import.meta.url));
@@ -160,7 +161,7 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath,
     name: configName,
     dependencies,
     entry: {
-      api: {
+      "api": {
         import: [
           "./src/background/browser-polyfill.js",
           "./src/background/index.js"
@@ -168,8 +169,12 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath,
         library: {name: "EWE", type: "umd"}
       },
       content,
-      ui: {
+      "ui": {
         import: "./src/ui/index.js",
+        library: {name: "EWE", type: "umd"}
+      },
+      "content-api": {
+        import: "./src/content/api/index.js",
         library: {name: "EWE", type: "umd"}
       }
     },
@@ -243,11 +248,27 @@ export default (env = {}) => {
     mv2, mv3, performanceMV2, performanceMV3, slowPerformanceMV3
   ]) {
     let description = `Manifest version: ${buildVariant.manifestVersion}`;
+
+    const contentScripts = [
+      {
+        all_frames: true,
+        js: ["ewe-content.js"],
+        match_about_blank: true,
+        matches: ["http://*/*", "https://*/*"],
+        run_at: "document_start"
+      }
+    ];
+
     if (buildVariant.performance) {
       description = `${description} - performance`;
     }
-    else if (buildVariant.slow) {
-      description = `${description} - performance SLOW`;
+    else {
+      contentScripts.push({
+        all_frames: true,
+        js: ["ewe-content-api-test.js"],
+        matches: ["http://*/experiments-content-api.html", "https://*/experiments-content-api.html"],
+        run_at: "document_start"
+      });
     }
 
     let manifest = {
@@ -257,15 +278,7 @@ export default (env = {}) => {
       manifest_version: buildVariant.manifestVersion,
       background: buildVariant.background,
       options_ui: buildVariant.options,
-      content_scripts: [
-        {
-          all_frames: true,
-          js: ["ewe-content.js"],
-          match_about_blank: true,
-          matches: ["http://*/*", "https://*/*"],
-          run_at: "document_start"
-        }
-      ],
+      content_scripts: contentScripts,
       permissions: [
         "webNavigation", "webRequest", "scripting", "storage",
         "unlimitedStorage", "tabs",
@@ -316,7 +329,7 @@ export default (env = {}) => {
           {from: path.join(extensionFunctionalPath, "experiments-test.html")},
           {from: path.join(extensionFunctionalPath, "experiments-test.js")},
           ...buildVariant.manifestVersion >= 3 &&
-            fs.existsSync(scriptsOutputMV3Path) ?
+          fs.existsSync(scriptsOutputMV3Path) ?
             [{from: scriptsOutputMV3Path}] : [],
           {from: mochaCssPath}
         ]
@@ -334,7 +347,7 @@ export default (env = {}) => {
             {from: path.join(extensionPerformancePath, "status.html")},
             {from: path.join(extensionPerformancePath, "status.js")},
             ...buildVariant.manifestVersion >= 3 &&
-              fs.existsSync(scriptsOutputPerformancePath) ?
+            fs.existsSync(scriptsOutputPerformancePath) ?
               [{from: scriptsOutputPerformancePath}] : []
           ]
         })];
@@ -354,10 +367,11 @@ export default (env = {}) => {
           library: {name: "polling", type: "umd"}
         }
       } : {
-        functional: path.join(extensionFunctionalPath, "functional.js"),
-        reload: path.join(extensionFunctionalPath, "reload-wrap.js"),
-        update: path.join(extensionFunctionalPath, "update-wrap.js"),
-        migrate: path.join(extensionFunctionalPath, "migrate-wrap.js")
+        "functional": path.join(extensionFunctionalPath, "functional.js"),
+        "reload": path.join(extensionFunctionalPath, "reload-wrap.js"),
+        "update": path.join(extensionFunctionalPath, "update-wrap.js"),
+        "migrate": path.join(extensionFunctionalPath, "migrate-wrap.js"),
+        "ewe-content-api-test": path.join(extensionFunctionalPath, "ewe-content-api-test.js")
       },
       output: {
         path: path.resolve(dirname, "dist", buildVariant.outputPath),

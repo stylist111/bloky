@@ -45,10 +45,11 @@ All contributors to this project are required to read, and follow, our
 
 ## Getting started
 
-The library comes in three parts:
+The library comes in four parts:
 
 * `ewe-api.js` to be included in the extension's background page
 * `ewe-content.js` to be loaded as a content script
+* `ewe-content-api.js` to be imported in the extension's various content scripts
 * `ewe-ui.js` to be loaded in the extension's various UI pages
 
 You can get it from [npm][npm-package].
@@ -277,6 +278,14 @@ or by handling the bundling and importing the generated file directly:
 
 ```
 <script src="ewe-ui.js"></script>
+```
+
+Functionality that is intended to run in a content script context
+will use the `ewe-content-api.js` file. This can be imported by
+using the mechanism below:
+
+```
+import * as EWE from "@eyeo/webext-ad-filtering-solution/content-api";
 ```
 
 ### Snippet filters support

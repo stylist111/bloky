@@ -21,15 +21,18 @@ import expect from "expect";
 import {EWE, expectTestEvents, clearTestEvents} from "./messaging.js";
 import {TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
 import {
+  Page,
   clearEndpointResponse,
   clearRequestLogs,
   getRequestLogs,
   setEndpointResponse,
   setMinTimeout,
-  waitForAssertion
+  waitForAssertion,
+  getExistingElement
 } from "./utils.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 import {MILLIS_IN_SECOND} from "adblockpluscore/lib/time.js";
+import {wait} from "./polling.js";
 
 const EXPERIMENT_FLAG = "onboarding_flow";
 const EXPERIMENT_URL = `${TEST_ADMIN_PAGES_URL}/experiments.json`;
@@ -705,7 +708,7 @@ describe("Split Experiments", function() {
     });
   });
 
-  describe("ui-tests", function() {
+  describe("Experiments UI API tests", function() {
     afterEach(async function() {
       await EWE.testing.resetExperimentData();
     });
@@ -747,6 +750,41 @@ describe("Split Experiments", function() {
     it("should NOT display UI experiment when flag is NOT set", async function() {
       const flagValue = await getFlagFromUI(EXPERIMENT_FLAG);
       expect(flagValue).toBeNull();
+    });
+  });
+
+  describe("Experiments Content Script API tests", function() {
+    const elemId = "experiments-content-api-test";
+    const timeout = 4000;
+
+    afterEach(async function() {
+      await EWE.testing.resetExperimentData();
+    });
+
+    it("should display experiment when flag is set", async function() {
+      await setConfig(oneVariantConfig("test-content-script-flag"));
+      await EWE.experiments.sync();
+      const tabId = await new Page("experiments-content-api.html").loaded;
+      let elem;
+
+      await wait(async() => {
+        elem = await getExistingElement(tabId, elemId);
+        return elem !== null;
+      }, timeout, "Experiment element is not visible");
+
+      expect(elem).toContain(elemId);
+    });
+
+    it("should NOT display experiment when flag is NOT set", async function() {
+      let elem;
+      const tabId = await new Page("experiments-content-api.html").loaded;
+
+      await wait(async() => {
+        elem = await getExistingElement(tabId, elemId);
+        return elem === null;
+      }, timeout, "Experiment element is visible");
+
+      expect(elem).toBeNull();
     });
   });
 });

@@ -16,4 +16,4 @@
  */
 
 export {default as sentry} from "./sentry.js";
-export {default as experiments} from "./experiments.js";
+export {default as experiments} from "../front/experiments.js";
