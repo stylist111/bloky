@@ -10,7 +10,7 @@ include: "/.gitlab/ci-common.yml"
 
 default:
   interruptible: true
-  image: node:18.17.1
+  image: node:22.14.0
   tags:
     - "GCP"
 
@@ -225,6 +225,8 @@ func:v2:firefox:oldest:
     # like the extensions monorepo, if npm can't retry fetching dependencies.
     npm_config_fetch_retries: 2
   before_script:
+    - choco uninstall -y nodejs nodejs.install
+    - choco install -y --no-progress nodejs-lts --version 22.14.0
     - npm install
   tags:
     - eyeo-windows

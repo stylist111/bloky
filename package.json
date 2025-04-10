@@ -2,6 +2,10 @@
   "name": "extensions",
   "private": true,
   "description": "Extensions monorepo",
+  "engines": {
+    "node": ">=22",
+    "npm": ">=10"
+  },
   "workspaces": [
     "core/*",
     "core/sdk/adblockpluscore",

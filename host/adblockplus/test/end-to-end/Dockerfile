@@ -1,4 +1,4 @@
-FROM registry.gitlab.com/eyeo/docker/get-browser-binary:node18
+FROM registry.gitlab.com/eyeo/docker/get-browser-binary:node22
 
 # Doing early `npm install` to cache those files on further image builds If this
 # fails saying that the package-lock.json is out of sync, it could mean that a

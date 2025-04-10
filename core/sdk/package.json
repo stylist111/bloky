@@ -8,10 +8,6 @@
   },
   "author": "eyeo GmbH",
   "license": "GPL-3.0",
-  "engines": {
-    "node": ">=18.16",
-    "npm": ">=9"
-  },
   "type": "module",
   "main": "./dist/ewe-api.js",
   "types": "./src/types/index.d.ts",

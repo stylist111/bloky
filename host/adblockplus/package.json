@@ -3,10 +3,6 @@
   "private": true,
   "repository": "https://gitlab.com/adblockinc/ext/adblockplus/adblockplus",
   "license": "GPL-3.0",
-  "engines": {
-    "node": ">=18.17.1 <19",
-    "npm": "9"
-  },
   "scripts": {
     "$": "npm-dollar",
     "build": "npm run $ build.devenv",
@@ -143,10 +139,10 @@
     "webpack-stream": "7.0.0"
   },
   "devDependencies": {
-    "@babel/core": "7.18.9",
-    "@babel/preset-env": "7.18.9",
+    "@babel/core": "7.26.7",
+    "@babel/preset-env": "7.26.0",
     "@babel/preset-react": "7.24.7",
-    "@babel/preset-typescript": "7.18.6",
+    "@babel/preset-typescript": "7.26.0",
     "@eyeo/get-browser-binary": "0.20.2",
     "@eyeo/test-utils": "*",
     "@sentry/cli": "2.37.0",
@@ -155,7 +151,7 @@
     "@typescript-eslint/parser": "6.11.0",
     "@xmldom/xmldom": "0.8.10",
     "adm-zip": "0.5.9",
-    "babel-jest": "28.1.3",
+    "babel-jest": "29.7.0",
     "basichtml": "2.4.9",
     "chai": "4.3.6",
     "csv": "6.1.3",

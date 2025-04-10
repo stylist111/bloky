@@ -5,6 +5,9 @@
 - Added the ability to retrieve an experiment flag from content/ui scripts. (EXT-877)
 - Added new `ewe-content-api.js` to be used when importing inside
   content scripts. (EXT-897)
+- Updated the minimum supported version of Node to 22. Node 22 is the current
+  LTS version of Node. This only affects code that runs in Node, such as build
+  scripts. This does not affect extension code running in the browser. (EXT-778)
 
 ## General
 

@@ -9,7 +9,7 @@ called 'fragments' into the host extension, in order to create customized
 extensions with different features and branding to suit various user needs.
 
 This architecture also streamlines dependency management, making development and
-collaboration more efficient.  
+collaboration more efficient.
 
 Read more about the architecture [here](./docs/ARCHITECTURE.md).
 
@@ -17,8 +17,8 @@ Read more about the architecture [here](./docs/ARCHITECTURE.md).
 
 ### Prerequisites 
 
-- node: 18.17.1
-- npm: 9.6.7
+- node >= 22
+- npm >= 10
 
 ### Building on Windows
 

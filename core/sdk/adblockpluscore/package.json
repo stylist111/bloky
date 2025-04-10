@@ -3,10 +3,6 @@
   "version": "0.11.1",
   "repository": "https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore.git",
   "license": "GPL-3.0-only",
-  "engines": {
-    "node": ">=18",
-    "npm": ">=9"
-  },
   "dependencies": {
     "tar": "^6.1.10",
     "yargs": "17.3.0"

@@ -101,7 +101,7 @@ export let obj = {
     global.browser = this.browser;
 
     this.navigator = Object.create(testNavigatorPrototype);
-    global.navigator = this.navigator;
+    Object.defineProperty(global, "navigator", {value: this.navigator});
 
     // we could use `sinon` here for more opportunities of mocking and spying
     global.fetchResponses = new Map();

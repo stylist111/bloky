@@ -22,8 +22,8 @@ AdBlock source code is available in the attached tar file.
 
 ## Requirements
 
-node: 18.17.1
-npm: 9.6.7
+node: 22.14.0
+npm: 10.9.2
 
 ## Building on Windows
 
@@ -80,7 +80,7 @@ Merge request: https://github.com/mozilla/webextension-polyfill/pull/719
 # Opera notes for reviewers
 
 ```md
-On Debian or Ubuntu: Run the following commands using Node 18.17.1 and npm 9.6.7:
+On Debian or Ubuntu: Run the following commands using Node 22.14.0 and npm 10.9.2:
 npm install
 npm run build:release -- --scope=adblock -- chrome 2
 ```
