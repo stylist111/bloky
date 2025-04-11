@@ -3597,6 +3597,22 @@
     "message": "Premium-Filter-Listen werden von unserem Team verwaltet und bieten exklusive Vorteile gegenüber unseren regulären Filtern.",
     "description": "Description of the Premium filter lists"
   },
+  "premium_filter_easyprivacy": {
+    "message": "Zusätzliches Tracking blockieren",
+    "description": "EasyPrivacy filter list on the Premium Filters tab"
+  },
+  "premium_filter_easyprivacy_description": {
+    "message": "Schützen Sie Ihre Privatsphäre und Ihre persönlichen Daten, indem Sie die meisten Formen des Online-Trackings blockieren, einschließlich Web-Bugs, Tracking-Skripte und Informationssammler",
+    "description": "EasyPrivacy filter list description on the Premium Filters tab"
+  },
+  "easyprivacy_distraction_control_premium": {
+    "message": "Datenschutz & Störungskontrolle",
+    "description": "Title of the Premimum filter lists"
+  },
+  "block_trackers_and_cookies": {
+    "message": "Blockieren Sie unerwünschte Tracker und lästige Pop-ups wie Cookie-Einwilligungsbanner, Videoeinblendungen und Newsletter-Pop-ups.",
+    "description": "Description of the Premimum filter lists"
+  },
   "distraction_control_description_I": {
     "message": "Übernehmen Sie die Kontrolle über Ihren Browser und surfen Sie nach Herzenslust!",
     "description": "Description of the Premium filter lists"
@@ -3620,14 +3636,6 @@
   "cookie_consent_cutter_desclaimer_II": {
     "message": "Wir blockieren automatisch Tracker von Dritten, jedoch nicht von Erstanbietern, da diese ausschließlich für die von Ihnen besuchte Website verwendet werden und für Ihr Nutzererlebnis wichtig sind.",
     "description": "Legal desclaimer of the Cookie Consent Cutter Premium filter lists"
-  },
-  "cookie_consent_cutter": {
-    "message": "Cookie-Pop-Up-Blocker",
-    "description": "Name of a Premium option."
-  },
-  "hide_most_cookie": {
-    "message": "Blenden Sie die meisten Cookie-Warnungen auf populären Webseiten aus.",
-    "description": "Description of the Cookie Consent Cutter option"
   },
   "cookie_consent_cutter_preview_example": {
     "message": "Beispiel einer Webseite mit aktiviertem Cookie-Pop-Up-Blocker",

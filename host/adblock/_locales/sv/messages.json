@@ -3589,6 +3589,22 @@
     "message": "Listor över premiumfilter underhålls av vårt team och erbjuder exklusiva förmåner utöver våra standardfilter.",
     "description": "Description of the Premium filter lists"
   },
+  "premium_filter_easyprivacy": {
+    "message": "Blockera ytterligare spårning",
+    "description": "EasyPrivacy filter list on the Premium Filters tab"
+  },
+  "premium_filter_easyprivacy_description": {
+    "message": "Skydda din sekretess och dina personuppgifter genom att blockera de flesta typer av spårare online, inklusive webbuggar, spårningsskript och uppgiftsinsamlare.",
+    "description": "EasyPrivacy filter list description on the Premium Filters tab"
+  },
+  "easyprivacy_distraction_control_premium": {
+    "message": "Sekretess- och distraktionsstyrning",
+    "description": "Title of the Premimum filter lists"
+  },
+  "block_trackers_and_cookies": {
+    "message": "Blockera oönskade spårare och irriterande popup-fönster som cookie-banners, flytande videor och popup-fönster för nyhetsbrev.",
+    "description": "Description of the Premimum filter lists"
+  },
   "distraction_control_description_I": {
     "message": "Ta kontroll över din webbläsare och surfa precis som du vill!",
     "description": "Description of the Premium filter lists"
@@ -3612,14 +3628,6 @@
   "cookie_consent_cutter_desclaimer_II": {
     "message": "Som standard blockerar vi spårningstjänster från tredje part, dock inte spårningstjänster från första part, som är exklusiva för de webbplatser du besöker och viktiga för din användarupplevelse.",
     "description": "Legal desclaimer of the Cookie Consent Cutter Premium filter lists"
-  },
-  "cookie_consent_cutter": {
-    "message": "Blockerare av popup-fönster för cookies",
-    "description": "Name of a Premium option."
-  },
-  "hide_most_cookie": {
-    "message": "Dölj de flesta notifikationer om cookies på populära webbplatser.",
-    "description": "Description of the Cookie Consent Cutter option"
   },
   "cookie_consent_cutter_preview_example": {
     "message": "exempel på webbsida med aktiverad blockerare av popup-fönster för cookies",

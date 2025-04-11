@@ -154,18 +154,24 @@ export default () => {
       By.css(".filter-subscription-wrapper .locked .premium_locked_icon"),
     );
     const iconsVisibility = await Promise.all(lockedIcons.map((i) => i.isDisplayed()));
-    expect(iconsVisibility).toEqual([true, true]);
+    expect(iconsVisibility).toEqual([true, true, true]);
 
     const listTitlesElems = await driver.findElements(
       By.css(".filter-subscription-wrapper .locked .premium_filter_list_title"),
     );
 
     const listTitles = await Promise.all(listTitlesElems.map((e) => e.getText()));
-    expect(listTitles).toEqual(["Enhanced Distraction Control", "Cookie Consent Cutter"]);
+    expect(listTitles).toEqual([
+      "Enhanced Distraction Control",
+      "Block additional tracking",
+      "Cookie Consent Cutter",
+    ]);
 
     // check distraction control link
     await clickAndCloseNewTab("#premium-filter-lists > div:nth-child(1)", fullPremiumUrl);
-    // check cookie consent cutter link
+    // check Privacy & tracker link
     await clickAndCloseNewTab("#premium-filter-lists > div:nth-child(2)", fullPremiumUrl);
+    // check cookie consent cutter link
+    await clickAndCloseNewTab("#premium-filter-lists > div:nth-child(3)", fullPremiumUrl);
   });
 };

@@ -3605,6 +3605,22 @@
     "message": "Premium篩選清單是由我們的團隊負責維護，可提供遠勝我們標準篩選器的專屬優勢。",
     "description": "Description of the Premium filter lists"
   },
+  "premium_filter_easyprivacy": {
+    "message": "攔截額外的追蹤",
+    "description": "EasyPrivacy filter list on the Premium Filters tab"
+  },
+  "premium_filter_easyprivacy_description": {
+    "message": "攔截大多數類型的網路追蹤工具，包括網頁臭蟲、追蹤指令和資訊收集器等，堅定保護您的隱私和個人資料",
+    "description": "EasyPrivacy filter list description on the Premium Filters tab"
+  },
+  "easyprivacy_distraction_control_premium": {
+    "message": "隱私與干擾控制",
+    "description": "Title of the Premimum filter lists"
+  },
+  "block_trackers_and_cookies": {
+    "message": "攔截討厭的追蹤器和惱人的彈出式視窗，如cookie同意橫幅視窗、浮動式影片和電子報訂閱彈出式視窗等。",
+    "description": "Description of the Premimum filter lists"
+  },
   "distraction_control_description_I": {
     "message": "掌控您的瀏覽器，以您想要的悠遊網路！",
     "description": "Description of the Premium filter lists"
@@ -3628,14 +3644,6 @@
   "cookie_consent_cutter_desclaimer_II": {
     "message": "在預設情況下，我們會攔截第三方追蹤器，但不攔截第一方的追蹤器，這是您所造訪的網站專用的追蹤器，對於您的使用者體驗有莫大影響。",
     "description": "Legal desclaimer of the Cookie Consent Cutter Premium filter lists"
-  },
-  "cookie_consent_cutter": {
-    "message": "Cookie同意要求視窗攔截程式",
-    "description": "Name of a Premium option."
-  },
-  "hide_most_cookie": {
-    "message": "隱藏熱門網站上大多數的cookie警告視窗。",
-    "description": "Description of the Cookie Consent Cutter option"
   },
   "cookie_consent_cutter_preview_example": {
     "message": "已啟用Cookie同意要求視窗攔截程式的網頁範例",

@@ -21,6 +21,8 @@
 // Yes, you could hack my code to not check the license.  But please don't.
 // Paying for this extension supports the work on AdBlock.  Thanks very much.
 
+import * as ewe from "@eyeo/webext-ad-filtering-solution";
+
 import { EventEmitter } from "../../adblockplusui/adblockpluschrome/lib/events";
 import { TabSessionStorage } from "../../adblockplusui/adblockpluschrome/lib/storage/tab-session";
 
@@ -325,7 +327,7 @@ export const License = (function getLicense() {
               updatedLicense.status &&
               updatedLicense.status === "expired"
             ) {
-              License.processExpiredLicense();
+              void License.processExpiredLicense();
               ServerMessages.recordGeneralMessage("trial_license_expired");
             }
           } else {
@@ -346,7 +348,7 @@ export const License = (function getLicense() {
           log("license server returned error: ", error);
         });
     },
-    processExpiredLicense() {
+    async processExpiredLicense() {
       theLicense = License.get();
       theLicense.myadblock_enrollment = true;
       License.set(theLicense);
@@ -361,6 +363,13 @@ export const License = (function getLicense() {
       setSetting("color_themes", { popup_menu: "default_theme", options_page: "default_theme" });
       SubscriptionAdapter.unsubscribe({ adblockId: "distraction-control" });
       SubscriptionAdapter.unsubscribe({ adblockId: "cookies-premium" });
+      const easyPrivacyURL = SubscriptionAdapter.getUrlFromId("easyprivacy");
+      if (
+        (await ewe.experiments.getFlag("is_privacy_premium")) === true &&
+        ewe.subscriptions.has(easyPrivacyURL)
+      ) {
+        await ewe.subscriptions.remove(easyPrivacyURL);
+      }
       browser.alarms.clear(licenseAlarmName);
     },
     ready() {
@@ -404,7 +413,7 @@ export const License = (function getLicense() {
     // activate the current license and configure the extension in licensed mode.
     // Call with an optional delay parameter (in milliseconds) if the first license
     // update should be delayed by a custom delay (default is 0 minutes).
-    activate(delayMs) {
+    async activate(delayMs) {
       let delay = delayMs;
       const currentLicense = License.get() || {};
       const newLicense = { ...currentLicense };
@@ -420,6 +429,11 @@ export const License = (function getLicense() {
         }, delay);
       }
       setSetting("picreplacement", false);
+      const easyPrivacyURL = SubscriptionAdapter.getUrlFromId("easyprivacy");
+      if ((await ewe.experiments.getFlag("is_privacy_premium")) === true) {
+        await ewe.subscriptions.add(easyPrivacyURL);
+        await ewe.subscriptions.sync(easyPrivacyURL);
+      }
     },
     getFormattedActiveSinceDate() {
       if (

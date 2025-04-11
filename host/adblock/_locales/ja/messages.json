@@ -3613,6 +3613,22 @@
     "message": "Premiumフィルターリストは当社チームにより維持されており、標準フィルターを上回る独自のメリットを提供します。",
     "description": "Description of the Premium filter lists"
   },
+  "premium_filter_easyprivacy": {
+    "message": "追加のトラッキングをブロックする",
+    "description": "EasyPrivacy filter list on the Premium Filters tab"
+  },
+  "premium_filter_easyprivacy_description": {
+    "message": "オンラインのトラッキングのほとんどの形態をブロックすることで、プライバシーデータと個人データを保護します。これには、ウェブバグ、トラッキングスクリプト、情報収集者が含まれます。",
+    "description": "EasyPrivacy filter list description on the Premium Filters tab"
+  },
+  "easyprivacy_distraction_control_premium": {
+    "message": "プライバシーと迷惑要素のコントロール",
+    "description": "Title of the Premimum filter lists"
+  },
+  "block_trackers_and_cookies": {
+    "message": "不要なトラッカーや迷惑なポップアップ、例えばクッキー同意バナー、フローティングビデオ、ニュースレターポップアップをブロックします。",
+    "description": "Description of the Premimum filter lists"
+  },
   "distraction_control_description_I": {
     "message": "ブラウザを完全に制御し、お望みの方法でインターネットを閲覧しましょう！",
     "description": "Description of the Premium filter lists"
@@ -3636,14 +3652,6 @@
   "cookie_consent_cutter_desclaimer_II": {
     "message": "デフォルトでは、サードパーティートラッカーのみをブロックし、閲覧するウェブサイト独自のユーザー体験に重要となるファーストパーティートラッカーはブロックされません。",
     "description": "Legal desclaimer of the Cookie Consent Cutter Premium filter lists"
-  },
-  "cookie_consent_cutter": {
-    "message": "クッキー同意排除",
-    "description": "Name of a Premium option."
-  },
-  "hide_most_cookie": {
-    "message": "人気サイトにおける大半のクッキー警告を非表示に。",
-    "description": "Description of the Cookie Consent Cutter option"
   },
   "cookie_consent_cutter_preview_example": {
     "message": "クッキー同意排除が適用されたウェブページの例",

@@ -3613,6 +3613,22 @@
     "message": "Gli elenchi di filtri Premium sono gestiti dal nostro team e offrono vantaggi esclusivi rispetto ai filtri standard.",
     "description": "Description of the Premium filter lists"
   },
+  "premium_filter_easyprivacy": {
+    "message": "Blocca ulteriori tracciamenti",
+    "description": "EasyPrivacy filter list on the Premium Filters tab"
+  },
+  "premium_filter_easyprivacy_description": {
+    "message": "Proteggi la tua privacy e i tuoi dati personali bloccando la maggior parte delle forme di tracciamento online, inclusi web bug, script di tracciamento e raccoglitori di informazioni.",
+    "description": "EasyPrivacy filter list description on the Premium Filters tab"
+  },
+  "easyprivacy_distraction_control_premium": {
+    "message": "Controllo della Privacy e delle Distrazioni",
+    "description": "Title of the Premimum filter lists"
+  },
+  "block_trackers_and_cookies": {
+    "message": "Blocca i tracker indesiderati e i pop-up fastidiosi, come i banner di consenso ai cookie, i video fluttuanti e i pop-up delle newsletter.",
+    "description": "Description of the Premimum filter lists"
+  },
   "distraction_control_description_I": {
     "message": "Prendi il controllo del tuo browser e naviga come vuoi tu!",
     "description": "Description of the Premium filter lists"
@@ -3636,14 +3652,6 @@
   "cookie_consent_cutter_desclaimer_II": {
     "message": "Per impostazione predefinita, blocchiamo i tracker di terze parti, ma non quelli di prime parti, che sono esclusivi del sito web che visiti e sono importanti per la tua esperienza d'uso.",
     "description": "Legal desclaimer of the Cookie Consent Cutter Premium filter lists"
-  },
-  "cookie_consent_cutter": {
-    "message": "Blocco pop-up cookie",
-    "description": "Name of a Premium option."
-  },
-  "hide_most_cookie": {
-    "message": "Nascondi la maggior parte degli avvisi sui cookie nei siti più popolari.",
-    "description": "Description of the Cookie Consent Cutter option"
   },
   "cookie_consent_cutter_preview_example": {
     "message": "esempio di una pagina web in cui è abilitato il Blocco pop-up cookie",

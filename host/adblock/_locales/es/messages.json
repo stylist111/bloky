@@ -3613,6 +3613,22 @@
     "message": "Nuestro equipo se ocupa del mantenimiento de las listas de filtros Premium, que ofrecen beneficios exclusivos más allá de nuestras listas de filtros estándar.",
     "description": "Description of the Premium filter lists"
   },
+  "premium_filter_easyprivacy": {
+    "message": "Bloquear rastreo adicional",
+    "description": "EasyPrivacy filter list on the Premium Filters tab"
+  },
+  "premium_filter_easyprivacy_description": {
+    "message": "Protege tu privacidad y tus datos personales al bloquear la mayoría de las formas de rastreo en línea, incluidos las balizas web, los scripts de rastreo y los recopiladores de información",
+    "description": "EasyPrivacy filter list description on the Premium Filters tab"
+  },
+  "easyprivacy_distraction_control_premium": {
+    "message": "Control de distracciones y de la privacidad",
+    "description": "Title of the Premimum filter lists"
+  },
+  "block_trackers_and_cookies": {
+    "message": "Bloquea los rastreadores no deseados y las ventanas emergentes molestas como los avisos de consentimiento de cookies, vídeos flotantes y ventanas emergentes de boletines.",
+    "description": "Description of the Premimum filter lists"
+  },
   "distraction_control_description_I": {
     "message": "Toma el control de tu navegador y navega de la manera que quieres.",
     "description": "Description of the Premium filter lists"
@@ -3636,14 +3652,6 @@
   "cookie_consent_cutter_desclaimer_II": {
     "message": "Por defecto, bloqueamos los rastreadores de terceros, pero no los propios que son exclusivos del sitio web que puedas visitar y que son importantes para tu experiencia de usuario/a.",
     "description": "Legal desclaimer of the Cookie Consent Cutter Premium filter lists"
-  },
-  "cookie_consent_cutter": {
-    "message": "Cortador de consentimiento de cookies",
-    "description": "Name of a Premium option."
-  },
-  "hide_most_cookie": {
-    "message": "Oculta la mayoría de los avisos de cookies de los sitios más famosos.",
-    "description": "Description of the Cookie Consent Cutter option"
   },
   "cookie_consent_cutter_preview_example": {
     "message": "ejemplo de una página web con el Cortador de consentimiento de cookies",

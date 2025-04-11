@@ -3613,6 +3613,22 @@
     "message": "Premium 筛选清单由我们的团队维护，提供远超我们标准筛选器的专属益处。",
     "description": "Description of the Premium filter lists"
   },
+  "premium_filter_easyprivacy": {
+    "message": "拦截额外的跟踪器",
+    "description": "EasyPrivacy filter list on the Premium Filters tab"
+  },
+  "premium_filter_easyprivacy_description": {
+    "message": "通过拦截大多数形式的在线跟踪器来保护您的隐私和个人数据，包括网络 Bug、跟踪脚本和信息收集器。",
+    "description": "EasyPrivacy filter list description on the Premium Filters tab"
+  },
+  "easyprivacy_distraction_control_premium": {
+    "message": "隐私与干扰控制",
+    "description": "Title of the Premimum filter lists"
+  },
+  "block_trackers_and_cookies": {
+    "message": "拦截不需要的跟踪器和烦人的弹出窗口，例如 Cookie 同意横幅、浮动视频和新闻通讯弹出窗口。",
+    "description": "Description of the Premimum filter lists"
+  },
   "distraction_control_description_I": {
     "message": "掌控自己的浏览器，随心所欲畅快浏览！",
     "description": "Description of the Premium filter lists"
@@ -3636,14 +3652,6 @@
   "cookie_consent_cutter_desclaimer_II": {
     "message": "我们默认拦截第三方跟踪程序，但不会拦截第一方跟踪程序，后者是您访问的网站专有的跟踪程序，对于您的用户体验十分重要。",
     "description": "Legal desclaimer of the Cookie Consent Cutter Premium filter lists"
-  },
-  "cookie_consent_cutter": {
-    "message": "Cookie 弹窗拦截器",
-    "description": "Name of a Premium option."
-  },
-  "hide_most_cookie": {
-    "message": "隐藏热门网站上的绝大多数 Cookie 警告。",
-    "description": "Description of the Cookie Consent Cutter option"
   },
   "cookie_consent_cutter_preview_example": {
     "message": "启用了 Cookie 弹窗拦截器的网页示例",

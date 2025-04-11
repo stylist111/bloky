@@ -18,7 +18,8 @@
 /* For ESLint: List any global identifiers used in this file below */
 /* global activateTab, connectUIPort, delayedSubscriptionSelection,
    getStorageCookie, initializeProxies,
-   isPremiumFilterListURL, License,
+   isPremiumFilterListURL, isPremiumFilterListURLThatShouldBeShown,
+   License,
    MABPayment, premiumFiltersCtaKey, selected, send, ServerMessages,
    setStorageCookie, settings, startSubscriptionSelection, storageGet,
    storageSet, SubscriptionAdapter, SubscriptionsProxy,
@@ -75,7 +76,12 @@ function replaceAnnoyances(subsList) {
 
 function cleanUpSubs(subs) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const subsWithoutPremium = subs.filter(([_, entry]) => !isPremiumFilterListURL(entry.url));
+  const subsWithoutPremium = subs.filter(([_, entry]) => {
+    if (isPremiumFilterListURLThatShouldBeShown(entry.url)) {
+      return true;
+    }
+    return !isPremiumFilterListURL(entry.url);
+  });
   const subsWithoutAnnoyances = replaceAnnoyances(subsWithoutPremium);
 
   return subsWithoutAnnoyances;
@@ -1002,7 +1008,7 @@ CustomFilterListUploadUtil.bindControls = () => {
 
     const existingFilterList = FilterListUtil.checkUrlForExistingFilterList(url);
     if (existingFilterList) {
-      if (isPremiumFilterListURL(url)) {
+      if (isPremiumFilterListURL(url) && !isPremiumFilterListURLThatShouldBeShown(url)) {
         return;
       }
       CustomFilterListUploadUtil.updateExistingFilterList(existingFilterList);
@@ -1029,7 +1035,11 @@ async function onFilterChangeHandler(action, items) {
   if (Array.isArray(items)) {
     [item] = items;
   }
-  if (item && isPremiumFilterListURL(item.url)) {
+  if (
+    item &&
+    isPremiumFilterListURL(item.url) &&
+    !isPremiumFilterListURLThatShouldBeShown(item.url)
+  ) {
     return;
   }
   // A user can either add, remove or update a filter list from the UI.

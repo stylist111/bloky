@@ -3613,6 +3613,22 @@
     "message": "Списки фильтров Premium ведутся нашей командой и предлагают эксклюзивные преимущества, которых нет у наших стандартных фильтров.",
     "description": "Description of the Premium filter lists"
   },
+  "premium_filter_easyprivacy": {
+    "message": "Блокируйте дополнительное отслеживание",
+    "description": "EasyPrivacy filter list on the Premium Filters tab"
+  },
+  "premium_filter_easyprivacy_description": {
+    "message": "Защитите свою конфиденциальность и персональные данные, заблокировав большинство способов онлайн-отслеживания, включая веб-жучки, скрипты отслеживания и сборщики информации",
+    "description": "EasyPrivacy filter list description on the Premium Filters tab"
+  },
+  "easyprivacy_distraction_control_premium": {
+    "message": "Защита конфиденциальности и контроль отвлекающих факторов",
+    "description": "Title of the Premimum filter lists"
+  },
+  "block_trackers_and_cookies": {
+    "message": "Блокируйте нежелательные трекеры и раздражающие выскакивающие окна, включая баннеры с требованием согласия на использование файлов cookie, плавающие видео и выскакивающие окна с рассылками.",
+    "description": "Description of the Premimum filter lists"
+  },
   "distraction_control_description_I": {
     "message": "Возьмите браузер под контроль и просматривайте страницы, как вам нравится!",
     "description": "Description of the Premium filter lists"
@@ -3636,14 +3652,6 @@
   "cookie_consent_cutter_desclaimer_II": {
     "message": "По умолчанию мы блокируем сторонние трекеры, однако не собственные трекеры, относящиеся исключительно к посещаемому вами веб-сайту, которые важны для ваших впечатлений как пользователя.",
     "description": "Legal desclaimer of the Cookie Consent Cutter Premium filter lists"
-  },
-  "cookie_consent_cutter": {
-    "message": "Устранение согласий на использование файлов сookie",
-    "description": "Name of a Premium option."
-  },
-  "hide_most_cookie": {
-    "message": "Скрывайте большинство уведомлений об использовании файлов cookie на популярных сайтах.",
-    "description": "Description of the Cookie Consent Cutter option"
   },
   "cookie_consent_cutter_preview_example": {
     "message": "пример веб-страницы с включенным Устранением согласий на использование файлов сookie",

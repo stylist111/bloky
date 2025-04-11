@@ -3699,6 +3699,22 @@
     "message": "Premium filter lists are maintained by our team and offer exclusive benefits above and beyond our standard filters.",
     "description": "Description of the Premium filter lists"
   },
+  "premium_filter_easyprivacy": {
+    "message": "Block additional tracking",
+    "description": "EasyPrivacy filter list on the Premium Filters tab"
+  },
+  "premium_filter_easyprivacy_description": {
+    "message": "Protect your privacy and personal data by blocking most forms of online tracking, including web bugs, tracking scripts, and information collectors",
+    "description": "EasyPrivacy filter list description on the Premium Filters tab"
+  },
+  "easyprivacy_distraction_control_premium": {
+    "message": "Privacy & Distraction Control",
+    "description": "Title of the Premimum filter lists"
+  },
+  "block_trackers_and_cookies": {
+    "message": "Block unwanted trackers and annoying pop-ups like cookie consent banners, floating videos and newsletter pop-ups.",
+    "description": "Description of the Premimum filter lists"
+  },
   "enhanced_distraction_control_description": {
     "message": "Take control of your browser and browse the way you want to! Say goodbye to newsletter pop-ups, floating videos, site notifications and survey requests with Enhanced Distraction Control.",
     "description": "Description of the Premium filter lists"
@@ -3742,14 +3758,6 @@
   "distraction_control_example": {
     "message": "Distraction Control example",
     "description": "Text in the alt attribute of an image in the Options page mab that visualizes the Distraction Control feature."
-  },
-  "cookie_consent_cutter": {
-    "message": "Cookie Consent Cutter",
-    "description": "Name of a Premium option."
-  },
-  "hide_most_cookie": {
-    "message": "Hide most cookie warnings on popular sites.",
-    "description": "Description of the Cookie Consent Cutter option"
   },
   "hide_most_cookie_no_period": {
     "message": "Hide most cookie warnings on popular sites",

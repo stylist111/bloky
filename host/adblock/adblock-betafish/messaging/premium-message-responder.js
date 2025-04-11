@@ -217,7 +217,7 @@ ext.addTrustedMessageTypes(null, ["adblock:load_my_adblock"]);
  */
 port.on("adblock:activate", async () => {
   await License.ready();
-  License.activate();
+  await License.activate();
 });
 port.on("adblock:cleanUpSevenDayAlarm", async () => {
   await License.ready();
@@ -241,7 +241,7 @@ port.on("adblock:isActiveLicense", () => processIsActiveLicense());
 port.on("adblock:payment_success", async () => {
   await License.ready();
   try {
-    License.activate();
+    await License.activate();
     return { ack: true };
   } catch (e) {
     /* eslint-disable-next-line no-console */

@@ -3613,6 +3613,22 @@
     "message": "As listas de filtros do Premium são mantidas pela nossa equipe e oferecem benefícios exclusivos muito além dos nossos filtros padrão.",
     "description": "Description of the Premium filter lists"
   },
+  "premium_filter_easyprivacy": {
+    "message": "Bloquear rastreamento adicional",
+    "description": "EasyPrivacy filter list on the Premium Filters tab"
+  },
+  "premium_filter_easyprivacy_description": {
+    "message": "Proteja a sua privacidade e os seus dados pessoais bloqueando a maioria das formas de rastreamento on-line, inclusive web bugs, scripts de rastreamento e coletores de informações",
+    "description": "EasyPrivacy filter list description on the Premium Filters tab"
+  },
+  "easyprivacy_distraction_control_premium": {
+    "message": "Privacidade e controle de distrações",
+    "description": "Title of the Premimum filter lists"
+  },
+  "block_trackers_and_cookies": {
+    "message": "Bloqueie rastreadores indesejados e janelas pop-up irritantes, como banners de autorização de cookies, vídeos flutuantes e janelas pop-up de newsletter.",
+    "description": "Description of the Premimum filter lists"
+  },
   "distraction_control_description_I": {
     "message": "Assuma o controle do seu navegador e navegue da forma que desejar!",
     "description": "Description of the Premium filter lists"
@@ -3636,14 +3652,6 @@
   "cookie_consent_cutter_desclaimer_II": {
     "message": "Por padrão, bloqueamos rastreadores de terceiros, que são exclusivos dos sites que você visita e são importantes para a sua experiência de usuário.",
     "description": "Legal desclaimer of the Cookie Consent Cutter Premium filter lists"
-  },
-  "cookie_consent_cutter": {
-    "message": "Cutter de consentimento de cookies",
-    "description": "Name of a Premium option."
-  },
-  "hide_most_cookie": {
-    "message": "Oculte a maioria dos avisos de cookies nos sites populares.",
-    "description": "Description of the Cookie Consent Cutter option"
   },
   "cookie_consent_cutter_preview_example": {
     "message": "exemplo de página da Web com cutter de consentimento de cookies",

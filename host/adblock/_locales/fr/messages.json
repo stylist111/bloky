@@ -3613,6 +3613,22 @@
     "message": "Les listes de filtres Premium sont gérées par notre équipe et offrent des avantages exclusifs par rapport à nos filtres standard.",
     "description": "Description of the Premium filter lists"
   },
+  "premium_filter_easyprivacy": {
+    "message": "Bloquez davantage de traqueurs",
+    "description": "EasyPrivacy filter list on the Premium Filters tab"
+  },
+  "premium_filter_easyprivacy_description": {
+    "message": "Protégez votre vie privée et vos données personnelles en bloquant la plupart des formes de suivi en ligne, y compris les mouchards web, les scripts de suivi et les collecteurs d'informations.",
+    "description": "EasyPrivacy filter list description on the Premium Filters tab"
+  },
+  "easyprivacy_distraction_control_premium": {
+    "message": "Confidentialité et Contrôle des Distractions",
+    "description": "Title of the Premimum filter lists"
+  },
+  "block_trackers_and_cookies": {
+    "message": "Bloquez les traqueurs indésirables et les pop-ups agaçants comme les bannières de consentement aux cookies, les vidéos flottantes et les pop-ups de newsletter.",
+    "description": "Description of the Premimum filter lists"
+  },
   "distraction_control_description_I": {
     "message": "Prenez le contrôle de votre navigateur et naviguez comme vous le souhaitez !",
     "description": "Description of the Premium filter lists"
@@ -3636,14 +3652,6 @@
   "cookie_consent_cutter_desclaimer_II": {
     "message": "Par défaut, nous bloquons les traqueurs tiers, mais pas les traqueurs propres au site web que vous visitez et qui sont importants pour votre expérience d’utilisateur.",
     "description": "Legal desclaimer of the Cookie Consent Cutter Premium filter lists"
-  },
-  "cookie_consent_cutter": {
-    "message": "Masquage du consentement aux cookies",
-    "description": "Name of a Premium option."
-  },
-  "hide_most_cookie": {
-    "message": "Masquez la plupart des avertissements relatifs aux cookies sur les sites populaires.",
-    "description": "Description of the Cookie Consent Cutter option"
   },
   "cookie_consent_cutter_preview_example": {
     "message": "exemple de page web avec Masquage du consentement aux cookies activé",

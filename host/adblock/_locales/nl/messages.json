@@ -3613,6 +3613,22 @@
     "message": "Lijsten met premium filters worden bijgehouden door ons team en bieden exclusieve voordelen boven op onze standaard filters.",
     "description": "Description of the Premium filter lists"
   },
+  "premium_filter_easyprivacy": {
+    "message": "Blokkeer aanvullende tracking",
+    "description": "EasyPrivacy filter list on the Premium Filters tab"
+  },
+  "premium_filter_easyprivacy_description": {
+    "message": "Bescherm uw privacy en persoonlijke gegevens door de meeste vormen van online tracking te blokkeren, waaronder webbugs, trackingscripts en informatieverzamelaars",
+    "description": "EasyPrivacy filter list description on the Premium Filters tab"
+  },
+  "easyprivacy_distraction_control_premium": {
+    "message": "Privacy en afleidingscontrole",
+    "description": "Title of the Premimum filter lists"
+  },
+  "block_trackers_and_cookies": {
+    "message": "Blokkeer ongewenste trackers en vervelende pop-ups zoals banners voor cookietoestemming, zwevende video's en pop-ups voor nieuwsbrieven.",
+    "description": "Description of the Premimum filter lists"
+  },
   "distraction_control_description_I": {
     "message": "Neem de controle over uw browser en browse zoals u dat wilt!",
     "description": "Description of the Premium filter lists"
@@ -3636,14 +3652,6 @@
   "cookie_consent_cutter_desclaimer_II": {
     "message": "We blokkeren standaard trackers van derden, maar niet first-party trackers, die exclusief zijn voor de website die u bezoekt en die belangrijk zijn voor uw gebruikerservaring.",
     "description": "Legal desclaimer of the Cookie Consent Cutter Premium filter lists"
-  },
-  "cookie_consent_cutter": {
-    "message": "Blokkering van pop-ups voor cookietoestemming",
-    "description": "Name of a Premium option."
-  },
-  "hide_most_cookie": {
-    "message": "Verberg de meeste cookiewaarschuwingen op populaire sites.",
-    "description": "Description of the Cookie Consent Cutter option"
   },
   "cookie_consent_cutter_preview_example": {
     "message": "voorbeeld van een webpagina waarop de Cookie Consent Cutter is ingeschakeld",
