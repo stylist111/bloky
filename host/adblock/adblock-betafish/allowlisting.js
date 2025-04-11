@@ -15,17 +15,15 @@
  * along with AdBlock.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* For ESLint: List any global identifiers used in this file below */
-/* global License*/
-
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
 import { Prefs } from "~/alias/prefs";
 import ServerMessages from "./servermessages";
 import { createFilterMetaData } from "./utilities/background/bg-functions";
 import { FilterOrigin } from "../src/filters/shared";
+import { License } from "./picreplacement/check";
 
-const trustedDomains = [
+export const trustedDomains = [
   "softonic-ar.com",
   "softonic-id.com",
   "softonic-th.com",
@@ -48,7 +46,7 @@ const trustedDomains = [
  *
  * @param hostname - hostname to parse
  */
-function getAllowlistingDomain(hostname) {
+export function getAllowlistingDomain(hostname) {
   // if the hostname is a trusted domain, or a subdomain of a trusted domain,
   // allowlist the root domain, this way we allowlist all subdomains as well.
   for (const trustedDomain of trustedDomains) {
@@ -69,7 +67,7 @@ function getAllowlistingDomain(hostname) {
  *  expire (allowed 1 day - 365 days in the future).
  *
  */
-async function onAllowlisting(domain, options) {
+export async function onAllowlisting(domain, options) {
   if (License.isActiveLicense()) {
     return;
   }

@@ -22,7 +22,7 @@ import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import * as premium from "../../premium/background";
 import { FilterOrigin } from "~/filters/shared";
 
-const trustedDomains = [
+export const trustedDomains = [
   "softonic-ar.com",
   "softonic-id.com",
   "softonic-th.com",
@@ -45,7 +45,7 @@ const trustedDomains = [
  *
  * @param hostname - hostname to parse
  */
-function getAllowlistingDomain(hostname: string): string {
+export function getAllowlistingDomain(hostname: string): string {
   // if the hostname is a trusted domain, or a subdomain of a trusted domain,
   // allowlist the root domain, this way we allowlist all subdomains as well.
   for (const trustedDomain of trustedDomains) {
@@ -66,7 +66,7 @@ function getAllowlistingDomain(hostname: string): string {
  *  expire (allowed 1 day - 365 days in the future).
  *
  */
-async function onAllowlisting(
+export async function onAllowlisting(
   domain: string,
   options: ewe.AllowlistingOptions
 ): Promise<void> {
