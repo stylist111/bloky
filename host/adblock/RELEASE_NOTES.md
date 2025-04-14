@@ -7,6 +7,7 @@
 - Added privacy as premium, under an experiment flag (EXT-859)
 - Fixed empty responses being forwarded to Main World by the Public API. (EXT-872)
 - Added Sentry exception handling to the icon popup. (EXT-902)
+- Fixed: Free distraction control filter list was no longer considered recommended.
 
 # 6.18.0 - 2025-04-01
 

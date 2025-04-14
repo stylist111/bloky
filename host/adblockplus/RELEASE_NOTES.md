@@ -4,6 +4,7 @@
   LTS version of Node. This only affects code that runs in Node, such as build
   scripts. This does not affect extension code running in the browser. (EXT-778)
 - Added Sentry exception handling to the icon popup. (EXT-902)
+- Fixed: Free distraction control filter list was no longer considered recommended.
 
 # 4.19.0 - 2025-04-08
 

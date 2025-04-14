@@ -94,6 +94,8 @@ export const recommended = [
   "D72B6F06-52B2-4FED-96A2-1BF59CDD7AEC",
   // social
   "0A679439-445F-4DE7-84B9-88341F6DA520",
+  // videos
+  "294D21F0-B3DC-11EF-9B01-F73C7F3A4DB5",
 ];
 
 export const privileged = [
@@ -101,4 +103,6 @@ export const privileged = [
   "CDAD4CF5-2706-42CB-B404-F5B9B61B8CAA",
   // cookies-premium
   "588470E8-E163-4CD9-A909-521B2A3BE73F",
+  // videos
+  "294D21F0-B3DC-11EF-9B01-F73C7F3A4DB5",
 ];
