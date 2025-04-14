@@ -65,7 +65,11 @@ export default {
       },
       {
         dest: "options.js",
-        src: ["src/bootstrap/ui/options.entry.ts"],
+        src: ["src/options/ui/bootstrap.entry.ts"],
+      },
+      {
+        dest: "popup.js",
+        src: ["src/popup/ui/bootstrap.entry.ts"],
       },
       {
         dest: "info-injector.preload.js",

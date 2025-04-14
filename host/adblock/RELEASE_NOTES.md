@@ -6,6 +6,7 @@
   scripts. This does not affect extension code running in the browser. (EXT-778)
 - Added privacy as premium, under an experiment flag (EXT-859)
 - Fixed empty responses being forwarded to Main World by the Public API. (EXT-872)
+- Added Sentry exception handling to the icon popup. (EXT-902)
 
 # 6.18.0 - 2025-04-01
 

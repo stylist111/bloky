@@ -3,6 +3,7 @@
 - Updated the minimum supported version of Node to 22. Node 22 is the current
   LTS version of Node. This only affects code that runs in Node, such as build
   scripts. This does not affect extension code running in the browser. (EXT-778)
+- Added Sentry exception handling to the icon popup. (EXT-902)
 
 # 4.19.0 - 2025-04-08
 

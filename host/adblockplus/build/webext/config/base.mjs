@@ -46,7 +46,7 @@ export default {
       {
         dest: "desktop-options.js",
         src: [
-          "src/bootstrap/ui/desktop-options.entry.ts",
+          "src/desktop-options/ui/bootstrap.entry.ts",
           "js/pages/desktop-options/index.mjs"
         ]
       },
@@ -88,7 +88,7 @@ export default {
       },
       {
         dest: "popup.js",
-        src: ["js/pages/popup/index.mjs"]
+        src: ["src/popup/ui/bootstrap.entry.ts", "js/pages/popup/index.mjs"]
       },
       {
         dest: "popup-dummy.js",
