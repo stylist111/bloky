@@ -9,6 +9,7 @@
 - Added experiment flag data to the information injected into our websites. (EXT-867)
 - Added privacy as premium, under an experiment flag (EXT-847)
 - Fixed various UI breakages that could occur if too many tabs are open.
+- - Fixed empty responses being forwarded to Main World by the Public API. (EXT-872)
 
 # 4.18.0 - 2025-03-25
 

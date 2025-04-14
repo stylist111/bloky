@@ -54,6 +54,18 @@ async function handleCommand({ requestId, method, params }) {
     params,
   });
 
+  // The SW should never reply with an empty response
+  // This can happen if the URL was not properly added to the trusted types (see EXT-872)
+  if (!response) {
+    sendResponseToMainWorld({
+      requestId,
+      extName,
+      error: "unexpected_error",
+    });
+
+    return;
+  }
+
   sendResponseToMainWorld({
     requestId,
     ...response,

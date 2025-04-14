@@ -79,6 +79,13 @@ export function mainPublicApi({ requestEvent, responseEvent, integrations }) {
   function responseHandler(event) {
     const { detail } = event;
     const { requestId, name } = detail;
+
+    // Ignore responses that don't have a proper identifier attached to them (see EXT-872)
+    if (!requestId || !name) {
+      console.error("Invalid response received from the extension", detail);
+      return;
+    }
+
     const queuedResponse = responseQueue[requestId];
 
     if (!queuedResponse) {
