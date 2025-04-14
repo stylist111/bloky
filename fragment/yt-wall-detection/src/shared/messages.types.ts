@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+export const ytHavenShouldStart = "yt-haven.should-start";
+
 export const youTubeAlreadyAllowListed = "yt-site.already.allowlisted";
 export const youTubeAutoAllowlisted = "yt-auto.allowlisted";
 export const youTubeWallDetected = "yt-site.ad-wall-detected";
@@ -23,7 +25,22 @@ export const youTubeNavigation = "yt-site.navigation";
 
 export const ytHavenOverlayFlag = "yt-haven-overlay-iframe-enabled";
 export const ytHavenModalFlag = "yt-haven-overlay-modal-enabled";
-export const ytHavenIframeFlag = "yt-haven-iframe-enabled";
+export const ytHavenEmbedFreeFlag = "yt-haven-embed-free";
+export const ytHavenEmbedPremiumFlag = "yt-haven-embed-premium";
+export const ytHavenDefaultEnabledFlag = "yt-haven-default-enabled";
+
+export const ytHavenToggleStatePrefsKey = "yt_haven_toggle_state";
+export const ytHavenToggleState = "yt-haven.toggle-state";
+export const ytHavenToggleStateUpdate = "yt-haven.toggle-state-update";
+export const ytHavenConflict = "yt-haven.conflict";
+
+export const ytHavenRecordEvent = "yt-haven.record-event";
+
+// events send by the info box
+export const ytHavenInfoBoxShown = "yt_haven_info_box_shown";
+export const ytHavenToggleStateEnabled = "yt_haven_toggle_state_enabled";
+export const ytHavenToggleStateDisabled = "yt_haven_toggle_state_disabled";
+export const ytHavenFeedbackMenuOpen = "yt_haven_feedback_menu_open";
 
 export const matchingElementFoundKey = "matchingElementFound";
 

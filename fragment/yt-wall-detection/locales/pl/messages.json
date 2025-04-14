@@ -46,5 +46,20 @@
         "example": "AdBlock or Adblock Plus"
       }
     }
+  },
+  "yt_haven_info_box_description": {
+    "message": "Musieliśmy wstrzymać Twoją funkcję blokowania reklam. Przełącz, aby włączyć eksperymentalne blokowanie reklam."
+  },
+  "yt_haven_toggle_label": {
+    "message": "Blokuj reklamy"
+  },
+  "yt_haven_feedback_love": {
+    "message": "Uwielbiam to"
+  },
+  "yt_haven_feedback_fix_it": {
+    "message": "Nie działa"
+  },
+  "yt_haven_feedback_hate": {
+    "message": "Nie podoba ci się to"
   }
 }

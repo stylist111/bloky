@@ -17,12 +17,11 @@
  */
 
 import browser from "webextension-polyfill";
-import * as ewe from "@eyeo/webext-ad-filtering-solution/content-api";
 
 import {
-  ytHavenIframeFlag,
-  ytHavenOverlayFlag,
-  ytHavenModalFlag,
+  ytHavenToggleState,
+  ytHavenShouldStart,
+  ytHavenRecordEvent,
 } from "../shared/index.js";
 import type {
   IframePlayerConfig,
@@ -72,12 +71,7 @@ export const videoContextStore: VideoContextStoreType = {
  * Checks if the user is in one of the YT Haven experiments
  */
 export async function isInHavenExperiment(): Promise<boolean> {
-  const ytHavenFlags = await Promise.all([
-    ewe.experiments.getFlag(ytHavenIframeFlag),
-    ewe.experiments.getFlag(ytHavenOverlayFlag),
-    ewe.experiments.getFlag(ytHavenModalFlag),
-  ]);
-  return ytHavenFlags.some((result) => Boolean(result));
+  return await browser.runtime.sendMessage({ type: ytHavenShouldStart });
 }
 
 /**
@@ -224,4 +218,39 @@ export function createLogoSVG(): HTMLElement {
   logo.innerHTML = extLogo;
 
   return logo.firstChild as HTMLElement;
+}
+
+/**
+ * Retrieves the toggle state from the background page
+ */
+export const getToggleState = async (): Promise<boolean> => {
+  return await browser.runtime.sendMessage({
+    type: ytHavenToggleState,
+  });
+};
+
+/**
+ * Checks if the dark mode is enabled
+ */
+export function isDarkMode(): boolean {
+  const docAttr = document.documentElement.getAttribute("dark");
+  const ytdApp = document.querySelector("ytd-app");
+
+  return docAttr !== null || (ytdApp !== null && ytdApp.hasAttribute("dark"));
+}
+
+/**
+ * Wrapper over the sendMessage function to record events
+ * @param {string} eventName - The name of the event to record
+ * @param {object} [eventPayload] - The payload of the event
+ */
+export async function recordEvent(
+  eventName: string,
+  eventPayload?: object,
+): Promise<void> {
+  void browser.runtime.sendMessage({
+    type: ytHavenRecordEvent,
+    eventName,
+    eventPayload,
+  });
 }

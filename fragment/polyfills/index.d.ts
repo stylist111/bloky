@@ -76,3 +76,17 @@ export interface YTHavenPlayerErrorMessage extends Message {
    */
   errorCode: string;
 }
+
+export interface YTHavenToggleMessage extends Message {
+  /**
+   * The state of the toggle
+   */
+  newState: boolean;
+}
+
+/**
+ * Interface for the Message
+ */
+export interface YTHavenRecordEvent extends Message {
+  eventName: string;
+}

@@ -25,6 +25,8 @@ import {
   type MessageSender,
   type AdWallMessage,
   type YTHavenPlayerErrorMessage,
+  type YTHavenToggleMessage,
+  type YTHavenRecordEvent,
 } from "@eyeo/polyfills/all";
 import {
   noop,
@@ -37,7 +39,6 @@ import {
   youTubeAutoAllowlisted,
   youTubeWallDetected,
   youTubeNavigation,
-  ytHavenIframeFlag,
   ytHavenModalFlag,
   ytHavenOverlayFlag,
   matchingElementFoundKey,
@@ -52,7 +53,17 @@ import {
   ytHavenNonPlayableFound,
   ytHavenModalClosed,
   ytHavenOverlayShown,
-  ytHavenIframeShown,
+  ytHavenToggleState,
+  ytHavenDefaultEnabledFlag,
+  ytHavenToggleStateUpdate,
+  ytHavenToggleStatePrefsKey,
+  ytHavenShouldStart,
+  ytHavenEmbedFreeFlag,
+  ytHavenEmbedPremiumFlag,
+  ytHavenToggleStateEnabled,
+  ytHavenToggleStateDisabled,
+  ytHavenRecordEvent,
+  ytHavenConflict,
 } from "../shared/index.js";
 
 /**
@@ -81,19 +92,6 @@ const captureDateOnUpdate = (
   if (details.reason === "update" || details.reason === "install") {
     captureStartDate(parameters);
   }
-};
-
-/**
- * Checks if the user is in one of the Haven experiments
- */
-const isInHavenExperiment = async (): Promise<boolean> => {
-  const expFlags = await Promise.all([
-    ewe.experiments.getFlag(ytHavenIframeFlag),
-    ewe.experiments.getFlag(ytHavenModalFlag),
-    ewe.experiments.getFlag(ytHavenOverlayFlag),
-  ]);
-
-  return expFlags.some((flag) => Boolean(flag));
 };
 
 /**
@@ -137,11 +135,9 @@ const processYouTubeWallMessage = async (
   await ewe.filters.add(ruleText, metadata);
 
   // Store the allowlist in the local storage so that we know it on the second run
-  if (await isInHavenExperiment()) {
-    await browser.storage.local.set({
-      [matchingElementFoundKey]: true,
-    });
-  }
+  await browser.storage.local.set({
+    [matchingElementFoundKey]: true,
+  });
 
   if (message.currentPlaybackTime > 5) {
     senderURL.searchParams.set(
@@ -155,6 +151,38 @@ const processYouTubeWallMessage = async (
   }
   sendAdWallEvents(youTubeAutoAllowlisted);
 };
+
+/**
+ * Executes a script in the current tab to attempt detecting
+ * other ad blockers that might interfere with the solution.
+ *
+ * @param tabId The tab id.
+ */
+async function executeScript(tabId: number): Promise<boolean> {
+  if (typeof tabId === "undefined") {
+    return false;
+  }
+
+  const world = "MAIN";
+  const func = (): boolean => {
+    return XMLHttpRequest.toString().includes("uboLog");
+  };
+
+  if (browser.scripting?.executeScript) {
+    try {
+      const out = await browser.scripting.executeScript({
+        target: { tabId },
+        func,
+        world,
+      });
+      return out[0].result as boolean;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  return false;
+}
 
 /**
  * Initializes YouTube telemetry
@@ -191,11 +219,21 @@ export function start(parameters: StartInfo): void {
     youTubeWallDetected,
     processYouTubeWallMessageWithParameters,
   );
-  parameters.port.on(youTubeNavigation, (message: AdWallMessage): void => {
-    sendAdWallEvents(youTubeNavigation, {
-      userLoggedIn: message.userLoggedIn ? "1" : "0",
-    });
-  });
+  parameters.port.on(
+    youTubeNavigation,
+    async (message: AdWallMessage, sender: MessageSender): Promise<void> => {
+      sendAdWallEvents(youTubeNavigation, {
+        userLoggedIn: message.userLoggedIn ? "1" : "0",
+      });
+
+      const tabId = sender.tab?.id;
+      const result = await executeScript(tabId);
+
+      if (result) {
+        sendAdWallEvents(ytHavenConflict);
+      }
+    },
+  );
 
   parameters.port.on(ytHavenWatchCTAClicked, (): void => {
     sendAdWallEvents(ytHavenWatchCTAClicked);
@@ -257,7 +295,7 @@ export function start(parameters: StartInfo): void {
 
       // Disable the experiment flags to not show the overlay/embed in content script again
       await ewe.experiments.overrideFlag(ytHavenOverlayFlag, false);
-      await ewe.experiments.overrideFlag(ytHavenIframeFlag, false);
+      // await ewe.experiments.overrideFlag(ytHavenIframeFlag, false);
 
       // Reload the tab so that the experiment is removed from content script
       await browser.tabs.reload(tabId);
@@ -276,13 +314,70 @@ export function start(parameters: StartInfo): void {
     sendAdWallEvents(ytHavenOverlayShown);
   });
 
-  parameters.port.on(ytHavenIframeShown, (): void => {
-    sendAdWallEvents(ytHavenIframeShown);
+  parameters.port.on(
+    ytHavenRecordEvent,
+    ({ type, eventName, ...eventPayload }: YTHavenRecordEvent): void => {
+      const isPremium = parameters.isPremiumActive();
+      sendAdWallEvents(eventName, {
+        ...eventPayload,
+        // pass the premium flag to differentiate between users from experiments
+        p: isPremium,
+      });
+    },
+  );
+
+  // check if the user is in the YT Haven experiment
+  parameters.port.on(ytHavenShouldStart, async (): Promise<boolean> => {
+    const isPremium = parameters.isPremiumActive();
+    const ytHavenFlags = await Promise.all([
+      ewe.experiments.getFlag(ytHavenEmbedFreeFlag),
+      ewe.experiments.getFlag(ytHavenEmbedPremiumFlag),
+    ]);
+    return (
+      (Boolean(ytHavenFlags[0]) && !isPremium) ||
+      (Boolean(ytHavenFlags[1]) && isPremium)
+    );
   });
+
+  // Get the toggle state from persistent storage, as default if user is premium
+  // it should be false otherwise depends on the variant configuration
+  parameters.port.on(ytHavenToggleState, async (): Promise<boolean> => {
+    const isPremium = parameters.isPremiumActive();
+    const [currentState, isDefaultEnabled] = await Promise.all([
+      browser.storage.local.get(ytHavenToggleStatePrefsKey),
+      ewe.experiments.getFlag(ytHavenDefaultEnabledFlag),
+    ]);
+    return Boolean(
+      currentState[ytHavenToggleStatePrefsKey] ??
+        (isPremium ? false : isDefaultEnabled),
+    );
+  });
+
+  // Update the toggle state
+  parameters.port.on(
+    ytHavenToggleStateUpdate,
+    async ({ newState }: YTHavenToggleMessage): Promise<boolean> => {
+      // update the state
+      await browser.storage.local.set({
+        [ytHavenToggleStatePrefsKey]: newState,
+      });
+
+      // record toggle state change event
+      const isPremium = parameters.isPremiumActive();
+      const eventName = newState
+        ? ytHavenToggleStateEnabled
+        : ytHavenToggleStateDisabled;
+      const eventPayload = { p: isPremium };
+      sendAdWallEvents(eventName, eventPayload);
+
+      return newState;
+    },
+  );
 
   const trustedEventNames = [
     youTubeWallDetected,
     youTubeNavigation,
+    ytHavenShouldStart,
     ytHavenWatchCTAClicked,
     ytHavenNeverShowOverlayClick,
     ytHavenNonEmbeddableFound,
@@ -294,7 +389,9 @@ export function start(parameters: StartInfo): void {
     ytHavenLabelWatchingIgnore,
     ytHavenModalClosed,
     ytHavenOverlayShown,
-    ytHavenIframeShown,
+    ytHavenToggleState,
+    ytHavenToggleStateUpdate,
+    ytHavenRecordEvent,
   ];
   parameters.addTrustedMessageTypes("https://youtube.com", trustedEventNames);
   parameters.addTrustedMessageTypes(

@@ -114,7 +114,8 @@ async function bootstrap(): Promise<void> {
     logger,
     port,
     prefs: Prefs,
-    sendAdWallEvents: undefined
+    sendAdWallEvents: undefined,
+    isPremiumActive: hasActiveLicense
   });
   startInfoInjector();
   startUpdateCampaign();

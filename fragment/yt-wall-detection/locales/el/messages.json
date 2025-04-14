@@ -46,5 +46,20 @@
         "example": "AdBlock or Adblock Plus"
       }
     }
+  },
+  "yt_haven_info_box_description": {
+    "message": "Έπρεπε να διακόψουμε τη φραγή διαφημίσεων. Ενεργοποιήστε την πειραματική φραγή διαφημίσεων."
+  },
+  "yt_haven_toggle_label": {
+    "message": "Φραγή Διαφημίσεων"
+  },
+  "yt_haven_feedback_love": {
+    "message": "Το λατρεύω"
+  },
+  "yt_haven_feedback_fix_it": {
+    "message": "Δεν λειτουργεί"
+  },
+  "yt_haven_feedback_hate": {
+    "message": "Δεν σου αρέσει;"
   }
 }

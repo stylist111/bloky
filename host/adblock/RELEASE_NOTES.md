@@ -8,6 +8,7 @@
 - Fixed empty responses being forwarded to Main World by the Public API. (EXT-872)
 - Added Sentry exception handling to the icon popup. (EXT-902)
 - Fixed: Free distraction control filter list was no longer considered recommended.
+- Phase 2 of haven experiment with info box (EXT-899)
 
 # 6.18.0 - 2025-04-01
 

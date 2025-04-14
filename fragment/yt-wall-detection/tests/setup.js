@@ -35,20 +35,12 @@ const invokeAndResetMock = (...args) => {
   callback(); // call the callback with your expected callback args
 };
 
-chrome.storage.local = {
-  data: {},
-  get: vi.fn(async (key) => ({ [key]: mockLocalStorage.data[key] || 0 })),
-  set: vi.fn(async (obj) => {
-    Object.assign(mockLocalStorage.data, obj);
-  }),
-};
-
 chrome.runtime.sendMessage.mockImplementation((...args) => {
-  invokeAndResetMock(args);
+  invokeAndResetMock(...args);
 });
 
 chrome.tabs.sendMessage.mockImplementation((...args) => {
-  invokeAndResetMock(args);
+  invokeAndResetMock(...args);
 });
 
 chrome.runtime.getManifest.mockImplementation(() => {
@@ -56,11 +48,11 @@ chrome.runtime.getManifest.mockImplementation(() => {
 });
 
 chrome.tabs.reload.mockImplementation((...args) => {
-  invokeAndResetMock(args);
+  invokeAndResetMock(...args);
 });
 
 chrome.tabs.update.mockImplementation((...args) => {
-  invokeAndResetMock(args);
+  invokeAndResetMock(...args);
 });
 
 // We need to require this after we setup vitest-chrome

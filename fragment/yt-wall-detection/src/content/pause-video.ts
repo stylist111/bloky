@@ -72,6 +72,7 @@ const playListener = (event: Event): void => {
 const pauseVideo = (video: HTMLVideoElement): void => {
   // Pause videos only from watch page
   if (!video.paused && isWatchPage()) {
+    lastPausedVideo = video;
     video.pause();
   }
 

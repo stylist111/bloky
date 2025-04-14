@@ -679,6 +679,7 @@ initialize
       port,
       prefs: Prefs,
       sendAdWallEvents: ServerMessages.recordAdWallMessage,
+      isPremiumActive: License.isActiveLicense,
     });
     startPublicAPI({
       port,

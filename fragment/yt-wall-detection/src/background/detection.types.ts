@@ -96,4 +96,9 @@ export interface StartInfo {
    *
    */
   sendAdWallEvents: sendAdWallEventsFunction | undefined;
+
+  /**
+   * Function to get the premium state of the user
+   */
+  isPremiumActive: () => boolean;
 }

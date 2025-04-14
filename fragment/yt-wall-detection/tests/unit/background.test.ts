@@ -41,7 +41,10 @@ import {
   ytHavenNonPlayableFound,
   ytHavenModalClosed,
   ytHavenOverlayShown,
-  ytHavenIframeShown,
+  ytHavenShouldStart,
+  ytHavenToggleState,
+  ytHavenToggleStateUpdate,
+  ytHavenRecordEvent,
 } from "../../src/shared/index.js";
 import { type MessageSender, type AdWallMessage } from "@eyeo/polyfills/all";
 
@@ -87,18 +90,21 @@ const startInfo: StartInfo = {
 const trustedEventNames = [
   youTubeWallDetected,
   youTubeNavigation,
+  ytHavenShouldStart,
   ytHavenWatchCTAClicked,
-  ytHavenEmbeddedPlayerIssue,
-  ytHavenMetaTagFound,
   ytHavenNeverShowOverlayClick,
   ytHavenNonEmbeddableFound,
   ytHavenNonPlayableFound,
+  ytHavenEmbeddedPlayerIssue,
+  ytHavenMetaTagFound,
   ytHavenNextVideoNotFound,
   ytHavenLabelWatchingDisable,
   ytHavenLabelWatchingIgnore,
   ytHavenModalClosed,
   ytHavenOverlayShown,
-  ytHavenIframeShown,
+  ytHavenToggleState,
+  ytHavenToggleStateUpdate,
+  ytHavenRecordEvent,
 ];
 
 /**
@@ -138,7 +144,7 @@ describe("Fragment / YT Ad Wall Detection", () => {
       expectTypeOf(arg2).toBeFunction();
 
       if (arg1 === youTubeNavigation) {
-        arg2(message);
+        arg2(message, {tab: {}});
         sendAdWallEventsFNMock.calledWith(youTubeNavigation, {
           userLoggedIn: "0",
         });

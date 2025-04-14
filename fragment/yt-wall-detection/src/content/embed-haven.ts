@@ -16,20 +16,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import browser from "webextension-polyfill";
-import * as ewe from "@eyeo/webext-ad-filtering-solution/content-api";
 
 import type { YTEventData } from "./shared.types.js";
 import {
-  ytHavenIframeFlag,
+  ytHavenFeedbackMenuOpen,
   ytHavenIframeShown,
+  ytHavenInfoBoxShown,
   ytHavenNextVideoNotFound,
+  ytHavenToggleStateUpdate,
 } from "../shared/index.js";
-import { resumeCurrentVideo } from "./pause-video.js";
+import { resumeCurrentVideo, startPause, stopPause } from "./pause-video.js";
 import {
   createIframePlayer,
+  createLogoSVG,
   getIframePlayer,
+  getToggleState,
+  isDarkMode,
+  isInHavenExperiment,
+  recordEvent,
   videoContextStore,
 } from "./shared.js";
+import { menuIcon } from "../img/menu.js";
 
 /**
  * Enum with the player state
@@ -39,13 +46,7 @@ enum PlayerState {
   ENDED = 0,
 }
 
-/**
- * Removes the embedded player from the DOM
- */
-export const removeEmbedPlayer = (): void => {
-  const playerElem = getIframePlayer();
-  playerElem?.parentNode?.removeChild(playerElem);
-};
+const infoBoxId = "yt-haven-info-box";
 
 /**
  * Attempts to load the next video when the current video in the embedded player has ended
@@ -122,9 +123,7 @@ export async function addEmbedVideoOnTop(
   // This event will be triggered when the iframe is first added,
   // but also when the user navigates to another video and the iframe
   // already exists in the DOM
-  void browser.runtime.sendMessage({
-    type: ytHavenIframeShown,
-  });
+  void recordEvent(ytHavenIframeShown);
 
   if (playerElem && playerElem instanceof HTMLIFrameElement) {
     // This message is being sent to the YT JS code in the embedded iframe.
@@ -147,7 +146,6 @@ export async function addEmbedVideoOnTop(
     videoId,
     playlistId,
     startSeconds,
-    showWatchingWith: true,
   });
 
   window.addEventListener("message", (event: MessageEvent): void => {
@@ -160,15 +158,295 @@ export async function addEmbedVideoOnTop(
 }
 
 /**
+ * Creates a toggle switch element
+ *
+ * @param {boolean} initialState - The initial state of the toggle switch
+ * @param {Function} onToggle - The callback function to be called when the toggle state changes
+ */
+function createToggleSwitch(
+  initialState: boolean = false,
+  onToggle: (state: boolean) => Promise<void> = async () => {},
+): HTMLDivElement {
+  let isActive = initialState;
+
+  // Create toggle container
+  const toggle = document.createElement("div");
+  Object.assign(toggle.style, {
+    width: "36px",
+    height: "18px",
+    backgroundColor: initialState ? "#34d399" : "#7b8794",
+    borderRadius: "18px",
+    position: "relative",
+    cursor: "pointer",
+    transition: "background-color 0.3s ease",
+    display: "inline-block",
+    flex: "none",
+  });
+
+  // Create toggle thumb
+  const thumb = document.createElement("div");
+  Object.assign(thumb.style, {
+    width: "18px",
+    height: "18px",
+    backgroundColor: "#ffffff",
+    borderRadius: "50%",
+    position: "absolute",
+    top: "0px",
+    left: initialState ? "18px" : "0px",
+    boxShadow: "0 0 6px rgba(0, 0, 0, 0.2)",
+    transition: "left 0.3s ease",
+  });
+
+  toggle.appendChild(thumb);
+
+  // toggle logic
+  toggle.addEventListener("click", () => {
+    const newState = !isActive;
+    if (newState !== isActive) {
+      isActive = newState;
+      toggle.style.backgroundColor = isActive ? "#34d399" : "#7b8794";
+      thumb.style.left = isActive ? "18px" : "0px";
+      void onToggle(isActive);
+    }
+  });
+
+  return toggle;
+}
+
+function createMenuComponent(): HTMLDivElement {
+  const container = document.createElement("div");
+  Object.assign(container.style, {
+    position: "relative",
+    display: "inline-block",
+  });
+
+  // Trigger button
+  const menuButton: HTMLDivElement = document.createElement("div");
+  menuButton.innerHTML = menuIcon;
+  Object.assign(menuButton.style, {
+    cursor: "pointer",
+    width: "24px",
+    textAlign: "center",
+    fontSize: "24px",
+  });
+
+  // Menu dropdown
+  const menu: HTMLDivElement = document.createElement("div");
+  Object.assign(menu.style, {
+    display: "none",
+    position: "absolute",
+    top: "0",
+    right: "0",
+    transform: "translateY(-100%)",
+    background: isDarkMode() ? "#222" : "#FFF",
+    borderRadius: "12px",
+    padding: "8px 0",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
+    width: "256px",
+    color: isDarkMode() ? "#FFF" : "#000",
+    fontSize: "14px",
+    zIndex: "1000",
+  });
+
+  // Helper to create items
+  const createItem = (emoji: string, i18nKey: string): HTMLDivElement => {
+    const item = document.createElement("div");
+    item.textContent = `${emoji} ${browser.i18n.getMessage(i18nKey)}`;
+    Object.assign(item.style, {
+      padding: "10px 16px",
+      display: "flex",
+      alignItems: "center",
+      gap: "10px",
+      cursor: "pointer",
+    });
+
+    item.addEventListener("mouseenter", () => {
+      item.style.backgroundColor = isDarkMode()
+        ? "rgba(255, 255, 255, 0.15)"
+        : "rgba(0, 0, 0, 0.15)";
+    });
+
+    item.addEventListener("mouseleave", () => {
+      // Reset to hover background
+      item.style.backgroundColor = "";
+    });
+
+    item.addEventListener("click", () => {
+      // close the menu
+      menu.style.display = "none";
+      // record feedback menu item clicked
+      void recordEvent(i18nKey);
+    });
+
+    return item;
+  };
+
+  menu.appendChild(createItem("😍", "yt_haven_feedback_love"));
+  menu.appendChild(createItem("🥲", "yt_haven_feedback_fix_it"));
+  menu.appendChild(createItem("👎", "yt_haven_feedback_hate"));
+
+  // Toggle menu
+  menuButton.addEventListener("click", () => {
+    menu.style.display = menu.style.display === "block" ? "none" : "block";
+
+    // record feedback menu open
+    if (menu.style.display === "block") {
+      void recordEvent(ytHavenFeedbackMenuOpen);
+    }
+  });
+
+  // Close on outside click
+  window.addEventListener("click", (e: MouseEvent) => {
+    if (!container.contains(e.target as Node)) {
+      menu.style.display = "none";
+    }
+  });
+
+  // Assemble
+  container.appendChild(menuButton);
+  container.appendChild(menu);
+
+  return container;
+}
+
+/**
+ * Inserts the info box into the page, between the video player and
+ * the video title
+ *
+ * @param {HTMLElement} targetContainer - The container to insert the info box into
+ * @param {boolean} toggleState - The state of the toggle switch
+ * @param {Function} onToggle - The callback function to be called when the toggle state changes
+ */
+function addInfoBox(
+  targetContainer: HTMLElement,
+  toggleState: boolean,
+  onToggle: (state: boolean) => Promise<void>,
+): void {
+  // Remove the info box, if it already exists
+  removeInfoBox();
+
+  const infoBoxElem = document.createElement("div");
+  infoBoxElem.id = infoBoxId;
+
+  Object.assign(infoBoxElem.style, {
+    marginTop: "12px",
+    backgroundColor: isDarkMode() ? "#263950" : "#dff1fe",
+    borderRadius: "12px",
+    padding: "12px",
+    fontSize: "14px",
+    color: isDarkMode() ? "#fff" : "#000",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "36px",
+  });
+
+  const logoElem = createLogoSVG();
+  Object.assign(logoElem.style, {
+    height: "20px",
+    display: "block",
+    marginBottom: "4px",
+  });
+
+  const actionContainer = document.createElement("div");
+  Object.assign(actionContainer.style, {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    flex: "none",
+    borderLeft: `1px solid ${isDarkMode() ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`,
+    paddingLeft: "18px",
+  });
+
+  const toggleContainer = document.createElement("div");
+  Object.assign(toggleContainer.style, {
+    display: "flex",
+    alignItems: "center",
+    flexDirection: "column",
+    gap: "6px",
+    paddingTop: "12px",
+  });
+
+  const toggleElem = createToggleSwitch(toggleState, onToggle);
+  toggleContainer.appendChild(toggleElem);
+
+  const toggleLabel = document.createElement("div");
+  Object.assign(toggleLabel.style, {
+    textAlign: "center",
+    fontSize: "12px",
+    opacity: "0.5",
+  });
+  toggleLabel.innerText = browser.i18n.getMessage("yt_haven_toggle_label");
+  toggleContainer.appendChild(toggleLabel);
+  actionContainer.appendChild(toggleContainer);
+
+  const menuElem = createMenuComponent();
+  actionContainer.appendChild(menuElem);
+
+  const infoElem = document.createElement("div");
+  infoElem.innerText = browser.i18n.getMessage("yt_haven_info_box_description");
+  infoElem.insertBefore(logoElem, infoElem.firstChild);
+
+  infoBoxElem.appendChild(infoElem);
+  infoBoxElem.appendChild(actionContainer);
+
+  // insert the info box between the player and the video title
+  targetContainer.insertBefore(infoBoxElem, targetContainer.firstChild);
+
+  // record info box shown event
+  void recordEvent(ytHavenInfoBoxShown);
+}
+
+/**
  * Initializes YouTube embedded video player
  */
 export async function start(targetElement: HTMLElement): Promise<void> {
-  const isIframeEmbedExp = await ewe.experiments.getFlag(ytHavenIframeFlag);
+  const [isExpEnabled, toggleState] = await Promise.all([
+    isInHavenExperiment(),
+    getToggleState(),
+  ]);
+  const targetInfoContainer = document.querySelector<HTMLElement>("#below");
 
   // Do nothing if the user is not in experiment
-  if (!isIframeEmbedExp) {
+  if (!isExpEnabled || !targetInfoContainer) {
     return;
   }
 
-  void addEmbedVideoOnTop(targetElement);
+  const onToggle = async (newState: boolean): Promise<void> => {
+    await browser.runtime.sendMessage({
+      type: ytHavenToggleStateUpdate,
+      newState,
+    });
+
+    if (newState) {
+      startPause();
+      void addEmbedVideoOnTop(targetElement);
+    } else {
+      stopPause();
+      removeEmbedPlayer();
+    }
+  };
+
+  addInfoBox(targetInfoContainer, Boolean(toggleState), onToggle);
+
+  // show the embedded player by default
+  if (toggleState) {
+    void addEmbedVideoOnTop(targetElement);
+  } else {
+    stopPause();
+    removeEmbedPlayer();
+  }
 }
+
+/**
+ * Removes the embedded player from the DOM
+ */
+export const removeEmbedPlayer = (): void => {
+  const playerElem = getIframePlayer();
+  playerElem?.parentNode?.removeChild(playerElem);
+};
+
+export const removeInfoBox = (): void => {
+  const infoBoxElem = document.getElementById(infoBoxId);
+  infoBoxElem?.parentNode?.removeChild(infoBoxElem);
+};

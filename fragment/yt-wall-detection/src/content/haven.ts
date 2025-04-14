@@ -25,12 +25,14 @@ import {
 } from "../shared/index.js";
 import {
   getIframePlayer,
+  getToggleState,
   isInHavenExperiment,
   isWatchPage,
   videoContextStore,
 } from "./shared.js";
 import {
   removeEmbedPlayer,
+  removeInfoBox,
   start as startEmbedExperiment,
 } from "./embed-haven.js";
 import { insertOverlayExp, removeVideoOverlay } from "./overlay.js";
@@ -77,15 +79,20 @@ const addExperiments = async (): Promise<void> => {
 const removeExperiments = (): void => {
   removeVideoOverlay();
   removeEmbedPlayer();
+  removeInfoBox();
 };
 
 /**
  * Listens on the navigation event. Updates the video context.
  * Adds or removes the experiments
  *
- * @param event The navigation event
+ * @param {CustomEvent} event - The navigation event
+ * @param {boolean} toggleState - If the experiment should be started by default
  */
-const navigationListener = async (event: CustomEvent): Promise<void> => {
+const navigationListener = async (
+  event: CustomEvent,
+  toggleState: boolean = false,
+): Promise<void> => {
   const videoId = event?.detail?.endpoint?.watchEndpoint?.videoId;
 
   if (!isWatchPage() || !(await shouldStartExperiment()) || !videoId) {
@@ -93,7 +100,11 @@ const navigationListener = async (event: CustomEvent): Promise<void> => {
     return;
   }
 
-  pauseCurrentVideos();
+  // pause the videos automatically if the user is in the experiment with default on
+  if (toggleState) {
+    pauseCurrentVideos();
+  }
+
   const playlistId = event?.detail?.endpoint?.watchEndpoint?.playlistId;
   const isEmbeddable =
     event?.detail?.response?.playerResponse?.playabilityStatus?.playableInEmbed;
@@ -193,7 +204,12 @@ const shouldStartExperiment = async (): Promise<boolean> => {
  * Starts the YT Haven experiments
  */
 export async function start(): Promise<void> {
-  if (!(await shouldStartExperiment())) {
+  const [shouldStartExp, toggleState] = await Promise.all([
+    shouldStartExperiment(),
+    getToggleState(),
+  ]);
+
+  if (!shouldStartExp) {
     return;
   }
 
@@ -204,10 +220,13 @@ export async function start(): Promise<void> {
     return;
   }
 
-  startPause();
+  // pause all videos if experiment should start by default
+  if (toggleState) {
+    startPause();
+  }
 
   window.addEventListener("yt-navigate-finish", (event: CustomEvent) => {
-    void navigationListener(event);
+    void navigationListener(event, Boolean(toggleState));
   });
 
   // Listens for any errors in the iframe player

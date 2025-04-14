@@ -46,5 +46,20 @@
         "example": "AdBlock or Adblock Plus"
       }
     }
+  },
+  "yt_haven_info_box_description": {
+    "message": "広告ブロッカーを一時停止しました。実験的な広告ブロックを有効にするには、トグルをオンにしてください。"
+  },
+  "yt_haven_toggle_label": {
+    "message": "広告をブロックする"
+  },
+  "yt_haven_feedback_love": {
+    "message": "気に入っています"
+  },
+  "yt_haven_feedback_fix_it": {
+    "message": "動作しません"
+  },
+  "yt_haven_feedback_hate": {
+    "message": "気に入らない"
   }
 }
