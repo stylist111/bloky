@@ -486,26 +486,12 @@ developer, a high priority ticket should be immediately created.
 The best way of investigating flaky tests locally is using docker (instead of
 `npm -w @eyeo/webext-ad-filtering-solution test:functional`).
 
-If you need to run specific tests multiple times to investigate/reproduce
+If you need to run specific tests to investigate/reproduce
 flakiness, use the `[flaky]` tag in the name of the test, along with the
 `ONLY_FLAKY` parameter set to `true`. Example:
 
 ```
 docker run ... -e ONLY_FLAKY=true functional
-```
-
-The `TEST_RUNS` parameter allows running tests multiple times in a row, while
-logging the amount of failures per test run. Example:
-
-```
-docker run ... -e TEST_RUNS=10 functional
-```
-
-Note: Combining both `ONLY_FLAKY` and `TEST_RUNS` parameters allows running only
-tests marked as `[flaky]` multiple times in a row:
-
-```
-docker run ... -e ONLY_FLAKY=true -e TEST_RUNS=10 functional
 ```
 
 ### Tips for debugging failing/ flaky tests
@@ -575,20 +561,18 @@ This will trigger "measure flakiness" scripts & check that will run
 test modules in isolation:
 
 - Go to: <https://gitlab.com/eyeo/browser-extensions-and-premium/extensions/extensions/-/pipelines>
-then press “Run pipelines”.
+then click "New pipeline” on the top right.
 - Select branch you want to run pipeline on
-- Provide variable: SDK_CHECKTESTS: true
-- Provide variable SDK_FULL: true if you wish to run full set of browsers (as on
-main)
-- Run pipeline
+- Provide variable key : `NIGHTLY_RUN`, value: `true`
+- Run pipeline by clicking "New pipeline" button
 
-![Run pipeline](/docs/run_pipeline_ui.png "Run pipeline from UI")
+Note: When NIGHTLY_RUN is `true`, the tests are run on a full set of browsers
+and some functional jobs will run N times in parallel,
+where N is the number of `job_runs` as defined in
+[.gitlab/ci-run-jobs-n-times.yml](../../../.gitlab/ci-run-jobs-n-times.yml)
 
 Note: this setup is run on main on our Nightly Runs - checking if our
-tests are good quality (no flaky and independent from each other)
-
-You can also use our [webext sdk cheat sheet](TESTING_CHEAT_SHEET.md) for short
-version of commands commonly used by webext devs.
+tests are good quality (not flaky and independent from each other).
 
 ### Functional Isolated Tests
 

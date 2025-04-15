@@ -79,18 +79,6 @@ Running container in a mode that will run only tests that are tagged [flaky]:
 docker run --shm-size=2g -it -e TEST_PARAMS="3 chromium" -e ONLY_FLAKY="true" functional
 ```
 
-Run [flaky] tests multiple times in a row:
-
-```
-docker run --shm-size=2g -it -e TEST_PARAMS="3 chromium" -e ONLY_FLAKY="true" -e TEST_RUNS=10 functional
-```
-
-### Measure flakiness for whole test suite
-
-```
-docker run --shm-size=2g -it -e TEST_PARAMS="3 chromium" -e TEST_RUNS=10 functional
-```
-
 ### Functional Isolated Tests
 
 ```

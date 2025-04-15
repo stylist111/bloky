@@ -15,9 +15,10 @@
 
 spec:
   inputs:
-    parent_pipeline_source:
-      type: string
-      description: "Value of CI_PIPELINE_SOURCE in the parent pipeline"
+    job_runs:
+      type: number
+      default: 1
+      description: Amount of times certain test jobs should run using the "parallel" keyword
 
 ---
 include: "/.gitlab/ci-common.yml"
@@ -250,6 +251,7 @@ comp:MV2:firefox:oldest:
   after_script:
     - IMAGE_ID=$(docker ps -aqf ancestor=end-to-end)
     - docker cp $IMAGE_ID:/extensions/host/adblockplus/test/end-to-end/screenshots host/adblockplus 2> /dev/null
+  parallel: $[[ inputs.job_runs ]]
   artifacts:
     paths:
       - host/adblockplus/screenshots/

@@ -1,8 +1,9 @@
 spec:
   inputs:
-    parent_pipeline_source:
-      type: string
-      description: "Value of CI_PIPELINE_SOURCE in the parent pipeline"
+    job_runs:
+      type: number
+      default: 1
+      description: Amount of times certain test jobs should run using the "parallel" keyword
 
 ---
 
@@ -35,27 +36,20 @@ workflow:
       when: never
     - when: always
 
-# The following CI variables modify which jobs run in a pipeline:
-# - SDK_FULL: Full set of tests, including additional browsers. Used in nightly runs.
-# - SDK_CHECKTESTS: Check tests quality. Used in nightly runs.
-
-.full-run:
+# The following CI variable modifies which jobs run in a pipeline:
+# - NIGHTLY_RUN: Full set of tests with some jobs running multiple times, including additional browsers.
+.nightly-run:
   rules:
-    - if: $SDK_FULL == "true"
+    - if: $NIGHTLY_RUN == "true"
 
-.checktests-run:
-  rules:
-    - if: $SDK_CHECKTESTS == "true"
-
+# Jobs using this rule only run on the main branch pipelines
 .main-run:
   rules:
-    - !reference [.full-run, rules]
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 # Won't be triggered on flaky debugging pipelines
 .avoid-flaky-run:
   rules:
-    - !reference [.full-run, rules]
     # Run manually on commits that contain [flaky]
     - if: $CI_COMMIT_MESSAGE =~ /\[flaky]/
       when: manual
@@ -160,9 +154,6 @@ adblockpluscore:browser:
       echo "The first line of the commit message contains the [flaky] tag!";
       OTHER_PARAMS="-e ONLY_FLAKY=true";
     fi;
-    if echo "$SDK_CHECKTESTS" | grep -q "true"; then
-      OTHER_PARAMS="$OTHER_PARAMS -e TEST_RUNS=10";
-    fi;
     docker run $DOCKER_OPTIONS -e TEST_PARAMS="$TEST_PARAMS" $OTHER_PARAMS $FUNCTIONAL_IMAGE;
   after_script:
     if [[ $CI_JOB_STATUS == "failed" ]]; then
@@ -179,39 +170,44 @@ adblockpluscore:browser:
   # "default" section: https://gitlab.com/gitlab-org/gitlab/-/issues/213634
   timeout: 2h
 
+# This template runs a job N times, it is set to 1 by default
+.functional-n-times:
+  extends: .functional
+  parallel: $[[ inputs.job_runs ]]
+
 # Functional tests - MV2
 func:v2:chromium:latest:
-  extends: .functional
+  extends: .functional-n-times
   variables:
     BROWSER: chromium latest
     TEST_PARAMS: 2 $BROWSER
 
 func:v2:chromium:incognito:
-  extends: .functional
+  extends: .functional-n-times
   variables:
     BROWSER: chromium latest
     TEST_PARAMS: 2 $BROWSER --incognito
 
 func:v2:chromium:oldest:
-  extends: .functional
+  extends: .functional-n-times
   variables:
     BROWSER: chromium $OLDEST_CHROMIUM_MV2_VERSION
     TEST_PARAMS: 2 $BROWSER
 
 func:v2:firefox:latest:
-  extends: .functional
+  extends: .functional-n-times
   variables:
     BROWSER: firefox latest
     TEST_PARAMS: 2 $BROWSER
 
 func:v2:firefox:incognito:
-  extends: .functional
+  extends: .functional-n-times
   variables:
     BROWSER: firefox latest
     TEST_PARAMS: 2 $BROWSER --incognito
 
 func:v2:firefox:oldest:
-  extends: .functional
+  extends: .functional-n-times
   variables:
     BROWSER: firefox $OLDEST_FIREFOX_VERSION
     TEST_PARAMS: 2 $BROWSER
@@ -243,37 +239,35 @@ func:v2:windows:edge:
 
 # Functional tests - MV3
 func:v3:chromium:latest:
-  extends: .functional
+  extends: .functional-n-times
   variables:
     BROWSER: chromium latest
     TEST_PARAMS: 3 $BROWSER --testKinds functional reload update
 
 func:v3:chromium:incognito:
-  extends: .functional
+  extends: .functional-n-times
   variables:
     BROWSER: chromium latest
     TEST_PARAMS: 3 $BROWSER --testKinds functional reload update --incognito
 
 func:v3:chromium:oldest:
-  extends: .functional
+  extends: .functional-n-times
   variables:
     BROWSER: chromium $OLDEST_CHROMIUM_MV3_VERSION
     TEST_PARAMS: 3 $BROWSER --testKinds functional reload update
 
 func:v3:edge:latest:
-  extends: .functional
+  extends: .functional-n-times
   variables:
     BROWSER: edge latest
     TEST_PARAMS: 3 $BROWSER --testKinds functional reload update
 
 # Functional tests - isolated
 .functional-isolated:
-  extends: .functional
+  extends: .functional-nightly
   stage: test
   script:
     - docker run $DOCKER_OPTIONS -e TEST_SUITES="$TEST_SUITES" -e TEST_PARAMS="$TEST_PARAMS" --entrypoint "core/sdk/test/dockerfiles/isolated-entrypoint.sh" $FUNCTIONAL_IMAGE
-  rules:
-    - !reference [.checktests-run, rules]
 
 .functional-isolated-mv3:
   extends: .functional-isolated
@@ -334,28 +328,28 @@ fi:v2:firefox:
   variables:
     TEST_PARAMS: 2 firefox latest
 
-# Functional tests - full run
-.functional-full:
+# Functional tests - nightly run
+.functional-nightly:
   extends: .functional
-  allow_failure: true
   rules:
-    - !reference [.full-run, rules]
+    - !reference [.nightly-run, rules]
 
 func:v3:chromium:beta:
-  extends: .functional-full
+  extends: .functional-nightly
   variables:
     BROWSER: chromium beta
     TEST_PARAMS: 3 $BROWSER --testKinds functional reload update
+  allow_failure: true
 
 func:v2:firefox:incognito:update:
-  extends: .functional-full
+  extends: .functional-nightly
   variables:
     BROWSER: firefox $BSL_FIREFOX_INCOGNITO_VERSION
     TEST_PARAMS: 2 $BROWSER --testKinds update --incognito
   allow_failure: false
 
 func:v2:edge:latest:
-  extends: .functional-full
+  extends: .functional-nightly
   variables:
     BROWSER: edge
     TEST_PARAMS: 2 $BROWSER --testKinds functional reload
@@ -368,24 +362,26 @@ func:v2:edge:latest:
     TEST_PARAMS: 3 $BROWSER $INCOGNITO --testKinds fuzz
 
 fuzz:v3:chromium:latest:
-  extends: .fuzz
+  extends:
+    - .functional-n-times
+    - .fuzz
   variables:
     BROWSER: chromium latest
 
 fuzz:v3:chromium:incognito:
-  extends: .fuzz
+  extends:
+    - .functional-nightly
+    - .fuzz
   variables:
     BROWSER: chromium latest
     INCOGNITO: --incognito
-  rules:
-    - !reference [.full-run, rules]
 
 fuzz:v3:edge:latest:
-  extends: .fuzz
+  extends:
+    - .functional-nightly
+    - .fuzz
   variables:
     BROWSER: edge latest
-  rules:
-    - !reference [.full-run, rules]
 
 # Compliance tests
 .compliance:

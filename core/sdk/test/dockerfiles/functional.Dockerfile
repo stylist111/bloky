@@ -23,5 +23,4 @@ RUN if [ ! -z "$BROWSER" ]; then node core/sdk/test/dockerfiles/get-browser-bina
 ENV IS_DOCKER_RUN="true"
 ENV TEST_PARAMS="3 chromium"
 ENV ONLY_FLAKY="false"
-ENV TEST_RUNS=1
 ENTRYPOINT core/sdk/test/dockerfiles/functional-entrypoint.sh
