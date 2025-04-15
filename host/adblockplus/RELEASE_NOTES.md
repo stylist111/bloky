@@ -1,5 +1,9 @@
 # Unreleased
 
+# 4.20.0 - 2025-04-15
+
+This release contains improvements to ongoing haven experiment as well as various bug fixes and under-the-hood improvements.
+
 - Updated the minimum supported version of Node to 22. Node 22 is the current
   LTS version of Node. This only affects code that runs in Node, such as build
   scripts. This does not affect extension code running in the browser. (EXT-778)
