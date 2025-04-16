@@ -119,7 +119,7 @@ export async function initOptionsBackupSyncTab(optionsHandle) {
 
 export async function initOptionsPremiumFlTab(optionsHandle) {
   await loadOptionsTab(optionsHandle, "premium-filters");
-  await getDisplayedElement("#premium-filter-lists > div:nth-child(2)", { timeout: 2000 });
+  await getDisplayedElement("#premium-filter-lists > div:nth-child(3)", { timeout: 2000 });
 }
 
 export async function getCustomFilters() {
