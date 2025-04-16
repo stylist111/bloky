@@ -204,6 +204,24 @@ installed, [which does not work with some versions of `node-gyp`](https://github
 That could be solved by installing Python 3.11 locally, and
 [`pyenv`](https://github.com/pyenv/pyenv) could be used for that.
 
+### Windows Powershell errors
+
+From Node 22, there are some issues that need to be worked around if you're
+using Windows Powershell.
+
+- When calling NPM scripts, "--" is frequently used to separate the NPM
+  invocation from the arguments meant for the script. However, since NPM 10,
+  Powershell sometimes misinterprets the -- as being part of a Powershell
+  command (see [this Node issue](https://github.com/npm/cli/issues/7375)). A
+  simple workaround is to quote the --, for example
+  `npm run build "--" --scope=adblock`
+- When running NPM in the context of a `Start-Process` command, you must use the
+  command `npm.cmd`, rather than just `npm` (see [this Node
+  issue](https://github.com/npm/cli/issues/7375)).
+
+As an alternative to these workarounds, it is recommended to use Windows
+Subsystem for Linux rather than Powershell.
+
 ## CI pipeline
 
 ### Adding CI config for a new package
