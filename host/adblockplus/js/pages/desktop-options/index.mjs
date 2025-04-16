@@ -35,7 +35,6 @@ import {
 } from "~/premium-subscriptions/shared";
 import {
   convertDoclinks,
-  getDoclink,
   getErrorMessage,
   getSourceAttribute
 } from "../../common.mjs";
@@ -65,6 +64,9 @@ let acceptableAdsPrivacyUrl = null;
 let isCustomFiltersLoaded = false;
 let additionalSubscriptions = [];
 let premiumIsActive = null;
+let focusedBeforeDialog = null;
+let promisedDateFormat = null;
+let promisedResources = null;
 
 const collections = Object.create(null);
 const { getMessage } = browser.i18n;
@@ -101,20 +103,6 @@ const allowlistedPageRegexp = /^@@\|([^?|]+(?:\?[^|]*)?)\|?\$document$/;
 const minuteInMs = 60000;
 const hourInMs = 3600000;
 const fullDayInMs = 86400000;
-
-convertDoclinks();
-initI18n();
-
-const promisedLocaleInfo = browser.runtime.sendMessage({
-  type: "app.get",
-  what: "localeInfo"
-});
-const promisedDateFormat = promisedLocaleInfo
-  .then((addonLocale) => {
-    return new Intl.DateTimeFormat(addonLocale.locale);
-  })
-  .catch(dispatchError);
-const promisedResources = loadResources();
 
 function Collection(details) {
   this.details = details;
@@ -403,45 +391,6 @@ function focusNextElement(container, currentElement) {
   nextElement.focus();
   return true;
 }
-
-collections.recommendedFreeList = new Collection([
-  {
-    id: "free-list-table",
-    getItemTitle: (item) => getPrettyItemTitle(item, false)
-  }
-]);
-collections.recommendedPremiumList = new Collection([
-  {
-    id: "premium-list-table",
-    getItemTitle: (item) => getPrettyItemTitle(item, false)
-  }
-]);
-collections.langs = new Collection([
-  {
-    id: "blocking-languages-table",
-    emptyTexts: ["options_language_empty"],
-    getItemTitle: (item) => getPrettyItemTitle(item, false)
-  }
-]);
-collections.more = new Collection([
-  {
-    id: "more-list-table",
-    setEmptyAction: "hide-more-filters-section",
-    removeEmptyAction: "show-more-filters-section"
-  }
-]);
-collections.allowlist = new Collection([
-  {
-    id: "allowlisting-table",
-    emptyTexts: ["options_allowlist_empty_1", "options_allowlist_empty_2"]
-  }
-]);
-collections.filterLists = new Collection([
-  {
-    id: "all-filter-lists-table",
-    emptyTexts: ["options_filterList_empty"]
-  }
-]);
 
 async function addSubscription(subscription) {
   const { disabled, recommended, url } = subscription;
@@ -1072,7 +1021,7 @@ function getListBoxItems(subscriptions) {
   ];
 }
 
-function setupLanguagesBox() {
+function startLanguagesBox() {
   const ioListBox = $("#languages-box");
   ioListBox.getItemTitle = (item) => getPrettyItemTitle(item, false);
   ioListBox.addEventListener("close", (event) => {
@@ -1088,150 +1037,6 @@ function setupLanguagesBox() {
   });
 }
 
-function onDOMLoaded() {
-  void setupPremium();
-  setupLanguagesBox();
-  void showSmartAllowlistWarning();
-  populateLists().catch(dispatchError);
-  populateFilters().catch(dispatchError);
-
-  // Initialize navigation sidebar
-  browser.runtime
-    .sendMessage({
-      type: "app.get",
-      what: "addonVersion"
-    })
-    .then((addonVersion) => {
-      $("#abp-version").textContent = getMessage(
-        "options_dialog_about_version",
-        [addonVersion]
-      );
-    });
-
-  // Initialize interactive UI elements
-  document.body.addEventListener("click", onClick, false);
-
-  $("#acceptable-ads-allow").addEventListener("click", switchAcceptableAds);
-  $("#acceptable-ads-privacy-allow").addEventListener(
-    "click",
-    switchAcceptableAds
-  );
-
-  document.body.addEventListener("keyup", onKeyUp, false);
-  $("#allowlisting-textbox").addEventListener(
-    "keyup",
-    (e) => {
-      $("#allowlisting-add-button").disabled = !e.target.value;
-    },
-    false
-  );
-
-  $$("li[data-pref]").forEach(async (option) => {
-    const key = option.dataset.pref;
-    const value = await getPref(key);
-    onPrefMessage(key, value, true);
-  });
-
-  // General tab
-  getDoclink("acceptable_ads_criteria").then((link) => {
-    setElementLinks("enable-acceptable-ads-description", link);
-  });
-  getDoclink("imprint").then((url) => {
-    setElementText($("#copyright"), "options_dialog_about_copyright", [
-      new Date().getFullYear()
-    ]);
-    setElementLinks("copyright", url);
-  });
-  getDoclink("privacy").then((url) => {
-    $("#privacy-policy").href = url;
-  });
-  getDoclink("language_subscription").then((url) => {
-    setElementLinks("blocking-languages-description", url);
-  });
-  setElementText($("#tracking-warning-1"), "options_tracking_warning_1", [
-    getMessage("common_feature_privacy_title"),
-    getMessage("options_acceptableAds_ads_label")
-  ]);
-  setElementText($("#tracking-warning-3"), "options_tracking_warning_3", [
-    getMessage("options_acceptableAds_privacy_label")
-  ]);
-
-  getDoclink("adblock_plus_{browser}_dnt").then((url) => {
-    setElementLinks("dnt", url);
-  });
-  getDoclink("acceptable_ads_survey").then((url) => {
-    $("#acceptable-ads-why-not a.primary").href = url;
-  });
-
-  // Advanced tab
-  browser.runtime
-    .sendMessage({
-      type: "app.get",
-      what: "features"
-    })
-    .then((features) => {
-      hidePref("show_devtools_panel", !features.devToolsPanel);
-    });
-
-  getDoclink("filterdoc").then((link) => {
-    setElementLinks("custom-filters-description", link);
-  });
-
-  // Help tab
-  getDoclink("help_center_abp_en").then((link) => {
-    setElementLinks("help-center", link);
-  });
-  getDoclink("adblock_plus_report_bug").then((link) => {
-    setElementLinks("report-bug", link);
-  });
-  getDoclink("{browser}_support").then((url) => {
-    setElementLinks("visit-forum", url);
-  });
-
-  messaging.app.getInfo().then(({ application, manifestVersion, store }) => {
-    document.documentElement.dataset.application = application;
-    document.documentElement.dataset.manifestVersion = manifestVersion;
-
-    // We need to restrict the rating feature to certain browsers for which we
-    // have a link to where users can rate us
-    if (!["chrome", "chromium", "opera", "firefox"].includes(application)) {
-      $("#support-us").setAttribute("aria-hidden", true);
-    } else {
-      messaging.doclinks.get(`${store}_review`).then((url) => {
-        $("#support-us a[data-i18n='options_rating_button']").href = url;
-      });
-    }
-  });
-
-  $("#dialog").addEventListener(
-    "keydown",
-    function (event) {
-      const { key, shiftKey, target } = event;
-
-      switch (key) {
-        case "Escape":
-          closeDialog();
-          break;
-        case "Tab":
-          if (shiftKey) {
-            if (target.classList.contains("focus-first")) {
-              event.preventDefault();
-              $(".focus-last", this).focus();
-            }
-          } else if (target.classList.contains("focus-last")) {
-            event.preventDefault();
-            $(".focus-first", this).focus();
-          }
-          break;
-      }
-    },
-    false
-  );
-
-  onHashChange();
-}
-
-let focusedBeforeDialog = null;
 function openDialog(name, options) {
   const dialog = $("#dialog");
   dialog.setAttribute("aria-hidden", false);
@@ -1405,9 +1210,9 @@ function updateErrorTooltip(element, errorIds) {
   element.classList.add("error");
 }
 
-async function setupPremium() {
-  setupPremiumBanners();
-  setupPremiumInRecommended();
+async function startPremium() {
+  startPremiumBanners();
+  startPremiumInRecommended();
 
   const premium = await messaging.premium.get();
   premiumIsActive = premium.isActive;
@@ -1416,7 +1221,7 @@ async function setupPremium() {
   void premiumSubscriptions.start(emitter);
 }
 
-async function setupPremiumBanners() {
+async function startPremiumBanners() {
   const premiumUpgradeBanner = $(".premium-upgrade.banner");
   const upgradeCTA = $(".upgrade.button", premiumUpgradeBanner);
   const upgradeDescription = $("#premium-upgrade-description");
@@ -1434,7 +1239,7 @@ async function setupPremiumBanners() {
   setElementLinks(upgradeDescription, upgradeUrl);
 }
 
-async function setupPremiumInRecommended() {
+async function startPremiumInRecommended() {
   const upgradeCTA = $(".recommended-features .upgrade.button");
 
   const source = getSourceAttribute(upgradeCTA);
@@ -1588,7 +1393,7 @@ function onPrefMessage(key, value, initial) {
   if (checkbox) checkbox.setAttribute("aria-checked", value);
 }
 
-messaging.addMessageListener((message) => {
+function handleMessage(message) {
   switch (message.type) {
     case "app.respond":
       switch (message.action) {
@@ -1643,7 +1448,7 @@ messaging.addMessageListener((message) => {
       break;
     case "premium.respond":
       premiumIsActive = message.args[0].isActive;
-      setupPremiumBanners();
+      startPremiumBanners();
       updatePremiumStateInPage();
       break;
     case "subscriptions.respond":
@@ -1651,45 +1456,254 @@ messaging.addMessageListener((message) => {
       setupFiltersBox();
       break;
   }
-});
-
-messaging.app.listen(["addSubscription", "focusSection"]);
-messaging.filters.listen(["added", "changed", "removed"]);
-messaging.prefs.listen([
-  "elemhide_debug",
-  "notifications_ignoredcategories",
-  "recommend_language_subscriptions",
-  "shouldShowBlockElementMenu",
-  "show_devtools_panel",
-  "show_statsinicon",
-  "ui_warn_tracking",
-  "data_collection_opt_out"
-]);
-messaging.premium.listen(["changed"]);
-messaging.subscriptions.listen([
-  "added",
-  "changed",
-  "filtersDisabled",
-  "removed"
-]);
-
-onDOMLoaded();
-
-window.addEventListener("hashchange", onHashChange, false);
-
-// Show a generic error message
-window.addEventListener(
-  "error",
-  showNotification.bind(
-    null,
-    browser.i18n.getMessage("options_generic_error"),
-    "error"
-  )
-);
+}
 
 function dispatchError(error) {
   if (error) window.console.error(error);
   window.dispatchEvent(new CustomEvent("error"));
 }
 
-document.body.hidden = false;
+async function startAdditionalSidebar() {
+  const info = await messaging.app.getInfo();
+  document.documentElement.dataset.application = info.application;
+  document.documentElement.dataset.manifestVersion = info.manifestVersion;
+
+  // We need to restrict the rating feature to certain browsers for which we
+  // have a link to where users can rate us
+  if (!["chrome", "chromium", "opera", "firefox"].includes(info.application)) {
+    $("#support-us").setAttribute("aria-hidden", true);
+  } else {
+    const url = await messaging.doclinks.get(`${info.store}_review`);
+    $("#support-us a[data-i18n='options_rating_button']").href = url;
+  }
+}
+
+function startCollections() {
+  collections.recommendedFreeList = new Collection([
+    {
+      id: "free-list-table",
+      getItemTitle: (item) => getPrettyItemTitle(item, false)
+    }
+  ]);
+  collections.recommendedPremiumList = new Collection([
+    {
+      id: "premium-list-table",
+      getItemTitle: (item) => getPrettyItemTitle(item, false)
+    }
+  ]);
+  collections.langs = new Collection([
+    {
+      id: "blocking-languages-table",
+      emptyTexts: ["options_language_empty"],
+      getItemTitle: (item) => getPrettyItemTitle(item, false)
+    }
+  ]);
+  collections.more = new Collection([
+    {
+      id: "more-list-table",
+      setEmptyAction: "hide-more-filters-section",
+      removeEmptyAction: "show-more-filters-section"
+    }
+  ]);
+  collections.allowlist = new Collection([
+    {
+      id: "allowlisting-table",
+      emptyTexts: ["options_allowlist_empty_1", "options_allowlist_empty_2"]
+    }
+  ]);
+  collections.filterLists = new Collection([
+    {
+      id: "all-filter-lists-table",
+      emptyTexts: ["options_filterList_empty"]
+    }
+  ]);
+}
+
+function startDialog() {
+  $("#dialog").addEventListener(
+    "keydown",
+    function (event) {
+      const { key, shiftKey, target } = event;
+
+      switch (key) {
+        case "Escape":
+          closeDialog();
+          break;
+        case "Tab":
+          if (shiftKey) {
+            if (target.classList.contains("focus-first")) {
+              event.preventDefault();
+              $(".focus-last", this).focus();
+            }
+          } else if (target.classList.contains("focus-last")) {
+            event.preventDefault();
+            $(".focus-first", this).focus();
+          }
+          break;
+      }
+    },
+    false
+  );
+}
+
+function startMessageListeners() {
+  messaging.addMessageListener(handleMessage);
+  messaging.app.listen(["addSubscription", "focusSection"]);
+  messaging.filters.listen(["added", "changed", "removed"]);
+  messaging.prefs.listen([
+    "elemhide_debug",
+    "notifications_ignoredcategories",
+    "recommend_language_subscriptions",
+    "shouldShowBlockElementMenu",
+    "show_devtools_panel",
+    "show_statsinicon",
+    "ui_warn_tracking",
+    "data_collection_opt_out"
+  ]);
+  messaging.premium.listen(["changed"]);
+  messaging.subscriptions.listen([
+    "added",
+    "changed",
+    "filtersDisabled",
+    "removed"
+  ]);
+}
+
+async function startNavigationSidebar() {
+  const addonVersion = await messaging.app.get("addonVersion");
+  $("#abp-version").textContent = getMessage("options_dialog_about_version", [
+    addonVersion
+  ]);
+}
+
+async function startPrefOptions() {
+  const options = Array.from($$("li[data-pref]"));
+  await Promise.all(
+    options.map(async (option) => {
+      const key = option.dataset.pref;
+      const value = await messaging.prefs.get(key);
+      onPrefMessage(key, value, true);
+    })
+  );
+}
+
+async function startTabAdvanced() {
+  await Promise.all([
+    messaging.app.get("features").then((features) => {
+      hidePref("show_devtools_panel", !features.devToolsPanel);
+    }),
+    messaging.doclinks.get("filterdoc").then((link) => {
+      setElementLinks("custom-filters-description", link);
+    })
+  ]);
+}
+
+async function startTabGeneral() {
+  await Promise.all([
+    messaging.doclinks.get("acceptable_ads_criteria").then((link) => {
+      setElementLinks("enable-acceptable-ads-description", link);
+    }),
+    messaging.doclinks.get("imprint").then((url) => {
+      setElementText($("#copyright"), "options_dialog_about_copyright", [
+        new Date().getFullYear()
+      ]);
+      setElementLinks("copyright", url);
+    }),
+    messaging.doclinks.get("privacy").then((url) => {
+      $("#privacy-policy").href = url;
+    }),
+    messaging.doclinks.get("language_subscription").then((url) => {
+      setElementLinks("blocking-languages-description", url);
+    }),
+    messaging.doclinks.get("adblock_plus_{browser}_dnt").then((url) => {
+      setElementLinks("dnt", url);
+    }),
+    messaging.doclinks.get("acceptable_ads_survey").then((url) => {
+      $("#acceptable-ads-why-not a.primary").href = url;
+    })
+  ]);
+
+  setElementText($("#tracking-warning-1"), "options_tracking_warning_1", [
+    getMessage("common_feature_privacy_title"),
+    getMessage("options_acceptableAds_ads_label")
+  ]);
+  setElementText($("#tracking-warning-3"), "options_tracking_warning_3", [
+    getMessage("options_acceptableAds_privacy_label")
+  ]);
+}
+
+async function startTabHelp() {
+  await Promise.all([
+    messaging.doclinks.get("help_center_abp_en").then((link) => {
+      setElementLinks("help-center", link);
+    }),
+    messaging.doclinks.get("adblock_plus_report_bug").then((link) => {
+      setElementLinks("report-bug", link);
+    }),
+    messaging.doclinks.get("{browser}_support").then((url) => {
+      setElementLinks("visit-forum", url);
+    })
+  ]);
+}
+
+export function start() {
+  convertDoclinks();
+  initI18n();
+
+  promisedDateFormat = messaging.app
+    .get("localeInfo")
+    .then((addonLocale) => {
+      return new Intl.DateTimeFormat(addonLocale.locale);
+    })
+    .catch(dispatchError);
+  promisedResources = loadResources();
+
+  startCollections();
+  startMessageListeners();
+
+  void startPremium();
+  startLanguagesBox();
+  void showSmartAllowlistWarning();
+  void populateLists().catch(dispatchError);
+  void populateFilters().catch(dispatchError);
+
+  void startNavigationSidebar();
+
+  document.body.addEventListener("click", onClick, false);
+  $("#acceptable-ads-allow").addEventListener("click", switchAcceptableAds);
+  $("#acceptable-ads-privacy-allow").addEventListener(
+    "click",
+    switchAcceptableAds
+  );
+
+  document.body.addEventListener("keyup", onKeyUp, false);
+  $("#allowlisting-textbox").addEventListener(
+    "keyup",
+    (e) => {
+      $("#allowlisting-add-button").disabled = !e.target.value;
+    },
+    false
+  );
+
+  void startPrefOptions();
+  void startTabGeneral();
+  void startTabAdvanced();
+  void startTabHelp();
+  void startAdditionalSidebar();
+  startDialog();
+
+  onHashChange();
+  window.addEventListener("hashchange", onHashChange, false);
+
+  // Show a generic error message
+  window.addEventListener(
+    "error",
+    showNotification.bind(
+      null,
+      browser.i18n.getMessage("options_generic_error"),
+      "error"
+    )
+  );
+
+  document.body.hidden = false;
+}

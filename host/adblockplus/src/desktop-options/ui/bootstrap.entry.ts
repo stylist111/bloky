@@ -17,9 +17,12 @@
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution/ui";
 
+import { start as startUi } from "../../../js/pages/desktop-options/index.mjs";
+
 async function bootstrap(): Promise<void> {
   // Where we start things
   ewe.sentry.start();
+  startUi();
 }
 
 void bootstrap();
