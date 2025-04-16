@@ -27,10 +27,6 @@ import {
 import * as premium from "../../src/premium/background/index.ts";
 import { startOptionLinkListener } from "../../src/options/background";
 import { info } from "../../src/info/background";
-import {
-  setReadyState,
-  ReadyState
-} from "../../src/testing/ready-state/background/index.ts";
 import { port } from "~/core/messaging/background";
 import { revalidateAllowlistingStates } from "./allowlisting.js";
 import { initDisabledFilterCounters } from "./filterConfiguration.js";
@@ -242,7 +238,6 @@ export async function start() {
   void initializeEyeometryMACCounting();
   startUnloadCleanup();
   startIPMPingListener();
-  setReadyState(ReadyState.started);
 
   /**
    * @typedef {object} subscriptionsGetInitIssuesResult

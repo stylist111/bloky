@@ -39,7 +39,11 @@ import { start as startNewTab } from "../../new-tab/background";
 import { start as startOnPageDialog } from "../../onpage-dialog/background";
 import { start as startPremiumOnboarding } from "../../premium-onboarding/background";
 import { start as startPremiumSubscriptions } from "../../premium-subscriptions/background";
-import { start as startReadyState } from "../../testing/ready-state/background";
+import {
+  ReadyState,
+  setReadyState,
+  start as startReadyState
+} from "../../testing/ready-state/background";
 import { start as startYTWallDetection } from "@eyeo-fragments/yt-wall-detection/background";
 import { start as startInfoInjector } from "../../info-injector/background";
 import { start as startUpdateCampaign } from "../../update-campaign/background";
@@ -127,6 +131,8 @@ async function bootstrap(): Promise<void> {
     isPremiumActive: hasActiveLicense,
     getEncodedLicense: getAuthPayload
   });
+
+  setReadyState(ReadyState.started);
 }
 
 void bootstrap();
