@@ -73,10 +73,6 @@ export default () => {
       } else if (text === "LANGUAGE FILTER LISTS") {
         // This is a UI label, not a filterlist
         continue;
-      } else if (text.startsWith("Free - Distraction Control")) {
-        // That list doesn't appear in all environments.
-        // Not testing it as a workaround
-        continue;
       } else if (text.startsWith("IndianList+EasyList")) {
         // See getBuiltinFilterLists()
         text = "IndianList+EasyList";

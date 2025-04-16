@@ -140,7 +140,12 @@ export const defaultFilterLists = [
     text: "Anti-Circumvention filters",
     enabled: true,
   },
-  { name: "easylist", checkboxSelector: "#adblockFilterList_3", text: "EasyList", enabled: true },
+  {
+    name: "easylist",
+    checkboxSelector: "#adblockFilterList_3",
+    text: "EasyList",
+    enabled: true,
+  },
   {
     name: "free_distraction_control",
     text: "Basic Distraction Control",
