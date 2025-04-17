@@ -28,7 +28,7 @@ import {MILLIS_IN_SECOND} from "adblockpluscore/lib/time.js";
 // This is fairly arbitrary, mostly to capture calls that don't ever respond and
 // hang the tests. However, 30 seconds is also the longest time we reliably have
 // in MV3 for handling an event before the service worker might be suspended.
-const MAX_API_CALL_DURATION = 30 * MILLIS_IN_SECOND;
+export const MAX_API_CALL_DURATION = 30 * MILLIS_IN_SECOND;
 
 export async function fuzzSuspendServiceWorker() {
   if (isFuzzingServiceWorker()) {

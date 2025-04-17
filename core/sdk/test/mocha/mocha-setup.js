@@ -22,8 +22,7 @@
 import {TEST_PAGES_URL} from "../test-server-urls.js";
 import {Page, Popup, setMinTimeout, isIncognito} from "../utils.js";
 import {runInBackgroundPage, getLastError, clearAllTestEvents,
-        resetFeatureFlags} from "../messaging.js";
-import {isFuzzingServiceWorker} from "./mocha-runner.js";
+        resetFeatureFlags, MAX_API_CALL_DURATION} from "../messaging.js";
 
 import "./mocha-setup-minimal.js";
 
@@ -131,7 +130,10 @@ afterEach(async function() {
     await new Promise(r => setTimeout(r, 1000));
   }
 
-  setMinTimeout(this, isFuzzingServiceWorker() ? 12000 : 10000);
+  // This timeout must be higher than MAX_API_CALL_DURATION, which is used by
+  // runInBackgroundPage, otherwise the mocha timeout may hide the real failure
+  setMinTimeout(this, MAX_API_CALL_DURATION + 5000);
+
   await clearFilters();
   await clearStorage();
   await resetFeatureFlags();
