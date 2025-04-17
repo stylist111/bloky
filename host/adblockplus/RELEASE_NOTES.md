@@ -1,5 +1,7 @@
 # Unreleased
 
+- Updated snippets to 2.1.0
+
 # 4.20.0 - 2025-04-15
 
 This release contains improvements to ongoing haven experiment as well as various bug fixes and under-the-hood improvements.
