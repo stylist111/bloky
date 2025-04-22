@@ -397,6 +397,12 @@ Prefs.on(Prefs.shouldShowBlockElementMenu, () => {
   updateButtonUIAndContextMenus();
 });
 
+// update the tab icon when the tab's content changes
+ext.pages.onLoading.addListener(async (page) => {
+  const tab = await browser.tabs.get(page.id);
+  updateButtonUIAndContextMenus(tab);
+});
+
 updateButtonUIAndContextMenus();
 
 // eslint-disable-next-line no-restricted-globals

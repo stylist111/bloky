@@ -41,7 +41,6 @@ async function pauseOnDomain() {
     command: "allowlistTab",
     url: href,
   });
-  await browser.runtime.sendMessage({ command: "updateButtonUIAndContextMenus" });
   browser.tabs.reload();
   closePopup();
 }
@@ -56,7 +55,6 @@ async function resumeThisPage() {
   });
 
   if (response) {
-    await browser.runtime.sendMessage({ command: "updateButtonUIAndContextMenus" });
     browser.tabs.reload();
     closePopup();
   }
