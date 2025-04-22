@@ -16,10 +16,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { allowlistWebsite } from "./allowlisting-api.js";
+// import { allowlistWebsite } from "./allowlisting-api.js";
 import { getStatus } from "./status-api.js";
 
 export default {
   getStatus,
-  allowlistWebsite,
+  // allowlistWebsite is intentionally not exposed
 };

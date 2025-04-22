@@ -113,7 +113,7 @@ type StatusResponse = Array<{
 
 ### `allowlistWebsite`
 
-Adds the current website to the allowlist for one or more extensions.
+> **Note:** This method is no longer exposed in the public API and cannot be accessed.
 
 #### Example
 
