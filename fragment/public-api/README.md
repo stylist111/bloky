@@ -200,6 +200,55 @@ type AllowlistResponse = Array<{
 
 ---
 
+### `getExperimentFlags`
+
+Returns an object containing all current experiment flags and their values.
+
+#### Example
+
+```js
+await sendExtCommand({ method: "getExperimentFlags" });
+```
+
+#### Response Structure
+
+The response is an array of objects. Each object represents the result from a specific extension.
+
+```typescript
+type ExperimentFlagsResponse = Array<{
+  /**
+   * The ID of the extension (e.g., 'adblock' or 'adblockplus').
+   */
+  name: string;
+
+  /**
+   * The manifest version of the extension (e.g., '1.2.3').
+   */
+  version: string;
+
+  /**
+   * The request ID. Generated automatically and will be the same for each response
+   * in this array of responses.
+   */
+  requestId: string;
+
+  /**
+   * The experiment flags object, where keys are flag IDs and values are their current state.
+   * If an error occurs, this is undefined, and the `error` key will be populated.
+   */
+  result?: {
+    [flagId: string]: unknown;
+  };
+
+  /**
+   * A description of the error if the extension fails to respond.
+   */
+  error?: string;
+}>;
+```
+
+---
+
 ## Notes
 
 - When targeting multiple extensions, each extension processes the request independently.
