@@ -19,6 +19,7 @@ import * as info from "info";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
 import { start as startSettings } from "~/prefs/background";
+import { start as startPageviewMetrics } from "../../pageview-metrics/background";
 
 async function bootstrap(): Promise<void> {
   void ewe.sentry.start(
@@ -28,6 +29,7 @@ async function bootstrap(): Promise<void> {
   );
 
   startSettings();
+  startPageviewMetrics();
 }
 
 void bootstrap();

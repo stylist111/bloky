@@ -2,6 +2,7 @@
 
 - Fixed an issue with the block count being shown after a user allowlists a site (EXT-904)
 - Updated snippets to 2.1.0
+- Collect pageview metrics from specific domains.
 
 # 6.19.0 - 2025-04-15
 

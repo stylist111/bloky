@@ -35,7 +35,7 @@ declare namespace ext {
      * @param callback Called when an tab is loaded.
      * The parameters of this function depend on the type of event.
      */
-    addListener(callback: (tab: browser.Tabs.Tab) => void): void;
+    addListener(callback: (tab: browser.Tabs.Tab) => unknown): void;
 
     /**
      * Removes an event listener <em>callback</em> to an event.

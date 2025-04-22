@@ -16,6 +16,7 @@
  */
 
 // Type definitions for ewe-api.js
+import "./adblockpluscore";
 export * from "./background";
 
 // Type definitions for ewe-ui.js
