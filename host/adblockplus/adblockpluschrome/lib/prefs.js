@@ -273,6 +273,11 @@ defaults.ipm_ping_interval = 24 * 60 * 60 * 1000;
 defaults.ipm_last_ping = 0;
 
 /**
+ * The total number of pings.
+ */
+defaults.ipm_ping_count = 0;
+
+/**
  * List of user events
  *
  * @type {array}

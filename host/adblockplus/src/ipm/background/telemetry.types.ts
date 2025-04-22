@@ -31,3 +31,7 @@ export const serverUrlKey = "ipm_server_url";
  * The name for the Prefs storage key of the last attempted IPM ping.
  */
 export const lastPingKey = "ipm_last_ping";
+/**
+ * The name for the Prefs storage key of the total number of pings.
+ */
+export const pingCountPrefsKey = "ipm_ping_count";

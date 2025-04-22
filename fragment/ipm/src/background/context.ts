@@ -54,6 +54,9 @@ export let info: UserAndHostInformation = {
   getBrowserName() {
     return "browser_name";
   },
+  getBrowserVersion() {
+    return "browser_version";
+  },
   getAppVersion() {
     return "app_version";
   },

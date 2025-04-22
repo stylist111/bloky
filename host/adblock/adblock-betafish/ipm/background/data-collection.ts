@@ -33,6 +33,7 @@ import {
   PlatformStatus,
   PlatformType,
   UserData,
+  pingCountStorageKey,
 } from "./data-collection.types";
 import { getUserId } from "../../id/background/index";
 import { License } from "../../picreplacement/check";
@@ -80,10 +81,13 @@ async function getBaseAttributes(): Promise<BaseAttributes> {
   return {
     app_name: info.baseName,
     browser_name: info.application,
+    // Removing 0.0.0 from browser_version as can only get major version anyway:
+    browser_version: info.applicationVersion.split(".").shift()!,
     os: (await browser.runtime.getPlatformInfo()).os,
     language_tag: browser.i18n.getUILanguage(),
     app_version: info.addonVersion,
     install_type: (await browser.management.getSelf()).installType,
+    manifest_version: browser.runtime.getManifest().manifest_version,
   };
 }
 
@@ -130,10 +134,22 @@ async function getDeviceData(): Promise<DeviceData> {
     device_id: await getUserId(),
     attributes: {
       ...(await getBaseAttributes()),
+      extension_id: browser.runtime.id,
       blocked_total: (Prefs as any).blocked_total,
       license_status: License.isActiveLicense() ? LicenseState.active : LicenseState.inactive,
     },
   };
+}
+
+/**
+ * Gets the number of IPM pings from storage.
+ *
+ * @returns The IPM ping count
+ */
+async function getIPMPingCount(): Promise<number> {
+  const pingCountStorage = await browser.storage.local.get(pingCountStorageKey);
+  const count = pingCountStorage[pingCountStorageKey];
+  return typeof count === "number" && !Number.isNaN(count) ? count : 0;
 }
 
 /**
@@ -145,7 +161,10 @@ async function getUserData(): Promise<UserData> {
   return {
     type: DataType.customer,
     platforms: [{ platform: PlatformType.web, active: PlatformStatus.true }],
-    attributes: await getBaseAttributes(),
+    attributes: {
+      ...(await getBaseAttributes()),
+      ping_count: await getIPMPingCount(),
+    },
   };
 }
 

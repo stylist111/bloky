@@ -60,6 +60,7 @@ export interface UserAndHostInformation {
   getId: () => Promise<string>;
   getAppName: () => string;
   getBrowserName: () => string;
+  getBrowserVersion: () => string;
   getAppVersion: () => string;
 }
 

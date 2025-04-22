@@ -16,6 +16,14 @@
  */
 
 /**
+ * The name of the prefs key where the total number of IPM pings is stored.
+ *
+ * NOTE: This is ABP specific and defined in the host. If it changes in the
+ * host, we need to change it here as well.
+ */
+export const pingCountPrefsKey = "ipm_ping_count";
+
+/**
  * The types of data sent to the IPM server required by MoEngage
  */
 export enum DataType {
@@ -46,6 +54,10 @@ export interface BaseAttributes {
    */
   browser_name: string;
   /**
+   * The version of the browser.
+   */
+  browser_version: string;
+  /**
    * The operating system that the browser runs on.
    */
   os: string;
@@ -61,6 +73,10 @@ export interface BaseAttributes {
    * String describing how the add-on was installed.
    */
   install_type: string;
+  /**
+   * The extension manifest version
+   */
+  manifest_version: number;
 }
 
 /**
@@ -140,6 +156,10 @@ interface DeviceAttributes extends BaseAttributes {
    * Whether the user has an active premium license.
    */
   license_status: LicenseState;
+  /**
+   * The ID of the extension
+   */
+  extension_id: string;
 }
 
 /**
@@ -179,7 +199,17 @@ interface PlatformInfo {
 type PlatformInfoList = PlatformInfo[];
 
 /**
- * The device attributes that are being sent to the IPM server
+ * The additional user object attributes that are being sent to the IPM server
+ */
+interface UserAttributes extends BaseAttributes {
+  /**
+   * The total number of pings the extension sent.
+   */
+  ping_count: number;
+}
+
+/**
+ * The user attributes that are being sent to the IPM server
  */
 export interface UserData {
   /**
@@ -191,7 +221,7 @@ export interface UserData {
    */
   platforms: PlatformInfoList;
 
-  attributes: BaseAttributes;
+  attributes: UserAttributes;
 }
 
 /**

@@ -32,6 +32,7 @@ import {
   PlatformType,
   type UserData,
   eventStorageKey,
+  pingCountPrefsKey,
 } from "./data-collection.types";
 import { info, licensing, prefs } from "./context";
 
@@ -79,10 +80,12 @@ async function getBaseAttributes(): Promise<BaseAttributes> {
   return {
     app_name: info.getAppName(),
     browser_name: info.getBrowserName(),
+    browser_version: info.getBrowserVersion(),
     os: (await browser.runtime.getPlatformInfo()).os,
     language_tag: browser.i18n.getUILanguage(),
     app_version: info.getAppVersion(),
     install_type: (await browser.management.getSelf()).installType,
+    manifest_version: browser.runtime.getManifest().manifest_version,
   };
 }
 
@@ -129,6 +132,7 @@ async function getDeviceData(): Promise<DeviceData> {
     device_id: await info.getId(),
     attributes: {
       ...(await getBaseAttributes()),
+      extension_id: browser.runtime.id,
       blocked_total: 0, // We're not sending block count to protect user privacy
       license_status: licensing.isLicenseValid()
         ? LicenseState.active
@@ -146,7 +150,10 @@ async function getUserData(): Promise<UserData> {
   return {
     type: DataType.customer,
     platforms: [{ platform: PlatformType.web, active: PlatformStatus.true }],
-    attributes: await getBaseAttributes(),
+    attributes: {
+      ...(await getBaseAttributes()),
+      ping_count: prefs.get(pingCountPrefsKey),
+    },
   };
 }
 

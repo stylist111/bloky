@@ -30,6 +30,7 @@ import {
 import {
   intervalKey,
   lastPingKey,
+  pingCountPrefsKey,
   scheduleName,
   serverUrlKey
 } from "./telemetry.types";
@@ -78,6 +79,14 @@ async function processResponse(response: Response): Promise<void> {
 }
 
 /**
+ * Increments the number of total IPM pings.
+ */
+function incrementPingCount(): void {
+  const count = Prefs.get(pingCountPrefsKey);
+  void Prefs.set(pingCountPrefsKey, count + 1);
+}
+
+/**
  * Sends a ping together with telemetry data
  */
 export async function sendPing(): Promise<void> {
@@ -106,8 +115,9 @@ export async function sendPing(): Promise<void> {
     return;
   }
 
-  // Update timestamp for latest ping
+  // Update ping count and timestamp for latest ping
   void Prefs.set(lastPingKey, Date.now());
+  incrementPingCount();
 
   void fetch(url, {
     method: "POST",

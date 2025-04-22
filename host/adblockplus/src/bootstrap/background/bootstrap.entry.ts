@@ -91,6 +91,9 @@ async function bootstrap(): Promise<void> {
       getBrowserName() {
         return info.application;
       },
+      getBrowserVersion() {
+        return info.applicationVersion;
+      },
       getAppVersion() {
         return info.addonVersion;
       }
