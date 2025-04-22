@@ -374,6 +374,7 @@ export class Channels {
       if (
         request &&
         request.tabId &&
+        request.tabId !== browser.tabs.TAB_ID_NONE &&
         filter &&
         filter.type === "elemhide" &&
         filter.selector &&
@@ -384,6 +385,7 @@ export class Channels {
       } else if (
         request &&
         request.tabId &&
+        request.tabId !== browser.tabs.TAB_ID_NONE &&
         filter &&
         filter.type === "blocking" &&
         filter.enabled
