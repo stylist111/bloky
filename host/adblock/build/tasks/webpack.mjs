@@ -26,13 +26,7 @@ import named from "vinyl-named";
 
 const require = createRequire(import.meta.url);
 
-export default function webpack({
-  webpackInfo,
-  addonName,
-  addonVersion,
-  sourceMapType,
-  skipTypeChecks,
-}) {
+export default function webpack({ webpackInfo, addonName, addonVersion, sourceMapType }) {
   // merge2 will merge these streams keeping their existing order. This is
   // important, because if the order changes webpack can give results that are
   // functionally the same between runs, but not byte-for-byte identical.
@@ -75,7 +69,14 @@ export default function webpack({
                 use: [
                   {
                     loader: "ts-loader",
-                    options: { transpileOnly: skipTypeChecks },
+                    options: {
+                      onlyCompileBundledFiles: true,
+                      // We're running type checks separately due to memory
+                      // and performance problems when running them while
+                      // building the extension
+                      // https://gitlab.com/adblockinc/ext/adblockplus/adblockplus/-/issues/1441
+                      transpileOnly: true,
+                    },
                   },
                 ],
               },

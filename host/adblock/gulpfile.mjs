@@ -61,7 +61,6 @@ async function getBuildSteps(options) {
       addonName,
       addonVersion: options.version,
       sourceMapType: options.sourceMapType,
-      skipTypeChecks: args["skip_type_checks"] === "true",
     }),
     tasks.createManifest(options.manifest),
     translations(options.translations, options.manifest),
