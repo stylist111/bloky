@@ -95,7 +95,7 @@ export async function initOptionsCustomizeTab(optionsHandle) {
 
 export async function initOptionsGeneralTab(optionsHandle) {
   await loadOptionsTab(optionsHandle, "general");
-  await waitForNotNullProperty("#acceptable_ads", "checked");
+  await waitForNotNullProperty("#acceptable_ads", "checked", { timeout: 2000 });
   await driver.sleep(optionsPageSleep); // https://eyeo.atlassian.net/browse/EXT-335
 }
 
@@ -123,7 +123,7 @@ export async function initOptionsPremiumFlTab(optionsHandle) {
 }
 
 export async function getCustomFilters() {
-  const filters = await waitForNotNullProperty("#txtFiltersAdvanced", "value", 2000);
+  const filters = await waitForNotNullProperty("#txtFiltersAdvanced", "value", { timeout: 2000 });
   return filters.split("\n");
 }
 

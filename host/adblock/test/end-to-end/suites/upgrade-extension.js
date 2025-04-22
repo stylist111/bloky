@@ -45,6 +45,10 @@ import {
 import { defaultFilterLists, premiumFilterLists, languageFilterLists } from "../utils/dataset.js";
 
 export default () => {
+  before(async function () {
+    await initOptionsGeneralTab(getOptionsHandle());
+  });
+
   it("keeps settings after upgrade", async function () {
     this.timeout(100000); // Long test with many checks, including the extension reload
 

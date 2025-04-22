@@ -179,7 +179,7 @@ export function waitForNotDisplayed(
   );
 }
 
-export async function waitForNotNullProperty(cssSelector, property, timeout = 1000) {
+export async function waitForNotNullProperty(cssSelector, property, { timeout = 1000 } = {}) {
   let value;
   await wait(
     async () => {
