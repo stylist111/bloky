@@ -337,14 +337,12 @@ func:v3:chromium:beta:
   variables:
     BROWSER: chromium beta
     TEST_PARAMS: 3 $BROWSER --testKinds functional reload update
-  allow_failure: true
 
 func:v2:firefox:incognito:update:
   extends: .functional-nightly
   variables:
     BROWSER: firefox $BSL_FIREFOX_INCOGNITO_VERSION
     TEST_PARAMS: 2 $BROWSER --testKinds update --incognito
-  allow_failure: false
 
 func:v2:edge:latest:
   extends: .functional-nightly
