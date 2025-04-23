@@ -233,8 +233,8 @@ async function run() {
     console.log(`🤖 Tag ${tagName} has been created and pushed`);
   }
 
-  console.log('🤖 The version bump has completed successfully! The release process continues here:');
-  console.log('https://gitlab.com/eyeo/extensions/extensions/-/wikis/Host-release-process#get-builds');
+  console.log('🤖 The version bump has completed successfully! You may continue with the release process');
+  console.log('https://gitlab.com/eyeo/browser-extensions-and-premium/extensions/extensions/-/wikis/Host-release-process');
 }
 
 run().catch(err => {
