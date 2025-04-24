@@ -32,6 +32,7 @@ import {
   wait,
 } from "@eyeo/test-utils/driver";
 import { getOptionsHandle, sendExtMessage } from "@eyeo/test-utils/extension";
+import { premiumFilterLists } from "./dataset.js";
 
 import { installUrl } from "./urls.js";
 
@@ -274,6 +275,29 @@ export async function setAADefaultState() {
   // Cleanup setting the AA default state
   if (!aaEnabled) {
     await clickFilterlist(name, checkboxSelector, true);
+  }
+}
+
+export async function changePremiumFLStatus(checkboxSelector, { enable = true } = {}) {
+  await clickOnDisplayedElement(`span:has(> ${checkboxSelector})`);
+
+  const errMsg = enable ? "enabled" : "disabled";
+  await wait(
+    async () => {
+      return (await isCheckboxPropertyEnabled(checkboxSelector)) === enable;
+    },
+    1000,
+    `${checkboxSelector} has not been ${errMsg}`,
+  );
+}
+
+export async function setPremiumFLsDefaultState() {
+  await initOptionsPremiumFlTab(getOptionsHandle());
+
+  for (const { checkboxSelector } of premiumFilterLists) {
+    if (await isCheckboxPropertyEnabled(checkboxSelector)) {
+      await changePremiumFLStatus(checkboxSelector, { enable: false });
+    }
   }
 }
 

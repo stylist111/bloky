@@ -23,6 +23,7 @@ import {
   openNewTab,
   waitForNotDisplayed,
   clickOnDisplayedElement,
+  isCheckboxPropertyEnabled,
   clickAndSendKeys,
   wait,
 } from "@eyeo/test-utils/driver";
@@ -34,11 +35,18 @@ import {
   initOptionsPremiumTab,
   enablePremiumProgrammatically,
   initPopupWithLocalPage,
+  initOptionsPremiumFlTab,
+  setPremiumFLsDefaultState,
+  changePremiumFLStatus,
 } from "../../utils/page.js";
-import { premiumPopupToggleItems } from "../../utils/dataset.js";
+import { premiumPopupToggleItems, premiumFilterLists } from "../../utils/dataset.js";
 import { premiumUrl } from "../../utils/urls.js";
 
 export default () => {
+  afterEach(async function () {
+    await setPremiumFLsDefaultState();
+  });
+
   it("activates premium by UI", async function () {
     this.timeout(80000); // See driver.sleep below
 
@@ -152,6 +160,25 @@ export default () => {
         displayedTimeout: 1000,
         forceRefresh: true,
       });
+    }
+  });
+
+  it("enables premium filter lists", async function () {
+    await enablePremiumProgrammatically();
+    await initOptionsPremiumFlTab(getOptionsHandle());
+
+    let someEnabled = false;
+    for (const { checkboxSelector } of premiumFilterLists) {
+      if (await isCheckboxPropertyEnabled(checkboxSelector)) {
+        continue;
+      }
+
+      await changePremiumFLStatus(checkboxSelector, { enable: true });
+      someEnabled = true;
+    }
+
+    if (!someEnabled) {
+      throw new Error("All premium filterlists were previously enabled");
     }
   });
 };

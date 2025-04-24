@@ -41,6 +41,7 @@ import {
   initOptionsPremiumFlTab,
   getCustomFilters,
   checkSubscriptionsState,
+  changePremiumFLStatus,
 } from "../utils/page.js";
 import { defaultFilterLists, premiumFilterLists, languageFilterLists } from "../utils/dataset.js";
 
@@ -58,16 +59,10 @@ export default () => {
     // activate premium
     await enablePremiumProgrammatically();
 
-    // enable premium filterlists
+    // enable premium filterlist
     await initOptionsPremiumFlTab(getOptionsHandle());
-    for (const { checkboxSelector, text } of premiumFilterLists) {
-      await clickOnDisplayedElement(`span:has(> ${checkboxSelector})`);
-      await wait(
-        async () => isCheckboxPropertyEnabled(checkboxSelector),
-        2000,
-        `${text} is not enabled`,
-      );
-    }
+    const { checkboxSelector: premiumFlCheckboxSelector } = premiumFilterLists[0];
+    await changePremiumFLStatus(premiumFlCheckboxSelector, { enable: true });
 
     // turn off the counter on the extension icon
     await initOptionsGeneralTab(getOptionsHandle());
@@ -80,28 +75,14 @@ export default () => {
       "Counter on the extension icon is still on",
     );
 
-    // switch existing default states for lists: acceptable ads, easyList, easyprivacy
+    // switch existing default states for lists: acceptable ads, easyList
     await initOptionsFiltersTab(getOptionsHandle());
-    const lists = defaultFilterLists
-      .filter((list) => ["easyprivacy", "acceptable_ads", "easylist"].includes(list.name))
-      .map((list) => {
-        // In 16.14.1 acceptable_ads was previously disabled by default FF and should remain that way after upgrade
-        // Note: This should be removed after releasing the new version
-        if (
-          list.name === "acceptable_ads" &&
-          browserDetails.browserName === "firefox" &&
-          prevExtVersion === "6.14.1"
-        ) {
-          return { ...list, enabled: false };
-        }
+    const defaultFLSubset = defaultFilterLists.filter((list) =>
+      ["acceptable_ads", "easylist"].includes(list.name),
+    );
 
-        return list;
-      });
-
-    for (const { checkboxSelector, enabled, name } of lists) {
-      // Easyprivacy is down below the page, therefore scrollIntoView is needed
-      await clickOnDisplayedElement(`span:has(> ${checkboxSelector})`, { scrollIntoView: true });
-
+    for (const { checkboxSelector, enabled, name } of defaultFLSubset) {
+      await clickOnDisplayedElement(`span:has(> ${checkboxSelector})`);
       // if list is enabled by default, it should be unsubscribed
       const regexp = enabled ? /Unsubscribed/ : /updated|Subscribed/;
       await checkSubscriptionsState([{ name, enabled: !enabled, checkboxSelector }], { regexp });
@@ -144,18 +125,9 @@ export default () => {
     // check if blocked ads are still increasing
     await blockAds(blockedBeforeUpgrade, maxAdsBlocked, getPopupBlockedAdsTotalCount);
 
-    // check if premium filterlists are still enabled and can be changed
+    // check if premium filterlist is still enabled and can be disabled
     await initOptionsPremiumFlTab(getOptionsHandle());
-    for (const { checkboxSelector, text } of premiumFilterLists) {
-      await clickOnDisplayedElement(`span:has(> ${checkboxSelector})`);
-      await wait(
-        async () => {
-          return !(await isCheckboxPropertyEnabled(checkboxSelector));
-        },
-        2000,
-        `${text} is still enabled`,
-      );
-    }
+    await changePremiumFLStatus(premiumFlCheckboxSelector, { enable: false });
 
     // check if the counter on the extension icon is still off
     await initOptionsGeneralTab(getOptionsHandle());
@@ -171,8 +143,8 @@ export default () => {
     await clickOnDisplayedElement(`span:has(> ${langList.checkboxSelector})`);
     await waitForNotDisplayed(`span:has(> ${langList.checkboxSelector})`);
 
-    // switch back to the existing default states for lists: acceptable ads, easyList, easyprivacy
-    for (const { name, enabled, checkboxSelector } of lists) {
+    // switch back to the existing default states for lists: acceptable ads, easyList
+    for (const { name, enabled, checkboxSelector } of defaultFLSubset) {
       await clickOnDisplayedElement(`span:has(> ${checkboxSelector})`, {
         scrollIntoView: true,
       });
