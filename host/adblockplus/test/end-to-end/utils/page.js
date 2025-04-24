@@ -647,24 +647,30 @@ export async function addLanguageFilterList(
   langName,
   { isOptionsGeneralTab = true, isLanguagesPopupOpen = false } = {}
 ) {
-  const languageElems = isLanguagesPopupOpen
-    ? await getPopupLanguageFilterLists(isOptionsGeneralTab)
-    : await getLanguageFilterLists(isOptionsGeneralTab);
-
+  const errText = isOptionsGeneralTab ? "languages box" : "filters box";
   let langElem;
-  for (const elem of languageElems) {
-    const text = await getElemTextSafe(elem);
-    if (text && text.startsWith(langName)) {
-      langElem = elem;
-      break;
-    }
-  }
-  if (!langElem) {
-    const text = isOptionsGeneralTab ? "languages box" : "filters box";
-    throw new Error(`${langName} EasyList was not found on ${text}`);
-  }
-  await langElem.click();
+  await wait(
+    async () => {
+      const languageElems = isLanguagesPopupOpen
+        ? await getPopupLanguageFilterLists(isOptionsGeneralTab)
+        : await getLanguageFilterLists(isOptionsGeneralTab);
 
+      for (const elem of languageElems) {
+        const text = await getElemTextSafe(elem);
+        if (text && text.startsWith(langName)) {
+          langElem = elem;
+          return true;
+        }
+      }
+      if (!langElem) {
+        throw new Error();
+      }
+    },
+    2000,
+    `${langName} EasyList was not found on ${errText}`
+  );
+
+  await clickOnDisplayedElement(langElem);
   await checkLanguageFilterList(langName, { isOptionsGeneralTab });
 }
 
@@ -686,15 +692,39 @@ export async function changeLanguageFilterList(langNameBefore, langNameAfter) {
     isOptionsGeneralTab
   });
 
-  const changeFilterlistSelector = `${flSelector} [data-action="open-languages-box"]`;
-  await clickOnDisplayedElement(changeFilterlistSelector, {
-    scrollIntoView: true
-  });
-  // Clicking on changeFilterlistSelector opens the languages popup
-  await addLanguageFilterList(langNameAfter, {
-    isOptionsGeneralTab,
-    isLanguagesPopupOpen: true
-  });
+  const dataActionSelector = '[data-action="open-languages-box"]';
+  // Initially the "change" selector locates also the expected language
+  let changeFilterlistSelector = `${flSelector} ${dataActionSelector}`;
+
+  // For some reason right after extension installation the changed filterlist
+  // may be different than the one that got clicked. Retrying as a workaround
+  await wait(
+    async () => {
+      // Open the languages popup using the "change" button
+      await clickOnDisplayedElement(changeFilterlistSelector, {
+        scrollIntoView: true
+      });
+      try {
+        await addLanguageFilterList(langNameAfter, {
+          isOptionsGeneralTab,
+          isLanguagesPopupOpen: true
+        });
+        return true;
+      } catch (err) {
+        if (err.name === "TimeoutError") {
+          console.warn(`${err.message}, retrying...`);
+          // At this point the language has changed, but it's likely a wrong one,
+          // that's why the selector is now less strict
+          changeFilterlistSelector = dataActionSelector;
+          return false;
+        }
+        throw err;
+      }
+    },
+    3000,
+    `Language filterlist "${langNameBefore}" could not be changed to "${langNameAfter}"`
+  );
+
   // Check langNameBefore list has been removed
   await checkLanguageFilterList(langNameBefore, {
     isAdded: false,

@@ -43,7 +43,8 @@ import {
   getTooltipMsg,
   manageFilterListsError,
   getElemTextSafe,
-  checkSubscriptionsState
+  checkSubscriptionsState,
+  changeLanguageFilterList
 } from "../../utils/page.js";
 import {
   getDefaultFilterLists,
@@ -153,6 +154,16 @@ export default () => {
     await checkSubscriptionsState([{ name, enabled: true }], {
       timeout: 5000
     });
+  });
+
+  it("changes the default language filter list", async function () {
+    const defaultLangName = "English";
+    const changedLangName = "Deutsch + English";
+
+    await initOptionsGeneralTab(getOptionsHandle());
+    await changeLanguageFilterList(defaultLangName, changedLangName);
+    // Cleanup
+    await changeLanguageFilterList(changedLangName, defaultLangName);
   });
 
   it("adds and removes a built in language filter list", async function () {

@@ -105,11 +105,12 @@ export default () => {
 
     const timeout = 1000;
     for (const { name, action } of premiumPopupToggleItems) {
-      await clickOnDisplayedElement(`[data-name="${name}"]`, {
-        timeout,
-        checkDisplayed: false, // Edge headless on macOS gets the element as "not displayed"
-        checkAttribute: { name: "data-is-checked", value: null },
-      });
+      const cssSelector = `[data-name="${name}"]`;
+      // Edge headless on macOS gets the element as "not displayed"
+      const elem = await getDisplayedElement(cssSelector, { timeout, checkDisplayed: false });
+
+      expect(await elem.getAttribute("data-is-checked")).toEqual(null);
+      await clickOnDisplayedElement(elem, { timeout, checkDisplayed: false });
 
       const actionSelector = `[data-action="${action}"] > button`;
       // A sliding animation of the action button makes polling needed

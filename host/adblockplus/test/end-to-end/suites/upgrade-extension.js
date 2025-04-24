@@ -90,6 +90,12 @@ async function clickAdsCounterAndCheck({ enable = true } = {}) {
 }
 
 export default () => {
+  before(async function () {
+    await initOptionsGeneralTab(getOptionsHandle(), {
+      waitForDefaultState: true
+    });
+  });
+
   it("keeps settings after upgrade", async function () {
     this.timeout(100000); // Long test with many checks, including the extension reload
 
@@ -99,7 +105,7 @@ export default () => {
     await enablePremiumProgrammatically();
 
     // Change default filterlist status:
-    // cookies (premium), additional tracking, acceptable ads, german easylist
+    // cookies (premium), additional tracking, acceptable ads, english easylist
     await clickFLAndCheck("Block cookie consent pop-ups", {
       enable: true,
       stepsAfterClick: async () =>
@@ -114,8 +120,10 @@ export default () => {
       enable: false,
       name: "Acceptable Ads"
     });
-    // Replace default EasyList with German Easylist
-    await changeLanguageFilterList("English", "Deutsch + English");
+    const defaultLangName = "English";
+    const changedLangName1 = "Deutsch + English";
+    const changedLangName2 = "italiano + English";
+    await changeLanguageFilterList(defaultLangName, changedLangName1);
 
     // turn off the counter on the extension icon
     await clickAdsCounterAndCheck({ enable: false });
@@ -177,8 +185,8 @@ export default () => {
       name: "Acceptable Ads"
     });
 
-    // Replace German EasyList with Italian Easylist
-    await changeLanguageFilterList("Deutsch + English", "italiano + English");
+    // check if language filter list can be changed again
+    await changeLanguageFilterList(changedLangName1, changedLangName2);
 
     // check if the counter on the extension icon is still off and turn it on
     await clickAdsCounterAndCheck({ enable: true });

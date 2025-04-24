@@ -17,8 +17,7 @@
 
 import fs from "fs";
 import path from "path";
-import { By } from "selenium-webdriver";
-import { expect } from "expect";
+import { By, WebElement } from "selenium-webdriver";
 
 export async function findUrl(expectedUrl, timeout = 5000) {
   let url;
@@ -230,34 +229,45 @@ export async function waitForCheckboxStatus(
   );
 }
 
+/**
+ * Clicks on a displayed element.
+ *
+ * @param {string|Object} cssSelectorOrWebElement - Either the CSS locator of the element or an instance of Selenium's WebElement
+ * @param {Object} options - Options object
+ * @param {number} options.timeout - polling timeout in ms
+ * @param {boolean} options.scrollIntoView - Scroll into element's view before click
+ * @param {boolean} options.checkDisplayed - When false, the element doesn't need to be displayed
+ * @param {boolean} options.jsClick - When true, do a javascript click instead of a regular Selenium click.
+ *                                    Used as a workaround when elem.click() doesn't work
+ * @returns {Promise<Object>} - The webdriver element found in the page
+ */
 export async function clickOnDisplayedElement(
-  cssSelector,
-  {
-    timeout = 500,
-    scrollIntoView = false,
-    checkDisplayed = true,
-    checkAttribute = null,
-    jsClick = false,
-  } = {},
+  cssSelectorOrWebElement,
+  { timeout = 500, scrollIntoView = false, checkDisplayed = true, jsClick = false } = {},
 ) {
   const bigTimeout = timeout * 2;
+
   let elem;
+  let cssSelector;
+  if (cssSelectorOrWebElement instanceof WebElement) {
+    elem = cssSelectorOrWebElement;
+  } else {
+    cssSelector = cssSelectorOrWebElement;
+  }
+
   await wait(
     async () => {
       try {
-        elem = await getDisplayedElement(cssSelector, { timeout, checkDisplayed });
+        if (cssSelector) {
+          elem = await getDisplayedElement(cssSelector, { timeout, checkDisplayed });
+        }
         if (scrollIntoView) {
           await driver.executeScript("arguments[0].scrollIntoView();", elem);
-        }
-        if (checkAttribute) {
-          const { name, value } = checkAttribute;
-          expect(await elem.getAttribute(name)).toEqual(value);
         }
         // make sure the element is interactable
         await elem.isEnabled();
 
         if (jsClick) {
-          // Workaround when elem.click() doesn't work
           await driver.executeScript((selector) => {
             document.querySelector(selector).click();
           }, cssSelector);
