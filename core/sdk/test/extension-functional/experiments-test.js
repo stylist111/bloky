@@ -1,16 +1,16 @@
 async function start() {
   const port = chrome.runtime.connect({name: "experiments-ui-test"});
-  port.onMessage.addListener(async flagId => {
-    const flagValue = await EWE.experiments.getFlag(flagId);
-    const div = document.createElement("div");
-    div.id = "test-flag-ui";
-    div.innerText = "This should be displayed if the feature flag is set";
+  port.onMessage.addListener(async({method, args}) => {
+    let response = null;
 
-    if (flagValue === "test-ui-flag") {
-      document.body.appendChild(div);
+    try {
+      response = await EWE.experiments[method](...args);
+    }
+    catch (error) {
+      console.error("Error in experiments test:", error);
     }
 
-    port.postMessage(flagValue);
+    port.postMessage(response);
   });
 }
 

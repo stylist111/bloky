@@ -709,38 +709,59 @@ describe("Split Experiments", function() {
   });
 
   describe("Experiments UI API tests", function() {
+    let uiPort;
+    let uiTab;
+
     afterEach(async function() {
       await EWE.testing.resetExperimentData();
     });
 
-    const getFlagFromUI = flagId => {
-      return new Promise((resolve, reject) => {
-        // Currently we check if an element is displayed on the page by
-        // injecting a script into the page via browser.tab.executeScript.
-        // For extension pages we cannot use this, so we pass the information
-        // retrieved on the UI page via a message.
-        function handleConnect(port) {
-          if (port.name !== "experiments-ui-test") {
-            return;
-          }
-          browser.runtime.onConnect.removeListener(handleConnect);
-
-          port.postMessage(flagId);
-          port.onMessage.addListener(message => {
-            resolve(message);
-          });
-
-          port.onDisconnect.addListener(() => {
-            reject(new Error("Port disconnected without receiving the flag value"));
-          });
+    before(async function() {
+      function handleConnect(port) {
+        if (port.name !== "experiments-ui-test") {
+          return;
         }
+        uiPort = port;
 
-        browser.runtime.onConnect.addListener(handleConnect);
-        void browser.tabs.create({url: "experiments-test.html"});
+        browser.runtime.onConnect.removeListener(handleConnect);
+      }
+
+      browser.runtime.onConnect.addListener(handleConnect);
+      uiTab = await browser.tabs.create({url: "experiments-test.html"});
+    });
+
+    after(async function() {
+      await browser.tabs.remove(uiTab.id);
+    });
+
+    async function uiSendMessage(method, ...args) {
+      // Currently we check if an element is displayed on the page by
+      // injecting a script into the page via browser.tab.executeScript.
+      // For extension pages we cannot use this, so we pass the information
+      // retrieved on the UI page via a message.
+      return new Promise((resolve, reject) => {
+        uiPort.postMessage({method, args});
+        uiPort.onMessage.addListener(message => {
+          resolve(message);
+        });
+
+        uiPort.onDisconnect.addListener(() => {
+          reject(new Error("Port disconnected without receiving the flag value"));
+        });
       });
+    }
+
+    async function getFlagFromUI(flagId) {
+      return uiSendMessage("getFlag", flagId);
+    }
+
+    const getFlagsFromUI = (method, args) => {
+      return uiSendMessage("getFlags");
     };
 
     it("should display UI experiment when flag is set", async function() {
+      // wait for the page to load before trying to open the port
+      await new Promise(r => setTimeout(r, 1000));
       await setConfig(oneVariantConfig("test-ui-flag"));
       await EWE.experiments.sync();
       const flagValue = await getFlagFromUI(EXPERIMENT_FLAG);
@@ -751,10 +772,18 @@ describe("Split Experiments", function() {
       const flagValue = await getFlagFromUI(EXPERIMENT_FLAG);
       expect(flagValue).toBeNull();
     });
+
+    it("should get all experiment flags available for the user, in UI", async function() {
+      await setConfig(twoVariantConfig([0, 500], [500, 1000]));
+      await EWE.experiments.sync();
+      const availableFlags = await EWE.experiments.getFlags();
+
+      const uiFlags = await getFlagsFromUI();
+      expect(uiFlags).toEqual(availableFlags);
+    });
   });
 
   describe("Experiments Content Script API tests", function() {
-    const elemId = "experiments-content-api-test";
     const timeout = 4000;
 
     afterEach(async function() {
@@ -762,6 +791,7 @@ describe("Split Experiments", function() {
     });
 
     it("should display experiment when flag is set", async function() {
+      const elemId = "experiments-content-api-test";
       await setConfig(oneVariantConfig("test-content-script-flag"));
       await EWE.experiments.sync();
       const tabId = await new Page("experiments-content-api.html").loaded;
@@ -777,6 +807,7 @@ describe("Split Experiments", function() {
 
     it("should NOT display experiment when flag is NOT set", async function() {
       let elem;
+      const elemId = "experiments-content-api-test";
       const tabId = await new Page("experiments-content-api.html").loaded;
 
       await wait(async() => {
@@ -785,6 +816,25 @@ describe("Split Experiments", function() {
       }, timeout, "Experiment element is visible");
 
       expect(elem).toBeNull();
+    });
+
+    it("should get all available flags in content scripts", async function() {
+      let elem;
+
+      await setConfig(twoVariantConfig([0, 500], [500, 1000]));
+      await EWE.experiments.sync();
+      const availableFlags = await EWE.experiments.getFlags();
+
+      const tabId = await new Page("experiments-content-api.html").loaded;
+
+      for (let key in availableFlags) {
+        await wait(async() => {
+          elem = await getExistingElement(tabId, key);
+          return elem !== null;
+        }, timeout, `Flag ${key} not available in content script`);
+
+        expect(elem).toContain(key);
+      }
     });
   });
 });

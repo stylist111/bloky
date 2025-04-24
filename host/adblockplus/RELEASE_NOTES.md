@@ -1,5 +1,7 @@
 # Unreleased
 
+- Added the `EWE.experiments.getFlags()` in Content and UI APIs. (EXT-880)
+
 # 4.21.0 - 2025-04-22
 
 This release contains only minor updates and under-the-hood changes.

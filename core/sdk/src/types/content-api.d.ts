@@ -23,5 +23,9 @@ declare module "@eyeo/webext-ad-filtering-solution/content-api" {
     const getFlag: (
       flagId: string
     ) => Promise<boolean | string | number | string[] | null>;
+    /**
+     * Retrieves all feature flags, including overridden flags and their values
+     */
+    const getFlags: () => Promise<Record<string, unknown>>
   }
 }

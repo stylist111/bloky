@@ -81,6 +81,8 @@ async function handleMessage(message, sender) {
     case "ewe:get-experiment-flag":
       const {flagId} = message;
       return await experiments.getFlag(flagId);
+    case "ewe:get-experiment-flags":
+      return await experiments.getFlags();
   }
 }
 

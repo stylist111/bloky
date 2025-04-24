@@ -29,6 +29,15 @@ async function startExperiment() {
     div.id = elemId;
     document.body.appendChild(div);
   }
+
+  const allFlags = await ewe.experiments.getFlags();
+
+  for (let key in allFlags) {
+    const div = document.createElement("div");
+    div.id = key;
+    div.innerText = `${key} = ${allFlags[flag]}`;
+    document.body.appendChild(div);
+  }
 }
 
 async function start() {

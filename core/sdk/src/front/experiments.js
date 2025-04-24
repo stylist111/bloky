@@ -35,5 +35,15 @@ export default {
         flagId
       })
     );
+  },
+
+  /**
+   * Retrieves all the available experiment flags
+   * @returns {Promise<*|null>} Value of the feature flag or null if not found
+   */
+  async getFlags() {
+    return await ignoreNoConnectionError(
+      browser.runtime.sendMessage({type: "ewe:get-experiment-flags"})
+    );
   }
 };
