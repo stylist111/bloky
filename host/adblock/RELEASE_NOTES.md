@@ -2,7 +2,7 @@
 
 - Fixed an issue with the block count being shown after a user allowlists a site (EXT-904)
 - Updated snippets to 2.1.0
-- Collect pageview metrics from specific domains.
+- Collect pageview metrics from specific domains. (EXT-921)
 - Added the `EWE.experiments.getFlags()` in Content and UI APIs. (EXT-880)
 
 # 6.19.0 - 2025-04-15

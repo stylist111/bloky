@@ -29,6 +29,7 @@ import {MaxLengthMetricsDict} from "./domains-trimming.js";
 import {isHttpOrHttps, stripQuery} from "adblockpluscore/lib/url.js";
 import {SpecialDomainsProcessor} from "./cdp-processor.js";
 import {setPremiumStatusCallback} from "./callbacks.js";
+import {EventDispatcher} from "./types.js";
 
 /**
  * "Page view" event type. These are triggered whenever a new page is viewed,
@@ -378,8 +379,6 @@ function handleBrowserEvent(details, doMarkActive) {
   if (newSession) {
     count(EVENT_SESSION_START, siteId, timeStamp);
   }
-
-  return siteId;
 }
 
 function onCommitted(details) {
@@ -475,8 +474,19 @@ export function shouldNotifyActive(tabId, frameId) {
   return processor.shouldProcess(new URL(frameInfo.url));
 }
 
-export function onBlockthroughAcceptableAdsPageView(url) {
-  trace({url});
+let dispatchBTAADetectionEvent = () => {};
+
+/**
+ * Count a Blockthrough Acceptable Ads detection event if it counts as an
+ * Acceptable Ads Page View (BT AAPV).
+ * @param {string} url The URL of the page where the BTAADetectionEvent was
+ * emitted.
+ * @param {Object} details Detail object from the BTAADetectionEvent, including
+ * the `ab` and `acceptable` properties.
+ * @ignore
+ */
+export function countBTAADetectionEvent(url, details) {
+  trace({url, details});
 
   if (isOptedOut()) {
     return;
@@ -484,7 +494,7 @@ export function onBlockthroughAcceptableAdsPageView(url) {
 
   if (!isStateLoaded()) {
     warn(() => `Deferring blockthrough acceptable ads page view event: ${JSON.stringify({url})}`);
-    deferredBlockthroughEvents.push({url});
+    deferredBlockthroughEvents.push({url, details});
     return;
   }
 
@@ -506,12 +516,23 @@ export function onBlockthroughAcceptableAdsPageView(url) {
     return;
   }
 
+  let isAAPV = details.ab && details.acceptable;
+
+  dispatchBTAADetectionEvent({
+    siteId,
+    isAAPV,
+    ab: details.ab,
+    acceptable: details.acceptable
+  });
+
+  if (!isAAPV) {
+    return;
+  }
+
   log(`onBlockthroughAcceptableAdsPageView() url*=${stripQuery(url)}, hostname=${parsedUrl.hostname}, siteId=${siteId}`);
 
   const timeStamp = Date.now();
   count(EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW, siteId, timeStamp);
-
-  return siteId;
 }
 
 async function loadEvents() {
@@ -540,7 +561,7 @@ function handleDeferredEvents() {
 
   if (deferredBlockthroughEvents.length > 0) {
     for (const eachEvent of deferredBlockthroughEvents) {
-      onBlockthroughAcceptableAdsPageView(eachEvent.url);
+      countBTAADetectionEvent(eachEvent.url, eachEvent.details);
     }
     warn(`Processed ${deferredBlockthroughEvents.length} deferred blockthrough events`);
     deferredBlockthroughEvents = [];
@@ -683,6 +704,24 @@ export async function start() {
 }
 
 export default {
+
+  /**
+   * Emitted when we process a BTAADetectionEvent.
+   *
+   * @event
+   * @type {EventDispatcher<{siteId: string,
+   *                         isAAPV: boolean,
+   *                         ab: boolean,
+   *                         acceptable: boolean}>}
+   */
+  onBTAADetectionEvent: new EventDispatcher(
+    dispatch => {
+      dispatchBTAADetectionEvent = dispatch;
+    },
+    () => {
+      dispatchBTAADetectionEvent = () => {};
+    }),
+
   /**
    * Emitted when any CDP event happened.
    * @event

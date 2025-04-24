@@ -569,6 +569,15 @@ declare module "@eyeo/webext-ad-filtering-solution" {
 
   namespace cdp {
     /**
+     * Emitted when we process a BTAADetectionEvent.
+     */
+    const onBTAADetectionEvent: EventDispatcher<(
+      details: {siteId: string,
+                isAAPV: boolean,
+                ab: boolean,
+                acceptable: boolean}) => unknown>;
+
+    /**
      * Opt in or out from CDP
      *
      * @param optOut - `true` to opt out from CDP

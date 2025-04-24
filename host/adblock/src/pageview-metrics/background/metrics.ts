@@ -97,8 +97,42 @@ async function isTabAllowlisted(tabId: number): Promise<boolean> {
 }
 
 /**
+ * Records metrics related to a Blockthrough Acceptable Ads detection event.
+ *
+ * @param details - The details of the event, including our conclusion on if
+ * this is an Acceptable Ads Page View.
+ */
+async function handleBTAADetectionEvent(details: {
+  siteId: string;
+  isAAPV: boolean;
+  ab: boolean;
+  acceptable: boolean;
+}): Promise<void> {
+  const domains = await ewe.experiments.getFlag("pageview-metrics:domains");
+  if (!isStringArray(domains) || !domains.length) {
+    return;
+  }
+
+  if (!domains.includes(getBaseDomain(details.siteId))) {
+    return;
+  }
+
+  let packedDetails = 0;
+  packedDetails |= details.isAAPV ? 1 : 0;
+  packedDetails <<= 1;
+  packedDetails |= details.ab ? 1 : 0;
+  packedDetails <<= 1;
+  packedDetails |= details.acceptable ? 1 : 0;
+
+  ServerMessages.recordAnonymousMessage("btaa_detection", "stats", null, {
+    var: packedDetails,
+  });
+}
+
+/**
  * Initializes page view metrics functionality.
  */
 export function start(): void {
   ext.pages.onLoaded.addListener(handlePageLoaded);
+  ewe.cdp.onBTAADetectionEvent.addListener(handleBTAADetectionEvent);
 }

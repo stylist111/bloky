@@ -35,6 +35,7 @@ toc:
       - AllowlistingAuthorizationError
       - BlockableEventDispatcher
       - BlockableEventOptions
+      - BundledSubscription
       - CdpEventDispatcher
       - CdpEventOptions
       - EventDispatcher

@@ -596,6 +596,35 @@ describe("CDP", function() {
         ]));
       });
     });
+
+    it("notifies the listeners for blockthrough AAPV events", async function() {
+      await new Page(`${TEST_PAGES_URL}/blockthrough-aapv.html`).loaded;
+      await new Page(`${TEST_PAGES_URL}/blockthrough-aapv.html?bt-aapv-ab=false`).loaded;
+      await new Page(`${TEST_PAGES_URL}/blockthrough-aapv.html?bt-aapv-acceptable=false`).loaded;
+
+      await waitForAssertion(() => {
+        expect(getTestEvents("cdp.onBTAADetectionEvent")).toEqual([
+          [{
+            siteId: TEST_PAGES_DOMAIN,
+            isAAPV: true,
+            ab: true,
+            acceptable: true
+          }],
+          [{
+            siteId: TEST_PAGES_DOMAIN,
+            isAAPV: false,
+            ab: false,
+            acceptable: true
+          }],
+          [{
+            siteId: TEST_PAGES_DOMAIN,
+            isAAPV: false,
+            ab: true,
+            acceptable: false
+          }]
+        ]);
+      });
+    });
   });
 
   describe("Metric Upload", function() {

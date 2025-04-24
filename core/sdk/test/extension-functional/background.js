@@ -483,6 +483,9 @@ EWE.reporting.onBlockableItem.addListener(
   }
 );
 
+EWE.cdp.onBTAADetectionEvent.addListener(
+  createTestEventListener("cdp.onBTAADetectionEvent")
+);
 EWE.cdp.onCdpItem.addListener(
   createTestEventListener("cdp.onCdpItem.all")
 );

@@ -9,6 +9,8 @@
   LTS version of Node. This only affects code that runs in Node, such as build
   scripts. This does not affect extension code running in the browser. (EXT-778)
 - Added the `EWE.experiments.getFlags()` in Content and UI APIs. (EXT-880)
+- Added a new event, `EWE.cdp.onBTAADetectionEvent`, which can be used to
+  inspect and debug the status of the Blockthrough tag.
 
 ## General
 

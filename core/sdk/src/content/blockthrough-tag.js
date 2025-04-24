@@ -19,14 +19,15 @@ import browser from "webextension-polyfill";
 import {ignoreNoConnectionError} from "../all/errors.js";
 
 function onBTAADetectionEvent(event) {
-  let isAAPV = event.detail.ab && event.detail.acceptable;
-  if (isAAPV) {
-    ignoreNoConnectionError(
-      browser.runtime.sendMessage({
-        type: "ewe:blockthrough-acceptable-ads-page-view"
-      })
-    );
-  }
+  ignoreNoConnectionError(
+    browser.runtime.sendMessage({
+      type: "ewe:blockthrough-acceptable-ads-detection-event",
+      details: {
+        ab: event.detail.ab,
+        acceptable: event.detail.acceptable
+      }
+    })
+  );
 }
 
 export function startWatchingBlockthroughTag() {
