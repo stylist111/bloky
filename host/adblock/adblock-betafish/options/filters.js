@@ -222,7 +222,6 @@ FilterListUtil.getFilterListType = (filterList) => {
     "easyprivacy",
     "fb_notifications",
     "free_distraction_control",
-    "idcac",
     "warning_removal",
   ];
 

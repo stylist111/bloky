@@ -90,8 +90,6 @@ export const recommended = [
   ...typePremium,
   // circumvention
   "D4028CDD-3D39-4624-ACC7-8140F4EC3238",
-  // cookies
-  "2090F374-29D9-4202-B2CE-139D6492D95E",
   // notifications
   "5BD2BB73-459D-4A74-AF9D-A10157268350",
   // privacy

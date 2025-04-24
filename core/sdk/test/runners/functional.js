@@ -153,6 +153,48 @@ async function updateManifest(version) {
   }
 }
 
+async function removeManifestRulesets(rulsetIds) {
+  for (let extensionPath of extensionPaths) {
+    let manifestFile = path.resolve(extensionPath, "manifest.json");
+    let content = JSON.parse(await fs.promises.readFile(manifestFile));
+
+    // Don't do anything for MV2 extensions
+    if (manifestFile.manifest_version !== 3) {
+      return;
+    }
+
+    content.declarative_net_request.rule_resources =
+      content.declarative_net_request.rule_resources.filter(
+        ruleset => !rulsetIds.includes(ruleset.id)
+      );
+    await fs.promises.writeFile(manifestFile, JSON.stringify(content, null, 2));
+  }
+}
+
+async function addManifestRulesets(rulesets) {
+  const rulesetIds = rulesets.map(ruleset => ruleset.id);
+  await removeManifestRulesets(rulesetIds);
+
+  for (let extensionPath of extensionPaths) {
+    let manifestFile = path.resolve(extensionPath, "manifest.json");
+    let content = JSON.parse(await fs.promises.readFile(manifestFile));
+
+    // Don't do anything for MV2 extensions
+    if (manifestFile.manifest_version !== 3) {
+      return;
+    }
+
+    content.declarative_net_request.rule_resources.push(rulesets.map(
+      ruleset => ({
+        id: ruleset.id,
+        enabled: ruleset.enabled ?? false,
+        path: ruleset.path ?? "rulesets/${ruleset.id}"
+      })
+    ));
+    await fs.promises.writeFile(manifestFile, JSON.stringify(content, null, 2));
+  }
+}
+
 export async function exists(filename) {
   try {
     await fs.promises.access(filename);
@@ -268,6 +310,12 @@ async function runCommand(method, args) {
 
     case "updateManifest":
       await updateManifest(args.version);
+      break;
+    case "removeManifestRulesets":
+      await removeManifestRulesets(args.rulesetIds);
+      break;
+    case "addManifestRulesets":
+      await addManifestRulesets(args.rulesets);
       break;
 
     default:

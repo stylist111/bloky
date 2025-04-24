@@ -275,16 +275,6 @@
     "adblockId": "easyprivacy",
     "index": 35
   },
-  "https://easylist-downloads.adblockplus.org/v3/full/i_dont_care_about_cookies.txt": {
-    "id": "2090F374-29D9-4202-B2CE-139D6492D95E",
-    "adblockId": "idcac",
-    "index": 36
-  },
-  "https://easylist-downloads.adblockplus.org/i_dont_care_about_cookies.txt": {
-    "id": "2090F374-29D9-4202-B2CE-139D6492D95E",
-    "adblockId": "idcac",
-    "index": 36
-  },
   "https://easylist-downloads.adblockplus.org/v3/full/fanboy-social.txt": {
     "id": "0A679439-445F-4DE7-84B9-88341F6DA520",
     "adblockId": "antisocial",

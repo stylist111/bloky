@@ -377,6 +377,16 @@ describe(`Update (${phase}) [runner-only]`, function() {
           url: oldBundledSubscription.url
         }));
 
+        // Remove the old bundled subscription from manifest also.
+        await updateExtensionFiles([
+          {
+            method: "removeManifestRulesets",
+            args: {
+              rulesetIds: [oldBundledSubscription.id]
+            }
+          }
+        ]);
+
         return;
       }
 

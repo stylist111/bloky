@@ -408,6 +408,11 @@ export async function checkAndInitSubscriptions(skipWipeOutDiffs) {
     return;
   }
 
+  // Update subscription information before calling
+  // enableAllDisabledStaticRules() or otherwise
+  // browser.declarativeNetRequest.getDisabledRuleIds will throw an error
+  await updateSubscriptionInformation();
+
   if (!skipWipeOutDiffs) {
     // It's a webext update, so we need to wipe out all diffs
     // and start from scratch: full state provided in bundled data.
@@ -417,7 +422,6 @@ export async function checkAndInitSubscriptions(skipWipeOutDiffs) {
   }
 
   await recoverMigrationErrorSubscriptions();
-  await updateSubscriptionInformation();
   await ensureDNRRulesetsEnabled();
 
   await subscriptions.default.sync();

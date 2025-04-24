@@ -121,18 +121,6 @@ export const subAcceptableAdsLocal = {
   diff_url: `${TEST_ADMIN_PAGES_URL}/updatable_subscription/diff.json`
 };
 
-// Subscriptions listed in adblockpluscore/data/subscriptions.json
-
-export const subIDontCareAboutCookiesLive = {
-  id: "2090F374-29D9-4202-B2CE-139D6492D95E",
-  type: "cookies",
-  title: "I don't care about cookies",
-  homepage: "https://www.i-dont-care-about-cookies.eu/",
-  url: "https://easylist-downloads.adblockplus.org/v3/full/i_dont_care_about_cookies.txt",
-  mv2_url: "https://easylist-downloads.adblockplus.org/i_dont_care_about_cookies.txt",
-  diff_url: "https://easylist-downloads.adblockplus.org/v3/diff/i_dont_care_about_cookies/31a7d7a021ec70b20a639220192bb51a7c55f1f1.json"
-};
-
 // Subscriptions listed in test/scripts/custom-subscriptions.json and
 // adblockpluscore/data/subscriptions.json
 

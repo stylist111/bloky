@@ -67,7 +67,6 @@ const SyncService = (function getSyncService() {
     "easylist_plus_romanian",
     "fb_notifications",
     "free_distraction_control",
-    "idcac",
     "japanese",
     "nordic",
     "turkish",

@@ -84,8 +84,6 @@ export const recommended = [
   "CDAD4CF5-2706-42CB-B404-F5B9B61B8CAA",
   // circumvention
   "D4028CDD-3D39-4624-ACC7-8140F4EC3238",
-  // cookies
-  "2090F374-29D9-4202-B2CE-139D6492D95E",
   // cookies-premium
   "588470E8-E163-4CD9-A909-521B2A3BE73F",
   // notifications

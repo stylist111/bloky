@@ -181,11 +181,6 @@ export const defaultFilterLists = [
     text: "Fanboy's Notifications (blocks in-page pop-ups, social media and related widgets, and other annoyances)",
     enabled: false,
   },
-  {
-    name: "idcac",
-    text: "I Don't Care About Cookies",
-    enabled: false,
-  },
 ].map(addTestIdAndCheckboxSelector);
 
 export const premiumFilterLists = [

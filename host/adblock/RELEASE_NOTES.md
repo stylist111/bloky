@@ -4,6 +4,7 @@
 - Updated snippets to 2.1.0
 - Collect pageview metrics from specific domains. (EXT-921)
 - Added the `EWE.experiments.getFlags()` in Content and UI APIs. (EXT-880)
+- Remove I don't care about cookies recommended list. (EXT-843)
 
 # 6.19.0 - 2025-04-15
 

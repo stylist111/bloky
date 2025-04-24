@@ -11,6 +11,7 @@
 - Added the `EWE.experiments.getFlags()` in Content and UI APIs. (EXT-880)
 - Added a new event, `EWE.cdp.onBTAADetectionEvent`, which can be used to
   inspect and debug the status of the Blockthrough tag.
+- Remove I don't care about cookies recommended list. (EXT-843)
 
 ## General
 

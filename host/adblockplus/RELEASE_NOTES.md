@@ -7,6 +7,7 @@
 This release contains only minor updates and under-the-hood changes.
 
 - Updated snippets to 2.1.0
+- Remove I don't care about cookies recommended list. (EXT-843)
 
 # 4.20.0 - 2025-04-15
 

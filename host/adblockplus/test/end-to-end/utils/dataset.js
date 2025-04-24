@@ -31,7 +31,6 @@ export function getBuiltinFilterLists(manifestVersion) {
     manifestVersion === 3
       ? "ABP filters (compliance) (ABP Anti-Circumvention Filter List)"
       : "ABP filters (ABP Anti-Circumvention Filter List)",
-    "I don't care about cookies",
     "Fanboy's Notifications Blocking List (Block push notifications)",
     "EasyPrivacy (Block additional tracking)",
     "Fanboy's Social Blocking List (Block social media icons tracking)",
