@@ -353,9 +353,9 @@ export default {
 
   _clearFrameState: _clear,
 
-  restartExperiments(url, syncInterval, errorRetryDelay) {
+  restartExperiments(url, syncInterval, errorRetryDelay, disableAutosync) {
     experiments.stop();
-    experiments.start(url, syncInterval, errorRetryDelay);
+    experiments.start(url, syncInterval, errorRetryDelay, disableAutosync);
   },
   setExperimentsSeed: experiments.setSeed,
   resetExperimentData: experiments.reset,

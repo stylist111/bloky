@@ -155,6 +155,12 @@ describe("Testing Mechanisms", function() {
   });
 
   describe("Events", function() {
+    // These tests do not actually take this long generally. However, in the
+    // worst case, we have a wait with a default timeout of 1 second, which we
+    // call 10 times in a loop, and there should be a buffer time on top of that
+    // for us to see the actual error.
+    setMinTimeout(this, 14000);
+
     it("does not let events leak between tests", async function() {
       for (let i = 0; i < 10; i++) {
         await triggerTestEvent("test-event", [i]);

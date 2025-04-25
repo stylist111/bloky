@@ -143,16 +143,23 @@ async function getExperimentsInternal() {
  * @param {string} url - URL endpoint for fetching experiment configurations
  * @param {number} [syncInterval=600000] - Interval in milliseconds between
  * syncs
- * @param {number} [errorRetryDelay] - Interval in milliseconds between syncs if
- * the last download had a network error.
+ * @param {number} [errorRetryDelay=3600000] - Interval in milliseconds between
+ * syncs if the last download had a network error.
+ * @param {boolean} [disableAutosync=false] - If this is true, then syncing will
+ * only happen if you call the sync function.
  */
 export function start(url, syncInterval = 10 * MILLIS_IN_MINUTE,
-                      errorRetryDelay = MILLIS_IN_HOUR) {
+                      errorRetryDelay = MILLIS_IN_HOUR,
+                      disableAutosync = false) {
   if (scheduler) {
     return;
   }
 
   experimentUrl = url;
+
+  if (disableAutosync) {
+    return;
+  }
 
   scheduler = new Scheduler({
     async listener() {

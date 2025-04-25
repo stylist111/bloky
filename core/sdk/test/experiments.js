@@ -91,9 +91,9 @@ async function setConfig(config, status = 200, etag) {
   await setEndpointResponse(EXPERIMENT_URL, config, "GET", status, {etag});
 }
 
-async function startWithTestArgs() {
+async function startWithTestArgs(disableAutosync) {
   await EWE.testing.restartExperiments(
-    EXPERIMENT_URL, PING_INTERVAL_MS, ERROR_BACKOFF_MS
+    EXPERIMENT_URL, PING_INTERVAL_MS, ERROR_BACKOFF_MS, disableAutosync
   );
 }
 
@@ -101,7 +101,7 @@ describe("Split Experiments", function() {
   afterEach(async function() {
     await clearEndpointResponse(EXPERIMENT_URL);
     await EWE.experiments.clearFlagOverrides();
-    await startWithTestArgs();
+    await startWithTestArgs(true);
   });
 
   it("returns an empty state before first sync", async function() {
@@ -483,7 +483,7 @@ describe("Split Experiments", function() {
 
     it("updates experiment data on schedule", async function() {
       await setConfig(oneVariantConfig("initial"));
-      await startWithTestArgs();
+      await startWithTestArgs(false);
 
       await expectNextPing(1, {[EXPERIMENT_FLAG]: "initial"});
       const initialSyncStatus = await EWE.experiments.getSyncStatus();
@@ -508,7 +508,7 @@ describe("Split Experiments", function() {
       setMinTimeout(this, 10000);
 
       await setConfig(oneVariantConfig("initial"));
-      await startWithTestArgs();
+      await startWithTestArgs(false);
 
       await expectNextPing(1, {[EXPERIMENT_FLAG]: "initial"});
       expect(await EWE.experiments.getSyncStatus()).toEqual({
@@ -534,11 +534,11 @@ describe("Split Experiments", function() {
 
     it("pings using the error delay when the service worker is suspended after a server error [mv3-only]", async function() {
       await setConfig({}, 500);
-      await startWithTestArgs();
+      await startWithTestArgs(false);
       await expectNextPing(1);
 
       await suspendServiceWorker(this);
-      await startWithTestArgs();
+      await startWithTestArgs(false);
       await delayThenExpectNextPing(ERROR_BACKOFF_MS, 2);
     });
 
