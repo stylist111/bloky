@@ -35,7 +35,6 @@ import {
   enablePremiumProgrammatically,
   initOptionsAdvancedTab,
   initOptionsGeneralTab,
-  initOptionsGeneralTabAfterChanges,
   changeLanguageFilterList,
   addCustomFilters,
   getCustomFilters,
@@ -147,7 +146,9 @@ export default () => {
 
     // upgrade extension
     const prevExtVersion = extension.version;
-    await upgradeExtension(initOptionsGeneralTabAfterChanges);
+    await upgradeExtension(initOptionsGeneralTab, {
+      waitForDefaultState: false
+    });
 
     // check the extension version has changed
     expect(extension.version).not.toEqual(prevExtVersion);

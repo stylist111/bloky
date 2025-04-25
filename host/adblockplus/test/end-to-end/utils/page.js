@@ -246,14 +246,6 @@ export async function setAADefaultState() {
   }
 }
 
-export async function initOptionsGeneralTabAfterChanges(
-  optionsHandle,
-  { timeout = 5000 } = {}
-) {
-  await loadOptionsTab(optionsHandle, "tab-general", timeout);
-  await getDisplayedElement("#free-list-table", { timeout });
-}
-
 export async function getElemTextSafe(elem) {
   let text;
   try {

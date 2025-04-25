@@ -211,11 +211,17 @@ export async function removeFilterProgrammatically(initOptionsFn, filterText) {
  * Reload the extension and wait for the options page to be displayed
  *
  * @param {Function} initOptionsFn - Function that initialises the options page, specific to each host
- * @param {boolean} [suppressUpdatePage=true] - Whether to suppress
- *   the update page or not before reloading
+ * @param {object} [options] - Options object
+ * @param {boolean} [options.suppressUpdatePage=true] - Whether to suppress
+ *   the update page or not before reloading. Only used by AB
+ * @param {boolean} [options.waitForDefaultState=true] - Whether to wait for the
+ *   options page default state or not. Only used by ABP
  * @returns {Promise<void>}
  */
-export async function reloadExtension(initOptionsFn, suppressUpdatePage = true) {
+export async function reloadExtension(
+  initOptionsFn,
+  { suppressUpdatePage = true, waitForDefaultState = true } = {},
+) {
   // Extension pages will be closed during reload,
   // create a new tab to avoid the "target window already closed" error
   const safeHandle = await openNewTab(localTestPageUrl);
@@ -262,14 +268,14 @@ export async function reloadExtension(initOptionsFn, suppressUpdatePage = true) 
           await driver.navigate().to(`${extension.origin}/options.html`);
           setOptionsHandle(await driver.getWindowHandle());
           // The options parameter is only used by ABP
-          await initOptionsFn(getOptionsHandle(), { timeout: 10000, waitForDefaultState: true });
+          await initOptionsFn(getOptionsHandle(), { timeout: 10000, waitForDefaultState });
           return true;
         } catch (e) {
           await driver.navigate().refresh();
         }
       },
       20000,
-      "Options page not found after reload",
+      "Options page not found after reload, or not in default state",
       1000,
     );
   } finally {
@@ -280,9 +286,10 @@ export async function reloadExtension(initOptionsFn, suppressUpdatePage = true) 
 /**
  * Replaces the extension files with the current build files, and reloads the extension
  * @param {Function} initOptionsFn - Function that initialises the options page, specific to each host
+ * @param {object?} reloadOptions - Options passed to reloadExtension call
  * @returns {Promise<void>}
  */
-export async function upgradeExtension(initOptionsFn) {
+export async function upgradeExtension(initOptionsFn, reloadOptions) {
   const { buildsDirPath, unpackedUpgradeDirPath } = global.config;
 
   // replace the contents of the extension with the files from the current builds
@@ -292,7 +299,7 @@ export async function upgradeExtension(initOptionsFn) {
   await changeExtensionVersion(unpackedUpgradeDirPath);
 
   // reload the extension
-  await reloadExtension(initOptionsFn);
+  await reloadExtension(initOptionsFn, reloadOptions);
 
   // update the extension info on global
   const { name, version, manifestVersion, origin, popupUrl } = await getExtensionInfo();
