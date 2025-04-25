@@ -18,3 +18,9 @@
   rules:
     - if: $UPDATE_RULES == "true"
       when: never
+
+# Full set of tests. Some regular jobs run multiple times, additional jobs use
+# other browser versions (i.e. beta)
+.nightly-run:
+  rules:
+    - if: $NIGHTLY_RUN == "true"

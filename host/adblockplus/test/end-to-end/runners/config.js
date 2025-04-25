@@ -30,6 +30,8 @@ const hostname = "adblockplus";
 export const runnerConfig = {
   // The browser name to use for the tests
   browserName: process.env.BROWSER,
+  // The browser version to use for the tests. Defaults to "latest"
+  browserVersion: process.env.BROWSER_VERSION,
   // The manifest version passed as command line argument
   manifestVersion: process.env.MANIFEST_VERSION,
   // Screenshots folder path

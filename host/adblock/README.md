@@ -97,10 +97,16 @@ npm run build:release -- --scope=adblock
 npm run test:end-to-end -- --scope=adblock -- {chromium|edge|firefox} {2|3}
 ```
 
-By default browsers run headless. Setting the environment variable
-`FORCE_HEADFUL=true` will trigger a headful run instead.
+Changing the default behaviour:
 
-Mocha [command line options](https://mochajs.org/#command-line-usage) are
+- Setting the environment variable `FORCE_HEADFUL=true` will trigger a headful
+  run instead of headless.
+- Setting the environment variable `BROWSER_VERSION={version|channel}` will use
+  a different browser version (default is "latest"). See
+  [get-browser-binary](https://gitlab.com/eyeo/developer-experience/get-browser-binary)
+  for supported versions and channels.
+
+Mocha [command line options](https://mochajs.org/#command-line-usage) are also
 supported. Example:
 
 ```sh
@@ -117,11 +123,11 @@ docker build -t end-to-end -f host/adblock/test/end-to-end/Dockerfile .
 docker run --shm-size=2g -it -e BROWSER={chromium|firefox|edge} -e MANIFEST_VERSION={2|3} end-to-end
 ```
 
-To use mocha command line options the `--entrypoint` parameter needs to be set.
-Example:
+To use mocha command line options or a non-default browser version the
+`--entrypoint` parameter needs to be set. Example:
 
 ```sh
-docker run --shm-size=2g -it -e BROWSER={chromium|firefox|edge} -e MANIFEST_VERSION={2|3} --entrypoint npm end-to-end run -w host/adblock test:end-to-end-local -- --grep "Smoke"
+docker run --shm-size=2g -it -e BROWSER={chromium|firefox|edge} [-e BROWSER_VERSION={version|channel}] -e MANIFEST_VERSION={2|3} --entrypoint npm end-to-end run -w host/adblock test:end-to-end-local -- --grep "Smoke"
 ```
 
 To access the screenshots for failing tests run the following command, which

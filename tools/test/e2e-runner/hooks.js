@@ -48,11 +48,18 @@ export function setGlobalOptionsHook(runnerConfig) {
  * @returns {Promise<(*|string|string|(function(): *)|number)[]>}
  */
 async function startBrowser(extensionPath, retry = 0) {
-  const version = "latest";
-  const { helperExtensionPath, browserName } = global.config;
+  const { helperExtensionPath, browserName, browserVersion } = global.config;
+  const version = browserVersion || "latest";
+
+  const browser = BROWSERS[browserName];
+  if (!browser) {
+    throw new Error(
+      `Unsupported browser "${browserName}". Supported browsers: ${Object.keys(BROWSERS)}`,
+    );
+  }
 
   try {
-    const { versionNumber } = await BROWSERS[browserName].installBrowser(version);
+    const { versionNumber } = await browser.installBrowser(version);
     console.log(`Installed ${browserName} ${versionNumber} ...`);
 
     const extensionPaths = [helperExtensionPath, extensionPath];
@@ -86,14 +93,14 @@ async function startBrowser(extensionPath, retry = 0) {
     console.log(`Browser: ${cap.getBrowserName()} ${browserVersion}`);
 
     return [driver, browserName, browserVersion, getMajorVersion(browserVersion)];
-  } catch (e) {
+  } catch (err) {
     if (retry < 5) {
-      console.warn(`Failed to start the browser, retrying (${retry})...`);
+      console.warn(`Failed to start the browser: ${err.message}, retrying (${retry})...`);
       await new Promise((r) => setTimeout(r, 1000));
       return startBrowser(extensionPath, retry + 1);
     }
 
-    throw e;
+    throw err;
   }
 }
 

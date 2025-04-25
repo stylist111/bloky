@@ -228,37 +228,57 @@ comp:MV2:chromium:oldest:
   script:
     - echo "EYEOMETRY_BEARER=\"$ADBLOCK_EYEOMETRY_BEARER\"" >> host/adblock/.env
     - docker build -t end-to-end -f host/adblock/test/end-to-end/Dockerfile .
-    - docker run --shm-size=2g -t -e BROWSER -e MANIFEST_VERSION -e CI end-to-end
+    - docker run --shm-size=2g -t -e BROWSER -e BROWSER_VERSION -e MANIFEST_VERSION -e CI end-to-end
   after_script:
     - IMAGE_ID=$(docker ps -aqf ancestor=end-to-end)
     - docker cp $IMAGE_ID:/extensions/host/adblock/test/end-to-end/screenshots host/adblock/ 2> /dev/null
-  parallel: $[[ inputs.job_runs ]]
   artifacts:
     paths:
       - host/adblock/screenshots/
     when: on_failure
     expire_in: 1 mo
 
-end-to-end:MV2:firefox:
-  extends:
-    - .end-to-end
+.end-to-end-n-times:
+  extends: .end-to-end
+  parallel: $[[ inputs.job_runs ]]
+
+end-to-end:MV2:firefox:latest:
+  extends: .end-to-end-n-times
   variables:
     BROWSER: firefox
     MANIFEST_VERSION: 2
 
-end-to-end:MV2:edge:
-  extends:
-    - .end-to-end
+end-to-end:MV2:edge:latest:
+  extends: .end-to-end-n-times
   variables:
     BROWSER: edge
     MANIFEST_VERSION: 2
 
-end-to-end:MV3:chromium:
-  extends:
-    - .end-to-end
+end-to-end:MV3:chromium:latest:
+  extends: .end-to-end-n-times
   variables:
     BROWSER: chromium
     MANIFEST_VERSION: 3
+
+# End-to-end tests - nightly run
+.end-to-end-nightly:
+  extends: .end-to-end
+  rules:
+    - !reference [.nightly-run, rules]
+
+end-to-end:MV2:firefox:beta:
+  extends: .end-to-end-nightly
+  variables:
+    MANIFEST_VERSION: 2
+    BROWSER: firefox
+    BROWSER_VERSION: beta
+
+end-to-end:MV3:chromium:beta:
+  extends: .end-to-end-nightly
+  variables:
+    MANIFEST_VERSION: 3
+    BROWSER: chromium
+    BROWSER_VERSION: beta
 
 ################################################################################
 # Release

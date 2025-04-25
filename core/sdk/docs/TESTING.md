@@ -566,11 +566,6 @@ then click "New pipeline” on the top right.
 - Provide variable key : `NIGHTLY_RUN`, value: `true`
 - Run pipeline by clicking "New pipeline" button
 
-Note: When NIGHTLY_RUN is `true`, the tests are run on a full set of browsers
-and some functional jobs will run N times in parallel,
-where N is the number of `job_runs` as defined in
-[.gitlab/ci-run-jobs-n-times.yml](../../../.gitlab/ci-run-jobs-n-times.yml)
-
 Note: this setup is run on main on our Nightly Runs - checking if our
 tests are good quality (not flaky and independent from each other).
 

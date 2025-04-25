@@ -236,6 +236,15 @@ pipelines, then you can create a child `.gitlab-ci.yml` in your package, and add
 it as a child pipeline in [the root `.gitlab-ci.yml`](./gitlab-ci.yml). See [the
 SDK config](./core/sdk/.gitlab-ci.yml) as an example.
 
+### Nightly run
+
+Running a pipeline with the CI variable `NIGHTLY_RUN=true` will trigger a full
+set of functional and end-to-end test jobs:
+
+- Additional jobs will run using other browser versions (i.e. beta)
+- Some jobs will run N times in parallel, where N is the number of `job_runs`
+  defined in [.gitlab/ci-run-jobs-n-times.yml](.gitlab/ci-run-jobs-n-times.yml)
+
 ### Runners
 
 Pipeline jobs use self-managed runners from Google Cloud Platform (GCP):

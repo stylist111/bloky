@@ -247,11 +247,10 @@ comp:MV2:firefox:oldest:
     # EYEOMETRY_BEARER should be set the same way the build job does it, this is:
     # echo "EYEOMETRY_BEARER=\"$ADBLOCKPLUS_EYEOMETRY_BEARER\"" >> host/adblockplus/.env
     # Passing it as a docker run env variable as a workaround.
-    - docker run --shm-size=2g -t -e MANIFEST_VERSION -e BROWSER -e CI -e EYEOMETRY_BEARER="$ADBLOCKPLUS_EYEOMETRY_BEARER" end-to-end
+    - docker run --shm-size=2g -t -e MANIFEST_VERSION -e BROWSER -e BROWSER_VERSION -e CI -e EYEOMETRY_BEARER="$ADBLOCKPLUS_EYEOMETRY_BEARER" end-to-end
   after_script:
     - IMAGE_ID=$(docker ps -aqf ancestor=end-to-end)
     - docker cp $IMAGE_ID:/extensions/host/adblockplus/test/end-to-end/screenshots host/adblockplus 2> /dev/null
-  parallel: $[[ inputs.job_runs ]]
   artifacts:
     paths:
       - host/adblockplus/screenshots/
@@ -260,23 +259,47 @@ comp:MV2:firefox:oldest:
   rules:
     - !reference [.always, rules]
 
-end-to-end:MV2:firefox:
+.end-to-end-n-times:
   extends: .end-to-end
+  parallel: $[[ inputs.job_runs ]]
+
+end-to-end:MV2:firefox:latest:
+  extends: .end-to-end-n-times
   variables:
     MANIFEST_VERSION: 2
     BROWSER: firefox
 
-end-to-end:MV2:edge:
-  extends: .end-to-end
+end-to-end:MV2:edge:latest:
+  extends: .end-to-end-n-times
   variables:
     MANIFEST_VERSION: 2
     BROWSER: edge
 
-end-to-end:MV3:chromium:
-  extends: .end-to-end
+end-to-end:MV3:chromium:latest:
+  extends: .end-to-end-n-times
   variables:
     MANIFEST_VERSION: 3
     BROWSER: chromium
+
+# End-to-end tests - nightly run
+.end-to-end-nightly:
+  extends: .end-to-end
+  rules:
+    - !reference [.nightly-run, rules]
+
+end-to-end:MV2:firefox:beta:
+  extends: .end-to-end-nightly
+  variables:
+    MANIFEST_VERSION: 2
+    BROWSER: firefox
+    BROWSER_VERSION: beta
+
+end-to-end:MV3:chromium:beta:
+  extends: .end-to-end-nightly
+  variables:
+    MANIFEST_VERSION: 3
+    BROWSER: chromium
+    BROWSER_VERSION: beta
 
 ################################################################################
 # Release

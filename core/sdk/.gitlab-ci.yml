@@ -36,12 +36,6 @@ workflow:
       when: never
     - when: always
 
-# The following CI variable modifies which jobs run in a pipeline:
-# - NIGHTLY_RUN: Full set of tests with some jobs running multiple times, including additional browsers.
-.nightly-run:
-  rules:
-    - if: $NIGHTLY_RUN == "true"
-
 # Jobs using this rule only run on the main branch pipelines
 .main-run:
   rules:
