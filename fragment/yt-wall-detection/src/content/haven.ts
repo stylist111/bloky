@@ -93,7 +93,10 @@ const navigationListener = async (
   event: CustomEvent,
   toggleState: boolean = false,
 ): Promise<void> => {
-  const videoId = event?.detail?.endpoint?.watchEndpoint?.videoId;
+  const endpoint = event?.detail?.endpoint;
+  const playerResponse = event?.detail?.response?.playerResponse;
+  const pageData = event?.detail?.response?.response;
+  const videoId = endpoint?.watchEndpoint?.videoId;
 
   if (!isWatchPage() || !(await shouldStartExperiment()) || !videoId) {
     removeExperiments();
@@ -105,11 +108,9 @@ const navigationListener = async (
     pauseCurrentVideos();
   }
 
-  const playlistId = event?.detail?.endpoint?.watchEndpoint?.playlistId;
-  const isEmbeddable =
-    event?.detail?.response?.playerResponse?.playabilityStatus?.playableInEmbed;
-  const playabilityStatus =
-    event?.detail?.response?.playerResponse?.playabilityStatus?.status;
+  const playlistId = endpoint?.watchEndpoint?.playlistId;
+  const isEmbeddable = playerResponse?.playabilityStatus?.playableInEmbed;
+  const playabilityStatus = playerResponse?.playabilityStatus?.status;
 
   // Unpause the current Video if is not embeddable
   // or if it's unplayable (e.g. members only without access)
@@ -124,19 +125,26 @@ const navigationListener = async (
   }
 
   const nextVideoId =
-    event?.detail?.response?.response?.contents?.twoColumnWatchNextResults
-      ?.autoplay?.autoplay?.sets[0]?.autoplayVideo?.watchEndpoint?.videoId;
+    pageData?.contents?.twoColumnWatchNextResults?.autoplay?.autoplay?.sets[0]
+      ?.autoplayVideo?.watchEndpoint?.videoId;
+  const autoplayEnabled =
+    pageData?.playerOverlays?.playerOverlayRenderer?.autonavToggle
+      ?.autoplaySwitchButtonRenderer?.enabled ?? true;
   // The current time of the video e.g ?t=100
-  const startSeconds =
-    event?.detail?.response?.endpoint?.watchEndpoint?.startTimeSeconds;
+  const startSeconds = endpoint?.watchEndpoint?.startTimeSeconds;
 
   // update the video context, as this will be used in other parts of the fragment
   videoContextStore.setVideoContext({
-    playlistId,
-    isEmbeddable,
     videoId,
-    nextVideoId,
+    isEmbeddable,
     startSeconds,
+
+    // autoplay
+    autoplayEnabled,
+    nextVideoId,
+
+    // playlist config
+    playlistId,
   });
 
   await addExperiments();

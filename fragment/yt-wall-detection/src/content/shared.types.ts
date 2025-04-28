@@ -21,21 +21,28 @@
  */
 export interface IframePlayerConfig {
   videoId: string;
-  playlistId?: string;
   showWatchingWith?: boolean;
   showInModal?: boolean;
   startSeconds?: number;
+
+  // playlist related
+  playlistId?: string;
 }
 
 /**
  * The context of the current video
  */
 export interface VideoContext {
-  playlistId?: string;
-  isEmbeddable: boolean;
   videoId: string;
-  nextVideoId?: string;
+  isEmbeddable: boolean;
   startSeconds?: number;
+
+  // autoplay related
+  autoplayEnabled?: boolean;
+  nextVideoId?: string;
+
+  // playlist related
+  playlistId?: string;
 }
 
 /**

@@ -52,6 +52,15 @@ const infoBoxId = "yt-haven-info-box";
  * Attempts to load the next video when the current video in the embedded player has ended
  */
 async function handleEmbeddedVideoEnding(): Promise<void> {
+  const { nextVideoId, autoplayEnabled, playlistId } =
+    videoContextStore.getVideoContext();
+
+  // If autoplay is disabled and there is no playlist, do nothing
+  // aka. playlists are always autoplay enabled
+  if (!autoplayEnabled && !playlistId) {
+    return;
+  }
+
   const nextVideoAnchor = document.querySelector(
     "#movie_player > div.ytp-chrome-bottom > div.ytp-chrome-controls > div.ytp-left-controls > a.ytp-next-button.ytp-button",
   );
@@ -65,7 +74,6 @@ async function handleEmbeddedVideoEnding(): Promise<void> {
     return;
   }
 
-  const { nextVideoId } = videoContextStore.getVideoContext();
   const searchParams = new URLSearchParams(window.location.search);
 
   if (nextVideoId) {
@@ -112,8 +120,7 @@ const iFrameMessageListener = (event: MessageEvent): void => {
 export async function addEmbedVideoOnTop(
   targetElement: HTMLElement,
 ): Promise<void> {
-  const { videoId, playlistId, startSeconds } =
-    videoContextStore.getVideoContext();
+  const { videoId, startSeconds } = videoContextStore.getVideoContext();
 
   let playerElem = getIframePlayer();
   if (!(playerElem instanceof HTMLIFrameElement)) {
@@ -138,13 +145,11 @@ export async function addEmbedVideoOnTop(
       }),
       "*",
     );
-
     return;
   }
 
   playerElem = createIframePlayer({
     videoId,
-    playlistId,
     startSeconds,
   });
 
