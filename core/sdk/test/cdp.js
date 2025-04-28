@@ -44,6 +44,8 @@ const RSA_ALGORITHM = {
   hash: "SHA-256"
 };
 
+const UUID_V4_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
 async function importRSAPrivateKey(pem) {
   // fetch the part of the PEM string between header and footer
   const pemContents = pem.substring(
@@ -608,22 +610,61 @@ describe("CDP", function() {
             siteId: TEST_PAGES_DOMAIN,
             isAAPV: true,
             ab: true,
-            acceptable: true
+            acceptable: true,
+            sessionId: expect.stringMatching(UUID_V4_REGEX)
           }],
           [{
             siteId: TEST_PAGES_DOMAIN,
             isAAPV: false,
             ab: false,
-            acceptable: true
+            acceptable: true,
+            sessionId: expect.stringMatching(UUID_V4_REGEX)
           }],
           [{
             siteId: TEST_PAGES_DOMAIN,
             isAAPV: false,
             ab: true,
-            acceptable: false
+            acceptable: false,
+            sessionId: expect.stringMatching(UUID_V4_REGEX)
           }]
         ]);
       });
+    });
+
+    it("blockthrough AAPV events contain different session IDs for different sessions", async function() {
+      const page = new Page(`${TEST_PAGES_URL}/blockthrough-aapv.html?bt-aapv-repeat=2`);
+      let events = [];
+
+      await page.loaded;
+      await waitForAssertion(() => {
+        events = getTestEvents("cdp.onBTAADetectionEvent");
+        expect(events.length).toEqual(2);
+      });
+
+      await page.reload();
+      await waitForAssertion(() => {
+        events = getTestEvents("cdp.onBTAADetectionEvent");
+        expect(events.length).toEqual(4);
+      });
+
+      const sessionIds = events.map(event => event[0].sessionId);
+      expect(sessionIds[1]).toEqual(sessionIds[0]);
+      expect(sessionIds[2]).not.toEqual(sessionIds[0]);
+      expect(sessionIds[3]).toEqual(sessionIds[2]);
+    });
+
+    it("blockthrough AAPV events contain the same session ID across history state changes", async function() {
+      const page = new Page(`${TEST_PAGES_URL}/blockthrough-aapv-history-page-view-per-history-state.html`);
+      let events = [];
+
+      await page.loaded;
+      await waitForAssertion(() => {
+        events = getTestEvents("cdp.onBTAADetectionEvent");
+        expect(events.length).toEqual(2);
+      });
+
+      const sessionIds = events.map(event => event[0].sessionId);
+      expect(sessionIds[1]).toEqual(sessionIds[0]);
     });
   });
 

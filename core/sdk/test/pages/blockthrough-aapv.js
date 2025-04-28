@@ -10,10 +10,14 @@ export function injectBlockthroughTag() {
     window.__bt_intrnl = {
       aaDetectionResults: detail
     };
-    let event = new CustomEvent("BTAADetection", {
-      detail
-    });
-    window.dispatchEvent(event);
+
+    const repeat = Number(urlParams.get("bt-aapv-repeat") || "1");
+    for (let i = 0; i < repeat; i++) {
+      let event = new CustomEvent("BTAADetection", {
+        detail
+      });
+      window.dispatchEvent(event);
+    }
   };
 
   let delay = urlParams.get("bt-aapv-delay");

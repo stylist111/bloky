@@ -16,15 +16,24 @@
  */
 
 import browser from "webextension-polyfill";
+import {v4 as uuidv4} from "uuid";
+
 import {ignoreNoConnectionError} from "../all/errors.js";
 
+let sessionId = null;
+
 function onBTAADetectionEvent(event) {
+  if (!sessionId) {
+    sessionId = uuidv4();
+  }
+
   ignoreNoConnectionError(
     browser.runtime.sendMessage({
       type: "ewe:blockthrough-acceptable-ads-detection-event",
       details: {
         ab: event.detail.ab,
-        acceptable: event.detail.acceptable
+        acceptable: event.detail.acceptable,
+        sessionId
       }
     })
   );

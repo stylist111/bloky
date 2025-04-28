@@ -42,6 +42,32 @@ export interface AllowlistingOptions {
 }
 
 /**
+ * Blockthrough Acceptable Ads detection details
+ */
+export interface BtaaDetectionDetails {
+  /**
+   * Indicates whether an ad blocker has been detected on the page
+   */
+  ab: boolean;
+  /**
+   * Indicates whether Acceptable Ads has been detected on the page
+   */
+  acceptable: boolean;
+  /**
+   * Indicates whether it's an Acceptable Ads pageview
+   */
+  isAAPV: boolean;
+  /**
+   * Page session ID
+   */
+  sessionId: string;
+  /**
+   * Site ID
+   */
+  siteId: string;
+}
+
+/**
  * The EventDispatcher class allows users to listen to certain events that are emitted.
  */
 export interface EventDispatcher<T> {
@@ -572,10 +598,8 @@ declare module "@eyeo/webext-ad-filtering-solution" {
      * Emitted when we process a BTAADetectionEvent.
      */
     const onBTAADetectionEvent: EventDispatcher<(
-      details: {siteId: string,
-                isAAPV: boolean,
-                ab: boolean,
-                acceptable: boolean}) => unknown>;
+      details: BtaaDetectionDetails
+    ) => unknown>;
 
     /**
      * Opt in or out from CDP

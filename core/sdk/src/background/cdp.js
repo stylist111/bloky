@@ -522,7 +522,8 @@ export function countBTAADetectionEvent(url, details) {
     siteId,
     isAAPV,
     ab: details.ab,
-    acceptable: details.acceptable
+    acceptable: details.acceptable,
+    sessionId: details.sessionId
   });
 
   if (!isAAPV) {
@@ -704,15 +705,24 @@ export async function start() {
 }
 
 export default {
+  /**
+   * Blockthrough Acceptable Ads detection details
+   * @typedef {Object} BtaaDetectionDetails
+   * @property {boolean} ab Indicates whether an ad blocker has been detected
+   *   on the page
+   * @property {boolean} acceptable Indicates whether Acceptable Ads has been
+   *   detected on the page
+   * @property {boolean} isAAPV Indicates whether it's an Acceptable Ads
+   *   pageview
+   * @property {string} sessionId Page session ID
+   * @property {string} siteId Site ID
+   */
 
   /**
    * Emitted when we process a BTAADetectionEvent.
    *
    * @event
-   * @type {EventDispatcher<{siteId: string,
-   *                         isAAPV: boolean,
-   *                         ab: boolean,
-   *                         acceptable: boolean}>}
+   * @type {EventDispatcher<BtaaDetectionDetails>}
    */
   onBTAADetectionEvent: new EventDispatcher(
     dispatch => {

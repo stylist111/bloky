@@ -37,7 +37,8 @@ async function handlePageLoaded(page: TabPage): Promise<void> {
     return;
   }
 
-  if (!domains.includes(getBaseDomain(page.url.hostname))) {
+  const domain = getBaseDomain(page.url.hostname);
+  if (!domains.includes(domain)) {
     return;
   }
 
@@ -49,6 +50,7 @@ async function handlePageLoaded(page: TabPage): Promise<void> {
   pageState |= (await isAcceptableAdsEnabled()) ? 1 : 0;
 
   ServerMessages.recordAnonymousMessage("pageview", "stats", null, {
+    misc_text: domain,
     var: pageState,
   });
 }
@@ -102,18 +104,14 @@ async function isTabAllowlisted(tabId: number): Promise<boolean> {
  * @param details - The details of the event, including our conclusion on if
  * this is an Acceptable Ads Page View.
  */
-async function handleBTAADetectionEvent(details: {
-  siteId: string;
-  isAAPV: boolean;
-  ab: boolean;
-  acceptable: boolean;
-}): Promise<void> {
+async function handleBTAADetectionEvent(details: ewe.BtaaDetectionDetails): Promise<void> {
   const domains = await ewe.experiments.getFlag("pageview-metrics:domains");
   if (!isStringArray(domains) || !domains.length) {
     return;
   }
 
-  if (!domains.includes(getBaseDomain(details.siteId))) {
+  const domain = getBaseDomain(details.siteId);
+  if (!domains.includes(domain)) {
     return;
   }
 
@@ -125,6 +123,8 @@ async function handleBTAADetectionEvent(details: {
   packedDetails |= details.acceptable ? 1 : 0;
 
   ServerMessages.recordAnonymousMessage("btaa_detection", "stats", null, {
+    misc_text: domain,
+    sid: details.sessionId,
     var: packedDetails,
   });
 }
