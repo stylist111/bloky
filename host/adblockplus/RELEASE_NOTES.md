@@ -1,7 +1,11 @@
 # Unreleased
 
+# 4.21.1 - 2025-04-29
+
+This release contains bugfixes and under-the-hood changes.
+
 - Added the `EWE.experiments.getFlags()` in Content and UI APIs. (EXT-880)
-- Fixed haven autoplay behaviour. (noissue)
+- Fixed haven autoplay behaviour.
 
 # 4.21.0 - 2025-04-22
 
