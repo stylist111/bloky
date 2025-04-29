@@ -1,10 +1,15 @@
 # Unreleased
 
+# 6.20.0 - 2025-04-29
+
+This release removes the I don't care about cookies recommendation and also
+contains some bugfixes and under-the-hood changes.
+
+- Remove I don't care about cookies recommended list. (EXT-843)
 - Fixed an issue with the block count being shown after a user allowlists a site (EXT-904)
 - Updated snippets to 2.1.0
 - Collect pageview metrics from specific domains. (EXT-921)
 - Added the `EWE.experiments.getFlags()` in Content and UI APIs. (EXT-880)
-- Remove I don't care about cookies recommended list. (EXT-843)
 - Fixed haven autoplay behaviour. (noissue)
 
 # 6.19.0 - 2025-04-15
