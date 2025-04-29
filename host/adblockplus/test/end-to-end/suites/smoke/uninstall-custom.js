@@ -53,7 +53,7 @@ export default () => {
     await initOptionsAdvancedTab(getOptionsHandle());
     const name = "EasyList";
     const { toggle } = getFLSelectors(name);
-    await clickOnDisplayedElement(toggle);
+    await clickOnDisplayedElement(toggle, { timeout: 1000 });
     await wait(
       async () => !(await isCheckboxPropertyEnabled(toggle)),
       2000,
