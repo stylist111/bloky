@@ -139,15 +139,24 @@ export default () => {
     // reload the extension to restore the default settings
     await reloadExtension(initOptionsGeneralTab);
 
-    await initOptionsAdvancedTab(getOptionsHandle());
     // Wait for the first filter list to be displayed
+    let errMsg;
     try {
-      await getDisplayedElement(firstFLSelector, {
-        timeout: 4000,
-        verboseLogging: true
-      });
-    } catch (err) {
-      await manageFilterListsError(err);
+      await wait(async () => {
+        await driver.navigate().refresh();
+        await initOptionsAdvancedTab(getOptionsHandle());
+        try {
+          await getDisplayedElement(firstFLSelector, {
+            timeout: 2000,
+            verboseLogging: true
+          });
+          return true;
+        } catch (err) {
+          errMsg = err.message;
+        }
+      }, 8000);
+    } catch (e) {
+      await manageFilterListsError(errMsg);
     }
     // check default filter lists are enabled
     const actualFilterLists = [];
