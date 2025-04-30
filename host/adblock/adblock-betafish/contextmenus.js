@@ -399,7 +399,14 @@ Prefs.on(Prefs.shouldShowBlockElementMenu, () => {
 
 // update the tab icon when the tab's content changes
 ext.pages.onLoading.addListener(async (page) => {
-  const tab = await browser.tabs.get(page.id);
+  let tab;
+  try {
+    tab = await browser.tabs.get(page.id);
+  } catch (ex) {
+    // No need to continue, if tab no longer exists
+    return;
+  }
+
   updateButtonUIAndContextMenus(tab);
 });
 
