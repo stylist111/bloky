@@ -36,22 +36,17 @@ export async function fuzzSuspendServiceWorker() {
   }
 }
 
-export async function runInBackgroundPage(operations, fuzzEnabled = true) {
-  if (fuzzEnabled) {
-    await fuzzSuspendServiceWorker();
-  }
-
-  let runResultPromise =
-      browser.runtime.sendMessage({type: "ewe-test:run", operations});
+async function waitForSendMessageResult(message) {
+  let runResultPromise = browser.runtime.sendMessage(message);
 
   let runResult = await limitPromiseDuration(
     runResultPromise,
-    `Calling ewe-test:run with these operations did not resolve: ${JSON.stringify(operations)}`,
-    MAX_API_CALL_DURATION);
+    `Sending the following message did not resolve: ${JSON.stringify(message, null, 2)}`,
+    MAX_API_CALL_DURATION
+  );
 
   if (!runResult) {
-    console.warn("Call to ewe-test:run with these arguments didn't return a result",
-                 operations);
+    console.warn(`Sending the following message did not return a result: ${JSON.stringify(message, null, 2)}`);
     runResult = {};
   }
 
@@ -61,6 +56,14 @@ export async function runInBackgroundPage(operations, fuzzEnabled = true) {
   }
 
   return result;
+}
+
+export async function runInBackgroundPage(operations, fuzzEnabled = true) {
+  if (fuzzEnabled) {
+    await fuzzSuspendServiceWorker();
+  }
+
+  return waitForSendMessageResult({type: "ewe-test:run", operations});
 }
 
 function proxy(namespace) {
@@ -248,26 +251,12 @@ export async function getLastError() {
 }
 
 export async function setFeatureFlags(featureFlags) {
-  let {result, error} = await browser.runtime.sendMessage({
+  return waitForSendMessageResult({
     type: "ewe-test:setFeatureFlags",
     featureFlags
   });
-
-  if (error) {
-    throw new Error(error);
-  }
-
-  return result;
 }
 
 export async function resetFeatureFlags() {
-  let {result, error} = await browser.runtime.sendMessage({
-    type: "ewe-test:resetFeatureFlags"
-  });
-
-  if (error) {
-    throw new Error(error);
-  }
-
-  return result;
+  return waitForSendMessageResult({type: "ewe-test:resetFeatureFlags"});
 }
