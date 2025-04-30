@@ -36,6 +36,9 @@
 - In CDP, page views are now counted based on onCommitted events rather than
   onBeforeNavigate. This prevents double counted page view on redirect in
   Firefox.
+- Fixed a bug where previously-disabled filters that are readded would be still
+  be considered disabled by the DNR rules subsystem but not by other parts of
+  the engine, leading to inconsistent behaviour. (EXT-926)
 
 ## Updating your code
 

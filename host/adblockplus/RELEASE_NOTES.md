@@ -1,5 +1,9 @@
 # Unreleased
 
+- Fixed a bug where previously-disabled filters that are readded would be still
+  be considered disabled by the DNR rules subsystem but not by other parts of
+  the engine, leading to inconsistent behaviour. (EXT-926)
+
 # 4.21.1 - 2025-04-29
 
 This release contains bugfixes and under-the-hood changes.

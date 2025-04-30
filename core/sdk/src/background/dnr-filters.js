@@ -608,11 +608,16 @@ async function getRules(filter) {
  * @param {?string} subscriptionId The optional subscription ID.
  * @param {?mapper} mapper The DNR mapper for the subscription. If null then
  *   this doesn't check for static rules to enable or disable.
+ * @param {?boolean} filtersWillBeEnabled Some filters are prepared differently
+ * if they are disabled according to the filterState, for example not generating
+ * DNR rules. If this is true, then the filters are going to be enabled as part
+ * of adding them, and so checking the filterState should be skipped.
  *
  * @ignore
  * @returns {Promise<ProcessedFilters>} The processed filters.
  */
-async function processFilterTexts(texts, subscriptionId = null, mapper = null) {
+async function processFilterTexts(texts, subscriptionId = null, mapper = null,
+                                  filtersWillBeEnabled = false) {
   let details = [];
   let add = [];
   let invalid = [];
@@ -665,7 +670,8 @@ async function processFilterTexts(texts, subscriptionId = null, mapper = null) {
       continue;
     }
 
-    if (!filterEngine.filterStorage.filterState.isEnabled(text)) {
+    if (!filtersWillBeEnabled &&
+        !filterEngine.filterStorage.filterState.isEnabled(text)) {
       details.push({filter, ruleIds: [], enabled: false});
     }
     else {
@@ -734,7 +740,7 @@ export async function dynamicRulesAvailable() {
 
 export async function addFilters(texts, metadata) {
   await init();
-  let plannedChanges = await processFilterTexts(texts);
+  let plannedChanges = await processFilterTexts(texts, null, null, true);
   if (plannedChanges.invalid.length > 0) {
     throw plannedChanges.invalid[0];
   }

@@ -407,21 +407,21 @@ const namespace = {
   async getUserFilters() {
     let result = [];
 
+    if (browser.declarativeNetRequest) {
+      for (let [text, details] of (await getDynamicUserFilters()).entries()) {
+        let filter = convertFilter(Filter.fromText(text));
+        filter.enabled = filter.type == "comment" ? null : details.enabled;
+
+        result.push(filter);
+      }
+
+      return result;
+    }
+
     for (let subscription of filterEngine.filterStorage.subscriptions()) {
       if (subscription instanceof SpecialSubscription) {
         for (let text of subscription.filterText()) {
           result.push(convertFilter(Filter.fromText(text)));
-        }
-      }
-    }
-
-    if (browser.declarativeNetRequest) {
-      for (let [text, details] of (await getDynamicUserFilters()).entries()) {
-        if (!result.find(filter => filter.text == text)) {
-          let filter = convertFilter(Filter.fromText(text));
-          filter.enabled = filter.type == "comment" ? null : details.enabled;
-
-          result.push(filter);
         }
       }
     }
