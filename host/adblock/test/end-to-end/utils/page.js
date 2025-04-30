@@ -120,7 +120,12 @@ export async function initOptionsBackupSyncTab(optionsHandle) {
 
 export async function initOptionsPremiumFlTab(optionsHandle) {
   await loadOptionsTab(optionsHandle, "premium-filters");
-  await getDisplayedElement("#premium-filter-lists > div:nth-child(3)", { timeout: 2000 });
+  await getDisplayedElement("#premium-filter-lists > div:nth-child(3)", {
+    timeout: 2000,
+    // Right after initialisation not all premium filterlists may show up
+    // Refreshing as a workaround
+    forceRefresh: true,
+  });
 }
 
 export async function getCustomFilters() {
