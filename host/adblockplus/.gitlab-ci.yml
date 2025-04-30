@@ -48,7 +48,6 @@ stages:
   - unit
   - compliance
   - end-to-end
-  - release
 
 # Pipeline rules
 .always:
@@ -57,12 +56,6 @@ stages:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: never
     - when: on_success
-
-.release-tag:
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^(adblockplus)-v?\d+(\.\d+)*$/'
-      when: on_success
-    - when: never
 
 ################################################################################
 # Build
@@ -300,52 +293,3 @@ end-to-end:MV3:chromium:beta:
     MANIFEST_VERSION: 3
     BROWSER: chromium
     BROWSER_VERSION: beta
-
-################################################################################
-# Release
-################################################################################
-
-.gitlab-api-release-automation:
-  stage: release
-  image: gitlab/glab
-  rules:
-    - !reference [.release-tag, rules]
-  before_script:
-    - apk add git nodejs
-    - version=${CI_COMMIT_TAG/adblockplus-/""}
-    - glab auth login --token $GITLAB_TOKEN_RELEASE
-    - git remote set-url --push origin "https://$GITLAB_TOKEN_RELEASE_NAME:$GITLAB_TOKEN_RELEASE@gitlab.com/$CI_PROJECT_PATH.git"
-
-create_release:
-  extends: .gitlab-api-release-automation
-  needs:
-    - !reference [.needs-parent-build-release, needs]
-  script:
-    - release_notes=$(node tools/release/get-release-notes.js adblockplus $version)
-    - glab release create $CI_COMMIT_TAG -n "Adblock Plus $version" host/adblockplus/dist/release/* -N "$release_notes"
-
-create_release_mr_back_to_main:
-  extends: .gitlab-api-release-automation
-  needs: []
-  script:
-    - git checkout -B $CI_COMMIT_TAG-merge-back-to-main refs/tags/$CI_COMMIT_TAG
-    - git push origin $CI_COMMIT_TAG-merge-back-to-main
-    - glab mr create --title "Adblock Plus $version release back to main" --description "Automatically bringing release changes back to the main branch" --remove-source-branch --yes
-
-upload_sourcemaps:
-  stage: release
-  needs:
-    - !reference [.needs-parent-build-release, needs]
-  rules:
-    - !reference [.release-tag, rules]
-  script:
-    - npm i
-    - cd host/adblockplus
-    - npm run sentry:login -- --auth-token $SENTRY_AUTH_TOKEN
-    - version="${CI_COMMIT_TAG/adblockplus-/""}"
-    - echo "Uploading the sourcemaps for Adblock Plus $version"
-    - VERSION=$version npm run sentry:release-new
-    - mkdir -p ./dist/sourcemaps/chrome-mv3
-    - unzip dist/release/adblockplus-chrome-*-mv3.zip -d ./dist/sourcemaps/chrome-mv3/
-    - VERSION=$version npm run sentry:sourcemaps
-    - VERSION=$version npm run sentry:release-finalize
