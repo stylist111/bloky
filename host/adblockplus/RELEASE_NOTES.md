@@ -6,6 +6,7 @@ This release contains bugfixes and under-the-hood changes.
 
 - Added the `EWE.experiments.getFlags()` in Content and UI APIs. (EXT-880)
 - Fixed haven autoplay behaviour.
+- Attempt to fix the issue of delivering Premium enrollment campaigns to Premium users [EXT-931]
 
 # 4.21.0 - 2025-04-22
 

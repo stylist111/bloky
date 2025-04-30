@@ -17,7 +17,7 @@
 
 import { type LicenseStateBehavior } from "./command-library.types";
 import { LicenseState } from "./data-collection.types";
-import { licensing } from "./context";
+import { licensing, prefs } from "./context";
 
 /**
  * The default license state for the license_state_list command parameter.
@@ -50,6 +50,8 @@ export function isValidLicenseState(
 export async function doesLicenseStateMatch(
   behavior: LicenseStateBehavior,
 ): Promise<boolean> {
+  await prefs.untilLoaded;
+
   if (!behavior.licenseStateList) {
     return true;
   }
