@@ -245,8 +245,8 @@ export async function reloadExtension(
   // otherwise the next step will fail
   await wait(
     async () => {
-      const handlers = await driver.getAllWindowHandles();
-      return !handlers.includes(getOptionsHandle());
+      const handles = await driver.getAllWindowHandles();
+      return !handles.includes(getOptionsHandle());
     },
     5000,
     "Current option page was not closed in time",

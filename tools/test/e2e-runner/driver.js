@@ -19,13 +19,73 @@ import fs from "fs";
 import path from "path";
 import { By, WebElement } from "selenium-webdriver";
 
+// As of Microsoft Edge 136, driver.getWindowHandles() also returns the
+// extensions' background pages (MV2), so we need to ignore them in order
+// not to accidentally interact with those.
+export async function getAllWindowHandlesSafe() {
+  const { browserName, manifestVersion } = global.config;
+  if (browserName === "firefox" || manifestVersion === "3") {
+    return await driver.getAllWindowHandles();
+  }
+
+  let previousHandle;
+  try {
+    previousHandle = await driver.getWindowHandle();
+  } catch (err) {
+    // We can't get the current window handle. Ignoring it
+    // Example: NoSuchWindowError
+  }
+
+  const allHandles = await driver.getAllWindowHandles();
+  const safeHandles = [];
+  for (const handle of allHandles) {
+    try {
+      await driver.switchTo().window(handle);
+      const url = await driver.getCurrentUrl();
+      if (url.includes("_generated_background_page.html")) {
+        continue;
+      }
+
+      safeHandles.push(handle);
+    } catch (e) {
+      // Ignoring errors here, as they have no impact on anything that comes
+      // after it
+    }
+  }
+
+  let handleSwitchErr;
+  if (previousHandle) {
+    try {
+      await driver.switchTo().window(previousHandle);
+    } catch (err) {
+      // Switching to previous Handle didn't work.
+      previousHandle = null;
+      handleSwitchErr = err;
+    }
+  }
+
+  // Cant be an "else" because previousHandle may habe been reassigned
+  if (!previousHandle) {
+    // To avoid having switched to the generated background page handle in the
+    // previous loop, we need a safe handle to switch to
+    const safeHandle = safeHandles.find((handle) => handle !== previousHandle);
+    if (safeHandle) {
+      await driver.switchTo().window(safeHandle);
+    } else {
+      console.warn(`There are no safe handles to switch to: ${handleSwitchErr}`);
+    }
+  }
+
+  return safeHandles;
+}
+
 export async function findUrl(expectedUrl, timeout = 5000) {
   let url;
   let handle;
   await wait(
     async () => {
       try {
-        for (handle of await driver.getAllWindowHandles()) {
+        for (handle of await getAllWindowHandlesSafe()) {
           await driver.switchTo().window(handle);
           url = await driver.getCurrentUrl();
           if (url && url.includes(expectedUrl)) {
@@ -316,19 +376,19 @@ export async function clickAndNavigateBack(selector, expectedURL) {
 
 export async function clickAndCloseNewTab(selector, expectedURL) {
   const currentWindowHandle = await driver.getWindowHandle();
-  const initialWindowHandles = await driver.getAllWindowHandles();
+  const initialWindowHandles = await getAllWindowHandlesSafe();
 
   await clickOnDisplayedElement(selector, { timeout: 2000, scrollIntoView: true });
   await wait(
     async () => {
-      const currentWindowHandles = await driver.getAllWindowHandles();
+      const currentWindowHandles = await getAllWindowHandlesSafe();
       return currentWindowHandles.length > initialWindowHandles.length;
     },
     5000,
     `The element "${selector}" did not open a new tab with the URL "${expectedURL}"`,
   );
 
-  const currentWindowHandles = await driver.getAllWindowHandles();
+  const currentWindowHandles = await getAllWindowHandlesSafe();
   const newWindowHandle = currentWindowHandles.find(
     (handle) => !initialWindowHandles.includes(handle),
   );
