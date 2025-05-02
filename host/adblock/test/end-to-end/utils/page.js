@@ -363,11 +363,24 @@ export async function setPausedStateFromPopup(url, paused = true) {
     checkDisplayed: false, // Sometimes isDisplayed() returns false, even though the button can be clicked
   });
 
-  await driver.switchTo().window(websiteHandle);
-  await driver.navigate().refresh();
+  // reopening the popup ccasionally fails when setPausedStateFromPopup is
+  // called right after upgrading the extension. Retrying as a workaround
+  await wait(
+    async () => {
+      await driver.switchTo().window(websiteHandle);
+      await driver.navigate().refresh();
+      try {
+        await initPopupPage(tabId);
+        return true;
+      } catch (err) {
+        console.warn(`after pausing/unpausing: ${err.message}, retrying...`);
+      }
+    },
+    15000,
+    "Could not init the popup page after pausing/unpausing",
+  );
 
-  // re-open the popup and check state changed
-  await initPopupPage(tabId);
+  // check paused state changed
   await getDisplayedElement(afterClickBtn, { timeout: 5000, checkDisplayed: false });
   await driver.close();
 

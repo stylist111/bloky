@@ -131,6 +131,10 @@ export async function getTabId(optionsHandle) {
     { url },
   );
 
+  if (tabId < 0) {
+    throw new Error(`tabId could not be found for current URL ${url}`);
+  }
+
   await driver.switchTo().window(currentHandle);
   return tabId;
 }
