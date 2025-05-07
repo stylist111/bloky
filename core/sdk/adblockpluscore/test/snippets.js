@@ -23,7 +23,7 @@ const assert = require("assert");
 const {LIB_FOLDER} = require("./_common");
 
 const {Filter, SnippetFilter} = require(LIB_FOLDER + "/filterClasses");
-const {Snippets, parseScript, compileScript} =
+const {Snippets, parseScript, compileScript, prepareInlineScriptForInjection} =
       require(LIB_FOLDER + "/snippets");
 
 describe("Snippets", function() {
@@ -358,5 +358,53 @@ describe("Snippets", function() {
     new Function(compileScript("setFoo 123; assertFoo 123", isolatedLib, injectedLib, injectedSnippetsList, environment))();
 
     new Function(compileScript("assertFoo 123", isolatedLib, injectedLib, injectedSnippetsList, {foo: 123}))();
+  });
+
+  it("Prepare Inline Script for injection", function() {
+    const params = ["hello", "world"];
+
+    let injectedLib = function testing(arg1, arg2) {
+      console.log(arg1, arg2);
+    };
+
+    const args = JSON.stringify(params);
+    let code = JSON.stringify(injectedLib.toString());
+    code = `"(${code.slice(1, -1)}).apply(null,${JSON.stringify(args).slice(1, -1)});"`;
+
+    let template =
+      `function injectScriptInMainContext(executable)
+        {
+          // injecting phases
+          let script = document.createElement("script");
+          script.type = "application/javascript";
+          script.async = false;
+
+          // Firefox 58 only bypasses site CSPs when assigning to 'src',
+          // while Chrome 67 and Microsoft Edge (tested on 44.17763.1.0)
+          // only bypass site CSPs when using 'textContent'.
+          if (typeof netscape != "undefined" && typeof browser != "undefined")
+          {
+            let url = URL.createObjectURL(new Blob([executable]));
+            script.src = url;
+            document.documentElement.appendChild(script);
+            URL.revokeObjectURL(url);
+          }
+          else
+          {
+            script.textContent = executable;
+            document.documentElement.appendChild(script);
+          }
+
+          document.documentElement.removeChild(script);
+        };
+        {
+          const executable = {{{script}}};
+          injectScriptInMainContext(executable);
+        }`;
+
+    let actual = prepareInlineScriptForInjection(injectedLib, ...params);
+    let expected = template.replace("{{{script}}}", code);
+
+    assert.equal(expected, actual);
   });
 });

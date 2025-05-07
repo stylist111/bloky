@@ -17,6 +17,7 @@
  */
 
 import browser from "webextension-polyfill";
+import { prepareInlineScriptForInjection } from "@eyeo/webext-ad-filtering-solution/adblockpluscore/lib/snippets.js";
 import {
   apiFrameUrl,
   integrations,
@@ -24,46 +25,6 @@ import {
   responseEvent,
 } from "../shared/constants.js";
 import { mainPublicApi } from "../content/main-public-api.js";
-
-/**
- * Returns an MV2 script to inject into the page.
- *
- * @param {Function} injectedFunction - The function to be injected into the page.
- * @param {any[]} params - The parameters for the function.
- * @returns {string} - The code to be injected into the main world context.
- */
-function getMV2ScriptToInject(injectedFunction, ...params) {
-  const args = JSON.stringify([...params]);
-  // stringify injectedLib to escape backticks
-  let code = JSON.stringify(injectedFunction.toString());
-  code = `"(${code.slice(1, -1)}).apply(null,${JSON.stringify(args).slice(1, -1)});"`;
-  let executable = `function injectScriptInMainContext(executable) {
-      // injecting phases
-      let script = document.createElement("script");
-      script.type = "application/javascript";
-      script.async = false;
-
-      // Firefox 58 only bypasses site CSPs when assigning to 'src',
-      // while Chrome 67 and Microsoft Edge (tested on 44.17763.1.0)
-      // only bypass site CSPs when using 'textContent'.
-      if (typeof netscape != "undefined" && typeof browser != "undefined") {
-        let url = URL.createObjectURL(new Blob([executable]));
-        script.src = url;
-        document.documentElement.appendChild(script);
-        URL.revokeObjectURL(url);
-      } else {
-        script.textContent = executable;
-        document.documentElement.appendChild(script);
-      }
-
-      document.documentElement.removeChild(script);
-    };
-    {
-      const executable = ${code};
-      injectScriptInMainContext(executable);
-    }`;
-  return executable;
-}
 
 /**
  * Injects a script into the main world context of a frame
@@ -87,7 +48,7 @@ async function injectScriptInFrame({ tabId, frameId, func, args }) {
     }
   }
 
-  const executable = getMV2ScriptToInject(func, ...args);
+  const executable = prepareInlineScriptForInjection(func, ...args);
 
   return browser.tabs.executeScript(tabId, {
     frameId,

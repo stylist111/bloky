@@ -19,7 +19,7 @@ import browser from "./browser.js";
 
 import {createStyleSheet} from "adblockpluscore/lib/elemHide.js";
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
-import {parseScript} from "adblockpluscore/lib/snippets.js";
+import {parseScript, prepareInlineScriptForInjection} from "adblockpluscore/lib/snippets.js";
 
 import {filterEngine} from "./core.js";
 import {getFrameInfo} from "./frame-state.js";
@@ -131,47 +131,6 @@ async function executeSnippets(tabId, frameId, previousFrame, frame) {
     }
   }
 
-  // This is necessary when browser.scripting is not available.
-  // tabs.executeScript does not allow injecting scripts to main context.
-  // So we resort to creating an inline script element.
-  function prepareInlineScriptForSnippets() {
-    const args = JSON.stringify([environment, ...main]);
-    // stringify injectedLib to escape backticks
-    let code = JSON.stringify(injectedLib.toString());
-    code = `"(${code.slice(1, -1)}).apply(null,${JSON.stringify(args).slice(1, -1)});"`;
-    let executable =
-      `function injectSnippetsInMainContext(executable)
-        {
-          // injecting phases
-          let script = document.createElement("script");
-          script.type = "application/javascript";
-          script.async = false;
-
-          // Firefox 58 only bypasses site CSPs when assigning to 'src',
-          // while Chrome 67 and Microsoft Edge (tested on 44.17763.1.0)
-          // only bypass site CSPs when using 'textContent'.
-          if (typeof netscape != "undefined" && typeof browser != "undefined")
-          {
-            let url = URL.createObjectURL(new Blob([executable]));
-            script.src = url;
-            document.documentElement.appendChild(script);
-            URL.revokeObjectURL(url);
-          }
-          else
-          {
-            script.textContent = executable;
-            document.documentElement.appendChild(script);
-          }
-
-          document.documentElement.removeChild(script);
-        };
-        {
-          const executable = ${code};
-          injectSnippetsInMainContext(executable);
-        }`;
-    return executable;
-  }
-
   let execute = [];
   if (browser.scripting && browser.scripting.executeScript) {
     if (isolated.length > 0) {
@@ -216,7 +175,11 @@ async function executeSnippets(tabId, frameId, previousFrame, frame) {
         );
       }
       else {
-        const executable = prepareInlineScriptForSnippets();
+        const executable = prepareInlineScriptForInjection(
+          injectedLib,
+          environment,
+          ...main
+        );
         debug(() => `Execute main script ${executable}`);
         execute.push(
           browser.tabs.executeScript(
@@ -255,7 +218,11 @@ async function executeSnippets(tabId, frameId, previousFrame, frame) {
     }
 
     if (main.length > 0) {
-      const executable = prepareInlineScriptForSnippets();
+      const executable = prepareInlineScriptForInjection(
+        injectedLib,
+        environment,
+        ...main
+      );
       debug(() => `Execute main script ${executable}`);
       execute.push(
         browser.tabs.executeScript(

@@ -316,3 +316,52 @@ exports.compileScript = function compileScript(scripts,
     })();
   `;
 };
+
+/**
+ * Prepares an inline script for injecting code into the main context.
+ * This is necessary when `browser.scripting` is not available.
+ * tabs.executeScript does not allow injecting scripts to main context.
+ * So we resort to creating an inline script element.
+ *
+ * @param {any} codeToInject The code to be injected
+ * @param {Array<any>} params Parameters to be passed to the injected code
+ * @returns {string} The executable code to be injected
+ */
+exports.prepareInlineScriptForInjection =
+  function prepareInlineScriptForInjection(codeToInject, ...params) {
+    const args = JSON.stringify(params);
+    // stringify injectedLib to escape backticks
+    let code = JSON.stringify(codeToInject.toString());
+    code = `"(${code.slice(1, -1)}).apply(null,${JSON.stringify(args).slice(1, -1)});"`;
+    let executable =
+      `function injectScriptInMainContext(executable)
+        {
+          // injecting phases
+          let script = document.createElement("script");
+          script.type = "application/javascript";
+          script.async = false;
+
+          // Firefox 58 only bypasses site CSPs when assigning to 'src',
+          // while Chrome 67 and Microsoft Edge (tested on 44.17763.1.0)
+          // only bypass site CSPs when using 'textContent'.
+          if (typeof netscape != "undefined" && typeof browser != "undefined")
+          {
+            let url = URL.createObjectURL(new Blob([executable]));
+            script.src = url;
+            document.documentElement.appendChild(script);
+            URL.revokeObjectURL(url);
+          }
+          else
+          {
+            script.textContent = executable;
+            document.documentElement.appendChild(script);
+          }
+
+          document.documentElement.removeChild(script);
+        };
+        {
+          const executable = ${code};
+          injectScriptInMainContext(executable);
+        }`;
+    return executable;
+  };
