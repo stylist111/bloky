@@ -20,6 +20,7 @@
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
+import { getNumberPartnerExt } from "@eyeo-fragments/conflict-detection";
 import { chromeStorageSetHelper } from "~/utilities/background/bg-functions";
 import {
   getWebAllowlistingFilterCount,
@@ -28,6 +29,7 @@ import {
   getWizardFilterCount,
   getMissingFilterCount,
 } from "./custom-rule";
+
 import { Prefs } from "~/alias/prefs";
 import ServerMessages from "~/servermessages";
 import SubscriptionAdapter from "~/subscriptionadapter";
@@ -186,6 +188,7 @@ class TelemetryBase {
       data.crctotal += 1;
     }
 
+    data.numberOfPartnerExt = await getNumberPartnerExt();
     data.dc = this.dataCorrupt ? "1" : "0";
     data.isPinned = "-1";
     const userSettings = browser.action.getUserSettings && (await browser.action.getUserSettings());

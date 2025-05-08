@@ -138,6 +138,7 @@
     "vitest": "3.0.9"
   },
   "dependencies": {
+    "@eyeo-fragments/conflict-detection": "*",
     "@eyeo-fragments/public-api": "*",
     "@eyeo-fragments/yt-wall-detection": "*",
     "@eyeo/ext-ui-components": "*",

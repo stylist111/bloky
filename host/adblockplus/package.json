@@ -105,6 +105,7 @@
   },
   "dependencies": {
     "@eyeo-fragments/ipm": "*",
+    "@eyeo-fragments/conflict-detection": "*",
     "@eyeo-fragments/public-api": "*",
     "@eyeo-fragments/yt-wall-detection": "*",
     "@eyeo/ext-ui-components": "*",

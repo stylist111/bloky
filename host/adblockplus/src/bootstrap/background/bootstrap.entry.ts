@@ -45,6 +45,7 @@ import {
   start as startReadyState
 } from "../../testing/ready-state/background";
 import { start as startYTWallDetection } from "@eyeo-fragments/yt-wall-detection/background";
+import { start as startConflictDetection } from "@eyeo-fragments/conflict-detection";
 import { start as startInfoInjector } from "../../info-injector/background";
 import { start as startUpdateCampaign } from "../../update-campaign/background";
 import { start as startPages } from "../../core/pages/background";
@@ -134,6 +135,7 @@ async function bootstrap(): Promise<void> {
     isPremiumActive: hasActiveLicense,
     getEncodedLicense: getAuthPayload
   });
+  void startConflictDetection({ logger, prefs: Prefs });
 
   setReadyState(ReadyState.started);
 }

@@ -424,6 +424,52 @@ defaults.migration_popup_to_smart_allowlist_complete = false;
 defaults.migration_all_to_smart_allowlist_complete = false;
 
 /**
+ * The interval in which to ping the other extension, in ms. Defaults to 24 hours.
+ *
+ * @type {number}
+ */
+defaults.pd_ping_interval = 24 * 60 * 60 * 1000;
+
+/**
+ * The timestamp of the last attempt to ping other partner extensions
+ *
+ * @type {number}
+ */
+defaults.pd_last_ping = 0;
+
+/**
+ * An object that indicates:
+ *  - the extension ID of the ad blocking or partner extensions that were found installed on this device
+ *  - the local timestamp when they were detected
+ *
+ * @type {Object}
+ */
+defaults.partnerExtensionFound = {
+  extesnionsIdsFound: [],
+  detectionTimestamp: 0
+};
+
+/**
+ * The interval in which to ping the other extension, in ms. Defaults to 24 hours.
+ *
+ * @type {number}
+ */
+defaults.pd_ping_interval = 24 * 60 * 60 * 1000;
+
+/**
+ * An object that indicates:
+ *  - the extension ID of the ad blocking or partner extensions that were found installed on this device
+ *  - the local timestamp when they were detected
+ *
+ * @type {Object}
+ */
+defaults.partnerExtensionFound = {
+  extesnionsIdsFound: [],
+  detectionTimestamp: 0
+};
+
+/**
+>>>>>>> 4610f4148639b6e016ea22cce9bc357c040cc2c2
  * @namespace
  * @static
  */
