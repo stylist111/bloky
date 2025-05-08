@@ -75,17 +75,28 @@ export async function setMinDriverTimeout(timeout) {
 }
 
 export async function getHandle(page, timeout = 8000) {
+  // temporarily changing pageLoad timeout to prevent driver calls in
+  // switchToHandle to potentially use the default 5 min timeout
+  // https://www.selenium.dev/documentation/webdriver/drivers/options/#page-load-timeout
+  const {pageLoad} = await driver.manage().getTimeouts();
+  await driver.manage().setTimeouts({pageLoad: 4000});
   let url;
-  let handle = await driver.wait(() => switchToHandle(handleUrl => {
-    if (!handleUrl) {
-      return false;
-    }
 
-    url = new URL(handleUrl);
-    return url.pathname == page;
-  }), timeout, `${page} did not open`);
+  try {
+    let handle = await driver.wait(() => switchToHandle(handleUrl => {
+      if (!handleUrl) {
+        return false;
+      }
 
-  return handle;
+      url = new URL(handleUrl);
+      return url.pathname == page;
+    }), timeout, `${page} did not open`);
+
+    return handle;
+  }
+  finally {
+    await driver.manage().setTimeouts({pageLoad});
+  }
 }
 
 export async function switchToHandle(testFn) {
