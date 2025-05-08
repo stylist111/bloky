@@ -15,6 +15,11 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import {
+  clickOnDisplayedElement,
+  waitForNotDisplayed
+} from "@eyeo/test-utils/driver";
+
 export function getDefaultFilterLists(manifestVersion) {
   return [
     {
@@ -85,4 +90,23 @@ export const premiumToggles = [
     selector: "#premium-distractions-toggle svg",
     enabled: "true"
   }
+];
+
+export const premiumFilterLists = [
+  {
+    name: "Block cookie consent pop-ups",
+    enabled: false,
+    async stepsAfterClick(enable) {
+      if (enable) {
+        const btnSelector = "button[data-action='add-subscription']";
+        await clickOnDisplayedElement(btnSelector);
+        await waitForNotDisplayed(btnSelector);
+      }
+    }
+  },
+  { name: "Enhanced distraction control", enabled: true }
+];
+
+export const freeFilterLists = [
+  { name: "Block additional tracking", enabled: false }
 ];

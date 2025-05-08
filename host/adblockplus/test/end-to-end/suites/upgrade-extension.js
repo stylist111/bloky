@@ -41,31 +41,10 @@ import {
   clickOnCustomFilterToggleAndCheck,
   setPausedStateFromPopup,
   getPopupBlockedAdsTotalCount,
-  clickFLCheckboxAndCheck
+  clickFLCheckboxAndCheck,
+  clickFLAndCheck
 } from "../utils/page.js";
-
-async function clickFLAndCheck(
-  name,
-  { enable = true, timeout = 1000, stepsAfterClick = () => {} } = {}
-) {
-  const checkboxSelector = `[aria-label="${name}"] button`;
-  const enabledBeforeClick = !enable;
-
-  const enabled = await isCheckboxAttributeEnabled(checkboxSelector);
-  expect({ name, enabledBeforeClick: enabled }).toEqual({
-    name,
-    enabledBeforeClick
-  });
-
-  await clickOnDisplayedElement(checkboxSelector);
-  await stepsAfterClick();
-  await waitForCheckboxStatus(checkboxSelector, {
-    timeout,
-    expectEnabled: enable,
-    isProperty: false,
-    name
-  });
-}
+import { premiumFilterLists, freeFilterLists } from "../utils/dataset.js";
 
 async function clickAdsCounterAndCheck({ enable = true } = {}) {
   const adsCounterCheckboxSelector =
@@ -105,15 +84,14 @@ export default () => {
 
     // Change default filterlist status:
     // cookies (premium), additional tracking, acceptable ads, english easylist
-    await clickFLAndCheck("Block cookie consent pop-ups", {
-      enable: true,
-      stepsAfterClick: async () =>
-        clickOnDisplayedElement("button[data-action='add-subscription']")
-    });
-    await clickFLAndCheck("Block additional tracking", {
-      timeout: 2000,
-      enable: true
-    });
+    const generalTabFilterLists = [...premiumFilterLists, ...freeFilterLists];
+    for (const { name, enabled, stepsAfterClick } of generalTabFilterLists) {
+      if (!enabled) {
+        continue; // Don't disable filterlists enabled by default
+      }
+
+      await clickFLAndCheck(name, { enable: true, stepsAfterClick });
+    }
     const aaSelector = "#acceptable-ads-allow";
     await clickFLCheckboxAndCheck(aaSelector, {
       enable: false,
@@ -170,14 +148,8 @@ export default () => {
 
     // check if general tab filterlists are still enabled and can be changed
     await initOptionsGeneralTab(getOptionsHandle());
-
-    const generalTabFilterLists = [
-      "Block cookie consent pop-ups",
-      "Enhanced distraction control",
-      "Block additional tracking"
-    ];
-    for (const name of generalTabFilterLists) {
-      await clickFLAndCheck(name, { enable: false });
+    for (const { name, stepsAfterClick } of generalTabFilterLists) {
+      await clickFLAndCheck(name, { enable: false, stepsAfterClick });
     }
 
     // check if AA is still disabled and can be enabled

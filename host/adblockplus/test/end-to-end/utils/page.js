@@ -28,9 +28,11 @@ import {
   clickOnDisplayedElement,
   openNewTab,
   getTabId,
-  wait
+  wait,
+  isCheckboxAttributeEnabled
 } from "@eyeo/test-utils/driver";
 import { getOptionsHandle } from "@eyeo/test-utils/extension";
+import { premiumFilterLists } from "./dataset.js";
 
 const optionsPageSleep = 2000;
 
@@ -159,12 +161,10 @@ export async function clickFLCheckboxAndCheck(
   checkboxSelector,
   { enable = true, isToggle = false, name } = {}
 ) {
-  const enabledBeforeClick = !enable;
-
-  const enabled = await isCheckboxPropertyEnabled(checkboxSelector);
-  expect({ name, enabledBeforeClick: enabled }).toEqual({
-    name,
-    enabledBeforeClick
+  await waitForCheckboxStatus(checkboxSelector, {
+    expectEnabled: !enable,
+    isProperty: true,
+    name
   });
 
   await clickOnDisplayedElement(checkboxSelector);
@@ -722,4 +722,43 @@ export async function changeLanguageFilterList(langNameBefore, langNameAfter) {
     isAdded: false,
     isOptionsGeneralTab
   });
+}
+
+export async function clickFLAndCheck(
+  name,
+  { enable = true, timeout = 1000, stepsAfterClick = () => {} } = {}
+) {
+  const checkboxSelector = `[aria-label="${name}"] button`;
+  const enabledBeforeClick = !enable;
+
+  const enabled = await isCheckboxAttributeEnabled(checkboxSelector);
+  // If the filterlist is already in the desired state, return indicating it
+  // has not been clicked
+  if (enabled === enable) {
+    return false;
+  }
+
+  expect({ name, enabledBeforeClick: enabled }).toEqual({
+    name,
+    enabledBeforeClick
+  });
+
+  await clickOnDisplayedElement(checkboxSelector);
+  await stepsAfterClick(enable);
+  await waitForCheckboxStatus(checkboxSelector, {
+    timeout,
+    expectEnabled: enable,
+    isProperty: false,
+    name
+  });
+
+  return true;
+}
+
+export async function setPremiumFLsDefaultState() {
+  await initOptionsGeneralTab(getOptionsHandle());
+
+  for (const { name, enabled, stepsAfterClick } of premiumFilterLists) {
+    await clickFLAndCheck(name, { enable: enabled, stepsAfterClick });
+  }
 }

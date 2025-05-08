@@ -34,10 +34,16 @@ import {
   initOptionsGeneralTab,
   initPopupWithLocalPage,
   enablePremiumProgrammatically,
-  checkPremiumActivated
+  checkPremiumActivated,
+  clickFLAndCheck,
+  setPremiumFLsDefaultState
 } from "../../utils/page.js";
 import { premiumUrl } from "../../utils/urls.js";
-import { premiumLinkButtons, premiumToggles } from "../../utils/dataset.js";
+import {
+  premiumLinkButtons,
+  premiumToggles,
+  premiumFilterLists
+} from "../../utils/dataset.js";
 
 async function enablePremiumByUI() {
   await initOptionsGeneralTab(getOptionsHandle());
@@ -92,6 +98,10 @@ async function enablePremiumByUI() {
 }
 
 export default () => {
+  afterEach(async function () {
+    await setPremiumFLsDefaultState();
+  });
+
   it("activates premium by UI", async function () {
     // This flow is slow, as it takes some time for the payment provider
     // to inform our backend about the payment status.
@@ -140,6 +150,24 @@ export default () => {
     await getDisplayedElement("#control-element");
     for (const dcFilter of dcFilters) {
       await waitForNotDisplayed(dcFilter);
+    }
+  });
+
+  it("enables premium filter lists", async function () {
+    await enablePremiumProgrammatically();
+    await initOptionsGeneralTab(getOptionsHandle());
+
+    let someEnabled = false;
+    for (const { name, stepsAfterClick } of premiumFilterLists) {
+      const hasClicked = await clickFLAndCheck(name, {
+        enable: true,
+        stepsAfterClick
+      });
+      someEnabled = hasClicked || someEnabled;
+    }
+
+    if (!someEnabled) {
+      throw new Error("All premium filterlists were previously enabled");
     }
   });
 };

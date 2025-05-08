@@ -189,11 +189,15 @@ export function skipWhenSmokeTestsFailed() {
  * @returns {Promise<void>}
  */
 export async function screenshotsHook() {
-  if (this.currentTest.state !== "failed") {
+  const { currentTest } = this;
+  const currentHook = currentTest.ctx.test;
+
+  if (currentTest.state !== "failed" && currentHook.state !== "failed") {
     return;
   }
 
-  const title = this.currentTest.title.replaceAll(" ", "_");
+  let title = currentTest.state === "failed" ? currentTest.title : currentHook.title;
+  title = title.replaceAll(" ", "_").replaceAll('"', "");
   await screenshot(title);
 }
 

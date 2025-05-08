@@ -44,11 +44,13 @@ import {
   manageFilterListsError,
   getElemTextSafe,
   checkSubscriptionsState,
-  changeLanguageFilterList
+  changeLanguageFilterList,
+  clickFLAndCheck
 } from "../../utils/page.js";
 import {
   getDefaultFilterLists,
-  getBuiltinFilterLists
+  getBuiltinFilterLists,
+  freeFilterLists
 } from "../../utils/dataset.js";
 
 async function setFilterListUrl(url) {
@@ -129,7 +131,7 @@ export default () => {
     await findUrl(aaUrl);
   });
 
-  it("disables and reenables a filter list", async function () {
+  it("disables and reenables a filter list - advanced tab", async function () {
     const name = "EasyList";
     const { toggle } = getFLSelectors(name);
 
@@ -154,6 +156,14 @@ export default () => {
     await checkSubscriptionsState([{ name, enabled: true }], {
       timeout: 5000
     });
+  });
+
+  it("enables and disables a filter list - general tab", async function () {
+    const { name } = freeFilterLists[0];
+
+    await initOptionsGeneralTab(getOptionsHandle());
+    await clickFLAndCheck(name, { enable: true });
+    await clickFLAndCheck(name, { enable: false });
   });
 
   it("changes the default language filter list", async function () {
