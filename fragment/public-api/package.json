@@ -13,7 +13,8 @@
     "build": "npm run build:types",
     "build:release": "npm run build:types",
     "lint": "eslint .",
-    "prettier-fix": "prettier --write ."
+    "prettier-fix": "prettier --write .",
+    "test": "vitest run"
   },
   "peerDependencies": {
     "@eyeo/webext-ad-filtering-solution": "*",
