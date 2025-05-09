@@ -14,3 +14,18 @@ vi.mock("@eyeo/webext-ad-filtering-solution", () => ({
     hasAcceptableAdsEnabled: vi.fn(),
   },
 }));
+
+const manifest = {
+  short_name: "Adblock Plus",
+  version: "1.0.0",
+};
+
+vi.mock("webextension-polyfill", () => ({
+  default: {
+    runtime: {
+      getManifest: vi.fn(() => manifest),
+    },
+  },
+}));
+
+globalThis.manifest = manifest;

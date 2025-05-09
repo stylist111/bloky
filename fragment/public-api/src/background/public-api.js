@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
+import browser from "webextension-polyfill";
 import { start as startMainWorldAPIInjection } from "./api-injector.js";
 import { apiFrameUrl, requestEvent } from "../shared/constants.js";
 import apiHandlers from "./api-handlers/index.js";
