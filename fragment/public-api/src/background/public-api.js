@@ -92,6 +92,7 @@ export function start({
     };
   });
 
-  addTrustedMessageTypes(apiFrameUrl, [requestEvent]);
+  const iframeUrl = new URL(apiFrameUrl);
+  addTrustedMessageTypes(iframeUrl.origin, [requestEvent]);
   startMainWorldAPIInjection();
 }

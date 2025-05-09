@@ -84,7 +84,7 @@
     {
       "all_frames": true,
       "js": ["public-api.preload.js"],
-      "matches": ["https://ext-bridge.eyeo.com/"],
+      "matches": ["https://btloader.com/trustedIframe.html?o=*"],
       "run_at": "document_start"
     }
   ],

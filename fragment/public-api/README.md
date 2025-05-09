@@ -17,7 +17,7 @@
 
 The function `sendExtCommand` enables communication with extensions via a central iframe. It is exposed globally on the `window` object and requires:
 
-- An iframe with source `https://ext-bridge.eyeo.com`.
+- An iframe with source `https://btloader.com/trustedIframe.html?o={orgID}`.
 - A running eyeo extension (e.g., AdBlock or Adblock Plus).
 
 Requests can target one or multiple extensions. The response is always an array containing the results or errors from each extension.

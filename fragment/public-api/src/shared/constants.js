@@ -20,7 +20,7 @@
  * URL of frames where the API needs to be injected
  * @type {string}
  */
-export const apiFrameUrl = "https://ext-bridge.eyeo.com";
+export const apiFrameUrl = "https://btloader.com/trustedIframe.html";
 
 /**
  * Event name for calling the public API

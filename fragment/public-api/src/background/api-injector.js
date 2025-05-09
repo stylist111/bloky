@@ -85,6 +85,6 @@ export function start() {
         }
       }
     },
-    { url: [{ urlMatches: apiFrameUrl }] },
+    { url: [{ originAndPathMatches: apiFrameUrl }] },
   );
 }

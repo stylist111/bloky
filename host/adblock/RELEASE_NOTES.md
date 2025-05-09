@@ -4,6 +4,7 @@
   be considered disabled by the DNR rules subsystem but not by other parts of
   the engine, leading to inconsistent behaviour. (EXT-926)
 - Detect and collect if a user has our ad blocking extensions installed (EXT-923)
+- Enabled public api in the trusted iframe. (noissue)
 
 # 6.20.0 - 2025-04-29
 
