@@ -84,15 +84,15 @@ export async function extractExtension(buildsDirPath, unpackedDirPath) {
 export async function getExtensionInfo() {
   const info = await driver.executeAsyncScript(async (callback) => {
     if (typeof browser !== "undefined" && browser.management !== "undefined") {
-      const { shortName, version, permissions, optionsUrl } = await browser.management.getSelf();
+      const { shortName, version, optionsUrl } = await browser.management.getSelf();
       const origin = optionsUrl ? location.origin : null;
       const manifest = await browser.runtime.getManifest();
-      const popupUrl = manifest.applications?.gecko
-        ? await browser.action.getPopup({})
-        : manifest.manifest_version == "3"
-          ? `${location.origin}/${manifest.action.default_popup}`
-          : `${location.origin}/${manifest.browser_action.default_popup}`;
-      callback({ name: shortName, version, origin, permissions, popupUrl });
+      const manifestVersion = manifest.manifest_version;
+      const popupUrl =
+        manifestVersion === 3
+          ? await browser.action.getPopup({})
+          : await browser.browserAction.getPopup({});
+      callback({ name: shortName, version, origin, manifestVersion, popupUrl });
     } else {
       callback({});
     }
@@ -100,14 +100,8 @@ export async function getExtensionInfo() {
 
   if (!info || !info.origin) {
     throw new Error("Origin was not found");
-  }
-
-  info.manifestVersion = 2;
-  if (
-    info.permissions.includes("declarativeNetRequest") ||
-    info.permissions.includes("declarativeNetRequestWithHostAccess")
-  ) {
-    info.manifestVersion = 3;
+  } else if (!info.popupUrl) {
+    throw new Error("Popup URL was not found");
   }
 
   return info;
