@@ -1,5 +1,12 @@
 # Unreleased
 
+# 4.21.3 - 2025-05-13
+
+This release contains under-the-hood changes.
+
+- Detect and collect if a user has our ad blocking extensions installed (EXT-923)
+- Enabled public api in the trusted iframe. (noissue)
+
 # 4.21.2 - 2025-05-06
 
 This release contains bugfixes and under-the-hood changes.
@@ -7,8 +14,6 @@ This release contains bugfixes and under-the-hood changes.
 - Fixed a bug where previously-disabled filters that are readded would be still
   be considered disabled by the DNR rules subsystem but not by other parts of
   the engine, leading to inconsistent behaviour. (EXT-926)
-- Detect and collect if a user has our ad blocking extensions installed (EXT-923)
-- Enabled public api in the trusted iframe. (noissue)
 
 # 4.21.1 - 2025-04-29
 
