@@ -33,6 +33,7 @@ import eyeometry from "./eyeometry.js";
 import youtubeAllowlist from "./youtube-auto-allowlist.js";
 import oneClickAllowlisting from "./public-api/one-click-allowlisting.js";
 import bypassAPI from "./public-api/bypass-api.js";
+import infoInjector from "./info-injector.js";
 
 export default () => {
   beforeEach(async function () {
@@ -59,6 +60,8 @@ export default () => {
     });
 
     describe("Eyeometry", eyeometry);
+
+    describe("Info Injector", infoInjector);
 
     describe("Youtube Allowlist", youtubeAllowlist);
 

@@ -18,6 +18,8 @@
 import path from "path";
 import fs from "fs";
 import AdmZip from "adm-zip";
+import { By } from "selenium-webdriver";
+import { expect } from "expect";
 
 import { openNewTab, getTabId, getFromStorage, wait } from "./driver.js";
 import { localTestPageUrl, blockHideLocalhostUrl } from "../test-server/urls.js";
@@ -199,6 +201,32 @@ export async function removeFilterProgrammatically(initOptionsFn, filterText) {
     type: "filters.remove",
     text: filterText,
   });
+}
+
+/**
+ * Verifies that the info injected on testUrl matches the actual extension values.
+ */
+export async function verifyInjectedExtensionData(testUrl, dataAttribute, getActualExtensionData) {
+  await openNewTab(testUrl);
+
+  await driver.wait(
+    async () => {
+      const html = await driver.findElement(By.css("html"));
+      const attr = await html.getAttribute(dataAttribute);
+      return attr !== null;
+    },
+    6000,
+    `Extension info not injected in <html> on ${testUrl}`,
+  );
+
+  const html = await driver.findElement(By.css("html"));
+  const injectedAttribute = await html.getAttribute(dataAttribute);
+  expect(injectedAttribute).not.toBeNull();
+
+  const parsedHtmlData = JSON.parse(injectedAttribute);
+  const actualExtensionData = await getActualExtensionData();
+
+  expect(parsedHtmlData).toMatchObject(actualExtensionData);
 }
 
 /**
