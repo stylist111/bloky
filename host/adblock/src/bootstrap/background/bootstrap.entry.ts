@@ -29,7 +29,7 @@ async function bootstrap(): Promise<void> {
   );
 
   startSettings();
-  startPageviewMetrics();
+  await startPageviewMetrics();
 }
 
 void bootstrap();

@@ -220,7 +220,7 @@ defaults.ipm_default_origin = "https://getadblock.com";
 /**
  * Trusted origins for URLs used in IPMs
  *
- * @type {string}
+ * @type {string[]}
  */
 defaults.ipm_safe_origins = [
   defaults.ipm_default_origin,
@@ -385,6 +385,13 @@ defaults.partnerExtensionFound = {
   extesnionsIdsFound: [],
   detectionTimestamp: 0,
 };
+
+/**
+ * List of request URLs for which pageview metrics should be recorded
+ *
+ * @type {string[]}
+ */
+defaults.pageviewMetrics_requestUrls = ["*://btloader.com/tag?*"];
 
 /**
  * @namespace

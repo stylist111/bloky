@@ -15,124 +15,15 @@
  * along with AdBlock.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as ewe from "@eyeo/webext-ad-filtering-solution";
-import { getBaseDomain } from "@eyeo/webext-ad-filtering-solution/adblockpluscore/lib/url";
-
-import ServerMessages from "~/servermessages";
-import { getAAStatus } from "~/telemetry/background";
-import { type TabPage } from "../../core/pages/background";
+import { start as startBtaaDetectionEvent } from "./btaa-detection-event";
+import { start as startPageviewEvent } from "./pageview-event";
+import { start as startRequestEvents } from "./request-events";
 
 /**
- * Records metrics related to pageviews for specific domains
- *
- * @param page - Page
+ * Initializes pageview-related metrics functionality.
  */
-async function handlePageLoaded(page: TabPage): Promise<void> {
-  if (typeof page.id === "undefined" || page.id === browser.tabs.TAB_ID_NONE) {
-    return;
-  }
-
-  const domains = await ewe.experiments.getFlag("pageview-metrics:domains");
-  if (!isStringArray(domains) || !domains.length) {
-    return;
-  }
-
-  const domain = getBaseDomain(page.url.hostname);
-  if (!domains.includes(domain)) {
-    return;
-  }
-
-  let pageState = 0;
-  pageState |= (await isTabAllowlisted(page.id)) ? 1 : 0;
-  pageState <<= 1;
-  pageState |= (await isTabPrivate(page.id)) ? 1 : 0;
-  pageState <<= 1;
-  pageState |= (await isAcceptableAdsEnabled()) ? 1 : 0;
-
-  ServerMessages.recordAnonymousMessage("pageview", "stats", null, {
-    misc_text: domain,
-    var: pageState,
-  });
-}
-
-/**
- * Determines whether Acceptable Ads is enabled
- *
- * @returns whether Acceptable Ads is enabled
- */
-async function isAcceptableAdsEnabled(): Promise<boolean> {
-  const status = await getAAStatus();
-  return status === "1" || status === "2";
-}
-
-/**
- * Determines whether given candidate is a string array
- *
- * @param candidate
- *
- * @returns whether given candidate is a string array
- */
-function isStringArray(candidate: unknown): candidate is string[] {
-  return Array.isArray(candidate) && (!candidate.length || typeof candidate[0] === "string");
-}
-
-/**
- * Determines whether the given tab is in a private window
- *
- * @returns whether the given tab is in a private window
- */
-async function isTabPrivate(tabId: number): Promise<boolean> {
-  const tab = await browser.tabs.get(tabId);
-  return tab.incognito;
-}
-
-/**
- * Determines whether the given tab is allowlisted
- *
- * @param tabId - Tab ID
- *
- * @returns whether the given tab is allowlisted
- */
-async function isTabAllowlisted(tabId: number): Promise<boolean> {
-  const allowingFilters = await ewe.filters.getAllowingFilters(tabId);
-  return allowingFilters.length > 0;
-}
-
-/**
- * Records metrics related to a Blockthrough Acceptable Ads detection event.
- *
- * @param details - The details of the event, including our conclusion on if
- * this is an Acceptable Ads Page View.
- */
-async function handleBTAADetectionEvent(details: ewe.BtaaDetectionDetails): Promise<void> {
-  const domains = await ewe.experiments.getFlag("pageview-metrics:domains");
-  if (!isStringArray(domains) || !domains.length) {
-    return;
-  }
-
-  const domain = getBaseDomain(details.siteId);
-  if (!domains.includes(domain)) {
-    return;
-  }
-
-  let packedDetails = 0;
-  packedDetails |= details.isAAPV ? 1 : 0;
-  packedDetails <<= 1;
-  packedDetails |= details.ab ? 1 : 0;
-  packedDetails <<= 1;
-  packedDetails |= details.acceptable ? 1 : 0;
-
-  ServerMessages.recordAnonymousMessage("btaa_detection", "stats", null, {
-    misc_text: domain,
-    sid: details.sessionId,
-    var: packedDetails,
-  });
-}
-
-/**
- * Initializes page view metrics functionality.
- */
-export function start(): void {
-  ext.pages.onLoaded.addListener(handlePageLoaded);
-  ewe.cdp.onBTAADetectionEvent.addListener(handleBTAADetectionEvent);
+export async function start(): Promise<void> {
+  startBtaaDetectionEvent();
+  startPageviewEvent();
+  await startRequestEvents();
 }

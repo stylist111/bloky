@@ -16,3 +16,4 @@
  */
 
 export * from "./metrics";
+export * from "./request-events.types";
