@@ -191,6 +191,7 @@ export function startNonPartnerDetection(parameters: StartInfo): void {
       logger.debug(
         "[conflict-detection]: non-partner extension found by options page",
       );
+      await saveResultInPrefs(prefs, uboDetectionLastRunKey);
       await saveResultInPrefs(prefs, uboDetectedKey);
     }
   });

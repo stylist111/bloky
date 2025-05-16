@@ -215,6 +215,7 @@ describe("nonpartner-detection", () => {
       await registeredTabListener!({
         url: `chrome-extension://${extId}/options.html`,
       });
+      expect(prefs.set).toHaveBeenCalledWith(uboDetectionLastRunKey, mockTimestamp);
       expect(prefs.set).toHaveBeenCalledWith(uboDetectedKey, mockTimestamp);
     });
 
