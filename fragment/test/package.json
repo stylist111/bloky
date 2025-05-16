@@ -36,6 +36,7 @@
   "license": "GPL-3.0",
   "dependencies": {
     "@eyeo-fragments/example": "*",
+    "@eyeo-fragments/yt-wall-detection": "*",
     "@eyeo/webext-ad-filtering-solution": "*"
   },
   "peerDependencies": {
@@ -48,6 +49,7 @@
     "expect": "^25.5.0",
     "mocha": "10.7.3",
     "selenium-webdriver": "4.23.0",
+    "sinon": "20.0.0",
     "webpack": "5.97.1",
     "webpack-cli": "^5.1.4"
   }

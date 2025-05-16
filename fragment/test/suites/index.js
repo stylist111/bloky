@@ -17,7 +17,9 @@
  */
 
 import sampleTest from "./sample-test.js";
+import youtubeAutoAllowlist from "./youtube-auto-allowlist.js";
 
 export default () => {
   describe("Sample Test", sampleTest);
+  describe("YouTube auto-allowlist", youtubeAutoAllowlist);
 };

@@ -25,6 +25,7 @@ import { openNewTab, getTabId, getFromStorage, wait } from "./driver.js";
 import { localTestPageUrl, blockHideLocalhostUrl } from "../test-server/urls.js";
 
 export const subscriptionUrl = "https://abptestpages.org/en/abp-testcase-subscription.txt";
+export const ytAllowlistUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
 
 let optionsHandle;
 
@@ -387,7 +388,7 @@ export function getPremiumEmail() {
 
 // Opens a YT video and triggers auto-allowlisting
 export async function autoAllowlistsYoutube() {
-  const websiteHandle = await openNewTab("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+  const websiteHandle = await openNewTab(ytAllowlistUrl);
   const tabId = await getTabId(getOptionsHandle());
   await driver.switchTo().window(websiteHandle);
 

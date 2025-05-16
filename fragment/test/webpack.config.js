@@ -47,6 +47,11 @@ const baseManifest = {
       run_at: "document_end",
       all_frames: false,
     },
+    {
+      matches: ["*://*.youtube.com/*"],
+      js: ["ytWallDetectionPreload.js"],
+      run_at: "document_start",
+    },
   ],
   options_ui: {
     page: "options.html",
@@ -86,6 +91,7 @@ export default (env = {}) => {
     entry: {
       background: "./test-extension/src/background.js",
       examplePreload: "@eyeo-fragments/example/content",
+      ytWallDetectionPreload: "@eyeo-fragments/yt-wall-detection/content",
       options: "./test-extension/src/options.js",
     },
     output: {
