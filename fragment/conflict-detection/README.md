@@ -3,6 +3,7 @@
 ## Intro
 
 This fragment contains the background page (service worker) scripts needed to detect:
+
 - all of our extensions
 - other extensions that may cause a conflict with the functionality our extensions provide
 

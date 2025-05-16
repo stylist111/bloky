@@ -34,7 +34,29 @@ export interface StartInfo {
    *
    */
   prefs: any;
+
+  /**
+   * A reference to the port object
+   *
+   */
+  port: any;
+
+  /**
+   * A reference to a function will add the message types
+   * that are needed from the content script.
+   *
+   */
+  addTrustedMessageTypes: addTrustedMessageTypesFunction;
 }
+
+/**
+ * Function to add trusted message types for certain origins
+ *
+ */
+export type addTrustedMessageTypesFunction = (
+  origin: string | null,
+  types: string[],
+) => void;
 
 /**
  * The alarm name for the ping schedule.
@@ -60,6 +82,16 @@ export const partnerExtensionFoundKey = "partnerExtensionFound";
  * The name for the Prefs storage key of the last attempted Partner Detection ping.
  */
 export const lastPingKey = "pd_last_ping";
+
+/**
+ * The name for the Prefs storage key that indicates if the ubo extension was found.
+ */
+export const uboDetectedKey = "uboDetected";
+
+/**
+ * The name for the Prefs storage key that indicates when the detection was last run.
+ */
+export const uboDetectionLastRunKey = "uboDetectionLastRun";
 
 /**
  * The name for the Prefs storage key that contains the partner extension IDs of Chromium based browsers.
@@ -93,3 +125,15 @@ export const PartnerExtensionIds = [
  *
  */
 export type getNumberPartnerExtFunction = () => Promise<number>;
+
+/**
+ *  The extension IDs of the NON-partner extension(s) to send the ping message to.
+ */
+export const uboExtensionIds = [
+  "cjpalhdlnbpafiamejdnhcphjbkeiagm", // ubo - CWS
+  "ddkjiahejlhfcafbddmgiahcphecmpfh", // ubo light - CWS
+  "odfafepnkmbhccpbejgmiehpchacaeak", // ubo - MS Edge Store
+  "cimighlppcgcoapaliogpjjdehbnofhn", // ubo light - MS Edge Store
+  "kccohkcpppjjkkjppopfnflnebibpida", // ubo - Opera
+  "99f80bf7-2581-4e03-a191-3013e8d65551", // ubo - FF / AMO
+];

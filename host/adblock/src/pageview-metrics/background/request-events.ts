@@ -17,7 +17,7 @@
 
 import { Prefs } from "~/alias/prefs";
 import ServerMessages from "~/servermessages";
-import { getMatchingDomain } from "./domains";
+import { getMatchingDomain } from "./shared";
 import { type RequestOriginDetails } from "./request-events.types";
 
 /**

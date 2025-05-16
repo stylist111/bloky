@@ -20,7 +20,7 @@ import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import ServerMessages from "~/servermessages";
 import { getAAStatus } from "~/telemetry/background";
 import { type TabPage } from "../../core/pages/background";
-import { getMatchingDomain } from "./domains";
+import { getMatchingDomain, hasUbo, uboDetectionWasActive } from "./shared";
 
 /**
  * Records metrics related to pageviews for specific domains
@@ -38,6 +38,10 @@ async function handlePageLoaded(page: TabPage): Promise<void> {
   }
 
   let pageState = 0;
+  pageState |= (await hasUbo()) ? 1 : 0;
+  pageState <<= 1;
+  pageState |= (await uboDetectionWasActive()) ? 1 : 0;
+  pageState <<= 1;
   pageState |= (await isTabAllowlisted(page.id)) ? 1 : 0;
   pageState <<= 1;
   pageState |= (await isTabPrivate(page.id)) ? 1 : 0;

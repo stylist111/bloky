@@ -18,7 +18,7 @@
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
 import ServerMessages from "~/servermessages";
-import { getMatchingDomain } from "./domains";
+import { getMatchingDomain, hasUbo } from "./shared";
 
 /**
  * Records metrics related to a Blockthrough Acceptable Ads detection event.
@@ -33,6 +33,8 @@ async function handleBTAADetectionEvent(details: ewe.BtaaDetectionDetails): Prom
   }
 
   let packedDetails = 0;
+  packedDetails |= (await hasUbo()) ? 1 : 0;
+  packedDetails <<= 1;
   packedDetails |= details.isAAPV ? 1 : 0;
   packedDetails <<= 1;
   packedDetails |= details.ab ? 1 : 0;

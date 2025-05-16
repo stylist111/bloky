@@ -107,6 +107,11 @@ export default {
         dest: "options/react-options.js",
         src: ["adblock-betafish/options/react-components/main.jsx"],
       },
+      {
+        dest: "conflict-detection.preload.js",
+        package: "@eyeo-fragments/conflict-detection",
+        src: "/content",
+      },
     ],
   },
   mapping: {

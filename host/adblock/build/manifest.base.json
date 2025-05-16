@@ -85,6 +85,11 @@
       "js": ["public-api.preload.js"],
       "matches": ["https://btloader.com/trustedIframe.html?o=*"],
       "run_at": "document_start"
+    },
+    {
+      "js": ["conflict-detection.preload.js"],
+      "matches": ["*://*.youtube.com/*", "*://*.facebook.com/*"],
+      "run_at": "document_start"
     }
   ],
   "content_security_policy": "default-src 'self'; img-src 'self' data: blob: https://cdn.adblockcdn.com; style-src 'self' 'unsafe-inline'; connect-src *; frame-src 'self' https://getadblock.com",

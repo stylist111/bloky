@@ -29,7 +29,7 @@ import {
   startPartnerDetection,
   sendPingToParterExtension,
   sendSavePingResponses,
-  addAlarmListener
+  addAlarmListener,
 } from "../../src/background/partner-detection";
 
 const defaultInterval = 100000;
@@ -41,46 +41,60 @@ const parameters = {
     get: vi.fn(() => defaultInterval),
   },
   logger: {
-    debug:  vi.fn(),
-  }
+    debug: vi.fn(),
+  },
 };
 
-const setupMockOnMessageResponse = (returnTrueArray:string[]): void => {
+const setupMockOnMessageResponse = (returnTrueArray: string[]): void => {
   const listener = vi.fn();
   chrome.runtime.onMessageExternal.addListener.mockImplementation(listener);
   // Mock responses for each extension ID
-  (browser.runtime.sendMessage as jest.Mock).mockImplementation((extensionId) => {
-    if (returnTrueArray.includes(extensionId)) {
-      return Promise.resolve({ pingResponse: true });
-    }
-    return Promise.reject(); // Simulate failure for other extensions
-  });
-}
+  (browser.runtime.sendMessage as jest.Mock).mockImplementation(
+    (extensionId) => {
+      if (returnTrueArray.includes(extensionId)) {
+        return Promise.resolve({ pingResponse: true });
+      }
+      return Promise.reject(); // Simulate failure for other extensions
+    },
+  );
+};
 
 describe("sendPingMessage", () => {
-
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("should return an array of found extension IDs when extensions respond successfully", async () => {
-    setupMockOnMessageResponse([PartnerExtensionIds[0], PartnerExtensionIds[1]]);
+    setupMockOnMessageResponse([
+      PartnerExtensionIds[0],
+      PartnerExtensionIds[1],
+    ]);
 
     const result = await sendPingToParterExtension();
 
     expect(result).toEqual([PartnerExtensionIds[0], PartnerExtensionIds[1]]);
-    expect(browser.runtime.sendMessage).toHaveBeenCalledTimes(PartnerExtensionIds.length);
-    expect(browser.runtime.sendMessage).toHaveBeenCalledWith(PartnerExtensionIds[0], PingMessage, undefined);
+    expect(browser.runtime.sendMessage).toHaveBeenCalledTimes(
+      PartnerExtensionIds.length,
+    );
+    expect(browser.runtime.sendMessage).toHaveBeenCalledWith(
+      PartnerExtensionIds[0],
+      PingMessage,
+      undefined,
+    );
   });
 
   it("should return an empty array if no extensions respond successfully", async () => {
     // Mock all extensions to fail
-    (browser.runtime.sendMessage as jest.Mock).mockRejectedValue(new Error("Failed"));
+    (browser.runtime.sendMessage as jest.Mock).mockRejectedValue(
+      new Error("Failed"),
+    );
 
     const result = await sendPingToParterExtension();
 
     expect(result).toEqual([]);
-    expect(browser.runtime.sendMessage).toHaveBeenCalledTimes(PartnerExtensionIds.length);
+    expect(browser.runtime.sendMessage).toHaveBeenCalledTimes(
+      PartnerExtensionIds.length,
+    );
   });
 
   it("should save 0 ping responses to preferences", async () => {
@@ -88,52 +102,68 @@ describe("sendPingMessage", () => {
 
     await sendSavePingResponses(parameters);
 
-    expect(parameters.prefs.set).toHaveBeenCalledWith(partnerExtensionFoundKey, {
-      extesnionsIdsFound: [],
-      detectionTimestamp: expect.any(Number),
-    });
+    expect(parameters.prefs.set).toHaveBeenCalledWith(
+      partnerExtensionFoundKey,
+      {
+        extesnionsIdsFound: [],
+        detectionTimestamp: expect.any(Number),
+      },
+    );
   });
 
   it("should save 2 ping responses to preferences", async () => {
-    setupMockOnMessageResponse([PartnerExtensionIds[0], PartnerExtensionIds[1]]);
+    setupMockOnMessageResponse([
+      PartnerExtensionIds[0],
+      PartnerExtensionIds[1],
+    ]);
 
     await sendSavePingResponses(parameters);
 
-    expect(parameters.prefs.set).toHaveBeenCalledWith(partnerExtensionFoundKey, {
-      extesnionsIdsFound: [PartnerExtensionIds[0], PartnerExtensionIds[1]],
-      detectionTimestamp: expect.any(Number),
-    });
+    expect(parameters.prefs.set).toHaveBeenCalledWith(
+      partnerExtensionFoundKey,
+      {
+        extesnionsIdsFound: [PartnerExtensionIds[0], PartnerExtensionIds[1]],
+        detectionTimestamp: expect.any(Number),
+      },
+    );
   });
 
-  it('should save 1 ping response to preference when alarm fires',  async () => {
-    let theCallbackFunction = (Alarm): void => { };
+  it("should save 1 ping response to preference when alarm fires", async () => {
+    let theCallbackFunction = (Alarm): void => {};
     const mockListener = vi.fn().mockImplementation((callback: any) => {
-      theCallbackFunction = callback;  // save a reference to the callback function
-                                      // so we can invoke it later
+      theCallbackFunction = callback; // save a reference to the callback function
+      // so we can invoke it later
     });
-    vi.spyOn(browser.alarms.onAlarm, 'addListener').mockImplementation(mockListener);
+    vi.spyOn(browser.alarms.onAlarm, "addListener").mockImplementation(
+      mockListener,
+    );
     expect(mockListener).not.toBeCalled();
     addAlarmListener(parameters);
     expect(mockListener).toHaveBeenCalled();
 
-    theCallbackFunction({ name: 'stuff'}); // invoke the onAlarm listener with incorrect alarm
+    theCallbackFunction({ name: "stuff" }); // invoke the onAlarm listener with incorrect alarm
     expect(parameters.prefs.set).not.toBeCalled();
 
     setupMockOnMessageResponse([PartnerExtensionIds[1]]);
-    await theCallbackFunction({ name: alarmName});  // invoke the onAlarm listener with correct alarm
+    await theCallbackFunction({ name: alarmName }); // invoke the onAlarm listener with correct alarm
     await new Promise(process.nextTick);
-    expect(parameters.prefs.set).toHaveBeenCalledWith(partnerExtensionFoundKey, {
-      extesnionsIdsFound: [PartnerExtensionIds[1]],
-      detectionTimestamp: expect.any(Number),
-    });
+    expect(parameters.prefs.set).toHaveBeenCalledWith(
+      partnerExtensionFoundKey,
+      {
+        extesnionsIdsFound: [PartnerExtensionIds[1]],
+        detectionTimestamp: expect.any(Number),
+      },
+    );
   });
 
-  it('should add the alarm listener and return',  async () => {
+  it("should add the alarm listener and return", async () => {
     const mockListener = vi.fn();
-    vi.spyOn(browser.alarms.onAlarm, 'addListener').mockImplementation(mockListener);
+    vi.spyOn(browser.alarms.onAlarm, "addListener").mockImplementation(
+      mockListener,
+    );
 
     const mockGet = vi.fn(() => Promise.resolve(undefined));
-    vi.spyOn(browser.alarms, 'get').mockImplementation(mockGet);
+    vi.spyOn(browser.alarms, "get").mockImplementation(mockGet);
     expect(mockListener).not.toBeCalled();
 
     await startPartnerDetection(parameters);
@@ -141,48 +171,47 @@ describe("sendPingMessage", () => {
     expect(mockListener).toHaveBeenCalled();
   });
 
-  it('should create alarm',  async () => {
-
+  it("should create alarm", async () => {
     const mockCreateAlarm = vi.fn();
-    vi.spyOn(browser.alarms, 'create').mockImplementation(mockCreateAlarm);
+    vi.spyOn(browser.alarms, "create").mockImplementation(mockCreateAlarm);
 
     const mockGet = vi.fn(() => Promise.resolve(undefined));
-    vi.spyOn(browser.alarms, 'get').mockImplementation(mockGet);
+    vi.spyOn(browser.alarms, "get").mockImplementation(mockGet);
 
     const mockListener = vi.fn();
-    vi.spyOn(browser.alarms.onAlarm, 'addListener').mockImplementation(mockListener);
+    vi.spyOn(browser.alarms.onAlarm, "addListener").mockImplementation(
+      mockListener,
+    );
 
     await startPartnerDetection(parameters);
     expect(mockListener).toHaveBeenCalled();
     expect(parameters.prefs.get).toBeCalled();
-    expect(mockCreateAlarm).toHaveBeenCalledWith(alarmName, {periodInMinutes: (defaultInterval / 1000 / 60) });
-
+    expect(mockCreateAlarm).toHaveBeenCalledWith(alarmName, {
+      periodInMinutes: defaultInterval / 1000 / 60,
+    });
   });
 
-  it('should not re-create alarm',  async () => {
-
+  it("should not re-create alarm", async () => {
     const mockCreateAlarm = vi.fn();
-    vi.spyOn(browser.alarms, 'create').mockImplementation(mockCreateAlarm);
+    vi.spyOn(browser.alarms, "create").mockImplementation(mockCreateAlarm);
     const mockGet = vi.fn().mockImplementation(() => {
       return { name: alarmName };
     });
-    vi.spyOn(browser.alarms, 'get').mockImplementation(mockGet);
+    vi.spyOn(browser.alarms, "get").mockImplementation(mockGet);
 
     await startPartnerDetection(parameters);
 
     expect(parameters.prefs.get).toBeCalled();
     expect(mockCreateAlarm).not.toBeCalled();
-
   });
 
-  it('should return 2 extensions',  async () => {
+  it("should return 2 extensions", async () => {
     parameters.prefs.get = vi.fn().mockImplementation(() => {
-      return { extesnionsIdsFound: ['test1', 'test2']}
+      return { extesnionsIdsFound: ["test1", "test2"] };
     });
     await startPartnerDetection(parameters);
     const numberExt = await getNumberPartnerExt();
     expect(numberExt).toEqual(2);
-    expect(parameters.prefs.get).toHaveBeenCalledWith(partnerExtensionFoundKey)
+    expect(parameters.prefs.get).toHaveBeenCalledWith(partnerExtensionFoundKey);
   });
-
 });

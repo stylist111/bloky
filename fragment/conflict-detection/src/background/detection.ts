@@ -18,10 +18,12 @@
 
 import { startPartnerDetection } from "./partner-detection.js";
 import { type StartInfo } from "./detection.types.js";
+import { startNonPartnerDetection } from "./nonpartner-detection.js";
 
 /**
  * Initializes the conflict extension fragment.
  */
 export async function start(parameters: StartInfo): Promise<void> {
   void startPartnerDetection(parameters);
+  startNonPartnerDetection(parameters);
 }

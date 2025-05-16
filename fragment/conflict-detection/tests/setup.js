@@ -45,6 +45,20 @@ const browser = {
       addListener: vi.fn(),
     },
   },
+  scripting: {
+    executeScript: vi.fn(),
+  },
+  tabs: {
+    executeScript: vi.fn(),
+    onCreated: {
+      addListener: vi.fn(),
+    },
+  },
+  webNavigation: {
+    onCompleted: {
+      addListener: vi.fn(),
+    },
+  },
 };
 
 Object.assign(global, {

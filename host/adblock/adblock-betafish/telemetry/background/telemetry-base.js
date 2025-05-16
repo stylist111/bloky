@@ -189,6 +189,8 @@ class TelemetryBase {
     }
 
     data.numberOfPartnerExt = await getNumberPartnerExt();
+    // Detected in the last 7 days
+    data.hasUBO = Date.now() - Prefs.get("uboDetected") < 7 * 24 * 60 * 60 * 1000 ? "1" : "0";
     data.dc = this.dataCorrupt ? "1" : "0";
     data.isPinned = "-1";
     const userSettings = browser.action.getUserSettings && (await browser.action.getUserSettings());

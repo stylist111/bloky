@@ -3,9 +3,23 @@
   "type": "module",
   "license": "GPL-3.0",
   "private": true,
-  "types": "./dist/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "background": [
+        "./dist/background/index.d.ts"
+      ],
+      "content": [
+        "./dist/content/index.d.ts"
+      ]
+    }
+  },
+  "files": [
+    "./dist/"
+  ],
   "exports": {
-    ".": "./dist/index.js"
+    ".": "./dist/background/index.js",
+    "./background": "./dist/background/index.js",
+    "./content": "./dist/content/index.js"
   },
   "scripts": {
     "build:types": "tsc --project tsconfig.json --emitDeclarationOnly",
@@ -17,8 +31,11 @@
   },
   "peerDependencies": {
     "@types/webextension-polyfill": "0.12.0",
-    "typescript": "5.6.3",
+    "@eyeo/webext-ad-filtering-solution": "*",
     "webextension-polyfill": "*"
+  },
+  "dependencies": {
+    "typescript": "5.6.3"
   },
   "devDependencies": {
     "eslint": "8.34.0",

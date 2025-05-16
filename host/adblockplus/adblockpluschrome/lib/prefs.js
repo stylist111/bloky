@@ -469,7 +469,20 @@ defaults.partnerExtensionFound = {
 };
 
 /**
->>>>>>> 4610f4148639b6e016ea22cce9bc357c040cc2c2
+ * A timestamp that indicates when was the last time when ubo was found on this device
+ *
+ * @type {number}
+ */
+defaults.uboDetected = 0;
+
+/**
+ * A timestamp that indicates when was the last time when ubo detection was tun
+ *
+ * @type {number}
+ */
+defaults.uboDetectionLastRun = 0;
+
+/**
  * @namespace
  * @static
  */

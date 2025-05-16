@@ -1,5 +1,7 @@
 # Unreleased
 
+- Detect and collect if a user has ubo installed (EXT-942)
+
 # 4.21.3 - 2025-05-13
 
 This release contains under-the-hood changes.

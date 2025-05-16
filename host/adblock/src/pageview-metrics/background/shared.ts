@@ -18,6 +18,7 @@
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
 import { getBaseDomain } from "@eyeo/webext-ad-filtering-solution/adblockpluscore/lib/url";
+import { Prefs } from "~/alias/prefs";
 
 /**
  * Determines whether metrics should be recorded for given domain.
@@ -42,6 +43,28 @@ export async function getMatchingDomain(domain: string | null): Promise<string |
   }
 
   return baseDomain;
+}
+
+/**
+ * Determines if ubo was detected in the last 7 days.
+ *
+ * @returns whether ubo was detected in the last 7 days
+ */
+export async function hasUbo(): Promise<boolean> {
+  await Prefs.untilLoaded;
+  // Was detected in the last 7 days
+  return Date.now() - Prefs.get("uboDetected") < 7 * 24 * 60 * 60 * 1000;
+}
+
+/**
+ * Determines if ubo detection was active in the last 7 days.
+ *
+ * @returns whether ubo detection was active in the last 7 days
+ */
+export async function uboDetectionWasActive(): Promise<boolean> {
+  await Prefs.untilLoaded;
+  // Was run in the last 7 days
+  return Date.now() - Prefs.get("uboDetectionLastRun") < 7 * 24 * 60 * 60 * 1000;
 }
 
 /**
