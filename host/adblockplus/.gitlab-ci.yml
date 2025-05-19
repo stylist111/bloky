@@ -183,8 +183,6 @@ checkbuildsizes:MV2:firefox:
     expire_in: 1 month
   rules:
     - !reference [.always, rules]
-  variables:
-    TESTS_TO_EXCLUDE: "Blocking|iFrame with subdomains Exception|Image Exception"
 
 .compliance:MV3:
   extends: .compliance
