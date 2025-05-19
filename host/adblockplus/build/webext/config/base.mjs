@@ -138,6 +138,11 @@ export default {
         dest: "conflict-detection.preload.js",
         package: "@eyeo-fragments/conflict-detection",
         src: "/content"
+      },
+      {
+        dest: "cookie-banner-detection.preload.js",
+        package: "@eyeo-fragments/ipm",
+        src: ["/cookie-banner-detection/content/index.js"]
       }
     ]
   },

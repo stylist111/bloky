@@ -15,13 +15,24 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { type Tabs } from "webextension-polyfill";
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import * as dialogModule from "./dialog";
 import { type Dialog } from "./dialog.types";
+import * as ipmBackground from "@eyeo-fragments/ipm/background";
+import * as premiumSubscriptions from "../../premium-subscriptions/background";
+import {
+  ANNOYANCE_SUBSCRIPTION_TYPE,
+  COOKIES_PREMIUM_SUBSCRIPTION_TYPE
+} from "~/premium-subscriptions/shared";
 import {
   compareDialogsByPriority,
+  handleCookieBannerDetected,
   isCoolDownPeriodOngoing,
-  showOnpageDialog
+  pagesWithCookieBanner,
+  showDialogFromList,
+  showOnpageDialog,
+  unassignedDialogs
 } from "./tab-manager";
 import { dialogs, tab } from "./tab-manager.spec-data";
 import {
@@ -30,6 +41,9 @@ import {
   ShowOnpageDialogResult
 } from "./tab-manager.types";
 import * as timing from "./timing";
+
+jest.mock("@eyeo-fragments/ipm/background");
+jest.mock("../../premium-subscriptions/background");
 
 jest.mock("../../../adblockpluschrome/lib/prefs", () => {
   const prefsData: Record<string, any> = {
@@ -150,6 +164,70 @@ describe("TabManager", () => {
 
       const result = await isCoolDownPeriodOngoing();
       expect(result).toBe(false);
+    });
+  });
+
+  describe("showDialogFromList", () => {
+    it("should dismiss 'cookie banner' OPD when premium cookie list is active", async () => {
+      const tabId = 123;
+      const cookieDialogPremiumUsers = dialogs[8];
+
+      jest
+        .spyOn(ipmBackground, "doesLicenseStateMatch")
+        .mockResolvedValue(true);
+      jest
+        .spyOn(premiumSubscriptions, "getPremiumSubscriptionsState")
+        .mockResolvedValue({
+          [ANNOYANCE_SUBSCRIPTION_TYPE]: false,
+          [COOKIES_PREMIUM_SUBSCRIPTION_TYPE]: true
+        });
+
+      const dismissDialog = jest.fn();
+      await showDialogFromList(
+        [cookieDialogPremiumUsers],
+        { ...tab, id: tabId },
+        dismissDialog
+      );
+
+      expect(dismissDialog).toHaveBeenCalled();
+    });
+  });
+
+  describe("handleCookieBannerDetect", () => {
+    const tabId = 123;
+    const message = {
+      type: "cookie-banner.detected"
+    };
+    const messageSender = {
+      frameId: undefined,
+      tab: { ...tab, id: tabId }
+    };
+
+    it("should store in memory the page id where the cookie was detected", () => {
+      handleCookieBannerDetected(message, messageSender);
+      expect(pagesWithCookieBanner.has(tabId)).toBe(true);
+    });
+
+    it("should try to show only cookie dialogs if stored in the extension", async () => {
+      // storing normal dialog
+      unassignedDialogs.set(dialogs[0].id, dialogs[0]);
+      // storing cookie banner dialogs
+      unassignedDialogs.set(dialogs[6].id, dialogs[6]);
+      unassignedDialogs.set(dialogs[7].id, dialogs[7]);
+
+      const dialogIdsToShow: string[] = [];
+      const showDialogFromList = jest.fn(
+        async (dialogs: Dialog[], tab: Tabs.Tab): Promise<void> => {
+          for (const dialog of dialogs) {
+            dialogIdsToShow.push(dialog.id);
+          }
+        }
+      );
+
+      handleCookieBannerDetected(message, messageSender, showDialogFromList);
+
+      expect(showDialogFromList).toHaveBeenCalled();
+      expect(dialogIdsToShow.every((id) => ["6", "7"].includes(id))).toBe(true);
     });
   });
 });

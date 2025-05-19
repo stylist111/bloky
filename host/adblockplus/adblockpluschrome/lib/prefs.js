@@ -390,6 +390,10 @@ defaults.onpage_dialog_timing_configurations = {
   after_navigation: {
     cooldownDuration: 1,
     maxDisplayCount: 1
+  },
+  cookie_banner: {
+    cooldownDuration: 1,
+    maxDisplayCount: 1
   }
 };
 

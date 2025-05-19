@@ -49,7 +49,8 @@ const paramDefinitionList: ParamDefinitionList<DialogParams> = [
       typeof param === "undefined" ||
       param === Timing.afterWebAllowlisting ||
       param === Timing.revisitWebAllowlisted ||
-      param === Timing.afterNavigation
+      param === Timing.afterNavigation ||
+      param === Timing.cookieBanner
   },
   {
     name: "display_duration",

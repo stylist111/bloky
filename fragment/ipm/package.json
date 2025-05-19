@@ -6,7 +6,10 @@
   "typesVersions": {
     "*": {
       "background": [
-        "./dist/index.d.ts"
+        "./dist/background/index.d.ts"
+      ],
+      "cookie-banner-detection/content": [
+        "./dist/cookie-banner-detection/content/index.d.ts"
       ]
     }
   },
@@ -14,7 +17,8 @@
     "./dist/"
   ],
   "exports": {
-    "./background": "./dist/index.js"
+    "./background": "./dist/background/index.js",
+    "./cookie-banner-detection/content/index.js": "./dist/cookie-banner-detection/content/index.js"
   },
   "scripts": {
     "build:types": "tsc --project tsconfig.json --emitDeclarationOnly",

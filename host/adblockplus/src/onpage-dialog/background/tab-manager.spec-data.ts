@@ -114,5 +114,42 @@ export const dialogs: Dialog[] = [
     },
     content,
     id: "5"
+  },
+  /**
+   * Cookie banner dialogs
+   */
+  {
+    behavior: {
+      displayDuration: 1,
+      target: "",
+      timing: Timing.cookieBanner,
+      priority: 1
+    },
+    content,
+    id: "6"
+  },
+  {
+    behavior: {
+      displayDuration: 1,
+      target: "",
+      timing: Timing.cookieBanner,
+      priority: 1
+    },
+    content,
+    id: "7"
+  },
+  /**
+   * Cookie banner dialog targeting Premium users
+   */
+  {
+    behavior: {
+      displayDuration: 1,
+      target: "",
+      timing: Timing.cookieBanner,
+      priority: 1,
+      licenseStateList: "premium"
+    },
+    content,
+    id: "8"
   }
 ];

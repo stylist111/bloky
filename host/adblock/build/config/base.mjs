@@ -112,6 +112,10 @@ export default {
         package: "@eyeo-fragments/conflict-detection",
         src: "/content",
       },
+      {
+        dest: "cookie-banner-detection.preload.js",
+        src: ["adblock-betafish/ipm/cookie-banner-detection/content/index.ts"],
+      },
     ],
   },
   mapping: {

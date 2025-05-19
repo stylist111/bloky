@@ -45,7 +45,12 @@ import * as logger from "../../logger/background";
 import { type Message, isMessage } from "~/core/messaging/shared";
 import { type TabRemovedEventData } from "../../polyfills/background";
 import { type HideMessage, type StartInfo, isPingMessage } from "../shared";
-import { isDialog, isDialogBehavior, isDialogContent } from "./dialog";
+import {
+  isCookieBannerDialog,
+  isDialog,
+  isDialogBehavior,
+  isDialogContent
+} from "./dialog";
 import { type Dialog } from "./dialog.types";
 import { setDialogCommandHandler } from "./middleware";
 import { clearStats, getStats, setStats } from "./stats";
@@ -63,6 +68,8 @@ import {
 import { isTabPage, pageEmitter } from "~/core/pages/background";
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import { Timing } from "./timing.types";
+import { getPremiumSubscriptionsState } from "~/premium-subscriptions/background";
+import { COOKIES_PREMIUM_SUBSCRIPTION_TYPE } from "~/premium-subscriptions/shared";
 
 /**
  * Tab-specific session storage for dialogs
@@ -76,7 +83,12 @@ export const eventEmitter = new EventEmitter();
  * Queue of dialogs that haven't been assigned to a tab yet
  * Keys are dialog IDs
  */
-const unassignedDialogs = new Map<string, Dialog>();
+export const unassignedDialogs = new Map<string, Dialog>();
+
+/**
+ * Pages where a cookie banner has been detected
+ */
+export const pagesWithCookieBanner = new Set<number>();
 
 /**
  * Compares two dialogs to see which has the higher priority.
@@ -347,6 +359,66 @@ function handleTabRemovedEvent(data: TabRemovedEventData): void {
 }
 
 /**
+ * Iterate over a list of dialogs and try until a dialog can be shown,
+ * or the list is empty.
+ *
+ * @param dialogs - the list of dialogs where a dialog should be shown
+ * @param tab - the page tab where we will try to show a dialog
+ * @param dismissDialogFn - a callback function that will dissmiss dialogs
+ */
+export async function showDialogFromList(
+  dialogs: Dialog[],
+  tab: Tabs.Tab,
+  dismissDialogFn = dismissDialog
+): Promise<void> {
+  if (!tab.id) {
+    return;
+  }
+
+  for (const dialog of dialogs) {
+    // Ignore and dismiss command if license state doesn't match those in the
+    // command
+    if (!(await doesLicenseStateMatch(dialog.behavior))) {
+      logger.debug("[onpage-dialog]: License has mismatch");
+      dismissDialogFn(dialog);
+      continue;
+    }
+
+    // Ignore and dismiss command if it has expired
+    if (typeof dialog.ipmId === "string") {
+      const command = getCommand(dialog.ipmId);
+      if (command && isCommandExpired(command)) {
+        logger.error("[onpage-dialog]: Command has expired.");
+        recordDialogEvent(dialog, CommandEventType.expired);
+        dismissDialogFn(dialog);
+        continue;
+      }
+    }
+
+    // Ignore and dismiss 'cookie banner' OPDs if user
+    // has the cookie premium filter list activated
+    if (isCookieBannerDialog(dialog)) {
+      const premiumSubscriptionsState = await getPremiumSubscriptionsState();
+      const isCookieSubscriptionActive =
+        premiumSubscriptionsState[COOKIES_PREMIUM_SUBSCRIPTION_TYPE];
+
+      if (isCookieSubscriptionActive) {
+        logger.debug(
+          "[onpage-dialog]: Dismiss 'cookie banner' OPD due to Premium cookie subscription active"
+        );
+        dismissDialogFn(dialog);
+        continue;
+      }
+    }
+
+    const result = await showOnpageDialog(tab.id, tab, dialog);
+    if (result === ShowOnpageDialogResult.rejected) {
+      dismissDialogFn(dialog);
+    }
+  }
+}
+
+/**
  * Handles "loaded" page events
  *
  * @param page - Page that finished loading
@@ -363,6 +435,13 @@ async function handlePageLoadedEvent(page: unknown): Promise<void> {
   // Clean any leftover dialog from pages being loaded in unusual ways,
   // e.g. pages that simulate navigation by changing browser session history
   try {
+    if (await assignedDialogs.has(page.id)) {
+      // keep dialogs whose communication with the extension is not lost
+      // and ignore handling any other command in the extension
+      logger.debug("[onpage-dialog]: Tab already contains dialog");
+      return;
+    }
+    // remove dialogs whose communication is lost
     await removeDialogFrame(page.id);
   } catch (ex) {
     // Ignore if there's no dialog to remove
@@ -393,33 +472,7 @@ async function handlePageLoadedEvent(page: unknown): Promise<void> {
     compareDialogsByPriority
   );
 
-  // Finally iterate over list and try until a dialog can be shown, or the
-  // list is empty.
-  for (const dialog of dialogs) {
-    // Ignore and dismiss command if license state doesn't match those in the
-    // command
-    if (!(await doesLicenseStateMatch(dialog.behavior))) {
-      logger.debug("[onpage-dialog]: License has mismatch");
-      dismissDialog(dialog);
-      continue;
-    }
-
-    // Ignore and dismiss command if it has expired
-    if (typeof dialog.ipmId === "string") {
-      const command = getCommand(dialog.ipmId);
-      if (command && isCommandExpired(command)) {
-        logger.error("[onpage-dialog]: Command has expired.");
-        recordDialogEvent(dialog, CommandEventType.expired);
-        dismissDialog(dialog);
-        continue;
-      }
-    }
-
-    const result = await showOnpageDialog(page.id, tab, dialog);
-    if (result === ShowOnpageDialogResult.rejected) {
-      dismissDialog(dialog);
-    }
-  }
+  void showDialogFromList(dialogs, tab);
 }
 
 /**
@@ -520,6 +573,12 @@ export async function showOnpageDialog(
     return ShowOnpageDialogResult.ignored;
   }
 
+  // Ignore cookie banner dialog if no banner has been detected in the page
+  if (isCookieBannerDialog(dialog) && !pagesWithCookieBanner.has(tabId)) {
+    logger.debug("[onpage-dialog]: No cookie banner detected on page");
+    return ShowOnpageDialogResult.ignored;
+  }
+
   logger.debug("[onpage-dialog]: Show dialog");
   await assignedDialogs.set(tabId, dialog);
 
@@ -576,6 +635,41 @@ async function addDialog(tabId: number): Promise<void> {
 }
 
 /**
+ * Handles "cookie-banner.detected" messages
+ *
+ * @param message - Message
+ * @param sender - Message sender
+ * @param processCookieBannerDialogs - Callback to process cookie banner dialogs
+ */
+export function handleCookieBannerDetected(
+  message: Message,
+  sender: MessageSender,
+  processCookieBannerDialogs = showDialogFromList
+): void {
+  logger.debug("[onpage-dialog]: Cookie banner detected");
+  const { tab } = sender;
+
+  if (!tab) {
+    return;
+  }
+
+  if (!tab.id) {
+    return;
+  }
+
+  pagesWithCookieBanner.add(tab.id);
+
+  // Sort the waiting dialogs by priority.
+  let dialogs = Array.from(unassignedDialogs.values()).sort(
+    compareDialogsByPriority
+  );
+  // Filter out cookie banner dialogs
+  dialogs = dialogs.filter((dialog) => isCookieBannerDialog(dialog));
+
+  void processCookieBannerDialogs(dialogs, tab);
+}
+
+/**
  * Initializes on-page manager
  */
 export async function start(): Promise<void> {
@@ -588,6 +682,7 @@ export async function start(): Promise<void> {
   port.on("onpage-dialog.ping", handlePingMessage);
   port.on("onpage-dialog.hide", forwardMessage);
   port.on("onpage-dialog.resize", forwardMessage);
+  port.on("cookie-banner.detected", handleCookieBannerDetected);
 
   addTrustedMessageTypes(null, [
     "onpage-dialog.continue",
@@ -595,11 +690,19 @@ export async function start(): Promise<void> {
     "onpage-dialog.get",
     "onpage-dialog.ping",
     "onpage-dialog.hide",
-    "onpage-dialog.resize"
+    "onpage-dialog.resize",
+    "cookie-banner.detected"
   ]);
 
   // Dismiss dialog when tab used for storing session data gets closed
   assignedDialogs.on("tab-removed", handleTabRemovedEvent);
+
+  // Dismiss detection of cookie banner when tab gets closed
+  pageEmitter.on("removed", (tabId: number) => {
+    if (pagesWithCookieBanner.has(tabId)) {
+      pagesWithCookieBanner.delete(tabId);
+    }
+  });
 
   // Handle commands
   pageEmitter.on("loaded", handlePageLoadedEvent);

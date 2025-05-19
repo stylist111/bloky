@@ -61,6 +61,7 @@ import SyncService from "./picreplacement/sync-service";
 import * as prefs from "./prefs/background";
 import { FilterOrigin } from "../src/filters/shared";
 import { start as startFiltersMigration } from "../src/filters/background";
+import { start as startCookieBannerDetection } from "./ipm/cookie-banner-detection/background";
 
 import {
   createFilterMetaData,
@@ -696,6 +697,7 @@ initialize
       port,
       addTrustedMessageTypes: ext.addTrustedMessageTypes,
     });
+    startCookieBannerDetection();
   })
   .catch((e) => {
     const hasInternalError = /internal error/i.test(e.message);

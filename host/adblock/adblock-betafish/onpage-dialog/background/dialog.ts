@@ -17,6 +17,7 @@
 
 import { type DialogContent } from "../shared";
 import { type Dialog, type DialogBehavior } from "./dialog.types";
+import { Timing } from "./timing.types";
 
 /**
  * Checks whether given candidate is dialog information
@@ -66,4 +67,15 @@ export function isDialogContent(candidate: unknown): candidate is DialogContent 
     "button" in candidate &&
     "title" in candidate
   );
+}
+
+/**
+ * Checks whether given on-page dialog is of type "cookie banner"
+ * i.e. an dialog that will be triggered on presence of cookie banner
+ *
+ * @param dialog - The on-page dialog to test
+ * @returns whether the dialog is of type "cookie" banner or not
+ */
+export function isCookieBannerDialog(dialog: Dialog): boolean {
+  return dialog.behavior.timing === Timing.cookieBanner;
 }

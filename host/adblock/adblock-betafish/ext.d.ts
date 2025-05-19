@@ -22,6 +22,7 @@ declare namespace ext {
 
   interface Pages {
     onLoaded: OnLoadedEvent;
+    onRemoved: OnRemovedEvent;
   }
 
   /**
@@ -45,6 +46,29 @@ declare namespace ext {
      */
     removeListener(callback: (tab: browser.Tabs.Tab) => void): void;
   }
+
+  /**
+   * Fired when a tab is closed
+   *
+   */
+  interface OnRemovedEvent {
+    /**
+     * Registers an event listener <em>callback</em> to the onRemoved event.
+     *
+     * @param callback Called when an tab is closed.
+     * The parameters of this function depend on the type of event.
+     */
+    addListener(callback: (tab: browser.Tabs.Tab) => unknown): void;
+
+    /**
+     * Removes an event listener <em>callback</em> to an event.
+     *
+     * @param callback Called when an tab is closed.
+     * The parameters of this function depend on the type of event.
+     */
+    removeListener(callback: (tab: browser.Tabs.Tab) => void): void;
+  }
+
   /**
    * Adds trusted message types for certain origins
    *

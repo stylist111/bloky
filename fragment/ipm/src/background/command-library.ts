@@ -40,6 +40,7 @@ import { isDeleteBehavior, setDeleteCommandHandler } from "./delete-commands";
 import { recordEvent, recordGenericEvent } from "./event-recording";
 import { checkLanguage } from "./language-check";
 import { isValidDate } from "./param-validator";
+import { start as startCookieBannerDetection } from "../cookie-banner-detection/background";
 
 /**
  * A list of known commands.
@@ -494,4 +495,6 @@ export async function start(
 
   const commands = Object.values(commandStorage);
   await executeIPMCommands(commands, true);
+
+  startCookieBannerDetection();
 }

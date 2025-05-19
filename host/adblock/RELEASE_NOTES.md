@@ -2,6 +2,7 @@
 
 - Collect additional pageview metrics for specific requests. (EXT-951)
 - Detect and collect if a user has ubo installed. (EXT-942)
+- Introduce 'cookie banner' OPD. (GROW-58)
 
 # 6.20.1 - 2025-05-13
 

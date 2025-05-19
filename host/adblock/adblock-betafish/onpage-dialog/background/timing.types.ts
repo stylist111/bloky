@@ -23,6 +23,7 @@ export enum Timing {
   immediate = "immediate",
   revisitWebAllowlisted = "revisit_web_allowlisted_site",
   afterNavigation = "after_navigation",
+  cookieBanner = "cookie_banner",
 }
 
 /**
