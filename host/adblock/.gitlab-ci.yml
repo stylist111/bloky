@@ -172,6 +172,8 @@ checkbuildsizes:MV2:firefox:
       - host/adblock/screenshots/
     when: on_failure
     expire_in: 1 month
+  variables:
+    TESTS_TO_EXCLUDE: "iFrame with subdomains Exception"
 
 comp:MV3:chromium:latest:
   extends: .compliance

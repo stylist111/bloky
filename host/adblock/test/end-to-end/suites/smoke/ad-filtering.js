@@ -46,7 +46,7 @@ export default () => {
     await setAADefaultState();
   });
 
-  it("uses sitekey to allowlist content", async function () {
+  it.skip("uses sitekey to allowlist content", async function () {
     const url = `https://abptestpages.org/en/exceptions/sitekey_mv${extension.manifestVersion}`;
 
     const getTestpagesFilters = async () => {

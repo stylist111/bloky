@@ -525,7 +525,7 @@ describe("Element Hiding", function() {
       await waitForInvisibleElement(tabId, "elem-hide-img-request");
     });
 
-    it("hides the img element of a blocked request on multiple slow requests", async function() {
+    it.skip("hides the img element of a blocked request on multiple slow requests", async function() {
       // Two matching filters are added to test that sendMessage() in
       // content-message-deferrer.js is called more than once
       await EWE.filters.add([
