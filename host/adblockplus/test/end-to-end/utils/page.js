@@ -137,7 +137,7 @@ async function loadOptionsTab(optionsHandle, id, timeout = 5000) {
     async () => {
       try {
         await driver.switchTo().frame("content");
-        await clickOnDisplayedElement(`#${id}`, { timeout: 1000 });
+        await clickOnDisplayedElement(`#${id}`, { timeout: 2000 });
         return true;
       } catch (err) {
         if (
