@@ -123,8 +123,10 @@ export const PartnerExtensionIds = [
 /**
  * Function that returns the number of partner extensions found during the last 'ping'
  *
+ * @returns number of partner extensions found (null if function has not been
+ *   initialized yet)
  */
-export type getNumberPartnerExtFunction = () => Promise<number>;
+export type getNumberPartnerExtFunction = () => Promise<number | null>;
 
 /**
  *  The extension IDs of the NON-partner extension(s) to send the ping message to.

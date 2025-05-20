@@ -113,8 +113,10 @@ async function getNumberPartnerExtTemp(parameters: StartInfo): Promise<number> {
 /**
  * Returns the number of partner extensions found
  *
+ * @returns number of partner extensions found (null if function has not been
+ *   initialized yet)
  */
-export let getNumberPartnerExt: getNumberPartnerExtFunction;
+export let getNumberPartnerExt: getNumberPartnerExtFunction = async () => null;
 
 /**
  * Initializes the partner detection functionality of the fragment.

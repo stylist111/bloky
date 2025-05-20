@@ -34,16 +34,7 @@ import {
 
 const defaultInterval = 100000;
 
-const parameters = {
-  prefs: {
-    untilLoaded: vi.fn(() => Promise.resolve()),
-    set: vi.fn(),
-    get: vi.fn(() => defaultInterval),
-  },
-  logger: {
-    debug: vi.fn(),
-  },
-};
+let parameters;
 
 const setupMockOnMessageResponse = (returnTrueArray: string[]): void => {
   const listener = vi.fn();
@@ -62,6 +53,35 @@ const setupMockOnMessageResponse = (returnTrueArray: string[]): void => {
 describe("sendPingMessage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    parameters = {
+      prefs: {
+        set: vi.fn(),
+        get: vi.fn(() => defaultInterval),
+        untilLoaded: vi.fn(() => Promise.resolve()),
+      },
+      logger: {
+        debug: vi.fn(),
+      },
+    };
+  });
+
+  it("should not return extensions before initialization", async () => {
+    parameters.prefs.get = vi.fn().mockImplementation(() => {
+      return { extesnionsIdsFound: ["test1", "test2"] };
+    });
+    const numberExt = await getNumberPartnerExt();
+    expect(numberExt).toEqual(null);
+    expect(parameters.prefs.get).not.toHaveBeenCalledWith(partnerExtensionFoundKey);
+  });
+
+  it("should return 2 extensions", async () => {
+    parameters.prefs.get = vi.fn().mockImplementation(() => {
+      return { extesnionsIdsFound: ["test1", "test2"] };
+    });
+    await startPartnerDetection(parameters);
+    const numberExt = await getNumberPartnerExt();
+    expect(numberExt).toEqual(2);
+    expect(parameters.prefs.get).toHaveBeenCalledWith(partnerExtensionFoundKey);
   });
 
   it("should return an array of found extension IDs when extensions respond successfully", async () => {
@@ -203,15 +223,5 @@ describe("sendPingMessage", () => {
 
     expect(parameters.prefs.get).toBeCalled();
     expect(mockCreateAlarm).not.toBeCalled();
-  });
-
-  it("should return 2 extensions", async () => {
-    parameters.prefs.get = vi.fn().mockImplementation(() => {
-      return { extesnionsIdsFound: ["test1", "test2"] };
-    });
-    await startPartnerDetection(parameters);
-    const numberExt = await getNumberPartnerExt();
-    expect(numberExt).toEqual(2);
-    expect(parameters.prefs.get).toHaveBeenCalledWith(partnerExtensionFoundKey);
   });
 });
