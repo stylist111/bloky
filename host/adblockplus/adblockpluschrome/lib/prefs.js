@@ -454,25 +454,6 @@ defaults.partnerExtensionFound = {
 };
 
 /**
- * The interval in which to ping the other extension, in ms. Defaults to 24 hours.
- *
- * @type {number}
- */
-defaults.pd_ping_interval = 24 * 60 * 60 * 1000;
-
-/**
- * An object that indicates:
- *  - the extension ID of the ad blocking or partner extensions that were found installed on this device
- *  - the local timestamp when they were detected
- *
- * @type {Object}
- */
-defaults.partnerExtensionFound = {
-  extesnionsIdsFound: [],
-  detectionTimestamp: 0
-};
-
-/**
  * A timestamp that indicates when was the last time when ubo was found on this device
  *
  * @type {number}
@@ -504,7 +485,11 @@ export let Prefs = {
     // https://gitlab.com/adblockinc/ext/adblockplus/adblockplus/-/issues/1621
     if (
       preference === "data_collection_opt_out" &&
-      info.application === "firefox"
+      // We cannot use info.application, because it's determined asynchronously,
+      // and this function may already be called earlier than that. So in the
+      // absence of a reliable initialization strategy, we can use info.platform
+      // to target Firefox users.
+      info.platform === "gecko"
     )
       return true;
 

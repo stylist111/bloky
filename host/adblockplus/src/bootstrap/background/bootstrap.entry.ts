@@ -63,11 +63,19 @@ import { getInstallationId } from "~/id/background";
 import { info } from "~/info/background";
 
 async function bootstrap(): Promise<void> {
-  void ewe.sentry.start(
-    webpackDotenvPlugin.SENTRY_DSN,
-    webpackDotenvPlugin.SENTRY_ENVIRONMENT,
-    info.addonVersion
-  );
+  // This early in the initialization, we may not have loaded the preference
+  // value from storage yet, and we cannot load it in the first turn of the
+  // event loop. However, we can determine its default value. This helps us
+  // avoid collecting any data for users who are opted-out by default.
+  if (Prefs.get("data_collection_opt_out")) {
+    console.warn("Sentry is not initialized");
+  } else {
+    void ewe.sentry.start(
+      webpackDotenvPlugin.SENTRY_DSN,
+      webpackDotenvPlugin.SENTRY_ENVIRONMENT,
+      info.addonVersion
+    );
+  }
 
   startPages();
   startTabSessionStorage();

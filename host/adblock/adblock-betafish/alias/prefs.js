@@ -427,7 +427,16 @@ export let Prefs = {
     // we're working on improving our data collection opt-out mechanism based
     // on Mozilla's requirements
     // https://gitlab.com/adblockinc/ext/adblock/adblock/-/issues/574
-    if (preference === "data_collection_opt_out" && info.application === "firefox") return true;
+    if (
+      preference === "data_collection_opt_out" &&
+      // We cannot use info.application, because it's determined asynchronously,
+      // and this function may already be called earlier than that. So in the
+      // absence of a reliable initialization strategy, we can use info.platform
+      // to target Firefox users.
+      info.platform === "gecko"
+    ) {
+      return true;
+    }
 
     let result = (preference in overrides ? overrides : defaults)[preference];
 
