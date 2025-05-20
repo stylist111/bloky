@@ -18,3 +18,4 @@
 export const installUrl = "https://getadblock.com/en/installed";
 export const premiumUrl = "https://getadblock.com/en/premium";
 export const uninstallUrl = "https://getadblock.com/en/uninstall";
+export const updateUrl = "https://getadblock.com/en/update/latest/";

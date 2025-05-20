@@ -491,3 +491,37 @@ export async function blockAds(expectedMinBlocked, expectedMaxBlocked, getPopupB
 
   return adsBlocked;
 }
+
+export async function setUserId(initOptionsFn, userId) {
+  const currentHandle = await driver.getWindowHandle();
+  const optionsHandle = getOptionsHandle();
+  if (currentHandle !== optionsHandle) {
+    await initOptionsFn(getOptionsHandle());
+  }
+  await driver.executeAsyncScript(async (userid, callback) => {
+    await browser.storage.local.set({ userid });
+    callback();
+  }, userId);
+  await driver.switchTo().window(currentHandle);
+}
+
+export async function setIPMServer(initOptionsFn) {
+  return sendExtMessage(initOptionsFn, {
+    type: "prefs.set",
+    key: "ipm_server_url",
+    value: "http://localhost:3007",
+  });
+}
+
+export async function pingIPMServer(initOptionsFn) {
+  return sendExtMessage(initOptionsFn, {
+    type: "testing.ping_ipm_server",
+  });
+}
+
+export async function getIPMCommands(initOptionsFn) {
+  return sendExtMessage(initOptionsFn, {
+    type: "prefs.get",
+    key: "ipm_commands",
+  });
+}

@@ -15,6 +15,8 @@
  * along with Web Extensions CU.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { commandVersionByName, CREATE_ON_PAGE_DIALOG } from "./supported-commands.js";
+
 /**
  * Generates a list of a specific amount of OPD commands
  *
@@ -22,7 +24,7 @@
  * @param {string} userId - Server user identifier
  * @returns {Array<Object>} An array of commands
  */
-export function getMultipleOPDCommands(amountOfDialogs, userId) {
+export function getOPDCommands(amountOfDialogs, userId, expired = false) {
   if (amountOfDialogs <= 0) {
     throw new Error("The amount of dialogs to generate should be greater than zero.");
   }
@@ -34,7 +36,7 @@ export function getMultipleOPDCommands(amountOfDialogs, userId) {
   const baseCommand = {
     command_name: "create_on_page_dialog",
     timing: "after_navigation",
-    version: 4,
+    version: commandVersionByName.get(CREATE_ON_PAGE_DIALOG),
     domain_list: "google.com,wikipedia.org,example.com",
     sub_title: "OPD was created after navigation to google.com, example.com, wikipedia.org",
     upper_body:
@@ -43,6 +45,9 @@ export function getMultipleOPDCommands(amountOfDialogs, userId) {
     button_target: "/premium",
     license_state_list: "free",
     display_duration: 1,
+    // If expired commands are required, get expiry dates from 1 day in the past
+    // otherwise, get them 1 day in the future
+    expiry: getExpiryDate(expired ? -1 : 1),
   };
 
   const commandList = [];
@@ -59,4 +64,25 @@ export function getMultipleOPDCommands(amountOfDialogs, userId) {
   }
 
   return commandList;
+}
+
+/**
+ * Generates an expiry date with valid format
+ *
+ * @param {number} daysToAdd
+ *        Days to add (or reduce) to Today's date to generate expiration date:
+ *        use positive values for non-expired commands,
+ *        and zero or negative values for expired commands
+ *
+ * @returns {string} The expiry date
+ */
+export function getExpiryDate(daysToAdd) {
+  if (typeof daysToAdd !== "number") {
+    throw new Error("daysToAdd argument should be of type 'number' ");
+  }
+
+  const expiryFullDate = new Date();
+  expiryFullDate.setDate(expiryFullDate.getDate() + daysToAdd);
+  const expiryDate = expiryFullDate.toISOString().split("T")[0];
+  return expiryDate;
 }

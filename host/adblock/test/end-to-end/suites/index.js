@@ -37,6 +37,7 @@ import eyeometry from "./data-collection/eyeometry.js";
 import youtubeAutoAllowlist from "./youtube-auto-allowlist.js";
 import helpFlow from "./popup-page/helpflow.js";
 import infoInjector from "./info-injector.js";
+import campaigns from "./ipm/campaigns.js";
 
 export default () => {
   beforeEach(async function () {
@@ -67,6 +68,10 @@ export default () => {
     describe("Data Collection", function () {
       dataCollection();
       describe("Eyeometry", eyeometry);
+    });
+
+    describe("IPM", function () {
+      describe("Campaigns", campaigns);
     });
 
     describe("YouTube auto-allowlist", youtubeAutoAllowlist);

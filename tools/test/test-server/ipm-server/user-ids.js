@@ -35,6 +35,8 @@ export const ABP_PREMIUM_USER_NEWTAB_PREMIUM = "newtabpremiumpremiumuserABP";
 export const ABP_PREMIUM_USER_NAVIGATION_FREE = "opdnavigationfreepremiumuserABP";
 export const ABP_PREMIUM_USER_NEWTAB = "newtabpremiumuserABP";
 export const ABP_MULTIPLE_COMMANDS = "multiplecommandsABP";
+export const ABP_PRIORITY_OPD = "opdPriorityABP";
+export const ABP_PRIORITY_NEWTAB = "newtabPriorityABP";
 
 /*AdBlock*/
 export const AB_DELETE_COMMANDS = "deletecommandsAB";
@@ -56,6 +58,8 @@ export const AB_PREMIUM_USER_NEWTAB_PREMIUM = "newtabpremiumpremiumuserAB";
 export const AB_PREMIUM_USER_NAVIGATION_FREE = "opdnavigationfreepremiumuserAB";
 export const AB_PREMIUM_USER_NEWTAB = "newtabpremiumuserAB";
 export const AB_MULTIPLE_COMMANDS = "multiplecommandsAB";
+export const AB_PRIORITY_OPD = "opdPriorityAB";
+export const AB_PRIORITY_NEWTAB = "newtabPriorityAB";
 
 /*errors*/
 export const ABP_DUPLICATE_OPD_NAVIGATION = "opdnavigationduplicateABP";
@@ -65,6 +69,7 @@ export const MISSING_PARAMETER = "missingparameter";
 export const WRONG_VERSION = "wrongversion";
 export const INVALID_COMMAND = "invalidcommand";
 export const TOO_MANY_COMMANDS = "toomanycommands";
+export const EXPIRED_COMMAND = "expiredcommand";
 
 /*standard ping*/
 export const NO_CAMPAIGN = "nocampaign";

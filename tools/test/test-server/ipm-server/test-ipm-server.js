@@ -16,6 +16,8 @@
  */
 
 /* eslint-disable no-console */
+import path from "path";
+import url from "url";
 
 import { createServer } from "http";
 import { createReadStream } from "fs";
@@ -36,8 +38,11 @@ let singleObjectMode = false;
 
 export const port = 3007;
 
+const dirname = path.dirname(url.fileURLToPath(import.meta.url));
+const indexFilePath = path.join(dirname, "index.html");
+
 const server = createServer((req, res) => {
-  createReadStream("index.html").pipe(res);
+  createReadStream(indexFilePath).pipe(res);
   let data = "";
 
   req.on("data", (chunk) => {
@@ -46,7 +51,6 @@ const server = createServer((req, res) => {
 
   req.on("end", () => {
     try {
-      console.log("request received", JSON.parse(data));
       const { device } = JSON.parse(data);
 
       const responseData = getResponseData(device.device_id, singleObjectMode);

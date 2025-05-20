@@ -43,7 +43,7 @@ import ExcludeFilter from "../excludefilter";
 import messageValidator from "./messagevalidator";
 import { getNewBadgeTextReason, resetBadgeText } from "../alias/icon";
 import { createFilterMetaData } from "../utilities/background/bg-functions";
-import { getReadyState } from "../testing/ready-state/background/index.ts";
+import { getReadyState } from "../../src/testing/ready-state/background";
 import { getInfoCommand, injectionOrigins } from "../../src/info-injector/shared";
 import { getInjectionInfo } from "../../src/info-injector/background";
 import { getUserId } from "~/id/background/index";
