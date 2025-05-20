@@ -1,5 +1,7 @@
 # Unreleased
 
+# 4.22.0 - 2025-05-20
+
 - Detect and collect if a user has ubo installed (EXT-942)
 - Introduce 'cookie banner' OPD. (GROW-58)
 - Consider data collection opt-out when initializing Sentry
