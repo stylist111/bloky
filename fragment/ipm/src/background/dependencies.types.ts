@@ -16,27 +16,14 @@
  */
 
 /**
- * A interface to capture are the needed external functionalities needed by
- * the IPM system to work. These functionalities are typically implemented
- * by hosting extensions.
+ * An interface describing the dependencies of the IPM fragment.
  */
-export interface Context {
-  // Preferences
-  untilPreferencesLoaded: () => Promise<void>;
-  getPreference: (key: string) => any;
-  setPreference: (key: string, value: any) => Promise<void>;
-  onPreferenceChanged: (key: string, f: () => Promise<void>) => void;
-
-  // Licenses and Premium
-  isLicenseValid: () => boolean;
-
-  // User or Installation Id
-  getId: () => Promise<string>;
-
-  // Host information
-  getAppName: () => string;
-  getBrowserName: () => string;
-  getAppVersion: () => string;
+export interface Dependencies {
+  prefs: Preferences;
+  logger: Logger;
+  licensing: Licensing;
+  info: UserAndHostInformation;
+  getExperiments: getExperimentsFunction;
 }
 
 export interface Preferences {

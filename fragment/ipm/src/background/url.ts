@@ -16,7 +16,7 @@
  */
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
-import { getExperiments, prefs } from "./context";
+import { getDependencies } from "./dependencies";
 import { ExperimentSearchParameterKeys, noRevisionId } from "./url.types";
 
 /**
@@ -31,6 +31,7 @@ import { ExperimentSearchParameterKeys, noRevisionId } from "./url.types";
  *   safe origin URL was not possible, or if origins did not match.
  */
 export function createSafeOriginUrl(url: string): string | null {
+  const { prefs } = getDependencies();
   const defaultOrigin: string = prefs.get("ipm_default_origin");
   const safeOrigins: string[] = prefs.get("ipm_safe_origins");
   let safeOriginUrl: URL;
@@ -60,6 +61,7 @@ export function createSafeOriginUrl(url: string): string | null {
 export async function addExperimentsSearchParams(
   url: string,
 ): Promise<string | null> {
+  const { getExperiments } = getDependencies();
   let extendedUrl: URL;
 
   try {

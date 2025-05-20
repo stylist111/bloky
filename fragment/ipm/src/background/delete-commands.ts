@@ -30,7 +30,7 @@ import {
 } from "./delete-commands.types";
 import { validateParams } from "./param-validator";
 import type { ParamDefinitionList } from "./param-validator.types";
-import { logger } from "./context";
+import { getDependencies } from "./dependencies";
 
 /**
  * List of delete-commands parameter definitions
@@ -51,6 +51,7 @@ const paramDefinitionList: ParamDefinitionList<DeleteParams> = [
  * @returns Whether the command is a valid DeleteCommand and can be worked with
  */
 function isDeleteCommand(command: Command): command is DeleteCommand {
+  const { logger } = getDependencies();
   const validationErrors = validateParams(command, paramDefinitionList);
   if (validationErrors.length === 0) {
     return true;

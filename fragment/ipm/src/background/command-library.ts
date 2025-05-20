@@ -28,14 +28,14 @@ import {
   DeleteEventType,
   maximumProcessableCommands,
 } from "./command-library.types";
-import { init as initializeContext, logger, prefs } from "./context";
+import { getDependencies, setDependencies } from "./dependencies";
 import {
   type getExperimentsFunction,
   type Licensing,
   type Logger,
   type Preferences,
   type UserAndHostInformation,
-} from "./context.types";
+} from "./dependencies.types";
 import { isDeleteBehavior, setDeleteCommandHandler } from "./delete-commands";
 import { recordEvent, recordGenericEvent } from "./event-recording";
 import { checkLanguage } from "./language-check";
@@ -119,6 +119,7 @@ export function setCommandActor(
  * @param ipmId - IPM ID
  */
 export function dismissCommand(ipmId: string): void {
+  const { prefs } = getDependencies();
   const command = getCommand(ipmId);
   if (!command) {
     return;
@@ -161,6 +162,7 @@ export function getBehavior(ipmId: string): Behavior | null {
  * @returns command
  */
 export function getCommand(ipmId: string): Command | null {
+  const { prefs } = getDependencies();
   const commandStorage = prefs.get(commandStorageKey);
   return commandStorage[ipmId] || null;
 }
@@ -171,6 +173,7 @@ export function getCommand(ipmId: string): Command | null {
  * @returns An array with command IDs or empty array if there's no commands
  */
 export function getStoredCommandIds(): string[] {
+  const { prefs } = getDependencies();
   const commandStorage = prefs.get(commandStorageKey);
 
   if (!isCommandMap(commandStorage)) {
@@ -245,6 +248,7 @@ function retryExecuteCommands(commandName: CommandName): void {
  * @param commands A list of commands from the IPM server
  */
 function storeCommands(commands: Command[]): void {
+  const { prefs, logger } = getDependencies();
   let commandStorageModified = false;
   const storage = prefs.get(commandStorageKey);
 
@@ -274,6 +278,7 @@ export async function executeIPMCommands(
   commands: unknown[],
   isInitialization: boolean = false,
 ): Promise<void> {
+  const { logger } = getDependencies();
   const actorByExecutableCommand = new Map<Command, CommandActor>();
 
   if (commands.length > maximumProcessableCommands) {
@@ -393,6 +398,7 @@ function registerDeleteEvent(
  * @returns
  */
 async function handleDeleteCommand(ipmId: string): Promise<void> {
+  const { logger } = getDependencies();
   const command = getCommand(ipmId);
   if (!command) {
     return;
@@ -454,6 +460,7 @@ async function handleDeleteCommand(ipmId: string): Promise<void> {
  * commands stored that should not execute anymore
  */
 async function resetIPMCommands(): Promise<void> {
+  const { prefs } = getDependencies();
   await prefs.untilLoaded;
 
   const ipmCommandsReset = prefs.get("ipm_commands_second_reset_completed");
@@ -467,13 +474,19 @@ async function resetIPMCommands(): Promise<void> {
  * Initializes command library
  */
 export async function start(
-  preferences: Preferences,
+  prefs: Preferences,
   logger: Logger,
   licensing: Licensing,
   info: UserAndHostInformation,
   getExperiments: getExperimentsFunction,
 ): Promise<void> {
-  initializeContext(preferences, logger, licensing, info, getExperiments);
+  setDependencies({
+    prefs,
+    logger,
+    licensing,
+    info,
+    getExperiments,
+  });
 
   await prefs.untilLoaded;
 

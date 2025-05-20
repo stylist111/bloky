@@ -25,7 +25,7 @@ import {
   isValidDate,
   isEmptyOrPositiveNumber,
 } from "./param-validator";
-import { prefs } from "./context";
+import { getDependencies } from "./dependencies";
 
 describe("param-validator", () => {
   describe("isNumeric", () => {
@@ -121,6 +121,7 @@ describe("param-validator", () => {
     });
 
     it("returns true if the url is a an 'IPM safe' url", async () => {
+      const { prefs } = getDependencies();
       const prefsGetMock = jest.spyOn(prefs, "get");
       prefsGetMock.mockReturnValue("https://adblock.org");
       const ipmSafeOrigin = prefs.get("ipm_safe_origin");
@@ -134,6 +135,7 @@ describe("param-validator", () => {
     });
 
     it("returns false if the url is not an 'IPM safe' url", () => {
+      const { prefs } = getDependencies();
       const prefsGetMock = jest.spyOn(prefs, "get");
       prefsGetMock.mockReturnValue("https://adblock.org");
 

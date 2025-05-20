@@ -17,6 +17,7 @@ module.exports = {
   resetMocks: true,
   restoreMocks: true,
   setupFiles: ["jest-webextension-mock", "./mocks/js/jest-polyfill.js"],
+  setupFilesAfterEnv: ["./mocks/js/dependencies.js"],
   testEnvironment: "./mocks/js/jest-jsdom.mjs",
   testMatch: ["**/*.spec.ts"]
 };

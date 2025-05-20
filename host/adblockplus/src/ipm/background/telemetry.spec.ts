@@ -62,6 +62,12 @@ jest.mock("../../../adblockpluschrome/lib/prefs", () => {
   };
 });
 
+jest.mock("@eyeo-fragments/ipm/background", () => ({
+  clearEvents: () => {},
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  getPayload: () => Promise.resolve({})
+}));
+
 describe("telemetry", () => {
   beforeEach(() => {
     jest.spyOn(global, "fetch").mockImplementation(

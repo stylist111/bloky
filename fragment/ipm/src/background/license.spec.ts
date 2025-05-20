@@ -15,50 +15,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { prefs } from "./context";
+import { getDependencies } from "./dependencies";
 import { doesLicenseStateMatch } from "./license";
-
-jest.mock("./context", () => {
-  const prefsData: Record<string, any> = {
-    premium_license: {
-      lv: 1,
-      code: "",
-      status: "expired",
-    },
-  };
-
-  return {
-    prefs: {
-      get: (key: string) => {
-        return prefsData[key];
-      },
-      set: (key: string, value: any) => {
-        prefsData[key] = value;
-      },
-      untilLoaded: null,
-    },
-    licensing: {
-      isLicenseValid() {
-        return prefsData.premium_license.status === "active";
-      },
-    },
-  };
-});
 
 describe("license", () => {
   describe("doesLicenseStateMatch", () => {
     it("should wait for license changes made in Prefs initialization", async () => {
-      // activating the Premium license in a deferred asynchronous way
-      prefs.untilLoaded = new Promise((resolve) => {
-        setTimeout(() => {
-          void prefs.set("premium_license", {
-            lv: 1,
-            code: "",
-            status: "active",
-          });
-          resolve();
-        }, 0);
-      });
+      const { licensing } = getDependencies();
+      jest.spyOn(licensing, "isLicenseValid").mockReturnValue(true);
 
       expect(await doesLicenseStateMatch({ licenseStateList: "premium" })).toBe(
         true,

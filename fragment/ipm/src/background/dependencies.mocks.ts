@@ -15,15 +15,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+/**
+ * This file contains test doubles for the IPM fragment's dependencies.
+ */
+
 import {
+  type Dependencies,
   type getExperimentsFunction,
   type Licensing,
   type Logger,
   type Preferences,
   type UserAndHostInformation,
-} from "./context.types";
+} from "./dependencies.types";
 
-export let prefs: Preferences = {
+const prefs: Preferences = {
   get(_): any {
     return null;
   },
@@ -33,18 +38,18 @@ export let prefs: Preferences = {
   untilLoaded: Promise.resolve(),
 };
 
-export let logger: Logger = {
+const logger: Logger = {
   debug(_) {},
   reportAndLogError(_e, _logContext) {},
 };
 
-export let licensing: Licensing = {
+const licensing: Licensing = {
   isLicenseValid() {
     return false;
   },
 };
 
-export let info: UserAndHostInformation = {
+const info: UserAndHostInformation = {
   async getId() {
     return "";
   },
@@ -62,30 +67,14 @@ export let info: UserAndHostInformation = {
   },
 };
 
-/**
- * A reference to the `getExperiments` function
- */
-export let getExperiments = async (): Promise<string> => "";
+const getExperiments: getExperimentsFunction = async (): Promise<string> => "";
 
-/**
- * Sets dependencies for the IPM fragment.
- *
- * @param prefs_ A reference to the prefs module
- * @param logger_ A reference to the logger module
- * @param licensing_ A reference to the licensing module
- * @param info_ A reference to the info module
- * @param getExperiments_ A reference to the `getExperiments` function
- */
-export function init(
-  prefs_: Preferences,
-  logger_: Logger,
-  licensing_: Licensing,
-  info_: UserAndHostInformation,
-  getExperiments_: getExperimentsFunction,
-): void {
-  prefs = prefs_;
-  logger = logger_;
-  licensing = licensing_;
-  info = info_;
-  getExperiments = getExperiments_;
+export function getDependencies(): Dependencies {
+  return {
+    prefs,
+    logger,
+    licensing,
+    info,
+    getExperiments,
+  };
 }
