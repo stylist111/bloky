@@ -91,9 +91,12 @@ async function enablePremiumByUI() {
 
   // Premium onboarding
   await driver.switchTo().defaultContent();
-  await clickOnDisplayedElement('[data-extension-page="premium-onboarding"]', {
-    timeout: 30000
-  });
+  await clickOnDisplayedElement(
+    "a.premium-checkout__button.premium-checkout-success__button",
+    {
+      timeout: 30000
+    }
+  );
   await findUrl(`${extension.origin}/premium-onboarding.html`);
 }
 
