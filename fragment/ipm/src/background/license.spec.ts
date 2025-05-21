@@ -15,13 +15,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { getDependencies } from "./dependencies";
+import { getStartInfo } from "./start-info";
 import { doesLicenseStateMatch } from "./license";
 
 describe("license", () => {
   describe("doesLicenseStateMatch", () => {
     it("should wait for license changes made in Prefs initialization", async () => {
-      const { licensing } = getDependencies();
+      const { licensing } = getStartInfo();
       jest.spyOn(licensing, "isLicenseValid").mockReturnValue(true);
 
       expect(await doesLicenseStateMatch({ licenseStateList: "premium" })).toBe(

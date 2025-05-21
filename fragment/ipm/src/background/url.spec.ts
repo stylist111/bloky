@@ -16,7 +16,7 @@
  */
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
-import { getDependencies } from "./dependencies";
+import { getStartInfo } from "./start-info";
 import { addExperimentsSearchParams, createSafeOriginUrl } from "./url";
 import { ExperimentSearchParameterKeys } from "./url.types";
 
@@ -24,7 +24,7 @@ describe("url", () => {
   describe("createSafeOriginUrl", () => {
     const defaultOrigin = "https://origin.com";
     const safeOrigins = [defaultOrigin, "https://origin2.com"];
-    const deps = getDependencies();
+    const deps = getStartInfo();
 
     beforeEach(() => {
       jest.spyOn(deps.prefs, "get").mockImplementation((preference) => {
@@ -74,7 +74,7 @@ describe("url", () => {
   describe("addExperimentsSearchParams", () => {
     const experiments = "__exp__";
     const revision = "__rev__";
-    const deps = getDependencies();
+    const deps = getStartInfo();
 
     beforeEach(() => {
       jest

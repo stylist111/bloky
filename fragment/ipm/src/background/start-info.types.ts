@@ -16,9 +16,9 @@
  */
 
 /**
- * An interface describing the dependencies of the IPM fragment.
+ * An interface describing the start info for the IPM fragment.
  */
-export interface Dependencies {
+export interface StartInfo {
   prefs: Preferences;
   logger: Logger;
   licensing: Licensing;
@@ -26,24 +26,22 @@ export interface Dependencies {
   getExperiments: getExperimentsFunction;
 }
 
-export interface Preferences {
+interface Preferences {
   get: (preference: string) => any;
   set: (preference: string, value: any) => Promise<void>;
-  on: (preference: string, callback: () => Promise<void>) => void;
-
   untilLoaded: Promise<void>;
 }
 
-export interface Logger {
+interface Logger {
   debug: (...data: unknown[]) => void;
   reportAndLogError: (e: Error, logContext?: string) => void;
 }
 
-export interface Licensing {
+interface Licensing {
   isLicenseValid: () => boolean;
 }
 
-export interface UserAndHostInformation {
+interface UserAndHostInformation {
   getId: () => Promise<string>;
   getAppName: () => string;
   getBrowserName: () => string;
@@ -54,4 +52,4 @@ export interface UserAndHostInformation {
 /**
  * Function signature of the host's getExperiments(), as of 2025-02-05
  */
-export type getExperimentsFunction = () => Promise<string>;
+type getExperimentsFunction = () => Promise<string>;

@@ -1,0 +1,57 @@
+/*
+ * This file is part of Adblock Plus <https://adblockplus.org/>,
+ * Copyright (C) 2006-present eyeo GmbH
+ *
+ * Adblock Plus is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * Adblock Plus is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * This file contains the `StartInfo` that the IPM fragment needs to start up.
+ */
+
+import { type StartInfo } from "@eyeo-fragments/ipm/background";
+import { getInstallationId } from "~/id/background";
+import { info } from "~/info/background";
+import { getPremiumState } from "~/premium/background";
+import { getExperiments } from "~/uninstall/background";
+import { Prefs as prefs } from "../../../adblockpluschrome/lib/prefs";
+import * as logger from "../../logger/background";
+
+export const startInfo: StartInfo = {
+  prefs,
+  logger,
+  licensing: {
+    isLicenseValid() {
+      const { isActive } = getPremiumState();
+      return isActive;
+    }
+  },
+  info: {
+    async getId() {
+      return await getInstallationId();
+    },
+    getAppName() {
+      return info.baseName;
+    },
+    getAppVersion() {
+      return info.addonVersion;
+    },
+    getBrowserName() {
+      return info.application;
+    },
+    getBrowserVersion() {
+      return info.applicationVersion;
+    }
+  },
+  getExperiments
+};

@@ -15,27 +15,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { type Dependencies } from "./dependencies.types";
+import { type StartInfo } from "./start-info.types";
 
 /**
- * In-memory storage for references to the IPM fragment's dependencies.
+ * In-memory storage for references to the IPM fragment's start info.
  */
-let deps: Dependencies;
+let startInfo: StartInfo;
 
 /**
- * Sets the IPM fragment's dependencies.
+ * Sets the IPM fragment's start info.
  *
- * @param dependencies The IPM fragment's dependencies
+ * @param newStartInfo The IPM fragment's start info
  */
-export function setDependencies(dependencies: Dependencies): void {
-  deps = dependencies;
+export function setStartInfo(newStartInfo: StartInfo): void {
+  startInfo = newStartInfo;
 }
 
 /**
- * Retrieves the IPM fragment's dependencies.
+ * Retrieves the IPM fragment's start info.
  *
- * @returns The IPM fragment's dependencies
+ * @returns The IPM fragment's start info
  */
-export function getDependencies(): Dependencies {
-  return deps;
+export function getStartInfo(): StartInfo {
+  return startInfo;
 }

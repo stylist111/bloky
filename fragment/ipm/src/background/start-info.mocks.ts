@@ -16,40 +16,29 @@
  */
 
 /**
- * This file contains test doubles for the IPM fragment's dependencies.
+ * This file contains mocks for the IPM fragment's start info.
  */
 
-import {
-  type Dependencies,
-  type getExperimentsFunction,
-  type Licensing,
-  type Logger,
-  type Preferences,
-  type UserAndHostInformation,
-} from "./dependencies.types";
+import { type StartInfo } from "./start-info.types";
 
-const prefs: Preferences = {
-  get(_): any {
-    return null;
-  },
-  async set(_key, _value) {},
-  on(_pref, _callback) {},
-
+const prefs = {
+  get(_: string) {},
+  async set(_key: string, _value: any) {},
   untilLoaded: Promise.resolve(),
 };
 
-const logger: Logger = {
-  debug(_) {},
-  reportAndLogError(_e, _logContext) {},
+const logger = {
+  debug(..._data: unknown[]) {},
+  reportAndLogError(_e: Error, _logContext?: string) {},
 };
 
-const licensing: Licensing = {
+const licensing = {
   isLicenseValid() {
     return false;
   },
 };
 
-const info: UserAndHostInformation = {
+const info = {
   async getId() {
     return "";
   },
@@ -67,9 +56,9 @@ const info: UserAndHostInformation = {
   },
 };
 
-const getExperiments: getExperimentsFunction = async (): Promise<string> => "";
+const getExperiments = async (): Promise<string> => "";
 
-export function getDependencies(): Dependencies {
+export function getStartInfo(): StartInfo {
   return {
     prefs,
     logger,

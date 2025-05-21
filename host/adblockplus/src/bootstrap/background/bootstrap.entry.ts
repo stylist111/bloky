@@ -25,10 +25,7 @@ import { start as startMessageResponder } from "../../../adblockpluschrome/lib/m
 import { start as startStats } from "../../../adblockpluschrome/lib/stats.js";
 import { start as startTabSessionStorage } from "../../../adblockpluschrome/lib/storage/tab-session";
 import { start as startSubscriptionInit } from "../../../adblockpluschrome/lib/subscriptionInit.js";
-import {
-  getExperiments,
-  start as startUninstall
-} from "~/uninstall/background";
+import { start as startUninstall } from "~/uninstall/background";
 import { start as startInit } from "../../../lib/init.js";
 import { start as startRecommendedLanguage } from "../../../lib/recommendLanguage.js";
 import { start as startAllowListing } from "../../allowlisting/background";
@@ -54,13 +51,9 @@ import { start as startFiltersMigration } from "../../filters/background/";
 import { start as startPublicAPI } from "@eyeo-fragments/public-api";
 import { port, addTrustedMessageTypes } from "~/core/messaging/background";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
-import {
-  getAuthPayload,
-  getPremiumState,
-  hasActiveLicense
-} from "~/premium/background";
-import { getInstallationId } from "~/id/background";
+import { getAuthPayload, hasActiveLicense } from "~/premium/background";
 import { info } from "~/info/background";
+import { startInfo as ipmFragmentStartInfo } from "~/ipm/background";
 
 async function bootstrap(): Promise<void> {
   // This early in the initialization, we may not have loaded the preference
@@ -81,34 +74,7 @@ async function bootstrap(): Promise<void> {
   startTabSessionStorage();
   startDevTools();
   startDebug();
-  void startIPM(
-    Prefs,
-    logger,
-    {
-      isLicenseValid() {
-        const { isActive } = getPremiumState();
-        return isActive;
-      }
-    },
-    {
-      async getId() {
-        return await getInstallationId();
-      },
-      getAppName() {
-        return info.baseName;
-      },
-      getBrowserName() {
-        return info.application;
-      },
-      getBrowserVersion() {
-        return info.applicationVersion;
-      },
-      getAppVersion() {
-        return info.addonVersion;
-      }
-    },
-    getExperiments
-  );
+  void startIPM(ipmFragmentStartInfo);
   startReadyState();
   startFilterConfiguration();
   startStats();

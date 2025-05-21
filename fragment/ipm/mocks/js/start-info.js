@@ -15,12 +15,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { getDependencies } from "../../src/background/dependencies.mocks";
+import { getStartInfo } from "../../src/background/start-info.mocks";
 
-const mockDependencies = getDependencies();
+const mockStartInfo = getStartInfo();
 
-jest.mock("../../src/background/dependencies", () => {
+jest.mock("../../src/background/start-info", () => {
   return {
-    getDependencies: () => mockDependencies,
+    getStartInfo: () => mockStartInfo,
   };
 });

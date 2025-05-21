@@ -24,14 +24,14 @@ import {
   setCommandActor,
 } from "./command-library";
 import { type CommandActor, CommandName } from "./command-library.types";
-import { getDependencies } from "./dependencies";
+import { getStartInfo } from "./start-info";
 
 describe("command-library", () => {
   describe("getStoredCommandIds", () => {
     let prefsObj: Record<string, any>;
 
     beforeEach(() => {
-      const { prefs } = getDependencies();
+      const { prefs } = getStartInfo();
       const prefsGetMock = jest.spyOn(prefs, "get");
       prefsGetMock.mockImplementation((key) => prefsObj[key]);
     });
@@ -121,7 +121,7 @@ describe("command-library", () => {
     let createTabActor: CommandActor;
 
     beforeEach(() => {
-      const { prefs } = getDependencies();
+      const { prefs } = getStartInfo();
       // Mock prefs.get to return an empty object
       jest.spyOn(prefs, "get").mockReturnValue({});
       jest

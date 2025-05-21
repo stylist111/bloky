@@ -34,7 +34,7 @@ import {
   eventStorageKey,
   pingCountPrefsKey,
 } from "./data-collection.types";
-import { getDependencies } from "./dependencies";
+import { getStartInfo } from "./start-info";
 
 /**
  * Takes a number, turns it into a string, and pads it if necessary to create
@@ -77,7 +77,7 @@ function getLocalTimeStamp(): string {
  * @returns The base attributes
  */
 async function getBaseAttributes(): Promise<BaseAttributes> {
-  const { info } = getDependencies();
+  const { info } = getStartInfo();
   return {
     app_name: info.getAppName(),
     browser_name: info.getBrowserName(),
@@ -105,7 +105,7 @@ async function getEventData(
   commandVersion: number,
   name: string,
 ): Promise<EventData> {
-  const { info } = getDependencies();
+  const { info } = getStartInfo();
   return {
     type: DataType.event,
     device_id: await info.getId(),
@@ -128,7 +128,7 @@ async function getEventData(
  * @returns An object containing device data
  */
 async function getDeviceData(): Promise<DeviceData> {
-  const { info, prefs, licensing } = getDependencies();
+  const { info, prefs, licensing } = getStartInfo();
   await prefs.untilLoaded;
   return {
     type: DataType.device,
@@ -150,7 +150,7 @@ async function getDeviceData(): Promise<DeviceData> {
  * @returns An object containing user data
  */
 async function getUserData(): Promise<UserData> {
-  const { prefs } = getDependencies();
+  const { prefs } = getStartInfo();
   return {
     type: DataType.customer,
     platforms: [{ platform: PlatformType.web, active: PlatformStatus.true }],
@@ -200,7 +200,7 @@ function getIpmData(): IpmData {
  * @returns An object containing the payload
  */
 export async function getPayload(): Promise<PayloadData> {
-  const { prefs } = getDependencies();
+  const { prefs } = getStartInfo();
   await prefs.untilLoaded;
   const user = await getUserData();
   const device = await getDeviceData();
@@ -213,7 +213,7 @@ export async function getPayload(): Promise<PayloadData> {
  * Clears all recorded user events.
  */
 export async function clearEvents(): Promise<void> {
-  const { prefs } = getDependencies();
+  const { prefs } = getStartInfo();
   await prefs.untilLoaded;
   void prefs.set(eventStorageKey, []);
 }
@@ -235,7 +235,7 @@ export async function storeEvent(
   commandVersion: number,
   name: string,
 ): Promise<void> {
-  const { prefs } = getDependencies();
+  const { prefs } = getStartInfo();
   await prefs.untilLoaded;
   const eventData = await getEventData(
     ipmId,
