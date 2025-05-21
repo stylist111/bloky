@@ -15,6 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import * as ewe from "@eyeo/webext-ad-filtering-solution/ui";
 import * as messaging from "~/core/messaging/front";
 import { getSourceAttribute } from "../../common.mjs";
 import { $ } from "../../dom.mjs";
@@ -33,6 +34,16 @@ import "./notifications.mjs";
 import "../../io-popup-footer.mjs";
 
 initI18n();
+
+/**
+ * Reports an error to Sentry and logs it to the console
+ *
+ * @param {error} error -  The error to send to Sentry, and to log to the console
+ */
+function reportAndLogError(error) {
+  ewe.sentry.reportError(error);
+  console.error(error);
+}
 
 // info (platform, application and store) dataset bootstrap
 //
@@ -69,7 +80,7 @@ activeTab
 
     return tab;
   })
-  .then((tab) => {
+  .then(async (tab) => {
     const { url } = tab;
     const defaultDetails = { hostname: "", pathname: "", search: "" };
     const { hostname, pathname, search } = url ? new URL(url) : defaultDetails;
@@ -94,8 +105,13 @@ activeTab
       );
     });
 
-    setupPremium();
-    setupPremiumToggles();
+    try {
+      await setupPremium();
+      setupPremiumToggles();
+    } catch (error) {
+      reportAndLogError(error);
+    }
+
     setupCookieModal();
     setupToggles(tab);
     setupStats(tab);
@@ -126,11 +142,33 @@ function updateBlockedTotal(blockedTotal) {
   $("#stats-total .amount").textContent = total;
 }
 
-async function setupPremium() {
+function wait(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+/**
+ * Intializes the Premium state & related UI components
+ *
+ * @param {number} retryCount - the current retry count, used to avoid a
+ *        premium users seeing the incorrect premium status in the popup menu.
+ */
+async function setupPremium(retryCount = 0) {
+  const premium = await messaging.premium.get();
+  if (!premium) {
+    if (retryCount > 4) {
+      throw new Error("Failed to initialize Premium");
+    }
+    retryCount += 1;
+    await wait(200);
+    setupPremium(retryCount);
+    return;
+  }
+
   setupPremiumBanners();
   updateToggles();
 
-  const premium = await messaging.premium.get();
   setPremiumState(premium.isActive);
 
   messaging.addMessageListener((msg) => {

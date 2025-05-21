@@ -1,5 +1,7 @@
 # Unreleased
 
+- Fixed an issue with the incorrect premium license status being shown to users. (EXT-930)
+
 # 4.22.0 - 2025-05-20
 
 - Detect and collect if a user has ubo installed (EXT-942)

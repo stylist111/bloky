@@ -80,7 +80,8 @@ export default () => {
     const freeUserPremiumLists = ["cookies-premium", "annoyances"];
     for (const title of freeUserPremiumLists) {
       await getDisplayedElement(
-        `#premium-list-table [data-recommended="${title}"]`
+        `#premium-list-table [data-recommended="${title}"]`,
+        { timeout: 1000 }
       );
 
       await wait(

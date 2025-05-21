@@ -1210,11 +1210,36 @@ function updateErrorTooltip(element, errorIds) {
   element.classList.add("error");
 }
 
-async function startPremium() {
-  startPremiumBanners();
-  startPremiumInRecommended();
+function wait(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
 
+/**
+ * Intializes the Premium state & related UI components
+ *
+ * @param {number} retryCount - the current retry count, used to avoid a
+ *        premium users seeing the incorrect premium status on the option page.
+ */
+async function startPremium(retryCount = 0) {
+  // the order of the following functions matters,
+  // and these functions should only be invoked once
+  if (retryCount === 0) {
+    startPremiumBanners();
+    startPremiumInRecommended();
+  }
   const premium = await messaging.premium.get();
+  if (!premium) {
+    if (retryCount > 4) {
+      throw new Error("Failed to initialize Premium");
+    }
+    retryCount += 1;
+    await wait(200);
+    startPremium(retryCount);
+    return;
+  }
+
   premiumIsActive = premium.isActive;
   updatePremiumStateInPage();
 
