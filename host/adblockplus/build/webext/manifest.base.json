@@ -21,25 +21,25 @@
       "run_at": "document_start"
     },
     {
-      "js": ["onpage-dialog.preload.js"],
+      "js": ["polyfill.js", "onpage-dialog.preload.js"],
       "matches": ["http://*/*", "https://*/*"],
       "run_at": "document_start"
     },
     {
       "all_frames": true,
-      "js": ["onpage-dialog-ui.preload.js"],
+      "js": ["polyfill.js", "onpage-dialog-ui.preload.js"],
       "match_about_blank": true,
       "matches": ["http://*/*", "https://*/*"],
       "run_at": "document_start"
     },
     {
-      "js": ["yt-auto-allowlist.preload.js"],
+      "js": ["polyfill.js", "yt-auto-allowlist.preload.js"],
       "matches": ["*://*.youtube.com/*"],
       "run_at": "document_start"
     },
     {
       "all_frames": true,
-      "js": ["yt-player-controls.preload.js"],
+      "js": ["polyfill.js", "yt-player-controls.preload.js"],
       "matches": ["*://*.youtube-nocookie.com/embed/*"],
       "run_at": "document_start"
     },
@@ -83,18 +83,18 @@
     },
     {
       "all_frames": true,
-      "js": ["public-api.preload.js"],
+      "js": ["polyfill.js", "public-api.preload.js"],
       "matches": ["https://btloader.com/trustedIframe.html?o=*"],
       "run_at": "document_start"
     },
     {
-      "js": ["conflict-detection.preload.js"],
+      "js": ["polyfill.js", "conflict-detection.preload.js"],
       "matches": ["*://*.youtube.com/*", "*://*.facebook.com/*"],
       "run_at": "document_start"
     },
     {
       "all_frames": true,
-      "js": ["cookie-banner-detection.preload.js"],
+      "js": ["polyfill.js", "cookie-banner-detection.preload.js"],
       "matches": ["http://*/*", "https://*/*"],
       "run_at": "document_start"
     }
