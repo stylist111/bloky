@@ -68,12 +68,6 @@ async function clickAdsCounterAndCheck({ enable = true } = {}) {
 }
 
 export default () => {
-  before(async function () {
-    await initOptionsGeneralTab(getOptionsHandle(), {
-      waitForDefaultState: true
-    });
-  });
-
   it("keeps settings after upgrade", async function () {
     this.timeout(100000); // Long test with many checks, including the extension reload
 
@@ -81,6 +75,9 @@ export default () => {
 
     // activate premium
     await enablePremiumProgrammatically();
+    await initOptionsGeneralTab(getOptionsHandle(), {
+      waitForDefaultState: true
+    });
 
     // Change default filterlist status:
     // cookies (premium), additional tracking, acceptable ads, english easylist
