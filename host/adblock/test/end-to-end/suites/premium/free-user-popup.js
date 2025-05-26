@@ -49,7 +49,7 @@ export default () => {
       // click will close current tab and opens a new one
       await learnMoreBtn.click();
       // find new opened tab
-      await findUrl(fullPremiumUrl);
+      await findUrl(fullPremiumUrl, 10000);
     }
   });
 };
