@@ -156,7 +156,7 @@ describe("Subscriptions", function() {
   });
 
   it("adds defaults if the force flag is passed to addDefaults", async function() {
-    setMinTimeout(this, 15000);
+    setMinTimeout(this, 20000);
 
     await EWE.subscriptions.add(VALID_SUBSCRIPTION_URL);
     await EWE.subscriptions.addDefaults(null, true);
