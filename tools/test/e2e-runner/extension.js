@@ -251,6 +251,7 @@ export async function reloadExtension(
 
   // Suppress page or not
   await updateSettings(initOptionsFn, "suppress_update_page", suppressUpdatePage);
+  await updatePrefs(initOptionsFn, "suppress_first_run_page", suppressUpdatePage);
 
   // reload the extension
   await initOptionsFn(getOptionsHandle());
