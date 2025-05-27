@@ -1,5 +1,9 @@
 # Unreleased
 
+# 6.21.1 - 2025-05-27
+
+This release contains only minor updates and under-the-hood changes.
+
 # 6.21.0 - 2025-05-20
 
 - Collect additional pageview metrics for specific requests. (EXT-951)
