@@ -133,6 +133,13 @@ exports.Filter = class Filter {
 let knownFilters = new Map();
 
 /**
+ * Clears known filters cache
+ */
+exports.clearKnownFiltersCache = function clearKnownFiltersCache() {
+  knownFilters.clear();
+};
+
+/**
  * Creates a filter of correct type from its text representation - does the
  * basic parsing and calls the right constructor then.
  *

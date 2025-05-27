@@ -305,6 +305,10 @@ describe("Element Hiding", function() {
   });
 
   describe("Element Hiding Emulation", function() {
+    afterEach(async function() {
+      await EWE.testing.clearKnownFiltersCache();
+    });
+
     it("hides abp-properties elements [fuzz]", async function() {
       await addFilter(
         `${TEST_PAGES_DOMAIN}#?#div:-abp-properties(background-color: red)`);
