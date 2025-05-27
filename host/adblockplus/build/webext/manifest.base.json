@@ -104,6 +104,15 @@
   "description": "__MSG_description__",
   "default_locale": "en_US",
   "devtools_page": "devtools.html",
+  "externally_connectable": {
+    "ids": [
+      "cfhdojbkjhnklbpkdaibdccddilifddb",
+      "gighmmpiobklfepjocnamgkkbiglidom",
+      "gmgoamodcdcjnbaobigkjelfplakmdhh",
+      "ndcileolkflehcjpmjnfbnaibdcgglog",
+      "oidhhegpmlfpoeialbgcdocjalghfpkp"
+    ]
+  },
   "icons": {
     "128": "icons/logo/abp-128.png",
     "16": "icons/abp-16.png",

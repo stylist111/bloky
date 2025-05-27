@@ -128,7 +128,7 @@ async function runMV2Detection(logger: any, tabId: number): Promise<void> {
  * Initializes the conflict resolution main world script.
  * Sets up listeners and injects the page script after the DOM is ready.
  */
-export function startNonPartnerDetection(parameters: StartInfo): void {
+export function start(parameters: StartInfo): void {
   const { logger, port, addTrustedMessageTypes, prefs } = parameters;
 
   // Run the detection on the onCompleted event of the webNavigation API

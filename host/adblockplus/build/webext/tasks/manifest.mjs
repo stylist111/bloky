@@ -45,6 +45,7 @@ async function editManifest(data, version, channel, target) {
     if ("browser_action" in data) delete data.browser_action.default_popup;
     delete data.optional_permissions;
     delete data.storage;
+    delete data.externally_connectable;
 
     data.applications.gecko = gecko;
   }

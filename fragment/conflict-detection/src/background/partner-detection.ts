@@ -18,12 +18,10 @@
 
 import browser from "webextension-polyfill";
 import {
-  type getNumberPartnerExtFunction,
   alarmName,
   intervalKey,
   lastPingKey,
   PartnerExtensionIds,
-  partnerExtensionFoundKey,
   type PingResponse,
   PingMessage,
   type StartInfo,
@@ -41,8 +39,10 @@ export async function sendPingToParterExtension(): Promise<string[]> {
     const response = browser.runtime
       .sendMessage(extensionId, PingMessage, undefined)
       .then((result: any) => {
-        foundExtensionIds.push(extensionId);
         const pingResult = result as PingResponse;
+        if (pingResult?.pingResponse) {
+          foundExtensionIds.push(extensionId);
+        }
         return !!pingResult?.pingResponse;
       })
       .catch(() => {
@@ -73,14 +73,10 @@ export async function sendSavePingResponses(
   }
   parameters?.logger.debug("[conflict-detection]: pinging.");
   const foundExtensionIds = await sendPingToParterExtension();
-  await parameters?.prefs.set(partnerExtensionFoundKey, {
-    extesnionsIdsFound: foundExtensionIds,
-    detectionTimestamp: Date.now(),
-  });
+  await parameters.onUpdatedPartnerExtensionIds(foundExtensionIds);
 
   // Update the timestamp for latest ping
   await parameters?.prefs.set(lastPingKey, Date.now());
-
   parameters?.logger.debug(
     `[conflict-detection]: foundExtensionIds : ${foundExtensionIds.toString()}`,
   );
@@ -99,34 +95,29 @@ export async function addAlarmListener(parameters: StartInfo): Promise<void> {
 }
 
 /**
- * Returns the number of partner extensions found during the last 'ping'
- *
+ * Listens for messages from other extensions
+ * Responds only if the extension ID is recognized
  */
-async function getNumberPartnerExtTemp(parameters: StartInfo): Promise<number> {
-  await parameters?.prefs.untilLoaded;
-  return (
-    parameters?.prefs.get(partnerExtensionFoundKey)?.extesnionsIdsFound
-      ?.length || 0
-  );
+function addMessageListener(): void {
+  browser.runtime.onMessageExternal.addListener(function (
+    message: unknown,
+    sender,
+    sendResponse: any,
+  ) {
+    if (!isMessage(message) || !isKnownSender(sender)) {
+      return;
+    }
+    sendResponse({ pingResponse: true });
+    return true;
+  });
 }
-
-/**
- * Returns the number of partner extensions found
- *
- * @returns number of partner extensions found (null if function has not been
- *   initialized yet)
- */
-export let getNumberPartnerExt: getNumberPartnerExtFunction = async () => null;
 
 /**
  * Initializes the partner detection functionality of the fragment.
  */
-export async function startPartnerDetection(
-  parameters: StartInfo,
-): Promise<void> {
+export async function start(parameters: StartInfo): Promise<void> {
   void addAlarmListener(parameters);
-
-  getNumberPartnerExt = getNumberPartnerExtTemp.bind(null, parameters);
+  addMessageListener();
 
   await parameters?.prefs.untilLoaded;
 
@@ -183,19 +174,3 @@ function isKnownSender(sender: browser.Runtime.MessageSender): boolean {
     )
   );
 }
-
-/**
- * Listens for messages from other extensions
- * Responds only if the extension ID is recognized
- */
-browser.runtime.onMessageExternal.addListener(function (
-  message: unknown,
-  sender,
-  sendResponse: any,
-) {
-  if (!isMessage(message) || !isKnownSender(sender)) {
-    return;
-  }
-  sendResponse({ pingResponse: true });
-  return true;
-});

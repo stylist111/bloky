@@ -27,7 +27,7 @@ import {
   afterAll,
 } from "vitest";
 import browser from "webextension-polyfill";
-import { startNonPartnerDetection } from "../../src/background/nonpartner-detection";
+import { start as startNonPartnerDetection } from "../../src/background/nonpartner-detection";
 import {uboDetectedKey, uboDetectionLastRunKey, uboExtensionIds} from "../../src/background";
 import { detectionEvent } from "../../src/shared";
 

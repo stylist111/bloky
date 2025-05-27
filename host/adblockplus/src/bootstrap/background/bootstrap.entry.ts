@@ -113,7 +113,14 @@ async function bootstrap(): Promise<void> {
     logger,
     prefs: Prefs,
     port,
-    addTrustedMessageTypes
+    addTrustedMessageTypes,
+    onUpdatedPartnerExtensionIds: async (extensionIds: string[]) => {
+      await Prefs.untilLoaded;
+      void Prefs.set("partnerExtensionFound", {
+        extesnionsIdsFound: extensionIds,
+        detectionTimestamp: Date.now()
+      });
+    }
   });
 
   setReadyState(ReadyState.started);

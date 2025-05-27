@@ -18,4 +18,3 @@
 
 export * from "./detection.js";
 export * from "./detection.types.js";
-export * from "./partner-detection.js";

@@ -16,9 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { startPartnerDetection } from "./partner-detection.js";
+import { start as startPartnerDetection } from "./partner-detection.js";
 import { type StartInfo } from "./detection.types.js";
-import { startNonPartnerDetection } from "./nonpartner-detection.js";
+import { start as startNonPartnerDetection } from "./nonpartner-detection.js";
 
 /**
  * Initializes the conflict extension fragment.

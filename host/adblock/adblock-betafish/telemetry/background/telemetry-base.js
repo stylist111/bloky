@@ -16,11 +16,10 @@
  */
 
 /* For ESLint: List any global identifiers used in this file below */
-/* global browser, channels, replacedCounts, getSettings, BigInt */
+/* global browser, channels, replacedCounts, BigInt */
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
-import { getNumberPartnerExt } from "@eyeo-fragments/conflict-detection";
 import { chromeStorageSetHelper } from "~/utilities/background/bg-functions";
 import {
   getWebAllowlistingFilterCount,
@@ -32,6 +31,7 @@ import {
 
 import { Prefs } from "~/alias/prefs";
 import ServerMessages from "~/servermessages";
+import { getSettings, settings } from "~/prefs/background";
 import SubscriptionAdapter from "~/subscriptionadapter";
 import { getUserId } from "~/id/background/index";
 import { determineUserLanguage, storageSet, getUserAgentInfo } from "~/utilities/background/index";
@@ -112,6 +112,7 @@ class TelemetryBase {
   async getTelemetryData() {
     const response = await browser.storage.local.get(this.totalRequestsStorageKey);
     let data = {};
+    await settings.onload();
     const settingsObj = getSettings();
     const totalPings = response[this.totalRequestsStorageKey] || 0;
     const themeOptionsPage = settingsObj.color_themes.options_page.replace("_theme", "");
@@ -120,6 +121,7 @@ class TelemetryBase {
     if (typeof BigInt === "function") {
       subsStr = BigInt(`0b${await SubscriptionAdapter.getSubscriptionsChecksum()}`).toString();
     }
+    await Prefs.untilLoaded;
 
     data = {
       u: this.userId,
@@ -188,7 +190,7 @@ class TelemetryBase {
       data.crctotal += 1;
     }
 
-    data.numberOfPartnerExt = await getNumberPartnerExt();
+    data.numberOfPartnerExt = Prefs.get("partnerExtensionFound").extesnionsIdsFound.length;
     // Detected in the last 7 days
     data.hasUBO = Date.now() - Prefs.get("uboDetected") < 7 * 24 * 60 * 60 * 1000 ? "1" : "0";
     data.dc = this.dataCorrupt ? "1" : "0";

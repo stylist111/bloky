@@ -51,6 +51,8 @@ async function editManifest(dataParam, version, channel, target, extensionId) {
 
     data.applications.gecko = gecko;
 
+    delete data.externally_connectable;
+
     if ("action" in data) {
       delete data.action.default_popup;
     }

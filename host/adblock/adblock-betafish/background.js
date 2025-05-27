@@ -696,6 +696,13 @@ initialize
       prefs: Prefs,
       port,
       addTrustedMessageTypes: ext.addTrustedMessageTypes,
+      onUpdatedPartnerExtensionIds: async (extensionIds) => {
+        await Prefs.untilLoaded;
+        Prefs.set("partnerExtensionFound", {
+          extesnionsIdsFound: extensionIds,
+          detectionTimestamp: Date.now(),
+        });
+      },
     });
     startCookieBannerDetection();
   })

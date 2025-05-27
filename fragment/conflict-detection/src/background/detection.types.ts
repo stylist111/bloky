@@ -47,6 +47,12 @@ export interface StartInfo {
    *
    */
   addTrustedMessageTypes: addTrustedMessageTypesFunction;
+
+  /**
+   * A reference to a function will update the partner extensions
+   *
+   */
+  onUpdatedPartnerExtensionIds: savePartnerExtensionFoundFunction;
 }
 
 /**
@@ -57,6 +63,14 @@ export type addTrustedMessageTypesFunction = (
   origin: string | null,
   types: string[],
 ) => void;
+
+/**
+ * Function to persist the array of found partner extension Ids
+ *
+ */
+export type savePartnerExtensionFoundFunction = (
+  foundExtensionIds: string[],
+) => Promise<void>;
 
 /**
  * The alarm name for the ping schedule.
@@ -72,11 +86,6 @@ export const intervalKey = "pd_ping_interval";
  * The name for the Prefs storage key that contains the partner extension IDs of Chromium based browsers.
  */
 export const partnerExtensionIdsKey = "partnerExtensionIds";
-
-/**
- * The name for the Prefs storage key that indicates if a partner extension was found.
- */
-export const partnerExtensionFoundKey = "partnerExtensionFound";
 
 /**
  * The name for the Prefs storage key of the last attempted Partner Detection ping.
@@ -119,14 +128,6 @@ export const PartnerExtensionIds = [
   "{d10d0bf8-f5b5-c8b4-a8b2-2b9879e08c5d}", // ABP - FF / AMO
   "jid1-NIfFY2CA8fy1tg@jetpack", // AB - FF / AMO
 ] as const;
-
-/**
- * Function that returns the number of partner extensions found during the last 'ping'
- *
- * @returns number of partner extensions found (null if function has not been
- *   initialized yet)
- */
-export type getNumberPartnerExtFunction = () => Promise<number | null>;
 
 /**
  *  The extension IDs of the NON-partner extension(s) to send the ping message to.

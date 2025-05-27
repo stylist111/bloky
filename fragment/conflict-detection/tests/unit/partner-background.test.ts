@@ -20,13 +20,11 @@ import { describe, expect, vi } from "vitest";
 import {
   alarmName,
   PartnerExtensionIds,
-  partnerExtensionFoundKey,
   PingMessage,
 } from "../../src/background/detection.types";
 import browser from "webextension-polyfill";
 import {
-  getNumberPartnerExt,
-  startPartnerDetection,
+  start as startPartnerDetection,
   sendPingToParterExtension,
   sendSavePingResponses,
   addAlarmListener,
@@ -62,26 +60,8 @@ describe("sendPingMessage", () => {
       logger: {
         debug: vi.fn(),
       },
+      onUpdatedPartnerExtensionIds: vi.fn()
     };
-  });
-
-  it("should not return extensions before initialization", async () => {
-    parameters.prefs.get = vi.fn().mockImplementation(() => {
-      return { extesnionsIdsFound: ["test1", "test2"] };
-    });
-    const numberExt = await getNumberPartnerExt();
-    expect(numberExt).toEqual(null);
-    expect(parameters.prefs.get).not.toHaveBeenCalledWith(partnerExtensionFoundKey);
-  });
-
-  it("should return 2 extensions", async () => {
-    parameters.prefs.get = vi.fn().mockImplementation(() => {
-      return { extesnionsIdsFound: ["test1", "test2"] };
-    });
-    await startPartnerDetection(parameters);
-    const numberExt = await getNumberPartnerExt();
-    expect(numberExt).toEqual(2);
-    expect(parameters.prefs.get).toHaveBeenCalledWith(partnerExtensionFoundKey);
   });
 
   it("should return an array of found extension IDs when extensions respond successfully", async () => {
@@ -122,13 +102,7 @@ describe("sendPingMessage", () => {
 
     await sendSavePingResponses(parameters);
 
-    expect(parameters.prefs.set).toHaveBeenCalledWith(
-      partnerExtensionFoundKey,
-      {
-        extesnionsIdsFound: [],
-        detectionTimestamp: expect.any(Number),
-      },
-    );
+    expect(parameters.onUpdatedPartnerExtensionIds).toHaveBeenCalledWith([]);
   });
 
   it("should save 2 ping responses to preferences", async () => {
@@ -139,13 +113,7 @@ describe("sendPingMessage", () => {
 
     await sendSavePingResponses(parameters);
 
-    expect(parameters.prefs.set).toHaveBeenCalledWith(
-      partnerExtensionFoundKey,
-      {
-        extesnionsIdsFound: [PartnerExtensionIds[0], PartnerExtensionIds[1]],
-        detectionTimestamp: expect.any(Number),
-      },
-    );
+    expect(parameters.onUpdatedPartnerExtensionIds).toHaveBeenCalledWith([PartnerExtensionIds[0], PartnerExtensionIds[1]]);
   });
 
   it("should save 1 ping response to preference when alarm fires", async () => {
@@ -167,13 +135,7 @@ describe("sendPingMessage", () => {
     setupMockOnMessageResponse([PartnerExtensionIds[1]]);
     await theCallbackFunction({ name: alarmName }); // invoke the onAlarm listener with correct alarm
     await new Promise(process.nextTick);
-    expect(parameters.prefs.set).toHaveBeenCalledWith(
-      partnerExtensionFoundKey,
-      {
-        extesnionsIdsFound: [PartnerExtensionIds[1]],
-        detectionTimestamp: expect.any(Number),
-      },
-    );
+    expect(parameters.onUpdatedPartnerExtensionIds).toHaveBeenCalledWith([PartnerExtensionIds[1]]);
   });
 
   it("should add the alarm listener and return", async () => {
