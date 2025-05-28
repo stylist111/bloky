@@ -34,4 +34,6 @@ const IPM_CONSTANTS = [
 
 const NO_DATA = "no data";
 
-export { IPM_CONSTANTS, NO_DATA };
+const PING_COUNT_STORAGE_KEY = "total_pings";
+
+export { IPM_CONSTANTS, NO_DATA, PING_COUNT_STORAGE_KEY };

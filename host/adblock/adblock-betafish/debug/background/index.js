@@ -30,7 +30,7 @@ import { getSettings } from "~/prefs/background";
 import SubscriptionAdapter from "~/subscriptionadapter";
 import { TELEMETRY } from "~/telemetry/background";
 
-import { IPM_CONSTANTS, NO_DATA } from "./constants";
+import { IPM_CONSTANTS, NO_DATA, PING_COUNT_STORAGE_KEY } from "./constants";
 
 async function getExperimentsAssignments() {
   const assignments = await ewe.experiments.getAssignments();
@@ -222,8 +222,8 @@ const getSubscriptionInfo = async function () {
 };
 
 const getTotalPings = async function () {
-  const storageResponse = await browser.storage.local.get("total_pings");
-  return storageResponse.totalPings || 0;
+  const storageResponse = await browser.storage.local.get(PING_COUNT_STORAGE_KEY);
+  return storageResponse[PING_COUNT_STORAGE_KEY] || 0;
 };
 
 // Get debug info as a JSON object for bug reporting and ad reporting
