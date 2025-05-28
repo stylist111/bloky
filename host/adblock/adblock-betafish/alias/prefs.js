@@ -24,8 +24,6 @@ import { installHandler } from "../../adblockplusui/adblockpluschrome/lib/messag
 import { port } from "../../adblockplusui/adblockpluschrome/lib/messaging/port.js";
 import { EventEmitter } from "../../adblockplusui/adblockpluschrome/lib/events.js";
 
-import { commandStats } from "../ipm/background/command-library.types";
-
 import { eventStorageKey } from "../ipm/background/data-collection.types";
 
 import { statsStorageKey } from "../onpage-dialog/background/stats.types";
@@ -205,9 +203,11 @@ defaults.ipm_commands_second_reset_completed = false;
 /**
  * Map of command stats
  *
+ * TODO: This is never written to. Remove?
+ *
  * @type {Object}
  */
-defaults[commandStats] = {};
+defaults.ipm_commands_stats = {};
 
 /**
  * Default trusted origin for URLs used in IPMs. This is the base URL used when

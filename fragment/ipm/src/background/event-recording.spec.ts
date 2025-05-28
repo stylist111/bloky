@@ -24,6 +24,7 @@ describe("event-recording", () => {
     beforeEach(() => {
       jest.spyOn(DataCollection, "storeEvent").mockImplementation();
     });
+
     it("should call storeEvent with the correct parameters", async () => {
       const ipmId = "__ipm_id__";
       const command = CommandName.createTab;
@@ -39,7 +40,24 @@ describe("event-recording", () => {
         eventName,
       );
     });
+
+    it("should call storeEvent with the correct parameters when no IPM ID is passed", async () => {
+      const ipmId = null;
+      const command = CommandName.createTab;
+      const commandVersion = CommandVersion[command];
+      const eventName = "__event_name__";
+      recordEvent(ipmId, command, eventName);
+
+      expect(DataCollection.storeEvent).toHaveBeenCalledTimes(1);
+      expect(DataCollection.storeEvent).toHaveBeenCalledWith(
+        "__no_ipm__",
+        command,
+        commandVersion,
+        eventName,
+      );
+    });
   });
+
   describe("recordGenericEvent", () => {
     beforeEach(() => {
       jest.spyOn(DataCollection, "storeEvent").mockImplementation();

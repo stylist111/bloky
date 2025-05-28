@@ -24,6 +24,8 @@ export interface StartInfo {
   licensing: Licensing;
   info: UserAndHostInformation;
   getExperiments: getExperimentsFunction;
+  getIPMPingCount: () => Promise<number>;
+  getBlockCount: () => Promise<number>;
 }
 
 interface Preferences {

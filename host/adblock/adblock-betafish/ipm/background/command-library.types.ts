@@ -27,11 +27,6 @@ export const maximumProcessableCommands = 100;
 export const commandStorageKey = "ipm_commands";
 
 /**
- * The key for the map of command stats.
- */
-export const commandStats = "ipm_commands_stats";
-
-/**
  * Command behavior
  */
 export interface Behavior {}

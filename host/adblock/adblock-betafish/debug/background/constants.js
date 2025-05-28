@@ -17,13 +17,13 @@
 
 /* For ESLint: List any global identifiers used in this file below */
 
-import { commandStats, commandStorageKey } from "~/ipm/background/command-library.types";
+import { commandStorageKey } from "~/ipm/background/command-library.types";
 
 import { eventStorageKey } from "~/ipm/background/data-collection.types";
 
 const IPM_CONSTANTS = [
   /* IPM values */
-  commandStats,
+  "ipm_commands_stats", // TODO: When this is read from Prefs, it's alway an empty object. Remove?
   commandStorageKey,
   eventStorageKey,
 

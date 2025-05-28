@@ -17,20 +17,22 @@
 
 import { type CommandName, CommandVersion } from "./command-library.types";
 import { storeEvent } from "./data-collection";
+import { noCommand, noIPM } from "./event-recording.types";
 
 /**
  * Records a user event that is connected to a certain command.
  *
- * @param ipmId - The IPM ID
+ * @param ipmId - The IPM ID, or `null` if no IPM or ID is available
  * @param command - The name of the command the event belongs to
  * @param name - The name of the event to record
  */
 export function recordEvent(
-  ipmId: string,
+  ipmId: string | null,
   command: CommandName,
   name: string,
 ): void {
-  void storeEvent(ipmId, command, CommandVersion[command], name);
+  const id = typeof ipmId === "string" ? ipmId : noIPM;
+  void storeEvent(id, command, CommandVersion[command], name);
 }
 
 /**
@@ -39,5 +41,5 @@ export function recordEvent(
  * @param name The name of the event to record
  */
 export function recordGenericEvent(name: string): void {
-  void storeEvent("__no_ipm__", "__no_command__", 0, name);
+  void storeEvent(noIPM, noCommand, 0, name);
 }

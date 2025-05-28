@@ -360,7 +360,7 @@ export async function executeIPMCommands(
 
   const commandHandlingPromises = Array.from(actorByExecutableCommand).map(
     async ([executableCommand, actor]) => {
-      await actor.handleCommand(executableCommand.ipm_id);
+      await actor.handleCommand(executableCommand.ipm_id, isInitialization);
     },
   );
 

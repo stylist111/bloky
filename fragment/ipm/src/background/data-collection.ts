@@ -32,7 +32,6 @@ import {
   PlatformType,
   type UserData,
   eventStorageKey,
-  pingCountPrefsKey,
 } from "./data-collection.types";
 import { getStartInfo } from "./start-info";
 
@@ -128,15 +127,14 @@ async function getEventData(
  * @returns An object containing device data
  */
 async function getDeviceData(): Promise<DeviceData> {
-  const { info, prefs, licensing } = getStartInfo();
-  await prefs.untilLoaded;
+  const { info, licensing, getBlockCount } = getStartInfo();
   return {
     type: DataType.device,
     device_id: await info.getId(),
     attributes: {
       ...(await getBaseAttributes()),
       extension_id: browser.runtime.id,
-      blocked_total: 0, // We're not sending block count to protect user privacy
+      blocked_total: await getBlockCount(),
       license_status: licensing.isLicenseValid()
         ? LicenseState.active
         : LicenseState.inactive,
@@ -150,13 +148,13 @@ async function getDeviceData(): Promise<DeviceData> {
  * @returns An object containing user data
  */
 async function getUserData(): Promise<UserData> {
-  const { prefs } = getStartInfo();
+  const { getIPMPingCount } = getStartInfo();
   return {
     type: DataType.customer,
     platforms: [{ platform: PlatformType.web, active: PlatformStatus.true }],
     attributes: {
       ...(await getBaseAttributes()),
-      ping_count: prefs.get(pingCountPrefsKey),
+      ping_count: await getIPMPingCount(),
     },
   };
 }

@@ -144,6 +144,7 @@ describe("command-library", () => {
       await executeIPMCommands(commands, true);
       expect(createTabActor.handleCommand).toHaveBeenCalledWith(
         commandBase.ipm_id,
+        true,
       );
     });
 
@@ -152,6 +153,7 @@ describe("command-library", () => {
       await executeIPMCommands(commands);
       expect(createTabActor.handleCommand).toHaveBeenCalledWith(
         commandBase.ipm_id,
+        false,
       );
     });
   });

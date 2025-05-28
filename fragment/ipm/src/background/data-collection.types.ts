@@ -16,14 +16,6 @@
  */
 
 /**
- * The name of the prefs key where the total number of IPM pings is stored.
- *
- * NOTE: This is ABP specific and defined in the host. If it changes in the
- * host, we need to change it here as well.
- */
-export const pingCountPrefsKey = "ipm_ping_count";
-
-/**
  * The types of data sent to the IPM server required by MoEngage
  */
 export enum DataType {

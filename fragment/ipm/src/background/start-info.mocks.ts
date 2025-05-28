@@ -58,6 +58,10 @@ const info = {
 
 const getExperiments = async (): Promise<string> => "";
 
+const getIPMPingCount = async (): Promise<number> => 0;
+
+const getBlockCount = async (): Promise<number> => 0;
+
 export function getStartInfo(): StartInfo {
   return {
     prefs,
@@ -65,5 +69,7 @@ export function getStartInfo(): StartInfo {
     licensing,
     info,
     getExperiments,
+    getIPMPingCount,
+    getBlockCount,
   };
 }

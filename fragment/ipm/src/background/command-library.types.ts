@@ -39,8 +39,17 @@ export interface LicenseStateBehavior extends Behavior {
 
 /**
  * Handler that gets called when command gets executed
+ *
+ * @param ipmId The IPM ID
+ * @param isInitialization Whether the command handler is called during
+ *  the fragment initialization phase (i.e. when processing commands that
+ *  are being restored from storage, as opposed to processing commands that
+ *  come in via a response from the IPM server during runtime).
  */
-export type CommandHandler = (ipmId: string) => Promise<void>;
+export type CommandHandler = (
+  ipmId: string,
+  isFragmentInitialization: boolean,
+) => Promise<void>;
 
 /**
  * An enum containing all known command names.

@@ -26,7 +26,12 @@ import { getPremiumState } from "~/premium/background";
 import { getExperiments } from "~/uninstall/background";
 import { Prefs as prefs } from "../../../adblockpluschrome/lib/prefs";
 import * as logger from "../../logger/background";
+import { getIPMPingCount } from "./ping-count";
+import { getBlockCount } from "./block-count";
 
+/**
+ * The information the IPM fragments needs to start up.
+ */
 export const startInfo: StartInfo = {
   prefs,
   logger,
@@ -53,5 +58,7 @@ export const startInfo: StartInfo = {
       return info.applicationVersion;
     }
   },
-  getExperiments
+  getExperiments,
+  getIPMPingCount,
+  getBlockCount
 };
