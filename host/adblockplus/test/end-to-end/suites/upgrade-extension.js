@@ -80,7 +80,7 @@ export default () => {
     });
 
     // Change default filterlist status:
-    // cookies (premium), additional tracking, acceptable ads, english easylist
+    // cookies (premium), social media tracking, acceptable ads, english easylist
     const generalTabFilterLists = [...premiumFilterLists, ...freeFilterLists];
     for (const { name, enabled, stepsAfterClick } of generalTabFilterLists) {
       if (!enabled) {

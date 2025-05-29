@@ -108,5 +108,5 @@ export const premiumFilterLists = [
 ];
 
 export const freeFilterLists = [
-  { name: "Block additional tracking", enabled: false }
+  { name: "Block social media icons tracking", enabled: false }
 ];

@@ -98,6 +98,7 @@ export default () => {
           "The advanced user was not enabled after clicking",
         );
       }
+      await driver.navigate().refresh();
     };
 
     await initOptionsGeneralTab(getOptionsHandle());
