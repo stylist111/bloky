@@ -31,7 +31,7 @@ import {
   clickOnDisplayedElement,
   wait,
 } from "@eyeo/test-utils/driver";
-import { getOptionsHandle, sendExtMessage } from "@eyeo/test-utils/extension";
+import { getOptionsHandle } from "@eyeo/test-utils/extension";
 import { premiumFilterLists } from "./dataset.js";
 
 import { installUrl } from "./urls.js";
@@ -417,7 +417,11 @@ export async function enablePremiumProgrammatically() {
   // status. In that case the activation flow is retried.
   await wait(
     async () => {
-      await sendExtMessage(initOptionsGeneralTab, { type: "adblock:activate" }); // activate premium
+      await driver.executeScript(() => {
+        try {
+          browser.runtime.sendMessage({ type: "adblock:activate" });
+        } catch (e) {}
+      });
       await initOptionsPremiumTab(getOptionsHandle());
 
       try {
