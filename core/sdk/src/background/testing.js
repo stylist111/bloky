@@ -55,6 +55,9 @@ import {_clear} from "./frame-state.js";
 import * as experiments from "./experiments.js";
 import * as sentry from "./sentry.js";
 
+const serverLogger = new telemetry.default.ServerLogger("ewe_background_test");
+const altServerLogger = new telemetry.default.ServerLogger("ewe_background_test_alternate");
+
 export default {
   ...sitekey, // everything exported from "sitekey.js"
 
@@ -369,5 +372,41 @@ export default {
   setExperimentsSeed: experiments.setSeed,
   resetExperimentData: experiments.reset,
   getLastSentryEvent: sentry.getLastEvent,
-  setSentrySampleRate: sentry.setSampleRate
+  setSentrySampleRate: sentry.setSampleRate,
+
+  serverLogger: {
+    debug(event, data) {
+      serverLogger.debug(event, data);
+    },
+
+    info(event, data) {
+      serverLogger.info(event, data);
+    },
+
+    behavior(event, data) {
+      serverLogger.behavior(event, data);
+    },
+
+    warn(event, data) {
+      serverLogger.warn(event, data);
+    }
+  },
+
+  altServerLogger: {
+    debug(event, data) {
+      altServerLogger.debug(event, data);
+    },
+
+    info(event, data) {
+      altServerLogger.info(event, data);
+    },
+
+    behavior(event, data) {
+      altServerLogger.behavior(event, data);
+    },
+
+    warn(event, data) {
+      altServerLogger.warn(event, data);
+    }
+  }
 };

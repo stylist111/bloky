@@ -627,5 +627,72 @@ declare module "@eyeo/webext-ad-filtering-solution" {
      * @param value - Pass `true` to opt-out, pass `false` to opt in.
      */
     const setOptOut: (optOut: boolean) => Promise<void>;
+
+    /**
+     * Resets the console logging level to "off".
+     * @returns {Promise} Promise that resolves when the setting is set.
+     */
+    export function resetConsoleLogLevel(): Promise<any>;
+
+    /**
+     * Sets the intended console logging level.
+     *
+     * If both the global log level and a module-specific log level are set, the
+     * most verbose one takes priority.
+     *
+     * Setting the log level implies that all less verbose levels are also
+     * enabled. For example, enabling "info" logging will also enable "behavior"
+     * and "warn" logging.
+     *
+     * @param {string} level The level you want to log at. Can be one of
+     *                       "debug", "info", "behavior", "warn", or "off".
+     * @param {string?} module The specific module you want to set the log level
+     *                         for. Not passing this sets the global log level.
+     * @returns {Promise} Promise that resolves when the setting is set.
+     */
+    export function setConsoleLogLevel(level: string, module: string): Promise<any>;
+
+    /**
+     * Represents a server logger. This is used to send data to a our telemetry
+     * server. The exact URL will be configured by the telemetry module in the
+     * background script. Console logging is also provided for convenience.
+     *
+     * @param {string} module The module that this logger is for.
+     */
+    export class ServerLogger {
+      constructor(module: string);
+      /**
+       * Creates a debug log.
+       *
+       * @param {string} event The name of the event to log. This should be unique.
+       * @param {string|number|object|array|boolean|null} data
+       *    The dynamic data relevant to the event.
+       */
+      debug(event: string, data?: string | number | object | any[] | boolean | null): void;
+      /**
+       * Creates an info log.
+       *
+       * @param {string} event The name of the event to log. This should be unique.
+       * @param {string|number|object|array|boolean|null} data
+       *    The dynamic data relevant to the event.
+       */
+      info(event: string, data?: string | number | object | any[] | boolean | null): void;
+      /**
+       * Creates a behaviour log.
+       *
+       * @param {string} event The name of the event to log. This should be unique.
+       * @param {string|number|object|array|boolean|null} data
+       *    The dynamic data relevant to the event.
+       */
+      behavior(event: string, data?: string | number | object | any[] | boolean | null): void;
+      /**
+       * Creates a warn log.
+       *
+       * @param {string} event The name of the event to log. This should be unique.
+       * @param {string|number|object|array|boolean|null} data
+       *    The dynamic data relevant to the event.
+       */
+      warn(event: string, data?: string | number | object | any[] | boolean | null): void;
+    }
   }
 }

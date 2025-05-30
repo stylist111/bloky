@@ -28,6 +28,7 @@ import {TEST_PAGES_URL, TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
 export const RECENT_FIREFOX_VERSION = 86; // Latest Firefox on February 2021
 export const HIDETIMEOUT = isFuzzingServiceWorker() ? 15000 : 1500;
 export const UNHIDDENTIMEOUT = isFuzzingServiceWorker() ? 1000 : 200;
+export const ISO_DATE_REGEX = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/;
 
 function handleConnection(details, tabId, removeListeners, reject) {
   if ((details.tabId == tabId || !tabId) &&

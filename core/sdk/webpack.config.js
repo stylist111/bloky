@@ -328,6 +328,8 @@ export default (env = {}) => {
           {from: path.join(extensionFunctionalPath, "sentry-test.js")},
           {from: path.join(extensionFunctionalPath, "experiments-test.html")},
           {from: path.join(extensionFunctionalPath, "experiments-test.js")},
+          {from: path.join(extensionFunctionalPath, "telemetry-test.html")},
+          {from: path.join(extensionFunctionalPath, "telemetry-test.js")},
           ...buildVariant.manifestVersion >= 3 &&
           fs.existsSync(scriptsOutputMV3Path) ?
             [{from: scriptsOutputMV3Path}] : [],

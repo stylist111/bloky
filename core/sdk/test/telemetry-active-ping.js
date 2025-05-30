@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /*
  * This file is part of eyeo's Web Extension Ad Blocking Toolkit (EWE),
  * Copyright (C) 2006-present eyeo GmbH
@@ -30,7 +29,7 @@ import {subTestCustom1} from "./api-fixtures.js";
 import {wait} from "./polling.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 
-describe("Telemetry", function() {
+describe("Telemetry - Active Ping", function() {
   const TELEMETRY_URL = `${TEST_ADMIN_PAGES_URL}/telemetry`;
   const TELEMETRY_BEARER = "SSBhbSBhIGJlYXIuLi4gZXIuLi4gUkFXUg==";
   const TELEMETRY_STORAGE_KEY = "ewe:telemetry";

@@ -1,0 +1,278 @@
+/*
+ * This file is part of eyeo's Web Extension Ad Blocking Toolkit (EWE),
+ * Copyright (C) 2006-present eyeo GmbH
+ *
+ * EWE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * EWE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import sinon from "sinon/pkg/sinon.js";
+import expect from "expect";
+import {AbstractLogger, logLevelNamesToNumbers} from "../../../src/all/telemetry.js";
+import {default as events} from "../../../events.js";
+
+const ISO_DATE_REGEX = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/;
+
+describe("Debug Telemetry", function() {
+  let logger;
+  let spy;
+
+  function getValidatedLogCalls() {
+    return spy.getCalls().map(x => x.args);
+  }
+
+  beforeEach(function() {
+    logger = new AbstractLogger("ewe_background_test");
+    spy = sinon.spy(logger, "_validatedLog");
+
+    // The invalid events, of which there are many here, log errors to the
+    // console when they are called. It makes the test noisy, so this is to
+    // suppress them.
+    sinon.stub(console, "error");
+  });
+
+  afterEach(function() {
+    sinon.restore();
+  });
+
+  it("core/sdk/events.js has the right format", async function() {
+    expect(events).toBeInstanceOf(Object);
+
+    function checkData(validationErrors, context, data,
+                       requireDescription = true) {
+      if (typeof data != "object") {
+        validationErrors.push(`${context} is not an object`);
+        return;
+      }
+
+      if (requireDescription && typeof data.description != "string") {
+        validationErrors.push(`${context}.description is not a string`);
+      }
+
+      // Type is either a string or an array of strings. If it's a string, it
+      // should be treated as a single element array.
+      let types = data.type;
+      if (typeof types === "string") {
+        types = [types];
+      }
+
+      const validTypes = ["array", "boolean", "null", "integer", "number", "object", "string", "any"];
+      if (!types.every(type => validTypes.includes(type))) {
+        validationErrors.push(`${context}.type is not valid. Expected an array containing a subset of ${validTypes}, or a single string that is one of the above.`);
+      }
+
+      if (types.includes("object")) {
+        if (typeof data.properties != "object") {
+          validationErrors.push(`${context}.properties is not an object. It is required for objects.`);
+        }
+
+        let propertyIds = Object.keys(data.properties);
+        if (propertyIds.length == 0) {
+          validationErrors.push("${context}.properties specifies no properties");
+        }
+
+        for (let propertyId of propertyIds) {
+          checkData(validationErrors, `${context}.properties.${propertyId}`, data.properties[propertyId]);
+        }
+      }
+
+      if (types.includes("array")) {
+        if (typeof data.items != "object") {
+          validationErrors.push(`${context}.items is not an object. It is required for arrays.`);
+        }
+        checkData(validationErrors, `${context}.items`, data.items, false);
+      }
+    }
+
+    let validationErrors = [];
+
+    const moduleIds = Object.keys(events);
+    if (moduleIds.length == 0) {
+      validationErrors.push("No modules found");
+    }
+
+    for (let moduleId of moduleIds) {
+      const module = events[moduleId];
+      if (typeof module != "object") {
+        validationErrors.push(`${moduleId} is not an object`);
+        continue;
+      }
+
+      const eventIds = Object.keys(events[moduleId]);
+      if (eventIds.length == 0) {
+        validationErrors.push(`${moduleId} had no events`);
+      }
+
+      for (let eventId of eventIds) {
+        const event = events[moduleId][eventId];
+        if (typeof event != "object") {
+          validationErrors.push(`${moduleId}.${eventId} is not an object`);
+          continue;
+        }
+
+        if (typeof event.description != "string") {
+          validationErrors.push(`${moduleId}.${eventId}.description is not a string`);
+        }
+
+        if (typeof event.data !== "undefined") {
+          const data = event.data;
+          checkData(validationErrors, `${moduleId}.${eventId}.data`, data);
+        }
+      }
+    }
+
+    expect(validationErrors).toEqual([]);
+  });
+
+  it("logs some data", function() {
+    logger.debug("test_event", {potato: true});
+    expect(getValidatedLogCalls()).toEqual([
+      [
+        expect.stringMatching(ISO_DATE_REGEX),
+        logLevelNamesToNumbers.debug,
+        "test_event",
+        {potato: true}
+      ]
+    ]);
+  });
+
+  it("rejects nonserializable data", function() {
+    let cyclicData = {};
+    cyclicData.self = cyclicData;
+
+    logger.debug("test_event", cyclicData);
+    logger.debug("test_event", new Error("some message"));
+    logger.debug("test_event", () => {});
+    logger.debug("test_event", {innerArray: [1, () => {}]});
+    logger.debug("test_event", {toJSON() {}});
+    logger.debug("test_event", NaN);
+    logger.debug("test_event", Infinity);
+    logger.debug("test_event", /./);
+    logger.debug("test_event", Symbol("test"));
+    logger.debug("test_event", 9007199254740991n);
+    logger.debug("test_event", new Uint8Array(10).buffer);
+    logger.debug("test_event", Object.create({}, {hidden: {value: "secret", enumerable: false}}));
+
+    expect(getValidatedLogCalls()).toHaveLength(0);
+  });
+
+  const dataTestCases = [{
+    eventId: "test_event",
+    validData: ["good", 5, null, {}],
+    invalidData: [void 0]
+  }, {
+    eventId: "test_event_no_data",
+    validData: [void 0],
+    invalidData: ["bad", {}]
+  }, {
+    eventId: "test_event_string_data",
+    validData: ["good"],
+    invalidData: [null, 0.5, 1]
+  }, {
+    eventId: "test_event_numeric_data",
+    validData: [0.5, 1],
+    invalidData: [null, "bad", {a: 1}]
+  }, {
+    eventId: "test_event_integer_data",
+    validData: [1],
+    invalidData: [0.5, null, "bad", {a: 1}]
+  }, {
+    eventId: "test_event_null_data",
+    validData: [null],
+    invalidData: [0.5, "bad", [null]]
+  }, {
+    eventId: "test_event_optional_string_data",
+    validData: ["good", null],
+    invalidData: [1, [null], {}]
+  }, {
+    eventId: "test_event_object_data",
+    validData: [
+      {name: "Bingo", age: 3},
+      {name: "Bandit", age: 30, unknown: void 0},
+      {name: "Bluey", age: 7, additional: 35}
+    ],
+    invalidData: [
+      1,
+      [null],
+      {},
+      {name: 1, age: 3},
+      {name: "Bingo"},
+      {name: void 0, age: 5}
+    ]
+  }, {
+    eventId: "test_event_array_data",
+    validData: [["a", "b", "c"]],
+    invalidData: [1, [null], {}, ["a", "b", 3]]
+  }, {
+    eventId: "test_event_complex_data",
+    validData: [
+      "data",
+      {
+        nullable: null,
+        arrayInObject: ["yes", 1.5]
+      },
+      {
+        nullable: "a value",
+        arrayInObject: [{
+          good: true
+        }]
+      },
+      [{
+        favoriteNumber: 4
+      }, {
+        favoriteNumber: 5
+      }]
+    ],
+
+    invalidData: [
+      1,
+      {
+        nullable: 1,
+        arrayInObject: ["yes", 1.5]
+      },
+      {
+        nullable: null,
+        arrayInObject: [null]
+      },
+      {
+        nullable: null,
+        arrayInObject: [{
+          good: "potato"
+        }]
+      },
+      [{
+        favoriteNumber: null
+      }],
+      [{}]
+    ]
+  }];
+
+  for (let testCase of dataTestCases) {
+    it(`logs only the expected data for the ${testCase.eventId} event`, function() {
+      for (let data of testCase.validData) {
+        logger.debug(testCase.eventId, data);
+      }
+      for (let data of testCase.invalidData) {
+        logger.debug(testCase.eventId, data);
+      }
+
+      let expectedCalls = testCase.validData.map(data => [
+        expect.stringMatching(ISO_DATE_REGEX),
+        logLevelNamesToNumbers.debug,
+        testCase.eventId,
+        data
+      ]);
+
+      expect(getValidatedLogCalls()).toEqual(expectedCalls);
+    });
+  }
+});

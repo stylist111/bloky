@@ -18,6 +18,8 @@
 import browser from "webextension-polyfill";
 import {v4 as uuidv4} from "uuid";
 import {MILLIS_IN_HOUR, MILLIS_IN_DAY} from "adblockpluscore/lib/time.js";
+import {AbstractLogger, logLevelNumbersToNames, logLevelNamesToNumbers}
+  from "../all/telemetry.js";
 
 import {Prefs, init as initializePrefs} from "./prefs.js";
 import * as info from "./info.js";
@@ -28,6 +30,7 @@ import {default as initializer} from "./initializer.js";
 import {trace, error} from "./debugging.js";
 import {default as experiments} from "./experiments.js";
 import {premiumStatusCallback} from "./callbacks.js";
+import {PersistentState} from "./persistence.js";
 
 const TELEMETRY_STORAGE_KEY = "ewe:telemetry";
 
@@ -311,6 +314,81 @@ async function getExtensionMetadata() {
   return payload;
 }
 
+// Console logging is primarily for devs who are currently adding logging to
+// be able to see the logs, or for devs trying to reproduce something that
+// they saw in the server logs.
+let consoleLogLevel = new PersistentState(
+  "ewe:telemetry-logging-console-level",
+  browser.storage.local
+);
+
+function loggingEnabled(module, level, loggingConfig) {
+  let possibleLevels = [
+    loggingConfig.globalLevel,
+    loggingConfig.byModule ? loggingConfig.byModule[module] : null
+  ];
+  return possibleLevels.some(
+    configLevel => configLevel && level >= configLevel
+  );
+}
+
+async function consoleLog(logTime, module, level, event, data) {
+  if (loggingEnabled(module, level, await consoleLogLevel.getStateLoaded())) {
+    const logParams = [
+      logTime,
+      module,
+      logLevelNumbersToNames[level],
+      event];
+
+    if (typeof data != "undefined") {
+      logParams.push(data);
+    }
+
+    // eslint-disable-next-line no-console
+    console.log(...logParams);
+  }
+}
+
+/**
+ * @ignore
+ * Records an event.
+ *
+ * Depending on the current logging config, this may send the log to a remote
+ * server, or print the log on the console.
+ *
+ * There may be internal asynchronous processes before the log is actually sent
+ * anywhere or displayed on the console, so don't expect logs to have happened
+ * already when this function returns.
+ *
+ * @param {string} logTime When this log occurred.
+ * @param {string} module The module in which the event occurred.
+ * @param {number} level The logging level, from 1=debug to 4=warn.
+ * @param {string} event The event being logged. This should be unique.
+ * @param {string|number|Object|Array|boolean} [data]
+ */
+export function serverLogValidatedEvent(logTime, module, level, event, data) {
+  // This is currently only console logging, but the intention is for the server
+  // logging to be added here soon.
+  void consoleLog(logTime, module, level, event, data);
+}
+
+/**
+ * Represents a server logger. This is used to send data to a our
+ * telemetry server. The exact URL will be configured in this file's
+ * start function. Console logging is also provided for convenience.
+ *
+ * @param {string} module The module that this logger is for.
+ */
+export class ServerLogger extends AbstractLogger {
+  constructor(module) {
+    super(module);
+  }
+
+  _validatedLog(logTime, level, event, data) {
+    serverLogValidatedEvent(logTime, this._module, level, event, data);
+  }
+}
+
 export default {
   /**
   * @typedef {Object} TelemetryPingError
@@ -341,5 +419,67 @@ export default {
     if (value) {
       await clearStorage();
     }
+  },
+
+  /**
+    * @class {ServerLogger}
+    */
+  ServerLogger,
+
+  /**
+   * Resets the console logging level to "off".
+   * @returns {Promise} Promise that resolves when the setting is set.
+   */
+  async resetConsoleLogLevel() {
+    consoleLogLevel.clearState();
+    await consoleLogLevel.save();
+  },
+
+  /**
+   * Sets the intended console logging level.
+   *
+   * If both the global log level and a module-specific log level are set, the
+   * most verbose one takes priority.
+   *
+   * Setting the log level implies that all less verbose levels are also
+   * enabled. For example, enabling "info" logging will also enable "behavior"
+   * and "warn" logging.
+   *
+   * @param {string} level The level you want to log at. Can be one of
+   *                       "debug", "info", "behavior", "warn", or "off".
+   * @param {string?} module The specific module you want to set the log level
+   *                         for. Not passing this sets the global log level.
+   * @returns {Promise} Promise that resolves when the setting is set.
+   */
+  async setConsoleLogLevel(level, module) {
+    let newLevel = logLevelNamesToNumbers[level];
+    if (!newLevel) {
+      throw new Error(`Unknown log level: ${level}`);
+    }
+
+    let config = await consoleLogLevel.getStateLoaded();
+
+    if (module) {
+      if (newLevel == logLevelNamesToNumbers.off) {
+        if (config.byModule) {
+          delete config.byModule[module];
+        }
+      }
+      else {
+        if (!config.byModule) {
+          config.byModule = {};
+        }
+
+        config.byModule[module] = newLevel;
+      }
+    }
+    else if (newLevel == logLevelNamesToNumbers.off) {
+      delete config.globalLevel;
+    }
+    else {
+      config.globalLevel = newLevel;
+    }
+
+    await consoleLogLevel.save();
   }
 };

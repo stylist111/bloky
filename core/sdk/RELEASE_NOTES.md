@@ -26,6 +26,7 @@
   "premium"/"free" as a callback return. (EXT-779)
 - Several errors which would have previously only been logged to the console are
   now reported to our Sentry instance. (EXT-742)
+- Added the `EWE.telemetry.ServerLogger` core utility. (EXT-884)
 
 ## Fixes
 

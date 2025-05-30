@@ -98,6 +98,8 @@ export const EWE = Object.fromEntries([
   "sentry"
 ].map(name => [name, proxy([name])]));
 EWE.reporting.contentTypesMap = proxy(["reporting", "contentTypesMap"]);
+EWE.testing.serverLogger = proxy(["testing", "serverLogger"]);
+EWE.testing.altServerLogger = proxy(["testing", "altServerLogger"]);
 
 export async function setPremiumStatus(status) {
   await browser.runtime.sendMessage({type: "ewe-test:setPremiumResponse", status});

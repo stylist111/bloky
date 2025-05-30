@@ -28,7 +28,8 @@ import {
   setEndpointResponse,
   setMinTimeout,
   waitForAssertion,
-  getExistingElement
+  getExistingElement,
+  ISO_DATE_REGEX
 } from "./utils.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 import {MILLIS_IN_SECOND} from "adblockpluscore/lib/time.js";
@@ -44,7 +45,6 @@ const LOWER_VARIANT_FLAG = LOWER_VARIANT_ID + "-flag";
 const UPPER_VARIANT_FLAG = UPPER_VARIANT_ID + "-flag";
 const LOWER_HALF_USER_ID = "f47ac10b-58cc-4372-a567-0e02b2c3d479";  // Hashes with experimentid-1 to 215
 const UPPER_HALF_USER_ID = "e5c619b9-7928-4d8a-b25c-84e5df2080c2";  // Hashes with experimentid-1 to 907
-const ISO_DATE_REGEX = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/;
 const SCHEMA_ID = "1";
 const ERROR_BACKOFF_MS = 2 * MILLIS_IN_SECOND;
 const PING_INTERVAL_MS = MILLIS_IN_SECOND;
@@ -459,10 +459,12 @@ describe("Split Experiments", function() {
   });
 
   describe("Scheduled updates", function() {
+    setMinTimeout(this, 10000);
+
     async function expectNextPing(expectedNewPingCount, expectedFlags) {
       await waitForAssertion(async() => {
-        expect(await getRequestLogs(EXPERIMENT_URL))
-          .toHaveLength(expectedNewPingCount);
+        let requestLogs = await getRequestLogs(EXPERIMENT_URL);
+        expect(requestLogs.length).toBeGreaterThanOrEqual(expectedNewPingCount);
 
         for (let flag in expectedFlags) {
           expect(await EWE.experiments.getFlag(flag)).toBe(expectedFlags[flag]);
@@ -470,10 +472,34 @@ describe("Split Experiments", function() {
       });
     }
 
-    async function delayThenExpectNextPing(delay, expectedNewPingCount,
-                                           expectedFlags) {
+    async function delayThenExpectNextPing(delay, expectedFlags) {
+      let currentPingCount = (await getRequestLogs(EXPERIMENT_URL)).length;
       await new Promise(r => setTimeout(r, delay));
-      await expectNextPing(expectedNewPingCount, expectedFlags);
+      await expectNextPing(currentPingCount + 1, expectedFlags);
+    }
+
+    async function getRequestLogIntervals() {
+      let requestLogs = await getRequestLogs(EXPERIMENT_URL);
+      let diffs = [];
+
+      for (let index = 1; index < requestLogs.length; index++) {
+        let timeDifference = new Date(requestLogs[index].timestamp).getTime() -
+            new Date(requestLogs[index - 1].timestamp).getTime();
+
+        diffs.push(Math.round(timeDifference / 1000) * 1000);
+      }
+
+      const intervals = [diffs[0]];
+      let currentDiff = diffs[0];
+
+      for (let i = 1; i < diffs.length; i++) {
+        if (diffs[i] !== currentDiff) {
+          intervals.push(diffs[i]);
+          currentDiff = diffs[i];
+        }
+      }
+
+      return intervals;
     }
 
     beforeEach(async function() {
@@ -493,7 +519,7 @@ describe("Split Experiments", function() {
       });
 
       await setConfig(oneVariantConfig("updated"));
-      await delayThenExpectNextPing(PING_INTERVAL_MS, 2, {[EXPERIMENT_FLAG]: "updated"});
+      await delayThenExpectNextPing(PING_INTERVAL_MS, {[EXPERIMENT_FLAG]: "updated"});
       const updatedSyncStatus = await EWE.experiments.getSyncStatus();
       expect(updatedSyncStatus).toEqual({
         lastDownloaded: expect.stringMatching(ISO_DATE_REGEX),
@@ -502,10 +528,12 @@ describe("Split Experiments", function() {
 
       expect(updatedSyncStatus.lastDownloaded)
         .not.toBe(initialSyncStatus.lastDownloaded);
+
+      expect(await getRequestLogIntervals()).toEqual([PING_INTERVAL_MS]);
     });
 
     it("waits for the error retry delay if there is a network error", async function() {
-      setMinTimeout(this, 10000);
+      setMinTimeout(this, 15000);
 
       await setConfig(oneVariantConfig("initial"));
       await startWithTestArgs(false);
@@ -517,7 +545,7 @@ describe("Split Experiments", function() {
       });
 
       await setConfig({}, 500);
-      await delayThenExpectNextPing(PING_INTERVAL_MS, 2, {[EXPERIMENT_FLAG]: "initial"});
+      await delayThenExpectNextPing(PING_INTERVAL_MS, {[EXPERIMENT_FLAG]: "initial"});
       expect(await EWE.experiments.getSyncStatus()).toEqual({
         lastDownloaded: expect.stringMatching(ISO_DATE_REGEX),
         lastNetworkError: expect.stringMatching(ISO_DATE_REGEX),
@@ -525,11 +553,19 @@ describe("Split Experiments", function() {
       });
 
       await setConfig(oneVariantConfig("updated"));
-      await delayThenExpectNextPing(ERROR_BACKOFF_MS, 3, {[EXPERIMENT_FLAG]: "updated"});
+      await delayThenExpectNextPing(ERROR_BACKOFF_MS, {[EXPERIMENT_FLAG]: "updated"});
       expect(await EWE.experiments.getSyncStatus()).toEqual({
         lastDownloaded: expect.stringMatching(ISO_DATE_REGEX),
         errors: []
       });
+
+      await delayThenExpectNextPing(PING_INTERVAL_MS);
+
+      expect(await getRequestLogIntervals()).toEqual([
+        PING_INTERVAL_MS,
+        ERROR_BACKOFF_MS,
+        PING_INTERVAL_MS
+      ]);
     });
 
     it("pings using the error delay when the service worker is suspended after a server error [mv3-only]", async function() {
@@ -539,7 +575,12 @@ describe("Split Experiments", function() {
 
       await suspendServiceWorker(this);
       await startWithTestArgs(false);
-      await delayThenExpectNextPing(ERROR_BACKOFF_MS, 2);
+      await delayThenExpectNextPing(ERROR_BACKOFF_MS);
+
+      // This one might take longer if the service worker startup is slow. But
+      // it absolutely should not happen sooner than the backoff delay.
+      expect((await getRequestLogIntervals())[0])
+        .toBeGreaterThanOrEqual(ERROR_BACKOFF_MS);
     });
 
     it("handles HTTP 304 server response", async function() {

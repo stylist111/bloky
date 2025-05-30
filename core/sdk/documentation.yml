@@ -49,6 +49,7 @@ toc:
       - FilterMatchInfo
       - FirstRunInfo
       - Recommendation
+      - ServerLogger
       - Subscription
       - SnippetCallback
       - TelemetryPingError

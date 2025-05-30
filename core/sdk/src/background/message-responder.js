@@ -29,6 +29,7 @@ import {onContentHelloReceived} from "./content-message-deferrer.js";
 import {markActive, countBTAADetectionEvent} from "./cdp.js";
 import {default as sentry} from "./sentry.js";
 import {default as experiments} from "./experiments.js";
+import {serverLogValidatedEvent} from "./telemetry.js";
 
 async function handleMessage(message, sender) {
   trace({
@@ -77,6 +78,15 @@ async function handleMessage(message, sender) {
     case "ewe:sentry-error":
       const error = fromSerializableError(message.error);
       sentry.reportError(error);
+      break;
+    case "ewe:telemetry-log":
+      serverLogValidatedEvent(
+        message.logTime,
+        message.module,
+        message.level,
+        message.event,
+        message.data
+      );
       break;
     case "ewe:get-experiment-flag":
       const {flagId} = message;

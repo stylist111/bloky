@@ -16,3 +16,4 @@
  */
 
 export {default as experiments} from "../../front/experiments.js";
+export {default as telemetry} from "../../front/telemetry.js";

@@ -36,11 +36,14 @@ class RequestLogger {
   }
 
   logRequests(req, res, next) {
+    let timestamp = new Date().toISOString();
+
     if (this.verbose) {
-      console.log(new Date().toISOString(), req.method, req.url);
+      console.log(timestamp, req.method, req.url);
     }
 
     this.requests.push({
+      timestamp,
       method: req.method,
       url: req.url,
       path: req.path,
