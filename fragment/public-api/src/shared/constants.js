@@ -29,6 +29,12 @@ export const apiFrameUrl = "https://btloader.com/trustedIframe.html";
 export const requestEvent = "public-api.request";
 
 /**
+ * Event name for initializing the main world public API
+ * @type {string}
+ */
+export const initializeEvent = "public-api.initialize";
+
+/**
  * Event name for listening on responses for the public API
  * @type {string}
  */

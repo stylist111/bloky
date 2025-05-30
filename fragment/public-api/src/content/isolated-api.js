@@ -17,7 +17,11 @@
  */
 
 import browser from "webextension-polyfill";
-import { requestEvent, responseEvent } from "../shared/constants.js";
+import {
+  requestEvent,
+  responseEvent,
+  initializeEvent,
+} from "../shared/constants.js";
 import { getIntegrationName } from "../shared/helpers.js";
 
 const { short_name } = browser.runtime.getManifest();
@@ -75,10 +79,15 @@ async function handleCommand({ requestId, method, params }) {
 /**
  * Signals to the Main world script that the content script was initialized
  * by adding a hidden div into the page.
+ *
+ * Signals to the SW that the main world API should be initialized.
  */
-function sendReadySignal() {
+async function sendReadySignal() {
   const html = document.documentElement;
   html.dataset[extName] = "true";
+
+  // Signal SW to initialize the main world API
+  await browser.runtime.sendMessage({ type: initializeEvent });
 }
 
 /**
@@ -104,7 +113,7 @@ function start() {
     true,
   );
 
-  sendReadySignal();
+  void sendReadySignal();
 }
 
 start();

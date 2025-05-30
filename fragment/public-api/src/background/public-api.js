@@ -16,10 +16,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import browser from "webextension-polyfill";
-import { start as startMainWorldAPIInjection } from "./api-injector.js";
-import { apiFrameUrl, requestEvent } from "../shared/constants.js";
+import { prepareInlineScriptForInjection } from "@eyeo/webext-ad-filtering-solution/adblockpluscore/lib/snippets.js";
+import {
+  apiFrameUrl,
+  initializeEvent,
+  integrations,
+  requestEvent,
+  responseEvent,
+} from "../shared/constants.js";
 import apiHandlers from "./api-handlers/index.js";
 import { getIntegrationName } from "../shared/helpers.js";
+import { mainPublicApi } from "../content/main-public-api.js";
 
 const { short_name, version } = browser.runtime.getManifest();
 const name = getIntegrationName(short_name);
@@ -41,6 +48,37 @@ const name = getIntegrationName(short_name);
  */
 
 /**
+ * Injects a script into the main world context of a frame
+ *
+ * @param {object} details - The details for the
+ * @param {number} details.tabId - The id of the tab
+ * @param {number} details.frameId - The id of the frame
+ * @param {Function} details.func - The function to be inserted into main world
+ * @param {any[]} details.args - The parameters for the function.
+ */
+async function injectScriptInFrame({ tabId, frameId, func, args }) {
+  if (browser.scripting && browser.scripting.executeScript) {
+    if (Object.values(browser.scripting.ExecutionWorld).includes("MAIN")) {
+      return browser.scripting.executeScript({
+        target: { tabId, frameIds: [frameId] },
+        world: "MAIN",
+        injectImmediately: true,
+        func,
+        args,
+      });
+    }
+  }
+
+  const executable = prepareInlineScriptForInjection(func, ...args);
+  return browser.tabs.executeScript(tabId, {
+    frameId,
+    code: executable,
+    matchAboutBlank: true,
+    runAt: "document_start",
+  });
+}
+
+/**
  * Initializes the Public API fragment.
  *
  * @param {StartParams} StartParams The start parameters
@@ -51,6 +89,33 @@ export function start({
   isPremiumActive,
   getEncodedLicense,
 }) {
+  // Initialize the main world API
+  port.on(initializeEvent, async (message, sender) => {
+    const tabId = (sender.tab || {}).id;
+    const frameId = sender.frameId || 0;
+
+    if (!tabId || !frameId) {
+      return {
+        name,
+        version,
+        error: "invalid_invocation",
+      };
+    }
+
+    await injectScriptInFrame({
+      tabId,
+      frameId,
+      func: mainPublicApi,
+      args: [
+        {
+          requestEvent,
+          responseEvent,
+          integrations,
+        },
+      ],
+    });
+  });
+
   port.on(requestEvent, async (message, sender) => {
     const tabId = (sender.tab || {}).id;
 
@@ -93,6 +158,5 @@ export function start({
   });
 
   const iframeUrl = new URL(apiFrameUrl);
-  addTrustedMessageTypes(iframeUrl.origin, [requestEvent]);
-  startMainWorldAPIInjection();
+  addTrustedMessageTypes(iframeUrl.origin, [requestEvent, initializeEvent]);
 }

@@ -1,6 +1,7 @@
 # Unreleased
 
 - Fixed an issue with the incorrect premium license status being shown to users. (EXT-930)
+- Fix Public API Main World script initialization.
 
 # 4.22.0 - 2025-05-20
 

@@ -25,6 +25,13 @@ vi.mock("webextension-polyfill", () => ({
     runtime: {
       getManifest: vi.fn(() => manifest),
     },
+    scripting: {
+      ExecutionWorld: { MAIN: "MAIN" },
+      executeScript: vi.fn(),
+    },
+    tabs: {
+      executeScript: vi.fn(),
+    },
   },
 }));
 

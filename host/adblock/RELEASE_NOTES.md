@@ -1,6 +1,7 @@
 # Unreleased
 
 - Fixed a typo in the AdBlock debug data related to the total ping count. (noissue)
+- Fix Public API Main World script initialization. (noissue)
 
 # 6.21.1 - 2025-05-27
 

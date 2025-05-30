@@ -1,14 +1,16 @@
+import browser from "webextension-polyfill";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { start } from "~/background/public-api";
 import apiHandlers from "~/background/api-handlers";
-import { start as mockStartMainWorldAPIInjection } from "~/background/api-injector";
-import { apiFrameUrl, requestEvent } from "~/shared/constants";
+import {
+  apiFrameUrl,
+  requestEvent,
+  initializeEvent,
+  integrations,
+  responseEvent,
+} from "~/shared/constants";
 import { getIntegrationName } from "~/shared/helpers.js";
 import { port as mockPort } from "../mocks/port";
-
-vi.mock("~/background/api-injector.js", () => ({
-  start: vi.fn(),
-}));
 
 describe("Public API - Background", () => {
   const extVersion = manifest.version;
@@ -19,14 +21,16 @@ describe("Public API - Background", () => {
   const mockGetEncodedLicense = vi.fn(() => "test-license");
 
   // Helper to initialize the API and return the event callback
-  function setupAndGetEventCallback() {
+  function setupAndGetEventCallback(eventName = requestEvent) {
+    const callNo = eventName === requestEvent ? 1 : 0;
+
     start({
       port: mockPort,
       addTrustedMessageTypes: mockAddTrustedMessageTypes,
       isPremiumActive: mockIsPremiumActive,
       getEncodedLicense: mockGetEncodedLicense,
     });
-    return mockPort.on.mock.calls[0][1];
+    return mockPort.on.mock.calls[callNo][1];
   }
 
   beforeEach(() => {
@@ -47,6 +51,11 @@ describe("Public API - Background", () => {
       getEncodedLicense: mockGetEncodedLicense,
     });
 
+    expect(mockPort.on).toHaveBeenCalledTimes(2);
+    expect(mockPort.on).toHaveBeenCalledWith(
+      initializeEvent,
+      expect.any(Function),
+    );
     expect(mockPort.on).toHaveBeenCalledWith(
       requestEvent,
       expect.any(Function),
@@ -55,11 +64,11 @@ describe("Public API - Background", () => {
     const parsedUrl = new URL(apiFrameUrl);
     expect(mockAddTrustedMessageTypes).toHaveBeenCalledWith(parsedUrl.origin, [
       requestEvent,
+      initializeEvent,
     ]);
-    expect(mockStartMainWorldAPIInjection).toHaveBeenCalled();
   });
 
-  it("should return error if tabId is missing", async () => {
+  it("should return error if tabId is missing when receiving a command", async () => {
     const eventCallback = setupAndGetEventCallback();
     const message = { method: "someMethod", params: {} };
     const sender = { url: "http://example.com" };
@@ -70,6 +79,94 @@ describe("Public API - Background", () => {
       name: integrationName,
       version: extVersion,
       error: "invalid_invocation",
+    });
+  });
+
+  it("should return error if tabId is missing when initializing the Main world API", async () => {
+    const eventCallback = setupAndGetEventCallback(initializeEvent);
+    const message = {};
+    const sender = { url: "http://example.com" };
+
+    const response = await eventCallback(message, sender);
+
+    expect(response).toEqual({
+      name: integrationName,
+      version: extVersion,
+      error: "invalid_invocation",
+    });
+  });
+
+  it("should return error if frame id is missing Main world API", async () => {
+    const eventCallback = setupAndGetEventCallback(initializeEvent);
+    const message = {};
+    const sender = { tab: { id: 123 }, url: "http://example.com" };
+
+    const response = await eventCallback(message, sender);
+
+    expect(response).toEqual({
+      name: integrationName,
+      version: extVersion,
+      error: "invalid_invocation",
+    });
+  });
+
+  it("should return error if frame id is 0 Main world API", async () => {
+    const eventCallback = setupAndGetEventCallback(initializeEvent);
+    const message = {};
+    const sender = { tab: { id: 123 }, frameId: 0, url: "http://example.com" };
+
+    const response = await eventCallback(message, sender);
+
+    expect(response).toEqual({
+      name: integrationName,
+      version: extVersion,
+      error: "invalid_invocation",
+    });
+  });
+
+  it("should insert Main World API on MV3", async () => {
+    const eventCallback = setupAndGetEventCallback(initializeEvent);
+    const tabId = 123;
+    const frameId = 1234;
+    const sender = { tab: { id: tabId }, frameId, url: "http://example.com" };
+
+    await eventCallback({}, sender);
+
+    expect(browser.scripting.executeScript).toHaveBeenCalledWith({
+      target: { tabId, frameIds: [frameId] },
+      world: "MAIN",
+      injectImmediately: true,
+      func: expect.any(Function),
+      args: [
+        {
+          requestEvent,
+          responseEvent,
+          integrations,
+        },
+      ],
+    });
+
+    expect(browser.tabs.executeScript).not.toHaveBeenCalled();
+  });
+
+  it("should insert Main World API on MV2", async () => {
+    Object.defineProperty(browser.scripting, "executeScript", {
+      value: undefined,
+      configurable: true,
+    });
+    const eventCallback = setupAndGetEventCallback(initializeEvent);
+    const message = { method: "someMethod", params: {} };
+    const tabId = 123;
+    const frameId = 1234;
+    const sender = { tab: { id: tabId }, frameId, url: "http://example.com" };
+
+    await eventCallback(message, sender);
+
+    expect(browser.tabs.executeScript).toHaveBeenCalledWith(tabId, {
+      frameId,
+      code: expect.any(String),
+      matchAboutBlank: true,
+      runAt: "document_start",
     });
   });
 
