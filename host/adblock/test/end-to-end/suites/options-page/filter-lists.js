@@ -155,7 +155,7 @@ export default () => {
     await waitForNotDisplayed(`[name="${name}"]`);
   });
 
-  it.skip("adds and removes a filter list via URL", async function () {
+  it("adds and removes a filter list via URL", async function () {
     const name = `url:${subscriptionUrl}`;
     const checkboxSelector = "#customFilterList_1";
 

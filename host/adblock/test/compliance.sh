@@ -3,7 +3,7 @@
 set -xeu
 
 # From the Snippets tests, only "simulate-mouse-event" will run by using a nested negation (?!)
-TESTS_TO_EXCLUDE="Subscriptions|Image Exception|iFrame with subdomains Exception|Blocking|Snippets.(?!simulate-mouse-event)"
+TESTS_TO_EXCLUDE="Subscriptions|Snippets.(?!simulate-mouse-event)"
 
 rm -rf testpages.adblockplus.org
 git clone https://gitlab.com/eyeo/developer-experience/testpages.adblockplus.org

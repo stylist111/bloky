@@ -221,7 +221,7 @@ export default () => {
     await checkSubscriptionsState([{ name, enabled: true }], { timeout: 3000 });
   });
 
-  it.skip("adds and removes a filter list via URL", async function () {
+  it("adds and removes a filter list via URL", async function () {
     await setFilterListUrl(subscriptionUrl);
     await checkSubscriptionsState([{ name: subscriptionUrl, enabled: true }]);
 
