@@ -646,6 +646,14 @@ premium-filter-list-title {
   margin-bottom: 8px;
 }
 
+#dark_theme #txtFiltersAdvanced,
+#dark_theme #txtExcludeFiltersAdvanced,
+#dark_theme #debugInfo {
+  /* address overwrites from component library */
+  background-color: unset;
+  border-color: unset;
+}
+
 .customize-entry-table {
   width: 100%;
   line-height: 25px;
