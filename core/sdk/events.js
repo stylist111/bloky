@@ -1,4 +1,9 @@
 export default {
+  adblock_popup: {
+    options_clicked: {
+      description: "User clicked the gear icon"
+    }
+  },
   ewe_background_test: {
     test_event: {
       description: "A logging test event for various types of data",

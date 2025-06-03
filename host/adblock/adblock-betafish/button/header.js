@@ -21,6 +21,8 @@
 /* eslint-disable import/extensions */
 import { getTabId, closePopup, sendMessageWithNoResponse } from "./utils.js";
 
+const serverLogger = new modulesAsGlobal.ewe.telemetry.ServerLogger("adblock_popup");
+
 let template;
 
 const openHomePage = async () => {
@@ -33,6 +35,7 @@ const openHomePage = async () => {
 const openOptionsPage = async () => {
   const popupMenuDCCtaClosedKey = "popup_menu_dc_cta_closed";
   storageSet(popupMenuDCCtaClosedKey, true);
+  serverLogger.behavior("options_clicked");
   sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "options_clicked" });
   await browser.runtime.sendMessage({
     command: "openTab",
