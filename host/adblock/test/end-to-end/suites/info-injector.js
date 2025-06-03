@@ -28,7 +28,7 @@ import {
   getUserIdFromStorage,
   getPopupBlockedAdsTotalCount,
   initOptionsPremiumTab,
-  initOptionsGeneralTab,
+  getExperimentFlagsFromExtension,
 } from "../utils/page.js";
 
 export const testUrl = "https://getadblock.com";
@@ -47,20 +47,13 @@ export async function isPremiumLabelPresent() {
   }
 }
 
-async function getExperimentFlags() {
-  await initOptionsGeneralTab(getOptionsHandle());
-  return driver.executeScript(() => {
-    return modulesAsGlobal?.ewe?.experiments?.getFlags();
-  });
-}
-
 export async function getActualExtensionData() {
   const id = await getUserIdFromStorage(getOptionsHandle());
   const blockCount = await blockAds(-1, maxAdsBlocked, getPopupBlockedAdsTotalCount);
   await prepareExtensionHook();
   const { version } = extension;
   const isPremium = await isPremiumLabelPresent();
-  const experimentFlags = await getExperimentFlags();
+  const experimentFlags = await getExperimentFlagsFromExtension();
   return { id, isPremium, version, blockCount, experimentFlags };
 }
 

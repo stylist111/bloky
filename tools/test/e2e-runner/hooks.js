@@ -198,6 +198,7 @@ export async function screenshotsHook() {
 
   let title = currentTest.state === "failed" ? currentTest.title : currentHook.title;
   title = title.replaceAll(" ", "_").replaceAll('"', "");
+  await driver.switchTo().defaultContent();
   await screenshot(title);
 }
 

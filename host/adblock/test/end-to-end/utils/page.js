@@ -447,3 +447,57 @@ export async function enablePremiumProgrammatically() {
     throw new Error(`Unexpected premium status after activation: ${premiumStatusText}`);
   }
 }
+
+export async function getExperimentFlagsFromExtension() {
+  const currentHandle = await driver.getWindowHandle();
+  const optionsHandle = await getOptionsHandle();
+  await driver.switchTo().window(optionsHandle);
+
+  // wait for the ewe module to be available
+  await driver.wait(
+    async () => {
+      const result = await driver.executeScript(() => {
+        return !!window.modulesAsGlobal.ewe;
+      });
+      return result;
+    },
+    5000,
+    "Timeout waiting for the ewe module to be available",
+  );
+
+  const experimentFlags = await driver.executeAsyncScript(async (callback) => {
+    const flags = await window.modulesAsGlobal.ewe.experiments.getFlags();
+    callback(flags);
+  });
+
+  await driver.switchTo().window(currentHandle);
+  return experimentFlags;
+}
+
+export async function sendExtCommandInTrustedIframe(trustedIframeHandle, method, params) {
+  const currentHandle = await driver.getWindowHandle();
+  await driver.switchTo().frame(trustedIframeHandle);
+
+  // make sure the public API is available
+  await driver.wait(
+    async () => {
+      const result = await driver.executeScript(() => {
+        return !!window.sendExtCommand;
+      });
+      return result;
+    },
+    1000,
+    "Timeout waiting for public API to be available",
+  );
+
+  const responses = await driver.executeAsyncScript(
+    async (m, p, callback) => {
+      const result = await window.sendExtCommand({ method: m, params: p });
+      callback(result);
+    },
+    method,
+    params,
+  );
+  await driver.switchTo().window(currentHandle);
+  return responses;
+}
