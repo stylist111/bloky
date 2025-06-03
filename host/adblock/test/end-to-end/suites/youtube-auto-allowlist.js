@@ -28,6 +28,16 @@ export default () => {
 
     const tabId = await autoAllowlistsYoutube();
 
+    await initOptionsGeneralTab(getOptionsHandle());
+
+    const returnedFilters = await driver.executeAsyncScript(async (callback) => {
+      const filters = await browser.runtime.sendMessage({ type: "filters.get" });
+      callback(filters);
+    });
+
+    expect(returnedFilters[0].text).toEqual("@@||youtube.com^$document");
+    expect(returnedFilters[0].type).toEqual("allowing");
+
     await initPopupPage(tabId);
 
     const domainPausedText = await getDisplayedElement("#domain_paused_subsection", {

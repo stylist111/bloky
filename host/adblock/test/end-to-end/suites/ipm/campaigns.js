@@ -29,7 +29,11 @@ import { expect } from "expect";
 import { findUrl, openNewTab } from "@eyeo/test-utils/driver";
 import { localTestPageUrl } from "@eyeo/test-utils/urls";
 import { updateUrl } from "../../utils/urls.js";
-import { getUserIdFromInstallPage, initOptionsGeneralTab } from "../../utils/page.js";
+import {
+  getUserIdFromInstallPage,
+  initOptionsGeneralTab,
+  getUserIdFromStorage,
+} from "../../utils/page.js";
 
 export default () => {
   after(async function () {
@@ -38,6 +42,9 @@ export default () => {
     await initOptionsGeneralTab(getOptionsHandle());
     await setUserId(getOptionsHandle, originalUserId);
     await reloadExtension(initOptionsGeneralTab);
+
+    const currentUserId = await getUserIdFromStorage(getOptionsHandle());
+    expect(currentUserId).toEqual(originalUserId);
   });
 
   it("triggers a new tab campaign", async function () {
