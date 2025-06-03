@@ -3,6 +3,7 @@
 - Fixed a typo in the AdBlock debug data related to the total ping count. (noissue)
 - Fixed an issue with the display of text on the Customize tab of the AdBlock Option page with the dark theme enabled. (EXT-835)
 - Fix Public API Main World script initialization. (noissue)
+- Store installation date in prefs. (EXT-959)
 
 # 6.21.1 - 2025-05-27
 

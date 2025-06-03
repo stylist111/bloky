@@ -468,6 +468,13 @@ defaults.uboDetected = 0;
 defaults.uboDetectionLastRun = 0;
 
 /**
+ * A timestamp that indicates when the extension was installed
+ *
+ * @type {number}
+ */
+defaults.installDate = 0;
+
+/**
  * @namespace
  * @static
  */

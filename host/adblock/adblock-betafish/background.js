@@ -725,17 +725,32 @@ initialize
   });
 
 // Create the "blockage stats" for the uninstall logic ...
-browser.runtime.onInstalled.addListener((details) => {
+browser.runtime.onInstalled.addListener(async (details) => {
   if (details.reason === "install") {
+    const now = Date.now();
+
     browser.storage.local.get("blockage_stats").then((response) => {
       const { blockage_stats } = response;
       if (!blockage_stats) {
         const data = {};
-        data.start = Date.now();
+        data.start = now;
         data.version = 1;
         chromeStorageSetHelper("blockage_stats", data);
       }
     });
+
+    await Prefs.untilLoaded;
+    await Prefs.set("installDate", now);
+  } else if (details.reason === "update") {
+    // TODO: remove this migration after clients upgrade to newer versions
+    await Prefs.untilLoaded;
+    const installDate = await Prefs.get("installDate");
+    if (!installDate) {
+      const { blockage_stats } = await browser.storage.local.get("blockage_stats");
+
+      const start = blockage_stats && blockage_stats.start ? blockage_stats.start : Date.now();
+      await Prefs.set("installDate", start);
+    }
   }
 });
 

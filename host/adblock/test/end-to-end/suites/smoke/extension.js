@@ -101,6 +101,23 @@ export default () => {
     expect(actualParams).toEqual(expectedParams);
   });
 
+  it("sets the install date", async function () {
+    await driver.switchTo().window(getOptionsHandle());
+
+    const installDate = await driver.executeScript(() => {
+      return browser.storage.local
+        .get("pref:installDate")
+        .then((data) => data["pref:installDate"] || null);
+    });
+
+    const extensionDate = new Date(installDate);
+    const now = new Date();
+
+    expect(extensionDate.getFullYear()).toEqual(now.getFullYear());
+    expect(extensionDate.getMonth()).toEqual(now.getMonth());
+    expect(extensionDate.getDate()).toEqual(now.getDate());
+  });
+
   it("displays the default filter lists state", async function () {
     await initOptionsFiltersTab(getOptionsHandle());
 

@@ -36,6 +36,7 @@ import { start as startNewTab } from "../../new-tab/background";
 import { start as startOnPageDialog } from "../../onpage-dialog/background";
 import { start as startPremiumOnboarding } from "../../premium-onboarding/background";
 import { start as startPremiumSubscriptions } from "../../premium-subscriptions/background";
+import { start as startFirstRun } from "../../first-run/background";
 import {
   ReadyState,
   setReadyState,
@@ -123,6 +124,7 @@ async function bootstrap(): Promise<void> {
     }
   });
 
+  startFirstRun();
   setReadyState(ReadyState.started);
 }
 
