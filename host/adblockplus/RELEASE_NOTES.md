@@ -1,5 +1,9 @@
 # Unreleased
 
+# 4.22.1 - 2025-06-03
+
+This release contains bugfixes and under-the-hood changes.
+
 - Fixed an issue with the incorrect premium license status being shown to users. (EXT-930)
 - Fix Public API Main World script initialization.
 - Store installation date in prefs. (EXT-959)
