@@ -30,10 +30,10 @@ const acceptedLevelsByLevel = new Map([
   ["debug", ["warn", "behavior", "info", "debug"]]
 ]);
 
-const module1 = "ewe_background_test";
-const module2 = "ewe_background_test_alternate";
-const contentScriptModule = "ewe_content_api_test";
-const uiPageModule = "ewe_ui_api_test";
+const module1 = "test_ewe_background";
+const module2 = "test_ewe_ui_api";
+const contentScriptModule = "test_ewe_content_api";
+const uiPageModule = "test_ewe_ui_api";
 
 function getConsoleLogs() {
   // eslint-disable-next-line no-console

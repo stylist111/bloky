@@ -26,6 +26,7 @@ import GenerateJsonPlugin from "generate-json-webpack-plugin";
 import CopyPlugin from "copy-webpack-plugin";
 import Dotenv from "dotenv-webpack";
 import {createRequire} from "module";
+import {default as events} from "./events.js";
 
 const require = createRequire(import.meta.url);
 
@@ -210,6 +211,7 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath,
     },
     plugins: [
       new GenerateJsonPlugin("package.json", {type: "commonjs"}, null, 2),
+      new GenerateJsonPlugin("events.json", events, null, 2),
       ...commonPlugins()
     ]
   };

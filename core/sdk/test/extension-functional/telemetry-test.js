@@ -1,4 +1,4 @@
-const serverLogger = new EWE.telemetry.ServerLogger("ewe_ui_api_test");
+const serverLogger = new EWE.telemetry.ServerLogger("test_ewe_ui_api");
 
 function handleMessage({type, data}) {
   switch (type) {

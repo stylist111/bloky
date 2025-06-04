@@ -136,21 +136,22 @@ function matchesEventSchema(data, dataSchema) {
  * @param {string} module The module that this logger is for.
  */
 export class AbstractLogger {
-  constructor(module) {
+  constructor(module, defaultEvents = events) {
     this._module = module;
+    this._events = defaultEvents;
 
-    if (!events[this._module]) {
+    if (!this._events[this._module]) {
       console.error(`Unknown module: ${module}. ` +
                     "Did you remember to add it to core/sdk/events.js?");
     }
   }
 
   _log(level, event, data) {
-    if (!events[this._module]) {
+    if (!this._events[this._module]) {
       return;
     }
 
-    if (!events[this._module][event]) {
+    if (!this._events[this._module][event]) {
       console.error(`Unknown event: ${event} in module: ${this._module}. ` +
         "Did you remember to add it to core/sdk/events.js?");
       return;
@@ -161,7 +162,7 @@ export class AbstractLogger {
       return;
     }
 
-    const dataSchema = events[this._module][event].data;
+    const dataSchema = this._events[this._module][event].data;
     if (!matchesEventSchema(data, dataSchema)) {
       console.error(`Data for event: ${event} in module: ${this._module} does not match the schema ` +
         "provided in core/sdk/events.js. ", {data, dataSchema});

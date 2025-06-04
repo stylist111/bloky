@@ -21,7 +21,7 @@ const flagName = "onboarding_flow";
 const flagValue = "test-content-script-flag";
 const elemId = "experiments-content-api-test";
 
-const serverLogger = new ewe.telemetry.ServerLogger("ewe_content_api_test");
+const serverLogger = new ewe.telemetry.ServerLogger("test_ewe_content_api");
 
 async function startExperiment() {
   const flag = await ewe.experiments.getFlag(flagName);

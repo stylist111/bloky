@@ -55,8 +55,8 @@ import {_clear} from "./frame-state.js";
 import * as experiments from "./experiments.js";
 import * as sentry from "./sentry.js";
 
-const serverLogger = new telemetry.default.ServerLogger("ewe_background_test");
-const altServerLogger = new telemetry.default.ServerLogger("ewe_background_test_alternate");
+const serverLogger = new telemetry.default.ServerLogger("test_ewe_background");
+const altServerLogger = new telemetry.default.ServerLogger("test_ewe_ui_api");
 
 export default {
   ...sitekey, // everything exported from "sitekey.js"
