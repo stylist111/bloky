@@ -104,11 +104,20 @@ export default () => {
   it("sets the install date", async function () {
     await driver.switchTo().window(getOptionsHandle());
 
-    const installDate = await driver.executeScript(() => {
-      return browser.storage.local
-        .get("pref:installDate")
-        .then((data) => data["pref:installDate"] || null);
-    });
+    let installDate = 0;
+    await wait(
+      async () => {
+        installDate = await driver.executeScript(() => {
+          return browser.runtime.sendMessage({
+            type: "prefs.get",
+            key: "installDate",
+          });
+        });
+        return installDate !== 0;
+      },
+      5000,
+      "Expected install date preference to be set",
+    );
 
     const extensionDate = new Date(installDate);
     const now = new Date();
