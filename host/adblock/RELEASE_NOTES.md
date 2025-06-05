@@ -1,5 +1,7 @@
 # Unreleased
 
+- Update non-partner detection check
+
 # 6.21.2 - 2025-06-03
 
 This release contains bugfixes and under-the-hood changes.

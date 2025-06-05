@@ -40,7 +40,7 @@ const urlMatches = [
  * @returns {boolean} The result of the checks.
  */
 function uboDetection(eventName: string): boolean {
-  const jsonIn = `{"require":{"0":{"3":{"0":{"__bbox":{"require":[{"3":{"1":{"__bbox":{"result":{"data":[{"ads_data":{"__typename":"this_will_be_removed"}}]}}}}}]}}}}}}`;
+  const jsonIn = `{"require":{"0":{"3":{"0":{"__bbox":{"require":[{"3":{"1":{"__bbox":{"result":{"data":{"serpResponse":{"results":{"edges":[{"rendering_strategy":{"view_model":{"story":{"sponsored_data":{"ad_id":"this_will_be_removed"}}}}}]}}}}}}}}]}}}}}}`;
 
   const jsonOut = JSON.stringify(JSON.parse(jsonIn));
   const XHRChanged = XMLHttpRequest.toString().includes("uboLog");
