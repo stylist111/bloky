@@ -36,7 +36,7 @@ export const startInfo: StartInfo = {
   prefs,
   logger,
   licensing: {
-    isLicenseValid() {
+    async isLicenseValid() {
       const { isActive } = getPremiumState();
       return isActive;
     }

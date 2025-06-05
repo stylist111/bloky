@@ -135,7 +135,7 @@ async function getDeviceData(): Promise<DeviceData> {
       ...(await getBaseAttributes()),
       extension_id: browser.runtime.id,
       blocked_total: await getBlockCount(),
-      license_status: licensing.isLicenseValid()
+      license_status: (await licensing.isLicenseValid())
         ? LicenseState.active
         : LicenseState.inactive,
     },

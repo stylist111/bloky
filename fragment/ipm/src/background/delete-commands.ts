@@ -82,11 +82,10 @@ export function isDeleteBehavior(
 }
 
 /**
- * Extracts delete-commands behavior from the given command.
+ * Extracts delete-commands behavior from the given command
  *
- * @param command - The command to extract the behavior from
- * @returns The behavior of the command, or `null` if the given command is
- *          not a valid NewTabCommand
+ * @param command - Command to extract the behavior from
+ * @returns delete-commands behavior (or null, if command is invalid)
  */
 function getBehavior(command: Command): DeleteBehavior | null {
   if (!isDeleteCommand(command)) {
@@ -106,13 +105,12 @@ function getBehavior(command: Command): DeleteBehavior | null {
 }
 
 /**
- * Extracts delete-commands content from the given command.
+ * Extracts delete-commands content from the given command
  *
  * Currently there is no content in the IPM Command, so this will always
  * return an empty `Content` object.
  *
- * @param command - The command to extract the content from
- * @returns The content (always an empty object)
+ * @returns delete-commands content
  */
 function getContent(): Content {
   return {};

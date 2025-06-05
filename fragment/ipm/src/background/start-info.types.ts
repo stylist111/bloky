@@ -40,7 +40,7 @@ interface Logger {
 }
 
 interface Licensing {
-  isLicenseValid: () => boolean;
+  isLicenseValid: () => Promise<boolean>;
 }
 
 interface UserAndHostInformation {

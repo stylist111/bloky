@@ -19,14 +19,16 @@ import {
   Command,
   CommandHandler,
   CommandName,
+  Content,
   defaultLicenseState,
   ParamDefinitionList,
   isSafeUrl,
-  isValidLicenseStates,
+  isValidLicenseStateList,
   setCommandActor,
   validateParams,
   isEmptyOrPositiveNumber,
-} from "../../../ipm/background";
+} from "@eyeo-fragments/ipm/background";
+
 import * as logger from "~/utilities/background";
 import {
   CreationMethod,
@@ -47,7 +49,7 @@ const paramDefinitionList: ParamDefinitionList<NewTabParams> = [
   },
   {
     name: "license_state_list",
-    validate: isValidLicenseStates,
+    validate: isValidLicenseStateList,
   },
   {
     name: "method",
@@ -99,11 +101,10 @@ export function isNewTabBehavior(candidate: unknown): candidate is NewTabBehavio
 }
 
 /**
- * Extracts new tab behavior from command
+ * Extracts new-tab behavior from the given command
  *
- * @param command - Command
- *
- * @returns null
+ * @param command - Command to extract the behavior from
+ * @returns new-tab behavior (or null, if command is invalid)
  */
 function getBehavior(command: Command): NewTabBehavior | null {
   if (!isNewTabCommand(command)) {
@@ -121,16 +122,15 @@ function getBehavior(command: Command): NewTabBehavior | null {
 }
 
 /**
- * Extracts new tab content from command
- * Currently there is no content in the IPM Command
- * so it returns null
+ * Extracts new-tab content from the given command
  *
- * @param command - Command
+ * Currently there is no content in the IPM Command, so this will always
+ * return an empty `Content` object.
  *
- * @returns null
+ * @returns new-tab content
  */
-function getContent(): null {
-  return null;
+function getContent(): Content {
+  return {};
 }
 
 /**

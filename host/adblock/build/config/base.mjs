@@ -50,7 +50,6 @@ export default {
           "adblock-betafish/messaging/premium-message-responder.js",
           "adblock-betafish/messaging/message-responder.js",
           "adblock-betafish/api/protected/background/getadblock.js",
-          "adblock-betafish/ipm/background/index.ts",
           "adblock-betafish/onpage-dialog/background/index.ts",
           "adblock-betafish/new-tab/background/index.ts",
         ],
@@ -114,7 +113,8 @@ export default {
       },
       {
         dest: "cookie-banner-detection.preload.js",
-        src: ["adblock-betafish/ipm/cookie-banner-detection/content/index.ts"],
+        package: "@eyeo-fragments/ipm",
+        src: ["/cookie-banner-detection/content/index.js"],
       },
     ],
   },

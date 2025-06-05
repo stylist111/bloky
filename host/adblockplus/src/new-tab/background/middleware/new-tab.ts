@@ -104,11 +104,10 @@ export function isNewTabBehavior(
 }
 
 /**
- * Extracts new tab behavior from the given command.
+ * Extracts new-tab behavior from the given command
  *
- * @param command - The command to extract the behavior from
- * @returns The behavior of the command, or `null` if the given command is
- *  not a valid NewTabCommand
+ * @param command - Command to extract the behavior from
+ * @returns new-tab behavior (or null, if command is invalid)
  */
 function getBehavior(command: Command): NewTabBehavior | null {
   if (!isNewTabCommand(command)) {
@@ -130,13 +129,12 @@ function getBehavior(command: Command): NewTabBehavior | null {
 }
 
 /**
- * Extracts new tab content from the given command.
+ * Extracts new-tab content from the given command
  *
  * Currently there is no content in the IPM Command, so this will always
  * return an empty `Content` object.
  *
- * @param command - The command to extract the content from
- * @returns The content (always an empty object)
+ * @returns new-tab content
  */
 function getContent(): Content {
   return {};

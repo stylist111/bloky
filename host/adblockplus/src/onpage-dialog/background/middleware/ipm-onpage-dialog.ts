@@ -89,11 +89,10 @@ const paramDefinitionList: ParamDefinitionList<DialogParams> = [
 ];
 
 /**
- * Extracts on-page dialog behavior from command
+ * Extracts on-page dialog behavior from the given command
  *
- * @param command - Command
- *
- * @returns on-page dialog behavior
+ * @param command - Command to extract the behavior from
+ * @returns on-page dialog behavior (or null, if command is invalid)
  */
 function getBehavior(command: Command): DialogBehavior | null {
   if (!isDialogCommand(command)) {
@@ -115,11 +114,10 @@ function getBehavior(command: Command): DialogBehavior | null {
 }
 
 /**
- * Extracts on-page dialog content from command
+ * Extracts on-page dialog content from the given command
  *
  * @param command - Command
- *
- * @returns on-page dialog content
+ * @returns on-page dialog content (or null, if command is invalid)
  */
 function getContent(command: Command): DialogContent | null {
   if (!isDialogCommand(command)) {

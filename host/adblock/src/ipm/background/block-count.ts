@@ -15,31 +15,14 @@
  * along with AdBlock.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { Behavior, Command } from "./command-library.types";
+import { Prefs } from "~/alias/prefs";
 
 /**
- * Delete-commands behavior
+ * Retrieves the number of blocked requests
+ *
+ * @returns number of blocked requests
  */
-export interface DeleteBehavior extends Behavior {
-  /**
-   * List of IPM command IDs to delete
-   */
-  commandIds: string[];
+export async function getBlockCount(): Promise<number> {
+  await Prefs.untilLoaded;
+  return Prefs.get("blocked_total");
 }
-
-/**
- * Parameter key value to delete all commands
- */
-export const deleteAllKey = "__all__";
-
-/**
- * Delete-commands IPM command parameters
- */
-export interface DeleteParams {
-  commands: string;
-}
-
-/**
- * A valid IPM command to delete commands
- */
-export type DeleteCommand = Command & DeleteParams;

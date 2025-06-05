@@ -18,10 +18,10 @@
 /* For ESLint: List any global identifiers used in this file below */
 /* global browser */
 
-import * as logger from "../../utilities/background/logger.ts";
+import { clearEvents, executeIPMCommands, getPayload } from "@eyeo-fragments/ipm/background";
 
+import * as logger from "../../utilities/background/logger.ts";
 import { chromeStorageSetHelper } from "../../utilities/background/bg-functions";
-import { clearEvents, executeIPMCommands, getPayload } from "../../ipm/background/index.ts";
 import postData from "../../fetch-util";
 import { Prefs } from "../../alias/prefs";
 import ServerMessages from "../../servermessages";

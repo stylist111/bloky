@@ -61,7 +61,7 @@ function bnToBytes(bn) {
  * bitmap due to limited space in the uninstall URL.
  * @link https://eyeo.atlassian.net/browse/DATA-2793
  *
- * @returns {string} split experiments assignments
+ * @returns {Promise<string>} split experiments assignments
  */
 export async function getExperiments() {
   let variantsBitmap = 0n;

@@ -15,25 +15,8 @@
  * along with AdBlock.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* For ESLint: List any global identifiers used in this file below */
-
-import { commandStorageKey } from "~/ipm/background/command-library.types";
-
-import { eventStorageKey } from "~/ipm/background/data-collection.types";
-
-const IPM_CONSTANTS = [
-  /* IPM values */
-  "ipm_commands_stats", // TODO: When this is read from Prefs, it's alway an empty object. Remove?
-  commandStorageKey,
-  eventStorageKey,
-
-  /* OPD values */
-  "onpage_dialog_command_stats",
-  "onpage_dialog_timing_configurations",
-];
-
 const NO_DATA = "no data";
 
 const PING_COUNT_STORAGE_KEY = "total_pings";
 
-export { IPM_CONSTANTS, NO_DATA, PING_COUNT_STORAGE_KEY };
+export { NO_DATA, PING_COUNT_STORAGE_KEY };

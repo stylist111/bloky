@@ -18,14 +18,10 @@
 import { Tabs } from "webextension-polyfill";
 import * as browser from "webextension-polyfill";
 
-import { Prefs } from "../../alias/prefs";
-import { port } from "../../../adblockplusui/adblockpluschrome/lib/messaging/port";
-import { TabSessionStorage } from "../../../adblockplusui/adblockpluschrome/lib/storage/tab-session";
-import { EventEmitter } from "../../../adblockplusui/adblockpluschrome/lib/events";
-import { getLocaleInfo } from "../../i18n/background";
 import {
   CommandEventType,
   CommandName,
+  checkLanguage,
   createSafeOriginUrl,
   dismissCommand,
   doesLicenseStateMatch,
@@ -34,7 +30,13 @@ import {
   getContent,
   isCommandExpired,
   recordEvent,
-} from "../../ipm/background";
+} from "@eyeo-fragments/ipm/background";
+
+import { Prefs } from "../../alias/prefs";
+import { port } from "../../../adblockplusui/adblockpluschrome/lib/messaging/port";
+import { TabSessionStorage } from "../../../adblockplusui/adblockpluschrome/lib/storage/tab-session";
+import { EventEmitter } from "../../../adblockplusui/adblockpluschrome/lib/events";
+import { getLocaleInfo } from "../../i18n/background";
 import * as logger from "../../utilities/background";
 import { MessageSender, TabRemovedEventData } from "../../polyfills/background";
 import { getSettings } from "../../prefs/background/settings";
@@ -53,7 +55,6 @@ import {
   lastShownKey,
 } from "./tab-manager.types";
 import { shouldBeDismissed, shouldBeShown, start as setupTimings } from "./timing";
-import { checkLanguage } from "../../ipm/background/language-check";
 
 /**
  * Tab-specific session storage for dialogs

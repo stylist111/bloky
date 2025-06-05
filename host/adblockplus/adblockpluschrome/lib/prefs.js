@@ -278,9 +278,9 @@ defaults.ipm_last_ping = 0;
 defaults.ipm_ping_count = 0;
 
 /**
- * List of user events
+ * List of IPM user events
  *
- * @type {array}
+ * @type {Object[]}
  */
 defaults.ipm_events = [];
 

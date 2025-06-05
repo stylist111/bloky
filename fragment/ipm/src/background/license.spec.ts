@@ -22,7 +22,7 @@ describe("license", () => {
   describe("doesLicenseStateMatch", () => {
     it("should wait for license changes made in Prefs initialization", async () => {
       const { licensing } = getStartInfo();
-      jest.spyOn(licensing, "isLicenseValid").mockReturnValue(true);
+      jest.spyOn(licensing, "isLicenseValid").mockResolvedValue(true);
 
       expect(await doesLicenseStateMatch({ licenseStateList: "premium" })).toBe(
         true,

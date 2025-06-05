@@ -15,13 +15,13 @@
  * along with AdBlock.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from "./command-library";
-export * from "./command-library.types";
-export * from "./data-collection";
-export * from "./data-collection.types";
-export * from "./license";
-export * from "./param-validator";
-export * from "./param-validator.types";
-export * from "./url";
-export * from "./url.types";
-export * from "./event-recording";
+/**
+ * Retrieves the number of IPM pings
+ *
+ * @returns number of IPM pings
+ */
+export async function getIPMPingCount(): Promise<number> {
+  const storage = await browser.storage.local.get("total_ipm_pings");
+  const count = storage.total_ipm_pings;
+  return typeof count === "number" && !Number.isNaN(count) ? count : 0;
+}

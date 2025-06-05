@@ -41,7 +41,7 @@ export interface LicenseStateBehavior extends Behavior {
  * Handler that gets called when command gets executed
  *
  * @param ipmId The IPM ID
- * @param isInitialization Whether the command handler is called during
+ * @param isFragmentInitialization Whether the command handler is called during
  *  the fragment initialization phase (i.e. when processing commands that
  *  are being restored from storage, as opposed to processing commands that
  *  come in via a response from the IPM server during runtime).
@@ -129,12 +129,14 @@ export interface CommandActor {
    * Retrieves the actor-specific command behavior
    *
    * @param command - Command
+   * @returns actor-specific behavior (or null, if command is invalid)
    */
   getBehavior: (command: Command) => Behavior | null;
   /**
    * Retrieves the actor-specific command content
    *
    * @param command - Command
+   * @returns actor-specific content (or null, if command is invalid)
    */
   getContent: (command: Command) => Content | null;
   /**

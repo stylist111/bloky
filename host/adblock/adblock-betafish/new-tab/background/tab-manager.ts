@@ -16,11 +16,12 @@
  */
 
 import * as browser from "webextension-polyfill";
-import { ExtendedInstallType } from "~/management";
+
 import {
   addExperimentsSearchParams,
   CommandEventType,
   CommandName,
+  checkLanguage,
   createSafeOriginUrl,
   dismissCommand,
   doesLicenseStateMatch,
@@ -28,7 +29,9 @@ import {
   getCommand,
   isCommandExpired,
   recordEvent,
-} from "../../ipm/background";
+} from "@eyeo-fragments/ipm/background";
+
+import { ExtendedInstallType } from "~/management";
 
 import * as logger from "../../utilities/background";
 import { getSettings, settings } from "../../prefs/background/settings";
@@ -42,7 +45,6 @@ import {
   coolDownPeriodKey,
 } from "./tab-manager.types";
 import { Prefs } from "../../alias/prefs";
-import { checkLanguage } from "../../ipm/background/language-check";
 
 const tabIds = new Set<number | undefined>();
 

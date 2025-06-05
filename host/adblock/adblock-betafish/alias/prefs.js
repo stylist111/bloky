@@ -24,8 +24,6 @@ import { installHandler } from "../../adblockplusui/adblockpluschrome/lib/messag
 import { port } from "../../adblockplusui/adblockpluschrome/lib/messaging/port.js";
 import { EventEmitter } from "../../adblockplusui/adblockpluschrome/lib/events.js";
 
-import { eventStorageKey } from "../ipm/background/data-collection.types";
-
 import { statsStorageKey } from "../onpage-dialog/background/stats.types";
 
 const keyPrefix = "pref:";
@@ -294,11 +292,11 @@ defaults.onpage_dialog_timing_configurations = {
 };
 
 /**
- * Map of IPM user events
+ * List of IPM user events
  *
- * @type {Object}
+ * @type {Object[]}
  */
-defaults[eventStorageKey] = [];
+defaults.ipm_events = [];
 
 /**
  * The URL of the IPM server.

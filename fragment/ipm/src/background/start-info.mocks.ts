@@ -33,7 +33,7 @@ const logger = {
 };
 
 const licensing = {
-  isLicenseValid() {
+  async isLicenseValid() {
     return false;
   },
 };

@@ -58,7 +58,7 @@ export async function doesLicenseStateMatch(
   }
 
   const licenseStates = behavior.licenseStateList.split(",");
-  const isActive = licensing.isLicenseValid(); // getPremiumState();
+  const isActive = await licensing.isLicenseValid();
 
   for (const licenseState of licenseStates) {
     if (licenseState === LicenseState.inactive && !isActive) {

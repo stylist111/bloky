@@ -25,10 +25,11 @@ import {
   isNotEmpty,
   isSafeUrl,
   isValidDomainList,
-  isValidLicenseStates,
+  isValidLicenseStateList,
   setCommandActor,
   validateParams,
-} from "../../../ipm/background";
+} from "@eyeo-fragments/ipm/background";
+
 import * as logger from "../../../utilities/background";
 import { type DialogContent } from "../../shared";
 import { type DialogBehavior } from "../dialog.types";
@@ -75,7 +76,7 @@ const paramDefinitionList: ParamDefinitionList<DialogParams> = [
   },
   {
     name: "license_state_list",
-    validate: isValidLicenseStates,
+    validate: isValidLicenseStateList,
   },
   {
     name: "priority",
@@ -84,11 +85,10 @@ const paramDefinitionList: ParamDefinitionList<DialogParams> = [
 ];
 
 /**
- * Extracts on-page dialog behavior from command
+ * Extracts on-page dialog behavior from the given command
  *
- * @param command - Command
- *
- * @returns on-page dialog behavior
+ * @param command - Command to extract the behavior from
+ * @returns on-page dialog behavior (or null, if command is invalid)
  */
 function getBehavior(command: Command): DialogBehavior | null {
   if (!isDialogCommand(command)) {
@@ -106,11 +106,10 @@ function getBehavior(command: Command): DialogBehavior | null {
 }
 
 /**
- * Extracts on-page dialog content from command
+ * Extracts on-page dialog content from the given command
  *
  * @param command - Command
- *
- * @returns on-page dialog content
+ * @returns on-page dialog content (or null, if command is invalid)
  */
 function getContent(command: Command): DialogContent | null {
   if (!isDialogCommand(command)) {

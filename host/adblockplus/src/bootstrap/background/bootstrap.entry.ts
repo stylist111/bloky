@@ -57,6 +57,18 @@ import { info } from "~/info/background";
 import { startInfo as ipmFragmentStartInfo } from "~/ipm/background";
 
 /**
+ * Runs initialization that can be done in parallel and doesn't have to be done
+ * in the first turn of the event loop
+ */
+async function bootstrapAsync(): Promise<void> {
+  try {
+    await Promise.all([startIPM(ipmFragmentStartInfo)]);
+  } catch (ex) {
+    logger.reportAndLogError(ex);
+  }
+}
+
+/**
  * Runs initalization that must be done in the first turn of the event loop
  */
 function bootstrapSync(): void {
@@ -85,7 +97,6 @@ async function bootstrap(): Promise<void> {
   startTabSessionStorage();
   startDevTools();
   startDebug();
-  void startIPM(ipmFragmentStartInfo);
   startReadyState();
   startFilterConfiguration();
   startStats();
@@ -132,6 +143,8 @@ async function bootstrap(): Promise<void> {
       });
     }
   });
+
+  await bootstrapAsync();
 
   setReadyState(ReadyState.started);
 }

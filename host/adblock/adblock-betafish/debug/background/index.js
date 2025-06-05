@@ -30,7 +30,7 @@ import { getSettings } from "~/prefs/background";
 import SubscriptionAdapter from "~/subscriptionadapter";
 import { TELEMETRY } from "~/telemetry/background";
 
-import { IPM_CONSTANTS, NO_DATA, PING_COUNT_STORAGE_KEY } from "./constants";
+import { NO_DATA, PING_COUNT_STORAGE_KEY } from "./constants";
 
 async function getExperimentsAssignments() {
   const assignments = await ewe.experiments.getAssignments();
@@ -164,11 +164,6 @@ const getHostPermissions = async function () {
   return NO_DATA;
 };
 
-const getIPMData = function () {
-  const IPMEntries = IPM_CONSTANTS.map((entry) => [entry, Prefs[entry]]);
-  return Object.fromEntries(IPMEntries);
-};
-
 const getJavascriptErrors = async function (errorKey) {
   const errorResponse = await browser.storage.local.get(errorKey);
   if (errorResponse && errorResponse[errorKey]) {
@@ -246,7 +241,17 @@ const getDebugInfo = function () {
     response.excludedFilters = await getExcludeFilters();
 
     // Add IPM info
-    response.ipmInfo = getIPMData();
+    response.ipmInfo = {
+      commands: Prefs.get("ipm_commands"),
+      commandsStats: Prefs.get("ipm_commands_stats"),
+      events: Prefs.get("ipm_events"),
+    };
+
+    // Add on-page dialog info
+    response.opdInfo = {
+      commandStats: Prefs.get("onpage_dialog_command_stats"),
+      timingConfig: Prefs.get("onpage_dialog_timing_configurations"),
+    };
 
     response.otherInfo = {};
     let { otherInfo } = response;

@@ -17,10 +17,25 @@
 
 import * as info from "info";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
+import { start as startIPM } from "@eyeo-fragments/ipm/background";
 
 import { Prefs } from "~/alias/prefs";
 import { start as startSettings } from "~/prefs/background";
+import * as logger from "~/utilities/background";
+import { startInfo as ipmFragmentStartInfo } from "../../ipm/background";
 import { start as startPageviewMetrics } from "../../pageview-metrics/background";
+
+/**
+ * Runs initialization that can be done in parallel and doesn't have to be done
+ * in the first turn of the event loop
+ */
+async function bootstrapAsync(): Promise<void> {
+  try {
+    await Promise.all([startIPM(ipmFragmentStartInfo), startPageviewMetrics()]);
+  } catch (ex) {
+    logger.reportAndLogError(ex);
+  }
+}
 
 /**
  * Runs initalization that must be done in the first turn of the event loop
@@ -45,7 +60,8 @@ async function bootstrap(): Promise<void> {
   bootstrapSync();
 
   startSettings();
-  await startPageviewMetrics();
+
+  await bootstrapAsync();
 }
 
 void bootstrap();

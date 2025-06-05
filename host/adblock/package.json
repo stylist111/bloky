@@ -32,7 +32,7 @@
     "sentry:release-new": "sentry-cli releases new $VERSION --org eyeo --project adblock",
     "sentry:release-finalize": "sentry-cli releases finalize $VERSION --org eyeo --project adblock",
     "sentry:sourcemaps": "sentry-cli sourcemaps upload --release=$VERSION --org eyeo --project adblock ./dist/sourcemaps/chrome-mv3",
-    "test": "vitest run test/unit",
+    "test": "vitest run ./src/ ./test/unit/",
     "test:watch": "vitest test/unit",
     "test:end-to-end": "npm run $ test.end-to-end",
     "test:end-to-end-local": "node test/end-to-end/runTests.js"
@@ -139,6 +139,7 @@
   },
   "dependencies": {
     "@eyeo-fragments/conflict-detection": "*",
+    "@eyeo-fragments/ipm": "*",
     "@eyeo-fragments/public-api": "*",
     "@eyeo-fragments/yt-wall-detection": "*",
     "@eyeo/ext-ui-components": "*",

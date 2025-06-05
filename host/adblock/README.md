@@ -153,7 +153,7 @@ The following npm commands are then available:
 
 As we update the extension structure and add Typescript, we will find ourselves importing files from multiple levels within peer directories, as well as relocating files within a given subdirectory. To help make this easier, we have added a `~` shortcut, which maps to `adblock-betafish`.
 
-This means that rather than needing to use `../` to navigate out of a file's directory, the import address can be given from the perspective of `adblock-betafish`. So an import like `from '../../ipm/background/command-library.types';` can be replaced with from `'~/ipm/background/command-library.types';`.
+This means that rather than needing to use `../` to navigate out of a file's directory, the import address can be given from the perspective of `adblock-betafish`. So an import like `from '../../id/background';` can be replaced with from `'~/id/background';`.
 
 ## Developer Guide
 
