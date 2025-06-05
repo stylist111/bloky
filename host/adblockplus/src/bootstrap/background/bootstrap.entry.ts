@@ -56,7 +56,10 @@ import { getAuthPayload, hasActiveLicense } from "~/premium/background";
 import { info } from "~/info/background";
 import { startInfo as ipmFragmentStartInfo } from "~/ipm/background";
 
-async function bootstrap(): Promise<void> {
+/**
+ * Runs initalization that must be done in the first turn of the event loop
+ */
+function bootstrapSync(): void {
   // This early in the initialization, we may not have loaded the preference
   // value from storage yet, and we cannot load it in the first turn of the
   // event loop. However, we can determine its default value. This helps us
@@ -70,6 +73,13 @@ async function bootstrap(): Promise<void> {
       info.addonVersion
     );
   }
+
+  startFirstRun();
+  startUpdateCampaign();
+}
+
+async function bootstrap(): Promise<void> {
+  bootstrapSync();
 
   startPages();
   startTabSessionStorage();
@@ -101,7 +111,6 @@ async function bootstrap(): Promise<void> {
     isPremiumActive: hasActiveLicense
   });
   startInfoInjector();
-  startUpdateCampaign();
   startGlobals();
   void startFiltersMigration();
   startPublicAPI({
@@ -124,7 +133,6 @@ async function bootstrap(): Promise<void> {
     }
   });
 
-  startFirstRun();
   setReadyState(ReadyState.started);
 }
 
