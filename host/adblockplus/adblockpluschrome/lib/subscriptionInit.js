@@ -35,6 +35,7 @@ import { Prefs } from "./prefs.js";
 import { start as startUnloadCleanup } from "../../src/unload-cleanup/background/index.ts";
 import { start as startIPMPingListener } from "../../src/testing/ping-ipm/background";
 import * as logger from "../../src/logger/background";
+import { getFacts } from "~/remote-config/background";
 
 let firstRun;
 let userNotificationCallback = null;
@@ -185,8 +186,9 @@ export async function start() {
     bundledSubscriptionsPath: "/data/rules/abp",
     name: info.addonName,
     version: info.addonVersion,
-    experiments: {
-      url: "https://easylist-downloads.adblockplus.org/ab-testing/experiments.json"
+    remoteConfig: {
+      url: "https://easylist-downloads.adblockplus.org/ab-testing/experiments.json",
+      getFacts
     },
     featureFlags: {
       inlineCss: false

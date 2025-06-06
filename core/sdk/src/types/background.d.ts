@@ -78,6 +78,48 @@ export interface EventDispatcher<T> {
 }
 
 /**
+ * represents the remote configuration
+ */
+export interface RemoteConfig {
+  /**
+   * The ID of the schema that is used for the remote config.
+   */
+  schemaId: string;
+
+  /**
+   * The experiments that are currently active.
+   */
+  experiments?: Experiment[];
+
+  /**
+   * The cohorts that are currently active.
+   */
+  cohorts?: Cohort[];
+}
+
+/**
+ * Represents a cohort
+ */
+export interface Cohort {
+  /**
+   * The cohort details
+   */
+  name: string;
+
+  /**
+   * The cohort conditions
+   */
+  conditions: any[];
+
+  /**
+   * The cohort ID
+   */
+  event: {
+    type: string;
+  };
+}
+
+/**
  * Represents an experiment
  */
 export interface Experiment {
@@ -381,6 +423,49 @@ export interface VirtualBlockableItemRequest {
   url: string;
 }
 
+export interface Facts {
+  /**
+   * Indicates whether the user has a premium license.
+   */
+  hasPremium?: boolean;
+  /**
+   * The timestamp when the extension was installed, in milliseconds since the epoch.
+   */
+  installDate?: number;
+  /**
+   * The extension name.
+   */
+  extName?: string;
+  /**
+   * The extension version.
+   */
+  extVersion?: string;
+  /**
+   * The browser name.
+   */
+  browserName?: string;
+  /**
+   * The browser version.
+   */
+  browserVersion?: string;
+  /**
+   * The browser language.
+   */
+  browserLanguage?: string
+  /**
+   * Weather Acceptable Ads is enabled.
+   */
+  aaEnabled?: boolean;
+  /**
+   * The type of installation e.g. is it development build or large scale deployment.
+   */
+  installType?: Browser.Management.ExtensionInstallType;
+  /**
+   * The 2-letter country code, as provided through the JSON configuration response header
+   */
+  countryCode?: string;
+}
+
 declare module "@eyeo/webext-ad-filtering-solution" {
   namespace allowlisting {
     /**
@@ -491,6 +576,35 @@ declare module "@eyeo/webext-ad-filtering-solution" {
     const add: (text: string | string[], metadata?: FilterMetadata) => Promise<void>;
   }
 
+  namespace remoteConfig {
+    /**
+     * Retrieves current remote config revision ID
+     */
+    const getRevisionId: () => Promise<string | null>;
+
+    /**
+     * Emitted when the remote config has changed
+     */
+    const onChanged: EventDispatcher<() => unknown>;
+  }
+
+  namespace cohorts {
+    /**
+     * Retrieves the currently active cohorts.
+     */
+    const getAll: () => Promise<string[]>;
+
+    /**
+     * Returns weather the given cohort is currently active.
+     */
+    const includes: (cohortId: string) => Promise<boolean>;
+
+    /**
+     * Emitted when the active cohorts have changed
+     */
+    const onChanged: EventDispatcher<(cohortIds: string[]) => unknown>;
+  }
+
   namespace experiments {
     /**
      * Returns the assignments for the user
@@ -514,10 +628,6 @@ declare module "@eyeo/webext-ad-filtering-solution" {
      * Overrides a feature flag value
      */
     const overrideFlag: (flagId: string, value: any) => Promise<void>;
-    /**
-     * Retrieves current experiment data revision ID
-     */
-    const getRevisionId: () => Promise<string | null>;
     /**
      * Emitted when experiment data has changed
      */

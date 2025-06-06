@@ -18,6 +18,7 @@
 import {
   clickOnDisplayedElement,
   findUrl,
+  getFromStorage,
   isCheckboxPropertyEnabled,
   wait
 } from "@eyeo/test-utils/driver";
@@ -78,6 +79,16 @@ export default () => {
       "Easylist still enabled after clicking on the toggle"
     );
 
+    // Wait for the remote config to be downloaded, before uninstalling,
+    // so the revisionId is added to the uninstall URL
+    await wait(
+      async () => {
+        const config = await getFromStorage("local", "ewe:remote_config");
+        return config && typeof config.revisionId !== "undefined";
+      },
+      5000,
+      "Remote config not downloaded yet?!"
+    );
     await uninstallExtension(initOptionsGeneralTab);
     const { url } = await findUrl(uninstallUrl);
 

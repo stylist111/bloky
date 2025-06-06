@@ -35,7 +35,9 @@ import * as testing from "./testing.js";
 import * as prefs from "./prefs.js";
 import * as cdp from "./cdp.js";
 import * as cdpMetricsUploader from "./cdp-metrics-uploader.js";
+import * as remoteConfig from "./remote-config.js";
 import * as experiments from "./experiments.js";
+import * as cohorts from "./cohorts/index.js";
 import {setSnippetLibrary} from "./content-filter.js";
 import {setAddonInfo} from "./info.js";
 import {filterEngine} from "./core.js";
@@ -147,8 +149,20 @@ export {wrappedCdp as cdp};
 /**
  * @ignore
  */
+const wrappedRemoteConfig = wrapApiNamespace(remoteConfig.default);
+export {wrappedRemoteConfig as remoteConfig};
+
+/**
+ * @ignore
+ */
 const wrappedExperiments = wrapApiNamespace(experiments.default);
 export {wrappedExperiments as experiments};
+
+/**
+ * @ignore
+ */
+const wrappedCohorts = wrapApiNamespace(cohorts.default);
+export {wrappedCohorts as cohorts};
 
 export let snippets = {
   /**
@@ -276,15 +290,18 @@ async function onInstalled(details) {
  *   used. The default value is the correct state for the flag according to the
  *   SDK at time of release, so under normal circumstances these flags do not
  *   need to be set. Options may be removed from this object without it being
- *   considered a breaking change as features stabilitze and can no longer by
+ *   considered a breaking change as features stabilize and can no longer by
  *   dynamically enabled or disabled. If any features are set here which are
  *   not known features, a warning will be added to the `warnings` property
  *   of the returned `FirstRunInfo`.
  * @param {bool?} [addonInfo.featureFlags.inlineCss] Enable inline CSS in
  *   element hiding and element hiding emulation filters.
- * @param {Object?} [addonInfo.experiments] Settings for split experiments.
- * @param {string} [addonInfo.experiments.url] The URL to make a GET request to
- *   for getting experiment data.
+ * @param {Object?} [addonInfo.remoteConfig] Remote configuration parameters.
+ * @param {string} [addonInfo.remoteConfig.url] The URL to make a GET request to
+ *   for getting the remote config data.
+ * @param {Function} [addonInfo.remoteConfig.getFacts] - A function that returns
+ *   the facts object to be used in the cohorts and experiments modules
+ *   e.g. `() => ({hasPremium: true})`.
  * @return {Promise<FirstRunInfo>} Promise that is resolved after starting up
  *                                 is completed.
  */
@@ -373,8 +390,8 @@ async function startSubmodules(addonInfo) {
 
   filterEngine.filterStorage.synchronizer.start();
 
-  if (addonInfo && addonInfo.experiments && addonInfo.experiments.url) {
-    experiments.start(addonInfo.experiments.url);
+  if (addonInfo && addonInfo.remoteConfig && addonInfo.remoteConfig.url) {
+    remoteConfig.start(addonInfo.remoteConfig);
   }
 }
 

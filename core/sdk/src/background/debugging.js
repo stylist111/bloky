@@ -253,7 +253,7 @@ export function emitLogEvent({message, level, color, timeStamp = new Date()}) {
  * @ignore
  * @param {string|function} messageOrCallback Log message or a callback
  *                                            that returns log message
- * @param {*} color Log output color
+ * @param {*} [color] Log output color
  */
 export function info(messageOrCallback, color) {
   _trace(messageOrCallback, LOG_LEVEL_INFO, color);
@@ -264,7 +264,7 @@ export function info(messageOrCallback, color) {
  * @ignore
  * @param {string|function} messageOrCallback Log message or a callback
  *                                            that returns log message
- * @param {*} color Log output color
+ * @param {*} [color] Log output color
  */
 export function debug(messageOrCallback, color) {
   _trace(messageOrCallback, LOG_LEVEL_DEBUG, color);
@@ -275,7 +275,7 @@ export function debug(messageOrCallback, color) {
  * @ignore
  * @param {string|function} messageOrCallback Log message or a callback
  *                                            that returns log message
- * @param {*} color Log output color
+ * @param {*} [color] Log output color
  */
 export function log(messageOrCallback, color) {
   _trace(messageOrCallback, LOG_LEVEL_INFO, color);
@@ -286,7 +286,7 @@ export function log(messageOrCallback, color) {
  * @ignore
  * @param {string|function} messageOrCallback Log message or a callback
  *                                            that returns log message
- * @param {*} color Log output color
+ * @param {*} [color] Log output color
  */
 export function warn(messageOrCallback, color) {
   _trace(messageOrCallback, LOG_LEVEL_WARNING, color);
@@ -297,7 +297,7 @@ export function warn(messageOrCallback, color) {
  * @ignore
  * @param {string|function} messageOrCallback Log message or a callback
  *                                            that returns log message
- * @param {*} color Log output color
+ * @param {*} [color] Log output color
  */
 export function error(messageOrCallback, color) {
   _trace(messageOrCallback, LOG_LEVEL_ERROR, color);
@@ -307,7 +307,7 @@ export function error(messageOrCallback, color) {
  * Outputs call track and the arguments
  * @ignore
  * @param {Object} args Call arguments
- * @param {*?} color Log output color
+ * @param {*} [color] Log output color
  */
 export function trace(args, color) {
   if (listeners.length) {

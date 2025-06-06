@@ -19,32 +19,20 @@ import browser from "webextension-polyfill";
 import {v4 as uuidv4} from "uuid";
 
 import {EventEmitter} from "adblockpluscore/lib/events.js";
-import {MILLIS_IN_MINUTE, MILLIS_IN_HOUR} from "adblockpluscore/lib/time.js";
 import {PersistentState} from "./persistence.js";
 import {EventDispatcher} from "./types.js";
-import {Scheduler} from "../all/scheduler.js";
-import {validateExperimentData} from "../all/experiment-validation.js";
+import sentry from "./sentry.js";
+import {warn} from "./debugging.js";
 
+let _experimentsConfig = [];
 let emitter = new EventEmitter();
 let experimentData = new PersistentState("ewe:split_experiments", browser.storage.local);
-let experimentUrl;
-let scheduler;
 
 let onChanged = new EventDispatcher(dispatch => {
   emitter.on("updated", async() => {
     dispatch(await getExperimentsInternal());
   });
 });
-
-async function hashString(str) {
-  const sha1Buffer = await crypto.subtle.digest(
-    "SHA-1",
-    new TextEncoder().encode(str)
-  );
-  const bytes = new Uint8Array(sha1Buffer);
-  const base64 = btoa(String.fromCharCode(...bytes));
-  return base64.substring(0, 8);
-}
 
 async function modHashString(str) {
   const sha1Buffer = await crypto.subtle.digest(
@@ -117,9 +105,8 @@ async function assignVariants(experiments) {
 async function getExperimentsInternal() {
   const state = await experimentData.getStateLoaded();
   const assignments = state.assignments || {};
-  const rawData = state.rawData || {experiments: []};
 
-  const experiments = rawData.experiments.map(experiment => {
+  const experiments = _experimentsConfig.map(experiment => {
     const variants = experiment.variants.map(variant => {
       return {
         id: variant.variantId,
@@ -137,187 +124,40 @@ async function getExperimentsInternal() {
 }
 
 /**
- *
- * @ignore
- * Starts the experiment system with periodic syncing
- * @param {string} url - URL endpoint for fetching experiment configurations
- * @param {number} [syncInterval=600000] - Interval in milliseconds between
- * syncs
- * @param {number} [errorRetryDelay=3600000] - Interval in milliseconds between
- * syncs if the last download had a network error.
- * @param {boolean} [disableAutosync=false] - If this is true, then syncing will
- * only happen if you call the sync function.
- */
-export function start(url, syncInterval = 10 * MILLIS_IN_MINUTE,
-                      errorRetryDelay = MILLIS_IN_HOUR,
-                      disableAutosync = false) {
-  if (scheduler) {
-    return;
-  }
-
-  experimentUrl = url;
-
-  if (disableAutosync) {
-    return;
-  }
-
-  scheduler = new Scheduler({
-    async listener() {
-      await syncData();
-      return true;
-    },
-    async getNextTimestamp() {
-      const state = await experimentData.getStateLoaded();
-
-      let lastDownloaded = state.lastDownloaded;
-      let lastNetworkError = state.lastNetworkError;
-
-      if (lastNetworkError) {
-        let nextRetryAfterError = new Date(lastNetworkError).getTime() +
-            errorRetryDelay;
-        let nowTimestamp = Date.now();
-        let maxNextRetry = nowTimestamp + errorRetryDelay;
-        if (nextRetryAfterError > maxNextRetry) {
-          // This shouldn't happen if the clocks are working right. It implies
-          // that the system clock has been set backwards since we stored that
-          // timestamp. Let's correct the storage using our current clock
-          // value. We shouldn't do this with lastPing because lastPing comes
-          // from the server.
-          nextRetryAfterError = maxNextRetry;
-          state.lastNetworkError = new Date(nowTimestamp).toISOString();
-          await experimentData.save();
-        }
-
-        return nextRetryAfterError;
-      }
-      else if (lastDownloaded) {
-        return new Date(lastDownloaded).getTime() + syncInterval;
-      }
-
-      return null;
-    },
-    interval: syncInterval,
-    errorRetryDelay
-  });
-}
-
-/**
  * @ignore
  */
 export async function reset() {
-  stop();
+  _experimentsConfig = [];
   experimentData.clearState();
   await experimentData.save();
 }
 
 /**
+ * Assigns the current client to the variants of the experiments
+ *
+ * @param {Array<Object>} config - Array of experiments configuration
+ *
  * @ignore
- */
-export function stop() {
-  if (!scheduler) {
-    return;
-  }
-
-  scheduler.stop();
-  scheduler = null;
-}
-
-async function downloadExperimentsFile() {
-  const state = await experimentData.getStateLoaded();
-
-  const headers = {};
-  if (state.etag) {
-    headers["if-none-match"] = state.etag;
-  }
-
-  try {
-    const response = await fetch(experimentUrl, {headers});
-
-    const date = response.headers.get("date");
-    const etag = response.headers.get("etag");
-
-    if (response.status === 304) {
-      return {cacheFresh: true, date, etag};
-    }
-
-    if (!response.ok) {
-      return {downloadError: true};
-    }
-
-    const data = await response.json();
-    const revisionId = await hashString(JSON.stringify(data));
-
-    return {newExperimentData: data, date, etag, revisionId};
-  }
-  catch (e) {
-    return {downloadError: true};
-  }
-}
-
-/**
- * Synchronizes experiment data using the experimentUrl configured
  * @returns {Promise<void>}
  */
-async function syncData() {
-  const state = await experimentData.getStateLoaded();
+export async function sync(config) {
+  // store in memory the experiments config, to be later used
+  _experimentsConfig = config;
 
-  if (!experimentUrl) {
-    state.lastNetworkError = new Date().toISOString();
+  try {
+    const state = await experimentData.getStateLoaded();
+    const {flags, assignments} = await assignVariants(config);
+    state.flags = flags;
+    state.assignments = assignments;
+
     await experimentData.save();
-    return;
+
+    emitter.emit("updated");
   }
-
-  const {
-    downloadError,
-    cacheFresh,
-    newExperimentData: data,
-    date,
-    etag,
-    revisionId
-  } = await downloadExperimentsFile();
-
-  if (downloadError) {
-    state.lastNetworkError = new Date().toISOString();
-    await experimentData.save();
-    return;
+  catch (e) {
+    warn(`Error while synchronizing experiments: ${e.message}`);
+    sentry.reportError(e);
   }
-
-  delete state.lastNetworkError;
-
-  if (date) {
-    state.lastDownloaded = new Date(date).toISOString();
-  }
-  else {
-    state.lastDownloaded = new Date().toISOString();
-  }
-
-  if (cacheFresh) {
-    // Data hasn't changed since last sync, so nothing to update except the
-    // lastDownload timestamp.
-    await experimentData.save();
-    return;
-  }
-
-  state.etag = etag;
-  state.rawData = data;
-
-  const {errors} = validateExperimentData(data);
-
-  if (errors && errors.length > 0) {
-    state.errors = errors;
-    await experimentData.save();
-    return;
-  }
-
-  state.errors = [];
-  state.revisionId = revisionId;
-  const {flags, assignments} = await assignVariants(data.experiments);
-  state.flags = flags;
-  state.assignments = assignments;
-
-  await experimentData.save();
-
-  emitter.emit("updated");
 }
 
 /**
@@ -333,20 +173,6 @@ export default {
    */
 
   /**
-   * Represents the experiment data synchronization status
-   * @typedef {Object} ExperimentSyncStatus
-   * @property {Array<string>} errors Errors from the last experiments
-   *   synchronization.
-   * @property {string?} lastDownloaded ISO formatting timestamp when experiment
-   *   data was last successfully downloaded. This is also updated if the server
-   *   returned a response of 304 - not modified. Undefined if there have been
-   *   no successful downloads.
-   * @property {string?} lastNetworkError ISO formatting timestamp of the last
-   *   download attempt if that attempt had a network error. Undefined if the
-   *   last sync was successful.
-   */
-
-  /**
    * Represents a variant of an experiment
    * @typedef {Object} ExperimentVariant
    * @property {string} id Experiment variant ID.
@@ -356,26 +182,12 @@ export default {
 
   /**
    * Manually triggers synchronization of experiment data
+   *
+   * @function
+   * @param {Array<Object>} config - Array of experiments configuration.
    * @returns {Promise<void>}
    */
-  async sync() {
-    await syncData();
-  },
-
-  /**
-   * Retrieves the status of the latest synchronization of experiment data
-   * @returns {Promise<ExperimentSyncStatus>} Experiment data synchronization
-   *   status
-   */
-  async getSyncStatus() {
-    const state = await experimentData.getStateLoaded();
-
-    return {
-      errors: state.errors || [],
-      lastDownloaded: state.lastDownloaded,
-      lastNetworkError: state.lastNetworkError
-    };
-  },
+  sync,
 
   /**
    * Retrieves the value of a feature flag
@@ -480,15 +292,6 @@ export default {
    */
   async getExperiments() {
     return getExperimentsInternal();
-  },
-
-  /**
-   * Retrieves current experiment data revision ID
-   * @returns {string?} Experiment data revision ID
-   */
-  async getRevisionId() {
-    const state = await experimentData.getStateLoaded();
-    return state.revisionId || null;
   },
 
   /**

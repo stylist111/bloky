@@ -30,6 +30,7 @@ import { setReadyState, ReadyState } from "../../src/testing/ready-state/backgro
 import ServerMessages from "~/servermessages";
 import { start as startIPMPingListener } from "../../src/testing/ping-ipm/background";
 import * as logger from "~/utilities/background";
+import { getFacts } from "../../src/remote-config/background";
 
 let firstRun;
 let reinitialized = false;
@@ -205,8 +206,9 @@ const start = async function () {
     bundledSubscriptionsPath: "/data/rules/abp",
     name: info.addonName,
     version: info.addonVersion,
-    experiments: {
+    remoteConfig: {
       url: "https://easylist-downloads.adblockplus.org/ab-testing/experiments.json",
+      getFacts,
     },
     featureFlags: {
       inlineCss: false,

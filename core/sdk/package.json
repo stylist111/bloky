@@ -36,6 +36,8 @@
   "dependencies": {
     "@sentry/browser": "8.54.0",
     "adblockpluscore": "*",
+    "json-rules-engine": "7.3.1",
+    "jsonpath-plus": "10.3.0",
     "pako": "^2.1.0",
     "uuid": "^9.0.0",
     "yargs": "^17.5.1"
@@ -78,7 +80,7 @@
   },
   "scripts": {
     "lint": "node scripts/lint.js",
-    "docs": "documentation build --document-exported --sort-order alpha -f html -o public --config documentation.yml src/background/index.js src/background/filters.js src/background/subscriptions.js src/background/reporting.js src/background/cdp.js srck/background/debugging.js src/background/telemetry.js src/background/types.js src/background/experiments.js",
+    "docs": "documentation build --document-exported --sort-order alpha -f html -o public --config documentation.yml src/background/index.js src/background/filters.js src/background/subscriptions.js src/background/reporting.js src/background/cdp.js srck/background/debugging.js src/background/telemetry.js src/background/types.js src/background/experiments.js src/background/remote-config.js src/background/cohorts/engine.js",
     "docs-adblockpluscore": "jsdoc --configure adblockpluscore/.jsdoc.conf --destination public/adblockpluscore adblockpluscore/lib",
     "prepack": "npm run build:release",
     "build": "node scripts/build.js",

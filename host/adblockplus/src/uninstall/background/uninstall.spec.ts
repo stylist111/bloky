@@ -104,9 +104,12 @@ describe("uninstall", () => {
     };
     jest.mock("@eyeo/webext-ad-filtering-solution", () => {
       return {
+        remoteConfig: {
+          getRevisionId: async () => "12345678",
+          onChanged: mockEventDispatcher
+        },
         experiments: {
           getExperiments: async () => [],
-          getRevisionId: async () => "12345678",
           onChanged: mockEventDispatcher
         },
         filters: {

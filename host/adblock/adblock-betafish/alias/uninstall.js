@@ -113,7 +113,7 @@ export async function setUninstallURL() {
         const bc = Prefs.blocked_total;
         url = `${url}&bc=${bc}`;
 
-        const experimentsRevision = await ewe.experiments.getRevisionId();
+        const experimentsRevision = await ewe.remoteConfig.getRevisionId();
         url = `${url}&er=${encodeURIComponent(experimentsRevision)}`;
         const experimentsVariants = await getExperiments();
         url = `${url}&ev=${encodeURIComponent(experimentsVariants)}`;

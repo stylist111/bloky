@@ -159,7 +159,7 @@ export async function setUninstallURL(): Promise<void> {
   const params = Object.create(info);
 
   params.corrupted = isDataCorrupted() ? "1" : "0";
-  params.experimentsRevision = await ewe.experiments.getRevisionId();
+  params.experimentsRevision = await ewe.remoteConfig.getRevisionId();
   params.experimentsVariants = await getExperiments();
   params.firstVersion = ewe.reporting.getFirstVersion();
 
@@ -210,6 +210,7 @@ export async function setUninstallURL(): Promise<void> {
  * Initializes the uninstall module
  */
 export function start(): void {
+  ewe.remoteConfig.onChanged.addListener(setUninstallURL);
   ewe.experiments.onChanged.addListener(setUninstallURL);
 
   ewe.notifications.on("downloaded", setUninstallURL);

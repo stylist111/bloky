@@ -94,6 +94,8 @@ export const EWE = Object.fromEntries([
   "testing",
   "cdp",
   "telemetry",
+  "remoteConfig",
+  "cohorts",
   "experiments",
   "sentry"
 ].map(name => [name, proxy([name])]));

@@ -52,6 +52,8 @@ import * as sitekey from "./sitekey.js";
 import {getDeferredMessages} from "./content-message-deferrer.js";
 import * as cdp from "./cdp.js";
 import {_clear} from "./frame-state.js";
+import * as remoteConfig from "./remote-config.js";
+import * as cohorts from "./cohorts/index.js";
 import * as experiments from "./experiments.js";
 import * as sentry from "./sentry.js";
 
@@ -365,12 +367,24 @@ export default {
 
   _clearFrameState: _clear,
 
-  restartExperiments(url, syncInterval, errorRetryDelay, disableAutosync) {
-    experiments.stop();
-    experiments.start(url, syncInterval, errorRetryDelay, disableAutosync);
+  // remote config
+  restartRemoteConfig(url, syncInterval, errorRetryDelay, disableAutosync) {
+    remoteConfig.stop();
+    remoteConfig.start({url, syncInterval, errorRetryDelay, disableAutosync});
   },
+  resetRemoteConfig: remoteConfig.reset,
+
+  // cohorts
+  resetCohortsData: cohorts.reset,
+  mockFacts(facts) {
+    cohorts.setFactsGetter(() => facts);
+  },
+
+  // experiments
   setExperimentsSeed: experiments.setSeed,
   resetExperimentData: experiments.reset,
+
+  // sentry
   getLastSentryEvent: sentry.getLastEvent,
   setSentrySampleRate: sentry.setSampleRate,
 

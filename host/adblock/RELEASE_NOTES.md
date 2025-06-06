@@ -11,6 +11,7 @@ This release contains bugfixes and under-the-hood changes.
 - Fixed an issue with the display of text on the Customize tab of the AdBlock Option page with the dark theme enabled. (EXT-835)
 - Fix Public API Main World script initialization.
 - Store installation date in prefs. (EXT-959)
+- Updated `EWE.start()` parameters to enable the cohorts engine. (EXT-946)
 
 # 6.21.1 - 2025-05-27
 

@@ -372,12 +372,12 @@ describe("Telemetry - Active Ping", function() {
           }
         ]
       }, "GET", 200);
-      await EWE.testing.restartExperiments(
+      await EWE.testing.restartRemoteConfig(
         EXPERIMENT_URL,
         MILLIS_IN_SECOND,
         2 * MILLIS_IN_SECOND
       );
-      await EWE.experiments.sync();
+      await EWE.remoteConfig.sync();
       await EWE.testing.startTelemetry(TELEMETRY_ARGS);
 
       await waitForAssertion(async() => {

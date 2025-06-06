@@ -81,7 +81,7 @@ describe("url", () => {
         .spyOn(deps, "getExperiments")
         .mockImplementation(async () => experiments);
       jest
-        .spyOn(ewe.experiments, "getRevisionId")
+        .spyOn(ewe.remoteConfig, "getRevisionId")
         .mockImplementation(async () => revision);
     });
 

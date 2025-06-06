@@ -767,10 +767,9 @@ describe("CDP", function() {
       const PING_INTERVAL_MS = MILLIS_IN_SECOND;
       const ERROR_BACKOFF_MS = 2 * MILLIS_IN_SECOND;
 
-      await EWE.testing.restartExperiments(
+      await EWE.testing.restartRemoteConfig(
         EXPERIMENT_URL, PING_INTERVAL_MS, ERROR_BACKOFF_MS
       );
-      await EWE.experiments.sync();
       await startMetricsUploaderWithTestArgs();
 
       await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
@@ -816,7 +815,7 @@ describe("CDP", function() {
           }
         ]
       }, "GET", 200);
-      await EWE.experiments.sync();
+      await EWE.remoteConfig.sync();
       await startMetricsUploaderWithTestArgs();
 
       await new Page("http://localhost:3000/image.html").loaded;

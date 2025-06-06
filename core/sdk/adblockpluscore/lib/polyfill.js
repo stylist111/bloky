@@ -23,3 +23,29 @@ if (!Promise.prototype.finally) {
     return this.then(fn, fn);
   };
 }
+
+// Object.hasOwn is not supported in Firefox < 92
+// Note: Using https://github.com/es-shims/Object.hasOwn/
+// will result in checkbuildsize pipeline failure, so for now we're using
+// a simple polyfill
+if (!Object.hasOwn) {
+  Object.hasOwn = function(obj, prop) {
+    return Object.prototype.hasOwnProperty.call(obj, prop);
+  };
+}
+
+// String.prototype.replaceAll is not supported in Firefox < 77
+// Note: Using https://github.com/es-shims/String.prototype.replaceAll/
+// will result in checkbuildsize pipeline failure, so for now we're using
+// a simple polyfill
+if (!String.prototype.replaceAll) {
+  String.prototype.replaceAll = function(search, replacement) {
+    if (typeof search === "string") {
+      return this.split(search).join(replacement);
+    }
+    else if (search instanceof RegExp) {
+      return this.replace(search, replacement);
+    }
+    throw new TypeError("Invalid arguments");
+  };
+}

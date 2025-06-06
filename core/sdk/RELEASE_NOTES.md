@@ -12,6 +12,8 @@
 - Added a new event, `EWE.cdp.onBTAADetectionEvent`, which can be used to
   inspect and debug the status of the Blockthrough tag.
 - Remove I don't care about cookies recommended list. (EXT-843)
+- Added remote configuration support `EWE.remoteConfig` API. (EXT-946)
+- Added the `EWE.cohorts` API to retrieve the current user cohort. (EXT-946)
 
 ## General
 
@@ -51,6 +53,10 @@
     by Sentry automatically.
 - Callback used in `EWE.cdp.setPremiumStatusCallback(callback)` has to return
   boolean instead of string. (EXT-779)
+- In the `EWE.start()` parameters should replace `experiments` with
+  `remoteConfig`. In addition, the `remoteConfig` can contain `getFacts` a
+  function that returns an object with information to be used in the cohorts
+  and experiments engine e.g. hasPremium, installDate, etc. (EXT-946)
 
 # 1.23.1 - 2025-01-15
 

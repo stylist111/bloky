@@ -442,6 +442,8 @@ addEventListener("unhandledrejection", ({reason}) => {
   lastError = typeof reason == "object" ? reason.message : reason;
 });
 
+EWE.remoteConfig.onChanged.addListener(createTestEventListener("remoteConfig.updated"));
+EWE.cohorts.onChanged.addListener(createTestEventListener("cohorts.updated"));
 EWE.experiments.onChanged.addListener(createTestEventListener("experiments.updated"));
 EWE.filters.onAdded.addListener(createTestEventListener("filters.onAdded"));
 EWE.filters.onChanged.addListener(createTestEventListener("filters.onChanged"));
@@ -535,8 +537,13 @@ if (isMV3()) {
     sub => sub.id != "00000000-0000-0000-0000-000000000092");
 }
 
-startupInfo.experiments = {
-  url: "http://localhost:3003/experiments.json"
+startupInfo.remoteConfig = {
+  url: "http://localhost:3003/experiments.json",
+  getFacts: async() => ({
+    countryCode: "US",
+    hasPremium: false,
+    installDate: new Date("2023-10-01T00:00:00Z").getTime()
+  })
 };
 
 startupInfo.telemetry = {

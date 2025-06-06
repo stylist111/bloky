@@ -72,7 +72,7 @@ export async function addExperimentsSearchParams(
 
   extendedUrl.searchParams.append(
     ExperimentSearchParameterKeys.revision,
-    (await ewe.experiments.getRevisionId()) ?? noRevisionId,
+    (await ewe.remoteConfig.getRevisionId()) ?? noRevisionId,
   );
   extendedUrl.searchParams.append(
     ExperimentSearchParameterKeys.variants,

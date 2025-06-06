@@ -20,10 +20,12 @@ toc:
     children:
       - allowlisting
       - cdp
+      - cohorts
       - debugging
       - experiments
       - filters
       - notifications
+      - remoteConfig
       - reporting
       - sentry
       - snippets
@@ -41,7 +43,6 @@ toc:
       - CdpEventOptions
       - EventDispatcher
       - Experiment
-      - ExperimentSyncStatus
       - ExperimentVariant
       - Filter
       - FilterAddResult
@@ -49,6 +50,7 @@ toc:
       - FilterMatchInfo
       - FirstRunInfo
       - Recommendation
+      - RemoteConfigSyncStatus
       - ServerLogger
       - Subscription
       - SnippetCallback

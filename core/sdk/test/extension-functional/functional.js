@@ -19,6 +19,8 @@ import "../dnr-filters-update.js";
 import "../dnr-full-subscription-updates.js";
 import "../telemetry-active-ping.js";
 import "../telemetry-logging.js";
+import "../remote-config.js";
+import "../cohorts.js";
 import "../experiments.js";
 import "../sentry.js";
 
