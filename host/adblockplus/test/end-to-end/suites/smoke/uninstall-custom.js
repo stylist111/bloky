@@ -53,7 +53,25 @@ export default () => {
     await initOptionsAdvancedTab(getOptionsHandle());
     const name = "EasyList";
     const { toggle } = getFLSelectors(name);
-    await clickOnDisplayedElement(toggle, { timeout: 1000 });
+
+    await wait(
+      async () => {
+        try {
+          await clickOnDisplayedElement(toggle, { timeout: 1000 });
+          return true;
+        } catch (e) {
+          await clickOnDisplayedElement("#update");
+          // eslint-disable-next-line no-console
+          console.log(
+            "Easylist toggle not found, trying to update filter lists"
+          );
+        }
+      },
+      10000,
+      "Easylist toggle not found",
+      2000
+    );
+
     await wait(
       async () => !(await isCheckboxPropertyEnabled(toggle)),
       2000,
