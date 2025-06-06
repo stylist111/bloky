@@ -1,6 +1,7 @@
 # Unreleased
 
 - Update non-partner detection check
+- Updated snippets to 2.2.0
 
 # 4.22.1 - 2025-06-03
 
