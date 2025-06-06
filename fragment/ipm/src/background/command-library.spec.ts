@@ -23,19 +23,24 @@ import {
   isCommandExpired,
   setCommandActor,
 } from "./command-library";
-import { type CommandActor, CommandName } from "./command-library.types";
+import {
+  type CommandActor,
+  CommandName,
+  CommandVersion,
+} from "./command-library.types";
 import { getStartInfo } from "./start-info";
 
 describe("command-library", () => {
+  let prefsObj: Record<string, any>;
+
+  beforeEach(() => {
+    prefsObj = {};
+    const { prefs } = getStartInfo();
+    const prefsGetMock = jest.spyOn(prefs, "get");
+    prefsGetMock.mockImplementation((key) => prefsObj[key]);
+  });
+
   describe("getStoredCommandIds", () => {
-    let prefsObj: Record<string, any>;
-
-    beforeEach(() => {
-      const { prefs } = getStartInfo();
-      const prefsGetMock = jest.spyOn(prefs, "get");
-      prefsGetMock.mockImplementation((key) => prefsObj[key]);
-    });
-
     it("should return an empty array when no commands are stored", () => {
       prefsObj = {
         [commandStorageKey]: {},
@@ -112,7 +117,7 @@ describe("command-library", () => {
 
   describe("executeIPMCommands", () => {
     const commandBase = {
-      version: 6,
+      version: CommandVersion[CommandName.createTab],
       command_name: CommandName.createTab,
       ipm_id: "command_1",
       expiry: "2050-01-16",
@@ -121,9 +126,6 @@ describe("command-library", () => {
     let createTabActor: CommandActor;
 
     beforeEach(() => {
-      const { prefs } = getStartInfo();
-      // Mock prefs.get to return an empty object
-      jest.spyOn(prefs, "get").mockReturnValue({});
       jest
         .spyOn(ewe.experiments, "getFlag")
         .mockReturnValue(Promise.resolve(true));
@@ -149,12 +151,32 @@ describe("command-library", () => {
     });
 
     it("executes properly after ping", async () => {
+      const { prefs } = getStartInfo();
+      // Mock prefs.get to return an empty object
+      jest.spyOn(prefs, "get").mockReturnValue({});
+
       const commands = [{ ...commandBase }];
       await executeIPMCommands(commands);
       expect(createTabActor.handleCommand).toHaveBeenCalledWith(
         commandBase.ipm_id,
         false,
       );
+    });
+
+    it("dismisses commands with outdated versions on initialization", async () => {
+      const outdatedCommand = {
+        ...commandBase,
+        version: commandBase.version - 1,
+      };
+      prefsObj = {
+        [commandStorageKey]: {
+          [outdatedCommand.ipm_id]: outdatedCommand,
+        },
+      };
+
+      await executeIPMCommands([outdatedCommand], true);
+
+      expect(JSON.stringify(prefsObj[commandStorageKey])).toBe("{}");
     });
   });
 });

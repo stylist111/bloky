@@ -306,6 +306,12 @@ export async function executeIPMCommands(
           }`,
         ),
       );
+
+      // cleanup commands whose version has become outdated from local storage
+      if (isInitialization) {
+        dismissCommand(command.ipm_id);
+      }
+
       continue;
     }
 
