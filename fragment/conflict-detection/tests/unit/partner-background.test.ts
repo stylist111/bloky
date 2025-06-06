@@ -60,7 +60,7 @@ describe("sendPingMessage", () => {
       logger: {
         debug: vi.fn(),
       },
-      onUpdatedPartnerExtensionIds: vi.fn()
+      onUpdatedPartnerExtensionIds: vi.fn(),
     };
   });
 
@@ -113,7 +113,10 @@ describe("sendPingMessage", () => {
 
     await sendSavePingResponses(parameters);
 
-    expect(parameters.onUpdatedPartnerExtensionIds).toHaveBeenCalledWith([PartnerExtensionIds[0], PartnerExtensionIds[1]]);
+    expect(parameters.onUpdatedPartnerExtensionIds).toHaveBeenCalledWith([
+      PartnerExtensionIds[0],
+      PartnerExtensionIds[1],
+    ]);
   });
 
   it("should save 1 ping response to preference when alarm fires", async () => {
@@ -135,7 +138,9 @@ describe("sendPingMessage", () => {
     setupMockOnMessageResponse([PartnerExtensionIds[1]]);
     await theCallbackFunction({ name: alarmName }); // invoke the onAlarm listener with correct alarm
     await new Promise(process.nextTick);
-    expect(parameters.onUpdatedPartnerExtensionIds).toHaveBeenCalledWith([PartnerExtensionIds[1]]);
+    expect(parameters.onUpdatedPartnerExtensionIds).toHaveBeenCalledWith([
+      PartnerExtensionIds[1],
+    ]);
   });
 
   it("should add the alarm listener and return", async () => {

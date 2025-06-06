@@ -28,7 +28,11 @@ import {
 } from "vitest";
 import browser from "webextension-polyfill";
 import { start as startNonPartnerDetection } from "../../src/background/nonpartner-detection";
-import {uboDetectedKey, uboDetectionLastRunKey, uboExtensionIds} from "../../src/background";
+import {
+  uboDetectedKey,
+  uboDetectionLastRunKey,
+  uboExtensionIds,
+} from "../../src/background";
 import { detectionEvent } from "../../src/shared";
 
 describe("nonpartner-detection", () => {
@@ -40,7 +44,10 @@ describe("nonpartner-detection", () => {
   const mockTimestamp = 1672531200000; // Jan 1, 2023
 
   beforeEach(() => {
-    logger = { debug: vi.fn() };
+    logger = {
+      debug: vi.fn(),
+      error: vi.fn()
+    };
     prefs = {
       untilLoaded: vi.fn(() => Promise.resolve()),
       set: vi.fn(() => Promise.resolve()),
@@ -90,7 +97,10 @@ describe("nonpartner-detection", () => {
 
       expect(browser.scripting.executeScript).toHaveBeenCalled();
       expect(prefs.set).toHaveBeenCalledWith(uboDetectedKey, mockTimestamp);
-      expect(prefs.set).toHaveBeenCalledWith(uboDetectionLastRunKey, mockTimestamp);
+      expect(prefs.set).toHaveBeenCalledWith(
+        uboDetectionLastRunKey,
+        mockTimestamp,
+      );
     });
 
     it("should not save the result if not detected", async () => {
@@ -111,7 +121,40 @@ describe("nonpartner-detection", () => {
       });
 
       expect(browser.scripting.executeScript).toHaveBeenCalled();
-      expect(prefs.set).toHaveBeenCalledWith(uboDetectionLastRunKey, mockTimestamp);
+      expect(prefs.set).toHaveBeenCalledTimes(1);
+      expect(prefs.set).toHaveBeenCalledWith(
+        uboDetectionLastRunKey,
+        mockTimestamp,
+      );
+    });
+
+    it("should not save the result if Main World script injection throws error", async () => {
+      const tabId = 1234;
+
+      browser.scripting.executeScript.mockRejectedValue(
+        new Error(`No tab with id: ${tabId}`),
+      );
+
+      startNonPartnerDetection({
+        logger,
+        port,
+        addTrustedMessageTypes,
+        prefs,
+      });
+
+      expect(registeredNavigationListener).toBeDefined();
+      await registeredNavigationListener!({
+        url: "https://example.com",
+        tabId,
+        frameId: 0,
+      });
+
+      expect(browser.scripting.executeScript).toHaveBeenCalled();
+      expect(prefs.set).toHaveBeenCalledTimes(1);
+      expect(prefs.set).toHaveBeenCalledWith(
+        uboDetectionLastRunKey,
+        mockTimestamp,
+      );
     });
   });
 
@@ -215,7 +258,10 @@ describe("nonpartner-detection", () => {
       await registeredTabListener!({
         url: `chrome-extension://${extId}/options.html`,
       });
-      expect(prefs.set).toHaveBeenCalledWith(uboDetectionLastRunKey, mockTimestamp);
+      expect(prefs.set).toHaveBeenCalledWith(
+        uboDetectionLastRunKey,
+        mockTimestamp,
+      );
       expect(prefs.set).toHaveBeenCalledWith(uboDetectedKey, mockTimestamp);
     });
 

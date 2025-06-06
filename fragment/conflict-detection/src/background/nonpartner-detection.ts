@@ -80,18 +80,27 @@ async function runMV3Detection(
   prefs: any,
   tabId: number,
 ): Promise<void> {
-  const [{ result }] = await browser.scripting.executeScript({
-    target: { tabId },
-    func: uboDetection,
-    world: "MAIN",
-  });
-  logger.debug(
-    "[conflict-detection]: non-partner extension MV3 detection script was injected",
-  );
+  try {
+    const [{ result }] = await browser.scripting.executeScript({
+      target: { tabId },
+      func: uboDetection,
+      world: "MAIN",
+    });
 
-  if (!result) {
     logger.debug(
-      "[conflict-detection]: NO non-partner extension was found on MV3",
+      "[conflict-detection]: non-partner extension MV3 detection script was injected",
+    );
+
+    if (!result) {
+      logger.debug(
+        "[conflict-detection]: NO non-partner extension was found on MV3",
+      );
+      return;
+    }
+  } catch (error) {
+    logger.error(
+      "[conflict-detection]: Error running MV3 detection script",
+      error,
     );
     return;
   }
@@ -112,16 +121,22 @@ async function runMV2Detection(logger: any, tabId: number): Promise<void> {
     detectionEvent,
   );
 
-  await browser.tabs.executeScript(tabId, {
-    frameId: 0,
-    code: executable,
-    matchAboutBlank: true,
-    runAt: "document_end",
-  });
-
-  logger.debug(
-    "[conflict-detection]: non-partner extension MV2 detection script was injected",
-  );
+  try {
+    await browser.tabs.executeScript(tabId, {
+      frameId: 0,
+      code: executable,
+      matchAboutBlank: true,
+      runAt: "document_end",
+    });
+    logger.debug(
+      "[conflict-detection]: non-partner extension MV2 detection script was injected",
+    );
+  } catch (error) {
+    logger.error(
+      "[conflict-detection]: Error running MV2 detection script",
+      error,
+    );
+  }
 }
 
 /**
