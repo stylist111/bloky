@@ -15,6 +15,8 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import semver from "semver";
+
 /**
  * Cohorts operator for relative time comparisons. Checks if a fact value is
  * older than a specified time in milliseconds.
@@ -49,9 +51,7 @@ export function withinLast(factValue, jsonValue) {
  * @returns {boolean}
  */
 export function semverGreaterThan(factValue, jsonValue) {
-  // eslint-disable-next-line no-warning-comments
-  // TODO: Implement using semver.gt
-  return false;
+  return semver.gt(factValue, jsonValue);
 }
 
 /**
@@ -60,10 +60,8 @@ export function semverGreaterThan(factValue, jsonValue) {
  * @param {string} jsonValue - The semantic version to compare against.
  * @returns {boolean}
  */
-export function semverGreaterThanEqual(factValue, jsonValue) {
-  // eslint-disable-next-line no-warning-comments
-  // TODO: Implement using semver.gte
-  return false;
+export function semverGreaterThanInclusive(factValue, jsonValue) {
+  return semver.gte(factValue, jsonValue);
 }
 
 /**
@@ -73,9 +71,7 @@ export function semverGreaterThanEqual(factValue, jsonValue) {
  * @returns {boolean}
  */
 export function semverLessThan(factValue, jsonValue) {
-  // eslint-disable-next-line no-warning-comments
-  // TODO: Implement using semver.lt
-  return false;
+  return semver.lt(factValue, jsonValue);
 }
 
 /**
@@ -84,20 +80,6 @@ export function semverLessThan(factValue, jsonValue) {
  * @param {string} jsonValue - The semantic version to compare against.
  * @returns {boolean}
  */
-export function semverLessThanEqual(factValue, jsonValue) {
-  // eslint-disable-next-line no-warning-comments
-  // TODO: Implement using semver.lte
-  return false;
-}
-
-/**
- * Checks if the factValue satisfies the semver range specified by jsonValue.
- * @param {string} factValue - The semantic version to check.
- * @param {string} jsonValue - The semver range to satisfy.
- * @returns {boolean}
- */
-export function semverSatisfies(factValue, jsonValue) {
-  // eslint-disable-next-line no-warning-comments
-  // TODO: Implement using semver.satisfies
-  return false;
+export function semverLessThanInclusive(factValue, jsonValue) {
+  return semver.lte(factValue, jsonValue);
 }

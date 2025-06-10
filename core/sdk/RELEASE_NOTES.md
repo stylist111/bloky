@@ -14,6 +14,7 @@
 - Remove I don't care about cookies recommended list. (EXT-843)
 - Added remote configuration support `EWE.remoteConfig` API. (EXT-946)
 - Added the `EWE.cohorts` API to retrieve the current user cohort. (EXT-946)
+- Add semver operator to be used in cohorts. (EXT-960)
 
 ## General
 

@@ -2,6 +2,7 @@
 
 - Update non-partner detection check
 - Updated snippets to 2.2.0
+- Add semver operator to be used in cohorts. (EXT-960)
 
 # 6.21.2 - 2025-06-03
 
