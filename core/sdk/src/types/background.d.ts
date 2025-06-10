@@ -441,6 +441,10 @@ export interface Facts {
    */
   extVersion?: string;
   /**
+   * The number of ads blocked by the extension.
+   */
+  blockedCount?: number;
+  /**
    * The browser name.
    */
   browserName?: string;
@@ -453,7 +457,7 @@ export interface Facts {
    */
   browserLanguage?: string
   /**
-   * Weather Acceptable Ads is enabled.
+   * Whether Acceptable Ads is enabled.
    */
   aaEnabled?: boolean;
   /**

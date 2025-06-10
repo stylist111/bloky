@@ -31,5 +31,6 @@ export async function getFacts(): Promise<Facts> {
   return {
     hasPremium: License.isActiveLicense(),
     installDate: Prefs.get("installDate"),
+    blockedCount: Prefs.get("blocked_total"),
   };
 }

@@ -29,6 +29,7 @@ export async function getFacts(): Promise<Facts> {
 
   return {
     hasPremium: hasActiveLicense(),
-    installDate: Prefs.get("installDate")
+    installDate: Prefs.get("installDate"),
+    blockedCount: Prefs.get("blocked_total")
   };
 }
