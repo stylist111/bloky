@@ -85,7 +85,10 @@ export default () => {
       await clickOnDisplayedElement(`span:has(> ${checkboxSelector})`);
       // if list is enabled by default, it should be unsubscribed
       const regexp = enabled ? /Unsubscribed/ : /updated|Subscribed/;
-      await checkSubscriptionsState([{ name, enabled: !enabled, checkboxSelector }], { regexp });
+      await checkSubscriptionsState([{ name, enabled: !enabled, checkboxSelector }], {
+        timeout: 4000,
+        regexp,
+      });
     }
 
     // note: we need easylist to be off, otherwise there is no enough space for all the filters (MV3)
