@@ -724,6 +724,35 @@ export async function changeLanguageFilterList(langNameBefore, langNameAfter) {
   });
 }
 
+export async function isFLInCorrectState(name, expectedState) {
+  const allSubscriptions = await driver.executeScript(() => {
+    return browser.runtime.sendMessage({
+      type: "subscriptions.get"
+    });
+  });
+
+  let targetFilterList = null;
+  for (const key in allSubscriptions) {
+    if (Object.prototype.hasOwnProperty.call(allSubscriptions, key)) {
+      const subscription = allSubscriptions[key];
+      if (subscription.title === name) {
+        targetFilterList = subscription;
+        break;
+      }
+    }
+  }
+
+  if (!targetFilterList) {
+    return false;
+  }
+
+  const currentEnabledState = !targetFilterList.disabled;
+  if (currentEnabledState === expectedState.enable) {
+    return true;
+  }
+  return false;
+}
+
 export async function clickFLAndCheck(
   name,
   { enable = true, timeout = 1000, stepsAfterClick = () => {} } = {}
@@ -759,6 +788,12 @@ export async function setPremiumFLsDefaultState() {
   await initOptionsGeneralTab(getOptionsHandle());
 
   for (const { name, enabled, stepsAfterClick } of premiumFilterLists) {
-    await clickFLAndCheck(name, { enable: enabled, stepsAfterClick });
+    const isAlreadyCorrect = await isFLInCorrectState(name, {
+      enable: enabled
+    });
+
+    if (!isAlreadyCorrect) {
+      await clickFLAndCheck(name, { enable: enabled, stepsAfterClick });
+    }
   }
 }
