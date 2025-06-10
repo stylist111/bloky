@@ -49,6 +49,12 @@ enum PlayerState {
 const infoBoxId = "yt-haven-info-box";
 
 /**
+ * URL to the survey for feedback
+ * This is used in the feedback menu
+ */
+const SURVEY_URL = "https://survey.alchemer.eu/s3/90847063/Quick-Feedback";
+
+/**
  * Attempts to load the next video when the current video in the embedded player has ended
  */
 async function handleEmbeddedVideoEnding(): Promise<void> {
@@ -173,13 +179,18 @@ function createToggleSwitch(
   onToggle: (state: boolean) => Promise<void> = async () => {},
 ): HTMLDivElement {
   let isActive = initialState;
+  const colors = {
+    // ENABLED: "#34d399"
+    ENABLED: "#3c5b81",
+    DISABLED: isDarkMode() ? "rgba(255, 255, 255, 0.15)" : "#b0c0d1",
+  };
 
   // Create toggle container
   const toggle = document.createElement("div");
   Object.assign(toggle.style, {
     width: "36px",
     height: "18px",
-    backgroundColor: initialState ? "#34d399" : "#7b8794",
+    backgroundColor: initialState ? colors.ENABLED : colors.DISABLED,
     borderRadius: "18px",
     position: "relative",
     cursor: "pointer",
@@ -209,7 +220,9 @@ function createToggleSwitch(
     const newState = !isActive;
     if (newState !== isActive) {
       isActive = newState;
-      toggle.style.backgroundColor = isActive ? "#34d399" : "#7b8794";
+      toggle.style.backgroundColor = isActive
+        ? colors.ENABLED
+        : colors.DISABLED;
       thumb.style.left = isActive ? "18px" : "0px";
       void onToggle(isActive);
     }
@@ -254,7 +267,11 @@ function createMenuComponent(): HTMLDivElement {
   });
 
   // Helper to create items
-  const createItem = (emoji: string, i18nKey: string): HTMLDivElement => {
+  const createItem = (
+    emoji: string,
+    i18nKey: string,
+    href: string = "",
+  ): HTMLDivElement => {
     const item = document.createElement("div");
     item.textContent = `${emoji} ${browser.i18n.getMessage(i18nKey)}`;
     Object.assign(item.style, {
@@ -281,14 +298,18 @@ function createMenuComponent(): HTMLDivElement {
       menu.style.display = "none";
       // record feedback menu item clicked
       void recordEvent(i18nKey);
+      if (href) {
+        // If href is provided, navigate to it
+        window.open(href, "_blank");
+      }
     });
 
     return item;
   };
 
   menu.appendChild(createItem("😍", "yt_haven_feedback_love"));
-  menu.appendChild(createItem("🥲", "yt_haven_feedback_fix_it"));
-  menu.appendChild(createItem("👎", "yt_haven_feedback_hate"));
+  menu.appendChild(createItem("🥲", "yt_haven_feedback_fix_it", SURVEY_URL));
+  menu.appendChild(createItem("👎", "yt_haven_feedback_hate", SURVEY_URL));
 
   // Toggle menu
   menuButton.addEventListener("click", () => {
@@ -335,7 +356,7 @@ function addInfoBox(
 
   Object.assign(infoBoxElem.style, {
     marginTop: "12px",
-    backgroundColor: isDarkMode() ? "#263950" : "#dff1fe",
+    backgroundColor: isDarkMode() ? "#272727" : "#dff1fe",
     borderRadius: "12px",
     padding: "12px",
     fontSize: "14px",
