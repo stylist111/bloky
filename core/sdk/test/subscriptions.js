@@ -179,20 +179,22 @@ describe("Subscriptions", function() {
       await EWE.subscriptions.add(isMV3() ? sub.url : sub.mv2_url);
     }
 
-    let subs = await EWE.subscriptions.getSubscriptions();
-    expect(subs.length).toEqual(3);
+    await waitForAssertion(async() => {
+      let subs = await EWE.subscriptions.getSubscriptions();
+      expect(subs.length).toEqual(3);
 
-    // If the test fails with "downloadStatus": "synchronize_connection_error",
-    // the diff_url property from live subscriptions in
-    // test/scripts/custom-subscriptions.json probably needs to be updated
-    if (isMV3()) {
-      for (let sub of subs) {
-        expect(sub).toEqual(expect.objectContaining({
-          downloadStatus: "synchronize_ok",
-          diffURL: expect.stringMatching(/.*diff.*/)
-        }));
+      // If the test fails with "downloadStatus": "synchronize_connection_error"
+      // the diff_url property from live subscriptions in
+      // test/scripts/custom-subscriptions.json probably needs to be updated
+      if (isMV3()) {
+        for (let sub of subs) {
+          expect(sub).toEqual(expect.objectContaining({
+            downloadStatus: "synchronize_ok",
+            diffURL: expect.stringMatching(/.*diff.*/)
+          }));
+        }
       }
-    }
+    }, 5000);
   });
 
   it("adds downloadable subscriptions in MV2 and non-downloadable subscriptions in MV3", async function() {
