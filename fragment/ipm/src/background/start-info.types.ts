@@ -15,6 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { type PayloadData } from "./data-collection.types";
+
 /**
  * An interface describing the start info for the IPM fragment.
  */
@@ -23,9 +25,13 @@ export interface StartInfo {
   logger: Logger;
   licensing: Licensing;
   info: UserAndHostInformation;
+  addMessageListener: (
+    name: string,
+    listener: () => Promise<PayloadData | null>,
+  ) => void;
   getExperiments: getExperimentsFunction;
-  getIPMPingCount: () => Promise<number>;
   getBlockCount: () => Promise<number>;
+  isOptedOut: () => Promise<boolean>;
 }
 
 interface Preferences {
@@ -37,6 +43,7 @@ interface Preferences {
 interface Logger {
   debug: (...data: unknown[]) => void;
   reportAndLogError: (e: Error, logContext?: string) => void;
+  warn: (...data: unknown[]) => void;
 }
 
 interface Licensing {

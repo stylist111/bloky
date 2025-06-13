@@ -20,23 +20,26 @@
  */
 
 import { type StartInfo } from "@eyeo-fragments/ipm/background";
+
+import { port } from "~/core/messaging/background";
 import { getInstallationId } from "~/id/background";
 import { info } from "~/info/background";
+import * as logger from "~/logger/background";
 import { getPremiumState } from "~/premium/background";
 import { getExperiments } from "~/uninstall/background";
-import { Prefs as prefs } from "../../../adblockpluschrome/lib/prefs";
-import * as logger from "../../logger/background";
-import { getIPMPingCount } from "./ping-count";
+
+import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import { getBlockCount } from "./block-count";
 
 /**
  * The information the IPM fragments needs to start up.
  */
 export const startInfo: StartInfo = {
-  prefs,
+  prefs: Prefs,
   logger,
   licensing: {
     async isLicenseValid() {
+      await Prefs.untilLoaded;
       const { isActive } = getPremiumState();
       return isActive;
     }
@@ -58,7 +61,13 @@ export const startInfo: StartInfo = {
       return info.applicationVersion;
     }
   },
+  addMessageListener(name, listener) {
+    port.on(name, listener);
+  },
   getExperiments,
-  getIPMPingCount,
-  getBlockCount
+  getBlockCount,
+  async isOptedOut() {
+    await Prefs.untilLoaded;
+    return Prefs.get("data_collection_opt_out") === true;
+  }
 };

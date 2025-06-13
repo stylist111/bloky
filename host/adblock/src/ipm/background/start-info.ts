@@ -23,21 +23,27 @@ import { type StartInfo } from "@eyeo-fragments/ipm/background";
 
 import * as info from "info";
 
+import { port } from "../../../adblockplusui/adblockpluschrome/lib/messaging/port";
 import { Prefs } from "~/alias/prefs";
 import { getExperiments } from "~/alias/uninstall";
 import { getUserId } from "~/id/background";
 import { License } from "~/picreplacement/check";
 import * as utils from "~/utilities/background";
 import { getBlockCount } from "./block-count";
-import { getIPMPingCount } from "./ping-count";
 
 /**
  * The information the IPM fragments needs to start up.
  */
 export const startInfo: StartInfo = {
+  addMessageListener(name, listener) {
+    port.on(name, listener);
+  },
   getExperiments,
-  getIPMPingCount,
   getBlockCount,
+  async isOptedOut() {
+    await Prefs.untilLoaded;
+    return Prefs.get("data_collection_opt_out") === true;
+  },
   info: {
     async getId() {
       return await getUserId();

@@ -1,38 +1,32 @@
 /*
- * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-present eyeo GmbH
+ * This file is part of eyeo's In Product Messaging (IPM) fragment,
+ * Copyright (C) 2024-present eyeo GmbH
  *
- * Adblock Plus is free software: you can redistribute it and/or modify
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
  *
- * Adblock Plus is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 import browser from "webextension-polyfill";
-import { Prefs } from "../../../adblockpluschrome/lib/prefs";
-import {
-  hasSchedule,
-  removeSchedule
-} from "../../core/scheduled-event-emitter/background";
-import { warn as logWarning, reportAndLogError } from "../../logger/background";
-import {
-  executeIPMCommands,
-  getPayload,
-  clearEvents
-} from "@eyeo-fragments/ipm/background";
+
+import { executeIPMCommands } from "./command-library";
+import { clearEvents, getPayload } from "./data-collection";
+import { type PayloadData } from "./data-collection.types";
+import { getStartInfo } from "./start-info";
 import {
   intervalKey,
   lastPingKey,
   pingCountPrefsKey,
   scheduleName,
-  serverUrlKey
+  serverUrlKey,
 } from "./telemetry.types";
 
 /**
@@ -42,11 +36,13 @@ import {
  * @param response The response from the IPM server
  */
 async function processResponse(response: Response): Promise<void> {
+  const { logger } = getStartInfo();
+
   if (!response || !response.ok) {
     const status = response?.status || "no status";
-    reportAndLogError(
+    logger.reportAndLogError(
       new Error(`Bad response status from IPM server: ${status}`),
-      `[Telemetry]: Bad response status from IPM server: ${status}`
+      `[Telemetry]: Bad response status from IPM server: ${status}`,
     );
     return;
   }
@@ -71,9 +67,9 @@ async function processResponse(response: Response): Promise<void> {
 
     await executeIPMCommands(commands);
   } catch (error) {
-    reportAndLogError(
+    logger.reportAndLogError(
       error as Error,
-      "[Telemetry]: Error parsing IPM response."
+      "[Telemetry]: Error parsing IPM response.",
     );
   }
 }
@@ -82,26 +78,32 @@ async function processResponse(response: Response): Promise<void> {
  * Increments the number of total IPM pings.
  */
 function incrementPingCount(): void {
-  const count = Prefs.get(pingCountPrefsKey);
-  void Prefs.set(pingCountPrefsKey, count + 1);
+  const { prefs } = getStartInfo();
+
+  const count = prefs.get(pingCountPrefsKey);
+  void prefs.set(pingCountPrefsKey, count + 1);
 }
 
 /**
  * Sends a ping together with telemetry data
+ *
+ * @returns request payload (null, if no ping was attempted)
  */
-export async function sendPing(): Promise<void> {
+export async function sendPing(): Promise<PayloadData | null> {
+  const { isOptedOut, logger, prefs } = getStartInfo();
+
   // Disable IPM when user opted out of data collection.
-  if (Prefs.get("data_collection_opt_out") === true) {
-    return;
+  if (await isOptedOut()) {
+    return null;
   }
 
   // Check if enough time has passed to actually ping
-  const lastPingTimestamp = Prefs.get(lastPingKey);
-  const intervalTime = Prefs.get(intervalKey);
+  const lastPingTimestamp = prefs.get(lastPingKey);
+  const intervalTime = prefs.get(intervalKey);
   if (Date.now() - lastPingTimestamp < intervalTime) {
     // We haven't reached our desired interval time yet.
-    logWarning("[Telemetry]: Ping time too early, not pinging.");
-    return;
+    logger.warn("[Telemetry]: Ping time too early, not pinging.");
+    return null;
   }
 
   const payload = await getPayload();
@@ -110,28 +112,42 @@ export async function sendPing(): Promise<void> {
   // successful or not.
   void clearEvents();
 
-  const url = Prefs.get(serverUrlKey);
+  const url = prefs.get(serverUrlKey);
   if (typeof url !== "string") {
-    return;
+    return null;
   }
 
   // Update ping count and timestamp for latest ping
-  void Prefs.set(lastPingKey, Date.now());
+  void prefs.set(lastPingKey, Date.now());
   incrementPingCount();
 
   void fetch(url, {
     method: "POST",
     cache: "no-cache",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(payload),
   })
     .then(processResponse)
     .catch((error) => {
-      reportAndLogError(
+      logger.reportAndLogError(
         error as Error,
-        "[Telemetry]: Ping sending failed with error:"
+        "[Telemetry]: Ping sending failed with error:",
       );
     });
+
+  return payload;
+}
+
+/**
+ * Gets the number of IPM pings from storage.
+ *
+ * @returns The IPM ping count
+ */
+export async function getIPMPingCount(): Promise<number> {
+  const { prefs } = getStartInfo();
+
+  await prefs.untilLoaded;
+  return prefs.get(pingCountPrefsKey);
 }
 
 /**
@@ -140,14 +156,14 @@ export async function sendPing(): Promise<void> {
  * Will schedule pings.
  */
 export async function start(): Promise<void> {
-  // We used to use the ScheduledEventEmitter for scheduling pings, so let's
-  // clean up in case this is the first time we get here after changing that.
-  if (hasSchedule(scheduleName)) {
-    void removeSchedule(scheduleName);
-  }
+  const { addMessageListener, prefs } = getStartInfo();
 
-  await Prefs.untilLoaded;
-  const intervalTime = Prefs.get(intervalKey);
+  addMessageListener("ipm:testing.ping_ipm_server", async () => {
+    return await sendPing();
+  });
+
+  await prefs.untilLoaded;
+  const intervalTime = prefs.get(intervalKey);
   if (typeof intervalTime !== "number") {
     return;
   }
@@ -160,7 +176,7 @@ export async function start(): Promise<void> {
   });
 
   browser.alarms.create(scheduleName, {
-    periodInMinutes: intervalTime / 1000 / 60
+    periodInMinutes: intervalTime / 1000 / 60,
   });
 
   void sendPing();

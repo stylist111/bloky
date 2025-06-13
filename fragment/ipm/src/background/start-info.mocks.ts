@@ -30,6 +30,7 @@ const prefs = {
 const logger = {
   debug(..._data: unknown[]) {},
   reportAndLogError(_e: Error, _logContext?: string) {},
+  warn(..._data: unknown[]) {},
 };
 
 const licensing = {
@@ -58,8 +59,6 @@ const info = {
 
 const getExperiments = async (): Promise<string> => "";
 
-const getIPMPingCount = async (): Promise<number> => 0;
-
 const getBlockCount = async (): Promise<number> => 0;
 
 export function getStartInfo(): StartInfo {
@@ -68,8 +67,9 @@ export function getStartInfo(): StartInfo {
     logger,
     licensing,
     info,
+    addMessageListener: () => {},
     getExperiments,
-    getIPMPingCount,
     getBlockCount,
+    isOptedOut: async () => false,
   };
 }

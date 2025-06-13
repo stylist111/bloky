@@ -243,21 +243,29 @@ defaults.onpage_dialog_command_stats = {};
 
 /**
  * The timestamp of the last time we showed a dialog.
+ *
+ * @type {number}
  */
 defaults.onpage_dialog_last_shown = 0;
 
 /**
  * The minimum amount of time between two dialogs being shown.
+ *
+ * @type {number}
  */
 defaults.onpage_dialog_cool_down = 24 * 60 * 60 * 1000;
 
 /**
  * The timestamp of the last time we opened a new tab.
+ *
+ * @type {number}
  */
 defaults.new_tab_last_shown = 0;
 
 /**
  * The minimum amount of time between two new tabs being opened.
+ *
+ * @type {number}
  */
 defaults.new_tab_cool_down = 24 * 60 * 60 * 1000;
 
@@ -297,6 +305,27 @@ defaults.onpage_dialog_timing_configurations = {
  * @type {Object[]}
  */
 defaults.ipm_events = [];
+
+/**
+ * The timestamp of the last attempt to reach the IPM ping server.
+ *
+ * @type {number}
+ */
+defaults.ipm_last_ping = 0;
+
+/**
+ * The total number of pings.
+ *
+ * @type {number}
+ */
+defaults.ipm_ping_count = 0;
+
+/**
+ * The interval in which to ping the IPM server, in ms. Defaults to 24 hours.
+ *
+ * @type {number}
+ */
+defaults.ipm_ping_interval = 24 * 60 * 60 * 1000;
 
 /**
  * The URL of the IPM server.

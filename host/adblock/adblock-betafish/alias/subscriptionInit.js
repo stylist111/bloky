@@ -28,7 +28,6 @@ import rulesIndex from "@eyeo/rules-utils/adblock/index/adblock.json";
 import { port } from "../../adblockplusui/adblockpluschrome/lib/messaging/port.js";
 import { setReadyState, ReadyState } from "../../src/testing/ready-state/background";
 import ServerMessages from "~/servermessages";
-import { start as startIPMPingListener } from "../../src/testing/ping-ipm/background";
 import * as logger from "~/utilities/background";
 import { getFacts } from "../../src/remote-config/background";
 
@@ -247,7 +246,6 @@ const start = async function () {
     // adding default filter lists
     await addSubscriptions();
     await removeSubscriptions();
-    startIPMPingListener();
 
     setReadyState(ReadyState.started);
   });

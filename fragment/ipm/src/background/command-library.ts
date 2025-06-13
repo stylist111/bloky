@@ -34,6 +34,7 @@ import { isDeleteBehavior, setDeleteCommandHandler } from "./delete-commands";
 import { recordEvent, recordGenericEvent } from "./event-recording";
 import { checkLanguage } from "./language-check";
 import { isValidDate } from "./param-validator";
+import { start as startTelemetry } from "./telemetry";
 import { start as startCookieBannerDetection } from "../cookie-banner-detection/background";
 
 /**
@@ -497,6 +498,8 @@ export async function start(startInfo: StartInfo): Promise<void> {
 
   const commands = Object.values(commandStorage);
   await executeIPMCommands(commands, true);
+
+  await startTelemetry();
 
   startCookieBannerDetection();
 }

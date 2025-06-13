@@ -21,8 +21,7 @@ import rulesIndex from "@eyeo/rules-utils/adblockplus/index/adblockplus.json";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import {
   initializeCDP,
-  initializeEyeometryMACCounting,
-  startTelemetry
+  initializeEyeometryMACCounting
 } from "../../src/ipm/background";
 import * as premium from "../../src/premium/background/index.ts";
 import { startOptionLinkListener } from "../../src/options/background";
@@ -33,7 +32,6 @@ import { initDisabledFilterCounters } from "./filterConfiguration.js";
 import { initNotifications } from "./notificationHelper.js";
 import { Prefs } from "./prefs.js";
 import { start as startUnloadCleanup } from "../../src/unload-cleanup/background/index.ts";
-import { start as startIPMPingListener } from "../../src/testing/ping-ipm/background";
 import * as logger from "../../src/logger/background";
 import { getFacts } from "~/remote-config/background";
 
@@ -235,11 +233,9 @@ export async function start() {
   premium.start();
   ewe.cdp.setPremiumStatusCallback(async () => premium.hasActiveLicense());
   startOptionLinkListener();
-  void startTelemetry();
   void initializeCDP();
   void initializeEyeometryMACCounting();
   startUnloadCleanup();
-  startIPMPingListener();
 
   /**
    * @typedef {object} subscriptionsGetInitIssuesResult

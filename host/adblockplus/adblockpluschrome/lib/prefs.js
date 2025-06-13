@@ -193,6 +193,8 @@ defaults.premium_license = {
 
 /**
  * Origins that are trusted to open the options page
+ *
+ * @type {string[]}
  */
 defaults.options_backlink_trusted_origins = [
   "https://welcome.adblockplus.org",
@@ -338,21 +340,29 @@ defaults.onpage_dialog_command_stats = {};
 
 /**
  * The timestamp of the last time we showed a dialog.
+ *
+ * @type {number}
  */
 defaults.onpage_dialog_last_shown = 0;
 
 /**
  * The minimum amount of time between two dialogs being shown.
+ *
+ * @type {number}
  */
 defaults.onpage_dialog_cool_down = 24 * 60 * 60 * 1000;
 
 /**
  * The timestamp of the last time we opened a new tab.
+ *
+ * @type {number}
  */
 defaults.new_tab_last_shown = 0;
 
 /**
  * The minimum amount of time between two new tabs being opened.
+ *
+ * @type {number}
  */
 defaults.new_tab_cool_down = 24 * 60 * 60 * 1000;
 

@@ -25,5 +25,6 @@ export * from "./license";
 export * from "./param-validator";
 export * from "./param-validator.types";
 export * from "./start-info.types";
+export * from "./telemetry.types";
 export * from "./url";
 export * from "./url.types";

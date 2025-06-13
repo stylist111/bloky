@@ -11,7 +11,7 @@ The default value for the new user preference ("data_collection_opt_out") is tru
 The usage of this user preference can be seen in the Telemetry module:
 adblock-betafish/telemetry/background/telemetry-ping.js
 and IPM Telemetry module:
-adblock-betafish/telemetry/background/telemetry-ipm.js
+src/ipm/background/start-info.ts
 
 ## Intro
 

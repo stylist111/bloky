@@ -34,6 +34,7 @@ import {
   eventStorageKey,
 } from "./data-collection.types";
 import { getStartInfo } from "./start-info";
+import { getIPMPingCount } from "./telemetry";
 
 /**
  * Takes a number, turns it into a string, and pads it if necessary to create
@@ -148,7 +149,6 @@ async function getDeviceData(): Promise<DeviceData> {
  * @returns An object containing user data
  */
 async function getUserData(): Promise<UserData> {
-  const { getIPMPingCount } = getStartInfo();
   return {
     type: DataType.customer,
     platforms: [{ platform: PlatformType.web, active: PlatformStatus.true }],

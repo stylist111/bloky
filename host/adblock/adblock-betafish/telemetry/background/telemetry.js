@@ -17,15 +17,8 @@
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { Prefs } from "~/alias/prefs";
 
-import IPMTelemetry from "./telemetry-ipm";
 import Telemetry from "./telemetry-ping";
 
-export const IPM = new IPMTelemetry(
-  "total_ipm_pings",
-  "next_ipm_ping_time",
-  "ipm_pingalarm",
-  "ipm_server_url",
-);
 export const TELEMETRY = new Telemetry(
   "total_pings",
   "next_ping_time",

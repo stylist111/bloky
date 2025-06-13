@@ -40,7 +40,6 @@ import { NEW_BADGE_REASONS, getNewBadgeTextReason, showIconBadgeCTA } from "./al
 import { getUserId } from "./id/background/index";
 import { initialize } from "./alias/subscriptionInit";
 import {
-  IPM as IPMTelemetry,
   TELEMETRY,
   startCdpOptOutListener,
   startTelemetryOptOutListener,
@@ -106,7 +105,6 @@ Object.assign(self, {
   ServerMessages,
   SubscriptionAdapter,
   TELEMETRY,
-  IPMTelemetry,
   DataCollectionV2,
   getNewBadgeTextReason,
   ewe,
@@ -668,8 +666,6 @@ initialize
     await getUserId();
     TELEMETRY.start();
     setUninstallURL();
-    await IPMTelemetry.untilLoaded();
-    IPMTelemetry.start();
     await startTelemetryOptOutListener();
     await startCdpOptOutListener();
     revalidateAllowlistingStates();

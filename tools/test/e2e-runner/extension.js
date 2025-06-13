@@ -515,8 +515,13 @@ export async function setIPMServer(initOptionsFn) {
 }
 
 export async function pingIPMServer(initOptionsFn) {
+  await sendExtMessage(initOptionsFn, {
+    type: "prefs.set",
+    key: "ipm_last_ping",
+    value: 0,
+  });
   return sendExtMessage(initOptionsFn, {
-    type: "testing.ping_ipm_server",
+    type: "ipm:testing.ping_ipm_server",
   });
 }
 
