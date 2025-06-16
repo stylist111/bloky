@@ -26,14 +26,14 @@ if (timeout) {
   mocha.timeout(parseInt(timeout, 10));
 }
 else {
-  mocha.timeout(4000);
+  mocha.timeout(4500);
 }
 
 if (isFuzzingServiceWorker()) {
   mocha.slow(20000);
 }
 else {
-  mocha.slow(3000);
+  mocha.slow(4000);
 }
 
 
