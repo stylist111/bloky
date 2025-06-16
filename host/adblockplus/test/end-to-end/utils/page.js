@@ -60,6 +60,7 @@ export async function checkInstallUninstallUrl({ url, appVersion, uninstall }) {
       ps: expect.stringMatching(/(0|1)/), // premium subscription
       er: expect.stringMatching(/^([a-zA-Z0-9+/,_=]{8}|null)$/), // experiments revision ID. Example: ietbCO3H
       ev: expect.stringMatching(/^[a-zA-Z0-9+/]+=*/), // experiments variants. Example: AQ%3D%3
+      ca: expect.stringMatching(/^[a-zA-Z0-9+/]+=*/), // cohort assignments. Example: AQ%3D%3
       fv: expect.stringMatching(new RegExp(`(0|${todaysDate})`)) // filter version. Example: 20241216
     };
   }

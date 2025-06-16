@@ -36,6 +36,7 @@ export default () => {
       ps: expect.stringMatching(/(0|1)/),
       er: expect.stringMatching(/^([a-zA-Z0-9+/,_=]{8}|null)$/), // experiments revision ID. Example: ietbCO3H
       ev: expect.stringMatching(/^[a-zA-Z0-9+/]+=*/), // experiments variants. Example: AQ%3D%3
+      ca: expect.stringMatching(/^[a-zA-Z0-9+/]+=*/), // cohort assignments. Example: AQ%3D%3
     };
 
     await uninstallExtension(initOptionsGeneralTab);

@@ -107,6 +107,27 @@ describe("Cohorts", function() {
     ]));
   });
 
+  it("returns the cohorts as a base64-encoded bitmap", async function() {
+    await EWE.cohorts.sync(config, countryCode);
+    let encoded = await EWE.cohorts.getEncodedCohorts();
+    expect(encoded).toEqual("Aw==");
+
+    await EWE.testing.resetCohortsData();
+    await EWE.cohorts.sync(config, "FR");
+    encoded = await EWE.cohorts.getEncodedCohorts();
+    expect(encoded).toEqual("Ag==");
+
+    await EWE.testing.resetCohortsData();
+    await EWE.cohorts.sync(config, "RO");
+    encoded = await EWE.cohorts.getEncodedCohorts();
+    expect(encoded).toEqual("AQ==");
+
+    await EWE.testing.resetRemoteConfig();
+    await EWE.testing.resetCohortsData();
+    encoded = await EWE.cohorts.getEncodedCohorts();
+    expect(encoded).toEqual("AA==");
+  });
+
   it("updates cohorts when facts change", async function() {
     await EWE.cohorts.sync(config, countryCode);
 

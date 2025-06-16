@@ -19,7 +19,7 @@
 /* eslint-disable array-bracket-spacing */
 
 import expect from "expect";
-import {arraysDiff, filtersUpdateDiff, mergeObjects}
+import {arraysDiff, base64Encode, filtersUpdateDiff, mergeObjects}
   from "../../../src/background/set-operations.js";
 
 describe("Arrays diff", function() {
@@ -242,5 +242,24 @@ describe("Objects merging", function() {
         5: [message2]
       }
     });
+  });
+});
+
+describe("Base 64 array encoding", function() {
+  it("encodes successfully and empty array", function() {
+    const encoded = base64Encode([]);
+    expect(encoded).toEqual("AA==");
+  });
+
+  it("encodes successfully various arrays", function() {
+    expect(base64Encode([1, 1, 1, 1])).toEqual("Dw==");
+    expect(base64Encode([1, 1, 0, 1])).toEqual("Cw==");
+    expect(base64Encode([1, 0, 1, 0, 0])).toEqual("BQ==");
+    expect(base64Encode([1, 0, 0, 1])).toEqual("CQ==");
+  });
+
+  it("encodes successfully a large array", function() {
+    const toEncode = Array(100).fill(1);
+    expect(base64Encode(toEncode)).toEqual("D////////////////w==");
   });
 });

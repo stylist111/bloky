@@ -18,6 +18,7 @@
 import * as browser from "webextension-polyfill";
 
 import {
+  addCohortAssignmentsSearchParam,
   addExperimentsSearchParams,
   CommandEventType,
   CommandName,
@@ -253,6 +254,14 @@ async function openNewtab(): Promise<void> {
     let url = await addExperimentsSearchParams(targetUrl);
     if (url === null) {
       logger.debug("[new-tab]: Failed to append experiments search params.");
+      url = targetUrl;
+    }
+
+    // Add cohort assignments query param to target URL.
+    // eslint-disable-next-line no-await-in-loop
+    url = await addCohortAssignmentsSearchParam(targetUrl);
+    if (url === null) {
+      logger.debug("[new-tab]: Failed to append cohort assignments search param.");
       url = targetUrl;
     }
 

@@ -100,3 +100,48 @@ export function mergeObjects(obj1, obj2) {
 
   return resultObj;
 }
+
+/**
+ * Converts number to bytes array
+ *
+ * @param {number} num - Number to convert
+ * @returns {Uint8Array} bytes array
+ */
+function bnToBytes(num) {
+  let hex = num.toString(16);
+  if (hex.length % 2) {
+    hex = `0${hex}`;
+  }
+
+  const length = hex.length / 2;
+  const bytes = new Uint8Array(length);
+
+  for (let i = 0; i < length; i++) {
+    bytes[i] = parseInt(hex.substring(i * 2, i * 2 + 2), 16);
+  }
+
+  return bytes;
+}
+
+/**
+ * Encodes an array of numbers to a base64-encoded bitmap.
+ * For every truthy value in the array, a bit is set to 1, and for every falsy
+ * value, a bit is set to 0. The bits are then packed into bytes and
+ * converted to a base64-encoded string.
+ * @link https://eyeo.atlassian.net/browse/DATA-2793
+ *
+ * @param {Array<number>} toEncode - Array of objects to encode
+ * @returns {string} base64-encoded bitmap
+ */
+export function base64Encode(toEncode) {
+  let bitmap = 0n;
+
+  for (const value of [...toEncode].reverse()) {
+    bitmap |= value ? 1n : 0n;
+    bitmap <<= 1n;
+  }
+  bitmap >>= 1n;
+
+  const bytes = bnToBytes(bitmap);
+  return btoa(String.fromCharCode(...bytes));
+}

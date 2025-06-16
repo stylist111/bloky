@@ -118,6 +118,9 @@ export async function setUninstallURL() {
         const experimentsVariants = await getExperiments();
         url = `${url}&ev=${encodeURIComponent(experimentsVariants)}`;
 
+        const cohortAssignments = await ewe.cohorts.getEncodedCohorts();
+        url = `${url}&ca=${encodeURIComponent(cohortAssignments)}`;
+
         const lastUpdateTime = await getLastUpdateTime();
         url = `${url}&lt=${lastUpdateTime}`;
         url = `${url}&wafc=${await getWebAllowlistingFilterCount()}`;

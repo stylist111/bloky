@@ -27,6 +27,7 @@ import {debug, warn} from "../debugging.js";
 import initializer from "../initializer.js";
 import * as operators from "./operators.js";
 import sentry from "../sentry.js";
+import {base64Encode} from "../set-operations.js";
 
 let _cohortsConfig = [];
 const emitter = new EventEmitter();
@@ -201,6 +202,24 @@ async function _getActiveCohortIds() {
 }
 
 /**
+ * Encodes the cohort assignments as a base64-encoded bitmap.
+ * @link https://eyeo.atlassian.net/browse/EXT-979
+ *
+ * @returns {Promise<string>}
+ * @private
+ */
+async function getEncodedCohorts() {
+  const activeCohortIds = await _getActiveCohortIds();
+
+  const cohorts = _cohortsConfig.map(cohort => {
+    const cohortId = cohort.event.type;
+    return activeCohortIds.includes(cohortId) ? 1 : 0;
+  });
+
+  return base64Encode(cohorts);
+}
+
+/**
  * API to interact with cohorts
  * @namespace cohorts
  */
@@ -217,6 +236,19 @@ export default {
   async getAll() {
     return _getActiveCohortIds();
   },
+
+  /**
+   * Return the assigned cohorts encoded as a base64-encoded bitmap.
+   * @link https://eyeo.atlassian.net/browse/EXT-979
+   *
+   * @function
+   * @memberof cohorts
+   * @returns {Promise<string>}
+   * @example
+   * await ewe.cohorts.getEncodedCohorts();
+   * // returns AQ==
+   */
+  getEncodedCohorts,
 
   /**
    * Check if the user is in a specific cohort.

@@ -34,6 +34,7 @@ const abbreviations = [
   ["c", "corrupted"],
   ["er", "experimentsRevision"],
   ["ev", "experimentsVariants"],
+  ["ca", "cohortAssignments"],
   ["fv", "firstVersion"],
   ["ndc", "notificationDownloadCount"],
   ["p", "platform"],
@@ -161,6 +162,7 @@ export async function setUninstallURL(): Promise<void> {
   params.corrupted = isDataCorrupted() ? "1" : "0";
   params.experimentsRevision = await ewe.remoteConfig.getRevisionId();
   params.experimentsVariants = await getExperiments();
+  params.cohortAssignments = await ewe.cohorts.getEncodedCohorts();
   params.firstVersion = ewe.reporting.getFirstVersion();
 
   const notificationDownloadCount = await ewe.notifications.getDownloadCount();

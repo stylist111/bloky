@@ -24,6 +24,11 @@ export enum ExperimentSearchParameterKeys {
 }
 
 /**
+ * The key of the search parameter that contains the cohorts encoding.
+ */
+export const CohortIdsSearchParameterKey = "ca";
+
+/**
  * The value for the revision search query parameter in case the ewe doesn't
  * report an id.
  */

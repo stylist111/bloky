@@ -17,8 +17,15 @@
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { getStartInfo } from "./start-info";
-import { addExperimentsSearchParams, createSafeOriginUrl } from "./url";
-import { ExperimentSearchParameterKeys } from "./url.types";
+import {
+  addCohortAssignmentsSearchParam,
+  addExperimentsSearchParams,
+  createSafeOriginUrl,
+} from "./url";
+import {
+  CohortIdsSearchParameterKey,
+  ExperimentSearchParameterKeys,
+} from "./url.types";
 
 describe("url", () => {
   describe("createSafeOriginUrl", () => {
@@ -113,6 +120,49 @@ describe("url", () => {
       const fragment = "#fragment1";
       const url = `${path}${query}${fragment}`;
       const result = (await addExperimentsSearchParams(url)) ?? "";
+
+      expect(result.startsWith(path)).toBe(true);
+      expect(result.endsWith(fragment)).toBe(true);
+      expect(result).toContain(query);
+    });
+  });
+
+  describe("addCohortsAssignmentsSearchParams", () => {
+    const cohortsEncoding = "__ca__";
+
+    beforeEach(() => {
+      jest
+        .spyOn(ewe.cohorts, "getEncodedCohorts")
+        .mockImplementation(async () => cohortsEncoding);
+    });
+
+    it("should return a string if a valid URL is given", async () => {
+      const result =
+        await addCohortAssignmentsSearchParam("http://example.com");
+      expect(typeof result).toBe("string");
+    });
+
+    it("should return null if an invalid URL is given", async () => {
+      const result = await addCohortAssignmentsSearchParam("__invalid_url__");
+      expect(result).toBe(null);
+    });
+
+    it("should add the correct params", async () => {
+      const result =
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        (await addCohortAssignmentsSearchParam("http://example.com"))!;
+      console.log(result);
+      expect(result).toContain(
+        `${CohortIdsSearchParameterKey}=${cohortsEncoding}`,
+      );
+    });
+
+    it("should keep path, query params, matrix params and fragment identifiers", async () => {
+      const path = "http://example.com/level1;name=foo/level2;name=bar/?";
+      const query = "query=1";
+      const fragment = "#fragment1";
+      const url = `${path}${query}${fragment}`;
+      const result = (await addCohortAssignmentsSearchParam(url)) ?? "";
 
       expect(result.startsWith(path)).toBe(true);
       expect(result.endsWith(fragment)).toBe(true);

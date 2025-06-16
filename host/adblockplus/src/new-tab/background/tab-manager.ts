@@ -17,6 +17,7 @@
 
 import * as browser from "webextension-polyfill";
 import {
+  addCohortAssignmentsSearchParam,
   addExperimentsSearchParams,
   checkLanguage,
   CommandEventType,
@@ -243,6 +244,15 @@ async function openNewTab(): Promise<void> {
     let url = await addExperimentsSearchParams(targetUrl);
     if (url === null) {
       logger.debug("[new-tab]: Failed to append experiments search params.");
+      url = targetUrl;
+    }
+
+    // Add cohort assignments query param to target URL.
+    url = await addCohortAssignmentsSearchParam(targetUrl);
+    if (url === null) {
+      logger.debug(
+        "[new-tab]: Failed to append cohort assignments search param."
+      );
       url = targetUrl;
     }
 

@@ -17,7 +17,11 @@
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { getStartInfo } from "./start-info";
-import { ExperimentSearchParameterKeys, noRevisionId } from "./url.types";
+import {
+  CohortIdsSearchParameterKey,
+  ExperimentSearchParameterKeys,
+  noRevisionId,
+} from "./url.types";
 
 /**
  * Constructs a URL based on the given URL and a trusted origin. If `url` is
@@ -77,6 +81,32 @@ export async function addExperimentsSearchParams(
   extendedUrl.searchParams.append(
     ExperimentSearchParameterKeys.variants,
     await getExperiments(),
+  );
+
+  return extendedUrl.href;
+}
+
+/**
+ * Adds cohorts assignments as a search param "ca" to the given URL.
+ *
+ * @param url The URL to add the params to
+ * @returns The URL with the added params if the given URL is a valid URL,
+ *  or `null` if it is not
+ */
+export async function addCohortAssignmentsSearchParam(
+  url: string,
+): Promise<string | null> {
+  let extendedUrl: URL;
+
+  try {
+    extendedUrl = new URL(url);
+  } catch (ex) {
+    return null;
+  }
+
+  extendedUrl.searchParams.append(
+    CohortIdsSearchParameterKey,
+    await ewe.cohorts.getEncodedCohorts(),
   );
 
   return extendedUrl.href;

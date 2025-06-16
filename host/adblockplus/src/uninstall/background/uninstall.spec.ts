@@ -36,6 +36,7 @@ const mockParams = new Map<string, string>([
   ["c", "0"],
   ["er", "12345678"],
   ["ev", "AA=="],
+  ["ca", "AA=="],
   ["fv", "0"],
   ["ndc", "0"],
   ["p", "gecko"],
@@ -111,6 +112,9 @@ describe("uninstall", () => {
         experiments: {
           getExperiments: async () => [],
           onChanged: mockEventDispatcher
+        },
+        cohorts: {
+          getEncodedCohorts: async () => "AA=="
         },
         filters: {
           getMetadata: async () => null,

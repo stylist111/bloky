@@ -599,6 +599,12 @@ declare module "@eyeo/webext-ad-filtering-solution" {
     const getAll: () => Promise<string[]>;
 
     /**
+     * Retrieve the assigned cohorts encoded as a base64-encoded bitmap.
+     * @link https://eyeo.atlassian.net/browse/EXT-979
+     */
+    const getEncodedCohorts: () => Promise<string>;
+
+    /**
      * Returns weather the given cohort is currently active.
      */
     const includes: (cohortId: string) => Promise<boolean>;
