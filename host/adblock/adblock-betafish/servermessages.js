@@ -161,41 +161,6 @@ const ServerMessages = (function serverMessages() {
     return recordMessageWithUserID("data_collection_opt_out", "general");
   };
 
-  // Send an error message to the backup log server. This is to be used when
-  // there's fetch failure.  It may fail as well depending on the failure,
-  // and state of the local computer & network
-  const sendMessageToBackupLogServer = async function (msg, errorMsg, queryType = "error") {
-    if (Prefs.get("data_collection_opt_out")) {
-      return;
-    }
-    let extensionInstallTimestamp = "unknown";
-    const { blockage_stats: blockageStats } = await browser.storage.local.get("blockage_stats");
-    if (blockageStats && blockageStats.start) {
-      extensionInstallTimestamp = new Date(blockageStats.start).toLocaleString();
-    }
-    const allPermissions = await browser.permissions.getAll();
-    const allURLSPermission =
-      allPermissions.origins && allPermissions.origins.includes("<all_urls>") ? "1" : "0";
-    const payload = {
-      u: await getUserId(),
-      f: flavor,
-      o: os,
-      l: determineUserLanguage(),
-      t: queryType,
-      v: browser.runtime.getManifest().version,
-      error: errorMsg,
-      extensionInstallTimestamp,
-      allURLSPermission,
-    };
-    const eventWithPayload = { event: msg, payload };
-    fetch("https://logbackup.getadblock.com/v2/record_log.php", {
-      method: "POST",
-      cache: "no-store",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(eventWithPayload),
-    });
-  };
-
   // Log a data-collection smart allowlist expired message on GAB log server.
   const recordAllowlistEvent = async function (eventName, allowlistDuration) {
     return recordGeneralMessage(eventName, null, { allowlistDuration });
@@ -209,7 +174,6 @@ const ServerMessages = (function serverMessages() {
     recordErrorMessage,
     recordGeneralMessage,
     recordStatusMessage,
-    sendMessageToBackupLogServer,
     recordOptOutMessage,
     recordAllowlistEvent,
   };
