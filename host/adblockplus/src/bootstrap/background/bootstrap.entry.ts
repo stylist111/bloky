@@ -54,6 +54,7 @@ import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { getAuthPayload, hasActiveLicense } from "~/premium/background";
 import { info } from "~/info/background";
 import { startInfo as ipmFragmentStartInfo } from "~/ipm/background";
+import { start as startTelemetry } from "~/telemetry/background";
 
 /**
  * Runs initialization that can be done in parallel and doesn't have to be done
@@ -61,7 +62,7 @@ import { startInfo as ipmFragmentStartInfo } from "~/ipm/background";
  */
 async function bootstrapAsync(): Promise<void> {
   try {
-    await Promise.all([startIPM(ipmFragmentStartInfo)]);
+    await Promise.all([startIPM(ipmFragmentStartInfo), startTelemetry()]);
   } catch (ex) {
     logger.reportAndLogError(ex);
   }

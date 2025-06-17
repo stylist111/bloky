@@ -24,6 +24,7 @@ import { start as startSettings } from "~/prefs/background";
 import * as logger from "~/utilities/background";
 import { startInfo as ipmFragmentStartInfo } from "../../ipm/background";
 import { start as startPageviewMetrics } from "../../pageview-metrics/background";
+import { start as startTelemetry } from "../../telemetry/background";
 
 /**
  * Runs initialization that can be done in parallel and doesn't have to be done
@@ -31,7 +32,7 @@ import { start as startPageviewMetrics } from "../../pageview-metrics/background
  */
 async function bootstrapAsync(): Promise<void> {
   try {
-    await Promise.all([startIPM(ipmFragmentStartInfo), startPageviewMetrics()]);
+    await Promise.all([startIPM(ipmFragmentStartInfo), startPageviewMetrics(), startTelemetry()]);
   } catch (ex) {
     logger.reportAndLogError(ex);
   }

@@ -19,10 +19,6 @@
 
 import rulesIndex from "@eyeo/rules-utils/adblockplus/index/adblockplus.json";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
-import {
-  initializeCDP,
-  initializeEyeometryMACCounting
-} from "../../src/ipm/background";
 import * as premium from "../../src/premium/background/index.ts";
 import { startOptionLinkListener } from "../../src/options/background";
 import { info } from "../../src/info/background";
@@ -233,8 +229,6 @@ export async function start() {
   premium.start();
   ewe.cdp.setPremiumStatusCallback(async () => premium.hasActiveLicense());
   startOptionLinkListener();
-  void initializeCDP();
-  void initializeEyeometryMACCounting();
   startUnloadCleanup();
 
   /**

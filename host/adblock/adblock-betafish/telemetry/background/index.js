@@ -15,7 +15,6 @@
  * along with AdBlock.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { TELEMETRY, startTelemetryOptOutListener } from "./telemetry";
+export { TELEMETRY } from "./telemetry";
 export { getAAStatus } from "./telemetry-base";
 export { telemetryNotifier } from "./telemetry-ping";
-export { startCdpOptOutListener } from "./telemetry-cdp";

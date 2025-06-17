@@ -15,6 +15,4 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { initialize as initializeCDP } from "./cdp";
-export { initialize as initializeEyeometryMACCounting } from "./eyeometry-mac-counting";
 export * from "./start-info";

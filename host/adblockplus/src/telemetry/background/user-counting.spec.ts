@@ -18,28 +18,16 @@
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
-import { reportAndLogError } from "../../logger/background";
+import { start } from "./user-counting";
 
-async function applyOptOut(): Promise<void> {
-  const isOptedOut = Prefs.get("data_collection_opt_out");
+describe("User counting", () => {
+  beforeEach(() => {
+    jest.spyOn(ewe.telemetry, "setOptOut").mockReturnValue(Promise.resolve());
+  });
 
-  await ewe.cdp.setOptOut(typeof isOptedOut === "boolean" ? isOptedOut : true);
-}
-
-async function initOptOut(): Promise<void> {
-  await Prefs.untilLoaded;
-
-  await applyOptOut();
-  Prefs.on("data_collection_opt_out", applyOptOut);
-}
-
-/**
- * Initializes the CDP.
- */
-export async function initialize(): Promise<void> {
-  try {
-    await initOptOut();
-  } catch (error) {
-    reportAndLogError(error as Error, "CDP initialization failed");
-  }
-}
+  it("sets the opt-out value from prefs on initialization", async () => {
+    await Prefs.set("data_collection_opt_out", true);
+    await start();
+    expect(ewe.telemetry.setOptOut).toHaveBeenCalledWith(true);
+  });
+});

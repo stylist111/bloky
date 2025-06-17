@@ -39,11 +39,7 @@ import { NEW_BADGE_REASONS, getNewBadgeTextReason, showIconBadgeCTA } from "./al
 
 import { getUserId } from "./id/background/index";
 import { initialize } from "./alias/subscriptionInit";
-import {
-  TELEMETRY,
-  startCdpOptOutListener,
-  startTelemetryOptOutListener,
-} from "./telemetry/background";
+import { TELEMETRY } from "./telemetry/background";
 import { getBlockedPerPage, Stats } from "../adblockplusui/adblockpluschrome/lib/stats";
 import { getSettings, settings } from "./prefs/background";
 import { License, channels } from "./picreplacement/check";
@@ -665,8 +661,6 @@ initialize
     await getUserId();
     TELEMETRY.start();
     setUninstallURL();
-    await startTelemetryOptOutListener();
-    await startCdpOptOutListener();
     revalidateAllowlistingStates();
     prefs.migrateUserData();
     startYtWallDetection({

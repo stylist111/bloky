@@ -16,17 +16,26 @@
  */
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
+
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
-import { initialize } from "./eyeometry-mac-counting";
+import * as logger from "~/logger/background";
 
-describe("Eyeometry-based MAC counting", () => {
-  beforeEach(() => {
-    jest.spyOn(ewe.telemetry, "setOptOut").mockReturnValue(Promise.resolve());
-  });
+async function applyOptOut(): Promise<void> {
+  const isOptedOut = Prefs.get("data_collection_opt_out");
 
-  it("sets the opt-out value from prefs on initialization", async () => {
-    await Prefs.set("data_collection_opt_out", true);
-    await initialize();
-    expect(ewe.telemetry.setOptOut).toHaveBeenCalledWith(true);
-  });
-});
+  await ewe.cdp.setOptOut(typeof isOptedOut === "boolean" ? isOptedOut : true);
+}
+
+/**
+ * Initializes customer data platform (CDP) functionality
+ */
+export async function start(): Promise<void> {
+  try {
+    await Prefs.untilLoaded;
+
+    await applyOptOut();
+    Prefs.on("data_collection_opt_out", applyOptOut);
+  } catch (error) {
+    logger.reportAndLogError(error, "CDP initialization failed");
+  }
+}

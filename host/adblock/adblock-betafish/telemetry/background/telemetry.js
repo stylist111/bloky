@@ -14,8 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with AdBlock.  If not, see <http://www.gnu.org/licenses/>.
  */
-import * as ewe from "@eyeo/webext-ad-filtering-solution";
-import { Prefs } from "~/alias/prefs";
 
 import Telemetry from "./telemetry-ping";
 
@@ -25,14 +23,3 @@ export const TELEMETRY = new Telemetry(
   "pingalarm",
   "ping_server_url",
 );
-
-async function updateTelemetryOptout() {
-  await ewe.telemetry.setOptOut(Prefs.get("data_collection_opt_out"));
-}
-
-export async function startTelemetryOptOutListener() {
-  await Prefs.untilLoaded;
-
-  await updateTelemetryOptout();
-  Prefs.on("data_collection_opt_out", updateTelemetryOptout);
-}

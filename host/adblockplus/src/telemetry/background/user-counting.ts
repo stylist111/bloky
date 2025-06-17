@@ -18,7 +18,7 @@
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
-import { reportAndLogError } from "../../logger/background";
+import * as logger from "~/logger/background";
 
 async function applyOptOut(): Promise<void> {
   const isOptedOut = Prefs.get("data_collection_opt_out");
@@ -28,22 +28,18 @@ async function applyOptOut(): Promise<void> {
   );
 }
 
-async function initOptOut(): Promise<void> {
-  await Prefs.untilLoaded;
-
-  await applyOptOut();
-  Prefs.on("data_collection_opt_out", applyOptOut);
-}
-
 /**
- * Initializes the settings for Eyeometry-based client counting.
+ * Initializes user counting functionality
  */
-export async function initialize(): Promise<void> {
+export async function start(): Promise<void> {
   try {
-    await initOptOut();
+    await Prefs.untilLoaded;
+
+    await applyOptOut();
+    Prefs.on("data_collection_opt_out", applyOptOut);
   } catch (error) {
-    reportAndLogError(
-      error as Error,
+    logger.reportAndLogError(
+      error,
       "Eyeometry-based MAC counting initialization failed"
     );
   }
