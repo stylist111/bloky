@@ -3,6 +3,7 @@
 - Update non-partner detection check
 - Updated snippets to 2.2.0
 - Add semver operator to be used in cohorts. (EXT-960)
+- Clean up logic for deprecated pref keys.
 - Add encoded cohorts to uninstall and IPM URLs. (EXT-979)
 
 # 4.22.1 - 2025-06-03

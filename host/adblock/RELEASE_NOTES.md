@@ -1,5 +1,6 @@
 # Unreleased
 
+- Clean up logic for deprecated pref keys.
 - Add encoded cohorts to uninstall and IPM URLs. (EXT-979)
 
 # 6.22.0 - 2025-06-10

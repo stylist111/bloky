@@ -48,7 +48,6 @@ import { start as startInfoInjector } from "../../info-injector/background";
 import { start as startUpdateCampaign } from "../../update-campaign/background";
 import { start as startPages } from "../../core/pages/background";
 import { start as startGlobals } from "../../globals/background";
-import { start as startFiltersMigration } from "../../filters/background/";
 import { start as startPublicAPI } from "@eyeo-fragments/public-api";
 import { port, addTrustedMessageTypes } from "~/core/messaging/background";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
@@ -123,7 +122,6 @@ async function bootstrap(): Promise<void> {
   });
   startInfoInjector();
   startGlobals();
-  void startFiltersMigration();
   startPublicAPI({
     port,
     addTrustedMessageTypes,

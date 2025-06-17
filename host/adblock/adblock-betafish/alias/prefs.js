@@ -378,20 +378,6 @@ defaults.yt_allowlist_start_date = 0;
 defaults.allowlisting_auto_extend_ms = 1000 * 60 * 60 * 24 * 7; // 7 days
 
 /**
- * Whether all historic allowlisting filters with "popup" source were
- * transitioned to smart allowlisting
- * @type {boolean}
- */
-defaults.migration_popup_to_smart_allowlist_complete = false;
-
-/**
- * Whether all historic allowlisting filters were transitioned to smart allowlisting
- * no matter the source (except for "web" source).
- * @type {boolean}
- */
-defaults.migration_all_to_smart_allowlist_complete = false;
-
-/**
  * The interval in which to ping the other extension, in ms. Defaults to 24 hours.
  *
  * @type {number}
@@ -519,6 +505,22 @@ export let Prefs = {
 
     overrides[preference] = value;
     return (customSave.get(preference) || savePref)(preference);
+  },
+
+  /**
+   * Removes old preference keys from browser.storage.local that are no longer used.
+   * @return {Promise<void>} Resolves when cleanup is complete.
+   */
+  async removeDeprecated() {
+    const items = await browser.storage.local.get(null);
+    const validPrefs = new Set(Object.keys(defaults));
+
+    const unusedKeys = Object.keys(items).filter(
+      (key) => keyToPref(key) && !validPrefs.has(keyToPref(key)),
+    );
+    if (unusedKeys.length > 0) {
+      await browser.storage.local.remove(unusedKeys);
+    }
   },
 
   /**
@@ -740,4 +742,12 @@ installHandler("prefs", null, (emit, action) => {
   const onChanged = () => emit(Prefs[action]);
   Prefs.on(action, onChanged);
   return () => Prefs.off(action, onChanged);
+});
+
+browser.runtime.onInstalled.addListener(async (details) => {
+  const { reason } = details;
+  if (reason === "update") {
+    await Prefs.untilLoaded;
+    await Prefs.removeDeprecated();
+  }
 });

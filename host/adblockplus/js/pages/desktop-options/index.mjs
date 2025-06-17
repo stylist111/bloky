@@ -701,17 +701,6 @@ const toggleDntNotification = (show) => {
   }
 };
 
-async function showSmartAllowlistWarning() {
-  const isMigrationActive = await browser.runtime.sendMessage({
-    type: "filters.isMigrationActive"
-  });
-
-  if (!isMigrationActive) return;
-
-  const smartAllowlistWarning = $("#smart-allowlist-warning");
-  smartAllowlistWarning.hidden = false;
-}
-
 function execAction(action, element) {
   if (
     element.getAttribute("aria-disabled") === "true" ||
@@ -1688,7 +1677,6 @@ export function start() {
 
   void startPremium();
   startLanguagesBox();
-  void showSmartAllowlistWarning();
   void populateLists().catch(dispatchError);
   void populateFilters().catch(dispatchError);
 
