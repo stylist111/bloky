@@ -15,6 +15,8 @@
 - Added remote configuration support `EWE.remoteConfig` API. (EXT-946)
 - Added the `EWE.cohorts` API to retrieve the current user cohort. (EXT-946)
 - Add semver operator to be used in cohorts. (EXT-960)
+- Skip cohort evaluation when facts haven't changed (noissue)
+- Send a facts snapshot event every 12h for cohort estimations (EXT-978)
 - Expose `EWE.cohorts.getEncodedCohorts()` method to retrieve the assigned cohorts
   encoded as base64-encoded bitmap. (EXT-979)
 

@@ -19,6 +19,7 @@ import browser from "webextension-polyfill";
 import {Engine} from "json-rules-engine";
 import {JSONPath} from "jsonpath-plus";
 import {EventEmitter} from "adblockpluscore/lib/events.js";
+import {MILLIS_IN_HOUR} from "adblockpluscore/lib/time.js";
 import {PersistentState} from "../persistence.js";
 import {EventDispatcher} from "../types.js";
 import {hasAcceptableAdsEnabled} from "../subscriptions.js";
@@ -27,11 +28,13 @@ import {debug, warn} from "../debugging.js";
 import initializer from "../initializer.js";
 import * as operators from "./operators.js";
 import sentry from "../sentry.js";
+import {ServerLogger} from "../telemetry.js";
 import {base64Encode} from "../set-operations.js";
 
 let _cohortsConfig = [];
 const emitter = new EventEmitter();
 const cohortsData = new PersistentState("ewe:cohorts", browser.storage.local);
+const logger = new ServerLogger("cohorts");
 
 let _getFacts = async() => ({});
 
@@ -89,6 +92,30 @@ async function getDefaultFacts() {
 }
 
 /**
+ * Sends a snapshot of the current facts to the event system. This will be used
+ * for cohort estimation and debugging purposes.
+ *
+ * @param {Facts} facts - The facts to send.
+ * @returns {void}
+ */
+async function sendFactsSnapshot(facts) {
+  const state = await cohortsData.getStateLoaded();
+  const lastFactsSnapshotTimestamp = state.lastFactsSnapshotTimestamp || 0;
+
+  // check if 12h have passed since the last snapshot
+  if (Date.now() - lastFactsSnapshotTimestamp < 12 * MILLIS_IN_HOUR) {
+    debug("[cohorts] Skipping facts snapshot, less than 12h ago have passed");
+    return;
+  }
+
+  // send a snapshot of facts for 1% to the event system and
+  // update the last snapshot timestamp
+  logger.info("facts_snapshot", facts);
+  state.lastFactsSnapshotTimestamp = Date.now();
+  await cohortsData.save();
+}
+
+/**
  * Updates the active cohorts if they have changed and
  * emits the "updated" event.
  *
@@ -131,12 +158,24 @@ export async function sync(config, countryCode) {
       return;
     }
 
-    // update the facts with to the latest values
-    state.facts = {
+    // get the facts with the latest values
+    const newFacts = {
       countryCode,
       ...(await getDefaultFacts()),
       ...(await _getFacts())
     };
+
+    // send the facts snapshot to the event system
+    await sendFactsSnapshot(newFacts);
+
+    // No changes in facts, no need to re-evaluate cohorts
+    if (JSON.stringify(newFacts) === JSON.stringify(state.facts)) {
+      debug("[cohorts] No changes in facts, skipping cohort evaluation");
+      return;
+    }
+
+    // Update the state with the new facts
+    state.facts = newFacts;
 
     // Initialize the cohorts engine with the filtered cohort conditions
     const engine = new Engine([], {

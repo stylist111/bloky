@@ -275,6 +275,7 @@ export default (env = {}) => {
 
     let manifest = {
       name: "eyeo's WebExtension Ad-Filtering Solution Test Extension",
+      short_name: "EWE Test",
       version: "0.0.1",
       description,
       manifest_version: buildVariant.manifestVersion,

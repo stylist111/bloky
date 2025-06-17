@@ -16,13 +16,15 @@
  */
 
 import expect from "expect";
-
+import sinon from "sinon/pkg/sinon.js";
 import {clearTestEvents, EWE, expectTestEvents} from "./messaging.js";
+import {ISO_DATE_REGEX, waitForAssertion} from "./utils.js";
 
 const countryCode = "US";
 const defaultFacts = {
   hasPremium: false,
-  installDate: new Date("2023-01-01T00:00:00Z").getTime()
+  installDate: new Date("2023-01-01T00:00:00Z").getTime(),
+  blockedCount: 12345
 };
 
 const cohort1Config = {
@@ -218,6 +220,94 @@ describe("Cohorts", function() {
   it("returns false for includes if not in cohort", async function() {
     await EWE.cohorts.sync(config, countryCode);
     expect(await EWE.cohorts.includes("non_existent_cohort")).toBe(false);
+  });
+
+  describe("Facts snapshot reporting", function() {
+    let sandbox;
+    const expectedFacts = {
+      ...defaultFacts,
+      aaEnabled: expect.any(Boolean),
+      browserLanguage: expect.any(String),
+      browserName: expect.any(String),
+      browserVersion: expect.stringMatching(/^\d+\.\d+(?:\.\d+){0,2}$/),
+      countryCode: expect.stringMatching(/^[A-Z]{2}$/),
+      extName: expect.any(String),
+      extVersion: expect.stringMatching(/\d+\.\d+\.\d+/),
+      installType: "development"
+    };
+
+    beforeEach(async function() {
+      // Set logging level globally
+      await EWE.telemetry.setConsoleLogLevel("debug");
+
+      sandbox = sinon.createSandbox();
+      sandbox.spy(console, "log");
+    });
+
+    afterEach(async function() {
+      sandbox.restore();
+      await EWE.telemetry.resetConsoleLogLevel();
+    });
+
+    function getConsoleLogs() {
+      // eslint-disable-next-line no-console
+      return console.log.getCalls().map(item => item.args);
+    }
+
+    async function expectConsoleLogs(expected = []) {
+      function addCommonData(logs) {
+        return logs.map(log => [
+          "Background (log):",
+          expect.stringMatching(ISO_DATE_REGEX),
+          ...log
+        ]);
+      }
+
+      const fullExpectedLogs = addCommonData(expected);
+
+      await waitForAssertion(() => {
+        expect(getConsoleLogs()).toEqual(
+          expect.arrayContaining(fullExpectedLogs)
+        );
+      });
+    }
+
+    it("sends an event if first time or more than 12h have passed", async function() {
+      // Sync cohorts to trigger the first facts snapshot
+      await EWE.cohorts.sync(config, countryCode);
+
+      // Expect the facts snapshot to be logged
+      await expectConsoleLogs([
+        ["cohorts", "info", "facts_snapshot", expectedFacts]
+      ]);
+    });
+
+    it("does not send the event if too early", async function() {
+      // Sync cohorts to trigger the first facts snapshot
+      await EWE.cohorts.sync(config, countryCode);
+
+      // Expect the facts snapshot to be logged
+      await expectConsoleLogs([
+        ["cohorts", "info", "facts_snapshot", expectedFacts]
+      ]);
+
+      // Reset the console logs and sync again
+      await EWE.testing._clearDebugLog();
+      await EWE.cohorts.sync(config, countryCode);
+      await EWE.testing._printDebugLog();
+
+      // Expect no new facts snapshot to be logged
+      await waitForAssertion(() => {
+        expect(getConsoleLogs()).toEqual(
+          expect.arrayContaining([
+            expect.arrayContaining([
+              "Background (debug):",
+              expect.stringContaining("[cohorts] No changes in facts, skipping cohort evaluation")
+            ])
+          ])
+        );
+      });
+    });
   });
 
   describe("Cohorts events", function() {
