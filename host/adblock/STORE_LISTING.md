@@ -6,7 +6,7 @@
 A note regarding telemetry in AdBlock.
 A few releases ago (version 5.20.0, Date: 2024-03-12), we added a user preference ("data_collection_opt_out"). This preference is used throughout AdBlock (including all of the telemetry modules) to disable the sending of any data to the AdBlock telemetry servers.
 
-The default value for the new user preference ("data_collection_opt_out") is true for all Firefox users. You can see this in the Preference module: adblock-betafish/alias/prefs.js lines around lines 283 through 289.
+The default value for the new user preference ("data_collection_opt_out") is true for all Firefox users. You can see this in the Preference module: adblock-betafish/alias/prefs.js if you search for the get(preference) method definition.
 
 The usage of this user preference can be seen in the Telemetry module:
 adblock-betafish/telemetry/background/telemetry-ping.js
