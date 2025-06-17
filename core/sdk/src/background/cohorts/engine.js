@@ -74,9 +74,11 @@ export function setFactsGetter(getFacts) {
 async function getDefaultFacts() {
   await initializer.start();
   const {installType} = await browser.management.getSelf();
+  let {short_name: extName} = browser.runtime.getManifest();
+  extName = extName ? extName.replace(/ /g, "").toLowerCase() : extName;
 
   return {
-    extName: info.addonName,
+    extName,
     extVersion: info.addonVersion,
     browserName: info.application,
     browserVersion: info.applicationVersion,
