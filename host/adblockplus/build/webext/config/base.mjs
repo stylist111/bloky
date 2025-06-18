@@ -141,8 +141,8 @@ export default {
       },
       {
         dest: "cookie-banner-detection.preload.js",
-        package: "@eyeo-fragments/ipm",
-        src: ["/cookie-banner-detection/content/index.js"]
+        package: "@eyeo-fragments/cookie-banner-detection",
+        src: ["/content"]
       }
     ]
   },

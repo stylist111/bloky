@@ -17,6 +17,7 @@
 
 import * as info from "info";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
+import { start as startCookieBannerDetection } from "@eyeo-fragments/cookie-banner-detection/background";
 import { start as startIPM } from "@eyeo-fragments/ipm/background";
 
 import { Prefs } from "~/alias/prefs";
@@ -32,6 +33,10 @@ import { start as startTelemetry } from "../../telemetry/background";
  */
 async function bootstrapAsync(): Promise<void> {
   try {
+    // although the following call is not asynchronous by logic,
+    // it's part of the initialization that doesn't need to be serialized
+    startCookieBannerDetection();
+
     await Promise.all([startIPM(ipmFragmentStartInfo), startPageviewMetrics(), startTelemetry()]);
   } catch (ex) {
     logger.reportAndLogError(ex);

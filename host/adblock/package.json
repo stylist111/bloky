@@ -139,6 +139,7 @@
   },
   "dependencies": {
     "@eyeo-fragments/conflict-detection": "*",
+    "@eyeo-fragments/cookie-banner-detection": "*",
     "@eyeo-fragments/ipm": "*",
     "@eyeo-fragments/public-api": "*",
     "@eyeo-fragments/yt-wall-detection": "*",
