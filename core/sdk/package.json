@@ -34,6 +34,7 @@
     "src/types/*.d.ts"
   ],
   "dependencies": {
+    "@eyeo/remote-configuration-validator": "*",
     "@sentry/browser": "8.54.0",
     "adblockpluscore": "*",
     "json-rules-engine": "7.3.1",

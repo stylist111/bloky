@@ -12,6 +12,7 @@
     "fragment/*",
     "fragment/test/test-extension",
     "host/*",
+    "public/*",
     "tools/*",
     "ui-components",
     "vendor/*"

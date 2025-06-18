@@ -188,6 +188,30 @@ sdk:
   variables:
     WORKSPACEPATH: core/sdk
 
+publish-remote-validation:
+  stage: children
+  before_script:
+    - npm ci --cache .npm --prefer-offline
+  script:
+    - echo -e "\n@eyeo:registry=https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/" >> .npmrc
+    - echo "//${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
+    - echo "//gitlab.com/api/v4/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> .npmrc
+    - npm publish --workspace=core/remote-configuration-validator
+  rules:
+    - !reference [.never-run-on-update-rules-trigger, rules]
+    # Only run when merging to the main branch
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: on_success
+    # Do not trigger push pipelines
+    - if: $CI_PIPELINE_SOURCE == "push"
+      when: never
+    # only run when the package.json file for the project is updated
+    - changes:
+        paths:
+          - core/remote-configuration-validator/package.json
+        compare_to: 'refs/heads/main'
+  needs: ["test", "sdk", "adblock", "adblockplus"]
+
 ################################################################################
 # Release
 ################################################################################
