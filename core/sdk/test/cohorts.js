@@ -229,7 +229,6 @@ describe("Cohorts", function() {
       aaEnabled: expect.any(Boolean),
       browserLanguage: expect.any(String),
       browserName: expect.any(String),
-      browserVersion: expect.stringMatching(/^\d+\.\d+(?:\.\d+){0,2}$/),
       countryCode: expect.stringMatching(/^[A-Z]{2}$/),
       extName: expect.any(String),
       extVersion: expect.stringMatching(/\d+\.\d+\.\d+/),

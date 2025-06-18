@@ -66,7 +66,6 @@ export function setFactsGetter(getFacts) {
  * @property {string} extName - The name of the extension.
  * @property {string} extVersion - The version of the extension (semver).
  * @property {string} browserName - The name of the browser.
- * @property {string} browserVersion - The version of the browser (semver).
  * @property {string} countryCode - The 2-letter country code of the user.
  * @property {boolean} aaEnabled - Whether Acceptable Ads is enabled.
  * @property {management.ExtensionInstallType} installType - The installation
@@ -84,7 +83,6 @@ async function getDefaultFacts() {
     extName,
     extVersion: info.addonVersion,
     browserName: info.application,
-    browserVersion: info.applicationVersion,
     browserLanguage: browser.i18n.getUILanguage(),
     aaEnabled: await hasAcceptableAdsEnabled(),
     installType
