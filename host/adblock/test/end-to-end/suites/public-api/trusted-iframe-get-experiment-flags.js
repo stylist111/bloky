@@ -21,15 +21,15 @@ import { openNewTab } from "@eyeo/test-utils/driver";
 import {
   getExperimentFlagsFromExtension,
   sendExtCommandInTrustedIframe,
+  loadPageWithTrustedIframe,
 } from "../../utils/page.js";
 
 export default () => {
   it("retrieves experiment flags from a trusted iframe injected into BT partner website", async function () {
-    const btPartnerUrl = "https://www.accuweather.com/";
-    const trustedIframeSrc = "https://btloader.com/trustedIframe.html?o=5673795450830848";
-    const iframeId = "trusted-experiments-iframe-accuweather";
+    const BT_PARTNER_URL = "https://www.accuweather.com/";
+    const TRUSTED_IFRAME_URL = "https://btloader.com/trustedIframe.html?o=5673795450830848";
 
-    await openNewTab(btPartnerUrl);
+    await openNewTab(BT_PARTNER_URL);
 
     // The page sometimes fails to load and needs to be refreshed
     const bodyText = await driver.findElement(By.css("body")).getText();
@@ -48,35 +48,7 @@ export default () => {
       await acceptButton.click();
     } catch (e) {}
 
-    // inject the trusted iframe into the page
-    await driver.executeScript(
-      (iframeSrc, id) => {
-        const iframe = document.createElement("iframe");
-        iframe.src = iframeSrc;
-        iframe.id = id;
-        document.body.appendChild(iframe);
-      },
-      trustedIframeSrc,
-      iframeId,
-    );
-
-    // Wait for the injected trusted iframe to be present and visible
-    const iframeSelector = `iframe#${iframeId}[src="${trustedIframeSrc}"]`;
-    try {
-      const iframeElement = await driver.findElement(By.css(iframeSelector));
-      await driver.wait(
-        until.elementIsVisible(iframeElement),
-        15000,
-        `Timeout waiting for injected iframe with src ${trustedIframeSrc} to be visible on ${btPartnerUrl}.`,
-      );
-    } catch (e) {
-      throw new Error(
-        `Injected trusted iframe with src "${trustedIframeSrc}" not found or not visible on ${btPartnerUrl}. Original error: ${e.message}`,
-      );
-    }
-
-    // Switch to the iframe
-    const trustedIframe = await driver.findElement(By.css(iframeSelector));
+    const trustedIframe = await loadPageWithTrustedIframe(BT_PARTNER_URL, TRUSTED_IFRAME_URL);
 
     // get experiment flags through the public API
     const responses = await sendExtCommandInTrustedIframe(trustedIframe, "getExperimentFlags");

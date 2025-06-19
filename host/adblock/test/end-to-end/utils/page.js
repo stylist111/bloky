@@ -15,7 +15,7 @@
  * along with AdBlock.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { By, Key } from "selenium-webdriver";
+import { By, Key, until } from "selenium-webdriver";
 import { expect } from "expect";
 
 import { localTestPageUrl } from "@eyeo/test-utils/urls";
@@ -31,7 +31,7 @@ import {
   clickOnDisplayedElement,
   wait,
 } from "@eyeo/test-utils/driver";
-import { getOptionsHandle } from "@eyeo/test-utils/extension";
+import { getOptionsHandle, reloadExtension } from "@eyeo/test-utils/extension";
 import { premiumFilterLists } from "./dataset.js";
 
 import { installUrl } from "./urls.js";
@@ -358,10 +358,26 @@ export async function setPausedStateFromPopup(url, paused = true) {
   await initPopupPage(tabId);
 
   // click on the 'Pause' or 'Unpause' button
-  await clickOnDisplayedElement(beforeClickBtn, {
-    timeout: 5000,
-    checkDisplayed: false, // Sometimes isDisplayed() returns false, even though the button can be clicked
-  });
+  try {
+    await clickOnDisplayedElement(beforeClickBtn, {
+      timeout: 5000,
+      checkDisplayed: false, // Sometimes isDisplayed() returns false, even though the button can be clicked
+    });
+  } catch (err) {
+    // If clicking fails, check if afterClickBtn is already present (already in desired state)
+    try {
+      await getDisplayedElement(afterClickBtn, { timeout: 2000, checkDisplayed: false });
+      console.warn(
+        `setPausedStateFromPopup: Already in desired state for url=${url}, paused=${paused}`,
+      );
+      await driver.close();
+      await driver.switchTo().window(getOptionsHandle());
+      return;
+    } catch {
+      // Not in desired state, rethrow original error
+      throw err;
+    }
+  }
 
   // reopening the popup ccasionally fails when setPausedStateFromPopup is
   // called right after upgrading the extension. Retrying as a workaround
@@ -448,6 +464,31 @@ export async function enablePremiumProgrammatically() {
   }
 }
 
+export async function disablePremiumProgrammatically() {
+  const currentHandle = await driver.getWindowHandle();
+  await driver.switchTo().window(getOptionsHandle());
+
+  // wait for extension api to be available
+  await driver.wait(
+    async () => {
+      const result = await driver.executeScript(() => {
+        return !!browser;
+      });
+      return result;
+    },
+    5000,
+    "Timeout waiting for extension api to be available",
+  );
+
+  await driver.executeAsyncScript(async (callback) => {
+    await browser.storage.local.remove("license");
+    callback();
+  });
+
+  await driver.switchTo().window(currentHandle);
+  await reloadExtension(initOptionsGeneralTab);
+}
+
 export async function getExperimentFlagsFromExtension() {
   const currentHandle = await driver.getWindowHandle();
   const optionsHandle = await getOptionsHandle();
@@ -500,4 +541,53 @@ export async function sendExtCommandInTrustedIframe(trustedIframeHandle, method,
   );
   await driver.switchTo().window(currentHandle);
   return responses;
+}
+
+export async function loadPageWithTrustedIframe(pageUrl, trustedIframeSrc) {
+  await openNewTab(pageUrl);
+
+  // Handle the cookie popup if it appears
+  try {
+    const acceptButton = await driver.wait(
+      until.elementLocated(By.css('button[aria-label="Consent"]')),
+      5000,
+    );
+    await driver.wait(until.elementIsVisible(acceptButton), 5000);
+    await acceptButton.click();
+  } catch (e) {}
+
+  // Inject the iframe in the page and wait for it to load
+  await driver.executeAsyncScript((iframeSrc, done) => {
+    const iframe = document.createElement("iframe");
+    const timeout = setTimeout(() => done(new Error("Iframe load timed out")), 10000);
+
+    const finish = (result) => {
+      clearTimeout(timeout);
+      done(result);
+    };
+
+    iframe.onload = () => finish();
+    iframe.onerror = () => finish(new Error("Iframe failed to load"));
+    iframe.src = iframeSrc;
+    document.body.appendChild(iframe);
+  }, trustedIframeSrc);
+
+  // Wait for the injected trusted iframe to be present and visible
+  const iframeSelector = `iframe[src="${trustedIframeSrc}"]`;
+  try {
+    const iframeElement = await driver.findElement(By.css(iframeSelector));
+    await driver.wait(
+      until.elementIsVisible(iframeElement),
+      15000,
+      `Timeout waiting for injected iframe with src ${trustedIframeSrc} to be visible on ${pageUrl}.`,
+    );
+  } catch (e) {
+    throw new Error(
+      `Injected trusted iframe with src "${trustedIframeSrc}" not found or not visible on ${pageUrl}. Original error: ${e.message}`,
+    );
+  }
+
+  // Switch to the iframe
+  const trustedIframe = await driver.findElement(By.css(iframeSelector));
+  return trustedIframe;
 }

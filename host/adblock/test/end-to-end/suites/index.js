@@ -34,6 +34,7 @@ import testServer from "./test-server.js";
 import oneClickAllowlisting from "./public-api/one-click-allowlisting.js";
 import bypassAPI from "./public-api/bypass-api.js";
 import getExperimentFlags from "./public-api/trusted-iframe-get-experiment-flags.js";
+import getStatus from "./public-api/trusted-iframe-get-status.js";
 import eyeometry from "./data-collection/eyeometry.js";
 import youtubeAutoAllowlist from "./youtube-auto-allowlist.js";
 import helpFlow from "./popup-page/helpflow.js";
@@ -83,6 +84,7 @@ export default () => {
       describe("One click allowlisting", oneClickAllowlisting);
       describe("Bypass API", bypassAPI);
       describe("Experiments flags API - Trusted Iframe", getExperimentFlags);
+      describe("Get Status API - Trusted Iframe", getStatus);
     });
 
     describe("Premium", function () {
