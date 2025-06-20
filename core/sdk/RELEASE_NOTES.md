@@ -17,8 +17,10 @@
 - Add semver operator to be used in cohorts. (EXT-960)
 - Skip cohort evaluation when facts haven't changed (noissue)
 - Send a facts snapshot event every 12h for cohort estimations (EXT-978)
-- Expose `EWE.cohorts.getEncodedCohorts()` method to retrieve the assigned cohorts
+- Exposed `EWE.cohorts.getEncodedCohorts()` method to retrieve the assigned cohorts
   encoded as base64-encoded bitmap. (EXT-979)
+- Exposed `EWE.experiments.getEncodedExperiments()` method to retrieve the
+  experiment assignments encoded as base64-encoded bitmap.
 
 ## General
 

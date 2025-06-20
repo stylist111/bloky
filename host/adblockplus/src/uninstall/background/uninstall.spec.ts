@@ -18,7 +18,6 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 
 import {
-  type Experiment,
   type Filter,
   type Recommendation,
   type Subscription
@@ -47,42 +46,6 @@ const mockParams = new Map<string, string>([
 ]);
 const mockUrl = "https://www.example.com/uninstall?locale=en";
 
-function getExperiments(assignedVariants: number[]): Experiment[] {
-  return [
-    {
-      id: "a",
-      variants: [
-        { id: "aa", assigned: !!assignedVariants.includes(1) },
-        { id: "ab", assigned: !!assignedVariants.includes(2) },
-        { id: "ac", assigned: !!assignedVariants.includes(3) }
-      ]
-    },
-    {
-      id: "b",
-      variants: [
-        { id: "ba", assigned: !!assignedVariants.includes(4) },
-        { id: "bb", assigned: !!assignedVariants.includes(5) },
-        { id: "bc", assigned: !!assignedVariants.includes(6) }
-      ]
-    },
-    {
-      id: "c",
-      variants: [
-        { id: "ca", assigned: !!assignedVariants.includes(7) },
-        { id: "cb", assigned: !!assignedVariants.includes(8) }
-      ]
-    },
-    {
-      id: "d",
-      variants: [{ id: "da", assigned: !!assignedVariants.includes(9) }]
-    },
-    {
-      id: "e",
-      variants: [{ id: "ea", assigned: !!assignedVariants.includes(10) }]
-    }
-  ];
-}
-
 function createExpectedUninstallUrl(overrides: Record<string, string>): string {
   const url = new URL(mockUrl);
 
@@ -110,7 +73,7 @@ describe("uninstall", () => {
           onChanged: mockEventDispatcher
         },
         experiments: {
-          getExperiments: async () => [],
+          getEncodedExperiments: async () => "AA==",
           onChanged: mockEventDispatcher
         },
         cohorts: {
@@ -245,73 +208,21 @@ describe("uninstall", () => {
   });
 
   it("adds experiments variants to uninstall URL", async () => {
-    const ewe = await import("@eyeo/webext-ad-filtering-solution");
     const { setUninstallURL } = await import("./uninstall");
-
-    // Variants: 0x01
-    jest
-      .spyOn(ewe.experiments, "getExperiments")
-      .mockResolvedValue(getExperiments([1]));
     await setUninstallURL();
     expect(browser.runtime.setUninstallURL).toHaveBeenCalledWith(
       createExpectedUninstallUrl({
-        ev: "AQ=="
+        ev: "AA=="
       })
     );
+  });
 
-    // Variants: 0x05
-    jest
-      .spyOn(ewe.experiments, "getExperiments")
-      .mockResolvedValue(getExperiments([1, 3]));
+  it("adds cohorts to uninstall URL", async () => {
+    const { setUninstallURL } = await import("./uninstall");
     await setUninstallURL();
     expect(browser.runtime.setUninstallURL).toHaveBeenCalledWith(
       createExpectedUninstallUrl({
-        ev: "BQ=="
-      })
-    );
-
-    // Variants: 0x0200
-    jest
-      .spyOn(ewe.experiments, "getExperiments")
-      .mockResolvedValue(getExperiments([10]));
-    await setUninstallURL();
-    expect(browser.runtime.setUninstallURL).toHaveBeenCalledWith(
-      createExpectedUninstallUrl({
-        ev: "AgA="
-      })
-    );
-
-    // Variants: 0x0214
-    jest
-      .spyOn(ewe.experiments, "getExperiments")
-      .mockResolvedValue(getExperiments([3, 5, 10]));
-    await setUninstallURL();
-    expect(browser.runtime.setUninstallURL).toHaveBeenCalledWith(
-      createExpectedUninstallUrl({
-        ev: "AhQ="
-      })
-    );
-
-    // Variants bitmap that is larger than 32 bits supported by Number type
-    const manyVariantsExperiments: Experiment[] = [
-      {
-        id: "a",
-        variants: [...new Array(100)].map((value, idx) => {
-          return {
-            assigned: true,
-            id: `${idx}`
-          };
-        })
-      }
-    ];
-
-    jest
-      .spyOn(ewe.experiments, "getExperiments")
-      .mockResolvedValue(manyVariantsExperiments);
-    await setUninstallURL();
-    expect(browser.runtime.setUninstallURL).toHaveBeenCalledWith(
-      createExpectedUninstallUrl({
-        ev: "D////////////////w=="
+        ca: "AA=="
       })
     );
   });

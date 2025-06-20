@@ -26,7 +26,6 @@ import { getInstallationId } from "~/id/background";
 import { info } from "~/info/background";
 import * as logger from "~/logger/background";
 import { getPremiumState } from "~/premium/background";
-import { getExperiments } from "~/uninstall/background";
 
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import { getBlockCount } from "./block-count";
@@ -64,7 +63,6 @@ export const startInfo: StartInfo = {
   addMessageListener(name, listener) {
     port.on(name, listener);
   },
-  getExperiments,
   getBlockCount,
   async isOptedOut() {
     await Prefs.untilLoaded;

@@ -29,7 +29,6 @@ export interface StartInfo {
     name: string,
     listener: () => Promise<PayloadData | null>,
   ) => void;
-  getExperiments: getExperimentsFunction;
   getBlockCount: () => Promise<number>;
   isOptedOut: () => Promise<boolean>;
 }
@@ -57,8 +56,3 @@ interface UserAndHostInformation {
   getBrowserVersion: () => string;
   getAppVersion: () => string;
 }
-
-/**
- * Function signature of the host's getExperiments(), as of 2025-02-05
- */
-type getExperimentsFunction = () => Promise<string>;

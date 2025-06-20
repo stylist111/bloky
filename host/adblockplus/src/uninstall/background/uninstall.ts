@@ -84,56 +84,6 @@ function getAdsSubscriptions(): Set<string> {
 }
 
 /**
- * Converts number to bytes array
- *
- * @param num - Number
- * @returns bytes array
- */
-function bnToBytes(num: bigint): Uint8Array {
-  let hex = num.toString(16);
-  if (hex.length % 2) {
-    hex = `0${hex}`;
-  }
-
-  const length = hex.length / 2;
-  const bytes = new Uint8Array(length);
-
-  for (let i = 0; i < length; i++) {
-    bytes[i] = parseInt(hex.substring(i * 2, i * 2 + 2), 16);
-  }
-
-  return bytes;
-}
-
-/**
- * Retrieves split experiments assignments. It is compressed as base64-encoded
- * bitmap due to limited space in the uninstall URL.
- * @link https://eyeo.atlassian.net/browse/DATA-2793
- *
- * @returns split experiments assignments
- */
-export async function getExperiments(): Promise<string> {
-  // TypeScript only supports *n notation when targeting es2020, but we still
-  // support older browser versions that don't support all those features
-  // (e.g. optional chaining). Therefore we're using BigInt() notation instead.
-  let variantsBitmap = BigInt(0);
-
-  const experiments = await ewe.experiments.getExperiments();
-  for (const experiment of [...experiments].reverse()) {
-    for (const variant of [...experiment.variants].reverse()) {
-      variantsBitmap |= variant.assigned ? BigInt(1) : BigInt(0);
-      variantsBitmap <<= BigInt(1);
-    }
-  }
-  variantsBitmap >>= BigInt(1);
-
-  const bytes = bnToBytes(variantsBitmap);
-  const base64 = btoa(String.fromCharCode(...bytes));
-
-  return base64;
-}
-
-/**
  * Determines whether any of the given subscriptions are installed and enabled
  *
  * @param urls - Subscription URLs
@@ -161,7 +111,7 @@ export async function setUninstallURL(): Promise<void> {
 
   params.corrupted = isDataCorrupted() ? "1" : "0";
   params.experimentsRevision = await ewe.remoteConfig.getRevisionId();
-  params.experimentsVariants = await getExperiments();
+  params.experimentsVariants = await ewe.experiments.getEncodedExperiments();
   params.cohortAssignments = await ewe.cohorts.getEncodedCohorts();
   params.firstVersion = ewe.reporting.getFirstVersion();
 

@@ -620,6 +620,13 @@ declare module "@eyeo/webext-ad-filtering-solution" {
      * Retrieves current experiments
      */
     const getExperiments: () => Promise<Experiment[]>;
+
+    /**
+     * Retrieve the experiment assignments encoded as a base64-encoded bitmap.
+     * @link https://eyeo.atlassian.net/browse/DATA-2793
+     */
+    const getEncodedExperiments: () => Promise<string>;
+
     /**
      * Returns the value of the flag
      */

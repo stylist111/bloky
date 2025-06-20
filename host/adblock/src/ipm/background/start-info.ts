@@ -25,7 +25,6 @@ import * as info from "info";
 
 import { port } from "../../../adblockplusui/adblockpluschrome/lib/messaging/port";
 import { Prefs } from "~/alias/prefs";
-import { getExperiments } from "~/alias/uninstall";
 import { getUserId } from "~/id/background";
 import { License } from "~/picreplacement/check";
 import * as utils from "~/utilities/background";
@@ -38,7 +37,6 @@ export const startInfo: StartInfo = {
   addMessageListener(name, listener) {
     port.on(name, listener);
   },
-  getExperiments,
   getBlockCount,
   async isOptedOut() {
     await Prefs.untilLoaded;

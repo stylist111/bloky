@@ -23,6 +23,7 @@ import {PersistentState} from "./persistence.js";
 import {EventDispatcher} from "./types.js";
 import sentry from "./sentry.js";
 import {warn} from "./debugging.js";
+import {base64Encode} from "./set-operations.js";
 
 let _experimentsConfig = [];
 let emitter = new EventEmitter();
@@ -121,6 +122,19 @@ async function getExperimentsInternal() {
   });
 
   return experiments;
+}
+
+async function getEncodedExperiments() {
+  const state = await experimentData.getStateLoaded();
+  const assignments = state.assignments || {};
+
+  const bitArray = _experimentsConfig.flatMap(experiment =>
+    experiment.variants.map(variant =>
+      assignments[experiment.experimentId] === variant.variantId ? 1 : 0
+    )
+  );
+
+  return base64Encode(bitArray);
 }
 
 /**
@@ -293,6 +307,18 @@ export default {
   async getExperiments() {
     return getExperimentsInternal();
   },
+
+  /**
+   * Retrieves split experiments assignments as a base64-encoded bitmap.
+   * @link https://eyeo.atlassian.net/browse/DATA-2793
+   *
+   * @function
+   * @returns {Promise<string>} The encoded bitmap of experiment assignments.
+   * @example
+   * await ewe.experiments.getEncodedExperiments();
+   * // returns AQ==
+   */
+  getEncodedExperiments,
 
   /**
    * Emitted when experiment data has changed

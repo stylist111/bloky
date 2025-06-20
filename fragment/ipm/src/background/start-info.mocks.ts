@@ -57,8 +57,6 @@ const info = {
   },
 };
 
-const getExperiments = async (): Promise<string> => "";
-
 const getBlockCount = async (): Promise<number> => 0;
 
 export function getStartInfo(): StartInfo {
@@ -68,7 +66,6 @@ export function getStartInfo(): StartInfo {
     licensing,
     info,
     addMessageListener: () => {},
-    getExperiments,
     getBlockCount,
     isOptedOut: async () => false,
   };

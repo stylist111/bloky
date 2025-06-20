@@ -65,7 +65,6 @@ export function createSafeOriginUrl(url: string): string | null {
 export async function addExperimentsSearchParams(
   url: string,
 ): Promise<string | null> {
-  const { getExperiments } = getStartInfo();
   let extendedUrl: URL;
 
   try {
@@ -80,7 +79,7 @@ export async function addExperimentsSearchParams(
   );
   extendedUrl.searchParams.append(
     ExperimentSearchParameterKeys.variants,
-    await getExperiments(),
+    await ewe.experiments.getEncodedExperiments(),
   );
 
   return extendedUrl.href;

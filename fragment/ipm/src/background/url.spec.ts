@@ -81,11 +81,10 @@ describe("url", () => {
   describe("addExperimentsSearchParams", () => {
     const experiments = "__exp__";
     const revision = "__rev__";
-    const deps = getStartInfo();
 
     beforeEach(() => {
       jest
-        .spyOn(deps, "getExperiments")
+        .spyOn(ewe.experiments, "getEncodedExperiments")
         .mockImplementation(async () => experiments);
       jest
         .spyOn(ewe.remoteConfig, "getRevisionId")

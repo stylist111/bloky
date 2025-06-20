@@ -402,6 +402,101 @@ describe("Split Experiments", function() {
       await EWE.experiments.sync(config);
       await userShouldBeInVariant(LOWER_VARIANT_ID, LOWER_VARIANT_FLAG);
     });
+
+    describe("Experiments encoding", function() {
+      function getExperimentsConfig(assignedVariants) {
+        const config = [
+          {
+            experimentId: "1",
+            variants: [
+              {variantId: "1"},
+              {variantId: "2"}
+            ]
+          },
+          {
+            experimentId: "11",
+            variants: [
+              {variantId: "3"},
+              {variantId: "4"}
+            ]
+          },
+          {
+            experimentId: "a1",
+            variants: [
+              {variantId: "5"},
+              {variantId: "6"},
+              {variantId: "7"},
+              {variantId: "8"}
+            ]
+          },
+          {
+            experimentId: "a2",
+            variants: [{variantId: "9"}]
+          },
+          {
+            experimentId: "11111",
+            variants: [{variantId: "10"}]
+          }
+        ];
+
+        config.forEach(experiment => {
+          const assigned = experiment.variants.filter(
+            v => assignedVariants.includes(v.variantId)
+          );
+          const unassigned = experiment.variants.filter(
+            v => !assignedVariants.includes(v.variantId)
+          );
+
+          const assignedSize =
+            assigned.length > 0 ? Math.floor(500 / assigned.length) : 0;
+          assigned.forEach((variant, index) => {
+            variant.mods = [index * assignedSize, (index + 1) * assignedSize];
+          });
+
+          const unassignedSize =
+            unassigned.length > 0 ? Math.floor(500 / unassigned.length) : 0;
+          unassigned.forEach((variant, index) => {
+            variant.mods = [
+              500 + index * unassignedSize,
+              500 + (index + 1) * unassignedSize
+            ];
+          });
+        });
+
+        return config;
+      }
+
+      it("encodes empty experiments assignments as base64 string", async function() {
+        await EWE.testing.resetExperimentData();
+        await EWE.experiments.sync([]);
+        const encoding = await EWE.experiments.getEncodedExperiments();
+        expect(encoding).toEqual("AA==");
+      });
+
+      it("encodes experiments assignments as base64 string", async function() {
+        let encoding;
+
+        await EWE.testing.setExperimentsSeed(LOWER_HALF_USER_ID);
+        await EWE.experiments.sync(getExperimentsConfig(["1"]));
+        encoding = await EWE.experiments.getEncodedExperiments();
+        expect(encoding).toEqual("AQ==");
+
+        await EWE.testing.setExperimentsSeed(LOWER_HALF_USER_ID);
+        await EWE.experiments.sync(getExperimentsConfig(["1", "3"]));
+        encoding = await EWE.experiments.getEncodedExperiments();
+        expect(encoding).toEqual("BQ==");
+
+        await EWE.testing.setExperimentsSeed(LOWER_HALF_USER_ID);
+        await EWE.experiments.sync(getExperimentsConfig(["10"]));
+        encoding = await EWE.experiments.getEncodedExperiments();
+        expect(encoding).toEqual("AgA=");
+
+        await EWE.testing.setExperimentsSeed(LOWER_HALF_USER_ID);
+        await EWE.experiments.sync(getExperimentsConfig(["3", "5", "10"]));
+        encoding = await EWE.experiments.getEncodedExperiments();
+        expect(encoding).toEqual("AhQ=");
+      });
+    });
   });
 
   describe("Experiments events", function() {
