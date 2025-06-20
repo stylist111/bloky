@@ -1,5 +1,7 @@
 # Unreleased
 
+- Fixed: Close button of tracking warning was misaligned for left-to-right locales.
+
 # 4.22.2 - 2025-06-17
 
 - Update non-partner detection check

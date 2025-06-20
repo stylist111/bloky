@@ -1027,12 +1027,16 @@ section.cols > *:last-child {
 #hide-tracking-warning {
   position: absolute;
   top: 0.8rem;
+}
+
+html[dir="ltr"] #hide-tracking-warning {
+  left: auto;
   right: 0.8rem;
 }
 
 html[dir="rtl"] #hide-tracking-warning {
-  right: auto;
   left: 1rem;
+  right: auto;
 }
 
 #tracking-warning .link {
