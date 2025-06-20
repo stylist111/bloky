@@ -199,17 +199,16 @@ publish-remote-validation:
     - npm publish --workspace=core/remote-configuration-validator
   rules:
     - !reference [.never-run-on-update-rules-trigger, rules]
-    # Only run when merging to the main branch
+    # Only run when:
+    # - merging to the main branch
+    # - the package.json file for the project is updated
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - core/remote-configuration-validator/package.json
       when: on_success
     # Do not trigger push pipelines
     - if: $CI_PIPELINE_SOURCE == "push"
       when: never
-    # only run when the package.json file for the project is updated
-    - changes:
-        paths:
-          - core/remote-configuration-validator/package.json
-        compare_to: 'refs/heads/main'
   needs: ["test", "sdk", "adblock", "adblockplus"]
 
 ################################################################################
