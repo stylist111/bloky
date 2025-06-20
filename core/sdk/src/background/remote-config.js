@@ -19,7 +19,7 @@ import browser from "webextension-polyfill";
 import {MILLIS_IN_HOUR, MILLIS_IN_MINUTE} from "adblockpluscore/lib/time.js";
 import {PersistentState} from "./persistence.js";
 import {Scheduler} from "../all/scheduler.js";
-import {validateExperimentData} from "../all/experiment-validation.js";
+import {validateRemoteConfig} from "@eyeo/remote-configuration-validator";
 import {EventEmitter} from "../../adblockpluscore/lib/events.js";
 import {EventDispatcher} from "./types.js";
 import * as experiments from "./experiments.js";
@@ -151,9 +151,7 @@ async function sync() {
   // update the ETag
   state.etag = etag;
 
-  // eslint-disable-next-line no-warning-comments
-  // TODO: we should validate the entire config not just experiments
-  const {errors} = validateExperimentData(data);
+  const errors = validateRemoteConfig(data);
 
   if (errors && errors.length > 0) {
     state.errors = errors;

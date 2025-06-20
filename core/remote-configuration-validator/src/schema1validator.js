@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
+/* For ESLint: List any global identifiers used in this file below */
+/* global console */
 import {Rule} from "json-rules-engine";
 import {Validator} from "jsonschema";
 import {remoteConfigSchema} from "../schema/remoteConfigSchema.js";
@@ -220,9 +222,14 @@ export function validate(data) {
   const validator = new Validator();
   let validateResult = {};
   try {
-    validateResult = validator.validate(data, remoteConfigSchema);
+    // passing the 'base' property to the validate function
+    // avoids an error when running certain tests in some browsers
+    // see more here -> https://github.com/tdegrunt/jsonschema/issues/407
+    validateResult = validator.validate(data, remoteConfigSchema, {base: "https://eyeo.com/remoteConfigSchema"});
   }
   catch (err) {
+    // eslint-disable-next-line no-console
+    console.error(err.message);
     return [err.message];
   }
 

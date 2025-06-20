@@ -356,7 +356,7 @@ describe("Remote config", function() {
       schemaId: SCHEMA_ID,
       experiments: "yo"
     };
-    const EXPECTED_ERRORS = ["`experiments` is not an array"];
+    const EXPECTED_ERRORS = ["instance.experiments is not of a type(s) array"];
 
     it("keeps the old config active when there is a schema error", async function() {
       await setConfig(DEFAULT_CONFIG);

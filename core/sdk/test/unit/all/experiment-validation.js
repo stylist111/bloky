@@ -16,15 +16,13 @@
  */
 
 import expect from "expect";
-import {validateExperimentData} from "../../../src/all/experiment-validation.js";
+import {validateRemoteConfig} from "@eyeo/remote-configuration-validator";
 
 const SCHEMA_ID = "1";
 
 describe("Experiment Data Validation", function() {
   async function expectErrors(data, expectedErrors) {
-    expect(validateExperimentData(data)).toEqual({
-      errors: expectedErrors
-    });
+    expect(validateRemoteConfig(data)).toEqual(expectedErrors);
   }
 
   it("marks a simple config as valid", async function() {
@@ -32,9 +30,7 @@ describe("Experiment Data Validation", function() {
       schemaId: SCHEMA_ID,
       experiments: []
     };
-    expect(validateExperimentData(data)).toEqual({
-      errors: null
-    });
+    expect(validateRemoteConfig(data)).toEqual([]);
   });
 
   it("marks a more complex config as valid", async function() {
@@ -76,9 +72,7 @@ describe("Experiment Data Validation", function() {
         }
       ]
     };
-    expect(validateExperimentData(data)).toEqual({
-      errors: null
-    });
+    expect(validateRemoteConfig(data)).toEqual([]);
   });
 
   it("reports missing experiments array", async function() {
@@ -87,7 +81,7 @@ describe("Experiment Data Validation", function() {
         schemaId: SCHEMA_ID,
         experiments: "yo"
       },
-      ["`experiments` is not an array"]
+      ["instance.experiments is not of a type(s) array"]
     );
   });
 
@@ -128,7 +122,7 @@ describe("Experiment Data Validation", function() {
           }
         ]
       },
-      ["`experiments[0].experimentId` is not a string"]
+      ["instance.experiments[0].experimentId is not of a type(s) string"]
     );
   });
 
@@ -147,9 +141,8 @@ describe("Experiment Data Validation", function() {
         ]
       },
       [
-        "`experiments[0].name` is not a string",
-        "`experiments[0].description` is not a string",
-        "`experiments[0].enabled` is not a boolean"
+        "instance.experiments[0].name is not of a type(s) string",
+        "instance.experiments[0].enabled is not of a type(s) boolean"
       ]
     );
   });
@@ -165,7 +158,7 @@ describe("Experiment Data Validation", function() {
           }
         ]
       },
-      ["`experiments[0].variants` is not an array"]
+      ["instance.experiments[0].variants is not of a type(s) array"]
     );
   });
 
@@ -212,7 +205,7 @@ describe("Experiment Data Validation", function() {
           }
         ]
       },
-      ["`experiments[0].variants[0].variantId` is not a string"]
+      ["instance.experiments[0].variants[0].variantId is not of a type(s) string"]
     );
   });
 
@@ -235,8 +228,8 @@ describe("Experiment Data Validation", function() {
         ]
       },
       [
-        "`experiments[0].variants[0].name` is not a string",
-        "`experiments[0].variants[0].flags` is not an object"
+        "instance.experiments[0].variants[0].flags is not of a type(s) object",
+        "instance.experiments[0].variants[0].name is not of a type(s) string"
       ]
     );
   });
@@ -264,9 +257,7 @@ describe("Experiment Data Validation", function() {
         ]
       },
       [
-        "`experiments[0].variants[0].mods` is not a two element array",
-        "`experiments[0].variants[1].mods` is not a two element array"
-      ]
+        "instance.experiments[0].variants[0].mods is not of a type(s) array"]
     );
   });
 
@@ -298,9 +289,9 @@ describe("Experiment Data Validation", function() {
         ]
       },
       [
-        "`experiments[0].variants[0].mods[0]` is not a number between 0 and 1000",
-        "`experiments[0].variants[1].mods[0]` is not a number between 0 and 1000",
-        "`experiments[0].variants[2].mods[1]` is not a number between 0 and 1000"
+        "instance.experiments[0].variants[0].mods[0] is not of a type(s) integer",
+        "instance.experiments[0].variants[1].mods[0] must be greater than or equal to 0",
+        "instance.experiments[0].variants[2].mods[1] must be less than or equal to 1000"
       ]
     );
   });
@@ -431,14 +422,14 @@ describe("Experiment Data Validation", function() {
     await expectErrors(
       {},
       [
-        "This system only supports a schemaId of '1'"
+        "This system does not support a schemaId of 'undefined'"
       ]
     );
 
     await expectErrors(
       {schemaId: "potato"},
       [
-        "This system only supports a schemaId of '1'"
+        "This system does not support a schemaId of 'potato'"
       ]
     );
   });
