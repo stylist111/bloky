@@ -22,7 +22,7 @@ import sinon from "sinon/pkg/sinon.js";
 import {TEST_PAGES_URL, TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
 import {setMinTimeout, waitForAssertion, setEndpointResponse,
         clearEndpointResponse, getMaxDynamicRulesAvailable} from "./utils.js";
-import {subTestCustom2, subTestUpdatable1} from "./api-fixtures.js";
+import {subTestCustom2, subTestUpdatable1} from "./fixtures/subscriptions.js";
 import {wait} from "./polling.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 import {runInBackgroundPage, waitForServiceWorkerInitialization, EWE,

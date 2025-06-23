@@ -19,62 +19,19 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 
 import {EWE, expectTestEvents, clearTestEvents} from "./messaging.js";
-import {TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
+import {clearEndpointResponse} from "./utils.js";
 import {
-  Page,
-  clearEndpointResponse,
-  getExistingElement
-} from "./utils.js";
-import {wait} from "./polling.js";
-
-const EXPERIMENT_FLAG = "onboarding_flow";
-const EXPERIMENT_URL = `${TEST_ADMIN_PAGES_URL}/experiments.json`;
-
-const EXPERIMENT_ID = "experiment-1";
-const LOWER_VARIANT_ID = "lower-variant";
-const UPPER_VARIANT_ID = "upper-variant";
-const LOWER_VARIANT_FLAG = LOWER_VARIANT_ID + "-flag";
-const UPPER_VARIANT_FLAG = UPPER_VARIANT_ID + "-flag";
-const LOWER_HALF_USER_ID = "f47ac10b-58cc-4372-a567-0e02b2c3d479";  // Hashes with experimentid-1 to 215
-const UPPER_HALF_USER_ID = "e5c619b9-7928-4d8a-b25c-84e5df2080c2";  // Hashes with experimentid-1 to 907
-
-function oneVariantConfig(flag) {
-  return [
-    {
-      experimentId: EXPERIMENT_ID,
-      variants: [
-        {
-          variantId: "variant1",
-          flags: {
-            [EXPERIMENT_FLAG]: flag
-          },
-          mods: [0, 1000]
-        }
-      ]
-    }
-  ];
-}
-
-function twoVariantConfig(lowerMods, upperMods) {
-  return [{
-    experimentId: EXPERIMENT_ID,
-    variants: [
-      {
-        variantId: LOWER_VARIANT_ID,
-        flags: {[EXPERIMENT_FLAG]: LOWER_VARIANT_FLAG},
-        mods: lowerMods
-      },
-      {
-        variantId: UPPER_VARIANT_ID,
-        flags: {
-          [EXPERIMENT_FLAG]: UPPER_VARIANT_FLAG,
-          "Second flag": "second flag value"
-        },
-        mods: upperMods
-      }
-    ]
-  }];
-}
+  EXPERIMENT_FLAG,
+  EXPERIMENT_ID,
+  EXPERIMENT_URL, LOWER_HALF_USER_ID,
+  LOWER_VARIANT_FLAG,
+  LOWER_VARIANT_ID,
+  oneVariantConfig,
+  twoVariantConfig,
+  UPPER_HALF_USER_ID,
+  UPPER_VARIANT_FLAG,
+  UPPER_VARIANT_ID
+} from "./fixtures/experiments.js";
 
 describe("Split Experiments", function() {
   afterEach(async function() {
@@ -621,61 +578,6 @@ describe("Split Experiments", function() {
 
       const uiFlags = await getFlagsFromUI();
       expect(uiFlags).toEqual(availableFlags);
-    });
-  });
-
-  describe("Experiments Content Script API tests", function() {
-    const timeout = 4000;
-
-    afterEach(async function() {
-      await EWE.testing.resetExperimentData();
-    });
-
-    it("should display experiment when flag is set", async function() {
-      const elemId = "experiments-content-api-test";
-      const config = oneVariantConfig("test-content-script-flag");
-      await EWE.experiments.sync(config);
-      const tabId = await new Page("experiments-content-api.html").loaded;
-      let elem;
-
-      await wait(async() => {
-        elem = await getExistingElement(tabId, elemId);
-        return elem !== null;
-      }, timeout, "Experiment element is not visible");
-
-      expect(elem).toContain(elemId);
-    });
-
-    it("should NOT display experiment when flag is NOT set", async function() {
-      let elem;
-      const elemId = "experiments-content-api-test";
-      const tabId = await new Page("experiments-content-api.html").loaded;
-
-      await wait(async() => {
-        elem = await getExistingElement(tabId, elemId);
-        return elem === null;
-      }, timeout, "Experiment element is visible");
-
-      expect(elem).toBeNull();
-    });
-
-    it("should get all available flags in content scripts", async function() {
-      let elem;
-
-      const config = twoVariantConfig([0, 500], [500, 1000]);
-      await EWE.experiments.sync(config);
-      const availableFlags = await EWE.experiments.getFlags();
-
-      const tabId = await new Page("experiments-content-api.html").loaded;
-
-      for (let key in availableFlags) {
-        await wait(async() => {
-          elem = await getExistingElement(tabId, key);
-          return elem !== null;
-        }, timeout, `Flag ${key} not available in content script`);
-
-        expect(elem).toContain(key);
-      }
     });
   });
 });

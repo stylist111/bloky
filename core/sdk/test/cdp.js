@@ -29,7 +29,7 @@ import {isChromiumBased, isFirefox, Page, setMinTimeout, executeScript, isMV3,
 import {setPremiumStatus, resetPremiumStatus} from "./messaging.js";
 import {base64ToArrayBuffer} from "adblockpluscore/lib/rsa.js";
 import {limitPromiseDuration} from "./polling.js";
-import {subAcceptableAdsLive} from "./api-fixtures.js";
+import {subAcceptableAdsLive} from "./fixtures/subscriptions.js";
 
 const SITE_ID = "siteId";
 

@@ -19,28 +19,23 @@ import * as ewe from "@eyeo/webext-ad-filtering-solution/content-api";
 
 const flagName = "onboarding_flow";
 const flagValue = "test-content-script-flag";
-const elemId = "experiments-content-api-test";
 
 const serverLogger = new ewe.telemetry.ServerLogger("test_ewe_content_api");
 
 async function startExperiment() {
   const flag = await ewe.experiments.getFlag(flagName);
+  const flags = await ewe.experiments.getFlags();
+  const assignments = await ewe.experiments.getAssignments();
   serverLogger.debug("test_got_experiment_flag", {flagName, flag});
 
-  if (flag === flagValue) {
-    const div = document.createElement("div");
-    div.id = elemId;
-    document.body.appendChild(div);
-  }
+  const div = document.createElement("div");
+  div.id = "experiments-api-test";
 
-  const allFlags = await ewe.experiments.getFlags();
+  div.setAttribute("data-get-flag", JSON.stringify(flagValue));
+  div.setAttribute("data-get-flags", JSON.stringify(flags));
+  div.setAttribute("data-get-assignments", JSON.stringify(assignments));
 
-  for (let key in allFlags) {
-    const div = document.createElement("div");
-    div.id = key;
-    div.innerText = `${key} = ${allFlags[flag]}`;
-    document.body.appendChild(div);
-  }
+  document.body.appendChild(div);
 }
 
 async function start() {
@@ -48,8 +43,8 @@ async function start() {
     document.addEventListener("DOMContentLoaded", startExperiment);
   }
   else {
-    startExperiment();
+    void startExperiment();
   }
 }
 
-start();
+void start();

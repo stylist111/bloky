@@ -28,7 +28,7 @@ import {
   getUserIdFromStorage,
   getPopupBlockedAdsTotalCount,
   initOptionsPremiumTab,
-  getExperimentFlagsFromExtension,
+  callUIExperimentsAPI,
 } from "../utils/page.js";
 
 export const testUrl = "https://getadblock.com";
@@ -53,7 +53,7 @@ export async function getActualExtensionData() {
   await prepareExtensionHook();
   const { version } = extension;
   const isPremium = await isPremiumLabelPresent();
-  const experimentFlags = await getExperimentFlagsFromExtension();
+  const experimentFlags = await callUIExperimentsAPI("getFlags");
   return { id, isPremium, version, blockCount, experimentFlags };
 }
 

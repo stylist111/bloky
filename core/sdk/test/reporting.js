@@ -28,7 +28,7 @@ import {EWE, addFilter, runInBackgroundPage, getTestEvents, clearTestEvents,
         addOnBlockableListener, removeOnBlockableListener,
         waitForServiceWorkerInitialization, setFeatureFlags}
   from "./messaging.js";
-import {VALID_FILTER_TEXT, subTestCustom1} from "./api-fixtures.js";
+import {VALID_FILTER_TEXT, subTestCustom1} from "./fixtures/subscriptions.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 describe("Reporting", function() {

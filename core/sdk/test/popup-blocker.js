@@ -24,7 +24,7 @@ import {Page, Popup, setMinTimeout, setEndpointResponse,
         syncSubHasLastFilter, syncSubHasNoLastFilter,
         isEdge, waitForSubscriptionToBeSynchronized}
   from "./utils.js";
-import {emptyDiffResponse, subTestUpdatable1} from "./api-fixtures.js";
+import {emptyDiffResponse, subTestUpdatable1} from "./fixtures/subscriptions.js";
 import {EWE, waitForServiceWorkerInitialization, getLastError}
   from "./messaging.js";
 import {isFuzzingServiceWorker, suspendServiceWorker}

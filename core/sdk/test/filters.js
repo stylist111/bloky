@@ -27,7 +27,7 @@ import {addFilter, EWE, getTestEvents, clearTestEvents, expectTestEvents,
         enableSendTestEvents} from "./messaging.js";
 import {VALID_FILTER_TEXT, COMMENT_FILTER_TEXT, SECOND_VALID_FILTER_TEXT,
         THIRD_VALID_FILTER_TEXT, subTestUpdatable1, subTestUpdatable2}
-  from "./api-fixtures.js";
+  from "./fixtures/subscriptions.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 const WEBBUNDLE_FILTER_TEXT = `|${TEST_PAGES_URL}$webbundle`;

@@ -26,7 +26,7 @@ import {Page, setEndpointResponse, shouldBeLoaded, setMinTimeout,
         clearRequestLogs, getRequestLogs, clearEndpointResponse,
         waitForSubscriptionToFailToUpdate, fetchFilterText}
   from "./utils.js";
-import {subTestCustom1, subTestUpdatable1} from "./api-fixtures.js";
+import {subTestCustom1, subTestUpdatable1} from "./fixtures/subscriptions.js";
 import {wait} from "./polling.js";
 import {isFuzzingServiceWorker, suspendServiceWorker} from "./mocha/mocha-runner.js";
 

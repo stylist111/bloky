@@ -20,7 +20,7 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import {convert} from "../../scripts/convertSubscriptions.js";
-import {subTestUpdatable2} from "../api-fixtures.js";
+import {subTestUpdatable2} from "../fixtures/subscriptions.js";
 
 const encoding = "utf-8";
 

@@ -24,7 +24,7 @@ import {subAntiCVLocal, subEasylistLocal, subEasylistLive,
         subEasylistPlusGermanyLive, subAcceptableAdsLive, subTestUpdatable2,
         subTestCustom1, subTestCustom2, subTestCustom3, subAntiCVLive,
         subAcceptableAdsLocal}
-  from "./api-fixtures.js";
+  from "./fixtures/subscriptions.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 const ADDON_NAME = "foo";

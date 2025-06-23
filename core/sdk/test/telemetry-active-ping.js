@@ -25,7 +25,7 @@ import {TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
 import {clearRequestLogs, getRequestLogs, setMinTimeout, setEndpointResponse,
         clearEndpointResponse, waitForAssertion,
         waitForSubscriptionToBeSynchronized} from "./utils.js";
-import {subTestCustom1} from "./api-fixtures.js";
+import {subTestCustom1} from "./fixtures/subscriptions.js";
 import {wait} from "./polling.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 

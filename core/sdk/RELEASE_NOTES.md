@@ -21,6 +21,7 @@
   encoded as base64-encoded bitmap. (EXT-979)
 - Exposed `EWE.experiments.getEncodedExperiments()` method to retrieve the
   experiment assignments encoded as base64-encoded bitmap.
+- Added the `EWE.experiments.getAssignments()` in Content and UI APIs. (EXT-991)
 
 ## General
 

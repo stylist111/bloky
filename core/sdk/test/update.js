@@ -21,7 +21,7 @@ import browser from "webextension-polyfill";
 import {TEST_PAGES_URL, TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
 import {Page, isFirefox, firefoxVersion, isIncognito, readFile,
         writeFile, setMinTimeout, expectElemHideHidden, waitForAssertion, waitForSubscriptionsToDownload} from "./utils.js";
-import {subTestCustom1, subTestNoDNR} from "./api-fixtures.js";
+import {subTestCustom1, subTestNoDNR} from "./fixtures/subscriptions.js";
 import {wait} from "./polling.js";
 import {EWE} from "./messaging.js";
 import {updateExtensionFiles, reloadExtension} from "./mocha/mocha-runner.js";

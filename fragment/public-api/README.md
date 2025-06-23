@@ -246,7 +246,56 @@ type ExperimentFlagsResponse = Array<{
   error?: string;
 }>;
 ```
+---
 
+### `getExperimentAssignments`
+
+Returns an object containing all current experiment flags and their values.
+
+#### Example
+
+```js
+await sendExtCommand({ method: "getExperimentAssignments" });
+```
+
+#### Response Structure
+
+The response is an array of objects. Each object represents the result from a specific extension.
+
+```typescript
+type ExperimentAssignmentsResponse = Array<{
+  /**
+   * The ID of the extension (e.g., 'adblock' or 'adblockplus').
+   */
+  name: string;
+
+  /**
+   * The manifest version of the extension (e.g., '1.2.3').
+   */
+  version: string;
+
+  /**
+   * The request ID. Generated automatically and will be the same for each response
+   * in this array of responses.
+   */
+  requestId: string;
+
+  /**
+   * The experiment assignments object, where keys are experiment IDs and values are their variant assignment.
+   * Example:
+   * { "experiment1": "variant1", "experiment2": "variant2" }
+   * If an error occurs, this is undefined, and the `error` key will be populated.
+   */
+  result?: {
+    [experimentId: string]: [variantId: string];
+  };
+
+  /**
+   * A description of the error if the extension fails to respond.
+   */
+  error?: string;
+}>;
+```
 ---
 
 ## Notes

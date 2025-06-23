@@ -28,7 +28,7 @@ import {Page, waitForInvisibleElement, executeScript, setMinTimeout,
         isChromiumBased, setEndpointResponse, expectElemHideRemoved,
         expectElementToHaveInlineStyle}
   from "./utils.js";
-import {subTestCustom1, subAntiCVLocal} from "./api-fixtures.js";
+import {subTestCustom1, subAntiCVLocal} from "./fixtures/subscriptions.js";
 import {wait} from "./polling.js";
 import {addFilter, EWE, setFeatureFlags} from "./messaging.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";

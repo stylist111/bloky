@@ -29,7 +29,7 @@ import {addFilter, EWE, runInBackgroundPage, getTestEvents, clearTestEvents,
 import {VALID_FILTER_TEXT, subAntiCVLocal, subTestUpdatable2,
         subEasylistLive, subTestCustom1, subTestCustom2, subAcceptableAdsLive,
         subTestUpdatable1, subAntiCVLive, subTestNoDNR, subTestAllowingFilter}
-  from "./api-fixtures.js";
+  from "./fixtures/subscriptions.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 
 const VALID_SUBSCRIPTION_URL = subTestCustom1.url;

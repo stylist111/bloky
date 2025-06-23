@@ -18,10 +18,11 @@
 
 // import { allowlistWebsite } from "./allowlisting-api.js";
 import { getStatus } from "./status-api.js";
-import { getExperimentFlags } from "./experiments.js";
+import { getExperimentFlags, getExperimentAssignments } from "./experiments.js";
 
 export default {
   getStatus,
   // allowlistWebsite is intentionally not exposed
   getExperimentFlags,
+  getExperimentAssignments,
 };

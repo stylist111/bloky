@@ -21,7 +21,7 @@ import browser from "webextension-polyfill";
 import {TEST_PAGES_URL} from "./test-server-urls.js";
 import {isMV3, Page, expectElemHideHidden} from "./utils.js";
 import {subAntiCVLocal, subTestCustom1, subEasylistLive,
-        subEasylistPlusGermanyLive} from "./api-fixtures.js";
+        subEasylistPlusGermanyLive} from "./fixtures/subscriptions.js";
 import {wait} from "./polling.js";
 import {EWE} from "./messaging.js";
 import {updateExtensionFiles, reloadExtension} from "./mocha/mocha-runner.js";

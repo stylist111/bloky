@@ -28,9 +28,7 @@ import {
   disablePremiumProgrammatically,
   loadPageWithTrustedIframe,
 } from "../../utils/page.js";
-
-const BT_PARTNER_URL = "https://www.accuweather.com/";
-const TRUSTED_IFRAME_URL = "https://btloader.com/trustedIframe.html?o=5673795450830848";
+import { BT_PARTNER_URL, TRUSTED_IFRAME_URL } from "./trusted-iframe-experiments.js";
 
 function getCombinations() {
   const combinations = [];

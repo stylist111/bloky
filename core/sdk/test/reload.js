@@ -21,7 +21,7 @@ import browser from "webextension-polyfill";
 import {Page, isMV3, isFirefox, waitForHighlightedStyle,
         isIncognito, waitForSubscriptionToBeSynchronized}
   from "./utils.js";
-import {subTestCustom1} from "./api-fixtures.js";
+import {subTestCustom1} from "./fixtures/subscriptions.js";
 import {wait} from "./polling.js";
 import {addFilter, EWE} from "./messaging.js";
 import {reloadExtension} from "./mocha/mocha-runner.js";

@@ -28,8 +28,8 @@ import {trace} from "./debugging.js";
 import {onContentHelloReceived} from "./content-message-deferrer.js";
 import {markActive, countBTAADetectionEvent} from "./cdp.js";
 import {default as sentry} from "./sentry.js";
-import {default as experiments} from "./experiments.js";
 import {serverLogValidatedEvent} from "./telemetry.js";
+import {handleMessageAPICall} from "./message-invoked-api.js";
 
 async function handleMessage(message, sender) {
   trace({
@@ -88,11 +88,9 @@ async function handleMessage(message, sender) {
         message.data
       );
       break;
-    case "ewe:get-experiment-flag":
-      const {flagId} = message;
-      return await experiments.getFlag(flagId);
-    case "ewe:get-experiment-flags":
-      return await experiments.getFlags();
+    case "ewe:api-call":
+      const {apiName, methodName, params} = message;
+      return await handleMessageAPICall(apiName, methodName, params);
   }
 }
 

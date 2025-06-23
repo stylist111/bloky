@@ -24,7 +24,7 @@ import {Page, Resource, executeScript, shouldBeLoaded, supportsWebBundle,
         isChromiumBased, waitForSubscriptionToBeSynchronized, sleep,
         waitForAssertion, isMV3, conditionallyRetryAssertion}
   from "./utils.js";
-import {subTestCustom1, subTestAllowingFilter} from "./api-fixtures.js";
+import {subTestCustom1, subTestAllowingFilter} from "./fixtures/subscriptions.js";
 import {addFilter, EWE} from "./messaging.js";
 import browser from "webextension-polyfill";
 import sinon from "sinon/pkg/sinon.js";

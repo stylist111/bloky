@@ -19,31 +19,53 @@ import browser from "webextension-polyfill";
 import {ignoreNoConnectionError} from "../all/errors.js";
 
 /**
+ * Sends a message to the service worker to call the experiments API.
+ * @param {string} methodName the method to call on the experiments API
+ * @param {any[]} params the parameters to pass to the method
+ * @returns {Promise<*>} the result of the API call.
+ */
+async function callAPI(methodName, ...params) {
+  return await ignoreNoConnectionError(
+    browser.runtime.sendMessage({
+      type: "ewe:api-call",
+      apiName: "experiments",
+      methodName,
+      params
+    })
+  );
+}
+
+/**
  * API to interact with the experiments module
  * @namespace experiments
  */
 export default {
   /**
    * Retrieves the value of a feature flag
+   * @ignore
    * @param {string} flagId - Identifier of the feature flag
    * @returns {Promise<*|null>} Value of the feature flag or null if not found
    */
   async getFlag(flagId) {
-    return await ignoreNoConnectionError(
-      browser.runtime.sendMessage({
-        type: "ewe:get-experiment-flag",
-        flagId
-      })
-    );
+    return await callAPI("getFlag", flagId);
   },
 
   /**
    * Retrieves all the available experiment flags
+   * @ignore
    * @returns {Promise<*|null>} Value of the feature flag or null if not found
    */
   async getFlags() {
-    return await ignoreNoConnectionError(
-      browser.runtime.sendMessage({type: "ewe:get-experiment-flags"})
-    );
+    return await callAPI("getFlags");
+  },
+
+  /**
+   * Retrieves all the experiment assignments
+   * @ignore
+   * @returns {Promise<Object.<string, string>>} Object specifying the assigned
+   *   variant ID for each active assigned experiment ID
+   */
+  async getAssignments() {
+    return await callAPI("getAssignments");
   }
 };

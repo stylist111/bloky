@@ -489,7 +489,7 @@ export async function disablePremiumProgrammatically() {
   await reloadExtension(initOptionsGeneralTab);
 }
 
-export async function getExperimentFlagsFromExtension() {
+export async function callUIExperimentsAPI(methodName, ...params) {
   const currentHandle = await driver.getWindowHandle();
   const optionsHandle = await getOptionsHandle();
   await driver.switchTo().window(optionsHandle);
@@ -506,10 +506,14 @@ export async function getExperimentFlagsFromExtension() {
     "Timeout waiting for the ewe module to be available",
   );
 
-  const experimentFlags = await driver.executeAsyncScript(async (callback) => {
-    const flags = await window.modulesAsGlobal.ewe.experiments.getFlags();
-    callback(flags);
-  });
+  const experimentFlags = await driver.executeAsyncScript(
+    async (method, args, callback) => {
+      const flags = await window.modulesAsGlobal.ewe.experiments[method](...args);
+      callback(flags);
+    },
+    methodName,
+    params,
+  );
 
   await driver.switchTo().window(currentHandle);
   return experimentFlags;
@@ -545,6 +549,13 @@ export async function sendExtCommandInTrustedIframe(trustedIframeHandle, method,
 
 export async function loadPageWithTrustedIframe(pageUrl, trustedIframeSrc) {
   await openNewTab(pageUrl);
+
+  // The page sometimes fails to load and needs to be refreshed
+  const bodyText = await driver.findElement(By.css("body")).getText();
+  if (bodyText.includes("can't reach this page")) {
+    await driver.sleep(3000);
+    await driver.navigate().refresh();
+  }
 
   // Handle the cookie popup if it appears
   try {

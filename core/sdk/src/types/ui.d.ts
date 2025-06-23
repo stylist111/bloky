@@ -82,7 +82,11 @@ export interface ServerLogger {
     /**
      * Retrieves all feature flags, including overridden flags and their values
      */
-    const getFlags: () => Promise<Record<string, unknown>>
+    const getFlags: () => Promise<Record<string, unknown>>;
+    /**
+     * Returns the assignments for the user
+     */
+    const getAssignments: () => Promise<Record<string, string>>;
   }
 
   namespace telemetry {

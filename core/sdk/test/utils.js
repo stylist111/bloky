@@ -612,6 +612,13 @@ export function getExistingElement(tabId, elemId) {
   }, [elemId]);
 }
 
+export function getElementAttribute(tabId, elemId, attrName) {
+  return executeScript(tabId, (id, attr) => {
+    let el = document.getElementById(id);
+    return el ? el.getAttribute(attr) : null;
+  }, [elemId, attrName]);
+}
+
 export function getInlineElementStyle(tabId, elemId) {
   return executeScript(tabId, id => {
     const el = document.getElementById(id);

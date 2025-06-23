@@ -23,6 +23,8 @@ import "../remote-config.js";
 import "../cohorts.js";
 import "../experiments.js";
 import "../sentry.js";
+import "../ewe-content-script-api.js";
+import "../ewe-ui-api.js";
 
 import {start} from "../mocha/mocha-runner.js";
 start();

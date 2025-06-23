@@ -21,7 +21,7 @@ import {getRequestLogs, clearRequestLogs, setEndpointResponse, setMinTimeout,
         Page, waitForSubscriptionToBeSynchronized, shouldBeLoaded}
   from "./utils.js";
 import {subAntiCVLocal, subTestCustom3, subTestUpdatable1}
-  from "./api-fixtures.js";
+  from "./fixtures/subscriptions.js";
 import {wait} from "./polling.js";
 import {EWE, addFilter} from "./messaging.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";

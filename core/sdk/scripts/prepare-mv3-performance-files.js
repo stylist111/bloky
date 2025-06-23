@@ -24,7 +24,7 @@ import {cleanup} from "./clean-mv3-files.js";
 import {isMain} from "./utils.js";
 import {commonRun} from "./prepare-mv3-common.js";
 
-import {subAntiCVLive, subEasylistLive, subAcceptableAdsLive} from "../test/api-fixtures.js";
+import {subAntiCVLive, subEasylistLive, subAcceptableAdsLive} from "../test/fixtures/subscriptions.js";
 
 async function run() {
   const scriptsOutputDir = path.join(process.cwd(), "scriptsOutput", "performance-mv3");

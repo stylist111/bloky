@@ -25,7 +25,7 @@ import express from "express";
 import requestLogger from "./request-logger.js";
 import {delay, apiErrorHandler} from "./api-middleware.js";
 import {TEST_ADMIN_PAGES_PORT} from "./test-server-urls.js";
-import {emptyDiffResponse} from "./api-fixtures.js";
+import {emptyDiffResponse} from "./fixtures/subscriptions.js";
 
 let dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
