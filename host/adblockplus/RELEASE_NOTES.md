@@ -1,5 +1,7 @@
 # Unreleased
 
+# 4.23.0 - 2025-06-24
+
 - Fixed: Close button of tracking warning was misaligned for left-to-right locales.
 - Exposed experiment assignment in the Public API. (EXT-991)
 
