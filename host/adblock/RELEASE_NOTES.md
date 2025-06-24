@@ -1,5 +1,7 @@
 # Unreleased
 
+# 6.23.0 - 2025-06-24
+
 - Clean up logic for deprecated pref keys.
 - Add encoded cohorts to uninstall and IPM URLs. (EXT-979)
 - Exposed experiment assignments in the Public API. (EXT-991)
