@@ -29,11 +29,16 @@ import {
 } from "@eyeo/test-utils/driver";
 import { dcTestPageUrl } from "@eyeo/test-utils/urls";
 import { dcFilters } from "@eyeo/test-utils/filters";
-import { getOptionsHandle, getPremiumEmail } from "@eyeo/test-utils/extension";
+import {
+  getOptionsHandle,
+  getPremiumEmail,
+  setTimeoutForExtensionReload,
+} from "@eyeo/test-utils/extension";
 
 import {
   initOptionsPremiumTab,
   enablePremiumProgrammatically,
+  disablePremiumProgrammatically,
   initPopupWithLocalPage,
   initOptionsPremiumFlTab,
   setPremiumFLsDefaultState,
@@ -45,6 +50,11 @@ import { premiumUrl } from "../../utils/urls.js";
 export default () => {
   afterEach(async function () {
     await setPremiumFLsDefaultState();
+  });
+
+  after(async function () {
+    setTimeoutForExtensionReload(this);
+    await disablePremiumProgrammatically();
   });
 
   it("activates premium by UI", async function () {

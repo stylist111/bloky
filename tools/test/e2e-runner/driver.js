@@ -79,29 +79,38 @@ export async function getAllWindowHandlesSafe() {
   return safeHandles;
 }
 
-export async function findUrl(expectedUrl, timeout = 5000) {
+export async function findUrl(expectedUrl, { timeout = 5000, exists = true } = {}) {
   let url;
   let handle;
+
+  // When checking that the URL does not exist, we want to give it enough time in case it does open
+  if (!exists) await driver.sleep(timeout);
+
   await wait(
     async () => {
       try {
-        for (handle of await getAllWindowHandlesSafe()) {
+        const handles = await getAllWindowHandlesSafe();
+        let urlFound = false;
+
+        for (handle of handles) {
           await driver.switchTo().window(handle);
           url = await driver.getCurrentUrl();
           if (url && url.includes(expectedUrl)) {
-            return true;
+            urlFound = true;
+            break;
           }
         }
+        return exists ? urlFound : !urlFound;
       } catch (err) {
         if (err.name !== "NoSuchWindowError") {
           throw err;
         }
+        return !exists;
       }
     },
     timeout,
-    `${expectedUrl} was not found`,
+    `${expectedUrl} was ${exists ? "not found" : "found"}`,
   );
-
   return { url, handle };
 }
 

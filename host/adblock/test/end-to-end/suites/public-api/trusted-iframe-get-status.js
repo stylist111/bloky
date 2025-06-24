@@ -16,7 +16,7 @@
  */
 
 import { expect } from "expect";
-import { getOptionsHandle } from "@eyeo/test-utils/extension";
+import { getOptionsHandle, setTimeoutForExtensionReload } from "@eyeo/test-utils/extension";
 import { isCheckboxPropertyEnabled } from "@eyeo/test-utils/driver";
 import {
   enablePremiumProgrammatically,
@@ -67,6 +67,7 @@ export default () => {
   const statusCombinations = getCombinations();
 
   after(async function () {
+    setTimeoutForExtensionReload(this); // disablePremiumProgrammatically reloads extension
     // Reset to default state after the tests
     await disablePremiumProgrammatically();
     await setAADefaultState();
@@ -75,7 +76,7 @@ export default () => {
   statusCombinations.forEach(({ premium, aa, allowlist }) => {
     const testName = `retrieves extension status - premium -> ${premium}, AA -> ${aa}, allowlisted -> ${allowlist}`;
     it(testName, async function () {
-      this.timeout(60000); // Long test with many checks
+      setTimeoutForExtensionReload(this); // setExtensionState reloads extension
       await setExtensionState({ premium, aa, allowlist });
 
       const trustedIframe = await loadPageWithTrustedIframe(BT_PARTNER_URL, TRUSTED_IFRAME_URL);

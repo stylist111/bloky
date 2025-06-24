@@ -230,6 +230,10 @@ export async function verifyInjectedExtensionData(testUrl, dataAttribute, getAct
   expect(parsedHtmlData).toMatchObject(actualExtensionData);
 }
 
+export function setTimeoutForExtensionReload(mochaContext) {
+  // Reloads are slow—ensure longer test timeout
+  mochaContext.timeout(60000);
+}
 /**
  * Reload the extension and wait for the options page to be displayed
  *
@@ -511,6 +515,20 @@ export async function setIPMServer(initOptionsFn) {
     type: "prefs.set",
     key: "ipm_server_url",
     value: "http://localhost:3007",
+  });
+}
+
+export async function setIPMCooldowns(initOptionsFn) {
+  await sendExtMessage(initOptionsFn, {
+    type: "prefs.set",
+    key: "new_tab_cool_down",
+    value: 2000,
+  });
+
+  return sendExtMessage(initOptionsFn, {
+    type: "prefs.set",
+    key: "onpage_dialog_cool_down",
+    value: 2000,
   });
 }
 

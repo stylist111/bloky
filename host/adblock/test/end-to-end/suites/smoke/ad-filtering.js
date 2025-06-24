@@ -100,7 +100,17 @@ export default () => {
     const snippetElem = await getDisplayedElement("#snippet-filter");
     expect(await snippetElem.getText()).toEqual("Snippet filter not applied");
 
-    await setCustomFilters([snippetFilter]);
+    // Due to a textarea bug, filters on chrome beta should be added programatically
+    // Should be removed once we start using the new chrome beta version: https://issues.chromium.org/issues/422003155
+    if (
+      browserDetails.browserName === "chromium" &&
+      browserDetails.fullBrowserVersion === "138.0.7204.0"
+    ) {
+      await addFiltersProgrammatically(initOptionsFiltersTab, snippetFilter);
+    } else {
+      await setCustomFilters([snippetFilter]);
+    }
+
     await openNewTab(snippetTestPageUrl);
     await driver.navigate().refresh();
     await waitForNotDisplayed("#snippet-filter", { timeout: 2000 });
@@ -108,7 +118,17 @@ export default () => {
   });
 
   it("allowlists websites", async function () {
-    await setCustomFilters([allowlistingFilter]);
+    // Due to a textarea bug, filters on chrome beta should be added programatically
+    // Should be removed once we start using the new chrome beta version: https://issues.chromium.org/issues/422003155
+    if (
+      browserDetails.browserName === "chromium" &&
+      browserDetails.fullBrowserVersion === "138.0.7204.0"
+    ) {
+      await addFiltersProgrammatically(initOptionsFiltersTab, allowlistingFilter);
+    } else {
+      await setCustomFilters([allowlistingFilter]);
+    }
+
     const websiteHandle = await openNewTab(blockHideUrl);
     await checkBlockHidePage(true);
     await setCustomFilters([]);

@@ -28,6 +28,7 @@ import {
 } from "@eyeo/test-utils/driver";
 import {
   getOptionsHandle,
+  setTimeoutForExtensionReload,
   reloadExtension,
   waitForNumberToBeInRange
 } from "@eyeo/test-utils/extension";
@@ -123,7 +124,7 @@ export default () => {
   });
 
   it("resets settings", async function () {
-    this.timeout(50000); // The options page may take long time to appear after reloading the extension
+    setTimeoutForExtensionReload(this);
 
     await initOptionsAdvancedTab(getOptionsHandle());
 

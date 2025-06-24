@@ -27,7 +27,12 @@ import {
   wait,
 } from "@eyeo/test-utils/driver";
 import { aaTestPageUrl } from "@eyeo/test-utils/urls";
-import { getOptionsHandle, upgradeExtension, blockAds } from "@eyeo/test-utils/extension";
+import {
+  getOptionsHandle,
+  upgradeExtension,
+  addFiltersProgrammatically,
+  blockAds,
+} from "@eyeo/test-utils/extension";
 import { customBlockingFilter } from "@eyeo/test-utils/filters";
 
 import {
@@ -102,7 +107,17 @@ export default () => {
 
     // Add custom filter. Needs to be added before blocking ads
     await initOptionsCustomizeTab(getOptionsHandle());
-    await setCustomFilters([customBlockingFilter], true);
+
+    // Due to a textarea bug, filters on chrome beta should be added programatically
+    // Should be removed once we start using the new chrome beta version: https://issues.chromium.org/issues/422003155
+    if (
+      browserDetails.browserName === "chromium" &&
+      browserDetails.fullBrowserVersion === "138.0.7204.0"
+    ) {
+      await addFiltersProgrammatically(initOptionsFiltersTab, customBlockingFilter);
+    } else {
+      await setCustomFilters([customBlockingFilter], true);
+    }
 
     // ads should be blocked before the domain is allowlisted
     const blockedBeforeUpgrade = await blockAds(0, maxAdsBlocked, getPopupBlockedAdsTotalCount);

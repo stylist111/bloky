@@ -136,7 +136,6 @@ export async function getCustomFilters() {
 export async function setCustomFilters(filters, append = false) {
   await initOptionsCustomizeTab(getOptionsHandle());
   const editButton = await getDisplayedElement("#btnEditAdvancedFilters", { timeout: 2000 });
-
   // The edit button functionality may take some time to be ready.
   // Retrying as a workaround
   let saveButton;
@@ -487,6 +486,7 @@ export async function disablePremiumProgrammatically() {
 
   await driver.switchTo().window(currentHandle);
   await reloadExtension(initOptionsGeneralTab);
+  await waitForNotDisplayed("#premium_status_msg");
 }
 
 export async function callUIExperimentsAPI(methodName, ...params) {

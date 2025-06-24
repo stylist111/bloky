@@ -28,6 +28,7 @@ import {
 import {
   addFiltersProgrammatically,
   removeFilterProgrammatically,
+  setTimeoutForExtensionReload,
   reloadExtension
 } from "@eyeo/test-utils/extension";
 
@@ -35,6 +36,7 @@ import { checkBlockHidePage, initOptionsGeneralTab } from "../../utils/page.js";
 
 export default () => {
   before(async function () {
+    setTimeoutForExtensionReload(this);
     // beforeEach hook in index.js executes after this before hook.
     // Calling beforeEachTasks ensures the options page is opened and focused before updating preferences
     await beforeEachTasks();

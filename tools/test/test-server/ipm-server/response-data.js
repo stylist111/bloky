@@ -47,7 +47,69 @@ export function getResponseData(userId, singleObjectMode = false) {
   let bodyData;
 
   switch (userId) {
-    /* ABP */
+    /* ################################## */
+    /* ##                              ## */
+    /* ##         E2E tests            ## */
+    /* ##                              ## */
+    /* ################################## */
+
+    case supportedIds.TEST_ADBLOCK_NEWTAB:
+      statusCode = 200;
+      bodyData = [
+        {
+          ipm_id: "test_adblock_newtab_priority_low",
+          device_id: "test_adblock_newtab",
+          command_name: "create_tab",
+          version: commandVersionByName.get(CREATE_TAB),
+          url: "/update?ipmId=test_adblock_newtab_priority_low",
+          method: "default",
+        },
+        {
+          ipm_id: "test_adblock_newtab_priority_high",
+          device_id: "test_adblock_newtab",
+          command_name: "create_tab",
+          version: commandVersionByName.get(CREATE_TAB),
+          url: "/update?ipmId=test_adblock_newtab_priority_high",
+          method: "default",
+          license_state_list: "free",
+          priority: 3,
+        },
+      ];
+      break;
+    case supportedIds.TEST_ADBLOCK_PREMIUM:
+      bodyData = [
+        {
+          ipm_id: "test_adblock_newtab_premium",
+          device_id: "test_adblock_premium",
+          command_name: "create_tab",
+          version: commandVersionByName.get(CREATE_TAB),
+          url: "/update",
+          method: "default",
+          license_state_list: "free",
+        },
+      ];
+      break;
+    case supportedIds.TEST_ADBLOCK_DELETE:
+      bodyData = [
+        {
+          ipm_id: "test_adblock_delete_commands",
+          device_id: "test_adblock_delete",
+          command_name: "delete_commands",
+          // replace the following value with a string of comma-separated IPM IDs
+          // to delete specific IPM commands in the extension,
+          // or use the `"__all__"` value to delete all IPM commands
+          commands: "__all__",
+          version: commandVersionByName.get(DELETE_COMMANDS),
+        },
+      ];
+      break;
+
+    /* ################################## */
+    /* ##                              ## */
+    /* ##        Adblock Plus          ## */
+    /* ##                              ## */
+    /* ################################## */
+
     case supportedIds.ABP_DELETE_COMMANDS:
       bodyData = [
         {

@@ -30,6 +30,7 @@ import {
   getOptionsHandle,
   reloadExtension,
   waitForNumberToBeInRange,
+  setTimeoutForExtensionReload,
 } from "@eyeo/test-utils/extension";
 
 import {
@@ -173,7 +174,7 @@ export default () => {
   });
 
   it("resets settings", async function () {
-    this.timeout(50000); // The options page may take long time to appear after reloading the extension
+    setTimeoutForExtensionReload(this);
 
     const enabledFilterLists = defaultFilterLists.filter(({ enabled }) => enabled);
 

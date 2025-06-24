@@ -37,9 +37,9 @@ import experiments from "./public-api/trusted-iframe-experiments.js";
 import getStatus from "./public-api/trusted-iframe-get-status.js";
 import eyeometry from "./data-collection/eyeometry.js";
 import youtubeAutoAllowlist from "./youtube-auto-allowlist.js";
+import campaigns from "./ipm/campaigns.js";
 import helpFlow from "./popup-page/helpflow.js";
 import infoInjector from "./info-injector.js";
-import campaigns from "./ipm/campaigns.js";
 
 export default () => {
   beforeEach(async function () {
@@ -72,10 +72,6 @@ export default () => {
       describe("Eyeometry", eyeometry);
     });
 
-    describe("IPM", function () {
-      describe("Campaigns", campaigns);
-    });
-
     describe("YouTube auto-allowlist", youtubeAutoAllowlist);
 
     describe("Info Injector", infoInjector);
@@ -91,6 +87,10 @@ export default () => {
       describe("Free user - Popup", freeUserPopup);
       describe("Free user - Options", freeUserOptions);
       describe("Premium user", getPremium);
+    });
+
+    describe("IPM", function () {
+      describe("Campaigns", campaigns);
     });
     // Needs to be the last suite to run because the extension gets uninstalled
     describe("Smoke Tests - Uninstall", uninstall);

@@ -214,7 +214,7 @@ export async function cleanupHook() {
   }
 }
 
-async function cleanupOpenTabs() {
+export async function cleanupOpenTabs() {
   const { installUrl } = global.config;
 
   for (const handle of await getAllWindowHandlesSafe()) {

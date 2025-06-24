@@ -23,6 +23,7 @@ import { beforeEachTasks } from "@eyeo/test-utils/hooks";
 import { allowlistingFilter } from "@eyeo/test-utils/filters";
 import {
   removeFilterProgrammatically,
+  setTimeoutForExtensionReload,
   reloadExtension
 } from "@eyeo/test-utils/extension";
 import {
@@ -59,6 +60,7 @@ async function allowlistPageAndCheck(command) {
 
 export default () => {
   before(async function () {
+    setTimeoutForExtensionReload(this);
     // beforeEach hook in index.js executes after this before hook.
     // Calling beforeEachTasks ensures the options page is opened and focused before updating preferences
     await beforeEachTasks();

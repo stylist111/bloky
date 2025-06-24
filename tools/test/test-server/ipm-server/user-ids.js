@@ -15,6 +15,11 @@
  * along with Web Extensions CU.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*E2E tests*/
+export const TEST_ADBLOCK_NEWTAB = "test_adblock_newtab";
+export const TEST_ADBLOCK_PREMIUM = "test_adblock_premium";
+export const TEST_ADBLOCK_DELETE = "test_adblock_delete";
+
 /*ABP*/
 export const ABP_DELETE_COMMANDS = "deletecommandsABP";
 export const ABP_CTA_OPD_NAVIGATION = "opdnavigationctaABP";
