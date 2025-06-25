@@ -508,8 +508,8 @@ export async function callUIExperimentsAPI(methodName, ...params) {
 
   const experimentFlags = await driver.executeAsyncScript(
     async (method, args, callback) => {
-      const flags = await window.modulesAsGlobal.ewe.experiments[method](...args);
-      callback(flags);
+      const result = await window.modulesAsGlobal.ewe.experiments[method](...args);
+      callback(result);
     },
     methodName,
     params,

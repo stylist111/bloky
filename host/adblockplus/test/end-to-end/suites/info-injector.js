@@ -25,20 +25,13 @@ import {
 } from "@eyeo/test-utils/extension";
 import {
   getPopupBlockedAdsTotalCount,
-  initOptionsGeneralTab
+  callUIExperimentsAPI
 } from "../utils/page.js";
 
 export const testUrl = "https://adblockplus.org";
 export const dataAttribute = "data-adblock-plus-extension-info";
 
 const maxAdsBlocked = 100;
-
-async function getExperimentFlags() {
-  await initOptionsGeneralTab(getOptionsHandle());
-  return driver.executeScript(() => {
-    return ewe?.experiments?.getFlags();
-  });
-}
 
 async function isPremiumLabelPresent() {
   await driver.switchTo().window(getOptionsHandle());
@@ -64,7 +57,7 @@ export async function getActualExtensionData() {
       .get("pref:installation_id")
       .then((data) => data["pref:installation_id"] || null);
   });
-  const experimentFlags = await getExperimentFlags();
+  const experimentFlags = await callUIExperimentsAPI("getFlags");
   return { id, isPremium, version, blockCount, experimentFlags };
 }
 

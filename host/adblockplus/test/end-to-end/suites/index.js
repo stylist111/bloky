@@ -33,6 +33,7 @@ import eyeometry from "./eyeometry.js";
 import youtubeAllowlist from "./youtube-auto-allowlist.js";
 import oneClickAllowlisting from "./public-api/one-click-allowlisting.js";
 import bypassAPI from "./public-api/bypass-api.js";
+import experiments from "./public-api/trusted-iframe-experiments.js";
 import infoInjector from "./info-injector.js";
 
 export default () => {
@@ -68,6 +69,7 @@ export default () => {
     describe("Public API", function () {
       describe("One click allowlisting", oneClickAllowlisting);
       describe("Bypass API", bypassAPI);
+      describe("Trusted iframe experiments", experiments);
     });
 
     describe("Premium", function () {

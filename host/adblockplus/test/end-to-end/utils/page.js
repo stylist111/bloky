@@ -14,9 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
+/* global ewe */
 
 import { expect } from "expect";
-import { By } from "selenium-webdriver";
+import { By, until } from "selenium-webdriver";
 import moment from "moment";
 
 import { localTestPageUrl } from "@eyeo/test-utils/urls";
@@ -797,4 +798,117 @@ export async function setPremiumFLsDefaultState() {
       await clickFLAndCheck(name, { enable: enabled, stepsAfterClick });
     }
   }
+}
+
+export async function sendExtCommandInTrustedIframe(
+  trustedIframeHandle,
+  method,
+  params
+) {
+  const currentHandle = await driver.getWindowHandle();
+  await driver.switchTo().frame(trustedIframeHandle);
+
+  // make sure the public API is available
+  await driver.wait(
+    async () => {
+      return await driver.executeScript(() => {
+        return typeof window.sendExtCommand === "function";
+      });
+    },
+    5000,
+    "Timeout waiting for public API to be available"
+  );
+
+  const responses = await driver.executeAsyncScript(
+    async (m, p, callback) => {
+      // eslint-disable-next-line no-undef
+      const result = await sendExtCommand({ method: m, params: p });
+      callback(result);
+    },
+    method,
+    params
+  );
+  await driver.switchTo().window(currentHandle);
+  return responses;
+}
+
+export async function callUIExperimentsAPI(methodName, ...params) {
+  const currentHandle = await driver.getWindowHandle();
+  await initOptionsGeneralTab(getOptionsHandle());
+
+  // wait for the ewe module to be available
+  await driver.wait(
+    async () => {
+      const result = await driver.executeScript(() => {
+        return ewe;
+      });
+      return result;
+    },
+    5000,
+    "Timeout waiting for the ewe module to be available"
+  );
+
+  const experimentFlags = await driver.executeAsyncScript(
+    async (method, args, callback) => {
+      const result = await ewe?.experiments[method](...args);
+      callback(result);
+    },
+    methodName,
+    params
+  );
+
+  await driver.switchTo().window(currentHandle);
+  return experimentFlags;
+}
+
+export async function loadPageWithTrustedIframe(pageUrl, trustedIframeSrc) {
+  await openNewTab(pageUrl);
+
+  // Handle the cookie popup if it appears
+  try {
+    const acceptButton = await driver.wait(
+      until.elementLocated(By.css('button[aria-label="Consent"]')),
+      5000
+    );
+    await driver.wait(until.elementIsVisible(acceptButton), 5000);
+    await acceptButton.click();
+  } catch (e) {}
+
+  // Inject the iframe in the page and wait for it to load
+  await driver.executeAsyncScript((iframeSrc, done) => {
+    const iframe = document.createElement("iframe");
+    const timeout = setTimeout(
+      () => done(new Error("Iframe load timed out")),
+      10000
+    );
+
+    const finish = (result) => {
+      clearTimeout(timeout);
+      done(result);
+    };
+
+    iframe.onload = () => finish();
+    iframe.onerror = () => finish(new Error("Iframe failed to load"));
+    iframe.src = iframeSrc;
+    document.body.appendChild(iframe);
+  }, trustedIframeSrc);
+
+  // Wait for the injected trusted iframe to be present and visible
+  const iframeSelector = `iframe[src="${trustedIframeSrc}"]`;
+  try {
+    const iframeElement = await driver.findElement(By.css(iframeSelector));
+    await driver.wait(
+      until.elementIsVisible(iframeElement),
+      15000,
+      `Timeout waiting for injected iframe with src ${trustedIframeSrc} to be visible on ${pageUrl}.`
+    );
+  } catch (e) {
+    throw new Error(
+      `Injected trusted iframe with src "${trustedIframeSrc}" not found or not visible on ${pageUrl}. Original error: ${e.message}`
+    );
+  }
+
+  // Switch to the iframe
+  const trustedIframe = await driver.findElement(By.css(iframeSelector));
+  return trustedIframe;
 }
