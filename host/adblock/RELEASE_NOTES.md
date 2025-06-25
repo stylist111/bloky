@@ -1,6 +1,7 @@
 # Unreleased
 
 - Add website-specific 'cookie consent' CTA. (GROW-56)
+- Fixed a display issue with the filter hits devtools. (EE-894)
 
 # 6.23.0 - 2025-06-24
 

@@ -1,5 +1,7 @@
 # Unreleased
 
+- Fixed a display issue with the filter hits devtools. (EE-894)
+
 # 4.23.0 - 2025-06-24
 
 - Fixed: Close button of tracking warning was misaligned for left-to-right locales.

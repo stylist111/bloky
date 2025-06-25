@@ -39,7 +39,7 @@ function add(target, filter, subscriptions) {
 
     if (oldRecord.filter) continue;
 
-    oldRecord.filter = filter;
+    oldRecord.filter = newRecord.filter;
 
     changes.push({
       filter: oldRecord.filter,

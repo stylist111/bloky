@@ -270,7 +270,7 @@
       matchesAny = true;
       if (!filter) break;
       if (oldRecord.filter) continue;
-      oldRecord.filter = filter;
+      oldRecord.filter = newRecord.filter;
       changes.push({
         filter: oldRecord.filter,
         index: i,
