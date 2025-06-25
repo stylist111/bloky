@@ -432,6 +432,13 @@ defaults.uboDetectionLastRun = 0;
 defaults.installDate = 0;
 
 /**
+ * A flag indicating whether the cookie banner growth experiment has been run already.
+ *
+ * @type {boolean}
+ */
+defaults.cookie_banner_experiment_run = false;
+
+/**
  * @namespace
  * @static
  */

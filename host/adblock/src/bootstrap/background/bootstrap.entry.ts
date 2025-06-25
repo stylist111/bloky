@@ -24,6 +24,7 @@ import { Prefs } from "~/alias/prefs";
 import { start as startSettings } from "~/prefs/background";
 import * as logger from "~/utilities/background";
 import { startInfo as ipmFragmentStartInfo } from "../../ipm/background";
+import { start as startGrowthExperiments } from "../../growth-experiments/background";
 import { start as startPageviewMetrics } from "../../pageview-metrics/background";
 import { start as startTelemetry } from "../../telemetry/background";
 
@@ -66,7 +67,7 @@ async function bootstrap(): Promise<void> {
   bootstrapSync();
 
   startSettings();
-
+  void startGrowthExperiments();
   await bootstrapAsync();
 }
 

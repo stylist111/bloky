@@ -1,5 +1,7 @@
 # Unreleased
 
+- Add website-specific 'cookie consent' CTA. (GROW-56)
+
 # 6.23.0 - 2025-06-24
 
 - Clean up logic for deprecated pref keys.

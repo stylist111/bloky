@@ -116,6 +116,10 @@ export default {
         package: "@eyeo-fragments/cookie-banner-detection",
         src: ["/content"],
       },
+      {
+        dest: "growth-experiments.preload.js",
+        src: ["src/growth-experiments/content/index.ts"],
+      },
     ],
   },
   mapping: {
