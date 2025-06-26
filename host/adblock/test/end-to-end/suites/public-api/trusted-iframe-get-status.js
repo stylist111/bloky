@@ -16,25 +16,31 @@
  */
 
 import { expect } from "expect";
-import { getOptionsHandle, setTimeoutForExtensionReload } from "@eyeo/test-utils/extension";
+import {
+  getOptionsHandle,
+  setTimeoutForExtensionReload,
+  removeAllFilters,
+} from "@eyeo/test-utils/extension";
 import { isCheckboxPropertyEnabled } from "@eyeo/test-utils/driver";
 import {
   enablePremiumProgrammatically,
   sendExtCommandInTrustedIframe,
   setPausedStateFromPopup,
-  clickFilterlist,
   initOptionsFiltersTab,
   setAADefaultState,
+  clickFilterlist,
+  isPremiumLabelPresent,
   disablePremiumProgrammatically,
   loadPageWithTrustedIframe,
+  checkSubscriptionsState,
 } from "../../utils/page.js";
 import { BT_PARTNER_URL, TRUSTED_IFRAME_URL } from "./trusted-iframe-experiments.js";
 
 function getCombinations() {
   const combinations = [];
-  for (const premium of [true, false]) {
-    for (const aa of [true, false]) {
-      for (const allowlist of [true, false]) {
+  for (const premium of [false, true]) {
+    for (const allowlist of [false, true]) {
+      for (const aa of [true, false]) {
         combinations.push({ premium, aa, allowlist });
       }
     }
@@ -45,22 +51,30 @@ function getCombinations() {
 async function setExtensionState({ premium, aa, allowlist }) {
   // Set premium
   if (premium) {
-    await enablePremiumProgrammatically();
-  } else {
-    await disablePremiumProgrammatically();
+    const premiumAlreadyEnabled = await isPremiumLabelPresent();
+    if (!premiumAlreadyEnabled) {
+      await enablePremiumProgrammatically();
+    }
+  }
+
+  // Set allowlist
+  if (allowlist) {
+    await setPausedStateFromPopup(BT_PARTNER_URL);
   }
 
   // Set Acceptable Ads
   await initOptionsFiltersTab(getOptionsHandle());
-  const isEnabled = await isCheckboxPropertyEnabled("#adblockFilterList_0");
-  if ((aa && !isEnabled) || (!aa && isEnabled)) {
-    await clickFilterlist("acceptable_ads", "#adblockFilterList_0", aa);
-    // Allow time for state to update in webext
-    await driver.sleep(2000);
-  }
+  const checkboxSelector = "#adblockFilterList_0";
+  const name = "acceptable_ads";
+  const isEnabled = await isCheckboxPropertyEnabled(checkboxSelector);
 
-  // Set allowlist
-  await setPausedStateFromPopup(BT_PARTNER_URL, allowlist);
+  if ((aa && !isEnabled) || (!aa && isEnabled)) {
+    await clickFilterlist(name, checkboxSelector, aa);
+    const regexp = isEnabled ? /Unsubscribed/ : /updated|Subscribed/;
+    await checkSubscriptionsState([{ name, enabled: aa, checkboxSelector }], {
+      regexp,
+    });
+  }
 }
 
 export default () => {
@@ -71,12 +85,12 @@ export default () => {
     // Reset to default state after the tests
     await disablePremiumProgrammatically();
     await setAADefaultState();
+    await removeAllFilters();
   });
 
   statusCombinations.forEach(({ premium, aa, allowlist }) => {
-    const testName = `retrieves extension status - premium -> ${premium}, AA -> ${aa}, allowlisted -> ${allowlist}`;
+    const testName = `retrieves extension status - premium -> ${premium}, allowlisted -> ${allowlist}, AA -> ${aa}`;
     it(testName, async function () {
-      setTimeoutForExtensionReload(this); // setExtensionState reloads extension
       await setExtensionState({ premium, aa, allowlist });
 
       const trustedIframe = await loadPageWithTrustedIframe(BT_PARTNER_URL, TRUSTED_IFRAME_URL);
@@ -118,6 +132,8 @@ export default () => {
         expect(resp.result.allowlist.expiresAt).toBeGreaterThan(
           Date.now() + 1000 * 60 * 60 * 24 * 7 - 1000 * 60 * 10,
         );
+        await initOptionsFiltersTab(getOptionsHandle());
+        await removeAllFilters();
       }
     });
   });

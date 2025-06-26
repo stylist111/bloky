@@ -17,7 +17,6 @@
 
 /* For ESLint: List any global identifiers used in this file below */
 
-import { getDisplayedElement } from "@eyeo/test-utils/driver";
 import { prepareExtensionHook } from "@eyeo/test-utils/hooks";
 import {
   getOptionsHandle,
@@ -27,7 +26,7 @@ import {
 import {
   getUserIdFromStorage,
   getPopupBlockedAdsTotalCount,
-  initOptionsPremiumTab,
+  isPremiumLabelPresent,
   callUIExperimentsAPI,
 } from "../utils/page.js";
 
@@ -35,17 +34,6 @@ export const testUrl = "https://getadblock.com";
 export const dataAttribute = "data-adblock-extension-info";
 
 const maxAdsBlocked = 100;
-
-export async function isPremiumLabelPresent() {
-  await initOptionsPremiumTab(getOptionsHandle());
-
-  try {
-    await getDisplayedElement("#premium_status_msg");
-    return true;
-  } catch (error) {
-    return false;
-  }
-}
 
 export async function getActualExtensionData() {
   const id = await getUserIdFromStorage(getOptionsHandle());

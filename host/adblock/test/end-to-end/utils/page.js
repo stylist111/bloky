@@ -489,6 +489,17 @@ export async function disablePremiumProgrammatically() {
   await waitForNotDisplayed("#premium_status_msg");
 }
 
+export async function isPremiumLabelPresent() {
+  await initOptionsPremiumTab(getOptionsHandle());
+
+  try {
+    await getDisplayedElement("#premium_status_msg");
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
 export async function callUIExperimentsAPI(methodName, ...params) {
   const currentHandle = await driver.getWindowHandle();
   const optionsHandle = await getOptionsHandle();
