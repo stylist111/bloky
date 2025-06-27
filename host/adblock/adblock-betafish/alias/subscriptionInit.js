@@ -232,6 +232,15 @@ const start = async function () {
     addonInfo.telemetry = telemetry;
   }
 
+  let telemetryEventLogging = {
+    url: webpackDotenvPlugin.EYEOMETRY_EVENT_LOGGING_URL,
+    bearer: webpackDotenvPlugin.EYEOMETRY_EVENT_LOGGING_BEARER,
+  };
+
+  if (telemetryEventLogging.url && telemetryEventLogging.bearer) {
+    addonInfo.telemetryEventLogging = telemetryEventLogging;
+  }
+
   return ewe.start(addonInfo).then(async (eweFirstRun) => {
     await detectFirstRun(eweFirstRun.foundSubscriptions, eweFirstRun.foundStorage);
     (await ewe.filters.getMigrationErrors()).forEach(console.error);

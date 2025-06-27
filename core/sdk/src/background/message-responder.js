@@ -28,7 +28,7 @@ import {trace} from "./debugging.js";
 import {onContentHelloReceived} from "./content-message-deferrer.js";
 import {markActive, countBTAADetectionEvent} from "./cdp.js";
 import {default as sentry} from "./sentry.js";
-import {serverLogValidatedEvent} from "./telemetry.js";
+import {serverLogValidatedEvent} from "./telemetry/server-logger.js";
 import {handleMessageAPICall} from "./message-invoked-api.js";
 
 async function handleMessage(message, sender) {

@@ -25,7 +25,7 @@ import {Scheduler} from "../all/scheduler.js";
 import {hasAcceptableAdsEnabled} from "./subscriptions.js";
 import {trace, error, debug, warn} from "./debugging.js";
 import {default as experiments} from "./experiments.js";
-import {postWithBearerToken} from "./telemetry.js";
+import {postWithBearerToken} from "./telemetry/eyeometry.js";
 import {default as cdpMod, getDomainStats, clearData} from "./cdp.js";
 import {premiumStatusCallback} from "./callbacks.js";
 import {importRSAPublicKey, encryptRSA, AES_LENGTH,

@@ -458,7 +458,6 @@ EWE.notifications.addShowListener(createTestEventListener("notifications.addShow
 EWE.notifications.addShowListener(async notification => {
   await EWE.notifications.markAsShown(notification.id);
 });
-EWE.telemetry.onError.addListener(createTestEventListener("telemetry.onError"));
 
 EWE.reporting.onBlockableItem.addListener(
   createTestEventListener("reporting.onBlockableItem.defaultEventOptions"),
@@ -548,6 +547,11 @@ startupInfo.remoteConfig = {
 
 startupInfo.telemetry = {
   url: "http://localhost:3003/telemetry",
+  bearer: "SSBhbSBhIGJlYXIuLi4gZXIuLi4gUkFXUg=="
+};
+
+startupInfo.telemetryEventLogging = {
+  url: "http://localhost:3003/telemetry-log-event",
   bearer: "SSBhbSBhIGJlYXIuLi4gZXIuLi4gUkFXUg=="
 };
 

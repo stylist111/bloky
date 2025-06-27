@@ -1,6 +1,7 @@
 # Unreleased
 
 - Add website-specific 'cookie consent' CTA. (GROW-56)
+- Added the ability to generate anonymized debug/behavioural logging for a marginal amount of users. This is set to opted out by default for Firefox and can be opted out on other browsers. (EXT-918)
 - Fixed a display issue with the filter hits devtools. (EE-894)
 
 # 6.23.0 - 2025-06-24

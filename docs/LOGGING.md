@@ -12,8 +12,10 @@ This API allows consistent logging from:
 
 ## Current State
 
-Currently none of the logs will go anywhere, instead they'll be logged to the
-console. Sending these to the server is the next phase.
+Currently, behaviour and warning logs can be sent for 1% of users as configured 
+in the experiments.json file. This data will contain a rotating user id in the 
+payload. Next steps would be configuring these levels in the experiments.json 
+file.
 
 ## Log Levels
 
@@ -116,7 +118,7 @@ export default {
 Valid types for data are `any`, `array`, `object`, `boolean`, `null`, `integer`,
 `number`, or `string`.
 
-### Call the logger
+### Call the logger from outside the SDK
 
 First you have to import the ewe object. See
 [README](../core/sdk/README.md#API). Note that the import differs depending on
@@ -126,6 +128,20 @@ generally called `EWE` in the SDK, and `ewe` everywhere else.
 ```javascript
 // Creating the logger. You have to give it the current module
 const serverLogger = new ewe.telemetry.ServerLogger("module_name");
+
+// Log at different levels
+serverLogger.debug("initialization_complete", { version: "1.2.3" });
+serverLogger.info("feature_enabled", "cool_experiment" );
+serverLogger.behavior("button_clicked", { buttonId: "enable_premium",  });
+serverLogger.warn("api_call_failed", { endpoint: "/data", status: 404 });
+```
+ 
+### Call the logger from inside the SDK
+```javascript
+import {ServerLogger} from "./telemetry/server-logger.js";
+
+// Creating the logger. You have to give it the current module
+const serverLogger = new ServerLogger("module_name");
 
 // Log at different levels
 serverLogger.debug("initialization_complete", { version: "1.2.3" });

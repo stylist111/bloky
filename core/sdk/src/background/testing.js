@@ -43,7 +43,9 @@ import {dnrDiffSubscriptionUpdate, dynamicRulesAvailable, getDynamicFilters,
 import {getSubscriptionRulesetMap} from "./subscriptions-utils.js";
 import {IO} from "./io.js";
 import {FilterStorage} from "adblockpluscore/lib/filterStorage.js";
-import * as telemetry from "./telemetry.js";
+import * as telemetry from "./telemetry/index.js";
+import * as activePing from "./telemetry/active-ping.js";
+import * as serverLogUploader from "./telemetry/server-log-uploader.js";
 import * as cdpMetricsUploader from "./cdp-metrics-uploader.js";
 import * as cdpEncryption from "./cdp-encryption.js";
 import * as filters from "./filters.js";
@@ -311,9 +313,15 @@ export default {
   clearIsDnrSubscriptionUpdating,
   isSynchronizing,
 
-  stopTelemetry: telemetry.stop,
-  startTelemetry: telemetry.start,
-  resetTelemetry: telemetry.reset,
+  stopTelemetry: activePing.stop,
+  startTelemetry: activePing.start,
+  resetTelemetry: activePing.reset,
+
+  startServerLogUploader: serverLogUploader.start,
+  stopServerLogUploader: serverLogUploader.stop,
+  resetServerLogUploader: serverLogUploader.reset,
+  setRotationPeriod: serverLogUploader.setRotationPeriod,
+  serverLogUploaderIsRunning: serverLogUploader.isRunning,
 
   stopCdpMetricsUploader: cdpMetricsUploader.stop,
   startCdpMetricsUploader: cdpMetricsUploader.start,

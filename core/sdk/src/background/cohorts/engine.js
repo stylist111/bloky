@@ -28,7 +28,7 @@ import {debug, warn} from "../debugging.js";
 import initializer from "../initializer.js";
 import * as operators from "./operators.js";
 import sentry from "../sentry.js";
-import {ServerLogger} from "../telemetry.js";
+import {ServerLogger} from "../telemetry/server-logger.js";
 import {base64Encode} from "../set-operations.js";
 
 let _cohortsConfig = [];

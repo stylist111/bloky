@@ -26,7 +26,9 @@ import * as requestFilter from "./request-filter.js";
 import * as dnrRequestReporter from "./dnr-request-reporter.js";
 import * as sitekey from "./sitekey.js";
 import * as contentMessageDeferrer from "./content-message-deferrer.js";
-import * as telemetry from "./telemetry.js";
+import * as telemetry from "./telemetry/index.js";
+import * as activePing from "./telemetry/active-ping.js";
+import * as serverLogUploader from "./telemetry/server-log-uploader.js";
 import * as subscriptions from "./subscriptions.js";
 import * as debugging from "./debugging.js";
 import * as filters from "./filters.js";
@@ -342,7 +344,11 @@ export async function start(addonInfo) {
   }
 
   if (addonInfo && addonInfo.telemetry) {
-    await telemetry.start(addonInfo.telemetry);
+    await activePing.start(addonInfo.telemetry);
+  }
+
+  if (addonInfo && addonInfo.telemetryEventLogging) {
+    await serverLogUploader.start(addonInfo.telemetryEventLogging);
   }
 
   if (addonInfo && addonInfo.cdp) {

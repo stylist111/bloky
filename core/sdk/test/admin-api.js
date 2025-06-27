@@ -90,6 +90,13 @@ const BUILD_TIME_ROUTES = [
     method: "POST"
   },
   {
+    url: "/telemetry-log-event",
+    response: () => JSON.stringify({
+      token: new Date().toISOString()
+    }),
+    method: "POST"
+  },
+  {
     url: "/cdp-ping",
     response: () => "{}",
     method: "POST"
