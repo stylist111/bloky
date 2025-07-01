@@ -1,5 +1,9 @@
 # Unreleased
 
+# 4.23.1 - 2025-07-01
+
+This release contains bugfixes and under-the-hood changes.
+
 - Fixed a display issue with the filter hits devtools. (EE-894)
 
 # 4.23.0 - 2025-06-24
