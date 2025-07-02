@@ -468,6 +468,59 @@ export async function enablePremiumProgrammatically() {
   await checkPremiumActivated();
 }
 
+export async function disablePremiumProgrammatically() {
+  await driver.switchTo().window(getOptionsHandle());
+
+  // wait for extension api to be available
+  await driver.wait(
+    async () => {
+      const result = await driver.executeScript(() => {
+        return !!browser;
+      });
+      return result;
+    },
+    5000,
+    "Timeout waiting for extension api to be available"
+  );
+
+  await driver.executeAsyncScript(async (callback) => {
+    try {
+      await browser.runtime.sendMessage({
+        type: "premium.activate",
+        userId: "expired_user_id"
+      });
+      await browser.runtime.sendMessage({
+        type: "prefs.set",
+        key: "premium_license_check_url",
+        value: "https://myadblock.licensing.adblockplus.dev/license"
+      });
+      await browser.runtime.sendMessage({
+        type: "prefs.set",
+        key: "premium_user_id",
+        value: ""
+      });
+    } catch (err) {
+      callback(err);
+    }
+    callback();
+  });
+
+  await driver.switchTo().window(getOptionsHandle());
+  await driver.navigate().refresh(); // This reloads the options page
+  await waitForNotDisplayed(".button.premium-label");
+}
+
+export async function isPremiumLabelPresent() {
+  await initOptionsGeneralTab(getOptionsHandle());
+
+  try {
+    await getDisplayedElement(".button.premium-label");
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
 export function getFLSelectors(name, { isOptionsGeneralTab = false } = {}) {
   const tableSelector = isOptionsGeneralTab
     ? "#blocking-languages-table"

@@ -34,6 +34,7 @@ import youtubeAllowlist from "./youtube-auto-allowlist.js";
 import oneClickAllowlisting from "./public-api/one-click-allowlisting.js";
 import bypassAPI from "./public-api/bypass-api.js";
 import experiments from "./public-api/trusted-iframe-experiments.js";
+import getStatus from "./public-api/trusted-iframe-get-status.js";
 import infoInjector from "./info-injector.js";
 
 export default () => {
@@ -70,6 +71,7 @@ export default () => {
       describe("One click allowlisting", oneClickAllowlisting);
       describe("Bypass API", bypassAPI);
       describe("Trusted iframe experiments", experiments);
+      describe("Trusted iframe get status", getStatus);
     });
 
     describe("Premium", function () {
