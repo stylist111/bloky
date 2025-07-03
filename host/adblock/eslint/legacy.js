@@ -137,6 +137,7 @@ module.exports = {
     // See https://typescript-eslint.io/rules/no-unused-vars/#how-to-use
     "no-unused-vars": "off",
     "@typescript-eslint/no-unused-vars": "error",
+    "no-await-in-loop": "off",
   },
   parserOptions: {
     sourceType: "script",

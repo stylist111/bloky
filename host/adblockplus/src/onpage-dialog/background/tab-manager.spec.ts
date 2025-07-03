@@ -19,7 +19,6 @@ import { type Tabs } from "webextension-polyfill";
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import * as dialogModule from "./dialog";
 import { type Dialog } from "./dialog.types";
-import * as ipmBackground from "@eyeo-fragments/ipm/background";
 import * as premiumSubscriptions from "../../premium-subscriptions/background";
 import {
   ANNOYANCE_SUBSCRIPTION_TYPE,
@@ -41,6 +40,9 @@ import {
   ShowOnpageDialogResult
 } from "./tab-manager.types";
 import * as timing from "./timing";
+import { getFragment } from "~/ipm/background";
+
+const ipmBackground = getFragment();
 
 jest.mock("@eyeo-fragments/ipm/background");
 jest.mock("../../premium-subscriptions/background");

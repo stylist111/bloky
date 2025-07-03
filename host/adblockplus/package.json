@@ -104,6 +104,7 @@
     }
   },
   "dependencies": {
+    "@eyeo-fragments/in-product-messaging": "*",
     "@eyeo-fragments/ipm": "*",
     "@eyeo-fragments/conflict-detection": "*",
     "@eyeo-fragments/cookie-banner-detection": "*",

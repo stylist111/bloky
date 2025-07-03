@@ -73,8 +73,16 @@ export interface BtaaDetectionDetails {
 export interface EventDispatcher<T> {
   /**
    * Attaches a listener function to an event. This listener will be called when the event is emitted. Please note that in an MV3 context this has to happen in the first turn of the event loop. This should happen when your service worker starts.
+   *
+   * @param listener - Listener function
    */
   addListener: (listener: T) => void;
+  /**
+   * Removes the added function. The listener will no longer be called by the event.
+   *
+   * @param listener - Listener function
+   */
+  removeListener: (listener: T) => void;
 }
 
 /**
@@ -613,6 +621,10 @@ declare module "@eyeo/webext-ad-filtering-solution" {
 
   namespace experiments {
     /**
+     * Clears all feature flag overrides
+     */
+    const clearFlagOverrides: () => Promise<void>;
+    /**
      * Returns the assignments for the user
      */
     const getAssignments: () => Promise<Record<string, string>>;
@@ -620,13 +632,11 @@ declare module "@eyeo/webext-ad-filtering-solution" {
      * Retrieves current experiments
      */
     const getExperiments: () => Promise<Experiment[]>;
-
     /**
      * Retrieve the experiment assignments encoded as a base64-encoded bitmap.
      * @link https://eyeo.atlassian.net/browse/DATA-2793
      */
     const getEncodedExperiments: () => Promise<string>;
-
     /**
      * Returns the value of the flag
      */

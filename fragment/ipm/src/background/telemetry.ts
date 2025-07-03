@@ -151,6 +151,24 @@ export async function getIPMPingCount(): Promise<number> {
 }
 
 /**
+ * Handles testing.ping_ipm_server messages
+ */
+async function handleTestingPingMessage(): Promise<PayloadData | null> {
+  return await sendPing();
+}
+
+/**
+ * Handles browser alarms for scheduled pings
+ */
+function handleAlarm(alarm: browser.Alarms.Alarm): void {
+  if (alarm.name !== scheduleName) {
+    return;
+  }
+
+  void sendPing();
+}
+
+/**
  * Starts The telemetry module.
  *
  * Will schedule pings.
@@ -158,9 +176,7 @@ export async function getIPMPingCount(): Promise<number> {
 export async function start(): Promise<void> {
   const { addMessageListener, prefs } = getStartInfo();
 
-  addMessageListener("ipm:testing.ping_ipm_server", async () => {
-    return await sendPing();
-  });
+  addMessageListener("ipm:testing.ping_ipm_server", handleTestingPingMessage);
 
   await prefs.untilLoaded;
   const intervalTime = prefs.get(intervalKey);
@@ -168,16 +184,27 @@ export async function start(): Promise<void> {
     return;
   }
 
-  browser.alarms.onAlarm.addListener((alarm: browser.Alarms.Alarm) => {
-    if (alarm.name !== scheduleName) {
-      return;
-    }
-    void sendPing();
-  });
+  browser.alarms.onAlarm.addListener(handleAlarm);
 
   browser.alarms.create(scheduleName, {
     periodInMinutes: intervalTime / 1000 / 60,
   });
 
   void sendPing();
+}
+
+/**
+ * Stops the telemetry module
+ */
+export async function stop(): Promise<void> {
+  const { removeMessageListener } = getStartInfo();
+
+  removeMessageListener(
+    "ipm:testing.ping_ipm_server",
+    handleTestingPingMessage,
+  );
+
+  browser.alarms.onAlarm.removeListener(handleAlarm);
+
+  await browser.alarms.clear(scheduleName);
 }

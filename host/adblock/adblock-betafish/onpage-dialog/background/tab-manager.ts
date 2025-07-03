@@ -18,20 +18,7 @@
 import { Tabs } from "webextension-polyfill";
 import * as browser from "webextension-polyfill";
 
-import {
-  CommandEventType,
-  CommandName,
-  checkLanguage,
-  createSafeOriginUrl,
-  dismissCommand,
-  doesLicenseStateMatch,
-  getBehavior,
-  getCommand,
-  getContent,
-  isCommandExpired,
-  recordEvent,
-} from "@eyeo-fragments/ipm/background";
-
+import { CommandEventType, CommandName, getFragment } from "../../../src/ipm/background";
 import { Prefs } from "../../alias/prefs";
 import { port } from "../../../adblockplusui/adblockpluschrome/lib/messaging/port";
 import { TabSessionStorage } from "../../../adblockplusui/adblockpluschrome/lib/storage/tab-session";
@@ -137,7 +124,7 @@ function recordDialogEvent(dialog: Dialog, eventType: CommandEventType | DialogE
   eventEmitter.emit(eventType, dialog);
 
   if (typeof dialog.ipmId === "string") {
-    recordEvent(dialog.ipmId, CommandName.createOnPageDialog, eventType);
+    getFragment().recordEvent(dialog.ipmId, CommandName.createOnPageDialog, eventType);
   }
 }
 
@@ -148,7 +135,7 @@ function recordDialogEvent(dialog: Dialog, eventType: CommandEventType | DialogE
  * @param eventType - Dialog event type
  */
 function recordDialogErrorEvent(eventType: DialogErrorEventType): void {
-  recordEvent(null, CommandName.createOnPageDialog, eventType);
+  getFragment().recordEvent(null, CommandName.createOnPageDialog, eventType);
 }
 
 /**
@@ -161,7 +148,7 @@ function dismissDialog(dialog: Dialog): void {
   unassignedDialogs.delete(dialog.id);
 
   if (typeof dialog.ipmId === "string") {
-    dismissCommand(dialog.ipmId);
+    getFragment().dismissCommand(dialog.ipmId);
   }
 }
 
@@ -180,8 +167,14 @@ async function removeDialogFrame(tabId: number): Promise<void> {
  *
  * @param tabId - Tab ID
  * @param dialog - Dialog
+ * @param [keepStorage=false] - Indicates whether the dialog should be kept
+ *   in storage, so that it can be showed again later
  */
-async function removeDialog(tabId: number, dialog: Dialog): Promise<void> {
+async function removeDialog(
+  tabId: number,
+  dialog: Dialog,
+  keepStorage: boolean = false,
+): Promise<void> {
   logger.debug("[onpage-dialog]: Remove dialog");
 
   if (!isDialog(dialog)) {
@@ -194,6 +187,10 @@ async function removeDialog(tabId: number, dialog: Dialog): Promise<void> {
     await assignedDialogs.delete(tabId);
   } catch (ex) {
     // Ignore if tab has already been removed
+  }
+
+  if (keepStorage) {
+    return;
   }
 
   // Determine whether dialog should remain active
@@ -218,6 +215,8 @@ async function handleDialogCommand(ipmId: string, isInitialization: boolean): Pr
   if (typeof ipmId !== "string") {
     return;
   }
+
+  const { getBehavior, getContent } = getFragment();
 
   const behavior = getBehavior(ipmId);
   if (!isDialogBehavior(behavior)) {
@@ -272,7 +271,7 @@ async function handleContinueMessage(message: Message, sender: MessageSender): P
     return;
   }
 
-  const safeTargetUrl = createSafeOriginUrl(dialog.behavior.target);
+  const safeTargetUrl = getFragment().createSafeOriginUrl(dialog.behavior.target);
   if (safeTargetUrl === null) {
     return;
   }
@@ -359,9 +358,17 @@ async function handleErrorMessage(message: ErrorMessage, sender: MessageSender):
   const dialog = await assignedDialogs.get(sender.page.id);
 
   if (!dialog) {
-    recordEvent(null, CommandName.createOnPageDialog, DialogErrorEventType.error_no_dialog_found);
+    getFragment().recordEvent(
+      null,
+      CommandName.createOnPageDialog,
+      DialogErrorEventType.error_no_dialog_found,
+    );
   }
-  recordEvent(dialog.ipmId, CommandName.createOnPageDialog, `${message.type}.${message.error}`);
+  getFragment().recordEvent(
+    dialog.ipmId,
+    CommandName.createOnPageDialog,
+    `${message.type}.${message.error}`,
+  );
 }
 
 /**
@@ -479,7 +486,7 @@ export async function showOnpageDialog(
 ): Promise<ShowOnpageDialogResult> {
   // If we're here because of an IPM command, run the mandatory language skew check
   if (typeof dialog.ipmId === "string") {
-    void checkLanguage(dialog.ipmId);
+    void getFragment().checkLanguage(dialog.ipmId);
   }
 
   // Ignore and dismiss dialog if user opted-out of notifications
@@ -580,6 +587,8 @@ export async function showDialogFromList(
   if (!tab.id) {
     return;
   }
+
+  const { doesLicenseStateMatch, getCommand, isCommandExpired } = getFragment();
 
   for (const dialog of dialogs) {
     // Ignore and dismiss command if license state doesn't match those in the
@@ -722,9 +731,26 @@ async function handleCookieBannerDetected(
 }
 
 /**
+ * Clears active commands
+ */
+async function clearCommands(): Promise<void> {
+  unassignedDialogs.clear();
+
+  const tabs = await browser.tabs.query({});
+  for (const tab of tabs) {
+    if (typeof tab.id === "undefined") {
+      continue;
+    }
+
+    const dialog = await assignedDialogs.get(tab.id);
+    await removeDialog(tab.id, dialog, true);
+  }
+}
+
+/**
  * Initializes on-page manager
  */
-async function start(): Promise<void> {
+export async function start(): Promise<void> {
   await setupTimings();
 
   // Handle messages from content scripts
@@ -756,6 +782,5 @@ async function start(): Promise<void> {
 
   // Handle commands
   ext.pages.onLoaded.addListener(handlePageLoadedEvent);
-  setDialogCommandHandler(handleDialogCommand);
+  setDialogCommandHandler(handleDialogCommand, clearCommands);
 }
-void start().catch(logger.error);

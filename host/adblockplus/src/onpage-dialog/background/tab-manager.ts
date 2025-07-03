@@ -28,19 +28,6 @@ import { TabSessionStorage } from "../../../adblockpluschrome/lib/storage/tab-se
 import { EventEmitter } from "../../../adblockpluschrome/lib/events";
 import { getLocaleInfo } from "../../i18n/background";
 import { info } from "../../info/background";
-import {
-  checkLanguage,
-  CommandEventType,
-  CommandName,
-  createSafeOriginUrl,
-  dismissCommand,
-  doesLicenseStateMatch,
-  getBehavior,
-  getCommand,
-  getContent,
-  isCommandExpired,
-  recordEvent
-} from "@eyeo-fragments/ipm/background";
 import * as logger from "../../logger/background";
 import { type Message, isMessage } from "~/core/messaging/shared";
 import { type TabRemovedEventData } from "../../polyfills/background";
@@ -70,6 +57,7 @@ import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import { Timing } from "./timing.types";
 import { getPremiumSubscriptionsState } from "~/premium-subscriptions/background";
 import { COOKIES_PREMIUM_SUBSCRIPTION_TYPE } from "~/premium-subscriptions/shared";
+import { CommandEventType, CommandName, getFragment } from "~/ipm/background";
 
 /**
  * Tab-specific session storage for dialogs
@@ -147,8 +135,13 @@ async function removeDialogFrame(tabId: number): Promise<void> {
  * Removes on-page dialog
  *
  * @param tabId - Tab ID
+ * @param [keepStorage=false] - Indicates whether the dialog should be kept
+ *   in storage, so that it can be showed again later
  */
-async function removeDialog(tabId: number): Promise<void> {
+async function removeDialog(
+  tabId: number,
+  keepStorage: boolean = false
+): Promise<void> {
   logger.debug("[onpage-dialog]: Remove dialog");
 
   const dialog = await assignedDialogs.get(tabId);
@@ -161,6 +154,10 @@ async function removeDialog(tabId: number): Promise<void> {
     await assignedDialogs.delete(tabId);
   } catch (ex) {
     // Ignore if tab has already been removed
+  }
+
+  if (keepStorage) {
+    return;
   }
 
   // Determine whether dialog should remain active
@@ -184,7 +181,7 @@ function dismissDialog(dialog: Dialog): void {
   unassignedDialogs.delete(dialog.id);
 
   if (typeof dialog.ipmId === "string") {
-    dismissCommand(dialog.ipmId);
+    getFragment().dismissCommand(dialog.ipmId);
   }
 }
 
@@ -249,7 +246,9 @@ async function handleContinueMessage(
     return;
   }
 
-  const safeTargetUrl = createSafeOriginUrl(dialog.behavior.target);
+  const safeTargetUrl = getFragment().createSafeOriginUrl(
+    dialog.behavior.target
+  );
   if (safeTargetUrl === null) {
     return;
   }
@@ -269,6 +268,8 @@ async function handleDialogCommand(ipmId: string): Promise<void> {
   if (typeof ipmId !== "string") {
     return;
   }
+
+  const { getBehavior, getContent } = getFragment();
 
   const behavior = getBehavior(ipmId);
   if (!isDialogBehavior(behavior)) {
@@ -374,6 +375,7 @@ export async function showDialogFromList(
   if (!tab.id) {
     return;
   }
+  const { doesLicenseStateMatch, getCommand, isCommandExpired } = getFragment();
 
   for (const dialog of dialogs) {
     // Ignore and dismiss command if license state doesn't match those in the
@@ -488,7 +490,11 @@ function recordDialogEvent(
   eventEmitter.emit(eventType, dialog);
 
   if (typeof dialog.ipmId === "string") {
-    recordEvent(dialog.ipmId, CommandName.createOnPageDialog, eventType);
+    getFragment().recordEvent(
+      dialog.ipmId,
+      CommandName.createOnPageDialog,
+      eventType
+    );
   }
 }
 
@@ -530,7 +536,7 @@ export async function showOnpageDialog(
 ): Promise<ShowOnpageDialogResult> {
   // If we're here because of an IPM command, run the mandatory language skew check
   if (typeof dialog.ipmId === "string") {
-    void checkLanguage(dialog.ipmId);
+    void getFragment().checkLanguage(dialog.ipmId);
   }
 
   // Ignore and dismiss dialog if user opted-out of notifications
@@ -670,6 +676,22 @@ export function handleCookieBannerDetected(
 }
 
 /**
+ * Clears active commands
+ */
+async function clearCommands(): Promise<void> {
+  unassignedDialogs.clear();
+
+  const tabs = await browser.tabs.query({});
+  for (const tab of tabs) {
+    if (typeof tab.id === "undefined") {
+      continue;
+    }
+
+    await removeDialog(tab.id, true);
+  }
+}
+
+/**
  * Initializes on-page manager
  */
 export async function start(): Promise<void> {
@@ -707,5 +729,5 @@ export async function start(): Promise<void> {
   // Handle commands
   pageEmitter.on("loaded", handlePageLoadedEvent);
   /* eslint-disable-next-line @typescript-eslint/no-misused-promises */
-  setDialogCommandHandler(handleDialogCommand);
+  setDialogCommandHandler(handleDialogCommand, clearCommands);
 }

@@ -17,23 +17,9 @@
 
 import * as browser from "webextension-polyfill";
 
-import {
-  addCohortAssignmentsSearchParam,
-  addExperimentsSearchParams,
-  CommandEventType,
-  CommandName,
-  checkLanguage,
-  createSafeOriginUrl,
-  dismissCommand,
-  doesLicenseStateMatch,
-  getBehavior,
-  getCommand,
-  isCommandExpired,
-  recordEvent,
-} from "@eyeo-fragments/ipm/background";
-
 import { ExtendedInstallType } from "~/management";
 
+import { CommandEventType, CommandName, getFragment } from "../../../src/ipm/background";
 import * as logger from "../../utilities/background";
 import { getSettings, settings } from "../../prefs/background/settings";
 import { CreationMethod, isNewTabBehavior, NewTab, setNewTabCommandHandler } from "./middleware";
@@ -47,12 +33,8 @@ import {
 } from "./tab-manager.types";
 import { Prefs } from "../../alias/prefs";
 
-const tabIds = new Set<number | undefined>();
-
 const onCreatedHandlerByIPMids = new Map();
 const onUpdatedHandlerByIPMids = new Map();
-
-const openNewtabOnUpdatedHandlerByIPMids = new Map();
 
 let newTabCounter = 0;
 
@@ -65,7 +47,19 @@ const newTabMessageSendTrigger = [1, 10, 20, 100, 200];
 /**
  * List of tabs that we still need to open.
  */
-const waitingTabs: Record<string, NewTab> = {};
+let waitingTabs: Record<string, NewTab> = {};
+
+/**
+ * A collection of ids of tabs that have been opened since we
+ * started listening.
+ */
+const tabIds = new Set<number>();
+
+/**
+ * A map of functions that handle update events on tabs that we have created
+ * ourselves. Keys are the IPM IDs that triggered the tab creation.
+ */
+const onNewTabUpdateHandlerByIpmId = new Map();
 
 /**
  * Maps the IDs of the tabs we crated to the IPM IDs that caused their creation.
@@ -122,7 +116,7 @@ function registerEvent(
   ipmId: string,
   name: CommandEventType | NewTabEventType | NewTabExitEventType | NewTabErrorEventType,
 ): void {
-  recordEvent(ipmId, CommandName.createTab, name);
+  getFragment().recordEvent(ipmId, CommandName.createTab, name);
 }
 
 /**
@@ -161,8 +155,8 @@ const openNewtabOnUpdated = (
   if (typeof ipmId !== "string") {
     return;
   }
-  const onUpdatedHandler = openNewtabOnUpdatedHandlerByIPMids.get(ipmId);
-  openNewtabOnUpdatedHandlerByIPMids.delete(ipmId);
+  const onUpdatedHandler = onNewTabUpdateHandlerByIpmId.get(ipmId);
+  onNewTabUpdateHandlerByIpmId.delete(ipmId);
   browser.tabs.onUpdated.removeListener(onUpdatedHandler);
   registerEvent(ipmId, NewTabEventType.loaded);
 };
@@ -205,6 +199,18 @@ async function openNewtab(): Promise<void> {
   for (const candidate of candidates) {
     logger.debug("[new-tab]:openNewtab");
     const { ipmId } = candidate;
+
+    const {
+      addCohortAssignmentsSearchParam,
+      addExperimentsSearchParams,
+      checkLanguage,
+      createSafeOriginUrl,
+      dismissCommand,
+      doesLicenseStateMatch,
+      getBehavior,
+      getCommand,
+      isCommandExpired,
+    } = getFragment();
 
     // Run mandatory language skew check
     void checkLanguage(ipmId);
@@ -268,7 +274,7 @@ async function openNewtab(): Promise<void> {
     // eslint-disable-next-line no-await-in-loop
     url = await addBlockCountToURL(url);
     if (url === null) {
-      recordEvent(ipmId, CommandName.createTab, NewTabErrorEventType.noUrlFound);
+      getFragment().recordEvent(ipmId, CommandName.createTab, NewTabErrorEventType.noUrlFound);
       dismissCommand(ipmId);
       logger.debug("[new-tab]: Invalid target URL.");
       continue;
@@ -309,7 +315,7 @@ async function openNewtab(): Promise<void> {
     }
 
     createdTabsMap.set(tabId, ipmId);
-    openNewtabOnUpdatedHandlerByIPMids.set(ipmId, loadEventListener);
+    onNewTabUpdateHandlerByIpmId.set(ipmId, loadEventListener);
 
     // eslint-disable-next-line no-await-in-loop
     await Prefs.set(lastShownKey, Date.now());
@@ -362,6 +368,11 @@ const onCreated = (tab: browser.Tabs.Tab) => {
     openNotificationTab();
     return;
   }
+
+  if (typeof tab.id !== "number") {
+    return;
+  }
+
   tabIds.add(tab.id);
 };
 
@@ -400,7 +411,11 @@ const onUpdated = (
     newTabCounter += 1;
     const ipmId = createdTabsMap.get(tabId);
     if (typeof ipmId === "string" && newTabMessageSendTrigger.includes(newTabCounter)) {
-      recordEvent(ipmId, CommandName.createTab, `${NewTabEventType.has_content}:${newTabCounter}`);
+      getFragment().recordEvent(
+        ipmId,
+        CommandName.createTab,
+        `${NewTabEventType.has_content}:${newTabCounter}`,
+      );
     }
     return;
   }
@@ -415,6 +430,8 @@ const onUpdated = (
  */
 async function handleCommand(ipmId: string): Promise<void> {
   logger.debug("[new-tab]:tab manager handleCommand", ipmId);
+
+  const { dismissCommand, getBehavior } = getFragment();
 
   const { installType } = await browser.management.getSelf();
   if ((installType as ExtendedInstallType) === "admin") {
@@ -483,12 +500,34 @@ function onCommandsProcessed(): void {
 }
 
 /**
- * Initializes new tab manager
+ * Clears active commands
  */
-async function start(): Promise<void> {
-  logger.debug("[new-tab]:tab manager start");
+async function clearCommands(): Promise<void> {
+  // clearing listeners for commands that are still waiting to be opened
+  for (const ipmId of Object.keys(waitingTabs)) {
+    removeListeners(ipmId);
+  }
+  waitingTabs = {};
 
-  setNewTabCommandHandler(handleCommand, onCommandsProcessed);
+  // clearing new tabs opened by IPM commands
+  for (const [tabID, ipmId] of createdTabsMap) {
+    const updateListener = onNewTabUpdateHandlerByIpmId.get(ipmId);
+    if (updateListener) {
+      browser.tabs.onUpdated.removeListener(updateListener);
+    }
+
+    await browser.tabs.remove(tabID);
+  }
+  onNewTabUpdateHandlerByIpmId.clear();
+  createdTabsMap.clear();
+  tabIds.clear();
 }
 
-void start().catch(logger.error);
+/**
+ * Initializes new tab manager
+ */
+export async function start(): Promise<void> {
+  logger.debug("[new-tab]:tab manager start");
+
+  setNewTabCommandHandler(handleCommand, clearCommands, onCommandsProcessed);
+}

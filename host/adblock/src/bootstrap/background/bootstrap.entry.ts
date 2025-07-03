@@ -18,13 +18,14 @@
 import * as info from "info";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { start as startCookieBannerDetection } from "@eyeo-fragments/cookie-banner-detection/background";
-import { start as startIPM } from "@eyeo-fragments/ipm/background";
 
 import { Prefs } from "~/alias/prefs";
 import { start as startSettings } from "~/prefs/background";
 import * as logger from "~/utilities/background";
-import { startInfo as ipmFragmentStartInfo } from "../../ipm/background";
+import { start as startInProductMessaging } from "../../ipm/background";
 import { start as startGrowthExperiments } from "../../growth-experiments/background";
+import { start as startNewTab } from "../../../adblock-betafish/new-tab/background";
+import { start as startOnPageDialog } from "../../../adblock-betafish/onpage-dialog/background";
 import { start as startPageviewMetrics } from "../../pageview-metrics/background";
 import { start as startTelemetry } from "../../telemetry/background";
 
@@ -38,7 +39,7 @@ async function bootstrapAsync(): Promise<void> {
     // it's part of the initialization that doesn't need to be serialized
     startCookieBannerDetection();
 
-    await Promise.all([startIPM(ipmFragmentStartInfo), startPageviewMetrics(), startTelemetry()]);
+    await Promise.all([startPageviewMetrics(), startTelemetry()]);
   } catch (ex) {
     logger.reportAndLogError(ex);
   }
@@ -68,6 +69,13 @@ async function bootstrap(): Promise<void> {
 
   startSettings();
   void startGrowthExperiments();
+
+  // Features depending on IPM need to wait for fragment to be selected,
+  // even if they don't need to be await-ed themselves
+  await startInProductMessaging();
+  void startOnPageDialog();
+  void startNewTab();
+
   await bootstrapAsync();
 }
 

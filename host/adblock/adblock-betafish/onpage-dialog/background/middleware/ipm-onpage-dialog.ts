@@ -20,15 +20,8 @@ import {
   type CommandHandler,
   CommandName,
   type ParamDefinitionList,
-  defaultLicenseState,
-  isEmptyOrPositiveNumber,
-  isNotEmpty,
-  isSafeUrl,
-  isValidDomainList,
-  isValidLicenseStateList,
-  setCommandActor,
-  validateParams,
-} from "@eyeo-fragments/ipm/background";
+  getFragment,
+} from "../../../../src/ipm/background";
 
 import * as logger from "../../../utilities/background";
 import { type DialogContent } from "../../shared";
@@ -39,50 +32,60 @@ import { defaultPriority, type DialogCommand, type DialogParams } from "./ipm-on
 /**
  * List of on-page dialog parameter definitions
  */
-const paramDefinitionList: ParamDefinitionList<DialogParams> = [
-  {
-    name: "timing",
-    validate: (param): boolean =>
-      typeof param === "undefined" ||
-      param === Timing.afterWebAllowlisting ||
-      param === Timing.revisitWebAllowlisted ||
-      param === Timing.afterNavigation ||
-      param === Timing.cookieBanner,
-  },
-  {
-    name: "display_duration",
-    validate: (param): boolean =>
-      typeof param === "undefined" || (typeof param === "number" && param >= 0 && param <= 20),
-  },
-  {
-    name: "sub_title",
-    validate: isNotEmpty,
-  },
-  {
-    name: "upper_body",
-    validate: isNotEmpty,
-  },
-  {
-    name: "button_label",
-    validate: isNotEmpty,
-  },
-  {
-    name: "button_target",
-    validate: isSafeUrl,
-  },
-  {
-    name: "domain_list",
-    validate: isValidDomainList,
-  },
-  {
-    name: "license_state_list",
-    validate: isValidLicenseStateList,
-  },
-  {
-    name: "priority",
-    validate: isEmptyOrPositiveNumber,
-  },
-];
+function getParamDefinitionList(): ParamDefinitionList<DialogParams> {
+  const {
+    isEmptyOrPositiveNumber,
+    isNotEmpty,
+    isValidDomainList,
+    isSafeUrl,
+    isValidLicenseStateList,
+  } = getFragment();
+
+  return [
+    {
+      name: "timing",
+      validate: (param): boolean =>
+        typeof param === "undefined" ||
+        param === Timing.afterWebAllowlisting ||
+        param === Timing.revisitWebAllowlisted ||
+        param === Timing.afterNavigation ||
+        param === Timing.cookieBanner,
+    },
+    {
+      name: "display_duration",
+      validate: (param): boolean =>
+        typeof param === "undefined" || (typeof param === "number" && param >= 0 && param <= 20),
+    },
+    {
+      name: "sub_title",
+      validate: isNotEmpty,
+    },
+    {
+      name: "upper_body",
+      validate: isNotEmpty,
+    },
+    {
+      name: "button_label",
+      validate: isNotEmpty,
+    },
+    {
+      name: "button_target",
+      validate: isSafeUrl,
+    },
+    {
+      name: "domain_list",
+      validate: isValidDomainList,
+    },
+    {
+      name: "license_state_list",
+      validate: isValidLicenseStateList,
+    },
+    {
+      name: "priority",
+      validate: isEmptyOrPositiveNumber,
+    },
+  ];
+}
 
 /**
  * Extracts on-page dialog behavior from the given command
@@ -100,7 +103,7 @@ function getBehavior(command: Command): DialogBehavior | null {
     target: command.button_target,
     timing: command.timing,
     domainList: command.domain_list,
-    licenseStateList: command.license_state_list ?? defaultLicenseState,
+    licenseStateList: command.license_state_list ?? getFragment().defaultLicenseState,
     priority: typeof command.priority === "number" ? command.priority : defaultPriority,
   };
 }
@@ -134,7 +137,7 @@ function getContent(command: Command): DialogContent | null {
  * @returns Whether the command is a valid DialogCommand and can be worked with
  */
 function isDialogCommand(command: Command): command is DialogCommand {
-  const validationErrors = validateParams(command, paramDefinitionList);
+  const validationErrors = getFragment().validateParams(command, getParamDefinitionList());
 
   if (validationErrors.length === 0) {
     return true;
@@ -148,9 +151,11 @@ function isDialogCommand(command: Command): command is DialogCommand {
  * Sets on-page dialog command handler
  *
  * @param handler - Command handler
+ * @param clearCommands - Function to clear active commands
  */
-export function setDialogCommandHandler(handler: CommandHandler): void {
-  setCommandActor(CommandName.createOnPageDialog, {
+export function setDialogCommandHandler(handler: CommandHandler, clearCommands: () => void): void {
+  getFragment().setCommandActor(CommandName.createOnPageDialog, {
+    clearCommands,
     getBehavior,
     getContent,
     handleCommand: handler,

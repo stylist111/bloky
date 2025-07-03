@@ -66,6 +66,7 @@ export function getStartInfo(): StartInfo {
     licensing,
     info,
     addMessageListener: () => {},
+    removeMessageListener: () => {},
     getBlockCount,
     isOptedOut: async () => false,
   };

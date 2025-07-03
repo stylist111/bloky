@@ -1,0 +1,9 @@
+{
+  "extends": "../../core/configs/tsconfig",
+  "compilerOptions": {
+    "outDir": "./dist/"
+  },
+  "include": [
+    "src/**/*"
+  ]
+}

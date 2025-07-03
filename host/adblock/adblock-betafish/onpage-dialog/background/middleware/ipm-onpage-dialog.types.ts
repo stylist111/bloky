@@ -15,7 +15,7 @@
  * along with AdBlock.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { type Command } from "@eyeo-fragments/ipm/background";
+import { type Command } from "../../../../src/ipm/background";
 
 import { type Timing } from "../timing.types";
 

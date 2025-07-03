@@ -17,6 +17,7 @@
 
 import browser from "webextension-polyfill";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
+
 import {
   type Behavior,
   type Command,
@@ -34,7 +35,7 @@ import { isDeleteBehavior, setDeleteCommandHandler } from "./delete-commands";
 import { recordEvent, recordGenericEvent } from "./event-recording";
 import { checkLanguage } from "./language-check";
 import { isValidDate } from "./param-validator";
-import { start as startTelemetry } from "./telemetry";
+import { start as startTelemetry, stop as stopTelemetry } from "./telemetry";
 
 /**
  * A list of known commands.
@@ -471,6 +472,15 @@ async function resetIPMCommands(): Promise<void> {
 }
 
 /**
+ * Clears active commands
+ */
+export async function clearCommands(): Promise<void> {
+  for (const actor of actorByCommandName.values()) {
+    await actor.clearCommands();
+  }
+}
+
+/**
  * Initializes command library
  */
 export async function start(startInfo: StartInfo): Promise<void> {
@@ -491,12 +501,19 @@ export async function start(startInfo: StartInfo): Promise<void> {
   // Reinitialize commands from storage
   const commandStorage = prefs.get(commandStorageKey);
 
-  if (!isCommandMap(commandStorage)) {
-    return;
+  if (isCommandMap(commandStorage)) {
+    const commands = Object.values(commandStorage);
+    await executeIPMCommands(commands, true);
   }
 
-  const commands = Object.values(commandStorage);
-  await executeIPMCommands(commands, true);
-
   await startTelemetry();
+}
+
+/**
+ * Unloads command library
+ */
+export async function stop(): Promise<void> {
+  await stopTelemetry();
+
+  await clearCommands();
 }

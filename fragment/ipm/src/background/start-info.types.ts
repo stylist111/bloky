@@ -29,6 +29,10 @@ export interface StartInfo {
     name: string,
     listener: () => Promise<PayloadData | null>,
   ) => void;
+  removeMessageListener: (
+    name: string,
+    listener: () => Promise<PayloadData | null>,
+  ) => void;
   getBlockCount: () => Promise<number>;
   isOptedOut: () => Promise<boolean>;
 }

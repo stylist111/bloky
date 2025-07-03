@@ -123,6 +123,7 @@ function getContent(): Content {
  */
 export function setDeleteCommandHandler(handler: CommandHandler): void {
   setCommandActor(CommandName.deleteCommands, {
+    clearCommands: () => {},
     getBehavior,
     getContent,
     handleCommand: handler,

@@ -16,7 +16,6 @@
  */
 
 import { isDomainList, createSafeOriginUrl } from "./url";
-import { type Command } from "./command-library.types";
 import { isValidLicenseState } from "./license";
 import {
   type ParamDefinitionList,
@@ -149,7 +148,7 @@ export const isValidDate: ParamValidator = (param: unknown): boolean => {
  * @returns An array containing one error message for every invalid parameter
  */
 export function validateParams<T>(
-  command: Command,
+  command: Record<string, unknown>,
   paramDefinitions: ParamDefinitionList<T>,
 ): string[] {
   return paramDefinitions

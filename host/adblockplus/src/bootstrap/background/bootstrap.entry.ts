@@ -31,7 +31,6 @@ import { start as startRecommendedLanguage } from "../../../lib/recommendLanguag
 import { start as startAllowListing } from "../../allowlisting/background";
 import { start as startBypass } from "../../bypass/background";
 import { start as startComposer } from "../../composer/background";
-import { start as startIPM } from "@eyeo-fragments/ipm/background";
 import { start as startNewTab } from "../../new-tab/background";
 import { start as startOnPageDialog } from "../../onpage-dialog/background";
 import { start as startPremiumOnboarding } from "../../premium-onboarding/background";
@@ -54,8 +53,8 @@ import { port, addTrustedMessageTypes } from "~/core/messaging/background";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { getAuthPayload, hasActiveLicense } from "~/premium/background";
 import { info } from "~/info/background";
-import { startInfo as ipmFragmentStartInfo } from "~/ipm/background";
 import { start as startTelemetry } from "~/telemetry/background";
+import { start as startInProductMessaging } from "~/ipm/background";
 
 /**
  * Runs initialization that can be done in parallel and doesn't have to be done
@@ -67,7 +66,7 @@ async function bootstrapAsync(): Promise<void> {
     // it's part of the initialization that doesn't need to be serialized
     startCookieBannerDetection();
 
-    await Promise.all([startIPM(ipmFragmentStartInfo), startTelemetry()]);
+    await Promise.all([startTelemetry()]);
   } catch (ex) {
     logger.reportAndLogError(ex);
   }
@@ -95,6 +94,9 @@ function bootstrapSync(): void {
   startUpdateCampaign();
 }
 
+/**
+ * Runs initialization of each extension functionality
+ */
 async function bootstrap(): Promise<void> {
   bootstrapSync();
 
@@ -114,8 +116,6 @@ async function bootstrap(): Promise<void> {
   startMessageResponder();
   void startAllowListing();
   startBypass();
-  void startOnPageDialog();
-  void startNewTab();
   startPremiumOnboarding();
   startPremiumSubscriptions();
   startYTWallDetection({
@@ -147,6 +147,12 @@ async function bootstrap(): Promise<void> {
       });
     }
   });
+
+  // Features depending on IPM need to wait for fragment to be selected,
+  // even if they don't need to be await-ed themselves
+  await startInProductMessaging();
+  void startOnPageDialog();
+  void startNewTab();
 
   await bootstrapAsync();
 

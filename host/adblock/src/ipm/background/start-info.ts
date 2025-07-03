@@ -19,8 +19,6 @@
  * This file contains the `StartInfo` that the IPM fragment needs to start up.
  */
 
-import { type StartInfo } from "@eyeo-fragments/ipm/background";
-
 import * as info from "info";
 
 import { port } from "../../../adblockplusui/adblockpluschrome/lib/messaging/port";
@@ -29,6 +27,7 @@ import { getUserId } from "~/id/background";
 import { License } from "~/picreplacement/check";
 import * as utils from "~/utilities/background";
 import { getBlockCount } from "./block-count";
+import { type StartInfo } from "./fragment-provider.types";
 
 /**
  * The information the IPM fragments needs to start up.
@@ -67,4 +66,7 @@ export const startInfo: StartInfo = {
   },
   logger: utils,
   prefs: Prefs,
+  removeMessageListener(name, listener) {
+    port.off(name, listener);
+  },
 };

@@ -549,3 +549,22 @@ export async function getIPMCommands(initOptionsFn) {
     key: "ipm_commands",
   });
 }
+
+export async function getSelectedFragmentType(initOptionsFn) {
+  return sendExtMessage(initOptionsFn, {
+    type: "testing.getSelectedFragmentType",
+  });
+}
+
+export async function resetIPMFragment(initOptionsFn) {
+  return sendExtMessage(initOptionsFn, {
+    type: "testing.resetIPMFragment",
+  });
+}
+
+export async function setIPMFragment(initOptionsFn, fragmentType) {
+  return sendExtMessage(initOptionsFn, {
+    type: "testing.setIPMFragment",
+    fragmentType,
+  });
+}

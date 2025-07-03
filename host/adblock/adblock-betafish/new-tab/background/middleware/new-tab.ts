@@ -16,25 +16,19 @@
  */
 
 import {
-  Command,
-  CommandHandler,
+  type Command,
+  type CommandHandler,
   CommandName,
-  Content,
-  defaultLicenseState,
-  ParamDefinitionList,
-  isSafeUrl,
-  isValidLicenseStateList,
-  setCommandActor,
-  validateParams,
-  isEmptyOrPositiveNumber,
-} from "@eyeo-fragments/ipm/background";
-
+  type Content,
+  type ParamDefinitionList,
+  getFragment,
+} from "../../../../src/ipm/background";
 import * as logger from "~/utilities/background";
 import {
   CreationMethod,
-  NewTabBehavior,
-  NewTabCommand,
-  NewTabParams,
+  type NewTabBehavior,
+  type NewTabCommand,
+  type NewTabParams,
   defaultCreationMethod,
   defaultPriority,
 } from "./new-tab.types";
@@ -42,29 +36,32 @@ import {
 /**
  * List of new tab parameter definitions
  */
-const paramDefinitionList: ParamDefinitionList<NewTabParams> = [
-  {
-    name: "url",
-    validate: isSafeUrl,
-  },
-  {
-    name: "license_state_list",
-    validate: isValidLicenseStateList,
-  },
-  {
-    name: "method",
-    validate: (param): boolean =>
-      typeof param === "undefined" ||
-      (typeof param === "string" &&
-        Object.values(CreationMethod)
-          .map((method) => String(method))
-          .includes(param)),
-  },
-  {
-    name: "priority",
-    validate: isEmptyOrPositiveNumber,
-  },
-];
+function getParamDefinitionList(): ParamDefinitionList<NewTabParams> {
+  const { isEmptyOrPositiveNumber, isSafeUrl, isValidLicenseStateList } = getFragment();
+  return [
+    {
+      name: "url",
+      validate: isSafeUrl,
+    },
+    {
+      name: "license_state_list",
+      validate: isValidLicenseStateList,
+    },
+    {
+      name: "method",
+      validate: (param): boolean =>
+        typeof param === "undefined" ||
+        (typeof param === "string" &&
+          Object.values(CreationMethod)
+            .map((method) => String(method))
+            .includes(param)),
+    },
+    {
+      name: "priority",
+      validate: isEmptyOrPositiveNumber,
+    },
+  ];
+}
 
 /**
  * Runs parameter validation on the given command to check whether it can be
@@ -74,7 +71,7 @@ const paramDefinitionList: ParamDefinitionList<NewTabParams> = [
  * @returns Whether the command is a valid NewTabCommand and can be worked with
  */
 function isNewTabCommand(command: Command): command is NewTabCommand {
-  const validationErrors = validateParams(command, paramDefinitionList);
+  const validationErrors = getFragment().validateParams(command, getParamDefinitionList());
   if (validationErrors.length === 0) {
     return true;
   }
@@ -115,7 +112,7 @@ function getBehavior(command: Command): NewTabBehavior | null {
 
   return {
     target: command.url,
-    licenseStateList: command.license_state_list || defaultLicenseState,
+    licenseStateList: command.license_state_list || getFragment().defaultLicenseState,
     method,
     priority: typeof command.priority === "number" ? command.priority : defaultPriority,
   };
@@ -137,13 +134,16 @@ function getContent(): Content {
  * Sets new tab command handler
  *
  * @param handler - Command handler
+ * @param clearCommands - Function to clear active commands
  * @param onCommandsProcessed - Called when all commands in a ping are processed
  */
 export function setNewTabCommandHandler(
   handler: CommandHandler,
+  clearCommands: () => void,
   onCommandsProcessed: () => void,
 ): void {
-  setCommandActor(CommandName.createTab, {
+  getFragment().setCommandActor(CommandName.createTab, {
+    clearCommands,
     getBehavior,
     getContent,
     handleCommand: handler,

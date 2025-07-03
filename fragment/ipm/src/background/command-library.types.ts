@@ -72,7 +72,7 @@ export const CommandVersion: Record<CommandName, number> = {
 /**
  * The required IPM command meta data.
  */
-export interface CommandMetaData {
+interface CommandMetaData {
   /**
    * The command version.
    */
@@ -125,6 +125,14 @@ export interface Content {}
  * Command actor
  */
 export interface CommandActor {
+  /**
+   * Clears active commands
+   *
+   * This function is meant to clean up any non-persistent effects that the
+   * handleCommand() function had on the extension state (e.g. close opened
+   * tabs, remove event listeners, clear in-memory storage).
+   */
+  clearCommands: () => Promise<void> | void;
   /**
    * Retrieves the actor-specific command behavior
    *

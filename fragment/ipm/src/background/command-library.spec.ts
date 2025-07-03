@@ -131,6 +131,7 @@ describe("command-library", () => {
         .mockReturnValue(Promise.resolve(true));
 
       createTabActor = {
+        clearCommands: jest.fn(),
         handleCommand: jest.fn(),
         onCommandsProcessed: jest.fn(),
         getBehavior: jest.fn(),
