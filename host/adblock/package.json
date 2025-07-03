@@ -94,7 +94,7 @@
     "@babel/preset-env": "7.26.0",
     "@babel/preset-react": "7.24.7",
     "@babel/preset-typescript": "7.26.0",
-    "@eyeo/get-browser-binary": "0.21.0",
+    "@eyeo/get-browser-binary": "0.22.0",
     "@eyeo/test-utils": "*",
     "@rollup/plugin-commonjs": "22.0.2",
     "@rollup/plugin-node-resolve": "13.3.0",
