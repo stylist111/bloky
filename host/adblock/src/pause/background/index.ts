@@ -128,8 +128,11 @@ function handleExtensionStartup(): void {
 }
 browser.runtime.onStartup.addListener(handleExtensionStartup);
 
-browser.commands.onCommand.addListener((command) => {
-  if (command === "toggle_pause") {
+// TODO: Remove this once the shortcut removal experiment is over
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
+browser.commands.onCommand.addListener(async (command) => {
+  const isDisabled = await ewe.experiments.getFlag("is-shortcut-removed");
+  if (!isDisabled && command === "toggle_pause") {
     adblockIsPaused(!adblockIsPaused());
     ServerMessages.recordGeneralMessage("pause_shortcut_used");
   }
