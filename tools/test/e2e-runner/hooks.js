@@ -144,7 +144,7 @@ export async function setupBrowserHook(buildsDirPath, unpackedDirPath) {
  * @returns {Promise<void>}
  */
 export async function prepareExtensionHook() {
-  const { handle } = await findUrl("options.html", 15000);
+  const { handle } = await findUrl("options.html", { timeout: 15000 });
   setOptionsHandle(handle);
 
   const { name, version, manifestVersion, origin, popupUrl } = await getExtensionInfo();
