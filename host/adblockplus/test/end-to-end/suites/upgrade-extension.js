@@ -61,6 +61,7 @@ async function clickAdsCounterAndCheck({ enable = true } = {}) {
 
   await clickOnDisplayedElement(adsCounterCheckboxSelector);
   await waitForCheckboxStatus(adsCounterCheckboxSelector, {
+    timeout: 3000,
     expectEnabled: enable,
     isProperty: false,
     name
