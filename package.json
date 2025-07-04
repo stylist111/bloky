@@ -23,6 +23,7 @@
     "build:local": "lerna run build:local",
     "build:source": "lerna run build:source",
     "test": "lerna run test",
+    "test:fragments": "lerna run test:fragments",
     "test:end-to-end": "lerna run test:end-to-end",
     "lint": "lerna run lint",
     "do-release": "npm run -w @eyeo/release-utils do-release --"

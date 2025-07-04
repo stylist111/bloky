@@ -1,9 +1,10 @@
 {
-  "name": "fragments-test-extension",
+  "name": "fragments-test",
   "version": "1.0.0",
-  "description": "Test Extension for Fragments",
+  "description": "Test Framework for Fragments",
   "type": "module",
   "scripts": {
+    "$": "npm-dollar",
     "lint": "eslint .",
     "build:mv3": "webpack --env manifest=v3",
     "build:mv2": "webpack --env manifest=v2",
@@ -37,7 +38,8 @@
   "dependencies": {
     "@eyeo-fragments/example": "*",
     "@eyeo-fragments/yt-wall-detection": "*",
-    "@eyeo/webext-ad-filtering-solution": "*"
+    "@eyeo/webext-ad-filtering-solution": "*",
+    "npm-dollar": "2.2.1"
   },
   "peerDependencies": {
     "webextension-polyfill": "*"

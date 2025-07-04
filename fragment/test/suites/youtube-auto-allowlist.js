@@ -22,6 +22,11 @@ import { getOptionsHandle, ytAllowlistUrl } from "@eyeo/test-utils/extension";
 
 export default () => {
   it("auto-allowlists YouTube", async function () {
+    // Test currently skipped on Edge due to DNR limitations - will be fixed later
+    if (browserDetails.browserName === "edge") {
+      this.skip();
+    }
+
     const eventName = "yt-site.ad-wall-detected";
 
     await driver.wait(

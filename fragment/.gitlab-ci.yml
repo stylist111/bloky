@@ -1,0 +1,91 @@
+spec:
+  inputs:
+    job_runs:
+      type: number
+      default: 1
+      description: Amount of times certain test jobs should run using the "parallel" keyword
+
+---
+include: "/.gitlab/ci-common.yml"
+
+.docker:
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  needs:
+    - !reference [.needs-parent-build, needs]
+
+stages:
+  - build
+  - fragments-tests
+
+build:
+  stage: build
+  image: node:22.14.0
+  script:
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - fragment/test/test-extension/dist/
+    expire_in: 1 week
+
+.fragments-tests:
+  stage: fragments-tests
+  extends: .docker
+  needs: [build]
+  script:
+    - echo "EYEOMETRY_BEARER=\"$ADBLOCK_EYEOMETRY_BEARER\"" >> fragment/.env
+    - docker build -t fragments-tests -f fragment/test/Dockerfile .
+    - docker run --shm-size=2g -t -e BROWSER -e BROWSER_VERSION -e MANIFEST_VERSION -e CI fragments-tests
+  after_script:
+    - IMAGE_ID=$(docker ps -aqf ancestor=fragments-tests)
+    - docker cp $IMAGE_ID:/extensions/fragment/test/screenshots fragment/ 2> /dev/null
+  artifacts:
+    paths:
+      - fragment/screenshots/
+    when: on_failure
+    expire_in: 1 mo
+
+.fragments-tests-n-times:
+  extends: .fragments-tests
+  parallel: $[[ inputs.job_runs ]]
+
+fragments-tests:MV2:firefox:latest:
+  extends: .fragments-tests-n-times
+  variables:
+    BROWSER: firefox
+    MANIFEST_VERSION: 2
+
+fragments-tests:MV2:edge:latest:
+  extends: .fragments-tests-n-times
+  variables:
+    BROWSER: edge
+    MANIFEST_VERSION: 2
+
+fragments-tests:MV3:chromium:latest:
+  extends: .fragments-tests-n-times
+  variables:
+    BROWSER: chromium
+    MANIFEST_VERSION: 3
+
+# Fragments tests - nightly run
+.fragments-tests-nightly:
+  extends: .fragments-tests
+  rules:
+    - !reference [.nightly-run, rules]
+
+fragments-tests:MV2:firefox:beta:
+  extends: .fragments-tests-nightly
+  variables:
+    MANIFEST_VERSION: 2
+    BROWSER: firefox
+    BROWSER_VERSION: beta
+
+fragments-tests:MV3:chromium:beta:
+  extends: .fragments-tests-nightly
+  variables:
+    MANIFEST_VERSION: 3
+    BROWSER: chromium
+    BROWSER_VERSION: beta
+    

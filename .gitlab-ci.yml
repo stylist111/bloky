@@ -183,6 +183,11 @@ adblockplus:
   variables:
     WORKSPACEPATH: host/adblockplus
 
+fragments:
+  extends: .child-host
+  variables:
+    WORKSPACEPATH: fragment
+
 sdk:
   extends: .child-core
   variables:
