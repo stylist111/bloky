@@ -25,6 +25,11 @@ import { initOptionsGeneralTab, initPopupPage } from "../utils/page.js";
 
 export default () => {
   it("auto-allowlists YouTube", async function () {
+    // This scenario is already covered by the Fragments tests for Chromium and Firefox
+    if (browserDetails.browserName !== "edge") {
+      this.skip();
+    }
+
     await initOptionsGeneralTab(getOptionsHandle());
 
     const tabId = await autoAllowlistsYoutube();
