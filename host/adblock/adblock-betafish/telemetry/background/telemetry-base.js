@@ -193,6 +193,9 @@ class TelemetryBase {
     data.numberOfPartnerExt = Prefs.get("partnerExtensionFound").extesnionsIdsFound.length;
     // Detected in the last 7 days
     data.hasUBO = Date.now() - Prefs.get("uboDetected") < 7 * 24 * 60 * 60 * 1000 ? "1" : "0";
+    // Detection was last run in the last 7 days
+    data.uboDetectionWasActive =
+      Date.now() - Prefs.get("uboDetectionLastRun") < 7 * 24 * 60 * 60 * 1000 ? "1" : "0";
     data.dc = this.dataCorrupt ? "1" : "0";
     data.isPinned = "-1";
     const userSettings = browser.action.getUserSettings && (await browser.action.getUserSettings());
