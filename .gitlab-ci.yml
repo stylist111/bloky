@@ -211,8 +211,8 @@ publish-remote-validation:
       changes:
         - core/remote-configuration-validator/package.json
       when: on_success
-    # Do not trigger push pipelines
-    - if: $CI_PIPELINE_SOURCE == "push"
+    # Do not trigger for push or schedule pipelines
+    - if: $CI_PIPELINE_SOURCE == "push" || $CI_PIPELINE_SOURCE == "schedule"
       when: never
   needs: ["test", "sdk", "adblock", "adblockplus"]
 
