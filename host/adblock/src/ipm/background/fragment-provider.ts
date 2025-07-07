@@ -16,7 +16,7 @@
  */
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
-import * as LegacyFragment from "@eyeo-fragments/ipm/background";
+import * as LegacyFragment from "@eyeo-fragments/ipm-legacy/background";
 import * as FutureFragment from "@eyeo-fragments/in-product-messaging/background";
 
 import { port } from "../../../adblockplusui/adblockpluschrome/lib/messaging/port";

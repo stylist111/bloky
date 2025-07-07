@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type * as LegacyFragment from "@eyeo-fragments/ipm/background";
+import type * as LegacyFragment from "@eyeo-fragments/ipm-legacy/background";
 import type * as FutureFragment from "@eyeo-fragments/in-product-messaging/background";
 
 import { type Message } from "~/polyfills/shared";
@@ -28,10 +28,10 @@ export type {
   LicenseStateBehavior,
   ParamDefinitionList,
   StartInfo,
-} from "@eyeo-fragments/ipm/background";
+} from "@eyeo-fragments/ipm-legacy/background";
 
 // re-export enums
-export { CommandEventType, CommandName } from "@eyeo-fragments/ipm/background";
+export { CommandEventType, CommandName } from "@eyeo-fragments/ipm-legacy/background";
 
 /**
  * A type alias for the fragments

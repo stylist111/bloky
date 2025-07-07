@@ -44,7 +44,7 @@ import { getFragment } from "~/ipm/background";
 
 const ipmBackground = getFragment();
 
-jest.mock("@eyeo-fragments/ipm/background");
+jest.mock("@eyeo-fragments/ipm-legacy/background");
 jest.mock("../../premium-subscriptions/background");
 
 jest.mock("../../../adblockpluschrome/lib/prefs", () => {

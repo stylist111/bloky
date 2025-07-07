@@ -18,8 +18,8 @@
 import {
   type CommandActor,
   type CommandName
-} from "@eyeo-fragments/ipm/background";
-import * as LegacyFragment from "@eyeo-fragments/ipm/background";
+} from "@eyeo-fragments/ipm-legacy/background";
+import * as LegacyFragment from "@eyeo-fragments/ipm-legacy/background";
 import * as FutureFragment from "@eyeo-fragments/in-product-messaging/background";
 
 import { type Fragment } from "./fragment-provider.types";

@@ -15,8 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type * as LegacyFragment from "@eyeo-fragments/ipm/background";
+import type * as LegacyFragment from "@eyeo-fragments/ipm-legacy/background";
 import type * as FutureFragment from "@eyeo-fragments/in-product-messaging/background";
+import { type Message } from "~/core/messaging/shared";
 
 // re-export types
 export type {
@@ -26,10 +27,13 @@ export type {
   LicenseStateBehavior,
   ParamDefinitionList,
   StartInfo
-} from "@eyeo-fragments/ipm/background";
+} from "@eyeo-fragments/ipm-legacy/background";
 
 // re-export enums
-export { CommandEventType, CommandName } from "@eyeo-fragments/ipm/background";
+export {
+  CommandEventType,
+  CommandName
+} from "@eyeo-fragments/ipm-legacy/background";
 
 /**
  * A type alias for the fragments
@@ -43,3 +47,16 @@ export enum FragmentType {
   legacy = "legacy",
   future = "future"
 }
+
+/**
+ * Message object for "testing.setIPMFragment" type
+ */
+export interface SetIPMFragmentMessage extends Message {
+  type: typeof featureFlagId;
+  fragmentType: FragmentType;
+}
+
+/**
+ * IPM fragment feature flag ID
+ */
+export const featureFlagId = "ipm-use-future-fragment";

@@ -1,5 +1,5 @@
 {
-  "name": "@eyeo-fragments/ipm",
+  "name": "@eyeo-fragments/ipm-legacy",
   "type": "module",
   "license": "GPL-3.0",
   "private": true,

@@ -16,14 +16,19 @@
  */
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
-import * as LegacyFragment from "@eyeo-fragments/ipm/background";
+import * as LegacyFragment from "@eyeo-fragments/ipm-legacy/background";
 import * as FutureFragment from "@eyeo-fragments/in-product-messaging/background";
 
-import { type Fragment, FragmentType } from "./fragment-provider.types";
+import {
+  featureFlagId,
+  type Fragment,
+  FragmentType,
+  type SetIPMFragmentMessage
+} from "./fragment-provider.types";
 import { getFragmentOverrides } from "./fragment-overrides";
 import { startInfo } from "./start-info";
-
-const featureFlagId = "ipm-use-future-fragment";
+import { port } from "~/core/messaging/background";
+import { isMessage, type Message } from "~/core/messaging/shared";
 
 /**
  * An object pointing to the two imported fragments
@@ -85,6 +90,19 @@ async function switchFragment(): Promise<void> {
 }
 
 /**
+ * Checks whether given candidate is message of type "testing.setIPMFragment"
+ *
+ * @param candidate - Candidate
+ *
+ * @returns whether candidate is message of type "testing.setIPMFragment"
+ */
+export function isSetIPMFragmentMessage(
+  candidate: unknown
+): candidate is SetIPMFragmentMessage {
+  return isMessage(candidate) && "fragmentType" in candidate;
+}
+
+/**
  * Starts the IPM fragment provider feature
  */
 export async function start(): Promise<void> {
@@ -93,5 +111,26 @@ export async function start(): Promise<void> {
 
   ewe.experiments.onChanged.addListener(() => {
     void switchFragment();
+  });
+
+  port.on("testing.getSelectedFragmentType", () => {
+    return selectedFragmentType;
+  });
+  port.on("testing.resetIPMFragment", async () => {
+    await ewe.experiments.clearFlagOverrides();
+  });
+  port.on("testing.setIPMFragment", async (message: Message) => {
+    if (!isSetIPMFragmentMessage(message)) {
+      return;
+    }
+
+    if (!message.fragmentType) {
+      return;
+    }
+
+    await ewe.experiments.overrideFlag(
+      featureFlagId,
+      message.fragmentType === FragmentType.future
+    );
   });
 }
