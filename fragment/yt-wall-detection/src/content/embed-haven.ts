@@ -37,6 +37,8 @@ import {
   videoContextStore,
 } from "./shared.js";
 import { menuIcon } from "../img/menu.js";
+import { checkIcon } from "../img/check.js";
+import { crossIcon } from "../img/cross.js";
 
 /**
  * Enum with the player state
@@ -205,13 +207,19 @@ function createToggleSwitch(
     width: "18px",
     height: "18px",
     backgroundColor: "#ffffff",
+    color: "#666",
     borderRadius: "50%",
     position: "absolute",
     top: "0px",
     left: initialState ? "18px" : "0px",
     boxShadow: "0 0 6px rgba(0, 0, 0, 0.2)",
     transition: "left 0.3s ease",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   });
+  // initial icon
+  thumb.innerHTML = isActive ? checkIcon : crossIcon;
 
   toggle.appendChild(thumb);
 
@@ -224,6 +232,7 @@ function createToggleSwitch(
         ? colors.ENABLED
         : colors.DISABLED;
       thumb.style.left = isActive ? "18px" : "0px";
+      thumb.innerHTML = isActive ? checkIcon : crossIcon;
       void onToggle(isActive);
     }
   });
