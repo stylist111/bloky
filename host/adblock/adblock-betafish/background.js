@@ -703,9 +703,7 @@ initialize
         errorMsg: e.message,
       });
     } else {
-      // Send anonymous event to the log server in case there was an error with
-      // initializing the extension.
-      ServerMessages.recordAnonymousErrorMessage("initialization_error");
+      ServerMessages.recordErrorMessage("initialization_error", { errorMsg: e.message });
     }
     throw e;
   });
