@@ -411,6 +411,11 @@ export interface Subscription {
    * not provided. It might be set if the subscription is not downloadable.
    */
   version: string;
+  /**
+   * The number of times the subscription has been succesfully downloaded
+   * (downloadble subscriptions only).
+   */
+  downloadCount?: number;
 }
 
 /**
@@ -530,6 +535,10 @@ declare module "@eyeo/webext-ad-filtering-solution" {
        */
       options?: FiltersGetAllowingFiltersOptions
     ) => Promise<string[]>;
+    /**
+     * Returns an array of MV2 to MV3 migration errors and the related filters.
+     */
+    const getMigrationErrors: () => Promise<array<Filter, string>>;
     /**
      * Returns an extra data associated with a filter
      *
@@ -724,6 +733,11 @@ declare module "@eyeo/webext-ad-filtering-solution" {
      * Emitted when a subscription is removed.
      */
     const onRemoved: EventDispatcher<(subscription: Subscription) => unknown>;
+    /**
+     * Returns an array of MV2 to MV3 migration errors and the related
+     * subscription.
+     */
+    const getMigrationErrors: () => Promise<Array<Subscription, string>>;
   }
 
   namespace cdp {

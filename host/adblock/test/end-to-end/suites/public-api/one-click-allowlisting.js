@@ -48,10 +48,10 @@ async function allowlistPageAndCheck(command) {
 
 function validateFilterMetadata(debugInfo, expiresAt = null) {
   expect(debugInfo).not.toBeNull();
-  expect(debugInfo.otherInfo).not.toBeNull();
-  expect(debugInfo.otherInfo.customRuleMetaData).not.toBeNull();
+  expect(debugInfo.deviceSpecificInformation).not.toBeNull();
+  expect(debugInfo.deviceSpecificInformation.userFilters).not.toBeNull();
 
-  const rulesMetadata = debugInfo.otherInfo.customRuleMetaData;
+  const rulesMetadata = debugInfo.deviceSpecificInformation.userFilters;
   const expectedMetadata = {
     created: expect.any(Number),
     origin: "web",
@@ -64,8 +64,8 @@ function validateFilterMetadata(debugInfo, expiresAt = null) {
   expect(rulesMetadata).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        metaData: expectedMetadata,
-        text: allowlistingFilter,
+        metadata: expectedMetadata,
+        ruleText: allowlistingFilter,
       }),
     ]),
   );

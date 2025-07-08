@@ -17,109 +17,20 @@
 
 /* For ESLint: List any global identifiers used in this file below */
 /* global browser  */
-import * as ewe from "@eyeo/webext-ad-filtering-solution";
+
+import { getDebugInformation } from "@eyeo-fragments/debug-information";
 
 import { Prefs } from "~/alias/prefs";
-import { getUserFilters } from "~/filter-utils";
 import { getUserId } from "~/id/background/index";
-import LocalDataCollection from "~/localdatacollection";
 import { adblockIsPaused } from "../../../src/pause/background/index";
 import { License, channels } from "~/picreplacement/check";
 import SyncService from "~/picreplacement/sync-service";
-import { getSettings } from "~/prefs/background";
-import SubscriptionAdapter from "~/subscriptionadapter";
-import { TELEMETRY } from "~/telemetry/background";
+import { getSettings, settings } from "~/prefs/background";
 
-import { NO_DATA, PING_COUNT_STORAGE_KEY } from "./constants";
-
-async function getExperimentsAssignments() {
-  const assignments = await ewe.experiments.getAssignments();
-  return Object.entries(assignments).map((assignment) => {
-    return {
-      experiment_id: assignment[0],
-      variant_id: assignment[1],
-    };
-  });
-}
-
-async function getExperimentData() {
-  const experimentFlags = await ewe.experiments.getFlags();
-  const experimentAssignments = await getExperimentsAssignments();
-  return { experimentAssignments, experimentFlags };
-}
-
-const getAdblockSettings = function () {
-  const adblockSettings = {};
-  const settingsObj = getSettings();
-  for (const [key, value] of Object.entries(settingsObj)) {
-    adblockSettings[key] = JSON.stringify(value);
-  }
-
-  return adblockSettings;
-};
-
-const getBuildType = function () {
-  // Is this installed build of AdBlock the official one?
-  if (browser.runtime.id === "pljaalgmajnlogcgiohkhdmgpomjcihk") {
-    return " Beta";
-  }
-
-  if (
-    browser.runtime.id === "gighmmpiobklfepjocnamgkkbiglidom" ||
-    browser.runtime.id === "aobdicepooefnbaeokijohmhjlleamfj" ||
-    browser.runtime.id === "ndcileolkflehcjpmjnfbnaibdcgglog" ||
-    browser.runtime.id === "jid1-NIfFY2CA8fy1tg@jetpack"
-  ) {
-    return " Stable";
-  }
-
-  return " Unofficial";
-};
-
-async function getCustomFilterMetaData(currentUserFilters) {
-  if (!currentUserFilters || currentUserFilters.length === 0) {
-    return Promise.resolve({});
-  }
-  return Promise.all(
-    /* eslint-disable-next-line consistent-return */
-    currentUserFilters.map(async (rule) => {
-      if (rule && rule.text) {
-        const metaData = await ewe.filters.getMetadata(rule.text);
-        if (!metaData) {
-          return { text: rule.text };
-        }
-
-        return { text: rule.text, metaData };
-      }
-    }),
-  );
-}
-
-const getCustomFilters = async function (userFilters) {
-  if (userFilters && userFilters.length) {
-    return userFilters.map((filter) => filter.text).join("\n");
-  }
-
-  return NO_DATA;
-};
-
-const getDebugAlarmInfo = async () => {
-  const response = {};
-  const alarms = await browser.alarms.getAll();
-  if (alarms && alarms.length > 0) {
-    response["Alarm info"] = `length: ${alarms.length}`;
-    for (let i = 0; i < alarms.length; i++) {
-      const alarm = alarms[i];
-      response[`${i} Alarm Name`] = alarm.name;
-      response[`${i} Alarm Scheduled Time`] = new Date(alarm.scheduledTime).toLocaleString();
-    }
-  } else {
-    response["No alarm info"] = "No alarm info";
-  }
-  return response;
-};
+import { PING_COUNT_STORAGE_KEY } from "./constants";
 
 const getDebugLicenseInfo = async () => {
+  await License.ready();
   const response = {};
   response.licenseInfo = {};
   response.licenseInfo.extensionGUID = await getUserId();
@@ -145,159 +56,29 @@ const getDebugLicenseInfo = async () => {
   return response;
 };
 
-const getExcludeFilters = async function () {
-  const excludeFiltersKey = "exclude_filters";
-  const secondResponse = await browser.storage.local.get(excludeFiltersKey);
-  if (secondResponse && secondResponse[excludeFiltersKey]) {
-    return secondResponse[excludeFiltersKey];
-  }
-
-  return NO_DATA;
-};
-
-const getHostPermissions = async function () {
-  if (browser.permissions && browser.permissions.getAll) {
-    const allPermissions = await browser.permissions.getAll();
-    return allPermissions;
-  }
-
-  return NO_DATA;
-};
-
-const getJavascriptErrors = async function (errorKey) {
-  const errorResponse = await browser.storage.local.get(errorKey);
-  if (errorResponse && errorResponse[errorKey]) {
-    return errorResponse[errorKey];
-  }
-
-  return NO_DATA;
-};
-
-const getLocalStorageInfo = function () {
-  let localStorageInfo;
-
-  if (typeof localStorage !== "undefined" && localStorage.length) {
-    localStorageInfo = {};
-    localStorageInfo.length = localStorage.length;
-
-    let inx = 1;
-    for (const key in localStorage) {
-      localStorageInfo[`key${inx}`] = key;
-      inx += 1;
-    }
-  } else {
-    localStorageInfo = NO_DATA;
-  }
-
-  return localStorageInfo;
-};
-
-const getMigrationMessages = async function () {
-  const response = {};
-  response.migrationErrors = {};
-  const { migrationErrors } = response;
-  migrationErrors.filters = await ewe.filters.getMigrationErrors();
-  migrationErrors.subscriptions = await ewe.subscriptions.getMigrationErrors();
+const getTotalPings = async function () {
+  const storageResponse = await browser.storage.local.get(PING_COUNT_STORAGE_KEY);
+  const response = storageResponse[PING_COUNT_STORAGE_KEY] || 0;
   return response;
 };
 
-const getSubscriptionInfo = async function () {
-  const subscriptionInfo = {};
-  const subscriptions = await SubscriptionAdapter.getSubscriptionsMinusText();
-  for (const id in subscriptions) {
-    if (subscriptions[id].subscribed) {
-      subscriptionInfo[id] = {};
-      subscriptionInfo[id].lastSuccess = new Date(subscriptions[id].lastSuccess * 1000);
-      subscriptionInfo[id].lastDownload = new Date(subscriptions[id].lastDownload * 1000);
-      subscriptionInfo[id].downloadStatus = subscriptions[id].downloadStatus;
-    }
-  }
-
-  return subscriptionInfo;
-};
-
-const getTotalPings = async function () {
-  const storageResponse = await browser.storage.local.get(PING_COUNT_STORAGE_KEY);
-  return storageResponse[PING_COUNT_STORAGE_KEY] || 0;
-};
-
 // Get debug info as a JSON object for bug reporting and ad reporting
-const getDebugInfo = function () {
-  return new Promise(async (resolve) => {
-    const response = {};
-    const userFilters = await getUserFilters();
-
-    // Get subscribed filter lists
-    response.subscriptions = await getSubscriptionInfo();
-
-    // Get custom/user filter rules
-    response.customFilters = await getCustomFilters(userFilters);
-
-    // Get settings
-    response.settings = getAdblockSettings();
-    response.prefs = JSON.stringify(Prefs);
-
-    // Add exclude filters
-    response.excludedFilters = await getExcludeFilters();
-
-    // Add IPM info
-    response.ipmInfo = {
-      commands: Prefs.get("ipm_commands"),
-      commandsStats: Prefs.get("ipm_commands_stats"),
-      events: Prefs.get("ipm_events"),
-    };
-
-    // Add on-page dialog info
-    response.opdInfo = {
-      commandStats: Prefs.get("onpage_dialog_command_stats"),
-      timingConfig: Prefs.get("onpage_dialog_timing_configurations"),
-    };
-
-    response.otherInfo = {};
-    let { otherInfo } = response;
-
-    // Get build type
-    otherInfo.buildtype = getBuildType();
-
-    // Get AdBlock version
-    otherInfo.version = browser.runtime.getManifest().version;
-
-    // Get system telemetry
-    otherInfo.browser = TELEMETRY.browser;
-    otherInfo.browserVersion = TELEMETRY.browserVersion;
-    otherInfo.osVersion = TELEMETRY.osVersion;
-    otherInfo.os = TELEMETRY.os;
-
-    otherInfo.localStorageInfo = getLocalStorageInfo();
-    otherInfo.isAdblockPaused = adblockIsPaused();
-
-    // Get 'Stats' size
-    otherInfo.rawStatsSize = await LocalDataCollection.getRawStatsSize();
-
-    // Get total pings
-    otherInfo.totalPings = await getTotalPings();
-
-    // Add JavaScript exception error
-    const errorKey = "errorkey";
-    otherInfo[errorKey] = await getJavascriptErrors(errorKey);
-
-    // Add any migration messages (if there are any)
-    otherInfo = Object.assign(otherInfo, await getMigrationMessages());
-
-    otherInfo.alarmInfo = await getDebugAlarmInfo();
-    otherInfo.hostPermissions = await getHostPermissions();
-
-    otherInfo.licenseInfo = await getDebugLicenseInfo();
-    otherInfo.customRuleMetaData = await getCustomFilterMetaData(userFilters);
-
-    const blockageStats = (await browser.storage.local.get("blockage_stats")).blockage_stats;
-    if (blockageStats && blockageStats.start) {
-      otherInfo.extensionInstallTimestamp = new Date(blockageStats.start).toLocaleString();
-    }
-    otherInfo.experimentData = await getExperimentData();
-
-    resolve(response);
+export const getDebugInfo = async function () {
+  await Promise.all([Prefs.untilLoaded, License.ready(), settings.onload()]);
+  const [userSettings, pingCount, isAdblockIsPaused] = await Promise.all([
+    getSettings(),
+    getTotalPings(),
+    adblockIsPaused(),
+  ]);
+  const [prefs, licenseInformation] = await Promise.all([Prefs.toJSON(), getDebugLicenseInfo()]);
+  const additionalHostSpecificInformation = {
+    userSettings,
+    pingCount,
+    isAdblockIsPaused,
+  };
+  return getDebugInformation({
+    additionalHostSpecificInformation,
+    licenseInformation,
+    prefs,
   });
 };
-
-export { getCustomFilterMetaData, getDebugInfo, getUserFilters };

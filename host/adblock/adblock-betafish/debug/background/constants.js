@@ -15,8 +15,6 @@
  * along with AdBlock.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-const NO_DATA = "no data";
-
 const PING_COUNT_STORAGE_KEY = "total_pings";
 
-export { NO_DATA, PING_COUNT_STORAGE_KEY };
+export { PING_COUNT_STORAGE_KEY };

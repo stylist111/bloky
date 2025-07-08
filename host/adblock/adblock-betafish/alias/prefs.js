@@ -531,6 +531,24 @@ export let Prefs = {
   },
 
   /**
+
+   */
+  async toJSON() {
+    // Any Prefs we don't want to include in the debug data
+    const exclusiongKeys = [
+      "allowlisting_authorizedKeys",
+      "bypass_authorizedKeys",
+      "pageviewMetrics_requestUrls",
+    ];
+    const responseObject = { ...defaults, ...overrides };
+    exclusiongKeys.forEach((key) => {
+      delete responseObject[key];
+    });
+
+    return responseObject;
+  },
+
+  /**
    * Adds a callback that is called when the
    * value of a specified preference changed.
    *

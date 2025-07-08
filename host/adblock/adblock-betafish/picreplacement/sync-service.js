@@ -23,7 +23,6 @@
 /** @module SyncService */
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
-import { getCustomFilterMetaData } from "../debug/background";
 import { TELEMETRY } from "../telemetry/background";
 import { getUserId } from "../id/background/index";
 import { EventEmitter } from "../../adblockplusui/adblockpluschrome/lib/events";
@@ -41,6 +40,25 @@ import {
   chromeStorageSetHelper,
   getUserAgentInfo,
 } from "../utilities/background/index";
+
+async function getCustomFilterMetaData(currentUserFilters) {
+  if (!currentUserFilters || currentUserFilters.length === 0) {
+    return Promise.resolve({});
+  }
+  return Promise.all(
+    /* eslint-disable-next-line consistent-return */
+    currentUserFilters.map(async (rule) => {
+      if (rule && rule.text) {
+        const metaData = await ewe.filters.getMetadata(rule.text);
+        if (!metaData) {
+          return { text: rule.text };
+        }
+
+        return { text: rule.text, metaData };
+      }
+    }),
+  );
+}
 
 const SyncService = (function getSyncService() {
   let syncCommitVersion = 0;

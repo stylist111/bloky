@@ -67,41 +67,64 @@ $(async () => {
     // Get debug info
     const theDebugInfo = await send("getDebugInfo");
     const content = [];
-    if (theDebugInfo.subscriptions) {
+
+    content.push("=== Extension & Platform Information ===");
+    content.push(JSON.stringify(theDebugInfo.extensionInformation, null, 4));
+    content.push(JSON.stringify(theDebugInfo.platformInformation, null, 4));
+    content.push("");
+
+    if (theDebugInfo.deviceSpecificInformation.subscriptions) {
       content.push("=== Filter Lists ===");
-      for (const sub in theDebugInfo.subscriptions) {
-        content.push(`Id:${sub}`);
-        content.push(`  Download Status: ${theDebugInfo.subscriptions[sub].downloadStatus}`);
-        content.push(`  Last Download: ${theDebugInfo.subscriptions[sub].lastDownload}`);
-        content.push(`  Last Success: ${theDebugInfo.subscriptions[sub].lastSuccess}`);
-      }
+      content.push(JSON.stringify(theDebugInfo.deviceSpecificInformation.subscriptions, null, 4));
+    } else {
+      content.push("=== NO Filter Lists ===");
     }
-
     content.push("");
 
-    if (theDebugInfo.exclude_filters) {
-      content.push("=== Exclude Filters ===");
-      content.push(JSON.stringify(theDebugInfo.exclude_filters));
-    }
     // Custom & Excluded filters might not always be in the object
-    if (theDebugInfo.customFilters) {
+    if (theDebugInfo.deviceSpecificInformation.userFilters) {
       content.push("=== Custom Filters ===");
-      content.push(theDebugInfo.customFilters);
-      content.push("");
+      content.push(JSON.stringify(theDebugInfo.deviceSpecificInformation.userFilters, null, 4));
+    } else {
+      content.push("=== NO Custom Filters ===");
     }
+    content.push("");
 
-    content.push("=== Settings ===");
-    for (const setting in theDebugInfo.settings) {
-      content.push(`${setting} : ${theDebugInfo.settings[setting]}`);
+    content.push("=== Preferences & Settings ===");
+    if (theDebugInfo.hostSpecificInformation.prefs) {
+      content.push(JSON.stringify(theDebugInfo.hostSpecificInformation.prefs, null, 4));
     }
-
+    if (theDebugInfo.hostSpecificInformation.additionalHostSpecificInformation) {
+      content.push(
+        JSON.stringify(
+          theDebugInfo.hostSpecificInformation.additionalHostSpecificInformation,
+          null,
+          4,
+        ),
+      );
+    }
     content.push("");
-    content.push("=== Other Info ===");
-    content.push(JSON.stringify(theDebugInfo.otherInfo, null, "\t"));
 
+    content.push("=== Premium Information ===");
+    content.push(JSON.stringify(theDebugInfo.hostSpecificInformation.licenseInformation, null, 4));
     content.push("");
-    content.push("=== IPM Info ===");
-    content.push(JSON.stringify(theDebugInfo.ipmInfo, null, "\t"));
+    content.push("=== Alarm Information ===");
+    content.push(JSON.stringify(theDebugInfo.deviceSpecificInformation.alarmInformation, null, 4));
+    content.push("");
+    content.push("=== Remote Configuration Information ===");
+    content.push(
+      JSON.stringify(
+        theDebugInfo.deviceSpecificInformation.remoteConfigurationInformation,
+        null,
+        4,
+      ),
+    );
+    content.push("");
+    content.push("=== Migration Errors ===");
+    content.push(JSON.stringify(theDebugInfo.migrationErrors, null, 4));
+    content.push("");
+    content.push("=== JS Errors ===");
+    content.push(JSON.stringify(theDebugInfo.errors, null, 4));
 
     // Put it together to put into the textbox
     debugInfo = content.join("\n");

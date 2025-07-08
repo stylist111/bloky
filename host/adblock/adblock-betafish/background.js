@@ -25,8 +25,6 @@ import { start as startConflictDetection } from "@eyeo-fragments/conflict-detect
 import { start as startYtWallDetection } from "@eyeo-fragments/yt-wall-detection/background";
 import { start as startPublicAPI } from "@eyeo-fragments/public-api";
 import { Prefs } from "./alias/prefs";
-
-import { getCustomFilterMetaData, getDebugInfo } from "./debug/background";
 import { getUserFilters } from "./filter-utils";
 import {
   isTabTemporaryAllowlisted,
@@ -37,6 +35,7 @@ import {
 import { start as startContentFiltering } from "./alias/contentFiltering";
 import { NEW_BADGE_REASONS, getNewBadgeTextReason, showIconBadgeCTA } from "./alias/icon";
 
+import { getDebugInfo } from "./debug/background/index";
 import { getUserId } from "./id/background/index";
 import { initialize } from "./alias/subscriptionInit";
 import { TELEMETRY } from "./telemetry/background";
@@ -763,5 +762,4 @@ Object.assign(self, {
   pausedFilterText1,
   pausedFilterText2,
   versionStorageKey,
-  getCustomFilterMetaData,
 });

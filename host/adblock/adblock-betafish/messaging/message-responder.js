@@ -20,13 +20,14 @@
    addCustomFilter, countCache, checkUpdateProgress,
    adblockIsPaused, pageIsWhitelisted, getCurrentTabInfo,
    openTab, updateFilterLists, isTrustedSenderDomain, updateButtonUIAndContextMenus,
-   getDebugInfo, addYTChannelListeners, removeYTChannelListeners, openYTManagedSubPage,
+   addYTChannelListeners, removeYTChannelListeners, openYTManagedSubPage,
    addTwitchAllowlistListeners, removeTwitchAllowlistListeners, abpPrefPropertyNames,
    pausedFilterText1, pausedFilterText2, updateCustomFilterCountMap
 */
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { toPlainFilterError } from "../../adblockplusui/adblockpluschrome/lib/messaging/types";
+import { getDebugInfo } from "../debug/background/index";
 
 import {
   getSettings,

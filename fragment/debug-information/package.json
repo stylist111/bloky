@@ -1,0 +1,42 @@
+{
+  "name": "@eyeo-fragments/debug-information",
+  "type": "module",
+  "license": "GPL-3.0",
+  "private": true,
+  "typesVersions": {
+    "*": {
+      "background": [
+        "./dist/background/index.d.ts"
+      ]
+    }
+  },
+  "files": [
+    "./dist/"
+  ],
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build:types": "tsc --emitDeclarationOnly",
+    "build": "tsc --project tsconfig.json",
+    "build:release": "tsc --project tsconfig.json",
+    "lint": "eslint --ext .ts src/",
+    "prettier-fix": "prettier --write .",
+    "test": "vitest run --reporter=verbose"
+  },
+  "peerDependencies": {
+    "@eyeo/webext-ad-filtering-solution": "*",
+    "@types/webextension-polyfill": "0.12.0",
+    "webextension-polyfill": "*"
+  },
+  "devDependencies": {
+    "eslint": "8.34.0",
+    "eslint-config-prettier": "9.1.0",
+    "eslint-plugin-prettier": "5.1.3",
+    "prettier": "3.3.3",
+    "vite": "5.4.11",
+    "vitest": "3.0.9",
+    "vitest-chrome": "0.1.0",
+    "vitest-mock-extended": "2.0.2"
+  }
+}
