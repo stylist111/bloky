@@ -31,8 +31,8 @@ async function getAllowlistStatus({ tabId }) {
 
   for (const filter of allowlistingFilters) {
     // eslint-disable-next-line no-await-in-loop
-    metadata = await ewe.filters.getMetadata(filter);
-    const { origin } = metadata ? metadata : {};
+    metadata = (await ewe.filters.getMetadata(filter)) || {};
+    const { origin } = metadata;
 
     if (origin === "web") {
       break;
