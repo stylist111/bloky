@@ -169,7 +169,7 @@ export default () => {
           this.skip();
         }
 
-        await enablePremiumProgrammatically();
+        await enablePremiumProgrammatically(15000); // wait up to 15s for Premium activation
         await setIPMServerResponse("test_adblock_premium");
         await pingIPMServer(initOptionsGeneralTab);
 

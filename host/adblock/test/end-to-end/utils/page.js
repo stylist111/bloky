@@ -421,7 +421,7 @@ export async function getPopupBlockedAdsTotalCount() {
   return parseInt(totalCount, 10);
 }
 
-export async function enablePremiumProgrammatically() {
+export async function enablePremiumProgrammatically(timeout = 10000) {
   const currentDate = new Date();
   const options = { year: "numeric", month: "long" };
   const formattedDate = currentDate.toLocaleDateString("en-US", options).toUpperCase();
@@ -453,7 +453,7 @@ export async function enablePremiumProgrammatically() {
         throw err;
       }
     },
-    10000,
+    timeout,
     "Temporary premium couldn't be activated",
   );
 
