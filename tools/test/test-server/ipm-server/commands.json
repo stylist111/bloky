@@ -1,0 +1,52 @@
+{
+  "test_adblock_newtab": [
+    {
+      "ipm_id": "test_adblock_newtab",
+      "device_id": "test_adblock_ipm",
+      "command_name": "create_tab",
+      "version": 6,
+      "url": "/update",
+      "method": "default"
+    }
+  ],
+  "test_adblock_priority": [
+    {
+      "ipm_id": "test_adblock_newtab_priority_low",
+      "device_id": "test_adblock_ipm",
+      "command_name": "create_tab",
+      "version": 6,
+      "url": "/update?ipmId=test_adblock_newtab_priority_low",
+      "method": "default"
+    },
+    {
+      "ipm_id": "test_adblock_newtab_priority_high",
+      "device_id": "test_adblock_ipm",
+      "command_name": "create_tab",
+      "version": 6,
+      "url": "/update?ipmId=test_adblock_newtab_priority_high",
+      "method": "default",
+      "license_state_list": "free",
+      "priority": 3
+    }
+  ],
+  "test_adblock_premium": [
+    {
+      "ipm_id": "test_adblock_newtab_premium",
+      "device_id": "test_adblock_ipm",
+      "command_name": "create_tab",
+      "version": 6,
+      "url": "/update",
+      "method": "default",
+      "license_state_list": "free"
+    }
+  ],
+  "test_adblock_delete": [
+    {
+      "ipm_id": "test_adblock_delete_commands",
+      "device_id": "test_adblock_ipm",
+      "command_name": "delete_commands",
+      "commands": "__all__",
+      "version": 2
+    }
+  ]
+}

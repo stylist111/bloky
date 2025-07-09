@@ -21,9 +21,10 @@ import {
   getOptionsHandle,
   setTimeoutForExtensionReload,
   reloadExtension,
-  setUserId,
+  updateSettings,
   setIPMServer,
   pingIPMServer,
+  setIPMServerResponse,
   getIPMCommands,
   setIPMCooldowns,
   getSelectedFragmentType,
@@ -32,106 +33,48 @@ import {
 } from "@eyeo/test-utils/extension";
 import { expect } from "expect";
 import { findUrl, openNewTab } from "@eyeo/test-utils/driver";
-import { cleanupOpenTabs } from "@eyeo/test-utils/hooks";
 import { localTestPageUrl } from "@eyeo/test-utils/urls";
+import {
+  expectedIPMCommandsNewtab,
+  expectedIPMCommandsPriority,
+  expectedIPMCommandsLowPriority,
+  expectedIPMCommandsPremium,
+} from "../../utils/ipms.js";
 import { updateUrl, updateUrlPriorityHigh, updateUrlPriorityLow } from "../../utils/urls.js";
 import {
-  getUserIdFromInstallPage,
   initOptionsGeneralTab,
-  getUserIdFromStorage,
   enablePremiumProgrammatically,
   disablePremiumProgrammatically,
 } from "../../utils/page.js";
-
-const expectedIPMCommands = {
-  test_adblock_newtab_priority_low: {
-    attributes: {
-      language: expect.stringMatching(/^[a-z]{2,3}-[A-Z]{2}$/),
-      received: expect.any(Number),
-    },
-    ipm_id: "test_adblock_newtab_priority_low",
-    device_id: "test_adblock_newtab",
-    command_name: "create_tab",
-    method: "default",
-    expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
-    url: "/update?ipmId=test_adblock_newtab_priority_low",
-    version: 6,
-  },
-  test_adblock_newtab_priority_high: {
-    attributes: {
-      language: expect.stringMatching(/^[a-z]{2,3}-[A-Z]{2}$/),
-      received: expect.any(Number),
-    },
-    ipm_id: "test_adblock_newtab_priority_high",
-    device_id: "test_adblock_newtab",
-    command_name: "create_tab",
-    method: "default",
-    license_state_list: "free",
-    expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
-    url: "/update?ipmId=test_adblock_newtab_priority_high",
-    priority: 3,
-    version: 6,
-  },
-};
-
-const expectedIPMCommandLowPriority = {
-  test_adblock_newtab_priority_low: {
-    attributes: {
-      language: expect.stringMatching(/^[a-z]{2,3}-[A-Z]{2}$/),
-      received: expect.any(Number),
-    },
-    ipm_id: "test_adblock_newtab_priority_low",
-    device_id: "test_adblock_newtab",
-    command_name: "create_tab",
-    method: "default",
-    expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
-    url: "/update?ipmId=test_adblock_newtab_priority_low",
-    version: 6,
-  },
-};
-
-const expectedIPMCommandPremium = {
-  test_adblock_newtab_premium: {
-    attributes: {
-      language: expect.stringMatching(/^[a-z]{2,3}-[A-Z]{2}$/),
-      received: expect.any(Number),
-    },
-    ipm_id: "test_adblock_newtab_premium",
-    device_id: "test_adblock_premium",
-    command_name: "create_tab",
-    method: "default",
-    license_state_list: "free",
-    expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
-    url: "/update",
-    version: 6,
-  },
-};
 
 export default () => {
   for (const fragmentType of ["legacy", "future"]) {
     describe(`Selected fragment: ${fragmentType}`, () => {
       before(async function () {
-        setTimeoutForExtensionReload(this);
         await setIPMServer(initOptionsGeneralTab);
         await setIPMCooldowns(initOptionsGeneralTab);
-        await setUserId(getOptionsHandle, "test_adblock_newtab");
+
+        // `suppress_update_page` must be set to false before running tests,
+        // so that newtabs can be triggered. This setting is otherwise set to true
+        // to prevent real newtab IPMs from opening and interfering with the tests.
+        await updateSettings(initOptionsGeneralTab, "suppress_update_page", false);
         await setIPMFragment(getOptionsHandle, fragmentType);
-        await reloadExtension(initOptionsGeneralTab, { suppressUpdatePage: false });
         const selectedFragmentType = await getSelectedFragmentType(getOptionsHandle);
         expect(selectedFragmentType).toEqual(fragmentType);
-        const currentUserId = await getUserIdFromStorage(getOptionsHandle());
-        expect(currentUserId).toEqual("test_adblock_newtab");
+      });
+
+      afterEach(async function () {
+        await setIPMServerResponse("test_adblock_delete");
+        await pingIPMServer(initOptionsGeneralTab);
+        const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
+        expect(ipmCommands).toEqual({});
       });
 
       after(async function () {
         setTimeoutForExtensionReload(this);
-        const originalUserId = await getUserIdFromInstallPage();
-        await initOptionsGeneralTab(getOptionsHandle());
-        await setUserId(getOptionsHandle, originalUserId);
-        await resetIPMFragment(getOptionsHandle);
         await disablePremiumProgrammatically();
-        const currentUserId = await getUserIdFromStorage(getOptionsHandle());
-        expect(currentUserId).toEqual(originalUserId);
+        await updateSettings(initOptionsGeneralTab, "suppress_update_page", true);
+        await resetIPMFragment(getOptionsHandle);
       });
 
       it("triggers a new tab campaign and checks ping alarm", async function () {
@@ -139,26 +82,26 @@ export default () => {
         if (browserDetails.browserName === "firefox") {
           this.skip();
         }
-
+        await setIPMServerResponse("test_adblock_newtab");
         await pingIPMServer(initOptionsGeneralTab);
-        const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
 
+        const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
         let { pingAlarm } = await driver.executeAsyncScript(async (callback) => {
           pingAlarm = await browser.alarms.get("pingalarm");
           callback({ pingAlarm });
         });
 
-        expect(ipmCommands).toEqual(expectedIPMCommands);
+        expect(ipmCommands).toEqual(expectedIPMCommandsNewtab);
         expect(pingAlarm.scheduledTime).toBeGreaterThan(Date.now());
 
         await openNewTab(localTestPageUrl);
-        await findUrl(updateUrlPriorityHigh);
+        await findUrl(updateUrl);
         await initOptionsGeneralTab(getOptionsHandle());
-        const pingPayload = await pingIPMServer(initOptionsGeneralTab);
 
-        expect(pingPayload.ipm.active).toEqual([{ id: "test_adblock_newtab_priority_low" }]);
+        const pingPayload = await pingIPMServer(initOptionsGeneralTab);
+        expect(pingPayload.ipm.active).toEqual([]);
         const actions = pingPayload.events.map((e) => e.action);
-        expect(actions).toEqual(["received", "received", "tab_created", "tab_loaded"]);
+        expect(actions).toEqual(["received", "tab_created", "tab_loaded"]);
       });
 
       it("triggers new tab campaigns by priority", async function () {
@@ -167,23 +110,35 @@ export default () => {
           this.skip();
         }
         setTimeoutForExtensionReload(this);
-
+        await setIPMServerResponse("test_adblock_priority");
         await pingIPMServer(initOptionsGeneralTab);
+
         const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
-        expect(ipmCommands).toEqual(expectedIPMCommands);
+        expect(ipmCommands).toEqual(expectedIPMCommandsPriority);
 
         await openNewTab(localTestPageUrl);
         await findUrl(updateUrlPriorityHigh);
         await findUrl(updateUrlPriorityLow, { exists: false });
 
         const ipmCommand = await getIPMCommands(initOptionsGeneralTab);
-        expect(ipmCommand).toEqual(expectedIPMCommandLowPriority);
+        let pingPayload = await pingIPMServer(initOptionsGeneralTab);
+        const actions = pingPayload.events.map((e) => e.action);
+
+        expect(ipmCommand).toEqual(expectedIPMCommandsLowPriority);
+        expect(pingPayload.ipm.active).toEqual([{ id: "test_adblock_newtab_priority_low" }]);
+        expect(actions).toEqual([
+          "received",
+          "received",
+          "tab_created",
+          "has_content:1",
+          "tab_loaded",
+        ]);
 
         await reloadExtension(initOptionsGeneralTab, { suppressUpdatePage: false });
         await openNewTab(localTestPageUrl);
         await findUrl(updateUrlPriorityLow);
 
-        const pingPayload = await pingIPMServer(initOptionsGeneralTab);
+        pingPayload = await pingIPMServer(initOptionsGeneralTab);
         expect(pingPayload.ipm.active).toEqual([]);
       });
 
@@ -192,29 +147,20 @@ export default () => {
         if (browserDetails.browserName === "firefox") {
           this.skip();
         }
-        setTimeoutForExtensionReload(this);
-
+        await setIPMServerResponse("test_adblock_newtab");
         await pingIPMServer(initOptionsGeneralTab);
+
         let ipmCommands = await getIPMCommands(initOptionsGeneralTab);
-        expect(ipmCommands).toEqual(expectedIPMCommands);
+        expect(ipmCommands).toEqual(expectedIPMCommandsNewtab);
 
-        await setUserId(getOptionsHandle, "test_adblock_delete");
-        await reloadExtension(initOptionsGeneralTab, { suppressUpdatePage: false });
-        await cleanupOpenTabs();
-        await driver.switchTo().window(getOptionsHandle());
-
-        ipmCommands = await getIPMCommands(initOptionsGeneralTab);
-        expect(ipmCommands).toEqual(expectedIPMCommandLowPriority);
-
+        await setIPMServerResponse("test_adblock_delete");
         await pingIPMServer(initOptionsGeneralTab);
-        const currentUserId = await getUserIdFromStorage(getOptionsHandle());
-        expect(currentUserId).toEqual("test_adblock_delete");
 
         ipmCommands = await getIPMCommands(initOptionsGeneralTab);
         expect(ipmCommands).toEqual({});
+
         await openNewTab(localTestPageUrl);
-        await findUrl(updateUrlPriorityHigh, { exists: false });
-        await findUrl(updateUrlPriorityLow, { exists: false });
+        await findUrl(updateUrl, { exists: false });
       });
 
       it("does not trigger a new tab campaign for premium user", async function () {
@@ -222,22 +168,27 @@ export default () => {
         if (browserDetails.browserName === "firefox") {
           this.skip();
         }
-        setTimeoutForExtensionReload(this);
 
         await enablePremiumProgrammatically();
-        await setUserId(getOptionsHandle, "test_adblock_premium");
-        await reloadExtension(initOptionsGeneralTab, { suppressUpdatePage: false });
+        await setIPMServerResponse("test_adblock_premium");
         await pingIPMServer(initOptionsGeneralTab);
 
         const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
-        expect(ipmCommands).toEqual(expectedIPMCommandPremium);
+        expect(ipmCommands).toEqual(expectedIPMCommandsPremium);
 
         await openNewTab(localTestPageUrl);
         await findUrl(updateUrl, { exists: false });
 
         const pingPayload = await pingIPMServer(initOptionsGeneralTab);
         const actions = pingPayload.events.map((e) => e.action);
-        expect(actions).toEqual(["received", "license_state_no_match"]);
+
+        expect(actions).toEqual([
+          "received",
+          "error_no_behavior",
+          "error_no_behavior",
+          "license_state_no_match",
+          "error_no_behavior",
+        ]);
       });
 
       it("checks IPM versions", async function () {
@@ -245,8 +196,7 @@ export default () => {
         if (browserDetails.browserName === "firefox") {
           this.skip();
         }
-
-        await initOptionsGeneralTab(getOptionsHandle());
+        await setIPMServerResponse("test_adblock_newtab");
         const payload = await pingIPMServer(initOptionsGeneralTab);
         const { capabilities } = payload.ipm;
 
@@ -262,13 +212,12 @@ export default () => {
         if (browserDetails.browserName !== "firefox") {
           this.skip();
         }
-        await pingIPMServer(initOptionsGeneralTab);
+        await setIPMServerResponse("test_adblock_newtab");
         const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
         expect(ipmCommands).toEqual({});
 
         await openNewTab(localTestPageUrl);
-        await findUrl(updateUrlPriorityHigh, { exists: false });
-        await findUrl(updateUrlPriorityLow, { exists: false });
+        await findUrl(updateUrl, { exists: false });
       });
     });
   }

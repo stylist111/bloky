@@ -16,12 +16,8 @@
  */
 
 /* eslint-disable no-console */
-import path from "path";
-import url from "url";
-
 import { createServer } from "http";
-import { createReadStream } from "fs";
-import { getResponseData } from "./response-data.js";
+import { getResponseData, getResponseDataForCommand } from "./response-data.js";
 
 /**
  * Script command-line argument that swtiches the server into legacy
@@ -36,31 +32,53 @@ const singleObjectKey = "--single-object";
  */
 let singleObjectMode = false;
 
+let ipmResponseData = {
+  statusCode: 200,
+  body: "<html><body>Default IPM response</body></html>",
+};
+
 export const port = 3007;
 
-const dirname = path.dirname(url.fileURLToPath(import.meta.url));
-const indexFilePath = path.join(dirname, "index.html");
-
 const server = createServer((req, res) => {
-  createReadStream(indexFilePath).pipe(res);
   let data = "";
 
   req.on("data", (chunk) => {
     data += chunk;
   });
 
-  req.on("end", () => {
+  req.on("end", async () => {
     try {
-      const { device } = JSON.parse(data);
+      if (req.url === "/setIPMResponse" && req.method === "POST") {
+        ipmResponseData = await getResponseDataForCommand(data);
 
-      const responseData = getResponseData(device.device_id, singleObjectMode);
-
-      res.setHeader("Content-Type", "application/json");
-      res.statusCode = responseData.statusCode;
-      res.end(responseData.body);
+        res.setHeader("Content-Type", "application/json");
+        res.statusCode = 200;
+        res.end(JSON.stringify({ message: "IPM response set successfully!" }));
+      } else if (req.url === "/ipm") {
+        res.setHeader("Content-Type", "application/json");
+        res.statusCode = ipmResponseData.statusCode;
+        res.end(ipmResponseData.body);
+      } else {
+        // Handle other requests (e.g., serving index.html)
+        if (req.url === "/") {
+          try {
+            const responseData = getResponseData(singleObjectMode);
+            res.setHeader("Content-Type", "application/json");
+            res.statusCode = responseData.statusCode;
+            res.end(responseData.body);
+          } catch (error) {
+            console.log("error", error);
+          }
+        } else {
+          res.statusCode = 404;
+          res.end("Not Found");
+        }
+      }
     } catch (error) {
-      // Unexpected end of JSON input
-      console.log("error", error);
+      console.error("Error processing request:", error);
+      res.setHeader("Content-Type", "application/json");
+      res.statusCode = 400;
+      res.end(JSON.stringify({ error: "Invalid JSON or request processing error" }));
     }
   });
 });

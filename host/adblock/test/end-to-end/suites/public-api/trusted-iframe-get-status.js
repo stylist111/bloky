@@ -72,6 +72,7 @@ async function setExtensionState({ premium, aa, allowlist }) {
     await clickFilterlist(name, checkboxSelector, aa);
     const regexp = isEnabled ? /Unsubscribed/ : /updated|Subscribed/;
     await checkSubscriptionsState([{ name, enabled: aa, checkboxSelector }], {
+      timeout: 10000,
       regexp,
     });
   }

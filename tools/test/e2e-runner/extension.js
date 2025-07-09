@@ -158,7 +158,7 @@ export async function sendExtMessage(initOptionsFn, message) {
  * @param {string} name - The setting key name
  * @param {boolean} isEnabled - The settings value
  */
-async function updateSettings(initOptionsFn, name, isEnabled) {
+export async function updateSettings(initOptionsFn, name, isEnabled) {
   return sendExtMessage(initOptionsFn, {
     command: "setSetting",
     name,
@@ -514,7 +514,16 @@ export async function setIPMServer(initOptionsFn) {
   return sendExtMessage(initOptionsFn, {
     type: "prefs.set",
     key: "ipm_server_url",
-    value: "http://localhost:3007",
+    value: "http://localhost:3007/ipm",
+  });
+}
+
+export async function setIPMServerResponse(response) {
+  await fetch(`http://localhost:3007/setIPMResponse`, {
+    method: "POST",
+    cache: "no-cache",
+    headers: { "Content-Type": "application/json" },
+    body: response,
   });
 }
 
@@ -522,7 +531,7 @@ export async function setIPMCooldowns(initOptionsFn) {
   await sendExtMessage(initOptionsFn, {
     type: "prefs.set",
     key: "new_tab_cool_down",
-    value: 2000,
+    value: 500,
   });
 
   return sendExtMessage(initOptionsFn, {
