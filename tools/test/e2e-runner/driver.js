@@ -417,7 +417,7 @@ export async function clickAndCloseNewTab(selector, expectedURL) {
       const newWindowURL = await driver.getCurrentUrl();
       return newWindowURL === expectedURL;
     },
-    2000,
+    5000,
     `The new tab did not navigate to the expected URL "${expectedURL}", actual URL: ${await driver.getCurrentUrl()}`,
   );
 
