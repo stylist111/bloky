@@ -157,7 +157,7 @@ export default () => {
     await wait(
       async () => {
         try {
-          await getDisplayedElement(visibleSelector);
+          await getDisplayedElement(visibleSelector, { timeout: 3000, forceRefresh: true });
           await waitForNotDisplayed(hiddenSelector, { forceRefresh: true });
           return true;
         } catch (e) {}
