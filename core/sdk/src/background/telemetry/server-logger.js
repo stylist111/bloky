@@ -34,7 +34,7 @@ let consoleLogLevel = new PersistentState(
 );
 
 let serverLogLevel = {
-  globalLevel: logLevelNamesToNumbers.behavior
+  globalLevel: logLevelNamesToNumbers.info
 };
 
 let pendingServerLogState = new PersistentState(
