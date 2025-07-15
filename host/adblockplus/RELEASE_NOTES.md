@@ -1,5 +1,9 @@
 # Unreleased
 
+# 4.23.2 - 2025-07-15
+
+This release contains filter updates and under-the-hood changes.
+
 # 4.23.1 - 2025-07-01
 
 This release contains bugfixes and under-the-hood changes.
