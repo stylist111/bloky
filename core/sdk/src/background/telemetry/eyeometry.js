@@ -18,6 +18,7 @@
 import browser from "webextension-polyfill";
 
 import {default as experiments} from "../experiments.js";
+import {default as cohorts} from "../cohorts/index.js";
 import {premiumStatusCallback} from "../callbacks.js";
 import * as info from "../info.js";
 import {hasAcceptableAdsEnabled} from "../subscriptions.js";
@@ -63,7 +64,10 @@ export async function getExtensionMetadata() {
     aa_active: await hasAcceptableAdsEnabled(),
 
     // The currently assigned split experiments
-    experiments: await getExperimentsAssignments()
+    experiments: await getExperimentsAssignments(),
+
+    // The currently assigned user cohorts
+    cohorts: await cohorts.getAll()
   };
 
   if (premiumStatusCallback) {

@@ -25,6 +25,7 @@ import {Scheduler} from "../all/scheduler.js";
 import {hasAcceptableAdsEnabled} from "./subscriptions.js";
 import {trace, error, debug, warn} from "./debugging.js";
 import {default as experiments} from "./experiments.js";
+import {default as cohorts} from "./cohorts/index.js";
 import {postWithBearerToken} from "./telemetry/eyeometry.js";
 import {default as cdpMod, getDomainStats, clearData} from "./cdp.js";
 import {premiumStatusCallback} from "./callbacks.js";
@@ -116,7 +117,8 @@ async function buildPayload(publicKey, keyId, domainStats, utid) {
     encryption_scheme: `rsa:2048:aes:${AES_LENGTH}`,
     // schema #4
     aa_active: await hasAcceptableAdsEnabled(),
-    experiments: await getExperimentsAssignments()
+    experiments: await getExperimentsAssignments(),
+    cohorts: await cohorts.getAll()
   };
 
   if (premiumStatusCallback) {

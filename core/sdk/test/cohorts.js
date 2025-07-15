@@ -19,63 +19,9 @@ import expect from "expect";
 import sinon from "sinon/pkg/sinon.js";
 import {clearTestEvents, EWE, expectTestEvents} from "./messaging.js";
 import {ISO_DATE_REGEX, waitForAssertion} from "./utils.js";
+import {defaultFacts, cohortsConfig, cohort1Config, cohort2Config} from "./fixtures/cohorts.js";
 
 const countryCode = "US";
-const defaultFacts = {
-  hasPremium: false,
-  installDate: new Date("2023-01-01T00:00:00Z").getTime(),
-  blockedCount: 12345
-};
-
-const cohort1Config = {
-  name: "MAU Top 20 countries, free users, with install date older than 9 days",
-  conditions: {
-    all: [
-      {
-        fact: "countryCode",
-        operator: "in",
-        value: ["US", "DE", "RO"]
-      },
-      {
-        fact: "installDate",
-        operator: "olderThan",
-        value: 777600000
-      },
-      {
-        fact: "hasPremium",
-        operator: "equal",
-        value: false
-      }
-    ]
-  },
-  event: {
-    type: "top20_free_9d"
-  }
-};
-
-const cohort2Config = {
-  name: "Tier 1 country users",
-  conditions: {
-    all: [
-      {
-        fact: "countryCode",
-        operator: "in",
-        value: [
-          "US", "FR", "CA", "GB", "MX", "ES", "DE", "IT", "AU", "TW",
-          "JP", "NL", "BE", "SE", "IL", "DK", "CH", "AT", "IE", "NO"
-        ]
-      }
-    ]
-  },
-  event: {
-    type: "tier1"
-  }
-};
-
-const config = [
-  cohort1Config,
-  cohort2Config
-];
 
 describe("Cohorts", function() {
   beforeEach(async function() {
@@ -99,7 +45,7 @@ describe("Cohorts", function() {
   });
 
   it("returns the cohorts assigned", async function() {
-    await EWE.cohorts.sync(config, countryCode);
+    await EWE.cohorts.sync(cohortsConfig, countryCode);
 
     const cohorts = await EWE.cohorts.getAll();
     expect(cohorts).toHaveLength(2);
@@ -110,17 +56,17 @@ describe("Cohorts", function() {
   });
 
   it("returns the cohorts as a base64-encoded bitmap", async function() {
-    await EWE.cohorts.sync(config, countryCode);
+    await EWE.cohorts.sync(cohortsConfig, countryCode);
     let encoded = await EWE.cohorts.getEncodedCohorts();
     expect(encoded).toEqual("Aw==");
 
     await EWE.testing.resetCohortsData();
-    await EWE.cohorts.sync(config, "FR");
+    await EWE.cohorts.sync(cohortsConfig, "FR");
     encoded = await EWE.cohorts.getEncodedCohorts();
     expect(encoded).toEqual("Ag==");
 
     await EWE.testing.resetCohortsData();
-    await EWE.cohorts.sync(config, "RO");
+    await EWE.cohorts.sync(cohortsConfig, "RO");
     encoded = await EWE.cohorts.getEncodedCohorts();
     expect(encoded).toEqual("AQ==");
 
@@ -131,7 +77,7 @@ describe("Cohorts", function() {
   });
 
   it("updates cohorts when facts change", async function() {
-    await EWE.cohorts.sync(config, countryCode);
+    await EWE.cohorts.sync(cohortsConfig, countryCode);
 
     const cohorts = await EWE.cohorts.getAll();
     expect(cohorts).toHaveLength(2);
@@ -144,7 +90,7 @@ describe("Cohorts", function() {
       ...defaultFacts,
       hasPremium: true // Change premium status to not match cohort1
     });
-    await EWE.cohorts.sync(config, countryCode);
+    await EWE.cohorts.sync(cohortsConfig, countryCode);
 
     const updatedCohorts = await EWE.cohorts.getAll();
     expect(updatedCohorts).toEqual([
@@ -153,14 +99,14 @@ describe("Cohorts", function() {
   });
 
   it("assigns the right cohorts based on facts", async function() {
-    await EWE.cohorts.sync(config, "FR");
+    await EWE.cohorts.sync(cohortsConfig, "FR");
 
     const cohorts = await EWE.cohorts.getAll();
     expect(cohorts).toEqual([cohort2Config.event.type]);
   });
 
   it("clears old cohorts when new config is empty", async function() {
-    await EWE.cohorts.sync(config, countryCode);
+    await EWE.cohorts.sync(cohortsConfig, countryCode);
     expect(await EWE.cohorts.getAll()).toHaveLength(2);
 
     await EWE.cohorts.sync([], countryCode);
@@ -218,7 +164,7 @@ describe("Cohorts", function() {
   });
 
   it("returns false for includes if not in cohort", async function() {
-    await EWE.cohorts.sync(config, countryCode);
+    await EWE.cohorts.sync(cohortsConfig, countryCode);
     expect(await EWE.cohorts.includes("non_existent_cohort")).toBe(false);
   });
 
@@ -273,7 +219,7 @@ describe("Cohorts", function() {
 
     it("sends an event if first time or more than 12h have passed", async function() {
       // Sync cohorts to trigger the first facts snapshot
-      await EWE.cohorts.sync(config, countryCode);
+      await EWE.cohorts.sync(cohortsConfig, countryCode);
 
       // Expect the facts snapshot to be logged
       await expectConsoleLogs([
@@ -283,7 +229,7 @@ describe("Cohorts", function() {
 
     it("does not send the event if too early", async function() {
       // Sync cohorts to trigger the first facts snapshot
-      await EWE.cohorts.sync(config, countryCode);
+      await EWE.cohorts.sync(cohortsConfig, countryCode);
 
       // Expect the facts snapshot to be logged
       await expectConsoleLogs([
@@ -292,7 +238,7 @@ describe("Cohorts", function() {
 
       // Reset the console logs and sync again
       await EWE.testing._clearDebugLog();
-      await EWE.cohorts.sync(config, countryCode);
+      await EWE.cohorts.sync(cohortsConfig, countryCode);
       await EWE.testing._printDebugLog();
 
       // Expect no new facts snapshot to be logged
@@ -319,7 +265,7 @@ describe("Cohorts", function() {
       expect(await EWE.cohorts.getAll()).toEqual([]);
 
       // Sync with country code set to FR to trigger ONLY cohort2
-      await EWE.cohorts.sync(config, "FR");
+      await EWE.cohorts.sync(cohortsConfig, "FR");
       await expectTestEvents("cohorts.updated", [[[cohort2Config.event.type]]]);
     });
   });

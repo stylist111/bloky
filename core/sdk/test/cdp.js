@@ -30,6 +30,7 @@ import {setPremiumStatus, resetPremiumStatus} from "./messaging.js";
 import {base64ToArrayBuffer} from "adblockpluscore/lib/rsa.js";
 import {limitPromiseDuration} from "./polling.js";
 import {subAcceptableAdsLive} from "./fixtures/subscriptions.js";
+import {cohortsConfig, defaultFacts} from "./fixtures/cohorts.js";
 
 const SITE_ID = "siteId";
 
@@ -830,6 +831,57 @@ describe("CDP", function() {
           experiment_id: "b",
           variant_id: "bb"
         }
+      ]);
+
+      await clearEndpointResponse(EXPERIMENT_URL);
+    });
+
+    it("sends cohorts property", async function() {
+      const EXPERIMENT_URL = `${TEST_ADMIN_PAGES_URL}/experiments.json`;
+      const PING_INTERVAL_MS = MILLIS_IN_SECOND;
+      const ERROR_BACKOFF_MS = 2 * MILLIS_IN_SECOND;
+
+      await EWE.testing.restartRemoteConfig(
+        EXPERIMENT_URL, PING_INTERVAL_MS, ERROR_BACKOFF_MS
+      );
+      await startMetricsUploaderWithTestArgs();
+
+      await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
+
+      let payload;
+
+      async function assertCohorts(cohorts) {
+        await waitForAssertion(async() => {
+          let requestLogs = await getRequestLogs(CDP_PHASE_3_ARGS.pingUrl);
+          expect(requestLogs).toHaveLength(1);
+          payload = requestLogs[0].body.payload;
+        });
+
+        expect(payload.cohorts).toHaveLength(cohorts.length);
+        expect(payload.cohorts).toEqual(expect.arrayContaining(cohorts));
+      }
+
+      await assertCohorts([]);
+      await clearRequestLogs();
+
+      const countryCode = "US";
+      await EWE.testing.stopCdpMetricsUploader();
+      await setEndpointResponse(EXPERIMENT_URL, {
+        schemaId: "1",
+        experiments: [],
+        cohorts: cohortsConfig
+      }, "GET", 200, {"X-Country-Code": countryCode});
+      await EWE.testing.mockFacts(defaultFacts);
+      await EWE.testing.resetCohortsData();
+      await EWE.remoteConfig.sync();
+      await startMetricsUploaderWithTestArgs();
+
+      await new Page("http://localhost:3000/image.html").loaded;
+      await EWE.testing._uploadCdp();
+
+      await assertCohorts([
+        cohortsConfig[0].event.type,
+        cohortsConfig[1].event.type
       ]);
 
       await clearEndpointResponse(EXPERIMENT_URL);

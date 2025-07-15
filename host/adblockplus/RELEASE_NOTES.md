@@ -1,5 +1,7 @@
 # Unreleased
 
+- Added cohorts to telemetry and CDP. (EXT-980)
+
 # 4.23.2 - 2025-07-15
 
 This release contains filter updates and under-the-hood changes.

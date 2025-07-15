@@ -25,6 +25,7 @@ import {clearRequestLogs, getRequestLogs, setMinTimeout, setEndpointResponse,
         clearEndpointResponse, waitForAssertion,
         waitForSubscriptionToBeSynchronized} from "./utils.js";
 import {subTestCustom1} from "./fixtures/subscriptions.js";
+import {cohortsConfig, defaultFacts} from "./fixtures/cohorts.js";
 import {wait} from "./polling.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 
@@ -133,6 +134,7 @@ describe("Telemetry - Active Ping", function() {
         expect(payload.aa_active).toEqual(false);
         expect(payload).not.toHaveProperty("premium_status");
         expect(payload.experiments).toEqual([]);
+        expect(payload.cohorts).toEqual([]);
       });
     });
 
@@ -405,6 +407,46 @@ describe("Telemetry - Active Ping", function() {
 
       await clearEndpointResponse(EXPERIMENT_URL);
       await EWE.remoteConfig.sync();
+    });
+
+    it("sends cohorts to the telemetry server", async function() {
+      const EXPERIMENT_URL = `${TEST_ADMIN_PAGES_URL}/experiments.json`;
+      const countryCode = "US";
+
+      await setEndpointResponse(EXPERIMENT_URL, {
+        schemaId: "1",
+        experiments: [],
+        cohorts: cohortsConfig
+      }, "GET", 200, {"X-Country-Code": countryCode});
+      await EWE.testing.restartRemoteConfig(
+        EXPERIMENT_URL,
+        MILLIS_IN_SECOND,
+        2 * MILLIS_IN_SECOND
+      );
+      await EWE.testing.mockFacts(defaultFacts);
+      await EWE.testing.resetCohortsData();
+      await EWE.remoteConfig.sync();
+      await EWE.testing.startTelemetry(TELEMETRY_ARGS);
+
+      await waitForAssertion(async() => {
+        let telemetryRequests = await getRequestLogs(TELEMETRY_URL);
+
+        expect(telemetryRequests).toEqual([expect.objectContaining({
+          url: "/telemetry",
+          method: "POST",
+          authorization: `Bearer ${TELEMETRY_BEARER}`
+        })]);
+
+        const payload = telemetryRequests[0].body.payload;
+        expect(payload.cohorts).toHaveLength(2);
+        expect(payload.cohorts).toEqual(expect.arrayContaining([
+          cohortsConfig[0].event.type,
+          cohortsConfig[1].event.type
+        ]));
+      });
+
+      await clearEndpointResponse(EXPERIMENT_URL);
+      await EWE.testing.resetCohortsData();
     });
 
     describe("Telemetry restart", function() {
