@@ -1,5 +1,9 @@
 # Unreleased
 
+# 6.24.1 - 2025-07-15
+
+This release contains filter updates and under-the-hood changes.
+
 # 6.24.0 - 2025-07-08
 
 - Add website-specific 'cookie consent' CTA. (GROW-56)
