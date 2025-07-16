@@ -88,4 +88,3 @@ fragments-tests:MV3:chromium:beta:
     MANIFEST_VERSION: 3
     BROWSER: chromium
     BROWSER_VERSION: beta
-    
