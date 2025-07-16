@@ -16,24 +16,11 @@ include: "/.gitlab/ci-common.yml"
     - !reference [.needs-parent-build, needs]
 
 stages:
-  - build
   - fragments-tests
-
-build:
-  stage: build
-  image: node:22.14.0
-  script:
-    - npm ci
-    - npm run build
-  artifacts:
-    paths:
-      - fragment/test/test-extension/dist/
-    expire_in: 1 week
 
 .fragments-tests:
   stage: fragments-tests
   extends: .docker
-  needs: [build]
   script:
     - echo "EYEOMETRY_BEARER=\"$ADBLOCK_EYEOMETRY_BEARER\"" >> fragment/.env
     - docker build -t fragments-tests -f fragment/test/Dockerfile .
