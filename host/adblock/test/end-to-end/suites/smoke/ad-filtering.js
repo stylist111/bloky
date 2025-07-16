@@ -25,8 +25,13 @@ import {
   waitForNotDisplayed,
   wait,
 } from "@eyeo/test-utils/driver";
-import { blockHideUrl, aaTestPageUrl, snippetTestPageUrl } from "@eyeo/test-utils/urls";
-import { allowlistingFilter, snippetFilter } from "@eyeo/test-utils/filters";
+import {
+  blockHideUrl,
+  aaTestPageUrl,
+  customFiltersTestPageUrl,
+  snippetTestPageUrl,
+} from "@eyeo/test-utils/urls";
+import { allowlistingFilter, customFilters } from "@eyeo/test-utils/filters";
 import {
   addFiltersProgrammatically,
   getOptionsHandle,
@@ -97,23 +102,40 @@ export default () => {
 
   it("uses snippets to block ads", async function () {
     await openNewTab(snippetTestPageUrl);
-    const snippetElem = await getDisplayedElement("#snippet-filter");
-    expect(await snippetElem.getText()).toEqual("Snippet filter not applied");
+    await waitForNotDisplayed("#snippet-filter", { timeout: 2000 });
+    await getDisplayedElement("#control-element");
+  });
 
+  it("uses custom filters to block ads", async function () {
+    await openNewTab(customFiltersTestPageUrl);
+    const customIdELem = await getDisplayedElement("#test-element-id-custom");
+    const customClassElem = await getDisplayedElement(".test-element-class-custom");
+    const customScriptPathElem = await getDisplayedElement("#script-id-custom-full-path");
+    const customScriptRegexElem = await getDisplayedElement("#script-id-custom-regex");
+    expect(await customIdELem.getText()).toEqual("Custom id hiding filter not applied");
+    expect(await customClassElem.getText()).toEqual("Custom css hiding filter not applied");
+    expect(await customScriptPathElem.getText()).toEqual("Custom blocking filter not applied");
+    expect(await customScriptRegexElem.getText()).toEqual(
+      "Custom regex blocking filter not applied",
+    );
+
+    const splitCustomFilters = customFilters.join("\n");
     // Due to a textarea bug, filters on chrome beta should be added programatically
     // Should be removed once we start using the new chrome beta version: https://issues.chromium.org/issues/422003155
     if (
       browserDetails.browserName === "chromium" &&
       browserDetails.fullBrowserVersion === "138.0.7204.0"
     ) {
-      await addFiltersProgrammatically(initOptionsFiltersTab, snippetFilter);
+      await addFiltersProgrammatically(initOptionsFiltersTab, splitCustomFilters);
     } else {
-      await setCustomFilters([snippetFilter]);
+      await setCustomFilters([splitCustomFilters]);
     }
-
-    await openNewTab(snippetTestPageUrl);
+    await openNewTab(customFiltersTestPageUrl);
     await driver.navigate().refresh();
-    await waitForNotDisplayed("#snippet-filter", { timeout: 2000 });
+    await waitForNotDisplayed("#test-element-id-custom", { timeout: 3000 });
+    await waitForNotDisplayed(".test-element-class-custom", { timeout: 3000 });
+    await waitForNotDisplayed("#script-id-custom-full-path", { timeout: 3000 });
+    await waitForNotDisplayed("#script-id-custom-regex", { timeout: 3000 });
     await getDisplayedElement("#control-element");
   });
 

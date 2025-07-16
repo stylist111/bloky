@@ -27,9 +27,10 @@ import {
 import {
   aaTestPageUrl,
   blockHideUrl,
+  customFiltersTestPageUrl,
   snippetTestPageUrl
 } from "@eyeo/test-utils/urls";
-import { snippetFilter, allowlistedDomain } from "@eyeo/test-utils/filters";
+import { customFilters, allowlistedDomain } from "@eyeo/test-utils/filters";
 import {
   initOptionsGeneralTab,
   checkBlockHidePage,
@@ -99,13 +100,42 @@ export default () => {
 
   it("uses snippets to block ads", async function () {
     await openNewTab(snippetTestPageUrl);
-    const snippetElem = await getDisplayedElement("#snippet-filter");
-    expect(await snippetElem.getText()).toEqual("Snippet filter not applied");
-
-    await addCustomFilters([snippetFilter], { switchToAdvancedTab: true });
-    await openNewTab(snippetTestPageUrl);
-    await driver.navigate().refresh();
     await waitForNotDisplayed("#snippet-filter", { timeout: 2000 });
+    await getDisplayedElement("#control-element");
+  });
+
+  it("uses custom filters to block ads", async function () {
+    await openNewTab(customFiltersTestPageUrl);
+    const customIdELem = await getDisplayedElement("#test-element-id-custom");
+    const customClassElem = await getDisplayedElement(
+      ".test-element-class-custom"
+    );
+    const customScriptPathElem = await getDisplayedElement(
+      "#script-id-custom-full-path"
+    );
+    const customScriptRegexElem = await getDisplayedElement(
+      "#script-id-custom-regex"
+    );
+    expect(await customIdELem.getText()).toEqual(
+      "Custom id hiding filter not applied"
+    );
+    expect(await customClassElem.getText()).toEqual(
+      "Custom css hiding filter not applied"
+    );
+    expect(await customScriptPathElem.getText()).toEqual(
+      "Custom blocking filter not applied"
+    );
+    expect(await customScriptRegexElem.getText()).toEqual(
+      "Custom regex blocking filter not applied"
+    );
+
+    await addCustomFilters(customFilters, { switchToAdvancedTab: true });
+    await openNewTab(customFiltersTestPageUrl);
+    await driver.navigate().refresh();
+    await waitForNotDisplayed("#test-element-id-custom", { timeout: 3000 });
+    await waitForNotDisplayed(".test-element-class-custom", { timeout: 3000 });
+    await waitForNotDisplayed("#script-id-custom-full-path", { timeout: 3000 });
+    await waitForNotDisplayed("#script-id-custom-regex", { timeout: 3000 });
     await getDisplayedElement("#control-element");
   });
 

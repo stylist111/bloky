@@ -23,4 +23,5 @@ export const blockHideLocalhostUrl = `http://localhost:${testPagesPort}/easylist
 export const aaTestPageUrl = `http://testpages.eyeo.com:${testPagesPort}/aa-filters.html`;
 export const dcTestPageUrl = `http://testpages.eyeo.com:${testPagesPort}/dc-filters.html`;
 export const snippetTestPageUrl = `http://testpages.eyeo.com:${testPagesPort}/snippet-filters.html`;
+export const customFiltersTestPageUrl = `http://testpages.eyeo.com:${testPagesPort}/custom-filters.html`;
 export const localTestPageUrl = `http://localhost:${testPagesPort}/test.html`;

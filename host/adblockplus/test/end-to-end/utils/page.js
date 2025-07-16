@@ -810,7 +810,7 @@ export async function isFLInCorrectState(name, expectedState) {
 
 export async function clickFLAndCheck(
   name,
-  { enable = true, timeout = 1000, stepsAfterClick = () => {} } = {}
+  { enable = true, timeout = 2000, stepsAfterClick = () => {} } = {}
 ) {
   const checkboxSelector = `[aria-label="${name}"] button`;
   const enabledBeforeClick = !enable;

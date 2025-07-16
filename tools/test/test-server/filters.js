@@ -20,8 +20,13 @@
 // in live versions of EasyLyst, Acceptable Ads and Cincumvention filterlists.
 
 export const allowlistingFilter = "@@||testpages.eyeo.com^$document";
-export const snippetFilter = "testpages.eyeo.com#$#hide-if-contains 'filter not applied' p[id]";
 export const allowlistedDomain = "testpages.eyeo.com";
 export const easylistFilter = "testpages.eyeo.com*js/test-script.js";
 export const customBlockingFilter = "localhost*js/test-script.js";
 export const dcFilters = ["#script-id-dc", "#element-id-dc"];
+export const customFilters = [
+  "testpages.eyeo.com*js/test-script-custom-regex",
+  "testpages.eyeo.com*js/test-script-custom.js",
+  "testpages.eyeo.com###test-element-id-custom",
+  "testpages.eyeo.com##.test-element-class-custom",
+];
