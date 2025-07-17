@@ -457,10 +457,10 @@ export async function enablePremiumProgrammatically() {
         type: "premium.activate",
         userId: "valid_user_id"
       });
+      callback();
     } catch (err) {
       callback(err);
     }
-    callback();
   });
 
   if (error) throw new Error(error);
