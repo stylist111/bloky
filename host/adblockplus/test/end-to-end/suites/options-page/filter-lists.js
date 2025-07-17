@@ -95,7 +95,7 @@ export default () => {
     // one minute after installing. When running tests in the CI, more than a minute should
     // already pass before we get to this test, but when running it locally in isolation,
     // it will need more than a minute to run
-    const longTimeout = 65000;
+    const longTimeout = 70000;
     this.timeout(longTimeout + 10000);
 
     const defaultFilterLists = getDefaultFilterLists(extension.manifestVersion);
