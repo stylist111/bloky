@@ -17,8 +17,8 @@
 
 import * as browser from "webextension-polyfill";
 
-import { getStoredCommandIds } from "./command-library";
 import { CommandName, CommandVersion } from "./command-library.types";
+import * as commandStorage from "./command-storage";
 import {
   type BaseAttributes,
   DataType,
@@ -181,7 +181,7 @@ export function getSupportedCommandsData(): IpmCapability[] {
  */
 function getIpmData(): IpmData {
   return {
-    active: getStoredCommandIds().map((id) => ({ id })),
+    active: commandStorage.getIds().map((id) => ({ id })),
     capabilities: [
       {
         name: "multi_ipm_response",

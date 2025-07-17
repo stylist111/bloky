@@ -21,25 +21,84 @@
 
 import * as info from "info";
 
-import { port } from "../../../adblockplusui/adblockpluschrome/lib/messaging/port";
 import { Prefs } from "~/alias/prefs";
 import { getUserId } from "~/id/background";
 import { License } from "~/picreplacement/check";
 import * as utils from "~/utilities/background";
+import { port } from "../../../adblockplusui/adblockpluschrome/lib/messaging/port";
 import { getBlockCount } from "./block-count";
-import { type StartInfo } from "./fragment-provider.types";
+import { type FutureFragment, type LegacyFragment } from "./fragment-provider.types";
 
 /**
- * The information the IPM fragments needs to start up.
+ * The information the future IPM fragment needs to start up.
  */
-export const startInfo: StartInfo = {
-  addMessageListener(name, listener) {
-    port.on(name, listener);
-  },
-  getBlockCount,
-  async isOptedOut() {
-    await Prefs.untilLoaded;
-    return Prefs.get("data_collection_opt_out") === true;
+export async function getFutureStartInfo(): Promise<FutureFragment.StartInfo> {
+  await Prefs.untilLoaded;
+
+  return {
+    prefs: Prefs,
+    logger: utils,
+    licensing: {
+      async isLicenseValid() {
+        await License.ready();
+        return License.isActiveLicense();
+      },
+    },
+    info: {
+      async getId() {
+        return await getUserId();
+      },
+      getAppName() {
+        return info.baseName;
+      },
+      getAppVersion() {
+        return info.addonVersion;
+      },
+      getBrowserName() {
+        return info.application;
+      },
+      getBrowserVersion() {
+        return info.applicationVersion;
+      },
+    },
+    addMessageListener(name, listener) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      port.on(name, listener);
+    },
+    removeMessageListener(name, listener) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      port.off(name, listener);
+    },
+    getBlockCount,
+    async isOptedOut() {
+      return Prefs.get("data_collection_opt_out") === true;
+    },
+    getDefaultOrigin() {
+      return Prefs.get("ipm:default_origin");
+    },
+    getSafeOrigins() {
+      return Prefs.get("ipm:safe_origins");
+    },
+    fetchCommands() {
+      return Prefs.get("ipm:stored_commands");
+    },
+    async persistCommands(commands) {
+      return await Prefs.set("ipm:stored_commands", commands);
+    },
+  };
+}
+
+/**
+ * The information the legacy IPM fragments needs to start up.
+ */
+export const legacyStartInfo: LegacyFragment.StartInfo = {
+  prefs: Prefs,
+  logger: utils,
+  licensing: {
+    async isLicenseValid() {
+      await License.ready();
+      return License.isActiveLicense();
+    },
   },
   info: {
     async getId() {
@@ -58,14 +117,14 @@ export const startInfo: StartInfo = {
       return info.applicationVersion;
     },
   },
-  licensing: {
-    async isLicenseValid() {
-      await License.ready();
-      return License.isActiveLicense();
-    },
+  getBlockCount,
+  async isOptedOut() {
+    await Prefs.untilLoaded;
+    return Prefs.get("data_collection_opt_out") === true;
   },
-  logger: utils,
-  prefs: Prefs,
+  addMessageListener(name, listener) {
+    port.on(name, listener);
+  },
   removeMessageListener(name, listener) {
     port.off(name, listener);
   },

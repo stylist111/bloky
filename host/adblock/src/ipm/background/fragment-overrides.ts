@@ -1,25 +1,23 @@
 /*
- * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-present eyeo GmbH
+ * This file is part of AdBlock  <https://getadblock.com/>,
+ * Copyright (C) 2013-present  Adblock, Inc.
  *
- * Adblock Plus is free software: you can redistribute it and/or modify
+ * AdBlock is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
  *
- * Adblock Plus is distributed in the hope that it will be useful,
+ * AdBlock is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
+ * along with AdBlock.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { type CommandActor, type CommandName } from "@eyeo-fragments/ipm-legacy/background";
-import * as LegacyFragment from "@eyeo-fragments/ipm-legacy/background";
 import * as FutureFragment from "@eyeo-fragments/in-product-messaging/background";
-
-import { type Fragment } from "./fragment-provider.types";
+import * as LegacyFragment from "@eyeo-fragments/ipm-legacy/background";
+import { type CommandActor, type CommandName } from "@eyeo-fragments/ipm-legacy/background";
 
 /**
  * Sets actor for handling command with given name
@@ -39,7 +37,18 @@ function setCommandActor(commandName: CommandName, actor: CommandActor): void {
  *
  * @returns fragment overrides
  */
-export function getFragmentOverrides(): Partial<Fragment> {
+export function getFutureFragmentOverrides(): Partial<typeof FutureFragment> {
+  return {
+    setCommandActor,
+  };
+}
+
+/**
+ * Retrieves fragment API overrides for divergent functionality between them
+ *
+ * @returns fragment overrides
+ */
+export function getLegacyFragmentOverrides(): Partial<typeof LegacyFragment> {
   return {
     setCommandActor,
   };

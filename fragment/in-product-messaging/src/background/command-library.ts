@@ -16,19 +16,20 @@
  */
 
 import browser from "webextension-polyfill";
-import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
 import {
   type Behavior,
   type Command,
   type CommandActor,
   CommandEventType,
+  type CommandMap,
   CommandName,
   CommandVersion,
   type Content,
   DeleteEventType,
   maximumProcessableCommands,
 } from "./command-library.types";
+import * as commandStorage from "./command-storage";
 import { getStartInfo, setStartInfo } from "./start-info";
 import { type StartInfo } from "./start-info.types";
 import { isDeleteBehavior, setDeleteCommandHandler } from "./delete-commands";
@@ -41,11 +42,6 @@ import { start as startTelemetry, stop as stopTelemetry } from "./telemetry";
  * A list of known commands.
  */
 const knownCommandsList = Object.values(CommandName);
-
-/**
- * The key for the command storage.
- */
-export const commandStorageKey = "ipm_commands";
 
 /**
  * Map of known command actors
@@ -83,9 +79,7 @@ function isCommand(candidate: unknown): candidate is Command {
  *
  * @returns whether candidate is a map of commands
  */
-export function isCommandMap(
-  candidate: unknown,
-): candidate is Record<string, Command> {
+export function isCommandMap(candidate: unknown): candidate is CommandMap {
   return (
     typeof candidate === "object" &&
     candidate !== null &&
@@ -114,18 +108,7 @@ export function setCommandActor(
  * @param ipmId - IPM ID
  */
 export function dismissCommand(ipmId: string): void {
-  const { prefs } = getStartInfo();
-  const command = getCommand(ipmId);
-  if (!command) {
-    return;
-  }
-
-  const commandStorage = prefs.get(commandStorageKey);
-  // We can't use a Map or Set for `commandStorage`, so we need dynamic
-  // deletion here.
-  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-  delete commandStorage[command.ipm_id];
-  void prefs.set(commandStorageKey, commandStorage);
+  void commandStorage.remove(ipmId);
 }
 
 /**
@@ -157,25 +140,7 @@ export function getBehavior(ipmId: string): Behavior | null {
  * @returns command
  */
 export function getCommand(ipmId: string): Command | null {
-  const { prefs } = getStartInfo();
-  const commandStorage = prefs.get(commandStorageKey);
-  return commandStorage[ipmId] || null;
-}
-
-/**
- * Retrieves a list of stored IPM command IDs
- *
- * @returns An array with command IDs or empty array if there's no commands
- */
-export function getStoredCommandIds(): string[] {
-  const { prefs } = getStartInfo();
-  const commandStorage = prefs.get(commandStorageKey);
-
-  if (!isCommandMap(commandStorage)) {
-    return [];
-  }
-
-  return Object.keys(commandStorage);
+  return commandStorage.get(ipmId);
 }
 
 /**
@@ -234,31 +199,6 @@ function retryExecuteCommands(commandName: CommandName): void {
 
     unexecutableCommands.delete(command);
     void executeIPMCommands([command], isInitialization);
-  }
-}
-
-/**
- * Stores the commands data to persistent storage.
- *
- * @param commands A list of commands from the IPM server
- */
-function storeCommands(commands: Command[]): void {
-  const { prefs, logger } = getStartInfo();
-  let commandStorageModified = false;
-  const storage = prefs.get(commandStorageKey);
-
-  for (const command of commands) {
-    if (typeof storage[command.ipm_id] !== "undefined") {
-      logger.debug("[ipm]: Campaign already stored:", command.ipm_id);
-      continue;
-    }
-
-    storage[command.ipm_id] = command;
-    commandStorageModified = true;
-  }
-
-  if (commandStorageModified) {
-    void prefs.set(commandStorageKey, storage);
   }
 }
 
@@ -362,7 +302,7 @@ export async function executeIPMCommands(
 
   // store the valid commands, if just received from the server
   if (!isInitialization && executableCommands.length > 0) {
-    storeCommands(executableCommands);
+    void commandStorage.add(executableCommands);
   }
 
   const commandHandlingPromises = Array.from(actorByExecutableCommand).map(
@@ -455,23 +395,6 @@ async function handleDeleteCommand(ipmId: string): Promise<void> {
 }
 
 /**
- * TODO: Remove this after new IPM initialization is enabled and reaches the
- * majority of users. See: https://eyeo.atlassian.net/browse/IM-238
- * Reset IPM commands, as part of IM-175, since there might be multiple
- * commands stored that should not execute anymore
- */
-async function resetIPMCommands(): Promise<void> {
-  const { prefs } = getStartInfo();
-  await prefs.untilLoaded;
-
-  const ipmCommandsReset = prefs.get("ipm_commands_second_reset_completed");
-  if (!ipmCommandsReset) {
-    await prefs.set(commandStorageKey, {});
-    await prefs.set("ipm_commands_second_reset_completed", true);
-  }
-}
-
-/**
  * Clears active commands
  */
 export async function clearCommands(): Promise<void> {
@@ -486,23 +409,13 @@ export async function clearCommands(): Promise<void> {
 export async function start(startInfo: StartInfo): Promise<void> {
   setStartInfo(startInfo);
 
-  const { prefs } = startInfo;
-  await prefs.untilLoaded;
-
-  // TODO: Remove this after new IPM initialization is enabled and reaches the
-  // majority of users. See: https://eyeo.atlassian.net/browse/IM-238
-  await resetIPMCommands();
-  ewe.experiments.onChanged.addListener(async () => {
-    await resetIPMCommands();
-  });
-
   setDeleteCommandHandler(handleDeleteCommand);
 
   // Reinitialize commands from storage
-  const commandStorage = prefs.get(commandStorageKey);
+  const storedCommands = commandStorage.getAll();
 
-  if (isCommandMap(commandStorage)) {
-    const commands = Object.values(commandStorage);
+  if (isCommandMap(storedCommands)) {
+    const commands = Object.values(storedCommands);
     await executeIPMCommands(commands, true);
   }
 

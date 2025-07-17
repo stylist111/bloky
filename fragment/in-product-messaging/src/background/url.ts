@@ -35,9 +35,9 @@ import {
  *   safe origin URL was not possible, or if origins did not match.
  */
 export function createSafeOriginUrl(url: string): string | null {
-  const { prefs } = getStartInfo();
-  const defaultOrigin: string = prefs.get("ipm_default_origin");
-  const safeOrigins: string[] = prefs.get("ipm_safe_origins");
+  const { getDefaultOrigin, getSafeOrigins } = getStartInfo();
+  const defaultOrigin = getDefaultOrigin();
+  const safeOrigins = getSafeOrigins();
   let safeOriginUrl: URL;
 
   try {

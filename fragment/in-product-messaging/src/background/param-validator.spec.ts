@@ -121,10 +121,10 @@ describe("param-validator", () => {
     });
 
     it("returns true if the url is a an 'IPM safe' url", async () => {
-      const { prefs } = getStartInfo();
-      const prefsGetMock = jest.spyOn(prefs, "get");
-      prefsGetMock.mockReturnValue("https://adblock.org");
-      const ipmSafeOrigin = prefs.get("ipm_safe_origin");
+      const ipmSafeOrigin = "https://adblock.org";
+      const deps = getStartInfo();
+      jest.spyOn(deps, "getSafeOrigins").mockReturnValue([ipmSafeOrigin]);
+      jest.spyOn(deps, "getDefaultOrigin").mockReturnValue(ipmSafeOrigin);
 
       expect(isSafeUrl(`${ipmSafeOrigin}/en/welcome`)).toBe(true);
       expect(isSafeUrl(`${ipmSafeOrigin}/fr/foo/bar`)).toBe(true);
@@ -135,9 +135,10 @@ describe("param-validator", () => {
     });
 
     it("returns false if the url is not an 'IPM safe' url", () => {
-      const { prefs } = getStartInfo();
-      const prefsGetMock = jest.spyOn(prefs, "get");
-      prefsGetMock.mockReturnValue("https://adblock.org");
+      const ipmSafeOrigin = "https://adblock.org";
+      const deps = getStartInfo();
+      jest.spyOn(deps, "getSafeOrigins").mockReturnValue([ipmSafeOrigin]);
+      jest.spyOn(deps, "getDefaultOrigin").mockReturnValue(ipmSafeOrigin);
 
       expect(isSafeUrl(`https://welcome.adblock.org`)).toBe(false);
       expect(isSafeUrl(`https://google.com`)).toBe(false);

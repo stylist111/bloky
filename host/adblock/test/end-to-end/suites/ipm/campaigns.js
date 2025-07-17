@@ -66,7 +66,7 @@ export default () => {
       afterEach(async function () {
         await setIPMServerResponse("test_adblock_delete");
         await pingIPMServer(initOptionsGeneralTab);
-        const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
+        const ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
         expect(ipmCommands).toEqual({});
       });
 
@@ -85,7 +85,7 @@ export default () => {
         await setIPMServerResponse("test_adblock_newtab");
         await pingIPMServer(initOptionsGeneralTab);
 
-        const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
+        const ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
         let { pingAlarm } = await driver.executeAsyncScript(async (callback) => {
           pingAlarm = await browser.alarms.get("pingalarm");
           callback({ pingAlarm });
@@ -113,14 +113,14 @@ export default () => {
         await setIPMServerResponse("test_adblock_priority");
         await pingIPMServer(initOptionsGeneralTab);
 
-        const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
+        const ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
         expect(ipmCommands).toEqual(expectedIPMCommandsPriority);
 
         await openNewTab(localTestPageUrl);
         await findUrl(updateUrlPriorityHigh);
         await findUrl(updateUrlPriorityLow, { exists: false });
 
-        const ipmCommand = await getIPMCommands(initOptionsGeneralTab);
+        const ipmCommand = await getIPMCommands(initOptionsGeneralTab, fragmentType);
         let pingPayload = await pingIPMServer(initOptionsGeneralTab);
         const actions = pingPayload.events.map((e) => e.action);
 
@@ -150,13 +150,13 @@ export default () => {
         await setIPMServerResponse("test_adblock_newtab");
         await pingIPMServer(initOptionsGeneralTab);
 
-        let ipmCommands = await getIPMCommands(initOptionsGeneralTab);
+        let ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
         expect(ipmCommands).toEqual(expectedIPMCommandsNewtab);
 
         await setIPMServerResponse("test_adblock_delete");
         await pingIPMServer(initOptionsGeneralTab);
 
-        ipmCommands = await getIPMCommands(initOptionsGeneralTab);
+        ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
         expect(ipmCommands).toEqual({});
 
         await openNewTab(localTestPageUrl);
@@ -173,7 +173,7 @@ export default () => {
         await setIPMServerResponse("test_adblock_premium");
         await pingIPMServer(initOptionsGeneralTab);
 
-        const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
+        const ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
         expect(ipmCommands).toEqual(expectedIPMCommandsPremium);
 
         await openNewTab(localTestPageUrl);
@@ -213,7 +213,7 @@ export default () => {
           this.skip();
         }
         await setIPMServerResponse("test_adblock_newtab");
-        const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
+        const ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
         expect(ipmCommands).toEqual({});
 
         await openNewTab(localTestPageUrl);

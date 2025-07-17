@@ -16,16 +16,18 @@
  */
 
 import * as eventRecording from "./event-recording";
-import { CommandName, type Command } from "./command-library.types";
+import { CommandName } from "./command-library.types";
 import { checkLanguage } from "./language-check";
 import * as browser from "webextension-polyfill";
 import { getStartInfo } from "./start-info";
+
+const { persistCommands } = getStartInfo();
 
 const ipmId = "__ipm_id__";
 const oldIpmId = "__old_ipm__";
 const language = "__language__";
 
-const mockCommandStorage: Record<string, Command> = {
+const mockCommandStorage = {
   [oldIpmId]: {
     version: 1,
     command_name: CommandName.createTab,
@@ -45,10 +47,9 @@ const mockCommandStorage: Record<string, Command> = {
 };
 
 describe("language-check", () => {
-  beforeEach(() => {
-    const { prefs } = getStartInfo();
+  beforeEach(async () => {
     jest.spyOn(eventRecording, "recordEvent").mockImplementation();
-    jest.spyOn(prefs, "get").mockReturnValue(mockCommandStorage);
+    await persistCommands(mockCommandStorage);
   });
 
   describe("checkLanguage", () => {

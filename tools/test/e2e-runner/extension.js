@@ -552,10 +552,12 @@ export async function pingIPMServer(initOptionsFn) {
   });
 }
 
-export async function getIPMCommands(initOptionsFn) {
+export async function getIPMCommands(initOptionsFn, fragmentType) {
+  const ipmStorageKey = fragmentType === "legacy" ? "ipm_commands" : "ipm:stored_commands";
+
   return sendExtMessage(initOptionsFn, {
     type: "prefs.get",
-    key: "ipm_commands",
+    key: ipmStorageKey,
   });
 }
 

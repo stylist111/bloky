@@ -324,6 +324,43 @@ defaults.ipm_safe_origins = [
   "https://welcome.adblockplus.org"
 ];
 
+/* ########## NEW IPM SYSTEM ########## */
+
+/**
+ * Map of stored commands
+ *
+ * [New IPM system]
+ *
+ * @type {Object}
+ */
+defaults["ipm:stored_commands"] = {};
+
+/**
+ * Default trusted origin for URLs used in IPMs. This is the base URL used when
+ * a relative URL is passed.
+ *
+ * [New IPM system]
+ *
+ * @type {string}
+ */
+defaults["ipm:default_origin"] = "https://adblockplus.org";
+
+/**
+ * Trusted origins for URLs used in IPMs
+ *
+ * [New IPM system]
+ *
+ * @type {string}
+ */
+defaults["ipm:safe_origins"] = [
+  defaults["ipm:default_origin"],
+  "https://accounts.adblockplus.org",
+  "https://blog.adblockplus.org",
+  "https://help.adblockplus.org",
+  "https://new.adblockplus.org",
+  "https://welcome.adblockplus.org"
+];
+
 /**
  * Minimum log level
  *

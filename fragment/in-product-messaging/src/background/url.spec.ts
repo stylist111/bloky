@@ -34,14 +34,8 @@ describe("url", () => {
     const deps = getStartInfo();
 
     beforeEach(() => {
-      jest.spyOn(deps.prefs, "get").mockImplementation((preference) => {
-        switch (preference) {
-          case "ipm_default_origin":
-            return defaultOrigin;
-          case "ipm_safe_origins":
-            return safeOrigins;
-        }
-      });
+      jest.spyOn(deps, "getDefaultOrigin").mockReturnValue(defaultOrigin);
+      jest.spyOn(deps, "getSafeOrigins").mockReturnValue(safeOrigins);
     });
 
     it("should return null for unknown origins", () => {

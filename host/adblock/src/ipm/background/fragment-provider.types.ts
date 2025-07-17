@@ -1,22 +1,22 @@
 /*
- * This file is part of eyeo's In Product Messaging (IPM) fragment,
- * Copyright (C) 2024-present eyeo GmbH
+ * This file is part of AdBlock  <https://getadblock.com/>,
+ * Copyright (C) 2013-present  Adblock, Inc.
  *
- * This program is free software: you can redistribute it and/or modify
+ * AdBlock is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
  *
- * This program is distributed in the hope that it will be useful,
+ * AdBlock is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with AdBlock.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type * as LegacyFragment from "@eyeo-fragments/ipm-legacy/background";
 import type * as FutureFragment from "@eyeo-fragments/in-product-messaging/background";
+import type * as LegacyFragment from "@eyeo-fragments/ipm-legacy/background";
 
 import { type Message } from "~/polyfills/shared";
 
@@ -27,11 +27,13 @@ export type {
   Content,
   LicenseStateBehavior,
   ParamDefinitionList,
-  StartInfo,
-} from "@eyeo-fragments/ipm-legacy/background";
+} from "@eyeo-fragments/in-product-messaging/background";
 
 // re-export enums
-export { CommandEventType, CommandName } from "@eyeo-fragments/ipm-legacy/background";
+export { CommandEventType, CommandName } from "@eyeo-fragments/in-product-messaging/background";
+
+// export differing types
+export { type FutureFragment, type LegacyFragment };
 
 /**
  * A type alias for the fragments

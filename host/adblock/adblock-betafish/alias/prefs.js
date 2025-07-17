@@ -227,6 +227,41 @@ defaults.ipm_safe_origins = [
   "https://vpn.getadblock.com",
 ];
 
+/* ########## NEW IPM SYSTEM ########## */
+
+/**
+ * Map of stored commands
+ *
+ * [New IPM system]
+ *
+ * @type {Object}
+ */
+defaults["ipm:stored_commands"] = {};
+
+/**
+ * Default trusted origin for URLs used in IPMs. This is the base URL used when
+ * a relative URL is passed.
+ *
+ * [New IPM system]
+ *
+ * @type {string}
+ */
+defaults["ipm:default_origin"] = "https://getadblock.com";
+
+/**
+ * Trusted origins for URLs used in IPMs
+ *
+ * [New IPM system]
+ *
+ * @type {string[]}
+ */
+defaults["ipm:safe_origins"] = [
+  defaults["ipm:default_origin"],
+  "https://blog.getadblock.com",
+  "https://helpcenter.getadblock.com",
+  "https://vpn.getadblock.com",
+];
+
 /**
  * Minimum log level
  *

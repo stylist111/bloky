@@ -116,6 +116,12 @@ export interface InternalAttributes {
 export type Command = CommandMetaData & Record<string, unknown>;
 
 /**
+ * A map of commands, where the key is the IPM id, and the value is the
+ * command.
+ */
+export type CommandMap = Record<string, Command>;
+
+/**
  * Command content
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface

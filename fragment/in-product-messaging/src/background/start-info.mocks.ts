@@ -19,7 +19,10 @@
  * This file contains mocks for the IPM fragment's start info.
  */
 
+import { type CommandMap } from "./command-library.types";
 import { type StartInfo } from "./start-info.types";
+
+let storedCommands: CommandMap = {};
 
 const prefs = {
   get(_: string) {},
@@ -59,15 +62,27 @@ const info = {
 
 const getBlockCount = async (): Promise<number> => 0;
 
+function fetchCommands(): CommandMap {
+  return JSON.parse(JSON.stringify(storedCommands));
+}
+
+async function persistCommands(commands: CommandMap): Promise<void> {
+  storedCommands = JSON.parse(JSON.stringify(commands));
+}
+
 export function getStartInfo(): StartInfo {
   return {
     prefs,
     logger,
     licensing,
     info,
+    getBlockCount,
     addMessageListener: () => {},
     removeMessageListener: () => {},
-    getBlockCount,
     isOptedOut: async () => false,
+    getDefaultOrigin: () => "",
+    getSafeOrigins: () => [],
+    fetchCommands,
+    persistCommands,
   };
 }

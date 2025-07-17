@@ -15,6 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { type CommandMap } from "./command-library.types";
 import { type PayloadData } from "./data-collection.types";
 
 /**
@@ -35,6 +36,10 @@ export interface StartInfo {
   ) => void;
   getBlockCount: () => Promise<number>;
   isOptedOut: () => Promise<boolean>;
+  getDefaultOrigin: () => string;
+  getSafeOrigins: () => string[];
+  fetchCommands: () => CommandMap;
+  persistCommands: (commands: CommandMap) => Promise<void>;
 }
 
 interface Preferences {

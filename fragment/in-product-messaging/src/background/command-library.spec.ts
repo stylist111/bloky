@@ -17,9 +17,7 @@
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import {
-  commandStorageKey,
   executeIPMCommands,
-  getStoredCommandIds,
   isCommandExpired,
   setCommandActor,
 } from "./command-library";
@@ -28,50 +26,9 @@ import {
   CommandName,
   CommandVersion,
 } from "./command-library.types";
-import { getStartInfo } from "./start-info";
+import * as commandStorage from "./command-storage";
 
 describe("command-library", () => {
-  let prefsObj: Record<string, any>;
-
-  beforeEach(() => {
-    prefsObj = {};
-    const { prefs } = getStartInfo();
-    const prefsGetMock = jest.spyOn(prefs, "get");
-    prefsGetMock.mockImplementation((key) => prefsObj[key]);
-  });
-
-  describe("getStoredCommandIds", () => {
-    it("should return an empty array when no commands are stored", () => {
-      prefsObj = {
-        [commandStorageKey]: {},
-      };
-
-      expect(getStoredCommandIds()).toStrictEqual([]);
-    });
-
-    it("should return a list of command ids when commands are stored", () => {
-      const commandIds = ["command_1", "command_2"];
-      prefsObj = {
-        [commandStorageKey]: {
-          [commandIds[0]]: {
-            version: 1,
-            ipm_id: commandIds[0],
-            command_name: "mock-command",
-            expiry: 0,
-          },
-          [commandIds[1]]: {
-            version: 1,
-            ipm_id: commandIds[1],
-            command_name: "mock-command",
-            expiry: 0,
-          },
-        },
-      };
-
-      expect(getStoredCommandIds()).toStrictEqual(commandIds);
-    });
-  });
-
   describe("isCommandExpired", () => {
     const commandBase = {
       version: 1,
@@ -152,10 +109,6 @@ describe("command-library", () => {
     });
 
     it("executes properly after ping", async () => {
-      const { prefs } = getStartInfo();
-      // Mock prefs.get to return an empty object
-      jest.spyOn(prefs, "get").mockReturnValue({});
-
       const commands = [{ ...commandBase }];
       await executeIPMCommands(commands);
       expect(createTabActor.handleCommand).toHaveBeenCalledWith(
@@ -169,15 +122,13 @@ describe("command-library", () => {
         ...commandBase,
         version: commandBase.version - 1,
       };
-      prefsObj = {
-        [commandStorageKey]: {
-          [outdatedCommand.ipm_id]: outdatedCommand,
-        },
-      };
+
+      jest.spyOn(commandStorage, "remove").mockImplementation();
 
       await executeIPMCommands([outdatedCommand], true);
-
-      expect(JSON.stringify(prefsObj[commandStorageKey])).toBe("{}");
+      expect(commandStorage.remove).toHaveBeenCalledWith(
+        outdatedCommand.ipm_id,
+      );
     });
   });
 });

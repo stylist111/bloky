@@ -16,10 +16,8 @@
  */
 
 import browser from "webextension-polyfill";
-import { commandStorageKey } from "./command-library";
+import * as commandStorage from "./command-storage";
 import { recordEvent } from "./event-recording";
-import { type Command } from "./command-library.types";
-import { getStartInfo } from "./start-info";
 
 /**
  * Runs a check to see whether the current user language still matches the
@@ -29,14 +27,12 @@ import { getStartInfo } from "./start-info";
  * @param ipmId The ID of the IPM command to run the check for
  */
 export async function checkLanguage(ipmId: string): Promise<void> {
-  const { prefs } = getStartInfo();
-  await prefs.untilLoaded;
-  const commandStorage = prefs.get(commandStorageKey);
-  if (!(ipmId in commandStorage)) {
+  const storedCommands = commandStorage.getAll();
+  if (!(ipmId in storedCommands)) {
     return;
   }
 
-  const command: Command = commandStorage[ipmId];
+  const command = storedCommands[ipmId];
 
   if (typeof command.attributes?.language !== "string") {
     // This is an old command that didn't get enriched with additional attributes.

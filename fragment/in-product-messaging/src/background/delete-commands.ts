@@ -15,7 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { getStoredCommandIds, setCommandActor } from "./command-library";
+import { setCommandActor } from "./command-library";
+import * as commandStorage from "./command-storage";
 import {
   type Command,
   type CommandHandler,
@@ -96,7 +97,7 @@ function getBehavior(command: Command): DeleteBehavior | null {
   let commandIds;
 
   if (commands === deleteAllKey) {
-    commandIds = getStoredCommandIds();
+    commandIds = commandStorage.getIds();
   } else {
     commandIds = commands.split(",").map((id) => id.trim());
   }
