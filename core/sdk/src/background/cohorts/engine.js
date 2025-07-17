@@ -163,12 +163,12 @@ export async function sync(config, countryCode) {
       ...(await _getFacts())
     };
 
-    // send the facts snapshot to the event system
-    await sendFactsSnapshot(newFacts);
-
     // No changes in facts, no need to re-evaluate cohorts
     if (JSON.stringify(newFacts) === JSON.stringify(state.facts)) {
       debug("[cohorts] No changes in facts, skipping cohort evaluation");
+      // send the facts snapshot to the event system
+      // no need to await here since we are not changing the state
+      sendFactsSnapshot(newFacts);
       return;
     }
 
@@ -214,6 +214,9 @@ export async function sync(config, countryCode) {
     // postprocess the events into cohort IDs
     const newCohortIds = result.events.map(event => event.type);
     await updateIfChanged(newCohortIds);
+    // send the facts snapshot to the event system
+    // no need to await here since we are not changing the state
+    sendFactsSnapshot(newFacts);
   }
   catch (e) {
     warn(`Error while synchronizing cohorts: ${e.message}`);
