@@ -16,7 +16,7 @@
  */
 
 import { type LicenseStateBehavior } from "./command-library.types";
-import { LicenseState } from "./data-collection.types";
+import { LicenseState } from "./license.types";
 import { getStartInfo } from "./start-info";
 
 /**
@@ -50,8 +50,7 @@ export function isValidLicenseState(
 export async function doesLicenseStateMatch(
   behavior: LicenseStateBehavior,
 ): Promise<boolean> {
-  const { licensing, prefs } = getStartInfo();
-  await prefs.untilLoaded;
+  const { licensing } = getStartInfo();
 
   if (!behavior.licenseStateList) {
     return true;

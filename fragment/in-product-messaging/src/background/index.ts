@@ -17,14 +17,11 @@
 
 export * from "./command-library";
 export * from "./command-library.types";
-export * from "./data-collection";
-export * from "./data-collection.types";
 export * from "./event-recording";
 export * from "./language-check";
 export * from "./license";
 export * from "./param-validator";
 export * from "./param-validator.types";
 export * from "./start-info.types";
-export * from "./telemetry.types";
 export * from "./url";
 export * from "./url.types";

@@ -24,12 +24,6 @@ import { type StartInfo } from "./start-info.types";
 
 let storedCommands: CommandMap = {};
 
-const prefs = {
-  get(_: string) {},
-  async set(_key: string, _value: any) {},
-  untilLoaded: Promise.resolve(),
-};
-
 const logger = {
   debug(..._data: unknown[]) {},
   reportAndLogError(_e: Error, _logContext?: string) {},
@@ -72,13 +66,10 @@ async function persistCommands(commands: CommandMap): Promise<void> {
 
 export function getStartInfo(): StartInfo {
   return {
-    prefs,
     logger,
     licensing,
     info,
     getBlockCount,
-    addMessageListener: () => {},
-    removeMessageListener: () => {},
     isOptedOut: async () => false,
     getDefaultOrigin: () => "",
     getSafeOrigins: () => [],

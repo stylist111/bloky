@@ -36,7 +36,6 @@ import { isDeleteBehavior, setDeleteCommandHandler } from "./delete-commands";
 import { recordEvent, recordGenericEvent } from "./event-recording";
 import { checkLanguage } from "./language-check";
 import { isValidDate } from "./param-validator";
-import { start as startTelemetry, stop as stopTelemetry } from "./telemetry";
 
 /**
  * A list of known commands.
@@ -418,15 +417,11 @@ export async function start(startInfo: StartInfo): Promise<void> {
     const commands = Object.values(storedCommands);
     await executeIPMCommands(commands, true);
   }
-
-  await startTelemetry();
 }
 
 /**
  * Unloads command library
  */
 export async function stop(): Promise<void> {
-  await stopTelemetry();
-
   await clearCommands();
 }

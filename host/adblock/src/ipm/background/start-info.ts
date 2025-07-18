@@ -36,7 +36,6 @@ export async function getFutureStartInfo(): Promise<FutureFragment.StartInfo> {
   await Prefs.untilLoaded;
 
   return {
-    prefs: Prefs,
     logger: utils,
     licensing: {
       async isLicenseValid() {
@@ -60,14 +59,6 @@ export async function getFutureStartInfo(): Promise<FutureFragment.StartInfo> {
       getBrowserVersion() {
         return info.applicationVersion;
       },
-    },
-    addMessageListener(name, listener) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      port.on(name, listener);
-    },
-    removeMessageListener(name, listener) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      port.off(name, listener);
     },
     getBlockCount,
     async isOptedOut() {

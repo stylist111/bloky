@@ -15,9 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import * as eventRecording from "./event-recording";
 import { CommandName } from "./command-library.types";
-import { checkLanguage } from "./language-check";
+import { isLanguageSkewed } from "./language-check";
 import * as browser from "webextension-polyfill";
 import { getStartInfo } from "./start-info";
 
@@ -48,37 +47,32 @@ const mockCommandStorage = {
 
 describe("language-check", () => {
   beforeEach(async () => {
-    jest.spyOn(eventRecording, "recordEvent").mockImplementation();
     await persistCommands(mockCommandStorage);
   });
 
-  describe("checkLanguage", () => {
-    it("should not do anything if there is no command for the given id", async () => {
-      await checkLanguage("no such ipm id");
-      expect(eventRecording.recordEvent).not.toHaveBeenCalled();
+  describe("isLanguageSkewed", () => {
+    it("should return false if there is no command for the given id", async () => {
+      const result = await isLanguageSkewed("no such ipm id");
+      expect(result).toBe(false);
     });
 
-    it("should not do anything if the command has no attributes", async () => {
-      await checkLanguage(oldIpmId);
-      expect(eventRecording.recordEvent).not.toHaveBeenCalled();
+    it("should return false if the command has no attributes", async () => {
+      const result = await isLanguageSkewed(oldIpmId);
+      expect(result).toBe(false);
     });
 
-    it("should not do anything if the language still matches", async () => {
+    it("should return false if the language still matches", async () => {
       jest.spyOn(browser.i18n, "getUILanguage").mockReturnValue(language);
 
-      await checkLanguage(ipmId);
-      expect(eventRecording.recordEvent).not.toHaveBeenCalled();
+      const result = await isLanguageSkewed(ipmId);
+      expect(result).toBe(false);
     });
 
-    it("should record an event if the language differs", async () => {
+    it("should return true if the language differs", async () => {
       jest.spyOn(browser.i18n, "getUILanguage").mockReturnValue("new language");
 
-      await checkLanguage(ipmId);
-      expect(eventRecording.recordEvent).toHaveBeenCalledWith(
-        ipmId,
-        CommandName.createOnPageDialog,
-        "language_skew",
-      );
+      const result = await isLanguageSkewed(ipmId);
+      expect(result).toBe(true);
     });
   });
 });

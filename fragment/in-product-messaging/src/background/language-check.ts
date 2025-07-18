@@ -27,21 +27,38 @@ import { recordEvent } from "./event-recording";
  * @param ipmId The ID of the IPM command to run the check for
  */
 export async function checkLanguage(ipmId: string): Promise<void> {
-  const storedCommands = commandStorage.getAll();
-  if (!(ipmId in storedCommands)) {
+  const command = commandStorage.get(ipmId);
+  if (command === null) {
     return;
   }
 
-  const command = storedCommands[ipmId];
+  const isSkewed = await isLanguageSkewed(ipmId);
+  if (isSkewed) {
+    recordEvent(command.ipm_id, command.command_name, "language_skew");
+  }
+}
+
+/**
+ * Checks whether the language attributed to the command with the given ID
+ * matches the current browser language.
+ *
+ * @param ipmId The ID of the IPM command to run the check for
+ * @returns true if the languages differ, false if they are the same
+ */
+export async function isLanguageSkewed(ipmId: string): Promise<boolean> {
+  const command = commandStorage.get(ipmId);
+  if (command === null) {
+    return false;
+  }
 
   if (typeof command.attributes?.language !== "string") {
     // This is an old command that didn't get enriched with additional attributes.
-    return;
+    return false;
   }
 
   if (browser.i18n.getUILanguage() === command.attributes.language) {
-    return;
+    return false;
   }
 
-  recordEvent(command.ipm_id, command.command_name, "language_skew");
+  return true;
 }

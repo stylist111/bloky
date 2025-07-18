@@ -39,7 +39,6 @@ export async function getFutureStartInfo(): Promise<FutureFragment.StartInfo> {
   await Prefs.untilLoaded;
 
   return {
-    prefs: Prefs,
     logger,
     licensing: {
       async isLicenseValid() {
@@ -65,14 +64,6 @@ export async function getFutureStartInfo(): Promise<FutureFragment.StartInfo> {
       }
     },
     getBlockCount,
-    addMessageListener(name, listener) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      port.on(name, listener);
-    },
-    removeMessageListener(name, listener) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      port.off(name, listener);
-    },
     async isOptedOut() {
       return Prefs.get("data_collection_opt_out") === true;
     },

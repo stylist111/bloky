@@ -16,22 +16,9 @@
  */
 
 /**
- * The name for the ping schedule.
+ * An enum containing all known states for License.
  */
-export const scheduleName = "ipm_ping_schedule";
-/**
- * The name for the Prefs storage key of the interval duration.
- */
-export const intervalKey = "ipm_ping_interval";
-/**
- * The name for the Prefs storage key of the IPM server URL.
- */
-export const serverUrlKey = "ipm_server_url";
-/**
- * The name for the Prefs storage key of the last attempted IPM ping.
- */
-export const lastPingKey = "ipm_last_ping";
-/**
- * The name for the Prefs storage key of the total number of pings.
- */
-export const pingCountPrefsKey = "ipm_ping_count";
+export enum LicenseState {
+  active = "premium",
+  inactive = "free",
+}

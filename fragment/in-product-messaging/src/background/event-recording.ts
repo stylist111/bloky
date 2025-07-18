@@ -15,12 +15,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { type CommandName, CommandVersion } from "./command-library.types";
-import { storeEvent } from "./data-collection";
-import { noCommand, noIPM } from "./event-recording.types";
+import { type CommandName } from "./command-library.types";
 
 /**
  * Records a user event that is connected to a certain command.
+ *
+ * NOTE: This function is non-operational. Please decide whether
+ * to send this event to the new logging endpoint instead of
+ * calling this function.
  *
  * @param ipmId - The IPM ID, or `null` if no IPM or ID is available
  * @param command - The name of the command the event belongs to
@@ -31,15 +33,21 @@ export function recordEvent(
   command: CommandName,
   name: string,
 ): void {
-  const id = typeof ipmId === "string" ? ipmId : noIPM;
-  void storeEvent(id, command, CommandVersion[command], name);
+  // const id = typeof ipmId === "string" ? ipmId : noIPM;
+  // void storeEvent(id, command, CommandVersion[command], name);
+  // TODO: Decide whether to send this event to the new logging endpoint instead of calling this function.
 }
 
 /**
  * Records an event that is not connected to a certain command.
  *
+ * NOTE: This function is non-operational. Please decide whether
+ * to send this event to the new logging endpoint instead of
+ * calling this function.
+ *
  * @param name The name of the event to record
  */
 export function recordGenericEvent(name: string): void {
-  void storeEvent(noIPM, noCommand, 0, name);
+  // void storeEvent(noIPM, noCommand, 0, name);
+  // TODO: Decide whether to send this event to the new logging endpoint instead of calling this function.
 }

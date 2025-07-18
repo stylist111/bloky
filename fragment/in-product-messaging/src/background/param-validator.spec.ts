@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { LicenseState } from "./data-collection.types";
+import { LicenseState } from "./license.types";
 import {
   isNotEmpty,
   isNumeric,

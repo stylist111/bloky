@@ -16,36 +16,20 @@
  */
 
 import { type CommandMap } from "./command-library.types";
-import { type PayloadData } from "./data-collection.types";
 
 /**
  * An interface describing the start info for the IPM fragment.
  */
 export interface StartInfo {
-  prefs: Preferences;
   logger: Logger;
   licensing: Licensing;
   info: UserAndHostInformation;
-  addMessageListener: (
-    name: string,
-    listener: () => Promise<PayloadData | null>,
-  ) => void;
-  removeMessageListener: (
-    name: string,
-    listener: () => Promise<PayloadData | null>,
-  ) => void;
   getBlockCount: () => Promise<number>;
   isOptedOut: () => Promise<boolean>;
   getDefaultOrigin: () => string;
   getSafeOrigins: () => string[];
   fetchCommands: () => CommandMap;
   persistCommands: (commands: CommandMap) => Promise<void>;
-}
-
-interface Preferences {
-  get: (preference: string) => any;
-  set: (preference: string, value: any) => Promise<void>;
-  untilLoaded: Promise<void>;
 }
 
 interface Logger {
