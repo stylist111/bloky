@@ -171,6 +171,7 @@ export async function clickFLCheckboxAndCheck(
 
   await clickOnDisplayedElement(checkboxSelector);
   await waitForCheckboxStatus(checkboxSelector, {
+    timeout: 1500,
     expectEnabled: enable,
     isProperty: true,
     name
