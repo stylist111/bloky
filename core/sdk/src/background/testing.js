@@ -46,6 +46,7 @@ import {FilterStorage} from "adblockpluscore/lib/filterStorage.js";
 import * as telemetry from "./telemetry/index.js";
 import * as activePing from "./telemetry/active-ping.js";
 import * as serverLogUploader from "./telemetry/server-log-uploader.js";
+import * as serverLogConfig from "./telemetry/server-log-config.js";
 import * as cdpMetricsUploader from "./cdp-metrics-uploader.js";
 import * as cdpEncryption from "./cdp-encryption.js";
 import * as filters from "./filters.js";
@@ -320,8 +321,11 @@ export default {
   startServerLogUploader: serverLogUploader.start,
   stopServerLogUploader: serverLogUploader.stop,
   resetServerLogUploader: serverLogUploader.reset,
-  setRotationPeriod: serverLogUploader.setRotationPeriod,
   serverLogUploaderIsRunning: serverLogUploader.isRunning,
+
+  setRotatingClientId: serverLogConfig.setRotatingClientId,
+  resetRotationPeriod: serverLogConfig.resetRotationPeriod,
+  setRotationPeriod: serverLogConfig.setRotationPeriod,
 
   stopCdpMetricsUploader: cdpMetricsUploader.stop,
   startCdpMetricsUploader: cdpMetricsUploader.start,

@@ -23,8 +23,6 @@ import {Prefs, init as initializePrefs} from "../prefs.js";
 import {PersistentState} from "../persistence.js";
 import {EventDispatcher} from "../types.js";
 
-import {default as experiments} from "../experiments.js";
-
 // Console logging is primarily for devs who are currently adding logging to
 // be able to see the logs, or for devs trying to reproduce something that
 // they saw in the server logs.
@@ -33,9 +31,48 @@ let consoleLogLevel = new PersistentState(
   browser.storage.local
 );
 
-let serverLogLevel = {
-  globalLevel: logLevelNamesToNumbers.info
-};
+// This is configured through ab-testing-config's experiments.json file.
+let serverLogLevel = new PersistentState(
+  "ewe:telemetry-logging-server-level",
+  browser.storage.local
+);
+
+/**
+ * Sets the intended server logging levels.
+ *
+ * If both the global log level and a module-specific log level are set, the
+ * most verbose one takes priority.
+ *
+ * Setting the log level implies that all less verbose levels are also
+ * enabled. For example, enabling "info" logging will also enable "behavior"
+ * and "warn" logging.
+ *
+ * This overrides any existing server log level.
+ *
+ * @param {object} newLevels
+ * @param {string?} newLevels.global The level you want to log at. Can be one of
+ *   "debug", "info", "behavior", "warn", or "off".
+ * @param {object?} newLevels.byModule Logging levels for specific modules. keys
+ *   are module names and the values are the logging level, can be one of
+ *   "debug", "info", "behavior", "warn", or "off".
+ * @returns {Promise} Promise that resolves when the setting is set.
+ *
+ * @ignore
+ */
+export async function setServerLogLevel(newLevels) {
+  let config = await serverLogLevel.getStateLoaded();
+
+  config.global = logLevelNamesToNumbers[newLevels.global];
+
+  config.byModule = {};
+  if (newLevels.byModule) {
+    for (const [module, level] of Object.entries(newLevels.byModule)) {
+      config.byModule[module] = logLevelNamesToNumbers[level];
+    }
+  }
+
+  await serverLogLevel.save();
+}
 
 let pendingServerLogState = new PersistentState(
   "ewe:telemetry-logging-pending",
@@ -99,12 +136,14 @@ export let onLogQueued = new EventDispatcher(dispatch => {});
 
 function loggingEnabled(module, level, loggingConfig) {
   let possibleLevels = [
-    loggingConfig.globalLevel,
+    loggingConfig.global,
     loggingConfig.byModule ? loggingConfig.byModule[module] : null
   ];
-  return possibleLevels.some(
+
+  const result = possibleLevels.some(
     configLevel => configLevel && level >= configLevel
   );
+  return result;
 }
 
 async function consoleLog(logTime, module, level, event, data) {
@@ -127,15 +166,11 @@ async function consoleLog(logTime, module, level, event, data) {
 async function queueServerLog(logTime, module, level, event, data) {
   await initializePrefs();
 
-  if (await experiments.getFlag("telemetry-debug-logging-enabled") !== true) {
-    return;
-  }
-
   if (Prefs.telemetry_opt_out) {
     return;
   }
 
-  if (!loggingEnabled(module, level, serverLogLevel)) {
+  if (!loggingEnabled(module, level, await serverLogLevel.getStateLoaded())) {
     return;
   }
 
@@ -196,6 +231,17 @@ export class ServerLogger extends AbstractLogger {
 }
 
 /**
+ * Resets the server logging level to "off".
+ * @returns {Promise} Promise that resolves when the setting is set.
+ *
+ * @ignore
+ */
+export async function resetServerLogLevel() {
+  serverLogLevel.clearState();
+  await serverLogLevel.save();
+}
+
+/**
  * Resets the console logging level to "off".
  * @returns {Promise} Promise that resolves when the setting is set.
  * @memberof telemetry
@@ -245,10 +291,10 @@ export async function setConsoleLogLevel(level, module) {
     }
   }
   else if (newLevel == logLevelNamesToNumbers.off) {
-    delete config.globalLevel;
+    delete config.global;
   }
   else {
-    config.globalLevel = newLevel;
+    config.global = newLevel;
   }
 
   await consoleLogLevel.save();

@@ -24,6 +24,7 @@ import {EventEmitter} from "../../adblockpluscore/lib/events.js";
 import {EventDispatcher} from "./types.js";
 import * as experiments from "./experiments.js";
 import * as cohorts from "./cohorts/index.js";
+import * as serverLogConfig from "./telemetry/server-log-config.js";
 
 const emitter = new EventEmitter();
 const remoteConfigState = new PersistentState("ewe:remote_config", browser.storage.local);
@@ -187,6 +188,9 @@ async function syncSubmodules(cacheFresh = false) {
   if (!cacheFresh) {
     const experimentsConfig = await remoteConfig.getExperimentsConfig();
     await experiments.sync(experimentsConfig);
+
+    const loggingConfig = await remoteConfig.getLoggingConfig();
+    await serverLogConfig.sync(loggingConfig);
   }
 }
 
@@ -384,6 +388,21 @@ const remoteConfig = {
     }
 
     return rawData.cohorts;
+  },
+
+  /**
+   * Retrieves logging config
+   * @returns {Promise<Object>}
+   */
+  async getLoggingConfig() {
+    const state = await remoteConfigState.getStateLoaded();
+    const rawData = state.rawData;
+
+    if (!rawData || typeof rawData.loggingLevels !== "object") {
+      return {};
+    }
+
+    return rawData.loggingLevels;
   },
 
   /**

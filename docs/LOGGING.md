@@ -10,14 +10,38 @@ This API allows consistent logging from:
 - Content scripts
 - UI pages
 
-## Current State
+## Runtime configuration of server logs
 
-Currently, behaviour and warning logs can be sent for 1% of users as configured 
-in the experiments.json file. This data will contain a rotating user id in the 
-payload. Next steps would be configuring these levels in the experiments.json 
-file.
+Logging levels are configured using the experiments.json file in the
+ab-testing-config repository. Mods range from 0 to 1000 just like for
+experiments. Clients are randomly assigned a mod value, and server logging is
+only enabled for clients who fall in the configured range. For clients with a
+mod value outside of this range, server logging is disabled.
 
-## Log Levels
+The expected structure looks like this:
+
+```json
+{
+  "loggingLevels": {
+    "global": "warn",
+    "byModule": {
+      "module1": "behavior",
+      "module2": "debug"
+    },
+    "mods": [0, 10]
+  }
+}
+```
+
+Clients have an id which rotates on a regular schedule. This is currently
+configured to rotate weekly (see `DEFAULT_ID_ROTATION_PERIOD` in
+[server-log-config.js](../core/sdk/src/background/telemetry/server-log-config.js)). This
+rotating client id can be used to correlate events on a short scale, eg a few
+days, and is also used as part of the hash that determines if a user is included
+in the logs. When the client id is rotated, it may cause logging to be enabled
+or disabled on that client.
+
+### Log Levels
 
 | Level      | Value | Description                                          |
 |------------|-------|------------------------------------------------------|
@@ -76,11 +100,11 @@ export default {
             "description": "A name. Not all nice things have names, so it can also be null",
             // If type is an array, all the given values are valid
             "type": ["string", "null"]
-          }, 
+          },
           "nice": {
             "description": "Element id of the blocked item",
             "type": "string"
-          }, 
+          },
           "number": {
             "description": "Element id of the blocked item",
             "type": "number"
@@ -135,7 +159,7 @@ serverLogger.info("feature_enabled", "cool_experiment" );
 serverLogger.behavior("button_clicked", { buttonId: "enable_premium",  });
 serverLogger.warn("api_call_failed", { endpoint: "/data", status: 404 });
 ```
- 
+
 ### Call the logger from inside the SDK
 ```javascript
 import {ServerLogger} from "./telemetry/server-logger.js";
@@ -153,7 +177,8 @@ serverLogger.warn("api_call_failed", { endpoint: "/data", status: 404 });
 ### Testing your logs with console output
 
 This system is meant to log to a server. Console output is intended purely as a
-debugging tool for engineers.
+debugging tool for engineers. Note that enabling or disabling console logging
+has no effect on whether or not logs are uploaded to the server.
 
 By default console logging is disabled but you can enable it for your session by
 running this in the browser's development tools console:

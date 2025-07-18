@@ -43,6 +43,7 @@ const uiPageModule = "test_ewe_ui_api";
 const DEBUG_TELEMETRY_URL = `${TEST_ADMIN_PAGES_URL}/telemetry-log-event`;
 const DEBUG_TELEMETRY_BEARER = "SSBhbSBhIGJlYXIuLi4gZXIuLi4gUkFXUg==";
 const UPLOADER_STORAGE_KEY = "ewe:telemetry-server-log-uploader";
+const REMOTE_CONFIG_URL = `${TEST_ADMIN_PAGES_URL}/experiments.json`;
 
 const INTERVAL_BETWEEN_BATCHES = 1000;
 const ERROR_DELAY = 2000;
@@ -72,9 +73,25 @@ async function getRequestLogIntervals() {
   return intervals;
 }
 
+async function logAllEvents() {
+  await EWE.testing.serverLogger.debug("test_event_no_data");
+  await EWE.testing.serverLogger.info("test_event_no_data");
+  await EWE.testing.serverLogger.behavior("test_event_no_data");
+  await EWE.testing.serverLogger.warn("test_event_no_data");
+
+  await EWE.testing.altServerLogger.debug("test_event_no_data");
+  await EWE.testing.altServerLogger.info("test_event_no_data");
+  await EWE.testing.altServerLogger.behavior("test_event_no_data");
+  await EWE.testing.altServerLogger.warn("test_event_no_data");
+}
+
 function getConsoleLogs() {
   // eslint-disable-next-line no-console
   return console.log.getCalls().map(item => item.args);
+}
+
+async function setRemoteConfig(config, status = 200) {
+  await setEndpointResponse(REMOTE_CONFIG_URL, JSON.stringify(config), "GET", status);
 }
 
 describe("Telemetry - Server Logging", function() {
@@ -267,12 +284,23 @@ describe("Telemetry - Server Logging", function() {
         url: DEBUG_TELEMETRY_URL,
         bearer: DEBUG_TELEMETRY_BEARER
       }, INTERVAL_BETWEEN_BATCHES, ERROR_DELAY);
+
+      const testingConfig = {
+        schemaId: "1",
+        experiments: [],
+        loggingLevels: {
+          global: "debug",
+          mods: [0, 1000]
+        }
+      };
+
+      await setRemoteConfig(testingConfig);
+      await EWE.remoteConfig.sync();
     }
 
     beforeEach(async function() {
       await EWE.telemetry.setOptOut(false);
 
-      await EWE.experiments.overrideFlag("telemetry-debug-logging-enabled", true);
       await restartWithTestArgs();
     });
 
@@ -289,16 +317,6 @@ describe("Telemetry - Server Logging", function() {
       await expect(
         EWE.testing.startServerLogUploader({bearer: DEBUG_TELEMETRY_BEARER})
       ).rejects.toThrow("Error: No debug telemetry `url` provided");
-    });
-
-    it("does not send a behavior log to the server if the experiment flag isn't enabled", async function() {
-      await EWE.experiments.clearFlagOverrides();
-      await EWE.testing.serverLogger.behavior("test_event_no_data");
-
-      await new Promise(r => setTimeout(r, 1000));
-
-      let requestLogs = await getRequestLogs(DEBUG_TELEMETRY_URL);
-      expect(requestLogs).toHaveLength(0);
     });
 
     it("does not send a behavior log to the server if opted out", async function() {
@@ -627,7 +645,7 @@ describe("Telemetry - Server Logging", function() {
       });
 
       // If we log again within TEST_ROTATION_PERIOD, the ID should not change.
-      await EWE.testing.serverLogger.behavior("test_event", "test-rotation");
+      await EWE.testing.serverLogger.behavior("test_event", "test-rotation-2");
 
       await waitForAssertion(async() => {
         let payload = await verifyTelemetryPayload(2);
@@ -638,7 +656,7 @@ describe("Telemetry - Server Logging", function() {
       await new Promise(r => setTimeout(r, TEST_ROTATION_PERIOD + 1000));
 
       // A last test that should have a new client ID.
-      await EWE.testing.serverLogger.behavior("test_event", "test-rotation2");
+      await EWE.testing.serverLogger.behavior("test_event", "test-rotation-3");
 
       await waitForAssertion(async() => {
         let payload = await verifyTelemetryPayload(3);
@@ -648,9 +666,11 @@ describe("Telemetry - Server Logging", function() {
           module: module1,
           level: "behavior",
           event: "test_event",
-          data: "test-rotation2"
+          data: "test-rotation-3"
         }]);
       });
+
+      await EWE.testing.resetRotationPeriod();
     });
 
     describe("Service worker suspension [mv3-only]", function() {
@@ -726,8 +746,6 @@ describe("Telemetry - Server Logging", function() {
     beforeEach(async function() {
       await clearRequestLogs();
       await EWE.telemetry.setOptOut(false);
-
-      await EWE.experiments.overrideFlag("telemetry-debug-logging-enabled", true);
     });
 
     afterEach(async function() {
@@ -763,6 +781,263 @@ describe("Telemetry - Server Logging", function() {
         expect(storage).toHaveProperty("lastSuccess");
         expect(storage).not.toHaveProperty("lastError");
       }, 5000);
+    });
+  });
+
+  describe("Remote configuration", function() {
+    beforeEach(async function() {
+      await clearRequestLogs();
+      await EWE.telemetry.setOptOut(false);
+
+      await EWE.testing.resetServerLogUploader();
+      await EWE.testing.startServerLogUploader({
+        url: DEBUG_TELEMETRY_URL,
+        bearer: DEBUG_TELEMETRY_BEARER
+      }, INTERVAL_BETWEEN_BATCHES, ERROR_DELAY);
+    });
+
+    afterEach(async function() {
+      await clearEndpointResponse(DEBUG_TELEMETRY_URL);
+      await clearRequestLogs();
+      await EWE.experiments.clearFlagOverrides();
+    });
+
+    const KNOWN_CLIENT_IDS = {
+      LOWER_HALF: "f47ac10b-58cc-4372-a567-0e02b2c3d479", // 308
+      UPPER_HALF: "e5c619b9-7928-4d4a-b25d-84e5df2080c2" // 767
+    };
+
+    it("Does not log if there is no logging config", async function() {
+      const testingConfig = {
+        schemaId: "1",
+        experiments: []
+      };
+
+      await setRemoteConfig(testingConfig);
+      await EWE.remoteConfig.sync();
+
+      await logAllEvents();
+
+      await new Promise(r => setTimeout(r, 2000));
+      const noLogs = await getRequestLogs(DEBUG_TELEMETRY_URL);
+      expect(noLogs).toHaveLength(0);
+    });
+
+    it("Logs based on a given global server configuration", async function() {
+      const testingConfig = {
+        schemaId: "1",
+        experiments: [],
+        loggingLevels: {
+          global: "warn",
+          mods: [0, 1000]
+        }
+      };
+
+      await setRemoteConfig(testingConfig);
+      await EWE.remoteConfig.sync();
+
+      await logAllEvents();
+
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(DEBUG_TELEMETRY_URL);
+
+        let payloadItems = [];
+        for (let requestLog of requestLogs) {
+          payloadItems.push(...requestLog.body.payload.items);
+        }
+
+        expect(payloadItems).toHaveLength(2);
+
+        expect(payloadItems).toEqual(expect.arrayContaining([
+          {
+            timestamp: expect.stringMatching(ISO_DATE_REGEX),
+            module: module1,
+            level: "warn",
+            event: "test_event_no_data"
+          },
+          {
+            timestamp: expect.stringMatching(ISO_DATE_REGEX),
+            module: module2,
+            level: "warn",
+            event: "test_event_no_data"
+          }
+        ]));
+      }, INTERVAL_BETWEEN_BATCHES * 3);
+    });
+
+    it("Logs based on a given per module server configuration", async function() {
+      const testingConfig = {
+        schemaId: "1",
+        experiments: [],
+        loggingLevels: {
+          byModule: {
+            test_ewe_background: "behavior",  // Only behavior and warn should log
+            test_ewe_ui_api: "debug"          // All levels should log
+          },
+          mods: [0, 1000]
+        }
+      };
+
+      await setRemoteConfig(testingConfig);
+      await EWE.remoteConfig.sync();
+
+      await logAllEvents();
+
+      await waitForAssertion(async() => {
+        let requestLogs = await getRequestLogs(DEBUG_TELEMETRY_URL);
+
+        let payloadItems = [];
+        for (let requestLog of requestLogs) {
+          payloadItems.push(...requestLog.body.payload.items);
+        }
+
+        // Should have 2 logs from module1 (behavior, warn)
+        // and 4 from module2 (all levels)
+        expect(payloadItems).toHaveLength(6);
+
+        const module1Logs = payloadItems.filter(x => x.module === module1);
+        expect(module1Logs).toHaveLength(2);
+        expect(module1Logs).toEqual(expect.arrayContaining([
+          {
+            timestamp: expect.stringMatching(ISO_DATE_REGEX),
+            module: module1,
+            level: "behavior",
+            event: "test_event_no_data"
+          },
+          {
+            timestamp: expect.stringMatching(ISO_DATE_REGEX),
+            module: module1,
+            level: "warn",
+            event: "test_event_no_data"
+          }
+        ]));
+
+        const module2Logs = payloadItems.filter(x => x.module === module2);
+        expect(module2Logs).toHaveLength(4);
+        expect(module2Logs).toEqual(expect.arrayContaining([
+          {
+            timestamp: expect.stringMatching(ISO_DATE_REGEX),
+            module: module2,
+            level: "debug",
+            event: "test_event_no_data"
+          },
+          {
+            timestamp: expect.stringMatching(ISO_DATE_REGEX),
+            module: module2,
+            level: "info",
+            event: "test_event_no_data"
+          },
+          {
+            timestamp: expect.stringMatching(ISO_DATE_REGEX),
+            module: module2,
+            level: "behavior",
+            event: "test_event_no_data"
+          },
+          {
+            timestamp: expect.stringMatching(ISO_DATE_REGEX),
+            module: module2,
+            level: "warn",
+            event: "test_event_no_data"
+          }
+        ]));
+      }, INTERVAL_BETWEEN_BATCHES * 3);
+    });
+
+    it("Logs based on a user being in a specific mod range", async function() {
+      const testingConfig = {
+        schemaId: "1",
+        experiments: [],
+        loggingLevels: {
+          global: "warn",
+          mods: [0, 500]
+        }
+      };
+
+      await setRemoteConfig(testingConfig);
+      await EWE.remoteConfig.sync();
+
+      const inRangeClientId = KNOWN_CLIENT_IDS.LOWER_HALF;
+      await EWE.testing.setRotatingClientId(inRangeClientId);
+
+      await EWE.testing.serverLogger.warn("test_event_no_data");
+
+      await waitForAssertion(async() => {
+        const requestLogs = await getRequestLogs(DEBUG_TELEMETRY_URL);
+        expect(requestLogs.length).toBeGreaterThan(0);
+
+        const payload = requestLogs[0].body.payload;
+        expect(payload.rotating_client_id).toBe(inRangeClientId);
+        expect(payload.items).toHaveLength(1);
+        expect(payload.items[0]).toMatchObject({
+          module: module1,
+          level: "warn",
+          event: "test_event_no_data"
+        });
+      }, INTERVAL_BETWEEN_BATCHES * 3);
+
+      await clearRequestLogs();
+
+      const outOfRangeClientId = KNOWN_CLIENT_IDS.UPPER_HALF;
+      await EWE.testing.setRotatingClientId(outOfRangeClientId);
+
+      await EWE.testing.serverLogger.warn("test_event_no_data");
+
+      await new Promise(r => setTimeout(r, 2000));
+      const noLogs = await getRequestLogs(DEBUG_TELEMETRY_URL);
+      expect(noLogs).toHaveLength(0);
+    });
+
+    it("Stops logging when the server changes remote config's mod ranges", async function() {
+      const testingConfig = {
+        schemaId: "1",
+        experiments: [],
+        loggingLevels: {
+          global: "warn",
+          mods: [0, 500]
+        }
+      };
+
+      await setRemoteConfig(testingConfig);
+      await EWE.remoteConfig.sync();
+
+      const inRangeClientId = KNOWN_CLIENT_IDS.LOWER_HALF;
+      await EWE.testing.setRotatingClientId(inRangeClientId);
+
+      await EWE.testing.serverLogger.warn("test_event_no_data");
+
+      await waitForAssertion(async() => {
+        const requestLogs = await getRequestLogs(DEBUG_TELEMETRY_URL);
+        expect(requestLogs.length).toBeGreaterThan(0);
+
+        const payload = requestLogs[0].body.payload;
+        expect(payload.rotating_client_id).toBe(inRangeClientId);
+        expect(payload.items).toHaveLength(1);
+        expect(payload.items[0]).toMatchObject({
+          module: module1,
+          level: "warn",
+          event: "test_event_no_data"
+        });
+      }, INTERVAL_BETWEEN_BATCHES * 3);
+
+      const updatedTestingConfig = {
+        schemaId: "1",
+        experiments: [],
+        loggingLevels: {
+          global: "warn",
+          mods: [0, 100]
+        }
+      };
+
+      await setRemoteConfig(updatedTestingConfig);
+      await EWE.remoteConfig.sync();
+
+      await clearRequestLogs();
+
+      await EWE.testing.serverLogger.warn("test_event_no_data");
+
+      await new Promise(r => setTimeout(r, 2000));
+      const noLogs = await getRequestLogs(DEBUG_TELEMETRY_URL);
+      expect(noLogs).toHaveLength(0);
     });
   });
 });

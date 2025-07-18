@@ -109,6 +109,7 @@ describe("Remote config", function() {
     expect(await EWE.remoteConfig.getCountryCode()).toEqual("unknown");
     expect(await EWE.remoteConfig.getExperimentsConfig()).toEqual([]);
     expect(await EWE.remoteConfig.getCohortsConfig()).toEqual([]);
+    expect(await EWE.remoteConfig.getLoggingConfig()).toEqual({});
     expect(await EWE.remoteConfig.getSyncStatus()).toEqual({
       errors: []
     });

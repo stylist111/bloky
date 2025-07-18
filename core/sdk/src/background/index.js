@@ -29,6 +29,7 @@ import * as contentMessageDeferrer from "./content-message-deferrer.js";
 import * as telemetry from "./telemetry/index.js";
 import * as activePing from "./telemetry/active-ping.js";
 import * as serverLogUploader from "./telemetry/server-log-uploader.js";
+import * as serverLogConfig from "./telemetry/server-log-config.js";
 import * as subscriptions from "./subscriptions.js";
 import * as debugging from "./debugging.js";
 import * as filters from "./filters.js";
@@ -349,6 +350,8 @@ export async function start(addonInfo) {
 
   if (addonInfo && addonInfo.telemetryEventLogging) {
     await serverLogUploader.start(addonInfo.telemetryEventLogging);
+
+    await serverLogConfig.startRotationScheduler();
   }
 
   if (addonInfo && addonInfo.cdp) {

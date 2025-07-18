@@ -24,6 +24,7 @@ import {EventDispatcher} from "./types.js";
 import sentry from "./sentry.js";
 import {warn} from "./debugging.js";
 import {base64Encode} from "./set-operations.js";
+import {modHashString} from "../all/hashing.js";
 
 let _experimentsConfig = [];
 let emitter = new EventEmitter();
@@ -34,27 +35,6 @@ let onChanged = new EventDispatcher(dispatch => {
     dispatch(await getExperimentsInternal());
   });
 });
-
-async function modHashString(str) {
-  const sha1Buffer = await crypto.subtle.digest(
-    "SHA-1",
-    new TextEncoder().encode(str)
-  );
-  const sha1DataView = new DataView(sha1Buffer);
-
-  // For simplicity, we only use the first 32 bits of the sha1. This is enough
-  // entropy to give us a good uniform distribution.
-  const sha1Subset = sha1DataView.getUint32(0);
-  const unscaledRangeSize = Math.pow(2, 32);
-
-  // We get into the 0-1000 range by multiplying and dividing, rather than
-  // modulo, because modulo would introduce a bias towards the lower ends of the
-  // number range.
-  const scaledRangeSize = 1000;
-  const hash = Math.floor(sha1Subset * scaledRangeSize / unscaledRangeSize);
-
-  return hash;
-}
 
 /**
  * @ignore

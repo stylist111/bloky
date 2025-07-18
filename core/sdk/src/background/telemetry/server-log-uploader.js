@@ -18,7 +18,7 @@
 import browser from "webextension-polyfill";
 import {v4 as uuidv4} from "uuid";
 
-import {MILLIS_IN_SECOND, MILLIS_IN_MINUTE, MILLIS_IN_HOUR, MILLIS_IN_DAY} from "adblockpluscore/lib/time.js";
+import {MILLIS_IN_SECOND, MILLIS_IN_MINUTE, MILLIS_IN_HOUR} from "adblockpluscore/lib/time.js";
 import {getExtensionMetadata, postWithBearerToken} from "./eyeometry.js";
 import {onLogQueued, hasPendingLogs, startUploadTransaction,
         commitUploadTransaction, abortUploadTransaction}
@@ -26,20 +26,32 @@ import {onLogQueued, hasPendingLogs, startUploadTransaction,
 import {PersistentState} from "../persistence.js";
 import {default as remoteConfig} from "../remote-config.js";
 import {default as cohorts} from "../cohorts/index.js";
+import {default as serverLogConfig} from "./server-log-config.js";
 import {Scheduler} from "../../all/scheduler.js";
 import {Prefs, init as initializePrefs} from "../prefs.js";
 
 const ERROR_RETRY_ATTEMPTS = 3;
-const DEFAULT_ID_ROTATION_PERIOD = 7 * MILLIS_IN_DAY;
 
 let storage = new PersistentState("ewe:telemetry-server-log-uploader",
                                   browser.storage.local);
 
 let scheduler = null;
-let idRotationPeriod = DEFAULT_ID_ROTATION_PERIOD;
 function onLogQueuedCallback() {
   if (scheduler) {
     scheduler.checkNow();
+  }
+}
+
+async function cleanUpOldStorageData() {
+  let state = await storage.getStateLoaded();
+
+  // These fields have been moved to their own storage key in
+  // server-log-config.js, and so should no longer be tracked here. This cleanup
+  // can be removed after it has been live for a while.
+  if (state.nextRotationTime || state.rotatingClientId) {
+    delete state.nextRotationTime;
+    delete state.rotatingClientId;
+    await storage.save();
   }
 }
 
@@ -98,6 +110,7 @@ export async function start(debugTelemetry, interval = 10 * MILLIS_IN_SECOND,
   });
 
   onLogQueued.addListener(onLogQueuedCallback);
+  void cleanUpOldStorageData();
 }
 
 export function stop() {
@@ -116,32 +129,12 @@ export async function reset() {
   await startUploadTransaction();
   await commitUploadTransaction();
   await storage.save();
-  idRotationPeriod = DEFAULT_ID_ROTATION_PERIOD;
 }
 
 export async function isRunning() {
   return !!scheduler;
 }
 
-export function setRotationPeriod(periodInMs) {
-  idRotationPeriod = periodInMs;
-}
-
-async function getRotatingClientId() {
-  const state = await storage.getStateLoaded();
-  const currentTime = Date.now();
-  const nextRotation = state.nextRotationTime || 0;
-  const hasValidId = state.rotatingClientId && state.nextRotationTime;
-  const isTimeToRotate = !hasValidId || currentTime >= nextRotation;
-
-  if (isTimeToRotate) {
-    state.rotatingClientId = uuidv4();
-    state.nextRotationTime = currentTime + idRotationPeriod;
-    await storage.save();
-  }
-
-  return state.rotatingClientId;
-}
 
 async function sendServerLogs(debugTelemetry) {
   if (!await hasPendingLogs()) {
@@ -170,7 +163,7 @@ async function sendServerLogs(debugTelemetry) {
   metadata.cohorts = await cohorts.getAll();
 
   const payload = {
-    rotating_client_id: await getRotatingClientId(),
+    rotating_client_id: await serverLogConfig.getRotatingClientId(),
     utid: state.nextUtid,
     error_count: state.errorCount || 0,
     items,

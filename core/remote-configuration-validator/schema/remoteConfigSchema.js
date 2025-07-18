@@ -17,6 +17,7 @@
 
 import {All, Any, Conditions, Cohort, Event, Not, Params, Value} from "./cohortDefinitions.js";
 import {Experiment, Flags, Variant} from "./experimentDefinitions.js";
+import {LoggingLevels, LogLevel} from "./loggingLevelsDefinitions.js";
 
 export const remoteConfigSchema = {
   $schema: "http://json-schema.org/draft-06/schema#",
@@ -41,6 +42,9 @@ export const remoteConfigSchema = {
           items: {
             $ref: "#/definitions/Cohort"
           }
+        },
+        loggingLevels: {
+          $ref: "#/definitions/LoggingLevels"
         }
       },
       required: ["experiments", "schemaId"]
@@ -55,6 +59,8 @@ export const remoteConfigSchema = {
     Experiment,
     Variant,
     Flags,
-    Value
+    Value,
+    LoggingLevels,
+    LogLevel
   }
 };
