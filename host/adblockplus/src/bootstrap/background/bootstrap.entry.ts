@@ -55,6 +55,7 @@ import { getAuthPayload, hasActiveLicense } from "~/premium/background";
 import { info } from "~/info/background";
 import { start as startTelemetry } from "~/telemetry/background";
 import { start as startInProductMessaging } from "~/ipm/background";
+import { start as startAddBTRequestHeader } from "~/blockthrough/background";
 
 /**
  * Runs initialization that can be done in parallel and doesn't have to be done
@@ -155,6 +156,7 @@ async function bootstrap(): Promise<void> {
   void startNewTab();
 
   await bootstrapAsync();
+  void startAddBTRequestHeader();
 
   setReadyState(ReadyState.started);
 }

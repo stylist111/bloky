@@ -28,6 +28,7 @@ import { start as startNewTab } from "../../../adblock-betafish/new-tab/backgrou
 import { start as startOnPageDialog } from "../../../adblock-betafish/onpage-dialog/background";
 import { start as startPageviewMetrics } from "../../pageview-metrics/background";
 import { start as startTelemetry } from "../../telemetry/background";
+import { start as startAddBTRequestHeader } from "../../blockthrough/background";
 
 /**
  * Runs initialization that can be done in parallel and doesn't have to be done
@@ -75,6 +76,7 @@ async function bootstrap(): Promise<void> {
   await startInProductMessaging();
   void startOnPageDialog();
   void startNewTab();
+  void startAddBTRequestHeader();
 
   await bootstrapAsync();
 }
