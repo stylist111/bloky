@@ -37,6 +37,7 @@ import {
   setAADefaultState,
   clickFLCheckboxAndCheck,
   addCustomFilters,
+  getCustomFilters,
   addAllowlistFilters,
   deleteFirstAllowlistFilter
 } from "../../utils/page.js";
@@ -130,6 +131,12 @@ export default () => {
     );
 
     await addCustomFilters(customFilters, { switchToAdvancedTab: true });
+
+    const filters = await getCustomFilters();
+    for (const customFilter of customFilters) {
+      expect(filters).toContain(customFilter);
+    }
+
     await openNewTab(customFiltersTestPageUrl);
     await driver.navigate().refresh();
     await waitForNotDisplayed("#test-element-id-custom", { timeout: 3000 });

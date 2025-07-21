@@ -205,6 +205,16 @@ export async function removeFilterProgrammatically(initOptionsFn, filterText) {
 }
 
 /**
+ * Gets filters
+ */
+export async function getFiltersProgrammatically(initOptionsFn) {
+  const filters = await sendExtMessage(initOptionsFn, {
+    type: "filters.get",
+  });
+  return filters.map((f) => f.text);
+}
+
+/**
  * Verifies that the info injected on testUrl matches the actual extension values.
  */
 export async function verifyInjectedExtensionData(testUrl, dataAttribute, getActualExtensionData) {

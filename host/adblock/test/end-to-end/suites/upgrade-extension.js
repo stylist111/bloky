@@ -31,6 +31,7 @@ import {
   getOptionsHandle,
   upgradeExtension,
   addFiltersProgrammatically,
+  getFiltersProgrammatically,
   blockAds,
 } from "@eyeo/test-utils/extension";
 import { customBlockingFilter } from "@eyeo/test-utils/filters";
@@ -115,8 +116,12 @@ export default () => {
       browserDetails.fullBrowserVersion === "138.0.7204.0"
     ) {
       await addFiltersProgrammatically(initOptionsFiltersTab, customBlockingFilter);
+      expect(await getFiltersProgrammatically(initOptionsFiltersTab)).toContain(
+        customBlockingFilter,
+      );
     } else {
       await setCustomFilters([customBlockingFilter], true);
+      expect(await getCustomFilters()).toContain(customBlockingFilter);
     }
 
     // ads should be blocked before the domain is allowlisted
@@ -178,7 +183,7 @@ export default () => {
     await wait(
       async () => {
         customFilters = await getCustomFilters();
-        return customFilters[0] !== "";
+        return customFilters.length > 0;
       },
       5000,
       "Custom filters were empty",

@@ -34,6 +34,7 @@ import {
 import { allowlistingFilter, customFilters } from "@eyeo/test-utils/filters";
 import {
   addFiltersProgrammatically,
+  getFiltersProgrammatically,
   getOptionsHandle,
   removeAllFilters,
 } from "@eyeo/test-utils/extension";
@@ -41,6 +42,7 @@ import {
 import {
   checkBlockHidePage,
   setCustomFilters,
+  getCustomFilters,
   initOptionsFiltersTab,
   clickFilterlist,
   setAADefaultState,
@@ -127,9 +129,12 @@ export default () => {
       browserDetails.fullBrowserVersion === "138.0.7204.0"
     ) {
       await addFiltersProgrammatically(initOptionsFiltersTab, splitCustomFilters);
+      expect(await getFiltersProgrammatically(initOptionsFiltersTab)).toEqual(customFilters);
     } else {
       await setCustomFilters([splitCustomFilters]);
+      expect(await getCustomFilters()).toEqual(customFilters);
     }
+
     await openNewTab(customFiltersTestPageUrl);
     await driver.navigate().refresh();
     await waitForNotDisplayed("#test-element-id-custom", { timeout: 3000 });
@@ -147,8 +152,10 @@ export default () => {
       browserDetails.fullBrowserVersion === "138.0.7204.0"
     ) {
       await addFiltersProgrammatically(initOptionsFiltersTab, allowlistingFilter);
+      expect(await getFiltersProgrammatically(initOptionsFiltersTab)).toContain(allowlistingFilter);
     } else {
       await setCustomFilters([allowlistingFilter]);
+      expect(await getCustomFilters()).toContain(allowlistingFilter);
     }
 
     const websiteHandle = await openNewTab(blockHideUrl);

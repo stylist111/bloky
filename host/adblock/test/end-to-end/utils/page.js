@@ -130,7 +130,10 @@ export async function initOptionsPremiumFlTab(optionsHandle) {
 
 export async function getCustomFilters() {
   const filters = await waitForNotNullProperty("#txtFiltersAdvanced", "value", { timeout: 2000 });
-  return filters.split("\n");
+  return filters
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
 }
 
 export async function setCustomFilters(filters, append = false) {
