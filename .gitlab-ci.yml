@@ -205,9 +205,7 @@ publish-remote-validation:
     - npm publish --workspace=core/remote-configuration-validator
   rules:
     - !reference [.never-run-on-update-rules-trigger, rules]
-    # Do not trigger for push or schedule pipelines
-    - if: $CI_PIPELINE_SOURCE == "push"
-      when: never
+    # Do not trigger for schedule pipelines
     - if: $CI_PIPELINE_SOURCE == "schedule"
       when: never
     # Only run when:
