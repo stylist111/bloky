@@ -26,7 +26,7 @@ import {
   beforeAll,
   afterAll,
 } from "vitest";
-import browser from "webextension-polyfill";
+import browser, { types } from "webextension-polyfill";
 import { start as startNonPartnerDetection } from "../../src/background/nonpartner-detection";
 import {
   uboDetectedKey,
@@ -34,6 +34,17 @@ import {
   uboExtensionIds,
 } from "../../src/background";
 import { detectionEvent } from "../../src/shared";
+
+// Mock the @eyeo/webext-ad-filtering-solution module
+const loggingInfoSpy = vi.fn();
+vi.mock("@eyeo/webext-ad-filtering-solution", () => ({
+  telemetry: {
+    ServerLogger: class {
+      info(...args: any[]) { return loggingInfoSpy(...args); }
+      constructor() {}
+    }
+  }
+}));
 
 describe("nonpartner-detection", () => {
   let logger: any;
@@ -226,6 +237,34 @@ describe("nonpartner-detection", () => {
     expect(browser.tabs.onCreated.addListener).toHaveBeenCalled();
     expect(addTrustedMessageTypes).toHaveBeenCalled();
     expect(port.on).toHaveBeenCalledWith(detectionEvent, expect.any(Function));
+  });
+
+  it("should log bt_loader_blocked when webRequest.onErrorOccurred is triggered with correct url", () => {
+    // Arrange
+    startNonPartnerDetection({
+      logger,
+      port,
+      addTrustedMessageTypes,
+      prefs,
+    });
+
+    // Find the listener registered for webRequest.onErrorOccurred
+    const addListenerMock = browser.webRequest.onErrorOccurred.addListener;
+    expect(addListenerMock).toHaveBeenCalledWith(
+      expect.any(Function),
+      { urls: ["*://btloader.com/tag?*"], types: ["script"] },
+    );
+    const listener = addListenerMock.mock.calls[0][0];
+
+    // Act
+    const errorDetails = { error: "net::ERR_BLOCKED_BY_CLIENT" };
+    listener(errorDetails);
+
+    // Assert
+    expect(loggingInfoSpy).toHaveBeenCalledWith(
+      "bt_loader_blocked",
+      errorDetails.error
+    );
   });
 
   describe("Options Page", () => {

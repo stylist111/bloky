@@ -36,7 +36,7 @@ let parameters;
 
 const setupMockOnMessageResponse = (returnTrueArray: string[]): void => {
   const listener = vi.fn();
-  chrome.runtime.onMessageExternal.addListener.mockImplementation(listener);
+  browser.runtime.onMessageExternal.addListener.mockImplementation(listener);
   // Mock responses for each extension ID
   (browser.runtime.sendMessage as jest.Mock).mockImplementation(
     (extensionId) => {

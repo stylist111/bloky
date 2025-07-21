@@ -59,9 +59,13 @@ const browser = {
       addListener: vi.fn(),
     },
   },
+  webRequest: {
+    onErrorOccurred: {
+      addListener: vi.fn(),
+    },
+  },
 };
 
-Object.assign(global, {
-  chrome: browser,
-  browser,
-});
+vi.mock("webextension-polyfill", () => ({
+  default: browser,
+}));

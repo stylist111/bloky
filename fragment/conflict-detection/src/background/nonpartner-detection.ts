@@ -17,6 +17,7 @@
  */
 
 import browser from "webextension-polyfill";
+import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { prepareInlineScriptForInjection } from "@eyeo/webext-ad-filtering-solution/adblockpluscore/lib/snippets.js";
 import { detectionEvent } from "../shared/index.js";
 import {
@@ -32,6 +33,10 @@ const urlMatches = [
   { hostEquals: "www.facebook.com" },
   { hostEquals: "facebook.com" },
 ];
+
+const btUrls = ["*://btloader.com/tag?*"];
+
+const serverLogger = new ewe.telemetry.ServerLogger("conflict_detection");
 
 /**
  * Runs checks to detect if uBo is present in the page context.
@@ -210,4 +215,13 @@ export function start(parameters: StartInfo): void {
       await saveResultInPrefs(prefs, uboDetectedKey);
     }
   });
+
+  // Monitor request errors on *://btloader.com/tag?*, if it's blocked and AA is enabled,
+  // it indicates that a non-partner extension is present. Save it as a separate data point.
+  browser.webRequest.onErrorOccurred.addListener(
+    (details): void => {
+      serverLogger.info("bt_loader_blocked", details.error);
+    },
+    { urls: btUrls, types: ["script"] },
+  );
 }

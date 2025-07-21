@@ -4,6 +4,15 @@ export default {
       description: "User clicked the gear icon"
     }
   },
+  conflict_detection: {
+    bt_loader_blocked: {
+      description: "BTLoader was blocked, possibly indicating a non-partner extension is present",
+      data: {
+        description: "Browser string indicating the error that occurred",
+        type: "string"
+      }
+    }
+  },
   cohorts: {
     facts_snapshot: {
       description: "Cohorts facts snapshot used for cohort estimation",
