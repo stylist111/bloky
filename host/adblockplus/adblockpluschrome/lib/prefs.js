@@ -25,6 +25,18 @@ import { info } from "../../src/info/background";
 
 const keyPrefix = "pref:";
 
+/**
+ * Important!
+ * Below is a list of keys that will be excluded
+ * from the debug data that user can download or export from
+ * the host extension.
+ */
+const exclusionKeys = [
+  "allowlisting_authorizedKeys",
+  "bypass_authorizedKeys",
+  "pageviewMetrics_requestUrls"
+];
+
 let eventEmitter = new EventEmitter();
 let overrides = Object.create(null);
 
@@ -599,6 +611,21 @@ export let Prefs = {
       (key) => keyToPref(key) && !validPrefs.has(keyToPref(key))
     );
     if (unusedKeys.length > 0) await browser.storage.local.remove(unusedKeys);
+  },
+
+  /**
+   * Retrieves all of the Preference keys and their current values as a object
+   * Certain keys/values are excluded
+   *
+   * @return {any}
+   */
+  toJSON() {
+    const responseObject = { ...defaults, ...overrides };
+    exclusionKeys.forEach((key) => {
+      delete responseObject[key];
+    });
+
+    return responseObject;
   },
 
   /**

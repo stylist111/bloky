@@ -431,6 +431,9 @@
   "options_report_forum": {
     "message": "Quer ajuda da nossa comunidade? <a>Aceda ao Fórum</a>"
   },
+  "options_download_debug_data": {
+    "message": "Nossa equipe solicitou informações de depuração? <a>Baixar dados de depuração<\/a>"
+  },
   "options_social_description": {
     "message": "Tem uma pergunta ou sugestão? Estamos aqui para ajudar."
   },

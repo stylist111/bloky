@@ -407,7 +407,7 @@
   "options_filterList_lastDownload_tooManyFilters": {
     "description": "Error message in advanced tab when the dynamic rule limit has been exceeded",
     "message": "Filter list update could not be applied due to browser limitations. Reducing number of filter lists and custom filters may fix this problem."
-  },   
+  },
   "options_filterList_lastDownload_diffTooOld": {
     "description": "https://gitlab.com/adblockinc/ext/adblockplus/spec/-/blob/efcd245a208f15fdc7379d479266c674f34f6793/spec/abp/desktop-settings/advanced-tab.md#filter-list-error-statuses",
     "message": "Filter list update could not be applied due to an outdated extension version. Updating to a newer extension version may fix this problem."
@@ -462,6 +462,10 @@
   "options_report_forum": {
     "description": "'Support' section list item in Help tab",
     "message": "Want support from our community? <a>Go to the Forum</a>"
+  },
+  "options_download_debug_data": {
+    "description": "'Support' section list item in Help tab",
+    "message": "Has our team requested debug info? <a>Download debug data</a>"
   },
   "options_social_title": {
     "description": "'Section' title in Help tab",

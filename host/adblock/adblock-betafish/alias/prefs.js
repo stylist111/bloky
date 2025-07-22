@@ -28,6 +28,18 @@ import { statsStorageKey } from "../onpage-dialog/background/stats.types";
 
 const keyPrefix = "pref:";
 
+/**
+ * Important!
+ * Below is a list of keys that will be excluded
+ * from the debug data that user can download or export from
+ * the host extension.
+ */
+const exclusionKeys = [
+  "allowlisting_authorizedKeys",
+  "bypass_authorizedKeys",
+  "pageviewMetrics_requestUrls",
+];
+
 let eventEmitter = new EventEmitter();
 let overrides = Object.create(null);
 
@@ -569,14 +581,8 @@ export let Prefs = {
 
    */
   async toJSON() {
-    // Any Prefs we don't want to include in the debug data
-    const exclusiongKeys = [
-      "allowlisting_authorizedKeys",
-      "bypass_authorizedKeys",
-      "pageviewMetrics_requestUrls",
-    ];
     const responseObject = { ...defaults, ...overrides };
-    exclusiongKeys.forEach((key) => {
+    exclusionKeys.forEach((key) => {
       delete responseObject[key];
     });
 

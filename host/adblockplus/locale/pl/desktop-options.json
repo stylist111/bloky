@@ -431,6 +431,9 @@
   "options_report_forum": {
     "message": "Potrzebujesz pomocy od naszej społeczności? <a>Przejdź do forum</a>"
   },
+  "options_download_debug_data": {
+    "message": "Czy nasz zespół poprosił o informacje debugowania? <a>Pobierz dane debugowania<\/a>"
+  },
   "options_social_description": {
     "message": "Masz pytanie lub nowy pomysł? Jesteśmy tutaj po to, aby pomóc."
   },

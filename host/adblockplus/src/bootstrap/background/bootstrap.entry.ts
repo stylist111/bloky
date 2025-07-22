@@ -19,6 +19,7 @@ import * as logger from "../../logger/background";
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import { start as startContentFiltering } from "../../../adblockpluschrome/lib/contentFiltering.js";
 import { start as startDebug } from "../../../adblockpluschrome/lib/debug.js";
+import { start as startGetDebugInfo } from "../../debug/background";
 import { start as startDevTools } from "../../../adblockpluschrome/lib/devtools.js";
 import { start as startFilterConfiguration } from "../../../adblockpluschrome/lib/filterConfiguration.js";
 import { start as startMessageResponder } from "../../../adblockpluschrome/lib/messageResponder.js";
@@ -155,6 +156,7 @@ async function bootstrap(): Promise<void> {
   void startNewTab();
 
   await bootstrapAsync();
+  startGetDebugInfo();
   void startAddBTRequestHeader();
 
   setReadyState(ReadyState.started);

@@ -431,6 +431,9 @@
   "options_report_forum": {
     "message": "想要我们社区的支持？<a>前往论坛</a>"
   },
+  "options_download_debug_data": {
+    "message": "我们的团队是否已要求提供调试信息？<a>下载调试数据<\/a>"
+  },
   "options_social_description": {
     "message": "有问题还是新想法？我们来帮忙。"
   },

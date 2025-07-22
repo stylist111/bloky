@@ -701,6 +701,40 @@ const toggleDntNotification = (show) => {
   }
 };
 
+/**
+ * Creates a Blob from the debug data object, and downloads it
+ * to the desktop
+ *
+ * @param {any} data the debug data for the extension
+ */
+const downloadDebugData = (data) => {
+  if (!data) {
+    data = "Error: no debug data was returned";
+  }
+  const myBlob = new Blob([JSON.stringify(data, null, 4)], {
+    type: "text/plain"
+  });
+  const blobURL = URL.createObjectURL(myBlob);
+  const a = document.createElement("a");
+  a.setAttribute("href", blobURL);
+  // use the current date & time (without seconds or the timezone) to create
+  // a unique file name for the user
+  const currentLocalTimeNoSpecialChars = new Date()
+    .toISOString()
+    .split(".")[0]
+    .slice(0, -2)
+    .replace(/[-T:]/g, "");
+  a.setAttribute(
+    "download",
+    `adblockplus-data-${currentLocalTimeNoSpecialChars}.txt`
+  );
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(blobURL);
+};
+
 function execAction(action, element) {
   if (
     element.getAttribute("aria-disabled") === "true" ||
@@ -736,6 +770,15 @@ function execAction(action, element) {
     }
     case "close-dialog":
       closeDialog();
+      return true;
+    case "download-debug-data":
+      browser.runtime
+        .sendMessage({
+          type: "debug.getDebugInfo"
+        })
+        .then((data) => {
+          downloadDebugData(data);
+        });
       return true;
     case "hide-more-filters-section":
       $("#more-filters").setAttribute("aria-hidden", true);

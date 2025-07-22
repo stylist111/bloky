@@ -1,5 +1,6 @@
 # Unreleased
 
+- Added a download debug information to the Help tab of the desktop options page (EXT-995)
 - Added cohorts to telemetry and CDP. (EXT-980)
 - Updated snippets to 2.3.0
 - Removed encoded license from Bypass and Public APIs

@@ -18,7 +18,7 @@
 /* For ESLint: List any global identifiers used in this file below */
 /* global browser  */
 
-import { getDebugInformation } from "@eyeo-fragments/debug-information";
+import { getDebugInformation } from "@eyeo-fragments/debug-information/background";
 
 import { Prefs } from "~/alias/prefs";
 import { getUserId } from "~/id/background/index";

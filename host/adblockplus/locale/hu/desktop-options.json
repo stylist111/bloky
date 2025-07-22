@@ -431,6 +431,9 @@
   "options_report_forum": {
     "message": "Szeretne támogatást a közösségtől? <a>Irány a fórum</a>"
   },
+  "options_download_debug_data": {
+    "message": "Kért a csapatunk hibakeresési információkat? <a>Hibakeresési adatok letöltése<\/a>"
+  },
   "options_social_description": {
     "message": "Kérdése vagy új ötlete van? Azért vagyunk itt, hogy segítsünk."
   },
