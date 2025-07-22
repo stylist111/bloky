@@ -132,7 +132,7 @@ afterEach(async function() {
 
   // This timeout must be higher than MAX_API_CALL_DURATION, which is used by
   // runInBackgroundPage, otherwise the mocha timeout may hide the real failure
-  setMinTimeout(this, MAX_API_CALL_DURATION + 6000);
+  setMinTimeout(this, MAX_API_CALL_DURATION + 7000);
   await clearFilters();
   await clearStorage();
   await resetFeatureFlags();
