@@ -19,6 +19,7 @@
 @import "../../theme/ui/light.css";
 @import "../../components/ui/io-circle-toggle.css";
 @import "../../components/ui/io-popup-footer.css";
+@import "../../experiments/grow-157/qrcode.css";
 
 :root {
   --border-width-thick-doubled: calc(2 * var(--border-width-thick));
