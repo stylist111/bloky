@@ -2,6 +2,7 @@
 
 - Added cohorts to telemetry and CDP. (EXT-980)
 - Updated snippets to 2.3.0
+- Removed encoded license from Bypass and Public APIs
 
 # 4.23.2 - 2025-07-15
 

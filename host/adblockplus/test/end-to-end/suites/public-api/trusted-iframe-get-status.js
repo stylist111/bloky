@@ -47,6 +47,7 @@ function getCombinations() {
       }
     }
   }
+
   return combinations;
 }
 
@@ -116,9 +117,9 @@ export default () => {
         name: extension.flattrName,
         version: extension.version,
         result: {
+          hasPremium: premium,
           aa,
-          allowlist: expectedAllowlist,
-          license: premium ? expect.any(String) : null
+          allowlist: expectedAllowlist
         }
       };
 

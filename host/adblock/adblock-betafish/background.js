@@ -673,8 +673,7 @@ initialize
     startPublicAPI({
       port,
       addTrustedMessageTypes: ext.addTrustedMessageTypes,
-      isPremiumActive: License.isActiveLicense,
-      getEncodedLicense: License.getBypassPayload,
+      hasPremium: License.isActiveLicense,
     });
     addAllowlistingListeners();
     await startConflictDetection({

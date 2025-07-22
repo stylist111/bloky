@@ -35,8 +35,7 @@ describe("Public API - Background", () => {
   const integrationName = getIntegrationName(manifest.short_name);
 
   const mockAddTrustedMessageTypes = vi.fn();
-  const mockIsPremiumActive = vi.fn(() => false);
-  const mockGetEncodedLicense = vi.fn(() => "test-license");
+  const mockHasPremium = vi.fn(() => false);
 
   // Helper to initialize the API and return the event callback
   function setupAndGetEventCallback(eventName = requestEvent) {
@@ -45,16 +44,14 @@ describe("Public API - Background", () => {
     start({
       port: mockPort,
       addTrustedMessageTypes: mockAddTrustedMessageTypes,
-      isPremiumActive: mockIsPremiumActive,
-      getEncodedLicense: mockGetEncodedLicense,
+      hasPremium: mockHasPremium,
     });
     return mockPort.on.mock.calls[callNo][1];
   }
 
   beforeEach(() => {
     mockAddTrustedMessageTypes.mockReset();
-    mockIsPremiumActive.mockReset();
-    mockGetEncodedLicense.mockReset();
+    mockHasPremium.mockReset();
   });
 
   afterEach(() => {
@@ -65,8 +62,7 @@ describe("Public API - Background", () => {
     start({
       port: mockPort,
       addTrustedMessageTypes: mockAddTrustedMessageTypes,
-      isPremiumActive: mockIsPremiumActive,
-      getEncodedLicense: mockGetEncodedLicense,
+      hasPremium: mockHasPremium,
     });
 
     expect(mockPort.on).toHaveBeenCalledTimes(2);
@@ -217,8 +213,7 @@ describe("Public API - Background", () => {
 
     expect(mockHandler).toHaveBeenCalledWith({ data: "test" });
     const handlerContext = mockHandler.mock.contexts[0];
-    expect(handlerContext.isPremiumActive).toBe(mockIsPremiumActive);
-    expect(handlerContext.getEncodedLicense).toBe(mockGetEncodedLicense);
+    expect(handlerContext.hasPremium).toBe(mockHasPremium);
     expect(handlerContext.sender).toBe(sender);
 
     expect(response).toEqual({

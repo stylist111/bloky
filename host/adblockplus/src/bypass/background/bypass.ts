@@ -21,7 +21,6 @@ import {
   port
 } from "../../core/messaging/background";
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
-import { getAuthPayload, getPremiumState } from "../../premium/background";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { info } from "../../info/background";
 import * as logger from "../../logger/background";
@@ -297,11 +296,9 @@ async function handleGetAuthPayloadMessage(
     return null;
   }
 
-  const premiumState = getPremiumState();
-  const payload = premiumState.isActive ? getAuthPayload() : null;
   const extensionInfo = await getExtensionInfo(sender);
 
-  return { payload, extensionInfo };
+  return { extensionInfo };
 }
 
 /**

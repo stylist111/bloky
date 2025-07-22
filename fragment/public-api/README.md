@@ -64,11 +64,9 @@ type StatusResponse = Array<{
    */
   result?: {
     /**
-     * License information for the extension.
-     * - `null`: No active license.
-     * - `string`: Active license key.
+     * True if the user has a premium subscription active, false otherwise.
      */
-    license: string | null;
+    hasPremium: boolean;
 
     /**
      * True if Acceptable Ads (AA) is enabled, false otherwise.

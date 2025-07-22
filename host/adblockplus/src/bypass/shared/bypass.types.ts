@@ -60,11 +60,6 @@ export interface AllowlistState {
  */
 export interface PayloadAndExtensionInfo {
   /**
-   * Payload to verify authenticity of Premium license data
-   */
-  payload: string | null;
-
-  /**
    * Information about the extension
    */
   extensionInfo: ExtensionInfo | null;

@@ -98,12 +98,8 @@ async function handleUsersIsPayingMessage(message, sender) {
 
   // Retrieve payload
   const extensionInfo = await getExtensionInfo(message, sender);
-  const payload = License.isActiveLicense() ? License.getBypassPayload() : null;
-  if (License.isActiveLicense() && !payload) {
-    log("no bypass mode payload");
-  }
 
-  return { payload, extensionInfo };
+  return { extensionInfo };
 }
 
 /**

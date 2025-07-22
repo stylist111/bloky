@@ -34,9 +34,8 @@ const name = getIntegrationName(short_name);
 /**
  * @typedef {Object} StartParams
  * @property {any} port A reference to the port object
+ * @property {Function} hasPremium Function to get the premium state of the user
  * @property {addTrustedMessageTypesFunction} addTrustedMessageTypes Function to add the trusted message types
- * @property {Function} isPremiumActive Function to get the premium state of the user
- * @property {Function} getEncodedLicense Function to get the encoded license of the user
  */
 
 /**
@@ -83,12 +82,7 @@ async function injectScriptInFrame({ tabId, frameId, func, args }) {
  *
  * @param {StartParams} StartParams The start parameters
  */
-export function start({
-  port,
-  addTrustedMessageTypes,
-  isPremiumActive,
-  getEncodedLicense,
-}) {
+export function start({ port, hasPremium, addTrustedMessageTypes }) {
   // Initialize the main world API
   port.on(initializeEvent, async (message, sender) => {
     const tabId = (sender.tab || {}).id;
@@ -141,10 +135,7 @@ export function start({
 
     const response = {};
     try {
-      response.result = await handler.bind(
-        { isPremiumActive, getEncodedLicense, sender },
-        params,
-      )();
+      response.result = await handler.bind({ hasPremium, sender }, params)();
     } catch (e) {
       console.warn("An error occurred in the Public API for method", method, e);
       response.error = e.message;

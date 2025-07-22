@@ -113,13 +113,13 @@ async function processNextEvent(): Promise<void> {
   if (event && isTrustedEvent(event) && isAuthRequestEvent(event)) {
     try {
       const result = await getPayloadAndExtensionInfo(event);
-      if (!result || (!result.payload && !result.extensionInfo)) {
+      if (!result?.extensionInfo) {
         throw new Error("Premium request rejected");
       }
 
-      const { payload, extensionInfo } = result;
+      const { extensionInfo } = result;
 
-      let detail = { detail: { payload, extensionInfo } };
+      let detail = { detail: { extensionInfo } };
       if (typeof cloneInto === "function") {
         // Firefox requires content scripts to clone objects
         // that are passed to the document

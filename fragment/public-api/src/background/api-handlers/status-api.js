@@ -57,10 +57,10 @@ export async function getStatus() {
   const tabId = this.sender.tab.id;
   const allowlist = await getAllowlistStatus({ tabId });
   const aa = await ewe.subscriptions.hasAcceptableAdsEnabled();
-  const license = this.isPremiumActive() ? this.getEncodedLicense() : null;
+  const hasPremium = await this.hasPremium();
 
   return {
-    license,
+    hasPremium,
     aa,
     allowlist,
   };

@@ -27,9 +27,9 @@ import {
   sendExtCommandInTrustedIframe,
   setPausedStateFromPopup,
   initOptionsFiltersTab,
+  isPremiumLabelPresent,
   setAADefaultState,
   clickFilterlist,
-  isPremiumLabelPresent,
   disablePremiumProgrammatically,
   loadPageWithTrustedIframe,
   checkSubscriptionsState,
@@ -111,9 +111,9 @@ export default () => {
         name: extension.flattrName,
         version: extension.version,
         result: {
+          hasPremium: premium,
           aa,
           allowlist: expectedAllowlist,
-          license: premium ? expect.any(String) : null,
         },
       };
 

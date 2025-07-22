@@ -20,10 +20,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { getStatus } from "~/background/api-handlers/status-api";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
-const mockContext = (tabId = 1, premium = false, license = null) => ({
+const mockContext = (tabId = 1, premium = false) => ({
   sender: { tab: { id: tabId } },
-  isPremiumActive: () => premium,
-  getEncodedLicense: () => license,
+  hasPremium: () => premium,
 });
 
 describe("getStatus", () => {
@@ -34,7 +33,7 @@ describe("getStatus", () => {
     ewe.subscriptions.hasAcceptableAdsEnabled.mockReset();
   });
 
-  it("should return status with allowlist, aa, and no license if not premium", async () => {
+  it("should return status with allowlist, aa, and hasPremium false", async () => {
     ewe.filters.getAllowingFilters.mockResolvedValue(["filter1"]);
     ewe.filters.getMetadata.mockResolvedValue({
       origin: "popup",
@@ -45,7 +44,7 @@ describe("getStatus", () => {
     const ctx = mockContext(42, false);
     const result = await getStatus.call(ctx);
     expect(result).toEqual({
-      license: null,
+      hasPremium: false,
       aa: true,
       allowlist: {
         status: true,
@@ -55,15 +54,15 @@ describe("getStatus", () => {
     });
   });
 
-  it("should return status with license if premium is active", async () => {
+  it("should return status with premium is active", async () => {
     ewe.filters.getAllowingFilters.mockResolvedValue([]);
     ewe.filters.getMetadata.mockResolvedValue({});
     ewe.subscriptions.hasAcceptableAdsEnabled.mockResolvedValue(false);
 
-    const ctx = mockContext(7, true, "encoded-license");
+    const ctx = mockContext(7, true);
     const result = await getStatus.call(ctx);
     expect(result).toEqual({
-      license: "encoded-license",
+      hasPremium: true,
       aa: false,
       allowlist: {
         status: false,

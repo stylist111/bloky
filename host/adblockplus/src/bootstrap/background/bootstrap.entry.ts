@@ -51,7 +51,7 @@ import { start as startGlobals } from "../../globals/background";
 import { start as startPublicAPI } from "@eyeo-fragments/public-api";
 import { port, addTrustedMessageTypes } from "~/core/messaging/background";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
-import { getAuthPayload, hasActiveLicense } from "~/premium/background";
+import { hasActiveLicense } from "~/premium/background";
 import { info } from "~/info/background";
 import { start as startTelemetry } from "~/telemetry/background";
 import { start as startInProductMessaging } from "~/ipm/background";
@@ -132,8 +132,7 @@ async function bootstrap(): Promise<void> {
   startPublicAPI({
     port,
     addTrustedMessageTypes,
-    isPremiumActive: hasActiveLicense,
-    getEncodedLicense: getAuthPayload
+    hasPremium: hasActiveLicense
   });
   void startConflictDetection({
     logger,
