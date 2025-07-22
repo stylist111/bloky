@@ -37,7 +37,9 @@ import experiments from "./public-api/trusted-iframe-experiments.js";
 import getStatus from "./public-api/trusted-iframe-get-status.js";
 import eyeometry from "./data-collection/eyeometry.js";
 import youtubeAutoAllowlist from "./youtube-auto-allowlist.js";
-import campaigns from "./ipm/campaigns.js";
+import ipmCampaigns from "./ipm/ipm-campaigns.js";
+import opdCampaigns from "./ipm/opd-campaigns.js";
+import newtabCampaigns from "./ipm/newtab-campaigns.js";
 import helpFlow from "./popup-page/helpflow.js";
 import infoInjector from "./info-injector.js";
 
@@ -90,7 +92,9 @@ export default () => {
     });
 
     describe("IPM", function () {
-      describe("Campaigns", campaigns);
+      describe("Campaigns - General", ipmCampaigns);
+      describe("Campaigns - OPD", opdCampaigns);
+      describe("Campaigns - Newtab", newtabCampaigns);
     });
     // Needs to be the last suite to run because the extension gets uninstalled
     describe("Smoke Tests - Uninstall", uninstall);

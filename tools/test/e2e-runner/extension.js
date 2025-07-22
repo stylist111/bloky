@@ -547,7 +547,7 @@ export async function setIPMCooldowns(initOptionsFn) {
   return sendExtMessage(initOptionsFn, {
     type: "prefs.set",
     key: "onpage_dialog_cool_down",
-    value: 2000,
+    value: 500,
   });
 }
 

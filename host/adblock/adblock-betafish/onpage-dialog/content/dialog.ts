@@ -257,7 +257,8 @@ const showDialog = async function (message: StartInfo) {
     }
   }
 
-  const baseShadow = dialogParentElement.attachShadow({ mode: "closed" });
+  const mode = navigator.webdriver ? "open" : "closed";
+  const baseShadow = dialogParentElement.attachShadow({ mode });
 
   loadResources(baseShadow);
   setLangAndDirAttributes(dialogElement);

@@ -1,0 +1,148 @@
+/*
+ * This file is part of AdBlock  <https://getadblock.com/>,
+ * Copyright (C) 2024-present  Adblock, Inc.
+ *
+ * AdBlock is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * AdBlock is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AdBlock.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* eslint-disable camelcase */
+
+import { expect } from "expect";
+import {
+  getOptionsHandle,
+  updateSettings,
+  setIPMServer,
+  pingIPMServer,
+  setIPMServerResponse,
+  getIPMCommands,
+  setIPMCooldowns,
+  getSelectedFragmentType,
+  resetIPMFragment,
+  setIPMFragment,
+} from "@eyeo/test-utils/extension";
+import { findUrl, openNewTab } from "@eyeo/test-utils/driver";
+import { localTestPageUrl } from "@eyeo/test-utils/urls";
+import { updateUrl } from "../../utils/urls.js";
+import { initOptionsGeneralTab } from "../../utils/page.js";
+import { expectedIPMCommandsNewtab } from "../../utils/ipms.js";
+
+export default () => {
+  /* ########################################## */
+  /* ############ Fragment: Legacy ############ */
+  /* ########################################## */
+
+  const fragmentType = "legacy";
+
+  describe(`Selected fragment: ${fragmentType}`, () => {
+    before(async function () {
+      await setIPMServer(initOptionsGeneralTab);
+      await setIPMCooldowns(initOptionsGeneralTab);
+
+      // `suppress_update_page` must be set to false before running tests,
+      // so that newtabs can be triggered. This setting is otherwise set to true
+      // to prevent real newtab IPMs from opening and interfering with the tests.
+      await updateSettings(initOptionsGeneralTab, "suppress_update_page", false);
+      await setIPMFragment(getOptionsHandle, fragmentType);
+      const selectedFragmentType = await getSelectedFragmentType(getOptionsHandle);
+      expect(selectedFragmentType).toEqual(fragmentType);
+    });
+
+    after(async function () {
+      await initOptionsGeneralTab(getOptionsHandle());
+      await updateSettings(initOptionsGeneralTab, "suppress_update_page", true);
+      await resetIPMFragment(getOptionsHandle);
+    });
+
+    it("checks IPM versions and ping alarm", async function () {
+      // IPMs are not supported in Firefox
+      if (browserDetails.browserName === "firefox") {
+        this.skip();
+      }
+      await setIPMServerResponse("test_adblock_newtab");
+      const payload = await pingIPMServer(initOptionsGeneralTab);
+      const { capabilities } = payload.ipm;
+      let { pingAlarm } = await driver.executeAsyncScript(async (callback) => {
+        pingAlarm = await browser.alarms.get("pingalarm");
+        callback({ pingAlarm });
+      });
+
+      expect(pingAlarm.scheduledTime).toBeGreaterThan(Date.now());
+      expect(capabilities).toEqual([
+        { name: "multi_ipm_response", version: 1 },
+        { name: "create_on_page_dialog", version: 7 },
+        { name: "create_tab", version: 6 },
+        { name: "delete_commands", version: 2 },
+      ]);
+    });
+
+    it("deletes an active campaign", async function () {
+      // IPMs are not supported in Firefox
+      if (browserDetails.browserName === "firefox") {
+        this.skip();
+      }
+      await setIPMServerResponse("test_adblock_newtab");
+      await pingIPMServer(initOptionsGeneralTab);
+
+      let ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
+      expect(ipmCommands).toEqual(expectedIPMCommandsNewtab);
+
+      await setIPMServerResponse("test_adblock_delete");
+      await pingIPMServer(initOptionsGeneralTab);
+
+      ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
+      expect(ipmCommands).toEqual({});
+
+      await openNewTab(localTestPageUrl);
+      await findUrl(updateUrl, { exists: false });
+    });
+
+    it("checks IPM errors", async function () {
+      // IPMs are not supported in Firefox
+      if (browserDetails.browserName === "firefox") {
+        this.skip();
+      }
+      await setIPMServerResponse("test_error_uknown_command");
+      await pingIPMServer(initOptionsGeneralTab);
+      await setIPMServerResponse("test_error_invalid_command");
+      await pingIPMServer(initOptionsGeneralTab);
+      await setIPMServerResponse("test_error_missing_params");
+      await pingIPMServer(initOptionsGeneralTab);
+      await setIPMServerResponse("test_error_wrong_version");
+      await pingIPMServer(initOptionsGeneralTab);
+
+      const ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
+      expect(ipmCommands).toEqual({});
+
+      await openNewTab(localTestPageUrl);
+      await findUrl(updateUrl, { exists: false });
+    });
+
+    it("does not trigger a campaign on Firefox", async function () {
+      if (browserDetails.browserName !== "firefox") {
+        this.skip();
+      }
+      await setIPMServerResponse("test_adblock_newtab");
+      const ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
+      expect(ipmCommands).toEqual({});
+
+      await openNewTab(localTestPageUrl);
+      await findUrl(updateUrl, { exists: false });
+    });
+  });
+
+  /* ########################################## */
+  /* ############ Fragment: Future ############ */
+  /* ########################################## */
+
+  // No e2e tests yet.
+};

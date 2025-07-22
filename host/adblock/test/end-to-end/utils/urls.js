@@ -18,8 +18,9 @@
 export const installUrl = "https://getadblock.com/en/installed";
 export const premiumUrl = "https://getadblock.com/en/premium";
 export const uninstallUrl = "https://getadblock.com/en/uninstall";
-export const updateUrl = "https://getadblock.com/en/update/latest/";
+export const updateUrl = "https://getadblock.com/en/update/latest/?ipmId=test_adblock_newtab";
+export const updateUrlForce = "https://getadblock.com/en/update/latest/?ipmId=test_adblock_force";
 export const updateUrlPriorityHigh =
-  "https://getadblock.com/en/update/latest/?ipmId=test_adblock_newtab_priority_high";
+  "https://getadblock.com/en/update/latest/?ipmId=test_adblock_priority_high";
 export const updateUrlPriorityLow =
-  "https://getadblock.com/en/update/latest/?ipmId=test_adblock_newtab_priority_low";
+  "https://getadblock.com/en/update/latest/?ipmId=test_adblock_priority_low";

@@ -29,65 +29,205 @@ export const expectedIPMCommandsNewtab = {
     command_name: "create_tab",
     method: "default",
     expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
-    url: "/update",
+    url: "/update?ipmId=test_adblock_newtab",
     version: 6,
   },
 };
 
-export const expectedIPMCommandsPriority = {
-  test_adblock_newtab_priority_low: {
+export const expectedIPMCommandsNavigation_future = {
+  test_adblock_navigation_future: {
     attributes: {
       language: expect.stringMatching(/^[a-z]{2,3}-[A-Z]{2}$/),
       received: expect.any(Number),
     },
-    ipm_id: "test_adblock_newtab_priority_low",
+    ipm_id: "test_adblock_navigation_future",
+    device_id: "test_adblock_ipm",
+    command_name: "create_on_page_dialog",
+    timing: "after_navigation",
+    version: 7,
+    domain_list: "google.com,wikipedia.org,example.com",
+    sub_title: "OPD navigation title",
+    lower_body: "ipmID: test_adblock_navigation",
+    upper_body: "This is a test OPD based on navigation",
+    button_label: "CTA navigation",
+    license_state_list: "free",
+    expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+    button_target: "/premium",
+    display_duration: 1,
+  },
+};
+
+export const expectedIPMCommandsExclusion_future = {
+  test_adblock_exclusion_future: {
+    attributes: {
+      language: expect.stringMatching(/^[a-z]{2,3}-[A-Z]{2}$/),
+      received: expect.any(Number),
+    },
+    ipm_id: "test_adblock_exclusion_future",
+    device_id: "test_adblock_ipm",
+    command_name: "create_on_page_dialog",
+    timing: "after_navigation",
+    version: 7,
+    domain_list: "~example.com",
+    sub_title: "OPD exclusion title",
+    lower_body: "ipmID: test_adblock_exclusion",
+    upper_body: "This is a test OPD based on exclusion",
+    button_label: "CTA exclusion",
+    license_state_list: "free",
+    expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+    button_target: "/premium",
+    display_duration: 1,
+  },
+};
+
+export const expectedIPMCommandsCookie_future = {
+  test_adblock_cookie_future: {
+    attributes: {
+      language: expect.stringMatching(/^[a-z]{2,3}-[A-Z]{2}$/),
+      received: expect.any(Number),
+    },
+    ipm_id: "test_adblock_cookie_future",
+    device_id: "test_adblock_ipm",
+    command_name: "create_on_page_dialog",
+    timing: "cookie_banner",
+    version: 7,
+    domain_list: "dw.com,welt.de,example.com",
+    sub_title: "OPD cookie title",
+    lower_body: "ipmID: test_adblock_cookie",
+    upper_body: "This is a test cookie baner OPD",
+    button_label: "CTA cookie",
+    license_state_list: "free",
+    expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+    button_target: "/premium",
+    display_duration: 1,
+    priority: 100,
+  },
+};
+
+export const expectedIPMCommandsNavigation_legacy = {
+  test_adblock_navigation_legacy: {
+    attributes: {
+      language: expect.stringMatching(/^[a-z]{2,3}-[A-Z]{2}$/),
+      received: expect.any(Number),
+    },
+    ipm_id: "test_adblock_navigation_legacy",
+    device_id: "test_adblock_ipm",
+    command_name: "create_on_page_dialog",
+    timing: "after_navigation",
+    version: 7,
+    domain_list: "google.com,wikipedia.org,example.com",
+    sub_title: "OPD navigation title",
+    lower_body: "ipmID: test_adblock_navigation",
+    upper_body: "This is a test OPD based on navigation",
+    button_label: "CTA navigation",
+    license_state_list: "free",
+    expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+    button_target: "/premium",
+    display_duration: 1,
+  },
+};
+
+export const expectedIPMCommandsExclusion_legacy = {
+  test_adblock_exclusion_legacy: {
+    attributes: {
+      language: expect.stringMatching(/^[a-z]{2,3}-[A-Z]{2}$/),
+      received: expect.any(Number),
+    },
+    ipm_id: "test_adblock_exclusion_legacy",
+    device_id: "test_adblock_ipm",
+    command_name: "create_on_page_dialog",
+    timing: "after_navigation",
+    version: 7,
+    domain_list: "~example.com",
+    sub_title: "OPD exclusion title",
+    lower_body: "ipmID: test_adblock_exclusion",
+    upper_body: "This is a test OPD based on exclusion",
+    button_label: "CTA exclusion",
+    license_state_list: "free",
+    expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+    button_target: "/premium",
+    display_duration: 1,
+  },
+};
+
+export const expectedIPMCommandsCookie_legacy = {
+  test_adblock_cookie_legacy: {
+    attributes: {
+      language: expect.stringMatching(/^[a-z]{2,3}-[A-Z]{2}$/),
+      received: expect.any(Number),
+    },
+    ipm_id: "test_adblock_cookie_legacy",
+    device_id: "test_adblock_ipm",
+    command_name: "create_on_page_dialog",
+    timing: "cookie_banner",
+    version: 7,
+    domain_list: "dw.com,welt.de,example.com",
+    sub_title: "OPD cookie title",
+    lower_body: "ipmID: test_adblock_cookie",
+    upper_body: "This is a test cookie baner OPD",
+    button_label: "CTA cookie",
+    license_state_list: "free",
+    expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+    button_target: "/premium",
+    display_duration: 1,
+    priority: 100,
+  },
+};
+
+export const expectedIPMCommandsPriority = {
+  test_adblock_priority_low: {
+    attributes: {
+      language: expect.stringMatching(/^[a-z]{2,3}-[A-Z]{2}$/),
+      received: expect.any(Number),
+    },
+    ipm_id: "test_adblock_priority_low",
     device_id: "test_adblock_ipm",
     command_name: "create_tab",
     method: "default",
     expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
-    url: "/update?ipmId=test_adblock_newtab_priority_low",
+    url: "/update?ipmId=test_adblock_priority_low",
     version: 6,
   },
-  test_adblock_newtab_priority_high: {
+  test_adblock_priority_high: {
     attributes: {
       language: expect.stringMatching(/^[a-z]{2,3}-[A-Z]{2}$/),
       received: expect.any(Number),
     },
-    ipm_id: "test_adblock_newtab_priority_high",
+    ipm_id: "test_adblock_priority_high",
     device_id: "test_adblock_ipm",
     command_name: "create_tab",
     method: "default",
     license_state_list: "free",
     expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
-    url: "/update?ipmId=test_adblock_newtab_priority_high",
+    url: "/update?ipmId=test_adblock_priority_high",
     priority: 3,
     version: 6,
   },
 };
 
 export const expectedIPMCommandsLowPriority = {
-  test_adblock_newtab_priority_low: {
+  test_adblock_priority_low: {
     attributes: {
       language: expect.stringMatching(/^[a-z]{2,3}-[A-Z]{2}$/),
       received: expect.any(Number),
     },
-    ipm_id: "test_adblock_newtab_priority_low",
+    ipm_id: "test_adblock_priority_low",
     device_id: "test_adblock_ipm",
     command_name: "create_tab",
     method: "default",
     expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
-    url: "/update?ipmId=test_adblock_newtab_priority_low",
+    url: "/update?ipmId=test_adblock_priority_low",
     version: 6,
   },
 };
 
 export const expectedIPMCommandsPremium = {
-  test_adblock_newtab_premium: {
+  test_adblock_premium: {
     attributes: {
       language: expect.stringMatching(/^[a-z]{2,3}-[A-Z]{2}$/),
       received: expect.any(Number),
     },
-    ipm_id: "test_adblock_newtab_premium",
+    ipm_id: "test_adblock_premium",
     device_id: "test_adblock_ipm",
     command_name: "create_tab",
     method: "default",
