@@ -146,9 +146,9 @@ browser.runtime.onInstalled.addListener((details) => {
 // TODO: Remove this once the shortcut removal experiment is over
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
 browser.commands.onCommand.addListener(async (command) => {
-  const isDisabled = await ewe.experiments.getFlag("is-shortcut-removed");
-  if (!isDisabled && command === "toggle_pause") {
-    await adblockIsPaused(!(await adblockIsPaused()));
+  if (command === "toggle_pause") {
+    const isDisabled = await ewe.experiments.getFlag("is-shortcut-removed");
+    !isDisabled && (await adblockIsPaused(!(await adblockIsPaused())));
     ServerMessages.recordGeneralMessage("pause_shortcut_used");
   }
 });
