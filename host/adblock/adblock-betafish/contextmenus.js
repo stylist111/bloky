@@ -16,12 +16,15 @@
  */
 
 /* For ESLint: List any global identifiers used in this file below */
-/* global browser, ext, adblockIsPaused,
-   License, reloadTab, getSettings, */
+/* global browser, ext, License, reloadTab, getSettings, */
 
 import { Prefs } from "prefs";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
-import { allowlistTab, removeAllAllowlistRulesForTab } from "../src/pause/background";
+import {
+  adblockIsPaused,
+  allowlistTab,
+  removeAllAllowlistRulesForTab,
+} from "../src/pause/background";
 import { FilterOrigin } from "../src/filters/shared";
 import { setBadge } from "../adblockplusui/adblockpluschrome/lib/action";
 import ServerMessages from "./servermessages";
@@ -34,7 +37,7 @@ const updateBadge = async function (tab) {
     return;
   }
 
-  if (adblockIsPaused() || !!(await ewe.filters.getAllowingFilters(tab.id)).length) {
+  if ((await adblockIsPaused()) || !!(await ewe.filters.getAllowingFilters(tab.id)).length) {
     setBadge(tab.id, { number: "" });
   }
 };
@@ -171,12 +174,12 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
     switch (menuItemId) {
       case "pause_adblock_everywhere":
         ServerMessages.recordGeneralMessage("cm_pause_clicked");
-        adblockIsPaused(true);
+        await adblockIsPaused(true);
         updateButtonUIAndContextMenus(tab);
         break;
       case "resume_blocking_ads":
         ServerMessages.recordGeneralMessage("cm_unpause_clicked");
-        adblockIsPaused(false);
+        await adblockIsPaused(false);
         updateButtonUIAndContextMenus(tab);
         break;
       case "resume_blocking_ads_unallow":
@@ -268,7 +271,7 @@ let updateContextMenuItems = async function (page) {
 
   const isTabAllowlisted = !!(await ewe.filters.getAllowingFilters(page.id)).length;
 
-  if (adblockIsPaused()) {
+  if (await adblockIsPaused()) {
     await browser.contextMenus.create(contextMenuItem.unpauseAll, checkLastError);
   } else if (isTabAllowlisted) {
     await browser.contextMenus.create(contextMenuItem.unAllowList, checkLastError);

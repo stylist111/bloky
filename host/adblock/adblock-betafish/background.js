@@ -426,7 +426,7 @@ const getCurrentTabInfo = function (secondTime, tabId) {
           url: String(page.url || tab.url),
           id: page.id,
           settings: getSettings(),
-          paused: adblockIsPaused(),
+          paused: await adblockIsPaused(),
           domainPaused: await isTabTemporaryAllowlisted(page.id),
           blockCountPage: await getBlockedPerPage(tab),
           blockCountTotal: Stats.blocked_total,
@@ -739,7 +739,6 @@ browser.runtime.onInstalled.addListener(async (details) => {
 // Attach methods to window
 // eslint-disable-next-line no-restricted-globals
 Object.assign(self, {
-  adblockIsPaused,
   getUserFilters,
   updateFilterLists,
   checkUpdateProgress,

@@ -16,9 +16,10 @@
  */
 
 /* For ESLint: List any global identifiers used in this file below */
-/* global browser, adblockIsPaused, replacedCounts */
+/* global browser, replacedCounts */
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
+import { adblockIsPaused } from "../src/pause/background";
 import { getSettings, setSetting, settings } from "./prefs/background";
 import { isEmptyObject, chromeStorageSetHelper } from "./utilities/background/bg-functions";
 
@@ -77,16 +78,16 @@ const LocalDataCollection = (function getLocalDataCollection() {
     }
   };
 
-  const filterListener = function ({ request, filter }) {
-    if (getSettings().local_data_collection && !adblockIsPaused()) {
+  const filterListener = async function ({ request, filter }) {
+    if (getSettings().local_data_collection && !(await adblockIsPaused())) {
       addFilterToCache(request, filter);
     } else if (!getSettings().local_data_collection) {
       LocalDataCollection.end();
     }
   };
 
-  const adReplacedListener = function (tabId, url) {
-    if (getSettings().local_data_collection && !adblockIsPaused()) {
+  const adReplacedListener = async function (tabId, url) {
+    if (getSettings().local_data_collection && !(await adblockIsPaused())) {
       const domain = new URL(url).hostname;
       initializeDomainIfNeeded(domain);
       dataCollectionCache.domains[domain].adsReplaced += 1;

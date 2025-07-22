@@ -18,12 +18,7 @@
 import * as browser from "webextension-polyfill";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { FilterOrigin } from "../../filters/shared";
-import {
-  createFilterMetaData,
-  chromeStorageSetHelper,
-  sessionStorageGet,
-  sessionStorageSet,
-} from "~/utilities/background/bg-functions";
+import { createFilterMetaData } from "~/utilities/background/bg-functions";
 import { Prefs } from "~/alias/prefs";
 import { initialize } from "~/alias/subscriptionInit";
 import ServerMessages from "~/servermessages";
@@ -43,20 +38,19 @@ const createDomainAllowlistRule = function (domain: string): string {
 // false, AdBlock will not be paused.
 // Returns: undefined if newValue was specified, otherwise it returns true
 // if paused, false otherwise.
-const adblockIsPaused = function (newValue?: boolean): boolean | undefined {
+const adblockIsPaused = async function (newValue?: boolean): Promise<boolean | undefined> {
   if (newValue === undefined) {
-    return sessionStorageGet(pausedKey) === true;
+    const response = await browser.storage.local.get(pausedKey);
+    return response[pausedKey] === true;
   }
 
   if (newValue) {
-    chromeStorageSetHelper(pausedKey, true, async () => {
-      await ewe.filters.add([pausedFilterText1, pausedFilterText2]);
-    });
+    await browser.storage.local.set({ [pausedKey]: true });
+    await ewe.filters.add([pausedFilterText1, pausedFilterText2]);
   } else {
-    void ewe.filters.remove([pausedFilterText1, pausedFilterText2]);
-    void browser.storage.local.remove(pausedKey);
+    await ewe.filters.remove([pausedFilterText1, pausedFilterText2]);
+    await browser.storage.local.remove(pausedKey);
   }
-  sessionStorageSet(pausedKey, newValue);
   return undefined;
 };
 
@@ -98,7 +92,6 @@ const removeAllAllowlistRulesForTab = async (tabId: number): Promise<boolean> =>
  * @return {boolean} true, if the  tab is temporarily allowlisted
  *                   false, if the tab is not temporarily allowlisted
  */
-// return a boolean indicating whether the tab is paused
 const isTabTemporaryAllowlisted = async (tabId: number): Promise<boolean> => {
   const filters = await ewe.filters.getAllowingFilters(tabId);
   let metaDataMatch = false;
@@ -109,7 +102,7 @@ const isTabTemporaryAllowlisted = async (tabId: number): Promise<boolean> => {
   return metaDataMatch;
 };
 
-// If AdBlock was paused on shutdown (adblock_is_paused is true), then
+// If AdBlock was paused on shutdown , then
 // unpause / remove the global allow-list rules at startup.
 async function start(): Promise<void> {
   const response = await browser.storage.local.get(pausedKey);
@@ -118,9 +111,6 @@ async function start(): Promise<void> {
     await ewe.filters.remove([pausedFilterText1, pausedFilterText2]);
     await browser.storage.local.remove(pausedKey);
   }
-  // Remove all old domain pauses
-  const domainPausedKey = "domainPaused";
-  void browser.storage.local.remove(domainPausedKey);
 }
 
 function handleExtensionStartup(): void {
@@ -128,12 +118,37 @@ function handleExtensionStartup(): void {
 }
 browser.runtime.onStartup.addListener(handleExtensionStartup);
 
+/**
+ * Checks if there are any temporary pause rules when the extension is updated,
+ * if so, we remove any/all of them, and remove the pause key
+ * This will will unpause AdBlock when a new version of the extension is released
+ *
+ */
+async function cleanUpPauseRules(): Promise<void> {
+  await initialize.then();
+  const customRules = await ewe.filters.getUserFilters();
+  const onlyPauseRules = customRules.filter(
+    (filter) => filter.text === pausedFilterText1 || filter.text === pausedFilterText2,
+  );
+  if (onlyPauseRules.length && (await ewe.experiments.getFlag("is-cleanup-pause")) === true) {
+    await ewe.filters.remove([pausedFilterText1, pausedFilterText2]);
+    await browser.storage.local.remove(pausedKey);
+    ServerMessages.recordGeneralMessage("pause_rules_cleaned");
+  }
+}
+
+browser.runtime.onInstalled.addListener((details) => {
+  if (details.reason === "update") {
+    void cleanUpPauseRules();
+  }
+});
+
 // TODO: Remove this once the shortcut removal experiment is over
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
 browser.commands.onCommand.addListener(async (command) => {
   const isDisabled = await ewe.experiments.getFlag("is-shortcut-removed");
   if (!isDisabled && command === "toggle_pause") {
-    adblockIsPaused(!adblockIsPaused());
+    await adblockIsPaused(!(await adblockIsPaused()));
     ServerMessages.recordGeneralMessage("pause_shortcut_used");
   }
 });

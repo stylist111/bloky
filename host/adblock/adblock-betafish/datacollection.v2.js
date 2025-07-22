@@ -16,11 +16,11 @@
  */
 
 /* For ESLint: List any global identifiers used in this file below */
-/* global browser, adblockIsPaused, getUserFilters, */
+/* global browser, getUserFilters, */
 
 import * as info from "info";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
-import { isTabTemporaryAllowlisted } from "../src/pause/background";
+import { adblockIsPaused, isTabTemporaryAllowlisted } from "../src/pause/background";
 import SubscriptionAdapter from "./subscriptionadapter";
 import postData from "./fetch-util";
 import { getSettings, settings, setSetting } from "./prefs/background";
@@ -90,8 +90,8 @@ const DataCollectionV2 = (function getDataCollectionV2() {
     if (
       details.url &&
       details.type === "main_frame" &&
-      !adblockIsPaused() &&
-      (await !isTabTemporaryAllowlisted(details.tabId))
+      !(await adblockIsPaused()) &&
+      !(await isTabTemporaryAllowlisted(details.tabId))
     ) {
       const domain = parseUri(details.url).host;
       if (!dataCollectionCache.domains[domain]) {
@@ -103,8 +103,8 @@ const DataCollectionV2 = (function getDataCollectionV2() {
     }
   };
 
-  const filterListener = function ({ request, filter }) {
-    if (getSettings().data_collection_v2 && !adblockIsPaused()) {
+  const filterListener = async function ({ request, filter }) {
+    if (getSettings().data_collection_v2 && !(await adblockIsPaused())) {
       addFilterToCache(request, filter);
     } else if (!getSettings().data_collection_v2) {
       ewe.reporting.onBlockableItem.removeListener(filterListener, REPORTING_OPTIONS);

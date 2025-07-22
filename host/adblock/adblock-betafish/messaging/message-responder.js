@@ -18,7 +18,7 @@
 /* For ESLint: List any global identifiers used in this file below */
 /* global browser, isTrustedSender,  getUserFilters,
    addCustomFilter, countCache, checkUpdateProgress,
-   adblockIsPaused, pageIsWhitelisted, getCurrentTabInfo,
+   pageIsWhitelisted, getCurrentTabInfo,
    openTab, updateFilterLists, isTrustedSenderDomain, updateButtonUIAndContextMenus,
    addYTChannelListeners, removeYTChannelListeners, openYTManagedSubPage,
    addTwitchAllowlistListeners, removeTwitchAllowlistListeners, abpPrefPropertyNames,
@@ -28,7 +28,7 @@
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { toPlainFilterError } from "../../adblockplusui/adblockpluschrome/lib/messaging/types";
 import { getDebugInfo } from "../debug/background/index";
-
+import { adblockIsPaused } from "../../src/pause/background";
 import {
   getSettings,
   setSetting,
@@ -181,9 +181,7 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendResponse(pageIsWhitelisted(JSON.parse(message.page)));
       break;
     case "adblockIsPaused": {
-      const isPaused = adblockIsPaused(message.newValue);
-      sendResponse(isPaused);
-      return Promise.resolve(isPaused);
+      return adblockIsPaused(message.newValue);
     }
     case "allowlistTab": {
       sendResponse({});
