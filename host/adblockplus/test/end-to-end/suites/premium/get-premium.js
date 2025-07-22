@@ -53,11 +53,13 @@ async function enablePremiumByUI() {
   await clickOnDisplayedElement(selector);
 
   const { url } = await findUrl(premiumUrl);
-  const premiumTestModeUrl = `${url}&testmode`;
+  const premiumTestModeUrl = `${url}&optimizely_disable=true&testmode`;
   await driver.navigate().to(premiumTestModeUrl);
 
-  await clickOnDisplayedElement('[data-plan="monthly"]');
-  await clickOnDisplayedElement('[type="submit"]');
+  await clickOnDisplayedElement("#get-premium-monthly", {
+    timeout: 4000,
+    scrollIntoView: true
+  });
 
   await wait(
     async () => {

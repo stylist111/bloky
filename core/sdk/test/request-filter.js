@@ -568,13 +568,13 @@ describe("Blocking", function() {
         await page.expectResource("image.png").toBeBlocked();
       });
 
-      it("injects header if sitekey signature is invalild", async function() {
+      it("injects header if sitekey signature is invalid", async function() {
         await addFilter(CSP_FILTER);
         await addFilter(`@@$csp,sitekey=${SITEKEY}`);
         expect(await checkViolatedDirective("?invalid-sitekey=1")).toEqual("img-src");
       });
 
-      it("blocks a request if sitekey signature is invalild", async function() {
+      it("blocks a request if sitekey signature is invalid", async function() {
         await addFilter("/image.png^$image");
         await addFilter(`@@$sitekey=${SITEKEY}`);
         let page = new Page("image.html?invalid-sitekey=1");
