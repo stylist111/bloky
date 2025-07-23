@@ -31,7 +31,7 @@ import {
   setIPMFragment,
 } from "@eyeo/test-utils/extension";
 import { findUrl, openNewTab } from "@eyeo/test-utils/driver";
-import { localTestPageUrl } from "@eyeo/test-utils/urls";
+import { localTestPageUrl } from "@eyeo/test-utils/host-urls";
 import { updateUrl } from "../../utils/urls.js";
 import { initOptionsGeneralTab } from "../../utils/page.js";
 import { expectedIPMCommandsNewtab } from "../../utils/ipms.js";

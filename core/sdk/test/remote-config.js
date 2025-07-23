@@ -24,7 +24,7 @@ import {
   waitForAssertion
 } from "./utils.js";
 import {EWE} from "./messaging.js";
-import {TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
+import {TEST_ADMIN_PAGES_URL} from "@eyeo/test-utils/sdk-urls";
 import {MILLIS_IN_SECOND} from "adblockpluscore/lib/time.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 

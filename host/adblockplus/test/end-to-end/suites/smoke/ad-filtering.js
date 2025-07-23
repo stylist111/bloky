@@ -29,8 +29,11 @@ import {
   blockHideUrl,
   customFiltersTestPageUrl,
   snippetTestPageUrl
-} from "@eyeo/test-utils/urls";
-import { customFilters, allowlistedDomain } from "@eyeo/test-utils/filters";
+} from "@eyeo/test-utils/host-urls";
+import {
+  customFilters,
+  allowlistedDomain
+} from "@eyeo/test-utils/host-filters";
 import {
   initOptionsGeneralTab,
   checkBlockHidePage,

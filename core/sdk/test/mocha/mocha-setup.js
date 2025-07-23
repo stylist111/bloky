@@ -19,7 +19,7 @@
 
 /* eslint-disable mocha/no-top-level-hooks */
 
-import {TEST_PAGES_URL} from "../test-server-urls.js";
+import {TEST_PAGES_URL} from "@eyeo/test-utils/sdk-urls";
 import {Page, Popup, setMinTimeout, isIncognito} from "../utils.js";
 import {runInBackgroundPage, getLastError, clearAllTestEvents,
         resetFeatureFlags, MAX_API_CALL_DURATION} from "../messaging.js";

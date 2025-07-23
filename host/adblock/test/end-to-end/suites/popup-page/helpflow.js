@@ -1,5 +1,5 @@
 import { expect } from "expect";
-import { blockHideUrl } from "@eyeo/test-utils/urls";
+import { blockHideUrl } from "@eyeo/test-utils/host-urls";
 import { getOptionsHandle } from "@eyeo/test-utils/extension";
 import {
   getDisplayedElement,

@@ -16,8 +16,8 @@
  */
 
 import expect from "expect";
+import {TEST_PAGES_URL, TEST_PAGES_DOMAIN} from "@eyeo/test-utils/sdk-urls";
 
-import {TEST_PAGES_URL, TEST_PAGES_DOMAIN} from "./test-server-urls.js";
 import {Page, clickElement, executeScript, isEdge, setMinTimeout, sleep,
         waitForAssertion}
   from "./utils.js";

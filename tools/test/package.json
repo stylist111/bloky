@@ -7,20 +7,24 @@
     "./extension": "./e2e-runner/extension.js",
     "./hooks": "./e2e-runner/hooks.js",
     "./public-api": "./e2e-runner/public-api.js",
-    "./filters": "./test-server/filters.js",
-    "./urls": "./test-server/urls.js"
+    "./host-filters": "./test-server/host-server/filters.js",
+    "./host-urls": "./test-server/host-server/urls.js",
+    "./sdk-urls": "./test-server/sdk-server/test-server-urls.js",
+    "./test-server-manager": "./test-server/manager.js"
   },
   "devDependencies": {
     "@eyeo/get-browser-binary": "0.23.0",
     "eslint": "8.34.0",
     "expect": "29.7.0",
     "express": "^4.17.1",
-    "prettier": "3.3.3"
+    "prettier": "3.3.3",
+    "ws": "^7.4.6"
   },
   "scripts": {
     "lint": "npx eslint . && npx prettier --check .",
     "prettier-fix": "npx prettier --write .",
-    "start-server": "node test-server/start.js",
+    "start-host-server": "node test-server/start-host.js",
+    "start-sdk-server": "node test-server/start-sdk.js",
     "test": "echo 'No unit tests in test-utils'"
   }
 }

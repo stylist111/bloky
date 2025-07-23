@@ -18,7 +18,7 @@
 import expect from "expect";
 import browser from "webextension-polyfill";
 
-import {TEST_PAGES_URL, TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
+import {TEST_PAGES_URL, TEST_ADMIN_PAGES_URL} from "@eyeo/test-utils/sdk-urls";
 import {Page, isFirefox, firefoxVersion, isIncognito, readFile,
         writeFile, setMinTimeout, expectElemHideHidden, waitForAssertion, waitForSubscriptionsToDownload} from "./utils.js";
 import {subTestCustom1, subTestNoDNR} from "./fixtures/subscriptions.js";

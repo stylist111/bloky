@@ -21,8 +21,8 @@ import {exec} from "child_process";
 
 import yargs from "yargs";
 import {hideBin} from "yargs/helpers";
+import {runSDKTestServer, killSDKTestServer} from "@eyeo/test-utils/test-server-manager";
 
-import {runTestServer, killTestServer} from "./test-server-manager.js";
 import {isMain} from "../scripts/utils.js";
 
 const isScriptInvokedFromCLI = isMain(import.meta.url);
@@ -60,7 +60,7 @@ async function subsRunMV3(args) {
   }
 
   if (!args["use-external-server"]) {
-    await runTestServer();
+    await runSDKTestServer();
   }
 
   try {
@@ -71,7 +71,7 @@ async function subsRunMV3(args) {
   }
   finally {
     if (isScriptInvokedFromCLI) {
-      await killTestServer();
+      await killSDKTestServer();
     }
   }
 }
@@ -136,7 +136,7 @@ if (isScriptInvokedFromCLI) {
 }
 
 async function cleanInterrupt() {
-  await killTestServer();
+  await killSDKTestServer();
   process.exit(1);
 }
 

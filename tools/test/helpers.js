@@ -21,29 +21,6 @@ import path from "path";
 import { download } from "@eyeo/get-browser-binary";
 
 /**
- * Finds the project root directory by looking for a package.json file.
- *
- * @param {string} [startDir] - The directory to start looking in
- * @param {string} [lookupFile="package.json"] - The file to look for in the directory
- * @returns {string|*}
- */
-export function findProjectRoot(startDir = process.cwd(), lookupFile = "package.json") {
-  // Convert the directory to an absolute path, and resolve the lookup file path.
-  const dir = path.resolve(startDir);
-
-  if (fs.existsSync(path.resolve(dir, lookupFile))) {
-    return dir;
-  }
-
-  const parentDir = path.dirname(dir);
-  if (parentDir === dir) {
-    throw new Error("Project root not found");
-  }
-
-  return findProjectRoot(parentDir);
-}
-
-/**
  * Downloads the latest release builds from Gitlab
  *
  * @param {string} extName - The name of the extension e.g. adblock or adblockplus

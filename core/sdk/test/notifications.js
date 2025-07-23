@@ -17,7 +17,7 @@
 
 import expect from "expect";
 
-import {TEST_PAGES_URL} from "./test-server-urls.js";
+import {TEST_PAGES_URL} from "@eyeo/test-utils/sdk-urls";
 import {setMinTimeout} from "./utils.js";
 import {wait} from "./polling.js";
 import {EWE, runInBackgroundPage, expectTestEvents} from "./messaging.js";

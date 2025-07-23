@@ -20,7 +20,8 @@
 import { spawn } from "child_process";
 import fs from "fs";
 
-import { runTestServer, killTestServer, buildHelperExtension } from "../index.js";
+import { runHostTestServer, killHostTestServer } from "../test-server/manager.js";
+import { buildHelperExtension } from "../helper-extension/build.js";
 
 // Extract command-line arguments after the script name
 // e.g., --grep "Smoke"
@@ -60,13 +61,13 @@ export async function runE2ETests(config) {
   await buildHelperExtension(process.env.MANIFEST_VERSION, helperExtensionPath);
   console.log(`Helper extension built to ${helperExtensionPath}`);
 
-  await runTestServer();
+  await runHostTestServer();
 
   try {
     await removeScreenshots(screenshotsPath);
     await runMochaTests(config);
   } finally {
     console.log("Stopping test server...");
-    await killTestServer();
+    await killHostTestServer();
   }
 }

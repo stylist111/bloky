@@ -167,7 +167,7 @@ When running tests on Docker, the test-server is run automatically on Docker
 container, no need to run it locally.
 
 ```
-npm run -w @eyeo/webext-ad-filtering-solution test-server
+npm run -w @eyeo/test-utils start-sdk-server
 ```
 
 #### Using the test extension

@@ -19,7 +19,7 @@ import expect from "expect";
 import browser from "webextension-polyfill";
 
 import {TEST_PAGES_URL, TEST_PAGES_DOMAIN, SITEKEY, TEST_ADMIN_PAGES_URL}
-  from "./test-server-urls.js";
+  from "@eyeo/test-utils/sdk-urls";
 import {Page, waitForInvisibleElement, executeScript, setMinTimeout,
         getVisibleElement, getVisibleElementInFrame, expectElemHideHidden,
         expectElemHideVisible, isFirefox, firefoxVersion,

@@ -1,10 +1,11 @@
+import {runSDKTestServer, killSDKTestServer} from "@eyeo/test-utils/test-server-manager";
+
 import {run as runBuild} from "./build.js";
 import {run as runTests} from "../test/runners/functional.js";
-import {runTestServer, killTestServer} from "./test-server-manager.js";
 
 async function run() {
   try {
-    await runTestServer();
+    await runSDKTestServer();
     await runBuild();
     await runTests();
   }
@@ -12,7 +13,7 @@ async function run() {
     console.error(e);
   }
   finally {
-    await killTestServer();
+    await killSDKTestServer();
   }
 }
 

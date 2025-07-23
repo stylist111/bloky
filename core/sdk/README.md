@@ -452,7 +452,7 @@ which is already running, you can use the `--use-external-server`
 flag.
 
 ```
-npm run -w @eyeo/webext-ad-filtering-solution test-server&
+npm run -w @eyeo/test-utils start-sdk-server &
 npm run build -- --scope @eyeo/webext-ad-filtering-solution -- --use-external-server
 ```
 

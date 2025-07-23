@@ -18,7 +18,7 @@
 import expect from "expect";
 
 import {TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN, SITEKEY}
-  from "./test-server-urls.js";
+  from "@eyeo/test-utils/sdk-urls";
 import {wait} from "./polling.js";
 import {Page, Popup, setMinTimeout, setEndpointResponse,
         syncSubHasLastFilter, syncSubHasNoLastFilter,

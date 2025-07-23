@@ -26,7 +26,10 @@ import {
   waitForNotDisplayed
 } from "@eyeo/test-utils/driver";
 import { getOptionsHandle, subscriptionUrl } from "@eyeo/test-utils/extension";
-import { easylistFilter, customBlockingFilter } from "@eyeo/test-utils/filters";
+import {
+  easylistFilter,
+  customBlockingFilter
+} from "@eyeo/test-utils/host-filters";
 
 import {
   initOptionsAdvancedTab,

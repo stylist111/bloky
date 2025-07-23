@@ -21,7 +21,7 @@ npm run -w @eyeo/webext-ad-filtering-solution test:bundle
 ## Start test server
 
 ```
-npm run -w @eyeo/webext-ad-filtering-solution test-server
+npm run -w @eyeo/test-utils start-sdk-server
 ```
 
 ## Run tests with test-runner

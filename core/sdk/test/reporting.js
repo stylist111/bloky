@@ -19,7 +19,7 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 
 import {TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, CROSS_DOMAIN,
-        TEST_ADMIN_PAGES_URL, TEST_PAGES_PORT} from "./test-server-urls.js";
+        TEST_ADMIN_PAGES_URL, TEST_PAGES_PORT} from "@eyeo/test-utils/sdk-urls";
 import {Page, Popup, setMinTimeout, waitForAssertion, isMV3, isEdge,
         executeScript, getVisibleElement, setEndpointResponse}
   from "./utils.js";

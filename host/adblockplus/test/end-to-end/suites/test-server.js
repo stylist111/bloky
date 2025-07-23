@@ -19,7 +19,7 @@ import { expect } from "expect";
 import { By } from "selenium-webdriver";
 
 import { openNewTab } from "@eyeo/test-utils/driver";
-import { localTestPageUrl } from "@eyeo/test-utils/urls";
+import { localTestPageUrl } from "@eyeo/test-utils/host-urls";
 
 export default () => {
   it("loads a test server page", async function () {

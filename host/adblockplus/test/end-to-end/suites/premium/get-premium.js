@@ -27,8 +27,8 @@ import {
   wait
 } from "@eyeo/test-utils/driver";
 import { getOptionsHandle, getPremiumEmail } from "@eyeo/test-utils/extension";
-import { dcTestPageUrl } from "@eyeo/test-utils/urls";
-import { dcFilters } from "@eyeo/test-utils/filters";
+import { dcTestPageUrl } from "@eyeo/test-utils/host-urls";
+import { dcFilters } from "@eyeo/test-utils/host-filters";
 
 import {
   initOptionsGeneralTab,

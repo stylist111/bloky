@@ -19,7 +19,7 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 
 import {TEST_PAGES_URL, TEST_PAGES_DOMAIN, TEST_ADMIN_PAGES_URL}
-  from "./test-server-urls.js";
+  from "@eyeo/test-utils/sdk-urls";
 import {clearRequestLogs, isMV3, Page, setEndpointResponse, shouldBeLoaded,
         setMinTimeout, waitForAssertion, waitForSubscriptionToBeSynchronized,
         clearEndpointResponse} from "./utils.js";

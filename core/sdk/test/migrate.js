@@ -18,7 +18,7 @@
 import expect from "expect";
 import browser from "webextension-polyfill";
 
-import {TEST_PAGES_URL} from "./test-server-urls.js";
+import {TEST_PAGES_URL} from "@eyeo/test-utils/sdk-urls";
 import {isMV3, Page, expectElemHideHidden} from "./utils.js";
 import {subAntiCVLocal, subTestCustom1, subEasylistLive,
         subEasylistPlusGermanyLive} from "./fixtures/subscriptions.js";

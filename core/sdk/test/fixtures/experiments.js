@@ -15,7 +15,7 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {TEST_ADMIN_PAGES_URL} from "../test-server-urls.js";
+import {TEST_ADMIN_PAGES_URL} from "@eyeo/test-utils/sdk-urls";
 
 export const EXPERIMENT_FLAG = "onboarding_flow";
 export const EXPERIMENT_URL = `${TEST_ADMIN_PAGES_URL}/experiments.json`;

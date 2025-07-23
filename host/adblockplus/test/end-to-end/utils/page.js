@@ -20,7 +20,7 @@ import { expect } from "expect";
 import { By, until } from "selenium-webdriver";
 import moment from "moment";
 
-import { localTestPageUrl } from "@eyeo/test-utils/urls";
+import { localTestPageUrl } from "@eyeo/test-utils/host-urls";
 import {
   getDisplayedElement,
   waitForNotDisplayed,

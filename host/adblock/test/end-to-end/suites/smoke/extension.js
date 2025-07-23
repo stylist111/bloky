@@ -25,7 +25,7 @@ import {
   getDisplayedElement,
   clickOnDisplayedElement,
 } from "@eyeo/test-utils/driver";
-import { blockHideUrl } from "@eyeo/test-utils/urls";
+import { blockHideUrl } from "@eyeo/test-utils/host-urls";
 import {
   getOptionsHandle,
   reloadExtension,

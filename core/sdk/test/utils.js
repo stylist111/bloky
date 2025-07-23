@@ -23,7 +23,7 @@ import {fuzzSuspendServiceWorker, waitForServiceWorkerInitialization,
         EWE, getTestEvents, clearTestEvents, runInBackgroundPage}
   from "./messaging.js";
 import {wait} from "./polling.js";
-import {TEST_PAGES_URL, TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
+import {TEST_PAGES_URL, TEST_ADMIN_PAGES_URL} from "@eyeo/test-utils/sdk-urls";
 
 export const RECENT_FIREFOX_VERSION = 86; // Latest Firefox on February 2021
 export const HIDETIMEOUT = isFuzzingServiceWorker() ? 15000 : 1500;

@@ -17,7 +17,7 @@
 
 import expect from "expect";
 import {EWE, clearTestEvents, getTestEvents} from "./messaging.js";
-import {TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
+import {TEST_ADMIN_PAGES_URL} from "@eyeo/test-utils/sdk-urls";
 import {Page, setEndpointResponse, clearEndpointResponse,
         setMinTimeout, expectElemHideVisible, expectElemHideHidden,
         syncSubHasLastFilter, syncSubHasNoLastFilter,

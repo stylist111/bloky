@@ -24,10 +24,10 @@ import fs from "fs";
 import yargs from "yargs";
 import webdriver from "selenium-webdriver";
 import {BROWSERS, getMajorVersion} from "@eyeo/get-browser-binary";
+import {runSDKTestServer, killSDKTestServer} from "@eyeo/test-utils/test-server-manager";
 
 import {isMain} from "../../scripts/utils.js";
 import {getHandle, switchToHandle, getNewDriver, writeScreenshot, setMinDriverTimeout, quitDriver} from "./driver.js";
-import {runTestServer, killTestServer} from "../../scripts/test-server-manager.js";
 
 const isScriptInvokedFromCLI = isMain(import.meta.url);
 
@@ -585,14 +585,14 @@ export async function run() {
   const args = parseArguments();
   try {
     if (isScriptInvokedFromCLI) {
-      await runTestServer(args.params ? args.params.verbose : false);
+      await runSDKTestServer(args.params ? args.params.verbose : false);
     }
 
     await runTests(args);
   }
   finally {
     if (isScriptInvokedFromCLI) {
-      await killTestServer();
+      await killSDKTestServer();
     }
   }
 }
@@ -770,7 +770,7 @@ async function runTests({manifest, browser, version, params, testKinds}) {
 if (isScriptInvokedFromCLI) {
   run().catch(err => {
     console.error(err instanceof Error ? err.stack : `Error: ${err}`);
-    killTestServer();
+    killSDKTestServer();
     process.exit(1);
   });
 }

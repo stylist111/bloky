@@ -17,8 +17,8 @@
 
 import crypto from "crypto";
 
-import { blockHideUrl } from "@eyeo/test-utils/urls";
-import { updatePrefs } from "@eyeo/test-utils/extension";
+import { blockHideUrl } from "../test-server/host-server/urls.js";
+import { updatePrefs } from "./extension.js";
 
 const algorithm = {
   name: "RSASSA-PKCS1-v1_5",

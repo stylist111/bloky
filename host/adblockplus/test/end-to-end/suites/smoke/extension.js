@@ -42,7 +42,7 @@ import {
   manageFilterListsError,
   checkSubscriptionsState
 } from "../../utils/page.js";
-import { blockHideUrl } from "@eyeo/test-utils/urls";
+import { blockHideUrl } from "@eyeo/test-utils/host-urls";
 import { installUrl } from "../../utils/urls.js";
 import { getDefaultFilterLists } from "../../utils/dataset.js";
 

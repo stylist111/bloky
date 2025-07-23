@@ -22,9 +22,9 @@
    > node run-tests.js
 
    Helper extension built to .../monorepo/extensions/fragment/test/dist/devenv/helper-extension
-   Test pages server listening at http://localhost:3005
-   IPM server listening at http://localhost:3007
-   License server listening at http://localhost:3006
+   Host pages server listening at http://localhost:3005
+   Host IPM server listening at http://localhost:3007
+   Host license server listening at http://localhost:3006
 
      Fragments Tests
    Installed chromium 134.0.6998.89 ...

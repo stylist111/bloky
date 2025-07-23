@@ -22,7 +22,7 @@ import { By } from "selenium-webdriver";
 import { expect } from "expect";
 
 import { openNewTab, getTabId, getFromStorage, wait } from "./driver.js";
-import { localTestPageUrl, blockHideLocalhostUrl } from "../test-server/urls.js";
+import { localTestPageUrl, blockHideLocalhostUrl } from "../test-server/host-server/urls.js";
 
 export const subscriptionUrl = "https://abptestpages.org/en/abp-testcase-subscription.txt";
 export const ytAllowlistUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";

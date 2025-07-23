@@ -15,7 +15,7 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {TEST_PAGES_URL, TEST_ADMIN_PAGES_URL} from "../test-server-urls.js";
+import {TEST_PAGES_URL, TEST_ADMIN_PAGES_URL} from "@eyeo/test-utils/sdk-urls";
 
 export const VALID_FILTER_TEXT = `|${TEST_PAGES_URL}$image`;
 export const COMMENT_FILTER_TEXT = "!comment";

@@ -30,8 +30,8 @@ import {
   aaTestPageUrl,
   customFiltersTestPageUrl,
   snippetTestPageUrl,
-} from "@eyeo/test-utils/urls";
-import { allowlistingFilter, customFilters } from "@eyeo/test-utils/filters";
+} from "@eyeo/test-utils/host-urls";
+import { allowlistingFilter, customFilters } from "@eyeo/test-utils/host-filters";
 import {
   addFiltersProgrammatically,
   getFiltersProgrammatically,

@@ -22,7 +22,7 @@ import {MILLIS_IN_MINUTE, MILLIS_IN_HOUR, MILLIS_IN_SECOND} from "adblockpluscor
 
 import {EWE, addFilter, getTestEvents} from "./messaging.js";
 import {CROSS_DOMAIN, TEST_ADMIN_PAGES_URL, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
-        CROSS_DOMAIN_URL} from "./test-server-urls.js";
+        CROSS_DOMAIN_URL} from "@eyeo/test-utils/sdk-urls";
 import {isChromiumBased, isFirefox, Page, setMinTimeout, executeScript, isMV3,
         waitForAssertion, clearRequestLogs, getRequestLogs, setEndpointResponse,
         clearEndpointResponse, waitForSubscriptionToBeSynchronized} from "./utils.js";

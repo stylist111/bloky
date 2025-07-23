@@ -18,9 +18,9 @@
 import { expect } from "expect";
 
 import { openNewTab } from "@eyeo/test-utils/driver";
-import { blockHideUrl } from "@eyeo/test-utils/urls";
+import { blockHideUrl } from "@eyeo/test-utils/host-urls";
 import { beforeEachTasks } from "@eyeo/test-utils/hooks";
-import { allowlistingFilter } from "@eyeo/test-utils/filters";
+import { allowlistingFilter } from "@eyeo/test-utils/host-filters";
 import {
   sendExtCommand,
   updateExtPrefAPIKey

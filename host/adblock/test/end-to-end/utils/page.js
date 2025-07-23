@@ -18,7 +18,7 @@
 import { By, Key, until } from "selenium-webdriver";
 import { expect } from "expect";
 
-import { localTestPageUrl } from "@eyeo/test-utils/urls";
+import { localTestPageUrl } from "@eyeo/test-utils/host-urls";
 import {
   getDisplayedElement,
   openNewTab,

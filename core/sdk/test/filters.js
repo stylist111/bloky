@@ -19,7 +19,7 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 
 import {TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN, SITEKEY,
-        CROSS_DOMAIN_URL} from "./test-server-urls.js";
+        CROSS_DOMAIN_URL} from "@eyeo/test-utils/sdk-urls";
 import {Page, setMinTimeout, waitForAssertion, isFirefox, isEdge,
         setEndpointResponse, waitForSubscriptionsToDownload,
         getMaxDynamicRulesAvailable, sleep} from "./utils.js";

@@ -23,13 +23,13 @@ import {
   clickOnDisplayedElement,
   waitForCheckboxStatus
 } from "@eyeo/test-utils/driver";
-import { aaTestPageUrl } from "@eyeo/test-utils/urls";
+import { aaTestPageUrl } from "@eyeo/test-utils/host-urls";
 import {
   getOptionsHandle,
   upgradeExtension,
   blockAds
 } from "@eyeo/test-utils/extension";
-import { customBlockingFilter } from "@eyeo/test-utils/filters";
+import { customBlockingFilter } from "@eyeo/test-utils/host-filters";
 
 import {
   enablePremiumProgrammatically,

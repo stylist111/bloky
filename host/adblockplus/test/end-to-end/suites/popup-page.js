@@ -20,7 +20,10 @@ import {
   findUrl,
   openNewTab
 } from "@eyeo/test-utils/driver";
-import { blockHideUrl, blockHideLocalhostUrl } from "@eyeo/test-utils/urls";
+import {
+  blockHideUrl,
+  blockHideLocalhostUrl
+} from "@eyeo/test-utils/host-urls";
 import {
   checkBlockHidePage,
   setPausedStateFromPopup,

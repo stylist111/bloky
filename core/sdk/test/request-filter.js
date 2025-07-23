@@ -18,7 +18,7 @@
 import expect from "expect";
 
 import {TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, SITEKEY,
-        TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
+        TEST_ADMIN_PAGES_URL} from "@eyeo/test-utils/sdk-urls";
 import {Page, Resource, executeScript, shouldBeLoaded, supportsWebBundle,
         waitForSubscriptionsToDownload, setMinTimeout, setEndpointResponse,
         isChromiumBased, waitForSubscriptionToBeSynchronized, sleep,

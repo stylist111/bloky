@@ -21,7 +21,7 @@ import env from "./environment.js";
 import {mock} from "./mock/mock.js";
 import expect from "expect";
 
-import {TEST_PAGES_URL, SITEKEY} from "../../test-server-urls.js";
+import {TEST_PAGES_URL, SITEKEY} from "@eyeo/test-utils/sdk-urls";
 
 describe("Sitekeys", function() {
   let api;

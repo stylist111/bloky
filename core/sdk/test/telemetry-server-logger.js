@@ -20,7 +20,7 @@ import expect from "expect";
 import sinon from "sinon/pkg/sinon.js";
 
 import {EWE} from "./messaging.js";
-import {TEST_ADMIN_PAGES_URL} from "./test-server-urls.js";
+import {TEST_ADMIN_PAGES_URL} from "@eyeo/test-utils/sdk-urls";
 import {Page, waitForAssertion, ISO_DATE_REGEX, getRequestLogs,
         clearRequestLogs, setMinTimeout, setEndpointResponse,
         clearEndpointResponse} from "./utils.js";
