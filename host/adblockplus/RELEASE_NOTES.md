@@ -4,6 +4,9 @@
 - Added cohorts to telemetry and CDP. (EXT-980)
 - Updated snippets to 2.3.0
 - Removed encoded license from Bypass and Public APIs
+- Added a data collection opt-out to the advanced options page on Chrome. Note
+  that this is not currently shown on Firefox because Firefox users are
+  currently always opted out of data collection. (EXT-983)
 
 # 4.23.2 - 2025-07-15
 

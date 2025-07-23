@@ -1906,10 +1906,6 @@ body:not([data-dialog]) #dialog {
   will-change: transform;
 }
 
-#data-collection {
-  display: none;
-}
-
 html[data-application="firefox"] #data-collection {
   /*
    * We need to temporarily force-disable data collection in Firefox, while
