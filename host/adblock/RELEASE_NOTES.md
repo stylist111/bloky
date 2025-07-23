@@ -4,6 +4,7 @@
 - Updated snippets to 2.3.0
 - Fixed an issue with Pause on all sites feature (EXT-911)
 - Removed encoded license from Bypass and Public APIs
+- Technical debug data is no longer added to bug reports on Firefox
 
 # 6.24.1 - 2025-07-15
 

@@ -17,7 +17,14 @@
 
 import { expect } from "expect";
 
-import { isCheckboxPropertyEnabled, waitForNotDisplayed } from "@eyeo/test-utils/driver";
+import {
+  isCheckboxPropertyEnabled,
+  waitForNotDisplayed,
+  getDisplayedElement,
+  clickOnDisplayedElement,
+  clickAndSendKeys,
+  openNewTab,
+} from "@eyeo/test-utils/driver";
 import { getOptionsHandle } from "@eyeo/test-utils/extension";
 
 import { initOptionsGeneralTab } from "../../utils/page.js";
@@ -48,5 +55,30 @@ export default () => {
     }
 
     return optOutFlag;
+  });
+
+  it("does not include debug data in bug reports for Firefox", async function () {
+    if (browserDetails.browserName !== "firefox") {
+      this.skip();
+    }
+
+    const bugReportUrl = `${extension.origin}/adblock-options-bug-report.html`;
+    await openNewTab(bugReportUrl);
+
+    await clickAndSendKeys("#name", "Test User");
+    await clickAndSendKeys("#email", "test@test.com");
+    await clickAndSendKeys("#summary", "Test bug");
+    await clickAndSendKeys("#repro-steps", "Test steps");
+    await clickAndSendKeys("#expected-result", "Should work");
+    await clickAndSendKeys("#actual-result", "Doesn't work");
+
+    await clickOnDisplayedElement("#step1-next");
+
+    const debugTextarea = await getDisplayedElement("#debug-info", { timeout: 5000 });
+    const debugContent = await debugTextarea.getAttribute("value");
+    expect(debugContent).toEqual("");
+
+    // This test specifically should not click the "Send" button
+    // because we are not testing the actual sending of the bug report.
   });
 };
