@@ -1,5 +1,7 @@
 # Unreleased
 
+# 6.25.0 - 2025-07-23
+
 - Added cohorts to telemetry and CDP. (EXT-980)
 - Updated snippets to 2.3.0
 - Fixed an issue with Pause on all sites feature (EXT-911)
