@@ -121,8 +121,8 @@ export async function sendExtCommand({ triggerEventName, responseEventName, opti
       // dispatch the event, will be intercepted by the content-script
       document.dispatchEvent(event);
 
-      // if the event is not received in 5 seconds, consider it failed
-      setTimeout(() => callback(null), 5000);
+      // if the event is not received in 8 seconds, consider it failed
+      setTimeout(() => callback(null), 8000);
     },
     { domain, signature, timestamp, options, triggerEventName, responseEventName },
   );
