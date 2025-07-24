@@ -7,6 +7,9 @@
 - Added a data collection opt-out to the advanced options page on Chrome. Note
   that this is not currently shown on Firefox because Firefox users are
   currently always opted out of data collection. (EXT-983)
+- Added the ability to generate anonymized debug/behavioural logging for a
+  marginal amount of users. This is set to opted out by default for Firefox and
+  can be opted out on other browsers. (EXT-918)
 
 # 4.23.2 - 2025-07-15
 

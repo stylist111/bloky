@@ -64,6 +64,21 @@ export default {
       }
     }
   },
+  adblockplus_subscriptions_init: {
+    initialization_complete: {
+      description: "The subscription initialization, including starting the SDK, has completed",
+      data: {
+        description: "Data about the initialized system",
+        type: "object",
+        properties: {
+          subscriptionsCount: {
+            description: "The number of subscriptions the user has active.",
+            type: "number"
+          }
+        }
+      }
+    }
+  },
   test_ewe_background: {
     test_event: {
       description: "TEST: A logging test event for various types of data",

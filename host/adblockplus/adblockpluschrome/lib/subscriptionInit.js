@@ -31,6 +31,10 @@ import { start as startUnloadCleanup } from "../../src/unload-cleanup/background
 import * as logger from "../../src/logger/background";
 import { getFacts } from "~/remote-config/background";
 
+const serverLogger = new ewe.telemetry.ServerLogger(
+  "adblockplus_subscriptions_init"
+);
+
 let firstRun;
 let userNotificationCallback = null;
 let reinitialized = false;
@@ -203,6 +207,14 @@ export async function start() {
 
   if (telemetry.url && telemetry.bearer) addonInfo.telemetry = telemetry;
 
+  let telemetryEventLogging = {
+    url: webpackDotenvPlugin.EYEOMETRY_EVENT_LOGGING_URL,
+    bearer: webpackDotenvPlugin.EYEOMETRY_EVENT_LOGGING_BEARER
+  };
+
+  if (telemetryEventLogging.url && telemetryEventLogging.bearer)
+    addonInfo.telemetryEventLogging = telemetryEventLogging;
+
   const [eweFirstRun] = await Promise.all([
     ewe.start(addonInfo),
     Prefs.untilLoaded.catch(() => {
@@ -250,6 +262,10 @@ export async function start() {
     dataCorrupted,
     reinitialized
   }));
+
+  serverLogger.debug("initialization_complete", {
+    subscriptionsCount: (await ewe.subscriptions.getSubscriptions()).length
+  });
 }
 
 /**
