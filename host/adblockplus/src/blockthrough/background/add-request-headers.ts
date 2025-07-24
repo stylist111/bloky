@@ -47,7 +47,7 @@ function addRequestHeader(): void {
   browser.webRequest.onBeforeSendHeaders.addListener(
     onBeforeSendHeadersListener,
     { urls: ["*://btloader.com/tag?*"], types: ["script"] },
-    ["blocking", "requestHeaders", "extraHeaders"]
+    ["blocking", "requestHeaders"]
   );
 }
 
