@@ -37,7 +37,7 @@ const premiumFiltersUIitems = [
     title: translate("premium_filter_easyprivacy"),
     description: translate("premium_filter_easyprivacy_description"),
     disclaimer: undefined,
-    imageURL: "icons/easyprivacy.svg",
+    imageURL: "icons/distraction-control.svg",
     topLineClass: "top-line",
   },
   {

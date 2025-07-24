@@ -1491,6 +1491,7 @@ section .theme-section-row {
 .premium_image_wrapper {
   position: relative;
   min-height: 105px;
+  min-width: 188px;
   align-self: center;
 }
 
