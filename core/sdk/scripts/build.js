@@ -37,7 +37,7 @@ async function subsRunMV3(args) {
     await runCommand("npm run subs-clean");
   }
 
-  if (!args["use-external-server"]) {
+  if (!args["use-external-server"] && isScriptInvokedFromCLI) {
     await runSDKTestServer();
   }
 
