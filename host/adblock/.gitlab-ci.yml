@@ -258,6 +258,12 @@ end-to-end:MV3:chromium:latest:
   rules:
     - !reference [.nightly-run, rules]
 
+end-to-end:MV3:edge:latest:
+  extends: .end-to-end-nightly
+  variables:
+    BROWSER: edge
+    MANIFEST_VERSION: 3
+
 end-to-end:MV2:firefox:beta:
   extends: .end-to-end-nightly
   variables:

@@ -69,9 +69,22 @@ export default () => {
 
     const { url } = await findUrl(premiumUrl);
     await driver.navigate().to(`${url}&testmode`);
-    await clickOnDisplayedElement("#get-premium-monthly", { timeout: 2000, scrollIntoView: true });
+    await clickOnDisplayedElement("#get-premium-monthly", { timeout: 5000, scrollIntoView: true });
 
-    await driver.switchTo().frame("paddle_frame");
+    await wait(
+      async () => {
+        try {
+          await driver.switchTo().frame("paddle_frame");
+          return true;
+        } catch (err) {
+          if (err.name !== "NoSuchElementError") {
+            throw err;
+          }
+        }
+      },
+      10000,
+      "Could not switch to paddle_frame",
+    );
     // First paying page
     // The first field of the loaded frame may take a while to appear
     await clickAndSendKeys("#email > input", getPremiumEmail(), { timeout: 10000 });

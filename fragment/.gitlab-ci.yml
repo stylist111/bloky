@@ -62,6 +62,12 @@ fragments-tests:MV3:chromium:latest:
   rules:
     - !reference [.nightly-run, rules]
 
+end-to-end:MV3:edge:latest:
+  extends: .fragments-tests-nightly
+  variables:
+    BROWSER: edge
+    MANIFEST_VERSION: 3
+
 fragments-tests:MV2:firefox:beta:
   extends: .fragments-tests-nightly
   variables:

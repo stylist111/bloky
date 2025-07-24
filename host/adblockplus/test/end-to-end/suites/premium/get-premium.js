@@ -57,7 +57,7 @@ async function enablePremiumByUI() {
   await driver.navigate().to(premiumTestModeUrl);
 
   await clickOnDisplayedElement("#get-premium-monthly", {
-    timeout: 4000,
+    timeout: 5000,
     scrollIntoView: true
   });
 
@@ -70,7 +70,7 @@ async function enablePremiumByUI() {
         if (err.name !== "NoSuchElementError") throw err;
       }
     },
-    5000,
+    10000,
     "Could not switch to paddle_frame"
   );
 

@@ -26,7 +26,7 @@
         },
         "edge": {
           "mv2": "if [[ -z \"$1\" || \"$1\" == \"edge\" && \"$2\" != \"3\" ]]; then MANIFEST_VERSION=2 BROWSER=edge npm run test:fragments-local; fi",
-          "mv3": "if [[ -z \"$1\" || \"$1\" == \"edge\" && \"$2\" == \"3\" ]]; then echo \"Edge tests are not supported with extension in Manifest v3\"; exit 1; fi"
+          "mv3": "if [[ -z \"$1\" || \"$1\" == \"edge\" && \"$2\" == \"3\" ]]; then MANIFEST_VERSION=3 BROWSER=edge npm run test:fragments-local; fi"
         },
         "chrome": "if [[ -z \"$1\" || \"$1\" == \"chrome\" ]]; then echo \"Tests are not possible to be run in Chrome in Fragments Test Extension. Did you mean Chromium?\"; exit 1; fi"
       }
