@@ -17,35 +17,13 @@
 
 /* eslint-env node */
 
-import {exec} from "child_process";
-
 import yargs from "yargs";
 import {hideBin} from "yargs/helpers";
 import {runSDKTestServer, killSDKTestServer} from "@eyeo/test-utils/test-server-manager";
 
-import {isMain} from "../scripts/utils.js";
+import {isMain, runCommand} from "../scripts/utils.js";
 
 const isScriptInvokedFromCLI = isMain(import.meta.url);
-
-function runCommand(command) {
-  console.log(`> ${command}`);
-  return new Promise((resolve, reject) => {
-    let process = exec(command, error => {
-      if (error) {
-        reject(error);
-      }
-      else {
-        resolve();
-      }
-    });
-    process.stdout.on("data", data => {
-      console.log(data);
-    });
-    process.stderr.on("data", data => {
-      console.error(data);
-    });
-  });
-}
 
 async function subsRunMV3(args) {
   let configNames = args["config-name"];

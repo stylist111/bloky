@@ -29,6 +29,7 @@ import {BlockingFilter, AllowingFilter}
   from "adblockpluscore/lib/filterClasses.js";
 import {parseURL} from "adblockpluscore/lib/url.js";
 import {trace} from "./debugging.js";
+import {isSafari} from "./info.js";
 
 function getContext(details) {
   let contentType = getRequestContentType(details);
@@ -274,9 +275,15 @@ export function start() {
     return;
   }
 
+  let urls = ["http://*/*", "https://*/*"];
+  if (!isSafari()) {
+    // The schemes are not supported by Safari
+    urls.push(...["ws://*/*", "wss://*/*"]);
+  }
+
   let eventArgs = {
     types: Object.values(browser.webRequest.ResourceType),
-    urls: ["http://*/*", "https://*/*", "ws://*/*", "wss://*/*"]
+    urls
   };
 
   browser.webRequest.onBeforeRedirect.addListener(onBeforeRedirect, eventArgs);

@@ -79,6 +79,7 @@ Manifest V3:
 
 * Chromium 124 and latest
 * Edge latest
+* Safari latest - iOS and macOS (limited support)
 
 List of browsers supported by extension and webext can be found in the [supported-browsers].
 

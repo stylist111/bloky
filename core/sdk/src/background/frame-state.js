@@ -28,6 +28,8 @@ import {getSitekey, clearTabSitekeys,
 import {applyContentFilters} from "./content-filter.js";
 import {trace, debug} from "./debugging.js";
 import {ignoreNoConnectionError} from "../all/errors.js";
+import {default as sentry} from "./sentry.js";
+import {log as _log} from "./safari-logs.js";
 
 /**
  * The URL that browsers use to represent an empty page, about:blank.
@@ -291,6 +293,10 @@ async function discoverExistingFrames() {
 
         frames.set(frameId, new FrameInfo(tabId, frameId, parent, url));
       }
+    }).catch(err => {
+      const e = new Error(`Failed to get frames for tab ${tabId}: ${err}`);
+      sentry.reportError(e);
+      console.error(e);
     })
   ));
 }
@@ -584,8 +590,19 @@ export async function start() {
     browser.webNavigation.onBeforeNavigate.addListener(onBeforeNavigate);
     browser.webNavigation.onCommitted.addListener(onCommitted);
     browser.webNavigation.onErrorOccurred.addListener(onErrorOccurred);
-    browser.webNavigation.onHistoryStateUpdated.addListener(
-      onHistoryStateUpdated);
+    _log("frame-state.js subscribing to browser.webNavigation.onHistoryStateUpdated");
+    _log(browser.webNavigation);
+    _log(browser.webNavigation.onHistoryStateUpdated);
+    try {
+      browser.webNavigation.onHistoryStateUpdated.addListener(
+        onHistoryStateUpdated);
+    }
+    catch (e) {
+      _log("Failed to subscribe!");
+      _log(browser.webNavigation);
+      throw e;
+    }
+    _log("frame-state.js subscribed");
     browser.tabs.onRemoved.addListener(onRemoved);
     browser.tabs.onReplaced.addListener(onReplaced);
 

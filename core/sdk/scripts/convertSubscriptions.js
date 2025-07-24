@@ -49,7 +49,7 @@ function generateRuleId() {
 async function convert(inDir, outDir,
                        generateReport = false, repDir = reportDir,
                        recommendedSubscriptions = customSubscriptionsFilename,
-                       spaces = 2) {
+                       spaces = 2, safari = false) {
   let files = fs.readdirSync(inDir);
   if (!fs.existsSync(outDir)) {
     fs.mkdirSync(outDir, {recursive: true});
@@ -86,7 +86,8 @@ async function convert(inDir, outDir,
           accountForRule(rule, context.text, subsId);
         }
         return rule;
-      }
+      },
+      safari
     });
 
     if (generateReport) {
@@ -165,6 +166,10 @@ async function main() {
       boolean: true,
       description: "Pretty-print JSON files"
     })
+    .option("safari", {
+      boolean: true,
+      description: "Convert to DNR rules supported by Safari (iOS)"
+    })
     .parse();
 
   let inDir = args.input || inputDir;
@@ -174,8 +179,12 @@ async function main() {
   let recommendedSubscriptions =
     args.recommendedSubscriptions || customSubscriptionsFilename;
   let spaces = args.prettyPrint ? 2 : 0;
+  let safari = args.safari || false;
+  if (safari) {
+    console.warn("Converting for Safari");
+  }
   await convert(inDir, outDir, generateReport,
-                repDir, recommendedSubscriptions, spaces);
+                repDir, recommendedSubscriptions, spaces, safari);
 }
 
 if (isMain(import.meta.url)) {

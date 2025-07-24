@@ -353,7 +353,8 @@ function validateCondition(condition) {
   validateDomains(condition.initiatorDomains);
   validateDomains(condition.requestDomains);
 
-  // deprecated starting Chrome 101
+  // deprecated starting Chrome 101,
+  // but still supported by Safari
   validateDomains(condition.domains);
   validateDomains(condition.excludedDomains);
 

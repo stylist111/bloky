@@ -17,6 +17,11 @@
 
 import browser from "webextension-polyfill";
 
+// "safari-polyfill.js" import must come one of the first as
+// there are a lot of code expectations on `browser.webRequest` API,
+// which is not supported by Safari, eg. `browser.webRequest.ResourceType`.
+import {patchForSafari} from "./safari-polyfill.js";
+
 import {default as initializer} from "./initializer.js";
 import * as messageResponder from "./message-responder.js";
 import * as messageDeferrer from "./content-message-deferrer.js";
@@ -42,7 +47,7 @@ import * as remoteConfig from "./remote-config.js";
 import * as experiments from "./experiments.js";
 import * as cohorts from "./cohorts/index.js";
 import {setSnippetLibrary} from "./content-filter.js";
-import {setAddonInfo} from "./info.js";
+import {setAddonInfo, isSafari} from "./info.js";
 import {filterEngine} from "./core.js";
 import {validate as validateSubscriptions,
         migrate as migrateSubscriptions, ensureDNRRulesetsEnabled,
@@ -309,6 +314,9 @@ async function onInstalled(details) {
  *                                 is completed.
  */
 export async function start(addonInfo) {
+  if (isSafari()) {
+    patchForSafari(false);
+  }
   let warnings = [];
 
   let addonInfoResult = setAddonInfo(addonInfo);
@@ -328,6 +336,10 @@ export async function start(addonInfo) {
     }
   }
 
+  if (isSafari()) {
+    // for the API that is used by modules
+    await patchForSafari();
+  }
   await startSubmodules(addonInfo);
 
   let {filterStorage} = filterEngine;

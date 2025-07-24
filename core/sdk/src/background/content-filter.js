@@ -27,6 +27,8 @@ import {logItem, tracingEnabled} from "./diagnostics.js";
 import {debugOptions, trace, debug, warn} from "./debugging.js";
 import {arraysDiff} from "./set-operations.js";
 import {shouldNotifyActive} from "./cdp.js";
+import {patchSender as patchHistoryApi} from "./safari-history.js";
+import {isSafari} from "./info.js";
 
 let isolatedLib;
 let injectedLib;
@@ -115,6 +117,11 @@ async function executeSnippets(tabId, frameId, previousFrame, frame) {
   let isolatedDependencies = [];
   let isolated = [];
   let main = [];
+
+  if (isSafari()) {
+    console.warn("Patching history API sender");
+    await patchHistoryApi(details);
+  }
 
   for (let script of scripts) {
     for (let [snippet, ...args] of parseScript(script)) {

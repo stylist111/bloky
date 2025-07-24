@@ -37,7 +37,7 @@ import {default as sentry} from "./sentry.js";
 
 import {FilterError} from "./types.js";
 import {Prefs} from "./prefs.js";
-import {isFirefox, getBrowserVersion} from "./info.js";
+import {isFirefox, getBrowserVersion, isSafari} from "./info.js";
 
 const ERROR_DISABLED_RULE_LIMIT_REACHED = "The number of disabled static " +
       "rules exceeds the disabled rule count limit.";
@@ -55,7 +55,8 @@ if (browser.declarativeNetRequest) {
     async isRegexSupported(regex) {
       let result = await browser.declarativeNetRequest.isRegexSupported(regex);
       return result.isSupported;
-    }
+    },
+    safari: isSafari()
   });
 }
 
@@ -231,16 +232,22 @@ export async function enableAllDisabledStaticRules() {
       continue;
     }
 
-    let enableRuleIds =
-      await browser.declarativeNetRequest.getDisabledRuleIds({
-        rulesetId: subscription.id
-      });
+    if (!isSafari()) {
+      let enableRuleIds =
+        await browser.declarativeNetRequest.getDisabledRuleIds({
+          rulesetId: subscription.id
+        });
 
-    await browser.declarativeNetRequest.updateStaticRules({
-      rulesetId: subscription.id,
-      disableRuleIds,
-      enableRuleIds
-    });
+      await browser.declarativeNetRequest.updateStaticRules({
+        rulesetId: subscription.id,
+        disableRuleIds,
+        enableRuleIds
+      });
+    }
+    else {
+      // eslint-disable-next-line no-console
+      console.log("Skipping enabling all static rules on Safari");
+    }
   }
 }
 
@@ -248,6 +255,14 @@ async function _dnrFullSubscriptionUpdate(subscription, filterText) {
   // With some path of code the filter engine might not be initialized
   // if the service worker got awaken.
   await initializer.start();
+
+  // On Safari there is an issue:
+  // DNR rule ids overlap with existing dynamic rules (racing?).
+  // So increasing the highest rule id according to actual dynamic rules helps.
+  if (isSafari()) {
+    let dynamicRules = await browser.declarativeNetRequest.getDynamicRules();
+    setHighestRuleId(dynamicRules.map(rule => rule.id));
+  }
 
   let plannedChanges = await processFilterTexts(filterText, subscription.url);
 
@@ -342,7 +357,7 @@ export async function _dnrDiffSubscriptionUpdate(subscription, updates) {
     filterTextToRuleIdsMapper = new DnrMapper(
       async() => await getSubscriptionRulesetMap(subscription.id)
     );
-    disabledStaticRulesIds =
+    disabledStaticRulesIds = isSafari() ? [] :
       await browser.declarativeNetRequest.getDisabledRuleIds({
         rulesetId: subscription.id
       });
@@ -395,11 +410,17 @@ export async function _dnrDiffSubscriptionUpdate(subscription, updates) {
     enableRuleIds.push(...disabledStaticRulesIds);
 
     try {
-      await browser.declarativeNetRequest.updateStaticRules({
-        rulesetId: subscription.id,
-        disableRuleIds,
-        enableRuleIds
-      });
+      if (!isSafari()) {
+        await browser.declarativeNetRequest.updateStaticRules({
+          rulesetId: subscription.id,
+          disableRuleIds,
+          enableRuleIds
+        });
+      }
+      else {
+        // eslint-disable-next-line no-console
+        console.log("Skipping updating static rules on Safari");
+      }
     }
     catch (e) {
       if (e.message == ERROR_DISABLED_RULE_LIMIT_REACHED) {
@@ -729,7 +750,7 @@ export async function dynamicRulesAvailable() {
       overriddenMaxRules[RULES_LIMIT_KEY] :
       isFirefox() ?
         declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES :
-        getBrowserVersion()[0] < 121 ? // Chromium or edge: EE-315
+        isSafari() || getBrowserVersion()[0] < 121 ? // Chromium or edge: EE-315
           declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_AND_SESSION_RULES :
           declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_RULES;
 
@@ -871,9 +892,15 @@ async function enableStaticRules(filterTexts, enable) {
     let disableRuleIds = (enable ? void 0 : ruleIds);
     let enableRuleIds = (enable ? ruleIds : void 0);
 
-    await browser.declarativeNetRequest.updateStaticRules({
-      rulesetId, disableRuleIds, enableRuleIds
-    });
+    if (!isSafari()) {
+      await browser.declarativeNetRequest.updateStaticRules({
+        rulesetId, disableRuleIds, enableRuleIds
+      });
+    }
+    else {
+      // eslint-disable-next-line no-console
+      console.log("Skipping updating static rules on Safari");
+    }
   }
 }
 

@@ -62,6 +62,7 @@ export function getConfig(filename) {
         "./sitekey.js": path.resolve(dirname, "./webext-sdk.mock.js"),
         "./cdp.js": path.resolve(dirname, "./webext-sdk.mock.js"),
         "./sentry.js": path.resolve(dirname, "./sentry.mock.js"),
+        "./safari-history.js": path.resolve(dirname, "./webext-sdk.mock.js"),
         "io$": path.resolve(dirname, "../../../../src/background/io.js"),
         "info$": path.resolve(dirname, "../../../../src/background/info.js"),
         "prefs$": path.resolve(dirname, "./prefs.mock.js")

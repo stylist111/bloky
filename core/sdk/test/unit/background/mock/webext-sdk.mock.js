@@ -50,3 +50,4 @@ export function restoreDynamicRules() {}
 export function isDnrSubscriptionUpdating(url) {}
 export async function _awaitSavingComplete() {}
 export function shouldNotifyActive(tabId, frames) {}
+export async function patchSender() {}

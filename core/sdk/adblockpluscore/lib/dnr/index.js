@@ -36,6 +36,7 @@ const {parse, FilterParsingError} = require("../filters");
  * @property {function} isRegexSupported a sync/async method to check if a
  *  generic regular expression is compatible with the engine.
  * @property {function} modifyRule a sync method to modify a DNR rule if needed.
+ * @property {boolean} safari Convert to DNR rules supported by Safari.
  */
 
 /**
@@ -200,9 +201,45 @@ async function asDNR(parsedFilter) {
     let context = {
       text: parsedFilter.text
     };
-    return result
-      .map(rule => this.modifyRule(rule, context))
-      .map(validateRule);
+    result = result
+      .map(rule => this.modifyRule(rule, context));
+
+    if (this.safari) {
+      // Safari has limited DNR support
+      result = result.filter(rule => {
+        return rule.action.type !== "redirect" &&
+          rule.action.type !== "modifyHeaders" &&
+          rule.action.type !== "responseHeaders";
+      })
+      .map(rule => {
+        if (rule.action.type === "allowAllRequests") {
+          rule.action.type = "allow";
+        }
+
+        if (rule.condition.initiatorDomains) {
+          rule.condition.domains = rule.condition.initiatorDomains;
+          delete rule.condition.initiatorDomains;
+        }
+
+        if (rule.condition.excludedInitiatorDomains) {
+          rule.condition.excludedDomains =
+            rule.condition.excludedInitiatorDomains;
+          delete rule.condition.excludedInitiatorDomains;
+        }
+
+        if (rule.condition.resourceTypes) {
+          rule.condition.resourceTypes =
+            rule.condition.resourceTypes.filter(it => it !== "webbundle");
+          if (rule.condition.resourceTypes.length === 0) {
+            throw new Error("No resource types");
+          }
+        }
+
+        return rule;
+      });
+    }
+
+    return result.map(validateRule);
   }
   catch (error) {
     return new FilterParsingError("filter_invalid_regexp",

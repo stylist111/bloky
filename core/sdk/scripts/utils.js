@@ -153,3 +153,23 @@ export async function repositoryUrl() {
   // json parse removes the extra quotes around the json string that npm returns
   return JSON.parse(repoUrlResult.stdout.trim());
 }
+
+export function runCommand(command) {
+  console.log(`> ${command}`);
+  return new Promise((resolve, reject) => {
+    let process = exec(command, error => {
+      if (error) {
+        reject(error);
+      }
+      else {
+        resolve();
+      }
+    });
+    process.stdout.on("data", data => {
+      console.log(data);
+    });
+    process.stderr.on("data", data => {
+      console.error(data);
+    });
+  });
+}

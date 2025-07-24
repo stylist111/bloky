@@ -47,6 +47,11 @@ export function isEdge() {
   return application.includes("edg");
 }
 
+export function isSafari() {
+  let ua = navigator.userAgent.toLowerCase();
+  return ua.includes("version") && ua.includes("safari");
+}
+
 export function initializeDefaultAddonInfo() {
   let manifest = browser.runtime.getManifest();
 
@@ -57,7 +62,8 @@ export function initializeDefaultAddonInfo() {
   platformVersion = "0";
   manifestVersion = String(manifest.manifest_version);
 
-  if (typeof netscape != "undefined") {
+  // Neither Safari, nor webextension-polyfill provides `getBrowserInfo`
+  if (typeof netscape != "undefined" && browser.runtime.getBrowserInfo) {
     platform = "gecko";
 
     let match = /\brv:([^;)]+)/.exec(navigator.userAgent);
@@ -69,6 +75,16 @@ export function initializeDefaultAddonInfo() {
       application = browserInfo.name.toLowerCase();
       applicationVersion = browserInfo.version;
     });
+  }
+  else if (typeof netscape != "undefined" && !browser.runtime.getBrowserInfo) {
+    platform = "safari";
+    application = "safari";
+
+    let match = /Version\/(\S+)/.exec(navigator.userAgent);
+    if (match) {
+      platformVersion = match[1];
+      applicationVersion = match[1];
+    }
   }
   else {
     platform = "chromium";

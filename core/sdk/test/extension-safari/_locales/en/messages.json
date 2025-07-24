@@ -1,0 +1,14 @@
+{
+    "extension_name": {
+        "message": "eyeo's WebExtension Ad-Filtering Solution Test Extension",
+        "description": "The display name for the extension."
+    },
+    "short_name": {
+        "short_name": "EWE Test",
+        "description": "The short display name for the extension."
+    },
+    "extension_description": {
+        "message": "Manifest version: 3 - Safari",
+        "description": "Description of what the extension does."
+    }
+}

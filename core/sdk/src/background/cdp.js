@@ -30,6 +30,7 @@ import {isHttpOrHttps, stripQuery} from "adblockpluscore/lib/url.js";
 import {SpecialDomainsProcessor} from "./cdp-processor.js";
 import {setPremiumStatusCallback} from "./callbacks.js";
 import {EventDispatcher} from "./types.js";
+import {log as _log, printLog} from "./safari-logs.js";
 
 /**
  * "Page view" event type. These are triggered whenever a new page is viewed,
@@ -680,8 +681,19 @@ export async function start() {
       }
 
       browser.webNavigation.onCommitted.addListener(onCommitted);
-      browser.webNavigation.onHistoryStateUpdated.addListener(
-        onHistoryStateUpdated);
+      _log("cdp.js subscribing to browser.webNavigation.onHistoryStateUpdated ...");
+      _log(browser.webNavigation);
+      _log(browser.webNavigation.onHistoryStateUpdated);
+      try {
+        browser.webNavigation.onHistoryStateUpdated.addListener(
+          onHistoryStateUpdated);
+      }
+      catch (e) {
+        _log("Failed to subscribe!");
+        _log(browser.webNavigation);
+        throw e;
+      }
+      _log("cdp.js subscribed");
 
       async function loadData() {
         await loadEvents();
@@ -774,5 +786,10 @@ export default {
   *   return a status of the license as a string.
   *   Options supported: true, false.
   */
-  setPremiumStatusCallback
+  setPremiumStatusCallback,
+
+  /**
+   * Print the safari polyfilling log
+   */
+  printLog
 };

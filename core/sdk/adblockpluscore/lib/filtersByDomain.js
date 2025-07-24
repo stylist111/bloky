@@ -46,11 +46,9 @@ exports.FilterMap = class FilterMap extends Map {};
  *
  * @package
  */
-exports.FiltersByDomain = class FiltersByDomain extends Map {
+exports.FiltersByDomain = class FiltersByDomain {
   constructor(source) {
-    super(source);
-
-    // We keep concrete domains list (eg. "example.com") in `this` map
+    // We keep concrete domains list (eg. "example.com") in `exactDomains` map
     // and the domain with wildcards in internal `domainsWithWildcards` map
     // because of different way of matching.
     // `Map` uses "equals" implementation for `get()` and for
@@ -59,6 +57,15 @@ exports.FiltersByDomain = class FiltersByDomain extends Map {
     // So at filter adding to add it to the according map and override all the
     // relevant methods (has, get) to run the wildcards-related logic.
     this.domainsWithWildcards = new Map();
+    this.exactDomains = new Map(source);
+  }
+
+  get size() {
+    return this.exactDomains.size;
+  }
+
+  entries() {
+    return this.exactDomains.entries();
   }
 
   /**
@@ -79,7 +86,7 @@ exports.FiltersByDomain = class FiltersByDomain extends Map {
         this._addToMap(filter, domain, include, this.domainsWithWildcards);
       }
       else {
-        this._addToMap(filter, domain, include, this);
+        this._addToMap(filter, domain, include, this.exactDomains);
       }
     }
   }
@@ -100,7 +107,7 @@ exports.FiltersByDomain = class FiltersByDomain extends Map {
   }
 
   has(domain) {
-    let result = super.has(domain);
+    let result = this.exactDomains.has(domain);
     if (!result) {
       // no filters for the concrete domain
       for (let domainWithWildcards of this.domainsWithWildcards.keys()) {
@@ -115,7 +122,7 @@ exports.FiltersByDomain = class FiltersByDomain extends Map {
 
   get(domain, skipWildcardCheck) {
     let result = [];
-    let map = super.get(domain);
+    let map = this.exactDomains.get(domain);
     if (map) {
       result.push(map);
     }
@@ -153,8 +160,8 @@ exports.FiltersByDomain = class FiltersByDomain extends Map {
   }
 
   clear() {
-    super.clear();
     this.domainsWithWildcards.clear();
+    this.exactDomains.clear();
   }
 
   /**
@@ -171,7 +178,7 @@ exports.FiltersByDomain = class FiltersByDomain extends Map {
         this._removeFromMap(filter, domain, this.domainsWithWildcards);
       }
       else {
-        this._removeFromMap(filter, domain, this);
+        this._removeFromMap(filter, domain, this.exactDomains);
       }
     }
   }

@@ -22,6 +22,9 @@ import {init as initDNRFilters} from "./dnr-filters.js";
 import {init as initPrefs} from "./prefs.js";
 import {default as debugging} from "./debugging.js";
 import * as cdp from "./cdp.js";
+import {isSafari} from "./info.js";
+import {patchForSafari} from "./safari-polyfill.js";
+import {log, printLog} from "./safari-logs.js";
 
 let startupPromise;
 
@@ -41,8 +44,14 @@ export default {
    * @return {Promise} Resolves when initialization is complete
    */
   start() {
+    printLog();
     if (!startupPromise) {
       startupPromise = (async() => {
+        log("initializer started");
+        if (isSafari()) {
+          await patchForSafari();
+        }
+
         await io.initialize();
         await debugging.start();
         await initPrefs();

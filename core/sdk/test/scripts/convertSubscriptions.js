@@ -302,4 +302,60 @@ describe("convertSubscriptions script", function() {
       url: "1"
     });
   });
+
+  describe("converts for Safari", function() {
+    it("removes unsupported action type rules", async function() {
+      let filename = "foo.txt";
+      createAbpRuleFile(filename, "[Adblock Plus 2.0]\n||bar.com/ad.js$script,domain=foo.com,rewrite=abp-resource:blank-js");
+      await convert(tmpInDir, tmpOutDir, false, "", customSubscriptionsFilename, 2, true);
+      let dnrRules = getDnrRulesFromFile(filename);
+      expect(dnrRules.length).toEqual(0);
+    });
+
+    it("updates allowAllRequests action", async function() {
+      let filename = "foo.txt";
+      createAbpRuleFile(filename, "[Adblock Plus 2.0]\n@@||optout.exampleadvertising.org^$document");
+      await convert(tmpInDir, tmpOutDir, false, "", customSubscriptionsFilename, 2, true);
+      let dnrRules = getDnrRulesFromFile(filename);
+      expect(dnrRules.length).toEqual(1);
+      expect(dnrRules[0].action.type).toEqual("allow");
+    });
+
+    it("updates initiatorDomains property", async function() {
+      let filename = "foo.txt";
+      createAbpRuleFile(filename, "[Adblock Plus 2.0]\n@@||g.doubleclick.net/gpt/pubads_impl_$script,domain=example.com");
+      await convert(tmpInDir, tmpOutDir, false, "", customSubscriptionsFilename, 2, true);
+      let dnrRules = getDnrRulesFromFile(filename);
+      expect(dnrRules.length).toEqual(1);
+      expect(dnrRules[0].condition.initiatorDomains).toBeUndefined();
+      expect(dnrRules[0].condition.domains).toEqual(["example.com"]);
+    });
+
+    it("updates excludedInitiatorDomains property", async function() {
+      let filename = "foo.txt";
+      createAbpRuleFile(filename, "[Adblock Plus 2.0]\n@@||g.doubleclick.net/gpt/pubads_impl_$script,domain=~example.com");
+      await convert(tmpInDir, tmpOutDir, false, "", customSubscriptionsFilename, 2, true);
+      let dnrRules = getDnrRulesFromFile(filename);
+      expect(dnrRules.length).toEqual(1);
+      expect(dnrRules[0].condition.excludedInitiatorDomains).toBeUndefined();
+      expect(dnrRules[0].condition.excludedDomains).toEqual(["example.com"]);
+    });
+
+    it("removes webbundle resource type from array", async function() {
+      let filename = "foo.txt";
+      createAbpRuleFile(filename, "[Adblock Plus 2.0]\nrule2$webbundle,image");
+      await convert(tmpInDir, tmpOutDir, false, "", customSubscriptionsFilename, 2, true);
+      let dnrRules = getDnrRulesFromFile(filename);
+      expect(dnrRules.length).toEqual(1);
+      expect(dnrRules[0].condition.resourceTypes).toEqual(["image"]);
+    });
+
+    it("removes the rule if its only resource type is webbundle", async function() {
+      let filename = "foo.txt";
+      createAbpRuleFile(filename, "[Adblock Plus 2.0]\nrule2$webbundle");
+      await convert(tmpInDir, tmpOutDir, false, "", customSubscriptionsFilename, 2, true);
+      let dnrRules = getDnrRulesFromFile(filename);
+      expect(dnrRules.length).toEqual(0);
+    });
+  });
 });

@@ -27,7 +27,7 @@ import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {recommendations} from "adblockpluscore/lib/recommendations.js";
 import {Filter} from "adblockpluscore/lib/filterClasses.js";
 
-import {addonBundledSubscriptions} from "./info.js";
+import {addonBundledSubscriptions, isSafari} from "./info.js";
 import {default as initializer} from "./initializer.js";
 import {filterEngine} from "./core.js";
 import {EventDispatcher} from "./types.js";
@@ -232,9 +232,14 @@ async function enableRuleset(rulesetId) {
   if (browser.declarativeNetRequest) {
     if (rulesetExistsInManifest(rulesetId)) {
       try {
-        await browser.declarativeNetRequest.updateEnabledRulesets({
-          enableRulesetIds: [rulesetId]
-        });
+        // Don't enable already enabled ruleset (causes error in Safari)
+        let enabledRulesetIds =
+          await browser.declarativeNetRequest.getEnabledRulesets();
+        if (!enabledRulesetIds.includes(rulesetId)) {
+          await browser.declarativeNetRequest.updateEnabledRulesets({
+            enableRulesetIds: [rulesetId]
+          });
+        }
       }
       catch (e) {
         // Update the error message with the rulesetId. Helpful for tracking
@@ -248,20 +253,27 @@ async function enableRuleset(rulesetId) {
 
 async function disableRuleset(rulesetId) {
   if (browser.declarativeNetRequest && rulesetExistsInManifest(rulesetId)) {
-    await browser.declarativeNetRequest.updateEnabledRulesets({
-      disableRulesetIds: [rulesetId]
-    });
+    // Don't disable already disabled ruleset (causes error in Safari)
+    let enabledRulesetIds =
+      await browser.declarativeNetRequest.getEnabledRulesets();
+    if (enabledRulesetIds.includes(rulesetId)) {
+      await browser.declarativeNetRequest.updateEnabledRulesets({
+        disableRulesetIds: [rulesetId]
+      });
+    }
 
     await disableDynamicRules(rulesetId);
 
-    let enableRuleIds =
-      await browser.declarativeNetRequest.getDisabledRuleIds({
-        rulesetId
+    if (!isSafari()) {
+      let enableRuleIds =
+        await browser.declarativeNetRequest.getDisabledRuleIds({
+          rulesetId
+        });
+      await browser.declarativeNetRequest.updateStaticRules({
+        rulesetId,
+        enableRuleIds
       });
-    await browser.declarativeNetRequest.updateStaticRules({
-      rulesetId,
-      enableRuleIds
-    });
+    }
   }
 }
 

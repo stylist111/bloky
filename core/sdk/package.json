@@ -86,6 +86,7 @@
     "prepack": "npm run build:release",
     "build": "node scripts/build.js",
     "build:release": "npm run build -- --env release",
+    "build:safari": "node scripts/safari/build.js",
     "build-then-test": "node scripts/build-and-test.js",
     "test": "npm run -w adblockpluscore test:unit && npm run test:unit && npm run test:scripts",
     "test:bundle": "node test/bundle/run.js",

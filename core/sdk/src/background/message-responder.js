@@ -30,6 +30,7 @@ import {markActive, countBTAADetectionEvent} from "./cdp.js";
 import {default as sentry} from "./sentry.js";
 import {serverLogValidatedEvent} from "./telemetry/server-logger.js";
 import {handleMessageAPICall} from "./message-invoked-api.js";
+import {onHistoryStateUpdatedSafari} from "./safari-polyfill.js";
 
 async function handleMessage(message, sender) {
   trace({
@@ -91,6 +92,9 @@ async function handleMessage(message, sender) {
     case "ewe:api-call":
       const {apiName, methodName, params} = message;
       return await handleMessageAPICall(apiName, methodName, params);
+    case "ewe:safari-onhistorystateupdated":
+      onHistoryStateUpdatedSafari(sender.tab.id, sender.frameId, message.event);
+      break;
   }
 }
 

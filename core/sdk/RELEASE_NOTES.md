@@ -23,6 +23,7 @@
   experiment assignments encoded as base64-encoded bitmap.
 - Added the `EWE.experiments.getAssignments()` in Content and UI APIs. (EXT-991)
 - Added cohorts to telemetry and CDP. (EXT-980)
+- Added limited Safari support (NASA-739)
 
 ## General
 

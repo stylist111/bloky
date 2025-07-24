@@ -329,6 +329,25 @@ command:
 ./core/sdk/test/dockerfiles/integration-entrypoint.sh
 ```
 
+### Safari tests
+
+A subset of [nasapp-testing](https://gitlab.com/eyeo/network-filtering/nasapp-testing)
+tests check that the SDK code works in Safari.
+
+Before running, those tests need the Safari testing app to be built:
+
+```sh
+npm run -w=@eyeo/webext-ad-filtering-solution build:safari
+```
+
+Then run the tests:
+
+```sh
+./core/sdk/test/scripts/safari.sh
+```
+
+Note: Safari build/test scripts only work on macOS.
+
 ## Performance tests
 
 The performance of the engine is measured using

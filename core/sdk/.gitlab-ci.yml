@@ -85,6 +85,22 @@ build:docs:
       - core/sdk/public/
     expire_in: 1 week
 
+build:safari:
+  stage: build
+  image: macos-15-xcode-16
+  tags:
+    - saas-macos-medium-m1
+  needs:
+    - !reference [.needs-parent-build, needs]
+  before_script:
+    - npm install
+  script:
+    - npm run -w=@eyeo/webext-ad-filtering-solution build:safari
+  artifacts:
+    paths:
+      - core/sdk/dist/testSafariApp/build/Release-iphonesimulator/testSafariApp.app
+    expire_in: 1 week
+
 # Publishes the docs to https://eyeo.gitlab.io/browser-extensions-and-premium/extensions/extensions/sdk/
 # and https://eyeo.gitlab.io/browser-extensions-and-premium/extensions/extensions/sdk/adblockpluscore/
 # Requirements: https://docs.gitlab.com/ee/user/project/pages/introduction.html#gitlab-pages-requirements
@@ -440,6 +456,22 @@ int:bundle:
     - !reference [.needs-parent-build, needs]
   rules:
     - !reference [.avoid-flaky-run, rules]
+
+int:safari:
+  stage: integration
+  image: macos-15-xcode-16
+  tags:
+    - saas-macos-large-m2pro
+  needs: ["build:safari"]
+  before_script:
+    - npm install
+  script:
+    - ./core/sdk/test/scripts/safari.sh
+  artifacts:
+    paths:
+      - core/sdk/nasapp-testing/test-output/screenshots/
+    when: on_failure
+    expire_in: 1 mo
 
 # Performance tests
 .performance:

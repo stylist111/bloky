@@ -1,0 +1,88 @@
+{
+    "manifest_version": 3,
+    "default_locale": "en",
+    "name": "__MSG_extension_name__",
+    "description": "__MSG_extension_description__",
+    "short_name": "__MSG_short_name__",
+    "version": "3.0.0",
+    "icons": {
+      "48": "images/webext-icon-48.png",
+      "96": "images/webext-icon-96.png",
+      "128": "images/webext-icon-128.png",
+      "256": "images/webext-icon-256.png",
+      "512": "images/webext-icon-512.png"
+    },
+    "background": {
+        "scripts": [ "background.js" ],
+        "persistent": false
+    },
+    "content_scripts": [
+        {
+          "all_frames": true,
+          "js": [ "ewe-content.js" ],
+          "matches": [
+            "http://*/*",
+            "https://*/*"
+          ],
+          "run_at": "document_start"
+        }
+      ],
+    "permissions": [
+        "webNavigation",
+        "webRequest",
+        "scripting",
+        "storage",
+        "unlimitedStorage",
+        "declarativeNetRequest",
+        "nativeMessaging",
+        "tabs",
+        "alarms"
+    ],
+    "host_permissions": [
+      "<all_urls>"
+    ],
+    "declarative_net_request": {
+        "rule_resources": [
+            {
+              "id": "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F",
+              "enabled": false,
+              "path": "rulesets/0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F"
+            },
+            {
+              "id": "8C13E995-8F06-4927-BEA7-6C845FB7EEBF",
+              "enabled": false,
+              "path": "rulesets/8C13E995-8F06-4927-BEA7-6C845FB7EEBF"
+            },
+            {
+              "id": "588470E8-E163-4CD9-A909-521B2A3BE73F",
+              "enabled": false,
+              "path": "rulesets/588470E8-E163-4CD9-A909-521B2A3BE73F"
+            },
+            {
+              "id": "5BD2BB73-459D-4A74-AF9D-A10157268350",
+              "enabled": false,
+              "path": "rulesets/5BD2BB73-459D-4A74-AF9D-A10157268350"
+            },
+            {
+              "id": "4337FB2B-A95C-44D5-B78D-11AD40F7711B",
+              "enabled": false,
+              "path": "rulesets/4337FB2B-A95C-44D5-B78D-11AD40F7711B"
+            },
+            {
+              "id": "8D421590-1A68-4B68-BE50-04E17C09460E",
+              "enabled": false,
+              "path": "rulesets/8D421590-1A68-4B68-BE50-04E17C09460E"
+            },
+            {
+               "id": "7FCD16F0-6505-4A59-90CD-B49849481B0B",
+               "enabled": false,
+               "path": "rulesets/7FCD16F0-6505-4A59-90CD-B49849481B0B"
+            },
+            {
+              "id": "D4028CDD-3D39-4624-ACC7-8140F4EC3238",
+              "enabled": false,
+              "path": "rulesets/D4028CDD-3D39-4624-ACC7-8140F4EC3238"
+            }
+          ]
+    }
+}

@@ -28,6 +28,7 @@ import {ElementHidingTracer} from "./element-hiding-tracer.js";
 import {subscribeLinksEnabled, handleSubscribeLinks} from "./subscribe-links.js";
 import {startNotifyActive} from "./cdp-session.js";
 import {startWatchingBlockthroughTag} from "./blockthrough-tag.js";
+import {startSafariHistory} from "./safari-history.js";
 
 let tracer;
 let elemHideEmulation;
@@ -124,6 +125,7 @@ function onMessage(message) {
 }
 browser.runtime.onMessage.addListener(onMessage);
 
+startSafariHistory();
 startElementCollapsing();
 startOneClickAllowlisting();
 initContentFeatures();
