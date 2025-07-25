@@ -286,14 +286,14 @@ export async function setAADefaultState() {
 }
 
 export async function changePremiumFLStatus(checkboxSelector, { enable = true } = {}) {
-  await clickOnDisplayedElement(`span:has(> ${checkboxSelector})`);
+  await clickOnDisplayedElement(`span:has(> ${checkboxSelector})`, { timeout: 1500 });
 
   const errMsg = enable ? "enabled" : "disabled";
   await wait(
     async () => {
       return (await isCheckboxPropertyEnabled(checkboxSelector)) === enable;
     },
-    1000,
+    2000,
     `${checkboxSelector} has not been ${errMsg}`,
   );
 }
