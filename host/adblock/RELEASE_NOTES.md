@@ -1,5 +1,9 @@
 # Unreleased
 
+# 6.25.1 - 2025-07-29
+
+This release contains bugfixes and under-the-hood changes.
+
 # 6.25.0 - 2025-07-23
 
 - Added cohorts to telemetry and CDP. (EXT-980)
