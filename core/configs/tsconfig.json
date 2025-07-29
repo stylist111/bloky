@@ -4,6 +4,7 @@
     "allowJs": true,
     "allowUnreachableCode": false,
     "declaration": true,
+    "resolveJsonModule": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "module": "es2020",

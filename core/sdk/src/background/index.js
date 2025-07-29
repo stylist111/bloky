@@ -233,13 +233,13 @@ async function onInstalled(details) {
  * Defines the recommended filter subscriptions per language.
  * @typedef {Object} BundledSubscription
  * @property {string} id The identifier for this subscription.
- * @property {Array<string>} languages The languages that this subscription
+ * @property {?Array<string>} languages The languages that this subscription
  *   would match to.
  * @property {string} title The display name of the recommended subscription.
- * @property {string} homepage The home page of the recommended subscription.
- * @property {Array<string>} requires A list of subscriptions that this one
+ * @property {?string} homepage The home page of the recommended subscription.
+ * @property {?Array<string>} requires A list of subscriptions that this one
  *   depends on.
- * @property {Array<string>} includes A list of subscriptions that this
+ * @property {?Array<string>} includes A list of subscriptions that this
  *   one also contains.
  * @property {?boolean} privileged True if this subscription can load filters
  *   that require privileged access, like snippets.
@@ -302,7 +302,7 @@ async function onInstalled(details) {
  *   dynamically enabled or disabled. If any features are set here which are
  *   not known features, a warning will be added to the `warnings` property
  *   of the returned `FirstRunInfo`.
- * @param {bool?} [addonInfo.featureFlags.inlineCss] Enable inline CSS in
+ * @param {boolean?} [addonInfo.featureFlags.inlineCss] Enable inline CSS in
  *   element hiding and element hiding emulation filters.
  * @param {Object?} [addonInfo.remoteConfig] Remote configuration parameters.
  * @param {string} [addonInfo.remoteConfig.url] The URL to make a GET request to
@@ -310,6 +310,12 @@ async function onInstalled(details) {
  * @param {Function} [addonInfo.remoteConfig.getFacts] - A function that returns
  *   the facts object to be used in the cohorts and experiments modules
  *   e.g. `() => ({hasPremium: true})`.
+ * @param {Object?} [addonInfo.telemetryEventLogging] Settings for telemetry
+ *   event logging.
+ * @param {string?} [addonInfo.telemetryEventLogging.bearer] The Bearer token
+ *   accompanying telemetry event logging API calls.
+ * @param {string?} [addonInfo.telemetryEventLogging.url] The URL of the
+ *   location where telemetry event logs will be sent to.
  * @return {Promise<FirstRunInfo>} Promise that is resolved after starting up
  *                                 is completed.
  */

@@ -479,7 +479,177 @@ export interface Facts {
   countryCode?: string;
 }
 
+/**
+ * An object containing addon information belonging to sdk consumer, that can be accessed 
+ * via debugging module.
+ */
+export interface AddonInfo {
+  /**
+   * An array of bundled subscriptions provided by the integrator.
+   */
+  bundledSubscriptions?: BundledSubscription[];
+  /**
+   * A path to subscription files provided by the integrator.
+   */
+  bundledSubscriptionsPath?: string;
+  /**
+   * Name of the addon/extension.
+   */
+  name?: string;
+  /**
+   * Version of the addon/extension.
+   */
+  version?: string;
+  /**
+   * Remote configuration parameters.
+   */
+  remoteConfig?: {
+    /**
+     * The URL to make a GET request to for getting the remote config data.
+     */
+    url?: string;
+    /**
+    * A function that returns the facts object to be used in the cohorts and experiments modules.
+    */
+    getFacts?: () => Promise<Facts>;
+  };
+  /**
+   * Feature flags for the addon/extension.
+   */
+  featureFlags?: {
+    /**
+     * Enable inline CSS in element hiding and element hiding emulation filters.
+     */
+    inlineCss?: boolean;
+  };
+  /**
+   * Settings for CDP.
+   */
+  cdp?: {
+    /**
+     * The URL to do the user counting ping to CDP.
+     */
+    pingUrl?: string;
+    /**
+     * The URL to send aggregate metrics to CDP.
+     */
+    publicKeyUrl?: string;
+    /**
+     * The Bearer token accompanying CDP API calls.
+     */
+    bearer?: string;
+  };
+  /**
+   * Settings for telemetry.
+   */
+  telemetry?: {
+    /**
+     * The URL of the location where user active pings will be sent to.
+     */
+    url?: string;
+    /**
+     * The Bearer token accompanying telemetry API calls.
+     */
+    bearer?: string;
+  };
+  /**
+   * Settings for telemetry event logging.
+   */
+  telemetryEventLogging?: {
+    /**
+     * The URL of the location where telemetry event logs will be sent to.
+     */
+    url?: string;
+    /**
+     * The Bearer token accompanying telemetry event logging API calls.
+     */
+    bearer?: string;
+  };
+}
+
+/**
+ * Defines the recommended filter subscriptions per language.
+ */
+export interface BundledSubscription {
+  /**
+   * Where this recommendation will get updates from. Required for MV3 subscriptions to update.
+   */
+  diff_url?: string;
+  /**
+   * Expiration interval from the subscription header. Usually the number of days or hours between expirations.
+   */
+  expires?: string;
+  /**
+   * The home page of the recommended subscription.
+   */
+  homepage?: string;
+  /**
+   * The identifier for this subscription.
+   */
+  id: string;
+  /**
+   * A list of subscriptions that this one also contains.
+   */
+  includes?: string[];
+  /**
+   * The languages that this subscription would match to.
+   */
+  languages?: string[];
+  /**
+   * Where the recommended subscription can be found for MV2 in plain text (Manifest V3 only).
+   */
+  mv2_url?: string;
+  /**
+   * True if this subscription can load filters that require privileged access, like snippets.
+   */
+  privileged?: boolean;
+  /**
+   * A list of subscriptions that this one depends on.
+   */
+  requires?: string[];
+  /**
+   * The display name of the recommended subscription.
+   */
+  title: string;
+  /**
+   * The kind of content targeted by this recommended subscription.
+   */
+  type: string;
+  /**
+   * Where the recommended subscription can be found in plain text.
+   */
+  url: string;
+}
+
+/**
+ * Information returned after the first run of the extension.
+ */
+export interface FirstRunInfo {
+  /**
+   * Whether the subscriptions storage was initialized or not.
+   */
+  foundStorage: boolean;
+  /**
+   * Whether pre-existing subscriptions were found.
+   */
+  foundSubscriptions: boolean;
+  /**
+   * An array of warnings.
+   */
+  warnings?: string[];
+}
+
 declare module "@eyeo/webext-ad-filtering-solution" {
+  /**
+   * Starts the EWE with the given addon information.
+   *
+   * @param addonInfo An object containing addon information
+   * belonging to sdk consumer, that can be accessed via `debugging` module.
+   * @returns A promise that is resolved after starting up is completed.
+   */
+
+  const start: (addonInfo: AddonInfo) =>  Promise<FirstRunInfo>;
+
   namespace allowlisting {
     /**
      * Sets the function called when allowlisting succeeds

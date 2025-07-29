@@ -57,6 +57,7 @@ import { info } from "~/info/background";
 import { start as startTelemetry } from "~/telemetry/background";
 import { start as startInProductMessaging } from "~/ipm/background";
 import { start as startAddBTRequestHeader } from "~/blockthrough/background";
+import { start as startEWE } from "~/ewe/background";
 
 /**
  * Runs initialization that can be done in parallel and doesn't have to be done
@@ -102,6 +103,13 @@ function bootstrapSync(): void {
 async function bootstrap(): Promise<void> {
   bootstrapSync();
 
+  // startEWE is meant to be called in the first turn of the event loop,
+  // but it cannot be moved to bootstrapSync() yet, because we need to await
+  // its result, this could be moved to bootstrapSync() once webext will support
+  // sync function to call start.
+  // This function needs to be called before any functionality that might be using it.
+  const eweFirstRun = await startEWE();
+
   startPages();
   startTabSessionStorage();
   startDevTools();
@@ -109,7 +117,7 @@ async function bootstrap(): Promise<void> {
   startReadyState();
   startFilterConfiguration();
   startStats();
-  void startSubscriptionInit();
+  void startSubscriptionInit(eweFirstRun);
   startInit();
   void startRecommendedLanguage();
   startComposer();

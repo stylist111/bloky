@@ -17,7 +17,6 @@
 
 /** @module subscriptionInit */
 
-import rulesIndex from "@eyeo/rules-utils/adblockplus/index/adblockplus.json";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import * as premium from "../../src/premium/background/index.ts";
 import { startOptionLinkListener } from "../../src/options/background";
@@ -29,7 +28,6 @@ import { initNotifications } from "./notificationHelper.js";
 import { Prefs } from "./prefs.js";
 import { start as startUnloadCleanup } from "../../src/unload-cleanup/background/index.ts";
 import * as logger from "../../src/logger/background";
-import { getFacts } from "~/remote-config/background";
 
 const serverLogger = new ewe.telemetry.ServerLogger(
   "adblockplus_subscriptions_init"
@@ -178,45 +176,8 @@ function initElementHidingDebugMode() {
   );
 }
 
-export async function start() {
-  let addonInfo = {
-    bundledSubscriptions: rulesIndex,
-    bundledSubscriptionsPath: "/data/rules/abp",
-    name: info.addonName,
-    version: info.addonVersion,
-    remoteConfig: {
-      url: "https://easylist-downloads.adblockplus.org/ab-testing/experiments.json",
-      getFacts
-    },
-    featureFlags: {
-      inlineCss: false
-    }
-  };
-
-  let cdp = {
-    pingUrl: webpackDotenvPlugin.CDP_PING_URL,
-    publicKeyUrl: webpackDotenvPlugin.CDP_PUBLIC_KEY_URL,
-    bearer: webpackDotenvPlugin.CDP_BEARER
-  };
-  if (cdp.pingUrl && cdp.publicKeyUrl && cdp.bearer) addonInfo.cdp = cdp;
-
-  let telemetry = {
-    url: webpackDotenvPlugin.EYEOMETRY_URL,
-    bearer: webpackDotenvPlugin.EYEOMETRY_BEARER
-  };
-
-  if (telemetry.url && telemetry.bearer) addonInfo.telemetry = telemetry;
-
-  let telemetryEventLogging = {
-    url: webpackDotenvPlugin.EYEOMETRY_EVENT_LOGGING_URL,
-    bearer: webpackDotenvPlugin.EYEOMETRY_EVENT_LOGGING_BEARER
-  };
-
-  if (telemetryEventLogging.url && telemetryEventLogging.bearer)
-    addonInfo.telemetryEventLogging = telemetryEventLogging;
-
-  const [eweFirstRun] = await Promise.all([
-    ewe.start(addonInfo),
+export async function start(eweFirstRun) {
+  await Promise.all([
     Prefs.untilLoaded.catch(() => {
       setDataCorrupted(true);
     }),

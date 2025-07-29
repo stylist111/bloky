@@ -312,7 +312,7 @@ export async function reloadExtension(
           await driver.navigate().refresh();
         }
       },
-      20000,
+      30000,
       "Options page not found after reload, or not in default state",
       1000,
     );

@@ -18,10 +18,26 @@
 export {};
 
 declare global {
-  /**
-   * WebpackDotenv plugin declared env. variables for Sentry
-   */
   const webpackDotenvPlugin: {
+    /*
+     * WebpackDotenv plugin declared env. variables for CDP
+     */
+    CDP_BEARER?: string;
+    CDP_PING_URL?: string;
+    CDP_PUBLIC_KEY_URL?: string;
+    /*
+     * WebpackDotenv plugin declared env. variables for logging
+     */
+    EYEOMETRY_EVENT_LOGGING_URL?: string;
+    EYEOMETRY_EVENT_LOGGING_BEARER?: string;
+    /*
+     * WebpackDotenv plugin declared env. variables for eyeometry
+     */
+    EYEOMETRY_URL?: string;
+    EYEOMETRY_BEARER?: string;
+    /**
+     * WebpackDotenv plugin declared env. variables for Sentry
+     */
     SENTRY_DSN?: string;
     SENTRY_ENVIRONMENT?: string;
   };
