@@ -1,5 +1,9 @@
 # Unreleased
 
+# 4.24.0 - 2025-07-29
+
+This version contains new snippets, a bunch of bug fixes, and some under the hood changes.
+
 - Added a download debug information to the Help tab of the desktop options page (EXT-995)
 - Added cohorts to telemetry and CDP. (EXT-980)
 - Updated snippets to 2.3.0
