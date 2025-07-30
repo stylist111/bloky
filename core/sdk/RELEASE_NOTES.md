@@ -1,5 +1,7 @@
 # Unreleased
 
+# 2.0.0 - 2025-07-15
+
 - Added the `EWE.experiments.getFlags()` method to retrieve a list of all
   current split experiment flags and their values. (EXT-867)
 - Added the ability to retrieve an experiment flag from content/ui scripts. (EXT-877)

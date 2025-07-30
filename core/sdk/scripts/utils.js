@@ -140,8 +140,9 @@ export async function currentVersion() {
     "npm pkg get version",
     {cwd: projectRoot}
   );
-  // json parse removes the extra quotes around the json string that npm returns
-  return JSON.parse(versionResult.stdout.trim());
+
+  const result = JSON.parse(versionResult.stdout.trim());
+  return result["@eyeo/webext-ad-filtering-solution"];
 }
 
 export async function repositoryUrl() {
@@ -150,8 +151,9 @@ export async function repositoryUrl() {
     "npm pkg get repository.url",
     {cwd: projectRoot}
   );
-  // json parse removes the extra quotes around the json string that npm returns
-  return JSON.parse(repoUrlResult.stdout.trim());
+
+  const result = JSON.parse(repoUrlResult.stdout.trim());
+  return result["@eyeo/webext-ad-filtering-solution"];
 }
 
 export function runCommand(command) {

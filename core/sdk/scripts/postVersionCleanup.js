@@ -26,7 +26,7 @@ const isScriptInvokedFromCLI = isMain(import.meta.url);
 async function removeIncorrectFormatTag(version, projectRoot) {
   try {
     await promisify(exec)(
-      `git tag --delete v${version}`,
+      `git tag --delete ${version}`,
       {cwd: projectRoot}
     );
   }
@@ -42,7 +42,7 @@ async function createNewTag(version) {
   // exec doesn't provide a way to send stdin, which is the easiest way to pass
   // the release notes found for the release.
   let subprocess = spawn("git", [
-    "tag", "--file=-", "--cleanup=whitespace", version
+    "tag", "--file=-", "--cleanup=whitespace", "sdk-" + version
   ]);
   return new Promise((resolve, reject) => {
     subprocess.stdin.write(releaseNotes.notesForVersion(version));
