@@ -25,8 +25,8 @@ import sentry from "./sentry.js";
 import {warn} from "./debugging.js";
 import {base64Encode} from "./set-operations.js";
 import {modHashString} from "../all/hashing.js";
+import {getExperimentsConfig} from "./remote-config/storage.js";
 
-let _experimentsConfig = [];
 let emitter = new EventEmitter();
 let experimentData = new PersistentState("ewe:split_experiments", browser.storage.local);
 
@@ -87,7 +87,8 @@ async function getExperimentsInternal() {
   const state = await experimentData.getStateLoaded();
   const assignments = state.assignments || {};
 
-  const experiments = _experimentsConfig.map(experiment => {
+  const config = await getExperimentsConfig();
+  const experiments = config.map(experiment => {
     const variants = experiment.variants.map(variant => {
       return {
         id: variant.variantId,
@@ -108,7 +109,8 @@ async function getEncodedExperiments() {
   const state = await experimentData.getStateLoaded();
   const assignments = state.assignments || {};
 
-  const bitArray = _experimentsConfig.flatMap(experiment =>
+  const config = await getExperimentsConfig();
+  const bitArray = config.flatMap(experiment =>
     experiment.variants.map(variant =>
       assignments[experiment.experimentId] === variant.variantId ? 1 : 0
     )
@@ -121,7 +123,6 @@ async function getEncodedExperiments() {
  * @ignore
  */
 export async function reset() {
-  _experimentsConfig = [];
   experimentData.clearState();
   await experimentData.save();
 }
@@ -129,16 +130,12 @@ export async function reset() {
 /**
  * Assigns the current client to the variants of the experiments
  *
- * @param {Array<Object>} config - Array of experiments configuration
- *
  * @ignore
  * @returns {Promise<void>}
  */
-export async function sync(config) {
-  // store in memory the experiments config, to be later used
-  _experimentsConfig = config;
-
+export async function sync() {
   try {
+    const config = await getExperimentsConfig();
     const state = await experimentData.getStateLoaded();
     const {flags, assignments} = await assignVariants(config);
     state.flags = flags;
@@ -178,7 +175,6 @@ export default {
    * Manually triggers synchronization of experiment data
    *
    * @function
-   * @param {Array<Object>} config - Array of experiments configuration.
    * @returns {Promise<void>}
    */
   sync,

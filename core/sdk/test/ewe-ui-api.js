@@ -16,10 +16,10 @@
  */
 
 import {EWE} from "./messaging.js";
-import {clearEndpointResponse} from "./utils.js";
 import expect from "expect";
-import {EXPERIMENT_FLAG, EXPERIMENT_URL, oneVariantConfig, twoVariantConfig} from "./fixtures/experiments.js";
+import {EXPERIMENT_FLAG, oneVariantConfig, twoVariantConfig} from "./fixtures/experiments.js";
 import browser from "webextension-polyfill";
+import {DEFAULT_CONFIG} from "./fixtures/remote-config.js";
 
 describe("EWE UI API tests", function() {
   describe("Experiments API", function() {
@@ -41,17 +41,17 @@ describe("EWE UI API tests", function() {
     });
 
     after(async function() {
-      await clearEndpointResponse(EXPERIMENT_URL);
       await EWE.experiments.clearFlagOverrides();
       await browser.tabs.remove(uiTab.id);
     });
 
-    afterEach(async function() {
+    beforeEach(async function() {
+      await EWE.testing.resetRemoteConfig();
       await EWE.testing.resetExperimentData();
     });
 
     async function uiSendMessage(method, ...args) {
-      // Currently we check if an element is displayed on the page by
+      // Currently, we check if an element is displayed on the page by
       // injecting a script into the page via browser.tab.executeScript.
       // For extension pages we cannot use this, so we pass the information
       // retrieved on the UI page via a message.
@@ -71,19 +71,27 @@ describe("EWE UI API tests", function() {
       // wait for the page to load before trying to open the port
       await new Promise(r => setTimeout(r, 1000));
       const config = oneVariantConfig("test-ui-flag");
-      await EWE.experiments.sync(config);
+      await EWE.testing.mockRemoteConfig({
+        ...DEFAULT_CONFIG,
+        experiments: config
+      });
+      await EWE.experiments.sync();
       const flagValue = await uiSendMessage("getFlag", EXPERIMENT_FLAG);
       expect(flagValue).toBe("test-ui-flag");
     });
 
-    it("should NOT experiment flag in UI when flag is NOT set", async function() {
+    it("should NOT return the experiment flag in UI when flag is NOT set", async function() {
       const flagValue = await uiSendMessage("getFlag", EXPERIMENT_FLAG);
       expect(flagValue).toBeNull();
     });
 
     it("should get all experiment flags available for the user, in UI", async function() {
       const config = twoVariantConfig([0, 500], [500, 1000]);
-      await EWE.experiments.sync(config);
+      await EWE.testing.mockRemoteConfig({
+        ...DEFAULT_CONFIG,
+        experiments: config
+      });
+      await EWE.experiments.sync();
       const availableFlags = await EWE.experiments.getFlags();
 
       const uiFlags = await uiSendMessage("getFlags");
@@ -92,7 +100,11 @@ describe("EWE UI API tests", function() {
 
     it("should get all experiment assignments available for the user, in UI", async function() {
       const config = twoVariantConfig([0, 500], [500, 1000]);
-      await EWE.experiments.sync(config);
+      await EWE.testing.mockRemoteConfig({
+        ...DEFAULT_CONFIG,
+        experiments: config
+      });
+      await EWE.experiments.sync();
       const assignments = await EWE.experiments.getAssignments();
 
       const uiAssignments = await uiSendMessage("getAssignments");

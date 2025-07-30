@@ -77,7 +77,8 @@ describe("uninstall", () => {
           onChanged: mockEventDispatcher
         },
         cohorts: {
-          getEncodedCohorts: async () => "AA=="
+          getEncodedCohorts: async () => "AA==",
+          onChanged: mockEventDispatcher
         },
         filters: {
           getMetadata: async () => null,

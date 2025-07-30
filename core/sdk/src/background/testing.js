@@ -55,10 +55,12 @@ import * as sitekey from "./sitekey.js";
 import {getDeferredMessages} from "./content-message-deferrer.js";
 import * as cdp from "./cdp.js";
 import {_clear} from "./frame-state.js";
-import * as remoteConfig from "./remote-config.js";
+import * as remoteConfig from "./remote-config/index.js";
 import * as cohorts from "./cohorts/index.js";
 import * as experiments from "./experiments.js";
 import * as sentry from "./sentry.js";
+import {hashString} from "../all/hashing.js";
+import {remoteConfigState} from "./remote-config/storage.js";
 
 const serverLogger = new telemetry.default.ServerLogger("test_ewe_background");
 const altServerLogger = new telemetry.default.ServerLogger("test_ewe_ui_api");
@@ -385,6 +387,18 @@ export default {
     remoteConfig.start({url, syncInterval, errorRetryDelay, disableAutosync});
   },
   resetRemoteConfig: remoteConfig.reset,
+  async mockRemoteConfig(config, countryCode = "US") {
+    const state = await remoteConfigState.getStateLoaded();
+
+    state.revisionId = await hashString(JSON.stringify(config));
+    state.countryCode = countryCode;
+    state.rawData = config;
+    state.etag = "";
+    state.lastDownloaded = new Date().getTime();
+    state.errors = [];
+
+    await remoteConfigState.save();
+  },
 
   // cohorts
   resetCohortsData: cohorts.reset,

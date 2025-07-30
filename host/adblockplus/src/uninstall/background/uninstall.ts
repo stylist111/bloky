@@ -164,6 +164,7 @@ export async function setUninstallURL(): Promise<void> {
 export function start(): void {
   ewe.remoteConfig.onChanged.addListener(setUninstallURL);
   ewe.experiments.onChanged.addListener(setUninstallURL);
+  ewe.cohorts.onChanged.addListener(setUninstallURL);
 
   ewe.notifications.on("downloaded", setUninstallURL);
 

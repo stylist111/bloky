@@ -35,3 +35,23 @@ export async function modHashString(str) {
 
   return hash;
 }
+
+/**
+ * Generates a short Base64-encoded SHA-1 hash of a given string.
+ *
+ * This function hashes the input string using the SHA-1 algorithm,
+ * encodes the result in Base64, and returns the first 8 characters
+ * of the encoded string for use as a compact identifier.
+ *
+ * @param {string} str - String to hash
+ * @returns {Promise<string>}
+ */
+export async function hashString(str) {
+  const sha1Buffer = await crypto.subtle.digest(
+    "SHA-1",
+    new TextEncoder().encode(str)
+  );
+  const bytes = new Uint8Array(sha1Buffer);
+  const base64 = btoa(String.fromCharCode(...bytes));
+  return base64.substring(0, 8);
+}

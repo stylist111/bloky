@@ -24,7 +24,7 @@ import {onLogQueued, hasPendingLogs, startUploadTransaction,
         commitUploadTransaction, abortUploadTransaction}
   from "./server-logger.js";
 import {PersistentState} from "../persistence.js";
-import {default as remoteConfig} from "../remote-config.js";
+import {default as remoteConfig} from "../remote-config/index.js";
 import {default as cohorts} from "../cohorts/index.js";
 import {default as serverLogConfig} from "./server-log-config.js";
 import {Scheduler} from "../../all/scheduler.js";

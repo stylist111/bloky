@@ -15,49 +15,35 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import browser from "webextension-polyfill";
 import {MILLIS_IN_HOUR, MILLIS_IN_MINUTE} from "adblockpluscore/lib/time.js";
-import {PersistentState} from "./persistence.js";
-import {Scheduler} from "../all/scheduler.js";
+import {Scheduler} from "../../all/scheduler.js";
 import {validateRemoteConfig} from "@eyeo/remote-configuration-validator";
-import {EventEmitter} from "../../adblockpluscore/lib/events.js";
-import {EventDispatcher} from "./types.js";
-import * as experiments from "./experiments.js";
-import * as cohorts from "./cohorts/index.js";
-import * as serverLogConfig from "./telemetry/server-log-config.js";
+import {EventEmitter} from "../../../adblockpluscore/lib/events.js";
+import {EventDispatcher} from "../types.js";
+import * as experiments from "../experiments.js";
+import * as cohorts from "../cohorts/index.js";
+import * as serverLogConfig from "../telemetry/server-log-config.js";
+import {
+  getCohortsConfig,
+  getConfig,
+  getCountryCode,
+  getExperimentsConfig,
+  getLoggingConfig,
+  getRevisionId,
+  getSyncStatus,
+  remoteConfigState
+} from "./storage.js";
+import {hashString} from "../../all/hashing.js";
 
 const emitter = new EventEmitter();
-const remoteConfigState = new PersistentState("ewe:remote_config", browser.storage.local);
 let configUrl;
 let scheduler;
-
-const UNKNOWN_COUNTRY_CODE = "unknown";
 
 const onChanged = new EventDispatcher(dispatch => {
   emitter.on("updated", async() => {
     dispatch();
   });
 });
-
-/**
- * Generates a short Base64-encoded SHA-1 hash of a given string.
- *
- * This function hashes the input string using the SHA-1 algorithm,
- * encodes the result in Base64, and returns the first 8 characters
- * of the encoded string for use as a compact identifier.
- *
- * @param {string} str - String to hash
- * @returns {Promise<string>}
- */
-async function hashString(str) {
-  const sha1Buffer = await crypto.subtle.digest(
-    "SHA-1",
-    new TextEncoder().encode(str)
-  );
-  const bytes = new Uint8Array(sha1Buffer);
-  const base64 = btoa(String.fromCharCode(...bytes));
-  return base64.substring(0, 8);
-}
 
 /**
  * Downloads the remote configuration from a URL.
@@ -180,17 +166,12 @@ async function sync() {
  */
 async function syncSubmodules(cacheFresh = false) {
   // synchronize cohorts
-  const cohortsConfig = await remoteConfig.getCohortsConfig();
-  const countryCode = await remoteConfig.getCountryCode();
-  await cohorts.sync(cohortsConfig, countryCode);
+  await cohorts.sync();
 
   // synchronize experiments
   if (!cacheFresh) {
-    const experimentsConfig = await remoteConfig.getExperimentsConfig();
-    await experiments.sync(experimentsConfig);
-
-    const loggingConfig = await remoteConfig.getLoggingConfig();
-    await serverLogConfig.sync(loggingConfig);
+    await experiments.sync();
+    await serverLogConfig.sync();
   }
 }
 
@@ -227,6 +208,9 @@ export async function start({
   if (typeof getFacts === "function") {
     cohorts.setFactsGetter(getFacts);
   }
+
+  // initialize the server log config when starting the service worker
+  await serverLogConfig.sync();
 
   if (disableAutosync) {
     return;
@@ -322,17 +306,10 @@ const remoteConfig = {
 
   /**
    * Retrieves the status of the latest synchronization of remote config
+   * @function
    * @returns {Promise<RemoteConfigSyncStatus>}
    */
-  async getSyncStatus() {
-    const state = await remoteConfigState.getStateLoaded();
-
-    return {
-      errors: state.errors || [],
-      lastDownloaded: state.lastDownloaded,
-      lastNetworkError: state.lastNetworkError
-    };
-  },
+  getSyncStatus,
 
   /**
    * Emitted when remote config has changed
@@ -344,75 +321,45 @@ const remoteConfig = {
   /**
    * Retrieves the 2-letter country code from the remote config response.
    *    e.g. "US", "DE", etc.
+   * @function
    * @returns {Promise<string>}
    */
-  async getCountryCode() {
-    const state = await remoteConfigState.getStateLoaded();
-    return state.countryCode || UNKNOWN_COUNTRY_CODE;
-  },
+  getCountryCode,
 
   /**
    * Retrieves the remote config data
+   * @function
    * @returns {Promise<Object|null>}
    */
-  async getConfig() {
-    const state = await remoteConfigState.getStateLoaded();
-    return state.rawData;
-  },
+  getConfig,
 
   /**
    * Retrieves experiments config
+   * @function
    * @returns {Promise<Experiment[]>}
    */
-  async getExperimentsConfig() {
-    const state = await remoteConfigState.getStateLoaded();
-    const rawData = state.rawData;
-
-    if (!rawData || !Array.isArray(rawData.experiments)) {
-      return [];
-    }
-
-    return rawData.experiments;
-  },
+  getExperimentsConfig,
 
   /**
    * Retrieves cohorts config
+   * @function
    * @returns {Promise<Object[]>}
    */
-  async getCohortsConfig() {
-    const state = await remoteConfigState.getStateLoaded();
-    const rawData = state.rawData;
-
-    if (!rawData || !Array.isArray(rawData.cohorts)) {
-      return [];
-    }
-
-    return rawData.cohorts;
-  },
+  getCohortsConfig,
 
   /**
    * Retrieves logging config
+   * @function
    * @returns {Promise<Object>}
    */
-  async getLoggingConfig() {
-    const state = await remoteConfigState.getStateLoaded();
-    const rawData = state.rawData;
-
-    if (!rawData || typeof rawData.loggingLevels !== "object") {
-      return {};
-    }
-
-    return rawData.loggingLevels;
-  },
+  getLoggingConfig,
 
   /**
    * Retrieves current remote config revision ID
+   * @function
    * @returns {Promise<string|null>}
    */
-  async getRevisionId() {
-    const state = await remoteConfigState.getStateLoaded();
-    return state.revisionId || null;
-  }
+  getRevisionId
 };
 
 export default remoteConfig;

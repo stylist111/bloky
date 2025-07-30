@@ -1,5 +1,8 @@
 # Unreleased
 
+- Fixed initialization of experiments, cohorts, and logger after the service
+  worker restarts (noissue)
+
 # 2.0.0 - 2025-07-15
 
 - Added the `EWE.experiments.getFlags()` method to retrieve a list of all

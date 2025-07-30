@@ -43,7 +43,7 @@ import * as testing from "./testing.js";
 import * as prefs from "./prefs.js";
 import * as cdp from "./cdp.js";
 import * as cdpMetricsUploader from "./cdp-metrics-uploader.js";
-import * as remoteConfig from "./remote-config.js";
+import * as remoteConfig from "./remote-config/index.js";
 import * as experiments from "./experiments.js";
 import * as cohorts from "./cohorts/index.js";
 import {setSnippetLibrary} from "./content-filter.js";

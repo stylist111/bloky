@@ -5,8 +5,9 @@ import {setServerLogLevel, resetServerLogLevel} from "./server-logger.js";
 import {MILLIS_IN_DAY} from "adblockpluscore/lib/time.js";
 import {PersistentState} from "../persistence.js";
 import {Scheduler} from "../../all/scheduler.js";
-import {default as remoteConfig} from "../remote-config.js";
+import {default as remoteConfig} from "../remote-config/index.js";
 import {modHashString} from "../../all/hashing.js";
+import {getLoggingConfig} from "../remote-config/storage.js";
 
 const DEFAULT_ID_ROTATION_PERIOD = 7 * MILLIS_IN_DAY;
 let idRotationPeriod = DEFAULT_ID_ROTATION_PERIOD;
@@ -101,15 +102,21 @@ async function isInModRange(rotatingClientId, modRange) {
 }
 
 /**
- * Synchronizes server logging configuration based on client eligibility.
+ * Represents the logging configuration from the remote config.
  *
- * @param {Object} config The logging configuration object from remote config
- * @param {Object} config.byModule Module-specific logging levels
- * @param {string} config.global Global logging level
- * @param {Array<number>} config.mods Range for logging eligibility
+ * @typedef {Object} LoggingConfig
+ * @property {object} byModule - Module-specific logging levels
+ * @property {string} global - Global logging level
+ * @property {Array<number>} mods - Range for logging eligibility
+ */
+/**
+ * Synchronizes server logging configuration based on client eligibility,
+ * by reading the {@link LoggingConfig} from the remote config and applying it.
+ *
  * @return {Promise<void>}
  */
-export async function sync(config = {}) {
+export async function sync() {
+  const config = await getLoggingConfig();
   const {byModule, global, mods} = config;
 
   const rotatingClientId = await getRotatingClientId();

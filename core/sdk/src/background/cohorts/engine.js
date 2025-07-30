@@ -30,8 +30,8 @@ import * as operators from "./operators.js";
 import sentry from "../sentry.js";
 import {ServerLogger} from "../telemetry/server-logger.js";
 import {base64Encode} from "../set-operations.js";
+import {getCohortsConfig, getCountryCode} from "../remote-config/storage.js";
 
-let _cohortsConfig = [];
 const emitter = new EventEmitter();
 const cohortsData = new PersistentState("ewe:cohorts", browser.storage.local);
 const logger = new ServerLogger("cohorts");
@@ -138,18 +138,16 @@ async function updateIfChanged(newCohortIds) {
 /**
  * Assigns the current client to the matching cohorts
  *
- * @param {Array<Object>} config - The cohort configuration.
- * @param {string} countryCode - The 2-letter country code of the user.
- *
  * @ignore
  * @returns {Promise<void>}
  */
-export async function sync(config, countryCode) {
-  _cohortsConfig = config;
+export async function sync() {
   try {
+    const config = await getCohortsConfig();
+    const countryCode = await getCountryCode();
     const state = await cohortsData.getStateLoaded();
 
-    if (!_cohortsConfig.length) {
+    if (!config.length) {
       // No cohorts config available, so no cohorts to assign
       debug("[cohorts] Empty cohorts config, removing all cohorts");
       await updateIfChanged([]);
@@ -188,7 +186,7 @@ export async function sync(config, countryCode) {
     }
 
     // filter out cohorts that have missing facts or operators
-    for (const cohort of _cohortsConfig) {
+    for (const cohort of config) {
       const {conditions, event} = cohort;
       const factsUsed = JSONPath({path: "$..fact", json: conditions});
       const operatorsUsed = JSONPath({path: "$..operator", json: conditions});
@@ -228,7 +226,6 @@ export async function sync(config, countryCode) {
  * @ignore
  */
 export async function reset() {
-  _cohortsConfig = [];
   cohortsData.clearState();
   await cohortsData.save();
 }
@@ -253,7 +250,8 @@ async function _getActiveCohortIds() {
 async function getEncodedCohorts() {
   const activeCohortIds = await _getActiveCohortIds();
 
-  const cohorts = _cohortsConfig.map(cohort => {
+  const config = await getCohortsConfig();
+  const cohorts = config.map(cohort => {
     const cohortId = cohort.event.type;
     return activeCohortIds.includes(cohortId) ? 1 : 0;
   });
@@ -312,8 +310,6 @@ export default {
    *
    * @function
    * @memberof cohorts
-   * @param {Array<Object>} config - Array of cohorts configuration
-   * @param {string} countryCode - The 2-letter country code
    * @returns {Promise<void>}
    */
   sync,

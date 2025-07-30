@@ -1,5 +1,9 @@
 # Unreleased
 
+- Fixed initialization of experiments, cohorts, and logger after the service
+  worker restarts (noissue)
+- Fixed uninstall URL after experiments and cohorts were changed (noissue)
+
 # 6.25.1 - 2025-07-29
 
 This release contains bugfixes and under-the-hood changes.

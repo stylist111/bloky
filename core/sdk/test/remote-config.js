@@ -19,82 +19,19 @@ import expect from "expect";
 import {
   clearEndpointResponse, clearRequestLogs,
   getRequestLogs, ISO_DATE_REGEX,
-  setEndpointResponse,
   setMinTimeout,
   waitForAssertion
 } from "./utils.js";
 import {EWE} from "./messaging.js";
-import {TEST_ADMIN_PAGES_URL} from "@eyeo/test-utils/sdk-urls";
-import {MILLIS_IN_SECOND} from "adblockpluscore/lib/time.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
-
-const REMOTE_CONFIG_URL = `${TEST_ADMIN_PAGES_URL}/experiments.json`;
-const SCHEMA_ID = "1";
-const ERROR_BACKOFF_MS = 2 * MILLIS_IN_SECOND;
-const PING_INTERVAL_MS = MILLIS_IN_SECOND;
-
-const DEFAULT_CONFIG = {
-  schemaId: SCHEMA_ID,
-  experiments: [{
-    experimentId: "my-experiment",
-    variants: [{
-      variantId: "variant1",
-      flags: {
-        hello: "world"
-      },
-      mods: [0, 1000]
-    }]
-  }],
-  cohorts: [
-    {
-      name: "Users who are older than 7 days",
-      conditions: {
-        all: [
-          {
-            fact: "installDate",
-            operator: "olderThan",
-            value: 7 * 24 * 60 * 60 * 1000
-          }
-        ]
-      },
-      event: {
-        type: "my-first-cohort"
-      }
-    }
-  ]
-};
-
-const UPDATED_CONFIG = {
-  ...DEFAULT_CONFIG,
-  cohorts: [
-    ...DEFAULT_CONFIG.cohorts,
-    {
-      name: "Users who are older than 14 days",
-      conditions: {
-        all: [
-          {
-            fact: "installDate",
-            operator: "olderThan",
-            value: 14 * 24 * 60 * 60 * 1000
-          }
-        ]
-      },
-      event: {
-        type: "my-second-cohort"
-      }
-    }
-  ]
-};
-
-async function setConfig(config, status = 200, etag) {
-  await setEndpointResponse(REMOTE_CONFIG_URL, JSON.stringify(config), "GET", status, {etag});
-}
-
-async function startWithTestArgs(disableAutosync) {
-  await EWE.testing.restartRemoteConfig(
-    REMOTE_CONFIG_URL, PING_INTERVAL_MS, ERROR_BACKOFF_MS, disableAutosync
-  );
-}
+import {
+  DEFAULT_CONFIG, ERROR_BACKOFF_MS, PING_INTERVAL_MS,
+  REMOTE_CONFIG_URL,
+  SCHEMA_ID,
+  setConfig,
+  startWithTestArgs,
+  UPDATED_CONFIG
+} from "./fixtures/remote-config.js";
 
 describe("Remote config", function() {
   afterEach(async function() {

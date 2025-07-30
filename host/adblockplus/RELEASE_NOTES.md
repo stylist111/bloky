@@ -1,5 +1,9 @@
 # Unreleased
 
+- Fixed initialization of experiments, cohorts, and logger after the service
+  worker restarts (noissue)
+- Fixed uninstall URL after cohorts were changed (noissue)
+
 # 4.24.0 - 2025-07-29
 
 This version contains new snippets, a bunch of bug fixes, and some under the hood changes.

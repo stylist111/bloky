@@ -19,11 +19,10 @@ import browser from "webextension-polyfill";
 import expect from "expect";
 
 import {EWE, expectTestEvents, clearTestEvents} from "./messaging.js";
-import {clearEndpointResponse} from "./utils.js";
 import {
   EXPERIMENT_FLAG,
   EXPERIMENT_ID,
-  EXPERIMENT_URL, LOWER_HALF_USER_ID,
+  LOWER_HALF_USER_ID,
   LOWER_VARIANT_FLAG,
   LOWER_VARIANT_ID,
   oneVariantConfig,
@@ -32,29 +31,28 @@ import {
   UPPER_VARIANT_FLAG,
   UPPER_VARIANT_ID
 } from "./fixtures/experiments.js";
+import {suspendServiceWorker} from "./mocha/mocha-runner.js";
+import {DEFAULT_CONFIG, setConfig} from "./fixtures/remote-config.js";
 
 describe("Split Experiments", function() {
-  afterEach(async function() {
-    await clearEndpointResponse(EXPERIMENT_URL);
-    await EWE.experiments.clearFlagOverrides();
+  beforeEach(async function() {
+    await EWE.testing.resetRemoteConfig();
+    await EWE.testing.resetExperimentData();
   });
 
   it("returns an empty state before first sync", async function() {
-    await EWE.testing.resetExperimentData();
-
     expect(await EWE.experiments.getAssignments()).toEqual({});
     expect(await EWE.experiments.getExperiments()).toEqual([]);
   });
 
   it("initially returns an empty object for get all flags", async function() {
-    await EWE.testing.resetExperimentData();
-    let flags = await EWE.experiments.getFlags();
+    const flags = await EWE.experiments.getFlags();
     expect(flags).toEqual({});
   });
 
   describe("Variant assignment", function() {
     it("initially returns null for a flag", async function() {
-      let flag = await EWE.experiments.getFlag(EXPERIMENT_FLAG);
+      const flag = await EWE.experiments.getFlag(EXPERIMENT_FLAG);
       expect(flag).toBeNull();
     });
 
@@ -70,7 +68,11 @@ describe("Split Experiments", function() {
 
     it("returns experiments with assignments", async function() {
       const config = oneVariantConfig("test");
-      await EWE.experiments.sync(config);
+      await EWE.testing.mockRemoteConfig({
+        ...DEFAULT_CONFIG,
+        experiments: config
+      });
+      await EWE.experiments.sync();
 
       expect(await EWE.experiments.getExperiments()).toEqual([
         {
@@ -85,11 +87,41 @@ describe("Split Experiments", function() {
       ]);
     });
 
+    it("loads experiments state after SW restart [mv3-only]", async function() {
+      await setConfig(DEFAULT_CONFIG);
+      await EWE.remoteConfig.sync();
+
+      const expectedExperiments = [
+        {
+          id: DEFAULT_CONFIG.experiments[0].experimentId,
+          variants: [
+            {
+              assigned: true,
+              id: "variant1"
+            }
+          ]
+        }
+      ];
+      expect(await EWE.experiments.getExperiments())
+        .toEqual(expectedExperiments);
+
+      await suspendServiceWorker(this);
+
+      // expect that after SW restart the experiments state
+      // is equal to the one before
+      expect(await EWE.experiments.getExperiments())
+        .toEqual(expectedExperiments);
+    });
+
     it("returns one flag with value", async function() {
       const config = oneVariantConfig("test");
-      await EWE.experiments.sync(config);
+      await EWE.testing.mockRemoteConfig({
+        ...DEFAULT_CONFIG,
+        experiments: config
+      });
+      await EWE.experiments.sync();
 
-      let flags = await EWE.experiments.getFlags();
+      const flags = await EWE.experiments.getFlags();
       expect(flags).toEqual({
         [EXPERIMENT_FLAG]: "test"
       });
@@ -97,9 +129,13 @@ describe("Split Experiments", function() {
 
     it("gets the value of the flag in the experiment the user is assigned to", async function() {
       const config = oneVariantConfig("simple");
-      await EWE.experiments.sync(config);
+      await EWE.testing.mockRemoteConfig({
+        ...DEFAULT_CONFIG,
+        experiments: config
+      });
+      await EWE.experiments.sync();
 
-      let flag = await EWE.experiments.getFlag(EXPERIMENT_FLAG);
+      const flag = await EWE.experiments.getFlag(EXPERIMENT_FLAG);
       expect(flag).toBe("simple");
     });
 
@@ -119,7 +155,11 @@ describe("Split Experiments", function() {
         }]
       }];
 
-      await EWE.experiments.sync(config);
+      await EWE.testing.mockRemoteConfig({
+        ...DEFAULT_CONFIG,
+        experiments: config
+      });
+      await EWE.experiments.sync();
 
       expect(await EWE.experiments.getFlag("string_flag")).toBe("value1");
       expect(await EWE.experiments.getFlag("number_flag")).toBe(42);
@@ -144,8 +184,12 @@ describe("Split Experiments", function() {
         }]
       }];
 
-      await EWE.experiments.sync(config);
-      let flags = await EWE.experiments.getFlags();
+      await EWE.testing.mockRemoteConfig({
+        ...DEFAULT_CONFIG,
+        experiments: config
+      });
+      await EWE.experiments.sync();
+      const flags = await EWE.experiments.getFlags();
       expect(flags).toEqual({
         string_flag: "value1",
         number_flag: 42,
@@ -158,8 +202,13 @@ describe("Split Experiments", function() {
     it("deterministically assigns users to variants based on their seed", async function() {
       const config = twoVariantConfig([0, 500], [500, 1000]);
 
+      await EWE.testing.mockRemoteConfig({
+        ...DEFAULT_CONFIG,
+        experiments: config
+      });
       await EWE.testing.setExperimentsSeed(LOWER_HALF_USER_ID);
-      await EWE.experiments.sync(config);
+      await EWE.experiments.sync();
+
       expect(await EWE.experiments.getAssignments()).toEqual({
         [EXPERIMENT_ID]: LOWER_VARIANT_ID
       });
@@ -168,7 +217,7 @@ describe("Split Experiments", function() {
       expect(await EWE.experiments.getFlag("Second flag")).toBeNull();
 
       await EWE.testing.setExperimentsSeed(UPPER_HALF_USER_ID);
-      await EWE.experiments.sync(config);
+      await EWE.experiments.sync();
       expect(await EWE.experiments.getAssignments()).toEqual({
         [EXPERIMENT_ID]: UPPER_VARIANT_ID
       });
@@ -180,8 +229,12 @@ describe("Split Experiments", function() {
     it("mods are inclusive at the bottom and exclusive at the top", async function() {
       const config = twoVariantConfig([0, 215], [215, 1000]);
 
+      await EWE.testing.mockRemoteConfig({
+        ...DEFAULT_CONFIG,
+        experiments: config
+      });
       await EWE.testing.setExperimentsSeed(LOWER_HALF_USER_ID);
-      await EWE.experiments.sync(config);
+      await EWE.experiments.sync();
       expect(await EWE.experiments.getAssignments()).toEqual({
         [EXPERIMENT_ID]: UPPER_VARIANT_ID
       });
@@ -190,8 +243,12 @@ describe("Split Experiments", function() {
     it("doesn't assign to a variant if there isn't a relevant one", async function() {
       const config = twoVariantConfig([0, 215], [216, 1000]);
 
+      await EWE.testing.mockRemoteConfig({
+        ...DEFAULT_CONFIG,
+        experiments: config
+      });
       await EWE.testing.setExperimentsSeed(LOWER_HALF_USER_ID);
-      await EWE.experiments.sync(config);
+      await EWE.experiments.sync();
       expect(await EWE.experiments.getAssignments()).toEqual({});
       expect(await EWE.experiments.getFlag(EXPERIMENT_FLAG)).toBe(null);
     });
@@ -236,9 +293,14 @@ describe("Split Experiments", function() {
         }
       ];
 
+      await EWE.testing.mockRemoteConfig({
+        ...DEFAULT_CONFIG,
+        experiments: config
+      });
+
       for (const testCase of testCases) {
         await EWE.testing.setExperimentsSeed(testCase.userId);
-        await EWE.experiments.sync(config);
+        await EWE.experiments.sync();
 
         expect(await EWE.experiments.getAssignments()).toEqual({
           [EXPERIMENT_ID]: testCase.expectedVariant
@@ -295,8 +357,12 @@ describe("Split Experiments", function() {
 
       // LOWER_HALF_USER_ID hashes to 215 with experiment-1
       // LOWER_HALF_USER_ID hashes to 775 with experiment-2
+      await EWE.testing.mockRemoteConfig({
+        ...DEFAULT_CONFIG,
+        experiments: config
+      });
       await EWE.testing.setExperimentsSeed(LOWER_HALF_USER_ID);
-      await EWE.experiments.sync(config);
+      await EWE.experiments.sync();
 
       expect(await EWE.experiments.getAssignments()).toEqual({
         "experiment-1": "exp1-medium",
@@ -321,10 +387,15 @@ describe("Split Experiments", function() {
         }
       ];
 
+      await EWE.testing.mockRemoteConfig({
+        ...DEFAULT_CONFIG,
+        experiments: config
+      });
+
       let foundMods = new Set();
       for (let i = 0; i < 5; i++) {
         await EWE.testing.setExperimentsSeed(null);
-        await EWE.experiments.sync(config);
+        await EWE.experiments.sync();
         foundMods.add(await EWE.experiments.getFlag("mod"));
       }
 
@@ -341,22 +412,30 @@ describe("Split Experiments", function() {
 
       let config = twoVariantConfig([0, 500], [500, 1000]);
 
+      await EWE.testing.mockRemoteConfig({
+        ...DEFAULT_CONFIG,
+        experiments: config
+      });
       await EWE.testing.setExperimentsSeed(LOWER_HALF_USER_ID);
-      await EWE.experiments.sync(config);
+      await EWE.experiments.sync();
       await userShouldBeInVariant(LOWER_VARIANT_ID, LOWER_VARIANT_FLAG);
 
       await EWE.testing.setExperimentsSeed(UPPER_HALF_USER_ID);
-      await EWE.experiments.sync(config);
+      await EWE.experiments.sync();
       await userShouldBeInVariant(UPPER_VARIANT_ID, UPPER_VARIANT_FLAG);
 
       config = twoVariantConfig([0, 950], [950, 1000]);
+      await EWE.testing.mockRemoteConfig({
+        ...DEFAULT_CONFIG,
+        experiments: config
+      });
 
       await EWE.testing.setExperimentsSeed(LOWER_HALF_USER_ID);
-      await EWE.experiments.sync(config);
+      await EWE.experiments.sync();
       await userShouldBeInVariant(LOWER_VARIANT_ID, LOWER_VARIANT_FLAG);
 
       await EWE.testing.setExperimentsSeed(UPPER_HALF_USER_ID);
-      await EWE.experiments.sync(config);
+      await EWE.experiments.sync();
       await userShouldBeInVariant(LOWER_VARIANT_ID, LOWER_VARIANT_FLAG);
     });
 
@@ -424,8 +503,7 @@ describe("Split Experiments", function() {
       }
 
       it("encodes empty experiments assignments as base64 string", async function() {
-        await EWE.testing.resetExperimentData();
-        await EWE.experiments.sync([]);
+        await EWE.experiments.sync();
         const encoding = await EWE.experiments.getEncodedExperiments();
         expect(encoding).toEqual("AA==");
       });
@@ -434,22 +512,38 @@ describe("Split Experiments", function() {
         let encoding;
 
         await EWE.testing.setExperimentsSeed(LOWER_HALF_USER_ID);
-        await EWE.experiments.sync(getExperimentsConfig(["1"]));
+        await EWE.testing.mockRemoteConfig({
+          ...DEFAULT_CONFIG,
+          experiments: getExperimentsConfig(["1"])
+        });
+        await EWE.experiments.sync();
         encoding = await EWE.experiments.getEncodedExperiments();
         expect(encoding).toEqual("AQ==");
 
         await EWE.testing.setExperimentsSeed(LOWER_HALF_USER_ID);
-        await EWE.experiments.sync(getExperimentsConfig(["1", "3"]));
+        await EWE.testing.mockRemoteConfig({
+          ...DEFAULT_CONFIG,
+          experiments: getExperimentsConfig(["1", "3"])
+        });
+        await EWE.experiments.sync();
         encoding = await EWE.experiments.getEncodedExperiments();
         expect(encoding).toEqual("BQ==");
 
         await EWE.testing.setExperimentsSeed(LOWER_HALF_USER_ID);
-        await EWE.experiments.sync(getExperimentsConfig(["10"]));
+        await EWE.testing.mockRemoteConfig({
+          ...DEFAULT_CONFIG,
+          experiments: getExperimentsConfig(["10"])
+        });
+        await EWE.experiments.sync();
         encoding = await EWE.experiments.getEncodedExperiments();
         expect(encoding).toEqual("AgA=");
 
         await EWE.testing.setExperimentsSeed(LOWER_HALF_USER_ID);
-        await EWE.experiments.sync(getExperimentsConfig(["3", "5", "10"]));
+        await EWE.testing.mockRemoteConfig({
+          ...DEFAULT_CONFIG,
+          experiments: getExperimentsConfig(["3", "5", "10"])
+        });
+        await EWE.experiments.sync();
         encoding = await EWE.experiments.getEncodedExperiments();
         expect(encoding).toEqual("AhQ=");
       });
@@ -467,7 +561,11 @@ describe("Split Experiments", function() {
       expect(await EWE.experiments.getExperiments()).toEqual([]);
 
       const config = oneVariantConfig("test");
-      await EWE.experiments.sync(config);
+      await EWE.testing.mockRemoteConfig({
+        ...DEFAULT_CONFIG,
+        experiments: config
+      });
+      await EWE.experiments.sync();
 
       await expectTestEvents("experiments.updated", [[
         [
@@ -561,7 +659,11 @@ describe("Split Experiments", function() {
       // wait for the page to load before trying to open the port
       await new Promise(r => setTimeout(r, 1000));
       const config = oneVariantConfig("test-ui-flag");
-      await EWE.experiments.sync(config);
+      await EWE.testing.mockRemoteConfig({
+        ...DEFAULT_CONFIG,
+        experiments: config
+      });
+      await EWE.experiments.sync();
       const flagValue = await getFlagFromUI(EXPERIMENT_FLAG);
       expect(flagValue).toBe("test-ui-flag");
     });
@@ -573,7 +675,11 @@ describe("Split Experiments", function() {
 
     it("should get all experiment flags available for the user, in UI", async function() {
       const config = twoVariantConfig([0, 500], [500, 1000]);
-      await EWE.experiments.sync(config);
+      await EWE.testing.mockRemoteConfig({
+        ...DEFAULT_CONFIG,
+        experiments: config
+      });
+      await EWE.experiments.sync();
       const availableFlags = await EWE.experiments.getFlags();
 
       const uiFlags = await getFlagsFromUI();

@@ -15,22 +15,21 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-
 import {EWE} from "./messaging.js";
-import {clearEndpointResponse, getElementAttribute, Page} from "./utils.js";
+import {getElementAttribute, Page} from "./utils.js";
 import {wait} from "./polling.js";
 import expect from "expect";
-import {EXPERIMENT_URL, oneVariantConfig, twoVariantConfig} from "./fixtures/experiments.js";
+import {oneVariantConfig, twoVariantConfig} from "./fixtures/experiments.js";
+import {DEFAULT_CONFIG} from "./fixtures/remote-config.js";
 
 describe("EWE Content Script API tests", function() {
   describe("Experiments API", function() {
     after(async function() {
-      await clearEndpointResponse(EXPERIMENT_URL);
       await EWE.experiments.clearFlagOverrides();
     });
 
-    afterEach(async function() {
+    beforeEach(async function() {
+      await EWE.testing.resetRemoteConfig();
       await EWE.testing.resetExperimentData();
     });
 
@@ -50,7 +49,11 @@ describe("EWE Content Script API tests", function() {
     it("should return flag when flag is set", async function() {
       const flagValue = "test-content-script-flag";
       const config = oneVariantConfig(flagValue);
-      await EWE.experiments.sync(config);
+      await EWE.testing.mockRemoteConfig({
+        ...DEFAULT_CONFIG,
+        experiments: config
+      });
+      await EWE.experiments.sync();
       const tabId = await new Page("experiments-content-api.html").loaded;
 
       const contentFlagValue = await getValueFromPage(tabId, "data-get-flag");
@@ -72,7 +75,11 @@ describe("EWE Content Script API tests", function() {
 
     it("should get all available flags in content scripts", async function() {
       const config = twoVariantConfig([0, 500], [500, 1000]);
-      await EWE.experiments.sync(config);
+      await EWE.testing.mockRemoteConfig({
+        ...DEFAULT_CONFIG,
+        experiments: config
+      });
+      await EWE.experiments.sync();
       const availableFlags = await EWE.experiments.getFlags();
 
       const tabId = await new Page("experiments-content-api.html").loaded;
@@ -83,7 +90,11 @@ describe("EWE Content Script API tests", function() {
 
     it("should get the experiment assignments in content scripts", async function() {
       const config = twoVariantConfig([0, 500], [500, 1000]);
-      await EWE.experiments.sync(config);
+      await EWE.testing.mockRemoteConfig({
+        ...DEFAULT_CONFIG,
+        experiments: config
+      });
+      await EWE.experiments.sync();
       const availableAssignments = await EWE.experiments.getAssignments();
 
       const tabId = await new Page("experiments-content-api.html").loaded;

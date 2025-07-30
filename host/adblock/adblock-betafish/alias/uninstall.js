@@ -92,6 +92,11 @@ export async function setUninstallURL() {
       // minutes
       setInterval(updateUninstallURL, twoMinutes);
       updateUninstallURL();
+
+      // listen for changes to the remote config, experiments and cohorts
+      ewe.remoteConfig.onChanged.addListener(updateUninstallURL);
+      ewe.experiments.onChanged.addListener(updateUninstallURL);
+      ewe.cohorts.onChanged.addListener(updateUninstallURL);
     } else {
       browser.runtime.setUninstallURL(`${uninstallURL}&t=-1`);
     }
