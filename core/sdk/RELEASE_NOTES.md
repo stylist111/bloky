@@ -1,5 +1,7 @@
 # Unreleased
 
+# 2.1.0 - 2025-07-31
+
 - Added cohorts to telemetry and CDP. (EXT-980)
 - Added limited Safari support (NASA-739)
 - Fixed initialization of experiments, cohorts, and logger after the service
