@@ -1,5 +1,7 @@
 # Unreleased
 
+- Added cohorts to telemetry and CDP. (EXT-980)
+- Added limited Safari support (NASA-739)
 - Fixed initialization of experiments, cohorts, and logger after the service
   worker restarts (noissue)
 
@@ -27,8 +29,6 @@
 - Exposed `EWE.experiments.getEncodedExperiments()` method to retrieve the
   experiment assignments encoded as base64-encoded bitmap.
 - Added the `EWE.experiments.getAssignments()` in Content and UI APIs. (EXT-991)
-- Added cohorts to telemetry and CDP. (EXT-980)
-- Added limited Safari support (NASA-739)
 
 ## General
 
