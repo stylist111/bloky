@@ -35,7 +35,7 @@ export const LoggingLevels = {
         minimum: 0,
         maximum: 1000
       }
-    },
+    }
   },
   required: ["mods"]
 };

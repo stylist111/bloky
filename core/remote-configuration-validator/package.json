@@ -1,6 +1,6 @@
 {
   "name": "@eyeo/remote-configuration-validator",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "eyeo's Remote Configuration Validator",
   "repository": {
     "type": "git",
@@ -11,7 +11,7 @@
   "main": "./src/validator.js",
   "type": "module",
   "scripts": {
-    "lint": "eslint src/*",
+    "lint": "eslint **/*.js",
     "prettier-fix": "prettier --write ./src/*",
     "test": "mocha test/*.js"
   },

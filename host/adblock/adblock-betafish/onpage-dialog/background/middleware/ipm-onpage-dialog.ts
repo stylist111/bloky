@@ -44,12 +44,18 @@ function getParamDefinitionList(): ParamDefinitionList<DialogParams> {
   return [
     {
       name: "timing",
-      validate: (param): boolean =>
-        typeof param === "undefined" ||
-        param === Timing.afterWebAllowlisting ||
-        param === Timing.revisitWebAllowlisted ||
-        param === Timing.afterNavigation ||
-        param === Timing.cookieBanner,
+      validate: (param): boolean => {
+        if (typeof param !== "string") {
+          return false;
+        }
+
+        return (
+          param === Timing.afterWebAllowlisting ||
+          param === Timing.revisitWebAllowlisted ||
+          param === Timing.afterNavigation ||
+          param === Timing.cookieBanner
+        );
+      },
     },
     {
       name: "display_duration",
@@ -83,6 +89,10 @@ function getParamDefinitionList(): ParamDefinitionList<DialogParams> {
     {
       name: "priority",
       validate: isEmptyOrPositiveNumber,
+    },
+    {
+      name: "lower_body",
+      validate: (param): boolean => typeof param === "undefined" || isNotEmpty(param),
     },
   ];
 }

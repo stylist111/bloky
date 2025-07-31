@@ -17,6 +17,11 @@
 
 import {All, Any, Conditions, Cohort, Event, Not, Params, Value} from "./cohortDefinitions.js";
 import {Experiment, Flags, Variant} from "./experimentDefinitions.js";
+import {
+  CreateOnpageDialogCommand,
+  CreateTabCommand,
+  DeleteCommandsCommand
+} from "./ipmDefinitions.js";
 import {LoggingLevels, LogLevel} from "./loggingLevelsDefinitions.js";
 
 export const remoteConfigSchema = {
@@ -45,6 +50,16 @@ export const remoteConfigSchema = {
         },
         loggingLevels: {
           $ref: "#/definitions/LoggingLevels"
+        },
+        ipmCommands: {
+          type: "array",
+          items: {
+            anyOf: [
+              {$ref: "#/definitions/CreateOnpageDialogCommand"},
+              {$ref: "#/definitions/CreateTabCommand"},
+              {$ref: "#/definitions/DeleteCommandsCommand"}
+            ]
+          }
         }
       },
       required: ["experiments", "schemaId"]
@@ -61,6 +76,9 @@ export const remoteConfigSchema = {
     Flags,
     Value,
     LoggingLevels,
-    LogLevel
+    LogLevel,
+    CreateOnpageDialogCommand,
+    CreateTabCommand,
+    DeleteCommandsCommand
   }
 };

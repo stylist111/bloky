@@ -16,12 +16,12 @@
  */
 
 import expect from "expect";
-import { validateRemoteConfig } from "../src/validator.js";
+import {validateRemoteConfig} from "../src/validator.js";
 
 const SCHEMA_ID = "1";
 
-describe("Logging Data Validation", function () {
-  it("marks a missing logging config as valid", function () {
+describe("Logging Data Validation", function() {
+  it("marks a missing logging config as valid", function() {
     let data = {
       schemaId: SCHEMA_ID,
       experiments: []
@@ -29,7 +29,7 @@ describe("Logging Data Validation", function () {
     expect(validateRemoteConfig(data)).toEqual([]);
   });
 
-  it("marks a valid config as valid", function () {
+  it("marks a valid config as valid", function() {
     let data = {
       schemaId: SCHEMA_ID,
       experiments: [],
@@ -45,7 +45,7 @@ describe("Logging Data Validation", function () {
     expect(validateRemoteConfig(data)).toEqual([]);
   });
 
-  it("allows the global level to be optional", function () {
+  it("allows the global level to be optional", function() {
     let data = {
       schemaId: SCHEMA_ID,
       experiments: [],
@@ -60,7 +60,7 @@ describe("Logging Data Validation", function () {
     expect(validateRemoteConfig(data)).toEqual([]);
   });
 
-  it("allows the byModule to be optional", function () {
+  it("allows the byModule to be optional", function() {
     let data = {
       schemaId: SCHEMA_ID,
       experiments: [],
@@ -72,7 +72,7 @@ describe("Logging Data Validation", function () {
     expect(validateRemoteConfig(data)).toEqual([]);
   });
 
-  it("reports missing mods", function () {
+  it("reports missing mods", function() {
     let data = {
       schemaId: SCHEMA_ID,
       experiments: [],
@@ -85,7 +85,7 @@ describe("Logging Data Validation", function () {
     ]);
   });
 
-  it("reports invalid mods", function () {
+  it("reports invalid mods", function() {
     let data = {
       schemaId: SCHEMA_ID,
       experiments: [],
@@ -100,7 +100,7 @@ describe("Logging Data Validation", function () {
     ]);
   });
 
-  it("reports invalid global level", function () {
+  it("reports invalid global level", function() {
     let data = {
       schemaId: SCHEMA_ID,
       experiments: [],
@@ -114,7 +114,7 @@ describe("Logging Data Validation", function () {
     ]);
   });
 
-  it("reports invalid byModule level", function () {
+  it("reports invalid byModule level", function() {
     let data = {
       schemaId: SCHEMA_ID,
       experiments: [],
