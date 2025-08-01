@@ -505,7 +505,7 @@
   },
   "options_dialog_about_trademark": {
     "description": "Trademark information in 'about Adblock Plus' modal dialog",
-    "message": "All rights reserved. Adblock Plus® is a registered trademark of eyeo GmbH."
+    "message": "All rights reserved. Adblock Plus® is a registered trademark."
   },
   "options_dialog_invalid_title": {
     "description": "https://gitlab.com/eyeo/specs/spec/blob/0a80698daaa8097c0cfa5ba1b826bc61b00deace/spec/abp/options-page-advanced.md#adding-filter-lists-via-subscribe-links",

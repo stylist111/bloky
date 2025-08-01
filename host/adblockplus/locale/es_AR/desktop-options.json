@@ -45,7 +45,7 @@
     "message": "Acerca de Adblock Plus"
   },
   "options_dialog_about_trademark": {
-    "message": "Todos los derechos reservados. Adblock Plus® es una marca registrada de eyeo GmbH."
+    "message": "Todos los derechos reservados. Adblock Plus® es una marca registrada."
   },
   "options_dialog_about_version": {
     "message": "Número de versión $version$",

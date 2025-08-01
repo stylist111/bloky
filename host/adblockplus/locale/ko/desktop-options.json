@@ -128,7 +128,7 @@
     "message": "Adblock Plus 정보"
   },
   "options_dialog_about_trademark": {
-    "message": "Adblock Plus®은 eyeo GmbH의 등록 상표입니다."
+    "message": "Adblock Plus®은 등록 상표입니다."
   },
   "options_dialog_about_version": {
     "message": "버전 번호 $version$",

@@ -63,7 +63,7 @@
     "message": "關於 Adblock Plus"
   },
   "options_dialog_about_trademark": {
-    "message": "著作權所有，並保留一切權利。Adblock Plus® 是 eyeo GmbH 的註冊 商標。"
+    "message": "著作權所有，並保留一切權利。Adblock Plus® 是註冊商標。"
   },
   "options_dialog_about_version": {
     "message": "版本號 $version$",

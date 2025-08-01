@@ -63,7 +63,8 @@
     "message": "Adblock Plus பற்றி"
   },
   "options_dialog_about_trademark": {
-    "message": "அனைத்து உரிமைகள் பாதுகாக்கப்பட்டவை. Adblock Plus® eyeo GmbH இன் பதிவுசெய்யப்பட்ட வணிகமுத்திரையாகும்."
+    "message": "அனைத்து உரிமைகள் பாதுகாக்கப்பட்டவை. Adblock Plus® என்பது ஒரு பதிவுசெய்யப்பட்ட வணிகமுத்திரையாகும்."
+
   },
   "options_dialog_about_version": {
     "message": "பதிப்பு எண் $version$",

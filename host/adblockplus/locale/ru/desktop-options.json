@@ -128,7 +128,7 @@
     "message": "Об Adblock Plus"
   },
   "options_dialog_about_trademark": {
-    "message": "Все права защищены. Adblock Plus® является зарегистрированной торговой маркой компании eyeo GmbH."
+    "message": "Все права защищены. Adblock Plus® является зарегистрированной торговой маркой."
   },
   "options_dialog_about_version": {
     "message": "Номер версии $version$",

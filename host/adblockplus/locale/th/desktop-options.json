@@ -45,7 +45,7 @@
     "message": "เกี่ยวกับ Adblock Plus"
   },
   "options_dialog_about_trademark": {
-    "message": "สงวนลิขสิทธิ์ Adblock Plus® เป็นเครื่องหมายการค้า จดทะเบียนของ eyeo GmbH"
+    "message": "สงวนลิขสิทธิ์ Adblock Plus® เป็นเครื่องหมายการค้าที่จดทะเบียนแล้ว."
   },
   "options_dialog_about_version": {
     "message": "เวอร์ชั่น $version$",
