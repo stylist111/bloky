@@ -20,5 +20,5 @@ Merge request: https://github.com/mozilla/webextension-polyfill/pull/719
 ```md
 On Debian or Ubuntu: Run the following commands using Node 22.14.0 and npm 10.9.2:
 npm install
-npm run build:release -- --scope=adblockplus -- chrome 2
+npm run build:release -- --scope=adblockplus -- chrome 3
 ```
