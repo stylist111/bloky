@@ -35,6 +35,8 @@ let firstRun;
 let reinitialized = false;
 let dataCorrupted = false;
 
+const serverLogger = new ewe.telemetry.ServerLogger("initialization");
+
 /**
  * If there aren't any filters, the default subscriptions are added.
  * However, if patterns.ini already did exist and/or any preference
@@ -139,7 +141,7 @@ async function addSubscriptions() {
   if (isMV3) {
     const subscriptions = await ewe.subscriptions.getSubscriptions();
     if (subscriptions.length === 0) {
-      let errorMsg;
+      let errorMsg = null;
 
       try {
         // Enable default subscriptions: EasyList, Anti-CV and Acceptable Ads
@@ -155,7 +157,7 @@ async function addSubscriptions() {
         browser.declarativeNetRequest.getDynamicRules(),
       ]);
       const enabledSubscriptions = newSubscriptions.filter((subscription) => subscription.enabled);
-      const lastErrorMsg = (browser.runtime.lastError || {}).message;
+      const lastErrorMsg = (browser.runtime.lastError || {}).message || null;
       const params = {
         subs: newSubscriptions.length,
         enabledSubs: enabledSubscriptions.length,
@@ -172,6 +174,8 @@ async function addSubscriptions() {
       // send a message to the log server with debug metadata
       console.warn("Something is wrong with subscriptions, reset to defaults", params);
       ServerMessages.recordGeneralMessage("zero_subs_reset", null, params);
+
+      serverLogger.debug("zero_subs_reset", params);
 
       // reset the reinitialized flag to be later used in communicating with the user
       reinitialized = true;

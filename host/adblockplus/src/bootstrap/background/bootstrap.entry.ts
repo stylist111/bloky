@@ -59,6 +59,8 @@ import { start as startInProductMessaging } from "~/ipm/background";
 import { start as startAddBTRequestHeader } from "~/blockthrough/background";
 import { start as startEWE } from "~/ewe/background";
 
+const serverLogger = new ewe.telemetry.ServerLogger("initialization");
+
 /**
  * Runs initialization that can be done in parallel and doesn't have to be done
  * in the first turn of the event loop
@@ -170,4 +172,17 @@ async function bootstrap(): Promise<void> {
   setReadyState(ReadyState.started);
 }
 
-void bootstrap();
+void bootstrap()
+  .then(async () => {
+    serverLogger.debug("initialization_complete", {
+      subscriptionsCount: (await ewe.subscriptions.getSubscriptions()).length
+    });
+  })
+  .catch((e) => {
+    serverLogger.debug("initialization_error", {
+      errorMsg: e.message,
+      hasInternalError: /internal error/i.test(e.message as string)
+    });
+
+    throw e;
+  });

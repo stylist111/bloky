@@ -64,16 +64,82 @@ export default {
       }
     }
   },
-  adblockplus_subscriptions_init: {
+  initialization: {
     initialization_complete: {
-      description: "The subscription initialization, including starting the SDK, has completed",
+      description: "The extension has finished initializing without any errors",
       data: {
         description: "Data about the initialized system",
         type: "object",
         properties: {
           subscriptionsCount: {
-            description: "The number of subscriptions the user has active.",
+            description: "The number of subscriptions the user has active",
             type: "number"
+          }
+        }
+      }
+    },
+    initialization_error: {
+      description: "Errors recorded during the initialization of the extension",
+      data: {
+        description: "Data about the initializion error",
+        type: "object",
+        properties: {
+          errorMsg: {
+            description: "The error message that was recorded",
+            type: "string"
+          },
+          hasInternalError: {
+            description: "Whether or not the error string matched 'internal error' which indicates that it is a browser error",
+            type: "boolean"
+          }
+        }
+      }
+    },
+    zero_subs_reset: {
+      description: "Event logged when subscriptions are reset to defaults due to zero enabled subscriptions",
+      data: {
+        description: "Debug metadata about the subscription reset",
+        type: "object",
+        properties: {
+          subs: {
+            description: "The total number of subscriptions after reset",
+            type: "number"
+          },
+          enabledSubs: {
+            description: "The number of enabled subscriptions after reset",
+            type: "number"
+          },
+          enabledRulesets: {
+            description: "The number of enabled DNR rulesets after reset",
+            type: "number"
+          },
+          totalUserFilters: {
+            description: "The total number of user filters after reset",
+            type: "number"
+          },
+          dynamicRules: {
+            description: "The number of dynamic DNR rules after reset",
+            type: "number"
+          },
+          dataCorrupted: {
+            description: "Whether the data is corrupted. True if the extension has detected that storage has thrown an error.",
+            type: "boolean"
+          },
+          firstRun: {
+            description: "Whether this is the first run of the extension based on the number of subscriptions and user filters.",
+            type: "boolean"
+          },
+          reinitialized: {
+            description: "Whether the extension was reinitialized before reset.",
+            type: "boolean"
+          },
+          errorMsg: {
+            description: "An error that occurred when readding subscriptions, if any",
+            type: ["string", "null"]
+          },
+          lastErrorMsg: {
+            description: "The last error in the browser runtime, if any",
+            type: ["string", "null"]
           }
         }
       }

@@ -650,6 +650,8 @@ function addAllowlistingListeners() {
   });
 }
 
+const initializationServerLogger = new ewe.telemetry.ServerLogger("initialization");
+
 initialize
   .then(async () => {
     await startContentFiltering();
@@ -690,6 +692,11 @@ initialize
       },
     });
   })
+  .then(async () => {
+    initializationServerLogger.debug("initialization_complete", {
+      subscriptionsCount: (await ewe.subscriptions.getSubscriptions()).length,
+    });
+  })
   .catch((e) => {
     const hasInternalError = /internal error/i.test(e.message);
     if (hasInternalError) {
@@ -701,8 +708,15 @@ initialize
         errorMsg: e.message,
       });
     } else {
+      ServerMessages.recordAnonymousErrorMessage("initialization_error");
       ServerMessages.recordErrorMessage("initialization_error", { errorMsg: e.message });
     }
+
+    initializationServerLogger.debug("initialization_error", {
+      errorMsg: e.message,
+      hasInternalError,
+    });
+
     throw e;
   });
 

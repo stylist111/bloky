@@ -29,9 +29,7 @@ import { Prefs } from "./prefs.js";
 import { start as startUnloadCleanup } from "../../src/unload-cleanup/background/index.ts";
 import * as logger from "../../src/logger/background";
 
-const serverLogger = new ewe.telemetry.ServerLogger(
-  "adblockplus_subscriptions_init"
-);
+const serverLogger = new ewe.telemetry.ServerLogger("initialization");
 
 let firstRun;
 let userNotificationCallback = null;
@@ -107,8 +105,38 @@ async function addSubscriptionsAndNotifyUser() {
   if (isMV3) {
     const subscriptions = await ewe.subscriptions.getSubscriptions();
     if (subscriptions.length === 0) {
-      // Enable default subscriptions: EasyList, Anti-CV and Acceptable Ads
-      await ewe.subscriptions.addDefaults(null, true);
+      let errorMsg = null;
+
+      try {
+        // Enable default subscriptions: EasyList, Anti-CV and Acceptable Ads
+        await ewe.subscriptions.addDefaults(null, true);
+      } catch (e) {
+        errorMsg = e.message;
+      }
+
+      const [newSubscriptions, enabledRulesets, userFilters, dynamicRules] =
+        await Promise.all([
+          ewe.subscriptions.getSubscriptions(),
+          browser.declarativeNetRequest.getEnabledRulesets(),
+          ewe.filters.getUserFilters(),
+          browser.declarativeNetRequest.getDynamicRules()
+        ]);
+      const enabledSubscriptions = newSubscriptions.filter(
+        (subscription) => subscription.enabled
+      );
+      const lastErrorMsg = (browser.runtime.lastError || {}).message || null;
+      const params = {
+        subs: newSubscriptions.length,
+        enabledSubs: enabledSubscriptions.length,
+        enabledRulesets: enabledRulesets.length,
+        totalUserFilters: userFilters.length,
+        dynamicRules: dynamicRules.length,
+        dataCorrupted: isDataCorrupted(),
+        firstRun,
+        reinitialized,
+        errorMsg,
+        lastErrorMsg
+      };
 
       // send a message to the log server with debug metadata
       console.warn("Something is wrong with subscriptions, reset to defaults", {
@@ -116,6 +144,7 @@ async function addSubscriptionsAndNotifyUser() {
         reinitialized,
         dataCorrupted
       });
+      serverLogger.debug("zero_subs_reset", params);
 
       // reset the reinitialized flag to be later used in communicating
       // with the user
@@ -223,10 +252,6 @@ export async function start(eweFirstRun) {
     dataCorrupted,
     reinitialized
   }));
-
-  serverLogger.debug("initialization_complete", {
-    subscriptionsCount: (await ewe.subscriptions.getSubscriptions()).length
-  });
 }
 
 /**
