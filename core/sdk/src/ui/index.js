@@ -16,5 +16,6 @@
  */
 
 export {default as sentry} from "./sentry.js";
+export {default as account} from "../front/account.js";
 export {default as experiments} from "../front/experiments.js";
 export {default as telemetry} from "../front/telemetry.js";

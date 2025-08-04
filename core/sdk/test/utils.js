@@ -891,3 +891,50 @@ export async function sleep(ms) {
   // on devices with high CPU usage
   return wait(() => performance.now() - start >= ms);
 }
+
+export async function getRequestLogIntervals(url) {
+  let requestLogs = await getRequestLogs(url);
+  let diffs = [];
+
+  for (let index = 1; index < requestLogs.length; index++) {
+    let timeDifference = new Date(requestLogs[index].timestamp).getTime() -
+      new Date(requestLogs[index - 1].timestamp).getTime();
+
+    // round to nearest 500ms
+    diffs.push(Math.round(timeDifference / 1000) * 1000);
+  }
+
+  const intervals = [diffs[0]];
+  let currentDiff = diffs[0];
+
+  for (let i = 1; i < diffs.length; i++) {
+    if (diffs[i] !== currentDiff) {
+      intervals.push(diffs[i]);
+      currentDiff = diffs[i];
+    }
+  }
+
+  return intervals;
+}
+
+export async function expectNextPing({
+  expectedNewPingCount,
+  url,
+  timeout = 1000
+}) {
+  await waitForAssertion(async() => {
+    const requestLogs = await getRequestLogs(url);
+    expect(requestLogs.length)
+      .toBeGreaterThanOrEqual(expectedNewPingCount);
+  }, timeout);
+}
+
+export async function delayThenExpectNextPing({delay, url, timeout = 1000}) {
+  const currentPingCount = (await getRequestLogs(url)).length;
+  await new Promise(r => setTimeout(r, delay));
+  await expectNextPing({
+    expectedNewPingCount: currentPingCount + 1,
+    url,
+    timeout
+  });
+}

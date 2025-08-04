@@ -19,6 +19,7 @@ toc:
       </style>
     children:
       - allowlisting
+      - account
       - cdp
       - cohorts
       - debugging
@@ -54,3 +55,5 @@ toc:
       - ServerLogger
       - Subscription
       - SnippetCallback
+      - UserProfile
+      - ProfileSyncStatus

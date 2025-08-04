@@ -1,5 +1,7 @@
 # Unreleased
 
+- Added the `EWE.account` API to handle user accounts. (EXT-1013)
+
 # 2.1.0 - 2025-07-31
 
 - Added cohorts to telemetry and CDP. (EXT-980)

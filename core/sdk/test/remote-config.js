@@ -17,7 +17,11 @@
 
 import expect from "expect";
 import {
-  clearEndpointResponse, clearRequestLogs,
+  clearEndpointResponse,
+  clearRequestLogs,
+  delayThenExpectNextPing,
+  expectNextPing,
+  getRequestLogIntervals,
   getRequestLogs, ISO_DATE_REGEX,
   setMinTimeout,
   waitForAssertion
@@ -66,47 +70,6 @@ describe("Remote config", function() {
   describe("Scheduled updates", function() {
     setMinTimeout(this, 10000);
 
-    async function expectNextPing(expectedNewPingCount, expectedConfig) {
-      await waitForAssertion(async() => {
-        const requestLogs = await getRequestLogs(REMOTE_CONFIG_URL);
-        expect(requestLogs.length)
-          .toBeGreaterThanOrEqual(expectedNewPingCount);
-
-        const config = await EWE.remoteConfig.getConfig();
-        expect(config).toEqual(expectedConfig);
-      });
-    }
-
-    async function delayThenExpectNextPing(delay, expectedConfig) {
-      const currentPingCount = (await getRequestLogs(REMOTE_CONFIG_URL)).length;
-      await new Promise(r => setTimeout(r, delay));
-      await expectNextPing(currentPingCount + 1, expectedConfig);
-    }
-
-    async function getRequestLogIntervals() {
-      let requestLogs = await getRequestLogs(REMOTE_CONFIG_URL);
-      let diffs = [];
-
-      for (let index = 1; index < requestLogs.length; index++) {
-        let timeDifference = new Date(requestLogs[index].timestamp).getTime() -
-          new Date(requestLogs[index - 1].timestamp).getTime();
-
-        diffs.push(Math.round(timeDifference / 1000) * 1000);
-      }
-
-      const intervals = [diffs[0]];
-      let currentDiff = diffs[0];
-
-      for (let i = 1; i < diffs.length; i++) {
-        if (diffs[i] !== currentDiff) {
-          intervals.push(diffs[i]);
-          currentDiff = diffs[i];
-        }
-      }
-
-      return intervals;
-    }
-
     beforeEach(async function() {
       await EWE.testing.resetRemoteConfig();
       await clearRequestLogs();
@@ -116,7 +79,13 @@ describe("Remote config", function() {
       await setConfig(DEFAULT_CONFIG);
       await startWithTestArgs(false);
 
-      await expectNextPing(1, DEFAULT_CONFIG);
+      await expectNextPing({
+        expectedNewPingCount: 1,
+        url: REMOTE_CONFIG_URL
+      });
+      await waitForAssertion(async() => {
+        expect(await EWE.remoteConfig.getConfig()).toEqual(DEFAULT_CONFIG);
+      });
 
       const initialSyncStatus = await EWE.remoteConfig.getSyncStatus();
       expect(initialSyncStatus).toEqual({
@@ -125,7 +94,13 @@ describe("Remote config", function() {
       });
 
       await setConfig(UPDATED_CONFIG);
-      await delayThenExpectNextPing(PING_INTERVAL_MS, UPDATED_CONFIG);
+      await delayThenExpectNextPing({
+        delay: PING_INTERVAL_MS,
+        url: REMOTE_CONFIG_URL
+      });
+      await waitForAssertion(async() => {
+        expect(await EWE.remoteConfig.getConfig()).toEqual(UPDATED_CONFIG);
+      });
       const updatedSyncStatus = await EWE.remoteConfig.getSyncStatus();
       expect(updatedSyncStatus).toEqual({
         lastDownloaded: expect.stringMatching(ISO_DATE_REGEX),
@@ -135,7 +110,8 @@ describe("Remote config", function() {
       expect(updatedSyncStatus.lastDownloaded)
         .not.toBe(initialSyncStatus.lastDownloaded);
 
-      expect(await getRequestLogIntervals()).toEqual([PING_INTERVAL_MS]);
+      expect(await getRequestLogIntervals(REMOTE_CONFIG_URL))
+        .toEqual([PING_INTERVAL_MS]);
     });
 
     it("waits for the error retry delay if there is a network error", async function() {
@@ -144,14 +120,26 @@ describe("Remote config", function() {
       await setConfig(DEFAULT_CONFIG);
       await startWithTestArgs(false);
 
-      await expectNextPing(1, DEFAULT_CONFIG);
+      await expectNextPing({
+        expectedNewPingCount: 1,
+        url: REMOTE_CONFIG_URL
+      });
+      await waitForAssertion(async() => {
+        expect(await EWE.remoteConfig.getConfig()).toEqual(DEFAULT_CONFIG);
+      });
       expect(await EWE.remoteConfig.getSyncStatus()).toEqual({
         lastDownloaded: expect.stringMatching(ISO_DATE_REGEX),
         errors: []
       });
 
       await setConfig({}, 500);
-      await delayThenExpectNextPing(PING_INTERVAL_MS, DEFAULT_CONFIG);
+      await delayThenExpectNextPing({
+        delay: PING_INTERVAL_MS,
+        url: REMOTE_CONFIG_URL
+      });
+      await waitForAssertion(async() => {
+        expect(await EWE.remoteConfig.getConfig()).toEqual(DEFAULT_CONFIG);
+      });
       expect(await EWE.remoteConfig.getSyncStatus()).toEqual({
         lastDownloaded: expect.stringMatching(ISO_DATE_REGEX),
         lastNetworkError: expect.stringMatching(ISO_DATE_REGEX),
@@ -159,15 +147,27 @@ describe("Remote config", function() {
       });
 
       await setConfig(UPDATED_CONFIG);
-      await delayThenExpectNextPing(ERROR_BACKOFF_MS, UPDATED_CONFIG);
+      await delayThenExpectNextPing({
+        delay: ERROR_BACKOFF_MS,
+        url: REMOTE_CONFIG_URL
+      });
+      await waitForAssertion(async() => {
+        expect(await EWE.remoteConfig.getConfig()).toEqual(UPDATED_CONFIG);
+      });
       expect(await EWE.remoteConfig.getSyncStatus()).toEqual({
         lastDownloaded: expect.stringMatching(ISO_DATE_REGEX),
         errors: []
       });
 
-      await delayThenExpectNextPing(PING_INTERVAL_MS, UPDATED_CONFIG);
+      await delayThenExpectNextPing({
+        delay: PING_INTERVAL_MS,
+        url: REMOTE_CONFIG_URL
+      });
+      await waitForAssertion(async() => {
+        expect(await EWE.remoteConfig.getConfig()).toEqual(UPDATED_CONFIG);
+      });
 
-      expect(await getRequestLogIntervals()).toEqual([
+      expect(await getRequestLogIntervals(REMOTE_CONFIG_URL)).toEqual([
         PING_INTERVAL_MS,
         ERROR_BACKOFF_MS,
         PING_INTERVAL_MS
@@ -177,15 +177,27 @@ describe("Remote config", function() {
     it("pings using the error delay when the service worker is suspended after a server error [mv3-only]", async function() {
       await setConfig({}, 500);
       await startWithTestArgs(false);
-      await expectNextPing(1);
+      await expectNextPing({
+        expectedNewPingCount: 1,
+        url: REMOTE_CONFIG_URL
+      });
+      await waitForAssertion(async() => {
+        expect(await EWE.remoteConfig.getConfig()).toBeUndefined();
+      });
 
       await suspendServiceWorker(this);
       await startWithTestArgs(false);
-      await delayThenExpectNextPing(ERROR_BACKOFF_MS);
+      await delayThenExpectNextPing({
+        delay: ERROR_BACKOFF_MS,
+        url: REMOTE_CONFIG_URL
+      });
+      await waitForAssertion(async() => {
+        expect(await EWE.remoteConfig.getConfig()).toBeUndefined();
+      });
 
       // This one might take longer if the service worker startup is slow. But
       // it absolutely should not happen sooner than the backoff delay.
-      expect((await getRequestLogIntervals())[0])
+      expect((await getRequestLogIntervals(REMOTE_CONFIG_URL))[0])
         .toBeGreaterThanOrEqual(ERROR_BACKOFF_MS);
     });
 

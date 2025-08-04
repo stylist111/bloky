@@ -136,7 +136,7 @@ export async function setUninstallURL(): Promise<void> {
   const isAdBlockingActive = await isAnySubscriptionActive(adsSubscriptions);
   params.subscriptions =
     (Number(isAcceptableAdsActive) << 1) | Number(isAdBlockingActive);
-  const premiumState = getPremiumState();
+  const premiumState = await getPremiumState();
   params.premiumStatus = premiumState.isActive ? 1 : 0;
   params.webAllowlistingFilterCount = await getWebAllowlistingFilterCount();
 

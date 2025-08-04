@@ -36,8 +36,8 @@ import { type Message } from "~/core/messaging/shared";
  * @returns The Premium Information
  */
 const getDebugLicenseInfo = async (): Promise<PremiumInformation> => {
-  const [isActive, installationId] = await Promise.all([
-    getPremiumState().isActive,
+  const [{ isActive }, installationId] = await Promise.all([
+    getPremiumState(),
     getInstallationId()
   ]);
   return { isActive, installationId };

@@ -46,6 +46,7 @@ import * as cdpMetricsUploader from "./cdp-metrics-uploader.js";
 import * as remoteConfig from "./remote-config/index.js";
 import * as experiments from "./experiments.js";
 import * as cohorts from "./cohorts/index.js";
+import * as account from "./account/index.js";
 import {setSnippetLibrary} from "./content-filter.js";
 import {setAddonInfo, isSafari} from "./info.js";
 import {filterEngine} from "./core.js";
@@ -171,6 +172,12 @@ export {wrappedExperiments as experiments};
  */
 const wrappedCohorts = wrapApiNamespace(cohorts.default);
 export {wrappedCohorts as cohorts};
+
+/**
+ * @ignore
+ */
+const wrappedAccount = wrapApiNamespace(account.default);
+export {wrappedAccount as account};
 
 export let snippets = {
   /**
@@ -330,7 +337,7 @@ export async function start(addonInfo) {
     warnings.push(...addonInfoResult.warnings);
   }
 
-  startSubmodulesWithListeners();
+  startSubmodulesWithListeners(addonInfo);
 
   if (browser.declarativeNetRequest) {
     browser.runtime.onInstalled.addListener(onInstalled);
@@ -384,7 +391,7 @@ export async function start(addonInfo) {
   return firstRun;
 }
 
-function startSubmodulesWithListeners() {
+function startSubmodulesWithListeners(addonInfo) {
   // for MV3, submodules that register event listeners generally need
   // to register their events in the first turn of the event loop to
   // register their event listeners.
@@ -400,6 +407,10 @@ function startSubmodulesWithListeners() {
 
   sitekey.start();
   filters.start();
+
+  if (addonInfo && addonInfo.account) {
+    account.start(addonInfo.account);
+  }
 }
 
 async function startSubmodules(addonInfo) {

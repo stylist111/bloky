@@ -15,6 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import {
   addTrustedMessageTypes,
   installHandler,
@@ -213,8 +214,8 @@ function deactivateLicense(): void {
  *
  * @returns Premium state information
  */
-export function getPremiumState(): PremiumState {
-  return { isActive: hasActiveLicense() };
+export async function getPremiumState(): Promise<PremiumState> {
+  return { isActive: await hasActiveLicense() };
 }
 
 /**
@@ -222,9 +223,11 @@ export function getPremiumState(): PremiumState {
  *
  * @returns whether an active Premium license exists
  */
-export function hasActiveLicense(): boolean {
+export async function hasActiveLicense(): Promise<boolean> {
+  const hasPremium = await ewe.account.hasPremium();
+
   const license = Prefs.get("premium_license") as License;
-  return license.status === "active";
+  return hasPremium || license.status === "active";
 }
 
 /**
@@ -284,14 +287,14 @@ function initializeMessaging(): void {
     return true;
   });
 
-  port.on("premium.get", () => getPremiumState());
+  port.on("premium.get", async () => await getPremiumState());
 
   installHandler(
     "premium",
     "changed",
     (emit: EventEmitterCallback<PremiumState>) => {
-      const onChanged = (): void => {
-        emit(getPremiumState());
+      const onChanged = async (): Promise<void> => {
+        emit(await getPremiumState());
       };
       emitter.on("activated", onChanged);
       emitter.on("deactivated", onChanged);
@@ -316,4 +319,17 @@ function initializeMessaging(): void {
 export function start(): void {
   initializeMessaging();
   initializeLicenseChecks();
+
+  ewe.account.onChanged.addListener(async ({ user, oldUser }) => {
+    const hasPremium = await hasActiveLicense();
+
+    if (!hasPremium) {
+      deactivateLicense();
+      return;
+    }
+
+    if (user?.hasPremium && !oldUser?.hasPremium) {
+      emitter.emit("activated");
+    }
+  });
 }

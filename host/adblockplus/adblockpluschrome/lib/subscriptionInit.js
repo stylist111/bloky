@@ -229,7 +229,9 @@ export async function start(eweFirstRun) {
   initElementHidingDebugMode();
   await initNotifications(firstRun);
   premium.start();
-  ewe.cdp.setPremiumStatusCallback(async () => premium.hasActiveLicense());
+  ewe.cdp.setPremiumStatusCallback(
+    async () => await premium.hasActiveLicense()
+  );
   startOptionLinkListener();
   startUnloadCleanup();
 

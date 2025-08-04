@@ -100,5 +100,5 @@ export interface StartInfo {
   /**
    * Function to get the premium state of the user
    */
-  isPremiumActive: () => boolean;
+  isPremiumActive: () => Promise<boolean>;
 }

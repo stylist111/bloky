@@ -30,7 +30,7 @@ import { getPremiumState } from "../../premium/background";
  */
 async function handleGetInjectionInfo(): Promise<InjectionInfo> {
   await Prefs.untilLoaded;
-  const { isActive: isPremium } = getPremiumState();
+  const { isActive: isPremium } = await getPremiumState();
   const version = info.addonVersion;
   const id = await getInstallationId();
   const premiumId = Prefs.get("premium_user_id");

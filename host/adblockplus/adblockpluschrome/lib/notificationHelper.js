@@ -368,7 +368,7 @@ async function showNotification(notification) {
   // as shown right away because they're not shown immediately.
   if (matchesDisplayMethod("newtab", notification)) {
     const { installType } = await browser.management.getSelf();
-    const { isActive: isPremiumUser } = getPremiumState();
+    const { isActive: isPremiumUser } = await getPremiumState();
 
     // Newtab notifications can be quite obtrusive and managed users may
     // see them more frequently than others so we shouldn't show such

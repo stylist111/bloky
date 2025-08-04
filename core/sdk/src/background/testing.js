@@ -55,12 +55,14 @@ import * as sitekey from "./sitekey.js";
 import {getDeferredMessages} from "./content-message-deferrer.js";
 import * as cdp from "./cdp.js";
 import {_clear} from "./frame-state.js";
+import * as account from "./account/index.js";
 import * as remoteConfig from "./remote-config/index.js";
 import * as cohorts from "./cohorts/index.js";
 import * as experiments from "./experiments.js";
 import * as sentry from "./sentry.js";
 import {hashString} from "../all/hashing.js";
 import {remoteConfigState} from "./remote-config/storage.js";
+import {MILLIS_IN_DAY, MILLIS_IN_HOUR} from "../../adblockpluscore/lib/time.js";
 
 const serverLogger = new telemetry.default.ServerLogger("test_ewe_background");
 const altServerLogger = new telemetry.default.ServerLogger("test_ewe_ui_api");
@@ -398,6 +400,30 @@ export default {
     state.errors = [];
 
     await remoteConfigState.save();
+  },
+
+  async stopAccount() {
+    await account.stop();
+  },
+  async clearAccountStorage() {
+    await account.clearAccountStorage();
+  },
+  async restartAccount({
+    apiBaseUrl,
+    applicationId,
+    loginRequestPattern,
+    profileSyncConfig = {
+      syncInterval: MILLIS_IN_DAY,
+      errorRetryDelay: MILLIS_IN_HOUR,
+      disableAutosync: false
+    }
+  }) {
+    await account.start({
+      apiBaseUrl,
+      applicationId,
+      loginRequestPattern,
+      profileSyncConfig
+    });
   },
 
   // cohorts

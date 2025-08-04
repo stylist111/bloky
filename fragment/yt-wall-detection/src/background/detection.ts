@@ -316,8 +316,12 @@ export function start(parameters: StartInfo): void {
 
   parameters.port.on(
     ytHavenRecordEvent,
-    ({ type, eventName, ...eventPayload }: YTHavenRecordEvent): void => {
-      const isPremium = parameters.isPremiumActive();
+    async ({
+      type,
+      eventName,
+      ...eventPayload
+    }: YTHavenRecordEvent): Promise<void> => {
+      const isPremium = await parameters.isPremiumActive();
       sendAdWallEvents(eventName, {
         ...eventPayload,
         // pass the premium flag to differentiate between users from experiments
@@ -328,7 +332,7 @@ export function start(parameters: StartInfo): void {
 
   // check if the user is in the YT Haven experiment
   parameters.port.on(ytHavenShouldStart, async (): Promise<boolean> => {
-    const isPremium = parameters.isPremiumActive();
+    const isPremium = await parameters.isPremiumActive();
     const ytHavenFlags = await Promise.all([
       ewe.experiments.getFlag(ytHavenEmbedFreeFlag),
       ewe.experiments.getFlag(ytHavenEmbedPremiumFlag),
@@ -342,7 +346,7 @@ export function start(parameters: StartInfo): void {
   // Get the toggle state from persistent storage, as default if user is premium
   // it should be false otherwise depends on the variant configuration
   parameters.port.on(ytHavenToggleState, async (): Promise<boolean> => {
-    const isPremium = parameters.isPremiumActive();
+    const isPremium = await parameters.isPremiumActive();
     const [currentState, isDefaultEnabled] = await Promise.all([
       browser.storage.local.get(ytHavenToggleStatePrefsKey),
       ewe.experiments.getFlag(ytHavenDefaultEnabledFlag),
@@ -363,7 +367,7 @@ export function start(parameters: StartInfo): void {
       });
 
       // record toggle state change event
-      const isPremium = parameters.isPremiumActive();
+      const isPremium = await parameters.isPremiumActive();
       const eventName = newState
         ? ytHavenToggleStateEnabled
         : ytHavenToggleStateDisabled;

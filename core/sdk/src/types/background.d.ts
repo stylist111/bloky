@@ -479,8 +479,42 @@ export interface Facts {
   countryCode?: string;
 }
 
+export interface UserProfile {
+  /**
+   * The user's email address.
+   */
+  email?: string;
+
+  /**
+   * The user's display name, if available.
+   */
+  displayName?: string;
+
+  /**
+   * Whether the user has a premium subscription.
+   */
+  hasPremium?: boolean;
+
+  /**
+   * The features available to the user
+   * e.g., "premium", "adblocker"
+   */
+  features?: string[];
+}
+
+export interface ProfileSyncStatus {
+  /**
+   * The last time the profile was successfully synced.
+   */
+  lastSuccessfulRequest?: string;
+  /**
+   * The last time the profile sync failed.
+   */
+  lastRequestError?: string;
+}
+
 /**
- * An object containing addon information belonging to sdk consumer, that can be accessed 
+ * An object containing addon information belonging to sdk consumer, that can be accessed
  * via debugging module.
  */
 export interface AddonInfo {
@@ -761,6 +795,44 @@ declare module "@eyeo/webext-ad-filtering-solution" {
      * @returns A promise that resolves when the filter has been added.
      */
     const add: (text: string | string[], metadata?: FilterMetadata) => Promise<void>;
+  }
+
+  namespace account {
+    /**
+     * Retrieves the current user profile
+     */
+    const getProfile: () => Promise<UserProfile>;
+
+    /**
+     * Checks if the user has an active premium subscription.
+     */
+    const hasPremium: () => Promise<boolean>;
+
+    /**
+     * Checks if the user is logged in.
+     */
+    const isLoggedIn: () => Promise<boolean>;
+
+    /**
+     * Logs in the user using a license ID and user ID.
+     */
+    const logInWithLicense: ({ userId, licenseId }) => Promise<void>;
+
+    /**
+     * Logs out the user.
+     */
+    const logOut: () => Promise<void>;
+
+    /**
+     * Retrieves the current user profile sync status.
+     */
+    const getProfileSyncStatus: () => Promise<ProfileSyncStatus>;
+
+
+    /**
+     * Emitted when the account status has changed
+     */
+    const onChanged: EventDispatcher<(payload: { user: UserProfile; oldUser: UserProfile }) => unknown>;
   }
 
   namespace remoteConfig {

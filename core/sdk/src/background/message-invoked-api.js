@@ -15,12 +15,17 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {default as experimentsAPI} from "./experiments.js";
+import experimentsAPI from "./experiments.js";
+import accountAPI from "./account/index.js";
 
 /**
  * API to interact with the EWE via messages
  */
 const messageAPI = {
+  account: {
+    getProfile: accountAPI.getProfile,
+    hasPremium: accountAPI.hasPremium
+  },
   experiments: {
     getFlag: experimentsAPI.getFlag,
     getFlags: experimentsAPI.getFlags,

@@ -59,14 +59,7 @@
     },
     {
       "js": ["polyfill.js", "info-injector.preload.js"],
-      "matches": [
-        "https://adblockplus.org/*",
-        "https://accounts.adblockplus.org/*",
-        "https://new.adblockplus.org/*",
-        "https://welcome.adblockplus.org/*",
-        "https://getadblock.com/*",
-        "https://vpn.getadblock.com/*"
-      ],
+      "matches": ["https://*.adblockplus.org/*", "https://*.getadblock.com/*"],
       "run_at": "document_start"
     },
     {

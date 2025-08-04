@@ -16,7 +16,7 @@
  */
 
 import {MILLIS_IN_HOUR, MILLIS_IN_MINUTE} from "adblockpluscore/lib/time.js";
-import {Scheduler} from "../../all/scheduler.js";
+import {getNextRequestTimestamp, Scheduler} from "../../all/scheduler.js";
 import {validateRemoteConfig} from "@eyeo/remote-configuration-validator";
 import {EventEmitter} from "../../../adblockpluscore/lib/events.js";
 import {EventDispatcher} from "../types.js";
@@ -227,29 +227,22 @@ export async function start({
       let lastDownloaded = state.lastDownloaded;
       let lastNetworkError = state.lastNetworkError;
 
-      if (lastNetworkError) {
-        let nextRetryAfterError = new Date(lastNetworkError).getTime() +
-          errorRetryDelay;
-        let nowTimestamp = Date.now();
-        let maxNextRetry = nowTimestamp + errorRetryDelay;
-        if (nextRetryAfterError > maxNextRetry) {
-          // This shouldn't happen if the clocks are working right. It implies
-          // that the system clock has been set backwards since we stored that
-          // timestamp. Let's correct the storage using our current clock
-          // value. We shouldn't do this with lastPing because lastPing comes
-          // from the server.
-          nextRetryAfterError = maxNextRetry;
-          state.lastNetworkError = new Date(nowTimestamp).toISOString();
-          await remoteConfigState.save();
-        }
+      const {
+        nextCheckTimestamp,
+        lastRequestError: updatedNetworkError
+      } = getNextRequestTimestamp({
+        lastSuccessfulRequest: lastDownloaded,
+        lastRequestError: lastNetworkError,
+        errorRetryDelay,
+        syncInterval
+      });
 
-        return nextRetryAfterError;
-      }
-      else if (lastDownloaded) {
-        return new Date(lastDownloaded).getTime() + syncInterval;
+      if (updatedNetworkError) {
+        state.lastNetworkError = updatedNetworkError;
+        await remoteConfigState.save();
       }
 
-      return null;
+      return nextCheckTimestamp;
     },
     interval: syncInterval,
     errorRetryDelay

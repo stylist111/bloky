@@ -42,7 +42,7 @@ export async function getFutureStartInfo(): Promise<FutureFragment.StartInfo> {
     logger,
     licensing: {
       async isLicenseValid() {
-        const { isActive } = getPremiumState();
+        const { isActive } = await getPremiumState();
         return isActive;
       }
     },
@@ -91,7 +91,7 @@ export const legacyStartInfo: LegacyFragment.StartInfo = {
   licensing: {
     async isLicenseValid() {
       await Prefs.untilLoaded;
-      const { isActive } = getPremiumState();
+      const { isActive } = await getPremiumState();
       return isActive;
     }
   },

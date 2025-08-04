@@ -66,13 +66,13 @@ describe("allowlisting/background/public-api", () => {
     beforeEach(() => {
       jest
         .spyOn(premium, "getPremiumState")
-        .mockReturnValue({ isActive: false });
+        .mockReturnValue(Promise.resolve({ isActive: false }));
     });
 
     it("does not call allowlist if premium is active", async () => {
       jest
         .spyOn(premium, "getPremiumState")
-        .mockReturnValueOnce({ isActive: true });
+        .mockReturnValueOnce(Promise.resolve({ isActive: true }));
 
       await onAllowlisting("softonic.com", { expiresAt: 1234567890 });
 

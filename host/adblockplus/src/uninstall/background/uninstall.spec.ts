@@ -130,7 +130,7 @@ describe("uninstall", () => {
     });
     jest.mock("../../premium/background", () => {
       return {
-        getPremiumState: () => {
+        getPremiumState: async () => {
           return { isActive: false };
         }
       };

@@ -443,6 +443,7 @@ addEventListener("unhandledrejection", ({reason}) => {
 });
 
 EWE.remoteConfig.onChanged.addListener(createTestEventListener("remoteConfig.updated"));
+EWE.account.onChanged.addListener(createTestEventListener("account.onChanged"));
 EWE.cohorts.onChanged.addListener(createTestEventListener("cohorts.updated"));
 EWE.experiments.onChanged.addListener(createTestEventListener("experiments.updated"));
 EWE.filters.onAdded.addListener(createTestEventListener("filters.onAdded"));
@@ -535,6 +536,11 @@ if (isMV3()) {
     // The update tests need this subscription to be removed
     sub => sub.id != "00000000-0000-0000-0000-000000000092");
 }
+
+startupInfo.account = {
+  apiBaseUrl: "http://localhost:3003/accounts",
+  applicationId: "ewe-test-application-id"
+};
 
 startupInfo.remoteConfig = {
   url: "http://localhost:3003/experiments.json",

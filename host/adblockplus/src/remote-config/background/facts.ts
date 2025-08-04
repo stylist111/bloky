@@ -28,7 +28,7 @@ export async function getFacts(): Promise<Facts> {
   await Prefs.untilLoaded;
 
   return {
-    hasPremium: hasActiveLicense(),
+    hasPremium: await hasActiveLicense(),
     installDate: Prefs.get("installDate"),
     blockedCount: Prefs.get("blocked_total")
   };

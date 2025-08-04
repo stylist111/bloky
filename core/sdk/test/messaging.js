@@ -85,6 +85,7 @@ function proxy(namespace) {
 }
 
 export const EWE = Object.fromEntries([
+  "account",
   "subscriptions",
   "filters",
   "notifications",

@@ -17,47 +17,59 @@
 
 declare module "@eyeo/webext-ad-filtering-solution/ui" {
   /**
- * Represents a server logger. This is used to send data to a our telemetry
- * server. The exact URL will be configured by the telemetry module in the
- * background script. Console logging is also provided for convenience.
- *
- * @param {string} module The module that this logger is for.
- */
-export interface ServerLogger {
-  constructor(module: string);
-  /**
-   * Creates a debug log.
+   * Represents a server logger. This is used to send data to a our telemetry
+   * server. The exact URL will be configured by the telemetry module in the
+   * background script. Console logging is also provided for convenience.
    *
-   * @param {string} event The name of the event to log. This should be unique.
-   * @param {string|number|object|array|boolean|null} data
-   *    The dynamic data relevant to the event.
+   * @param {string} module The module that this logger is for.
    */
-  debug(event: string, data: string | number | object | any[] | boolean | null): void;
-  /**
-   * Creates an info log.
-   *
-   * @param {string} event The name of the event to log. This should be unique.
-   * @param {string|number|object|array|boolean|null} data
-   *    The dynamic data relevant to the event.
-   */
-  info(event: string, data: string | number | object | any[] | boolean | null): void;
-  /**
-   * Creates a behaviour log.
-   *
-   * @param {string} event The name of the event to log. This should be unique.
-   * @param {string|number|object|array|boolean|null} data
-   *    The dynamic data relevant to the event.
-   */
-  behavior(event: string, data: string | number | object | any[] | boolean | null): void;
-  /**
-   * Creates a warn log.
-   *
-   * @param {string} event The name of the event to log. This should be unique.
-   * @param {string|number|object|array|boolean|null} data
-   *    The dynamic data relevant to the event.
-   */
-  warn(event: string, data: string | number | object | any[] | boolean | null): void;
-}
+  export interface ServerLogger {
+    constructor(module: string);
+    /**
+     * Creates a debug log.
+     *
+     * @param {string} event The name of the event to log. This should be unique.
+     * @param {string|number|object|array|boolean|null} data
+     *    The dynamic data relevant to the event.
+     */
+    debug(event: string, data: string | number | object | any[] | boolean | null): void;
+    /**
+     * Creates an info log.
+     *
+     * @param {string} event The name of the event to log. This should be unique.
+     * @param {string|number|object|array|boolean|null} data
+     *    The dynamic data relevant to the event.
+     */
+    info(event: string, data: string | number | object | any[] | boolean | null): void;
+    /**
+     * Creates a behaviour log.
+     *
+     * @param {string} event The name of the event to log. This should be unique.
+     * @param {string|number|object|array|boolean|null} data
+     *    The dynamic data relevant to the event.
+     */
+    behavior(event: string, data: string | number | object | any[] | boolean | null): void;
+    /**
+     * Creates a warn log.
+     *
+     * @param {string} event The name of the event to log. This should be unique.
+     * @param {string|number|object|array|boolean|null} data
+     *    The dynamic data relevant to the event.
+     */
+    warn(event: string, data: string | number | object | any[] | boolean | null): void;
+  }
+
+  namespace account {
+    /**
+     * Retrieves the current user profile
+     */
+    const getProfile: () => Promise<UserProfile>;
+
+    /**
+     * Checks if the user has an active premium subscription.
+     */
+    const hasPremium: () => Promise<boolean>;
+  }
 
   namespace sentry {
    /**

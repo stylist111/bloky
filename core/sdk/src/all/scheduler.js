@@ -116,3 +116,58 @@ export class Scheduler {
     }
   }
 }
+
+/**
+ * Returns the next timestamp when the scheduler should check for updates.
+ * If there was a network error and the clock was set backwards, an updated
+ * lastNetworkError timestamp is returned too.
+ *
+ * @param {string} lastSuccessfulRequest
+ *   ISO Date of the last successful download
+ * @param {string} lastRequestError
+ *   ISO Date of the last request error, if any
+ * @param {number} errorRetryDelay
+ *   Delay in milliseconds to wait after a network error before retrying
+ * @param {number} syncInterval Interval in milliseconds to wait after
+ *   a successful download before checking again
+ * @return {Object} An object containing the next check timestamp
+ *   and optionally an updated lastRequestError timestamp
+ */
+export function getNextRequestTimestamp({
+  lastSuccessfulRequest,
+  lastRequestError,
+  errorRetryDelay,
+  syncInterval
+}) {
+  if (lastRequestError) {
+    let nextRetryAfterError = new Date(lastRequestError).getTime() +
+      errorRetryDelay;
+    let nowTimestamp = Date.now();
+    let maxNextRetry = nowTimestamp + errorRetryDelay;
+    if (nextRetryAfterError > maxNextRetry) {
+      // This shouldn't happen if the clocks are working right. It implies
+      // that the system clock has been set backwards since we stored that
+      // timestamp. Let's correct the storage using our current clock
+      // value. We shouldn't do this with lastPing because lastPing comes
+      // from the server.
+      return {
+        lastRequestError: new Date(nowTimestamp).toISOString(),
+        nextCheckTimestamp: maxNextRetry
+      };
+    }
+
+    return {
+      nextCheckTimestamp: nextRetryAfterError
+    };
+  }
+  else if (lastSuccessfulRequest) {
+    const nextCheckTimestamp = new Date(lastSuccessfulRequest).getTime() +
+      syncInterval;
+
+    return {
+      nextCheckTimestamp
+    };
+  }
+
+  return {nextCheckTimestamp: null};
+}

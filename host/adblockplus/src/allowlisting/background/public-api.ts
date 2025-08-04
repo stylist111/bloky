@@ -70,7 +70,7 @@ export async function onAllowlisting(
   domain: string,
   options: ewe.AllowlistingOptions
 ): Promise<void> {
-  if (premium.getPremiumState().isActive) return;
+  if ((await premium.getPremiumState()).isActive) return;
 
   await allowlist({
     hostname: getAllowlistingDomain(domain),
@@ -113,7 +113,7 @@ export async function start(): Promise<void> {
   void ewe.allowlisting.setAuthorizedKeys(authorizedKeys);
   ewe.allowlisting.setAllowlistingCallback(onAllowlisting);
 
-  if (premium.getPremiumState().isActive) {
+  if ((await premium.getPremiumState()).isActive) {
     void removeWebAllowlistingFilters();
   }
 

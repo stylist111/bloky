@@ -84,7 +84,7 @@ async function handleUpdateCampaign(): Promise<void> {
   }
 
   // Don't open campaign for Premium users
-  if (getPremiumState().isActive) {
+  if ((await getPremiumState()).isActive) {
     return;
   }
 
