@@ -39,7 +39,7 @@ async function run() {
     .version(false)
     .strict()
     .command("$0 [host] [version] [commit]", "", subparser =>
-      subparser.positional("host", { choices: ["adblock", "adblockplus"] })
+      subparser.positional("host", { choices: ["adblock", "adblockplus", "sdk"] })
         .positional("version", { type: "string" })
         .positional("commit", { type: "string" }))
     .option("release-date", {
@@ -94,6 +94,10 @@ async function run() {
       {
         name: 'Adblock Plus',
         value: 'adblockplus'
+      },
+      {
+        name: 'SDK',
+        value: 'sdk'
       }
     ]
   });

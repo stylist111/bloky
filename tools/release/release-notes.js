@@ -100,8 +100,17 @@ export class ReleaseNotes {
   }
 }
 
-ReleaseNotes.hostFilePath = function(host) {   
-  return path.join(projectRootPath(), 'host', host, 'RELEASE_NOTES.md');
+ReleaseNotes.hostFilePath = function(host) {
+  switch (host) {
+    case "adblock":
+      return path.join(projectRootPath(), 'host', 'adblock', 'RELEASE_NOTES.md');
+    case "adblockplus":
+      return path.join(projectRootPath(), 'host', 'adblockplus', 'RELEASE_NOTES.md');
+    case "sdk":
+      return path.join(projectRootPath(), 'core', 'sdk', 'RELEASE_NOTES.md');
+    default:
+      throw new Error(`Unknown host: ${host}`);
+  }
 };
 
 ReleaseNotes.readFromHostFilepath = async function(host) {

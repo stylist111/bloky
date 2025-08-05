@@ -163,6 +163,23 @@ describe("Do-release script", function() {
     expect(originTagCommit).toEqual(newCommit);
   });
 
+  it("recreates the 2.1.0 release for the sdk", {timeout: 10000}, async function () {
+    await executeShellCommand("npm run do-release -- sdk 99.2.1 aff562463 --yes --release-date=2025-07-31", checkoutDir);
+
+    const diff = await executeShellCommand("git diff --full-index --unified=0 HEAD^..HEAD", checkoutDir);
+    const expectedDiff = await loadTestFile("sdk-99.2.1-diff.txt");
+    expect(diff).toEqual(expectedDiff);
+
+    const newCommit = await executeShellCommand("git rev-parse --short HEAD", checkoutDir);
+    const checkoutReleaseBranchCommit = await executeShellCommand("git rev-parse --short sdk-release", checkoutDir);
+    const originReleaseBranchCommit = await executeShellCommand("git rev-parse --short sdk-release", originDir);
+    const originTagCommit = await executeShellCommand("git rev-parse --short sdk-99.2.1^{commit}", originDir);
+
+    expect(checkoutReleaseBranchCommit).toEqual(newCommit);
+    expect(originReleaseBranchCommit).toEqual(newCommit);
+    expect(originTagCommit).toEqual(newCommit);
+  });
+
   it("recreates the 4.10.0.1 release for adblockplus", async function() {
     await executeShellCommand("git checkout 4427af61a", checkoutDir);
     await executeShellCommand("sed -i 's/# Unreleased/# Unreleased\\n\\nThis release contains only rules updates for Manifest v3 extensions./g' ./host/adblockplus/RELEASE_NOTES.md", checkoutDir);
@@ -187,13 +204,13 @@ describe("Do-release script", function() {
   });
 
   it("exits if a version already exists", async function() {
-    expect(() => executeShellCommand("npm run do-release -- adblock 6.10.0 HEAD --yes", checkoutDir))
+    await expect(() => executeShellCommand("npm run do-release -- adblock 6.10.0 HEAD --yes", checkoutDir))
       .rejects.toThrowError("already exists");
   });
 
   it("exits if no release notes exist", async function() {
     // Attempt to recreate 4.10.0.1 but without adding release notes
-    expect(() => executeShellCommand(`npm run do-release -- adblockplus 994.10.0.1 4427af61a --yes --release-date=2024-12-16`, checkoutDir))
+    await expect(() => executeShellCommand(`npm run do-release -- adblockplus 994.10.0.1 4427af61a --yes --release-date=2024-12-16`, checkoutDir))
       .rejects.toThrowError("No release notes found");
   });
 });

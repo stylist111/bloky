@@ -1,0 +1,21 @@
+diff --git a/core/sdk/RELEASE_NOTES.md b/core/sdk/RELEASE_NOTES.md
+index 8dd059f360190d923bf446743b3806265c2c5413..c9b23952704d96ead36d8d92345d08167c7b23b2 100644
+--- a/core/sdk/RELEASE_NOTES.md
++++ b/core/sdk/RELEASE_NOTES.md
+@@ -2,0 +3,2 @@
++# 99.2.1 - 2025-07-31
++
+diff --git a/core/sdk/package.json b/core/sdk/package.json
+index b43fed24a3f61b8b6635bdcde23e548120a24ccf..d4a255deb11080dd292658b347e639773eb0d2ac 100644
+--- a/core/sdk/package.json
++++ b/core/sdk/package.json
+@@ -3 +3 @@
+-  "version": "2.0.0",
++  "version": "99.2.1",
+diff --git a/package-lock.json b/package-lock.json
+index a38b9aad0211df59e0019ff5c29a33a3b411971f..ed18e5a37f136d92fc3bd2861d26f19372b665a3 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -52 +52 @@
+-      "version": "2.0.0",
++      "version": "99.2.1",

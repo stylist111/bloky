@@ -21,7 +21,6 @@ import fs from "fs";
 import url from "url";
 import path from "path";
 import {exec} from "child_process";
-import {promisify} from "util";
 
 export async function exists(filename) {
   try {
@@ -132,28 +131,6 @@ export function projectRootPath() {
   let scriptDir = path.dirname(url.fileURLToPath(import.meta.url));
   let projectRoot = path.join(scriptDir, "..");
   return path.normalize(projectRoot);
-}
-
-export async function currentVersion() {
-  let projectRoot = projectRootPath();
-  let versionResult = await promisify(exec)(
-    "npm pkg get version",
-    {cwd: projectRoot}
-  );
-
-  const result = JSON.parse(versionResult.stdout.trim());
-  return result["@eyeo/webext-ad-filtering-solution"];
-}
-
-export async function repositoryUrl() {
-  let projectRoot = projectRootPath();
-  let repoUrlResult = await promisify(exec)(
-    "npm pkg get repository.url",
-    {cwd: projectRoot}
-  );
-
-  const result = JSON.parse(repoUrlResult.stdout.trim());
-  return result["@eyeo/webext-ad-filtering-solution"];
 }
 
 export function runCommand(command) {

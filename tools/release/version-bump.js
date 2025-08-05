@@ -19,9 +19,10 @@ import { readFile, writeFile } from "fs/promises";
 import path from "path";
 
 import { projectRootPath } from "./utils.js";
+import { executeShellCommand } from "./utils.js";
 
 export function updateVersionInConfigContent(content, version) {
-  const regex = /(version:\s*)\"[^\"]+\"/;
+  const regex = /(\"?version\"?:\s*)\"[^\"]+\"/;
 
   if (!regex.test(content)) {
     throw new Error('Could not find version field in the config file');
@@ -31,12 +32,30 @@ export function updateVersionInConfigContent(content, version) {
 }
 
 export async function updateVersionInConfig(host, version) {
-  const configPath = host === 'adblock'
-    ? 'host/adblock/build/config/base.mjs'
-    : 'host/adblockplus/build/webext/config/base.mjs';
+  let configPath;
+  let needsPackageLockUpdate = false;
+
+  switch (host) {
+    case 'adblock':
+      configPath = 'host/adblock/build/config/base.mjs';
+      break;
+    case 'adblockplus':
+      configPath = 'host/adblockplus/build/webext/config/base.mjs';
+      break;
+    case 'sdk':
+      configPath = 'core/sdk/package.json';
+      needsPackageLockUpdate = true;
+      break;
+    default:
+      throw new Error(`Host does not have a known config path: ${host}`);
+  }
 
   const fullPath = path.join(projectRootPath(), configPath);
   const content = await readFile(fullPath, "utf8");
   const updatedContent = updateVersionInConfigContent(content, version);
   await writeFile(fullPath, updatedContent, "utf8");
+
+  if (needsPackageLockUpdate) {
+    await executeShellCommand("npm install --package-lock-only");
+  }
 }
