@@ -13,9 +13,9 @@ collaboration more efficient.
 
 Read more about the architecture [here](./docs/ARCHITECTURE.md).
 
-## Using this repository 
+## Using this repository
 
-### Prerequisites 
+### Prerequisites
 
 - node >= 22
 - npm >= 10
@@ -42,7 +42,7 @@ checking out a new revision.
 
 #### Dependency management
 
-The `package-lock.json` file and the `node_modules` folder are in the 
+The `package-lock.json` file and the `node_modules` folder are in the
 root of this repository. Any subfolder with a `package.json` might still have a
 local `node_modules` folder when different versions of the same dependency are
 used.
@@ -137,7 +137,6 @@ script arguments together with Lerna's `--scope` argument.
 npm run build -- --scope=adblock -- chrome 3
 ```
 
-
 #### Running all unit tests
 
 ```sh
@@ -172,7 +171,7 @@ All of these scripts are optional.
   package. This is probably combined with the `types` or `typesVersions`
   property in your `package.json`. This is called automatically as a dependency
   of the `lint` script, since some lint scripts do type checking.
-- `lint`: Do any static analysis of the code, such as eslint, prettier, or
+- `lint`: Do any static analysis of the code, such as eslint, or
   typescript type checking.
 - `test`: Run unit tests. This is highly recommended for all packages.
 
@@ -260,17 +259,17 @@ may be granted by devops.
 
 ## Supported Browsers
 
-Table below contains minimum supported version of the browser extension (or engine) 
-will work on. 
+Table below contains minimum supported version of the browser extension (or engine)
+will work on.
 
-| Manifest | Browser | Adblock Plus  |    AdBlock    | webext SDK |
-| -------- |-------- | ------------- | ------------- | ---------- |
-|   MV2    | firefox |     68.0      |     75.0      |    68.0    |
-|   MV2    |  chrome | not supported | not supported |    79.0    |
-|   MV2    |  edge   |     79.0      |     79.0      |    79.0    |
-|   MV2    |  opera  |     66.0      | not supported |    66.0    |
-|   MV3    |  yandex |    124.0      |     124.0     |    124.0   |
-|   MV3    |  chrome |    124.0      |     124.0     |    124.0   |
+| Manifest | Browser | Adblock Plus  | AdBlock       | webext SDK |
+| -------- | ------- | ------------- | ------------- | ---------- |
+| MV2      | firefox | 68.0          | 75.0          | 68.0       |
+| MV2      | chrome  | not supported | not supported | 79.0       |
+| MV2      | edge    | 79.0          | 79.0          | 79.0       |
+| MV2      | opera   | 66.0          | not supported | 66.0       |
+| MV3      | yandex  | 124.0         | 124.0         | 124.0      |
+| MV3      | chrome  | 124.0         | 124.0         | 124.0      |
 
 ## Contributing
 

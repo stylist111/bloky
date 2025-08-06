@@ -5,32 +5,27 @@ module.exports = {
   env: {
     browser: true,
     es2021: true,
-    webextensions: true
+    webextensions: true,
   },
   ignorePatterns: ["dist/"],
   parserOptions: {
     ecmaVersion: "latest",
-    sourceType: "module"
+    sourceType: "module",
   },
   overrides: [
     {
       files: ["*.ts", "*.tsx"],
-      extends: [
-        "love",
-        "plugin:prettier/recommended"
-      ],
+      extends: ["love", "prettier", "prettier/prettier"],
       parser: "@typescript-eslint/parser",
       rules: {
         "@typescript-eslint/strict-boolean-expressions": "off",
-        "curly": "error"
-      }
+        curly: "error",
+      },
     },
     {
       // JavaScript-specific rules
       files: ["*.js"],
-      extends: [
-        "plugin:prettier/recommended"
-      ],
+      extends: ["prettier", "prettier/prettier"],
       rules: {
         // Add other JavaScript-specific rules here
       },

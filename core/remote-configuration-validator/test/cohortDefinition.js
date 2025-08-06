@@ -16,7 +16,7 @@
  */
 
 import expect from "expect";
-import {validateRemoteConfig} from "../src/validator.js";
+import { validateRemoteConfig } from "../src/validator.js";
 
 const SCHEMA_ID = "1";
 
@@ -28,20 +28,20 @@ let complexExperiment = [
     variants: [
       {
         variantId: "exp1-small",
-        flags: {exp1_flag: "small"},
-        mods: [0, 200]
+        flags: { exp1_flag: "small" },
+        mods: [0, 200],
       },
       {
         variantId: "exp1-medium",
-        flags: {exp1_flag: "medium"},
-        mods: [200, 600]
+        flags: { exp1_flag: "medium" },
+        mods: [200, 600],
       },
       {
         variantId: "exp1-large",
-        flags: {exp1_flag: "large"},
-        mods: [600, 1000]
-      }
-    ]
+        flags: { exp1_flag: "large" },
+        mods: [600, 1000],
+      },
+    ],
   },
   {
     experimentId: "experiment-2",
@@ -49,11 +49,11 @@ let complexExperiment = [
       {
         variantId: "exp2-control",
         name: "The single variant",
-        flags: {exp2_flag: "control"},
-        mods: [0, 100]
-      }
-    ]
-  }
+        flags: { exp2_flag: "control" },
+        mods: [0, 100],
+      },
+    ],
+  },
 ];
 
 let complexCohorts = [
@@ -64,30 +64,30 @@ let complexCohorts = [
         {
           fact: "countryCode",
           operator: "in",
-          value: ["US", "DE", "RO"]
+          value: ["US", "DE", "RO"],
         },
         {
           fact: "installDate",
           operator: "olderThan",
-          value: 777600000
+          value: 777600000,
         },
         {
           fact: "hasPremium",
           operator: "equal",
-          value: false
+          value: false,
         },
         {
           not: {
             fact: "installType",
             operator: "equal",
-            value: "admin"
-          }
-        }
-      ]
+            value: "admin",
+          },
+        },
+      ],
     },
     event: {
-      type: "top20_free_9d"
-    }
+      type: "top20_free_9d",
+    },
   },
   {
     name: "Tier 1 country users",
@@ -96,13 +96,13 @@ let complexCohorts = [
         {
           fact: "countryCode",
           operator: "in",
-          value: ["US", "FR", "DE", "CA", "IE", "NO"]
-        }
-      ]
+          value: ["US", "FR", "DE", "CA", "IE", "NO"],
+        },
+      ],
     },
     event: {
-      type: "tier1"
-    }
+      type: "tier1",
+    },
   },
   {
     // This example demonstates nested boolean logic
@@ -119,84 +119,84 @@ let complexCohorts = [
             {
               fact: "lastSawOPDCampaign",
               operator: "greaterThan",
-              value: 432000000 // 5 days in milliseconds
+              value: 432000000, // 5 days in milliseconds
             },
             {
               fact: "totalBlockCount",
               operator: "greaterThanInclusive",
-              value: 100
-            }
-          ]
+              value: 100,
+            },
+          ],
         },
         {
           all: [
             {
               fact: "lastSawOPDCampaign",
               operator: "greaterThan",
-              value: 518400000 // 6 days in milliseconds
+              value: 518400000, // 6 days in milliseconds
             },
             {
               not: {
                 fact: "totalBlockCount",
                 operator: "greaterThanInclusive",
-                value: 200
-              }
-            }
-          ]
-        }
-      ]
+                value: 200,
+              },
+            },
+          ],
+        },
+      ],
     },
     event: {
-      type: "highBlockCountAndHasnotSeenOPD"
-    }
-  }
+      type: "highBlockCountAndHasnotSeenOPD",
+    },
+  },
 ];
 
 let complexExperimentData = {
   schemaId: SCHEMA_ID,
-  experiments: complexExperiment
+  experiments: complexExperiment,
 };
 
 let complexExperimentAndCohortData = {
   schemaId: SCHEMA_ID,
   experiments: complexExperiment,
-  cohorts: complexCohorts
+  cohorts: complexCohorts,
 };
 
-describe("Cohort Data Validation", function() {
+describe("Cohort Data Validation", function () {
   async function expectErrors(data, expectedErrors) {
     expect(validateRemoteConfig(data)).toEqual(expectedErrors);
   }
 
-  it("marks a more complex config as valid", async function() {
+  it("marks a more complex config as valid", async function () {
     expect(validateRemoteConfig(complexExperimentData)).toEqual([]);
   });
 
-  it("marks a simple config with cohorts as valid", async function() {
+  it("marks a simple config with cohorts as valid", async function () {
     let data = {
       schemaId: SCHEMA_ID,
       experiments: [],
-      cohorts: []
+      cohorts: [],
     };
     expect(validateRemoteConfig(data)).toEqual([]);
   });
 
-  it("marks a more complex config with cohorts as valid", async function() {
+  it("marks a more complex config with cohorts as valid", async function () {
     expect(validateRemoteConfig(complexExperimentAndCohortData)).toEqual([]);
   });
 
-  it("reports missing cohorts array", async function() {
+  it("reports missing cohorts array", async function () {
     await expectErrors(
       {
         schemaId: SCHEMA_ID,
         experiments: [],
-        cohorts: "yo"
+        cohorts: "yo",
       },
-      ["instance.cohorts is not of a type(s) array"]
+      ["instance.cohorts is not of a type(s) array"],
     );
   });
 
-  it("validates a condition reference", async function() {
+  it("validates a condition reference", async function () {
     await expectErrors(
       {
         schemaId: SCHEMA_ID,
@@ -205,19 +205,19 @@ describe("Cohort Data Validation", function() {
           {
             name: "unique test name",
             conditions: {
-              all: [{condition: "conditionName"}]
+              all: [{ condition: "conditionName" }],
             },
             event: {
-              type: "top20_free_9d"
-            }
-          }
-        ]
+              type: "top20_free_9d",
+            },
+          },
+        ],
       },
-      []
+      [],
     );
   });
 
-  it("validates a param reference", async function() {
+  it("validates a param reference", async function () {
     await expectErrors(
       {
         schemaId: SCHEMA_ID,
@@ -230,24 +230,24 @@ describe("Cohort Data Validation", function() {
                 {
                   fact: "blockedCount",
                   params: {
-                    countryId: "widget"
+                    countryId: "widget",
                   },
                   operator: "greaterThan",
-                  value: 100
-                }
-              ]
+                  value: 100,
+                },
+              ],
             },
             event: {
-              type: "someevent"
-            }
-          }
-        ]
+              type: "someevent",
+            },
+          },
+        ],
       },
-      []
+      [],
     );
   });
 
-  it("validates a path reference", async function() {
+  it("validates a path reference", async function () {
     await expectErrors(
       {
         schemaId: SCHEMA_ID,
@@ -261,24 +261,24 @@ describe("Cohort Data Validation", function() {
                   fact: "blockedCount",
                   path: "$.price",
                   params: {
-                    productId: "widget"
+                    productId: "widget",
                   },
                   operator: "greaterThan",
-                  value: 100
-                }
-              ]
+                  value: 100,
+                },
+              ],
             },
             event: {
-              type: "someevent"
-            }
-          }
-        ]
+              type: "someevent",
+            },
+          },
+        ],
       },
-      []
+      [],
     );
   });
 
-  it("validates a fact to fact comparison", async function() {
+  it("validates a fact to fact comparison", async function () {
     await expectErrors(
       {
         schemaId: SCHEMA_ID,
@@ -292,22 +292,22 @@ describe("Cohort Data Validation", function() {
                   fact: "installDate",
                   operator: "equal",
                   value: {
-                    fact: "browserLanguage"
-                  }
-                }
-              ]
+                    fact: "browserLanguage",
+                  },
+                },
+              ],
             },
             event: {
-              type: "someevent"
-            }
-          }
-        ]
+              type: "someevent",
+            },
+          },
+        ],
       },
-      []
+      [],
     );
   });
 
-  it("reports missing condition", async function() {
+  it("reports missing condition", async function () {
     await expectErrors(
       {
         schemaId: SCHEMA_ID,
@@ -317,16 +317,16 @@ describe("Cohort Data Validation", function() {
             name: "unique test name",
             conditions: {},
             event: {
-              type: "top20_free_9d"
-            }
-          }
-        ]
+              type: "top20_free_9d",
+            },
+          },
+        ],
       },
-      ["Invalid rule 'cohort[0]'"]
+      ["Invalid rule 'cohort[0]'"],
     );
   });
 
-  it("reports a bad fact", async function() {
+  it("reports a bad fact", async function () {
     await expectErrors(
       {
         schemaId: SCHEMA_ID,
@@ -339,21 +339,21 @@ describe("Cohort Data Validation", function() {
                 {
                   fact: "countyCode",
                   operator: "multiple",
-                  value: ["US"]
-                }
-              ]
+                  value: ["US"],
+                },
+              ],
             },
             event: {
-              type: "top20_free_9d"
-            }
-          }
-        ]
+              type: "top20_free_9d",
+            },
+          },
+        ],
       },
-      ["`countyCode` not a known fact"]
+      ["`countyCode` not a known fact"],
     );
   });
 
-  it("reports a bad operator for fact", async function() {
+  it("reports a bad operator for fact", async function () {
     await expectErrors(
       {
         schemaId: SCHEMA_ID,
@@ -366,17 +366,17 @@ describe("Cohort Data Validation", function() {
                 {
                   fact: "countryCode",
                   operator: "multiple",
-                  value: ["US", "DE", "RO"]
-                }
-              ]
+                  value: ["US", "DE", "RO"],
+                },
+              ],
             },
             event: {
-              type: "top20_free_9d"
-            }
-          }
-        ]
+              type: "top20_free_9d",
+            },
+          },
+        ],
       },
-      ["`invalid operator multiple for fact: countryCode`"]
+      ["`invalid operator multiple for fact: countryCode`"],
     );
   });
 });

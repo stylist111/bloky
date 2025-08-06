@@ -1,5 +1,5 @@
 @layer base {
-  [data-extension='adblock'] {
+  [data-extension="adblock"] {
     --extension-font-family: "Lato", Arial, sans-serif;
 
     h1 {

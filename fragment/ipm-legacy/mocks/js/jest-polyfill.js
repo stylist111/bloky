@@ -33,8 +33,8 @@ Object.assign(browser.tabs, {
   onRemoved: {
     addListener() {},
     removeListener() {},
-    hasListener() {}
-  }
+    hasListener() {},
+  },
 });
 
 Object.assign(browser.runtime, {
@@ -47,10 +47,10 @@ Object.assign(browser.runtime, {
     return {
       manifest_version: 3,
       options_ui: {
-        page: "options.html"
-      }
+        page: "options.html",
+      },
     };
-  }
+  },
 });
 
 Object.assign(browser, {
@@ -58,20 +58,20 @@ Object.assign(browser, {
     getSelf() {
       return new Promise((resolve) => {
         resolve({
-          installType: "normal"
+          installType: "normal",
         });
       });
-    }
-  }
+    },
+  },
 });
 
 Object.assign(browser, {
   webRequest: {
     onBeforeRequest() {},
-    ResourceType: {}
-  }
+    ResourceType: {},
+  },
 });
 
 Object.assign(browser, {
-  action: browser.browserAction
+  action: browser.browserAction,
 });

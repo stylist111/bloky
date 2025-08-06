@@ -16,3 +16,59 @@ node_modules
 
 # Sentry Config File
 .sentryclirc
+
+# Binary files
+*.zip
+*.crx
+*.tar
+*.gz
+*.xpi
+
+# Testing
+**/browser-snapshots
+
+.env
+
+### fragment/test
+fragment/test/screenshots/
+
+### host/adblock
+host/adblock/.last_snippets_build
+host/adblock/testpages.adblockplus.org/
+host/adblock/test/end-to-end/screenshots
+
+### core/sdk/adblockpluscore
+core/sdk/adblockpluscore/foo*.json
+core/sdk/adblockpluscore/foo*.json.map
+core/sdk/adblockpluscore/build/docs/
+core/sdk/adblockpluscore/build/
+
+### host/adblockplus
+host/adblockplus/skin/icons/toolbar/*.png
+host/adblockplus/test/end-to-end/screenshots/
+host/adblockplus/testpages.adblockplus.org/
+
+# version management
+host/adblockplus/.tool-versions
+
+# env file for e2e tests
+host/adblockplus/.env.e2e
+
+# Sentry Config File
+host/adblockplus/.env.sentry-build-plugin
+
+# ui-components
+ui-components/.vite/**
+ui-components/.dist/**
+ui-components/*storybook.log
+ui-components/storybook-static/
+
+# core/sdk
+core/sdk/public
+core/sdk/test/bundle/package-lock.json
+core/sdk/testpages.adblockplus.org
+core/sdk/scriptsOutput
+core/sdk/test/scripts/test-extension/package-lock.json
+core/sdk/test/screenshots
+core/sdk/nasapp-testing
+core/sdk/scripts/safari/AuthKey.p8

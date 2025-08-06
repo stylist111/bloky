@@ -64,7 +64,7 @@ export interface AdWallMessage extends Message {
   /**
    * The current time of the YT video when an ad wall is shown
    */
-  currentPlaybackTime: number
+  currentPlaybackTime: number;
 }
 
 /**

@@ -2,7 +2,7 @@ include: "/.gitlab/ci-common.yml"
 
 default:
   image: node:22.14.0
-  cache:  # Cache modules using lock file
+  cache: # Cache modules using lock file
     key:
       files:
         - package-lock.json
@@ -114,7 +114,7 @@ tools:
   stage: children
   trigger:
     include:
-      - local: '$WORKSPACEPATH/.gitlab-ci.yml'
+      - local: "$WORKSPACEPATH/.gitlab-ci.yml"
       - local: "/.gitlab/ci-run-jobs-n-times.yml"
         rules:
           - if: $NIGHTLY_RUN == "true"
@@ -150,8 +150,8 @@ tools:
           - tools/**/*
           - ui-components/**/*
           - vendor/**/*
-          - '*'
-        compare_to: 'refs/heads/main'
+          - "*"
+        compare_to: "refs/heads/main"
       when: on_success
 
 .child-core:
@@ -170,8 +170,8 @@ tools:
           - $WORKSPACEPATH/**/*
           - tools/test/**/*
           - vendor/**/*
-          - '*'
-        compare_to: 'refs/heads/main'
+          - "*"
+        compare_to: "refs/heads/main"
       when: on_success
 
 adblock:
@@ -254,7 +254,6 @@ publish-remote-validation:
     - if: '$CI_COMMIT_TAG =~ /^(adblock|adblockplus)-\d+(\.\d+)*$/'
       when: on_success
     - when: never
-
 
 .gitlab-api-release-automation:
   stage: release

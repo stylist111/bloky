@@ -360,16 +360,16 @@ describe("pretty print debug data", () => {
       { text: "onePointTwoUserFilter" },
       { text: "twoUserFilter" },
       { notextrule: "blank" },
-      { text: "threeUserFilter" }
+      { text: "threeUserFilter" },
     ];
     const complexUserMetadata = {
       oneUserFilter: {
-        origin: 'test',
-        time: Date.now()
+        origin: "test",
+        time: Date.now(),
       },
       twoUserFilter: {
-        origin: 'test',
-        time: Date.now()
+        origin: "test",
+        time: Date.now(),
       },
     };
     const mockGetUserFilters = vi.fn().mockImplementation(() => {
@@ -392,21 +392,19 @@ describe("pretty print debug data", () => {
     expect(debugData.deviceSpecificInformation).toHaveProperty("userFilters");
     expect(debugData.deviceSpecificInformation.userFilters?.length).toEqual(4);
     expect(debugData.deviceSpecificInformation.userFilters?.[0]).toEqual(
-        expect.objectContaining({
-          metadata: complexUserMetadata.oneUserFilter,
-          ruleText: complexUserFilters[0].text,
-        }),
+      expect.objectContaining({
+        metadata: complexUserMetadata.oneUserFilter,
+        ruleText: complexUserFilters[0].text,
+      }),
     );
     expect(debugData.deviceSpecificInformation.userFilters?.[2]).toEqual(
-        expect.objectContaining({
-          metadata: complexUserMetadata.twoUserFilter,
-          ruleText: complexUserFilters[2].text,
-        }),
+      expect.objectContaining({
+        metadata: complexUserMetadata.twoUserFilter,
+        ruleText: complexUserFilters[2].text,
+      }),
     );
     expect(
       debugData.deviceSpecificInformation.userFilters?.[3].ruleText,
     ).toEqual(complexUserFilters[4].text);
-
   });
-
 });

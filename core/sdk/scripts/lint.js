@@ -25,7 +25,7 @@ let cwd = process.cwd();
 
 const commands = [
   "npx eslint --ext js,html,mjs .",
-  "npx markdownlint --ignore-path .gitignore ."
+  "npx markdownlint --ignore-path ../../.gitignore ."
 ];
 
 (async() => {

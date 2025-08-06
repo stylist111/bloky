@@ -12,5 +12,5 @@
  * codebase see `legacy.js` and `adblockpluschrome.js`.
  */
 module.exports = {
-  extends: "../../core/configs/.eslintrc.js"
+  extends: "../../core/configs/.eslintrc.js",
 };

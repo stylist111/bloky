@@ -249,12 +249,10 @@ You can lint all files via `npm run lint` or lint only specific file types:
 
 - JavaScript/TypeScript: `npm run --workspace host/adblockplus $ lint.js`
 - Translation files: `npm run --workspace host/adblockplus $ lint.locale`
-- Other files: `npm run --workspace host/adblockplus $ lint.prettier`
 
 The following can help fix issues:
 
 - JavaScript/TypeScript: `npx eslint --fix <file path>`
-- Other files: `npm run prettier-fix`
 
 ## CI pipeline
 

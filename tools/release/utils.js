@@ -17,12 +17,12 @@
 
 import url from "url";
 import path from "path";
-import {exec} from "child_process";
-import {promisify} from "util";
+import { exec } from "child_process";
+import { promisify } from "util";
 
 export function projectRootPath() {
-  const scriptDir = path.dirname(url.fileURLToPath(import.meta.url));  
-  const projectRoot = path.join(scriptDir, "..", "..");  
+  const scriptDir = path.dirname(url.fileURLToPath(import.meta.url));
+  const projectRoot = path.join(scriptDir, "..", "..");
   return path.normalize(projectRoot);
 }
 
@@ -31,7 +31,9 @@ export async function executeShellCommand(command, cwd = projectRootPath()) {
     const { stdout } = await promisify(exec)(command, { cwd });
     return stdout.trim();
   } catch (error) {
-    throw new Error(`${error.message}\nstdout: ${error.stdout}\nstderr: ${error.stderr}`);
+    throw new Error(
+      `${error.message}\nstdout: ${error.stdout}\nstderr: ${error.stderr}`,
+    );
   }
 }
 

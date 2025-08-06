@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 
 /**
  * InterpolateTranslate is to be used when an HTML component, like a link or styled span,
@@ -22,15 +22,17 @@ export const InterpolateTranslate = ({
   tagArgs,
   translate,
 }) => {
-
   const { messageName, substitutions } = content;
   const rawMessage = translate(messageName, substitutions);
   const pattern = /\[\[|\]\]/; // matches [[ or ]]
-  const [ before, inner, after ] = rawMessage.split(pattern);
+  const [before, inner, after] = rawMessage.split(pattern);
 
   return (
-    <span data-testid='interpolated-translation'> { before } <Tag {...tagArgs}> { inner } </Tag> { after } </span>
-  )
+    <span data-testid="interpolated-translation">
+      {" "}
+      {before} <Tag {...tagArgs}> {inner} </Tag> {after}{" "}
+    </span>
+  );
 };
 
 InterpolateTranslate.propTypes = {

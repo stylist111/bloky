@@ -1,10 +1,11 @@
-import { useEffect } from 'react';
-import { DecoratorHelpers } from '@storybook/addon-themes';
+import { useEffect } from "react";
+import { DecoratorHelpers } from "@storybook/addon-themes";
 
-const DEFAULT_ELEMENT_SELECTOR = 'html';
-const DEFAULT_DATA_EXTENSION_ATTRIBUTE = 'data-extension';
-const DEFAULT_DATA_THEME_ATTRIBUTE = 'data-theme';
-const { initializeThemeState, pluckThemeFromContext, useThemeParameters } = DecoratorHelpers;
+const DEFAULT_ELEMENT_SELECTOR = "html";
+const DEFAULT_DATA_EXTENSION_ATTRIBUTE = "data-extension";
+const DEFAULT_DATA_THEME_ATTRIBUTE = "data-theme";
+const { initializeThemeState, pluckThemeFromContext, useThemeParameters } =
+  DecoratorHelpers;
 
 export const withExtensionTheme = ({
   themes,
@@ -24,7 +25,7 @@ export const withExtensionTheme = ({
       const extensionThemeKey = themeOverride || selected || defaultTheme;
 
       // Theme has the format "<Extension> <Theme>"
-      const [extension, theme] = extensionThemeKey.split(' ');
+      const [extension, theme] = extensionThemeKey.split(" ");
 
       if (parentElement) {
         parentElement.setAttribute(attrExtName, extension.toLowerCase());
@@ -34,4 +35,4 @@ export const withExtensionTheme = ({
 
     return storyFn();
   };
-}
+};

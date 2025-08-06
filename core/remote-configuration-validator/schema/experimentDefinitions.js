@@ -20,28 +20,28 @@ export const Experiment = {
   additionalProperties: true,
   properties: {
     experimentId: {
-      type: "string"
+      type: "string",
     },
     name: {
-      type: "string"
+      type: "string",
     },
     enabled: {
-      type: "boolean"
+      type: "boolean",
     },
     variants: {
       type: "array",
       items: {
-        $ref: "#/definitions/Variant"
-      }
-    }
+        $ref: "#/definitions/Variant",
+      },
+    },
   },
-  required: ["experimentId", "variants"]
+  required: ["experimentId", "variants"],
 };
 
 export const Flags = {
   type: "object",
   additionalProperties: true,
-  required: []
+  required: [],
 };
 
 export const Variant = {
@@ -49,22 +49,22 @@ export const Variant = {
   additionalProperties: true,
   properties: {
     variantId: {
-      type: "string"
+      type: "string",
     },
     flags: {
-      $ref: "#/definitions/Flags"
+      $ref: "#/definitions/Flags",
     },
     mods: {
       type: "array",
       items: {
         type: "integer",
         minimum: 0,
-        maximum: 1000
-      }
+        maximum: 1000,
+      },
     },
     name: {
-      type: "string"
-    }
+      type: "string",
+    },
   },
-  required: ["flags", "mods", "variantId"]
+  required: ["flags", "mods", "variantId"],
 };

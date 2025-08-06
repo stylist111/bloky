@@ -1,5 +1,5 @@
-import PropTypes from 'prop-types';
-import { useState, useEffect } from 'react';
+import PropTypes from "prop-types";
+import { useState, useEffect } from "react";
 
 export const sizeToNumber = {
   sm: "18px",
@@ -27,7 +27,9 @@ export const Icon = ({
   size = "md",
 }) => {
   if (!ariaLabel && !ariaHidden) {
-    throw new Error('Icons must have either an aria-label or be aria-hidden, if they have no semanitic meaning.');
+    throw new Error(
+      "Icons must have either an aria-label or be aria-hidden, if they have no semanitic meaning.",
+    );
   }
 
   const [importedComponent, setImportedComponent] = useState(null);
@@ -36,14 +38,18 @@ export const Icon = ({
     const importComponent = async () => {
       const module = await import(`./svgs/${name}.jsx`);
       const { default: IconSvg } = module;
-      setImportedComponent(<IconSvg size={ sizeToNumber[size] } label={ ariaLabel } />);
+      setImportedComponent(
+        <IconSvg size={sizeToNumber[size]} label={ariaLabel} />,
+      );
     };
 
     importComponent();
   }, [ariaLabel, size]);
 
   return (
-    <span className={ className } aria-hidden={ ariaHidden }>{ importedComponent }</span>
+    <span className={className} aria-hidden={ariaHidden}>
+      {importedComponent}
+    </span>
   );
 };
 

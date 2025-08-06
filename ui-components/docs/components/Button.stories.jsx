@@ -1,15 +1,15 @@
-import { fn } from '@storybook/test';
-import { Button, buttonKinds, Icon } from '@components';
-import { getArgsFromJSDoc } from '../helpers.js';
+import { fn } from "@storybook/test";
+import { Button, buttonKinds, Icon } from "@components";
+import { getArgsFromJSDoc } from "../helpers.js";
 
 const icon = <Icon name="circle" size="sm" ariaHidden />;
 
 export default {
-  title: 'Components/Button',
+  title: "Components/Button",
   component: Button,
   argTypes: getArgsFromJSDoc(Button),
   args: {
-    text: 'Update now',
+    text: "Update now",
     onClick: fn(),
   },
 };
@@ -18,32 +18,38 @@ const generateKinds = (args) => {
   return (
     <>
       <div className="flex items-center gap-2 mb-4">
-        {
-          buttonKinds.map((el) => (<Button {...args} kind={ el } key={ el } />))
-        }
+        {buttonKinds.map((el) => (
+          <Button {...args} kind={el} key={el} />
+        ))}
       </div>
       <div className="flex items-center gap-2 mb-4">
-        {
-          buttonKinds.map((el) => (<Button {...args} kind={ el } key={ el } icon={ icon } />))
-        }
+        {buttonKinds.map((el) => (
+          <Button {...args} kind={el} key={el} icon={icon} />
+        ))}
       </div>
       <div className="flex items-center gap-2 mb-4">
-        {
-          buttonKinds.map((el) => (<Button {...args} text="" kind={ el } key={ el } icon={ icon } />))
-        }
+        {buttonKinds.map((el) => (
+          <Button {...args} text="" kind={el} key={el} icon={icon} />
+        ))}
       </div>
       <div className="flex items-center gap-2 mb-4">
-        {
-          buttonKinds.map((el) => (<Button {...args} disabled kind={ el } key={ `disabled-${el}` } icon={ icon } />))
-        }
+        {buttonKinds.map((el) => (
+          <Button
+            {...args}
+            disabled
+            kind={el}
+            key={`disabled-${el}`}
+            icon={icon}
+          />
+        ))}
       </div>
     </>
-  )
+  );
 };
 
 export const AllVariants = {
   render: generateKinds,
-}
+};
 
 /**
  * Filled buttons initiate the primary action of any given page or flow.
@@ -52,8 +58,8 @@ export const AllVariants = {
  */
 export const Filled = {
   args: {
-    text: 'Update now',
-  }
+    text: "Update now",
+  },
 };
 
 /**
@@ -61,9 +67,9 @@ export const Filled = {
  */
 export const Outline = {
   args: {
-    text: 'Update now',
-    kind: 'outline',
-  }
+    text: "Update now",
+    kind: "outline",
+  },
 };
 
 /**
@@ -71,9 +77,9 @@ export const Outline = {
  */
 export const Text = {
   args: {
-    kind: 'text',
-    text: 'Update now',
-  }
+    kind: "text",
+    text: "Update now",
+  },
 };
 
 /**
@@ -82,9 +88,9 @@ export const Text = {
  */
 export const Punched = {
   args: {
-    kind: 'punched',
-    text: 'Update now',
-  }
+    kind: "punched",
+    text: "Update now",
+  },
 };
 
 /**
@@ -93,7 +99,7 @@ export const Punched = {
  */
 export const Link = {
   args: {
-    kind: 'link',
-    text: 'Update now',
-  }
+    kind: "link",
+    text: "Update now",
+  },
 };

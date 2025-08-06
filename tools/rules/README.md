@@ -7,12 +7,13 @@ Tools for retrieving filter lists and generating rules files from various source
 - Include content of `dist/{adblock|adblockplus}/manifest/{adblock|adblockplus}.json` in manifest.json file.
 - Include `dist/{adblock|adblockplus}/rules/abp/*` in build as `data/rules/abp/*`.
 - Include `dist/{adblock|adblockplus}/rules/dnr/*` in build as `data/rules/dnr/*`.
-- Import index from `@eyeo/rules-utils/{adblock|adblockplus}/index/{adblock|adblockplus}.json` to `EWE.start()`.  
+- Import index from `@eyeo/rules-utils/{adblock|adblockplus}/index/{adblock|adblockplus}.json` to `EWE.start()`.
+
   ```js
   import index from "@eyeo/rules-utils/adblock/index/adblock.json";
-  
+
   EWE.start({ bundledSubscriptions: index, … });
-  ````
+  ```
 
 ### Rules data generation
 

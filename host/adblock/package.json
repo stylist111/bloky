@@ -20,14 +20,12 @@
     "eslint": "npm run $ lint.js",
     "eslint-fix": "npm run $ lint-fix.js",
     "eslint:legacy": "npm run $ lint.js.legacy",
-    "eslint:legacy-fix": "eslint --fix --ext .js,.mjs --ignore-path .gitignore --ignore-pattern /adblockplusui/ adblock-betafish/",
+    "eslint:legacy-fix": "eslint --fix --ext .js,.mjs --ignore-path ../../.gitignore --ignore-pattern /adblockplusui/ adblock-betafish/",
     "eslint:love": "npm run $ lint.js.love",
-    "eslint:love-fix": "eslint --fix --ignore-path .gitignore src/",
+    "eslint:love-fix": "eslint --fix --ignore-path ../../.gitignore src/",
     "html-hint": "npm run $ lint.html",
     "json-bundle": "node build/jsonBundle.cjs",
     "lint": "npm run $ lint",
-    "prettier": "npm run $ lint.prettier",
-    "prettier-fix": "npm run $ lint-fix.prettier",
     "sentry:login": "sentry-cli login",
     "sentry:release-new": "sentry-cli releases new $VERSION --org eyeo --project adblock",
     "sentry:release-finalize": "sentry-cli releases finalize $VERSION --org eyeo --project adblock",
@@ -64,12 +62,10 @@
         "legacy": "eslint --ext .js,.mjs,.ts adblock-betafish/ src/ test/",
         "love": "eslint --ext .ts adblock-betafish/ src/"
       },
-      "prettier": "prettier --check .",
       "ts": "tsc --noEmit"
     },
     "lint-fix": {
-      "js": "eslint --fix --ext .js,.mjs adblock-betafish/ src/ test/",
-      "prettier": "prettier --write ."
+      "js": "eslint --fix --ext .js,.mjs adblock-betafish/ src/ test/"
     },
     "test": {
       "end-to-end": {
@@ -116,7 +112,6 @@
     "eslint-plugin-import": "2.27.5",
     "eslint-plugin-n": "16.2.0",
     "eslint-plugin-no-unsanitized": "4.0.2",
-    "eslint-plugin-prettier": "5.1.3",
     "eslint-plugin-promise": "6.1.1",
     "expect": "29.7.0",
     "gulp-gzip": "1.4.2",
@@ -126,7 +121,6 @@
     "mkdirp": "1.0.4",
     "mocha": "10.7.3",
     "ncp": "2.0.0",
-    "prettier": "3.3.3",
     "rollup": "2.77.2",
     "rollup-plugin-license": "2.8.1",
     "rollup-plugin-node-polyfills": "0.2.1",

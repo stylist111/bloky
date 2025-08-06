@@ -21,11 +21,15 @@ import path from "path";
 import os from "os";
 import ignore from "ignore";
 
-import { executeShellCommand, getCurrentFileDir, projectRootPath,
-       gitRepoHasChanges } from "../../utils.js";
+import {
+  executeShellCommand,
+  getCurrentFileDir,
+  projectRootPath,
+  gitRepoHasChanges,
+} from "../../utils.js";
 
 async function loadGitignore() {
-  const gitignorePath = path.join(projectRootPath(), '.gitignore');
+  const gitignorePath = path.join(projectRootPath(), ".gitignore");
   const gitignoreContent = await fs.readFile(gitignorePath, "utf8");
 
   const ig = ignore();
@@ -33,7 +37,12 @@ async function loadGitignore() {
   return ig;
 }
 
-async function recursiveCopyDirectoryWithGitignore(src, dest, ig, rootDir = src) {
+async function recursiveCopyDirectoryWithGitignore(
+  src,
+  dest,
+  ig,
+  rootDir = src,
+) {
   await fs.mkdir(dest, { recursive: true });
 
   const items = await fs.readdir(src);
@@ -45,7 +54,12 @@ async function recursiveCopyDirectoryWithGitignore(src, dest, ig, rootDir = src)
     if (!ig.ignores(relativePath)) {
       const stats = await fs.stat(srcPath);
       if (stats.isDirectory()) {
-        await recursiveCopyDirectoryWithGitignore(srcPath, destPath, ig, rootDir);
+        await recursiveCopyDirectoryWithGitignore(
+          srcPath,
+          destPath,
+          ig,
+          rootDir,
+        );
       } else if (stats.isFile()) {
         await fs.copyFile(srcPath, destPath);
       }
@@ -61,10 +75,10 @@ async function findNodeModules(dir) {
     const fullPath = path.join(dir, entry.name);
 
     if (entry.isDirectory()) {
-      if (entry.name === 'node_modules') {
+      if (entry.name === "node_modules") {
         nodeModulesDirs.push(fullPath);
       } else {
-        nodeModulesDirs.push(...await findNodeModules(fullPath));
+        nodeModulesDirs.push(...(await findNodeModules(fullPath)));
       }
     }
   }
@@ -84,7 +98,7 @@ async function recursiveSymlinkNodeModules(src, dest) {
 async function loadTestFile(relativePath) {
   return await fs.readFile(
     path.join(getCurrentFileDir(import.meta.url), relativePath),
-    "utf8"
+    "utf8",
   );
 }
 
@@ -94,22 +108,29 @@ async function configureTestGitUser(repoDir) {
   // checkout.
 
   await executeShellCommand("git config user.name end-to-end-test", repoDir);
-  await executeShellCommand("git config user.email end-to-end-test@example.com", repoDir);
+  await executeShellCommand(
+    "git config user.email end-to-end-test@example.com",
+    repoDir,
+  );
 }
 
-describe("Do-release script", function() {
+describe("Do-release script", function () {
   let tempDir;
   let originDir;
   let checkoutDir;
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "do-release-spec-"));
     originDir = path.join(tempDir, "origin");
     checkoutDir = path.join(tempDir, "checkout");
 
-    const repoRoot =  projectRootPath();
+    const repoRoot = projectRootPath();
 
-    await recursiveCopyDirectoryWithGitignore(repoRoot, originDir, await loadGitignore());
+    await recursiveCopyDirectoryWithGitignore(
+      repoRoot,
+      originDir,
+      await loadGitignore(),
+    );
 
     if (await gitRepoHasChanges(originDir)) {
       // This commit is so that any uncommitted changes to the do-release script
@@ -118,99 +139,192 @@ describe("Do-release script", function() {
       await executeShellCommand("git add --all", originDir);
       await executeShellCommand("git commit -m WIP", originDir);
     }
-    
+
     await executeShellCommand("git clone origin checkout", tempDir);
     await recursiveSymlinkNodeModules(repoRoot, checkoutDir);
 
     await configureTestGitUser(checkoutDir);
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await fs.rm(tempDir, { recursive: true, force: true });
   });
 
-  it("recreates the 4.9 release for adblockplus", async function() {
-    await executeShellCommand("npm run do-release -- adblockplus 994.9 01debaf19 --yes --release-date=2024-10-31", checkoutDir);
+  it("recreates the 4.9 release for adblockplus", async function () {
+    await executeShellCommand(
+      "npm run do-release -- adblockplus 994.9 01debaf19 --yes --release-date=2024-10-31",
+      checkoutDir,
+    );
 
-    const diff = await executeShellCommand("git diff --full-index --unified=0 HEAD^..HEAD", checkoutDir);
+    const diff = await executeShellCommand(
+      "git diff --full-index --unified=0 HEAD^..HEAD",
+      checkoutDir,
+    );
     const expectedDiff = await loadTestFile("adblockplus-994.9-diff.txt");
     expect(diff).toEqual(expectedDiff);
 
-    const newCommit = await executeShellCommand("git rev-parse --short HEAD", checkoutDir);
-    const checkoutReleaseBranchCommit = await executeShellCommand("git rev-parse --short adblockplus-release", checkoutDir);
-    const originReleaseBranchCommit = await executeShellCommand("git rev-parse --short adblockplus-release", originDir);
-    const originTagCommit = await executeShellCommand("git rev-parse --short adblockplus-994.9^{commit}", originDir);
+    const newCommit = await executeShellCommand(
+      "git rev-parse --short HEAD",
+      checkoutDir,
+    );
+    const checkoutReleaseBranchCommit = await executeShellCommand(
+      "git rev-parse --short adblockplus-release",
+      checkoutDir,
+    );
+    const originReleaseBranchCommit = await executeShellCommand(
+      "git rev-parse --short adblockplus-release",
+      originDir,
+    );
+    const originTagCommit = await executeShellCommand(
+      "git rev-parse --short adblockplus-994.9^{commit}",
+      originDir,
+    );
 
     expect(checkoutReleaseBranchCommit).toEqual(newCommit);
     expect(originReleaseBranchCommit).toEqual(newCommit);
     expect(originTagCommit).toEqual(newCommit);
   });
 
-  it("recreates the 6.11.0 release for adblock", async function() {
-    await executeShellCommand("npm run do-release -- adblock 996.11.0 05a2e33a5 --yes --release-date=2024-10-30", checkoutDir);
+  it("recreates the 6.11.0 release for adblock", async function () {
+    await executeShellCommand(
+      "npm run do-release -- adblock 996.11.0 05a2e33a5 --yes --release-date=2024-10-30",
+      checkoutDir,
+    );
 
-    const diff = await executeShellCommand("git diff --full-index --unified=0 HEAD^..HEAD", checkoutDir);
+    const diff = await executeShellCommand(
+      "git diff --full-index --unified=0 HEAD^..HEAD",
+      checkoutDir,
+    );
     const expectedDiff = await loadTestFile("adblock-996.11.0-diff.txt");
     expect(diff).toEqual(expectedDiff);
 
-    const newCommit = await executeShellCommand("git rev-parse --short HEAD", checkoutDir);
-    const checkoutReleaseBranchCommit = await executeShellCommand("git rev-parse --short adblock-release", checkoutDir);
-    const originReleaseBranchCommit = await executeShellCommand("git rev-parse --short adblock-release", originDir);
-    const originTagCommit = await executeShellCommand("git rev-parse --short adblock-996.11.0^{commit}", originDir);
+    const newCommit = await executeShellCommand(
+      "git rev-parse --short HEAD",
+      checkoutDir,
+    );
+    const checkoutReleaseBranchCommit = await executeShellCommand(
+      "git rev-parse --short adblock-release",
+      checkoutDir,
+    );
+    const originReleaseBranchCommit = await executeShellCommand(
+      "git rev-parse --short adblock-release",
+      originDir,
+    );
+    const originTagCommit = await executeShellCommand(
+      "git rev-parse --short adblock-996.11.0^{commit}",
+      originDir,
+    );
 
     expect(checkoutReleaseBranchCommit).toEqual(newCommit);
     expect(originReleaseBranchCommit).toEqual(newCommit);
     expect(originTagCommit).toEqual(newCommit);
   });
 
-  it("recreates the 2.1.0 release for the sdk", {timeout: 10000}, async function () {
-    await executeShellCommand("npm run do-release -- sdk 99.2.1 aff562463 --yes --release-date=2025-07-31", checkoutDir);
+  it(
+    "recreates the 2.1.0 release for the sdk",
+    { timeout: 10000 },
+    async function () {
+      await executeShellCommand(
+        "npm run do-release -- sdk 99.2.1 aff562463 --yes --release-date=2025-07-31",
+        checkoutDir,
+      );
 
-    const diff = await executeShellCommand("git diff --full-index --unified=0 HEAD^..HEAD", checkoutDir);
-    const expectedDiff = await loadTestFile("sdk-99.2.1-diff.txt");
-    expect(diff).toEqual(expectedDiff);
+      const diff = await executeShellCommand(
+        "git diff --full-index --unified=0 HEAD^..HEAD",
+        checkoutDir,
+      );
+      const expectedDiff = await loadTestFile("sdk-99.2.1-diff.txt");
+      expect(diff).toEqual(expectedDiff);
 
-    const newCommit = await executeShellCommand("git rev-parse --short HEAD", checkoutDir);
-    const checkoutReleaseBranchCommit = await executeShellCommand("git rev-parse --short sdk-release", checkoutDir);
-    const originReleaseBranchCommit = await executeShellCommand("git rev-parse --short sdk-release", originDir);
-    const originTagCommit = await executeShellCommand("git rev-parse --short sdk-99.2.1^{commit}", originDir);
+      const newCommit = await executeShellCommand(
+        "git rev-parse --short HEAD",
+        checkoutDir,
+      );
+      const checkoutReleaseBranchCommit = await executeShellCommand(
+        "git rev-parse --short sdk-release",
+        checkoutDir,
+      );
+      const originReleaseBranchCommit = await executeShellCommand(
+        "git rev-parse --short sdk-release",
+        originDir,
+      );
+      const originTagCommit = await executeShellCommand(
+        "git rev-parse --short sdk-99.2.1^{commit}",
+        originDir,
+      );
 
-    expect(checkoutReleaseBranchCommit).toEqual(newCommit);
-    expect(originReleaseBranchCommit).toEqual(newCommit);
-    expect(originTagCommit).toEqual(newCommit);
-  });
+      expect(checkoutReleaseBranchCommit).toEqual(newCommit);
+      expect(originReleaseBranchCommit).toEqual(newCommit);
+      expect(originTagCommit).toEqual(newCommit);
+    },
+  );
 
-  it("recreates the 4.10.0.1 release for adblockplus", async function() {
+  it("recreates the 4.10.0.1 release for adblockplus", async function () {
     await executeShellCommand("git checkout 4427af61a", checkoutDir);
-    await executeShellCommand("sed -i 's/# Unreleased/# Unreleased\\n\\nThis release contains only rules updates for Manifest v3 extensions./g' ./host/adblockplus/RELEASE_NOTES.md", checkoutDir);
-    await executeShellCommand("git add ./host/adblockplus/RELEASE_NOTES.md", checkoutDir);
-    await executeShellCommand("git commit -m 'Updated release notes'", checkoutDir);
+    await executeShellCommand(
+      "sed -i 's/# Unreleased/# Unreleased\\n\\nThis release contains only rules updates for Manifest v3 extensions./g' ./host/adblockplus/RELEASE_NOTES.md",
+      checkoutDir,
+    );
+    await executeShellCommand(
+      "git add ./host/adblockplus/RELEASE_NOTES.md",
+      checkoutDir,
+    );
+    await executeShellCommand(
+      "git commit -m 'Updated release notes'",
+      checkoutDir,
+    );
     const hash = await executeShellCommand("git rev-parse HEAD", checkoutDir);
 
-    await executeShellCommand(`npm run do-release -- adblockplus 994.10.0.1 ${hash} --yes --release-date=2024-12-16`, checkoutDir);
+    await executeShellCommand(
+      `npm run do-release -- adblockplus 994.10.0.1 ${hash} --yes --release-date=2024-12-16`,
+      checkoutDir,
+    );
 
-    const diff = await executeShellCommand("git diff --full-index --unified=0 HEAD^..HEAD", checkoutDir);
+    const diff = await executeShellCommand(
+      "git diff --full-index --unified=0 HEAD^..HEAD",
+      checkoutDir,
+    );
     const expectedDiff = await loadTestFile("adblockplus-994.10.0.1-diff.txt");
     expect(diff).toEqual(expectedDiff);
 
-    const newCommit = await executeShellCommand("git rev-parse --short HEAD", checkoutDir);
-    const checkoutReleaseBranchCommit = await executeShellCommand("git rev-parse --short adblockplus-release", checkoutDir);
-    const originReleaseBranchCommit = await executeShellCommand("git rev-parse --short adblockplus-release", originDir);
-    const originTagCommit = await executeShellCommand("git rev-parse --short adblockplus-994.10.0.1^{commit}", originDir);
+    const newCommit = await executeShellCommand(
+      "git rev-parse --short HEAD",
+      checkoutDir,
+    );
+    const checkoutReleaseBranchCommit = await executeShellCommand(
+      "git rev-parse --short adblockplus-release",
+      checkoutDir,
+    );
+    const originReleaseBranchCommit = await executeShellCommand(
+      "git rev-parse --short adblockplus-release",
+      originDir,
+    );
+    const originTagCommit = await executeShellCommand(
+      "git rev-parse --short adblockplus-994.10.0.1^{commit}",
+      originDir,
+    );
 
     expect(checkoutReleaseBranchCommit).toEqual(newCommit);
     expect(originReleaseBranchCommit).toEqual(newCommit);
     expect(originTagCommit).toEqual(newCommit);
   });
 
-  it("exits if a version already exists", async function() {
-    await expect(() => executeShellCommand("npm run do-release -- adblock 6.10.0 HEAD --yes", checkoutDir))
-      .rejects.toThrowError("already exists");
+  it("exits if a version already exists", async function () {
+    await expect(() =>
+      executeShellCommand(
+        "npm run do-release -- adblock 6.10.0 HEAD --yes",
+        checkoutDir,
+      ),
+    ).rejects.toThrowError("already exists");
   });
 
-  it("exits if no release notes exist", async function() {
+  it("exits if no release notes exist", async function () {
     // Attempt to recreate 4.10.0.1 but without adding release notes
-    await expect(() => executeShellCommand(`npm run do-release -- adblockplus 994.10.0.1 4427af61a --yes --release-date=2024-12-16`, checkoutDir))
-      .rejects.toThrowError("No release notes found");
+    await expect(() =>
+      executeShellCommand(
+        `npm run do-release -- adblockplus 994.10.0.1 4427af61a --yes --release-date=2024-12-16`,
+        checkoutDir,
+      ),
+    ).rejects.toThrowError("No release notes found");
   });
 });

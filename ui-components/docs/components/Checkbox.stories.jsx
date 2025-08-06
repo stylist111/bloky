@@ -1,16 +1,15 @@
-import { fn } from '@storybook/test';
-import { Checkbox } from '@components';
-import { getArgsFromJSDoc } from '@/docs/helpers.js';
-
+import { fn } from "@storybook/test";
+import { Checkbox } from "@components";
+import { getArgsFromJSDoc } from "@/docs/helpers.js";
 
 export default {
-  title: 'Components/Checkbox',
+  title: "Components/Checkbox",
   component: Checkbox,
   argTypes: getArgsFromJSDoc(Checkbox),
   args: {
     onChange: fn(),
-  }
-}
+  },
+};
 
 export const AllVariants = {
   render: (args) => (
@@ -21,16 +20,14 @@ export const AllVariants = {
   ),
 };
 
-
 /**
  * Checkbox is used as a controlled input with `checked` and `onChange` properties.
  */
 export const Basic = {
   args: {
     checked: true,
-  }
+  },
 };
-
 
 /**
  * Invalid state is displayed using the `invalid` prop to indicate a failed
@@ -40,5 +37,5 @@ export const Basic = {
 export const Invalid = {
   args: {
     invalid: true,
-  }
-}
+  },
+};

@@ -16,20 +16,20 @@
  */
 
 import expect from "expect";
-import {validateRemoteConfig} from "../src/validator.js";
+import { validateRemoteConfig } from "../src/validator.js";
 
 const SCHEMA_ID = "1";
 
-describe("Logging Data Validation", function() {
-  it("marks a missing logging config as valid", function() {
+describe("Logging Data Validation", function () {
+  it("marks a missing logging config as valid", function () {
     let data = {
       schemaId: SCHEMA_ID,
-      experiments: []
+      experiments: [],
     };
     expect(validateRemoteConfig(data)).toEqual([]);
   });
 
-  it("marks a valid config as valid", function() {
+  it("marks a valid config as valid", function () {
     let data = {
       schemaId: SCHEMA_ID,
       experiments: [],
@@ -37,99 +37,99 @@ describe("Logging Data Validation", function() {
         global: "warn",
         byModule: {
           module1: "behavior",
-          module2: "debug"
+          module2: "debug",
         },
-        mods: [0, 10]
-      }
+        mods: [0, 10],
+      },
     };
     expect(validateRemoteConfig(data)).toEqual([]);
   });
 
-  it("allows the global level to be optional", function() {
+  it("allows the global level to be optional", function () {
     let data = {
       schemaId: SCHEMA_ID,
       experiments: [],
       loggingLevels: {
         byModule: {
           module1: "behavior",
-          module2: "debug"
+          module2: "debug",
         },
-        mods: [0, 10]
-      }
+        mods: [0, 10],
+      },
     };
     expect(validateRemoteConfig(data)).toEqual([]);
   });
 
-  it("allows the byModule to be optional", function() {
+  it("allows the byModule to be optional", function () {
     let data = {
       schemaId: SCHEMA_ID,
       experiments: [],
       loggingLevels: {
         global: "warn",
-        mods: [0, 10]
-      }
+        mods: [0, 10],
+      },
     };
     expect(validateRemoteConfig(data)).toEqual([]);
   });
 
-  it("reports missing mods", function() {
+  it("reports missing mods", function () {
     let data = {
       schemaId: SCHEMA_ID,
       experiments: [],
       loggingLevels: {
-        global: "warn"
-      }
+        global: "warn",
+      },
     };
     expect(validateRemoteConfig(data)).toEqual([
-      "instance.loggingLevels requires property \"mods\""
+      'instance.loggingLevels requires property "mods"',
     ]);
   });
 
-  it("reports invalid mods", function() {
+  it("reports invalid mods", function () {
     let data = {
       schemaId: SCHEMA_ID,
       experiments: [],
       loggingLevels: {
         global: "warn",
-        mods: [0.5, 9000]
-      }
+        mods: [0.5, 9000],
+      },
     };
     expect(validateRemoteConfig(data)).toEqual([
       "instance.loggingLevels.mods[0] is not of a type(s) integer",
-      "instance.loggingLevels.mods[1] must be less than or equal to 1000"
+      "instance.loggingLevels.mods[1] must be less than or equal to 1000",
     ]);
   });
 
-  it("reports invalid global level", function() {
+  it("reports invalid global level", function () {
     let data = {
       schemaId: SCHEMA_ID,
       experiments: [],
       loggingLevels: {
         global: "potato",
-        mods: [0, 1000]
-      }
+        mods: [0, 1000],
+      },
     };
     expect(validateRemoteConfig(data)).toEqual([
-      "instance.loggingLevels.global is not one of enum values: debug,info,behavior,warn,off"
+      "instance.loggingLevels.global is not one of enum values: debug,info,behavior,warn,off",
     ]);
   });
 
-  it("reports invalid byModule level", function() {
+  it("reports invalid byModule level", function () {
     let data = {
       schemaId: SCHEMA_ID,
       experiments: [],
       loggingLevels: {
         byModule: {
           module1: 5,
-          module2: "behaviour" // incorrect spelling!
+          module2: "behaviour", // incorrect spelling!
         },
-        mods: [0, 10]
-      }
+        mods: [0, 10],
+      },
     };
     expect(validateRemoteConfig(data)).toEqual([
       "instance.loggingLevels.byModule.module1 is not of a type(s) string",
       "instance.loggingLevels.byModule.module1 is not one of enum values: debug,info,behavior,warn,off",
-      "instance.loggingLevels.byModule.module2 is not one of enum values: debug,info,behavior,warn,off"
+      "instance.loggingLevels.byModule.module2 is not one of enum values: debug,info,behavior,warn,off",
     ]);
   });
 });

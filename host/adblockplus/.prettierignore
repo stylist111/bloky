@@ -1,5 +1,0 @@
-# Translation files are generated automatically
-locale/
-
-# Some test files are intentionally invalid
-test/unit/locale-linter/data/en_US/invalid.json

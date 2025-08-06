@@ -27,20 +27,19 @@ export const ThemeColors = ({ extension, theme }) => {
         }
       </ColorPalette>
     </div>
-  );
+
+);
 };
 
 export const RenderAllThemes = () => (
   <>
-    {
-      themes.map(({ extension, name }) => (
-        <ThemeColors
-          key={`${extension}-${name}`}
-          extension={extension}
-          theme={name}
-        />
-      ))
-    }
+    {themes.map(({ extension, name }) => (
+      <ThemeColors
+        key={`${extension}-${name}`}
+        extension={extension}
+        theme={name}
+      />
+    ))}
   </>
 );
 

@@ -244,6 +244,7 @@ type ExperimentFlagsResponse = Array<{
   error?: string;
 }>;
 ```
+
 ---
 
 ### `getExperimentAssignments`
@@ -294,6 +295,7 @@ type ExperimentAssignmentsResponse = Array<{
   error?: string;
 }>;
 ```
+
 ---
 
 ## Notes

@@ -1,79 +1,79 @@
-import { afterEach, describe, it, expect, vi } from 'vitest';
+import { afterEach, describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { ToggleSwitch, INLINE } from '@components/Toggle';
+import { ToggleSwitch, INLINE } from "@components/Toggle";
 
 const clickFn = vi.fn();
 
 let toggle;
 const defaultProps = {
   onChange: clickFn,
-  id: 'toggle-one'
+  id: "toggle-one",
 };
 
 const renderToggleSwitch = (propsToSet = {}) => {
   const props = {
     ...defaultProps,
-    ...propsToSet
+    ...propsToSet,
   };
-  const baseToggle = <ToggleSwitch {...props} />
+  const baseToggle = <ToggleSwitch {...props} />;
   render(baseToggle);
-  toggle = screen.getByRole('checkbox')
-}
+  toggle = screen.getByRole("checkbox");
+};
 
-describe('ToggleSwitch in default configuration', () => {
+describe("ToggleSwitch in default configuration", () => {
   afterEach(() => {
-    vi.restoreAllMocks()
+    vi.restoreAllMocks();
   });
 
-  it ('renders', () => {
+  it("renders", () => {
     renderToggleSwitch();
     expect(toggle).toBeVisible();
   });
 
-  it('renders an unchecked toggle switch by default', () => {
+  it("renders an unchecked toggle switch by default", () => {
     renderToggleSwitch();
-    expect(toggle).to.have.property('checked', false);
+    expect(toggle).to.have.property("checked", false);
   });
 
-  it('renders an inset-style toggle by default', () => {
+  it("renders an inset-style toggle by default", () => {
     renderToggleSwitch();
-    const button = screen.getByTestId('toggleButton');
-    expect(button).toHaveClass('bg-theme-secondary');
-  })
+    const button = screen.getByTestId("toggleButton");
+    expect(button).toHaveClass("bg-theme-secondary");
+  });
 
-  it('renders an toggle switch with id when passed', () => {
-    const id = 'toggle-two';
+  it("renders an toggle switch with id when passed", () => {
+    const id = "toggle-two";
     renderToggleSwitch({ id });
-    expect(toggle).toHaveAttribute('id', id);
+    expect(toggle).toHaveAttribute("id", id);
   });
 
-  it('responds to click events', () => {
+  it("responds to click events", () => {
     renderToggleSwitch();
     expect(clickFn).not.toHaveBeenCalled();
-    expect(toggle).to.have.property('checked', false);
+    expect(toggle).to.have.property("checked", false);
     fireEvent.click(toggle);
     expect(clickFn).toHaveBeenCalledTimes(1);
-    expect(toggle).to.have.property('checked', true);
+    expect(toggle).to.have.property("checked", true);
   });
 });
 
-describe('Toggle Switch design variation', () => {
+describe("Toggle Switch design variation", () => {
   afterEach(() => {
-    vi.restoreAllMocks()
+    vi.restoreAllMocks();
   });
 
-  it('renders an inline toggle when expected', () => {
+  it("renders an inline toggle when expected", () => {
     renderToggleSwitch({ kind: INLINE });
-    const button = screen.getByTestId('toggleButton');
-    expect(button).toHaveClass('bg-theme-link-color');
-  })
+    const button = screen.getByTestId("toggleButton");
+    expect(button).toHaveClass("bg-theme-link-color");
+  });
 
-  it('responds to click events', () => {
+  it("responds to click events", () => {
     renderToggleSwitch({ kind: INLINE });
     expect(clickFn).not.toHaveBeenCalled();
-    expect(toggle).to.have.property('checked', false);
+    expect(toggle).to.have.property("checked", false);
     fireEvent.click(toggle);
     expect(clickFn).toHaveBeenCalledTimes(1);
-    expect(toggle).to.have.property('checked', true);
+    expect(toggle).to.have.property("checked", true);
   });
-})
+});

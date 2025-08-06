@@ -1,22 +1,25 @@
 ## Fragments Tests
 
-### **Testing Instructions**  
+### **Testing Instructions**
 
-1. **Setup the environment**  
-   - Run the following commands from the monorepo root:  
+1. **Setup the environment**
+
+   - Run the following commands from the monorepo root:
      ```sh
-     npm i 
+     npm i
      npm run build
-     ```  
+     ```
 
-2. **Run Fragments Tests Locally**  
-   - Execute the following command from the monorepo root:  
+2. **Run Fragments Tests Locally**
+
+   - Execute the following command from the monorepo root:
      ```sh
      BROWSER=chromium MANIFEST_VERSION=3 FORCE_HEADFUL=false npm run --workspace fragment/test test:fragments-local
-     ```  
-   - You can try different combinations of browsers (`chromium`, `firefox`, `edge`) and manifest versions (`2`, `3`).  
+     ```
+   - You can try different combinations of browsers (`chromium`, `firefox`, `edge`) and manifest versions (`2`, `3`).
 
-   **Expected Output**  
+   **Expected Output**
+
    ```
    > fragments-test-extension@1.0.0 test:fragments-local
    > node run-tests.js
@@ -39,18 +42,19 @@
    Test pages server stopped
    License server closed
    IPM server closed
-   ```  
+   ```
 
-3. **Screenshots for Failing Tests**  
-   - Screenshots are saved in:  
+3. **Screenshots for Failing Tests**
+   - Screenshots are saved in:
      ```sh
      fragment/test/screenshots
-     ```  
+     ```
 
-### **Troubleshooting**  
-- Ensure dependencies are installed by running `npm i` before executing the tests.  
-- If tests fail unexpectedly, try running in headful mode by setting:  
+### **Troubleshooting**
+
+- Ensure dependencies are installed by running `npm i` before executing the tests.
+- If tests fail unexpectedly, try running in headful mode by setting:
   ```sh
   FORCE_HEADFUL=true
-  ```  
-- Check browser compatibility and ensure the correct version is installed.  
+  ```
+- Check browser compatibility and ensure the correct version is installed.

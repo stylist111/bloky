@@ -20,27 +20,27 @@ export const LoggingLevels = {
   additionalProperties: true,
   properties: {
     global: {
-      $ref: "#/definitions/LogLevel"
+      $ref: "#/definitions/LogLevel",
     },
     byModule: {
       type: "object",
       additionalProperties: {
-        $ref: "#/definitions/LogLevel"
-      }
+        $ref: "#/definitions/LogLevel",
+      },
     },
     mods: {
       type: "array",
       items: {
         type: "integer",
         minimum: 0,
-        maximum: 1000
-      }
-    }
+        maximum: 1000,
+      },
+    },
   },
-  required: ["mods"]
+  required: ["mods"],
 };
 
 export const LogLevel = {
   type: "string",
-  enum: ["debug", "info", "behavior", "warn", "off"]
+  enum: ["debug", "info", "behavior", "warn", "off"],
 };

@@ -16,10 +16,10 @@
  */
 
 const requiredBaseProperties = {
-  command_name: {type: "string"},
-  expiry: {type: "string"},
-  ipm_id: {type: "string"},
-  version: {type: "integer"}
+  command_name: { type: "string" },
+  expiry: { type: "string" },
+  ipm_id: { type: "string" },
+  version: { type: "integer" },
 };
 const requiredBasePropertiesKeys = Object.keys(requiredBaseProperties);
 
@@ -27,23 +27,23 @@ export const CreateOnpageDialogCommand = {
   type: "object",
   properties: {
     ...requiredBaseProperties,
-    button_label: {type: "string"},
-    button_target: {type: "string"},
+    button_label: { type: "string" },
+    button_target: { type: "string" },
     display_duration: {
       type: "integer",
       minimum: 0,
-      maximum: 20
+      maximum: 20,
     },
-    domain_list: {type: "string"},
-    license_state_list: {type: "string"},
-    lower_body: {type: "string"},
+    domain_list: { type: "string" },
+    license_state_list: { type: "string" },
+    lower_body: { type: "string" },
     priority: {
       type: "integer",
-      minimum: 1
+      minimum: 1,
     },
-    sub_title: {type: "string"},
-    timing: {type: "string"},
-    upper_body: {type: "string"}
+    sub_title: { type: "string" },
+    timing: { type: "string" },
+    upper_body: { type: "string" },
   },
   required: [
     ...requiredBasePropertiesKeys,
@@ -51,36 +51,30 @@ export const CreateOnpageDialogCommand = {
     "button_target",
     "sub_title",
     "timing",
-    "upper_body"
-  ]
+    "upper_body",
+  ],
 };
 
 export const CreateTabCommand = {
   type: "object",
   properties: {
     ...requiredBaseProperties,
-    license_state_list: {type: "string"},
-    method: {type: "string"},
+    license_state_list: { type: "string" },
+    method: { type: "string" },
     priority: {
       type: "integer",
-      minimum: 1
+      minimum: 1,
     },
-    url: {type: "string"}
+    url: { type: "string" },
   },
-  required: [
-    ...requiredBasePropertiesKeys,
-    "url"
-  ]
+  required: [...requiredBasePropertiesKeys, "url"],
 };
 
 export const DeleteCommandsCommand = {
   type: "object",
   properties: {
     ...requiredBaseProperties,
-    commands: {type: "string"}
+    commands: { type: "string" },
   },
-  required: [
-    ...requiredBasePropertiesKeys,
-    "commands"
-  ]
+  required: [...requiredBasePropertiesKeys, "commands"],
 };

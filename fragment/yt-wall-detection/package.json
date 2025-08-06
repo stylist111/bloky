@@ -26,7 +26,6 @@
     "build": "tsc --project tsconfig.json",
     "build:release": "tsc --project tsconfig.json",
     "lint": "eslint --ext .ts src/",
-    "prettier-fix": "prettier --write .",
     "test": "vitest run --reporter=verbose"
   },
   "peerDependencies": {
@@ -41,7 +40,6 @@
     "eslint": "8.34.0",
     "eslint-config-prettier": "9.1.0",
     "eslint-config-standard-with-typescript": "39.1.1",
-    "eslint-plugin-prettier": "5.1.3",
     "vitest": "3.0.9",
     "vitest-chrome": "0.1.0",
     "vitest-mock-extended": "2.0.2"

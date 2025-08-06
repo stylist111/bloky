@@ -1,11 +1,11 @@
-This Contributor Agreement is between eyeo GmbH, 
-Prinzenstraße 34, 10969 Berlin, Germany ("eyeo") 
+This Contributor Agreement is between eyeo GmbH,
+Prinzenstraße 34, 10969 Berlin, Germany ("eyeo")
 and the individual or other entity.
 
-Contributor offers to license certain software 
-(a “Contribution” or multiple “Contributions”) to eyeo, 
+Contributor offers to license certain software
+(a “Contribution” or multiple “Contributions”) to eyeo,
 and eyeo agrees to accept said Contributions,
-under the terms of the open source license: 
+under the terms of the open source license:
 GNU General Public License v3
 
 Contributor understands and agrees that eyeo shall have

@@ -4,7 +4,6 @@ spec:
       type: number
       default: 1
       description: Amount of times certain test jobs should run using the "parallel" keyword
-
 ---
 include: "/.gitlab/ci-common.yml"
 

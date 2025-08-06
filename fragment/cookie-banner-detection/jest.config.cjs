@@ -12,11 +12,11 @@ module.exports = {
   coverageDirectory: "coverage",
   coverageReporters: ["json", "html", "text"],
   moduleNameMapper: {
-    "^~/(.*)$": "<rootDir>/src/$1"
+    "^~/(.*)$": "<rootDir>/src/$1",
   },
   resetMocks: true,
   restoreMocks: true,
   setupFiles: ["jest-webextension-mock", "./mocks/js/jest-polyfill.js"],
   testEnvironment: "jsdom",
-  testMatch: ["**/*.spec.ts"]
+  testMatch: ["**/*.spec.ts"],
 };

@@ -6,5 +6,5 @@
  * will also change.
  */
 .docs-story {
-    @apply bg-theme-primary;
+  @apply bg-theme-primary;
 }

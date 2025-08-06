@@ -1,4 +1,4 @@
 include:
-  - local: '$WORKSPACEPATH/.gitlab-ci.yml'
+  - local: "$WORKSPACEPATH/.gitlab-ci.yml"
     inputs:
       job_runs: 3

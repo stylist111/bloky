@@ -15,10 +15,10 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {validate as validateSchemaVersion1Data} from "./schema1validator.js";
+import { validate as validateSchemaVersion1Data } from "./schema1validator.js";
 
 const schemaValidatorLookup = {
-  1: validateSchemaVersion1Data
+  1: validateSchemaVersion1Data,
 };
 
 export function validateRemoteConfig(data) {

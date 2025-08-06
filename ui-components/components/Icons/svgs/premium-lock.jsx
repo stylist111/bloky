@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 
 export const PremiumLock = ({ label = "", size }) => {
   return (
@@ -17,7 +17,7 @@ export const PremiumLock = ({ label = "", size }) => {
       />
       {label && <title>{label}</title>}
     </svg>
-  )
+  );
 };
 
 PremiumLock.propTypes = {

@@ -44,7 +44,7 @@ or disabled on that client.
 ### Log Levels
 
 | Level      | Value | Description                                          |
-|------------|-------|------------------------------------------------------|
+| ---------- | ----- | ---------------------------------------------------- |
 | `debug`    | 1     | Detailed information for debugging purposes          |
 | `info`     | 2     | General information about system operation           |
 | `behavior` | 3     | Used for tracking user behavior/interactions         |
@@ -67,53 +67,54 @@ export default {
   // The top level property is the module name. This is what you will pass to
   // new ServerLogger(module). As a naming convention, prefer snake_case names
   // for modules.
-  "blocking": {
+  blocking: {
     // Modules contain events. This is what you will pass to
     // serverLogger.debug(event). As a naming convention, prefer snake_case names
     // for events.
-    "blocked_something": {
-      "description": "Something has been blocked",
+    blocked_something: {
+      description: "Something has been blocked",
       // If an event has associated data, its schema can be documented
       // here. This should follow JSON schema, specifying at least a
       // description, type, properties (for objects) and items (for arrays).
-      "data": {
-        "description": "Element id of the blocked item",
-        "type": "string"
-      }
+      data: {
+        description: "Element id of the blocked item",
+        type: "string",
+      },
     },
 
-    "allowlisted_something": {
-      "description": "Something has been allowlisted"
+    allowlisted_something: {
+      description: "Something has been allowlisted",
       // This behavior doesn't have any data, so the `data` property must be
       // omitted.
     },
 
-    "nice_checker_event": {
-      "description": "Checks that nice?",
+    nice_checker_event: {
+      description: "Checks that nice?",
       // This event's data is an object, so the properties on the data are
       // documented.
-      "data": {
-        "description": "Nice things",
-        "type": "object",
-        "properties": {
-          "name": {
-            "description": "A name. Not all nice things have names, so it can also be null",
+      data: {
+        description: "Nice things",
+        type: "object",
+        properties: {
+          name: {
+            description:
+              "A name. Not all nice things have names, so it can also be null",
             // If type is an array, all the given values are valid
-            "type": ["string", "null"]
+            type: ["string", "null"],
           },
-          "nice": {
-            "description": "Element id of the blocked item",
-            "type": "string"
+          nice: {
+            description: "Element id of the blocked item",
+            type: "string",
           },
-          "number": {
-            "description": "Element id of the blocked item",
-            "type": "number"
-          }
-        }
-      }
+          number: {
+            description: "Element id of the blocked item",
+            type: "number",
+          },
+        },
+      },
     },
 
-    "array_event": {
+    array_event: {
       description: "Event that",
       data: {
         description: "A sequence of numbers",
@@ -121,21 +122,21 @@ export default {
         items: {
           // items doesn't need a description, because the array description
           // should cover it
-          type: "number"
-        }
-      }
+          type: "number",
+        },
+      },
     },
 
-    "unstructured_event": {
+    unstructured_event: {
       description: "Event that has unknown data associated with it",
       data: {
         description: "Interesting data",
         // any allows any value that can be serialized to JSON, including null,
         // but rejects undefined
-        type: "any"
-      }
-    }
-  }
+        type: "any",
+      },
+    },
+  },
 };
 ```
 
@@ -155,22 +156,23 @@ const serverLogger = new ewe.telemetry.ServerLogger("module_name");
 
 // Log at different levels
 serverLogger.debug("initialization_complete", { version: "1.2.3" });
-serverLogger.info("feature_enabled", "cool_experiment" );
-serverLogger.behavior("button_clicked", { buttonId: "enable_premium",  });
+serverLogger.info("feature_enabled", "cool_experiment");
+serverLogger.behavior("button_clicked", { buttonId: "enable_premium" });
 serverLogger.warn("api_call_failed", { endpoint: "/data", status: 404 });
 ```
 
 ### Call the logger from inside the SDK
+
 ```javascript
-import {ServerLogger} from "./telemetry/server-logger.js";
+import { ServerLogger } from "./telemetry/server-logger.js";
 
 // Creating the logger. You have to give it the current module
 const serverLogger = new ServerLogger("module_name");
 
 // Log at different levels
 serverLogger.debug("initialization_complete", { version: "1.2.3" });
-serverLogger.info("feature_enabled", "cool_experiment" );
-serverLogger.behavior("button_clicked", { buttonId: "enable_premium",  });
+serverLogger.info("feature_enabled", "cool_experiment");
+serverLogger.behavior("button_clicked", { buttonId: "enable_premium" });
 serverLogger.warn("api_call_failed", { endpoint: "/data", status: 404 });
 ```
 
@@ -201,6 +203,7 @@ When logs appear in the console, they follow this format:
 ```
 
 Example:
+
 ```
 2025-05-15T12:34:56.789Z my_module debug initialization_complete {version: "1.2.3"}
 ```

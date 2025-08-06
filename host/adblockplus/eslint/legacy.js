@@ -10,7 +10,7 @@
  * at `love.js`.
  */
 module.exports = {
-  extends: ["eslint-config-eyeo", "plugin:prettier/recommended"],
+  extends: ["eslint-config-eyeo", "prettier", "prettier/prettier"],
   root: true,
   env: {
     browser: true,

@@ -1,9 +1,29 @@
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 
 const kindStyles = {
-  text: ['text-theme-link-color', 'hover:text-theme-text-accent'],
-  filled: ['bg-theme-button-primary', 'text-theme-button-secondary', 'fill-theme-button-secondary', 'stroke-theme-button-secondary', 'border', 'border-theme-button-primary', 'hover:drop-shadow-md', 'hover:bg-theme-link-color', 'hover:border-theme-link-color',],
-  outline: ['text-theme-button-primary', 'fill-theme-button-primary', 'stroke-theme-button-primary', 'border', 'border-theme-button-primary', 'hover:bg-theme-button-primary', 'hover:text-theme-button-secondary', 'hover:stroke-theme-button-secondary', 'hover:fill-theme-button-secondary'],
+  text: ["text-theme-link-color", "hover:text-theme-text-accent"],
+  filled: [
+    "bg-theme-button-primary",
+    "text-theme-button-secondary",
+    "fill-theme-button-secondary",
+    "stroke-theme-button-secondary",
+    "border",
+    "border-theme-button-primary",
+    "hover:drop-shadow-md",
+    "hover:bg-theme-link-color",
+    "hover:border-theme-link-color",
+  ],
+  outline: [
+    "text-theme-button-primary",
+    "fill-theme-button-primary",
+    "stroke-theme-button-primary",
+    "border",
+    "border-theme-button-primary",
+    "hover:bg-theme-button-primary",
+    "hover:text-theme-button-secondary",
+    "hover:stroke-theme-button-secondary",
+    "hover:fill-theme-button-secondary",
+  ],
 };
 
 export const linkKinds = Object.keys(kindStyles);
@@ -29,18 +49,19 @@ export const linkKinds = Object.keys(kindStyles);
 export const Link = ({
   children,
   href,
-  target = '_blank',
-  kind = 'text',
+  target = "_blank",
+  kind = "text",
   colorOverrides,
 }) => {
-  const defaultStyles = kind === 'text' ? [] : ['px-4', 'py-2', 'rounded-md', '!no-underline'];
-  const transitionStyles = ['transition', 'duration-200', 'ease-in-out'];
+  const defaultStyles =
+    kind === "text" ? [] : ["px-4", "py-2", "rounded-md", "!no-underline"];
+  const transitionStyles = ["transition", "duration-200", "ease-in-out"];
   const customStyles = colorOverrides ?? kindStyles[kind];
   const className = [
     ...defaultStyles,
     ...transitionStyles,
     ...customStyles,
-  ].join(' ');
+  ].join(" ");
 
   return (
     <a
@@ -50,10 +71,10 @@ export const Link = ({
       rel="noreferrer"
       referrerPolicy="no-referrer"
     >
-      { children }
+      {children}
     </a>
   );
-}
+};
 
 Link.propTypes = {
   children: PropTypes.node,
@@ -61,4 +82,4 @@ Link.propTypes = {
   target: PropTypes.string,
   kind: PropTypes.oneOf(linkKinds),
   colorOverrides: PropTypes.arrayOf(PropTypes.string),
-}
+};

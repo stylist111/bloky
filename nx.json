@@ -2,48 +2,30 @@
   "targetDefaults": {
     "build": {
       "cache": true,
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        "{projectRoot}/dist"
-      ]
+      "dependsOn": ["^build"],
+      "outputs": ["{projectRoot}/dist"]
     },
     "build:release": {
       "cache": true,
-      "dependsOn": [
-        "^build:release"
-      ],
-      "outputs": [
-        "{projectRoot}/dist"
-      ]
+      "dependsOn": ["^build:release"],
+      "outputs": ["{projectRoot}/dist"]
     },
     "build:local": {
       "cache": true,
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        "{projectRoot}/dist/devenv/local-mv2"
-      ]
+      "dependsOn": ["^build"],
+      "outputs": ["{projectRoot}/dist/devenv/local-mv2"]
     },
     "build:types": {
       "cache": true,
-      "outputs": [
-        "{projectRoot}/dist/**/*.d.ts"
-      ]
+      "outputs": ["{projectRoot}/dist/**/*.d.ts"]
     },
     "lint": {
       "cache": false,
-      "dependsOn": [
-        "^build:types"
-      ]
+      "dependsOn": ["^build:types"]
     },
     "test": {
       "cache": false,
-      "dependsOn": [
-        "^build"
-      ]
+      "dependsOn": ["^build"]
     },
     "test:end-to-end": {
       "parallelism": false

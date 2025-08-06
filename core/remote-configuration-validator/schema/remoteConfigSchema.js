@@ -15,14 +15,23 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {All, Any, Conditions, Cohort, Event, Not, Params, Value} from "./cohortDefinitions.js";
-import {Experiment, Flags, Variant} from "./experimentDefinitions.js";
+import {
+  All,
+  Any,
+  Conditions,
+  Cohort,
+  Event,
+  Not,
+  Params,
+  Value,
+} from "./cohortDefinitions.js";
+import { Experiment, Flags, Variant } from "./experimentDefinitions.js";
 import {
   CreateOnpageDialogCommand,
   CreateTabCommand,
-  DeleteCommandsCommand
+  DeleteCommandsCommand,
 } from "./ipmDefinitions.js";
-import {LoggingLevels, LogLevel} from "./loggingLevelsDefinitions.js";
+import { LoggingLevels, LogLevel } from "./loggingLevelsDefinitions.js";
 
 export const remoteConfigSchema = {
   $schema: "http://json-schema.org/draft-06/schema#",
@@ -34,35 +43,35 @@ export const remoteConfigSchema = {
       additionalProperties: true,
       properties: {
         schemaId: {
-          type: "string"
+          type: "string",
         },
         experiments: {
           type: "array",
           items: {
-            $ref: "#/definitions/Experiment"
-          }
+            $ref: "#/definitions/Experiment",
+          },
         },
         cohorts: {
           type: "array",
           items: {
-            $ref: "#/definitions/Cohort"
-          }
+            $ref: "#/definitions/Cohort",
+          },
         },
         loggingLevels: {
-          $ref: "#/definitions/LoggingLevels"
+          $ref: "#/definitions/LoggingLevels",
         },
         ipmCommands: {
           type: "array",
           items: {
             anyOf: [
-              {$ref: "#/definitions/CreateOnpageDialogCommand"},
-              {$ref: "#/definitions/CreateTabCommand"},
-              {$ref: "#/definitions/DeleteCommandsCommand"}
-            ]
-          }
-        }
+              { $ref: "#/definitions/CreateOnpageDialogCommand" },
+              { $ref: "#/definitions/CreateTabCommand" },
+              { $ref: "#/definitions/DeleteCommandsCommand" },
+            ],
+          },
+        },
       },
-      required: ["experiments", "schemaId"]
+      required: ["experiments", "schemaId"],
     },
     Cohort,
     Conditions,
@@ -79,6 +88,6 @@ export const remoteConfigSchema = {
     LogLevel,
     CreateOnpageDialogCommand,
     CreateTabCommand,
-    DeleteCommandsCommand
-  }
+    DeleteCommandsCommand,
+  },
 };

@@ -18,7 +18,7 @@
 import { readFile, writeFile } from "fs/promises";
 import path from "path";
 
-import {projectRootPath} from "./utils.js";
+import { projectRootPath } from "./utils.js";
 
 export class ReleaseNotes {
   constructor(fileContent) {
@@ -33,10 +33,10 @@ export class ReleaseNotes {
     const start = this.lines.findIndex((currentLine) => {
       const line = currentLine.toLowerCase();
       const headingStart = "# " + version.toLowerCase();
-      
+
       return line.startsWith(headingStart + " ") || line == headingStart;
     });
-      
+
     if (start < 0) {
       throw new Error(`Could not find notes for version ${version}`);
     }
@@ -49,7 +49,7 @@ export class ReleaseNotes {
       return line.startsWith("# ");
     });
 
-    if (end < 0) {      
+    if (end < 0) {
       end = this.lines.length;
     }
 
@@ -69,7 +69,7 @@ export class ReleaseNotes {
     let unreleasedLine = this.lines.findIndex((currentLine) => {
       const line = currentLine.toLowerCase();
       const headingStart = "# unreleased";
-            
+
       return line.startsWith(headingStart + " ") || line == headingStart;
     });
 
@@ -78,10 +78,7 @@ export class ReleaseNotes {
     let date = now.toISOString().substring(0, 10);
     let versionHeading = `# ${version} - ${date}`;
 
-    let newHeading = [
-      "",
-      versionHeading
-    ];
+    let newHeading = ["", versionHeading];
 
     this.lines.splice(newHeadingLine, 0, ...newHeading);
 
@@ -92,28 +89,37 @@ export class ReleaseNotes {
   }
 
   async writeToHostFilepath(host) {
-    await writeFile(
-      ReleaseNotes.hostFilePath(host),
-      this.toString(),
-      "utf8"
-    );
+    await writeFile(ReleaseNotes.hostFilePath(host), this.toString(), "utf8");
   }
 }
 
-ReleaseNotes.hostFilePath = function(host) {
+ReleaseNotes.hostFilePath = function (host) {
   switch (host) {
     case "adblock":
-      return path.join(projectRootPath(), 'host', 'adblock', 'RELEASE_NOTES.md');
+      return path.join(
+        projectRootPath(),
+        "host",
+        "adblock",
+        "RELEASE_NOTES.md",
+      );
     case "adblockplus":
-      return path.join(projectRootPath(), 'host', 'adblockplus', 'RELEASE_NOTES.md');
+      return path.join(
+        projectRootPath(),
+        "host",
+        "adblockplus",
+        "RELEASE_NOTES.md",
+      );
     case "sdk":
-      return path.join(projectRootPath(), 'core', 'sdk', 'RELEASE_NOTES.md');
+      return path.join(projectRootPath(), "core", "sdk", "RELEASE_NOTES.md");
     default:
       throw new Error(`Unknown host: ${host}`);
   }
 };
 
-ReleaseNotes.readFromHostFilepath = async function(host) {
-  let releaseNotesContent = await readFile(ReleaseNotes.hostFilePath(host), "utf8");
+ReleaseNotes.readFromHostFilepath = async function (host) {
+  let releaseNotesContent = await readFile(
+    ReleaseNotes.hostFilePath(host),
+    "utf8",
+  );
   return new ReleaseNotes(releaseNotesContent);
 };

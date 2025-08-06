@@ -16,24 +16,24 @@
  * along with Web Extensions CU.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {ReleaseNotes} from "./release-notes.js";
+import { ReleaseNotes } from "./release-notes.js";
 
 async function run() {
   const host = process.argv[2];
   const version = process.argv[3];
 
   if (!host || !version) {
-    console.error('Please provide a host and a version');
-    console.error('Usage: node get-release-notes.js <host> <version>');
+    console.error("Please provide a host and a version");
+    console.error("Usage: node get-release-notes.js <host> <version>");
     process.exit(1);
-  }      
+  }
 
-  const releaseNotes = await ReleaseNotes.readFromHostFilepath(host);    
+  const releaseNotes = await ReleaseNotes.readFromHostFilepath(host);
   const notesForVersion = releaseNotes.notesForVersion(version);
-  console.log(notesForVersion); 
+  console.log(notesForVersion);
 }
 
-run().catch(err => {
+run().catch((err) => {
   console.error(err.message);
   process.exit(1);
 });

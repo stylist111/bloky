@@ -1,0 +1,14 @@
+core/sdk
+vendor/
+
+### host/adblock
+
+host/adblock/adblock-betafish/translators.json
+
+### host/adblockplus
+
+# Translation files are generated automatically
+host/adblockplus/locale/
+
+# Some test files are intentionally invalid
+host/adblockplus/test/unit/locale-linter/data/en_US/invalid.json

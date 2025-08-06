@@ -16,9 +16,9 @@
  */
 /* For ESLint: List any global identifiers used in this file below */
 /* global console */
-import {Rule} from "json-rules-engine";
-import {Validator} from "jsonschema";
-import {remoteConfigSchema} from "../schema/remoteConfigSchema.js";
+import { Rule } from "json-rules-engine";
+import { Validator } from "jsonschema";
+import { remoteConfigSchema } from "../schema/remoteConfigSchema.js";
 
 const SCHEMA_ID = "1";
 
@@ -37,7 +37,7 @@ const validOperatorsByFact = {
     "lessThan",
     "lessThanInclusive",
     "greaterThan",
-    "greaterThanInclusive"
+    "greaterThanInclusive",
   ],
   hasPremium: ["equal", "notEqual"],
   installDate: [
@@ -48,7 +48,7 @@ const validOperatorsByFact = {
     "greaterThan",
     "greaterThanInclusive",
     "withinLast",
-    "olderThan"
+    "olderThan",
   ],
   installType: ["equal", "notEqual", "in", "notIn"],
   blockedCount: [
@@ -57,8 +57,8 @@ const validOperatorsByFact = {
     "lessThan",
     "lessThanInclusive",
     "greaterThan",
-    "greaterThanInclusive"
-  ]
+    "greaterThanInclusive",
+  ],
 };
 
 function isValidModValue(value) {
@@ -78,7 +78,9 @@ function isValidCondition(conditions, errors) {
       condition.fact &&
       !validOperatorsByFact[condition.fact].includes(condition.operator)
     ) {
-      errors.push(`\`invalid operator ${condition.operator} for fact: ${condition.fact}\``);
+      errors.push(
+        `\`invalid operator ${condition.operator} for fact: ${condition.fact}\``,
+      );
     }
   });
 }
@@ -93,7 +95,7 @@ function getErrorsForExperiments(data) {
 
     if (encounteredExperimentIds.has(experiment.experimentId)) {
       errors.push(
-        `\`${experimentRef}.experimentId\` ${experiment.experimentId} appears as the experiment ID on a previous experiment`
+        `\`${experimentRef}.experimentId\` ${experiment.experimentId} appears as the experiment ID on a previous experiment`,
       );
     }
     encounteredExperimentIds.add(experiment.experimentId);
@@ -106,20 +108,19 @@ function getErrorsForExperiments(data) {
 
       if (encounteredVariantIds.has(variant.variantId)) {
         errors.push(
-          `\`${variantRef}.variantId\` ${variant.variantId} appears as the variantId on a previous variant in this experiment`
+          `\`${variantRef}.variantId\` ${variant.variantId} appears as the variantId on a previous variant in this experiment`,
         );
       }
 
       encounteredVariantIds.add(variant.variantId);
 
       if (variant.flags) {
-        Object.keys(variant.flags).forEach(flag => {
+        Object.keys(variant.flags).forEach((flag) => {
           if (!flagExperiments.has(flag)) {
             flagExperiments.set(flag, experiment.experimentId);
-          }
-          else if (flagExperiments.get(flag) !== experiment.experimentId) {
+          } else if (flagExperiments.get(flag) !== experiment.experimentId) {
             errors.push(
-              `\`${variantRef}.flag[${flag}] appears in multiple experiments`
+              `\`${variantRef}.flag[${flag}] appears in multiple experiments`,
             );
           }
         });
@@ -136,26 +137,25 @@ function getErrorsForExperiments(data) {
 
       if (!validStart) {
         errors.push(
-          `\`${variantRef}.mods[0]\` is not a number between 0 and 1000`
+          `\`${variantRef}.mods[0]\` is not a number between 0 and 1000`,
         );
       }
       if (!validEnd) {
         errors.push(
-          `\`${variantRef}.mods[1]\` is not a number between 0 and 1000`
+          `\`${variantRef}.mods[1]\` is not a number between 0 and 1000`,
         );
       }
 
       if (validStart && validEnd) {
         if (start >= end) {
           errors.push(
-            `\`${variantRef}.mods[0]\` is not smaller than \`${variantRef}.mods[1]\``
+            `\`${variantRef}.mods[0]\` is not smaller than \`${variantRef}.mods[1]\``,
           );
-        }
-        else {
+        } else {
           for (const [prevStart, prevEnd] of variantRanges) {
             if (start < prevEnd && prevStart < end) {
               errors.push(
-                `Mod ranges [${prevStart}-${prevEnd}] and [${start}-${end}] overlap in experiment '${experiment.experimentId}'`
+                `Mod ranges [${prevStart}-${prevEnd}] and [${start}-${end}] overlap in experiment '${experiment.experimentId}'`,
               );
             }
           }
@@ -178,19 +178,15 @@ function getErrorsForCohorts(data) {
         if (ruleObj && ruleObj.conditions) {
           if (ruleObj.conditions.all) {
             isValidCondition(ruleObj.conditions.all, errors);
-          }
-          else if (ruleObj.conditions.any) {
+          } else if (ruleObj.conditions.any) {
             isValidCondition(ruleObj.conditions.any, errors);
-          }
-          else if (ruleObj.conditions.not) {
+          } else if (ruleObj.conditions.not) {
             isValidCondition(ruleObj.conditions.not, errors);
-          }
-          else {
+          } else {
             errors.push(`Invalid rule, no conditions found '${ruleRef}'`);
           }
         }
-      }
-      catch (e) {
+      } catch (e) {
         // Should the error be returned?
         errors.push(`Invalid rule '${ruleRef}'`);
       }
@@ -225,9 +221,10 @@ export function validate(data) {
     // passing the 'base' property to the validate function
     // avoids an error when running certain tests in some browsers
     // see more here -> https://github.com/tdegrunt/jsonschema/issues/407
-    validateResult = validator.validate(data, remoteConfigSchema, {base: "https://eyeo.com/remoteConfigSchema"});
-  }
-  catch (err) {
+    validateResult = validator.validate(data, remoteConfigSchema, {
+      base: "https://eyeo.com/remoteConfigSchema",
+    });
+  } catch (err) {
     // eslint-disable-next-line no-console
     console.error(err.message);
     return [err.message];
@@ -236,7 +233,7 @@ export function validate(data) {
   if (validateResult && validateResult.errors && validateResult.errors.length) {
     // Filter out a lot of the validation error object,
     // the 'stack' property contains the most relevant information
-    const errorStack = validateResult.errors.map(error => error.stack);
+    const errorStack = validateResult.errors.map((error) => error.stack);
     return errorStack;
   }
 

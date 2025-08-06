@@ -3,6 +3,7 @@
 ## Main architectural components
 
 There are three main types of architectural components:
+
 - Core utilities
 - Fragments
 - Host extensions
@@ -40,7 +41,7 @@ we ship to the stores.
 
 Examples: AdBlock, Adblock Plus.
 
-### Tools 
+### Tools
 
 Utilities used throughout the Extensions repository
 

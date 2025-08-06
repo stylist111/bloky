@@ -40,10 +40,12 @@ const loggingInfoSpy = vi.fn();
 vi.mock("@eyeo/webext-ad-filtering-solution", () => ({
   telemetry: {
     ServerLogger: class {
-      info(...args: any[]) { return loggingInfoSpy(...args); }
+      info(...args: any[]) {
+        return loggingInfoSpy(...args);
+      }
       constructor() {}
-    }
-  }
+    },
+  },
 }));
 
 describe("nonpartner-detection", () => {
@@ -57,7 +59,7 @@ describe("nonpartner-detection", () => {
   beforeEach(() => {
     logger = {
       debug: vi.fn(),
-      error: vi.fn()
+      error: vi.fn(),
     };
     prefs = {
       untilLoaded: vi.fn(() => Promise.resolve()),
@@ -250,10 +252,10 @@ describe("nonpartner-detection", () => {
 
     // Find the listener registered for webRequest.onErrorOccurred
     const addListenerMock = browser.webRequest.onErrorOccurred.addListener;
-    expect(addListenerMock).toHaveBeenCalledWith(
-      expect.any(Function),
-      { urls: ["*://btloader.com/tag?*"], types: ["script"] },
-    );
+    expect(addListenerMock).toHaveBeenCalledWith(expect.any(Function), {
+      urls: ["*://btloader.com/tag?*"],
+      types: ["script"],
+    });
     const listener = addListenerMock.mock.calls[0][0];
 
     // Act
@@ -263,7 +265,7 @@ describe("nonpartner-detection", () => {
     // Assert
     expect(loggingInfoSpy).toHaveBeenCalledWith(
       "bt_loader_blocked",
-      errorDetails.error
+      errorDetails.error,
     );
   });
 

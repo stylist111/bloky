@@ -1,69 +1,69 @@
 {
-    "name": "@eyeo/ext-ui-components",
-    "version": "0.0.1",
-    "description": "UI components library",
-    "author": "eyeo GmbH",
-    "license": "GPL-3.0",
-    "homepage": "https://gitlab.com/eyeo/extensions/extensions/-/blob/main/ui-components/README.md",
-    "main": "index.jsx",
-    "type": "module",
-    "types": "dist/types/index.d.ts",
-    "scripts": {
-        "dev": "storybook dev -p 6006",
-        "build:types": "tsc",
-        "build": "vite build && npm run build:types",
-        "build:watch": "vite build --watch",
-        "build:release": "npm run build",
-        "test": "vitest run --reporter=verbose",
-        "test:watch": "vitest",
-        "lint": "eslint .",
-        "storybook": "storybook dev -p 6006",
-        "build-storybook": "storybook build"
-    },
-    "peerDependencies": {
-        "react": "^18.3.1",
-        "react-dom": "^18.3.1"
-    },
-    "devDependencies": {
-        "@chromatic-com/storybook": "^1.8.0",
-        "@eslint/js": "^9.8.0",
-        "@storybook/addon-essentials": "^8.2.9",
-        "@storybook/addon-links": "^8.2.9",
-        "@storybook/addon-themes": "^8.2.9",
-        "@storybook/blocks": "^8.2.9",
-        "@storybook/react": "^8.2.9",
-        "@storybook/react-vite": "^8.2.9",
-        "@storybook/test": "^8.2.9",
-        "@tailwindcss/forms": "^0.5.9",
-        "@testing-library/jest-dom": "^6.5.0",
-        "@testing-library/react": "^16.0.0",
-        "@types/react": "^18.3.3",
-        "@types/react-dom": "^18.3.0",
-        "@vitejs/plugin-react": "^4.3.1",
-        "autoprefixer": "^10.4.20",
-        "comment-parser": "^1.4.1",
-        "eslint": "9.8.0",
-        "eslint-plugin-react": "^7.35.0",
-        "eslint-plugin-react-hooks": "^5.1.0-rc.0",
-        "eslint-plugin-react-refresh": "^0.4.9",
-        "eslint-plugin-storybook": "^0.8.0",
-        "globals": "^15.9.0",
-        "jsdom": "^25.0.0",
-        "postcss": "^8.4.41",
-        "postcss-import": "^16.1.0",
-        "react": "^18.3.1",
-        "storybook": "^8.2.9",
-        "tailwindcss": "^3.4.10",
-        "typescript": "^5.5.4",
-        "vite": "^5.4.6",
-        "vitest": "3.0.9"
-    },
-    "eslintConfig": {
-        "extends": [
-            "plugin:storybook/recommended"
-        ]
-    },
-    "dependencies": {
-        "prop-types": "^15.8.1"
-    }
+  "name": "@eyeo/ext-ui-components",
+  "version": "0.0.1",
+  "description": "UI components library",
+  "author": "eyeo GmbH",
+  "license": "GPL-3.0",
+  "homepage": "https://gitlab.com/eyeo/extensions/extensions/-/blob/main/ui-components/README.md",
+  "main": "index.jsx",
+  "type": "module",
+  "types": "dist/types/index.d.ts",
+  "scripts": {
+    "dev": "storybook dev -p 6006",
+    "build:types": "tsc",
+    "build": "vite build && npm run build:types",
+    "build:watch": "vite build --watch",
+    "build:release": "npm run build",
+    "test": "vitest run --reporter=verbose",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
+  },
+  "peerDependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@chromatic-com/storybook": "^1.8.0",
+    "@eslint/js": "^9.8.0",
+    "@storybook/addon-essentials": "^8.2.9",
+    "@storybook/addon-links": "^8.2.9",
+    "@storybook/addon-themes": "^8.2.9",
+    "@storybook/blocks": "^8.2.9",
+    "@storybook/react": "^8.2.9",
+    "@storybook/react-vite": "^8.2.9",
+    "@storybook/test": "^8.2.9",
+    "@tailwindcss/forms": "^0.5.9",
+    "@testing-library/jest-dom": "^6.5.0",
+    "@testing-library/react": "^16.0.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.20",
+    "comment-parser": "^1.4.1",
+    "eslint": "9.8.0",
+    "eslint-plugin-react": "^7.35.0",
+    "eslint-plugin-react-hooks": "^5.1.0-rc.0",
+    "eslint-plugin-react-refresh": "^0.4.9",
+    "eslint-plugin-storybook": "^0.8.0",
+    "globals": "^15.9.0",
+    "jsdom": "^25.0.0",
+    "postcss": "^8.4.41",
+    "postcss-import": "^16.1.0",
+    "react": "^18.3.1",
+    "storybook": "^8.2.9",
+    "tailwindcss": "^3.4.10",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.6",
+    "vitest": "3.0.9"
+  },
+  "eslintConfig": {
+    "extends": [
+      "plugin:storybook/recommended"
+    ]
+  },
+  "dependencies": {
+    "prop-types": "^15.8.1"
+  }
 }

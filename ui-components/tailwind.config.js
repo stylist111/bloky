@@ -33,16 +33,14 @@ module.exports = {
         "theme-button-secondary": "var(--theme-button-secondary)",
 
         // Error color
-        "error": "var(--error)",
+        error: "var(--error)",
         // Foreground content color to use on error color
         "error-content": "var(--error-content)",
       },
       fontFamily: {
-       "sans": "var(--extension-font-family)",
-      }
+        sans: "var(--extension-font-family)",
+      },
     },
   },
-  plugins: [
-    require('@tailwindcss/forms'),
-  ],
-}
+  plugins: [require("@tailwindcss/forms")],
+};

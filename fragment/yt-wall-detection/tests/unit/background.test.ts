@@ -144,7 +144,7 @@ describe("Fragment / YT Ad Wall Detection", () => {
       expectTypeOf(arg2).toBeFunction();
 
       if (arg1 === youTubeNavigation) {
-        arg2(message, {tab: {}});
+        arg2(message, { tab: {} });
         sendAdWallEventsFNMock.calledWith(youTubeNavigation, {
           userLoggedIn: "0",
         });

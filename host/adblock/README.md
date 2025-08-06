@@ -139,14 +139,12 @@ docker cp $(docker ps -aqf ancestor=end-to-end | head -n 1):/extensions/host/adb
 
 ## Code Style
 
-We use a community code style enforced by [eslint](https://eslint.org) for JavaScript and [Prettier](https://prettier.io) for other files. Additionally, we use [HTMLHint](https://github.com/htmlhint/HTMLHint) for HTML accessibility and standards checking.
+We use a community code style enforced by [eslint](https://eslint.org) for JavaScript for other files. Additionally, we use [HTMLHint](https://github.com/htmlhint/HTMLHint) for HTML accessibility and standards checking.
 
 The following npm commands are then available:
 
 - `npm run lint` runs all linters and prints out all violations.
 - `npm run --workspace host/adblock eslint-fix` runs eslint and automatically fixes JavaScript style violations in place (be sure to commit before running this command in case you need to revert the changes eslint makes).
-- `npm run --workspace host/adblock prettier` runs prettier on HTML, CSS, and JSON files in the adblock-betafish directory and list all files that need to be Prettier.
-- `npm run --workspace host/adblock prettier-fix` runs prettier and automatically replaces with Prettier versions for HTML, CSS, and JSON files in the adblock-betafish directory.
 - `npm run --workspace host/adblock html-hint` runs HTMLhint and flags any issues with the HTML templates such as missing `DOCTYPE`, tags and/or attributes. This does not run on pre-commits so it must be run manually. New AdBlock custom attributes should be added in `./rules/static/custom_attributes.json`. If mistakenly flagged, standard HTML attributes should be added in `./rules/static/aria_attributes.json` or `./rules/static/mapped_attributes.json`.
 
 ### Aliases

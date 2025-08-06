@@ -25,10 +25,10 @@ export function updateVersionInConfigContent(content, version) {
   const regex = /(\"?version\"?:\s*)\"[^\"]+\"/;
 
   if (!regex.test(content)) {
-    throw new Error('Could not find version field in the config file');
+    throw new Error("Could not find version field in the config file");
   }
-  
-  return content.replace(regex, "$1\"" + version + "\"");
+
+  return content.replace(regex, '$1"' + version + '"');
 }
 
 export async function updateVersionInConfig(host, version) {
@@ -36,14 +36,14 @@ export async function updateVersionInConfig(host, version) {
   let needsPackageLockUpdate = false;
 
   switch (host) {
-    case 'adblock':
-      configPath = 'host/adblock/build/config/base.mjs';
+    case "adblock":
+      configPath = "host/adblock/build/config/base.mjs";
       break;
-    case 'adblockplus':
-      configPath = 'host/adblockplus/build/webext/config/base.mjs';
+    case "adblockplus":
+      configPath = "host/adblockplus/build/webext/config/base.mjs";
       break;
-    case 'sdk':
-      configPath = 'core/sdk/package.json';
+    case "sdk":
+      configPath = "core/sdk/package.json";
       needsPackageLockUpdate = true;
       break;
     default:

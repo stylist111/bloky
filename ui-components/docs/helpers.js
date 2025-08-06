@@ -1,5 +1,4 @@
-import { parse as parseJSDoc } from 'comment-parser';
-
+import { parse as parseJSDoc } from "comment-parser";
 
 /**
  * Get the args from the JSDoc comments of a component.
@@ -22,15 +21,15 @@ export function getArgsFromJSDoc(component) {
     component.__docgenInfo.description = info.description;
     for (const tag of info.tags) {
       // Skip tags that aren't 'param'
-      if (tag.tag !== 'param') {
+      if (tag.tag !== "param") {
         continue;
       }
 
       // Use a regex to remove the 'props.' prefix if it exists
-      const paramName = tag.name.replace(/^props\./, '');
+      const paramName = tag.name.replace(/^props\./, "");
 
       // Skip if the param name is 'props' after potential replacement
-      if (paramName === 'props') {
+      if (paramName === "props") {
         continue;
       }
 

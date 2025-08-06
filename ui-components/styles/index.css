@@ -1,11 +1,10 @@
 @import "tailwindcss/base";
-@import './adblock-color-themes.css';
-@import './extension-theme-adblock.css';
-@import './extension-theme-abp.css';
+@import "./adblock-color-themes.css";
+@import "./extension-theme-adblock.css";
+@import "./extension-theme-abp.css";
 
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
-
 
 :root {
   --white: rgb(255 255 255); /* #ffffff */

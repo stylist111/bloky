@@ -20,53 +20,53 @@ export const All = {
   additionalProperties: true,
   properties: {
     fact: {
-      type: "string"
+      type: "string",
     },
     operator: {
-      type: "string"
+      type: "string",
     },
     value: {
-      $ref: "#/definitions/Value"
+      $ref: "#/definitions/Value",
     },
     path: {
-      type: "string"
+      type: "string",
     },
     params: {
-      $ref: "#/definitions/Params"
+      $ref: "#/definitions/Params",
     },
     any: {
       anyOf: [
         {
-          $ref: "#/definitions/Any"
+          $ref: "#/definitions/Any",
         },
         {
           type: "array",
-          items: {$ref: "#/definitions/Any"}
-        }
-      ]
+          items: { $ref: "#/definitions/Any" },
+        },
+      ],
     },
     all: [
       {
-        $ref: "#/definitions/All"
+        $ref: "#/definitions/All",
       },
       {
         type: "array",
-        items: {$ref: "#/definitions/All"}
-      }
+        items: { $ref: "#/definitions/All" },
+      },
     ],
     not: {
       anyOf: [
         {
-          $ref: "#/definitions/Not"
+          $ref: "#/definitions/Not",
         },
         {
           type: "array",
-          items: {$ref: "#/definitions/Not"}
-        }
-      ]
-    }
+          items: { $ref: "#/definitions/Not" },
+        },
+      ],
+    },
   },
-  required: []
+  required: [],
 };
 
 export const Any = {
@@ -74,53 +74,53 @@ export const Any = {
   additionalProperties: true,
   properties: {
     fact: {
-      type: "string"
+      type: "string",
     },
     operator: {
-      type: "string"
+      type: "string",
     },
     value: {
-      $ref: "#/definitions/Value"
+      $ref: "#/definitions/Value",
     },
     path: {
-      type: "string"
+      type: "string",
     },
     params: {
-      $ref: "#/definitions/Params"
+      $ref: "#/definitions/Params",
     },
     any: {
       anyOf: [
         {
-          $ref: "#/definitions/Any"
+          $ref: "#/definitions/Any",
         },
         {
           type: "array",
-          items: {$ref: "#/definitions/Any"}
-        }
-      ]
+          items: { $ref: "#/definitions/Any" },
+        },
+      ],
     },
     all: [
       {
-        $ref: "#/definitions/All"
+        $ref: "#/definitions/All",
       },
       {
         type: "array",
-        items: {$ref: "#/definitions/All"}
-      }
+        items: { $ref: "#/definitions/All" },
+      },
     ],
     not: {
       anyOf: [
         {
-          $ref: "#/definitions/Not"
+          $ref: "#/definitions/Not",
         },
         {
           type: "array",
-          items: {$ref: "#/definitions/Not"}
-        }
-      ]
-    }
+          items: { $ref: "#/definitions/Not" },
+        },
+      ],
+    },
   },
-  required: []
+  required: [],
 };
 
 export const Cohort = {
@@ -128,16 +128,16 @@ export const Cohort = {
   additionalProperties: true,
   properties: {
     name: {
-      type: "string"
+      type: "string",
     },
     conditions: {
-      $ref: "#/definitions/Conditions"
+      $ref: "#/definitions/Conditions",
     },
     event: {
-      $ref: "#/definitions/Event"
-    }
+      $ref: "#/definitions/Event",
+    },
   },
-  required: ["conditions", "event", "name"]
+  required: ["conditions", "event", "name"],
 };
 
 export const Conditions = {
@@ -147,38 +147,38 @@ export const Conditions = {
     any: {
       anyOf: [
         {
-          $ref: "#/definitions/Any"
+          $ref: "#/definitions/Any",
         },
         {
           type: "array",
-          items: {$ref: "#/definitions/Any"}
-        }
-      ]
+          items: { $ref: "#/definitions/Any" },
+        },
+      ],
     },
     all: {
       anyOf: [
         {
-          $ref: "#/definitions/All"
+          $ref: "#/definitions/All",
         },
         {
           type: "array",
-          items: {$ref: "#/definitions/All"}
-        }
-      ]
+          items: { $ref: "#/definitions/All" },
+        },
+      ],
     },
     not: {
       anyOf: [
         {
-          $ref: "#/definitions/Not"
+          $ref: "#/definitions/Not",
         },
         {
           type: "array",
-          items: {$ref: "#/definitions/Not"}
-        }
-      ]
-    }
+          items: { $ref: "#/definitions/Not" },
+        },
+      ],
+    },
   },
-  required: []
+  required: [],
 };
 
 export const Event = {
@@ -186,10 +186,10 @@ export const Event = {
   additionalProperties: true,
   properties: {
     type: {
-      type: "string"
-    }
+      type: "string",
+    },
   },
-  required: ["type"]
+  required: ["type"],
 };
 
 export const Not = {
@@ -197,38 +197,38 @@ export const Not = {
   additionalProperties: true,
   properties: {
     fact: {
-      type: "string"
+      type: "string",
     },
     operator: {
-      type: "string"
+      type: "string",
     },
     value: {
-      $ref: "#/definitions/Value"
+      $ref: "#/definitions/Value",
     },
     path: {
-      type: "string"
+      type: "string",
     },
     params: {
-      $ref: "#/definitions/Params"
+      $ref: "#/definitions/Params",
     },
     not: {
-      $ref: "#/definitions/Not"
+      $ref: "#/definitions/Not",
     },
     any: {
-      $ref: "#/definitions/Any"
+      $ref: "#/definitions/Any",
     },
     all: {
-      $ref: "#/definitions/All"
-    }
+      $ref: "#/definitions/All",
+    },
   },
-  required: []
+  required: [],
 };
 
 export const Params = {
   type: "object",
   additionalProperties: true,
   properties: {},
-  required: []
+  required: [],
 };
 
 export const Value = {
@@ -236,32 +236,32 @@ export const Value = {
     {
       type: "array",
       items: {
-        type: "string"
-      }
+        type: "string",
+      },
     },
     {
       type: "object",
       additionalProperties: true,
       properties: {
         fact: {
-          type: "string"
+          type: "string",
         },
         path: {
-          type: "string"
+          type: "string",
         },
         params: {
-          $ref: "#/definitions/Params"
-        }
-      }
+          $ref: "#/definitions/Params",
+        },
+      },
     },
     {
-      type: "boolean"
+      type: "boolean",
     },
     {
-      type: "integer"
+      type: "integer",
     },
     {
-      type: "string"
-    }
-  ]
+      type: "string",
+    },
+  ],
 };

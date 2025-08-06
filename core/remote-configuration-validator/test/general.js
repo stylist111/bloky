@@ -16,44 +16,34 @@
  */
 
 import expect from "expect";
-import {validateRemoteConfig} from "../src/validator.js";
+import { validateRemoteConfig } from "../src/validator.js";
 
 const SCHEMA_ID = "1";
 
-describe("General Schema Validation", function() {
+describe("General Schema Validation", function () {
   async function expectErrors(data, expectedErrors) {
-    expect(
-      validateRemoteConfig(data)).toEqual(expectedErrors);
+    expect(validateRemoteConfig(data)).toEqual(expectedErrors);
   }
 
-  it("marks a simple config as valid", async function() {
+  it("marks a simple config as valid", async function () {
     let data = {
       schemaId: SCHEMA_ID,
-      experiments: []
+      experiments: [],
     };
     expect(validateRemoteConfig(data)).toEqual([]);
   });
 
-  it("reports when root data is not an object", async function() {
-    await expectErrors(
-      "not an object",
-      ["root data is not an object"]
-    );
+  it("reports when root data is not an object", async function () {
+    await expectErrors("not an object", ["root data is not an object"]);
   });
 
-  it("reports when the schema id has changed or is missing", async function() {
-    await expectErrors(
-      {},
-      [
-        "This system does not support a schemaId of 'undefined'"
-      ]
-    );
+  it("reports when the schema id has changed or is missing", async function () {
+    await expectErrors({}, [
+      "This system does not support a schemaId of 'undefined'",
+    ]);
 
-    await expectErrors(
-      {schemaId: "potato"},
-      [
-        "This system does not support a schemaId of 'potato'"
-      ]
-    );
+    await expectErrors({ schemaId: "potato" }, [
+      "This system does not support a schemaId of 'potato'",
+    ]);
   });
 });

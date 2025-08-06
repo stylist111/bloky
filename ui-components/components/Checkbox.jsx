@@ -1,5 +1,5 @@
-import PropTypes from 'prop-types';
-import { useState } from 'react';
+import PropTypes from "prop-types";
+import { useState } from "react";
 
 /**
  * Checkbox component for controlled and uncontrolled use.
@@ -12,21 +12,18 @@ import { useState } from 'react';
  * @param {boolean} [props.invalid] - Sets whether the element is in an invalid state.
  * @returns {JSX.Element}
  */
-export const Checkbox = ({
-  checked = false,
-  onChange,
-  id,
-  invalid,
-}) => {
+export const Checkbox = ({ checked = false, onChange, id, invalid }) => {
   if (!onChange) {
-    throw new Error('Checkbox is controlled but no `onChange` handler was provided.');
+    throw new Error(
+      "Checkbox is controlled but no `onChange` handler was provided.",
+    );
   }
 
   const [isChecked, setIsChecked] = useState(checked);
   const onChangeHandler = async (e) => {
     setIsChecked(e.target.checked);
     await onChange(e);
-  }
+  };
 
   // Override the internal state when external state changes
   // This allows simple implementations not to have to control the state
@@ -38,24 +35,27 @@ export const Checkbox = ({
   }
 
   const defaultStyles = [
-    'inline-block', 'align-middle', 'cursor-pointer',
+    "inline-block",
+    "align-middle",
+    "cursor-pointer",
 
     // Size
-    'w-5', 'h-5',
+    "w-5",
+    "h-5",
 
     // Transition
-    'transition', 'duration-200', 'ease-in-out',
+    "transition",
+    "duration-200",
+    "ease-in-out",
 
     // Colors
-    'bg-theme-secondary',
-    'checked:bg-theme-link-color', 'checked:hover:bg-theme-link-color',
-    'checked:focus:bg-theme-link-color',
+    "bg-theme-secondary",
+    "checked:bg-theme-link-color",
+    "checked:hover:bg-theme-link-color",
+    "checked:focus:bg-theme-link-color",
   ];
-  const invalidStyles = invalid ? ['border-error'] : ['border-theme-secondary'];
-  const className = [
-    ...defaultStyles,
-    ...invalidStyles,
-  ].join(' ');
+  const invalidStyles = invalid ? ["border-error"] : ["border-theme-secondary"];
+  const className = [...defaultStyles, ...invalidStyles].join(" ");
 
   return (
     <input

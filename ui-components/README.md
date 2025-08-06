@@ -4,11 +4,11 @@ Hello and welcome to our very under construction UI component library. The goal 
 
 The notes below cover:
 
-* [background & goals](#general-background-and-goals)
-* [deciding what kind of component you need](#the-six-ways)
-* [understanding what kinds of components should be in this library ](#is-this-the-right-place-for-my-component)
-* [how to add a component to this library](#creating-a-component)
-* [how to work with themes to provide a component for fragments and hosts](#working-alongside-host-code-adblock), including [how to do all of this incrementally as we go](#aligning-themed-css)
+- [background & goals](#general-background-and-goals)
+- [deciding what kind of component you need](#the-six-ways)
+- [understanding what kinds of components should be in this library ](#is-this-the-right-place-for-my-component)
+- [how to add a component to this library](#creating-a-component)
+- [how to work with themes to provide a component for fragments and hosts](#working-alongside-host-code-adblock), including [how to do all of this incrementally as we go](#aligning-themed-css)
 
 [More discussion of this project can be found in Google Docs.](https://docs.google.com/document/d/17Qg40bEA0CsZ_PUhIj7SB9LORKp_5cxDaWeHw6Kr0dk/edit)
 
@@ -21,7 +21,7 @@ The primary goal of our component and theming system is to produce UI components
 ```js
 // ⛔️ do not do this!
 
-if (extension == 'adblock' && theme == dark) {
+if (extension == "adblock" && theme == dark) {
   // apply CSS class or do other nefarious things or whatever
 }
 ```
@@ -30,7 +30,7 @@ There are roughly six ways to achieve this. This repo is the right place for opt
 
 ### The Six Ways
 
-*These are adapted from a more specific comment, but should be helpful here.*
+_These are adapted from a more specific comment, but should be helpful here._
 
 #### 1: Create a new theme variable.
 
@@ -184,7 +184,7 @@ Ensure the component follows the project’s architecture and style guidelines.
 
 ```jsx
 // components/MyComponent.jsx
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 
 /**
  * This is my brand new awesome component.
@@ -196,7 +196,9 @@ import PropTypes from 'prop-types';
  */
 export default function MyComponent(text, isActive = false) {
   return (
-    <div className={`bg-theme-primary ${isActive ? 'text-theme-accent-dark' : 'text-theme-secondary'}`}>
+    <div
+      className={`bg-theme-primary ${isActive ? "text-theme-accent-dark" : "text-theme-secondary"}`}
+    >
       {text}
     </div>
   );
@@ -257,7 +259,6 @@ This is a mostly unorganized series of good ideas. Feel free to add your own.
 Creating a set of default props and a function to render the component with these and any overwrites can make your tests easier to read and reduce repetition. Consider this example from `‌ui-components/tests/Buttons.test.jsx`
 
 ```jsx
-
 let button;
 const defaultProps = {
   text: buttonText,
@@ -267,14 +268,13 @@ const defaultProps = {
 const renderButton = (propsToSet = {}) => {
   const props = {
     ...defaultProps,
-    ...propsToSet
+    ...propsToSet,
   };
 
-  const baseButton = <Button {...props} />
+  const baseButton = <Button {...props} />;
   render(baseButton);
-  button = screen.getByRole('button');
-}
-
+  button = screen.getByRole("button");
+};
 ```
 
 Now when variations on the button are created, only the salient information needs to be included in the function:
@@ -294,7 +294,6 @@ This is also supported by the `defaultProps` additions above, since it makes it 
 expect(button).toHaveTextContent(defaultProps.text);
 ```
 
-
 ##### Test with indicative data as much as possible
 
 A third step in making tests useful as possible for readers is to use real data or mocks that look like the expected data as much as possible.
@@ -306,20 +305,19 @@ Remember, most people will be interacting with your tests through the command li
 ```jsx
 // ✅
 
-describe('My cool component disabled', () => {
+describe("My cool component disabled", () => {
   beforeEach(() => {
-    renderComponent({ disabled: true})
-  })
+    renderComponent({ disabled: true });
+  });
 
-  it('is not focusable when disabled', () => {
+  it("is not focusable when disabled", () => {
     expect(component).not.toBeFocused();
-  })
+  });
 
-  it('is not callable when disabled', () => {
+  it("is not callable when disabled", () => {
     // ..
-  })
-})
-
+  });
+});
 ```
 
 > **Note:** Do not put too many expectations in one function
@@ -332,18 +330,18 @@ Create a new file names `MyComponent.stories.jsx` in the `/docs/components` dire
 
 ```jsx
 // docs/components/MyComponent.stories.jsx
-import { MyComponent } from '@components';
-import { getArgsFromJSDoc } from '../helpers';
+import { MyComponent } from "@components";
+import { getArgsFromJSDoc } from "../helpers";
 
 export default {
   // The <Group>/<Title> of the component to show in Storybook sidebar
-  title: 'Components/MyComponent',
+  title: "Components/MyComponent",
   component: MyComponent,
   // Required for auto-populating props description from JSDoc.
   argTypes: getArgsFromJSDoc(MyComponent),
   args: {
     // Props you want to pass by default to your components
-    text: 'Hello World',
+    text: "Hello World",
   },
 };
 
@@ -352,10 +350,11 @@ export default {
  * first named export will be shown in all Themes.
  */
 export const Basic = {
-  args: { // overwrite the default args, if needed
-    text: 'Hello basic component',
-  }
-}
+  args: {
+    // overwrite the default args, if needed
+    text: "Hello basic component",
+  },
+};
 
 /**
  * This description will appear under the ActiveComponent
@@ -365,16 +364,17 @@ export const Basic = {
 export const ActiveComponent = {
   args: {
     isActive: true,
-  }
-}
+  },
+};
 ```
 
 ### Add to Host/Fragment
 
 Once the component is created, documented, and tested, it can be added to the host or fragment component.
+
 ```jsx
 // e.g. host/adblock/src/OptionsContainer.jsx
-import { MyComponent } from '@eyeo/ext-ui-components';
+import { MyComponent } from "@eyeo/ext-ui-components";
 
 export default function OptionsContainer() {
   return (
@@ -397,10 +397,9 @@ Hopefully, you will not need to create a theme variable to do your work, but wil
 
 #### What Is a Theme?
 
-The word *theme* can be used in slightly different ways throughout discussions of UI work. This in part reflects that different systems use the word differently: for Tailwind, a theme is the portion of the configuration file where we ["define[our] project’s color palette, type scale, fonts, breakpoints, border radius values, and more"](https://tailwindcss.com/docs/theme), whereas in current Adblock code, *theme* refers to the collection of properties — almost entirely to colors — that drive various views of the site.
+The word _theme_ can be used in slightly different ways throughout discussions of UI work. This in part reflects that different systems use the word differently: for Tailwind, a theme is the portion of the configuration file where we ["define[our] project’s color palette, type scale, fonts, breakpoints, border radius values, and more"](https://tailwindcss.com/docs/theme), whereas in current Adblock code, _theme_ refers to the collection of properties — almost entirely to colors — that drive various views of the site.
 
-In this new UI architecture, we are using *theme* to refer to colors and properties, defined using methods 1 or 2, which are used to allow the same components to appear differently in different contexts, by which we mean not only Adblock themes but also as an Adblock or ABP component.
-
+In this new UI architecture, we are using _theme_ to refer to colors and properties, defined using methods 1 or 2, which are used to allow the same components to appear differently in different contexts, by which we mean not only Adblock themes but also as an Adblock or ABP component.
 
 #### How to theme
 
@@ -411,10 +410,10 @@ Themes are created in the following manner:
 For example:
 
 ```css
-  [data-extension='adblock'][data-theme='default'],
-  [data-extension='adblock'] [data-theme='default'] {
-    --theme-primary: var(--white);
-  }
+[data-extension="adblock"][data-theme="default"],
+[data-extension="adblock"] [data-theme="default"] {
+  --theme-primary: var(--white);
+}
 ```
 
 Note that the name is not based on where it goes, like `popup-main-background` but instead on its use in a system, in this case, the primary theme color. This is because theme variables should be a small collection of properties that can be used many places.

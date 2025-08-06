@@ -7,6 +7,7 @@ This fragment gathers and returns common debug information about the host extens
 **Key Functionality:**
 
 Returns the following information in human readable JSON object that can be 'stringified':
+
 - User agent and platform info (browser, OS, versions)
 - Extension info (version, ID, manifest version)
 - Device-specific info (premium license information, preferences, settings)
@@ -23,8 +24,7 @@ Returns the following information in human readable JSON object that can be 'str
 **`getDebugInformation`**
 The single function `getDebugInformation(parameters)` is asynchronous and returns an object containing all the collected debug data, suitable for diagnostics, testing or support purposes.
 
-The `getDebugInformation` parameters will be included in the response object in the `hostSpecificInformation` key.  These parameters should be JSON-serializable objects since they will be passed to other contexts of the host extension via messaging.
-
+The `getDebugInformation` parameters will be included in the response object in the `hostSpecificInformation` key. These parameters should be JSON-serializable objects since they will be passed to other contexts of the host extension via messaging.
 
 ### Unit testing
 
