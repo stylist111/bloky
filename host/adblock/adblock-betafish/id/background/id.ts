@@ -15,10 +15,22 @@
  * along with AdBlock.  If not, see <http://www.gnu.org/licenses/>.
  */
 import * as browser from "webextension-polyfill";
+import ServerMessages from "../../servermessages";
 
 const userIdStorageKey = "userid";
+let userIdPromise: Promise<string> | null = null;
 
-let userId: string = "";
+async function sendUserIdToServer(): Promise<void> {
+  try {
+    const response = await browser.storage.local.get(userIdStorageKey);
+    const userId = response[userIdStorageKey];
+    ServerMessages.recordAnonymousMessage("debug_missing_user_id", "general", null, {
+      u: JSON.stringify(userId),
+    });
+  } catch (error) {
+    // ignore any errors
+  }
+}
 
 /**
  * Generates a 16 character random string
@@ -26,25 +38,39 @@ let userId: string = "";
  * @returns the user id as 16 character random string
  */
 // eslint-disable-next-line import/prefer-default-export
-export async function getUserId(): Promise<string> {
-  if (userId) {
-    return userId;
+export function getUserId(): Promise<string> {
+  if (userIdPromise) {
+    return userIdPromise;
   }
-  const response = await browser.storage.local.get(userIdStorageKey);
-  if (!response[userIdStorageKey]) {
-    const timeSuffix = Date.now() % 1e8; // 8 digits from end of
-    // timestamp
+
+  userIdPromise = (async () => {
+    const response = await browser.storage.local.get(userIdStorageKey);
+    const value = response[userIdStorageKey];
+
+    if (value) {
+      return typeof value === "string" ? value : "";
+    }
+
+    // The stored value is missing, generate a new one.
+    const timeSuffix = Date.now() % 1e8; // 8 digits from end of timestamp
     const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
     const result = [];
     for (let i = 0; i < 8; i++) {
       const choice = Math.floor(Math.random() * alphabet.length);
       result.push(alphabet[choice]);
     }
-    userId = result.join("") + timeSuffix;
-    await browser.storage.local.set({ [userIdStorageKey]: userId });
-  } else {
-    const value = response[userIdStorageKey];
-    userId = typeof value === "string" ? value : "";
-  }
-  return userId;
+    const newUserId = result.join("") + timeSuffix;
+    await browser.storage.local.set({ [userIdStorageKey]: newUserId });
+    return newUserId;
+  })();
+
+  return userIdPromise;
 }
+
+// TODO: remove this once we have a fix for invalid user IDs
+browser.runtime.onInstalled.addListener(async () => {
+  const userId = await getUserId();
+  if (userId === "") {
+    await sendUserIdToServer();
+  }
+});

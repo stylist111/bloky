@@ -6,7 +6,11 @@ import {
   getAllowlistingDomain,
 } from "../../adblock-betafish/allowlisting";
 
-vi.mock("webextension-polyfill", () => ({}));
+vi.mock("webextension-polyfill", () => ({
+  runtime: {
+    onInstalled: { addListener: vi.fn() },
+  },
+}));
 
 vi.mock("../../adblock-betafish/picreplacement/check", () => ({
   License: {
