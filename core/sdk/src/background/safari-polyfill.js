@@ -127,26 +127,34 @@ export async function patchForSafari(doWaitForWebNavigation = true) {
       };
     }
 
-    if (!browser.declarativeNetRequest.getSessionRules()) {
-      console.debug("Patching declarativeNetRequest.getSessionRules");
-      browser.declarativeNetRequest.getSessionRules = async function() {
-        // not implemented
-        console.warn("Stub declarativeNetRequest.getSessionRules() called");
-        return [];
-      };
+    // browser.declarativeNetRequest is only available under Manifest v3,
+    // so we shouldn't polyfill it, in case we're running under Manifest v2
+    if (browser.declarativeNetRequest) {
+      if (!browser.declarativeNetRequest.getSessionRules) {
+        console.debug("Patching declarativeNetRequest.getSessionRules");
+        browser.declarativeNetRequest.getSessionRules = async function() {
+          // not implemented
+          console.warn("Stub declarativeNetRequest.getSessionRules() called");
+          return [];
+        };
+      }
+
+      if (!browser.declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_RULES) {
+        console.debug("Patching declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_RULES");
+        browser.declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_RULES = 5000;
+      }
     }
 
-    if (!browser.declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_RULES) {
-      console.debug("Patching declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_RULES");
-      browser.declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_RULES = 5000;
-    }
-
-    if (!browser.scripting.ExecutionWorld) {
-      console.debug("Patching scripting.ExecutionWorld");
-      browser.scripting.ExecutionWorld = {
-        ISOLATED: "ISOLATED",
-        MAIN: "MAIN"
-      };
+    // browser.scripting is only available under Manifest v3,
+    // so we shouldn't polyfill it, in case we're running under Manifest v2
+    if (browser.scripting) {
+      if (!browser.scripting.ExecutionWorld) {
+        console.debug("Patching scripting.ExecutionWorld");
+        browser.scripting.ExecutionWorld = {
+          ISOLATED: "ISOLATED",
+          MAIN: "MAIN"
+        };
+      }
     }
 
     if (doWaitForWebNavigation) {
