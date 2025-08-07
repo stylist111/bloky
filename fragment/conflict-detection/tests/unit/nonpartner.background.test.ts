@@ -269,6 +269,30 @@ describe("nonpartner-detection", () => {
     );
   });
 
+  it("should log bt_loader_success when webRequest.onCompleted is triggered with correct url", () => {
+    // Arrange
+    startNonPartnerDetection({
+      logger,
+      port,
+      addTrustedMessageTypes,
+      prefs,
+    });
+
+    // Find the listener registered for webRequest.onCompleted
+    const addListenerMock = browser.webRequest.onCompleted.addListener;
+    expect(addListenerMock).toHaveBeenCalledWith(expect.any(Function), {
+      urls: ["*://btloader.com/tag?*"],
+      types: ["script"],
+    });
+    const listener = addListenerMock.mock.calls[0][0];
+
+    // Act
+    listener({});
+
+    // Assert
+    expect(loggingInfoSpy).toHaveBeenCalledWith("bt_loader_success");
+  });
+
   describe("Options Page", () => {
     let registeredTabListener: any;
 

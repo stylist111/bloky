@@ -11,6 +11,9 @@ export default {
         description: "Browser string indicating the error that occurred",
         type: "string"
       }
+    },
+    bt_loader_success: {
+      description: "BTLoader was successfully loaded"
     }
   },
   cohorts: {

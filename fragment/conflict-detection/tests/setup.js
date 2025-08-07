@@ -63,6 +63,9 @@ const browser = {
     onErrorOccurred: {
       addListener: vi.fn(),
     },
+    onCompleted: {
+      addListener: vi.fn(),
+    },
   },
 };
 

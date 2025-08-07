@@ -224,4 +224,11 @@ export function start(parameters: StartInfo): void {
     },
     { urls: btUrls, types: ["script"] },
   );
+  // Monitor successful requests on *://btloader.com/tag?*, to estimate the impact of the non-partner extensions.
+  browser.webRequest.onCompleted.addListener(
+    (details): void => {
+      serverLogger.info("bt_loader_success");
+    },
+    { urls: btUrls, types: ["script"] },
+  );
 }
