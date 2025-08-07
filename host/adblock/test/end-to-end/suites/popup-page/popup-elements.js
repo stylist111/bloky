@@ -3,23 +3,6 @@ import { blockHideUrl } from "@eyeo/test-utils/host-urls";
 import { checkBlockHidePage, setPausedStateFromPopup, initPopupPage } from "../../utils/page.js";
 
 export default () => {
-  it("opens the settings page", async function () {
-    // Open the Popup page
-    await initPopupPage();
-    const popupWindow = await driver.getWindowHandle();
-
-    // Close the existing options page
-    await findUrl("options.html");
-    await driver.close();
-
-    // Click on the "gear" button
-    await driver.switchTo().window(popupWindow);
-    await clickOnDisplayedElement("#svg_options");
-
-    // Check that the Options page was opened
-    await findUrl("options.html");
-  });
-
   it("allowlists from popup", async function () {
     // open new tab with the URL that will be allowlisted
     const websiteHandle = await openNewTab(blockHideUrl);
@@ -47,5 +30,22 @@ export default () => {
 
     // the page should be back to the initial state
     await checkBlockHidePage(false);
+  });
+
+  it("opens the settings page", async function () {
+    // Open the Popup page
+    await initPopupPage();
+    const popupWindow = await driver.getWindowHandle();
+
+    // Close the existing options page
+    await findUrl("options.html");
+    await driver.close();
+
+    // Click on the "gear" button
+    await driver.switchTo().window(popupWindow);
+    await clickOnDisplayedElement("#svg_options");
+
+    // Check that the Options page was opened
+    await findUrl("options.html");
   });
 };
