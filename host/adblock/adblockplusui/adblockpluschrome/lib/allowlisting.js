@@ -162,7 +162,9 @@ async function revalidateAllowlistingState(page) {
 
 export async function revalidateAllowlistingStates() {
   let tabs = await browser.tabs.query({});
-  for (let tab of tabs) revalidateAllowlistingState(new ext.Page(tab));
+  for (let tab of tabs) {
+    revalidateAllowlistingState(new ext.Page(tab));
+  }
 }
 
 ext.pages.onLoaded.addListener(revalidateAllowlistingState);

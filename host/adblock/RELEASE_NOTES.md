@@ -1,5 +1,7 @@
 # Unreleased
 
+- Changed the extension icon from green to grayscale when the tab is allowlisted (EXT-1049).
+
 # 6.25.2 - 2025-08-04
 
 This release contains bugfixes and under-the-hood changes.

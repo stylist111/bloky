@@ -167,20 +167,3 @@ export function setIconImageData(tabId, imageData) {
 export function setIconPath(tabId, path) {
   addChange(tabId, "iconPath", path);
 }
-
-/**
- * Toggles icon badge for given tab.
- *
- * @param  {number} tabId
- * @param  {boolean} shouldHide
- */
-export async function toggleBadge(tabId, shouldHide) {
-  if (shouldHide) {
-    await setBadgeState(tabId, "hiddenState", "hiding");
-    addChange(tabId, "badgeText", "");
-    await setBadgeState(tabId, "hiddenState", "hidden");
-  } else {
-    let badgeState = await setBadgeState(tabId, "hiddenState", "visible");
-    addChange(tabId, "badgeText", badgeState.text);
-  }
-}
