@@ -63,7 +63,7 @@ import {
   ytHavenToggleStateEnabled,
   ytHavenToggleStateDisabled,
   ytHavenRecordEvent,
-  ytHavenConflict,
+  ytHavenAutoAllowlistVideo,
 } from "../shared/index.js";
 
 /**
@@ -110,23 +110,42 @@ const processYouTubeWallMessage = async (
   }
   const { sendAdWallEvents = noop } = parameters;
 
+  const senderURL = new URL(tabURL);
+  const host = senderURL.hostname.replace(/^www\./, "");
+  const pathname = senderURL.pathname;
+  const videoId = senderURL.searchParams.get("v");
+
+  const isAllowlistVideo = await ewe.experiments.getFlag(
+    ytHavenAutoAllowlistVideo,
+  );
+  let allowlistUrl = host;
+
+  if (isAllowlistVideo) {
+    allowlistUrl = host + pathname;
+    // If the video is allowlisted, we need to use the video ID
+    if (videoId) {
+      allowlistUrl = `${allowlistUrl}?v=${videoId}`;
+    }
+  }
+
+  const allowlistDuration = isAllowlistVideo ? "video" : "tab";
   const filters = await ewe.filters.getAllowingFilters(tabId);
-  const isAllowListed = !!filters.length;
+  const isAllowListed = filters.some((f) => f.includes(allowlistUrl));
   if (isAllowListed) {
     sendAdWallEvents(youTubeAlreadyAllowListed, {
       userLoggedIn: message.userLoggedIn ? "1" : "0",
       isAllowListed: "1",
+      allowlistDuration,
     });
     return;
   }
   sendAdWallEvents(youTubeWallDetected, {
     userLoggedIn: message.userLoggedIn ? "1" : "0",
     isAllowListed: "0",
+    allowlistDuration,
   });
 
-  const senderURL = new URL(tabURL);
-  const host = senderURL.hostname.replace(/^www\./, "");
-  const ruleText = `@@||${host}^$document`;
+  const ruleText = `@@||${allowlistUrl}^$document`;
   const metadata = {
     expiresByTabId: tabId,
     origin: "yt-auto",
@@ -149,40 +168,10 @@ const processYouTubeWallMessage = async (
   } else {
     await browser.tabs.reload(tabId);
   }
-  sendAdWallEvents(youTubeAutoAllowlisted);
+  sendAdWallEvents(youTubeAutoAllowlisted, {
+    allowlistDuration,
+  });
 };
-
-/**
- * Executes a script in the current tab to attempt detecting
- * other ad blockers that might interfere with the solution.
- *
- * @param tabId The tab id.
- */
-async function executeScript(tabId: number): Promise<boolean> {
-  if (typeof tabId === "undefined") {
-    return false;
-  }
-
-  const world = "MAIN";
-  const func = (): boolean => {
-    return XMLHttpRequest.toString().includes("uboLog");
-  };
-
-  if (browser.scripting?.executeScript) {
-    try {
-      const out = await browser.scripting.executeScript({
-        target: { tabId },
-        func,
-        world,
-      });
-      return out[0].result as boolean;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  return false;
-}
 
 /**
  * Initializes YouTube telemetry
@@ -225,13 +214,6 @@ export function start(parameters: StartInfo): void {
       sendAdWallEvents(youTubeNavigation, {
         userLoggedIn: message.userLoggedIn ? "1" : "0",
       });
-
-      const tabId = sender.tab?.id;
-      const result = await executeScript(tabId);
-
-      if (result) {
-        sendAdWallEvents(ytHavenConflict);
-      }
     },
   );
 

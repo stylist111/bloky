@@ -35,6 +35,7 @@ export default () => {
     const tabId = await autoAllowlistsYoutube();
 
     const websiteAllowlistBtnSelector = `#page-status > div:first-of-type > io-circle-toggle`;
+    const pageAllowlistBtnSelector = `#page-status > div:nth-of-type(2) > io-circle-toggle`;
 
     await wait(
       async () => {
@@ -48,10 +49,22 @@ export default () => {
             action: "Youtube Auto Allowlisting"
           });
           return true;
-        } catch (e) {}
+        } catch (e1) {
+          try {
+            await waitForCheckboxStatus(pageAllowlistBtnSelector, {
+              timeout: 3000,
+              expectEnabled: false,
+              isProperty: true,
+              name: "Page Allowlist Toggle",
+              action: "Youtube Auto Allowlisting"
+            });
+            return true;
+          } catch (e2) {}
+        }
+        return false;
       },
       7000,
-      `Website allowlist toggle was not disabled after allowlisting`
+      `Website or page allowlist toggle was not disabled after allowlisting`
     );
   });
 };

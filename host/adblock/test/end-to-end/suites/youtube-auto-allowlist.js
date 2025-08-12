@@ -40,7 +40,7 @@ export default () => {
       callback(filters);
     });
 
-    expect(returnedFilters[0].text).toEqual("@@||youtube.com^$document");
+    expect(returnedFilters[0].text.startsWith("@@||youtube.com")).toEqual(true);
     expect(returnedFilters[0].type).toEqual("allowing");
 
     await initPopupPage(tabId);

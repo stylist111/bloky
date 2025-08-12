@@ -32,9 +32,10 @@ export const ytHavenDefaultEnabledFlag = "yt-haven-default-enabled";
 export const ytHavenToggleStatePrefsKey = "yt_haven_toggle_state";
 export const ytHavenToggleState = "yt-haven.toggle-state";
 export const ytHavenToggleStateUpdate = "yt-haven.toggle-state-update";
-export const ytHavenConflict = "yt-haven.conflict";
 
 export const ytHavenRecordEvent = "yt-haven.record-event";
+
+export const ytHavenAutoAllowlistVideo = "yt-haven-allowlist-video";
 
 // events send by the info box
 export const ytHavenInfoBoxShown = "yt_haven_info_box_shown";
