@@ -223,8 +223,6 @@ export default {
    * @param {Object} updates The updates to apply.
    */
   async _dnrDiffSubscriptionUpdate(url, updates) {
-    await this._waitForInitialization();
-
     const {filterStorage} = filterEngine;
     let subscription = filterStorage.getSubscription(url);
     // This allow testing if the subscription is not in the storage.

@@ -17,6 +17,7 @@
 
 import browser from "webextension-polyfill";
 import expect from "expect";
+import {v4 as uuidv4} from "uuid";
 import {DnrMapper} from "adblockpluscore/lib/dnr/mapper.js";
 import {EWE, clearTestEvents, expectTestEvents, getTestEvents} from "./messaging.js";
 import {TEST_PAGES_URL, TEST_ADMIN_PAGES_URL} from "@eyeo/test-utils/sdk-urls";
@@ -26,7 +27,7 @@ import {Page, setEndpointResponse, shouldBeLoaded, setMinTimeout,
         clearRequestLogs, getRequestLogs, clearEndpointResponse,
         waitForSubscriptionToFailToUpdate, fetchFilterText}
   from "./utils.js";
-import {subTestCustom1, subTestUpdatable1} from "./fixtures/subscriptions.js";
+import {subEasylistLocal, subTestCustom1, subTestUpdatable1, subAcceptableAdsLocal} from "./fixtures/subscriptions.js";
 import {wait} from "./polling.js";
 import {isFuzzingServiceWorker, suspendServiceWorker} from "./mocha/mocha-runner.js";
 
@@ -1298,6 +1299,128 @@ describe("DNR filters update [mv3-only]", function() {
       await waitForSubscriptionToBeSynchronized(subTestUpdatable1.url);
 
       await expectElemHideHidden({elemId, timeout: 10000});
+    });
+
+    function generateBlockingFilterTexts() {
+      let filters = [];
+      for (let i = 0; i < 20; i++) {
+        filters.push(uuidv4());
+      }
+      return filters;
+    }
+
+    it("properly processes filter texts when updating multiple distinct subscriptions simultaneously", async function() {
+      await EWE.subscriptions.add(subTestUpdatable1.url);
+      await waitForSubscriptionToBeSynchronized(subTestUpdatable1.url);
+      await EWE.subscriptions.add(subAcceptableAdsLocal.url);
+      await waitForSubscriptionToBeSynchronized(subAcceptableAdsLocal.url);
+      await EWE.subscriptions.add(subEasylistLocal.url);
+      await waitForSubscriptionToBeSynchronized(subEasylistLocal.url);
+
+      let filters1 = generateBlockingFilterTexts();
+      let filters2 = generateBlockingFilterTexts();
+      let filters3 = generateBlockingFilterTexts();
+
+      await Promise.all([
+        EWE.testing._dnrDiffSubscriptionUpdate(
+          subTestUpdatable1.url, {
+            added: filters1,
+            removed: []
+          }
+        ),
+        EWE.testing._dnrDiffSubscriptionUpdate(
+          subAcceptableAdsLocal.url, {
+            added: filters2,
+            removed: []
+          }
+        ),
+        EWE.testing._dnrDiffSubscriptionUpdate(
+          subEasylistLocal.url, {
+            added: filters3,
+            removed: []
+          }
+        )
+      ]);
+
+      let dynamicFilters = await EWE.testing.getDynamicFilters();
+      expect(dynamicFilters)
+        .toHaveLength(filters1.length + filters2.length + filters3.length);
+    });
+
+    it("properly initializes the rule count before doing diff updates", async function() {
+      await EWE.subscriptions.add(subTestUpdatable1.url);
+      await waitForSubscriptionToBeSynchronized(subTestUpdatable1.url);
+
+      let filters1 = generateBlockingFilterTexts();
+      let filters2 = generateBlockingFilterTexts();
+
+      await EWE.testing._dnrDiffSubscriptionUpdate(
+        subTestUpdatable1.url, {
+          added: filters1,
+          removed: []
+        }
+      );
+
+      let dynamicFiltersBefore = await EWE.testing.getDynamicFilters();
+      expect(dynamicFiltersBefore).toHaveLength(filters1.length);
+
+      await suspendServiceWorker(this);
+
+      await EWE.testing._dnrDiffSubscriptionUpdate(
+        subTestUpdatable1.url, {
+          added: filters1.concat(filters2),
+          removed: []
+        }
+      );
+
+      let dynamicFiltersAfter = await EWE.testing.getDynamicFilters();
+      expect(dynamicFiltersAfter)
+        .toHaveLength(filters1.length + filters2.length);
+    });
+
+    it("detects unexpected DNR dynamic rules during initialization and still allows adding new diff rules", async function() {
+      await EWE.subscriptions.add(subTestUpdatable1.url);
+      await waitForSubscriptionToBeSynchronized(subTestUpdatable1.url);
+
+      await EWE.testing._dnrDiffSubscriptionUpdate(
+        subTestUpdatable1.url, {
+          added: [DYNAMIC_FILTER],
+          removed: []
+        }
+      );
+
+      await browser.declarativeNetRequest.updateDynamicRules({
+        addRules: [{
+          id: 3,
+          priority: 100,
+          condition: {
+            urlFilter: "||example.com"
+          },
+          action: {type: "block"}
+        }]
+      });
+
+      let dynamicRulesBeforeUpdate =
+          await browser.declarativeNetRequest.getDynamicRules();
+      expect(dynamicRulesBeforeUpdate).toHaveLength(2);
+
+      await suspendServiceWorker(this);
+
+      let filters = generateBlockingFilterTexts();
+
+      await EWE.testing._dnrDiffSubscriptionUpdate(
+        subTestUpdatable1.url, {
+          added: filters,
+          removed: []
+        }
+      );
+
+      let dynamicFiltersAfterUpdate = await EWE.testing.getDynamicFilters();
+      expect(dynamicFiltersAfterUpdate).toHaveLength(filters.length);
+
+      let dynamicRulesAfterUpdate =
+          await browser.declarativeNetRequest.getDynamicRules();
+      expect(dynamicRulesAfterUpdate).toHaveLength(filters.length + 1);
     });
 
     describe("Disabled rule limits", function() {

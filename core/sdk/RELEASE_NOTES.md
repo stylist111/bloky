@@ -2,6 +2,12 @@
 
 - Added the `EWE.account` API to handle user accounts. (EXT-1013)
 
+## Fixes
+
+- Added a startup check that DNR and our dynamic filters are in sync. If they
+  are not, we will as a workaround at least no longer assign rule ids that
+  appear in the DNR rules for new dynamic filters. (EXT-938)
+
 # 2.1.0 - 2025-07-31
 
 - Added cohorts to telemetry and CDP. (EXT-980)

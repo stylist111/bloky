@@ -34,6 +34,8 @@ import {onChangedFilter, disableFilter, ERROR_FILTER_NOT_FOUND,
 import {default as initializer} from "./initializer.js";
 import {debug, error} from "./debugging.js";
 import {default as sentry} from "./sentry.js";
+import {ServerLogger} from "./telemetry/server-logger.js";
+import {arraysDiff} from "./set-operations.js";
 
 import {FilterError} from "./types.js";
 import {Prefs} from "./prefs.js";
@@ -41,6 +43,8 @@ import {isFirefox, getBrowserVersion, isSafari} from "./info.js";
 
 const ERROR_DISABLED_RULE_LIMIT_REACHED = "The number of disabled static " +
       "rules exceeds the disabled rule count limit.";
+
+const serverLogger = new ServerLogger("dnr_filters");
 
 let highestRuleId = 1;
 
@@ -576,10 +580,40 @@ export function init() {
 
       filterNotifier.on("subscription.diffReceived", dnrDiffSubscriptionUpdate);
       filterNotifier.on("subscription.fullUpdateReceived", dnrFullSubscriptionUpdate);
+
+      await dataIntegrityCheck();
     })();
   }
 
   return initializationPromise;
+}
+
+async function dataIntegrityCheck() {
+  let expectedDynamicRuleIds = Array.from(
+    dynamicFilters.values()
+      .flatMap(filter => filter.ruleIds ? filter.ruleIds : [])
+  );
+
+  let dynamicRules = await browser.declarativeNetRequest.getDynamicRules();
+  let actualDynamicRuleIds = dynamicRules.map(rule => rule.id);
+
+  let {added, removed} = arraysDiff(
+    expectedDynamicRuleIds,
+    actualDynamicRuleIds
+  );
+
+  if (added.length > 0 || removed.length > 0) {
+    // We don't currently have any recovery from this state. This means that
+    // someone in this state will still be in this state on service worker
+    // restart. To avoid potentially overwhelming our log server, this should be
+    // a debug level log until we have a recovery mechanism.
+    serverLogger.debug("data_integrity_check_failed", {
+      extraRulesInDNR: added.length,
+      missingRulesInDNR: removed.length
+    });
+
+    setHighestRuleId(actualDynamicRuleIds);
+  }
 }
 
 async function getRules(filter) {

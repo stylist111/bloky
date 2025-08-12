@@ -67,6 +67,25 @@ export default {
       }
     }
   },
+  dnr_filters: {
+    data_integrity_check_failed: {
+      description: "On initialization, our DNR filter management module will compare the dynamic DNR rules that the browser has with the filters that we know about. If these do not match, this warning is emitted.",
+      data: {
+        description: "Data about the difference between our filters and the DNR dynamic rules",
+        type: "object",
+        properties: {
+          extraRulesInDNR: {
+            description: "Count of the number of active dynamic DNR rules which we do not expect to see",
+            type: "number"
+          },
+          missingRulesInDNR: {
+            description: "Count of the number of rules that our filters expected to exist but didn't",
+            type: "number"
+          }
+        }
+      }
+    }
+  },
   initialization: {
     initialization_complete: {
       description: "The extension has finished initializing without any errors",
