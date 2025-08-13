@@ -138,7 +138,7 @@ export async function sendExtMessage(initOptionsFn, message) {
   const currentHandle = await driver.getWindowHandle();
   const optionsHandle = getOptionsHandle();
   if (currentHandle !== optionsHandle) {
-    await initOptionsFn(getOptionsHandle());
+    await driver.switchTo().window(optionsHandle);
   }
 
   const extResponse = await driver.executeAsyncScript(async (params, callback) => {
