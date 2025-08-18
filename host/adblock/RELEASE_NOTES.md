@@ -1,6 +1,10 @@
 # Unreleased
 
-- Remove shortcut for global pause (noissue)
+# 6.27.0 - 2025-08-18
+
+This release removes the keyboard shortcut for pausing AdBlock globally.
+
+- Remove shortcut for global pause
 - Fixed missing user ID (EXT-1001)
 
 # 6.26.0 - 2025-08-12
