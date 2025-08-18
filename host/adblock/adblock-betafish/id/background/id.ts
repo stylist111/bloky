@@ -15,22 +15,9 @@
  * along with AdBlock.  If not, see <http://www.gnu.org/licenses/>.
  */
 import * as browser from "webextension-polyfill";
-import ServerMessages from "../../servermessages";
 
 const userIdStorageKey = "userid";
 let userIdPromise: Promise<string> | null = null;
-
-async function sendUserIdToServer(): Promise<void> {
-  try {
-    const response = await browser.storage.local.get(userIdStorageKey);
-    const userId = response[userIdStorageKey];
-    ServerMessages.recordAnonymousMessage("debug_missing_user_id", "general", null, {
-      u: JSON.stringify(userId),
-    });
-  } catch (error) {
-    // ignore any errors
-  }
-}
 
 /**
  * Generates a 16 character random string
@@ -48,7 +35,10 @@ export function getUserId(): Promise<string> {
     const value = response[userIdStorageKey];
 
     if (value) {
-      return typeof value === "string" ? value : "";
+      // Sometimes we generate user IDs that consist only of digits
+      // we suspect that in some cases the browser may store them as numbers,
+      // that is why we cast them to string here (EXT-1001)
+      return String(value);
     }
 
     // The stored value is missing, generate a new one.
@@ -66,11 +56,3 @@ export function getUserId(): Promise<string> {
 
   return userIdPromise;
 }
-
-// TODO: remove this once we have a fix for invalid user IDs
-browser.runtime.onInstalled.addListener(async () => {
-  const userId = await getUserId();
-  if (userId === "") {
-    await sendUserIdToServer();
-  }
-});

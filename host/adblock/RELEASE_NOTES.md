@@ -1,5 +1,7 @@
 # Unreleased
 
+- Fixed missing user ID (EXT-1001)
+
 # 6.26.0 - 2025-08-12
 
 - Changed the extension icon from green to grayscale when the tab is allowlisted (EXT-1049).
