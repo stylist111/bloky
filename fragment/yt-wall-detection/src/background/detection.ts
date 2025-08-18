@@ -131,19 +131,28 @@ const processYouTubeWallMessage = async (
   const allowlistDuration = isAllowlistVideo ? "video" : "tab";
   const filters = await ewe.filters.getAllowingFilters(tabId);
   const isAllowListed = filters.some((f) => f.includes(allowlistUrl));
-  if (isAllowListed) {
-    sendAdWallEvents(youTubeAlreadyAllowListed, {
-      userLoggedIn: message.userLoggedIn ? "1" : "0",
-      isAllowListed: "1",
-      allowlistDuration,
-    });
-    return;
-  }
-  sendAdWallEvents(youTubeWallDetected, {
+
+  // trigger the detection event
+  const eventName = isAllowListed
+    ? youTubeAlreadyAllowListed
+    : youTubeWallDetected;
+  sendAdWallEvents(eventName, {
+    category: message.hasDismiss ? "soft" : "hard",
     userLoggedIn: message.userLoggedIn ? "1" : "0",
-    isAllowListed: "0",
+    isAllowListed: isAllowListed ? "1" : "0",
     allowlistDuration,
   });
+
+  // Store the allowlist in the local storage so that we know it on the second run
+  await browser.storage.local.set({
+    [matchingElementFoundKey]: true,
+  });
+
+  // Already allowlisted, no need to add the rule;
+  // maybe due to co-install of another extension
+  if (isAllowListed) {
+    return;
+  }
 
   const ruleText = `@@||${allowlistUrl}^$document`;
   const metadata = {
@@ -152,11 +161,6 @@ const processYouTubeWallMessage = async (
     created: Date.now(),
   };
   await ewe.filters.add(ruleText, metadata);
-
-  // Store the allowlist in the local storage so that we know it on the second run
-  await browser.storage.local.set({
-    [matchingElementFoundKey]: true,
-  });
 
   if (message.currentPlaybackTime > 5) {
     senderURL.searchParams.set(

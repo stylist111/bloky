@@ -65,6 +65,11 @@ export interface AdWallMessage extends Message {
    * The current time of the YT video when an ad wall is shown
    */
   currentPlaybackTime: number;
+
+  /**
+   * Indicates if it can be dismissed by the user or not
+   */
+  hasDismiss: boolean;
 }
 
 /**

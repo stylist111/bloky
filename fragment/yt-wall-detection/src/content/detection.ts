@@ -48,7 +48,7 @@ function isElement(candidate: unknown): candidate is Element {
 /**
  * Send a message to SW when the add wall has been found
  */
-async function adWallSelectorFound(): Promise<void> {
+async function adWallSelectorFound(hasDismiss: boolean): Promise<void> {
   adWallObserver.disconnect();
 
   const videoPlayer = document.querySelector("video");
@@ -58,6 +58,7 @@ async function adWallSelectorFound(): Promise<void> {
     type: youTubeWallDetected,
     userLoggedIn,
     currentPlaybackTime,
+    hasDismiss,
   });
 }
 
@@ -68,15 +69,24 @@ async function adWallSelectorFound(): Promise<void> {
  * @param mutations - DOM modifications
  */
 function handleMutations(mutations: MutationRecord[]): void {
-  const matchingElementFound = mutations.some(({ addedNodes }) => {
-    const addedArrayNodes = Array.from(addedNodes);
-    return addedArrayNodes.some(
-      (node) => isElement(node) && node.matches(adWallSelector),
-    );
-  });
+  for (const mutation of mutations) {
+    for (const node of mutation.addedNodes) {
+      if (!isElement(node)) {
+        continue;
+      }
 
-  if (matchingElementFound) {
-    void adWallSelectorFound();
+      // cover this element or anything inside it
+      const matchNode = node.matches(adWallSelector)
+        ? node
+        : node.querySelector(adWallSelector);
+
+      if (matchNode) {
+        const hasDismiss = !!matchNode.querySelector("#dismiss-button");
+        void adWallSelectorFound(hasDismiss);
+        // Exit early if we found a matching element
+        return;
+      }
+    }
   }
 }
 
