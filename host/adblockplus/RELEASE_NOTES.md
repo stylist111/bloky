@@ -1,5 +1,9 @@
 # Unreleased
 
+# 4.25.1 - 2025-08-18
+
+This release contains only minor updates and under-the-hood changes.
+
 # 4.25.0 - 2025-08-12
 
 - Added auto-allowlist per video (EXT-1050)
