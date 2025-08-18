@@ -6,15 +6,6 @@
       "strict_min_version": "75.0"
     }
   },
-  "commands": {
-    "toggle_pause": {
-      "description": "Toggle Pause/Resume on all sites",
-      "suggested_key": {
-        "default": "Ctrl+Period",
-        "mac": "Command+Period"
-      }
-    }
-  },
   "content_scripts": [
     {
       "all_frames": true,

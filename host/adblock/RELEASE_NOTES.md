@@ -1,5 +1,6 @@
 # Unreleased
 
+- Remove shortcut for global pause (noissue)
 - Fixed missing user ID (EXT-1001)
 
 # 6.26.0 - 2025-08-12

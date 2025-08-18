@@ -119,6 +119,7 @@ function handleExtensionStartup(): void {
 browser.runtime.onStartup.addListener(handleExtensionStartup);
 
 /**
+ * TODO: remove this after the filters are removed from all users.
  * Checks if there are any temporary pause rules when the extension is updated,
  * if so, we remove any/all of them, and remove the pause key
  * This will will unpause AdBlock when a new version of the extension is released
@@ -140,16 +141,6 @@ async function cleanUpPauseRules(): Promise<void> {
 browser.runtime.onInstalled.addListener((details) => {
   if (details.reason === "update") {
     void cleanUpPauseRules();
-  }
-});
-
-// TODO: Remove this once the shortcut removal experiment is over
-// eslint-disable-next-line @typescript-eslint/no-misused-promises
-browser.commands.onCommand.addListener(async (command) => {
-  if (command === "toggle_pause") {
-    const isDisabled = await ewe.experiments.getFlag("is-shortcut-removed");
-    !isDisabled && (await adblockIsPaused(!(await adblockIsPaused())));
-    ServerMessages.recordGeneralMessage("pause_shortcut_used");
   }
 });
 
