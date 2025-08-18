@@ -708,7 +708,9 @@ initialize
         errorMsg: e.message,
       });
     } else {
-      ServerMessages.recordAnonymousErrorMessage("initialization_error");
+      ServerMessages.recordAnonymousErrorMessage("initialization_error", null, {
+        errorMsg: e.message,
+      });
       ServerMessages.recordErrorMessage("initialization_error", { errorMsg: e.message });
     }
 
