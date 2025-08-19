@@ -130,11 +130,6 @@ export default {
         src: "/content"
       },
       {
-        dest: "yt-player-controls.preload.js",
-        package: "@eyeo-fragments/yt-wall-detection",
-        src: "/content/player-controls/index.js"
-      },
-      {
         dest: "conflict-detection.preload.js",
         package: "@eyeo-fragments/conflict-detection",
         src: "/content"

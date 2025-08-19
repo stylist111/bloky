@@ -35,7 +35,6 @@ import {
   removeInfoBox,
   start as startEmbedExperiment,
 } from "./embed-haven.js";
-import { insertOverlayExp, removeVideoOverlay } from "./overlay.js";
 import {
   startPause,
   resumeCurrentVideo,
@@ -68,8 +67,8 @@ const addExperiments = async (): Promise<void> => {
   }
 
   await Promise.all([
-    insertOverlayExp(targetElement),
     startEmbedExperiment(targetElement),
+    // other experiments can be added here in the future
   ]);
 };
 
@@ -77,7 +76,6 @@ const addExperiments = async (): Promise<void> => {
  * Removes the YT Haven experiments
  */
 const removeExperiments = (): void => {
-  removeVideoOverlay();
   removeEmbedPlayer();
   removeInfoBox();
 };

@@ -168,41 +168,6 @@ export function createIframePlayer(
 }
 
 /**
- * Creates the background overlay UI
- */
-export function createBackdrop(id?: string): HTMLDivElement {
-  const backdropElem = document.createElement("div");
-  if (id) {
-    backdropElem.id = id;
-  }
-
-  backdropElem.style.position = "absolute";
-  backdropElem.style.top = "0";
-  backdropElem.style.left = "0";
-  backdropElem.style.width = "100%";
-  backdropElem.style.height = "100%";
-  backdropElem.style.display = "flex";
-  backdropElem.style.flexDirection = "column";
-  backdropElem.style.justifyContent = "center";
-
-  // YouTube is using certain z-index values for its elements like notifications
-  // or dialogs, so we need to make sure that the backdrop is not above them, but above
-  // the video and 3rd party elements added by other extensions. e.g.:
-  // yt premium promo = 2202
-  // yt members dialog = 2202
-  // 3rd party ext player controls = 300
-  backdropElem.style.zIndex = "1500";
-
-  backdropElem.style.backgroundColor = "rgba(0, 0, 0, 0.9)";
-  backdropElem.style.flexWrap = "nowrap";
-  backdropElem.style.alignContent = "center";
-  backdropElem.style.alignItems = "center";
-  backdropElem.style.fontFamily = "'Roboto', 'Arial', sans-serif";
-
-  return backdropElem;
-}
-
-/**
  * Creates the extension logo
  */
 export function createLogoSVG(): HTMLElement {

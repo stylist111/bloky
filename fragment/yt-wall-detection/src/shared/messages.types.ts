@@ -23,8 +23,6 @@ export const youTubeAutoAllowlisted = "yt-auto.allowlisted";
 export const youTubeWallDetected = "yt-site.ad-wall-detected";
 export const youTubeNavigation = "yt-site.navigation";
 
-export const ytHavenOverlayFlag = "yt-haven-overlay-iframe-enabled";
-export const ytHavenModalFlag = "yt-haven-overlay-modal-enabled";
 export const ytHavenEmbedFreeFlag = "yt-haven-embed-free";
 export const ytHavenEmbedPremiumFlag = "yt-haven-embed-premium";
 export const ytHavenDefaultEnabledFlag = "yt-haven-default-enabled";
@@ -46,17 +44,8 @@ export const ytHavenFeedbackMenuOpen = "yt_haven_feedback_menu_open";
 export const matchingElementFoundKey = "matchingElementFound";
 
 export const ytHavenEmbeddedPlayerIssue = "yt-haven.embed-issue";
-export const ytHavenNeverShowOverlayClick =
-  "yt-haven.never-show-overlay-clicked";
 export const ytHavenMetaTagFound = "yt-haven.meta-tag.found";
 export const ytHavenNextVideoNotFound = "yt-haven.next-video-not-found";
 export const ytHavenNonEmbeddableFound = "yt-haven.non-embeddable-found";
 export const ytHavenNonPlayableFound = "yt-haven.non-playable-found";
-export const ytHavenWatchCTAClicked = "yt-haven.watch-cta-clicked";
-export const ytHavenOverlayShown = "yt-haven.overlay-shown";
 export const ytHavenIframeShown = "yt-haven.iframe-shown";
-export const ytHavenModalClosed = "yt-haven.modal-closed";
-
-// Events sent by the player control on the embedded video
-export const ytHavenLabelWatchingDisable = "yt-haven.label-watching-disable";
-export const ytHavenLabelWatchingIgnore = "yt-haven.watching-label-ignore";

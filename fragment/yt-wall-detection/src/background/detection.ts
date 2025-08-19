@@ -39,20 +39,12 @@ import {
   youTubeAutoAllowlisted,
   youTubeWallDetected,
   youTubeNavigation,
-  ytHavenModalFlag,
-  ytHavenOverlayFlag,
   matchingElementFoundKey,
-  ytHavenWatchCTAClicked,
   ytHavenEmbeddedPlayerIssue,
   ytHavenMetaTagFound,
   ytHavenNextVideoNotFound,
   ytHavenNonEmbeddableFound,
-  ytHavenNeverShowOverlayClick,
-  ytHavenLabelWatchingDisable,
-  ytHavenLabelWatchingIgnore,
   ytHavenNonPlayableFound,
-  ytHavenModalClosed,
-  ytHavenOverlayShown,
   ytHavenToggleState,
   ytHavenDefaultEnabledFlag,
   ytHavenToggleStateUpdate,
@@ -221,18 +213,6 @@ export function start(parameters: StartInfo): void {
     },
   );
 
-  parameters.port.on(ytHavenWatchCTAClicked, (): void => {
-    sendAdWallEvents(ytHavenWatchCTAClicked);
-  });
-
-  parameters.port.on(ytHavenNeverShowOverlayClick, async (): Promise<void> => {
-    sendAdWallEvents(ytHavenNeverShowOverlayClick);
-
-    // Disable the experiment flags to not show the overlay in content script again
-    await ewe.experiments.overrideFlag(ytHavenOverlayFlag, false);
-    await ewe.experiments.overrideFlag(ytHavenModalFlag, false);
-  });
-
   parameters.port.on(
     ytHavenNonEmbeddableFound,
     (message: YTHavenPlayerErrorMessage): void => {
@@ -267,38 +247,6 @@ export function start(parameters: StartInfo): void {
       });
     },
   );
-
-  parameters.port.on(
-    ytHavenLabelWatchingDisable,
-    async (message: any, sender: MessageSender): Promise<void> => {
-      const tabId = sender?.tab?.id;
-
-      if (!tabId) {
-        return;
-      }
-
-      sendAdWallEvents(ytHavenLabelWatchingDisable);
-
-      // Disable the experiment flags to not show the overlay/embed in content script again
-      await ewe.experiments.overrideFlag(ytHavenOverlayFlag, false);
-      // await ewe.experiments.overrideFlag(ytHavenIframeFlag, false);
-
-      // Reload the tab so that the experiment is removed from content script
-      await browser.tabs.reload(tabId);
-    },
-  );
-
-  parameters.port.on(ytHavenLabelWatchingIgnore, (): void => {
-    sendAdWallEvents(ytHavenLabelWatchingIgnore);
-  });
-
-  parameters.port.on(ytHavenModalClosed, (): void => {
-    sendAdWallEvents(ytHavenModalClosed);
-  });
-
-  parameters.port.on(ytHavenOverlayShown, (): void => {
-    sendAdWallEvents(ytHavenOverlayShown);
-  });
 
   parameters.port.on(
     ytHavenRecordEvent,
@@ -368,17 +316,11 @@ export function start(parameters: StartInfo): void {
     youTubeWallDetected,
     youTubeNavigation,
     ytHavenShouldStart,
-    ytHavenWatchCTAClicked,
-    ytHavenNeverShowOverlayClick,
     ytHavenNonEmbeddableFound,
     ytHavenNonPlayableFound,
     ytHavenEmbeddedPlayerIssue,
     ytHavenMetaTagFound,
     ytHavenNextVideoNotFound,
-    ytHavenLabelWatchingDisable,
-    ytHavenLabelWatchingIgnore,
-    ytHavenModalClosed,
-    ytHavenOverlayShown,
     ytHavenToggleState,
     ytHavenToggleStateUpdate,
     ytHavenRecordEvent,
