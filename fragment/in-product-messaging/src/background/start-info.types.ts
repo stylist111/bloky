@@ -15,8 +15,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { type CommandMap } from "./command-library.types";
-
 /**
  * An interface describing the start info for the IPM fragment.
  */
@@ -28,8 +26,10 @@ export interface StartInfo {
   isOptedOut: () => Promise<boolean>;
   getDefaultOrigin: () => string;
   getSafeOrigins: () => string[];
-  fetchCommands: () => CommandMap;
-  persistCommands: (commands: CommandMap) => Promise<void>;
+  getDismissedIpmIds: () => string[];
+  setDismissedIpmIds: (ipmIds: string[]) => void;
+  addMessageListener: (name: string, listener: () => unknown) => void;
+  removeMessageListener: (name: string, listener: () => unknown) => void;
 }
 
 interface Logger {

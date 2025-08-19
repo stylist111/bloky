@@ -853,9 +853,26 @@ declare module "@eyeo/webext-ad-filtering-solution" {
     const getRevisionId: () => Promise<string | null>;
 
     /**
+     * Retrieves in-product messaging commands
+     * @returns in-product messaging commands
+     */
+    const getIpmCommands: () => Promise<unknown[] | null>;
+
+    /**
      * Emitted when the remote config has changed
      */
     const onChanged: EventDispatcher<() => unknown>;
+
+    /**
+     * Sets URL endpoint for fetching the remote config
+     * @param {string} url - URL endpoint for fetching the remote config
+     */
+    const setUrl: (url: string) => void;
+
+    /**
+     * Manually triggers synchronization of remote config
+     */
+    const sync: () => Promise<void>;
   }
 
   namespace cohorts {

@@ -29,6 +29,7 @@ import { start as startOnPageDialog } from "../../../adblock-betafish/onpage-dia
 import { start as startPageviewMetrics } from "../../pageview-metrics/background";
 import { start as startTelemetry } from "../../telemetry/background";
 import { start as startAddBTRequestHeader } from "../../blockthrough/background";
+import { start as startTestingEwe } from "../../testing/ewe/background";
 
 /**
  * Runs initialization that can be done in parallel and doesn't have to be done
@@ -36,9 +37,10 @@ import { start as startAddBTRequestHeader } from "../../blockthrough/background"
  */
 async function bootstrapAsync(): Promise<void> {
   try {
-    // although the following call is not asynchronous by logic,
+    // although the following calls are not asynchronous by logic,
     // it's part of the initialization that doesn't need to be serialized
     startCookieBannerDetection();
+    startTestingEwe();
 
     await Promise.all([startPageviewMetrics(), startTelemetry()]);
   } catch (ex) {

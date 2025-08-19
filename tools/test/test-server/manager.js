@@ -25,6 +25,10 @@ import {
   stopHostLicenseServer,
 } from "./host-server/test-license-server.js";
 import { startHostIpmServer, stopHostIpmServer } from "./host-server/ipm-server/test-ipm-server.js";
+import {
+  startHostRemoteConfigServer,
+  stopHostRemoteConfigServer,
+} from "./host-server/test-remote-config-server.js";
 
 const hostname = "localhost";
 
@@ -32,6 +36,7 @@ export function runHostTestServer(host = hostname) {
   startHostPagesServer(host);
   startHostLicenseServer(host);
   startHostIpmServer(host);
+  startHostRemoteConfigServer(host);
 }
 
 export function runSDKTestServer(host = hostname, verbose = false) {
@@ -44,6 +49,7 @@ export async function killHostTestServer() {
   stopHostPagesServer();
   stopHostLicenseServer();
   stopHostIpmServer();
+  stopHostRemoteConfigServer();
 
   // Sleep to allow stop server messages to be logged
   await new Promise((r) => setTimeout(r, 2000));

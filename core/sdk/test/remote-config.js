@@ -50,6 +50,7 @@ describe("Remote config", function() {
     expect(await EWE.remoteConfig.getCountryCode()).toEqual("unknown");
     expect(await EWE.remoteConfig.getExperimentsConfig()).toEqual([]);
     expect(await EWE.remoteConfig.getCohortsConfig()).toEqual([]);
+    expect(await EWE.remoteConfig.getIpmCommands()).toEqual(null);
     expect(await EWE.remoteConfig.getLoggingConfig()).toEqual({});
     expect(await EWE.remoteConfig.getSyncStatus()).toEqual({
       errors: []
@@ -65,6 +66,17 @@ describe("Remote config", function() {
 
     // Hash corresponding to {"schemaId":"1","experiments":[]}
     expect(await EWE.remoteConfig.getRevisionId()).toEqual("BpNHg1PA");
+  });
+
+  it("returns in-product messaging commands", async function() {
+    await setConfig({
+      schemaId: SCHEMA_ID,
+      experiments: [],
+      ipmCommands: []
+    });
+    await EWE.remoteConfig.sync();
+
+    expect(await EWE.remoteConfig.getIpmCommands()).toEqual([]);
   });
 
   describe("Scheduled updates", function() {

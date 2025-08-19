@@ -91,11 +91,13 @@ export default () => {
       describe("Premium user", getPremium);
     });
 
-    describe("IPM", function () {
-      describe("Campaigns - General", ipmCampaigns);
-      describe("Campaigns - OPD", opdCampaigns);
-      describe("Campaigns - Newtab", newtabCampaigns);
-    });
+    for (const fragmentType of ["legacy", "future"]) {
+      describe(`IPM (${fragmentType})`, function () {
+        describe("Campaigns - General", () => ipmCampaigns(fragmentType));
+        describe("Campaigns - OPD", () => opdCampaigns(fragmentType));
+        describe("Campaigns - Newtab", () => newtabCampaigns(fragmentType));
+      });
+    }
     // Needs to be the last suite to run because the extension gets uninstalled
     describe("Smoke Tests - Uninstall", uninstall);
   });

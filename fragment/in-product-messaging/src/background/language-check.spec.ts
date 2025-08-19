@@ -15,12 +15,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { CommandName } from "./command-library.types";
-import { isLanguageSkewed } from "./language-check";
 import * as browser from "webextension-polyfill";
-import { getStartInfo } from "./start-info";
 
-const { persistCommands } = getStartInfo();
+import { CommandName } from "./command-library.types";
+import * as commandStorage from "./command-storage";
+import { isLanguageSkewed } from "./language-check";
 
 const ipmId = "__ipm_id__";
 const oldIpmId = "__old_ipm__";
@@ -46,8 +45,8 @@ const mockCommandStorage = {
 };
 
 describe("language-check", () => {
-  beforeEach(async () => {
-    await persistCommands(mockCommandStorage);
+  beforeEach(() => {
+    commandStorage.replaceAll(mockCommandStorage);
   });
 
   describe("isLanguageSkewed", () => {

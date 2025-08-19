@@ -520,20 +520,41 @@ export async function setUserId(initOptionsFn, userId) {
   await driver.switchTo().window(currentHandle);
 }
 
-export async function setIPMServer(initOptionsFn) {
+export async function setRemoteConfigUrl(initOptionsFn) {
+  const fragmentType = await getSelectedFragmentType(initOptionsFn);
+
+  if (fragmentType === "legacy") {
+    return sendExtMessage(initOptionsFn, {
+      type: "prefs.set",
+      key: "ipm_server_url",
+      value: "http://localhost:3007/ipm",
+    });
+  }
+
   return sendExtMessage(initOptionsFn, {
-    type: "prefs.set",
-    key: "ipm_server_url",
-    value: "http://localhost:3007/ipm",
+    type: "testing.setRemoteConfigUrl",
+    url: "http://localhost:3008/remote-config",
   });
 }
 
-export async function setIPMServerResponse(response) {
-  await fetch(`http://localhost:3007/setIPMResponse`, {
+export async function setRemoteConfigIpmCommands(initOptionsFn, scenarioId) {
+  const fragmentType = await getSelectedFragmentType(initOptionsFn);
+
+  if (fragmentType === "legacy") {
+    await fetch(`http://localhost:3007/setIPMResponse`, {
+      method: "POST",
+      cache: "no-cache",
+      headers: { "Content-Type": "application/json" },
+      body: scenarioId,
+    });
+    return;
+  }
+
+  await fetch(`http://localhost:3008/setIpmScenario`, {
     method: "POST",
     cache: "no-cache",
     headers: { "Content-Type": "application/json" },
-    body: response,
+    body: scenarioId,
   });
 }
 
@@ -551,29 +572,54 @@ export async function setIPMCooldowns(initOptionsFn) {
   });
 }
 
-export async function pingIPMServer(initOptionsFn) {
+export async function syncRemoteConfig(initOptionsFn) {
+  const fragmentType = await getSelectedFragmentType(initOptionsFn);
+
+  if (fragmentType === "legacy") {
+    await sendExtMessage(initOptionsFn, {
+      type: "prefs.set",
+      key: "ipm_last_ping",
+      value: 0,
+    });
+    return sendExtMessage(initOptionsFn, {
+      type: "ipm:testing.ping_ipm_server",
+    });
+  }
+
   await sendExtMessage(initOptionsFn, {
-    type: "prefs.set",
-    key: "ipm_last_ping",
-    value: 0,
-  });
-  return sendExtMessage(initOptionsFn, {
-    type: "ipm:testing.ping_ipm_server",
+    type: "testing.syncRemoteConfig",
   });
 }
 
-export async function getIPMCommands(initOptionsFn, fragmentType) {
-  const ipmStorageKey = fragmentType === "legacy" ? "ipm_commands" : "ipm:stored_commands";
+export async function getIPMCommands(initOptionsFn) {
+  const fragmentType = await getSelectedFragmentType(initOptionsFn);
+
+  if (fragmentType === "legacy") {
+    return sendExtMessage(initOptionsFn, {
+      type: "prefs.get",
+      key: "ipm_commands",
+    });
+  }
 
   return sendExtMessage(initOptionsFn, {
-    type: "prefs.get",
-    key: ipmStorageKey,
+    type: "ipm:testing.getCommands",
   });
 }
 
-export async function getSelectedFragmentType(initOptionsFn) {
+async function getSelectedFragmentType(initOptionsFn) {
   return sendExtMessage(initOptionsFn, {
     type: "testing.getSelectedFragmentType",
+  });
+}
+
+export async function clearDismissedIpmIds(initOptionsFn) {
+  const fragmentType = await getSelectedFragmentType(initOptionsFn);
+  if (fragmentType === "legacy") {
+    return;
+  }
+
+  return sendExtMessage(initOptionsFn, {
+    type: "ipm:testing.clearDismissedIpmIds",
   });
 }
 
@@ -584,8 +630,17 @@ export async function resetIPMFragment(initOptionsFn) {
 }
 
 export async function setIPMFragment(initOptionsFn, fragmentType) {
-  return sendExtMessage(initOptionsFn, {
+  await sendExtMessage(initOptionsFn, {
     type: "testing.setIPMFragment",
     fragmentType,
   });
+
+  await wait(
+    async () => {
+      const selectedFragmentType = await getSelectedFragmentType(getOptionsHandle);
+      return selectedFragmentType === fragmentType;
+    },
+    5000,
+    "Fragment was not selected within the expected time",
+  );
 }

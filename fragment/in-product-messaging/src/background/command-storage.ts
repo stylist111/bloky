@@ -18,24 +18,24 @@
 import type { CommandMap, Command } from "./command-library.types";
 import { getStartInfo } from "./start-info";
 
+let storedCommands: CommandMap = {};
+
 /**
  * Retrieves all the stored commands
  *
  * @returns All the stored commands in a commandId-to-command map shape
  */
 export function getAll(): CommandMap {
-  const { fetchCommands } = getStartInfo();
-  return fetchCommands();
+  return storedCommands;
 }
 
 /**
  * Retrieves the stored command for the given ID
  *
- * @param id The ID command
+ * @param id The command ID
  * @returns The stored command for the given ID or null otherwise
  */
 export function get(id: string): Command | null {
-  const storedCommands = getAll();
   return storedCommands[id] || null;
 }
 
@@ -45,8 +45,6 @@ export function get(id: string): Command | null {
  * @returns An array with command IDs or empty array if there's no commands
  */
 export function getIds(): string[] {
-  const storedCommands = getAll();
-
   return Object.keys(storedCommands);
 }
 
@@ -55,23 +53,17 @@ export function getIds(): string[] {
  *
  * @param commands A list of commands to add to the storage
  */
-export async function add(commands: Command[]): Promise<void> {
-  const { logger, persistCommands } = getStartInfo();
-  let commandStorageModified = false;
-  const commandsToStore = getAll();
+export function add(commands: Command[]): void {
+  const { logger } = getStartInfo();
+  const storedCommands = getAll();
 
   for (const command of commands) {
-    if (typeof commandsToStore[command.ipm_id] !== "undefined") {
+    if (typeof storedCommands[command.ipm_id] !== "undefined") {
       logger.debug("[ipm]: Campaign already stored:", command.ipm_id);
       continue;
     }
 
-    commandsToStore[command.ipm_id] = command;
-    commandStorageModified = true;
-  }
-
-  if (commandStorageModified) {
-    await persistCommands(commandsToStore);
+    storedCommands[command.ipm_id] = command;
   }
 }
 
@@ -80,18 +72,23 @@ export async function add(commands: Command[]): Promise<void> {
  *
  * @param id The ID for the command to remove
  */
-export async function remove(id: string): Promise<void> {
-  const { fetchCommands, persistCommands } = getStartInfo();
-
+export function remove(id: string): void {
   const command = get(id);
   if (!command) {
     return;
   }
 
-  const commandsToStore = fetchCommands();
   // We can't use a Map or Set for `commandStorage`, so we need dynamic
   // deletion here.
   // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-  delete commandsToStore[command.ipm_id];
-  await persistCommands(commandsToStore);
+  delete storedCommands[command.ipm_id];
+}
+
+/**
+ * Replaces the stored command map with the given command map.
+ *
+ * @param commandMap The command map to store
+ */
+export function replaceAll(commandMap: CommandMap): void {
+  storedCommands = { ...commandMap };
 }

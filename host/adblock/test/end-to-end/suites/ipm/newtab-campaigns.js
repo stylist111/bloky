@@ -23,14 +23,14 @@ import {
   setTimeoutForExtensionReload,
   reloadExtension,
   updateSettings,
-  setIPMServer,
-  pingIPMServer,
-  setIPMServerResponse,
+  setRemoteConfigUrl,
+  syncRemoteConfig,
+  setRemoteConfigIpmCommands,
   getIPMCommands,
   setIPMCooldowns,
-  getSelectedFragmentType,
   resetIPMFragment,
   setIPMFragment,
+  clearDismissedIpmIds,
 } from "@eyeo/test-utils/extension";
 import { findUrl, openNewTab } from "@eyeo/test-utils/driver";
 import { localTestPageUrl } from "@eyeo/test-utils/host-urls";
@@ -53,80 +53,82 @@ import {
   disablePremiumProgrammatically,
 } from "../../utils/page.js";
 
-export default () => {
-  /* ########################################## */
-  /* ############ Fragment: Legacy ############ */
-  /* ########################################## */
+export default (fragmentType) => {
+  before(async function () {
+    // IPMs are not supported in Firefox
+    if (browserDetails.browserName === "firefox") {
+      this.skip();
+    }
 
-  const fragmentType = "legacy";
+    await setIPMCooldowns(initOptionsGeneralTab);
 
-  describe(`Selected fragment: ${fragmentType}`, () => {
-    before(async function () {
-      // IPMs are not supported in Firefox
-      if (browserDetails.browserName === "firefox") {
-        this.skip();
-      }
-      await setIPMServer(initOptionsGeneralTab);
-      await setIPMCooldowns(initOptionsGeneralTab);
+    // `suppress_update_page` must be set to false before running tests,
+    // so that newtabs can be triggered. This setting is otherwise set to true
+    // to prevent real newtab IPMs from opening and interfering with the tests.
+    await updateSettings(initOptionsGeneralTab, "suppress_update_page", false);
 
-      // `suppress_update_page` must be set to false before running tests,
-      // so that newtabs can be triggered. This setting is otherwise set to true
-      // to prevent real newtab IPMs from opening and interfering with the tests.
-      await updateSettings(initOptionsGeneralTab, "suppress_update_page", false);
-      await setIPMFragment(getOptionsHandle, fragmentType);
-      const selectedFragmentType = await getSelectedFragmentType(getOptionsHandle);
-      expect(selectedFragmentType).toEqual(fragmentType);
-    });
+    await setIPMFragment(getOptionsHandle, fragmentType);
+  });
 
-    afterEach(async function () {
-      await setIPMServerResponse("test_adblock_delete");
-      await pingIPMServer(initOptionsGeneralTab);
-      const ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
-      expect(ipmCommands).toEqual({});
-    });
+  beforeEach(async function () {
+    await setRemoteConfigUrl(initOptionsGeneralTab);
+    await clearDismissedIpmIds(initOptionsGeneralTab);
+  });
 
-    after(async function () {
-      setTimeoutForExtensionReload(this);
-      await initOptionsGeneralTab(getOptionsHandle());
-      await disablePremiumProgrammatically();
-      await updateSettings(initOptionsGeneralTab, "suppress_update_page", true);
-      await resetIPMFragment(getOptionsHandle);
-    });
+  afterEach(async function () {
+    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_delete");
+    await syncRemoteConfig(initOptionsGeneralTab);
+    const ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
+    expect(ipmCommands).toEqual({});
+  });
 
-    it("triggers a new tab campaign", async function () {
-      await setIPMServerResponse("test_adblock_newtab");
-      await pingIPMServer(initOptionsGeneralTab);
+  after(async function () {
+    setTimeoutForExtensionReload(this);
+    await initOptionsGeneralTab(getOptionsHandle());
+    await disablePremiumProgrammatically();
+    await updateSettings(initOptionsGeneralTab, "suppress_update_page", true);
+    await resetIPMFragment(getOptionsHandle);
+  });
 
-      const ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
-      expect(ipmCommands).toEqual(expectedIPMCommandsNewtab);
+  it("triggers a new tab campaign", async function () {
+    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_newtab");
+    await syncRemoteConfig(initOptionsGeneralTab);
 
-      await openNewTab(localTestPageUrl);
-      await findUrl(updateUrl);
-      await initOptionsGeneralTab(getOptionsHandle());
+    const ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
+    expect(ipmCommands).toEqual(expectedIPMCommandsNewtab);
 
-      const pingPayload = await pingIPMServer(initOptionsGeneralTab);
+    await openNewTab(localTestPageUrl);
+    await findUrl(updateUrl);
+    await initOptionsGeneralTab(getOptionsHandle());
+
+    // Ping payloads only exist in future fragment
+    if (fragmentType === "legacy") {
+      const pingPayload = await syncRemoteConfig(initOptionsGeneralTab);
       expect(pingPayload.ipm.active).toEqual([]);
       const actions = pingPayload.events.map((e) => e.action);
       expect(actions).toEqual(["received", "tab_created", "has_content:1", "tab_loaded"]);
-    });
+    }
+  });
 
-    it("triggers new tab campaigns by priority", async function () {
-      setTimeoutForExtensionReload(this);
-      await setIPMServerResponse("test_adblock_priority");
-      await pingIPMServer(initOptionsGeneralTab);
+  it("triggers new tab campaigns by priority", async function () {
+    setTimeoutForExtensionReload(this);
+    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_priority");
+    await syncRemoteConfig(initOptionsGeneralTab);
 
-      const ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
-      expect(ipmCommands).toEqual(expectedIPMCommandsPriority);
+    let ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
+    expect(ipmCommands).toEqual(expectedIPMCommandsPriority);
 
-      await openNewTab(localTestPageUrl);
-      await findUrl(updateUrlPriorityHigh);
-      await findUrl(updateUrlPriorityLow, { exists: false });
+    await openNewTab(localTestPageUrl);
+    await findUrl(updateUrlPriorityHigh);
+    await findUrl(updateUrlPriorityLow, { exists: false });
 
-      const ipmCommand = await getIPMCommands(initOptionsGeneralTab, fragmentType);
-      let pingPayload = await pingIPMServer(initOptionsGeneralTab);
+    ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
+    expect(ipmCommands).toEqual(expectedIPMCommandsLowPriority);
+
+    // Ping payloads only exist in future fragment
+    if (fragmentType === "legacy") {
+      const pingPayload = await syncRemoteConfig(initOptionsGeneralTab);
       const actions = pingPayload.events.map((e) => e.action);
-
-      expect(ipmCommand).toEqual(expectedIPMCommandsLowPriority);
       expect(pingPayload.ipm.active).toEqual([{ id: "test_adblock_priority_low" }]);
       expect(actions).toEqual([
         "received",
@@ -135,27 +137,35 @@ export default () => {
         "has_content:1",
         "tab_loaded",
       ]);
+    }
 
-      await reloadExtension(initOptionsGeneralTab, { suppressUpdatePage: false });
-      await openNewTab(localTestPageUrl);
-      await findUrl(updateUrlPriorityLow);
+    await reloadExtension(initOptionsGeneralTab, { suppressUpdatePage: false });
+    await setRemoteConfigUrl(initOptionsGeneralTab);
 
-      pingPayload = await pingIPMServer(initOptionsGeneralTab);
+    await openNewTab(localTestPageUrl);
+    await findUrl(updateUrlPriorityLow);
+
+    // Ping payloads only exist in future fragment
+    if (fragmentType === "legacy") {
+      const pingPayload = await syncRemoteConfig(initOptionsGeneralTab);
       expect(pingPayload.ipm.active).toEqual([]);
-    });
+    }
+  });
 
-    it("does not trigger a new tab campaign for premium user", async function () {
-      await enablePremiumProgrammatically(15000);
-      await setIPMServerResponse("test_adblock_premium");
-      await pingIPMServer(initOptionsGeneralTab);
+  it("does not trigger a new tab campaign for premium user", async function () {
+    await enablePremiumProgrammatically(15000);
+    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_premium");
+    await syncRemoteConfig(initOptionsGeneralTab);
 
-      const ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
-      expect(ipmCommands).toEqual(expectedIPMCommandsPremium);
+    const ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
+    expect(ipmCommands).toEqual(expectedIPMCommandsPremium);
 
-      await openNewTab(localTestPageUrl);
-      await findUrl(updateUrl, { exists: false });
+    await openNewTab(localTestPageUrl);
+    await findUrl(updateUrl, { exists: false });
 
-      const pingPayload = await pingIPMServer(initOptionsGeneralTab);
+    // Ping payloads only exist in future fragment
+    if (fragmentType === "legacy") {
+      const pingPayload = await syncRemoteConfig(initOptionsGeneralTab);
       const actions = pingPayload.events.map((e) => e.action);
 
       // See: https://eyeo.atlassian.net/browse/IM-217
@@ -166,22 +176,16 @@ export default () => {
         "license_state_no_match",
         "error_no_behavior",
       ]);
-    });
-
-    it("force triggers a new tab campaign", async function () {
-      const premiumAlreadyEnabled = await isPremiumLabelPresent();
-      if (!premiumAlreadyEnabled) {
-        await enablePremiumProgrammatically();
-      }
-      await setIPMServerResponse("test_adblock_force");
-      await pingIPMServer(initOptionsGeneralTab);
-      await findUrl(updateUrlForce);
-    });
+    }
   });
 
-  /* ########################################## */
-  /* ############ Fragment: Future ############ */
-  /* ########################################## */
-
-  // No e2e tests yet.
+  it("force triggers a new tab campaign", async function () {
+    const premiumAlreadyEnabled = await isPremiumLabelPresent();
+    if (!premiumAlreadyEnabled) {
+      await enablePremiumProgrammatically();
+    }
+    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_force");
+    await syncRemoteConfig(initOptionsGeneralTab);
+    await findUrl(updateUrlForce);
+  });
 };

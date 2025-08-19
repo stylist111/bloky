@@ -22,14 +22,14 @@ import { By } from "selenium-webdriver";
 import {
   getOptionsHandle,
   updateSettings,
-  setIPMServer,
-  pingIPMServer,
-  setIPMServerResponse,
+  setRemoteConfigUrl,
+  syncRemoteConfig,
+  setRemoteConfigIpmCommands,
   getIPMCommands,
   setIPMCooldowns,
-  getSelectedFragmentType,
   resetIPMFragment,
   setIPMFragment,
+  clearDismissedIpmIds,
 } from "@eyeo/test-utils/extension";
 import {
   getDisplayedElement,
@@ -74,71 +74,76 @@ const expectedIPMCommands = {
   },
 };
 
-export default () => {
-  /* ########################################## */
-  /* ############ Fragment: Legacy ############ */
-  /* ########################################## */
+export default (fragmentType) => {
+  before(async function () {
+    // IPMs are not supported in Firefox
+    if (browserDetails.browserName === "firefox") {
+      this.skip();
+    }
 
-  const fragmentType = "legacy";
+    await setIPMCooldowns(initOptionsGeneralTab);
 
-  describe(`Selected fragment: ${fragmentType}`, async () => {
-    before(async function () {
-      // IPMs are not supported in Firefox
-      if (browserDetails.browserName === "firefox") {
-        this.skip();
-      }
-      await setIPMServer(initOptionsGeneralTab);
-      await setIPMCooldowns(initOptionsGeneralTab);
+    // `suppress_update_page` must be set to false before running tests,
+    // so that newtabs can be triggered. This setting is otherwise set to true
+    // to prevent real newtab IPMs from opening and interfering with the tests.
+    await updateSettings(initOptionsGeneralTab, "suppress_update_page", false);
 
-      // `suppress_update_page` must be set to false before running tests,
-      // so that newtabs can be triggered. This setting is otherwise set to true
-      // to prevent real newtab IPMs from opening and interfering with the tests.
-      await updateSettings(initOptionsGeneralTab, "suppress_update_page", false);
-      await setIPMFragment(getOptionsHandle, fragmentType);
-      const selectedFragmentType = await getSelectedFragmentType(getOptionsHandle);
-      expect(selectedFragmentType).toEqual(fragmentType);
-    });
+    await setIPMFragment(getOptionsHandle, fragmentType);
+  });
 
-    afterEach(async function () {
-      await setIPMServerResponse("test_adblock_delete");
-      await pingIPMServer(initOptionsGeneralTab);
-      const ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
-      expect(ipmCommands).toEqual({});
-    });
+  beforeEach(async function () {
+    await setRemoteConfigUrl(initOptionsGeneralTab);
+    await clearDismissedIpmIds(initOptionsGeneralTab);
+  });
 
-    after(async function () {
-      await initOptionsGeneralTab(getOptionsHandle());
-      await updateSettings(initOptionsGeneralTab, "suppress_update_page", true);
-      await resetIPMFragment(getOptionsHandle);
-    });
+  afterEach(async function () {
+    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_delete");
+    await syncRemoteConfig(initOptionsGeneralTab);
+    const ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
+    expect(ipmCommands).toEqual({});
+  });
 
-    it("triggers an OPD campaign", async function () {
-      await setIPMServerResponse(`test_adblock_navigation_${fragmentType}`);
-      await pingIPMServer(initOptionsGeneralTab);
-      let ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
-      expect(ipmCommands).toEqual(expectedIPMCommands.navigation[fragmentType]);
-      await openNewTab("https://www.example.com");
+  after(async function () {
+    await initOptionsGeneralTab(getOptionsHandle());
+    await updateSettings(initOptionsGeneralTab, "suppress_update_page", true);
+    await resetIPMFragment(getOptionsHandle);
+  });
 
-      const opd = await getOPDShadowRoot();
-      const opdTitle = await opd.findElement(By.css("#titleRow"));
-      const ctaButton = await opd.findElement(By.css("#continue"));
-      const paragraphs = await opd.findElements(By.css(".msgText"));
-      const texts = await Promise.all(paragraphs.map((p) => p.getText()));
+  it("triggers an OPD campaign", async function () {
+    await setRemoteConfigIpmCommands(
+      initOptionsGeneralTab,
+      `test_adblock_navigation_${fragmentType}`,
+    );
+    await syncRemoteConfig(initOptionsGeneralTab);
 
-      expect(await opdTitle.getText()).toEqual("OPD navigation title");
-      expect(await ctaButton.getText()).toEqual("CTA navigation");
-      expect(texts[0]).toEqual("This is a test OPD based on navigation");
-      expect(texts[1]).toEqual("ipmID: test_adblock_navigation");
+    let ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
+    expect(ipmCommands).toEqual(expectedIPMCommands.navigation[fragmentType]);
 
-      await ctaButton.click();
-      await findUrl(premiumUrl);
-      await openNewTab("https://www.wikipedia.org");
-      await waitForNotDisplayed("#__ABoverlay");
+    await openNewTab("https://www.example.com");
 
-      await initOptionsGeneralTab(getOptionsHandle());
-      ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
-      expect(ipmCommands).toEqual({});
-      const pingPayload = await pingIPMServer(initOptionsGeneralTab);
+    const opd = await getOPDShadowRoot();
+    const opdTitle = await opd.findElement(By.css("#titleRow"));
+    const ctaButton = await opd.findElement(By.css("#continue"));
+    const paragraphs = await opd.findElements(By.css(".msgText"));
+    const texts = await Promise.all(paragraphs.map((p) => p.getText()));
+
+    expect(await opdTitle.getText()).toEqual("OPD navigation title");
+    expect(await ctaButton.getText()).toEqual("CTA navigation");
+    expect(texts[0]).toEqual("This is a test OPD based on navigation");
+    expect(texts[1]).toEqual("ipmID: test_adblock_navigation");
+
+    await ctaButton.click();
+    await findUrl(premiumUrl);
+    await openNewTab("https://www.wikipedia.org");
+    await waitForNotDisplayed("#__ABoverlay");
+
+    await initOptionsGeneralTab(getOptionsHandle());
+    ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
+    expect(ipmCommands).toEqual({});
+
+    // Ping payloads only exist in future fragment
+    if (fragmentType === "legacy") {
+      const pingPayload = await syncRemoteConfig(initOptionsGeneralTab);
       expect(pingPayload.ipm.active).toEqual([]);
       const actions = pingPayload.events.map((e) => e.action);
       // See: https://eyeo.atlassian.net/browse/IM-217
@@ -150,36 +155,44 @@ export default () => {
         "dialog_button_clicked",
         "error_no_behavior",
       ]);
-    });
+    }
+  });
 
-    it("triggers an OPD campaign exclusion and dismissed after page reload", async function () {
-      await setIPMServerResponse(`test_adblock_exclusion_${fragmentType}`);
-      await pingIPMServer(initOptionsGeneralTab);
-      let ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
-      expect(ipmCommands).toEqual(expectedIPMCommands.exclusion[fragmentType]);
+  it("triggers an OPD campaign exclusion and dismissed after page reload", async function () {
+    await setRemoteConfigIpmCommands(
+      initOptionsGeneralTab,
+      `test_adblock_exclusion_${fragmentType}`,
+    );
+    await syncRemoteConfig(initOptionsGeneralTab);
 
-      await openNewTab("https://www.example.com");
-      await waitForNotDisplayed("#__ABoverlay");
+    let ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
+    expect(ipmCommands).toEqual(expectedIPMCommands.exclusion[fragmentType]);
 
-      await openNewTab("https://www.wikipedia.org");
-      const opd = await getOPDShadowRoot();
-      const opdTitle = await opd.findElement(By.css("#titleRow"));
-      const ctaButton = await opd.findElement(By.css("#continue"));
-      const paragraphs = await opd.findElements(By.css(".msgText"));
-      const texts = await Promise.all(paragraphs.map((p) => p.getText()));
+    await openNewTab("https://www.example.com");
+    await waitForNotDisplayed("#__ABoverlay");
 
-      expect(await opdTitle.getText()).toEqual("OPD exclusion title");
-      expect(await ctaButton.getText()).toEqual("CTA exclusion");
-      expect(texts[0]).toEqual("This is a test OPD based on exclusion");
-      expect(texts[1]).toEqual("ipmID: test_adblock_exclusion");
+    await openNewTab("https://www.wikipedia.org");
+    const opd = await getOPDShadowRoot();
+    const opdTitle = await opd.findElement(By.css("#titleRow"));
+    const ctaButton = await opd.findElement(By.css("#continue"));
+    const paragraphs = await opd.findElements(By.css(".msgText"));
+    const texts = await Promise.all(paragraphs.map((p) => p.getText()));
 
-      await driver.navigate().refresh();
-      await waitForNotDisplayed("#__ABoverlay");
+    expect(await opdTitle.getText()).toEqual("OPD exclusion title");
+    expect(await ctaButton.getText()).toEqual("CTA exclusion");
+    expect(texts[0]).toEqual("This is a test OPD based on exclusion");
+    expect(texts[1]).toEqual("ipmID: test_adblock_exclusion");
 
-      await initOptionsGeneralTab(getOptionsHandle());
-      ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
-      expect(ipmCommands).toEqual({});
-      const pingPayload = await pingIPMServer(initOptionsGeneralTab);
+    await driver.navigate().refresh();
+    await waitForNotDisplayed("#__ABoverlay");
+
+    await initOptionsGeneralTab(getOptionsHandle());
+    ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
+    expect(ipmCommands).toEqual({});
+
+    // Ping payloads only exist in future fragment
+    if (fragmentType === "legacy") {
+      const pingPayload = await syncRemoteConfig(initOptionsGeneralTab);
       expect(pingPayload.ipm.active).toEqual([]);
       const actions = pingPayload.events.map((e) => e.action);
       // See: https://eyeo.atlassian.net/browse/IM-217
@@ -191,34 +204,29 @@ export default () => {
         "error_no_behavior",
         "dialog_injected",
       ]);
-    });
-
-    it("triggers an OPD campaign cookie", async function () {
-      await setIPMServerResponse(`test_adblock_cookie_${fragmentType}`);
-      await pingIPMServer(initOptionsGeneralTab);
-      const ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
-      expect(ipmCommands).toEqual(expectedIPMCommands.cookie[fragmentType]);
-
-      await openNewTab("https://www.example.com");
-      await waitForNotDisplayed("#__ABoverlay");
-
-      await openNewTab("https://www.welt.de");
-      const opd = await getOPDShadowRoot();
-      const opdTitle = await opd.findElement(By.css("#titleRow"));
-      const ctaButton = await opd.findElement(By.css("#continue"));
-      const paragraphs = await opd.findElements(By.css(".msgText"));
-      const texts = await Promise.all(paragraphs.map((p) => p.getText()));
-
-      expect(await opdTitle.getText()).toEqual("OPD cookie title");
-      expect(await ctaButton.getText()).toEqual("CTA cookie");
-      expect(texts[0]).toEqual("This is a test cookie baner OPD");
-      expect(texts[1]).toEqual("ipmID: test_adblock_cookie");
-    });
+    }
   });
 
-  /* ########################################## */
-  /* ############ Fragment: Future ############ */
-  /* ########################################## */
+  it("triggers an OPD campaign cookie", async function () {
+    await setRemoteConfigIpmCommands(initOptionsGeneralTab, `test_adblock_cookie_${fragmentType}`);
+    await syncRemoteConfig(initOptionsGeneralTab);
 
-  // No e2e tests yet.
+    const ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
+    expect(ipmCommands).toEqual(expectedIPMCommands.cookie[fragmentType]);
+
+    await openNewTab("https://www.example.com");
+    await waitForNotDisplayed("#__ABoverlay");
+
+    await openNewTab("https://www.welt.de");
+    const opd = await getOPDShadowRoot();
+    const opdTitle = await opd.findElement(By.css("#titleRow"));
+    const ctaButton = await opd.findElement(By.css("#continue"));
+    const paragraphs = await opd.findElements(By.css(".msgText"));
+    const texts = await Promise.all(paragraphs.map((p) => p.getText()));
+
+    expect(await opdTitle.getText()).toEqual("OPD cookie title");
+    expect(await ctaButton.getText()).toEqual("CTA cookie");
+    expect(texts[0]).toEqual("This is a test cookie baner OPD");
+    expect(texts[1]).toEqual("ipmID: test_adblock_cookie");
+  });
 };

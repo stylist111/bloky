@@ -16,6 +16,7 @@
  */
 
 import browser from "webextension-polyfill";
+import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
 import {
   type Behavior,
@@ -107,7 +108,13 @@ export function setCommandActor(
  * @param ipmId - IPM ID
  */
 export function dismissCommand(ipmId: string): void {
-  void commandStorage.remove(ipmId);
+  const { getDismissedIpmIds, setDismissedIpmIds } = getStartInfo();
+
+  const dismissedIpmIds = getDismissedIpmIds();
+  dismissedIpmIds.push(ipmId);
+  setDismissedIpmIds(dismissedIpmIds);
+
+  commandStorage.remove(ipmId);
 }
 
 /**
@@ -298,10 +305,9 @@ export async function executeIPMCommands(
   }
 
   const executableCommands = Array.from(actorByExecutableCommand.keys());
-
   // store the valid commands, if just received from the server
   if (!isInitialization && executableCommands.length > 0) {
-    void commandStorage.add(executableCommands);
+    commandStorage.add(executableCommands);
   }
 
   const commandHandlingPromises = Array.from(actorByExecutableCommand).map(
@@ -403,6 +409,83 @@ export async function clearCommands(): Promise<void> {
 }
 
 /**
+ * Retrieves commands from remote config
+ *
+ * @returns commands from remote config (or null, if there is no remote config)
+ */
+async function getRemoteCommands(): Promise<Command[] | null> {
+  const { logger } = getStartInfo();
+
+  const remoteCommandCandidates = await ewe.remoteConfig.getIpmCommands();
+  if (remoteCommandCandidates === null) {
+    return null;
+  }
+
+  const remoteCommands: Command[] = [];
+  for (const candidate of remoteCommandCandidates) {
+    if (!isCommand(candidate)) {
+      logger.reportAndLogError(new Error("[ipm]: Invalid command received."));
+      continue;
+    }
+
+    remoteCommands.push(candidate);
+  }
+
+  return remoteCommands;
+}
+
+/**
+ * Clears list of ignored IPMs
+ */
+function clearDismissedIpmIds(): void {
+  const { setDismissedIpmIds } = getStartInfo();
+  setDismissedIpmIds([]);
+}
+
+/**
+ * Handles "ipm:testing.getCommands" message
+ *
+ * @returns stored commands in commandId-to-command map shape
+ */
+function handleTestingGetCommandsMessage(): CommandMap {
+  return commandStorage.getAll();
+}
+
+/**
+ * Fetches IPM commands from remote config and synchronizes the locally
+ * stored commands with what we received from the remote config.
+ */
+async function synchronizeRemoteCommands(): Promise<void> {
+  const { getDismissedIpmIds, logger, setDismissedIpmIds } = getStartInfo();
+  const remoteCommands = await getRemoteCommands();
+  if (remoteCommands === null) {
+    logger.reportAndLogError(new Error("[ipm]: No remote configuration."));
+    return;
+  }
+
+  // Filter out commands that we already executed
+  const dismissedIpmIds = getDismissedIpmIds();
+  const commands = remoteCommands.filter((command) => {
+    return !dismissedIpmIds.includes(command.ipm_id);
+  });
+
+  // Update list of ignored IPM IDs
+  const newDismissedIpmIds = dismissedIpmIds.filter((ipmId) => {
+    return remoteCommands.some((command) => command.ipm_id === ipmId);
+  });
+  setDismissedIpmIds(newDismissedIpmIds);
+
+  // Set stored commands list
+  const commandMap = Object.fromEntries(
+    commands.map((command) => [command.ipm_id, command]),
+  );
+  commandStorage.replaceAll(commandMap);
+
+  // Execute commands
+  await executeIPMCommands(commands, true);
+}
+
+/**
  * Initializes command library
  */
 export async function start(startInfo: StartInfo): Promise<void> {
@@ -410,18 +493,34 @@ export async function start(startInfo: StartInfo): Promise<void> {
 
   setDeleteCommandHandler(handleDeleteCommand);
 
-  // Reinitialize commands from storage
-  const storedCommands = commandStorage.getAll();
+  await synchronizeRemoteCommands();
 
-  if (isCommandMap(storedCommands)) {
-    const commands = Object.values(storedCommands);
-    await executeIPMCommands(commands, true);
-  }
+  ewe.remoteConfig.onChanged.addListener(synchronizeRemoteCommands);
+  startInfo.addMessageListener(
+    "ipm:testing.clearDismissedIpmIds",
+    clearDismissedIpmIds,
+  );
+  startInfo.addMessageListener(
+    "ipm:testing.getCommands",
+    handleTestingGetCommandsMessage,
+  );
 }
 
 /**
  * Unloads command library
  */
 export async function stop(): Promise<void> {
+  const { removeMessageListener } = getStartInfo();
+
   await clearCommands();
+
+  ewe.remoteConfig.onChanged.removeListener(synchronizeRemoteCommands);
+  removeMessageListener(
+    "ipm:testing.clearDismissedIpmIds",
+    clearDismissedIpmIds,
+  );
+  removeMessageListener(
+    "ipm:testing.getCommands",
+    handleTestingGetCommandsMessage,
+  );
 }

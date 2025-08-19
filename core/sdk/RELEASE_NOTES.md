@@ -1,6 +1,8 @@
 # Unreleased
 
 - Added the `EWE.account` API to handle user accounts. (EXT-1013)
+- Added `EWE.remoteConfig.getIpmCommands()` API (EXT-977).
+- Added `EWE.remoteConfig.setUrl()` API (EXT-977).
 
 ## Fixes
 

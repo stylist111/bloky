@@ -17,9 +17,6 @@
 
 import { CommandName, type Command } from "./command-library.types";
 import * as commandStorage from "./command-storage";
-import { getStartInfo } from "./start-info";
-
-const { fetchCommands, persistCommands } = getStartInfo();
 
 const mockCommandIds = ["command_1", "command_2"];
 const mockCommandMap = {
@@ -38,8 +35,8 @@ const mockCommandMap = {
 };
 
 describe("command-storage", () => {
-  beforeEach(async () => {
-    await persistCommands({});
+  beforeEach(() => {
+    commandStorage.replaceAll({});
   });
 
   describe("getAll", () => {
@@ -48,8 +45,8 @@ describe("command-storage", () => {
       expect(storedCommands).toStrictEqual({});
     });
 
-    it("should return a map of all commands that are stored", async () => {
-      await persistCommands(mockCommandMap);
+    it("should return a map of all commands that are stored", () => {
+      commandStorage.replaceAll(mockCommandMap);
 
       const storedCommands = commandStorage.getAll();
       expect(storedCommands).toStrictEqual(mockCommandMap);
@@ -57,14 +54,14 @@ describe("command-storage", () => {
   });
 
   describe("get", () => {
-    it("should return 'null' if no command is stored with the given ID", async () => {
-      await persistCommands(mockCommandMap);
+    it("should return 'null' if no command is stored with the given ID", () => {
+      commandStorage.replaceAll(mockCommandMap);
 
       expect(commandStorage.get("invalid_id")).toBe(null);
     });
 
-    it("should return the coressponding command for the given ID", async () => {
-      await persistCommands(mockCommandMap);
+    it("should return the coressponding command for the given ID", () => {
+      commandStorage.replaceAll(mockCommandMap);
 
       let command: Command | null;
 
@@ -81,42 +78,55 @@ describe("command-storage", () => {
       expect(commandStorage.getIds()).toStrictEqual([]);
     });
 
-    it("should return a list of command ids when commands are stored", async () => {
-      await persistCommands(mockCommandMap);
+    it("should return a list of command ids when commands are stored", () => {
+      commandStorage.replaceAll(mockCommandMap);
 
       expect(commandStorage.getIds()).toStrictEqual(mockCommandIds);
     });
   });
 
   describe("add", () => {
-    it("should store all the commands given", async () => {
+    it("should store all the commands given", () => {
       const commands: Command[] = Object.values(mockCommandMap);
-      await commandStorage.add(commands);
+      commandStorage.add(commands);
 
-      const storedCommands = fetchCommands();
+      const storedCommands = commandStorage.getAll();
       expect(storedCommands).toStrictEqual(mockCommandMap);
     });
   });
 
   describe("remove", () => {
-    it("should remove a command that is stored with the given ID", async () => {
-      await persistCommands(mockCommandMap);
+    it("should remove a command that is stored with the given ID", () => {
+      commandStorage.replaceAll(mockCommandMap);
 
       const commandIdToRemove = mockCommandIds[0];
-      await commandStorage.remove(commandIdToRemove);
+      commandStorage.remove(commandIdToRemove);
 
-      const storedCommands = fetchCommands();
+      const storedCommands = commandStorage.getAll();
       expect(Object.keys(storedCommands)).not.toContain(commandIdToRemove);
     });
 
-    it("shouldn't do anything if there's no stored command with the given ID", async () => {
-      await persistCommands(mockCommandMap);
+    it("shouldn't do anything if there's no stored command with the given ID", () => {
+      commandStorage.replaceAll(mockCommandMap);
 
       const commandIdToRemove = "invalid_id";
-      await commandStorage.remove(commandIdToRemove);
+      commandStorage.remove(commandIdToRemove);
 
-      const storedCommands = fetchCommands();
+      const storedCommands = commandStorage.getAll();
       expect(storedCommands).toStrictEqual(mockCommandMap);
+    });
+  });
+
+  describe("replaceAll", () => {
+    it("should replace all commands with the given ones", () => {
+      commandStorage.replaceAll(mockCommandMap);
+
+      let storedCommands = commandStorage.getAll();
+      expect(storedCommands).toStrictEqual(mockCommandMap);
+
+      commandStorage.replaceAll({});
+      storedCommands = commandStorage.getAll();
+      expect(storedCommands).toStrictEqual({});
     });
   });
 });

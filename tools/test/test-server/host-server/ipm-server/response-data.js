@@ -15,26 +15,15 @@
  * along with Web Extensions CU.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import fs from "fs";
-import path from "path";
-
+import ipmScenarios from "../ipm-scenarios.js";
 import { getExpiryDate } from "./utils.js";
 
-export async function getResponseDataForCommand(command) {
+export async function getResponseDataForCommand(scenarioId) {
   let statusCode = 200;
   let bodyData;
 
-  try {
-    const casesPath = path.resolve(
-      "../../tools/test/test-server/host-server/ipm-server/commands.json",
-    );
-    const cases = JSON.parse(fs.readFileSync(casesPath, "utf8"));
-
-    if (command in cases) {
-      bodyData = cases[command];
-    }
-  } catch (error) {
-    console.error("Error reading commands.json:", error);
+  if (scenarioId in ipmScenarios) {
+    bodyData = ipmScenarios[scenarioId];
   }
 
   if (statusCode === 200 && Array.isArray(bodyData)) {

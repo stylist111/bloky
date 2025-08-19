@@ -50,10 +50,10 @@ toc:
       - FilterError
       - FilterMatchInfo
       - FirstRunInfo
+      - ProfileSyncStatus
       - Recommendation
       - RemoteConfigSyncStatus
       - ServerLogger
       - Subscription
       - SnippetCallback
       - UserProfile
-      - ProfileSyncStatus

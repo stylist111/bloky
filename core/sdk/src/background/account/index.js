@@ -103,6 +103,8 @@ export async function stop() {
 /**
  * Clears the all data from the account storage.
  * @returns {Promise<void>}
+ *
+ * @ignore
  */
 export async function clearAccountStorage() {
   await clearStorage();

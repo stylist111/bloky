@@ -61,6 +61,28 @@ export async function getCohortsConfig() {
 }
 
 /**
+ * Retrieves in-product messaging commands
+ * @returns {Promise<Object[]|null>}
+ */
+export async function getIpmCommands() {
+  const state = await remoteConfigState.getStateLoaded();
+  const rawData = state.rawData;
+
+  // It does matter whether we don't have any data, or whether the are no
+  // commands, because we are using the absence of an IPM command to determine
+  // whether or not it should be considered active
+  if (!rawData) {
+    return null;
+  }
+
+  if (!Array.isArray(rawData.ipmCommands)) {
+    return [];
+  }
+
+  return rawData.ipmCommands;
+}
+
+/**
  * Retrieves logging config
  * @returns {Promise<Object>}
  */

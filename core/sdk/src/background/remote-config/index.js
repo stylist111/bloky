@@ -28,6 +28,7 @@ import {
   getConfig,
   getCountryCode,
   getExperimentsConfig,
+  getIpmCommands,
   getLoggingConfig,
   getRevisionId,
   getSyncStatus,
@@ -341,6 +342,13 @@ const remoteConfig = {
   getCohortsConfig,
 
   /**
+   * Retrieves in-product messaging commands
+   * @function
+   * @returns {Promise<Object[]|null>}
+   */
+  getIpmCommands,
+
+  /**
    * Retrieves logging config
    * @function
    * @returns {Promise<Object>}
@@ -352,7 +360,16 @@ const remoteConfig = {
    * @function
    * @returns {Promise<string|null>}
    */
-  getRevisionId
+  getRevisionId,
+
+  /**
+   * Sets URL endpoint for fetching the remote config
+   * @function
+   * @param {string} url - URL endpoint for fetching the remote config
+   */
+  setUrl(url) {
+    configUrl = url;
+  }
 };
 
 export default remoteConfig;

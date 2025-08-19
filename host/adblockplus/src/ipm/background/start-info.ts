@@ -73,11 +73,17 @@ export async function getFutureStartInfo(): Promise<FutureFragment.StartInfo> {
     getSafeOrigins() {
       return Prefs.get("ipm:safe_origins");
     },
-    fetchCommands() {
-      return Prefs.get("ipm:stored_commands");
+    getDismissedIpmIds() {
+      return Prefs.get("ipm:dismissed_ipm_ids");
     },
-    async persistCommands(commands) {
-      return await Prefs.set("ipm:stored_commands", commands);
+    setDismissedIpmIds(ipmIds) {
+      void Prefs.set("ipm:dismissed_ipm_ids", ipmIds);
+    },
+    addMessageListener(name, listener) {
+      port.on(name, listener);
+    },
+    removeMessageListener(name, listener) {
+      port.off(name, listener);
     }
   };
 }
