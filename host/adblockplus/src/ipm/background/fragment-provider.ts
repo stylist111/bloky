@@ -31,6 +31,7 @@ import {
   FragmentType,
   type SetIPMFragmentMessage
 } from "./fragment-provider.types";
+import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import { getFutureStartInfo, legacyStartInfo } from "./start-info";
 
 /**
@@ -44,6 +45,13 @@ let selectedFragmentType: FragmentType = FragmentType.legacy;
  * @returns fragment type, as indicated by the feature flag
  */
 async function getExpectedFragmentType(): Promise<FragmentType> {
+  // TODO: Remove this once we have IPM end-to-end tests in ABP
+  // and we are covered for switching IPM fragment in production.
+  const forceLegacyFragment = Prefs.get("ipm_force_legacy_fragment");
+  if (forceLegacyFragment) {
+    return FragmentType.legacy;
+  }
+
   const featureFlag = await ewe.experiments.getFlag(featureFlagId);
   return featureFlag === true ? FragmentType.future : FragmentType.legacy;
 }
@@ -115,6 +123,8 @@ function isSetIPMFragmentMessage(
  * Starts the IPM fragment provider feature
  */
 export async function start(): Promise<void> {
+  await Prefs.untilLoaded;
+
   await selectFragment();
   await startFragment();
 
