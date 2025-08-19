@@ -34,7 +34,8 @@ const METADATA_FILTER = {
   slow: false,
   thirdParty: null,
   type: "elemhide",
-  selector: "#metadata-test"
+  selector: "#metadata-test",
+  metadata: {a: 1}
 };
 const CONTENT_FILTER_TEXT = "reload###test";
 const CONTENT_FILTER = {
@@ -89,7 +90,7 @@ describe(`Reload (${phase})`, function() {
   });
 
   it("persists metadata filter storage data", async function() {
-    let metadata = {a: 1};
+    let metadata = METADATA_FILTER.metadata;
     if (start) {
       await EWE.filters.add([METADATA_FILTER_TEXT], metadata);
       await wait(async() => {

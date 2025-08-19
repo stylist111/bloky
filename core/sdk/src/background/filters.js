@@ -244,6 +244,14 @@ const namespace = {
    */
 
   /**
+   * Represents a single filter rule and its state, with associated filter
+   * metadata.
+   * @typedef {object} FilterWithMetadata
+   * @extends Filter
+   * @property {Object?} metadata Any metadata associated with the filter.
+   */
+
+  /**
    * Represents the results of calling the `add` function.
    * @typedef {Object} FilterAddResult
    * @property {Array<string>} added The filter texts that were added.
@@ -358,7 +366,7 @@ const namespace = {
    */
   async setMetadata(text, metadata) {
     if (browser.declarativeNetRequest) {
-      setMetadataForFilter(text, metadata);
+      await setMetadataForFilter(text, metadata);
       updateSchedulerIfNeeded(metadata);
       return;
     }
@@ -401,7 +409,7 @@ const namespace = {
 
   /**
    * Returns an array of user filter objects.
-   * @return {Promise<Array<Filter>>}
+   * @return {Promise<Array<FilterWithMetadata>>}
    * @memberof filters
    */
   async getUserFilters() {
@@ -411,6 +419,7 @@ const namespace = {
       for (let [text, details] of (await getDynamicUserFilters()).entries()) {
         let filter = convertFilter(Filter.fromText(text));
         filter.enabled = filter.type == "comment" ? null : details.enabled;
+        filter.metadata = details.metadata;
 
         result.push(filter);
       }
@@ -421,7 +430,9 @@ const namespace = {
     for (let subscription of filterEngine.filterStorage.subscriptions()) {
       if (subscription instanceof SpecialSubscription) {
         for (let text of subscription.filterText()) {
-          result.push(convertFilter(Filter.fromText(text)));
+          let filter = convertFilter(Filter.fromText(text));
+          filter.metadata = subscription.metadata;
+          result.push(filter);
         }
       }
     }
@@ -801,8 +812,7 @@ export function start() {
       let nextTimestamp = Date.now() + MILLIS_IN_HOUR; // 1h from now
 
       for (const filter of filters) {
-        const metadata = await namespace.getMetadata(filter.text) || {};
-        const {expiresAt} = metadata;
+        const {expiresAt} = filter.metadata || {};
 
         if (expiresAt && expiresAt < nextTimestamp) {
           nextTimestamp = expiresAt;

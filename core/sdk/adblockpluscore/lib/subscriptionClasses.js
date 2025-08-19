@@ -837,7 +837,7 @@ exports.SpecialSubscription = class SpecialSubscription extends Subscription {
      */
     this.defaults = null;
 
-    this._metadata = null;
+    this._metadata = void 0;
   }
 
   get privileged() {
@@ -880,7 +880,7 @@ exports.SpecialSubscription = class SpecialSubscription extends Subscription {
 
   /**
    * Get the metadata block.
-   * @return {?object} the metadata object or null
+   * @return {?object} the metadata object or undefined if there is no metadata
    */
   get metadata() {
     return this._metadata;

@@ -251,6 +251,9 @@ describe("Filters", function() {
         added: [filterText],
         exists: []
       });
+      expect(await EWE.filters.getUserFilters()).toEqual([
+        {...VALID_FILTER, metadata}
+      ]);
       expect(await EWE.filters.getMetadata(filterText)).toEqual(metadata);
     }
 
@@ -306,8 +309,8 @@ describe("Filters", function() {
         exists: []
       });
       expect(await EWE.filters.getUserFilters()).toEqual([
-        VALID_FILTER,
-        SECOND_VALID_FILTER
+        {...VALID_FILTER, metadata},
+        {...SECOND_VALID_FILTER, metadata}
       ]);
       expect(await EWE.filters.getMetadata(VALID_FILTER_TEXT))
         .toEqual(metadata);
@@ -323,8 +326,8 @@ describe("Filters", function() {
         exists: [VALID_FILTER_TEXT]
       });
       expect(await EWE.filters.getUserFilters()).toEqual([
-        VALID_FILTER,
-        SECOND_VALID_FILTER,
+        {...VALID_FILTER, metadata},
+        {...SECOND_VALID_FILTER, metadata},
         THIRD_VALID_FILTER
       ]);
     });
@@ -887,8 +890,10 @@ describe("Filters", function() {
       const tabId = await page.loaded;
       await addExtraTestRules();
       await page.remove();
-      expect((await EWE.filters.getUserFilters()).length).toEqual(2);
-      expect(await EWE.filters.getAllowingFilters(tabId)).toEqual([]);
+      await waitForAssertion(async() => {
+        expect((await EWE.filters.getUserFilters()).length).toEqual(2);
+        expect(await EWE.filters.getAllowingFilters(tabId)).toEqual([]);
+      });
     });
 
     it("remove allowlists rule when a paused tab navigates to another domain", async function() {
@@ -997,14 +1002,17 @@ describe("Filters", function() {
       await clearTestEvents(EVENT);
 
       await new Page("image.html").loaded;
-      const metadata = await EWE.filters.getMetadata(ALLOWING_DOC_FILTER);
+      await waitForAssertion(async() => {
+        const metadata = await EWE.filters.getMetadata(ALLOWING_DOC_FILTER);
 
-      expect(metadata.expiresAt).toBeGreaterThan(expiresAt + waitMs);
-      expect(metadata.expiresAt).toBeLessThanOrEqual(Date.now() + autoExtendMs);
-      await expectTestEvents(EVENT, [[expect.objectContaining({
-        text: ALLOWING_DOC_FILTER,
-        metadata
-      })]]);
+        expect(metadata.expiresAt).toBeGreaterThan(expiresAt + waitMs);
+        expect(metadata.expiresAt)
+          .toBeLessThanOrEqual(Date.now() + autoExtendMs);
+        await expectTestEvents(EVENT, [[expect.objectContaining({
+          text: ALLOWING_DOC_FILTER,
+          metadata
+        })]]);
+      });
     });
   });
 });

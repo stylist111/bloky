@@ -291,6 +291,17 @@ export interface Filter {
 }
 
 /**
+ * Represents a single filter rule and its state, with associated filter
+ * metadata.
+ */
+export interface FilterWithMetadata extends Filter {
+  /**
+   * Any metadata associated with the filter.
+   */
+  metadata?: FilterMetadata
+}
+
+/**
  * The result of parsing an invalid filter.
  */
 export interface FilterError {
@@ -766,7 +777,7 @@ declare module "@eyeo/webext-ad-filtering-solution" {
      *
      * @returns an array of user filter objects
      */
-    const getUserFilters: () => Promise<Filter[]>;
+    const getUserFilters: () => Promise<FilterWithMetadata[]>;
     /**
      * Emitted when a new filter is added.
      */

@@ -27,7 +27,8 @@ import {Page, setEndpointResponse, shouldBeLoaded, setMinTimeout,
         clearRequestLogs, getRequestLogs, clearEndpointResponse,
         waitForSubscriptionToFailToUpdate, fetchFilterText}
   from "./utils.js";
-import {subEasylistLocal, subTestCustom1, subTestUpdatable1, subAcceptableAdsLocal} from "./fixtures/subscriptions.js";
+import {subEasylistLocal, subTestCustom1, subTestUpdatable1,
+        subAcceptableAdsLocal} from "./fixtures/subscriptions.js";
 import {wait} from "./polling.js";
 import {isFuzzingServiceWorker, suspendServiceWorker} from "./mocha/mocha-runner.js";
 
@@ -102,6 +103,14 @@ const UPDATES5 = {
     "###elem-hide"
   ]
 };
+
+function generateBlockingFilterTexts() {
+  let filters = [];
+  for (let i = 0; i < 20; i++) {
+    filters.push(uuidv4());
+  }
+  return filters;
+}
 
 describe("DNR filters update [mv3-only]", function() {
   async function checkRulesAreDisabled(rulesetId, ruleIds) {
@@ -192,7 +201,7 @@ describe("DNR filters update [mv3-only]", function() {
 
   beforeEach(async function() {
     await clearRequestLogs();
-    await setEndpointResponse("/updatable_subscription/diff.json", EMPTY_DIFF_UPDATE);
+    await setEndpointResponse(subTestUpdatable1.diff_url, EMPTY_DIFF_UPDATE);
     await EWE.testing.clearIsDnrSubscriptionUpdating();
 
     // Ensure it is enabled.
@@ -385,6 +394,54 @@ describe("DNR filters update [mv3-only]", function() {
     await EWE.subscriptions.enable(subTestUpdatable1.url);
     await waitForSubscriptionToBeSynchronized(subTestUpdatable1.url);
     await checkDynamicRuleCount(6);
+  });
+
+  it("properly processes filter text when adding subscription ID to existing filter", async function() {
+    // subTestUpdatable1 is already added in a beforeEach
+    await EWE.subscriptions.add(subAcceptableAdsLocal.url);
+    await waitForSubscriptionToBeSynchronized(subAcceptableAdsLocal.url);
+
+    let filters = generateBlockingFilterTexts();
+
+    let subs = [subAcceptableAdsLocal, subTestUpdatable1];
+
+    await EWE.testing._dnrDiffSubscriptionUpdate(subs[1].url, {
+      added: filters,
+      removed: []
+    });
+
+    expect(await EWE.testing.getDynamicFilters()).toHaveLength(filters.length);
+
+    for (let i = 0; i < 10; ++i) {
+      await Promise.all([
+        EWE.testing._dnrDiffSubscriptionUpdate(
+          subs[0].url, {
+            added: filters,
+            removed: []
+          }
+        ),
+        EWE.testing._dnrDiffSubscriptionUpdate(
+          subs[1].url, {
+            added: [],
+            removed: []
+          }
+        )
+      ]);
+
+      let dynamicFilters = await EWE.testing.getDynamicFilters();
+
+      let expectedEntries = filters.map(filterText =>
+        [filterText, {
+          enabled: true,
+          metadata: {},
+          ruleIds: [expect.any(Number)],
+          subscriptionIds: [subs[0].id]
+        }]);
+
+      expect(dynamicFilters).toEqual(expectedEntries);
+
+      subs.reverse();
+    }
   });
 
   it("restores latest dynamic rules when reenabled if there are new dynamic rules", async function() {
@@ -1300,14 +1357,6 @@ describe("DNR filters update [mv3-only]", function() {
 
       await expectElemHideHidden({elemId, timeout: 10000});
     });
-
-    function generateBlockingFilterTexts() {
-      let filters = [];
-      for (let i = 0; i < 20; i++) {
-        filters.push(uuidv4());
-      }
-      return filters;
-    }
 
     it("properly processes filter texts when updating multiple distinct subscriptions simultaneously", async function() {
       await EWE.subscriptions.add(subTestUpdatable1.url);
