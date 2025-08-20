@@ -292,7 +292,7 @@ create_release_mr_back_to_main:
   script:
     - git checkout -B $CI_COMMIT_TAG-merge-back-to-main refs/tags/$CI_COMMIT_TAG
     - git push origin $CI_COMMIT_TAG-merge-back-to-main
-    - glab mr create --title "$HOST_PRETTY_NAME $VERSION release back to main" --description "Automatically bringing release changes back to the main branch" --remove-source-branch --yes
+    - glab mr create --title "$HOST_PRETTY_NAME $VERSION release back to main [skip ci]" --description "Automatically bringing release changes back to the main branch" --remove-source-branch --yes
 
 upload_sourcemaps:
   stage: release

@@ -22,5 +22,7 @@
 # Full set of tests. Some regular jobs run multiple times, additional jobs use
 # other browser versions (i.e. beta)
 .nightly-run:
+  # This job will never be cancelled automatically, even if the pipeline is auto-cancelled
+  interruptible: false
   rules:
     - if: $NIGHTLY_RUN == "true"
