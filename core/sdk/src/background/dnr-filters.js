@@ -35,6 +35,7 @@ import {default as initializer} from "./initializer.js";
 import {debug, error} from "./debugging.js";
 import {default as sentry} from "./sentry.js";
 import {ServerLogger} from "./telemetry/server-logger.js";
+import {default as experiments} from "./experiments.js";
 import {arraysDiff} from "./set-operations.js";
 
 import {FilterError} from "./types.js";
@@ -615,16 +616,25 @@ export function init() {
         await removeAllDynamicFilters();
       }
 
-      await dynamicFiltersMutex.lockRead(async dynamicFilters => {
+      filterNotifier.on("subscription.diffReceived", dnrDiffSubscriptionUpdate);
+      filterNotifier.on("subscription.fullUpdateReceived", dnrFullSubscriptionUpdate);
+
+      let checkResult = await dynamicFiltersMutex.lockRead(dynamicFilters => {
         for (let {ruleIds} of dynamicFilters.values()) {
           setHighestRuleId(ruleIds);
         }
 
-        filterNotifier.on("subscription.diffReceived", dnrDiffSubscriptionUpdate);
-        filterNotifier.on("subscription.fullUpdateReceived", dnrFullSubscriptionUpdate);
-
-        await dataIntegrityCheck(dynamicFilters);
+        return dataIntegrityCheck(dynamicFilters);
       });
+
+      if (checkResult.valid == false) {
+        if (await experiments.getFlag("dnr-filters-recreate-dnr-rules-on-integrity-check-failure")) {
+          await recreateAllDNRRules();
+        }
+        else {
+          setHighestRuleId([checkResult.highestDNRRuleId]);
+        }
+      }
     })();
   }
 
@@ -646,17 +656,45 @@ async function dataIntegrityCheck(dynamicFilters) {
   );
 
   if (added.length > 0 || removed.length > 0) {
-    // We don't currently have any recovery from this state. This means that
-    // someone in this state will still be in this state on service worker
-    // restart. To avoid potentially overwhelming our log server, this should be
-    // a debug level log until we have a recovery mechanism.
     serverLogger.debug("data_integrity_check_failed", {
       extraRulesInDNR: added.length,
       missingRulesInDNR: removed.length
     });
-
-    setHighestRuleId(actualDynamicRuleIds);
+    return {
+      valid: false,
+      highestDNRRuleId: actualDynamicRuleIds
+        .reduce((acc, next) => Math.max(acc, next), 0)
+    };
   }
+
+  return {valid: true};
+}
+
+async function recreateAllDNRRules() {
+  await dynamicFiltersMutex.lockWrite(async dynamicFilters => {
+    highestRuleId = 1;
+
+    let recreatedRules = [];
+    for (let filter of dynamicFilters.values()) {
+      if (!filter.enabled) {
+        continue;
+      }
+
+      let {filterRules, ruleIds} = await getRules(filter.filter);
+      if (filterRules) {
+        recreatedRules.push(...filterRules);
+      }
+      filter.ruleIds = ruleIds;
+    }
+
+    let currentDynamicRules =
+        await browser.declarativeNetRequest.getDynamicRules();
+
+    await browser.declarativeNetRequest.updateDynamicRules({
+      addRules: recreatedRules,
+      removeRuleIds: currentDynamicRules.map(r => r.id)
+    });
+  });
 }
 
 async function getRules(filter) {

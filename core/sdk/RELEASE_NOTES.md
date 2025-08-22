@@ -8,7 +8,8 @@
 
 - Added a startup check that DNR and our dynamic filters are in sync. If they
   are not, we will as a workaround at least no longer assign rule ids that
-  appear in the DNR rules for new dynamic filters. (EXT-938)
+  appear in the DNR rules for new dynamic filters. If a feature flag is set,
+  this will recreate all DNR dynamic rules if this check fails. (EXT-938)
 
 # 2.1.0 - 2025-07-31
 

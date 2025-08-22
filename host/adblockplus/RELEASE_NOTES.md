@@ -1,5 +1,8 @@
 # Unreleased
 
+- Fixed DNR dynamic rules getting out of sync with our dynamic filters in MV3
+  extensions. (EXT-938)
+
 # 4.25.1 - 2025-08-18
 
 This release contains only minor updates and under-the-hood changes.

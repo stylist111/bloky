@@ -1,5 +1,8 @@
 # Unreleased
 
+- Fixed DNR dynamic rules getting out of sync with our dynamic filters in MV3
+  extensions. (EXT-938)
+
 # 6.27.0 - 2025-08-18
 
 This release removes the keyboard shortcut for pausing AdBlock globally.

@@ -1427,35 +1427,140 @@ describe("DNR filters update [mv3-only]", function() {
         .toHaveLength(filters1.length + filters2.length);
     });
 
-    it("detects unexpected DNR dynamic rules during initialization and still allows adding new diff rules", async function() {
+    it("detects unexpected DNR dynamic rules during initialization and still allows adding new diff rules - no DNR rule fix", async function() {
+      await EWE.experiments.overrideFlag(
+        "dnr-filters-recreate-dnr-rules-on-integrity-check-failure",
+        false
+      );
+
+      let filters = generateBlockingFilterTexts();
+
       await EWE.subscriptions.add(subTestUpdatable1.url);
       await waitForSubscriptionToBeSynchronized(subTestUpdatable1.url);
 
       await EWE.testing._dnrDiffSubscriptionUpdate(
         subTestUpdatable1.url, {
-          added: [DYNAMIC_FILTER],
+          added: [filters[0], filters[1]],
           removed: []
         }
       );
 
+      let dynamicFiltersInitial = await EWE.testing.getDynamicFilters();
+      expect(dynamicFiltersInitial).toHaveLength(2);
+
+      let lastDynamicFilterRuleId = dynamicFiltersInitial[1][1].ruleIds[0];
+      let extraRuleIds = [
+        lastDynamicFilterRuleId + 1,
+        lastDynamicFilterRuleId + 2
+      ];
       await browser.declarativeNetRequest.updateDynamicRules({
         addRules: [{
-          id: 3,
+          id: extraRuleIds[0],
           priority: 100,
           condition: {
             urlFilter: "||example.com"
           },
           action: {type: "block"}
-        }]
+        }, {
+          id: extraRuleIds[1],
+          priority: 100,
+          condition: {
+            urlFilter: "||example.com/foo"
+          },
+          action: {type: "block"}
+        }],
+        removeRuleIds: [lastDynamicFilterRuleId]
       });
 
-      let dynamicRulesBeforeUpdate =
-          await browser.declarativeNetRequest.getDynamicRules();
-      expect(dynamicRulesBeforeUpdate).toHaveLength(2);
+      expect(
+        await browser.declarativeNetRequest.getDynamicRules()
+      ).toHaveLength(3);
 
       await suspendServiceWorker(this);
 
+      await EWE.testing._waitForInitialization();
+      let rulesAfterInit =
+          await browser.declarativeNetRequest.getDynamicRules();
+      let dynamicFiltersAfterInit = await EWE.testing.getDynamicFilters();
+      expect(dynamicFiltersAfterInit).toHaveLength(2);
+      expect(rulesAfterInit.map(r => r.id))
+        .toEqual([dynamicFiltersInitial[0][1].ruleIds[0], ...extraRuleIds]);
+
+      await EWE.testing._dnrDiffSubscriptionUpdate(
+        subTestUpdatable1.url, {
+          added: filters,
+          removed: []
+        }
+      );
+
+      let dynamicFiltersAfterUpdate = await EWE.testing.getDynamicFilters();
+      expect(dynamicFiltersAfterUpdate).toHaveLength(filters.length);
+      let expectedDNRRuleAfterUpdate = dynamicFiltersAfterUpdate
+          .flatMap(f => f[1].ruleIds)
+          .filter(id => id != lastDynamicFilterRuleId)
+          .concat(extraRuleIds)
+          .sort();
+
+      let dynamicRulesAfterUpdate =
+        await browser.declarativeNetRequest.getDynamicRules();
+      expect(dynamicRulesAfterUpdate.map(r => r.id).sort())
+        .toEqual(expectedDNRRuleAfterUpdate);
+    });
+
+    it("detects unexpected DNR dynamic rules during initialization and still allows adding new diff rules - with DNR rule fix", async function() {
+      await EWE.experiments.overrideFlag(
+        "dnr-filters-recreate-dnr-rules-on-integrity-check-failure",
+        true
+      );
+
       let filters = generateBlockingFilterTexts();
+
+      await EWE.subscriptions.add(subTestUpdatable1.url);
+      await waitForSubscriptionToBeSynchronized(subTestUpdatable1.url);
+
+      await EWE.testing._dnrDiffSubscriptionUpdate(
+        subTestUpdatable1.url, {
+          added: [filters[0], filters[1]],
+          removed: []
+        }
+      );
+
+      let dynamicFiltersInitial = await EWE.testing.getDynamicFilters();
+      expect(dynamicFiltersInitial).toHaveLength(2);
+
+      let lastDynamicFilterRuleId = dynamicFiltersInitial[1][1].ruleIds[0];
+      await browser.declarativeNetRequest.updateDynamicRules({
+        addRules: [{
+          id: lastDynamicFilterRuleId + 1,
+          priority: 100,
+          condition: {
+            urlFilter: "||example.com"
+          },
+          action: {type: "block"}
+        }, {
+          id: lastDynamicFilterRuleId + 2,
+          priority: 100,
+          condition: {
+            urlFilter: "||example.com/foo"
+          },
+          action: {type: "block"}
+        }],
+        removeRuleIds: [lastDynamicFilterRuleId]
+      });
+
+      expect(
+        await browser.declarativeNetRequest.getDynamicRules()
+      ).toHaveLength(3);
+
+      await suspendServiceWorker(this);
+
+      await EWE.testing._waitForInitialization();
+      let rulesAfterInit =
+          await browser.declarativeNetRequest.getDynamicRules();
+      let dynamicFiltersAfterInit = await EWE.testing.getDynamicFilters();
+      expect(dynamicFiltersAfterInit).toHaveLength(2);
+      expect(rulesAfterInit.map(r => r.id))
+        .toEqual(dynamicFiltersAfterInit.flatMap(f => f[1].ruleIds));
 
       await EWE.testing._dnrDiffSubscriptionUpdate(
         subTestUpdatable1.url, {
@@ -1468,8 +1573,9 @@ describe("DNR filters update [mv3-only]", function() {
       expect(dynamicFiltersAfterUpdate).toHaveLength(filters.length);
 
       let dynamicRulesAfterUpdate =
-          await browser.declarativeNetRequest.getDynamicRules();
-      expect(dynamicRulesAfterUpdate).toHaveLength(filters.length + 1);
+        await browser.declarativeNetRequest.getDynamicRules();
+      expect(dynamicRulesAfterUpdate.map(r => r.id))
+        .toEqual(dynamicFiltersAfterUpdate.flatMap(f => f[1].ruleIds));
     });
 
     describe("Disabled rule limits", function() {
