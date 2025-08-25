@@ -94,4 +94,5 @@ export interface YTHavenToggleMessage extends Message {
  */
 export interface YTHavenRecordEvent extends Message {
   eventName: string;
+  eventPayload?: Record<string, any>;
 }

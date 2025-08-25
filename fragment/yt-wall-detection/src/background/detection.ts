@@ -250,16 +250,24 @@ export function start(parameters: StartInfo): void {
 
   parameters.port.on(
     ytHavenRecordEvent,
-    async ({
-      type,
-      eventName,
-      ...eventPayload
-    }: YTHavenRecordEvent): Promise<void> => {
+    async (
+      { eventName, eventPayload }: YTHavenRecordEvent,
+      sender: MessageSender,
+    ): Promise<void> => {
+      const tabId = sender.tab?.id;
+
+      let isAllowListed = false;
+      if (typeof tabId !== "undefined") {
+        const filters = await ewe.filters.getAllowingFilters(tabId);
+        isAllowListed = filters.some((f) => f.includes("youtube.com"));
+      }
+
       const isPremium = await parameters.isPremiumActive();
       sendAdWallEvents(eventName, {
         ...eventPayload,
         // pass the premium flag to differentiate between users from experiments
         p: isPremium,
+        isAllowListed: isAllowListed ? "1" : "0",
       });
     },
   );

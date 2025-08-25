@@ -22,6 +22,8 @@ export const youTubeAlreadyAllowListed = "yt-site.already.allowlisted";
 export const youTubeAutoAllowlisted = "yt-auto.allowlisted";
 export const youTubeWallDetected = "yt-site.ad-wall-detected";
 export const youTubeNavigation = "yt-site.navigation";
+export const adShownEvent = "yt-site.ad-shown";
+export const toastShownEvent = "yt-site.toast-shown";
 
 export const ytHavenEmbedFreeFlag = "yt-haven-embed-free";
 export const ytHavenEmbedPremiumFlag = "yt-haven-embed-premium";
