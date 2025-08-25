@@ -17,8 +17,14 @@
 
 import { Tabs } from "webextension-polyfill";
 import * as browser from "webextension-polyfill";
+import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
-import { CommandEventType, CommandName, getFragment } from "../../../src/ipm/background";
+import {
+  CommandEventType,
+  CommandName,
+  getFragment,
+  isFutureFragment,
+} from "../../../src/ipm/background";
 import { Prefs } from "../../alias/prefs";
 import { port } from "../../../adblockplusui/adblockpluschrome/lib/messaging/port";
 import { TabSessionStorage } from "../../../adblockplusui/adblockpluschrome/lib/storage/tab-session";
@@ -61,6 +67,11 @@ const unassignedDialogs = new Map<string, Dialog>();
  * Pages where a cookie banner has been detected
  */
 const pagesWithCookieBanner = new Set<number>();
+
+/**
+ * Server logger instance for events related to the on-page dialog feature
+ */
+const serverLogger = new ewe.telemetry.ServerLogger("onpage_dialog");
 
 /**
  * Compares two dialogs to see which has the higher priority.
@@ -117,10 +128,11 @@ function sendMessage(tabId: number, message: Message): Promise<any> {
 /**
  * Records dialog event
  *
+ * @deprecated only used for recording events for @eyeo-fragments/ipm-legacy
  * @param dialog - Dialog information
  * @param eventType - Dialog event type
  */
-function recordDialogEvent(dialog: Dialog, eventType: CommandEventType | DialogEventType): void {
+function recordLegacyEvent(dialog: Dialog, eventType: CommandEventType | DialogEventType): void {
   eventEmitter.emit(eventType, dialog);
 
   if (typeof dialog.ipmId === "string") {
@@ -131,10 +143,11 @@ function recordDialogEvent(dialog: Dialog, eventType: CommandEventType | DialogE
 /**
  * Records dialog error event
  *
+ * @deprecated only used for recording events for @eyeo-fragments/ipm-legacy
  * @param dialog - Dialog information
  * @param eventType - Dialog event type
  */
-function recordDialogErrorEvent(eventType: DialogErrorEventType): void {
+function recordLegacyErrorEvent(eventType: DialogErrorEventType): void {
   getFragment().recordEvent(null, CommandName.createOnPageDialog, eventType);
 }
 
@@ -230,8 +243,13 @@ async function handleDialogCommand(ipmId: string, isInitialization: boolean): Pr
 
   const dialog: Dialog = { behavior, content, id: ipmId, ipmId };
   unassignedDialogs.set(dialog.id, dialog);
+
+  if (isFutureFragment()) {
+    serverLogger.info("command_ready", ipmId);
+  }
+
   if (!isInitialization) {
-    recordDialogEvent(dialog, DialogEventType.received);
+    recordLegacyEvent(dialog, DialogEventType.received);
   }
 }
 
@@ -252,7 +270,7 @@ async function handleCloseMessage(message: Message, sender: MessageSender): Prom
   }
 
   void removeDialog(sender.page.id, dialog);
-  recordDialogEvent(dialog, DialogEventType.closed);
+  recordLegacyEvent(dialog, DialogEventType.closed);
 }
 
 /**
@@ -279,7 +297,7 @@ async function handleContinueMessage(message: Message, sender: MessageSender): P
   void browser.tabs.create({ url: safeTargetUrl });
 
   void removeDialog(sender.page.id, dialog);
-  recordDialogEvent(dialog, DialogEventType.buttonClicked);
+  recordLegacyEvent(dialog, DialogEventType.buttonClicked);
 }
 
 /**
@@ -302,7 +320,7 @@ async function handleGetMessage(
   const dialog = await assignedDialogs.get(sender.page.id);
   if (!isDialog(dialog)) {
     logger.debug("[onpage-dialog]: get, no dialog");
-    recordDialogErrorEvent(DialogErrorEventType.get_no_dialog_found);
+    recordLegacyErrorEvent(DialogErrorEventType.get_no_dialog_found);
     return null;
   }
 
@@ -326,7 +344,7 @@ async function handlePingMessage(message: Message, sender: MessageSender): Promi
   const dialog = await assignedDialogs.get(sender.page.id);
   if (!isDialog(dialog)) {
     logger.debug("[onpage-dialog]: ping message, no dialog");
-    recordDialogErrorEvent(DialogErrorEventType.ping_no_dialog_found);
+    recordLegacyErrorEvent(DialogErrorEventType.ping_no_dialog_found);
     return;
   }
 
@@ -340,7 +358,7 @@ async function handlePingMessage(message: Message, sender: MessageSender): Promi
   }
 
   void removeDialog(sender.page.id, dialog);
-  recordDialogEvent(dialog, DialogEventType.ignored);
+  recordLegacyEvent(dialog, DialogEventType.ignored);
 }
 
 /**
@@ -385,7 +403,7 @@ function handleTabRemovedEvent(data: TabRemovedEventData): void {
   }
 
   void removeDialog(tabId, dialog);
-  recordDialogEvent(dialog, DialogEventType.ignored);
+  recordLegacyEvent(dialog, DialogEventType.ignored);
 }
 
 /**
@@ -550,11 +568,11 @@ export async function showOnpageDialog(
 
   const successfulInjection = await addDialog(tabId);
   if (!successfulInjection) {
-    recordDialogEvent(dialog, DialogEventType.injected_error);
+    recordLegacyEvent(dialog, DialogEventType.injected_error);
     return ShowOnpageDialogResult.error;
   }
 
-  recordDialogEvent(dialog, DialogEventType.injected);
+  recordLegacyEvent(dialog, DialogEventType.injected);
   return ShowOnpageDialogResult.shown;
 }
 
@@ -605,7 +623,7 @@ export async function showDialogFromList(
       const command = getCommand(dialog.ipmId);
       if (command && isCommandExpired(command)) {
         logger.error("[onpage-dialog]: Command has expired.");
-        recordDialogEvent(dialog, CommandEventType.expired);
+        recordLegacyEvent(dialog, CommandEventType.expired);
         dismissDialogFn(dialog);
         continue;
       }

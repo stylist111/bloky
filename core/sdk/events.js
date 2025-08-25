@@ -86,6 +86,15 @@ export default {
       }
     }
   },
+  in_product_messaging: {
+    command_received: {
+      description: "Extension received a valid IPM command from the remote config",
+      data: {
+        description: "IPM command ID",
+        type: "string"
+      }
+    }
+  },
   initialization: {
     initialization_complete: {
       description: "The extension has finished initializing without any errors",
@@ -164,6 +173,24 @@ export default {
             type: ["string", "null"]
           }
         }
+      }
+    }
+  },
+  new_tab: {
+    command_ready: {
+      description: "'create_tab' IPM command has passed all checks and new tab is going to be created at the next possible opportunity",
+      data: {
+        description: "IPM command ID",
+        type: "string"
+      }
+    }
+  },
+  onpage_dialog: {
+    command_ready: {
+      description: "'create_on_page_dialog' IPM command has passed all checks and on-page dialog is going to be created at the next possible opportunity",
+      data: {
+        description: "IPM command ID",
+        type: "string"
       }
     }
   },

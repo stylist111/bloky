@@ -16,10 +16,16 @@
  */
 
 import * as browser from "webextension-polyfill";
+import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
 import { ExtendedInstallType } from "~/management";
 
-import { CommandEventType, CommandName, getFragment } from "../../../src/ipm/background";
+import {
+  CommandEventType,
+  CommandName,
+  getFragment,
+  isFutureFragment,
+} from "../../../src/ipm/background";
 import * as logger from "../../utilities/background";
 import { getSettings, settings } from "../../prefs/background/settings";
 import { CreationMethod, isNewTabBehavior, NewTab, setNewTabCommandHandler } from "./middleware";
@@ -67,6 +73,11 @@ const onNewTabUpdateHandlerByIpmId = new Map();
 const createdTabsMap = new Map<number, string>();
 
 /**
+ * Server logger instance for events related to the new-tab feature
+ */
+const serverLogger = new ewe.telemetry.ServerLogger("new_tab");
+
+/**
  * Compares two new tab requests to see which has the higher priority.
  *
  * @param newTabA The first new tab request
@@ -107,12 +118,13 @@ export function compareNewTabRequestsByPriority(newTabA: NewTab, newTabB: NewTab
 }
 
 /**
- * Registers an event with the data collection feature.
+ * Records an event
  *
+ * @deprecated only used for recording events for @eyeo-fragments/ipm-legacy
  * @param ipmId The ipm id to register the event for
  * @param name The event name to register
  */
-function registerEvent(
+function recordLegacyEvent(
   ipmId: string,
   name: CommandEventType | NewTabEventType | NewTabExitEventType | NewTabErrorEventType,
 ): void {
@@ -158,7 +170,7 @@ const openNewtabOnUpdated = (
   const onUpdatedHandler = onNewTabUpdateHandlerByIpmId.get(ipmId);
   onNewTabUpdateHandlerByIpmId.delete(ipmId);
   browser.tabs.onUpdated.removeListener(onUpdatedHandler);
-  registerEvent(ipmId, NewTabEventType.loaded);
+  recordLegacyEvent(ipmId, NewTabEventType.loaded);
 };
 
 /**
@@ -231,7 +243,7 @@ async function openNewtab(): Promise<void> {
     const behavior = getBehavior(ipmId);
     if (!isNewTabBehavior(behavior)) {
       logger.debug("[new-tab]: No command behavior");
-      registerEvent(ipmId, NewTabErrorEventType.noBehaviorFound);
+      recordLegacyEvent(ipmId, NewTabErrorEventType.noBehaviorFound);
       dismissCommand(ipmId);
       continue;
     }
@@ -240,7 +252,7 @@ async function openNewtab(): Promise<void> {
     // eslint-disable-next-line no-await-in-loop
     if (!(await doesLicenseStateMatch(behavior))) {
       logger.debug("[new-tab]: License state mis-match");
-      registerEvent(ipmId, NewTabErrorEventType.licenseStateNoMatch);
+      recordLegacyEvent(ipmId, NewTabErrorEventType.licenseStateNoMatch);
       dismissCommand(ipmId);
       continue;
     }
@@ -249,7 +261,7 @@ async function openNewtab(): Promise<void> {
     // origin requirements.
     const targetUrl = createSafeOriginUrl(behavior.target);
     if (!targetUrl) {
-      registerEvent(ipmId, NewTabErrorEventType.noUrlFound);
+      recordLegacyEvent(ipmId, NewTabErrorEventType.noUrlFound);
       logger.debug("[new-tab]: Invalid target URL.");
       dismissCommand(ipmId);
       continue;
@@ -288,7 +300,7 @@ async function openNewtab(): Promise<void> {
     // Ignore and dismiss command if it has expired
     if (isCommandExpired(command)) {
       logger.error("[new-tab]: Command has expired.");
-      registerEvent(ipmId, CommandEventType.expired);
+      recordLegacyEvent(ipmId, CommandEventType.expired);
       dismissCommand(ipmId);
       continue;
     }
@@ -304,13 +316,13 @@ async function openNewtab(): Promise<void> {
     } catch (ex) {
       // There was an error during tab creation. Let's retry later.
       logger.error(`[new-tab]: Tab creation error for IPM id "${ipmId}"`, ex);
-      registerEvent(ipmId, NewTabErrorEventType.tabCreationError);
+      recordLegacyEvent(ipmId, NewTabErrorEventType.tabCreationError);
       continue;
     }
 
     if (typeof tabId === "undefined") {
       logger.error(`[new-tab]: Invalid ID "${tabId}" for created tab for IPM ID "${ipmId}"`);
-      registerEvent(ipmId, NewTabErrorEventType.tabCreationError);
+      recordLegacyEvent(ipmId, NewTabErrorEventType.tabCreationError);
       continue;
     }
 
@@ -319,7 +331,7 @@ async function openNewtab(): Promise<void> {
 
     // eslint-disable-next-line no-await-in-loop
     await Prefs.set(lastShownKey, Date.now());
-    registerEvent(ipmId, NewTabEventType.created);
+    recordLegacyEvent(ipmId, NewTabEventType.created);
     dismissCommand(ipmId);
   }
 }
@@ -435,7 +447,7 @@ async function handleCommand(ipmId: string): Promise<void> {
 
   const { installType } = await browser.management.getSelf();
   if ((installType as ExtendedInstallType) === "admin") {
-    registerEvent(ipmId, NewTabExitEventType.admin);
+    recordLegacyEvent(ipmId, NewTabExitEventType.admin);
     dismissCommand(ipmId);
     return;
   }
@@ -444,7 +456,7 @@ async function handleCommand(ipmId: string): Promise<void> {
   // Ignore and dismiss command if user opted-out of 'surveys'
   if (getSettings().suppress_update_page) {
     logger.debug("[new-tab]:suppress_update_page - true");
-    registerEvent(ipmId, NewTabExitEventType.disabled);
+    recordLegacyEvent(ipmId, NewTabExitEventType.disabled);
     dismissCommand(ipmId);
     return;
   }
@@ -454,15 +466,19 @@ async function handleCommand(ipmId: string): Promise<void> {
   const behavior = getBehavior(ipmId);
   if (!isNewTabBehavior(behavior)) {
     logger.debug("[new-tab]: Invalid command behavior");
-    registerEvent(ipmId, NewTabErrorEventType.noBehaviorFound);
+    recordLegacyEvent(ipmId, NewTabErrorEventType.noBehaviorFound);
     dismissCommand(ipmId);
     return;
   }
 
   // Let the IPM know we received the command.
-  registerEvent(ipmId, NewTabEventType.received);
+  recordLegacyEvent(ipmId, NewTabEventType.received);
 
   waitingTabs[ipmId] = { behavior, ipmId };
+
+  if (isFutureFragment()) {
+    serverLogger.info("command_ready", ipmId);
+  }
 
   // If the method is `force`, we don't need to create handlers.
   if (behavior.method === CreationMethod.force) {

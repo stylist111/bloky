@@ -29,6 +29,8 @@ export const coolDownPeriodKey = "onpage_dialog_cool_down";
 
 /**
  * On-page dialog event names
+ *
+ * @deprecated only used for recording events for @eyeo-fragments/ipm-legacy
  */
 export enum DialogEventType {
   buttonClicked = "dialog_button_clicked",

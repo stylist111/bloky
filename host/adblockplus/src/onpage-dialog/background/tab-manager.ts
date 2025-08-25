@@ -57,7 +57,12 @@ import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import { Timing } from "./timing.types";
 import { getPremiumSubscriptionsState } from "~/premium-subscriptions/background";
 import { COOKIES_PREMIUM_SUBSCRIPTION_TYPE } from "~/premium-subscriptions/shared";
-import { CommandEventType, CommandName, getFragment } from "~/ipm/background";
+import {
+  CommandEventType,
+  CommandName,
+  getFragment,
+  isFutureFragment
+} from "~/ipm/background";
 
 /**
  * Tab-specific session storage for dialogs
@@ -77,6 +82,11 @@ export const unassignedDialogs = new Map<string, Dialog>();
  * Pages where a cookie banner has been detected
  */
 export const pagesWithCookieBanner = new Set<number>();
+
+/**
+ * Server logger instance for events related to the on-page dialog feature
+ */
+const serverLogger = new ewe.telemetry.ServerLogger("onpage_dialog");
 
 /**
  * Compares two dialogs to see which has the higher priority.
@@ -224,7 +234,7 @@ async function handleCloseMessage(
   }
 
   void removeDialog(sender.tab.id);
-  recordDialogEvent(dialog, DialogEventType.closed);
+  recordLegacyEvent(dialog, DialogEventType.closed);
 }
 
 /**
@@ -256,7 +266,7 @@ async function handleContinueMessage(
   void browser.tabs.create({ url: safeTargetUrl });
 
   void removeDialog(sender.tab.id);
-  recordDialogEvent(dialog, DialogEventType.buttonClicked);
+  recordLegacyEvent(dialog, DialogEventType.buttonClicked);
 }
 
 /**
@@ -283,6 +293,10 @@ async function handleDialogCommand(ipmId: string): Promise<void> {
 
   const dialog: Dialog = { behavior, content, id: ipmId, ipmId };
   unassignedDialogs.set(dialog.id, dialog);
+
+  if (isFutureFragment()) {
+    serverLogger.info("command_ready", ipmId);
+  }
 }
 
 /**
@@ -340,7 +354,7 @@ async function handlePingMessage(
   }
 
   void removeDialog(sender.tab.id);
-  recordDialogEvent(dialog, DialogEventType.ignored);
+  recordLegacyEvent(dialog, DialogEventType.ignored);
 }
 
 /**
@@ -356,7 +370,7 @@ function handleTabRemovedEvent(data: TabRemovedEventData): void {
   }
 
   void removeDialog(tabId);
-  recordDialogEvent(dialog, DialogEventType.ignored);
+  recordLegacyEvent(dialog, DialogEventType.ignored);
 }
 
 /**
@@ -391,7 +405,7 @@ export async function showDialogFromList(
       const command = getCommand(dialog.ipmId);
       if (command && isCommandExpired(command)) {
         logger.error("[onpage-dialog]: Command has expired.");
-        recordDialogEvent(dialog, CommandEventType.expired);
+        recordLegacyEvent(dialog, CommandEventType.expired);
         dismissDialogFn(dialog);
         continue;
       }
@@ -480,10 +494,11 @@ async function handlePageLoadedEvent(page: unknown): Promise<void> {
 /**
  * Records dialog event
  *
+ * @deprecated only used for recording events for @eyeo-fragments/ipm-legacy
  * @param dialog - Dialog information
  * @param eventType - Dialog event type
  */
-function recordDialogEvent(
+function recordLegacyEvent(
   dialog: Dialog,
   eventType: CommandEventType | DialogEventType
 ): void {
@@ -605,7 +620,7 @@ export async function showOnpageDialog(
 
   await addDialog(tabId);
 
-  recordDialogEvent(dialog, DialogEventType.injected);
+  recordLegacyEvent(dialog, DialogEventType.injected);
 
   return ShowOnpageDialogResult.shown;
 }

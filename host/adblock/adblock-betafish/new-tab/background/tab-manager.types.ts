@@ -35,6 +35,8 @@ export const coolDownPeriodKey = "new_tab_cool_down";
 
 /**
  * New tab event names
+ *
+ * @deprecated only used for recording events for @eyeo-fragments/ipm-legacy
  */
 export enum NewTabEventType {
   created = "tab_created",
@@ -45,6 +47,8 @@ export enum NewTabEventType {
 
 /**
  * New tab error event names
+ *
+ * @deprecated only used for recording events for @eyeo-fragments/ipm-legacy
  */
 export enum NewTabErrorEventType {
   noBehaviorFound = "error_no_behavior",
@@ -55,6 +59,8 @@ export enum NewTabErrorEventType {
 
 /**
  * New tab exit event names
+ *
+ * @deprecated only used for recording events for @eyeo-fragments/ipm-legacy
  */
 export enum NewTabExitEventType {
   admin = "newtab_admin",

@@ -48,6 +48,8 @@ export type ListenerSet = Record<ListenerType, Listener>;
 
 /**
  * Event names for successful tab creation.
+ *
+ * @deprecated only used for recording events for @eyeo-fragments/ipm-legacy
  */
 export enum CreationSuccess {
   created = "tab_created",
@@ -56,6 +58,8 @@ export enum CreationSuccess {
 
 /**
  * Event names for when we couldn't create a tab.
+ *
+ * @deprecated only used for recording events for @eyeo-fragments/ipm-legacy
  */
 export enum CreationError {
   invalidBehavior = "error_no_behavior",
@@ -66,6 +70,8 @@ export enum CreationError {
 
 /**
  * Event names for when we decided not to create a tab.
+ *
+ * @deprecated only used for recording events for @eyeo-fragments/ipm-legacy
  */
 export enum CreationRejection {
   admin = "newtab_admin"

@@ -16,6 +16,8 @@
  */
 
 import * as browser from "webextension-polyfill";
+import * as ewe from "@eyeo/webext-ad-filtering-solution";
+
 import * as logger from "../../logger/background";
 import {
   CreationMethod,
@@ -34,7 +36,12 @@ import {
   coolDownPeriodKey
 } from "./tab-manager.types";
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
-import { getFragment, CommandEventType, CommandName } from "~/ipm/background";
+import {
+  CommandEventType,
+  CommandName,
+  getFragment,
+  isFutureFragment
+} from "~/ipm/background";
 
 /**
  * List of tabs that we still need to open.
@@ -62,6 +69,11 @@ const onNewTabUpdateHandlerByIpmId = new Map<string, Listener>();
  * Maps the IDs of the tabs we crated to the IPM IDs that caused their creation.
  */
 const createdTabsMap = new Map<number, string>();
+
+/**
+ * Server logger instance for events related to the new-tab feature
+ */
+const serverLogger = new ewe.telemetry.ServerLogger("new_tab");
 
 /**
  * Compares two new tab requests to see which has the higher priority.
@@ -117,12 +129,13 @@ export async function isCoolDownPeriodOngoing(): Promise<boolean> {
 }
 
 /**
- * Registers an event with the data collection feature.
+ * Records an event
  *
+ * @deprecated only used for recording events for @eyeo-fragments/ipm-legacy
  * @param ipmId The ipm id to register the event for
  * @param name The event name to register
  */
-function registerEvent(
+function recordsLegacyEvent(
   ipmId: string,
   name: CommandEventType | CreationSuccess | CreationError | CreationRejection
 ): void {
@@ -157,7 +170,7 @@ function onNewTabUpdated(
     return;
   }
 
-  registerEvent(ipmId, CreationSuccess.loaded);
+  recordsLegacyEvent(ipmId, CreationSuccess.loaded);
 
   const listener = onNewTabUpdateHandlerByIpmId.get(ipmId);
   if (typeof listener === "undefined") {
@@ -216,7 +229,7 @@ async function openNewTab(): Promise<void> {
     const behavior = getBehavior(ipmId);
     if (!isNewTabBehavior(behavior)) {
       logger.debug("[new-tab]: Invalid command behavior.");
-      registerEvent(ipmId, CreationError.invalidBehavior);
+      recordsLegacyEvent(ipmId, CreationError.invalidBehavior);
       dismissCommand(ipmId);
       continue;
     }
@@ -224,7 +237,7 @@ async function openNewTab(): Promise<void> {
     // Ignore and dismiss command if license states mismatch.
     if (!(await doesLicenseStateMatch(behavior))) {
       logger.debug("[new-tab]: License state mismatch.");
-      registerEvent(ipmId, CreationError.licenseStateMismatch);
+      recordsLegacyEvent(ipmId, CreationError.licenseStateMismatch);
       dismissCommand(ipmId);
       continue;
     }
@@ -234,7 +247,7 @@ async function openNewTab(): Promise<void> {
     const targetUrl = createSafeOriginUrl(behavior.target);
     if (targetUrl === null) {
       logger.debug("[new-tab]: Invalid target URL.");
-      registerEvent(ipmId, CreationError.invalidURL);
+      recordsLegacyEvent(ipmId, CreationError.invalidURL);
       dismissCommand(ipmId);
       continue;
     }
@@ -262,7 +275,7 @@ async function openNewTab(): Promise<void> {
     }
     if (isCommandExpired(command)) {
       logger.error("[new-tab]: Command has expired.");
-      registerEvent(ipmId, CommandEventType.expired);
+      recordsLegacyEvent(ipmId, CommandEventType.expired);
       dismissCommand(ipmId);
       continue;
     }
@@ -278,7 +291,7 @@ async function openNewTab(): Promise<void> {
     } catch (ex) {
       // There was an error during tab creation. Let's retry later.
       logger.error(`[new-tab]: Tab creation error for IPM id "${ipmId}"`, ex);
-      registerEvent(ipmId, CreationError.tabCreationError);
+      recordsLegacyEvent(ipmId, CreationError.tabCreationError);
       continue;
     }
 
@@ -286,7 +299,7 @@ async function openNewTab(): Promise<void> {
       logger.error(
         `[new-tab]: Invalid ID "${tabId}" for created tab for IPM ID "${ipmId}"`
       );
-      registerEvent(ipmId, CreationError.tabCreationError);
+      recordsLegacyEvent(ipmId, CreationError.tabCreationError);
       continue;
     }
 
@@ -294,7 +307,7 @@ async function openNewTab(): Promise<void> {
     onNewTabUpdateHandlerByIpmId.set(ipmId, loadEventListener);
 
     await Prefs.set(lastShownKey, Date.now());
-    registerEvent(ipmId, CreationSuccess.created);
+    recordsLegacyEvent(ipmId, CreationSuccess.created);
     dismissCommand(ipmId);
   }
 }
@@ -411,7 +424,7 @@ export async function handleCommand(ipmId: string): Promise<void> {
   // Don't open new tabs if we're on a managed installation.
   const { installType } = await browser.management.getSelf();
   if ((installType as unknown) === "admin") {
-    registerEvent(ipmId, CreationRejection.admin);
+    recordsLegacyEvent(ipmId, CreationRejection.admin);
     dismissCommand(ipmId);
     return;
   }
@@ -421,12 +434,16 @@ export async function handleCommand(ipmId: string): Promise<void> {
 
   if (!isNewTabBehavior(behavior)) {
     logger.debug("[new-tab]: Invalid command behavior.");
-    registerEvent(ipmId, CreationError.invalidBehavior);
+    recordsLegacyEvent(ipmId, CreationError.invalidBehavior);
     dismissCommand(ipmId);
     return;
   }
 
   waitingTabs[ipmId] = { behavior, ipmId };
+
+  if (isFutureFragment()) {
+    serverLogger.info("command_ready", ipmId);
+  }
 
   // If the method is `force`, we don't need to create handlers.
   if (behavior.method === CreationMethod.force) {

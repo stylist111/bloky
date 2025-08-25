@@ -55,6 +55,11 @@ const actorByCommandName = new Map<CommandName, CommandActor>();
 const unexecutableCommands = new Map<Command, boolean>();
 
 /**
+ * Server logger instance for IPM events
+ */
+const serverLogger = new ewe.telemetry.ServerLogger("in_product_messaging");
+
+/**
  * Checks whether the given input satisfies the requirements to be treated
  * as a command from the IPM server, and to be precessed further.
  *
@@ -312,6 +317,7 @@ export async function executeIPMCommands(
 
   const commandHandlingPromises = Array.from(actorByExecutableCommand).map(
     async ([executableCommand, actor]) => {
+      serverLogger.info("command_received", executableCommand.ipm_id);
       await actor.handleCommand(executableCommand.ipm_id, isInitialization);
     },
   );

@@ -31,6 +31,8 @@ export const coolDownPeriodKey = "onpage_dialog_cool_down";
 
 /**
  * On-page dialog event names
+ *
+ * @deprecated only used for recording events for @eyeo-fragments/ipm-legacy
  */
 export enum DialogEventType {
   buttonClicked = "dialog_button_clicked",
@@ -66,6 +68,8 @@ export enum ShowOnpageDialogResult {
 
 /**
  * On-page dialog error event names
+ *
+ * @deprecated only used for recording events for @eyeo-fragments/ipm-legacy
  */
 export enum DialogErrorEventType {
   error_no_dialog_found = "error.no_ipm",

@@ -45,7 +45,7 @@ async function getExpectedFragmentType(): Promise<FragmentType> {
 }
 
 /**
- * Returns a reference to the fragment
+ * Returns a reference to the currently selected fragment
  *
  * @returns A reference to the fragment
  */
@@ -55,6 +55,15 @@ export function getFragment(): Fragment {
   }
 
   return { ...FutureFragment, ...getFutureFragmentOverrides() };
+}
+
+/**
+ * Whether the currently selected fragment is the future fragment
+ *
+ * @returns whether the currently selected fragment is the future fragment
+ */
+export function isFutureFragment(): boolean {
+  return selectedFragmentType === FragmentType.future;
 }
 
 /**
