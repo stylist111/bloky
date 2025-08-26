@@ -86,7 +86,13 @@ class Browser {
     };
 
     this.declarativeNetRequest = {
-      DYNAMIC_RULESET_ID: "_dynamicRuleset"
+      DYNAMIC_RULESET_ID: "_dynamicRuleset",
+      getEnabledRulesets() {
+        return Promise.resolve([]);
+      },
+      getAvailableStaticRuleCount() {
+        return Promise.resolve(0);
+      }
     };
   }
 }

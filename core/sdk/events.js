@@ -109,6 +109,66 @@ export default {
         }
       }
     },
+    adddefaults_complete: {
+      description: "Default subscriptions have been added during initialization",
+      data: {
+        description: "Data about the rules and rulesets before and after adding defaults",
+        type: "object",
+        properties: {
+          beforeRulesets: {
+            description: "Array of enabled DNR ruleset IDs before adding defaults",
+            type: "array",
+            items: {
+              type: "string"
+            }
+          },
+          afterRulesets: {
+            description: "Array of enabled DNR ruleset IDs after adding defaults",
+            type: "array",
+            items: {
+              type: "string"
+            }
+          },
+          beforeAvailableStaticRuleCount: {
+            description: "Number of available static DNR rules before adding defaults",
+            type: "number"
+          },
+          afterAvailableStaticRuleCount: {
+            description: "Number of available static DNR rules after adding defaults",
+            type: "number"
+          },
+          beforeSubscriptionCount: {
+            description: "Number of enabled subscriptions before adding defaults",
+            type: "number"
+          },
+          afterSubscriptionCount: {
+            description: "Number of enabled subscriptions after adding defaults",
+            type: "number"
+          }
+        }
+      }
+    },
+    adddefaults_error: {
+      description: "Error occurred while adding default subscriptions during initialization",
+      data: {
+        description: "Error details and context",
+        type: "object",
+        properties: {
+          error: {
+            description: "Error message",
+            type: "string"
+          },
+          stack: {
+            description: "Error stack trace",
+            type: "string"
+          },
+          force: {
+            description: "Force parameter passed to addDefaults",
+            type: "boolean"
+          }
+        }
+      }
+    },
     initialization_error: {
       description: "Errors recorded during the initialization of the extension",
       data: {
