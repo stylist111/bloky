@@ -35,7 +35,10 @@
     <div id="sidebar">
       <div class="fixed">
         <header>
-          <h1>Adblock Plus</h1>
+          <div>
+            <h1>Adblock Plus</h1>
+            <small id="version" class="block text-right"></small>
+          </div>
           <p data-i18n="options_page_title"></p>
         </header>
 
@@ -90,22 +93,59 @@
           </ul>
         </nav>
 
-        <footer>
-          <p>
-            <a
-              data-i18n="options_footer_contribute"
-              class="button secondary"
-              data-doclink="contribute"
-            ></a>
-          </p>
-          <p>
-            <button
-              data-i18n="options_footer_about"
-              class="link"
-              data-action="open-dialog"
-              data-dialog="about"
-            ></button>
-          </p>
+        <footer class="flex flex-col gap-2 items-center px-5">
+          <a
+            id="user-account-login"
+            class="button secondary w-full text-center flex items-center justify-center gap-2"
+            style="display: none"
+            href=""
+            target="_blank"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="size-6"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+              />
+            </svg>
+            <span data-i18n="user_account_login"></span>
+          </a>
+          <a
+            id="user-account-manage"
+            class="button secondary w-full text-center flex items-center justify-center gap-2"
+            style="display: none"
+            href=""
+            target="_blank"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="size-6"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+              />
+            </svg>
+            <span data-i18n="user_account_manage_account"></span>
+          </a>
+          <button
+            data-i18n="options_footer_about"
+            class="link text-center"
+            data-action="open-dialog"
+            data-dialog="about"
+          ></button>
         </footer>
       </div>
     </div>
@@ -116,12 +156,20 @@
           id="premium-upgrade-description"
           data-i18n="options_premium_upgrade_description"
         ></p>
-        <a
-          class="premium upgrade button"
-          href=""
-          target="_blank"
-          data-i18n="options_upgrade_button"
-        ></a>
+        <div class="flex items-center gap-4">
+          <a
+            class="premium login button secondary"
+            href=""
+            target="_blank"
+            data-i18n="user_account_login"
+          ></a>
+          <a
+            class="premium upgrade button"
+            href=""
+            target="_blank"
+            data-i18n="options_upgrade_button"
+          ></a>
+        </div>
       </div>
       <div class="premium-manage banner background">
         <a

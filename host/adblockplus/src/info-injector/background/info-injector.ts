@@ -18,7 +18,7 @@
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { getInstallationId } from "../../id/background";
 import { info } from "../../info/background";
-import { type InjectionInfo, injectionOrigins } from "../shared";
+import { type InjectionInfo } from "../shared";
 import { addTrustedMessageTypes, port } from "~/core/messaging/background";
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import { getPremiumState } from "../../premium/background";
@@ -45,7 +45,5 @@ async function handleGetInjectionInfo(): Promise<InjectionInfo> {
 export function start(): void {
   port.on("info.getInjectionInfo", handleGetInjectionInfo);
 
-  injectionOrigins.forEach((origin) => {
-    addTrustedMessageTypes(origin, ["info.getInjectionInfo"]);
-  });
+  addTrustedMessageTypes(null, ["info.getInjectionInfo"]);
 }

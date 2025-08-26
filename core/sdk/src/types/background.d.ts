@@ -558,6 +558,22 @@ export interface AddonInfo {
     */
     getFacts?: () => Promise<Facts>;
   };
+
+  /**
+   * Configuration for the account module.
+   */
+  account?: {
+    /**
+     * The base URL of the API to which the account module will make requests.
+     */
+    apiBaseUrl?: string;
+
+    /**
+     * The application ID of to be used in the communication with the account API.
+     */
+    applicationId?: string;
+  };
+
   /**
    * Feature flags for the addon/extension.
    */

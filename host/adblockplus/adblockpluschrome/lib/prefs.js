@@ -204,23 +204,6 @@ defaults.premium_license = {
 };
 
 /**
- * Origins that are trusted to open the options page
- *
- * @type {string[]}
- */
-defaults.options_backlink_trusted_origins = [
-  "https://welcome.adblockplus.org",
-  "https://adblockplus.org"
-];
-
-/**
- * Origin of page to activate Premium license.
- *
- * @type {string}
- */
-defaults.premium_license_activation_origin = "https://accounts.adblockplus.org";
-
-/**
  * Timestamp indicating when to attempt the next Premium license check.
  *
  * @type {number}
@@ -236,19 +219,12 @@ defaults.premium_license_check_url =
   "https://myadblock.licensing.adblockplus.dev/license";
 
 /**
- * Address of page to manage Premium account.
+ * Address of page to manage the Premium account.
  *
  * @type {string}
  */
 defaults.premium_manage_page_url =
-  "https://accounts.adblockplus.org/%LANG%/manage?lic=%LICENSE_CODE%&s=%SOURCE%";
-
-/**
- * Origin of page to trigger Premium onboarding
- *
- * @type {string}
- */
-defaults.premium_onboarding_trigger_origin = "https://accounts.adblockplus.org";
+  "https://myaccount.adblockplus.org/?lang=%LANG%&av=%ADDON_VERSION%&ref=%SOURCE%&premium=%HAS_PREMIUM%";
 
 /**
  * Address of page to upgrade to Premium.

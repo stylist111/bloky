@@ -18,10 +18,11 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import * as browser from "webextension-polyfill";
+import * as ewe from "@eyeo/webext-ad-filtering-solution";
+import type { UserProfile } from "@eyeo/webext-ad-filtering-solution";
 import { getDebugInformation } from "../../src/background/debug";
 import { type HostSpecificInformation } from "../../src/background/debug.types";
-import browser from "webextension-polyfill";
-import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
 const defaultSubscriptionData = [
   {
@@ -60,8 +61,25 @@ const complexAssignment = {
   ytHavenPhase2: "yt-haven-free-disabled-group",
 };
 
+const defaultUser: UserProfile = {
+  email: "john.doe@company.com",
+  displayName: "John Doe",
+  hasPremium: false,
+  features: [],
+};
+
 // Mock the @eyeo/webext-ad-filtering-solution module
 vi.mock("@eyeo/webext-ad-filtering-solution", () => ({
+  account: {
+    hasPremium: vi.fn(() => defaultUser.hasPremium),
+    isLoggedIn: vi.fn(() => true),
+    getProfile: vi.fn(() => Promise.resolve(defaultUser)),
+    getProfileSyncStatus: vi.fn(() =>
+      Promise.resolve({
+        lastSuccessfulRequest: new Date().toISOString(),
+      }),
+    ),
+  },
   filters: {
     getUserFilters: vi.fn().mockImplementation(() => {
       return Promise.resolve(defaultFilters);
@@ -100,7 +118,7 @@ const Prefs = {
 };
 
 const defaultParameters: HostSpecificInformation = {
-  prefs: await Prefs.toJSON(),
+  prefs: Prefs.toJSON(),
   additionalHostSpecificInformation: defaultSettingData,
   licenseInformation: defaultPremiumData,
 };
@@ -145,6 +163,18 @@ describe("pretty print debug data", () => {
 
   afterEach(() => {
     vi.clearAllMocks();
+  });
+
+  it("should contain user account info", async () => {
+    const debugData = await getDebugInformation(defaultParameters);
+
+    expect(debugData).toHaveProperty("account");
+    expect(debugData.account.hasPremium).toEqual(false);
+    expect(debugData.account.isLoggedIn).toEqual(true);
+    expect(debugData.account.user).toEqual(defaultUser);
+    expect(debugData.account.syncStatus).toHaveProperty(
+      "lastSuccessfulRequest",
+    );
   });
 
   it("should return default test debug data for MV3 installation of AdBlock", async () => {

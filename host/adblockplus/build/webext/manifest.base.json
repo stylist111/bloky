@@ -44,27 +44,31 @@
         "premium-onboarding.preload.js"
       ],
       "matches": [
-        "https://accounts.adblockplus.org/premium",
-        "https://accounts.adblockplus.org/premium?*",
-        "https://accounts.adblockplus.org/*/premium",
-        "https://accounts.adblockplus.org/*/premium?*"
+        "https://accounts.adblockplus.org/*",
+        "https://*.myaccount.adblockplus.org/*"
       ],
       "run_at": "document_start"
     },
     {
       "js": ["polyfill.js", "info-injector.preload.js"],
-      "matches": ["https://*.adblockplus.org/*", "https://*.getadblock.com/*"],
+      "matches": [
+        "https://adblockplus.org/*",
+        "https://new.adblockplus.org/*",
+        "https://welcome.adblockplus.org/*",
+        "https://accounts.adblockplus.org/*",
+        "https://*.myaccount.adblockplus.org/*",
+        "https://getadblock.com/*",
+        "https://vpn.getadblock.com/*",
+        "https://*.myaccount.getadblock.com/*"
+      ],
       "run_at": "document_start"
     },
     {
       "js": ["polyfill.js", "options.preload.js"],
       "matches": [
-        "https://adblockplus.org/installed",
-        "https://adblockplus.org/installed?*",
-        "https://adblockplus.org/*/installed",
-        "https://adblockplus.org/*/installed?*",
-        "https://welcome.adblockplus.org/*/installed",
-        "https://welcome.adblockplus.org/*/installed?*"
+        "https://adblockplus.org/*",
+        "https://welcome.adblockplus.org/*",
+        "https://*.myaccount.adblockplus.org/*"
       ],
       "run_at": "document_idle"
     },

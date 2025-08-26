@@ -22,18 +22,12 @@ import {
   type PaymentSuccessPayload
 } from "./activation.types";
 
-const trustedOrigin = "https://accounts.adblockplus.org";
-
 /**
  * Receives and responds to "payment_success" event
  *
  * @param event - Message event
  */
 function onMessage(event: MessageEvent<PaymentSuccessPayload>): void {
-  if (event.origin !== trustedOrigin) {
-    return;
-  }
-
   const { data } = event;
   if (
     data.version !== 1 ||

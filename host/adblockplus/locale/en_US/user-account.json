@@ -1,0 +1,10 @@
+{
+  "user_account_login": {
+    "message": "Log in",
+    "description": "Text on the login button"
+  },
+  "user_account_manage_account": {
+    "message": "My Account",
+    "description": "Text on the manage account button"
+  }
+}

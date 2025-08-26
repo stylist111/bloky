@@ -38,6 +38,10 @@ const addonInfo: AddonInfo = {
     url: "https://easylist-downloads.adblockplus.org/ab-testing/experiments.json",
     getFacts
   },
+  account: {
+    apiBaseUrl: "https://api.ua.eyeo.it/v1",
+    applicationId: "8aac1ab7a162dc3c81f1574281f3aecc"
+  },
   featureFlags: {
     inlineCss: false
   }

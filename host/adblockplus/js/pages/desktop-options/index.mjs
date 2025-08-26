@@ -1280,7 +1280,7 @@ async function startPremiumBanners() {
     source
   });
 
-  $$(".premium-manage.banner a").forEach((cta) => {
+  $$(".premium-manage.banner a, .premium.login.button").forEach((cta) => {
     cta.setAttribute("href", manageUrl);
   });
   upgradeCTA.setAttribute("href", upgradeUrl);
@@ -1302,6 +1302,7 @@ function updatePremiumStateInPage() {
   document.body.classList.toggle("premium", premiumIsActive);
 
   setupFiltersBox();
+  showUserAccount();
 }
 
 function onFilterMessage(action, filter) {
@@ -1619,6 +1620,7 @@ function startMessageListeners() {
 
 async function startNavigationSidebar() {
   const addonVersion = await messaging.app.get("addonVersion");
+  $("#version").textContent = `v${addonVersion}`;
   $("#abp-version").textContent = getMessage("options_dialog_about_version", [
     addonVersion
   ]);
@@ -1700,6 +1702,30 @@ async function startTabHelp() {
   });
 }
 
+/**
+ * Displays the user account management buttons based on authentication status.
+ */
+async function showUserAccount() {
+  const user = await ewe.account.getProfile();
+  const loginBtn = $("#user-account-login");
+  const manageBtn = $("#user-account-manage");
+
+  // Dynamically update the login URL to include the premium status.
+  // This is used to determine if the user should see the successful activation page
+  const source = getSourceAttribute(loginBtn);
+  const manageUrl = await messaging.ctalinks.get("premium-manage", { source });
+  loginBtn.setAttribute("href", manageUrl);
+  manageBtn.setAttribute("href", manageUrl);
+
+  if (user && user.email) {
+    loginBtn.style.display = "none";
+    manageBtn.style.display = "flex";
+  } else {
+    loginBtn.style.display = "flex";
+    manageBtn.style.display = "none";
+  }
+}
+
 export function start() {
   convertDoclinks();
   initI18n();
@@ -1716,6 +1742,7 @@ export function start() {
   startMessageListeners();
 
   void startPremium();
+  void showUserAccount();
   startLanguagesBox();
   void populateLists().catch(dispatchError);
   void populateFilters().catch(dispatchError);

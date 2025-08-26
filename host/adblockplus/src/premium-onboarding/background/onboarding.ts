@@ -15,17 +15,11 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import { addTrustedMessageTypes } from "~/core/messaging/background";
 
 /**
  * Initializes Premium onboarding trigger
  */
 export function start(): void {
-  const trustedOrigin = Prefs.get("premium_onboarding_trigger_origin");
-  if (typeof trustedOrigin !== "string") {
-    return;
-  }
-
-  addTrustedMessageTypes(trustedOrigin, ["app.open"]);
+  addTrustedMessageTypes(null, ["app.open"]);
 }

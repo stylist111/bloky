@@ -17,15 +17,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import {
-  type DebugInfoResponse,
-  type ExperimentsAssignments,
-  type HostSpecificInformation,
-  type MigrationErrors,
-  type RemoteConfigurationData,
-  type RuleMetaData,
-  type SubscriptionDetails,
-  type AlarmInfo,
+import type {
+  DebugInfoResponse,
+  ExperimentsAssignments,
+  HostSpecificInformation,
+  MigrationErrors,
+  RemoteConfigurationData,
+  RuleMetaData,
+  SubscriptionDetails,
+  AlarmInfo,
+  AccountInfo,
 } from "./debug.types.js";
 import { getUserAgentInfo } from "./user-agent-info";
 
@@ -110,6 +111,25 @@ async function getMigrationMessages(): Promise<MigrationErrors> {
 }
 
 /**
+ * Returns the account information needed to debug potential issues
+ */
+async function getAccountInfo(): Promise<AccountInfo> {
+  const [hasPremium, isLoggedIn, user, syncStatus] = await Promise.all([
+    ewe.account.hasPremium(),
+    ewe.account.isLoggedIn(),
+    ewe.account.getProfile(),
+    ewe.account.getProfileSyncStatus(),
+  ]);
+
+  return {
+    hasPremium,
+    isLoggedIn,
+    user,
+    syncStatus,
+  };
+}
+
+/**
  * Returns the following information in human readable JSON object that can be 'stringified'
  *  User agent info
  *  - Platform, including version
@@ -150,7 +170,8 @@ export async function getDebugInformation(
     getCustomFilterMetaData(),
   ]);
 
-  const response: DebugInfoResponse = {
+  return {
+    account: await getAccountInfo(),
     deviceSpecificInformation: {
       alarmInformation,
       remoteConfigurationInformation,
@@ -173,5 +194,4 @@ export async function getDebugInformation(
       os: getUserAgentInfo().os,
     },
   };
-  return response;
 }

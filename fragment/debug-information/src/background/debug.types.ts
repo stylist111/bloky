@@ -106,9 +106,20 @@ export interface DeviceSpecificInformation {
 }
 
 /**
+ * A container object for account related debug data
+ */
+export interface AccountInfo {
+  hasPremium: boolean;
+  isLoggedIn: boolean;
+  user?: ewe.UserProfile | null;
+  syncStatus?: ewe.ProfileSyncStatus | null;
+}
+
+/**
  * A container object for debug data
  */
 export interface DebugInfoResponse {
+  account: AccountInfo;
   deviceSpecificInformation: DeviceSpecificInformation;
   errors: unknown;
   hostSpecificInformation: HostSpecificInformation;

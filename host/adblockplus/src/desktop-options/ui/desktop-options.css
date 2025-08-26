@@ -129,7 +129,7 @@ button.primary:not(.icon),
 .button.primary:not(.icon),
 button.secondary:not(.icon),
 .button.secondary:not(.icon) {
-  padding: 0.6rem 2rem;
+  padding: 8px 20px;
 }
 
 /* Ignore .icon to avoid overriding "specific" (primary, secondary) styles */
@@ -703,10 +703,9 @@ html[dir="rtl"] li a[role="tab"][aria-selected] {
   width: 100%;
 }
 
-#sidebar footer p {
+#sidebar button,
+#sidebar .button {
   display: flex;
-  margin: 1rem 0rem;
-  justify-content: center;
 }
 
 #support-us {
@@ -802,6 +801,7 @@ body.premium .premium.upgrade.button {
 .premium.upgrade.button {
   display: inline-block;
   padding: 8px 20px;
+  border: 2px solid var(--color-premium);
   background-color: var(--color-premium);
   color: var(--background-color-primary);
   text-transform: none;
@@ -811,6 +811,7 @@ body.premium .premium.upgrade.button {
 .premium.upgrade.button:hover,
 .premium.upgrade.button:focus {
   background-color: var(--color-premium-hover);
+  border-color: var(--color-premium-hover);
 }
 
 .premium.list button.icon[role="checkbox"]:disabled::before {

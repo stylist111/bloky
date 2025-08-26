@@ -22,6 +22,7 @@ import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { port } from "~/core/messaging/background";
 import { Prefs } from "./prefs.js";
 import { info } from "../../src/info/background";
+import { hasActiveLicense } from "~/premium/background";
 
 /**
  * Opens given UI page or switches to it, if it's already open
@@ -106,6 +107,7 @@ export function start() {
       const prefsUrlKey = ctaLinkNameToPrefsMap.get(ctaLinkName);
       let url = Prefs[prefsUrlKey];
 
+      const hasPremium = await hasActiveLicense();
       const linkPlaceholders = [
         ["LANG", () => browser.i18n.getUILanguage().replace("-", "_")],
         ["ADDON_NAME", () => info.addonName],
@@ -115,6 +117,7 @@ export function start() {
         ["PLATFORM_NAME", () => info.platform],
         ["PLATFORM_VERSION", () => info.platformVersion],
         ["LICENSE_CODE", () => Prefs.get("premium_license").code],
+        ["HAS_PREMIUM", () => hasPremium],
         ["SOURCE", () => queryParams.source]
       ];
 

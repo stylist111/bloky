@@ -3,6 +3,7 @@
 - Fixed DNR dynamic rules getting out of sync with our dynamic filters in MV3
   extensions. (EXT-938)
 - Updated snippets to 2.4.0
+- Added user account integration. (EXT-1013)
 
 # 4.25.1 - 2025-08-18
 
