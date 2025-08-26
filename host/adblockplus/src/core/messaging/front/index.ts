@@ -66,3 +66,7 @@ export * as Stats from "./category-stats.types";
  */
 export * as subscriptions from "./category-subscriptions";
 export * as Subscriptions from "./category-subscriptions.types";
+/**
+ * Messaging related to debugging information
+ */
+export * as debug from "./category-debug";

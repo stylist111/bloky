@@ -771,15 +771,6 @@ function execAction(action, element) {
     case "close-dialog":
       closeDialog();
       return true;
-    case "download-debug-data":
-      browser.runtime
-        .sendMessage({
-          type: "debug.getDebugInfo"
-        })
-        .then((data) => {
-          downloadDebugData(data);
-        });
-      return true;
     case "hide-more-filters-section":
       $("#more-filters").setAttribute("aria-hidden", true);
       return true;
@@ -1701,6 +1692,12 @@ async function startTabHelp() {
       setElementLinks("visit-forum", url);
     })
   ]);
+
+  setElementLinks("download-debug-data", function () {
+    messaging.debug.getInfo().then((data) => {
+      downloadDebugData(data);
+    });
+  });
 }
 
 export function start() {

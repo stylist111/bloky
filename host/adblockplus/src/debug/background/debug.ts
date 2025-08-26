@@ -59,7 +59,7 @@ export const getDebugInfo = async function (): Promise<DebugInfoResponse> {
 };
 
 /**
- * Handles the debug.getDebugInfo message
+ * Handles the debug.getInfo message
  *
  * @param message - The message to handle
  * @param sender - The message sender
@@ -69,7 +69,7 @@ export const getDebugInfo = async function (): Promise<DebugInfoResponse> {
 async function handleGetDebugInfoMessage(
   message: Message,
   sender: MessageSender
-): Promise<DebugInfoResponse | null> {
+): Promise<DebugInfoResponse> {
   return await getDebugInfo();
 }
 
@@ -77,6 +77,6 @@ async function handleGetDebugInfoMessage(
  * Initializes the getDebugData module
  */
 export function start(): void {
-  port.on("debug.getDebugInfo", handleGetDebugInfoMessage);
-  addTrustedMessageTypes(null, ["debug.getDebugInfo"]);
+  port.on("debug.getInfo", handleGetDebugInfoMessage);
+  addTrustedMessageTypes(null, ["debug.getInfo"]);
 }
