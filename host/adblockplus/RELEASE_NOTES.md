@@ -1,5 +1,9 @@
 # Unreleased
 
+# 4.26.0 - 2025-08-27
+
+This release is adding user account integration and small bug fixes.
+
 - Fixed DNR dynamic rules getting out of sync with our dynamic filters in MV3
   extensions. (EXT-938)
 - Updated snippets to 2.4.0
