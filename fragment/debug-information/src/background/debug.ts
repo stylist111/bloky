@@ -153,6 +153,7 @@ export async function getDebugInformation(
   parameters: HostSpecificInformation,
 ): Promise<DebugInfoResponse> {
   const [
+    account,
     alarmInformation,
     errors,
     hostPermissions,
@@ -161,6 +162,7 @@ export async function getDebugInformation(
     subscriptions,
     userFilters,
   ] = await Promise.all([
+    getAccountInfo(),
     getDebugAlarmInfo(),
     getJavascriptErrors(),
     browser.permissions.getAll(),
@@ -171,7 +173,7 @@ export async function getDebugInformation(
   ]);
 
   return {
-    account: await getAccountInfo(),
+    account,
     deviceSpecificInformation: {
       alarmInformation,
       remoteConfigurationInformation,
