@@ -1,5 +1,9 @@
 # Unreleased
 
+# 6.27.1 - 2025-08-27
+
+This release contains bugfixes and under-the-hood changes.
+
 - Fixed DNR dynamic rules getting out of sync with our dynamic filters in MV3
   extensions. (EXT-938)
 - Updated snippets to 2.4.0
