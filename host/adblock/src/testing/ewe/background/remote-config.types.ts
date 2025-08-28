@@ -16,9 +16,9 @@
  */
 
 /**
- * Options for "testing.setRemoteConfigUrl" message
+ * Message object for "testing.setRemoteConfigUrl" type
  */
-export interface SetRemoteConfigUrlOptions {
+export interface SetRemoteConfigUrlMessage {
   /**
    * Remote configuration URL
    */

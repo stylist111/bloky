@@ -41,7 +41,7 @@ import {
   expectedIPMCommandsPremium,
 } from "../../utils/ipms.js";
 import {
-  updateUrl,
+  updateUrlNewTab,
   updateUrlForce,
   updateUrlPriorityHigh,
   updateUrlPriorityLow,
@@ -98,7 +98,7 @@ export default (fragmentType) => {
     expect(ipmCommands).toEqual(expectedIPMCommandsNewtab);
 
     await openNewTab(localTestPageUrl);
-    await findUrl(updateUrl);
+    await findUrl(updateUrlNewTab);
     await initOptionsGeneralTab(getOptionsHandle());
 
     // Ping payloads only exist in future fragment
@@ -161,7 +161,7 @@ export default (fragmentType) => {
     expect(ipmCommands).toEqual(expectedIPMCommandsPremium);
 
     await openNewTab(localTestPageUrl);
-    await findUrl(updateUrl, { exists: false });
+    await findUrl(updateUrlNewTab, { exists: false });
 
     // Ping payloads only exist in future fragment
     if (fragmentType === "legacy") {

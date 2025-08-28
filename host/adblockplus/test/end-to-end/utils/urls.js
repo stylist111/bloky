@@ -18,3 +18,12 @@
 export const installUrl = "https://welcome.adblockplus.org/en/installed";
 export const uninstallUrl = "https://adblockplus.org/en/uninstalled";
 export const premiumUrl = "https://accounts.adblockplus.org/en/premium";
+export const updateUrl = "https://adblockplus.org/update";
+export const updateUrlVersions = "/update?ipmId=test_adblockplus_versions";
+export const updateUrlNewTab = "/update?ipmId=test_adblockplus_newtab";
+export const updateUrlNavigation = "/update?ipmId=test_adblockplus_navigation";
+export const updateUrlForce = "/update?ipmId=test_adblockplus_force";
+export const updateUrlPriorityHigh =
+  "/update?ipmId=test_adblockplus_priority_high";
+export const updateUrlPriorityLow =
+  "/update?ipmId=test_adblockplus_priority_low";

@@ -36,7 +36,8 @@ import {
   enablePremiumProgrammatically,
   checkPremiumActivated,
   clickFLAndCheck,
-  setPremiumFLsDefaultState
+  setPremiumFLsDefaultState,
+  disablePremiumProgrammatically
 } from "../../utils/page.js";
 import { premiumUrl } from "../../utils/urls.js";
 import {
@@ -105,6 +106,11 @@ async function enablePremiumByUI() {
 export default () => {
   afterEach(async function () {
     await setPremiumFLsDefaultState();
+  });
+
+  after(async function () {
+    await initOptionsGeneralTab(getOptionsHandle());
+    await disablePremiumProgrammatically();
   });
 
   it("activates premium by UI", async function () {

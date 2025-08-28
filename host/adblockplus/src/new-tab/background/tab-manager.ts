@@ -416,11 +416,6 @@ export async function handleCommand(ipmId: string): Promise<void> {
   logger.debug("[new-tab]: tab manager handleCommand", ipmId);
   const { dismissCommand, getBehavior } = getFragment();
 
-  // Don't open new tabs if we're in an automation scenario.
-  if (navigator.webdriver) {
-    return;
-  }
-
   // Don't open new tabs if we're on a managed installation.
   const { installType } = await browser.management.getSelf();
   if ((installType as unknown) === "admin") {

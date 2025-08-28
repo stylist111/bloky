@@ -18,6 +18,21 @@
 
 import { expect } from "expect";
 
+export const expectedIPMCommandsVersions = {
+  test_adblock_versions: {
+    attributes: {
+      language: expect.stringMatching(/^[a-z]{2,3}-[A-Z]{2}$/),
+      received: expect.any(Number),
+    },
+    ipm_id: "test_adblock_versions",
+    command_name: "create_tab",
+    method: "default",
+    expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+    url: "/update?ipmId=test_adblock_versions",
+    version: 6,
+  },
+};
+
 export const expectedIPMCommandsNewtab = {
   test_adblock_newtab: {
     attributes: {
@@ -25,7 +40,6 @@ export const expectedIPMCommandsNewtab = {
       received: expect.any(Number),
     },
     ipm_id: "test_adblock_newtab",
-    device_id: "test_adblock_ipm",
     command_name: "create_tab",
     method: "default",
     expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
@@ -41,7 +55,6 @@ export const expectedIPMCommandsNavigation_future = {
       received: expect.any(Number),
     },
     ipm_id: "test_adblock_navigation_future",
-    device_id: "test_adblock_ipm",
     command_name: "create_on_page_dialog",
     timing: "after_navigation",
     version: 7,
@@ -64,7 +77,6 @@ export const expectedIPMCommandsExclusion_future = {
       received: expect.any(Number),
     },
     ipm_id: "test_adblock_exclusion_future",
-    device_id: "test_adblock_ipm",
     command_name: "create_on_page_dialog",
     timing: "after_navigation",
     version: 7,
@@ -87,7 +99,6 @@ export const expectedIPMCommandsCookie_future = {
       received: expect.any(Number),
     },
     ipm_id: "test_adblock_cookie_future",
-    device_id: "test_adblock_ipm",
     command_name: "create_on_page_dialog",
     timing: "cookie_banner",
     version: 7,
@@ -111,7 +122,6 @@ export const expectedIPMCommandsNavigation_legacy = {
       received: expect.any(Number),
     },
     ipm_id: "test_adblock_navigation_legacy",
-    device_id: "test_adblock_ipm",
     command_name: "create_on_page_dialog",
     timing: "after_navigation",
     version: 7,
@@ -134,7 +144,6 @@ export const expectedIPMCommandsExclusion_legacy = {
       received: expect.any(Number),
     },
     ipm_id: "test_adblock_exclusion_legacy",
-    device_id: "test_adblock_ipm",
     command_name: "create_on_page_dialog",
     timing: "after_navigation",
     version: 7,
@@ -157,7 +166,6 @@ export const expectedIPMCommandsCookie_legacy = {
       received: expect.any(Number),
     },
     ipm_id: "test_adblock_cookie_legacy",
-    device_id: "test_adblock_ipm",
     command_name: "create_on_page_dialog",
     timing: "cookie_banner",
     version: 7,
@@ -181,7 +189,6 @@ export const expectedIPMCommandsPriority = {
       received: expect.any(Number),
     },
     ipm_id: "test_adblock_priority_low",
-    device_id: "test_adblock_ipm",
     command_name: "create_tab",
     method: "default",
     expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
@@ -194,7 +201,6 @@ export const expectedIPMCommandsPriority = {
       received: expect.any(Number),
     },
     ipm_id: "test_adblock_priority_high",
-    device_id: "test_adblock_ipm",
     command_name: "create_tab",
     method: "default",
     license_state_list: "free",
@@ -212,7 +218,6 @@ export const expectedIPMCommandsLowPriority = {
       received: expect.any(Number),
     },
     ipm_id: "test_adblock_priority_low",
-    device_id: "test_adblock_ipm",
     command_name: "create_tab",
     method: "default",
     expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
@@ -228,7 +233,6 @@ export const expectedIPMCommandsPremium = {
       received: expect.any(Number),
     },
     ipm_id: "test_adblock_premium",
-    device_id: "test_adblock_ipm",
     command_name: "create_tab",
     method: "default",
     license_state_list: "free",

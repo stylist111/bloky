@@ -18,13 +18,13 @@
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
 import { port } from "../../../../adblockplusui/adblockpluschrome/lib/messaging/port.js";
-import { type SetRemoteConfigUrlOptions } from "./remote-config.types";
+import { type SetRemoteConfigUrlMessage } from "./remote-config.types";
 
 /**
  * Initializes remote configuration testing functionality
  */
 export function start(): void {
-  port.on("testing.setRemoteConfigUrl", (message: SetRemoteConfigUrlOptions) => {
+  port.on("testing.setRemoteConfigUrl", (message: SetRemoteConfigUrlMessage) => {
     ewe.remoteConfig.setUrl(message.url);
   });
   port.on("testing.syncRemoteConfig", async () => {

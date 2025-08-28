@@ -58,6 +58,7 @@ import { start as startTelemetry } from "~/telemetry/background";
 import { start as startInProductMessaging } from "~/ipm/background";
 import { start as startAddBTRequestHeader } from "~/blockthrough/background";
 import { start as startEWE } from "~/ewe/background";
+import { start as startTestingEwe } from "~/testing/ewe/background";
 
 const serverLogger = new ewe.telemetry.ServerLogger("initialization");
 
@@ -67,9 +68,10 @@ const serverLogger = new ewe.telemetry.ServerLogger("initialization");
  */
 async function bootstrapAsync(): Promise<void> {
   try {
-    // although the following call is not asynchronous by logic,
+    // although the following calls are not asynchronous by logic,
     // it's part of the initialization that doesn't need to be serialized
     startCookieBannerDetection();
+    startTestingEwe();
 
     await Promise.all([startTelemetry()]);
   } catch (ex) {

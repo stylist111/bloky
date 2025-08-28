@@ -37,6 +37,9 @@ import bypassAPI from "./public-api/bypass-api.js";
 import experiments from "./public-api/trusted-iframe-experiments.js";
 import getStatus from "./public-api/trusted-iframe-get-status.js";
 import infoInjector from "./info-injector.js";
+import ipmCampaigns from "./ipm/ipm-campaigns.js";
+import opdCampaigns from "./ipm/opd-campaigns.js";
+import newtabCampaigns from "./ipm/newtab-campaigns.js";
 
 export default () => {
   beforeEach(async function () {
@@ -79,6 +82,12 @@ export default () => {
     describe("Premium", function () {
       describe("Free user", freeUser);
       describe("Premium user", getPremium);
+    });
+
+    describe("IPM", function () {
+      describe("Campaigns - General", ipmCampaigns);
+      describe("Campaigns - OPD", opdCampaigns);
+      describe("Campaigns - Newtab", newtabCampaigns);
     });
 
     // Needs to be the last suite to run because the extension gets uninstalled

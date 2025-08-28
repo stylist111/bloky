@@ -32,9 +32,9 @@ import {
 } from "@eyeo/test-utils/extension";
 import { findUrl, openNewTab } from "@eyeo/test-utils/driver";
 import { localTestPageUrl } from "@eyeo/test-utils/host-urls";
-import { updateUrl } from "../../utils/urls.js";
+import { updateUrlVersions } from "../../utils/urls.js";
 import { initOptionsGeneralTab } from "../../utils/page.js";
-import { expectedIPMCommandsNewtab } from "../../utils/ipms.js";
+import { expectedIPMCommandsVersions } from "../../utils/ipms.js";
 
 export default (fragmentType) => {
   before(async function () {
@@ -70,7 +70,7 @@ export default (fragmentType) => {
       this.skip();
     }
 
-    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_newtab");
+    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_versions");
     const payload = await syncRemoteConfig(initOptionsGeneralTab);
     const { capabilities } = payload.ipm;
     let { pingAlarm } = await driver.executeAsyncScript(async (callback) => {
@@ -98,11 +98,11 @@ export default (fragmentType) => {
       this.skip();
     }
 
-    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_newtab");
+    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_versions");
     await syncRemoteConfig(initOptionsGeneralTab);
 
     let ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
-    expect(ipmCommands).toEqual(expectedIPMCommandsNewtab);
+    expect(ipmCommands).toEqual(expectedIPMCommandsVersions);
 
     await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_delete");
     await syncRemoteConfig(initOptionsGeneralTab);
@@ -111,7 +111,7 @@ export default (fragmentType) => {
     expect(ipmCommands).toEqual({});
 
     await openNewTab(localTestPageUrl);
-    await findUrl(updateUrl, { exists: false });
+    await findUrl(updateUrlVersions, { exists: false });
   });
 
   it("deletes an active campaign (if no longer present in remote config)", async function () {
@@ -125,11 +125,11 @@ export default (fragmentType) => {
       this.skip();
     }
 
-    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_newtab");
+    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_versions");
     await syncRemoteConfig(initOptionsGeneralTab);
 
     let ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
-    expect(ipmCommands).toEqual(expectedIPMCommandsNewtab);
+    expect(ipmCommands).toEqual(expectedIPMCommandsVersions);
 
     await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_none");
     await syncRemoteConfig(initOptionsGeneralTab);
@@ -138,7 +138,7 @@ export default (fragmentType) => {
     expect(ipmCommands).toEqual({});
 
     await openNewTab(localTestPageUrl);
-    await findUrl(updateUrl, { exists: false });
+    await findUrl(updateUrlVersions, { exists: false });
   });
 
   it("checks IPM errors", async function () {
@@ -160,7 +160,7 @@ export default (fragmentType) => {
     expect(ipmCommands).toEqual({});
 
     await openNewTab(localTestPageUrl);
-    await findUrl(updateUrl, { exists: false });
+    await findUrl(updateUrlVersions, { exists: false });
   });
 
   it("does not trigger a campaign on Firefox", async function () {
@@ -168,11 +168,11 @@ export default (fragmentType) => {
       this.skip();
     }
 
-    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_newtab");
+    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_versions");
     const ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
     expect(ipmCommands).toEqual({});
 
     await openNewTab(localTestPageUrl);
-    await findUrl(updateUrl, { exists: false });
+    await findUrl(updateUrlVersions, { exists: false });
   });
 };
