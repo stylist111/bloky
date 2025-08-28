@@ -34,7 +34,27 @@ const urlMatches = [
   { hostEquals: "facebook.com" },
 ];
 
-const btUrls = ["*://btloader.com/tag?*"];
+const baitsURLs = [
+  "*://btloader.com/tag?*",
+  "*://ad-delivery.net/px.gif?ch=1*",
+  "*://ad-delivery.net/px.gif?ch=2*",
+];
+
+function getEventName(url: string, blocked: boolean): string | null {
+  if (url.includes("btloader.com/tag")) {
+    return blocked ? "bt_loader_blocked" : "bt_loader_success";
+  }
+
+  if (url.includes("ad-delivery.net/px.gif?ch=1")) {
+    return blocked ? "aa_bait1_blocked" : "aa_bait1_success";
+  }
+
+  if (url.includes("ad-delivery.net/px.gif?ch=2")) {
+    return blocked ? "aa_bait2_blocked" : "aa_bait2_success";
+  }
+
+  return null;
+}
 
 const serverLogger = new ewe.telemetry.ServerLogger("conflict_detection");
 
@@ -220,15 +240,23 @@ export function start(parameters: StartInfo): void {
   // it indicates that a non-partner extension is present. Save it as a separate data point.
   browser.webRequest.onErrorOccurred.addListener(
     (details): void => {
-      serverLogger.info("bt_loader_blocked", details.error);
+      const { url } = details;
+      const eventName = getEventName(url, true);
+      if (eventName) {
+        serverLogger.info(eventName, details.error);
+      }
     },
-    { urls: btUrls, types: ["script"] },
+    { urls: baitsURLs },
   );
   // Monitor successful requests on *://btloader.com/tag?*, to estimate the impact of the non-partner extensions.
   browser.webRequest.onCompleted.addListener(
     (details): void => {
-      serverLogger.info("bt_loader_success");
+      const { url } = details;
+      const eventName = getEventName(url, false);
+      if (eventName) {
+        serverLogger.info(eventName);
+      }
     },
-    { urls: btUrls, types: ["script"] },
+    { urls: baitsURLs },
   );
 }

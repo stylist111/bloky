@@ -241,8 +241,7 @@ describe("nonpartner-detection", () => {
     expect(port.on).toHaveBeenCalledWith(detectionEvent, expect.any(Function));
   });
 
-  it("should log bt_loader_blocked when webRequest.onErrorOccurred is triggered with correct url", () => {
-    // Arrange
+  it("should log events when webRequest listeners are triggered with correct urls", () => {
     startNonPartnerDetection({
       logger,
       port,
@@ -250,47 +249,46 @@ describe("nonpartner-detection", () => {
       prefs,
     });
 
-    // Find the listener registered for webRequest.onErrorOccurred
-    const addListenerMock = browser.webRequest.onErrorOccurred.addListener;
-    expect(addListenerMock).toHaveBeenCalledWith(expect.any(Function), {
-      urls: ["*://btloader.com/tag?*"],
-      types: ["script"],
-    });
-    const listener = addListenerMock.mock.calls[0][0];
+    const onErrorListener =
+      browser.webRequest.onErrorOccurred.addListener.mock.calls[0][0];
+    const onCompleteListener =
+      browser.webRequest.onCompleted.addListener.mock.calls[0][0];
 
-    // Act
-    const errorDetails = { error: "net::ERR_BLOCKED_BY_CLIENT" };
-    listener(errorDetails);
+    const testCases = [
+      {
+        url: "https://btloader.com/tag?id=123",
+        eventPrefix: "bt_loader",
+      },
+      {
+        url: "https://ad-delivery.net/px.gif?ch=1&id=456",
+        eventPrefix: "aa_bait1",
+      },
+      {
+        url: "https://ad-delivery.net/px.gif?ch=2&id=789",
+        eventPrefix: "aa_bait2",
+      },
+    ];
 
-    // Assert
-    expect(loggingInfoSpy).toHaveBeenCalledWith(
-      "bt_loader_blocked",
-      errorDetails.error,
-    );
-  });
+    for (const { url, eventPrefix } of testCases) {
+      loggingInfoSpy.mockClear();
 
-  it("should log bt_loader_success when webRequest.onCompleted is triggered with correct url", () => {
-    // Arrange
-    startNonPartnerDetection({
-      logger,
-      port,
-      addTrustedMessageTypes,
-      prefs,
-    });
+      // Test onErrorOccurred
+      const errorDetails = {
+        url,
+        error: "net::ERR_BLOCKED_BY_CLIENT",
+      };
+      onErrorListener(errorDetails);
+      expect(loggingInfoSpy).toHaveBeenCalledWith(
+        `${eventPrefix}_blocked`,
+        errorDetails.error,
+      );
 
-    // Find the listener registered for webRequest.onCompleted
-    const addListenerMock = browser.webRequest.onCompleted.addListener;
-    expect(addListenerMock).toHaveBeenCalledWith(expect.any(Function), {
-      urls: ["*://btloader.com/tag?*"],
-      types: ["script"],
-    });
-    const listener = addListenerMock.mock.calls[0][0];
+      loggingInfoSpy.mockClear();
 
-    // Act
-    listener({});
-
-    // Assert
-    expect(loggingInfoSpy).toHaveBeenCalledWith("bt_loader_success");
+      // Test onCompleted
+      onCompleteListener({ url });
+      expect(loggingInfoSpy).toHaveBeenCalledWith(`${eventPrefix}_success`);
+    }
   });
 
   describe("Options Page", () => {

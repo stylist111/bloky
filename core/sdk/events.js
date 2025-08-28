@@ -14,6 +14,26 @@ export default {
     },
     bt_loader_success: {
       description: "BTLoader was successfully loaded"
+    },
+    aa_bait1_blocked: {
+      description: "Acceptable Ads bait 1 was blocked",
+      data: {
+        description: "Browser string indicating the error that occurred",
+        type: "string"
+      }
+    },
+    aa_bait1_success: {
+      description: "Acceptable Ads bait 1 was successfully loaded"
+    },
+    aa_bait2_blocked: {
+      description: "Acceptable Ads bait 2 was blocked",
+      data: {
+        description: "Browser string indicating the error that occurred",
+        type: "string"
+      }
+    },
+    aa_bait2_success: {
+      description: "Acceptable Ads bait 2 was successfully loaded"
     }
   },
   cohorts: {
