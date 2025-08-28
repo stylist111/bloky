@@ -3,6 +3,7 @@
 - Fixed an issue where certain invalid DNR filters in a custom user subscription
   would prevent the other filters in the subscription from
   functioning. (EXT-1074)
+- Updated allowlisted icon to grey (noissue)
 
 # 6.27.1 - 2025-08-27
 

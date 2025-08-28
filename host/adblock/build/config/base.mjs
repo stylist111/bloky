@@ -522,66 +522,6 @@ export default {
         src: "adblock-betafish/options/sync.js",
       },
       {
-        dest: "icons/ab-16.png",
-        src: "icons/adblock-16.png",
-      },
-      {
-        dest: "icons/ab-16-whitelisted.png",
-        src: "icons/adblock-16-whitelisted.png",
-      },
-      {
-        dest: "icons/ab-19.png",
-        src: "icons/adblock-19.png",
-      },
-      {
-        dest: "icons/ab-19-whitelisted.png",
-        src: "icons/adblock-19-whitelisted.png",
-      },
-      {
-        dest: "icons/ab-20.png",
-        src: "icons/adblock-20.png",
-      },
-      {
-        dest: "icons/ab-20-whitelisted.png",
-        src: "icons/adblock-20-whitelisted.png",
-      },
-      {
-        dest: "icons/ab-32.png",
-        src: "icons/adblock-32.png",
-      },
-      {
-        dest: "icons/ab-32-whitelisted.png",
-        src: "icons/adblock-32-whitelisted.png",
-      },
-      {
-        dest: "icons/ab-38.png",
-        src: "icons/adblock-38.png",
-      },
-      {
-        dest: "icons/ab-38-whitelisted.png",
-        src: "icons/adblock-38-whitelisted.png",
-      },
-      {
-        dest: "icons/ab-40.png",
-        src: "icons/adblock-40.png",
-      },
-      {
-        dest: "icons/ab-40-whitelisted.png",
-        src: "icons/adblock-40-whitelisted.png",
-      },
-      {
-        dest: "icons/ab-48.png",
-        src: "icons/adblock-48.png",
-      },
-      {
-        dest: "icons/ab-64.png",
-        src: "icons/adblock-64.png",
-      },
-      {
-        dest: "icons/ab-128.png",
-        src: "icons/adblock-128.png",
-      },
-      {
         dest: "icons/adblock-picreplacement-images-cat.png",
         src: "adblock-betafish/picreplacement/images/cat.png",
       },

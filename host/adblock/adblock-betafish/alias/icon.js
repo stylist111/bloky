@@ -18,9 +18,8 @@
 /*
  * Same as the original source adblockpluschrome/lib/icon.js
  * except:
- * - updated image file names from 'abp-' to 'ab-'
+ * - updated image file names from 'abp-' to 'adblock-'
  * - updated the 'import' paths
- * - use the term 'whitelisted' instead of 'allowlisted' for now
  * - call renderIcons() at the end of the module for all platforms,
  *   not just Chromium
  * - added the showIconBadgeCTA, getNewBadgeTextReason functions
@@ -59,15 +58,15 @@ async function loadImage(url) {
 
 async function renderIcons() {
   let paths = [
-    "icons/ab-16.png",
-    "icons/ab-16-whitelisted.png",
-    "icons/ab-32.png",
-    "icons/ab-32-whitelisted.png",
+    "icons/adblock-16.png",
+    "icons/adblock-16-allowlisted.png",
+    "icons/adblock-32.png",
+    "icons/adblock-32-allowlisted.png",
   ];
 
   for (let path of paths) {
     let image = await loadImage(path);
-    let [, size, allowlisted] = /\/ab-(16|32)(-whitelisted)?\./.exec(path);
+    let [, size, allowlisted] = /\/adblock-(16|32)(-allowlisted)?\./.exec(path);
 
     let canvas = new OffscreenCanvas(size, size);
     let context = canvas.getContext("2d");
@@ -84,17 +83,10 @@ async function renderIcons() {
 async function setIcon(page) {
   const allowlisted = !!(await allowlistedByPage.get(page.id));
 
-  const shouldGrayscale = await ewe.experiments.getFlag("yt-haven-icon-updated");
-  if (allowlisted && shouldGrayscale) {
-    // If the page is allowlisted, we use a grayscale icon
-    setIconPath(page.id, "/icons/adblock-$size-grayscale.png");
-    return;
-  }
-
   if (icons[allowlisted | 0]) {
     setIconImageData(page.id, icons[allowlisted | 0]);
   } else {
-    setIconPath(page.id, "/icons/ab-$size" + (allowlisted ? "-whitelisted" : "") + ".png");
+    setIconPath(page.id, "/icons/adblock-$size" + (allowlisted ? "-allowlisted" : "") + ".png");
   }
 }
 

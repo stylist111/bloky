@@ -38,7 +38,7 @@ let panelWindow = null;
     if (enabled) {
       let panel = await browser.devtools.panels.create(
         "AdBlock",
-        "icons/ab-32.png",
+        "icons/adblock-32.png",
         "devtools-panel.html",
       );
 
