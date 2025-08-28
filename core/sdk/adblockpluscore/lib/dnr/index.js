@@ -118,7 +118,20 @@ async function asDNR(parsedFilter) {
   }
 
   try {
-    const urlPattern = new Pattern(regexpSource, matchCase);
+    let urlPattern;
+    try {
+      urlPattern = new Pattern(regexpSource, matchCase);
+    }
+    catch (e) {
+      if (e instanceof SyntaxError) {
+        return new FilterParsingError("filter_invalid_regexp",
+                                      {
+                                        regexp: regexpSource,
+                                        text
+                                      });
+      }
+      throw e;
+    }
     let {pattern: urlFilter} = urlPattern;
     let checkValidRegExp = true;
     let hostname;
@@ -231,7 +244,11 @@ async function asDNR(parsedFilter) {
           rule.condition.resourceTypes =
             rule.condition.resourceTypes.filter(it => it !== "webbundle");
           if (rule.condition.resourceTypes.length === 0) {
-            throw new Error("No resource types");
+            throw new FilterParsingError("filter_unknown_option",
+                                         {
+                                           option: "webbundle",
+                                           text
+                                         });
           }
         }
 
@@ -239,11 +256,17 @@ async function asDNR(parsedFilter) {
       });
     }
 
-    return result.map(validateRule);
+    for (let rule of result) {
+      validateRule(rule, text);
+    }
+
+    return result;
   }
   catch (error) {
-    return new FilterParsingError("filter_invalid_regexp",
-                                  {regexp: regexpSource, text});
+    if (error instanceof FilterParsingError) {
+      return error;
+    }
+    throw error;
   }
 }
 

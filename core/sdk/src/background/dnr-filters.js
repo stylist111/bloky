@@ -79,7 +79,7 @@ const dynamicFiltersMutex = (() => {
 
 let initializationPromise;
 
-let getRulesFromFilter = () => Promise.resolve({});
+let getRulesFromFilter = () => Promise.resolve([]);
 if (browser.declarativeNetRequest) {
   getRulesFromFilter = createConverter({
     async isRegexSupported(regex) {
@@ -706,7 +706,7 @@ async function getRules(filter) {
     let result = await getRulesFromFilter(filter.text);
     if (result.name == "Error") {
       let {option} = result.detail;
-      throw new FilterError(result.message, result.detail.text, option);
+      throw new FilterError("invalid_filter", result.message, option);
     }
 
     for (let rule of result) {

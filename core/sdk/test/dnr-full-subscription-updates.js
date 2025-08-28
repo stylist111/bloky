@@ -100,6 +100,27 @@ describe("Update using the full update mechanism [mv3-only]", function() {
     await expectElemHideVisible({elemId});
   });
 
+  it("ignores invalid filters and still applies the valid ones in the subscription", async function() {
+    const elemId = "diff-elem-item";
+    const contentFilter = "###diff-elem-item";
+
+    await setEndpointResponse(USER_SUBSCRIPTION_URL, [
+      RESPONSE_HEADER,
+      "||foo^$domain=77978.みんな",
+      "||77978.みんな^",
+      IMAGE,
+      contentFilter
+    ].join("\n"));
+
+    await EWE.subscriptions.add(USER_SUBSCRIPTION_URL);
+    await waitForSubscriptionToBeSynchronized(USER_SUBSCRIPTION_URL);
+
+    await new Page(SINGLE_IMAGE_PAGE)
+      .expectResource(IMAGE)
+      .toBeBlocked();
+    await expectElemHideHidden({elemId, timeout: 10000});
+  });
+
   it("doesn't remove enabled user filters which conflict with subscription filters in the full update", async function() {
     const FILTER = "/image-from-custom-filter.png^$image";
 

@@ -21,6 +21,7 @@
 
 const {contentTypes} = require("../contentTypes");
 const {resources} = require("../../data/resources.js");
+const {FilterParsingError} = require("../filters");
 
 // We differentiate generic rules from specific ones in order to support the
 // conversion of $genericblock exception filters. Since with the
@@ -326,49 +327,43 @@ exports.generateAllowingRules = function(filter, urlFilter, matchCase) {
   return rules;
 };
 
-function validateIsAsciiOnly(str) {
+function validateIsAsciiOnly(str, filterText) {
   // [0-127] range is considered to be allowed ASCII characters
   if (!/^[\x00-\x7F]*$/.test(str)) {
-    throw new Error(`Invalid ASCII characters found in: "${str}"`);
+    throw new FilterParsingError("filter_invalid_domain", {text: filterText});
   }
 }
 exports.validateIsAsciiOnly = validateIsAsciiOnly;
 
-function validateDomains(domains) {
+function validateDomains(domains, filterText) {
   if (domains) {
     for (let domain of domains) {
-      validateIsAsciiOnly(domain);
+      validateIsAsciiOnly(domain, filterText);
     }
   }
 }
 
-function validateCondition(condition) {
+function validateCondition(condition, filterText) {
   if (condition.urlFilter) {
-    validateIsAsciiOnly(condition.urlFilter);
+    validateIsAsciiOnly(condition.urlFilter, filterText);
   }
   if (condition.regexFilter) {
-    validateIsAsciiOnly(condition.regexFilter);
+    validateIsAsciiOnly(condition.regexFilter, filterText);
   }
 
-  validateDomains(condition.initiatorDomains);
-  validateDomains(condition.requestDomains);
+  validateDomains(condition.initiatorDomains, filterText);
+  validateDomains(condition.requestDomains, filterText);
 
   // deprecated starting Chrome 101,
   // but still supported by Safari
-  validateDomains(condition.domains);
-  validateDomains(condition.excludedDomains);
+  validateDomains(condition.domains, filterText);
+  validateDomains(condition.excludedDomains, filterText);
 
   // starting Chrome 101
-  validateDomains(condition.excludedInitiatorDomains);
-  validateDomains(condition.excludedRequestDomains);
+  validateDomains(condition.excludedInitiatorDomains, filterText);
+  validateDomains(condition.excludedRequestDomains, filterText);
 }
 
-exports.validateRule = function(rule) {
-  try {
-    validateCondition(rule.condition);
-    return rule;
-  }
-  catch (e) {
-    return e;
-  }
+exports.validateRule = function(rule, filterText) {
+  validateCondition(rule.condition, filterText);
 };

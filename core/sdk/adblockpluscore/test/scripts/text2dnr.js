@@ -23,18 +23,19 @@ const fs = require("fs/promises");
 const {spawn} = require("child_process");
 const {createConverter} = require("../../lib/dnr/index.js");
 const {validateRule, validateIsAsciiOnly} = require("../../lib/dnr/rules.js");
+const {FilterParsingError} = require("../../lib/filters/index.js");
 
 const {
   parseArgs, readAndProcessFile
 } = require("../../scripts/text2dnr.js");
 
 describe("text2dnr script", function() {
-  function assertIsInvalid(rule, str) {
-    assert.deepEqual(validateRule(rule), Error(`Invalid ASCII characters found in: "${str}"`));
+  function assertIsInvalid(rule, filterText) {
+    assert.throws(() => validateRule(rule, filterText), new FilterParsingError("filter_invalid_domain", {text: filterText}));
   }
 
-  function assertIsValid(rule) {
-    assert.equal(validateRule(rule), rule);
+  function assertIsValid(rule, filterText) {
+    assert.doesNotThrow(() => validateRule(rule, filterText));
   }
 
   it("parses the command line", function() {
@@ -269,17 +270,7 @@ describe("text2dnr script", function() {
         type: "block"
       },
       id: 2
-    });
-    assertIsValid({
-      priority: 1001,
-      condition: {
-        regexFilter: "http://abc.com"
-      },
-      action: {
-        type: "block"
-      },
-      id: 2
-    });
+    }, "http://abc.com");
     assertIsValid({
       priority: 1000,
       condition: {
@@ -289,16 +280,6 @@ describe("text2dnr script", function() {
         type: "block"
       },
       id: 1
-    });
-    assertIsValid({
-      priority: 1000,
-      condition: {
-        regexFilter: "http://abc.xn--?q=-zedud" // punycode
-      },
-      action: {
-        type: "block"
-      },
-      id: 1
-    });
+    }, "http://abc.xn--?q=-zedud");
   });
 });

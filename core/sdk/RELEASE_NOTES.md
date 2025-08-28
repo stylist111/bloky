@@ -10,6 +10,9 @@
   are not, we will as a workaround at least no longer assign rule ids that
   appear in the DNR rules for new dynamic filters. If a feature flag is set,
   this will recreate all DNR dynamic rules if this check fails. (EXT-938)
+- Fixed an issue where certain invalid DNR filters in a custom user subscription
+  would prevent the other filters in the subscription from
+  functioning. (EXT-1074)
 
 # 2.1.0 - 2025-07-31
 

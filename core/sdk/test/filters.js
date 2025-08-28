@@ -22,7 +22,7 @@ import {TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN, SITEKEY,
         CROSS_DOMAIN_URL} from "@eyeo/test-utils/sdk-urls";
 import {Page, setMinTimeout, waitForAssertion, isFirefox, isEdge,
         setEndpointResponse, waitForSubscriptionsToDownload,
-        getMaxDynamicRulesAvailable, sleep} from "./utils.js";
+        getMaxDynamicRulesAvailable, sleep, isMV3} from "./utils.js";
 import {addFilter, EWE, getTestEvents, clearTestEvents, expectTestEvents,
         enableSendTestEvents} from "./messaging.js";
 import {VALID_FILTER_TEXT, COMMENT_FILTER_TEXT, SECOND_VALID_FILTER_TEXT,
@@ -164,6 +164,30 @@ describe("Filters", function() {
         .rejects.toThrow("FilterError: {\"type\":\"invalid_filter\",\"reason\":\"filter_invalid_wildcard\",\"option\":null}");
     await expect(addFilter("||foo^$domain=bar.???"))
       .rejects.toThrow("FilterError: {\"type\":\"invalid_filter\",\"reason\":\"filter_invalid_wildcard\",\"option\":null}");
+  });
+
+  it("rejects to add a single filter with invalid unicode in a url", async function() {
+    const nonAsciiInDomainOption = "||foo^$domain=77978.みんな";
+    await expect(addFilter(nonAsciiInDomainOption))
+      .rejects.toThrow("FilterError: {\"type\":\"invalid_filter\",\"reason\":\"filter_invalid_domain\",\"option\":null}");
+
+    // This filter is considered valid in MV2 but not MV3 because the DNR API
+    // rejects having it in patterns. Even though our MV2 engine accepts
+    // non-ascii in the pattern, it's possible that it isn't matching anything
+    // if URLs are always normalized, so we should consider making them invalid
+    // in MV2 as well.
+    const nonAsciiInPattern = "||77978.みんな^";
+    if (isMV3()) {
+      await expect(addFilter(nonAsciiInPattern))
+        .rejects.toThrow("FilterError: {\"type\":\"invalid_filter\",\"reason\":\"filter_invalid_domain\",\"option\":null}");
+    }
+    else {
+      expect(await addFilter(nonAsciiInPattern))
+        .toEqual({
+          added: [nonAsciiInPattern],
+          exists: []
+        });
+    }
   });
 
   it("adds an allowing filter with sitekey option", async function() {
