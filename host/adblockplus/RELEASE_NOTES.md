@@ -1,5 +1,9 @@
 # Unreleased
 
+- Fixed an issue where certain invalid DNR filters in a custom user subscription
+  would prevent the other filters in the subscription from
+  functioning. (EXT-1074)
+
 # 4.26.0 - 2025-08-27
 
 This release is adding user account integration and small bug fixes.
@@ -8,9 +12,6 @@ This release is adding user account integration and small bug fixes.
   extensions. (EXT-938)
 - Updated snippets to 2.4.0
 - Added user account integration. (EXT-1013)
-- Fixed an issue where certain invalid DNR filters in a custom user subscription
-  would prevent the other filters in the subscription from
-  functioning. (EXT-1074)
 
 # 4.25.1 - 2025-08-18
 
