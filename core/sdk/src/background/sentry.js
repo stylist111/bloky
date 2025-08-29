@@ -27,7 +27,7 @@ import {v4 as uuidv4} from "uuid";
 import browser from "./browser.js";
 import {PersistentState} from "./persistence.js";
 
-const defaultSampleRate = 0.002;
+const defaultSampleRate = 0.01;
 
 let lastEvent;
 let sampleRate = defaultSampleRate;
