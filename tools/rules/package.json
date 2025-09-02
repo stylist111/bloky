@@ -24,7 +24,7 @@
     "test:end-to-end": "vitest run --root test/end-to-end --reporter=verbose"
   },
   "dependencies": {
-    "@eyeo/filterlists": "1.0.41",
+    "@eyeo/filterlists": "1.0.42",
     "vitest": "3.0.9"
   },
   "peerDependencies": {
