@@ -4,6 +4,7 @@
   would prevent the other filters in the subscription from
   functioning. (EXT-1074)
 - Updated allowlisted icon to grey (noissue)
+- Updated snippets to 2.4.1
 
 # 6.27.1 - 2025-08-27
 

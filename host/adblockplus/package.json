@@ -107,7 +107,7 @@
     "@eyeo-fragments/yt-wall-detection": "*",
     "@eyeo/ext-ui-components": "*",
     "@eyeo/rules-utils": "*",
-    "@eyeo/snippets": "2.4.0",
+    "@eyeo/snippets": "2.4.1",
     "@eyeo/webext-ad-filtering-solution": "*",
     "@types/webextension-polyfill": "0.12.0",
     "argparse": "1.0.10",
