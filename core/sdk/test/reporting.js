@@ -339,6 +339,18 @@ describe("Reporting", function() {
                 requestMatches;
             });
             return !isRetryRequest;
+          })
+          .filter(event => {
+            // From Chrome 140, Chrome has added their "DSE Prewarming" feature
+            // which will load https://www.google.com/warmup.html to download
+            // some extra resources like fonts when it thinks you might want to
+            // make a Google seach soon.
+            let isChromeWarmup =
+                event.request.documentLifecycle == "prerender" &&
+                (event.request.url == "https://www.google.com/warmup.html" ||
+                    event.request.initiator == "https://www.google.com");
+
+            return !isChromeWarmup;
           });
     }
 
