@@ -170,6 +170,9 @@ const openNewtabOnUpdated = (
   const onUpdatedHandler = onNewTabUpdateHandlerByIpmId.get(ipmId);
   onNewTabUpdateHandlerByIpmId.delete(ipmId);
   browser.tabs.onUpdated.removeListener(onUpdatedHandler);
+  if (isFutureFragment()) {
+    serverLogger.info("tab_loaded", ipmId);
+  }
   recordLegacyEvent(ipmId, NewTabEventType.loaded);
 };
 
@@ -261,8 +264,8 @@ async function openNewtab(): Promise<void> {
     // origin requirements.
     const targetUrl = createSafeOriginUrl(behavior.target);
     if (!targetUrl) {
-      recordLegacyEvent(ipmId, NewTabErrorEventType.noUrlFound);
       logger.debug("[new-tab]: Invalid target URL.");
+      recordLegacyEvent(ipmId, NewTabErrorEventType.noUrlFound);
       dismissCommand(ipmId);
       continue;
     }
@@ -331,6 +334,9 @@ async function openNewtab(): Promise<void> {
 
     // eslint-disable-next-line no-await-in-loop
     await Prefs.set(lastShownKey, Date.now());
+    if (isFutureFragment()) {
+      serverLogger.info("tab_created", ipmId);
+    }
     recordLegacyEvent(ipmId, NewTabEventType.created);
     dismissCommand(ipmId);
   }
@@ -453,7 +459,7 @@ async function handleCommand(ipmId: string): Promise<void> {
   }
 
   await settings.onload();
-  // Ignore and dismiss command if user opted-out of 'surveys'
+  // Ignore and dismiss command if user opted-out of 'update-page'
   if (getSettings().suppress_update_page) {
     logger.debug("[new-tab]:suppress_update_page - true");
     recordLegacyEvent(ipmId, NewTabExitEventType.disabled);
@@ -471,7 +477,6 @@ async function handleCommand(ipmId: string): Promise<void> {
     return;
   }
 
-  // Let the IPM know we received the command.
   recordLegacyEvent(ipmId, NewTabEventType.received);
 
   waitingTabs[ipmId] = { behavior, ipmId };

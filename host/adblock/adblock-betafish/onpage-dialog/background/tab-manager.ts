@@ -270,6 +270,9 @@ async function handleCloseMessage(message: Message, sender: MessageSender): Prom
   }
 
   void removeDialog(sender.page.id, dialog);
+  if (isFutureFragment()) {
+    serverLogger.behavior("dialog_closed", dialog.ipmId ?? "");
+  }
   recordLegacyEvent(dialog, DialogEventType.closed);
 }
 
@@ -297,6 +300,9 @@ async function handleContinueMessage(message: Message, sender: MessageSender): P
   void browser.tabs.create({ url: safeTargetUrl });
 
   void removeDialog(sender.page.id, dialog);
+  if (isFutureFragment()) {
+    serverLogger.behavior("dialog_button_clicked", dialog.ipmId ?? "");
+  }
   recordLegacyEvent(dialog, DialogEventType.buttonClicked);
 }
 
@@ -358,6 +364,9 @@ async function handlePingMessage(message: Message, sender: MessageSender): Promi
   }
 
   void removeDialog(sender.page.id, dialog);
+  if (isFutureFragment()) {
+    serverLogger.behavior("dialog_ignored", dialog.ipmId ?? "");
+  }
   recordLegacyEvent(dialog, DialogEventType.ignored);
 }
 
@@ -403,6 +412,9 @@ function handleTabRemovedEvent(data: TabRemovedEventData): void {
   }
 
   void removeDialog(tabId, dialog);
+  if (isFutureFragment()) {
+    serverLogger.behavior("dialog_ignored", dialog.ipmId ?? "");
+  }
   recordLegacyEvent(dialog, DialogEventType.ignored);
 }
 
@@ -410,56 +422,36 @@ function handleTabRemovedEvent(data: TabRemovedEventData): void {
  * Injects the necessary user style and content script into the tab
  * to display the on-page dialog
  *
- * @param tabId - Tab ID
- *
- * @returns true on success, false on error
+ * @param tabId - ID of tab in which to show the dialog
  */
-async function injectScriptAndStyle(tabId: number): Promise<boolean> {
+async function injectDialog(tabId: number): Promise<void> {
   // We only inject styles into the page when we actually need them. Otherwise
   // websites may use them to detect the presence of the extension. For content
   // scripts this is not a problem, because those only interact with the web
   // page when we tell them to. Therefore we inject them via manifest.json.
-  try {
-    if (browser.scripting) {
-      await browser.scripting.insertCSS({
-        files: ["adblock-onpage-dialog-user.css"],
-        origin: "USER",
-        target: { tabId },
-      });
-      await browser.scripting.executeScript({
-        files: ["onpage-dialog.postload.js"],
-        target: { tabId },
-      });
-    } else {
-      await browser.tabs.insertCSS(tabId, {
-        file: "adblock-onpage-dialog-user.css",
-        allFrames: false,
-        cssOrigin: "user",
-        runAt: "document_start",
-      });
-      await browser.tabs.executeScript(tabId, {
-        file: "onpage-dialog.postload.js",
-        allFrames: false,
-      });
-    }
-    return true;
-  } catch (error: unknown) {
-    logger.error("Injection of Dialog css & script failed");
-    logger.error(error);
-    return false;
+  logger.debug("[onpage-dialog]: Injecting dialog");
+  if (browser.scripting) {
+    await browser.scripting.insertCSS({
+      files: ["adblock-onpage-dialog-user.css"],
+      origin: "USER",
+      target: { tabId },
+    });
+    await browser.scripting.executeScript({
+      files: ["onpage-dialog.postload.js"],
+      target: { tabId },
+    });
+  } else {
+    await browser.tabs.insertCSS(tabId, {
+      file: "adblock-onpage-dialog-user.css",
+      allFrames: false,
+      cssOrigin: "user",
+      runAt: "document_start",
+    });
+    await browser.tabs.executeScript(tabId, {
+      file: "onpage-dialog.postload.js",
+      allFrames: false,
+    });
   }
-}
-
-/**
- * Injects the user style and content script into the tab to show the Dialog
- * Updates the statistics on successful injection of the Dialog
- *
- * @param tabId - Tab ID
- * @param ipmId - IPM ID
- */
-async function addDialog(tabId: number): Promise<boolean> {
-  logger.debug("[onpage-dialog]: addDialog");
-  return injectScriptAndStyle(tabId);
 }
 
 /**
@@ -566,12 +558,17 @@ export async function showOnpageDialog(
   });
   await Prefs.set(lastShownKey, now);
 
-  const successfulInjection = await addDialog(tabId);
-  if (!successfulInjection) {
+  try {
+    await injectDialog(tabId);
+  } catch (ex) {
+    logger.reportAndLogError(ex, "[onpage-dialog] Injection of dialog failed");
     recordLegacyEvent(dialog, DialogEventType.injected_error);
     return ShowOnpageDialogResult.error;
   }
 
+  if (isFutureFragment()) {
+    serverLogger.info("dialog_injected", dialog.ipmId ?? "");
+  }
   recordLegacyEvent(dialog, DialogEventType.injected);
   return ShowOnpageDialogResult.shown;
 }

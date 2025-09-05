@@ -54,5 +54,9 @@ export enum ShowOnpageDialogResult {
   /**
    * Dialog was shown
    */
-  shown
+  shown,
+  /**
+   * Error during processing
+   */
+  error
 }

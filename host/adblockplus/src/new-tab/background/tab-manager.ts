@@ -135,7 +135,7 @@ export async function isCoolDownPeriodOngoing(): Promise<boolean> {
  * @param ipmId The ipm id to register the event for
  * @param name The event name to register
  */
-function recordsLegacyEvent(
+function recordLegacyEvent(
   ipmId: string,
   name: CommandEventType | CreationSuccess | CreationError | CreationRejection
 ): void {
@@ -170,7 +170,10 @@ function onNewTabUpdated(
     return;
   }
 
-  recordsLegacyEvent(ipmId, CreationSuccess.loaded);
+  if (isFutureFragment()) {
+    serverLogger.info("tab_loaded", ipmId);
+  }
+  recordLegacyEvent(ipmId, CreationSuccess.loaded);
 
   const listener = onNewTabUpdateHandlerByIpmId.get(ipmId);
   if (typeof listener === "undefined") {
@@ -229,7 +232,7 @@ async function openNewTab(): Promise<void> {
     const behavior = getBehavior(ipmId);
     if (!isNewTabBehavior(behavior)) {
       logger.debug("[new-tab]: Invalid command behavior.");
-      recordsLegacyEvent(ipmId, CreationError.invalidBehavior);
+      recordLegacyEvent(ipmId, CreationError.invalidBehavior);
       dismissCommand(ipmId);
       continue;
     }
@@ -237,7 +240,7 @@ async function openNewTab(): Promise<void> {
     // Ignore and dismiss command if license states mismatch.
     if (!(await doesLicenseStateMatch(behavior))) {
       logger.debug("[new-tab]: License state mismatch.");
-      recordsLegacyEvent(ipmId, CreationError.licenseStateMismatch);
+      recordLegacyEvent(ipmId, CreationError.licenseStateMismatch);
       dismissCommand(ipmId);
       continue;
     }
@@ -247,7 +250,7 @@ async function openNewTab(): Promise<void> {
     const targetUrl = createSafeOriginUrl(behavior.target);
     if (targetUrl === null) {
       logger.debug("[new-tab]: Invalid target URL.");
-      recordsLegacyEvent(ipmId, CreationError.invalidURL);
+      recordLegacyEvent(ipmId, CreationError.invalidURL);
       dismissCommand(ipmId);
       continue;
     }
@@ -275,7 +278,7 @@ async function openNewTab(): Promise<void> {
     }
     if (isCommandExpired(command)) {
       logger.error("[new-tab]: Command has expired.");
-      recordsLegacyEvent(ipmId, CommandEventType.expired);
+      recordLegacyEvent(ipmId, CommandEventType.expired);
       dismissCommand(ipmId);
       continue;
     }
@@ -291,7 +294,7 @@ async function openNewTab(): Promise<void> {
     } catch (ex) {
       // There was an error during tab creation. Let's retry later.
       logger.error(`[new-tab]: Tab creation error for IPM id "${ipmId}"`, ex);
-      recordsLegacyEvent(ipmId, CreationError.tabCreationError);
+      recordLegacyEvent(ipmId, CreationError.tabCreationError);
       continue;
     }
 
@@ -299,7 +302,7 @@ async function openNewTab(): Promise<void> {
       logger.error(
         `[new-tab]: Invalid ID "${tabId}" for created tab for IPM ID "${ipmId}"`
       );
-      recordsLegacyEvent(ipmId, CreationError.tabCreationError);
+      recordLegacyEvent(ipmId, CreationError.tabCreationError);
       continue;
     }
 
@@ -307,7 +310,10 @@ async function openNewTab(): Promise<void> {
     onNewTabUpdateHandlerByIpmId.set(ipmId, loadEventListener);
 
     await Prefs.set(lastShownKey, Date.now());
-    recordsLegacyEvent(ipmId, CreationSuccess.created);
+    if (isFutureFragment()) {
+      serverLogger.info("tab_created", ipmId);
+    }
+    recordLegacyEvent(ipmId, CreationSuccess.created);
     dismissCommand(ipmId);
   }
 }
@@ -419,17 +425,17 @@ export async function handleCommand(ipmId: string): Promise<void> {
   // Don't open new tabs if we're on a managed installation.
   const { installType } = await browser.management.getSelf();
   if ((installType as unknown) === "admin") {
-    recordsLegacyEvent(ipmId, CreationRejection.admin);
+    recordLegacyEvent(ipmId, CreationRejection.admin);
     dismissCommand(ipmId);
     return;
   }
 
-  // Don't open new tabs if something's wrong with the data we got.
   const behavior = getBehavior(ipmId);
 
+  // Don't open new tabs if something's wrong with the data we got.
   if (!isNewTabBehavior(behavior)) {
     logger.debug("[new-tab]: Invalid command behavior.");
-    recordsLegacyEvent(ipmId, CreationError.invalidBehavior);
+    recordLegacyEvent(ipmId, CreationError.invalidBehavior);
     dismissCommand(ipmId);
     return;
   }

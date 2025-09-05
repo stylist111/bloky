@@ -263,11 +263,53 @@ export default {
         description: "IPM command ID",
         type: "string"
       }
+    },
+    tab_created: {
+      description: "A tab has been created for the IPM command",
+      data: {
+        description: "IPM command ID",
+        type: "string"
+      }
+    },
+    tab_loaded: {
+      description: "The contents of the tab for the IPM command have been loaded",
+      data: {
+        description: "IPM command ID",
+        type: "string"
+      }
     }
   },
   onpage_dialog: {
     command_ready: {
       description: "'create_on_page_dialog' IPM command has passed all checks and on-page dialog is going to be created at the next possible opportunity",
+      data: {
+        description: "IPM command ID",
+        type: "string"
+      }
+    },
+    dialog_button_clicked: {
+      description: "The user clicked on the button presented on the dialog",
+      data: {
+        description: "IPM command ID",
+        type: "string"
+      }
+    },
+    dialog_closed: {
+      description: "The user closed the dialog by clicking the close icon in the dialog header",
+      data: {
+        description: "IPM command ID",
+        type: "string"
+      }
+    },
+    dialog_ignored: {
+      description: "The user did not interact with the dialog while being injected into the page, and the dialog no longer can be interacted with",
+      data: {
+        description: "IPM command ID",
+        type: "string"
+      }
+    },
+    dialog_injected: {
+      description: "The extension injected the dialog into the page and rendered it. This doesn’t mean that the dialog is visible to the user, or that it looks as expected",
       data: {
         description: "IPM command ID",
         type: "string"

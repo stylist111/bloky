@@ -234,6 +234,9 @@ async function handleCloseMessage(
   }
 
   void removeDialog(sender.tab.id);
+  if (isFutureFragment()) {
+    serverLogger.behavior("dialog_closed", dialog.ipmId ?? "");
+  }
   recordLegacyEvent(dialog, DialogEventType.closed);
 }
 
@@ -266,6 +269,9 @@ async function handleContinueMessage(
   void browser.tabs.create({ url: safeTargetUrl });
 
   void removeDialog(sender.tab.id);
+  if (isFutureFragment()) {
+    serverLogger.behavior("dialog_button_clicked", dialog.ipmId ?? "");
+  }
   recordLegacyEvent(dialog, DialogEventType.buttonClicked);
 }
 
@@ -354,6 +360,9 @@ async function handlePingMessage(
   }
 
   void removeDialog(sender.tab.id);
+  if (isFutureFragment()) {
+    serverLogger.behavior("dialog_ignored", dialog.ipmId ?? "");
+  }
   recordLegacyEvent(dialog, DialogEventType.ignored);
 }
 
@@ -370,6 +379,9 @@ function handleTabRemovedEvent(data: TabRemovedEventData): void {
   }
 
   void removeDialog(tabId);
+  if (isFutureFragment()) {
+    serverLogger.behavior("dialog_ignored", dialog.ipmId ?? "");
+  }
   recordLegacyEvent(dialog, DialogEventType.ignored);
 }
 
@@ -618,8 +630,16 @@ export async function showOnpageDialog(
   });
   await Prefs.set(lastShownKey, now);
 
-  await addDialog(tabId);
+  try {
+    await injectDialog(tabId);
+  } catch (ex) {
+    logger.reportAndLogError(ex, "[onpage-dialog] Injection of dialog failed");
+    return ShowOnpageDialogResult.error;
+  }
 
+  if (isFutureFragment()) {
+    serverLogger.info("dialog_injected", dialog.ipmId ?? "");
+  }
   recordLegacyEvent(dialog, DialogEventType.injected);
 
   return ShowOnpageDialogResult.shown;
@@ -631,11 +651,12 @@ export async function showOnpageDialog(
  *
  * @param tabId - ID of tab in which to show the dialog
  */
-async function addDialog(tabId: number): Promise<void> {
+async function injectDialog(tabId: number): Promise<void> {
   // We only inject styles into the page when we actually need them. Otherwise
   // websites may use them to detect the presence of the extension. For content
   // scripts this is not a problem, because those only interact with the web
   // page when we tell them to. Therefore we inject them via manifest.json.
+  logger.debug("[onpage-dialog]: Injecting dialog");
   if (browser.scripting) {
     await browser.scripting.insertCSS({
       files: ["skin/onpage-dialog.css"],
