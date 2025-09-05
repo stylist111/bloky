@@ -596,7 +596,7 @@ describe("Blocking", function() {
       await new Page("image.html").expectResource("image.png").toBeBlocked();
     });
 
-    it("blocks request after filter expiration, set with setMetadata [fuzz]", async function() {
+    it("blocks request after filter expiration, set with setMetadata", async function() {
       setMinTimeout(this, 30000);
       const allowlistingFilter = `@@||${TEST_PAGES_DOMAIN}^$document`;
 
@@ -619,7 +619,7 @@ describe("Blocking", function() {
       await new Page("image.html").expectResource("image.png").toBeBlocked();
     });
 
-    it("blocks request after extended expiration [fuzz]", async function() {
+    it("blocks request after extended expiration", async function() {
       setMinTimeout(this, 30000);
 
       const autoExtendMs = 5000;
@@ -649,7 +649,7 @@ describe("Blocking", function() {
       await new Page("image.html").expectResource("image.png").toBeBlocked();
     });
 
-    it("blocks request after extended expiration, set with setMetadata [fuzz]", async function() {
+    it("blocks request after extended expiration, set with setMetadata", async function() {
       setMinTimeout(this, 30000);
       const allowlistingFilter = `@@||${TEST_PAGES_DOMAIN}^$document`;
 

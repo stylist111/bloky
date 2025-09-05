@@ -27,6 +27,7 @@ import {BROWSERS, getMajorVersion} from "@eyeo/get-browser-binary";
 import {runSDKTestServer, killSDKTestServer} from "@eyeo/test-utils/test-server-manager";
 
 import {isMain} from "../../scripts/utils.js";
+import {wait} from "../polling.js";
 import {getHandle, switchToHandle, getNewDriver, writeScreenshot, setMinDriverTimeout, quitDriver} from "./driver.js";
 
 const isScriptInvokedFromCLI = isMain(import.meta.url);
@@ -531,11 +532,16 @@ async function suspendServiceWorker(driver, handle) {
     async() => {
       await driver.switchTo().newWindow("tab");
       await driver.get("chrome://serviceworker-internals/");
-      let stopButtons = await driver.findElements(webdriver.By.css(".stop,[data-command=stop]"));
 
-      if (stopButtons.length == 0) {
-        throw new Error("No service workers to stop.");
-      }
+      let stopButtons;
+      let startButtons;
+
+      await wait(async() => {
+        stopButtons = await driver.findElements(webdriver.By.css(".stop,[data-command=stop]"));
+        startButtons = await driver.findElements(webdriver.By.css(".start,[data-command=start]"));
+
+        return (stopButtons.length != 0 || startButtons.length != 0);
+      }, 2000, "No service workers to stop.");
 
       for (let stopButton of stopButtons) {
         if (await stopButton.isDisplayed()) {
