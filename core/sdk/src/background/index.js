@@ -327,6 +327,8 @@ async function onInstalled(details) {
  *                                 is completed.
  */
 export async function start(addonInfo) {
+  performance.mark("sdk.start");
+
   if (isSafari()) {
     patchForSafari(false);
   }
@@ -388,6 +390,7 @@ export async function start(addonInfo) {
   // errors when getting and removing custom rules.
   filters.deferredStart();
 
+  performance.measure("sdk.start", "sdk.start");
   return firstRun;
 }
 

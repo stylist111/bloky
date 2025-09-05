@@ -204,6 +204,7 @@ async function testStorage() {
 }
 
 const start = async function () {
+  performance.mark("adblock.initialize");
   let addonInfo = {
     bundledSubscriptions: rulesIndex,
     bundledSubscriptionsPath: "/data/rules/abp",

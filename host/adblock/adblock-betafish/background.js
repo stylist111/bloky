@@ -19,6 +19,7 @@
 /* global browser, ext, twitchChannelNamePages, ytChannelNamePages */
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
+import { getPerformanceTimings } from "@eyeo/webext-ad-filtering-solution/all/profiling";
 
 import * as info from "info";
 import { start as startConflictDetection } from "@eyeo-fragments/conflict-detection/background";
@@ -693,11 +694,21 @@ initialize
     });
   })
   .then(async () => {
+    performance.measure("adblock.initialize", "adblock.initialize");
+
+    let availableStaticRuleCount = null;
+    if (browser.declarativeNetRequest) {
+      availableStaticRuleCount = await browser.declarativeNetRequest.getAvailableStaticRuleCount();
+    }
+
     initializationServerLogger.debug("initialization_complete", {
+      availableStaticRuleCount,
       subscriptionsCount: (await ewe.subscriptions.getSubscriptions()).length,
+      timings: getPerformanceTimings(),
     });
   })
   .catch((e) => {
+    performance.measure("adblock.initialize.error", "adblock.initialize");
     const hasInternalError = /internal error/i.test(e.message);
     if (hasInternalError) {
       // Send the error message to the log server when internal error occurs.
@@ -717,6 +728,7 @@ initialize
     initializationServerLogger.debug("initialization_error", {
       errorMsg: e.message,
       hasInternalError,
+      timings: getPerformanceTimings(),
     });
 
     throw e;

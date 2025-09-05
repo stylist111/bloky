@@ -125,6 +125,54 @@ export default {
           subscriptionsCount: {
             description: "The number of subscriptions the user has active",
             type: "number"
+          },
+          availableStaticRuleCount: {
+            description: "The number of DNR static rules that the user has available, or null for MV2 extensions",
+            type: ["number", "null"]
+          },
+          timings: {
+            description: "Profiling information about startup performance",
+            type: "object",
+            properties: {
+              marks: {
+                type: "array",
+                description: "Specific points in time when something happened",
+                items: {
+                  type: "object",
+                  properties: {
+                    name: {
+                      description: "Name of the initialization step",
+                      type: "string"
+                    },
+                    startTime: {
+                      description: "Milliseconds elapsed since the service worker started",
+                      type: "number"
+                    }
+                  }
+                }
+              },
+              measures: {
+                type: "array",
+                description: "Measurements of how long steps took",
+                items: {
+                  type: "object",
+                  properties: {
+                    name: {
+                      description: "Name of the initialization step",
+                      type: "string"
+                    },
+                    startTime: {
+                      description: "When the measure started, in milliseconds elapsed since the service worker started",
+                      type: "number"
+                    },
+                    duration: {
+                      description: "Duration that the step took in milliseconds",
+                      type: "number"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -142,6 +190,50 @@ export default {
           hasInternalError: {
             description: "Whether or not the error string matched 'internal error' which indicates that it is a browser error",
             type: "boolean"
+          },
+          timings: {
+            description: "Profiling information about startup performance",
+            type: "object",
+            properties: {
+              marks: {
+                type: "array",
+                description: "Specific points in time when something happened",
+                items: {
+                  type: "object",
+                  properties: {
+                    name: {
+                      description: "Name of the initialization step",
+                      type: "string"
+                    },
+                    startTime: {
+                      description: "Milliseconds elapsed since the service worker started",
+                      type: "number"
+                    }
+                  }
+                }
+              },
+              measures: {
+                type: "array",
+                description: "Measurements of how long steps took",
+                items: {
+                  type: "object",
+                  properties: {
+                    name: {
+                      description: "Name of the initialization step",
+                      type: "string"
+                    },
+                    startTime: {
+                      description: "When the measure started, in milliseconds elapsed since the service worker started",
+                      type: "number"
+                    },
+                    duration: {
+                      description: "Duration that the step took in milliseconds",
+                      type: "number"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }

@@ -24,3 +24,6 @@ import "./ui";
 
 // Type definitions for ewe-content-api.js
 import "./content-api";
+
+// Type definitions for src/all
+import "./all";

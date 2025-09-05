@@ -52,6 +52,7 @@ import { start as startGlobals } from "../../globals/background";
 import { start as startPublicAPI } from "@eyeo-fragments/public-api";
 import { port, addTrustedMessageTypes } from "~/core/messaging/background";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
+import { getPerformanceTimings } from "@eyeo/webext-ad-filtering-solution/all/profiling.js";
 import { hasActiveLicense } from "~/premium/background";
 import { info } from "~/info/background";
 import { start as startTelemetry } from "~/telemetry/background";
@@ -105,6 +106,8 @@ function bootstrapSync(): void {
  * Runs initialization of each extension functionality
  */
 async function bootstrap(): Promise<void> {
+  performance.mark("adblockplus.bootstrap");
+
   bootstrapSync();
 
   // startEWE is meant to be called in the first turn of the event loop,
@@ -172,18 +175,30 @@ async function bootstrap(): Promise<void> {
   void startAddBTRequestHeader();
 
   setReadyState(ReadyState.started);
+  performance.measure("adblockplus.bootstrap", "adblockplus.bootstrap");
 }
 
 void bootstrap()
   .then(async () => {
+    let availableStaticRuleCount = null;
+    if (browser.declarativeNetRequest) {
+      availableStaticRuleCount =
+        await browser.declarativeNetRequest.getAvailableStaticRuleCount();
+    }
+
     serverLogger.debug("initialization_complete", {
-      subscriptionsCount: (await ewe.subscriptions.getSubscriptions()).length
+      availableStaticRuleCount,
+      subscriptionsCount: (await ewe.subscriptions.getSubscriptions()).length,
+      timings: getPerformanceTimings()
     });
   })
   .catch((e) => {
+    performance.measure("adblockplus.bootstrap.error", "adblockplus.bootstrap");
+
     serverLogger.debug("initialization_error", {
       errorMsg: e.message,
-      hasInternalError: /internal error/i.test(e.message as string)
+      hasInternalError: /internal error/i.test(e.message as string),
+      timings: getPerformanceTimings()
     });
 
     throw e;

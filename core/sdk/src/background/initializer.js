@@ -47,6 +47,7 @@ export default {
     printLog();
     if (!startupPromise) {
       startupPromise = (async() => {
+        performance.mark("sdk.initializer");
         log("initializer started");
         if (isSafari()) {
           await patchForSafari();
@@ -59,6 +60,7 @@ export default {
         await frameState.start();
         await initDNRFilters();
         await cdp.start();
+        performance.measure("sdk.initializer", "sdk.initializer");
       })();
     }
     return startupPromise;

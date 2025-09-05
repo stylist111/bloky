@@ -115,6 +115,7 @@ class FilterEngine {
   initialize(filterSource) {
     if (!this._initializationPromise) {
       if (typeof filterSource == "undefined") {
+        performance.mark("adblockpluscore.filterEngine.initialize");
         // Note: filterListener.js and filterStorage.js must be loaded
         // conditionally here in local scope in order for the engine
         // to be able to work in standalone mode with no disk and
@@ -126,6 +127,10 @@ class FilterEngine {
         this._initializationPromise = this._filterListener.initialize(
           this, this._filterStorage
         );
+        this._initializationPromise.then(() => {
+          performance.measure("adblockpluscore.filterEngine.initialize",
+                              "adblockpluscore.filterEngine.initialize");
+        });
       }
       else {
         this._initializationPromise = Promise.resolve().then(() => {

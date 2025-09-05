@@ -21,6 +21,7 @@ import {subscriptionFileExists, rulesetExistsInManifest}
 export async function validate(bundledSubscriptions,
                                bundledSubscriptionsPath) {
   let warnings = [];
+  performance.mark("sdk.subscriptions.validate");
 
   for (let subscription of bundledSubscriptions) {
     let fileExists = await subscriptionFileExists(
@@ -34,5 +35,6 @@ export async function validate(bundledSubscriptions,
     }
   }
 
+  performance.measure("sdk.subscriptions.validate", "sdk.subscriptions.validate");
   return warnings;
 }
