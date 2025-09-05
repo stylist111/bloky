@@ -328,9 +328,12 @@ const postLoadInitialize = function () {
   $("#separator_help").show();
 };
 
-/* eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars */
 const showHelpSetupPage = function () {
   loadHTMLSegments().then(() => {
     postLoadInitialize();
   });
 };
+
+Object.assign(window, {
+  showHelpSetupPage,
+});
