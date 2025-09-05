@@ -34,7 +34,6 @@ import {EventDispatcher} from "./types.js";
 import {convertFilter} from "./filters.js";
 import {disableDynamicRules} from "./dnr-filters.js";
 import {default as sentry} from "./sentry.js";
-import {ServerLogger} from "./telemetry/server-logger.js";
 import {Prefs} from "./prefs.js";
 
 const ACCEPTABLE_ADS_ID = "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F";
@@ -722,78 +721,28 @@ export default {
    * @return {Promise}
    */
   async addDefaults(uiLanguage, force = false) {
-    const serverLogger = new ServerLogger("initialization");
+    let subscriptions = [];
 
-    let beforeRulesets = [];
-    let beforeAvailableStaticRuleCount = 0;
-    let beforeSubscriptionCount;
-    let afterRulesets = [];
-    let afterAvailableStaticRuleCount = 0;
-    let afterSubscriptionCount;
-
-    try {
-      if (browser.declarativeNetRequest) {
-        beforeRulesets =
-          await browser.declarativeNetRequest.getEnabledRulesets();
-        beforeAvailableStaticRuleCount =
-          await browser.declarativeNetRequest.getAvailableStaticRuleCount();
-        beforeSubscriptionCount =
-          getSubscriptions().filter(s => s.enabled).length;
+    if (force || shouldAddDefaultSubscriptions()) {
+      let defaultSubscriptions = getDefaultSubscriptions(uiLanguage);
+      if (!defaultSubscriptions.hasDefaultLang) {
+        throw Error("No default language subscription");
       }
 
-      let subscriptions = [];
-
-      if (force || shouldAddDefaultSubscriptions()) {
-        let defaultSubscriptions = getDefaultSubscriptions(uiLanguage);
-        if (!defaultSubscriptions.hasDefaultLang) {
-          throw Error("No default language subscription");
-        }
-
-        if (!defaultSubscriptions.hasAntiCV) {
-          throw Error("No anti-circumvention subscription");
-        }
-
-        if (!defaultSubscriptions.hasAA) {
-          throw Error("No allowing subscription");
-        }
-
-        subscriptions.push(...defaultSubscriptions.chosenSubscriptions);
+      if (!defaultSubscriptions.hasAntiCV) {
+        throw Error("No anti-circumvention subscription");
       }
 
-      for (let subscription of subscriptions) {
-        await this.add(browser.declarativeNetRequest ?
-          subscription.url : subscription.mv2URL);
+      if (!defaultSubscriptions.hasAA) {
+        throw Error("No allowing subscription");
       }
 
-      if (browser.declarativeNetRequest) {
-        afterRulesets =
-          await browser.declarativeNetRequest.getEnabledRulesets();
-        afterAvailableStaticRuleCount =
-          await browser.declarativeNetRequest.getAvailableStaticRuleCount();
-        afterSubscriptionCount =
-          getSubscriptions().filter(s => s.enabled).length;
-
-        serverLogger.debug("adddefaults_complete", {
-          beforeRulesets,
-          afterRulesets,
-          beforeAvailableStaticRuleCount,
-          afterAvailableStaticRuleCount,
-          beforeSubscriptionCount,
-          afterSubscriptionCount
-        });
-      }
+      subscriptions.push(...defaultSubscriptions.chosenSubscriptions);
     }
-    catch (error) {
-      serverLogger.debug("adddefaults_error", {
-        error: error.message,
-        stack: error.stack,
-        force,
-        beforeRulesets,
-        beforeAvailableStaticRuleCount,
-        beforeSubscriptionCount
-      });
 
-      throw error;
+    for (let subscription of subscriptions) {
+      await this.add(browser.declarativeNetRequest ?
+        subscription.url : subscription.mv2URL);
     }
   },
 
