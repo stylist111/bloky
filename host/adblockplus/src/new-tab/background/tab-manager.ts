@@ -381,6 +381,7 @@ function onTabUpdated(
  * @param tabId - The id of the tab removed
  */
 function onTabRemoved(tabId: number): void {
+  createdTabsMap.delete(tabId);
   tabIds.delete(tabId);
 }
 
@@ -494,7 +495,12 @@ async function clearCommands(): Promise<void> {
       browser.tabs.onUpdated.removeListener(updateListener);
     }
 
-    await browser.tabs.remove(tabID);
+    try {
+      await browser.tabs.remove(tabID);
+    } catch (ex) {
+      // Ignore if tab has already been closed since we stopped listening,
+      // which can occur while running end-to-end tests
+    }
   }
   onNewTabUpdateHandlerByIpmId.clear();
   createdTabsMap.clear();

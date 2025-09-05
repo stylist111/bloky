@@ -275,15 +275,6 @@ defaults.ipm_ping_count = 0;
 defaults.ipm_events = [];
 
 /**
- * TODO: Remove this once we have IPM end-to-end tests in ABP
- * and we are covered for switching IPM fragment in production.
- *
- * Forces the extension to only use the IPM legacy fragment
- * and ignore feature flag changes.
- */
-defaults.ipm_force_legacy_fragment = true;
-
-/**
  * Map of commands
  *
  * @type {Object}

@@ -98,6 +98,7 @@ export default () => {
         describe("Campaigns - Newtab", () => newtabCampaigns(fragmentType));
       });
     }
+
     // Needs to be the last suite to run because the extension gets uninstalled
     describe("Smoke Tests - Uninstall", uninstall);
   });

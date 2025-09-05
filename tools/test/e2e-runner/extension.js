@@ -624,9 +624,18 @@ export async function clearDismissedIpmIds(initOptionsFn) {
 }
 
 export async function resetIPMFragment(initOptionsFn) {
-  return sendExtMessage(initOptionsFn, {
+  await sendExtMessage(initOptionsFn, {
     type: "testing.resetIPMFragment",
   });
+
+  await wait(
+    async () => {
+      const selectedFragmentType = await getSelectedFragmentType(getOptionsHandle);
+      return selectedFragmentType === "legacy";
+    },
+    5000,
+    "Fragment was not selected within the expected time",
+  );
 }
 
 export async function setIPMFragment(initOptionsFn, fragmentType) {

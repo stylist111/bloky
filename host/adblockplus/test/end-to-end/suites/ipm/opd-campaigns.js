@@ -77,92 +77,81 @@ const expectedIPMCommands = {
   }
 };
 
-export default () => {
-  /* ########################################## */
-  /* ############ Fragment: Legacy ############ */
-  /* ########################################## */
+export default (fragmentType) => {
+  before(async function () {
+    // IPMs are not supported in Firefox
+    if (browserDetails.browserName === "firefox") {
+      this.skip();
+    }
+    await setIPMCooldowns(initOptionsGeneralTab);
 
-  const fragmentType = "legacy";
+    // `suppress_first_run_page` must be set to false before running tests,
+    // so that newtabs can be triggered. This setting is otherwise set to true
+    // to prevent real newtab IPMs from opening and interfering with the tests.
+    await updatePrefs(initOptionsGeneralTab, "suppress_first_run_page", false);
 
-  describe(`Selected fragment: ${fragmentType}`, async () => {
-    before(async function () {
-      // IPMs are not supported in Firefox
-      if (browserDetails.browserName === "firefox") {
-        this.skip();
-      }
-      await setIPMCooldowns(initOptionsGeneralTab);
+    await setIPMFragment(initOptionsGeneralTab, fragmentType);
+  });
 
-      // `suppress_first_run_page` must be set to false before running tests,
-      // so that newtabs can be triggered. This setting is otherwise set to true
-      // to prevent real newtab IPMs from opening and interfering with the tests.
-      await updatePrefs(
-        initOptionsGeneralTab,
-        "suppress_first_run_page",
-        false
-      );
+  beforeEach(async function () {
+    await setRemoteConfigUrl(initOptionsGeneralTab);
+    await clearDismissedIpmIds(initOptionsGeneralTab);
+  });
 
-      await setIPMFragment(initOptionsGeneralTab, fragmentType);
-    });
+  afterEach(async function () {
+    await setRemoteConfigIpmCommands(
+      initOptionsGeneralTab,
+      "test_adblockplus_delete"
+    );
+    await syncRemoteConfig(initOptionsGeneralTab);
+    const ipmCommands = await getIPMCommands(
+      initOptionsGeneralTab,
+      fragmentType
+    );
+    expect(ipmCommands).toEqual({});
+  });
 
-    beforeEach(async function () {
-      await setRemoteConfigUrl(initOptionsGeneralTab);
-      await clearDismissedIpmIds(initOptionsGeneralTab);
-    });
+  after(async function () {
+    await initOptionsGeneralTab(getOptionsHandle());
+    await updatePrefs(initOptionsGeneralTab, "suppress_first_run_page", true);
+    await resetIPMFragment(initOptionsGeneralTab);
+  });
 
-    afterEach(async function () {
-      await setRemoteConfigIpmCommands(
-        initOptionsGeneralTab,
-        "test_adblockplus_delete"
-      );
-      await syncRemoteConfig(initOptionsGeneralTab);
-      const ipmCommands = await getIPMCommands(
-        initOptionsGeneralTab,
-        fragmentType
-      );
-      expect(ipmCommands).toEqual({});
-    });
+  it("triggers an OPD campaign", async function () {
+    await setRemoteConfigIpmCommands(
+      initOptionsGeneralTab,
+      `test_adblockplus_navigation_${fragmentType}`
+    );
+    await syncRemoteConfig(initOptionsGeneralTab);
 
-    after(async function () {
-      await initOptionsGeneralTab(getOptionsHandle());
-      await updatePrefs(initOptionsGeneralTab, "suppress_first_run_page", true);
-      await resetIPMFragment(initOptionsGeneralTab);
-    });
+    let ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
+    expect(ipmCommands).toEqual(expectedIPMCommands.navigation[fragmentType]);
+    await openNewTab("https://www.example.com");
 
-    it("triggers an OPD campaign", async function () {
-      await setRemoteConfigIpmCommands(
-        initOptionsGeneralTab,
-        `test_adblockplus_navigation_${fragmentType}`
-      );
-      await syncRemoteConfig(initOptionsGeneralTab);
+    await switchToOPDiframe();
+    const opdTitle = await getDisplayedElement("#title");
+    const ctaButton = await getDisplayedElement("#continue");
+    const paragraphs = await driver.findElements(By.css("#body p"));
+    const texts = await Promise.all(paragraphs.map((p) => p.getText()));
 
-      let ipmCommands = await getIPMCommands(
-        initOptionsGeneralTab,
-        fragmentType
-      );
-      expect(ipmCommands).toEqual(expectedIPMCommands.navigation[fragmentType]);
-      await openNewTab("https://www.example.com");
+    expect(await opdTitle.getText()).toEqual("OPD navigation title");
+    expect(await ctaButton.getText()).toEqual("CTA NAVIGATION");
+    expect(texts[0]).toEqual("This is a test OPD based on navigation");
+    expect(texts[1]).toEqual("ipmID: test_adblockplus_navigation");
 
-      await switchToOPDiframe();
-      const opdTitle = await getDisplayedElement("#title");
-      const ctaButton = await getDisplayedElement("#continue");
-      const paragraphs = await driver.findElements(By.css("#body p"));
-      const texts = await Promise.all(paragraphs.map((p) => p.getText()));
+    await ctaButton.click();
+    await driver.switchTo().defaultContent();
 
-      expect(await opdTitle.getText()).toEqual("OPD navigation title");
-      expect(await ctaButton.getText()).toEqual("CTA NAVIGATION");
-      expect(texts[0]).toEqual("This is a test OPD based on navigation");
-      expect(texts[1]).toEqual("ipmID: test_adblockplus_navigation");
+    await findUrl(updateUrlNavigation);
+    await openNewTab("https://www.example.net");
+    await waitForNotDisplayed("#__abp-overlay-onpage-dialog iframe");
 
-      await ctaButton.click();
-      await driver.switchTo().defaultContent();
+    await initOptionsGeneralTab(getOptionsHandle());
+    ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
+    expect(ipmCommands).toEqual({});
 
-      await findUrl(updateUrlNavigation);
-      await openNewTab("https://www.example.net");
-      await waitForNotDisplayed("#__abp-overlay-onpage-dialog iframe");
-
-      await initOptionsGeneralTab(getOptionsHandle());
-      ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
-      expect(ipmCommands).toEqual({});
+    // Ping payloads only exist in future fragment
+    if (fragmentType === "legacy") {
       const pingPayload = await syncRemoteConfig(initOptionsGeneralTab);
       expect(pingPayload.ipm.active).toEqual([]);
       const actions = pingPayload.events.map((e) => e.action);
@@ -175,40 +164,44 @@ export default () => {
         "dialog_button_clicked",
         "error_no_behavior"
       ]);
-    });
+    }
+  });
 
-    it("triggers an OPD campaign exclusion and dismissed after page reload", async function () {
-      await setRemoteConfigIpmCommands(
-        initOptionsGeneralTab,
-        `test_adblockplus_exclusion_${fragmentType}`
-      );
-      await syncRemoteConfig(initOptionsGeneralTab);
+  it("triggers an OPD campaign exclusion and dismissed after page reload", async function () {
+    await setRemoteConfigIpmCommands(
+      initOptionsGeneralTab,
+      `test_adblockplus_exclusion_${fragmentType}`
+    );
+    await syncRemoteConfig(initOptionsGeneralTab);
 
-      const ipmCommands = await getIPMCommands(
-        initOptionsGeneralTab,
-        fragmentType
-      );
-      expect(ipmCommands).toEqual(expectedIPMCommands.exclusion[fragmentType]);
+    const ipmCommands = await getIPMCommands(
+      initOptionsGeneralTab,
+      fragmentType
+    );
+    expect(ipmCommands).toEqual(expectedIPMCommands.exclusion[fragmentType]);
 
-      await openNewTab("https://www.example.org");
-      await waitForNotDisplayed("#__abp-overlay-onpage-dialog iframe");
+    await openNewTab("https://www.example.org");
+    await waitForNotDisplayed("#__abp-overlay-onpage-dialog iframe");
 
-      await openNewTab("https://www.wikipedia.org");
-      await switchToOPDiframe();
-      const opdTitle = await getDisplayedElement("#title");
-      const ctaButton = await getDisplayedElement("#continue");
-      const paragraphs = await driver.findElements(By.css("#body p"));
-      const texts = await Promise.all(paragraphs.map((p) => p.getText()));
+    await openNewTab("https://www.wikipedia.org");
+    await switchToOPDiframe();
+    const opdTitle = await getDisplayedElement("#title");
+    const ctaButton = await getDisplayedElement("#continue");
+    const paragraphs = await driver.findElements(By.css("#body p"));
+    const texts = await Promise.all(paragraphs.map((p) => p.getText()));
 
-      expect(await opdTitle.getText()).toEqual("OPD exclusion title");
-      expect(await ctaButton.getText()).toEqual("CTA EXCLUSION");
-      expect(texts[0]).toEqual("This is a test OPD based on exclusion");
-      expect(texts[1]).toEqual("ipmID: test_adblockplus_exclusion");
+    expect(await opdTitle.getText()).toEqual("OPD exclusion title");
+    expect(await ctaButton.getText()).toEqual("CTA EXCLUSION");
+    expect(texts[0]).toEqual("This is a test OPD based on exclusion");
+    expect(texts[1]).toEqual("ipmID: test_adblockplus_exclusion");
 
-      await driver.navigate().refresh();
-      await waitForNotDisplayed("#__abp-overlay-onpage-dialog iframe");
+    await driver.navigate().refresh();
+    await waitForNotDisplayed("#__abp-overlay-onpage-dialog iframe");
 
-      await initOptionsGeneralTab(getOptionsHandle());
+    await initOptionsGeneralTab(getOptionsHandle());
+
+    // Ping payloads only exist in future fragment
+    if (fragmentType === "legacy") {
       const pingPayload = await syncRemoteConfig(initOptionsGeneralTab);
       const actions = pingPayload.events.map((e) => e.action);
 
@@ -219,41 +212,35 @@ export default () => {
         "error_no_behavior",
         "dialog_injected"
       ]);
-    });
-
-    it("triggers an OPD campaign cookie", async function () {
-      await setRemoteConfigIpmCommands(
-        initOptionsGeneralTab,
-        `test_adblockplus_cookie_${fragmentType}`
-      );
-      await syncRemoteConfig(initOptionsGeneralTab);
-
-      const ipmCommands = await getIPMCommands(
-        initOptionsGeneralTab,
-        fragmentType
-      );
-      expect(ipmCommands).toEqual(expectedIPMCommands.cookie[fragmentType]);
-
-      await openNewTab("https://www.example.org");
-      await waitForNotDisplayed("#__abp-overlay-onpage-dialog iframe");
-
-      await openNewTab("https://www.welt.de");
-      await switchToOPDiframe();
-      const opdTitle = await getDisplayedElement("#title");
-      const ctaButton = await getDisplayedElement("#continue");
-      const paragraphs = await driver.findElements(By.css("#body p"));
-      const texts = await Promise.all(paragraphs.map((p) => p.getText()));
-
-      expect(await opdTitle.getText()).toEqual("OPD cookie title");
-      expect(await ctaButton.getText()).toEqual("CTA COOKIE");
-      expect(texts[0]).toEqual("This is a test cookie baner OPD");
-      expect(texts[1]).toEqual("ipmID: test_adblockplus_cookie");
-    });
+    }
   });
 
-  /* ########################################## */
-  /* ############ Fragment: Future ############ */
-  /* ########################################## */
+  it("triggers an OPD campaign cookie", async function () {
+    await setRemoteConfigIpmCommands(
+      initOptionsGeneralTab,
+      `test_adblockplus_cookie_${fragmentType}`
+    );
+    await syncRemoteConfig(initOptionsGeneralTab);
 
-  // No e2e tests yet.
+    const ipmCommands = await getIPMCommands(
+      initOptionsGeneralTab,
+      fragmentType
+    );
+    expect(ipmCommands).toEqual(expectedIPMCommands.cookie[fragmentType]);
+
+    await openNewTab("https://www.example.org");
+    await waitForNotDisplayed("#__abp-overlay-onpage-dialog iframe");
+
+    await openNewTab("https://www.welt.de");
+    await switchToOPDiframe();
+    const opdTitle = await getDisplayedElement("#title");
+    const ctaButton = await getDisplayedElement("#continue");
+    const paragraphs = await driver.findElements(By.css("#body p"));
+    const texts = await Promise.all(paragraphs.map((p) => p.getText()));
+
+    expect(await opdTitle.getText()).toEqual("OPD cookie title");
+    expect(await ctaButton.getText()).toEqual("CTA COOKIE");
+    expect(texts[0]).toEqual("This is a test cookie baner OPD");
+    expect(texts[1]).toEqual("ipmID: test_adblockplus_cookie");
+  });
 };
