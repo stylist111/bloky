@@ -71,6 +71,15 @@ async function clearFrameState() {
   ], false);
 }
 
+async function clearExperimentFlagOverrides() {
+  await runInBackgroundPage([
+    {op: "getGlobal", arg: "EWE"},
+    {op: "getProp", arg: "experiments"},
+    {op: "callMethod", arg: "clearFlagOverrides"},
+    {op: "await"}
+  ], false);
+}
+
 before(async function() {
   setMinTimeout(this, 7000);
 
@@ -136,6 +145,7 @@ afterEach(async function() {
   await clearFilters();
   await clearStorage();
   await resetFeatureFlags();
+  await clearExperimentFlagOverrides();
   await Page.removeCurrent();
   await clearFrameState();
   await Popup.removeCurrent();

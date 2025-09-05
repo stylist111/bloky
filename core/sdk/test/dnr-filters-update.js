@@ -1578,6 +1578,64 @@ describe("DNR filters update [mv3-only]", function() {
         .toEqual(dynamicFiltersAfterUpdate.flatMap(f => f[1].ruleIds));
     });
 
+    it("starts up successfully if there is invalid data in storage - no DNR rule fix", async function() {
+      await EWE.experiments.overrideFlag(
+        "dnr-filters-recreate-dnr-rules-on-integrity-check-failure",
+        false
+      );
+      await EWE.filters.add(DYNAMIC_FILTER);
+
+      await suspendServiceWorker(this);
+
+      let storage = await browser.storage.local.get("abp:pref:dynamic_filters");
+      let dynamicFiltersArray = storage["abp:pref:dynamic_filters"];
+      expect(dynamicFiltersArray).toHaveLength(1);
+      dynamicFiltersArray[0][1].ruleIds = "a";
+      dynamicFiltersArray.push([]);
+      dynamicFiltersArray.push([null, null]);
+      await browser.storage.local.set({
+        "abp:pref:dynamic_filters": dynamicFiltersArray
+      });
+
+      await EWE.filters.add(DYNAMIC_FILTER2);
+
+      let dynamicFiltersArrayAfter = await EWE.testing.getDynamicFilters();
+      expect(dynamicFiltersArrayAfter).toHaveLength(2);
+
+      let modifiedRuleEntry = dynamicFiltersArrayAfter
+          .find(entry => entry[0] == DYNAMIC_FILTER);
+      expect(modifiedRuleEntry[1].ruleIds).toEqual("a");
+    });
+
+    it("starts up successfully if there is invalid data in storage - with DNR rule fix", async function() {
+      await EWE.experiments.overrideFlag(
+        "dnr-filters-recreate-dnr-rules-on-integrity-check-failure",
+        true
+      );
+      await EWE.filters.add(DYNAMIC_FILTER);
+
+      await suspendServiceWorker(this);
+
+      let storage = await browser.storage.local.get("abp:pref:dynamic_filters");
+      let dynamicFiltersArray = storage["abp:pref:dynamic_filters"];
+      expect(dynamicFiltersArray).toHaveLength(1);
+      dynamicFiltersArray[0][1].ruleIds = "a";
+      dynamicFiltersArray.push([]);
+      dynamicFiltersArray.push([null, null]);
+      await browser.storage.local.set({
+        "abp:pref:dynamic_filters": dynamicFiltersArray
+      });
+
+      await EWE.filters.add(DYNAMIC_FILTER2);
+
+      let dynamicFiltersArrayAfter = await EWE.testing.getDynamicFilters();
+      expect(dynamicFiltersArrayAfter).toHaveLength(2);
+
+      let modifiedRuleEntry = dynamicFiltersArrayAfter
+          .find(entry => entry[0] == DYNAMIC_FILTER);
+      expect(modifiedRuleEntry[1].ruleIds).toEqual([expect.any(Number)]);
+    });
+
     describe("Disabled rule limits", function() {
       const BIG_DISABLED_SUBSCRIPTION =
             `${TEST_PAGES_URL}/subscription-with-5000-disabled-filters.txt`;

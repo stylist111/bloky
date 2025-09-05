@@ -71,7 +71,17 @@ const dynamicFiltersMutex = (() => {
 
     async init(dynamicFilterArray) {
       await navigator.locks.request("dynamic_filters", async() => {
-        _dynamicFilters = new Map(dynamicFilterArray);
+        _dynamicFilters = new Map();
+        for (const entry of dynamicFilterArray) {
+          let isValidEntry = Array.isArray(entry) &&
+              entry.length === 2 &&
+              typeof entry[0] === "string" &&
+              typeof entry[1] === "object";
+
+          if (isValidEntry) {
+            _dynamicFilters.set(entry[0], entry[1]);
+          }
+        }
       });
     }
   };
@@ -581,7 +591,7 @@ export async function removeAllDynamicFilters() {
 }
 
 function setHighestRuleId(ruleIds) {
-  if (!ruleIds) {
+  if (!Array.isArray(ruleIds)) {
     return;
   }
 
@@ -644,8 +654,7 @@ export function init() {
 async function dataIntegrityCheck(dynamicFilters) {
   let expectedDynamicRuleIds = Array.from(
     dynamicFilters.values()
-      .flatMap(filter => filter.ruleIds ? filter.ruleIds : [])
-  );
+  ).flatMap(filter => Array.isArray(filter.ruleIds) ? filter.ruleIds : []);
 
   let dynamicRules = await browser.declarativeNetRequest.getDynamicRules();
   let actualDynamicRuleIds = dynamicRules.map(rule => rule.id);
@@ -675,16 +684,31 @@ async function recreateAllDNRRules() {
     highestRuleId = 1;
 
     let recreatedRules = [];
-    for (let filter of dynamicFilters.values()) {
-      if (!filter.enabled) {
+    for (let [text, details] of dynamicFilters.entries()) {
+      if (!details.enabled) {
         continue;
       }
 
-      let {filterRules, ruleIds} = await getRules(filter.filter);
-      if (filterRules) {
-        recreatedRules.push(...filterRules);
+      let normalized = Filter.normalize(text);
+      let filter = Filter.fromText(normalized);
+      let filterError = validateFilter(filter);
+      if (filterError) {
+        details.ruleIds = [];
+        continue;
       }
-      filter.ruleIds = ruleIds;
+
+      try {
+        let {filterRules, ruleIds} = await getRules(filter);
+        if (filterRules) {
+          recreatedRules.push(...filterRules);
+        }
+        details.ruleIds = ruleIds;
+      }
+      catch (e) {
+        // This is another case for invalid filters, the validation error is
+        // thrown by getRules.
+        details.ruleIds = [];
+      }
     }
 
     let currentDynamicRules =
