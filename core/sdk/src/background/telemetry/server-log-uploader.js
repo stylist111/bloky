@@ -55,8 +55,8 @@ async function cleanUpOldStorageData() {
   }
 }
 
-export async function start(debugTelemetry, interval = 10 * MILLIS_IN_SECOND,
-                            errorRetryDelay = 5 * MILLIS_IN_MINUTE) {
+export function start(debugTelemetry, interval = 10 * MILLIS_IN_SECOND,
+                      errorRetryDelay = 5 * MILLIS_IN_MINUTE) {
   if (!debugTelemetry.url) {
     throw new Error("No debug telemetry `url` provided");
   }

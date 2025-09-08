@@ -339,6 +339,15 @@ export async function start(addonInfo) {
     warnings.push(...addonInfoResult.warnings);
   }
 
+  if (addonInfo && addonInfo.telemetryEventLogging) {
+    serverLogUploader.start(addonInfo.telemetryEventLogging);
+    serverLogConfig.startRotationScheduler();
+  }
+
+  if (addonInfo && addonInfo.remoteConfig && addonInfo.remoteConfig.url) {
+    remoteConfig.start(addonInfo.remoteConfig);
+  }
+
   startSubmodulesWithListeners(addonInfo);
 
   if (browser.declarativeNetRequest) {
@@ -373,12 +382,6 @@ export async function start(addonInfo) {
 
   if (addonInfo && addonInfo.telemetry) {
     await activePing.start(addonInfo.telemetry);
-  }
-
-  if (addonInfo && addonInfo.telemetryEventLogging) {
-    await serverLogUploader.start(addonInfo.telemetryEventLogging);
-
-    await serverLogConfig.startRotationScheduler();
   }
 
   if (addonInfo && addonInfo.cdp) {
@@ -416,7 +419,7 @@ function startSubmodulesWithListeners(addonInfo) {
   }
 }
 
-async function startSubmodules(addonInfo) {
+async function startSubmodules() {
   await initializer.start();
 
   // MV2-style popup and request blocking assume that initializer is
@@ -430,10 +433,6 @@ async function startSubmodules(addonInfo) {
   }
 
   filterEngine.filterStorage.synchronizer.start();
-
-  if (addonInfo && addonInfo.remoteConfig && addonInfo.remoteConfig.url) {
-    remoteConfig.start(addonInfo.remoteConfig);
-  }
 }
 
 async function checkAndMigrateSubscriptions() {

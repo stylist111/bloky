@@ -710,6 +710,13 @@ initialize
   .catch((e) => {
     performance.measure("adblock.initialize.error", "adblock.initialize");
     const hasInternalError = /internal error/i.test(e.message);
+
+    initializationServerLogger.debug("initialization_error", {
+      errorMsg: e.message,
+      hasInternalError,
+      timings: getPerformanceTimings(),
+    });
+
     if (hasInternalError) {
       // Send the error message to the log server when internal error occurs.
       // We want to know the amount of users that are affected by this issue,
@@ -724,12 +731,6 @@ initialize
       });
       ServerMessages.recordErrorMessage("initialization_error", { errorMsg: e.message });
     }
-
-    initializationServerLogger.debug("initialization_error", {
-      errorMsg: e.message,
-      hasInternalError,
-      timings: getPerformanceTimings(),
-    });
 
     throw e;
   });

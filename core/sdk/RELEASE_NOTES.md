@@ -3,6 +3,8 @@
 - Added the `EWE.account` API to handle user accounts. (EXT-1013)
 - Added `EWE.remoteConfig.getIpmCommands()` API (EXT-977).
 - Added `EWE.remoteConfig.setUrl()` API (EXT-977).
+- Moved the initialization of logging components to earlier in the SDK
+  initialization process (EXT-1036).
 
 ## Fixes
 

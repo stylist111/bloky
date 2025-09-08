@@ -46,7 +46,7 @@ export async function resetRotationPeriod() {
   }
 }
 
-export async function startRotationScheduler() {
+export function startRotationScheduler() {
   if (scheduler) {
     return;
   }
