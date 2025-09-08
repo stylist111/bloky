@@ -122,18 +122,8 @@ export default () => {
     );
 
     const splitCustomFilters = customFilters.join("\n");
-    // Due to a textarea bug, filters on chrome beta should be added programatically
-    // Should be removed once we start using the new chrome beta version: https://issues.chromium.org/issues/422003155
-    if (
-      browserDetails.browserName === "chromium" &&
-      browserDetails.fullBrowserVersion === "138.0.7204.0"
-    ) {
-      await addFiltersProgrammatically(initOptionsFiltersTab, splitCustomFilters);
-      expect(await getFiltersProgrammatically(initOptionsFiltersTab)).toEqual(customFilters);
-    } else {
-      await setCustomFilters([splitCustomFilters]);
-      expect(await getCustomFilters()).toEqual(customFilters);
-    }
+    await setCustomFilters([splitCustomFilters]);
+    expect(await getCustomFilters()).toEqual(customFilters);
 
     await openNewTab(customFiltersTestPageUrl);
     await driver.navigate().refresh();
@@ -145,18 +135,8 @@ export default () => {
   });
 
   it("allowlists websites", async function () {
-    // Due to a textarea bug, filters on chrome beta should be added programatically
-    // Should be removed once we start using the new chrome beta version: https://issues.chromium.org/issues/422003155
-    if (
-      browserDetails.browserName === "chromium" &&
-      browserDetails.fullBrowserVersion === "138.0.7204.0"
-    ) {
-      await addFiltersProgrammatically(initOptionsFiltersTab, allowlistingFilter);
-      expect(await getFiltersProgrammatically(initOptionsFiltersTab)).toContain(allowlistingFilter);
-    } else {
-      await setCustomFilters([allowlistingFilter]);
-      expect(await getCustomFilters()).toContain(allowlistingFilter);
-    }
+    await addFiltersProgrammatically(initOptionsFiltersTab, allowlistingFilter);
+    expect(await getFiltersProgrammatically(initOptionsFiltersTab)).toContain(allowlistingFilter);
 
     const websiteHandle = await openNewTab(blockHideUrl);
     await checkBlockHidePage(true);

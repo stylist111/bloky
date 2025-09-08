@@ -109,20 +109,8 @@ export default () => {
     // Add custom filter. Needs to be added before blocking ads
     await initOptionsCustomizeTab(getOptionsHandle());
 
-    // Due to a textarea bug, filters on chrome beta should be added programatically
-    // Should be removed once we start using the new chrome beta version: https://issues.chromium.org/issues/422003155
-    if (
-      browserDetails.browserName === "chromium" &&
-      browserDetails.fullBrowserVersion === "138.0.7204.0"
-    ) {
-      await addFiltersProgrammatically(initOptionsFiltersTab, customBlockingFilter);
-      expect(await getFiltersProgrammatically(initOptionsFiltersTab)).toContain(
-        customBlockingFilter,
-      );
-    } else {
-      await setCustomFilters([customBlockingFilter], true);
-      expect(await getCustomFilters()).toContain(customBlockingFilter);
-    }
+    await addFiltersProgrammatically(initOptionsFiltersTab, customBlockingFilter);
+    expect(await getFiltersProgrammatically(initOptionsFiltersTab)).toContain(customBlockingFilter);
 
     // ads should be blocked before the domain is allowlisted
     const blockedBeforeUpgrade = await blockAds(0, maxAdsBlocked, getPopupBlockedAdsTotalCount);
