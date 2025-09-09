@@ -8,32 +8,92 @@ export default {
     bt_loader_blocked: {
       description: "BTLoader was blocked, possibly indicating a non-partner extension is present",
       data: {
-        description: "Browser string indicating the error that occurred",
-        type: "string"
+        description: "Data about why BTLoader was blocked",
+        type: "object",
+        properties: {
+          isPageAllowlisted: {
+            description: "Whether the page is allowlisted",
+            type: "boolean"
+          },
+          errorMsg: {
+            description: "Browser string indicating the error that occurred",
+            type: "string"
+          }
+        }
       }
     },
     bt_loader_success: {
-      description: "BTLoader was successfully loaded"
+      description: "BTLoader was successfully loaded",
+      data: {
+        description: "Data about the BTLoader success event",
+        type: "object",
+        properties: {
+          isPageAllowlisted: {
+            description: "Whether the page is allowlisted",
+            type: "boolean"
+          }
+        }
+      }
     },
     aa_bait1_blocked: {
       description: "Acceptable Ads bait 1 was blocked",
       data: {
-        description: "Browser string indicating the error that occurred",
-        type: "string"
+        description: "Data about why Acceptable Ads bait 1 was blocked",
+        type: "object",
+        properties: {
+          isPageAllowlisted: {
+            description: "Whether the page is allowlisted",
+            type: "boolean"
+          },
+          errorMsg: {
+            description: "Browser string indicating the error that occurred",
+            type: "string"
+          }
+        }
       }
     },
     aa_bait1_success: {
-      description: "Acceptable Ads bait 1 was successfully loaded"
+      description: "Acceptable Ads bait 1 was successfully loaded",
+      data: {
+        description: "Data about the Acceptable Ads bait 1 success event",
+        type: "object",
+        properties: {
+          isPageAllowlisted: {
+            description: "Whether the page is allowlisted",
+            type: "boolean"
+          }
+        }
+      }
     },
     aa_bait2_blocked: {
       description: "Acceptable Ads bait 2 was blocked",
       data: {
-        description: "Browser string indicating the error that occurred",
-        type: "string"
+        description: "Data about why Acceptable Ads bait 2 was blocked",
+        type: "object",
+        properties: {
+          isPageAllowlisted: {
+            description: "Whether the page is allowlisted",
+            type: "boolean"
+          },
+          errorMsg: {
+            description: "Browser string indicating the error that occurred",
+            type: "string"
+          }
+        }
       }
     },
     aa_bait2_success: {
-      description: "Acceptable Ads bait 2 was successfully loaded"
+      description: "Acceptable Ads bait 2 was successfully loaded",
+      data: {
+        description: "Data about the Acceptable Ads bait 2 success event",
+        type: "object",
+        properties: {
+          isPageAllowlisted: {
+            description: "Whether the page is allowlisted",
+            type: "boolean"
+          }
+        }
+      }
     }
   },
   cohorts: {

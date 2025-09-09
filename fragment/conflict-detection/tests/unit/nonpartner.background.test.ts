@@ -46,6 +46,11 @@ vi.mock("@eyeo/webext-ad-filtering-solution", () => ({
       constructor() {}
     },
   },
+  filters: {
+    getAllowingFilters: vi.fn((tabId) => {
+      return tabId === 1 ? [] : ["some-filter"];
+    }),
+  },
 }));
 
 describe("nonpartner-detection", () => {
@@ -241,7 +246,7 @@ describe("nonpartner-detection", () => {
     expect(port.on).toHaveBeenCalledWith(detectionEvent, expect.any(Function));
   });
 
-  it("should log events when webRequest listeners are triggered with correct urls", () => {
+  it("should log events when webRequest listeners are triggered with correct urls", async () => {
     startNonPartnerDetection({
       logger,
       port,
@@ -276,18 +281,21 @@ describe("nonpartner-detection", () => {
       const errorDetails = {
         url,
         error: "net::ERR_BLOCKED_BY_CLIENT",
+        tabId: 1,
       };
-      onErrorListener(errorDetails);
-      expect(loggingInfoSpy).toHaveBeenCalledWith(
-        `${eventPrefix}_blocked`,
-        errorDetails.error,
-      );
+      await onErrorListener(errorDetails);
+      expect(loggingInfoSpy).toHaveBeenCalledWith(`${eventPrefix}_blocked`, {
+        errorMsg: errorDetails.error,
+        isPageAllowlisted: false,
+      });
 
       loggingInfoSpy.mockClear();
 
       // Test onCompleted
-      onCompleteListener({ url });
-      expect(loggingInfoSpy).toHaveBeenCalledWith(`${eventPrefix}_success`);
+      await onCompleteListener({ url, tabId: 2 });
+      expect(loggingInfoSpy).toHaveBeenCalledWith(`${eventPrefix}_success`, {
+        isPageAllowlisted: true,
+      });
     }
   });
 

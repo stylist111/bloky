@@ -239,22 +239,31 @@ export function start(parameters: StartInfo): void {
   // Monitor request errors on *://btloader.com/tag?*, if it's blocked and AA is enabled,
   // it indicates that a non-partner extension is present. Save it as a separate data point.
   browser.webRequest.onErrorOccurred.addListener(
-    (details): void => {
-      const { url } = details;
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    async (details): Promise<void> => {
+      const { url, tabId, error } = details;
       const eventName = getEventName(url, true);
       if (eventName) {
-        serverLogger.info(eventName, details.error);
+        const filters = await ewe.filters.getAllowingFilters(tabId);
+        const isPageAllowlisted = filters.length > 0;
+        serverLogger.info(eventName, {
+          errorMsg: error,
+          isPageAllowlisted,
+        });
       }
     },
     { urls: baitsURLs },
   );
   // Monitor successful requests on *://btloader.com/tag?*, to estimate the impact of the non-partner extensions.
   browser.webRequest.onCompleted.addListener(
-    (details): void => {
-      const { url } = details;
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    async (details): Promise<void> => {
+      const { url, tabId } = details;
       const eventName = getEventName(url, false);
       if (eventName) {
-        serverLogger.info(eventName);
+        const filters = await ewe.filters.getAllowingFilters(tabId);
+        const isPageAllowlisted = filters.length > 0;
+        serverLogger.info(eventName, { isPageAllowlisted });
       }
     },
     { urls: baitsURLs },
