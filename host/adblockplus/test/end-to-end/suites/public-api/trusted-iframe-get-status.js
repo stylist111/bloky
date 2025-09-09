@@ -86,6 +86,7 @@ export default () => {
   });
 
   after(async function () {
+    setTimeoutForExtensionReload(this);
     await disablePremiumProgrammatically();
   });
 

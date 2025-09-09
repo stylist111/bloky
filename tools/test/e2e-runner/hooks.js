@@ -20,7 +20,11 @@
 import path from "path";
 
 import { BROWSERS, getMajorVersion } from "@eyeo/get-browser-binary";
-
+import {
+  startMockServer,
+  stopMockServer,
+  addMocksForTestPages,
+} from "../test-server/mock-http-server/index.js";
 import { findUrl, openNewTab, getAllWindowHandlesSafe, screenshot } from "./driver.js";
 import {
   getOptionsHandle,
@@ -73,13 +77,17 @@ async function startBrowser(extensionPath, retry = 0) {
       // to be able to test with locally hosted page. For FF we use PAC file
       // to set proxy
       const proxy = "http://localhost:3005/proxy-config.pac";
-      options = { headless, extensionPaths, extraArgs, proxy };
+      options = {
+        headless,
+        extensionPaths,
+        extraArgs,
+        proxy,
+        insecure: true,
+      };
     } else {
       extraArgs = [
         "--window-size=1400,1500",
-        // EXT-497: we need to bind "testpages.eyeo.com" to "localhost"
-        // to be able to test with locally hosted page.
-        "--host-resolver-rules=MAP testpages.eyeo.com 127.0.0.1",
+        "--proxy-server=http://localhost:9999", // mock http server
         "--ignore-certificate-errors",
         "--disable-search-engine-choice-screen",
       ];
@@ -125,11 +133,13 @@ export async function setupBrowserHook(buildsDirPath, unpackedDirPath) {
     }
   }
 
+  const mockServer = await startMockServer();
   const [driver, browserName, fullBrowserVersion, majorBrowserVersion] =
     await startBrowser(extensionPath);
 
   // Set global variables for the tests
   global.driver = driver;
+  global.mockServer = mockServer;
 
   global.browserDetails = {
     browserName,
@@ -208,6 +218,7 @@ export async function screenshotsHook() {
  * @returns {Promise<void>}
  */
 export async function cleanupHook() {
+  await stopMockServer();
   if (global.driver) {
     await driver.quit();
     delete global.driver;
@@ -235,6 +246,10 @@ export async function cleanupOpenTabs() {
 }
 
 export async function beforeEachTasks() {
+  // EXT-497: we need to bind "testpages.eyeo.com" to "localhost"
+  // to be able to test with locally hosted page.
+  await addMocksForTestPages();
+
   // If the options page handle is not valid anymore, then restore it
   try {
     await driver.switchTo().window(getOptionsHandle());

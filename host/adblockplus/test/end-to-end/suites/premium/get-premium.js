@@ -26,7 +26,11 @@ import {
   waitForNotDisplayed,
   wait
 } from "@eyeo/test-utils/driver";
-import { getOptionsHandle, getPremiumEmail } from "@eyeo/test-utils/extension";
+import {
+  getOptionsHandle,
+  getPremiumEmail,
+  setTimeoutForExtensionReload
+} from "@eyeo/test-utils/extension";
 import { dcTestPageUrl } from "@eyeo/test-utils/host-urls";
 import { dcFilters } from "@eyeo/test-utils/host-filters";
 
@@ -110,6 +114,7 @@ export default () => {
 
   after(async function () {
     await initOptionsGeneralTab(getOptionsHandle());
+    setTimeoutForExtensionReload(this);
     await disablePremiumProgrammatically();
   });
 

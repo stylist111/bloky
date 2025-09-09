@@ -17,6 +17,7 @@
     "eslint": "8.34.0",
     "expect": "29.7.0",
     "express": "^4.17.1",
+    "mockttp": "4.1.0",
     "ws": "^7.4.6"
   },
   "scripts": {

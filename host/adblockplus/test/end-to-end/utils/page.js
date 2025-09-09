@@ -32,7 +32,7 @@ import {
   wait,
   isCheckboxAttributeEnabled
 } from "@eyeo/test-utils/driver";
-import { getOptionsHandle } from "@eyeo/test-utils/extension";
+import { getOptionsHandle, reloadExtension } from "@eyeo/test-utils/extension";
 import { premiumFilterLists } from "./dataset.js";
 
 const optionsPageSleep = 2000;
@@ -426,9 +426,9 @@ export async function checkPremiumActivated({
   ];
 
   try {
-    for (const selector of premiumSelectors) {
-      await getDisplayedElement(selector);
-    }
+    await Promise.all(
+      premiumSelectors.map((selector) => getDisplayedElement(selector))
+    );
   } catch (e) {
     if (retry >= maxRetries) {
       throw new Error(`Premium elements not found after ${maxRetries} retries`);
@@ -506,8 +506,14 @@ export async function disablePremiumProgrammatically() {
     callback();
   });
 
+  // Delete stored account information if any
+  await driver.executeAsyncScript(async (callback) => {
+    await browser.storage.local.remove("ewe:account");
+    callback();
+  });
+
   await driver.switchTo().window(getOptionsHandle());
-  await driver.navigate().refresh(); // This reloads the options page
+  await reloadExtension(initOptionsGeneralTab);
   await waitForNotDisplayed(".button.premium-label");
 }
 

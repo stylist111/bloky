@@ -30,6 +30,7 @@ import popupPage from "./popup-page.js";
 import uninstallDefault from "./smoke/uninstall-default.js";
 import freeUser from "./premium/free-user.js";
 import getPremium from "./premium/get-premium.js";
+import getPremiumWithAccount from "./premium/get-premium-with-account.js";
 import eyeometry from "./eyeometry.js";
 import youtubeAllowlist from "./youtube-auto-allowlist.js";
 import oneClickAllowlisting from "./public-api/one-click-allowlisting.js";
@@ -82,6 +83,7 @@ export default () => {
     describe("Premium", function () {
       describe("Free user", freeUser);
       describe("Premium user", getPremium);
+      describe("Premium user with account", getPremiumWithAccount);
     });
 
     for (const fragmentType of ["legacy", "future"]) {
