@@ -1,5 +1,9 @@
 # Unreleased
 
+# 4.27.0 - 2025-09-09
+
+This release contains only minor updates and under-the-hood changes.
+
 - Fixed an issue where certain invalid DNR filters in a custom user subscription
   would prevent the other filters in the subscription from
   functioning. (EXT-1074)
