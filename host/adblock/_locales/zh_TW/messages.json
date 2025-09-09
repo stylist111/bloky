@@ -2285,180 +2285,6 @@
     "message": "我們無法連到伺服器",
     "description": "The sub-title of an error message box in payment iframe in the Options page."
   },
-  "sync_tab_item": {
-    "message": "備份與同步",
-    "description": "Title of the Sync sub-tab of the Options page"
-  },
-  "sync_turn_on_invalid_name_text": {
-    "message": "請命名此擴充套件然後繼續",
-    "description": "error message text on the Sync sub-tab of the Options page"
-  },
-  "sync_turn_on_duplicate_name_text": {
-    "message": "此擴充套件名稱已使用",
-    "description": "error message text on the Sync sub-tab of the Options page"
-  },
-  "sync_extension_section_title": {
-    "message": "擴充套件",
-    "description": "section title text on the Sync sub-tab of the Options page"
-  },
-  "sync_header_message_no_license": {
-    "message": "請容我們花一點時間為您準備同步。",
-    "description": "message to users on the sync page when the license is unavailable, inactive or a license ID hasn't been returned yet"
-  },
-  "sync_header_message_getting_license": {
-    "message": "檢查中……",
-    "description": "message to users on the sync page when the extension is getting the license"
-  },
-  "sync_header_message_in_progress": {
-    "message": "同步進行中……",
-    "description": "message to users on the options pages when syncing with the server is in progress"
-  },
-  "sync_header_message_sync_complete": {
-    "message": "同步完成",
-    "description": "message to users on the option pages when syncing with the server server is complete"
-  },
-  "sync_extension_no_extension_msg": {
-    "message": "您沒有同步的擴充套件。",
-    "description": "message to users on the sync page when the license is unavailable, inactive or a license ID hasn't been returned yet"
-  },
-  "sync_header_message_setup_fail_prefix": {
-    "message": "同步錯誤：",
-    "description": "start of error message to users on the sync page when sync fails."
-  },
-  "sync_header_message_setup_fail_part_2": {
-    "message": "請在幾分鐘後再次嘗試新增此擴充套件。",
-    "description": "message to users on the sync page when initial setup of sync fails for some unknown reason."
-  },
-  "sync_header_message_error_prefix": {
-    "message": "此擴充套件未同步。",
-    "description": "Start of an sync error message to users on the Options page or AdBlock popup menu."
-  },
-  "sync_header_message_old_commit_version_part_2": {
-    "message": "我們已同步此擴充套件並還原了您的變更。",
-    "description": "part 2 of a message to users on the sync page and popup menu when initial setup of sync fails for some unknown reason."
-  },
-  "sync_header_message_old_commit_version_part_3": {
-    "message": "請重新載入頁面，然後再次進行變更。",
-    "description": "part 3 of a message to users on the sync page when initial setup of sync fails for some unknown reason."
-  },
-  "sync_header_error_save_message_part_2": {
-    "message": "此擴充套件未同步。",
-    "description": "part 2 of a message to users on the Options pages when sending the sync data fails for some unknown reason."
-  },
-  "sync_header_error_save_message_part_3": {
-    "message": "請稍後再嘗試手動同步。",
-    "description": "part 3 of a message to users on the Options pages when sending the sync data fails for some unknown reason."
-  },
-  "sync_header_message_old_commit_version_customize_tab_part_2": {
-    "message": "我們已同步此擴充套件並將還原您的變更。",
-    "description": "part 2 of a message to users on the sync page when initial setup of sync fails for some unknown reason."
-  },
-  "sync_header_message_old_commit_version_customize_tab_part_3": {
-    "message": "請將自訂規則複製到剪貼簿，重新載入頁面，然後再次進行變更。",
-    "description": "part 3 of a message to users on the sync page when initial setup of sync fails for some unknown reason."
-  },
-  "sync_device_name_list_updated_at_msg": {
-    "message": "上次更新於 $timestamp$",
-    "description": "message to users on when the sync page was last updated with the name of the extensions / devices (displayed in locale specific format)",
-    "placeholders": {
-      "timestamp": {
-        "content": "$1",
-        "example": "April 30, 2019 6:25 pm for US/English locale"
-      }
-    }
-  },
-  "sync_extension_name_placeholder": {
-    "message": "請命名此擴充套件，以便與其他擴充套件區別……",
-    "description": "placeholder text in the extension / device name field on the sync page"
-  },
-  "sync_verify_turn_on_text": {
-    "message": "開啟「備份與同步」功能將清除此擴充套件中的現有設定資訊。",
-    "description": "message text in the extension / device name field on the sync page"
-  },
-  "sync_now_btn_text": {
-    "message": "立即同步",
-    "description": "button text on the Sync sub-tab of the Options page"
-  },
-  "sync_message_old_version_part_1": {
-    "message": "您使用的是舊版的 AdBlock。",
-    "description": "button text on the Sync sub-tab of the Options page"
-  },
-  "sync_message_old_version_part_2": {
-    "message": "請[[更新 AdBlock]] 以便我們將您的設定同步。",
-    "description": "button text on the Sync sub-tab of the Options page"
-  },
-  "sync_removed_error_msg_part_1": {
-    "message": "這項擴充套件並未同步",
-    "description": "sync error message text on the popup menu"
-  },
-  "sync_removed_error_msg_part_2": {
-    "message": "按一下這裡以更新設定",
-    "description": "sync error message text on the popup menu and options page"
-  },
-  "unsync_error_msg_part_1": {
-    "message": "同步錯誤",
-    "description": "sync error message text on the options menu"
-  },
-  "unsync_error_msg_part_2": {
-    "message": "這項擴充套件已經不再同步。",
-    "description": "sync error message text on the popup menu"
-  },
-  "unsync_error_msg_part_3": {
-    "message": "按一下這裡以更新這個頁面，接著按一下「新增此擴充套件」以同步這個裝置",
-    "description": "sync error message text on the Sync tab of the options page"
-  },
-  "sync_premium_cta": {
-    "message": "有了「同步」等 Premium 功能，您將成為廣告攔截專家。",
-    "description": "AdBlock Premium CTA on the Sync tab"
-  },
-  "backup_sync_settings": {
-    "message": "在所有裝置上自動備份與同步您的 AdBlock 設定。",
-    "description": "Description of Sync on Sync tab"
-  },
-  "set_preferences_once": {
-    "message": "只需設定一次偏好設定，就永遠不需擔心資料遺失或需要再對多個擴充套件進行相同的變更。",
-    "description": "Description of Sync on Sync tab"
-  },
-  "get_sync": {
-    "message": "取得同步功能",
-    "description": "Link to pay for Sync (part of AdBlock Premium)"
-  },
-  "check_sync_status": {
-    "message": "檢查同步狀態",
-    "description": "Button on Sync tab that checks the status of the Sync feature"
-  },
-  "show_details": {
-    "message": "顯示詳細資訊",
-    "description": "Toggle that shows the details section"
-  },
-  "hide_details": {
-    "message": "隱藏詳細資訊",
-    "description": "Toggle that hides the details section"
-  },
-  "add_this_extension": {
-    "message": "新增此擴充套件",
-    "description": "Button on Sync tab that adds this extension to the Sync process"
-  },
-  "add": {
-    "message": "新增",
-    "description": "Button on Sync tab that adds an entered name for this extension to the list of synced extensions"
-  },
-  "this_extension": {
-    "message": "（此擴充套件）",
-    "description": "description for name of the current extension"
-  },
-  "sync_delete_panel_title": {
-    "message": "刪除同步的擴充套件",
-    "description": "Panel title text on the delete device overlay"
-  },
-  "confirm_delete_extension": {
-    "message": "確定要刪除此擴充套件嗎？",
-    "description": "Warning/confirmation message shown when the user clicks on the delete icon for a device"
-  },
-  "cannot_be_undone": {
-    "message": "這項動作必須做完。",
-    "description": "Warning/confirmation message shown when the user clicks on the delete icon for a device"
-  },
   "delete": {
     "message": "刪除",
     "description": "Text on a delete button"
@@ -2599,14 +2425,6 @@
   },
   "see_photos_no_ads_description": {
     "message": "我們仍會阻擋廣告，但我們會以好看的貓狗或自然照片取代。",
-    "description": "The main text of a feature box in the MyAdBlock Options page"
-  },
-  "sync_your_settings_title": {
-    "message": "同步您的設定",
-    "description": "The title of a feature box in the MyAdBlock Options page"
-  },
-  "sync_your_settings_description": {
-    "message": "無論使用哪一台電腦，您的自訂廣告攔截規則與設定都可以帶著走。",
     "description": "The main text of a feature box in the MyAdBlock Options page"
   },
   "how_can_we_help": {
@@ -2877,10 +2695,6 @@
     "message": "圖片交換範例",
     "description": "Text in the alt attribute of an image in the Options page mab that visualizes the Image Swap feature."
   },
-  "sync_example": {
-    "message": "同步範例",
-    "description": "Text in the alt attribute of an image in the Options page mab that visualizes the Sync feature."
-  },
   "adblock_home": {
     "message": "AdBlock 主頁",
     "description": "Text in the alt attribute of an AdBlock logo / icon that links to getadblock.com."
@@ -2961,10 +2775,6 @@
     "message": "進一步了解",
     "description": "Text in the aria-label attribute of an icon linking to extra information about an option."
   },
-  "find_out_more": {
-    "message": "深入了解",
-    "description": "Text in the button on the Premium CTA on the hiding wizard."
-  },
   "update_filter_lists_now": {
     "message": "更新過濾清單",
     "description": "Text in the aria-label attribute of the 'update now' button on the Options page in the Filter Lists tab."
@@ -3017,6 +2827,10 @@
     "message": "AdBlock Premium：瀏覽網路的更好方式。",
     "description": "The text of the header the AdBlock Premium Options page"
   },
+  "premium_upsell_text": {
+    "message": "立即使用 AdBlock VPN 解锁更安全、无边界的互联网",
+    "description": "The text on the premium upsell of AdBlock Premium in Options page"
+  },
   "premium_benefits_explained": {
     "message": "為了感謝您支持我們並啟用 AdBlock Premium，您將在最新工具與功能推出時獲得優先使用權。",
     "description": "Main text of the teaser AdBlock Premium feature in the AdBlock Premium tab of the Options page"
@@ -3024,14 +2838,6 @@
   "manage_subscription": {
     "message": "管理您的訂閱",
     "description": "Text of link to manage the user's Premium subscription on the Premium tab of the Options page"
-  },
-  "save_custom_settings_cta": {
-    "message": "您是否要儲存自訂廣告攔截設定並在每個瀏覽器中使用？",
-    "description": "Part 1 of a Premium call-to-action on the Options page"
-  },
-  "try_backup_sync": {
-    "message": "如果是，請嘗試我們的「備份與同步」功能。",
-    "description": "Part 2 of a Premium call-to-action on the Options page"
   },
   "wont_show_again": {
     "message": "好的，我們不會再顯示此訊息。",
@@ -3056,26 +2862,6 @@
   "whitelisted_a_site": {
     "message": "您剛剛將網站加到了允許名單中！",
     "description": "Part 1 of a call-to-action on the allowlist wizard"
-  },
-  "dont_show_me_again": {
-    "message": "別再顯示此訊息",
-    "description": "opt out option on all-to-action on the blocklist / hiding wizard"
-  },
-  "never_lose_settings": {
-    "message": "將此設定套用到所有裝置，並使用「備份與同步」以確保您不會遺失您的 AdBlock 設定。",
-    "description": "Part 2 of a call-to-action on the allowlist and blocklist wizards"
-  },
-  "wizard_premium_cta_title": {
-    "message": "嘿，看來您可能會喜歡 AdBlock Premium",
-    "description": "Part of a message on the blocklist wizard"
-  },
-  "wizard_premium_cta_part_I": {
-    "message": "您剛剛阻擋了這個網站上的內容。",
-    "description": "Part of a message on the blocklist wizard"
-  },
-  "wizard_premium_cta_part_II": {
-    "message": "將此偏好套用到所有裝置，並使用「備份與同步」以確保您不會遺失您的 AdBlock 設定。",
-    "description": "Part of a message on the blocklist wizard"
   },
   "blocked_something": {
     "message": "您剛剛阻擋了這個網站上的內容！",
@@ -3762,18 +3548,6 @@
   "take_control_easy": {
     "message": "利用輕鬆使用的控制方式來自訂 AdBlock 的外觀、體驗與字型大小。讓 AdBlock 為您所用！",
     "description": "Description of Themes on the main Premium options page"
-  },
-  "save_settings_multiple": {
-    "message": "在多個裝置上儲存您的 AdBlock 設定",
-    "description": "Sub-header describing Backup & Sync on the main Premium options page"
-  },
-  "take_custom_with_you": {
-    "message": "在您所有的 Chrome 個人檔案中使用自己的自訂廣告阻擋規則、過濾清單訂閱與白名單。",
-    "description": "Description of Backup & Sync on the main Premium options page"
-  },
-  "set_up_once": {
-    "message": "只需要一次設定，就可以將設定帶著走！",
-    "description": "Description of Backup & Sync on the main Premium options page"
   },
   "annoyance_free_browsing": {
     "message": "體驗無干擾的瀏覽方式",

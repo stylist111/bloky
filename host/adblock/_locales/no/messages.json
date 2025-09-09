@@ -1965,80 +1965,6 @@
     "message": "Å nei!",
     "description": "The text notifying something is wrong in the payment iframe in the Options page."
   },
-  "sync_tab_item": {
-    "message": "Sikkerhetskopier og synkroniser",
-    "description": "Title of the Sync sub-tab of the Options page"
-  },
-  "sync_turn_on_duplicate_name_text": {
-    "message": "Dette utvidelsesnavnet er allerede i bruk",
-    "description": "error message text on the Sync sub-tab of the Options page"
-  },
-  "sync_extension_section_title": {
-    "message": "Utvidelser",
-    "description": "section title text on the Sync sub-tab of the Options page"
-  },
-  "sync_header_message_getting_license": {
-    "message": "sjekker …",
-    "description": "message to users on the sync page when the extension is getting the license"
-  },
-  "sync_header_message_in_progress": {
-    "message": "Synkronisering pågår …",
-    "description": "message to users on the options pages when syncing with the server is in progress"
-  },
-  "sync_header_message_sync_complete": {
-    "message": "Synkronisering fullført",
-    "description": "message to users on the option pages when syncing with the server server is complete"
-  },
-  "sync_extension_no_extension_msg": {
-    "message": "Du har ingen synkroniserte utvidelser.",
-    "description": "message to users on the sync page when the license is unavailable, inactive or a license ID hasn't been returned yet"
-  },
-  "sync_header_message_setup_fail_prefix": {
-    "message": "Synkroniseringsfeil:",
-    "description": "start of error message to users on the sync page when sync fails."
-  },
-  "sync_device_name_list_updated_at_msg": {
-    "message": "senest oppdatert den $timestamp$",
-    "description": "message to users on when the sync page was last updated with the name of the extensions / devices (displayed in locale specific format)",
-    "placeholders": {
-      "timestamp": {
-        "content": "$1",
-        "example": "April 30, 2019 6:25 pm for US/English locale"
-      }
-    }
-  },
-  "sync_now_btn_text": {
-    "message": "Synkroniser nå",
-    "description": "button text on the Sync sub-tab of the Options page"
-  },
-  "sync_message_old_version_part_1": {
-    "message": "Du bruker en gammel versjon av AdBlock.",
-    "description": "button text on the Sync sub-tab of the Options page"
-  },
-  "check_sync_status": {
-    "message": "Sjekk synkroniseringsstatus",
-    "description": "Button on Sync tab that checks the status of the Sync feature"
-  },
-  "show_details": {
-    "message": "Vis detaljer",
-    "description": "Toggle that shows the details section"
-  },
-  "hide_details": {
-    "message": "Skjul detaljer",
-    "description": "Toggle that hides the details section"
-  },
-  "add_this_extension": {
-    "message": "Legg til denne utvidelsen",
-    "description": "Button on Sync tab that adds this extension to the Sync process"
-  },
-  "add": {
-    "message": "Legg til ",
-    "description": "Button on Sync tab that adds an entered name for this extension to the list of synced extensions"
-  },
-  "this_extension": {
-    "message": "(denne utvidelsen)",
-    "description": "description for name of the current extension"
-  },
   "delete": {
     "message": "Slett",
     "description": "Text on a delete button"
@@ -2117,10 +2043,6 @@
   },
   "see_photos_no_ads_title": {
     "message": "Se bilder, ikke reklamer",
-    "description": "The title of a feature box in the MyAdBlock Options page"
-  },
-  "sync_your_settings_title": {
-    "message": "Synkroniser innstillingene dine",
     "description": "The title of a feature box in the MyAdBlock Options page"
   },
   "how_can_we_help": {
@@ -2202,10 +2124,6 @@
   "image_swap_example": {
     "message": "Bildebytte-eksempel",
     "description": "Text in the alt attribute of an image in the Options page mab that visualizes the Image Swap feature."
-  },
-  "sync_example": {
-    "message": "Synkroniseringseksempel",
-    "description": "Text in the alt attribute of an image in the Options page mab that visualizes the Sync feature."
   },
   "help": {
     "message": "Hjelp",

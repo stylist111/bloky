@@ -20,7 +20,7 @@ export const globalDataCollectionV2 = {
 };
 export const globalInfo = global.info;
 export const globalPrefs = global.Prefs;
-export const globalMABPayment = { displaySyncCTAs: vi.fn() };
+export const globalMABPayment = {};
 export const globalSend = vi.fn();
 export const globalSettings = {};
 export const globalPrefsNotifier = { on: vi.fn(), off: vi.fn() };

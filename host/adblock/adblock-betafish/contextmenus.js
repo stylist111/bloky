@@ -16,7 +16,7 @@
  */
 
 /* For ESLint: List any global identifiers used in this file below */
-/* global browser, ext, License, reloadTab, getSettings, */
+/* global browser, ext, reloadTab, getSettings, */
 
 import { Prefs } from "prefs";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
@@ -197,8 +197,6 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
           fn: "topOpenBlacklistUI",
           options: {
             info,
-            showBlacklistCTA: License.shouldShowBlacklistCTA(),
-            isActiveLicense: License.isActiveLicense(),
             settings: getSettings(),
             addCustomFilterRandomName: messageValidator.generateNewRandomText(),
           },
@@ -210,8 +208,6 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
           fn: "topOpenBlacklistUI",
           options: {
             nothingClicked: true,
-            showBlacklistCTA: License.shouldShowBlacklistCTA(),
-            isActiveLicense: License.isActiveLicense(),
             settings: getSettings(),
             addCustomFilterRandomName: messageValidator.generateNewRandomText(),
           },
@@ -331,8 +327,6 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
         fn: "topOpenWhitelistCompletionUI",
         options: {
           rule: request.rule,
-          isActiveLicense: License.isActiveLicense(),
-          showWhitelistCTA: License.shouldShowWhitelistCTA(),
         },
         tabID: sender.tab.id,
       });
@@ -347,8 +341,6 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
       fn: "topOpenWhitelistCompletionUI",
       options: {
         rule: request.rule,
-        isActiveLicense: License.isActiveLicense(),
-        showWhitelistCTA: License.shouldShowWhitelistCTA(),
       },
       tabID: sender.tab.id,
     });
@@ -362,8 +354,6 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
       fn: "topOpenBlacklistUI",
       options: {
         nothingClicked: request.nothingClicked,
-        isActiveLicense: License.isActiveLicense(),
-        showBlacklistCTA: License.shouldShowBlacklistCTA(),
         settings: getSettings(),
         addCustomFilterRandomName: messageValidator.generateNewRandomText(),
       },

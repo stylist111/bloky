@@ -34,7 +34,6 @@
   --background-color: var(--gray2);
   --unselected-toggle-border-color: var(--gray2);
   --ancillary-button-bg-color: var(--gray2);
-  --sync-delete-bg-color: var(--gray2);
   --sidebar-bg-color: var(--dark-gray1); /* updating */
   --extension-name-bg-color-hovered: var(--dark-gray1); /* updating */
 
@@ -67,8 +66,9 @@
   --toggle-active-bg: var(--blue3);
   --options-button-complete-bg: var(--link-color);
   --popup-link-text: var(--red4); /* updating  */
-  --mail-dialog-link-color: var(--blue3) /* overwriting to match theme  */ /* --gray3 */
-    --popup-separator-color: var(--gray3);
+  --mail-dialog-link-color: var(--blue3);
+  /* overwriting to match theme  */ /* --gray3 */
+  --popup-separator-color: var(--gray3);
   --popup-accent-hovered-color: var(--gray3);
   --toggle-inactive-bg: var(--gray3);
   --not-selected-checkbox-bg-color: var(--gray3);
@@ -88,9 +88,6 @@
 
   /* ************************************************************************ */
 
-  /* --gray5 */
-  --sync-delete-color: var(--gray5);
-
   /* --white */
   --popup-button-secondary-text: var(--white);
   --popup-button-reenable-text-color: var(--white);
@@ -99,7 +96,6 @@
   /* only overwritten here ... is that important? */
   --customize-dropdown-menu-icon-color: var(--white);
   --ancillary-button-text-color: var(--white);
-  --sync-delete-title-color: var(--white);
   --email-btn-color: var(--white);
   --pf-list-title: var(--white);
 
@@ -169,7 +165,6 @@
   --ancillary-button-bg-color: var(--solarized-teal1);
   --extension-name-bg-color-hovered: var(--solarized-teal1);
   --toggle-foreground: var(--popup-background-color);
-  --sync-delete-bg-color: var(--sidebar-bg-color);
 
   /* --solarized-teal2 */
   --popup-card-background-color: var(--solarized-teal2);
@@ -192,7 +187,6 @@
   --mab-teaser-card-header-text-color: var(--solarized-gray1);
   --options-premium-badge: var(--solarized-gray1);
   --delete-icon-color-hovered: var(--solarized-gray1);
-  --sync-delete-color: var(--solarized-gray1);
   --popup-themes-cta-text: var(--solarized-gray1);
   --mail-dialog-header-text-color: var(--solarized-gray1);
   --mail-dialog-header-border-color: var(--solarized-gray1);
@@ -228,7 +222,6 @@
 
   /* --solarized-gray2 */
   --ancillary-button-text-color: var(--solarized-gray2);
-  --sync-delete-title-color: var(--solarized-gray2);
 
   /* --gray1 */
   --popup-vpn-cta-hover-color: var(--gray1);
@@ -301,7 +294,6 @@
   --mab-feature-card-body-bg: var(--solarized-yellow2);
   --ancillary-button-bg-color: var(--solarized-yellow2);
   --extension-name-bg-color-hovered: var(--solarized-yellow2);
-  --sync-delete-bg-color: var(--solarized-yellow2);
 
   /* --solarized-gray1l */
   --popup-accent-color: var(--solarized-gray1l);
@@ -314,8 +306,6 @@
   --mab-feature-card-header-unlocked-bg: var(--solarized-gray1l);
   --mab-feature-card-text-color: var(--solarized-gray1l);
   --options-premium-badge: var(--solarized-gray1l);
-  --sync-delete-color: var(--solarized-gray1l);
-  --sync-delete-title-color: var(--solarized-gray1l);
   --popup-themes-cta-text: var(--solarized-gray1l);
   --mail-dialog-header-text-color: var(--solarized-gray1l);
   --mail-dialog-content-text-color: var(--solarized-gray1l);

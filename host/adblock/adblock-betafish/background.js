@@ -52,7 +52,6 @@ import * as logger from "~/utilities/background";
 import { port } from "../adblockplusui/adblockpluschrome/lib/messaging/port";
 import ServerMessages from "~/servermessages";
 import SubscriptionAdapter from "./subscriptionadapter";
-import SyncService from "./picreplacement/sync-service";
 import * as prefs from "./prefs/background";
 import { FilterOrigin } from "../src/filters/shared";
 
@@ -95,7 +94,6 @@ Object.assign(self, {
   Prefs,
   info,
   getBlockedPerPage,
-  SyncService,
   LocalDataCollection,
   ServerMessages,
   SubscriptionAdapter,
@@ -435,9 +433,6 @@ const getCurrentTabInfo = function (secondTime, tabId) {
           showMABEnrollment: License.shouldShowMyAdBlockEnrollment(),
           popupMenuThemeCTA: License.getCurrentPopupMenuThemeCTA(),
           showDcCTA: License.shouldShowPremiumDcCTA(),
-          lastGetStatusCode: SyncService.getLastGetStatusCode(),
-          lastGetErrorResponse: SyncService.getLastGetErrorResponse(),
-          lastPostStatusCode: SyncService.getLastPostStatusCode(),
           newBadgeTextReason: getNewBadgeTextReason(),
           premiumPayURL: License.MAB_CONFIG.payURL,
         };

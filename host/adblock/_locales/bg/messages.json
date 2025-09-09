@@ -1873,58 +1873,6 @@
     "message": "Още възможности очаквайте скоро!",
     "description": "Title of the teaser MyAdBlock feature box in the MyAdBlock tab of the Options page"
   },
-  "sync_message_old_version_part_1": {
-    "message": "Вие използвате стара версия на AdBlock.",
-    "description": "button text on the Sync sub-tab of the Options page"
-  },
-  "sync_message_old_version_part_2": {
-    "message": "Моля [[обновете AdBlock]], така че да можем да синхронизираме вашите настройки.",
-    "description": "button text on the Sync sub-tab of the Options page"
-  },
-  "sync_premium_cta": {
-    "message": "Ще бъдете експерт в блокирането на реклами с Premium услугите, като Синхронизиране.",
-    "description": "AdBlock Premium CTA on the Sync tab"
-  },
-  "backup_sync_settings": {
-    "message": "Автоматично запазвай и синхронизирай твоите AdBlock настройки на всичките Ви устройства.",
-    "description": "Description of Sync on Sync tab"
-  },
-  "set_preferences_once": {
-    "message": "Настрой своите предпочитания и не се тревожи за загуба на данни или да правиш същите настройки някога отново.",
-    "description": "Description of Sync on Sync tab"
-  },
-  "get_sync": {
-    "message": "Синхронизирай",
-    "description": "Link to pay for Sync (part of AdBlock Premium)"
-  },
-  "check_sync_status": {
-    "message": "Провери статуса на Синхронизацията",
-    "description": "Button on Sync tab that checks the status of the Sync feature"
-  },
-  "show_details": {
-    "message": "Покажи Детайли",
-    "description": "Toggle that shows the details section"
-  },
-  "hide_details": {
-    "message": "Скрий Детайлите",
-    "description": "Toggle that hides the details section"
-  },
-  "add_this_extension": {
-    "message": "Добави това Разширение",
-    "description": "Button on Sync tab that adds this extension to the Sync process"
-  },
-  "add": {
-    "message": "Добави",
-    "description": "Button on Sync tab that adds an entered name for this extension to the list of synced extensions"
-  },
-  "this_extension": {
-    "message": "(това разширение)",
-    "description": "description for name of the current extension"
-  },
-  "confirm_delete_extension": {
-    "message": "Сигурен ли си че искаш да изтриеш разширението?",
-    "description": "Warning/confirmation message shown when the user clicks on the delete icon for a device"
-  },
   "delete": {
     "message": "Изтрий",
     "description": "Text on a delete button"
@@ -2055,10 +2003,6 @@
     "message": "Продължаваме да блокираме реклами, но сега ще заменим някои от тях с красиви снимки на котки, кучета и природа.",
     "description": "The main text of a feature box in the MyAdBlock Options page"
   },
-  "sync_your_settings_title": {
-    "message": "Синхронизирай твоите Настройки",
-    "description": "The title of a feature box in the MyAdBlock Options page"
-  },
   "how_can_we_help": {
     "message": "Как можем да помогнем?",
     "description": "Message for help flow in popup menu."
@@ -2159,14 +2103,6 @@
     "message": "Управление на вашите абонаменти",
     "description": "Text of link to manage the user's Premium subscription on the Premium tab of the Options page"
   },
-  "save_custom_settings_cta": {
-    "message": "Искате ли да запазите персоналните настройки за блокиране на реклами и да ги използвате във всеки браузър?",
-    "description": "Part 1 of a Premium call-to-action on the Options page"
-  },
-  "try_backup_sync": {
-    "message": "Ако е така, опитайте услугата Запазване & Синхронизиране.",
-    "description": "Part 2 of a Premium call-to-action on the Options page"
-  },
   "wont_show_again": {
     "message": "Добре, повече няма да Ви показваме това съобщение.",
     "description": "Message shown when user opts out of call-to-action"
@@ -2182,10 +2118,6 @@
   "change_behavior_settings": {
     "message": "Може да промените това поведение от [[settings]].",
     "description": "Part of a message on the allowlist and blocklist wizards"
-  },
-  "never_lose_settings": {
-    "message": "Приложи тези настройки на всички устройства и се увери че няма да загубиш настройките на AdBlock с услугата Запазване & Синхронизиране.",
-    "description": "Part 2 of a call-to-action on the allowlist and blocklist wizards"
   },
   "overlay_notification_button_no": {
     "message": "Не"

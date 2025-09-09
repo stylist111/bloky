@@ -2293,180 +2293,6 @@
     "message": "サーバーに接続できませんでした",
     "description": "The sub-title of an error message box in payment iframe in the Options page."
   },
-  "sync_tab_item": {
-    "message": "バックアップと同期",
-    "description": "Title of the Sync sub-tab of the Options page"
-  },
-  "sync_turn_on_invalid_name_text": {
-    "message": "この拡張機能に名前を付けて続行して下さい",
-    "description": "error message text on the Sync sub-tab of the Options page"
-  },
-  "sync_turn_on_duplicate_name_text": {
-    "message": "この拡張機能の名前は既に使用されています",
-    "description": "error message text on the Sync sub-tab of the Options page"
-  },
-  "sync_extension_section_title": {
-    "message": "拡張機能",
-    "description": "section title text on the Sync sub-tab of the Options page"
-  },
-  "sync_header_message_no_license": {
-    "message": "同期が完了するまで少々お待ち下さい。",
-    "description": "message to users on the sync page when the license is unavailable, inactive or a license ID hasn't been returned yet"
-  },
-  "sync_header_message_getting_license": {
-    "message": "確認中...",
-    "description": "message to users on the sync page when the extension is getting the license"
-  },
-  "sync_header_message_in_progress": {
-    "message": "同期の進行中...",
-    "description": "message to users on the options pages when syncing with the server is in progress"
-  },
-  "sync_header_message_sync_complete": {
-    "message": "同期完了",
-    "description": "message to users on the option pages when syncing with the server server is complete"
-  },
-  "sync_extension_no_extension_msg": {
-    "message": "同期されていない拡張機能があります。",
-    "description": "message to users on the sync page when the license is unavailable, inactive or a license ID hasn't been returned yet"
-  },
-  "sync_header_message_setup_fail_prefix": {
-    "message": "同期エラー：",
-    "description": "start of error message to users on the sync page when sync fails."
-  },
-  "sync_header_message_setup_fail_part_2": {
-    "message": "数分後にこの拡張機能の追加を再度お試し下さい。",
-    "description": "message to users on the sync page when initial setup of sync fails for some unknown reason."
-  },
-  "sync_header_message_error_prefix": {
-    "message": "この拡張機能は同期されていません。",
-    "description": "Start of an sync error message to users on the Options page or AdBlock popup menu."
-  },
-  "sync_header_message_old_commit_version_part_2": {
-    "message": "この拡張機能を同期し、変更を元に戻しました。",
-    "description": "part 2 of a message to users on the sync page and popup menu when initial setup of sync fails for some unknown reason."
-  },
-  "sync_header_message_old_commit_version_part_3": {
-    "message": "ページを再読み込みしてから変更を再度適用して下さい。",
-    "description": "part 3 of a message to users on the sync page when initial setup of sync fails for some unknown reason."
-  },
-  "sync_header_error_save_message_part_2": {
-    "message": "この拡張機能は同期されてません。",
-    "description": "part 2 of a message to users on the Options pages when sending the sync data fails for some unknown reason."
-  },
-  "sync_header_error_save_message_part_3": {
-    "message": "後ほど手動での同期をお試し下さい。",
-    "description": "part 3 of a message to users on the Options pages when sending the sync data fails for some unknown reason."
-  },
-  "sync_header_message_old_commit_version_customize_tab_part_2": {
-    "message": "この拡張機能を同期しました。変更を元に戻します。",
-    "description": "part 2 of a message to users on the sync page when initial setup of sync fails for some unknown reason."
-  },
-  "sync_header_message_old_commit_version_customize_tab_part_3": {
-    "message": "カスタムルールをクリップボードにコピーし、ページをリロードして、再度変更して下さい。",
-    "description": "part 3 of a message to users on the sync page when initial setup of sync fails for some unknown reason."
-  },
-  "sync_device_name_list_updated_at_msg": {
-    "message": "最終更新日： $timestamp$",
-    "description": "message to users on when the sync page was last updated with the name of the extensions / devices (displayed in locale specific format)",
-    "placeholders": {
-      "timestamp": {
-        "content": "$1",
-        "example": "April 30, 2019 6:25 pm for US/English locale"
-      }
-    }
-  },
-  "sync_extension_name_placeholder": {
-    "message": "他と区別するためにこの拡張機能に名前を付けて下さい",
-    "description": "placeholder text in the extension / device name field on the sync page"
-  },
-  "sync_verify_turn_on_text": {
-    "message": "「バックアップと同期」をオンにすると、この拡張機能の既存の設定情報が消去されます。",
-    "description": "message text in the extension / device name field on the sync page"
-  },
-  "sync_now_btn_text": {
-    "message": "今すぐ同期",
-    "description": "button text on the Sync sub-tab of the Options page"
-  },
-  "sync_message_old_version_part_1": {
-    "message": "古いバージョンのAdBlockを使用しています。",
-    "description": "button text on the Sync sub-tab of the Options page"
-  },
-  "sync_message_old_version_part_2": {
-    "message": "あなたの設定を同期するために、[[AdBlockをアップデート]]して下さい。",
-    "description": "button text on the Sync sub-tab of the Options page"
-  },
-  "sync_removed_error_msg_part_1": {
-    "message": "この拡張機能は同期されてません",
-    "description": "sync error message text on the popup menu"
-  },
-  "sync_removed_error_msg_part_2": {
-    "message": "ここをクリックし、設定を更新してください",
-    "description": "sync error message text on the popup menu and options page"
-  },
-  "unsync_error_msg_part_1": {
-    "message": "同期エラー",
-    "description": "sync error message text on the options menu"
-  },
-  "unsync_error_msg_part_2": {
-    "message": "この拡張機能は今後同期されません。",
-    "description": "sync error message text on the popup menu"
-  },
-  "unsync_error_msg_part_3": {
-    "message": "ここをクリックしてこのページを更新し、「この拡張機能を追加する」をクリックしてこのデバイスを同期してください",
-    "description": "sync error message text on the Sync tab of the options page"
-  },
-  "sync_premium_cta": {
-    "message": "同期等のPremium機能を導入して広告ブロックのプロになりましょう。",
-    "description": "AdBlock Premium CTA on the Sync tab"
-  },
-  "backup_sync_settings": {
-    "message": "ご利用の全端末でAdBlockの設定を自動的にバックアップ及び同期します。",
-    "description": "Description of Sync on Sync tab"
-  },
-  "set_preferences_once": {
-    "message": "設定を一度行うだけで、データの損失や、複数の拡張機能における同様の変更をを行う手間が省けます。",
-    "description": "Description of Sync on Sync tab"
-  },
-  "get_sync": {
-    "message": "同期を行う",
-    "description": "Link to pay for Sync (part of AdBlock Premium)"
-  },
-  "check_sync_status": {
-    "message": "同期状況の確認",
-    "description": "Button on Sync tab that checks the status of the Sync feature"
-  },
-  "show_details": {
-    "message": "詳細を表示",
-    "description": "Toggle that shows the details section"
-  },
-  "hide_details": {
-    "message": "詳細を非表示",
-    "description": "Toggle that hides the details section"
-  },
-  "add_this_extension": {
-    "message": "この拡張機能を追加する",
-    "description": "Button on Sync tab that adds this extension to the Sync process"
-  },
-  "add": {
-    "message": "追加",
-    "description": "Button on Sync tab that adds an entered name for this extension to the list of synced extensions"
-  },
-  "this_extension": {
-    "message": "（当拡張機能）",
-    "description": "description for name of the current extension"
-  },
-  "sync_delete_panel_title": {
-    "message": "同期済み拡張機能の削除",
-    "description": "Panel title text on the delete device overlay"
-  },
-  "confirm_delete_extension": {
-    "message": "本当にこの拡張機能を削除しますか？",
-    "description": "Warning/confirmation message shown when the user clicks on the delete icon for a device"
-  },
-  "cannot_be_undone": {
-    "message": "この操作は元に戻すことができません。",
-    "description": "Warning/confirmation message shown when the user clicks on the delete icon for a device"
-  },
   "delete": {
     "message": "削除",
     "description": "Text on a delete button"
@@ -2607,14 +2433,6 @@
   },
   "see_photos_no_ads_description": {
     "message": "ブロックした広告の場所に可愛い猫や犬、綺麗な自然の写真を表示させます。",
-    "description": "The main text of a feature box in the MyAdBlock Options page"
-  },
-  "sync_your_settings_title": {
-    "message": "設定を同期させよう",
-    "description": "The title of a feature box in the MyAdBlock Options page"
-  },
-  "sync_your_settings_description": {
-    "message": "どのPCからでも、広告ブロックルールの設定や許可リストなどを編集することができます。",
     "description": "The main text of a feature box in the MyAdBlock Options page"
   },
   "how_can_we_help": {
@@ -2885,10 +2703,6 @@
     "message": "画像交換の例",
     "description": "Text in the alt attribute of an image in the Options page mab that visualizes the Image Swap feature."
   },
-  "sync_example": {
-    "message": "同期の例",
-    "description": "Text in the alt attribute of an image in the Options page mab that visualizes the Sync feature."
-  },
   "adblock_home": {
     "message": "AdBlockホーム",
     "description": "Text in the alt attribute of an AdBlock logo / icon that links to getadblock.com."
@@ -2969,10 +2783,6 @@
     "message": "詳しくはこちら",
     "description": "Text in the aria-label attribute of an icon linking to extra information about an option."
   },
-  "find_out_more": {
-    "message": "詳細はこちら",
-    "description": "Text in the button on the Premium CTA on the hiding wizard."
-  },
   "update_filter_lists_now": {
     "message": "今フィルタリストを更新する",
     "description": "Text in the aria-label attribute of the 'update now' button on the Options page in the Filter Lists tab."
@@ -3025,6 +2835,10 @@
     "message": "AdBlock Premium： インターネットをより快適にブラウズする方法。",
     "description": "The text of the header the AdBlock Premium Options page"
   },
+  "premium_upsell_text": {
+    "message": "AdBlock VPNで、より安全で国境のないインターネットを今すぐ体験しましょう",
+    "description": "The text on the premium upsell of AdBlock Premium in Options page"
+  },
   "premium_benefits_explained": {
     "message": "AdBlock Premiumを有効にして私たちを支援して頂けると、最新のツールや機能がリリースされるとすぐにアクセス可能になります。",
     "description": "Main text of the teaser AdBlock Premium feature in the AdBlock Premium tab of the Options page"
@@ -3032,14 +2846,6 @@
   "manage_subscription": {
     "message": "サブスクリプションの管理",
     "description": "Text of link to manage the user's Premium subscription on the Premium tab of the Options page"
-  },
-  "save_custom_settings_cta": {
-    "message": "カスタム広告ブロック設定を保存して、すべてのブラウザで使用したいですか？",
-    "description": "Part 1 of a Premium call-to-action on the Options page"
-  },
-  "try_backup_sync": {
-    "message": "そうであれば、「バックアップと同期」の機能をお試し下さい。",
-    "description": "Part 2 of a Premium call-to-action on the Options page"
   },
   "wont_show_again": {
     "message": "今後このメッセージを表示しません。",
@@ -3064,26 +2870,6 @@
   "whitelisted_a_site": {
     "message": "サイトを許可リストに追加しました！",
     "description": "Part 1 of a call-to-action on the allowlist wizard"
-  },
-  "dont_show_me_again": {
-    "message": "このメッセージを今後表示しない",
-    "description": "opt out option on all-to-action on the blocklist / hiding wizard"
-  },
-  "never_lose_settings": {
-    "message": "この設定をすべての端末に適用して、「バックアップと同期」を利用してAdBlock設定が失われないようにしましょう。",
-    "description": "Part 2 of a call-to-action on the allowlist and blocklist wizards"
-  },
-  "wizard_premium_cta_title": {
-    "message": "AdBlock Premiumをご利用になってはいかがでしょうか",
-    "description": "Part of a message on the blocklist wizard"
-  },
-  "wizard_premium_cta_part_I": {
-    "message": "このサイトで何かをブロックしました。",
-    "description": "Part of a message on the blocklist wizard"
-  },
-  "wizard_premium_cta_part_II": {
-    "message": "この設定をすべての端末に適用して、「バックアップと同期」を利用してAdBlock設定が失われないようにしましょう。",
-    "description": "Part of a message on the blocklist wizard"
   },
   "blocked_something": {
     "message": "このサイトで何かをブロックしました！",
@@ -3770,18 +3556,6 @@
   "take_control_easy": {
     "message": "AdBlockの見た目、快適性、フォントサイズをお手軽操作で変更できます。AdBlockを自分色に染めましょう！",
     "description": "Description of Themes on the main Premium options page"
-  },
-  "save_settings_multiple": {
-    "message": "複数のデバイスのAdBlockの設定を保存しましょう",
-    "description": "Sub-header describing Backup & Sync on the main Premium options page"
-  },
-  "take_custom_with_you": {
-    "message": "Chromeの全てのアカウントで広告ブロックルールの設定やホワイトリストなどを共有することができます。",
-    "description": "Description of Backup & Sync on the main Premium options page"
-  },
-  "set_up_once": {
-    "message": "AdBlockを一度設定すれば、その設定を持ち歩くことができます。",
-    "description": "Description of Backup & Sync on the main Premium options page"
   },
   "annoyance_free_browsing": {
     "message": "煩わしさのないブラウジングを実現",

@@ -1041,12 +1041,6 @@ async function onFilterChangeHandler(action, items) {
   ) {
     return;
   }
-  // A user can either add, remove or update a filter list from the UI.
-  // Each 'subscription.added' action leads to a 'subscription.updated' so we
-  // can show the CTAs simply when a subscription is either removed or updated
-  if (["subscription.removed", "subscription.updated"].includes(action)) {
-    MABPayment.displaySyncCTAs(true);
-  }
 
   const updateEntry = async function (entryToUpdate, eventAction) {
     const entry = entryToUpdate;
@@ -1267,9 +1261,8 @@ $(async () => {
     MABPayment.paidUserLogic(payInfo);
   }
 
-  MABPayment.displaySyncCTAs();
-  $(".sync-cta #get-it-now-filters").on("click", MABPayment.userClickedSyncCTA);
-  $(".sync-cta #close-sync-cta-filters").on("click", MABPayment.userClosedSyncCTA);
+  MABPayment.displayUpsellCTA();
+  $(".upsell-cta #get-it-now-filters").on("click", MABPayment.userClickedUpsellCTA);
   $("a.link-to-tab").on("click", (event) => {
     activateTab($(event.target).attr("href"));
   });

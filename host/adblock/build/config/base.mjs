@@ -514,14 +514,6 @@ export default {
         src: "adblock-betafish/picreplacement/options/imageview.css",
       },
       {
-        dest: "adblock-options-sync.html",
-        src: "adblock-betafish/options/sync.html",
-      },
-      {
-        dest: "adblock-options-sync.js",
-        src: "adblock-betafish/options/sync.js",
-      },
-      {
         dest: "icons/adblock-picreplacement-images-cat.png",
         src: "adblock-betafish/picreplacement/images/cat.png",
       },
@@ -576,10 +568,6 @@ export default {
       {
         dest: "icons/adblock-picreplacement-images-bird-grayscale.png",
         src: "adblock-betafish/picreplacement/images/bird_grayscale.png",
-      },
-      {
-        dest: "adblock-wizard_sync_cta.svg",
-        src: "adblock-betafish/uiscripts/wizard_sync_cta.svg",
       },
       {
         dest: "managed-storage-schema.json",

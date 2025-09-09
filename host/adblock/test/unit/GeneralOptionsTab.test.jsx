@@ -126,10 +126,8 @@ describe("optionsList", () => {
         expect(fn).not.toHaveBeenCalled();
         fireEvent.click(checkbox);
         await waitFor(() => expect(fn).toHaveBeenCalledTimes(1));
-        await waitFor(() => expect(MABPayment.displaySyncCTAs).toHaveBeenCalledTimes(1));
         fireEvent.click(checkbox);
         await waitFor(() => expect(fn).toHaveBeenCalledTimes(2));
-        await waitFor(() => expect(MABPayment.displaySyncCTAs).toHaveBeenCalledTimes(2));
       },
     );
   });

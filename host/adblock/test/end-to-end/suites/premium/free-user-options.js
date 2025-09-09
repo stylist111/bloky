@@ -30,7 +30,6 @@ import {
   initOptionsPremiumTab,
   initOptionsThemesTab,
   initOptionsImageSwapTab,
-  initOptionsBackupSyncTab,
   initOptionsPremiumFlTab,
   checkPremiumPageHeader,
 } from "../../utils/page.js";
@@ -47,16 +46,16 @@ export default () => {
   it("displays cta and premium features", async function () {
     await initOptionsPremiumTab(getOptionsHandle());
     await checkPremiumPageHeader(
-      "#locked-user-pay-section-mab > p",
+      "#locked-user-pay-section-mab > div > p",
       "#get-it-now-mab",
       fullPremiumUrl,
     );
 
     const features = await driver.findElements(By.css("#myadblock-features > div"));
-    expect(features.length).toEqual(4);
+    expect(features.length).toEqual(3);
 
     // click on each feature and check if it navigates to the correct premium page
-    const hashes = ["#premium-filters", "#mab-image-swap", "#mab-themes", "#sync"];
+    const hashes = ["#premium-filters", "#mab-image-swap", "#mab-themes"];
     for (let i = 0; i < hashes.length; i++) {
       const selector = `#myadblock-features > div:nth-child(${i + 1})`;
       await clickAndNavigateBack(selector, `${extension.origin}/options.html${hashes[i]}`);
@@ -83,7 +82,7 @@ export default () => {
     it(`shows ${selector} themes correctly`, async function () {
       await initOptionsThemesTab(getOptionsHandle());
       await checkPremiumPageHeader(
-        "#locked-user-pay-section-themes > p",
+        "#locked-user-pay-section-themes > div > p",
         "#get-it-now-themes",
         fullPremiumUrl,
       );
@@ -111,7 +110,7 @@ export default () => {
     await initOptionsImageSwapTab(getOptionsHandle());
 
     await checkPremiumPageHeader(
-      "#locked-user-pay-section-image-swap > p",
+      "#locked-user-pay-section-image-swap > div > p",
       "#get-it-now-image-swap",
       fullPremiumUrl,
     );
@@ -128,24 +127,10 @@ export default () => {
     }
   });
 
-  it("shows backup & sync off", async function () {
-    await initOptionsBackupSyncTab(getOptionsHandle());
-    await checkPremiumPageHeader(
-      "#locked-user-pay-section-sync > p",
-      "#get-it-now-sync",
-      fullPremiumUrl,
-    );
-
-    const ctaLink = await getDisplayedElement("#get-sync");
-    expect(await ctaLink.getText()).toEqual("Get Sync");
-
-    await clickAndCloseNewTab("#get-sync", fullPremiumUrl);
-  });
-
   it("shows premium filter lists locked in options page", async function () {
     await initOptionsPremiumFlTab(getOptionsHandle());
     await checkPremiumPageHeader(
-      "#locked-user-pay-section-distraction-control > p",
+      "#locked-user-pay-section-distraction-control > div > p",
       "#get-it-now-distraction-control",
       fullPremiumUrl,
     );

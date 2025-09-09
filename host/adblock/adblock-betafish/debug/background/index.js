@@ -24,7 +24,6 @@ import { Prefs } from "~/alias/prefs";
 import { getUserId } from "~/id/background/index";
 import { adblockIsPaused } from "../../../src/pause/background/index";
 import { License, channels } from "~/picreplacement/check";
-import SyncService from "~/picreplacement/sync-service";
 import { getSettings, settings } from "~/prefs/background";
 
 import { PING_COUNT_STORAGE_KEY } from "./constants";
@@ -37,11 +36,6 @@ const getDebugLicenseInfo = async () => {
   response.licenseInfo.licenseId = License.get() && License.get().licenseId;
   response.licenseInfo.licenseState = License.get() && License.get().status;
   response.licenseInfo.licenseVersion = License.get() && License.get().lv;
-  const syncInfo = {};
-  syncInfo.SyncCommitVersion = SyncService.getCommitVersion();
-  syncInfo.SyncCommitName = SyncService.getCurrentExtensionName();
-  syncInfo.SyncCommitLog = await SyncService.getSyncLog();
-  response.syncInfo = syncInfo;
   response["License Installation Date"] = await License.getLicenseInstallationDate();
   const customChannelId = channels.getIdByName("CustomChannel");
   if (

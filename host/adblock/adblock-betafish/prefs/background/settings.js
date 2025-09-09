@@ -69,6 +69,13 @@ function Settings() {
   this.init = new Promise((resolve) => {
     browser.storage.local.get(that.settingsKey).then((response) => {
       const settings = response.settings || {};
+      // Remove old sync settings if it exists
+      // https://eyeo.atlassian.net/browse/EXT-1078
+      // TODO: Remove this code after a few releases
+      if (settings.sync_settings !== undefined) {
+        delete settings.sync_settings;
+        browser.storage.local.set({ settings });
+      }
       that.data = extend(that.defaults, settings);
       if (settings.debug_logging) {
         logging(true);

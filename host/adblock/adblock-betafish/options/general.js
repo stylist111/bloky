@@ -131,11 +131,6 @@ const initialize = async function init() {
 
   $("input.feature[type='checkbox']").on("change", async function onOptionSelectionChange() {
     const isEnabled = $(this).is(":checked");
-    // This change of settings causes the Options page to be automatically reloaded
-    // so the CTA display logic is handled on the Options page unload/load time
-    if (this.id !== "enable_show_advanced_options") {
-      MABPayment.displaySyncCTAs(true);
-    }
     if (this.id === "acceptable_ads") {
       acceptableAdsClicked(isEnabled);
       return;
@@ -335,9 +330,8 @@ const handlePremiumEnrollmentCTAs = () => {
     MABPayment.paidUserLogic(payInfo);
   }
 
-  MABPayment.displaySyncCTAs();
-  $(".sync-cta #get-it-now-general").on("click", MABPayment.userClickedSyncCTA);
-  $(".sync-cta #close-sync-cta-general").on("click", MABPayment.userClosedSyncCTA);
+  MABPayment.displayUpsellCTA();
+  $(".upsell-cta #get-it-now-general").on("click", MABPayment.userClickedUpsellCTA);
   $("a.link-to-tab").on("click", (event) => {
     activateTab($(event.target).attr("href"));
   });

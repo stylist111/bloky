@@ -20,9 +20,9 @@
    CustomFilterListUploadUtil, localizePage, storageSet, chromeStorageSetHelper,
    chromeStorageGetHelper, debounced, determineUserLanguage,
    setLangAndDirAttributes, License,
-   settingsNotifier, initializeMABPayment, initializeSettings, initializeLicense,
+   settingsNotifier, initializeSettings, initializeLicense,
    initializeChannels, settings, initializePrefs, ServerMessages, SubscriptionAdapter,
-   initializeLocalDataCollection, SyncService, initializePremiumPort,
+   initializeLocalDataCollection, initializePremiumPort,
    initializeSubscriptionsProxy, initializeFiltersProxy,
    connectUIPort, initializeSubscriptionsProxy, initializeFiltersProxy
 
@@ -80,32 +80,12 @@ const mailCtaKey = "mail-cta-clicked";
 const premiumFiltersCtaKey = "premium-filters-cta-clicked";
 
 const info = {};
-const FIVE_SECONDS = 5000;
-const TWENTY_SECONDS = FIVE_SECONDS * 4;
-/* eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars */
-const SIXTY_SECONDS = FIVE_SECONDS * 20;
 let autoReloadingPage;
-let timeoutID;
 
 const language = determineUserLanguage();
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let delayedSubscriptionSelection = null;
-
-let syncErrorCode = 0;
-
-// Function to check the last known Sync Error Code,
-// only allows an event handler to run if there is
-// no error to prevent data loss
-/* eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars */
-function checkForSyncError(handler) {
-  return function syncError(event) {
-    if (syncErrorCode >= 400) {
-      return;
-    }
-    handler(event);
-  };
-}
 
 let initializedProxies;
 const initializeProxies = () => {
@@ -248,211 +228,6 @@ function setSelectedThemeColor() {
   }
 
   $("#sidebar-adblock-logo").attr("src", `icons/${optionsTheme}/logo.svg`);
-}
-
-const requestSyncMessageRemoval = function (delayTime) {
-  return new Promise((resolve) => {
-    if (typeof delayTime !== "number") {
-      resolve();
-    }
-    timeoutID = setTimeout(() => {
-      $(".sync-header-message-text").text("");
-      $(".unsync-header").addClass("sync-message-hidden");
-      $(".sync-header-message")
-        .removeClass("sync-message-good sync-message-error")
-        .addClass("sync-message-hidden");
-      $(".sync-out-of-date-header-message").addClass("sync-message-hidden");
-      resolve();
-    }, delayTime);
-  });
-};
-
-const showOutOfDateExtensionError = function () {
-  $(".sync-out-of-date-header-message").removeClass("sync-message-hidden");
-  requestSyncMessageRemoval(TWENTY_SECONDS);
-};
-
-const showNoLongerSyncError = function () {
-  if (timeoutID) {
-    window.clearTimeout(timeoutID);
-  }
-  requestSyncMessageRemoval(0).then(() => {
-    $(".unsync-header").removeClass("sync-message-hidden");
-    if ($("#sync").is(":visible")) {
-      const maxHeight = Math.max(
-        $("#unsync-message-box-close-sync-tab").height(),
-        $("#sync-reload-page-message").height(),
-      );
-      $("#unsync-message-box-close-sync-tab").height(maxHeight);
-      $("#sync-reload-page-message").height(maxHeight);
-    }
-
-    SyncService.resetAllErrors();
-  });
-};
-
-// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-const addUnSyncErrorClickHandler = function () {
-  $('span[i18n="sync_removed_error_msg_part_2"]').on("click", () => {
-    $(".unsync-header").addClass("sync-message-hidden");
-    activateTab("#sync");
-  });
-  $("#unsync-message-box-close i, #unsync-message-box-close-sync-tab i").on("click", () => {
-    $(".unsync-header").addClass("sync-message-hidden");
-  });
-  $("#sync-reload-page-message").on("click", () => {
-    window.location.reload();
-  });
-};
-
-// this function is invoked from the tabs.js module
-// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-const checkForUnSyncError = function () {
-  if (
-    !settings.sync_settings &&
-    (SyncService.getLastGetStatusCode() === 403 || SyncService.getLastPostStatusCode() === 403)
-  ) {
-    showNoLongerSyncError();
-    SyncService.resetAllErrors();
-  }
-};
-
-const showSyncMessage = function (msgText, doneIndicator, errorIndicator) {
-  if (!msgText) {
-    return;
-  }
-  $(".unsync-header").addClass("sync-message-hidden");
-  $(".sync-header-message-text").text(msgText);
-  if (!doneIndicator && errorIndicator) {
-    $(".sync-icon").text("error_outline");
-    $(".sync-header-message")
-      .removeClass("sync-message-hidden sync-message-good")
-      .addClass("sync-message-error");
-    requestSyncMessageRemoval(TWENTY_SECONDS);
-  } else if (doneIndicator && !errorIndicator) {
-    $(".sync-icon").text("check_circle");
-    $(".sync-header-message")
-      .removeClass("sync-message-hidden sync-message-error")
-      .addClass("sync-message-good");
-    requestSyncMessageRemoval(FIVE_SECONDS);
-  } else {
-    $(".sync-icon").text("sync");
-    $(".sync-header-message")
-      .removeClass("sync-message-hidden sync-message-error")
-      .addClass("sync-message-good");
-  }
-};
-
-const onExtensionNameError = function () {
-  const messagePrefix = translate("sync_header_message_setup_fail_prefix");
-  const messageSuffix = translate("sync_header_message_setup_fail_part_2");
-  showSyncMessage(`${messagePrefix} ${messageSuffix}`, false, true);
-};
-
-const onPostDataSending = function () {
-  showSyncMessage(translate("sync_header_message_in_progress"));
-};
-
-const onPostDataSent = function () {
-  syncErrorCode = 0;
-  showSyncMessage(translate("sync_header_message_sync_complete"), true);
-};
-
-const onPostDataSentError = function (errorCode, initialGet) {
-  const setupFailMsgPrefix = translate("sync_header_message_setup_fail_prefix");
-  const setupFailMsg2 = translate("sync_header_message_setup_fail_part_2");
-  const $customizeSyncHeaderText = $("#customize .sync-header-message-text");
-  const $customizeSyncHeaderIcon = $("#customize .sync-icon");
-  $customizeSyncHeaderIcon.text("error_outline");
-
-  if (errorCode === 403) {
-    showNoLongerSyncError();
-  } else if (errorCode === 409) {
-    const errMsgPrefix = translate("sync_header_message_error_prefix");
-    const oldCommitMsg2 = translate("sync_header_message_old_commit_version_part_2");
-    const oldCommitMsg3 = translate("sync_header_message_old_commit_version_part_3");
-    showSyncMessage(`${errMsgPrefix} ${oldCommitMsg2} ${oldCommitMsg3}`, false, true);
-
-    if ($("#customize").is(":visible")) {
-      const customize2 = translate("sync_header_message_old_commit_version_customize_tab_part_2");
-      const customize3 = translate("sync_header_message_old_commit_version_customize_tab_part_3");
-      $customizeSyncHeaderText.text(`${errMsgPrefix} ${customize2} ${customize3}`);
-      syncErrorCode = errorCode;
-    }
-  } else if (initialGet && [0, 401, 404, 500].includes(errorCode)) {
-    showSyncMessage(`${setupFailMsgPrefix} ${setupFailMsg2}`, false, true);
-    if ($("#customize").is(":visible")) {
-      $customizeSyncHeaderText.text(`${setupFailMsgPrefix} ${setupFailMsg2}`);
-      syncErrorCode = errorCode;
-    }
-  } else if (!initialGet && [0, 401, 404, 500].includes(errorCode)) {
-    const revertMsg2 = translate("sync_header_error_save_message_part_2");
-    const revertMsg3 = translate("sync_header_error_save_message_part_3");
-    showSyncMessage(`${setupFailMsgPrefix} ${revertMsg2} ${revertMsg3}`, false, true);
-    $customizeSyncHeaderText.text(`${setupFailMsgPrefix} ${revertMsg2} ${revertMsg3}`);
-    syncErrorCode = errorCode;
-  }
-};
-
-const onSyncDataGetting = function () {
-  showSyncMessage(translate("sync_header_message_in_progress"));
-};
-
-const onSyncDataReceieved = function () {
-  showSyncMessage(translate("sync_header_message_sync_complete"), true);
-};
-
-const onSyncDataGettingError = function (errorCode, responseJSON) {
-  // NOTE - currently, there are no error messages for  404, 500
-  if (errorCode === 400 && responseJSON && responseJSON.code === "invalid_sync_version") {
-    showOutOfDateExtensionError();
-    return;
-  }
-  if (errorCode === 403) {
-    showNoLongerSyncError();
-    return;
-  }
-  showSyncMessage(translate("sync_header_message_no_license"), false, true);
-};
-
-const onSyncDataInitialGettingError = function () {
-  const syncSetupFailMsgPrefix = translate("sync_header_message_setup_fail_prefix");
-  const syncSetupFailMsg2 = translate("sync_header_message_setup_fail_part_2");
-  showSyncMessage(`${syncSetupFailMsgPrefix} ${syncSetupFailMsg2}`, false, true);
-};
-
-const removeSyncListeners = function () {
-  SyncService.syncNotifier.off("post.data.sending", onPostDataSending);
-  SyncService.syncNotifier.off("post.data.sent", onPostDataSent);
-  SyncService.syncNotifier.off("post.data.sent.error", onPostDataSentError);
-  SyncService.syncNotifier.off("sync.data.getting", onSyncDataGetting);
-  SyncService.syncNotifier.off("sync.data.receieved", onSyncDataReceieved);
-  SyncService.syncNotifier.off("sync.data.getting.error", onSyncDataGettingError);
-  SyncService.syncNotifier.off(
-    "sync.data.getting.error.initial.fail",
-    onSyncDataInitialGettingError,
-  );
-  SyncService.syncNotifier.off("extension.name.updated.error", onExtensionNameError);
-};
-
-const addSyncListeners = function () {
-  SyncService.syncNotifier.on("post.data.sending", onPostDataSending);
-  SyncService.syncNotifier.on("post.data.sent", onPostDataSent);
-  SyncService.syncNotifier.on("post.data.sent.error", onPostDataSentError);
-  SyncService.syncNotifier.on("sync.data.getting", onSyncDataGetting);
-  SyncService.syncNotifier.on("sync.data.receieved", onSyncDataReceieved);
-  SyncService.syncNotifier.on("sync.data.getting.error", onSyncDataGettingError);
-  SyncService.syncNotifier.on(
-    "sync.data.getting.error.initial.fail",
-    onSyncDataInitialGettingError,
-  );
-  SyncService.syncNotifier.on("extension.name.updated.error", onExtensionNameError);
-};
-
-function loadOptionalSettings() {
-  if (settings && settings.sync_settings) {
-    addSyncListeners();
-  }
 }
 
 // Update Acceptable Ads UI in the General tab. To be called
@@ -621,7 +396,6 @@ async function updateSocialIconsVisibility() {
 
 $(async () => {
   await initializeProxies();
-  await initializeMABPayment();
 
   storageSet(License.pageReloadedOnSettingChangeKey, false);
 
@@ -638,7 +412,6 @@ $(async () => {
   settingsNotifier.on("settings.changed", onSettingsChanged);
 
   setSelectedThemeColor();
-  loadOptionalSettings();
   displayVersionNumber();
   localizePage();
   displayTranslationCredit();
@@ -651,7 +424,6 @@ window.onbeforeunload = function leavingOptionsPage() {
     storageSet(License.pageReloadedOnSettingChangeKey, true);
   }
   storageSet(License.userSawSyncCTAKey, true);
-  removeSyncListeners();
 };
 
 document.addEventListener("readystatechange", () => {

@@ -2285,180 +2285,6 @@
     "message": "Sunucularımıza bağlanamadık",
     "description": "The sub-title of an error message box in payment iframe in the Options page."
   },
-  "sync_tab_item": {
-    "message": "Yedekle & Eşitle",
-    "description": "Title of the Sync sub-tab of the Options page"
-  },
-  "sync_turn_on_invalid_name_text": {
-    "message": "Devam etmek için bu eklentiye bir isim verin",
-    "description": "error message text on the Sync sub-tab of the Options page"
-  },
-  "sync_turn_on_duplicate_name_text": {
-    "message": "Bu eklenti ismi zaten kullanılıyor",
-    "description": "error message text on the Sync sub-tab of the Options page"
-  },
-  "sync_extension_section_title": {
-    "message": "Eklentiler",
-    "description": "section title text on the Sync sub-tab of the Options page"
-  },
-  "sync_header_message_no_license": {
-    "message": "Eşleştirmeyi hazırlamamız için bize birkaç dakika ver",
-    "description": "message to users on the sync page when the license is unavailable, inactive or a license ID hasn't been returned yet"
-  },
-  "sync_header_message_getting_license": {
-    "message": "kontrol ediliyor ...",
-    "description": "message to users on the sync page when the extension is getting the license"
-  },
-  "sync_header_message_in_progress": {
-    "message": "Eşitleme sürüyor...",
-    "description": "message to users on the options pages when syncing with the server is in progress"
-  },
-  "sync_header_message_sync_complete": {
-    "message": "Eşitleme tamamlandı",
-    "description": "message to users on the option pages when syncing with the server server is complete"
-  },
-  "sync_extension_no_extension_msg": {
-    "message": "Eşitlenmiş bir eklentin bulunmuyor.",
-    "description": "message to users on the sync page when the license is unavailable, inactive or a license ID hasn't been returned yet"
-  },
-  "sync_header_message_setup_fail_prefix": {
-    "message": "Eşitleme hatası:",
-    "description": "start of error message to users on the sync page when sync fails."
-  },
-  "sync_header_message_setup_fail_part_2": {
-    "message": "Lütfen bu eklentiyi eklemeyi birkaç dakika sonra tekrar dene",
-    "description": "message to users on the sync page when initial setup of sync fails for some unknown reason."
-  },
-  "sync_header_message_error_prefix": {
-    "message": "Bu eklenti eşitleme dışı",
-    "description": "Start of an sync error message to users on the Options page or AdBlock popup menu."
-  },
-  "sync_header_message_old_commit_version_part_2": {
-    "message": "Bu eklentiyi eşitledik ve değişikliklerini iptal ettik",
-    "description": "part 2 of a message to users on the sync page and popup menu when initial setup of sync fails for some unknown reason."
-  },
-  "sync_header_message_old_commit_version_part_3": {
-    "message": "Lütfen sayfayı yeniden yükle ve değişikliklerini tekrar dene.",
-    "description": "part 3 of a message to users on the sync page when initial setup of sync fails for some unknown reason."
-  },
-  "sync_header_error_save_message_part_2": {
-    "message": "Bu eklenti eşitleme dışı",
-    "description": "part 2 of a message to users on the Options pages when sending the sync data fails for some unknown reason."
-  },
-  "sync_header_error_save_message_part_3": {
-    "message": "Lütfen manuel eşitlemeyi daha sonra deneyin",
-    "description": "part 3 of a message to users on the Options pages when sending the sync data fails for some unknown reason."
-  },
-  "sync_header_message_old_commit_version_customize_tab_part_2": {
-    "message": "Bu eklentiyi eşitledik ve değişikliklerini iptal edeceğiz.",
-    "description": "part 2 of a message to users on the sync page when initial setup of sync fails for some unknown reason."
-  },
-  "sync_header_message_old_commit_version_customize_tab_part_3": {
-    "message": "Lütfen özel kurallarını kopyala, sayfayı yenile, ve değişikliklerini tekrar yap.",
-    "description": "part 3 of a message to users on the sync page when initial setup of sync fails for some unknown reason."
-  },
-  "sync_device_name_list_updated_at_msg": {
-    "message": "en son $timestamp$'da güncellendi",
-    "description": "message to users on when the sync page was last updated with the name of the extensions / devices (displayed in locale specific format)",
-    "placeholders": {
-      "timestamp": {
-        "content": "$1",
-        "example": "April 30, 2019 6:25 pm for US/English locale"
-      }
-    }
-  },
-  "sync_extension_name_placeholder": {
-    "message": "Bu eklentiyi diğerlerinden ayırt edebilmek için bir isim ver...",
-    "description": "placeholder text in the extension / device name field on the sync page"
-  },
-  "sync_verify_turn_on_text": {
-    "message": "Yedekle & Eşitle'yi etkinleştirmek bu eklentideki varolan ayar bilgilerini temizleyecektir.",
-    "description": "message text in the extension / device name field on the sync page"
-  },
-  "sync_now_btn_text": {
-    "message": "Şimdi Eşitle",
-    "description": "button text on the Sync sub-tab of the Options page"
-  },
-  "sync_message_old_version_part_1": {
-    "message": "AdBlock'un eski bir sürümünü kullanıyorsunuz.",
-    "description": "button text on the Sync sub-tab of the Options page"
-  },
-  "sync_message_old_version_part_2": {
-    "message": "Ayarlarınızı senkronize edebilmemiz için lütfen [[AdBlock'u güncelleyin]].\n",
-    "description": "button text on the Sync sub-tab of the Options page"
-  },
-  "sync_removed_error_msg_part_1": {
-    "message": "Bu uzantı senkronize değil\n",
-    "description": "sync error message text on the popup menu"
-  },
-  "sync_removed_error_msg_part_2": {
-    "message": "Ayarlarınızı güncellemek için burayı tıklayın\n",
-    "description": "sync error message text on the popup menu and options page"
-  },
-  "unsync_error_msg_part_1": {
-    "message": "Senkronizasyon Hatası",
-    "description": "sync error message text on the options menu"
-  },
-  "unsync_error_msg_part_2": {
-    "message": "Bu uzantı artık senkronize edilmiyor.\n",
-    "description": "sync error message text on the popup menu"
-  },
-  "unsync_error_msg_part_3": {
-    "message": "Bu sayfayı yenilemek için burayı tıklayın, ardından bu cihazı senkronize etmek için \"Bu Uzantıyı Ekle\" yi tıklayın\n",
-    "description": "sync error message text on the Sync tab of the options page"
-  },
-  "sync_premium_cta": {
-    "message": "Eşitle gibi Premium özelliklerle bir reklam engelleme prosu olacaksın.",
-    "description": "AdBlock Premium CTA on the Sync tab"
-  },
-  "backup_sync_settings": {
-    "message": "AdBlock ayarlarını bütün cihazlarında otomatik olarak eşleştir ve yedekle.",
-    "description": "Description of Sync on Sync tab"
-  },
-  "set_preferences_once": {
-    "message": "Tercihlerini bir kez kaydet, ve bir daha asla verilerini kaybetmekten veya aynı ayarları tekrar tekrar yapmaktan korkma.",
-    "description": "Description of Sync on Sync tab"
-  },
-  "get_sync": {
-    "message": "Eşleştirme edinin",
-    "description": "Link to pay for Sync (part of AdBlock Premium)"
-  },
-  "check_sync_status": {
-    "message": "Eşleştirme durumunu kontrol et",
-    "description": "Button on Sync tab that checks the status of the Sync feature"
-  },
-  "show_details": {
-    "message": "Detayları Göster",
-    "description": "Toggle that shows the details section"
-  },
-  "hide_details": {
-    "message": "Detayları Gizle",
-    "description": "Toggle that hides the details section"
-  },
-  "add_this_extension": {
-    "message": "Bu eklentiyi ekle",
-    "description": "Button on Sync tab that adds this extension to the Sync process"
-  },
-  "add": {
-    "message": "Ekle",
-    "description": "Button on Sync tab that adds an entered name for this extension to the list of synced extensions"
-  },
-  "this_extension": {
-    "message": "(bu eklenti)",
-    "description": "description for name of the current extension"
-  },
-  "sync_delete_panel_title": {
-    "message": "Senkronize Edilen Uzantıyı Sil\n",
-    "description": "Panel title text on the delete device overlay"
-  },
-  "confirm_delete_extension": {
-    "message": "Bu eklentiyi silmek istediğinize emin misiniz?",
-    "description": "Warning/confirmation message shown when the user clicks on the delete icon for a device"
-  },
-  "cannot_be_undone": {
-    "message": "Bu eylem geri alınamaz.\n",
-    "description": "Warning/confirmation message shown when the user clicks on the delete icon for a device"
-  },
   "delete": {
     "message": "Sil",
     "description": "Text on a delete button"
@@ -2591,14 +2417,6 @@
   },
   "see_photos_no_ads_description": {
     "message": "Reklamları engellemeye devam edeceğiz fakat, bazılarını kedi, köpek ve doğa resimleriyle değiştireceğiz",
-    "description": "The main text of a feature box in the MyAdBlock Options page"
-  },
-  "sync_your_settings_title": {
-    "message": "Ayarlarınızı eşleştirin",
-    "description": "The title of a feature box in the MyAdBlock Options page"
-  },
-  "sync_your_settings_description": {
-    "message": "Özel reklam engelleme kurallarınızı, ayarlarınızı ve beyaz listelerinizi kullandığınız bilgisayardan yanınıza alın.",
     "description": "The main text of a feature box in the MyAdBlock Options page"
   },
   "how_can_we_help": {
@@ -2869,10 +2687,6 @@
     "message": "Resim değiştirme örneği",
     "description": "Text in the alt attribute of an image in the Options page mab that visualizes the Image Swap feature."
   },
-  "sync_example": {
-    "message": "Eşleştirme örneği",
-    "description": "Text in the alt attribute of an image in the Options page mab that visualizes the Sync feature."
-  },
   "adblock_home": {
     "message": "AdBlock ana sayfası",
     "description": "Text in the alt attribute of an AdBlock logo / icon that links to getadblock.com."
@@ -2953,10 +2767,6 @@
     "message": "Daha fazlasını öğren",
     "description": "Text in the aria-label attribute of an icon linking to extra information about an option."
   },
-  "find_out_more": {
-    "message": "Daha Fazla Bilgi",
-    "description": "Text in the button on the Premium CTA on the hiding wizard."
-  },
   "update_filter_lists_now": {
     "message": "Filtre Listelerini Güncelle",
     "description": "Text in the aria-label attribute of the 'update now' button on the Options page in the Filter Lists tab."
@@ -3009,6 +2819,10 @@
     "message": "AdBlock Premium: İnternette dolanmanın daha iyi yolu",
     "description": "The text of the header the AdBlock Premium Options page"
   },
+  "premium_upsell_text": {
+    "message": "AdBlock VPN ile bugün daha güvenli ve sınır tanımayan bir internete erişin",
+    "description": "The text on the premium upsell of AdBlock Premium in Options page"
+  },
   "premium_benefits_explained": {
     "message": "AdBlock Premium'u etkinleştirerek bizi desteklemenin karşılığında, en son araçlara ve özelliklere yayınlanır yayınlanmaz erişebilirsiniz.",
     "description": "Main text of the teaser AdBlock Premium feature in the AdBlock Premium tab of the Options page"
@@ -3016,14 +2830,6 @@
   "manage_subscription": {
     "message": "Aboneliğinizi Yönetin",
     "description": "Text of link to manage the user's Premium subscription on the Premium tab of the Options page"
-  },
-  "save_custom_settings_cta": {
-    "message": "Özel reklam engelleme ayarlarınızı kaydetmek ve her tarayıcıda kullanmak istiyor musunuz?",
-    "description": "Part 1 of a Premium call-to-action on the Options page"
-  },
-  "try_backup_sync": {
-    "message": "Öyleyse, Yedeklememizi deneyin & Senkronizasyon özelliği.",
-    "description": "Part 2 of a Premium call-to-action on the Options page"
   },
   "wont_show_again": {
     "message": "Tamam, size bu mesajı bir daha göstermeyeceğiz.",
@@ -3048,26 +2854,6 @@
   "whitelisted_a_site": {
     "message": "Beyaz listene bir web sitesi ekledin!",
     "description": "Part 1 of a call-to-action on the allowlist wizard"
-  },
-  "dont_show_me_again": {
-    "message": "Bu mesajı bir daha gösterme",
-    "description": "opt out option on all-to-action on the blocklist / hiding wizard"
-  },
-  "never_lose_settings": {
-    "message": "Bu ayarı tüm cihazlarınıza uygulayın ve Yedekleme ile AdBlock ayarlarınızı asla kaybetmediğinizden emin olun & Senkronize et.",
-    "description": "Part 2 of a call-to-action on the allowlist and blocklist wizards"
-  },
-  "wizard_premium_cta_title": {
-    "message": "Hey, görünüşe göre AdBlock Premium'u beğenebilirsin\n",
-    "description": "Part of a message on the blocklist wizard"
-  },
-  "wizard_premium_cta_part_I": {
-    "message": "Bu sitede az önce bir şeyi engellediniz.\n",
-    "description": "Part of a message on the blocklist wizard"
-  },
-  "wizard_premium_cta_part_II": {
-    "message": "Bu tercihi tüm cihazlarınıza uygulayın ve Yedekleme ve Senkronizasyon ile AdBlock ayarlarınızı asla kaybetmediğinizden emin olun.\n",
-    "description": "Part of a message on the blocklist wizard"
   },
   "blocked_something": {
     "message": "Bu sitede yeni bir şey engellediniz!",
@@ -3682,18 +3468,6 @@
   "take_control_easy": {
     "message": "Kullanımı kolay kontrollerle AdBlock'un görünümünü, hissini ve yazı tipi boyutunu kontrol edin. AdBlock'u sizin yapın!\n",
     "description": "Description of Themes on the main Premium options page"
-  },
-  "save_settings_multiple": {
-    "message": "AdBlock Ayarlarınızı Birden Fazla Cihaza Kaydedin\n",
-    "description": "Sub-header describing Backup & Sync on the main Premium options page"
-  },
-  "take_custom_with_you": {
-    "message": "Özel reklam engelleme kurallarınızı, filtre listesi aboneliklerinizi ve beyaz listelerinizi tüm Chrome profillerinizde yanınıza alın.\n",
-    "description": "Description of Backup & Sync on the main Premium options page"
-  },
-  "set_up_once": {
-    "message": "AdBlock'u bir kez kurun, ayarlarınızı yanınıza alın!\n",
-    "description": "Description of Backup & Sync on the main Premium options page"
   },
   "annoyance_free_browsing": {
     "message": "Sıkıntısız Gezinmeyi Yaşayın\n",

@@ -184,9 +184,6 @@ Global Styles
   --pf-list-title: var(--gray1);
   --extension-name-bg-color-hovered: var(--gray6);
   --delete-icon-color-hovered: var(--gray3);
-  --sync-delete-bg-color: var(--white);
-  --sync-delete-color: var(--black);
-  --sync-delete-title-color: var(--black);
   /* Aliases for Themes CTA:
      normally these are defined by other custom properties, but here they are set
      with the solarized colors since it's the default Theme CTA to use */
@@ -218,8 +215,6 @@ Global Styles
   --mail-dialog-drop-shadow-color: rgba(51, 51, 51, 0.2);
 
   /* Entries that are never 'themed' */
-  --sync-error-msg-background-color: var(--options-button-bg-hover);
-  --sync-msg-color: var(--options-button-text);
   --icon-notes-main-text-color: var(--white);
   --icon-notes-background-color: var(--red2);
   --image-background-color: var(--white);
@@ -240,7 +235,6 @@ Global Styles
   --options-button-disabled-bg: var(--gray3);
   --options-button-disabled-bg-hover: var(--gray2);
   --mab-button-text: var(--gray1);
-  --sync-msg-background-color: var(--blue1a);
   --options-button-text: var(--white);
   --disabled-link-color: var(--gray4);
   --popup-button-disabled-background-color: var(--gray5);

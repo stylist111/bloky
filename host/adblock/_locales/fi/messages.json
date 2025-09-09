@@ -2277,180 +2277,6 @@
     "message": "Palvelimiimme ei saatu yhteyttä",
     "description": "The sub-title of an error message box in payment iframe in the Options page."
   },
-  "sync_tab_item": {
-    "message": "Varmuuskopiointi ja synkronointi",
-    "description": "Title of the Sync sub-tab of the Options page"
-  },
-  "sync_turn_on_invalid_name_text": {
-    "message": "Nimeä laajennus jatkaaksesi",
-    "description": "error message text on the Sync sub-tab of the Options page"
-  },
-  "sync_turn_on_duplicate_name_text": {
-    "message": "Tämä laajennusnimi on jo käytössä",
-    "description": "error message text on the Sync sub-tab of the Options page"
-  },
-  "sync_extension_section_title": {
-    "message": "Laajennukset",
-    "description": "section title text on the Sync sub-tab of the Options page"
-  },
-  "sync_header_message_no_license": {
-    "message": "Odota hetki, kun synkronointia valmistellaan.",
-    "description": "message to users on the sync page when the license is unavailable, inactive or a license ID hasn't been returned yet"
-  },
-  "sync_header_message_getting_license": {
-    "message": "Tarkistetaan...",
-    "description": "message to users on the sync page when the extension is getting the license"
-  },
-  "sync_header_message_in_progress": {
-    "message": "Synkronoidaan...",
-    "description": "message to users on the options pages when syncing with the server is in progress"
-  },
-  "sync_header_message_sync_complete": {
-    "message": "Synkronointi on valmis",
-    "description": "message to users on the option pages when syncing with the server server is complete"
-  },
-  "sync_extension_no_extension_msg": {
-    "message": "Sinulla ei ole synkronoituja laajennuksia.",
-    "description": "message to users on the sync page when the license is unavailable, inactive or a license ID hasn't been returned yet"
-  },
-  "sync_header_message_setup_fail_prefix": {
-    "message": "Synkronointivirhe:",
-    "description": "start of error message to users on the sync page when sync fails."
-  },
-  "sync_header_message_setup_fail_part_2": {
-    "message": "Yritä asentaa laajennus muutaman minuutin kuluttua uudelleen.",
-    "description": "message to users on the sync page when initial setup of sync fails for some unknown reason."
-  },
-  "sync_header_message_error_prefix": {
-    "message": "Laajennus ei ollut ajan tasalla.",
-    "description": "Start of an sync error message to users on the Options page or AdBlock popup menu."
-  },
-  "sync_header_message_old_commit_version_part_2": {
-    "message": "Laajennus synkronoitiin ja muutoksesi peruttiin.",
-    "description": "part 2 of a message to users on the sync page and popup menu when initial setup of sync fails for some unknown reason."
-  },
-  "sync_header_message_old_commit_version_part_3": {
-    "message": "Päivitä sivu ja tee muutoksesi uudelleen.",
-    "description": "part 3 of a message to users on the sync page when initial setup of sync fails for some unknown reason."
-  },
-  "sync_header_error_save_message_part_2": {
-    "message": "Laajennus ei ole ajan tasalla.",
-    "description": "part 2 of a message to users on the Options pages when sending the sync data fails for some unknown reason."
-  },
-  "sync_header_error_save_message_part_3": {
-    "message": "Yritä synkronointia myöhemmin manuaalisesti uudelleen.",
-    "description": "part 3 of a message to users on the Options pages when sending the sync data fails for some unknown reason."
-  },
-  "sync_header_message_old_commit_version_customize_tab_part_2": {
-    "message": "Laajennus synkronoitiin ja muutoksesi perutaan.",
-    "description": "part 2 of a message to users on the sync page when initial setup of sync fails for some unknown reason."
-  },
-  "sync_header_message_old_commit_version_customize_tab_part_3": {
-    "message": "Kopioi omat sääntösi leikepöydälle, päivitä sivu ja tee muutoksesi uudelleen.",
-    "description": "part 3 of a message to users on the sync page when initial setup of sync fails for some unknown reason."
-  },
-  "sync_device_name_list_updated_at_msg": {
-    "message": "päivitetty viimeksi $timestamp$",
-    "description": "message to users on when the sync page was last updated with the name of the extensions / devices (displayed in locale specific format)",
-    "placeholders": {
-      "timestamp": {
-        "content": "$1",
-        "example": "April 30, 2019 6:25 pm for US/English locale"
-      }
-    }
-  },
-  "sync_extension_name_placeholder": {
-    "message": "Nimeä laajennus, jotta erotat sen muista laajennuksistasi...",
-    "description": "placeholder text in the extension / device name field on the sync page"
-  },
-  "sync_verify_turn_on_text": {
-    "message": "Varmuuskopioinnin ja synkronoinnin käyttöönotto tyhjentää laajennuksen asetukset.",
-    "description": "message text in the extension / device name field on the sync page"
-  },
-  "sync_now_btn_text": {
-    "message": "Synkronoi nyt",
-    "description": "button text on the Sync sub-tab of the Options page"
-  },
-  "sync_message_old_version_part_1": {
-    "message": "Käytät AdBlockin vanhaa versiota.",
-    "description": "button text on the Sync sub-tab of the Options page"
-  },
-  "sync_message_old_version_part_2": {
-    "message": "[[Päivitä AdBlock]], jotta asetuksesi voidaan synkronoida.",
-    "description": "button text on the Sync sub-tab of the Options page"
-  },
-  "sync_removed_error_msg_part_1": {
-    "message": "Laajennusta ei ole synkronoitu",
-    "description": "sync error message text on the popup menu"
-  },
-  "sync_removed_error_msg_part_2": {
-    "message": "Päivitä asetuksesi painamalla tästä",
-    "description": "sync error message text on the popup menu and options page"
-  },
-  "unsync_error_msg_part_1": {
-    "message": "Synkronointivirhe",
-    "description": "sync error message text on the options menu"
-  },
-  "unsync_error_msg_part_2": {
-    "message": "Laajennusta ei enää synkronoida.",
-    "description": "sync error message text on the popup menu"
-  },
-  "unsync_error_msg_part_3": {
-    "message": "Päivitä sivu painamalla tästä ja sitten \"Lisää tämä laajennus\" synkronoidaksesi tämän laitteen",
-    "description": "sync error message text on the Sync tab of the options page"
-  },
-  "sync_premium_cta": {
-    "message": "Tulet olemaan mainoseston ammattiosaaja synkronoinnin kaltaisilla Premium-ominaisuuksilla.",
-    "description": "AdBlock Premium CTA on the Sync tab"
-  },
-  "backup_sync_settings": {
-    "message": "Varmuuskopioi ja synkronoi AdBlock-asetuksesi useiden laitteiden välillä.",
-    "description": "Description of Sync on Sync tab"
-  },
-  "set_preferences_once": {
-    "message": "Määritä asetukset kerran, äläkä koskaan huolehdi tietojen menetyksestä tai saman muutoksen tekemisestä useille asennuksille uudelleen.",
-    "description": "Description of Sync on Sync tab"
-  },
-  "get_sync": {
-    "message": "Hanki synkronointi",
-    "description": "Link to pay for Sync (part of AdBlock Premium)"
-  },
-  "check_sync_status": {
-    "message": "Tarkista synkronoinnin tila",
-    "description": "Button on Sync tab that checks the status of the Sync feature"
-  },
-  "show_details": {
-    "message": "Näytä tiedot",
-    "description": "Toggle that shows the details section"
-  },
-  "hide_details": {
-    "message": "Piilota tiedot",
-    "description": "Toggle that hides the details section"
-  },
-  "add_this_extension": {
-    "message": "Lisää tämä laajennus",
-    "description": "Button on Sync tab that adds this extension to the Sync process"
-  },
-  "add": {
-    "message": "Lisää",
-    "description": "Button on Sync tab that adds an entered name for this extension to the list of synced extensions"
-  },
-  "this_extension": {
-    "message": "(tämä laajennus)",
-    "description": "description for name of the current extension"
-  },
-  "sync_delete_panel_title": {
-    "message": "Poista synkronoitu laajennus",
-    "description": "Panel title text on the delete device overlay"
-  },
-  "confirm_delete_extension": {
-    "message": "Haluatko varmasti poistaa laajennuksen?",
-    "description": "Warning/confirmation message shown when the user clicks on the delete icon for a device"
-  },
-  "cannot_be_undone": {
-    "message": "Toiminto on pysyvä.",
-    "description": "Warning/confirmation message shown when the user clicks on the delete icon for a device"
-  },
   "delete": {
     "message": "Poista",
     "description": "Text on a delete button"
@@ -2583,14 +2409,6 @@
   },
   "see_photos_no_ads_description": {
     "message": "Mainokset estetään edelleen, mutta osa niistä korvataan hienoilla kuvilla kissoista, koirista ja luonnosta.",
-    "description": "The main text of a feature box in the MyAdBlock Options page"
-  },
-  "sync_your_settings_title": {
-    "message": "Synkronoi asetuksesi",
-    "description": "The title of a feature box in the MyAdBlock Options page"
-  },
-  "sync_your_settings_description": {
-    "message": "Käytä omia mainosestosääntöjäsi ja asetuksiasi millä tahansa tietokoneella.",
     "description": "The main text of a feature box in the MyAdBlock Options page"
   },
   "how_can_we_help": {
@@ -2861,10 +2679,6 @@
     "message": "Esimerkki Kuvavaihdosta",
     "description": "Text in the alt attribute of an image in the Options page mab that visualizes the Image Swap feature."
   },
-  "sync_example": {
-    "message": "Synkronointiesimerkki",
-    "description": "Text in the alt attribute of an image in the Options page mab that visualizes the Sync feature."
-  },
   "adblock_home": {
     "message": "AdBlock-koti",
     "description": "Text in the alt attribute of an AdBlock logo / icon that links to getadblock.com."
@@ -2945,10 +2759,6 @@
     "message": "Lue lisää",
     "description": "Text in the aria-label attribute of an icon linking to extra information about an option."
   },
-  "find_out_more": {
-    "message": "Lue lisää",
-    "description": "Text in the button on the Premium CTA on the hiding wizard."
-  },
   "update_filter_lists_now": {
     "message": "Päivitä suodatinlistat nyt",
     "description": "Text in the aria-label attribute of the 'update now' button on the Options page in the Filter Lists tab."
@@ -3009,14 +2819,6 @@
     "message": "Hallinnoi tilaustasi",
     "description": "Text of link to manage the user's Premium subscription on the Premium tab of the Options page"
   },
-  "save_custom_settings_cta": {
-    "message": "Haluatko tallentaa omat mainosestoasetuksesi ja käyttää niitä kaikissa selaimissa?",
-    "description": "Part 1 of a Premium call-to-action on the Options page"
-  },
-  "try_backup_sync": {
-    "message": "Jos näin, kokeile Varmuuskopiointi ja synkronointi -ominaisuuttamme.",
-    "description": "Part 2 of a Premium call-to-action on the Options page"
-  },
   "wont_show_again": {
     "message": "OK, tätä viestiä ei näytetä uudestaan.",
     "description": "Message shown when user opts out of call-to-action"
@@ -3040,26 +2842,6 @@
   "whitelisted_a_site": {
     "message": "Lisäsit sivuston juuri sallittujen listalle!",
     "description": "Part 1 of a call-to-action on the allowlist wizard"
-  },
-  "dont_show_me_again": {
-    "message": "Älä näytä tätä viestiä uudestaan",
-    "description": "opt out option on all-to-action on the blocklist / hiding wizard"
-  },
-  "never_lose_settings": {
-    "message": "Käytä tätä asetusta kaikilla laitteillasi, niin varmistat varmuuskopioinnin ja synkronoinnin avulla, ettet koskaan menetä AdBlock-asetuksiasi.",
-    "description": "Part 2 of a call-to-action on the allowlist and blocklist wizards"
-  },
-  "wizard_premium_cta_title": {
-    "message": "Hei, näyttää siltä, että saattaisit pitää AdBlock Premiumista",
-    "description": "Part of a message on the blocklist wizard"
-  },
-  "wizard_premium_cta_part_I": {
-    "message": "Estit juuri jotain tältä sivustolta!",
-    "description": "Part of a message on the blocklist wizard"
-  },
-  "wizard_premium_cta_part_II": {
-    "message": "Käytä tätä asetusta kaikilla laitteillasi, niin varmistat varmuuskopioinnin ja synkronoinnin avulla, ettet koskaan menetä AdBlock-asetuksiasi.",
-    "description": "Part of a message on the blocklist wizard"
   },
   "blocked_something": {
     "message": "Estit juuri jotain tältä sivustolta!",
@@ -3674,18 +3456,6 @@
   "take_control_easy": {
     "message": "Hallitse AdBlockin ulkonäköä, tunnelmaa ja fonttikokoa helppokäyttöisillä valinnoilla. Tee AdBlockista omasi!",
     "description": "Description of Themes on the main Premium options page"
-  },
-  "save_settings_multiple": {
-    "message": "Tallenna useiden laitteiden AdBlock-asetukset",
-    "description": "Sub-header describing Backup & Sync on the main Premium options page"
-  },
-  "take_custom_with_you": {
-    "message": "Pidä omat mainosestosääntösi, suodatintilauksesi ja sallittujen listat mukanasi kaikissa Chrome-profiileissasi.",
-    "description": "Description of Backup & Sync on the main Premium options page"
-  },
-  "set_up_once": {
-    "message": "Määritä AdBlock kerran ja pidä asetukset mukanasi!",
-    "description": "Description of Backup & Sync on the main Premium options page"
   },
   "annoyance_free_browsing": {
     "message": "Koe ärsykevapaa selaus",

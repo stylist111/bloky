@@ -19,7 +19,7 @@
 /* global EventEmitter, browser */
 
 /**
- * Act as Proxy to the Premium modules - License, Channels, CustomChannel, SyncService
+ * Act as Proxy to the Premium modules - License, Channels, CustomChannel
  *
  */
 
@@ -103,49 +103,9 @@ async function initializeChannels() {
 }
 
 /* eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars */
-class SyncService {
-  static enableSync = (initialGet) =>
-    modulesAsGlobal.messaging.send("adblock:SyncService.enableSync", { initialGet });
-
-  static disableSync = (removeName) =>
-    modulesAsGlobal.messaging.send("adblock:SyncService.disableSync", { removeName });
-
-  static getLastGetStatusCode = () =>
-    modulesAsGlobal.messaging.send("adblock:SyncService.getLastGetStatusCode");
-
-  static getLastPostStatusCode = () =>
-    modulesAsGlobal.messaging.send("adblock:SyncService.getLastPostStatusCode");
-
-  static resetAllErrors = () => modulesAsGlobal.messaging.send("SyncService.resetAllErrors");
-
-  static processUserSyncRequest = () =>
-    modulesAsGlobal.messaging.send("adblock:SyncService.processUserSyncRequest");
-
-  static getAllExtensionNames = () =>
-    modulesAsGlobal.messaging.send("adblock:SyncService.getAllExtensionNames");
-
-  static getCurrentExtensionName = () =>
-    modulesAsGlobal.messaging.send("adblock:SyncService.getCurrentExtensionName");
-
-  static removeExtensionName = (dataDeviceName, dataExtensionGUID) =>
-    modulesAsGlobal.messaging.send("adblock:SyncService.removeExtensionName", {
-      dataDeviceName,
-      dataExtensionGUID,
-    });
-
-  static setCurrentExtensionName = (name) =>
-    modulesAsGlobal.messaging.send("adblock:SyncService.setCurrentExtensionName", { name });
-
-  static syncNotifier = new EventEmitter();
-}
-
-/* eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars */
 async function initializePremiumPort() {
   const premiumPort = browser.runtime.connect({ name: "premium" });
   premiumPort.onMessage.addListener(async (message) => {
-    if (message.type === "sync.respond" && message.args) {
-      SyncService.syncNotifier.emit(`${message.action}`, ...message.args);
-    }
     if (message.type === "channels.respond") {
       channels.channelGuide = await channels.getGuide();
       if (message.args) {
@@ -158,27 +118,6 @@ async function initializePremiumPort() {
         licenseNotifier.emit(`license.${message.action}`, ...message.args);
       }
     }
-  });
-  premiumPort.postMessage({
-    type: "sync.listen",
-    filter: [
-      "sync.data.receieved",
-      "sync.data.getting",
-      "sync.data.error.initial.fail",
-      "sync.data.getting.error",
-      "extension.names.downloading",
-      "extension.names.downloaded",
-      "extension.names.downloading.error",
-      "extension.name.updating",
-      "extension.name.updated",
-      "extension.name.updated.error",
-      "extension.name.remove",
-      "extension.name.removed",
-      "extension.name.remove.error",
-      "post.data.sending",
-      "post.data.sent",
-      "post.data.sent.error",
-    ],
   });
   premiumPort.postMessage({
     type: "channels.listen",

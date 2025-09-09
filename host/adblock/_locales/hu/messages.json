@@ -1223,6 +1223,10 @@
     "message": "Aktív",
     "description": "Message shown on the premium tab of the option page when user is a licensed premium user"
   },
+  "premium_upsell_text": {
+    "message": "Fedezd fel még ma a biztonságosabb, határok nélküli internetet az AdBlock VPN-nel",
+    "description": "The text on the premium upsell of AdBlock Premium in Options page"
+  },
   "unpause_adblock": {
     "message": "Az AdBlock felfüggesztésének feloldása",
     "description": "Link text to start blocking ads again, displayed immediately after 'AdBlock is paused'"
@@ -2014,26 +2018,6 @@
   "myadblock_payment_not_available_subtitle": {
     "message": "Nem lehet kapcsolódni a szerverhez.",
     "description": "The sub-title of an error message box in payment iframe in the Options page."
-  },
-  "sync_tab_item": {
-    "message": "Biztonsági mentés és szinkronizáció",
-    "description": "Title of the Sync sub-tab of the Options page"
-  },
-  "sync_header_message_getting_license": {
-    "message": "ellenőrzés...",
-    "description": "message to users on the sync page when the extension is getting the license"
-  },
-  "show_details": {
-    "message": "Részletek mutatása",
-    "description": "Toggle that shows the details section"
-  },
-  "hide_details": {
-    "message": "Részletek elrejtése",
-    "description": "Toggle that hides the details section"
-  },
-  "add": {
-    "message": "Hozzáad",
-    "description": "Button on Sync tab that adds an entered name for this extension to the list of synced extensions"
   },
   "delete": {
     "message": "Törlés",

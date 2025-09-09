@@ -2269,180 +2269,6 @@
     "message": "לא הצלחנו להתחבר אל השרתים שלנו",
     "description": "The sub-title of an error message box in payment iframe in the Options page."
   },
-  "sync_tab_item": {
-    "message": "גיבוי וסינכרון",
-    "description": "Title of the Sync sub-tab of the Options page"
-  },
-  "sync_turn_on_invalid_name_text": {
-    "message": "אנא תן שם להרחבה זו כדי להמשיך",
-    "description": "error message text on the Sync sub-tab of the Options page"
-  },
-  "sync_turn_on_duplicate_name_text": {
-    "message": "שם זה של הרחבה נמצא כבר בשימוש",
-    "description": "error message text on the Sync sub-tab of the Options page"
-  },
-  "sync_extension_section_title": {
-    "message": "הרחבות",
-    "description": "section title text on the Sync sub-tab of the Options page"
-  },
-  "sync_header_message_no_license": {
-    "message": "אנא תן לנו מספר רגעים כדי להכין את סינכרון עבורך.",
-    "description": "message to users on the sync page when the license is unavailable, inactive or a license ID hasn't been returned yet"
-  },
-  "sync_header_message_getting_license": {
-    "message": "בודק…",
-    "description": "message to users on the sync page when the extension is getting the license"
-  },
-  "sync_header_message_in_progress": {
-    "message": "סינכרון בתהליך…",
-    "description": "message to users on the options pages when syncing with the server is in progress"
-  },
-  "sync_header_message_sync_complete": {
-    "message": "סינכרון הושלם",
-    "description": "message to users on the option pages when syncing with the server server is complete"
-  },
-  "sync_extension_no_extension_msg": {
-    "message": "אין לך הרחבות מסונכרנות.",
-    "description": "message to users on the sync page when the license is unavailable, inactive or a license ID hasn't been returned yet"
-  },
-  "sync_header_message_setup_fail_prefix": {
-    "message": "שגיאת סינכרון:",
-    "description": "start of error message to users on the sync page when sync fails."
-  },
-  "sync_header_message_setup_fail_part_2": {
-    "message": "אנא נסה להוסיף שוב הרחבה זו עוד מספר דקות.",
-    "description": "message to users on the sync page when initial setup of sync fails for some unknown reason."
-  },
-  "sync_header_message_error_prefix": {
-    "message": "הרחבה זו לא הייתה מסונכרנת.",
-    "description": "Start of an sync error message to users on the Options page or AdBlock popup menu."
-  },
-  "sync_header_message_old_commit_version_part_2": {
-    "message": "סינכרנו הרחבה זו והחזרנו את השינויים שלך.",
-    "description": "part 2 of a message to users on the sync page and popup menu when initial setup of sync fails for some unknown reason."
-  },
-  "sync_header_message_old_commit_version_part_3": {
-    "message": "אנא טען מחדש את הדף ובצע שוב את השינויים שלך.",
-    "description": "part 3 of a message to users on the sync page when initial setup of sync fails for some unknown reason."
-  },
-  "sync_header_error_save_message_part_2": {
-    "message": "הרחבה זו אינה מסונכרנת.",
-    "description": "part 2 of a message to users on the Options pages when sending the sync data fails for some unknown reason."
-  },
-  "sync_header_error_save_message_part_3": {
-    "message": "אנא נסה סינכרון ידני מאוחר יותר.",
-    "description": "part 3 of a message to users on the Options pages when sending the sync data fails for some unknown reason."
-  },
-  "sync_header_message_old_commit_version_customize_tab_part_2": {
-    "message": "סינכרנו הרחבה זו ונחזיר את השינויים שלך.",
-    "description": "part 2 of a message to users on the sync page when initial setup of sync fails for some unknown reason."
-  },
-  "sync_header_message_old_commit_version_customize_tab_part_3": {
-    "message": "אנא העתק את הכללים המותאמים אישית ללוח הגזירה, טען מחדש את הדף ובצע שוב את השינויים שלך.",
-    "description": "part 3 of a message to users on the sync page when initial setup of sync fails for some unknown reason."
-  },
-  "sync_device_name_list_updated_at_msg": {
-    "message": "עודכן בפעם האחרונה $timestamp$",
-    "description": "message to users on when the sync page was last updated with the name of the extensions / devices (displayed in locale specific format)",
-    "placeholders": {
-      "timestamp": {
-        "content": "$1",
-        "example": "April 30, 2019 6:25 pm for US/English locale"
-      }
-    }
-  },
-  "sync_extension_name_placeholder": {
-    "message": "תן שם להרחבה זו כך שתוכל לכנות אותה בנפרד מאחרות…",
-    "description": "placeholder text in the extension / device name field on the sync page"
-  },
-  "sync_verify_turn_on_text": {
-    "message": "הפעלת גיבוי וסינכרון תנקה מידע הגדרות קיים מהרחבה זו.",
-    "description": "message text in the extension / device name field on the sync page"
-  },
-  "sync_now_btn_text": {
-    "message": "סנכרן כעת",
-    "description": "button text on the Sync sub-tab of the Options page"
-  },
-  "sync_message_old_version_part_1": {
-    "message": "אתה משתמש בגרסה ישנה של AdBlock.",
-    "description": "button text on the Sync sub-tab of the Options page"
-  },
-  "sync_message_old_version_part_2": {
-    "message": "אנא [[עדכן את AdBlock]] כך שנוכל לסנכרן את ההגדרות שלך.",
-    "description": "button text on the Sync sub-tab of the Options page"
-  },
-  "sync_removed_error_msg_part_1": {
-    "message": "הרחבה זו אינה מסונכרנת",
-    "description": "sync error message text on the popup menu"
-  },
-  "sync_removed_error_msg_part_2": {
-    "message": "לחץ כאן כדי לעדכן את ההגדרות שלך",
-    "description": "sync error message text on the popup menu and options page"
-  },
-  "unsync_error_msg_part_1": {
-    "message": "שגיאת סינכרון",
-    "description": "sync error message text on the options menu"
-  },
-  "unsync_error_msg_part_2": {
-    "message": "הרחבה זו אינה מסתנכרנת יותר.",
-    "description": "sync error message text on the popup menu"
-  },
-  "unsync_error_msg_part_3": {
-    "message": "לחץ כאן כדי לרענן דף זה, לאחר מכן לחץ על \"הוסף הרחבה זו\" כדי לסנכרן מכשיר זה",
-    "description": "sync error message text on the Sync tab of the options page"
-  },
-  "sync_premium_cta": {
-    "message": "תהיה מקצוען של חסימת פרסומות עם מאפייני Premium כמו סינכרון.",
-    "description": "AdBlock Premium CTA on the Sync tab"
-  },
-  "backup_sync_settings": {
-    "message": "גבה וסנכרן באופן אוטומטי את הגדרות AdBlock שלך ברחבי כל המכשירים שלך.",
-    "description": "Description of Sync on Sync tab"
-  },
-  "set_preferences_once": {
-    "message": "הגדר את ההעדפות שלך פעם אחת, ולעולם לא תדאג לגבי אובדן נתונים או ביצוע אותו שינוי שוב בהרחבות רבות.",
-    "description": "Description of Sync on Sync tab"
-  },
-  "get_sync": {
-    "message": "השג סינכרון",
-    "description": "Link to pay for Sync (part of AdBlock Premium)"
-  },
-  "check_sync_status": {
-    "message": "בדוק מעמד סינכרון",
-    "description": "Button on Sync tab that checks the status of the Sync feature"
-  },
-  "show_details": {
-    "message": "הראה פרטים",
-    "description": "Toggle that shows the details section"
-  },
-  "hide_details": {
-    "message": "הסתר פרטים",
-    "description": "Toggle that hides the details section"
-  },
-  "add_this_extension": {
-    "message": "הוסף הרחבה זו",
-    "description": "Button on Sync tab that adds this extension to the Sync process"
-  },
-  "add": {
-    "message": "הוסף",
-    "description": "Button on Sync tab that adds an entered name for this extension to the list of synced extensions"
-  },
-  "this_extension": {
-    "message": "(הרחבה זו)",
-    "description": "description for name of the current extension"
-  },
-  "sync_delete_panel_title": {
-    "message": "מחק הרחבה מסונכרנת",
-    "description": "Panel title text on the delete device overlay"
-  },
-  "confirm_delete_extension": {
-    "message": "האם אתה בטוח שאתה רוצה למחוק הרחבה זו?",
-    "description": "Warning/confirmation message shown when the user clicks on the delete icon for a device"
-  },
-  "cannot_be_undone": {
-    "message": "פעולה זו אינה ניתנת לביטול.",
-    "description": "Warning/confirmation message shown when the user clicks on the delete icon for a device"
-  },
   "delete": {
     "message": "מחק",
     "description": "Text on a delete button"
@@ -2575,14 +2401,6 @@
   },
   "see_photos_no_ads_description": {
     "message": "נחסום עדיין פרסומות, אבל נחליף כמה מהן בתמונות של חתולים, כלבים וטבע.",
-    "description": "The main text of a feature box in the MyAdBlock Options page"
-  },
-  "sync_your_settings_title": {
-    "message": "סנכרן הגדרות",
-    "description": "The title of a feature box in the MyAdBlock Options page"
-  },
-  "sync_your_settings_description": {
-    "message": "קח את הכללים וההגדרות של חסימת הפרסומות שלך איתך לכל מחשב שאתה משתמש.",
     "description": "The main text of a feature box in the MyAdBlock Options page"
   },
   "how_can_we_help": {
@@ -2813,10 +2631,6 @@
     "message": "דוגמה של החלפת תמונה",
     "description": "Text in the alt attribute of an image in the Options page mab that visualizes the Image Swap feature."
   },
-  "sync_example": {
-    "message": "דוגמת סינכרון",
-    "description": "Text in the alt attribute of an image in the Options page mab that visualizes the Sync feature."
-  },
   "adblock_home": {
     "message": "בית AdBlock",
     "description": "Text in the alt attribute of an AdBlock logo / icon that links to getadblock.com."
@@ -2897,10 +2711,6 @@
     "message": "למד עוד",
     "description": "Text in the aria-label attribute of an icon linking to extra information about an option."
   },
-  "find_out_more": {
-    "message": "גלה עוד",
-    "description": "Text in the button on the Premium CTA on the hiding wizard."
-  },
   "update_filter_lists_now": {
     "message": "עדכן רשימות מסננים כעת",
     "description": "Text in the aria-label attribute of the 'update now' button on the Options page in the Filter Lists tab."
@@ -2961,14 +2771,6 @@
     "message": "נהל את המינוי שלך",
     "description": "Text of link to manage the user's Premium subscription on the Premium tab of the Options page"
   },
-  "save_custom_settings_cta": {
-    "message": "האם אתה רוצה לשמור הגדרות של חסימת פרסומות מותאמת אישית ולהשתמש בהן בכל דפדפן?",
-    "description": "Part 1 of a Premium call-to-action on the Options page"
-  },
-  "try_backup_sync": {
-    "message": "אם כך, נסה את המאפיין גיבוי וסינכרון.",
-    "description": "Part 2 of a Premium call-to-action on the Options page"
-  },
   "wont_show_again": {
     "message": "בסדר, לא נראה לך שוב הודעה זו.",
     "description": "Message shown when user opts out of call-to-action"
@@ -2992,26 +2794,6 @@
   "whitelisted_a_site": {
     "message": "הוספת הרגע אתר אל רשימת ההתרה שלך!",
     "description": "Part 1 of a call-to-action on the allowlist wizard"
-  },
-  "dont_show_me_again": {
-    "message": "אל תראה לי הודעה זו שוב",
-    "description": "opt out option on all-to-action on the blocklist / hiding wizard"
-  },
-  "never_lose_settings": {
-    "message": "החל הגדרה זו בכל המכשירים שלך ווודא שלעולם לא תאבד את הגדרות AdBlock שלך עם גיבוי וסינכרון.",
-    "description": "Part 2 of a call-to-action on the allowlist and blocklist wizards"
-  },
-  "wizard_premium_cta_title": {
-    "message": "היי, נראה שתאהב את AdBlock Premium",
-    "description": "Part of a message on the blocklist wizard"
-  },
-  "wizard_premium_cta_part_I": {
-    "message": "חסמת הרגע משהו באתר הזה.",
-    "description": "Part of a message on the blocklist wizard"
-  },
-  "wizard_premium_cta_part_II": {
-    "message": "החל העדפה זו בכל המכשירים שלך ווודא שלעולם לא תאבד את הגדרות AdBlock שלך עם גיבוי וסינכרון.",
-    "description": "Part of a message on the blocklist wizard"
   },
   "blocked_something": {
     "message": "חסמת הרגע משהו באתר זה!",

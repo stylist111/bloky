@@ -1,4 +1,4 @@
-# Sync technical implementation
+# Custom Image Swap technical implementation
 
 The following document will provide a technical overview of the implementation of the Custom Image Swap feature within AdBlock (next_gen_repo).
 
@@ -63,9 +63,6 @@ The array containing image meta data.  This array is used to populate the 'list
   ...
 ]
 
-Sync considerations:
-Custom images will not be sync'd
-
 # Testing hints:
 
 Test that existing settings are retained for current Premium Image Swap users
@@ -81,8 +78,6 @@ Test the import of large image files
 Test in older versions of the browsers (the minimum supported version if possible).
 
 Test the custom images are displayed correctly on the Image Swap page, on tabs / pages where they are used for ad replacement, and on the view image details page
-
-Sync should continue to work with previous versions of AdBlock that do not have this feature.  For example, if a user enables the custom image swap, and only custom image, and has sync enabled, the old version of AdBlock should gracefully handle the setting, and return it when a user makes an update on it.
 
 To test the error handling on the "Image Swap" page, run the following code snippet on the _**background**_ page of the extension:
 

@@ -2293,180 +2293,6 @@
     "message": "Мы не смогли подключиться к нашим серверам",
     "description": "The sub-title of an error message box in payment iframe in the Options page."
   },
-  "sync_tab_item": {
-    "message": "Резервная копия и синхронизация",
-    "description": "Title of the Sync sub-tab of the Options page"
-  },
-  "sync_turn_on_invalid_name_text": {
-    "message": "Пожалуйста, назовите расширение, чтобы продолжить",
-    "description": "error message text on the Sync sub-tab of the Options page"
-  },
-  "sync_turn_on_duplicate_name_text": {
-    "message": "Такое имя расширения уже существует",
-    "description": "error message text on the Sync sub-tab of the Options page"
-  },
-  "sync_extension_section_title": {
-    "message": "Расширения",
-    "description": "section title text on the Sync sub-tab of the Options page"
-  },
-  "sync_header_message_no_license": {
-    "message": "Дайте нам немного времени, чтобы завершить процесс синхронизации.",
-    "description": "message to users on the sync page when the license is unavailable, inactive or a license ID hasn't been returned yet"
-  },
-  "sync_header_message_getting_license": {
-    "message": "проверка...",
-    "description": "message to users on the sync page when the extension is getting the license"
-  },
-  "sync_header_message_in_progress": {
-    "message": "Идет синхронизация...",
-    "description": "message to users on the options pages when syncing with the server is in progress"
-  },
-  "sync_header_message_sync_complete": {
-    "message": "Синхронизация завершена",
-    "description": "message to users on the option pages when syncing with the server server is complete"
-  },
-  "sync_extension_no_extension_msg": {
-    "message": "Нет синхронизированных расширений.",
-    "description": "message to users on the sync page when the license is unavailable, inactive or a license ID hasn't been returned yet"
-  },
-  "sync_header_message_setup_fail_prefix": {
-    "message": "Ошибка синхронизации:",
-    "description": "start of error message to users on the sync page when sync fails."
-  },
-  "sync_header_message_setup_fail_part_2": {
-    "message": "Попробуйте добавить это расширение через несколько минут.",
-    "description": "message to users on the sync page when initial setup of sync fails for some unknown reason."
-  },
-  "sync_header_message_error_prefix": {
-    "message": "Расширение не было синхронизировано.",
-    "description": "Start of an sync error message to users on the Options page or AdBlock popup menu."
-  },
-  "sync_header_message_old_commit_version_part_2": {
-    "message": "Расширение синхронизировано, изменения сброшены.",
-    "description": "part 2 of a message to users on the sync page and popup menu when initial setup of sync fails for some unknown reason."
-  },
-  "sync_header_message_old_commit_version_part_3": {
-    "message": "Перезагрузите страницу и попробуйте внести изменения снова.",
-    "description": "part 3 of a message to users on the sync page when initial setup of sync fails for some unknown reason."
-  },
-  "sync_header_error_save_message_part_2": {
-    "message": "Не удалось синхронизировать расширение.",
-    "description": "part 2 of a message to users on the Options pages when sending the sync data fails for some unknown reason."
-  },
-  "sync_header_error_save_message_part_3": {
-    "message": "Попробуйте синхронизировать его вручную позже.",
-    "description": "part 3 of a message to users on the Options pages when sending the sync data fails for some unknown reason."
-  },
-  "sync_header_message_old_commit_version_customize_tab_part_2": {
-    "message": "Расширение синхронизировано, изменения будут сброшены.",
-    "description": "part 2 of a message to users on the sync page when initial setup of sync fails for some unknown reason."
-  },
-  "sync_header_message_old_commit_version_customize_tab_part_3": {
-    "message": "Пожалуйста, скопируйте ваши настройки в буфер обмена, обновите страницу и внесите их заново.",
-    "description": "part 3 of a message to users on the sync page when initial setup of sync fails for some unknown reason."
-  },
-  "sync_device_name_list_updated_at_msg": {
-    "message": "последнее обновление: $timestamp$",
-    "description": "message to users on when the sync page was last updated with the name of the extensions / devices (displayed in locale specific format)",
-    "placeholders": {
-      "timestamp": {
-        "content": "$1",
-        "example": "April 30, 2019 6:25 pm for US/English locale"
-      }
-    }
-  },
-  "sync_extension_name_placeholder": {
-    "message": "Дайте название этому расширению, чтобы быстро найти в будущем.",
-    "description": "placeholder text in the extension / device name field on the sync page"
-  },
-  "sync_verify_turn_on_text": {
-    "message": "После включения функции Резервного копирования/синхронизации вся прошлая информация об этом расширении будет удалена.",
-    "description": "message text in the extension / device name field on the sync page"
-  },
-  "sync_now_btn_text": {
-    "message": "Синхронизировать сейчас",
-    "description": "button text on the Sync sub-tab of the Options page"
-  },
-  "sync_message_old_version_part_1": {
-    "message": "Вы используете устаревшую версию AdBlock.",
-    "description": "button text on the Sync sub-tab of the Options page"
-  },
-  "sync_message_old_version_part_2": {
-    "message": "Для синхронизации настроек вам нужно [[обновить AdBlock]].",
-    "description": "button text on the Sync sub-tab of the Options page"
-  },
-  "sync_removed_error_msg_part_1": {
-    "message": "Расширение не синхронизовано",
-    "description": "sync error message text on the popup menu"
-  },
-  "sync_removed_error_msg_part_2": {
-    "message": "Нажмите здесь, чтобы обновить настройки",
-    "description": "sync error message text on the popup menu and options page"
-  },
-  "unsync_error_msg_part_1": {
-    "message": "Ошибка синхронизации",
-    "description": "sync error message text on the options menu"
-  },
-  "unsync_error_msg_part_2": {
-    "message": "Данное расширение больше не синхронизируется.",
-    "description": "sync error message text on the popup menu"
-  },
-  "unsync_error_msg_part_3": {
-    "message": "Нажмите здесь, чтобы обновить страницу, затем нажмите на \"Добавить расширение\", чтобы синхронизировать устройство.",
-    "description": "sync error message text on the Sync tab of the options page"
-  },
-  "sync_premium_cta": {
-    "message": "Одна из функций Premium: синхронизация",
-    "description": "AdBlock Premium CTA on the Sync tab"
-  },
-  "backup_sync_settings": {
-    "message": "AdBlock будет делать бэкапы и синхронизировать настройки на всех ваших устройствах.",
-    "description": "Description of Sync on Sync tab"
-  },
-  "set_preferences_once": {
-    "message": "Настройте расширение один раз и не беспокойтесь о том, что вам придется делать это снова: ваши данные не потеряются.",
-    "description": "Description of Sync on Sync tab"
-  },
-  "get_sync": {
-    "message": "Синхронизировать",
-    "description": "Link to pay for Sync (part of AdBlock Premium)"
-  },
-  "check_sync_status": {
-    "message": "Проверить статус",
-    "description": "Button on Sync tab that checks the status of the Sync feature"
-  },
-  "show_details": {
-    "message": "Подробнее",
-    "description": "Toggle that shows the details section"
-  },
-  "hide_details": {
-    "message": "Скрыть детали",
-    "description": "Toggle that hides the details section"
-  },
-  "add_this_extension": {
-    "message": "Добавить расширение",
-    "description": "Button on Sync tab that adds this extension to the Sync process"
-  },
-  "add": {
-    "message": "Добавить",
-    "description": "Button on Sync tab that adds an entered name for this extension to the list of synced extensions"
-  },
-  "this_extension": {
-    "message": "(это расширение)",
-    "description": "description for name of the current extension"
-  },
-  "sync_delete_panel_title": {
-    "message": "Удалить синхронизированное расширение",
-    "description": "Panel title text on the delete device overlay"
-  },
-  "confirm_delete_extension": {
-    "message": "Удалить расширение?",
-    "description": "Warning/confirmation message shown when the user clicks on the delete icon for a device"
-  },
-  "cannot_be_undone": {
-    "message": "Данное действие нельзя отменить.",
-    "description": "Warning/confirmation message shown when the user clicks on the delete icon for a device"
-  },
   "delete": {
     "message": "Удалить",
     "description": "Text on a delete button"
@@ -2607,14 +2433,6 @@
   },
   "see_photos_no_ads_description": {
     "message": "Мы не просто заблокируем объявления: мы заменим их фотографиями котиков и собачек.",
-    "description": "The main text of a feature box in the MyAdBlock Options page"
-  },
-  "sync_your_settings_title": {
-    "message": "Синхронизируйте настройки",
-    "description": "The title of a feature box in the MyAdBlock Options page"
-  },
-  "sync_your_settings_description": {
-    "message": "Все ваши настройки и фильтры блокировки рекламы будут работать на любом устройстве.",
     "description": "The main text of a feature box in the MyAdBlock Options page"
   },
   "how_can_we_help": {
@@ -2885,10 +2703,6 @@
     "message": "Пример замены изображений",
     "description": "Text in the alt attribute of an image in the Options page mab that visualizes the Image Swap feature."
   },
-  "sync_example": {
-    "message": "Пример синхронизации",
-    "description": "Text in the alt attribute of an image in the Options page mab that visualizes the Sync feature."
-  },
   "adblock_home": {
     "message": "Главная страница AdBlock",
     "description": "Text in the alt attribute of an AdBlock logo / icon that links to getadblock.com."
@@ -2969,10 +2783,6 @@
     "message": "Подробности",
     "description": "Text in the aria-label attribute of an icon linking to extra information about an option."
   },
-  "find_out_more": {
-    "message": "Узнать больше",
-    "description": "Text in the button on the Premium CTA on the hiding wizard."
-  },
   "update_filter_lists_now": {
     "message": "Обновить список фильтров",
     "description": "Text in the aria-label attribute of the 'update now' button on the Options page in the Filter Lists tab."
@@ -3025,6 +2835,10 @@
     "message": "AdBlock Premium: Интернет с комфортом.",
     "description": "The text of the header the AdBlock Premium Options page"
   },
+  "premium_upsell_text": {
+    "message": "Откройте для себя более безопасный и свободный интернет уже сегодня с AdBlock VPN",
+    "description": "The text on the premium upsell of AdBlock Premium in Options page"
+  },
   "premium_benefits_explained": {
     "message": "В знак благодарности за приобретение AdBlock Premium вы также будете получать доступ ко всем новым функциям и инструментам сразу после их внедрения.",
     "description": "Main text of the teaser AdBlock Premium feature in the AdBlock Premium tab of the Options page"
@@ -3032,14 +2846,6 @@
   "manage_subscription": {
     "message": "Управление подпиской",
     "description": "Text of link to manage the user's Premium subscription on the Premium tab of the Options page"
-  },
-  "save_custom_settings_cta": {
-    "message": "Сохранить пользовательские настройки блокировки и использовать их на всех браузерах?",
-    "description": "Part 1 of a Premium call-to-action on the Options page"
-  },
-  "try_backup_sync": {
-    "message": "Чтобы сделать это, включите функцию Резервная копия и Синхронизация.",
-    "description": "Part 2 of a Premium call-to-action on the Options page"
   },
   "wont_show_again": {
     "message": "Мы больше не покажем вам это сообщение.",
@@ -3064,26 +2870,6 @@
   "whitelisted_a_site": {
     "message": "Вы добавили сайт в разрешенный список!",
     "description": "Part 1 of a call-to-action on the allowlist wizard"
-  },
-  "dont_show_me_again": {
-    "message": "Не показывать снова",
-    "description": "opt out option on all-to-action on the blocklist / hiding wizard"
-  },
-  "never_lose_settings": {
-    "message": "Включите функцию Резервного копирования и Синхронизации на всех устройствах, чтобы не потерять персональные настройки вашего AdBLock.",
-    "description": "Part 2 of a call-to-action on the allowlist and blocklist wizards"
-  },
-  "wizard_premium_cta_title": {
-    "message": "Кстати, вам может понравиться AdBlock Premium",
-    "description": "Part of a message on the blocklist wizard"
-  },
-  "wizard_premium_cta_part_I": {
-    "message": "Вы заблокировали что-то на этом сайте.",
-    "description": "Part of a message on the blocklist wizard"
-  },
-  "wizard_premium_cta_part_II": {
-    "message": "Включите функцию Резервного копирования и Синхронизации на всех устройствах, чтобы не потерять персональные настройки вашего AdBlock.",
-    "description": "Part of a message on the blocklist wizard"
   },
   "blocked_something": {
     "message": "Вы только что заблокировали что-то на этом сайте!",
@@ -3770,18 +3556,6 @@
   "take_control_easy": {
     "message": "Меняйте внешний вид и размер шрифта в AdBlock с помощью несложных настроек. Настройте AdBlock для себя!",
     "description": "Description of Themes on the main Premium options page"
-  },
-  "save_settings_multiple": {
-    "message": "Синхронизируйте ваши персональные настройки AdBlock на нескольких устройствах",
-    "description": "Sub-header describing Backup & Sync on the main Premium options page"
-  },
-  "take_custom_with_you": {
-    "message": "Примените ваши настройки блокировки рекламы, предпочтений и белого списка на всех устройствах с аккаунтом Chrome.",
-    "description": "Description of Backup & Sync on the main Premium options page"
-  },
-  "set_up_once": {
-    "message": "Настройте AdBlock один раз для всех устройств!",
-    "description": "Description of Backup & Sync on the main Premium options page"
   },
   "annoyance_free_browsing": {
     "message": "Проводите время в интернете без помех",

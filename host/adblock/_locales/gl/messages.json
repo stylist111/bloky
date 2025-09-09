@@ -1985,82 +1985,6 @@
     "message": "Non poidemos conectarnos aos nosos servidores",
     "description": "The sub-title of an error message box in payment iframe in the Options page."
   },
-  "sync_tab_item": {
-    "message": "Copia de seguridade e sincronización",
-    "description": "Title of the Sync sub-tab of the Options page"
-  },
-  "sync_turn_on_invalid_name_text": {
-    "message": "Por favor, nomee esta extensión para continuar",
-    "description": "error message text on the Sync sub-tab of the Options page"
-  },
-  "sync_turn_on_duplicate_name_text": {
-    "message": "Este nome de extensión xa está en uso",
-    "description": "error message text on the Sync sub-tab of the Options page"
-  },
-  "sync_extension_section_title": {
-    "message": "Extensións",
-    "description": "section title text on the Sync sub-tab of the Options page"
-  },
-  "sync_header_message_no_license": {
-    "message": "Dános uns minutos para que Sync estea listo para ti.",
-    "description": "message to users on the sync page when the license is unavailable, inactive or a license ID hasn't been returned yet"
-  },
-  "sync_header_message_getting_license": {
-    "message": "estase a comprobar...",
-    "description": "message to users on the sync page when the extension is getting the license"
-  },
-  "sync_header_message_in_progress": {
-    "message": "Sincronización en curso…",
-    "description": "message to users on the options pages when syncing with the server is in progress"
-  },
-  "sync_header_message_sync_complete": {
-    "message": "Sincronización rematada",
-    "description": "message to users on the option pages when syncing with the server server is complete"
-  },
-  "sync_extension_no_extension_msg": {
-    "message": "Non tes extensións sincronizadas.",
-    "description": "message to users on the sync page when the license is unavailable, inactive or a license ID hasn't been returned yet"
-  },
-  "sync_header_message_setup_fail_prefix": {
-    "message": "Erro de sincronización:",
-    "description": "start of error message to users on the sync page when sync fails."
-  },
-  "sync_header_message_setup_fail_part_2": {
-    "message": "Por favor intente engadir esta extensión outra vez nuns minutos.",
-    "description": "message to users on the sync page when initial setup of sync fails for some unknown reason."
-  },
-  "sync_header_message_error_prefix": {
-    "message": "Esta extensión non estaba sincronizada.",
-    "description": "Start of an sync error message to users on the Options page or AdBlock popup menu."
-  },
-  "sync_header_message_old_commit_version_part_2": {
-    "message": "Sincronizamos esta extensión e revertemos os seus cambios.",
-    "description": "part 2 of a message to users on the sync page and popup menu when initial setup of sync fails for some unknown reason."
-  },
-  "sync_now_btn_text": {
-    "message": "Sincronizar agora",
-    "description": "button text on the Sync sub-tab of the Options page"
-  },
-  "show_details": {
-    "message": "Amosar detalles",
-    "description": "Toggle that shows the details section"
-  },
-  "hide_details": {
-    "message": "Agochar detalles",
-    "description": "Toggle that hides the details section"
-  },
-  "add_this_extension": {
-    "message": "Engadir esta extensión",
-    "description": "Button on Sync tab that adds this extension to the Sync process"
-  },
-  "add": {
-    "message": "Engadir",
-    "description": "Button on Sync tab that adds an entered name for this extension to the list of synced extensions"
-  },
-  "this_extension": {
-    "message": "(esta extensión)",
-    "description": "description for name of the current extension"
-  },
   "delete": {
     "message": "Eliminar",
     "description": "Text on a delete button"
@@ -2127,10 +2051,6 @@
   },
   "see_photos_no_ads_title": {
     "message": "Ollar imaxes, non anuncios",
-    "description": "The title of a feature box in the MyAdBlock Options page"
-  },
-  "sync_your_settings_title": {
-    "message": "Sincronizar os teus axustes",
     "description": "The title of a feature box in the MyAdBlock Options page"
   },
   "how_can_we_help": {
@@ -2252,10 +2172,6 @@
   "image_swap_example": {
     "message": "Exemplo de mudado de imaxes",
     "description": "Text in the alt attribute of an image in the Options page mab that visualizes the Image Swap feature."
-  },
-  "sync_example": {
-    "message": "Exemplo de sincronización",
-    "description": "Text in the alt attribute of an image in the Options page mab that visualizes the Sync feature."
   },
   "adblock_home": {
     "message": "Inicio do AdBlock",
@@ -2393,14 +2309,6 @@
     "message": "Administre a súa subscrición",
     "description": "Text of link to manage the user's Premium subscription on the Premium tab of the Options page"
   },
-  "save_custom_settings_cta": {
-    "message": "Desexa gardar a súa configuración personalizada de bloqueo de anuncios e utilizala en todos os navegadores?",
-    "description": "Part 1 of a Premium call-to-action on the Options page"
-  },
-  "try_backup_sync": {
-    "message": "Se é así, probe a nosa función de Copia de seguridade e Sincronización.",
-    "description": "Part 2 of a Premium call-to-action on the Options page"
-  },
   "wont_show_again": {
     "message": "OK, non lle amosaremos esta mensaxe novamente.",
     "description": "Message shown when user opts out of call-to-action"
@@ -2416,10 +2324,6 @@
   "change_behavior_settings": {
     "message": "Pode cambiar este comportamento na súa [[configuración]].",
     "description": "Part of a message on the allowlist and blocklist wizards"
-  },
-  "never_lose_settings": {
-    "message": "Aplique esta configuración a todos os seus dispositivos e asegúrese de non perder nunca a configuración de AdBlock con Copia de seguridade e Sincronización.",
-    "description": "Part 2 of a call-to-action on the allowlist and blocklist wizards"
   },
   "blocked_something": {
     "message": "Acabas de bloquear algo neste sitio!",

@@ -77,31 +77,13 @@ function topOpenWhitelistCompletionUI(options) {
       <section class='body-button'>
         <button class='cancel'>${translate("done")}</button>
       </section>
-      <footer id='whitelist-cta' style='display:none;'>
-        <div id='dismissed-msg' class='messageWithLink' i18n_replacement_el='premium-link' style='display:none;'>
-          ${i18nJoin("wont_show_again", "check_out_premium")}
-          <a id='premium-link' class='link' href='#'></a>
-        </div>
-        <div id='premium-cta'>
-          <div id='cta-msg'>${i18nJoin("whitelisted_a_site", "never_lose_settings")}</div>
-          <div id='cta-buttons'>
-            <button class='learn-more'>${translate("learn_more_without_period")}</button>
-            <button class='close material-icons'>close</button>
-          </div>
-        </div>
-      </footer>
     </div>
     `;
 
     const $dialog = $(html);
     const $adblockRule = $dialog.find("#adblock-rule");
     const $doneBtn = $dialog.find("button.cancel");
-    const $learnMoreBtn = $dialog.find("button.learn-more");
-    const $closeBtn = $dialog.find("button.close");
     const $settingsLink = $dialog.find("#settings-link");
-    const $premiumLink = $dialog.find("#premium-link");
-    const $dismissedMsg = $dialog.find("#dismissed-msg");
-    const $premiumCTA = $dialog.find("#premium-cta");
 
     $adblockRule.text(options.rule || "");
 
@@ -109,29 +91,10 @@ function topOpenWhitelistCompletionUI(options) {
       mayOpenDialogUi = true;
       (document.body || document.documentElement).removeChild(base);
     });
-    $learnMoreBtn.on("click", () => {
-      void modulesAsGlobal.messaging.send("adblock:openPremiumPayURL");
-      browser.runtime.sendMessage({
-        command: "recordGeneralMessage",
-        msg: "whitelist_cta_clicked",
-      });
-    });
-    $closeBtn.on("click", () => {
-      void modulesAsGlobal.messaging.send("adblock:setWhitelistCTAStatus", { isEnabled: false });
-      browser.runtime.sendMessage({ command: "recordGeneralMessage", msg: "whitelist_cta_closed" });
-      $premiumCTA.hide();
-      $dismissedMsg.show();
-    });
     $settingsLink.on("click", () => {
       browser.runtime.sendMessage({
         command: "openTab",
         urlToOpen: browser.runtime.getURL("options.html#customize"),
-      });
-    });
-    $premiumLink.on("click", () => {
-      browser.runtime.sendMessage({
-        command: "openTab",
-        urlToOpen: browser.runtime.getURL("options.html#mab"),
       });
     });
 
@@ -141,12 +104,6 @@ function topOpenWhitelistCompletionUI(options) {
 
     setLangAndDirAttributes($dialog.get(0));
     bindEnterClickToDefault($dialog);
-
-    // Check whether to show CTA
-    if (!options.isActiveLicense && options.showWhitelistCTA) {
-      $dialog.find("#whitelist-cta").show();
-      browser.runtime.sendMessage({ command: "recordGeneralMessage", msg: "whitelist_cta_seen" });
-    }
 
     // Show page
     $base.append($dialog);

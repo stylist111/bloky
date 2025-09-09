@@ -1673,64 +1673,6 @@
     "message": "Oh, ne!",
     "description": "The text notifying something is wrong in the payment iframe in the Options page."
   },
-  "sync_tab_item": {
-    "message": "Varnostno kopiranje in sinhronizacija",
-    "description": "Title of the Sync sub-tab of the Options page"
-  },
-  "sync_extension_section_title": {
-    "message": "Razširitve",
-    "description": "section title text on the Sync sub-tab of the Options page"
-  },
-  "sync_header_message_getting_license": {
-    "message": "preverjam...",
-    "description": "message to users on the sync page when the extension is getting the license"
-  },
-  "sync_header_message_in_progress": {
-    "message": "Sinhronizacija poteka...",
-    "description": "message to users on the options pages when syncing with the server is in progress"
-  },
-  "sync_header_message_sync_complete": {
-    "message": "Sinhronizacija dokončana",
-    "description": "message to users on the option pages when syncing with the server server is complete"
-  },
-  "sync_header_message_setup_fail_prefix": {
-    "message": "Napaka sinhronizacije:",
-    "description": "start of error message to users on the sync page when sync fails."
-  },
-  "sync_device_name_list_updated_at_msg": {
-    "message": "zadnji posodobjeno $timestamp$",
-    "description": "message to users on when the sync page was last updated with the name of the extensions / devices (displayed in locale specific format)",
-    "placeholders": {
-      "timestamp": {
-        "content": "$1",
-        "example": "April 30, 2019 6:25 pm for US/English locale"
-      }
-    }
-  },
-  "sync_now_btn_text": {
-    "message": "Sinhroniziraj sedaj",
-    "description": "button text on the Sync sub-tab of the Options page"
-  },
-  "show_details": {
-    "message": "Prikaži podrobnosti",
-    "description": "Toggle that shows the details section"
-  },
-  "hide_details": {
-    "message": "Skrij podrobnosti",
-    "description": "Toggle that hides the details section"
-  },
-  "add_this_extension": {
-    "message": "Dodaj to razširitev",
-    "description": "Button on Sync tab that adds this extension to the Sync process"
-  },
-  "add": {
-    "message": "Dodaj",
-    "description": "Button on Sync tab that adds an entered name for this extension to the list of synced extensions"
-  },
-  "this_extension": {
-    "message": "(this extension)",
-    "description": "description for name of the current extension"
-  },
   "delete": {
     "message": "Izbriši",
     "description": "Text on a delete button"

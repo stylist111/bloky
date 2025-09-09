@@ -179,24 +179,6 @@ function topOpenBlacklistUI(options) {
           <div class="buttonRow" ><button class='primary confirm adblock-default-button'>${translate("buttonconfirm")}</button></div>
         </section>
       </div>
-      <div class='page' id='page_3' style='display:none;'>
-        <header class="center-and-right">
-          <h1>${translate("adblock_premium")}</h1>
-          <i class="material-icons md-18 close" role="img" aria-label="${translate("close")}">close</i>
-        </header>
-        <section>
-          <span style="display: flex; flex-direction: column;">
-            <span style="font-size: 18px; font-weight: bold;">${translate("wizard_premium_cta_title")}</span>
-            <span style="margin-top: 22px;">${translate("wizard_premium_cta_part_I")}  ${translate("wizard_premium_cta_part_II")}</span>
-          </span>
-          <img aria-hidden='true' src='${browser.runtime.getURL("adblock-wizard_sync_cta.svg")}' style="height: 200px; width: 245px;">
-        </section>
-        <hr />
-        <footer id='blacklist-cta' >
-          <button id='find_out_more' class='btnClose'>${translate("find_out_more")}</button>
-          <span id='opt-out-msg' class='btnClose'>${translate("dont_show_me_again")}</span>
-        </footer>
-      </div>
     </div>
     `;
     const $dialog = $(html);
@@ -222,8 +204,6 @@ function topOpenBlacklistUI(options) {
     const blacklistUI = new BlacklistUi(
       rightClickedItem,
       options.settings.show_advanced_options,
-      options.isActiveLicense,
-      options.showBlacklistCTA,
       $dialog,
       options.addCustomFilterRandomName,
     );

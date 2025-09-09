@@ -101,7 +101,6 @@ export const AcceptableAdsList = ({ subs }) => {
     checkedItems.acceptable_ads_privacy && !privacyControlEnabled;
 
   const updateItem = async (name, evt) => {
-    MABPayment.displaySyncCTAs(true);
     if (name === "acceptable_ads" && evt.target.checked && !aaTrueOnce) {
       setAaTrueOnce(true);
     }

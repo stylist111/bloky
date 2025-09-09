@@ -31,9 +31,31 @@ async function unsubscribeToFilterList(url) {
 }
 
 /**
+ * Cleans up any leftover sync data from older versions
+ * https://eyeo.atlassian.net/browse/EXT-1078
+ * @returns {Promise<void>}
+ */
+async function cleanUpSyncData() {
+  const keysToRemove = [
+    "syncPendingPostDataKey",
+    "SyncLogMessageKey",
+    "SyncCommitKey",
+    "SyncPreviousDataKey",
+    "SyncExtensionNameKey",
+  ];
+
+  try {
+    await browser.storage.local.remove(keysToRemove);
+  } catch (e) {
+    // Silently ignore errors
+  }
+}
+
+/**
  * Migrates existing user data from older versions
  */
 async function migrateUserData() {
+  await cleanUpSyncData();
   // We remove the AdBlock Custom filter list,
   // because it no longer serves any purpose
   unsubscribeToFilterList("https://cdn.adblockcdn.com/filters/adblock_custom.txt");

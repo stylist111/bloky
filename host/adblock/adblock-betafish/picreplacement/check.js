@@ -28,7 +28,7 @@ import { TabSessionStorage } from "../../adblockplusui/adblockpluschrome/lib/sto
 
 import { getUserId } from "../id/background/index";
 import { Channels } from "./channels";
-import { getSettings, setSetting } from "../prefs/background";
+import { setSetting } from "../prefs/background";
 import { showIconBadgeCTA, NEW_BADGE_REASONS } from "../alias/icon";
 import { Prefs } from "~/alias/prefs";
 import { initialize } from "../alias/subscriptionInit";
@@ -74,14 +74,12 @@ export const License = (function getLicense() {
   const mabConfig = {
     prod: {
       licenseURL: "https://myadblock.licensing.getadblock.com/license/",
-      syncURL: "https://myadblock.sync.getadblock.com/v1/sync",
       subscribeKey: "sub-c-9eccffb2-8c6a-11e9-97ab-aa54ad4b08ec",
       payURL: "https://getadblock.com/premium/enrollment/",
       subscriptionURL: "https://getadblock.com/premium/manage-subscription/",
     },
     dev: {
       licenseURL: "https://dev.myadblock.licensing.getadblock.com/license/",
-      syncURL: "https://dev.myadblock.sync.getadblock.com/v1/sync",
       subscribeKey: "sub-c-9e0a7270-83e7-11e9-99de-d6d3b84c4a25",
       payURL: "https://getadblock.com/premium/enrollment/?testmode=true",
       subscriptionURL: "https://dev.getadblock.com/premium/manage-subscription/",
@@ -354,12 +352,6 @@ export const License = (function getLicense() {
       License.set(theLicense);
       setSetting("picreplacement", false);
       licenseNotifier.emit("license.expired");
-      if (getSettings().sync_settings) {
-        // We have to import the "sync-service" module on demand,
-        // as the "sync-service" module in turn requires this module.
-        /* eslint-disable import/no-cycle */
-        import("./sync-service").disableSync();
-      }
       setSetting("color_themes", { popup_menu: "default_theme", options_page: "default_theme" });
       SubscriptionAdapter.unsubscribe({ adblockId: "distraction-control" });
       SubscriptionAdapter.unsubscribe({ adblockId: "cookies-premium" });
@@ -476,40 +468,6 @@ export const License = (function getLicense() {
     },
     shouldShowPremiumCTA() {
       return !(License && License.get().suppress_premium_cta === true);
-    },
-    shouldShowBlacklistCTA(newValue) {
-      if (!License.shouldShowPremiumCTA()) {
-        return false;
-      }
-      const currentLicense = License.get() || {};
-      if (typeof newValue === "boolean") {
-        currentLicense.showBlacklistCTA = newValue;
-        License.set(currentLicense);
-        return null;
-      }
-
-      if (typeof currentLicense.showBlacklistCTA === "undefined") {
-        currentLicense.showBlacklistCTA = true;
-        License.set(currentLicense);
-      }
-      return License && License.get() && License.get().showBlacklistCTA === true;
-    },
-    shouldShowWhitelistCTA(newValue) {
-      if (!License.shouldShowPremiumCTA()) {
-        return false;
-      }
-      const currentLicense = License.get() || {};
-      if (typeof newValue === "boolean") {
-        currentLicense.showWhitelistCTA = newValue;
-        License.set(currentLicense);
-        return null;
-      }
-
-      if (typeof currentLicense.showWhitelistCTA === "undefined") {
-        currentLicense.showWhitelistCTA = true;
-        License.set(currentLicense);
-      }
-      return License && License.get() && License.get().showWhitelistCTA === true;
     },
     displayPopupMenuNewCTA() {
       const isNotActive = !License.isActiveLicense();

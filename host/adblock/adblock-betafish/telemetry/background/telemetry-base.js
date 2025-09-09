@@ -139,7 +139,6 @@ class TelemetryBase {
       rc: await replacedCounts.getTotalAdsReplaced(),
       to: themeOptionsPage,
       tm: themePopupMenu,
-      sy: settingsObj.sync_settings ? "1" : "0",
       ir: channels.isAnyEnabled() ? "1" : "0",
       cir: channels.channelGuide[channels.getIdByName("CustomChannel")].enabled ? "1" : "0",
       tca: settingsObj.twitch_channel_allowlist ? "1" : "0",

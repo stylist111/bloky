@@ -74,10 +74,8 @@ describe("AcceptableAdsList", () => {
       expect(toggleAcceptableAds).not.toHaveBeenCalled();
       fireEvent.click(getAaOption());
       await waitFor(() => expect(toggleAcceptableAds).toHaveBeenCalledTimes(1));
-      await waitFor(() => expect(MABPayment.displaySyncCTAs).toHaveBeenCalledTimes(1));
       fireEvent.click(getAaOption());
       await waitFor(() => expect(toggleAcceptableAds).toHaveBeenCalledTimes(2));
-      await waitFor(() => expect(MABPayment.displaySyncCTAs).toHaveBeenCalledTimes(2));
     });
 
     it("calls toggleAcceptableAdsPrivacy on privacy change", async () => {
@@ -85,10 +83,8 @@ describe("AcceptableAdsList", () => {
       fireEvent.click(getAaOption());
       fireEvent.click(getPrivacySuboption());
       await waitFor(() => expect(toggleAcceptableAdsPrivacy).toHaveBeenCalledTimes(1));
-      await waitFor(() => expect(MABPayment.displaySyncCTAs).toHaveBeenCalledTimes(2));
       fireEvent.click(getPrivacySuboption());
       await waitFor(() => expect(toggleAcceptableAdsPrivacy).toHaveBeenCalledTimes(2));
-      await waitFor(() => expect(MABPayment.displaySyncCTAs).toHaveBeenCalledTimes(3));
     });
   });
 

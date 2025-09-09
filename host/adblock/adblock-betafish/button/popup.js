@@ -26,7 +26,6 @@ const useFlexDisplayElements = [
   "allowlisted_subsection",
   "channelname",
   "disabled_site_title",
-  "div_sync_removed_error_msg",
   "domain_paused_subsection",
   "hostname",
   "pause_subsection",
@@ -452,30 +451,6 @@ const start = async function () {
     if (info.activeLicense === true) {
       $("#premium_status_msg").css("display", "inline-flex");
     }
-    if (
-      info.settings.sync_settings &&
-      info.lastGetStatusCode === 400 &&
-      info.lastGetErrorResponse &&
-      info.lastGetErrorResponse.code === "invalid_sync_version"
-    ) {
-      show(["div_sync_outofdate_error_msg"]);
-      modulesAsGlobal.messaging.send("adblock:resetLastGetStatusCode"); // reset the code, so it doesn't show again.
-      modulesAsGlobal.messaging.send("adblock:resetLastGetErrorResponse"); // reset the code, so it doesn't show again.
-    } else if (
-      !info.settings.sync_settings &&
-      (info.lastGetStatusCode === 403 || info.lastPostStatusCode === 403)
-    ) {
-      show(["div_sync_removed_error_msg", "sync_removed_error_msg_part_1"]);
-      sendMessageWithNoResponse({ command: "SyncService.resetAllErrors" }); // reset all of  the errors, so it doesn't show again.
-    } else if (
-      (info.lastPostStatusCode >= 400 || info.lastPostStatusCode === 0) &&
-      info.settings.sync_settings
-    ) {
-      show(["div_sync_error_msg"]);
-      modulesAsGlobal.messaging.send("adblock:resetLastPostStatusCode"); // reset the code, so it doesn't show again.
-    } else {
-      hide(["div_sync_error_msg"]);
-    }
 
     if (errorOccurred) {
       return;
@@ -650,21 +625,6 @@ const start = async function () {
     $("#div_premium_dc_cta").slideUp();
   });
 
-  selected(
-    "#sync_removed_error_msg_part_1, #sync_removed_error_msg_part_2, #sync_removed_error_icon ",
-    async () => {
-      await browser.runtime.sendMessage({
-        command: "openTab",
-        urlToOpen: browser.runtime.getURL("options.html#sync"),
-      });
-      closePopup();
-    },
-  );
-
-  selected("#sync_removed_error_close", () => {
-    $("#div_sync_removed_error_msg").fadeOut();
-  });
-
   $("#div_vpn_cta")
     .on("mouseenter", () => {
       $("#vpn_cta").text(translate("vpn_cta_msg_hover"));
@@ -723,24 +683,6 @@ const start = async function () {
         logoFileName = "beta_logo.svg";
       }
       $(".header-logo").attr("src", `icons/${popupMenuTheme}/${logoFileName}`);
-    });
-
-  // eslint-disable-next-line prefer-arrow-callback
-  $("#div_sync_removed_error_msg")
-    .on("mouseenter", function handleIn() {
-      $("#sync_removed_error_msg_part_1").hide();
-      $("#sync_removed_error_msg_part_2").show();
-      $("#sync_removed_error_icon").addClass("removed_error_icon_hovered");
-      $("#div_sync_removed_error_msg").addClass("div_sync_removed_error_msg_hovered");
-      $("#sync_removed_error_close").addClass("sync_removed_error_close_hovered");
-      // eslint-disable-next-line prefer-arrow-callback
-    })
-    .on("mouseleave", function handleOut() {
-      $("#sync_removed_error_msg_part_2").hide();
-      $("#sync_removed_error_icon").removeClass("removed_error_icon_hovered");
-      $("#div_sync_removed_error_msg").removeClass("div_sync_removed_error_msg_hovered");
-      $("#sync_removed_error_close").removeClass("sync_removed_error_close_hovered");
-      $("#sync_removed_error_msg_part_1").show();
     });
 }; // end of start
 

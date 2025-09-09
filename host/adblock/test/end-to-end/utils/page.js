@@ -114,10 +114,6 @@ export async function initOptionsImageSwapTab(optionsHandle) {
   await loadOptionsTab(optionsHandle, "mab-image-swap");
 }
 
-export async function initOptionsBackupSyncTab(optionsHandle) {
-  await loadOptionsTab(optionsHandle, "sync");
-}
-
 export async function initOptionsPremiumFlTab(optionsHandle) {
   await loadOptionsTab(optionsHandle, "premium-filters");
   await getDisplayedElement("#premium-filter-lists > div:nth-child(3)", {

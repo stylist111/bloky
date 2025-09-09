@@ -38,15 +38,7 @@ function selectorFromElm(el) {
 // properties to block.
 // clickedItem: the element that was right clicked, if any.
 // advancedUser:bool
-// showBlacklistCTA:bool
-function BlacklistUi(
-  clickedItem,
-  advancedUser,
-  isActiveLicense,
-  showBlacklistCTA,
-  $base,
-  addCustomFilterRandomName,
-) {
+function BlacklistUi(clickedItem, advancedUser, $base, addCustomFilterRandomName) {
   // If a dialog is ever closed without setting this to false, the
   // object fires a cancel event.
   this.cancelled = true;
@@ -57,9 +49,7 @@ function BlacklistUi(
   this.callbacks = { cancel: [], block: [] };
 
   this.clickedItem = clickedItem;
-  this.isActiveLicense = isActiveLicense;
   this.advancedUser = advancedUser;
-  this.showBlacklistCTA = showBlacklistCTA;
   this.$dialog = $base;
   this.clickWatcher = null;
   this.addCustomFilterRandomName = addCustomFilterRandomName;
@@ -353,7 +343,7 @@ BlacklistUi.prototype.buildPage2 = function buildPage2() {
             }
             that.fire("block");
             that.blockedText = cssHidingText;
-            that.buildPage3();
+            $pageTwoCancelBtn.trigger("click");
           } else if (response && response.reason) {
             displayErrorMessage(translate("blacklistereditinvalid1", translate(response.reason)));
           } else if (response) {
@@ -386,50 +376,6 @@ BlacklistUi.prototype.buildPage2 = function buildPage2() {
   $pageTwo.show();
   that.currentStep = 2;
   that.preview($summary.text());
-};
-
-BlacklistUi.prototype.buildPage3 = function buildPage3() {
-  const that = this;
-  const $pageThree = that.$dialog.children("#page_3");
-  const $pageThreeFindOutBtn = $pageThree.find("button#find_out_more");
-  const $pageThreeOptOutBtn = $pageThree.find("#opt-out-msg");
-  const $pageThreeCancelBtn = $pageThree.find("i.close");
-
-  // Reset and hide all wizard pages
-  that.$dialog.children(".page").hide();
-
-  const findOutBtnClickHandler = () => {
-    void modulesAsGlobal.messaging.send("adblock:openPremiumPayURL");
-    browser.runtime.sendMessage({ command: "recordGeneralMessage", msg: "blacklist_cta_clicked" });
-    that.preview(null);
-    that.onClose();
-  };
-  $pageThreeFindOutBtn.off("click", findOutBtnClickHandler);
-  $pageThreeFindOutBtn.on("click", findOutBtnClickHandler);
-
-  const optOutBtnClickHandler = () => {
-    void modulesAsGlobal.messaging.send("adblock:setBlacklistCTAStatus", { isEnabled: false });
-    browser.runtime.sendMessage({ command: "recordGeneralMessage", msg: "blacklist_cta_closed" });
-    that.preview(null);
-    that.onClose();
-  };
-  $pageThreeOptOutBtn.off("click", optOutBtnClickHandler);
-  $pageThreeOptOutBtn.on("click", optOutBtnClickHandler);
-
-  const closeBtnClickHandler = this.CloseBtnClickHandler.bind(this);
-  $pageThreeCancelBtn.off("click", closeBtnClickHandler);
-  $pageThreeCancelBtn.on("click", closeBtnClickHandler);
-
-  if (!this.isActiveLicense && this.showBlacklistCTA) {
-    // Show page 3
-    $pageThree.show();
-    that.currentStep = 3;
-    browser.runtime.sendMessage({ command: "recordGeneralMessage", msg: "blacklist_cta_seen" });
-  } else {
-    // simulate the user clicking the cancel/close icon is the easiest way to trigger all of the
-    // close / clean up logic to run
-    $pageThreeCancelBtn.trigger("click");
-  }
 };
 
 BlacklistUi.prototype.redrawPage1 = function redrawPage1() {

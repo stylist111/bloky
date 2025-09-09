@@ -51,7 +51,6 @@ export function GeneralOptionsTab({ subs, settings, prefs }) {
   const isChecked = getCheckedFn(checkedItems);
 
   const updateItem = (name, evt) => {
-    MABPayment.displaySyncCTAs(true);
     eventsList[name]({ name, evt }, setCheckedItems);
   };
 

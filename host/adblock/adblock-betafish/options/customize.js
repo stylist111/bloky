@@ -17,7 +17,7 @@
 
 /* For ESLint: List any global identifiers used in this file below */
 /* global browser, settings,
-   syncErrorCode, translate, checkForSyncError, isSelectorFilter, activateTab, License,
+   translate, isSelectorFilter, activateTab, License,
    MABPayment, DOMPurify, initializeProxies, FiltersProxy, send, sendTypeMessage  */
 
 let originalCustomFilters = [];
@@ -49,21 +49,6 @@ async function showCustomRules() {
 }
 
 async function onFilterChange() {
-  if (syncErrorCode >= 400) {
-    // disable all the buttons on the page
-    // refreshing the page will re-enable the buttons, etc.
-    $(".accordion-icon .material-icons").css("color", "grey");
-    $("button").removeClass("red").css("background-color", "grey");
-    const newStyle = document.createElement("style");
-    newStyle.type = "text/css";
-    newStyle.appendChild(document.createTextNode(""));
-    document.head.appendChild(newStyle);
-    newStyle.sheet.insertRule(
-      ".btn:hover { font-weight: normal !important; cursor: unset !important; box-shadow: none !important; }",
-      0,
-    );
-    return;
-  }
   const userFilters = await FiltersProxy.getUserFilters();
   if (userFilters && userFilters.length) {
     originalCustomFilters = await cleanCustomFilter(userFilters);
@@ -72,7 +57,6 @@ async function onFilterChange() {
   } else {
     $("#txtFiltersAdvanced").val("");
   }
-  MABPayment.displaySyncCTAs(true);
 }
 
 const excludeFiltersKey = "exclude_filters";
@@ -283,250 +267,210 @@ $(async () => {
   });
 
   // The add_filter functions
-  $("#btnAddUserFilter").on(
-    "click",
-    checkForSyncError((event) => {
-      const blockCss = $("#txtUserFilterCss").val().trim();
-      const blockDomain = $("#txtUserFilterDomain").val().trim();
+  $("#btnAddUserFilter").on("click", (event) => {
+    const blockCss = $("#txtUserFilterCss").val().trim();
+    const blockDomain = $("#txtUserFilterDomain").val().trim();
 
-      if (blockDomain === ".*" || blockDomain === "*" || blockDomain === "") {
-        appendCustomFilter(`##${blockCss}`);
-      } else {
-        appendCustomFilter(`${blockDomain}##${blockCss}`);
-      }
+    if (blockDomain === ".*" || blockDomain === "*" || blockDomain === "") {
+      appendCustomFilter(`##${blockCss}`);
+    } else {
+      appendCustomFilter(`${blockDomain}##${blockCss}`);
+    }
 
-      $(event.target).closest(".customize-entry-table").find("input[type='text']").val("");
-      $(event.target).prop("disabled", true);
-    }),
-  );
+    $(event.target).closest(".customize-entry-table").find("input[type='text']").val("");
+    $(event.target).prop("disabled", true);
+  });
 
-  $("#btnAddExcludeFilter").on(
-    "click",
-    checkForSyncError((event) => {
-      let excludeUrl = $("#txtUnblock").val().trim();
+  $("#btnAddExcludeFilter").on("click", (event) => {
+    let excludeUrl = $("#txtUnblock").val().trim();
 
-      // prevent regexes
-      if (/^\/.*\/$/.test(excludeUrl)) {
-        excludeUrl += "*";
-      }
+    // prevent regexes
+    if (/^\/.*\/$/.test(excludeUrl)) {
+      excludeUrl += "*";
+    }
 
-      appendCustomFilter(`@@${excludeUrl}$document`);
+    appendCustomFilter(`@@${excludeUrl}$document`);
 
-      $(event.target).closest(".customize-entry-table").find("input[type='text']").val("");
-      $(event.target).prop("disabled", true);
-    }),
-  );
+    $(event.target).closest(".customize-entry-table").find("input[type='text']").val("");
+    $(event.target).prop("disabled", true);
+  });
 
-  $("#btnAddBlacklist").on(
-    "click",
-    checkForSyncError(() => {
-      const blacklist = toTildePipeFormat($("#txtBlacklist").val());
+  $("#btnAddBlacklist").on("click", () => {
+    const blacklist = toTildePipeFormat($("#txtBlacklist").val());
 
-      let filters = `${$("#txtFiltersAdvanced").val().trim()}\n`;
+    let filters = `${$("#txtFiltersAdvanced").val().trim()}\n`;
 
-      // Delete the first likely line
-      filters = filters.replace(/^@@\*\$document,domain=~.*\n/m, "").trim();
-      $("#txtFiltersAdvanced").val(filters);
+    // Delete the first likely line
+    filters = filters.replace(/^@@\*\$document,domain=~.*\n/m, "").trim();
+    $("#txtFiltersAdvanced").val(filters);
 
-      // Add our line in its place, or if it was empty, remove the filter
-      if (blacklist) {
-        appendCustomFilter(`@@*$document,domain=${blacklist}`);
-      } else {
-        saveFilters();
-      } // just record the deletion
+    // Add our line in its place, or if it was empty, remove the filter
+    if (blacklist) {
+      appendCustomFilter(`@@*$document,domain=${blacklist}`);
+    } else {
+      saveFilters();
+    } // just record the deletion
 
-      $("#btnAddBlacklist").prop("disabled", true);
-    }),
-  );
+    $("#btnAddBlacklist").prop("disabled", true);
+  });
 
-  $("#btnAddUrlBlock").on(
-    "click",
-    checkForSyncError((event) => {
-      let blockUrl = $("#txtBlockUrl").val().trim();
-      let blockDomain = $("#txtBlockUrlDomain").val().trim();
-      if (blockDomain === "*") {
-        blockDomain = "";
-      }
+  $("#btnAddUrlBlock").on("click", (event) => {
+    let blockUrl = $("#txtBlockUrl").val().trim();
+    let blockDomain = $("#txtBlockUrlDomain").val().trim();
+    if (blockDomain === "*") {
+      blockDomain = "";
+    }
 
-      // prevent regexes
-      if (/^\/.*\/$/.test(blockUrl)) {
-        blockUrl += "*";
-      }
+    // prevent regexes
+    if (/^\/.*\/$/.test(blockUrl)) {
+      blockUrl += "*";
+    }
 
-      if (blockDomain === "") {
-        appendCustomFilter(blockUrl);
-      } else {
-        appendCustomFilter(`${blockUrl}$domain=${blockDomain}`);
-      }
+    if (blockDomain === "") {
+      appendCustomFilter(blockUrl);
+    } else {
+      appendCustomFilter(`${blockUrl}$domain=${blockDomain}`);
+    }
 
-      $(event.target).closest(".customize-entry-table").find("input[type='text']").val("");
-      $(event.target).prop("disabled", true);
-    }),
-  );
+    $(event.target).closest(".customize-entry-table").find("input[type='text']").val("");
+    $(event.target).prop("disabled", true);
+  });
 
   // The validation functions
-  $("#txtBlacklist").on(
-    "input",
-    checkForSyncError(async () => {
-      let blacklist = toTildePipeFormat($("#txtBlacklist").val());
+  $("#txtBlacklist").on("input", async () => {
+    let blacklist = toTildePipeFormat($("#txtBlacklist").val());
 
-      if (blacklist) {
-        blacklist = `@@*$document,domain=${blacklist}`;
-      }
+    if (blacklist) {
+      blacklist = `@@*$document,domain=${blacklist}`;
+    }
 
-      let filterErrorMessage = "";
+    let filterErrorMessage = "";
+    $("#messageBlacklist").text(filterErrorMessage);
+    $("#messageBlacklist").hide();
+    const result = await FiltersProxy.validate(blacklist);
+
+    if (result && result.length > 0) {
+      $("#btnAddBlacklist").prop("disabled", true);
+      filterErrorMessage = translate("customfilterserrormessage", [
+        $("#txtBlacklist").val(),
+        translate(result.type || result.reason),
+      ]);
       $("#messageBlacklist").text(filterErrorMessage);
-      $("#messageBlacklist").hide();
-      const result = await FiltersProxy.validate(blacklist);
+      $("#messageBlacklist").show();
+      return;
+    }
 
-      if (result && result.length > 0) {
-        $("#btnAddBlacklist").prop("disabled", true);
-        filterErrorMessage = translate("customfilterserrormessage", [
-          $("#txtBlacklist").val(),
-          translate(result.type || result.reason),
-        ]);
-        $("#messageBlacklist").text(filterErrorMessage);
-        $("#messageBlacklist").show();
-        return;
-      }
+    $("#btnAddBlacklist").prop("disabled", false);
+  });
 
-      $("#btnAddBlacklist").prop("disabled", false);
-    }),
-  );
+  $("#divUrlBlock input[type='text']").on("input", async () => {
+    const blockUrl = $("#txtBlockUrl").val().trim();
+    let blockDomain = $("#txtBlockUrlDomain").val().trim();
+    if (blockDomain === "*") {
+      blockDomain = "";
+    }
 
-  $("#divUrlBlock input[type='text']").on(
-    "input",
-    checkForSyncError(async () => {
-      const blockUrl = $("#txtBlockUrl").val().trim();
-      let blockDomain = $("#txtBlockUrlDomain").val().trim();
-      if (blockDomain === "*") {
-        blockDomain = "";
-      }
+    if (blockDomain) {
+      blockDomain = `$domain=${blockDomain}`;
+    }
+    const result = await FiltersProxy.validate(blockUrl + blockDomain);
+    $("#btnAddUrlBlock").prop("disabled", result && result.length === 0 ? null : true);
+  });
 
-      if (blockDomain) {
-        blockDomain = `$domain=${blockDomain}`;
-      }
-      const result = await FiltersProxy.validate(blockUrl + blockDomain);
-      $("#btnAddUrlBlock").prop("disabled", result && result.length === 0 ? null : true);
-    }),
-  );
+  $("#divCssBlock input[type='text']").on("input", async () => {
+    const blockCss = $("#txtUserFilterCss").val().trim();
+    let blockDomain = $("#txtUserFilterDomain").val().trim();
+    if (blockDomain === "*") {
+      blockDomain = "";
+    }
 
-  $("#divCssBlock input[type='text']").on(
-    "input",
-    checkForSyncError(async () => {
-      const blockCss = $("#txtUserFilterCss").val().trim();
-      let blockDomain = $("#txtUserFilterDomain").val().trim();
-      if (blockDomain === "*") {
-        blockDomain = "";
-      }
+    const result = await FiltersProxy.validate(`${blockDomain}##${blockCss}`);
+    $("#btnAddUserFilter").prop("disabled", result && result.length === 0 ? null : true);
+  });
 
-      const result = await FiltersProxy.validate(`${blockDomain}##${blockCss}`);
-      $("#btnAddUserFilter").prop("disabled", result && result.length === 0 ? null : true);
-    }),
-  );
+  $("#divExcludeBlock input[type='text']").on("input", async () => {
+    const unblockUrl = $("#txtUnblock").val().trim();
+    let result = await FiltersProxy.validate(`@@${unblockUrl}$document`);
+    if (!unblockUrl || isSelectorFilter(unblockUrl)) {
+      result = true;
+    }
 
-  $("#divExcludeBlock input[type='text']").on(
-    "input",
-    checkForSyncError(async () => {
-      const unblockUrl = $("#txtUnblock").val().trim();
-      let result = await FiltersProxy.validate(`@@${unblockUrl}$document`);
-      if (!unblockUrl || isSelectorFilter(unblockUrl)) {
-        result = true;
-      }
-
-      $("#btnAddExcludeFilter").prop("disabled", result && result.length === 0 ? null : true);
-    }),
-  );
+    $("#btnAddExcludeFilter").prop("disabled", result && result.length === 0 ? null : true);
+  });
 
   // When one presses 'Enter', pretend it was a click on the 'add' button
-  $(".customize-entry-table input[type='text']").on(
-    "keypress",
-    checkForSyncError((event) => {
-      const submitButton = $(event.target)
-        .closest(".customize-entry-table")
-        .find("input[type='button']");
-      if (event.keyCode === 13 && !submitButton.prop("disabled")) {
-        event.preventDefault();
-        submitButton.trigger("click");
-      }
-    }),
-  );
-
-  $("a.controlsLink").on(
-    "click",
-    checkForSyncError((event) => {
+  $(".customize-entry-table input[type='text']").on("keypress", (event) => {
+    const submitButton = $(event.target)
+      .closest(".customize-entry-table")
+      .find("input[type='button']");
+    if (event.keyCode === 13 && !submitButton.prop("disabled")) {
       event.preventDefault();
-      const $myControls = $(event.target).parent("div").find(".addControls");
-      $(".addControls")
-        .not($myControls)
-        .slideUp({
-          complete() {
-            $(event.target).parent("div").find(".accordion-icon").removeClass("upward");
-          },
-        });
-      $myControls.slideToggle({
-        complete() {
-          const $icon = $(event.target).parent("div").find(".accordion-icon");
-          const isExpanded = $(event.target).css("display") !== "none";
+      submitButton.trigger("click");
+    }
+  });
 
-          if (isExpanded) {
-            $icon.addClass("upward");
-          } else {
-            $icon.removeClass("upward");
-          }
+  $("a.controlsLink").on("click", (event) => {
+    event.preventDefault();
+    const $myControls = $(event.target).parent("div").find(".addControls");
+    $(".addControls")
+      .not($myControls)
+      .slideUp({
+        complete() {
+          $(event.target).parent("div").find(".accordion-icon").removeClass("upward");
         },
       });
-    }),
-  );
+    $myControls.slideToggle({
+      complete() {
+        const $icon = $(event.target).parent("div").find(".accordion-icon");
+        const isExpanded = $(event.target).css("display") !== "none";
 
-  $("#btnEditAdvancedFilters").on(
-    "click",
-    checkForSyncError((event) => {
-      const headerOffset = $("#header").height() ? $("#header").height() + 10 : 0;
-      $("body, html").animate(
-        {
-          scrollTop: $(event.target).offset().top - headerOffset,
-        },
-        1000,
-      );
-      $("#txtFiltersAdvanced").prop("disabled", false);
-      $("#spanSaveButton").show();
-      $("#btnEditAdvancedFilters").hide();
-      $("#txtFiltersAdvanced").trigger("focus");
-    }),
-  );
+        if (isExpanded) {
+          $icon.addClass("upward");
+        } else {
+          $icon.removeClass("upward");
+        }
+      },
+    });
+  });
 
-  $("#btnEditExcludeAdvancedFilters").on(
-    "click",
-    checkForSyncError((event) => {
-      const headerOffset = $("#header").height() ? $("#header").height() + 10 : 0;
-      $("body, html").animate(
-        {
-          scrollTop: $(event.target).offset().top - headerOffset,
-        },
-        1000,
-      );
-      $("#txtExcludeFiltersAdvanced").prop("disabled", false);
-      $("#spanSaveExcludeButton").show();
-      $("#btnEditExcludeAdvancedFilters").hide();
-      $("#txtExcludeFiltersAdvanced").trigger("focus");
-    }),
-  );
+  $("#btnEditAdvancedFilters").on("click", (event) => {
+    const headerOffset = $("#header").height() ? $("#header").height() + 10 : 0;
+    $("body, html").animate(
+      {
+        scrollTop: $(event.target).offset().top - headerOffset,
+      },
+      1000,
+    );
+    $("#txtFiltersAdvanced").prop("disabled", false);
+    $("#spanSaveButton").show();
+    $("#btnEditAdvancedFilters").hide();
+    $("#txtFiltersAdvanced").trigger("focus");
+  });
+
+  $("#btnEditExcludeAdvancedFilters").on("click", (event) => {
+    const headerOffset = $("#header").height() ? $("#header").height() + 10 : 0;
+    $("body, html").animate(
+      {
+        scrollTop: $(event.target).offset().top - headerOffset,
+      },
+      1000,
+    );
+    $("#txtExcludeFiltersAdvanced").prop("disabled", false);
+    $("#spanSaveExcludeButton").show();
+    $("#btnEditExcludeAdvancedFilters").hide();
+    $("#txtExcludeFiltersAdvanced").trigger("focus");
+  });
 
   $("#btnSaveAdvancedFilters").on("click", saveFilters);
 
-  $("#btnSaveExcludeAdvancedFilters").on(
-    "click",
-    checkForSyncError(() => {
-      const excludeFiltersText = $("#txtExcludeFiltersAdvanced").val();
-      send("ExcludeFilter.setExcludeFilters", { filters: excludeFiltersText });
-      $("#divAddNewFilter").slideDown();
-      $("#txtExcludeFiltersAdvanced").attr("disabled", "disabled");
-      $("#spanSaveExcludeButton").hide();
-      $("#btnEditExcludeAdvancedFilters").show();
-      MABPayment.displaySyncCTAs(true);
-    }),
-  );
+  $("#btnSaveExcludeAdvancedFilters").on("click", () => {
+    const excludeFiltersText = $("#txtExcludeFiltersAdvanced").val();
+    send("ExcludeFilter.setExcludeFilters", { filters: excludeFiltersText });
+    $("#divAddNewFilter").slideDown();
+    $("#txtExcludeFiltersAdvanced").attr("disabled", "disabled");
+    $("#spanSaveExcludeButton").hide();
+    $("#btnEditExcludeAdvancedFilters").show();
+  });
 
   showCustomRules();
 
@@ -548,9 +492,8 @@ $(async () => {
     MABPayment.paidUserLogic(payInfo);
   }
 
-  MABPayment.displaySyncCTAs();
-  $(".sync-cta #get-it-now-customize").on("click", MABPayment.userClickedSyncCTA);
-  $(".sync-cta #close-sync-cta-customize").on("click", MABPayment.userClosedSyncCTA);
+  MABPayment.displayUpsellCTA();
+  $(".upsell-cta #get-it-now-customize").on("click", MABPayment.userClickedUpsellCTA);
   $("a.link-to-tab").on("click", (event) => {
     activateTab($(event.target).attr("href"));
   });
