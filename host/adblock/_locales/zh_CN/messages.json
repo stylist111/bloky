@@ -1251,10 +1251,6 @@
     "message": "无可拦截的内容！",
     "description": "header title on the menu when a user is on tab that extensions are disabled on (Chrome settings, etc)"
   },
-  "allowlisted_channel": {
-    "message": "您已将AdBlock配置为每次访问时在此频道保持暂停状态。",
-    "description": "Message shown in toolbar button on web pages that have been allowlisted"
-  },
   "disabled": {
     "message": "AdBlock已暂停",
     "description": "Title shown in menu when AdBlock is paused on all sites"
@@ -1570,10 +1566,6 @@
   "selectlanguage": {
     "message": " -- 选择语言 -- ",
     "description": "First option in the language dropdown menu on the Filter lists tab. Include the ' -- ' on either side of your translation."
-  },
-  "allowlist_channel": {
-    "message": "在此频道上允许广告",
-    "description": "Entry in the AdBlock menu, only displayed when a user is browsing YouTube or Twitch and has enabled the YouTube or Twitch channel allow listing option"
   },
   "confirm_undo_custom_filters": {
     "message": "你确定要移除为 $host$ 创建的 $count$ 项拦截规则吗？",
@@ -2140,14 +2132,6 @@
   "selectlanguage2": {
     "message": "选择语言",
     "description": "First option in the language dropdown menu on the Filter lists tab."
-  },
-  "allowlisting_twitch_channels": {
-    "message": "在特定 Twitch 频道上允许广告",
-    "description": "Checkbox on the 'General' tab of the Options page"
-  },
-  "require_restart_browser": {
-    "message": "需要重新启动浏览器",
-    "description": "Text displayed within an option to notify users to restart the browser to fully enable the option"
   },
   "themes": {
     "message": "主题",

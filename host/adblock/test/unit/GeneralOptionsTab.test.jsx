@@ -93,7 +93,6 @@ describe("optionsList", () => {
           show_advanced_options: true,
           display_menu_stats: true,
           onpageMessages: true,
-          twitch_channel_allowlist: true,
           data_collection_v2: true,
         },
       };

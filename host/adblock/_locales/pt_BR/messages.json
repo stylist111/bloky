@@ -1251,10 +1251,6 @@
     "message": "Nada para bloquear aqui!",
     "description": "header title on the menu when a user is on tab that extensions are disabled on (Chrome settings, etc)"
   },
-  "allowlisted_channel": {
-    "message": "Você configurou o AdBlock para permanecer pausado neste canal a cada visita.",
-    "description": "Message shown in toolbar button on web pages that have been allowlisted"
-  },
   "disabled": {
     "message": "O AdBlock está pausado",
     "description": "Title shown in menu when AdBlock is paused on all sites"
@@ -1570,10 +1566,6 @@
   "selectlanguage": {
     "message": " -- Selecione o idioma -- ",
     "description": "First option in the language dropdown menu on the Filter lists tab. Include the ' -- ' on either side of your translation."
-  },
-  "allowlist_channel": {
-    "message": "Permitir anúncios neste canal",
-    "description": "Entry in the AdBlock menu, only displayed when a user is browsing YouTube or Twitch and has enabled the YouTube or Twitch channel allow listing option"
   },
   "confirm_undo_custom_filters": {
     "message": "Tem certeza de que quer remover os $count$ itens bloqueados que você criou no $host$?",
@@ -2140,14 +2132,6 @@
   "selectlanguage2": {
     "message": "selecione o idioma",
     "description": "First option in the language dropdown menu on the Filter lists tab."
-  },
-  "allowlisting_twitch_channels": {
-    "message": "Permitir anúncios em canais específicos do Twitch",
-    "description": "Checkbox on the 'General' tab of the Options page"
-  },
-  "require_restart_browser": {
-    "message": "necessita reiniciar o navegador",
-    "description": "Text displayed within an option to notify users to restart the browser to fully enable the option"
   },
   "themes": {
     "message": "Temas",

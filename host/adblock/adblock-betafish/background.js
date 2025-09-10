@@ -16,7 +16,7 @@
  */
 
 /* For ESLint: List any global identifiers used in this file below */
-/* global browser, ext, twitchChannelNamePages */
+/* global browser, ext */
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { getPerformanceTimings } from "@eyeo/webext-ad-filtering-solution/all/profiling";
@@ -400,7 +400,6 @@ const getTab = function (tabId) {
 // lastGetStatusCode: int - status code for last GET request
 // lastGetErrorResponse: error object - error response for last GET request
 // lastPostStatusCode: int - status code for last POST request
-// allowlistRuleText: string - allowlist rule text for use on YouTube and Twitch
 // }
 // Returns: Promise
 const getCurrentTabInfo = function (secondTime, tabId) {
@@ -443,17 +442,6 @@ const getCurrentTabInfo = function (secondTime, tabId) {
         if (License && License.isActiveLicense()) {
           result.activeLicense = true;
           result.subscriptions = await SubscriptionAdapter.getSubscriptionsMinusText();
-        }
-        if (
-          twitchChannelNamePages &&
-          getSettings() &&
-          getSettings().twitch_channel_allowlist &&
-          parseUri(tab.url).hostname === "www.twitch.tv"
-        ) {
-          result.twitchChannelName = twitchChannelNamePages.get(page.id);
-          if (result.twitchChannelName) {
-            result.allowlistRuleText = `@@||twitch.tv/*${result.twitchChannelName}^$document`;
-          }
         }
         return resolve(result);
       } catch (err) {

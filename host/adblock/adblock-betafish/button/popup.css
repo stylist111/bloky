@@ -432,8 +432,7 @@ button.premium-cta-close:hover {
 }
 
 #hostname,
-#disabled_site_title,
-.channelname {
+#disabled_site_title {
   font-size: 18px;
   font-weight: 700;
   justify-content: center;
@@ -463,47 +462,8 @@ button.premium-cta-close:hover {
   align-items: center;
 }
 
-/* site specific (YT & Twitch) */
-
-#twitch_channel_section {
-  display: none;
-  margin-bottom: 16px;
-  padding-bottom: 16px;
-}
-
-.channel_name_row {
-  display: flex;
-  justify-content: center;
-  align-content: center;
-}
-
-.channel_icon {
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  margin-right: 8px;
-}
-
-#btn_allowlist_twitch_channel {
-  width: 256px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  text-align: center;
-}
-
-#twitch_channel_icon {
-  color: var(--popup-twitch-icon-color);
-}
-
-#allowlist_twitch_channel_section,
-#allowlisted_twitch_channel_section,
 #disabled_site_section {
   display: none;
-}
-
-#allowlisted_twitch_channel_section {
-  padding-bottom: 68px;
 }
 
 /* other, misc */

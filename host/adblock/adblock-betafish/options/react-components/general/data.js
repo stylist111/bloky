@@ -7,7 +7,6 @@ import {
   togglePrefs,
   toggleSettings,
   toggleShowContextMenus,
-  toggleTwitchAllowlist,
 } from "./events";
 
 export const aaOptionsData = [
@@ -30,14 +29,6 @@ export const aaOptionsData = [
 ];
 
 export const getOptionsData = (application) => [
-  {
-    name: "twitch_channel_allowlist",
-    onChange: toggleTwitchAllowlist,
-    textKey: "allowlisting_twitch_channels",
-    extraInfo: "require_restart_browser",
-    helpLink:
-      "https://helpcenter.getadblock.com/hc/en-us/articles/9738502507283-Does-AdBlock-block-ads-on-Twitch",
-  },
   {
     name: "shouldShowBlockElementMenu",
     onChange: toggleShowContextMenus,

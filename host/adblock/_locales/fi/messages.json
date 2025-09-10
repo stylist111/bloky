@@ -1243,10 +1243,6 @@
     "message": "Täällä ei ole mitään estettävää!",
     "description": "header title on the menu when a user is on tab that extensions are disabled on (Chrome settings, etc)"
   },
-  "allowlisted_channel": {
-    "message": "Olet määrittänyt AdBlockin pysäytetyksi tällä kanavalla aina sitä käytettäessä.",
-    "description": "Message shown in toolbar button on web pages that have been allowlisted"
-  },
   "disabled": {
     "message": "AdBlock on pysäytetty",
     "description": "Title shown in menu when AdBlock is paused on all sites"
@@ -1562,10 +1558,6 @@
   "selectlanguage": {
     "message": " -- Valitse kieli -- ",
     "description": "First option in the language dropdown menu on the Filter lists tab. Include the ' -- ' on either side of your translation."
-  },
-  "allowlist_channel": {
-    "message": "Salli mainokset tällä kanavalla",
-    "description": "Entry in the AdBlock menu, only displayed when a user is browsing YouTube or Twitch and has enabled the YouTube or Twitch channel allow listing option"
   },
   "confirm_undo_custom_filters": {
     "message": "Haluatko varmasti poistaa $count$ verkkotunnukselle $host$ luomaasi estoa?",
@@ -2124,14 +2116,6 @@
   "selectlanguage2": {
     "message": "valitse kieli",
     "description": "First option in the language dropdown menu on the Filter lists tab."
-  },
-  "allowlisting_twitch_channels": {
-    "message": "Salli tiettyjen Twitch-kanavien mainokset",
-    "description": "Checkbox on the 'General' tab of the Options page"
-  },
-  "require_restart_browser": {
-    "message": "vaatii selaimen uudelleenkäynnistyksen",
-    "description": "Text displayed within an option to notify users to restart the browser to fully enable the option"
   },
   "themes": {
     "message": "Teemat",

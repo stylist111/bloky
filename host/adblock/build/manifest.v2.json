@@ -50,7 +50,6 @@
     "icons/MaterialIcons-Regular.woff2",
     "icons/adblock-icons.woff2",
     "purify.min.js",
-    "adblock-deny-push-notifications-requests.js",
-    "adblock-twitch-capture-requests.js"
+    "adblock-deny-push-notifications-requests.js"
   ]
 }

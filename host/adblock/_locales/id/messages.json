@@ -1173,10 +1173,6 @@
     "message": "Tidak ada yang diblokir disini!",
     "description": "header title on the menu when a user is on tab that extensions are disabled on (Chrome settings, etc)"
   },
-  "allowlisted_channel": {
-    "message": "Anda telah mengkonfigurasi AdBlock untuk dijeda di saluran ini untuk setiap kunjungan.",
-    "description": "Message shown in toolbar button on web pages that have been allowlisted"
-  },
   "disabled": {
     "message": "AdBlock Dijeda",
     "description": "Title shown in menu when AdBlock is paused on all sites"
@@ -1488,10 +1484,6 @@
   "selectlanguage": {
     "message": " --Pilih bahasa-- ",
     "description": "First option in the language dropdown menu on the Filter lists tab. Include the ' -- ' on either side of your translation."
-  },
-  "allowlist_channel": {
-    "message": "Izinkan iklan di saluran ini",
-    "description": "Entry in the AdBlock menu, only displayed when a user is browsing YouTube or Twitch and has enabled the YouTube or Twitch channel allow listing option"
   },
   "confirm_undo_custom_filters": {
     "message": "Apakah Anda yakin ingin menghapus blok $count$ yang telah Anda buat pada $host$?",
@@ -2050,14 +2042,6 @@
   "selectlanguage2": {
     "message": "pilih bahasa",
     "description": "First option in the language dropdown menu on the Filter lists tab."
-  },
-  "allowlisting_twitch_channels": {
-    "message": "Izinkan iklan pada saluran Twitch tertentu",
-    "description": "Checkbox on the 'General' tab of the Options page"
-  },
-  "require_restart_browser": {
-    "message": "membutuhkan memulai ulang browser anda",
-    "description": "Text displayed within an option to notify users to restart the browser to fully enable the option"
   },
   "themes": {
     "message": "Tema",

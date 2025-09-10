@@ -418,9 +418,6 @@
   --popup-button-outline-color: var(--purple3);
   --toggle-inactive-bg: var(--popup-accent-color);
 
-  /* other, might make sense defined in theme stylesheet rather than as theme color */
-  --popup-twitch-icon-color: var(--white);
-
   /* Variables below this line should be fit into the above or a new semantic group should be proposed. (For instance, button colors are still missing.) */
 
   /* ************************************************************************ */

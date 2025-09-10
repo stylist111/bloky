@@ -126,15 +126,3 @@ export const toggleShowContextMenus = ({ evt }, setCheckedItems) => {
     shouldShowBlockElementMenu: evt.target.checked,
   }));
 };
-
-export const toggleTwitchAllowlist = ({ evt }, setCheckedItems) => {
-  const isEnabled = evt.target.checked;
-
-  if (isEnabled) {
-    send("addTwitchAllowlistListeners");
-  } else {
-    send("removeTwitchAllowlistListeners");
-  }
-
-  toggleSettings({ name: "twitch_channel_allowlist", evt }, setCheckedItems);
-};

@@ -74,7 +74,6 @@ module.exports = {
           "show_statsinpopup",
           "display_menu_stats",
           "show_survey",
-          "twitch_hiding",
           "color_themes",
           "original_sid",
           "updated_sid",

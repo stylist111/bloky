@@ -1251,10 +1251,6 @@
     "message": "ブロックできる広告はありません！",
     "description": "header title on the menu when a user is on tab that extensions are disabled on (Chrome settings, etc)"
   },
-  "allowlisted_channel": {
-    "message": "AdBlockがこのチャンネルにアクセスするたびに一時停止するように設定されています。",
-    "description": "Message shown in toolbar button on web pages that have been allowlisted"
-  },
   "disabled": {
     "message": "AdBlockは一時停止中です",
     "description": "Title shown in menu when AdBlock is paused on all sites"
@@ -1570,10 +1566,6 @@
   "selectlanguage": {
     "message": " -- 言語を選択 -- ",
     "description": "First option in the language dropdown menu on the Filter lists tab. Include the ' -- ' on either side of your translation."
-  },
-  "allowlist_channel": {
-    "message": "このチャンネルの広告を許可する",
-    "description": "Entry in the AdBlock menu, only displayed when a user is browsing YouTube or Twitch and has enabled the YouTube or Twitch channel allow listing option"
   },
   "confirm_undo_custom_filters": {
     "message": "本当に$host$で作成した$count$のブロックを削除しますか？",
@@ -2140,14 +2132,6 @@
   "selectlanguage2": {
     "message": "言語の選択",
     "description": "First option in the language dropdown menu on the Filter lists tab."
-  },
-  "allowlisting_twitch_channels": {
-    "message": "特定のTwitchチャンネルの広告表示を許可する",
-    "description": "Checkbox on the 'General' tab of the Options page"
-  },
-  "require_restart_browser": {
-    "message": "ブラウザを再起動する必要があります",
-    "description": "Text displayed within an option to notify users to restart the browser to fully enable the option"
   },
   "themes": {
     "message": "テーマ",

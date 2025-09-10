@@ -58,6 +58,12 @@ const deprecatedSettingsKeys = [
   // See: https://eyeo.atlassian.net/browse/EXT-1079
   "youtube_channel_whitelist",
   "youtube_manage_subscribed",
+
+  // TODO: Remove this code after a few releases (added Oct 10, 2025)
+  // Part of Twitch allowlist channel feature
+  // See: https://eyeo.atlassian.net/browse/EXT-1081
+  "twitch_channel_allowlist",
+  "twitch_hiding",
 ];
 
 /**
@@ -94,7 +100,6 @@ function Settings() {
     display_menu_stats: true,
     show_survey: true,
     picreplacement: false,
-    twitch_hiding: false,
     onpageMessages: true,
     color_themes: {
       popup_menu: "default_theme",

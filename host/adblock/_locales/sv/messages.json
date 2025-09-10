@@ -1243,10 +1243,6 @@
     "message": "Inget att blockera här!",
     "description": "header title on the menu when a user is on tab that extensions are disabled on (Chrome settings, etc)"
   },
-  "allowlisted_channel": {
-    "message": "Du har konfigurerat AdBlock att förbli pausat på denna kanal för varje besök.",
-    "description": "Message shown in toolbar button on web pages that have been allowlisted"
-  },
   "disabled": {
     "message": "AdBlock har pausats",
     "description": "Title shown in menu when AdBlock is paused on all sites"
@@ -1562,10 +1558,6 @@
   "selectlanguage": {
     "message": " -- Välj språk -- ",
     "description": "First option in the language dropdown menu on the Filter lists tab. Include the ' -- ' on either side of your translation."
-  },
-  "allowlist_channel": {
-    "message": "Tillåt annonser på denna kanal",
-    "description": "Entry in the AdBlock menu, only displayed when a user is browsing YouTube or Twitch and has enabled the YouTube or Twitch channel allow listing option"
   },
   "confirm_undo_custom_filters": {
     "message": "Är du säker på att du vill ta bort de $count$ blockeringarna som du har skapat på $host$?",
@@ -2132,14 +2124,6 @@
   "selectlanguage2": {
     "message": "välj språk",
     "description": "First option in the language dropdown menu on the Filter lists tab."
-  },
-  "allowlisting_twitch_channels": {
-    "message": "Tillåt annonser på specifika Twitch-kanaler",
-    "description": "Checkbox on the 'General' tab of the Options page"
-  },
-  "require_restart_browser": {
-    "message": "kräver omstart av webbläsaren",
-    "description": "Text displayed within an option to notify users to restart the browser to fully enable the option"
   },
   "themes": {
     "message": "Teman",

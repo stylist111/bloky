@@ -23,7 +23,6 @@ let errorOccurred = false;
 
 const useFlexDisplayElements = [
   "allowlisted_subsection",
-  "channelname",
   "disabled_site_title",
   "domain_paused_subsection",
   "hostname",
@@ -174,25 +173,9 @@ const show = function (elementIds) {
   });
 };
 
-const hide = function (elementIds) {
-  elementIds.forEach((elementId) => {
-    shown[elementId] = false;
-  });
-};
-
 const closePopup = function () {
   itemClicked = true;
   window.close();
-};
-
-const shouldShowCTAOnSite = function () {
-  if (!pageInfo || !pageInfo.url || !pageInfo.url.hostname) {
-    return true;
-  }
-  if (pageInfo.url.hostname === "www.youtube.com" || pageInfo.url.hostname === "www.twitch.tv") {
-    return false;
-  }
-  return true;
 };
 
 // This handles clicks on help icon from More Options and related sub-pages (aka
@@ -354,25 +337,6 @@ const start = async function () {
       show(["div_undo"]);
     }
 
-    if (
-      pageInfo.url &&
-      /ab_channel/.test(pageInfo.url.href) &&
-      pageInfo.url.hostname === "www.twitch.tv" &&
-      info.twitchChannelName
-    ) {
-      $("#twitch_channelname").text(info.twitchChannelName);
-      $("#twitch_channelname").css("display", "inline-flex");
-      show(["twitch_channel_section", "allowlist_twitch_channel_section"]);
-      if (info.whitelisted) {
-        if (info.allowlistRuleText && info.whitelisted.text === info.allowlistRuleText) {
-          hide(["allowlist_twitch_channel_section", "primary_section"]);
-          show(["allowlisted_twitch_channel_section"]);
-        } else {
-          hide(["twitch_channel_section", "allowlist_twitch_channel_section"]);
-        }
-      }
-    }
-
     if (popupMenuTheme && browser.runtime && browser.runtime.id === betaExtId) {
       $(".header-logo").attr("src", `icons/${popupMenuTheme}/beta_logo.svg`);
     }
@@ -380,7 +344,6 @@ const start = async function () {
     // CTAs
     if (
       !userClosedVPNCta && // VPN CTA
-      shouldShowCTAOnSite() &&
       !info.disabledSite &&
       !info.whitelisted
     ) {
@@ -389,7 +352,6 @@ const start = async function () {
     } else if (
       // Premium CTAs
       info.showMABEnrollment &&
-      shouldShowCTAOnSite() &&
       userClosedCta &&
       showThemesCTA &&
       userClosedFreeDCCta
@@ -401,17 +363,12 @@ const start = async function () {
         msg: "premium_themes_cta_seen",
         additionalParams: { theme: info.popupMenuThemeCTA.replace("_theme", "") },
       });
-    } else if (
-      info.showMABEnrollment &&
-      shouldShowCTAOnSite() &&
-      !userClosedCta &&
-      userClosedFreeDCCta
-    ) {
+    } else if (info.showMABEnrollment && !userClosedCta && userClosedFreeDCCta) {
       show(["div_myadblock_enrollment_v2"]);
-    } else if (info.showMABEnrollment && shouldShowCTAOnSite() && !userClosedFreeDCCta) {
+    } else if (info.showMABEnrollment && !userClosedFreeDCCta) {
       show(["div_free_dc_cta"]);
       sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "free_dc_cta_seen" });
-    } else if (info.showDcCTA && shouldShowCTAOnSite() && !userClosedDCCta && !info.disabledSite) {
+    } else if (info.showDcCTA && !userClosedDCCta && !info.disabledSite) {
       show(["div_premium_dc_cta"]);
       sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "premium_dc_cta_seen" });
     }
@@ -454,22 +411,6 @@ const start = async function () {
         tabId: pageInfo.id,
       });
       await browser.runtime.sendMessage({ command: "updateButtonUIAndContextMenus" });
-      closePopup();
-    }
-  });
-
-  selected("#btn_allowlist_twitch_channel", async () => {
-    if (pageInfo.url && pageInfo.url.hostname === "www.twitch.tv") {
-      sendMessageWithNoResponse({
-        command: "recordGeneralMessage",
-        msg: "whitelist_twitch_clicked",
-      });
-      await browser.runtime.sendMessage({
-        command: "createAllowlistFilterForTwitchChannel",
-        url: pageInfo.url.href,
-        origin: modulesAsGlobal.filters.FilterOrigin.popup,
-      });
-      browser.tabs.reload();
       closePopup();
     }
   });

@@ -165,16 +165,6 @@ const initialize = async function init() {
         DataCollectionV2.end();
       }
     }
-
-    // if the user enables/disable Twitch Channel allow listing
-    // add or remove listners
-    if (name === "twitch_channel_allowlist") {
-      if (isEnabled) {
-        send("addTwitchAllowlistListeners");
-      } else {
-        send("removeTwitchAllowlistListeners");
-      }
-    }
   });
 };
 

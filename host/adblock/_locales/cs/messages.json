@@ -1235,10 +1235,6 @@
     "message": "Tady není co blokovat!",
     "description": "header title on the menu when a user is on tab that extensions are disabled on (Chrome settings, etc)"
   },
-  "allowlisted_channel": {
-    "message": "Nastavili jste AdBlock, aby na tomto kanálu zůstal pozastaven při každé návštěvě.",
-    "description": "Message shown in toolbar button on web pages that have been allowlisted"
-  },
   "disabled": {
     "message": "AdBlock je pozastaven.",
     "description": "Title shown in menu when AdBlock is paused on all sites"
@@ -1554,10 +1550,6 @@
   "selectlanguage": {
     "message": " -- Zvolte jazyk -- ",
     "description": "First option in the language dropdown menu on the Filter lists tab. Include the ' -- ' on either side of your translation."
-  },
-  "allowlist_channel": {
-    "message": "Povolit reklamy na tomto kanálu",
-    "description": "Entry in the AdBlock menu, only displayed when a user is browsing YouTube or Twitch and has enabled the YouTube or Twitch channel allow listing option"
   },
   "confirm_undo_custom_filters": {
     "message": "Jste si jist, že chcete odstranit $count$ blokování, které jste vytvořili na $host$?",
@@ -2116,14 +2108,6 @@
   "selectlanguage2": {
     "message": "vybrat jazyk",
     "description": "First option in the language dropdown menu on the Filter lists tab."
-  },
-  "allowlisting_twitch_channels": {
-    "message": "Povolit reklamy na konkrétních kanálech Twitch",
-    "description": "Checkbox on the 'General' tab of the Options page"
-  },
-  "require_restart_browser": {
-    "message": "vyžaduje restartování prohlížeče",
-    "description": "Text displayed within an option to notify users to restart the browser to fully enable the option"
   },
   "themes": {
     "message": "Motivy",

@@ -20,8 +20,7 @@
    addCustomFilter, countCache, checkUpdateProgress,
    pageIsWhitelisted, getCurrentTabInfo,
    openTab, updateFilterLists, isTrustedSenderDomain, updateButtonUIAndContextMenus,
-   addTwitchAllowlistListeners, removeTwitchAllowlistListeners, abpPrefPropertyNames,
-   pausedFilterText1, pausedFilterText2, updateCustomFilterCountMap
+   abpPrefPropertyNames, pausedFilterText1, pausedFilterText2, updateCustomFilterCountMap
 */
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
@@ -355,8 +354,8 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 /**
- * Process messages for the  Exclude Filters, Local Data Collection,
- * Server Messages, YT Channel & Twitch Channel Listeners
+ * Process messages for the Exclude Filters, Local Data Collection,
+ * and Server Messages, Listeners
  *
  */
 /* eslint-disable consistent-return */
@@ -366,14 +365,6 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   const { command } = message;
   switch (command) {
-    case "addTwitchAllowlistListeners":
-      addTwitchAllowlistListeners();
-      sendResponse({});
-      break;
-    case "removeTwitchAllowlistListeners":
-      removeTwitchAllowlistListeners();
-      sendResponse({});
-      break;
     case "recordAnonymousErrorMessage":
       ServerMessages.recordAnonymousErrorMessage(message.msg, undefined, message.additionalParams);
       sendResponse({});

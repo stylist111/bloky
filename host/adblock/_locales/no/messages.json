@@ -1865,10 +1865,6 @@
     "message": "velg språk",
     "description": "First option in the language dropdown menu on the Filter lists tab."
   },
-  "require_restart_browser": {
-    "message": "krever omstart av din nettleser",
-    "description": "Text displayed within an option to notify users to restart the browser to fully enable the option"
-  },
   "themes": {
     "message": "Temaer",
     "description": "Title of the Themes tab of the Options page"

@@ -1849,10 +1849,6 @@
     "message": "избери език",
     "description": "First option in the language dropdown menu on the Filter lists tab."
   },
-  "require_restart_browser": {
-    "message": "изисква рестартиране на твоя браузър",
-    "description": "Text displayed within an option to notify users to restart the browser to fully enable the option"
-  },
   "themes": {
     "message": "Теми",
     "description": "Title of the Themes tab of the Options page"

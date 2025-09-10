@@ -1853,10 +1853,6 @@
     "message": "escoller lingua",
     "description": "First option in the language dropdown menu on the Filter lists tab."
   },
-  "require_restart_browser": {
-    "message": "require reiniciar o seu navegador",
-    "description": "Text displayed within an option to notify users to restart the browser to fully enable the option"
-  },
   "themes": {
     "message": "Temas",
     "description": "Title of the Themes tab of the Options page"
