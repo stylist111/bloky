@@ -629,26 +629,47 @@ export function init() {
       filterNotifier.on("subscription.diffReceived", dnrDiffSubscriptionUpdate);
       filterNotifier.on("subscription.fullUpdateReceived", dnrFullSubscriptionUpdate);
 
-      let checkResult = await dynamicFiltersMutex.lockRead(dynamicFilters => {
+      await dynamicFiltersMutex.lockRead(async dynamicFilters => {
         for (let {ruleIds} of dynamicFilters.values()) {
           setHighestRuleId(ruleIds);
         }
 
-        return dataIntegrityCheck(dynamicFilters);
+        // It's possible for our dynamic filters to get out of sync with the
+        // actual dynamic rules. Setting the highest rule ID based on the actual
+        // dynamic rules too means we can still add new rules in this situation.
+        let dynamicRules =
+            await browser.declarativeNetRequest.getDynamicRules();
+        setHighestRuleId(dynamicRules.map(rule => rule.id));
       });
-
-      if (checkResult.valid == false) {
-        if (await experiments.getFlag("dnr-filters-recreate-dnr-rules-on-integrity-check-failure")) {
-          await recreateAllDNRRules();
-        }
-        else {
-          setHighestRuleId([checkResult.highestDNRRuleId]);
-        }
-      }
     })();
   }
 
   return initializationPromise;
+}
+
+export async function recreateDNRRulesIfNecessary() {
+  if (await experiments.getFlag("dnr-filters-recreate-dnr-rules-on-extension-upgade")) {
+    let checkResultBefore = await dynamicFiltersMutex.lockRead(
+      dynamicFilters => {
+        return dataIntegrityCheck(dynamicFilters);
+      }
+    );
+    if (checkResultBefore.valid == false) {
+      let recreateStats = await recreateAllDNRRules();
+
+      let checkResultAfter = await dynamicFiltersMutex.lockRead(
+        dynamicFilters => {
+          return dataIntegrityCheck(dynamicFilters);
+        }
+      );
+
+      serverLogger.info("recreated_dnr_rules", {
+        recreateStats,
+        checkResultBefore,
+        checkResultAfter
+      });
+    }
+  }
 }
 
 async function dataIntegrityCheck(dynamicFilters) {
@@ -664,23 +685,18 @@ async function dataIntegrityCheck(dynamicFilters) {
     actualDynamicRuleIds
   );
 
-  if (added.length > 0 || removed.length > 0) {
-    serverLogger.debug("data_integrity_check_failed", {
-      extraRulesInDNR: added.length,
-      missingRulesInDNR: removed.length
-    });
-    return {
-      valid: false,
-      highestDNRRuleId: actualDynamicRuleIds
-        .reduce((acc, next) => Math.max(acc, next), 0)
-    };
-  }
+  let extraRulesInDNRCount = added.length;
+  let missingRulesInDNRCount = removed.length;
 
-  return {valid: true};
+  return {
+    valid: extraRulesInDNRCount === 0 && missingRulesInDNRCount === 0,
+    extraRulesInDNRCount,
+    missingRulesInDNRCount
+  };
 }
 
 async function recreateAllDNRRules() {
-  await dynamicFiltersMutex.lockWrite(async dynamicFilters => {
+  return await dynamicFiltersMutex.lockWrite(async dynamicFilters => {
     highestRuleId = 1;
 
     let recreatedRules = [];
@@ -718,6 +734,11 @@ async function recreateAllDNRRules() {
       addRules: recreatedRules,
       removeRuleIds: currentDynamicRules.map(r => r.id)
     });
+
+    return {
+      recreatedRulesCount: recreatedRules.length,
+      removedRulesCount: currentDynamicRules.length
+    };
   });
 }
 

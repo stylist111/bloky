@@ -148,19 +148,61 @@ export default {
     }
   },
   dnr_filters: {
-    data_integrity_check_failed: {
-      description: "On initialization, our DNR filter management module will compare the dynamic DNR rules that the browser has with the filters that we know about. If these do not match, this warning is emitted.",
+    recreated_dnr_rules: {
+      description: "On extension upgrade, our DNR filter management module will compare the dynamic DNR rules that the browser has with the filters that we know about. If these do not match, we recreate the DNR rules and log this report.",
       data: {
-        description: "Data about the difference between our filters and the DNR dynamic rules",
+        description: "Report on the before and after state of the recreation",
         type: "object",
         properties: {
-          extraRulesInDNR: {
-            description: "Count of the number of active dynamic DNR rules which we do not expect to see",
-            type: "number"
+          recreateStats: {
+            description: "Stats on how many DNR rules were recreated",
+            type: "object",
+            properties: {
+              recreatedRulesCount: {
+                description: "How many DNR rules were recreated",
+                type: "integer"
+              },
+              removedRulesCount: {
+                description: "How many existing DNR rules were removed",
+                type: "integer"
+              }
+            }
           },
-          missingRulesInDNR: {
-            description: "Count of the number of rules that our filters expected to exist but didn't",
-            type: "number"
+          checkResultBefore: {
+            description: "Results of the data integrity check done before recreating the DNR rules.",
+            type: "object",
+            properties: {
+              valid: {
+                description: "True if the data integrity check passed. We only do the recreation if it failed, so this would be expected to always be false.",
+                type: "boolean"
+              },
+              extraRulesInDNRCount: {
+                description: "Count of the number of active dynamic DNR rules which we do not expect to see",
+                type: "integer"
+              },
+              missingRulesInDNRCount: {
+                description: "Count of the number of rules that our filters expected to exist but didn't",
+                type: "integer"
+              }
+            }
+          },
+          checkResultAfter: {
+            description: "Results of the data integrity check done after recreating the DNR rules.",
+            type: "object",
+            properties: {
+              valid: {
+                description: "True if the data integrity check passed. We expect this to be true after the rule recreation has run.",
+                type: "boolean"
+              },
+              extraRulesInDNRCount: {
+                description: "Count of the number of active dynamic DNR rules which we do not expect to see. We expect this to be 0 after the rule recreation has run.",
+                type: "integer"
+              },
+              missingRulesInDNRCount: {
+                description: "Count of the number of rules that our filters expected to exist but didn't. We expect this to be 0 after the rule recreation has run.",
+                type: "integer"
+              }
+            }
           }
         }
       }

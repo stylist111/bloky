@@ -55,7 +55,8 @@ import {validate as validateSubscriptions,
         updateSubscriptionInformation, recoverMigrationErrorSubscriptions}
   from "./subscriptions.js";
 import {migrateCustomFilters, clearRulesetUpdates,
-        removeSubscriptionsDynamicFilters, enableAllDisabledStaticRules}
+        removeSubscriptionsDynamicFilters, enableAllDisabledStaticRules,
+        recreateDNRRulesIfNecessary}
   from "./dnr-filters.js";
 import {MIGRATED_TO_MV2, MIGRATED_TO_MV3, Prefs} from "./prefs.js";
 import {isRunningInServiceWorker} from "./browser-features.js";
@@ -476,6 +477,7 @@ export async function checkAndInitSubscriptions(skipWipeOutDiffs) {
     await clearRulesetUpdates();
     await removeSubscriptionsDynamicFilters();
     await enableAllDisabledStaticRules();
+    await recreateDNRRulesIfNecessary();
   }
 
   await recoverMigrationErrorSubscriptions();

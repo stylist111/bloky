@@ -413,6 +413,48 @@ describe(`Update (${phase}) [runner-only]`, function() {
     }));
   });
 
+  it("clears out unexpected extra DNR rules on update [mv3-only]", async function() {
+    let unexpectedUrlRule = "this-rule-should-be-eliminated-on-update";
+    let damagedFilter = "this-filter-loses-its-rule";
+
+    if (start) {
+      await EWE.experiments.overrideFlag(
+        "dnr-filters-recreate-dnr-rules-on-extension-upgade",
+        true
+      );
+      await EWE.filters.add(damagedFilter);
+
+      let existingRules = await browser.declarativeNetRequest.getDynamicRules();
+      let damagedFilterRule = existingRules
+          .find(rule => rule.condition.urlFilter == damagedFilter);
+      let maxExistingRuleId = existingRules
+          .map(rule => rule.id)
+          .reduce((acc, next) => Math.max(acc, next), 1);
+
+      await browser.declarativeNetRequest.updateDynamicRules({
+        addRules: [{
+          id: maxExistingRuleId + 1,
+          priority: 100,
+          condition: {
+            urlFilter: unexpectedUrlRule
+          },
+          action: {type: "block"}
+        }],
+        removeRuleIds: [damagedFilterRule.id]
+      });
+      return;
+    }
+
+    let existingRules = await browser.declarativeNetRequest.getDynamicRules();
+    let unexpectedRules = existingRules
+        .filter(rule => rule.condition.urlFilter == unexpectedUrlRule);
+    expect(unexpectedRules).toEqual([]);
+
+    let expectedRecreatedRules = existingRules
+        .filter(rule => rule.condition.urlFilter == damagedFilter);
+    expect(expectedRecreatedRules).toHaveLength(1);
+  });
+
   it("fixes the IO/Prefs prefixes [mv2-only]", async function() {
     // Firefox 115 supports IndexedDB, so we don't switch to b.s.l for IO
     if (!isFirefox() || !isIncognito() || firefoxVersion() >= 115) {
