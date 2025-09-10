@@ -1149,10 +1149,6 @@
     "message": "Aktiver AdBlock på denne siden",
     "description": "Link text to un-allowlist a page, displayed immediately after 'AdBlock is disabled on this page'"
   },
-  "enable_adblock_on_this_channel": {
-    "message": "Blokker reklamer på denne kanalen",
-    "description": "Menu entry to un-allowlist a YouTube channel, displayed under 'You allowed ads on this channel.'"
-  },
   "status_paused": {
     "message": "AdBlock er satt på pause.",
     "description": "Message shown in toolbar button when AdBlock is not running"
@@ -1406,10 +1402,6 @@
   "how": {
     "message": "Hvordan?",
     "description": "Text of a link pointing to instructions on how to do something"
-  },
-  "whats_this": {
-    "message": "Hva er dette?",
-    "description": "Text of a link pointing to the explanation of a new feature"
   },
   "selectlanguage": {
     "message": " — Velg språk — ",
@@ -2367,17 +2359,5 @@
   "custom_image_supported_file_types": {
     "message": "*.bmp, *.gif, *.jpeg, *.png, *.svg, *.tiff, *.webp",
     "description": "supported file types, shown on the error message dialog box when a user selects a unsupported file type"
-  },
-  "youtube_onpage_icon_one_moment_text": {
-    "message": "Et øyeblikk …",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_allowing_ads_on_channel": {
-    "message": "Tillater reklamer på denne kanalen",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_blocking_ads_on_channel": {
-    "message": "Blokkerer reklamer på denne kanalen",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
   }
 }

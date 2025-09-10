@@ -8,7 +8,6 @@ import {
   toggleSettings,
   toggleShowContextMenus,
   toggleTwitchAllowlist,
-  toggleYoutubeChannelWhitelist,
 } from "./events";
 
 export const aaOptionsData = [
@@ -31,27 +30,6 @@ export const aaOptionsData = [
 ];
 
 export const getOptionsData = (application) => [
-  {
-    name: "youtube_channel_whitelist",
-    onChange: toggleYoutubeChannelWhitelist,
-    textKey: "allow_whitelisting_youtube_channels2",
-    extraInfo: "require_restart_browser",
-    subOptions: [
-      {
-        name: "youtube_manage_subscribed",
-        onChange: toggleSettings,
-        textKey: "youtube_manage_subscribed",
-        helpLink:
-          "https://helpcenter.getadblock.com/hc/en-us/articles/9738459986707-About-Acceptable-Ads-and-Third-Party-Tracking",
-        additionalInfoLink: {
-          textKey: "settings",
-          href: "https://www.youtube.com/feed/channels",
-        },
-      },
-    ],
-    helpLink:
-      "https://helpcenter.getadblock.com/hc/en-us/articles/9738502154131-Can-I-use-AdBlock-and-still-allow-ads-on-my-favorite-YouTube-channels",
-  },
   {
     name: "twitch_channel_allowlist",
     onChange: toggleTwitchAllowlist,

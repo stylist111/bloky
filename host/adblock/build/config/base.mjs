@@ -43,7 +43,6 @@ export default {
           "adblock-betafish/contextmenus.js",
           "adblock-betafish/alias/icon.js",
           "adblock-betafish/twitch/twitch-bg.js",
-          "adblock-betafish/youtube/yt-bg.js",
           "adblock-betafish/picreplacement/bypass-mode-bg.js",
           "adblock-betafish/picreplacement/distraction-control-bg.js",
           "adblock-betafish/notifications/background/notifications.js",
@@ -224,34 +223,6 @@ export default {
       {
         dest: "adblock-getadblock.js",
         src: "adblock-betafish/api/protected/content/getadblock.js",
-      },
-      {
-        dest: "adblock-yt-cs.js",
-        src: "adblock-betafish/youtube/yt-cs.js",
-      },
-      {
-        dest: "adblock-yt-capture-requests.js",
-        src: "adblock-betafish/youtube/yt-capture-requests.js",
-      },
-      {
-        dest: "adblock-yt-capture-events.js",
-        src: "adblock-betafish/youtube/yt-capture-events.js",
-      },
-      {
-        dest: "adblock-yt-manage-cs.js",
-        src: "adblock-betafish/youtube/yt-manage-cs.js",
-      },
-      {
-        dest: "adblock-yt-manage.css",
-        src: "adblock-betafish/youtube/yt-manage.css",
-      },
-      {
-        dest: "adblock-ads-allowed-icon.svg",
-        src: "adblock-betafish/youtube/ads-allowed-icon.svg",
-      },
-      {
-        dest: "adblock-ads-blocked-icon.svg",
-        src: "adblock-betafish/youtube/ads-blocked-icon.svg",
       },
       {
         dest: "adblock-twitch-capture-requests.js",

@@ -138,23 +138,3 @@ export const toggleTwitchAllowlist = ({ evt }, setCheckedItems) => {
 
   toggleSettings({ name: "twitch_channel_allowlist", evt }, setCheckedItems);
 };
-
-export const toggleYoutubeChannelWhitelist = ({ evt }, setCheckedItems) => {
-  const isEnabled = evt.target.checked;
-  const updates = {
-    youtube_channel_whitelist: isEnabled,
-  };
-
-  if (isEnabled) {
-    send("addYTChannelListeners");
-  } else {
-    updates.youtube_manage_subscribed = false;
-    send("removeYTChannelListeners");
-  }
-
-  toggleSettings({ name: "youtube_channel_whitelist", evt }, setCheckedItems);
-  setCheckedItems((prevCheckedItems) => ({
-    ...prevCheckedItems,
-    ...updates,
-  }));
-};

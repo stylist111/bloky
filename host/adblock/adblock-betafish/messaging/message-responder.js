@@ -16,11 +16,10 @@
  */
 
 /* For ESLint: List any global identifiers used in this file below */
-/* global browser, isTrustedSender,  getUserFilters,
+/* global browser, isTrustedSender, getUserFilters,
    addCustomFilter, countCache, checkUpdateProgress,
    pageIsWhitelisted, getCurrentTabInfo,
    openTab, updateFilterLists, isTrustedSenderDomain, updateButtonUIAndContextMenus,
-   addYTChannelListeners, removeYTChannelListeners, openYTManagedSubPage,
    addTwitchAllowlistListeners, removeTwitchAllowlistListeners, abpPrefPropertyNames,
    pausedFilterText1, pausedFilterText2, updateCustomFilterCountMap
 */
@@ -367,18 +366,6 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   const { command } = message;
   switch (command) {
-    case "addYTChannelListeners":
-      addYTChannelListeners();
-      sendResponse({});
-      break;
-    case "removeYTChannelListeners":
-      removeYTChannelListeners();
-      sendResponse({});
-      break;
-    case "openYTManagedSubPage":
-      openYTManagedSubPage();
-      sendResponse({});
-      break;
     case "addTwitchAllowlistListeners":
       addTwitchAllowlistListeners();
       sendResponse({});

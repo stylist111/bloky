@@ -1149,10 +1149,6 @@
     "message": "Увімкнути AdBlock на цій сторінці",
     "description": "Link text to un-allowlist a page, displayed immediately after 'AdBlock is disabled on this page'"
   },
-  "enable_adblock_on_this_channel": {
-    "message": "Блокувати рекламу на цьому каналі",
-    "description": "Menu entry to un-allowlist a YouTube channel, displayed under 'You allowed ads on this channel.'"
-  },
   "status_paused": {
     "message": "AdBlock призупинено.",
     "description": "Message shown in toolbar button when AdBlock is not running"
@@ -1398,10 +1394,6 @@
   "how": {
     "message": "Як?",
     "description": "Text of a link pointing to instructions on how to do something"
-  },
-  "whats_this": {
-    "message": "Що це таке?",
-    "description": "Text of a link pointing to the explanation of a new feature"
   },
   "selectlanguage": {
     "message": " -- Оберіть якою -- ",

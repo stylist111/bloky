@@ -47,13 +47,49 @@ const validThemes = [
   "sunshine_theme",
 ];
 
+const deprecatedSettingsKeys = [
+  // TODO: Remove this code after a few releases (added Sept 9, 2025)
+  // Part of Sync settings feature
+  // See: https://eyeo.atlassian.net/browse/EXT-1078
+  "sync_settings",
+
+  // TODO: Remove this code after a few releases (added Sep 10, 2025)
+  // Part of YouTube allowlist channel feature
+  // See: https://eyeo.atlassian.net/browse/EXT-1079
+  "youtube_channel_whitelist",
+  "youtube_manage_subscribed",
+];
+
+/**
+ * Remove deprecated settings from storage and update storage if needed
+ * @param {object} settings - Current settings object
+ * @returns {*}
+ */
+function removeDeprecated(settings) {
+  const newSettings = { ...settings };
+  let settingsModified = false;
+
+  // loop through deprecated keys and remove them if they exist
+  deprecatedSettingsKeys.forEach((key) => {
+    if (Object.prototype.hasOwnProperty.call(newSettings, key)) {
+      delete newSettings[key];
+      settingsModified = true;
+    }
+  });
+
+  // If any deprecated settings were found, update storage
+  if (settingsModified) {
+    browser.storage.local.set({ settings: newSettings });
+  }
+
+  return newSettings;
+}
+
 // OPTIONAL SETTINGS
 function Settings() {
   this.settingsKey = "settings";
   this.defaults = {
     debug_logging: false,
-    youtube_channel_whitelist: true,
-    youtube_manage_subscribed: true,
     show_advanced_options: false,
     display_menu_stats: true,
     show_survey: true,
@@ -68,14 +104,7 @@ function Settings() {
   const that = this;
   this.init = new Promise((resolve) => {
     browser.storage.local.get(that.settingsKey).then((response) => {
-      const settings = response.settings || {};
-      // Remove old sync settings if it exists
-      // https://eyeo.atlassian.net/browse/EXT-1078
-      // TODO: Remove this code after a few releases
-      if (settings.sync_settings !== undefined) {
-        delete settings.sync_settings;
-        browser.storage.local.set({ settings });
-      }
+      const settings = removeDeprecated(response.settings || {});
       that.data = extend(that.defaults, settings);
       if (settings.debug_logging) {
         logging(true);

@@ -1275,10 +1275,6 @@
     "message": "このページでAdBlockを有効にします。",
     "description": "Link text to un-allowlist a page, displayed immediately after 'AdBlock is disabled on this page'"
   },
-  "enable_adblock_on_this_channel": {
-    "message": "このチャンネルの広告をブロックする",
-    "description": "Menu entry to un-allowlist a YouTube channel, displayed under 'You allowed ads on this channel.'"
-  },
   "status_paused": {
     "message": "AdBlockが一時停止しています。",
     "description": "Message shown in toolbar button when AdBlock is not running"
@@ -1571,10 +1567,6 @@
     "message": "どうやって？",
     "description": "Text of a link pointing to instructions on how to do something"
   },
-  "whats_this": {
-    "message": "これはなに？",
-    "description": "Text of a link pointing to the explanation of a new feature"
-  },
   "selectlanguage": {
     "message": " -- 言語を選択 -- ",
     "description": "First option in the language dropdown menu on the Filter lists tab. Include the ' -- ' on either side of your translation."
@@ -1582,14 +1574,6 @@
   "allowlist_channel": {
     "message": "このチャンネルの広告を許可する",
     "description": "Entry in the AdBlock menu, only displayed when a user is browsing YouTube or Twitch and has enabled the YouTube or Twitch channel allow listing option"
-  },
-  "manage_subscribed_channel": {
-    "message": "登録チャンネルの広告の管理",
-    "description": "Entry in the AdBlock menu, only displayed when a user is browsing YouTube and has enabled the YouTube channel allow listing option"
-  },
-  "whitelist_youtube_channel_v2": {
-    "message": "広告表示を許可するYouTubeチャンネル：",
-    "description": "Menu entry to whitelist the channel of the current YouTube video or page. The channel name will appear on a line below this menu item."
   },
   "confirm_undo_custom_filters": {
     "message": "本当に$host$で作成した$count$のブロックを削除しますか？",
@@ -2156,14 +2140,6 @@
   "selectlanguage2": {
     "message": "言語の選択",
     "description": "First option in the language dropdown menu on the Filter lists tab."
-  },
-  "allow_whitelisting_youtube_channels2": {
-    "message": "特定のYouTubeチャンネルの広告表示を許可する",
-    "description": "Checkbox on the 'General' tab of the Options page"
-  },
-  "youtube_manage_subscribed": {
-    "message": "YouTubeの登録ページからAdBlockの設定を管理する",
-    "description": "Checkbox on the 'General' tab of the Options page"
   },
   "allowlisting_twitch_channels": {
     "message": "特定のTwitchチャンネルの広告表示を許可する",
@@ -3290,46 +3266,6 @@
   "custom_image_supported_file_types": {
     "message": "*.bmp, *.gif, *.jpeg, *.png, *.svg, *.tiff, *.webp",
     "description": "supported file types, shown on the error message dialog box when a user selects a unsupported file type"
-  },
-  "youtube_onpage_icon_msg": {
-    "message": "登録チャンネルの広告表示を管理しよう：",
-    "description": "The message text on the YouTube on page icon; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_allow_all_btn_text": {
-    "message": "広告表示を全て許可",
-    "description": "The button text on the YouTube on page icon; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_block_all_btn_text": {
-    "message": "広告表示を全てブロック",
-    "description": "The button text on the YouTube on page icon; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_one_moment_text": {
-    "message": "少々お待ち下さい...",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_allowed_complete_text": {
-    "message": "全ての登録チャンネルの広告表示を許可しました",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_blocked_complete_text": {
-    "message": "全ての登録チャンネルの広告表示をブロックしました",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_allowing_ads_on_channel": {
-    "message": "このチャンネルの広告表示を許可する",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_blocking_ads_on_channel": {
-    "message": "このチャンネルの広告をブロックする",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_sign_in_text": {
-    "message": "YouTubeアカウントにログインし、登録チャンネルの広告表示を管理しましょう。",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_no_channels_text": {
-    "message": "少なくとも1つのYouTubeチャンネルに登録して、登録チャンネルの広告表示を管理しましょう。",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
   },
   "once": {
     "message": "一度だけ",

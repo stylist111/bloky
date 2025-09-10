@@ -30,7 +30,6 @@ let logSent = false;
 let closeKeydownHandler;
 let backKeydownHandler;
 let primarysectionDisplay;
-let ytChannelSectionDisplay;
 let twitchChannelSectionDisplay;
 let disabledSiteSectionDisplay;
 let pauseSubsectionDisplay;
@@ -59,7 +58,6 @@ const reset = function () {
   segueBreadCrumb = [];
   $("#help_content").empty();
   $("#primary_section").css("display", primarysectionDisplay);
-  $("#yt_channel_section").css("display", ytChannelSectionDisplay);
   $("#twitch_channel_section").css("display", twitchChannelSectionDisplay);
   $("#disabled_site_section").css("display", disabledSiteSectionDisplay);
   $("#pause_subsection").css("display", pauseSubsectionDisplay);
@@ -308,7 +306,6 @@ const postLoadInitialize = function () {
   backKeydownHandler = selected("#back_icon", backClickHandler);
   transitionTo("start");
   primarysectionDisplay = $("#primary_section").css("display");
-  ytChannelSectionDisplay = $("#yt_channel_section").css("display");
   twitchChannelSectionDisplay = $("#twitch_channel_section").css("display");
   disabledSiteSectionDisplay = $("#disabled_site_section").css("display");
   pauseSubsectionDisplay = $("#pause_subsection").css("display");
@@ -317,7 +314,6 @@ const postLoadInitialize = function () {
   allowlistedSubsectionDisplay = $("#allowlisted_subsection").css("display");
 
   $("#primary_section").hide();
-  $("#yt_channel_section").hide();
   $("#twitch_channel_section").hide();
   $("#disabled_site_section").hide();
   $("#pause_subsection").hide();

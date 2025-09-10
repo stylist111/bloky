@@ -131,7 +131,6 @@ class TelemetryBase {
       bv: this.browserVersion,
       ov: this.osVersion,
       ad: settingsObj.show_advanced_options ? "1" : "0",
-      yt: settingsObj.youtube_channel_whitelist ? "1" : "0",
       l: determineUserLanguage(),
       pc: totalPings,
       dcv2: settingsObj.data_collection_v2 ? "1" : "0",

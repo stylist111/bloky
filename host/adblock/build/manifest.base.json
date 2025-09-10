@@ -43,12 +43,6 @@
       "run_at": "document_start"
     },
     {
-      "all_frames": true,
-      "js": ["polyfill.js", "adblock-yt-cs.js"],
-      "matches": ["*://*.youtube.com/*"],
-      "run_at": "document_start"
-    },
-    {
       "js": ["polyfill.js", "yt-auto-allowlist.preload.js"],
       "matches": ["*://*.youtube.com/*"],
       "run_at": "document_start"

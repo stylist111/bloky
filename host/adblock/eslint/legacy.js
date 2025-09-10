@@ -70,8 +70,6 @@ module.exports = {
           "options_page",
           "install_timestamp",
           "debug_logging",
-          "youtube_channel_whitelist",
-          "youtube_manage_subscribed",
           "show_advanced_options",
           "show_statsinpopup",
           "display_menu_stats",

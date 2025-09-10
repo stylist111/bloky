@@ -16,7 +16,7 @@
  */
 
 /* For ESLint: List any global identifiers used in this file below */
-/* global browser, ext, twitchChannelNamePages, ytChannelNamePages */
+/* global browser, ext, twitchChannelNamePages */
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { getPerformanceTimings } from "@eyeo/webext-ad-filtering-solution/all/profiling";
@@ -443,23 +443,6 @@ const getCurrentTabInfo = function (secondTime, tabId) {
         if (License && License.isActiveLicense()) {
           result.activeLicense = true;
           result.subscriptions = await SubscriptionAdapter.getSubscriptionsMinusText();
-        }
-        if (
-          getSettings() &&
-          getSettings().youtube_channel_whitelist &&
-          parseUri(tab.url).hostname === "www.youtube.com"
-        ) {
-          result.youTubeChannelName = ytChannelNamePages.get(page.id);
-          // handle the odd occurence of when the  YT Channel Name
-          // isn't available in the ytChannelNamePages map
-          // obtain the channel name from the URL
-          // for instance, when the forward / back button is clicked
-          if (!result.youTubeChannelName && /ab_channel/.test(tab.url)) {
-            result.youTubeChannelName = parseUri.parseSearch(tab.url).ab_channel;
-          }
-          if (result.youTubeChannelName) {
-            result.allowlistRuleText = `@@||www.youtube.com/*${result.youTubeChannelName}|$document`;
-          }
         }
         if (
           twitchChannelNamePages &&

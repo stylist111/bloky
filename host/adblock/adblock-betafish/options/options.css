@@ -372,21 +372,9 @@ button {
   list-style-type: none;
 }
 
-.text-help-link-icon {
-  margin-right: 5px;
-  margin-left: 5px;
-  text-indent: 0;
-  min-width: fit-content;
-}
-
 .help-link-icon {
   margin: 5px;
   text-indent: 0;
-}
-
-.text-help-link-icon .material-icons {
-  display: inline-block;
-  color: var(--help-icon-color);
 }
 
 .help-link-icon .material-icons {

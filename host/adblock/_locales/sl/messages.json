@@ -1097,10 +1097,6 @@
     "message": "Omogoči AdBlock na tej strani",
     "description": "Link text to un-allowlist a page, displayed immediately after 'AdBlock is disabled on this page'"
   },
-  "enable_adblock_on_this_channel": {
-    "message": "Blokiraj oglase na tem kanalu",
-    "description": "Menu entry to un-allowlist a YouTube channel, displayed under 'You allowed ads on this channel.'"
-  },
   "status_paused": {
     "message": "AdBlock je začasno ustavljen.",
     "description": "Message shown in toolbar button when AdBlock is not running"
@@ -1295,17 +1291,9 @@
     "message": "Kako?",
     "description": "Text of a link pointing to instructions on how to do something"
   },
-  "whats_this": {
-    "message": "Kaj je to?",
-    "description": "Text of a link pointing to the explanation of a new feature"
-  },
   "selectlanguage": {
     "message": " -- Izberite jezik -- ",
     "description": "First option in the language dropdown menu on the Filter lists tab. Include the ' -- ' on either side of your translation."
-  },
-  "whitelist_youtube_channel_v2": {
-    "message": "Dovolite oglase na YouTube kanalu:",
-    "description": "Menu entry to whitelist the channel of the current YouTube video or page. The channel name will appear on a line below this menu item."
   },
   "confirm_undo_custom_filters": {
     "message": "Ali ste prepričani, da želite odstraniti naslednje število blokad, ki ste jih ustvarili na $host$? Št. blokad: $count$",

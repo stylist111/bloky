@@ -1263,10 +1263,6 @@
     "message": "Activați AdBlock pe această pagină",
     "description": "Link text to un-allowlist a page, displayed immediately after 'AdBlock is disabled on this page'"
   },
-  "enable_adblock_on_this_channel": {
-    "message": "Blocați reclamele pe acest canal",
-    "description": "Menu entry to un-allowlist a YouTube channel, displayed under 'You allowed ads on this channel.'"
-  },
   "status_paused": {
     "message": "AdBlock este în pauză.",
     "description": "Message shown in toolbar button when AdBlock is not running"
@@ -1559,10 +1555,6 @@
     "message": "Cum?",
     "description": "Text of a link pointing to instructions on how to do something"
   },
-  "whats_this": {
-    "message": "Ce este acesta?",
-    "description": "Text of a link pointing to the explanation of a new feature"
-  },
   "selectlanguage": {
     "message": "-- Alegeți limba --",
     "description": "First option in the language dropdown menu on the Filter lists tab. Include the ' -- ' on either side of your translation."
@@ -1570,14 +1562,6 @@
   "allowlist_channel": {
     "message": "Permiteți reclame pe acest canal",
     "description": "Entry in the AdBlock menu, only displayed when a user is browsing YouTube or Twitch and has enabled the YouTube or Twitch channel allow listing option"
-  },
-  "manage_subscribed_channel": {
-    "message": "Gestionați reclamele pe canalele abonate",
-    "description": "Entry in the AdBlock menu, only displayed when a user is browsing YouTube and has enabled the YouTube channel allow listing option"
-  },
-  "whitelist_youtube_channel_v2": {
-    "message": "Permiteți reclame pe canalul YouTube:",
-    "description": "Menu entry to whitelist the channel of the current YouTube video or page. The channel name will appear on a line below this menu item."
   },
   "confirm_undo_custom_filters": {
     "message": "Sigur vreți să eliminați $count$ blocaje pe care le-ați creat pe $host$?",
@@ -2136,14 +2120,6 @@
   "selectlanguage2": {
     "message": "selectați limba",
     "description": "First option in the language dropdown menu on the Filter lists tab."
-  },
-  "allow_whitelisting_youtube_channels2": {
-    "message": "Permiteți reclame pe anumite canale YouTube",
-    "description": "Checkbox on the 'General' tab of the Options page"
-  },
-  "youtube_manage_subscribed": {
-    "message": "Gestionați setările AdBlock din pagina mea de abonamente YouTube",
-    "description": "Checkbox on the 'General' tab of the Options page"
   },
   "allowlisting_twitch_channels": {
     "message": "Permiteți reclame pe anumite canale Twitch",
@@ -3258,46 +3234,6 @@
   "custom_image_supported_file_types": {
     "message": "*.bmp, *.gif, *.jpeg, *.png, *.svg, *.tiff, *.webp",
     "description": "supported file types, shown on the error message dialog box when a user selects a unsupported file type"
-  },
-  "youtube_onpage_icon_msg": {
-    "message": "Gestionează reclamele pe canalele dvs. abonate:",
-    "description": "The message text on the YouTube on page icon; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_allow_all_btn_text": {
-    "message": "Permite reclame pe toate",
-    "description": "The button text on the YouTube on page icon; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_block_all_btn_text": {
-    "message": "Blochează reclame pe toate",
-    "description": "The button text on the YouTube on page icon; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_one_moment_text": {
-    "message": "Un moment...",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_allowed_complete_text": {
-    "message": "Reclame permise pe toate canalele abonate",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_blocked_complete_text": {
-    "message": "Reclame blocate pe toate canalele abonate",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_allowing_ads_on_channel": {
-    "message": "Se permit reclame pe acest canal",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_blocking_ads_on_channel": {
-    "message": "Se blochează reclame pe acest canal",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_sign_in_text": {
-    "message": "Conectați-vă la contul dvs. YouTube pentru a gestiona reclame pe canalele dvs. abonate.",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_no_channels_text": {
-    "message": "Abonați-vă la cel puțin un canal YouTube pentru a gestiona reclamele pe canalele dvs. abonate.",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
   },
   "once": {
     "message": "O dată",

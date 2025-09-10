@@ -1149,10 +1149,6 @@
     "message": "Разреши AdBlock за страницата",
     "description": "Link text to un-allowlist a page, displayed immediately after 'AdBlock is disabled on this page'"
   },
-  "enable_adblock_on_this_channel": {
-    "message": "Блокирай рекламите в канала",
-    "description": "Menu entry to un-allowlist a YouTube channel, displayed under 'You allowed ads on this channel.'"
-  },
   "status_paused": {
     "message": "Задържан AdBlock.",
     "description": "Message shown in toolbar button when AdBlock is not running"
@@ -1398,10 +1394,6 @@
   "how": {
     "message": "Как става?",
     "description": "Text of a link pointing to instructions on how to do something"
-  },
-  "whats_this": {
-    "message": "Какво е това?",
-    "description": "Text of a link pointing to the explanation of a new feature"
   },
   "selectlanguage": {
     "message": "— избор на език —",

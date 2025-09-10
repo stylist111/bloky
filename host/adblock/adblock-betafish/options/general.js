@@ -88,12 +88,6 @@ const initialize = async function init() {
     $(`#enable_${name}`).prop("checked", settings[name]);
   }
 
-  if (!settings.youtube_manage_subscribed) {
-    $("#youtube_manage_subscribed_link").removeClass("link-text-color");
-    $("#youtube_manage_subscribed_link").removeClass("pointer");
-    $("#youtube_manage_subscribed_link").addClass("disabled-link-text-color");
-  }
-
   for (const inx in abpPrefPropertyNames) {
     const name = abpPrefPropertyNames[inx];
     $(`#prefs__${name}`).prop("checked", Prefs[name]);
@@ -172,45 +166,6 @@ const initialize = async function init() {
       }
     }
 
-    // if the user enables/disable YouTube Channel allowlisting
-    // add or remove history state listners
-    if (name === "youtube_channel_whitelist") {
-      if (isEnabled) {
-        send("addYTChannelListeners");
-      } else {
-        window.setTimeout(() => {
-          // toggle sub-setting as well
-          settings.youtube_manage_subscribed = isEnabled;
-          $("#youtube_manage_subscribed_link").removeClass("link-text-color");
-          $("#youtube_manage_subscribed_link").removeClass("pointer");
-          $("#youtube_manage_subscribed_link").addClass("disabled-link-text-color");
-        }, 250);
-        send("removeYTChannelListeners");
-      }
-    }
-
-    // if the user enables/disable the Manage AdBlock settings from YouTube™ subscriptions page
-    // also, wait a moment to allow the current 'set' to save,
-    // then enable YouTube Channel allowlisting
-    if (name === "youtube_manage_subscribed") {
-      if (isEnabled) {
-        window.setTimeout(() => {
-          // toggle parent setting as well
-          settings.youtube_channel_whitelist = isEnabled;
-          send("addYTChannelListeners");
-        }, 250);
-      }
-      if (!isEnabled) {
-        $("#youtube_manage_subscribed_link").removeClass("link-text-color");
-        $("#youtube_manage_subscribed_link").removeClass("pointer");
-        $("#youtube_manage_subscribed_link").addClass("disabled-link-text-color");
-      } else {
-        $("#youtube_manage_subscribed_link").addClass("link-text-color");
-        $("#youtube_manage_subscribed_link").addClass("pointer");
-        $("#youtube_manage_subscribed_link").removeClass("disabled-link-text-color");
-      }
-    }
-
     // if the user enables/disable Twitch Channel allow listing
     // add or remove listners
     if (name === "twitch_channel_allowlist") {
@@ -219,12 +174,6 @@ const initialize = async function init() {
       } else {
         send("removeTwitchAllowlistListeners");
       }
-    }
-  });
-
-  $("#youtube_manage_subscribed_link").on("click", () => {
-    if (settings.youtube_manage_subscribed) {
-      send("openYTManagedSubPage");
     }
   });
 };

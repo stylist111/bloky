@@ -43,11 +43,6 @@ body::-webkit-scrollbar {
   margin: 0px;
 }
 
-.menu-entry {
-  cursor: pointer;
-  color: var(--popup-link-text);
-}
-
 .right {
   float: right;
 }
@@ -470,7 +465,6 @@ button.premium-cta-close:hover {
 
 /* site specific (YT & Twitch) */
 
-#yt_channel_section,
 #twitch_channel_section {
   display: none;
   margin-bottom: 16px;
@@ -490,11 +484,6 @@ button.premium-cta-close:hover {
   margin-right: 8px;
 }
 
-#div_manage_subscribed_channel {
-  padding-top: 12px;
-}
-
-#btn_allowlist_yt_channel,
 #btn_allowlist_twitch_channel {
   width: 256px;
   height: 36px;
@@ -507,26 +496,14 @@ button.premium-cta-close:hover {
   color: var(--popup-twitch-icon-color);
 }
 
-#yt_channel_icon {
-  color: var(--popup-yt-icon-color);
-}
-
-#allowlist_yt_channel_section,
-#allowlisted_yt_channel_section,
 #allowlist_twitch_channel_section,
 #allowlisted_twitch_channel_section,
 #disabled_site_section {
   display: none;
 }
 
-#allowlisted_yt_channel_section,
 #allowlisted_twitch_channel_section {
   padding-bottom: 68px;
-}
-
-#allowlist_yt_channel_section {
-  flex-direction: column;
-  align-items: center;
 }
 
 /* other, misc */

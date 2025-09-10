@@ -22,7 +22,6 @@
 let errorOccurred = false;
 
 const useFlexDisplayElements = [
-  "allowlist_yt_channel_section",
   "allowlisted_subsection",
   "channelname",
   "disabled_site_title",
@@ -126,11 +125,6 @@ const processError = function (err, stack, message) {
     } else {
       reloadAnchor.style.display = "none";
     }
-
-    document.querySelectorAll(".menu-entry").forEach((el) => {
-      const elem = el;
-      elem.style.display = "none";
-    });
 
     document.querySelectorAll(".separator").forEach((el) => {
       const elem = el;
@@ -245,7 +239,7 @@ const start = async function () {
   localizePage();
 
   // Set menu entries appropriately for the selected tab.
-  $(".menu-entry, .menu-status, .premium-cta, .separator").hide();
+  $(".premium-cta, .separator").hide();
 
   let tabId;
   if (document.location.search && document.location.search.indexOf("tabId") > 0) {
@@ -363,24 +357,6 @@ const start = async function () {
     if (
       pageInfo.url &&
       /ab_channel/.test(pageInfo.url.href) &&
-      pageInfo.url.hostname === "www.youtube.com" &&
-      info.youTubeChannelName
-    ) {
-      $("#yt_channelname").text(info.youTubeChannelName);
-      $("#yt_channelname").css("display", "inline-flex");
-      show(["yt_channel_section", "allowlist_yt_channel_section"]);
-      if (info.whitelisted) {
-        if (info.allowlistRuleText && info.whitelisted.text === info.allowlistRuleText) {
-          hide(["allowlist_yt_channel_section", "primary_section"]);
-          show(["allowlisted_yt_channel_section"]);
-        } else {
-          hide(["yt_channel_section", "allowlist_yt_channel_section"]);
-        }
-      }
-    }
-    if (
-      pageInfo.url &&
-      /ab_channel/.test(pageInfo.url.href) &&
       pageInfo.url.hostname === "www.twitch.tv" &&
       info.twitchChannelName
     ) {
@@ -395,14 +371,6 @@ const start = async function () {
           hide(["twitch_channel_section", "allowlist_twitch_channel_section"]);
         }
       }
-    }
-    if (
-      pageInfo.url &&
-      pageInfo.url.hostname === "www.youtube.com" &&
-      pageInfo.url.pathname !== "/feed/channels" &&
-      info.settings.youtube_manage_subscribed
-    ) {
-      show(["div_manage_subscribed_channel"]);
     }
 
     if (popupMenuTheme && browser.runtime && browser.runtime.id === betaExtId) {
@@ -490,22 +458,6 @@ const start = async function () {
     }
   });
 
-  selected("#btn_allowlist_yt_channel", async () => {
-    if (pageInfo.url && pageInfo.url.hostname === "www.youtube.com") {
-      sendMessageWithNoResponse({
-        command: "recordGeneralMessage",
-        msg: "whitelist_youtube_clicked",
-      });
-      await browser.runtime.sendMessage({
-        command: "createWhitelistFilterForYoutubeChannel",
-        url: pageInfo.url.href,
-        origin: modulesAsGlobal.filters.FilterOrigin.popup,
-      });
-      browser.tabs.reload();
-      closePopup();
-    }
-  });
-
   selected("#btn_allowlist_twitch_channel", async () => {
     if (pageInfo.url && pageInfo.url.hostname === "www.twitch.tv") {
       sendMessageWithNoResponse({
@@ -520,15 +472,6 @@ const start = async function () {
       browser.tabs.reload();
       closePopup();
     }
-  });
-
-  selected("#div_manage_subscribed_channel", async () => {
-    sendMessageWithNoResponse({
-      command: "recordGeneralMessage",
-      msg: "manage_subscribed_clicked",
-    });
-    await browser.runtime.sendMessage({ command: "openYTManagedSubPage" });
-    closePopup();
   });
 
   selected("#div_myadblock_enrollment_v2", async () => {

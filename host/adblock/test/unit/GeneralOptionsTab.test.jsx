@@ -11,19 +11,8 @@ import {
 import { GeneralOptionsTab } from "../../adblock-betafish/options/react-components/general/GeneralOptionsTab";
 
 import { eventsList } from "../../adblock-betafish/options/react-components/general/data";
-import {
-  toggleAdvancedOptions,
-  toggleDataCollection,
-  toggleDataCollectionOptOut,
-  togglePrefs,
-  toggleSettings,
-  toggleShowContextMenus,
-  toggleTwitchAllowlist,
-  toggleYoutubeChannelWhitelist,
-} from "../../adblock-betafish/options/react-components/general/events";
 
 import {
-  globalMABPayment as MABPayment,
   globalSettingsNotifier as settingsNotifier,
   globalPrefsNotifier as prefsNotifier,
 } from "../../adblock-betafish/options/react-components/shared/globals";
@@ -101,8 +90,6 @@ describe("optionsList", () => {
         },
         settings: {
           debug_logging: true,
-          youtube_channel_whitelist: true,
-          youtube_manage_subscribed: true,
           show_advanced_options: true,
           display_menu_stats: true,
           onpageMessages: true,

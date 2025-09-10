@@ -1271,10 +1271,6 @@
     "message": "Ενεργοποίηση του AdBlock σε αυτή τη σελίδα",
     "description": "Link text to un-allowlist a page, displayed immediately after 'AdBlock is disabled on this page'"
   },
-  "enable_adblock_on_this_channel": {
-    "message": "Να αποκλείονται οι διαφημίσεις",
-    "description": "Menu entry to un-allowlist a YouTube channel, displayed under 'You allowed ads on this channel.'"
-  },
   "status_paused": {
     "message": "Το AdBlock είναι σε παύση.",
     "description": "Message shown in toolbar button when AdBlock is not running"
@@ -1567,10 +1563,6 @@
     "message": "Πώς;",
     "description": "Text of a link pointing to instructions on how to do something"
   },
-  "whats_this": {
-    "message": "Τι είναι αυτό;",
-    "description": "Text of a link pointing to the explanation of a new feature"
-  },
   "selectlanguage": {
     "message": " -- Επιλογή Γλώσσας -- ",
     "description": "First option in the language dropdown menu on the Filter lists tab. Include the ' -- ' on either side of your translation."
@@ -1578,14 +1570,6 @@
   "allowlist_channel": {
     "message": "Να επιτρέπονται διαφημίσεις",
     "description": "Entry in the AdBlock menu, only displayed when a user is browsing YouTube or Twitch and has enabled the YouTube or Twitch channel allow listing option"
-  },
-  "manage_subscribed_channel": {
-    "message": "Διαχείριση διαφημίσεων στα κανάλια που έχω εγγραφεί",
-    "description": "Entry in the AdBlock menu, only displayed when a user is browsing YouTube and has enabled the YouTube channel allow listing option"
-  },
-  "whitelist_youtube_channel_v2": {
-    "message": "Να επιτρέπονται οι διαφημίσεις στο κανάλι YouTube:",
-    "description": "Menu entry to whitelist the channel of the current YouTube video or page. The channel name will appear on a line below this menu item."
   },
   "confirm_undo_custom_filters": {
     "message": "Είστε βέβαιος ότι θέλετε να αφαιρέσετε τους $count$ αποκλεισμούς που έχετε δημιουργήσει στον ιστότοπο $host$;",
@@ -2144,14 +2128,6 @@
   "selectlanguage2": {
     "message": "επιλογή γλώσσας",
     "description": "First option in the language dropdown menu on the Filter lists tab."
-  },
-  "allow_whitelisting_youtube_channels2": {
-    "message": "Να επιτρέπονται διαφημίσεις σε συγκεκριμένα κανάλια στο YouTube",
-    "description": "Checkbox on the 'General' tab of the Options page"
-  },
-  "youtube_manage_subscribed": {
-    "message": "Διαχείριση ρυθμίσεων του AdBlock από τη σελίδα συνδρομών μου στο YouTube",
-    "description": "Checkbox on the 'General' tab of the Options page"
   },
   "allowlisting_twitch_channels": {
     "message": "Να επιτρέπονται διαφημίσεις σε συγκεκριμένα κανάλια στο Twitch",
@@ -3242,46 +3218,6 @@
   "custom_image_supported_file_types": {
     "message": "*.bmp, *.gif, *.jpeg, *.png, *.svg, *.tiff, *.webp",
     "description": "supported file types, shown on the error message dialog box when a user selects a unsupported file type"
-  },
-  "youtube_onpage_icon_msg": {
-    "message": "Διαχειριστείτε τις διαφημίσεις στα κανάλια που έχετε εγγραφεί:",
-    "description": "The message text on the YouTube on page icon; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_allow_all_btn_text": {
-    "message": "Να επιτρέπονται οι διαφημίσεις σε όλα",
-    "description": "The button text on the YouTube on page icon; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_block_all_btn_text": {
-    "message": "Να αποκλειόνται οι διαφημίσεις σε όλα",
-    "description": "The button text on the YouTube on page icon; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_one_moment_text": {
-    "message": "Μια Στιγμή...",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_allowed_complete_text": {
-    "message": "Επιτρεπόμενες διαφημίσεις σε όλα τα κανάλια που έχετε εγγραφεί",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_blocked_complete_text": {
-    "message": "Αποκλεισμένες διαφημίσεις σε όλα τα κανάλια που έχετε εγγραφεί",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_allowing_ads_on_channel": {
-    "message": "Επιτρέπονται οι διαφημίσεις",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_blocking_ads_on_channel": {
-    "message": "Αποκλείονται οι διαφημίσεις",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_sign_in_text": {
-    "message": "Συνδεθείτε στο λογαριασμό σας στο YouTube για να διαχειριστείτε τις διαφημίσεις στα κανάλια που έχετε εγγραφεί.",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_no_channels_text": {
-    "message": "Εγγραφείτε σε τουλάχιστον ένα κανάλι YouTube για να διαχειριστείτε τις διαφημίσεις σε αυτά.",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
   },
   "once": {
     "message": "Μία φορά",

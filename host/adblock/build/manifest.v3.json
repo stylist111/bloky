@@ -36,9 +36,6 @@
     {
       "resources": [
         "adblock-uiscripts-adblock-wizard.css",
-        "adblock-ads-allowed-icon.svg",
-        "adblock-ads-blocked-icon.svg",
-        "adblock-yt-manage.css",
         "icons/icon24.png",
         "icons/adblock-19.png",
         "icons/adblock-20.svg",
@@ -62,18 +59,8 @@
       "use_dynamic_url": true
     },
     {
-      "resources": ["adblock-yt-capture-requests.js"],
-      "matches": ["*://*.youtube.com/*"],
-      "use_dynamic_url": true
-    },
-    {
       "resources": ["adblock-twitch-capture-requests.js"],
       "matches": ["*://*.twitch.tv/*"],
-      "use_dynamic_url": true
-    },
-    {
-      "resources": ["adblock-yt-capture-events.js"],
-      "matches": ["*://*.youtube.com/*"],
       "use_dynamic_url": true
     }
   ]

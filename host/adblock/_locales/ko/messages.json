@@ -1275,10 +1275,6 @@
     "message": "해당 페이지에 AdBlock 적용",
     "description": "Link text to un-allowlist a page, displayed immediately after 'AdBlock is disabled on this page'"
   },
-  "enable_adblock_on_this_channel": {
-    "message": "이 채널에서 광고 차단하기",
-    "description": "Menu entry to un-allowlist a YouTube channel, displayed under 'You allowed ads on this channel.'"
-  },
   "status_paused": {
     "message": "AdBlock 일시 중지됨.",
     "description": "Message shown in toolbar button when AdBlock is not running"
@@ -1571,10 +1567,6 @@
     "message": "어떻게 하나요?",
     "description": "Text of a link pointing to instructions on how to do something"
   },
-  "whats_this": {
-    "message": "이게 무엇인가요?",
-    "description": "Text of a link pointing to the explanation of a new feature"
-  },
   "selectlanguage": {
     "message": " -- 언어 선택 -- ",
     "description": "First option in the language dropdown menu on the Filter lists tab. Include the ' -- ' on either side of your translation."
@@ -1582,14 +1574,6 @@
   "allowlist_channel": {
     "message": "이 채널에서 광고 허용하기",
     "description": "Entry in the AdBlock menu, only displayed when a user is browsing YouTube or Twitch and has enabled the YouTube or Twitch channel allow listing option"
-  },
-  "manage_subscribed_channel": {
-    "message": "구독된 채널에 대해 광고 관리하기",
-    "description": "Entry in the AdBlock menu, only displayed when a user is browsing YouTube and has enabled the YouTube channel allow listing option"
-  },
-  "whitelist_youtube_channel_v2": {
-    "message": "광고가 허용된 YouTube 채널:",
-    "description": "Menu entry to whitelist the channel of the current YouTube video or page. The channel name will appear on a line below this menu item."
   },
   "confirm_undo_custom_filters": {
     "message": "$host$에서 생성한 차단 내역 $count$개를 삭제하시겠습니까?",
@@ -2148,14 +2132,6 @@
   "selectlanguage2": {
     "message": "언어 선택",
     "description": "First option in the language dropdown menu on the Filter lists tab."
-  },
-  "allow_whitelisting_youtube_channels2": {
-    "message": "특정 YouTube 채널에서 광고 허용",
-    "description": "Checkbox on the 'General' tab of the Options page"
-  },
-  "youtube_manage_subscribed": {
-    "message": "YouTube 구독 채널 목록에서 AdBlock 설정 관리하기",
-    "description": "Checkbox on the 'General' tab of the Options page"
   },
   "allowlisting_twitch_channels": {
     "message": "특정 Twitch 채널에서 광고 허용",
@@ -3270,46 +3246,6 @@
   "custom_image_supported_file_types": {
     "message": "*.bmp, *.gif, *.jpeg, *.png, *.svg, *.tiff, *.webp",
     "description": "supported file types, shown on the error message dialog box when a user selects a unsupported file type"
-  },
-  "youtube_onpage_icon_msg": {
-    "message": "구독 한 채널에 대해 광고 관리하기",
-    "description": "The message text on the YouTube on page icon; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_allow_all_btn_text": {
-    "message": "모든 채널에서 광고 허용",
-    "description": "The button text on the YouTube on page icon; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_block_all_btn_text": {
-    "message": "모든 채널에서 광고 차단",
-    "description": "The button text on the YouTube on page icon; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_one_moment_text": {
-    "message": "잠시만요...",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_allowed_complete_text": {
-    "message": "모든 구독된 채널에 대해 광고 허용됨",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_blocked_complete_text": {
-    "message": "모든 구독된 채널에 대해 광고 차단됨",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_allowing_ads_on_channel": {
-    "message": "이 채널에서 광고 허용하기",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_blocking_ads_on_channel": {
-    "message": "이 채널에서 광고 차단하기",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_sign_in_text": {
-    "message": "YouTube 계정에 로그인하여 구독된 채널에 대하여 광고를 설정하세요.",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_no_channels_text": {
-    "message": "YouTube 채널에 구독하여 구독된 채널에 대하여 광고를 설정해 보세요.",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
   },
   "once": {
     "message": "한 번만",

@@ -33,9 +33,6 @@
   ],
   "web_accessible_resources": [
     "adblock-uiscripts-adblock-wizard.css",
-    "adblock-ads-allowed-icon.svg",
-    "adblock-ads-blocked-icon.svg",
-    "adblock-yt-manage.css",
     "icons/icon24.png",
     "icons/adblock-19.png",
     "icons/adblock-20.svg",
@@ -53,8 +50,6 @@
     "icons/MaterialIcons-Regular.woff2",
     "icons/adblock-icons.woff2",
     "purify.min.js",
-    "adblock-yt-capture-requests.js",
-    "adblock-yt-capture-events.js",
     "adblock-deny-push-notifications-requests.js",
     "adblock-twitch-capture-requests.js"
   ]

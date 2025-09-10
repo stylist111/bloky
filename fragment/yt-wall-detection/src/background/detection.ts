@@ -159,7 +159,6 @@ const processYouTubeWallMessage = async (
       "t",
       Math.floor(message.currentPlaybackTime).toString(),
     );
-    senderURL.searchParams.delete("ab_channel");
     await browser.tabs.update(tabId, { url: senderURL.href });
   } else {
     await browser.tabs.reload(tabId);

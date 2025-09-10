@@ -3,6 +3,7 @@
 - Fixed a bug that sometimes caused an error message to be shown when clicking
   on the "Support" button in the icon popup
 - Removed Sync Settings feature. (EXT-1076)
+- Removed allowlist YouTube channel feature (EXT-1079)
 
 # 6.27.2 - 2025-09-02
 

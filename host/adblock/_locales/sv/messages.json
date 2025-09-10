@@ -1267,10 +1267,6 @@
     "message": "Aktivera AdBlock på den här sidan",
     "description": "Link text to un-allowlist a page, displayed immediately after 'AdBlock is disabled on this page'"
   },
-  "enable_adblock_on_this_channel": {
-    "message": "Blockera annonser på den här kanalen",
-    "description": "Menu entry to un-allowlist a YouTube channel, displayed under 'You allowed ads on this channel.'"
-  },
   "status_paused": {
     "message": "AdBlock har pausats.",
     "description": "Message shown in toolbar button when AdBlock is not running"
@@ -1563,10 +1559,6 @@
     "message": "Hur?",
     "description": "Text of a link pointing to instructions on how to do something"
   },
-  "whats_this": {
-    "message": "Vad är det här?",
-    "description": "Text of a link pointing to the explanation of a new feature"
-  },
   "selectlanguage": {
     "message": " -- Välj språk -- ",
     "description": "First option in the language dropdown menu on the Filter lists tab. Include the ' -- ' on either side of your translation."
@@ -1574,14 +1566,6 @@
   "allowlist_channel": {
     "message": "Tillåt annonser på denna kanal",
     "description": "Entry in the AdBlock menu, only displayed when a user is browsing YouTube or Twitch and has enabled the YouTube or Twitch channel allow listing option"
-  },
-  "manage_subscribed_channel": {
-    "message": "Hantera annonser på kanalerna du prenumererar på",
-    "description": "Entry in the AdBlock menu, only displayed when a user is browsing YouTube and has enabled the YouTube channel allow listing option"
-  },
-  "whitelist_youtube_channel_v2": {
-    "message": "Tillåt annonser på YouTube-kanalen:",
-    "description": "Menu entry to whitelist the channel of the current YouTube video or page. The channel name will appear on a line below this menu item."
   },
   "confirm_undo_custom_filters": {
     "message": "Är du säker på att du vill ta bort de $count$ blockeringarna som du har skapat på $host$?",
@@ -2148,14 +2132,6 @@
   "selectlanguage2": {
     "message": "välj språk",
     "description": "First option in the language dropdown menu on the Filter lists tab."
-  },
-  "allow_whitelisting_youtube_channels2": {
-    "message": "Tillåt annonser på specifika YouTube-kanaler",
-    "description": "Checkbox on the 'General' tab of the Options page"
-  },
-  "youtube_manage_subscribed": {
-    "message": "Hantera AdBlock-inställningarna från min prenumerationssida på YouTube",
-    "description": "Checkbox on the 'General' tab of the Options page"
   },
   "allowlisting_twitch_channels": {
     "message": "Tillåt annonser på specifika Twitch-kanaler",
@@ -3278,46 +3254,6 @@
   "custom_image_supported_file_types": {
     "message": "*.bmp, *.gif, *.jpeg, *.png, *.svg, *.tiff, *.webp",
     "description": "supported file types, shown on the error message dialog box when a user selects a unsupported file type"
-  },
-  "youtube_onpage_icon_msg": {
-    "message": "Hantera annonser på kanalerna du prenumererar på:",
-    "description": "The message text on the YouTube on page icon; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_allow_all_btn_text": {
-    "message": "Tillåt annonser på alla",
-    "description": "The button text on the YouTube on page icon; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_block_all_btn_text": {
-    "message": "Blockera annonser på alla",
-    "description": "The button text on the YouTube on page icon; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_one_moment_text": {
-    "message": "Ett ögonblick...",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_allowed_complete_text": {
-    "message": "Annonser tillåts på alla kanaler du prenumererar på",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_blocked_complete_text": {
-    "message": "Annonser blockeras på alla kanaler du prenumererar på",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_allowing_ads_on_channel": {
-    "message": "Tillåter annonser på den här kanalen",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_blocking_ads_on_channel": {
-    "message": "Blockerar annonser på den här kanalen",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_sign_in_text": {
-    "message": "Logga in på ditt YouTube-konto för att hantera annonserna på kanalerna du prenumererar på.",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
-  },
-  "youtube_onpage_icon_no_channels_text": {
-    "message": "Prenumerera på minst en YouTube-kanal för att hantera annonserna på kanalerna du prenumererar på.",
-    "description": "The message text on the YouTube on page panel; shown on https://www.youtube.com/feed/channels"
   },
   "once": {
     "message": "En gång",

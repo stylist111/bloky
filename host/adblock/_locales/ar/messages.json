@@ -1255,10 +1255,6 @@
     "message": "تمكين AdBlock على هذه الصفحة",
     "description": "Link text to un-allowlist a page, displayed immediately after 'AdBlock is disabled on this page'"
   },
-  "enable_adblock_on_this_channel": {
-    "message": "حظر الإعلانات على هذا القناة",
-    "description": "Menu entry to un-allowlist a YouTube channel, displayed under 'You allowed ads on this channel.'"
-  },
   "status_paused": {
     "message": "AdBlock متوقفة مؤقتاً.",
     "description": "Message shown in toolbar button when AdBlock is not running"
@@ -1547,10 +1543,6 @@
     "message": "كيف؟",
     "description": "Text of a link pointing to instructions on how to do something"
   },
-  "whats_this": {
-    "message": "ما هذا؟",
-    "description": "Text of a link pointing to the explanation of a new feature"
-  },
   "selectlanguage": {
     "message": " --حدد اللغة -- ",
     "description": "First option in the language dropdown menu on the Filter lists tab. Include the ' -- ' on either side of your translation."
@@ -1558,10 +1550,6 @@
   "allowlist_channel": {
     "message": "السماح بالإعلانات على هذه القناة",
     "description": "Entry in the AdBlock menu, only displayed when a user is browsing YouTube or Twitch and has enabled the YouTube or Twitch channel allow listing option"
-  },
-  "whitelist_youtube_channel_v2": {
-    "message": "السماح بالإعلانات على قناة YouTube™:",
-    "description": "Menu entry to whitelist the channel of the current YouTube video or page. The channel name will appear on a line below this menu item."
   },
   "confirm_undo_custom_filters": {
     "message": "هل أنت متأكد من أنك تريد إزالة $count$ المنع الذي قمت بإنشائه في $host$؟",
@@ -2060,14 +2048,6 @@
   "selectlanguage2": {
     "message": "إختر اللغة",
     "description": "First option in the language dropdown menu on the Filter lists tab."
-  },
-  "allow_whitelisting_youtube_channels2": {
-    "message": "السماح بالإعلانات على قنوات يوتيوب محددة",
-    "description": "Checkbox on the 'General' tab of the Options page"
-  },
-  "youtube_manage_subscribed": {
-    "message": "إدارة إعدادات AdBlock من صفحة اشتراكات يوتيوب الخاصة بي",
-    "description": "Checkbox on the 'General' tab of the Options page"
   },
   "allowlisting_twitch_channels": {
     "message": "السماح بالإعلانات على قنوات تويتش محددة",
