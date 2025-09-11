@@ -42,7 +42,7 @@ export function getUserId(): Promise<string> {
     }
 
     // The stored value is missing, generate a new one.
-    const timeSuffix = Date.now() % 1e8; // 8 digits from end of timestamp
+    const timeSuffix = (Date.now() % 1e8).toString().padStart(8, "0"); // 8 digits from end of timestamp
     const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
     const result = [];
     for (let i = 0; i < 8; i++) {
