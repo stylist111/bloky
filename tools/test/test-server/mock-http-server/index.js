@@ -11,7 +11,11 @@ const mockServer = mockttp.getLocal({
   https: {
     certPath: path.join(__dirname, "certificates/testCA.pem"),
     keyPath: path.join(__dirname, "certificates/testCA.key"),
-    tlsInterceptOnly: [{ hostname: "api.ua.eyeo.it" }],
+    tlsInterceptOnly: [
+      { hostname: "api.ua.eyeo.it" },
+      { hostname: "myaccount.adblockplus.org" },
+      { hostname: "myaccount.getadblock.com" },
+    ],
   },
 });
 

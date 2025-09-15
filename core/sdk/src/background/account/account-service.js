@@ -25,7 +25,7 @@ import {ACCOUNT_PATHS, HEADERS, PORTAL_NAME} from "./resources.js";
 import {fetchWithRetry} from "./fetch-with-retry.js";
 
 /**
- * Returns the resources URLs for the account management API.
+ * Returns the resource URLs for the account management API.
  *
  * @param {string} apiBaseUrl - The base URL of the account management API.
  * @returns {Object}
@@ -34,8 +34,7 @@ function getResourceUrls(apiBaseUrl) {
   return {
     PROFILE: `${apiBaseUrl}${ACCOUNT_PATHS.PROFILE}`,
     REFRESH_TOKENS: `${apiBaseUrl}${ACCOUNT_PATHS.REFRESH_TOKENS}`,
-    LICENSE_LOGIN: `${apiBaseUrl}${ACCOUNT_PATHS.LICENSE_LOGIN}`,
-    LOGIN: `${apiBaseUrl}${ACCOUNT_PATHS.LOGIN}`
+    LICENSE_LOGIN: `${apiBaseUrl}${ACCOUNT_PATHS.LICENSE_LOGIN}`
   };
 }
 
@@ -75,16 +74,13 @@ export class AccountService {
       disableAutosync: false
     }
   }) {
+    this.apiBaseUrl = apiBaseUrl;
     this.applicationId = applicationId;
     this.profileSyncConfig = profileSyncConfig;
-    this.scheduler = null;
-    this.resources = getResourceUrls(apiBaseUrl);
     this.loginRequestPattern = loginRequestPattern;
 
-    if (!loginRequestPattern) {
-      // Set the login request pattern, defaulting to the LOGIN resource URL
-      this.loginRequestPattern = this.resources.LOGIN;
-    }
+    this.scheduler = null;
+    this.resources = getResourceUrls(apiBaseUrl);
   }
 
   /**
@@ -292,6 +288,11 @@ export class AccountService {
     }
 
     await accountStorage.saveTokens({accessToken, refreshToken});
+
+    // Restart the profile sync scheduler on every login. This will ensure it's
+    // fetching the profile right after each login.
+    this.stopProfileSyncScheduler();
+    await accountStorage.clearProfileSync();
     this.startProfileSyncScheduler();
   }
 

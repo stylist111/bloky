@@ -60,14 +60,16 @@ export const ACCOUNT_PATHS = {
   PROFILE: "/accounts/profile",
   REFRESH_TOKENS: "/accounts/token/refresh",
   LICENSE_LOGIN: `/accounts/migration/login-${PRODUCT_PREFIX}`,
-  LOGIN: "/accounts/otp/login"
+  EXT_LOGIN: "/accounts/api/auth/ext-login"
 };
+
+export const DEFAULT_LOGIN_PATTERN = `${TEST_ADMIN_PAGES_URL}${ACCOUNT_PATHS.EXT_LOGIN}*`;
 
 export const PROFILE_SYNC_URL = `${TEST_ADMIN_PAGES_URL}${ACCOUNT_PATHS.PROFILE}`;
 
 export const ACCOUNT_ROUTES = [
   {
-    url: ACCOUNT_PATHS.LOGIN,
+    url: ACCOUNT_PATHS.EXT_LOGIN,
     method: "POST",
     response: JSON.stringify({}),
     headers: {

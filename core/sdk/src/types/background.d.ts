@@ -566,12 +566,19 @@ export interface AddonInfo {
     /**
      * The base URL of the API to which the account module will make requests.
      */
-    apiBaseUrl?: string;
+    apiBaseUrl: string;
 
     /**
      * The application ID of to be used in the communication with the account API.
      */
-    applicationId?: string;
+    applicationId: string;
+
+    /**
+     * URL pattern to identify login requests and extract auth tokens from.
+     * See {@link https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Match_patterns|Match patterns}
+     * for details on the format.
+     */
+    loginRequestPattern: string;
   };
 
   /**

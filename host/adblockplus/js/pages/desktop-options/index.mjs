@@ -1708,6 +1708,7 @@ async function startTabHelp() {
 async function showUserAccount() {
   const user = await ewe.account.getProfile();
   const loginBtn = $("#user-account-login");
+  const loginCTABtn = $("#user-account-login-cta");
   const manageBtn = $("#user-account-manage");
 
   // Dynamically update the login URL to include the premium status.
@@ -1719,9 +1720,11 @@ async function showUserAccount() {
 
   if (user && user.email) {
     loginBtn.style.display = "none";
+    loginCTABtn.style.display = "none";
     manageBtn.style.display = "flex";
   } else {
     loginBtn.style.display = "flex";
+    loginCTABtn.style.display = "block";
     manageBtn.style.display = "none";
   }
 }

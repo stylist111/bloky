@@ -36,11 +36,12 @@ let accountService;
  * @param {Object} config - The config for the account service.
  * @param {string} config.apiBaseUrl - The endpoint for
  *   account-related resources.
+ * @param {string} config.applicationId - The application identifier used to
+ *   identify the application in the account system.
  * @param {string} config.loginRequestPattern - The pattern for the login
  *  request URL. This is used to filter the login requests that will be
  *  intercepted.
- * @param {string} config.applicationId - The application identifier used to
- *   identify the application in the account system.
+ * @param {Object} [config.profileSyncConfig] - Configuration for profile
  * @returns {Promise<void>}
  * @ignore
  */
@@ -59,15 +60,17 @@ export async function start({
     return;
   }
 
-  // do not continue if the API base URL or application ID is not provided
-  if (!apiBaseUrl || !applicationId) {
+  // Stop, if the API base URL, portal URL or application ID is not provided
+  if (!apiBaseUrl || !loginRequestPattern || !applicationId) {
+    // eslint-disable-next-line no-console
+    console.debug("Skipping account service initialization");
     return;
   }
 
   accountService = new AccountService({
     apiBaseUrl,
-    loginRequestPattern,
     applicationId,
+    loginRequestPattern,
     profileSyncConfig
   });
 

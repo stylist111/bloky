@@ -52,8 +52,8 @@ const EMAIL_ADDRESS = "john@example.com";
 async function mockOtpLoginEndpoint() {
   const { mockServer } = global;
   return await mockServer
-    .forPost("/v1/otp/login")
-    .forHost("api.ua.eyeo.it")
+    .forPost("/api/auth/ext-login")
+    .forHost("myaccount.adblockplus.org")
     .once()
     .thenReply(200, JSON.stringify({}), {
       "X-Application-Name": "abp-portal",
@@ -92,10 +92,11 @@ async function simulatePremiumActivation() {
   // navigate to https://myaccount.adblockplus.org/
   await openNewTab(premiumUrl);
 
-  // simulate the otp login, this will be intercepted by the mock server
-  // the response will activate the premium account in the extension
+  // Simulate the request to login the extension. This will be intercepted
+  // by the mock server the response will activate the premium account in
+  // the extension
   await driver.executeAsyncScript(async (callback) => {
-    await fetch("https://api.ua.eyeo.it/v1/otp/login", {
+    await fetch("https://myaccount.adblockplus.org/api/auth/ext-login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"

@@ -1,5 +1,7 @@
 # Unreleased
 
+- Updated user account log in request pattern (noissue)
+
 # 4.27.0 - 2025-09-09
 
 This release contains only minor updates and under-the-hood changes.

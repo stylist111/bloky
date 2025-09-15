@@ -539,6 +539,7 @@ if (isMV3()) {
 
 startupInfo.account = {
   apiBaseUrl: "http://localhost:3003/accounts",
+  loginRequestPattern: "http://localhost:3003/accounts/api/auth/ext-login*",
   applicationId: "ewe-test-application-id"
 };
 

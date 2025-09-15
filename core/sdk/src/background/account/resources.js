@@ -61,6 +61,5 @@ export const FEATURES = {
 export const ACCOUNT_PATHS = {
   PROFILE: "/profile",
   REFRESH_TOKENS: "/token/refresh",
-  LICENSE_LOGIN: `/migration/login-${productPrefix}`,
-  LOGIN: "/otp/login"
+  LICENSE_LOGIN: `/migration/login-${productPrefix}`
 };

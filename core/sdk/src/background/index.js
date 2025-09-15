@@ -279,6 +279,15 @@ async function onInstalled(details) {
  *   name and version will default to the extension's name and version.
  * @param {string} [addonInfo.name] Name of the addon/extension.
  * @param {string} [addonInfo.version] Version of the addon/extension.
+ * @param {Object} [addonInfo.account] - Configuration for the account module.
+ * @param {string} addonInfo.account.apiBaseUrl - The base URL of the API
+ *   to which the account module will make requests.
+ * @param {string} addonInfo.account.applicationId - The application ID to be
+ *   used in the communication with the account API.
+ * @param {string} addonInfo.account.loginRequestPattern - URL pattern to
+ *   identify login requests and extract auth tokens from.
+ *   See {@link https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Match_patterns|Match patterns}
+ *   for details on the format.
  * @param {Array<BundledSubscription>?} [addonInfo.bundledSubscriptions]
  *   A list of subscriptions provided by the integrator. Cannot be undefined
  *   for MV3.

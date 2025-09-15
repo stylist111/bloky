@@ -40,7 +40,8 @@ import {
   PROFILE_SYNC_URL,
   STORED_FREE_USER_PROFILE,
   REFRESH_TOKEN_INVALID_ERROR,
-  INTERNAL_SERVER_ERROR
+  INTERNAL_SERVER_ERROR,
+  DEFAULT_LOGIN_PATTERN
 } from "./fixtures/account.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 
@@ -69,12 +70,12 @@ async function startWithTestArgs({
   errorRetryDelay = ERROR_BACKOFF_MS,
   disableAutosync
 }) {
-  let loginRequestPattern;
+  let loginRequestPattern = DEFAULT_LOGIN_PATTERN;
 
   // Firefox listener is not triggered if the pattern contains the port.
   // That is why we use localhost without port.
   if (isFirefox()) {
-    loginRequestPattern = `*://localhost${ACCOUNT_PATHS.LOGIN}`;
+    loginRequestPattern = DEFAULT_LOGIN_PATTERN.replace(/:\d+/, "");
   }
 
   const config = {

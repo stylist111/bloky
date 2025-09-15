@@ -5,6 +5,7 @@
 - Added `EWE.remoteConfig.setUrl()` API (EXT-977).
 - Moved the initialization of logging components to earlier in the SDK
   initialization process (EXT-1036).
+- Updated user account log in request pattern (noissue)
 
 ## Fixes
 

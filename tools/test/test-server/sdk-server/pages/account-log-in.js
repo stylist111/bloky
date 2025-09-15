@@ -1,5 +1,5 @@
 export async function sendLogInRequest() {
-  const url = "http://localhost:3003/accounts/otp/login";
+  const url = "http://localhost:3003/accounts/api/auth/ext-login";
 
   const headers = {
     Accept: "application/json",
