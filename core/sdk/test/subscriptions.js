@@ -37,6 +37,7 @@ const VALID_SUBSCRIPTION_URL_2 = subTestCustom2.url;
 
 // this subscription doesn't appear in background.js and isn't bundled
 const USER_SUBSCRIPTION_URL = `${TEST_ADMIN_PAGES_URL}/user-subscription.txt`;
+const USER_SUBSCRIPTION_URL_2 = `${TEST_ADMIN_PAGES_URL}/user-subscription-2.txt`;
 
 const INVALID_SUBSCRIPTION_URL = "invalidUrl";
 
@@ -842,8 +843,11 @@ describe("Subscriptions", function() {
     });
 
     it("stops emitting events for removed subscriptions", async function() {
-      await setEndpointResponse(USER_SUBSCRIPTION_URL, USER_SUBSCRIPTION_BODY);
-      await EWE.subscriptions.add(USER_SUBSCRIPTION_URL);
+      await setEndpointResponse(
+        USER_SUBSCRIPTION_URL_2,
+        USER_SUBSCRIPTION_BODY
+      );
+      await EWE.subscriptions.add(USER_SUBSCRIPTION_URL_2);
 
       // wait for downloading started
       await waitForAssertion(() => {
@@ -851,14 +855,14 @@ describe("Subscriptions", function() {
         let downloadStartingEvents = changeEvents.filter(event => {
           return event[0].downloading == true && event[1] == "downloading";
         });
+
         expect(downloadStartingEvents).toEqual([[
-          expect.objectContaining({url: USER_SUBSCRIPTION_URL}),
+          expect.objectContaining({url: USER_SUBSCRIPTION_URL_2}),
           "downloading"
         ]]);
       }, 3000, 5);
-
       // remove the subscription, the synchronization continues meanwhile
-      await EWE.subscriptions.remove(USER_SUBSCRIPTION_URL);
+      await EWE.subscriptions.remove(USER_SUBSCRIPTION_URL_2);
       await clearTestEvents("subscriptions.onChanged");
 
       // await for the sync to be finished
