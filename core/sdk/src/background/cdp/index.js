@@ -15,29 +15,28 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import browser from "./browser.js";
-
-import {Prefs, CDP_OPTED_IN, CDP_OPTED_OUT,
-        CDP_OPTED_IN_BY_USER, CDP_OPTED_OUT_BY_USER}
-  from "./prefs.js";
-import {getFrameInfo, TOP_LEVEL_FRAME_ID} from "./frame-state.js";
-import {PersistentState} from "./persistence.js";
-
-import {trace, debug, warn, error} from "./debugging.js";
-import {isFirefox} from "./info.js";
-import {MaxLengthMetricsDict} from "./domains-trimming.js";
 import {isHttpOrHttps, stripQuery} from "adblockpluscore/lib/url.js";
-import {SpecialDomainsProcessor} from "./cdp-processor.js";
+import browser from "../browser.js";
+import {Prefs, CDP_OPTED_IN, CDP_OPTED_OUT, CDP_OPTED_IN_BY_USER,
+        CDP_OPTED_OUT_BY_USER, isInitialized as isPrefsInitialized}
+  from "../prefs.js";
+import {getFrameInfo, TOP_LEVEL_FRAME_ID} from "../frame-state.js";
+import {PersistentState} from "../persistence.js";
+import {trace, debug, warn, error} from "../debugging.js";
+import {isFirefox} from "../info.js";
+import {EventDispatcher} from "../types.js";
+import {log as _log} from "../safari-logs.js";
+
+import {MaxLengthMetricsDict} from "./domains-trimming.js";
+import {SpecialDomainsProcessor} from "./domain-processor.js";
 import {setPremiumStatusCallback} from "./callbacks.js";
-import {EventDispatcher} from "./types.js";
-import {log as _log, printLog} from "./safari-logs.js";
 
 /**
  * "Page view" event type. These are triggered whenever a new page is viewed,
  * both using a full page refresh or a single page app navigation.
  * @ignore
  */
-export const EVENT_PAGE_VIEW = "page_view";
+const EVENT_PAGE_VIEW = "page_view";
 
 /**
  * "Session started" event type. These are triggered when the user starts a new
@@ -45,7 +44,7 @@ export const EVENT_PAGE_VIEW = "page_view";
  * on that site for 30 minutes (configurable in Prefs).
  * @ignore
  */
-export const EVENT_SESSION_START = "session_start";
+const EVENT_SESSION_START = "session_start";
 
 /**
  * "Blockthrough AAPV" event type. This is a page view, on which the
@@ -53,7 +52,7 @@ export const EVENT_SESSION_START = "session_start";
  * indicates that Acceptable Ads is active.
  * @ignore
  */
-export const EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW =
+const EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW =
   "blockthrough_acceptable_ads_page_view";
 
 // CDP events and pages user activity loading delay (for testing)
@@ -137,65 +136,6 @@ function initializeActivity() {
 
 initializeActivity();
 
-// Map<Listener, Object (filter options)>
-let listeners = new Map();
-
-/**
- * The CdpEventDispatcher class allows users to listen to CDP events.
- * @hideconstructor
- */
-export class CdpEventDispatcher {
-  /**
-  * @typedef {Object} CdpEventOptions
-  * @param {string} [eventType]
-  *   The optional filter for event types. Skip for all the event types.
-  *   The supported event types are "page_view", "session_start" and "blocking".
-  * @param {string?} [siteId]
-  *   The optional filter for siteIds.
-  *   Skip for all the siteIds.
-  */
-
-  /**
-   * Attaches a listener function to a event. This listener will be called
-   * when the CDP event is emitted if the feature is ON and user did not
-   * opt out (`Prefs.cdp_opt_in_out`).
-   * @param {function} listener The user defined function that will be called
-   *                            once the specified event is emitted.
-   * @param {CdpEventOptions} filterOptions The filtering conditions to apply
-   *                                        when the event is emitted.
-   * @example
-   * // Logs all event types on all the tracked domains
-   * EWE.reporting.onCdpItem.addListener(console.log);
-   * @example
-   * // Log all "session_start" items on "webext.com"
-   * EWE.reporting.onCdpItem.addListener(
-   *   console.log,
-   *   {eventType: "session_start", siteId: "webext.com"}
-   * );
-   */
-  addListener(listener, filterOptions = {}) {
-    listeners.set(listener, filterOptions);
-  }
-
-  removeListener(listener) {
-    listeners.delete(listener);
-  }
-}
-
-async function emitEvent(eventType, siteId, timeStamp) {
-  for (const [listener, filterOptions] of listeners) {
-    if (filterOptions.eventType && filterOptions.eventType != eventType) {
-      continue;
-    }
-
-    if (filterOptions.siteId && filterOptions.siteId != siteId) {
-      continue;
-    }
-
-    await listener({eventType, siteId, timeStamp});
-  }
-}
-
 async function count(eventType, siteId, timeStamp) {
   trace({eventType, siteId, timeStamp});
   log(`count(${eventType}, ${siteId}, ${timeStamp})`);
@@ -207,8 +147,6 @@ async function count(eventType, siteId, timeStamp) {
   if (isStateLoaded()) {
     await state.save();
   }
-
-  await emitEvent(eventType, siteId, timeStamp);
 }
 
 /**
@@ -333,16 +271,16 @@ export async function clearData() {
 
 let startupPromise;
 
-function handleBrowserEvent(details, doMarkActive) {
+async function handleBrowserEvent(details, doMarkActive) {
   trace(details);
-
-  if (isOptedOut()) {
-    return;
-  }
 
   if (!isStateLoaded()) {
     warn(() => `Deferring browser event: ${JSON.stringify(details)}`);
     deferredBrowserEvents.push({details, doMarkActive});
+    return;
+  }
+
+  if (isOptedOut()) {
     return;
   }
 
@@ -408,7 +346,15 @@ function isNewSession(siteId) {
   return false;
 }
 
-function isOptedOut() {
+/**
+ * Gets the current CDP opt-out status. This should only be called after Prefs
+ * has been initialized.
+ *
+ * @returns {boolean} True if the user has opted out, false if we can send
+ *   payloads.
+ * @ignore
+ */
+export function isOptedOut() {
   return Prefs.cdp_opt_in_out == CDP_OPTED_OUT ||
          Prefs.cdp_opt_in_out == CDP_OPTED_OUT_BY_USER;
 }
@@ -455,6 +401,9 @@ export async function markActive(tabId, frameId) {
 
 /**
  * Checks whether tab domain is tracked for CDP events
+ *
+ * This should only be called after prefs have been initialized.
+ *
  * @param {Number} tabId Tab id
  * @param {Number} frameId Frame id
  * @returns {boolean} Whether the tab domain is tracked for CDP events
@@ -489,13 +438,13 @@ let dispatchBTAADetectionEvent = () => {};
 export function countBTAADetectionEvent(url, details) {
   trace({url, details});
 
-  if (isOptedOut()) {
-    return;
-  }
-
   if (!isStateLoaded()) {
     warn(() => `Deferring blockthrough acceptable ads page view event: ${JSON.stringify({url})}`);
     deferredBlockthroughEvents.push({url, details});
+    return;
+  }
+
+  if (isOptedOut()) {
     return;
   }
 
@@ -548,6 +497,9 @@ function isStateLoaded() {
     if (!state.loaded) {
       return false;
     }
+  }
+  if (!isPrefsInitialized) {
+    return false;
   }
   return true;
 }
@@ -716,6 +668,9 @@ export async function start() {
   return startupPromise;
 }
 
+/**
+ * @namespace cdp
+ */
 export default {
   /**
    * Blockthrough Acceptable Ads detection details
@@ -735,6 +690,7 @@ export default {
    *
    * @event
    * @type {EventDispatcher<BtaaDetectionDetails>}
+   * @memberof cdp
    */
   onBTAADetectionEvent: new EventDispatcher(
     dispatch => {
@@ -745,35 +701,14 @@ export default {
     }),
 
   /**
-   * Emitted when any CDP event happened.
-   * @event
-   * @param {string} eventType Event type
-   *                           ("page_view", "session_start", "blocking")
-   * @param {string} siteId SiteId
-   * @param {Number} timestamp Event timestamp
-   * @type {CdpEventDispatcher<{eventType: string,
-   *                           siteId: string,
-   *                           timeStamp: Number}>}
-   */
-  onCdpItem: new CdpEventDispatcher(),
-
-  /**
    * Opt-out from CDP. Default is `true` (used opted out)
    * @param {boolean} value Pass `true` to opt-out
    * @returns {Promise} Promise that resolves when the setting is set.
+   * @memberof cdp
    */
   async setOptOut(value) {
     Prefs.cdp_opt_in_out = (value ?
       CDP_OPTED_OUT_BY_USER : CDP_OPTED_IN_BY_USER);
-  },
-
-  /**
-   * Check whether user is opted out from CDP
-   * @returns {Promise<boolean>} Returns `true` is user opted out from CDP
-   */
-  async isOptOut() {
-    return Prefs.cdp_opt_in_out == CDP_OPTED_OUT ||
-           Prefs.cdp_opt_in_out == CDP_OPTED_OUT_BY_USER;
   },
 
   /**
@@ -785,11 +720,7 @@ export default {
   *   be called as soon as possible after EWE start. The callback must
   *   return a status of the license as a string.
   *   Options supported: true, false.
+  * @memberof cdp
   */
-  setPremiumStatusCallback,
-
-  /**
-   * Print the safari polyfilling log
-   */
-  printLog
+  setPremiumStatusCallback
 };

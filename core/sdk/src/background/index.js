@@ -41,8 +41,8 @@ import * as filters from "./filters.js";
 import * as reporting from "./reporting.js";
 import * as testing from "./testing.js";
 import * as prefs from "./prefs.js";
-import * as cdp from "./cdp.js";
-import * as cdpMetricsUploader from "./cdp-metrics-uploader.js";
+import * as cdp from "./cdp/index.js";
+import * as cdpUploader from "./cdp/uploader.js";
 import * as remoteConfig from "./remote-config/index.js";
 import * as experiments from "./experiments.js";
 import * as cohorts from "./cohorts/index.js";
@@ -395,7 +395,7 @@ export async function start(addonInfo) {
   }
 
   if (addonInfo && addonInfo.cdp) {
-    await cdpMetricsUploader.start(addonInfo.cdp);
+    await cdpUploader.start(addonInfo.cdp);
   }
 
   // This function is invoked at the latest

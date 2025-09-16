@@ -20,6 +20,11 @@
   would prevent the other filters in the subscription from
   functioning. (EXT-1074)
 
+## Breaking Changes
+
+- Removed `EWE.cdp.onCdpItem`, `EWE.cdp.isOptOut`, and
+  `EWE.cdp.printLog`. (EXT-920).
+
 # 2.1.0 - 2025-07-31
 
 - Added cohorts to telemetry and CDP. (EXT-980)

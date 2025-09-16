@@ -20,19 +20,21 @@ import {v4 as uuidv4} from "uuid";
 import pako from "pako";
 import {MILLIS_IN_HOUR, MILLIS_IN_DAY} from "adblockpluscore/lib/time.js";
 
-import * as info from "./info.js";
-import {Scheduler} from "../all/scheduler.js";
-import {hasAcceptableAdsEnabled} from "./subscriptions.js";
-import {trace, error, debug, warn} from "./debugging.js";
-import {default as experiments} from "./experiments.js";
-import {default as cohorts} from "./cohorts/index.js";
-import {postWithBearerToken} from "./telemetry/eyeometry.js";
-import {default as cdpMod, getDomainStats, clearData} from "./cdp.js";
+import * as info from "../info.js";
+import {Scheduler} from "../../all/scheduler.js";
+import {hasAcceptableAdsEnabled} from "../subscriptions.js";
+import {trace, error, debug, warn} from "../debugging.js";
+import {default as experiments} from "../experiments.js";
+import {default as cohorts} from "../cohorts/index.js";
+import {postWithBearerToken} from "../telemetry/eyeometry.js";
+import {PersistentState} from "../persistence.js";
+import {init as initPrefs} from "../prefs.js";
+
+import {isOptedOut, getDomainStats, clearData} from "./index.js";
 import {premiumStatusCallback} from "./callbacks.js";
 import {importRSAPublicKey, encryptRSA, AES_LENGTH,
         createAESKey, generateAESNonce, AESkeyToBinary, encryptAES}
-  from "./cdp-encryption.js";
-import {PersistentState} from "./persistence.js";
+  from "./encryption.js";
 
 let manifest = browser.runtime.getManifest();
 const extensionVersion = manifest.version;
@@ -192,7 +194,8 @@ function hasLastDomainStats(state) {
 export async function upload() {
   trace({});
 
-  if (await cdpMod.isOptOut()) {
+  await initPrefs();
+  if (isOptedOut()) {
     warn("CDP opted out, skipping");
     return false;
   }

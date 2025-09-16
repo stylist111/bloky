@@ -19,7 +19,7 @@ import browser from "webextension-polyfill";
 
 import {default as experiments} from "../experiments.js";
 import {default as cohorts} from "../cohorts/index.js";
-import {premiumStatusCallback} from "../callbacks.js";
+import {premiumStatusCallback} from "../cdp/callbacks.js";
 import * as info from "../info.js";
 import {hasAcceptableAdsEnabled} from "../subscriptions.js";
 

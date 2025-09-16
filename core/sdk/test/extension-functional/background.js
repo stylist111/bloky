@@ -488,21 +488,6 @@ EWE.reporting.onBlockableItem.addListener(
 EWE.cdp.onBTAADetectionEvent.addListener(
   createTestEventListener("cdp.onBTAADetectionEvent")
 );
-EWE.cdp.onCdpItem.addListener(
-  createTestEventListener("cdp.onCdpItem.all")
-);
-EWE.cdp.onCdpItem.addListener(
-  createTestEventListener("cdp.onCdpItem.page_view"),
-  {
-    eventType: "page_view"
-  }
-);
-EWE.cdp.onCdpItem.addListener(
-  createTestEventListener("cdp.onCdpItem.session_start"),
-  {
-    eventType: "session_start"
-  }
-);
 
 async function checkTabAllowlisted(tabId, changeInfo, tab) {
   let result = {

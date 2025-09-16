@@ -184,6 +184,8 @@ async function loadPreferences() {
   }
 }
 
+export let isInitialized = false;
+
 export async function init() {
   if (!initializationPromise) {
     initializationPromise = (async() => {
@@ -196,6 +198,7 @@ export async function init() {
       }
 
       await loadPreferences();
+      isInitialized = true;
     })();
   }
 

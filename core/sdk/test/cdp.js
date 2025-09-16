@@ -177,7 +177,7 @@ describe("CDP", function() {
   let originalExpirationInterval;
 
   before(async function() {
-    originalUserOptedOut = await EWE.cdp.isOptOut();
+    originalUserOptedOut = await EWE.testing._isCdpOptedOut();
     originalExpirationInterval = await EWE.testing._getPrefs(
       EXPIRATION_INTERVAL_KEY
     );
@@ -199,18 +199,18 @@ describe("CDP", function() {
     const KEY = "cdp_opt_in_out";
 
     it("is disabled by default for Firefox only", async function() {
-      expect(await EWE.cdp.isOptOut()).toEqual(isFirefox());
+      expect(await EWE.testing._isCdpOptedOut()).toEqual(isFirefox());
     });
 
     it("checks to be opted in on Firefox by user", async function() {
       await EWE.cdp.setOptOut(false);
-      expect(await EWE.cdp.isOptOut()).toEqual(false);
+      expect(await EWE.testing._isCdpOptedOut()).toEqual(false);
       expect(await EWE.testing._getPrefs(KEY)).toEqual(2); // OPTED_IN_BY_USER
     });
 
     it("checks to be opted out by user", async function() {
       await EWE.cdp.setOptOut(true);
-      expect(await EWE.cdp.isOptOut()).toEqual(true);
+      expect(await EWE.testing._isCdpOptedOut()).toEqual(true);
       expect(await EWE.testing._getPrefs(KEY)).toEqual(3); // OPTED_OUT_BY_USER
     });
   });
@@ -313,7 +313,7 @@ describe("CDP", function() {
 
     it("does not track if opted out by user", async function() {
       await EWE.cdp.setOptOut(true);
-      expect(await EWE.cdp.isOptOut()).toEqual(true);
+      expect(await EWE.testing._isCdpOptedOut()).toEqual(true);
       await addFilter(`image.png$domain=${TEST_PAGES_DOMAIN}`);
       await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
       await assertEvents(TEST_PAGES_DOMAIN, EVENT_PAGE_VIEW, 0);
@@ -564,40 +564,6 @@ describe("CDP", function() {
 
       await new Page("chrome://version").loaded;
       await assertEvents("version", EVENT_SESSION_START, 0);
-    });
-
-    it("notifies the listeners", async function() {
-      await addFilter(`image.png$domain=${TEST_PAGES_DOMAIN}`);
-
-      await new Page(`${TEST_PAGES_URL}/image.html`).loaded;
-      await EWE.debugging.ensureEverythingHasSaved();
-
-      await waitForAssertion(() => {
-        expect(getTestEvents("cdp.onCdpItem.page_view")).toEqual([[{
-          timeStamp: expect.any(Number),
-          siteId: TEST_PAGES_DOMAIN,
-          eventType: EVENT_PAGE_VIEW
-        }]]);
-
-        expect(getTestEvents("cdp.onCdpItem.session_start")).toEqual([[{
-          timeStamp: expect.any(Number),
-          siteId: TEST_PAGES_DOMAIN,
-          eventType: EVENT_SESSION_START
-        }]]);
-
-        expect(getTestEvents("cdp.onCdpItem.all")).toEqual(expect.arrayContaining([
-          expect.arrayContaining([{
-            timeStamp: expect.any(Number),
-            siteId: TEST_PAGES_DOMAIN,
-            eventType: EVENT_PAGE_VIEW
-          }]),
-          expect.arrayContaining([{
-            timeStamp: expect.any(Number),
-            siteId: TEST_PAGES_DOMAIN,
-            eventType: EVENT_SESSION_START
-          }])
-        ]));
-      });
     });
 
     it("notifies the listeners for blockthrough AAPV events", async function() {
@@ -1591,24 +1557,6 @@ describe("CDP", function() {
     });
 
     describe("Encryption", function() {
-      const PEM_ENCODED_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
-MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEA6D2rA84PYRZQFv4NL4V5
-UMCivHsmRE8JticuyWzTAx7vyptEjsstuk/oW3v25+glc4Jr0zi8z9IzUUJ097tX
-RioZ9fc5bCtUFLU0+XbxiUiMBYsocPkFr/XkDClWDF7OcCvZcltZfbRnOsui8v5W
-zEK1nWFTv3PPHhpBbKjnP+acnI9mxxbjC9kYzytyH03vLEGPayDujP5QyZAH6U9v
-3RB6pS/46vrVbYbNuMHYrUQGSNAXotweKqx/iMs7kur5Xp0ugUoyR6mrBftmk2vP
-Z5y4mIqwUhGMX1XLzQRVhT+7ngKK1QhxB0ruQuX/Dvn8Y6bIE+ola8B3txJ31l5I
-8+05Dcr4AAmkq67KQUTcce/+0Nz7MWWMObf12+S/j95b4nqROGrNlwtV83MoYH8e
-QtJr9Ejt+zdl/OAahyp4zvAiPFLA8fRQGoHhPXt/fYHsxySG7OPMazLJxFarmWT/
-UlvVm112lG9ij3Mc/f64cKzmenKoIe0c2HSGMxFagEDnAgMBAAE=
------END PUBLIC KEY-----`;
-
-      it("imports public RSA key", async function() {
-        const publicKey = await EWE.testing._importRSAPublicKey(
-          PEM_ENCODED_PUBLIC_KEY);
-        expect(publicKey).not.toBeNull();
-      });
-
       it("requests public key", async function() {
         await EWE.testing.startCdpMetricsUploader(CDP_PHASE_3_ARGS, 3000);
         const {publicKey, keyId} = await EWE.testing._requestPublicKey();

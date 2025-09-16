@@ -1048,11 +1048,6 @@ declare module "@eyeo/webext-ad-filtering-solution" {
      */
     const setOptOut: (optOut: boolean) => Promise<void>;
 
-    /**
-     * Returns whether opted out from CDP
-     */
-    const isOptOut: () => Promise<boolean>;
-
    /**
      * Function called to set a callback for retrieving premium status.
      *

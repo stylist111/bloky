@@ -21,7 +21,7 @@ import {IO as io} from "./io.js";
 import {init as initDNRFilters} from "./dnr-filters.js";
 import {init as initPrefs} from "./prefs.js";
 import {default as debugging} from "./debugging.js";
-import * as cdp from "./cdp.js";
+import * as cdp from "./cdp/index.js";
 import {isSafari} from "./info.js";
 import {patchForSafari} from "./safari-polyfill.js";
 import {log, printLog} from "./safari-logs.js";

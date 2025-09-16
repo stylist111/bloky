@@ -40,12 +40,11 @@ toc:
       - BlockableEventOptions
       - BtaaDetectionDetails
       - BundledSubscription
-      - CdpEventDispatcher
-      - CdpEventOptions
       - EventDispatcher
       - Experiment
       - ExperimentVariant
       - Filter
+      - FilterWithMetadata
       - FilterAddResult
       - FilterError
       - FilterMatchInfo

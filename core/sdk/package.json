@@ -82,7 +82,7 @@
   "scripts": {
     "lint": "node scripts/lint.js",
     "lint-fix": "node scripts/lint.js --fix",
-    "docs": "documentation build --document-exported --sort-order alpha -f html -o public --config documentation.yml src/background/index.js src/background/filters.js src/background/subscriptions.js src/background/reporting.js src/background/cdp.js src/background/debugging.js src/background/telemetry/server-logger.js src/background/telemetry/index.js src/background/types.js src/background/experiments.js src/background/remote-config/index.js src/background/cohorts/engine.js src/background/account/index.js",
+    "docs": "documentation build --document-exported --sort-order alpha -f html -o public --config documentation.yml src/background/index.js src/background/filters.js src/background/subscriptions.js src/background/reporting.js src/background/cdp/index.js src/background/debugging.js src/background/telemetry/server-logger.js src/background/telemetry/index.js src/background/types.js src/background/experiments.js src/background/remote-config/index.js src/background/cohorts/engine.js src/background/account/index.js",
     "docs-adblockpluscore": "jsdoc --configure adblockpluscore/.jsdoc.conf --destination public/adblockpluscore adblockpluscore/lib",
     "prepack": "npm run build:release",
     "build": "node scripts/build.js",

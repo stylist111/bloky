@@ -47,13 +47,12 @@ import * as telemetry from "./telemetry/index.js";
 import * as activePing from "./telemetry/active-ping.js";
 import * as serverLogUploader from "./telemetry/server-log-uploader.js";
 import * as serverLogConfig from "./telemetry/server-log-config.js";
-import * as cdpMetricsUploader from "./cdp-metrics-uploader.js";
-import * as cdpEncryption from "./cdp-encryption.js";
+import * as cdpUploader from "./cdp/uploader.js";
 import * as filters from "./filters.js";
 
 import * as sitekey from "./sitekey.js";
 import {getDeferredMessages} from "./content-message-deferrer.js";
-import * as cdp from "./cdp.js";
+import * as cdp from "./cdp/index.js";
 import {_clear} from "./frame-state.js";
 import * as account from "./account/index.js";
 import * as remoteConfig from "./remote-config/index.js";
@@ -329,9 +328,9 @@ export default {
   resetRotationPeriod: serverLogConfig.resetRotationPeriod,
   setRotationPeriod: serverLogConfig.setRotationPeriod,
 
-  stopCdpMetricsUploader: cdpMetricsUploader.stop,
-  startCdpMetricsUploader: cdpMetricsUploader.start,
-  resetCdpMetricsUploader: cdpMetricsUploader.reset,
+  stopCdpMetricsUploader: cdpUploader.stop,
+  startCdpMetricsUploader: cdpUploader.start,
+  resetCdpMetricsUploader: cdpUploader.reset,
 
   stopCdp: cdp.stop,
   startCdp: cdp.start,
@@ -344,9 +343,9 @@ export default {
   _clearCdpData: cdp.clearData,
   _clearCdpActivity: cdp.clearActivity,
   _getCdpDomainStats: cdp.getDomainStats,
-  _importRSAPublicKey: cdpEncryption.importRSAPublicKey,
-  _requestPublicKey: cdpMetricsUploader.requestPublicKey,
-  _uploadCdp: cdpMetricsUploader.upload,
+  _isCdpOptedOut: cdp.isOptedOut,
+  _requestPublicKey: cdpUploader.requestPublicKey,
+  _uploadCdp: cdpUploader.upload,
 
   clearSkipInitRulesets,
   checkAndInitSubscriptions,

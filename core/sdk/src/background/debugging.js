@@ -27,7 +27,7 @@ import {filterEngine} from "./core.js";
 import * as prefs from "./prefs.js";
 import * as sitekey from "./sitekey.js";
 import * as contentMessageDeferrer from "./content-message-deferrer.js";
-import * as cdp from "./cdp.js";
+import * as cdp from "./cdp/index.js";
 import {validate} from "./subscriptions.js";
 
 let defaultDebugOptions = {

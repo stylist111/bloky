@@ -26,7 +26,7 @@ import {logHiddenElements} from "./diagnostics.js";
 import {allowlistPage} from "./allowlisting.js";
 import {trace} from "./debugging.js";
 import {onContentHelloReceived} from "./content-message-deferrer.js";
-import {markActive, countBTAADetectionEvent} from "./cdp.js";
+import {markActive, countBTAADetectionEvent} from "./cdp/index.js";
 import {default as sentry} from "./sentry.js";
 import {serverLogValidatedEvent} from "./telemetry/server-logger.js";
 import {handleMessageAPICall} from "./message-invoked-api.js";
@@ -74,7 +74,7 @@ async function handleMessage(message, sender) {
       await markActive(sender.tab.id, sender.frameId);
       break;
     case "ewe:blockthrough-acceptable-ads-detection-event":
-      await countBTAADetectionEvent(sender.tab.url, message.details);
+      countBTAADetectionEvent(sender.tab.url, message.details);
       break;
     case "ewe:sentry-error":
       const error = fromSerializableError(message.error);

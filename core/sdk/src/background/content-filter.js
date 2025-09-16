@@ -26,7 +26,7 @@ import {getFrameInfo} from "./frame-state.js";
 import {logItem, tracingEnabled} from "./diagnostics.js";
 import {debugOptions, trace, debug, warn} from "./debugging.js";
 import {arraysDiff} from "./set-operations.js";
-import {shouldNotifyActive} from "./cdp.js";
+import {shouldNotifyActive} from "./cdp/index.js";
 import {patchSender as patchHistoryApi} from "./safari-history.js";
 import {isSafari} from "./info.js";
 

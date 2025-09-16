@@ -17,7 +17,7 @@
 
 import expect from "expect";
 import {Validator} from "jsonschema";
-import {MaxLengthMetricsDict} from "../../../src/background/domains-trimming.js";
+import {MaxLengthMetricsDict} from "../../../src/background/cdp/domains-trimming.js";
 
 const SESSIONS_COUNT = "s";
 const PAGE_VIEWS = "p";
