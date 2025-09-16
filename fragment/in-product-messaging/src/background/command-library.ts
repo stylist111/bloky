@@ -15,7 +15,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import browser from "webextension-polyfill";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
 import {
@@ -35,7 +34,6 @@ import { getStartInfo, setStartInfo } from "./start-info";
 import { type StartInfo } from "./start-info.types";
 import { isDeleteBehavior, setDeleteCommandHandler } from "./delete-commands";
 import { recordEvent, recordGenericEvent } from "./event-recording";
-import { checkLanguage } from "./language-check";
 import { isValidDate } from "./param-validator";
 
 /**
@@ -297,14 +295,6 @@ export async function executeIPMCommands(
       continue;
     }
 
-    // add timestamp and language information
-    if (!("attributes" in command)) {
-      command.attributes = {
-        received: Date.now(),
-        language: browser.i18n.getUILanguage(),
-      };
-    }
-
     // queue command for execution
     actorByExecutableCommand.set(command, actor);
   }
@@ -364,9 +354,6 @@ async function handleDeleteCommand(ipmId: string): Promise<void> {
     );
     return;
   }
-
-  // run mandatory language check
-  void checkLanguage(ipmId);
 
   // Ignore and dismiss command if it has expired
   if (isCommandExpired(command)) {

@@ -34,7 +34,7 @@ import { findUrl, openNewTab } from "@eyeo/test-utils/driver";
 import { localTestPageUrl } from "@eyeo/test-utils/host-urls";
 import { updateUrlVersions } from "../../utils/urls.js";
 import { initOptionsGeneralTab } from "../../utils/page.js";
-import { expectedIPMCommandsVersions } from "../../utils/ipms.js";
+import { expectedIPMCommands } from "../../utils/ipms.js";
 
 export default (fragmentType) => {
   before(async function () {
@@ -109,7 +109,7 @@ export default (fragmentType) => {
     await syncRemoteConfig(initOptionsGeneralTab);
 
     let ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
-    expect(ipmCommands).toEqual(expectedIPMCommandsVersions);
+    expect(ipmCommands).toEqual(expectedIPMCommands.versions[fragmentType]);
 
     await setRemoteConfigIpmCommands(
       initOptionsGeneralTab,
@@ -142,7 +142,7 @@ export default (fragmentType) => {
     await syncRemoteConfig(initOptionsGeneralTab);
 
     let ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
-    expect(ipmCommands).toEqual(expectedIPMCommandsVersions);
+    expect(ipmCommands).toEqual(expectedIPMCommands.versions[fragmentType]);
 
     await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_none");
     await syncRemoteConfig(initOptionsGeneralTab);

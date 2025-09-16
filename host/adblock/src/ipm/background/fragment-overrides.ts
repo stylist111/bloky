@@ -17,7 +17,12 @@
 
 import * as FutureFragment from "@eyeo-fragments/in-product-messaging/background";
 import * as LegacyFragment from "@eyeo-fragments/ipm-legacy/background";
-import { type CommandActor, type CommandName } from "@eyeo-fragments/ipm-legacy/background";
+
+import {
+  type FutureFragmentOverrides,
+  type LegacyFragmentOverrides,
+} from "./fragment-overrides.types";
+import { type CommandActor, type CommandName } from "./fragment-provider.types";
 
 /**
  * Sets actor for handling command with given name
@@ -37,8 +42,9 @@ function setCommandActor(commandName: CommandName, actor: CommandActor): void {
  *
  * @returns fragment overrides
  */
-export function getFutureFragmentOverrides(): Partial<typeof FutureFragment> {
+export function getFutureFragmentOverrides(): FutureFragmentOverrides {
   return {
+    checkLanguage: async () => {},
     setCommandActor,
   };
 }
@@ -48,7 +54,7 @@ export function getFutureFragmentOverrides(): Partial<typeof FutureFragment> {
  *
  * @returns fragment overrides
  */
-export function getLegacyFragmentOverrides(): Partial<typeof LegacyFragment> {
+export function getLegacyFragmentOverrides(): LegacyFragmentOverrides {
   return {
     setCommandActor,
   };

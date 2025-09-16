@@ -38,14 +38,7 @@ import {
   openNewTab,
 } from "@eyeo/test-utils/driver";
 import { premiumUrl } from "../../utils/urls.js";
-import {
-  expectedIPMCommandsNavigation_legacy,
-  expectedIPMCommandsNavigation_future,
-  expectedIPMCommandsExclusion_legacy,
-  expectedIPMCommandsExclusion_future,
-  expectedIPMCommandsCookie_legacy,
-  expectedIPMCommandsCookie_future,
-} from "../../utils/ipms.js";
+import { expectedIPMCommands } from "../../utils/ipms.js";
 import { initOptionsGeneralTab } from "../../utils/page.js";
 
 async function getOPDShadowRoot() {
@@ -58,21 +51,6 @@ async function getOPDShadowRoot() {
   const opdHost = await driver.findElement(By.css("#__ABoverlay"));
   return opdHost.getShadowRoot();
 }
-
-const expectedIPMCommands = {
-  navigation: {
-    legacy: expectedIPMCommandsNavigation_legacy,
-    future: expectedIPMCommandsNavigation_future,
-  },
-  exclusion: {
-    legacy: expectedIPMCommandsExclusion_legacy,
-    future: expectedIPMCommandsExclusion_future,
-  },
-  cookie: {
-    legacy: expectedIPMCommandsCookie_legacy,
-    future: expectedIPMCommandsCookie_future,
-  },
-};
 
 export default (fragmentType) => {
   before(async function () {

@@ -17,11 +17,17 @@
 
 import type * as FutureFragment from "@eyeo-fragments/in-product-messaging/background";
 import type * as LegacyFragment from "@eyeo-fragments/ipm-legacy/background";
+
 import { type Message } from "~/core/messaging/shared";
+import {
+  type FutureFragmentOverrides,
+  type LegacyFragmentOverrides
+} from "./fragment-overrides.types";
 
 // re-export types
 export type {
   Command,
+  CommandActor,
   CommandHandler,
   Content,
   LicenseStateBehavior,
@@ -40,7 +46,9 @@ export { type FutureFragment, type LegacyFragment };
 /**
  * A type alias for the fragments
  */
-export type Fragment = typeof LegacyFragment | typeof FutureFragment;
+export type Fragment =
+  | (typeof LegacyFragment & LegacyFragmentOverrides)
+  | (typeof FutureFragment & FutureFragmentOverrides);
 
 /**
  * An enum for the fragment types we have
