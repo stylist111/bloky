@@ -1,5 +1,10 @@
 # Unreleased
 
+# 6.28.0 - 2025-09-16
+
+This release fixes an occasional bug and removes some old features that
+are not used anymore.
+
 - Fixed a bug that sometimes caused an error message to be shown when clicking
   on the "Support" button in the icon popup
 - Removed Sync Settings feature. (EXT-1076)
