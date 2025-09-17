@@ -507,6 +507,16 @@ export async function blockAds(expectedMinBlocked, expectedMaxBlocked, getPopupB
   return adsBlocked;
 }
 
+export async function clearRemoteConfigIpmCommands(initOptionsFn) {
+  const fragmentType = await getSelectedFragmentType(initOptionsFn);
+
+  await setRemoteConfigIpmCommands(
+    initOptionsFn,
+    fragmentType === "legacy" ? "test_adblock_delete" : "test_none",
+  );
+  await syncRemoteConfig(initOptionsFn);
+}
+
 export async function setUserId(initOptionsFn, userId) {
   const currentHandle = await driver.getWindowHandle();
   const optionsHandle = getOptionsHandle();

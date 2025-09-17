@@ -206,6 +206,10 @@ export function getContent(ipmId: string): Content | null {
  * @returns Whether the IPM command has expired or not
  */
 export function isCommandExpired(command: Command): boolean {
+  if (typeof command.expiry === "undefined") {
+    return true;
+  }
+
   if (!isValidDate(command.expiry)) {
     return true;
   }

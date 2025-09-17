@@ -36,7 +36,6 @@ function expectErrors(commands, expectedErrors) {
 function getBaseCommand(commandName) {
   return {
     command_name: commandName,
-    expiry: "2000-01-01",
     ipm_id: "123",
     version: 1,
   };
@@ -80,12 +79,6 @@ describe("In-product messaging commands validation", function () {
   it("reports missing command name", function () {
     const command = getCreateTabCommand();
     delete command.command_name;
-    expectErrors([command], [COMMAND_ERROR]);
-  });
-
-  it("reports missing expiry date", function () {
-    const command = getCreateTabCommand();
-    delete command.expiry;
     expectErrors([command], [COMMAND_ERROR]);
   });
 

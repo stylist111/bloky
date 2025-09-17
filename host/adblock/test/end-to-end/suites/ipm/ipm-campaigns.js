@@ -101,13 +101,13 @@ export default (fragmentType) => {
     await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_versions");
     await syncRemoteConfig(initOptionsGeneralTab);
 
-    let ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
+    let ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual(expectedIPMCommands.versions[fragmentType]);
 
     await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_delete");
     await syncRemoteConfig(initOptionsGeneralTab);
 
-    ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
+    ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual({});
 
     await openNewTab(localTestPageUrl);
@@ -128,13 +128,13 @@ export default (fragmentType) => {
     await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_versions");
     await syncRemoteConfig(initOptionsGeneralTab);
 
-    let ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
+    let ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual(expectedIPMCommands.versions[fragmentType]);
 
     await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_none");
     await syncRemoteConfig(initOptionsGeneralTab);
 
-    ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
+    ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual({});
 
     await openNewTab(localTestPageUrl);
@@ -156,7 +156,7 @@ export default (fragmentType) => {
     await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_error_wrong_version");
     await syncRemoteConfig(initOptionsGeneralTab);
 
-    const ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
+    const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual({});
 
     await openNewTab(localTestPageUrl);
@@ -169,7 +169,7 @@ export default (fragmentType) => {
     }
 
     await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_versions");
-    const ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
+    const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual({});
 
     await openNewTab(localTestPageUrl);

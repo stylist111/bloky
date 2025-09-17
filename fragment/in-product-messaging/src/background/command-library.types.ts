@@ -57,6 +57,9 @@ export type CommandHandler = (
 export enum CommandName {
   createOnPageDialog = "create_on_page_dialog",
   createTab = "create_tab",
+  /**
+   * @deprecated unused, but required for compatibility with legacy fragment
+   */
   deleteCommands = "delete_commands",
 }
 
@@ -66,7 +69,10 @@ export enum CommandName {
 export const CommandVersion: Record<CommandName, number> = {
   [CommandName.createOnPageDialog]: 7,
   [CommandName.createTab]: 6,
-  [CommandName.deleteCommands]: 2,
+  /**
+   * @deprecated unused, but required for compatibility with legacy fragment
+   */
+  [CommandName.deleteCommands]: 100,
 };
 
 /**
@@ -85,10 +91,6 @@ interface CommandMetaData {
    * The IPM id.
    */
   ipm_id: string;
-  /**
-   * The command expiration date.
-   */
-  expiry: string;
 }
 
 export interface InternalAttributes {
@@ -170,12 +172,4 @@ export interface CommandActor {
  */
 export enum CommandEventType {
   expired = "command_expired",
-}
-
-/**
- * IPM delete-commands event names
- */
-export enum DeleteEventType {
-  sucess = "deletion_success",
-  error = "deletion_error",
 }

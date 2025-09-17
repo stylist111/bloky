@@ -17,7 +17,6 @@
 
 const requiredBaseProperties = {
   command_name: { type: "string" },
-  expiry: { type: "string" },
   ipm_id: { type: "string" },
   version: { type: "integer" },
 };

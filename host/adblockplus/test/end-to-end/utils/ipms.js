@@ -55,7 +55,6 @@ export const expectedIPMCommands = {
         upper_body: "This is a test cookie baner OPD",
         button_label: "CTA cookie",
         license_state_list: "free",
-        expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
         button_target: "/update",
         display_duration: 1,
         priority: 100
@@ -96,7 +95,6 @@ export const expectedIPMCommands = {
         upper_body: "This is a test OPD based on exclusion",
         button_label: "CTA exclusion",
         license_state_list: "free",
-        expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
         button_target: "/update",
         display_duration: 1
       }
@@ -122,7 +120,6 @@ export const expectedIPMCommands = {
         ipm_id: "test_adblockplus_priority_low",
         command_name: "create_tab",
         method: "default",
-        expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
         url: "/update?ipmId=test_adblockplus_priority_low",
         version: 6
       }
@@ -162,7 +159,6 @@ export const expectedIPMCommands = {
         upper_body: "This is a test OPD based on navigation",
         button_label: "CTA navigation",
         license_state_list: "free",
-        expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
         button_target: "/update?ipmId=test_adblockplus_navigation",
         display_duration: 1
       }
@@ -188,7 +184,6 @@ export const expectedIPMCommands = {
         ipm_id: "test_adblockplus_newtab",
         command_name: "create_tab",
         method: "default",
-        expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
         url: "/update?ipmId=test_adblockplus_newtab",
         version: 6
       }
@@ -216,7 +211,6 @@ export const expectedIPMCommands = {
         command_name: "create_tab",
         method: "default",
         license_state_list: "free",
-        expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
         url: "/update",
         version: 6
       }
@@ -256,7 +250,6 @@ export const expectedIPMCommands = {
         ipm_id: "test_adblockplus_priority_low",
         command_name: "create_tab",
         method: "default",
-        expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
         url: "/update?ipmId=test_adblockplus_priority_low",
         version: 6
       },
@@ -265,7 +258,6 @@ export const expectedIPMCommands = {
         command_name: "create_tab",
         method: "default",
         license_state_list: "free",
-        expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
         url: "/update?ipmId=test_adblockplus_priority_high",
         priority: 3,
         version: 6
@@ -292,7 +284,6 @@ export const expectedIPMCommands = {
         ipm_id: "test_adblockplus_versions",
         command_name: "create_tab",
         method: "default",
-        expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
         url: "/update?ipmId=test_adblockplus_versions",
         version: 6
       }

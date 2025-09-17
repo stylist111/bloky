@@ -29,6 +29,14 @@ import {
 import * as commandStorage from "./command-storage";
 
 describe("command-library", () => {
+  beforeEach(() => {
+    commandStorage.replaceAll({});
+  });
+
+  afterAll(() => {
+    commandStorage.replaceAll({});
+  });
+
   describe("isCommandExpired", () => {
     const commandBase = {
       version: 1,
@@ -36,39 +44,16 @@ describe("command-library", () => {
       ipm_id: "command_1",
     };
 
-    beforeEach(() => {
-      jest.useFakeTimers();
-      jest.setSystemTime(new Date("1996-01-15T12:00:00Z"));
+    it("should return true if command is not in storage", () => {
+      expect(isCommandExpired(commandBase)).toBe(true);
     });
-    afterEach(() => {
-      jest.setSystemTime();
-      jest.useRealTimers();
-    });
-    it("should return true when expiry date doesn't have a valid shape", () => {
-      expect(isCommandExpired({ ...commandBase, expiry: "" })).toBe(true);
-      expect(
-        isCommandExpired({ ...commandBase, expiry: "1996-January-16" }),
-      ).toBe(true);
-    });
-    it("should return true when expiry date is not a real date", () => {
-      expect(isCommandExpired({ ...commandBase, expiry: "1996-01-32" })).toBe(
-        true,
-      );
-    });
-    it("should return true when expiry date is in the past", () => {
-      expect(isCommandExpired({ ...commandBase, expiry: "1996-01-14" })).toBe(
-        true,
-      );
-    });
-    it("should return true when expiry date is the same as current date", () => {
-      expect(isCommandExpired({ ...commandBase, expiry: "1996-01-15" })).toBe(
-        true,
-      );
-    });
-    it("should return false when expiry date is in the future", () => {
-      expect(isCommandExpired({ ...commandBase, expiry: "1996-01-16" })).toBe(
-        false,
-      );
+
+    it("should return false if command is in storage", () => {
+      commandStorage.replaceAll({
+        [commandBase.ipm_id]: commandBase,
+      });
+
+      expect(isCommandExpired(commandBase)).toBe(false);
     });
   });
 
@@ -77,15 +62,17 @@ describe("command-library", () => {
       version: CommandVersion[CommandName.createTab],
       command_name: CommandName.createTab,
       ipm_id: "command_1",
-      expiry: "2050-01-16",
     };
-
     let createTabActor: CommandActor;
 
     beforeEach(() => {
       jest
         .spyOn(ewe.experiments, "getFlag")
         .mockReturnValue(Promise.resolve(true));
+
+      commandStorage.replaceAll({
+        [commandBase.ipm_id]: commandBase,
+      });
 
       createTabActor = {
         clearCommands: jest.fn(),
@@ -117,18 +104,38 @@ describe("command-library", () => {
       );
     });
 
-    it("dismisses commands with outdated versions on initialization", async () => {
-      const outdatedCommand = {
+    it("dismisses commands with older versions", async () => {
+      const olderCommand = {
         ...commandBase,
         version: commandBase.version - 1,
       };
 
       jest.spyOn(commandStorage, "remove").mockImplementation();
+      commandStorage.replaceAll({
+        [olderCommand.ipm_id]: olderCommand,
+      });
 
-      await executeIPMCommands([outdatedCommand], true);
-      expect(commandStorage.remove).toHaveBeenCalledWith(
-        outdatedCommand.ipm_id,
-      );
+      await executeIPMCommands([olderCommand], true);
+
+      expect(commandStorage.remove).toHaveBeenCalledWith(olderCommand.ipm_id);
+      expect(commandStorage.get(olderCommand.ipm_id)).toEqual(olderCommand);
+    });
+
+    it("keeps commands with newer versions", async () => {
+      const newerCommand = {
+        ...commandBase,
+        version: commandBase.version + 1,
+      };
+
+      jest.spyOn(commandStorage, "remove").mockImplementation();
+      commandStorage.replaceAll({
+        [newerCommand.ipm_id]: newerCommand,
+      });
+
+      await executeIPMCommands([newerCommand], true);
+
+      expect(commandStorage.remove).not.toHaveBeenCalled();
+      expect(commandStorage.get(newerCommand.ipm_id)).toEqual(newerCommand);
     });
   });
 });

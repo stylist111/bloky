@@ -20,7 +20,6 @@
 import { createServer } from "http";
 
 import ipmScenarios from "./ipm-scenarios.js";
-import { getExpiryDate } from "./ipm-server/utils.js";
 
 export const port = 3008;
 
@@ -37,14 +36,6 @@ const server = createServer((req, res) => {
     try {
       if (req.method === "POST" && req.url === "/setIpmScenario") {
         responseData = ipmScenarios[data] || null;
-
-        for (const command of responseData) {
-          if ("expiry" in command) {
-            continue;
-          }
-
-          command.expiry = getExpiryDate(1);
-        }
 
         res.statusCode = 200;
         res.end();

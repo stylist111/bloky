@@ -30,7 +30,8 @@ import {
   getIPMCommands,
   setIPMCooldowns,
   resetIPMFragment,
-  setIPMFragment
+  setIPMFragment,
+  clearRemoteConfigIpmCommands
 } from "@eyeo/test-utils/extension";
 import { findUrl, openNewTab } from "@eyeo/test-utils/driver";
 import { localTestPageUrl } from "@eyeo/test-utils/host-urls";
@@ -69,15 +70,8 @@ export default (fragmentType) => {
   });
 
   afterEach(async function () {
-    await setRemoteConfigIpmCommands(
-      initOptionsGeneralTab,
-      "test_adblockplus_delete"
-    );
-    await syncRemoteConfig(initOptionsGeneralTab);
-    const ipmCommands = await getIPMCommands(
-      initOptionsGeneralTab,
-      fragmentType
-    );
+    await clearRemoteConfigIpmCommands(initOptionsGeneralTab);
+    const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual({});
   });
 
@@ -96,10 +90,7 @@ export default (fragmentType) => {
     );
     await syncRemoteConfig(initOptionsGeneralTab);
 
-    const ipmCommands = await getIPMCommands(
-      initOptionsGeneralTab,
-      fragmentType
-    );
+    const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual(expectedIPMCommands.newtab[fragmentType]);
 
     await openNewTab(localTestPageUrl);
@@ -123,14 +114,14 @@ export default (fragmentType) => {
     );
     await syncRemoteConfig(initOptionsGeneralTab);
 
-    let ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
+    let ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual(expectedIPMCommands.priority[fragmentType]);
 
     await openNewTab(localTestPageUrl);
     await findUrl(updateUrlPriorityHigh);
     await findUrl(updateUrlPriorityLow, { exists: false });
 
-    ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
+    ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual(expectedIPMCommands.lowPriority[fragmentType]);
 
     // Ping payloads only exist in future fragment
@@ -167,10 +158,7 @@ export default (fragmentType) => {
     );
     await syncRemoteConfig(initOptionsGeneralTab);
 
-    const ipmCommands = await getIPMCommands(
-      initOptionsGeneralTab,
-      fragmentType
-    );
+    const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual(expectedIPMCommands.premium[fragmentType]);
 
     await openNewTab(localTestPageUrl);

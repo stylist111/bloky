@@ -88,7 +88,7 @@ interface CommandMetaData {
   /**
    * The command expiration date.
    */
-  expiry: string;
+  expiry?: string;
   /**
    * A collection of attributes that do not come in via the IPM server, but
    * that are rather added by the internal IPM system instead.

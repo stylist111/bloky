@@ -24,13 +24,11 @@ const mockCommandMap = {
     version: 1,
     ipm_id: mockCommandIds[0],
     command_name: CommandName.createOnPageDialog,
-    expiry: "0",
   },
   [mockCommandIds[1]]: {
     version: 1,
     ipm_id: mockCommandIds[1],
     command_name: CommandName.createTab,
-    expiry: "0",
   },
 };
 

@@ -27,11 +27,13 @@ export async function getResponseDataForCommand(scenarioId) {
   }
 
   if (statusCode === 200 && Array.isArray(bodyData)) {
-    for (const command of bodyData) {
-      if (!("expiry" in command)) {
-        command.expiry = getExpiryDate(1);
+    bodyData = bodyData.map((command) => {
+      if ("expiry" in command) {
+        return command;
       }
-    }
+
+      return { ...command, expiry: getExpiryDate(1) };
+    });
   }
   return { statusCode, body: JSON.stringify(bodyData) };
 }

@@ -30,7 +30,8 @@ import {
   getIPMCommands,
   setIPMCooldowns,
   resetIPMFragment,
-  setIPMFragment
+  setIPMFragment,
+  clearRemoteConfigIpmCommands
 } from "@eyeo/test-utils/extension";
 import {
   getDisplayedElement,
@@ -77,15 +78,8 @@ export default (fragmentType) => {
   });
 
   afterEach(async function () {
-    await setRemoteConfigIpmCommands(
-      initOptionsGeneralTab,
-      "test_adblockplus_delete"
-    );
-    await syncRemoteConfig(initOptionsGeneralTab);
-    const ipmCommands = await getIPMCommands(
-      initOptionsGeneralTab,
-      fragmentType
-    );
+    await clearRemoteConfigIpmCommands(initOptionsGeneralTab);
+    const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual({});
   });
 
@@ -102,7 +96,7 @@ export default (fragmentType) => {
     );
     await syncRemoteConfig(initOptionsGeneralTab);
 
-    let ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
+    let ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual(expectedIPMCommands.navigation[fragmentType]);
     await openNewTab("https://www.example.com");
 
@@ -125,7 +119,7 @@ export default (fragmentType) => {
     await waitForNotDisplayed("#__abp-overlay-onpage-dialog iframe");
 
     await initOptionsGeneralTab(getOptionsHandle());
-    ipmCommands = await getIPMCommands(initOptionsGeneralTab, fragmentType);
+    ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual({});
 
     // Ping payloads only exist in future fragment
@@ -152,10 +146,7 @@ export default (fragmentType) => {
     );
     await syncRemoteConfig(initOptionsGeneralTab);
 
-    const ipmCommands = await getIPMCommands(
-      initOptionsGeneralTab,
-      fragmentType
-    );
+    const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual(expectedIPMCommands.exclusion[fragmentType]);
 
     await openNewTab("https://www.example.org");
@@ -200,10 +191,7 @@ export default (fragmentType) => {
     );
     await syncRemoteConfig(initOptionsGeneralTab);
 
-    const ipmCommands = await getIPMCommands(
-      initOptionsGeneralTab,
-      fragmentType
-    );
+    const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual(expectedIPMCommands.cookie[fragmentType]);
 
     await openNewTab("https://www.example.org");

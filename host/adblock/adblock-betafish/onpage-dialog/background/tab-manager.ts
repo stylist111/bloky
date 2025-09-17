@@ -618,6 +618,9 @@ export async function showDialogFromList(
     // Ignore and dismiss command if it has expired
     if (typeof dialog.ipmId === "string") {
       const command = getCommand(dialog.ipmId);
+      // If the command disappears from storage, it means it's expired when
+      // running the new fragment. With the legacy fragment, this shouldn't
+      // happen, but we can't continue anyways.
       if (command && isCommandExpired(command)) {
         logger.error("[onpage-dialog]: Command has expired.");
         recordLegacyEvent(dialog, CommandEventType.expired);

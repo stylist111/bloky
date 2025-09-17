@@ -26,15 +26,12 @@ import {
   CommandName,
   CommandVersion,
   type Content,
-  DeleteEventType,
   maximumProcessableCommands,
 } from "./command-library.types";
 import * as commandStorage from "./command-storage";
 import { getStartInfo, setStartInfo } from "./start-info";
 import { type StartInfo } from "./start-info.types";
-import { isDeleteBehavior, setDeleteCommandHandler } from "./delete-commands";
 import { recordEvent, recordGenericEvent } from "./event-recording";
-import { isValidDate } from "./param-validator";
 
 /**
  * A list of known commands.
@@ -70,8 +67,7 @@ function isCommand(candidate: unknown): candidate is Command {
     candidate !== null &&
     "version" in candidate &&
     "ipm_id" in candidate &&
-    "command_name" in candidate &&
-    "expiry" in candidate
+    "command_name" in candidate
   );
 }
 
@@ -176,23 +172,15 @@ export function getContent(ipmId: string): Content | null {
 /**
  * Checks whether the IPM command has expired or not
  *
+ * A command is expired if it is no longer in the remote IPM config
+ *
  * @param command The IPM command
  * @returns Whether the IPM command has expired or not
  */
 export function isCommandExpired(command: Command): boolean {
-  if (!isValidDate(command.expiry)) {
-    return true;
-  }
-
-  // Expiry command parameter will only have date data without time
-  const expiryDateOnly = new Date(command.expiry);
-  const nowDateTime = new Date();
-
-  if (nowDateTime >= expiryDateOnly) {
-    return true;
-  }
-
-  return false;
+  // We synchronize our local command storage when the remote config changes,
+  // so if we no longer have it in storage, it's expired
+  return commandStorage.get(command.ipm_id) === null;
 }
 
 /**
@@ -257,11 +245,11 @@ export async function executeIPMCommands(
         ),
       );
 
-      // cleanup commands whose version has become outdated from local storage
-      if (isInitialization) {
+      // Dismiss outdated commands but keep commands that require a higher
+      // version than present
+      if (command.version < CommandVersion[command.command_name]) {
         dismissCommand(command.ipm_id);
       }
-
       continue;
     }
 
@@ -273,11 +261,8 @@ export async function executeIPMCommands(
         CommandEventType.expired,
       );
 
-      // cleanup commands that have expired from local storage
-      if (isInitialization) {
-        dismissCommand(command.ipm_id);
-      }
-
+      // Ignore and dismiss command if it has expired
+      dismissCommand(command.ipm_id);
       continue;
     }
 
@@ -299,12 +284,6 @@ export async function executeIPMCommands(
     actorByExecutableCommand.set(command, actor);
   }
 
-  const executableCommands = Array.from(actorByExecutableCommand.keys());
-  // store the valid commands, if just received from the server
-  if (!isInitialization && executableCommands.length > 0) {
-    commandStorage.add(executableCommands);
-  }
-
   const commandHandlingPromises = Array.from(actorByExecutableCommand).map(
     async ([executableCommand, actor]) => {
       serverLogger.info("command_received", executableCommand.ipm_id);
@@ -318,78 +297,6 @@ export async function executeIPMCommands(
       .map((name) => actorByCommandName.get(name))
       .forEach((actor) => actor?.onCommandsProcessed());
   });
-}
-
-/**
- * Registers a delete-commands event with the data collection feature.
- *
- * @param ipmId The ipm id to register the event for
- * @param name The event name to register
- */
-function registerDeleteEvent(
-  ipmId: string,
-  name: CommandEventType | DeleteEventType,
-): void {
-  recordEvent(ipmId, CommandName.deleteCommands, name);
-}
-
-/**
- * Handles delete-commands IPM command
- *
- * @param ipmId
- * @returns
- */
-async function handleDeleteCommand(ipmId: string): Promise<void> {
-  const { logger } = getStartInfo();
-  const command = getCommand(ipmId);
-  if (!command) {
-    return;
-  }
-
-  const behavior = getBehavior(ipmId);
-
-  if (!isDeleteBehavior(behavior)) {
-    logger.reportAndLogError(
-      new Error("[delete-commands]: Invalid command behavior."),
-    );
-    return;
-  }
-
-  // Ignore and dismiss command if it has expired
-  if (isCommandExpired(command)) {
-    logger.reportAndLogError(
-      new Error("[delete-commands]: Command has expired."),
-    );
-    registerDeleteEvent(ipmId, CommandEventType.expired);
-    dismissCommand(ipmId);
-    return;
-  }
-
-  const { commandIds } = behavior;
-  let success = true;
-
-  for (const commandId of commandIds) {
-    try {
-      dismissCommand(commandId);
-
-      if (getCommand(commandId) !== null) {
-        throw new Error("Command was not successfully deleted.");
-      }
-    } catch (error) {
-      success = false;
-      logger.reportAndLogError(
-        new Error(
-          `[delete-commands]: Error trying to delete command with ID ${commandId}`,
-        ),
-      );
-    }
-  }
-
-  registerDeleteEvent(
-    ipmId,
-    success ? DeleteEventType.sucess : DeleteEventType.error,
-  );
-  dismissCommand(ipmId);
 }
 
 /**
@@ -483,8 +390,6 @@ async function synchronizeRemoteCommands(): Promise<void> {
  */
 export async function start(startInfo: StartInfo): Promise<void> {
   setStartInfo(startInfo);
-
-  setDeleteCommandHandler(handleDeleteCommand);
 
   await synchronizeRemoteCommands();
 
