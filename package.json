@@ -27,8 +27,7 @@
     "test:end-to-end": "lerna run test:end-to-end",
     "lint": "lerna run lint && prettier --check .",
     "lint-fix": "lerna run lint-fix && prettier --write .",
-    "do-release": "npm run -w @eyeo/release-utils do-release --",
-    "publish-events": "node tools/release/publish-events.js"
+    "do-release": "npm run -w @eyeo/release-utils do-release --"
   },
   "devDependencies": {
     "babel-loader": "8.4.1",
