@@ -51,12 +51,11 @@ function getCombinations() {
 async function setExtensionState({ premium, aa, allowlist }) {
   // Set premium
   if (premium) {
-    const premiumAlreadyEnabled = await isPremiumLabelPresent();
-    if (!premiumAlreadyEnabled) {
+    const isPremium = await isPremiumLabelPresent();
+    if (!isPremium) {
       await enablePremiumProgrammatically();
     }
   }
-
   // Set allowlist
   if (allowlist) {
     await setPausedStateFromPopup(BT_PARTNER_URL);

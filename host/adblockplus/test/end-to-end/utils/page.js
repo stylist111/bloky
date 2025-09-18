@@ -206,7 +206,7 @@ export async function initOptionsGeneralTab(
     await wait(
       async () => isCheckboxPropertyEnabled("#acceptable-ads-allow"),
       timeout,
-      "Acceptable Ads is disabled before clicking"
+      "Acceptable Ads is disabled when opening the Options tab"
     );
   }
 }
@@ -514,7 +514,11 @@ export async function disablePremiumProgrammatically() {
 
   await driver.switchTo().window(getOptionsHandle());
   await reloadExtension(initOptionsGeneralTab);
-  await waitForNotDisplayed(".button.premium-label");
+  await waitForNotDisplayed(".button.premium-label", {
+    timeout: 5000,
+    displayedTimeout: 1000,
+    forceRefresh: true
+  });
 }
 
 export async function isPremiumLabelPresent() {
@@ -736,7 +740,7 @@ export async function removeLanguageFilterList(
     isOptionsGeneralTab
   });
   await clickOnDisplayedElement(trashBtn);
-  await waitForNotDisplayed(filterlist);
+  await waitForNotDisplayed(filterlist, { timeout: 3000 });
 }
 
 export async function changeLanguageFilterList(langNameBefore, langNameAfter) {

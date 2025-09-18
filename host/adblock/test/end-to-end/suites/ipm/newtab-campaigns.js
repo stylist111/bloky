@@ -148,7 +148,12 @@ export default (fragmentType) => {
   });
 
   it("does not trigger a new tab campaign for premium user", async function () {
-    await enablePremiumProgrammatically(15000);
+    const isPremium = await isPremiumLabelPresent();
+
+    if (!isPremium) {
+      await enablePremiumProgrammatically(15000);
+    }
+
     await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_premium");
     await syncRemoteConfig(initOptionsGeneralTab);
 
@@ -175,8 +180,8 @@ export default (fragmentType) => {
   });
 
   it("force triggers a new tab campaign", async function () {
-    const premiumAlreadyEnabled = await isPremiumLabelPresent();
-    if (!premiumAlreadyEnabled) {
+    const isPremium = await isPremiumLabelPresent();
+    if (!isPremium) {
       await enablePremiumProgrammatically();
     }
     await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_force");

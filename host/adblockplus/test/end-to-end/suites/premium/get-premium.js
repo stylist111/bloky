@@ -37,6 +37,7 @@ import { dcFilters } from "@eyeo/test-utils/host-filters";
 import {
   initOptionsGeneralTab,
   initPopupWithLocalPage,
+  isPremiumLabelPresent,
   enablePremiumProgrammatically,
   checkPremiumActivated,
   clickFLAndCheck,
@@ -130,7 +131,11 @@ export default () => {
   });
 
   it("has premium features", async function () {
-    await enablePremiumProgrammatically();
+    const isPremium = await isPremiumLabelPresent();
+
+    if (!isPremium) {
+      await enablePremiumProgrammatically();
+    }
     await initPopupWithLocalPage();
 
     // Default popup premium togles
@@ -170,7 +175,11 @@ export default () => {
   });
 
   it("enables premium filter lists", async function () {
-    await enablePremiumProgrammatically();
+    const isPremium = await isPremiumLabelPresent();
+
+    if (!isPremium) {
+      await enablePremiumProgrammatically();
+    }
     await initOptionsGeneralTab(getOptionsHandle());
 
     let someEnabled = false;

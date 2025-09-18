@@ -239,7 +239,10 @@ export default () => {
     // Easy check if user is free
     // Premium link/button checks
     for (const { selector, text } of premiumLinkButtons) {
-      const elem = await getDisplayedElement(selector);
+      const elem = await getDisplayedElement(selector, {
+        timeout: 3000,
+        forceRefresh: true
+      });
       expect(await elem.getText()).toEqual(text);
 
       await elem.click();

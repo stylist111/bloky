@@ -16,14 +16,13 @@
  */
 /* global ewe */
 
-import { getDisplayedElement } from "@eyeo/test-utils/driver";
 import { prepareExtensionHook } from "@eyeo/test-utils/hooks";
 import {
-  getOptionsHandle,
   blockAds,
   verifyInjectedExtensionData
 } from "@eyeo/test-utils/extension";
 import {
+  isPremiumLabelPresent,
   getPopupBlockedAdsTotalCount,
   callUIExperimentsAPI
 } from "../utils/page.js";
@@ -32,16 +31,6 @@ export const testUrl = "https://adblockplus.org";
 export const dataAttribute = "data-adblock-plus-extension-info";
 
 const maxAdsBlocked = 100;
-
-async function isPremiumLabelPresent() {
-  await driver.switchTo().window(getOptionsHandle());
-  try {
-    await getDisplayedElement(".button.premium-label");
-    return true;
-  } catch (error) {
-    return false;
-  }
-}
 
 export async function getActualExtensionData() {
   const blockCount = await blockAds(

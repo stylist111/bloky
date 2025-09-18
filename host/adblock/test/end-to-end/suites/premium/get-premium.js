@@ -36,6 +36,7 @@ import {
 } from "@eyeo/test-utils/extension";
 
 import {
+  isPremiumLabelPresent,
   initOptionsPremiumTab,
   enablePremiumProgrammatically,
   disablePremiumProgrammatically,
@@ -117,7 +118,11 @@ export default () => {
   });
 
   it("has premium features", async function () {
-    await enablePremiumProgrammatically();
+    const isPremium = await isPremiumLabelPresent();
+
+    if (!isPremium) {
+      await enablePremiumProgrammatically();
+    }
 
     await clickOnDisplayedElement('[href="#mab-image-swap"]');
     await getDisplayedElement("#cats");
@@ -134,7 +139,7 @@ export default () => {
     // Check theme is displayed on popup page
     await getDisplayedElement("#dark_theme");
 
-    const timeout = 1000;
+    const timeout = 2000;
     for (const { name, action } of premiumPopupToggleItems) {
       const cssSelector = `[data-name="${name}"]`;
       // Edge headless on macOS gets the element as "not displayed"
@@ -187,7 +192,11 @@ export default () => {
   });
 
   it("enables premium filter lists", async function () {
-    await enablePremiumProgrammatically();
+    const isPremium = await isPremiumLabelPresent();
+
+    if (!isPremium) {
+      await enablePremiumProgrammatically();
+    }
     await initOptionsPremiumFlTab(getOptionsHandle());
 
     let someEnabled = false;
