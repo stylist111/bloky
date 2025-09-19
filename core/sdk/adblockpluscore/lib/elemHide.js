@@ -26,7 +26,6 @@
 const {domainSuffixes, hasWildcard, matchesWildcards} =
   require("./url");
 const {FiltersByDomain, FilterMap} = require("./filtersByDomain");
-const {Cache} = require("./caching");
 const {ElemHideExceptions} = require("./elemHideExceptions");
 
 class ElemHide {
@@ -107,19 +106,6 @@ class ElemHide {
     this._commonStyleSheet = null;
 
     /**
-     * Cache of generated domain-specific style sheets.
-     *
-     * This contains entries for only known domains. If a domain is unknown, it
-     * gets `{@link module:elemHide~ElemHide#_commonStyleSheet
-     *              _commonStyleSheet}`.
-     *
-     * @type {Cache.<string, string>}
-     *
-     * @private
-     */
-    this._styleSheetCache = new Cache(100);
-
-    /**
      * Set containing known element hiding filters
      * @type {Set.<module:filterClasses.ElemHideFilter>}
      * @private
@@ -149,8 +135,9 @@ class ElemHide {
   clear() {
     this._commonStyleSheet = null;
 
-    for (let collection of [this._styleSheetCache, this._filtersByDomain,
-                            this._filterBySelector, this._filters,
+    for (let collection of [this._filtersByDomain,
+                            this._filterBySelector,
+                            this._filters,
                             this._exceptionDomains,
                             this._exceptionDomainsWithWildcards]) {
       collection.clear();
@@ -169,7 +156,6 @@ class ElemHide {
       return;
     }
 
-    this._styleSheetCache.clear();
     this._commonStyleSheet = null;
 
     let {domains, selector} = filter;
@@ -197,7 +183,6 @@ class ElemHide {
       return;
     }
 
-    this._styleSheetCache.clear();
     this._commonStyleSheet = null;
 
     let {selector} = filter;
@@ -443,28 +428,9 @@ class ElemHide {
     return this._commonStyleSheet;
   }
 
-  /**
-   * Returns the domain-specific style sheet that applies on a given domain.
-   * @param {string} domain
-   * @returns {string}
-   * @private
-   */
-  _getDomainSpecificStyleSheet(domain) {
-    let styleSheet = this._styleSheetCache.get(domain);
-
-    if (typeof styleSheet == "undefined") {
-      styleSheet =
-        createStyleSheet(this._getConditionalSelectors(domain, false));
-      this._styleSheetCache.set(domain, styleSheet);
-    }
-
-    return styleSheet;
-  }
-
   _onExceptionAdded(exception) {
     let {domains, selector} = exception;
 
-    this._styleSheetCache.clear();
     this._commonStyleSheet = null;
 
     if (domains) {

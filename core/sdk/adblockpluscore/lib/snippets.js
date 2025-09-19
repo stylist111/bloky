@@ -23,8 +23,6 @@
  * @file Snippets implementation.
  */
 
-const {EventEmitter} = require("./events");
-
 let singleCharacterEscapes = new Map([
   ["n", "\n"], ["r", "\r"], ["t", "\t"]
 ]);
@@ -32,13 +30,11 @@ let singleCharacterEscapes = new Map([
 /**
  * `{@link module:snippets.snippets snippets}` implementation.
  */
-class Snippets extends EventEmitter {
+class Snippets {
   /**
    * @hideconstructor
    */
   constructor() {
-    super();
-
     /**
      * All known snippet filters.
      * @type {Set.<module:filterClasses.SnippetFilter>}
@@ -58,8 +54,6 @@ class Snippets extends EventEmitter {
     }
 
     _filters.clear();
-
-    this.emit("snippets.filtersCleared");
   }
 
   /**
@@ -67,14 +61,7 @@ class Snippets extends EventEmitter {
    * @param {module:filterClasses.SnippetFilter} filter
    */
   add(filter) {
-    let {_filters} = this;
-    let {size} = _filters;
-
-    _filters.add(filter);
-
-    if (size != _filters.size) {
-      this.emit("snippets.filterAdded", filter);
-    }
+    this._filters.add(filter);
   }
 
   /**
@@ -82,14 +69,7 @@ class Snippets extends EventEmitter {
    * @param {module:filterClasses.SnippetFilter} filter
    */
   remove(filter) {
-    let {_filters} = this;
-    let {size} = _filters;
-
-    _filters.delete(filter);
-
-    if (size != _filters.size) {
-      this.emit("snippets.filterRemoved", filter);
-    }
+    this._filters.delete(filter);
   }
 
   /**

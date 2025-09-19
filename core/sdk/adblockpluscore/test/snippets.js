@@ -80,23 +80,10 @@ describe("Snippets", function() {
   });
 
   it("Filters container", function() {
-    let events = [];
-
-    function eventHandler(...args) {
-      events.push([...args]);
-    }
-
     function compareRules(description, domain, expectedMatches) {
       let result = snippets.getFilters(domain);
       assert.deepEqual(result.sort(), expectedMatches.sort(), description);
     }
-
-    snippets.on("snippets.filterAdded",
-                eventHandler.bind(null, "snippets.filterAdded"));
-    snippets.on("snippets.filterRemoved",
-                eventHandler.bind(null, "snippets.filterRemoved"));
-    snippets.on("snippets.filtersCleared",
-                eventHandler.bind(null, "snippets.filtersCleared"));
 
     let domainFilter = Filter.fromText("example.com#$#filter1");
     let subdomainFilter = Filter.fromText("www.example.com#$#filter2");
@@ -123,16 +110,6 @@ describe("Snippets", function() {
       "Return no filters after clearing",
       "www.example.com",
       []
-    );
-
-    assert.deepEqual(
-      events, [
-        ["snippets.filterAdded", domainFilter],
-        ["snippets.filterAdded", subdomainFilter],
-        ["snippets.filterAdded", otherDomainFilter],
-        ["snippets.filterRemoved", domainFilter],
-        ["snippets.filtersCleared"]
-      ], "Event log"
     );
   });
 
