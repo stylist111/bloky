@@ -21,11 +21,12 @@ export async function commonRun(subsInput, scriptsOutputDir) {
   let fetchedSubscription = path.join(scriptsOutputDir, "subscriptions");
   let convertedRulesets = path.join(scriptsOutputDir, "rulesets");
   let rulesetsFile = path.join(convertedRulesets, "rulesets.json");
+  let arrayOfDefaultEnabledRulesets = ["00000000-0000-0000-0000-000000000030"];
 
   await promisify(exec)(`npm run subs-merge -- -i ${subsInput} -o ${subsOutput}`);
   await promisify(exec)(`npm run subs-fetch -- -i ${subsOutput} -o ${fetchedSubscription}`);
   await promisify(exec)(`npm run subs-convert -- -i ${fetchedSubscription} -o ${convertedRulesets} -s ${subsOutput}`);
-  await promisify(exec)(`npm run subs-generate -- -i ${convertedRulesets} -o ${rulesetsFile} -p rulesets/`);
+  await promisify(exec)(`npm run subs-generate -- -i ${convertedRulesets} -o ${rulesetsFile} -d ${arrayOfDefaultEnabledRulesets.join(" ")} -p rulesets/`);
 
   await writeCustomMV3Subscriptions(subsInput, scriptsOutputDir);
 

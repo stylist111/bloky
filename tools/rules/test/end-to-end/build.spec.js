@@ -70,9 +70,12 @@ describe("Rules build script", function () {
         const fragmentJson = JSON.parse(fragmentContent);
 
         for (const recommendedId of config.recommended) {
+          const expectedEnabled =
+            config.defaultEnabled &&
+            config.defaultEnabled.includes(recommendedId);
           expect(fragmentJson.rule_resources).toContainEqual({
             id: recommendedId,
-            enabled: false,
+            enabled: expectedEnabled || false,
             path: `/data/rules/dnr/${recommendedId}`,
           });
         }

@@ -574,11 +574,23 @@ export async function migrate() {
 export async function ensureDNRRulesetsEnabled() {
   if (browser.declarativeNetRequest) {
     let enabledItems = await browser.declarativeNetRequest.getEnabledRulesets();
+    let toDisable = new Set(enabledItems);
 
     for (let subscription of filterEngine.filterStorage.subscriptions()) {
-      if (!enabledItems.includes(subscription.id) && !subscription.disabled) {
-        enableRuleset(subscription.id);
+      const alreadyEnabled = enabledItems.includes(subscription.id);
+      const shouldBeEnabled = !subscription.disabled;
+
+      if (!alreadyEnabled && shouldBeEnabled) {
+        await enableRuleset(subscription.id);
       }
+
+      if (shouldBeEnabled) {
+        toDisable.delete(subscription.id);
+      }
+    }
+
+    for (let id of toDisable) {
+      await disableRuleset(id);
     }
   }
 }

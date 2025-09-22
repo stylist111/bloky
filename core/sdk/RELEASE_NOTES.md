@@ -6,6 +6,8 @@
 - Moved the initialization of logging components to earlier in the SDK
   initialization process (EXT-1036).
 - Updated user account log in request pattern (noissue)
+- The script `subs-generate` has a new parameter for specifying default enabled
+  rulesets
 
 ## Fixes
 
@@ -19,6 +21,8 @@
 - Fixed an issue where certain invalid DNR filters in a custom user subscription
   would prevent the other filters in the subscription from
   functioning. (EXT-1074)
+- On extension update, if a ruleset is enabled that shouldn't be, it will now
+  be disabled.
 
 ## Breaking Changes
 

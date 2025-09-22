@@ -104,3 +104,10 @@ export const privileged = [
   // videos
   "294D21F0-B3DC-11EF-9B01-F73C7F3A4DB5",
 ];
+
+// These lists will be enabled by default to prevent blocking gap during initialization
+export const defaultEnabled = [
+  "8C13E995-8F06-4927-BEA7-6C845FB7EEBF", // EasyList
+  "D4028CDD-3D39-4624-ACC7-8140F4EC3238", // ABP Anti-CV
+  "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F", // Acceptable Ads
+];

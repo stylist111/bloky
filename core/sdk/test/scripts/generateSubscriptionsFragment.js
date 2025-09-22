@@ -91,9 +91,9 @@ describe("generateSubscriptionsFragment script", function() {
     fs.openSync(path.join(tmpDir, filename), "w");
   }
 
-  function getRulesArrayFrom(dir) {
+  function getRulesArrayFrom(dir, defaultEnabled = []) {
     return JSON.parse(
-      generateFragment(dir, null, null)).rule_resources;
+      generateFragment(dir, null, null, defaultEnabled)).rule_resources;
   }
 
   it("throws an error if rules directory does not exist", function() {
@@ -142,6 +142,44 @@ describe("generateSubscriptionsFragment script", function() {
   it("returns rules disabled by default", function() {
     createRuleFile(VALID_RULESET_FILE);
     expect(getRulesArrayFrom(tmpDir)[0].enabled).toEqual(false);
+  });
+
+  it("returns default subscription rulesets enabled", function() {
+    const easyListId = "8C13E995-8F06-4927-BEA7-6C845FB7EEBF";
+    const antiCVId = "D4028CDD-3D39-4624-ACC7-8140F4EC3238";
+    const acceptableAdsId = "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F";
+
+    createRuleFile(easyListId);
+    createRuleFile(antiCVId);
+    createRuleFile(acceptableAdsId);
+
+    const defaultEnabled = [easyListId, antiCVId, acceptableAdsId];
+    const rules = getRulesArrayFrom(tmpDir, defaultEnabled);
+
+    const easyListRule = rules.find(rule => rule.id === easyListId);
+    const antiCVRule = rules.find(rule => rule.id === antiCVId);
+    const acceptableAdsRule = rules.find(rule => rule.id === acceptableAdsId);
+
+    expect(easyListRule.enabled).toEqual(true);
+    expect(antiCVRule.enabled).toEqual(true);
+    expect(acceptableAdsRule.enabled).toEqual(true);
+  });
+
+  it("returns mixed enabled state for default and non-default rulesets", function() {
+    const easyListId = "8C13E995-8F06-4927-BEA7-6C845FB7EEBF"; // default - should be enabled
+    const nonDefaultId = "12345678-1234-1234-1234-123456789012"; // non-default - should be disabled
+
+    createRuleFile(easyListId);
+    createRuleFile(nonDefaultId);
+
+    const defaultEnabled = [easyListId];
+    const rules = getRulesArrayFrom(tmpDir, defaultEnabled);
+
+    const easyListRule = rules.find(rule => rule.id === easyListId);
+    const nonDefaultRule = rules.find(rule => rule.id === nonDefaultId);
+
+    expect(easyListRule.enabled).toEqual(true);
+    expect(nonDefaultRule.enabled).toEqual(false);
   });
 
   it("returns proper file path", function() {

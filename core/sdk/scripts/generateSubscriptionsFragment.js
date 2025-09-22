@@ -37,7 +37,7 @@ function isValidRulesetFile(file) {
   return isUUID(path.parse(file).base);
 }
 
-function generateFragment(dir, pathPrefix, space = 2) {
+function generateFragment(dir, pathPrefix, space = 2, defaultEnabled = []) {
   if (!fs.existsSync(dir)) {
     throw new Error(`DNR rules directory (${dir}) does not exist. ` +
       "Run `npm run \"subs-convert\"` to generate it.");
@@ -50,9 +50,10 @@ function generateFragment(dir, pathPrefix, space = 2) {
       console.warn(`Not ruleset file (${file}) skipped`);
       continue;
     }
+    const rulesetId = getRuleId(file);
     fragment.rule_resources.push({
-      id: getRuleId(file),
-      enabled: false,
+      id: rulesetId,
+      enabled: defaultEnabled.includes(rulesetId),
       path: (pathPrefix || "") + getFilePath(file)
     });
   }
@@ -89,12 +90,18 @@ function main() {
       type: "string",
       description: "Path prefix (to be used in the fragment)"
     })
+    .option("default-enabled", {
+      alias: "d",
+      type: "array",
+      description: "List of subscription IDs to enable by default"
+    })
     .parse();
 
   let fromDir = args.input || convertOutputDir;
   let toFile = args.output || outputFile;
   let pathPrefix = args.prefix;
-  let fragmentJson = generateFragment(fromDir, pathPrefix);
+  let defaultEnabled = args["default-enabled"];
+  let fragmentJson = generateFragment(fromDir, pathPrefix, 2, defaultEnabled);
   fs.writeFileSync(toFile, fragmentJson);
   console.log(`Web extension manifest fragment file (${toFile}) generated.`);
 }

@@ -112,3 +112,6 @@ export const privileged = [
   // videos
   "294D21F0-B3DC-11EF-9B01-F73C7F3A4DB5",
 ];
+
+// These lists will be enabled by default to prevent blocking gap during initialization
+export const defaultEnabled = [];

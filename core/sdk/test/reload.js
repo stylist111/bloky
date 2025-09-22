@@ -196,6 +196,12 @@ describe(`Reload (${phase})`, function() {
       await new Page("image-from-subscription.html")
         .expectResource("image-from-subscription.png")
         .toBeBlocked();
+
+      if (browser.declarativeNetRequest) {
+        const enabledRulesets =
+          await browser.declarativeNetRequest.getEnabledRulesets();
+        expect(enabledRulesets).toEqual([subTestCustom1.id]);
+      }
     }
     finally {
       await EWE.subscriptions.remove(subTestCustom1.url);
