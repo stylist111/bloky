@@ -46,6 +46,32 @@ import {
 
 const licenseNotifier = new EventEmitter();
 
+const acceptableAdsUrls = [
+  ewe.subscriptions.ACCEPTABLE_ADS_URL,
+  ewe.subscriptions.ACCEPTABLE_ADS_PRIVACY_URL,
+];
+
+async function enableAcceptableAds() {
+  await Promise.all(
+    acceptableAdsUrls.map(async (url) => {
+      if (!(await ewe.subscriptions.has(url))) {
+        await ewe.subscriptions.add(url);
+        await ewe.subscriptions.sync(url);
+      }
+    }),
+  );
+}
+
+async function disableAcceptableAds() {
+  await Promise.all(
+    acceptableAdsUrls.map(async (url) => {
+      if (await ewe.subscriptions.has(url)) {
+        await ewe.subscriptions.remove(url);
+      }
+    }),
+  );
+}
+
 export const License = (function getLicense() {
   const isProd = true;
   const licenseStorageKey = "license";
@@ -362,6 +388,9 @@ export const License = (function getLicense() {
       ) {
         await ewe.subscriptions.remove(easyPrivacyURL);
       }
+      if ((await ewe.experiments.getFlag("is_premium_aa")) === true) {
+        await enableAcceptableAds();
+      }
       browser.alarms.clear(licenseAlarmName);
     },
     ready() {
@@ -425,6 +454,9 @@ export const License = (function getLicense() {
       if ((await ewe.experiments.getFlag("is_privacy_premium")) === true) {
         await ewe.subscriptions.add(easyPrivacyURL);
         await ewe.subscriptions.sync(easyPrivacyURL);
+      }
+      if ((await ewe.experiments.getFlag("is_premium_aa")) === true) {
+        await disableAcceptableAds();
       }
     },
     getFormattedActiveSinceDate() {
