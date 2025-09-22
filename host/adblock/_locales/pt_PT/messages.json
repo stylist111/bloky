@@ -267,16 +267,6 @@
     "message": "Erro!",
     "description": "abp: link subscriber unsuccessful result"
   },
-  "optionsversion": {
-    "message": "Versão $version$",
-    "description": "Version number",
-    "placeholders": {
-      "version": {
-        "content": "$1",
-        "example": "3.9.2"
-      }
-    }
-  },
   "tabgeneral": {
     "message": "Geral",
     "description": "A tab on the Options page"
@@ -3392,5 +3382,11 @@
   "get_around_popups": {
     "message": "Com o Modo Bypass, será capaz de contornar alguns desses pop-ups sem desativar o AdBlock.",
     "description": "Description of Bypass Mode on the main Premium options page"
+  },
+  "user_account_login": {
+    "message": "Iniciar sessão"
+  },
+  "user_account_manage_account": {
+    "message": "A minha conta"
   }
 }

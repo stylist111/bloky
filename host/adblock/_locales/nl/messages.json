@@ -267,16 +267,6 @@
     "message": "Mislukt!",
     "description": "abp: link subscriber unsuccessful result"
   },
-  "optionsversion": {
-    "message": "Versie $version$",
-    "description": "Version number",
-    "placeholders": {
-      "version": {
-        "content": "$1",
-        "example": "3.9.2"
-      }
-    }
-  },
   "tabgeneral": {
     "message": "Algemeen",
     "description": "A tab on the Options page"
@@ -3496,5 +3486,11 @@
   "get_around_popups": {
     "message": "Met de Bypass-modus kun je een aantal van die pop-ups omzeilen zonder dat je AdBlock hoeft uit te schakelen.",
     "description": "Description of Bypass Mode on the main Premium options page"
+  },
+  "user_account_login": {
+    "message": "Inloggen"
+  },
+  "user_account_manage_account": {
+    "message": "Mijn account"
   }
 }

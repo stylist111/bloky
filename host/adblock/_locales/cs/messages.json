@@ -263,16 +263,6 @@
     "message": "Neúspěšné!",
     "description": "abp: link subscriber unsuccessful result"
   },
-  "optionsversion": {
-    "message": "Verze $version$",
-    "description": "Version number",
-    "placeholders": {
-      "version": {
-        "content": "$1",
-        "example": "3.9.2"
-      }
-    }
-  },
   "tabgeneral": {
     "message": "Obecné",
     "description": "A tab on the Options page"

@@ -53,8 +53,8 @@ const MABPayment = (function mabPayment() {
     },
     // When the Options page loads we show the premium upsell on the
     // General, Filter Lists and Customize tabs if the user is not premium
-    displayUpsellCTA: () => {
-      if (!License || !License.shouldShowMyAdBlockEnrollment()) {
+    displayUpsellCTA: async () => {
+      if (!License || !(await License.shouldShowMyAdBlockEnrollment())) {
         return;
       }
 

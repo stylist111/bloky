@@ -267,16 +267,6 @@
     "message": "失败了！",
     "description": "abp: link subscriber unsuccessful result"
   },
-  "optionsversion": {
-    "message": "版本 $version$",
-    "description": "Version number",
-    "placeholders": {
-      "version": {
-        "content": "$1",
-        "example": "3.9.2"
-      }
-    }
-  },
   "tabgeneral": {
     "message": "常规",
     "description": "A tab on the Options page"
@@ -3496,5 +3486,11 @@
   "get_around_popups": {
     "message": "有了旁路模式，您可以在不禁用 AdBlock 的情况下绕过一些弹窗。",
     "description": "Description of Bypass Mode on the main Premium options page"
+  },
+  "user_account_login": {
+    "message": "登录"
+  },
+  "user_account_manage_account": {
+    "message": "我的账户"
   }
 }

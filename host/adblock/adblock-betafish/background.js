@@ -429,9 +429,9 @@ const getCurrentTabInfo = function (secondTime, tabId) {
           blockCountPage: await getBlockedPerPage(tab),
           blockCountTotal: Stats.blocked_total,
           customFilterCount: countCache.getCustomFilterCount(customFilterCheckUrl),
-          showMABEnrollment: License.shouldShowMyAdBlockEnrollment(),
+          showMABEnrollment: await License.shouldShowMyAdBlockEnrollment(),
           popupMenuThemeCTA: License.getCurrentPopupMenuThemeCTA(),
-          showDcCTA: License.shouldShowPremiumDcCTA(),
+          showDcCTA: await License.shouldShowPremiumDcCTA(),
           newBadgeTextReason: getNewBadgeTextReason(),
           premiumPayURL: License.MAB_CONFIG.payURL,
         };
@@ -439,7 +439,7 @@ const getCurrentTabInfo = function (secondTime, tabId) {
           result.whitelisted = !!(await ewe.filters.getAllowingFilters(page.id)).length;
           result.whitelistedText = await ewe.filters.getAllowingFilters(page.id);
         }
-        if (License && License.isActiveLicense()) {
+        if (License && (await License.isActiveLicense())) {
           result.activeLicense = true;
           result.subscriptions = await SubscriptionAdapter.getSubscriptionsMinusText();
         }
@@ -494,8 +494,8 @@ const showUpdatePage = async function (details) {
       }
     };
 
-    const checkLicense = function () {
-      if (!License.isActiveLicense()) {
+    const checkLicense = async function () {
+      if (!(await License.isActiveLicense())) {
         checkQueryState();
       }
     };
@@ -503,7 +503,7 @@ const showUpdatePage = async function (details) {
     const extensionInfo = await browser.management.getSelf();
     if (extensionInfo.installType !== "admin") {
       await License.ready();
-      checkLicense();
+      await checkLicense();
     }
   };
 
@@ -624,7 +624,7 @@ initialize
     await startContentFiltering();
     ewe.cdp.setPremiumStatusCallback(async () => {
       await License.ready();
-      return Boolean(License.isActiveLicense());
+      return Boolean(await License.isActiveLicense());
     });
     await getUserId();
     TELEMETRY.start();

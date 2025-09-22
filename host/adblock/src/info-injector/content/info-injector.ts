@@ -16,7 +16,7 @@
  */
 
 import * as browser from "webextension-polyfill";
-import { injectionOrigins, type InjectionInfo, getInfoCommand } from "../shared";
+import { type InjectionInfo, getInfoCommand } from "../shared";
 import { datasetKey, nodeId } from "./info-injector.types";
 
 /**
@@ -53,26 +53,11 @@ function createInfoElement(document: Document, info: string): HTMLDivElement {
 }
 
 /**
- * Checks if the given origin is relevant for us, and if we want to inject
- * the info element here.
- *
- * @param origin The origin to check
- * @returns Whether the given origin is relevant for us
- */
-function isRelevantOrigin(origin: string): boolean {
-  return injectionOrigins.includes(origin);
-}
-
-/**
  * Injects an element containing info about the extension, and adds a dataset
  * entry with the same info.
  */
 async function injectInfo(): Promise<void> {
   const document = getDocumentReference();
-
-  if (!isRelevantOrigin(document.location.origin)) {
-    return;
-  }
 
   const info = JSON.stringify(await getInfo());
   const element = createInfoElement(document, info);

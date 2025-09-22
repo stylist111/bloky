@@ -271,16 +271,6 @@
     "message": "Failed!",
     "description": "abp: link subscriber unsuccessful result"
   },
-  "optionsversion": {
-    "message": "Version $version$",
-    "description": "Version number",
-    "placeholders": {
-      "version": {
-        "content": "$1",
-        "example": "3.9.2"
-      }
-    }
-  },
   "tabgeneral": {
     "message": "General",
     "description": "A tab on the Options page"
@@ -3590,5 +3580,11 @@
   "adblock_logo": {
     "message": "AdBlock logo",
     "description": "Text in the alt attribute of an AdBlock logo image."
+  },
+  "user_account_login": {
+    "message": "Log in"
+  },
+  "user_account_manage_account": {
+    "message": "My Account"
   }
 }

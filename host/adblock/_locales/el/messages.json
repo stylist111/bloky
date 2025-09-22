@@ -263,16 +263,6 @@
     "message": "Απέτυχε!",
     "description": "abp: link subscriber unsuccessful result"
   },
-  "optionsversion": {
-    "message": "Έκδοση $version$",
-    "description": "Version number",
-    "placeholders": {
-      "version": {
-        "content": "$1",
-        "example": "3.9.2"
-      }
-    }
-  },
   "tabgeneral": {
     "message": "Γενικά",
     "description": "A tab on the Options page"
@@ -3376,5 +3366,11 @@
   "get_around_popups": {
     "message": "Με αυτήν τη λειτουργία, θα είστε σε θέση να παρακάμψετε μερικά από αυτά τα αναδυόμενα παράθυρα χωρίς να απενεργοποιήσετε το AdBlock.",
     "description": "Description of Bypass Mode on the main Premium options page"
+  },
+  "user_account_login": {
+    "message": "Σύνδεση"
+  },
+  "user_account_manage_account": {
+    "message": "Ο λογαριασμός μου"
   }
 }

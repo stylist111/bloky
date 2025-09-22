@@ -1255,13 +1255,13 @@ $(async () => {
     return;
   }
   const payInfo = MABPayment.initialize("filters");
-  if (License.shouldShowMyAdBlockEnrollment()) {
+  if (await License.shouldShowMyAdBlockEnrollment()) {
     MABPayment.freeUserLogic(payInfo);
-  } else if (License.isActiveLicense()) {
+  } else if (await License.isActiveLicense()) {
     MABPayment.paidUserLogic(payInfo);
   }
 
-  MABPayment.displayUpsellCTA();
+  await MABPayment.displayUpsellCTA();
   $(".upsell-cta #get-it-now-filters").on("click", MABPayment.userClickedUpsellCTA);
   $("a.link-to-tab").on("click", (event) => {
     activateTab($(event.target).attr("href"));

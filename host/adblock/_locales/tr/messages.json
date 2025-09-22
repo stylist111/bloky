@@ -267,16 +267,6 @@
     "message": "Başarısız!",
     "description": "abp: link subscriber unsuccessful result"
   },
-  "optionsversion": {
-    "message": "Sürüm $version$",
-    "description": "Version number",
-    "placeholders": {
-      "version": {
-        "content": "$1",
-        "example": "3.9.2"
-      }
-    }
-  },
   "tabgeneral": {
     "message": "Genel",
     "description": "A tab on the Options page"
@@ -3408,5 +3398,11 @@
   "get_around_popups": {
     "message": "Bypass Modu ile, AdBlock'u devre dışı bırakmadan bu pop-up'lardan bazılarının etrafından dolaşabileceksiniz.\n",
     "description": "Description of Bypass Mode on the main Premium options page"
+  },
+  "user_account_login": {
+    "message": "Giriş yap"
+  },
+  "user_account_manage_account": {
+    "message": "Hesabım"
   }
 }

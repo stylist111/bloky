@@ -267,16 +267,6 @@
     "message": "실패!",
     "description": "abp: link subscriber unsuccessful result"
   },
-  "optionsversion": {
-    "message": "버전 $version$",
-    "description": "Version number",
-    "placeholders": {
-      "version": {
-        "content": "$1",
-        "example": "3.9.2"
-      }
-    }
-  },
   "tabgeneral": {
     "message": "일반",
     "description": "A tab on the Options page"
@@ -3404,5 +3394,11 @@
   "get_around_popups": {
     "message": "우회 모드와 함께라면, AdBlock을 비활성화할 필요 없이 몇 개의 이러한 창들을 우회할 수 있습니다.",
     "description": "Description of Bypass Mode on the main Premium options page"
+  },
+  "user_account_login": {
+    "message": "로그인"
+  },
+  "user_account_manage_account": {
+    "message": "내 계정"
   }
 }

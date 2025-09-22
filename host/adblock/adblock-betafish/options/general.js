@@ -258,18 +258,18 @@ const addDataListeners = () => {
   SubscriptionsProxy.onRemoved.addListener(onSubRemoved);
 };
 
-const handlePremiumEnrollmentCTAs = () => {
+const handlePremiumEnrollmentCTAs = async () => {
   if (!License || $.isEmptyObject(License) || !MABPayment) {
     return;
   }
   const payInfo = MABPayment.initialize("general");
-  if (License.shouldShowMyAdBlockEnrollment()) {
+  if (await License.shouldShowMyAdBlockEnrollment()) {
     MABPayment.freeUserLogic(payInfo);
-  } else if (License.isActiveLicense()) {
+  } else if (await License.isActiveLicense()) {
     MABPayment.paidUserLogic(payInfo);
   }
 
-  MABPayment.displayUpsellCTA();
+  await MABPayment.displayUpsellCTA();
   $(".upsell-cta #get-it-now-general").on("click", MABPayment.userClickedUpsellCTA);
   $("a.link-to-tab").on("click", (event) => {
     activateTab($(event.target).attr("href"));
@@ -290,5 +290,5 @@ $(async () => {
     addDataListeners();
   }
 
-  handlePremiumEnrollmentCTAs();
+  await handlePremiumEnrollmentCTAs();
 });

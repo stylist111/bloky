@@ -33,21 +33,27 @@
     <div id="sidebar">
       <div id="sidebar-content">
         <section id="sidebar-content-top">
-          <a id="adblock-logo-link" href="https://www.getadblock.com" target="_blank">
-            <img
-              id="sidebar-adblock-logo"
-              i18n-alt="adblock_home"
-              src="icons/default_theme/logo.svg"
-            />
-            <img
-              id="sidebar-adblock-logo-narrow"
-              i18n-alt="adblock_home"
-              src="icons/adblock-38.png"
-            />
-          </a>
+          <div id="sidebar-logo-wrapper">
+            <a id="adblock-logo-link" href="https://www.getadblock.com" target="_blank">
+              <img
+                id="sidebar-adblock-logo"
+                i18n-alt="adblock_home"
+                src="icons/default_theme/logo.svg"
+                dir="ltr"
+              />
+              <img
+                id="sidebar-adblock-logo-narrow"
+                i18n-alt="adblock_home"
+                src="icons/adblock-38.png"
+                dir="ltr"
+              />
+            </a>
+            <small id="extension_version_number"></small>
+          </div>
         </section>
 
         <section id="sidebar-content-bottom">
+          <!--
           <div id="sidebar-social-links">
             <a href="https://facebook.com/heres.adblock" target="_blank">
               <i class="adblock-icon">facebook</i>
@@ -59,6 +65,7 @@
               <i class="adblock-icon">linkedin</i>
             </a>
           </div>
+          -->
         </section>
       </div>
     </div>

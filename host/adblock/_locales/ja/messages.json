@@ -267,16 +267,6 @@
     "message": "失敗しました！",
     "description": "abp: link subscriber unsuccessful result"
   },
-  "optionsversion": {
-    "message": "$version$バージョン",
-    "description": "Version number",
-    "placeholders": {
-      "version": {
-        "content": "$1",
-        "example": "3.9.2"
-      }
-    }
-  },
   "tabgeneral": {
     "message": "全般",
     "description": "A tab on the Options page"
@@ -3496,5 +3486,11 @@
   "get_around_popups": {
     "message": "バイパスモードを使えば、AdBlockを無効にすることなく、ポップアップを回避することができます。",
     "description": "Description of Bypass Mode on the main Premium options page"
+  },
+  "user_account_login": {
+    "message": "ログイン"
+  },
+  "user_account_manage_account": {
+    "message": "マイアカウント"
   }
 }

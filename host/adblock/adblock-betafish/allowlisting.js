@@ -68,7 +68,7 @@ export function getAllowlistingDomain(hostname) {
  *
  */
 export async function onAllowlisting(domain, options) {
-  if (License.isActiveLicense()) {
+  if (await License.isActiveLicense()) {
     return;
   }
 
@@ -112,12 +112,12 @@ async function start() {
   ewe.allowlisting.setAllowlistingCallback(onAllowlisting);
 
   await License.ready();
-  if (License.isActiveLicense()) {
+  if (await License.isActiveLicense()) {
     removeWebAllowlistingFilters();
   }
 
-  License.licenseNotifier.on("license.status.changed", () => {
-    if (License.isActiveLicense()) {
+  License.licenseNotifier.on("license.status.changed", async () => {
+    if (await License.isActiveLicense()) {
       ewe.allowlisting.setAuthorizedKeys([]);
       removeWebAllowlistingFilters();
     } else {

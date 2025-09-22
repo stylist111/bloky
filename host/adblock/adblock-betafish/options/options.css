@@ -1554,12 +1554,13 @@ section .theme-section-row {
   height: 100%;
 }
 
+#sidebar-logo-wrapper {
+  margin: 30px;
+  text-align: right;
+}
+
 #sidebar-adblock-logo {
-  width: 75%;
-  margin-left: calc(25% / 2);
-  height: auto;
-  margin-top: 30px;
-  margin-bottom: 30px;
+  width: 100%;
   display: inline-block;
 }
 
@@ -1588,13 +1589,8 @@ section .theme-section-row {
   color: #999999;
 }
 
-#sidebar-content-bottom i {
-  color: var(--header-social-icons);
-}
-
 #sidebar-content-bottom {
   font-size: 14px;
-  width: fit-content;
   min-width: 40%;
 }
 
@@ -1901,11 +1897,13 @@ input:checked + .slider::before {
 @media screen and (max-width: 890px) {
   #sidebar-adblock-logo-narrow {
     display: inline-block;
-    margin-top: 35px;
     width: 28px;
-    margin-left: 16px;
     height: auto;
-    margin-bottom: 30px;
+  }
+
+  #sidebar-logo-wrapper {
+    margin: 30px 5px;
+    text-align: center;
   }
 
   #sidebar-adblock-logo {

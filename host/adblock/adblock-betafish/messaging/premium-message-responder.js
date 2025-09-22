@@ -26,13 +26,6 @@ import { port } from "../../adblockplusui/adblockpluschrome/lib/messaging/port";
 import { License, replacedCounts, channels } from "../picreplacement/check";
 import { channelsNotifier } from "../picreplacement/channels";
 
-const gabHostnames = [
-  "https://getadblock.com",
-  "https://dev.getadblock.com",
-  "https://dev1.getadblock.com",
-  "https://dev2.getadblock.com",
-  "https://getadblockpremium.com",
-];
 /**
  * Process events related to the Premium object - License, Channels, and Sync-Service
  *
@@ -139,13 +132,13 @@ const injectScript = async function (scriptFileName, tabId, frameId) {
  *
  * @returns a clone of the License object
  */
-function getPremiumAssociatedObject() {
+async function getPremiumAssociatedObject() {
   return {
-    getFormattedActiveSinceDate: License.getFormattedActiveSinceDate(),
+    getFormattedActiveSinceDate: await License.getFormattedActiveSinceDate(),
     MAB_CONFIG: License.MAB_CONFIG,
-    shouldShowMyAdBlockEnrollment: License.shouldShowMyAdBlockEnrollment(),
+    shouldShowMyAdBlockEnrollment: await License.shouldShowMyAdBlockEnrollment(),
     shouldShowPremiumCTA: License.shouldShowPremiumCTA(),
-    isActiveLicense: License.isActiveLicense(),
+    isActiveLicense: await License.isActiveLicense(),
     isLicenseCodeValid: License.isLicenseCodeValid(),
     pageReloadedOnSettingChangeKey: License.pageReloadedOnSettingChangeKey,
     themesForCTA: License.userSawSyncCTAKey,
@@ -170,7 +163,7 @@ const processIsActiveLicense = async () => {
 const processLicenseConfig = async () => {
   try {
     await License.ready();
-    const response = getPremiumAssociatedObject();
+    const response = await getPremiumAssociatedObject();
     Object.assign(response, License.get());
     return response;
   } catch (e) {
@@ -189,7 +182,7 @@ const processLicenseConfig = async () => {
 port.on("adblock:load_my_adblock", async (message, sender) => {
   await License.ready();
   if (
-    License.isActiveLicense() &&
+    (await License.isActiveLicense()) &&
     sender.page &&
     sender.page.url &&
     sender.page.url.href &&
@@ -222,6 +215,9 @@ port.on("adblock:cleanUpSevenDayAlarm", async () => {
   return {};
 });
 port.on("adblock:getLicenseConfig", () => processLicenseConfig());
+
+// TODO: This might be deprecated and no longer needed.
+// Investigate and remove if so
 port.on("adblock:updatePeriodically", async () => {
   await License.ready();
   License.updatePeriodically();
@@ -234,7 +230,7 @@ port.on("adblock:updatePeriodically", async () => {
  * the messages come from content scripts on the getadblock.com domain
  *
  */
-port.on("adblock:isActiveLicense", () => processIsActiveLicense());
+port.on("adblock:isActiveLicense", processIsActiveLicense);
 port.on("adblock:payment_success", async () => {
   await License.ready();
   try {
@@ -248,9 +244,8 @@ port.on("adblock:payment_success", async () => {
     return { ack: false };
   }
 });
-for (const hostname of gabHostnames) {
-  ext.addTrustedMessageTypes(hostname, ["adblock:isActiveLicense", "adblock:payment_success"]);
-}
+
+ext.addTrustedMessageTypes(null, ["adblock:isActiveLicense", "adblock:payment_success"]);
 
 /**
  * Process the messages related to Channels object
@@ -279,7 +274,7 @@ const processGetRandomlisting = async function (message, sender) {
       return { disabledOnPage: true };
     }
     await License.ready();
-    if (!License.isActiveLicense()) {
+    if (!(await License.isActiveLicense())) {
       return { disabledOnPage: true };
     }
     const result = channels.randomListing(message.opts);
@@ -306,7 +301,7 @@ port.on("adblock:channels.getrandomlisting", (message, sender) =>
 );
 port.on("adblock:channels.recordOneAdReplaced", async (message, sender) => {
   await License.ready();
-  if (License.isActiveLicense()) {
+  if (await License.isActiveLicense()) {
     replacedCounts.recordOneAdReplaced(sender.page.id);
   }
 });

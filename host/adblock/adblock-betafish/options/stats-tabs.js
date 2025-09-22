@@ -122,7 +122,7 @@ const showOrHideTrackerPanelCountNeeded = function () {
 const showOrHideReplacedPanelCountNeeded = async function () {
   if (
     settings.local_data_collection &&
-    License.isActiveLicense() &&
+    (await License.isActiveLicense()) &&
     channels &&
     (await channels.isAnyEnabled())
   ) {
@@ -754,7 +754,7 @@ const getLineChartConfig = async function (chartType, filterName, labelName) {
 
   if (
     showReplacedData &&
-    License.isActiveLicense() &&
+    (await License.isActiveLicense()) &&
     channels &&
     (await channels.isAnyEnabled())
   ) {
@@ -897,7 +897,7 @@ const filterBarChartDataForDateRange = async function (startTime, endTime) {
             if (subs && subs.easyprivacy && subs.easyprivacy.subscribed) {
               domainData[cleanDomain].trackers += rawData[timestamp].doms[domain].trackers;
             }
-            if (License.isActiveLicense() && channels && (await channels.isAnyEnabled())) {
+            if ((await License.isActiveLicense()) && channels && (await channels.isAnyEnabled())) {
               domainData[cleanDomain].adsReplaced += rawData[timestamp].doms[domain].adsReplaced;
             }
             domainData[cleanDomain].total =
@@ -1150,7 +1150,7 @@ const initializeStatsTabContent = async function () {
       $("#trackers_blocked_panel").hide();
       $("#trackers_cta_panel").fadeIn();
     }
-    if (License.isActiveLicense()) {
+    if (await License.isActiveLicense()) {
       if (channels && (await channels.isAnyEnabled())) {
         $("#premium_cta_panel").hide();
         $("#ads_replaced_panel").css("display", "flex").hide().fadeIn();

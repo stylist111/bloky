@@ -205,16 +205,6 @@
     "message": "Sikertelen!",
     "description": "abp: link subscriber unsuccessful result"
   },
-  "optionsversion": {
-    "message": "Verzió: $version$",
-    "description": "Version number",
-    "placeholders": {
-      "version": {
-        "content": "$1",
-        "example": "3.9.2"
-      }
-    }
-  },
   "tabgeneral": {
     "message": "Általános",
     "description": "A tab on the Options page"
@@ -2132,5 +2122,11 @@
   "buttonkeep": {
     "message": "Megtart",
     "description": "text on the remove / delete image modal on the image swap tab"
+  },
+  "user_account_login": {
+    "message": "Bejelentkezés"
+  },
+  "user_account_manage_account": {
+    "message": "Fiókom"
   }
 }

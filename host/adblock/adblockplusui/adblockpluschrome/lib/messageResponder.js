@@ -23,6 +23,7 @@ import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
 import { port } from "./messaging/port.js";
 import { Prefs } from "./prefs.js";
+import { License } from "../../../adblock-betafish/picreplacement/check";
 
 function forward(type, message, sender) {
   return port._onMessage(Object.assign({}, message, { type }), sender);
@@ -78,6 +79,7 @@ port.on("app.get", async (message, sender) => {
     const prefsUrlKey = ctaLinkNameToPrefsMap.get(ctaLinkName);
     let url = Prefs[prefsUrlKey];
 
+    const hasPremium = await License.isActiveLicense();
     const linkPlaceholders = [
       ["LANG", () => browser.i18n.getUILanguage().replace("-", "_")],
       ["ADDON_NAME", () => info.addonName],
@@ -86,7 +88,7 @@ port.on("app.get", async (message, sender) => {
       ["APPLICATION_VERSION", () => info.applicationVersion],
       ["PLATFORM_NAME", () => info.platform],
       ["PLATFORM_VERSION", () => info.platformVersion],
-      ["LICENSE_CODE", () => Prefs.get("premium_license").code],
+      ["HAS_PREMIUM", () => hasPremium],
       ["SOURCE", () => queryParams.source],
     ];
 

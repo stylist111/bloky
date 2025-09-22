@@ -17,11 +17,10 @@
 
 /* For ESLint: List any global identifiers used in this file below */
 /* global browser, translate, FilterListUtil, activateTab,
-   CustomFilterListUploadUtil, localizePage, storageSet, chromeStorageSetHelper,
-   chromeStorageGetHelper, debounced, determineUserLanguage,
-   setLangAndDirAttributes, License,
+   CustomFilterListUploadUtil, localizePage, storageSet, debounced, determineUserLanguage,
+   setLangAndDirAttributes, License, ewe, licenseNotifier, initializeProxies,
    settingsNotifier, initializeSettings, initializeLicense,
-   initializeChannels, settings, initializePrefs, ServerMessages, SubscriptionAdapter,
+   initializeChannels, settings, initializePrefs, SubscriptionAdapter,
    initializeLocalDataCollection, initializePremiumPort,
    initializeSubscriptionsProxy, initializeFiltersProxy,
    connectUIPort, initializeSubscriptionsProxy, initializeFiltersProxy
@@ -72,10 +71,6 @@ const isSelectorFilter = function (text) {
   return /^[^!]*#@?#./.test(text);
 };
 
-/* eslint-disable-next-line no-unused-vars */
-const rateUsCtaKey = "rate-us-cta-clicked";
-/* eslint-disable-next-line no-unused-vars */
-const mailCtaKey = "mail-cta-clicked";
 /* eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars */
 const premiumFiltersCtaKey = "premium-filters-cta-clicked";
 
@@ -88,7 +83,7 @@ const language = determineUserLanguage();
 let delayedSubscriptionSelection = null;
 
 let initializedProxies;
-const initializeProxies = () => {
+window.initializeProxies = () => {
   if (initializedProxies) {
     return initializedProxies;
   }
@@ -114,7 +109,7 @@ const initializeProxies = () => {
 
 function displayVersionNumber() {
   const currentVersion = browser.runtime.getManifest().version;
-  $("#version_number").text(translate("optionsversion", [currentVersion]));
+  $("#extension_version_number").text(`v${currentVersion}`);
 }
 
 function displayTranslationCredit() {
@@ -266,117 +261,6 @@ const debounceWaitTime = 1000; // time in ms before
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 const updateAcceptableAdsUI = debounced(debounceWaitTime, updateAcceptableAdsUIFN);
 
-const shouldShowRateUsCTA = function () {
-  const mql = window.matchMedia("(max-width: 890px)");
-  if (!mql.matches && (info.application === "chrome" || info.application === "edge")) {
-    chromeStorageGetHelper(rateUsCtaKey).then((alreadyRatedUs) => {
-      if (!alreadyRatedUs) {
-        if (info.application === "edge") {
-          $("#rate-us").attr(
-            "href",
-            "https://microsoftedge.microsoft.com/addons/detail/adblock-%E2%80%94-best-ad-blocker/ndcileolkflehcjpmjnfbnaibdcgglog",
-          );
-        }
-        $("#rate-us-cta").show();
-        $("#rate-us-cta a#rate-us").on("click", () => {
-          chromeStorageSetHelper(rateUsCtaKey, true);
-          $("#rate-us-cta").hide();
-        });
-      }
-    });
-  }
-};
-
-const shouldShowEmailCTA = function () {
-  const mql = window.matchMedia("(max-width: 890px)");
-  if (!mql.matches) {
-    chromeStorageGetHelper(mailCtaKey).then((alreadyClickedMailCTA) => {
-      if (!alreadyClickedMailCTA) {
-        ServerMessages.recordGeneralMessage("mail_option_cta_seen");
-        const mailCTA$ = $("#mail-cta");
-        mailCTA$.show();
-        const checkBox$ = $("#mail-cta-confirm-checkbox");
-        const emailAddress$ = $("#mail-cta-address");
-        const placePanel = function () {
-          const recs = mailCTA$.get(0).getBoundingClientRect();
-          $("#mail-dialog").css({ top: recs.top - 360, left: recs.left + 5, position: "absolute" });
-        };
-        mailCTA$.on("click", () => {
-          // reset the error messages, indicates, fields, etc.
-          $("#mail-dialog-err-message").text("");
-          checkBox$.prop("checked", false);
-          emailAddress$.val("");
-          $(".mail-dialog-checkbox i").css({ color: "" });
-          emailAddress$.css({ border: "1px solid var(--mail-dialog-textfield-border-color)" });
-          $(window).on("resize", placePanel);
-          placePanel();
-          $("#mail-dialog").fadeToggle(() => {
-            if ($("#mail-dialog").is(":visible")) {
-              ServerMessages.recordGeneralMessage("mail_option_cta_clicked");
-            }
-          });
-        });
-        $("#mail-cta-close-icon, #mail-cta-done-close-icon").on("click", (event) => {
-          if (
-            event &&
-            event.target &&
-            event.target.dataset &&
-            event.target.dataset.sendCloseEvent
-          ) {
-            ServerMessages.recordGeneralMessage("mail_option_cta_closed");
-          }
-          $("#mail-dialog-err-message").text("");
-          $("#mail-dialog").fadeOut();
-          $("#mail-dialog-done-content").fadeOut();
-          mailCTA$.fadeOut();
-          $(window).off("resize", placePanel);
-          chromeStorageSetHelper(mailCtaKey, true);
-        });
-        $("#mail-dialog-join-btn").on("click", () => {
-          const emailAddressTxt = emailAddress$.val().trim().toLowerCase();
-          let errorMsg = "";
-          const updateErrorMsg = function (newText) {
-            if (errorMsg) {
-              errorMsg = `${errorMsg}\n${newText}`;
-            } else {
-              errorMsg = newText;
-            }
-          };
-          if (!checkBox$.is(":checked")) {
-            $(".mail-dialog-checkbox i").css({ color: "var(--email-error-message-color)" });
-            updateErrorMsg(translate("please_confirm"));
-          } else {
-            $(".mail-dialog-checkbox i").css({ color: "" });
-          }
-          if (!emailAddressTxt) {
-            emailAddress$.css({ border: "1px solid var(--email-error-message-color)" });
-            updateErrorMsg(translate("valid_email_address"));
-          } else if (emailAddressTxt && !emailAddress$.get(0).checkValidity()) {
-            emailAddress$.css({ border: "1px solid var(--email-error-message-color)" });
-            updateErrorMsg(translate("valid_email_address"));
-          } else {
-            emailAddress$.css({ border: "1px solid var(--mail-dialog-textfield-border-color)" });
-          }
-          if (errorMsg) {
-            $("#mail-dialog-err-message").text(errorMsg);
-          } else {
-            $("#mail-dialog-err-message").text("");
-            $("#mail-dialog-content").fadeOut(() => {
-              $("#mail-dialog-done-content").fadeIn();
-            });
-            ServerMessages.recordGeneralMessage("newsletter_optin", undefined, {
-              emailAddress: emailAddressTxt,
-            });
-            chromeStorageSetHelper(mailCtaKey, true);
-          }
-        });
-      } else {
-        shouldShowRateUsCTA();
-      }
-    });
-  }
-};
-
 /**
  * Updates the visibility of social icons based on subscribed filter lists.
  *
@@ -392,6 +276,35 @@ async function updateSocialIconsVisibility() {
   );
 
   document.body.classList.toggle(socialIconsStateClassName, hasAntiSocialSubscriptions);
+}
+
+/**
+ * Displays the user account management buttons based on authentication status.
+ */
+async function displayUserAccount() {
+  const user = await ewe.account.getProfile();
+  const loginBtn = $("#user-account-login");
+  const manageBtn = $("#user-account-manage");
+
+  // Dynamically update the login URL to include the premium status.
+  // This is used to determine if the user should see the successful activation page
+  const loginUrl = await sendTypeMessage("app.get", {
+    what: "ctalink",
+    link: "premium-manage",
+    queryParams: {
+      source: "options",
+    },
+  });
+  loginBtn.attr("href", loginUrl);
+  manageBtn.attr("href", loginUrl);
+
+  if (user && user.email) {
+    loginBtn.hide();
+    manageBtn.show();
+  } else {
+    loginBtn.show();
+    manageBtn.hide();
+  }
 }
 
 $(async () => {
@@ -410,13 +323,16 @@ $(async () => {
   };
 
   settingsNotifier.on("settings.changed", onSettingsChanged);
+  licenseNotifier.on("license.updated", () => {
+    displayUserAccount();
+  });
 
   setSelectedThemeColor();
   displayVersionNumber();
   localizePage();
   displayTranslationCredit();
-  shouldShowEmailCTA();
   updateSocialIconsVisibility();
+  displayUserAccount();
 });
 
 window.onbeforeunload = function leavingOptionsPage() {

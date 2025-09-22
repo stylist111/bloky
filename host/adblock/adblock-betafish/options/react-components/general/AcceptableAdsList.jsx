@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "@eyeo/ext-ui-components";
 import {
-  globalMABPayment as MABPayment,
   globalSubscriptionAdapter as SubscriptionAdapter,
   globalSubscriptionsProxy as SubscriptionsProxy,
 } from "../shared/globals";

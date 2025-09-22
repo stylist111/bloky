@@ -25,16 +25,10 @@
 
 #myadblock-features {
   margin-top: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
 }
 .mab-feature {
-  width: 336px;
-  height: 320px;
-  margin: 20px 0;
   border-radius: 6px;
+  background-color: var(--mab-feature-card-body-bg);
   position: relative;
 }
 .mab-feature .hover-overlay {
@@ -70,15 +64,11 @@
   color: var(--mab-teaser-card-header-text-color);
 }
 .mab-feature-body {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 16px 24px 0px 24px;
+  padding: 24px;
   color: var(--mab-feature-card-text-color);
   background-color: var(--mab-feature-card-body-bg);
-  height: calc(100% - 64px);
   border-radius: 0 0 6px 6px;
-  line-height: normal;
+  line-height: 1.5;
 }
 .mab-feature-header > * {
   margin-right: 8px;
@@ -240,11 +230,6 @@ div.mab-page-box > .option-page-content > footer h2 {
   color: var(--options-page-accent-text);
   overflow-wrap: break-word;
   max-width: 776px;
-}
-
-[id^="locked-user-pay-section-"] a {
-  font-size: 14px;
-  max-width: 176px;
 }
 
 /* End: MAB payment section */

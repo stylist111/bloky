@@ -4,7 +4,7 @@
 import { getUserId } from "../../../id/background/index";
 
 const webRequestFilter = {
-  url: [{ hostSuffix: "getadblock.com" }, { hostSuffix: "getadblockpremium.com" }],
+  url: [{ hostSuffix: "getadblock.com" }],
 };
 
 function setAdblockUserID(userid) {

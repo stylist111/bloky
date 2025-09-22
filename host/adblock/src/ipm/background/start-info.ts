@@ -40,7 +40,7 @@ export async function getFutureStartInfo(): Promise<FutureFragment.StartInfo> {
     licensing: {
       async isLicenseValid() {
         await License.ready();
-        return License.isActiveLicense();
+        return await License.isActiveLicense();
       },
     },
     info: {
@@ -94,7 +94,7 @@ export const legacyStartInfo: LegacyFragment.StartInfo = {
   licensing: {
     async isLicenseValid() {
       await License.ready();
-      return License.isActiveLicense();
+      return await License.isActiveLicense();
     },
   },
   info: {

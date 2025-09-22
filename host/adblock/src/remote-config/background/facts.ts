@@ -25,11 +25,10 @@ import type { Facts } from "@eyeo/webext-ad-filtering-solution";
  * @returns {Promise<Object>}
  */
 export async function getFacts(): Promise<Facts> {
-  await Prefs.untilLoaded;
-  await License.ready();
+  await Promise.all([Prefs.untilLoaded, License.ready()]);
 
   return {
-    hasPremium: License.isActiveLicense(),
+    hasPremium: await License.isActiveLicense(),
     installDate: Prefs.get("installDate"),
     blockedCount: Prefs.get("blocked_total"),
   };

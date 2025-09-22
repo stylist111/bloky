@@ -31,24 +31,23 @@ $(async () => {
   const $pageTitle = $("#premium-tab-header > span > span.page-title");
   let manageSubscriptionURL = License.MAB_CONFIG.subscriptionURL;
 
-  if (License.shouldShowMyAdBlockEnrollment()) {
+  if (await License.shouldShowMyAdBlockEnrollment()) {
     MABPayment.freeUserLogic(payInfo);
     $("#get-it-now-mab").on("click", MABPayment.userClickedPremiumCTA);
     $pageTitle.text(translate("premium_page_title"));
-  } else if (License.isActiveLicense()) {
+  } else if (await License.isActiveLicense()) {
     MABPayment.paidUserLogic(payInfo);
     $pageTitle.text(translate("premium"));
-    if (License.getFormattedActiveSinceDate()) {
-      $("#premium_status_msg").text(
-        translate("premium_status_msg", License.getFormattedActiveSinceDate()),
-      );
+    const formattedActiveSinceDate = await License.getFormattedActiveSinceDate();
+    if (formattedActiveSinceDate) {
+      $("#premium_status_msg").text(translate("premium_status_msg", formattedActiveSinceDate));
     } else {
       $("#premium_status_msg").text(translate("premium_status_short_msg"));
     }
     $(".status_msg").css("display", "inline-flex");
 
     if (License.isLicenseCodeValid() && License.code) {
-      manageSubscriptionURL = `${manageSubscriptionURL}?lic=${License.code}`;
+      manageSubscriptionURL = `${manageSubscriptionURL}&lic=${License.code}`;
       $("a#manage-subscription").attr("href", manageSubscriptionURL).show();
     }
   }

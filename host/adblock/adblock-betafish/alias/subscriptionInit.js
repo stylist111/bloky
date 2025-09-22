@@ -214,6 +214,11 @@ const start = async function () {
       url: "https://easylist-downloads.adblockplus.org/ab-testing/experiments.json",
       getFacts,
     },
+    account: {
+      apiBaseUrl: "https://api.ua.eyeo.it/v1",
+      loginRequestPattern: "https://myaccount.getadblock.com/api/auth/ext-login*",
+      applicationId: "b793c0eaad23705f155df0a9609dc95c",
+    },
     featureFlags: {
       inlineCss: false,
     },

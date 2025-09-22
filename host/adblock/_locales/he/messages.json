@@ -263,16 +263,6 @@
     "message": "נכשל ! :(",
     "description": "abp: link subscriber unsuccessful result"
   },
-  "optionsversion": {
-    "message": "גרסה $version$",
-    "description": "Version number",
-    "placeholders": {
-      "version": {
-        "content": "$1",
-        "example": "3.9.2"
-      }
-    }
-  },
   "tabgeneral": {
     "message": "כללי",
     "description": "A tab on the Options page"

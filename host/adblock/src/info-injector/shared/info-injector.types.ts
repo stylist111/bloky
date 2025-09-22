@@ -16,18 +16,6 @@
  */
 
 /**
- * A list of origins where we want to inject the info.
- */
-export const injectionOrigins = [
-  "https://adblockplus.org",
-  "https://accounts.adblockplus.org",
-  "https://new.adblockplus.org",
-  "https://welcome.adblockplus.org",
-  "https://getadblock.com",
-  "https://vpn.getadblock.com",
-];
-
-/**
  * The name of the command we send in a message to the background page.
  */
 export const getInfoCommand = "getInjectionInfo";

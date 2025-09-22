@@ -28,10 +28,11 @@ import { TabSessionStorage } from "../../adblockplusui/adblockpluschrome/lib/sto
 
 import { getUserId } from "../id/background/index";
 import { Channels } from "./channels";
-import { setSetting } from "../prefs/background";
-import { showIconBadgeCTA, NEW_BADGE_REASONS } from "../alias/icon";
+import { setSetting } from "~/prefs/background";
+import { showIconBadgeCTA, NEW_BADGE_REASONS } from "~/alias/icon";
 import { Prefs } from "~/alias/prefs";
-import { initialize } from "../alias/subscriptionInit";
+import { initialize } from "~/alias/subscriptionInit";
+import * as logger from "~/utilities/background";
 import ServerMessages from "../servermessages";
 import SubscriptionAdapter from "../subscriptionadapter";
 import postData from "../fetch-util";
@@ -42,7 +43,7 @@ import {
   log,
   storageSet,
   reloadOptionsPageTabs,
-} from "../utilities/background/bg-functions";
+} from "~/utilities/background";
 
 const licenseNotifier = new EventEmitter();
 
@@ -102,13 +103,13 @@ export const License = (function getLicense() {
       licenseURL: "https://myadblock.licensing.getadblock.com/license/",
       subscribeKey: "sub-c-9eccffb2-8c6a-11e9-97ab-aa54ad4b08ec",
       payURL: "https://getadblock.com/premium/enrollment/",
-      subscriptionURL: "https://getadblock.com/premium/manage-subscription/",
+      subscriptionURL: "https://myaccount.getadblock.com/?ref=adblock-options&premium=true",
     },
     dev: {
       licenseURL: "https://dev.myadblock.licensing.getadblock.com/license/",
       subscribeKey: "sub-c-9e0a7270-83e7-11e9-99de-d6d3b84c4a25",
       payURL: "https://getadblock.com/premium/enrollment/?testmode=true",
-      subscriptionURL: "https://dev.getadblock.com/premium/manage-subscription/",
+      subscriptionURL: "https://ab.ua-qa.eyeo.it/?ref=adblock-options&premium=true",
     },
   };
 
@@ -202,18 +203,6 @@ export const License = (function getLicense() {
   };
   addSevenDayAlarmStateListener();
 
-  /**
-   * Provides payload to verify authenticity of Premium license data
-   *
-   * @returns {string|null} Encoded signed Premium license data
-   */
-  const getBypassPayload = function () {
-    if (!License.isActiveLicense()) {
-      return null;
-    }
-    return `${License.get().encodedData}.${License.get().signature}`;
-  };
-
   // Load the license from persistent storage
   // Should only be called during startup / initialization
   const loadFromStorage = function (callback) {
@@ -273,7 +262,6 @@ export const License = (function getLicense() {
     licenseNotifier,
     MAB_CONFIG,
     isProd,
-    getBypassPayload,
     enrollUser() {
       loadFromStorage(() => {
         // only enroll users if they were not previously enrolled
@@ -323,6 +311,12 @@ export const License = (function getLicense() {
     },
     // Get the latest license data from the server, and talk to the user if needed.
     async update() {
+      // TODO: Remove this when the old license system is fully deprecated
+      // Force using the new user account system and ignore the old license
+      if (await ewe.experiments.getFlag("ab_legacy_license_disabled")) {
+        return;
+      }
+
       const userID = await getUserId();
       licenseNotifier.emit("license.updating");
       const postDataObj = {};
@@ -397,7 +391,7 @@ export const License = (function getLicense() {
       return licensePromise;
     },
     async create24HourAlarm() {
-      if (!License.isActiveLicense()) {
+      if (!(await License.isActiveLicense())) {
         return;
       }
 
@@ -412,7 +406,7 @@ export const License = (function getLicense() {
     },
 
     async updatePeriodically() {
-      if (!License.isActiveLicense()) {
+      if (!(await License.isActiveLicense())) {
         return;
       }
       await License.update();
@@ -435,6 +429,12 @@ export const License = (function getLicense() {
     // Call with an optional delay parameter (in milliseconds) if the first license
     // update should be delayed by a custom delay (default is 0 minutes).
     async activate(delayMs) {
+      // TODO: Remove this when the old license system is fully deprecated
+      // Force using the new user account system and ignore the old license
+      if (await ewe.experiments.getFlag("ab_legacy_license_disabled")) {
+        return;
+      }
+
       let delay = delayMs;
       const currentLicense = License.get() || {};
       const newLicense = { ...currentLicense };
@@ -459,10 +459,10 @@ export const License = (function getLicense() {
         await disableAcceptableAds();
       }
     },
-    getFormattedActiveSinceDate() {
+    async getFormattedActiveSinceDate() {
       if (
         !License ||
-        !License.isActiveLicense() ||
+        !(await License.isActiveLicense()) ||
         !License.get() ||
         !License.get().createdAtUTC ||
         !Number.isInteger(License.get().createdAtUTC)
@@ -479,8 +479,16 @@ export const License = (function getLicense() {
       }
       return formattedDate;
     },
-    isActiveLicense() {
-      return License && License.get() && License.get().status === "active";
+    async isActiveLicense() {
+      const hasPremium = await ewe.account.hasPremium();
+
+      // TODO: Remove this when the old license system is fully deprecated
+      // Force using the new user account system and ignore the old license
+      if (await ewe.experiments.getFlag("ab_legacy_license_disabled")) {
+        return hasPremium;
+      }
+
+      return hasPremium || (License && License.get() && License.get().status === "active");
     },
     isLicenseCodeValid() {
       return License && License.get().code && typeof License.get().code === "string";
@@ -488,23 +496,20 @@ export const License = (function getLicense() {
     isMyAdBlockEnrolled() {
       return License && License.get() && License.get().myadblock_enrollment === true;
     },
-    shouldShowMyAdBlockEnrollment() {
+    async shouldShowMyAdBlockEnrollment() {
       return (
         License.isMyAdBlockEnrolled() &&
-        !License.isActiveLicense() &&
+        !(await License.isActiveLicense()) &&
         License.shouldShowPremiumCTA()
       );
     },
-    shouldShowPremiumDcCTA() {
-      return License && License.isActiveLicense() && License.get().suppress_premium_cta !== true;
+    async shouldShowPremiumDcCTA() {
+      return (
+        License && (await License.isActiveLicense()) && License.get().suppress_premium_cta !== true
+      );
     },
     shouldShowPremiumCTA() {
       return !(License && License.get().suppress_premium_cta === true);
-    },
-    displayPopupMenuNewCTA() {
-      const isNotActive = !License.isActiveLicense();
-      const variant = License.get() ? License.get().var : undefined;
-      return License && isNotActive && [3, 4].includes(variant) && License.shouldShowPremiumCTA();
     },
   };
 })();
@@ -588,6 +593,7 @@ Promise.all([onInstalledPromise, License.ready(), initialize]).then((detailsArra
 browser.runtime.onStartup.addListener(async () => {
   await License.ready();
   await License.create24HourAlarm();
+  await migrateToUserAccount();
 });
 
 browser.alarms.onAlarm.addListener(async (alarm) => {
@@ -601,13 +607,83 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
   }
 });
 
-License.ready().then(() => {
+License.ready().then(async () => {
   License.checkSevenDayAlarm();
+
+  // Attempt to migrate from legacy license to user account,
+  // when extension starts or SW restarts
+  await migrateToUserAccount();
 });
 
 License.initialize(() => {
   if (!License.initialized) {
     License.initialized = true;
+  }
+});
+
+/**
+ * Migrates the user's license to a user account if they have an active license
+ * @returns {Promise<void>}
+ */
+async function migrateToUserAccount() {
+  await Prefs.untilLoaded;
+  await License.ready();
+
+  // feature flag to gradually roll out this migration
+  if (!(await ewe.experiments.getFlag("ab_migrate_license"))) {
+    logger.debug("License migration feature flag is not enabled, skipping migration");
+    return;
+  }
+
+  // If the user doesn't have an active license, we don't need to migrate
+  if (!(await License.isActiveLicense())) {
+    logger.debug("Not active license, skipping migration");
+    return;
+  }
+
+  // If the user already logged in, we don't need to do anything
+  if (await ewe.account.isLoggedIn()) {
+    logger.debug("Already has premium, skipping migration");
+    return;
+  }
+
+  // attempt to log in with the license
+  try {
+    const userId = await getUserId();
+    await ewe.account.logInWithLicense({
+      userId,
+      licenseId: License.get().code,
+    });
+    logger.debug("Migrated license to user account successfully");
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.warn("Failed to migrate license to user account", e);
+    ewe.sentry.reportError(e);
+  }
+}
+
+ewe.account.onChanged.addListener(async ({ user, oldUser }) => {
+  const hasPremium = user && user.hasPremium;
+  const oldUserHadPremium = oldUser && oldUser.hasPremium;
+
+  // activate
+  if (hasPremium && !oldUserHadPremium) {
+    reloadOptionsPageTabs();
+  }
+
+  licenseNotifier.emit("license.updated", {
+    status: hasPremium ? "active" : "expired",
+  });
+
+  if (hasPremium !== oldUserHadPremium) {
+    // used in allowlisting module to update the authorized keys
+    licenseNotifier.emit("license.status.changed");
+  }
+
+  // expired
+  if (!hasPremium) {
+    logger.debug("No premium license, deactivating features");
+    await License.processExpiredLicense();
   }
 });
 

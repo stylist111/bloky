@@ -53,20 +53,23 @@
     <div id="sidebar">
       <div id="sidebar-content">
         <section id="sidebar-content-top">
-          <a id="adblock-logo-link" href="https://www.getadblock.com" target="_blank">
-            <img
-              id="sidebar-adblock-logo"
-              i18n-alt="adblock_home"
-              src="icons/default_theme/logo.svg"
-              dir="ltr"
-            />
-            <img
-              id="sidebar-adblock-logo-narrow"
-              i18n-alt="adblock_home"
-              src="icons/adblock-38.png"
-              dir="ltr"
-            />
-          </a>
+          <div id="sidebar-logo-wrapper">
+            <a id="adblock-logo-link" href="https://www.getadblock.com" target="_blank">
+              <img
+                id="sidebar-adblock-logo"
+                i18n-alt="adblock_home"
+                src="icons/default_theme/logo.svg"
+                dir="ltr"
+              />
+              <img
+                id="sidebar-adblock-logo-narrow"
+                i18n-alt="adblock_home"
+                src="icons/adblock-38.png"
+                dir="ltr"
+              />
+            </a>
+            <small id="extension_version_number"></small>
+          </div>
 
           <nav id="sidebar-tabs">
             <ul>
@@ -104,7 +107,23 @@
               <div class="separator"></div>
               <li>
                 <a href="#mab" class="tablink">
-                  <i class="material-icons md-18" role="img" aria-hidden="true">account_circle</i>
+                  <i
+                    class="material-icons md-18"
+                    role="img"
+                    aria-hidden="true"
+                    style="color: #efbf04"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      style="width: 18px; height: 18px"
+                    >
+                      <path
+                        d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5M19 19C19 19.6 18.6 20 18 20H6C5.4 20 5 19.6 5 19V18H19V19Z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                  </i>
                   <span i18n="premium"></span>
                 </a>
                 <ul data-parent-tab="#mab">
@@ -145,95 +164,35 @@
           </nav>
         </section>
 
-        <section id="sidebar-content-bottom">
-          <section id="rate-us-cta" class="hover-shadow" style="display: none">
-            <section id="rate-us-tooltip">
-              <div i18n="show_some_love"></div>
-              <div i18n="support_with_a_review"></div>
-            </section>
-
+        <section id="sidebar-content-bottom" class="w-full px-2 min-[890px]:px-5">
+          <div id="user-account-section" class="w-full">
             <a
-              href="https://chrome.google.com/webstore/detail/adblock-%E2%80%94-best-ad-blocker/gighmmpiobklfepjocnamgkkbiglidom/reviews"
-              id="rate-us"
-              class="btn secondary"
+              href=""
               target="_blank"
+              class="btn secondary mx-0 mb-5 flex gap-2 w-full"
+              id="user-account-login"
+              style="display: none"
             >
-              <i class="material-icons md-18" role="img" aria-hidden="true">favorite</i>
-              &nbsp;&nbsp;
-              <span i18n="love_adblock"></span>
+              <i class="material-icons md-18 text-current" role="img" aria-hidden="true">
+                account_circle
+              </i>
+              <span i18n="user_account_login" class="hidden min-[890px]:block"></span>
             </a>
-          </section>
-
-          <section id="mail-dialog" style="display: none" class="cta-speech-bubble">
-            <section id="mail-dialog-content">
-              <div class="mail-dialog-header">
-                <span i18n="keep_touch"></span>
-                <span tabindex="0" id="mail-cta-close-icon" class="close-button" role="button">
-                  <i class="material-icons md-18" role="img" data-send-close-event="true">close</i>
-                </span>
-              </div>
-              <section class="mail-dialog-body">
-                <span i18n="sign_up_mailing"></span>
-                <input
-                  type="email"
-                  id="mail-cta-address"
-                  i18n_placeholder="email_address_placeholder"
-                  dir="ltr"
-                  required
-                />
-                <section id="mail-dialog-confirm">
-                  <span class="mail-dialog-checkbox checkbox md-stack">
-                    <input type="checkbox" id="mail-cta-confirm-checkbox" />
-                    <i class="unchecked material-icons md-18" role="img">check_box_outline_blank</i>
-                    <i class="checked material-icons md-18" role="img">check_box</i>
-                  </span>
-                  <span id="mail-dialog-confirm-subsection">
-                    <span i18n="please_click_confirm"></span>
-                    <span i18n="never_share_email"></span>
-                    <a
-                      href="https://getadblock.com/privacy"
-                      target="_blank"
-                      i18n="privacy_policy"
-                    ></a>
-                  </span>
-                </section>
-                <section id="mail-dialog-err-message"></section>
-                <span i18n="join_mailing_list" class="btn" id="mail-dialog-join-btn"></span>
-              </section>
-            </section>
-            <section id="mail-dialog-done-content">
-              <div class="mail-dialog-header">
-                <span i18n="all_set"></span>
-                <span tabindex="0" id="mail-cta-done-close-icon" class="close-button" role="button">
-                  <i class="material-icons md-18" role="img">close</i>
-                </span>
-              </div>
-              <section class="mail-dialog-body">
-                <span i18n="youre_awesome"></span>
-                <span i18n="added_mailing_list"></span>
-              </section>
-              <img id="mail-dialog-done" src="icons/mail-cta-done.svg" dir="ltr" />
-            </section>
-          </section>
-
-          <section id="mail-cta" style="display: none">
-            <span i18n="adblock_newsletter" class="hover-shadow btn secondary"></span>
-          </section>
-
-          <div id="sidebar-social-links">
-            <a href="https://facebook.com/heres.adblock" target="_blank">
-              <i class="adblock-icon" aria-label="facebook" role="img">facebook</i>
-            </a>
-            <a id="twitter-icon-link" href="https://twitter.com/getadblock" target="_blank">
-              <i class="adblock-icon" aria-label="twitter" role="img">twitter</i>
-            </a>
-            <a href="https://www.linkedin.com/company/adblock/" target="_blank">
-              <i class="adblock-icon" aria-label="linkedin" role="img">linkedin</i>
+            <a
+              href=""
+              target="_blank"
+              class="btn secondary mx-0 mb-5 flex gap-2 w-full"
+              id="user-account-manage"
+              style="display: none"
+            >
+              <i class="material-icons md-18 text-current" role="img" aria-hidden="true"
+                >account_circle</i
+              >
+              <span i18n="user_account_manage_account" class="hidden min-[890px]:block"></span>
             </a>
           </div>
           <div class="top-line">
             <a href="https://getadblock.com/privacy" i18n="privacy_policy" target="_blank"></a>
-            <div id="version_number"></div>
           </div>
         </section>
       </div>

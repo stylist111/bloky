@@ -405,10 +405,10 @@ if (info.application === "gecko") {
     }
 
     const payInfo = MABPayment.initialize("image-swap");
-    if (License.shouldShowMyAdBlockEnrollment()) {
+    if (await License.shouldShowMyAdBlockEnrollment()) {
       MABPayment.freeUserLogic(payInfo);
       freeUserSetup();
-    } else if (License.isActiveLicense()) {
+    } else if (await License.isActiveLicense()) {
       MABPayment.paidUserLogic(payInfo);
       paidUserSetup();
       loadCurrentSettingsIntoPage();

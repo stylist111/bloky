@@ -28,6 +28,9 @@ function start(): void {
   }
 
   self.modulesAsGlobal = { messaging, filters, ewe };
+  Object.assign(self, {
+    ewe,
+  });
 }
 
 start();

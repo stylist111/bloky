@@ -14,7 +14,7 @@ vi.mock("webextension-polyfill", () => ({
 
 vi.mock("../../adblock-betafish/picreplacement/check", () => ({
   License: {
-    isActiveLicense: vi.fn(() => false),
+    isActiveLicense: vi.fn(() => Promise.resolve(false)),
     ready: vi.fn(() => Promise.resolve()),
     licenseNotifier: {
       on: vi.fn(),

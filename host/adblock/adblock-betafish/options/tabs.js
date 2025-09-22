@@ -17,8 +17,8 @@
 
 /* For ESLint: List any global identifiers used in this file below */
 /* global browser, License, localizePage, determineUserLanguage, getStorageCookie, setStorageCookie,
-   THIRTY_MINUTES_IN_MILLISECONDS, setLangAndDirAttributes, storageSet, storageGet,
-   initializeProxies, ServerMessages, settings:true, */
+   THIRTY_MINUTES_IN_MILLISECONDS, setLangAndDirAttributes, storageSet, storageGet, ewe,
+   initializeProxies, ServerMessages, sendTypeMessage, settings:true, */
 
 const userSeenNewPFPageKey = "options_menu_pf_key";
 let userSeenNewPFPage = storageGet(userSeenNewPFPageKey);
@@ -151,11 +151,11 @@ const displayMABFeedbackCTA = function () {
   if (lang === "en" || lang.startsWith("en")) {
     $("footer.myadblock_feedback_footer").css("display", "flex");
     const $feedbackButton = $(".mab-feedback-button, #support-feedback-button");
-    $feedbackButton.on("click", (e) => {
+    $feedbackButton.on("click", async (e) => {
       e.preventDefault();
       e.stopImmediatePropagation();
       let url = "https://portal.productboard.com/getadblock/4-adblock-extension";
-      if (License.isActiveLicense()) {
+      if (await License.isActiveLicense()) {
         url = "https://portal.productboard.com/getadblock/5-adblock-extension-premium";
       }
       browser.tabs.create({ url });
@@ -169,6 +169,33 @@ const hideAdvancedOptionsWhenNeeded = function () {
     $(".advanced").hide();
   }
 };
+
+/**
+ * Display the login CTA if the user is not logged in.
+ * If the user is logged in, hide the CTA.
+ * @returns {Promise<void>}
+ */
+async function displayUserAccountLoginCTA() {
+  const user = await ewe.account.getProfile();
+  const loginCTAButtons = $(".user-account-login-cta");
+
+  // Dynamically update the login URL to include the premium status.
+  // This is used to determine if the user should see the successful activation page
+  const loginUrl = await sendTypeMessage("app.get", {
+    what: "ctalink",
+    link: "premium-manage",
+    queryParams: {
+      source: "options",
+    },
+  });
+  loginCTAButtons.attr("href", loginUrl);
+
+  if (user && user.email) {
+    loginCTAButtons.hide();
+  } else {
+    loginCTAButtons.show();
+  }
+}
 
 // Load all HTML templates in respective tab panels
 // and translate strings on load completion
@@ -192,6 +219,7 @@ function loadTabPanelsHTML() {
         displayMABFeedbackCTA();
         shouldShowDCNewIcon();
         hideAdvancedOptionsWhenNeeded();
+        displayUserAccountLoginCTA();
       }
     });
   });

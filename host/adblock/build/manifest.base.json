@@ -33,7 +33,13 @@
     {
       "all_frames": true,
       "js": ["polyfill.js", "globals-front.js", "adblock-functions.js", "adblock-getadblock.js"],
-      "matches": ["*://*.getadblock.com/*", "*://*.getadblockpremium.com/*"],
+      "matches": [
+        "https://getadblock.com/*",
+        "https://dev.getadblock.com/*",
+        "https://dev1.getadblock.com/*",
+        "https://dev2.getadblock.com/*",
+        "https://*.myaccount.getadblock.com/*"
+      ],
       "run_at": "document_start"
     },
     {
@@ -44,12 +50,14 @@
     {
       "js": ["polyfill.js", "info-injector.preload.js"],
       "matches": [
+        "https://getadblock.com/*",
+        "https://vpn.getadblock.com/*",
+        "https://*.myaccount.getadblock.com/*",
         "https://adblockplus.org/*",
-        "https://accounts.adblockplus.org/*",
         "https://new.adblockplus.org/*",
         "https://welcome.adblockplus.org/*",
-        "https://getadblock.com/*",
-        "https://vpn.getadblock.com/*"
+        "https://accounts.adblockplus.org/*",
+        "https://*.myaccount.adblockplus.org/*"
       ],
       "run_at": "document_start"
     },

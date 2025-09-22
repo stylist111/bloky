@@ -370,6 +370,11 @@ const bugReportLogic = async function () {
   });
 };
 
+function displayVersionNumber() {
+  const currentVersion = browser.runtime.getManifest().version;
+  $("#extension_version_number").text(`v${currentVersion}`);
+}
+
 $(async () => {
   let optionsTheme = "default_theme";
   await initializeSettings();
@@ -384,5 +389,6 @@ $(async () => {
   // New components look for theme as a data attribute. When this is updated completely with new components, the line above can be deleted.
   body.dataset.theme = optionsTheme.replace("_theme", "");
   $("#sidebar-adblock-logo").attr("src", `icons/${optionsTheme}/logo.svg`);
+  displayVersionNumber();
   bugReportLogic();
 });

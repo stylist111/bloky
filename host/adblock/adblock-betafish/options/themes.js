@@ -185,10 +185,10 @@
     }
 
     const payInfo = MABPayment.initialize("themes");
-    if (License.shouldShowMyAdBlockEnrollment()) {
+    if (await License.shouldShowMyAdBlockEnrollment()) {
       MABPayment.freeUserLogic(payInfo);
       $("#get-it-now-themes").on("click", MABPayment.userClickedPremiumCTA);
-    } else if (License.isActiveLicense()) {
+    } else if (await License.isActiveLicense()) {
       MABPayment.paidUserLogic(payInfo);
     }
 

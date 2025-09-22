@@ -211,12 +211,12 @@ $(async () => {
     preparePFItems(false);
     return;
   }
-  preparePFItems(License.isActiveLicense());
+  preparePFItems(await License.isActiveLicense());
   const payInfo = MABPayment.initialize("distraction-control");
-  if (License.shouldShowMyAdBlockEnrollment()) {
+  if (await License.shouldShowMyAdBlockEnrollment()) {
     MABPayment.freeUserLogic(payInfo);
     $("#get-it-now-distraction-control").on("click", MABPayment.userClickedPremiumCTA);
-  } else if (License.isActiveLicense()) {
+  } else if (await License.isActiveLicense()) {
     MABPayment.paidUserLogic(payInfo);
   }
 

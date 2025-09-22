@@ -255,16 +255,6 @@
     "message": "فشل!",
     "description": "abp: link subscriber unsuccessful result"
   },
-  "optionsversion": {
-    "message": "النسخة $version$",
-    "description": "Version number",
-    "placeholders": {
-      "version": {
-        "content": "$1",
-        "example": "3.9.2"
-      }
-    }
-  },
   "tabgeneral": {
     "message": "اعدادات عامة",
     "description": "A tab on the Options page"
@@ -3030,5 +3020,11 @@
   "get_around_popups": {
     "message": "باستخدام وضع التجاوز ، ستتمكن من الالتفاف على بعض تلك النوافذ المنبثقة دون تعطيل AdBlock.",
     "description": "Description of Bypass Mode on the main Premium options page"
+  },
+  "user_account_login": {
+    "message": "تسجيل الدخول"
+  },
+  "user_account_manage_account": {
+    "message": "حسابي"
   }
 }

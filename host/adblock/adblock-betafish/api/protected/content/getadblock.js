@@ -18,15 +18,6 @@
 /* For ESLint: List any global identifiers used in this file below */
 /* global browser, onReady */
 
-const gabHostnames = [
-  "getadblock.com",
-  "dev.getadblock.com",
-  "dev1.getadblock.com",
-  "dev2.getadblock.com",
-  "getadblockpremium.com",
-];
-const gabHostnamesWithProtocal = gabHostnames.map((host) => `https://${host}`);
-
 // listen to messages from the background page
 function onMessage(request, sender, sendResponse) {
   if (Object.prototype.hasOwnProperty.call(request, "dataMigrationStatus")) {
@@ -37,11 +28,7 @@ function onMessage(request, sender, sendResponse) {
 }
 
 async function receiveMessage(event) {
-  if (
-    event.data &&
-    gabHostnamesWithProtocal.includes(event.origin) &&
-    event.data.command === "payment_success"
-  ) {
+  if (event.data && event.data.command === "payment_success") {
     window.removeEventListener("message", receiveMessage);
     browser.runtime.onMessage.addListener(onMessage);
     const response = await modulesAsGlobal.messaging.send("adblock:payment_success", {
@@ -94,7 +81,7 @@ async function getStartedWithMyAdBlock(event) {
 }
 
 onReady(async () => {
-  if (gabHostnames.includes(document.location.hostname) && window.top === window.self) {
+  if (window.top === window.self) {
     window.addEventListener("message", receiveMessage, false);
     let response = await browser.storage.local.get("userid");
     if (response.userid) {
@@ -128,7 +115,7 @@ onReady(async () => {
     });
 
     // add click handler for adblock subscribe clicks
-    // similiar to the code here:
+    // similar to the code here:
     // https://github.com/adblockplus/adblockpluschrome/blob/master/subscriptionLink.postload.js
     // the link host check ('subscribe.getadblock.com') is specific to the getadblock.com domain
     document.addEventListener(

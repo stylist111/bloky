@@ -267,16 +267,6 @@
     "message": "Niepowodzenie!",
     "description": "abp: link subscriber unsuccessful result"
   },
-  "optionsversion": {
-    "message": "Wersja $version$",
-    "description": "Version number",
-    "placeholders": {
-      "version": {
-        "content": "$1",
-        "example": "3.9.2"
-      }
-    }
-  },
   "tabgeneral": {
     "message": "Ogólne",
     "description": "A tab on the Options page"
@@ -3348,5 +3338,11 @@
   "get_around_popups": {
     "message": "W trybie Bypass będziesz mógł dotrzeć do niektórych z wyskakujących okienek bez wyłączania AdBlocka.",
     "description": "Description of Bypass Mode on the main Premium options page"
+  },
+  "user_account_login": {
+    "message": "Zaloguj się"
+  },
+  "user_account_manage_account": {
+    "message": "Moje konto"
   }
 }

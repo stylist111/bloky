@@ -31,10 +31,10 @@ import LogoIcon from "../content/icons/logo.js";
  *
  * @param details The navigation details as passed from the webNavigation.onCommitted event
  */
-function navigationListener(details: WebNavigation.OnCommittedDetailsType): void {
+async function navigationListener(details: WebNavigation.OnCommittedDetailsType): Promise<void> {
   const { tabId, frameId, url } = details;
 
-  if (License.isActiveLicense()) {
+  if (await License.isActiveLicense()) {
     // Should not show this experiment for already premium users
     return;
   }
@@ -55,6 +55,7 @@ function navigationListener(details: WebNavigation.OnCommittedDetailsType): void
     return;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
   browser.webNavigation.onCommitted.removeListener(navigationListener);
   void Prefs.set(cookieBannerExperimentStorageKey, true);
 
@@ -82,5 +83,6 @@ export function start(): void {
     return;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
   browser.webNavigation.onCommitted.addListener(navigationListener);
 }

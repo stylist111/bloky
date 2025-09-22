@@ -366,7 +366,7 @@ export class Channels {
   }
 
   async filterListener({ request, filter }) {
-    if (getSettings().picreplacement && this.license.isActiveLicense()) {
+    if (getSettings().picreplacement && (await this.license.isActiveLicense())) {
       const shouldUseFilter = await Channels.shouldUseFilter(filter);
       if (!shouldUseFilter) {
         return;
@@ -402,8 +402,8 @@ export class Channels {
 
   initializeListeners() {
     this.license.ready().then(() => {
-      settings.onload().then(() => {
-        if (getSettings().picreplacement && this.license.isActiveLicense()) {
+      settings.onload().then(async () => {
+        if (getSettings().picreplacement && (await this.license.isActiveLicense())) {
           ewe.reporting.onBlockableItem.removeListener(this.filterListener, REPORTING_OPTIONS);
           ewe.reporting.onBlockableItem.addListener(
             this.filterListener.bind(this),

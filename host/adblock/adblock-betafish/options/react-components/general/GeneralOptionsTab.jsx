@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { translate } from "../shared/utils";
 import {
   globalInfo as info,
-  globalMABPayment as MABPayment,
   globalPrefs as Prefs,
   globalPrefsNotifier as prefsNotifier,
   globalSettingsNotifier as settingsNotifier,

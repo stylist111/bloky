@@ -188,6 +188,14 @@ defaults.elemhide_debug = false;
 defaults.recommend_language_subscriptions = false;
 
 /**
+ * Address of page to manage the Premium account.
+ *
+ * @type {string}
+ */
+defaults.premium_manage_page_url =
+  "https://myaccount.getadblock.com/?lang=%LANG%&av=%ADDON_VERSION%&ref=%SOURCE%&premium=%HAS_PREMIUM%";
+
+/**
  * Premium user ID
  *
  * @type {string}

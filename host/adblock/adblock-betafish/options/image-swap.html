@@ -24,7 +24,20 @@
         <p i18n="myadblock_short_description_to_pay"></p>
       </div>
       <div class="flex items-center gap-10">
-        <div class="flex flex-col items-stretch gap-2 min-[890px]:justify-stretch">
+        <div
+          class="flex flex-col items-stretch gap-2 min-[890px]:flex-row min-[890px]:justify-stretch"
+        >
+          <a
+            href=""
+            target="_blank"
+            class="btn secondary flex gap-2 min-w-40 user-account-login-cta"
+            style="display: none"
+          >
+            <i class="material-icons md-18 text-current" role="img" aria-hidden="true">
+              account_circle
+            </i>
+            <span i18n="user_account_login"></span>
+          </a>
           <a
             id="get-it-now-image-swap"
             i18n="get_it_now"
