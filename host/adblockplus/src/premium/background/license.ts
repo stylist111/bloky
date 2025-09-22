@@ -104,6 +104,12 @@ async function checkLicense(retryCount: number = 0): Promise<void> {
     }
   }
 
+  // TODO: Remove this when the old license system is fully deprecated
+  // Force using the new user account system and ignore the old license
+  if (await ewe.experiments.getFlag("abp_legacy_license_disabled")) {
+    return;
+  }
+
   const userId = Prefs.get("premium_user_id") as string;
   if (!userId) {
     return;
@@ -226,6 +232,12 @@ export async function getPremiumState(): Promise<PremiumState> {
  */
 export async function hasActiveLicense(): Promise<boolean> {
   const hasPremium = await ewe.account.hasPremium();
+
+  // TODO: Remove this when the old license system is fully deprecated
+  // Force using the new user account system and ignore the old license
+  if (await ewe.experiments.getFlag("abp_legacy_license_disabled")) {
+    return hasPremium;
+  }
 
   const license = Prefs.get("premium_license") as License;
   return hasPremium || license.status === "active";
