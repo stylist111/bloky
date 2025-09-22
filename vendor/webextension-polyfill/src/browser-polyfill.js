@@ -12,6 +12,7 @@ if (!(globalThis.chrome && globalThis.chrome.runtime && globalThis.chrome.runtim
 
 if (!(globalThis.browser && globalThis.browser.runtime && globalThis.browser.runtime.id)) {
   const CHROME_SEND_MESSAGE_CALLBACK_NO_RESPONSE_MESSAGE = "The message port closed before a response was received.";
+  const ERROR_TO_IGNORE = `A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received`;
 
   // Wrapping the bulk of this polyfill in a one-time-use function is a minor
   // optimization for Firefox. Since Spidermonkey does not fully parse the
@@ -482,7 +483,7 @@ if (!(globalThis.browser && globalThis.browser.runtime && globalThis.browser.run
         // Detect when none of the listeners replied to the sendMessage call and resolve
         // the promise to undefined as in Firefox.
         // See https://github.com/mozilla/webextension-polyfill/issues/130
-        if (extensionAPIs.runtime.lastError.message === CHROME_SEND_MESSAGE_CALLBACK_NO_RESPONSE_MESSAGE) {
+        if (extensionAPIs.runtime.lastError.message === CHROME_SEND_MESSAGE_CALLBACK_NO_RESPONSE_MESSAGE || extensionAPIs.runtime.lastError.message.includes(ERROR_TO_IGNORE)) {
           resolve();
         } else {
           reject(new Error(extensionAPIs.runtime.lastError.message));
