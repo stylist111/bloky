@@ -1,5 +1,7 @@
 # Unreleased
 
+# 4.28.0 - 2025-09-23
+
 - Updated user account log in request pattern (noissue)
 - In MV3, EasyList, Acceptable Ads, and ABP filters have their DNR rulesets
   enabled by default. This should block ads before our service worker
