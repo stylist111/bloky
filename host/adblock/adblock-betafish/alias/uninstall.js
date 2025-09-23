@@ -22,6 +22,7 @@
 /** similar to adblockpluschrome\lib\uninstall.js */
 
 import { Prefs } from "./prefs";
+import * as info from "info";
 import SubscriptionAdapter from "../subscriptionadapter";
 import { getUserId } from "../id/background/index";
 import { getWebAllowlistingFilterCount } from "../telemetry/background/custom-rule";
@@ -61,6 +62,9 @@ export async function setUninstallURL() {
       const updateUninstallURL = async function () {
         const data = await browser.storage.local.get("blockage_stats");
         let url = uninstallURL;
+
+        // append the version of AdBlock
+        url = `${url}&av=${encodeURIComponent(info.addonVersion)}`;
 
         if (data && data.blockage_stats && data.blockage_stats.start) {
           const installedDuration = Date.now() - data.blockage_stats.start;

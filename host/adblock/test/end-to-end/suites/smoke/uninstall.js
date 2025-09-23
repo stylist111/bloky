@@ -28,6 +28,7 @@ export default () => {
     const userId = await getUserIdFromInstallPage();
     const expectedParams = {
       u: userId,
+      av: extension.version,
       bc: expect.any(Number),
       lt: expect.any(Number),
       t: expect.any(Number),
