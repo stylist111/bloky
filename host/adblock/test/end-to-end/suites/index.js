@@ -42,6 +42,7 @@ import opdCampaigns from "./ipm/opd-campaigns.js";
 import newtabCampaigns from "./ipm/newtab-campaigns.js";
 import helpFlow from "./popup-page/helpflow.js";
 import infoInjector from "./info-injector.js";
+import getPremiumWithAccount from "./premium/get-premium-with-account.js";
 
 export default () => {
   beforeEach(async function () {
@@ -89,6 +90,7 @@ export default () => {
       describe("Free user - Popup", freeUserPopup);
       describe("Free user - Options", freeUserOptions);
       describe("Premium user", getPremium);
+      describe("Premium user with account", getPremiumWithAccount);
     });
 
     for (const fragmentType of ["legacy", "future"]) {

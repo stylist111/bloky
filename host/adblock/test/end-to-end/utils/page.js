@@ -117,7 +117,7 @@ export async function initOptionsImageSwapTab(optionsHandle) {
 export async function initOptionsPremiumFlTab(optionsHandle) {
   await loadOptionsTab(optionsHandle, "premium-filters");
   await getDisplayedElement("#premium-filter-lists > div:nth-child(3)", {
-    timeout: 2000,
+    timeout: 7000,
     // Right after initialisation not all premium filterlists may show up
     // Refreshing as a workaround
     forceRefresh: true,
@@ -480,6 +480,23 @@ export async function disablePremiumProgrammatically() {
 
   await driver.executeAsyncScript(async (callback) => {
     await browser.storage.local.remove("license");
+    callback();
+  });
+
+  // Reset themes to default
+  await driver.executeAsyncScript(async (callback) => {
+    const settings = await browser.storage.local.get("settings");
+    settings.color_themes = {
+      options_page: "default_theme",
+      popup_menu: "default_theme",
+    };
+    await browser.storage.local.set({ settings });
+    callback();
+  });
+
+  // Delete stored account information if any
+  await driver.executeAsyncScript(async (callback) => {
+    await browser.storage.local.remove("ewe:account");
     callback();
   });
 

@@ -5,6 +5,7 @@
     ".": "./index.js",
     "./driver": "./e2e-runner/driver.js",
     "./extension": "./e2e-runner/extension.js",
+    "./account": "./e2e-runner/account.js",
     "./hooks": "./e2e-runner/hooks.js",
     "./public-api": "./e2e-runner/public-api.js",
     "./host-filters": "./test-server/host-server/filters.js",

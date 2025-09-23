@@ -21,6 +21,8 @@ const mockServer = mockttp.getLocal({
 
 export async function startMockServer(port = 9999) {
   await mockServer.start(port);
+  // Let unmatched requests pass through (e.g., requests to filter lists)
+  await mockServer.forUnmatchedRequest().thenPassThrough();
   console.log(`Mock HTTP server started on port ${port}`);
 
   //   // For debugging, you can uncomment these lines

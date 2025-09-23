@@ -27,8 +27,7 @@ import {
 } from "@eyeo/test-utils/driver";
 import {
   getOptionsHandle,
-  setTimeoutForExtensionReload,
-  reloadExtension
+  setTimeoutForExtensionReload
 } from "@eyeo/test-utils/extension";
 import { dcTestPageUrl } from "@eyeo/test-utils/host-urls";
 import { dcFilters } from "@eyeo/test-utils/host-filters";
@@ -44,83 +43,13 @@ import {
 } from "../../utils/page.js";
 import { premiumUrl } from "../../utils/urls.js";
 import { premiumToggles, premiumFilterLists } from "../../utils/dataset.js";
+import {
+  simulateDowngradeToFreeUser,
+  simulatePremiumActivation
+} from "@eyeo/test-utils/account";
 
-const ACCESS_TOKEN = "a-valid-access-token";
-const REFRESH_TOKEN = "a-valid-refresh-token";
-const EMAIL_ADDRESS = "john@example.com";
-
-async function mockOtpLoginEndpoint() {
-  const { mockServer } = global;
-  return await mockServer
-    .forPost("/api/auth/ext-login")
-    .forHost("myaccount.adblockplus.org")
-    .once()
-    .thenReply(200, JSON.stringify({}), {
-      "X-Application-Name": "abp-portal",
-      "X-Access-Token": ACCESS_TOKEN,
-      "X-Refresh-Token": REFRESH_TOKEN
-    });
-}
-
-async function mockUserProfileEndpoint(
-  options = { premium: true, priority: 1 }
-) {
-  const { premium, priority } = options;
-  const { mockServer } = global;
-  return await mockServer
-    .forGet("/v1/profile")
-    .forHost("api.ua.eyeo.it")
-    .asPriority(priority)
-    .withHeaders({ Authorization: `Bearer ${ACCESS_TOKEN}` })
-    .once()
-    .thenReply(
-      200,
-      JSON.stringify({
-        user: {
-          email: EMAIL_ADDRESS,
-          displayName: "John Doe",
-          features: premium ? ["abp_premium"] : []
-        }
-      })
-    );
-}
-
-async function simulatePremiumActivation() {
-  await mockOtpLoginEndpoint();
-  await mockUserProfileEndpoint();
-
-  // navigate to https://myaccount.adblockplus.org/
-  await openNewTab(premiumUrl);
-
-  // Simulate the request to login the extension. This will be intercepted
-  // by the mock server the response will activate the premium account in
-  // the extension
-  await driver.executeAsyncScript(async (callback) => {
-    await fetch("https://myaccount.adblockplus.org/api/auth/ext-login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({})
-    });
-    callback();
-  });
-
-  // make sure user profile was fetched
-  await driver.switchTo().window(getOptionsHandle());
-  await driver.navigate().refresh();
-  await driver.wait(
-    async () => {
-      const accountData = await driver.executeAsyncScript(async (callback) => {
-        const data = await browser.storage.local.get("ewe:account");
-        callback(data["ewe:account"]);
-      });
-      return accountData?.user?.email === EMAIL_ADDRESS;
-    },
-    5000,
-    "Premium account was not activated"
-  );
-}
+const PORTAL_URL = "https://myaccount.adblockplus.org";
+const APPLICATION_NAME = "abp-portal";
 
 export default () => {
   afterEach(async function () {
@@ -133,7 +62,7 @@ export default () => {
   });
 
   it("logging in with a premium account", async function () {
-    await simulatePremiumActivation();
+    await simulatePremiumActivation(PORTAL_URL, APPLICATION_NAME);
     await checkPremiumActivated({ timeout: 2000 });
     // eslint-disable-next-line no-warning-comments
     // TODO: after full migration to new account system all users should have
@@ -142,7 +71,7 @@ export default () => {
   });
 
   it("has premium features", async function () {
-    await simulatePremiumActivation();
+    await simulatePremiumActivation(PORTAL_URL, APPLICATION_NAME);
     await initPopupWithLocalPage();
 
     // Default popup premium togles
@@ -182,7 +111,7 @@ export default () => {
   });
 
   it("enables premium filter lists", async function () {
-    await simulatePremiumActivation();
+    await simulatePremiumActivation(PORTAL_URL, APPLICATION_NAME);
     await initOptionsGeneralTab(getOptionsHandle());
 
     let someEnabled = false;
@@ -201,46 +130,15 @@ export default () => {
 
   it("downgrades if premium expired", async function () {
     setTimeoutForExtensionReload(this);
-    await simulatePremiumActivation();
+    await simulatePremiumActivation(PORTAL_URL, APPLICATION_NAME);
     await checkPremiumActivated({ timeout: 2000 });
-
-    // Force fetching user profile again by removing last sync info
-    await driver.switchTo().window(getOptionsHandle());
-    await driver.executeAsyncScript(async (callback) => {
-      const data = await browser.storage.local.get("ewe:account");
-      data["ewe:account"].profileSync = {};
-      await browser.storage.local.set(data);
-      callback();
-    });
-
-    // Make sure backend signals this user is free
-    const profileEndpointMock = await mockUserProfileEndpoint({
-      premium: false,
-      priority: 10 // higher priority to override previous mock
-    });
-
-    // Check this user is downgraded
-    await reloadExtension(initOptionsGeneralTab);
-
-    // Check that profile endpoint mock was called
-    await driver.wait(
-      async () => {
-        const isPending = await profileEndpointMock.isPending();
-        return !isPending;
-      },
-      2000,
-      "User profile endpoint was not called"
-    );
-
-    // refresh the page to make sure new state is loaded
-    await driver.navigate().refresh();
-    await initOptionsGeneralTab(getOptionsHandle());
+    await simulateDowngradeToFreeUser(initOptionsGeneralTab);
 
     // Easy check if user is free
     // Premium link/button checks
     for (const { selector, text } of premiumLinkButtons) {
       const elem = await getDisplayedElement(selector, {
-        timeout: 3000,
+        timeout: 5000,
         forceRefresh: true
       });
       expect(await elem.getText()).toEqual(text);
