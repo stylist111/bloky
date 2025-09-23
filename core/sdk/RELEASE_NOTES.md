@@ -12,8 +12,7 @@
 ## Fixes
 
 - Added a check on extension update that DNR and our dynamic filters are in
-  sync. If they are not, all DNR dynamic rules will be recreated. This behavior
-  is behind a split experiment flag. (EXT-938)
+  sync. If they are not, all DNR dynamic rules will be recreated. (EXT-938)
 - Allow dnr-filters to initialize without error even if the data in prefs has
   certain type issues. This includes not reusing dynamic rules IDs for any
   existing rule, even if that is not a rule linked to one of our dynamic

@@ -418,10 +418,6 @@ describe(`Update (${phase}) [runner-only]`, function() {
     let damagedFilter = "this-filter-loses-its-rule";
 
     if (start) {
-      await EWE.experiments.overrideFlag(
-        "dnr-filters-recreate-dnr-rules-on-extension-upgade",
-        true
-      );
       await EWE.filters.add(damagedFilter);
 
       let existingRules = await browser.declarativeNetRequest.getDynamicRules();

@@ -35,7 +35,6 @@ import {default as initializer} from "./initializer.js";
 import {debug, error} from "./debugging.js";
 import {default as sentry} from "./sentry.js";
 import {ServerLogger} from "./telemetry/server-logger.js";
-import {default as experiments} from "./experiments.js";
 import {arraysDiff} from "./set-operations.js";
 
 import {FilterError} from "./types.js";
@@ -648,27 +647,25 @@ export function init() {
 }
 
 export async function recreateDNRRulesIfNecessary() {
-  if (await experiments.getFlag("dnr-filters-recreate-dnr-rules-on-extension-upgade")) {
-    let checkResultBefore = await dynamicFiltersMutex.lockRead(
+  let checkResultBefore = await dynamicFiltersMutex.lockRead(
+    dynamicFilters => {
+      return dataIntegrityCheck(dynamicFilters);
+    }
+  );
+  if (checkResultBefore.valid == false) {
+    let recreateStats = await recreateAllDNRRules();
+
+    let checkResultAfter = await dynamicFiltersMutex.lockRead(
       dynamicFilters => {
         return dataIntegrityCheck(dynamicFilters);
       }
     );
-    if (checkResultBefore.valid == false) {
-      let recreateStats = await recreateAllDNRRules();
 
-      let checkResultAfter = await dynamicFiltersMutex.lockRead(
-        dynamicFilters => {
-          return dataIntegrityCheck(dynamicFilters);
-        }
-      );
-
-      serverLogger.info("recreated_dnr_rules", {
-        recreateStats,
-        checkResultBefore,
-        checkResultAfter
-      });
-    }
+    serverLogger.info("recreated_dnr_rules", {
+      recreateStats,
+      checkResultBefore,
+      checkResultAfter
+    });
   }
 }
 

@@ -5,6 +5,8 @@
   enabled by default. This should block ads before our service worker
   initializes on update. Once the service worker has started the user selection
   will take effect.
+- On extension update, DNR dynamic rules will now be checked against our
+  expected filters. (EXT-938)
 
 # 4.27.0 - 2025-09-09
 

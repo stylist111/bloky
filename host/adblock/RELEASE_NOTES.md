@@ -1,6 +1,9 @@
 # Unreleased
 
 - Added user account integration. (EXT-1013)
+- On extension update, DNR dynamic rules will now be checked against our
+  expected filters. This was previously tested behind an experiment flag, but is
+  now enabled for everybody. (EXT-938)
 
 # 6.28.0 - 2025-09-16
 
