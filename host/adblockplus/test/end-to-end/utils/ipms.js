@@ -20,6 +20,19 @@
 import { expect } from "expect";
 
 export const expectedIPMCommands = {
+  cohort: {
+    legacy: null,
+    future: {
+      test_adblockplus_cohort: {
+        ipm_id: "test_adblockplus_cohort",
+        cohort: "test-countrycode",
+        command_name: "create_tab",
+        method: "default",
+        url: "/update?ipmId=test_adblockplus_cohort",
+        version: 6
+      }
+    }
+  },
   cookie: {
     legacy: {
       test_adblockplus_cookie_legacy: {
@@ -58,6 +71,17 @@ export const expectedIPMCommands = {
         button_target: "/update",
         display_duration: 1,
         priority: 100
+      }
+    }
+  },
+  error_unknown_command: {
+    legacy: null,
+    future: {
+      test_error_unknown_command: {
+        ipm_id: "test_error_unknown_command",
+        command_name: "unknown_command",
+        version: 1,
+        url: "/update"
       }
     }
   },

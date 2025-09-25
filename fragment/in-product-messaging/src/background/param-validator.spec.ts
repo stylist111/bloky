@@ -15,12 +15,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { LicenseState } from "./license.types";
 import {
   isNotEmpty,
   isNumeric,
   isSafeUrl,
-  isValidLicenseStateList,
   isValidDomainList,
   isValidDate,
   isEmptyOrPositiveNumber,
@@ -71,42 +69,6 @@ describe("param-validator", () => {
       expect(isNotEmpty("\u200b")).toBe(true);
       expect(isNotEmpty("\0")).toBe(true);
       expect(isNotEmpty("test")).toBe(true);
-    });
-  });
-
-  describe("isValidLicenseStateList", () => {
-    it("returns true for falsy arguments", () => {
-      expect(isValidLicenseStateList(null)).toBe(true);
-      expect(isValidLicenseStateList(undefined)).toBe(true);
-      expect(isValidLicenseStateList(0)).toBe(true);
-      expect(isValidLicenseStateList("")).toBe(true);
-    });
-
-    it("returns false for any non string truthy argument", () => {
-      expect(isValidLicenseStateList(1)).toBe(false);
-      expect(isValidLicenseStateList(new Map())).toBe(false);
-      expect(isValidLicenseStateList([])).toBe(false);
-      expect(isValidLicenseStateList({})).toBe(false);
-    });
-
-    it("returns true if it receives a comma separated list of valid LicenseState", () => {
-      const { active, inactive } = LicenseState;
-
-      expect(isValidLicenseStateList(`${active},${inactive}`)).toBe(true);
-      expect(isValidLicenseStateList(`${active},${active},${inactive}`)).toBe(
-        true,
-      );
-      expect(isValidLicenseStateList(`${inactive}`)).toBe(true);
-    });
-
-    it("returns false if it receives a comma separated list of invalid LicenseState", () => {
-      const { active, inactive } = LicenseState;
-
-      expect(isValidLicenseStateList(`${active},${inactive},foo`)).toBe(false);
-      expect(isValidLicenseStateList(`foo,bar,${active}`)).toBe(false);
-      expect(isValidLicenseStateList(`hi`)).toBe(false);
-      expect(isValidLicenseStateList(`,${active},`)).toBe(false);
-      expect(isValidLicenseStateList(`,,,`)).toBe(false);
     });
   });
 

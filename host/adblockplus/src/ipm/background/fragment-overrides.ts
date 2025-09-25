@@ -45,6 +45,9 @@ function setCommandActor(commandName: CommandName, actor: CommandActor): void {
 export function getFutureFragmentOverrides(): FutureFragmentOverrides {
   return {
     checkLanguage: async () => {},
+    defaultLicenseState: LegacyFragment.LicenseState.inactive,
+    doesLicenseStateMatch: async () => true,
+    isValidLicenseStateList: () => true,
     setCommandActor
   };
 }

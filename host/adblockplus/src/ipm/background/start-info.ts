@@ -40,12 +40,6 @@ export async function getFutureStartInfo(): Promise<FutureFragment.StartInfo> {
 
   return {
     logger,
-    licensing: {
-      async isLicenseValid() {
-        const { isActive } = await getPremiumState();
-        return isActive;
-      }
-    },
     info: {
       async getId() {
         return await getInstallationId();

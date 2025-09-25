@@ -37,12 +37,6 @@ export async function getFutureStartInfo(): Promise<FutureFragment.StartInfo> {
 
   return {
     logger: utils,
-    licensing: {
-      async isLicenseValid() {
-        await License.ready();
-        return await License.isActiveLicense();
-      },
-    },
     info: {
       async getId() {
         return await getUserId();

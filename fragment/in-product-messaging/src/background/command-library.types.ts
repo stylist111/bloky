@@ -28,16 +28,6 @@ export const maximumProcessableCommands = 100;
 export interface Behavior {}
 
 /**
- * Command behavior
- */
-export interface LicenseStateBehavior extends Behavior {
-  /**
-   * A comma separate list of Premium license state(s)
-   */
-  licenseStateList?: string;
-}
-
-/**
  * Handler that gets called when command gets executed
  *
  * @param ipmId The IPM ID
@@ -91,20 +81,10 @@ interface CommandMetaData {
    * The IPM id.
    */
   ipm_id: string;
-}
-
-export interface InternalAttributes {
   /**
-   * A timestamp denoting when the command was received. This will not come
-   * from the IPM server, but instead will be added by the extension.
+   * Targeted user cohort
    */
-  received: number;
-  /**
-   * The browser language at the time when the command was received. We use
-   * this to track whether the language changes between the command being
-   * received and it being executed.
-   */
-  language: string;
+  cohort?: string;
 }
 
 /**

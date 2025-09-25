@@ -195,6 +195,31 @@ function getErrorsForCohorts(data) {
   return errors;
 }
 
+function getErrorsForIpmCommands(data) {
+  const errors = [];
+  if (data.ipmCommands) {
+    data.ipmCommands.forEach((command, commandIndex) => {
+      const commandRef = `ipmCommands[${commandIndex}]`;
+
+      if (command.cohort) {
+        let exists = false;
+        if (data.cohorts) {
+          exists = data.cohorts.some(
+            (cohort) => cohort.event.type === command.cohort,
+          );
+        }
+
+        if (!exists) {
+          errors.push(
+            `\`${commandRef}.cohort\` ${command.cohort} cohort does not exist`,
+          );
+        }
+      }
+    });
+  }
+  return errors;
+}
+
 function getErrors(data) {
   let errors = [];
 
@@ -210,6 +235,7 @@ function getErrors(data) {
 
   errors.push(...getErrorsForExperiments(data));
   errors.push(...getErrorsForCohorts(data));
+  errors.push(...getErrorsForIpmCommands(data));
 
   return errors;
 }

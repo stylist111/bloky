@@ -15,6 +15,11 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import {
+  type LicenseState,
+  type LicenseStateBehavior
+} from "@eyeo-fragments/ipm-legacy/background";
+
 import { type CommandActor, type CommandName } from "./fragment-provider.types";
 
 /**
@@ -29,6 +34,9 @@ interface AbstractOverrides {
  */
 export interface FutureFragmentOverrides extends AbstractOverrides {
   checkLanguage: (ipmId: string) => Promise<void>;
+  defaultLicenseState: LicenseState;
+  doesLicenseStateMatch: (behavior: LicenseStateBehavior) => Promise<boolean>;
+  isValidLicenseStateList: (candidate: unknown) => boolean;
 }
 
 /**

@@ -29,12 +29,6 @@ const logger = {
   warn(..._data: unknown[]) {},
 };
 
-const licensing = {
-  async isLicenseValid() {
-    return false;
-  },
-};
-
 const info = {
   async getId() {
     return "";
@@ -58,7 +52,6 @@ const getBlockCount = async (): Promise<number> => 0;
 export function getStartInfo(): StartInfo {
   return {
     logger,
-    licensing,
     info,
     getBlockCount,
     isOptedOut: async () => false,

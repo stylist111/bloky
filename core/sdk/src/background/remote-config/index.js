@@ -152,9 +152,13 @@ async function sync() {
   state.revisionId = revisionId;
   await remoteConfigState.save();
 
+  // We need to run any post-processing before notifying others that the config
+  // has changed to ensure that, at that time, all the data that's based on the
+  // contents of the remote config is consistent
+  await syncSubmodules();
+
   // emit event to notify that the config has changed
   emitter.emit("updated");
-  await syncSubmodules();
 }
 
 /**

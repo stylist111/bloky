@@ -16,11 +16,12 @@
  */
 
 const requiredBaseProperties = {
+  cohort: { type: "string" },
   command_name: { type: "string" },
   ipm_id: { type: "string" },
   version: { type: "integer" },
 };
-const requiredBasePropertiesKeys = Object.keys(requiredBaseProperties);
+const requiredBasePropertiesKeys = ["command_name", "ipm_id", "version"];
 
 export const CreateOnpageDialogCommand = {
   type: "object",

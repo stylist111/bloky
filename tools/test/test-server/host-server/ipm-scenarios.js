@@ -341,9 +341,9 @@ export default {
       priority: 100,
     },
   ],
-  test_error_uknown_command: [
+  test_error_unknown_command: [
     {
-      ipm_id: "test_error_uknown_command",
+      ipm_id: "test_error_unknown_command",
       command_name: "unknown_command",
       version: 1,
       url: "/update",
@@ -368,6 +368,26 @@ export default {
       command_name: "create_on_page_dialog",
       version: 1,
       url: "/update",
+    },
+  ],
+  test_adblock_cohort: [
+    {
+      ipm_id: "test_adblock_cohort",
+      cohort: "test-countrycode",
+      command_name: "create_tab",
+      version: 6,
+      url: "/update?ipmId=test_adblock_cohort",
+      method: "default",
+    },
+  ],
+  test_adblockplus_cohort: [
+    {
+      ipm_id: "test_adblockplus_cohort",
+      cohort: "test-countrycode",
+      command_name: "create_tab",
+      version: 6,
+      url: "/update?ipmId=test_adblockplus_cohort",
+      method: "default",
     },
   ],
 };

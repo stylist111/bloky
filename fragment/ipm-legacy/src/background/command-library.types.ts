@@ -94,6 +94,12 @@ interface CommandMetaData {
    * that are rather added by the internal IPM system instead.
    */
   attributes?: InternalAttributes;
+  /**
+   * Targeted user cohort
+   *
+   * @deprecated unused, but required for compatibility with future fragment
+   */
+  cohort?: string;
 }
 
 export interface InternalAttributes {

@@ -18,7 +18,6 @@
 export * from "./command-library";
 export * from "./command-library.types";
 export * from "./event-recording";
-export * from "./license";
 export * from "./param-validator";
 export * from "./param-validator.types";
 export * from "./start-info.types";

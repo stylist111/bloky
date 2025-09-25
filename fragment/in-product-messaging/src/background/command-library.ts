@@ -184,6 +184,23 @@ export function isCommandExpired(command: Command): boolean {
 }
 
 /**
+ * Checks whether the user is part of the cohort that the IPM command is
+ * targeting
+ *
+ * @param command - IPM command
+ * @returns whether the user is part of the cohort that the IPM command is
+ *   targeting
+ */
+async function matchesCohort(command: Command): Promise<boolean> {
+  if (!command.cohort) {
+    return true;
+  }
+
+  const cohorts = await ewe.cohorts.getAll();
+  return cohorts.includes(command.cohort);
+}
+
+/**
  * Retries executing commands that couldn't be executed
  *
  * @param commandName - Command name
@@ -287,11 +304,17 @@ export async function executeIPMCommands(
   const commandHandlingPromises = Array.from(actorByExecutableCommand).map(
     async ([executableCommand, actor]) => {
       serverLogger.info("command_received", executableCommand.ipm_id);
+
+      if (!(await matchesCohort(executableCommand))) {
+        logger.debug("[ipm]: Cohort doesn't match.");
+        return;
+      }
+
       await actor.handleCommand(executableCommand.ipm_id, isInitialization);
     },
   );
 
-  void Promise.all(commandHandlingPromises).then(() => {
+  await Promise.all(commandHandlingPromises).then(() => {
     // let actors know that we're done process incoming commands
     knownCommandsList
       .map((name) => actorByCommandName.get(name))
@@ -391,7 +414,7 @@ async function synchronizeRemoteCommands(): Promise<void> {
 export async function start(startInfo: StartInfo): Promise<void> {
   setStartInfo(startInfo);
 
-  await synchronizeRemoteCommands();
+  void synchronizeRemoteCommands();
 
   ewe.remoteConfig.onChanged.addListener(synchronizeRemoteCommands);
   startInfo.addMessageListener(

@@ -23,6 +23,9 @@ import {
   updateSettings,
   setRemoteConfigUrl,
   syncRemoteConfig,
+  resetRemoteConfig,
+  setRemoteConfigCohorts,
+  setRemoteConfigCountryCode,
   setRemoteConfigIpmCommands,
   getIPMCommands,
   setIPMCooldowns,
@@ -32,7 +35,7 @@ import {
 } from "@eyeo/test-utils/extension";
 import { findUrl, openNewTab } from "@eyeo/test-utils/driver";
 import { localTestPageUrl } from "@eyeo/test-utils/host-urls";
-import { updateUrlVersions } from "../../utils/urls.js";
+import { updateUrlCohort, updateUrlVersions } from "../../utils/urls.js";
 import { initOptionsGeneralTab } from "../../utils/page.js";
 import { expectedIPMCommands } from "../../utils/ipms.js";
 
@@ -51,15 +54,17 @@ export default (fragmentType) => {
   beforeEach(async function () {
     await setRemoteConfigUrl(initOptionsGeneralTab);
     await clearDismissedIpmIds(initOptionsGeneralTab);
+    await resetRemoteConfig(initOptionsGeneralTab);
   });
 
   after(async function () {
     await initOptionsGeneralTab(getOptionsHandle());
     await updateSettings(initOptionsGeneralTab, "suppress_update_page", true);
     await resetIPMFragment(getOptionsHandle);
+    await resetRemoteConfig(initOptionsGeneralTab);
   });
 
-  it("checks IPM versions and ping alarm", async function () {
+  it("checks command versions and ping alarm", async function () {
     // IPMs are not supported in Firefox
     if (browserDetails.browserName === "firefox") {
       this.skip();
@@ -87,7 +92,7 @@ export default (fragmentType) => {
     ]);
   });
 
-  it("deletes an active campaign (using delete_commands command)", async function () {
+  it("dismisses a command (using delete_commands command)", async function () {
     // IPMs are not supported in Firefox
     if (browserDetails.browserName === "firefox") {
       this.skip();
@@ -114,7 +119,7 @@ export default (fragmentType) => {
     await findUrl(updateUrlVersions, { exists: false });
   });
 
-  it("deletes an active campaign (if no longer present in remote config)", async function () {
+  it("dismisses a command (if no longer present in remote config)", async function () {
     // IPMs are not supported in Firefox
     if (browserDetails.browserName === "firefox") {
       this.skip();
@@ -141,18 +146,50 @@ export default (fragmentType) => {
     await findUrl(updateUrlVersions, { exists: false });
   });
 
-  it("checks IPM errors", async function () {
+  it("does not execute invalid command", async function () {
     // IPMs are not supported in Firefox
     if (browserDetails.browserName === "firefox") {
       this.skip();
     }
 
-    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_error_uknown_command");
-    await syncRemoteConfig(initOptionsGeneralTab);
     await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_error_invalid_command");
     await syncRemoteConfig(initOptionsGeneralTab);
-    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_error_missing_params");
+
+    const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
+    // For future fragment, the command is not stored due to invalid commands
+    // causing the entire remote config to be invalid
+    expect(ipmCommands).toEqual({});
+
+    await openNewTab(localTestPageUrl);
+    await findUrl(updateUrlVersions, { exists: false });
+  });
+
+  it("does not execute command with unknown command name", async function () {
+    // IPMs are not supported in Firefox
+    if (browserDetails.browserName === "firefox") {
+      this.skip();
+    }
+
+    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_error_unknown_command");
     await syncRemoteConfig(initOptionsGeneralTab);
+
+    const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
+    if (fragmentType === "legacy") {
+      expect(ipmCommands).toEqual({});
+    } else {
+      expect(ipmCommands).toEqual(expectedIPMCommands.error_unknown_command[fragmentType]);
+    }
+
+    await openNewTab(localTestPageUrl);
+    await findUrl(updateUrlVersions, { exists: false });
+  });
+
+  it("does not execute command with wrong version", async function () {
+    // IPMs are not supported in Firefox
+    if (browserDetails.browserName === "firefox") {
+      this.skip();
+    }
+
     await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_error_wrong_version");
     await syncRemoteConfig(initOptionsGeneralTab);
 
@@ -163,7 +200,74 @@ export default (fragmentType) => {
     await findUrl(updateUrlVersions, { exists: false });
   });
 
-  it("does not trigger a campaign on Firefox", async function () {
+  it("does not execute command with missing parameters", async function () {
+    // IPMs are not supported in Firefox
+    if (browserDetails.browserName === "firefox") {
+      this.skip();
+    }
+
+    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_error_missing_params");
+    await syncRemoteConfig(initOptionsGeneralTab);
+
+    const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
+    // For future fragment, the command is not stored due to missing parameters
+    // causing the entire remote config to be invalid
+    expect(ipmCommands).toEqual({});
+
+    await openNewTab(localTestPageUrl);
+    await findUrl(updateUrlVersions, { exists: false });
+  });
+
+  it("executes only commands with matching cohorts", async function () {
+    // IPMs are not supported in Firefox
+    if (browserDetails.browserName === "firefox") {
+      this.skip();
+    }
+
+    // This behavior only exists in the future fragment
+    if (fragmentType === "legacy") {
+      this.skip();
+    }
+
+    await setRemoteConfigCohorts(initOptionsGeneralTab, [
+      {
+        name: "Test country",
+        conditions: {
+          all: [
+            {
+              fact: "countryCode",
+              operator: "equal",
+              value: "xx",
+            },
+          ],
+        },
+        event: {
+          type: "test-countrycode",
+        },
+      },
+    ]);
+    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_cohort");
+
+    await setRemoteConfigCountryCode(initOptionsGeneralTab, "xy");
+    await syncRemoteConfig(initOptionsGeneralTab);
+
+    let ipmCommands = await getIPMCommands(initOptionsGeneralTab);
+    expect(ipmCommands).toEqual(expectedIPMCommands.cohort[fragmentType]);
+
+    await openNewTab(localTestPageUrl);
+    await findUrl(updateUrlCohort, { exists: false });
+
+    await setRemoteConfigCountryCode(initOptionsGeneralTab, "xx");
+    await syncRemoteConfig(initOptionsGeneralTab);
+
+    ipmCommands = await getIPMCommands(initOptionsGeneralTab);
+    expect(ipmCommands).toEqual(expectedIPMCommands.cohort[fragmentType]);
+
+    await openNewTab(localTestPageUrl);
+    await findUrl(updateUrlCohort, { exists: true });
+  });
+
+  it("does not execute commands on Firefox", async function () {
     if (browserDetails.browserName !== "firefox") {
       this.skip();
     }

@@ -23,8 +23,23 @@ const COMMAND_ERROR =
 const SCHEMA_ID = "1";
 
 function expectErrors(commands, expectedErrors) {
+  expectErrorsWithCohorts(commands, [], expectedErrors);
+}
+
+function expectErrorsWithCohorts(commands, cohortIds, expectedErrors) {
   const data = {
     schemaId: SCHEMA_ID,
+    cohorts: cohortIds.map((cohortId) => {
+      return {
+        name: cohortId,
+        conditions: {
+          all: [],
+        },
+        event: {
+          type: cohortId,
+        },
+      };
+    }),
     experiments: [],
   };
   if (commands) {
@@ -74,6 +89,22 @@ describe("In-product messaging commands validation", function () {
   it("marks a valid command as valid", function () {
     const command = getCreateTabCommand();
     expectErrors([command], []);
+  });
+
+  it("allows optional known cohort", function () {
+    const command = getCreateTabCommand();
+    command.cohort = "foo";
+    expectErrorsWithCohorts([command], ["foo"], []);
+  });
+
+  it("reports unknown cohort", function () {
+    const command = getCreateTabCommand();
+    command.cohort = "foo";
+    expectErrorsWithCohorts(
+      [command],
+      [],
+      ["`ipmCommands[0].cohort` foo cohort does not exist"],
+    );
   });
 
   it("reports missing command name", function () {

@@ -517,6 +517,13 @@ export async function clearRemoteConfigIpmCommands(initOptionsFn) {
   await syncRemoteConfig(initOptionsFn);
 }
 
+export async function resetRemoteConfig(initOptionsFn) {
+  await setRemoteConfigCohorts(initOptionsFn, []);
+  await setRemoteConfigCountryCode(initOptionsFn, "");
+  await setRemoteConfigIpmCommands(initOptionsFn, "test_none");
+  await syncRemoteConfig(initOptionsFn);
+}
+
 export async function setUserId(initOptionsFn, userId) {
   const currentHandle = await driver.getWindowHandle();
   const optionsHandle = getOptionsHandle();
@@ -547,11 +554,41 @@ export async function setRemoteConfigUrl(initOptionsFn) {
   });
 }
 
+export async function setRemoteConfigCohorts(initOptionsFn, cohorts) {
+  const fragmentType = await getSelectedFragmentType(initOptionsFn);
+
+  if (fragmentType === "legacy") {
+    return;
+  }
+
+  await fetch("http://localhost:3008/setCohorts", {
+    method: "POST",
+    cache: "no-cache",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(cohorts),
+  });
+}
+
+export async function setRemoteConfigCountryCode(initOptionsFn, countryCode) {
+  const fragmentType = await getSelectedFragmentType(initOptionsFn);
+
+  if (fragmentType === "legacy") {
+    return;
+  }
+
+  await fetch("http://localhost:3008/setCountryCode", {
+    method: "POST",
+    cache: "no-cache",
+    headers: { "Content-Type": "application/json" },
+    body: countryCode,
+  });
+}
+
 export async function setRemoteConfigIpmCommands(initOptionsFn, scenarioId) {
   const fragmentType = await getSelectedFragmentType(initOptionsFn);
 
   if (fragmentType === "legacy") {
-    await fetch(`http://localhost:3007/setIPMResponse`, {
+    await fetch("http://localhost:3007/setIPMResponse", {
       method: "POST",
       cache: "no-cache",
       headers: { "Content-Type": "application/json" },
@@ -560,7 +597,7 @@ export async function setRemoteConfigIpmCommands(initOptionsFn, scenarioId) {
     return;
   }
 
-  await fetch(`http://localhost:3008/setIpmScenario`, {
+  await fetch("http://localhost:3008/setIpmScenario", {
     method: "POST",
     cache: "no-cache",
     headers: { "Content-Type": "application/json" },

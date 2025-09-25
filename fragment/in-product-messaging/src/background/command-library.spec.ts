@@ -28,6 +28,9 @@ import {
 } from "./command-library.types";
 import * as commandStorage from "./command-storage";
 
+const assignedCohort = "assigned";
+const nonAssignedCohort = "not-assigned";
+
 describe("command-library", () => {
   beforeEach(() => {
     commandStorage.replaceAll({});
@@ -66,6 +69,9 @@ describe("command-library", () => {
     let createTabActor: CommandActor;
 
     beforeEach(() => {
+      jest
+        .spyOn(ewe.cohorts, "getAll")
+        .mockReturnValue(Promise.resolve([assignedCohort]));
       jest
         .spyOn(ewe.experiments, "getFlag")
         .mockReturnValue(Promise.resolve(true));
@@ -136,6 +142,31 @@ describe("command-library", () => {
 
       expect(commandStorage.remove).not.toHaveBeenCalled();
       expect(commandStorage.get(newerCommand.ipm_id)).toEqual(newerCommand);
+    });
+
+    it("executes matching cohort-specific commands", async () => {
+      const commands = [
+        {
+          ...commandBase,
+          cohort: assignedCohort,
+        },
+      ];
+      await executeIPMCommands(commands, true);
+      expect(createTabActor.handleCommand).toHaveBeenCalledWith(
+        commandBase.ipm_id,
+        true,
+      );
+    });
+
+    it("does not execute non-matching cohort-specific commands", async () => {
+      const commands = [
+        {
+          ...commandBase,
+          cohort: nonAssignedCohort,
+        },
+      ];
+      await executeIPMCommands(commands, true);
+      expect(createTabActor.handleCommand).not.toHaveBeenCalled();
     });
   });
 });

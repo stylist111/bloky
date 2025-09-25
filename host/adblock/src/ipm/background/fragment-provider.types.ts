@@ -24,15 +24,16 @@ import {
   type LegacyFragmentOverrides,
 } from "./fragment-overrides.types";
 
-// re-export types
+// re-export common types
 export type {
   Command,
   CommandActor,
   CommandHandler,
   Content,
-  LicenseStateBehavior,
   ParamDefinitionList,
 } from "@eyeo-fragments/in-product-messaging/background";
+// re-export legacy types
+export type { LicenseStateBehavior } from "@eyeo-fragments/ipm-legacy/background";
 
 // re-export enums
 export { CommandEventType, CommandName } from "@eyeo-fragments/in-product-messaging/background";

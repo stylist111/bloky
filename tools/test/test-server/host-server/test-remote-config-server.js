@@ -23,7 +23,9 @@ import ipmScenarios from "./ipm-scenarios.js";
 
 export const port = 3008;
 
-let responseData = null;
+let cohorts = [];
+let countryCode = "";
+let ipmCommands = [];
 
 const server = createServer((req, res) => {
   let data = "";
@@ -34,22 +36,36 @@ const server = createServer((req, res) => {
 
   req.on("end", async () => {
     try {
-      if (req.method === "POST" && req.url === "/setIpmScenario") {
-        responseData = ipmScenarios[data] || null;
-
-        res.statusCode = 200;
+      if (req.method === "POST") {
+        if (req.url === "/setCohorts") {
+          cohorts = JSON.parse(data);
+          res.statusCode = 200;
+        } else if (req.url === "/setCountryCode") {
+          countryCode = data;
+          res.statusCode = 200;
+        } else if (req.url === "/setIpmScenario") {
+          ipmCommands = ipmScenarios[data] || [];
+          res.statusCode = 200;
+        } else {
+          res.statusCode = 404;
+          res.write("Not found");
+        }
         res.end();
         return;
       }
 
       if (req.url === "/remote-config") {
         res.setHeader("Content-Type", "application/json");
+        if (countryCode !== "") {
+          res.setHeader("X-Country-Code", countryCode);
+        }
         res.statusCode = 200;
         res.end(
           JSON.stringify({
             schemaId: "1",
+            cohorts,
             experiments: [],
-            ipmCommands: responseData || [],
+            ipmCommands,
           }),
         );
         return;

@@ -20,7 +20,6 @@
  */
 export interface StartInfo {
   logger: Logger;
-  licensing: Licensing;
   info: UserAndHostInformation;
   getBlockCount: () => Promise<number>;
   isOptedOut: () => Promise<boolean>;
@@ -36,10 +35,6 @@ interface Logger {
   debug: (...data: unknown[]) => void;
   reportAndLogError: (e: Error, logContext?: string) => void;
   warn: (...data: unknown[]) => void;
-}
-
-interface Licensing {
-  isLicenseValid: () => Promise<boolean>;
 }
 
 interface UserAndHostInformation {

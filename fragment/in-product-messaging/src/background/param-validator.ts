@@ -16,7 +16,6 @@
  */
 
 import { isDomainList, createSafeOriginUrl } from "./url";
-import { isValidLicenseState } from "./license";
 import {
   type ParamDefinitionList,
   type ParamValidator,
@@ -53,25 +52,6 @@ export const isNotEmpty: ParamValidator = (param) =>
  */
 export const isEmptyOrPositiveNumber: ParamValidator = (param) =>
   typeof param === "undefined" || (typeof param === "number" && param > 0);
-
-/**
- * Checks whether the given parameter contains only values of type LicenseState.
- *
- * @param param The parameter to validate
- * @returns Whether the parameter contains only values of type LicenseState
- */
-export const isValidLicenseStateList: ParamValidator = (
-  param: unknown,
-): boolean => {
-  if (!param) {
-    return true;
-  }
-  if (typeof param !== "string") {
-    return false;
-  }
-  const licenseStates = param.split(",");
-  return licenseStates.every((state) => isValidLicenseState(state));
-};
 
 /**
  * Checks whether the given parameter is a safe URL string.
