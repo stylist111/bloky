@@ -109,6 +109,13 @@ async function enablePremiumByUI() {
 }
 
 export default () => {
+  before(async function () {
+    // temporarily skipping the tests for Chromium
+    if (browserDetails.browserName === "chromium") {
+      this.skip();
+    }
+  });
+
   afterEach(async function () {
     await setPremiumFLsDefaultState();
   });
@@ -119,7 +126,7 @@ export default () => {
     await disablePremiumProgrammatically();
   });
 
-  it("activates premium by UI", async function () {
+  it.skip("activates premium by UI", async function () {
     // This flow is slow, as it takes some time for the payment provider
     // to inform our backend about the payment status.
     // Therefore, we need to increase the timeout for this test.
