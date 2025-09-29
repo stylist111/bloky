@@ -573,6 +573,8 @@ export async function migrate() {
  */
 export async function ensureDNRRulesetsEnabled() {
   if (browser.declarativeNetRequest) {
+    const enableRulesetIds = [];
+
     let enabledItems = await browser.declarativeNetRequest.getEnabledRulesets();
     let toDisable = new Set(enabledItems);
 
@@ -580,8 +582,9 @@ export async function ensureDNRRulesetsEnabled() {
       const alreadyEnabled = enabledItems.includes(subscription.id);
       const shouldBeEnabled = !subscription.disabled;
 
-      if (!alreadyEnabled && shouldBeEnabled) {
-        await enableRuleset(subscription.id);
+      if (!alreadyEnabled && shouldBeEnabled &&
+          rulesetExistsInManifest(subscription.id)) {
+        enableRulesetIds.push(subscription.id);
       }
 
       if (shouldBeEnabled) {
@@ -589,8 +592,18 @@ export async function ensureDNRRulesetsEnabled() {
       }
     }
 
-    for (let id of toDisable) {
-      await disableRuleset(id);
+    const disableRulesetIds = Array.from(toDisable);
+    if (enableRulesetIds.length > 0 || disableRulesetIds.length > 0) {
+      try {
+        await browser.declarativeNetRequest.updateEnabledRulesets({
+          enableRulesetIds,
+          disableRulesetIds
+        });
+      }
+      catch (e) {
+        e.message = `${e.message} (enableRulesetIds: ${enableRulesetIds.join(",")}, disableRulesetIds: ${disableRulesetIds.join(",")}, enabledItems: ${enabledItems.length})`;
+        throw e;
+      }
     }
   }
 }
