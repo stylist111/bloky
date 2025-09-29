@@ -29,7 +29,6 @@ import optionsPageDataCollection from "./options-page/data-collection.js";
 import popupPage from "./popup-page.js";
 import uninstallDefault from "./smoke/uninstall-default.js";
 import freeUser from "./premium/free-user.js";
-import getPremium from "./premium/get-premium.js";
 import getPremiumWithAccount from "./premium/get-premium-with-account.js";
 import eyeometry from "./eyeometry.js";
 import youtubeAllowlist from "./youtube-auto-allowlist.js";
@@ -82,7 +81,6 @@ export default () => {
 
     describe("Premium", function () {
       describe("Free user", freeUser);
-      describe("Premium user", getPremium);
       describe("Premium user with account", getPremiumWithAccount);
     });
 

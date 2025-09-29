@@ -31,7 +31,11 @@ import {
 } from "@eyeo/test-utils/extension";
 import { dcTestPageUrl } from "@eyeo/test-utils/host-urls";
 import { dcFilters } from "@eyeo/test-utils/host-filters";
-import { premiumLinkButtons } from "../../utils/dataset.js";
+import {
+  premiumLinkButtons,
+  premiumToggles,
+  premiumFilterLists
+} from "../../utils/dataset.js";
 
 import {
   initOptionsGeneralTab,
@@ -39,17 +43,10 @@ import {
   checkPremiumActivated,
   clickFLAndCheck,
   setPremiumFLsDefaultState,
+  enablePremiumProgrammatically,
   disablePremiumProgrammatically
 } from "../../utils/page.js";
 import { premiumUrl } from "../../utils/urls.js";
-import { premiumToggles, premiumFilterLists } from "../../utils/dataset.js";
-import {
-  simulateDowngradeToFreeUser,
-  simulatePremiumActivation
-} from "@eyeo/test-utils/account";
-
-const PORTAL_URL = "https://myaccount.adblockplus.org";
-const APPLICATION_NAME = "abp-portal";
 
 export default () => {
   afterEach(async function () {
@@ -62,7 +59,7 @@ export default () => {
   });
 
   it("logging in with a premium account", async function () {
-    await simulatePremiumActivation(PORTAL_URL, APPLICATION_NAME);
+    await enablePremiumProgrammatically();
     await checkPremiumActivated({ timeout: 2000 });
     // eslint-disable-next-line no-warning-comments
     // TODO: after full migration to new account system all users should have
@@ -71,7 +68,7 @@ export default () => {
   });
 
   it("has premium features", async function () {
-    await simulatePremiumActivation(PORTAL_URL, APPLICATION_NAME);
+    await enablePremiumProgrammatically();
     await initPopupWithLocalPage();
 
     // Default popup premium togles
@@ -111,7 +108,7 @@ export default () => {
   });
 
   it("enables premium filter lists", async function () {
-    await simulatePremiumActivation(PORTAL_URL, APPLICATION_NAME);
+    await enablePremiumProgrammatically();
     await initOptionsGeneralTab(getOptionsHandle());
 
     let someEnabled = false;
@@ -130,9 +127,9 @@ export default () => {
 
   it("downgrades if premium expired", async function () {
     setTimeoutForExtensionReload(this);
-    await simulatePremiumActivation(PORTAL_URL, APPLICATION_NAME);
+    await enablePremiumProgrammatically();
     await checkPremiumActivated({ timeout: 2000 });
-    await simulateDowngradeToFreeUser(initOptionsGeneralTab);
+    await disablePremiumProgrammatically();
 
     // Easy check if user is free
     // Premium link/button checks

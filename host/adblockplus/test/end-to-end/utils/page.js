@@ -32,7 +32,11 @@ import {
   wait,
   isCheckboxAttributeEnabled
 } from "@eyeo/test-utils/driver";
-import { getOptionsHandle, reloadExtension } from "@eyeo/test-utils/extension";
+import {
+  simulatePremiumActivation,
+  simulateDowngradeToFreeUser
+} from "@eyeo/test-utils/account";
+import { getOptionsHandle } from "@eyeo/test-utils/extension";
 import { premiumFilterLists } from "./dataset.js";
 
 const optionsPageSleep = 2000;
@@ -443,82 +447,13 @@ export async function checkPremiumActivated({
 }
 
 export async function enablePremiumProgrammatically() {
-  await initOptionsGeneralTab(getOptionsHandle(), {
-    waitForDefaultState: true
-  });
-
-  const error = await driver.executeAsyncScript(async (callback) => {
-    try {
-      await browser.runtime.sendMessage({
-        type: "prefs.set",
-        key: "premium_license_check_url",
-        value: "http://localhost:3006"
-      });
-      await browser.runtime.sendMessage({
-        type: "premium.activate",
-        userId: "valid_user_id"
-      });
-      callback();
-    } catch (err) {
-      callback(err);
-    }
-  });
-
-  if (error) throw new Error(error);
-
-  await checkPremiumActivated();
+  const portalUrl = "https://myaccount.adblockplus.org";
+  const applicationName = "abp-portal";
+  await simulatePremiumActivation(portalUrl, applicationName);
 }
 
 export async function disablePremiumProgrammatically() {
-  await driver.switchTo().window(getOptionsHandle());
-
-  // wait for extension api to be available
-  await driver.wait(
-    async () => {
-      const result = await driver.executeScript(() => {
-        return !!browser;
-      });
-      return result;
-    },
-    5000,
-    "Timeout waiting for extension api to be available"
-  );
-
-  await driver.executeAsyncScript(async (callback) => {
-    try {
-      await browser.runtime.sendMessage({
-        type: "premium.activate",
-        userId: "expired_user_id"
-      });
-      await browser.runtime.sendMessage({
-        type: "prefs.set",
-        key: "premium_license_check_url",
-        value: "https://myadblock.licensing.adblockplus.dev/license"
-      });
-      await browser.runtime.sendMessage({
-        type: "prefs.set",
-        key: "premium_user_id",
-        value: ""
-      });
-    } catch (err) {
-      callback(err);
-    }
-    callback();
-  });
-
-  // Delete stored account information if any
-  await driver.executeAsyncScript(async (callback) => {
-    await browser.storage.local.remove("ewe:account");
-    callback();
-  });
-
-  await driver.switchTo().window(getOptionsHandle());
-  await reloadExtension(initOptionsGeneralTab);
-  await waitForNotDisplayed(".button.premium-label", {
-    timeout: 5000,
-    displayedTimeout: 1000,
-    forceRefresh: true
-  });
+  await simulateDowngradeToFreeUser(initOptionsGeneralTab);
 }
 
 export async function isPremiumLabelPresent() {
