@@ -1,5 +1,9 @@
 # Unreleased
 
+# 4.28.1 - 2025-09-30
+
+This release contains bugfixes and under-the-hood changes.
+
 # 4.28.0 - 2025-09-23
 
 - Updated user account log in request pattern (noissue)
