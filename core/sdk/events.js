@@ -15,6 +15,10 @@ export default {
             description: "Whether the page is allowlisted",
             type: "boolean"
           },
+          aaListsStatus: {
+            description: "The status of the Acceptable Ads lists. 0: none, 1: AA, 2: AA Privacy, 3: both",
+            type: "number"
+          },
           errorMsg: {
             description: "Browser string indicating the error that occurred",
             type: "string"
@@ -31,6 +35,10 @@ export default {
           isPageAllowlisted: {
             description: "Whether the page is allowlisted",
             type: "boolean"
+          },
+          aaListsStatus: {
+            description: "The status of the Acceptable Ads lists. 0: none, 1: AA, 2: AA Privacy, 3: both",
+            type: "number"
           }
         }
       }
@@ -44,6 +52,10 @@ export default {
           isPageAllowlisted: {
             description: "Whether the page is allowlisted",
             type: "boolean"
+          },
+          aaListsStatus: {
+            description: "The status of the Acceptable Ads lists. 0: none, 1: AA, 2: AA Privacy, 3: both",
+            type: "number"
           },
           errorMsg: {
             description: "Browser string indicating the error that occurred",
@@ -61,6 +73,10 @@ export default {
           isPageAllowlisted: {
             description: "Whether the page is allowlisted",
             type: "boolean"
+          },
+          aaListsStatus: {
+            description: "The status of the Acceptable Ads lists. 0: none, 1: AA, 2: AA Privacy, 3: both",
+            type: "number"
           }
         }
       }
@@ -74,6 +90,10 @@ export default {
           isPageAllowlisted: {
             description: "Whether the page is allowlisted",
             type: "boolean"
+          },
+          aaListsStatus: {
+            description: "The status of the Acceptable Ads lists. 0: none, 1: AA, 2: AA Privacy, 3: both",
+            type: "number"
           },
           errorMsg: {
             description: "Browser string indicating the error that occurred",
@@ -91,6 +111,48 @@ export default {
           isPageAllowlisted: {
             description: "Whether the page is allowlisted",
             type: "boolean"
+          },
+          aaListsStatus: {
+            description: "The status of the Acceptable Ads lists. 0: none, 1: AA, 2: AA Privacy, 3: both",
+            type: "number"
+          }
+        }
+      }
+    },
+    aa_other_blocked: {
+      description: "Acceptable Ads filters on Amazon, Yahoo, LinkedIn, Outlook were blocked",
+      data: {
+        description: "Data about why Acceptable Ads filters were blocked",
+        type: "object",
+        properties: {
+          isPageAllowlisted: {
+            description: "Whether the page is allowlisted",
+            type: "boolean"
+          },
+          aaListsStatus: {
+            description: "The status of the Acceptable Ads lists. 0: none, 1: AA, 2: AA Privacy, 3: both",
+            type: "number"
+          },
+          errorMsg: {
+            description: "Browser string indicating the error that occurred",
+            type: "string"
+          }
+        }
+      }
+    },
+    aa_other_success: {
+      description: "Acceptable Ads filters on Amazon, Yahoo, LinkedIn, Outlook were successfully loaded",
+      data: {
+        description: "Data about the Acceptable Ads filters success event",
+        type: "object",
+        properties: {
+          isPageAllowlisted: {
+            description: "Whether the page is allowlisted",
+            type: "boolean"
+          },
+          aaListsStatus: {
+            description: "The status of the Acceptable Ads lists. 0: none, 1: AA, 2: AA Privacy, 3: both",
+            type: "number"
           }
         }
       }

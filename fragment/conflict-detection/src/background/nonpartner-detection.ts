@@ -38,9 +38,19 @@ const baitsURLs = [
   "*://btloader.com/tag?*",
   "*://ad-delivery.net/px.gif?ch=1*",
   "*://ad-delivery.net/px.gif?ch=2*",
+  "*://*.gpt.mail.yahoo.net/sandbox*",
+  "*://cdn.adnxs.com/*/trk.js*",
+  "*://*.ssl-images-amazon.com/images/S/apesafeframe/ape/sf*",
+  "*://*.media-amazon.com/images/S/apesafeframe/ape/sf*",
 ];
 
-function getEventName(url: string, blocked: boolean): string | null {
+async function getEventName(
+  details:
+    | browser.WebRequest.OnErrorOccurredDetailsType
+    | browser.WebRequest.OnCompletedDetailsType,
+  blocked: boolean,
+): Promise<string | null> {
+  const { url, type, tabId } = details;
   if (url.includes("btloader.com/tag")) {
     return blocked ? "bt_loader_blocked" : "bt_loader_success";
   }
@@ -53,7 +63,58 @@ function getEventName(url: string, blocked: boolean): string | null {
     return blocked ? "aa_bait2_blocked" : "aa_bait2_success";
   }
 
+  try {
+    const tab = await browser.tabs.get(tabId);
+    const tabUrl = new URL(tab.url ?? "");
+    const hostname = tabUrl.hostname;
+
+    // should match
+    // blocking rule ||gpt.mail.yahoo.net/sandbox$subdocument,domain=mail.yahoo.com
+    // allowlisting rule @@||gpt.mail.yahoo.net/sandbox$document,subdocument,domain=mail.yahoo.net|mail.yahoo.com|mail.aol.com
+    const isYahooFilter =
+      url.includes("gpt.mail.yahoo.net/sandbox") &&
+      type === "sub_frame" &&
+      hostname.includes("mail.yahoo.com");
+
+    // should match
+    // blocking rule ||adnxs.com^
+    // allowlisting rule @@||cdn.adnxs.com/*/trk.js$script,domain=outlook.live.com|www.msn.com
+    const isMicrosoftFilter =
+      url.includes("cdn.adnxs.com") &&
+      type === "script" &&
+      (hostname.includes("outlook.live.com") || hostname.includes("msn.com"));
+
+    // should match
+    // blocking rule ||ssl-images-amazon.com/images/S/apesafeframe/ape/sf/$script
+    // allowlisting rule @@||ssl-images-amazon.com^*/ape/sf/whitelisted/desktop/$subdocument,document,script,domain=amazon.ie|amazon.se|amazon.com.be|amazon.sg|amazon.pl|amazon.eg|amazon.com|amazon.co.jp|amazon.co.uk|amazon.de|amazon.es|amazon.fr|amazon.in|amazon.it|amazon.ca|amazon.cn|amazon.com.mx|amazon.com.au|amazon.ae|amazon.sa|amazon.com.br|amazon.nl
+    const isAmazonFilter =
+      (url.includes("ssl-images-amazon.com/images/S/apesafeframe/ape/sf") ||
+        url.includes("media-amazon.com/images/S/apesafeframe/ape/sf")) &&
+      type === "script" &&
+      hostname.includes("amazon.");
+
+    if (isYahooFilter || isMicrosoftFilter || isAmazonFilter) {
+      return blocked ? "aa_other_blocked" : "aa_other_success";
+    }
+  } catch (error) {}
+
   return null;
+}
+
+async function getAAListsStatus(): Promise<number> {
+  const [aa, privacy] = await Promise.all([
+    ewe.subscriptions.has(ewe.subscriptions.ACCEPTABLE_ADS_URL),
+    ewe.subscriptions.has(ewe.subscriptions.ACCEPTABLE_ADS_PRIVACY_URL),
+  ]);
+
+  let result = 0;
+  if (aa) {
+    result |= 1;
+  }
+  if (privacy) {
+    result |= 2;
+  }
+  return result;
 }
 
 const serverLogger = new ewe.telemetry.ServerLogger("conflict_detection");
@@ -241,16 +302,19 @@ export function start(parameters: StartInfo): void {
   browser.webRequest.onErrorOccurred.addListener(
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     async (details): Promise<void> => {
-      const { url, tabId, error } = details;
-      const eventName = getEventName(url, true);
-      if (eventName) {
-        const filters = await ewe.filters.getAllowingFilters(tabId);
-        const isPageAllowlisted = filters.length > 0;
-        serverLogger.info(eventName, {
-          errorMsg: error,
-          isPageAllowlisted,
-        });
-      }
+      const { tabId, error } = details;
+      const eventName = await getEventName(details, true);
+      if (!eventName) return;
+
+      const [aaListsStatus, filters] = await Promise.all([
+        getAAListsStatus(),
+        ewe.filters.getAllowingFilters(tabId),
+      ]);
+      serverLogger.info(eventName, {
+        errorMsg: error,
+        isPageAllowlisted: filters.length > 0,
+        aaListsStatus,
+      });
     },
     { urls: baitsURLs },
   );
@@ -258,13 +322,18 @@ export function start(parameters: StartInfo): void {
   browser.webRequest.onCompleted.addListener(
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     async (details): Promise<void> => {
-      const { url, tabId } = details;
-      const eventName = getEventName(url, false);
-      if (eventName) {
-        const filters = await ewe.filters.getAllowingFilters(tabId);
-        const isPageAllowlisted = filters.length > 0;
-        serverLogger.info(eventName, { isPageAllowlisted });
-      }
+      const { tabId } = details;
+      const eventName = await getEventName(details, false);
+      if (!eventName) return;
+
+      const [aaListsStatus, filters] = await Promise.all([
+        getAAListsStatus(),
+        ewe.filters.getAllowingFilters(tabId),
+      ]);
+      serverLogger.info(eventName, {
+        isPageAllowlisted: filters.length > 0,
+        aaListsStatus,
+      });
     },
     { urls: baitsURLs },
   );

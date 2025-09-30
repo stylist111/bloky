@@ -26,7 +26,7 @@ import {
   beforeAll,
   afterAll,
 } from "vitest";
-import browser, { types } from "webextension-polyfill";
+import browser from "webextension-polyfill";
 import { start as startNonPartnerDetection } from "../../src/background/nonpartner-detection";
 import {
   uboDetectedKey,
@@ -48,8 +48,11 @@ vi.mock("@eyeo/webext-ad-filtering-solution", () => ({
   },
   filters: {
     getAllowingFilters: vi.fn((tabId) => {
-      return tabId === 1 ? [] : ["some-filter"];
+      return tabId === 100 ? ["some-filter"] : [];
     }),
+  },
+  subscriptions: {
+    has: vi.fn(() => true),
   },
 }));
 
@@ -247,6 +250,19 @@ describe("nonpartner-detection", () => {
   });
 
   it("should log events when webRequest listeners are triggered with correct urls", async () => {
+    browser.tabs.get.mockImplementation(async (tabId) => {
+      if (tabId === 101) {
+        return { url: "https://mail.yahoo.com/d/folders/1" };
+      }
+      if (tabId === 102) {
+        return { url: "https://outlook.live.com/mail/0/" };
+      }
+      if (tabId === 103) {
+        return { url: "https://www.amazon.com/gp/cart/view.html" };
+      }
+      return { url: "https://example.com" };
+    });
+
     startNonPartnerDetection({
       logger,
       port,
@@ -261,40 +277,79 @@ describe("nonpartner-detection", () => {
 
     const testCases = [
       {
-        url: "https://btloader.com/tag?id=123",
+        details: {
+          url: "https://btloader.com/tag?id=123",
+          tabId: 100,
+        },
         eventPrefix: "bt_loader",
+        allowlisted: true,
       },
       {
-        url: "https://ad-delivery.net/px.gif?ch=1&id=456",
+        details: {
+          url: "https://ad-delivery.net/px.gif?ch=1&id=456",
+          tabId: 100,
+        },
         eventPrefix: "aa_bait1",
+        allowlisted: true,
       },
       {
-        url: "https://ad-delivery.net/px.gif?ch=2&id=789",
+        details: {
+          url: "https://ad-delivery.net/px.gif?ch=2&id=789",
+          tabId: 100,
+        },
         eventPrefix: "aa_bait2",
+        allowlisted: true,
+      },
+      {
+        details: {
+          url: "https://gpt.mail.yahoo.net/sandbox",
+          type: "sub_frame",
+          tabId: 101,
+        },
+        eventPrefix: "aa_other",
+        allowlisted: false,
+      },
+      {
+        details: {
+          url: "https://cdn.adnxs.com/v/s/252/trk.js",
+          type: "script",
+          tabId: 102,
+        },
+        eventPrefix: "aa_other",
+        allowlisted: false,
+      },
+      {
+        details: {
+          url: "https://s.media-amazon.com/images/S/apesafeframe/ape/sf/some/path.js",
+          type: "script",
+          tabId: 103,
+        },
+        eventPrefix: "aa_other",
+        allowlisted: false,
       },
     ];
 
-    for (const { url, eventPrefix } of testCases) {
+    for (const { details, eventPrefix, allowlisted } of testCases) {
       loggingInfoSpy.mockClear();
 
       // Test onErrorOccurred
-      const errorDetails = {
-        url,
+      await onErrorListener({
+        ...details,
         error: "net::ERR_BLOCKED_BY_CLIENT",
-        tabId: 1,
-      };
-      await onErrorListener(errorDetails);
+      });
       expect(loggingInfoSpy).toHaveBeenCalledWith(`${eventPrefix}_blocked`, {
-        errorMsg: errorDetails.error,
-        isPageAllowlisted: false,
+        errorMsg: "net::ERR_BLOCKED_BY_CLIENT",
+        isPageAllowlisted: allowlisted,
+        aaListsStatus: 3,
       });
 
       loggingInfoSpy.mockClear();
 
       // Test onCompleted
-      await onCompleteListener({ url, tabId: 2 });
+      await onCompleteListener(details);
       expect(loggingInfoSpy).toHaveBeenCalledWith(`${eventPrefix}_success`, {
-        isPageAllowlisted: true,
+        isPageAllowlisted: allowlisted,
+        aaListsStatus: 3,
       });
     }
   });

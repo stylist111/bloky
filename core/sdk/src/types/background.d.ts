@@ -987,6 +987,11 @@ declare module "@eyeo/webext-ad-filtering-solution" {
      * The URL of the Acceptable Ads subscription.
      */
     const ACCEPTABLE_ADS_URL: string;
+
+    /**
+     * The URL of the Acceptable Ads Privacy subscription.
+     */
+    const ACCEPTABLE_ADS_PRIVACY_URL: string;
     /**
      * Checks if a subscription has been added.
      *

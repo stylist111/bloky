@@ -50,6 +50,7 @@ const browser = {
   },
   tabs: {
     executeScript: vi.fn(),
+    get: vi.fn(),
     onCreated: {
       addListener: vi.fn(),
     },
