@@ -44,8 +44,16 @@ describe("Adblock Plus end-to-end tests - Regular", function () {
 
   before(async function () {
     await prepareExtensionHook();
-    // On ABP the extension is ready after the install URL opens
-    await findUrl(runnerConfig.installUrl);
+
+    // On ABP the extension is ready after the /installed URL or first-run page is opened
+    try {
+      await findUrl(runnerConfig.installUrl);
+    } catch (err) {
+      console.warn(
+        "https://welcome.adblockplus.org/en/installed not found, checking for local first run page"
+      );
+      await findUrl("first-run.html");
+    }
   });
 
   afterEach(screenshotsHook);

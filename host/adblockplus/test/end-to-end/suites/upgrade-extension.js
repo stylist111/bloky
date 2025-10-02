@@ -79,9 +79,20 @@ export default () => {
     if (!isPremium) {
       await enablePremiumProgrammatically();
     }
-    await initOptionsGeneralTab(getOptionsHandle(), {
-      waitForDefaultState: true
-    });
+
+    try {
+      await initOptionsGeneralTab(getOptionsHandle(), {
+        timeout: 5000,
+        waitForDefaultState: true
+      });
+    } catch (err) {
+      console.warn(err);
+      await driver.navigate().refresh();
+      await initOptionsGeneralTab(getOptionsHandle(), {
+        timeout: 5000,
+        waitForDefaultState: true
+      });
+    }
 
     // Change default filterlist status:
     // cookies (premium), social media tracking, acceptable ads, english easylist

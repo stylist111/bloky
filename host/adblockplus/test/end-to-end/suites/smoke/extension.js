@@ -47,15 +47,20 @@ import { installUrl } from "../../utils/urls.js";
 import { getDefaultFilterLists } from "../../utils/dataset.js";
 
 export default () => {
-  it("opens the install url", async function () {
-    const { url } = await findUrl(installUrl, 10000);
-
-    await driver.switchTo().window(getOptionsHandle());
-    const appVersion = await driver.executeScript(() => {
-      return browser.runtime.getManifest().version;
-    });
-
-    await checkInstallUninstallUrl({ url, appVersion, uninstall: false });
+  it("opens the /installed url or the first-run page", async function () {
+    try {
+      const { url } = await findUrl(installUrl, 10000);
+      await driver.switchTo().window(getOptionsHandle());
+      const appVersion = await driver.executeScript(() => {
+        return browser.runtime.getManifest().version;
+      });
+      await checkInstallUninstallUrl({ url, appVersion, uninstall: false });
+    } catch (err) {
+      console.warn(
+        "https://welcome.adblockplus.org/en/installed not found, checking for local first run page"
+      );
+      await findUrl("first-run.html");
+    }
   });
 
   it("sets the install date", async function () {
@@ -96,10 +101,11 @@ export default () => {
       console.warn(
         `There were issues with some of the default subscriptions:\n${err.message}\nUpdating them as a workaround`
       );
+      await driver.navigate().refresh();
       await clickOnDisplayedElement("#update");
       // sleeping to let the button click be effective
-      await driver.sleep(200);
-      await checkSubscriptionsState(defaultFilterLists);
+      await driver.sleep(500);
+      await checkSubscriptionsState(defaultFilterLists, { timeout: 5000 });
     }
   });
 

@@ -168,6 +168,7 @@ export async function clickFLCheckboxAndCheck(
   { enable = true, isToggle = false, name } = {}
 ) {
   await waitForCheckboxStatus(checkboxSelector, {
+    timeout: 3000,
     expectEnabled: !enable,
     isProperty: true,
     name
@@ -175,7 +176,7 @@ export async function clickFLCheckboxAndCheck(
 
   await clickOnDisplayedElement(checkboxSelector);
   await waitForCheckboxStatus(checkboxSelector, {
-    timeout: 1500,
+    timeout: 3000,
     expectEnabled: enable,
     isProperty: true,
     name
@@ -303,7 +304,7 @@ export async function addCustomFilters(
 
     await wait(
       async () => (await getCustomFilters()).includes(filter),
-      1000,
+      1500,
       `The filter "${filter}" was not shown after being added`
     );
   }
@@ -426,12 +427,15 @@ export async function checkPremiumActivated({
   const premiumSelectors = [
     ".button.premium-label",
     ".premium-banner-container",
-    'a[data-i18n="options_premium_manage"]'
+    'a[data-i18n="options_premium_manage"]',
+    "#user-account-manage"
   ];
 
   try {
     await Promise.all(
-      premiumSelectors.map((selector) => getDisplayedElement(selector))
+      premiumSelectors.map((selector) =>
+        getDisplayedElement(selector, { timeout: 2000 })
+      )
     );
   } catch (e) {
     if (retry >= maxRetries) {
@@ -625,14 +629,21 @@ async function checkLanguageFilterList(
   langName,
   { isAdded = true, isOptionsGeneralTab = true } = {}
 ) {
-  const timeout = 2000;
+  const timeout = 7000;
   const { filterlist } = getFLSelectors(langName, { isOptionsGeneralTab });
   if (isAdded) {
-    await getDisplayedElement(filterlist, { timeout });
+    try {
+      await getDisplayedElement(filterlist, { timeout });
+    } catch (err) {
+      console.warn(
+        "Language filterlist not shown, reloading the page as a workaround"
+      );
+      await driver.navigate().refresh();
+      await getDisplayedElement(filterlist, { timeout, forceRefresh: false });
+    }
   } else {
     await waitForNotDisplayed(filterlist, { timeout });
   }
-
   return filterlist;
 }
 

@@ -40,6 +40,7 @@ import {
 import {
   initOptionsGeneralTab,
   initPopupWithLocalPage,
+  isPremiumLabelPresent,
   checkPremiumActivated,
   clickFLAndCheck,
   setPremiumFLsDefaultState,
@@ -61,14 +62,14 @@ export default () => {
   it("logging in with a premium account", async function () {
     await enablePremiumProgrammatically();
     await checkPremiumActivated({ timeout: 2000 });
-    // eslint-disable-next-line no-warning-comments
-    // TODO: after full migration to new account system all users should have
-    // accounts and this check should be moved to checkPremiumActivated function
-    await getDisplayedElement("#user-account-manage", { timeout: 1000 });
   });
 
   it("has premium features", async function () {
-    await enablePremiumProgrammatically();
+    const isPremium = await isPremiumLabelPresent();
+
+    if (!isPremium) {
+      await enablePremiumProgrammatically();
+    }
     await initPopupWithLocalPage();
 
     // Default popup premium togles
@@ -108,7 +109,11 @@ export default () => {
   });
 
   it("enables premium filter lists", async function () {
-    await enablePremiumProgrammatically();
+    const isPremium = await isPremiumLabelPresent();
+
+    if (!isPremium) {
+      await enablePremiumProgrammatically();
+    }
     await initOptionsGeneralTab(getOptionsHandle());
 
     let someEnabled = false;
@@ -127,7 +132,12 @@ export default () => {
 
   it("downgrades if premium expired", async function () {
     setTimeoutForExtensionReload(this);
-    await enablePremiumProgrammatically();
+
+    const isPremium = await isPremiumLabelPresent();
+
+    if (!isPremium) {
+      await enablePremiumProgrammatically();
+    }
     await checkPremiumActivated({ timeout: 2000 });
     await disablePremiumProgrammatically();
 
@@ -141,7 +151,7 @@ export default () => {
       expect(await elem.getText()).toEqual(text);
 
       await elem.click();
-      await findUrl(premiumUrl);
+      await findUrl(premiumUrl, { timeout: 7000 });
       await driver.close();
       await initOptionsGeneralTab(getOptionsHandle());
     }
