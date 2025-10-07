@@ -56,6 +56,7 @@ import {
   ytHavenToggleStateDisabled,
   ytHavenRecordEvent,
   ytHavenAutoAllowlistVideo,
+  contextTamperingEvent,
 } from "../shared/index.js";
 
 /**
@@ -85,6 +86,23 @@ const captureDateOnUpdate = (
     captureStartDate(parameters);
   }
 };
+
+/**
+ * Check if the current tab is allowlisted
+ * @param {number} tabId
+ */
+async function hasAllowlistedFilter(
+  tabId: number | undefined,
+): Promise<boolean> {
+  let isAllowlisted = false;
+
+  if (typeof tabId !== "undefined") {
+    const filters = await ewe.filters.getAllowingFilters(tabId);
+    isAllowlisted = filters.some((f) => f.includes("youtube.com"));
+  }
+
+  return isAllowlisted;
+}
 
 /**
  * Process the YouTube Wall Detected message from the content script
@@ -187,6 +205,34 @@ export function start(parameters: StartInfo): void {
   );
   browser.runtime.onInstalled.addListener(captureDateOnUpdatedWithParameters);
 
+  // In case there are any errors in the main context, we want to capture and
+  // check if they are related to our snippets.
+  browser.webRequest.onCompleted.addListener(
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    async (details): Promise<void> => {
+      const { url, tabId } = details;
+      const parsedUrl = new URL(url);
+      const errorMsg = parsedUrl.searchParams.get("msg");
+      const ytClientVersion = parsedUrl.searchParams.get("client.version");
+
+      if (
+        errorMsg?.includes("read-only") &&
+        errorMsg?.includes("non-configurable")
+      ) {
+        const [isAllowlisted, isPremium] = await Promise.all([
+          hasAllowlistedFilter(tabId),
+          parameters.isPremiumActive(),
+        ]);
+        sendAdWallEvents(contextTamperingEvent, {
+          applicationVersion: ytClientVersion,
+          isAllowListed: isAllowlisted ? "1" : "0",
+          p: isPremium,
+        });
+      }
+    },
+    { urls: ["*://*.youtube.com/error_204*"] },
+  );
+
   // Remove the allowlisting state from storage when the filter is removed
   ewe.filters.onRemoved.addListener(async (filter: Filter) => {
     if (
@@ -254,19 +300,15 @@ export function start(parameters: StartInfo): void {
       sender: MessageSender,
     ): Promise<void> => {
       const tabId = sender.tab?.id;
+      const [isAllowlisted, isPremium] = await Promise.all([
+        hasAllowlistedFilter(tabId),
+        parameters.isPremiumActive(),
+      ]);
 
-      let isAllowListed = false;
-      if (typeof tabId !== "undefined") {
-        const filters = await ewe.filters.getAllowingFilters(tabId);
-        isAllowListed = filters.some((f) => f.includes("youtube.com"));
-      }
-
-      const isPremium = await parameters.isPremiumActive();
       sendAdWallEvents(eventName, {
         ...eventPayload,
-        // pass the premium flag to differentiate between users from experiments
+        isAllowListed: isAllowlisted ? "1" : "0",
         p: isPremium,
-        isAllowListed: isAllowListed ? "1" : "0",
       });
     },
   );

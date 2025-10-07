@@ -55,6 +55,11 @@ chrome.tabs.update.mockImplementation((...args) => {
   invokeAndResetMock(...args);
 });
 
+// !!! This is stupid, but necessary to pass the unit tests. We need a better
+// mock library, this one is broken (it already has a mock implementation for
+// webRequest.onCompleted, but it only works if you reference it here first)
+chrome.webRequest.onCompleted.addListener = vi.fn();
+
 // We need to require this after we setup vitest-chrome
 const browser = require("webextension-polyfill");
 Object.assign(global, { browser });
