@@ -1600,28 +1600,20 @@
     "description": "Link to the contributors page on the Support tab"
   },
   "debuginfo": {
-    "message": "Echipa noastră a solicitat unele informații de depanare?",
+    "message": "A solicitat echipa noastră informații despre depanare? [[Descărcați datele de depanare]]",
     "description": "Users can click this link to provide debug information to AdBlock staff"
   },
   "bugreport": {
-    "message": "Trimiteți-ne un [[raport de eroare]]",
-    "description": "Link to send a bug report on the Support tab"
+    "message": "[[Trimiteți-ne o solicitare de asistență]] (sau trimiteți un e-mail la: help@getadblock.com)",
+    "description": "Link to AdBlock's help site."
   },
   "supportsite": {
     "message": "Aduceți-ne la cunoștință pe [[site-ul de suport]]!",
     "description": "Link to the support site on the Support tab"
   },
   "helpcenter": {
-    "message": "Vizitați-ne [[Centrul de ajutor]]",
+    "message": "Aveți întrebări? [[Consultați Centrul nostru de ajutor]] (numai în engleză)",
     "description": "Link to AdBlock's help site. This is found on the Support tab of the options."
-  },
-  "copydebugdata": {
-    "message": "Copiați datele de depanare",
-    "description": "Button text on the Support tab of the options."
-  },
-  "copieddebugdata": {
-    "message": "Copiat!",
-    "description": "Button text on the Support tab of the options."
   },
   "resourceblocktitle": {
     "message": "Toate resursele",

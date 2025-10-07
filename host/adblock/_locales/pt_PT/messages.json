@@ -1600,28 +1600,20 @@
     "description": "Link to the contributors page on the Support tab"
   },
   "debuginfo": {
-    "message": "A nossa equipe solicitou algumas informações de depuração?",
+    "message": "Nossa equipe solicitou algumas informações de depuração? [[Baixar dados de depuração]]",
     "description": "Users can click this link to provide debug information to AdBlock staff"
   },
   "bugreport": {
-    "message": "Envie-nos um [[relatório de bugs]]",
-    "description": "Link to send a bug report on the Support tab"
+    "message": "[[Envie-nos uma solicitação de suporte]] (ou e-mail: help@getadblock.com)",
+    "description": "Link to AdBlock's help site."
   },
   "supportsite": {
-    "message": "Deixe-nos saber no nosso [[site de suporte]]!",
+    "message": "Avise-nos no nosso [[site de suporte]]!",
     "description": "Link to the support site on the Support tab"
   },
   "helpcenter": {
-    "message": "Visite nosso [[Centro de Ajuda]]",
+    "message": "Tem dúvidas? [[Confira nossa Central de Ajuda]] (somente em inglês)",
     "description": "Link to AdBlock's help site. This is found on the Support tab of the options."
-  },
-  "copydebugdata": {
-    "message": "Copiar Dados de Depuração",
-    "description": "Button text on the Support tab of the options."
-  },
-  "copieddebugdata": {
-    "message": "Copiado!",
-    "description": "Button text on the Support tab of the options."
   },
   "resourceblocktitle": {
     "message": "Todos os recursos",

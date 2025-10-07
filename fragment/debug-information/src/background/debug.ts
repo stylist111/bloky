@@ -27,6 +27,7 @@ import type {
   SubscriptionDetails,
   AlarmInfo,
   AccountInfo,
+  InstalledExtensionInfo,
 } from "./debug.types.js";
 import { getUserAgentInfo } from "./user-agent-info";
 
@@ -77,7 +78,7 @@ async function getSubscriptionInfo(): Promise<SubscriptionDetails> {
   return response;
 }
 
-async function getCustomFilterMetaData(): Promise<RuleMetaData[] | undefined> {
+async function getCustomFilterMetaData(): Promise<RuleMetaData[]> {
   const currentUserFilters = await ewe.filters.getUserFilters();
   if (!currentUserFilters.length) {
     return [];
@@ -138,7 +139,6 @@ async function getAccountInfo(): Promise<AccountInfo> {
  *  - Name
  *  - Version
  *  - Host permissions
- *  - Manifest Version
  *  User / device specific information, including
  *  - Alarm information
  *  - Cohort, Experiment, IPM & Logging information
@@ -172,6 +172,23 @@ export async function getDebugInformation(
     getCustomFilterMetaData(),
   ]);
 
+  // Include information about all installed extensions if permission
+  let allExtensionsInstalled: InstalledExtensionInfo | null = null;
+  if (hostPermissions?.permissions?.includes("management")) {
+    const extensions = await browser.management.getAll();
+    allExtensionsInstalled = extensions.map((ext) => ({
+      name: ext.name,
+      id: ext.id,
+      version: ext.version,
+      enabled: ext.enabled,
+      installType: ext.installType,
+      permissions: ext.permissions,
+    }));
+  }
+
+  const manifest = browser.runtime.getManifest();
+  const userAgentInfo = getUserAgentInfo();
+
   return {
     account,
     deviceSpecificInformation: {
@@ -182,18 +199,15 @@ export async function getDebugInformation(
     },
     errors,
     extensionInformation: {
-      extensionVersion: browser.runtime.getManifest().version,
+      extensionVersion: manifest.version,
       extensionID: browser.runtime.id,
       hostPermissions,
     },
     hostSpecificInformation: parameters,
     migrationErrors,
     platformInformation: {
-      browserName: getUserAgentInfo().browserName,
-      browserVersion: getUserAgentInfo().browserVersion,
-      manifestVersion: browser.runtime.getManifest().manifest_version,
-      osVersion: getUserAgentInfo().osVersion,
-      os: getUserAgentInfo().os,
+      ...userAgentInfo,
     },
+    allExtensionsInstalled,
   };
 }

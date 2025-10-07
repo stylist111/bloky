@@ -1565,21 +1565,21 @@
     "message": "Zistite viac o [[našom tíme]]",
     "description": "Link to the contributors page on the Support tab"
   },
+  "debuginfo": {
+    "message": "Požiadal náš tím o informácie o ladení? [[Stiahnuť ladiace údaje]]",
+    "description": "Users can click this link to provide debug information to AdBlock staff"
+  },
   "bugreport": {
-    "message": "Pošlite nám [[hlásenie chyby]]",
-    "description": "Link to send a bug report on the Support tab"
+    "message": "[[Pošlite nám žiadosť o podporu]] (alebo e-mail: help@getadblock.com)",
+    "description": "Link to AdBlock's help site."
   },
   "supportsite": {
     "message": "Dajte nám vedieť na našej [[stránke podpory]]!",
     "description": "Link to the support site on the Support tab"
   },
   "helpcenter": {
-    "message": "Navštívte naše [[Centrum pomoci]]",
+    "message": "Máte otázky? [[Pozrite si naše Centrum pomoci]] (iba v angličtine)",
     "description": "Link to AdBlock's help site. This is found on the Support tab of the options."
-  },
-  "copieddebugdata": {
-    "message": "Skopírované!",
-    "description": "Button text on the Support tab of the options."
   },
   "resourceblocktitle": {
     "message": "Všetky zdroje",

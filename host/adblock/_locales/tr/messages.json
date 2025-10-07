@@ -1612,28 +1612,20 @@
     "description": "Link to the contributors page on the Support tab"
   },
   "debuginfo": {
-    "message": "Ekibimiz bazı hata ayıklama bilgileri istedi mi?\n",
-    "description": "Users can click this link to provide debug information to AdBlock staff"
+    "message": "Ekibimiz bazı hata ayıklama bilgileri mi istedi? [[Hata ayıklama verilerini indir]]",
+    "description": "Link to download debug information on the Support tab"
   },
   "bugreport": {
-    "message": "Bize bir [[hata raporu]] gönderin\n",
-    "description": "Link to send a bug report on the Support tab"
+    "message": "[[Bize bir destek talebi gönderin]] (veya e‑posta: help@getadblock.com)",
+    "description": "Link to AdBlock's help site."
   },
   "supportsite": {
     "message": "[[Destek sitemize]] bildirin!",
     "description": "Link to the support site on the Support tab"
   },
   "helpcenter": {
-    "message": "[[Yardım Merkezimizi]] ziyaret edin\n",
+    "message": "Sorularınız mı var? [[Yardım Merkezimize göz atın]] (yalnızca İngilizce)",
     "description": "Link to AdBlock's help site. This is found on the Support tab of the options."
-  },
-  "copydebugdata": {
-    "message": "Hata ayıklama verilerini kopyala\n",
-    "description": "Button text on the Support tab of the options."
-  },
-  "copieddebugdata": {
-    "message": "Kopyalandı!",
-    "description": "Button text on the Support tab of the options."
   },
   "resourceblocktitle": {
     "message": "Tüm Kaynaklar",

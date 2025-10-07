@@ -1,5 +1,7 @@
 # Unreleased
 
+- Request management permission when download debug data.
+
 # 4.28.1 - 2025-09-30
 
 This release contains bugfixes and under-the-hood changes.

@@ -1530,28 +1530,20 @@
     "description": "Link to the contributors page on the Support tab"
   },
   "debuginfo": {
-    "message": "Sudahkan tim kami meminta beberapa info debug?",
+    "message": "Apakah tim kami meminta beberapa informasi debug? [[Unduh data debug]]",
     "description": "Users can click this link to provide debug information to AdBlock staff"
   },
   "bugreport": {
-    "message": "Kirimkan kami [[laporan bug]]",
-    "description": "Link to send a bug report on the Support tab"
+    "message": "[[Kirim permintaan dukungan kepada kami]] (atau email: help@getadblock.com)",
+    "description": "Link to AdBlock's help site."
   },
   "supportsite": {
     "message": "Beritahukan kami di [[situs dukungan]] ini!",
     "description": "Link to the support site on the Support tab"
   },
   "helpcenter": {
-    "message": "Kunjungi [[Pusat Bantuan]] kami",
+    "message": "Ada pertanyaan? [[Kunjungi Pusat Bantuan kami]] (Hanya Bahasa Inggris)",
     "description": "Link to AdBlock's help site. This is found on the Support tab of the options."
-  },
-  "copydebugdata": {
-    "message": "Salin data debug",
-    "description": "Button text on the Support tab of the options."
-  },
-  "copieddebugdata": {
-    "message": "Tersalin!",
-    "description": "Button text on the Support tab of the options."
   },
   "resourceblocktitle": {
     "message": "Semua sumber daya",

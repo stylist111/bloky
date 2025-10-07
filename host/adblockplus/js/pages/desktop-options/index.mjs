@@ -1696,9 +1696,12 @@ async function startTabHelp() {
   ]);
 
   setElementLinks("download-debug-data", function () {
-    messaging.debug.getInfo().then((data) => {
-      downloadDebugData(data);
-    });
+    browser.permissions
+      .request({ permissions: ["management"] })
+      .catch(() => false)
+      .then(() => messaging.debug.getInfo())
+      .then(downloadDebugData)
+      .catch(console.error);
   });
 }
 

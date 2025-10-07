@@ -1612,28 +1612,20 @@
     "description": "Link to the contributors page on the Support tab"
   },
   "debuginfo": {
-    "message": "我们的团队是否请求获得调试信息？",
+    "message": "我们的团队是否要求提供一些调试信息？[[下载调试数据]]",
     "description": "Users can click this link to provide debug information to AdBlock staff"
   },
   "bugreport": {
-    "message": "向我们发送[[错误报告]]",
-    "description": "Link to send a bug report on the Support tab"
+    "message": "[[向我们发送支持请求]]（或电子邮件：help@getadblock.com）",
+    "description": "Link to AdBlock's help site."
   },
   "supportsite": {
     "message": "访问[[支持网站]]告诉我们！",
     "description": "Link to the support site on the Support tab"
   },
   "helpcenter": {
-    "message": "访问我们的[[帮助中心]]",
+    "message": "有疑问？[[查看我们的帮助中心]]（仅英文）",
     "description": "Link to AdBlock's help site. This is found on the Support tab of the options."
-  },
-  "copydebugdata": {
-    "message": "复制调试数据",
-    "description": "Button text on the Support tab of the options."
-  },
-  "copieddebugdata": {
-    "message": "已复制！",
-    "description": "Button text on the Support tab of the options."
   },
   "resourceblocktitle": {
     "message": "所有资源",

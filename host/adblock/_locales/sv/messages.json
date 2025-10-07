@@ -1604,28 +1604,20 @@
     "description": "Link to the contributors page on the Support tab"
   },
   "debuginfo": {
-    "message": "Har vårt team efterfrågat avbuggningsinfo?",
+    "message": "Har vårt team begärt felsökningsinformation? [[Ladda ner felsökningsdata]]",
     "description": "Users can click this link to provide debug information to AdBlock staff"
   },
   "bugreport": {
-    "message": "Skicka oss en [[buggrapport]]",
-    "description": "Link to send a bug report on the Support tab"
+    "message": "[[Skicka en supportförfrågan till oss]] (eller mejla: help@getadblock.com)",
+    "description": "Link to AdBlock's help site."
   },
   "supportsite": {
     "message": "Berätta för oss på vår [[supportwebbplats]]!",
     "description": "Link to the support site on the Support tab"
   },
   "helpcenter": {
-    "message": "Besök vårt [[Hjälpcenter]]",
+    "message": "Har du frågor? [[Kolla in vårt hjälpcenter]] (endast engelska)",
     "description": "Link to AdBlock's help site. This is found on the Support tab of the options."
-  },
-  "copydebugdata": {
-    "message": "Kopiera avbuggningsdata",
-    "description": "Button text on the Support tab of the options."
-  },
-  "copieddebugdata": {
-    "message": "Kopierad!",
-    "description": "Button text on the Support tab of the options."
   },
   "resourceblocktitle": {
     "message": "Alla resurser",

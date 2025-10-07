@@ -1505,9 +1505,21 @@
     "message": "Az AdBlock-ról",
     "description": "Subtitle on the Support tab"
   },
+  "debuginfo": {
+    "message": "A csapatunk kért némi hibakeresési információt? [[Hibakeresési adatok letöltése]]",
+    "description": "Users can click this link to provide debug information to AdBlock staff"
+  },
+  "bugreport": {
+    "message": "[[Küldjön nekünk támogatási kérelmet]] (vagy írjon e-mailt: help@getadblock.com)",
+    "description": "Link to AdBlock's help site."
+  },
   "supportsite": {
     "message": "Tudassa velünk [[ügyfélszolgálati oldalunkon]]!",
     "description": "Link to the support site on the Support tab"
+  },
+  "helpcenter": {
+    "message": "Kérdései vannak? [[Nézze meg a Súgóközpontunkat]] (csak angolul)",
+    "description": "Link to AdBlock's help site. This is found on the Support tab of the options."
   },
   "resourceblocktitle": {
     "message": "Minden forrás",

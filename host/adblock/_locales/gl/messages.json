@@ -1419,9 +1419,21 @@
     "message": "Queres saber que hai detrás para que funcione AdBlock?",
     "description": "Subtitle on the Support tab. This section contains links to the AdBlock source code and contributors. In this context, 'tick' can be replaced with the word 'work'."
   },
+  "debuginfo": {
+    "message": "Solicitou o noso equipo información de depuración? [[Descargar datos de depuración]]",
+    "description": "Users can click this link to provide debug information to AdBlock staff"
+  },
+  "bugreport": {
+    "message": "[[Envíanos unha solicitude de asistencia]] (ou envía un correo electrónico a: help@getadblock.com)",
+    "description": "Link to AdBlock's help site."
+  },
   "supportsite": {
     "message": "Fáinolo saber no noso [[sitio de soporte]]!",
     "description": "Link to the support site on the Support tab"
+  },
+  "helpcenter": {
+    "message": "Tes algunha pregunta? [[Consulta o noso Centro de axuda]] (só en inglés)",
+    "description": "Link to AdBlock's help site. This is found on the Support tab of the options."
   },
   "resourceblocktitle": {
     "message": "Todos os recursos",

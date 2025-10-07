@@ -1315,9 +1315,21 @@
     "message": "Ali želite videti, kako deluje AdBlock?",
     "description": "Subtitle on the Support tab. This section contains links to the AdBlock source code and contributors. In this context, 'tick' can be replaced with the word 'work'."
   },
+  "debuginfo": {
+    "message": "Ali je naša ekipa zahtevala informacije o odpravljanju napak? [[Prenesi podatke o odpravljanju napak]]",
+    "description": "Users can click this link to provide debug information to AdBlock staff"
+  },
+  "bugreport": {
+    "message": "[[Pošljite nam zahtevo za podporo]] (ali pišite na: help@getadblock.com)",
+    "description": "Link to AdBlock's help site."
+  },
   "supportsite": {
-    "message": "Sporočite nam na naši [[strani s podporo]]!",
+    "message": "Let us know on our [[support site]]!",
     "description": "Link to the support site on the Support tab"
+  },
+  "helpcenter": {
+    "message": "Imate vprašanja? [[Oglejte si naš center za pomoč]] (samo v angleščini)",
+    "description": "Link to AdBlock's help site. This is found on the Support tab of the options."
   },
   "resourceblocktitle": {
     "message": "Vsi viri",

@@ -348,14 +348,6 @@ export default {
         src: "adblock-betafish/options/stats-tabs.css",
       },
       {
-        dest: "adblock-options-bug-report.js",
-        src: "adblock-betafish/options/bug-report.js",
-      },
-      {
-        dest: "adblock-options-bug-report.html",
-        src: "adblock-betafish/options/bug-report.html",
-      },
-      {
         dest: "adblock-button-popup.html",
         src: "adblock-betafish/button/popup.html",
       },

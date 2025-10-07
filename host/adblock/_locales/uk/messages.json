@@ -1423,9 +1423,21 @@
     "message": "Про AdBlock",
     "description": "Subtitle on the Support tab"
   },
+  "debuginfo": {
+    "message": "Чи запитувала наша команда інформацію для налагодження? [[Завантажити дані для налагодження]]",
+    "description": "Users can click this link to provide debug information to AdBlock staff"
+  },
+  "bugreport": {
+    "message": "[[Надішліть нам запит на підтримку]] (або надішліть електронний лист на адресу: help@getadblock.com)",
+    "description": "Link to AdBlock's help site."
+  },
   "supportsite": {
     "message": "Дайте нам знати на нашому [[сайті підтримки]]!",
     "description": "Link to the support site on the Support tab"
+  },
+  "helpcenter": {
+    "message": "Маєте запитання? [[Перегляньте наш Центр довідки]] (лише англійською мовою)",
+    "description": "Link to AdBlock's help site. This is found on the Support tab of the options."
   },
   "resourceblocktitle": {
     "message": "Всі ресурси",

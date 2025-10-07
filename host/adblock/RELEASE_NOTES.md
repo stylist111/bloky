@@ -1,5 +1,7 @@
 # Unreleased
 
+- Removed Zendesk integration (EXT-1089)
+
 # 6.29.0 - 2025-09-23
 
 - Added user account integration. (EXT-1013)

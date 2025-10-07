@@ -1612,28 +1612,20 @@
     "description": "Link to the contributors page on the Support tab"
   },
   "debuginfo": {
-    "message": "私たちのチームからデバッグ情報の提供を求められましたか？",
+    "message": "チームからデバッグ情報の提供をお願いされましたか？ [[デバッグデータをダウンロード]]",
     "description": "Users can click this link to provide debug information to AdBlock staff"
   },
   "bugreport": {
-    "message": "[[バグの報告]] を送信しますか",
-    "description": "Link to send a bug report on the Support tab"
+    "message": "[[サポートリクエストを送信]]（またはメール：help@getadblock.com）",
+    "description": "Link to AdBlock's help site."
   },
   "supportsite": {
     "message": "[[サポートサイト]]からお問い合わせ下さい！",
     "description": "Link to the support site on the Support tab"
   },
   "helpcenter": {
-    "message": "私たちの [[ヘルプセンター]] をご覧ください",
+    "message": "ご不明な点がありますか？ [[ヘルプセンターをご覧ください]]（英語のみ）",
     "description": "Link to AdBlock's help site. This is found on the Support tab of the options."
-  },
-  "copydebugdata": {
-    "message": "デバッグ情報をコピー",
-    "description": "Button text on the Support tab of the options."
-  },
-  "copieddebugdata": {
-    "message": "コピーしました",
-    "description": "Button text on the Support tab of the options."
   },
   "resourceblocktitle": {
     "message": "すべてのリソース",

@@ -1431,9 +1431,21 @@
     "message": "Om AdBlock",
     "description": "Subtitle on the Support tab"
   },
+  "debuginfo": {
+    "message": "Har teamet vårt bedt om feilsøkingsinformasjon? [[Last ned feilsøkingsdata]]",
+    "description": "Users can click this link to provide debug information to AdBlock staff"
+  },
+  "bugreport": {
+    "message": "[[Send oss ​​en støtteforespørsel]] (eller send e-post til: help@getadblock.com)",
+    "description": "Link to AdBlock's help site."
+  },
   "supportsite": {
     "message": "La oss få vite det på vår [[støtteside]]!",
     "description": "Link to the support site on the Support tab"
+  },
+  "helpcenter": {
+    "message": "Har du spørsmål? [[Sjekk ut hjelpesenteret vårt]] (kun engelsk)",
+    "description": "Link to AdBlock's help site. This is found on the Support tab of the options."
   },
   "resourceblocktitle": {
     "message": "Alle ressurser",

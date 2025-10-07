@@ -1604,28 +1604,20 @@
     "description": "Link to the contributors page on the Support tab"
   },
   "debuginfo": {
-    "message": "Onko tiimimme pyytänyt joitakin virheenjäljitystietoja?",
+    "message": "Onko tiimimme pyytänyt virheenkorjaustietoja? [[Lataa virheenkorjaustiedot]]",
     "description": "Users can click this link to provide debug information to AdBlock staff"
   },
   "bugreport": {
-    "message": "Lähetä meille [[virheilmoitus]]",
-    "description": "Link to send a bug report on the Support tab"
+    "message": "[[Lähetä meille tukipyyntö]] (tai lähetä sähköpostia osoitteeseen help@getadblock.com)",
+    "description": "Link to AdBlock's help site."
   },
   "supportsite": {
     "message": "Kerro siitä meille [[tukisivustollamme]]!",
     "description": "Link to the support site on the Support tab"
   },
   "helpcenter": {
-    "message": "Vieraile [[tukikeskuksessamme]]",
+    "message": "Onko sinulla kysyttävää? [[Tutustu ohjekeskukseemme]] (vain englanniksi)",
     "description": "Link to AdBlock's help site. This is found on the Support tab of the options."
-  },
-  "copydebugdata": {
-    "message": "Kopioi virheenjäljitystiedot",
-    "description": "Button text on the Support tab of the options."
-  },
-  "copieddebugdata": {
-    "message": "Kopioitu!",
-    "description": "Button text on the Support tab of the options."
   },
   "resourceblocktitle": {
     "message": "Kaikki resurssit",

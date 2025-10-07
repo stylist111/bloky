@@ -1576,20 +1576,20 @@
     "description": "Subtitle on the Support tab"
   },
   "debuginfo": {
-    "message": "هل طلب فريقنا بعض معلومات التصحيح؟",
+    "message": "هل طلب فريقنا بعض معلومات التصحيح؟ [[تنزيل بيانات التصحيح]]",
     "description": "Users can click this link to provide debug information to AdBlock staff"
+  },
+  "bugreport": {
+    "message": "[[أرسل إلينا طلب دعم]] (أو راسلنا عبر البريد: help@getadblock.com)",
+    "description": "Link to AdBlock's help site."
   },
   "supportsite": {
     "message": "اسمحوا لنا أن نعرف في [[الموقعنا]]!",
     "description": "Link to the support site on the Support tab"
   },
-  "copydebugdata": {
-    "message": "نسخ بيانات التصحيح",
-    "description": "Button text on the Support tab of the options."
-  },
-  "copieddebugdata": {
-    "message": "تم النسخ!",
-    "description": "Button text on the Support tab of the options."
+  "helpcenter": {
+    "message": "هل لديك أسئلة؟ [[اطّلع على مركز المساعدة لدينا]] (باللغة الإنجليزية فقط)",
+    "description": "Link to AdBlock's help site. This is found on the Support tab of the options."
   },
   "resourceblocktitle": {
     "message": "جميع الموارد",

@@ -1608,28 +1608,20 @@
     "description": "Link to the contributors page on the Support tab"
   },
   "debuginfo": {
-    "message": "Σας έχουν ζητηθεί πληροφορίες αποσφαλμάτωσης;",
+    "message": "Μήπως η ομάδα μας ζήτησε κάποια πληροφορία αποσφαλμάτωσης; [[Λήψη δεδομένων αποσφαλμάτωσης]]",
     "description": "Users can click this link to provide debug information to AdBlock staff"
   },
   "bugreport": {
-    "message": "Στείλτε μας μια [[αναφορά προβλήματος]]",
-    "description": "Link to send a bug report on the Support tab"
+    "message": "[[Στείλτε μας ένα αίτημα υποστήριξης]] (ή email: help@getadblock.com)",
+    "description": "Link to AdBlock's help site."
   },
   "supportsite": {
     "message": "Ενημερώστε μας στην [[ιστοσελίδα υποστήριξης]]!",
     "description": "Link to the support site on the Support tab"
   },
   "helpcenter": {
-    "message": "Επισκεφθείτε το [[Κέντρο Βοήθειας]]",
+    "message": "Έχετε απορίες; [[Ρίξτε μια ματιά στο Κέντρο βοήθειας]] (μόνο στα Αγγλικά)",
     "description": "Link to AdBlock's help site. This is found on the Support tab of the options."
-  },
-  "copydebugdata": {
-    "message": "Αντιγραφή δεδομένων αποσφαλμάτωσης",
-    "description": "Button text on the Support tab of the options."
-  },
-  "copieddebugdata": {
-    "message": "Αντιγράφηκε!",
-    "description": "Button text on the Support tab of the options."
   },
   "resourceblocktitle": {
     "message": "Όλοι οι πόροι",

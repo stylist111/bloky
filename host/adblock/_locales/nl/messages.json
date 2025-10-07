@@ -1612,28 +1612,20 @@
     "description": "Link to the contributors page on the Support tab"
   },
   "debuginfo": {
-    "message": "Heeft ons team je om debug-info gevraagd?",
+    "message": "Heeft ons team om debug-informatie gevraagd? [[Debug-gegevens downloaden]]",
     "description": "Users can click this link to provide debug information to AdBlock staff"
   },
   "bugreport": {
-    "message": "Stuur ons een [[bugrapport]]",
-    "description": "Link to send a bug report on the Support tab"
+    "message": "[[Stuur ons een ondersteuningsverzoek]] (of e-mail: help@getadblock.com)",
+    "description": "Link to AdBlock's help site."
   },
   "supportsite": {
     "message": "Laat het ons weten op onze [[ondersteuningssite]]!",
     "description": "Link to the support site on the Support tab"
   },
   "helpcenter": {
-    "message": "Bezoek ons [[hulpcentrum]]",
+    "message": "Heb je vragen? [[Bekijk ons Helpcentrum]] (alleen Engels)",
     "description": "Link to AdBlock's help site. This is found on the Support tab of the options."
-  },
-  "copydebugdata": {
-    "message": "Debuggegevens kopiëren",
-    "description": "Button text on the Support tab of the options."
-  },
-  "copieddebugdata": {
-    "message": "Gekopieerd!",
-    "description": "Button text on the Support tab of the options."
   },
   "resourceblocktitle": {
     "message": "Alle bronnen",

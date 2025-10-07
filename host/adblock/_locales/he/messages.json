@@ -1596,28 +1596,20 @@
     "description": "Link to the contributors page on the Support tab"
   },
   "debuginfo": {
-    "message": "האם הצוות שלנו ביקש מידע ניפוי תקלים?",
+    "message": "האם הצוות שלנו ביקש מידע על ניפוי באגים? [[הורד נתוני ניפוי באגים]]",
     "description": "Users can click this link to provide debug information to AdBlock staff"
   },
   "bugreport": {
-    "message": "שלח לנו [[דוח תקלים]]",
-    "description": "Link to send a bug report on the Support tab"
+    "message": "[[שלח לנו בקשת תמיכה]] (או שלח דוא\"ל לכתובת: help@getadblock.com)",
+    "description": "Link to AdBlock's help site."
   },
   "supportsite": {
     "message": "יידע אותנו ב[[אתר התמיכה]] שלנו!",
     "description": "Link to the support site on the Support tab"
   },
   "helpcenter": {
-    "message": "בקר ב[[מרכז העזרה]] שלנו",
+    "message": "יש לך שאלות? [[בדוק את מרכז העזרה שלנו]] (אנגלית בלבד)",
     "description": "Link to AdBlock's help site. This is found on the Support tab of the options."
-  },
-  "copydebugdata": {
-    "message": "העתק נתוני ניפוי תקלים",
-    "description": "Button text on the Support tab of the options."
-  },
-  "copieddebugdata": {
-    "message": "הועתק!",
-    "description": "Button text on the Support tab of the options."
   },
   "resourceblocktitle": {
     "message": "כל המשאבים",

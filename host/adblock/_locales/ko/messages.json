@@ -1612,28 +1612,20 @@
     "description": "Link to the contributors page on the Support tab"
   },
   "debuginfo": {
-    "message": "저희 팀이 디버그 정보를 요청했나요?",
+    "message": "우리 팀에서 디버그 정보가 필요하다고 요청했나요? [[디버그 데이터 다운로드]]",
     "description": "Users can click this link to provide debug information to AdBlock staff"
   },
   "bugreport": {
-    "message": "[[버그 제보]] 하기",
-    "description": "Link to send a bug report on the Support tab"
+    "message": "[[지원 요청 보내기]] (또는 이메일: help@getadblock.com)",
+    "description": "Link to AdBlock's help site."
   },
   "supportsite": {
     "message": "[[고객지원 사이트]]를 통해 알려주시기 바랍니다!",
     "description": "Link to the support site on the Support tab"
   },
   "helpcenter": {
-    "message": "[[고객 지원]] 방문",
+    "message": "궁금한 점이 있나요? [[도움말 센터를 확인하세요]] (영어만 제공)",
     "description": "Link to AdBlock's help site. This is found on the Support tab of the options."
-  },
-  "copydebugdata": {
-    "message": "디버그 데이터 복사하기",
-    "description": "Button text on the Support tab of the options."
-  },
-  "copieddebugdata": {
-    "message": "복사 완료!",
-    "description": "Button text on the Support tab of the options."
   },
   "resourceblocktitle": {
     "message": "전체 자원",
