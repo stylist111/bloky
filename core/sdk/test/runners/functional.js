@@ -460,7 +460,7 @@ async function runReloadTests(
     // loading the first time. This is worst in incognito mode and
     // when an MV3 extension has many subscriptions and rulesets, and on the
     // lastest Edge on Windows
-    handle = await getHandle(page, 100000);
+    handle = await getHandle(page, 150000);
     try {
       results = await pollMessages(driver, handle, isMV3);
     }
