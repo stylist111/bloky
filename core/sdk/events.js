@@ -4,6 +4,25 @@ export default {
       description: "User clicked the gear icon"
     }
   },
+  cdp: {
+    built_cdp_payload: {
+      description: "A payload has been built with the intention of sending it to CDP. This is debug information, and will temporarily include the eventStats until the CDP server is ready to ingest them.",
+      data: {
+        description: "Data about the built payload",
+        type: "object",
+        properties: {
+          eventStats: {
+            description: "Counts of behavior event logs since the last payload.",
+            type: "any"
+          },
+          uncompressedPayloadSize: {
+            description: "Size in bytes of the uncompressed and unencrypted payload.",
+            type: "integer"
+          }
+        }
+      }
+    }
+  },
   conflict_detection: {
     bt_loader_blocked: {
       description: "BTLoader was blocked, possibly indicating a non-partner extension is present",

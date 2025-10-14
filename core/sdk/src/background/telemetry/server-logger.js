@@ -79,6 +79,23 @@ let pendingServerLogState = new PersistentState(
   browser.storage.local
 );
 
+let behaviourCountState = new PersistentState(
+  "ewe:telemetry-behaviour-counts",
+  browser.storage.local
+);
+
+async function trackBehaviourEvent(module, event, ipmId) {
+  let state = await behaviourCountState.getStateLoaded();
+
+  if (!state.counts) {
+    state.counts = {};
+  }
+
+  const key = ipmId ? `${module}:${event}:${ipmId}` : `${module}:${event}`;
+  state.counts[key] = (state.counts[key] || 0) + 1;
+  await behaviourCountState.save();
+}
+
 /**
  * @ignore
  */
@@ -146,7 +163,7 @@ function loggingEnabled(module, level, loggingConfig) {
   return result;
 }
 
-async function consoleLog(logTime, module, level, event, data) {
+async function consoleLog(logTime, module, level, event, data, ipmId) {
   if (loggingEnabled(module, level, await consoleLogLevel.getStateLoaded())) {
     const logParams = [
       logTime,
@@ -154,8 +171,12 @@ async function consoleLog(logTime, module, level, event, data) {
       logLevelNumbersToNames[level],
       event];
 
-    if (typeof data !== "undefined") {
+    if (typeof data !== "undefined" && data !== null) {
       logParams.push(data);
+    }
+
+    if (typeof ipmId !== "undefined") {
+      logParams.push(`ipmId: ${ipmId}`);
     }
 
     // eslint-disable-next-line no-console
@@ -207,9 +228,16 @@ async function queueServerLog(logTime, module, level, event, data) {
  * @param {number} level The logging level, from 1=debug to 4=warn.
  * @param {string} event The event being logged. This should be unique.
  * @param {string|number|Object|Array|boolean} [data]
+ * @param {string} [ipmId] Optional IPM ID to associate with this event.
  */
-export function serverLogValidatedEvent(logTime, module, level, event, data) {
-  void consoleLog(logTime, module, level, event, data);
+export function serverLogValidatedEvent(
+  logTime, module, level, event, data, ipmId
+) {
+  if (level === logLevelNamesToNumbers.behavior) {
+    void trackBehaviourEvent(module, event, ipmId);
+  }
+
+  void consoleLog(logTime, module, level, event, data, ipmId);
   void queueServerLog(logTime, module, level, event, data);
 }
 
@@ -225,8 +253,8 @@ export class ServerLogger extends AbstractLogger {
     super(module);
   }
 
-  _validatedLog(logTime, level, event, data) {
-    serverLogValidatedEvent(logTime, this._module, level, event, data);
+  _validatedLog(logTime, level, event, data, ipmId) {
+    serverLogValidatedEvent(logTime, this._module, level, event, data, ipmId);
   }
 }
 
@@ -249,6 +277,27 @@ export async function resetServerLogLevel() {
 export async function resetConsoleLogLevel() {
   consoleLogLevel.clearState();
   await consoleLogLevel.save();
+}
+
+/**
+ * Gets the current behaviour logging state with call counts
+ * @returns {Promise<Object>} Object with event names as keys and counts
+ *   as values
+ * @ignore
+ */
+export async function getBehaviourLoggingState() {
+  let state = await behaviourCountState.getStateLoaded();
+  return state.counts || {};
+}
+
+/**
+ * Clears the behaviour logging state
+ * @returns {Promise<void>}
+ * @ignore
+ */
+export async function clearBehaviourLoggingState() {
+  behaviourCountState.clearState();
+  await behaviourCountState.save();
 }
 
 /**

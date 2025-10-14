@@ -159,6 +159,14 @@ serverLogger.debug("initialization_complete", { version: "1.2.3" });
 serverLogger.info("feature_enabled", "cool_experiment");
 serverLogger.behavior("button_clicked", { buttonId: "enable_premium" });
 serverLogger.warn("api_call_failed", { endpoint: "/data", status: 404 });
+
+// Log behavior events with an optional IPM ID for attribution
+serverLogger.behavior(
+  "ipm_impression",
+  { campaignId: "summer_2025" },
+  "ipm_campaign_123",
+);
+serverLogger.behavior("ipm_clicked", null, "ipm_campaign_123");
 ```
 
 ### Call the logger from inside the SDK
@@ -174,6 +182,14 @@ serverLogger.debug("initialization_complete", { version: "1.2.3" });
 serverLogger.info("feature_enabled", "cool_experiment");
 serverLogger.behavior("button_clicked", { buttonId: "enable_premium" });
 serverLogger.warn("api_call_failed", { endpoint: "/data", status: 404 });
+
+// Log behavior events with an optional IPM ID for attribution
+serverLogger.behavior(
+  "ipm_impression",
+  { campaignId: "summer_2025" },
+  "ipm_campaign_123",
+);
+serverLogger.behavior("ipm_clicked", null, "ipm_campaign_123");
 ```
 
 ### Testing your logs with console output
@@ -199,13 +215,41 @@ await ewe.telemetry.resetConsoleLogLevel();
 When logs appear in the console, they follow this format:
 
 ```
-[timestamp ISO format] [module name] [log level] [event name] [optional data object]
+[timestamp ISO format] [module name] [log level] [event name] [optional data object] [optional ipmId]
 ```
 
 Example:
 
 ```
 2025-05-15T12:34:56.789Z my_module debug initialization_complete {version: "1.2.3"}
+2025-05-15T12:34:56.789Z my_module behavior ipm_clicked ipmId: ipm_campaign_123
+```
+
+## Behavior event count aggregation
+
+Behavior-level events are automatically tracked and counted for aggregate
+reporting to CDP.
+
+This is currently disabled by default until the CDP endpoint supports the
+additional data. This can be enabled with the `cdp-include-event-stats`
+experiment flag.
+
+### IPM ID Parameter
+
+The optional `ipmId` parameter on `behavior()` calls allows you to associate
+events with specific in-product messaging campaigns. This enables tracking of
+user interactions with specific campaigns:
+
+```javascript
+// Without IPM ID - counted as "module_name:button_clicked"
+serverLogger.behavior("button_clicked", { buttonId: "enable_premium" });
+
+// With IPM ID - counted as "module_name:ipm_impression:campaign_123"
+serverLogger.behavior("ipm_impression", null, "campaign_123");
+
+// Same event, different IPM IDs are tracked separately
+serverLogger.behavior("ipm_clicked", null, "campaign_123");
+serverLogger.behavior("ipm_clicked", null, "campaign_456");
 ```
 
 ## Rules for logging
@@ -225,3 +269,6 @@ Example:
   will be printed to the console about the incorrect usage. Only data that can
   be serialized to JSON is supported. For example: strings, plain objects,
   finite numbers, arrays, booleans, and nulls.
+- IPM IDs should only be used with behavior-level events when tracking specific
+  in-product messaging campaigns. They are optional and should be omitted for
+  general behavior tracking.

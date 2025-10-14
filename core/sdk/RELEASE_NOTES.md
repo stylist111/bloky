@@ -8,6 +8,8 @@
 - Updated user account log in request pattern (noissue)
 - The script `subs-generate` has a new parameter for specifying default enabled
   rulesets
+- Behavior logs can now optionally have an IPM ID associated with
+  them. (EXT-920)
 
 ## Fixes
 

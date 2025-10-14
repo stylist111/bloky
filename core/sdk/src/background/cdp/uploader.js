@@ -29,18 +29,27 @@ import {default as cohorts} from "../cohorts/index.js";
 import {postWithBearerToken} from "../telemetry/eyeometry.js";
 import {PersistentState} from "../persistence.js";
 import {init as initPrefs} from "../prefs.js";
+import {getBehaviourLoggingState, clearBehaviourLoggingState, ServerLogger}
+  from "../telemetry/server-logger.js";
 
-import {isOptedOut, getDomainStats, clearData} from "./index.js";
+import {isOptedOut, getDomainStats, clearData, EVENT_SESSION_START,
+        EVENT_PAGE_VIEW, EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW}
+  from "./index.js";
 import {premiumStatusCallback} from "./callbacks.js";
 import {importRSAPublicKey, encryptRSA, AES_LENGTH,
         createAESKey, generateAESNonce, AESkeyToBinary, encryptAES}
   from "./encryption.js";
+import {MaxLengthMetricsDict} from "./domains-trimming.js";
 
 let manifest = browser.runtime.getManifest();
 const extensionVersion = manifest.version;
 
 const CDP_STORAGE_KEY = "ewe:cdp-metrics-uploader-3";
 const storage = new PersistentState(CDP_STORAGE_KEY, browser.storage.local);
+
+const STATS_UNCOMPRESSED_SIZE_LIMIT = 90 * 1024;
+
+const serverLogger = new ServerLogger("cdp");
 
 let _cdp;
 let _scheduler = null;
@@ -62,12 +71,12 @@ export async function requestPublicKey() {
   return {publicKey, keyId};
 }
 
-async function compressDomainStats(domainStats) {
-  const gzippedArray = pako.gzip(domainStats, {level: 9});
+async function compressStats(stats) {
+  const gzippedArray = pako.gzip(stats, {level: 9});
   return gzippedArray.buffer;
 }
 
-async function encryptDomainStats(publicKeyPem, domainStats) {
+async function encryptStats(publicKeyPem, stats) {
   trace({publicKeyPem});
 
   const publicKey = await importRSAPublicKey(publicKeyPem);
@@ -77,7 +86,7 @@ async function encryptDomainStats(publicKeyPem, domainStats) {
   const aesKeyBinaryBuffer = await encryptRSA(publicKey, aesKeyBinary);
   const aesKeyBinaryArray = new Uint8Array(aesKeyBinaryBuffer);
 
-  const encryptedDataBuffer = await encryptAES(aesNonce, aesKey, domainStats);
+  const encryptedDataBuffer = await encryptAES(aesNonce, aesKey, stats);
   const encryptedDataArray = new Uint8Array(encryptedDataBuffer);
 
   const encryptedCombo = new Uint8Array(
@@ -102,7 +111,7 @@ async function getExperimentsAssignments() {
   });
 }
 
-async function buildPayload(publicKey, keyId, domainStats, utid) {
+async function buildPayload(publicKey, keyId, stats, utid) {
   trace({publicKey, keyId, utid});
 
   const state = storage.getState();
@@ -130,8 +139,8 @@ async function buildPayload(publicKey, keyId, domainStats, utid) {
 
   // the very first run is expected not to have `encrypted_data` and `last_ping`
   if (state.lastPing) {
-    const gzippedDS = await compressDomainStats(domainStats);
-    payload.encrypted_data = await encryptDomainStats(publicKey, gzippedDS);
+    const gzippedStats = await compressStats(stats);
+    payload.encrypted_data = await encryptStats(publicKey, gzippedStats);
     payload.last_ping = new Date(state.lastPing).toISOString();
   }
 
@@ -170,8 +179,10 @@ async function updateTimestamps(updateLastPing) {
   if (state.lastError) {
     delete state.lastError;
   }
-  if (hasLastDomainStats(state)) {
+  if (hasLastStats(state)) {
+    // lastDomainStats is deprecated, but might still exist in the wild.
     delete state.lastDomainStats;
+    delete state.lastStats;
   }
   if (state.lastUtid) {
     delete state.lastUtid;
@@ -184,8 +195,53 @@ async function updateTimestamps(updateLastPing) {
   await storage.save();
 }
 
-function hasLastDomainStats(state) {
-  return Object.prototype.hasOwnProperty.call(state, "lastDomainStats");
+function hasLastStats(state) {
+  // lastDomainStats is deprecated, but might still exist in the wild.
+  return Object.prototype.hasOwnProperty.call(state, "lastStats") ||
+    Object.prototype.hasOwnProperty.call(state, "lastDomainStats");
+}
+
+// event type to backend metric token mapping
+const EVENT_TYPE_TO_METRIC = {
+  [EVENT_SESSION_START]: "s",
+  [EVENT_PAGE_VIEW]: "p",
+  [EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW]: "b"
+};
+
+export async function buildStatsPayload(includeEventStats) {
+  let eventStats = await getBehaviourLoggingState();
+
+  let domainStats = getDomainStats();
+
+  const domainStatMetrics = [
+    EVENT_TYPE_TO_METRIC[EVENT_SESSION_START],
+    EVENT_TYPE_TO_METRIC[EVENT_PAGE_VIEW],
+    EVENT_TYPE_TO_METRIC[EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW]
+  ];
+  const dict = new MaxLengthMetricsDict(
+    STATS_UNCOMPRESSED_SIZE_LIMIT, domainStatMetrics, includeEventStats, null
+  );
+
+  for (const [eventName, eventCount] of Object.entries(eventStats)) {
+    dict.addEvent(eventName, eventCount);
+  }
+
+  for (const domainStat of domainStats) {
+    for (const eventType in domainStat.stats) {
+      const metric = EVENT_TYPE_TO_METRIC[eventType];
+      const value = domainStat.stats[eventType];
+      dict.addMetric(domainStat.domain, metric, value);
+    }
+  }
+
+  let serializedPayload = dict.serialize();
+
+  serverLogger.debug("built_cdp_payload", {
+    eventStats,
+    uncompressedPayloadSize: serializedPayload.length
+  });
+
+  return serializedPayload;
 }
 
 /**
@@ -201,42 +257,47 @@ export async function upload() {
   }
 
   const state = storage.getState();
-  let domainStats;
+  let stats;
   let utid;
   try {
-    const isRetryPing = hasLastDomainStats(state);
+    const isRetryPing = hasLastStats(state);
 
-    // for the very first ping domainStats is `null`,
+    // for the very first ping stats is `null`,
     // but we save it as `null` anyway to signal that's the last sent payload,
-    // so we can't use the check `if (state.lastDomainStats)`
+    // so we can't use the check `if (state.lastStats)`
     if (isRetryPing) {
-      domainStats = state.lastDomainStats;
+      // lastDomainStats is deprecated, but might still exist in the wild.
+      stats = state.lastStats || state.lastDomainStats;
       utid = state.lastUtid;
       warn("Resending payload " + utid);
     }
     else {
       // for the very first ping `lastPing` is null
       if (state.lastPing) {
-        domainStats = getDomainStats();
+        let includeEventStats = await experiments.getFlag("cdp-include-event-stats");
+        stats = await buildStatsPayload(includeEventStats);
 
         // we don't need the data anymore:
         // it will be either successfully sent or saved for retry in
         // `browser.storage.local`
-        await clearData();
+        await Promise.all([
+          clearData(),
+          clearBehaviourLoggingState()
+        ]);
       }
       else {
         // the very first ping
-        domainStats = null;
+        stats = null;
       }
       utid = uuidv4();
       debug("New payload " + utid);
     }
 
-    // if we don't have domain stats, domainStats = "{"ds":[]}"
-    // (empty JSON array, 2 characters)
-    if (!state.lastPing || (domainStats && domainStats.length > 9)) {
+    let emptyPayload = stats === '{"ds":[]}' || stats === '{"ds":[],"es":{}}';
+
+    if (!state.lastPing || (stats && !emptyPayload)) {
       const {publicKey, keyId} = await requestPublicKey();
-      const payload = await buildPayload(publicKey, keyId, domainStats, utid);
+      const payload = await buildPayload(publicKey, keyId, stats, utid);
       await postWithBearerToken(_cdp.pingUrl, _cdp.bearer, {payload});
       await updateTimestamps(true);
     }
@@ -260,8 +321,8 @@ export async function upload() {
     }
 
     state.lastError = Date.now();
-    if (!hasLastDomainStats(state)) {
-      state.lastDomainStats = domainStats;
+    if (!hasLastStats(state)) {
+      state.lastStats = stats;
       state.lastUtid = utid;
     }
     await storage.save();

@@ -32,7 +32,7 @@ declare module "@eyeo/webext-ad-filtering-solution/ui" {
      * @param {string|number|object|array|boolean|null} data
      *    The dynamic data relevant to the event.
      */
-    debug(event: string, data: string | number | object | any[] | boolean | null): void;
+    debug(event: string, data?: string | number | object | any[] | boolean | null): void;
     /**
      * Creates an info log.
      *
@@ -40,15 +40,16 @@ declare module "@eyeo/webext-ad-filtering-solution/ui" {
      * @param {string|number|object|array|boolean|null} data
      *    The dynamic data relevant to the event.
      */
-    info(event: string, data: string | number | object | any[] | boolean | null): void;
+    info(event: string, data?: string | number | object | any[] | boolean | null): void;
     /**
      * Creates a behaviour log.
      *
      * @param {string} event The name of the event to log. This should be unique.
      * @param {string|number|object|array|boolean|null} data
      *    The dynamic data relevant to the event.
+     * @param {string} [ipmId] Optional IPM ID to associate with this event.
      */
-    behavior(event: string, data: string | number | object | any[] | boolean | null): void;
+    behavior(event: string, data?: string | number | object | any[] | boolean | null, ipmId?: string): void;
     /**
      * Creates a warn log.
      *
@@ -56,7 +57,7 @@ declare module "@eyeo/webext-ad-filtering-solution/ui" {
      * @param {string|number|object|array|boolean|null} data
      *    The dynamic data relevant to the event.
      */
-    warn(event: string, data: string | number | object | any[] | boolean | null): void;
+    warn(event: string, data?: string | number | object | any[] | boolean | null): void;
   }
 
   namespace account {
@@ -133,8 +134,9 @@ declare module "@eyeo/webext-ad-filtering-solution/ui" {
        * @param {string} event The name of the event to log. This should be unique.
        * @param {string|number|object|array|boolean|null} data
        *    The dynamic data relevant to the event.
+       * @param {string} [ipmId] Optional IPM ID to associate with this event.
        */
-      behavior(event: string, data?: string | number | object | any[] | boolean | null): void;
+      behavior(event: string, data?: string | number | object | any[] | boolean | null, ipmId?: string): void;
       /**
        * Creates a warn log.
        *

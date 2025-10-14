@@ -47,6 +47,7 @@ import * as telemetry from "./telemetry/index.js";
 import * as activePing from "./telemetry/active-ping.js";
 import * as serverLogUploader from "./telemetry/server-log-uploader.js";
 import * as serverLogConfig from "./telemetry/server-log-config.js";
+import * as serverLogger from "./telemetry/server-logger.js";
 import * as cdpUploader from "./cdp/uploader.js";
 import * as filters from "./filters.js";
 
@@ -63,8 +64,8 @@ import {hashString} from "../all/hashing.js";
 import {remoteConfigState} from "./remote-config/storage.js";
 import {MILLIS_IN_DAY, MILLIS_IN_HOUR} from "../../adblockpluscore/lib/time.js";
 
-const serverLogger = new telemetry.default.ServerLogger("test_ewe_background");
-const altServerLogger = new telemetry.default.ServerLogger("test_ewe_ui_api");
+const serverLoggerInstance = new telemetry.default.ServerLogger("test_ewe_background");
+const altServerLoggerInstance = new telemetry.default.ServerLogger("test_ewe_ui_api");
 
 export default {
   ...sitekey, // everything exported from "sitekey.js"
@@ -342,7 +343,7 @@ export default {
   _getCdpData: cdp.getData,
   _clearCdpData: cdp.clearData,
   _clearCdpActivity: cdp.clearActivity,
-  _getCdpDomainStats: cdp.getDomainStats,
+  _buildCdpStatsPayload: cdpUploader.buildStatsPayload,
   _isCdpOptedOut: cdp.isOptedOut,
   _requestPublicKey: cdpUploader.requestPublicKey,
   _uploadCdp: cdpUploader.upload,
@@ -439,37 +440,54 @@ export default {
 
   serverLogger: {
     debug(event, data) {
-      serverLogger.debug(event, data);
+      serverLoggerInstance.debug(event, data);
     },
 
     info(event, data) {
-      serverLogger.info(event, data);
+      serverLoggerInstance.info(event, data);
     },
 
-    behavior(event, data) {
-      serverLogger.behavior(event, data);
+    behavior(event, data, ipmId) {
+      serverLoggerInstance.behavior(event, data, ipmId);
     },
 
     warn(event, data) {
-      serverLogger.warn(event, data);
+      serverLoggerInstance.warn(event, data);
     }
   },
 
   altServerLogger: {
     debug(event, data) {
-      altServerLogger.debug(event, data);
+      altServerLoggerInstance.debug(event, data);
     },
 
     info(event, data) {
-      altServerLogger.info(event, data);
+      altServerLoggerInstance.info(event, data);
     },
 
-    behavior(event, data) {
-      altServerLogger.behavior(event, data);
+    behavior(event, data, ipmId) {
+      altServerLoggerInstance.behavior(event, data, ipmId);
     },
 
     warn(event, data) {
-      altServerLogger.warn(event, data);
+      altServerLoggerInstance.warn(event, data);
     }
+  },
+
+  /**
+   * Gets the current behaviour logging state with call counts
+   * @returns {Promise<Object>} Object with event names as keys and counts
+   *   as values
+   */
+  async getBehaviourLoggingState() {
+    return serverLogger.getBehaviourLoggingState();
+  },
+
+  /**
+   * Clears the behaviour logging state
+   * @returns {Promise<void>}
+   */
+  async clearBehaviourLoggingState() {
+    return serverLogger.clearBehaviourLoggingState();
   }
 };

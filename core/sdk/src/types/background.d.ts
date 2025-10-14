@@ -1123,8 +1123,9 @@ declare module "@eyeo/webext-ad-filtering-solution" {
        * @param {string} event The name of the event to log. This should be unique.
        * @param {string|number|object|array|boolean|null} data
        *    The dynamic data relevant to the event.
+       * @param {string} [ipmId] Optional IPM ID to associate with this event.
        */
-      behavior(event: string, data?: string | number | object | any[] | boolean | null): void;
+      behavior(event: string, data?: string | number | object | any[] | boolean | null, ipmId?: string): void;
       /**
        * Creates a warn log.
        *

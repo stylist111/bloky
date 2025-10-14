@@ -27,7 +27,6 @@ import {isFirefox} from "../info.js";
 import {EventDispatcher} from "../types.js";
 import {log as _log} from "../safari-logs.js";
 
-import {MaxLengthMetricsDict} from "./domains-trimming.js";
 import {SpecialDomainsProcessor} from "./domain-processor.js";
 import {setPremiumStatusCallback} from "./callbacks.js";
 
@@ -36,7 +35,7 @@ import {setPremiumStatusCallback} from "./callbacks.js";
  * both using a full page refresh or a single page app navigation.
  * @ignore
  */
-const EVENT_PAGE_VIEW = "page_view";
+export const EVENT_PAGE_VIEW = "page_view";
 
 /**
  * "Session started" event type. These are triggered when the user starts a new
@@ -44,7 +43,7 @@ const EVENT_PAGE_VIEW = "page_view";
  * on that site for 30 minutes (configurable in Prefs).
  * @ignore
  */
-const EVENT_SESSION_START = "session_start";
+export const EVENT_SESSION_START = "session_start";
 
 /**
  * "Blockthrough AAPV" event type. This is a page view, on which the
@@ -52,7 +51,7 @@ const EVENT_SESSION_START = "session_start";
  * indicates that Acceptable Ads is active.
  * @ignore
  */
-const EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW =
+export const EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW =
   "blockthrough_acceptable_ads_page_view";
 
 // CDP events and pages user activity loading delay (for testing)
@@ -540,70 +539,36 @@ export function stop() {
   initializeActivity();
 }
 
-// event type to backend metric token mapping
-const EVENT_TYPE_TO_METRIC = new Map([
-  [EVENT_SESSION_START, "s"],
-  [EVENT_PAGE_VIEW, "p"],
-  [EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW, "b"]
-]);
-
 /**
- * Format the "domain_stats" property with domains trimming
+ * Get all the current known domain event counts, sorted by session count
+ * descending.
  *
- * @param {Array<String>} metrics Event types (the default value is sessions)
- * @param {Number} limit Payload length limit (the default value is 90Kb)
- * @returns {string} Formatted and trimmed "domain_stats" object
+ * @returns {Array<Object>} List of domains and their known stats.
  * @ignore
  */
-export function getDomainStats(
-  metrics = [
-    EVENT_TYPE_TO_METRIC.get(EVENT_SESSION_START),
-    EVENT_TYPE_TO_METRIC.get(EVENT_PAGE_VIEW),
-    EVENT_TYPE_TO_METRIC.get(EVENT_BLOCKTHROUGH_ACCEPTABLE_ADS_PAGE_VIEW)
-  ],
-  limit = 90 * 1024) {
-  const domains = new Set();
+export function getDomainStats() {
+  const domainsMap = new Map();
 
   // collect all the domains from required metrics events
   for (const [eventType, state] of events) {
-    const metric = EVENT_TYPE_TO_METRIC.get(eventType);
-
-    // report exactly the metrics needed from backend
-    if (!metrics.includes(metric)) {
-      continue;
-    }
-
-    for (const domain of Object.keys(state.getState())) {
-      domains.add(domain);
+    let loadedEventState = state.getState();
+    for (const domain in loadedEventState) {
+      let value = domainsMap.get(domain) || {};
+      value[eventType] = toCounter(loadedEventState[domain]);
+      domainsMap.set(domain, value);
     }
   }
 
-  function getSessions(domain) {
-    return toCounter(events.get(EVENT_SESSION_START).getState()[domain]);
+  let domainStats = [];
+  for (let [domain, stats] of domainsMap) {
+    domainStats.push({domain, stats});
   }
 
-  // EVENT_SESSION_START is the most important metric
-  const sortedDomains = Array.from(domains).sort((domain1, domain2) =>
-    getSessions(domain2) - getSessions(domain1));
+  domainStats.sort(
+    (a, b) => b.stats[EVENT_SESSION_START] - a.stats[EVENT_SESSION_START]
+  );
 
-  // No JSON indentation to prefer more data instead of readability
-  const dict = new MaxLengthMetricsDict(limit, metrics, null);
-
-  for (const domain of sortedDomains) {
-    for (const [eventType, state] of events) {
-      const metric = EVENT_TYPE_TO_METRIC.get(eventType);
-
-      // report exactly the metrics needed from backend
-      if (!metrics.includes(metric)) {
-        continue;
-      }
-
-      const arrayOrCounter = state.getState()[domain];
-      dict.addMetric(domain, metric, toCounter(arrayOrCounter));
-    }
-  }
-
-  return dict.serialize();
+  return domainStats;
 }
 
 function toCounter(numberOrArray) {

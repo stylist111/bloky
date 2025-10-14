@@ -252,7 +252,32 @@ describe("Debug Telemetry", function() {
         expect.stringMatching(ISO_DATE_REGEX),
         logLevelNamesToNumbers.debug,
         "test_event",
-        {potato: true}
+        {potato: true},
+        void 0
+      ]
+    ]);
+  });
+
+  it("IPM ID can be logged for behavior logs", function() {
+    let ipmId = "someIpmId";
+
+    logger.debug("test_event", {}, ipmId);
+    logger.behavior("test_event", {}, ipmId);
+
+    expect(getValidatedLogCalls()).toEqual([
+      [
+        expect.stringMatching(ISO_DATE_REGEX),
+        logLevelNamesToNumbers.debug,
+        "test_event",
+        {},
+        void 0
+      ],
+      [
+        expect.stringMatching(ISO_DATE_REGEX),
+        logLevelNamesToNumbers.behavior,
+        "test_event",
+        {},
+        ipmId
       ]
     ]);
   });
@@ -381,7 +406,8 @@ describe("Debug Telemetry", function() {
         expect.stringMatching(ISO_DATE_REGEX),
         logLevelNamesToNumbers.debug,
         testCase.eventId,
-        data
+        data,
+        void 0
       ]);
 
       expect(getValidatedLogCalls()).toEqual(expectedCalls);

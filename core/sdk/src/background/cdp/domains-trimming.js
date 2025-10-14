@@ -28,15 +28,20 @@ export class MaxLengthMetricsDict {
   /**
    * Initiate a MaxLengthMetricsDict
    *
-   * @param {Number} maxLength The maximum length of the serialized string
-   *                           in bytes. For example 90000 for 90Kb.
+   * @param {Number} maxLength The maximum length of the serialized string in
+   *                           bytes. For example 90000 for 90Kb. This is
+   *                           treated as a soft limit, with critical data like
+   *                           the "_UNKNOWN" domain and event stats being added
+   *                           even if it exceeds this limit.
    * @param {Array<String>} metrics A list of names of metrics to collect
    *                                e.g. ["impression", "session"].
+   * @param {boolean} supportEventStats Whether or not we can add an "es"
+   * property to the output.
    * @param {?String|Number} space JSON formatting options (space).
    *                        (2 by default)
    * @throws {Error} "No metrics"
    */
-  constructor(maxLength, metrics, space = 2) {
+  constructor(maxLength, metrics, supportEventStats, space = 2) {
     if (!metrics || metrics.length == 0) {
       throw new Error("No metrics");
     }
@@ -44,20 +49,40 @@ export class MaxLengthMetricsDict {
     this.metrics = metrics;
     this.maxLength = maxLength;
     this.metricsDict = new Map();
+    this.eventsDict = new Map();
     this.space = space;
+    this.supportEventStats = supportEventStats;
 
     // line indentation length
     this.indentationLength = this.space ? (typeof this.space === "number" ?
       this.space :
       this.space.length) : 0;
 
+    // If there's any indentation, then the colon has a space after it.
+    this.colonLength = this.indentationLength > 0 ? 2 : 1;
+
     // line separator length
     this.newLineLength = this.indentationLength > 0 ? 1 : 0;
 
     // serialized object (result) length
-    this.length = 9 +
-      this.indentationLength * 2 + (this.indentationLength > 0 ? 1 : 0);
-    // "{ds:[]}" with indentation
+    this.length = 1 + // {
+      this.newLineLength +
+      this.indentationLength +
+      4 + // "ds"
+      this.colonLength +
+      2 + // []
+      this.newLineLength +
+      1; // }
+
+    if (supportEventStats) {
+      // With eventStats, our empty object additionally has: ,"es":{}
+      this.length += 1 + // comma
+        this.newLineLength +
+        this.indentationLength +
+        4 + // "es"
+        this.colonLength +
+        2; // {}
+    }
 
     this._calcMetricsLength();
   }
@@ -69,8 +94,7 @@ export class MaxLengthMetricsDict {
       // * 2 as it's 3rd level of indentation: (array/object)
       2 + // quotes
       property.length +
-      1 + // colon
-      (this.indentationLength > 0 ? 1 : 0) + // space
+      this.colonLength +
       value.length;
   }
 
@@ -109,7 +133,7 @@ export class MaxLengthMetricsDict {
      */
     return (this.metricsDict.size > 0 ?
         1 /* comma */ :
-      this.newLineLength /* new line between [] */) +
+      this.newLineLength + this.indentationLength /* new line between [] */) +
       this.newLineLength +
       this.indentationLength * 2 + 1 + // opening curly bracket
       this.newLineLength + // \n
@@ -117,28 +141,77 @@ export class MaxLengthMetricsDict {
       1 + // commas between `i` line and metrics lines
       this.newLineLength + // \n
       this.metricsLength + // metrics section length assuming all values are "0"
-      this.indentationLength * 2 + this.newLineLength + // \n
+      this.newLineLength + this.indentationLength * 2 + // \n
       1; // closing curly bracket
   }
 
   /**
-   * Adds or increments a metric for a given domain.
-   * If there isn't enough space, it updates the metrics for the UNKNOWN domain.
+   * Calculate how much larger in bytes the serialised object is going to be
+   * with the addition of a new event. This will vary based on the
+   * serialisation. The estimate does not need to be perfect. We can have some
+   * leeway by reducing the max length in bytes.
+   *
+   * @param {String} event Event name
+   * @param {Number} count Number of events seen
+   * @returns {Number} Bytes
+   */
+  _calcAdditionalEventLength(event, count) {
+    /* The new event will add a single property to the "es" object:
+     *
+     *   "<event>": count
+     */
+    let padding = this.eventsDict.size > 0 ?
+        1 : // comma
+        this.newLineLength + this.indentationLength; // new line between {}
+
+    return padding +
+      this.newLineLength +
+      this.indentationLength * 2 +
+      2 + // quotes
+      event.length +
+      this.colonLength +
+      count.toString().length;
+  }
+
+  /**
+   * Adds or increments an event.
+   *
+   * @param {String} event Event name
+   * @param {Number} increment Number of events seen
+   */
+  addEvent(event, increment) {
+    if (!this.supportEventStats) {
+      return;
+    }
+
+    if (!this.eventsDict.has(event)) {
+      this.length += this._calcAdditionalEventLength(event, increment);
+      this.eventsDict.set(event, increment);
+    }
+    else {
+      let before = this.eventsDict.get(event) || 0;
+      let after = before + increment;
+
+      this.length += after.toString().length - before.toString().length;
+      this.eventsDict.set(event, after);
+    }
+  }
+
+  /**
+   * Adds or increments a metric for a given domain. If there isn't enough
+   * space, it updates the metrics for the UNKNOWN domain. Does nothing if the
+   * metric is not one of the ones provided to the constructor.
    *
    * @param {String} domain Domain
    * @param {String} metric Metric. It must be known metrics
    * @param {Number} increment Increment
-   * @throws {Error} "Unknown metric"
    */
   addMetric(domain, metric, increment) {
     if (!this.metrics.includes(metric)) {
-      throw new Error("Unknown metric");
+      return;
     }
 
     if (!this.metricsDict.has(domain)) {
-      if (this.metricsDict.size == 0) {
-        this.length += (this.indentationLength > 0 ? 1 : 0) * 2;
-      }
       const additionalLength = this._calcAdditionalLength(domain);
       if ((domain.length > _MAX_DOMAIN_LENGTH) ||
           (this.length + additionalLength) > this.maxLength) {
@@ -160,7 +233,12 @@ export class MaxLengthMetricsDict {
         this.metricsDict.set(domain, stats);
       }
     }
+
     let stats = this.metricsDict.get(domain);
+    let before = stats[metric];
+    let after = before + increment;
+
+    this.length += after.toString().length - before.toString().length;
     stats[metric] += increment;
   }
 
@@ -179,17 +257,21 @@ export class MaxLengthMetricsDict {
    * @returns {String} String representation of the dictionary
    */
   serialize() {
-    let results = [];
+    const result = {ds: []};
     for (const [domain, stats] of this.metricsDict) {
-      results.push({
+      result.ds.push({
         i: domain,
         ...stats
       });
     }
 
-    const result = {ds: results};
+    if (this.supportEventStats) {
+      result.es = {};
+      for (const [event, count] of this.eventsDict) {
+        result.es[event] = count;
+      }
+    }
+
     return JSON.stringify(result, null, this.space);
   }
 }
-
-

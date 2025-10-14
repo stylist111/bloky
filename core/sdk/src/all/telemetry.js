@@ -84,8 +84,8 @@ function isSerializableToJson(data, seen = new WeakSet()) {
 function matchesEventSchema(data, dataSchema) {
   let dataType = typeof data;
   if (dataType === "undefined" || !dataSchema) {
-    // if either is undefined, then they must both be undefined.
-    return dataType === "undefined" && !dataSchema;
+    // if either is undefined (or null), then they must both be undefined.
+    return (dataType === "undefined" || data === null) && !dataSchema;
   }
 
   let types = dataSchema.type;
@@ -146,7 +146,7 @@ export class AbstractLogger {
     }
   }
 
-  _log(level, event, data) {
+  _log(level, event, data, ipmId) {
     if (!this._events[this._module]) {
       return;
     }
@@ -170,10 +170,10 @@ export class AbstractLogger {
     }
 
     const logTime = new Date().toISOString();
-    this._validatedLog(logTime, level, event, data);
+    this._validatedLog(logTime, level, event, data, ipmId);
   }
 
-  _validatedLog(logTime, level, event, data) {
+  _validatedLog(logTime, level, event, data, ipmId) {
   }
 
   /**
@@ -204,9 +204,10 @@ export class AbstractLogger {
    * @param {string} event The name of the event to log. This should be unique.
    * @param {string|number|object|array|boolean|null} [data]
    *    The dynamic data relevant to the event.
+   * @param {string} [ipmId] Optional IPM ID to associate with this event.
    */
-  behavior(event, data) {
-    this._log(BEHAVIOR, event, data);
+  behavior(event, data, ipmId) {
+    this._log(BEHAVIOR, event, data, ipmId);
   }
 
   /**

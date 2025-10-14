@@ -221,6 +221,7 @@ describe("Telemetry - Server Logging", function() {
     it("Logs all the various data types", async function() {
       await EWE.telemetry.setConsoleLogLevel("warn");
       await EWE.testing.serverLogger.warn("test_event_no_data");
+      await EWE.testing.serverLogger.warn("test_event_no_data", null);
       await EWE.testing.serverLogger.warn("test_event", null);
       await EWE.testing.serverLogger.warn("test_event", true);
       await EWE.testing.serverLogger.warn("test_event", 1);
@@ -231,12 +232,27 @@ describe("Telemetry - Server Logging", function() {
       await expectConsoleLogs({
         expected: [
           [module1, "warn", "test_event_no_data"],
-          [module1, "warn", "test_event", null],
+          [module1, "warn", "test_event_no_data"],
+          [module1, "warn", "test_event"],
           [module1, "warn", "test_event", true],
           [module1, "warn", "test_event", 1],
           [module1, "warn", "test_event", "yoooooo"],
           [module1, "warn", "test_event", {vegetable: "potato"}],
           [module1, "warn", "test_event", ["badger", "badger", "mushroom"]]
+        ]
+      });
+    });
+
+    it("Logs with an ipm ID", async function() {
+      await EWE.telemetry.setConsoleLogLevel("behavior");
+
+      await EWE.testing.serverLogger.behavior("test_event_no_data", null, 5);
+      await EWE.testing.serverLogger.behavior("test_event", "yoooooo", 5);
+
+      await expectConsoleLogs({
+        expected: [
+          [module1, "behavior", "test_event_no_data", "ipmId: 5"],
+          [module1, "behavior", "test_event", "yoooooo", "ipmId: 5"]
         ]
       });
     });
@@ -274,6 +290,61 @@ describe("Telemetry - Server Logging", function() {
       });
 
       await browser.tabs.remove(tab.id);
+    });
+
+    it("tracks and counts behaviour calls", async function() {
+      await EWE.testing.clearBehaviourLoggingState();
+
+      // Some simple non IPM calls for now.
+      await EWE.testing.serverLogger.behavior("test_event", 1);
+      await EWE.testing.serverLogger.behavior("test_event", 1);
+      await EWE.testing.serverLogger.behavior("test_event_no_data");
+
+      const behaviourState = await EWE.testing.getBehaviourLoggingState();
+
+      expect(behaviourState).toEqual({
+        "test_ewe_background:test_event": 2,
+        "test_ewe_background:test_event_no_data": 1
+      });
+    });
+
+    it("tracks and counts behaviour calls with an IPM id present", async function() {
+      await EWE.testing.clearBehaviourLoggingState();
+
+      // Some calls without the extra IPM id
+      await EWE.testing.serverLogger.behavior("test_event", 1);
+      await EWE.testing.serverLogger.behavior("test_event", 1);
+      await EWE.testing.serverLogger.behavior("test_event_no_data");
+
+      // Same event but with varying IPM IDs
+      await EWE.testing.serverLogger.behavior("test_event_no_data", null, "ipm_campaign_1");
+      await EWE.testing.serverLogger.behavior("test_event_no_data", null, "ipm_campaign_1");
+      await EWE.testing.serverLogger.behavior("test_event_no_data", null, "ipm_campaign_2");
+
+      // Different event, same IPM ID
+      await EWE.testing.serverLogger.behavior("test_event", 2, "ipm_campaign_1");
+
+      const behaviourState = await EWE.testing.getBehaviourLoggingState();
+
+      expect(behaviourState).toEqual({
+        "test_ewe_background:test_event": 2,
+        "test_ewe_background:test_event:ipm_campaign_1": 1,
+        "test_ewe_background:test_event_no_data": 1,
+        "test_ewe_background:test_event_no_data:ipm_campaign_1": 2,
+        "test_ewe_background:test_event_no_data:ipm_campaign_2": 1
+      });
+    });
+
+    it("clears behaviour call counts", async function() {
+      await EWE.testing.serverLogger.behavior("test_event", 1);
+      await EWE.testing.serverLogger.behavior("test_event", 1);
+      await EWE.testing.serverLogger.behavior("test_event_no_data");
+
+      await EWE.testing.clearBehaviourLoggingState();
+
+      const behaviourState = await EWE.testing.getBehaviourLoggingState();
+
+      expect(behaviourState).toEqual({});
     });
   });
 
