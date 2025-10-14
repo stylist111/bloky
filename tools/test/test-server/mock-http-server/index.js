@@ -15,6 +15,9 @@ const mockServer = mockttp.getLocal({
       { hostname: "api.ua.eyeo.it" },
       { hostname: "myaccount.adblockplus.org" },
       { hostname: "myaccount.getadblock.com" },
+      { hostname: "getadblock.com" },
+      { hostname: "welcome.adblockplus.org" },
+      { hostname: "adblockplus.org" },
     ],
   },
 });
@@ -65,4 +68,37 @@ export async function addMocksForTestPages() {
         throw error;
       }
     });
+}
+
+export async function addMocksForWebsitePages() {
+  // We want to mock only a few pages to avoid polluting our analytics
+  // when running the tests. Other pages should be left alone.
+  const websitePages = [
+    "https://getadblock.com/en/uninstall/",
+    "https://getadblock.com/en/installed/",
+    "https://welcome.adblockplus.org/en/installed",
+    "https://adblockplus.org/en/uninstalled",
+  ];
+
+  await Promise.all(
+    websitePages.map((url) =>
+      mockServer.forGet(url).thenCallback((req) => {
+        return {
+          statusCode: 200,
+          headers: { "Content-Type": "text/html" },
+          body: `
+          <html>
+            <body>
+              <h1>This is the mock page</h1>
+              <p>
+                The request made to ${req.url} was intercepted and the response
+                was successfully replaced with this page. This was done in order
+                to avoid polluting our analytics.
+              </p>
+            </body>
+          </html>`,
+        };
+      }),
+    ),
+  );
 }

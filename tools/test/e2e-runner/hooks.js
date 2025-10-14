@@ -24,6 +24,7 @@ import {
   startMockServer,
   stopMockServer,
   addMocksForTestPages,
+  addMocksForWebsitePages,
 } from "../test-server/mock-http-server/index.js";
 import { findUrl, openNewTab, getAllWindowHandlesSafe, screenshot } from "./driver.js";
 import {
@@ -134,6 +135,12 @@ export async function setupBrowserHook(buildsDirPath, unpackedDirPath) {
   }
 
   const mockServer = await startMockServer();
+  // EXT-497: we need to bind "testpages.eyeo.com" to "localhost"
+  // to be able to test with locally hosted page.
+  await addMocksForTestPages();
+  // we mock some pages from the website to avoid polluting our analytics
+  await addMocksForWebsitePages();
+
   const [driver, browserName, fullBrowserVersion, majorBrowserVersion] =
     await startBrowser(extensionPath);
 
@@ -246,10 +253,6 @@ export async function cleanupOpenTabs() {
 }
 
 export async function beforeEachTasks() {
-  // EXT-497: we need to bind "testpages.eyeo.com" to "localhost"
-  // to be able to test with locally hosted page.
-  await addMocksForTestPages();
-
   // If the options page handle is not valid anymore, then restore it
   try {
     await driver.switchTo().window(getOptionsHandle());
