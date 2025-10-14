@@ -1,6 +1,9 @@
 # Unreleased
 
-- Request management permission when download debug data.
+# 4.29.0 - 2025-10-14
+
+This release contains a change to request the management permission when
+downloading debug data.
 
 # 4.28.1 - 2025-09-30
 
