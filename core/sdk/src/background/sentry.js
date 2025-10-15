@@ -29,6 +29,7 @@ import {PersistentState} from "./persistence.js";
 
 const defaultSampleRate = 0.006;
 
+let hasEncounteredSessionStorageError = false;
 let lastEvent;
 let sampleRate = defaultSampleRate;
 let scope;
@@ -59,17 +60,30 @@ export function getUserId() {
 }
 
 function reportErrorInternal(error) {
-  if (scope) {
-    scope.captureException(error);
+  // After we exceed the session storage quota, this error will be thrown each
+  // time we're trying to write to session storage, which leads to few users
+  // generating a substantial amount of Sentry errors. To avoid this, we're
+  // ignoring any subsequent occurrences to ensure that we only get one error
+  // per service worker session.
+  if (error.message.includes("Session storage quota bytes exceeded.")) {
+    if (hasEncounteredSessionStorageError) {
+      return;
+    }
+
+    hasEncounteredSessionStorageError = true;
   }
-  else {
+
+  if (!scope) {
     // This is useful in local dev where Sentry auth hasn't been set up, but you
     // want to see the errors that would have been sent to Sentry if it were.
     console.warn(
       "Would have gone to Sentry:",
       {error}
     );
+    return;
   }
+
+  scope.captureException(error);
 }
 
 /**
