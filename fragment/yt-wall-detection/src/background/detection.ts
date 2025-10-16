@@ -57,6 +57,7 @@ import {
   ytHavenRecordEvent,
   ytHavenAutoAllowlistVideo,
   contextTamperingEvent,
+  adShownEvent,
 } from "../shared/index.js";
 
 /**
@@ -231,6 +232,42 @@ export function start(parameters: StartInfo): void {
       }
     },
     { urls: ["*://*.youtube.com/error_204*"] },
+  );
+
+  browser.webRequest.onCompleted.addListener(
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    async (details): Promise<void> => {
+      const { url, tabId } = details;
+      const parsedUrl = new URL(url);
+      const isFinalEvent = parsedUrl.searchParams.get("final");
+      const totalAdTime = parsedUrl.searchParams.get("len");
+      const adShownTime = parsedUrl.searchParams.get("rt");
+      const adFormat = parsedUrl.searchParams.get("adformat");
+      const contentVideo = parsedUrl.searchParams.get("content_v");
+
+      const [isAllowlisted, isPremium] = await Promise.all([
+        hasAllowlistedFilter(tabId),
+        parameters.isPremiumActive(),
+      ]);
+
+      if (
+        isFinalEvent !== "1" ||
+        !totalAdTime ||
+        !adShownTime ||
+        !contentVideo
+      ) {
+        return;
+      }
+
+      sendAdWallEvents(adShownEvent, {
+        isAllowListed: isAllowlisted ? "1" : "0",
+        p: isPremium,
+        category: adFormat,
+        bc: Math.floor(Number(totalAdTime) * 1000),
+        amount: Math.floor(Number(adShownTime) * 1000),
+      });
+    },
+    { urls: ["*://*.youtube.com/api/stats/watchtime?*el=adunit*"] },
   );
 
   // Remove the allowlisting state from storage when the filter is removed

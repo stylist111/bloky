@@ -20,7 +20,6 @@ import browser from "webextension-polyfill";
 import {
   youTubeWallDetected,
   youTubeNavigation,
-  adShownEvent,
   toastShownEvent,
 } from "../shared/index.js";
 import { recordEvent } from "./shared.js";
@@ -30,9 +29,6 @@ const adWallSelector = "ytd-enforcement-message-view-model";
 
 // CSS selector identifying YouTube Avatar element
 const userAvatarSelector = "button#avatar-btn";
-
-// CSS selector identifying the video elements
-const videoSelector = "video.html5-main-video";
 
 // CSS selector identifying the toast notification
 const toastSelector =
@@ -94,46 +90,6 @@ async function handleToastNotification(node: Element): Promise<void> {
 }
 
 /**
- * Checks whether the video is an ad and logs the information
- * @param event
- */
-function handleVideoPlaying(event: Event): void {
-  const video = event.target as HTMLVideoElement & {
-    [alreadyLoggedSymbol]?: string;
-  };
-  if (video[alreadyLoggedSymbol] === video.src) {
-    // If we already checked this video, skip it
-    return;
-  }
-
-  // If the .ad-showing class is present, and the video has a duration (the ad's duration)
-  const playerContainer = video.closest(".ad-showing");
-  if (playerContainer) {
-    // If the ad is skippable, we should see a skip button, either hidden or visible
-    const skippable = !!playerContainer.querySelector(".ytp-skip-ad-button");
-
-    // Mark the video as already logged to prevent multiple logs
-    video[alreadyLoggedSymbol] = video.src;
-
-    // Record the ad showing event
-    void recordEvent(adShownEvent, {
-      category: skippable ? "skippable" : "non-skippable",
-      bc: video.duration,
-    });
-  }
-}
-
-/**
- * Adds listener on the video element to detect when it plays
- * @param {HTMLVideoElement} video
- */
-function addPlayListener(video: HTMLVideoElement): void {
-  // Check for ads whenever the video plays or time updates
-  video.removeEventListener("playing", handleVideoPlaying);
-  video.addEventListener("playing", handleVideoPlaying);
-}
-
-/**
  * Handles DOM modifications to check whether a matching element got added
  * to the DOM
  *
@@ -150,19 +106,12 @@ function handleMutations(mutations: MutationRecord[]): void {
       const elements = [
         node,
         ...Array.from(
-          node.querySelectorAll(
-            [videoSelector, adWallSelector, toastSelector].join(","),
-          ),
+          node.querySelectorAll([adWallSelector, toastSelector].join(",")),
         ),
       ];
 
       for (const elem of elements) {
-        if (elem.tagName === "VIDEO") {
-          addPlayListener(elem as HTMLVideoElement);
-        } else if (
-          elem.tagName === adWallSelector.toUpperCase() &&
-          !wallDetected
-        ) {
+        if (elem.tagName === adWallSelector.toUpperCase() && !wallDetected) {
           const hasDismiss = !!elem.querySelector("#dismiss-button");
           void adWallSelectorFound(hasDismiss);
           wallDetected = true;
