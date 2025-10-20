@@ -114,15 +114,6 @@ export interface AccountInfo {
   syncStatus?: ewe.ProfileSyncStatus | null;
 }
 
-export type InstalledExtensionInfo = Array<{
-  name: string;
-  id: string;
-  version: string;
-  enabled: boolean;
-  installType: browser.Management.ExtensionInstallType;
-  permissions?: string[];
-}>;
-
 /**
  * A container object for debug data
  */
@@ -134,7 +125,6 @@ export interface DebugInfoResponse {
   platformInformation: PlatformInformation;
   extensionInformation: ExtensionInformation;
   migrationErrors?: MigrationErrors;
-  allExtensionsInstalled: InstalledExtensionInfo | null;
 }
 
 /**

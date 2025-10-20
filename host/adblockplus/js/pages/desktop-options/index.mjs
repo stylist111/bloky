@@ -1695,13 +1695,32 @@ async function startTabHelp() {
     })
   ]);
 
-  setElementLinks("download-debug-data", function () {
-    browser.permissions
-      .request({ permissions: ["management"] })
-      .catch(() => false)
-      .then(() => messaging.debug.getInfo())
-      .then(downloadDebugData)
-      .catch(console.error);
+  setElementLinks("download-debug-data", async () => {
+    const granted = await browser.permissions.request({
+      permissions: ["management"]
+    });
+    const debugData = await messaging.debug.getInfo();
+
+    if (granted) {
+      // We augment the debug data with a list of all installed extensions here
+      // because if the "management" permission is granted in the options page,
+      // it is not automatically granted in the background page or service worker.
+      // It will be available in the background page after a reload or
+      // restart of the service worker.
+      const installedExtensionsData = await browser.management.getAll();
+      debugData.installedExtensions = installedExtensionsData.map(
+        ({ name, id, version, enabled, installType, type }) => ({
+          name,
+          id,
+          version,
+          enabled,
+          installType,
+          type
+        })
+      );
+    }
+
+    downloadDebugData(debugData);
   });
 }
 

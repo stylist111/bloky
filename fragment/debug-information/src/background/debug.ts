@@ -27,7 +27,6 @@ import type {
   SubscriptionDetails,
   AlarmInfo,
   AccountInfo,
-  InstalledExtensionInfo,
 } from "./debug.types.js";
 import { getUserAgentInfo } from "./user-agent-info";
 
@@ -172,20 +171,6 @@ export async function getDebugInformation(
     getCustomFilterMetaData(),
   ]);
 
-  // Include information about all installed extensions if permission
-  let allExtensionsInstalled: InstalledExtensionInfo | null = null;
-  if (hostPermissions?.permissions?.includes("management")) {
-    const extensions = await browser.management.getAll();
-    allExtensionsInstalled = extensions.map((ext) => ({
-      name: ext.name,
-      id: ext.id,
-      version: ext.version,
-      enabled: ext.enabled,
-      installType: ext.installType,
-      permissions: ext.permissions,
-    }));
-  }
-
   const manifest = browser.runtime.getManifest();
   const userAgentInfo = getUserAgentInfo();
 
@@ -208,6 +193,5 @@ export async function getDebugInformation(
     platformInformation: {
       ...userAgentInfo,
     },
-    allExtensionsInstalled,
   };
 }
