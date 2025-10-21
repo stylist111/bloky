@@ -1,5 +1,9 @@
 # Unreleased
 
+# 4.29.1 - 2025-10-21
+
+This release contains bugfixes and under-the-hood changes.
+
 # 4.29.0 - 2025-10-14
 
 This release contains a change to request the management permission when
