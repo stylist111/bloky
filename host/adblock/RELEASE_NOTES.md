@@ -1,5 +1,9 @@
 # Unreleased
 
+# 6.30.1 - 2025-10-21
+
+This release contains bugfixes and small under-the-hood changes.
+
 # 6.30.0 - 2025-10-08
 
 This release removes Zendesk integration (EXT-1089).
