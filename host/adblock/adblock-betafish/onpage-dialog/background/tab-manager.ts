@@ -245,7 +245,7 @@ async function handleDialogCommand(ipmId: string, isInitialization: boolean): Pr
   unassignedDialogs.set(dialog.id, dialog);
 
   if (isFutureFragment()) {
-    serverLogger.info("command_ready", ipmId);
+    serverLogger.behavior("command_ready", null, ipmId);
   }
 
   if (!isInitialization) {
@@ -271,7 +271,7 @@ async function handleCloseMessage(message: Message, sender: MessageSender): Prom
 
   void removeDialog(sender.page.id, dialog);
   if (isFutureFragment()) {
-    serverLogger.behavior("dialog_closed", dialog.ipmId ?? "");
+    serverLogger.behavior("dialog_closed", null, dialog.ipmId);
   }
   recordLegacyEvent(dialog, DialogEventType.closed);
 }
@@ -301,7 +301,7 @@ async function handleContinueMessage(message: Message, sender: MessageSender): P
 
   void removeDialog(sender.page.id, dialog);
   if (isFutureFragment()) {
-    serverLogger.behavior("dialog_button_clicked", dialog.ipmId ?? "");
+    serverLogger.behavior("dialog_button_clicked", null, dialog.ipmId);
   }
   recordLegacyEvent(dialog, DialogEventType.buttonClicked);
 }
@@ -365,7 +365,7 @@ async function handlePingMessage(message: Message, sender: MessageSender): Promi
 
   void removeDialog(sender.page.id, dialog);
   if (isFutureFragment()) {
-    serverLogger.behavior("dialog_ignored", dialog.ipmId ?? "");
+    serverLogger.behavior("dialog_ignored", null, dialog.ipmId);
   }
   recordLegacyEvent(dialog, DialogEventType.ignored);
 }
@@ -413,7 +413,7 @@ function handleTabRemovedEvent(data: TabRemovedEventData): void {
 
   void removeDialog(tabId, dialog);
   if (isFutureFragment()) {
-    serverLogger.behavior("dialog_ignored", dialog.ipmId ?? "");
+    serverLogger.behavior("dialog_ignored", null, dialog.ipmId);
   }
   recordLegacyEvent(dialog, DialogEventType.ignored);
 }
@@ -567,7 +567,7 @@ export async function showOnpageDialog(
   }
 
   if (isFutureFragment()) {
-    serverLogger.info("dialog_injected", dialog.ipmId ?? "");
+    serverLogger.behavior("dialog_injected", null, dialog.ipmId);
   }
   recordLegacyEvent(dialog, DialogEventType.injected);
   return ShowOnpageDialogResult.shown;

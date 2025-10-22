@@ -303,7 +303,7 @@ export async function executeIPMCommands(
 
   const commandHandlingPromises = Array.from(actorByExecutableCommand).map(
     async ([executableCommand, actor]) => {
-      serverLogger.info("command_received", executableCommand.ipm_id);
+      serverLogger.behavior("command_received", null, executableCommand.ipm_id);
 
       if (!(await matchesCohort(executableCommand))) {
         logger.debug("[ipm]: Cohort doesn't match.");
