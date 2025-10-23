@@ -21,11 +21,16 @@ import {
   youTubeWallDetected,
   youTubeNavigation,
   toastShownEvent,
+  errorEvent,
+  ErrorType,
 } from "../shared/index.js";
 import { recordEvent } from "./shared.js";
 
 // CSS selector identifying YouTube ad wall element
 const adWallSelector = "ytd-enforcement-message-view-model";
+
+// CSS selector identifying YouTube player error element
+const playerErrorSelector = ".ytp-error";
 
 // CSS selector identifying YouTube Avatar element
 const userAvatarSelector = "button#avatar-btn";
@@ -90,6 +95,29 @@ async function handleToastNotification(node: Element): Promise<void> {
 }
 
 /**
+ * Handles the player error when it appears.
+ * This function will log the event only once per player error.
+ * @param node
+ */
+async function handlePlayerError(node: Element): Promise<void> {
+  // Extend the type to allow symbol indexing
+  const errorNode = node as HTMLDivElement & {
+    [alreadyLoggedSymbol]?: boolean;
+  };
+
+  // If we already logged this error div, skip it
+  if (errorNode[alreadyLoggedSymbol]) {
+    return;
+  }
+
+  errorNode[alreadyLoggedSymbol] = true;
+
+  void recordEvent(errorEvent, {
+    category: ErrorType.PLAYER_ERROR,
+  });
+}
+
+/**
  * Handles DOM modifications to check whether a matching element got added
  * to the DOM
  *
@@ -106,7 +134,9 @@ function handleMutations(mutations: MutationRecord[]): void {
       const elements = [
         node,
         ...Array.from(
-          node.querySelectorAll([adWallSelector, toastSelector].join(",")),
+          node.querySelectorAll(
+            [adWallSelector, toastSelector, playerErrorSelector].join(","),
+          ),
         ),
       ];
 
@@ -117,6 +147,11 @@ function handleMutations(mutations: MutationRecord[]): void {
           wallDetected = true;
         } else if (elem.tagName === "A" && elem.matches(toastSelector)) {
           void handleToastNotification(elem);
+        } else if (
+          elem.tagName === "DIV" &&
+          elem.matches(playerErrorSelector)
+        ) {
+          void handlePlayerError(elem);
         }
       }
     }

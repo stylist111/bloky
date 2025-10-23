@@ -58,6 +58,9 @@ import {
   ytHavenAutoAllowlistVideo,
   contextTamperingEvent,
   adShownEvent,
+  errorEvent,
+  ErrorType,
+  ytErrorLoggingFlag,
 } from "../shared/index.js";
 
 /**
@@ -215,17 +218,34 @@ export function start(parameters: StartInfo): void {
       const parsedUrl = new URL(url);
       const errorMsg = parsedUrl.searchParams.get("msg");
       const ytClientVersion = parsedUrl.searchParams.get("client.version");
+      const stack = parsedUrl.searchParams.get("stack");
+      const type = parsedUrl.searchParams.get("type");
+
+      const [isAllowlisted, isPremium, loggingEnabled] = await Promise.all([
+        hasAllowlistedFilter(tabId),
+        parameters.isPremiumActive(),
+        ewe.experiments.getFlag(ytErrorLoggingFlag),
+      ]);
 
       if (
         errorMsg?.includes("read-only") &&
         errorMsg?.includes("non-configurable")
       ) {
-        const [isAllowlisted, isPremium] = await Promise.all([
-          hasAllowlistedFilter(tabId),
-          parameters.isPremiumActive(),
-        ]);
         sendAdWallEvents(contextTamperingEvent, {
           applicationVersion: ytClientVersion,
+          isAllowListed: isAllowlisted ? "1" : "0",
+          p: isPremium,
+        });
+      } else {
+        if (!loggingEnabled) {
+          return;
+        }
+
+        sendAdWallEvents(errorEvent, {
+          error_msg: stack,
+          error: type,
+          applicationVersion: ytClientVersion,
+          category: ErrorType.UNCAUGHT_EXCEPTION,
           isAllowListed: isAllowlisted ? "1" : "0",
           p: isPremium,
         });
@@ -268,6 +288,34 @@ export function start(parameters: StartInfo): void {
       });
     },
     { urls: ["*://*.youtube.com/api/stats/watchtime?*el=adunit*"] },
+  );
+
+  browser.webRequest.onCompleted.addListener(
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    async (details): Promise<void> => {
+      const { url, tabId } = details;
+      const parsedUrl = new URL(url);
+      const error = parsedUrl.searchParams.get("error");
+      const clientVersion = parsedUrl.searchParams.get("cver");
+
+      if (!error) {
+        return;
+      }
+
+      const [isAllowlisted, isPremium] = await Promise.all([
+        hasAllowlistedFilter(tabId),
+        parameters.isPremiumActive(),
+      ]);
+
+      sendAdWallEvents(errorEvent, {
+        isAllowListed: isAllowlisted ? "1" : "0",
+        p: isPremium,
+        error,
+        applicationVersion: clientVersion,
+        category: ErrorType.SWW_ERROR,
+      });
+    },
+    { urls: ["*://*.youtube.com/api/stats/qoe?*"] },
   );
 
   // Remove the allowlisting state from storage when the filter is removed

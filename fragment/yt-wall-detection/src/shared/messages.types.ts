@@ -25,6 +25,17 @@ export const youTubeNavigation = "yt-site.navigation";
 export const adShownEvent = "yt-site.ad-shown";
 export const toastShownEvent = "yt-site.toast-shown";
 export const contextTamperingEvent = "yt-site.context-tampering";
+export const errorEvent = "yt-site.yt-error";
+export enum ErrorType {
+  // Error when video is not playing
+  PLAYER_ERROR = "player_error",
+  // Any uncaught exception
+  UNCAUGHT_EXCEPTION = "uncaught_exception",
+  // Something went wrong error
+  SWW_ERROR = "sww_error",
+}
+
+export const ytErrorLoggingFlag = "yt-uncaught-exception-logging";
 
 export const ytHavenEmbedFreeFlag = "yt-haven-embed-free";
 export const ytHavenEmbedPremiumFlag = "yt-haven-embed-premium";
