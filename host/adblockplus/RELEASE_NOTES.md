@@ -1,5 +1,7 @@
 # Unreleased
 
+- Updated snippets to 2.4.2
+
 # 4.29.1 - 2025-10-21
 
 This release contains bugfixes and under-the-hood changes.

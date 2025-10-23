@@ -1,5 +1,7 @@
 # Unreleased
 
+- Updated snippets to 2.4.2
+
 # 6.30.1 - 2025-10-21
 
 This release contains bugfixes and small under-the-hood changes.
