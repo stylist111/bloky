@@ -75,3 +75,24 @@ Object.assign(browser, {
 Object.assign(browser, {
   action: browser.browserAction,
 });
+
+// The storage mocks in jest-webextension-mock all use jest.fn to define their
+// mocked in-memory storage area. Unfortunately, if our jest.config.cjs has
+// `resetMocks: true`, then that function implementation is thrown away and all
+// functions return undefined. This works around the problem by providing a
+// storage area that just returns the right types.
+Object.assign(browser, {
+  storage: {
+    local: {
+      get() {
+        return Promise.resolve({});
+      },
+      set() {
+        return Promise.resolve();
+      },
+      remove() {
+        return Promise.resolve();
+      },
+    },
+  },
+});

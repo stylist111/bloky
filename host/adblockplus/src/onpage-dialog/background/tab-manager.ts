@@ -235,7 +235,7 @@ async function handleCloseMessage(
 
   void removeDialog(sender.tab.id);
   if (isFutureFragment()) {
-    serverLogger.behavior("dialog_closed", null, dialog.ipmId);
+    serverLogger.behavior("dialog_closed", dialog.ipmId ?? "", dialog.ipmId);
   }
   recordLegacyEvent(dialog, DialogEventType.closed);
 }
@@ -270,7 +270,11 @@ async function handleContinueMessage(
 
   void removeDialog(sender.tab.id);
   if (isFutureFragment()) {
-    serverLogger.behavior("dialog_button_clicked", null, dialog.ipmId);
+    serverLogger.behavior(
+      "dialog_button_clicked",
+      dialog.ipmId ?? "",
+      dialog.ipmId
+    );
   }
   recordLegacyEvent(dialog, DialogEventType.buttonClicked);
 }
@@ -301,7 +305,7 @@ async function handleDialogCommand(ipmId: string): Promise<void> {
   unassignedDialogs.set(dialog.id, dialog);
 
   if (isFutureFragment()) {
-    serverLogger.behavior("command_ready", null, ipmId);
+    serverLogger.behavior("command_ready", ipmId, ipmId);
   }
 }
 
@@ -361,7 +365,7 @@ async function handlePingMessage(
 
   void removeDialog(sender.tab.id);
   if (isFutureFragment()) {
-    serverLogger.behavior("dialog_ignored", null, dialog.ipmId);
+    serverLogger.behavior("dialog_ignored", dialog.ipmId ?? "", dialog.ipmId);
   }
   recordLegacyEvent(dialog, DialogEventType.ignored);
 }
@@ -380,7 +384,7 @@ function handleTabRemovedEvent(data: TabRemovedEventData): void {
 
   void removeDialog(tabId);
   if (isFutureFragment()) {
-    serverLogger.behavior("dialog_ignored", null, dialog.ipmId);
+    serverLogger.behavior("dialog_ignored", dialog.ipmId ?? "", dialog.ipmId);
   }
   recordLegacyEvent(dialog, DialogEventType.ignored);
 }
@@ -641,7 +645,7 @@ export async function showOnpageDialog(
   }
 
   if (isFutureFragment()) {
-    serverLogger.behavior("dialog_injected", null, dialog.ipmId);
+    serverLogger.behavior("dialog_injected", dialog.ipmId ?? "", dialog.ipmId);
   }
   recordLegacyEvent(dialog, DialogEventType.injected);
 

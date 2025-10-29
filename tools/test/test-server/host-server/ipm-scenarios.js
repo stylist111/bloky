@@ -161,14 +161,24 @@ export default {
       priority: 3,
     },
   ],
-  test_adblock_premium: [
+  test_adblock_premium_legacy: [
     {
       ipm_id: "test_adblock_premium",
       command_name: "create_tab",
       version: 6,
-      url: "/update",
+      url: "/update?ipmId=test_adblock_premium",
       method: "default",
       license_state_list: "free",
+    },
+  ],
+  test_adblock_premium_future: [
+    {
+      ipm_id: "test_adblock_premium",
+      cohort: "test-free-users",
+      command_name: "create_tab",
+      version: 6,
+      url: "/update?ipmId=test_adblock_premium",
+      method: "default",
     },
   ],
   test_adblock_delete: [
@@ -225,14 +235,24 @@ export default {
       priority: 3,
     },
   ],
-  test_adblockplus_premium: [
+  test_adblockplus_premium_legacy: [
     {
       ipm_id: "test_adblockplus_premium",
       command_name: "create_tab",
       version: 6,
-      url: "/update",
+      url: "/update?ipmId=test_adblockplus_premium",
       method: "default",
       license_state_list: "free",
+    },
+  ],
+  test_adblockplus_premium_future: [
+    {
+      ipm_id: "test_adblockplus_premium",
+      cohort: "test-free-users",
+      command_name: "create_tab",
+      version: 6,
+      url: "/update?ipmId=test_adblockplus_premium",
+      method: "default",
     },
   ],
   test_adblockplus_delete: [
@@ -388,6 +408,24 @@ export default {
       version: 6,
       url: "/update?ipmId=test_adblockplus_cohort",
       method: "default",
+    },
+  ],
+  test_extension_cohort_with_multiple_commands: [
+    {
+      ipm_id: "test_adblock_cohort_with_multiple_commands",
+      cohort: "test-adblock",
+      command_name: "create_tab",
+      version: 6,
+      url: "/update?ipmId=test_adblock_cohort_with_multiple_commands",
+      method: "force",
+    },
+    {
+      ipm_id: "test_adblockplus_cohort_with_multiple_commands",
+      cohort: "test-adblockplus",
+      command_name: "create_tab",
+      version: 6,
+      url: "/update?ipmId=test_adblockplus_cohort_with_multiple_commands",
+      method: "force",
     },
   ],
 };

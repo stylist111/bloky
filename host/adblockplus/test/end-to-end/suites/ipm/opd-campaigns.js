@@ -31,7 +31,8 @@ import {
   setIPMCooldowns,
   resetIPMFragment,
   setIPMFragment,
-  clearRemoteConfigIpmCommands
+  clearRemoteConfigIpmCommands,
+  getPendingLoggerCdpEventStats
 } from "@eyeo/test-utils/extension";
 import {
   getDisplayedElement,
@@ -40,6 +41,14 @@ import {
   openNewTab
 } from "@eyeo/test-utils/driver";
 import { updateUrlNavigation } from "../../utils/urls.js";
+import {
+  commandReceivedEvent,
+  opdCommandReadyEvent,
+  opdDialogClickedEvent,
+  opdDialogClosedEvent,
+  opdDialogIgnoredEvent,
+  opdDialogInjectedEvent
+} from "../../utils/events.js";
 import { expectedIPMCommands } from "../../utils/ipms.js";
 import { initOptionsGeneralTab } from "../../utils/page.js";
 
@@ -122,7 +131,7 @@ export default (fragmentType) => {
     ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual({});
 
-    // Ping payloads only exist in future fragment
+    // Legacy fragment uses ping payloads, future fragment uses CDP
     if (fragmentType === "legacy") {
       const pingPayload = await syncRemoteConfig(initOptionsGeneralTab);
       expect(pingPayload.ipm.active).toEqual([]);
@@ -136,6 +145,17 @@ export default (fragmentType) => {
         "dialog_button_clicked",
         "error_no_behavior"
       ]);
+    } else if (fragmentType === "future") {
+      await initOptionsGeneralTab(getOptionsHandle());
+      const { counts } = await getPendingLoggerCdpEventStats();
+
+      const ipmId = "test_adblockplus_navigation_future";
+      expect(counts).toHaveProperty(`${commandReceivedEvent}:${ipmId}`, 1);
+      expect(counts).toHaveProperty(`${opdCommandReadyEvent}:${ipmId}`, 1);
+      expect(counts).toHaveProperty(`${opdDialogInjectedEvent}:${ipmId}`, 1);
+      expect(counts).toHaveProperty(`${opdDialogClickedEvent}:${ipmId}`, 1);
+      expect(counts).not.toHaveProperty(`${opdDialogClosedEvent}:${ipmId}`);
+      expect(counts).not.toHaveProperty(`${opdDialogIgnoredEvent}:${ipmId}`);
     }
   });
 
@@ -169,7 +189,7 @@ export default (fragmentType) => {
 
     await initOptionsGeneralTab(getOptionsHandle());
 
-    // Ping payloads only exist in future fragment
+    // Legacy fragment uses ping payloads, future fragment uses CDP
     if (fragmentType === "legacy") {
       const pingPayload = await syncRemoteConfig(initOptionsGeneralTab);
       const actions = pingPayload.events.map((e) => e.action);
@@ -181,6 +201,17 @@ export default (fragmentType) => {
         "error_no_behavior",
         "dialog_injected"
       ]);
+    } else if (fragmentType === "future") {
+      await initOptionsGeneralTab(getOptionsHandle());
+      const { counts } = await getPendingLoggerCdpEventStats();
+
+      const ipmId = "test_adblockplus_exclusion_future";
+      expect(counts).toHaveProperty(`${commandReceivedEvent}:${ipmId}`, 1);
+      expect(counts).toHaveProperty(`${opdCommandReadyEvent}:${ipmId}`, 1);
+      expect(counts).toHaveProperty(`${opdDialogInjectedEvent}:${ipmId}`, 1);
+      expect(counts).not.toHaveProperty(`${opdDialogClickedEvent}:${ipmId}`);
+      expect(counts).not.toHaveProperty(`${opdDialogClosedEvent}:${ipmId}`);
+      expect(counts).not.toHaveProperty(`${opdDialogIgnoredEvent}:${ipmId}`);
     }
   });
 

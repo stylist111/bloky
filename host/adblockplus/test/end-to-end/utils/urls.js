@@ -22,9 +22,14 @@ export const updateUrl = "https://adblockplus.org/update";
 export const updateUrlCohort = "/update?ipmId=test_adblockplus_cohort";
 export const updateUrlVersions = "/update?ipmId=test_adblockplus_versions";
 export const updateUrlNewTab = "/update?ipmId=test_adblockplus_newtab";
+export const updateUrlPremium = "/update?ipmId=test_adblockplus_premium";
 export const updateUrlNavigation = "/update?ipmId=test_adblockplus_navigation";
 export const updateUrlForce = "/update?ipmId=test_adblockplus_force";
 export const updateUrlPriorityHigh =
   "/update?ipmId=test_adblockplus_priority_high";
 export const updateUrlPriorityLow =
   "/update?ipmId=test_adblockplus_priority_low";
+export const updateAdBlockCohort =
+  "/update?ipmId=test_adblock_cohort_with_multiple_commands";
+export const updateAdblockPlusCohort =
+  "/update?ipmId=test_adblockplus_cohort_with_multiple_commands";

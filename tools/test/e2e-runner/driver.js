@@ -79,7 +79,10 @@ export async function getAllWindowHandlesSafe() {
   return safeHandles;
 }
 
-export async function findUrl(expectedUrl, { timeout = 5000, exists = true } = {}) {
+export async function findUrl(
+  expectedUrl,
+  { timeout = 5000, exists = true, mustLoad = false } = {},
+) {
   let url;
   let handle;
 
@@ -111,6 +114,18 @@ export async function findUrl(expectedUrl, { timeout = 5000, exists = true } = {
     timeout,
     `${expectedUrl} was ${exists ? "not found" : "found"}`,
   );
+
+  if (exists && mustLoad) {
+    await wait(
+      async () => {
+        const readyState = await driver.executeScript("return document.readyState");
+        return readyState === "complete";
+      },
+      timeout,
+      "Page did not finish loading",
+    );
+  }
+
   return { url, handle };
 }
 
@@ -491,4 +506,26 @@ async function fullStacktraceOnError(promise) {
  */
 export async function wait(condition, timeout = 0, message, pollTimeout = 200) {
   return fullStacktraceOnError(driver.wait(condition, timeout, message, pollTimeout));
+}
+
+export async function waitForAssertion(assertion, timeout = 1000, pollTimeout = 200) {
+  let lastError = null;
+  function throwLastError() {
+    throw lastError;
+  }
+
+  return wait(
+    async function () {
+      try {
+        await assertion();
+        return true;
+      } catch (e) {
+        lastError = e;
+        return false;
+      }
+    },
+    timeout,
+    throwLastError,
+    pollTimeout,
+  );
 }

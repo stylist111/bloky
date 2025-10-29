@@ -225,17 +225,17 @@ export const expectedIPMCommands = {
         method: "default",
         license_state_list: "free",
         expiry: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
-        url: "/update",
+        url: "/update?ipmId=test_adblockplus_premium",
         version: 6
       }
     },
     future: {
       test_adblockplus_premium: {
+        cohort: "test-free-users",
         ipm_id: "test_adblockplus_premium",
         command_name: "create_tab",
         method: "default",
-        license_state_list: "free",
-        url: "/update",
+        url: "/update?ipmId=test_adblockplus_premium",
         version: 6
       }
     }

@@ -171,7 +171,7 @@ function onNewTabUpdated(
   }
 
   if (isFutureFragment()) {
-    serverLogger.behavior("tab_loaded", null, ipmId);
+    serverLogger.behavior("tab_loaded", ipmId, ipmId);
   }
   recordLegacyEvent(ipmId, CreationSuccess.loaded);
 
@@ -312,7 +312,7 @@ async function openNewTab(): Promise<void> {
 
     await Prefs.set(lastShownKey, Date.now());
     if (isFutureFragment()) {
-      serverLogger.behavior("tab_created", null, ipmId);
+      serverLogger.behavior("tab_created", ipmId, ipmId);
     }
     recordLegacyEvent(ipmId, CreationSuccess.created);
     dismissCommand(ipmId);
@@ -445,7 +445,7 @@ export async function handleCommand(ipmId: string): Promise<void> {
   waitingTabs[ipmId] = { behavior, ipmId };
 
   if (isFutureFragment()) {
-    serverLogger.behavior("command_ready", null, ipmId);
+    serverLogger.behavior("command_ready", ipmId, ipmId);
   }
 
   // If the method is `force`, we don't need to create handlers.

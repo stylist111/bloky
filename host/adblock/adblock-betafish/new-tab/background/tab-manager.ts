@@ -171,7 +171,7 @@ const openNewtabOnUpdated = (
   onNewTabUpdateHandlerByIpmId.delete(ipmId);
   browser.tabs.onUpdated.removeListener(onUpdatedHandler);
   if (isFutureFragment()) {
-    serverLogger.behavior("tab_loaded", null, ipmId);
+    serverLogger.behavior("tab_loaded", ipmId, ipmId);
   }
   recordLegacyEvent(ipmId, NewTabEventType.loaded);
 };
@@ -336,7 +336,7 @@ async function openNewtab(): Promise<void> {
     // eslint-disable-next-line no-await-in-loop
     await Prefs.set(lastShownKey, Date.now());
     if (isFutureFragment()) {
-      serverLogger.behavior("tab_created", null, ipmId);
+      serverLogger.behavior("tab_created", ipmId, ipmId);
     }
     recordLegacyEvent(ipmId, NewTabEventType.created);
     dismissCommand(ipmId);
@@ -484,7 +484,7 @@ async function handleCommand(ipmId: string): Promise<void> {
   waitingTabs[ipmId] = { behavior, ipmId };
 
   if (isFutureFragment()) {
-    serverLogger.behavior("command_ready", null, ipmId);
+    serverLogger.behavior("command_ready", ipmId, ipmId);
   }
 
   // If the method is `force`, we don't need to create handlers.

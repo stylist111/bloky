@@ -448,6 +448,10 @@ export async function getEyeometryDataFirefox() {
   }
 }
 
+export async function getPendingLoggerCdpEventStats() {
+  return getFromStorage("local", "ewe:telemetry-behaviour-counts");
+}
+
 // Removes all user filters programmatically
 export async function removeAllFilters() {
   return driver.executeAsyncScript(async (callback) => {

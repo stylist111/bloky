@@ -31,11 +31,24 @@ import {
   setIPMCooldowns,
   resetIPMFragment,
   setIPMFragment,
-  clearDismissedIpmIds
+  clearDismissedIpmIds,
+  getPendingLoggerCdpEventStats
 } from "@eyeo/test-utils/extension";
-import { findUrl, openNewTab } from "@eyeo/test-utils/driver";
+import { findUrl, openNewTab, waitForAssertion } from "@eyeo/test-utils/driver";
 import { localTestPageUrl } from "@eyeo/test-utils/host-urls";
-import { updateUrlCohort, updateUrlVersions } from "../../utils/urls.js";
+import {
+  updateUrlCohort,
+  updateUrlVersions,
+  updateAdBlockCohort,
+  updateAdblockPlusCohort
+} from "../../utils/urls.js";
+import {
+  commandReceivedEvent,
+  tabCommandReadyEvent,
+  tabCreatedEvent,
+  tabLoadedEvent
+} from "../../utils/events.js";
+
 import { initOptionsGeneralTab } from "../../utils/page.js";
 import { expectedIPMCommands } from "../../utils/ipms.js";
 
@@ -295,6 +308,92 @@ export default (fragmentType) => {
 
     await openNewTab(localTestPageUrl);
     await findUrl(updateUrlCohort, { exists: true });
+  });
+
+  it("with multiple ipm configs, executes only commands with matching extension cohorts", async function () {
+    // IPMs are not supported in Firefox
+    if (browserDetails.browserName === "firefox") {
+      this.skip();
+    }
+
+    // This behavior only exists in the future fragment
+    if (fragmentType === "legacy") {
+      this.skip();
+    }
+
+    await setRemoteConfigCohorts(initOptionsGeneralTab, [
+      {
+        name: "Test AdBlock",
+        conditions: {
+          all: [
+            {
+              fact: "extName",
+              operator: "equal",
+              value: "adblock"
+            }
+          ]
+        },
+        event: {
+          type: "test-adblock"
+        }
+      },
+      {
+        name: "Test Adblock Plus",
+        conditions: {
+          all: [
+            {
+              fact: "extName",
+              operator: "equal",
+              value: "adblockplus"
+            }
+          ]
+        },
+        event: {
+          type: "test-adblockplus"
+        }
+      }
+    ]);
+
+    await setRemoteConfigIpmCommands(
+      initOptionsGeneralTab,
+      "test_extension_cohort_with_multiple_commands"
+    );
+
+    await syncRemoteConfig(initOptionsGeneralTab);
+
+    await findUrl(updateAdBlockCohort, { exists: false });
+    await findUrl(updateAdblockPlusCohort, { exists: true, mustLoad: true });
+
+    await initOptionsGeneralTab(getOptionsHandle());
+    await waitForAssertion(async () => {
+      const { counts } = await getPendingLoggerCdpEventStats();
+
+      const ipmIdAdblock = "test_adblock_cohort_with_multiple_commands";
+      expect(counts).toHaveProperty(
+        `${commandReceivedEvent}:${ipmIdAdblock}`,
+        1
+      );
+      expect(counts).not.toHaveProperty(
+        `${tabCommandReadyEvent}:${ipmIdAdblock}`
+      );
+      expect(counts).not.toHaveProperty(`${tabCreatedEvent}:${ipmIdAdblock}`);
+      expect(counts).not.toHaveProperty(`${tabLoadedEvent}:${ipmIdAdblock}`);
+
+      const ipmIdAdblockPlus = "test_adblockplus_cohort_with_multiple_commands";
+      expect(counts).toHaveProperty(
+        `${commandReceivedEvent}:${ipmIdAdblockPlus}`,
+        1
+      );
+      expect(counts).toHaveProperty(
+        `${tabCommandReadyEvent}:${ipmIdAdblockPlus}`,
+        1
+      );
+      expect(counts).toHaveProperty(
+        `${tabCreatedEvent}:${ipmIdAdblockPlus}`,
+        1
+      );
+      expect(counts).toHaveProperty(`${tabLoadedEvent}:${ipmIdAdblockPlus}`, 1);
+    });
   });
 
   it("does not execute commands on Firefox", async function () {

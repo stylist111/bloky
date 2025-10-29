@@ -24,7 +24,13 @@ export const updateUrlVersions =
   "https://getadblock.com/en/update/latest/?ipmId=test_adblock_versions";
 export const updateUrlNewTab = "https://getadblock.com/en/update/latest/?ipmId=test_adblock_newtab";
 export const updateUrlForce = "https://getadblock.com/en/update/latest/?ipmId=test_adblock_force";
+export const updateUrlPremium =
+  "https://getadblock.com/en/update/latest/?ipmId=test_adblock_premium";
 export const updateUrlPriorityHigh =
   "https://getadblock.com/en/update/latest/?ipmId=test_adblock_priority_high";
 export const updateUrlPriorityLow =
   "https://getadblock.com/en/update/latest/?ipmId=test_adblock_priority_low";
+export const updateAdBlockCohort =
+  "https://getadblock.com/en/update/latest/?ipmId=test_adblock_cohort_with_multiple_commands";
+export const updateAdblockPlusCohort =
+  "https://getadblock.com/en/update/latest/?ipmId=test_adblockplus_cohort_with_multiple_commands";
