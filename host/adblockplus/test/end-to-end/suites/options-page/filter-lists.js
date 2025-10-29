@@ -25,7 +25,11 @@ import {
   clickAndSendKeys,
   waitForNotDisplayed
 } from "@eyeo/test-utils/driver";
-import { getOptionsHandle, subscriptionUrl } from "@eyeo/test-utils/extension";
+import {
+  getOptionsHandle,
+  subscriptionUrl,
+  removeAllFilters
+} from "@eyeo/test-utils/extension";
 import {
   easylistFilter,
   customBlockingFilter
@@ -65,6 +69,11 @@ async function setFilterListUrl(url) {
 export default () => {
   beforeEach(async function () {
     await initOptionsAdvancedTab(getOptionsHandle());
+  });
+
+  after(async function () {
+    await initOptionsGeneralTab(getOptionsHandle());
+    await removeAllFilters();
   });
 
   it("shows the built in filter list dropdown", async function () {

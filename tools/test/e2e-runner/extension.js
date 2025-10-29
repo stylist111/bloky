@@ -180,12 +180,6 @@ export async function updatePrefs(initOptionsFn, key, value) {
   });
 }
 
-/**
- * Add filters to the extension
- *
- * @param {string} filters - The filter rules to add
- * @returns {Promise<void>}
- */
 export async function addFiltersProgrammatically(initOptionsFn, filtersText) {
   return sendExtMessage(initOptionsFn, {
     type: "filters.importRaw",
@@ -193,10 +187,6 @@ export async function addFiltersProgrammatically(initOptionsFn, filtersText) {
   });
 }
 
-/**
- * Removes a filter.
- * @param {string} filterText The filter text.
- */
 export async function removeFilterProgrammatically(initOptionsFn, filterText) {
   return sendExtMessage(initOptionsFn, {
     type: "filters.remove",
@@ -204,14 +194,28 @@ export async function removeFilterProgrammatically(initOptionsFn, filterText) {
   });
 }
 
-/**
- * Gets filters
- */
 export async function getFiltersProgrammatically(initOptionsFn) {
   const filters = await sendExtMessage(initOptionsFn, {
     type: "filters.get",
   });
   return filters.map((f) => f.text);
+}
+
+export async function toggleSubscriptionProgrammatically(initOptionsFn, subscriptionUrl) {
+  return sendExtMessage(initOptionsFn, {
+    type: "subscriptions.toggle",
+    url: subscriptionUrl,
+  });
+}
+
+export async function getSubscriptionsProgrammatically(initOptionsFn) {
+  const subscriptions = await sendExtMessage(initOptionsFn, {
+    type: "subscriptions.get",
+  });
+  return subscriptions.map((s) => ({
+    title: s.title,
+    url: s.url,
+  }));
 }
 
 /**

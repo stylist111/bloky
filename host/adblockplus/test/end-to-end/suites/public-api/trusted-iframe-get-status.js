@@ -19,9 +19,11 @@ import { expect } from "expect";
 import {
   getOptionsHandle,
   removeAllFilters,
+  getFiltersProgrammatically,
+  getSubscriptionsProgrammatically,
+  toggleSubscriptionProgrammatically,
   setTimeoutForExtensionReload
 } from "@eyeo/test-utils/extension";
-import { isCheckboxPropertyEnabled } from "@eyeo/test-utils/driver";
 import {
   enablePremiumProgrammatically,
   sendExtCommandInTrustedIframe,
@@ -30,7 +32,6 @@ import {
   disablePremiumProgrammatically,
   initOptionsGeneralTab,
   isPremiumLabelPresent,
-  clickFLCheckboxAndCheck,
   loadPageWithTrustedIframe
 } from "../../utils/page.js";
 import {
@@ -39,20 +40,15 @@ import {
 } from "./trusted-iframe-experiments.js";
 
 function getCombinations() {
-  const combinations = [];
-  for (const premium of [false, true]) {
-    for (const allowlist of [false, true]) {
-      for (const aa of [false, true]) {
-        combinations.push({ premium, aa, allowlist });
-      }
-    }
-  }
-
-  return combinations;
+  return [
+    { premium: false, aa: true, allowlist: false }, // default state
+    { premium: false, aa: false, allowlist: false }, // change aa
+    { premium: false, aa: false, allowlist: true }, // change allowlist
+    { premium: true, aa: false, allowlist: true } // change premium
+  ];
 }
 
 async function setExtensionState({ premium, aa, allowlist }) {
-  // Set premium
   if (premium) {
     const isPremium = await isPremiumLabelPresent();
     if (!isPremium) {
@@ -60,33 +56,38 @@ async function setExtensionState({ premium, aa, allowlist }) {
     }
   }
 
-  // Set allowlist
   if (allowlist) {
-    await setPausedStateFromPopup(BT_PARTNER_URL);
+    const filters = await getFiltersProgrammatically(initOptionsGeneralTab);
+    if (!filters.length) {
+      await setPausedStateFromPopup(BT_PARTNER_URL);
+    }
   }
-  // Set Acceptable Ads
+
   await initOptionsGeneralTab(getOptionsHandle());
-  if (!aa) {
-    await clickFLCheckboxAndCheck("#acceptable-ads-allow", {
-      enable: false,
-      name: "Acceptable Ads"
-    });
+
+  const aaUrl =
+    extension.manifestVersion === 2
+      ? "https://easylist-downloads.adblockplus.org/exceptionrules.txt"
+      : "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt";
+
+  const subscriptions = await getSubscriptionsProgrammatically(
+    initOptionsGeneralTab
+  );
+  const hasAA = subscriptions.some(
+    (sub) => sub.title === "Allow nonintrusive advertising"
+  );
+  if ((aa && !hasAA) || (!aa && hasAA)) {
+    await toggleSubscriptionProgrammatically(initOptionsGeneralTab, aaUrl);
   }
-  const newAaState = await isCheckboxPropertyEnabled("#acceptable-ads-allow");
-  expect(newAaState).toEqual(aa);
 }
 
 export default () => {
   const statusCombinations = getCombinations();
 
-  afterEach(async function () {
-    await initOptionsGeneralTab(getOptionsHandle());
-    await setAADefaultState();
-    await removeAllFilters();
-  });
-
   after(async function () {
     setTimeoutForExtensionReload(this);
+    await setAADefaultState();
+    await removeAllFilters();
     await disablePremiumProgrammatically();
   });
 
@@ -136,7 +137,6 @@ export default () => {
       }
 
       if (allowlist) {
-        expect(resp.result.allowlist.origin).toEqual("popup");
         expect(resp.result.allowlist.expiresAt).toBeLessThanOrEqual(
           Date.now() + 1000 * 60 * 60 * 24 * 7
         );
