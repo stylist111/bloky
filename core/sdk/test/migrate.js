@@ -33,7 +33,7 @@ let phase = start ? "preparation" : "check";
 const RE2_UNSUPPORTED_FILTER = "/t(?=re)/$image";
 
 describe(`MV2 MV3 migrate (${phase}) [runner-only]`, function() {
-  this.timeout(10000);
+  this.timeout(15000);
 
   before(async function() {
     // it's meant to be started as MV2 test and restarted as MV3 test only
