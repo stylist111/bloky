@@ -287,6 +287,67 @@ export default {
           }
         }
       }
+    },
+    exceeded_static_rule_count_limit: {
+      description: "Debug log when someone runs into the 'set of enabled rulesets exceeds the rule count limit' error when enabling static rulesets",
+      data: {
+        description: "Data on the current state of static rules and the rulesets being enabled or disabled. Rule counts refer to static DNR rules, bundled in the extension at build time in rulesets.",
+        type: "object",
+        properties: {
+          enableRulesetIds: {
+            description: "Ruleset IDs that were to be enabled",
+            type: "array",
+            items: {
+              type: "string"
+            }
+          },
+          enableRuleCount: {
+            description: "Static rules that we are trying to enable",
+            type: "integer"
+          },
+          disableRulesetIds: {
+            description: "Ruleset IDs that were to be disabled",
+            type: "array",
+            items: {
+              type: "string"
+            }
+          },
+          disableRuleCount: {
+            description: "Static rules that we are trying to disable",
+            type: "integer"
+          },
+          currentEnabledRulesetIdsBefore: {
+            description: "Currently enabled ruleset IDs, gathered before calling updateEnabledRulesets",
+            type: "array",
+            items: {
+              type: "string"
+            }
+          },
+          currentEnabledRulesetIdsAfter: {
+            description: "Currently enabled ruleset IDs, gathered after calling updateEnabledRulesets",
+            type: "array",
+            items: {
+              type: "string"
+            }
+          },
+          currentEnabledRuleCountBefore: {
+            description: "Used static rules, gathered before calling updateEnabledRulesets",
+            type: "integer"
+          },
+          currentEnabledRuleCountAfter: {
+            description: "Used static rules, gathered after calling updateEnabledRulesets",
+            type: "integer"
+          },
+          availableRuleCountBefore: {
+            description: "Available static rules, gathered before calling updateEnabledRulesets",
+            type: "integer"
+          },
+          availableRuleCountAfter: {
+            description: "Available static rules, gathered after calling updateEnabledRulesets",
+            type: "integer"
+          }
+        }
+      }
     }
   },
   in_product_messaging: {

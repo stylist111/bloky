@@ -35,6 +35,7 @@ import {convertFilter} from "./filters.js";
 import {disableDynamicRules} from "./dnr-filters.js";
 import {default as sentry} from "./sentry.js";
 import {Prefs} from "./prefs.js";
+import {ServerLogger} from "./telemetry/server-logger.js";
 
 const ACCEPTABLE_ADS_ID = "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F";
 const ACCEPTABLE_ADS_MV2_URL = "https://easylist-downloads.adblockplus.org/exceptionrules.txt";
@@ -227,24 +228,78 @@ function shouldAddDefaultSubscriptions() {
   return true;
 }
 
+function ruleCountForRuleset(rulesetId) {
+  for (let recommendation of recommendations()) {
+    if (recommendation.id === rulesetId) {
+      return recommendation.ruleCount;
+    }
+  }
+  return 0;
+}
+
+function sumRuleCounts(rulesetIds) {
+  return rulesetIds
+    .map(id => ruleCountForRuleset(id))
+    .reduce((a, b) => a + b, 0);
+}
+
+async function updateEnabledRulesets(currentEnabledRulesetIdsBefore,
+                                     enableRulesetIds = [],
+                                     disableRulesetIds = []) {
+  const availableRuleCountBefore =
+        await browser.declarativeNetRequest.getAvailableStaticRuleCount();
+
+  try {
+    await browser.declarativeNetRequest.updateEnabledRulesets({
+      enableRulesetIds,
+      disableRulesetIds
+    });
+  }
+  catch (e) {
+    // Update the error message with the rulesetId. Helpful for tracking
+    // which rulesets failed to be enabled.
+    // Internal Error: https://issues.chromium.org/issues/367440970
+    e.message = `${e.message} (enableRulesetIds: ${enableRulesetIds.join(",")}, disableRulesetIds: ${disableRulesetIds.join(",")}, enabledItems: ${currentEnabledRulesetIdsBefore.length})`;
+
+    // We suspect that there is a bug in Chrome which leads to some people
+    // not getting the full static ruleset allocation. This log is to help
+    // us determine how many static rules the people that have this problem
+    // are using, and how many the browser says are available.
+    if (e.message.includes("The set of enabled rulesets exceeds the rule count limit")) {
+      const availableRuleCountAfter =
+            await browser.declarativeNetRequest.getAvailableStaticRuleCount();
+      const currentEnabledRulesetIdsAfter =
+            await browser.declarativeNetRequest.getEnabledRulesets();
+
+      const serverLogger = new ServerLogger("dnr_filters");
+      serverLogger.debug("exceeded_static_rule_count_limit", {
+        enableRulesetIds,
+        enableRuleCount: sumRuleCounts(enableRulesetIds),
+        disableRulesetIds,
+        disableRuleCount: sumRuleCounts(disableRulesetIds),
+        currentEnabledRulesetIdsBefore,
+        currentEnabledRulesetIdsAfter,
+        currentEnabledRuleCountBefore:
+          sumRuleCounts(currentEnabledRulesetIdsBefore),
+        currentEnabledRuleCountAfter:
+          sumRuleCounts(currentEnabledRulesetIdsAfter),
+        availableRuleCountBefore,
+        availableRuleCountAfter
+      });
+    }
+
+    throw e;
+  }
+}
+
 async function enableRuleset(rulesetId) {
   if (browser.declarativeNetRequest) {
     if (rulesetExistsInManifest(rulesetId)) {
-      try {
-        // Don't enable already enabled ruleset (causes error in Safari)
-        let enabledRulesetIds =
-          await browser.declarativeNetRequest.getEnabledRulesets();
-        if (!enabledRulesetIds.includes(rulesetId)) {
-          await browser.declarativeNetRequest.updateEnabledRulesets({
-            enableRulesetIds: [rulesetId]
-          });
-        }
-      }
-      catch (e) {
-        // Update the error message with the rulesetId. Helpful for tracking
-        // the Internal Error: https://issues.chromium.org/issues/367440970
-        e.message = `${e.message} (enableRuleset: ${rulesetId})`;
-        throw e;
+      // Don't enable already enabled ruleset (causes error in Safari)
+      let enabledRulesetIds =
+        await browser.declarativeNetRequest.getEnabledRulesets();
+      if (!enabledRulesetIds.includes(rulesetId)) {
+        await updateEnabledRulesets(enabledRulesetIds, [rulesetId], []);
       }
     }
   }
@@ -256,9 +311,11 @@ async function disableRuleset(rulesetId) {
     let enabledRulesetIds =
       await browser.declarativeNetRequest.getEnabledRulesets();
     if (enabledRulesetIds.includes(rulesetId)) {
-      await browser.declarativeNetRequest.updateEnabledRulesets({
-        disableRulesetIds: [rulesetId]
-      });
+      await updateEnabledRulesets(
+        enabledRulesetIds,
+        [],
+        [rulesetId]
+      );
     }
 
     await disableDynamicRules(rulesetId);
@@ -594,16 +651,11 @@ export async function ensureDNRRulesetsEnabled() {
 
     const disableRulesetIds = Array.from(toDisable);
     if (enableRulesetIds.length > 0 || disableRulesetIds.length > 0) {
-      try {
-        await browser.declarativeNetRequest.updateEnabledRulesets({
-          enableRulesetIds,
-          disableRulesetIds
-        });
-      }
-      catch (e) {
-        e.message = `${e.message} (enableRulesetIds: ${enableRulesetIds.join(",")}, disableRulesetIds: ${disableRulesetIds.join(",")}, enabledItems: ${enabledItems.length})`;
-        throw e;
-      }
+      await updateEnabledRulesets(
+        enabledItems,
+        enableRulesetIds,
+        disableRulesetIds
+      );
     }
   }
 }

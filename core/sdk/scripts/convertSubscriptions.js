@@ -100,23 +100,21 @@ async function convert(inDir, outDir,
       throw new Error(error);
     }
 
-    if (params.diffurl || params.expires) {
-      // iterate over all custom subscriptions and add the diffurl and expires
-      // properties to the subscription whose id matches subsId
-      for (let customSubscription of customSubscriptions) {
-        if (customSubscription.id === subsId) {
-          if (params.diffurl) {
-            customSubscription.diff_url = params.diffurl;
-          }
-          if (params.expires) {
-            customSubscription.expires = params.expires;
-          }
-          break;
+    let ruleCount = await processFile(converter, lines, outFileAbs, spaces);
+
+    for (let customSubscription of customSubscriptions) {
+      if (customSubscription.id === subsId) {
+        if (params.diffurl) {
+          customSubscription.diff_url = params.diffurl;
         }
+        if (params.expires) {
+          customSubscription.expires = params.expires;
+        }
+        customSubscription.rule_count = ruleCount;
+        break;
       }
     }
 
-    await processFile(converter, lines, outFileAbs, spaces);
     if (generateReport) {
       await writeSubsReport(subsId, reportFileAbs);
     }

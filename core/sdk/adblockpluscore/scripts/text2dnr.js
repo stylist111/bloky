@@ -120,13 +120,17 @@ async function processFile(converter, lines, outputfile, spaces = 2) {
       JSON.stringify(results.rules, null, spaces),
       ENCODING
     );
-    return await writeFile(
+    await writeFile(
       outputfile + ".map",
       JSON.stringify(results.dnrMap, null, spaces),
       ENCODING
     );
   }
-  return process.stdout.write(JSON.stringify(results, null, spaces));
+  else {
+    process.stdout.write(JSON.stringify(results, null, spaces));
+  }
+
+  return results.rules.length;
 }
 
 async function main() {

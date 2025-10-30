@@ -124,6 +124,14 @@ class Recommendation {
   get privileged() {
     return this._source.privileged;
   }
+
+  /**
+   * The number of static DNR rules associated with this subscription.
+   * @type {number}
+   */
+  get ruleCount() {
+    return this._source.rule_count || 0;
+  }
 }
 
 let _recommendations = null;
