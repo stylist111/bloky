@@ -116,7 +116,7 @@ export async function initOptionsImageSwapTab(optionsHandle) {
 
 export async function initOptionsPremiumFlTab(optionsHandle) {
   await loadOptionsTab(optionsHandle, "premium-filters");
-  await getDisplayedElement("#premium-filter-lists > div:nth-child(3)", {
+  await getDisplayedElement("#premium-filter-lists > div:nth-child(2)", {
     timeout: 7000,
     // Right after initialisation not all premium filterlists may show up
     // Refreshing as a workaround

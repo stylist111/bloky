@@ -185,7 +185,6 @@ export const defaultFilterLists = [
 
 export const premiumFilterLists = [
   { checkboxSelector: "#distraction-control", text: "Distraction Control" },
-  { checkboxSelector: "#easyprivacy", text: "Block additional tracking" },
   { checkboxSelector: "#cookies-premium", text: "Cookie Consent Cutter" },
 ].map(addTestId);
 

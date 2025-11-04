@@ -32,23 +32,11 @@ const PREMIUM_FILTER_URL_LIST = [
   "https://easylist-downloads.adblockplus.org/v3/full/adblock_premium.txt",
   "https://easylist-downloads.adblockplus.org/cookie-filter-list.txt",
   "https://easylist-downloads.adblockplus.org/v3/full/cookie-filter-list.txt",
-  "https://easylist-downloads.adblockplus.org/easyprivacy.txt",
-  "https://easylist-downloads.adblockplus.org/v3/full/easyprivacy.txt",
-];
-
-const PREMIUM_FILTER_URL_LIST_SHOW_ON_FILTERS = [
-  "https://easylist-downloads.adblockplus.org/easyprivacy.txt",
-  "https://easylist-downloads.adblockplus.org/v3/full/easyprivacy.txt",
 ];
 
 /* eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars */
 function isPremiumFilterListURL(url) {
   return PREMIUM_FILTER_URL_LIST.includes(url);
-}
-
-/* eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars */
-function isPremiumFilterListURLThatShouldBeShown(url) {
-  return PREMIUM_FILTER_URL_LIST_SHOW_ON_FILTERS.includes(url);
 }
 
 /* eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars */

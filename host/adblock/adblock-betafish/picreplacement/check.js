@@ -349,13 +349,6 @@ export const License = (function getLicense() {
       setSetting("color_themes", { popup_menu: "default_theme", options_page: "default_theme" });
       SubscriptionAdapter.unsubscribe({ adblockId: "distraction-control" });
       SubscriptionAdapter.unsubscribe({ adblockId: "cookies-premium" });
-      const easyPrivacyURL = SubscriptionAdapter.getUrlFromId("easyprivacy");
-      if (
-        (await ewe.experiments.getFlag("is_privacy_premium")) === true &&
-        ewe.subscriptions.has(easyPrivacyURL)
-      ) {
-        await ewe.subscriptions.remove(easyPrivacyURL);
-      }
       browser.alarms.clear(licenseAlarmName);
     },
     ready() {
@@ -421,11 +414,6 @@ export const License = (function getLicense() {
         }, delay);
       }
       setSetting("picreplacement", false);
-      const easyPrivacyURL = SubscriptionAdapter.getUrlFromId("easyprivacy");
-      if ((await ewe.experiments.getFlag("is_privacy_premium")) === true) {
-        await ewe.subscriptions.add(easyPrivacyURL);
-        await ewe.subscriptions.sync(easyPrivacyURL);
-      }
     },
     async getFormattedActiveSinceDate() {
       if (

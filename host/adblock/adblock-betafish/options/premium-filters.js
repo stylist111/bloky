@@ -33,14 +33,6 @@ const premiumFiltersUIitems = [
     topLineClass: "",
   },
   {
-    id: "easyprivacy",
-    title: translate("premium_filter_easyprivacy"),
-    description: translate("premium_filter_easyprivacy_description"),
-    disclaimer: undefined,
-    imageURL: "icons/distraction-control.svg",
-    topLineClass: "top-line",
-  },
-  {
     id: "cookies-premium",
     title: translate("cookie_consent_cutter_title"),
     description: translate("cookie_consent_cutter_description"),

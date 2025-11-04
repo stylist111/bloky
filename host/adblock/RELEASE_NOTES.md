@@ -1,5 +1,7 @@
 # Unreleased
 
+- Removed experiment setup for tracker blocking as premium feature (EXT-1009)
+
 # 6.31.0 - 2025-10-28
 
 This release contains bugfixes and small under-the-hood changes.
