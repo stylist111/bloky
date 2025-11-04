@@ -21,7 +21,6 @@ import { FilterOrigin } from "../../filters/shared";
 import { createFilterMetaData } from "~/utilities/background/bg-functions";
 import { Prefs } from "~/alias/prefs";
 import { initialize } from "~/alias/subscriptionInit";
-import ServerMessages from "~/servermessages";
 
 const pausedKey = "paused";
 // white-list all blocking requests regardless of frame / document, but still allows element hiding
@@ -117,32 +116,6 @@ function handleExtensionStartup(): void {
   void start();
 }
 browser.runtime.onStartup.addListener(handleExtensionStartup);
-
-/**
- * TODO: remove this after the filters are removed from all users.
- * Checks if there are any temporary pause rules when the extension is updated,
- * if so, we remove any/all of them, and remove the pause key
- * This will will unpause AdBlock when a new version of the extension is released
- *
- */
-async function cleanUpPauseRules(): Promise<void> {
-  await initialize.then();
-  const customRules = await ewe.filters.getUserFilters();
-  const onlyPauseRules = customRules.filter(
-    (filter) => filter.text === pausedFilterText1 || filter.text === pausedFilterText2,
-  );
-  if (onlyPauseRules.length && (await ewe.experiments.getFlag("is-cleanup-pause")) === true) {
-    await ewe.filters.remove([pausedFilterText1, pausedFilterText2]);
-    await browser.storage.local.remove(pausedKey);
-    ServerMessages.recordGeneralMessage("pause_rules_cleaned");
-  }
-}
-
-browser.runtime.onInstalled.addListener((details) => {
-  if (details.reason === "update") {
-    void cleanUpPauseRules();
-  }
-});
 
 export {
   allowlistTab,
