@@ -28,11 +28,7 @@ import {
 import * as messaging from "~/core/messaging/front";
 import { FilterOrigin } from "~/filters/shared";
 import * as premiumSubscriptions from "~/premium-subscriptions/ui";
-import {
-  premiumTypes,
-  PRIVACY_PREMIUM_FLAG,
-  PRIVACY_SUBSCRIPTION_TYPE
-} from "~/premium-subscriptions/shared";
+import { premiumTypes } from "~/premium-subscriptions/shared";
 import {
   convertDoclinks,
   getErrorMessage,
@@ -392,7 +388,7 @@ function focusNextElement(container, currentElement) {
   return true;
 }
 
-async function addSubscription(subscription) {
+function addSubscription(subscription) {
   const { disabled, recommended, url } = subscription;
   let collection = null;
   switch (recommended) {
@@ -402,15 +398,8 @@ async function addSubscription(subscription) {
       const ioListBox = $("#languages-box");
       ioListBox.items = ioListBox.items.concat(subscription);
       break;
-    case PRIVACY_SUBSCRIPTION_TYPE:
-      // Whether the privacy subscription type belongs in the premium lists
-      const isPrivacyPremium =
-        await ewe.experiments.getFlag(PRIVACY_PREMIUM_FLAG);
-      collection = isPrivacyPremium
-        ? collections.recommendedPremiumList
-        : collections.recommendedFreeList;
-      break;
     case "notifications":
+    case "privacy":
     case "social":
     case "videos":
       collection = collections.recommendedFreeList;
@@ -516,7 +505,7 @@ async function loadResources() {
       };
 
       subscriptions.push(subscription);
-      await addSubscription(subscription);
+      addSubscription(subscription);
     }
   } catch (ex) {
     dispatchError(ex);

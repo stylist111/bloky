@@ -17,15 +17,12 @@
 
 export const ANNOYANCE_SUBSCRIPTION_TYPE = "annoyances";
 export const COOKIES_PREMIUM_SUBSCRIPTION_TYPE = "cookies-premium";
-export const PRIVACY_SUBSCRIPTION_TYPE = "privacy";
 
 export type PremiumSubscriptionType =
   | typeof ANNOYANCE_SUBSCRIPTION_TYPE
-  | typeof COOKIES_PREMIUM_SUBSCRIPTION_TYPE
-  | typeof PRIVACY_SUBSCRIPTION_TYPE;
+  | typeof COOKIES_PREMIUM_SUBSCRIPTION_TYPE;
 
 export interface PremiumSubscriptionsState {
   [ANNOYANCE_SUBSCRIPTION_TYPE]: boolean;
   [COOKIES_PREMIUM_SUBSCRIPTION_TYPE]: boolean;
-  [PRIVACY_SUBSCRIPTION_TYPE]?: boolean;
 }

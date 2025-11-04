@@ -15,17 +15,11 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as ewe from "@eyeo/webext-ad-filtering-solution/ui";
 import { type EventEmitter } from "../../../adblockpluschrome/lib/events";
 import * as messaging from "~/core/messaging/front";
 import { type Message, isEventMessage } from "~/core/messaging/shared";
 import { $, $$ } from "../../../js/dom.mjs";
-import {
-  COOKIES_PREMIUM_SUBSCRIPTION_TYPE,
-  premiumTypes,
-  PRIVACY_PREMIUM_FLAG,
-  PRIVACY_SUBSCRIPTION_TYPE
-} from "../shared";
+import { COOKIES_PREMIUM_SUBSCRIPTION_TYPE, premiumTypes } from "../shared";
 
 import { isCollectionSubscription } from "../../polyfills/ui";
 import { isPremiumState } from "../../premium/shared";
@@ -106,13 +100,7 @@ async function onCollectionItemUpdated(item: unknown): Promise<void> {
     return;
   }
 
-  // Whether privacy subscription should be considered a premium subscription
-  const isPrivacyPremium = await ewe.experiments.getFlag(PRIVACY_PREMIUM_FLAG);
-  const isPremium =
-    premiumTypes.has(item.recommended) ||
-    (item.recommended === PRIVACY_SUBSCRIPTION_TYPE && isPrivacyPremium);
-
-  if (isPremium) {
+  if (premiumTypes.has(item.recommended)) {
     const listItem = getRecommendedListItem(item.recommended);
 
     if (!listItem) {
@@ -122,10 +110,7 @@ async function onCollectionItemUpdated(item: unknown): Promise<void> {
     const { isActive: premiumIsActive } = await messaging.premium.get();
     updateListItem(listItem, premiumIsActive);
 
-    if (
-      item.recommended === COOKIES_PREMIUM_SUBSCRIPTION_TYPE ||
-      item.recommended === PRIVACY_SUBSCRIPTION_TYPE
-    ) {
+    if (item.recommended === COOKIES_PREMIUM_SUBSCRIPTION_TYPE) {
       listItem.classList.add("new");
     }
   }
