@@ -3484,5 +3484,8 @@
   },
   "user_account_manage_account": {
     "message": "Mein Konto"
+  },
+  "marketing_opt_out": {
+    "message": "Erlaube AdBlock, gelegentlich Werbenachrichten anzuzeigen"
   }
 }

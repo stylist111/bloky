@@ -3484,5 +3484,8 @@
   },
   "user_account_manage_account": {
     "message": "マイアカウント"
+  },
+  "marketing_opt_out": {
+    "message": "AdBlock にときどきプロモーションメッセージの表示を許可する"
   }
 }

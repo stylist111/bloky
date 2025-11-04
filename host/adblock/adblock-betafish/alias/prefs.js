@@ -147,6 +147,13 @@ defaults.show_devtools_panel = true;
 defaults.data_collection_opt_out = false;
 
 /**
+ * Whether marketing messages can be shown or not.
+ *
+ * @type {boolean}
+ */
+defaults.marketing_opt_out = false;
+
+/**
  * Prevents unsolicited UI elements from showing up after installation. This
  * preference isn't set by the extension but can be pre-configured externally.
  *

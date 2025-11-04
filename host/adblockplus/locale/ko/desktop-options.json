@@ -101,7 +101,7 @@
     "message": "브라우저 개발자 도구 패널에서 차단 및 허용 목록에 추가된 항목 보기."
   },
   "options_customize_showNotifications": {
-    "message": "유용한 알림 표시"
+    "message": "Adblock Plus가 가끔 프로모션 메시지를 표시하도록 허용"
   },
   "options_customize_showNotifications_tooltip": {
     "message": "Adblock Plus으로부터의 알림 허용하기 (중요한 성능 문제와 관련된 알림은 항상 표시됩니다)."
@@ -247,7 +247,7 @@
     "message": "브라우저 제한으로 인해 필터 목록 업데이트를 적용할 수 없습니다. 새로운 확장 프로그램 버전으로 업데이트하는 것이 이 문제를 해결할 수도 있습니다."
   },
   "options_filterList_lastDownload_tooManyFilters": {
-        "message": "브라우저 제한으로 인해 필터 목록 업데이트를 적용할 수 없습니다. 필터 목록과 맞춤 필터의 수를 줄이면 이 문제를 해결할 수 있습니다."
+    "message": "브라우저 제한으로 인해 필터 목록 업데이트를 적용할 수 없습니다. 필터 목록과 맞춤 필터의 수를 줄이면 이 문제를 해결할 수 있습니다."
   },
   "options_filterList_lastDownload_diffTooOld": {
     "message": "구식 확장 프로그램 버전으로 인해 필터 목록 업데이트를 적용할 수 없습니다. 새로운 확장 프로그램 버전으로 업데이트하는 것이 이 문제를 해결할 수도 있습니다."
@@ -432,7 +432,7 @@
     "message": "커뮤니티의 지원이 필요하십니까? <a>포럼으로 가기</a>"
   },
   "options_download_debug_data": {
-    "message": "저희 팀에서 디버그 정보를 요청했습니까? <a>디버그 데이터 다운로드<\/a>"
+    "message": "저희 팀에서 디버그 정보를 요청했습니까? <a>디버그 데이터 다운로드</a>"
   },
   "options_social_description": {
     "message": "질문이나 새로운 아이디어가 있습니까? 기꺼이 도와드리겠습니다."

@@ -90,8 +90,9 @@ const initialize = async function init() {
 
   for (const inx in abpPrefPropertyNames) {
     const name = abpPrefPropertyNames[inx];
-    $(`#prefs__${name}`).prop("checked", Prefs[name]);
+    onPrefsChanged(name, Prefs[name]);
   }
+
   const acceptableAdsPrivacyClicked = async function (isEnabled) {
     if (isEnabled) {
       await SubscriptionsProxy.add(SubscriptionsProxy.ACCEPTABLE_ADS_PRIVACY_URL);
@@ -124,7 +125,12 @@ const initialize = async function init() {
   };
 
   $("input.feature[type='checkbox']").on("change", async function onOptionSelectionChange() {
-    const isEnabled = $(this).is(":checked");
+    let isEnabled = $(this).is(":checked");
+    const isInverted = $(this).is("[data-pref-transform='invert']");
+    if (isInverted) {
+      isEnabled = !isEnabled;
+    }
+
     if (this.id === "acceptable_ads") {
       acceptableAdsClicked(isEnabled);
       return;
@@ -148,6 +154,11 @@ const initialize = async function init() {
       if (isEnabled) {
         await send("dataCollectionOptOut");
       }
+    }
+
+    // send goodbye message
+    if (name === "marketing_opt_out" && isEnabled) {
+      await send("marketingOptOut");
     }
 
     if (abpPrefPropertyNames.indexOf(name) >= 0) {
@@ -208,7 +219,9 @@ const onSettingsChanged = function (name, currentValue, previousValue) {
 };
 
 const onPrefsChanged = function (name, currentValue) {
-  $(`#prefs__${name}`).prop("checked", currentValue);
+  const checkbox = $(`#prefs__${name}`);
+  const isInverted = checkbox.is("[data-pref-transform='invert']");
+  checkbox.prop("checked", isInverted ? !currentValue : currentValue);
 
   if (name === "data_collection_opt_out") {
     setDataCollectionOptionsVisibility(!currentValue);

@@ -40,6 +40,7 @@ import infoInjector from "./info-injector.js";
 import ipmCampaigns from "./ipm/ipm-campaigns.js";
 import opdCampaigns from "./ipm/opd-campaigns.js";
 import newtabCampaigns from "./ipm/newtab-campaigns.js";
+import updateCampaign from "./update-campaign.js";
 
 export default () => {
   beforeEach(async function () {
@@ -91,6 +92,8 @@ export default () => {
         describe("Campaigns - Newtab", () => newtabCampaigns(fragmentType));
       });
     }
+
+    describe("Integrated update campaign", updateCampaign);
 
     // Needs to be the last suite to run because the extension gets uninstalled
     describe("Smoke Tests - Uninstall", uninstallDefault);

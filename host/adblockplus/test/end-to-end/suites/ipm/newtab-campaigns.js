@@ -55,7 +55,8 @@ import {
   initOptionsGeneralTab,
   isPremiumLabelPresent,
   enablePremiumProgrammatically,
-  disablePremiumProgrammatically
+  disablePremiumProgrammatically,
+  setMarketingOptOutState
 } from "../../utils/page.js";
 
 export default (fragmentType) => {
@@ -79,6 +80,7 @@ export default (fragmentType) => {
   });
 
   afterEach(async function () {
+    await setMarketingOptOutState(false);
     await clearRemoteConfigIpmCommands(initOptionsGeneralTab);
     const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual({});
@@ -212,6 +214,22 @@ export default (fragmentType) => {
         expect(counts).toHaveProperty(`${tabLoadedEvent}:${ipmIdHigh}`, 1);
       });
     }
+  });
+
+  it("does not trigger a new tab campaign if opted out of marketing messages", async function () {
+    await setMarketingOptOutState(true);
+
+    await setRemoteConfigIpmCommands(
+      initOptionsGeneralTab,
+      "test_adblockplus_newtab"
+    );
+    await syncRemoteConfig(initOptionsGeneralTab);
+
+    const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
+    expect(ipmCommands).toEqual({});
+
+    await openNewTab(localTestPageUrl);
+    await findUrl(updateUrlNewTab, { exists: false });
   });
 
   it("does not trigger a new tab campaign for premium user", async function () {

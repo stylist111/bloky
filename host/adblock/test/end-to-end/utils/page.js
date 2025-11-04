@@ -25,6 +25,7 @@ import {
   findUrl,
   waitForNotNullProperty,
   isCheckboxPropertyEnabled,
+  waitForCheckboxStatus,
   waitForNotDisplayed,
   clickAndCloseNewTab,
   getTabId,
@@ -215,6 +216,19 @@ export async function clickFilterlist(name, checkboxSelector, enabledAfterClick)
   );
 }
 
+async function clickCheckboxAndCheck(checkboxSelector, { enable = true, name }) {
+  await waitForCheckboxStatus(checkboxSelector, {
+    expectEnabled: !enable,
+    name,
+  });
+
+  await clickOnDisplayedElement(checkboxSelector);
+  await waitForCheckboxStatus(checkboxSelector, {
+    expectEnabled: enable,
+    name,
+  });
+}
+
 /**
  * Checked that the elements from the blockHideUrl are allowlisted or not.
  *
@@ -279,6 +293,21 @@ export async function setAADefaultState() {
   if (!aaEnabled) {
     await clickFilterlist(name, checkboxSelector, true);
   }
+}
+
+export async function setMarketingOptOutState(optOut) {
+  const checkboxSelector = "#prefs__marketing_opt_out";
+
+  await initOptionsGeneralTab(getOptionsHandle());
+  const isChecked = await isCheckboxPropertyEnabled(checkboxSelector);
+  if (optOut !== isChecked) {
+    return;
+  }
+
+  await clickCheckboxAndCheck(checkboxSelector, {
+    enable: !optOut,
+    name: "Marketing opt-out",
+  });
 }
 
 export async function changePremiumFLStatus(checkboxSelector, { enable = true } = {}) {

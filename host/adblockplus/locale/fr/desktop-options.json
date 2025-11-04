@@ -101,7 +101,7 @@
     "message": "Afficher les éléments bloqués et autorisés à partir du panneau des outils de développement de votre navigateur."
   },
   "options_customize_showNotifications": {
-    "message": "Afficher les notifications utiles"
+    "message": "Autoriser Adblock Plus à afficher des messages promotionnels occasionnels"
   },
   "options_customize_showNotifications_tooltip": {
     "message": "Autoriser les notifications provenant d’Adblock Plus (les notifications liées à des problèmes de performance critiques s'afficheront toujours)."
@@ -432,7 +432,7 @@
     "message": "Vous voulez le soutien de notre communauté ? <a>Accédez au Forum</a>"
   },
   "options_download_debug_data": {
-    "message": "Notre équipe vous a-t-elle demandé des informations de débogage ? <a>Télécharger les données de débogage<\/a>"
+    "message": "Notre équipe vous a-t-elle demandé des informations de débogage ? <a>Télécharger les données de débogage</a>"
   },
   "options_social_description": {
     "message": "Vous avez une question ou une idée ? Nous sommes là pour vous aider."

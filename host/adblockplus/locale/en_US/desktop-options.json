@@ -297,7 +297,7 @@
   },
   "options_customize_showNotifications": {
     "description": "Option label of customize section in Advanced tab",
-    "message": "Show useful notifications"
+    "message": "Allow Adblock Plus to show occasional promotional messages"
   },
   "options_customize_showNotifications_tooltip": {
     "description": "Tooltip text for Show notifications option item of customize section in Advanced tab",

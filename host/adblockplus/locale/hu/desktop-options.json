@@ -101,7 +101,7 @@
     "message": "Tekintse meg a blokkolt és engedélyezett tételeket böngészője fejlesztői eszközök paneljén."
   },
   "options_customize_showNotifications": {
-    "message": "Hasznos értesítések megjelenítése"
+    "message": "Engedélyezd, hogy az Adblock Plus alkalmanként promóciós üzeneteket jelenítsen meg"
   },
   "options_customize_showNotifications_tooltip": {
     "message": "Értesítések engedélyezése az Adblock Plus-tól (a kritikus teljesítményre vonatkozó értesítések mindig megjelennek)."
@@ -432,7 +432,7 @@
     "message": "Szeretne támogatást a közösségtől? <a>Irány a fórum</a>"
   },
   "options_download_debug_data": {
-    "message": "Kért a csapatunk hibakeresési információkat? <a>Hibakeresési adatok letöltése<\/a>"
+    "message": "Kért a csapatunk hibakeresési információkat? <a>Hibakeresési adatok letöltése</a>"
   },
   "options_social_description": {
     "message": "Kérdése vagy új ötlete van? Azért vagyunk itt, hogy segítsünk."

@@ -3026,5 +3026,8 @@
   },
   "user_account_manage_account": {
     "message": "حسابي"
+  },
+  "marketing_opt_out": {
+    "message": "اسمح لـ AdBlock بعرض رسائل ترويجية بين الحين والآخر"
   }
 }

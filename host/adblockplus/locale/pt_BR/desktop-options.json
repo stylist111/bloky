@@ -101,7 +101,7 @@
     "message": "Exiba itens bloqueados ou incluídos na lista de permitidos a partir do painel de ferramentas do desenvolvedor do navegador."
   },
   "options_customize_showNotifications": {
-    "message": "Mostrar notificações úteis"
+    "message": "Permitir que o Adblock Plus mostre mensagens promocionais ocasionais"
   },
   "options_customize_showNotifications_tooltip": {
     "message": "Permitir notificações do Adblock Plus (notificações relacionadas aos problemas críticos de desempenho serão sempre exibidas)."
@@ -432,7 +432,7 @@
     "message": "Quer ajuda da nossa comunidade? <a>Aceda ao Fórum</a>"
   },
   "options_download_debug_data": {
-    "message": "Nossa equipe solicitou informações de depuração? <a>Baixar dados de depuração<\/a>"
+    "message": "Nossa equipe solicitou informações de depuração? <a>Baixar dados de depuração</a>"
   },
   "options_social_description": {
     "message": "Tem uma pergunta ou sugestão? Estamos aqui para ajudar."

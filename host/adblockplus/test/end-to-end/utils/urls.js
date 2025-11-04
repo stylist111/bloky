@@ -33,3 +33,4 @@ export const updateAdBlockCohort =
   "/update?ipmId=test_adblock_cohort_with_multiple_commands";
 export const updateAdblockPlusCohort =
   "/update?ipmId=test_adblockplus_cohort_with_multiple_commands";
+export const integratedUpdateUrl = "https://adblockplus.org/en/update";

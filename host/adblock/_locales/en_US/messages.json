@@ -1499,6 +1499,10 @@
     "message": "Allow AdBlock to show me messages on webpages when relevant",
     "description": "Checkbox on the 'General' tab of the Options page"
   },
+  "marketing_opt_out": {
+    "message": "Allow AdBlock to show occasional promotional messages",
+    "description": "Checkbox on the 'General' tab of the Options page"
+  },
   "data_collection_opt_out": {
     "message": "Opt-out of all data collection in the AdBlock extension.",
     "description": "Checkbox on the 'General' tab of the Options page"

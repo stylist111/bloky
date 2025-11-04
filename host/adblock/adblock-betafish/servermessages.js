@@ -157,8 +157,13 @@ const ServerMessages = (function serverMessages() {
   };
 
   // Log a data-collection opt-out message on GAB log server.
-  const recordOptOutMessage = async function () {
+  const recordDataCollectionOptOutMessage = async function () {
     return recordMessageWithUserID("data_collection_opt_out", "general");
+  };
+
+  // Log a marketing opt-out message on GAB log server.
+  const recordMarketingOptOutMessage = async function () {
+    return recordMessageWithUserID("marketing_opt_out", "general");
   };
 
   // Log a data-collection smart allowlist expired message on GAB log server.
@@ -174,7 +179,8 @@ const ServerMessages = (function serverMessages() {
     recordErrorMessage,
     recordGeneralMessage,
     recordStatusMessage,
-    recordOptOutMessage,
+    recordDataCollectionOptOutMessage,
+    recordMarketingOptOutMessage,
     recordAllowlistEvent,
   };
 })();

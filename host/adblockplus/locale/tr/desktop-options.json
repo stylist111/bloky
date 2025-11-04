@@ -101,7 +101,7 @@
     "message": "Tarayıcınızın geliştirici araçları panelinden engellenen ve izin verilen ögeleri görüntüleyin."
   },
   "options_customize_showNotifications": {
-    "message": "Yararlı bildirimlerini göster"
+    "message": "Adblock Plus’un ara sıra tanıtım mesajları göstermesine izin ver"
   },
   "options_customize_showNotifications_tooltip": {
     "message": "Adblock Plus’tan gelen tüm bildirimlere izin ver (kritik performans sorunlarıyla ilgili bildirimler her zaman gösterilir)."
@@ -432,7 +432,7 @@
     "message": "Topluluktan yardım mı almak istiyorsunuz? <a>Foruma bakın.</a>"
   },
   "options_download_debug_data": {
-    "message": "Ekibimiz sizden hata ayıklama bilgisi mi istedi? <a>Hata ayıklama verilerini indir<\/a>"
+    "message": "Ekibimiz sizden hata ayıklama bilgisi mi istedi? <a>Hata ayıklama verilerini indir</a>"
   },
   "options_social_description": {
     "message": "Sorunuz veya fikriniz mi var? Yardım etmek için buradayız."

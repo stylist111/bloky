@@ -3336,5 +3336,8 @@
   },
   "user_account_manage_account": {
     "message": "Moje konto"
+  },
+  "marketing_opt_out": {
+    "message": "Pozwól AdBlockowi wyświetlać okazjonalne komunikaty promocyjne"
   }
 }

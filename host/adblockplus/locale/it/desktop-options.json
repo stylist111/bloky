@@ -101,7 +101,7 @@
     "message": "Visualizza gli elementi bloccati e quelli inseriti tra i siti accettati dal pannello degli strumenti di sviluppo del tuo browser."
   },
   "options_customize_showNotifications": {
-    "message": "Mostra notifiche utili"
+    "message": "Consenti ad Adblock Plus di mostrare occasionali messaggi promozionali"
   },
   "options_customize_showNotifications_tooltip": {
     "message": "Consenti le notifiche di Adblock Plus (verranno sempre visualizzate quelle relative a problemi critici di prestazioni)."
@@ -432,7 +432,7 @@
     "message": "Hai bisogno di supporto dalla nostra community? <a>Vai al Forum</a>"
   },
   "options_download_debug_data": {
-    "message": "Il nostro team ha richiesto informazioni di debug? <a>Scarica i dati di debug<\/a>"
+    "message": "Il nostro team ha richiesto informazioni di debug? <a>Scarica i dati di debug</a>"
   },
   "options_social_description": {
     "message": "Hai una domanda o una nuova idea? Siamo qui per aiutarti."

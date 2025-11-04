@@ -2140,5 +2140,8 @@
   },
   "user_account_manage_account": {
     "message": "Fiókom"
+  },
+  "marketing_opt_out": {
+    "message": "Engedélyezd, hogy az AdBlock alkalmanként promóciós üzeneteket jelenítsen meg"
   }
 }

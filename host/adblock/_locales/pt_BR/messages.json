@@ -3484,5 +3484,8 @@
   },
   "user_account_manage_account": {
     "message": "Minha Conta"
+  },
+  "marketing_opt_out": {
+    "message": "Permitir que o AdBlock mostre mensagens promocionais ocasionais"
   }
 }

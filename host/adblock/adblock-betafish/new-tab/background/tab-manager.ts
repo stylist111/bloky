@@ -453,6 +453,7 @@ async function handleCommand(ipmId: string): Promise<void> {
 
   const { dismissCommand, getBehavior } = getFragment();
 
+  // Don't open new tabs if we're on a managed installation
   const { installType } = await browser.management.getSelf();
   if ((installType as ExtendedInstallType) === "admin") {
     recordLegacyEvent(ipmId, NewTabExitEventType.admin);
@@ -463,13 +464,21 @@ async function handleCommand(ipmId: string): Promise<void> {
   await settings.onload();
   // Ignore and dismiss command if user opted-out of 'update-page'
   if (getSettings().suppress_update_page) {
-    logger.debug("[new-tab]:suppress_update_page - true");
+    logger.debug("[new-tab]: suppress_update_page - true");
     recordLegacyEvent(ipmId, NewTabExitEventType.disabled);
     dismissCommand(ipmId);
     return;
   }
 
-  // Ignore and dismiss command if behavior is invalid.
+  // Don't open new tabs if user opted out of marketing messages
+  await Prefs.untilLoaded;
+  if (Prefs.get("marketing_opt_out")) {
+    logger.debug("[new-tab]: marketing_opt_out - true");
+    dismissCommand(ipmId);
+    return;
+  }
+
+  // Ignore and dismiss command if behavior is invalid
   logger.debug("[new-tab]:openNewtab");
   const behavior = getBehavior(ipmId);
   if (!isNewTabBehavior(behavior)) {
@@ -487,7 +496,7 @@ async function handleCommand(ipmId: string): Promise<void> {
     serverLogger.behavior("command_ready", ipmId, ipmId);
   }
 
-  // If the method is `force`, we don't need to create handlers.
+  // If the method is `force`, we don't need to create handlers
   if (behavior.method === CreationMethod.force) {
     return;
   }

@@ -101,7 +101,7 @@
     "message": "ブラウザ開発者のツールパネルから、ブロックされた項目と許可リストにある項目を表示します。"
   },
   "options_customize_showNotifications": {
-    "message": "有用な通知を表示"
+    "message": "Adblock Plus に時々プロモーションメッセージの表示を許可する"
   },
   "options_customize_showNotifications_tooltip": {
     "message": "Adblock Plus (重要なパフォーマンス上の問題は常に表示される) からの通知を許可します。"
@@ -409,7 +409,7 @@
     "message": "当社コミュニティのサポートを得るには<a>フォーラムに行く</a>"
   },
   "options_download_debug_data": {
-    "message": "チームからデバッグ情報の提供を求められましたか？<a>デバッグデータをダウンロード<\/a>"
+    "message": "チームからデバッグ情報の提供を求められましたか？<a>デバッグデータをダウンロード</a>"
   },
   "options_social_description": {
     "message": "当社へのご質問やご提案について是非お役立てください。"

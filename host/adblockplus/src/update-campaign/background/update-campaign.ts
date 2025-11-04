@@ -15,6 +15,8 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import * as ewe from "@eyeo/webext-ad-filtering-solution";
+
 import { info } from "../../info/background";
 import { getLocaleInfo } from "../../i18n/background";
 import {
@@ -65,8 +67,15 @@ async function handleUpdateCampaign(): Promise<void> {
     return;
   }
 
+  // Don't open campaign if user opted out of new tabs
   // For testing purposes, we can block opening campaigns on extension updates
   if (Prefs.get("suppress_first_run_page")) {
+    return;
+  }
+
+  // Don't open campaign if user opted out of marketing messages
+  const ignoredCategories = await ewe.notifications.getIgnoredCategories();
+  if (ignoredCategories.includes("*")) {
     return;
   }
 

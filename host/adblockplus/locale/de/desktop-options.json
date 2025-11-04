@@ -101,7 +101,7 @@
     "message": "Blockierte und auf die Allowlist gesetzte Elemente von dem Entwickler-Tools-Panel deines Browsers ansehen."
   },
   "options_customize_showNotifications": {
-    "message": "Zeige nützliche Benachrichtigungen"
+    "message": "Adblock Plus das Anzeigen gelegentlicher Werbenachrichten erlauben"
   },
   "options_customize_showNotifications_tooltip": {
     "message": "Benachrichtigungen von Adblock Plus zulassen (Benachrichtigungen in Bezug auf kritische Leistungsprobleme werden immer angezeigt)."
@@ -432,7 +432,7 @@
     "message": "Brauchst du Unterstützung unserer Community? <a>Besuche das Forum</a>"
   },
   "options_download_debug_data": {
-    "message": "Hat unser Team um Debug-Informationen gebeten? <a>Debug-Daten herunterladen<\/a>"
+    "message": "Hat unser Team um Debug-Informationen gebeten? <a>Debug-Daten herunterladen</a>"
   },
   "options_social_description": {
     "message": "Hast du eine Frage oder eine neue Idee? Wir sind hier, um zu helfen."

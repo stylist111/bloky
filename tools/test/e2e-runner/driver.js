@@ -243,12 +243,12 @@ export async function openNewTab(url) {
  */
 export function waitForNotDisplayed(
   cssSelector,
-  { timeout = 1000, displayedTimeout = 500, forceRefresh = false } = {},
+  { timeout = 1000, displayedTimeout = 500, forceRefresh = false, checkDisplayed = true } = {},
 ) {
   return wait(
     async () => {
       try {
-        await getDisplayedElement(cssSelector, { timeout: displayedTimeout });
+        await getDisplayedElement(cssSelector, { timeout: displayedTimeout, checkDisplayed });
         if (forceRefresh) {
           await doForceRefresh(`Element "${cssSelector}" is displayed`);
         }

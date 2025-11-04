@@ -3484,5 +3484,8 @@
   },
   "user_account_manage_account": {
     "message": "我的账户"
+  },
+  "marketing_opt_out": {
+    "message": "允许 AdBlock 偶尔显示推广信息"
   }
 }

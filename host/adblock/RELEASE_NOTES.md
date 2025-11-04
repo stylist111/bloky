@@ -1,5 +1,8 @@
 # Unreleased
 
+- Removed "Allow AdBlock to show me messages on webpages when relevant" option
+  in favor of option to opt-out of all marketing messages (EXT-1080).
+
 # 6.31.1 - 2025-11-04
 
 This release contains bugfixes and under-the-hood changes.

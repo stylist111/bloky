@@ -383,10 +383,18 @@ function handleTestingGetCommandsMessage(): CommandMap {
  * stored commands with what we received from the remote config.
  */
 async function synchronizeRemoteCommands(): Promise<void> {
-  const { getDismissedIpmIds, logger, setDismissedIpmIds } = getStartInfo();
+  const { getDismissedIpmIds, info, logger, setDismissedIpmIds } =
+    getStartInfo();
   const remoteCommands = await getRemoteCommands();
   if (remoteCommands === null) {
     logger.reportAndLogError(new Error("[ipm]: No remote configuration."));
+    return;
+  }
+
+  // In order to keep the behavior consistent with the legacy IPM fragment,
+  // and to not clash with the integrated update campaigns, we are explicitly
+  // ignoring IPMs for Firefox users while the legacy fragment is still around
+  if (info.getBrowserName() === "firefox") {
     return;
   }
 

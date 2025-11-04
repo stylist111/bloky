@@ -3484,5 +3484,8 @@
   },
   "user_account_manage_account": {
     "message": "Mijn account"
+  },
+  "marketing_opt_out": {
+    "message": "Sta AdBlock toe om af en toe promotionele berichten te tonen"
   }
 }

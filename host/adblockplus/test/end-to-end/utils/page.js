@@ -163,6 +163,24 @@ async function loadOptionsTab(optionsHandle, id, timeout = 5000) {
   );
 }
 
+async function clickCheckboxAndCheck(
+  checkboxSelector,
+  { enable = true, name }
+) {
+  await waitForCheckboxStatus(checkboxSelector, {
+    expectEnabled: !enable,
+    isProperty: false,
+    name
+  });
+
+  await clickOnDisplayedElement(checkboxSelector);
+  await waitForCheckboxStatus(checkboxSelector, {
+    expectEnabled: enable,
+    isProperty: false,
+    name
+  });
+}
+
 export async function clickFLCheckboxAndCheck(
   checkboxSelector,
   { enable = true, isToggle = false, name } = {}
@@ -252,6 +270,22 @@ export async function setAADefaultState() {
       name: "Acceptable Ads"
     });
   }
+}
+
+export async function setMarketingOptOutState(optOut) {
+  const checkboxSelector =
+    "[data-pref='notifications_ignoredcategories'] > [data-action='toggle-pref']";
+
+  await initOptionsAdvancedTab(getOptionsHandle());
+  const isChecked = await isCheckboxAttributeEnabled(checkboxSelector);
+  if (optOut !== isChecked) {
+    return;
+  }
+
+  await clickCheckboxAndCheck(checkboxSelector, {
+    enable: !optOut,
+    name: "Marketing opt-out"
+  });
 }
 
 export async function getElemTextSafe(elem) {

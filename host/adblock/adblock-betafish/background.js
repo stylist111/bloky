@@ -515,19 +515,39 @@ const showUpdatePage = async function (details) {
     return slashUpdateLanguages.includes(language);
   };
 
-  if (
-    details.reason === "update" &&
-    info.platform === "gecko" &&
-    shouldShowUpdateForLocale() &&
-    browser.runtime.id !== adblocBetaID
-  ) {
-    await settings.onload();
-    if (!getSettings().suppress_update_page) {
-      await getUserId();
-      await Prefs.untilLoaded;
-      shouldShowUpdate();
-    }
+  if (details.reason !== "update") {
+    return;
   }
+
+  // Only open campaign for Firefox users
+  if (info.platform !== "gecko") {
+    return;
+  }
+
+  // Don't open campaign for AdBlock Beta users
+  if (browser.runtime.id === adblocBetaID) {
+    return;
+  }
+
+  // Only open campaign for users with certain languages
+  if (!shouldShowUpdateForLocale()) {
+    return;
+  }
+
+  // Don't open campaign if user opted out of "update-page"
+  await settings.onload();
+  if (getSettings().suppress_update_page) {
+    return;
+  }
+
+  // Don't open campaign if user opted out of marketing messages
+  await Prefs.untilLoaded;
+  if (Prefs.get("marketing_opt_out")) {
+    return;
+  }
+
+  await getUserId();
+  shouldShowUpdate();
 };
 
 /*

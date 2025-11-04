@@ -3364,5 +3364,8 @@
   },
   "user_account_manage_account": {
     "message": "Ο λογαριασμός μου"
+  },
+  "marketing_opt_out": {
+    "message": "Να επιτρέπεται στο AdBlock να εμφανίζει περιστασιακά προωθητικά μηνύματα"
   }
 }

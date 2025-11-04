@@ -3484,5 +3484,8 @@
   },
   "user_account_manage_account": {
     "message": "Мой аккаунт"
+  },
+  "marketing_opt_out": {
+    "message": "Разрешить AdBlock показывать иногда рекламные сообщения"
   }
 }

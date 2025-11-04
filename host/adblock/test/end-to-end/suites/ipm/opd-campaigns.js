@@ -49,7 +49,7 @@ import {
   opdDialogInjectedEvent,
 } from "../../utils/events.js";
 import { expectedIPMCommands } from "../../utils/ipms.js";
-import { initOptionsGeneralTab } from "../../utils/page.js";
+import { initOptionsGeneralTab, setMarketingOptOutState } from "../../utils/page.js";
 
 async function getOPDShadowRoot() {
   // #__ABoverlay is actually not displayed on the page (hence checkDisplayed: false)
@@ -85,6 +85,7 @@ export default (fragmentType) => {
   });
 
   afterEach(async function () {
+    await setMarketingOptOutState(false);
     await clearRemoteConfigIpmCommands(initOptionsGeneralTab);
     const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual({});
@@ -237,5 +238,21 @@ export default (fragmentType) => {
     expect(await ctaButton.getText()).toEqual("CTA cookie");
     expect(texts[0]).toEqual("This is a test cookie baner OPD");
     expect(texts[1]).toEqual("ipmID: test_adblock_cookie");
+  });
+
+  it("does not trigger an OPD campaign if opted out of marketing messages", async function () {
+    await setMarketingOptOutState(true);
+
+    await setRemoteConfigIpmCommands(
+      initOptionsGeneralTab,
+      `test_adblock_navigation_${fragmentType}`,
+    );
+    await syncRemoteConfig(initOptionsGeneralTab);
+
+    const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
+    expect(ipmCommands).toEqual(expectedIPMCommands.navigation[fragmentType]);
+    await openNewTab("https://www.example.com");
+
+    await waitForNotDisplayed("#__ABoverlay");
   });
 };

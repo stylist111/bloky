@@ -3396,5 +3396,8 @@
   },
   "user_account_manage_account": {
     "message": "Hesabım"
+  },
+  "marketing_opt_out": {
+    "message": "AdBlock’un ara sıra tanıtım mesajları göstermesine izin ver"
   }
 }

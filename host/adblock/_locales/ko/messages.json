@@ -3392,5 +3392,8 @@
   },
   "user_account_manage_account": {
     "message": "내 계정"
+  },
+  "marketing_opt_out": {
+    "message": "AdBlock에서 가끔 프로모션 메시지를 표시하도록 허용"
   }
 }

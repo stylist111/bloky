@@ -357,6 +357,8 @@ export default (fragmentType) => {
     }
 
     await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_versions");
+    await syncRemoteConfig(initOptionsGeneralTab);
+
     const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual({});
 

@@ -424,7 +424,7 @@ export async function handleCommand(ipmId: string): Promise<void> {
   logger.debug("[new-tab]: tab manager handleCommand", ipmId);
   const { dismissCommand, getBehavior } = getFragment();
 
-  // Don't open new tabs if we're on a managed installation.
+  // Don't open new tabs if we're on a managed installation
   const { installType } = await browser.management.getSelf();
   if ((installType as unknown) === "admin") {
     recordLegacyEvent(ipmId, CreationRejection.admin);
@@ -432,9 +432,22 @@ export async function handleCommand(ipmId: string): Promise<void> {
     return;
   }
 
+  // Don't open new tabs if user opted out of new tabs
+  await Prefs.untilLoaded;
+  if (Prefs.get("suppress_first_run_page")) {
+    return;
+  }
+
+  // Don't open new tabs if user opted out of marketing messages
+  const ignoredCategories = await ewe.notifications.getIgnoredCategories();
+  if (ignoredCategories.includes("*")) {
+    dismissCommand(ipmId);
+    return;
+  }
+
   const behavior = getBehavior(ipmId);
 
-  // Don't open new tabs if something's wrong with the data we got.
+  // Don't open new tabs if something's wrong with the data we got
   if (!isNewTabBehavior(behavior)) {
     logger.debug("[new-tab]: Invalid command behavior.");
     recordLegacyEvent(ipmId, CreationError.invalidBehavior);
@@ -448,7 +461,7 @@ export async function handleCommand(ipmId: string): Promise<void> {
     serverLogger.behavior("command_ready", ipmId, ipmId);
   }
 
-  // If the method is `force`, we don't need to create handlers.
+  // If the method is `force`, we don't need to create handlers
   if (behavior.method === CreationMethod.force) {
     return;
   }

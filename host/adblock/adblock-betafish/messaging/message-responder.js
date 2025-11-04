@@ -230,7 +230,10 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
       break;
     case "dataCollectionOptOut":
       sendResponse({});
-      return ServerMessages.recordOptOutMessage();
+      return ServerMessages.recordDataCollectionOptOutMessage();
+    case "marketingOptOut":
+      sendResponse({});
+      return ServerMessages.recordMarketingOptOutMessage();
     default:
   }
 });
