@@ -487,7 +487,11 @@ export async function checkPremiumActivated({
 export async function enablePremiumProgrammatically() {
   const portalUrl = "https://myaccount.adblockplus.org";
   const applicationName = "abp-portal";
-  await simulatePremiumActivation(portalUrl, applicationName);
+  await simulatePremiumActivation(
+    portalUrl,
+    applicationName,
+    initOptionsGeneralTab
+  );
 }
 
 export async function disablePremiumProgrammatically() {

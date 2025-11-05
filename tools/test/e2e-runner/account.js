@@ -91,7 +91,7 @@ async function mockUserProfileEndpoint(user, priority = 1) {
  * @param applicationName - The application name to set in the OTP login response headers.
  * @returns {Promise<void>}
  */
-export async function simulatePremiumActivation(portalUrl, applicationName) {
+export async function simulatePremiumActivation(portalUrl, applicationName, initOptionsGeneralTab) {
   const loginUrl = new URL(PORTAL_LOGIN_PATH, portalUrl);
   const host = loginUrl.host;
   await mockOtpLoginEndpoint(host, applicationName);
@@ -115,8 +115,7 @@ export async function simulatePremiumActivation(portalUrl, applicationName) {
   }, loginUrl.toString());
 
   // make sure user profile was fetched
-  await driver.switchTo().window(getOptionsHandle());
-  await driver.navigate().refresh();
+  await initOptionsGeneralTab(getOptionsHandle());
   await driver.wait(
     async () => {
       const accountData = await driver.executeAsyncScript(async (callback) => {

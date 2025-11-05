@@ -69,12 +69,12 @@ export default () => {
   });
 
   it("logging in with a premium account", async function () {
-    await simulatePremiumActivation(PORTAL_URL, APPLICATION_NAME);
+    await simulatePremiumActivation(PORTAL_URL, APPLICATION_NAME, initOptionsGeneralTab);
     await checkPremiumActivated();
   });
 
   it("has premium features", async function () {
-    await simulatePremiumActivation(PORTAL_URL, APPLICATION_NAME);
+    await simulatePremiumActivation(PORTAL_URL, APPLICATION_NAME, initOptionsGeneralTab);
     await checkPremiumActivated();
     await clickOnDisplayedElement('[href="#mab-image-swap"]');
     await getDisplayedElement("#cats");
@@ -144,7 +144,7 @@ export default () => {
   });
 
   it("enables premium filter lists", async function () {
-    await simulatePremiumActivation(PORTAL_URL, APPLICATION_NAME);
+    await simulatePremiumActivation(PORTAL_URL, APPLICATION_NAME, initOptionsGeneralTab);
     await initOptionsPremiumFlTab(getOptionsHandle());
 
     let someEnabled = false;
@@ -164,7 +164,7 @@ export default () => {
 
   it("downgrades if premium expired", async function () {
     setTimeoutForExtensionReload(this);
-    await simulatePremiumActivation(PORTAL_URL, APPLICATION_NAME);
+    await simulatePremiumActivation(PORTAL_URL, APPLICATION_NAME, initOptionsGeneralTab);
     await checkPremiumActivated();
     await simulateDowngradeToFreeUser(initOptionsGeneralTab);
 
