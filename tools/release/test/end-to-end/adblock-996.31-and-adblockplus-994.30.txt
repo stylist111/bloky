@@ -1,0 +1,28 @@
+diff --git a/host/adblock/RELEASE_NOTES.md b/host/adblock/RELEASE_NOTES.md
+index 7d7ec53f3567d0a50ff64f318fd9afc0eca73c76..6baa28f2d5c41b2edaab247727b27a7bbcf8c8ed 100644
+--- a/host/adblock/RELEASE_NOTES.md
++++ b/host/adblock/RELEASE_NOTES.md
+@@ -2,0 +3,2 @@
++# 996.31.0 - 2025-10-28
++
+diff --git a/host/adblock/build/config/base.mjs b/host/adblock/build/config/base.mjs
+index dad9de92a2edb3e00973d8af3e0d249e8b6c18a1..c70c407a317bd763e65e08065d0b86021c388cc6 100644
+--- a/host/adblock/build/config/base.mjs
++++ b/host/adblock/build/config/base.mjs
+@@ -20 +20 @@ export default {
+-  version: "6.30.1",
++  version: "996.31.0",
+diff --git a/host/adblockplus/RELEASE_NOTES.md b/host/adblockplus/RELEASE_NOTES.md
+index abd4ba0ecc9ae80db0e7a6f715a418beb7703109..23e4cc7f797da299b87815e2ea912866f09994a0 100644
+--- a/host/adblockplus/RELEASE_NOTES.md
++++ b/host/adblockplus/RELEASE_NOTES.md
+@@ -2,0 +3,2 @@
++# 994.30.0 - 2025-10-28
++
+diff --git a/host/adblockplus/build/webext/config/base.mjs b/host/adblockplus/build/webext/config/base.mjs
+index 55b514155e0003433bb5316d99ee33af5f46de63..4ab1c179744a7f0ee8e6e5b52cc22f23ddda579d 100644
+--- a/host/adblockplus/build/webext/config/base.mjs
++++ b/host/adblockplus/build/webext/config/base.mjs
+@@ -20 +20 @@ export default {
+-  version: "4.29.1",
++  version: "994.30.0",

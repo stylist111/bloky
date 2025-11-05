@@ -260,7 +260,7 @@ publish-remote-validation:
   image: gitlab/glab
   before_script:
     - !reference [.on-any-release-tag, before_script]
-    - apk add git nodejs
+    - apk add git nodejs jq
     - glab auth login --token $GITLAB_TOKEN_RELEASE
     - git remote set-url --push origin "https://$GITLAB_TOKEN_RELEASE_NAME:$GITLAB_TOKEN_RELEASE@gitlab.com/$CI_PROJECT_PATH.git"
   rules:
@@ -288,11 +288,17 @@ create_release:
 
 create_release_mr_back_to_main:
   extends: .gitlab-api-release-automation
+  resource_group: merge-back-${CI_COMMIT_SHA}
   needs: []
   script:
-    - git checkout -B $CI_COMMIT_TAG-merge-back-to-main refs/tags/$CI_COMMIT_TAG
-    - git push origin $CI_COMMIT_TAG-merge-back-to-main
-    - glab mr create --title "$HOST_PRETTY_NAME $VERSION release back to main [skip ci]" --description "Automatically bringing release changes back to the main branch" --remove-source-branch --yes
+    - |
+      if glab mr list --order created_at --output json | jq -r ".[].sha" | grep "$CI_COMMIT_SHA" ; then
+        echo "MR already exists for commit $CI_COMMIT_SHA"
+      else
+        git checkout -B $CI_COMMIT_TAG-merge-back-to-main refs/tags/$CI_COMMIT_TAG
+        git push origin $CI_COMMIT_TAG-merge-back-to-main
+        glab mr create --title "$CI_COMMIT_TITLE" --description "Automatically bringing release changes back to the main branch" --remove-source-branch --yes
+      fi
 
 upload_sourcemaps:
   stage: release
