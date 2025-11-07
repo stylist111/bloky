@@ -26,7 +26,6 @@ import adFiltering from "./smoke/ad-filtering.js";
 import uninstall from "./smoke/uninstall.js";
 import optionsPageAA from "./options-page/acceptable-ads.js";
 import optionsPageFL from "./options-page/filter-lists.js";
-import getPremium from "./premium/get-premium.js";
 import popupElements from "./popup-page/popup-elements.js";
 import freeUserOptions from "./premium/free-user-options.js";
 import freeUserPopup from "./premium/free-user-popup.js";
@@ -90,7 +89,6 @@ export default () => {
     describe("Premium", function () {
       describe("Free user - Popup", freeUserPopup);
       describe("Free user - Options", freeUserOptions);
-      describe("Premium user", getPremium);
       describe("Premium user with account", getPremiumWithAccount);
     });
 

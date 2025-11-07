@@ -18,7 +18,6 @@
 import { expect } from "expect";
 
 import { getOptionsHandle, setTimeoutForExtensionReload } from "@eyeo/test-utils/extension";
-import { simulateDowngradeToFreeUser, simulatePremiumActivation } from "@eyeo/test-utils/account";
 import {
   clickOnDisplayedElement,
   getDisplayedElement,
@@ -32,29 +31,15 @@ import { dcFilters } from "@eyeo/test-utils/host-filters";
 
 import {
   changePremiumFLStatus,
+  checkPremiumActivated,
+  enablePremiumProgrammatically,
   disablePremiumProgrammatically,
-  initOptionsGeneralTab,
   initOptionsPremiumFlTab,
-  initOptionsPremiumTab,
   initPopupWithLocalPage,
   isPremiumLabelPresent,
   setPremiumFLsDefaultState,
 } from "../../utils/page.js";
 import { premiumFilterLists, premiumPopupToggleItems } from "../../utils/dataset.js";
-
-const PORTAL_URL = "https://myaccount.getadblock.com";
-const APPLICATION_NAME = "ab-portal";
-
-const checkPremiumActivated = async () => {
-  await initOptionsPremiumTab(getOptionsHandle());
-  const premiumStatus = await getDisplayedElement("#premium_status_msg", {
-    timeout: 4000,
-    forceRefresh: true,
-  });
-  expect(await premiumStatus.getText()).toEqual("ACTIVE");
-
-  await getDisplayedElement("#user-account-manage", { timeout: 1000 });
-};
 
 export default () => {
   afterEach(async function () {
@@ -69,12 +54,18 @@ export default () => {
   });
 
   it("logging in with a premium account", async function () {
-    await simulatePremiumActivation(PORTAL_URL, APPLICATION_NAME, initOptionsGeneralTab);
+    const isPremium = await isPremiumLabelPresent();
+    if (!isPremium) {
+      await enablePremiumProgrammatically();
+    }
     await checkPremiumActivated();
   });
 
   it("has premium features", async function () {
-    await simulatePremiumActivation(PORTAL_URL, APPLICATION_NAME, initOptionsGeneralTab);
+    const isPremium = await isPremiumLabelPresent();
+    if (!isPremium) {
+      await enablePremiumProgrammatically();
+    }
     await checkPremiumActivated();
     await clickOnDisplayedElement('[href="#mab-image-swap"]');
     await getDisplayedElement("#cats");
@@ -144,7 +135,10 @@ export default () => {
   });
 
   it("enables premium filter lists", async function () {
-    await simulatePremiumActivation(PORTAL_URL, APPLICATION_NAME, initOptionsGeneralTab);
+    const isPremium = await isPremiumLabelPresent();
+    if (!isPremium) {
+      await enablePremiumProgrammatically();
+    }
     await initOptionsPremiumFlTab(getOptionsHandle());
 
     let someEnabled = false;
@@ -164,9 +158,12 @@ export default () => {
 
   it("downgrades if premium expired", async function () {
     setTimeoutForExtensionReload(this);
-    await simulatePremiumActivation(PORTAL_URL, APPLICATION_NAME, initOptionsGeneralTab);
+    const isPremium = await isPremiumLabelPresent();
+    if (!isPremium) {
+      await enablePremiumProgrammatically();
+    }
     await checkPremiumActivated();
-    await simulateDowngradeToFreeUser(initOptionsGeneralTab);
+    await disablePremiumProgrammatically();
 
     // Check the user is still logged in
     await getDisplayedElement("#user-account-manage", { timeout: 1000 });

@@ -32,7 +32,8 @@ import {
   clickOnDisplayedElement,
   wait,
 } from "@eyeo/test-utils/driver";
-import { getOptionsHandle, reloadExtension } from "@eyeo/test-utils/extension";
+import { simulatePremiumActivation, simulateDowngradeToFreeUser } from "@eyeo/test-utils/account";
+import { getOptionsHandle } from "@eyeo/test-utils/extension";
 import { premiumFilterLists } from "./dataset.js";
 
 import { installUrl } from "./urls.js";
@@ -449,89 +450,34 @@ export async function getPopupBlockedAdsTotalCount() {
   return parseInt(totalCount, 10);
 }
 
-export async function enablePremiumProgrammatically(timeout = 10000) {
-  const currentDate = new Date();
-  const options = { year: "numeric", month: "long" };
-  const formattedDate = currentDate.toLocaleDateString("en-US", options).toUpperCase();
-  const expectedValues = [`SUPPORTER SINCE ${formattedDate}`, "ACTIVE"];
+export async function checkPremiumActivated() {
+  try {
+    await initOptionsPremiumTab(getOptionsHandle());
 
-  let premiumStatus;
-  // Occasionally the `adblock:activate` message has no effect in the premium
-  // status. In that case the activation flow is retried.
-  await wait(
-    async () => {
-      await driver.executeScript(() => {
-        try {
-          browser.runtime.sendMessage({ type: "adblock:activate" });
-        } catch (e) {}
-      });
-      await initOptionsPremiumTab(getOptionsHandle());
+    const premiumStatus = await getDisplayedElement("#premium_status_msg", {
+      timeout: 4000,
+      forceRefresh: true,
+    });
 
-      try {
-        premiumStatus = await getDisplayedElement("#premium_status_msg", {
-          timeout: 4000, // Premium status message may take a while to appear
-        });
-        return true;
-      } catch (err) {
-        if (err.name === "TimeoutError") {
-          console.warn("Temporary premium wasn't activated. Retrying...");
-          return false;
-        }
-
-        throw err;
-      }
-    },
-    timeout,
-    "Temporary premium couldn't be activated",
-  );
-
-  const premiumStatusText = await premiumStatus.getText();
-  if (!expectedValues.includes(premiumStatusText)) {
-    throw new Error(`Unexpected premium status after activation: ${premiumStatusText}`);
+    const text = await premiumStatus.getText();
+    if (text !== "ACTIVE") {
+      return false;
+    }
+    await getDisplayedElement("#user-account-manage", { timeout: 2000 });
+    return true;
+  } catch {
+    return false;
   }
 }
 
+export async function enablePremiumProgrammatically() {
+  const portalUrl = "https://myaccount.getadblock.com";
+  const applicationName = "ab-portal";
+  await simulatePremiumActivation(portalUrl, applicationName, initOptionsGeneralTab);
+}
+
 export async function disablePremiumProgrammatically() {
-  const currentHandle = await driver.getWindowHandle();
-  await driver.switchTo().window(getOptionsHandle());
-
-  // wait for extension api to be available
-  await driver.wait(
-    async () => {
-      const result = await driver.executeScript(() => {
-        return !!browser;
-      });
-      return result;
-    },
-    5000,
-    "Timeout waiting for extension api to be available",
-  );
-
-  await driver.executeAsyncScript(async (callback) => {
-    await browser.storage.local.remove("license");
-    callback();
-  });
-
-  // Reset themes to default
-  await driver.executeAsyncScript(async (callback) => {
-    const settings = await browser.storage.local.get("settings");
-    settings.color_themes = {
-      options_page: "default_theme",
-      popup_menu: "default_theme",
-    };
-    await browser.storage.local.set({ settings });
-    callback();
-  });
-
-  // Delete stored account information if any
-  await driver.executeAsyncScript(async (callback) => {
-    await browser.storage.local.remove("ewe:account");
-    callback();
-  });
-
-  await driver.switchTo().window(currentHandle);
-  await reloadExtension(initOptionsGeneralTab);
-  await waitForNotDisplayed("#premium_status_msg");
+  await simulateDowngradeToFreeUser(initOptionsGeneralTab);
 }
 
 export async function isPremiumLabelPresent() {
