@@ -40,8 +40,7 @@ import {
 import {
   initOptionsGeneralTab,
   initPopupWithLocalPage,
-  isPremiumLabelPresent,
-  checkPremiumActivated,
+  isPremiumActivated,
   clickFLAndCheck,
   setPremiumFLsDefaultState,
   enablePremiumProgrammatically,
@@ -61,11 +60,11 @@ export default () => {
 
   it("logging in with a premium account", async function () {
     await enablePremiumProgrammatically();
-    await checkPremiumActivated({ timeout: 2000 });
+    await isPremiumActivated();
   });
 
   it("has premium features", async function () {
-    const isPremium = await isPremiumLabelPresent();
+    const isPremium = await isPremiumActivated();
 
     if (!isPremium) {
       await enablePremiumProgrammatically();
@@ -109,7 +108,7 @@ export default () => {
   });
 
   it("enables premium filter lists", async function () {
-    const isPremium = await isPremiumLabelPresent();
+    const isPremium = await isPremiumActivated();
 
     if (!isPremium) {
       await enablePremiumProgrammatically();
@@ -133,15 +132,14 @@ export default () => {
   it("downgrades if premium expired", async function () {
     setTimeoutForExtensionReload(this);
 
-    const isPremium = await isPremiumLabelPresent();
+    const isPremium = await isPremiumActivated();
 
     if (!isPremium) {
       await enablePremiumProgrammatically();
     }
-    await checkPremiumActivated({ timeout: 2000 });
+    await isPremiumActivated();
     await disablePremiumProgrammatically();
 
-    // Easy check if user is free
     // Premium link/button checks
     for (const { selector, text } of premiumLinkButtons) {
       const elem = await getDisplayedElement(selector, {

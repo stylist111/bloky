@@ -32,7 +32,7 @@ import {
 import { customBlockingFilter } from "@eyeo/test-utils/host-filters";
 
 import {
-  isPremiumLabelPresent,
+  isPremiumActivated,
   enablePremiumProgrammatically,
   initOptionsAdvancedTab,
   initOptionsGeneralTab,
@@ -74,7 +74,7 @@ export default () => {
     this.timeout(100000); // Long test with many checks, including the extension reload
 
     const maxAdsBlocked = 15;
-    const isPremium = await isPremiumLabelPresent();
+    const isPremium = await isPremiumActivated();
 
     if (!isPremium) {
       await enablePremiumProgrammatically();

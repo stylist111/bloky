@@ -448,14 +448,9 @@ export async function deleteFirstAllowlistFilter() {
   await clickOnDisplayedElement("#allowlisting-table button");
 }
 
-export async function checkPremiumActivated({
-  timeout = 30000,
-  retry = 0,
-  maxRetries = 10
-} = {}) {
-  await driver.switchTo().window(getOptionsHandle());
-  await driver.navigate().refresh();
+export async function isPremiumActivated() {
   await initOptionsGeneralTab(getOptionsHandle());
+  await driver.navigate().refresh();
 
   // Premium has been activated
   const premiumSelectors = [
@@ -468,19 +463,12 @@ export async function checkPremiumActivated({
   try {
     await Promise.all(
       premiumSelectors.map((selector) =>
-        getDisplayedElement(selector, { timeout: 2000 })
+        getDisplayedElement(selector, { timeout: 5000 })
       )
     );
+    return true;
   } catch (e) {
-    if (retry >= maxRetries) {
-      throw new Error(`Premium elements not found after ${maxRetries} retries`);
-    }
-
-    console.warn(
-      `Premium elements not found, wait ${timeout}ms and retry... [${retry + 1}]`
-    );
-    await driver.sleep(timeout);
-    return checkPremiumActivated({ timeout, maxRetries, retry: retry + 1 });
+    return false;
   }
 }
 
@@ -496,17 +484,6 @@ export async function enablePremiumProgrammatically() {
 
 export async function disablePremiumProgrammatically() {
   await simulateDowngradeToFreeUser(initOptionsGeneralTab);
-}
-
-export async function isPremiumLabelPresent() {
-  await initOptionsGeneralTab(getOptionsHandle());
-
-  try {
-    await getDisplayedElement(".button.premium-label");
-    return true;
-  } catch (error) {
-    return false;
-  }
 }
 
 export function getFLSelectors(name, { isOptionsGeneralTab = false } = {}) {

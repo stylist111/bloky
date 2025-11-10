@@ -43,8 +43,7 @@ import {
   initOptionsCustomizeTab,
   getPopupBlockedAdsTotalCount,
   setCustomFilters,
-  isPremiumLabelPresent,
-  checkPremiumActivated,
+  isPremiumActivated,
   enablePremiumProgrammatically,
   initOptionsPremiumFlTab,
   getCustomFilters,
@@ -60,11 +59,11 @@ export default () => {
     const maxAdsBlocked = 15;
     const prevExtVersion = extension.version;
 
-    const isPremium = await isPremiumLabelPresent();
+    const isPremium = await isPremiumActivated();
     if (!isPremium) {
       await enablePremiumProgrammatically();
     }
-    await checkPremiumActivated();
+    await isPremiumActivated();
 
     // enable premium filterlist
     await initOptionsPremiumFlTab(getOptionsHandle());

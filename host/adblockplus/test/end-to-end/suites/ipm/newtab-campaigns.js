@@ -53,7 +53,7 @@ import {
 } from "../../utils/events.js";
 import {
   initOptionsGeneralTab,
-  isPremiumLabelPresent,
+  isPremiumActivated,
   enablePremiumProgrammatically,
   disablePremiumProgrammatically,
   setMarketingOptOutState
@@ -234,7 +234,7 @@ export default (fragmentType) => {
 
   it("does not trigger a new tab campaign for premium user", async function () {
     this.timeout(60000);
-    const isPremium = await isPremiumLabelPresent();
+    const isPremium = await isPremiumActivated();
 
     if (!isPremium) {
       await enablePremiumProgrammatically();
@@ -294,7 +294,7 @@ export default (fragmentType) => {
   });
 
   it("force triggers a new tab campaign", async function () {
-    const isPremium = await isPremiumLabelPresent();
+    const isPremium = await isPremiumActivated();
 
     if (!isPremium) {
       await enablePremiumProgrammatically();

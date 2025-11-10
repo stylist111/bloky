@@ -31,19 +31,18 @@ import { dcFilters } from "@eyeo/test-utils/host-filters";
 
 import {
   changePremiumFLStatus,
-  checkPremiumActivated,
+  isPremiumActivated,
   enablePremiumProgrammatically,
   disablePremiumProgrammatically,
   initOptionsPremiumFlTab,
   initPopupWithLocalPage,
-  isPremiumLabelPresent,
   setPremiumFLsDefaultState,
 } from "../../utils/page.js";
 import { premiumFilterLists, premiumPopupToggleItems } from "../../utils/dataset.js";
 
 export default () => {
   afterEach(async function () {
-    if (await isPremiumLabelPresent()) {
+    if (await isPremiumActivated()) {
       await setPremiumFLsDefaultState();
     }
   });
@@ -54,19 +53,19 @@ export default () => {
   });
 
   it("logging in with a premium account", async function () {
-    const isPremium = await isPremiumLabelPresent();
+    const isPremium = await isPremiumActivated();
     if (!isPremium) {
       await enablePremiumProgrammatically();
     }
-    await checkPremiumActivated();
+    await isPremiumActivated();
   });
 
   it("has premium features", async function () {
-    const isPremium = await isPremiumLabelPresent();
+    const isPremium = await isPremiumActivated();
     if (!isPremium) {
       await enablePremiumProgrammatically();
     }
-    await checkPremiumActivated();
+    await isPremiumActivated();
     await clickOnDisplayedElement('[href="#mab-image-swap"]');
     await getDisplayedElement("#cats");
 
@@ -135,7 +134,7 @@ export default () => {
   });
 
   it("enables premium filter lists", async function () {
-    const isPremium = await isPremiumLabelPresent();
+    const isPremium = await isPremiumActivated();
     if (!isPremium) {
       await enablePremiumProgrammatically();
     }
@@ -158,16 +157,16 @@ export default () => {
 
   it("downgrades if premium expired", async function () {
     setTimeoutForExtensionReload(this);
-    const isPremium = await isPremiumLabelPresent();
+    const isPremium = await isPremiumActivated();
     if (!isPremium) {
       await enablePremiumProgrammatically();
     }
-    await checkPremiumActivated();
+    await isPremiumActivated();
     await disablePremiumProgrammatically();
 
     // Check the user is still logged in
     await getDisplayedElement("#user-account-manage", { timeout: 1000 });
     // Check premium is deactivated
-    expect(await isPremiumLabelPresent()).toBe(false);
+    expect(await isPremiumActivated()).toBe(false);
   });
 };

@@ -28,7 +28,7 @@ import {
   enablePremiumProgrammatically,
   sendExtCommandInTrustedIframe,
   initOptionsFiltersTab,
-  isPremiumLabelPresent,
+  isPremiumActivated,
   setAADefaultState,
   setPausedStateFromPopup,
   disablePremiumProgrammatically,
@@ -47,7 +47,7 @@ function getCombinations() {
 
 async function setExtensionState({ premium, aa, allowlist }) {
   if (premium) {
-    const isPremium = await isPremiumLabelPresent();
+    const isPremium = await isPremiumActivated();
     if (!isPremium) {
       await enablePremiumProgrammatically();
     }

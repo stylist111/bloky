@@ -22,7 +22,7 @@ import {
   verifyInjectedExtensionData
 } from "@eyeo/test-utils/extension";
 import {
-  isPremiumLabelPresent,
+  isPremiumActivated,
   getPopupBlockedAdsTotalCount,
   callUIExperimentsAPI
 } from "../utils/page.js";
@@ -40,7 +40,7 @@ export async function getActualExtensionData() {
   );
   await prepareExtensionHook();
   const { version } = extension;
-  const isPremium = await isPremiumLabelPresent();
+  const isPremium = await isPremiumActivated();
   const id = await driver.executeScript(() => {
     return browser.storage.local
       .get("pref:installation_id")

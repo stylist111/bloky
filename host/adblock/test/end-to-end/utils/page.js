@@ -450,7 +450,7 @@ export async function getPopupBlockedAdsTotalCount() {
   return parseInt(totalCount, 10);
 }
 
-export async function checkPremiumActivated() {
+export async function isPremiumActivated() {
   try {
     await initOptionsPremiumTab(getOptionsHandle());
 
@@ -478,17 +478,6 @@ export async function enablePremiumProgrammatically() {
 
 export async function disablePremiumProgrammatically() {
   await simulateDowngradeToFreeUser(initOptionsGeneralTab);
-}
-
-export async function isPremiumLabelPresent() {
-  await initOptionsPremiumTab(getOptionsHandle());
-
-  try {
-    await getDisplayedElement("#premium_status_msg");
-    return true;
-  } catch (error) {
-    return false;
-  }
 }
 
 export async function callUIExperimentsAPI(methodName, ...params) {

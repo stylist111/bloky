@@ -31,7 +31,7 @@ import {
   setAADefaultState,
   disablePremiumProgrammatically,
   initOptionsGeneralTab,
-  isPremiumLabelPresent,
+  isPremiumActivated,
   loadPageWithTrustedIframe
 } from "../../utils/page.js";
 import {
@@ -50,7 +50,7 @@ function getCombinations() {
 
 async function setExtensionState({ premium, aa, allowlist }) {
   if (premium) {
-    const isPremium = await isPremiumLabelPresent();
+    const isPremium = await isPremiumActivated();
     if (!isPremium) {
       await enablePremiumProgrammatically();
     }

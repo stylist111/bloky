@@ -26,7 +26,7 @@ import {
 import {
   getUserIdFromStorage,
   getPopupBlockedAdsTotalCount,
-  isPremiumLabelPresent,
+  isPremiumActivated,
   callUIExperimentsAPI,
 } from "../utils/page.js";
 
@@ -40,7 +40,7 @@ export async function getActualExtensionData() {
   const blockCount = await blockAds(-1, maxAdsBlocked, getPopupBlockedAdsTotalCount);
   await prepareExtensionHook();
   const { version } = extension;
-  const isPremium = await isPremiumLabelPresent();
+  const isPremium = await isPremiumActivated();
   const experimentFlags = await callUIExperimentsAPI("getFlags");
   return { id, isPremium, version, blockCount, experimentFlags };
 }
