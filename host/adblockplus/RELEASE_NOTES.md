@@ -1,5 +1,7 @@
 # Unreleased
 
+# 4.31.0 - 2025-11-11
+
 - Expanded "Show useful notifications" option to apply to all marketing
   messages (EXT-1080).
 
