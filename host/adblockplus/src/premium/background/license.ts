@@ -352,6 +352,12 @@ async function migrateToUserAccount(): Promise<void> {
   try {
     const userId = Prefs.get("premium_user_id") as string;
     const license = Prefs.get("premium_license") as License;
+
+    // If there's no valid license code throw an error
+    if (!license.code) {
+      throw new Error("No valid license code for migration");
+    }
+
     await ewe.account.logInWithLicense({
       userId,
       licenseId: license.code

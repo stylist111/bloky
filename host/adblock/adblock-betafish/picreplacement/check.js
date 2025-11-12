@@ -605,6 +605,11 @@ async function migrateToUserAccount() {
 
   // attempt to log in with the license
   try {
+    // If there's no valid license code throw an error
+    if (!License.isLicenseCodeValid() || !License.get().code) {
+      throw new Error("No valid license code for migration");
+    }
+
     const userId = await getUserId();
     await ewe.account.logInWithLicense({
       userId,
