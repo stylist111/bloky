@@ -43,7 +43,13 @@ async function editManifest(data, version, channel, target) {
     delete data.minimum_opera_version;
     if ("action" in data) delete data.action.default_popup;
     if ("browser_action" in data) delete data.browser_action.default_popup;
-    delete data.optional_permissions;
+
+    // For Firefox retain optional_permissions but include only those supported.
+    const firefoxUnsupportedOptionalPermissions = ["contentSettings"];
+    data.optional_permissions = data.optional_permissions.filter(
+      (p) => !firefoxUnsupportedOptionalPermissions.includes(p)
+    );
+
     delete data.storage;
     delete data.externally_connectable;
 

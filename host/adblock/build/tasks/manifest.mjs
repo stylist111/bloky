@@ -47,7 +47,12 @@ async function editManifest(dataParam, version, channel, target, extensionId) {
     delete data.storage;
     delete data.minimum_chrome_version;
     delete data.minimum_opera_version;
-    delete data.optional_permissions;
+
+    // For Firefox retain optional_permissions but include only those supported.
+    const firefoxUnsupportedOptionalPermissions = ["contentSettings"];
+    data.optional_permissions = data.optional_permissions.filter(
+      (p) => !firefoxUnsupportedOptionalPermissions.includes(p),
+    );
 
     data.applications.gecko = gecko;
 
