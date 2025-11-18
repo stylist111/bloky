@@ -1,5 +1,7 @@
 # Unreleased
 
+# 6.32.1 - 2025-11-18
+
 - Updated snippets to 2.4.3
 
 # 6.32.0 - 2025-11-11
