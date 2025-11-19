@@ -89,6 +89,13 @@ describe("Filter classes", function() {
         }
         if (filter instanceof BlockingFilter) {
           result.push("csp=" + filter.csp);
+          if (filter.addHeader) {
+            const {phase, name, value} = filter.addHeader;
+            result.push("addheader=" + phase + ":" + name + ":" + value);
+          }
+          else {
+            result.push("addheader=null");
+          }
           result.push("rewrite=" + filter.rewrite);
         }
         else if (filter instanceof AllowingFilter) {
@@ -164,6 +171,7 @@ describe("Filter classes", function() {
     }
     if (type == "blocking") {
       addProperty("csp", "null");
+      addProperty("addheader", "null");
       addProperty("rewrite", "null");
     }
     if (type == "elemhide" || type == "elemhideexception" ||
@@ -397,6 +405,29 @@ describe("Filter classes", function() {
     compareFilter("blah$csp=foo,csp=base-uri", ["type=invalid", "reason=filter_invalid_csp"]);
     compareFilter("blah$csp=foo,csp=upgrade-insecure-requests", ["type=invalid", "reason=filter_invalid_csp"]);
     compareFilter("blah$csp=foo,csp=ReFeRReR", ["type=invalid", "reason=filter_invalid_csp"]);
+
+    // addheader option
+    compareFilter("blah$addheader", ["type=invalid", "reason=filter_invalid_addheader"]);
+    compareFilter("blah$addheader=", ["type=invalid", "reason=filter_invalid_addheader"]);
+    compareFilter("blah$addheader=:", ["type=invalid", "reason=filter_invalid_addheader"]);
+    compareFilter("blah$addheader=set-cookie", ["type=invalid", "reason=filter_invalid_addheader"]);
+    compareFilter("blah$addheader=set-cookie:", ["type=invalid", "reason=filter_invalid_addheader"]);
+    compareFilter("blah$addheader=:header-value", ["type=invalid", "reason=filter_invalid_addheader"]);
+    compareFilter("blah$addheader=header name:value", ["type=invalid", "reason=filter_invalid_addheader"]);
+    compareFilter("blah$addheader=header_name=value", ["type=invalid", "reason=filter_invalid_addheader"]);
+    compareFilter("blah$addheader=response:header name:value", ["type=invalid", "reason=filter_invalid_addheader"]);
+    compareFilter("blah$addheader=request:header name:value", ["type=invalid", "reason=filter_invalid_addheader"]);
+    compareFilter("blah$addheader=response:header(name:value", ["type=invalid", "reason=filter_invalid_addheader"]);
+    compareFilter("blah$addheader=request:header(name:value", ["type=invalid", "reason=filter_invalid_addheader"]);
+
+    // Forbidden header names
+    compareFilter("blah$addheader=request:AUTHORIZATION:value", ["type=invalid", "reason=filter_invalid_addheader"]);
+    compareFilter("blah$addheader=request:x-xss-protection:false", ["type=invalid", "reason=filter_invalid_addheader"]);
+
+    // Valid addheader filters
+    compareFilter("blah$addheader=response:set-cookie:value", ["type=blocking", "contentType=" + (contentTypes.ADDHEADER | contentTypes.DOCUMENT | RESOURCE_TYPES), "addheader=response:set-cookie:value"]);
+    compareFilter("blah$addheader=set-cookie:value", ["type=blocking", "contentType=" + (contentTypes.ADDHEADER | contentTypes.DOCUMENT | RESOURCE_TYPES), "addheader=response:set-cookie:value"]);
+    compareFilter("blah$addheader=request:x-test-header:value", ["type=blocking", "contentType=" + (contentTypes.ADDHEADER | contentTypes.DOCUMENT | RESOURCE_TYPES), "addheader=request:x-test-header:value"]);
   });
 
   it("Element hiding rules", function() {
@@ -745,6 +776,10 @@ describe("Filter classes", function() {
                  "/foo$/$csp=script-src http://example.com/?$1=1&$2=2&$3=3");
     assert.equal(Filter.normalize("||content.server.com/files/*.php$rewrite= $1"),
                  "||content.server.com/files/*.php$rewrite=$1");
+
+    // addheader
+    assert.equal(Filter.normalize(" b $addheader = response:x-some-header:some value"),
+                 "b$addheader=response:x-some-header:some value");
   });
 
   it("InvalidFilter option propagated", function() {

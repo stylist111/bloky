@@ -307,6 +307,20 @@ describe("contentTypes.CSP", function() {
   });
 });
 
+describe("contentTypes.ADDHEADER", function() {
+  it("should be numerical", function() {
+    assertNumerical(contentTypes.ADDHEADER);
+  });
+
+  it("should be a positive non-fractional power of 2", function() {
+    assertPositivePowerOfTwo(contentTypes.ADDHEADER);
+  });
+
+  it("should be less than or equal to 2 ** 30", function() {
+    assertLessThanEqualTwoPowThirty(contentTypes.ADDHEADER);
+  });
+});
+
 describe("contentTypes.HEADER", function() {
   it("should be numerical", function() {
     assertNumerical(contentTypes.HEADER);

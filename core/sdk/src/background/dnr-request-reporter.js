@@ -20,8 +20,10 @@ import browser from "webextension-polyfill";
 import {logItem, loggingEnabled} from "./diagnostics.js";
 import {filterEngine} from "./core.js";
 import {default as initializer} from "./initializer.js";
-import {getRequestContentType, getFrameInfoFromWebrequestDetails,
-        getParentFrameInfoFromWebrequestDetails, sanitizeInitiator}
+import {
+  getRequestContentType, getFrameInfoFromWebrequestDetails,
+  getParentFrameInfoFromWebrequestDetails, sanitizeInitiator, resourceTypes
+}
   from "./request-filter.js";
 
 import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
@@ -30,6 +32,10 @@ import {BlockingFilter, AllowingFilter}
 import {parseURL} from "adblockpluscore/lib/url.js";
 import {trace} from "./debugging.js";
 import {isSafari} from "./info.js";
+
+// Set of request IDs for which headers have been changed
+// by addheader or csp filters, to avoid logging unmatched entries
+const headersWereChanged = new Set();
 
 function getContext(details) {
   let contentType = getRequestContentType(details);
@@ -183,6 +189,85 @@ async function onErrorOccurred(details) {
   }
 }
 
+/**
+ * Logs any addheader filters that were applied to the request/response.
+ *
+ * @param {string} phase "request" or "response"
+ * @param {string} docDomain the document domain for the request
+ * @param {boolean} specificOnly  whether to only consider specific-only filters
+ * @param {WebRequestDetails} details object representing the request.
+ */
+function logAddHeaderFilters(
+  phase,
+  docDomain,
+  specificOnly,
+  details
+) {
+  // Allow for $document addheader filters
+  const customContentType =
+    resourceTypes.get(details.type) || contentTypes.OTHER;
+  const typeMask = contentTypes.ADDHEADER | customContentType;
+  const matchInfo = {docDomain, specificOnly, method: "addheader"};
+  const matches = filterEngine.defaultMatcher.search(
+    details.url,
+    typeMask,
+    docDomain,
+    null, // siteKey is not available here for DNR
+    specificOnly,
+    "blocking"
+  );
+
+  const headers = phase === "request" ? details.requestHeaders : details.responseHeaders;
+  const addHeaderMatches = matches.blocking.filter(
+    f => f.addHeader.phase === phase
+  );
+
+  for (const filter of addHeaderMatches) {
+    const {name, value} = filter.addHeader;
+
+    let requestHeaderWasAdded = headers.some(header => {
+      return header.name.toLowerCase() === name.toLowerCase() &&
+        header.value === value;
+    });
+
+    if (requestHeaderWasAdded) {
+      headersWereChanged.add(details.requestId);
+      logItem(details, filter, matchInfo);
+    }
+  }
+}
+
+/**
+ * Handles onSendHeaders events to log any addheader filters
+ * that apply to the request. We use this event instead of onBeforeSendHeaders
+ * because DNR added headers are not available there.
+ * @param {WebRequestDetails} details object representing the request.
+ * @returns {Promise<void>}
+ */
+async function onSendHeaders(details) {
+  trace({details});
+
+  if (!loggingEnabled(details.tabId)) {
+    return;
+  }
+
+  await initializer.start();
+
+  const {
+    allowingDocumentFilter,
+    specificOnly,
+    docDomain
+  } = getContext(details);
+
+  if (allowingDocumentFilter) {
+    // This request is allow-listed, so no addheader filters would have been
+    // applied.
+    return;
+  }
+
+  logAddHeaderFilters("request", docDomain, specificOnly, details);
+}
+
 async function onCompleted(details) {
   trace({details});
 
@@ -232,14 +317,13 @@ async function onCompleted(details) {
     );
     if (allowingCspFilter && allowingCspFilter instanceof AllowingFilter) {
       logItem(details, allowingCspFilter, cspMatchInfo);
-      return;
+      headersWereChanged.add(details.requestId);
     }
 
     let cspFilters = filterEngine.defaultMatcher.search(
       details.url, cspTypeMask, hostname, null, specificOnly, "blocking"
     );
 
-    let appliedCspFilters = false;
     for (let cspFilter of cspFilters.blocking) {
       let cspFilterWasApplied = details.responseHeaders.some(header => {
         return header.name.toLowerCase() == "content-security-policy" &&
@@ -247,13 +331,16 @@ async function onCompleted(details) {
       });
       if (cspFilterWasApplied) {
         logItem(details, cspFilter, cspMatchInfo);
-        appliedCspFilters = true;
+        headersWereChanged.add(details.requestId);
       }
     }
+  }
 
-    if (appliedCspFilters) {
-      return;
-    }
+  logAddHeaderFilters("response", docDomain, specificOnly, details);
+
+  if (headersWereChanged.has(details.requestId)) {
+    headersWereChanged.delete(details.requestId);
+    return;
   }
 
   let matchInfo = {
@@ -288,7 +375,20 @@ export function start() {
 
   browser.webRequest.onBeforeRedirect.addListener(onBeforeRedirect, eventArgs);
   browser.webRequest.onErrorOccurred.addListener(onErrorOccurred, eventArgs);
-  browser.webRequest.onCompleted.addListener(onCompleted, eventArgs, ["responseHeaders"]);
+  // On Chromium the headers modified are not available
+  // without specifying the "extraHeaders" param
+  browser.webRequest.onCompleted.addListener(onCompleted, eventArgs,
+    browser.webRequest.OnCompletedOptions ?
+      Object.values(browser.webRequest.OnCompletedOptions) :
+      ["responseHeaders"]
+  );
+  // On Chromium the headers modified are not available
+  // without specifying the "extraHeaders" param
+  browser.webRequest.onSendHeaders.addListener(onSendHeaders, eventArgs,
+    browser.webRequest.OnSendHeadersOptions ?
+      Object.values(browser.webRequest.OnSendHeadersOptions) :
+      ["requestHeaders"]
+  );
 
   started = true;
 }

@@ -46,6 +46,43 @@ const INVALID_CSP = /(;|^) ?(base-uri|referrer|report-to|report-uri|upgrade-inse
 exports.INVALID_CSP = INVALID_CSP;
 
 /**
+ * Regular expression that matches invalid header names
+ * https://datatracker.ietf.org/doc/html/rfc7230#section-3.2.6
+ * @type {RegExp}
+ */
+const INVALID_HEADER_NAME_REGEX = /[^!#$%&'*+\-.^_`|~A-Za-z0-9]/;
+
+/**
+ * Regular expression that matches invalid header values
+ * https://datatracker.ietf.org/doc/html/rfc7230#section-3.2.4
+ * @type {RegExp}
+ */
+const INVALID_HEADER_VALUE_REGEX = /[^\x20-\x7E]/;
+
+/**
+ * Set of forbidden header names for $addheader option
+ * @type {Set<string>}
+ */
+const FORBIDDEN_HEADER_NAMES = new Set([
+  "x-content-type-options",
+  "x-download-options",
+  "x-frame-options",
+  "x-permitted-cross-domain-policies",
+  "x-powered-by",
+  "x-xss-protection"
+]);
+
+/**
+ * Set of privileged header names for $addheader option
+ * @type {Set<string>}
+ */
+const PRIVILEGED_HEADER_NAMES = new Set([
+  "set-cookie"
+]);
+
+exports.PRIVILEGED_HEADER_NAMES = PRIVILEGED_HEADER_NAMES;
+
+/**
  * The Error type returned by parse.
  *
  * For example `filter_unknown_option` will have `option`.
@@ -122,6 +159,7 @@ exports.parse = function parse(text) {
   let csp = null;
   let rewrite = null;
   let header = null;
+  let addHeader = null;
   let options;
   let match = text.includes("$") ? FILTER_OPTIONS.exec(text) : null;
   if (match) {
@@ -130,6 +168,7 @@ exports.parse = function parse(text) {
     options = match[1].split(",");
     let cspSet = false;
     let headerSet = false;
+    let addHeaderSet = false;
 
     for (let option of options) {
       let value = null;
@@ -160,6 +199,74 @@ exports.parse = function parse(text) {
           }
           cspSet = true;
           csp = value;
+        }
+        else if (type === contentTypes.ADDHEADER) {
+          if (!blocking || !value) {
+            return new FilterParsingError("filter_invalid_addheader", {text: origText});
+          }
+
+          addHeaderSet = true;
+
+          const parts = value.split(":");
+
+          // Must have at least "name:value"
+          if (parts.length < 2) {
+            return new FilterParsingError("filter_invalid_addheader", {text: origText});
+          }
+
+          // Extract potential phase, header name, and value
+          let phase = "response"; // default
+          let headerName;
+          let headerValue;
+
+          const maybePhase = parts[0].trim().toLowerCase();
+
+          if (["request", "response"].includes(maybePhase)) {
+            // Format: requestOrResponse:headerName:headerValue
+            if (parts.length < 3) {
+              return new FilterParsingError("filter_invalid_addheader", {text: origText});
+            }
+            phase = maybePhase;
+            headerName = parts[1].trim().toLowerCase();
+            headerValue = parts.slice(2).join(":").trim(); // preserve extra colons in value
+          }
+          else {
+            // Format: headerName:headerValue
+            headerName = parts[0].trim().toLowerCase();
+            headerValue = parts.slice(1).join(":").trim();
+          }
+
+          // Validate name/value presence
+          if (!headerName || !headerValue) {
+            return new FilterParsingError("filter_invalid_addheader", {
+              text: origText
+            });
+          }
+
+          // Validate header syntax and allowed names
+          if (
+            INVALID_HEADER_NAME_REGEX.test(headerName) ||
+            FORBIDDEN_HEADER_NAMES.has(headerName)
+          ) {
+            return new FilterParsingError("filter_invalid_addheader", {
+              text: origText
+            });
+          }
+
+          // Only allow non-standard headers or privileged headers
+          if (!headerName.startsWith("x-") && !PRIVILEGED_HEADER_NAMES.has(headerName)) {
+            return new FilterParsingError("filter_invalid_addheader", {
+              text: origText
+            });
+          }
+
+          if (INVALID_HEADER_VALUE_REGEX.test(headerValue)) {
+            return new FilterParsingError("filter_invalid_addheader", {
+              text: origText
+            });
+          }
+
+          addHeader = {phase, name: headerName, value: headerValue};
         }
         else if (type === contentTypes.HEADER) {
           if (blocking && !value) {
@@ -243,15 +350,23 @@ exports.parse = function parse(text) {
         }
       }
     }
-    if (cspSet || headerSet) {
+    if (cspSet || headerSet || addHeaderSet) {
       if (contentType == null) {
         contentType = RESOURCE_TYPES;
+
+        // Allow the use of $document on $addheader rules
+        if (addHeaderSet) {
+          contentType |= contentTypes.DOCUMENT;
+        }
       }
       if (cspSet) {
         contentType |= contentTypes.CSP;
       }
       if (headerSet) {
         contentType |= contentTypes.HEADER;
+      }
+      if (addHeaderSet) {
+        contentType |= contentTypes.ADDHEADER;
       }
     }
   }
@@ -313,7 +428,8 @@ exports.parse = function parse(text) {
     sitekeys,
     header,
     rewrite,
-    csp
+    csp,
+    addHeader
   };
 };
 
@@ -409,7 +525,7 @@ exports.normalize = function(text, dontSanitize = false) {
   // For most regexp filters we strip all spaces, but $csp filter options
   // are allowed to contain single (non trailing) spaces.
   let strippedText = removeSpaces(text);
-  if (!strippedText.includes("$") || !/\b(csp|header)=/i.test(strippedText)) {
+  if (!strippedText.includes("$") || !/\b(csp|header|addheader)=/i.test(strippedText)) {
     return strippedText;
   }
 
@@ -434,7 +550,7 @@ exports.normalize = function(text, dontSanitize = false) {
   let options = optionsText.split(",");
   for (let i = 0; i < options.length; i++) {
     let option = options[i];
-    let optionMatch = /^ *(c *s *p|h *e *a *d *e *r) *=/i.exec(option);
+    let optionMatch = /^ *(c *s *p|h *e *a *d *e *r|a *d *d *h *e *a *d *e *r) *=/i.exec(option);
     if (optionMatch) {
       options[i] = removeSpaces(optionMatch[0]) +
         option.substring(optionMatch[0].length).trim().replace(/ +/g, " ");

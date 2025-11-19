@@ -22,7 +22,7 @@ import {TEST_PAGES_URL, TEST_PAGES_DOMAIN, CROSS_DOMAIN_URL, SITEKEY,
 import {Page, Resource, executeScript, shouldBeLoaded, supportsWebBundle,
         waitForSubscriptionsToDownload, setMinTimeout, setEndpointResponse,
         isChromiumBased, waitForSubscriptionToBeSynchronized, sleep,
-        waitForAssertion, isMV3, conditionallyRetryAssertion}
+        waitForAssertion, isMV3, conditionallyRetryAssertion, getRequestLogs}
   from "./utils.js";
 import {subTestCustom1, subTestAllowingFilter} from "./fixtures/subscriptions.js";
 import {addFilter, EWE} from "./messaging.js";
@@ -727,6 +727,136 @@ describe("Blocking", function() {
       await page.loaded;
       page.reload();
       await page.expectResource("image.png").toBeLoaded();
+    });
+  });
+
+  describe("Header injection", function() {
+    let headersByUrl;
+
+    function onCompleted(details) {
+      headersByUrl[details.url] = Object.fromEntries(
+        details.responseHeaders.map(header => [header.name, header.value])
+      );
+    }
+
+    beforeEach(function() {
+      headersByUrl = {};
+      browser.webRequest.onCompleted.addListener(onCompleted, {
+        urls: ["http://*/*", "https://*/*"]
+      }, ["responseHeaders"]);
+    });
+
+    afterEach(function() {
+      browser.webRequest.onCompleted.removeListener(onCompleted);
+    });
+
+    for (let headerType of ["request", "response"]) {
+      async function expectHeaderSet(url, header, value) {
+        if (headerType === "request") {
+          let requestLogs = await getRequestLogs(url);
+          let headers = requestLogs.pop().headers;
+
+          expect(headers[header]).toEqual(value);
+        }
+        else if (headerType === "response") {
+          await waitForAssertion(async() => {
+            expect(headersByUrl[url][header]).toEqual(value);
+          });
+        }
+      }
+
+      async function expectHeaderNotSet(url, header) {
+        if (headerType === "request") {
+          let requestLogs = await getRequestLogs(url);
+          let headers = requestLogs.pop().headers;
+
+          expect(headers[header]).toBeUndefined();
+        }
+        else if (headerType === "response") {
+          await waitForAssertion(async() => {
+            expect(headersByUrl[url]).toBeDefined();
+            expect(headersByUrl[url][header]).toBeUndefined();
+          });
+        }
+      }
+
+      it(`injects a header into a ${headerType} for a main frame`, async function() {
+        await addFilter(`|${TEST_PAGES_URL}/image.html^$addheader=${headerType}:x-test-header:test-value`);
+
+        await new Page("image.html").loaded;
+
+        await expectHeaderSet(`${TEST_PAGES_URL}/image.html`, "x-test-header", "test-value");
+      });
+
+      it(`injects a header into a ${headerType} for an iframe`, async function() {
+        await addFilter(`|${TEST_PAGES_URL}/image.html^$addheader=${headerType}:x-test-header:test-value`);
+
+        await new Page("iframe.html").loaded;
+
+        await expectHeaderSet(`${TEST_PAGES_URL}/image.html`, "x-test-header", "test-value");
+      });
+
+      it(`injects a header into a ${headerType} for a resource`, async function() {
+        await addFilter(`|${TEST_PAGES_URL}/image.png^$addheader=${headerType}:x-test-header:test-value`);
+
+        await new Page("image.html").loaded;
+
+        await expectHeaderSet(`${TEST_PAGES_URL}/image.png`, "x-test-header", "test-value");
+      });
+
+      it(`injects a header into a ${headerType} for main frames only using the $document option`, async function() {
+        await addFilter(`|${TEST_PAGES_URL}^$document,addheader=${headerType}:x-test-header:test-value`);
+
+        await new Page("iframe.html").loaded;
+
+        await expectHeaderSet(`${TEST_PAGES_URL}/iframe.html`, "x-test-header", "test-value");
+        await expectHeaderNotSet(`${TEST_PAGES_URL}/image.html`, "x-test-header");
+        await expectHeaderNotSet(`${TEST_PAGES_URL}/image.png`, "x-test-header");
+      });
+
+      it(`injects a header into a ${headerType} for iframes only using the $subdocument option`, async function() {
+        await addFilter(`|${TEST_PAGES_URL}^$subdocument,addheader=${headerType}:x-test-header:test-value`);
+
+        await new Page("iframe.html").loaded;
+
+        await expectHeaderNotSet(`${TEST_PAGES_URL}/iframe.html`, "x-test-header");
+        await expectHeaderSet(`${TEST_PAGES_URL}/image.html`, "x-test-header", "test-value");
+        await expectHeaderNotSet(`${TEST_PAGES_URL}/image.png`, "x-test-header");
+      });
+
+      for (let testcase of [{
+        name: "resource",
+        page: "image.html",
+        allowingFilter: `@@|${TEST_PAGES_URL}/image.png`
+      }, {
+        name: "frame",
+        page: "iframe.html",
+        allowingFilter: `@@|${TEST_PAGES_URL}/image$document`
+      }, {
+        name: "parent frame",
+        page: "iframe.html",
+        allowingFilter: `@@|${TEST_PAGES_URL}/iframe$document`
+      }]) {
+        it(`does not inject a header into a ${headerType} if the ${testcase.name} is allowlisted`, async function() {
+          await addFilter(`|${TEST_PAGES_URL}^$addheader=${headerType}:x-test-header:test-value`);
+          await addFilter(testcase.allowingFilter);
+
+          await new Page(testcase.page).loaded;
+
+          await expectHeaderNotSet(`${TEST_PAGES_URL}/image.png`, "x-test-header");
+        });
+      }
+    }
+
+    it("injects a header into a response that sets a cookie", async function() {
+      await addFilter(`|${TEST_PAGES_URL}^$addheader=response:set-cookie:test-cookie-value`);
+
+      let tabId = await new Page("image.html").loaded;
+
+      await waitForAssertion(async() => {
+        let cookies = await executeScript(tabId, () => document.cookie);
+        expect(cookies).toContain("test-cookie-value");
+      });
     });
   });
 

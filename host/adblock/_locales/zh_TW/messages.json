@@ -2848,6 +2848,9 @@
   "filter_elemhideemulation_nodomain": {
     "message": "沒有擴充元素隱藏過濾條件的指定啟用網域"
   },
+  "filter_invalid_addheader": {
+    "message": "无效的 addheader 采用"
+  },
   "filter_invalid_csp": {
     "message": "無效的內容安全政策"
   },

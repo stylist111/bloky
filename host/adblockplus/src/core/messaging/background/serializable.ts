@@ -82,9 +82,10 @@ export function toSerializableBlockableItem(
  */
 
 export function toSerializableFilter(filter: ewe.Filter): SerializableFilter {
-  const { csp, enabled, selector, slow, text, type } = filter;
+  const { isAddHeader, csp, enabled, selector, slow, text, type } = filter;
 
   const serializable: SerializableFilter = {
+    isAddHeader,
     csp,
     selector,
     slow,

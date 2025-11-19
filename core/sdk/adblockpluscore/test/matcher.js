@@ -102,7 +102,8 @@ describe("Matcher", function() {
 
       // Generic allowing rules can match for specificOnly searches, so we
       // can't easily know which rule will match for these allowlisting tests
-      if (specificOnly) {
+      // ADDHEADER rules don't have a corresponding allowlisting rule
+      if (specificOnly || requestContentTypes.includes("ADDHEADER")) {
         continue;
       }
 
@@ -291,6 +292,9 @@ describe("Matcher", function() {
 
     // See https://gitlab.com/eyeo/adblockplus/abc/adblockpluscore/-/issues/230
     checkMatch(["@@||*$document,domain=example.com"], "http://foo/bar/", "DOCUMENT", "example.com", null, false, "@@||*$document,domain=example.com");
+
+    // Should match only filters with ADDHEADER typemask
+    checkMatch(["foos", "foos^$addheader=x-test:test-value"], "http://example.com/foos", ["ADDHEADER", "IMAGE"], "example.com", null, false, "foos^$addheader=x-test:test-value");
   });
 
   it("Filter search", function() {
@@ -333,6 +337,9 @@ describe("Matcher", function() {
 
     // Non-matching specificity.
     checkSearch(filters, "http://example.com/foos", "IMAGE", "example.com", null, true, "all", {blocking: [], allowing: ["@@foos"]});
+
+    // Should match only filters with ADDHEADER typemask
+    checkSearch(["foos", "foos^$addheader=x-test:test-value"], "http://example.com/foos", ["ADDHEADER", "IMAGE"], "example.com", null, false, "all", {blocking: ["foos^$addheader=x-test:test-value"], allowing: []});
   });
 
   it("Allowlisted", function() {

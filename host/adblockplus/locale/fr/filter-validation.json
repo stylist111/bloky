@@ -5,6 +5,9 @@
   "filter_elemhideemulation_nodomain": {
     "message": "Aucun domaine actif spécifié. Veuillez spécifier au moins un domaine pour ce filtre de masquage d’éléments étendu."
   },
+  "filter_invalid_addheader": {
+    "message": "Filtre addheader non valide"
+  },
   "filter_invalid_csp": {
     "message": "Politique de sécurité du contenu non valide (la syntaxe n’est pas conforme à la norme)."
   },

@@ -2856,6 +2856,9 @@
   "filter_elemhideemulation_nodomain": {
     "message": "Aucun domaine actif défini pour le filtre de masquage d'éléments étendus"
   },
+  "filter_invalid_addheader": {
+    "message": "Filtre addheader non valide"
+  },
   "filter_invalid_csp": {
     "message": "Contenu de la politique de sécurité non valide"
   },

@@ -2856,6 +2856,9 @@
   "filter_elemhideemulation_nodomain": {
     "message": "Не указан активный домен для фильтра элементов"
   },
+  "filter_invalid_addheader": {
+    "message": "Недопустимый фильтр addheader"
+  },
   "filter_invalid_csp": {
     "message": "Неверная политика защиты контента"
   },

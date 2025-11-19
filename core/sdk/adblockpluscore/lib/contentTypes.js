@@ -58,6 +58,7 @@ exports.contentTypes = {
   FONT: 32768, // 1 << 15
 
   // Special filter options.
+  ADDHEADER: 1 << 23,
   POPUP: 1 << 24,
   CSP: 1 << 25,
   HEADER: 1 << 26,
@@ -86,10 +87,10 @@ const RESOURCE_TYPES =
  *
  * @package
  */
-// The first 24 bits are reserved for resource types like "script", "image",
+// The first 23 bits are reserved for resource types like "script", "image",
 // and so on.
 // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webRequest/ResourceType
-exports.RESOURCE_TYPES = (1 << 24) - 1;
+exports.RESOURCE_TYPES = (1 << 23) - 1;
 
 const SPECIAL_TYPES = ~RESOURCE_TYPES & (1 << 31) - 1;
 /**
@@ -111,7 +112,10 @@ exports.SPECIAL_TYPES = SPECIAL_TYPES;
  *
  * @package
  */
-const CONTEXT_TYPES = contentTypes.HEADER | contentTypes.CSP;
+const CONTEXT_TYPES =
+  contentTypes.HEADER |
+  contentTypes.CSP |
+  contentTypes.ADDHEADER;
 exports.CONTEXT_TYPES = CONTEXT_TYPES;
 
 /**

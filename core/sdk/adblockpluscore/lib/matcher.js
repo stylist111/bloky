@@ -592,8 +592,10 @@ exports.Matcher = class Matcher {
   checkEntryMatch(keyword, request, typeMask, sitekey, specificOnly,
                   collection) {
     // We need to skip the simple (location-only) filters if the type mask does
-    // not contain any resource types.
-    if (!specificOnly && (typeMask & RESOURCE_TYPES) != 0) {
+    // not contain any resource types or if it has special types.
+    if (!specificOnly &&
+      (typeMask & RESOURCE_TYPES) != 0 &&
+      (typeMask & SPECIAL_TYPES) == 0) {
       let filter = this._checkEntryMatchSimple(keyword, request, collection);
       if (filter) {
         return filter;

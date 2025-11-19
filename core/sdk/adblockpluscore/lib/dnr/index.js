@@ -27,7 +27,8 @@ const {
   generateAllowingRules,
   generateRedirectRules,
   generateBlockingRules,
-  validateRule
+  validateRule,
+  generateAddHeaderRules
 } = require("./rules");
 const {parse, FilterParsingError} = require("../filters");
 
@@ -105,7 +106,8 @@ async function asDNR(parsedFilter) {
     sitekeys,
     header,
     rewrite,
-    csp
+    csp,
+    addHeader
   } = parsedFilter;
 
   // Sitekey aren't currently handled with DeclarativeNetRequest
@@ -178,6 +180,7 @@ async function asDNR(parsedFilter) {
       thirdParty,
       rewrite,
       csp,
+      addHeader,
       domains: domains === null ? null : parseDomains(
         domains.toLowerCase(), "|")
     };
@@ -200,6 +203,9 @@ async function asDNR(parsedFilter) {
     let result;
     if (contentType & contentTypes.CSP) {
       result = generateCSPRules(filter, urlFilter, matchCase);
+    }
+    else if (contentType & contentTypes.ADDHEADER) {
+      result = generateAddHeaderRules(filter, urlFilter, matchCase);
     }
     else if (!blocking) {
       result = generateAllowingRules(filter, urlFilter, matchCase);

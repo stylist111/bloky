@@ -1,5 +1,7 @@
 # Unreleased
 
+- Add support for $addheader filter type (EXT-1098).
+
 # 4.31.1 - 2025-11-18
 
 - Updated snippets to 2.4.3

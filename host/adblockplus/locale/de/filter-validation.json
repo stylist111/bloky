@@ -5,6 +5,9 @@
   "filter_elemhideemulation_nodomain": {
     "message": "Keine aktive Domain angegeben. Bitte gib mindestens eine Domain für diesen erweiterten Ausblendefilter für Elemente an."
   },
+  "filter_invalid_addheader": {
+    "message": "Ungültiger addheader-Filter"
+  },
   "filter_invalid_csp": {
     "message": "Ungültige Content Security Policy (Syntax entspricht nicht dem Standard)."
   },

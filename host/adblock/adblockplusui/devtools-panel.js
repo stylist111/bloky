@@ -307,6 +307,7 @@
     return {
       allowlisted: filter.type == "allowing" || filter.type == "elemhideexception",
       csp: filter.csp,
+      isAddHeader: filter.isAddHeader,
       selector: filter.selector,
       subscription: subscriptionTitle,
       text: filter.text,
@@ -324,7 +325,12 @@
     if (oldRecord.filter && newRecord.filter) {
       if (oldRecord.filter.selector !== newRecord.filter.selector) return false;
     }
-    if (oldRecord.filter && oldRecord.filter.csp && newRecord.filter && newRecord.filter.csp) {
+    if (
+      oldRecord.filter &&
+      (oldRecord.filter.csp || oldRecord.filter.isAddHeader) &&
+      newRecord.filter &&
+      (newRecord.filter.csp || newRecord.filter.isAddHeader)
+    ) {
       if (oldRecord.filter.text !== newRecord.filter.text) return false;
     }
     return true;
@@ -483,6 +489,7 @@
         !filter.allowlisted &&
         request.type != "ELEMHIDE" &&
         request.type != "SNIPPET" &&
+        request.type != "ADDHEADER" &&
         !hasChanged
       ) {
         actionWrapper.appendChild(

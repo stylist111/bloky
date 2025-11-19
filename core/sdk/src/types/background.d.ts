@@ -288,6 +288,10 @@ export interface Filter {
    * Content Security Policy to be injected.
    */
   csp: string | null;
+  /**
+   * Indicates if the filter adds headers to requests or responses.
+   */
+  isAddHeader: boolean;
 }
 
 /**

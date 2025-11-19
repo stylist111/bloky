@@ -2840,6 +2840,9 @@
   "filter_elemhideemulation_nodomain": {
     "message": "Genişletilmiş öğe gizleme filtresi için etkin alan adı belirtilmedi"
   },
+  "filter_invalid_addheader": {
+    "message": "Geçersiz addheader filtresi"
+  },
   "filter_invalid_csp": {
     "message": "Geçersiz İçerik Güvenliği Politikası"
   },

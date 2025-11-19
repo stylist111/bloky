@@ -5,6 +5,9 @@
   "filter_elemhideemulation_nodomain": {
     "message": "Etkin alan belirtilmedi. Lütfen, bu genişletilmiş öge gizleme filtresi için en az bir alan adı belirtin."
   },
+  "filter_invalid_addheader": {
+    "message": "Geçersiz addheader filtresi"
+  },
   "filter_invalid_csp": {
     "message": "Geçersiz Content Security Policy (söz dizimi standarda uygun değil)."
   },

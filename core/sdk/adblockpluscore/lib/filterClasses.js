@@ -49,6 +49,13 @@ let filterState = null;
  */
 
 /**
+ * @typedef {Object} AddHeader
+ * @property {string} phase "request" or "response"
+ * @property {string} name header name
+ * @property {string} value header value
+ */
+
+/**
  * Map of internal resources for URL rewriting.
  * @type {Map.<string,string>}
  */
@@ -715,7 +722,8 @@ exports.URLFilter.fromText = function(filterText) {
     sitekeys,
     header,
     rewrite,
-    csp
+    csp,
+    addHeader
   } = result;
 
   try {
@@ -730,7 +738,8 @@ exports.URLFilter.fromText = function(filterText) {
         sitekeys,
         header,
         rewrite,
-        csp
+        csp,
+        addHeader
       );
     }
     return new AllowingFilter(
@@ -784,11 +793,12 @@ exports.BlockingFilter = class BlockingFilter extends URLFilter {
    *   `abp-resource:blank-html`, this should be `blank-html`.
    * @param {?string} [csp]
    *   Content Security Policy to inject when the filter matches
-   *
+   * @param {?AddHeader} [addHeader]
+   *   Header to add when the filter matches
    * @private
    */
   constructor(text, regexpSource, contentType, matchCase, domains, thirdParty,
-              sitekeys, header, rewrite, csp) {
+              sitekeys, header, rewrite, csp, addHeader) {
     super(
       text,
       regexpSource,
@@ -806,6 +816,12 @@ exports.BlockingFilter = class BlockingFilter extends URLFilter {
      * @type {?string}
      */
     this.csp = csp != null ? csp : null;
+
+    /**
+     * Header to add for matching requests.
+     * @type {?string}
+     */
+    this.addHeader = addHeader != null ? addHeader : null;
   }
 
   get type() {
@@ -813,7 +829,9 @@ exports.BlockingFilter = class BlockingFilter extends URLFilter {
   }
 
   get requiresPrivilegedSubscription() {
-    return (this.contentType & contentTypes.HEADER) != 0;
+    return (this.contentType &
+      (contentTypes.HEADER | contentTypes.ADDHEADER)
+    ) !== 0;
   }
 
   /**

@@ -29,6 +29,7 @@ import {reloadExtension} from "./mocha/mocha-runner.js";
 const METADATA_FILTER_TEXT = "reload###metadata-test";
 const METADATA_FILTER = {
   csp: null,
+  isAddHeader: false,
   text: METADATA_FILTER_TEXT,
   enabled: true,
   slow: false,
@@ -40,6 +41,7 @@ const METADATA_FILTER = {
 const CONTENT_FILTER_TEXT = "reload###test";
 const CONTENT_FILTER = {
   csp: null,
+  isAddHeader: false,
   text: CONTENT_FILTER_TEXT,
   enabled: true,
   slow: false,

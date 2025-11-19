@@ -5,6 +5,9 @@
   "filter_elemhideemulation_nodomain": {
     "message": "لم يتم تحديد مجال نشط. يُرجى تحديد مجال واحد على الأقل لعامل تصفية إخفاء العناصر المُوسَّع هذا."
   },
+  "filter_invalid_addheader": {
+    "message": "عامل تصفية ‎addheader غير صالح"
+  },
   "filter_invalid_csp": {
     "message": "سياسة أمان المحتوى غير صالحة (لا يتقيّد بناء الجملة بالمعيار)."
   },

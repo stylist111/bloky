@@ -5,6 +5,9 @@
   "filter_elemhideemulation_nodomain": {
     "message": "지정된 활성 도메인이 없습니다. 확장 요소 숨김 필터에 최소 하나의 도메인을 지정해 주십시오."
   },
+  "filter_invalid_addheader": {
+    "message": "유효하지 않은 addheader 필터"
+  },
   "filter_invalid_csp": {
     "message": "유효하지 않은 콘텐츠 보안 정책(구문이 표준을 준수하지 않음)."
   },

@@ -819,6 +819,9 @@
     "message": "Portugál (Portugália)",
     "description": "Language name"
   },
+  "filter_invalid_addheader": {
+    "message": "Érvénytelen addheader szűrő"
+  },
   "filtereasylist_plus_bulgarian": {
     "message": "Bolgár",
     "description": "A filter list"

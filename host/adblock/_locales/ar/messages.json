@@ -2680,6 +2680,9 @@
   "filter_elemhideemulation_nodomain": {
     "message": "لم يتم تحديد نطاق نشط محدّد لفلتر إخفاء العنصر الموسع"
   },
+  "filter_invalid_addheader": {
+    "message": "عامل تصفية ‎addheader غير صالح"
+  },
   "filter_invalid_csp": {
     "message": "سياسة أمان محتوى غير صالحة"
   },

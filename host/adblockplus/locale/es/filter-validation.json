@@ -5,6 +5,9 @@
   "filter_elemhideemulation_nodomain": {
     "message": "No se ha especificado dominio activo. Especifica, al menos, un dominio para este filtro de ocultación de elementos ampliado."
   },
+  "filter_invalid_addheader": {
+    "message": "Filtro addheader no válido"
+  },
   "filter_invalid_csp": {
     "message": "Política de seguridad de contenido no válida (la sintaxis no sigue la norma)."
   },

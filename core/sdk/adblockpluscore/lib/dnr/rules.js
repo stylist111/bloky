@@ -258,6 +258,52 @@ exports.generateCSPRules = function(filter, urlFilter, matchCase) {
   return rules;
 };
 
+exports.generateAddHeaderRules = function(filter, urlFilter, matchCase) {
+  const mainFrame = filter.contentType & contentTypes.DOCUMENT ? ["main_frame"] : [];
+  let resourceTypes = getResourceTypes(filter.contentType);
+
+  if (!resourceTypes) {
+    resourceTypes = Array.from(requestTypes.values()).flat();
+  }
+
+  resourceTypes = resourceTypes.concat(mainFrame);
+
+  // We can't generate rules for filters which don't include any supported
+  // resource types.
+  if (resourceTypes && resourceTypes.length === 0) {
+    return [];
+  }
+
+  const {conditions, isGenericFilter} = getConditions(
+    filter, urlFilter, resourceTypes, matchCase
+  );
+
+  let rules = [];
+
+  // Only blocking rules are supported for AddHeader filters.
+  if (filter.blocking) {
+    rules = conditions.map(condition => {
+      const isResponse = filter.addHeader.phase === "response";
+      const headerActionKey = isResponse ? "responseHeaders" : "requestHeaders";
+
+      return {
+        action: {
+          type: "modifyHeaders",
+          [headerActionKey]: [{
+            header: filter.addHeader.name,
+            operation: "set",
+            value: filter.addHeader.value
+          }]
+        },
+        condition,
+        priority: isGenericFilter ? GENERIC_PRIORITY : SPECIFIC_PRIORITY
+      };
+    });
+  }
+
+  return rules;
+};
+
 exports.generateBlockingRules = function(filter, urlFilter, matchCase) {
   let resourceTypes = getResourceTypes(filter.contentType);
 

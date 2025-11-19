@@ -87,6 +87,7 @@ function getFilterInfo(filter, subscriptions) {
     allowlisted:
       filter.type == "allowing" || filter.type == "elemhideexception",
     csp: filter.csp,
+    isAddHeader: filter.isAddHeader,
     selector: filter.selector,
     subscription: subscriptionTitle,
     text: filter.text,
@@ -113,14 +114,14 @@ function hasRecord(newRecord, oldRecord) {
     if (oldRecord.filter.selector !== newRecord.filter.selector) return false;
   }
 
-  // We apply multiple CSP filters to a document, but we must still remove
-  // any duplicates. Two CSP filters are duplicates if both have identical
+  // We apply multiple CSP & addHeader filters to a document, but we must still remove
+  // any duplicates. Two filters are duplicates if both have identical
   // text.
   if (
     oldRecord.filter &&
-    oldRecord.filter.csp &&
+    (oldRecord.filter.csp || oldRecord.filter.isAddHeader) &&
     newRecord.filter &&
-    newRecord.filter.csp
+    (newRecord.filter.csp || newRecord.filter.isAddHeader)
   ) {
     if (oldRecord.filter.text !== newRecord.filter.text) return false;
   }

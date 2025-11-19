@@ -5,6 +5,9 @@
   "filter_elemhideemulation_nodomain": {
     "message": "未指定活动域。请为此扩展元素隐藏筛选器指定至少一个域。"
   },
+  "filter_invalid_addheader": {
+    "message": "无效的 addheader 采用"
+  },
   "filter_invalid_csp": {
     "message": "无效的内容安全政策（语法不符合标准）。"
   },

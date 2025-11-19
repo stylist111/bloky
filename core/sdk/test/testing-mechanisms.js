@@ -38,7 +38,8 @@ const VALID_FILTER = {
   type: "blocking",
   thirdParty: null,
   selector: null,
-  csp: null
+  csp: null,
+  isAddHeader: false
 };
 const SECOND_VALID_FILTER = {
   text: SECOND_VALID_FILTER_TEXT,
@@ -47,7 +48,8 @@ const SECOND_VALID_FILTER = {
   type: "blocking",
   thirdParty: null,
   selector: null,
-  csp: null
+  csp: null,
+  isAddHeader: false
 };
 
 describe("Testing Mechanisms", function() {

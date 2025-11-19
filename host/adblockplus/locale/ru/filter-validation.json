@@ -5,6 +5,9 @@
   "filter_elemhideemulation_nodomain": {
     "message": "Не указан активный домен. Укажите хотя бы один домен для данного расширенного фильтра скрытия элементов."
   },
+  "filter_invalid_addheader": {
+    "message": "Недопустимый фильтр addheader"
+  },
   "filter_invalid_csp": {
     "message": "Недействительная политика безопасности контента (Content Security Policy) (синтаксис не соответствует стандарту)."
   },

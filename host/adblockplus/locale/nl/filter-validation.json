@@ -5,6 +5,9 @@
   "filter_elemhideemulation_nodomain": {
     "message": "Geen actief domein aangegeven. Geef ten minste één domein op voor dit toegevoegde element om filters te verbergen."
   },
+  "filter_invalid_addheader": {
+    "message": "Ongeldig addheader-filter"
+  },
   "filter_invalid_csp": {
     "message": "Ongeldige inhoud veiligheidsbeleid (syntaxis voldoet niet aan de norm)."
   },

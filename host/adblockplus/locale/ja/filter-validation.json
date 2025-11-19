@@ -5,6 +5,9 @@
   "filter_elemhideemulation_nodomain": {
     "message": "有効なドメインが指定されていません。この拡張要素非表示フィルターには、少なくとも1つのドメインを指定してください。"
   },
+  "filter_invalid_addheader": {
+    "message": "無効な addheader フィルター"
+  },
   "filter_invalid_csp": {
     "message": "コンテンツセキュリティポリシーが無効です（シンタックスが基準に準拠していません）。"
   },

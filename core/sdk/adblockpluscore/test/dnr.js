@@ -36,7 +36,8 @@ const preParsedRule = {
   sitekeys: null,
   header: null,
   rewrite: null,
-  csp: null
+  csp: null,
+  addHeader: null
 };
 
 describe("DeclarativeNetRequest", function() {
@@ -407,5 +408,93 @@ describe("DeclarativeNetRequest", function() {
       urlFilter: "||example.com",
       isUrlFilterCaseSensitive: true
     });
+  });
+
+  describe("Convert addheader rules", function() {
+    const ALL_RESOURCE_TYPES = [
+      "other",
+      "csp_report",
+      "script",
+      "image",
+      "stylesheet",
+      "object",
+      "sub_frame",
+      "websocket",
+      "webbundle",
+      "ping",
+      "xmlhttprequest",
+      "media",
+      "font",
+      "main_frame"
+    ];
+
+    for (let headerType of ["request", "response"]) {
+      const headersKey = headerType === "request" ? "requestHeaders" : "responseHeaders";
+      it(`adds ${headerType} header on all resources`, async function() {
+        let rule = Object.assign(
+          {},
+          preParsedRule,
+          {
+            blocking: true,
+            text: "||example.com^$addheader=x-custom-header:value1",
+            regexpSource: "||example.com^",
+            contentType: contentTypes.ADDHEADER | RESOURCE_TYPES | contentTypes.DOCUMENT,
+            addHeader: {
+              phase: headerType,
+              name: "x-custom-header",
+              value: "value1"
+            }
+          });
+
+        let result = await convert(rule);
+        assert.equal(result.length, 1);
+        assert.equal(result[0].priority, GENERIC_PRIORITY);
+        assert.deepEqual(result[0].condition, {
+          urlFilter: "||example.com^",
+          resourceTypes: ALL_RESOURCE_TYPES
+        });
+        assert.deepEqual(result[0].action, {
+          type: "modifyHeaders",
+          [headersKey]: [{
+            header: "x-custom-header",
+            operation: "set",
+            value: "value1"
+          }]
+        });
+      });
+
+      it(`adds ${headerType} header only main_frame using $document`, async function() {
+        let rule = Object.assign(
+          {},
+          preParsedRule,
+          {
+            blocking: true,
+            text: "||example.com^$document, addheader=x-custom-header:value1",
+            regexpSource: "||example.com^",
+            contentType: contentTypes.ADDHEADER | contentTypes.DOCUMENT,
+            addHeader: {
+              phase: headerType,
+              name: "x-custom-header",
+              value: "value1"
+            }
+          });
+
+        let result = await convert(rule);
+        assert.equal(result.length, 1);
+        assert.equal(result[0].priority, GENERIC_PRIORITY);
+        assert.deepEqual(result[0].condition, {
+          urlFilter: "||example.com^",
+          resourceTypes: ["main_frame"]
+        });
+        assert.deepEqual(result[0].action, {
+          type: "modifyHeaders",
+          [headersKey]: [{
+            header: "x-custom-header",
+            operation: "set",
+            value: "value1"
+          }]
+        });
+      });
+    }
   });
 });

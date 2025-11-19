@@ -7,6 +7,10 @@
     "description": "https://gitlab.com/eyeo/specs/spec/-/blob/7b0211f0bce836052977583bcaf764f34aee95e5/spec/abp/desktop-settings/advanced-tab.md#custom-filters-alert",
     "message": "No active domain specified. Please specify at least one domain for this extended element hiding filter."
   },
+  "filter_invalid_addheader": {
+    "description": "https://gitlab.com/eyeo/specs/spec/-/blob/7b0211f0bce836052977583bcaf764f34aee95e5/spec/abp/desktop-settings/advanced-tab.md#custom-filters-alert",
+    "message": "Invalid addheader filter"
+  },
   "filter_invalid_csp": {
     "description": "https://gitlab.com/eyeo/specs/spec/-/blob/7b0211f0bce836052977583bcaf764f34aee95e5/spec/abp/desktop-settings/advanced-tab.md#custom-filters-alert",
     "message": "Invalid content security policy (syntax does not adhere to standard)."

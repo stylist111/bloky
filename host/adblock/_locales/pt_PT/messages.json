@@ -2824,6 +2824,9 @@
   "filter_elemhideemulation_nodomain": {
     "message": "Nenhum domínio ativo especificado para o elemento estendido escondendo o filtro"
   },
+  "filter_invalid_addheader": {
+    "message": "Filtro addheader inválido"
+  },
   "filter_invalid_csp": {
     "message": "Política de segurança de conteúdo inválida"
   },

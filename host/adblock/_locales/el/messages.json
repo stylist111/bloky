@@ -2808,6 +2808,9 @@
   "filter_elemhideemulation_nodomain": {
     "message": "Δεν καθορίστηκε ενεργός τομέας για το φίλτρο εκτεταμένης απόκρυψης στοιχείων"
   },
+  "filter_invalid_addheader": {
+    "message": "Μη έγκυρο φίλτρο addheader"
+  },
   "filter_invalid_csp": {
     "message": "Μη έγκυρη Πολιτική Ασφάλειας Περιεχομένου (CSP)"
   },

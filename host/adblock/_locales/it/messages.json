@@ -2856,6 +2856,9 @@
   "filter_elemhideemulation_nodomain": {
     "message": "Nessun dominio attivo specificato per il filtro di occultamento degli elementi esteso"
   },
+  "filter_invalid_addheader": {
+    "message": "Filtro addheader non valido"
+  },
   "filter_invalid_csp": {
     "message": "Criteri di sicurezza contenuti non validi"
   },

@@ -5,6 +5,9 @@
   "filter_elemhideemulation_nodomain": {
     "message": "Nie określono aktywnej domeny. Proszę podać co najmniej jedną domenę dla tego filtra ukrywającego elementy rozszerzone."
   },
+  "filter_invalid_addheader": {
+    "message": "Nieprawidłowy filtr addheader"
+  },
   "filter_invalid_csp": {
     "message": "Nieprawidłowa polityka bezpieczeństwa zawartości (składnia nie odpowiada standardowi)."
   },

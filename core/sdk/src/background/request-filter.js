@@ -128,6 +128,7 @@ export function getParentFrameInfoFromWebrequestDetails(details) {
 
 let pendingAllowlistedRequests = new Set();
 let pendingCspRequests = new Set();
+let pendingAddHeaderRequests = new Set();
 
 class BaseFilter {
   register() {
@@ -434,12 +435,174 @@ CSPFilter.prototype.eventArgs = [
   browser.declarativeNetRequest ? ["responseHeaders"] : ["blocking", "responseHeaders"]
 ];
 
+class AddHeaderFilterBase extends BaseFilter {
+  get phase() {
+    throw new Error("Subclasses must define 'phase'");
+  }
+
+  get headersKey() {
+    throw new Error("Subclasses must define 'headersKey'");
+  }
+
+  filter(details) {
+    const {requestId, tabId, frameId, url, type, fromCache} = details;
+
+    if (pendingAllowlistedRequests.has(requestId) || fromCache) {
+      return;
+    }
+
+    let initiator = this.getInitiator(details);
+    if (initiator && initiator.startsWith(EXTENSION_PROTOCOL)) {
+      // These are requests sent by an extension, so if we block these
+      // we could block our own ability to update subscriptions etc.
+      return this.allow(details, null, {
+        method: "allowing", allowingReason: "extensionInitiated"
+      });
+    }
+
+    const matcher = filterEngine.defaultMatcher;
+    let headers = details[this.headersKey];
+
+    // build the site key from headers if possible
+    let siteKey = this.phase === "request" ? null : setSitekeyFromHeaders(
+      tabId, frameId, url, headers
+    );
+    let docDomain = null;
+    let specificOnly;
+
+    // We don't have the frame info yet for main_frame requests
+    if (type === "main_frame") {
+      const specificOnlyFilter = matcher.match(
+        url, contentTypes.GENERICBLOCK, docDomain, siteKey
+      );
+      const documentFilter = matcher.match(
+        url, contentTypes.DOCUMENT, docDomain, siteKey
+      );
+      specificOnly = !!specificOnlyFilter;
+
+      if (documentFilter) {
+        return this.allow(details, documentFilter, {
+          docDomain,
+          method: "allowing",
+          specificOnly
+        });
+      }
+    }
+    else {
+      let frame = getFrameInfoFromWebrequestDetails(details);
+      specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) !== 0;
+      docDomain = this.getDocDomain(details.type, frame.hostname);
+      siteKey = frame.sitekey;
+
+      if (frame.allowlisted & contentTypes.DOCUMENT) {
+        return this.allow(details, frame.allowingDocumentFilter, {
+          docDomain,
+          method: "allowing",
+          specificOnly
+        });
+      }
+    }
+
+    // Allow to filter by document only also only on the top frame
+    const customContentType = resourceTypes.get(type) || contentTypes.OTHER;
+    const typeMask = contentTypes.ADDHEADER | customContentType;
+    const matchInfo = {docDomain, specificOnly, method: "addheader"};
+    const matches = matcher.search(
+      url,
+      typeMask,
+      docDomain,
+      siteKey,
+      specificOnly,
+      "blocking"
+    );
+
+    // Filter only the addHeader filters for this phase
+    const addHeaderMatches = matches.blocking.filter(
+      f => f.addHeader.phase === this.phase
+    );
+
+    if (addHeaderMatches.length > 0) {
+      pendingAddHeaderRequests.add(requestId);
+
+      for (const filter of addHeaderMatches) {
+        const {name, value} = filter.addHeader;
+
+        logItem(details, filter, matchInfo);
+        headers.push({name, value});
+      }
+
+      // Response headers are cached on FF, so we need to remove caching
+      // headers to make sure our added headers are always applied
+      // https://bugzilla.mozilla.org/show_bug.cgi?id=1376932
+      // https://bugzilla.mozilla.org/show_bug.cgi?id=1648635
+      if (this.phase === "response" && typeof fromCache !== "undefined") {
+        headers = headers.filter(h => h.name.toLowerCase() !== "cache-control" && h.name.toLowerCase() !== "expires");
+        headers.push({name: "Cache-Control", value: "no-cache, no-store, must-revalidate"});
+      }
+
+      return {[this.headersKey]: headers};
+    }
+  }
+}
+
+class AddRequestHeaderFilter extends AddHeaderFilterBase {
+  get phase() {
+    return "request";
+  }
+
+  get headersKey() {
+    return "requestHeaders";
+  }
+}
+
+AddRequestHeaderFilter.prototype.event = browser.webRequest.onBeforeSendHeaders;
+AddRequestHeaderFilter.prototype.eventArgs = [
+  {
+    types: Object.values(browser.webRequest.ResourceType),
+    urls: ["http://*/*", "https://*/*"]
+  },
+  // On Chromium the headers cannot be modified
+  // without specifying the "extraHeaders" param
+  browser.declarativeNetRequest ? ["requestHeaders"] : (
+    browser.webRequest.OnBeforeSendHeadersOptions ?
+      Object.values(browser.webRequest.OnBeforeSendHeadersOptions) :
+      ["blocking", "requestHeaders"]
+  )
+];
+
+class AddResponseHeaderFilter extends AddHeaderFilterBase {
+  get phase() {
+    return "response";
+  }
+
+  get headersKey() {
+    return "responseHeaders";
+  }
+}
+
+AddResponseHeaderFilter.prototype.event = browser.webRequest.onHeadersReceived;
+AddResponseHeaderFilter.prototype.eventArgs = [
+  {
+    types: Object.values(browser.webRequest.ResourceType),
+    urls: ["http://*/*", "https://*/*"]
+  },
+  // On Chromium the headers cannot be modified
+  // without specifying the "extraHeaders" param
+  browser.declarativeNetRequest ? ["responseHeaders"] : (
+    browser.webRequest.OnHeadersReceivedOptions ?
+      Object.values(browser.webRequest.OnHeadersReceivedOptions) :
+      ["blocking", "responseHeaders"]
+  )
+];
+
+
 class RequestCompletionFilter extends BaseFilter {
   filter(details) {
     let {requestId, tabId, frameId, url, type} = details;
     let wasAllowlisted = pendingAllowlistedRequests.delete(requestId);
     let wasCsp = pendingCspRequests.delete(requestId);
-    if (wasAllowlisted || wasCsp) {
+    let wasAddHeader = pendingAddHeaderRequests.delete(requestId);
+    if (wasAllowlisted || wasCsp || wasAddHeader) {
       return;
     }
 
@@ -449,7 +612,7 @@ class RequestCompletionFilter extends BaseFilter {
       // frame is committed.
       let parentFrame = getParentFrameInfoFromWebrequestDetails(details);
       let {hostname: parentHostname, sitekey: parentSitekey} =
-          parentFrame || {};
+      parentFrame || {};
 
       let hostname = parentHostname || parseURL(url).hostname;
       let sitekey = getSitekey(tabId, frameId, url) || parentSitekey;
@@ -518,6 +681,8 @@ let filters = [
   new RequestFilter(),
   new HeaderFilter(),
   new CSPFilter(),
+  new AddRequestHeaderFilter(),
+  new AddResponseHeaderFilter(),
   new RequestCompletionFilter(),
   new RequestErrorFilter()
 ];

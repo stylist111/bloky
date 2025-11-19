@@ -2856,6 +2856,9 @@
   "filter_elemhideemulation_nodomain": {
     "message": "Keine aktive Domain für den Filter zum Ausblenden erweiterter Elemente angegeben"
   },
+  "filter_invalid_addheader": {
+    "message": "Ungültiger addheader-Filter"
+  },
   "filter_invalid_csp": {
     "message": "Ungültige Inhaltssicherheitsrichtlinie"
   },

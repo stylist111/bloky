@@ -236,6 +236,7 @@ function createRow(request, filter, options = {}) {
       !filter.allowlisted &&
       request.type != "ELEMHIDE" &&
       request.type != "SNIPPET" &&
+      request.type != "ADDHEADER" &&
       !hasChanged
     ) {
       actionWrapper.appendChild(

@@ -46,6 +46,10 @@ export interface SerializableBlockableItem {
  */
 export interface SerializableFilter {
   /**
+   * Indicates whether this filter adds an HTTP header.
+   */
+  isAddHeader: boolean;
+  /**
    * Content Security Policy to be injected.
    */
   csp: string | null;

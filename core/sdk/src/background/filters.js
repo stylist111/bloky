@@ -60,6 +60,7 @@ export function convertFilter(filter) {
     thirdParty: filter.thirdParty != null ? filter.thirdParty : null,
     selector: filter.selector || null,
     csp: filter.csp || null,
+    isAddHeader: !!filter.addHeader,
     remove: filter.remove || void 0,
     css: filter.css || void 0
   };

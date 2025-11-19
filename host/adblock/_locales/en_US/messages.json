@@ -2954,6 +2954,9 @@
   "filter_elemhideemulation_nodomain": {
     "message": "No active domain specified for extended element hiding filter"
   },
+  "filter_invalid_addheader": {
+    "message": "Invalid addheader filter"
+  },
   "filter_invalid_csp": {
     "message": "Invalid Content Security Policy"
   },

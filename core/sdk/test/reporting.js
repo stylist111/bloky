@@ -54,6 +54,7 @@ describe("Reporting", function() {
       popup: "popup",
       csp: "csp",
       header: "header",
+      addheader: "addheader",
       document: "document",
       genericblock: "genericblock",
       elemhide: "elemhide",
@@ -155,12 +156,14 @@ describe("Reporting", function() {
         type: "blocking",
         thirdParty: expect.anyNullable("boolean"),
         selector: null,
-        csp: expect.anyNullable("string")
+        csp: expect.anyNullable("string"),
+        isAddHeader: expect.any(Boolean)
       };
     }
 
     function expectedAllowingFilter(filterText) {
       return {
+        isAddHeader: false,
         csp: null,
         text: filterText,
         enabled: true,
@@ -173,6 +176,7 @@ describe("Reporting", function() {
 
     function expectedElemhideFilter(filterText) {
       return {
+        isAddHeader: false,
         csp: null,
         text: filterText,
         enabled: true,
@@ -203,6 +207,12 @@ describe("Reporting", function() {
     let cspMatchInfo = {
       docDomain: TEST_PAGES_DOMAIN,
       method: "csp",
+      specificOnly: false
+    };
+
+    let addHeaderMatchInfo = {
+      docDomain: TEST_PAGES_DOMAIN,
+      method: "addheader",
       specificOnly: false
     };
 
@@ -669,8 +679,8 @@ describe("Reporting", function() {
         "allEventOptions",
         "header.html",
         [{
-          filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}`),
-          matchInfo: cspMatchInfo,
+          filter: null,
+          matchInfo: unmatchedMainFrameMatchInfo,
           request: expectedRequestRelativeUrl("header.html")
         }, {
           filter: expectedAllowingFilter(`@@|${TEST_PAGES_URL}`),
@@ -712,6 +722,57 @@ describe("Reporting", function() {
           matchInfo: cspMatchInfo,
           request: expectedRequestRelativeUrl("csp.html")
         }]);
+    });
+
+    describe("Logging header injection filters", function() {
+      for (let headerType of ["request", "response"]) {
+        it(`logs $addheader ${headerType} filter [fuzz]`, async function() {
+          let filterText = `|${TEST_PAGES_URL}^$addheader=${headerType}:x-test-header:test-value`;
+          await checkLogging(
+            [filterText],
+            "allEventOptions",
+            "image.html",
+            [{
+              filter: expectedBlockingFilter(filterText),
+              matchInfo: {
+                ...addHeaderMatchInfo,
+                docDomain: null
+              },
+              request: expectedRequestRelativeUrl("image.html")
+            }, {
+              filter: expectedBlockingFilter(filterText),
+              matchInfo: addHeaderMatchInfo,
+              request: expectedRequestRelativeUrl("image.png")
+            }]);
+        });
+
+        it(`logs $addheader ${headerType} filter for cross domain iframe [fuzz]`, async function() {
+          let filterText = `|${TEST_PAGES_URL}^$addheader=${headerType}:x-test-header:test-value`;
+          await checkLogging(
+            [filterText],
+            "allEventOptions",
+            () => new Page(`${CROSS_DOMAIN_URL}/iframe.html`, true).loaded,
+            [{
+              filter: null,
+              matchInfo: unmatchedMainFrameMatchInfo,
+              request: expectedRequestUrl(`${CROSS_DOMAIN_URL}/iframe.html`)
+            }, {
+              filter: expectedBlockingFilter(filterText),
+              matchInfo: {
+                ...addHeaderMatchInfo,
+                docDomain: CROSS_DOMAIN
+              },
+              request: expectedRequestRelativeUrl("image.html")
+            }, {
+              filter: expectedBlockingFilter(filterText),
+              matchInfo: {
+                ...addHeaderMatchInfo,
+                docDomain: TEST_PAGES_DOMAIN
+              },
+              request: expectedRequestRelativeUrl("image.png")
+            }]);
+        });
+      }
     });
 
     it("logs multiple blocking $csp filters if multiple apply", async function() {
@@ -1397,6 +1458,7 @@ describe("Reporting", function() {
         "image.html",
         [{
           filter: {
+            isAddHeader: false,
             csp: null,
             text: `${TEST_PAGES_DOMAIN}#$#${snippet} true`,
             enabled: true,

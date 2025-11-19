@@ -716,6 +716,13 @@ function stripAdminUrl(url) {
   return url;
 }
 
+function stripTestPagesUrl(url) {
+  if (url.startsWith(TEST_PAGES_URL)) {
+    return url.slice(TEST_PAGES_URL.length);
+  }
+  return url;
+}
+
 export async function fetchFilterText(url) {
   let response = await fetch(url);
   await throwHttpErrors(response);
@@ -747,7 +754,7 @@ export async function getRequestLogs(url) {
   let requestLogs = await response.json();
 
   if (url) {
-    let path = stripAdminUrl(url);
+    let path = stripTestPagesUrl(stripAdminUrl(url));
     requestLogs = requestLogs.filter(log => log.path == path);
   }
 

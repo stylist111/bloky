@@ -2836,6 +2836,9 @@
   "filter_elemhideemulation_nodomain": {
     "message": "확장된 요소 숨김 필터에 지정된 활성 도메인이 없음"
   },
+  "filter_invalid_addheader": {
+    "message": "유효하지 않은 addheader 필터"
+  },
   "filter_invalid_csp": {
     "message": "잘못된 콘텐츠 보안 정책"
   },

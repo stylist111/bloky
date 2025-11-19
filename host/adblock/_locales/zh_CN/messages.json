@@ -2856,6 +2856,9 @@
   "filter_elemhideemulation_nodomain": {
     "message": "没有为扩展元素隐藏过滤器指定活动域"
   },
+  "filter_invalid_addheader": {
+    "message": "无效的 addheader 采用"
+  },
   "filter_invalid_csp": {
     "message": "无效的内容安全政策"
   },

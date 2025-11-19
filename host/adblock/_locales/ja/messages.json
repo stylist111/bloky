@@ -2856,6 +2856,9 @@
   "filter_elemhideemulation_nodomain": {
     "message": "拡張要素非表示フィルターに有効なドメインが指定されていません"
   },
+  "filter_invalid_addheader": {
+    "message": "無効な addheader フィルター"
+  },
   "filter_invalid_csp": {
     "message": "無効なコンテンツセキュリティポリシーです"
   },

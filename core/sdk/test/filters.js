@@ -38,7 +38,8 @@ const VALID_FILTER = {
   type: "blocking",
   thirdParty: null,
   selector: null,
-  csp: null
+  csp: null,
+  isAddHeader: false
 };
 const SECOND_VALID_FILTER = {
   text: SECOND_VALID_FILTER_TEXT,
@@ -47,7 +48,8 @@ const SECOND_VALID_FILTER = {
   type: "blocking",
   thirdParty: null,
   selector: null,
-  csp: null
+  csp: null,
+  isAddHeader: false
 };
 const THIRD_VALID_FILTER = {
   text: THIRD_VALID_FILTER_TEXT,
@@ -56,7 +58,8 @@ const THIRD_VALID_FILTER = {
   type: "blocking",
   thirdParty: null,
   selector: null,
-  csp: null
+  csp: null,
+  isAddHeader: false
 };
 const COMMENT_FILTER = {
   text: COMMENT_FILTER_TEXT,
@@ -65,7 +68,8 @@ const COMMENT_FILTER = {
   type: "comment",
   thirdParty: null,
   selector: null,
-  csp: null
+  csp: null,
+  isAddHeader: false
 };
 const INVALID_FILTER_TEXT = "/foo/$rewrite=";
 

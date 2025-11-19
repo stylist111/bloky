@@ -52,6 +52,8 @@ async function onBlockableItem(emit, blockableItem) {
 }
 
 function onPageFrame(emit, details) {
+  emit("requests", "reset");
+
   void reloadStateByPage.transaction(async () => {
     const { tabId } = details;
     const reloadState = await reloadStateByPage.get(tabId);
@@ -63,8 +65,6 @@ function onPageFrame(emit, details) {
       await reloadStateByPage.delete(tabId);
       return;
     }
-
-    emit("requests", "reset");
 
     // We can't repeat the request if it isn't a GET request. The browser would
     // prompt the user to confirm reloading the page, and POST requests are
