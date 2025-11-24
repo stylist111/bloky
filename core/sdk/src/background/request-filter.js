@@ -462,16 +462,35 @@ class AddHeaderFilterBase extends BaseFilter {
 
     const matcher = filterEngine.defaultMatcher;
     let headers = details[this.headersKey];
-
-    // build the site key from headers if possible
-    let siteKey = this.phase === "request" ? null : setSitekeyFromHeaders(
-      tabId, frameId, url, headers
-    );
-    let docDomain = null;
+    let siteKey;
+    let docDomain;
     let specificOnly;
 
-    // We don't have the frame info yet for main_frame requests
-    if (type === "main_frame") {
+    // We don't have the frame info yet for main_frame or sub_frame requests
+    // onBeforeSendHeaders is called before onCommited
+    // when the frame is created.
+    if (type === "main_frame" || type === "sub_frame") {
+      const parentFrame = getParentFrameInfoFromWebrequestDetails(details);
+      // do nothing if the parent frame exists and
+      // is allowlisted by a document filter
+      if (parentFrame && (parentFrame.allowlisted & contentTypes.DOCUMENT)) {
+        specificOnly =
+          (parentFrame.allowlisted & contentTypes.GENERICBLOCK) !== 0;
+
+        return this.allow(details, parentFrame.allowingDocumentFilter, {
+          docDomain: parentFrame.hostname,
+          method: "allowing",
+          specificOnly
+        });
+      }
+
+      const {
+        hostname: parentHostname,
+        sitekey: parentSiteKey
+      } = parentFrame || {};
+      siteKey = getSitekey(tabId, frameId, url) || parentSiteKey;
+      docDomain = parentHostname || null;
+
       const specificOnlyFilter = matcher.match(
         url, contentTypes.GENERICBLOCK, docDomain, siteKey
       );
@@ -489,7 +508,7 @@ class AddHeaderFilterBase extends BaseFilter {
       }
     }
     else {
-      let frame = getFrameInfoFromWebrequestDetails(details);
+      const frame = getFrameInfoFromWebrequestDetails(details);
       specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) !== 0;
       docDomain = this.getDocDomain(details.type, frame.hostname);
       siteKey = frame.sitekey;

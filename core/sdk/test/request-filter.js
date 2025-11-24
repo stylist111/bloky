@@ -827,15 +827,29 @@ describe("Blocking", function() {
       for (let testcase of [{
         name: "resource",
         page: "image.html",
-        allowingFilter: `@@|${TEST_PAGES_URL}/image.png`
+        allowingFilter: `@@|${TEST_PAGES_URL}/image.png`,
+        async expect() {
+          await expectHeaderSet(`${TEST_PAGES_URL}/image.html`, "x-test-header", "test-value");
+          await expectHeaderNotSet(`${TEST_PAGES_URL}/image.png`, "x-test-header");
+        }
       }, {
         name: "frame",
         page: "iframe.html",
-        allowingFilter: `@@|${TEST_PAGES_URL}/image$document`
+        allowingFilter: `@@|${TEST_PAGES_URL}/image$document`,
+        async expect() {
+          await expectHeaderSet(`${TEST_PAGES_URL}/iframe.html`, "x-test-header", "test-value");
+          await expectHeaderNotSet(`${TEST_PAGES_URL}/image.html`, "x-test-header");
+          await expectHeaderNotSet(`${TEST_PAGES_URL}/image.png`, "x-test-header");
+        }
       }, {
         name: "parent frame",
         page: "iframe.html",
-        allowingFilter: `@@|${TEST_PAGES_URL}/iframe$document`
+        allowingFilter: `@@|${TEST_PAGES_URL}/iframe$document`,
+        async expect() {
+          await expectHeaderNotSet(`${TEST_PAGES_URL}/iframe.html`, "x-test-header");
+          await expectHeaderNotSet(`${TEST_PAGES_URL}/image.html`, "x-test-header");
+          await expectHeaderNotSet(`${TEST_PAGES_URL}/image.png`, "x-test-header");
+        }
       }]) {
         it(`does not inject a header into a ${headerType} if the ${testcase.name} is allowlisted`, async function() {
           await addFilter(`|${TEST_PAGES_URL}^$addheader=${headerType}:x-test-header:test-value`);
@@ -843,7 +857,7 @@ describe("Blocking", function() {
 
           await new Page(testcase.page).loaded;
 
-          await expectHeaderNotSet(`${TEST_PAGES_URL}/image.png`, "x-test-header");
+          await testcase.expect();
         });
       }
     }
