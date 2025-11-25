@@ -31,6 +31,7 @@ import {subEasylistLocal, subTestCustom1, subTestUpdatable1,
         subAcceptableAdsLocal} from "./fixtures/subscriptions.js";
 import {wait} from "./polling.js";
 import {isFuzzingServiceWorker, suspendServiceWorker} from "./mocha/mocha-runner.js";
+import {SPECIFIC_ALLOW_ALL_PRIORITY} from "adblockpluscore/lib/dnr/rules.js";
 
 const DYNAMIC_FILTER = "||b5gxiibirp.invalid^";
 const DYNAMIC_FILTER2 = "||ttle10x9w7.invalid^";
@@ -1525,6 +1526,33 @@ describe("DNR filters update [mv3-only]", function() {
       let modifiedRuleEntry = dynamicFiltersArrayAfter
           .find(entry => entry[0] == DYNAMIC_FILTER);
       expect(modifiedRuleEntry[1].ruleIds).toEqual("a");
+    });
+
+    it("re-initializes rules after upgrade if priority changed", async function() {
+      await EWE.filters.add("@@||localhost^$document");
+
+      let dynamicFilters = await EWE.testing.getDynamicFilters();
+      expect(dynamicFilters).toHaveLength(1);
+
+      const rule = (await browser.declarativeNetRequest.getDynamicRules())[0];
+      await browser.declarativeNetRequest.updateDynamicRules({
+        removeRuleIds: [rule.id],
+        addRules: [{
+          ...rule,
+          priority: 33333 // changed priority
+        }]
+      });
+
+      // simulate webext restart
+      await EWE.testing.clearSkipInitRulesets();
+      await suspendServiceWorker(this);
+      await EWE.testing._waitForInitialization();
+
+      await wait(async() => {
+        const updatedRule =
+          (await browser.declarativeNetRequest.getDynamicRules())[0];
+        return updatedRule.priority === SPECIFIC_ALLOW_ALL_PRIORITY;
+      }, 10000, "Rule priority was not updated on initialization.");
     });
 
     describe("Disabled rule limits", function() {

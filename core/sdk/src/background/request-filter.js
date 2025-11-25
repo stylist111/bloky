@@ -447,7 +447,7 @@ class AddHeaderFilterBase extends BaseFilter {
   filter(details) {
     const {requestId, tabId, frameId, url, type, fromCache} = details;
 
-    if (pendingAllowlistedRequests.has(requestId) || fromCache) {
+    if (fromCache) {
       return;
     }
 
@@ -455,6 +455,11 @@ class AddHeaderFilterBase extends BaseFilter {
     if (initiator && initiator.startsWith(EXTENSION_PROTOCOL)) {
       // These are requests sent by an extension, so if we block these
       // we could block our own ability to update subscriptions etc.
+      // Don't log the request if it was already allowed
+      if (pendingAllowlistedRequests.has(requestId)) {
+        return;
+      }
+
       return this.allow(details, null, {
         method: "allowing", allowingReason: "extensionInitiated"
       });
@@ -474,8 +479,13 @@ class AddHeaderFilterBase extends BaseFilter {
       // do nothing if the parent frame exists and
       // is allowlisted by a document filter
       if (parentFrame && (parentFrame.allowlisted & contentTypes.DOCUMENT)) {
+        // Don't log the request if it was already allowed
+        if (pendingAllowlistedRequests.has(requestId)) {
+          return;
+        }
+
         specificOnly =
-          (parentFrame.allowlisted & contentTypes.GENERICBLOCK) !== 0;
+        (parentFrame.allowlisted & contentTypes.GENERICBLOCK) !== 0;
 
         return this.allow(details, parentFrame.allowingDocumentFilter, {
           docDomain: parentFrame.hostname,
@@ -500,6 +510,11 @@ class AddHeaderFilterBase extends BaseFilter {
       specificOnly = !!specificOnlyFilter;
 
       if (documentFilter) {
+        // Don't log the request if it was already allowed
+        if (pendingAllowlistedRequests.has(requestId)) {
+          return;
+        }
+
         return this.allow(details, documentFilter, {
           docDomain,
           method: "allowing",
@@ -514,6 +529,11 @@ class AddHeaderFilterBase extends BaseFilter {
       siteKey = frame.sitekey;
 
       if (frame.allowlisted & contentTypes.DOCUMENT) {
+        // Don't log the request if it was already allowed
+        if (pendingAllowlistedRequests.has(requestId)) {
+          return;
+        }
+
         return this.allow(details, frame.allowingDocumentFilter, {
           docDomain,
           method: "allowing",

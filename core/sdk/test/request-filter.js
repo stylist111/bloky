@@ -824,15 +824,17 @@ describe("Blocking", function() {
         await expectHeaderNotSet(`${TEST_PAGES_URL}/image.png`, "x-test-header");
       });
 
+      it(`inject a header into a ${headerType} even if there is an allowing filter for the resource`, async function() {
+        await addFilter(`|${TEST_PAGES_URL}^$addheader=${headerType}:x-test-header:test-value`);
+        await addFilter(`@@|${TEST_PAGES_URL}/image.png`);
+
+        await new Page("image.html").loaded;
+
+        await expectHeaderSet(`${TEST_PAGES_URL}/image.html`, "x-test-header", "test-value");
+        await expectHeaderSet(`${TEST_PAGES_URL}/image.png`, "x-test-header", "test-value");
+      });
+
       for (let testcase of [{
-        name: "resource",
-        page: "image.html",
-        allowingFilter: `@@|${TEST_PAGES_URL}/image.png`,
-        async expect() {
-          await expectHeaderSet(`${TEST_PAGES_URL}/image.html`, "x-test-header", "test-value");
-          await expectHeaderNotSet(`${TEST_PAGES_URL}/image.png`, "x-test-header");
-        }
-      }, {
         name: "frame",
         page: "iframe.html",
         allowingFilter: `@@|${TEST_PAGES_URL}/image$document`,

@@ -21,7 +21,7 @@ const assert = require("assert");
 const {LIB_FOLDER} = require("./_common");
 
 const {GENERIC_PRIORITY, GENERIC_ALLOW_ALL_PRIORITY, SPECIFIC_PRIORITY,
-       SPECIFIC_ALLOW_ALL_PRIORITY} = require(LIB_FOLDER + "/dnr/rules");
+       SPECIFIC_ALLOW_ALL_PRIORITY, ADD_HEADER_PRIORITY} = require(LIB_FOLDER + "/dnr/rules");
 const {contentTypes, RESOURCE_TYPES} = require(LIB_FOLDER + "/contentTypes");
 const {asDNR, createConverter} = require(LIB_FOLDER + "/dnr");
 
@@ -448,7 +448,7 @@ describe("DeclarativeNetRequest", function() {
 
         let result = await convert(rule);
         assert.equal(result.length, 1);
-        assert.equal(result[0].priority, GENERIC_PRIORITY);
+        assert.equal(result[0].priority, ADD_HEADER_PRIORITY);
         assert.deepEqual(result[0].condition, {
           urlFilter: "||example.com^",
           resourceTypes: ALL_RESOURCE_TYPES
@@ -481,7 +481,7 @@ describe("DeclarativeNetRequest", function() {
 
         let result = await convert(rule);
         assert.equal(result.length, 1);
-        assert.equal(result[0].priority, GENERIC_PRIORITY);
+        assert.equal(result[0].priority, ADD_HEADER_PRIORITY);
         assert.deepEqual(result[0].condition, {
           urlFilter: "||example.com^",
           resourceTypes: ["main_frame"]

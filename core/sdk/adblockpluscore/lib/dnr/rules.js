@@ -34,8 +34,28 @@ const GENERIC_ALLOW_ALL_PRIORITY = 1001;
 exports.GENERIC_ALLOW_ALL_PRIORITY = GENERIC_ALLOW_ALL_PRIORITY;
 const SPECIFIC_PRIORITY = 2000;
 exports.SPECIFIC_PRIORITY = SPECIFIC_PRIORITY;
-const SPECIFIC_ALLOW_ALL_PRIORITY = 2001;
+const SPECIFIC_ALLOW_ALL_PRIORITY = 2010;
 exports.SPECIFIC_ALLOW_ALL_PRIORITY = SPECIFIC_ALLOW_ALL_PRIORITY;
+
+// AddHeader rules have to have a higher priority than normal blocking rules
+// to ensure that they are applied even if there is an allowing rule
+// matching the same request. These rules should be allowlisted only by
+// allowAllRequests rules.
+const ADD_HEADER_PRIORITY = 2005;
+exports.ADD_HEADER_PRIORITY = ADD_HEADER_PRIORITY;
+
+/**
+ * Set of all possible rule priorities.
+ * @type {Set<number>}
+ */
+const RULE_PRIORITY_SET = new Set([
+  GENERIC_PRIORITY,
+  GENERIC_ALLOW_ALL_PRIORITY,
+  SPECIFIC_PRIORITY,
+  SPECIFIC_ALLOW_ALL_PRIORITY,
+  ADD_HEADER_PRIORITY
+]);
+exports.RULE_PRIORITY_SET = RULE_PRIORITY_SET;
 
 
 const requestTypes = new Map([
@@ -274,7 +294,7 @@ exports.generateAddHeaderRules = function(filter, urlFilter, matchCase) {
     return [];
   }
 
-  const {conditions, isGenericFilter} = getConditions(
+  const {conditions} = getConditions(
     filter, urlFilter, resourceTypes, matchCase
   );
 
@@ -296,7 +316,7 @@ exports.generateAddHeaderRules = function(filter, urlFilter, matchCase) {
           }]
         },
         condition,
-        priority: isGenericFilter ? GENERIC_PRIORITY : SPECIFIC_PRIORITY
+        priority: ADD_HEADER_PRIORITY
       };
     });
   }

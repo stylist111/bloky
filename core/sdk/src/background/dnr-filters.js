@@ -26,6 +26,7 @@ import {isValidHostname} from "adblockpluscore/lib/url.js";
 import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
 import {filterEngine} from "./core.js";
 import {createConverter} from "adblockpluscore/lib/dnr/index.js";
+import {RULE_PRIORITY_SET} from "adblockpluscore/lib/dnr/rules.js";
 import {DnrMapper} from "adblockpluscore/lib/dnr/mapper.js";
 import {getSubscriptionRulesetMap} from "./subscriptions-utils.js";
 import subscriptions from "./subscriptions.js";
@@ -36,7 +37,6 @@ import {debug, error} from "./debugging.js";
 import {default as sentry} from "./sentry.js";
 import {ServerLogger} from "./telemetry/server-logger.js";
 import {arraysDiff} from "./set-operations.js";
-
 import {FilterError} from "./types.js";
 import {Prefs} from "./prefs.js";
 import {isFirefox, getBrowserVersion, isSafari} from "./info.js";
@@ -652,7 +652,7 @@ export async function recreateDNRRulesIfNecessary() {
       return dataIntegrityCheck(dynamicFilters);
     }
   );
-  if (checkResultBefore.valid == false) {
+  if (checkResultBefore.valid === false || checkResultBefore.priorityChanged) {
     let recreateStats = await recreateAllDNRRules();
 
     let checkResultAfter = await dynamicFiltersMutex.lockRead(
@@ -676,6 +676,8 @@ async function dataIntegrityCheck(dynamicFilters) {
 
   let dynamicRules = await browser.declarativeNetRequest.getDynamicRules();
   let actualDynamicRuleIds = dynamicRules.map(rule => rule.id);
+  const priorityChanged =
+    dynamicRules.some(rule => !RULE_PRIORITY_SET.has(rule.priority));
 
   let {added, removed} = arraysDiff(
     expectedDynamicRuleIds,
@@ -687,6 +689,7 @@ async function dataIntegrityCheck(dynamicFilters) {
 
   return {
     valid: extraRulesInDNRCount === 0 && missingRulesInDNRCount === 0,
+    priorityChanged,
     extraRulesInDNRCount,
     missingRulesInDNRCount
   };
