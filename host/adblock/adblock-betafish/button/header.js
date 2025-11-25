@@ -21,7 +21,7 @@
 /* eslint-disable import/extensions */
 import { getTabId, closePopup, sendMessageWithNoResponse } from "./utils.js";
 
-const serverLogger = new modulesAsGlobal.ewe.telemetry.ServerLogger("adblock_popup");
+const serverLogger = new modulesAsGlobal.ewe.telemetry.ServerLogger("adblock_ui");
 
 let template;
 
@@ -45,6 +45,7 @@ const openOptionsPage = async () => {
 };
 
 const openHelp = (pageInfo, tabId) => {
+  serverLogger.behavior("support_icon_clicked");
   sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "feedback_clicked" });
   if (!pageInfo.disabledSite) {
     // This navigates to the index and starts the help SPA

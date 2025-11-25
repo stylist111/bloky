@@ -1,7 +1,10 @@
 export default {
-  adblock_popup: {
+  adblock_ui: {
     options_clicked: {
       description: "User clicked the gear icon"
+    },
+    support_icon_clicked: {
+      description: "User clicked the support icon on the header of the Adblock popup"
     }
   },
   cdp: {
