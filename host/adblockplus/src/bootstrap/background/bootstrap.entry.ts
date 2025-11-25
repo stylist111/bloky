@@ -57,7 +57,6 @@ import { hasActiveLicense } from "~/premium/background";
 import { info } from "~/info/background";
 import { start as startTelemetry } from "~/telemetry/background";
 import { start as startInProductMessaging } from "~/ipm/background";
-import { start as startAddBTRequestHeader } from "~/blockthrough/background";
 import { start as startEWE } from "~/ewe/background";
 import { start as startTestingEwe } from "~/testing/ewe/background";
 
@@ -172,7 +171,6 @@ async function bootstrap(): Promise<void> {
 
   await bootstrapAsync();
   startGetDebugInfo();
-  void startAddBTRequestHeader();
 
   setReadyState(ReadyState.started);
   performance.measure("adblockplus.bootstrap", "adblockplus.bootstrap");

@@ -105,6 +105,8 @@ export const recommended = [
 ];
 
 export const privileged = [
+  // Acceptable Ads
+  "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F",
   // annoyances
   "CDAD4CF5-2706-42CB-B404-F5B9B61B8CAA",
   // cookies-premium
