@@ -1,7 +1,12 @@
 # Unreleased
 
+# 4.32.0 - 2025-11-25
+
+New filter type, new snippets, small bugfix
+
 - Add support for $addheader filter type (EXT-1098).
 - Updated snippets to 2.4.5
+- Fixed a small filter hits bug in the devtools
 
 # 4.31.1 - 2025-11-18
 
