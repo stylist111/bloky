@@ -32,11 +32,6 @@ import "../../../src/popup/ui/popup.css";
 import "../../io-circle-toggle.mjs";
 import "./notifications.mjs";
 import "../../io-popup-footer.mjs";
-import {
-  getGrow157ExperimentConfig,
-  setupGrow157QRCode,
-  EXPERIMENT_CONTROL_FLAG
-} from "../../../src/experiments/grow-157/index.mjs";
 
 initI18n();
 
@@ -171,17 +166,7 @@ async function setupPremium(retryCount = 0) {
     return;
   }
 
-  // See https://eyeo.atlassian.net/browse/GROW-157 for details.
-  const experimentsConfig = await getGrow157ExperimentConfig(premium.isActive);
-
-  if (
-    experimentsConfig.variation &&
-    experimentsConfig.variation !== EXPERIMENT_CONTROL_FLAG
-  ) {
-    setupGrow157QRCode(experimentsConfig.variation);
-  }
-
-  setupPremiumBanners(experimentsConfig.experimentVarParam);
+  setupPremiumBanners();
   updateToggles();
 
   setPremiumState(premium.isActive);
@@ -189,26 +174,18 @@ async function setupPremium(retryCount = 0) {
   messaging.addMessageListener((msg) => {
     if (msg.type !== "premium.respond" || msg.action !== "changed") return;
 
-    setupPremiumBanners(experimentsConfig.experimentVarParam);
+    setupPremiumBanners();
     setPremiumState(msg.args[0].isActive);
   });
 
   messaging.premium.listen(["changed"]);
 }
 
-async function setupPremiumBanners(experimentVarParam) {
+async function setupPremiumBanners() {
   const source = getSourceAttribute(document.body);
-  let premiumUpgradeUrl = await messaging.ctalinks.get("premium-upgrade", {
+  const premiumUpgradeUrl = await messaging.ctalinks.get("premium-upgrade", {
     source
   });
-
-  if (experimentVarParam) {
-    const newUrl = new URL(premiumUpgradeUrl);
-    newUrl.searchParams.set("exp", "8");
-    newUrl.searchParams.set("var", experimentVarParam);
-    premiumUpgradeUrl = newUrl;
-  }
-
   $("#premium-upgrade").setAttribute("href", premiumUpgradeUrl);
   document.querySelectorAll("[data-link='premium']").forEach((element) => {
     element.setAttribute("href", premiumUpgradeUrl);
