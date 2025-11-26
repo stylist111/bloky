@@ -110,8 +110,10 @@ export function dismissCommand(ipmId: string): void {
   const { getDismissedIpmIds, setDismissedIpmIds } = getStartInfo();
 
   const dismissedIpmIds = getDismissedIpmIds();
-  dismissedIpmIds.push(ipmId);
-  setDismissedIpmIds(dismissedIpmIds);
+  if (!dismissedIpmIds.includes(ipmId)) {
+    dismissedIpmIds.push(ipmId);
+    setDismissedIpmIds(dismissedIpmIds);
+  }
 
   commandStorage.remove(ipmId);
 }
