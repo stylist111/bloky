@@ -18,7 +18,7 @@
 import browser from "webextension-polyfill";
 import {v4 as uuidv4} from "uuid";
 
-import {EventEmitter} from "adblockpluscore/lib/events.js";
+import {EventEmitter} from "#adblockpluscore/lib/events.js";
 import {PersistentState} from "./persistence.js";
 import {EventDispatcher} from "./types.js";
 import sentry from "./sentry.js";

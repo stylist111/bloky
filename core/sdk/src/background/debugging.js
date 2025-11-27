@@ -18,7 +18,7 @@
 
 import browser from "./browser.js";
 
-import {FilterStorage} from "adblockpluscore/lib/filterStorage.js";
+import {FilterStorage} from "#adblockpluscore/lib/filterStorage.js";
 
 import {IO} from "./io.js";
 import {addonBundledSubscriptions, addonBundledSubscriptionsPath,

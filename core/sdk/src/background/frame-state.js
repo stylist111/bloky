@@ -17,9 +17,9 @@
 
 import browser from "./browser.js";
 
-import {parseURL} from "adblockpluscore/lib/url.js";
+import {parseURL} from "#adblockpluscore/lib/url.js";
 import {ALLOWING_TYPES, contentTypes}
-  from "adblockpluscore/lib/contentTypes.js";
+  from "#adblockpluscore/lib/contentTypes.js";
 
 import {filterEngine} from "./core.js";
 import {logItem} from "./diagnostics.js";

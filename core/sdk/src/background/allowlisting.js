@@ -16,11 +16,11 @@
  */
 
 import browser from "./browser.js";
-import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
-import {parseURL} from "adblockpluscore/lib/url.js";
+import {contentTypes} from "#adblockpluscore/lib/contentTypes.js";
+import {parseURL} from "#adblockpluscore/lib/url.js";
 import {MILLIS_IN_HOUR, MILLIS_IN_MINUTE,
-        MILLIS_IN_DAY} from "adblockpluscore/lib/time.js";
-import {base64ToArrayBuffer} from "adblockpluscore/lib/rsa.js";
+        MILLIS_IN_DAY} from "#adblockpluscore/lib/time.js";
+import {base64ToArrayBuffer} from "#adblockpluscore/lib/rsa.js";
 
 import {filterEngine} from "./core.js";
 import {getFrameInfo} from "./frame-state.js";

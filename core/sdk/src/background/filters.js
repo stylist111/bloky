@@ -17,13 +17,13 @@
 
 import browser from "webextension-polyfill";
 
-import {parseURL} from "adblockpluscore/lib/url.js";
-import {Filter, URLFilter} from "adblockpluscore/lib/filterClasses.js";
-import {SpecialSubscription} from "adblockpluscore/lib/subscriptionClasses.js";
-import {isSlowFilter} from "adblockpluscore/lib/matcher.js";
-import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
-import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
-import {MILLIS_IN_HOUR} from "adblockpluscore/lib/time.js";
+import {parseURL} from "#adblockpluscore/lib/url.js";
+import {Filter, URLFilter} from "#adblockpluscore/lib/filterClasses.js";
+import {SpecialSubscription} from "#adblockpluscore/lib/subscriptionClasses.js";
+import {isSlowFilter} from "#adblockpluscore/lib/matcher.js";
+import {filterNotifier} from "#adblockpluscore/lib/filterNotifier.js";
+import {contentTypes} from "#adblockpluscore/lib/contentTypes.js";
+import {MILLIS_IN_HOUR} from "#adblockpluscore/lib/time.js";
 
 import {default as initializer} from "./initializer.js";
 import {filterEngine} from "./core.js";

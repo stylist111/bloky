@@ -20,7 +20,7 @@ import browser from "webextension-polyfill";
 import {fromSerializableError} from "../all/errors.js";
 import {default as initializer} from "./initializer.js";
 import {applyContentFilters, injectCSS} from "./content-filter.js";
-import {createStyleSheet} from "adblockpluscore/lib/elemHide.js";
+import {createStyleSheet} from "#adblockpluscore/lib/elemHide.js";
 import {subscribeLinkClicked} from "./subscribe-links.js";
 import {logHiddenElements} from "./diagnostics.js";
 import {allowlistPage} from "./allowlisting.js";

@@ -17,7 +17,7 @@
 
 import browser from "webextension-polyfill";
 import expect from "expect";
-import {MILLIS_IN_HOUR, MILLIS_IN_SECOND} from "adblockpluscore/lib/time.js";
+import {MILLIS_IN_HOUR, MILLIS_IN_SECOND} from "#adblockpluscore/lib/time.js";
 
 import {EWE, resetPremiumStatus, runInBackgroundPage, setPremiumStatus} from "./messaging.js";
 import {TEST_ADMIN_PAGES_URL} from "@eyeo/test-utils/sdk-urls";

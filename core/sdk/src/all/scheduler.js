@@ -15,7 +15,7 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {MILLIS_IN_HOUR} from "adblockpluscore/lib/time.js";
+import {MILLIS_IN_HOUR} from "#adblockpluscore/lib/time.js";
 
 const MAX_POLL_TIMEOUT = MILLIS_IN_HOUR;
 

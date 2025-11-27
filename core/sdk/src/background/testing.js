@@ -17,13 +17,13 @@
 
 import browser from "./browser.js";
 import {Subscription, _clean as _cleanSubscriptionClassesCache}
-  from "adblockpluscore/lib/subscriptionClasses.js";
+  from "#adblockpluscore/lib/subscriptionClasses.js";
 import {setRecommendations, recommendations}
-  from "adblockpluscore/lib/recommendations.js";
-import {notifications} from "adblockpluscore/lib/notifications.js";
+  from "#adblockpluscore/lib/recommendations.js";
+import {notifications} from "#adblockpluscore/lib/notifications.js";
 import {isFeatureEnabled, setFeatureFlags, resetFeatureFlags}
-  from "adblockpluscore/lib/features.js";
-import {clearKnownFiltersCache} from "adblockpluscore/lib/filterClasses.js";
+  from "#adblockpluscore/lib/features.js";
+import {clearKnownFiltersCache} from "#adblockpluscore/lib/filterClasses.js";
 
 import {filterEngine} from "./core.js";
 import {Prefs, awaitSavingComplete, init as initPrefs} from "./prefs.js";
@@ -42,7 +42,7 @@ import {dnrDiffSubscriptionUpdate, dynamicRulesAvailable, getDynamicFilters,
   from "./dnr-filters.js";
 import {getSubscriptionRulesetMap} from "./subscriptions-utils.js";
 import {IO} from "./io.js";
-import {FilterStorage} from "adblockpluscore/lib/filterStorage.js";
+import {FilterStorage} from "#adblockpluscore/lib/filterStorage.js";
 import * as telemetry from "./telemetry/index.js";
 import * as activePing from "./telemetry/active-ping.js";
 import * as serverLogUploader from "./telemetry/server-log-uploader.js";

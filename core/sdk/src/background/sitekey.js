@@ -15,7 +15,7 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {verifySignatureSync} from "adblockpluscore/lib/rsa.js";
+import {verifySignatureSync} from "#adblockpluscore/lib/rsa.js";
 import browser from "./browser.js";
 import {isRunningInServiceWorker} from "./browser-features.js";
 import {trace} from "./debugging.js";

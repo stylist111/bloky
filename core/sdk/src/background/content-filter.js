@@ -17,9 +17,9 @@
 
 import browser from "./browser.js";
 
-import {createStyleSheet} from "adblockpluscore/lib/elemHide.js";
-import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
-import {parseScript, prepareInlineScriptForInjection} from "adblockpluscore/lib/snippets.js";
+import {createStyleSheet} from "#adblockpluscore/lib/elemHide.js";
+import {contentTypes} from "#adblockpluscore/lib/contentTypes.js";
+import {parseScript, prepareInlineScriptForInjection} from "#adblockpluscore/lib/snippets.js";
 
 import {filterEngine} from "./core.js";
 import {getFrameInfo} from "./frame-state.js";

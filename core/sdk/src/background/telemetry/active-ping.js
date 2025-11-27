@@ -17,7 +17,7 @@
 
 import browser from "webextension-polyfill";
 import {v4 as uuidv4} from "uuid";
-import {MILLIS_IN_HOUR, MILLIS_IN_DAY} from "adblockpluscore/lib/time.js";
+import {MILLIS_IN_HOUR, MILLIS_IN_DAY} from "#adblockpluscore/lib/time.js";
 
 import * as info from "../info.js";
 import {Prefs, init as initializePrefs} from "../prefs.js";

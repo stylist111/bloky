@@ -18,7 +18,7 @@
 import sinon from "sinon/pkg/sinon.js";
 import expect from "expect";
 import {Scheduler} from "../../../src/all/scheduler.js";
-import {MILLIS_IN_HOUR} from "adblockpluscore/lib/time.js";
+import {MILLIS_IN_HOUR} from "#adblockpluscore/lib/time.js";
 
 describe("Scheduler", function() {
   let sandbox;

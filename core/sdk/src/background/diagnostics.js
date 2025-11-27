@@ -15,8 +15,8 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Filter, ElemHideFilter} from "adblockpluscore/lib/filterClasses.js";
-import {parseURL} from "adblockpluscore/lib/url.js";
+import {Filter, ElemHideFilter} from "#adblockpluscore/lib/filterClasses.js";
+import {parseURL} from "#adblockpluscore/lib/url.js";
 import {filterEngine} from "./core.js";
 import {convertFilter} from "./filters.js";
 import {BLANK_PAGE_URL} from "./frame-state.js";

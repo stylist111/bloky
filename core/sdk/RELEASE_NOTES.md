@@ -1,5 +1,15 @@
 # Unreleased
 
+## Fixes
+
+- Fix the SDK pulling in an old version of `adblockpluscore` from NPM. Back in
+  2023, we made the call to stop publishing `adblockpluscore` as an independent
+  library, and only use it as an internal part of the SDK. However, in Jan 2025,
+  when we moved the SDK's code into the monorepo, this involved some changes to
+  how the workspace was structured, and this accidetanlly introduced a bug where
+  users pulling in the SDK as a library would also have it linked to the last
+  published version of `adblockpluscore`.
+
 # 3.0.0 - 2025-11-26
 
 - Added the `EWE.account` API to handle user accounts. (EXT-1013)

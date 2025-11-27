@@ -15,8 +15,8 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {analytics} from "adblockpluscore/lib/analytics.js";
-import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
+import {analytics} from "#adblockpluscore/lib/analytics.js";
+import {contentTypes} from "#adblockpluscore/lib/contentTypes.js";
 
 import {BlockableEventDispatcher} from "./diagnostics.js";
 import {resourceTypes} from "./request-filter.js";

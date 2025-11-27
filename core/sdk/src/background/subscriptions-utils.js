@@ -17,7 +17,7 @@
 
 import browser from "./browser.js";
 import {PersistentState} from "./persistence.js";
-import {parseFilterList} from "adblockpluscore/lib/filters/lists.js";
+import {parseFilterList} from "#adblockpluscore/lib/filters/lists.js";
 import {readFileContent} from "./io.js";
 import {addonBundledSubscriptionsPath} from "./info.js";
 

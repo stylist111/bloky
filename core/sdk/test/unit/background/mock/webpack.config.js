@@ -51,7 +51,10 @@ export function getConfig(filename) {
     },
     resolve: {
       alias: {
-        "adblockpluscore": path.resolve(dirname, "./adblockpluscore"),
+        "#adblockpluscore": [
+          path.resolve(dirname, "./adblockpluscore"),
+          path.resolve(dirname, "../../../../adblockpluscore")
+        ],
         "./initializer.js": path.resolve(dirname, "./webext-sdk.mock.js"),
         "./core.js": path.resolve(dirname, "./webext-sdk.mock.js"),
         "./types.js": path.resolve(dirname, "./webext-sdk.mock.js"),

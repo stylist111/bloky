@@ -15,7 +15,7 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {domainSuffixes, getBaseDomain, isHttpOrHttps} from "adblockpluscore/lib/url.js";
+import {domainSuffixes, getBaseDomain, isHttpOrHttps} from "#adblockpluscore/lib/url.js";
 
 /**
  * CDP processor, that keeps a list of special domains,

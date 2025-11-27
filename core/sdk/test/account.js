@@ -18,7 +18,7 @@
 import expect from "expect";
 import {TEST_ADMIN_PAGES_URL, TEST_PAGES_URL} from "@eyeo/test-utils/sdk-urls";
 import {clearTestEvents, EWE, expectTestEvents} from "./messaging.js";
-import {MILLIS_IN_SECOND} from "adblockpluscore/lib/time.js";
+import {MILLIS_IN_SECOND} from "#adblockpluscore/lib/time.js";
 import {
   clearEndpointResponse,
   clearRequestLogs,

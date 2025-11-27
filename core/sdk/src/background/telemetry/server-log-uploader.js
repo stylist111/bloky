@@ -18,7 +18,7 @@
 import browser from "webextension-polyfill";
 import {v4 as uuidv4} from "uuid";
 
-import {MILLIS_IN_SECOND, MILLIS_IN_MINUTE, MILLIS_IN_HOUR} from "adblockpluscore/lib/time.js";
+import {MILLIS_IN_SECOND, MILLIS_IN_MINUTE, MILLIS_IN_HOUR} from "#adblockpluscore/lib/time.js";
 import {getExtensionMetadata, postWithBearerToken} from "./eyeometry.js";
 import {onLogQueued, hasPendingLogs, startUploadTransaction,
         commitUploadTransaction, abortUploadTransaction}

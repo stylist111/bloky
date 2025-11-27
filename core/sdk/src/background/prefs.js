@@ -16,9 +16,9 @@
  */
 
 import browser from "webextension-polyfill";
-import {EventEmitter} from "adblockpluscore/lib/events.js";
+import {EventEmitter} from "#adblockpluscore/lib/events.js";
 import {MILLIS_IN_SECOND, MILLIS_IN_MINUTE, MILLIS_IN_HOUR}
-  from "adblockpluscore/lib/time.js";
+  from "#adblockpluscore/lib/time.js";
 import {getDatabase} from "./io-idb.js";
 
 // MV2

@@ -16,3 +16,14 @@
  */
 
 export class Filter {}
+export class InvalidFilter {}
+export class CommentFilter {}
+export class ActiveFilter {}
+export class URLFilter {}
+export class BlockingFilter {}
+export class AllowingFilter {}
+export class ContentFilter {}
+export class ElemHideBase {}
+export class ElemHideFilter {}
+export class ElemHideException {}
+export class SnippetFilter {}

@@ -18,7 +18,7 @@
 import {webcrypto} from "crypto";
 import expect from "expect";
 import * as cdpEncrypt from "../../../src/background/cdp/encryption.js";
-import {base64ToArrayBuffer} from "adblockpluscore/lib/rsa.js";
+import {base64ToArrayBuffer} from "#adblockpluscore/lib/rsa.js";
 
 const PEM_ENCODED_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1o/kPjEWAnTlUmAXHHgj

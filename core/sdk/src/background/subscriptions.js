@@ -22,10 +22,10 @@ import {rulesetExistsInManifest, getFilterText} from "./subscriptions-utils.js";
 import {Subscription, CountableSubscription, RegularSubscription,
         FullUpdatableSubscription, SpecialSubscription,
         DiffUpdatableSubscription}
-  from "adblockpluscore/lib/subscriptionClasses.js";
-import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
-import {recommendations} from "adblockpluscore/lib/recommendations.js";
-import {Filter} from "adblockpluscore/lib/filterClasses.js";
+  from "#adblockpluscore/lib/subscriptionClasses.js";
+import {filterNotifier} from "#adblockpluscore/lib/filterNotifier.js";
+import {recommendations} from "#adblockpluscore/lib/recommendations.js";
+import {Filter} from "#adblockpluscore/lib/filterClasses.js";
 
 import {addonBundledSubscriptions, isSafari} from "./info.js";
 import {default as initializer} from "./initializer.js";

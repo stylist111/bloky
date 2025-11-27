@@ -15,7 +15,7 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {MILLIS_IN_HOUR, MILLIS_IN_MINUTE} from "adblockpluscore/lib/time.js";
+import {MILLIS_IN_HOUR, MILLIS_IN_MINUTE} from "#adblockpluscore/lib/time.js";
 import {getNextRequestTimestamp, Scheduler} from "../../all/scheduler.js";
 import {validateRemoteConfig} from "@eyeo/remote-configuration-validator";
 import {EventEmitter} from "../../../adblockpluscore/lib/events.js";

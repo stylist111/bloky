@@ -18,10 +18,10 @@
 import browser from "webextension-polyfill";
 
 import {BlockingFilter, AllowingFilter}
-  from "adblockpluscore/lib/filterClasses.js";
-import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
-import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
-import {parseURL} from "adblockpluscore/lib/url.js";
+  from "#adblockpluscore/lib/filterClasses.js";
+import {contentTypes} from "#adblockpluscore/lib/contentTypes.js";
+import {filterNotifier} from "#adblockpluscore/lib/filterNotifier.js";
+import {parseURL} from "#adblockpluscore/lib/url.js";
 
 import {filterEngine} from "./core.js";
 import {getFrameInfo, isTopLevelFrameId, isValidChildFrameId, isValidFrameId}

@@ -15,7 +15,7 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {base64ToArrayBuffer} from "adblockpluscore/lib/rsa.js";
+import {base64ToArrayBuffer} from "#adblockpluscore/lib/rsa.js";
 
 const RSA_ALGORITHM = {
   name: "RSA-OAEP",

@@ -19,7 +19,7 @@ import browser from "webextension-polyfill";
 
 import {init as initPrefs} from "./prefs.js";
 
-import {notifications as _notifications} from "adblockpluscore/lib/notifications.js";
+import {notifications as _notifications} from "#adblockpluscore/lib/notifications.js";
 
 const NOTIFICATION_KEY = "ewe:notifications";
 class NotificationSessionStorageBackend {

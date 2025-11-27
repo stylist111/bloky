@@ -2,7 +2,7 @@ import {v4 as uuidv4} from "uuid";
 import browser from "webextension-polyfill";
 
 import {setServerLogLevel, resetServerLogLevel} from "./server-logger.js";
-import {MILLIS_IN_DAY} from "adblockpluscore/lib/time.js";
+import {MILLIS_IN_DAY} from "#adblockpluscore/lib/time.js";
 import {PersistentState} from "../persistence.js";
 import {Scheduler} from "../../all/scheduler.js";
 import {default as remoteConfig} from "../remote-config/index.js";

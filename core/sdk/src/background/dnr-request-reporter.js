@@ -26,10 +26,10 @@ import {
 }
   from "./request-filter.js";
 
-import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
+import {contentTypes} from "#adblockpluscore/lib/contentTypes.js";
 import {BlockingFilter, AllowingFilter}
-  from "adblockpluscore/lib/filterClasses.js";
-import {parseURL} from "adblockpluscore/lib/url.js";
+  from "#adblockpluscore/lib/filterClasses.js";
+import {parseURL} from "#adblockpluscore/lib/url.js";
 import {trace} from "./debugging.js";
 import {isSafari} from "./info.js";
 

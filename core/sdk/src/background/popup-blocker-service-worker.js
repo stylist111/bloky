@@ -17,8 +17,8 @@
 
 import browser from "webextension-polyfill";
 
-import {BlockingFilter} from "adblockpluscore/lib/filterClasses.js";
-import {contentTypes} from "adblockpluscore/lib/contentTypes.js";
+import {BlockingFilter} from "#adblockpluscore/lib/filterClasses.js";
+import {contentTypes} from "#adblockpluscore/lib/contentTypes.js";
 
 import {filterEngine} from "./core.js";
 import {default as initializer} from "./initializer.js";

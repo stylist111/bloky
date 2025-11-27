@@ -15,7 +15,7 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {isHttpOrHttps, stripQuery} from "adblockpluscore/lib/url.js";
+import {isHttpOrHttps, stripQuery} from "#adblockpluscore/lib/url.js";
 import browser from "../browser.js";
 import {Prefs, CDP_OPTED_IN, CDP_OPTED_OUT, CDP_OPTED_IN_BY_USER,
         CDP_OPTED_OUT_BY_USER, isInitialized as isPrefsInitialized}

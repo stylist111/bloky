@@ -17,8 +17,8 @@
 
 import browser from "./browser.js";
 
-import {setRecommendations} from "adblockpluscore/lib/recommendations.js";
-import * as features from "adblockpluscore/lib/features.js";
+import {setRecommendations} from "#adblockpluscore/lib/recommendations.js";
+import * as features from "#adblockpluscore/lib/features.js";
 
 export let addonName;
 export let addonVersion;

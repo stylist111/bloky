@@ -19,7 +19,7 @@ import browser from "webextension-polyfill";
 import sentry from "../sentry.js";
 import * as accountStorage from "./storage.js";
 import {ClientError, RateLimitError, UnauthorizedError} from "./errors.js";
-import {MILLIS_IN_DAY, MILLIS_IN_HOUR} from "adblockpluscore/lib/time.js";
+import {MILLIS_IN_DAY, MILLIS_IN_HOUR} from "#adblockpluscore/lib/time.js";
 import {getNextRequestTimestamp, Scheduler} from "../../all/scheduler.js";
 import {ACCOUNT_PATHS, HEADERS, PORTAL_NAME} from "./resources.js";
 import {fetchWithRetry} from "./fetch-with-retry.js";

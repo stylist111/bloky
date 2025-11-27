@@ -25,7 +25,7 @@ import {subAntiCVLocal, subTestCustom3, subTestUpdatable1}
 import {wait} from "./polling.js";
 import {EWE, addFilter} from "./messaging.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
-import {MILLIS_IN_HOUR, MILLIS_IN_DAY} from "adblockpluscore/lib/time.js";
+import {MILLIS_IN_HOUR, MILLIS_IN_DAY} from "#adblockpluscore/lib/time.js";
 
 describe("Synchronization", function() {
   this.timeout(30000);

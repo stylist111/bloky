@@ -19,15 +19,15 @@ import browser from "webextension-polyfill";
 
 import {getFilterText} from "./subscriptions-utils.js";
 import {Filter, InvalidFilter, URLFilter, isActiveFilter}
-  from "adblockpluscore/lib/filterClasses.js";
+  from "#adblockpluscore/lib/filterClasses.js";
 import {SpecialSubscription, DiffUpdatableSubscription}
-  from "adblockpluscore/lib/subscriptionClasses.js";
-import {isValidHostname} from "adblockpluscore/lib/url.js";
-import {filterNotifier} from "adblockpluscore/lib/filterNotifier.js";
+  from "#adblockpluscore/lib/subscriptionClasses.js";
+import {isValidHostname} from "#adblockpluscore/lib/url.js";
+import {filterNotifier} from "#adblockpluscore/lib/filterNotifier.js";
 import {filterEngine} from "./core.js";
-import {createConverter} from "adblockpluscore/lib/dnr/index.js";
-import {RULE_PRIORITY_SET} from "adblockpluscore/lib/dnr/rules.js";
-import {DnrMapper} from "adblockpluscore/lib/dnr/mapper.js";
+import {createConverter} from "#adblockpluscore/lib/dnr/index.js";
+import {RULE_PRIORITY_SET} from "#adblockpluscore/lib/dnr/rules.js";
+import {DnrMapper} from "#adblockpluscore/lib/dnr/mapper.js";
 import {getSubscriptionRulesetMap} from "./subscriptions-utils.js";
 import subscriptions from "./subscriptions.js";
 import {onChangedFilter, disableFilter, ERROR_FILTER_NOT_FOUND,

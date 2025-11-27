@@ -23,7 +23,7 @@ import {isFuzzingServiceWorker, suspendServiceWorker}
   from "./mocha/mocha-runner.js";
 import {waitForAssertion} from "./utils.js";
 import {limitPromiseDuration} from "./polling.js";
-import {MILLIS_IN_SECOND} from "adblockpluscore/lib/time.js";
+import {MILLIS_IN_SECOND} from "#adblockpluscore/lib/time.js";
 
 // This is fairly arbitrary, mostly to capture calls that don't ever respond and
 // hang the tests. However, 30 seconds is also the longest time we reliably have

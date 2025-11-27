@@ -22,7 +22,7 @@
 
 /* eslint no-console: "off" */
 
-import {randomInteger} from "adblockpluscore/lib/random.js";
+import {randomInteger} from "#adblockpluscore/lib/random.js";
 
 /**
  * Generate a random string.
