@@ -1,5 +1,7 @@
 # Unreleased
 
+# 3.0.1 - 2025-11-28
+
 ## Fixes
 
 - Fix the SDK pulling in an old version of `adblockpluscore` from NPM. Back in
