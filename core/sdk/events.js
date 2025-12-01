@@ -28,7 +28,7 @@ export default {
   },
   conflict_detection: {
     bt_loader_blocked: {
-      description: "BTLoader was blocked, possibly indicating a non-partner extension is present",
+      description: "Recorded on every website when the script from Blockthrough fails to load. BTLoader initiates ad recovery for users who allow Acceptable Ads, enabling monetization. This event indicates the script was blocked, which can happen when the user has disabled Acceptable Ads, installed another ad blocker that blocks BTLoader, or allowlisted the page. When BTLoader is blocked, ad recovery cannot occur and monetization is lost.",
       data: {
         description: "Data about why BTLoader was blocked",
         type: "object",
@@ -49,7 +49,7 @@ export default {
       }
     },
     bt_loader_success: {
-      description: "BTLoader was successfully loaded",
+      description: "Recorded on every website when the script from Blockthrough successfully loads. BTLoader initiates ad recovery for users who allow Acceptable Ads, enabling monetization. This event confirms that ad recovery can proceed normally on this page.",
       data: {
         description: "Data about the BTLoader success event",
         type: "object",
