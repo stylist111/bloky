@@ -1,5 +1,9 @@
 # Unreleased
 
+# 6.33.1 - 2025-12-02
+
+This release contains bugfixes and under-the-hood changes.
+
 # 6.33.0 - 2025-11-25
 
 New filter type, new snippets, small bugfix
