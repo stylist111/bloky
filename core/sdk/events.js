@@ -7,6 +7,17 @@ export default {
       description: "User clicked the support icon on the header of the Adblock popup"
     }
   },
+  context_menu: {
+    cm_pause_on_site: {
+      description: "User right clicked on the page to open the context menu and selected 'Pause on this site' from the AdBlock section."
+    },
+    cm_pause_on_all_sites: {
+      description: "User right clicked on the page to open the context menu and selected 'Pause on all sites' from the AdBlock section."
+    },
+    cm_resume_adblock: {
+      description: "User right clicked on the page to open the context menu and selected 'Resume blocking ads' from the AdBlock section."
+    }
+  },
   cdp: {
     built_cdp_payload: {
       description: "A payload has been built with the intention of sending it to CDP. This is debug information, and will temporarily include the eventStats until the CDP server is ready to ingest them.",

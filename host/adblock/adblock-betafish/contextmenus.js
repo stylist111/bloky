@@ -168,26 +168,32 @@ const emitPageBroadcast = (function emitBroadcast() {
   return theFunction;
 })();
 
+const cmServerLogger = new ewe.telemetry.ServerLogger("context_menu");
+
 browser.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info && info.menuItemId) {
     const { menuItemId } = info;
     switch (menuItemId) {
       case "pause_adblock_everywhere":
+        cmServerLogger.behavior("cm_pause_on_all_sites");
         ServerMessages.recordGeneralMessage("cm_pause_clicked");
         await adblockIsPaused(true);
         updateButtonUIAndContextMenus(tab);
         break;
       case "resume_blocking_ads":
+        cmServerLogger.behavior("cm_resume_adblock");
         ServerMessages.recordGeneralMessage("cm_unpause_clicked");
         await adblockIsPaused(false);
         updateButtonUIAndContextMenus(tab);
         break;
       case "resume_blocking_ads_unallow":
+        cmServerLogger.behavior("cm_resume_adblock");
         ServerMessages.recordGeneralMessage("cm_unpause_clicked");
         await removeAllAllowlistRulesForTab(tab.id);
         updateButtonUIAndContextMenus(tab);
         break;
       case "domain_pause_adblock":
+        cmServerLogger.behavior("cm_pause_on_site");
         ServerMessages.recordGeneralMessage("cm_domain_pause_clicked");
         await allowlistTab(tab.url, FilterOrigin.context);
         updateButtonUIAndContextMenus(tab);
