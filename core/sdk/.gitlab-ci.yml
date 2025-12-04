@@ -63,6 +63,12 @@ workflow:
     COMPLIANCE_IMAGE: $IMAGE_TAG:compliance-image-$CI_JOB_ID
     DOCKER_OPTIONS: --shm-size=2g -t
 
+.macos-image:
+  # https://eyeo.atlassian.net/wiki/spaces/DEVOPS/pages/1425244203/Gitlab+Runner+MacOS+Cluster
+  image: macos-15-xcode-16
+  tags:
+    - eyeo-macos-tart
+
 stages:
   - build
   - unit
@@ -86,10 +92,8 @@ build:docs:
     expire_in: 1 week
 
 build:safari:
+  extends: .macos-image
   stage: build
-  image: macos-15-xcode-16
-  tags:
-    - saas-macos-medium-m1
   needs:
     - !reference [.needs-parent-build, needs]
   before_script:
@@ -458,12 +462,12 @@ int:bundle:
     - !reference [.avoid-flaky-run, rules]
 
 int:safari:
+  extends: .macos-image
   stage: integration
-  image: macos-15-xcode-16
-  tags:
-    - saas-macos-large-m2pro
   needs: ["build:safari"]
   before_script:
+    # /etc/hosts edit based on https://gitlab.com/eyeo/network-filtering/nasapp-testing/-/blob/main/scripts/setup-host.sh
+    - grep -q "127.0.0.1 testpages.eyeo.com" /etc/hosts || echo "127.0.0.1 testpages.eyeo.com" | sudo tee -a /etc/hosts
     - npm install
   script:
     - ./core/sdk/test/scripts/safari.sh
