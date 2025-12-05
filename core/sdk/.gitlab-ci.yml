@@ -64,10 +64,10 @@ workflow:
     DOCKER_OPTIONS: --shm-size=2g -t
 
 .macos-image:
-  # https://eyeo.atlassian.net/wiki/spaces/DEVOPS/pages/1425244203/Gitlab+Runner+MacOS+Cluster
+  # https://docs.gitlab.com/ci/runners/hosted_runners/macos/
   image: macos-15-xcode-16
   tags:
-    - eyeo-macos-tart
+    - saas-macos-large-m2pro
 
 stages:
   - build
