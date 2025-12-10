@@ -118,6 +118,16 @@ export function compareNewTabRequestsByPriority(newTabA: NewTab, newTabB: NewTab
 }
 
 /**
+ * Dismisses IPM command cleans up any leftovers
+ *
+ * @param ipmId - IPM ID
+ */
+function dismissCommand(ipmId: string): void {
+  getFragment().dismissCommand(ipmId);
+  delete waitingTabs[ipmId];
+}
+
+/**
  * Records an event
  *
  * @deprecated only used for recording events for @eyeo-fragments/ipm-legacy
@@ -220,7 +230,6 @@ async function openNewtab(): Promise<void> {
       addExperimentsSearchParams,
       checkLanguage,
       createSafeOriginUrl,
-      dismissCommand,
       doesLicenseStateMatch,
       getBehavior,
       getCommand,
@@ -451,7 +460,7 @@ const onUpdated = (
 async function handleCommand(ipmId: string): Promise<void> {
   logger.debug("[new-tab]:tab manager handleCommand", ipmId);
 
-  const { dismissCommand, getBehavior } = getFragment();
+  const { getBehavior } = getFragment();
 
   // Don't open new tabs if we're on a managed installation
   const { installType } = await browser.management.getSelf();

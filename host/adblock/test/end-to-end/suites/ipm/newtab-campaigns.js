@@ -189,8 +189,8 @@ export default (fragmentType) => {
       await waitForAssertion(async () => {
         const { counts } = await getPendingLoggerCdpEventStats();
 
-        expect(counts).toHaveProperty(`${commandReceivedEvent}:${ipmIdLow}`, 1);
-        expect(counts).toHaveProperty(`${tabCommandReadyEvent}:${ipmIdLow}`, 1);
+        expect(counts).toHaveProperty(`${commandReceivedEvent}:${ipmIdLow}`, 2);
+        expect(counts).toHaveProperty(`${tabCommandReadyEvent}:${ipmIdLow}`, 2);
         expect(counts).toHaveProperty(`${tabCreatedEvent}:${ipmIdLow}`, 1);
         expect(counts).toHaveProperty(`${tabLoadedEvent}:${ipmIdLow}`, 1);
 
@@ -253,14 +253,7 @@ export default (fragmentType) => {
       const pingPayload = await syncRemoteConfig(initOptionsGeneralTab);
       const actions = pingPayload.events.map((e) => e.action);
 
-      // See: https://eyeo.atlassian.net/browse/IM-217
-      // for context on error_no_behavior events
-      expect(actions).toEqual([
-        "received",
-        "error_no_behavior",
-        "license_state_no_match",
-        "error_no_behavior",
-      ]);
+      expect(actions).toEqual(["received", "license_state_no_match"]);
     } else if (fragmentType === "future") {
       await initOptionsGeneralTab(getOptionsHandle());
       const { counts } = await getPendingLoggerCdpEventStats();

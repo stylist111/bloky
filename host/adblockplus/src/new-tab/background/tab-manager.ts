@@ -119,6 +119,17 @@ export function compareNewTabRequestsByPriority(
 }
 
 /**
+ * Dismisses IPM command cleans up any leftovers
+ *
+ * @param ipmId - IPM ID
+ */
+function dismissCommand(ipmId: string): void {
+  getFragment().dismissCommand(ipmId);
+  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+  delete waitingTabs[ipmId];
+}
+
+/**
  * Checks whether the global new tab cool down period is still ongoing.
  *
  * @returns true if the cool down period is till ongoing, false if not
@@ -196,7 +207,6 @@ async function openNewTab(): Promise<void> {
     addExperimentsSearchParams,
     checkLanguage,
     createSafeOriginUrl,
-    dismissCommand,
     doesLicenseStateMatch,
     getBehavior,
     getCommand,
@@ -422,7 +432,7 @@ function removeListeners(ipmId: string): void {
  */
 export async function handleCommand(ipmId: string): Promise<void> {
   logger.debug("[new-tab]: tab manager handleCommand", ipmId);
-  const { dismissCommand, getBehavior } = getFragment();
+  const { getBehavior } = getFragment();
 
   // Don't open new tabs if we're on a managed installation
   const { installType } = await browser.management.getSelf();

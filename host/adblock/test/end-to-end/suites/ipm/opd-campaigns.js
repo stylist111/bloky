@@ -134,15 +134,8 @@ export default (fragmentType) => {
       const pingPayload = await syncRemoteConfig(initOptionsGeneralTab);
       expect(pingPayload.ipm.active).toEqual([]);
       const actions = pingPayload.events.map((e) => e.action);
-      // See: https://eyeo.atlassian.net/browse/IM-217
-      // for context on error_no_behavior events
-      expect(actions).toEqual([
-        "received",
-        "error_no_behavior",
-        "dialog_injected",
-        "dialog_button_clicked",
-        "error_no_behavior",
-      ]);
+
+      expect(actions).toEqual(["received", "dialog_injected", "dialog_button_clicked"]);
     } else if (fragmentType === "future") {
       await initOptionsGeneralTab(getOptionsHandle());
       const { counts } = await getPendingLoggerCdpEventStats();
@@ -194,15 +187,8 @@ export default (fragmentType) => {
       const pingPayload = await syncRemoteConfig(initOptionsGeneralTab);
       expect(pingPayload.ipm.active).toEqual([]);
       const actions = pingPayload.events.map((e) => e.action);
-      // See: https://eyeo.atlassian.net/browse/IM-217
-      // for context on error_no_behavior events
-      expect(actions).toEqual([
-        "received",
-        "error_no_behavior",
-        "dialog_injected",
-        "error_no_behavior",
-        "dialog_injected",
-      ]);
+
+      expect(actions).toEqual(["received", "dialog_injected", "dialog_injected"]);
     } else if (fragmentType === "future") {
       await initOptionsGeneralTab(getOptionsHandle());
       const { counts } = await getPendingLoggerCdpEventStats();
