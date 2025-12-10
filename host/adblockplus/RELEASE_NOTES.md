@@ -1,5 +1,9 @@
 # Unreleased
 
+# 4.32.2 - 2025-12-10
+
+This release contains bugfixes and under-the-hood changes.
+
 # 4.32.1 - 2025-12-02
 
 This release contains bugfixes and under-the-hood changes.
