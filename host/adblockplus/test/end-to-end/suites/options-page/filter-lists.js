@@ -102,33 +102,6 @@ export default () => {
     expect(actualFilterLists).toEqual(expectedFilterLists);
   });
 
-  it("updates all filter lists", async function () {
-    // A long timeout is needed because the 'Last Updated' text is changed to 'minutes ago'
-    // one minute after installing. When running tests in the CI, more than a minute should
-    // already pass before we get to this test, but when running it locally in isolation,
-    // it will need more than a minute to run
-    const longTimeout = 70000;
-    this.timeout(longTimeout + 10000);
-
-    const defaultFilterLists = getDefaultFilterLists(extension.manifestVersion);
-    try {
-      // Wait for filterlists to be updated "minutes ago". Refreshing because
-      // the text does not automatically update from "Just now" to "minutes ago"
-      await checkSubscriptionsState(defaultFilterLists, {
-        timeout: longTimeout,
-        regexp: /minutes ago/,
-        refresh: true
-      });
-      await clickOnDisplayedElement("#update");
-      await checkSubscriptionsState(defaultFilterLists, {
-        timeout: 5000,
-        regexp: /Just now/
-      });
-    } catch (err) {
-      await manageFilterListsError(err);
-    }
-  });
-
   it("goes to a filter list source page", async function () {
     const name = "Allow nonintrusive advertising";
     const aaUrl =
@@ -243,6 +216,33 @@ export default () => {
       timeout: 3000,
       displayedTimeout: 1000
     });
+  });
+
+  it("updates all filter lists", async function () {
+    // A long timeout is needed because the 'Last Updated' text is changed to 'minutes ago'
+    // one minute after installing. When running tests in the CI, more than a minute should
+    // already pass before we get to this test, but when running it locally in isolation,
+    // it will need more than a minute to run
+    const longTimeout = 70000;
+    this.timeout(longTimeout + 10000);
+
+    const defaultFilterLists = getDefaultFilterLists(extension.manifestVersion);
+    try {
+      // Wait for filterlists to be updated "minutes ago". Refreshing because
+      // the text does not automatically update from "Just now" to "minutes ago"
+      await checkSubscriptionsState(defaultFilterLists, {
+        timeout: longTimeout,
+        regexp: /minutes ago/,
+        refresh: true
+      });
+      await clickOnDisplayedElement("#update");
+      await checkSubscriptionsState(defaultFilterLists, {
+        timeout: 5000,
+        regexp: /Just now/
+      });
+    } catch (err) {
+      await manageFilterListsError(err);
+    }
   });
 
   it("displays an error for invalid filter list via URL", async function () {
