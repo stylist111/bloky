@@ -158,7 +158,7 @@ const initialize = async function init() {
 
     // send goodbye message
     if (name === "marketing_opt_out" && isEnabled) {
-      await send("marketingOptOut");
+      void send("marketingOptOut");
     }
 
     if (abpPrefPropertyNames.indexOf(name) >= 0) {
