@@ -108,6 +108,11 @@ export default {
       }
     }
   },
+  getadblock: {
+    opt_out_acceptable_ads_clicked: {
+      description: "The user clicked the opt-out link to disable Acceptable Ads on the getadblock.com installed page"
+    }
+  },
   cdp: {
     built_cdp_payload: {
       description: "A payload has been built with the intention of sending it to CDP. This is debug information, and will temporarily include the eventStats until the CDP server is ready to ingest them.",
