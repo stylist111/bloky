@@ -13,6 +13,62 @@ export default {
       description: "User clicked the Learn More button on the Block Distractions section in the AdBlock popup"
     }
   },
+  options_page_tab: {
+    options_page_tab_stats_clicked: {
+      description: "User clicked the Stats tab on the options page"
+    },
+    options_page_tab_general_clicked: {
+      description: "User clicked the General tab on the options page"
+    },
+    options_page_tab_filter_lists_clicked: {
+      description: "User clicked the Filter lists tab on the options page"
+    },
+    options_page_tab_customize_clicked: {
+      description: "User clicked the Customize tab on the options page"
+    },
+    options_page_tab_support_clicked: {
+      description: "User clicked the Support tab on the options page"
+    },
+    options_page_tab_premium_clicked: {
+      description: "User clicked the Premium tab on the options page"
+    },
+    options_page_tab_themes_clicked: {
+      description: "User clicked the Themes tab on the options page"
+    },
+    options_page_tab_image_swap_clicked: {
+      description: "User clicked the Image Swap tab on the options page"
+    },
+    options_page_tab_premium_filters_clicked: {
+      description: "User clicked the Premium Filters tab on the options page"
+    },
+    options_page_tab_stats_opened: {
+      description: "The Stats tab was opened in a new browser tab"
+    },
+    options_page_tab_general_opened: {
+      description: "The General tab was opened in a new browser tab"
+    },
+    options_page_tab_filter_lists_opened: {
+      description: "The Filter lists tab was opened in a new browser tab"
+    },
+    options_page_tab_customize_opened: {
+      description: "The Customize tab was opened in a new browser tab"
+    },
+    options_page_tab_support_opened: {
+      description: "The Support tab was opened in a new browser tab"
+    },
+    options_page_tab_premium_opened: {
+      description: "The Premium tab was opened in a new browser tab"
+    },
+    options_page_tab_themes_opened: {
+      description: "The Themes tab was opened in a new browser tab"
+    },
+    options_page_tab_image_swap_opened: {
+      description: "The Image Swap tab was opened in a new browser tab"
+    },
+    options_page_tab_premium_filters_opened: {
+      description: "The Premium Filters tab was opened in a new browser tab"
+    }
+  },
   context_menu: {
     cm_pause_on_site: {
       description: "User right clicked on the page to open the context menu and selected 'Pause on this site' from the AdBlock section."
