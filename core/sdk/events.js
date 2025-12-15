@@ -24,6 +24,34 @@ export default {
       description: "User right clicked on the page to open the context menu and selected 'Resume blocking ads' from the AdBlock section."
     }
   },
+  smart_allowlisting: {
+    allowlisting_expired: {
+      description: "An allowlisting filter expired automatically",
+      data: {
+        description: "Details about the filter at the time of expiration.",
+        type: "object",
+        properties: {
+          allowlistExtendDuration: {
+            description: "The number of milliseconds to extend the allowlisting filter's expiry when the user navigated to a URL that matches the filter.",
+            type: "number"
+          }
+        }
+      }
+    },
+    allowlisting_renewed: {
+      description: "An allowlisting filter was renewed automatically",
+      data: {
+        description: "Details about the filter at the time of renewal.",
+        type: "object",
+        properties: {
+          allowlistExtendDuration: {
+            description: "The number of milliseconds to extend the allowlisting filter's expiry when the user navigated to a URL that matches the filter.",
+            type: "number"
+          }
+        }
+      }
+    }
+  },
   cdp: {
     built_cdp_payload: {
       description: "A payload has been built with the intention of sending it to CDP. This is debug information, and will temporarily include the eventStats until the CDP server is ready to ingest them.",
