@@ -5,6 +5,12 @@ export default {
     },
     support_icon_clicked: {
       description: "User clicked the support icon on the header of the Adblock popup"
+    },
+    skip_cookie_walls_learn_more_clicked: {
+      description: "User clicked the Learn More button on the Skip Cookie Walls section in the AdBlock popup"
+    },
+    block_distractions_learn_more_clicked: {
+      description: "User clicked the Learn More button on the Block Distractions section in the AdBlock popup"
     }
   },
   context_menu: {

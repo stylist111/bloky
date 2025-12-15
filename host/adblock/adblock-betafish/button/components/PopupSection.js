@@ -89,6 +89,13 @@ const generateToggle = function (key) {
   return toggle;
 };
 
+const serverLogger = new modulesAsGlobal.ewe.telemetry.ServerLogger("adblock_ui");
+
+const learnMoreEventNameMap = new Map([
+  ["cookieWalls", "skip_cookie_walls_learn_more_clicked"],
+  ["blockDistractions", "block_distractions_learn_more_clicked"],
+]);
+
 const generateLearnMore = async function (name) {
   const urlToOpen = await addUserIdToUrl("https://getadblock.com/premium/enrollment/");
 
@@ -96,6 +103,7 @@ const generateLearnMore = async function (name) {
   button.innerText = translate("learn_more_without_period");
   button.addEventListener("click", () => {
     sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: `${name}_learn_clicked` });
+    serverLogger.behavior(learnMoreEventNameMap.get(name));
     sendMessageWithNoResponse({ command: "openTab", urlToOpen });
     closePopup();
   });
