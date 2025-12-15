@@ -467,6 +467,8 @@ int:safari:
   needs: ["build:safari"]
   before_script:
     # /etc/hosts edit based on https://gitlab.com/eyeo/network-filtering/nasapp-testing/-/blob/main/scripts/setup-host.sh
+    - asdf install java openjdk-22
+    - asdf global java openjdk-22
     - grep -q "127.0.0.1 testpages.eyeo.com" /etc/hosts || echo "127.0.0.1 testpages.eyeo.com" | sudo tee -a /etc/hosts
     - npm install
   script:

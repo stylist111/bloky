@@ -37,6 +37,50 @@ export default {
       }
     }
   },
+  youtube: {
+    yt_site_navigation: {
+      description: "Recorded 5 seconds after a user navigates to a YouTube page. This event is sent only once per session. Refreshing or opening a new tab will start a new session. Navigating through videos without refreshing (aka SPA navigation) will not trigger another event.",
+      data: {
+        description: "Data about the YouTube navigation event",
+        type: "object",
+        properties: {
+          userLoggedIn: {
+            description: "Indicates whether the user is logged in",
+            type: "string"
+          }
+        }
+      }
+    },
+    yt_site_ad_shown: {
+      description: "Recorded when a video ad on YouTube stops playing, either because it was skipped, the user navigated away, or it finished playing",
+      data: {
+        description: "Data for the YouTube ad shown event",
+        type: "object",
+        properties: {
+          isAllowListed: {
+            description: "Indicates whether the page is allowlisted",
+            type: "string"
+          },
+          isPremium: {
+            description: "Specifies whether the user has a Premium subscription",
+            type: "boolean"
+          },
+          adFormat: {
+            description: "Format ID of the displayed ad",
+            type: "string"
+          },
+          totalAdDurationMs: {
+            description: "Total duration of the ad, in milliseconds",
+            type: "number"
+          },
+          adShownDurationMs: {
+            description: "Actual playback duration of the ad, in milliseconds",
+            type: "number"
+          }
+        }
+      }
+    }
+  },
   conflict_detection: {
     bt_loader_blocked: {
       description: "Recorded on every website when the script from Blockthrough fails to load. BTLoader initiates ad recovery for users who allow Acceptable Ads, enabling monetization. This event indicates the script was blocked, which can happen when the user has disabled Acceptable Ads, installed another ad blocker that blocks BTLoader, or allowlisted the page. When BTLoader is blocked, ad recovery cannot occur and monetization is lost.",

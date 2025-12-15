@@ -144,13 +144,6 @@ const ServerMessages = (function serverMessages() {
     void recordMessageWithUserID(msg, "general", callback, additionalParams);
   };
 
-  // Log an ad wall specific 'general' message on GAB log server.
-  const recordAdWallMessage = function (msg, additionalParams) {
-    if (Prefs.get("send_ad_wall_messages")) {
-      void recordMessageWithUserID(msg, "general", null, additionalParams);
-    }
-  };
-
   // Log a 'adreport' message on GAB log server.
   const recordAdreportMessage = function (msg, callback, additionalParams) {
     void recordMessageWithUserID(msg, "adreport", callback, additionalParams);
@@ -173,7 +166,6 @@ const ServerMessages = (function serverMessages() {
 
   return {
     recordAdreportMessage,
-    recordAdWallMessage,
     recordAnonymousMessage,
     recordAnonymousErrorMessage,
     recordErrorMessage,

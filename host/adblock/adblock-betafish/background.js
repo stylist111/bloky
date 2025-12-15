@@ -59,6 +59,7 @@ import {
   createFilterMetaData,
   chromeStorageSetHelper,
   determineUserLanguage,
+  normalizeEventPayload,
   parseUri,
 } from "./utilities/background/bg-functions";
 
@@ -638,6 +639,9 @@ function addAllowlistingListeners() {
 }
 
 const initializationServerLogger = new ewe.telemetry.ServerLogger("initialization");
+const youtubeServerLogger = new ewe.telemetry.ServerLogger("youtube");
+
+const migratedEvents = new Set(["yt_site_navigation", "yt_site_ad_shown"]);
 
 initialize
   .then(async () => {
@@ -656,7 +660,22 @@ initialize
       logger,
       port,
       prefs: Prefs,
-      sendAdWallEvents: ServerMessages.recordAdWallMessage,
+      sendAdWallEvents: async (eventName, payload) => {
+        if (!Prefs.get("send_ad_wall_messages")) {
+          return;
+        }
+        void ServerMessages.recordGeneralMessage(eventName, null, payload);
+        // Normalize event name for serverLogger
+        // IMPORTANT: remove normalization after all events are migrated
+        // and serverMessages logging is removed
+        const normalizedEventName = eventName.replace(/[.-]/g, "_");
+        if (migratedEvents.has(normalizedEventName)) {
+          youtubeServerLogger.behavior(
+            normalizedEventName,
+            normalizeEventPayload(normalizedEventName, payload),
+          );
+        }
+      },
       isPremiumActive: License.isActiveLicense,
     });
     startPublicAPI({
