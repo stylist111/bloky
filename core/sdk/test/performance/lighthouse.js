@@ -22,8 +22,10 @@ import path from "path";
 import fs from "fs";
 import {fileURLToPath} from "url";
 
-import lighthouse from "lighthouse";
-import {remoteDebuggingPort, getNewDriver, waitForPerformanceExtension} from "../runners/driver.js";
+import {By} from "selenium-webdriver";
+
+import {runLighthouse, calculateMetricBaseline} from "@eyeo/test-utils/lighthouse";
+import {getNewDriver, getHandle} from "@eyeo/test-utils/sdk-driver";
 
 export const baselineRunsPerUrl = 20;
 const dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -49,22 +51,7 @@ const websiteUrls = [
   {url: "https://www.microsoft.com/de-de/", factor: 3}
 ];
 
-async function runLighthouse(url) {
-  const options = {
-    logLevel: "silent",
-    output: "json",
-    onlyCategories: ["performance"],
-    port: remoteDebuggingPort
-  };
-
-  console.log(`Running lighthouse on ${url}`);
-  const {lhr} = await lighthouse(url, options);
-  const {runWarnings, audits} = lhr;
-
-  if (runWarnings.length > 0) {
-    console.warn({runWarnings});
-  }
-
+function parseLighthouseMetrics(audits) {
   const lighthouseResult = {};
   for (const {metric} of metrics) {
     lighthouseResult[metric] = Math.trunc(audits[metric].numericValue);
@@ -107,38 +94,6 @@ function getFactorValue(baselineMetric, factor, url) {
   }
 
   return maxExpectedValue;
-}
-
-function getMedian(values) {
-  return values.length % 2 !== 0 ?
-    values[Math.floor(values.length / 2)] :
-    (values[values.length / 2 - 1] + values[values.length / 2]) / 2;
-}
-
-function calculateMetricBaseline(metric, lighthouseResults) {
-  const values = [];
-  let total = 0;
-
-  for (const lighthouseResult of lighthouseResults) {
-    const value = lighthouseResult[metric];
-
-    if (value === null) {
-      console.warn("Skipping a value in calculateMetricBaseline:", {metric, value});
-      continue;
-    }
-
-    total += value;
-    values.push(value);
-  }
-  values.sort((a, b) => a - b);
-
-  return {
-    metric,
-    min: values[0],
-    max: values[values.length - 1],
-    average: Math.round(total / values.length),
-    median: getMedian(values)
-  };
 }
 
 async function saveBaseline(runResults) {
@@ -219,6 +174,20 @@ async function checkResults(runResults) {
   console.log("Lighthouse tests OK.");
 }
 
+export async function waitForPerformanceExtension(driver) {
+  console.log("Waiting for performance extension ...");
+
+  await getHandle("/status.html", 25000);
+  const elem = await driver.findElement(By.id("status"));
+  if ((await elem.getAttribute("errors")) == "true") {
+    const errors = [];
+    for (const error of await elem.findElements(By.css("ul"))) {
+      errors.push(await error.getAttribute("innerText"));
+    }
+    throw new Error(errors.join("\n"));
+  }
+}
+
 export async function lighthouseTests(
   isBaselineRun, {browser, version, options}
 ) {
@@ -235,14 +204,15 @@ export async function lighthouseTests(
 
     const runResultAllUrls = [];
     for (const {url} of websiteUrls) {
-      const lighthouseResult = await runLighthouse(url);
+      const audits = await runLighthouse(url);
+      const lighthouseResult = parseLighthouseMetrics(audits);
       runResultAllUrls.push({url, lighthouseResult});
     }
     runResults.push(runResultAllUrls);
 
     if (i !== runsPerUrl - 1) {
-      await getNewDriver(browser, version, options);
-      await waitForPerformanceExtension();
+      const driver = await getNewDriver(browser, version, options);
+      await waitForPerformanceExtension(driver);
     }
   }
 
