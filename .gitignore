@@ -72,3 +72,8 @@ core/sdk/test/scripts/test-extension/package-lock.json
 core/sdk/test/screenshots
 core/sdk/nasapp-testing
 core/sdk/scripts/safari/AuthKey.p8
+
+# tools
+tools/test/extension-benchmark/extensions
+tools/test/extension-benchmark/results
+tools/test/extension-benchmark/urls.txt

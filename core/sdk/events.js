@@ -11,6 +11,63 @@ export default {
     },
     block_distractions_learn_more_clicked: {
       description: "User clicked the Learn More button on the Block Distractions section in the AdBlock popup"
+    },
+    popup_opened: {
+      description: "User clicked the AdBlock toolbar icon to open the popup menu",
+      data: {
+        description: "Data about the popup opened event",
+        type: "object",
+        properties: {
+          isBadgeTextNew: {
+            description: "Whether the badge text is new",
+            type: "boolean"
+          },
+          reason: {
+            description: "The reason for the popup opened event",
+            type: "string"
+          }
+        }
+      }
+    },
+    blacklist_clicked: {
+      description: "User clicked on the three dots in the popup menu, then clicked 'Hide something on this page' link"
+    },
+    titletext_clicked: {
+      description: "User clicked the AdBlock logo in the popup menu header"
+    },
+    whitelist_domain_clicked: {
+      description: "User clicked on the three dots in the popup menu, then clicked 'More pause options' link"
+    },
+    help_flow_results: {
+      description: "Emitted when a user completes the help flow in the popup. The flow presents different options based on the user's issue (e.g., ads not blocked, site broken, etc.), and the emitted event includes the path representing the sequence of choices the user made",
+      data: {
+        description: "Data about the help flow results",
+        type: "object",
+        properties: {
+          helpFlowPath: {
+            description: "The path of the help flow",
+            type: "string"
+          }
+        }
+      }
+    },
+    premium_options_clicked: {
+      description: "Triggered when a premium user clicks the 'Premium' label in the popup header which is shown next to the Adblock logo. The label is only visible to premium users and opens the Premium tab in the settings page"
+    },
+    popup_sub_clicked_cookies_premium: {
+      description: "Triggered when a premium user clicks the toggle to enable the Premium Cookie Blocking filter list in the popup. The list is not enabled automatically when upgrading to premium"
+    },
+    popup_sub_clicked_distraction_control: {
+      description: "Triggered when a premium user clicks the toggle to enable the Premium Block Distractions filter list in the popup. The list is not enabled automatically when upgrading to premium"
+    },
+    pause_on_site: {
+      description: "User clicked 'Pause on this site' on the Adblock popup"
+    },
+    resume_adblock_on_site: {
+      description: "User clicked 'Resume Ad Blocking' on the Adblock popup while YouTube was auto allowlisted. This event will be merged into resume_adblock in the future."
+    },
+    resume_adblock: {
+      description: "User clicked 'Resume Ad blocking' on the Adblock popup"
     }
   },
   options_page_tab: {

@@ -57,3 +57,39 @@ Used to open the options page of a host extension.
 ## E2E runner
 
 Used to run E2E tests in hosts and fragments.
+
+## SDK runner
+
+Used to run functional and performance tests in the SDK. Also used by the
+extension benchmark tool.
+
+## Extension benchmark
+
+Tool that benchmarks the performance of different extensions by gathering
+selected lighthouse and other metrics over a set of URLs.
+
+### Setup
+
+1. Copy unpacked extensions as separate folders into `tools/test/extension-benchmark/extensions/`
+1. Copy `tools/test/extension-benchmark/urls.txt.tmpl` to `tools/test/extension-benchmark/urls.txt`, then edit the file with the desired list of URLs
+
+### Running the benchmark tool
+
+```sh
+npm run -w @eyeo/test-utils extension-benchmark -- {chromium|edge} [version] [--forceHeadful] [--runsPerURL=5] [--restartBrowser] [--sleepPostInstall=10]
+
+# Positionals:
+#   browser                                          [choices: "chromium", "edge"]
+#   version                                           [string] [default: "latest"]
+#
+# Options:
+#   --help              Show help                                        [boolean]
+#   --forceHeadful      Run the tests in non headless mode
+#   --runsPerURL        How many times the same URL will be measured
+#                                                            [number] [default: 2]
+#   --restartBrowser    Use a new browser instance after each URL run
+#   --sleepPostInstall  Amount of seconds to sleep after the post install page
+#                                                            [number] [default: 0]
+```
+
+Results get stored in `tools/test/extension-benchmark/results/`.

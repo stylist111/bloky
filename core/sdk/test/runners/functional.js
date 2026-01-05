@@ -25,10 +25,11 @@ import yargs from "yargs";
 import webdriver from "selenium-webdriver";
 import {BROWSERS, getMajorVersion} from "@eyeo/get-browser-binary";
 import {runSDKTestServer, killSDKTestServer} from "@eyeo/test-utils/test-server-manager";
+import {getHandle, switchToHandle, getNewDriver, writeScreenshot, setMinDriverTimeout, quitDriver} from "@eyeo/test-utils/sdk-driver";
 
+import {screenshotsPath} from "./shared.js";
 import {isMain} from "../../scripts/utils.js";
 import {wait} from "../polling.js";
-import {getHandle, switchToHandle, getNewDriver, writeScreenshot, setMinDriverTimeout, quitDriver} from "./driver.js";
 
 const isScriptInvokedFromCLI = isMain(import.meta.url);
 
@@ -427,7 +428,7 @@ async function startTestRun(driver, id, params) {
     }, 3000, `Unable to locate element with id="${id}"`, 500);
   }
   catch (err) {
-    await writeScreenshot("startTestRun.png");
+    await writeScreenshot(screenshotsPath, "startTestRun.png");
     throw err;
   }
 }
