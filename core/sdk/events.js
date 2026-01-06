@@ -124,6 +124,14 @@ export default {
     },
     options_page_tab_premium_filters_opened: {
       description: "The Premium Filters tab was opened in a new browser tab"
+    },
+    data_collection_opt_out: {
+      description: "User opted out of data collection in the options page"
+    }
+  },
+  license: {
+    trial_license_expired: {
+      description: "The premium trial license has expired"
     }
   },
   context_menu: {

@@ -45,6 +45,8 @@ import {
   reloadOptionsPageTabs,
 } from "~/utilities/background";
 
+const checkOthersServerLogger = new ewe.telemetry.ServerLogger("license");
+
 const licenseNotifier = new EventEmitter();
 
 export const License = (function getLicense() {
@@ -320,6 +322,7 @@ export const License = (function getLicense() {
               updatedLicense.status === "expired"
             ) {
               void License.processExpiredLicense();
+              checkOthersServerLogger.behavior("trial_license_expired");
               ServerMessages.recordGeneralMessage("trial_license_expired");
             }
           } else {
