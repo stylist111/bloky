@@ -22,10 +22,9 @@ import path from "path";
 
 import yargs from "yargs";
 
-import {getNewDriver, quitDriver, remoteDebuggingPort} from "@eyeo/test-utils/sdk-driver";
-
+import {getNewDriver, quitDriver, remoteDebuggingPort, waitForPerformanceExtension} from "./driver.js";
 import {historyTest} from "../performance/history.js";
-import {baselineRunsPerUrl, lighthouseTests, waitForPerformanceExtension} from "../performance/lighthouse.js";
+import {baselineRunsPerUrl, lighthouseTests} from "../performance/lighthouse.js";
 
 function parseArguments() {
   try {
@@ -92,8 +91,8 @@ export async function run() {
   const options = {extensionPaths, extraArgs, headless};
 
   try {
-    const driver = await getNewDriver(browser, version, options);
-    await waitForPerformanceExtension(driver);
+    await getNewDriver(browser, version, options);
+    await waitForPerformanceExtension(browser);
 
     await lighthouseTests(params.saveBaseline, {browser, version, options});
     if (!params.saveBaseline) {

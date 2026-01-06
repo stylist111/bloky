@@ -53,8 +53,6 @@ export const processMessageResponse = (sendResponse, responseData) => {
   return Promise.resolve(responseData);
 };
 
-const messagingServerLogger = new ewe.telemetry.ServerLogger("options_page_tab");
-
 const uiPorts = new Map();
 const messageTypes = new Map([["settings", "settings.respond"]]);
 
@@ -232,7 +230,6 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
       break;
     case "dataCollectionOptOut":
       sendResponse({});
-      messagingServerLogger.behavior("data_collection_opt_out");
       return ServerMessages.recordDataCollectionOptOutMessage();
     case "marketingOptOut":
       sendResponse({});

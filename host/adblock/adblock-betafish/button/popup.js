@@ -21,8 +21,6 @@
 
 let errorOccurred = false;
 
-const popupAdblockUIServerLogger = new modulesAsGlobal.ewe.telemetry.ServerLogger("adblock_ui");
-
 const useFlexDisplayElements = [
   "allowlisted_subsection",
   "disabled_site_title",
@@ -257,10 +255,6 @@ const start = async function () {
       msg: "popup_opened",
       additionalParams: { isBadgeTextNew, reason: newBadgeTextReason },
     };
-    popupAdblockUIServerLogger.behavior("popup_opened", {
-      isBadgeTextNew,
-      reason: newBadgeTextReason,
-    });
     sendMessageWithNoResponse(genMsgData);
     sendMessageWithNoResponse({ command: "resetBadgeText" });
     void modulesAsGlobal.messaging.send("adblock:cleanUpSevenDayAlarm");
@@ -403,7 +397,6 @@ const start = async function () {
 
   // Click handlers
   selected("#btn_unpause_all", async () => {
-    popupAdblockUIServerLogger.behavior("resume_adblock");
     sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "unpause_clicked" });
     await browser.runtime.sendMessage({ command: "adblockIsPaused", newValue: false });
     await browser.runtime.sendMessage({ command: "updateButtonUIAndContextMenus" });
@@ -411,7 +404,6 @@ const start = async function () {
   });
 
   selected("#btn_unpause_once", async () => {
-    popupAdblockUIServerLogger.behavior("resume_adblock_on_site");
     sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "domain_unpause_clicked" });
     if (pageInfo.url) {
       await browser.runtime.sendMessage({

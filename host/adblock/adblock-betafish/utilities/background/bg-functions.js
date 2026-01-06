@@ -291,26 +291,3 @@ export const createFilterMetaData = (origin) => {
   }
   return data;
 };
-
-// Temporary helper for normalizing event payloads during the migration
-// from ServerMessages to ServerLogger
-//
-// Maps existing Adblock event parameters to more descriptive names.
-// This function should be removed once all events have been fully
-// migrated and ServerMessages are deprecated.
-export const normalizeEventPayload = (eventName, payload) => {
-  switch (eventName) {
-    case "yt_site_ad_shown":
-      // eslint-disable-next-line no-case-declarations
-      const { isAllowListed, p, category, bc, amount } = payload;
-      return {
-        isAllowListed,
-        isPremium: p,
-        adFormat: category,
-        totalAdDurationMs: bc,
-        adShownDurationMs: amount,
-      };
-    default:
-      return payload;
-  }
-};

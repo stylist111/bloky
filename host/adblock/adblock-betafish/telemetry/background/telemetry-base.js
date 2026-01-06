@@ -38,8 +38,6 @@ import { determineUserLanguage, storageSet, getUserAgentInfo } from "~/utilities
 
 const FiftyFiveMinutes = 3300000;
 
-const serverLogger = new ewe.telemetry.ServerLogger("new_install");
-
 // Returns `aa` property which encodes the status of Acceptable Ads
 // and Acceptable Ads Privacy subscriptions
 export async function getAAStatus() {
@@ -252,14 +250,11 @@ class TelemetryBase {
       if (browser.management && browser.management.getSelf) {
         const info = await browser.management.getSelf();
         if (info) {
-          serverLogger.behavior(`new_install_${info.installType}`);
           ServerMessages.recordGeneralMessage(`new_install_${info.installType}`);
         } else {
-          serverLogger.behavior("new_install_unknown");
           ServerMessages.recordGeneralMessage("new_install");
         }
       } else {
-        serverLogger.behavior("new_install_unknown");
         ServerMessages.recordGeneralMessage("new_install");
       }
     }

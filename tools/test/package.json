@@ -4,8 +4,6 @@
   "exports": {
     ".": "./index.js",
     "./driver": "./e2e-runner/driver.js",
-    "./sdk-driver": "./sdk-runner/driver.js",
-    "./lighthouse": "./extension-benchmark/lighthouse.js",
     "./extension": "./e2e-runner/extension.js",
     "./account": "./e2e-runner/account.js",
     "./hooks": "./e2e-runner/hooks.js",
@@ -17,18 +15,13 @@
   },
   "devDependencies": {
     "@eyeo/get-browser-binary": "0.23.0",
-    "chrome-remote-interface": "0.33.3",
     "eslint": "8.34.0",
     "expect": "29.7.0",
     "express": "^4.17.1",
-    "lighthouse": "^11.7.0",
     "mockttp": "4.1.0",
-    "selenium-webdriver": "4.23.0",
-    "ws": "^7.4.6",
-    "yargs": "^17.7.2"
+    "ws": "^7.4.6"
   },
   "scripts": {
-    "extension-benchmark": "node extension-benchmark/runner.js",
     "start-host-server": "node test-server/start-host.js",
     "start-sdk-server": "node test-server/start-sdk.js",
     "test": "echo 'No unit tests in test-utils'"

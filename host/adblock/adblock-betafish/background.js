@@ -59,7 +59,6 @@ import {
   createFilterMetaData,
   chromeStorageSetHelper,
   determineUserLanguage,
-  normalizeEventPayload,
   parseUri,
 } from "./utilities/background/bg-functions";
 
@@ -622,14 +621,9 @@ async function checkUpdateProgress() {
  * Listens on allowlisting events and logs when an allowlisting
  * filter was renewed or expired.
  */
-const smartAllowlistingServerLogger = new ewe.telemetry.ServerLogger("smart_allowlisting");
-
 function addAllowlistingListeners() {
   // Log event when a smart allowlist was renewed
   ewe.filters.onRenewed.addListener((filter) => {
-    smartAllowlistingServerLogger.behavior("allowlisting_renewed", {
-      allowlistExtendDuration: filter.metadata.autoExtendMs,
-    });
     ServerMessages.recordAllowlistEvent("allowlisting_renewed", filter.metadata.autoExtendMs);
   });
 
@@ -638,18 +632,12 @@ function addAllowlistingListeners() {
     const { autoExtendMs } = filter.metadata;
 
     if (autoExtendMs) {
-      smartAllowlistingServerLogger.behavior("allowlisting_expired", {
-        allowlistExtendDuration: autoExtendMs,
-      });
       ServerMessages.recordAllowlistEvent("allowlisting_expired", autoExtendMs);
     }
   });
 }
 
 const initializationServerLogger = new ewe.telemetry.ServerLogger("initialization");
-const youtubeServerLogger = new ewe.telemetry.ServerLogger("youtube");
-
-const migratedEvents = new Set(["yt_site_navigation", "yt_site_ad_shown"]);
 
 initialize
   .then(async () => {
@@ -668,22 +656,7 @@ initialize
       logger,
       port,
       prefs: Prefs,
-      sendAdWallEvents: async (eventName, payload) => {
-        if (!Prefs.get("send_ad_wall_messages")) {
-          return;
-        }
-        void ServerMessages.recordGeneralMessage(eventName, null, payload);
-        // Normalize event name for serverLogger
-        // IMPORTANT: remove normalization after all events are migrated
-        // and serverMessages logging is removed
-        const normalizedEventName = eventName.replace(/[.-]/g, "_");
-        if (migratedEvents.has(normalizedEventName)) {
-          youtubeServerLogger.behavior(
-            normalizedEventName,
-            normalizeEventPayload(normalizedEventName, payload),
-          );
-        }
-      },
+      sendAdWallEvents: ServerMessages.recordAdWallMessage,
       isPremiumActive: License.isActiveLicense,
     });
     startPublicAPI({

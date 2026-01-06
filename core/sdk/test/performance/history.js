@@ -20,8 +20,7 @@
 
 import {By, until} from "selenium-webdriver";
 
-import {writeScreenshot, getCurrentDriver} from "@eyeo/test-utils/sdk-driver";
-import {screenshotsPath} from "../runners/shared.js";
+import {writeScreenshot, getCurrentDriver} from "../runners/driver.js";
 
 // To be removed: https://eyeo.atlassian.net/browse/EXT-97
 const historyTestSkipped = true;
@@ -67,7 +66,7 @@ export async function historyTest() {
       await elem.click();
     }
     catch (err) {
-      await writeScreenshot(screenshotsPath, "screenshot.png");
+      await writeScreenshot("screenshot.png");
       if (err.name == "StaleElementReferenceError") {
         throw new Error(`${failure}: Clicking on a stale element`);
       }

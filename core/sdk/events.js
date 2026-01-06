@@ -5,133 +5,6 @@ export default {
     },
     support_icon_clicked: {
       description: "User clicked the support icon on the header of the Adblock popup"
-    },
-    skip_cookie_walls_learn_more_clicked: {
-      description: "User clicked the Learn More button on the Skip Cookie Walls section in the AdBlock popup"
-    },
-    block_distractions_learn_more_clicked: {
-      description: "User clicked the Learn More button on the Block Distractions section in the AdBlock popup"
-    },
-    popup_opened: {
-      description: "User clicked the AdBlock toolbar icon to open the popup menu",
-      data: {
-        description: "Data about the popup opened event",
-        type: "object",
-        properties: {
-          isBadgeTextNew: {
-            description: "Whether the badge text is new",
-            type: "boolean"
-          },
-          reason: {
-            description: "The reason for the popup opened event",
-            type: "string"
-          }
-        }
-      }
-    },
-    blacklist_clicked: {
-      description: "User clicked on the three dots in the popup menu, then clicked 'Hide something on this page' link"
-    },
-    titletext_clicked: {
-      description: "User clicked the AdBlock logo in the popup menu header"
-    },
-    whitelist_domain_clicked: {
-      description: "User clicked on the three dots in the popup menu, then clicked 'More pause options' link"
-    },
-    help_flow_results: {
-      description: "Emitted when a user completes the help flow in the popup. The flow presents different options based on the user's issue (e.g., ads not blocked, site broken, etc.), and the emitted event includes the path representing the sequence of choices the user made",
-      data: {
-        description: "Data about the help flow results",
-        type: "object",
-        properties: {
-          helpFlowPath: {
-            description: "The path of the help flow",
-            type: "string"
-          }
-        }
-      }
-    },
-    premium_options_clicked: {
-      description: "Triggered when a premium user clicks the 'Premium' label in the popup header which is shown next to the Adblock logo. The label is only visible to premium users and opens the Premium tab in the settings page"
-    },
-    popup_sub_clicked_cookies_premium: {
-      description: "Triggered when a premium user clicks the toggle to enable the Premium Cookie Blocking filter list in the popup. The list is not enabled automatically when upgrading to premium"
-    },
-    popup_sub_clicked_distraction_control: {
-      description: "Triggered when a premium user clicks the toggle to enable the Premium Block Distractions filter list in the popup. The list is not enabled automatically when upgrading to premium"
-    },
-    pause_on_site: {
-      description: "User clicked 'Pause on this site' on the Adblock popup"
-    },
-    resume_adblock_on_site: {
-      description: "User clicked 'Resume Ad Blocking' on the Adblock popup while YouTube was auto allowlisted. This event will be merged into resume_adblock in the future."
-    },
-    resume_adblock: {
-      description: "User clicked 'Resume Ad blocking' on the Adblock popup"
-    }
-  },
-  options_page_tab: {
-    options_page_tab_stats_clicked: {
-      description: "User clicked the Stats tab on the options page"
-    },
-    options_page_tab_general_clicked: {
-      description: "User clicked the General tab on the options page"
-    },
-    options_page_tab_filter_lists_clicked: {
-      description: "User clicked the Filter lists tab on the options page"
-    },
-    options_page_tab_customize_clicked: {
-      description: "User clicked the Customize tab on the options page"
-    },
-    options_page_tab_support_clicked: {
-      description: "User clicked the Support tab on the options page"
-    },
-    options_page_tab_premium_clicked: {
-      description: "User clicked the Premium tab on the options page"
-    },
-    options_page_tab_themes_clicked: {
-      description: "User clicked the Themes tab on the options page"
-    },
-    options_page_tab_image_swap_clicked: {
-      description: "User clicked the Image Swap tab on the options page"
-    },
-    options_page_tab_premium_filters_clicked: {
-      description: "User clicked the Premium Filters tab on the options page"
-    },
-    options_page_tab_stats_opened: {
-      description: "The Stats tab was opened in a new browser tab"
-    },
-    options_page_tab_general_opened: {
-      description: "The General tab was opened in a new browser tab"
-    },
-    options_page_tab_filter_lists_opened: {
-      description: "The Filter lists tab was opened in a new browser tab"
-    },
-    options_page_tab_customize_opened: {
-      description: "The Customize tab was opened in a new browser tab"
-    },
-    options_page_tab_support_opened: {
-      description: "The Support tab was opened in a new browser tab"
-    },
-    options_page_tab_premium_opened: {
-      description: "The Premium tab was opened in a new browser tab"
-    },
-    options_page_tab_themes_opened: {
-      description: "The Themes tab was opened in a new browser tab"
-    },
-    options_page_tab_image_swap_opened: {
-      description: "The Image Swap tab was opened in a new browser tab"
-    },
-    options_page_tab_premium_filters_opened: {
-      description: "The Premium Filters tab was opened in a new browser tab"
-    },
-    data_collection_opt_out: {
-      description: "User opted out of data collection in the options page"
-    }
-  },
-  license: {
-    trial_license_expired: {
-      description: "The premium trial license has expired"
     }
   },
   context_menu: {
@@ -143,39 +16,6 @@ export default {
     },
     cm_resume_adblock: {
       description: "User right clicked on the page to open the context menu and selected 'Resume blocking ads' from the AdBlock section."
-    }
-  },
-  smart_allowlisting: {
-    allowlisting_expired: {
-      description: "An allowlisting filter expired automatically",
-      data: {
-        description: "Details about the filter at the time of expiration.",
-        type: "object",
-        properties: {
-          allowlistExtendDuration: {
-            description: "The number of milliseconds to extend the allowlisting filter's expiry when the user navigated to a URL that matches the filter.",
-            type: "number"
-          }
-        }
-      }
-    },
-    allowlisting_renewed: {
-      description: "An allowlisting filter was renewed automatically",
-      data: {
-        description: "Details about the filter at the time of renewal.",
-        type: "object",
-        properties: {
-          allowlistExtendDuration: {
-            description: "The number of milliseconds to extend the allowlisting filter's expiry when the user navigated to a URL that matches the filter.",
-            type: "number"
-          }
-        }
-      }
-    }
-  },
-  getadblock: {
-    opt_out_acceptable_ads_clicked: {
-      description: "The user clicked the opt-out link to disable Acceptable Ads on the getadblock.com installed page"
     }
   },
   cdp: {
@@ -192,50 +32,6 @@ export default {
           uncompressedPayloadSize: {
             description: "Size in bytes of the uncompressed and unencrypted payload.",
             type: "integer"
-          }
-        }
-      }
-    }
-  },
-  youtube: {
-    yt_site_navigation: {
-      description: "Recorded 5 seconds after a user navigates to a YouTube page. This event is sent only once per session. Refreshing or opening a new tab will start a new session. Navigating through videos without refreshing (aka SPA navigation) will not trigger another event.",
-      data: {
-        description: "Data about the YouTube navigation event",
-        type: "object",
-        properties: {
-          userLoggedIn: {
-            description: "Indicates whether the user is logged in",
-            type: "string"
-          }
-        }
-      }
-    },
-    yt_site_ad_shown: {
-      description: "Recorded when a video ad on YouTube stops playing, either because it was skipped, the user navigated away, or it finished playing",
-      data: {
-        description: "Data for the YouTube ad shown event",
-        type: "object",
-        properties: {
-          isAllowListed: {
-            description: "Indicates whether the page is allowlisted",
-            type: "string"
-          },
-          isPremium: {
-            description: "Specifies whether the user has a Premium subscription",
-            type: "boolean"
-          },
-          adFormat: {
-            description: "Format ID of the displayed ad",
-            type: "string"
-          },
-          totalAdDurationMs: {
-            description: "Total duration of the ad, in milliseconds",
-            type: "number"
-          },
-          adShownDurationMs: {
-            description: "Actual playback duration of the ad, in milliseconds",
-            type: "number"
           }
         }
       }
@@ -748,26 +544,6 @@ export default {
           }
         }
       }
-    }
-  },
-  new_install: {
-    new_install_normal: {
-      description: "The extension was installed from the browser's official web store (Chrome Web Store, Firefox Add-ons, Microsoft Edge Add-ons)"
-    },
-    new_install_development: {
-      description: "The extension was installed manually in development mode, either as an unpacked directory or from a local .zip/.crx/.xpi package"
-    },
-    new_install_admin: {
-      description: "The extension was installed and managed by an administrator through a policy setting"
-    },
-    new_install_sideload: {
-      description: "The extension was installed by other software on the user's computer"
-    },
-    new_install_other: {
-      description: "The extension was installed through an unrecognized method not covered by other install types(normal/development/admin/sideload)"
-    },
-    new_install_unknown: {
-      description: "The extension was installed but the installation type could not be determined"
     }
   },
   new_tab: {

@@ -36,13 +36,8 @@ let domainPausedSubsectionDisplay;
 let allPausedSubsectionDisplay;
 let allowlistedSubsectionDisplay;
 
-const helpAdblockUIServerLogger = new modulesAsGlobal.ewe.telemetry.ServerLogger("adblock_ui");
-
 const logHelpFlowResults = function (source) {
   logSent = true;
-  helpAdblockUIServerLogger.behavior("help_flow_results", {
-    helpFlowPath: `${segueBreadCrumb},${source}`,
-  });
   browser.runtime.sendMessage({
     command: "recordGeneralMessage",
     msg: "help_flow_results",

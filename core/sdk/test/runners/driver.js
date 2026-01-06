@@ -1,18 +1,18 @@
 /*
- * This file is part of Web Extensions Core Utilities (Web Extensions CU),
- * Copyright (C) 2024-present eyeo GmbH
+ * This file is part of eyeo's Web Extension Ad Blocking Toolkit (EWE),
+ * Copyright (C) 2006-present eyeo GmbH
  *
- * Web Extensions CU is free software: you can redistribute it and/or modify
+ * EWE is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
  *
- * Web Extensions CU is distributed in the hope that it will be useful,
+ * EWE is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Web Extensions CU.  If not, see <http://www.gnu.org/licenses/>.
+ * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 /* eslint-env node */
@@ -21,8 +21,10 @@
 import fs from "fs";
 import path from "path";
 
-import { BROWSERS } from "@eyeo/get-browser-binary";
+import {By} from "selenium-webdriver";
+import {BROWSERS} from "@eyeo/get-browser-binary";
 
+const screenshotsPath = path.join(process.cwd(), "test", "screenshots");
 export const remoteDebuggingPort = 33560; // used by lighthouse
 
 let driver;
@@ -30,7 +32,6 @@ let driver;
 export async function quitDriver() {
   if (driver) {
     await driver.quit();
-    driver = null;
   }
 }
 
@@ -39,11 +40,10 @@ export async function getNewDriver(browser, version, options) {
 
   try {
     driver = await BROWSERS[browser].getDriver(version, options);
-  } catch (err) {
+  }
+  catch (err) {
     if (err.name === "SessionNotCreatedError") {
-      console.warn(
-        `SessionNotCreatedError was thrown. Please check if port ${remoteDebuggingPort} is already in use`,
-      );
+      console.warn(`SessionNotCreatedError was thrown. Please check if port ${remoteDebuggingPort} is already in use`);
     }
     throw err;
   }
@@ -64,47 +64,38 @@ export async function setMinDriverTimeout(timeout) {
   if (paramsTimeout == 0) {
     // 0 is a mocha special case to disable timeouts
     await driver.manage().setTimeouts({
-      script: null,
+      script: null
     });
-  } else if (driverTimeouts.script && paramsTimeout > driverTimeouts.script) {
+  }
+  else if (driverTimeouts.script && paramsTimeout > driverTimeouts.script) {
     await driver.manage().setTimeouts({
-      script: paramsTimeout,
+      script: paramsTimeout
     });
   }
 }
 
-// Change the pageLoad timeout. Useful to prevent driver calls in switchToHandle
-// to potentially spend the default 5 min timeout.
-// https://www.selenium.dev/documentation/webdriver/drivers/options/#page-load-timeout
-export async function setPageLoadTimeout(timeout) {
-  const { pageLoad } = await driver.manage().getTimeouts();
-  await driver.manage().setTimeouts({ pageLoad: timeout });
-
-  return pageLoad; // In case we want to restore the previous timeout later on
-}
-
 export async function getHandle(page, timeout = 8000) {
-  const currentTimeout = await setPageLoadTimeout(4000);
-
+  // temporarily changing pageLoad timeout to prevent driver calls in
+  // switchToHandle to potentially use the default 5 min timeout
+  // https://www.selenium.dev/documentation/webdriver/drivers/options/#page-load-timeout
+  const {pageLoad} = await driver.manage().getTimeouts();
+  await driver.manage().setTimeouts({pageLoad: 4000});
   let url;
-  try {
-    let handle = await driver.wait(
-      () =>
-        switchToHandle((handleUrl) => {
-          if (!handleUrl) {
-            return false;
-          }
 
-          url = new URL(handleUrl);
-          return url.pathname == page;
-        }),
-      timeout,
-      `${page} did not open`,
-    );
+  try {
+    let handle = await driver.wait(() => switchToHandle(handleUrl => {
+      if (!handleUrl) {
+        return false;
+      }
+
+      url = new URL(handleUrl);
+      return url.pathname == page;
+    }), timeout, `${page} did not open`);
 
     return handle;
-  } finally {
-    await setPageLoadTimeout(currentTimeout);
+  }
+  finally {
+    await driver.manage().setTimeouts({pageLoad});
   }
 }
 
@@ -114,7 +105,8 @@ export async function switchToHandle(testFn) {
     try {
       await driver.switchTo().window(handle);
       url = await driver.getCurrentUrl();
-    } catch (e) {
+    }
+    catch (e) {
       continue;
     }
 
@@ -124,12 +116,26 @@ export async function switchToHandle(testFn) {
   }
 }
 
-export async function writeScreenshot(screenshotsPath, filename) {
+export async function writeScreenshot(filename) {
   const data = await driver.takeScreenshot();
   const base64Data = data.replace(/^data:image\/png;base64,/, "");
 
-  await fs.promises.mkdir(screenshotsPath, { recursive: true });
+  await fs.promises.mkdir(screenshotsPath, {recursive: true});
   const screenshotFile = path.join(screenshotsPath, filename);
   await fs.promises.writeFile(screenshotFile, base64Data, "base64");
   console.warn(`Screenshot written to ${screenshotFile}`);
+}
+
+export async function waitForPerformanceExtension() {
+  console.log("Waiting for performance extension ...");
+
+  await getHandle("/status.html", 25000);
+  const elem = await driver.findElement(By.id("status"));
+  if ((await elem.getAttribute("errors")) == "true") {
+    const errors = [];
+    for (const error of await elem.findElements(By.css("ul"))) {
+      errors.push(await error.getAttribute("innerText"));
+    }
+    throw new Error(errors.join("\n"));
+  }
 }

@@ -28,12 +28,7 @@ import {
   sendMessageWithNoResponse,
 } from "../utils.js";
 
-const actionButtonAdblockUIServerLogger = new modulesAsGlobal.ewe.telemetry.ServerLogger(
-  "adblock_ui",
-);
-
 async function pauseOnDomain() {
-  actionButtonAdblockUIServerLogger.behavior("pause_on_site");
   sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "domain_pause_clicked" });
 
   if (!this.pageInfo.url) {
@@ -51,7 +46,6 @@ async function pauseOnDomain() {
 }
 
 async function resumeThisPage() {
-  actionButtonAdblockUIServerLogger.behavior("resume_adblock");
   sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "enable_adblock_clicked" });
   const { id } = this.pageInfo;
 
@@ -77,7 +71,6 @@ async function undoAllowlist() {
 }
 
 async function addSubscription(id) {
-  actionButtonAdblockUIServerLogger.behavior(`popup_sub_clicked_${id.replace("-", "_")}`); // only 2 possible values: popup_sub_clicked_cookies_premium or popup_sub_clicked_distraction_control
   await sendMessageWithNoResponse({
     command: "recordGeneralMessage",
     msg: `popup_sub_clicked_${id}`,

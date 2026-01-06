@@ -23,8 +23,6 @@
 const userSeenNewPFPageKey = "options_menu_pf_key";
 let userSeenNewPFPage = storageGet(userSeenNewPFPageKey);
 
-const ServerLogger = new ewe.telemetry.ServerLogger("options_page_tab");
-
 function showNewIcon() {
   $("#pfIcon").fadeOut();
   $("#new-pf-icon").fadeIn();
@@ -244,18 +242,6 @@ function getFormattedTabName() {
   return $(".tablink.active span").parent().attr("href").replace("#", "").replace(/-/g, "_");
 }
 
-const tabNameMap = new Map([
-  ["stats_tabs", "stats"],
-  ["general", "general"],
-  ["filters", "filter_lists"],
-  ["customize", "customize"],
-  ["support", "support"],
-  ["mab", "premium"],
-  ["mab_themes", "themes"],
-  ["mab_image_swap", "image_swap"],
-  ["premium_filters", "premium_filters"],
-]);
-
 $(async () => {
   await initializeProxies();
   // 1. load all the tab panels templates in respective panel DIVs
@@ -275,13 +261,9 @@ $(async () => {
   $(".tablink").on("click", function tabLinkClicked() {
     const tabID = $(this).attr("href");
     activateTab(tabID);
-    const tabName = getFormattedTabName();
-    ServerMessages.recordGeneralMessage(`options_page_tab_clicked_${tabName}`);
-    ServerLogger.behavior(`options_page_tab_${tabNameMap.get(tabName)}_clicked`);
+    ServerMessages.recordGeneralMessage(`options_page_tab_clicked_${getFormattedTabName()}`);
   });
-  const openedTabName = getFormattedTabName();
-  ServerMessages.recordGeneralMessage(`options_page_opened_tab_${openedTabName}`);
-  ServerLogger.behavior(`options_page_tab_${tabNameMap.get(openedTabName)}_opened`);
+  ServerMessages.recordGeneralMessage(`options_page_opened_tab_${getFormattedTabName()}`);
 
   // 5. Display CTA - a future library update will support
   // automatically injecting the CTA HTML as well.
