@@ -1,5 +1,9 @@
 # Unreleased
 
+# 4.32.3 - 2026-01-07
+
+This release contains only minor updates and under-the-hood changes.
+
 # 4.32.2.1 - 2025-12-16
 
 This release contains only rules updates for Manifest v3 extensions.
