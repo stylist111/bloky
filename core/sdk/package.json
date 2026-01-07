@@ -114,5 +114,8 @@
     "subs-fetch": "./scripts/fetchSubscriptions.js",
     "subs-convert": "./scripts/convertSubscriptions.js",
     "subs-generate": "./scripts/generateSubscriptionsFragment.js"
+  },
+  "nx": {
+    "implicitDependencies": ["adblockpluscore"]
   }
 }
