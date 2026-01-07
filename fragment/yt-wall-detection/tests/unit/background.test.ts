@@ -45,15 +45,11 @@ import { type MessageSender, type AdWallMessage } from "@eyeo/polyfills/all";
 vi.mock("@eyeo/webext-ad-filtering-solution", () => ({
   filters: {
     add: mockFn(),
-    onRemoved: {
-      addListener: mockFn(),
-    },
+    onRemoved: { addListener: mockFn() },
   },
   experiments: {
     getFlag: mockFn(),
-    onChanged: {
-      addListener: mockFn(),
-    },
+    onChanged: { addListener: mockFn() },
   },
 }));
 
