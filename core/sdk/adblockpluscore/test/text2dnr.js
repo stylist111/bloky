@@ -164,7 +164,7 @@ describe("convertFilter", function() {
           {
             priority: SPECIFIC_PRIORITY,
             condition: {
-              regexFilter: "regexp"
+              regexFilter: "Regexp"
             },
             action: {
               type: "allow"
@@ -709,7 +709,7 @@ describe("convertFilter", function() {
           [{
             priority: SPECIFIC_PRIORITY,
             condition: {
-              regexFilter: "regexp*"
+              regexFilter: "Regexp*"
             },
             action: {
               type: "allow"

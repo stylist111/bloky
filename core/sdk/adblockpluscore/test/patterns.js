@@ -290,11 +290,19 @@ describe("Pattern", function() {
 
   it("should compile explicit regexes", function() {
     function expectLiteralRegExpPattern(patternText) {
+      let expectedRegex = makeRegExpParameter(patternText);
+
       let pattern = new Pattern(patternText);
-      assert.deepStrictEqual(pattern.regexp, makeRegExpParameter(patternText));
+      assert.deepStrictEqual(pattern.regexp.source, expectedRegex.source);
+      assert.equal(pattern.regexp.ignoreCase, true);
+
+      let patternMatchCase = new Pattern(patternText, true);
+      assert.deepStrictEqual(patternMatchCase.regexp.source, expectedRegex.source);
+      assert.equal(patternMatchCase.regexp.ignoreCase, false);
     }
     expectLiteralRegExpPattern("/abcd/");
     expectLiteralRegExpPattern("/example.com$/");
+    expectLiteralRegExpPattern("/\\D\\d/");
   });
 
   it("should compile complex patterns to regexes", function() {
@@ -367,5 +375,8 @@ describe("Pattern", function() {
     expectNotMatch("/example.com/[a-z]{3}/[A-Z]{3}/", "http://example.com/AbC/DeF", true);
     expectMatch("/example.com/[a-z]{3}/[A-Z]{3}/", "http://example.com/abc/DEF", true);
     expectMatch("*", "http://foo/bar");
+
+    expectMatch("/exampl\\D\\.com/", "http://example.com");
+    expectNotMatch("/exampl\\D\\.com/", "http://exampl0.com");
   });
 });

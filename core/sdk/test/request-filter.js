@@ -255,6 +255,31 @@ describe("Blocking", function() {
     await new Page("image.html").expectResource("image.png").toBeBlocked();
   });
 
+  it("ignores case correctly in regex filters with case-sensitive metacharacters", async function() {
+    await addFilter("/\\D{5}\\.png/");
+
+    // https://issues.chromium.org/issues/473861783 Chrome's blocking of these
+    // requests is currently broken. So we're checking that we emit the right
+    // rule, so at least if Chrome fixes the bug we will start doing the right
+    // thing.
+    if (isChromiumBased() && browser.declarativeNetRequest) {
+      const dnrRules = await browser.declarativeNetRequest.getDynamicRules();
+      expect(dnrRules).toEqual([{
+        id: expect.any(Number),
+        priority: 1000,
+        action: {
+          type: "block"
+        },
+        condition: {
+          regexFilter: "\\D{5}\\.png"
+        }
+      }]);
+      return;
+    }
+
+    await new Page("image.html").expectResource("image.png").toBeBlocked();
+  });
+
   it("blocks $other requests", async function() {
     await addFilter(`$other,domain=${TEST_PAGES_DOMAIN}`);
     await new Page("other.html").expectResource("image.png").toBeBlocked();

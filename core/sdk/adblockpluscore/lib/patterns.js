@@ -200,19 +200,19 @@ exports.Pattern = class Pattern {
   constructor(pattern, matchCase) {
     this.matchCase = matchCase || false;
 
-    if (!this.matchCase) {
-      pattern = pattern.toLowerCase();
-    }
-
     if (pattern.length >= 2 &&
         pattern[0] == "/" &&
         pattern[pattern.length - 1] == "/") {
       // The filter is a regular expression - convert it immediately to
       // catch syntax errors
       pattern = pattern.substring(1, pattern.length - 1);
-      this._regexp = new RegExp(pattern);
+      this._regexp = new RegExp(pattern, this.matchCase ? "" : "i");
     }
     else {
+      if (!this.matchCase) {
+        pattern = pattern.toLowerCase();
+      }
+
       // Patterns like /foo/bar/* exist so that they are not treated as regular
       // expressions. We drop any superfluous wildcards here so our
       // optimizations can kick in.

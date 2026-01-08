@@ -24,6 +24,7 @@ const {GENERIC_PRIORITY, GENERIC_ALLOW_ALL_PRIORITY, SPECIFIC_PRIORITY,
        SPECIFIC_ALLOW_ALL_PRIORITY, ADD_HEADER_PRIORITY} = require(LIB_FOLDER + "/dnr/rules");
 const {contentTypes, RESOURCE_TYPES} = require(LIB_FOLDER + "/contentTypes");
 const {asDNR, createConverter} = require(LIB_FOLDER + "/dnr");
+const {parse} = require(LIB_FOLDER + "/filters");
 
 const preParsedRule = {
   blocking: false,
@@ -218,7 +219,7 @@ describe("DeclarativeNetRequest", function() {
     assert.equal(result[0].priority, GENERIC_PRIORITY);
     assert.equal(result[0].action.type, "block");
     assert.deepEqual(result[0].condition, {
-      regexFilter: "^https?:\\/\\/(.+?.)?anotherexample.com\\/images\\/uploads\\/[a-za-z]{6,15}-.*"
+      regexFilter: "^https?:\\/\\/(.+?.)?anotherexample.com\\/images\\/uploads\\/[a-zA-Z]{6,15}-.*"
     });
   });
 
@@ -407,6 +408,23 @@ describe("DeclarativeNetRequest", function() {
     assert.deepEqual(result[0].condition, {
       urlFilter: "||example.com",
       isUrlFilterCaseSensitive: true
+    });
+  });
+
+  it("Uses the case sensitive flag in the DNR rule and does not lowercase regex filters", async function() {
+    let ruleMatchCase = parse("/exampl\\D/$match-case");
+    let resultMatchCase = await convert(ruleMatchCase);
+    assert.equal(resultMatchCase.length, 1);
+    assert.deepEqual(resultMatchCase[0].condition, {
+      regexFilter: "exampl\\D",
+      isUrlFilterCaseSensitive: true
+    });
+
+    let ruleCaseInsensitive = parse("/exampl\\D/");
+    let resultCaseInsensitive = await convert(ruleCaseInsensitive);
+    assert.equal(resultCaseInsensitive.length, 1);
+    assert.deepEqual(resultCaseInsensitive[0].condition, {
+      regexFilter: "exampl\\D"
     });
   });
 

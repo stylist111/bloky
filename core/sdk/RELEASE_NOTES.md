@@ -1,5 +1,12 @@
 # Unreleased
 
+## Fixes
+
+- Fixed bug where regex filters that don't use the `match-case` option were
+  lowercased, which broke capital letter metacharacters. Note that this fixes
+  matching for these filters in MV2 extensions, but in Chromium-based MV3
+  extensions this is still broken due to a Chromium bug. (#12)
+
 # 3.0.1 - 2025-11-28
 
 ## Fixes
