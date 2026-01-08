@@ -130,6 +130,48 @@ const mockEvents = {
           }
         }
       }
+    },
+    test_event_string_enum: {
+      description: "A logging test event for string enums",
+      data: {
+        description: "Test data that must be one of the allowed string values",
+        type: "string",
+        enum: ["active", "paused", "stopped"]
+      }
+    },
+    test_event_number_enum: {
+      description: "A logging test event for number enums",
+      data: {
+        description: "Test data that must be one of the allowed number values",
+        type: "number",
+        enum: [0, 1, 2, 3]
+      }
+    },
+    test_event_integer_enum: {
+      description: "A logging test event for integer enums",
+      data: {
+        description: "Test data that must be one of the allowed integer values",
+        type: "integer",
+        enum: [100, 200, 300]
+      }
+    },
+    test_event_object_with_enum: {
+      description: "A logging test event for objects with enum properties",
+      data: {
+        description: "Test data that is an object with an enum property",
+        type: "object",
+        properties: {
+          status: {
+            description: "The status value",
+            type: "string",
+            enum: ["pending", "approved", "rejected"]
+          },
+          count: {
+            description: "A count value",
+            type: "integer"
+          }
+        }
+      }
     }
   }
 };
@@ -202,6 +244,16 @@ describe("Debug Telemetry", function() {
           validationErrors.push(`${context}.items is not an object. It is required for arrays.`);
         }
         checkData(validationErrors, `${context}.items`, data.items, false);
+      }
+
+      // Validate enum property if present
+      if (typeof data.enum !== "undefined") {
+        if (!Array.isArray(data.enum)) {
+          validationErrors.push(`${context}.enum must be an array of allowed values.`);
+        }
+        else if (data.enum.length === 0) {
+          validationErrors.push(`${context}.enum must not be empty.`);
+        }
       }
     }
 
@@ -390,6 +442,32 @@ describe("Debug Telemetry", function() {
         favoriteNumber: null
       }],
       [{}]
+    ]
+  }, {
+    eventId: "test_event_string_enum",
+    validData: ["active", "paused", "stopped"],
+    invalidData: ["invalid", "ACTIVE", "Active", "", null, 1, {}]
+  }, {
+    eventId: "test_event_number_enum",
+    validData: [0, 1, 2, 3],
+    invalidData: [4, -1, 0.5, 1.5, "1", null, {}]
+  }, {
+    eventId: "test_event_integer_enum",
+    validData: [100, 200, 300],
+    invalidData: [0, 150, 100.5, "100", null, {}]
+  }, {
+    eventId: "test_event_object_with_enum",
+    validData: [
+      {status: "pending", count: 5},
+      {status: "approved", count: 0},
+      {status: "rejected", count: 10}
+    ],
+    invalidData: [
+      {status: "invalid", count: 5},
+      {status: "PENDING", count: 5},
+      {status: 1, count: 5},
+      {status: "pending"},
+      {count: 5}
     ]
   }];
 

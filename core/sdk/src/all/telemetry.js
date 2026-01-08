@@ -93,7 +93,7 @@ function matchesEventSchema(data, dataSchema) {
     types = [types];
   }
 
-  return types.some(type => {
+  let typeMatches = types.some(type => {
     switch (type) {
       case "any":
         return true;
@@ -122,6 +122,19 @@ function matchesEventSchema(data, dataSchema) {
     }
     return false;
   });
+
+  if (!typeMatches) {
+    return false;
+  }
+
+  // After type validation passes, check enum constraint if defined
+  if (typeof dataSchema.enum !== "undefined") {
+    if (!dataSchema.enum.includes(data)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 /**
