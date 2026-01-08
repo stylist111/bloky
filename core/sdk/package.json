@@ -51,7 +51,7 @@
     "webextension-polyfill": "*"
   },
   "devDependencies": {
-    "@eyeo/get-browser-binary": "0.23.0",
+    "@eyeo/get-browser-binary": "0.23.1",
     "@eyeo/snippets": "1.2.2",
     "@eyeo/test-utils": "*",
     "copy-webpack-plugin": "^9.0.1",
