@@ -1,5 +1,7 @@
 # Unreleased
 
+# 3.0.2 - 2026-01-08
+
 ## Fixes
 
 - Fixed bug where regex filters that don't use the `match-case` option were
