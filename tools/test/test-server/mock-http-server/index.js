@@ -6,19 +6,31 @@ import mockttp from "mockttp";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const TELEMETRY_HOSTS = [
+  "abp.telemetry.adblockplus.org",
+  "adblockplus.telemetry.eyeo.com",
+  "adblock.telemetry.getadblock.com",
+  "adblock.telemetry.eyeo.com",
+  "webext-sdk.test-telemetry.data.eyeo.it",
+  "test-telemetry.data.eyeo.it",
+];
+
+const USER_ACCOUNTS_HOSTS = [
+  "api.ua.eyeo.it",
+  "myaccount.adblockplus.org",
+  "myaccount.getadblock.com",
+];
+
+const WEBSITE_HOSTS = ["getadblock.com", "welcome.adblockplus.org", "adblockplus.org"];
+
 const mockServer = mockttp.getLocal({
   cors: true,
   https: {
     certPath: path.join(__dirname, "certificates/testCA.pem"),
     keyPath: path.join(__dirname, "certificates/testCA.key"),
-    tlsInterceptOnly: [
-      { hostname: "api.ua.eyeo.it" },
-      { hostname: "myaccount.adblockplus.org" },
-      { hostname: "myaccount.getadblock.com" },
-      { hostname: "getadblock.com" },
-      { hostname: "welcome.adblockplus.org" },
-      { hostname: "adblockplus.org" },
-    ],
+    tlsInterceptOnly: [...TELEMETRY_HOSTS, ...USER_ACCOUNTS_HOSTS, ...WEBSITE_HOSTS].map(
+      (hostname) => ({ hostname }),
+    ),
   },
 });
 
@@ -99,6 +111,18 @@ export async function addMocksForWebsitePages() {
           </html>`,
         };
       }),
+    ),
+  );
+}
+
+export async function addMocksForCDP() {
+  // Mock only the path we expect extension to use for CDP pings
+  await Promise.all(
+    TELEMETRY_HOSTS.map((host) =>
+      mockServer
+        .forPost(/^\/topic\/cdp_activeping_noipc\/version\//)
+        .forHost(host)
+        .thenReply(200, "This is a mock response for CDP POST request"),
     ),
   );
 }

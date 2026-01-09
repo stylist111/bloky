@@ -25,6 +25,7 @@ import {
   stopMockServer,
   addMocksForTestPages,
   addMocksForWebsitePages,
+  addMocksForCDP,
 } from "../test-server/mock-http-server/index.js";
 import { findUrl, openNewTab, getAllWindowHandlesSafe, screenshot } from "./driver.js";
 import {
@@ -140,6 +141,7 @@ export async function setupBrowserHook(buildsDirPath, unpackedDirPath) {
   await addMocksForTestPages();
   // we mock some pages from the website to avoid polluting our analytics
   await addMocksForWebsitePages();
+  await addMocksForCDP();
 
   const [driver, browserName, fullBrowserVersion, majorBrowserVersion] =
     await startBrowser(extensionPath);
