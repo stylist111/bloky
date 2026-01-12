@@ -30,7 +30,8 @@ export class SpecialDomainsProcessor {
 
   restoreConfig() {
     this.setConfig([
-      "search.yahoo.com"
+      "search.yahoo.com",
+      "copilot.microsoft.com"
     ]);
   }
 

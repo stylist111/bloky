@@ -5,6 +5,11 @@
 - Fixed `$genericblock` exception filters incorrectly allowing `$addheader`
   rules in MV2 and not being logged in MV2/MV3 (EXT-1126).
 
+## CDP
+
+- CDP will now count `copilot.microsoft.com` separately from other Microsoft
+  subdomains.
+
 # 3.0.2 - 2026-01-08
 
 ## Fixes

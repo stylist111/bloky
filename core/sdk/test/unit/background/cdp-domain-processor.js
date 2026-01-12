@@ -105,6 +105,10 @@ describe("CDP processors", function() {
         assertGroups(["news.search.yahoo.com", "search.yahoo.com"], "search.yahoo.com");
       });
 
+      it("does not group microsoft.com and copilot.microsoft.com", function() {
+        assertDoesNotGroup(["microsoft.com", "copilot.microsoft.com"]);
+      });
+
       it("uses domain as siteId for unknown domains", function() {
         assertGroups(["domain.com", "cdn.domain.com"], "domain.com");
       });
