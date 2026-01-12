@@ -829,6 +829,15 @@ describe("Blocking", function() {
         await expectHeaderSet(`${TEST_PAGES_URL}/image.png`, "x-test-header", "test-value");
       });
 
+      it(`ignores generic allow rules and injects a header into a ${headerType} for a resource`, async function() {
+        await addFilter(`@@|${TEST_PAGES_URL}/$genericblock`);
+        await addFilter(`|${TEST_PAGES_URL}/image.png^$addheader=${headerType}:x-test-header:test-value`);
+
+        await new Page("image.html").loaded;
+
+        await expectHeaderSet(`${TEST_PAGES_URL}/image.png`, "x-test-header", "test-value");
+      });
+
       it(`injects a header into a ${headerType} for main frames only using the $document option`, async function() {
         await addFilter(`|${TEST_PAGES_URL}^$document,addheader=${headerType}:x-test-header:test-value`);
 

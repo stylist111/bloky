@@ -3,6 +3,8 @@
 - In Firefox, fixed a bug where regex filters that don't use the `match-case`
   option were lowercased, which broke capital letter metacharacters. This bug
   sadly still affects Chromium-based MV3 browsers. (#12)
+- Fixed `$genericblock` exception filters incorrectly allowing `$addheader`
+  rules in MV2 and not being logged in MV2/MV3 (EXT-1126).
 
 # 4.32.3 - 2026-01-07
 

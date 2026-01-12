@@ -194,26 +194,26 @@ async function onErrorOccurred(details) {
  *
  * @param {string} phase "request" or "response"
  * @param {string} docDomain the document domain for the request
- * @param {boolean} specificOnly  whether to only consider specific-only filters
  * @param {WebRequestDetails} details object representing the request.
  */
 function logAddHeaderFilters(
   phase,
   docDomain,
-  specificOnly,
   details
 ) {
   // Allow for $document addheader filters
   const customContentType =
     resourceTypes.get(details.type) || contentTypes.OTHER;
   const typeMask = contentTypes.ADDHEADER | customContentType;
-  const matchInfo = {docDomain, specificOnly, method: "addheader"};
+  const matchInfo = {docDomain, specificOnly: false, method: "addheader"};
+
+  // This filter cannot be allowed by a generic block allowlisting filter
   const matches = filterEngine.defaultMatcher.search(
     details.url,
     typeMask,
     docDomain,
     null, // siteKey is not available here for DNR
-    specificOnly,
+    false,
     "blocking"
   );
 
@@ -253,11 +253,7 @@ async function onSendHeaders(details) {
 
   await initializer.start();
 
-  const {
-    allowingDocumentFilter,
-    specificOnly,
-    docDomain
-  } = getContext(details);
+  const {allowingDocumentFilter, docDomain} = getContext(details);
 
   if (allowingDocumentFilter) {
     // This request is allow-listed, so no addheader filters would have been
@@ -265,7 +261,7 @@ async function onSendHeaders(details) {
     return;
   }
 
-  logAddHeaderFilters("request", docDomain, specificOnly, details);
+  logAddHeaderFilters("request", docDomain, details);
 }
 
 async function onCompleted(details) {
@@ -336,7 +332,7 @@ async function onCompleted(details) {
     }
   }
 
-  logAddHeaderFilters("response", docDomain, specificOnly, details);
+  logAddHeaderFilters("response", docDomain, details);
 
   if (headersWereChanged.has(details.requestId)) {
     headersWereChanged.delete(details.requestId);

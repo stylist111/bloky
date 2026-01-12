@@ -545,13 +545,15 @@ class AddHeaderFilterBase extends BaseFilter {
     // Allow to filter by document only also only on the top frame
     const customContentType = resourceTypes.get(type) || contentTypes.OTHER;
     const typeMask = contentTypes.ADDHEADER | customContentType;
-    const matchInfo = {docDomain, specificOnly, method: "addheader"};
+    const matchInfo = {docDomain, specificOnly: false, method: "addheader"};
+
+    // This filter cannot be allowed by a generic block allowlisting filter
     const matches = matcher.search(
       url,
       typeMask,
       docDomain,
       siteKey,
-      specificOnly,
+      false,
       "blocking"
     );
 
