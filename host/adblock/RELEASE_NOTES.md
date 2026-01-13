@@ -1,5 +1,7 @@
 # Unreleased
 
+# 6.33.4 - 2026-01-13
+
 - In Firefox, fixed a bug where regex filters that don't use the `match-case`
   option were lowercased, which broke capital letter metacharacters. This bug
   sadly still affects Chromium-based MV3 browsers. (#12)
