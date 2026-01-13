@@ -49,7 +49,6 @@ import { getUserId } from "~/id/background/index";
 import { allowlistTab, removeAllAllowlistRulesForTab } from "../../src/pause/background/index";
 
 export const processMessageResponse = (sendResponse, responseData) => {
-  sendResponse({});
   return Promise.resolve(responseData);
 };
 
@@ -182,13 +181,11 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return adblockIsPaused(message.newValue);
     }
     case "allowlistTab": {
-      sendResponse({});
       return allowlistTab(message.url);
     }
     case "getPausedFilterText":
       return processMessageResponse(sendResponse, { pausedFilterText1, pausedFilterText2 });
     case "getCurrentTabInfo":
-      sendResponse({});
       return getCurrentTabInfo(false, message.tabId).then((results) => results);
     case "getUserId":
       return getUserId();
@@ -212,10 +209,8 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendResponse({ response: getUserFilters() });
       return;
     case "removeAllAllowlistRulesForTab":
-      sendResponse({});
       return removeAllAllowlistRulesForTab(message.tabId).then((results) => results);
     case "getDebugInfo":
-      sendResponse({});
       return getDebugInfo();
     case "resetBadgeText":
       sendResponse({});
@@ -229,10 +224,8 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendResponse({});
       break;
     case "dataCollectionOptOut":
-      sendResponse({});
       return ServerMessages.recordDataCollectionOptOutMessage();
     case "marketingOptOut":
-      sendResponse({});
       return ServerMessages.recordMarketingOptOutMessage();
     default:
   }
@@ -306,10 +299,9 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
  * trusted sender configuration.
  *
  */
-browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+browser.runtime.onMessage.addListener((message) => {
   switch (message.command) {
     case getInfoCommand:
-      sendResponse({});
       return getInjectionInfo();
     default:
   }
@@ -378,7 +370,6 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     case "LocalDataCollection.start":
       return processMessageResponse(sendResponse, LocalDataCollection.start());
     case "LocalDataCollection.saveCacheData":
-      sendResponse({});
       return LocalDataCollection.saveCacheData();
     case "LocalDataCollection.easyPrivacyURL":
       return processMessageResponse(sendResponse, LocalDataCollection.easyPrivacyURL);
@@ -474,7 +465,6 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return processMessageResponse(sendResponse, ewe.filters.normalize(message.text));
     }
     case "filters.add": {
-      sendResponse({});
       return filtersAdd(message.text, message.origin);
     }
     case "filters.remove":

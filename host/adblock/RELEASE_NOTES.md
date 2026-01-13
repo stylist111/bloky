@@ -5,6 +5,7 @@
   sadly still affects Chromium-based MV3 browsers. (#12)
 - Fixed `$genericblock` exception filters incorrectly allowing `$addheader`
   rules in MV2 and not being logged in MV2/MV3 (EXT-1126).
+- Fixed UI pages that broke in Chrome 144.
 
 # 6.33.3 - 2026-01-07
 
