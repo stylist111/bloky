@@ -242,12 +242,12 @@ export function start(parameters: StartInfo): void {
         }
 
         sendAdWallEvents(errorEvent, {
-          error_msg: stack,
+          isAllowListed: isAllowlisted ? "1" : "0",
+          p: isPremium,
           error: type,
           applicationVersion: ytClientVersion,
           category: ErrorType.UNCAUGHT_EXCEPTION,
-          isAllowListed: isAllowlisted ? "1" : "0",
-          p: isPremium,
+          error_msg: stack,
         });
       }
     },
@@ -313,6 +313,7 @@ export function start(parameters: StartInfo): void {
         error,
         applicationVersion: clientVersion,
         category: ErrorType.SWW_ERROR,
+        error_msg: "",
       });
     },
     { urls: ["*://*.youtube.com/api/stats/qoe?*"] },

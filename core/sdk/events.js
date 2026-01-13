@@ -35,7 +35,8 @@ export default {
         properties: {
           userLoggedIn: {
             description: "Indicates whether the user is logged in to a YouTube account. '1' for logged in, '0' for not logged in.",
-            type: "string"
+            type: "string",
+            enum: ["1", "0"]
           }
         }
       }
@@ -48,23 +49,171 @@ export default {
         properties: {
           isAllowListed: {
             description: "Indicates whether the page is allowlisted. '1' for allowlisted, '0' for not allowlisted.",
-            type: "string"
+            type: "string",
+            enum: ["1", "0"]
           },
           isPremium: {
-            description: "Specifies whether the user has a Premium subscription. Used to be called 'p'",
+            description: "Specifies whether the user has a Premium subscription. Used to be called 'p' in getadblock.logs_unified.logs_fact",
             type: "boolean"
           },
           adFormat: {
-            description: "Format ID of the displayed ad. Used to be called 'category'",
+            description: "Format ID of the displayed ad. Used to be called 'category' in getadblock.logs_unified.logs_fact",
             type: "string"
           },
           totalAdDurationMs: {
-            description: "Total duration of the ad, in milliseconds. Used to be called 'bc'",
+            description: "Total duration of the ad, in milliseconds. Used to be called 'bc' in getadblock.logs_unified.logs_fact",
             type: "number"
           },
           adShownDurationMs: {
-            description: "Actual playback duration of the ad, in milliseconds. Used to be called 'amount'",
+            description: "Actual playback duration of the ad, in milliseconds. Used to be called 'amount' in getadblock.logs_unified.logs_fact",
             type: "number"
+          }
+        }
+      }
+    },
+    yt_site_ad_wall_detected: {
+      description: "Recorded when the YouTube ad wall is detected and the page is not yet allowlisted.",
+      data: {
+        description: "Data for YouTube ad wall detection when the page is not yet allowlisted",
+        type: "object",
+        properties: {
+          adwallCategory: {
+            description: "The ad wall type: 'soft' (dismiss button) or 'hard' (no dismiss button).",
+            type: "string",
+            enum: ["soft", "hard"]
+          },
+          userLoggedIn: {
+            description: "String flag indicating whether the user is logged in to a YouTube account ('1' if logged in, otherwise '0').",
+            type: "string",
+            enum: ["1", "0"]
+          },
+          isAllowListed: {
+            description: "String flag indicating whether the page is allowlisted ('1' if allowlisted, otherwise '0'). Should always be '0' for this event.",
+            type: "string",
+            enum: ["1", "0"]
+          },
+          allowlistScope: {
+            description: "Scope of the applied allowlist rule: 'video' (single video url) or 'tab' (all videos until the tab is closed).",
+            type: "string",
+            enum: ["video", "tab"]
+          }
+        }
+      }
+    },
+    yt_site_already_allowlisted: {
+      description: "Recorded when the YouTube ad wall is detected, but the page was already allowlisted.",
+      data: {
+        description: "Data for YouTube ad wall detection when the page is already allowlisted",
+        type: "object",
+        properties: {
+          adwallCategory: {
+            description: "The ad wall type: 'soft' (dismiss button) or 'hard' (no dismiss button).",
+            type: "string",
+            enum: ["soft", "hard"]
+          },
+          userLoggedIn: {
+            description: "String flag indicating whether the user is logged in to a YouTube account ('1' if logged in, otherwise '0').",
+            type: "string",
+            enum: ["1", "0"]
+          },
+          isAllowListed: {
+            description: "String flag indicating whether the page is allowlisted ('1' if allowlisted, otherwise '0'). Should always be '1' for this event.",
+            type: "string",
+            enum: ["1", "0"]
+          },
+          allowlistScope: {
+            description: "Scope of the applied allowlist rule: 'video' (single video url) or 'tab' (all videos until the tab is closed).",
+            type: "string",
+            enum: ["video", "tab"]
+          }
+        }
+      }
+    },
+    yt_auto_allowlisted: {
+      description: "Recorded immediately after the extension automatically allowlists a YouTube page in response to an ad wall.",
+      data: {
+        description: "Data for the YouTube auto allowlisted event",
+        type: "object",
+        properties: {
+          allowlistScope: {
+            description: "Scope of the applied allowlist rule: 'video' (single video url) or 'tab' (all videos until the tab is closed).",
+            type: "string",
+            enum: ["video", "tab"]
+          }
+        }
+      }
+    },
+    yt_site_toast_shown: {
+      description: "Recorded when the YouTube 'ad blocker' toast notification appears in the DOM. This is an experiment ran by YouTube that only appears for certain adblocking users, warning them that their adblocker might be causing interruptions.",
+      data: {
+        description: "Data for the YouTube toast shown event",
+        type: "object",
+        properties: {
+          isAllowListed: {
+            description: "String flag indicating whether the page is allowlisted ('1' if allowlisted, otherwise '0').",
+            type: "string",
+            enum: ["1", "0"]
+          },
+          isPremium: {
+            description: "Specifies whether the user has a Premium subscription",
+            type: "boolean"
+          }
+        }
+      }
+    },
+    yt_site_context_tampering: {
+      description: "Recorded when the YouTube error_204 beacon indicates a possible script conflict that could interfere with the extension.",
+      data: {
+        description: "Data for the YouTube context tampering event",
+        type: "object",
+        properties: {
+          isAllowListed: {
+            description: "String flag indicating whether the page is allowlisted ('1' if allowlisted, otherwise '0').",
+            type: "string",
+            enum: ["1", "0"]
+          },
+          isPremium: {
+            description: "Specifies whether the user has a Premium subscription",
+            type: "boolean"
+          },
+          applicationVersion: {
+            description: "YouTube client version from the client.version query param on the error_204 request.",
+            type: "string"
+          }
+        }
+      }
+    },
+    yt_site_yt_error: {
+      description: "This event is triggered in the event of an error on YouTube. There could be multiple types of errors happening on the page, so we try to differentiate them via the category parameter.",
+      data: {
+        description: "Data for the YouTube error event",
+        type: "object",
+        properties: {
+          category: {
+            description: "Indicates the error type as defined in our extension code. It can be one of the following: 'uncaught_exception', 'player_error' or 'sww_error'.",
+            type: "string",
+            enum: ["uncaught_exception", "player_error", "sww_error"]
+          },
+          applicationVersion: {
+            description: "The client version of the YouTube application (e.g., '2.20251020.01.00').",
+            type: "string"
+          },
+          error: {
+            description: "Indicates the exception type of JavaScript error, captured by the YouTube error handler (e.g., 'TypeError').",
+            type: "string"
+          },
+          errorMsg: {
+            description: "Either the stack trace of the error or an empty string.",
+            type: "string"
+          },
+          isAllowListed: {
+            description: "String flag indicating whether the site is allowlisted ('1' if allowlisted, otherwise '0').",
+            type: "string",
+            enum: ["1", "0"]
+          },
+          isPremium: {
+            description: "Specifies whether the user has a Premium subscription.",
+            type: "boolean"
           }
         }
       }
@@ -632,7 +781,7 @@ export default {
       }
     },
     dialog_injected: {
-      description: "The extension injected the dialog into the page and rendered it. This doesn’t mean that the dialog is visible to the user, or that it looks as expected",
+      description: "The extension injected the dialog into the page and rendered it. This doesn't mean that the dialog is visible to the user, or that it looks as expected",
       data: {
         description: "IPM command ID",
         type: "string"

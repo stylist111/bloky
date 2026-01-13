@@ -300,8 +300,7 @@ export const createFilterMetaData = (origin) => {
 // migrated and ServerMessages are deprecated.
 export const normalizeEventPayload = (eventName, payload) => {
   switch (eventName) {
-    case "yt_site_ad_shown":
-      // eslint-disable-next-line no-case-declarations
+    case "yt_site_ad_shown": {
       const { isAllowListed, p, category, bc, amount } = payload;
       return {
         isAllowListed,
@@ -310,6 +309,49 @@ export const normalizeEventPayload = (eventName, payload) => {
         totalAdDurationMs: bc,
         adShownDurationMs: amount,
       };
+    }
+    case "yt_site_ad_wall_detected":
+    case "yt_site_already_allowlisted": {
+      const { category, userLoggedIn, isAllowListed, allowlistDuration } = payload;
+      return {
+        adwallCategory: category,
+        userLoggedIn,
+        isAllowListed,
+        allowlistScope: allowlistDuration,
+      };
+    }
+    case "yt_auto_allowlisted": {
+      const { allowlistDuration } = payload;
+      return {
+        allowlistScope: allowlistDuration,
+      };
+    }
+    case "yt_site_toast_shown": {
+      const { isAllowListed, p } = payload;
+      return {
+        isAllowListed,
+        isPremium: p,
+      };
+    }
+    case "yt_site_context_tampering": {
+      const { isAllowListed, p, applicationVersion } = payload;
+      return {
+        isAllowListed,
+        isPremium: p,
+        applicationVersion,
+      };
+    }
+    case "yt_site_yt_error": {
+      const { category, applicationVersion, error, isAllowListed, p } = payload;
+      return {
+        category,
+        applicationVersion,
+        error,
+        errorMsg: payload.error_msg,
+        isAllowListed,
+        isPremium: p,
+      };
+    }
     default:
       return payload;
   }

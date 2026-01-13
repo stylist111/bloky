@@ -641,7 +641,16 @@ function addAllowlistingListeners() {
 const initializationServerLogger = new ewe.telemetry.ServerLogger("initialization");
 const youtubeServerLogger = new ewe.telemetry.ServerLogger("youtube");
 
-const migratedEvents = new Set(["yt_site_navigation", "yt_site_ad_shown"]);
+const migratedEvents = new Set([
+  "yt_site_navigation",
+  "yt_site_ad_shown",
+  "yt_site_ad_wall_detected",
+  "yt_site_already_allowlisted",
+  "yt_auto_allowlisted",
+  "yt_site_toast_shown",
+  "yt_site_context_tampering",
+  "yt_site_yt_error",
+]);
 
 initialize
   .then(async () => {
