@@ -17,10 +17,13 @@
 
 import { getStartInfo } from "../../src/background/start-info.mocks";
 
-const mockStartInfo = getStartInfo();
+let mockStartInfo = getStartInfo();
 
 jest.mock("../../src/background/start-info", () => {
   return {
     getStartInfo: () => mockStartInfo,
+    setStartInfo(startInfo) {
+      mockStartInfo = startInfo;
+    },
   };
 });

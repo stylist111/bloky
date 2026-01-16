@@ -22,6 +22,7 @@ import {
   getContent,
   isCommandExpired,
   setCommandActor,
+  start,
 } from "./command-library";
 import {
   type CommandActor,
@@ -30,10 +31,16 @@ import {
 } from "./command-library.types";
 import * as commandStorage from "./command-storage";
 
+import { getStartInfo } from "./start-info.mocks";
+
 const assignedCohort = "assigned";
 const nonAssignedCohort = "not-assigned";
 
 describe("command-library", () => {
+  beforeAll(async () => {
+    await start(getStartInfo());
+  });
+
   beforeEach(() => {
     commandStorage.replaceAll({});
   });

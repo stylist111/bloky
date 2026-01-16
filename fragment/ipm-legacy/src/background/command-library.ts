@@ -59,6 +59,11 @@ const actorByCommandName = new Map<CommandName, CommandActor>();
 const unexecutableCommands = new Map<Command, boolean>();
 
 /**
+ * Indicates whether IPM functionality is active
+ */
+let isActive = false;
+
+/**
  * Checks whether the given input satisfies the requirements to be treated
  * as a command from the IPM server, and to be precessed further.
  *
@@ -279,6 +284,10 @@ export async function executeIPMCommands(
   commands: unknown[],
   isInitialization: boolean = false,
 ): Promise<void> {
+  if (!isActive) {
+    return;
+  }
+
   const { logger } = getStartInfo();
   const actorByExecutableCommand = new Map<Command, CommandActor>();
 
@@ -492,6 +501,8 @@ export async function clearCommands(): Promise<void> {
 export async function start(startInfo: StartInfo): Promise<void> {
   setStartInfo(startInfo);
 
+  isActive = true;
+
   const { prefs } = startInfo;
   await prefs.untilLoaded;
 
@@ -519,6 +530,8 @@ export async function start(startInfo: StartInfo): Promise<void> {
  * Unloads command library
  */
 export async function stop(): Promise<void> {
+  isActive = false;
+
   await stopTelemetry();
 
   await clearCommands();

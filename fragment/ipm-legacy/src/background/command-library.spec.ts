@@ -22,6 +22,7 @@ import {
   getStoredCommandIds,
   isCommandExpired,
   setCommandActor,
+  start,
 } from "./command-library";
 import {
   type CommandActor,
@@ -32,6 +33,10 @@ import { getStartInfo } from "./start-info";
 
 describe("command-library", () => {
   let prefsObj: Record<string, any>;
+
+  beforeAll(async () => {
+    await start(getStartInfo());
+  });
 
   beforeEach(() => {
     prefsObj = {};

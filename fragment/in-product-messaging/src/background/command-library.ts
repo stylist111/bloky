@@ -64,6 +64,11 @@ const serverLogger = new ewe.telemetry.ServerLogger("in_product_messaging");
 let localeOverride: string | null = null;
 
 /**
+ * Indicates whether IPM functionality is active
+ */
+let isActive = false;
+
+/**
  * Checks whether the given input satisfies the requirements to be treated
  * as a command from the IPM server, and to be precessed further.
  *
@@ -267,6 +272,10 @@ export async function executeIPMCommands(
   commands: unknown[],
   isInitialization: boolean = false,
 ): Promise<void> {
+  if (!isActive) {
+    return;
+  }
+
   const { logger } = getStartInfo();
   const actorByExecutableCommand = new Map<Command, CommandActor>();
 
@@ -493,6 +502,8 @@ async function synchronizeRemoteCommands(): Promise<void> {
 export async function start(startInfo: StartInfo): Promise<void> {
   setStartInfo(startInfo);
 
+  isActive = true;
+
   void synchronizeRemoteCommands();
 
   ewe.remoteConfig.onChanged.addListener(synchronizeRemoteCommands);
@@ -515,6 +526,8 @@ export async function start(startInfo: StartInfo): Promise<void> {
  */
 export async function stop(): Promise<void> {
   const { removeMessageListener } = getStartInfo();
+
+  isActive = false;
 
   await clearCommands();
 
