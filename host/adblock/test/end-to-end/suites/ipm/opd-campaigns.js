@@ -32,6 +32,7 @@ import {
   clearDismissedIpmIds,
   clearRemoteConfigIpmCommands,
   getPendingLoggerCdpEventStats,
+  waitForIpmCooldown,
 } from "@eyeo/test-utils/extension";
 import {
   getDisplayedElement,
@@ -174,6 +175,11 @@ export default (fragmentType) => {
     expect(await ctaButton.getText()).toEqual("CTA exclusion");
     expect(texts[0]).toEqual("This is a test OPD based on exclusion");
     expect(texts[1]).toEqual("ipmID: test_adblock_exclusion");
+
+    // After successfully showing the dialog, we need to wait for the cooldown
+    // to expire, or otherwise the dialog won't be dismissed when attempting
+    // to show it again next
+    await waitForIpmCooldown();
 
     await driver.navigate().refresh();
     await waitForNotDisplayed("#__ABoverlay");

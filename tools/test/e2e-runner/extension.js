@@ -24,6 +24,7 @@ import { expect } from "expect";
 import { openNewTab, getTabId, getFromStorage, wait } from "./driver.js";
 import { localTestPageUrl, blockHideLocalhostUrl } from "../test-server/host-server/urls.js";
 
+const ipmCooldown = 500;
 export const subscriptionUrl = "https://abptestpages.org/en/abp-testcase-subscription.txt";
 export const ytAllowlistUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
 
@@ -617,13 +618,13 @@ export async function setIPMCooldowns(initOptionsFn) {
   await sendExtMessage(initOptionsFn, {
     type: "prefs.set",
     key: "new_tab_cool_down",
-    value: 500,
+    value: ipmCooldown,
   });
 
   return sendExtMessage(initOptionsFn, {
     type: "prefs.set",
     key: "onpage_dialog_cool_down",
-    value: 500,
+    value: ipmCooldown,
   });
 }
 
@@ -707,4 +708,8 @@ export async function setIPMFragment(initOptionsFn, fragmentType) {
     5000,
     "Fragment was not selected within the expected time",
   );
+}
+
+export async function waitForIpmCooldown() {
+  await driver.sleep(ipmCooldown);
 }
