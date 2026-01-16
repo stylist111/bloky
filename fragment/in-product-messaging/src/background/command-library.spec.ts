@@ -15,9 +15,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import browser from "webextension-polyfill";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import {
   executeIPMCommands,
+  getContent,
   isCommandExpired,
   setCommandActor,
 } from "./command-library";
@@ -167,6 +169,63 @@ describe("command-library", () => {
       ];
       await executeIPMCommands(commands, true);
       expect(createTabActor.handleCommand).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("getContent", () => {
+    const commandBase = {
+      version: 1,
+      command_name: CommandName.createOnPageDialog,
+      ipm_id: "command_1",
+      content: {
+        "de-AT": {
+          text: "[de-AT] Text",
+        },
+        de: {
+          text: "[de] Text",
+        },
+        en: {
+          text: "[en] Text",
+        },
+      },
+    };
+    let createTabActor: CommandActor;
+
+    beforeEach(() => {
+      commandStorage.replaceAll({
+        [commandBase.ipm_id]: commandBase,
+      });
+
+      createTabActor = {
+        clearCommands: jest.fn(),
+        handleCommand: jest.fn(),
+        onCommandsProcessed: jest.fn(),
+        getBehavior: jest.fn(),
+        getContent: (command, content) => content,
+        // Always validate the command
+        isValidCommand: jest.fn().mockReturnValue(true),
+      };
+      setCommandActor(CommandName.createOnPageDialog, createTabActor);
+    });
+
+    it("determine content based on user locale", () => {
+      jest.spyOn(browser.i18n, "getUILanguage").mockReturnValue("de-AT");
+
+      expect(getContent(commandBase.ipm_id)).toEqual(
+        commandBase.content["de-AT"],
+      );
+    });
+
+    it("determine content based on user language", () => {
+      jest.spyOn(browser.i18n, "getUILanguage").mockReturnValue("de-DE");
+
+      expect(getContent(commandBase.ipm_id)).toEqual(commandBase.content.de);
+    });
+
+    it("determine content based on default locale", () => {
+      jest.spyOn(browser.i18n, "getUILanguage").mockReturnValue("pt-BR");
+
+      expect(getContent(commandBase.ipm_id)).toEqual(commandBase.content.en);
     });
   });
 });

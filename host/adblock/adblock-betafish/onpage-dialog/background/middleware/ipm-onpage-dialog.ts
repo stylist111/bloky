@@ -19,6 +19,7 @@ import {
   type Command,
   type CommandHandler,
   CommandName,
+  type Content,
   type ParamDefinitionList,
   getFragment,
 } from "../../../../src/ipm/background";
@@ -27,13 +28,19 @@ import * as logger from "../../../utilities/background";
 import { type DialogContent } from "../../shared";
 import { type DialogBehavior } from "../dialog.types";
 import { Timing } from "../timing.types";
-import { defaultPriority, type DialogCommand, type DialogParams } from "./ipm-onpage-dialog.types";
+import {
+  defaultPriority,
+  type DialogCommand,
+  type DialogCommandContent,
+  type DialogParams,
+} from "./ipm-onpage-dialog.types";
 
 /**
  * List of on-page dialog parameter definitions
  */
 function getParamDefinitionList(): ParamDefinitionList<DialogParams> {
   const {
+    isEmpty,
     isEmptyOrPositiveNumber,
     isNotEmpty,
     isValidDomainList,
@@ -64,15 +71,36 @@ function getParamDefinitionList(): ParamDefinitionList<DialogParams> {
     },
     {
       name: "sub_title",
-      validate: isNotEmpty,
+      validate: (param, commandVersion): boolean => {
+        // Support for this parameter was removed in command version 8
+        if (commandVersion >= 8) {
+          return true;
+        }
+
+        return isNotEmpty(param);
+      },
     },
     {
       name: "upper_body",
-      validate: isNotEmpty,
+      validate: (param, commandVersion): boolean => {
+        // Support for this parameter was removed in command version 8
+        if (commandVersion >= 8) {
+          return true;
+        }
+
+        return isNotEmpty(param);
+      },
     },
     {
       name: "button_label",
-      validate: isNotEmpty,
+      validate: (param, commandVersion): boolean => {
+        // Support for this parameter was removed in command version 8
+        if (commandVersion >= 8) {
+          return true;
+        }
+
+        return isNotEmpty(param);
+      },
     },
     {
       name: "button_target",
@@ -92,7 +120,51 @@ function getParamDefinitionList(): ParamDefinitionList<DialogParams> {
     },
     {
       name: "lower_body",
-      validate: (param): boolean => typeof param === "undefined" || isNotEmpty(param),
+      validate: (param, commandVersion): boolean => {
+        // Support for this parameter was removed in command version 8
+        if (commandVersion >= 8) {
+          return true;
+        }
+
+        return typeof param === "undefined" || isNotEmpty(param);
+      },
+    },
+    {
+      name: "content",
+      validate: (param, commandVersion) => {
+        // Support for this parameter was added in command version 8
+        if (commandVersion < 8) {
+          return true;
+        }
+
+        if (param === null || typeof param !== "object") {
+          return false;
+        }
+
+        if (!("en" in param)) {
+          return false;
+        }
+
+        for (const content of Object.values(param)) {
+          if (!isDialogCommandContent(content)) {
+            return false;
+          }
+
+          if (
+            isEmpty(content.button_label) ||
+            isEmpty(content.sub_title) ||
+            isEmpty(content.upper_body)
+          ) {
+            return false;
+          }
+
+          if (typeof content.lower_body !== "undefined" && isEmpty(content.lower_body)) {
+            return false;
+          }
+        }
+
+        return true;
+      },
     },
   ];
 }
@@ -122,20 +194,21 @@ function getBehavior(command: Command): DialogBehavior | null {
  * Extracts on-page dialog content from the given command
  *
  * @param command - Command
+ * @param content - Command content
  * @returns on-page dialog content (or null, if command is invalid)
  */
-function getContent(command: Command): DialogContent | null {
-  if (!isDialogCommand(command)) {
+function getContent(command: Command, content: Content): DialogContent | null {
+  if (!isDialogCommand(command) || !isDialogCommandContent(content)) {
     return null;
   }
 
   return {
     body:
-      typeof command.lower_body === "string"
-        ? [command.upper_body, command.lower_body]
-        : [command.upper_body],
-    button: command.button_label,
-    title: command.sub_title,
+      typeof content.lower_body === "string"
+        ? [content.upper_body, content.lower_body]
+        : [content.upper_body],
+    button: content.button_label,
+    title: content.sub_title,
   };
 }
 
@@ -155,6 +228,22 @@ function isDialogCommand(command: Command): command is DialogCommand {
 
   logger.error("[onpage-dialog]: Invalid parameters received:", validationErrors.join(" "));
   return false;
+}
+
+/**
+ * Checks if the candidate is a valid DialogCommandContent
+ *
+ * @param candidate - Candidate to check
+ * @returns whether the candidate is a valid DialogCommandContent
+ */
+function isDialogCommandContent(candidate: unknown): candidate is DialogCommandContent {
+  return (
+    candidate !== null &&
+    typeof candidate === "object" &&
+    "button_label" in candidate &&
+    "sub_title" in candidate &&
+    "upper_body" in candidate
+  );
 }
 
 /**

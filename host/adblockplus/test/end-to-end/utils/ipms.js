@@ -61,12 +61,16 @@ export const expectedIPMCommands = {
         ipm_id: "test_adblockplus_cookie_future",
         command_name: "create_on_page_dialog",
         timing: "cookie_banner",
-        version: 7,
+        version: 8,
         domain_list: "dw.com,welt.de,example.org",
-        sub_title: "OPD cookie title",
-        lower_body: "ipmID: test_adblockplus_cookie",
-        upper_body: "This is a test cookie baner OPD",
-        button_label: "CTA cookie",
+        content: {
+          en: {
+            sub_title: "OPD cookie title",
+            lower_body: "ipmID: test_adblockplus_cookie",
+            upper_body: "This is a test cookie baner OPD",
+            button_label: "CTA cookie"
+          }
+        },
         license_state_list: "free",
         button_target: "/update",
         display_duration: 1,
@@ -112,12 +116,16 @@ export const expectedIPMCommands = {
         ipm_id: "test_adblockplus_exclusion_future",
         command_name: "create_on_page_dialog",
         timing: "after_navigation",
-        version: 7,
+        version: 8,
         domain_list: "~example.org",
-        sub_title: "OPD exclusion title",
-        lower_body: "ipmID: test_adblockplus_exclusion",
-        upper_body: "This is a test OPD based on exclusion",
-        button_label: "CTA exclusion",
+        content: {
+          en: {
+            sub_title: "OPD exclusion title",
+            lower_body: "ipmID: test_adblockplus_exclusion",
+            upper_body: "This is a test OPD based on exclusion",
+            button_label: "CTA exclusion"
+          }
+        },
         license_state_list: "free",
         button_target: "/update",
         display_duration: 1
@@ -176,12 +184,16 @@ export const expectedIPMCommands = {
         ipm_id: "test_adblockplus_navigation_future",
         command_name: "create_on_page_dialog",
         timing: "after_navigation",
-        version: 7,
+        version: 8,
         domain_list: "google.com,example.net,example.com",
-        sub_title: "OPD navigation title",
-        lower_body: "ipmID: test_adblockplus_navigation",
-        upper_body: "This is a test OPD based on navigation",
-        button_label: "CTA navigation",
+        content: {
+          en: {
+            sub_title: "OPD navigation title",
+            lower_body: "ipmID: test_adblockplus_navigation",
+            upper_body: "This is a test OPD based on navigation",
+            button_label: "CTA navigation"
+          }
+        },
         license_state_list: "free",
         button_target: "/update?ipmId=test_adblockplus_navigation",
         display_duration: 1
@@ -285,6 +297,40 @@ export const expectedIPMCommands = {
         url: "/update?ipmId=test_adblockplus_priority_high",
         priority: 3,
         version: 6
+      }
+    }
+  },
+  translations: {
+    future: {
+      test_adblockplus_translations: {
+        ipm_id: "test_adblockplus_translations",
+        command_name: "create_on_page_dialog",
+        timing: "after_navigation",
+        version: 8,
+        domain_list: "google.com,example.net,example.com",
+        content: {
+          "de-AT": {
+            sub_title: "[de-AT] OPD translations title",
+            lower_body: "[de-AT] ipmID: test_adblockplus_translations",
+            upper_body: "[de-AT] This is a test translations OPD",
+            button_label: "[de-AT] CTA translations"
+          },
+          de: {
+            sub_title: "[de] OPD translations title",
+            lower_body: "[de] ipmID: test_adblockplus_translations",
+            upper_body: "[de] This is a test translations OPD",
+            button_label: "[de] CTA translations"
+          },
+          en: {
+            sub_title: "[en] OPD translations title",
+            lower_body: "[en] ipmID: test_adblockplus_translations",
+            upper_body: "[en] This is a test translations OPD",
+            button_label: "[en] CTA translations"
+          }
+        },
+        license_state_list: "free",
+        button_target: "/update?ipmId=test_adblockplus_translations",
+        display_duration: 1
       }
     }
   },

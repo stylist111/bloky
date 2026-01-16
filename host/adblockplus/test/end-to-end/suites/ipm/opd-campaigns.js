@@ -33,7 +33,8 @@ import {
   setIPMFragment,
   clearRemoteConfigIpmCommands,
   getPendingLoggerCdpEventStats,
-  waitForIpmCooldown
+  waitForIpmCooldown,
+  overrideLanguageForIpmContent
 } from "@eyeo/test-utils/extension";
 import {
   getDisplayedElement,
@@ -91,6 +92,7 @@ export default (fragmentType) => {
   });
 
   afterEach(async function () {
+    await overrideLanguageForIpmContent(null);
     await setMarketingOptOutState(false);
     await clearRemoteConfigIpmCommands(initOptionsGeneralTab);
     const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
@@ -252,5 +254,95 @@ export default (fragmentType) => {
     await openNewTab("https://www.example.com");
 
     await waitForNotDisplayed("#__abp-overlay-onpage-dialog iframe");
+  });
+
+  it("triggers an OPD campaign using strings matching user locale", async function () {
+    // Legacy fragment doesn't support translations
+    if (fragmentType === "legacy") {
+      this.skip();
+    }
+
+    await overrideLanguageForIpmContent(initOptionsGeneralTab, "de-AT");
+
+    await setRemoteConfigIpmCommands(
+      initOptionsGeneralTab,
+      `test_adblockplus_translations_${fragmentType}`
+    );
+    await syncRemoteConfig(initOptionsGeneralTab);
+
+    const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
+    expect(ipmCommands).toEqual(expectedIPMCommands.translations[fragmentType]);
+    await openNewTab("https://www.example.com");
+
+    await switchToOPDiframe();
+    const opdTitle = await getDisplayedElement("#title");
+    const ctaButton = await getDisplayedElement("#continue");
+    const paragraphs = await driver.findElements(By.css("#body p"));
+    const texts = await Promise.all(paragraphs.map((p) => p.getText()));
+
+    expect(await opdTitle.getText()).toEqual("[de-AT] OPD translations title");
+    expect(await ctaButton.getText()).toEqual("[DE-AT] CTA TRANSLATIONS");
+    expect(texts[0]).toEqual("[de-AT] This is a test translations OPD");
+    expect(texts[1]).toEqual("[de-AT] ipmID: test_adblockplus_translations");
+  });
+
+  it("triggers an OPD campaign using strings matching user language", async function () {
+    // Legacy fragment doesn't support translations
+    if (fragmentType === "legacy") {
+      this.skip();
+    }
+
+    await overrideLanguageForIpmContent(initOptionsGeneralTab, "de-DE");
+
+    await setRemoteConfigIpmCommands(
+      initOptionsGeneralTab,
+      `test_adblockplus_translations_${fragmentType}`
+    );
+    await syncRemoteConfig(initOptionsGeneralTab);
+
+    const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
+    expect(ipmCommands).toEqual(expectedIPMCommands.translations[fragmentType]);
+    await openNewTab("https://www.example.com");
+
+    await switchToOPDiframe();
+    const opdTitle = await getDisplayedElement("#title");
+    const ctaButton = await getDisplayedElement("#continue");
+    const paragraphs = await driver.findElements(By.css("#body p"));
+    const texts = await Promise.all(paragraphs.map((p) => p.getText()));
+
+    expect(await opdTitle.getText()).toEqual("[de] OPD translations title");
+    expect(await ctaButton.getText()).toEqual("[DE] CTA TRANSLATIONS");
+    expect(texts[0]).toEqual("[de] This is a test translations OPD");
+    expect(texts[1]).toEqual("[de] ipmID: test_adblockplus_translations");
+  });
+
+  it("triggers an OPD campaign using strings matching default locale", async function () {
+    // Legacy fragment doesn't support translations
+    if (fragmentType === "legacy") {
+      this.skip();
+    }
+
+    await overrideLanguageForIpmContent(initOptionsGeneralTab, "pt-BR");
+
+    await setRemoteConfigIpmCommands(
+      initOptionsGeneralTab,
+      `test_adblockplus_translations_${fragmentType}`
+    );
+    await syncRemoteConfig(initOptionsGeneralTab);
+
+    const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
+    expect(ipmCommands).toEqual(expectedIPMCommands.translations[fragmentType]);
+    await openNewTab("https://www.example.com");
+
+    await switchToOPDiframe();
+    const opdTitle = await getDisplayedElement("#title");
+    const ctaButton = await getDisplayedElement("#continue");
+    const paragraphs = await driver.findElements(By.css("#body p"));
+    const texts = await Promise.all(paragraphs.map((p) => p.getText()));
+
+    expect(await opdTitle.getText()).toEqual("[en] OPD translations title");
+    expect(await ctaButton.getText()).toEqual("[EN] CTA TRANSLATIONS");
+    expect(texts[0]).toEqual("[en] This is a test translations OPD");
+    expect(texts[1]).toEqual("[en] ipmID: test_adblockplus_translations");
   });
 };

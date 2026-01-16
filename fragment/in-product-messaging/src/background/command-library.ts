@@ -15,6 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import browser from "webextension-polyfill";
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
 import {
@@ -26,7 +27,10 @@ import {
   CommandName,
   CommandVersion,
   type Content,
+  type ContentMap,
+  defaultLocale,
   maximumProcessableCommands,
+  type TestingOverrideLocaleMessage,
 } from "./command-library.types";
 import * as commandStorage from "./command-storage";
 import { getStartInfo, setStartInfo } from "./start-info";
@@ -53,6 +57,11 @@ const unexecutableCommands = new Map<Command, boolean>();
  * Server logger instance for IPM events
  */
 const serverLogger = new ewe.telemetry.ServerLogger("in_product_messaging");
+
+/**
+ * Override of locale used for testing
+ */
+let localeOverride: string | null = null;
 
 /**
  * Checks whether the given input satisfies the requirements to be treated
@@ -168,7 +177,9 @@ export function getContent(ipmId: string): Content | null {
     return null;
   }
 
-  return actor.getContent(command);
+  const locale = localeOverride ?? browser.i18n.getUILanguage();
+  const content = getContentForLocale(locale, command.content ?? {});
+  return actor.getContent(command, content);
 }
 
 /**
@@ -200,6 +211,33 @@ async function matchesCohort(command: Command): Promise<boolean> {
 
   const cohorts = await ewe.cohorts.getAll();
   return cohorts.includes(command.cohort);
+}
+
+/**
+ * Resolves content for given locale from given content map
+ *
+ * @param locale - Locale
+ * @param [contentByLocale] - Content mapped by locale
+ * @returns content
+ */
+function getContentForLocale(
+  locale: string,
+  contentByLocale: ContentMap,
+): Content {
+  if (locale in contentByLocale) {
+    return contentByLocale[locale];
+  }
+
+  const [language] = locale.split("-", 1);
+  if (language in contentByLocale) {
+    return contentByLocale[language];
+  }
+
+  if (defaultLocale in contentByLocale) {
+    return contentByLocale[defaultLocale];
+  }
+
+  return {};
 }
 
 /**
@@ -381,6 +419,33 @@ function handleTestingGetCommandsMessage(): CommandMap {
 }
 
 /**
+ * Handles "ipm:testing.overrideLocale" message
+ */
+function handleTestingOverrideLocale(message: unknown): void {
+  if (!isTestingOverrideLocaleMessage(message)) {
+    return;
+  }
+
+  localeOverride = message.locale;
+}
+
+/**
+ * Checks whether given candidate is message of type
+ * "ipm:testing.overrideLocale"
+ *
+ * @param candidate - Candidate
+ * @returns whether given candidate is message of type
+ * "ipm:testing.overrideLocale"
+ */
+function isTestingOverrideLocaleMessage(
+  candidate: unknown,
+): candidate is TestingOverrideLocaleMessage {
+  return (
+    candidate !== null && typeof candidate === "object" && "locale" in candidate
+  );
+}
+
+/**
  * Fetches IPM commands from remote config and synchronizes the locally
  * stored commands with what we received from the remote config.
  */
@@ -439,6 +504,10 @@ export async function start(startInfo: StartInfo): Promise<void> {
     "ipm:testing.getCommands",
     handleTestingGetCommandsMessage,
   );
+  startInfo.addMessageListener(
+    "ipm:testing.overrideLocale",
+    handleTestingOverrideLocale,
+  );
 }
 
 /**
@@ -457,5 +526,9 @@ export async function stop(): Promise<void> {
   removeMessageListener(
     "ipm:testing.getCommands",
     handleTestingGetCommandsMessage,
+  );
+  removeMessageListener(
+    "ipm:testing.overrideLocale",
+    handleTestingOverrideLocale,
   );
 }

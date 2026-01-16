@@ -37,6 +37,15 @@ export const isNumeric: ParamValidator = (param) =>
   typeof param === "number" && !Number.isNaN(param);
 
 /**
+ * Checks whether the given parameter is an empty string or not a string.
+ *
+ * @param param The parameter to check
+ * @returns Whether the param is a string that's empty
+ */
+export const isEmpty: ParamValidator = (param) =>
+  typeof param !== "string" || param.length === 0;
+
+/**
  * Checks whether the given parameter is of type string and not empty.
  *
  * @param param The parameter to check
@@ -148,7 +157,7 @@ export const isValidDate: ParamValidator = (param: unknown): boolean => {
  * @returns An array containing one error message for every invalid parameter
  */
 export function validateParams<T>(
-  command: Record<string, unknown>,
+  command: Record<string, unknown> & { version: number },
   paramDefinitions: ParamDefinitionList<T>,
 ): string[] {
   return paramDefinitions
@@ -157,7 +166,7 @@ export function validateParams<T>(
       // Symbol (keyof T), so we need to convert it into a string
       const name = String(definition.name);
       const param = command[name];
-      return definition.validate(param)
+      return definition.validate(param, command.version)
         ? ""
         : `Invalid value for parameter "${name}", got "${String(param)}":`;
     })

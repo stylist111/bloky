@@ -196,7 +196,9 @@ export function getContent(ipmId: string): Content | null {
     return null;
   }
 
-  return actor.getContent(command);
+  // Unlike in future fragment, content in legacy commands is mixed in with
+  // other top-level command parameters
+  return actor.getContent(command, command);
 }
 
 /**

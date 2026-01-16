@@ -16,6 +16,11 @@
  */
 
 /**
+ * The default locale to use for resolving translatable content
+ */
+export const defaultLocale = "en";
+
+/**
  * The maximum number of commands that the extension can process when
  * handling a IPM server response.
  */
@@ -57,7 +62,7 @@ export enum CommandName {
  * A map that contains the version for each command.
  */
 export const CommandVersion: Record<CommandName, number> = {
-  [CommandName.createOnPageDialog]: 7,
+  [CommandName.createOnPageDialog]: 8,
   [CommandName.createTab]: 6,
   /**
    * @deprecated unused, but required for compatibility with legacy fragment
@@ -85,6 +90,10 @@ interface CommandMetaData {
    * Targeted user cohort
    */
   cohort?: string;
+  /**
+   * Content by locale
+   */
+  content?: ContentMap;
 }
 
 /**
@@ -103,6 +112,18 @@ export type CommandMap = Record<string, Command>;
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface Content {}
+
+/**
+ * Content by locale
+ *
+ * @example
+ * {
+ *   "en": { color: "color"},
+ *   "en-GB": { color: "colour" },
+ *   "de": { color: "Farbe" }
+ * }
+ */
+export type ContentMap = Record<string, Content>;
 
 /**
  * Command actor
@@ -127,9 +148,10 @@ export interface CommandActor {
    * Retrieves the actor-specific command content
    *
    * @param command - Command
+   * @param content - Command content
    * @returns actor-specific content (or null, if command is invalid)
    */
-  getContent: (command: Command) => Content | null;
+  getContent: (command: Command, content: Content) => Content | null;
   /**
    * Handles given command
    */
@@ -152,4 +174,8 @@ export interface CommandActor {
  */
 export enum CommandEventType {
   expired = "command_expired",
+}
+
+export interface TestingOverrideLocaleMessage {
+  locale: string | null;
 }

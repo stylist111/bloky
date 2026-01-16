@@ -27,8 +27,24 @@ export const CreateOnpageDialogCommand = {
   type: "object",
   properties: {
     ...requiredBaseProperties,
-    button_label: { type: "string" },
     button_target: { type: "string" },
+    content: {
+      type: "object",
+      additionalProperties: false,
+      patternProperties: {
+        "^[a-z]+(-[A-Z0-9]+)?$": {
+          type: "object",
+          properties: {
+            button_label: { type: "string" },
+            lower_body: { type: "string" },
+            sub_title: { type: "string" },
+            upper_body: { type: "string" },
+          },
+          required: ["button_label", "sub_title", "upper_body"],
+        },
+      },
+      required: ["en"],
+    },
     display_duration: {
       type: "integer",
       minimum: 0,
@@ -36,22 +52,17 @@ export const CreateOnpageDialogCommand = {
     },
     domain_list: { type: "string" },
     license_state_list: { type: "string" },
-    lower_body: { type: "string" },
     priority: {
       type: "integer",
       minimum: 1,
     },
-    sub_title: { type: "string" },
     timing: { type: "string" },
-    upper_body: { type: "string" },
   },
   required: [
     ...requiredBasePropertiesKeys,
-    "button_label",
     "button_target",
-    "sub_title",
+    "content",
     "timing",
-    "upper_body",
   ],
 };
 

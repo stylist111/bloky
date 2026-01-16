@@ -100,6 +100,10 @@ interface CommandMetaData {
    * @deprecated unused, but required for compatibility with future fragment
    */
   cohort?: string;
+  /**
+   * Content by locale
+   */
+  content?: ContentMap;
 }
 
 export interface InternalAttributes {
@@ -128,6 +132,18 @@ export type Command = CommandMetaData & Record<string, unknown>;
 export interface Content {}
 
 /**
+ * Content by locale
+ *
+ * @example
+ * {
+ *   "en": { color: "color"},
+ *   "en-GB": { color: "colour" },
+ *   "de": { color: "Farbe" }
+ * }
+ */
+export type ContentMap = Record<string, Content>;
+
+/**
  * Command actor
  */
 export interface CommandActor {
@@ -150,9 +166,10 @@ export interface CommandActor {
    * Retrieves the actor-specific command content
    *
    * @param command - Command
+   * @param content - Command content
    * @returns actor-specific content (or null, if command is invalid)
    */
-  getContent: (command: Command) => Content | null;
+  getContent: (command: Command, content: Content) => Content | null;
   /**
    * Handles given command
    */

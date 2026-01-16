@@ -56,14 +56,22 @@ function getBaseCommand(commandName) {
   };
 }
 
+function getCommandContent() {
+  return {
+    en: {
+      button_label: "Button label",
+      sub_title: "Subtitle",
+      upper_body: "Upper body",
+    },
+  };
+}
+
 function getCreateOnpageDialogCommand() {
   return {
     ...getBaseCommand("create_on_page_dialog"),
-    button_label: "Button label",
+    content: getCommandContent(),
     button_target: "https://www.example.com/",
-    sub_title: "Subtitle",
     timing: "after_navigation",
-    upper_body: "Upper body",
   };
 }
 
@@ -95,6 +103,12 @@ describe("In-product messaging commands validation", function () {
     const command = getCreateTabCommand();
     command.cohort = "foo";
     expectErrorsWithCohorts([command], ["foo"], []);
+  });
+
+  it("allows optional content", function () {
+    const command = getCreateTabCommand();
+    command.content = getCommandContent();
+    expectErrors([command], []);
   });
 
   it("reports unknown cohort", function () {
@@ -151,13 +165,13 @@ describe("In-product messaging commands validation", function () {
 
     it("allows optional lower body", function () {
       const command = getCreateOnpageDialogCommand();
-      command.lower_body = "Lower body";
+      command.content.en.lower_body = "Lower body";
       expectErrors([command], []);
     });
 
     it("reports missing button label", function () {
       const command = getCreateOnpageDialogCommand();
-      delete command.button_label;
+      delete command.content.en.button_label;
       expectErrors([command], [COMMAND_ERROR]);
     });
 
@@ -169,7 +183,7 @@ describe("In-product messaging commands validation", function () {
 
     it("reports missing subtitle", function () {
       const command = getCreateOnpageDialogCommand();
-      delete command.sub_title;
+      delete command.content.en.sub_title;
       expectErrors([command], [COMMAND_ERROR]);
     });
 
@@ -181,7 +195,7 @@ describe("In-product messaging commands validation", function () {
 
     it("reports missing upper body", function () {
       const command = getCreateOnpageDialogCommand();
-      delete command.upper_body;
+      delete command.content.en.upper_body;
       expectErrors([command], [COMMAND_ERROR]);
     });
   });

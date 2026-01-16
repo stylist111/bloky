@@ -27,8 +27,14 @@ export interface StartInfo {
   getSafeOrigins: () => string[];
   getDismissedIpmIds: () => string[];
   setDismissedIpmIds: (ipmIds: string[]) => void;
-  addMessageListener: (name: string, listener: () => unknown) => void;
-  removeMessageListener: (name: string, listener: () => unknown) => void;
+  addMessageListener: (
+    name: string,
+    listener: (message: unknown) => unknown,
+  ) => void;
+  removeMessageListener: (
+    name: string,
+    listener: (message: unknown) => unknown,
+  ) => void;
 }
 
 interface Logger {

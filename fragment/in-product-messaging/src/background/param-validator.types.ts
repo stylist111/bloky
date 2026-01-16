@@ -21,6 +21,14 @@
 export type ParamValidator = (param: unknown) => boolean;
 
 /**
+ * A function to validate a parameter with additional context.
+ */
+export type ParamValidatorWithContext = (
+  param: unknown,
+  commandVersion: number,
+) => boolean;
+
+/**
  * A definition for a parameter.
  */
 export interface ParamDefinition<T> {
@@ -31,7 +39,7 @@ export interface ParamDefinition<T> {
   /**
    * A function to validate the parameter.
    */
-  validate: ParamValidator;
+  validate: ParamValidatorWithContext;
 }
 
 /**

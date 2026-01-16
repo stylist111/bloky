@@ -713,3 +713,10 @@ export async function setIPMFragment(initOptionsFn, fragmentType) {
 export async function waitForIpmCooldown() {
   await driver.sleep(ipmCooldown);
 }
+
+export async function overrideLanguageForIpmContent(initOptionsFn, locale) {
+  await sendExtMessage(initOptionsFn, {
+    type: "ipm:testing.overrideLocale",
+    locale,
+  });
+}
