@@ -622,9 +622,14 @@ async function checkUpdateProgress() {
  * Listens on allowlisting events and logs when an allowlisting
  * filter was renewed or expired.
  */
+const smartAllowlistingServerLogger = new ewe.telemetry.ServerLogger("smart_allowlisting");
+
 function addAllowlistingListeners() {
   // Log event when a smart allowlist was renewed
   ewe.filters.onRenewed.addListener((filter) => {
+    smartAllowlistingServerLogger.behavior("allowlisting_renewed", {
+      allowlistExtendDuration: filter.metadata.autoExtendMs,
+    });
     ServerMessages.recordAllowlistEvent("allowlisting_renewed", filter.metadata.autoExtendMs);
   });
 
@@ -633,6 +638,9 @@ function addAllowlistingListeners() {
     const { autoExtendMs } = filter.metadata;
 
     if (autoExtendMs) {
+      smartAllowlistingServerLogger.behavior("allowlisting_expired", {
+        allowlistExtendDuration: autoExtendMs,
+      });
       ServerMessages.recordAllowlistEvent("allowlisting_expired", autoExtendMs);
     }
   });
