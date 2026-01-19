@@ -22,18 +22,38 @@ import { localTestPageUrl } from "@eyeo/test-utils/host-urls";
 import {
   reloadExtension,
   setTimeoutForExtensionReload,
+  updatePrefs,
   updateSettings,
 } from "@eyeo/test-utils/extension";
 
 import { initOptionsGeneralTab, setMarketingOptOutState } from "../utils/page.js";
 import { updateUrl } from "../utils/urls.js";
 
+// Wednesday of an even-numbered week
+const dateWithUpdateCampaign = "2025-01-08";
+// Wednesday of an odd-numbered week
+const dateWithoutUpdateCampaign = "2025-01-01";
+const lastShownOld = new Date("2024-01-01").getTime();
+// Tuesday of an even-numbered week
+const lastShownRecent = new Date("2025-01-07").getTime();
+
 export default () => {
+  beforeEach(async function () {
+    await updatePrefs(
+      initOptionsGeneralTab,
+      "testing_update_campaign_date_override",
+      dateWithUpdateCampaign,
+    );
+    await updatePrefs(initOptionsGeneralTab, "update_campaign_last_shown", lastShownOld);
+  });
+
   afterEach(async function () {
     await setMarketingOptOutState(false);
+    await updatePrefs(initOptionsGeneralTab, "testing_update_campaign_date_override", "");
   });
 
   after(async function () {
+    await updatePrefs(initOptionsGeneralTab, "update_campaign_last_shown", 0);
     await updateSettings(initOptionsGeneralTab, "suppress_update_page", true);
   });
 
@@ -73,6 +93,42 @@ export default () => {
     }
 
     await setMarketingOptOutState(true);
+
+    setTimeoutForExtensionReload(this);
+    await reloadExtension(initOptionsGeneralTab, { suppressUpdatePage: false });
+
+    await openNewTab(localTestPageUrl);
+    await findUrl(updateUrl, { timeout: 15000, exists: false });
+  });
+
+  it("doesn't trigger an update campaign on Firefox if week is skipped", async function () {
+    // IPMs are not supported on Firefox, hence we need to fall back
+    // to running an update campaign directly
+    if (browserDetails.browserName !== "firefox") {
+      this.skip();
+    }
+
+    await updatePrefs(
+      initOptionsGeneralTab,
+      "testing_update_campaign_date_override",
+      dateWithoutUpdateCampaign,
+    );
+
+    setTimeoutForExtensionReload(this);
+    await reloadExtension(initOptionsGeneralTab, { suppressUpdatePage: false });
+
+    await openNewTab(localTestPageUrl);
+    await findUrl(updateUrl, { timeout: 15000, exists: false });
+  });
+
+  it("doesn't trigger an update campaign on Firefox if already shown in the same week", async function () {
+    // IPMs are not supported on Firefox, hence we need to fall back
+    // to running an update campaign directly
+    if (browserDetails.browserName !== "firefox") {
+      this.skip();
+    }
+
+    await updatePrefs(initOptionsGeneralTab, "update_campaign_last_shown", lastShownRecent);
 
     setTimeoutForExtensionReload(this);
     await reloadExtension(initOptionsGeneralTab, { suppressUpdatePage: false });

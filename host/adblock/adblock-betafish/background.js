@@ -456,7 +456,35 @@ const premiumCtaViewed = "premium_cta_viewed";
 const versionStorageKey = "last_known_version";
 const isUpdatePageEngaged = true;
 
-const showUpdatePage = async function (details) {
+const DAYS_IN_WEEK = 7;
+const MILLIS_IN_DAY = 24 * 60 * 60 * 1000;
+
+/**
+ * Determines current week number
+ *
+ * Based on https://weeknumber.com/how-to/javascript
+ */
+function getWeekNumber(date) {
+  date.setHours(0, 0, 0, 0);
+
+  // Thursday in current week decides the year
+  date.setDate(date.getDate() + 3 - ((date.getDay() + 6) % DAYS_IN_WEEK));
+
+  // January 4 is always in first week
+  const firstWeek = new Date(date.getFullYear(), 0, 4);
+
+  const daysSinceFirstWeek = (date.getTime() - firstWeek.getTime()) / MILLIS_IN_DAY;
+
+  // Adjust to Thursday in first week and count number of weeks from the given date to firstWeek
+  return (
+    1 +
+    Math.round((daysSinceFirstWeek - 3 + ((firstWeek.getDay() + 6) % DAYS_IN_WEEK)) / DAYS_IN_WEEK)
+  );
+}
+
+const showUpdatePage = async function () {
+  await Prefs.untilLoaded;
+
   let updateTabRetryCount = 0;
 
   const getUpdatedURL = async function () {
@@ -516,10 +544,6 @@ const showUpdatePage = async function (details) {
     return slashUpdateLanguages.includes(language);
   };
 
-  if (details.reason !== "update") {
-    return;
-  }
-
   // Only open campaign for Firefox users
   if (info.platform !== "gecko") {
     return;
@@ -527,6 +551,27 @@ const showUpdatePage = async function (details) {
 
   // Don't open campaign for AdBlock Beta users
   if (browser.runtime.id === adblocBetaID) {
+    return;
+  }
+
+  const dateOverride = Prefs.get("testing_update_campaign_date_override");
+  const date = dateOverride ? new Date(dateOverride) : new Date();
+
+  // Only open campaign in even-numbered weeks
+  if (getWeekNumber(date) % 2 === 1) {
+    return;
+  }
+
+  // Don't open campaign more than once in the same week
+  const lastShown = Prefs.get("update_campaign_last_shown");
+  if (lastShown + DAYS_IN_WEEK * MILLIS_IN_DAY > date.getTime()) {
+    return;
+  }
+  void Prefs.set("update_campaign_last_shown", date.getTime());
+
+  // Don't open campaign if this is the first week in which the extension
+  // got installed
+  if (lastShown === 0) {
     return;
   }
 
@@ -542,7 +587,6 @@ const showUpdatePage = async function (details) {
   }
 
   // Don't open campaign if user opted out of marketing messages
-  await Prefs.untilLoaded;
   if (Prefs.get("marketing_opt_out")) {
     return;
   }
@@ -550,6 +594,10 @@ const showUpdatePage = async function (details) {
   await getUserId();
   shouldShowUpdate();
 };
+
+if (isUpdatePageEngaged) {
+  void showUpdatePage();
+}
 
 /*
   If we call browser.storage.local.get with an undefined key, we get the whole list back.
@@ -582,9 +630,6 @@ browser.runtime.onInstalled.addListener(async (details) => {
     localStorage.removeItem(versionStorageKey);
   }
 
-  if (isUpdatePageEngaged) {
-    await showUpdatePage(details);
-  }
   // Update version in browser.storage.local.
   void browser.storage.local.set({ [versionStorageKey]: browser.runtime.getManifest().version });
 });

@@ -29,12 +29,39 @@ import {
 } from "../utils/page.js";
 import { integratedUpdateUrl } from "../utils/urls.js";
 
+// Wednesday of an odd-numbered week
+const dateWithUpdateCampaign = "2025-01-01";
+// Wednesday of an even-numbered week
+const dateWithoutUpdateCampaign = "2025-01-08";
+const lastShownOld = new Date("2024-01-01").getTime();
+// Tuesday of an odd-numbered week
+const lastShownRecent = new Date("2024-12-31").getTime();
+
 export default () => {
+  beforeEach(async function () {
+    await updatePrefs(
+      initOptionsGeneralTab,
+      "testing_update_campaign_date_override",
+      dateWithUpdateCampaign
+    );
+    await updatePrefs(
+      initOptionsGeneralTab,
+      "update_campaign_last_shown",
+      lastShownOld
+    );
+  });
+
   afterEach(async function () {
     await setMarketingOptOutState(false);
+    await updatePrefs(
+      initOptionsGeneralTab,
+      "testing_update_campaign_date_override",
+      ""
+    );
   });
 
   after(async function () {
+    await updatePrefs(initOptionsGeneralTab, "update_campaign_last_shown", 0);
     await updatePrefs(initOptionsGeneralTab, "suppress_first_run_page", true);
   });
 
@@ -80,6 +107,52 @@ export default () => {
     }
 
     await setMarketingOptOutState(true);
+
+    setTimeoutForExtensionReload(this);
+    await reloadExtension(initOptionsGeneralTab, { suppressUpdatePage: false });
+
+    await openNewTab(localTestPageUrl);
+    await findUrl(integratedUpdateUrl, {
+      timeout: 15000,
+      exists: false
+    });
+  });
+
+  it("doesn't trigger an update campaign on Firefox if week is skipped", async function () {
+    // IPMs are not supported on Firefox, hence we need to fall back
+    // to running an update campaign directly
+    if (browserDetails.browserName !== "firefox") {
+      this.skip();
+    }
+
+    await updatePrefs(
+      initOptionsGeneralTab,
+      "testing_update_campaign_date_override",
+      dateWithoutUpdateCampaign
+    );
+
+    setTimeoutForExtensionReload(this);
+    await reloadExtension(initOptionsGeneralTab, { suppressUpdatePage: false });
+
+    await openNewTab(localTestPageUrl);
+    await findUrl(integratedUpdateUrl, {
+      timeout: 15000,
+      exists: false
+    });
+  });
+
+  it("doesn't trigger an update campaign on Firefox if already shown in the same week", async function () {
+    // IPMs are not supported on Firefox, hence we need to fall back
+    // to running an update campaign directly
+    if (browserDetails.browserName !== "firefox") {
+      this.skip();
+    }
+
+    await updatePrefs(
+      initOptionsGeneralTab,
+      "update_campaign_last_shown",
+      lastShownRecent
+    );
 
     setTimeoutForExtensionReload(this);
     await reloadExtension(initOptionsGeneralTab, { suppressUpdatePage: false });

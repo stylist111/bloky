@@ -324,6 +324,21 @@ defaults.new_tab_last_shown = 0;
 defaults.new_tab_cool_down = 24 * 60 * 60 * 1000;
 
 /**
+ * Date to use when testing the update campaign that automatically opens on
+ * extension update
+ *
+ * @type {string}
+ */
+defaults.testing_update_campaign_date_override = "";
+
+/**
+ * The timestamp of the last time we opened the campaign tab on extension update
+ *
+ * @type {number}
+ */
+defaults.update_campaign_last_shown = 0;
+
+/**
  * Map of on-page dialog timing configurations
  *
  * @type {Object}

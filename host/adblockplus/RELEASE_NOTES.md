@@ -1,5 +1,8 @@
 # Unreleased
 
+- Fixed: Update campaign for Firefox users should only be triggered every other
+  week (EXT-1121).
+
 # 4.32.4 - 2026-01-13
 
 - In Firefox, fixed a bug where regex filters that don't use the `match-case`

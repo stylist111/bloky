@@ -27,6 +27,9 @@ import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import { getPremiumState } from "../../premium/background";
 import { reportAndLogError } from "../../logger/background";
 
+const DAYS_IN_WEEK = 7;
+const MILLIS_IN_DAY = 24 * 60 * 60 * 1000;
+
 // Locales that the update campaign will target
 const targetedLocales = ["en", "fr", "de", "es", "nl"];
 
@@ -57,6 +60,34 @@ async function openUpdatePage(): Promise<void> {
 }
 
 /**
+ * Determines current week number
+ *
+ * Based on https://weeknumber.com/how-to/javascript
+ */
+function getWeekNumber(date: Date): number {
+  date.setHours(0, 0, 0, 0);
+
+  // Thursday in current week decides the year
+  date.setDate(date.getDate() + 3 - ((date.getDay() + 6) % DAYS_IN_WEEK));
+
+  // January 4 is always in first week
+  const firstWeek = new Date(date.getFullYear(), 0, 4);
+
+  const daysSinceFirstWeek =
+    (date.getTime() - firstWeek.getTime()) / MILLIS_IN_DAY;
+
+  // Adjust to Thursday in first week and count number of weeks from given date
+  // to firstWeek
+  return (
+    1 +
+    Math.round(
+      (daysSinceFirstWeek - 3 + ((firstWeek.getDay() + 6) % DAYS_IN_WEEK)) /
+        DAYS_IN_WEEK
+    )
+  );
+}
+
+/**
  * Handle update campaign requests
  */
 async function handleUpdateCampaign(): Promise<void> {
@@ -64,6 +95,29 @@ async function handleUpdateCampaign(): Promise<void> {
 
   // Only open campaign for Firefox users
   if (info.platform !== "gecko") {
+    return;
+  }
+
+  const dateOverride = Prefs.get(
+    "testing_update_campaign_date_override"
+  ) as string;
+  const date = dateOverride ? new Date(dateOverride) : new Date();
+
+  // Only open campaign in odd-numbered weeks
+  if (getWeekNumber(date) % 2 === 0) {
+    return;
+  }
+
+  // Don't open campaign more than once in the same week
+  const lastShown = Prefs.get("update_campaign_last_shown") as number;
+  if (lastShown + DAYS_IN_WEEK * MILLIS_IN_DAY > date.getTime()) {
+    return;
+  }
+  void Prefs.set("update_campaign_last_shown", date.getTime());
+
+  // Don't open campaign if this is the first week in which the extension
+  // got installed
+  if (lastShown === 0) {
     return;
   }
 
@@ -113,12 +167,5 @@ async function handleUpdateCampaign(): Promise<void> {
  * Initializes update campaign module
  */
 export function start(): void {
-  browser.runtime.onInstalled.addListener((details) => {
-    // Only open campaign when the extension gets updated
-    if (details.reason !== "update") {
-      return;
-    }
-
-    void handleUpdateCampaign();
-  });
+  void handleUpdateCampaign();
 }
