@@ -5,6 +5,69 @@ export default {
     },
     support_icon_clicked: {
       description: "User clicked the support icon on the header of the Adblock popup"
+    },
+    cm_pause_on_site: {
+      description: "User right clicked on the page to open the context menu and selected 'Pause on this site' from the AdBlock section."
+    },
+    cm_pause_on_all_sites: {
+      description: "User right clicked on the page to open the context menu and selected 'Pause on all sites' from the AdBlock section."
+    },
+    cm_resume_adblock: {
+      description: "User right clicked on the page to open the context menu and selected 'Resume blocking ads' from the AdBlock section."
+    },
+    pause_on_site: {
+      description: "User clicked 'Pause on this site' on the Adblock popup"
+    },
+    resume_adblock: {
+      description: "User clicked 'Resume Ad blocking' on the Adblock popup"
+    },
+    popup_opened: {
+      description: "User clicked the AdBlock toolbar icon to open the popup menu",
+      data: {
+        description: "Data about the popup opened event",
+        type: "object",
+        properties: {
+          isBadgeTextNew: {
+            description: "The 'new' badge is shown on the popup icon",
+            type: "boolean"
+          },
+          reason: {
+            description: "The reason why the 'new' badge was shown",
+            type: "string"
+          }
+        }
+      }
+    },
+    hide_on_this_page_clicked: {
+      description: "User clicked on the three dots in the popup menu, then clicked the 'Hide something on this page' link"
+    },
+    titletext_clicked: {
+      description: "User clicked the AdBlock logo in the popup menu header"
+    },
+    more_pause_options_clicked: {
+      description: "User clicked on the three dots in the popup menu, then clicked 'More pause options' link"
+    },
+    help_flow_results: {
+      description: "Emitted when a user completes the help flow in the popup. The flow presents different options based on the user's issue (e.g., ads not blocked, site broken, etc.), and the emitted event includes the path representing the sequence of choices the user made",
+      data: {
+        description: "Data about the help flow results",
+        type: "object",
+        properties: {
+          helpFlowPath: {
+            description: "The path of the help flow (e.g. 'start,seeAd,seeAdEverywhere,link')",
+            type: "string"
+          }
+        }
+      }
+    },
+    premium_options_clicked: {
+      description: "Triggered when a premium user clicks the 'Premium' label in the popup header which is shown next to the Adblock logo. The label is only visible to premium users and opens the Premium tab in the settings page"
+    },
+    popup_sub_clicked_cookies_premium: {
+      description: "Triggered when a premium user clicks the toggle to enable the Premium Cookie Blocking filter list in the popup. The list is not enabled automatically when upgrading to premium"
+    },
+    popup_sub_clicked_distraction_control: {
+      description: "Triggered when a premium user clicks the toggle to enable the Premium Block Distractions filter list in the popup. The list is not enabled automatically when upgrading to premium"
     }
   },
   smart_allowlisting: {

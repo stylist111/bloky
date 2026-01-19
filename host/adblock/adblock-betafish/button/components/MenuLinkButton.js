@@ -21,13 +21,19 @@
 /* eslint-disable import/extensions */
 import { closePopup, PAGE_INFO_KEY, sendMessageWithNoResponse } from "../utils.js";
 
+const menuLinkButtonAdblockUIServerLogger = new modulesAsGlobal.ewe.telemetry.ServerLogger(
+  "adblock_ui",
+);
+
 const eventHandlers = {
   async openAllowListWizard() {
+    menuLinkButtonAdblockUIServerLogger.behavior("more_pause_options_clicked");
     sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "whitelist_domain_clicked" });
     await browser.runtime.sendMessage({ command: "showWhitelist", tabId: this.pageInfo.id });
     closePopup();
   },
   async openHidingWizard() {
+    menuLinkButtonAdblockUIServerLogger.behavior("hide_on_this_page_clicked");
     sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "blacklist_clicked" });
     await browser.runtime.sendMessage({
       command: "showBlacklist",

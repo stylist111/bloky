@@ -21,11 +21,12 @@
 /* eslint-disable import/extensions */
 import { getTabId, closePopup, sendMessageWithNoResponse } from "./utils.js";
 
-const serverLogger = new modulesAsGlobal.ewe.telemetry.ServerLogger("adblock_ui");
+const headerAdblockUIServerLogger = new modulesAsGlobal.ewe.telemetry.ServerLogger("adblock_ui");
 
 let template;
 
 const openHomePage = async () => {
+  headerAdblockUIServerLogger.behavior("titletext_clicked");
   sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "titletext_clicked" });
   const homepageURL = "https://getadblock.com/";
   await browser.runtime.sendMessage({ command: "openTab", urlToOpen: homepageURL });
@@ -35,7 +36,7 @@ const openHomePage = async () => {
 const openOptionsPage = async () => {
   const popupMenuDCCtaClosedKey = "popup_menu_dc_cta_closed";
   storageSet(popupMenuDCCtaClosedKey, true);
-  serverLogger.behavior("options_clicked");
+  headerAdblockUIServerLogger.behavior("options_clicked");
   sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "options_clicked" });
   await browser.runtime.sendMessage({
     command: "openTab",
@@ -45,7 +46,7 @@ const openOptionsPage = async () => {
 };
 
 const openHelp = (pageInfo, tabId) => {
-  serverLogger.behavior("support_icon_clicked");
+  headerAdblockUIServerLogger.behavior("support_icon_clicked");
   sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "feedback_clicked" });
   if (!pageInfo.disabledSite) {
     // This navigates to the index and starts the help SPA
@@ -64,6 +65,7 @@ const openHelp = (pageInfo, tabId) => {
 
 const openPremiumTab = async () => {
   storageSet("popup_menu_dc_cta_closed", true);
+  headerAdblockUIServerLogger.behavior("premium_options_clicked");
   sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "premium_options_clicked" });
   await browser.runtime.sendMessage({
     command: "openTab",
