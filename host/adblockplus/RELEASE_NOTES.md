@@ -1,5 +1,9 @@
 # Unreleased
 
+# 4.32.5 - 2026-01-20
+
+This release contains bugfixes and under-the-hood changes.
+
 - Fixed: Update campaign for Firefox users should only be triggered every other
   week (EXT-1121).
 
