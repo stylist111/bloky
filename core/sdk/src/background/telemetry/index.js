@@ -16,6 +16,7 @@
  */
 
 import {Prefs} from "../prefs.js";
+import {getRotatingClientId, onRotatingClientIdChanged} from "./server-log-config.js";
 import * as serverLogger from "./server-logger.js";
 import * as activePing from "./active-ping.js";
 
@@ -51,6 +52,23 @@ export default {
   /**
    * @ignore
    */
-  setConsoleLogLevel: serverLogger.setConsoleLogLevel
+  setConsoleLogLevel: serverLogger.setConsoleLogLevel,
+
+  /**
+   * Returns the rotating client ID used for privacy-preserving telemetry.
+   * The ID rotates every 7 days by default.
+   * @returns {Promise<string>} Promise that resolves with the rotating
+   * client ID.
+   * @memberof telemetry
+   */
+  getRotatingClientId,
+
+  /**
+   * Event that fires when the rotating client ID changes.
+   * @event
+   * @type {EventDispatcher<string>}
+   * @memberof telemetry
+   */
+  onRotatingClientIdChanged
 };
 

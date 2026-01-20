@@ -1,9 +1,11 @@
 import {v4 as uuidv4} from "uuid";
 import browser from "webextension-polyfill";
 
+import {EventEmitter} from "#adblockpluscore/lib/events.js";
 import {setServerLogLevel, resetServerLogLevel} from "./server-logger.js";
 import {MILLIS_IN_DAY} from "#adblockpluscore/lib/time.js";
 import {PersistentState} from "../persistence.js";
+import {EventDispatcher} from "../types.js";
 import {Scheduler} from "../../all/scheduler.js";
 import {default as remoteConfig} from "../remote-config/index.js";
 import {modHashString} from "../../all/hashing.js";
@@ -17,6 +19,17 @@ const rotatingClientStorage = new PersistentState(
   "ewe:telemetry-rotating-client-id",
   browser.storage.local
 );
+
+let emitter = new EventEmitter();
+
+/**
+ * Event dispatcher for rotating client ID changes.
+ */
+export let onRotatingClientIdChanged = new EventDispatcher(dispatch => {
+  emitter.on("updated", async() => {
+    dispatch(await getRotatingClientId());
+  });
+});
 
 export async function setRotationPeriod(periodInMs) {
   idRotationPeriod = periodInMs;
@@ -81,6 +94,8 @@ export async function setRotatingClientId(id) {
   state.nextRotationTime = Date.now() + idRotationPeriod;
   await rotatingClientStorage.save();
 
+  emitter.emit("updated");
+
   const loggingConfig = await remoteConfig.getLoggingConfig();
   await sync(loggingConfig);
 }
@@ -139,5 +154,6 @@ export default {
   getRotatingClientId,
   setRotationPeriod,
   resetRotationPeriod,
-  startRotationScheduler
+  startRotationScheduler,
+  onRotatingClientIdChanged
 };

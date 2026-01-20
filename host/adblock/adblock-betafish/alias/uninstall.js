@@ -21,8 +21,8 @@
 /** @module uninstall */
 /** similar to adblockpluschrome\lib\uninstall.js */
 
-import { Prefs } from "./prefs";
 import * as info from "info";
+import { Prefs } from "./prefs";
 import SubscriptionAdapter from "../subscriptionadapter";
 import { getUserId } from "../id/background/index";
 import { getWebAllowlistingFilterCount } from "../telemetry/background/custom-rule";
@@ -42,7 +42,7 @@ async function getPremiumStatus() {
 export async function setUninstallURL() {
   if (browser.runtime.setUninstallURL) {
     const userID = await getUserId();
-    let uninstallURL = "https://getadblock.com/uninstall/?u=" + userID;
+    const uninstallURL = `https://getadblock.com/uninstall/?u=${userID}`;
     // if the start property of blockCount exists (which is the AdBlock
     // installation timestamp)
     // use it to calculate the approximate length of time that user has
@@ -62,6 +62,9 @@ export async function setUninstallURL() {
       const updateUninstallURL = async function () {
         const data = await browser.storage.local.get("blockage_stats");
         let url = uninstallURL;
+
+        const rotatingClientId = await ewe.telemetry.getRotatingClientId();
+        url = `${url}&rcid=${encodeURIComponent(rotatingClientId)}`;
 
         // append the version of AdBlock
         url = `${url}&av=${encodeURIComponent(info.addonVersion)}`;
@@ -97,10 +100,11 @@ export async function setUninstallURL() {
       setInterval(updateUninstallURL, twoMinutes);
       updateUninstallURL();
 
-      // listen for changes to the remote config, experiments and cohorts
+      // listen for changes to the remote config, experiments, cohorts and rotating client ID
       ewe.remoteConfig.onChanged.addListener(updateUninstallURL);
       ewe.experiments.onChanged.addListener(updateUninstallURL);
       ewe.cohorts.onChanged.addListener(updateUninstallURL);
+      ewe.telemetry.onRotatingClientIdChanged.addListener(updateUninstallURL);
     } else {
       browser.runtime.setUninstallURL(`${uninstallURL}&t=-1`);
     }
