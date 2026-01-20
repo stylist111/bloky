@@ -26,6 +26,8 @@
    translate, updateAcceptableAdsUI, updateSocialIconsVisibility
    */
 
+const filtersAdblockUiServerLogger = new modulesAsGlobal.ewe.telemetry.ServerLogger("adblock_ui");
+
 const FANBOY_ANNOYANCE_URL = "https://fanboy.co.nz/fanboy-annoyance.txt";
 
 function fixFanboyFilter(item, adblockId) {
@@ -1147,6 +1149,7 @@ async function onFilterChangeHandler(action, items) {
 async function initPremiumFiltersCTA() {
   const userClosedpremiumFiltersCTA = storageGet(premiumFiltersCtaKey);
   if (!userClosedpremiumFiltersCTA) {
+    filtersAdblockUiServerLogger.behavior("premium_filter_list_cta", { action: "clicked" });
     ServerMessages.recordGeneralMessage("premium_filter_list_cta_clicked");
     $("#premium-filter-list-cta").fadeIn(1000);
     $("#btnPremiumFilterLearnMore").on("click", () => {
@@ -1154,6 +1157,7 @@ async function initPremiumFiltersCTA() {
       $("#premium-filter-list-cta").fadeOut(1000);
       activateTab("#mab");
     });
+    filtersAdblockUiServerLogger.behavior("premium_filter_list_cta", { action: "seen" });
     ServerMessages.recordGeneralMessage("premium_filter_list_cta_seen");
   }
 }

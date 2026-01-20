@@ -68,6 +68,142 @@ export default {
     },
     popup_sub_clicked_distraction_control: {
       description: "Triggered when a premium user clicks the toggle to enable the Premium Block Distractions filter list in the popup. The list is not enabled automatically when upgrading to premium"
+    },
+    skip_cookie_walls_learn_more_clicked: {
+      description: "A free user clicked the Learn More button on the 'Skip Cookie Walls' section in the AdBlock popup"
+    },
+    block_distractions_learn_more_clicked: {
+      description: "A free user clicked the Learn More button on the 'Block Distractions' section in the AdBlock popup"
+    },
+    options_page_tab_premium_cta: {
+      description: "User interacted with a premium CTA on a premium tab in the options page",
+      data: {
+        description: "Data about which tab the user was viewing",
+        type: "object",
+        properties: {
+          tab: {
+            description: "The name of the tab being viewed when the CTA was clicked",
+            type: "string",
+            enum: ["premium", "themes", "image_swap", "premium_filters"]
+          },
+          action: {
+            description: "Type of interaction with the Premium CTA",
+            type: "string",
+            enum: ["clicked"]
+          }
+        }
+      }
+    },
+    options_page_tab: {
+      description: "User clicked or opened a tab on the options page side bar",
+      data: {
+        description: "Data about the user interaction with the options page tab",
+        type: "object",
+        properties: {
+          tab: {
+            description: "The tab that the user interacted with",
+            type: "string",
+            enum: ["stats", "general", "filter_lists", "customize", "support", "premium", "themes", "image_swap", "premium_filters"]
+          },
+          action: {
+            description: "Type of interaction with the options page tab",
+            type: "string",
+            enum: ["opened", "clicked"]
+          }
+        }
+      }
+    },
+    vpn_cta: {
+      description: "User interacted with AdBlock VPN promotional banner in the popup menu. This CTA promotes the VPN with 'Introducing AdBlock VPN' message",
+      data: {
+        description: "Data about the user interaction with the AdBlock VPN promotional banner",
+        type: "object",
+        properties: {
+          action: {
+            description: "Type of interaction with the AdBlock VPN promotional banner",
+            type: "string",
+            enum: ["seen", "clicked", "closed"]
+          }
+        }
+      }
+    },
+    premium_themes_cta: {
+      description: "User interacted with themes customization CTA in the popup menu, opening the themes section in options page",
+      data: {
+        description: "Information about the theme that was being promoted when clicked",
+        type: "object",
+        properties: {
+          theme: {
+            description: "The name of the theme being showcased when the user clicked",
+            type: "string",
+            enum: ["solarized", "solarized_light", "watermelon", "sunshine", "ocean"]
+          },
+          action: {
+            description: "Type of interaction with the themes customization CTA",
+            type: "string",
+            enum: ["seen", "clicked", "closed"]
+          }
+        }
+      }
+    },
+    free_dc_cta: {
+      description: "User interacted with Distraction Control promotional banner in the popup menu. This CTA promotes the premium Distraction Control feature with 'Block Floating Videos' message",
+      data: {
+        description: "Data about the user interaction with the Distraction Control promotional banner",
+        type: "object",
+        properties: {
+          action: {
+            description: "Type of interaction with the Distraction Control promotional banner",
+            type: "string",
+            enum: ["seen", "clicked", "closed"]
+          }
+        }
+      }
+    },
+    premium_dc_cta: {
+      description: "Premium user interacted with the enhanced Distraction Control CTA in the popup menu. This CTA highlights 'New Premium feature available!' to promote advanced distraction blocking options",
+      data: {
+        description: "Data about the user interaction with the Distraction Control CTA",
+        type: "object",
+        properties: {
+          action: {
+            description: "Type of interaction with the Distraction Control CTA",
+            type: "string",
+            enum: ["seen", "clicked", "closed"]
+          }
+        }
+      }
+    },
+    premium_upsell_cta: {
+      description: "User interacted with Premium upsell upgrade banner in the popup menu. This CTA displays 'Upgrade your AdBlock' message to encourage premium subscription",
+      data: {
+        description: "Data about the user interaction with the Premium upsell upgrade banner",
+        type: "object",
+        properties: {
+          action: {
+            description: "Type of interaction with the Premium upsell upgrade banner",
+            type: "string",
+            enum: ["seen", "clicked", "closed"]
+          }
+        }
+      }
+    },
+    premium_filter_list_cta: {
+      description: "User interacted with Premium filter list banner in the popup menu. This CTA displays 'Upgrade your AdBlock' message to encourage premium subscription",
+      data: {
+        description: "Data about the user interaction with the premium filter list CTA",
+        type: "object",
+        properties: {
+          action: {
+            description: "Type of interaction with the premium filter list CTA",
+            type: "string",
+            enum: ["seen", "clicked"]
+          }
+        }
+      }
+    },
+    data_collection_opt_out: {
+      description: "User opted out of data collection in the options page"
     }
   },
   smart_allowlisting: {

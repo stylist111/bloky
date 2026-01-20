@@ -18,6 +18,17 @@
 /* For ESLint: List any global identifiers used in this file below */
 /* global License, ServerMessages, getFormattedTabName */
 
+const premiumPaymentAdblockUiServerLogger = new modulesAsGlobal.ewe.telemetry.ServerLogger(
+  "adblock_ui",
+);
+
+const premiumTabNameMap = new Map([
+  ["mab", "premium"],
+  ["mab_themes", "themes"],
+  ["mab_image_swap", "image_swap"],
+  ["premium_filters", "premium_filters"],
+]);
+
 /* eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars */
 const MABPayment = (function mabPayment() {
   return {
@@ -65,9 +76,12 @@ const MABPayment = (function mabPayment() {
       ServerMessages.recordGeneralMessage("options_page_upsell_clicked");
     },
     userClickedPremiumCTA: () => {
-      ServerMessages.recordGeneralMessage(
-        `options_page_premium_cta_clicked_${getFormattedTabName()}`,
-      );
+      const openedTabName = getFormattedTabName();
+      premiumPaymentAdblockUiServerLogger.behavior("options_page_tab_premium_cta", {
+        tab: premiumTabNameMap.get(openedTabName),
+        action: "clicked",
+      });
+      ServerMessages.recordGeneralMessage(`options_page_premium_cta_clicked_${openedTabName}`);
     },
   };
 })();

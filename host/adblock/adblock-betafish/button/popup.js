@@ -162,7 +162,6 @@ const popupMenuDCCtaClosedKey = "popup_menu_dc_cta_closed";
 const popupMenuVPNCtaClosedKey = "popup_menu_vpn_cta_closed";
 
 const shown = {};
-const themeCTA = "";
 let itemClicked = false;
 
 const sendMessageWithNoResponse = function (message) {
@@ -354,6 +353,7 @@ const start = async function () {
       !info.whitelisted
     ) {
       show(["div_vpn_cta"]);
+      popupAdblockUIServerLogger.behavior("vpn_cta", { action: "seen" });
       sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "vpn_cta_seen" });
     } else if (
       // Premium CTAs
@@ -364,18 +364,23 @@ const start = async function () {
     ) {
       show(["div_premium_themes_cta"]);
       $("#div_premium_themes_cta").attr("data-theme-cta", info.popupMenuThemeCTA);
+      const theme = info.popupMenuThemeCTA ? info.popupMenuThemeCTA.replace("_theme", "") : "";
+      popupAdblockUIServerLogger.behavior("premium_themes_cta", { theme, action: "seen" });
       sendMessageWithNoResponse({
         command: "recordGeneralMessage",
         msg: "premium_themes_cta_seen",
-        additionalParams: { theme: info.popupMenuThemeCTA.replace("_theme", "") },
+        additionalParams: { theme },
       });
     } else if (info.showMABEnrollment && !userClosedCta && userClosedFreeDCCta) {
       show(["div_myadblock_enrollment_v2"]);
+      popupAdblockUIServerLogger.behavior("premium_upsell_cta", { action: "seen" });
     } else if (info.showMABEnrollment && !userClosedFreeDCCta) {
       show(["div_free_dc_cta"]);
+      popupAdblockUIServerLogger.behavior("free_dc_cta", { action: "seen" });
       sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "free_dc_cta_seen" });
     } else if (info.showDcCTA && !userClosedDCCta && !info.disabledSite) {
       show(["div_premium_dc_cta"]);
+      popupAdblockUIServerLogger.behavior("premium_dc_cta", { action: "seen" });
       sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "premium_dc_cta_seen" });
     }
 
@@ -424,6 +429,7 @@ const start = async function () {
   });
 
   selected("#div_myadblock_enrollment_v2", async () => {
+    popupAdblockUIServerLogger.behavior("premium_upsell_cta", { action: "clicked" });
     sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "myadblock_cta_clicked" });
     await browser.runtime.sendMessage({ command: "openTab", urlToOpen: pageInfo.premiumPayURL });
     closePopup();
@@ -431,6 +437,7 @@ const start = async function () {
 
   selected("#mab_new_cta_close", (event) => {
     event.stopPropagation();
+    popupAdblockUIServerLogger.behavior("premium_upsell_cta", { action: "closed" });
     sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "myadblock_cta_closed" });
     $("#div_myadblock_enrollment_v2").slideUp();
     storageSet(popupMenuCtaClosedKey, true);
@@ -439,6 +446,7 @@ const start = async function () {
 
   selected("#div_free_dc_cta", async () => {
     storageSet(popupMenuFreeDCCtaClosedKey, true);
+    popupAdblockUIServerLogger.behavior("free_dc_cta", { action: "clicked" });
     sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "free_dc_cta_clicked" });
     await browser.runtime.sendMessage({
       command: "openTab",
@@ -449,6 +457,7 @@ const start = async function () {
 
   selected("#div_free_dc_cta_close", (event) => {
     event.stopPropagation();
+    popupAdblockUIServerLogger.behavior("free_dc_cta", { action: "closed" });
     sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "free_dc_cta_closed" });
     $("#div_free_dc_cta").slideUp();
     storageSet(popupMenuFreeDCCtaClosedKey, true);
@@ -457,6 +466,7 @@ const start = async function () {
   selected("#div_vpn_cta", async (event) => {
     event.stopPropagation();
     storageSet(popupMenuVPNCtaClosedKey, true);
+    popupAdblockUIServerLogger.behavior("vpn_cta", { action: "clicked" });
     sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "vpn_cta_clicked" });
     await browser.runtime.sendMessage({
       command: "openTab",
@@ -467,6 +477,7 @@ const start = async function () {
 
   selected("#vpn_cta_close", (event) => {
     event.stopPropagation();
+    popupAdblockUIServerLogger.behavior("vpn_cta", { action: "closed" });
     sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "vpn_cta_closed" });
     $("#div_vpn_cta").slideUp();
     storageSet(popupMenuVPNCtaClosedKey, true);
@@ -474,7 +485,8 @@ const start = async function () {
 
   selected("#div_premium_themes_cta", async (event) => {
     event.stopPropagation();
-    const theme = themeCTA ? themeCTA.replace("_theme", "") : "";
+    const theme = info.popupMenuThemeCTA ? info.popupMenuThemeCTA.replace("_theme", "") : "";
+    popupAdblockUIServerLogger.behavior("premium_themes_cta", { theme, action: "clicked" });
     sendMessageWithNoResponse({
       command: "recordGeneralMessage",
       msg: "premium_themes_cta_clicked",
@@ -489,7 +501,8 @@ const start = async function () {
 
   selected("#close-themes-cta", (event) => {
     event.stopPropagation();
-    const theme = themeCTA ? themeCTA.replace("_theme", "") : "";
+    const theme = info.popupMenuThemeCTA ? info.popupMenuThemeCTA.replace("_theme", "") : "";
+    popupAdblockUIServerLogger.behavior("premium_themes_cta", { theme, action: "closed" });
     sendMessageWithNoResponse({
       command: "recordGeneralMessage",
       msg: "premium_themes_cta_closed",
@@ -502,6 +515,7 @@ const start = async function () {
   selected("#div_premium_dc_cta", async (event) => {
     event.stopPropagation();
     storageSet(popupMenuDCCtaClosedKey, true);
+    popupAdblockUIServerLogger.behavior("premium_dc_cta", { action: "clicked" });
     sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "premium_dc_cta_clicked" });
     await browser.runtime.sendMessage({
       command: "openTab",
@@ -513,6 +527,7 @@ const start = async function () {
   selected("#close-premium-dc-cta", (event) => {
     event.stopPropagation();
     storageSet(popupMenuDCCtaClosedKey, true);
+    popupAdblockUIServerLogger.behavior("premium_dc_cta", { action: "closed" });
     sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "premium_dc_cta_closed" });
     $("#div_premium_dc_cta").slideUp();
   });

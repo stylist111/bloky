@@ -52,6 +52,8 @@ export const processMessageResponse = (sendResponse, responseData) => {
   return Promise.resolve(responseData);
 };
 
+const messagingRespondersAdblockUiServerLogger = new ewe.telemetry.ServerLogger("adblock_ui");
+
 const uiPorts = new Map();
 const messageTypes = new Map([["settings", "settings.respond"]]);
 
@@ -224,6 +226,7 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendResponse({});
       break;
     case "dataCollectionOptOut":
+      messagingRespondersAdblockUiServerLogger.behavior("data_collection_opt_out");
       return ServerMessages.recordDataCollectionOptOutMessage();
     case "marketingOptOut":
       return ServerMessages.recordMarketingOptOutMessage();
