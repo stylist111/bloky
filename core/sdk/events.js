@@ -955,6 +955,26 @@ export default {
       }
     }
   },
+  customer_lifecycle: {
+    new_install_normal: {
+      description: "The extension was installed from the browser's official web store (Chrome Web Store, Firefox Add-ons, Microsoft Edge Add-ons)"
+    },
+    new_install_development: {
+      description: "The extension was installed manually in development mode, either as an unpacked directory or from a local .zip/.crx/.xpi package"
+    },
+    new_install_admin: {
+      description: "The extension was installed and managed by an administrator through a policy setting"
+    },
+    new_install_sideload: {
+      description: "The extension was installed by other software on the user's computer"
+    },
+    new_install_other: {
+      description: "The extension was installed through an unrecognized method not covered by other install types(normal/development/admin/sideload)"
+    },
+    new_install_unknown: {
+      description: "The extension was installed but the installation type could not be determined"
+    }
+  },
   new_tab: {
     command_ready: {
       description: "'create_tab' IPM command has passed all checks and new tab is going to be created at the next possible opportunity",
