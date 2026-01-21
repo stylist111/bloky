@@ -981,6 +981,9 @@ export default {
     },
     new_install_unknown: {
       description: "The extension was installed but the installation type could not be determined"
+    },
+    trial_license_expired: {
+      description: "The premium trial license has expired"
     }
   },
   new_tab: {
