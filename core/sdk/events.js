@@ -6,6 +6,9 @@ export default {
     support_icon_clicked: {
       description: "User clicked the support icon on the header of the Adblock popup"
     },
+    opt_out_acceptable_ads_clicked: {
+      description: "The user clicked the opt-out link to disable Acceptable Ads on the getadblock.com installed page"
+    },
     cm_pause_on_site: {
       description: "User right clicked on the page to open the context menu and selected 'Pause on this site' from the AdBlock section."
     },
@@ -232,6 +235,11 @@ export default {
           }
         }
       }
+    }
+  },
+  getadblock: {
+    opt_out_acceptable_ads_clicked: {
+      description: "The user clicked the opt-out link to disable Acceptable Ads on the getadblock.com installed page"
     }
   },
   cdp: {

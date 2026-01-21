@@ -41,12 +41,15 @@ async function receiveMessage(event) {
 
 window.addEventListener("message", receiveMessage, false);
 
+const serverLogger = new modulesAsGlobal.ewe.telemetry.ServerLogger("adblock_ui");
+
 async function unsubscribeAcceptableAds(event) {
   if (event.isTrusted === false) {
     return;
   }
   event.preventDefault();
   await browser.runtime.sendMessage({ command: "unsubscribe", adblockId: "acceptable_ads" });
+  serverLogger.behavior("opt_out_acceptable_ads_clicked");
   await browser.runtime.sendMessage({
     command: "recordGeneralMessage",
     msg: "disableacceptableads_clicked",
