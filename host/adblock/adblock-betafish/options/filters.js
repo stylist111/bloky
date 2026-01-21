@@ -1149,10 +1149,10 @@ async function onFilterChangeHandler(action, items) {
 async function initPremiumFiltersCTA() {
   const userClosedpremiumFiltersCTA = storageGet(premiumFiltersCtaKey);
   if (!userClosedpremiumFiltersCTA) {
-    filtersAdblockUiServerLogger.behavior("premium_filter_list_cta", { action: "clicked" });
-    ServerMessages.recordGeneralMessage("premium_filter_list_cta_clicked");
     $("#premium-filter-list-cta").fadeIn(1000);
     $("#btnPremiumFilterLearnMore").on("click", () => {
+      filtersAdblockUiServerLogger.behavior("premium_filter_list_cta", { action: "clicked" });
+      ServerMessages.recordGeneralMessage("premium_filter_list_cta_clicked");
       storageSet(premiumFiltersCtaKey, true);
       $("#premium-filter-list-cta").fadeOut(1000);
       activateTab("#mab");
