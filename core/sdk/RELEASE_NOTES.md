@@ -4,6 +4,7 @@
 
 - Fixed `$genericblock` exception filters incorrectly allowing `$addheader`
   rules in MV2 and not being logged in MV2/MV3 (EXT-1126).
+- Fixed `$addheader` rules that apply to response headers in Manifest v2.
 
 ## CDP
 

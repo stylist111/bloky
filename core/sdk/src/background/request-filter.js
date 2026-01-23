@@ -602,13 +602,15 @@ AddRequestHeaderFilter.prototype.eventArgs = [
     types: Object.values(browser.webRequest.ResourceType),
     urls: ["http://*/*", "https://*/*"]
   },
-  // On Chromium the headers cannot be modified
-  // without specifying the "extraHeaders" param
-  browser.declarativeNetRequest ? ["requestHeaders"] : (
-    browser.webRequest.OnBeforeSendHeadersOptions ?
-      Object.values(browser.webRequest.OnBeforeSendHeadersOptions) :
-      ["blocking", "requestHeaders"]
-  )
+  browser.declarativeNetRequest ?
+    ["requestHeaders"] :
+    // On Chromium the headers modified are not available without specifying
+    // the "extraHeaders" param. However, Firefox does not support this param.
+    ["blocking", "requestHeaders", "extraHeaders"].filter(option =>
+      // OnBeforeSendHeadersOptions may not exist when running unit tests
+      Object.values(browser.webRequest.OnBeforeSendHeadersOptions || {})
+        .includes(option)
+    )
 ];
 
 class AddResponseHeaderFilter extends AddHeaderFilterBase {
@@ -627,15 +629,16 @@ AddResponseHeaderFilter.prototype.eventArgs = [
     types: Object.values(browser.webRequest.ResourceType),
     urls: ["http://*/*", "https://*/*"]
   },
-  // On Chromium the headers cannot be modified
-  // without specifying the "extraHeaders" param
-  browser.declarativeNetRequest ? ["responseHeaders"] : (
-    browser.webRequest.OnHeadersReceivedOptions ?
-      Object.values(browser.webRequest.OnHeadersReceivedOptions) :
-      ["blocking", "responseHeaders"]
-  )
+  browser.declarativeNetRequest ?
+    ["responseHeaders"] :
+    // On Chromium the headers modified are not available without specifying
+    // the "extraHeaders" param. However, Firefox does not support this param.
+    ["blocking", "responseHeaders", "extraHeaders"].filter(option =>
+      // OnHeadersReceivedOptions may not exist when running unit tests
+      Object.values(browser.webRequest.OnHeadersReceivedOptions || {})
+        .includes(option)
+    )
 ];
-
 
 class RequestCompletionFilter extends BaseFilter {
   filter(details) {

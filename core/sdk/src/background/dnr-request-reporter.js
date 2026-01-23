@@ -371,19 +371,25 @@ export function start() {
 
   browser.webRequest.onBeforeRedirect.addListener(onBeforeRedirect, eventArgs);
   browser.webRequest.onErrorOccurred.addListener(onErrorOccurred, eventArgs);
-  // On Chromium the headers modified are not available
-  // without specifying the "extraHeaders" param
-  browser.webRequest.onCompleted.addListener(onCompleted, eventArgs,
-    browser.webRequest.OnCompletedOptions ?
-      Object.values(browser.webRequest.OnCompletedOptions) :
-      ["responseHeaders"]
+  browser.webRequest.onCompleted.addListener(
+    onCompleted,
+    eventArgs,
+    // On Chromium the headers modified are not available without specifying
+    // the "extraHeaders" param. However, Firefox does not support this param.
+    ["responseHeaders", "extraHeaders"].filter(option =>
+      Object.values(browser.webRequest.OnCompletedOptions || {})
+        .includes(option)
+    )
   );
-  // On Chromium the headers modified are not available
-  // without specifying the "extraHeaders" param
-  browser.webRequest.onSendHeaders.addListener(onSendHeaders, eventArgs,
-    browser.webRequest.OnSendHeadersOptions ?
-      Object.values(browser.webRequest.OnSendHeadersOptions) :
-      ["requestHeaders"]
+  browser.webRequest.onSendHeaders.addListener(
+    onSendHeaders,
+    eventArgs,
+    // On Chromium the headers modified are not available without specifying
+    // the "extraHeaders" param. However, Firefox does not support this param.
+    ["requestHeaders", "extraHeaders"].filter(option =>
+      Object.values(browser.webRequest.OnSendHeadersOptions || {})
+        .includes(option)
+    )
   );
 
   started = true;
