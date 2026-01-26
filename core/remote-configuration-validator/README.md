@@ -23,6 +23,7 @@ Notes:
 - The `version` property in this project's `package.json` file should be updated in the same MR as any changes to this respository that require a new version to be published.
 - When the MR for the changes in this project are merged into the main branch of the mono-repo, a CI/CD script will publish
   a new version of this project to this project package registry (https://gitlab.com/eyeo/browser-extensions-and-premium/extensions/extensions/-/packages).
+- The version also needs to be published to npm's package registry by running `npm publish -w @eyeo/remote-configuration-validator`, as some projects depend on it being available there.
 - A related MR for the [`ab-testing-config`](https://gitlab.com/eyeo/filters/ab-testing-config) project will be required, including an update to the `version` property.  The new version of this
   project should be published before the `ab-testing-config` MR is merged to avoid conflicts.
 - Both MRs should reference each other.
