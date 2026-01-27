@@ -66,7 +66,7 @@ function throwIfInvalidPartialDomain(hostname, partialDomain) {
 
   const baseDomain = getBaseDomain(hostname);
 
-  for (let suffix of domainSuffixes(hostname)) {
+  for (const suffix of domainSuffixes(hostname)) {
     if (suffix === partialDomain) {
       return;
     }

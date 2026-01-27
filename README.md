@@ -180,12 +180,18 @@ The orchestration of these tasks, for example having the `lint` script run
 
 ## Code Style
 
-The code style of the monorepo is yet to be unified between the
-packages. However, each package may currently define its own linting
-rules. These are run for the whole monorepo at once.
+The monorepo has a root level eslint and prettier config. Each package may
+choose to define define its own additional linting tasks. These are run for the
+whole monorepo at once.
 
 ```sh
 npm run lint
+```
+
+Some style issues can be automatically fixed by running the `lint-fix` command.
+
+```sh
+npm run lint-fix
 ```
 
 ## Troubleshooting

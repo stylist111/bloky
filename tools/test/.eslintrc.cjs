@@ -1,7 +1,14 @@
 module.exports = {
-  extends: "../../core/configs/.eslintrc.js",
+  root: true,
+  parserOptions: {
+    ecmaVersion: "latest",
+    sourceType: "module",
+  },
   env: {
     node: true,
+    browser: true,
+    es2021: true,
+    webextensions: true,
   },
   globals: {
     driver: true,

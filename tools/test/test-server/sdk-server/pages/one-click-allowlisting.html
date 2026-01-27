@@ -273,7 +273,7 @@
   function maliciousProxyObject() {
     let ev = new CustomEvent("domain_allowlisting_request");
     let proxy = new Proxy(ev, {
-      get(target, property, receiver) {
+      get(target, property) {
         if (property === "detail") {
           eventHandlerDetected();
         }

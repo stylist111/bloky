@@ -18,7 +18,6 @@
   "devDependencies": {
     "@eyeo/get-browser-binary": "0.23.1",
     "chrome-remote-interface": "0.33.3",
-    "eslint": "8.34.0",
     "expect": "29.7.0",
     "express": "^4.17.1",
     "lighthouse": "^11.7.0",

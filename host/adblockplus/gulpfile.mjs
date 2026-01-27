@@ -74,7 +74,7 @@ if (args.partial === "true") {
 
 async function getBuildSteps(options) {
   const translations =
-    options.target == "chrome" ? tasks.chromeTranslations : tasks.translations;
+    options.target === "chrome" ? tasks.chromeTranslations : tasks.translations;
   const buildSteps = [];
   const addonName = `${options.basename}${options.target}`;
 
@@ -114,7 +114,7 @@ async function getBuildOptions(isDevenv, isSource) {
     isDevenv,
     target: args.target,
     channel: args.channel,
-    archiveType: args.target == "chrome" ? ".zip" : ".xpi",
+    archiveType: args.target === "chrome" ? ".zip" : ".xpi",
     manifestVersion: args.manifest_version
   };
 
@@ -145,7 +145,7 @@ async function getBuildOptions(isDevenv, isSource) {
     opts.output = gulp.dest(targetDir);
   } else {
     opts.baseversion = opts.version;
-    if (opts.channel == "development") {
+    if (opts.channel === "development") {
       const versionParts = opts.version.split(".", 4);
       if (versionParts.length > 3) {
         console.warn("Version string has more than three pre-defined segments");

@@ -17,12 +17,6 @@
     "build": "npm run $ build.devenv",
     "build:release": "npm run $ build.release",
     "build:source": "gulp source",
-    "eslint": "npm run $ lint.js",
-    "eslint-fix": "npm run $ lint-fix.js",
-    "eslint:legacy": "npm run $ lint.js.legacy",
-    "eslint:legacy-fix": "eslint --fix --ext .js,.mjs --ignore-path ../../.gitignore --ignore-pattern /adblockplusui/ adblock-betafish/",
-    "eslint:love": "npm run $ lint.js.love",
-    "eslint:love-fix": "eslint --fix --ignore-path ../../.gitignore src/",
     "html-hint": "npm run $ lint.html",
     "json-bundle": "node build/jsonBundle.cjs",
     "lint": "npm run $ lint",
@@ -58,14 +52,7 @@
     },
     "lint": {
       "html": "htmlhint adblock-betafish/ -R ./rules/",
-      "js": {
-        "legacy": "eslint --ext .js,.mjs,.ts adblock-betafish/ src/ test/",
-        "love": "eslint --ext .ts adblock-betafish/ src/"
-      },
       "ts": "tsc --noEmit"
-    },
-    "lint-fix": {
-      "js": "eslint --fix --ext .js,.mjs adblock-betafish/ src/ test/"
     },
     "test": {
       "end-to-end": {
@@ -98,21 +85,11 @@
     "@testing-library/jest-dom": "6.6.3",
     "@testing-library/react": "16.2.0",
     "@types/jest": "28.1.6",
-    "@typescript-eslint/eslint-plugin": "6.11.0",
-    "@typescript-eslint/parser": "6.11.0",
     "@vitejs/plugin-react": "4.3.4",
     "adm-zip": "0.5.9",
     "chai": "4.3.6",
     "dmg": "0.1.0",
     "dotenv-webpack": "8.1.0",
-    "eslint": "8.34.0",
-    "eslint-config-airbnb-base": "13.1.0",
-    "eslint-config-love": "43.1.0",
-    "eslint-config-prettier": "9.1.0",
-    "eslint-plugin-import": "2.27.5",
-    "eslint-plugin-n": "16.2.0",
-    "eslint-plugin-no-unsanitized": "4.0.2",
-    "eslint-plugin-promise": "6.1.1",
     "expect": "29.7.0",
     "gulp-gzip": "1.4.2",
     "gulp-tar": "3.1.0",

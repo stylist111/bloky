@@ -1,6 +1,9 @@
 /* eslint-env node */
 
+const path = require("path");
+
 module.exports = {
+  root: true,
   env: {
     browser: true,
     jquery: true,
@@ -22,6 +25,13 @@ module.exports = {
     curly: ["error", "all"],
     "guard-for-in": "off",
     "import/prefer-default-export": "off",
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        devDependencies: ["**/test/**"],
+        packageDir: path.join(__dirname, ".."),
+      },
+    ],
     "no-plusplus": ["error", { allowForLoopAfterthoughts: true }],
     "no-global-assign": ["error", { exceptions: ["savedData"] }],
     "no-unsanitized/method": "error",
@@ -156,6 +166,12 @@ module.exports = {
         sourceType: "module",
         allowImportExportEverywhere: true,
         ecmaVersion: 13,
+      },
+    },
+    {
+      files: ["*.jsx"],
+      rules: {
+        strict: "off", // Disable 'strict' rule for JSX files
       },
     },
   ],

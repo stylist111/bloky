@@ -1,5 +1,7 @@
 "use strict";
 
+const path = require("path");
+
 module.exports = {
   env: {
     mocha: true,
@@ -16,7 +18,7 @@ module.exports = {
       "error",
       {
         devDependencies: true,
-        packageDir: "./",
+        packageDir: path.join(__dirname, "../.."),
       },
     ],
     "import/extensions": "off",

@@ -20,7 +20,7 @@
     "build:types": "tsc --project tsconfig.json --emitDeclarationOnly",
     "build": "tsc --project tsconfig.json",
     "build:release": "tsc --project tsconfig.json",
-    "lint": "eslint --ext .cjs,.js,.mjs,.ts ./src && tsc --noEmit",
+    "lint": "tsc --noEmit",
     "test": "jest"
   },
   "peerDependencies": {
@@ -35,12 +35,6 @@
     "@babel/preset-typescript": "7.26.0",
     "@types/jest": "29.5.12",
     "babel-jest": "29.7.0",
-    "eslint": "8.34.0",
-    "eslint-config-eyeo": "3.2.0",
-    "eslint-config-love": "43.1.0",
-    "eslint-config-prettier": "9.1.0",
-    "eslint-plugin-n": "16.2.0",
-    "eslint-plugin-promise": "6.1.1",
     "jest": "29.7.0",
     "jest-environment-jsdom": "29.7.0",
     "jest-webextension-mock": "3.8.9"

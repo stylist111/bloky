@@ -71,7 +71,7 @@ build:release:
 lint:
   extends: .base
   script:
-    - npm run lint -- $SINCE
+    - npm run lint
 
 test:
   extends: .base

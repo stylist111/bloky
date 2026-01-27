@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 import path from "path";
 import { fileURLToPath } from "url";
 import * as fs from "fs/promises";

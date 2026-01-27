@@ -40,7 +40,7 @@ if (args.outputDirectory) {
 }
 
 async function getBuildSteps(options) {
-  const translations = options.target == "chrome" ? tasks.chromeTranslations : tasks.translations;
+  const translations = options.target === "chrome" ? tasks.chromeTranslations : tasks.translations;
   const buildSteps = [];
   const addonName = `${options.basename}${options.target}`;
 

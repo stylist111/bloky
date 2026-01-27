@@ -28,7 +28,7 @@ export async function execNpm(cmd, ...args) {
       if (code === 0) {
         resolve();
       } else {
-        reject("Received error code");
+        reject(new Error("Received error code"));
       }
     });
     proc.on("error", reject);

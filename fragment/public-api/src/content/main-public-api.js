@@ -178,6 +178,7 @@ export function mainPublicApi({ requestEvent, responseEvent, integrations }) {
   function init() {
     // Define the publicAPI on the window object
     // If multiple extensions are available only the first one will define the API
+    // eslint-disable-next-line no-prototype-builtins
     if (!window.hasOwnProperty("sendExtCommand")) {
       Object.defineProperty(window, "sendExtCommand", {
         value: sendExtCommand,

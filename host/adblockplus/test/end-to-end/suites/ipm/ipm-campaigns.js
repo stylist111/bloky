@@ -96,6 +96,7 @@ export default (fragmentType) => {
     const { capabilities } = payload.ipm;
     let { pingAlarm } = await driver.executeAsyncScript(async (callback) => {
       pingAlarm = await browser.alarms.get("ipm_ping_schedule");
+      // eslint-disable-next-line n/no-callback-literal
       callback({ pingAlarm });
     });
 

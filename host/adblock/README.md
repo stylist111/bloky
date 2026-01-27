@@ -144,7 +144,7 @@ We use a community code style enforced by [eslint](https://eslint.org) for JavaS
 The following npm commands are then available:
 
 - `npm run lint` runs all linters and prints out all violations.
-- `npm run --workspace host/adblock eslint-fix` runs eslint and automatically fixes JavaScript style violations in place (be sure to commit before running this command in case you need to revert the changes eslint makes).
+- `npm run lint-fix` runs all linters and applies automatic fixes.
 - `npm run --workspace host/adblock html-hint` runs HTMLhint and flags any issues with the HTML templates such as missing `DOCTYPE`, tags and/or attributes. This does not run on pre-commits so it must be run manually. New AdBlock custom attributes should be added in `./rules/static/custom_attributes.json`. If mistakenly flagged, standard HTML attributes should be added in `./rules/static/aria_attributes.json` or `./rules/static/mapped_attributes.json`.
 
 ### Aliases

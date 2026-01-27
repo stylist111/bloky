@@ -474,8 +474,10 @@ npm run -w @eyeo/webext-ad-filtering-solution docs
 
 ### Linting the code
 
+Linting is run from the root of the monorepo.
+
 ```
-npm run lint -- --scope @eyeo/webext-ad-filtering-solution
+npm run lint
 ```
 
 </div>

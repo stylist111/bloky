@@ -67,8 +67,9 @@ If you want to disable headless mode on the browser tests, set the
 
 ## Linting
 
-You can lint the code using [ESLint](http://eslint.org) by running
-`npm run lint -- --scope adblockpluscore`.
+Linting is run from the root of the monorepo.
+
+`npm run lint`.
 
 ## Documentation
 

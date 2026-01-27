@@ -12,8 +12,7 @@ By default most of the style is enforced by the linter, eslint. We use
 the style provided by the `eslint-config-eyeo` package, with some
 overrides, notably the position of the open curly brace. (see below)
 
-Run `npm run lint -- --scope adblockpluscore` to run the linter on the code
-base.
+Run `npm run lint` to run the linter on the code base.
 
 ## Formatting
 
