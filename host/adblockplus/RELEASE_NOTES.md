@@ -1,5 +1,9 @@
 # Unreleased
 
+# 4.32.6 - 2026-01-27
+
+This release contains only minor updates and under-the-hood changes.
+
 - Updated snippets to 2.5.0
 
 # 4.32.5 - 2026-01-20
