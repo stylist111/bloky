@@ -69,8 +69,6 @@ module.exports = {
           "synchronize_diff_too_old",
           "synchronize_dnr_error",
           "error_msg_header",
-          "error_msg_help_us",
-          "error_msg_thank_you",
           "error_msg_reload",
           "error_msg_help",
           "error_msg_partI",

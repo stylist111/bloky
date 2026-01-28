@@ -1909,18 +1909,6 @@
     "message": "Maaf, menu AdBlock mempunyai masalah untuk memuat.",
     "description": "DO NOT TRANSLATE The text on the popup menu when an error has occurred"
   },
-  "error_msg_help_us_partI": {
-    "message": "Bantu kami selesaikan masalah ini  ",
-    "description": "DO NOT TRANSLATE"
-  },
-  "error_msg_help_us_partII": {
-    "message": " dengan menghantar data debug kepada kami.",
-    "description": "DO NOT TRANSLATE"
-  },
-  "error_msg_thank_you": {
-    "message": "Terima kasih",
-    "description": "The text on the popup menu when an error has occurred"
-  },
   "error_msg_reload_partI": {
     "message": "Seterusnya, cuba memuatkan semula sambungan dengan ",
     "description": "DO NOT TRANSLATE"

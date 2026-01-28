@@ -1995,18 +1995,6 @@
     "message": "We're sorry, the AdBlock menu had trouble loading.",
     "description": "DO NOT TRANSLATE The text on the popup menu when an error has occurred"
   },
-  "error_msg_help_us_partI": {
-    "message": "Help ons om dit probleem op te lossen ",
-    "description": "DO NOT TRANSLATE"
-  },
-  "error_msg_help_us_partII": {
-    "message": " by sending us some debug data.",
-    "description": "DO NOT TRANSLATE"
-  },
-  "error_msg_thank_you": {
-    "message": "Bedankt",
-    "description": "The text on the popup menu when an error has occurred"
-  },
   "error_msg_reload_partI": {
     "message": "Next, try reloading the extension by ",
     "description": "DO NOT TRANSLATE"

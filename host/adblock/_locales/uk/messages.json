@@ -1783,10 +1783,6 @@
     "message": "Ой!",
     "description": "DO NOT TRANSLATE The text on the popup menu when an error has occurred"
   },
-  "error_msg_thank_you": {
-    "message": "Дякуємо",
-    "description": "The text on the popup menu when an error has occurred"
-  },
   "generaloptions2": {
     "message": "Основні налаштування",
     "description": "Title of one of the Options page tabs"

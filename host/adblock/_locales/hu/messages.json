@@ -1868,10 +1868,6 @@
     "message": "Hoppá!",
     "description": "DO NOT TRANSLATE The text on the popup menu when an error has occurred"
   },
-  "error_msg_thank_you": {
-    "message": "Köszönöm",
-    "description": "The text on the popup menu when an error has occurred"
-  },
   "generaloptions2": {
     "message": "Általános opciók",
     "description": "Title of one of the Options page tabs"

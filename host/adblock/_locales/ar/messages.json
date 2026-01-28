@@ -1943,10 +1943,6 @@
     "message": "المعذرة!",
     "description": "DO NOT TRANSLATE The text on the popup menu when an error has occurred"
   },
-  "error_msg_thank_you": {
-    "message": "شكرا لك",
-    "description": "The text on the popup menu when an error has occurred"
-  },
   "generaloptions2": {
     "message": "خيارات عامة",
     "description": "Title of one of the Options page tabs"

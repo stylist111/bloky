@@ -1787,10 +1787,6 @@
     "message": "Oi!",
     "description": "DO NOT TRANSLATE The text on the popup menu when an error has occurred"
   },
-  "error_msg_thank_you": {
-    "message": "Takk",
-    "description": "The text on the popup menu when an error has occurred"
-  },
   "generaloptions2": {
     "message": "Generelle Innstillinger",
     "description": "Title of one of the Options page tabs"

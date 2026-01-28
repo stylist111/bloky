@@ -1913,18 +1913,6 @@
     "message": "Mohon maaf, menu AdBlock terjadi kesalahan memuat.",
     "description": "DO NOT TRANSLATE The text on the popup menu when an error has occurred"
   },
-  "error_msg_help_us_partI": {
-    "message": "Bantu kami mengatasi masalah ini  ",
-    "description": "DO NOT TRANSLATE"
-  },
-  "error_msg_help_us_partII": {
-    "message": " dengan mengirimkan beberapa data debug.",
-    "description": "DO NOT TRANSLATE"
-  },
-  "error_msg_thank_you": {
-    "message": "Terima kasih",
-    "description": "The text on the popup menu when an error has occurred"
-  },
   "error_msg_reload_partI": {
     "message": "Selanjutnya, coba muat ulang ekstensi berdasarkan ",
     "description": "DO NOT TRANSLATE"

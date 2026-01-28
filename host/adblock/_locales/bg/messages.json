@@ -1771,10 +1771,6 @@
     "message": "Изпрати Съобщение",
     "description": "Text on the MyAdBlock feedback button"
   },
-  "error_msg_thank_you": {
-    "message": "Благодарим Ви",
-    "description": "The text on the popup menu when an error has occurred"
-  },
   "generaloptions2": {
     "message": "Общи Настройки",
     "description": "Title of one of the Options page tabs"

@@ -22,6 +22,7 @@
 let errorOccurred = false;
 
 const popupAdblockUIServerLogger = new modulesAsGlobal.ewe.telemetry.ServerLogger("adblock_ui");
+const popupSentry = modulesAsGlobal.ewe.sentry;
 
 const useFlexDisplayElements = [
   "allowlisted_subsection",
@@ -34,23 +35,6 @@ const useFlexDisplayElements = [
 const betaExtId = "pljaalgmajnlogcgiohkhdmgpomjcihk";
 
 const processError = function (err, stack, message) {
-  const errorPayload = {
-    u: "unknown",
-    f: "e",
-    o: "unknown",
-    l: "unknown",
-    t: "error",
-    st: "popupmenu",
-  };
-
-  const sendErrorPayload = function () {
-    const payload = { event: "error", payload: errorPayload };
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", "https://log.getadblock.com/v2/record_log.php", true);
-    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-    xhr.send(JSON.stringify(payload));
-  };
-
   // the translation messages are hard code in the JS to avoid any dependency
   // on Chrome extension APIs during error handling
   const translateErrorMsg = function (key) {
@@ -60,15 +44,6 @@ const processError = function (err, stack, message) {
       },
       error_msg_partI: {
         en: "We're sorry, the AdBlock menu had trouble loading.",
-      },
-      error_msg_help_us_partI: {
-        en: "Help us resolve this problem ",
-      },
-      error_msg_help_us_partII: {
-        en: " by sending us some debug data.",
-      },
-      error_msg_thank_you: {
-        en: "Thank you",
       },
       error_msg_reload_partI: {
         en: "Next, try reloading the extension by ",
@@ -88,6 +63,8 @@ const processError = function (err, stack, message) {
     return msg[locale] || msg.en;
   };
 
+  const errorPayload = {};
+
   errorOccurred = true;
   errorPayload.msg = err.message || message || "no message";
   errorPayload.src = err.source || stack || "no source";
@@ -97,15 +74,16 @@ const processError = function (err, stack, message) {
   if (typeof err === "string") {
     errorPayload.msg = err;
   }
+
   const errorMsgDiv = document.getElementById("div_status_error");
   if (errorMsgDiv) {
-    selectedOnce(document.getElementById("errorreport"), () => {
-      sendErrorPayload();
-      const firstMsg = document.getElementById("first_msg");
-      firstMsg.style.display = "none";
-      const secondMsg = document.getElementById("second_msg");
-      secondMsg.style.display = "block";
-    });
+    // send error to Sentry
+    const error = new Error(`Popup menu error: ${errorPayload.msg}`);
+    error.name = "PopupMenuError";
+    error.stack =
+      `Popup menu error: ${errorPayload.msg}\n` +
+      `at ${errorPayload.src}:${errorPayload.line}:${errorPayload.col}`;
+    popupSentry.reportError(error);
 
     const reloadAnchor = document.getElementById("reload");
     if (browser && browser.runtime && browser.runtime.reload) {

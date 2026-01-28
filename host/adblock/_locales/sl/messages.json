@@ -1575,10 +1575,6 @@
     "message": "Pošlji povratne informacije",
     "description": "Text on the MyAdBlock feedback button"
   },
-  "error_msg_thank_you": {
-    "message": "Hvala!",
-    "description": "The text on the popup menu when an error has occurred"
-  },
   "generaloptions2": {
     "message": "Splošne nastavitve",
     "description": "Title of one of the Options page tabs"

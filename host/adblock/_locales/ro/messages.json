@@ -1983,18 +1983,6 @@
     "message": "Ne pare rău, meniul AdBlock a avut probleme la încărcare.",
     "description": "DO NOT TRANSLATE The text on the popup menu when an error has occurred"
   },
-  "error_msg_help_us_partI": {
-    "message": "Ajutați-ne să rezolvăm această problemă  ",
-    "description": "DO NOT TRANSLATE"
-  },
-  "error_msg_help_us_partII": {
-    "message": " prin trimiterea unor date de depanare.",
-    "description": "DO NOT TRANSLATE"
-  },
-  "error_msg_thank_you": {
-    "message": "Vă mulțumim",
-    "description": "The text on the popup menu when an error has occurred"
-  },
   "error_msg_reload_partI": {
     "message": "Apoi, încercați reîncărcarea extensiei ",
     "description": "DO NOT TRANSLATE"
