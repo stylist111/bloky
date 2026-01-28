@@ -15,12 +15,39 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//
+// safari-polyfill.js
+//
+// This file provides SDK-specific Safari functionality that requires
+// ES module exports. Basic polyfills are in safari-polyfill-early.js
+// which is injected at bundle start via webpack BannerPlugin.
+//
+// This file handles:
+// - History state change listener shim (onHistoryStateUpdated)
+// - waitForWebNavigation async helper
+// - Ensuring globalThis.browser is set
+//
+
 /* eslint-disable no-console */
 
 import browser from "webextension-polyfill";
 import {log} from "./safari-logs.js";
 
-// Using `console` as `debugging` module might not be yet initialized.
+// IMPORTANT: The SDK uses globalThis.browser internally (via browser.js
+// export), so we must ensure globalThis.browser points to our polyfilled
+// browser object. The early polyfill patches it, but we ensure it's set here
+// in case the module loads before the early polyfill in some build configs.
+if (!globalThis.browser) {
+  log("Setting globalThis.browser to webextension-polyfill browser");
+  globalThis.browser = browser;
+}
+
+// =========================================================================
+// HISTORY STATE CHANGE LISTENER SHIM
+// =========================================================================
+
+// Safari doesn't support webNavigation.onHistoryStateUpdated, so we create
+// a shim that receives events from content scripts via messaging.
 
 let historyApiPrototype = {
   __listeners: new Map(),
@@ -40,6 +67,10 @@ let historyApiPrototype = {
 
 let safariOnHistoryStateUpdated = Object.create(historyApiPrototype);
 
+// =========================================================================
+// WAIT FOR WEB NAVIGATION
+// =========================================================================
+
 async function waitForWebNavigation() {
   return new Promise(r => {
     function checkWebNavigation() {
@@ -58,105 +89,27 @@ async function waitForWebNavigation() {
   });
 }
 
+// =========================================================================
+// PATCH FOR SAFARI
+// =========================================================================
+
+/**
+ * Apply Safari-specific patches for the SDK.
+ *
+ * Basic polyfills (webRequest, DNR, runtime, etc.) are handled by
+ * safari-polyfill-early.js which runs before any modules load.
+ *
+ * This function handles:
+ * - Waiting for webNavigation to be available (if doWaitForWebNavigation=true)
+ * - Patching onHistoryStateUpdated with our shim
+ *
+ * @param {boolean} doWaitForWebNavigation - Whether to wait for webNavigation
+ *   and patch onHistoryStateUpdated. Default is true.
+ */
 export async function patchForSafari(doWaitForWebNavigation = true) {
-  log("patchForSafari() patching for safari ...");
+  log("patchForSafari() called, doWaitForWebNavigation=" + doWaitForWebNavigation);
+
   try {
-    // Polyfill browser.webRequest namespace on Safari < iOS 18
-    if (!browser.webRequest) {
-      console.warn("Polyfilling missing browser.webRequest namespace");
-      browser.webRequest = {};
-    }
-    // Polyfill the missing ResourceType enum if it is not already defined.
-    if (!browser.webRequest.ResourceType) {
-      console.debug("Polyfilling webRequest.ResourceType");
-      browser.webRequest.ResourceType = {
-        CSP_REPORT: "csp_report",
-        FONT: "font",
-        IMAGE: "image",
-        MAIN_FRAME: "main_frame",
-        MEDIA: "media",
-        OBJECT: "object",
-        OTHER: "other",
-        PING: "ping",
-        SCRIPT: "script",
-        STYLESHEET: "stylesheet",
-        SUB_FRAME: "sub_frame",
-        // WEBBUNDLE: "webbundle", // not supported by Safari
-        WEBSOCKET: "websocket",
-        XMLHTTPREQUEST: "xmlhttprequest"
-      };
-    }
-    // Polyfill common webRequest events as no-ops
-    [
-      "onBeforeRequest",
-      "onBeforeSendHeaders",
-      "onHeadersReceived",
-      "onResponseStarted",
-      "onBeforeRedirect",
-      "onCompleted",
-      "onErrorOccurred"
-    ].forEach(eventName => {
-      if (!browser.webRequest[eventName]) {
-        browser.webRequest[eventName] = {
-          addListener() {
-            console.warn(`Stub ${eventName}.addListener called`);
-          },
-          removeListener() {},
-          hasListener() {
-            return false;
-          }
-        };
-      }
-    });
-
-    if (!browser.runtime.OnInstalledReason) {
-      console.debug("Patching runtime.OnInstalledReason");
-      browser.runtime.OnInstalledReason = {
-        // Other enum values are not used in the SDK at the moment
-        UPDATE: "update"
-      };
-    }
-
-    if (!browser.webNavigation.onCreatedNavigationTarget) {
-      console.debug("Patching webNavigation.onCreatedNavigationTarget");
-      browser.webNavigation.onCreatedNavigationTarget = {
-        addListener() {
-          // not implemented
-          console.warn("Stub webNavigation.addListener() called");
-        }
-      };
-    }
-
-    // browser.declarativeNetRequest is only available under Manifest v3,
-    // so we shouldn't polyfill it, in case we're running under Manifest v2
-    if (browser.declarativeNetRequest) {
-      if (!browser.declarativeNetRequest.getSessionRules) {
-        console.debug("Patching declarativeNetRequest.getSessionRules");
-        browser.declarativeNetRequest.getSessionRules = async function() {
-          // not implemented
-          console.warn("Stub declarativeNetRequest.getSessionRules() called");
-          return [];
-        };
-      }
-
-      if (!browser.declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_RULES) {
-        console.debug("Patching declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_RULES");
-        browser.declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_RULES = 5000;
-      }
-    }
-
-    // browser.scripting is only available under Manifest v3,
-    // so we shouldn't polyfill it, in case we're running under Manifest v2
-    if (browser.scripting) {
-      if (!browser.scripting.ExecutionWorld) {
-        console.debug("Patching scripting.ExecutionWorld");
-        browser.scripting.ExecutionWorld = {
-          ISOLATED: "ISOLATED",
-          MAIN: "MAIN"
-        };
-      }
-    }
-
     if (doWaitForWebNavigation) {
       console.log("webNavigation", browser.webNavigation);
       log("webNavigation before await:");
@@ -164,6 +117,8 @@ export async function patchForSafari(doWaitForWebNavigation = true) {
       await waitForWebNavigation();
       log("webNavigation after await:");
       log(browser.webNavigation);
+
+      // Patch onHistoryStateUpdated with our shim if not already present
       if (!browser.webNavigation.onHistoryStateUpdated) {
         console.debug("Patching onHistoryStateUpdated");
         browser.webNavigation.onHistoryStateUpdated =
@@ -175,12 +130,26 @@ export async function patchForSafari(doWaitForWebNavigation = true) {
     }
   }
   catch (e) {
-    console.error("Failed to polyfill for Safari:", e);
+    console.error("Failed to patch Safari:", e);
   }
 }
 
-export function onHistoryStateUpdatedSafari(
-  tabId, frameId, event) {
+// =========================================================================
+// HISTORY STATE UPDATE HANDLER
+// =========================================================================
+
+/**
+ * Handle history state update events from Safari content scripts.
+ *
+ * Safari doesn't support webNavigation.onHistoryStateUpdated natively,
+ * so content scripts send messages when they detect history state changes.
+ * This function routes those events to registered listeners.
+ *
+ * @param {number} tabId - The tab ID where the event occurred
+ * @param {number} frameId - The frame ID where the event occurred
+ * @param {Object} event - The event details
+ */
+export function onHistoryStateUpdatedSafari(tabId, frameId, event) {
   console.debug("onSafariHistoryStateUpdated()", tabId, frameId, JSON.stringify(event));
   log("onHistoryStateUpdated called");
 
@@ -200,9 +169,3 @@ export function onHistoryStateUpdatedSafari(
     listener(details);
   }
 }
-
-// Safari provides limited web extension API support,
-// "webextension-polyfill" does not support Safari.
-// We have to do patching right now as the following "ewe-api.js" code
-// already assumes `browser.webRequest.ResourceType` to be in place.
-patchForSafari(false);

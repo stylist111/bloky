@@ -3,9 +3,27 @@ import * as EWE from "../../dist/ewe-api.js";
 export const EASYLIST_URL = "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt";
 export const AA_URL = "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt";
 export const TESTPAGES_URL = "https://abptestpages.org/en/abp-testcase-subscription.txt";
-export const COOKIE_CONSENT_URL = "https://easylist-downloads.adblockplus.org/v3/full/cookie-filter-list.txt";
-export const FANBOY_NOTIFICATIONS_URL = "https://easylist-downloads.adblockplus.org/v3/full/fanboy-notifications.txt";
+export const COOKIE_CONSENT_URL =
+  "https://easylist-downloads.adblockplus.org/v3/full/cookie-filter-list.txt";
+export const FANBOY_NOTIFICATIONS_URL =
+  "https://easylist-downloads.adblockplus.org/v3/full/fanboy-notifications.txt";
 export const ANTI_CV_URL = "https://easylist-downloads.adblockplus.org/v3/full/abp-filters-anti-cv.txt";
+
+/**
+ * Subscription URLs that are added by default to EWE.
+ */
+export let defaultSubscriptionsUrls = [
+  EASYLIST_URL,
+  COOKIE_CONSENT_URL,
+  AA_URL,
+  ANTI_CV_URL
+];
+
+/**
+ * Subscription URLs that require privileged flag for element hiding filters.
+ * NOTE: Testing without privileged flag to see if it's needed.
+ */
+export let privilegedSubscriptionUrls = [];
 
 /**
  * Subscriptions list for EWE initialization.
@@ -66,18 +84,49 @@ export let subscriptions = [
  * This will add the subscriptions if not already added.
  */
 export async function checkDefaultSubscriptions() {
+  // eslint-disable-next-line no-console
+  console.log("Checking default subscriptions ...");
+
   let existingSubsUrls = (await EWE.subscriptions.getSubscriptions())
     .map(sub => sub.url);
 
-  for (let {url} of subscriptions) {
-    if (!existingSubsUrls.includes(url)) {
-      if (url === ANTI_CV_URL) {
-        // snippets require higher privilege level
-        await EWE.subscriptions.add(url, {privileged: true});
+  const knownSubUrls = subscriptions.map(sub => sub.url);
+  // Remove subscriptions that are no longer in our list
+  for (let url of existingSubsUrls) {
+    if (!knownSubUrls.includes(url) && url !== TESTPAGES_URL) {
+      try {
+        // eslint-disable-next-line no-console
+        console.log(`Removing obsolete subscription ${url} ...`);
+        await EWE.subscriptions.remove(url);
+        // eslint-disable-next-line no-console
+        console.log(`Removed obsolete subscription ${url}`);
       }
-      else {
-        await EWE.subscriptions.add(url);
+      catch (err) {
+        // eslint-disable-next-line no-console
+        console.error(`Failed to remove obsolete subscription ${url}:`, err);
       }
     }
   }
+
+  // Add subscriptions that are in the default list but not yet added
+  for (let url of defaultSubscriptionsUrls) {
+    if (!existingSubsUrls.includes(url)) {
+      await addSubscription(url);
+    }
+  }
+}
+
+/**
+ * Add a subscription with proper privileged flag.
+ * @param {string} url - The subscription URL to add
+ */
+export async function addSubscription(url) {
+  // eslint-disable-next-line no-console
+  console.log(`Adding subscription ${url} ...`);
+  let privileged = privilegedSubscriptionUrls.includes(url);
+  await EWE.subscriptions.add(url, {
+    privileged
+  });
+  // eslint-disable-next-line no-console
+  console.log(`Added subscription ${url}`);
 }

@@ -46,6 +46,7 @@ else
 fi
 
 pushd $testingProject
+git checkout fix-filters
 npm install
 
 # Run tests

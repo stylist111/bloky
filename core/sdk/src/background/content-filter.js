@@ -309,7 +309,35 @@ export async function applyContentFilters(
 export function injectCSS(tabId, frameId, code) {
   let result;
 
-  if (browser.scripting && browser.scripting.insertCSS) {
+  // Safari-specific: Try browser.tabs.insertCSS first as it may be more
+  // reliable on some Safari versions. If that fails, fall back to
+  // browser.scripting.insertCSS
+  if (isSafari()) {
+    if (browser.tabs && browser.tabs.insertCSS) {
+      result = browser.tabs.insertCSS(
+        tabId,
+        {
+          code,
+          cssOrigin: "user",
+          frameId,
+          matchAboutBlank: true,
+          runAt: "document_start"
+        }
+      );
+    }
+    else if (browser.scripting && browser.scripting.insertCSS) {
+      // Safari doesn't properly apply USER origin CSS, use AUTHOR instead
+      result = browser.scripting.insertCSS({
+        target: {tabId, frameIds: [frameId]},
+        css: code,
+        origin: "AUTHOR"
+      });
+    }
+    else {
+      return;
+    }
+  }
+  else if (browser.scripting && browser.scripting.insertCSS) {
     result = browser.scripting.insertCSS({
       target: {tabId, frameIds: [frameId]},
       css: code,
@@ -329,7 +357,21 @@ export function injectCSS(tabId, frameId, code) {
     );
   }
 
-  result.catch(() => {}); // Fails if tab or frame no longer exists
+  result.catch(() => {
+    // Safari fallback: If scripting.insertCSS failed, try tabs.insertCSS
+    if (isSafari() && browser.tabs && browser.tabs.insertCSS) {
+      browser.tabs.insertCSS(
+        tabId,
+        {
+          code,
+          cssOrigin: "user",
+          frameId,
+          matchAboutBlank: true,
+          runAt: "document_start"
+        }
+      ).catch(() => {});
+    }
+  });
 }
 
 export async function removeCSS(tabId, frameId, code) {

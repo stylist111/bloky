@@ -334,6 +334,29 @@ command:
 A subset of [nasapp-testing](https://gitlab.com/eyeo/network-filtering/nasapp-testing)
 tests check that the SDK code works in Safari.
 
+#### Important: Keeping manifest and polyfill in sync
+
+The Safari polyfill in `src/background/safari-polyfill-early.cjs`
+contains a `MANIFEST_ENABLED_RULESETS` array that **must match**
+the rulesets enabled in `test/extension-safari/manifest.json`.
+
+This is necessary because the polyfill's `getEnabledRulesets()` stub returns this
+list to tell the SDK which rulesets are already enabled. If this doesn't match the
+manifest, the SDK may try to enable/disable rulesets unnecessarily during startup,
+which can cause Safari's `updateEnabledRulesets` to fail with "Failed to apply rules".
+
+When modifying the manifest's `declarative_net_request.rule_resources`, update
+the `MANIFEST_ENABLED_RULESETS` array accordingly:
+
+```javascript
+// In safari-polyfill-early.js - must match manifest.json!
+const MANIFEST_ENABLED_RULESETS = [
+  "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F", // Acceptable Ads
+  "8C13E995-8F06-4927-BEA7-6C845FB7EEBF", // EasyList
+  "D4028CDD-3D39-4624-ACC7-8140F4EC3238"  // Anti-CV
+];
+```
+
 Before running, those tests need the Safari testing app to be built:
 
 ```sh
@@ -347,6 +370,71 @@ Then run the tests:
 ```
 
 Note: Safari build/test scripts only work on macOS.
+
+#### Building manually (without credentials)
+
+If you don't have App Store Connect credentials, you can build and run the test app
+on the simulator using these commands:
+
+```sh
+# 1. Install dependencies (if not already done)
+npm install
+
+# 2. Build the Safari extension with webpack
+npx webpack -c ./core/sdk/scripts/safari/webpack.config.js --entry ./core/sdk/test/extension-safari/index.js
+
+# 3. Convert web extension to Xcode project
+xcrun safari-web-extension-converter \
+  --project-location core/sdk/dist core/sdk/dist/test-safari \
+  --app-name testSafariApp \
+  --bundle-identifier org.adblockplus.testSafariApp \
+  --no-open --force --no-prompt --ios-only
+
+# 4. Build for iOS Simulator (without code signing)
+xcodebuild \
+  -project core/sdk/dist/testSafariApp/testSafariApp.xcodeproj \
+  -scheme "testSafariApp" \
+  -sdk iphonesimulator \
+  -destination 'platform=iOS Simulator,name=iPhone 16' \
+  CODE_SIGN_IDENTITY="-" \
+  CODE_SIGNING_REQUIRED=NO \
+  CODE_SIGNING_ALLOWED=NO \
+  build
+
+# 5. Boot simulator, install and launch the app
+xcrun simctl boot "iPhone 16"
+open -a Simulator
+xcrun simctl install booted ~/Library/Developer/Xcode/DerivedData/testSafariApp-*/Build/Products/Debug-iphonesimulator/testSafariApp.app
+xcrun simctl launch booted org.adblockplus.testSafariApp
+```
+
+To reinstall a fresh build (clearing cached app data):
+
+```sh
+xcrun simctl uninstall booted org.adblockplus.testSafariApp
+xcrun simctl install booted ~/Library/Developer/Xcode/DerivedData/testSafariApp-*/Build/Products/Debug-iphonesimulator/testSafariApp.app
+xcrun simctl launch booted org.adblockplus.testSafariApp
+```
+
+To enable the Safari extension: Open Settings → Safari → Extensions → Enable testSafariApp
+
+#### Cleaning up build artifacts
+
+If you see an old version of the app or encounter build issues, perform a full cleanup:
+
+```sh
+# 1. Delete Xcode derived data (cached builds)
+rm -rf ~/Library/Developer/Xcode/DerivedData/testSafariApp-*
+
+# 2. Delete generated project and extension files
+rm -rf core/sdk/dist/testSafariApp core/sdk/dist/test-safari
+
+# 3. (Optional) Erase simulator to reset all data
+xcrun simctl shutdown booted
+xcrun simctl erase "iPhone 16"
+```
+
+After cleanup, run the full build process again starting from the webpack step.
 
 ## Performance tests
 

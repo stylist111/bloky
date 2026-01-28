@@ -73,6 +73,9 @@ core/sdk/test/screenshots
 core/sdk/nasapp-testing
 core/sdk/scripts/safari/AuthKey.p8
 
+# Safari test app - generated Xcode project and build artifacts
+core/sdk/test/xcode/testSafariApp/
+
 # tools
 tools/test/extension-benchmark/extensions
 tools/test/extension-benchmark/results

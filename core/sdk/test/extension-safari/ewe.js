@@ -21,15 +21,11 @@ import {checkDefaultSubscriptions, subscriptions} from "./subscriptions.js";
 
 let startupInfo = {};
 
-// See "DiffUrl" subscription header URL
 startupInfo.bundledSubscriptionsPath = "subscriptions";
 startupInfo.bundledSubscriptions = subscriptions;
-
-// This line is here to be overridden in the update tests, which tests that when
-// we pass a different value here it's actually set. Generally, our test
-// extension should use our SDK's default features when running tests unless the
-// specific test changes the value, so this should be left empty.
-startupInfo.featureFlags = {};
+startupInfo.featureFlags = {
+  inlineCss: true
+};
 
 /**
  * Entry point
@@ -40,10 +36,15 @@ export function start() {
       console.warn("EWE startup warnings: ", firstRun.warnings);
     }
 
-    // We need to add default subscriptions on the very first run
-    // and probably on a regular run if webext was updated and
-    // we might have one more default subscription
     await checkDefaultSubscriptions();
+
+    // Signal that startup is complete - this allows updateEnabledRulesets
+    // to work normally for user-initiated filter list changes.
+    // Must be called AFTER subscriptions are set up.
+    // This function is injected by safari-early-polyfill.
+    if (typeof globalThis.__safariPolyfillStartupComplete === "function") {
+      globalThis.__safariPolyfillStartupComplete();
+    }
   }).catch(e => {
     console.error("Failed to start EWE:", e);
   });
