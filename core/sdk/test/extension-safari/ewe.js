@@ -18,6 +18,26 @@
 import * as EWE from "../../dist/ewe-api.js";
 import * as snippets from "@eyeo/snippets";
 import {checkDefaultSubscriptions, subscriptions} from "./subscriptions.js";
+import {notifyPopup} from "./utils.js";
+
+// Timing info - tracked at module load time
+const extensionStartTime = Date.now();
+let eweStartDuration = null;
+let eweSetupDuration = null;
+
+/**
+ * Get startup timing information.
+ * @returns {object} Timing info with extensionStartTime, eweStartDuration,
+ *   eweSetupDuration, and runningDuration (all numbers).
+ */
+export function getStartupInfo() {
+  return {
+    extensionStartTime,
+    eweStartDuration,
+    eweSetupDuration,
+    runningDuration: Date.now() - extensionStartTime
+  };
+}
 
 let startupInfo = {};
 
@@ -31,7 +51,11 @@ startupInfo.featureFlags = {
  * Entry point
  */
 export function start() {
+  const startTime = Date.now();
   EWE.start(startupInfo).then(async firstRun => {
+    eweStartDuration = Date.now() - startTime;
+    console.warn(`EWE.start() completed in ${eweStartDuration}ms`);
+    notifyPopup("timingUpdate", {section: "startup"});
     if (firstRun.warnings.length > 0) {
       console.warn("EWE startup warnings: ", firstRun.warnings);
     }
@@ -45,6 +69,9 @@ export function start() {
     if (typeof globalThis.__safariPolyfillStartupComplete === "function") {
       globalThis.__safariPolyfillStartupComplete();
     }
+    eweSetupDuration = Date.now() - startTime;
+    console.warn(`EWE setup completed in ${eweSetupDuration}ms`);
+    notifyPopup("timingUpdate", {section: "startup"});
   }).catch(e => {
     console.error("Failed to start EWE:", e);
   });

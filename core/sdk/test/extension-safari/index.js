@@ -19,7 +19,10 @@
 // injected at the very start of the bundle via webpack BannerPlugin.
 // Additional post-SDK-load patching is done below.
 
+// Import console capture first to intercept all logs
+import {getLogs, clearLogs} from "./console.js";
 import * as ewe from "./ewe.js";
+import {getSubscriptions, setSubscriptionEnabled} from "./subscriptions.js";
 
 // Safari doesn't implement getAvailableStaticRuleCount(), so this value is
 // used as a fallback return value. The value matches Chrome's guaranteed
@@ -48,5 +51,49 @@ try {
   ewe.start();
 }
 catch (e) {
-  console.error(`Failed to start: ${e}`);
+  console.error(`Failed to start EWE: ${e}`);
 }
+
+// ============ MESSAGE HANDLERS ============
+
+browser.runtime.onMessage.addListener(message => {
+  // Get all subscriptions
+  if (message.type === "getSubscriptions") {
+    return getSubscriptions()
+      .then(subs => ({subscriptions: subs}))
+      .catch(err => ({error: err.message}));
+  }
+
+  // Enable/disable a subscription
+  if (message.type === "setSubscriptionEnabled") {
+    // eslint-disable-next-line no-console
+    console.log(`Setting subscription ${message.enabled ? "enabled" : "disabled"}: ${message.url}`);
+    return setSubscriptionEnabled(message.url, message.enabled)
+      .then(() => {
+        // eslint-disable-next-line no-console
+        console.log("Subscription toggled successfully");
+        return {success: true};
+      })
+      .catch(err => ({error: err.message}));
+  }
+
+  // Get logs
+  if (message.type === "getLogs") {
+    return Promise.resolve(getLogs());
+  }
+
+  // Clear logs
+  if (message.type === "clearLogs") {
+    clearLogs();
+    // eslint-disable-next-line no-console
+    console.log("Logs cleared");
+    return Promise.resolve({success: true});
+  }
+
+  // Get startup info
+  if (message.type === "getStartupInfo") {
+    return Promise.resolve(ewe.getStartupInfo());
+  }
+
+  return false;
+});

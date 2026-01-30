@@ -12,6 +12,13 @@
       "256": "images/webext-icon-256.png",
       "512": "images/webext-icon-512.png"
     },
+    "action": {
+      "default_popup": "popup.html",
+      "default_icon": {
+        "48": "images/webext-icon-48.png",
+        "96": "images/webext-icon-96.png"
+      }
+    },
     "background": {
         "scripts": [ "background.js" ],
         "persistent": false

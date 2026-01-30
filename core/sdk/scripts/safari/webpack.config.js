@@ -51,6 +51,8 @@ export default async(env = {}) => {
       new CopyPlugin({
         patterns: [
           {from: path.join(extensionPath, "manifest.json")},
+          {from: path.join(extensionPath, "popup", "popup.html")},
+          {from: path.join(extensionPath, "popup", "popup.js")},
           {from: path.join(extensionPath, "images"), to: path.join(distPath, "images")},
           {from: path.join(extensionPath, "rulesets"), to: path.join(distPath, "rulesets")},
           {from: path.join(extensionPath, "_locales"), to: path.join(distPath, "_locales")},

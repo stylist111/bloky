@@ -357,7 +357,25 @@ const MANIFEST_ENABLED_RULESETS = [
 ];
 ```
 
-Before running, those tests need the Safari testing app to be built:
+#### Setup
+
+Before building, you need credentials from the Apps team. Create a `.env` file in
+`core/sdk/scripts/safari/` with:
+
+```sh
+XCODE_DEVELOPMENT_TEAM=<your_team_id>
+XCODE_AUTHENTICATION_KEY_ISSUER_ID=<your_issuer_id>
+XCODE_AUTHENTICATION_KEY_ID=<your_key_id>
+
+# Optional: auto-install to booted simulator, or use a specific UDID
+SIMULATOR_UDID=auto
+```
+
+You also need the `AuthKey.p8` file in the same directory.
+
+#### Building and running
+
+Build the Safari testing app:
 
 ```sh
 npm run -w=@eyeo/webext-ad-filtering-solution build:safari

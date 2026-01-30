@@ -16,6 +16,11 @@ pushd $DIRNAME_PATH/../../dist
 DIST_PATH=$(pwd)
 popd
 
+# Load local environment variables if .env file exists
+if [ -f "$DIRNAME_PATH/.env" ]; then
+   source "$DIRNAME_PATH/.env"
+fi
+
 # Path to a file with the Xcode private key. On the local run, the file is
 # expected to be called "AuthKey.p8"
 XCODE_AUTHENTICATION_KEY_PATH=${XCODE_AUTHENTICATION_KEY_PATH:-$DIRNAME_PATH/AuthKey.p8}
@@ -52,4 +57,23 @@ if [ -e $APP_PATH ]; then
    echo "$APP_PATH generated"
 else
    echo "Error: $APP_PATH doesn't exist after building"
+   exit 1
+fi
+
+# Install to simulator if SIMULATOR_UDID is set
+# Use "auto" to install to the currently booted simulator
+# Use a specific UDID to target a particular device
+if [ -n "${SIMULATOR_UDID:-}" ]; then
+   if [ "$SIMULATOR_UDID" = "auto" ]; then
+      # Check if any simulator is booted
+      if xcrun simctl list devices booted | grep -q "Booted"; then
+         xcrun simctl install booted $APP_PATH
+         echo "App installed to booted simulator"
+      else
+         echo "No simulator is currently booted, skipping installation"
+      fi
+   else
+      xcrun simctl install $SIMULATOR_UDID $APP_PATH
+      echo "App installed to simulator $SIMULATOR_UDID"
+   fi
 fi

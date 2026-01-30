@@ -1,4 +1,9 @@
 import * as EWE from "../../dist/ewe-api.js";
+import {notifyPopup} from "./utils.js";
+
+// Track API call durations per subscription URL
+const addDurations = new Map();
+const enableDurations = new Map();
 
 export const EASYLIST_URL = "https://easylist-downloads.adblockplus.org/v3/full/easylist.txt";
 export const AA_URL = "https://easylist-downloads.adblockplus.org/v3/full/exceptionrules.txt";
@@ -80,6 +85,14 @@ export let subscriptions = [
 ];
 
 /**
+ * Metadata map for quick lookup by URL.
+ * Provides title and type for each bundled subscription.
+ */
+const subscriptionMetadata = new Map(
+  subscriptions.map(sub => [sub.url, {title: sub.title, type: sub.type}])
+);
+
+/**
  * Check default subscriptions.
  * This will add the subscriptions if not already added.
  */
@@ -111,9 +124,62 @@ export async function checkDefaultSubscriptions() {
   // Add subscriptions that are in the default list but not yet added
   for (let url of defaultSubscriptionsUrls) {
     if (!existingSubsUrls.includes(url)) {
+      const start = Date.now();
       await addSubscription(url);
+      const duration = Date.now() - start;
+      addDurations.set(url, duration);
+      // eslint-disable-next-line no-console
+      console.log(`checkDefaultSubscriptions: added "${url}" in ${duration}ms`);
+      notifyPopup("timingUpdate", {section: "metrics"});
     }
   }
+}
+
+/**
+ * Get all subscriptions with enriched metadata and timing info.
+ * @returns {Promise<Array>}
+ */
+export async function getSubscriptions() {
+  const subs = await EWE.subscriptions.getSubscriptions();
+
+  return subs.map(sub => {
+    const metadata = subscriptionMetadata.get(sub.url);
+    const addDuration = addDurations.get(sub.url);
+    const enableInfo = enableDurations.get(sub.url);
+
+    return {
+      url: sub.url,
+      enabled: sub.enabled,
+      title: metadata?.title || sub.title || sub.url,
+      type: metadata?.type || "unknown",
+      addDuration,
+      enableDuration: enableInfo?.duration,
+      lastEnableAction: enableInfo?.enabled
+    };
+  });
+}
+
+/**
+ * Enable or disable a subscription.
+ * @param {string} url - The subscription URL
+ * @param {boolean} enabled - Whether to enable or disable
+ * @returns {Promise<{duration: number}>} The operation duration
+ */
+export async function setSubscriptionEnabled(url, enabled) {
+  const start = Date.now();
+  if (enabled) {
+    await EWE.subscriptions.enable(url);
+  }
+  else {
+    await EWE.subscriptions.disable(url);
+  }
+  const duration = Date.now() - start;
+  enableDurations.set(url, {duration, enabled});
+  const action = enabled ? "enable" : "disable";
+  // eslint-disable-next-line no-console
+  console.log(`subscriptions.${action}(${url}) took ${duration}ms`);
+  notifyPopup("timingUpdate", {section: "metrics"});
+  return {duration};
 }
 
 /**
