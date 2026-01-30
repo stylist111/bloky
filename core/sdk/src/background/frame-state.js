@@ -30,6 +30,7 @@ import {trace, debug} from "./debugging.js";
 import {ignoreNoConnectionError} from "../all/errors.js";
 import {default as sentry} from "./sentry.js";
 import {log as _log} from "./safari-logs.js";
+import {isSafari} from "./info.js";
 
 /**
  * The URL that browsers use to represent an empty page, about:blank.
@@ -294,6 +295,11 @@ async function discoverExistingFrames() {
         frames.set(frameId, new FrameInfo(tabId, frameId, parent, url));
       }
     }).catch(err => {
+      // Safari: Tab was closed between tabs.query() and getAllFrames()
+      // - benign race condition
+      if (isSafari() && err && err.message && err.message.includes("Tab not found")) {
+        return;
+      }
       const e = new Error(`Failed to get frames for tab ${tabId}: ${err}`);
       sentry.reportError(e);
       console.error(e);
