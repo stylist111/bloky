@@ -1,5 +1,11 @@
 # Unreleased
 
+# 3.1.0 - 2026-02-02
+
+## General
+
+- Added support for missing Safari WebExtension polyfills.
+
 ## Fixes
 
 - Fixed `$genericblock` exception filters incorrectly allowing `$addheader`
