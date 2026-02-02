@@ -1,5 +1,12 @@
 # Unreleased
 
+## Fixes
+
+- Fix a last file import of `adblockpluscore` that was using the NPM package
+  style reference rather than a file directly. It appeared that this was doing
+  the correct thing in our CI builds, but may have been undefined behavior if
+  building in other contexts.
+
 # 3.1.0 - 2026-02-02
 
 ## General

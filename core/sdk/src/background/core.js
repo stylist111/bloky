@@ -17,7 +17,7 @@
 
 import browser from "webextension-polyfill";
 
-import {Features, FilterEngine} from "adblockpluscore";
+import {Features, FilterEngine} from "#adblockpluscore/lib/index.js";
 
 export let filterEngine = new FilterEngine((function() {
   let features;

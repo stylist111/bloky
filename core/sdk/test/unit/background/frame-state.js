@@ -39,7 +39,7 @@ describe("Frame state", function() {
     };
 
     // don't mock the adblockpluscore as we need encryption functions working
-    api = await mock("frame-state.js", ["adblockpluscore", "./sitekey.js"], ["debugging.js"]);
+    api = await mock("frame-state.js", ["#adblockpluscore", "./sitekey.js"], ["debugging.js"]);
   });
 
   afterEach(function() {

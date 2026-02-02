@@ -31,7 +31,7 @@ import {subEasylistLocal, subTestCustom1, subTestUpdatable1,
         subAcceptableAdsLocal} from "./fixtures/subscriptions.js";
 import {wait} from "./polling.js";
 import {isFuzzingServiceWorker, suspendServiceWorker} from "./mocha/mocha-runner.js";
-import {SPECIFIC_ALLOW_ALL_PRIORITY} from "adblockpluscore/lib/dnr/rules.js";
+import {SPECIFIC_ALLOW_ALL_PRIORITY} from "#adblockpluscore/lib/dnr/rules.js";
 
 const DYNAMIC_FILTER = "||b5gxiibirp.invalid^";
 const DYNAMIC_FILTER2 = "||ttle10x9w7.invalid^";
