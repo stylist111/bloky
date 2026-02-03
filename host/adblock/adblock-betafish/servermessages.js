@@ -41,6 +41,16 @@ const ServerMessages = (function serverMessages() {
   // message.
   // If callback() is specified, call callback() after logging has completed
   const sendMessageToLogServer = async function (payload, callback) {
+    let loggingEnabled = true;
+    const flag = await ewe.experiments.getFlag("ab-servermessages-logging-enabled");
+    if (flag != null) {
+      loggingEnabled = flag;
+    }
+
+    if (!loggingEnabled) {
+      return;
+    }
+
     if (Prefs.get("data_collection_opt_out")) {
       return;
     }
