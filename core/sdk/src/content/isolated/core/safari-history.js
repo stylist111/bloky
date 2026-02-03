@@ -16,7 +16,7 @@
  */
 
 import browser from "webextension-polyfill";
-import {ignoreNoConnectionError} from "../all/errors.js";
+import {ignoreNoConnectionError} from "../../../all/errors.js";
 
 export function startSafariHistory() {
 // It receives a message from injected in Safari `history.pushState()`

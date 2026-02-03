@@ -52,6 +52,61 @@ export async function executeScript(tabId, func, args, world = "ISOLATED") {
   }
 
   let argsString = args ? args.map(JSON.stringify).join(",") : "";
+
+  // MV2: Need to inject inline script to run in main world
+  if (world === "MAIN") {
+    // Use a data attribute to pass the result back to isolated world
+    let resultAttr = `data-test-result-${Date.now()}-${Math.random()}`;
+    let inlineCode = `
+      (function() {
+        let result;
+        try {
+          result = (${func})(${argsString});
+        } catch (e) {
+          result = {__error__: e.message};
+        }
+        document.documentElement.setAttribute(
+          "${resultAttr}",
+          JSON.stringify(result)
+        );
+      })();
+    `;
+    // We need a small delay to ensure environment is set up properly
+    // before the inline script injection.
+    await sleep(100);
+    // Inject from isolated world: create inline script element
+    await browser.tabs.executeScript(tabId, {
+      code: `
+        (function() {
+          let script = document.createElement('script');
+          script.textContent = ${JSON.stringify(inlineCode)};
+          document.documentElement.appendChild(script);
+          document.documentElement.removeChild(script);
+        })();
+      `
+    });
+    // Read the result from the data attribute
+    let [resultJson] = await browser.tabs.executeScript(tabId, {
+      code: `
+        (function() {
+          let attr = "${resultAttr}";
+          let result = document.documentElement.getAttribute(attr);
+          document.documentElement.removeAttribute(attr);
+          return result;
+        })();
+      `
+    });
+    if (resultJson) {
+      let parsed = JSON.parse(resultJson);
+      if (parsed && parsed.__error__) {
+        throw new Error(parsed.__error__);
+      }
+      return parsed;
+    }
+    return null;
+  }
+
+  // MV2: We can run directly in isolated world
   return (await browser.tabs.executeScript(
     tabId, {code: `(${func})(${argsString});`})
   )[0];
@@ -493,6 +548,28 @@ export async function waitForInvisibleElement(tabId, id) {
     }, [id]);
     return result == null;
   }, 1000, `The element with id "${id}" is still visible`);
+}
+
+/**
+ * Checks that all elements matching the selector are hidden.
+ * @param {number} tabId - The tab ID.
+ * @param {string} selector - The CSS selector to match elements.
+ * @param {number} [timeoutMs=2000] - The timeout in milliseconds.
+ * @returns {Promise<void>}
+ */
+export async function checkElementsHidden(tabId, selector, timeoutMs = 2000) {
+  await wait(async() => {
+    return await executeScript(tabId, elemSelector => {
+      const nodes = document.querySelectorAll(elemSelector);
+      for (const node of nodes) {
+        // offsetParent is null when the element is not visible
+        if (node.offsetParent) {
+          return false;
+        }
+      }
+      return true;
+    }, [selector]);
+  }, timeoutMs, `The elements for selector "${selector}" are still visible`);
 }
 
 export function waitForAssertion(condition, timeout = 1000, pollTimeout = 100) {

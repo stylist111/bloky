@@ -1,0 +1,129 @@
+<div id="json-prune" data-expectedresult="fail">JSON Prune</div>
+<div id="json-stack-needle" data-expectedresult="fail">Stack Needle</div>
+<div id="json-prune-array" data-expectedresult="fail">JSON Prune Array</div>
+<div id="json-prune-object" data-expectedresult="fail">JSON Prune Object</div>
+<div id="json-prune-array-remove" data-expectedresult="fail">JSON Prune Array Remove</div>
+<div id="json-prune-object-remove" data-expectedresult="fail">JSON Prune Object Remove</div>
+
+<script type="text/javascript">
+  "use strict";
+
+  let propertiesToUse = `{
+    "jsonprune": "true",
+    "data-expectedresult": "fail",
+    "aria-label": "json-prune-fail",
+    "array": [
+      {"target-data": "delete-me"},
+      {"target-data": "delete-me"},
+      {"target-data": "delete-me"},
+      {"different-data": "dont-delete-me"}
+    ],
+    "object": {
+      "data1": {
+        "target-data": "delete-me"
+      },
+      "data2": {
+        "target-data": "delete-me"
+      },
+      "data3": {
+        "different-data": "dont-delete-me"
+      }
+    },
+    "arrayWithRemoval": [
+      {"shouldRemove": "true", "data": "element1"},
+      {"data": "element2"},
+      {"shouldRemove": "true", "data": "element3"},
+      {"data": "element4"}
+    ],
+    "objectWithRemoval": {
+      "prop1": {
+        "shouldRemove": "true",
+        "data": "property1"
+      },
+      "prop2": {
+        "data": "property2"
+      },
+      "prop3": {
+        "shouldRemove": "true",
+        "data": "property3"
+      },
+      "prop4": {
+        "data": "property4"
+      }
+    },
+    "toBeDeletedIfStackNeedle": "delete-me"
+  }`;
+
+  function checkSnippet() {
+    // The function `callstack` wraps the JSON.parse call for the stack-needle testcase
+    let propertiesObject;
+    function callstack() {
+      propertiesObject = JSON.parse(propertiesToUse);
+    }
+    callstack();
+
+    // Check for json-prune
+    let noUnexpectedProperties = Object.keys(propertiesObject).every(
+      (property) =>
+        property !== "data-expectedresult" && property !== "jsonprune" && property !== "aria-label",
+    );
+    if (noUnexpectedProperties) {
+      document.getElementById("json-prune").hidden = true;
+    }
+
+    // Check for "toBeDeletedIfStackNeedle"
+    let toBeDeletedIfStackNeedle = !Object.prototype.hasOwnProperty.call(
+      propertiesObject,
+      "toBeDeletedIfStackNeedle",
+    );
+    if (toBeDeletedIfStackNeedle) {
+      document.getElementById("json-stack-needle").hidden = true;
+    }
+
+    // Check for "target-data" in array
+    let noTargetDataInArray = propertiesObject.array.every(
+      (obj) => !Object.keys(obj).includes("target-data"),
+    );
+    if (noTargetDataInArray) {
+      document.getElementById("json-prune-array").hidden = true;
+    }
+
+    // Check for "target-data" in object
+    let noTargetDataInObject = Object.values(propertiesObject.object).every(
+      (innerObj) => !Object.keys(innerObj).includes("target-data"),
+    );
+    if (noTargetDataInObject) {
+      document.getElementById("json-prune-object").hidden = true;
+    }
+
+    // Check for [-] array element removal
+    let arrayElementsRemoved =
+      propertiesObject.arrayWithRemoval.length === 2 &&
+      propertiesObject.arrayWithRemoval.every(
+        (obj) => !Object.keys(obj).includes("shouldRemove"),
+      ) &&
+      propertiesObject.arrayWithRemoval.every((obj) => Object.keys(obj).includes("data"));
+    if (arrayElementsRemoved) {
+      document.getElementById("json-prune-array-remove").hidden = true;
+    }
+
+    // Check for {-} object property removal
+    let objectPropertiesRemoved =
+      Object.keys(propertiesObject.objectWithRemoval).length === 2 &&
+      Object.values(propertiesObject.objectWithRemoval).every(
+        (innerObj) => !Object.keys(innerObj).includes("shouldRemove"),
+      ) &&
+      Object.values(propertiesObject.objectWithRemoval).every((innerObj) =>
+        Object.keys(innerObj).includes("data"),
+      );
+    if (objectPropertiesRemoved) {
+      document.getElementById("json-prune-object-remove").hidden = true;
+    }
+
+    if (document.querySelector("[data-expectedresult=fail]:not([hidden])")) {
+      setTimeout(checkSnippet, 100);
+    }
+  }
+
+  checkSnippet();
+</script>

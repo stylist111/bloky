@@ -16,34 +16,71 @@
  */
 
 import browser from "webextension-polyfill";
-
 import {ElemHideEmulation}
   from "#adblockpluscore/lib/content/elemHideEmulation.js";
-
-import {ignoreNoConnectionError} from "../all/errors.js";
-import {startElementCollapsing, hideElement, unhideElement}
-  from "./element-collapsing.js";
-import {startOneClickAllowlisting} from "./allowlisting.js";
-import {ElementHidingTracer} from "./element-hiding-tracer.js";
-import {subscribeLinksEnabled, handleSubscribeLinks} from "./subscribe-links.js";
+import {ignoreNoConnectionError} from "../../../all/errors.js";
+import {handleSubscribeLinks, subscribeLinksEnabled} from "./subscribe-links.js";
+import {hideElement, unhideElement} from "./element-collapsing.js";
 import {startNotifyActive} from "./cdp-session.js";
-import {startWatchingBlockthroughTag} from "./blockthrough-tag.js";
-import {startSafariHistory} from "./safari-history.js";
 
 let tracer;
 let elemHideEmulation;
 
-async function initContentFeatures() {
-  if (subscribeLinksEnabled(window.location.href)) {
-    handleSubscribeLinks();
+class ElementHidingTracer {
+  constructor(selectors) {
+    this.selectors = new Map(selectors);
+
+    this.observer = new MutationObserver(() => {
+      this.observer.disconnect();
+      setTimeout(() => this.trace(), 1000);
+    });
+
+    if (document.readyState == "loading") {
+      document.addEventListener("DOMContentLoaded", () => this.trace());
+    }
+    else {
+      this.trace();
+    }
   }
 
-  let response = await ignoreNoConnectionError(
-    browser.runtime.sendMessage({type: "ewe:content-hello"})
-  );
+  log(filters, selectors = []) {
+    ignoreNoConnectionError(browser.runtime.sendMessage(
+      {type: "ewe:trace-elem-hide", filters, selectors}
+    ));
+  }
 
-  if (response) {
-    await applyContentFeatures(response);
+  trace() {
+    let filters = [];
+    let selectors = [];
+
+    for (let [selector, filter] of this.selectors) {
+      try {
+        if (document.querySelector(selector)) {
+          this.selectors.delete(selector);
+          if (filter) {
+            filters.push(filter);
+          }
+          else {
+            selectors.push(selector);
+          }
+        }
+      }
+      catch (e) {
+        console.error(e.toString());
+      }
+    }
+
+    if (filters.length > 0 || selectors.length > 0) {
+      this.log(filters, selectors);
+    }
+
+    this.observer.observe(document, {childList: true,
+                                     attributes: true,
+                                     subtree: true});
+  }
+
+  disconnect() {
+    this.observer.disconnect();
   }
 }
 
@@ -102,8 +139,12 @@ async function applyContentFeatures(response) {
 
   if (response.emulatedPatterns.length > 0) {
     if (!elemHideEmulation) {
-      elemHideEmulation = new ElemHideEmulation(hideElements, unhideElements,
-                                                removeElements, applyInlineCSS);
+      elemHideEmulation = new ElemHideEmulation(
+        hideElements,
+        unhideElements,
+        removeElements,
+        applyInlineCSS
+      );
     }
     elemHideEmulation.apply(response.emulatedPatterns);
   }
@@ -116,17 +157,26 @@ async function applyContentFeatures(response) {
   }
 }
 
-function onMessage(message) {
+function handleContentFeatures(message) {
   if (typeof message == "object" && message != null &&
     message.type && message.type == "ewe:apply-content-features") {
     removeContentFeatures();
     applyContentFeatures(message);
   }
 }
-browser.runtime.onMessage.addListener(onMessage);
 
-startSafariHistory();
-startElementCollapsing();
-startOneClickAllowlisting();
-initContentFeatures();
-startWatchingBlockthroughTag();
+export async function start() {
+  browser.runtime.onMessage.addListener(handleContentFeatures);
+
+  if (subscribeLinksEnabled(window.location.href)) {
+    handleSubscribeLinks();
+  }
+
+  let response = await ignoreNoConnectionError(
+    browser.runtime.sendMessage({type: "ewe:content-hello"})
+  );
+
+  if (response) {
+    await applyContentFeatures(response);
+  }
+}

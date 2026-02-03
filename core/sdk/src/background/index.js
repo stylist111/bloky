@@ -47,7 +47,6 @@ import * as remoteConfig from "./remote-config/index.js";
 import * as experiments from "./experiments.js";
 import * as cohorts from "./cohorts/index.js";
 import * as account from "./account/index.js";
-import {setSnippetLibrary} from "./content-filter.js";
 import {setAddonInfo, isSafari} from "./info.js";
 import {filterEngine} from "./core.js";
 import {validate as validateSubscriptions,
@@ -179,29 +178,6 @@ export {wrappedCohorts as cohorts};
  */
 const wrappedAccount = wrapApiNamespace(account.default);
 export {wrappedAccount as account};
-
-export let snippets = {
-  /**
-   * Snippet callback.
-   * @callback SnippetCallback
-   * @param {Object} environment
-   *   The environment variables
-   * @param {...Array.<Array.<string>>} _
-   *   The snippets names and arguments.
-   */
-
-  /**
-   * Enables support for snippet filters.
-   * @param {Object} [snippetInfo]
-   * @param {SnippetCallback} [snippetInfo.isolatedCode]
-   *   The code defining the available snippets to be executed in the isolated
-   *   content script context.
-   * @param {SnippetCallback} [snippetInfo.injectedCode]
-   *   The code defining the available snippets to be injected and executed in
-   *   the main context.
-   */
-  setLibrary: setSnippetLibrary
-};
 
 const SKIP_INIT_RULESETS_STORAGE_KEY = "ewe:skip_init_rulesets";
 

@@ -2,5 +2,6 @@
 
 /image-from-subscription.png^$image
 ###elem-hide
-localhost#$#injected-snippet true
 localhost#?##inline-css-div {margin-bottom: 0px;}
+! Snippets to be used in tests
+localhost#$#override-property-read overridePropertyRead.fp false

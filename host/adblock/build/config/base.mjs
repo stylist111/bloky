@@ -32,7 +32,6 @@ export default {
           "adblockplusui/adblockpluschrome/lib/devtools.js",
           "adblockplusui/adblockpluschrome/lib/debug.js",
           "adblock-betafish/alias/subscriptionInit.js",
-          "adblock-betafish/alias/contentFiltering.js",
           "adblockplusui/adblockpluschrome/lib/messageResponder.js",
           "adblockplusui/adblockpluschrome/lib/filterConfiguration.js",
           "adblock-betafish/jquery/jquery-3.5.1.min.js",
@@ -531,6 +530,11 @@ export default {
         dest: "vendor/@eyeo/webext-ad-filtering-solution/content.js",
         package: "@eyeo/webext-ad-filtering-solution",
         src: "dist/ewe-content.js",
+      },
+      {
+        dest: "vendor/@eyeo/webext-ad-filtering-solution/content-main.js",
+        package: "@eyeo/webext-ad-filtering-solution",
+        src: "dist/ewe-content-main.js",
       },
       {
         dest: "ui-components-styles.css",

@@ -1,0 +1,19 @@
+<div id="to-be-overriden" data-expectedresult="fail">Snippet has not executed</div>
+
+<script>
+  "use strict";
+
+  var overridePropertyRead = {
+    fp: true,
+  };
+
+  function checkSnippet() {
+    if (!overridePropertyRead.fp) {
+      document.getElementById("to-be-overriden").hidden = true;
+    } else {
+      setTimeout(checkSnippet, 100);
+    }
+  }
+
+  checkSnippet();
+</script>

@@ -397,18 +397,6 @@ function handleTestMessage(request, sender, sendResponse) {
       sendResponse({});
       return true;
     }
-
-    case "ewe-test:initSnippets": {
-      initSnippets();
-      sendResponse({});
-      return true;
-    }
-
-    case "ewe-test:deinitSnippets": {
-      deinitSnippets();
-      sendResponse({});
-      return true;
-    }
     case "ewe-test:setPremiumResponse": {
       EWE.cdp.setPremiumStatusCallback(async() => {
         return request.status;
@@ -599,80 +587,6 @@ EWE.start(startupInfo).then(async firstRun => {
 });
 
 restoreFeatureFlags();
-
-let injectedCode = (environment, ..._) => {
-  function loadContext() {
-    let context = {};
-    try {
-      context = JSON.parse(document.body.id);
-    }
-    catch (e) {
-      // may not exist yet
-    }
-    return context;
-  }
-  function saveContext(context) {
-    document.body.id = JSON.stringify(context);
-  }
-  function incrementCounter(context) {
-    context.counter = (context.counter || 0) + 1;
-  }
-  let injectedSnippetBody = arg => {
-    let context = loadContext();
-    context.arg = arg;
-    incrementCounter(context);
-    saveContext(context);
-  };
-  let recurringSnippetBody = () => {
-    let context = loadContext();
-    context.recurring_history = [];
-    incrementCounter(context);
-    // stays unchanged over the calls as it's local variable
-    let counter = context.counter;
-    saveContext(context);
-    function pushAndReschedule() {
-      let currentContext = loadContext();
-      currentContext.recurring_history.push(counter);
-      saveContext(currentContext);
-      setTimeout(pushAndReschedule, 100);
-    }
-    pushAndReschedule();
-  };
-  let snippets = {
-    "injected-snippet": injectedSnippetBody,
-    "hide-if-classifies": injectedSnippetBody,
-    "recurring-injected-snippet": recurringSnippetBody
-  };
-  for (let [name, ...args] of _) {
-    snippets[name](...args);
-  }
-};
-injectedCode.has = snippet => [
-  "injected-snippet",
-  "hide-if-classifies",
-  "recurring-injected-snippet"
-].includes(snippet);
-
-let isolatedCode = (environment, ..._) => {
-  let snippets = {"isolated-snippet": arg => self.isolated_snippet_works = arg};
-  for (let [name, ...args] of _) {
-    snippets[name](...args);
-  }
-};
-isolatedCode.has = snippet => ["isolated-snippet"].includes(snippet);
-isolatedCode.get = () => function dependency() {
-  self.isolated_snippet_dependency = true;
-};
-
-function initSnippets() {
-  EWE.snippets.setLibrary({isolatedCode, injectedCode});
-}
-
-function deinitSnippets() {
-  EWE.snippets.setLibrary({isolatedCode: null, injectedCode: null});
-}
-
-initSnippets();
 
 let oneClickAllowlistingPublicKeys = [
   "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAorAkyGHnzZkVE0TGcU7Sl6/LlH9j3udDNvHv/fSzplLMdqkw0HZNV9zaBFQ0Rw73AJ7MQ8JQm2hex9DEss3xsrlpHEi/nC7C1authg1rt5Xo4K0P5Bo+j6y41UtgQoL9xKJ6RlYGBq4uBHaq/xRyp/7zUxOiViTdnVZRhSkmyBCIQ+5l8/mTk5yyMLfH7QM0KFKdJbnnTU8HEGzHaFi33vAwWPpJjCohYUzYxgXOgSZYV6xNPycQj4U/D4k+7UT+d4zzrj7fSz08/ijfHLB8G6dr1nx7+Pydt3ijhKEX2mKaAWgKtyM2wTgFXys4rnAbdr340FpQaVebNF0bwGsqluBNdvZ6fPgN9dLlpVDQKXlOKdfOyc64Yw82/jHKdYC7NO1bg13hqo7JWM10Gklt2FY5ekfDBZagPbYCH780C8w0aMceBs3NBTI6SAPI8xhyu7LwL7vw/vMwz8kfIsKOCPFqf0qPlvJCaryIAA7Ca6SHfBqaTzyivEEqn6tWphCpYSODfPRO4Udg+l/o/PCJuly41b4QF2x8H+LvJnr7HFknmFYwisbIofC/2ucO2sfJDP4EOHKeDV9mexHSJIfjyFYV0f0ALj1eKl9Viz37qLefzXFhTG4wzoK5F/QM1ZhIWjN+0DBn6GTQxuWc4eAuASoh07JG4M+i2rWcUTYvgOECAwEAAQ==",

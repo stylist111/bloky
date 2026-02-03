@@ -1,0 +1,45 @@
+<html>
+  <head>
+    <script>
+      // Store original JSON.parse and prevent tampering
+      const originalJSONParse = JSON.parse;
+      Object.defineProperty(JSON, "parse", {
+        value: originalJSONParse,
+        writable: false,
+        configurable: false,
+      });
+    </script>
+  </head>
+  <body>
+    <div id="json-prune-object-tampering">JSON Prune Tampering</div>
+    <script>
+      let testProperties = `{
+    "jsonprune": "true",
+    "data-expectedresult": "fail",
+    "aria-label": "json-prune-fail",
+    "object": {
+      "data1": {
+        "target-data": "delete-me"
+      },
+      "data2": {
+        "target-data": "delete-me"
+      },
+      "data3": {
+        "different-data": "dont-delete-me"
+      }
+    }
+  }`;
+
+      const testObject = JSON.parse(testProperties);
+
+      // Check for "target-data" in object
+      let noTargetDataInObject = Object.values(testObject.object).every(
+        (innerObj) => !Object.keys(innerObj).includes("target-data"),
+      );
+
+      if (noTargetDataInObject) {
+        document.getElementById("json-prune-object-tampering").hidden = true;
+      }
+    </script>
+  </body>
+</html>

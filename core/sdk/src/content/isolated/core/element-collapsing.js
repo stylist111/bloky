@@ -16,7 +16,7 @@
  */
 
 import browser from "webextension-polyfill";
-import {ignoreNoConnectionError} from "../all/errors.js";
+import {ignoreNoConnectionError} from "../../../all/errors.js";
 
 let collapsedSelectors = new Set();
 let observers = new WeakMap();

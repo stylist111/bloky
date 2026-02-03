@@ -24,7 +24,7 @@ function isMV3() {
 }
 
 if (isMV3()) {
-  importScripts("ewe-api.js", "custom-mv3-subscriptions.js", "snippets.js", "polling.js");
+  importScripts("ewe-api.js", "custom-mv3-subscriptions.js", "polling.js");
 }
 
 let startupInfo = {};
@@ -88,13 +88,3 @@ EWE.start(startupInfo).then(async firstRun => {
 
   chrome.tabs.create({url: `status.html?errors=${errors.join(";")}`});
 });
-
-function initSnippets() {
-  EWE.snippets.setLibrary({
-    isolatedCode: snippets.isolated, // eslint-disable-line no-undef
-    injectedCode: snippets.injected // eslint-disable-line no-undef
-  });
-}
-
-// importing the snippets script in importScripts() may take a while
-setTimeout(initSnippets, 200);

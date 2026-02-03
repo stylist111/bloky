@@ -33,7 +33,6 @@ import {
   pausedFilterText1,
   pausedFilterText2,
 } from "../src/pause/background";
-import { start as startContentFiltering } from "./alias/contentFiltering";
 import { NEW_BADGE_REASONS, getNewBadgeTextReason, showIconBadgeCTA } from "./alias/icon";
 
 import { getDebugInfo } from "./debug/background/index";
@@ -707,7 +706,7 @@ const migratedEvents = new Set([
 
 initialize
   .then(async () => {
-    await startContentFiltering();
+    await Prefs.untilLoaded;
     ewe.cdp.setPremiumStatusCallback(async () => {
       await License.ready();
       return Boolean(await License.isActiveLicense());

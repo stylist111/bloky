@@ -16,7 +16,6 @@
  */
 
 import * as EWE from "../../dist/ewe-api.js";
-import * as snippets from "@eyeo/snippets";
 import {checkDefaultSubscriptions, subscriptions} from "./subscriptions.js";
 import {notifyPopup} from "./utils.js";
 
@@ -74,12 +73,6 @@ export function start() {
     notifyPopup("timingUpdate", {section: "startup"});
   }).catch(e => {
     console.error("Failed to start EWE:", e);
-  });
-
-  // snippets
-  EWE.snippets.setLibrary({
-    injectedCode: snippets.main,
-    isolatedCode: snippets.isolated
   });
 
   // 1-click allowlisting

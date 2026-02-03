@@ -7,6 +7,27 @@
 <div id="elem-hide-emulation-props">Properties target</div>
 
 <script>
+  // Set a global counter to track how many times myVar is (re)defined
+  document.body.dataset.myVarDefinitionCounter = "1";
+
+  // Snippet: localhost#$#override-property-read myVar 1 false
+  // Global error handler to catch when myVar is redefined.
+  // This listener will increment the counter each time a redefinition error occurs,
+  // indicating that the snippet attempted to redefine myVar again after history.pushState
+  window.onerror = function (message) {
+    // There is a snippet added that has defineProperty for myVar before this script runs.
+    if (message && message.includes("Cannot redefine property: myVar")) {
+      document.body.dataset.myVarDefinitionCounter = String(
+        parseInt(document.body.dataset.myVarDefinitionCounter) + 1,
+      );
+    }
+  };
+
+  // Test case: "does not restart the snippets on history.pushState"
+  // The test is adding snippet: localhost#$#override-property-read myVar 1 false
+  // which tries to redefine myVar
+  // On the page we have a global window.onerror handler that increments a counter
+  // each time myVar is redefined. We expect the counter to remain 1 after pushState
   history.pushState(null, "", "/history-after-pushState.html");
 
   setTimeout(() => {

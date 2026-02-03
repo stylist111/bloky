@@ -100,7 +100,11 @@ export const premiumFilterLists = [
       if (enable) {
         const btnSelector = "button[data-action='add-subscription']";
         await clickOnDisplayedElement(btnSelector);
+
+        // Wait for the double opt-in dialog and backdrop to disappear before
+        // proceeding to the next steps
         await waitForNotDisplayed(btnSelector);
+        await waitForNotDisplayed("#dialog-background");
       }
     }
   },

@@ -112,9 +112,24 @@ export async function resetPremiumStatus() {
   await browser.runtime.sendMessage({type: "ewe-test:resetPremiumResponse"});
 }
 
+/**
+ * Adds a single filter.
+ * @param {string} text - The filter text to add.
+ * @param {Object} [metadata] - Metadata to associate with the filter.
+ * @returns {Promise<*>}
+ */
 export async function addFilter(text, metadata) {
-  let result = await EWE.filters.add([text], metadata);
-  return result;
+  return EWE.filters.add([text], metadata);
+}
+
+/**
+ * Adds multiple filters.
+ * @param {Array<string>} filters - Array of filter strings to add.
+ * @param {Object} [metadata] - Metadata to associate with the filters.
+ * @returns {Promise<*>}
+ */
+export async function addFilters(filters, metadata) {
+  return EWE.filters.add(filters, metadata);
 }
 
 let activeLocks = {

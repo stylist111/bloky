@@ -29,7 +29,6 @@ toc:
       - remoteConfig
       - reporting
       - sentry
-      - snippets
       - subscriptions
       - telemetry
   - name: Objects
@@ -54,5 +53,4 @@ toc:
       - RemoteConfigSyncStatus
       - ServerLogger
       - Subscription
-      - SnippetCallback
       - UserProfile

@@ -48,7 +48,8 @@ All contributors to this project are required to read, and follow, our
 The library comes in four parts:
 
 * `ewe-api.js` to be included in the extension's background page
-* `ewe-content.js` to be loaded as a content script
+* `ewe-content.js` to be loaded as a content script (isolated world)
+* `ewe-content-main.js` to be loaded as a content script (main world)
 * `ewe-content-api.js` to be imported in the extension's various content scripts
 * `ewe-ui.js` to be loaded in the extension's various UI pages
 
@@ -291,19 +292,9 @@ import * as EWE from "@eyeo/webext-ad-filtering-solution/content-api";
 
 ### Snippet filters support
 
-In order to enable support for [snippet filters][snippet-filters] you have to get
-the [snippets library][snippets-project] separately and make it available to `EWE`:
-
-```
-import * as snippets from "@eyeo/snippets";
-EWE.snippets.setLibrary({
-  injectedCode: snippets.main,
-  isolatedCode: snippets.isolated
-});
-```
-
-The integration of the machine learning models is expected to be done by clients
-of the snippet library.
+The [snippets library][snippets-project] is available by default to `EWE`.
+Consult the documentation for [snippet filters][snippet-filters] to learn how to
+use them.
 
 ### Shared resources
 

@@ -21,6 +21,14 @@
       "run_at": "document_start"
     },
     {
+      "all_frames": true,
+      "js": ["vendor/@eyeo/webext-ad-filtering-solution/content-main.js"],
+      "match_about_blank": true,
+      "matches": ["http://*/*", "https://*/*"],
+      "world": "MAIN",
+      "run_at": "document_start"
+    },
+    {
       "js": ["polyfill.js", "onpage-dialog.preload.js"],
       "matches": ["http://*/*", "https://*/*"],
       "run_at": "document_start"

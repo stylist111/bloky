@@ -241,6 +241,11 @@ export default {
         src: "dist/ewe-content.js"
       },
       {
+        dest: "vendor/@eyeo/webext-ad-filtering-solution/content-main.js",
+        package: "@eyeo/webext-ad-filtering-solution",
+        src: "dist/ewe-content-main.js"
+      },
+      {
         dest: "premium-onboarding.html",
         src: "src/premium-onboarding/ui/onboarding.html"
       },

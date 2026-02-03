@@ -20,19 +20,21 @@ import browser from "webextension-polyfill";
 
 import {TEST_PAGES_URL, TEST_PAGES_DOMAIN, SITEKEY, TEST_ADMIN_PAGES_URL}
   from "@eyeo/test-utils/sdk-urls";
-import {Page, waitForInvisibleElement, executeScript, setMinTimeout,
-        getVisibleElement, getVisibleElementInFrame, expectElemHideHidden,
-        expectElemHideVisible, isFirefox, firefoxVersion,
-        UNHIDDENTIMEOUT, HIDETIMEOUT, waitForHighlightedStyle, isEdge,
-        edgeVersion, waitForSubscriptionsToDownload, chromiumVersion,
-        isChromiumBased, setEndpointResponse, expectElemHideRemoved,
-        expectElementToHaveInlineStyle}
+import {
+  Page, waitForInvisibleElement, executeScript, setMinTimeout,
+  getVisibleElement, getVisibleElementInFrame, expectElemHideHidden,
+  expectElemHideVisible, isFirefox, firefoxVersion,
+  UNHIDDENTIMEOUT, HIDETIMEOUT, waitForHighlightedStyle, isEdge,
+  edgeVersion, waitForSubscriptionsToDownload, chromiumVersion,
+  isChromiumBased, setEndpointResponse, expectElemHideRemoved,
+  expectElementToHaveInlineStyle, checkElementsHidden
+}
   from "./utils.js";
 import {subTestCustom1, subAntiCVLocal} from "./fixtures/subscriptions.js";
 import {wait} from "./polling.js";
-import {addFilter, EWE, setFeatureFlags} from "./messaging.js";
+import {addFilter, addFilters, EWE, setFeatureFlags} from "./messaging.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
-import sinon from "sinon/pkg/sinon.js";
+import {CACHED_FILTERS_CONFIG_KEY} from "../src/content/shared/constants.js";
 
 let hideTimeout = isFuzzingServiceWorker() ? 15000 : 1000;
 let collapseTimeout = 2000;
@@ -657,152 +659,540 @@ describe("Element Hiding", function() {
 });
 
 describe("Snippets", function() {
-  // keep in-sync with `background.js`
-  const INJECTED_SNIPPET = "injected-snippet";
-  const ISOLATED_SNIPPET = "isolated-snippet";
-  const SNIPPET_NOT_APPLIED_ERROR = "Snippet was not applied";
-  const MAIN_WORLD = "MAIN";
-  const ISOLATED_WORLD = "ISOLATED";
-  const WEBPAGE_URL = "image.html";
+  const forceBg = isFirefox() && firefoxVersion() >= 97;
 
-  async function assertSnippet(pageUrl, extractor, world, expectedArgument = "true") {
-    let tabId = await new Page(pageUrl).loaded;
-
-    // If the service worker is suspended just before the new page is opened
-    // (like the service worker fuzzing tests do),
-    // then there might be a short delay between the page loading and the
-    // snippet actually being applied. This is partly us initializing the
-    // filter engine, and partly chrome doing chrome things.
-    await wait(
-      // Snippets arguments are stringified (JSON.string()),
-      // so we set true (as boolean), but check "true" (as string).
-      async() => {
-        let actualArgument = await executeScript(tabId, extractor, null, world);
-        return actualArgument == expectedArgument;
-      },
-      hideTimeout,
-      SNIPPET_NOT_APPLIED_ERROR
-    );
-  }
-
-  async function addAndAssertSnippet(domain, pageUrl, snippet, func, world, snippetArgument = "true") {
-    await addFilter(`${domain}#$#${snippet} ${snippetArgument}`);
-    await assertSnippet(pageUrl, func, world, snippetArgument);
-  }
-
-  const INJECTED_SNIPPET_ARG_EXTRACTOR = () => {
-    try {
-      let context = JSON.parse(document.body.id);
-      return context.arg;
-    }
-    catch (e) {
-      // may not exist yet
-      return null;
-    }
-  };
-
-  it("warns if snippets are not initialized", async function() {
-    const sandbox = sinon.createSandbox();
-    try {
-      sandbox.spy(console, "log");
-      await browser.runtime.sendMessage({type: "ewe-test:deinitSnippets"});
-
-      await new Page("element-hiding.html").loaded;
-      await wait(async() => {
-        // eslint-disable-next-line no-console
-        const calls = console.log.getCalls();
-        return calls.find(call => call.args &&
-          call.args.length > 1 &&
-          typeof call.args[1] == "string" &&
-          call.args[1].includes("Snippets are not initialized"));
-      }, 1000, "No warning output received");
-    }
-    finally {
-      sandbox.restore();
-      await browser.runtime.sendMessage({type: "ewe-test:initSnippets"});
-    }
-  });
-
-  it("applies an injected snippet [fuzz]", async function() {
-    await addAndAssertSnippet(
-      TEST_PAGES_DOMAIN,
-      WEBPAGE_URL,
-      INJECTED_SNIPPET,
-      INJECTED_SNIPPET_ARG_EXTRACTOR,
-      MAIN_WORLD);
-  });
-
-  it("applies an injected snippet for domain with port and wildcard", async function() {
-    // DNS mapping webext.com to 127.0.0.1 is configured
-    // for all Chromium-based browsers during the tests.
+  it("applies a main snippet for domain with port and wildcard", async function() {
     if (!isChromiumBased()) {
       this.skip();
     }
+    await addFilters([
+      "webext.*#$#override-property-read overridePropertyRead.fp false"
+    ]);
 
-    await addAndAssertSnippet(
-      "webext.*",
-      "http://webext.com:3000/" + WEBPAGE_URL,
-      INJECTED_SNIPPET,
-      INJECTED_SNIPPET_ARG_EXTRACTOR,
-      MAIN_WORLD);
+    const tabId = await new Page("http://webext.com:3000/snippet-override-property-read.html", forceBg).loaded;
+    await checkElementsHidden(tabId, "[data-expectedresult='fail']");
   });
 
-  it("applies 'hide-if-classifies' snippet with no domains", async function() {
-    await addAndAssertSnippet(
-      "", // no domains
-      WEBPAGE_URL,
-      "hide-if-classifies",
-      INJECTED_SNIPPET_ARG_EXTRACTOR,
-      MAIN_WORLD,
-      ".selector");
+  it("applies a main snippet [fuzz]", async function() {
+    await addFilters([
+      `${TEST_PAGES_DOMAIN}#$#json-prune 'data-expectedresult jsonprune aria-label'`,
+      `${TEST_PAGES_DOMAIN}#$#json-prune toBeDeletedIfStackNeedle '' callstack`,
+      `${TEST_PAGES_DOMAIN}#$#json-prune array.[].target-data`,
+      `${TEST_PAGES_DOMAIN}#$#json-prune object.{}.target-data`,
+      `${TEST_PAGES_DOMAIN}#$#json-prune arrayWithRemoval.[-].shouldRemove`,
+      `${TEST_PAGES_DOMAIN}#$#json-prune objectWithRemoval.{-}.shouldRemove`
+    ]);
+
+    const tabId = await new Page("snippet-json-prune.html", forceBg).loaded;
+    await checkElementsHidden(tabId, "#json-prune[data-expectedresult='fail']");
+    await checkElementsHidden(tabId, "#json-stack-needle[data-expectedresult='fail']");
+    await checkElementsHidden(tabId, "#json-prune-array[data-expectedresult='fail']");
+    await checkElementsHidden(tabId, "#json-prune-object[data-expectedresult='fail']");
+    await checkElementsHidden(tabId, "#json-prune-array-remove[data-expectedresult='fail']");
+    await checkElementsHidden(tabId, "#json-prune-object-remove[data-expectedresult='fail']");
   });
 
   it("applies an isolated snippet", async function() {
-    await addAndAssertSnippet(
-      TEST_PAGES_DOMAIN,
-      WEBPAGE_URL,
-      ISOLATED_SNIPPET,
-      () => self.isolated_snippet_dependency && self.isolated_snippet_works,
-      ISOLATED_WORLD);
+    await addFilters([
+      `${TEST_PAGES_DOMAIN}#$#hide-if-contains 'hic-basic-static' div[id]`,
+      `${TEST_PAGES_DOMAIN}#$#hide-if-contains 'hic-basic-dynamic' div[id]`,
+      `${TEST_PAGES_DOMAIN}#$#hide-if-contains 'hic-search' div[id] .hic-target`,
+      `${TEST_PAGES_DOMAIN}#$#hide-if-contains /hic-regex-[2-3]/ div[id]`,
+      `${TEST_PAGES_DOMAIN}#$#hide-if-contains hidden span#frame-target`
+    ]);
+
+    // Navigate to the test page
+    const tabId = await new Page("snippet-hide-if-contains.html", forceBg).loaded;
+
+    // Check that elements indicating failure are hidden
+    await checkElementsHidden(tabId, "#awaiting[data-expectedresult='fail']");
+    await checkElementsHidden(tabId, "#hic-static[data-expectedresult='fail']");
+    await checkElementsHidden(tabId, "#hic-dynamic-id[data-expectedresult='fail']");
+    await checkElementsHidden(tabId, ".hic-target[data-expectedresult='fail']");
+    await checkElementsHidden(tabId, "#hic-regex-2[data-expectedresult='fail']");
+    await checkElementsHidden(tabId, "#hic-regex-3[data-expectedresult='fail']");
+    const frameElement = await getVisibleElementInFrame(tabId, "frame-target", ["hic-iframe"]);
+    expect(frameElement).toBeNull();
+  });
+
+  it("applies an isolated snippet with dependency", async function() {
+    await addFilters([
+      // eslint-disable-next-line quotes
+      `${TEST_PAGES_DOMAIN}#$#hide-if-matches-xpath3 '//*[name()="div" and matches(@class,"Spon(.+)sored")]'`,
+      // eslint-disable-next-line quotes
+      `${TEST_PAGES_DOMAIN}#$#hide-if-matches-xpath3 '//div[div/span[string-join((normalize-space(), following-sibling::span[1]/normalize-space()), " ") = "Failed. Element is not hidden."]]'`,
+      // eslint-disable-next-line quotes
+      `${TEST_PAGES_DOMAIN}#$#hide-if-matches-xpath3 '//*[name()="div" and xs:decimal(@data-num) > 2.5 ]'`
+    ]);
+
+    // Navigate to the test page
+    const tabId = await new Page("snippet-hide-if-matches-xpath3", forceBg).loaded;
+
+    // Check that elements indicating failure are hidden
+    await checkElementsHidden(tabId, "#xpath-filter1[data-expectedresult='fail']");
+    await checkElementsHidden(tabId, "#xpath-filter2[data-expectedresult='fail']");
+    await checkElementsHidden(tabId, "#xpath-filter3[data-expectedresult='fail']");
   });
 
   it("does not restart the snippets on history.pushState", async function() {
     setMinTimeout(this, 6000);
+    // This snippet tries to override a read-only property "myVar"
+    await addFilter("localhost#$#override-property-read myVar 1 false");
 
-    await addFilter(`${TEST_PAGES_DOMAIN}#$#${INJECTED_SNIPPET} true`);
-    let tabId = await new Page("history.html").loaded;
+    // The test page "history.html" has a window.onerror and looks for how
+    // many times "Cannot redefine property: myVar" is thrown and increments
+    // a counter stored in "document.body.dataset.myVarDefinitionCounter"
+    // At the end of the test, we make a history.pushState to simulate SPA
+    // navigation and ensure that the snippet is not re-executed
+    const tabId = await new Page("history.html").loaded;
+
     // Snippet is expected to be called only once (EE-507):
     // only when "history.html" is loaded and not called
     // on History event pushed
-    await wait(
-      async() => await executeScript(tabId, () => {
-        try {
-          let context = JSON.parse(document.body.id);
-          return context.counter;
-        }
-        catch (e) {
-          // may not exist yet
-          return null;
-        }
-      }, null, MAIN_WORLD) == "1",
-      4 * HIDETIMEOUT,
-      "Snippet was not called exactly once");
+    await wait(async() => {
+      const result = await executeScript(tabId, () => {
+        // This is false by default and is set to true when
+        // "Cannot redefine property: myVar" is thrown
+        // e.g. snippet is called again
+        return document.body.dataset.myVarDefinitionCounter;
+      });
+
+      // Ensure there is exactly one definition (aka counter == "1")
+      return result === "1";
+    }, 4 * HIDETIMEOUT, "Snippet was not called exactly once");
   });
 
-  it("does not deploy snippets not from anti-cv subscription [mv2-only]", async function() {
+  it("does not run snippets from unprivileged subscription", async function() {
     await EWE.subscriptions.add(subTestCustom1.url);
     await waitForSubscriptionsToDownload();
-    await expect(assertSnippet(
-      WEBPAGE_URL, INJECTED_SNIPPET_ARG_EXTRACTOR, MAIN_WORLD))
-      .rejects.toThrow(SNIPPET_NOT_APPLIED_ERROR);
+
+    // Navigate to the test page
+    const tabId = await new Page("snippet-override-property-read.html", forceBg).loaded;
+
+    // Check that it fails to hide elements
+    await expect(
+      checkElementsHidden(tabId, "[data-expectedresult='fail']")
+    ).rejects.toThrow(/Wait timed out|are still visible/);
   });
 
   it("runs a snippet in a privileged subscription", async function() {
     // subscription with injected-snippet
     await EWE.subscriptions.add(subTestCustom1.url, {privileged: true});
     await waitForSubscriptionsToDownload();
-    await expect(assertSnippet(
-      WEBPAGE_URL, INJECTED_SNIPPET_ARG_EXTRACTOR, MAIN_WORLD))
-      .resolves.not.toThrow();
+
+    // Navigate to the test page
+    const tabId = await new Page("snippet-override-property-read.html", forceBg).loaded;
+
+    // Check that elements indicating failure are hidden
+    await checkElementsHidden(tabId, "[data-expectedresult='fail']");
+  });
+
+  describe("localStorage tampering detection", function() {
+    let tabId;
+
+    beforeEach(async function() {
+      await EWE.experiments.overrideFlag("zero-delay-snippet-domains", ["localhost"]);
+
+      await addFilter(
+        `${TEST_PAGES_DOMAIN}#$#json-prune 'data-expectedresult jsonprune aria-label'`
+      );
+      tabId = await new Page("snippet-json-prune.html", forceBg).loaded;
+    });
+
+    it("does not detect that the snippets are stored in localStorage", async function() {
+      let getItemResult = await executeScript(tabId, key => {
+        return localStorage.getItem(key);
+      }, [CACHED_FILTERS_CONFIG_KEY], "MAIN");
+
+      expect(getItemResult).toBeNull();
+    });
+
+    it("does not detect that the snippets are stored in localStorage using property accessor", async function() {
+      let getItemResult = await executeScript(tabId, key => {
+        return localStorage[key];
+      }, [CACHED_FILTERS_CONFIG_KEY], "MAIN");
+
+      expect(getItemResult).toBeNull();
+    });
+
+    it("allows calling localStorage.setItem for the key used for snippets", async function() {
+      let expectedValue = "test-website-value";
+
+      let getItemResult = await executeScript(tabId, (key, value) => {
+        localStorage.setItem(key, value);
+        return localStorage.getItem(key);
+      }, [CACHED_FILTERS_CONFIG_KEY, expectedValue], "MAIN");
+
+      expect(getItemResult).toBe(expectedValue);
+    });
+
+    it("allows calling localStorage.setItem for a normal key", async function() {
+      let otherKey = "other-key";
+      let expectedValue = "test-other-value";
+
+      let getItemResult = await executeScript(tabId, (key, value) => {
+        localStorage.setItem(key, value);
+        return localStorage.getItem(key);
+      }, [otherKey, expectedValue], "MAIN");
+
+      expect(getItemResult).toBe(expectedValue);
+    });
+
+    it("allows using the key used for snippets as a property", async function() {
+      let expectedValue = "test-website-value";
+
+      let getItemResult = await executeScript(tabId, (key, value) => {
+        localStorage[key] = value;
+        return localStorage[key];
+      }, [CACHED_FILTERS_CONFIG_KEY, expectedValue], "MAIN");
+
+      expect(getItemResult).toBe(expectedValue);
+    });
+
+    it("allows using the key used for snippets in sessionStorage", async function() {
+      let propertyAccessExpectedValue = "test-website-value-prop";
+
+      let propertyAccessResult = await executeScript(tabId, (key, value) => {
+        sessionStorage.setItem(key, value);
+        return sessionStorage[key];
+      }, [CACHED_FILTERS_CONFIG_KEY, propertyAccessExpectedValue], "MAIN");
+
+      expect(propertyAccessResult).toBe(propertyAccessExpectedValue);
+
+      let getItemExpectedValue = "test-website-value-get-item";
+      let getItemResult = await executeScript(tabId, (key, value) => {
+        sessionStorage[key] = value;
+        return sessionStorage.getItem(key);
+      }, [CACHED_FILTERS_CONFIG_KEY, getItemExpectedValue], "MAIN");
+
+      expect(getItemResult).toBe(getItemExpectedValue);
+    });
+
+    it("allows using the key used for a normal key as a property", async function() {
+      let otherKey = "other-key";
+      let expectedValue = "test-other-value";
+
+      let getItemResult = await executeScript(tabId, (key, value) => {
+        localStorage[key] = value;
+        return localStorage[key];
+      }, [otherKey, expectedValue], "MAIN");
+
+      expect(getItemResult).toBe(expectedValue);
+    });
+
+    it("has the correct toString values for functions", async function() {
+      const getToStringResults = () => [
+        localStorage.getItem.toString(),
+        Function.prototype.toString.call(localStorage.getItem),
+        localStorage.setItem.toString(),
+        Function.prototype.toString.call(localStorage.setItem),
+        localStorage.removeItem.toString(),
+        Function.prototype.toString.call(localStorage.removeItem),
+        localStorage.clear.toString(),
+        Function.prototype.toString.call(localStorage.clear),
+        Function.prototype.toString.toString(),
+        Function.prototype.toString.call(Function.prototype.toString)
+      ];
+
+      const mainResults = await executeScript(tabId, getToStringResults, [], "MAIN");
+      const isolatedResults = await executeScript(tabId, getToStringResults, [], "ISOLATED");
+
+      for (const result of mainResults) {
+        // Check that the result looks at least a little like we expect. If
+        // there's something wrong with our toString code, or how we inject it
+        // into the page, it could return something like 'null' or 'undefined'
+        // for both main and isolated worlds.
+        expect(result).toContain("[native code]");
+      }
+      // The isolated world has the normal non-shimmed version, so if our
+      // hiding is correct this should be identical.
+      expect(mainResults).toEqual(isolatedResults);
+    });
+
+    it("has the correct toString values for objects", async function() {
+      const expressions = [
+        () => localStorage.toString(),
+        () => Object.prototype.toString.call(localStorage),
+        () => Object.prototype.toString.call(localStorage.getItem)
+      ];
+
+      for (const expression of expressions) {
+        let mainResult = await executeScript(tabId, expression, [], "MAIN");
+        let isolatedResult = await executeScript(tabId, expression, [], "ISOLATED");
+
+        // Check that the result looks at least a little like we expect. If
+        // there's something wrong with our toString code, or how we inject it
+        // into the page, it could return something like 'null' or 'undefined'
+        // for both main and isolated worlds.
+        expect(mainResult).toContain("[object");
+
+        // The isolated world has the normal non-shimmed version, so if our
+        // hiding is correct this should be identical.
+        expect(mainResult).toBe(isolatedResult);
+      }
+    });
+
+    it("allows calling localStorage.removeItem for the key used for snippets", async function() {
+      const value = "test-website-value";
+
+      const getItemResult = await executeScript(tabId, (key, val) => {
+        localStorage.setItem(key, val);
+        const valueAfterSet = localStorage.getItem(key);
+        localStorage.removeItem(key);
+        const valueAfterRemove = localStorage.getItem(key);
+        return {valueAfterSet, valueAfterRemove};
+      }, [CACHED_FILTERS_CONFIG_KEY, value], "MAIN");
+
+      expect(getItemResult.valueAfterSet).toBe(value);
+      expect(getItemResult.valueAfterRemove).toBeNull();
+    });
+
+    it("allows calling localStorage.clear", async function() {
+      const value = "test-website-value";
+
+      const getItemResult = await executeScript(tabId, (key, val) => {
+        localStorage.setItem(key, val);
+        const valueAfterSet = localStorage.getItem(key);
+        localStorage.clear();
+        const valueAfterClear = localStorage.getItem(key);
+        return {valueAfterSet, valueAfterClear};
+      }, [CACHED_FILTERS_CONFIG_KEY, value], "MAIN");
+
+      expect(getItemResult.valueAfterSet).toBe(value);
+      expect(getItemResult.valueAfterClear).toBeNull();
+    });
+
+    it("localStorage.length works as expected", async function() {
+      const result = await executeScript(tabId, key => {
+        localStorage.clear();
+        const lengthAfterClear = localStorage.length;
+
+        localStorage.setItem(key, "website-value");
+        const lengthAfterSet = localStorage.length;
+
+        localStorage.setItem("regular-key", "regular-value");
+        const lengthAfterRegular = localStorage.length;
+
+        localStorage.removeItem(key);
+        const lengthAfterRemove = localStorage.length;
+
+        return {
+          lengthAfterClear,
+          lengthAfterSet,
+          lengthAfterRegular,
+          lengthAfterRemove
+        };
+      }, [CACHED_FILTERS_CONFIG_KEY], "MAIN");
+
+      expect(result.lengthAfterClear).toBe(0);
+      expect(result.lengthAfterSet).toBe(1);
+      expect(result.lengthAfterRegular).toBe(2);
+      expect(result.lengthAfterRemove).toBe(1);
+    });
+
+    it("hides the config key when using .key when website value is not set", async function() {
+      const dummyKey = "foo";
+      const result = await executeScript(tabId, (cacheKey, otherKey) => {
+        localStorage.clear();
+
+        localStorage.setItem(cacheKey, "bar");
+        localStorage.setItem(otherKey, "baz");
+        let foundKeys = [];
+        for (let i = 0; i < localStorage.length + 1; i++) {
+          foundKeys.push(localStorage.key(i));
+        }
+        return foundKeys;
+      }, [CACHED_FILTERS_CONFIG_KEY, dummyKey], "MAIN");
+
+      expect(result).toBeArrayContainingExactly(
+        [CACHED_FILTERS_CONFIG_KEY, dummyKey, null]
+      );
+    });
+
+    it("shows the config key when using .key when website has set that value", async function() {
+      const dummyKey = "foo";
+      const result = await executeScript(tabId, key => {
+        localStorage.clear();
+
+        localStorage.setItem(key, "bar");
+        let foundKeys = [];
+        for (let i = 0; i < localStorage.length + 1; i++) {
+          foundKeys.push(localStorage.key(i));
+        }
+        return foundKeys;
+      }, [dummyKey], "MAIN");
+
+      expect(result).toBeArrayContainingExactly(
+        [dummyKey, null]
+      );
+    });
+
+    it("hides the config key when using spread operator", async function() {
+      const result = await executeScript(tabId, key => {
+        localStorage.clear();
+        localStorage.setItem("visible-key", "visible-value");
+        const spread = {...localStorage};
+        const hasConfigKey = key in spread;
+        const hasVisibleKey = "visible-key" in spread;
+        const keys = Object.keys(spread);
+        return {hasConfigKey, hasVisibleKey, keys};
+      }, [CACHED_FILTERS_CONFIG_KEY], "MAIN");
+
+      expect(result.hasConfigKey).toBe(false);
+      expect(result.hasVisibleKey).toBe(true);
+      expect(result.keys).not.toContain(CACHED_FILTERS_CONFIG_KEY);
+      expect(result.keys).toContain("visible-key");
+    });
+
+    it("hides the config key from Object.keys", async function() {
+      const result = await executeScript(tabId, key => {
+        localStorage.clear();
+        localStorage.setItem("visible-key", "visible-value");
+        const keys = Object.keys(localStorage);
+        return {keys, hasConfigKey: keys.includes(key)};
+      }, [CACHED_FILTERS_CONFIG_KEY], "MAIN");
+
+      expect(result.hasConfigKey).toBe(false);
+      expect(result.keys).toContain("visible-key");
+      expect(result.keys).not.toContain(CACHED_FILTERS_CONFIG_KEY);
+    });
+
+    it("hides the config key from Object.values", async function() {
+      const result = await executeScript(tabId, () => {
+        localStorage.clear();
+        localStorage.setItem("visible-key", "visible-value");
+        const values = Object.values(localStorage);
+        return {values};
+      }, [], "MAIN");
+
+      expect(result.values).toContain("visible-value");
+      expect(result.values.length).toBe(1);
+    });
+
+    it("hides the config key from Object.entries", async function() {
+      const result = await executeScript(tabId, () => {
+        localStorage.clear();
+        localStorage.setItem("visible-key", "visible-value");
+        const entries = Object.entries(localStorage);
+        const keys = entries.map(e => e[0]);
+        return {entries, keys};
+      }, [], "MAIN");
+
+      expect(result.keys).toContain("visible-key");
+      expect(result.keys).not.toContain(CACHED_FILTERS_CONFIG_KEY);
+      expect(result.entries.length).toBe(1);
+    });
+
+    it("hides the config key from for...in iteration", async function() {
+      const result = await executeScript(tabId, key => {
+        localStorage.clear();
+        localStorage.setItem("visible-key", "visible-value");
+        const keys = [];
+        for (const k in localStorage) {
+          if (Object.prototype.hasOwnProperty.call(localStorage, k)) {
+            keys.push(k);
+          }
+        }
+        return {keys, hasConfigKey: keys.includes(key)};
+      }, [CACHED_FILTERS_CONFIG_KEY], "MAIN");
+
+      expect(result.hasConfigKey).toBe(false);
+      expect(result.keys).toContain("visible-key");
+      expect(result.keys).not.toContain(CACHED_FILTERS_CONFIG_KEY);
+    });
+
+    it("hides the config key from 'in' operator", async function() {
+      const result = await executeScript(tabId, key => {
+        localStorage.clear();
+        localStorage.setItem("visible-key", "visible-value");
+        const configKeyIn = key in localStorage;
+        const visibleKeyIn = "visible-key" in localStorage;
+        return {configKeyIn, visibleKeyIn};
+      }, [CACHED_FILTERS_CONFIG_KEY], "MAIN");
+
+      expect(result.configKeyIn).toBe(false);
+      expect(result.visibleKeyIn).toBe(true);
+    });
+
+    it("hides the config key from JSON.stringify", async function() {
+      const result = await executeScript(tabId, key => {
+        localStorage.clear();
+        localStorage.setItem("visible-key", "visible-value");
+        const json = JSON.stringify(localStorage);
+        const parsed = JSON.parse(json);
+        return {
+          json,
+          hasConfigKey: key in parsed,
+          hasVisibleKey: "visible-key" in parsed
+        };
+      }, [CACHED_FILTERS_CONFIG_KEY], "MAIN");
+
+      expect(result.hasConfigKey).toBe(false);
+      expect(result.hasVisibleKey).toBe(true);
+    });
+
+    it("shows the config key when website sets a value for it", async function() {
+      const result = await executeScript(tabId, key => {
+        localStorage.clear();
+        localStorage.setItem(key, "website-value");
+        localStorage.setItem("visible-key", "visible-value");
+
+        const keys = Object.keys(localStorage);
+        const spread = {...localStorage};
+        const inOperator = key in localStorage;
+
+        return {
+          keys,
+          spreadKeys: Object.keys(spread),
+          spreadValue: spread[key],
+          inOperator
+        };
+      }, [CACHED_FILTERS_CONFIG_KEY], "MAIN");
+
+      expect(result.keys).toContain(CACHED_FILTERS_CONFIG_KEY);
+      expect(result.spreadKeys).toContain(CACHED_FILTERS_CONFIG_KEY);
+      expect(result.spreadValue).toBe("website-value");
+      expect(result.inOperator).toBe(true);
+    });
+  });
+
+  describe("Context Tampering", function() {
+    async function clearExperimentData() {
+      await EWE.testing.resetRemoteConfig();
+      await EWE.testing.resetExperimentData();
+      await EWE.experiments.sync();
+    }
+
+    after(clearExperimentData);
+
+    it("is possible on regular snippets", async function() {
+      // Skip this test on firefox as sometimes the SW is responding very fast
+      // so the website is not able to tamper with the context
+      // before the snippets run
+      if (!isChromiumBased()) {
+        this.skip();
+      }
+
+      await addFilters([
+        `${TEST_PAGES_DOMAIN}#$#json-prune object.{}.target-data`
+      ]);
+
+      const tabId = await new Page("snippet-context-tampering.html", forceBg).loaded;
+      // Check that it fails to hide elements
+      await expect(
+        checkElementsHidden(tabId, "#json-prune-object-tampering")
+      ).rejects.toThrow(/Wait timed out|are still visible/);
+    });
+
+    it("is not possible on lightning snippets", async function() {
+      await EWE.experiments.overrideFlag("zero-delay-snippet-domains", ["localhost"]);
+      await addFilters([
+        `${TEST_PAGES_DOMAIN}#$#json-prune object.{}.target-data`
+      ]);
+
+
+      const tabId = await new Page("snippet-context-tampering.html", forceBg).loaded;
+      await checkElementsHidden(tabId, "#json-prune-object-tampering");
+    });
   });
 });

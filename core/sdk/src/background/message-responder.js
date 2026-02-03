@@ -21,16 +21,20 @@ import {fromSerializableError} from "../all/errors.js";
 import {default as initializer} from "./initializer.js";
 import {applyContentFilters, injectCSS} from "./content-filter.js";
 import {createStyleSheet} from "#adblockpluscore/lib/elemHide.js";
+import {contentTypes} from "#adblockpluscore/lib/contentTypes.js";
 import {subscribeLinkClicked} from "./subscribe-links.js";
-import {logHiddenElements} from "./diagnostics.js";
+import {logHiddenElements, logItem} from "./diagnostics.js";
 import {allowlistPage} from "./allowlisting.js";
-import {trace} from "./debugging.js";
+import {debugOptions, trace} from "./debugging.js";
 import {onContentHelloReceived} from "./content-message-deferrer.js";
 import {markActive, countBTAADetectionEvent} from "./cdp/index.js";
 import {default as sentry} from "./sentry.js";
 import {serverLogValidatedEvent} from "./telemetry/server-logger.js";
 import {handleMessageAPICall} from "./message-invoked-api.js";
 import {onHistoryStateUpdatedSafari} from "./safari-polyfill.js";
+import {filterEngine} from "./core.js";
+import {getFrameInfo} from "./frame-state.js";
+import {default as experiments} from "./experiments.js";
 
 async function handleMessage(message, sender) {
   trace({
@@ -95,6 +99,53 @@ async function handleMessage(message, sender) {
     case "ewe:safari-onhistorystateupdated":
       onHistoryStateUpdatedSafari(sender.tab.id, sender.frameId, message.event);
       break;
+    case "ewe:get-filters-config": {
+      const frame = getFrameInfo(sender.tab.id, sender.frameId);
+      const hostname = frame.hostname;
+      const experimentHosts =
+            await experiments.getFlag("zero-delay-snippet-domains");
+      const request = {
+        tabId: sender.tab.id,
+        frameId: sender.frameId,
+        url: frame.url
+      };
+
+      const defaultFiltersConfig = {
+        // If true, content scripts will mark visually the elements hidden
+        debug: debugOptions.elemHide,
+        // If true, content scripts will apply the filters from the local cache
+        // first, and if there are changes will update the cache and refresh
+        // the page.
+        useCache: Boolean(experimentHosts && experimentHosts.includes(hostname))
+      };
+
+      // If the document is allowlisted, no filters should be applied.
+      if (frame.allowlisted & contentTypes.DOCUMENT) {
+        return {
+          ...defaultFiltersConfig,
+          filters: []
+        };
+      }
+
+      const snippetFilters = filterEngine.snippets.getFilters(hostname);
+
+      // Asynchronously log snippet filters This needs to be wrapped in a
+      // promise callback so that we don't block the current execution context,
+      // and rather returns as soon as possible.
+      void Promise.resolve().then(() => {
+        snippetFilters.forEach(filter =>
+          logItem(request, filter, {
+            docDomain: frame.hostname,
+            method: "snippet"
+          })
+        );
+      });
+
+      return {
+        ...defaultFiltersConfig,
+        filters: snippetFilters.map(snippetItem => snippetItem.body)
+      };
+    }
   }
 }
 

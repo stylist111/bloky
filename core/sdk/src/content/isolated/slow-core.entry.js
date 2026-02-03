@@ -15,30 +15,12 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import browser from "webextension-polyfill";
-import {v4 as uuidv4} from "uuid";
+import "./core.entry.js";
 
-import {ignoreNoConnectionError} from "../all/errors.js";
-
-let sessionId = null;
-
-function onBTAADetectionEvent(event) {
-  if (!sessionId) {
-    sessionId = uuidv4();
+// The following code slows down the performance of the content scripts.
+// It is only intended to be used by the slow performance test extension.
+setInterval(() => {
+  for (let i = 0; i <= 1300; i++) {
+    console.log("Slow performance loop"); // eslint-disable-line no-console
   }
-
-  ignoreNoConnectionError(
-    browser.runtime.sendMessage({
-      type: "ewe:blockthrough-acceptable-ads-detection-event",
-      details: {
-        ab: event.detail.ab,
-        acceptable: event.detail.acceptable,
-        sessionId
-      }
-    })
-  );
-}
-
-export function startWatchingBlockthroughTag() {
-  window.addEventListener("BTAADetection", onBTAADetectionEvent);
-}
+}, 1000);

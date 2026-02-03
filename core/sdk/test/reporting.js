@@ -1450,17 +1450,17 @@ describe("Reporting", function() {
 
     it("logs snippets filter [fuzz]", async function() {
       // keep in-sync with `background.js`
-      const snippet = "injected-snippet";
+      const snippet = "override-property-read myVar 1 false";
 
       await checkLogging(
-        [`${TEST_PAGES_DOMAIN}#$#${snippet} true`],
+        [`${TEST_PAGES_DOMAIN}#$#${snippet}`],
         "defaultEventOptions",
         "image.html",
         [{
           filter: {
             isAddHeader: false,
             csp: null,
-            text: `${TEST_PAGES_DOMAIN}#$#${snippet} true`,
+            text: `${TEST_PAGES_DOMAIN}#$#${snippet}`,
             enabled: true,
             slow: false,
             thirdParty: null,

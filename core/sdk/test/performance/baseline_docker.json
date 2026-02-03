@@ -3,53 +3,53 @@
     "url": "https://www.example.com",
     "baselineMetrics": [
       {
-        "metric": "server-response-time",
-        "min": 1,
-        "max": 20,
-        "average": 5,
-        "median": 3
-      },
-      {
-        "metric": "max-potential-fid",
-        "min": 67,
-        "max": 117,
-        "average": 77,
-        "median": 70
-      },
-      {
         "metric": "interactive",
-        "min": 857,
-        "max": 909,
-        "average": 882,
-        "median": 875.5
+        "min": 1101,
+        "max": 1240,
+        "average": 1154,
+        "median": 1141.5
       },
       {
         "metric": "speed-index",
-        "min": 824,
-        "max": 876,
-        "average": 839,
-        "median": 830.5
-      },
-      {
-        "metric": "total-blocking-time",
-        "min": 8,
-        "max": 33,
-        "average": 13,
-        "median": 10
+        "min": 1043,
+        "max": 1122,
+        "average": 1063,
+        "median": 1057
       },
       {
         "metric": "bootup-time",
-        "min": 54,
-        "max": 84,
-        "average": 61,
-        "median": 57
+        "min": 204,
+        "max": 256,
+        "average": 216,
+        "median": 211.5
+      },
+      {
+        "metric": "total-blocking-time",
+        "min": 7,
+        "max": 90,
+        "average": 33,
+        "median": 34
+      },
+      {
+        "metric": "max-potential-fid",
+        "min": 271,
+        "max": 346,
+        "average": 290,
+        "median": 284
       },
       {
         "metric": "mainthread-work-breakdown",
-        "min": 279,
-        "max": 346,
-        "average": 304,
-        "median": 296
+        "min": 568,
+        "max": 708,
+        "average": 643,
+        "median": 643.5
+      },
+      {
+        "metric": "server-response-time",
+        "min": 11,
+        "max": 60,
+        "average": 22,
+        "median": 17.5
       }
     ]
   },
@@ -57,53 +57,53 @@
     "url": "https://www.bing.com/search?q=hotels&rdr=1&rdrig=9CD9B92BAD5040239D3AE448A7A9AABD",
     "baselineMetrics": [
       {
-        "metric": "server-response-time",
-        "min": 57,
-        "max": 97,
-        "average": 70,
-        "median": 64.5
-      },
-      {
-        "metric": "max-potential-fid",
-        "min": 305,
-        "max": 512,
-        "average": 403,
-        "median": 408
-      },
-      {
         "metric": "interactive",
-        "min": 5276,
-        "max": 7352,
-        "average": 6762,
-        "median": 6884
+        "min": 1951,
+        "max": 2305,
+        "average": 2090,
+        "median": 2075
       },
       {
         "metric": "speed-index",
-        "min": 1793,
-        "max": 2487,
-        "average": 1984,
-        "median": 1954
-      },
-      {
-        "metric": "total-blocking-time",
-        "min": 600,
-        "max": 1574,
-        "average": 1204,
-        "median": 1225.5
+        "min": 1459,
+        "max": 3034,
+        "average": 2085,
+        "median": 2268
       },
       {
         "metric": "bootup-time",
-        "min": 1370,
-        "max": 6500,
-        "average": 3448,
-        "median": 2016.5
+        "min": 1022,
+        "max": 5185,
+        "average": 4434,
+        "median": 4966
+      },
+      {
+        "metric": "total-blocking-time",
+        "min": 22,
+        "max": 220,
+        "average": 119,
+        "median": 110
+      },
+      {
+        "metric": "max-potential-fid",
+        "min": 85,
+        "max": 412,
+        "average": 154,
+        "median": 123.5
       },
       {
         "metric": "mainthread-work-breakdown",
-        "min": 4471,
-        "max": 10606,
-        "average": 7485,
-        "median": 6140
+        "min": 3148,
+        "max": 7641,
+        "average": 6815,
+        "median": 7398.5
+      },
+      {
+        "metric": "server-response-time",
+        "min": 60,
+        "max": 172,
+        "average": 90,
+        "median": 81.5
       }
     ]
   },
@@ -111,53 +111,53 @@
     "url": "https://en.m.wikipedia.org/wiki/Cat",
     "baselineMetrics": [
       {
-        "metric": "server-response-time",
-        "min": 13,
-        "max": 14,
-        "average": 13,
-        "median": 13
-      },
-      {
-        "metric": "max-potential-fid",
-        "min": 312,
-        "max": 337,
-        "average": 323,
-        "median": 322
-      },
-      {
         "metric": "interactive",
-        "min": 4289,
-        "max": 4437,
-        "average": 4339,
-        "median": 4321
+        "min": 5603,
+        "max": 6059,
+        "average": 5767,
+        "median": 5761
       },
       {
         "metric": "speed-index",
-        "min": 2252,
-        "max": 2446,
-        "average": 2336,
-        "median": 2328.5
-      },
-      {
-        "metric": "total-blocking-time",
-        "min": 409,
-        "max": 522,
-        "average": 445,
-        "median": 438
+        "min": 3081,
+        "max": 3668,
+        "average": 3350,
+        "median": 3321.5
       },
       {
         "metric": "bootup-time",
-        "min": 896,
-        "max": 4764,
-        "average": 4511,
-        "median": 4689.5
+        "min": 1017,
+        "max": 4995,
+        "average": 3954,
+        "median": 4902
+      },
+      {
+        "metric": "total-blocking-time",
+        "min": 346,
+        "max": 585,
+        "average": 443,
+        "median": 456.5
+      },
+      {
+        "metric": "max-potential-fid",
+        "min": 308,
+        "max": 414,
+        "average": 352,
+        "median": 346.5
       },
       {
         "metric": "mainthread-work-breakdown",
-        "min": 3109,
-        "max": 7545,
-        "average": 7129,
-        "median": 7317
+        "min": 2979,
+        "max": 7963,
+        "average": 6492,
+        "median": 7443.5
+      },
+      {
+        "metric": "server-response-time",
+        "min": 9,
+        "max": 10,
+        "average": 10,
+        "median": 10
       }
     ]
   },
@@ -165,53 +165,53 @@
     "url": "https://harrypotter.fandom.com/wiki/Main_Page",
     "baselineMetrics": [
       {
-        "metric": "server-response-time",
-        "min": 2,
-        "max": 6,
-        "average": 3,
-        "median": 3
-      },
-      {
-        "metric": "max-potential-fid",
-        "min": 217,
-        "max": 422,
-        "average": 312,
-        "median": 310
-      },
-      {
         "metric": "interactive",
-        "min": 10056,
-        "max": 17104,
-        "average": 12162,
-        "median": 11857
+        "min": 3068,
+        "max": 13830,
+        "average": 11492,
+        "median": 13579.5
       },
       {
         "metric": "speed-index",
-        "min": 2395,
-        "max": 4107,
-        "average": 2961,
-        "median": 2924.5
-      },
-      {
-        "metric": "total-blocking-time",
-        "min": 695,
-        "max": 1401,
-        "average": 1120,
-        "median": 1188.5
+        "min": 1346,
+        "max": 7071,
+        "average": 5638,
+        "median": 6652
       },
       {
         "metric": "bootup-time",
-        "min": 1688,
-        "max": 1975,
-        "average": 1797,
-        "median": 1783
+        "min": 1167,
+        "max": 5938,
+        "average": 4936,
+        "median": 5859
+      },
+      {
+        "metric": "total-blocking-time",
+        "min": 665,
+        "max": 3029,
+        "average": 2370,
+        "median": 2686.5
+      },
+      {
+        "metric": "max-potential-fid",
+        "min": 421,
+        "max": 727,
+        "average": 626,
+        "median": 661
       },
       {
         "metric": "mainthread-work-breakdown",
-        "min": 5065,
-        "max": 5923,
-        "average": 5423,
-        "median": 5407
+        "min": 1747,
+        "max": 10492,
+        "average": 8562,
+        "median": 10157
+      },
+      {
+        "metric": "server-response-time",
+        "min": 9,
+        "max": 125,
+        "average": 63,
+        "median": 68
       }
     ]
   },
@@ -219,53 +219,53 @@
     "url": "https://m.youtube.com/watch?v=dQw4w9WgXcQ",
     "baselineMetrics": [
       {
-        "metric": "server-response-time",
-        "min": 32,
-        "max": 65,
-        "average": 48,
-        "median": 44
-      },
-      {
-        "metric": "max-potential-fid",
-        "min": 1028,
-        "max": 1069,
-        "average": 1042,
-        "median": 1039.5
-      },
-      {
         "metric": "interactive",
-        "min": 11821,
-        "max": 12464,
-        "average": 11998,
-        "median": 11937.5
+        "min": 11965,
+        "max": 12992,
+        "average": 12459,
+        "median": 12479.5
       },
       {
         "metric": "speed-index",
-        "min": 6122,
-        "max": 7291,
-        "average": 6569,
-        "median": 6571.5
-      },
-      {
-        "metric": "total-blocking-time",
-        "min": 3321,
-        "max": 3743,
-        "average": 3570,
-        "median": 3578.5
+        "min": 6468,
+        "max": 7845,
+        "average": 7091,
+        "median": 7039
       },
       {
         "metric": "bootup-time",
-        "min": 4620,
-        "max": 4978,
-        "average": 4763,
-        "median": 4751.5
+        "min": 3980,
+        "max": 4548,
+        "average": 4289,
+        "median": 4293
+      },
+      {
+        "metric": "total-blocking-time",
+        "min": 1746,
+        "max": 2431,
+        "average": 2007,
+        "median": 1969.5
+      },
+      {
+        "metric": "max-potential-fid",
+        "min": 547,
+        "max": 651,
+        "average": 599,
+        "median": 597.5
       },
       {
         "metric": "mainthread-work-breakdown",
-        "min": 11589,
-        "max": 12381,
-        "average": 11806,
-        "median": 11749
+        "min": 8393,
+        "max": 9412,
+        "average": 8700,
+        "median": 8717.5
+      },
+      {
+        "metric": "server-response-time",
+        "min": 42,
+        "max": 99,
+        "average": 68,
+        "median": 67.5
       }
     ]
   },
@@ -273,25 +273,11 @@
     "url": "https://www.microsoft.com/de-de/",
     "baselineMetrics": [
       {
-        "metric": "server-response-time",
-        "min": 33,
-        "max": 69,
-        "average": 44,
-        "median": 39.5
-      },
-      {
-        "metric": "max-potential-fid",
-        "min": 566,
-        "max": 631,
-        "average": 593,
-        "median": 589.5
-      },
-      {
         "metric": "interactive",
-        "min": 9495,
-        "max": 10162,
-        "average": 9866,
-        "median": 9849.5
+        "min": 13241,
+        "max": 14063,
+        "average": 13628,
+        "median": 13638.5
       },
       {
         "metric": "speed-index",
@@ -301,25 +287,39 @@
         "median": 4712.5
       },
       {
-        "metric": "total-blocking-time",
-        "min": 1568,
-        "max": 2027,
-        "average": 1801,
-        "median": 1807
+        "metric": "bootup-time",
+        "min": 2958,
+        "max": 3281,
+        "average": 3105,
+        "median": 3113
       },
       {
-        "metric": "bootup-time",
-        "min": 6117,
-        "max": 31771,
-        "average": 12770,
-        "median": 12458.5
+        "metric": "total-blocking-time",
+        "min": 1175,
+        "max": 1515,
+        "average": 1319,
+        "median": 1323.5
+      },
+      {
+        "metric": "max-potential-fid",
+        "min": 290,
+        "max": 372,
+        "average": 322,
+        "median": 327
       },
       {
         "metric": "mainthread-work-breakdown",
-        "min": 12301,
-        "max": 43581,
-        "average": 21005,
-        "median": 20487
+        "min": 6371,
+        "max": 7018,
+        "average": 6692,
+        "median": 6652
+      },
+      {
+        "metric": "server-response-time",
+        "min": 88,
+        "max": 708,
+        "average": 162,
+        "median": 117.5
       }
     ]
   }

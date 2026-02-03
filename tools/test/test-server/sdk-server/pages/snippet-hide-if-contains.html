@@ -1,0 +1,30 @@
+<div id="awaiting" data-expectedresult="fail">Awaiting content</div>
+<div id="hic-static" data-expectedresult="fail">hic-basic-static</div>
+<div id="hic-regex-2" data-expectedresult="fail">hic-regex-2</div>
+<div id="hic-regex-3" data-expectedresult="fail">hic-regex-3</div>
+<iframe
+  id="hic-iframe"
+  src="/snippet-hide-if-frame.html"
+  style="border: 0; width: 200px; height: 100px; flex-grow: 1"
+></iframe>
+
+<script type="text/javascript">
+  "use strict";
+
+  setTimeout(() => {
+    let dynamic = document.createElement("div");
+    dynamic.id = "hic-dynamic-id";
+    dynamic.innerHTML = "<div>hic-basic-dynamic</div>";
+    dynamic.setAttribute("data-expectedresult", "fail");
+
+    let search = document.createElement("div");
+    search.id = Math.random().toString(36).substring(2);
+    search.className = "hic-target";
+    search.setAttribute("data-expectedresult", "fail");
+    search.innerHTML = "hic-search";
+
+    document.body.appendChild(dynamic);
+    document.body.appendChild(search);
+    document.getElementById("awaiting").hidden = true;
+  }, 500);
+</script>

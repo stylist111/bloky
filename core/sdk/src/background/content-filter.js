@@ -19,24 +19,15 @@ import browser from "./browser.js";
 
 import {createStyleSheet} from "#adblockpluscore/lib/elemHide.js";
 import {contentTypes} from "#adblockpluscore/lib/contentTypes.js";
-import {parseScript, prepareInlineScriptForInjection} from "#adblockpluscore/lib/snippets.js";
 
 import {filterEngine} from "./core.js";
 import {getFrameInfo} from "./frame-state.js";
-import {logItem, tracingEnabled} from "./diagnostics.js";
+import {tracingEnabled} from "./diagnostics.js";
 import {debugOptions, trace, debug, warn} from "./debugging.js";
 import {arraysDiff} from "./set-operations.js";
 import {shouldNotifyActive} from "./cdp/index.js";
 import {patchSender as patchHistoryApi} from "./safari-history.js";
 import {isSafari} from "./info.js";
-
-let isolatedLib;
-let injectedLib;
-
-export function setSnippetLibrary({isolatedCode, injectedCode}) {
-  isolatedLib = isolatedCode;
-  injectedLib = injectedCode;
-}
 
 function calculateSelectorsDiff(previousStylesheet, styleSheet) {
   let diff = arraysDiff(previousStylesheet.selectors, styleSheet.selectors);
@@ -100,159 +91,6 @@ function generateStylesheet(tabId, previousFrame, frame) {
   return styleSheet;
 }
 
-async function executeSnippets(tabId, frameId, previousFrame, frame) {
-  if (!isolatedLib || !injectedLib) {
-    console.warn("Snippets are not initialized. Use `setSnippetLibrary()` to initialize snippets.");
-    return;
-  }
-
-  let details = {tabId, frameIds: [frameId]};
-  let filters = filterEngine.snippets.getFilters(frame.hostname);
-  let scripts = filters.map(({script}) => script);
-  let environment = {};
-  if (debugOptions.elemHide) {
-    environment.debugCSSProperties = debugOptions.snippetsCssProperties;
-  }
-
-  let isolatedDependencies = [];
-  let isolated = [];
-  let main = [];
-
-  if (isSafari()) {
-    console.warn("Patching history API sender");
-    await patchHistoryApi(details);
-  }
-
-  for (let script of scripts) {
-    for (let [snippet, ...args] of parseScript(script)) {
-      if (isolatedLib.has(snippet)) {
-        let dependency = isolatedLib.get(snippet);
-        if (dependency) {
-          isolatedDependencies.push(dependency);
-        }
-        isolated.push([snippet, ...args]);
-      }
-      if (injectedLib.has(snippet)) {
-        main.push([snippet, ...args]);
-      }
-    }
-  }
-
-  let execute = [];
-  if (browser.scripting && browser.scripting.executeScript) {
-    if (isolated.length > 0) {
-      if (isolatedDependencies.length) {
-        let isolatedDepsPromises = [];
-        for (let dependency of isolatedDependencies) {
-          debug(() => `Execute dependency script ${dependency}`);
-          isolatedDepsPromises.push(browser.scripting.executeScript({
-            target: details,
-            world: "ISOLATED",
-            func: dependency
-          }));
-        }
-        await Promise.all(isolatedDepsPromises);
-      }
-
-      debug(() => `Execute isolated script ${isolatedLib}`);
-      execute.push(
-        browser.scripting.executeScript({
-          target: details,
-          world: "ISOLATED",
-          func: isolatedLib,
-          args: [environment, ...isolated]
-        })
-      );
-    }
-
-    if (main.length > 0) {
-      // Firefox 108 - 128 does not support injection into main world.
-      // We fallback to injecting snippets with inline script in those cases.
-      // https://bugzilla.mozilla.org/show_bug.cgi?id=1736575
-      if (Object.values(browser.scripting.ExecutionWorld).includes("MAIN")) {
-        debug(() => `Execute main script ${injectedLib}`);
-        execute.push(
-          browser.scripting.executeScript({
-            target: details,
-            world: "MAIN",
-            injectImmediately: true,
-            func: injectedLib,
-            args: [environment, ...main]
-          })
-        );
-      }
-      else {
-        const executable = prepareInlineScriptForInjection(
-          injectedLib,
-          environment,
-          ...main
-        );
-        debug(() => `Execute main script ${executable}`);
-        execute.push(
-          browser.tabs.executeScript(
-            tabId,
-            {
-              frameId,
-              code: executable,
-              matchAboutBlank: true,
-              runAt: "document_start"
-            })
-        );
-      }
-    }
-  }
-  else {
-    if (isolated.length > 0) {
-      const args = JSON.stringify([environment, ...isolated]);
-      let code = "";
-      // prepend all dependencies before the snippets
-      if (isolatedDependencies.length) {
-        for (const cb of isolatedDependencies) {
-          code += `(${cb})();`;
-        }
-      }
-      code += `(${isolatedLib}).apply(null,${args})`;
-      debug(() => `Execute isolated script ${code}`);
-      execute.push(
-        browser.tabs.executeScript(
-          tabId,
-          {
-            frameId,
-            code,
-            matchAboutBlank: true,
-            runAt: "document_start"
-          }));
-    }
-
-    if (main.length > 0) {
-      const executable = prepareInlineScriptForInjection(
-        injectedLib,
-        environment,
-        ...main
-      );
-      debug(() => `Execute main script ${executable}`);
-      execute.push(
-        browser.tabs.executeScript(
-          tabId,
-          {
-            frameId,
-            code: executable,
-            matchAboutBlank: true,
-            runAt: "document_start"
-          })
-      );
-    }
-  }
-
-  let request = {tabId, frameId, url: frame.url};
-  Promise.all(execute).then(() => filters.forEach(filter => {
-    logItem(request, filter, {
-      docDomain: frame.hostname,
-      method: "snippet"
-    });
-  }), () => {});
-}
-
 export async function applyContentFilters(
   tabId, frameId, previousFrame, skipSnippets) {
   const frame = getFrameInfo(tabId, frameId);
@@ -268,8 +106,13 @@ export async function applyContentFilters(
       await removeCSS(tabId, frameId, styleSheet.removedCode);
     }
 
-    if (!skipSnippets && !(frame.allowlisted & contentTypes.DOCUMENT)) {
-      executeSnippets(tabId, frameId, previousFrame, frame);
+    if (
+      !skipSnippets &&
+      !(frame.allowlisted & contentTypes.DOCUMENT) &&
+      isSafari()
+    ) {
+      console.warn("Patching history API sender");
+      patchHistoryApi({tabId, frameIds: [frameId]});
     }
 
     if (!(frame.allowlisted & contentTypes.DOCUMENT) &&

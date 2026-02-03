@@ -7,6 +7,11 @@
   the correct thing in our CI builds, but may have been undefined behavior if
   building in other contexts.
 
+## Breaking Changes
+
+- Removed `EWE.snippets` API. Snippets are packaged by default within the SDK
+  and can no longer be customized. Part of (EXT-1099)
+
 # 3.1.0 - 2026-02-02
 
 ## General
@@ -16,7 +21,7 @@
 ## Fixes
 
 - Fixed `$genericblock` exception filters incorrectly allowing `$addheader`
-  rules in MV2 and not being logged in MV2/MV3 (EXT-1126).
+  rules in MV2 and not being logged in MV2/MV3. (EXT-1126)
 - Fixed `$addheader` rules that apply to response headers in Manifest v2.
 
 ## CDP

@@ -24,9 +24,11 @@ import fs from "fs";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import GenerateJsonPlugin from "generate-json-webpack-plugin";
 import CopyPlugin from "copy-webpack-plugin";
+import TerserPlugin from "terser-webpack-plugin";
 import Dotenv from "dotenv-webpack";
 import {createRequire} from "module";
 import {default as events} from "./events.js";
+import RemoveSourceMapPlugin from "./scripts/webpack-remove-sourcemap.js";
 
 const require = createRequire(import.meta.url);
 
@@ -156,7 +158,7 @@ function commonPlugins() {
 function eweBuild(env, configName, subscriptionFile, silent, outputPath,
                   dependencies) {
   const content = configName === "engine-slow" ?
-    "./src/content/slow-performance-index.js" : "./src/content/index.js";
+    "./src/content/isolated/slow-core.entry.js" : "./src/content/isolated/core.entry.js";
 
   let build = {
     name: configName,
@@ -175,8 +177,11 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath,
         library: {name: "EWE", type: "umd"}
       },
       "content-api": {
-        import: "./src/content/api/index.js",
+        import: "./src/content/isolated/api.entry.js",
         library: {name: "EWE", type: "umd"}
+      },
+      "content-main": {
+        import: "./src/content/main/snippets.entry.js"
       }
     },
     output: {
@@ -187,9 +192,6 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath,
     optimization: {
       minimize: false
     },
-    // This has to be inline-source-map for debugging the content script to
-    // work, since the .js.map file isn't web accessible.
-    devtool: "inline-source-map",
     performance: {
       hints: false
     },
@@ -209,9 +211,29 @@ function eweBuild(env, configName, subscriptionFile, silent, outputPath,
         }
       ]
     },
+    // Use inline source maps for all files to enable debugging of content
+    // scripts (external .js.map files aren't web accessible).
+    // IMPORTANT: In release builds, we strip inline source maps from
+    // content scripts to reduce file size. See RemoveSourceMapPlugin below.
+    devtool: "inline-source-map",
     plugins: [
       new GenerateJsonPlugin("package.json", {type: "commonjs"}, null, 2),
       new GenerateJsonPlugin("events.json", events, null, 2),
+      ...(env.release ? [
+        // Enable minification for content scripts only, if in release mode.
+        new TerserPlugin({
+          test: /ewe-content\.js/,
+          terserOptions: {
+            compress: true,
+            mangle: true
+          },
+          extractComments: false
+        }),
+        // Strip inline source maps from content scripts to reduce file size
+        new RemoveSourceMapPlugin({
+          test: /^ewe-content(-main)?\.js$/
+        })
+      ] : []),
       ...commonPlugins()
     ]
   };
@@ -258,6 +280,14 @@ export default (env = {}) => {
         match_about_blank: true,
         matches: ["http://*/*", "https://*/*"],
         run_at: "document_start"
+      },
+      {
+        all_frames: true,
+        js: ["ewe-content-main.js"],
+        match_about_blank: true,
+        matches: ["http://*/*", "https://*/*"],
+        run_at: "document_start",
+        world: "MAIN"
       }
     ];
 

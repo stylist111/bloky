@@ -91,6 +91,14 @@ activeTab
     } else if (search) {
       pageContent += "?…";
     }
+
+    // Special case for YouTube pages (as they are SPA) the allowlist
+    // page is not supported, since snippets are not injected properly,
+    // so we hide this section entirely
+    if (/\.youtube\.com$/.test(hostname)) {
+      $(".status_block.page").style.display = "none";
+    }
+
     $("#blocking-page").textContent = pageContent;
     $("#issue-reporter").addEventListener("click", () => reportIssue(tab));
     // drop the text content but keep it as aria-label
