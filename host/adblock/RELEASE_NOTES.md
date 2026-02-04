@@ -1,5 +1,7 @@
 # Unreleased
 
+# 6.34.0 - 2026-02-04
+
 - Snippets are now initialized at the SDK level.
 
 # 6.33.6 - 2026-01-27
