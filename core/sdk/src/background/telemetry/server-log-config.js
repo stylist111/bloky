@@ -11,7 +11,7 @@ import {default as remoteConfig} from "../remote-config/index.js";
 import {modHashString} from "../../all/hashing.js";
 import {getLoggingConfig} from "../remote-config/storage.js";
 
-const DEFAULT_ID_ROTATION_PERIOD = 7 * MILLIS_IN_DAY;
+const DEFAULT_ID_ROTATION_PERIOD = 30 * MILLIS_IN_DAY;
 let idRotationPeriod = DEFAULT_ID_ROTATION_PERIOD;
 let scheduler = null;
 
