@@ -292,12 +292,13 @@ create_release_mr_back_to_main:
   needs: []
   script:
     - |
-      if glab mr list --order created_at --output json | jq -r ".[].sha" | grep "$CI_COMMIT_SHA" ; then
+      if glab mr list --all --order created_at --output json | jq -r ".[].sha" | grep "$CI_COMMIT_SHA" ; then
         echo "MR already exists for commit $CI_COMMIT_SHA"
       else
         git checkout -B $CI_COMMIT_TAG-merge-back-to-main refs/tags/$CI_COMMIT_TAG
         git push origin $CI_COMMIT_TAG-merge-back-to-main
-        glab mr create --title "$CI_COMMIT_TITLE" --description "Automatically bringing release changes back to the main branch" --remove-source-branch --yes
+        # Using glab api because glab mr create doesn't support setting --squash=false. See https://gitlab.com/gitlab-org/cli/-/issues/8144
+        glab api -X POST projects/:id/merge_requests -F source_branch="$CI_COMMIT_TAG-merge-back-to-main" -F target_branch="main" -F title="$CI_COMMIT_TITLE" -F description="Automatically bringing release changes back to the main branch" -F squash=false -F remove_source_branch=true
       fi
 
 upload_sourcemaps:
