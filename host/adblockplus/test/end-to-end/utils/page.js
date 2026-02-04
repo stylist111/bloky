@@ -886,6 +886,35 @@ export async function callUIExperimentsAPI(methodName, ...params) {
   return experimentFlags;
 }
 
+export async function callUIAccountAPI(methodName, ...params) {
+  const currentHandle = await driver.getWindowHandle();
+  await initOptionsGeneralTab(getOptionsHandle());
+
+  // wait for the ewe module to be available
+  await driver.wait(
+    async () => {
+      const result = await driver.executeScript(() => {
+        return ewe;
+      });
+      return result;
+    },
+    5000,
+    "Timeout waiting for the ewe module to be available"
+  );
+
+  const accountData = await driver.executeAsyncScript(
+    async (method, args, callback) => {
+      const result = await ewe?.account[method](...args);
+      callback(result);
+    },
+    methodName,
+    params
+  );
+
+  await driver.switchTo().window(currentHandle);
+  return accountData;
+}
+
 export async function loadPageWithTrustedIframe(pageUrl, trustedIframeSrc) {
   await openNewTab(pageUrl);
 

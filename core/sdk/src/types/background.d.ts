@@ -494,6 +494,51 @@ export interface Facts {
   countryCode?: string;
 }
 
+/**
+ * Product-specific consent preferences
+ */
+export interface ProductConsents {
+  /**
+   * Whether the user has consented to marketing emails for this product
+   */
+  marketingEmail?: boolean;
+}
+
+/**
+ * Information about a specific product subscription
+ */
+export interface ProductInfo {
+  /**
+   * Whether the user is currently on a trial for this product
+   */
+  isTrial?: boolean;
+
+  /**
+   * Number of days remaining in the trial period, or null if not on trial
+   */
+  trialDaysLeft?: number | null;
+
+  /**
+   * User consent preferences for this product
+   */
+  consents?: ProductConsents;
+}
+
+/**
+ * Container for product-specific user information
+ */
+export interface UserProducts {
+  /**
+   * AdBlock product information
+   */
+  ab?: ProductInfo;
+
+  /**
+   * Adblock Plus product information
+   */
+  abp?: ProductInfo;
+}
+
 export interface UserProfile {
   /**
    * The user's email address.
@@ -515,6 +560,12 @@ export interface UserProfile {
    * e.g., "premium", "adblocker"
    */
   features?: string[];
+
+  /**
+   * Product-specific information for the user including trial status,
+   * trial days remaining, and consent preferences for each product (ab/abp)
+   */
+  products?: UserProducts;
 }
 
 export interface ProfileSyncStatus {
@@ -840,6 +891,27 @@ declare module "@eyeo/webext-ad-filtering-solution" {
      * Retrieves the current user profile
      */
     const getProfile: () => Promise<UserProfile>;
+
+    /**
+     * Retrieves the user's trial status
+     */
+    const getTrial: () => Promise<{ab?: boolean, abp?: boolean}>;
+
+    /**
+     * Retrieves the user's consent preferences
+     */
+    const getConsents: () => Promise<{
+      ab?: Record<string, boolean>,
+      abp?: Record<string, boolean>
+    }>;
+
+    /**
+     * Retrieves the user's trial days left
+     */
+    const getTrialDaysLeft: () => Promise<{
+      ab?: number | null,
+      abp?: number | null
+    }>;
 
     /**
      * Checks if the user has an active premium subscription.

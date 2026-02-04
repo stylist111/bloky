@@ -132,6 +132,54 @@ export async function getProfile() {
 }
 
 /**
+ * Retrieves the user's trial status from the account storage.
+ *
+ * @return {Promise<{ab: boolean, abp: boolean}>}
+ */
+export async function getTrial() {
+  const state = await accountData.getStateLoaded();
+  const user = state.user || {};
+  const products = user.products || {};
+
+  return {
+    ab: products.ab ? products.ab.isTrial : null,
+    abp: products.abp ? products.abp.isTrial : null
+  };
+}
+
+/**
+ * Retrieves the user's consent preferences from the account storage.
+ *
+ * @return {Promise<{ab: Object, abp: Object}>}
+ */
+export async function getConsents() {
+  const state = await accountData.getStateLoaded();
+  const user = state.user || {};
+  const products = user.products || {};
+
+  return {
+    ab: products.ab ? products.ab.consents : null,
+    abp: products.abp ? products.abp.consents : null
+  };
+}
+
+/**
+ * Retrieves the user's trial days left from the account storage.
+ *
+ * @return {Promise<{ab: number, abp: number}>}
+ */
+export async function getTrialDaysLeft() {
+  const state = await accountData.getStateLoaded();
+  const user = state.user || {};
+  const products = user.products || {};
+
+  return {
+    ab: products.ab ? products.ab.trialDaysLeft : null,
+    abp: products.abp ? products.abp.trialDaysLeft : null
+  };
+}
+
+/**
  * Clears the account storage by removing all user data
  * It emits an event to notify that the user data has been logged out.
  *

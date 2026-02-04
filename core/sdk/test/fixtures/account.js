@@ -18,7 +18,23 @@ export const PREMIUM_USER_PROFILE = {
   user: {
     email: "ewe-test@functional.com",
     displayName: "Test User",
-    features: [FEATURES.PREMIUM]
+    features: [FEATURES.PREMIUM],
+    products: {
+      ab: {
+        isTrial: false,
+        trialDaysLeft: null,
+        consents: {
+          marketingEmail: true
+        }
+      },
+      abp: {
+        isTrial: false,
+        trialDaysLeft: null,
+        consents: {
+          marketingEmail: true
+        }
+      }
+    }
   }
 };
 
@@ -27,11 +43,51 @@ export const STORED_PREMIUM_USER_PROFILE = {
   hasPremium: true
 };
 
+export const PREMIUM_USER_WITH_TRIAL_PROFILE = {
+  user: {
+    email: "ewe-test@functional.com",
+    displayName: "Test User",
+    features: [FEATURES.PREMIUM],
+    products: {
+      ab: {
+        isTrial: true,
+        trialDaysLeft: 15,
+        consents: {
+          marketingEmail: false
+        }
+      },
+      abp: {
+        isTrial: true,
+        trialDaysLeft: 10,
+        consents: {
+          marketingEmail: false
+        }
+      }
+    }
+  }
+};
+
 export const FREE_USER_PROFILE = {
   user: {
     email: "ewe-test@functional.com",
     displayName: "Test User",
-    features: ["VPN"]
+    features: ["VPN"],
+    products: {
+      ab: {
+        isTrial: false,
+        trialDaysLeft: null,
+        consents: {
+          marketingEmail: false
+        }
+      },
+      abp: {
+        isTrial: false,
+        trialDaysLeft: null,
+        consents: {
+          marketingEmail: true
+        }
+      }
+    }
   }
 };
 
@@ -49,6 +105,11 @@ export const INTERNAL_SERVER_ERROR = {
   details: {
     message: "Something went wrong on the server"
   }
+};
+
+export const STORED_PREMIUM_USER_WITH_TRIAL_PROFILE = {
+  ...PREMIUM_USER_WITH_TRIAL_PROFILE.user,
+  hasPremium: true
 };
 
 export const STORED_FREE_USER_PROFILE = {

@@ -34,9 +34,11 @@ import {
 } from "./utils.js";
 import {
   PREMIUM_USER_PROFILE,
+  PREMIUM_USER_WITH_TRIAL_PROFILE,
   ACCOUNT_ROUTES,
   ACCOUNT_PATHS,
   STORED_PREMIUM_USER_PROFILE,
+  STORED_PREMIUM_USER_WITH_TRIAL_PROFILE,
   PROFILE_SYNC_URL,
   STORED_FREE_USER_PROFILE,
   REFRESH_TOKEN_INVALID_ERROR,
@@ -104,6 +106,27 @@ async function assertAccountState({
     expect(await EWE.account.hasPremium()).toBe(hasPremium);
     expect(await EWE.account.getProfile())
       .toStrictEqual(profile);
+    expect(await EWE.account.getTrial())
+      .toStrictEqual({
+        ab: profile && profile.products && profile.products.ab ?
+          profile.products.ab.isTrial : null,
+        abp: profile && profile.products && profile.products.abp ?
+          profile.products.abp.isTrial : null
+      });
+    expect(await EWE.account.getConsents())
+      .toStrictEqual({
+        ab: profile && profile.products && profile.products.ab ?
+          profile.products.ab.consents : null,
+        abp: profile && profile.products && profile.products.abp ?
+          profile.products.abp.consents : null
+      });
+    expect(await EWE.account.getTrialDaysLeft())
+      .toStrictEqual({
+        ab: profile && profile.products && profile.products.ab ?
+          profile.products.ab.trialDaysLeft : null,
+        abp: profile && profile.products && profile.products.abp ?
+          profile.products.abp.trialDaysLeft : null
+      });
 
     const syncStatus = await EWE.account.getProfileSyncStatus();
 
@@ -125,6 +148,16 @@ async function assertPremiumUser() {
     isLoggedIn: true,
     hasPremium: true,
     profile: STORED_PREMIUM_USER_PROFILE,
+    expectLastSuccessfulRequest: true,
+    expectLastRequestError: false
+  });
+}
+
+async function assertPremiumUserWithTrial() {
+  return assertAccountState({
+    isLoggedIn: true,
+    hasPremium: true,
+    profile: STORED_PREMIUM_USER_WITH_TRIAL_PROFILE,
     expectLastSuccessfulRequest: true,
     expectLastRequestError: false
   });
@@ -482,6 +515,156 @@ describe("Account", function() {
       // minus the max fetch duration of all retry attempts.
       expect((await getRequestLogIntervals(PROFILE_SYNC_URL))[2])
         .toBeGreaterThanOrEqual(errorRetryDelay - maxFetchDuration);
+    });
+  });
+
+  describe("Trial user profile", function() {
+    beforeEach(async function() {
+      await EWE.testing.stopAccount();
+      await EWE.testing.clearAccountStorage();
+      await startWithTestArgs({disableAutosync: false});
+      await setEndpointResponse(
+        ACCOUNT_PATHS.PROFILE,
+        PREMIUM_USER_WITH_TRIAL_PROFILE,
+        "GET",
+        200
+      );
+      await clearTestEvents("account.onChanged");
+      onChangedEvents = [];
+    });
+
+    it("identifies user on trial as premium", async function() {
+      await logInUser();
+      await assertPremiumUserWithTrial();
+
+      onChangedEvents.push([{
+        oldUser: null,
+        user: STORED_PREMIUM_USER_WITH_TRIAL_PROFILE
+      }]);
+      await expectTestEvents("account.onChanged", onChangedEvents);
+    });
+
+    it("returns correct trial status for trial user", async function() {
+      await logInUser();
+      await assertPremiumUserWithTrial();
+
+      const trial = await EWE.account.getTrial();
+      expect(trial).toEqual({
+        ab: true,
+        abp: true
+      });
+    });
+
+    it("returns trial days left for trial user", async function() {
+      await logInUser();
+      await assertPremiumUserWithTrial();
+
+      const trialDaysLeft = await EWE.account.getTrialDaysLeft();
+      expect(trialDaysLeft).toEqual({
+        ab: 15,
+        abp: 10
+      });
+    });
+
+    it("returns correct consents for trial user", async function() {
+      await logInUser();
+      await assertPremiumUserWithTrial();
+
+      const consents = await EWE.account.getConsents();
+      expect(consents).toEqual({
+        ab: {marketingEmail: false},
+        abp: {marketingEmail: false}
+      });
+    });
+
+    it("transitions from trial to paid premium", async function() {
+      await logInUser();
+      await assertPremiumUserWithTrial();
+
+      onChangedEvents.push([{
+        oldUser: null,
+        user: STORED_PREMIUM_USER_WITH_TRIAL_PROFILE
+      }]);
+      await expectTestEvents("account.onChanged", onChangedEvents);
+
+      // Simulate trial ending and user purchasing premium
+      await setEndpointResponse(
+        ACCOUNT_PATHS.PROFILE,
+        PREMIUM_USER_PROFILE,
+        "GET",
+        200
+      );
+
+      // Wait for profile sync to pick up the change
+      await delayThenExpectNextPing({
+        delay: PING_INTERVAL_MS,
+        url: PROFILE_SYNC_URL
+      });
+      await assertPremiumUser();
+
+      onChangedEvents.push([{
+        oldUser: STORED_PREMIUM_USER_WITH_TRIAL_PROFILE,
+        user: STORED_PREMIUM_USER_PROFILE
+      }]);
+      await expectTestEvents("account.onChanged", onChangedEvents);
+
+      // Verify trial status changed
+      const trial = await EWE.account.getTrial();
+      expect(trial).toEqual({
+        ab: false,
+        abp: false
+      });
+
+      const trialDaysLeft = await EWE.account.getTrialDaysLeft();
+      expect(trialDaysLeft).toEqual({
+        ab: null,
+        abp: null
+      });
+    });
+
+    it("transitions from trial to free user", async function() {
+      await logInUser();
+      await assertPremiumUserWithTrial();
+
+      onChangedEvents.push([{
+        oldUser: null,
+        user: STORED_PREMIUM_USER_WITH_TRIAL_PROFILE
+      }]);
+      await expectTestEvents("account.onChanged", onChangedEvents);
+
+      // Simulate trial expiring without purchase
+      await setEndpointResponse(
+        ACCOUNT_PATHS.PROFILE,
+        {user: STORED_FREE_USER_PROFILE},
+        "GET",
+        200
+      );
+
+      // Wait for profile sync to pick up the change
+      await delayThenExpectNextPing({
+        delay: PING_INTERVAL_MS,
+        url: PROFILE_SYNC_URL
+      });
+      await assertFreeUser();
+
+      onChangedEvents.push([{
+        oldUser: STORED_PREMIUM_USER_WITH_TRIAL_PROFILE,
+        user: STORED_FREE_USER_PROFILE
+      }]);
+      await expectTestEvents("account.onChanged", onChangedEvents);
+
+      // Verify trial status changed
+      const trial = await EWE.account.getTrial();
+      expect(trial).toEqual({
+        ab: false,
+        abp: false
+      });
+
+      const trialDaysLeft = await EWE.account.getTrialDaysLeft();
+      expect(trialDaysLeft).toEqual({
+        ab: null,
+        abp: null
+      });
     });
   });
 });

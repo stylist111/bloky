@@ -29,6 +29,10 @@ export interface InjectionInfo {
    */
   isPremium: boolean;
   /**
+   * Whether the user is a trial user
+   */
+  isTrial: boolean;
+  /**
    * The version of the extension
    */
   version: string;

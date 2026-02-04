@@ -48,9 +48,12 @@ toc:
       - FilterError
       - FilterMatchInfo
       - FirstRunInfo
+      - ProductConsents
+      - ProductInfo
       - ProfileSyncStatus
       - Recommendation
       - RemoteConfigSyncStatus
       - ServerLogger
       - Subscription
+      - UserProducts
       - UserProfile

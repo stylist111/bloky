@@ -24,7 +24,10 @@ import accountAPI from "./account/index.js";
 const messageAPI = {
   account: {
     getProfile: accountAPI.getProfile,
-    hasPremium: accountAPI.hasPremium
+    hasPremium: accountAPI.hasPremium,
+    getTrial: accountAPI.getTrial,
+    getConsents: accountAPI.getConsents,
+    getTrialDaysLeft: accountAPI.getTrialDaysLeft
   },
   experiments: {
     getFlag: experimentsAPI.getFlag,

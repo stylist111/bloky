@@ -24,7 +24,8 @@ import {
 import {
   isPremiumActivated,
   getPopupBlockedAdsTotalCount,
-  callUIExperimentsAPI
+  callUIExperimentsAPI,
+  callUIAccountAPI
 } from "../utils/page.js";
 
 export const testUrl = "https://adblockplus.org";
@@ -46,8 +47,10 @@ export async function getActualExtensionData() {
       .get("pref:installation_id")
       .then((data) => data["pref:installation_id"] || null);
   });
+  const trial = await callUIAccountAPI("getTrial");
+  const isTrial = trial?.abp ?? false;
   const experimentFlags = await callUIExperimentsAPI("getFlags");
-  return { id, isPremium, version, blockCount, experimentFlags };
+  return { id, isPremium, isTrial, version, blockCount, experimentFlags };
 }
 
 export default async () => {

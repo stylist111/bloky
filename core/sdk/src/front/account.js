@@ -57,5 +57,35 @@ export default {
    */
   async hasPremium() {
     return await callAPI("hasPremium");
+  },
+
+  /**
+   * Retrieves the user's trial status.
+   *
+   * @returns {Promise<{ab: boolean, abp: boolean}>} An object containing
+   *   trial status for each product.
+   */
+  async getTrial() {
+    return await callAPI("getTrial");
+  },
+
+  /**
+   * Retrieves the user's consent preferences.
+   *
+   * @returns {Promise<{ab: Object, abp: Object}>} An object containing user
+   *   consent preferences for each product.
+   */
+  async getConsents() {
+    return await callAPI("getConsents");
+  },
+
+  /**
+   * Retrieves the user's trial days left.
+   *
+   * @returns {Promise<{ab: number, abp: number}>} An object containing trial
+   *   days left for each product.
+   */
+  async getTrialDaysLeft() {
+    return await callAPI("getTrialDaysLeft");
   }
 };
