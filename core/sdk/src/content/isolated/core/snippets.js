@@ -23,14 +23,16 @@ import snippetsCallback from "@eyeo/snippets/isolated";
 import {parseScript} from "#adblockpluscore/lib/snippets.js";
 import {ignoreNoConnectionError} from "../../../all/errors.js";
 import {CACHED_FILTERS_CONFIG_KEY, DEBUG_CSS_PROPERTIES, HANDSHAKE_EVENT_NAME} from "../../shared/constants.js";
-import {claimFiltersChannel} from "../../shared/helpers.js";
+import {claimCommsChannel} from "../../shared/helpers.js";
 import {default as sentry} from "./sentry.js";
+import {default as telemetry} from "../../../front/telemetry.js";
 
-const filtersChannelName = claimFiltersChannel(uuidv4());
+const commsChannelName = claimCommsChannel(uuidv4());
 let mainWorldReadyPromise;
 let filtersConfigPromise;
 let cachedFiltersConfig;
 let cachedFiltersConfigSerialized;
+const logger = new telemetry.ServerLogger("snippets");
 
 /**
  * Fetches snippet filters from the service worker/background script
@@ -64,7 +66,13 @@ function executeSnippets(filtersConfig) {
   const {debug} = filtersConfig;
   const filters = filtersConfig.filters.map(parseScript);
 
-  let eventDetails = {detail: {filters, debug}};
+  let eventDetails = {
+    detail: {
+      type: "ewe:filters-config",
+      filters,
+      debug
+    }
+  };
   if (typeof cloneInto === "function") {
     // Firefox requires content scripts to clone objects
     // that are passed to the document
@@ -77,12 +85,12 @@ function executeSnippets(filtersConfig) {
   // channel name being consumed from the dataset.
   const mainWorldReady = !document.documentElement.dataset.eweFiltersChannel;
   if (mainWorldReady) {
-    document.dispatchEvent(new CustomEvent(filtersChannelName, eventDetails));
+    document.dispatchEvent(new CustomEvent(commsChannelName, eventDetails));
   }
   else {
     // Wait for the handshake and then trigger execution for the main snippets
     mainWorldReadyPromise.then(() => {
-      document.dispatchEvent(new CustomEvent(filtersChannelName, eventDetails));
+      document.dispatchEvent(new CustomEvent(commsChannelName, eventDetails));
     });
   }
 
@@ -186,9 +194,40 @@ function syncCacheAndReload(filtersConfig) {
   }
 }
 
-export function start() {
-  filtersConfigPromise = getFiltersConfig();
+/**
+ * Listener for errors coming from the main world.
+ * It listens to the secret channel for errors and forwards
+ * them to Sentry
+ * @param {CustomEvent} event The event containing the error
+ */
+function mainWorldErrorListener({detail}) {
+  if (detail && detail.type === "ewe:main-error") {
+    const {error} = detail;
+    if (!error) {
+      return;
+    }
 
+    // Usually a TypeError is thrown when the page tries
+    // to tamper with the snippets context
+    if (error.name && error.name === "TypeError") {
+      logger.behavior("context_tampering");
+    }
+
+    sentry.reportError(error);
+  }
+}
+
+/**
+ * Starts the error listener for errors coming from the main world.
+ */
+function startErrorListener() {
+  document.removeEventListener(commsChannelName, mainWorldErrorListener);
+  document.addEventListener(commsChannelName, mainWorldErrorListener);
+}
+
+export function start() {
+  startErrorListener();
+  filtersConfigPromise = getFiltersConfig();
   // Promise that resolves when the handshake event is received
   mainWorldReadyPromise = new Promise(resolve => {
     function handleHandshake() {

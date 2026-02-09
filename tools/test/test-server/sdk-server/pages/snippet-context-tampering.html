@@ -1,13 +1,29 @@
 <html>
   <head>
     <script>
-      // Store original JSON.parse and prevent tampering
-      const originalJSONParse = JSON.parse;
-      Object.defineProperty(JSON, "parse", {
-        value: originalJSONParse,
-        writable: false,
-        configurable: false,
-      });
+      /**
+       * Makes a property on an object non-writable and non-configurable.
+       * @param {object} obj The object.
+       * @param {string} prop The property name.
+       */
+      function secureProperty(obj, prop) {
+        try {
+          Object.defineProperty(obj, prop, { writable: false, configurable: false });
+        } catch (e) {
+          // noop
+        }
+      }
+
+      // Secure various global objects and methods to prevent modification.
+      secureProperty(window, "fetch");
+      secureProperty(window, "JSON");
+      secureProperty(window.JSON, "stringify");
+      secureProperty(window.JSON, "parse");
+      secureProperty(window, "Array");
+      secureProperty(Array.prototype, "push");
+      secureProperty(Array.prototype, "forEach");
+      // This line is critical for the error: it makes Object.assign read-only and non-configurable.
+      secureProperty(Object, "assign");
     </script>
   </head>
   <body>

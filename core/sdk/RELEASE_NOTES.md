@@ -6,6 +6,8 @@
   style reference rather than a file directly. It appeared that this was doing
   the correct thing in our CI builds, but may have been undefined behavior if
   building in other contexts.
+- Fixed snippet errors not being reported to Sentry and corrected the logging
+  of context tampering events to the telemetry service
 
 ## Breaking Changes
 

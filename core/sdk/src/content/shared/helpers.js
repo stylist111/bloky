@@ -16,7 +16,7 @@
  */
 
 /**
- * Claims a filters channel name from the document's dataset.
+ * Claims a communication channel name from the document's dataset.
  *
  * If a channel name already exists in the dataset, it is consumed (removed
  * from the dataset and returned). If no channel name exists, the fallback
@@ -33,7 +33,7 @@
  * @returns {string} The claimed channel name (either the existing one
  *   or the fallback).
  */
-export function claimFiltersChannel(fallbackChannel) {
+export function claimCommsChannel(fallbackChannel) {
   let channelName = document.documentElement.dataset.eweFiltersChannel;
 
   if (!channelName) {

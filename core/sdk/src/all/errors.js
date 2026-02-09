@@ -26,7 +26,7 @@ const ERROR_MANAGER_DISCONNECTED = "Message manager disconnected";
 /**
  * Reconstructs an error from a serializable error object
  *
- * @param {string} errorData - Error object
+ * @param {Object} errorData - Error object
  *
  * @returns {Error} error
  */
@@ -67,7 +67,7 @@ export function ignoreNoConnectionError(promise) {
  *
  * @param {Error} error - Error
  *
- * @returns {string} serializable error object
+ * @returns {Object} serializable error object
  */
 export function toSerializableError(error) {
   return {

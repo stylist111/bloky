@@ -20,12 +20,19 @@ import expect from "expect";
 import sinon from "sinon/pkg/sinon.js";
 
 import {EWE} from "./messaging.js";
-import {TEST_ADMIN_PAGES_URL} from "@eyeo/test-utils/sdk-urls";
 import {Page, waitForAssertion, ISO_DATE_REGEX, getRequestLogs,
         clearRequestLogs, setMinTimeout, setEndpointResponse,
         clearEndpointResponse} from "./utils.js";
 import {suspendServiceWorker} from "./mocha/mocha-runner.js";
 import {wait} from "./polling.js";
+import {
+  restartWithTestArgs,
+  DEBUG_TELEMETRY_URL,
+  DEBUG_TELEMETRY_BEARER,
+  INTERVAL_BETWEEN_BATCHES,
+  ERROR_DELAY
+} from "./fixtures/telemetry-server-logger.js";
+import {setConfig as setRemoteConfig} from "./fixtures/remote-config.js";
 
 const acceptedLevelsByLevel = new Map([
   ["off", []],
@@ -40,13 +47,8 @@ const module2 = "test_ewe_ui_api";
 const contentScriptModule = "test_ewe_content_api";
 const uiPageModule = "test_ewe_ui_api";
 
-const DEBUG_TELEMETRY_URL = `${TEST_ADMIN_PAGES_URL}/telemetry-log-event`;
-const DEBUG_TELEMETRY_BEARER = "SSBhbSBhIGJlYXIuLi4gZXIuLi4gUkFXUg==";
 const UPLOADER_STORAGE_KEY = "ewe:telemetry-server-log-uploader";
-const REMOTE_CONFIG_URL = `${TEST_ADMIN_PAGES_URL}/experiments.json`;
 
-const INTERVAL_BETWEEN_BATCHES = 1000;
-const ERROR_DELAY = 2000;
 const ERROR_RETRY_ATTEMPTS = 3;
 
 async function getRequestLogIntervals() {
@@ -88,10 +90,6 @@ async function logAllEvents() {
 function getConsoleLogs() {
   // eslint-disable-next-line no-console
   return console.log.getCalls().map(item => item.args);
-}
-
-async function setRemoteConfig(config, status = 200) {
-  await setEndpointResponse(REMOTE_CONFIG_URL, JSON.stringify(config), "GET", status);
 }
 
 describe("Telemetry - Server Logging", function() {
@@ -349,26 +347,6 @@ describe("Telemetry - Server Logging", function() {
   });
 
   describe("Server Uploader", function() {
-    async function restartWithTestArgs() {
-      await EWE.testing.resetServerLogUploader();
-      await EWE.testing.startServerLogUploader({
-        url: DEBUG_TELEMETRY_URL,
-        bearer: DEBUG_TELEMETRY_BEARER
-      }, INTERVAL_BETWEEN_BATCHES, ERROR_DELAY);
-
-      const testingConfig = {
-        schemaId: "1",
-        experiments: [],
-        loggingLevels: {
-          global: "debug",
-          mods: [0, 1000]
-        }
-      };
-
-      await setRemoteConfig(testingConfig);
-      await EWE.remoteConfig.sync();
-    }
-
     beforeEach(async function() {
       await EWE.telemetry.setOptOut(false);
 

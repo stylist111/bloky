@@ -25,7 +25,8 @@ import {
   HANDSHAKE_EVENT_NAME
 } from "../shared/constants.js";
 import {shimLocalStorage} from "./shims/storage.js";
-import {claimFiltersChannel} from "../shared/helpers.js";
+import {claimCommsChannel} from "../shared/helpers.js";
+import {toSerializableError} from "../../all/errors.js";
 
 // Use chrome.storage to detect if we're in an isolated world.
 // Note: chrome.runtime is unreliable since other extensions may expose it
@@ -34,6 +35,9 @@ const isMainWorld = !(
   (typeof chrome === "object" && !!chrome.storage) ||
   (typeof browser === "object" && !!browser.storage)
 );
+
+// Get or create a unique channel name for communicating with the isolated world
+const commsChannelName = claimCommsChannel(uuidv4());
 
 const runStorageShim = (shimFn, configKey) => {
   try {
@@ -48,7 +52,7 @@ const runStorageShim = (shimFn, configKey) => {
 };
 
 const runSnippets = snippetsConfig => {
-  const {callback, filters, env} = snippetsConfig;
+  const {callback, filters, env, commsChannel, serializeError} = snippetsConfig;
 
   if (filters.length) {
     try {
@@ -57,6 +61,13 @@ const runSnippets = snippetsConfig => {
     catch (e) {
       // It would be good to report this error to Sentry, but we don't currently
       // have a way to do that from the main world.
+      const errorEvent = new CustomEvent(commsChannel, {
+        detail: {
+          type: "ewe:main-error",
+          error: serializeError(e)
+        }
+      });
+      document.dispatchEvent(errorEvent);
     }
   }
 };
@@ -98,16 +109,27 @@ const injectScript = (executable, policy) => {
 };
 
 const appendSnippets = snippetsConfig => {
-  const {callback, filters, env, shimFn, shimConfigKey} = snippetsConfig;
   const policy = createTrustedScriptPolicy();
+  const {
+    callback,
+    filters,
+    env,
+    shimFn,
+    shimConfigKey,
+    commsChannel,
+    serializeError
+  } = snippetsConfig;
 
   const snippetsCode = filters.length ? `
     const callback = (${callback});
     const runSnippets = (${runSnippets});
+    const serializeError = (${serializeError});
     const snippetsConfig = {
       callback,
       env: ${JSON.stringify(env)},
-      filters: ${JSON.stringify(filters)}
+      filters: ${JSON.stringify(filters)},
+      commsChannel: "${commsChannel}",
+      serializeError
     };
     runSnippets(snippetsConfig);
   ` : "";
@@ -124,7 +146,17 @@ const appendSnippets = snippetsConfig => {
 };
 
 const onFiltersReceived = event => {
-  const {filters, debug} = event.detail;
+  if (!event || !event.detail) {
+    return;
+  }
+
+  const {type, filters, debug} = event.detail;
+
+  // ignore other events that are not related to filters config
+  if (type !== "ewe:filters-config") {
+    return;
+  }
+
   // Check which snippets need to be executed in the main world.
   const mainSnippets = [];
   for (const filter of filters) {
@@ -140,7 +172,9 @@ const onFiltersReceived = event => {
     env: {debugCSSProperties: debug ? DEBUG_CSS_PROPERTIES : null},
     filters: mainSnippets,
     shimFn: shimLocalStorage,
-    shimConfigKey: CACHED_FILTERS_CONFIG_KEY
+    shimConfigKey: CACHED_FILTERS_CONFIG_KEY,
+    commsChannel: commsChannelName,
+    serializeError: toSerializableError
   };
 
   // If this script is injected into the main world we can execute directly.
@@ -155,6 +189,5 @@ const onFiltersReceived = event => {
   }
 };
 
-const filtersChannelName = claimFiltersChannel(uuidv4());
-document.addEventListener(filtersChannelName, onFiltersReceived);
+document.addEventListener(commsChannelName, onFiltersReceived);
 document.dispatchEvent(new CustomEvent(HANDSHAKE_EVENT_NAME));

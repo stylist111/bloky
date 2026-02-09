@@ -21,7 +21,7 @@ import {ignoreNoConnectionError} from "../all/errors.js";
 import {AbstractLogger} from "../all/telemetry.js";
 
 /**
- * Represents a server logger. This is used to send data to a our telemetry
+ * Represents a server logger. This is used to send data to our telemetry
  * server. The exact URL will be configured by the telemetry module in the
  * background script. Console logging is also provided for convenience.
  *

@@ -35,6 +35,7 @@ import {wait} from "./polling.js";
 import {addFilter, addFilters, EWE, setFeatureFlags} from "./messaging.js";
 import {isFuzzingServiceWorker} from "./mocha/mocha-runner.js";
 import {CACHED_FILTERS_CONFIG_KEY} from "../src/content/shared/constants.js";
+import {restartWithTestArgs as restartWithTelemetryTestArgs} from "./fixtures/telemetry-server-logger.js";
 
 let hideTimeout = isFuzzingServiceWorker() ? 15000 : 1000;
 let collapseTimeout = 2000;
@@ -1163,7 +1164,10 @@ describe("Snippets", function() {
       await EWE.experiments.sync();
     }
 
-    after(clearExperimentData);
+    afterEach(async function() {
+      await clearExperimentData();
+      await EWE.testing.setSentrySampleRate(null);
+    });
 
     it("is possible on regular snippets", async function() {
       // Skip this test on firefox as sometimes the SW is responding very fast
@@ -1177,11 +1181,36 @@ describe("Snippets", function() {
         `${TEST_PAGES_DOMAIN}#$#json-prune object.{}.target-data`
       ]);
 
+      // Start the telemetry logging
+      await restartWithTelemetryTestArgs();
+      await EWE.testing.clearBehaviourLoggingState();
+
+      // Start Sentry
+      await EWE.testing.setSentrySampleRate(1); // 100% sample rate
+      await EWE.sentry.start("test-snippets", "test-env", "1.0");
+      const oldEvent = await EWE.testing.getLastSentryEvent();
+
       const tabId = await new Page("snippet-context-tampering.html", forceBg).loaded;
       // Check that it fails to hide elements
       await expect(
         checkElementsHidden(tabId, "#json-prune-object-tampering")
       ).rejects.toThrow(/Wait timed out|are still visible/);
+
+      // check that telemetry event is being sent
+      const behaviourState = await EWE.testing.getBehaviourLoggingState();
+      expect(behaviourState).toEqual({
+        "snippets:context_tampering": 1
+      });
+
+      let newEvent;
+      // check that the error is logged to Sentry
+      await wait(async() => {
+        newEvent = await EWE.testing.getLastSentryEvent();
+        return (newEvent && newEvent.event_id) !==
+          (oldEvent && oldEvent.event_id);
+      }, 6000, "Sentry error not received");
+
+      expect(newEvent.exception.values[0].type).toBe("TypeError");
     });
 
     it("is not possible on lightning snippets", async function() {

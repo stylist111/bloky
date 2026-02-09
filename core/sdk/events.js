@@ -261,6 +261,11 @@ export default {
       }
     }
   },
+  snippets: {
+    context_tampering: {
+      description: "Recorded when the website is trying to disable the snippets"
+    }
+  },
   youtube: {
     yt_site_navigation: {
       description: "Recorded 5 seconds after a user navigates to a YouTube page. This event is sent only once per session. Refreshing or opening a new tab will start a new session. Navigating through videos without refreshing (aka SPA navigation) will not trigger another event.",

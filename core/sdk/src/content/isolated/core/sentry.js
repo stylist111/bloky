@@ -23,7 +23,7 @@ async function forwardError(error) {
   ignoreNoConnectionError(
     browser.runtime.sendMessage({
       type: "ewe:sentry-error",
-      error: toSerializableError(error)
+      error: error instanceof Error ? toSerializableError(error) : error
     })
   );
 }
@@ -36,7 +36,7 @@ export default {
   /**
    * Report error to Sentry
    *
-   * @param {Error} error - Error to send to Sentry.
+   * @param {Error|Object} error - Error to send to Sentry.
    */
   async reportError(error) {
     return await forwardError(error);
