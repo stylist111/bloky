@@ -31,7 +31,11 @@ const commsChannelName = claimCommsChannel(uuidv4());
 let mainWorldReadyPromise;
 let filtersConfigPromise;
 let cachedFiltersConfig;
-let cachedFiltersConfigSerialized;
+// cachedFiltersConfigSerialized defaults to `null` rather than `undefined`
+// because that is the value we would get if it is uninitialized in
+// localStorage.
+let cachedFiltersConfigSerialized = null;
+let localStorageAvailable = true;
 const logger = new telemetry.ServerLogger("snippets");
 
 /**
@@ -135,6 +139,16 @@ function executeSnippets(filtersConfig) {
  * @returns {Object|null} - returns the filtersConfig or null.
  */
 function syncCacheAndReload(filtersConfig) {
+  if (!localStorageAvailable) {
+    if (filtersConfig.useCache) {
+      logger.debug("local_storage_unavailable", {
+        isMainFrame: window === window.top
+      });
+    }
+
+    return filtersConfig;
+  }
+
   let websiteValue = null;
   if (cachedFiltersConfig) {
     websiteValue = cachedFiltersConfig.websiteValue;
@@ -242,13 +256,20 @@ export function start() {
     cachedFiltersConfigSerialized = localStorage.getItem(
       CACHED_FILTERS_CONFIG_KEY
     );
-    if (cachedFiltersConfigSerialized) {
-      cachedFiltersConfig = JSON.parse(cachedFiltersConfigSerialized);
-    }
   }
   catch (e) {
-    // This can happen in normal operation, if a website defines the key before
-    // we start caching filters, so we don't want to send this to Sentry.
+    localStorageAvailable = false;
+  }
+
+  if (cachedFiltersConfigSerialized) {
+    try {
+      cachedFiltersConfig = JSON.parse(cachedFiltersConfigSerialized);
+    }
+    catch (e) {
+      // This can happen in normal operation, if a website defines the key
+      // before we start caching filters, so we don't want to send this to
+      // Sentry.
+    }
   }
 
   // First try to apply the cached filters if they exist,
@@ -259,7 +280,10 @@ export function start() {
     }
     catch (e) {
       // Remove the cached value if there was a problem executing the filter
-      localStorage.removeItem(CACHED_FILTERS_CONFIG_KEY);
+      if (localStorageAvailable) {
+        localStorage.removeItem(CACHED_FILTERS_CONFIG_KEY);
+      }
+
       sentry.reportError(e);
     }
   }

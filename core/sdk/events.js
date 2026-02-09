@@ -264,6 +264,19 @@ export default {
   snippets: {
     context_tampering: {
       description: "Recorded when the website is trying to disable the snippets"
+    },
+    local_storage_unavailable: {
+      description: "The extension intended to use localStorage as a cache, but localStorage was unavailable",
+      data: {
+        description: "Metadata about the context where localStorage was unavailable",
+        type: "object",
+        properties: {
+          isMainFrame: {
+            description: "This occurred in the main frame, not in an iframe",
+            type: "boolean"
+          }
+        }
+      }
     }
   },
   youtube: {
