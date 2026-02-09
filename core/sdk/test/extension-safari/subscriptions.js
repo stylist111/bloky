@@ -25,10 +25,12 @@ export let defaultSubscriptionsUrls = [
 ];
 
 /**
- * Subscription URLs that require privileged flag for element hiding filters.
- * NOTE: Testing without privileged flag to see if it's needed.
+ * Subscription URLs that require privileged flag for snippet filters.
+ * Anti-CV subscription needs privileged flag for snippet filters to work.
  */
-export let privilegedSubscriptionUrls = [];
+export let privilegedSubscriptionUrls = [
+  ANTI_CV_URL
+];
 
 /**
  * Subscriptions list for EWE initialization.
