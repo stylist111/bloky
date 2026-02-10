@@ -1,5 +1,7 @@
 # Unreleased
 
+# 6.35.0 - 2026-02-10
+
 - Updated account API to use products nested structure with trial status, trial days left, and consent preferences per product (ab/abp). (EMP-42)
 - Added getTrial(), getConsents(), and getTrialDaysLeft() methods to core SDK account module. (EMP-42)
 - Added isTrial field to extension metadata injection on product websites. (EMP-42)
