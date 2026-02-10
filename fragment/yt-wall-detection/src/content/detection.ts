@@ -30,7 +30,7 @@ import { recordEvent } from "./shared.js";
 const adWallSelector = "ytd-enforcement-message-view-model";
 
 // CSS selector identifying YouTube player error element
-const playerErrorSelector = ".ytp-error";
+const playerErrorSelectors = [".ytp-error", "#player-error-message-container"];
 
 // CSS selector identifying YouTube Avatar element
 const userAvatarSelector = "button#avatar-btn";
@@ -47,6 +47,9 @@ let domObserver: MutationObserver;
 
 // Symbol to prevent multiple logging of the same event
 const alreadyLoggedSymbol = Symbol("alreadyLoggedSymbol");
+
+// Type for elements that can be marked as already logged
+type LoggableElement = Element & { [alreadyLoggedSymbol]?: boolean };
 
 /**
  * Checks whether given candidate is a DOM element
@@ -80,34 +83,42 @@ async function adWallSelectorFound(hasDismiss: boolean): Promise<void> {
  * @param node
  */
 async function handleToastNotification(node: Element): Promise<void> {
-  // Extend the type to allow symbol indexing
-  const anchorNode = node as HTMLAnchorElement & {
-    [alreadyLoggedSymbol]?: boolean;
-  };
+  const toastNode = node as LoggableElement;
 
   // If we already logged this toast, skip it
-  if (anchorNode[alreadyLoggedSymbol]) {
+  if (toastNode[alreadyLoggedSymbol]) {
     return;
   }
 
-  anchorNode[alreadyLoggedSymbol] = true;
+  toastNode[alreadyLoggedSymbol] = true;
   void recordEvent(toastShownEvent);
 }
 
 /**
  * Handles the player error when it appears.
- * This function will log the event only once per player error.
+ * This function will log the event only once per error, even if multiple
+ * error selectors match different elements on the page.
  * @param node
  */
 async function handlePlayerError(node: Element): Promise<void> {
-  // Extend the type to allow symbol indexing
-  const errorNode = node as HTMLDivElement & {
-    [alreadyLoggedSymbol]?: boolean;
-  };
+  const errorNode = node as LoggableElement;
 
-  // If we already logged this error div, skip it
+  // If we already logged this error element, skip it
   if (errorNode[alreadyLoggedSymbol]) {
     return;
+  }
+
+  // Check if any other player error element has already been logged
+  const allErrorElements = document.querySelectorAll(
+    playerErrorSelectors.join(","),
+  );
+  for (const elem of allErrorElements) {
+    const typedElem = elem as LoggableElement;
+    if (typedElem !== errorNode && typedElem[alreadyLoggedSymbol]) {
+      // Another error element was already logged, mark this one and skip
+      errorNode[alreadyLoggedSymbol] = true;
+      return;
+    }
   }
 
   errorNode[alreadyLoggedSymbol] = true;
@@ -135,7 +146,7 @@ function handleMutations(mutations: MutationRecord[]): void {
         node,
         ...Array.from(
           node.querySelectorAll(
-            [adWallSelector, toastSelector, playerErrorSelector].join(","),
+            [adWallSelector, toastSelector, ...playerErrorSelectors].join(","),
           ),
         ),
       ];
@@ -149,7 +160,7 @@ function handleMutations(mutations: MutationRecord[]): void {
           void handleToastNotification(elem);
         } else if (
           elem.tagName === "DIV" &&
-          elem.matches(playerErrorSelector)
+          elem.matches(playerErrorSelectors.join(","))
         ) {
           void handlePlayerError(elem);
         }
