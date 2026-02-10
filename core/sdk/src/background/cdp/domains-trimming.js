@@ -75,13 +75,13 @@ export class MaxLengthMetricsDict {
       1; // }
 
     if (supportEventStats) {
-      // With eventStats, our empty object additionally has: ,"es":{}
+      // With eventStats, our empty object additionally has: ,"es":[]
       this.length += 1 + // comma
         this.newLineLength +
         this.indentationLength +
         4 + // "es"
         this.colonLength +
-        2; // {}
+        2; // []
     }
 
     this._calcMetricsLength();
@@ -156,21 +156,27 @@ export class MaxLengthMetricsDict {
    * @returns {Number} Bytes
    */
   _calcAdditionalEventLength(event, count) {
-    /* The new event will add a single property to the "es" object:
+    /* The new event will add an object to the "es" array:
      *
-     *   "<event>": count
+     * {
+     *   "e": "<event>",
+     *   "c": <count>
+     * }
      */
     let padding = this.eventsDict.size > 0 ?
         1 : // comma
-        this.newLineLength + this.indentationLength; // new line between {}
+        this.newLineLength + this.indentationLength; // new line between []
 
     return padding +
-      this.newLineLength +
-      this.indentationLength * 2 +
-      2 + // quotes
-      event.length +
-      this.colonLength +
-      count.toString().length;
+      this.newLineLength + // newline after comma or after [
+      this.indentationLength * 2 + 1 + // opening curly bracket with indentation
+      this.newLineLength + // newline after {
+      this._calcLineLength("e", `"${event}"`) + // "e": "eventName" line
+      1 + // comma between "e" and "c"
+      this.newLineLength + // newline after comma
+      this._calcLineLength("c", count.toString()) + // "c": count line
+      this.newLineLength + // newline before }
+      this.indentationLength * 2 + 1; // closing curly bracket with indentation
   }
 
   /**
@@ -266,9 +272,9 @@ export class MaxLengthMetricsDict {
     }
 
     if (this.supportEventStats) {
-      result.es = {};
+      result.es = [];
       for (const [event, count] of this.eventsDict) {
-        result.es[event] = count;
+        result.es.push({e: event, c: count});
       }
     }
 

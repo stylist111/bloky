@@ -9,6 +9,13 @@
 - Fixed snippet errors not being reported to Sentry and corrected the logging
   of context tampering events to the telemetry service
 
+## CDP
+
+- Changed event stats format in CDP payloads from key-value object
+  `{"event-name": count}` to array of objects `[{"e": "event-name", "c": count}]`
+- Renamed experiment flag from `cdp-include-event-stats` to
+  `cdp-include-event-stats-list`
+
 ## Breaking Changes
 
 - Removed `EWE.snippets` API. Snippets are packaged by default within the SDK

@@ -231,7 +231,7 @@ Behavior-level events are automatically tracked and counted for aggregate
 reporting to CDP.
 
 This is currently disabled by default until the CDP endpoint supports the
-additional data. This can be enabled with the `cdp-include-event-stats`
+additional data. This can be enabled with the `cdp-include-event-stats-list`
 experiment flag.
 
 ### IPM ID Parameter

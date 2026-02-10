@@ -952,7 +952,7 @@ describe("CDP", function() {
     });
 
     it("sends requests that have event stats and no domain stats", async function() {
-      await EWE.experiments.overrideFlag("cdp-include-event-stats", true);
+      await EWE.experiments.overrideFlag("cdp-include-event-stats-list", true);
       await startMetricsUploaderWithTestArgs();
 
       // very first ping
@@ -1592,7 +1592,7 @@ describe("CDP", function() {
 
       for (let eventStatsSupported of [false, true]) {
         it(`is able to decrypt and decompress the payload - event stats ${eventStatsSupported ? "enabled" : "disabled"}`, async function() {
-          await EWE.experiments.overrideFlag("cdp-include-event-stats", eventStatsSupported);
+          await EWE.experiments.overrideFlag("cdp-include-event-stats-list", eventStatsSupported);
 
           setMinTimeout(this, 20 * 1000);
 
@@ -1649,9 +1649,10 @@ describe("CDP", function() {
           }]));
 
           if (eventStatsSupported) {
-            expect(stats.es).toEqual({
-              "test_ewe_background:test_event_no_data": 1
-            });
+            expect(stats.es).toEqual([{
+              e: "test_ewe_background:test_event_no_data",
+              c: 1
+            }]);
           }
           else {
             expect(stats.es).toBeUndefined();
@@ -1659,7 +1660,7 @@ describe("CDP", function() {
         });
 
         it(`stops retry sending after reaching the limit - event stats ${eventStatsSupported ? "enabled" : "disabled"}`, async function() {
-          await EWE.experiments.overrideFlag("cdp-include-event-stats", eventStatsSupported);
+          await EWE.experiments.overrideFlag("cdp-include-event-stats-list", eventStatsSupported);
 
           await new Page(`${CROSS_DOMAIN_URL}/image.html`).loaded;
           await EWE.testing.serverLogger.behavior("test_event_no_data");
@@ -1700,9 +1701,10 @@ describe("CDP", function() {
           const failedStats = await decryptStats(payload);
           expect(failedStats.ds).toHaveLength(1);
           if (eventStatsSupported) {
-            expect(failedStats.es).toEqual({
-              "test_ewe_background:test_event_no_data": 2
-            });
+            expect(failedStats.es).toEqual([{
+              e: "test_ewe_background:test_event_no_data",
+              c: 2
+            }]);
           }
           else {
             expect(failedStats.es).toBeUndefined();
@@ -1734,9 +1736,12 @@ describe("CDP", function() {
             b: 0
           }]);
           if (eventStatsSupported) {
-            expect(successfulStats.es).toEqual({
-              "test_ewe_background:test_event_no_data": 1
-            });
+            expect(successfulStats.es).toEqual([
+              {
+                e: "test_ewe_background:test_event_no_data",
+                c: 1
+              }
+            ]);
           }
           else {
             expect(successfulStats.es).toBeUndefined();

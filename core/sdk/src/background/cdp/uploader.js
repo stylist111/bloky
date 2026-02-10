@@ -274,7 +274,7 @@ export async function upload() {
     else {
       // for the very first ping `lastPing` is null
       if (state.lastPing) {
-        let includeEventStats = await experiments.getFlag("cdp-include-event-stats");
+        let includeEventStats = await experiments.getFlag("cdp-include-event-stats-list");
         stats = await buildStatsPayload(includeEventStats);
 
         // we don't need the data anymore:
@@ -293,7 +293,7 @@ export async function upload() {
       debug("New payload " + utid);
     }
 
-    let emptyPayload = stats === '{"ds":[]}' || stats === '{"ds":[],"es":{}}';
+    let emptyPayload = stats === '{"ds":[]}' || stats === '{"ds":[],"es":[]}';
 
     if (!state.lastPing || (stats && !emptyPayload)) {
       const {publicKey, keyId} = await requestPublicKey();

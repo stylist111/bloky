@@ -93,9 +93,21 @@ const SCHEMA =
       }
     },
     "es": {
-      "type": "object",
-      "additionalProperties": {
-        "type": "integer"
+      "description": "Event statistics.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "e": {
+            "description": "Event name",
+            "type": "string"
+          },
+          "c": {
+            "description": "Event count",
+            "type": "integer"
+          }
+        },
+        "required": ["e", "c"]
       }
     }
   },
@@ -124,7 +136,7 @@ describe("Domains trimming", function() {
     const fsmd = new MaxLengthMetricsDict(100, [SESSIONS_COUNT], true);
     const expected = `{
   "ds": [],
-  "es": {}
+  "es": []
 }`;
     expect(fsmd.serialize()).toEqual(expected);
     expect(fsmd.getLength()).toEqual(expected.length);
@@ -195,9 +207,12 @@ describe("Domains trimming", function() {
     const expected =
 `{
   "ds": [],
-  "es": {
-    "test-event": 5
-  }
+  "es": [
+    {
+      "e": "test-event",
+      "c": 5
+    }
+  ]
 }`;
     fsmd.addEvent("test-event", 5);
 
@@ -211,10 +226,16 @@ describe("Domains trimming", function() {
     const expected =
 `{
   "ds": [],
-  "es": {
-    "test-event-1": 5,
-    "test-event-2": 102
-  }
+  "es": [
+    {
+      "e": "test-event-1",
+      "c": 5
+    },
+    {
+      "e": "test-event-2",
+      "c": 102
+    }
+  ]
 }`;
     fsmd.addEvent("test-event-1", 5);
     fsmd.addEvent("test-event-2", 102);
@@ -229,9 +250,12 @@ describe("Domains trimming", function() {
     const expected =
 `{
   "ds": [],
-  "es": {
-    "test-event": 123
-  }
+  "es": [
+    {
+      "e": "test-event",
+      "c": 123
+    }
+  ]
 }`;
 
     fsmd.addEvent("test-event", 3);
@@ -370,9 +394,9 @@ describe("Domains trimming", function() {
   });
 
   it("trims a domain if exceeds the limit including event stats", function() {
-    // At a max length of 140, both domains would fit if we weren't setting the
+    // At a max length of 170, both domains would fit if we weren't setting the
     // event stats first.
-    const fsmd = new MaxLengthMetricsDict(140, [SESSIONS_COUNT], true);
+    const fsmd = new MaxLengthMetricsDict(170, [SESSIONS_COUNT], true);
     const expected =
 `{
   "ds": [
@@ -385,9 +409,12 @@ describe("Domains trimming", function() {
       "s": 2
     }
   ],
-  "es": {
-    "test-event": 5
-  }
+  "es": [
+    {
+      "e": "test-event",
+      "c": 5
+    }
+  ]
 }`;
 
     fsmd.addEvent("test-event", 5);
