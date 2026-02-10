@@ -39,6 +39,27 @@ let localStorageAvailable = true;
 const logger = new telemetry.ServerLogger("snippets");
 
 /**
+ * Checks if the current context is a cross-origin iframe
+ *
+ * @returns {boolean} True if the current context is an iframe, false otherwise
+ */
+function isCorsFrame() {
+  if (window === window.parent) {
+    return false;
+  }
+
+  try {
+    window.parent.location.href;
+    return false;
+  }
+  catch (e) {
+    return true;
+  }
+}
+
+const isCrossOrigin = isCorsFrame();
+
+/**
  * Fetches snippet filters from the service worker/background script
  * @returns {Promise<*>}
  */
@@ -274,7 +295,8 @@ export function start() {
 
   // First try to apply the cached filters if they exist,
   // then apply the filters that come from the filterEngine
-  if (cachedFiltersConfig) {
+  // Don't execute from cache if we are in an iframe
+  if (cachedFiltersConfig && !isCrossOrigin) {
     try {
       executeSnippets(cachedFiltersConfig);
     }
@@ -288,8 +310,17 @@ export function start() {
     }
   }
 
-  filtersConfigPromise
-    .then(syncCacheAndReload)
-    .then(executeSnippets);
+  // We don't want to reload the iframe as it can lose the
+  // referrer and other important information, so we will
+  // just execute the snippets after we receive the filters
+  // config without trying to sync with the cache.
+  if (isCrossOrigin) {
+    filtersConfigPromise.then(executeSnippets);
+  }
+  else {
+    filtersConfigPromise
+      .then(syncCacheAndReload)
+      .then(executeSnippets);
+  }
 }
 
