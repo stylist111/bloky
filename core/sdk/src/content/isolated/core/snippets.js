@@ -301,11 +301,6 @@ export function start() {
       executeSnippets(cachedFiltersConfig);
     }
     catch (e) {
-      // Remove the cached value if there was a problem executing the filter
-      if (localStorageAvailable) {
-        localStorage.removeItem(CACHED_FILTERS_CONFIG_KEY);
-      }
-
       sentry.reportError(e);
     }
   }
