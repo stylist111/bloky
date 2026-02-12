@@ -91,7 +91,7 @@ update_rules:
   stage: root
   image: gitlab/glab
   before_script:
-    - apk add bash git nodejs npm
+    - apk add bash git nodejs npm jq
     - git config --global user.email "extensions-release-squad@eyeo.com"
     - git config --global user.name "Eyeo Gitlab Automaton"
     - glab auth login --token $GITLAB_TOKEN_MERGE_REQUEST
