@@ -39,10 +39,12 @@ async function getPremiumStatus() {
   return booleanToURLBoolean(hasActiveLicense);
 }
 
+const LOGGING_FLAG = "ab-servermessages-logging-enabled";
+
+const UNINSTALL_BASE_URL = "https://getadblock.com/uninstall/";
+
 export async function setUninstallURL() {
   if (browser.runtime.setUninstallURL) {
-    const userID = await getUserId();
-    const uninstallURL = `https://getadblock.com/uninstall/?u=${userID}`;
     // if the start property of blockCount exists (which is the AdBlock
     // installation timestamp)
     // use it to calculate the approximate length of time that user has
@@ -61,39 +63,31 @@ export async function setUninstallURL() {
       };
       const updateUninstallURL = async function () {
         const data = await browser.storage.local.get("blockage_stats");
-        let url = uninstallURL;
+        const params = new URLSearchParams();
+        if (await ewe.experiments.getFlag(LOGGING_FLAG)) {
+          params.set("u", await getUserId());
+        }
 
-        const rotatingClientId = await ewe.telemetry.getRotatingClientId();
-        url = `${url}&rcid=${encodeURIComponent(rotatingClientId)}`;
-
-        // append the version of AdBlock
-        url = `${url}&av=${encodeURIComponent(info.addonVersion)}`;
+        params.set("rcid", await ewe.telemetry.getRotatingClientId());
+        params.set("av", info.addonVersion);
 
         if (data && data.blockage_stats && data.blockage_stats.start) {
           const installedDuration = Date.now() - data.blockage_stats.start;
-          url = `${url}&t=${installedDuration}`;
+          params.set("t", installedDuration);
         }
 
-        const bc = Prefs.blocked_total;
-        url = `${url}&bc=${bc}`;
-
-        const experimentsRevision = await ewe.remoteConfig.getRevisionId();
-        url = `${url}&er=${encodeURIComponent(experimentsRevision)}`;
-        const experimentsVariants = await ewe.experiments.getEncodedExperiments();
-        url = `${url}&ev=${encodeURIComponent(experimentsVariants)}`;
-
-        const cohortAssignments = await ewe.cohorts.getEncodedCohorts();
-        url = `${url}&ca=${encodeURIComponent(cohortAssignments)}`;
-
-        const lastUpdateTime = await getLastUpdateTime();
-        url = `${url}&lt=${lastUpdateTime}`;
-        url = `${url}&wafc=${await getWebAllowlistingFilterCount()}`;
+        params.set("bc", Prefs.blocked_total);
+        params.set("er", await ewe.remoteConfig.getRevisionId());
+        params.set("ev", await ewe.experiments.getEncodedExperiments());
+        params.set("ca", await ewe.cohorts.getEncodedCohorts());
+        params.set("lt", await getLastUpdateTime());
+        params.set("wafc", await getWebAllowlistingFilterCount());
 
         // CDP data
-        url = `${url}&ps=${await getPremiumStatus()}`;
-        url = `${url}&aa=${await getAAStatus()}`;
+        params.set("ps", await getPremiumStatus());
+        params.set("aa", await getAAStatus());
 
-        browser.runtime.setUninstallURL(url);
+        browser.runtime.setUninstallURL(`${UNINSTALL_BASE_URL}?${params}`);
       };
       // start an interval timer that will update the Uninstall URL every 2
       // minutes
@@ -106,7 +100,12 @@ export async function setUninstallURL() {
       ewe.cohorts.onChanged.addListener(updateUninstallURL);
       ewe.telemetry.onRotatingClientIdChanged.addListener(updateUninstallURL);
     } else {
-      browser.runtime.setUninstallURL(`${uninstallURL}&t=-1`);
+      const params = new URLSearchParams();
+      if (await ewe.experiments.getFlag(LOGGING_FLAG)) {
+        params.set("u", await getUserId());
+      }
+      params.set("t", -1);
+      browser.runtime.setUninstallURL(`${UNINSTALL_BASE_URL}?${params}`);
     }
   }
 }
