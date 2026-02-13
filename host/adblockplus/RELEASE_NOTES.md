@@ -1,6 +1,7 @@
 # Unreleased
 
 - Added ability to close tabs via data-extension-action="close-tab" attribute. (EMP-64)
+- Restructured UserProfile API schema to product-specific format. Trial information now in `subscription` object, preferences in `preferences` object. API methods simplified to return product-specific data. (noissue)
 
 # 4.34.0 - 2026-02-10
 

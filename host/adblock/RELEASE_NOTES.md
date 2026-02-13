@@ -1,5 +1,7 @@
 # Unreleased
 
+- Restructured UserProfile API schema to product-specific format. Trial information now in `subscription` object, preferences in `preferences` object. API methods simplified to return product-specific data. (noissue)
+
 # 6.35.0 - 2026-02-10
 
 - Updated account API to use products nested structure with trial status, trial days left, and consent preferences per product (ab/abp). (EMP-42)

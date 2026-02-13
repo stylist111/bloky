@@ -62,21 +62,20 @@ export default {
   /**
    * Retrieves the user's trial status.
    *
-   * @returns {Promise<{ab: boolean, abp: boolean}>} An object containing
-   *   trial status for each product.
+   * @returns {Promise<boolean>} True if the user is on trial, false otherwise.
    */
-  async getTrial() {
-    return await callAPI("getTrial");
+  async isTrial() {
+    return await callAPI("isTrial");
   },
 
   /**
-   * Retrieves the user's consent preferences.
+   * Retrieves the user's preferences.
    *
-   * @returns {Promise<{ab: Object, abp: Object}>} An object containing user
-   *   consent preferences for each product.
+   * @returns {Promise<Record<string, boolean>>} An object containing user
+   *   preferences.
    */
-  async getConsents() {
-    return await callAPI("getConsents");
+  async getPreferences() {
+    return await callAPI("getPreferences");
   },
 
   /**

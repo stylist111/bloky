@@ -495,48 +495,33 @@ export interface Facts {
 }
 
 /**
- * Product-specific consent preferences
+ * User subscription information
  */
-export interface ProductConsents {
+export interface UserSubscription {
   /**
-   * Whether the user has consented to marketing emails for this product
-   */
-  marketingEmail?: boolean;
-}
-
-/**
- * Information about a specific product subscription
- */
-export interface ProductInfo {
-  /**
-   * Whether the user is currently on a trial for this product
+   * Whether the user is currently on a trial
    */
   isTrial?: boolean;
 
   /**
-   * Number of days remaining in the trial period, or null if not on trial
+   * Number of days remaining in the trial period
    */
-  trialDaysLeft?: number | null;
+  trialDaysLeft?: number;
 
   /**
-   * User consent preferences for this product
+   * ISO 8601 timestamp when the trial period ends
    */
-  consents?: ProductConsents;
+  trialEndDate?: string;
 }
 
 /**
- * Container for product-specific user information
+ * User preferences and consent settings
  */
-export interface UserProducts {
+export interface UserPreferences {
   /**
-   * AdBlock product information
+   * Whether the user has consented to marketing emails
    */
-  ab?: ProductInfo;
-
-  /**
-   * Adblock Plus product information
-   */
-  abp?: ProductInfo;
+  marketingEmail?: boolean;
 }
 
 export interface UserProfile {
@@ -562,10 +547,14 @@ export interface UserProfile {
   features?: string[];
 
   /**
-   * Product-specific information for the user including trial status,
-   * trial days remaining, and consent preferences for each product (ab/abp)
+   * User subscription information including trial status
    */
-  products?: UserProducts;
+  subscription?: UserSubscription;
+
+  /**
+   * User preferences and consent settings
+   */
+  preferences?: UserPreferences;
 }
 
 export interface ProfileSyncStatus {
@@ -895,23 +884,17 @@ declare module "@eyeo/webext-ad-filtering-solution" {
     /**
      * Retrieves the user's trial status
      */
-    const getTrial: () => Promise<{ab?: boolean, abp?: boolean}>;
+    const isTrial: () => Promise<boolean>;
 
     /**
-     * Retrieves the user's consent preferences
+     * Retrieves the user's preferences
      */
-    const getConsents: () => Promise<{
-      ab?: Record<string, boolean>,
-      abp?: Record<string, boolean>
-    }>;
+    const getPreferences: () => Promise<Record<string, boolean>>;
 
     /**
      * Retrieves the user's trial days left
      */
-    const getTrialDaysLeft: () => Promise<{
-      ab?: number | null,
-      abp?: number | null
-    }>;
+    const getTrialDaysLeft: () => Promise<number>;
 
     /**
      * Checks if the user has an active premium subscription.

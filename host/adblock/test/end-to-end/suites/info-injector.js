@@ -42,8 +42,7 @@ export async function getActualExtensionData() {
   await prepareExtensionHook();
   const { version } = extension;
   const isPremium = await isPremiumActivated();
-  const trial = await callUIAccountAPI("getTrial");
-  const isTrial = trial?.ab ?? false;
+  const isTrial = await callUIAccountAPI("isTrial");
   const experimentFlags = await callUIExperimentsAPI("getFlags");
   return { id, isPremium, isTrial, version, blockCount, experimentFlags };
 }

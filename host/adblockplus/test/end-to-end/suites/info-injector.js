@@ -47,8 +47,7 @@ export async function getActualExtensionData() {
       .get("pref:installation_id")
       .then((data) => data["pref:installation_id"] || null);
   });
-  const trial = await callUIAccountAPI("getTrial");
-  const isTrial = trial?.abp ?? false;
+  const isTrial = await callUIAccountAPI("isTrial");
   const experimentFlags = await callUIExperimentsAPI("getFlags");
   return { id, isPremium, isTrial, version, blockCount, experimentFlags };
 }

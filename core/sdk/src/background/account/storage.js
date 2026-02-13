@@ -134,49 +134,40 @@ export async function getProfile() {
 /**
  * Retrieves the user's trial status from the account storage.
  *
- * @return {Promise<{ab: boolean, abp: boolean}>}
+ * @return {Promise<boolean>}
  */
-export async function getTrial() {
+export async function isTrial() {
   const state = await accountData.getStateLoaded();
   const user = state.user || {};
-  const products = user.products || {};
 
-  return {
-    ab: products.ab ? products.ab.isTrial : null,
-    abp: products.abp ? products.abp.isTrial : null
-  };
+  return (user.subscription && user.subscription.isTrial) || false;
 }
 
 /**
- * Retrieves the user's consent preferences from the account storage.
+ * Retrieves the user's preferences from the account storage.
  *
- * @return {Promise<{ab: Object, abp: Object}>}
+ * @return {Promise<Record<string, boolean>>}
  */
-export async function getConsents() {
+export async function getPreferences() {
   const state = await accountData.getStateLoaded();
   const user = state.user || {};
-  const products = user.products || {};
 
-  return {
-    ab: products.ab ? products.ab.consents : null,
-    abp: products.abp ? products.abp.consents : null
-  };
+  return user.preferences || {};
 }
 
 /**
  * Retrieves the user's trial days left from the account storage.
  *
- * @return {Promise<{ab: number, abp: number}>}
+ * @return {Promise<number>}
  */
 export async function getTrialDaysLeft() {
   const state = await accountData.getStateLoaded();
   const user = state.user || {};
-  const products = user.products || {};
 
-  return {
-    ab: products.ab ? products.ab.trialDaysLeft : null,
-    abp: products.abp ? products.abp.trialDaysLeft : null
-  };
+  if (user.subscription && typeof user.subscription.trialDaysLeft === "number") {
+    return user.subscription.trialDaysLeft;
+  }
+  return 0;
 }
 
 /**

@@ -24,8 +24,8 @@ import {
   isLoggedIn,
   clearUserData,
   clearStorage,
-  getTrial,
-  getConsents,
+  isTrial,
+  getPreferences,
   getTrialDaysLeft
 } from "./storage.js";
 import {MILLIS_IN_DAY, MILLIS_IN_HOUR} from "../../../adblockpluscore/lib/time.js";
@@ -122,28 +122,20 @@ export async function clearAccountStorage() {
  */
 export default {
   /**
-   * Product-specific consent preferences
-   * @typedef {Object} ProductConsents
-   * @property {boolean} [marketingEmail] - Whether the user has consented to
-   *   marketing emails for this product
-   */
-
-  /**
-   * Information about a specific product subscription
-   * @typedef {Object} ProductInfo
+   * User subscription information
+   * @typedef {Object} UserSubscription
    * @property {boolean} [isTrial] - Whether the user is currently on a trial
-   *   for this product
-   * @property {number|null} [trialDaysLeft] - Number of days remaining in the
-   *   trial period, or null if not on trial
-   * @property {ProductConsents} [consents] - User consent preferences for this
-   *   product
+   * @property {number} [trialDaysLeft] - Number of days remaining in the
+   *   trial period
+   * @property {string} [trialEndDate] - ISO 8601 timestamp when the trial
+   *   period ends
    */
 
   /**
-   * Container for product-specific user information
-   * @typedef {Object} UserProducts
-   * @property {ProductInfo} [ab] - AdBlock product information
-   * @property {ProductInfo} [abp] - Adblock Plus product information
+   * User preferences and consent settings
+   * @typedef {Object} UserPreferences
+   * @property {boolean} [marketingEmail] - Whether the user has consented to
+   *   marketing emails
    */
 
   /**
@@ -154,11 +146,14 @@ export default {
    * @typedef {Object} UserProfile
    * @property {string} email - The user's email address.
    * @property {string?} displayName - The user's display name, if available.
-   * @property {Array<String>} features - The features available to the user
-   *   (e.g., "premium", "adblocker").
    * @property {boolean} hasPremium - Indicates if the user has a
    *   premium account.
-   * @property {UserProducts} [products] - Product-specific user information
+   * @property {Array<String>} features - The features available to the user
+   *   (e.g., "premium", "adblocker").
+   * @property {UserSubscription} [subscription] - User subscription information
+   *   including trial status
+   * @property {UserPreferences} [preferences] - User preferences and consent
+   *   settings
    */
 
   /**
@@ -185,28 +180,27 @@ export default {
    *
    * @function
    * @memberof account
-   * @returns {Promise<{ab: boolean, abp: boolean}>} An object containing
-   *   trial status for each product.
+   * @returns {Promise<boolean>} True if the user is on trial, false otherwise.
    */
-  getTrial,
+  isTrial,
 
   /**
-   * Retrieves the user's consent preferences.
+   * Retrieves the user's preferences.
    *
    * @function
    * @memberof account
-   * @returns {Promise<{ab: Object, abp: Object}>} An object containing user
-   *   consent preferences for each product.
+   * @returns {Promise<Record<string, boolean>>} An object containing user
+   *   preferences.
    */
-  getConsents,
+  getPreferences,
 
   /**
    * Retrieves the user's trial days left.
    *
    * @function
    * @memberof account
-   * @returns {Promise<{ab: number, abp: number}>} An object containing trial
-   *   days left for each product.
+   * @returns {Promise<number>} Number of trial days remaining (defaults to 0
+   *   if not on trial).
    */
   getTrialDaysLeft,
 

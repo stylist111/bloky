@@ -19,21 +19,13 @@ export const PREMIUM_USER_PROFILE = {
     email: "ewe-test@functional.com",
     displayName: "Test User",
     features: [FEATURES.PREMIUM],
-    products: {
-      ab: {
-        isTrial: false,
-        trialDaysLeft: null,
-        consents: {
-          marketingEmail: true
-        }
-      },
-      abp: {
-        isTrial: false,
-        trialDaysLeft: null,
-        consents: {
-          marketingEmail: true
-        }
-      }
+    subscription: {
+      isTrial: false,
+      trialDaysLeft: 0,
+      trialEndDate: null
+    },
+    preferences: {
+      marketingEmail: true
     }
   }
 };
@@ -48,21 +40,13 @@ export const PREMIUM_USER_WITH_TRIAL_PROFILE = {
     email: "ewe-test@functional.com",
     displayName: "Test User",
     features: [FEATURES.PREMIUM],
-    products: {
-      ab: {
-        isTrial: true,
-        trialDaysLeft: 15,
-        consents: {
-          marketingEmail: false
-        }
-      },
-      abp: {
-        isTrial: true,
-        trialDaysLeft: 10,
-        consents: {
-          marketingEmail: false
-        }
-      }
+    subscription: {
+      isTrial: true,
+      trialDaysLeft: 15,
+      trialEndDate: "2024-12-31T23:59:59Z"
+    },
+    preferences: {
+      marketingEmail: false
     }
   }
 };
@@ -72,21 +56,13 @@ export const FREE_USER_PROFILE = {
     email: "ewe-test@functional.com",
     displayName: "Test User",
     features: ["VPN"],
-    products: {
-      ab: {
-        isTrial: false,
-        trialDaysLeft: null,
-        consents: {
-          marketingEmail: false
-        }
-      },
-      abp: {
-        isTrial: false,
-        trialDaysLeft: null,
-        consents: {
-          marketingEmail: true
-        }
-      }
+    subscription: {
+      isTrial: false,
+      trialDaysLeft: 0,
+      trialEndDate: null
+    },
+    preferences: {
+      marketingEmail: false
     }
   }
 };

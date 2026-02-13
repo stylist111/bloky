@@ -106,27 +106,15 @@ async function assertAccountState({
     expect(await EWE.account.hasPremium()).toBe(hasPremium);
     expect(await EWE.account.getProfile())
       .toStrictEqual(profile);
-    expect(await EWE.account.getTrial())
-      .toStrictEqual({
-        ab: profile && profile.products && profile.products.ab ?
-          profile.products.ab.isTrial : null,
-        abp: profile && profile.products && profile.products.abp ?
-          profile.products.abp.isTrial : null
-      });
-    expect(await EWE.account.getConsents())
-      .toStrictEqual({
-        ab: profile && profile.products && profile.products.ab ?
-          profile.products.ab.consents : null,
-        abp: profile && profile.products && profile.products.abp ?
-          profile.products.abp.consents : null
-      });
+    expect(await EWE.account.isTrial())
+      .toBe(profile && profile.subscription ?
+        profile.subscription.isTrial : false);
+    expect(await EWE.account.getPreferences())
+      .toStrictEqual(profile && profile.preferences ?
+        profile.preferences : {});
     expect(await EWE.account.getTrialDaysLeft())
-      .toStrictEqual({
-        ab: profile && profile.products && profile.products.ab ?
-          profile.products.ab.trialDaysLeft : null,
-        abp: profile && profile.products && profile.products.abp ?
-          profile.products.abp.trialDaysLeft : null
-      });
+      .toBe(profile && profile.subscription && typeof profile.subscription.trialDaysLeft === "number" ?
+        profile.subscription.trialDaysLeft : 0);
 
     const syncStatus = await EWE.account.getProfileSyncStatus();
 
@@ -548,11 +536,8 @@ describe("Account", function() {
       await logInUser();
       await assertPremiumUserWithTrial();
 
-      const trial = await EWE.account.getTrial();
-      expect(trial).toEqual({
-        ab: true,
-        abp: true
-      });
+      const trial = await EWE.account.isTrial();
+      expect(trial).toBe(true);
     });
 
     it("returns trial days left for trial user", async function() {
@@ -560,21 +545,15 @@ describe("Account", function() {
       await assertPremiumUserWithTrial();
 
       const trialDaysLeft = await EWE.account.getTrialDaysLeft();
-      expect(trialDaysLeft).toEqual({
-        ab: 15,
-        abp: 10
-      });
+      expect(trialDaysLeft).toBe(15);
     });
 
-    it("returns correct consents for trial user", async function() {
+    it("returns correct preferences for trial user", async function() {
       await logInUser();
       await assertPremiumUserWithTrial();
 
-      const consents = await EWE.account.getConsents();
-      expect(consents).toEqual({
-        ab: {marketingEmail: false},
-        abp: {marketingEmail: false}
-      });
+      const preferences = await EWE.account.getPreferences();
+      expect(preferences).toEqual({marketingEmail: false});
     });
 
     it("transitions from trial to paid premium", async function() {
@@ -609,17 +588,11 @@ describe("Account", function() {
       await expectTestEvents("account.onChanged", onChangedEvents);
 
       // Verify trial status changed
-      const trial = await EWE.account.getTrial();
-      expect(trial).toEqual({
-        ab: false,
-        abp: false
-      });
+      const trial = await EWE.account.isTrial();
+      expect(trial).toBe(false);
 
       const trialDaysLeft = await EWE.account.getTrialDaysLeft();
-      expect(trialDaysLeft).toEqual({
-        ab: null,
-        abp: null
-      });
+      expect(trialDaysLeft).toBe(0);
     });
 
     it("transitions from trial to free user", async function() {
@@ -654,17 +627,11 @@ describe("Account", function() {
       await expectTestEvents("account.onChanged", onChangedEvents);
 
       // Verify trial status changed
-      const trial = await EWE.account.getTrial();
-      expect(trial).toEqual({
-        ab: false,
-        abp: false
-      });
+      const trial = await EWE.account.isTrial();
+      expect(trial).toBe(false);
 
       const trialDaysLeft = await EWE.account.getTrialDaysLeft();
-      expect(trialDaysLeft).toEqual({
-        ab: null,
-        abp: null
-      });
+      expect(trialDaysLeft).toBe(0);
     });
   });
 });

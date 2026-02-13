@@ -25,8 +25,8 @@ const messageAPI = {
   account: {
     getProfile: accountAPI.getProfile,
     hasPremium: accountAPI.hasPremium,
-    getTrial: accountAPI.getTrial,
-    getConsents: accountAPI.getConsents,
+    isTrial: accountAPI.isTrial,
+    getPreferences: accountAPI.getPreferences,
     getTrialDaysLeft: accountAPI.getTrialDaysLeft
   },
   experiments: {

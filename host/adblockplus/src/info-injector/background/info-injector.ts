@@ -31,8 +31,7 @@ import { getPremiumState } from "../../premium/background";
 async function handleGetInjectionInfo(): Promise<InjectionInfo> {
   await Prefs.untilLoaded;
   const { isActive: isPremium } = await getPremiumState();
-  const trial = await ewe.account.getTrial();
-  const isTrial = trial?.abp ?? false;
+  const isTrial = await ewe.account.isTrial();
   const version = info.addonVersion;
   const id = await getInstallationId();
   const premiumId = Prefs.get("premium_user_id");
