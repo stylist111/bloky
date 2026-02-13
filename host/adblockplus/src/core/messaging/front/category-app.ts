@@ -95,3 +95,10 @@ export async function open(
   const options: OpenOptions = { what, ...parameters };
   await send("app.open", options);
 }
+
+/**
+ * Closes the current tab
+ */
+export async function close(): Promise<void> {
+  await send("app.close");
+}

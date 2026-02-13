@@ -72,6 +72,17 @@
       "run_at": "document_start"
     },
     {
+      "js": ["polyfill.js", "close-tab.preload.js"],
+      "matches": [
+        "https://adblockplus.org/*",
+        "https://new.adblockplus.org/*",
+        "https://welcome.adblockplus.org/*",
+        "https://accounts.adblockplus.org/*",
+        "https://*.myaccount.adblockplus.org/*"
+      ],
+      "run_at": "document_idle"
+    },
+    {
       "js": ["polyfill.js", "options.preload.js"],
       "matches": [
         "https://adblockplus.org/*",

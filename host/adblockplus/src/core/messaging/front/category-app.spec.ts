@@ -152,4 +152,10 @@ describe("Messaging category: app", () => {
       what: "options"
     });
   });
+
+  it("app.close", async () => {
+    await app.close();
+
+    expect(utils.send).toHaveBeenCalledWith("app.close");
+  });
 });

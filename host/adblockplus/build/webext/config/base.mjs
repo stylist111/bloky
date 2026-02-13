@@ -104,6 +104,10 @@ export default {
         src: ["src/premium-onboarding/content/index.ts"]
       },
       {
+        dest: "close-tab.preload.js",
+        src: ["src/close-tab/content/index.ts"]
+      },
+      {
         dest: "options.preload.js",
         src: ["src/options/content/index.ts"]
       },

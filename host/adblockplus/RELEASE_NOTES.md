@@ -1,5 +1,7 @@
 # Unreleased
 
+- Added ability to close tabs via data-extension-action="close-tab" attribute. (EMP-64)
+
 # 4.34.0 - 2026-02-10
 
 - Updated account API to use products nested structure with trial status, trial days left, and consent preferences per product (ab/abp). (EMP-42)
