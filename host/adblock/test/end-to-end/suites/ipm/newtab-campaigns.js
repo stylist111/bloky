@@ -189,7 +189,7 @@ export default (fragmentType) => {
       await waitForAssertion(async () => {
         const { counts } = await getPendingLoggerCdpEventStats();
 
-        expect(counts).toHaveProperty(`${commandReceivedEvent}:${ipmIdLow}`, 2);
+        expect(counts).toHaveProperty(`${commandReceivedEvent}:${ipmIdLow}`, 1);
         expect(counts).toHaveProperty(`${tabCommandReadyEvent}:${ipmIdLow}`, 2);
         expect(counts).toHaveProperty(`${tabCreatedEvent}:${ipmIdLow}`, 1);
         expect(counts).toHaveProperty(`${tabLoadedEvent}:${ipmIdLow}`, 1);

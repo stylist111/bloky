@@ -63,5 +63,7 @@ export function getStartInfo(): StartInfo {
     },
     addMessageListener: () => {},
     removeMessageListener: () => {},
+    getLastSyncId: () => String(Math.random()),
+    setLastSyncId: () => {},
   };
 }

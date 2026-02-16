@@ -282,6 +282,13 @@ defaults["ipm:safe_origins"] = [
 ];
 
 /**
+ * String identifying configuration state during the last synchronization
+ *
+ * @type {string}
+ */
+defaults["ipm:last_sync_id"] = "";
+
+/**
  * Minimum log level
  *
  * @type {number}

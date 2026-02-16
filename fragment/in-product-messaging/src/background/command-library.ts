@@ -48,10 +48,10 @@ const knownCommandsList = Object.values(CommandName);
 const actorByCommandName = new Map<CommandName, CommandActor>();
 
 /**
- * List of commands that cannot be executed yet, including indication
- * whether they are meant to be reinitialized
+ * List of commands that cannot be executed yet, including arguments to use
+ * for executing them
  */
-const unexecutableCommands = new Map<Command, boolean>();
+const unexecutableCommands = new Map<Command, boolean[]>();
 
 /**
  * Server logger instance for IPM events
@@ -251,13 +251,13 @@ function getContentForLocale(
  * @param commandName - Command name
  */
 function retryExecuteCommands(commandName: CommandName): void {
-  for (const [command, isInitialization] of unexecutableCommands) {
+  for (const [command, executionArguments] of unexecutableCommands) {
     if (command.command_name !== commandName) {
       continue;
     }
 
     unexecutableCommands.delete(command);
-    void executeIPMCommands([command], isInitialization);
+    void executeIPMCommands([command], ...executionArguments);
   }
 }
 
@@ -267,10 +267,13 @@ function retryExecuteCommands(commandName: CommandName): void {
  * @param commands A list of commands from the IPM server
  * @param isInitialization Whether the commands are being restored when the
  *   module initializes
+ * @param isConfigUpdate Whether the commands are executed the first time after
+ *   the underlying configuration got updated
  */
 export async function executeIPMCommands(
   commands: unknown[],
   isInitialization: boolean = false,
+  isConfigUpdate: boolean = false,
 ): Promise<void> {
   if (!isActive) {
     return;
@@ -335,7 +338,7 @@ export async function executeIPMCommands(
     const actor = actorByCommandName.get(command.command_name);
     if (!actor) {
       logger.debug("[ipm]: No actor found:", command.command_name);
-      unexecutableCommands.set(command, isInitialization);
+      unexecutableCommands.set(command, [isInitialization, isConfigUpdate]);
       continue;
     }
 
@@ -352,11 +355,15 @@ export async function executeIPMCommands(
 
   const commandHandlingPromises = Array.from(actorByExecutableCommand).map(
     async ([executableCommand, actor]) => {
-      serverLogger.behavior(
-        "command_received",
-        executableCommand.ipm_id,
-        executableCommand.ipm_id,
-      );
+      // We only need to know about whether the command was received whenever
+      // the config changes, so no need to log it under any other circumstances
+      if (isConfigUpdate) {
+        serverLogger.behavior(
+          "command_received",
+          executableCommand.ipm_id,
+          executableCommand.ipm_id,
+        );
+      }
 
       if (!(await matchesCohort(executableCommand))) {
         logger.debug("[ipm]: Cohort doesn't match.");
@@ -459,8 +466,22 @@ function isTestingOverrideLocaleMessage(
  * stored commands with what we received from the remote config.
  */
 async function synchronizeRemoteCommands(): Promise<void> {
-  const { getDismissedIpmIds, info, logger, setDismissedIpmIds } =
-    getStartInfo();
+  const {
+    getDismissedIpmIds,
+    getLastSyncId,
+    info,
+    logger,
+    setDismissedIpmIds,
+    setLastSyncId,
+  } = getStartInfo();
+
+  const lastSyncId = getLastSyncId();
+  const currentSyncId = (await ewe.remoteConfig.getRevisionId()) ?? "";
+  const isConfigUpdate = currentSyncId !== lastSyncId;
+  if (isConfigUpdate) {
+    setLastSyncId(currentSyncId);
+  }
+
   const remoteCommands = await getRemoteCommands();
   if (remoteCommands === null) {
     logger.reportAndLogError(new Error("[ipm]: No remote configuration."));
@@ -493,7 +514,7 @@ async function synchronizeRemoteCommands(): Promise<void> {
   commandStorage.replaceAll(commandMap);
 
   // Execute commands
-  await executeIPMCommands(commands, true);
+  await executeIPMCommands(commands, true, isConfigUpdate);
 }
 
 /**

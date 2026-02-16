@@ -35,6 +35,8 @@ export interface StartInfo {
     name: string,
     listener: (message: unknown) => unknown,
   ) => void;
+  getLastSyncId: () => string | null;
+  setLastSyncId: (syncId: string | null) => void;
 }
 
 interface Logger {

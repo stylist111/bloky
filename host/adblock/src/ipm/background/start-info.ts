@@ -76,6 +76,12 @@ export async function getFutureStartInfo(): Promise<FutureFragment.StartInfo> {
     removeMessageListener(name, listener) {
       port.off(name, listener);
     },
+    getLastSyncId() {
+      return Prefs.get("ipm:last_sync_id");
+    },
+    setLastSyncId(syncId) {
+      void Prefs.set("ipm:last_sync_id", syncId);
+    },
   };
 }
 
