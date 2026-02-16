@@ -27,6 +27,7 @@
  * and isolated world scripts execution order is not consistent.
  * @see https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Releases/139#changes_for_add-on_developers
  * @see https://bugzil.la/1792685
+ * @see https://eyeo.atlassian.net/wiki/spaces/B2C/pages/1666678786/Content-script+based+snippets
  *
  * @param {string} fallbackChannel - The channel name to use and store if
  *   none is present.
