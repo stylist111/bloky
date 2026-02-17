@@ -4,5 +4,6 @@ export function setSampleRate() {}
 
 export default {
   reportError() {},
+  setFeatureFlags() {},
   start() {}
 };

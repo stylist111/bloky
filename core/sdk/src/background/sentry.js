@@ -20,7 +20,8 @@ import {
   Scope,
   defaultStackParser,
   getDefaultIntegrations,
-  makeFetchTransport
+  makeFetchTransport,
+  featureFlagsIntegration
 } from "@sentry/browser";
 import {v4 as uuidv4} from "uuid";
 
@@ -34,6 +35,7 @@ let lastEvent;
 let sampleRate = defaultSampleRate;
 let scope;
 let userId;
+let _experimentFlags;
 let reporterData = new PersistentState(
   "ewe:sentry",
   browser.storage.local
@@ -117,6 +119,37 @@ export default {
   },
 
   /**
+   * Set feature flags to be included in Sentry error reports
+   * @see https://docs.sentry.io/platforms/javascript/configuration/integrations/featureflags/
+   *
+   * @param {Object} flags - Object containing feature flag key-value pairs
+   *    e.g., {featureName: true, anotherFeature: false}
+   */
+  setFeatureFlags(flags) {
+    // Store the flags in a variable so that they can be set once Sentry
+    // is initialized and scope is available.
+    _experimentFlags = flags;
+
+    if (!scope) {
+      console.warn("Sentry is not initialized. Feature flags will not be set.");
+      return;
+    }
+
+    const client = scope.getClient();
+    const flagsIntegration = client && client.getIntegrationByName("FeatureFlags");
+    if (!flagsIntegration) {
+      console.warn("Sentry FeatureFlags integration is not available.");
+      return;
+    }
+
+    // Note: At the moment, we only support boolean flag evaluations, so we're
+    // converting all values to boolean.
+    for (const [key, value] of Object.entries(flags)) {
+      flagsIntegration.addFeatureFlag(key, Boolean(value));
+    }
+  },
+
+  /**
    * Initialize and start Sentry
    *
    * @param {string?} dsn - Sentry DSN URL
@@ -155,7 +188,10 @@ export default {
           manifestVersion: manifest.manifest_version
         }
       },
-      integrations,
+      integrations: [
+        ...integrations,
+        featureFlagsIntegration()
+      ],
       sampleRate,
       beforeSend(event) {
         lastEvent = event;
@@ -166,6 +202,12 @@ export default {
     scope = new Scope();
     scope.setClient(client);
     client.init();
+
+    // If experiment flags were set before Sentry was initialized,
+    // we need to set them again now that the scope is available.
+    if (_experimentFlags) {
+      this.setFeatureFlags(_experimentFlags);
+    }
 
     self.addEventListener("error", event => {
       const {error} = event;

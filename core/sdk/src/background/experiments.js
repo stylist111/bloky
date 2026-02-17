@@ -30,6 +30,22 @@ import {getExperimentsConfig} from "./remote-config/storage.js";
 let emitter = new EventEmitter();
 let experimentData = new PersistentState("ewe:split_experiments", browser.storage.local);
 
+// Restore Sentry feature flags from persistent storage on service worker
+// startup. This ensures that experiment flags are available in Sentry error
+// reports even after the service worker restarts, until the next remote
+// config sync occurs.
+experimentData.load(savedState => {
+  try {
+    if (savedState && savedState.flags) {
+      sentry.setFeatureFlags(savedState.flags);
+    }
+  }
+  catch (e) {
+    warn(`Error while setting Sentry feature flags: ${e.message}`);
+    sentry.reportError(e);
+  }
+});
+
 let onChanged = new EventDispatcher(dispatch => {
   emitter.on("updated", async() => {
     dispatch(await getExperimentsInternal());
@@ -144,6 +160,7 @@ export async function sync() {
     await experimentData.save();
 
     emitter.emit("updated");
+    sentry.setFeatureFlags(flags);
   }
   catch (e) {
     warn(`Error while synchronizing experiments: ${e.message}`);
