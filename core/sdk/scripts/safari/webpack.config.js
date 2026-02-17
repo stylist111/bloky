@@ -14,7 +14,6 @@ const eweDistPath = path.join(dirname, "..", "..", "dist");
 const distPath = path.join(eweDistPath, "test-safari");
 
 // Path to the early polyfill code to inject at the very start of the bundle
-// This is the consolidated polyfill in the SDK source directory
 const earlyPolyfillPath = path.join(sdkSrcPath, "safari-polyfill-early.cjs");
 
 export default async(env = {}) => {

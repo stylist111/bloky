@@ -337,6 +337,13 @@
       font-weight: 500;
     }
 
+    /* Startup banner */
+    .startup-banner {
+      font-size: 11px;
+      color: #ff9500;
+      font-style: italic;
+    }
+
     /* States */
     .loading {
       text-align: center;
@@ -379,6 +386,7 @@
     <div class="subscriptions-container">
       <div class="toolbar">
         <button id="refreshSubscriptions" class="btn">Refresh</button>
+        <span id="startupStatus" class="startup-banner">Toggles disabled — waiting for startup...</span>
       </div>
       <div id="subscriptionContent" class="loading">Loading subscriptions...</div>
     </div>

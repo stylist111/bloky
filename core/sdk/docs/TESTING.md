@@ -334,28 +334,12 @@ command:
 A subset of [nasapp-testing](https://gitlab.com/eyeo/network-filtering/nasapp-testing)
 tests check that the SDK code works in Safari.
 
-#### Important: Keeping manifest and polyfill in sync
+#### Manifest and polyfill sync
 
 The Safari polyfill in `src/background/safari-polyfill-early.cjs`
-contains a `MANIFEST_ENABLED_RULESETS` array that **must match**
-the rulesets enabled in `test/extension-safari/manifest.json`.
-
-This is necessary because the polyfill's `getEnabledRulesets()` stub returns this
-list to tell the SDK which rulesets are already enabled. If this doesn't match the
-manifest, the SDK may try to enable/disable rulesets unnecessarily during startup,
-which can cause Safari's `updateEnabledRulesets` to fail with "Failed to apply rules".
-
-When modifying the manifest's `declarative_net_request.rule_resources`, update
-the `MANIFEST_ENABLED_RULESETS` array accordingly:
-
-```javascript
-// In safari-polyfill-early.js - must match manifest.json!
-const MANIFEST_ENABLED_RULESETS = [
-  "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F", // Acceptable Ads
-  "8C13E995-8F06-4927-BEA7-6C845FB7EEBF", // EasyList
-  "D4028CDD-3D39-4624-ACC7-8140F4EC3238"  // Anti-CV
-];
-```
+reads enabled rulesets at runtime via `chrome.runtime.getManifest()`.
+No manual sync or build-time injection is needed - the polyfill
+automatically picks up whatever is enabled in `manifest.json`.
 
 #### Setup
 

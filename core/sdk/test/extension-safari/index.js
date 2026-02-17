@@ -15,37 +15,15 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Safari polyfills are handled by safari-polyfill-early.js which is
+// Safari polyfills are fully handled by safari-polyfill-early.cjs which is
 // injected at the very start of the bundle via webpack BannerPlugin.
-// Additional post-SDK-load patching is done below.
+// The Proxy-based approach intercepts all DNR API access, so no
+// post-SDK-load patching is needed.
 
 // Import console capture first to intercept all logs
 import {getLogs, clearLogs} from "./console.js";
 import * as ewe from "./ewe.js";
 import {getSubscriptions, setSubscriptionEnabled} from "./subscriptions.js";
-
-// Safari doesn't implement getAvailableStaticRuleCount(), so this value is
-// used as a fallback return value. The value matches Chrome's guaranteed
-// minimum static rule count (30,000). Safari's actual limit may differ.
-const SAFARI_STATIC_RULE_COUNT_FALLBACK = 30000;
-
-// CRITICAL: Patch browser.declarativeNetRequest AFTER SDK loads
-// The SDK bundles its own webextension-polyfill which may create
-// a different browser object that needs patching
-function patchBrowserDnr() {
-  // Patch globalThis.browser which the SDK uses
-  if (globalThis.browser && globalThis.browser.declarativeNetRequest) {
-    const dnr = globalThis.browser.declarativeNetRequest;
-    if (typeof dnr.getAvailableStaticRuleCount !== "function") {
-      dnr.getAvailableStaticRuleCount = () =>
-        Promise.resolve(SAFARI_STATIC_RULE_COUNT_FALLBACK);
-    }
-    if (typeof dnr.getSessionRules !== "function") {
-      dnr.getSessionRules = () => Promise.resolve([]);
-    }
-  }
-}
-patchBrowserDnr();
 
 try {
   ewe.start();

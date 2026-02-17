@@ -61,13 +61,9 @@ export function start() {
 
     await checkDefaultSubscriptions();
 
-    // Signal that startup is complete - this allows updateEnabledRulesets
-    // to work normally for user-initiated filter list changes.
-    // Must be called AFTER subscriptions are set up.
-    // This function is injected by safari-early-polyfill.
-    if (typeof globalThis.__safariPolyfillStartupComplete === "function") {
-      globalThis.__safariPolyfillStartupComplete();
-    }
+    // Signal startup complete — updateEnabledRulesets calls will now
+    // go through to the native Safari API instead of being dropped.
+    EWE.signalStartupComplete();
     eweSetupDuration = Date.now() - startTime;
     console.warn(`EWE setup completed in ${eweSetupDuration}ms`);
     notifyPopup("timingUpdate", {section: "startup"});

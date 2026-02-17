@@ -27,12 +27,16 @@ const refreshLogsBtn = document.getElementById("refreshLogs");
 const copyLogsBtn = document.getElementById("copyLogs");
 const logLevelFilter = document.getElementById("logLevelFilter");
 const logTextFilter = document.getElementById("logTextFilter");
+const startupStatus = document.getElementById("startupStatus");
 const tabs = document.querySelectorAll(".tab");
 const tabContents = document.querySelectorAll(".tab-content");
 
 // Log filter state
 let activeLevel = "all";
 let activeTextFilter = "";
+
+// Startup state — toggles are disabled until EWE setup completes
+let startupComplete = false;
 
 // Tab switching
 tabs.forEach(tab => {
@@ -124,6 +128,7 @@ function renderSubscriptions(subscriptions) {
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.checked = sub.enabled;
+    checkbox.disabled = !startupComplete;
     checkbox.dataset.url = sub.url;
     checkbox.addEventListener("change", handleToggle);
 
@@ -136,6 +141,14 @@ function renderSubscriptions(subscriptions) {
     item.appendChild(info);
     item.appendChild(toggle);
     subscriptionContent.appendChild(item);
+  }
+}
+
+function enableSubscriptionToggles() {
+  startupStatus.hidden = true;
+  const checkboxes = subscriptionContent.querySelectorAll("input[type=checkbox]");
+  for (const cb of checkboxes) {
+    cb.disabled = false;
   }
 }
 
@@ -209,14 +222,23 @@ function renderStartupInfo(info) {
 
   startupSection.innerHTML = html;
 
-  // Inject hidden debug JSON into page (all durations in milliseconds)
-  injectDebugJson({
-    eweStartDurationMs: info.eweStartDuration,
-    eweSetupDurationMs: info.eweSetupDuration,
-    runningDurationMs: info.runningDuration,
-    errorCount,
-    sessionCount
-  });
+  // Inject hidden debug JSON only after startup is complete,
+  // so the test waits until real data is available.
+  if (info.eweSetupDuration !== null) {
+    injectDebugJson({
+      eweStartDurationMs: info.eweStartDuration,
+      eweSetupDurationMs: info.eweSetupDuration,
+      runningDurationMs: info.runningDuration,
+      errorCount,
+      sessionCount
+    });
+
+    // Enable subscription toggles now that startup is complete
+    if (!startupComplete) {
+      startupComplete = true;
+      enableSubscriptionToggles();
+    }
+  }
 }
 
 function injectDebugJson(data) {

@@ -762,6 +762,12 @@ declare module "@eyeo/webext-ad-filtering-solution" {
 
   const start: (addonInfo: AddonInfo) =>  Promise<FirstRunInfo>;
 
+  /**
+   * Signals that post-start setup is complete, unblocking Safari polyfill
+   * operations that are gated during startup. No-op on non-Safari builds.
+   */
+  const signalStartupComplete: () => void;
+
   namespace allowlisting {
     /**
      * Sets the function called when allowlisting succeeds

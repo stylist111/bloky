@@ -20,7 +20,8 @@
     "./ui": "./dist/ewe-ui.js",
     "./all/*": "./src/all/*",
     "./src/*": "./src/*",
-    "./adblockpluscore/*": "./adblockpluscore/*"
+    "./adblockpluscore/*": "./adblockpluscore/*",
+    "./safari-polyfill-early": "./src/background/safari-polyfill-early.cjs"
   },
   "imports": {
     "#adblockpluscore/*": "./adblockpluscore/*"
@@ -35,7 +36,8 @@
     "scripts",
     "sdk",
     "webpack.config.js",
-    "src/types/*.d.ts"
+    "src/types/*.d.ts",
+    "src/background/safari-polyfill-early.cjs"
   ],
   "dependencies": {
     "@eyeo/remote-configuration-validator": "*",

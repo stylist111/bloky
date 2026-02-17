@@ -19,7 +19,7 @@
 // safari-polyfill.js
 //
 // This file provides SDK-specific Safari functionality that requires
-// ES module exports. Basic polyfills are in safari-polyfill-early.js
+// ES module exports. Basic polyfills are in safari-polyfill-early.cjs
 // which is injected at bundle start via webpack BannerPlugin.
 //
 // This file handles:
@@ -97,7 +97,7 @@ async function waitForWebNavigation() {
  * Apply Safari-specific patches for the SDK.
  *
  * Basic polyfills (webRequest, DNR, runtime, etc.) are handled by
- * safari-polyfill-early.js which runs before any modules load.
+ * safari-polyfill-early.cjs which runs before any modules load.
  *
  * This function handles:
  * - Waiting for webNavigation to be available (if doWaitForWebNavigation=true)

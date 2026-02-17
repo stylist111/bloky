@@ -18,161 +18,269 @@
 //
 // safari-polyfill-early.cjs
 //
-// This file runs BEFORE any other modules, including the SDK.
-// It is injected at the very start of the bundle via webpack BannerPlugin.
+// This file MUST be loaded before ANY other modules, including the SDK.
+// It intercepts globalThis.browser to patch Safari-missing DNR APIs.
+//
+// The webextension-polyfill (bundled in the SDK) creates a Proxy
+// that checks `prop in target` before returning values. Safari's
+// native chrome.declarativeNetRequest is frozen, so we can't add
+// properties to it. Instead, we intercept the globalThis.browser
+// assignment and wrap its declarativeNetRequest with our polyfills.
 //
 // IMPORTANT: This file must NOT use ES module syntax (import/export)
 // because it is injected as raw code before the module system loads.
-//
-// This file patches BOTH chrome.* (before webextension-polyfill wraps them)
-// AND browser.* (which Safari provides natively).
 //
 
 /* eslint-disable no-console */
 /* global chrome */
 
 (function() {
-  // Safari doesn't provide getAvailableStaticRuleCount API. This constant is
-  // used as a fallback return value. The value matches Chrome's guaranteed
-  // minimum static rule count (30,000). Safari's actual limit may differ.
-  const SAFARI_STATIC_RULE_COUNT_FALLBACK = 30000;
-
-  // Track whether startup is complete - after subscriptions are loaded,
-  // updateEnabledRulesets can work normally
+  // Two-state lifecycle for updateEnabledRulesets:
+  //   false (initial) - calls silently resolve during startup
+  //   true            - calls go directly to native API
+  //
+  // Dropping during startup is safe because:
+  //   - Rulesets are already enabled via manifest.json at install time
+  //   - enabled-state.js polls every 1 second and reconciles real state
   let startupComplete = false;
 
-  // Expose a function to signal startup is complete
-  // This should be called after EWE.start() and subscriptions are loaded
   if (typeof globalThis !== "undefined") {
+    // Switch to passthrough mode.
+    // Call this after EWE.start() and checkDefaultSubscriptions() complete.
     globalThis.__safariPolyfillStartupComplete = function() {
       startupComplete = true;
       console.log("[Safari polyfill] Startup complete, updateEnabledRulesets now functional");
     };
   }
 
-  // =========================================================================
-  // POLYFILL DEFINITIONS
-  // =========================================================================
+  // Safari DNR limits (used for polyfills when native API unavailable)
+  // Safari allows ~50,000 static rules on device, but Simulator reports 30,000.
+  // We use the lower value for consistency across environments.
+  const SAFARI_AVAILABLE_STATIC_RULES = 30000;
+  const SAFARI_MAX_DYNAMIC_RULES = 5000;
 
-  // ResourceType enum - Safari doesn't include this
-  const RESOURCE_TYPE = {
-    CSP_REPORT: "csp_report",
-    FONT: "font",
-    IMAGE: "image",
-    MAIN_FRAME: "main_frame",
-    MEDIA: "media",
-    OBJECT: "object",
-    OTHER: "other",
-    PING: "ping",
-    SCRIPT: "script",
-    STYLESHEET: "stylesheet",
-    SUB_FRAME: "sub_frame",
-    WEBSOCKET: "websocket",
-    XMLHTTPREQUEST: "xmlhttprequest"
-  };
-
-  // WebRequest events to stub
-  const WEB_REQUEST_EVENTS = [
-    "onBeforeRequest",
-    "onBeforeSendHeaders",
-    "onSendHeaders",
-    "onHeadersReceived",
-    "onResponseStarted",
-    "onBeforeRedirect",
-    "onCompleted",
-    "onErrorOccurred"
-  ];
-
-  // Rulesets enabled in manifest.json - must match the manifest!
-  // This ensures the SDK sees the correct initial state and doesn't try
-  // to disable rulesets unnecessarily during startup.
-  const MANIFEST_ENABLED_RULESETS = [
-    "0798B6A2-94A4-4ADF-89ED-BEC112FC4C7F", // Acceptable Ads
-    "8C13E995-8F06-4927-BEA7-6C845FB7EEBF", // EasyList
-    "D4028CDD-3D39-4624-ACC7-8140F4EC3238"  // Anti-CV
-  ];
-
-  /**
-   * Wrap updateEnabledRulesets with startup protection.
-   * Safari's updateEnabledRulesets fails with "Failed to apply rules" when
-   * the SDK tries to disable manifest-enabled rulesets on startup (before
-   * subscriptions are loaded). Since rulesets are already enabled in manifest,
-   * blocking all calls during startup still allows blocking to work.
-   * After startup completes, we allow the real function to work.
-   * @param {Object} dnr - The declarativeNetRequest object to patch
-   */
-  function wrapUpdateEnabledRulesets(dnr) {
-    if (!dnr || dnr._updateEnabledRulesetsWrapped) {
-      return;
-    }
-    let originalFn = dnr.updateEnabledRulesets;
-    dnr.updateEnabledRulesets = function(options) {
-      if (!startupComplete) {
-        return Promise.resolve();
-      }
-      if (typeof originalFn === "function") {
-        return originalFn.call(dnr, options);
-      }
-      return Promise.resolve();
-    };
-    dnr._updateEnabledRulesetsWrapped = true;
-  }
-
-  // DNR stub implementations
-  const dnrStubs = {
+  // Polyfill functions for declarativeNetRequest
+  const dnrPolyfills = {
     getAvailableStaticRuleCount() {
-      return Promise.resolve(SAFARI_STATIC_RULE_COUNT_FALLBACK);
+      return SAFARI_AVAILABLE_STATIC_RULES;
     },
     getSessionRules() {
-      return Promise.resolve([]);
+      return [];
     },
+    MAX_NUMBER_OF_DYNAMIC_RULES: SAFARI_MAX_DYNAMIC_RULES,
     getEnabledRulesets() {
-      // Return the rulesets that are enabled in manifest.json
-      // This prevents the SDK from trying to disable them on startup
-      return Promise.resolve([...MANIFEST_ENABLED_RULESETS]);
+      // Read enabled rulesets directly from manifest.json
+      // - single source of truth.
+      // chrome.runtime.getManifest() is available
+      // synchronously in Safari extensions.
+      let manifest = chrome.runtime.getManifest();
+      let resources = manifest.declarative_net_request?.rule_resources || [];
+      return resources
+        .filter(r => r.enabled)
+        .map(r => r.id);
     },
     getDynamicRules() {
-      return Promise.resolve([]);
+      return [];
     },
     updateDynamicRules() {
-      return Promise.resolve();
-    },
-    MAX_NUMBER_OF_DYNAMIC_RULES: 5000
+      // no-op
+    }
   };
 
-  // =========================================================================
-  // PATCHING FUNCTIONS
-  // =========================================================================
+  // Create a proxy wrapper for declarativeNetRequest that adds missing methods
+  // and wraps updateEnabledRulesets with startup protection
+  function createDnrProxy(originalDnr) {
+    const originalUpdateEnabledRulesets = originalDnr.updateEnabledRulesets;
 
-  /**
-   * Patch webRequest namespace on a target object (chrome or browser)
-   * @param {Object} target - The target object to patch (chrome or browser)
-   * @param {string} targetName - Name of the target for logging
-   */
-  function patchWebRequest(target, targetName) {
-    if (!target) {
-      return;
+    return new Proxy(originalDnr, {
+      get(target, prop) {
+        // Wrap updateEnabledRulesets with startup protection
+        if (prop === "updateEnabledRulesets") {
+          return options => {
+            if (!startupComplete) {
+              // During startup: silently resolve to prevent deadlock.
+              // Safe because rulesets are enabled via
+              // manifest + enabled-state.js reconciles.
+              console.log(
+                "[Safari polyfill] updateEnabledRulesets dropped during init:",
+                options
+              );
+              return Promise.resolve();
+            }
+            // After startup: use the real function
+            if (typeof originalUpdateEnabledRulesets === "function") {
+              return originalUpdateEnabledRulesets.call(target, options);
+            }
+            return Promise.resolve();
+          };
+        }
+
+        // Return our polyfill if the property doesn't exist on the original
+        if (prop in dnrPolyfills && !(prop in target)) {
+          return dnrPolyfills[prop];
+        }
+        // Otherwise return the original property
+        let value = target[prop];
+        if (typeof value === "function") {
+          return value.bind(target);
+        }
+        return value;
+      },
+      has(target, prop) {
+        return prop in target || prop in dnrPolyfills;
+      }
+    });
+  }
+
+  // ExecutionWorld polyfill for scripting namespace
+  // Safari lacks browser.scripting.ExecutionWorld,
+  // causing snippet execution to fail
+  // This is needed for YouTube ad-blocking snippets on SPA navigation
+  const executionWorldPolyfill = {
+    ISOLATED: "ISOLATED",
+    MAIN: "MAIN"
+  };
+
+  // Create a proxy wrapper for scripting that adds ExecutionWorld
+  function createScriptingProxy(originalScripting) {
+    return new Proxy(originalScripting, {
+      get(target, prop) {
+        let value = target[prop];
+
+        // Return our polyfill if ExecutionWorld doesn't
+        // exist or is null/undefined
+        if (prop === "ExecutionWorld") {
+          if (value == null) {
+            return executionWorldPolyfill;
+          }
+          return value;
+        }
+
+        // For all other properties, return the original
+        if (typeof value === "function") {
+          return value.bind(target);
+        }
+        return value;
+      },
+      has(target, prop) {
+        return prop in target || prop === "ExecutionWorld";
+      }
+    });
+  }
+
+  // Create a proxy wrapper for the browser object that
+  // intercepts declarativeNetRequest and scripting
+  function createBrowserProxy(originalBrowser) {
+    let dnrProxyCache = null;
+    let scriptingProxyCache = null;
+    return new Proxy(originalBrowser, {
+      get(target, prop) {
+        if (prop === "declarativeNetRequest" && target.declarativeNetRequest) {
+          // Lazily create and cache our DNR proxy
+          if (!dnrProxyCache) {
+            dnrProxyCache = createDnrProxy(target.declarativeNetRequest);
+          }
+          return dnrProxyCache;
+        }
+        if (prop === "scripting") {
+          // Lazily create and cache our scripting proxy
+          if (!scriptingProxyCache) {
+            // Create scripting object if it doesn't exist
+            let scripting = target.scripting || {};
+            scriptingProxyCache = createScriptingProxy(scripting);
+          }
+          return scriptingProxyCache;
+        }
+        // For all other properties, return the original
+        let value = target[prop];
+        if (typeof value === "function") {
+          return value.bind(target);
+        }
+        return value;
+      },
+      has(target, prop) {
+        return prop in target || prop === "scripting";
+      },
+      set(target, prop, value) {
+        target[prop] = value;
+        return true;
+      }
+    });
+  }
+
+  // Intercept globalThis.browser assignment
+  // webextension-polyfill will set globalThis.browser when it initializes
+  let _browser = globalThis.browser;
+  // Track if we've already wrapped to prevent re-wrapping
+  let _isProxied = false;
+
+  Object.defineProperty(globalThis, "browser", {
+    configurable: true,
+    enumerable: true,
+    get() {
+      return _browser;
+    },
+    set(newBrowser) {
+      // Don't re-wrap if already proxied
+      // (prevents losing proxy state on multiple assignments)
+      if (_isProxied && newBrowser === _browser) {
+        return;
+      }
+
+      // Wrap the browser object with our proxy
+      // that handles declarativeNetRequest
+      if (newBrowser && newBrowser.declarativeNetRequest) {
+        _browser = createBrowserProxy(newBrowser);
+        _isProxied = true;
+      }
+      else {
+        _browser = newBrowser;
+        _isProxied = false;
+      }
     }
+  });
 
-    // Polyfill webRequest namespace (Safari < iOS 18)
-    if (!target.webRequest) {
-      // Polyfilling missing webRequest namespace
-      target.webRequest = {};
-    }
+  // Polyfill webRequest namespace (Safari < iOS 18)
+  if (typeof chrome !== "undefined" && !chrome.webRequest) {
+    chrome.webRequest = {};
+  }
 
-    // Polyfill ResourceType enum
-    if (!target.webRequest.ResourceType) {
-      // Polyfilling webRequest.ResourceType
-      target.webRequest.ResourceType = {...RESOURCE_TYPE};
-    }
+  // Polyfill webRequest.ResourceType enum
+  if (typeof chrome !== "undefined" && chrome.webRequest && !chrome.webRequest.ResourceType) {
+    chrome.webRequest.ResourceType = {
+      CSP_REPORT: "csp_report",
+      FONT: "font",
+      IMAGE: "image",
+      MAIN_FRAME: "main_frame",
+      MEDIA: "media",
+      OBJECT: "object",
+      OTHER: "other",
+      PING: "ping",
+      SCRIPT: "script",
+      STYLESHEET: "stylesheet",
+      SUB_FRAME: "sub_frame",
+      WEBSOCKET: "websocket",
+      XMLHTTPREQUEST: "xmlhttprequest"
+    };
+  }
 
-    // Polyfill webRequest events as no-ops
-    WEB_REQUEST_EVENTS.forEach(eventName => {
-      if (!target.webRequest[eventName]) {
-        target.webRequest[eventName] = {
-          addListener() {
-            // Stub addListener called
-          },
+  // Polyfill webRequest events as no-ops
+  // NOTE: onSendHeaders is required by EWE SDK 3.0.1 for DNR request reporting
+  if (typeof chrome !== "undefined" && chrome.webRequest) {
+    const events = [
+      "onBeforeRequest",
+      "onBeforeSendHeaders",
+      "onSendHeaders",
+      "onHeadersReceived",
+      "onResponseStarted",
+      "onBeforeRedirect",
+      "onCompleted",
+      "onErrorOccurred"
+    ];
+    events.forEach(eventName => {
+      if (!chrome.webRequest[eventName]) {
+        chrome.webRequest[eventName] = {
+          addListener() {},
           removeListener() {},
           hasListener() {
             return false;
@@ -182,207 +290,22 @@
     });
   }
 
-  /**
-   * Patch runtime namespace on a target object
-   * @param {Object} target - The target object to patch (chrome or browser)
-   * @param {string} targetName - Name of the target for logging
-   */
-  function patchRuntime(target, targetName) {
-    if (!target || !target.runtime) {
-      return;
-    }
-
-    if (!target.runtime.OnInstalledReason) {
-      target.runtime.OnInstalledReason = {
-        UPDATE: "update"
-      };
-    }
+  // Polyfill runtime.OnInstalledReason
+  if (typeof chrome !== "undefined" && chrome.runtime && !chrome.runtime.OnInstalledReason) {
+    chrome.runtime.OnInstalledReason = {
+      UPDATE: "update"
+    };
   }
 
-  /**
-   * Patch webNavigation namespace on a target object
-   * @param {Object} target - The target object to patch (chrome or browser)
-   * @param {string} targetName - Name of the target for logging
-   */
-  function patchWebNavigation(target, targetName) {
-    if (!target || !target.webNavigation) {
-      return;
-    }
-
-    if (!target.webNavigation.onCreatedNavigationTarget) {
-      target.webNavigation.onCreatedNavigationTarget = {
-        addListener() {}
-      };
-    }
-  }
-
-  /**
-   * Patch scripting namespace on a target object
-   * @param {Object} target - The target object to patch (chrome or browser)
-   * @param {string} targetName - Name of the target for logging
-   */
-  function patchScripting(target, targetName) {
-    if (!target || !target.scripting) {
-      return;
-    }
-
-    // Safari may have ExecutionWorld as null/undefined, or missing MAIN value
-    // We need ExecutionWorld.MAIN for snippet injection into the main world
-    let needsExecutionWorldPatch =
-      !target.scripting.ExecutionWorld ||
-      typeof target.scripting.ExecutionWorld.MAIN === "undefined";
-
-    if (needsExecutionWorldPatch) {
-      target.scripting.ExecutionWorld = {
-        ...target.scripting.ExecutionWorld,
-        ISOLATED: "ISOLATED",
-        MAIN: "MAIN"
-      };
-    }
-  }
-
-  /**
-   * Patch declarativeNetRequest namespace on a target object
-   * Includes startup protection for updateEnabledRulesets
-   * @param {Object} target - The target object to patch (chrome or browser)
-   * @param {string} targetName - Name of the target for logging
-   */
-  function patchDeclarativeNetRequest(target, targetName) {
-    if (!target) {
-      return;
-    }
-
-    // Ensure declarativeNetRequest namespace exists
-    if (!target.declarativeNetRequest) {
-      target.declarativeNetRequest = {};
-    }
-
-    let dnr = target.declarativeNetRequest;
-
-    // Patch each stub method
-    Object.keys(dnrStubs).forEach(key => {
-      if (typeof dnrStubs[key] === "function") {
-        if (typeof dnr[key] !== "function") {
-          dnr[key] = dnrStubs[key];
-        }
-      }
-      else if (!dnr[key]) {
-        dnr[key] = dnrStubs[key];
-      }
-    });
-
-    wrapUpdateEnabledRulesets(dnr);
-  }
-
-  /**
-   * Apply all patches to a target object (chrome or browser)
-   * @param {Object} target - The target object to patch (chrome or browser)
-   * @param {string} targetName - Name of the target for logging
-   */
-  function patchAll(target, targetName) {
-    if (!target) {
-      return;
-    }
-
-    patchWebRequest(target, targetName);
-    patchRuntime(target, targetName);
-    patchWebNavigation(target, targetName);
-    patchScripting(target, targetName);
-    patchDeclarativeNetRequest(target, targetName);
-  }
-
-  // =========================================================================
-  // LAZY API INTERCEPTOR
-  // =========================================================================
-
-  /**
-   * Use a getter/setter to intercept future access to declarativeNetRequest.
-   * This handles the case where Safari lazily provides the API after our
-   * polyfill runs.
-   * @param {Object} target - The target object to install interceptor on
-   * @param {string} targetName - Name of the target for logging
-   */
-  function installDnrInterceptor(target, targetName) {
-    if (!target) {
-      return;
-    }
-
-    let originalDnr = target.declarativeNetRequest;
-    let patchedDnr = null;
-
-    try {
-      Object.defineProperty(target, "declarativeNetRequest", {
-        configurable: true,
-        enumerable: true,
-        get() {
-          if (patchedDnr) {
-            return patchedDnr;
-          }
-
-          let currentDnr = originalDnr;
-
-          if (currentDnr) {
-            // Apply our stubs to any missing methods
-            Object.keys(dnrStubs).forEach(key => {
-              if (typeof dnrStubs[key] === "function") {
-                if (typeof currentDnr[key] !== "function") {
-                  currentDnr[key] = dnrStubs[key];
-                }
-              }
-              else if (!currentDnr[key]) {
-                currentDnr[key] = dnrStubs[key];
-              }
-            });
-
-            wrapUpdateEnabledRulesets(currentDnr);
-
-            patchedDnr = currentDnr;
-            return patchedDnr;
-          }
-
-          if (!patchedDnr) {
-            patchedDnr = {...dnrStubs};
-            wrapUpdateEnabledRulesets(patchedDnr);
-          }
-          return patchedDnr;
-        },
-        set(newValue) {
-          originalDnr = newValue;
-          patchedDnr = null;
-        }
-      });
-    }
-    catch (e) {
-      // Silently fail if we can't install the interceptor
-    }
-  }
-
-  // =========================================================================
-  // APPLY PATCHES
-  // =========================================================================
-
-  // Patch chrome.* (before webextension-polyfill wraps them)
-  if (typeof chrome !== "undefined") {
-    console.log("[Safari polyfill] Patching chrome.*");
-    patchAll(chrome, "chrome");
-  }
-
-  // CRITICAL: Safari provides globalThis.browser with runtime.id, which
-  // causes webextension-polyfill to skip wrapping and export the native
-  // browser object. We must patch globalThis.browser BEFORE the polyfill runs.
-  if (typeof globalThis !== "undefined" && globalThis.browser) {
-    console.log("[Safari polyfill] Patching globalThis.browser");
-    patchAll(globalThis.browser, "globalThis.browser");
-    installDnrInterceptor(globalThis.browser, "globalThis.browser");
-  }
-
-  // Also patch window.browser if it exists (Safari sometimes uses this)
-  if (typeof window !== "undefined" &&
-      window.browser &&
-      window.browser !== globalThis.browser) {
-    console.log("[Safari polyfill] Patching window.browser");
-    patchAll(window.browser, "window.browser");
-    installDnrInterceptor(window.browser, "window.browser");
+  // Polyfill webNavigation.onCreatedNavigationTarget
+  if (
+    typeof chrome !== "undefined" &&
+    chrome.webNavigation &&
+    !chrome.webNavigation.onCreatedNavigationTarget
+  ) {
+    chrome.webNavigation.onCreatedNavigationTarget = {
+      addListener() {}
+    };
   }
 
   console.log("[Safari polyfill] Early polyfill complete");

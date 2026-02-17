@@ -383,6 +383,21 @@ export async function start(addonInfo) {
   return firstRun;
 }
 
+/**
+ * Signals that post-start setup is complete, unblocking Safari polyfill
+ * operations (e.g. updateEnabledRulesets) that are gated during startup.
+ *
+ * Call this after EWE.start() and any consumer-side subscription setup
+ * (e.g. checkDefaultSubscriptions) have finished.
+ *
+ * On non-Safari builds where the polyfill is not present, this is a no-op.
+ */
+export function signalStartupComplete() {
+  if (typeof globalThis.__safariPolyfillStartupComplete === "function") {
+    globalThis.__safariPolyfillStartupComplete();
+  }
+}
+
 function startSubmodulesWithListeners(addonInfo) {
   // for MV3, submodules that register event listeners generally need
   // to register their events in the first turn of the event loop to
