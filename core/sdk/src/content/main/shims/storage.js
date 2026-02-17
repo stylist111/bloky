@@ -41,6 +41,21 @@ export function shimLocalStorage(CACHED_FILTERS_CONFIG_KEY) {
   const mapSet = (map, key, val) => $ReflectApply($MapSet, map, [key, val]);
   const mapHas = (map, key) => $ReflectApply($MapHas, map, [key]);
 
+  // Need to unwrap our own proxies when multiple extensions run this shim.
+  const realLocalStorage = window.localStorage;
+  const realSessionStorage = window.sessionStorage;
+  let localStorageProxy;
+  let sessionStorageProxy;
+  function unwrapStorage(storage) {
+    if (storage === localStorageProxy) {
+      return realLocalStorage;
+    }
+    if (storage === sessionStorageProxy) {
+      return realSessionStorage;
+    }
+    return storage;
+  }
+
   const originalToStrings = new Map();
 
   const storageGetItemDesc = Object.getOwnPropertyDescriptor(
@@ -63,7 +78,8 @@ export function shimLocalStorage(CACHED_FILTERS_CONFIG_KEY) {
   function getConfig(storage) {
     try {
       const configSerialized = $ReflectApply(
-        originalStorageGetItem, storage, [CACHED_FILTERS_CONFIG_KEY]
+        originalStorageGetItem, unwrapStorage(storage),
+        [CACHED_FILTERS_CONFIG_KEY]
       );
       if (configSerialized) {
         return $JSONparse(configSerialized);
@@ -81,14 +97,15 @@ export function shimLocalStorage(CACHED_FILTERS_CONFIG_KEY) {
   const storageGetItemProxy = new Proxy(originalStorageGetItem, {
     apply(target, thisArg, argumentsList) {
       const key = argumentsList[0];
+      const unwrappedThis = unwrapStorage(thisArg);
       if (key === CACHED_FILTERS_CONFIG_KEY) {
-        const config = getConfig(thisArg);
+        const config = getConfig(unwrappedThis);
         if (websiteHasValue(config)) {
           return config.websiteValue;
         }
         return null;
       }
-      return $ReflectApply(target, thisArg, argumentsList);
+      return $ReflectApply(target, unwrappedThis, argumentsList);
     }
   });
   Object.defineProperty(Storage.prototype, "getItem", {
@@ -110,17 +127,18 @@ export function shimLocalStorage(CACHED_FILTERS_CONFIG_KEY) {
   const storageSetItemProxy = new Proxy(originalStorageSetItem, {
     apply(target, thisArg, argumentsList) {
       const key = argumentsList[0];
+      const unwrappedThis = unwrapStorage(thisArg);
       if (key === CACHED_FILTERS_CONFIG_KEY) {
-        const config = getConfig(thisArg) || {};
+        const config = getConfig(unwrappedThis) || {};
         config.websiteValue = $String(argumentsList[1]);
         $ReflectApply(
           target,
-          thisArg,
+          unwrappedThis,
           [CACHED_FILTERS_CONFIG_KEY, $JSONstringify(config)]
         );
         return void 0;
       }
-      return $ReflectApply(target, thisArg, argumentsList);
+      return $ReflectApply(target, unwrappedThis, argumentsList);
     }
   });
   Object.defineProperty(Storage.prototype, "setItem", {
@@ -142,18 +160,19 @@ export function shimLocalStorage(CACHED_FILTERS_CONFIG_KEY) {
   const storageRemoveItemProxy = new Proxy(originalStorageRemoveItem, {
     apply(target, thisArg, argumentsList) {
       const key = argumentsList[0];
+      const unwrappedThis = unwrapStorage(thisArg);
       if (key === CACHED_FILTERS_CONFIG_KEY) {
-        const config = getConfig(thisArg);
+        const config = getConfig(unwrappedThis);
         if (websiteHasValue(config)) {
           delete config.websiteValue;
           $ReflectApply(
             originalStorageSetItem,
-            thisArg, [CACHED_FILTERS_CONFIG_KEY, $JSONstringify(config)]
+            unwrappedThis, [CACHED_FILTERS_CONFIG_KEY, $JSONstringify(config)]
           );
         }
         return void 0;
       }
-      return $ReflectApply(target, thisArg, argumentsList);
+      return $ReflectApply(target, unwrappedThis, argumentsList);
     }
   });
   Object.defineProperty(Storage.prototype, "removeItem", {
@@ -174,18 +193,19 @@ export function shimLocalStorage(CACHED_FILTERS_CONFIG_KEY) {
   const originalStorageClear = storageClearDesc.value;
   const storageClearProxy = new Proxy(originalStorageClear, {
     apply(target, thisArg, argumentsList) {
-      const config = getConfig(thisArg);
+      const unwrappedThis = unwrapStorage(thisArg);
+      const config = getConfig(unwrappedThis);
       if (config) {
         delete config.websiteValue;
       }
 
-      $ReflectApply(target, thisArg, argumentsList);
+      $ReflectApply(target, unwrappedThis, argumentsList);
 
       // Restore our config (without websiteValue)
       if (config && $ObjectKeys(config).length > 0) {
         $ReflectApply(
           originalStorageSetItem,
-          thisArg, [CACHED_FILTERS_CONFIG_KEY, $JSONstringify(config)]
+          unwrappedThis, [CACHED_FILTERS_CONFIG_KEY, $JSONstringify(config)]
         );
       }
       return void 0;
@@ -209,19 +229,20 @@ export function shimLocalStorage(CACHED_FILTERS_CONFIG_KEY) {
   const originalStorageKey = storageKeyDesc.value;
   const storageKeyProxy = new Proxy(originalStorageKey, {
     apply(target, thisArg, argumentsList) {
-      const config = getConfig(thisArg);
+      const unwrappedThis = unwrapStorage(thisArg);
+      const config = getConfig(unwrappedThis);
       if (!config || websiteHasValue(config)) {
-        return $ReflectApply(target, thisArg, argumentsList);
+        return $ReflectApply(target, unwrappedThis, argumentsList);
       }
 
       const requestedIndex = argumentsList[0];
       for (let i = 0; i <= requestedIndex; i++) {
-        const key = $ReflectApply(target, thisArg, [i]);
+        const key = $ReflectApply(target, unwrappedThis, [i]);
         if (key === CACHED_FILTERS_CONFIG_KEY) {
-          return $ReflectApply(target, thisArg, [requestedIndex + 1]);
+          return $ReflectApply(target, unwrappedThis, [requestedIndex + 1]);
         }
       }
-      return $ReflectApply(target, thisArg, argumentsList);
+      return $ReflectApply(target, unwrappedThis, argumentsList);
     }
   });
   Object.defineProperty(Storage.prototype, "key", {
@@ -243,9 +264,10 @@ export function shimLocalStorage(CACHED_FILTERS_CONFIG_KEY) {
   Object.defineProperty(Storage.prototype, "length", {
     ...storageLengthDesc,
     get() {
+      const unwrappedThis = unwrapStorage(this);
       const originalLength =
-        $ReflectApply(originalStorageLengthGetter, this, []);
-      const config = getConfig(this);
+        $ReflectApply(originalStorageLengthGetter, unwrappedThis, []);
+      const config = getConfig(unwrappedThis);
       if (config && !websiteHasValue(config)) {
         return originalLength - 1;
       }
@@ -363,7 +385,7 @@ export function shimLocalStorage(CACHED_FILTERS_CONFIG_KEY) {
     }
   };
 
-  const localStorageProxy = new Proxy(
+  localStorageProxy = new Proxy(
     window.localStorage,
     storageInstanceProxyConfig
   );
@@ -375,7 +397,7 @@ export function shimLocalStorage(CACHED_FILTERS_CONFIG_KEY) {
     enumerable: true
   });
 
-  const sessionStorageProxy = new Proxy(
+  sessionStorageProxy = new Proxy(
     window.sessionStorage,
     storageInstanceProxyConfig
   );
