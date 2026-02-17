@@ -92,6 +92,7 @@
     "dotenv-webpack": "8.1.0",
     "expect": "29.7.0",
     "gulp-gzip": "1.4.2",
+    "gulp-replace": "1.1.4",
     "gulp-tar": "3.1.0",
     "handlebars": "4.7.7",
     "htmlhint": "1.1.4",

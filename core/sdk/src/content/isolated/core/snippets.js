@@ -22,10 +22,16 @@ import {v4 as uuidv4} from "uuid";
 import snippetsCallback from "@eyeo/snippets/isolated";
 import {parseScript} from "#adblockpluscore/lib/snippets.js";
 import {ignoreNoConnectionError} from "../../../all/errors.js";
-import {CACHED_FILTERS_CONFIG_KEY, DEBUG_CSS_PROPERTIES, HANDSHAKE_EVENT_NAME} from "../../shared/constants.js";
+import {
+  CACHED_FILTERS_CONFIG_KEY,
+  COMMS_CHANNEL_DATASET_KEY,
+  DEBUG_CSS_PROPERTIES,
+  HANDSHAKE_EVENT_NAME
+} from "../../shared/constants.js";
 import {claimCommsChannel} from "../../shared/helpers.js";
 import {default as sentry} from "./sentry.js";
 import {default as telemetry} from "../../../front/telemetry.js";
+import experiments from "../../../front/experiments.js";
 
 const commsChannelName = claimCommsChannel(uuidv4());
 let mainWorldReadyPromise;
@@ -108,7 +114,8 @@ function executeSnippets(filtersConfig) {
   // Send the filters to the main world using the secret channel name
   // we know that handshake has already happened here because of the
   // channel name being consumed from the dataset.
-  const mainWorldReady = !document.documentElement.dataset.eweFiltersChannel;
+  // eslint-disable-next-line max-len
+  const mainWorldReady = !document.documentElement.dataset[COMMS_CHANNEL_DATASET_KEY];
   if (mainWorldReady) {
     document.dispatchEvent(new CustomEvent(commsChannelName, eventDetails));
   }
@@ -260,6 +267,32 @@ function startErrorListener() {
   document.addEventListener(commsChannelName, mainWorldErrorListener);
 }
 
+/**
+ * Cleans up any changes made to the localStorage for the experiment.
+ * @deprecated
+ * @returns {Promise<void>}
+ */
+async function cleanupExperiment() {
+  const oldStorageKey = await experiments.getFlag("zero-delay-cleanup");
+  if (localStorageAvailable && oldStorageKey) {
+    try {
+      const config = JSON.parse(localStorage.getItem(oldStorageKey));
+      if (config && typeof config.filters !== "undefined") {
+        if (typeof config.websiteValue !== "undefined") {
+          localStorage.setItem(oldStorageKey, config.websiteValue);
+        }
+        else {
+          localStorage.removeItem(oldStorageKey);
+        }
+        logger.debug("zero_delay_cleanup", {key: oldStorageKey});
+      }
+    }
+    catch (e) {
+      // noop
+    }
+  }
+}
+
 export function start() {
   startErrorListener();
   filtersConfigPromise = getFiltersConfig();
@@ -281,6 +314,10 @@ export function start() {
   catch (e) {
     localStorageAvailable = false;
   }
+
+  // eslint-disable-next-line no-warning-comments
+  // TODO: Remove this temporary cleanup of cached config from previous versions
+  void cleanupExperiment();
 
   if (cachedFiltersConfigSerialized) {
     try {

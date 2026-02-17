@@ -11,12 +11,24 @@
       _Destination file path_
     - **string|string[]** src  
       _Source file path glob(s)_
+    - **object[]** [replacements]
+      _Optional text replacements to apply_
+      - **string|RegExp** search
+        _Text or pattern to search for_
+      - **string|Function** replace
+        _Replacement text or function_
   - **object[]** rename  
     _Files to copy, changing file name and directory path_
     - **string** dest  
       _Destination file path_
     - **string** src  
       _Source file path glob_
+    - **object[]** [replacements]
+      _Optional text replacements to apply_
+      - **string|RegExp** search
+        _Text or pattern to search for_
+      - **string|Function** replace
+        _Replacement text or function_
 - **object** translations  
   _Translation file bundles_
   - **string** dest  

@@ -17,6 +17,7 @@
 
 import { existsSync } from "fs";
 import gulp from "gulp";
+import replace from "gulp-replace";
 import merge from "merge-stream";
 import changePath from "../utils/gulp-change-path.mjs";
 
@@ -48,12 +49,32 @@ function resolveBundleSrc(bundle) {
 export default function mapping(bundles) {
   return merge(
     bundles.copy.map((bundle) => {
-      return gulp.src(resolveBundleSrc(bundle)).pipe(changePath(bundle.dest));
+      let stream = gulp.src(resolveBundleSrc(bundle));
+
+      // Apply replacements if specified
+      if (bundle.replacements && Array.isArray(bundle.replacements)) {
+        bundle.replacements.forEach((replacement) => {
+          stream = stream.pipe(
+            replace(replacement.search, replacement.replace)
+          );
+        });
+      }
+
+      return stream.pipe(changePath(bundle.dest));
     }),
-    bundles.rename.map((bundle) =>
-      gulp
-        .src(resolveBundleSrc(bundle))
-        .pipe(changePath(bundle.dest, { rename: true }))
-    )
+    bundles.rename.map((bundle) => {
+      let stream = gulp.src(resolveBundleSrc(bundle));
+
+      // Apply replacements if specified
+      if (bundle.replacements && Array.isArray(bundle.replacements)) {
+        bundle.replacements.forEach((replacement) => {
+          stream = stream.pipe(
+            replace(replacement.search, replacement.replace)
+          );
+        });
+      }
+
+      return stream.pipe(changePath(bundle.dest, { rename: true }));
+    })
   );
 }

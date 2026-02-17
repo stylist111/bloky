@@ -242,12 +242,36 @@ export default {
       {
         dest: "vendor/@eyeo/webext-ad-filtering-solution/content.js",
         package: "@eyeo/webext-ad-filtering-solution",
-        src: "dist/ewe-content.js"
+        src: "dist/ewe-content.js",
+        replacements: [
+          {
+            // IMPORTANT!
+            // The host prefix is used by the webext-ad-filtering-solution to
+            // namespace its storage and events. It needs to be replaced with a
+            // host-specific value during the build process.
+            // This EXACT string must match the value in:
+            // core/sdk/src/content/shared/constants.js (HOST_PREFIX_TO_REPLACE)
+            search: "__host_prefix_rb9yitg346zu__",
+            replace: "abp"
+          }
+        ]
       },
       {
         dest: "vendor/@eyeo/webext-ad-filtering-solution/content-main.js",
         package: "@eyeo/webext-ad-filtering-solution",
-        src: "dist/ewe-content-main.js"
+        src: "dist/ewe-content-main.js",
+        replacements: [
+          {
+            // IMPORTANT!
+            // The host prefix is used by the webext-ad-filtering-solution to
+            // namespace its storage and events. It needs to be replaced with a
+            // host-specific value during the build process.
+            // This EXACT string must match the value in:
+            // core/sdk/src/content/shared/constants.js (HOST_PREFIX_TO_REPLACE)
+            search: "__host_prefix_rb9yitg346zu__",
+            replace: "abp"
+          }
+        ]
       },
       {
         dest: "premium-onboarding.html",

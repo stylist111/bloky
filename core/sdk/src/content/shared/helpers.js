@@ -15,6 +15,8 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import {COMMS_CHANNEL_DATASET_KEY} from "./constants.js";
+
 /**
  * Claims a communication channel name from the document's dataset.
  *
@@ -35,14 +37,14 @@
  *   or the fallback).
  */
 export function claimCommsChannel(fallbackChannel) {
-  let channelName = document.documentElement.dataset.eweFiltersChannel;
+  let channelName = document.documentElement.dataset[COMMS_CHANNEL_DATASET_KEY];
 
   if (!channelName) {
     channelName = fallbackChannel;
-    document.documentElement.dataset.eweFiltersChannel = channelName;
+    document.documentElement.dataset[COMMS_CHANNEL_DATASET_KEY] = channelName;
   }
   else {
-    delete document.documentElement.dataset.eweFiltersChannel;
+    delete document.documentElement.dataset[COMMS_CHANNEL_DATASET_KEY];
   }
 
   return channelName;

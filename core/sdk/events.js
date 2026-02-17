@@ -277,6 +277,19 @@ export default {
           }
         }
       }
+    },
+    zero_delay_cleanup: {
+      description: "Recorded when we cleaned up zero-delay storage key from previous extension versions.",
+      data: {
+        description: "Metadata about the cleanup operation",
+        type: "object",
+        properties: {
+          key: {
+            description: "The storage key that was cleaned up",
+            type: "string"
+          }
+        }
+      }
     }
   },
   youtube: {
