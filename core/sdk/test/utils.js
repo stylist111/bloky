@@ -71,9 +71,6 @@ export async function executeScript(tabId, func, args, world = "ISOLATED") {
         );
       })();
     `;
-    // We need a small delay to ensure environment is set up properly
-    // before the inline script injection.
-    await sleep(100);
     // Inject from isolated world: create inline script element
     await browser.tabs.executeScript(tabId, {
       code: `

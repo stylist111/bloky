@@ -24,7 +24,7 @@ import {
   DEBUG_CSS_PROPERTIES,
   HANDSHAKE_EVENT_NAME
 } from "../shared/constants.js";
-import {shimLocalStorage} from "./shims/storage.js";
+import {shimStorage} from "./shims/storage.js";
 import {claimCommsChannel} from "../shared/helpers.js";
 import {toSerializableError} from "../../all/errors.js";
 
@@ -171,7 +171,7 @@ const onFiltersReceived = event => {
     callback: snippetsCallback,
     env: {debugCSSProperties: debug ? DEBUG_CSS_PROPERTIES : null},
     filters: mainSnippets,
-    shimFn: shimLocalStorage,
+    shimFn: shimStorage,
     shimConfigKey: CACHED_FILTERS_CONFIG_KEY,
     commsChannel: commsChannelName,
     serializeError: toSerializableError
@@ -181,7 +181,7 @@ const onFiltersReceived = event => {
   // If we are on isolated world (MV2), we need to create an inline script to
   // inject the snippets into page context.
   if (isMainWorld) {
-    runStorageShim(shimLocalStorage, CACHED_FILTERS_CONFIG_KEY);
+    runStorageShim(shimStorage, CACHED_FILTERS_CONFIG_KEY);
     runSnippets(snippetsConfig);
   }
   else {

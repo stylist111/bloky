@@ -27,7 +27,7 @@ import {
   UNHIDDENTIMEOUT, HIDETIMEOUT, waitForHighlightedStyle, isEdge,
   edgeVersion, waitForSubscriptionsToDownload, chromiumVersion,
   isChromiumBased, setEndpointResponse, expectElemHideRemoved,
-  expectElementToHaveInlineStyle, checkElementsHidden
+  expectElementToHaveInlineStyle, checkElementsHidden, sleep
 }
   from "./utils.js";
 import {subTestCustom1, subAntiCVLocal} from "./fixtures/subscriptions.js";
@@ -788,7 +788,7 @@ describe("Snippets", function() {
     await checkElementsHidden(tabId, "[data-expectedresult='fail']");
   });
 
-  describe("localStorage tampering detection", function() {
+  describe("Storage tampering detection", function() {
     let tabId;
 
     beforeEach(async function() {
@@ -798,90 +798,108 @@ describe("Snippets", function() {
         `${TEST_PAGES_DOMAIN}#$#json-prune 'data-expectedresult jsonprune aria-label'`
       );
       tabId = await new Page("snippet-json-prune.html", forceBg).loaded;
+      await sleep(100);
     });
 
-    it("does not detect that the snippets are stored in localStorage", async function() {
-      let getItemResult = await executeScript(tabId, key => {
+    it("does not detect that the snippets are stored in Storage", async function() {
+      const getItemResultLocal = await executeScript(tabId, key => {
         return localStorage.getItem(key);
       }, [CACHED_FILTERS_CONFIG_KEY], "MAIN");
+      expect(getItemResultLocal).toBeNull();
 
-      expect(getItemResult).toBeNull();
+      const getItemResultSession = await executeScript(tabId, key => {
+        return sessionStorage.getItem(key);
+      }, [CACHED_FILTERS_CONFIG_KEY], "MAIN");
+      expect(getItemResultSession).toBeNull();
     });
 
-    it("does not detect that the snippets are stored in localStorage using property accessor", async function() {
-      let getItemResult = await executeScript(tabId, key => {
+    it("does not detect that the snippets are stored in Storage using property accessor", async function() {
+      const getItemResultLocal = await executeScript(tabId, key => {
         return localStorage[key];
       }, [CACHED_FILTERS_CONFIG_KEY], "MAIN");
+      expect(getItemResultLocal).toBeNull();
 
-      expect(getItemResult).toBeNull();
+      const getItemResultSession = await executeScript(tabId, key => {
+        return sessionStorage[key];
+      }, [CACHED_FILTERS_CONFIG_KEY], "MAIN");
+      expect(getItemResultSession).toBeNull();
     });
 
-    it("allows calling localStorage.setItem for the key used for snippets", async function() {
-      let expectedValue = "test-website-value";
+    it("allows calling Storage.setItem for the key used for snippets", async function() {
+      const expectedValue = "test-website-value";
 
-      let getItemResult = await executeScript(tabId, (key, value) => {
+      const getItemResultLocal = await executeScript(tabId, (key, value) => {
         localStorage.setItem(key, value);
         return localStorage.getItem(key);
       }, [CACHED_FILTERS_CONFIG_KEY, expectedValue], "MAIN");
 
-      expect(getItemResult).toBe(expectedValue);
+      expect(getItemResultLocal).toBe(expectedValue);
+
+      const getItemResultSession = await executeScript(tabId, (key, value) => {
+        sessionStorage.setItem(key, value);
+        return sessionStorage.getItem(key);
+      }, [CACHED_FILTERS_CONFIG_KEY, expectedValue], "MAIN");
+
+      expect(getItemResultSession).toBe(expectedValue);
     });
 
-    it("allows calling localStorage.setItem for a normal key", async function() {
-      let otherKey = "other-key";
-      let expectedValue = "test-other-value";
+    it("allows calling Storage.setItem for a normal key", async function() {
+      const otherKey = "other-key";
+      const expectedValue = "test-other-value";
 
-      let getItemResult = await executeScript(tabId, (key, value) => {
+      const getItemResultLocal = await executeScript(tabId, (key, value) => {
         localStorage.setItem(key, value);
         return localStorage.getItem(key);
       }, [otherKey, expectedValue], "MAIN");
 
-      expect(getItemResult).toBe(expectedValue);
+      expect(getItemResultLocal).toBe(expectedValue);
+
+      const getItemResultSession = await executeScript(tabId, (key, value) => {
+        sessionStorage.setItem(key, value);
+        return sessionStorage.getItem(key);
+      }, [otherKey, expectedValue], "MAIN");
+
+      expect(getItemResultSession).toBe(expectedValue);
     });
 
     it("allows using the key used for snippets as a property", async function() {
-      let expectedValue = "test-website-value";
+      const expectedValue = "test-website-value";
 
-      let getItemResult = await executeScript(tabId, (key, value) => {
+      const getItemResultLocal = await executeScript(tabId, (key, value) => {
         localStorage[key] = value;
         return localStorage[key];
       }, [CACHED_FILTERS_CONFIG_KEY, expectedValue], "MAIN");
 
-      expect(getItemResult).toBe(expectedValue);
-    });
+      expect(getItemResultLocal).toBe(expectedValue);
 
-    it("allows using the key used for snippets in sessionStorage", async function() {
-      let propertyAccessExpectedValue = "test-website-value-prop";
-
-      let propertyAccessResult = await executeScript(tabId, (key, value) => {
-        sessionStorage.setItem(key, value);
-        return sessionStorage[key];
-      }, [CACHED_FILTERS_CONFIG_KEY, propertyAccessExpectedValue], "MAIN");
-
-      expect(propertyAccessResult).toBe(propertyAccessExpectedValue);
-
-      let getItemExpectedValue = "test-website-value-get-item";
-      let getItemResult = await executeScript(tabId, (key, value) => {
+      const getItemResultSession = await executeScript(tabId, (key, value) => {
         sessionStorage[key] = value;
-        return sessionStorage.getItem(key);
-      }, [CACHED_FILTERS_CONFIG_KEY, getItemExpectedValue], "MAIN");
+        return sessionStorage[key];
+      }, [CACHED_FILTERS_CONFIG_KEY, expectedValue], "MAIN");
 
-      expect(getItemResult).toBe(getItemExpectedValue);
+      expect(getItemResultSession).toBe(expectedValue);
     });
 
     it("allows using the key used for a normal key as a property", async function() {
-      let otherKey = "other-key";
-      let expectedValue = "test-other-value";
+      const otherKey = "other-key";
+      const expectedValue = "test-other-value";
 
-      let getItemResult = await executeScript(tabId, (key, value) => {
+      const getItemResultLocal = await executeScript(tabId, (key, value) => {
         localStorage[key] = value;
         return localStorage[key];
       }, [otherKey, expectedValue], "MAIN");
 
-      expect(getItemResult).toBe(expectedValue);
+      expect(getItemResultLocal).toBe(expectedValue);
+
+      const getItemResultSession = await executeScript(tabId, (key, value) => {
+        sessionStorage[key] = value;
+        return sessionStorage[key];
+      }, [otherKey, expectedValue], "MAIN");
+
+      expect(getItemResultSession).toBe(expectedValue);
     });
 
-    it("has the correct toString values for functions", async function() {
+    it("has the correct toString values for localStorage functions", async function() {
       const getToStringResults = () => [
         localStorage.getItem.toString(),
         Function.prototype.toString.call(localStorage.getItem),
@@ -910,7 +928,7 @@ describe("Snippets", function() {
       expect(mainResults).toEqual(isolatedResults);
     });
 
-    it("has the correct toString values for objects", async function() {
+    it("has the correct toString values for localStorage objects", async function() {
       const expressions = [
         () => localStorage.toString(),
         () => Object.prototype.toString.call(localStorage),
@@ -933,10 +951,60 @@ describe("Snippets", function() {
       }
     });
 
-    it("allows calling localStorage.removeItem for the key used for snippets", async function() {
+    it("has the correct toString values for sessionStorage functions", async function() {
+      const getToStringResults = () => [
+        sessionStorage.getItem.toString(),
+        Function.prototype.toString.call(sessionStorage.getItem),
+        sessionStorage.setItem.toString(),
+        Function.prototype.toString.call(sessionStorage.setItem),
+        sessionStorage.removeItem.toString(),
+        Function.prototype.toString.call(sessionStorage.removeItem),
+        sessionStorage.clear.toString(),
+        Function.prototype.toString.call(sessionStorage.clear)
+      ];
+
+      const mainResults = await executeScript(tabId, getToStringResults, [], "MAIN");
+      const isolatedResults = await executeScript(tabId, getToStringResults, [], "ISOLATED");
+
+      for (const result of mainResults) {
+        // Check that the result looks at least a little like we expect. If
+        // there's something wrong with our toString code, or how we inject it
+        // into the page, it could return something like 'null' or 'undefined'
+        // for both main and isolated worlds.
+        expect(result).toContain("[native code]");
+      }
+      // The isolated world has the normal non-shimmed version, so if our
+      // hiding is correct this should be identical.
+      expect(mainResults).toEqual(isolatedResults);
+    });
+
+    it("has the correct toString values for sessionStorage objects", async function() {
+      const expressions = [
+        () => sessionStorage.toString(),
+        () => Object.prototype.toString.call(sessionStorage),
+        () => Object.prototype.toString.call(sessionStorage.getItem)
+      ];
+
+      for (const expression of expressions) {
+        let mainResult = await executeScript(tabId, expression, [], "MAIN");
+        let isolatedResult = await executeScript(tabId, expression, [], "ISOLATED");
+
+        // Check that the result looks at least a little like we expect. If
+        // there's something wrong with our toString code, or how we inject it
+        // into the page, it could return something like 'null' or 'undefined'
+        // for both main and isolated worlds.
+        expect(mainResult).toContain("[object");
+
+        // The isolated world has the normal non-shimmed version, so if our
+        // hiding is correct this should be identical.
+        expect(mainResult).toBe(isolatedResult);
+      }
+    });
+
+    it("allows calling Storage.removeItem for the key used for snippets", async function() {
       const value = "test-website-value";
 
-      const getItemResult = await executeScript(tabId, (key, val) => {
+      const getItemResultLocal = await executeScript(tabId, (key, val) => {
         localStorage.setItem(key, val);
         const valueAfterSet = localStorage.getItem(key);
         localStorage.removeItem(key);
@@ -944,14 +1012,25 @@ describe("Snippets", function() {
         return {valueAfterSet, valueAfterRemove};
       }, [CACHED_FILTERS_CONFIG_KEY, value], "MAIN");
 
-      expect(getItemResult.valueAfterSet).toBe(value);
-      expect(getItemResult.valueAfterRemove).toBeNull();
+      expect(getItemResultLocal.valueAfterSet).toBe(value);
+      expect(getItemResultLocal.valueAfterRemove).toBeNull();
+
+      const getItemResultSession = await executeScript(tabId, (key, val) => {
+        sessionStorage.setItem(key, val);
+        const valueAfterSet = localStorage.getItem(key);
+        sessionStorage.removeItem(key);
+        const valueAfterRemove = localStorage.getItem(key);
+        return {valueAfterSet, valueAfterRemove};
+      }, [CACHED_FILTERS_CONFIG_KEY, value], "MAIN");
+
+      expect(getItemResultSession.valueAfterSet).toBe(value);
+      expect(getItemResultSession.valueAfterRemove).toBeNull();
     });
 
-    it("allows calling localStorage.clear", async function() {
+    it("allows calling Storage.clear", async function() {
       const value = "test-website-value";
 
-      const getItemResult = await executeScript(tabId, (key, val) => {
+      const getItemResultLocal = await executeScript(tabId, (key, val) => {
         localStorage.setItem(key, val);
         const valueAfterSet = localStorage.getItem(key);
         localStorage.clear();
@@ -959,8 +1038,19 @@ describe("Snippets", function() {
         return {valueAfterSet, valueAfterClear};
       }, [CACHED_FILTERS_CONFIG_KEY, value], "MAIN");
 
-      expect(getItemResult.valueAfterSet).toBe(value);
-      expect(getItemResult.valueAfterClear).toBeNull();
+      expect(getItemResultLocal.valueAfterSet).toBe(value);
+      expect(getItemResultLocal.valueAfterClear).toBeNull();
+
+      const getItemResultSession = await executeScript(tabId, (key, val) => {
+        sessionStorage.setItem(key, val);
+        const valueAfterSet = sessionStorage.getItem(key);
+        sessionStorage.clear();
+        const valueAfterClear = sessionStorage.getItem(key);
+        return {valueAfterSet, valueAfterClear};
+      }, [CACHED_FILTERS_CONFIG_KEY, value], "MAIN");
+
+      expect(getItemResultSession.valueAfterSet).toBe(value);
+      expect(getItemResultSession.valueAfterClear).toBeNull();
     });
 
     it("localStorage.length works as expected", async function() {
@@ -991,16 +1081,44 @@ describe("Snippets", function() {
       expect(result.lengthAfterRemove).toBe(1);
     });
 
+    it("sessionStorage.length works as expected", async function() {
+      const result = await executeScript(tabId, key => {
+        sessionStorage.clear();
+        const lengthAfterClear = sessionStorage.length;
+
+        sessionStorage.setItem(key, "website-value");
+        const lengthAfterSet = sessionStorage.length;
+
+        sessionStorage.setItem("regular-key", "regular-value");
+        const lengthAfterRegular = sessionStorage.length;
+
+        sessionStorage.removeItem(key);
+        const lengthAfterRemove = sessionStorage.length;
+
+        return {
+          lengthAfterClear,
+          lengthAfterSet,
+          lengthAfterRegular,
+          lengthAfterRemove
+        };
+      }, [CACHED_FILTERS_CONFIG_KEY], "MAIN");
+
+      expect(result.lengthAfterClear).toBe(0);
+      expect(result.lengthAfterSet).toBe(1);
+      expect(result.lengthAfterRegular).toBe(2);
+      expect(result.lengthAfterRemove).toBe(1);
+    });
+
     it("hides the config key when using .key when website value is not set", async function() {
       const dummyKey = "foo";
       const result = await executeScript(tabId, (cacheKey, otherKey) => {
-        localStorage.clear();
+        sessionStorage.clear();
 
-        localStorage.setItem(cacheKey, "bar");
-        localStorage.setItem(otherKey, "baz");
+        sessionStorage.setItem(cacheKey, "bar");
+        sessionStorage.setItem(otherKey, "baz");
         let foundKeys = [];
-        for (let i = 0; i < localStorage.length + 1; i++) {
-          foundKeys.push(localStorage.key(i));
+        for (let i = 0; i < sessionStorage.length + 1; i++) {
+          foundKeys.push(sessionStorage.key(i));
         }
         return foundKeys;
       }, [CACHED_FILTERS_CONFIG_KEY, dummyKey], "MAIN");
@@ -1013,12 +1131,12 @@ describe("Snippets", function() {
     it("shows the config key when using .key when website has set that value", async function() {
       const dummyKey = "foo";
       const result = await executeScript(tabId, key => {
-        localStorage.clear();
+        sessionStorage.clear();
 
-        localStorage.setItem(key, "bar");
+        sessionStorage.setItem(key, "bar");
         let foundKeys = [];
-        for (let i = 0; i < localStorage.length + 1; i++) {
-          foundKeys.push(localStorage.key(i));
+        for (let i = 0; i < sessionStorage.length + 1; i++) {
+          foundKeys.push(sessionStorage.key(i));
         }
         return foundKeys;
       }, [dummyKey], "MAIN");
@@ -1030,9 +1148,9 @@ describe("Snippets", function() {
 
     it("hides the config key when using spread operator", async function() {
       const result = await executeScript(tabId, key => {
-        localStorage.clear();
-        localStorage.setItem("visible-key", "visible-value");
-        const spread = {...localStorage};
+        sessionStorage.clear();
+        sessionStorage.setItem("visible-key", "visible-value");
+        const spread = {...sessionStorage};
         const hasConfigKey = key in spread;
         const hasVisibleKey = "visible-key" in spread;
         const keys = Object.keys(spread);
@@ -1047,9 +1165,9 @@ describe("Snippets", function() {
 
     it("hides the config key from Object.keys", async function() {
       const result = await executeScript(tabId, key => {
-        localStorage.clear();
-        localStorage.setItem("visible-key", "visible-value");
-        const keys = Object.keys(localStorage);
+        sessionStorage.clear();
+        sessionStorage.setItem("visible-key", "visible-value");
+        const keys = Object.keys(sessionStorage);
         return {keys, hasConfigKey: keys.includes(key)};
       }, [CACHED_FILTERS_CONFIG_KEY], "MAIN");
 
@@ -1060,9 +1178,9 @@ describe("Snippets", function() {
 
     it("hides the config key from Object.values", async function() {
       const result = await executeScript(tabId, () => {
-        localStorage.clear();
-        localStorage.setItem("visible-key", "visible-value");
-        const values = Object.values(localStorage);
+        sessionStorage.clear();
+        sessionStorage.setItem("visible-key", "visible-value");
+        const values = Object.values(sessionStorage);
         return {values};
       }, [], "MAIN");
 
@@ -1072,9 +1190,9 @@ describe("Snippets", function() {
 
     it("hides the config key from Object.entries", async function() {
       const result = await executeScript(tabId, () => {
-        localStorage.clear();
-        localStorage.setItem("visible-key", "visible-value");
-        const entries = Object.entries(localStorage);
+        sessionStorage.clear();
+        sessionStorage.setItem("visible-key", "visible-value");
+        const entries = Object.entries(sessionStorage);
         const keys = entries.map(e => e[0]);
         return {entries, keys};
       }, [], "MAIN");
@@ -1086,11 +1204,11 @@ describe("Snippets", function() {
 
     it("hides the config key from for...in iteration", async function() {
       const result = await executeScript(tabId, key => {
-        localStorage.clear();
-        localStorage.setItem("visible-key", "visible-value");
+        sessionStorage.clear();
+        sessionStorage.setItem("visible-key", "visible-value");
         const keys = [];
-        for (const k in localStorage) {
-          if (Object.prototype.hasOwnProperty.call(localStorage, k)) {
+        for (const k in sessionStorage) {
+          if (Object.prototype.hasOwnProperty.call(sessionStorage, k)) {
             keys.push(k);
           }
         }
@@ -1104,10 +1222,10 @@ describe("Snippets", function() {
 
     it("hides the config key from 'in' operator", async function() {
       const result = await executeScript(tabId, key => {
-        localStorage.clear();
-        localStorage.setItem("visible-key", "visible-value");
-        const configKeyIn = key in localStorage;
-        const visibleKeyIn = "visible-key" in localStorage;
+        sessionStorage.clear();
+        sessionStorage.setItem("visible-key", "visible-value");
+        const configKeyIn = key in sessionStorage;
+        const visibleKeyIn = "visible-key" in sessionStorage;
         return {configKeyIn, visibleKeyIn};
       }, [CACHED_FILTERS_CONFIG_KEY], "MAIN");
 
@@ -1117,9 +1235,9 @@ describe("Snippets", function() {
 
     it("hides the config key from JSON.stringify", async function() {
       const result = await executeScript(tabId, key => {
-        localStorage.clear();
-        localStorage.setItem("visible-key", "visible-value");
-        const json = JSON.stringify(localStorage);
+        sessionStorage.clear();
+        sessionStorage.setItem("visible-key", "visible-value");
+        const json = JSON.stringify(sessionStorage);
         const parsed = JSON.parse(json);
         return {
           json,
@@ -1134,13 +1252,13 @@ describe("Snippets", function() {
 
     it("shows the config key when website sets a value for it", async function() {
       const result = await executeScript(tabId, key => {
-        localStorage.clear();
-        localStorage.setItem(key, "website-value");
-        localStorage.setItem("visible-key", "visible-value");
+        sessionStorage.clear();
+        sessionStorage.setItem(key, "website-value");
+        sessionStorage.setItem("visible-key", "visible-value");
 
-        const keys = Object.keys(localStorage);
-        const spread = {...localStorage};
-        const inOperator = key in localStorage;
+        const keys = Object.keys(sessionStorage);
+        const spread = {...sessionStorage};
+        const inOperator = key in sessionStorage;
 
         return {
           keys,

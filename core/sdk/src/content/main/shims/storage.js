@@ -15,7 +15,7 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export function shimLocalStorage(CACHED_FILTERS_CONFIG_KEY) {
+export function shimStorage(CACHED_FILTERS_CONFIG_KEY) {
   // =================== Secured copies of native functions ====================
   // These are captured before page scripts run.
   // Used inside Proxy apply handlers which run after page scripts.
@@ -64,12 +64,13 @@ export function shimLocalStorage(CACHED_FILTERS_CONFIG_KEY) {
   const originalStorageGetItem = storageGetItemDesc.value;
 
   // =================== Conditional application of the shim ===================
-  function shouldShimLocalStorage() {
-    const config = getConfig(window.localStorage);
+  function shouldShimStorage() {
+    const config = getConfig(window.sessionStorage) ||
+      getConfig(window.localStorage);
     return Boolean(config);
   }
 
-  if (!shouldShimLocalStorage()) {
+  if (!shouldShimStorage()) {
     return;
   }
 

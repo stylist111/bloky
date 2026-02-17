@@ -39,9 +39,9 @@ let filtersConfigPromise;
 let cachedFiltersConfig;
 // cachedFiltersConfigSerialized defaults to `null` rather than `undefined`
 // because that is the value we would get if it is uninitialized in
-// localStorage.
+// sessionStorage.
 let cachedFiltersConfigSerialized = null;
-let localStorageAvailable = true;
+let storageAvailable = true;
 const logger = new telemetry.ServerLogger("snippets");
 
 /**
@@ -167,7 +167,7 @@ function executeSnippets(filtersConfig) {
  * @returns {Object|null} - returns the filtersConfig or null.
  */
 function syncCacheAndReload(filtersConfig) {
-  if (!localStorageAvailable) {
+  if (!storageAvailable) {
     if (filtersConfig.useCache) {
       logger.debug("local_storage_unavailable", {
         isMainFrame: window === window.top
@@ -195,7 +195,7 @@ function syncCacheAndReload(filtersConfig) {
   const writeToStorage = filtersConfig.useCache &&
         filtersConfig.filters.length > 0;
 
-  // Cache the snippet filters in localStorage for future page loads
+  // Cache the snippet filters in Storage for future page loads
   const newFiltersConfigSerialized = writeToStorage ?
         JSON.stringify(filtersConfig) :
         websiteValue;
@@ -203,7 +203,7 @@ function syncCacheAndReload(filtersConfig) {
   if (cachedFiltersConfigSerialized === newFiltersConfigSerialized) {
     if (filtersConfig.useCache) {
       // We were instructed to use the cache and the data we expected was
-      // already in localStorage so it was executed on startup. Nothing more to
+      // already in Storage so it was executed on startup. Nothing more to
       // do.
       return null;
     }
@@ -215,13 +215,13 @@ function syncCacheAndReload(filtersConfig) {
 
   try {
     if (newFiltersConfigSerialized) {
-      localStorage.setItem(
+      sessionStorage.setItem(
         CACHED_FILTERS_CONFIG_KEY,
         newFiltersConfigSerialized
       );
     }
     else {
-      localStorage.removeItem(CACHED_FILTERS_CONFIG_KEY);
+      sessionStorage.removeItem(CACHED_FILTERS_CONFIG_KEY);
     }
 
     // reload the page to apply the new snippets from cache on next load
@@ -274,7 +274,7 @@ function startErrorListener() {
  */
 async function cleanupExperiment() {
   const oldStorageKey = await experiments.getFlag("zero-delay-cleanup");
-  if (localStorageAvailable && oldStorageKey) {
+  if (storageAvailable && oldStorageKey) {
     try {
       const config = JSON.parse(localStorage.getItem(oldStorageKey));
       if (config && typeof config.filters !== "undefined") {
@@ -307,12 +307,12 @@ export function start() {
   });
 
   try {
-    cachedFiltersConfigSerialized = localStorage.getItem(
+    cachedFiltersConfigSerialized = sessionStorage.getItem(
       CACHED_FILTERS_CONFIG_KEY
     );
   }
   catch (e) {
-    localStorageAvailable = false;
+    storageAvailable = false;
   }
 
   // eslint-disable-next-line no-warning-comments

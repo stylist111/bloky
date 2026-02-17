@@ -17,7 +17,7 @@
 
 /* eslint-disable no-undef */
 import expect from "expect";
-import {shimLocalStorage} from "../../../src/content/main/shims/storage.js";
+import {shimStorage} from "../../../src/content/main/shims/storage.js";
 
 // Tracks storage instances. A Proxy wrapping a storage object will not
 // be in this set, so calling a mock method with a Proxy as `this` throws
@@ -115,7 +115,7 @@ const EXT_B_KEY = "ewe-filters-config-adblockplus";
 function installShim(configKey) {
   // Simulate background script writing config before the content script runs
   window.localStorage.setItem(configKey, JSON.stringify({enabled: true}));
-  shimLocalStorage(configKey);
+  shimStorage(configKey);
 }
 
 describe("localStorage shim", function() {
