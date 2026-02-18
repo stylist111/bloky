@@ -45,19 +45,37 @@ function getPremiumSubscriptions(): ewe.Recommendation[] {
 }
 
 /**
+ * Returns the list of premium subscriptions that should be enabled by default
+ * based on the user's premium state.
+ * For trial users: returns both annoyances and cookies-premium
+ * For non-trial users: returns only annoyances
+ *
+ * @returns A Promise that resolves to the list of default premium subscriptions
+ */
+async function getDefaultPremiumSubscriptions(): Promise<ewe.Recommendation[]> {
+  const isTrial = await ewe.account.isTrial();
+  const subscriptions = getPremiumSubscriptions();
+
+  return subscriptions.filter(
+    (sub) =>
+      sub.type === ANNOYANCE_SUBSCRIPTION_TYPE ||
+      (isTrial && sub.type === COOKIES_PREMIUM_SUBSCRIPTION_TYPE)
+  );
+}
+
+/**
  * Adds premium subscriptions that should be installed by default.
+ * For trial users: adds both annoyances and cookies-premium
+ * For non-trial users: adds only annoyances
  *
  * @returns A Promise that settles after the process of adding
  * the subscriptions gets fulfilled or rejected
  */
 async function addDefaultPremiumSubscriptions(): Promise<void> {
-  const subscriptions = getPremiumSubscriptions();
+  const subscriptions = await getDefaultPremiumSubscriptions();
 
   for (const subscription of subscriptions) {
-    if (
-      !(await ewe.subscriptions.has(subscription.url)) &&
-      subscription.type === ANNOYANCE_SUBSCRIPTION_TYPE
-    ) {
+    if (!(await ewe.subscriptions.has(subscription.url))) {
       await addSubscription(subscription);
     }
   }
