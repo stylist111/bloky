@@ -102,7 +102,6 @@ const generateLearnMore = async function (name) {
   const button = document.createElement("button");
   button.innerText = translate("learn_more_without_period");
   button.addEventListener("click", () => {
-    sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: `${name}_learn_clicked` });
     serverLogger.behavior(learnMoreEventNameMap.get(name));
     sendMessageWithNoResponse({ command: "openTab", urlToOpen });
     closePopup();

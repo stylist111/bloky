@@ -51,10 +51,6 @@ async function unsubscribeAcceptableAds(event) {
   await browser.runtime.sendMessage({ command: "unsubscribe", adblockId: "acceptable_ads" });
   serverLogger.behavior("opt_out_acceptable_ads_clicked");
   await browser.runtime.sendMessage({
-    command: "recordGeneralMessage",
-    msg: "disableacceptableads_clicked",
-  });
-  await browser.runtime.sendMessage({
     command: "openTab",
     urlToOpen: browser.runtime.getURL("options.html?aadisabled=true#general"),
   });

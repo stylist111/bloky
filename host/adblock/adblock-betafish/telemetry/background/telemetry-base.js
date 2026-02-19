@@ -30,7 +30,6 @@ import {
 } from "./custom-rule";
 
 import { Prefs } from "~/alias/prefs";
-import ServerMessages from "~/servermessages";
 import { getSettings, settings } from "~/prefs/background";
 import SubscriptionAdapter from "~/subscriptionadapter";
 import { getUserId } from "~/id/background/index";
@@ -253,14 +252,11 @@ class TelemetryBase {
         const info = await browser.management.getSelf();
         if (info) {
           serverLogger.behavior(`new_install_${info.installType}`);
-          ServerMessages.recordGeneralMessage(`new_install_${info.installType}`);
         } else {
           serverLogger.behavior("new_install_unknown");
-          ServerMessages.recordGeneralMessage("new_install");
         }
       } else {
         serverLogger.behavior("new_install_unknown");
-        ServerMessages.recordGeneralMessage("new_install");
       }
     }
     // This will sleep, then ping, then schedule a new ping, then

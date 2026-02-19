@@ -156,11 +156,6 @@ const initialize = async function init() {
       }
     }
 
-    // send goodbye message
-    if (name === "marketing_opt_out" && isEnabled) {
-      void send("marketingOptOut");
-    }
-
     if (abpPrefPropertyNames.indexOf(name) >= 0) {
       Prefs[name] = isEnabled;
       return;
@@ -283,7 +278,6 @@ const handlePremiumEnrollmentCTAs = async () => {
   }
 
   await MABPayment.displayUpsellCTA();
-  $(".upsell-cta #get-it-now-general").on("click", MABPayment.userClickedUpsellCTA);
   $("a.link-to-tab").on("click", (event) => {
     activateTab($(event.target).attr("href"));
   });

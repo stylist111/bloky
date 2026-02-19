@@ -27,7 +27,6 @@ import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import rulesIndex from "@eyeo/rules-utils/adblock/index/adblock.json";
 import { port } from "../../adblockplusui/adblockpluschrome/lib/messaging/port.js";
 import { setReadyState, ReadyState } from "../../src/testing/ready-state/background";
-import ServerMessages from "~/servermessages";
 import * as logger from "~/utilities/background";
 import { getFacts } from "../../src/remote-config/background";
 
@@ -173,7 +172,6 @@ async function addSubscriptions() {
 
       // send a message to the log server with debug metadata
       console.warn("Something is wrong with subscriptions, reset to defaults", params);
-      ServerMessages.recordGeneralMessage("zero_subs_reset", null, params);
 
       serverLogger.debug("zero_subs_reset", params);
 

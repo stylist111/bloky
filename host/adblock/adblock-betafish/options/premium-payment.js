@@ -16,7 +16,7 @@
  */
 
 /* For ESLint: List any global identifiers used in this file below */
-/* global License, ServerMessages, getFormattedTabName */
+/* global License, getFormattedTabName */
 
 const premiumPaymentAdblockUiServerLogger = new modulesAsGlobal.ewe.telemetry.ServerLogger(
   "adblock_ui",
@@ -70,10 +70,6 @@ const MABPayment = (function mabPayment() {
       }
 
       $(".upsell-cta").show();
-      ServerMessages.recordGeneralMessage("options_page_upsell_seen");
-    },
-    userClickedUpsellCTA: () => {
-      ServerMessages.recordGeneralMessage("options_page_upsell_clicked");
     },
     userClickedPremiumCTA: () => {
       const openedTabName = getFormattedTabName();
@@ -81,7 +77,6 @@ const MABPayment = (function mabPayment() {
         tab: premiumTabNameMap.get(openedTabName),
         action: "clicked",
       });
-      ServerMessages.recordGeneralMessage(`options_page_premium_cta_clicked_${openedTabName}`);
     },
   };
 })();

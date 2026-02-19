@@ -34,11 +34,7 @@ const keyPrefix = "pref:";
  * from the debug data that user can download or export from
  * the host extension.
  */
-const exclusionKeys = [
-  "allowlisting_authorizedKeys",
-  "bypass_authorizedKeys",
-  "pageviewMetrics_requestUrls",
-];
+const exclusionKeys = ["allowlisting_authorizedKeys", "bypass_authorizedKeys"];
 
 let eventEmitter = new EventEmitter();
 let overrides = Object.create(null);
@@ -478,13 +474,6 @@ defaults.partnerExtensionFound = {
   extesnionsIdsFound: [],
   detectionTimestamp: 0,
 };
-
-/**
- * List of request URLs for which pageview metrics should be recorded
- *
- * @type {string[]}
- */
-defaults.pageviewMetrics_requestUrls = ["*://btloader.com/tag?*"];
 
 /**
  * A timestamp that indicates when was the last time when ubo was found on this device

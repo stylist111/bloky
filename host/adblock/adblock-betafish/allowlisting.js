@@ -18,7 +18,6 @@
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
 import { Prefs } from "~/alias/prefs";
-import ServerMessages from "./servermessages";
 import { createFilterMetaData } from "./utilities/background/bg-functions";
 import { FilterOrigin } from "../src/filters/shared";
 import { License } from "./picreplacement/check";
@@ -126,9 +125,6 @@ async function start() {
   });
 
   ewe.allowlisting.onUnauthorized.addListener((error) => {
-    ServerMessages.recordErrorMessage("one_click_allowlisting_error", {
-      errorMsg: error.toString(),
-    });
     // eslint-disable-next-line no-console
     console.error(error);
   });

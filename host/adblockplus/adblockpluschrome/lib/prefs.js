@@ -31,11 +31,7 @@ const keyPrefix = "pref:";
  * from the debug data that user can download or export from
  * the host extension.
  */
-const exclusionKeys = [
-  "allowlisting_authorizedKeys",
-  "bypass_authorizedKeys",
-  "pageviewMetrics_requestUrls"
-];
+const exclusionKeys = ["allowlisting_authorizedKeys", "bypass_authorizedKeys"];
 
 let eventEmitter = new EventEmitter();
 let overrides = Object.create(null);

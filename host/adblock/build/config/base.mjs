@@ -239,10 +239,6 @@ export default {
         src: "adblock-betafish/messaging/prefsproxy.js",
       },
       {
-        dest: "adblock-options-servermessagesproxy.js",
-        src: "adblock-betafish/messaging/servermessagesproxy.js",
-      },
-      {
         dest: "adblock-options-filtersproxy.js",
         src: "adblock-betafish/messaging/filtersproxy.js",
       },

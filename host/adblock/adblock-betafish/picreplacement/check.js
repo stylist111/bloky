@@ -33,7 +33,6 @@ import { showIconBadgeCTA, NEW_BADGE_REASONS } from "~/alias/icon";
 import { Prefs } from "~/alias/prefs";
 import { initialize } from "~/alias/subscriptionInit";
 import * as logger from "~/utilities/background";
-import ServerMessages from "../servermessages";
 import SubscriptionAdapter from "../subscriptionadapter";
 import postData from "../fetch-util";
 import {
@@ -323,7 +322,6 @@ export const License = (function getLicense() {
             ) {
               void License.processExpiredLicense();
               checkCustomerLifecycleServerLogger.behavior("trial_license_expired");
-              ServerMessages.recordGeneralMessage("trial_license_expired");
             }
           } else {
             log("license server error response", response.status, ajaxRetryCount);

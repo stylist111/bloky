@@ -19,7 +19,7 @@
 /* global activateTab, connectUIPort, delayedSubscriptionSelection,
    getStorageCookie, initializeProxies,
    isPremiumFilterListURL, License,
-   MABPayment, premiumFiltersCtaKey, selected, send, ServerMessages,
+   MABPayment, premiumFiltersCtaKey, selected, send,
    setStorageCookie, settings, startSubscriptionSelection, storageGet,
    storageSet, SubscriptionAdapter, SubscriptionsProxy,
    THIRTY_MINUTES_IN_MILLISECONDS,
@@ -1152,13 +1152,11 @@ async function initPremiumFiltersCTA() {
     $("#premium-filter-list-cta").fadeIn(1000);
     $("#btnPremiumFilterLearnMore").on("click", () => {
       filtersAdblockUiServerLogger.behavior("premium_filter_list_cta", { action: "clicked" });
-      ServerMessages.recordGeneralMessage("premium_filter_list_cta_clicked");
       storageSet(premiumFiltersCtaKey, true);
       $("#premium-filter-list-cta").fadeOut(1000);
       activateTab("#mab");
     });
     filtersAdblockUiServerLogger.behavior("premium_filter_list_cta", { action: "seen" });
-    ServerMessages.recordGeneralMessage("premium_filter_list_cta_seen");
   }
 }
 
@@ -1255,7 +1253,6 @@ $(async () => {
   }
 
   await MABPayment.displayUpsellCTA();
-  $(".upsell-cta #get-it-now-filters").on("click", MABPayment.userClickedUpsellCTA);
   $("a.link-to-tab").on("click", (event) => {
     activateTab($(event.target).attr("href"));
   });

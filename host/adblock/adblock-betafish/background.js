@@ -49,7 +49,6 @@ import DataCollectionV2 from "./datacollection.v2";
 import LocalDataCollection from "./localdatacollection";
 import * as logger from "~/utilities/background";
 import { port } from "../adblockplusui/adblockpluschrome/lib/messaging/port";
-import ServerMessages from "~/servermessages";
 import SubscriptionAdapter from "./subscriptionadapter";
 import * as prefs from "./prefs/background";
 import { FilterOrigin } from "../src/filters/shared";
@@ -95,7 +94,6 @@ Object.assign(self, {
   info,
   getBlockedPerPage,
   LocalDataCollection,
-  ServerMessages,
   SubscriptionAdapter,
   TELEMETRY,
   DataCollectionV2,
@@ -674,7 +672,6 @@ function addAllowlistingListeners() {
     smartAllowlistingServerLogger.behavior("allowlisting_renewed", {
       allowlistExtendDuration: filter.metadata.autoExtendMs,
     });
-    ServerMessages.recordAllowlistEvent("allowlisting_renewed", filter.metadata.autoExtendMs);
   });
 
   // Log event when a smart allowlist expired
@@ -685,7 +682,6 @@ function addAllowlistingListeners() {
       smartAllowlistingServerLogger.behavior("allowlisting_expired", {
         allowlistExtendDuration: autoExtendMs,
       });
-      ServerMessages.recordAllowlistEvent("allowlisting_expired", autoExtendMs);
     }
   });
 }
@@ -725,10 +721,7 @@ initialize
         if (!Prefs.get("send_ad_wall_messages")) {
           return;
         }
-        void ServerMessages.recordGeneralMessage(eventName, null, payload);
         // Normalize event name for serverLogger
-        // IMPORTANT: remove normalization after all events are migrated
-        // and serverMessages logging is removed
         const normalizedEventName = eventName.replace(/[.-]/g, "_");
         if (migratedEvents.has(normalizedEventName)) {
           youtubeServerLogger.behavior(
@@ -782,21 +775,6 @@ initialize
       hasInternalError,
       timings: getPerformanceTimings(),
     });
-
-    if (hasInternalError) {
-      // Send the error message to the log server when internal error occurs.
-      // We want to know the amount of users that are affected by this issue,
-      // as well which rulesets are affected. The ruleset id will be added to
-      // the error message by the WebExt SDK.
-      ServerMessages.recordErrorMessage("internal_error", {
-        errorMsg: e.message,
-      });
-    } else {
-      ServerMessages.recordAnonymousErrorMessage("initialization_error", null, {
-        errorMsg: e.message,
-      });
-      ServerMessages.recordErrorMessage("initialization_error", { errorMsg: e.message });
-    }
 
     throw e;
   });

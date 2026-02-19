@@ -16,29 +16,13 @@
  */
 
 import * as ewe from "@eyeo/webext-ad-filtering-solution";
-import ServerMessages from "~/servermessages";
-import { port } from "../../../adblockplusui/adblockpluschrome/lib/messaging/port";
-import { messageIdentifier } from "../shared";
 import { start as startCookieBannerExperiment } from "./cookie-banner";
 import { experimentFlag as cookieBannerExperimentFlag } from "./cookie-banner.types";
-
-/**
- * Sends a forwarded event to the log server.
- *
- * @param details The event object forwarded from the content script
- */
-function sendEvent({ name }: Record<string, string>): void {
-  // Sending event to legacy AdBlock log server; we could also send to IPM server instead.
-  ServerMessages.recordGeneralMessage(name);
-}
 
 /**
  * Starts the growth experiments module
  */
 export async function start(): Promise<void> {
-  ext.addTrustedMessageTypes(null, [messageIdentifier]);
-  port.on(messageIdentifier, sendEvent);
-
   const cookieBannerFlag = await ewe.experiments.getFlag(cookieBannerExperimentFlag);
   if (cookieBannerFlag === true) {
     startCookieBannerExperiment();

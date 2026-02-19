@@ -16,7 +16,7 @@
  */
 
 /* For ESLint: List any global identifiers used in this file below */
-/* global browser, setLangAndDirAttributes, sessionStorageGet, sessionStorageSet, translate */
+/* global browser, setLangAndDirAttributes, sessionStorageSet, translate */
 
 const CLOSED_KEY = "closedProgrammatically";
 const PAGE_INFO_KEY = "pageInfo";
@@ -58,15 +58,7 @@ const navigateTo = (url) => {
   window.location = url;
 };
 
-const reportClose = () => {
-  const programaticallyClosed = sessionStorageGet(CLOSED_KEY);
-  if (!programaticallyClosed) {
-    sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "popup_closed" });
-  }
-};
-
 const setupBehaviorListeners = () => {
-  window.addEventListener("unload", reportClose);
   document.addEventListener("readystatechange", addLanguageAndDir);
 };
 

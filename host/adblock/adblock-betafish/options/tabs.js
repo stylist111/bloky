@@ -18,7 +18,7 @@
 /* For ESLint: List any global identifiers used in this file below */
 /* global browser, License, localizePage, determineUserLanguage, getStorageCookie, setStorageCookie,
    THIRTY_MINUTES_IN_MILLISECONDS, setLangAndDirAttributes, storageSet, storageGet, ewe,
-   initializeProxies, ServerMessages, sendTypeMessage, settings:true, */
+   initializeProxies, sendTypeMessage, settings:true, */
 
 const userSeenNewPFPageKey = "options_menu_pf_key";
 let userSeenNewPFPage = storageGet(userSeenNewPFPageKey);
@@ -276,11 +276,9 @@ $(async () => {
     const tabID = $(this).attr("href");
     activateTab(tabID);
     const tabName = getFormattedTabName();
-    ServerMessages.recordGeneralMessage(`options_page_tab_clicked_${tabName}`);
     ServerLogger.behavior("options_page_tab", { tab: tabNameMap.get(tabName), action: "clicked" });
   });
   const openedTabName = getFormattedTabName();
-  ServerMessages.recordGeneralMessage(`options_page_opened_tab_${openedTabName}`);
   ServerLogger.behavior("options_page_tab", {
     tab: tabNameMap.get(openedTabName),
     action: "opened",

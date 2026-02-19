@@ -26,7 +26,6 @@ import { start as startInProductMessaging } from "../../ipm/background";
 import { start as startGrowthExperiments } from "../../growth-experiments/background";
 import { start as startNewTab } from "../../../adblock-betafish/new-tab/background";
 import { start as startOnPageDialog } from "../../../adblock-betafish/onpage-dialog/background";
-import { start as startPageviewMetrics } from "../../pageview-metrics/background";
 import { start as startTelemetry } from "../../telemetry/background";
 import { start as startTestingEwe } from "../../testing/ewe/background";
 
@@ -41,7 +40,7 @@ async function bootstrapAsync(): Promise<void> {
     startCookieBannerDetection();
     startTestingEwe();
 
-    await Promise.all([startPageviewMetrics(), startTelemetry()]);
+    await startTelemetry();
   } catch (ex) {
     logger.reportAndLogError(ex);
   }

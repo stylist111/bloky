@@ -18,8 +18,7 @@
 /* For ESLint: List any global identifiers used in this file below */
 /* global channelsNotifier, License, localizePage, MABPayment,
    browser, DOMPurify, base64toBlob, info, customImageSwapMimeType,
-   initializeProxies, settings, ServerMessages, customChannel, channels,
-   send,
+   initializeProxies, settings, customChannel, channels,
  */
 
 // Althought 'webp' is a preferred for Custom Image Swap
@@ -33,7 +32,6 @@ if (info.application === "gecko") {
 (async function onImageSwapLoaded() {
   await initializeProxies();
   let deleteFileURL = "";
-  let errorData = {};
 
   function generateItemImageHTML(width, height) {
     return `<li class="custom-channel-box thumbnail" >
@@ -495,7 +493,6 @@ if (info.application === "gecko") {
           .catch((error) => {
             // eslint-disable-next-line no-console
             console.log("error", error);
-            errorData = error;
             $("#custom-images").prop("value", "");
             $("#swap-edit-overlay-page").fadeOut(() => {
               destroyCroppie();
@@ -530,22 +527,7 @@ if (info.application === "gecko") {
     $("#swap-delete-overlay-page").fadeOut();
   });
 
-  $("#btnDontSend, #swap-error-overlay-close-icon-page").on("click", () => {
-    $("#swap-edit-overlay").css({
-      display: "none",
-    });
-    $("#swap-error-overlay-page").addClass("inactive");
-  });
-
-  $("#btnSendDebug").on("click", async () => {
-    if (errorData) {
-      const debugData = await send("getDebugInfo");
-      ServerMessages.recordAnonymousErrorMessage(
-        "custom_image_swap_error",
-        null,
-        JSON.stringify({ debugData, errorData }),
-      );
-    }
+  $("#swap-error-overlay-close-icon-page").on("click", () => {
     $("#swap-edit-overlay").css({
       display: "none",
     });

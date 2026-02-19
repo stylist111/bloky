@@ -493,7 +493,6 @@ $(async () => {
   }
 
   await MABPayment.displayUpsellCTA();
-  $(".upsell-cta #get-it-now-customize").on("click", MABPayment.userClickedUpsellCTA);
   $("a.link-to-tab").on("click", (event) => {
     activateTab($(event.target).attr("href"));
   });

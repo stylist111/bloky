@@ -36,7 +36,6 @@ import {
 } from "../prefs/background";
 import SubscriptionAdapter from "../subscriptionadapter";
 import DataCollectionV2 from "../datacollection.v2";
-import ServerMessages from "../servermessages";
 import LocalDataCollection from "../localdatacollection";
 import ExcludeFilter from "../excludefilter";
 import messageValidator from "./messagevalidator";
@@ -227,9 +226,7 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
       break;
     case "dataCollectionOptOut":
       messagingRespondersAdblockUiServerLogger.behavior("data_collection_opt_out");
-      return ServerMessages.recordDataCollectionOptOutMessage();
-    case "marketingOptOut":
-      return ServerMessages.recordMarketingOptOutMessage();
+      break;
     default:
   }
 });
@@ -288,10 +285,6 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
           sendResponse,
           SubscriptionAdapter.getAllSubscriptionsMinusText(),
         );
-      case "recordGeneralMessage":
-        ServerMessages.recordGeneralMessage(message.msg, undefined, message.additionalParams);
-        sendResponse({});
-        break;
       default:
     }
   }
@@ -360,10 +353,6 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   const { command } = message;
   switch (command) {
-    case "recordAnonymousErrorMessage":
-      ServerMessages.recordAnonymousErrorMessage(message.msg, undefined, message.additionalParams);
-      sendResponse({});
-      break;
     case "LocalDataCollection.clearCache":
       LocalDataCollection.clearCache();
       sendResponse({});

@@ -43,11 +43,6 @@ const logHelpFlowResults = function (source) {
   helpAdblockUIServerLogger.behavior("help_flow_results", {
     helpFlowPath: `${segueBreadCrumb},${source}`,
   });
-  browser.runtime.sendMessage({
-    command: "recordGeneralMessage",
-    msg: "help_flow_results",
-    additionalParams: { hfd: `${segueBreadCrumb},${source}` },
-  });
 };
 
 $(window).on("unload", () => {

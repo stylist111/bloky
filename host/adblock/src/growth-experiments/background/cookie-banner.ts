@@ -16,7 +16,6 @@
  */
 
 import { type WebNavigation } from "webextension-polyfill";
-import ServerMessages from "~/servermessages";
 import { runCookieBannerExperiment } from "../content/cookie-banner";
 import { cookieBannerExperimentStorageKey, experimentDomain } from "./cookie-banner.types";
 import { executeFunction } from "./script-injector";
@@ -58,9 +57,6 @@ async function navigationListener(details: WebNavigation.OnCommittedDetailsType)
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   browser.webNavigation.onCommitted.removeListener(navigationListener);
   void Prefs.set(cookieBannerExperimentStorageKey, true);
-
-  // Sending event to legacy AdBlock log server; we could also send to IPM server instead.
-  ServerMessages.recordGeneralMessage(cookieBannerEventNames.siteDetected);
 
   try {
     void executeFunction(tabId, frameId, runCookieBannerExperiment, [

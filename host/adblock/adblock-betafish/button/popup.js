@@ -140,8 +140,6 @@ const popupMenuDCCtaClosedKey = "popup_menu_dc_cta_closed";
 const popupMenuVPNCtaClosedKey = "popup_menu_vpn_cta_closed";
 
 const shown = {};
-let itemClicked = false;
-
 const sendMessageWithNoResponse = function (message) {
   void browser.runtime.sendMessage(message);
 };
@@ -153,7 +151,6 @@ const show = function (elementIds) {
 };
 
 const closePopup = function () {
-  itemClicked = true;
   window.close();
 };
 
@@ -229,16 +226,10 @@ const start = async function () {
       newBadgeTextReason = "";
     }
 
-    const genMsgData = {
-      command: "recordGeneralMessage",
-      msg: "popup_opened",
-      additionalParams: { isBadgeTextNew, reason: newBadgeTextReason },
-    };
     popupAdblockUIServerLogger.behavior("popup_opened", {
       isBadgeTextNew,
       reason: newBadgeTextReason,
     });
-    sendMessageWithNoResponse(genMsgData);
     sendMessageWithNoResponse({ command: "resetBadgeText" });
     void modulesAsGlobal.messaging.send("adblock:cleanUpSevenDayAlarm");
 
@@ -246,12 +237,6 @@ const start = async function () {
       processError(info.errorStr, info.stack, info.message);
       return;
     }
-    $(window).on("beforeunload", () => {
-      if (!itemClicked) {
-        sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "popup_closed" });
-      }
-    });
-
     // Cache response object for later use
     pageInfo = info;
     let parsedHostname = "";
@@ -332,7 +317,6 @@ const start = async function () {
     ) {
       show(["div_vpn_cta"]);
       popupAdblockUIServerLogger.behavior("vpn_cta", { action: "seen" });
-      sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "vpn_cta_seen" });
     } else if (
       // Premium CTAs
       info.showMABEnrollment &&
@@ -344,22 +328,15 @@ const start = async function () {
       $("#div_premium_themes_cta").attr("data-theme-cta", info.popupMenuThemeCTA);
       const theme = info.popupMenuThemeCTA ? info.popupMenuThemeCTA.replace("_theme", "") : "";
       popupAdblockUIServerLogger.behavior("premium_themes_cta", { theme, action: "seen" });
-      sendMessageWithNoResponse({
-        command: "recordGeneralMessage",
-        msg: "premium_themes_cta_seen",
-        additionalParams: { theme },
-      });
     } else if (info.showMABEnrollment && !userClosedCta && userClosedFreeDCCta) {
       show(["div_myadblock_enrollment_v2"]);
       popupAdblockUIServerLogger.behavior("premium_upsell_cta", { action: "seen" });
     } else if (info.showMABEnrollment && !userClosedFreeDCCta) {
       show(["div_free_dc_cta"]);
       popupAdblockUIServerLogger.behavior("free_dc_cta", { action: "seen" });
-      sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "free_dc_cta_seen" });
     } else if (info.showDcCTA && !userClosedDCCta && !info.disabledSite) {
       show(["div_premium_dc_cta"]);
       popupAdblockUIServerLogger.behavior("premium_dc_cta", { action: "seen" });
-      sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "premium_dc_cta_seen" });
     }
 
     if (info.activeLicense === true) {
@@ -387,7 +364,6 @@ const start = async function () {
   // Click handlers
   selected("#btn_unpause_all", async () => {
     popupAdblockUIServerLogger.behavior("resume_adblock");
-    sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "unpause_clicked" });
     await browser.runtime.sendMessage({ command: "adblockIsPaused", newValue: false });
     await browser.runtime.sendMessage({ command: "updateButtonUIAndContextMenus" });
     closePopup();
@@ -395,7 +371,6 @@ const start = async function () {
 
   selected("#btn_unpause_once", async () => {
     popupAdblockUIServerLogger.behavior("resume_adblock");
-    sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "domain_unpause_clicked" });
     if (pageInfo.url) {
       await browser.runtime.sendMessage({
         command: "removeAllAllowlistRulesForTab",
@@ -408,7 +383,6 @@ const start = async function () {
 
   selected("#div_myadblock_enrollment_v2", async () => {
     popupAdblockUIServerLogger.behavior("premium_upsell_cta", { action: "clicked" });
-    sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "myadblock_cta_clicked" });
     await browser.runtime.sendMessage({ command: "openTab", urlToOpen: pageInfo.premiumPayURL });
     closePopup();
   });
@@ -416,7 +390,6 @@ const start = async function () {
   selected("#mab_new_cta_close", (event) => {
     event.stopPropagation();
     popupAdblockUIServerLogger.behavior("premium_upsell_cta", { action: "closed" });
-    sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "myadblock_cta_closed" });
     $("#div_myadblock_enrollment_v2").slideUp();
     storageSet(popupMenuCtaClosedKey, true);
     storageSet(showPopupMenuThemesCtaKey, true);
@@ -425,7 +398,6 @@ const start = async function () {
   selected("#div_free_dc_cta", async () => {
     storageSet(popupMenuFreeDCCtaClosedKey, true);
     popupAdblockUIServerLogger.behavior("free_dc_cta", { action: "clicked" });
-    sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "free_dc_cta_clicked" });
     await browser.runtime.sendMessage({
       command: "openTab",
       urlToOpen: "https://getadblock.com/premium/enrollment/distraction-control/",
@@ -436,7 +408,6 @@ const start = async function () {
   selected("#div_free_dc_cta_close", (event) => {
     event.stopPropagation();
     popupAdblockUIServerLogger.behavior("free_dc_cta", { action: "closed" });
-    sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "free_dc_cta_closed" });
     $("#div_free_dc_cta").slideUp();
     storageSet(popupMenuFreeDCCtaClosedKey, true);
   });
@@ -445,7 +416,6 @@ const start = async function () {
     event.stopPropagation();
     storageSet(popupMenuVPNCtaClosedKey, true);
     popupAdblockUIServerLogger.behavior("vpn_cta", { action: "clicked" });
-    sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "vpn_cta_clicked" });
     await browser.runtime.sendMessage({
       command: "openTab",
       urlToOpen: "https://vpn.getadblock.com/?s=ap1",
@@ -456,7 +426,6 @@ const start = async function () {
   selected("#vpn_cta_close", (event) => {
     event.stopPropagation();
     popupAdblockUIServerLogger.behavior("vpn_cta", { action: "closed" });
-    sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "vpn_cta_closed" });
     $("#div_vpn_cta").slideUp();
     storageSet(popupMenuVPNCtaClosedKey, true);
   });
@@ -465,11 +434,6 @@ const start = async function () {
     event.stopPropagation();
     const theme = info.popupMenuThemeCTA ? info.popupMenuThemeCTA.replace("_theme", "") : "";
     popupAdblockUIServerLogger.behavior("premium_themes_cta", { theme, action: "clicked" });
-    sendMessageWithNoResponse({
-      command: "recordGeneralMessage",
-      msg: "premium_themes_cta_clicked",
-      additionalParams: { theme },
-    });
     await browser.runtime.sendMessage({
       command: "openTab",
       urlToOpen: browser.runtime.getURL("options.html#mab-themes"),
@@ -481,11 +445,6 @@ const start = async function () {
     event.stopPropagation();
     const theme = info.popupMenuThemeCTA ? info.popupMenuThemeCTA.replace("_theme", "") : "";
     popupAdblockUIServerLogger.behavior("premium_themes_cta", { theme, action: "closed" });
-    sendMessageWithNoResponse({
-      command: "recordGeneralMessage",
-      msg: "premium_themes_cta_closed",
-      additionalParams: { theme },
-    });
     $("#div_premium_themes_cta").slideUp();
     storageSet(showPopupMenuThemesCtaKey, false);
   });
@@ -494,7 +453,6 @@ const start = async function () {
     event.stopPropagation();
     storageSet(popupMenuDCCtaClosedKey, true);
     popupAdblockUIServerLogger.behavior("premium_dc_cta", { action: "clicked" });
-    sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "premium_dc_cta_clicked" });
     await browser.runtime.sendMessage({
       command: "openTab",
       urlToOpen: browser.runtime.getURL("options.html#premiumfilters"),
@@ -506,7 +464,6 @@ const start = async function () {
     event.stopPropagation();
     storageSet(popupMenuDCCtaClosedKey, true);
     popupAdblockUIServerLogger.behavior("premium_dc_cta", { action: "closed" });
-    sendMessageWithNoResponse({ command: "recordGeneralMessage", msg: "premium_dc_cta_closed" });
     $("#div_premium_dc_cta").slideUp();
   });
 
