@@ -18,7 +18,10 @@
 export const defaultFacts = {
   hasPremium: false,
   installDate: new Date("2023-01-01T00:00:00Z").getTime(),
-  blockedCount: 12345
+  blockedCount: 12345,
+  isTrial: false,
+  trialDaysLeft: null,
+  marketingConsent: false
 };
 
 export const cohort1Config = {

@@ -45,6 +45,21 @@ export const PREMIUM_USER_MOCK = {
 };
 
 /**
+ * Mock of a premium trial user profile response from the API.
+ * @type {{email: string, displayName: string, features: string[], subscription: Object, preferences: Object}}
+ */
+export const TRIAL_USER_MOCK = {
+  ...PREMIUM_USER_MOCK,
+  subscription: {
+    isTrial: true,
+    trialDaysLeft: 15,
+  },
+  preferences: {
+    marketingEmail: false,
+  },
+};
+
+/**
  * Mocks the OTP login endpoint.
  *
  * @param host - The host to mock the endpoint for.
@@ -84,18 +99,26 @@ async function mockUserProfileEndpoint(user, priority = 1) {
 }
 
 /**
- * Simulates the activation of a premium account by mocking the OTP login and user
- * profile endpoints, then triggering a login request from the extension.
+ * Simulates the activation of a premium (or trial) account by mocking the OTP login and
+ * user profile endpoints, then triggering a login request from the extension.
  *
  * @param portalUrl - The URL of the portal to use for login.
  * @param applicationName - The application name to set in the OTP login response headers.
+ * @param initOptionsGeneralTab - Function to initialize the options general tab.
+ * @param {Object} [options]
+ * @param {boolean} [options.isTrial=false] - When true, activates a trial account instead.
  * @returns {Promise<void>}
  */
-export async function simulatePremiumActivation(portalUrl, applicationName, initOptionsGeneralTab) {
+export async function simulatePremiumActivation(
+  portalUrl,
+  applicationName,
+  initOptionsGeneralTab,
+  { isTrial = false } = {},
+) {
   const loginUrl = new URL(PORTAL_LOGIN_PATH, portalUrl);
   const host = loginUrl.host;
   await mockOtpLoginEndpoint(host, applicationName);
-  await mockUserProfileEndpoint(PREMIUM_USER_MOCK);
+  await mockUserProfileEndpoint(isTrial ? TRIAL_USER_MOCK : PREMIUM_USER_MOCK);
 
   // navigate to a webpage where we can trigger the login
   await openNewTab(localTestPageUrl);
@@ -122,10 +145,13 @@ export async function simulatePremiumActivation(portalUrl, applicationName, init
         const data = await browser.storage.local.get("ewe:account");
         callback(data["ewe:account"]);
       });
-      return accountData?.user?.email === EMAIL_ADDRESS;
+      return (
+        accountData?.user?.email === EMAIL_ADDRESS &&
+        (!isTrial || accountData?.user?.subscription?.isTrial === true)
+      );
     },
     5000,
-    "Premium account was not activated",
+    isTrial ? "Trial account was not activated" : "Premium account was not activated",
   );
 }
 

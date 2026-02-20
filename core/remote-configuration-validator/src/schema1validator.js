@@ -59,6 +59,16 @@ const validOperatorsByFact = {
     "greaterThan",
     "greaterThanInclusive",
   ],
+  isTrial: ["equal", "notEqual"],
+  trialDaysLeft: [
+    "equal",
+    "notEqual",
+    "lessThan",
+    "lessThanInclusive",
+    "greaterThan",
+    "greaterThanInclusive",
+  ],
+  marketingConsent: ["equal", "notEqual"],
 };
 
 function isValidModValue(value) {

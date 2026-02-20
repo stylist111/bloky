@@ -22,7 +22,7 @@ import type { Facts } from "@eyeo/webext-ad-filtering-solution";
 /**
  * Returns the facts to be used in cohorts and experiments definition
  *
- * @returns {Promise<Object>}
+ * @returns {Promise<Facts>}
  */
 export async function getFacts(): Promise<Facts> {
   await Prefs.untilLoaded;

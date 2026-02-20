@@ -470,10 +470,12 @@ export async function isPremiumActivated() {
   }
 }
 
-export async function enablePremiumProgrammatically() {
+export async function enablePremiumProgrammatically({ isTrial = false } = {}) {
   const portalUrl = "https://myaccount.getadblock.com";
   const applicationName = "ab-portal";
-  await simulatePremiumActivation(portalUrl, applicationName, initOptionsGeneralTab);
+  await simulatePremiumActivation(portalUrl, applicationName, initOptionsGeneralTab, {
+    isTrial,
+  });
 }
 
 export async function disablePremiumProgrammatically() {

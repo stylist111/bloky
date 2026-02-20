@@ -492,6 +492,18 @@ export interface Facts {
    * The 2-letter country code, as provided through the JSON configuration response header
    */
   countryCode?: string;
+  /**
+   * Whether the user has an active freemium trial.
+   */
+  isTrial?: boolean;
+  /**
+   * Number of days remaining in freemium trial period, or zero if not on trial.
+   */
+  trialDaysLeft?: number;
+  /**
+   * Whether the user has consented to marketing emails.
+   */
+  marketingConsent?: boolean;
 }
 
 /**
@@ -523,6 +535,7 @@ export interface UserPreferences {
    */
   marketingEmail?: boolean;
 }
+
 
 export interface UserProfile {
   /**

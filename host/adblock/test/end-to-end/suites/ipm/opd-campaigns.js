@@ -24,6 +24,7 @@ import {
   updateSettings,
   setRemoteConfigUrl,
   syncRemoteConfig,
+  setRemoteConfigCohorts,
   setRemoteConfigIpmCommands,
   getIPMCommands,
   setIPMCooldowns,
@@ -51,7 +52,12 @@ import {
   opdDialogInjectedEvent,
 } from "../../utils/events.js";
 import { expectedIPMCommands } from "../../utils/ipms.js";
-import { initOptionsGeneralTab, setMarketingOptOutState } from "../../utils/page.js";
+import {
+  initOptionsGeneralTab,
+  setMarketingOptOutState,
+  enablePremiumProgrammatically,
+  disablePremiumProgrammatically,
+} from "../../utils/page.js";
 
 async function getOPDShadowRoot() {
   // #__ABoverlay is actually not displayed on the page (hence checkDisplayed: false)
@@ -340,5 +346,70 @@ export default (fragmentType) => {
     expect(await ctaButton.getText()).toEqual("[en] CTA translations");
     expect(texts[0]).toEqual("[en] This is a test translations OPD");
     expect(texts[1]).toEqual("[en] ipmID: test_adblock_translations");
+  });
+
+  describe("OPD campaign with trial cohort", function () {
+    before(async function () {
+      // Cohorts are only supported in the future fragment
+      if (fragmentType === "legacy") {
+        this.skip();
+      }
+      await setRemoteConfigCohorts(initOptionsGeneralTab, [
+        {
+          name: "Trial users without marketing consent",
+          conditions: {
+            all: [
+              {
+                fact: "isTrial",
+                operator: "equal",
+                value: true,
+              },
+              {
+                fact: "marketingConsent",
+                operator: "equal",
+                value: false,
+              },
+            ],
+          },
+          event: {
+            type: "test-trial-users",
+          },
+        },
+      ]);
+    });
+
+    beforeEach(async function () {
+      await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_trial_cohort");
+      await syncRemoteConfig(initOptionsGeneralTab);
+      const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
+      expect(ipmCommands).toEqual(expectedIPMCommands.trialCohort[fragmentType]);
+    });
+
+    after(async function () {
+      await disablePremiumProgrammatically();
+    });
+
+    it("does not trigger an OPD campaign when trial cohort does not match", async function () {
+      // Since isTrial is false and trialDaysLeft is null by default, OPD should NOT trigger
+      await openNewTab("https://www.example.com");
+      await waitForNotDisplayed("#__ABoverlay");
+    });
+
+    it("triggers an OPD campaign when trial cohort matches", async function () {
+      await enablePremiumProgrammatically({ isTrial: true });
+      await syncRemoteConfig(initOptionsGeneralTab);
+      await openNewTab("https://www.example.com");
+
+      const opd = await getOPDShadowRoot();
+      const opdTitle = await opd.findElement(By.css("#titleRow"));
+      const ctaButton = await opd.findElement(By.css("#continue"));
+      const paragraphs = await opd.findElements(By.css(".msgText"));
+      const texts = await Promise.all(paragraphs.map((p) => p.getText()));
+
+      expect(await opdTitle.getText()).toEqual("Trial OPD title");
+      expect(await ctaButton.getText()).toEqual("CTA trial");
+      expect(texts[0]).toEqual("This is a test OPD for trial users");
+      expect(texts[1]).toEqual("ipmID: test_adblock_trial_cohort");
+    });
   });
 };

@@ -358,4 +358,26 @@ export const expectedIPMCommands = {
       },
     },
   },
+  trialCohort: {
+    legacy: null,
+    future: {
+      test_adblock_trial_cohort: {
+        ipm_id: "test_adblock_trial_cohort",
+        cohort: "test-trial-users",
+        command_name: "create_on_page_dialog",
+        timing: "after_navigation",
+        version: 8,
+        content: {
+          en: {
+            sub_title: "Trial OPD title",
+            lower_body: "ipmID: test_adblock_trial_cohort",
+            upper_body: "This is a test OPD for trial users",
+            button_label: "CTA trial",
+          },
+        },
+        button_target: "/update?ipmId=test_adblock_trial_cohort",
+        display_duration: 1,
+      },
+    },
+  },
 };

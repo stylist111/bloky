@@ -180,6 +180,12 @@ const openNewtabOnUpdated = (
   const onUpdatedHandler = onNewTabUpdateHandlerByIpmId.get(ipmId);
   onNewTabUpdateHandlerByIpmId.delete(ipmId);
   browser.tabs.onUpdated.removeListener(onUpdatedHandler);
+  if (tab.url && /^https?:/.test(tab.url)) {
+    newTabCounter += 1;
+    if (newTabMessageSendTrigger.includes(newTabCounter)) {
+      getFragment().recordEvent(ipmId, CommandName.createTab, `has_content:${newTabCounter}`);
+    }
+  }
   if (isFutureFragment()) {
     serverLogger.behavior("tab_loaded", ipmId, ipmId);
   }

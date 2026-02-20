@@ -472,13 +472,14 @@ export async function isPremiumActivated() {
   }
 }
 
-export async function enablePremiumProgrammatically() {
+export async function enablePremiumProgrammatically({ isTrial = false } = {}) {
   const portalUrl = "https://myaccount.adblockplus.org";
   const applicationName = "abp-portal";
   await simulatePremiumActivation(
     portalUrl,
     applicationName,
-    initOptionsGeneralTab
+    initOptionsGeneralTab,
+    { isTrial }
   );
 }
 

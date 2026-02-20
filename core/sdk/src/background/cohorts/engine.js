@@ -31,6 +31,7 @@ import sentry from "../sentry.js";
 import {ServerLogger} from "../telemetry/server-logger.js";
 import {base64Encode} from "../set-operations.js";
 import {getCohortsConfig, getCountryCode} from "../remote-config/storage.js";
+import {getTrialDaysLeft, getPreferences} from "../account/storage.js";
 
 const emitter = new EventEmitter();
 const cohortsData = new PersistentState("ewe:cohorts", browser.storage.local);
@@ -67,9 +68,14 @@ export function setFactsGetter(getFacts) {
  * @property {string} extVersion - The version of the extension (semver).
  * @property {string} browserName - The name of the browser.
  * @property {string} countryCode - The 2-letter country code of the user.
+ * @property {string} browserLanguage - The UI language of the browser.
  * @property {boolean} aaEnabled - Whether Acceptable Ads is enabled.
  * @property {management.ExtensionInstallType} installType - The installation
  *    type of the extension.
+ * @property {boolean} isTrial - Whether the user is on a trial.
+ * @property {number} trialDaysLeft - The number of days left in the trial.
+ * @property {boolean} marketingConsent - Whether the user has consented to
+ *    marketing emails.
  *
  * @returns {Promise<Facts>}
  */
@@ -78,14 +84,22 @@ async function getDefaultFacts() {
   const {installType} = await browser.management.getSelf();
   let {short_name: extName} = browser.runtime.getManifest();
   extName = extName ? extName.replace(/ /g, "").toLowerCase() : extName;
+  const [aaEnabled, trialDaysLeft, preferences] = await Promise.all([
+    hasAcceptableAdsEnabled(),
+    getTrialDaysLeft(),
+    getPreferences()
+  ]);
 
   return {
     extName,
     extVersion: info.addonVersion,
     browserName: info.application,
     browserLanguage: browser.i18n.getUILanguage(),
-    aaEnabled: await hasAcceptableAdsEnabled(),
-    installType
+    aaEnabled,
+    installType,
+    isTrial: trialDaysLeft > 0,
+    trialDaysLeft,
+    marketingConsent: !!preferences.marketingEmail
   };
 }
 
