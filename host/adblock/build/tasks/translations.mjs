@@ -31,8 +31,8 @@ export function translations(locales) {
 }
 
 function getRequiredInfo(manifest) {
-  let result = {};
-  let limits = {
+  const result = {};
+  const limits = {
     name: 12,
     name_releasebuild: 45,
     name_devbuild: 45,
@@ -40,9 +40,9 @@ function getRequiredInfo(manifest) {
   };
 
   result.fields = Object.values(manifest)
-    .filter((value) => typeof value == "string" && value.match("__MSG"))
+    .filter((value) => typeof value === "string" && value.match("__MSG"))
     .map((name) => {
-      let parsed = name.replace(/(__MSG_)|(__)/g, "");
+      const parsed = name.replace(/(__MSG_)|(__)/g, "");
       return {
         name: parsed,
         limit: limits[parsed],

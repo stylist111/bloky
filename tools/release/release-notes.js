@@ -34,7 +34,7 @@ export class ReleaseNotes {
       const line = currentLine.toLowerCase();
       const headingStart = "# " + version.toLowerCase();
 
-      return line.startsWith(headingStart + " ") || line == headingStart;
+      return line.startsWith(headingStart + " ") || line === headingStart;
     });
 
     if (start < 0) {
@@ -66,24 +66,24 @@ export class ReleaseNotes {
   }
 
   insertNewVersionHeading(version, now) {
-    let unreleasedLine = this.lines.findIndex((currentLine) => {
+    const unreleasedLine = this.lines.findIndex((currentLine) => {
       const line = currentLine.toLowerCase();
       const headingStart = "# unreleased";
 
-      return line.startsWith(headingStart + " ") || line == headingStart;
+      return line.startsWith(headingStart + " ") || line === headingStart;
     });
 
-    let newHeadingLine = unreleasedLine >= 0 ? unreleasedLine + 1 : 0;
+    const newHeadingLine = unreleasedLine >= 0 ? unreleasedLine + 1 : 0;
 
-    let date = now.toISOString().substring(0, 10);
-    let versionHeading = `# ${version} - ${date}`;
+    const date = now.toISOString().substring(0, 10);
+    const versionHeading = `# ${version} - ${date}`;
 
-    let newHeading = ["", versionHeading];
+    const newHeading = ["", versionHeading];
 
     this.lines.splice(newHeadingLine, 0, ...newHeading);
 
-    let expectedWhitespaceLine = newHeadingLine + newHeading.length;
-    if (this.lines[expectedWhitespaceLine].trim() != "") {
+    const expectedWhitespaceLine = newHeadingLine + newHeading.length;
+    if (this.lines[expectedWhitespaceLine].trim() !== "") {
       this.lines.splice(expectedWhitespaceLine, 0, "");
     }
   }
@@ -117,7 +117,7 @@ ReleaseNotes.hostFilePath = function (host) {
 };
 
 ReleaseNotes.readFromHostFilepath = async function (host) {
-  let releaseNotesContent = await readFile(
+  const releaseNotesContent = await readFile(
     ReleaseNotes.hostFilePath(host),
     "utf8",
   );

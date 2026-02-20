@@ -26,7 +26,7 @@ describe("Experiment Data Validation", function () {
   }
 
   it("marks a more complex config as valid", async function () {
-    let data = {
+    const data = {
       schemaId: SCHEMA_ID,
       experiments: [
         {

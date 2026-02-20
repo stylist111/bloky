@@ -37,9 +37,7 @@ export default function webpack({ webpackInfo, addonName, addonVersion, sourceMa
           .src(require.resolve(`${bundle.package}${bundle.src}`))
           .pipe(named(() => bundle.dest));
       }
-      if (bundle.src) {
-        return gulp.src(bundle.src).pipe(named(() => bundle.dest));
-      }
+      return gulp.src(bundle.src).pipe(named(() => bundle.dest));
     }),
   ).pipe(
     webpackStream(

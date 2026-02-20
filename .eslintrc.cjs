@@ -7,11 +7,6 @@ module.exports = {
   ignorePatterns: [
     // Vendored in libraries, don't need to follow our linting standards
     "/vendor/",
-
-    // These don't follow the desired linting rules yet, but should
-    "/core/remote-configuration-validator/**/*.js",
-    "/tools/release/**/*.js",
-    "/host/adblock/build/",
   ],
   env: {
     browser: true,

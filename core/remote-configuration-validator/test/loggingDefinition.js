@@ -22,7 +22,7 @@ const SCHEMA_ID = "1";
 
 describe("Logging Data Validation", function () {
   it("marks a missing logging config as valid", function () {
-    let data = {
+    const data = {
       schemaId: SCHEMA_ID,
       experiments: [],
     };
@@ -30,7 +30,7 @@ describe("Logging Data Validation", function () {
   });
 
   it("marks a valid config as valid", function () {
-    let data = {
+    const data = {
       schemaId: SCHEMA_ID,
       experiments: [],
       loggingLevels: {
@@ -46,7 +46,7 @@ describe("Logging Data Validation", function () {
   });
 
   it("allows the global level to be optional", function () {
-    let data = {
+    const data = {
       schemaId: SCHEMA_ID,
       experiments: [],
       loggingLevels: {
@@ -61,7 +61,7 @@ describe("Logging Data Validation", function () {
   });
 
   it("allows the byModule to be optional", function () {
-    let data = {
+    const data = {
       schemaId: SCHEMA_ID,
       experiments: [],
       loggingLevels: {
@@ -73,7 +73,7 @@ describe("Logging Data Validation", function () {
   });
 
   it("reports missing mods", function () {
-    let data = {
+    const data = {
       schemaId: SCHEMA_ID,
       experiments: [],
       loggingLevels: {
@@ -86,7 +86,7 @@ describe("Logging Data Validation", function () {
   });
 
   it("reports invalid mods", function () {
-    let data = {
+    const data = {
       schemaId: SCHEMA_ID,
       experiments: [],
       loggingLevels: {
@@ -101,7 +101,7 @@ describe("Logging Data Validation", function () {
   });
 
   it("reports invalid global level", function () {
-    let data = {
+    const data = {
       schemaId: SCHEMA_ID,
       experiments: [],
       loggingLevels: {
@@ -115,7 +115,7 @@ describe("Logging Data Validation", function () {
   });
 
   it("reports invalid byModule level", function () {
-    let data = {
+    const data = {
       schemaId: SCHEMA_ID,
       experiments: [],
       loggingLevels: {

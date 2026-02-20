@@ -42,9 +42,7 @@ export default function webpack({
           .src(require.resolve(`${bundle.package}${bundle.src}`))
           .pipe(named(() => bundle.dest));
       }
-      if (bundle.src) {
-        return gulp.src(bundle.src).pipe(named(() => bundle.dest));
-      }
+      return gulp.src(bundle.src).pipe(named(() => bundle.dest));
     })
   ).pipe(
     webpackStream(

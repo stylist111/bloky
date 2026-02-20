@@ -21,9 +21,9 @@ import { Readable } from "stream";
 import Vinyl from "vinyl";
 
 export function addDevEnvVersion() {
-  let randNumber = Number(new Date()).toString();
+  const randNumber = Number(new Date()).toString();
 
-  return new Readable.from([
+  return Readable.from([
     new Vinyl({
       contents: Buffer.from(randNumber),
       path: "devenvVersion__",
@@ -32,11 +32,11 @@ export function addDevEnvVersion() {
 }
 
 export async function addTestsPage(templateData) {
-  let file = await fs.promises.readFile("build/templates/testIndex.html.tmpl");
-  let template = handlebars.compile(file.toString());
-  let data = template(templateData);
+  const file = await fs.promises.readFile("build/templates/testIndex.html.tmpl");
+  const template = handlebars.compile(file.toString());
+  const data = template(templateData);
 
-  return new Readable.from([
+  return Readable.from([
     new Vinyl({
       contents: Buffer.from(data),
       path: "qunit/index.html",

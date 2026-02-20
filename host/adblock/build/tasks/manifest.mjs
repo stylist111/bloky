@@ -26,7 +26,7 @@ const require = createRequire(import.meta.url);
 let manifest;
 
 async function getJSON(path) {
-  let content = await fs.promises.readFile(resolve(path));
+  const content = await fs.promises.readFile(resolve(path));
   return JSON.parse(content);
 }
 
@@ -64,7 +64,7 @@ async function editManifest(dataParam, version, channel, target, extensionId) {
   }
 
   if ("declarative_net_request" in data) {
-    let rulesPath = require.resolve("@eyeo/rules-utils/adblock/manifest/adblock.json");
+    const rulesPath = require.resolve("@eyeo/rules-utils/adblock/manifest/adblock.json");
 
     const rules = await getJSON(rulesPath);
     data.declarative_net_request = rules;
@@ -96,8 +96,8 @@ export async function getManifestContent(options) {
   } else {
     base = await getJSON("build/manifest.base.json");
   }
-  let specific = await getJSON(`build/manifest.v${manifestVersion}.json`);
-  let raw = Object.assign({}, base, specific);
+  const specific = await getJSON(`build/manifest.v${manifestVersion}.json`);
+  const raw = Object.assign({}, base, specific);
 
   manifest = await editManifest(raw, version, channel, target, extensionId);
 

@@ -61,7 +61,7 @@ export async function lsFiles(directory) {
   return fileString.split(EOL);
 }
 
-if (import.meta.url == pathToFileURL(process.argv[1])) {
+if (import.meta.url === pathToFileURL(process.argv[1]).toString()) {
   const parser = argparse.ArgumentParser();
   parser.addArgument(["-r", "--revision"], {
     required: false,

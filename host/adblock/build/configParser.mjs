@@ -16,15 +16,15 @@
  */
 
 let configs = {};
-let parsedConfigs = {};
+const parsedConfigs = {};
 
 function mergeObjectArray(base, override = []) {
-  let result = base.slice(0);
+  const result = base.slice(0);
 
   override.forEach((elem) => {
-    let commonDest = base.findIndex((baseElem) => baseElem.dest == elem.dest);
+    const commonDest = base.findIndex((baseElem) => baseElem.dest === elem.dest);
 
-    if (commonDest != -1) {
+    if (commonDest !== -1) {
       result[commonDest] = {
         ...result[commonDest],
         src: removeDuplicates(result[commonDest].src, elem.src),
@@ -38,8 +38,8 @@ function mergeObjectArray(base, override = []) {
 }
 
 function removeDuplicates(base, override = []) {
-  let unique = base.filter((elem) => {
-    let duplicate = override.find((value) => value.replace(/!/, "") == elem.replace(/!/, ""));
+  const unique = base.filter((elem) => {
+    const duplicate = override.find((value) => value.replace(/!/, "") === elem.replace(/!/, ""));
     return !duplicate;
   });
 
@@ -61,9 +61,9 @@ function mergeTranslations(base, override = {}) {
 }
 
 function mergeTests(base = {}, override = {}) {
-  let result = {};
-  let baseScripts = base.scripts || [];
-  let overrideScripts = override.scripts || [];
+  const result = {};
+  const baseScripts = base.scripts || [];
+  const overrideScripts = override.scripts || [];
 
   result.scripts = [...new Set([...baseScripts, ...overrideScripts])];
 
@@ -71,7 +71,7 @@ function mergeTests(base = {}, override = {}) {
 }
 
 function mergeMapping(base, override = {}) {
-  let result = {};
+  const result = {};
 
   result.copy = mergeObjectArray(base.copy, override.copy);
   result.rename = mergeObjectArray(base.rename, override.rename);
@@ -82,7 +82,7 @@ function mergeMapping(base, override = {}) {
 function mergeConfig(target) {
   if (parsedConfigs[target]) return parsedConfigs[target];
 
-  let config = configs[target];
+  const config = configs[target];
 
   if (!config.extends) {
     parsedConfigs[target] = { ...config };
@@ -91,11 +91,11 @@ function mergeConfig(target) {
     return parsedConfigs[target];
   }
 
-  let baseConfig = mergeConfig(config.extends);
+  const baseConfig = mergeConfig(config.extends);
 
-  let version = config.version || baseConfig.version;
-  let webpack = mergeWebpack(baseConfig.webpack, config.webpack);
-  let translations = mergeTranslations(baseConfig.translations, config.translations);
+  const version = config.version || baseConfig.version;
+  const webpack = mergeWebpack(baseConfig.webpack, config.webpack);
+  const translations = mergeTranslations(baseConfig.translations, config.translations);
 
   webpack.baseConfig = configs.webpack;
 

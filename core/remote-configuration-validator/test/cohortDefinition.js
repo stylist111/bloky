@@ -20,7 +20,7 @@ import { validateRemoteConfig } from "../src/validator.js";
 
 const SCHEMA_ID = "1";
 
-let complexExperiment = [
+const complexExperiment = [
   {
     experimentId: "experiment-1",
     name: "An experiment",
@@ -56,7 +56,7 @@ let complexExperiment = [
   },
 ];
 
-let complexCohorts = [
+const complexCohorts = [
   {
     name: "MAU Top 20 countries, free users, with install date older than 9 days and not an admin install type",
     conditions: {
@@ -152,12 +152,12 @@ let complexCohorts = [
   },
 ];
 
-let complexExperimentData = {
+const complexExperimentData = {
   schemaId: SCHEMA_ID,
   experiments: complexExperiment,
 };
 
-let complexExperimentAndCohortData = {
+const complexExperimentAndCohortData = {
   schemaId: SCHEMA_ID,
   experiments: complexExperiment,
   cohorts: complexCohorts,
@@ -173,7 +173,7 @@ describe("Cohort Data Validation", function () {
   });
 
   it("marks a simple config with cohorts as valid", async function () {
-    let data = {
+    const data = {
       schemaId: SCHEMA_ID,
       experiments: [],
       cohorts: [],

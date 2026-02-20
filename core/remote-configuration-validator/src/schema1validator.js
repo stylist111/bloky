@@ -86,9 +86,9 @@ function isValidCondition(conditions, errors) {
 }
 
 function getErrorsForExperiments(data) {
-  let errors = [];
-  let encounteredExperimentIds = new Set();
-  let flagExperiments = new Map();
+  const errors = [];
+  const encounteredExperimentIds = new Set();
+  const flagExperiments = new Map();
 
   data.experiments.forEach((experiment, experimentIndex) => {
     const experimentRef = `experiments[${experimentIndex}]`;
@@ -100,8 +100,8 @@ function getErrorsForExperiments(data) {
     }
     encounteredExperimentIds.add(experiment.experimentId);
 
-    let encounteredVariantIds = new Set();
-    let variantRanges = [];
+    const encounteredVariantIds = new Set();
+    const variantRanges = [];
 
     experiment.variants.forEach((variant, variantIndex) => {
       const variantRef = `${experimentRef}.variants[${variantIndex}]`;
@@ -168,7 +168,7 @@ function getErrorsForExperiments(data) {
 }
 
 function getErrorsForCohorts(data) {
-  let errors = [];
+  const errors = [];
   if (data.cohorts) {
     data.cohorts.forEach((rule, cohortIndex) => {
       const ruleRef = `cohort[${cohortIndex}]`;
@@ -221,7 +221,7 @@ function getErrorsForIpmCommands(data) {
 }
 
 function getErrors(data) {
-  let errors = [];
+  const errors = [];
 
   if (typeof data !== "object") {
     errors.push("root data is not an object");

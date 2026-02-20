@@ -58,8 +58,7 @@ async function run() {
         })
         .positional("packageSpecs", {
           type: "array",
-          description:
-            "The hosts to release, and their new version numbers. Must be in the format host@version, where host is one of ${validHosts} and version is a semver version.",
+          description: `The hosts to release, and their new version numbers. Must be in the format host@version, where host is one of ${validHosts} and version is a semver version.`,
           coerce: (arg) =>
             arg.map((a) => {
               const parts = a.split("@");
@@ -154,7 +153,7 @@ async function run() {
     });
 
     const versions = [];
-    for (let spec of args.packageSpecs) {
+    for (const spec of args.packageSpecs) {
       spec.version = await input({
         message: `What is the new version number for ${hostNames[spec.host]}?`,
         validate: (version) =>
@@ -182,13 +181,13 @@ async function run() {
     };
   });
 
-  for (let hostArg of hostArgs) {
+  for (const hostArg of hostArgs) {
     if (!args.skipGit) {
       const legacyTagName = `${hostArg.host}-v${hostArg.version}`;
       const existingTags = await executeShellCommand(
         `git tag --list ${hostArg.tagName} ${legacyTagName}`,
       );
-      const versionAlreadyExists = existingTags != "";
+      const versionAlreadyExists = existingTags !== "";
 
       if (versionAlreadyExists) {
         console.log(
@@ -199,14 +198,14 @@ async function run() {
     }
   }
 
-  let workingBranch = hostArgs[0].branchName;
+  const workingBranch = hostArgs[0].branchName;
   console.log(`🤖 Creating release branch: ${workingBranch}`);
   await executeMaybe(
     `git checkout -B ${workingBranch} ${args.commit}`,
     args.skipGit,
   );
 
-  for (let hostArg of hostArgs) {
+  for (const hostArg of hostArgs) {
     const releaseNotesPath = ReleaseNotes.hostFilePath(hostArg.host);
     let releaseNotes = await ReleaseNotes.readFromHostFilepath(hostArg.host);
 
@@ -300,7 +299,7 @@ async function run() {
     console.log("---------------------------------\n");
     console.log("🤖 The following changes will be made:\n");
 
-    for (let hostArg of hostArgs) {
+    for (const hostArg of hostArgs) {
       console.log(`- Push branch '${hostArg.branchName}' to origin`);
 
       if (!args.skipTag) {
@@ -336,14 +335,14 @@ async function run() {
   // branch for the first host, so the first host's branch is already
   // correct. All the others now need to be created and reset to point at that
   // same commit.
-  for (let hostArg of hostArgs.slice(1)) {
+  for (const hostArg of hostArgs.slice(1)) {
     await executeMaybe(
       `git checkout -B ${hostArg.branchName} ${workingBranch}`,
       args.skipGit,
     );
   }
 
-  for (let hostArg of hostArgs) {
+  for (const hostArg of hostArgs) {
     await executeMaybe(
       `git push origin ${hostArg.branchName} -f`,
       args.skipGit,

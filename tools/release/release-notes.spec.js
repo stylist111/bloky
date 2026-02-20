@@ -56,48 +56,48 @@ const NO_WHITESPACE = NO_WHITESPACE_LINES.join("\n");
 
 describe("ReleaseNotes script", function () {
   it("reads and then return an arbitrary file", function () {
-    let releaseNotes = new ReleaseNotes(NORMAL_FILE);
+    const releaseNotes = new ReleaseNotes(NORMAL_FILE);
     expect(releaseNotes.toString()).toEqual(NORMAL_FILE);
   });
 
   describe("getting notes for a specific version", function () {
     it("gets the unreleased notes from a normal file", function () {
-      let releaseNotes = new ReleaseNotes(NORMAL_FILE);
+      const releaseNotes = new ReleaseNotes(NORMAL_FILE);
       expect(releaseNotes.notesForVersion("Unreleased")).toEqual(
         NORMAL_FILE_LINES.slice(3, 6).join("\n"),
       );
     });
 
     it("gets the release notes for a version in the middle of a normal file", function () {
-      let releaseNotes = new ReleaseNotes(NORMAL_FILE);
+      const releaseNotes = new ReleaseNotes(NORMAL_FILE);
       expect(releaseNotes.notesForVersion("1.1.0")).toEqual(
         NORMAL_FILE_LINES.slice(7, 11).join("\n"),
       );
     });
 
     it("gets the release notes for a version at the end of a normal file", function () {
-      let releaseNotes = new ReleaseNotes(NORMAL_FILE);
+      const releaseNotes = new ReleaseNotes(NORMAL_FILE);
       expect(releaseNotes.notesForVersion("1.0.0")).toEqual(
         NORMAL_FILE_LINES.slice(12, 15).join("\n"),
       );
     });
 
     it("gets the release notes for a version at the end of a file with no empty lines", function () {
-      let releaseNotes = new ReleaseNotes(NO_WHITESPACE);
+      const releaseNotes = new ReleaseNotes(NO_WHITESPACE);
       expect(releaseNotes.notesForVersion("1.0.0")).toEqual(
         NO_WHITESPACE_LINES.slice(7, 9).join("\n"),
       );
     });
 
     it("throws an error if you try to get the release notes for a version which doesn't exist", function () {
-      let releaseNotes = new ReleaseNotes(NORMAL_FILE);
+      const releaseNotes = new ReleaseNotes(NORMAL_FILE);
       expect(() => releaseNotes.notesForVersion("9.9.9")).toThrow(
         "Could not find notes for version 9.9.9",
       );
     });
 
     it("gets the correct release notes when one version is a prefix of another", function () {
-      let releaseNotes = new ReleaseNotes(NON_SERMVER_RELEASE_NOTES);
+      const releaseNotes = new ReleaseNotes(NON_SERMVER_RELEASE_NOTES);
       expect(releaseNotes.notesForVersion("1.1")).toEqual(
         NON_SERMVER_RELEASE_NOTES_LINES.slice(5, 8).join("\n"),
       );
@@ -106,14 +106,14 @@ describe("ReleaseNotes script", function () {
 
   describe("inserting a new version heading", function () {
     it("inserts the new heading such that unreleased notes become the new version's notes", function () {
-      let releaseNotes = new ReleaseNotes(NORMAL_FILE);
-      let previousUnreleasedNotes = releaseNotes.unreleasedNotes();
+      const releaseNotes = new ReleaseNotes(NORMAL_FILE);
+      const previousUnreleasedNotes = releaseNotes.unreleasedNotes();
 
       releaseNotes.insertNewVersionHeading("1.2.0", new Date("2023-11-15"));
 
-      let unreleasedHeading = NORMAL_FILE_LINES.slice(3, 4).join("\n");
+      const unreleasedHeading = NORMAL_FILE_LINES.slice(3, 4).join("\n");
 
-      let expectedNotes = previousUnreleasedNotes.replace(
+      const expectedNotes = previousUnreleasedNotes.replace(
         unreleasedHeading,
         "# 1.2.0 - 2023-11-15",
       );
@@ -123,14 +123,14 @@ describe("ReleaseNotes script", function () {
     });
 
     it("inserts a new line after the heading, even if the unreleased heading didn't have one", function () {
-      let releaseNotes = new ReleaseNotes(NO_WHITESPACE);
-      let previousUnreleasedNotes = releaseNotes.unreleasedNotes();
+      const releaseNotes = new ReleaseNotes(NO_WHITESPACE);
+      const previousUnreleasedNotes = releaseNotes.unreleasedNotes();
 
       releaseNotes.insertNewVersionHeading("1.2.0", new Date("2023-11-15"));
 
-      let unreleasedHeading = NO_WHITESPACE_LINES.slice(2, 3).join("\n");
+      const unreleasedHeading = NO_WHITESPACE_LINES.slice(2, 3).join("\n");
 
-      let expectedNotes = previousUnreleasedNotes.replace(
+      const expectedNotes = previousUnreleasedNotes.replace(
         unreleasedHeading,
         "# 1.2.0 - 2023-11-15\n",
       );

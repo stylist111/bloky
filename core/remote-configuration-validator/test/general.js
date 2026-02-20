@@ -26,7 +26,7 @@ describe("General Schema Validation", function () {
   }
 
   it("marks a simple config as valid", async function () {
-    let data = {
+    const data = {
       schemaId: SCHEMA_ID,
       experiments: [],
     };

@@ -18,11 +18,10 @@
 import { readFile, writeFile } from "fs/promises";
 import path from "path";
 
-import { projectRootPath } from "./utils.js";
-import { executeShellCommand } from "./utils.js";
+import { projectRootPath, executeShellCommand } from "./utils.js";
 
 export function updateVersionInConfigContent(content, version) {
-  const regex = /(\"?version\"?:\s*)\"[^\"]+\"/;
+  const regex = /("?version"?:\s*)"[^"]+"/;
 
   if (!regex.test(content)) {
     throw new Error("Could not find version field in the config file");

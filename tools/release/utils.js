@@ -38,8 +38,8 @@ export async function executeShellCommand(command, cwd = projectRootPath()) {
 }
 
 export async function gitRepoHasChanges(cwd = projectRootPath()) {
-  let status = await executeShellCommand("git status --porcelain", cwd);
-  return status != "";
+  const status = await executeShellCommand("git status --porcelain", cwd);
+  return status !== "";
 }
 
 export async function checkIfGitRefExists(ref) {

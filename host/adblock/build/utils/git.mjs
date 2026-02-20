@@ -29,7 +29,7 @@ export async function execFile(...args) {
 }
 
 export async function getBuildnum(revision = "HEAD") {
-  let until = await execFile("git", ["log", "--pretty=%ct", "-n1", revision]);
+  const until = await execFile("git", ["log", "--pretty=%ct", "-n1", revision]);
 
   const buildNumberString = await execFile("git", [
     "rev-list",
@@ -57,10 +57,10 @@ export async function lsFiles(directory) {
   return fileString.split(EOL);
 }
 
-if (import.meta.url == pathToFileURL(process.argv[1])) {
-  let parser = argparse.ArgumentParser();
+if (import.meta.url === pathToFileURL(process.argv[1]).toString()) {
+  const parser = argparse.ArgumentParser();
   parser.addArgument(["-r", "--revision"], { required: false, defaultValue: "HEAD" });
-  let args = parser.parseArgs();
+  const args = parser.parseArgs();
 
   (async () => {
     try {
