@@ -1,5 +1,7 @@
 # Unreleased
 
+- Updated snippets to 2.6.0
+
 ## Fixes
 
 - Fix a last file import of `adblockpluscore` that was using the NPM package
