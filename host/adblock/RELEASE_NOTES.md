@@ -1,5 +1,11 @@
 # Unreleased
 
+# 6.36.1 - 2026-02-24
+
+This release contains only minor updates and under-the-hood changes.
+
+- Updated snippets to 2.6.0
+
 # 6.36.0 - 2026-02-17
 
 - Restructured UserProfile API schema to product-specific format. Trial information now in `subscription` object, preferences in `preferences` object. API methods simplified to return product-specific data. (noissue)
