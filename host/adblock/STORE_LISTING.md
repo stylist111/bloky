@@ -47,17 +47,6 @@ _host/adblock/dist/release/adblock-firefox-n.n.n-mv2.xpi_. These builds
 are unsigned. They can be submitted as-is or if unpacked,
 loaded in development mode for testing.
 
-## Development environment
-
-For testing purposes, create an unpacked development environment with the following command:
-
-    npm run build -- --scope=adblock -- firefox 2
-
-This will create a _host/adblock/devenv/firefox-mv2_ directory. You can load
-it as an unpacked extension under _about:debugging_ in Firefox. After making
-changes to the source code re-run the command to update the development
-environment, and reload the extension in the browser.
-
 ## Third Party Libraries in AdBlock:
 
 DomPurify (version 2.2.6)
