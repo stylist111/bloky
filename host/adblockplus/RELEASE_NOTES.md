@@ -4,7 +4,7 @@
 
 This release contains only minor updates and under-the-hood changes.
 
-- Updated snippets to 2.5.0
+- Updated snippets to 2.6.0
 - Cookies Premium filter list is now automatically enabled for users with an active trial when activating Premium. (EMP-63)
 
 # 4.35.0 - 2026-02-17
