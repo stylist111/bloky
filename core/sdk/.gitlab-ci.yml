@@ -509,23 +509,3 @@ perf:save-baseline:v3:chromium:
     PARAMS: 3 chromium --saveBaseline
   rules:
     - if: $SAVE_BASELINE == "true"
-
-# Notifications
-notify_events_schema_change:
-  stage: build
-  image: alpine:latest
-  cache: []
-  needs: []
-  before_script:
-    - apk add --no-cache curl
-  script:
-    - 'curl -X POST -H "Content-type: application/json" --data "{\"text\":\"events.js has been updated on main by ${GITLAB_USER_NAME} - ${CI_PIPELINE_URL}\"}" $SLACK_WEBHOOK_EVENTS_SCHEMA'
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-      when: never
-    - if: $CI_COMMIT_BRANCH == "main"
-      changes:
-        paths:
-          - core/sdk/events.js
-      when: on_success
-    - when: never
