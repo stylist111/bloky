@@ -106,39 +106,46 @@ async function isAnySubscriptionActive(urls: Set<string>): Promise<boolean> {
  * if any was detected, as well when notification data change.
  */
 export async function setUninstallURL(): Promise<void> {
+  await Prefs.untilLoaded;
+  const isOptedOut = Prefs.get("data_collection_opt_out");
+
   const search = [];
   const params = Object.create(info);
 
-  params.corrupted = isDataCorrupted() ? "1" : "0";
-  params.experimentsRevision = await ewe.remoteConfig.getRevisionId();
-  params.experimentsVariants = await ewe.experiments.getEncodedExperiments();
-  params.cohortAssignments = await ewe.cohorts.getEncodedCohorts();
-  params.firstVersion = ewe.reporting.getFirstVersion();
+  if (!isOptedOut) {
+    params.corrupted = isDataCorrupted() ? "1" : "0";
+    params.experimentsRevision = await ewe.remoteConfig.getRevisionId();
+    params.experimentsVariants = await ewe.experiments.getEncodedExperiments();
+    params.cohortAssignments = await ewe.cohorts.getEncodedCohorts();
+    params.firstVersion = ewe.reporting.getFirstVersion();
 
-  const notificationDownloadCount = await ewe.notifications.getDownloadCount();
-  if (notificationDownloadCount < 5) {
-    params.notificationDownloadCount = notificationDownloadCount;
-  } else if (notificationDownloadCount < 8) {
-    params.notificationDownloadCount = "5-7";
-  } else if (notificationDownloadCount < 30) {
-    params.notificationDownloadCount = "8-29";
-  } else if (notificationDownloadCount < 90) {
-    params.notificationDownloadCount = "30-89";
-  } else if (notificationDownloadCount < 180) {
-    params.notificationDownloadCount = "90-179";
-  } else {
-    params.notificationDownloadCount = "180+";
+    const notificationDownloadCount =
+      await ewe.notifications.getDownloadCount();
+    if (notificationDownloadCount < 5) {
+      params.notificationDownloadCount = notificationDownloadCount;
+    } else if (notificationDownloadCount < 8) {
+      params.notificationDownloadCount = "5-7";
+    } else if (notificationDownloadCount < 30) {
+      params.notificationDownloadCount = "8-29";
+    } else if (notificationDownloadCount < 90) {
+      params.notificationDownloadCount = "30-89";
+    } else if (notificationDownloadCount < 180) {
+      params.notificationDownloadCount = "90-179";
+    } else {
+      params.notificationDownloadCount = "180+";
+    }
+
+    const aaSubscriptions = new Set([ewe.subscriptions.ACCEPTABLE_ADS_URL]);
+    const adsSubscriptions = getAdsSubscriptions();
+    const isAcceptableAdsActive =
+      await isAnySubscriptionActive(aaSubscriptions);
+    const isAdBlockingActive = await isAnySubscriptionActive(adsSubscriptions);
+    params.subscriptions =
+      (Number(isAcceptableAdsActive) << 1) | Number(isAdBlockingActive);
+    const premiumState = await getPremiumState();
+    params.premiumStatus = premiumState.isActive ? 1 : 0;
+    params.webAllowlistingFilterCount = await getWebAllowlistingFilterCount();
   }
-
-  const aaSubscriptions = new Set([ewe.subscriptions.ACCEPTABLE_ADS_URL]);
-  const adsSubscriptions = getAdsSubscriptions();
-  const isAcceptableAdsActive = await isAnySubscriptionActive(aaSubscriptions);
-  const isAdBlockingActive = await isAnySubscriptionActive(adsSubscriptions);
-  params.subscriptions =
-    (Number(isAcceptableAdsActive) << 1) | Number(isAdBlockingActive);
-  const premiumState = await getPremiumState();
-  params.premiumStatus = premiumState.isActive ? 1 : 0;
-  params.webAllowlistingFilterCount = await getWebAllowlistingFilterCount();
 
   for (const [abbreviation, key] of abbreviations) {
     const value = params[key];
@@ -181,6 +188,7 @@ export function start(): void {
     await setUninstallURL();
   });
   ewe.subscriptions.onRemoved.addListener(setUninstallURL);
+  Prefs.on("data_collection_opt_out", setUninstallURL);
 
   void setUninstallURL();
 }

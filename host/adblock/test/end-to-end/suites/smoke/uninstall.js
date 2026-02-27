@@ -25,28 +25,46 @@ import { uninstallUrl } from "../../utils/urls.js";
 
 export default () => {
   it("uninstalls the extension", async function () {
-    const expectedParams = {
-      av: extension.version,
-      bc: expect.any(Number),
-      lt: expect.any(Number),
-      t: expect.any(Number),
-      wafc: "0", // always 0 as we don't do that anymore
-      aa: expect.stringMatching(/(u|0|1|2)/),
-      ps: expect.stringMatching(/(0|1)/),
-      er: expect.stringMatching(/^([a-zA-Z0-9+/,_=]{8}|null)$/), // experiments revision ID. Example: ietbCO3H
-      ev: expect.stringMatching(/^[a-zA-Z0-9+/]+=*/), // experiments variants. Example: AQ%3D%3
-      ca: expect.stringMatching(/^[a-zA-Z0-9+/]+=*/), // cohort assignments. Example: AQ%3D%3
-      rcid: expect.stringMatching(/^[a-f0-9-]{36}$/), // rotating client ID (UUID v4)
-    };
+    let expectedParams;
+
+    if (browserDetails.browserName === "firefox") {
+      expectedParams = {
+        av: extension.version,
+        rcid: expect.stringMatching(/^[a-f0-9-]{36}$/), // single-use rotating client ID (UUID v4)
+      };
+    } else {
+      expectedParams = {
+        av: extension.version,
+        bc: expect.any(Number),
+        lt: expect.any(Number),
+        t: expect.any(Number),
+        wafc: "0", // always 0 as we don't do that anymore
+        aa: expect.stringMatching(/(u|0|1|2)/),
+        ps: expect.stringMatching(/(0|1)/),
+        er: expect.stringMatching(/^([a-zA-Z0-9+/,_=]{8}|null)$/), // experiments revision ID. Example: ietbCO3H
+        ev: expect.stringMatching(/^[a-zA-Z0-9+/]+=*/), // experiments variants. Example: AQ%3D%3
+        ca: expect.stringMatching(/^[a-zA-Z0-9+/]+=*/), // cohort assignments. Example: AQ%3D%3
+        rcid: expect.stringMatching(/^[a-f0-9-]{36}$/), // rotating client ID (UUID v4)
+      };
+    }
 
     await uninstallExtension(initOptionsGeneralTab);
     const { url } = await findUrl(uninstallUrl);
 
     const params = new URLSearchParams(new URL(url).search);
     const actualParams = Object.fromEntries(params);
-    actualParams.bc = parseInt(actualParams.bc, 10);
-    actualParams.lt = parseInt(actualParams.lt, 10);
-    actualParams.t = parseInt(actualParams.t, 10);
+
+    if (typeof actualParams.bc !== "undefined") {
+      actualParams.bc = parseInt(actualParams.bc, 10);
+    }
+
+    if (typeof actualParams.lt !== "undefined") {
+      actualParams.lt = parseInt(actualParams.lt, 10);
+    }
+
+    if (typeof actualParams.t !== "undefined") {
+      actualParams.t = parseInt(actualParams.t, 10);
+    }
 
     expect(actualParams).toEqual(expectedParams);
   });

@@ -56,18 +56,25 @@ export async function checkInstallUninstallUrl({ url, appVersion, uninstall }) {
 
     base = {
       ...base,
-      c: "0", // corrupted - should be 0
-      s: expect.stringMatching(/(0|1|2|3)/), // default subscriptions enabled
-      wafc: "0", // always 0 as we don't do that anymore
       link: "uninstalled",
-      lang: "en-US",
-      ndc: "0",
-      ps: expect.stringMatching(/(0|1)/), // premium subscription
-      er: expect.stringMatching(/^([a-zA-Z0-9+/,_=]{8}|null)$/), // experiments revision ID. Example: ietbCO3H
-      ev: expect.stringMatching(/^[a-zA-Z0-9+/]+=*/), // experiments variants. Example: AQ%3D%3
-      ca: expect.stringMatching(/^[a-zA-Z0-9+/]+=*/), // cohort assignments. Example: AQ%3D%3
-      fv: expect.stringMatching(new RegExp(`(0|${todaysDate})`)) // filter version. Example: 20241216
+      lang: "en-US"
     };
+
+    // Firefox uses are opted-out of user data gathering.
+    if (browserName !== "firefox") {
+      base = {
+        ...base,
+        c: "0", // corrupted - should be 0
+        s: expect.stringMatching(/(0|1|2|3)/), // default subscriptions enabled
+        wafc: "0", // always 0 as we don't do that anymore
+        ndc: "0",
+        ps: expect.stringMatching(/(0|1)/), // premium subscription
+        er: expect.stringMatching(/^([a-zA-Z0-9+/,_=]{8}|null)$/), // experiments revision ID. Example: ietbCO3H
+        ev: expect.stringMatching(/^[a-zA-Z0-9+/]+=*/), // experiments variants. Example: AQ%3D%3
+        ca: expect.stringMatching(/^[a-zA-Z0-9+/]+=*/), // cohort assignments. Example: AQ%3D%3
+        fv: expect.stringMatching(new RegExp(`(0|${todaysDate})`)) // filter version. Example: 20241216
+      };
+    }
   }
 
   const expectedParams = {

@@ -1,5 +1,8 @@
 # Unreleased
 
+- Fixed additional parameters being set on the uninstall URL when the users is
+  opted out of data collection.
+
 # 4.35.1 - 2026-02-24
 
 This release contains only minor updates and under-the-hood changes.

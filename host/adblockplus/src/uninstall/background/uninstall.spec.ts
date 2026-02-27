@@ -44,22 +44,44 @@ const mockParams = new Map<string, string>([
   ["s", "0"],
   ["wafc", "0"]
 ]);
+const parametersIncludedIfOptedOut = [
+  "locale",
+  "an",
+  "ap",
+  "apv",
+  "av",
+  "p",
+  "pv"
+];
+
 const mockUrl = "https://www.example.com/uninstall?locale=en";
 
-function createExpectedUninstallUrl(overrides: Record<string, string>): string {
+function createExpectedUninstallUrl(
+  overrides: Record<string, string>,
+  isOptedOut: boolean = false
+): string {
   const url = new URL(mockUrl);
 
   const params = new URLSearchParams();
+
   for (const [name, defaultValue] of mockParams) {
-    params.set(name, overrides[name] ?? defaultValue);
+    const include = !isOptedOut || parametersIncludedIfOptedOut.includes(name);
+    if (include) {
+      params.set(name, overrides[name] ?? defaultValue);
+    }
   }
+
   url.search = params.toString();
 
   return url.toString();
 }
 
 describe("uninstall", () => {
+  let mockIsOptedOut: boolean;
+
   beforeEach(() => {
+    mockIsOptedOut = false;
+
     jest.resetModules();
     (global as any).browser = {
       runtime: {
@@ -107,7 +129,14 @@ describe("uninstall", () => {
     jest.mock("../../../adblockpluschrome/lib/prefs.js", () => {
       return {
         Prefs: {
-          getDocLink: () => mockUrl
+          getDocLink: () => mockUrl,
+          get: (key: string) => {
+            if (key === "data_collection_opt_out") {
+              return mockIsOptedOut;
+            }
+          },
+          on: jest.fn(),
+          untilLoaded: Promise.resolve()
         }
       };
     });
@@ -140,6 +169,7 @@ describe("uninstall", () => {
   it("sets up all necessary listeners", async () => {
     const ewe = await import("@eyeo/webext-ad-filtering-solution");
     const { start } = await import("./uninstall");
+    const { Prefs } = await import("../../../adblockpluschrome/lib/prefs.js");
 
     start();
 
@@ -154,6 +184,8 @@ describe("uninstall", () => {
     expect(ewe.subscriptions.onAdded.addListener).toHaveBeenCalled();
     expect(ewe.subscriptions.onChanged.addListener).toHaveBeenCalled();
     expect(ewe.subscriptions.onRemoved.addListener).toHaveBeenCalled();
+
+    expect(Prefs.on).toHaveBeenCalled();
   });
 
   it("generates uninstall URL", async () => {
@@ -401,6 +433,16 @@ describe("uninstall", () => {
       ],
       [{ origin: "web" }, {}, { origin: "web" }, { origin: "web" }],
       "2"
+    );
+  });
+
+  it("does not set parameters if opted out of data collection", async () => {
+    const { setUninstallURL } = await import("./uninstall");
+
+    mockIsOptedOut = true;
+    await setUninstallURL();
+    expect(browser.runtime.setUninstallURL).toHaveBeenCalledWith(
+      createExpectedUninstallUrl({}, mockIsOptedOut)
     );
   });
 });

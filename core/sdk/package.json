@@ -47,7 +47,7 @@
     "pako": "^2.1.0",
     "semver": "7.7.2",
     "tar": "^6.1.10",
-    "uuid": "^9.0.0",
+    "uuid": "9.0.1",
     "yargs": "^17.5.1"
   },
   "peerDependencies": {
