@@ -1,5 +1,9 @@
 # Unreleased
 
+# 0.9.0
+
+- Implemented facts for freemium opd cohorts [EMP-40]
+
 # 0.8.0
 
 - Moved `button_label`, `lower_body`, `sub_title` and `upper_body` properties from `ipmCommands[i]` to new `content` property.
