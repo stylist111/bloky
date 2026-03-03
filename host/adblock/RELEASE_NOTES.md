@@ -1,5 +1,7 @@
 # Unreleased
 
+# 6.36.2 - 2026-03-03
+
 - Fixed additional parameters being set on the uninstall URL when the users is
   opted out of data collection.
 
