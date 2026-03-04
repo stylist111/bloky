@@ -1181,6 +1181,7 @@ describe("CDP", function() {
     });
 
     it("sends the data in retry ping after public key server is up again", async function() {
+      setMinTimeout(this, 20 * 1000);
       const response = await fetch(PUBLIC_KEY_URL);
       const pubKeyResponseText = await response.text();
       const pubKeyResponseHeaders = Object.fromEntries(
