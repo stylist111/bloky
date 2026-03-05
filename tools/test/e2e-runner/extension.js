@@ -314,7 +314,12 @@ export async function reloadExtension(
           await initOptionsFn(getOptionsHandle(), { timeout: 10000, waitForDefaultState });
           return true;
         } catch (e) {
-          await driver.navigate().refresh();
+          try {
+            await driver.navigate().refresh();
+          } catch {
+            // If refresh also fails (e.g., session died during extension reload),
+            // let the wait loop retry — the extension may need more time to restart
+          }
         }
       },
       30000,
