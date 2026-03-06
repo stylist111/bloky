@@ -17,8 +17,13 @@
 
 import browser from "webextension-polyfill";
 import {PersistentState} from "../persistence.js";
+import {hasAcceptableAdsEnabled} from "../subscriptions.js";
+import * as info from "../info.js";
+import initializer from "../initializer.js";
+import {getTrialDaysLeft, getPreferences} from "../account/storage.js";
 
 const UNKNOWN_COUNTRY_CODE = "unknown";
+let _getFacts = async() => ({});
 export const remoteConfigState = new PersistentState("ewe:remote_config", browser.storage.local);
 
 /**
@@ -127,5 +132,82 @@ export async function getSyncStatus() {
     errors: state.errors || [],
     lastDownloaded: state.lastDownloaded,
     lastNetworkError: state.lastNetworkError
+  };
+}
+
+/**
+ * Set the function to get host-provided facts for condition evaluation.
+ *
+ * @param {Function} getFacts - A function that returns a Promise resolving to
+ *    an object containing facts.
+ * @ignore
+ */
+export function setFactsGetter(getFacts) {
+  if (typeof getFacts !== "function") {
+    throw new TypeError("getFacts must be a function");
+  }
+  _getFacts = getFacts;
+}
+
+/**
+ * Get the default facts for condition evaluation. These are
+ * facts derived from the extension's own state.
+ *
+ * @returns {Promise<Facts>}
+ */
+async function getDefaultFacts() {
+  await initializer.start();
+  const {installType} = await browser.management.getSelf();
+  let {short_name: extName} = browser.runtime.getManifest();
+  extName = extName ? extName.replace(/ /g, "").toLowerCase() : extName;
+  const [aaEnabled, trialDaysLeft, preferences] = await Promise.all([
+    hasAcceptableAdsEnabled(),
+    getTrialDaysLeft(),
+    getPreferences()
+  ]);
+
+  return {
+    extName,
+    extVersion: info.addonVersion,
+    browserName: info.application,
+    browserLanguage: browser.i18n.getUILanguage(),
+    aaEnabled,
+    installType,
+    isTrial: trialDaysLeft > 0,
+    trialDaysLeft,
+    marketingConsent: !!preferences.marketingEmail
+  };
+}
+
+/**
+ * Get all facts for condition evaluation: country code,
+ * default facts, and host-provided facts combined.
+ *
+ * @typedef {Object} Facts
+ * @property {string} extName - The extension name.
+ * @property {string} extVersion - The extension version (semver).
+ * @property {string} countryCode - The 2-letter country code of the user.
+ * @property {string} browserName - The browser name.
+ * @property {string} browserLanguage - The UI language.
+ * @property {boolean} aaEnabled - Whether Acceptable Ads is enabled.
+ * @property {management.ExtensionInstallType} installType - The installation
+ *    type of the extension e.g. "normal", "sideload", "development", etc.
+ * @property {boolean} isTrial - Whether the user is on a trial.
+ * @property {number} trialDaysLeft - Days left in trial.
+ * @property {boolean} marketingConsent - Whether the user consented to
+ *    marketing emails.
+ *
+ * @returns {Promise<Facts>}
+ */
+export async function getAllFacts() {
+  const [countryCode, defaultFacts, hostFacts] = await Promise.all([
+    getCountryCode(),
+    getDefaultFacts(),
+    _getFacts()
+  ]);
+  return {
+    countryCode,
+    ...defaultFacts,
+    ...hostFacts
   };
 }

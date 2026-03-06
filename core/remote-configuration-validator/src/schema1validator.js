@@ -27,7 +27,7 @@ const validOperatorsByFact = {
   browserName: ["equal", "notEqual", "in", "notIn"],
   browserLanguage: ["equal", "notEqual", "in", "notIn"],
   countryCode: ["equal", "notEqual", "in", "notIn"],
-  partnerExtensionDected: ["equal", "notEqual"],
+  partnerExtensionDetected: ["equal", "notEqual"],
   extName: ["equal", "notEqual"],
   extVersion: [
     "equal",
@@ -113,6 +113,21 @@ function getErrorsForExperiments(data) {
     const encounteredVariantIds = new Set();
     const variantRanges = [];
 
+    // Validate experiment conditions if they exist
+    if (experiment.conditions) {
+      const { conditions } = experiment;
+      if (conditions.all) {
+        isValidCondition(conditions.all, errors);
+      }
+      if (conditions.any) {
+        isValidCondition(conditions.any, errors);
+      }
+      if (conditions.not) {
+        isValidCondition([conditions.not], errors);
+      }
+    }
+
+    // Validate experiment variants
     experiment.variants.forEach((variant, variantIndex) => {
       const variantRef = `${experimentRef}.variants[${variantIndex}]`;
 

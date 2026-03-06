@@ -61,7 +61,7 @@ import * as cohorts from "./cohorts/index.js";
 import * as experiments from "./experiments.js";
 import * as sentry from "./sentry.js";
 import {hashString} from "../all/hashing.js";
-import {remoteConfigState} from "./remote-config/storage.js";
+import {remoteConfigState, setFactsGetter} from "./remote-config/storage.js";
 import {MILLIS_IN_DAY, MILLIS_IN_HOUR} from "../../adblockpluscore/lib/time.js";
 
 const serverLoggerInstance = new telemetry.default.ServerLogger("test_ewe_background");
@@ -427,7 +427,7 @@ export default {
   // cohorts
   resetCohortsData: cohorts.reset,
   mockFacts(facts) {
-    cohorts.setFactsGetter(() => facts);
+    setFactsGetter(() => facts);
   },
 
   // experiments

@@ -28,6 +28,9 @@ export const Experiment = {
     enabled: {
       type: "boolean",
     },
+    conditions: {
+      $ref: "#/definitions/Conditions",
+    },
     variants: {
       type: "array",
       items: {

@@ -17,15 +17,18 @@
 
 import browser from "webextension-polyfill";
 import {v4 as uuidv4} from "uuid";
+import {Engine} from "json-rules-engine";
+import {JSONPath} from "jsonpath-plus";
 
 import {EventEmitter} from "#adblockpluscore/lib/events.js";
 import {PersistentState} from "./persistence.js";
 import {EventDispatcher} from "./types.js";
 import sentry from "./sentry.js";
-import {warn} from "./debugging.js";
+import {debug, warn} from "./debugging.js";
 import {base64Encode} from "./set-operations.js";
 import {modHashString} from "../all/hashing.js";
-import {getExperimentsConfig} from "./remote-config/storage.js";
+import {getExperimentsConfig, getAllFacts} from "./remote-config/storage.js";
+import * as operators from "./cohorts/operators.js";
 
 let emitter = new EventEmitter();
 let experimentData = new PersistentState("ewe:split_experiments", browser.storage.local);
@@ -75,17 +78,94 @@ async function getSeed() {
   return state.seed;
 }
 
-async function assignVariants(experiments) {
+/**
+ * Checks whether all facts and operators used in the conditions are
+ * supported by this version of the extension. This prevents older
+ * extensions from breaking when the server config introduces new
+ * facts or operators.
+ *
+ * @param {Object} conditions - The conditions object (with all/any/not).
+ * @param {Facts} facts - The current facts.
+ * @param {Engine} engine - The rules engine (to check registered operators).
+ * @returns {boolean} true if all facts and operators are supported.
+ */
+function areConditionsSupported(conditions, facts, engine) {
+  const factsUsed = JSONPath({path: "$..fact", json: conditions});
+  const operatorsUsed = JSONPath({path: "$..operator", json: conditions});
+
+  const allFactsSupported = factsUsed.every(factName =>
+    typeof facts[factName] !== "undefined");
+  const allOperatorsSupported = operatorsUsed.every(opName =>
+    engine.operators.get(opName) !== null);
+
+  return allFactsSupported && allOperatorsSupported;
+}
+
+async function assignVariants(experiments, facts) {
   const seed = await getSeed();
   const flags = {};
   const assignments = {};
+
+  // Split experiments into unconditional and conditional
+  const unconditional = [];
+  const conditional = [];
 
   for (const experiment of experiments) {
     if (experiment.enabled === false) {
       continue;
     }
+    if (experiment.conditions) {
+      conditional.push(experiment);
+    }
+    else {
+      unconditional.push(experiment);
+    }
+  }
 
-    const mod = await modHashString(`${seed}:${experiment.experimentId}`);
+  // Evaluate conditions using a single engine (if needed)
+  const matchedExperimentIds = new Set();
+  if (conditional.length > 0) {
+    const engine = new Engine([], {allowUndefinedFacts: true});
+
+    for (const [name, fn] of Object.entries(operators)) {
+      engine.addOperator(name, fn);
+    }
+
+    for (const experiment of conditional) {
+      if (!areConditionsSupported(
+        experiment.conditions, facts, engine
+      )) {
+        warn("[experiments] Skipping experiment " +
+          `'${experiment.experimentId}' due to ` +
+          "unsupported fact(s) or operator(s)");
+        continue;
+      }
+
+      engine.addRule({
+        conditions: experiment.conditions,
+        event: {type: experiment.experimentId}
+      });
+    }
+
+    const result = await engine.run(facts);
+    for (const event of result.events) {
+      matchedExperimentIds.add(event.type);
+    }
+  }
+
+  // Assign variants for unconditional +
+  // conditional experiments that matched
+  const toAssign = [
+    ...unconditional,
+    ...conditional.filter(
+      e => matchedExperimentIds.has(e.experimentId)
+    )
+  ];
+
+  for (const experiment of toAssign) {
+    const mod = await modHashString(
+      `${seed}:${experiment.experimentId}`
+    );
 
     for (const variant of experiment.variants) {
       if (mod >= variant.mods[0] && mod < variant.mods[1]) {
@@ -153,10 +233,24 @@ export async function sync() {
   try {
     const config = await getExperimentsConfig();
     const state = await experimentData.getStateLoaded();
-    const {flags, assignments} = await assignVariants(config);
+    const facts = await getAllFacts();
+    const {flags, assignments} = await assignVariants(config, facts);
+
+    const flagsChanged = JSON.stringify(flags) !==
+      JSON.stringify(state.flags);
+    const assignmentsChanged = JSON.stringify(assignments) !==
+      JSON.stringify(state.assignments);
+
+    // If neither flags nor assignments have changed, we can skip saving and
+    // emitting the update event. This is an optimization to avoid unnecessary
+    // work when things haven't changed.
+    if (!flagsChanged && !assignmentsChanged) {
+      debug("[experiments] No changes in experiment assignments or flags");
+      return;
+    }
+
     state.flags = flags;
     state.assignments = assignments;
-
     await experimentData.save();
 
     emitter.emit("updated");

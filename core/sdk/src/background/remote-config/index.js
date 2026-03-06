@@ -32,7 +32,8 @@ import {
   getLoggingConfig,
   getRevisionId,
   getSyncStatus,
-  remoteConfigState
+  remoteConfigState,
+  setFactsGetter
 } from "./storage.js";
 import {hashString} from "../../all/hashing.js";
 
@@ -170,12 +171,15 @@ async function sync() {
  * @returns {Promise<void>}
  */
 async function syncSubmodules(cacheFresh = false) {
-  // synchronize cohorts
+  // Modules that require synchronization even if the cache is fresh,
+  // because they depend on facts that might have changed from the last sync.
   await cohorts.sync();
+  await experiments.sync();
 
-  // synchronize experiments
+  // Below are modules that don't have conditions to re-evaluate, so we only
+  // synchronize them if the cache is not fresh
+  // (i.e. the config data has changed since the last sync)
   if (!cacheFresh) {
-    await experiments.sync();
     await serverLogConfig.sync();
   }
 }
@@ -209,9 +213,9 @@ export async function start({
 
   configUrl = url;
 
-  // update the facts getter for cohorts
+  // update the facts getter (used by both cohorts and experiments)
   if (typeof getFacts === "function") {
-    cohorts.setFactsGetter(getFacts);
+    setFactsGetter(getFacts);
   }
 
   // initialize the server log config when starting the service worker

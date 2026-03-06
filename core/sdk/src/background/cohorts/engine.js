@@ -22,86 +22,25 @@ import {EventEmitter} from "#adblockpluscore/lib/events.js";
 import {MILLIS_IN_HOUR} from "#adblockpluscore/lib/time.js";
 import {PersistentState} from "../persistence.js";
 import {EventDispatcher} from "../types.js";
-import {hasAcceptableAdsEnabled} from "../subscriptions.js";
-import * as info from "../info.js";
 import {debug, warn} from "../debugging.js";
-import initializer from "../initializer.js";
 import * as operators from "./operators.js";
 import sentry from "../sentry.js";
 import {ServerLogger} from "../telemetry/server-logger.js";
 import {base64Encode} from "../set-operations.js";
-import {getCohortsConfig, getCountryCode} from "../remote-config/storage.js";
-import {getTrialDaysLeft, getPreferences} from "../account/storage.js";
+import {
+  getCohortsConfig,
+  getAllFacts
+} from "../remote-config/storage.js";
 
 const emitter = new EventEmitter();
 const cohortsData = new PersistentState("ewe:cohorts", browser.storage.local);
 const logger = new ServerLogger("cohorts");
-
-let _getFacts = async() => ({});
 
 const onChanged = new EventDispatcher(dispatch => {
   emitter.on("updated", async() => {
     dispatch(await _getActiveCohortIds());
   });
 });
-
-/**
- * Set the function to get facts for the cohorts engine.
- *
- * @param {Function} getFacts - A function that returns a Promise resolving to
- *    an object containing facts.
- * @ignore
- */
-export function setFactsGetter(getFacts) {
-  if (typeof getFacts !== "function") {
-    throw new TypeError("getFacts must be a function");
-  }
-  _getFacts = getFacts;
-}
-
-/**
- * Get the default facts for the cohorts engine. This will be combined with
- * the facts passed from the extension (via setFactsGetter).
- *
- * @typedef {Object} Facts
- * @property {string} extName - The name of the extension.
- * @property {string} extVersion - The version of the extension (semver).
- * @property {string} browserName - The name of the browser.
- * @property {string} countryCode - The 2-letter country code of the user.
- * @property {string} browserLanguage - The UI language of the browser.
- * @property {boolean} aaEnabled - Whether Acceptable Ads is enabled.
- * @property {management.ExtensionInstallType} installType - The installation
- *    type of the extension.
- * @property {boolean} isTrial - Whether the user is on a trial.
- * @property {number} trialDaysLeft - The number of days left in the trial.
- * @property {boolean} marketingConsent - Whether the user has consented to
- *    marketing emails.
- *
- * @returns {Promise<Facts>}
- */
-async function getDefaultFacts() {
-  await initializer.start();
-  const {installType} = await browser.management.getSelf();
-  let {short_name: extName} = browser.runtime.getManifest();
-  extName = extName ? extName.replace(/ /g, "").toLowerCase() : extName;
-  const [aaEnabled, trialDaysLeft, preferences] = await Promise.all([
-    hasAcceptableAdsEnabled(),
-    getTrialDaysLeft(),
-    getPreferences()
-  ]);
-
-  return {
-    extName,
-    extVersion: info.addonVersion,
-    browserName: info.application,
-    browserLanguage: browser.i18n.getUILanguage(),
-    aaEnabled,
-    installType,
-    isTrial: trialDaysLeft > 0,
-    trialDaysLeft,
-    marketingConsent: !!preferences.marketingEmail
-  };
-}
 
 /**
  * Sends a snapshot of the current facts to the event system. This will be used
@@ -158,7 +97,6 @@ async function updateIfChanged(newCohortIds) {
 export async function sync() {
   try {
     const config = await getCohortsConfig();
-    const countryCode = await getCountryCode();
     const state = await cohortsData.getStateLoaded();
 
     if (!config.length) {
@@ -169,11 +107,7 @@ export async function sync() {
     }
 
     // get the facts with the latest values
-    const newFacts = {
-      countryCode,
-      ...(await getDefaultFacts()),
-      ...(await _getFacts())
-    };
+    const newFacts = await getAllFacts();
 
     // No changes in facts, no need to re-evaluate cohorts
     if (JSON.stringify(newFacts) === JSON.stringify(state.facts)) {

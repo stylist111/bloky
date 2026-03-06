@@ -439,6 +439,280 @@ describe("Split Experiments", function() {
       await userShouldBeInVariant(LOWER_VARIANT_ID, LOWER_VARIANT_FLAG);
     });
 
+    describe("Conditional experiments", function() {
+      const defaultMockFacts = {
+        hasPremium: false,
+        installDate: new Date("2023-01-01T00:00:00Z").getTime(),
+        blockedCount: 0,
+        isTrial: false,
+        trialDaysLeft: null,
+        marketingConsent: false
+      };
+
+      const premiumConditions = {
+        all: [
+          {
+            fact: "hasPremium",
+            operator: "equal",
+            value: true
+          }
+        ]
+      };
+
+      function conditionalExperimentConfig(conditions, flagValue) {
+        return [{
+          experimentId: EXPERIMENT_ID,
+          conditions,
+          variants: [{
+            variantId: "variant1",
+            flags: {[EXPERIMENT_FLAG]: flagValue},
+            mods: [0, 1000]
+          }]
+        }];
+      }
+
+      it("skips experiment when conditions don't match", async function() {
+        const config = conditionalExperimentConfig(
+          premiumConditions, "premium-feature"
+        );
+        await EWE.testing.mockRemoteConfig({
+          ...DEFAULT_CONFIG,
+          experiments: config
+        });
+
+        await EWE.testing.mockFacts({...defaultMockFacts, hasPremium: false});
+        await EWE.experiments.sync();
+        expect(await EWE.experiments.getFlag(EXPERIMENT_FLAG)).toBeNull();
+        expect(await EWE.experiments.getAssignments()).toEqual({});
+      });
+
+      it("assigns user when conditions match", async function() {
+        const config = conditionalExperimentConfig(
+          premiumConditions, "premium-feature"
+        );
+        await EWE.testing.mockRemoteConfig({
+          ...DEFAULT_CONFIG,
+          experiments: config
+        });
+
+        await EWE.testing.mockFacts({...defaultMockFacts, hasPremium: true});
+        await EWE.experiments.sync();
+        expect(await EWE.experiments.getFlag(EXPERIMENT_FLAG))
+          .toBe("premium-feature");
+        expect(await EWE.experiments.getAssignments()).toEqual({
+          [EXPERIMENT_ID]: "variant1"
+        });
+      });
+
+      it("reassigns experiment and fires onChanged when facts change", async function() {
+        await clearTestEvents("experiments.updated");
+
+        const config = conditionalExperimentConfig(
+          premiumConditions, "premium-feature"
+        );
+        await EWE.testing.mockRemoteConfig({
+          ...DEFAULT_CONFIG,
+          experiments: config
+        });
+
+        // Non-premium user — not assigned
+        await EWE.testing.mockFacts({...defaultMockFacts, hasPremium: false});
+        await EWE.experiments.sync();
+        expect(await EWE.experiments.getFlag(EXPERIMENT_FLAG)).toBeNull();
+        expect(await EWE.experiments.getAssignments()).toEqual({});
+
+        await clearTestEvents("experiments.updated");
+
+        // Facts change: user becomes premium — should be assigned
+        await EWE.testing.mockFacts({...defaultMockFacts, hasPremium: true});
+        await EWE.experiments.sync();
+        expect(await EWE.experiments.getFlag(EXPERIMENT_FLAG))
+          .toBe("premium-feature");
+        expect(await EWE.experiments.getAssignments()).toEqual({
+          [EXPERIMENT_ID]: "variant1"
+        });
+
+        await expectTestEvents("experiments.updated", [[
+          [
+            {
+              id: EXPERIMENT_ID,
+              variants: [
+                {
+                  assigned: true,
+                  id: "variant1"
+                }
+              ]
+            }
+          ]
+        ]]);
+      });
+
+      it("evaluates time-based conditions like withinLast", async function() {
+        const newUserConditions = {
+          all: [{
+            fact: "installDate",
+            operator: "withinLast",
+            value: 14 * 24 * 60 * 60 * 1000 // 14 days
+          }]
+        };
+        const config = conditionalExperimentConfig(
+          newUserConditions, "new-user-feature"
+        );
+        await EWE.testing.mockRemoteConfig({
+          ...DEFAULT_CONFIG,
+          experiments: config
+        });
+
+        // New user (7 days ago) — assigned
+        await EWE.testing.mockFacts({
+          ...defaultMockFacts,
+          installDate: Date.now() - (7 * 24 * 60 * 60 * 1000)
+        });
+        await EWE.experiments.sync();
+        expect(await EWE.experiments.getFlag(EXPERIMENT_FLAG))
+          .toBe("new-user-feature");
+
+        // Old user (30 days ago) — not assigned
+        await EWE.testing.mockFacts({
+          ...defaultMockFacts,
+          installDate: Date.now() - (30 * 24 * 60 * 60 * 1000)
+        });
+        await EWE.experiments.sync();
+        expect(await EWE.experiments.getFlag(EXPERIMENT_FLAG)).toBeNull();
+      });
+
+      it("skips experiment with an unknown fact", async function() {
+        await EWE.testing.mockFacts(defaultMockFacts);
+
+        const config = [
+          {
+            experimentId: "unknown-fact-exp",
+            conditions: {
+              all: [
+                {
+                  fact: "nonExistentFact",
+                  operator: "equal",
+                  value: true
+                }
+              ]
+            },
+            variants: [{
+              variantId: "variant1",
+              flags: {unknown_fact_flag: "should-not-appear"},
+              mods: [0, 1000]
+            }]
+          },
+          {
+            experimentId: "unconditional-exp",
+            variants: [{
+              variantId: "uncond-variant",
+              flags: {uncond_flag: "always"},
+              mods: [0, 1000]
+            }]
+          }
+        ];
+
+        await EWE.testing.mockRemoteConfig({
+          ...DEFAULT_CONFIG,
+          experiments: config
+        });
+        await EWE.experiments.sync();
+
+        // Experiment with unknown fact should be skipped
+        expect(await EWE.experiments.getFlag("unknown_fact_flag")).toBeNull();
+        // Unconditional experiment should still be assigned
+        expect(await EWE.experiments.getFlag("uncond_flag")).toBe("always");
+        expect(await EWE.experiments.getAssignments()).toEqual({
+          "unconditional-exp": "uncond-variant"
+        });
+      });
+
+      it("skips experiment with an unknown operator", async function() {
+        await EWE.testing.mockFacts(defaultMockFacts);
+
+        const config = [
+          {
+            experimentId: "unknown-op-exp",
+            conditions: {
+              all: [
+                {
+                  fact: "hasPremium",
+                  operator: "nonExistentOperator",
+                  value: true
+                }
+              ]
+            },
+            variants: [{
+              variantId: "variant1",
+              flags: {unknown_op_flag: "should-not-appear"},
+              mods: [0, 1000]
+            }]
+          },
+          {
+            experimentId: "unconditional-exp",
+            variants: [{
+              variantId: "uncond-variant",
+              flags: {uncond_flag: "always"},
+              mods: [0, 1000]
+            }]
+          }
+        ];
+
+        await EWE.testing.mockRemoteConfig({
+          ...DEFAULT_CONFIG,
+          experiments: config
+        });
+        await EWE.experiments.sync();
+
+        // Experiment with unknown operator should be skipped
+        expect(await EWE.experiments.getFlag("unknown_op_flag")).toBeNull();
+        // Unconditional experiment should still be assigned
+        expect(await EWE.experiments.getFlag("uncond_flag")).toBe("always");
+        expect(await EWE.experiments.getAssignments()).toEqual({
+          "unconditional-exp": "uncond-variant"
+        });
+      });
+
+      it("handles mix of conditional and unconditional experiments", async function() {
+        await EWE.testing.mockFacts(defaultMockFacts);
+
+        const config = [
+          {
+            experimentId: "conditional-exp",
+            conditions: premiumConditions,
+            variants: [{
+              variantId: "cond-variant",
+              flags: {cond_flag: "conditional"},
+              mods: [0, 1000]
+            }]
+          },
+          {
+            experimentId: "unconditional-exp",
+            variants: [{
+              variantId: "uncond-variant",
+              flags: {uncond_flag: "unconditional"},
+              mods: [0, 1000]
+            }]
+          }
+        ];
+
+        await EWE.testing.mockRemoteConfig({
+          ...DEFAULT_CONFIG,
+          experiments: config
+        });
+        await EWE.experiments.sync();
+
+        // Conditional experiment should NOT be assigned (not premium)
+        expect(await EWE.experiments.getFlag("cond_flag")).toBeNull();
+        // Unconditional experiment should be assigned
+        expect(await EWE.experiments.getFlag("uncond_flag"))
+          .toBe("unconditional");
+        expect(await EWE.experiments.getAssignments()).toEqual({
+          "unconditional-exp": "uncond-variant"
+        });
+      });
+    });
+
     describe("Experiments encoding", function() {
       function getExperimentsConfig(assignedVariants) {
         const config = [
@@ -601,6 +875,21 @@ describe("Split Experiments", function() {
 
       await EWE.experiments.overrideFlag(EXPERIMENT_FLAG, "potato");
       await expectTestEvents("experiments.updated", [[[]]]);
+    });
+
+    it("does not fire an onChanged event when sync produces the same results", async function() {
+      const config = oneVariantConfig("test");
+      await EWE.testing.mockRemoteConfig({
+        ...DEFAULT_CONFIG,
+        experiments: config
+      });
+      await EWE.experiments.sync();
+
+      await clearTestEvents("experiments.updated");
+
+      // Sync again with same config — should not fire
+      await EWE.experiments.sync();
+      await expectTestEvents("experiments.updated", []);
     });
   });
 
