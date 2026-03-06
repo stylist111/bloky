@@ -102,6 +102,7 @@ export default () => {
         `There were issues with some of the default subscriptions:\n${err.message}\nUpdating them as a workaround`
       );
       await driver.navigate().refresh();
+      await initOptionsAdvancedTab(getOptionsHandle());
       await clickOnDisplayedElement("#update");
       // sleeping to let the button click be effective
       await driver.sleep(500);
