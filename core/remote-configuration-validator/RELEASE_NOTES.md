@@ -1,5 +1,9 @@
 # Unreleased
 
+# 0.10.0
+
+- Added support for conditional experiments, allowing a `conditions` field on experiments similar to cohorts syntax [noissue]
+
 # 0.9.0
 
 - Implemented facts for freemium opd cohorts [EMP-40]
