@@ -186,12 +186,13 @@ describe("Telemetry - Server Logging", function() {
 
       await expectConsoleLogs({
         expected: [
-          [module1, "debug", "test_event_no_data"],
           [module1, "warn", "test_event_no_data"],
           [module2, "debug", "test_event_no_data"],
           [module2, "warn", "test_event_no_data"]
         ],
-        unexpected: []
+        unexpected: [
+          [module1, "debug", "test_event_no_data"]
+        ]
       });
     });
 

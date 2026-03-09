@@ -152,15 +152,15 @@ export async function hasPendingLogs() {
 export let onLogQueued = new EventDispatcher(dispatch => {});
 
 function loggingEnabled(module, level, loggingConfig) {
-  let possibleLevels = [
-    loggingConfig.global,
-    loggingConfig.byModule ? loggingConfig.byModule[module] : null
-  ];
+  const moduleLevel = loggingConfig.byModule ?
+    loggingConfig.byModule[module] :
+    null;
+  if (moduleLevel) {
+    return level >= moduleLevel;
+  }
 
-  const result = possibleLevels.some(
-    configLevel => configLevel && level >= configLevel
-  );
-  return result;
+  const globalLevel = loggingConfig.global;
+  return globalLevel && level >= globalLevel;
 }
 
 async function consoleLog(logTime, module, level, event, data, ipmId) {
