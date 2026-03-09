@@ -23,8 +23,6 @@ if (typeof EWE == "undefined" && typeof importScripts != "undefined") {
   importScripts("ewe-api.js", "custom-mv3-subscriptions.js");
 }
 
-let callbackIdCounter = 0;
-let callbacks = new Map();
 let lastError;
 
 // This is state that deliberately is not backed by storage so we can
@@ -71,10 +69,6 @@ async function runOperations(operations) {
 
       case "stringifyMap":
         stack.push(JSON.stringify(Object.fromEntries(stack.pop())));
-        break;
-
-      case "pushCallback":
-        stack.push(callbacks.get(arg));
         break;
 
       case "getLastError":
@@ -270,7 +264,7 @@ function handleTestMessage(request, sender, sendResponse) {
     }
 
     case "ewe-test:error": {
-      Promise.reject("test error");
+      Promise.reject(new Error("test error"));
       sendResponse({result: {}});
       return true;
     }

@@ -58,7 +58,9 @@ function fetchIndex(indexUrl) {
       else {
         response.setEncoding("utf8");
         let rawData = "";
-        response.on("data", chunk => rawData += chunk);
+        response.on("data", chunk => {
+          rawData += chunk;
+        });
         response.on("end", () => {
           try {
             let parsedData = JSON.parse(rawData);

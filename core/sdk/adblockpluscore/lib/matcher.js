@@ -368,14 +368,11 @@ exports.Matcher = class Matcher {
         this._filterDomainMapsByKeyword.delete(keyword);
       }
       else if (filtersByDomain.size == 1) {
-        for (let [lastDomain, map] of filtersByDomain.entries()) {
-          // Reduce Map { "foo" => Map { "" => filter } } to
-          // Map { "foo" => filter }
-          if (lastDomain == "" && !(map instanceof FilterMap)) {
-            this._filterDomainMapsByKeyword.set(keyword, map);
-          }
-
-          break;
+        const [[lastDomain, map]] = filtersByDomain.entries();
+        // Reduce Map { "foo" => Map { "" => filter } } to
+        // Map { "foo" => filter }
+        if (lastDomain == "" && !(map instanceof FilterMap)) {
+          this._filterDomainMapsByKeyword.set(keyword, map);
         }
       }
     }

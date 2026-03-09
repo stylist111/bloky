@@ -20,13 +20,13 @@ import expect from "expect";
 import pako from "pako";
 import {MILLIS_IN_MINUTE, MILLIS_IN_HOUR, MILLIS_IN_SECOND} from "#adblockpluscore/lib/time.js";
 
-import {EWE, addFilter, getTestEvents} from "./messaging.js";
+import {EWE, addFilter, getTestEvents, setPremiumStatus, resetPremiumStatus}
+  from "./messaging.js";
 import {CROSS_DOMAIN, TEST_ADMIN_PAGES_URL, TEST_PAGES_URL, TEST_PAGES_DOMAIN,
         CROSS_DOMAIN_URL} from "@eyeo/test-utils/sdk-urls";
 import {isChromiumBased, isFirefox, Page, setMinTimeout, executeScript, isMV3,
         waitForAssertion, clearRequestLogs, getRequestLogs, setEndpointResponse,
         clearEndpointResponse, waitForSubscriptionToBeSynchronized} from "./utils.js";
-import {setPremiumStatus, resetPremiumStatus} from "./messaging.js";
 import {base64ToArrayBuffer} from "#adblockpluscore/lib/rsa.js";
 import {limitPromiseDuration} from "./polling.js";
 import {subAcceptableAdsLive} from "./fixtures/subscriptions.js";

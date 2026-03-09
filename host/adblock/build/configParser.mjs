@@ -80,7 +80,9 @@ function mergeMapping(base, override = {}) {
 }
 
 function mergeConfig(target) {
-  if (parsedConfigs[target]) return parsedConfigs[target];
+  if (parsedConfigs[target]) {
+    return parsedConfigs[target];
+  }
 
   const config = configs[target];
 

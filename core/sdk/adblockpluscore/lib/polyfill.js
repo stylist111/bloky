@@ -17,6 +17,8 @@
 
 "use strict";
 
+/* eslint-disable no-extend-native */
+
 // Promise.prototype.finally is not supported in Firefox < 58
 if (!Promise.prototype.finally) {
   Promise.prototype.finally = function(fn) {

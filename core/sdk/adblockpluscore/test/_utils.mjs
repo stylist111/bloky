@@ -56,7 +56,7 @@ export function spawnScript(name, ...args) {
         resolve();
       }
       else {
-        reject();
+        reject(new Error(`Non-zero exit code: ${code}`));
       }
     });
   });

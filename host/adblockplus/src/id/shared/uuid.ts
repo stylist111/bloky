@@ -34,7 +34,9 @@ function generateUUID(): string {
   for (let i = 0; i < uuid.length; i += 1) {
     const component = uuid[i].toString(16);
     uuidChunks.push(`000${component}`.slice(-4));
-    if (i >= 1 && i <= 4) uuidChunks.push("-");
+    if (i >= 1 && i <= 4) {
+      uuidChunks.push("-");
+    }
   }
   return uuidChunks.join("");
 }

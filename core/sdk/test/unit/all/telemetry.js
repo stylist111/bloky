@@ -231,7 +231,7 @@ describe("Debug Telemetry", function() {
 
         let propertyIds = Object.keys(data.properties);
         if (propertyIds.length == 0) {
-          validationErrors.push("${context}.properties specifies no properties");
+          validationErrors.push(`${context}.properties specifies no properties`);
         }
 
         for (let propertyId of propertyIds) {

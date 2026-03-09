@@ -85,7 +85,9 @@ export function setElementLinks(
     // for backwards compatibility
     // https://issues.adblockplus.org/ticket/6743
     const link = remainingLinks.next();
-    if (link.done ?? false) continue;
+    if (link.done ?? false) {
+      continue;
+    }
 
     assignAction([link.value], actions[i]);
   }
@@ -127,7 +129,9 @@ export function setElementText(
       }
 
       processString(after, currentElement);
-    } else currentElement.appendChild(document.createTextNode(str));
+    } else {
+      currentElement.appendChild(document.createTextNode(str));
+    }
   }
 
   while (element.lastChild !== null) {

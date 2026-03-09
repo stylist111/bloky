@@ -28,7 +28,9 @@ export function start(): void {
    * @event "app.close"
    */
   port.on("app.close", (message, sender) => {
-    if (sender.tab?.id) void browser.tabs.remove(sender.tab.id);
+    if (sender.tab?.id) {
+      void browser.tabs.remove(sender.tab.id);
+    }
   });
 
   // Restrict app.close message to trusted origins only

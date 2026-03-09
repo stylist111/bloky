@@ -68,8 +68,9 @@ if (args.partial === "true") {
   // the CLI help text.
   //
   // for a partial build, remove tasks.buildUI from task list
-  for (const taskList of [buildTasks, devenvTasks])
+  for (const taskList of [buildTasks, devenvTasks]) {
     taskList.splice(taskList.indexOf(tasks.buildUI), 1);
+  }
 }
 
 async function getBuildSteps(options) {
@@ -107,8 +108,9 @@ async function getBuildSteps(options) {
 }
 
 async function getBuildOptions(isDevenv, isSource) {
-  if (!isSource && !args.target)
+  if (!isSource && !args.target) {
     argumentParser.error('Argument "-t/--target" is required');
+  }
 
   const opts = {
     isDevenv,
@@ -127,13 +129,18 @@ async function getBuildOptions(isDevenv, isSource) {
     opts.sourceMapType = "source-map";
   }
 
-  if (args.config)
+  if (args.config) {
     configParser.setConfig(await import(url.pathToFileURL(args.config)));
-  else configParser.setConfig(config);
+  } else {
+    configParser.setConfig(config);
+  }
 
   let configName;
-  if (isSource) configName = "base";
-  else configName = opts.target;
+  if (isSource) {
+    configName = "base";
+  } else {
+    configName = opts.target;
+  }
 
   opts.webpackInfo = configParser.getSection(configName, "webpack");
   opts.mapping = configParser.getSection(configName, "mapping");

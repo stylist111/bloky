@@ -19,7 +19,9 @@ import { Transform } from "stream";
 import path from "path";
 
 function changePath(destination, custom = {}) {
-  if (custom.cwd) destination = path.join(custom.cwd, destination);
+  if (custom.cwd) {
+    destination = path.join(custom.cwd, destination);
+  }
 
   const transform = new Transform({ objectMode: true });
 

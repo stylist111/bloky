@@ -37,7 +37,9 @@ export function mainPublicApi({ requestEvent, responseEvent, integrations }) {
    * @returns {boolean} True if they are equal, false otherwise
    */
   function areSetsEqual(setA, setB) {
-    if (setA.size !== setB.size) return false;
+    if (setA.size !== setB.size) {
+      return false;
+    }
 
     setA.forEach((elem) => {
       if (!setB.has(elem)) {

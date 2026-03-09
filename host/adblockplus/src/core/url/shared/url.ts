@@ -140,16 +140,22 @@ function isValidHostname(hostname: string): boolean {
     hostname = hostname.substring(0, hostname.length - 1);
   }
 
-  if (hostname.length > 253) return false;
+  if (hostname.length > 253) {
+    return false;
+  }
 
   const labels = hostname.split(".");
 
   for (const label of labels) {
-    if (!/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/i.test(label)) return false;
+    if (!/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/i.test(label)) {
+      return false;
+    }
   }
 
   // Based on https://tools.ietf.org/html/rfc3696#section-2
-  if (!/\D/.test(labels[labels.length - 1])) return false;
+  if (!/\D/.test(labels[labels.length - 1])) {
+    return false;
+  }
 
   return true;
 }

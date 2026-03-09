@@ -15,6 +15,8 @@
  * along with EWE.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* eslint-disable no-extend-native */
+
 export function shimStorage(CACHED_FILTERS_CONFIG_KEY) {
   // =================== Secured copies of native functions ====================
   // These are captured before page scripts run.

@@ -63,8 +63,9 @@ function mergeTranslations(options = {}) {
                 description: content[field.name].description,
               };
 
-              if (locale === options.defaults.locale)
+              if (locale === options.defaults.locale) {
                 mandatoryInfo[field.name] = content[field.name];
+              }
             }
           });
         }
@@ -82,7 +83,9 @@ function mergeTranslations(options = {}) {
     Object.keys(merged).forEach((localeName) => {
       let mergedFile = merged[localeName];
 
-      if (options.defaults) mergedFile = { ...mandatoryInfo, ...mergedFile };
+      if (options.defaults) {
+        mergedFile = { ...mandatoryInfo, ...mergedFile };
+      }
 
       this.emit(
         "data",

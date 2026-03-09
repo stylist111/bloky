@@ -20,6 +20,7 @@ import expect from "expect";
 expect.extend({
   anyNullable(received, type) {
     return {
+      // eslint-disable-next-line valid-typeof
       pass: received == null || typeof received == type
     };
   },

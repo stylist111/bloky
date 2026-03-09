@@ -13,28 +13,28 @@ module.exports = {
     es2021: true,
     webextensions: true,
   },
+  plugins: ["eslint-plugin-html", "mocha"],
   parserOptions: {
     ecmaVersion: "latest",
     sourceType: "module",
   },
+  extends: ["love", "prettier", "prettier/prettier"],
+  rules: {
+    "@typescript-eslint/strict-boolean-expressions": "off",
+    curly: ["error", "all"],
+  },
   overrides: [
     {
       files: ["*.ts", "*.tsx"],
-      extends: ["love", "prettier", "prettier/prettier"],
       parser: "@typescript-eslint/parser",
-      rules: {
-        "@typescript-eslint/strict-boolean-expressions": "off",
-        curly: "error",
-      },
     },
     {
       // JavaScript-specific rules
       files: ["*.js", "*.cjs", "*.mjs", "*.html"],
-      extends: ["love", "prettier", "prettier/prettier"],
       parserOptions: { project: false },
       rules: {
         // The "love" config enables many typescript rules, but these error out
-        // without a project.
+        // without a typescript project.
         ...Object.fromEntries(
           Object.keys(typescriptEslint.rules).map((rule) => [
             `@typescript-eslint/${rule}`,

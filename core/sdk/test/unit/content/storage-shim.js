@@ -129,6 +129,7 @@ describe("localStorage shim", function() {
   });
 
   afterEach(function() {
+    // eslint-disable-next-line no-extend-native
     Object.defineProperty(
       Function.prototype, "toString", savedFunctionToString
     );

@@ -3,25 +3,17 @@
 module.exports = {
   extends: [
     "eslint-config-eyeo",
-    "plugin:mocha/recommended"
+    "plugin:mocha/recommended",
+    "prettier",
+    "prettier/prettier"
   ],
-  root: true,
   env: {
     es2021: true
   },
-  plugins: [
-    "eslint-plugin-html",
-    "mocha"
-  ],
   globals: {
     webpackDotenvPlugin: "readonly"
   },
   rules: {
-    "brace-style": ["error", "stroustrup"],
-    "curly": [
-      "error",
-      "all"
-    ],
     "max-len": [
       "error",
       {
@@ -32,7 +24,6 @@ module.exports = {
         ignorePattern: "abp:subscribe"
       }
     ],
-    "space-before-blocks": ["error", {functions: "always"}],
     "id-denylist": [
       "error",
       "blacklist", "blackList",
@@ -44,7 +35,14 @@ module.exports = {
     "mocha/prefer-arrow-callback": "error",
     "mocha/max-top-level-suites": "off",
     "mocha/no-setup-in-describe": "off",
-    "mocha/no-top-level-hooks": "error"
+    "mocha/no-top-level-hooks": "error",
+    "prefer-const": "off",
+    "eqeqeq": "off",
+    "promise/param-names": "off",
+    "no-void": "off",
+    "no-new": "off",
+    "import/no-named-default": "off",
+    "import/no-webpack-loader-syntax": "off",
   },
   parserOptions: {
     sourceType: "module",

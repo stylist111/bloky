@@ -76,7 +76,9 @@ describe("Recommendations", function() {
   function checkImmutability(recommendation, source) {
     // No properties can be set.
     for (let name of ["type", "languages", "title", "url", "homepage"]) {
-      assert.throws(() => recommendation[name] = null);
+      assert.throws(() => {
+        recommendation[name] = null;
+      });
     }
 
     // Modifying mutable values (arrays) has an effect on neither the

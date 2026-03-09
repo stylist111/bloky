@@ -304,7 +304,9 @@ export function start(parameters: StartInfo): void {
     async (details): Promise<void> => {
       const { tabId, error } = details;
       const eventName = await getEventName(details, true);
-      if (!eventName) return;
+      if (!eventName) {
+        return;
+      }
 
       const [aaListsStatus, filters] = await Promise.all([
         getAAListsStatus(),
@@ -324,7 +326,9 @@ export function start(parameters: StartInfo): void {
     async (details): Promise<void> => {
       const { tabId } = details;
       const eventName = await getEventName(details, false);
-      if (!eventName) return;
+      if (!eventName) {
+        return;
+      }
 
       const [aaListsStatus, filters] = await Promise.all([
         getAAListsStatus(),

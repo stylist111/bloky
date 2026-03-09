@@ -70,7 +70,9 @@ export async function onAllowlisting(
   domain: string,
   options: ewe.AllowlistingOptions
 ): Promise<void> {
-  if ((await premium.getPremiumState()).isActive) return;
+  if ((await premium.getPremiumState()).isActive) {
+    return;
+  }
 
   await allowlist({
     hostname: getAllowlistingDomain(domain),

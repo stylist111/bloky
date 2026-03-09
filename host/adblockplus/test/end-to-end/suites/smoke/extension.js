@@ -154,7 +154,9 @@ export default () => {
             await waitForNotDisplayed(trashBtn, { timeout });
             return true;
           } catch (err) {
-            if (err.name !== "TimeoutError") throw err;
+            if (err.name !== "TimeoutError") {
+              throw err;
+            }
           }
         },
         5000,

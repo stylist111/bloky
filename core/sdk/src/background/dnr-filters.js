@@ -17,7 +17,8 @@
 
 import browser from "webextension-polyfill";
 
-import {getFilterText} from "./subscriptions-utils.js";
+import {getFilterText, getSubscriptionRulesetMap}
+  from "./subscriptions-utils.js";
 import {Filter, InvalidFilter, URLFilter, isActiveFilter}
   from "#adblockpluscore/lib/filterClasses.js";
 import {SpecialSubscription, DiffUpdatableSubscription}
@@ -28,7 +29,6 @@ import {filterEngine} from "./core.js";
 import {createConverter} from "#adblockpluscore/lib/dnr/index.js";
 import {RULE_PRIORITY_SET} from "#adblockpluscore/lib/dnr/rules.js";
 import {DnrMapper} from "#adblockpluscore/lib/dnr/mapper.js";
-import {getSubscriptionRulesetMap} from "./subscriptions-utils.js";
 import subscriptions from "./subscriptions.js";
 import {onChangedFilter, disableFilter, ERROR_FILTER_NOT_FOUND,
         ERROR_TOO_MANY_FILTERS} from "./filters.js";
@@ -451,7 +451,7 @@ async function _dnrDiffSubscriptionUpdate(subscription, updates) {
 
       let disableRuleIds = removed.flatMap(text => {
         let ids = filterTextToRuleIdsMapper.get(text);
-        return ids ? ids : [];
+        return ids || [];
       });
       // Empty array cause exceptions. Make it `undefined`.
       if (disableRuleIds.length == 0) {

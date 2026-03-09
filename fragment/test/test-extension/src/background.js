@@ -45,7 +45,9 @@ import apiHandlersFactory from "./api/index.js";
 
     for (const part of parts) {
       handler = handler?.[part];
-      if (!handler) break;
+      if (!handler) {
+        break;
+      }
     }
 
     if (typeof handler === "function") {

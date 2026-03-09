@@ -762,7 +762,7 @@ export async function shouldBeLoaded(pageUrl, resource, errorMessage) {
       }
       catch (e) {}
       return false;
-    }, 4000, errorMessage ? errorMessage : `${resource} on ${pageUrl} was not loaded`
+    }, 4000, errorMessage || `${resource} on ${pageUrl} was not loaded`
   );
 }
 

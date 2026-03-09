@@ -606,7 +606,10 @@ describe("Synchronizer", function() {
 
         runner.registerHandler(
           "/subscription",
-          metadata => (requestCount++, [200, "[Adblock]\nmalicious-filter"])
+          metadata => {
+            requestCount++;
+            return [200, "[Adblock]\nmalicious-filter"];
+          }
         );
 
         await runner.runScheduledTasks(1);
@@ -627,15 +630,18 @@ describe("Synchronizer", function() {
 
         runner.registerHandler(
           "/subscription",
-          metadata => (
-            requestCount++,
-            [301, "", {Location: "http://malicious.example.com/redirected"}]
-          )
+          metadata => {
+            requestCount++;
+            return [301, "", {Location: "http://malicious.example.com/redirected"}];
+          }
         );
 
         runner.registerHandler(
           "/redirected",
-          metadata => (requestCount++, [200, "[Adblock]\nmalicious-filter"])
+          metadata => {
+            requestCount++;
+            return [200, "[Adblock]\nmalicious-filter"];
+          }
         );
 
         await runner.runScheduledTasks(1);
@@ -656,22 +662,26 @@ describe("Synchronizer", function() {
 
         runner.registerHandler(
           "/subscription",
-          metadata =>
-            (requestCount++, [301, "",
-                              {Location: "http://redirect.example.com/"}])
+          metadata => {
+            requestCount++;
+            return [301, "", {Location: "http://redirect.example.com/"}];
+          }
         );
 
         runner.registerHandler(
           "/",
-          metadata => (
-            requestCount++,
-            [301, "", {Location: "https://example.com/subscription-1.0"}]
-          )
+          metadata => {
+            requestCount++;
+            return [301, "", {Location: "https://example.com/subscription-1.0"}];
+          }
         );
 
         runner.registerHandler(
           "/subscription-1.0",
-          metadata => (requestCount++, [200, "[Adblock]\ngood-filter"])
+          metadata => {
+            requestCount++;
+            return [200, "[Adblock]\ngood-filter"];
+          }
         );
 
         await runner.runScheduledTasks(1);
@@ -689,7 +699,10 @@ describe("Synchronizer", function() {
 
         runner.registerHandler(
           "/subscription",
-          metadata => (requestCount++, [200, "[Adblock]\ntest-filter"])
+          metadata => {
+            requestCount++;
+            return [200, "[Adblock]\ntest-filter"];
+          }
         );
 
         await runner.runScheduledTasks(1);

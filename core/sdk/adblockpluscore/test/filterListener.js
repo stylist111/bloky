@@ -103,7 +103,7 @@ describe("Filter listener", function() {
     );
 
     const {FilterEngine} = sandboxedRequire(LIB_FOLDER + "/filterEngine");
-    filterEngine = new FilterEngine(),
+    filterEngine = new FilterEngine();
     (
       {elemHideExceptions, elemHide, defaultMatcher} = filterEngine
     );

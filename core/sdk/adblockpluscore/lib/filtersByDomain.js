@@ -193,14 +193,11 @@ exports.FiltersByDomain = class FiltersByDomain {
           fromMap.delete(domain);
         }
         else if (map.size == 1) {
-          for (let [lastFilter, include] of map.entries()) {
-            // Reduce Map { "example.com" => Map { filter => true } } to
-            // Map { "example.com" => filter }
-            if (include) {
-              fromMap.set(domain, lastFilter);
-            }
-
-            break;
+          const [[lastFilter, include]] = map.entries();
+          // Reduce Map { "example.com" => Map { filter => true } } to
+          // Map { "example.com" => filter }
+          if (include) {
+            fromMap.set(domain, lastFilter);
           }
         }
       }

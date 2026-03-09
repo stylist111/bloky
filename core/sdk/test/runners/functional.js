@@ -64,9 +64,9 @@ function parseArguments() {
     parser.option("browserBinary", {
       description: "Custom Browser Binary Path."
     });
-    parser.option("grep"), {
+    parser.option("grep", {
       array: true
-    };
+    });
     parser.option("verbose", {
       alias: "v",
       type: "boolean",
@@ -190,7 +190,7 @@ async function addManifestRulesets(rulesets) {
       ruleset => ({
         id: ruleset.id,
         enabled: ruleset.enabled ?? false,
-        path: ruleset.path ?? "rulesets/${ruleset.id}"
+        path: ruleset.path ?? `rulesets/${ruleset.id}`
       })
     ));
     await fs.promises.writeFile(manifestFile, JSON.stringify(content, null, 2));

@@ -392,12 +392,12 @@ describe("Matcher", function() {
     // Map { "example" => { text: "||example.com^$~third-party,image" } }
     matcher.add(Filter.fromText("||example.com^$~third-party,image"));
 
-    assert.equal(matcher._blocking._filterDomainMapsByKeyword.size, 1);
+    {
+      assert.equal(matcher._blocking._filterDomainMapsByKeyword.size, 1);
 
-    for (let [key, value] of matcher._blocking._filterDomainMapsByKeyword) {
+      const [[key, value]] = matcher._blocking._filterDomainMapsByKeyword;
       assert.equal(key, "example");
       assert.deepEqual(value, Filter.fromText("||example.com^$~third-party,image"));
-      break;
     }
 
     assert.ok(!!matcher.match(parseURL("https://example.com/example/ad.jpg"),
@@ -414,9 +414,10 @@ describe("Matcher", function() {
     // }
     matcher.add(Filter.fromText("/example/*$~third-party,image"));
 
-    assert.equal(matcher._blocking._filterDomainMapsByKeyword.size, 1);
+    {
+      assert.equal(matcher._blocking._filterDomainMapsByKeyword.size, 1);
 
-    for (let [key, value] of matcher._blocking._filterDomainMapsByKeyword) {
+      const [[key, value]] = matcher._blocking._filterDomainMapsByKeyword;
       assert.equal(key, "example");
       assert.equal(value.size, 1);
 
@@ -424,8 +425,6 @@ describe("Matcher", function() {
       assert.equal(map.size, 2);
       assert.equal(map.get(Filter.fromText("||example.com^$~third-party,image")), true);
       assert.equal(map.get(Filter.fromText("/example/*$~third-party,image")), true);
-
-      break;
     }
 
     assert.ok(!!matcher.match(parseURL("https://example.com/example/ad.jpg"),
@@ -435,12 +434,12 @@ describe("Matcher", function() {
     // Map { "example" => { text: "/example/*$~third-party,image" } }
     matcher.remove(Filter.fromText("||example.com^$~third-party,image"));
 
-    assert.equal(matcher._blocking._filterDomainMapsByKeyword.size, 1);
+    {
+      assert.equal(matcher._blocking._filterDomainMapsByKeyword.size, 1);
 
-    for (let [key, value] of matcher._blocking._filterDomainMapsByKeyword) {
+      const [[key, value]] = matcher._blocking._filterDomainMapsByKeyword;
       assert.equal(key, "example");
       assert.deepEqual(value, Filter.fromText("/example/*$~third-party,image"));
-      break;
     }
 
     assert.ok(!!matcher.match(parseURL("https://example.com/example/ad.jpg"),

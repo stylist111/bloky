@@ -27,12 +27,11 @@ import {clearKnownFiltersCache} from "#adblockpluscore/lib/filterClasses.js";
 
 import {filterEngine} from "./core.js";
 import {Prefs, awaitSavingComplete, init as initPrefs} from "./prefs.js";
-import {default as debugging} from "./debugging.js";
-import {info, log, debug, warn, error, trace} from "./debugging.js";
-import {default as subs, saveMigrationError as saveSubscriptionMigrationError}
-  from "./subscriptions.js";
+import {default as debugging, info, log, debug, warn, error, trace}
+  from "./debugging.js";
+import {default as subs, saveMigrationError as saveSubscriptionMigrationError,
+       getDefaultSubscriptions, isSynchronizing} from "./subscriptions.js";
 import {clearSkipInitRulesets, checkAndInitSubscriptions} from "./index.js";
-import {getDefaultSubscriptions, isSynchronizing} from "./subscriptions.js";
 import {default as initializer} from "./initializer.js";
 import {setAddonInfo, addonBundledSubscriptionsPath, initializeDefaultAddonInfo}
   from "./info.js";

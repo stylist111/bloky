@@ -140,9 +140,9 @@ describe("DNR filters update [mv3-only]", function() {
 
     // We count the number of rules in the dynamicFilters and compare that.
     let dynamicFilterRuleCount = 0;
-    (await EWE.testing.getDynamicFilters()).forEach(
-      dynamicFilter => dynamicFilterRuleCount += dynamicFilter[1].ruleIds.length
-    );
+    (await EWE.testing.getDynamicFilters()).forEach(dynamicFilter => {
+      dynamicFilterRuleCount += dynamicFilter[1].ruleIds.length;
+    });
     expect(dynamicFilterRuleCount).toEqual(count);
   }
 

@@ -24,7 +24,6 @@ import {patchForSafari} from "./safari-polyfill.js";
 
 import {default as initializer} from "./initializer.js";
 import * as messageResponder from "./message-responder.js";
-import * as messageDeferrer from "./content-message-deferrer.js";
 import * as popupBlockerBackgroundPage from "./popup-blocker-background-page.js";
 import * as popupBlockerServiceWorker from "./popup-blocker-service-worker.js";
 import * as requestFilter from "./request-filter.js";
@@ -403,7 +402,7 @@ function startSubmodulesWithListeners(addonInfo) {
   // to register their events in the first turn of the event loop to
   // register their event listeners.
   messageResponder.start();
-  messageDeferrer.start();
+  contentMessageDeferrer.start();
   if (isRunningInServiceWorker()) {
     popupBlockerServiceWorker.start();
   }
