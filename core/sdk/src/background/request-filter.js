@@ -524,6 +524,11 @@ class AddHeaderFilterBase extends BaseFilter {
     }
     else {
       const frame = getFrameInfoFromWebrequestDetails(details);
+      // If we don't have frame info don't do anything
+      if (!frame) {
+        return;
+      }
+
       specificOnly = (frame.allowlisted & contentTypes.GENERICBLOCK) !== 0;
       docDomain = this.getDocDomain(details.type, frame.hostname);
       siteKey = frame.sitekey;

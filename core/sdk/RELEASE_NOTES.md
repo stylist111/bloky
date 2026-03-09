@@ -1,5 +1,10 @@
 # Unreleased
 
+## Fixes
+
+- Fixed a bug in the addheader filter where the frame structure is
+  not available.
+
 # 4.0.0 - 2026-03-02
 
 - Updated snippets to 2.6.0
