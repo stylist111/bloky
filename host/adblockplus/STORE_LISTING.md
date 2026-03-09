@@ -5,6 +5,11 @@ On Debian or Ubuntu: Run the following commands using Node 22.14.0 and npm 10.9.
 npm install
 npm run build:release -- --scope=adblockplus -- firefox 2
 
+This will create a build with a name in the form
+_host/adblockplus/dist/release/adblockplus-firefox-n.n.n-mv2.xpi_. These builds
+are unsigned. They can be submitted as-is or if unpacked, loaded in development
+mode for testing.
+
 ## Data Transmission Consent
 
 We have a user preference ("data_collection_opt_out"). This preference is used throughout Adblock Plus (including all of the telemetry modules) to disable the transmission of any data.
