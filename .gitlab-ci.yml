@@ -215,10 +215,10 @@ publish-remote-validation:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       changes:
         - core/remote-configuration-validator/package.json
-      when: on_success
+      when: always
     # Fallback to prevent unintended runs
     - when: never
-  needs: ["test", "sdk", "adblock", "adblockplus"]
+  needs: []
 
 ################################################################################
 # Notifications
