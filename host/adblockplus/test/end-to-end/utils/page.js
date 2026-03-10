@@ -662,7 +662,10 @@ async function checkLanguageFilterList(
         "Language filterlist not shown, reloading the page as a workaround"
       );
       await driver.navigate().refresh();
-      await getDisplayedElement(filterlist, { timeout, forceRefresh: false });
+      await getDisplayedElement(filterlist, {
+        timeout: 15000,
+        forceRefresh: false
+      });
     }
   } else {
     await waitForNotDisplayed(filterlist, { timeout });
