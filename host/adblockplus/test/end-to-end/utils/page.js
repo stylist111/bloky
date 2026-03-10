@@ -36,7 +36,10 @@ import {
   simulatePremiumActivation,
   simulateDowngradeToFreeUser
 } from "@eyeo/test-utils/account";
-import { getOptionsHandle } from "@eyeo/test-utils/extension";
+import {
+  getOptionsHandle,
+  callOptionsAPI as _callOptionsAPI
+} from "@eyeo/test-utils/extension";
 import { premiumFilterLists } from "./dataset.js";
 
 const optionsPageSleep = 2000;
@@ -868,62 +871,8 @@ export async function sendExtCommandInTrustedIframe(
   return responses;
 }
 
-export async function callUIExperimentsAPI(methodName, ...params) {
-  const currentHandle = await driver.getWindowHandle();
-  await initOptionsGeneralTab(getOptionsHandle());
-
-  // wait for the ewe module to be available
-  await driver.wait(
-    async () => {
-      const result = await driver.executeScript(() => {
-        return ewe;
-      });
-      return result;
-    },
-    5000,
-    "Timeout waiting for the ewe module to be available"
-  );
-
-  const experimentFlags = await driver.executeAsyncScript(
-    async (method, args, callback) => {
-      const result = await ewe?.experiments[method](...args);
-      callback(result);
-    },
-    methodName,
-    params
-  );
-
-  await driver.switchTo().window(currentHandle);
-  return experimentFlags;
-}
-
-export async function callUIAccountAPI(methodName, ...params) {
-  const currentHandle = await driver.getWindowHandle();
-  await initOptionsGeneralTab(getOptionsHandle());
-
-  // wait for the ewe module to be available
-  await driver.wait(
-    async () => {
-      const result = await driver.executeScript(() => {
-        return ewe;
-      });
-      return result;
-    },
-    5000,
-    "Timeout waiting for the ewe module to be available"
-  );
-
-  const accountData = await driver.executeAsyncScript(
-    async (method, args, callback) => {
-      const result = await ewe?.account[method](...args);
-      callback(result);
-    },
-    methodName,
-    params
-  );
-
-  await driver.switchTo().window(currentHandle);
-  return accountData;
+export function callOptionsAPI(apiPath, ...params) {
+  return _callOptionsAPI(initOptionsGeneralTab, apiPath, ...params);
 }
 
 export async function loadPageWithTrustedIframe(pageUrl, trustedIframeSrc) {

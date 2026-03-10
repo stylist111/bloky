@@ -30,15 +30,18 @@ import { Prefs } from "../../../adblock-betafish/alias/prefs";
 export async function getInjectionInfo(): Promise<InjectionInfo> {
   await Promise.all([Prefs.untilLoaded, License.ready()]);
 
-  const [isPremium, id, experimentFlags, isTrial] = await Promise.all([
+  const [isPremium, id, experimentFlags, isTrial, er, ev, ca] = await Promise.all([
     License.isActiveLicense(),
     getUserId(),
     ewe.experiments.getFlags(),
     ewe.account.isTrial(),
+    ewe.remoteConfig.getRevisionId(),
+    ewe.experiments.getEncodedExperiments(),
+    ewe.cohorts.getEncodedCohorts(),
   ]);
 
   const version = info.addonVersion;
   const blockCount = Prefs.get("blocked_total");
 
-  return { isPremium, isTrial, version, id, blockCount, experimentFlags };
+  return { isPremium, isTrial, version, id, blockCount, experimentFlags, er, ev, ca };
 }

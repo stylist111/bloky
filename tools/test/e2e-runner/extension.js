@@ -243,6 +243,23 @@ export async function verifyInjectedExtensionData(testUrl, dataAttribute, getAct
   const actualExtensionData = await getActualExtensionData();
 
   expect(parsedHtmlData).toMatchObject(actualExtensionData);
+
+  const commonFields = [
+    "id",
+    "isPremium",
+    "isTrial",
+    "version",
+    "blockCount",
+    "experimentFlags",
+    "er",
+    "ev",
+    "ca",
+  ];
+  for (const field of commonFields) {
+    expect(parsedHtmlData).toHaveProperty(field);
+  }
+
+  return parsedHtmlData;
 }
 
 export function setTimeoutForExtensionReload(mochaContext) {
@@ -717,6 +734,46 @@ export async function setIPMFragment(initOptionsFn, fragmentType) {
 
 export async function waitForIpmCooldown() {
   await driver.sleep(ipmCooldown);
+}
+
+/**
+ * Calls a method on the options page by traversing a dot-separated path on `window`.
+ *
+ * @param {Function} initOptionsFn - Function that initialises the options page, specific to each host
+ * @param {string} apiPath - Dot-separated path to the method, e.g. "ewe.experiments.getFlag"
+ * @param {...any} params - Arguments to pass to the method
+ * @returns {Promise<*>} The result of the method call
+ */
+export async function callOptionsAPI(initOptionsFn, apiPath, ...params) {
+  const parts = apiPath.split(".");
+  const rootName = parts[0];
+  const currentHandle = await driver.getWindowHandle();
+  await initOptionsFn(getOptionsHandle());
+
+  // wait for the module (e.g. "ewe") to be available on the window
+  await driver.wait(
+    async () => {
+      return driver.executeScript((name) => typeof window[name] !== "undefined", rootName);
+    },
+    5000,
+    `Timeout waiting for ${rootName} to be available on window`,
+  );
+
+  const data = await driver.executeAsyncScript(
+    async (pathParts, args, callback) => {
+      let obj = window;
+      for (const part of pathParts.slice(0, -1)) {
+        obj = obj[part];
+      }
+      const result = await obj[pathParts[pathParts.length - 1]](...args);
+      callback(result);
+    },
+    parts,
+    params,
+  );
+
+  await driver.switchTo().window(currentHandle);
+  return data;
 }
 
 export async function overrideLanguageForIpmContent(initOptionsFn, locale) {

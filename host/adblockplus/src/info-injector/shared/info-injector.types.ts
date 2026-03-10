@@ -47,4 +47,16 @@ export interface InjectionInfo {
    * All feature flags for the user, including overridden flags and their values
    */
   experimentFlags: Record<string, unknown>;
+  /**
+   * The revision ID from remote configuration
+   */
+  er: string | null;
+  /**
+   * The encoded experiments variants
+   */
+  ev: string;
+  /**
+   * The encoded cohort assignments
+   */
+  ca: string;
 }

@@ -14,18 +14,17 @@
  * You should have received a copy of the GNU General Public License
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
-/* global ewe */
-
+import { expect } from "expect";
 import { prepareExtensionHook } from "@eyeo/test-utils/hooks";
 import {
   blockAds,
+  sendExtMessage,
   verifyInjectedExtensionData
 } from "@eyeo/test-utils/extension";
 import {
   isPremiumActivated,
   getPopupBlockedAdsTotalCount,
-  callUIExperimentsAPI,
-  callUIAccountAPI
+  callOptionsAPI
 } from "../utils/page.js";
 
 export const testUrl = "https://adblockplus.org";
@@ -47,17 +46,30 @@ export async function getActualExtensionData() {
       .get("pref:installation_id")
       .then((data) => data["pref:installation_id"] || null);
   });
-  const isTrial = await callUIAccountAPI("isTrial");
-  const experimentFlags = await callUIExperimentsAPI("getFlags");
-  return { id, isPremium, isTrial, version, blockCount, experimentFlags };
+  const isTrial = await callOptionsAPI("ewe.account.isTrial");
+  const experimentFlags = await callOptionsAPI("ewe.experiments.getFlags");
+  const info = await sendExtMessage(null, {
+    type: "info.getInjectionInfo"
+  });
+
+  return {
+    ...info,
+    id,
+    isPremium,
+    isTrial,
+    version,
+    blockCount,
+    experimentFlags
+  };
 }
 
 export default async () => {
-  it(`verifies injected data on adblockplus.org matches AdBlock extension data`, async () => {
-    await verifyInjectedExtensionData(
+  it(`verifies injected data on adblockplus.org matches ABP extension data`, async () => {
+    const injectedData = await verifyInjectedExtensionData(
       testUrl,
       dataAttribute,
       getActualExtensionData
     );
+    expect(injectedData).toHaveProperty("premiumId");
   });
 };

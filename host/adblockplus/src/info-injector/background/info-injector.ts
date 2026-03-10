@@ -30,13 +30,22 @@ import { getPremiumState } from "../../premium/background";
  */
 async function handleGetInjectionInfo(): Promise<InjectionInfo> {
   await Prefs.untilLoaded;
-  const { isActive: isPremium } = await getPremiumState();
-  const isTrial = await ewe.account.isTrial();
+
+  const [{ isActive: isPremium }, isTrial, id, experimentFlags, er, ev, ca] =
+    await Promise.all([
+      getPremiumState(),
+      ewe.account.isTrial(),
+      getInstallationId(),
+      ewe.experiments.getFlags(),
+      ewe.remoteConfig.getRevisionId(),
+      ewe.experiments.getEncodedExperiments(),
+      ewe.cohorts.getEncodedCohorts()
+    ]);
+
   const version = info.addonVersion;
-  const id = await getInstallationId();
   const premiumId = Prefs.get("premium_user_id");
   const blockCount = Prefs.get("blocked_total");
-  const experimentFlags = await ewe.experiments.getFlags();
+
   return {
     isPremium,
     isTrial,
@@ -44,7 +53,10 @@ async function handleGetInjectionInfo(): Promise<InjectionInfo> {
     id,
     premiumId,
     blockCount,
-    experimentFlags
+    experimentFlags,
+    er,
+    ev,
+    ca
   };
 }
 

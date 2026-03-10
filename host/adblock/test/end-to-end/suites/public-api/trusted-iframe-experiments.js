@@ -19,7 +19,7 @@ import { expect } from "expect";
 import {
   sendExtCommandInTrustedIframe,
   loadPageWithTrustedIframe,
-  callUIExperimentsAPI,
+  callOptionsAPI,
 } from "../../utils/page.js";
 
 export const BT_PARTNER_URL = "https://www.accuweather.com/";
@@ -50,14 +50,14 @@ export default () => {
       trustedIframe,
       "getExperimentAssignments",
     );
-    const assignments = await callUIExperimentsAPI("getAssignments");
+    const assignments = await callOptionsAPI("ewe.experiments.getAssignments");
 
     assertIframeResponse(iframeResponse, assignments);
   });
 
   it("retrieves experiment flags from a trusted iframe injected into BT partner website", async function () {
     const iframeResponse = await sendExtCommandInTrustedIframe(trustedIframe, "getExperimentFlags");
-    const flags = await callUIExperimentsAPI("getFlags");
+    const flags = await callOptionsAPI("ewe.experiments.getFlags");
 
     assertIframeResponse(iframeResponse, flags);
   });

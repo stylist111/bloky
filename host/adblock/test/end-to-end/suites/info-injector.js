@@ -21,14 +21,14 @@ import { prepareExtensionHook } from "@eyeo/test-utils/hooks";
 import {
   getOptionsHandle,
   blockAds,
+  sendExtMessage,
   verifyInjectedExtensionData,
 } from "@eyeo/test-utils/extension";
 import {
   getUserIdFromStorage,
   getPopupBlockedAdsTotalCount,
   isPremiumActivated,
-  callUIExperimentsAPI,
-  callUIAccountAPI,
+  callOptionsAPI,
 } from "../utils/page.js";
 
 export const testUrl = "https://getadblock.com";
@@ -42,13 +42,17 @@ export async function getActualExtensionData() {
   await prepareExtensionHook();
   const { version } = extension;
   const isPremium = await isPremiumActivated();
-  const isTrial = await callUIAccountAPI("isTrial");
-  const experimentFlags = await callUIExperimentsAPI("getFlags");
-  return { id, isPremium, isTrial, version, blockCount, experimentFlags };
+  const isTrial = await callOptionsAPI("ewe.account.isTrial");
+  const experimentFlags = await callOptionsAPI("ewe.experiments.getFlags");
+  const info = await sendExtMessage(null, {
+    command: "getInjectionInfo",
+  });
+
+  return { ...info, id, isPremium, isTrial, version, blockCount, experimentFlags };
 }
 
 export default async () => {
-  it(`verifies injected data on adblockplus.org matches AdBlock extension data`, async () => {
+  it(`verifies injected data on getadblock.com matches AdBlock extension data`, async () => {
     await verifyInjectedExtensionData(testUrl, dataAttribute, getActualExtensionData);
   });
 };
