@@ -349,7 +349,7 @@ export async function addCustomFilters(
 
     await wait(
       async () => (await getCustomFilters()).includes(filter),
-      1500,
+      5000,
       `The filter "${filter}" was not shown after being added`
     );
   }

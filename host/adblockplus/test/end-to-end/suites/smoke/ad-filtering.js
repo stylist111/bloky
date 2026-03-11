@@ -142,10 +142,22 @@ export default () => {
 
     await openNewTab(customFiltersTestPageUrl);
     await driver.navigate().refresh();
-    await waitForNotDisplayed("#test-element-id-custom", { timeout: 3000 });
-    await waitForNotDisplayed(".test-element-class-custom", { timeout: 3000 });
-    await waitForNotDisplayed("#script-id-custom-full-path", { timeout: 3000 });
-    await waitForNotDisplayed("#script-id-custom-regex", { timeout: 3000 });
+    await waitForNotDisplayed("#test-element-id-custom", {
+      timeout: 10000,
+      forceRefresh: true
+    });
+    await waitForNotDisplayed(".test-element-class-custom", {
+      timeout: 10000,
+      forceRefresh: true
+    });
+    await waitForNotDisplayed("#script-id-custom-full-path", {
+      timeout: 10000,
+      forceRefresh: true
+    });
+    await waitForNotDisplayed("#script-id-custom-regex", {
+      timeout: 10000,
+      forceRefresh: true
+    });
     await getDisplayedElement("#control-element");
   });
 

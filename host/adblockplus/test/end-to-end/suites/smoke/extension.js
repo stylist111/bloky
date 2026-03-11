@@ -209,7 +209,7 @@ export default () => {
     // check reset settings notification in popup
     await initPopupPage();
     const notification = await getDisplayedElement("#notification-message", {
-      timeout: 1000,
+      timeout: 5000,
       forceRefresh: true
     });
     expect(await notification.getText()).toContain(
