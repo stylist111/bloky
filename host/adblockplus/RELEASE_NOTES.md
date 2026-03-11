@@ -1,5 +1,9 @@
 # Unreleased
 
+# 4.36.0 - 2026-03-11
+
+This release contains only minor updates and under-the-hood changes.
+
 # 4.35.2 - 2026-03-03
 
 - Fixed additional parameters being set on the uninstall URL when the users is
