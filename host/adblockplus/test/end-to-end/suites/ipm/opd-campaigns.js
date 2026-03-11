@@ -35,7 +35,8 @@ import {
   clearRemoteConfigIpmCommands,
   getPendingLoggerCdpEventStats,
   waitForIpmCooldown,
-  overrideLanguageForIpmContent
+  overrideLanguageForIpmContent,
+  setTimeoutForExtensionReload
 } from "@eyeo/test-utils/extension";
 import {
   getDisplayedElement,
@@ -392,6 +393,7 @@ export default (fragmentType) => {
     });
 
     after(async function () {
+      setTimeoutForExtensionReload(this);
       await disablePremiumProgrammatically();
     });
 

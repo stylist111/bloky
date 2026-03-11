@@ -263,6 +263,13 @@ export async function beforeEachTasks() {
     setOptionsHandle(await driver.getWindowHandle());
   }
 
+  // If the options page is blank/unloaded (e.g. after a failed extension
+  // reload), navigate back to it so subsequent tests don't cascade-fail
+  const currentUrl = await driver.getCurrentUrl();
+  if (!currentUrl.includes("options.html")) {
+    await driver.navigate().to(`${extension.origin}/options.html`);
+  }
+
   await cleanupOpenTabs();
   await driver.switchTo().window(getOptionsHandle());
 }

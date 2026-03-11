@@ -63,10 +63,14 @@ async function loadOptionsTab(optionsHandle, id) {
         await clickOnDisplayedElement(`[href="#${id}"]`);
         return true;
       } catch (err) {
-        if (err.name !== "NoSuchElementError" && err.name !== "StaleElementReferenceError") {
+        if (
+          err.name !== "NoSuchElementError" &&
+          err.name !== "StaleElementReferenceError" &&
+          err.name !== "TimeoutError"
+        ) {
           throw err;
         }
-        // The options page has stale elements, reloading as a workaround
+        // The options page has stale or slow-loading elements, reloading as a workaround
         await driver.navigate().refresh();
         await driver.sleep(optionsPageSleep); // https://eyeo.atlassian.net/browse/EXT-335
       }
