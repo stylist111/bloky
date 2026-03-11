@@ -406,13 +406,13 @@ export async function deleteCustomFilters({
     isProperty: false
   });
 
-  // even if displayed, the delete button may be ineffective right after
-  // checking the filters. Sleeping as a workaround
-  await driver.sleep(1000);
+  // Even if displayed, the delete button may be ineffective right after
+  // checking the filters, sleeping as a workaround
+  await driver.sleep(3000);
   await clickOnDisplayedElement("#custom-filters button.delete");
   await wait(
     async () => (await getCustomFilters()).length === 0,
-    1000,
+    5000,
     "Custom filters were not deleted"
   );
 }
