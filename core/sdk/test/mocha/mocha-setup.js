@@ -143,11 +143,11 @@ afterEach(async function() {
   // runInBackgroundPage, otherwise the mocha timeout may hide the real failure
   setMinTimeout(this, MAX_API_CALL_DURATION + 7000);
   await clearFilters();
-  await clearStorage();
   await resetFeatureFlags();
   await clearExperimentFlagOverrides();
-  await Page.removeCurrent();
   await clearFrameState();
-  await Popup.removeCurrent();
   await clearAllTestEvents();
+  await clearStorage();
+  await Page.removeCurrent();
+  await Popup.removeCurrent();
 });
