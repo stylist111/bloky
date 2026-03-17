@@ -1,5 +1,9 @@
 # Unreleased
 
+# 6.37.1 - 2026-03-17
+
+This release contains bugfixes and under-the-hood changes.
+
 # 6.37.0 - 2026-03-11
 
 This release contains only minor updates and under-the-hood changes.
