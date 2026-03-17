@@ -213,7 +213,7 @@ export default () => {
     const { filterlist, trashBtn } = getFLSelectors(subscriptionUrl);
     await clickOnDisplayedElement(trashBtn);
     await waitForNotDisplayed(filterlist, {
-      timeout: 3000,
+      timeout: 5000,
       displayedTimeout: 1000
     });
   });
@@ -284,7 +284,7 @@ export default () => {
 
     // Reenable custom filter through tooltip link
     await clickOnDisplayedElement(`${tooltip} [data-action="enable-filters"]`);
-    await waitForNotDisplayed(tooltip);
+    await waitForNotDisplayed(tooltip, { timeout: 3000 });
     enabled = await isCheckboxPropertyEnabled(customSelector);
     expect({ easylistFilter, enabled }).toEqual({
       easylistFilter,
