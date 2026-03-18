@@ -23,7 +23,7 @@ const PLUGIN_NAME = "gulp-merge-translations";
 
 function mergeTranslations(options = {}) {
   let info;
-  const merged = {};
+  const files = [];
   const mandatoryInfo = {};
   const fields = options.defaults ? options.defaults.fields : [];
 
@@ -38,7 +38,7 @@ function mergeTranslations(options = {}) {
     return text.slice(0, limit - 1).concat("\u2026");
   }
 
-  function groupByLocale(file) {
+  function collectLocaleContent(file) {
     if (file.isBuffer()) {
       try {
         const locale = getLocaleName(file.path);
@@ -65,8 +65,7 @@ function mergeTranslations(options = {}) {
           });
         }
 
-        merged[locale] = merged[locale] || {};
-        merged[locale] = { ...merged[locale], ...content };
+        files.push({ path: file.path, locale, content });
       } catch (error) {
         const msg = `${PLUGIN_NAME} parsing: ${file.path} : ${error.message}`;
         this.emit("error", msg);
@@ -74,7 +73,24 @@ function mergeTranslations(options = {}) {
     }
   }
 
+  function mergeFilesByLocale() {
+    const merged = {};
+
+    // This sorting is essential to ensure that keys always appear in the built
+    // file in the same order.
+    files.sort((a, b) => a.path.localeCompare(b.path, "en"));
+
+    for (const { locale, content } of files) {
+      merged[locale] = merged[locale] || {};
+      merged[locale] = { ...merged[locale], ...content };
+    }
+
+    return merged;
+  }
+
   function emitByLocale() {
+    const merged = mergeFilesByLocale();
+
     Object.keys(merged).forEach((localeName) => {
       let mergedFile = merged[localeName];
 
@@ -94,7 +110,7 @@ function mergeTranslations(options = {}) {
     this.emit("end");
   }
 
-  return through(groupByLocale, emitByLocale);
+  return through(collectLocaleContent, emitByLocale);
 }
 
 export default mergeTranslations;
