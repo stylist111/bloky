@@ -195,6 +195,29 @@ function onNewTabUpdated(
 }
 
 /**
+ * Appends experiment and cohort query params to the given URL.
+ *
+ * @param targetUrl - The base URL to append params to
+ * @returns The URL with params appended
+ */
+export async function buildTargetUrl(targetUrl: string): Promise<string> {
+  const { addExperimentsSearchParams, addCohortAssignmentsSearchParam } =
+    getFragment();
+
+  let url = await addExperimentsSearchParams(targetUrl);
+  if (url === null) {
+    url = targetUrl;
+  }
+
+  url = await addCohortAssignmentsSearchParam(url);
+  if (url === null) {
+    url = targetUrl;
+  }
+
+  return url;
+}
+
+/**
  * Opens a new tab to the URL specified on the IPM command
  *
  * @param ipmId - IPM ID
@@ -203,8 +226,6 @@ async function openNewTab(): Promise<void> {
   logger.debug("[new-tab]: openNewTab");
 
   const {
-    addCohortAssignmentsSearchParam,
-    addExperimentsSearchParams,
     checkLanguage,
     createSafeOriginUrl,
     doesLicenseStateMatch,
@@ -265,21 +286,9 @@ async function openNewTab(): Promise<void> {
       continue;
     }
 
-    // Add experiment query params to target URL.
-    let url = await addExperimentsSearchParams(targetUrl);
-    if (url === null) {
-      logger.debug("[new-tab]: Failed to append experiments search params.");
-      url = targetUrl;
-    }
-
-    // Add cohort assignments query param to target URL.
-    url = await addCohortAssignmentsSearchParam(targetUrl);
-    if (url === null) {
-      logger.debug(
-        "[new-tab]: Failed to append cohort assignments search param."
-      );
-      url = targetUrl;
-    }
+    // Add experiment and cohort query params to target URL.
+    // eslint-disable-next-line no-await-in-loop
+    const url = await buildTargetUrl(targetUrl);
 
     // Ignore and dismiss command if it has expired
     const command = getCommand(ipmId);

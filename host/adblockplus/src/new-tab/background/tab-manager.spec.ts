@@ -17,11 +17,20 @@
 
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
 import {
+  buildTargetUrl,
   compareNewTabRequestsByPriority,
   isCoolDownPeriodOngoing
 } from "./tab-manager";
 import { newTabRequests } from "./tab-manager.spec-data";
 import { coolDownPeriodKey, lastShownKey } from "./tab-manager.types";
+import { getFragment } from "~/ipm/background";
+
+jest.mock("~/ipm/background", () => ({
+  getFragment: jest.fn(),
+  isFutureFragment: jest.fn(),
+  CommandName: { createTab: "createTab" },
+  CommandEventType: { expired: "expired" }
+}));
 
 describe("TabManager", () => {
   describe("compareNewTabRequestsByPriority", () => {
@@ -133,6 +142,32 @@ describe("TabManager", () => {
 
       const result = await isCoolDownPeriodOngoing();
       expect(result).toBe(false);
+    });
+  });
+
+  describe("buildTargetUrl", () => {
+    const targetUrl = "http://example.com";
+    const urlWithExperiments = "http://example.com?ev=__exp__&er=__rev__";
+
+    it("should pass the experiment-modified URL to addCohortAssignmentsSearchParam", async () => {
+      const addExperimentsSearchParams = jest
+        .fn()
+        .mockResolvedValue(urlWithExperiments);
+      const addCohortAssignmentsSearchParam = jest
+        .fn()
+        .mockResolvedValue(`${urlWithExperiments}&ca=__ca__`);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (getFragment as any).mockReturnValue({
+        addExperimentsSearchParams,
+        addCohortAssignmentsSearchParam
+      });
+
+      await buildTargetUrl(targetUrl);
+
+      expect(addCohortAssignmentsSearchParam).toHaveBeenCalledWith(
+        urlWithExperiments
+      );
     });
   });
 });
