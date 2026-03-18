@@ -232,7 +232,7 @@ notify_events_schema_change:
   before_script:
     - apk add --no-cache curl
   script:
-    - 'curl -X POST -H "Content-type: application/json" --data "{\"text\":\"events.js has been updated on main by ${GITLAB_USER_NAME} - ${CI_PIPELINE_URL}\"}" $SLACK_WEBHOOK_EVENTS_SCHEMA'
+    - 'curl -X POST -H "Content-type: application/json" --data "{\"text\":\"events.js has been updated on main by ${CI_COMMIT_AUTHOR%% <*} - ${CI_PIPELINE_URL}\"}" $SLACK_WEBHOOK_EVENTS_SCHEMA'
   rules:
     - !reference [.never-run-on-update-rules-trigger, rules]
     - if: $CI_PIPELINE_SOURCE == "schedule"
