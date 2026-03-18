@@ -306,6 +306,27 @@ export default {
           }
         }
       }
+    },
+    snippet_detection_event: {
+      description: "Recorded when a snippet detects a condition on a page (e.g. wall detection). Each detection snippet calls this event from a single location with a unique type value. Other snippet concerns (blocking, breakage) should register separate events.",
+      data: {
+        description: "Metadata about the detected condition",
+        type: "object",
+        properties: {
+          type: {
+            description: "Detection type identifier passed from the snippet filter, e.g. 'wall_detected'. Each snippet can have multiple types within a distinct type group for traceability.",
+            type: "string"
+          },
+          domain: {
+            description: "Domain where the condition was detected, e.g. 'example.com'",
+            type: "string"
+          },
+          specifier: {
+            description: "Optional additional context for filtering in BigQuery, e.g. the CSS selector that matched ('.overlay-wall-container') or a filter list identifier",
+            type: ["string", "null"]
+          }
+        }
+      }
     }
   },
   youtube: {

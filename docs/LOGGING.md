@@ -34,7 +34,7 @@ The expected structure looks like this:
 ```
 
 Clients have an id which rotates on a regular schedule. This is currently
-configured to rotate weekly (see `DEFAULT_ID_ROTATION_PERIOD` in
+configured to rotate every 30 days (see `DEFAULT_ID_ROTATION_PERIOD` in
 [server-log-config.js](../core/sdk/src/background/telemetry/server-log-config.js)). This
 rotating client id can be used to correlate events on a short scale, eg a few
 days, and is also used as part of the hash that determines if a user is included

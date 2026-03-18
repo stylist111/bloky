@@ -167,6 +167,9 @@ const onFiltersReceived = event => {
     }
   }
 
+  // sendDetectionEvent is intentionally not included in the main world env.
+  // Detection events rely on ServerLogger and Sentry, which require extension
+  // API access only available in the isolated world. See snippet-events.js.
   const snippetsConfig = {
     callback: snippetsCallback,
     env: {debugCSSProperties: debug ? DEBUG_CSS_PROPERTIES : null},

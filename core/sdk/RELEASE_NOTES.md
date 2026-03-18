@@ -2,8 +2,17 @@
 
 ## General
 
-- Added `EWE.remoteConfig.updateFacts`, to trigger an immediate reevaluation of
-  facts in the experiment and cohort system.
+- Added `EWE.remoteConfig.updateFacts`, to trigger an immediate
+  reevaluation of facts in the experiment and cohort system.
+
+## Added
+
+- Added `snippet_detection_event` schema in `events.js` for wall
+  detection logging. New `sendDetectionEvent` bridge in
+  `snippet-events.js` allows snippets to report detected conditions
+  (e.g. ad walls) through the existing logging pipeline. No
+  user-facing impact until a snippet calls the bridge and an
+  experiment is enabled.
 
 ## Fixes
 

@@ -32,6 +32,7 @@ import {claimCommsChannel} from "../../shared/helpers.js";
 import {default as sentry} from "./sentry.js";
 import {default as telemetry} from "../../../front/telemetry.js";
 import experiments from "../../../front/experiments.js";
+import {createSnippetDetectionEventSender} from "./snippet-events.js";
 
 const commsChannelName = claimCommsChannel(uuidv4());
 let mainWorldReadyPromise;
@@ -43,6 +44,7 @@ let cachedFiltersConfig;
 let cachedFiltersConfigSerialized = null;
 let storageAvailable = true;
 const logger = new telemetry.ServerLogger("snippets");
+const sendDetectionEvent = createSnippetDetectionEventSender(logger, sentry);
 
 /**
  * Checks if the current context is a cross-origin iframe
@@ -154,8 +156,12 @@ function executeSnippets(filtersConfig) {
   }
 
   if (isolatedSnippets.length) {
+    // sendDetectionEvent is only available to isolated world snippets
+    // because it relies on ServerLogger and Sentry, which need extension
+    // API access not available in the main world. See snippet-events.js.
     const env = {
-      debugCSSProperties: debug ? DEBUG_CSS_PROPERTIES : null
+      debugCSSProperties: debug ? DEBUG_CSS_PROPERTIES : null,
+      sendDetectionEvent
     };
     snippetsCallback(env, ...isolatedSnippets);
   }
