@@ -25,6 +25,7 @@ import * as info from "info";
 import { start as startConflictDetection } from "@eyeo-fragments/conflict-detection/background";
 import { start as startYtWallDetection } from "@eyeo-fragments/yt-wall-detection/background";
 import { start as startPublicAPI } from "@eyeo-fragments/public-api";
+import { start as startFacts } from "../src/remote-config/background";
 import { Prefs } from "./alias/prefs";
 import { getUserFilters } from "./filter-utils";
 import {
@@ -732,6 +733,7 @@ initialize
       },
       isPremiumActive: License.isActiveLicense,
     });
+    startFacts();
     startPublicAPI({
       port,
       addTrustedMessageTypes: ext.addTrustedMessageTypes,

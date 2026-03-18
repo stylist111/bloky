@@ -1,5 +1,10 @@
 # Unreleased
 
+## General
+
+- Added `EWE.remoteConfig.updateFacts`, to trigger an immediate reevaluation of
+  facts in the experiment and cohort system.
+
 ## Fixes
 
 - Fixed a bug in the addheader filter where the frame structure is

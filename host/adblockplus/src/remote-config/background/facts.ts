@@ -15,8 +15,12 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import { Prefs } from "../../../adblockpluschrome/lib/prefs";
-import { hasActiveLicense } from "~/premium/background";
+import {
+  hasActiveLicense,
+  emitter as premiumEventEmitter
+} from "~/premium/background";
 import type { Facts } from "@eyeo/webext-ad-filtering-solution";
 
 /**
@@ -32,4 +36,14 @@ export async function getFacts(): Promise<Facts> {
     installDate: Prefs.get("installDate"),
     blockedCount: Prefs.get("blocked_total")
   };
+}
+
+/**
+ * Add listeners to facts which need to be re-evaluated immediately when they
+ * change, rather than waiting for the next scheduled sync.
+ */
+export function start(): void {
+  premiumEventEmitter.on("activated", ewe.remoteConfig.updateFacts);
+  premiumEventEmitter.on("deactivated", ewe.remoteConfig.updateFacts);
+  Prefs.on("installDate", ewe.remoteConfig.updateFacts);
 }

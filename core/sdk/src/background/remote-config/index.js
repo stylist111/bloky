@@ -258,6 +258,10 @@ export async function start({
   });
 }
 
+async function updateFacts() {
+  await syncSubmodules(true);
+}
+
 /**
  * Stops the remote config update scheduler
  * @ignore
@@ -377,7 +381,15 @@ const remoteConfig = {
    */
   setUrl(url) {
     configUrl = url;
-  }
+  },
+
+  /**
+   * Re-evaluates cohorts and experiments using the current facts, without
+   * re-downloading the remote config.
+   * @function
+   * @returns {Promise<void>}
+   */
+  updateFacts
 };
 
 export default remoteConfig;

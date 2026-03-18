@@ -974,6 +974,12 @@ declare module "@eyeo/webext-ad-filtering-solution" {
      * Manually triggers synchronization of remote config
      */
     const sync: () => Promise<void>;
+
+    /**
+     * Re-evaluates cohorts and experiments using the current facts, without
+     * re-downloading the remote config.
+     */
+    const updateFacts: () => Promise<void>;
   }
 
   namespace cohorts {

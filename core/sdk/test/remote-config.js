@@ -36,6 +36,7 @@ import {
   startWithTestArgs,
   UPDATED_CONFIG
 } from "./fixtures/remote-config.js";
+import { MILLIS_IN_DAY } from "#adblockpluscore/lib/time.js";
 
 describe("Remote config", function() {
   afterEach(async function() {
@@ -310,6 +311,34 @@ describe("Remote config", function() {
         lastNetworkError: expect.stringMatching(ISO_DATE_REGEX),
         errors: []
       });
+    });
+  });
+
+  describe("updateFacts", function() {
+    beforeEach(async function() {
+      await EWE.testing.resetRemoteConfig();
+      await clearRequestLogs();
+      await startWithTestArgs(true);
+    });
+
+    it("re-evaluates cohorts based on changed facts without downloading config", async function() {
+      // Initial sync with facts that produce no cohorts
+      await EWE.testing.mockFacts({
+        installDate: Date.now() - 2 * MILLIS_IN_DAY
+      });
+      await setConfig(DEFAULT_CONFIG);
+      await EWE.remoteConfig.sync();
+      expect(await EWE.cohorts.getAll()).toEqual([]);
+
+      // Update facts to qualify for cohort
+      await EWE.testing.mockFacts({
+        installDate: Date.now() - 10 * MILLIS_IN_DAY
+      });
+      await clearRequestLogs();
+      await EWE.remoteConfig.updateFacts();
+
+      expect(await EWE.cohorts.getAll()).toEqual(["my-first-cohort"]);
+      expect((await getRequestLogs(REMOTE_CONFIG_URL)).length).toBe(0);
     });
   });
 

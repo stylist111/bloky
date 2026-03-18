@@ -26,6 +26,7 @@ import { revalidateAllowlistingStates } from "./allowlisting.js";
 import { initDisabledFilterCounters } from "./filterConfiguration.js";
 import { initNotifications } from "./notificationHelper.js";
 import { Prefs } from "./prefs.js";
+import { start as startFacts } from "../../src/remote-config/background";
 import { start as startUnloadCleanup } from "../../src/unload-cleanup/background/index.ts";
 import * as logger from "../../src/logger/background";
 
@@ -233,6 +234,7 @@ export async function start(eweFirstRun) {
     async () => await premium.hasActiveLicense()
   );
   startOptionLinkListener();
+  startFacts();
   startUnloadCleanup();
 
   /**

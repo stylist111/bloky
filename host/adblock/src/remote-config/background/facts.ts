@@ -17,6 +17,7 @@
 
 import { Prefs } from "~/alias/prefs";
 import { License } from "~/picreplacement/check";
+import * as ewe from "@eyeo/webext-ad-filtering-solution";
 import type { Facts } from "@eyeo/webext-ad-filtering-solution";
 
 /**
@@ -32,4 +33,13 @@ export async function getFacts(): Promise<Facts> {
     installDate: Prefs.get("installDate"),
     blockedCount: Prefs.get("blocked_total"),
   };
+}
+
+/**
+ * Add listeners to facts which need to be re-evaluated immediately when they
+ * change, rather than waiting for the next scheduled sync.
+ */
+export function start(): void {
+  License.licenseNotifier.on("license.status.changed", ewe.remoteConfig.updateFacts);
+  Prefs.on("installDate", ewe.remoteConfig.updateFacts);
 }
