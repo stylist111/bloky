@@ -209,6 +209,27 @@ export default {
       description: "User opted out of data collection in the options page"
     }
   },
+  extensions_ui: {
+    acceptable_ads_toggled: {
+      description: "User toggled the Acceptable Ads checkbox on the extension options page. This is a shared event fired by both AB and ABP.",
+      data: {
+        description: "Data about the acceptable ads toggle interaction",
+        type: "object",
+        properties: {
+          action: {
+            description: "Whether the user opted in or out of acceptable ads",
+            type: "string",
+            enum: ["opted_in", "opted_out"]
+          },
+          source: {
+            description: "Where the toggle occurred. This could be from the general or filter lists options tabs.",
+            type: "string",
+            enum: ["options_general", "options_filter_list"]
+          }
+        }
+      }
+    }
+  },
   smart_allowlisting: {
     allowlisting_expired: {
       description: "An allowlisting filter expired automatically",

@@ -25,6 +25,9 @@ export const globalSend = vi.fn();
 export const globalSettings = {};
 export const globalPrefsNotifier = { on: vi.fn(), off: vi.fn() };
 export const globalSettingsNotifier = { on: vi.fn(), off: vi.fn() };
+export const globalExtensionsUIServerLogger = {
+  behavior: vi.fn(),
+};
 export const globalSubscriptionsProxy = {
   add: vi.fn(),
   has: vi.fn(),

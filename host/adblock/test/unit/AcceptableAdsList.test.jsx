@@ -8,6 +8,8 @@ import {
   toggleAcceptableAdsPrivacy,
 } from "../../adblock-betafish/options/react-components/general/events";
 
+import { globalExtensionsUIServerLogger as extensionsUIServerLogger } from "../../adblock-betafish/options/react-components/shared/globals";
+
 import {
   globalMABPayment as MABPayment,
   globalSubscriptionsProxy as SubscriptionsProxy,
@@ -152,6 +154,39 @@ describe("AcceptableAdsList", () => {
       renderAcceptableAdsList({ subs: { acceptable_ads_privacy: { subscribed: true } } });
       expect(getPrivacySuboption()).to.have.property("checked", true);
       expect(aaListComponent).not.toContainElement(getDntMessage());
+    });
+  });
+
+  describe("acceptable_ads_toggled event", () => {
+    beforeEach(() => {
+      renderAcceptableAdsList();
+    });
+
+    afterEach(() => {
+      vi.resetAllMocks();
+    });
+
+    it("fires opted_in when enabling acceptable ads", async () => {
+      fireEvent.click(getAaOption());
+      await waitFor(() =>
+        expect(extensionsUIServerLogger.behavior).toHaveBeenCalledWith("acceptable_ads_toggled", {
+          action: "opted_in",
+          source: "options_general",
+        }),
+      );
+    });
+
+    it("fires opted_out when disabling acceptable ads", async () => {
+      fireEvent.click(getAaOption()); // enable
+      await waitFor(() => expect(toggleAcceptableAds).toHaveBeenCalledTimes(1));
+      vi.clearAllMocks();
+      fireEvent.click(getAaOption()); // disable
+      await waitFor(() =>
+        expect(extensionsUIServerLogger.behavior).toHaveBeenCalledWith("acceptable_ads_toggled", {
+          action: "opted_out",
+          source: "options_general",
+        }),
+      );
     });
   });
 

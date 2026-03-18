@@ -40,6 +40,10 @@ try {
   // do nothing
 }
 
+const generalExtensionsUIServerLogger = new modulesAsGlobal.ewe.telemetry.ServerLogger(
+  "extensions_ui",
+);
+
 function setDataCollectionOptionsVisibility(visibility) {
   if (visibility) {
     $(".data-collection-option-container").show(200);
@@ -122,6 +126,10 @@ const initialize = async function init() {
       }
       updateAcceptableAdsUI(false, false);
     }
+    generalExtensionsUIServerLogger.behavior("acceptable_ads_toggled", {
+      action: isEnabled ? "opted_in" : "opted_out",
+      source: "options_general",
+    });
   };
 
   $("input.feature[type='checkbox']").on("change", async function onOptionSelectionChange() {

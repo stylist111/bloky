@@ -5,6 +5,7 @@ import {
   globalSend as send,
   globalSubscriptionsProxy as SubscriptionsProxy,
   globalSettings as settings,
+  globalExtensionsUIServerLogger as eventsExtensionsUIServerLogger,
 } from "../shared/globals";
 
 const evtObjWrapper = (checkedVal) => ({
@@ -36,6 +37,10 @@ export const toggleAcceptableAds = async ({ evt }, setCheckedItems) => {
       SubscriptionsProxy.remove(SubscriptionsProxy.ACCEPTABLE_ADS_PRIVACY_URL);
     }
   }
+  eventsExtensionsUIServerLogger.behavior("acceptable_ads_toggled", {
+    action: isEnabled ? "opted_in" : "opted_out",
+    source: "options_general",
+  });
 };
 
 export const toggleAcceptableAdsPrivacy = async ({ evt }, setCheckedItems) => {

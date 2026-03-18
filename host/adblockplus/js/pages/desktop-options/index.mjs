@@ -49,6 +49,10 @@ import "../../io-list-box.mjs";
 import "../../io-popout.mjs";
 import "../../io-toggle.mjs";
 
+const extensionsUIServerLogger = new ewe.telemetry.ServerLogger(
+  "extensions_ui"
+);
+
 const ALLOWED_PROTOCOLS = /^(?:data|https):/;
 
 export const emitter = new EventEmitter();
@@ -660,6 +664,11 @@ const switchAcceptableAds = (e) => {
         url: acceptableAdsUrl
       });
     }
+
+    extensionsUIServerLogger.behavior("acceptable_ads_toggled", {
+      action: checked ? "opted_in" : "opted_out",
+      source: "options_general"
+    });
   }
   // Privacy Friendly Acceptable Ads checkbox clicked
   else {
@@ -798,12 +807,20 @@ function execAction(action, element) {
         text: findParentData(element, "access", false)
       });
       return true;
-    case "remove-subscription":
+    case "remove-subscription": {
+      const removedUrl = findParentData(element, "access", false);
       browser.runtime.sendMessage({
         type: "subscriptions.remove",
-        url: findParentData(element, "access", false)
+        url: removedUrl
       });
+      if (isAcceptableAds(removedUrl)) {
+        extensionsUIServerLogger.behavior("acceptable_ads_toggled", {
+          action: "opted_out",
+          source: "options_filter_list"
+        });
+      }
       return true;
+    }
     case "show-more-filters-section":
       $("#more-filters").setAttribute("aria-hidden", false);
       return true;

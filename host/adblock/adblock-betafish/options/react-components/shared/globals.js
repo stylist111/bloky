@@ -19,3 +19,6 @@ export const globalSettings = settings;
 export const globalSettingsNotifier = settingsNotifier;
 export const globalSubscriptionAdapter = SubscriptionAdapter;
 export const globalSubscriptionsProxy = SubscriptionsProxy;
+export const globalExtensionsUIServerLogger = new modulesAsGlobal.ewe.telemetry.ServerLogger(
+  "extensions_ui",
+);

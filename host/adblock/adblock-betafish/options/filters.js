@@ -27,6 +27,9 @@
    */
 
 const filtersAdblockUiServerLogger = new modulesAsGlobal.ewe.telemetry.ServerLogger("adblock_ui");
+const filtersExtensionsUIServerLogger = new modulesAsGlobal.ewe.telemetry.ServerLogger(
+  "extensions_ui",
+);
 
 const FANBOY_ANNOYANCE_URL = "https://fanboy.co.nz/fanboy-annoyance.txt";
 
@@ -764,6 +767,7 @@ CheckboxForFilterList.prototype = {
       const $subscriptionWrapper = $subscription.closest(".filter-subscription-wrapper");
       const checked = $(this).is(":checked");
       const adblockId = $subscription.attr("name");
+
       if (checked) {
         if (
           !event.addedViaBackground &&
@@ -813,6 +817,14 @@ CheckboxForFilterList.prototype = {
           const option = new OptionForFilterList(entry, index);
           LanguageSelectUtil.insertOption(option.get(), index);
         }
+      }
+
+      // fire event after subscriptions have been validated.
+      if (!event.addedViaBackground && isAcceptableAds(that.filterList)) {
+        filtersExtensionsUIServerLogger.behavior("acceptable_ads_toggled", {
+          action: checked ? "opted_in" : "opted_out",
+          source: "options_filter_list",
+        });
       }
     });
   },
