@@ -28,8 +28,6 @@ import {
   setRemoteConfigIpmCommands,
   getIPMCommands,
   setIPMCooldowns,
-  resetIPMFragment,
-  setIPMFragment,
   clearDismissedIpmIds,
   clearRemoteConfigIpmCommands,
   getPendingLoggerCdpEventStats,
@@ -71,7 +69,7 @@ async function getOPDShadowRoot() {
   return opdHost.getShadowRoot();
 }
 
-export default (fragmentType) => {
+export default () => {
   before(async function () {
     // IPMs are not supported in Firefox
     if (browserDetails.browserName === "firefox") {
@@ -84,8 +82,6 @@ export default (fragmentType) => {
     // so that newtabs can be triggered. This setting is otherwise set to true
     // to prevent real newtab IPMs from opening and interfering with the tests.
     await updateSettings(initOptionsGeneralTab, "suppress_update_page", false);
-
-    await setIPMFragment(getOptionsHandle, fragmentType);
   });
 
   beforeEach(async function () {
@@ -103,18 +99,14 @@ export default (fragmentType) => {
   after(async function () {
     await initOptionsGeneralTab(getOptionsHandle());
     await updateSettings(initOptionsGeneralTab, "suppress_update_page", true);
-    await resetIPMFragment(getOptionsHandle);
   });
 
   it("triggers an OPD campaign", async function () {
-    await setRemoteConfigIpmCommands(
-      initOptionsGeneralTab,
-      `test_adblock_navigation_${fragmentType}`,
-    );
+    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_navigation");
     await syncRemoteConfig(initOptionsGeneralTab);
 
     let ipmCommands = await getIPMCommands(initOptionsGeneralTab);
-    expect(ipmCommands).toEqual(expectedIPMCommands.navigation[fragmentType]);
+    expect(ipmCommands).toEqual(expectedIPMCommands.navigation);
 
     await openNewTab("https://www.example.com");
 
@@ -138,36 +130,24 @@ export default (fragmentType) => {
     ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual({});
 
-    // Legacy fragment uses ping payloads, future fragment uses CDP
-    if (fragmentType === "legacy") {
-      const pingPayload = await syncRemoteConfig(initOptionsGeneralTab);
-      expect(pingPayload.ipm.active).toEqual([]);
-      const actions = pingPayload.events.map((e) => e.action);
+    await initOptionsGeneralTab(getOptionsHandle());
+    const { counts } = await getPendingLoggerCdpEventStats();
 
-      expect(actions).toEqual(["received", "dialog_injected", "dialog_button_clicked"]);
-    } else if (fragmentType === "future") {
-      await initOptionsGeneralTab(getOptionsHandle());
-      const { counts } = await getPendingLoggerCdpEventStats();
-
-      const ipmId = "test_adblock_navigation_future";
-      expect(counts).toHaveProperty(`${commandReceivedEvent}:${ipmId}`, 1);
-      expect(counts).toHaveProperty(`${opdCommandReadyEvent}:${ipmId}`, 1);
-      expect(counts).toHaveProperty(`${opdDialogInjectedEvent}:${ipmId}`, 1);
-      expect(counts).toHaveProperty(`${opdDialogClickedEvent}:${ipmId}`, 1);
-      expect(counts).not.toHaveProperty(`${opdDialogClosedEvent}:${ipmId}`);
-      expect(counts).not.toHaveProperty(`${opdDialogIgnoredEvent}:${ipmId}`);
-    }
+    const ipmId = "test_adblock_navigation";
+    expect(counts).toHaveProperty(`${commandReceivedEvent}:${ipmId}`, 1);
+    expect(counts).toHaveProperty(`${opdCommandReadyEvent}:${ipmId}`, 1);
+    expect(counts).toHaveProperty(`${opdDialogInjectedEvent}:${ipmId}`, 1);
+    expect(counts).toHaveProperty(`${opdDialogClickedEvent}:${ipmId}`, 1);
+    expect(counts).not.toHaveProperty(`${opdDialogClosedEvent}:${ipmId}`);
+    expect(counts).not.toHaveProperty(`${opdDialogIgnoredEvent}:${ipmId}`);
   });
 
   it("triggers an OPD campaign exclusion and dismissed after page reload", async function () {
-    await setRemoteConfigIpmCommands(
-      initOptionsGeneralTab,
-      `test_adblock_exclusion_${fragmentType}`,
-    );
+    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_exclusion");
     await syncRemoteConfig(initOptionsGeneralTab);
 
     let ipmCommands = await getIPMCommands(initOptionsGeneralTab);
-    expect(ipmCommands).toEqual(expectedIPMCommands.exclusion[fragmentType]);
+    expect(ipmCommands).toEqual(expectedIPMCommands.exclusion);
 
     await openNewTab("https://www.example.com");
     await waitForNotDisplayed("#__ABoverlay");
@@ -196,33 +176,24 @@ export default (fragmentType) => {
     ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual({});
 
-    // Legacy fragment uses ping payloads, future fragment uses CDP
-    if (fragmentType === "legacy") {
-      const pingPayload = await syncRemoteConfig(initOptionsGeneralTab);
-      expect(pingPayload.ipm.active).toEqual([]);
-      const actions = pingPayload.events.map((e) => e.action);
+    await initOptionsGeneralTab(getOptionsHandle());
+    const { counts } = await getPendingLoggerCdpEventStats();
 
-      expect(actions).toEqual(["received", "dialog_injected", "dialog_injected"]);
-    } else if (fragmentType === "future") {
-      await initOptionsGeneralTab(getOptionsHandle());
-      const { counts } = await getPendingLoggerCdpEventStats();
-
-      const ipmId = "test_adblock_exclusion_future";
-      expect(counts).toHaveProperty(`${commandReceivedEvent}:${ipmId}`, 1);
-      expect(counts).toHaveProperty(`${opdCommandReadyEvent}:${ipmId}`, 1);
-      expect(counts).toHaveProperty(`${opdDialogInjectedEvent}:${ipmId}`, 1);
-      expect(counts).not.toHaveProperty(`${opdDialogClickedEvent}:${ipmId}`);
-      expect(counts).not.toHaveProperty(`${opdDialogClosedEvent}:${ipmId}`);
-      expect(counts).not.toHaveProperty(`${opdDialogIgnoredEvent}:${ipmId}`);
-    }
+    const ipmId = "test_adblock_exclusion";
+    expect(counts).toHaveProperty(`${commandReceivedEvent}:${ipmId}`, 1);
+    expect(counts).toHaveProperty(`${opdCommandReadyEvent}:${ipmId}`, 1);
+    expect(counts).toHaveProperty(`${opdDialogInjectedEvent}:${ipmId}`, 1);
+    expect(counts).not.toHaveProperty(`${opdDialogClickedEvent}:${ipmId}`);
+    expect(counts).not.toHaveProperty(`${opdDialogClosedEvent}:${ipmId}`);
+    expect(counts).not.toHaveProperty(`${opdDialogIgnoredEvent}:${ipmId}`);
   });
 
   it("triggers an OPD campaign cookie", async function () {
-    await setRemoteConfigIpmCommands(initOptionsGeneralTab, `test_adblock_cookie_${fragmentType}`);
+    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_cookie");
     await syncRemoteConfig(initOptionsGeneralTab);
 
     const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
-    expect(ipmCommands).toEqual(expectedIPMCommands.cookie[fragmentType]);
+    expect(ipmCommands).toEqual(expectedIPMCommands.cookie);
 
     await openNewTab("https://www.example.com");
     await waitForNotDisplayed("#__ABoverlay");
@@ -243,35 +214,24 @@ export default (fragmentType) => {
   it("does not trigger an OPD campaign if opted out of marketing messages", async function () {
     await setMarketingOptOutState(true);
 
-    await setRemoteConfigIpmCommands(
-      initOptionsGeneralTab,
-      `test_adblock_navigation_${fragmentType}`,
-    );
+    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_navigation");
     await syncRemoteConfig(initOptionsGeneralTab);
 
     const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
-    expect(ipmCommands).toEqual(expectedIPMCommands.navigation[fragmentType]);
+    expect(ipmCommands).toEqual(expectedIPMCommands.navigation);
     await openNewTab("https://www.example.com");
 
     await waitForNotDisplayed("#__ABoverlay");
   });
 
   it("triggers an OPD campaign using strings matching user locale", async function () {
-    // Legacy fragment doesn't support translations
-    if (fragmentType === "legacy") {
-      this.skip();
-    }
-
     await overrideLanguageForIpmContent(initOptionsGeneralTab, "de-AT");
 
-    await setRemoteConfigIpmCommands(
-      initOptionsGeneralTab,
-      `test_adblock_translations_${fragmentType}`,
-    );
+    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_translations");
     await syncRemoteConfig(initOptionsGeneralTab);
 
     const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
-    expect(ipmCommands).toEqual(expectedIPMCommands.translations[fragmentType]);
+    expect(ipmCommands).toEqual(expectedIPMCommands.translations);
 
     await openNewTab("https://www.example.com");
 
@@ -288,21 +248,13 @@ export default (fragmentType) => {
   });
 
   it("triggers an OPD campaign using strings matching user language", async function () {
-    // Legacy fragment doesn't support translations
-    if (fragmentType === "legacy") {
-      this.skip();
-    }
-
     await overrideLanguageForIpmContent(initOptionsGeneralTab, "de-DE");
 
-    await setRemoteConfigIpmCommands(
-      initOptionsGeneralTab,
-      `test_adblock_translations_${fragmentType}`,
-    );
+    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_translations");
     await syncRemoteConfig(initOptionsGeneralTab);
 
     const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
-    expect(ipmCommands).toEqual(expectedIPMCommands.translations[fragmentType]);
+    expect(ipmCommands).toEqual(expectedIPMCommands.translations);
 
     await openNewTab("https://www.example.com");
 
@@ -319,21 +271,13 @@ export default (fragmentType) => {
   });
 
   it("triggers an OPD campaign using strings matching default locale", async function () {
-    // Legacy fragment doesn't support translations
-    if (fragmentType === "legacy") {
-      this.skip();
-    }
-
     await overrideLanguageForIpmContent(initOptionsGeneralTab, "pt-BR");
 
-    await setRemoteConfigIpmCommands(
-      initOptionsGeneralTab,
-      `test_adblock_translations_${fragmentType}`,
-    );
+    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_translations");
     await syncRemoteConfig(initOptionsGeneralTab);
 
     const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
-    expect(ipmCommands).toEqual(expectedIPMCommands.translations[fragmentType]);
+    expect(ipmCommands).toEqual(expectedIPMCommands.translations);
 
     await openNewTab("https://www.example.com");
 
@@ -351,10 +295,6 @@ export default (fragmentType) => {
 
   describe("OPD campaign with trial cohort", function () {
     before(async function () {
-      // Cohorts are only supported in the future fragment
-      if (fragmentType === "legacy") {
-        this.skip();
-      }
       await setRemoteConfigCohorts(initOptionsGeneralTab, [
         {
           name: "Trial users without marketing consent",
@@ -383,7 +323,7 @@ export default (fragmentType) => {
       await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_trial_cohort");
       await syncRemoteConfig(initOptionsGeneralTab);
       const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
-      expect(ipmCommands).toEqual(expectedIPMCommands.trialCohort[fragmentType]);
+      expect(ipmCommands).toEqual(expectedIPMCommands.trialCohort);
     });
 
     after(async function () {

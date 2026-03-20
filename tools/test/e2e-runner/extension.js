@@ -539,12 +539,7 @@ export async function blockAds(expectedMinBlocked, expectedMaxBlocked, getPopupB
 }
 
 export async function clearRemoteConfigIpmCommands(initOptionsFn) {
-  const fragmentType = await getSelectedFragmentType(initOptionsFn);
-
-  await setRemoteConfigIpmCommands(
-    initOptionsFn,
-    fragmentType === "legacy" ? "test_adblock_delete" : "test_none",
-  );
+  await setRemoteConfigIpmCommands(initOptionsFn, "test_none");
   await syncRemoteConfig(initOptionsFn);
 }
 
@@ -569,16 +564,6 @@ export async function setUserId(initOptionsFn, userId) {
 }
 
 export async function setRemoteConfigUrl(initOptionsFn) {
-  const fragmentType = await getSelectedFragmentType(initOptionsFn);
-
-  if (fragmentType === "legacy") {
-    return sendExtMessage(initOptionsFn, {
-      type: "prefs.set",
-      key: "ipm_server_url",
-      value: "http://localhost:3007/ipm",
-    });
-  }
-
   return sendExtMessage(initOptionsFn, {
     type: "testing.setRemoteConfigUrl",
     url: "http://localhost:3008/remote-config",
@@ -586,12 +571,6 @@ export async function setRemoteConfigUrl(initOptionsFn) {
 }
 
 export async function setRemoteConfigCohorts(initOptionsFn, cohorts) {
-  const fragmentType = await getSelectedFragmentType(initOptionsFn);
-
-  if (fragmentType === "legacy") {
-    return;
-  }
-
   await fetch("http://localhost:3008/setCohorts", {
     method: "POST",
     cache: "no-cache",
@@ -601,12 +580,6 @@ export async function setRemoteConfigCohorts(initOptionsFn, cohorts) {
 }
 
 export async function setRemoteConfigCountryCode(initOptionsFn, countryCode) {
-  const fragmentType = await getSelectedFragmentType(initOptionsFn);
-
-  if (fragmentType === "legacy") {
-    return;
-  }
-
   await fetch("http://localhost:3008/setCountryCode", {
     method: "POST",
     cache: "no-cache",
@@ -616,18 +589,6 @@ export async function setRemoteConfigCountryCode(initOptionsFn, countryCode) {
 }
 
 export async function setRemoteConfigIpmCommands(initOptionsFn, scenarioId) {
-  const fragmentType = await getSelectedFragmentType(initOptionsFn);
-
-  if (fragmentType === "legacy") {
-    await fetch("http://localhost:3007/setIPMResponse", {
-      method: "POST",
-      cache: "no-cache",
-      headers: { "Content-Type": "application/json" },
-      body: scenarioId,
-    });
-    return;
-  }
-
   await fetch("http://localhost:3008/setIpmScenario", {
     method: "POST",
     cache: "no-cache",
@@ -651,85 +612,21 @@ export async function setIPMCooldowns(initOptionsFn) {
 }
 
 export async function syncRemoteConfig(initOptionsFn) {
-  const fragmentType = await getSelectedFragmentType(initOptionsFn);
-
-  if (fragmentType === "legacy") {
-    await sendExtMessage(initOptionsFn, {
-      type: "prefs.set",
-      key: "ipm_last_ping",
-      value: 0,
-    });
-    return sendExtMessage(initOptionsFn, {
-      type: "ipm:testing.ping_ipm_server",
-    });
-  }
-
   await sendExtMessage(initOptionsFn, {
     type: "testing.syncRemoteConfig",
   });
 }
 
 export async function getIPMCommands(initOptionsFn) {
-  const fragmentType = await getSelectedFragmentType(initOptionsFn);
-
-  if (fragmentType === "legacy") {
-    return sendExtMessage(initOptionsFn, {
-      type: "prefs.get",
-      key: "ipm_commands",
-    });
-  }
-
   return sendExtMessage(initOptionsFn, {
     type: "ipm:testing.getCommands",
   });
 }
 
-async function getSelectedFragmentType(initOptionsFn) {
-  return sendExtMessage(initOptionsFn, {
-    type: "testing.getSelectedFragmentType",
-  });
-}
-
 export async function clearDismissedIpmIds(initOptionsFn) {
-  const fragmentType = await getSelectedFragmentType(initOptionsFn);
-  if (fragmentType === "legacy") {
-    return;
-  }
-
   return sendExtMessage(initOptionsFn, {
     type: "ipm:testing.clearDismissedIpmIds",
   });
-}
-
-export async function resetIPMFragment(initOptionsFn) {
-  await sendExtMessage(initOptionsFn, {
-    type: "testing.resetIPMFragment",
-  });
-
-  await wait(
-    async () => {
-      const selectedFragmentType = await getSelectedFragmentType(getOptionsHandle);
-      return selectedFragmentType === "legacy";
-    },
-    5000,
-    "Fragment was not selected within the expected time",
-  );
-}
-
-export async function setIPMFragment(initOptionsFn, fragmentType) {
-  await sendExtMessage(initOptionsFn, {
-    type: "testing.setIPMFragment",
-    fragmentType,
-  });
-
-  await wait(
-    async () => {
-      const selectedFragmentType = await getSelectedFragmentType(getOptionsHandle);
-      return selectedFragmentType === fragmentType;
-    },
-    5000,
-    "Fragment was not selected within the expected time",
-  );
 }
 
 export async function waitForIpmCooldown() {

@@ -18,10 +18,7 @@
 import * as FutureFragment from "@eyeo-fragments/in-product-messaging/background";
 import * as LegacyFragment from "@eyeo-fragments/ipm-legacy/background";
 
-import {
-  type FutureFragmentOverrides,
-  type LegacyFragmentOverrides
-} from "./fragment-overrides.types";
+import { type FutureFragmentOverrides } from "./fragment-overrides.types";
 import { type CommandActor, type CommandName } from "./fragment-provider.types";
 
 /**
@@ -33,7 +30,6 @@ import { type CommandActor, type CommandName } from "./fragment-provider.types";
 function setCommandActor(commandName: CommandName, actor: CommandActor): void {
   // The command actor is only set once during the extension initialization,
   // so we apply it to both fragments at once
-  LegacyFragment.setCommandActor(commandName, actor);
   FutureFragment.setCommandActor(commandName, actor);
 }
 
@@ -48,17 +44,6 @@ export function getFutureFragmentOverrides(): FutureFragmentOverrides {
     defaultLicenseState: LegacyFragment.LicenseState.inactive,
     doesLicenseStateMatch: async () => true,
     isValidLicenseStateList: () => true,
-    setCommandActor
-  };
-}
-
-/**
- * Retrieves fragment API overrides for divergent functionality between them
- *
- * @returns fragment overrides
- */
-export function getLegacyFragmentOverrides(): LegacyFragmentOverrides {
-  return {
     setCommandActor
   };
 }

@@ -29,8 +29,6 @@ import {
   setRemoteConfigIpmCommands,
   getIPMCommands,
   setIPMCooldowns,
-  resetIPMFragment,
-  setIPMFragment,
   clearDismissedIpmIds,
   clearRemoteConfigIpmCommands,
   getPendingLoggerCdpEventStats,
@@ -59,7 +57,7 @@ import {
   setMarketingOptOutState,
 } from "../../utils/page.js";
 
-export default (fragmentType) => {
+export default () => {
   before(async function () {
     // IPMs are not supported in Firefox
     if (browserDetails.browserName === "firefox") {
@@ -72,8 +70,6 @@ export default (fragmentType) => {
     // so that newtabs can be triggered. This setting is otherwise set to true
     // to prevent real newtab IPMs from opening and interfering with the tests.
     await updateSettings(initOptionsGeneralTab, "suppress_update_page", false);
-
-    await setIPMFragment(getOptionsHandle, fragmentType);
   });
 
   beforeEach(async function () {
@@ -93,7 +89,6 @@ export default (fragmentType) => {
     await initOptionsGeneralTab(getOptionsHandle());
     await disablePremiumProgrammatically();
     await updateSettings(initOptionsGeneralTab, "suppress_update_page", true);
-    await resetIPMFragment(getOptionsHandle);
   });
 
   it("triggers a new tab campaign", async function () {
@@ -101,30 +96,22 @@ export default (fragmentType) => {
     await syncRemoteConfig(initOptionsGeneralTab);
 
     const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
-    expect(ipmCommands).toEqual(expectedIPMCommands.newtab[fragmentType]);
+    expect(ipmCommands).toEqual(expectedIPMCommands.newtab);
 
     await openNewTab(localTestPageUrl);
     await findUrl(updateUrlNewTab, { mustLoad: true });
     await initOptionsGeneralTab(getOptionsHandle());
 
-    // Legacy fragment uses ping payloads, future fragment uses CDP
-    if (fragmentType === "legacy") {
-      const pingPayload = await syncRemoteConfig(initOptionsGeneralTab);
-      expect(pingPayload.ipm.active).toEqual([]);
-      const actions = pingPayload.events.map((e) => e.action);
-      expect(actions).toEqual(["received", "tab_created", "has_content:1", "tab_loaded"]);
-    } else if (fragmentType === "future") {
-      await initOptionsGeneralTab(getOptionsHandle());
-      await waitForAssertion(async () => {
-        const { counts } = await getPendingLoggerCdpEventStats();
+    await initOptionsGeneralTab(getOptionsHandle());
+    await waitForAssertion(async () => {
+      const { counts } = await getPendingLoggerCdpEventStats();
 
-        const ipmId = "test_adblock_newtab";
-        expect(counts).toHaveProperty(`${commandReceivedEvent}:${ipmId}`, 1);
-        expect(counts).toHaveProperty(`${tabCommandReadyEvent}:${ipmId}`, 1);
-        expect(counts).toHaveProperty(`${tabCreatedEvent}:${ipmId}`, 1);
-        expect(counts).toHaveProperty(`${tabLoadedEvent}:${ipmId}`, 1);
-      });
-    }
+      const ipmId = "test_adblock_newtab";
+      expect(counts).toHaveProperty(`${commandReceivedEvent}:${ipmId}`, 1);
+      expect(counts).toHaveProperty(`${tabCommandReadyEvent}:${ipmId}`, 1);
+      expect(counts).toHaveProperty(`${tabCreatedEvent}:${ipmId}`, 1);
+      expect(counts).toHaveProperty(`${tabLoadedEvent}:${ipmId}`, 1);
+    });
   });
 
   it("triggers new tab campaigns by priority", async function () {
@@ -136,43 +123,29 @@ export default (fragmentType) => {
     const ipmIdHigh = "test_adblock_priority_high";
 
     let ipmCommands = await getIPMCommands(initOptionsGeneralTab);
-    expect(ipmCommands).toEqual(expectedIPMCommands.priority[fragmentType]);
+    expect(ipmCommands).toEqual(expectedIPMCommands.priority);
 
     await openNewTab(localTestPageUrl);
     await findUrl(updateUrlPriorityHigh, { mustLoad: true });
     await findUrl(updateUrlPriorityLow, { exists: false });
 
     ipmCommands = await getIPMCommands(initOptionsGeneralTab);
-    expect(ipmCommands).toEqual(expectedIPMCommands.lowPriority[fragmentType]);
+    expect(ipmCommands).toEqual(expectedIPMCommands.lowPriority);
 
-    // Legacy fragment uses ping payloads, future fragment uses CDP
-    if (fragmentType === "legacy") {
-      const pingPayload = await syncRemoteConfig(initOptionsGeneralTab);
-      const actions = pingPayload.events.map((e) => e.action);
-      expect(pingPayload.ipm.active).toEqual([{ id: "test_adblock_priority_low" }]);
-      expect(actions).toEqual([
-        "received",
-        "received",
-        "tab_created",
-        "has_content:1",
-        "tab_loaded",
-      ]);
-    } else if (fragmentType === "future") {
-      await initOptionsGeneralTab(getOptionsHandle());
-      await waitForAssertion(async () => {
-        const { counts } = await getPendingLoggerCdpEventStats();
+    await initOptionsGeneralTab(getOptionsHandle());
+    await waitForAssertion(async () => {
+      const { counts } = await getPendingLoggerCdpEventStats();
 
-        expect(counts).toHaveProperty(`${commandReceivedEvent}:${ipmIdLow}`, 1);
-        expect(counts).toHaveProperty(`${tabCommandReadyEvent}:${ipmIdLow}`, 1);
-        expect(counts).not.toHaveProperty(`${tabCreatedEvent}:${ipmIdLow}`);
-        expect(counts).not.toHaveProperty(`${tabLoadedEvent}:${ipmIdLow}`);
+      expect(counts).toHaveProperty(`${commandReceivedEvent}:${ipmIdLow}`, 1);
+      expect(counts).toHaveProperty(`${tabCommandReadyEvent}:${ipmIdLow}`, 1);
+      expect(counts).not.toHaveProperty(`${tabCreatedEvent}:${ipmIdLow}`);
+      expect(counts).not.toHaveProperty(`${tabLoadedEvent}:${ipmIdLow}`);
 
-        expect(counts).toHaveProperty(`${commandReceivedEvent}:${ipmIdHigh}`, 1);
-        expect(counts).toHaveProperty(`${tabCommandReadyEvent}:${ipmIdHigh}`, 1);
-        expect(counts).toHaveProperty(`${tabCreatedEvent}:${ipmIdHigh}`, 1);
-        expect(counts).toHaveProperty(`${tabLoadedEvent}:${ipmIdHigh}`, 1);
-      });
-    }
+      expect(counts).toHaveProperty(`${commandReceivedEvent}:${ipmIdHigh}`, 1);
+      expect(counts).toHaveProperty(`${tabCommandReadyEvent}:${ipmIdHigh}`, 1);
+      expect(counts).toHaveProperty(`${tabCreatedEvent}:${ipmIdHigh}`, 1);
+      expect(counts).toHaveProperty(`${tabLoadedEvent}:${ipmIdHigh}`, 1);
+    });
 
     await reloadExtension(initOptionsGeneralTab, { suppressUpdatePage: false });
     await setRemoteConfigUrl(initOptionsGeneralTab);
@@ -180,26 +153,20 @@ export default (fragmentType) => {
     await openNewTab(localTestPageUrl);
     await findUrl(updateUrlPriorityLow, { mustLoad: true });
 
-    // Legacy fragment uses ping payloads, future fragment uses CDP
-    if (fragmentType === "legacy") {
-      const pingPayload = await syncRemoteConfig(initOptionsGeneralTab);
-      expect(pingPayload.ipm.active).toEqual([]);
-    } else if (fragmentType === "future") {
-      await initOptionsGeneralTab(getOptionsHandle());
-      await waitForAssertion(async () => {
-        const { counts } = await getPendingLoggerCdpEventStats();
+    await initOptionsGeneralTab(getOptionsHandle());
+    await waitForAssertion(async () => {
+      const { counts } = await getPendingLoggerCdpEventStats();
 
-        expect(counts).toHaveProperty(`${commandReceivedEvent}:${ipmIdLow}`, 1);
-        expect(counts).toHaveProperty(`${tabCommandReadyEvent}:${ipmIdLow}`, 2);
-        expect(counts).toHaveProperty(`${tabCreatedEvent}:${ipmIdLow}`, 1);
-        expect(counts).toHaveProperty(`${tabLoadedEvent}:${ipmIdLow}`, 1);
+      expect(counts).toHaveProperty(`${commandReceivedEvent}:${ipmIdLow}`, 1);
+      expect(counts).toHaveProperty(`${tabCommandReadyEvent}:${ipmIdLow}`, 2);
+      expect(counts).toHaveProperty(`${tabCreatedEvent}:${ipmIdLow}`, 1);
+      expect(counts).toHaveProperty(`${tabLoadedEvent}:${ipmIdLow}`, 1);
 
-        expect(counts).toHaveProperty(`${commandReceivedEvent}:${ipmIdHigh}`, 1);
-        expect(counts).toHaveProperty(`${tabCommandReadyEvent}:${ipmIdHigh}`, 1);
-        expect(counts).toHaveProperty(`${tabCreatedEvent}:${ipmIdHigh}`, 1);
-        expect(counts).toHaveProperty(`${tabLoadedEvent}:${ipmIdHigh}`, 1);
-      });
-    }
+      expect(counts).toHaveProperty(`${commandReceivedEvent}:${ipmIdHigh}`, 1);
+      expect(counts).toHaveProperty(`${tabCommandReadyEvent}:${ipmIdHigh}`, 1);
+      expect(counts).toHaveProperty(`${tabCreatedEvent}:${ipmIdHigh}`, 1);
+      expect(counts).toHaveProperty(`${tabLoadedEvent}:${ipmIdHigh}`, 1);
+    });
   });
 
   it("does not trigger a new tab campaign if opted out of marketing messages", async function () {
@@ -239,31 +206,23 @@ export default (fragmentType) => {
         },
       },
     ]);
-    await setRemoteConfigIpmCommands(initOptionsGeneralTab, `test_adblock_premium_${fragmentType}`);
+    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_premium");
     await syncRemoteConfig(initOptionsGeneralTab);
 
     const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
-    expect(ipmCommands).toEqual(expectedIPMCommands.premium[fragmentType]);
+    expect(ipmCommands).toEqual(expectedIPMCommands.premium);
 
     await openNewTab(localTestPageUrl);
     await findUrl(updateUrlPremium, { exists: false });
 
-    // Legacy fragment uses ping payloads, future fragment uses CDP
-    if (fragmentType === "legacy") {
-      const pingPayload = await syncRemoteConfig(initOptionsGeneralTab);
-      const actions = pingPayload.events.map((e) => e.action);
+    await initOptionsGeneralTab(getOptionsHandle());
+    const { counts } = await getPendingLoggerCdpEventStats();
 
-      expect(actions).toEqual(["received", "license_state_no_match"]);
-    } else if (fragmentType === "future") {
-      await initOptionsGeneralTab(getOptionsHandle());
-      const { counts } = await getPendingLoggerCdpEventStats();
-
-      const ipmId = "test_adblock_premium";
-      expect(counts).toHaveProperty(`${commandReceivedEvent}:${ipmId}`, 1);
-      expect(counts).not.toHaveProperty(`${tabCommandReadyEvent}:${ipmId}`);
-      expect(counts).not.toHaveProperty(`${tabCreatedEvent}:${ipmId}`);
-      expect(counts).not.toHaveProperty(`${tabLoadedEvent}:${ipmId}`);
-    }
+    const ipmId = "test_adblock_premium";
+    expect(counts).toHaveProperty(`${commandReceivedEvent}:${ipmId}`, 1);
+    expect(counts).not.toHaveProperty(`${tabCommandReadyEvent}:${ipmId}`);
+    expect(counts).not.toHaveProperty(`${tabCreatedEvent}:${ipmId}`);
+    expect(counts).not.toHaveProperty(`${tabLoadedEvent}:${ipmId}`);
   });
 
   it("force triggers a new tab campaign", async function () {
@@ -275,17 +234,15 @@ export default (fragmentType) => {
     await syncRemoteConfig(initOptionsGeneralTab);
     await findUrl(updateUrlForce, { mustLoad: true });
 
-    if (fragmentType === "future") {
-      await initOptionsGeneralTab(getOptionsHandle());
-      await waitForAssertion(async () => {
-        const { counts } = await getPendingLoggerCdpEventStats();
+    await initOptionsGeneralTab(getOptionsHandle());
+    await waitForAssertion(async () => {
+      const { counts } = await getPendingLoggerCdpEventStats();
 
-        const ipmId = "test_adblock_force";
-        expect(counts).toHaveProperty(`${commandReceivedEvent}:${ipmId}`, 1);
-        expect(counts).toHaveProperty(`${tabCommandReadyEvent}:${ipmId}`, 1);
-        expect(counts).toHaveProperty(`${tabCreatedEvent}:${ipmId}`, 1);
-        expect(counts).toHaveProperty(`${tabLoadedEvent}:${ipmId}`, 1);
-      });
-    }
+      const ipmId = "test_adblock_force";
+      expect(counts).toHaveProperty(`${commandReceivedEvent}:${ipmId}`, 1);
+      expect(counts).toHaveProperty(`${tabCommandReadyEvent}:${ipmId}`, 1);
+      expect(counts).toHaveProperty(`${tabCreatedEvent}:${ipmId}`, 1);
+      expect(counts).toHaveProperty(`${tabLoadedEvent}:${ipmId}`, 1);
+    });
   });
 };

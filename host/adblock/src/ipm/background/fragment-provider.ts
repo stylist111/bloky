@@ -16,33 +16,10 @@
  */
 
 import * as FutureFragment from "@eyeo-fragments/in-product-messaging/background";
-import * as LegacyFragment from "@eyeo-fragments/ipm-legacy/background";
-import * as ewe from "@eyeo/webext-ad-filtering-solution";
 
-import { port } from "../../../adblockplusui/adblockpluschrome/lib/messaging/port";
-import { getFutureFragmentOverrides, getLegacyFragmentOverrides } from "./fragment-overrides";
-import {
-  featureFlagId,
-  type Fragment,
-  FragmentType,
-  type SetFragmentMessage,
-} from "./fragment-provider.types";
-import { getFutureStartInfo, legacyStartInfo } from "./start-info";
-
-/**
- * The currently used fragment type
- */
-let selectedFragmentType: FragmentType = FragmentType.future;
-
-/**
- * Returns the fragment type, as indicated by the feature flag
- *
- * @returns fragment type, as indicated by the feature flag
- */
-async function getExpectedFragmentType(): Promise<FragmentType> {
-  const featureFlag = await ewe.experiments.getFlag(featureFlagId);
-  return featureFlag === true ? FragmentType.future : FragmentType.legacy;
-}
+import { getFutureFragmentOverrides } from "./fragment-overrides";
+import { type Fragment } from "./fragment-provider.types";
+import { getFutureStartInfo } from "./start-info";
 
 /**
  * Returns a reference to the currently selected fragment
@@ -50,10 +27,6 @@ async function getExpectedFragmentType(): Promise<FragmentType> {
  * @returns A reference to the fragment
  */
 export function getFragment(): Fragment {
-  if (selectedFragmentType === FragmentType.legacy) {
-    return { ...LegacyFragment, ...getLegacyFragmentOverrides() };
-  }
-
   return { ...FutureFragment, ...getFutureFragmentOverrides() };
 }
 
@@ -63,28 +36,7 @@ export function getFragment(): Fragment {
  * @returns whether the currently selected fragment is the future fragment
  */
 export function isFutureFragment(): boolean {
-  return selectedFragmentType === FragmentType.future;
-}
-
-/**
- * Selects the fragment to be used based on the according feature flag
- */
-async function selectFragment(): Promise<void> {
-  selectedFragmentType = await getExpectedFragmentType();
-}
-
-/**
- * Switches to the current selected fragment
- */
-async function switchFragment(): Promise<void> {
-  const expectedFragmentType = await getExpectedFragmentType();
-  if (expectedFragmentType === selectedFragmentType) {
-    return;
-  }
-
-  await getFragment().stop();
-  await selectFragment();
-  await startFragment();
+  return true;
 }
 
 /**
@@ -92,35 +44,14 @@ async function switchFragment(): Promise<void> {
  * StartInfo argument
  */
 async function startFragment(): Promise<void> {
-  const fragment = getFragment();
-
-  if (selectedFragmentType === FragmentType.legacy) {
-    await (fragment as typeof LegacyFragment).start(legacyStartInfo);
-    return;
-  }
-
+  const fragment = getFragment() as typeof FutureFragment;
   const futureStartInfo = await getFutureStartInfo();
-  await (fragment as typeof FutureFragment).start(futureStartInfo);
+  await fragment.start(futureStartInfo);
 }
 
 /**
  * Starts the IPM fragment provider feature
  */
 export async function start(): Promise<void> {
-  await selectFragment();
   await startFragment();
-
-  ewe.experiments.onChanged.addListener(() => {
-    void switchFragment();
-  });
-
-  port.on("testing.getSelectedFragmentType", () => {
-    return selectedFragmentType;
-  });
-  port.on("testing.resetIPMFragment", async () => {
-    await ewe.experiments.clearFlagOverrides();
-  });
-  port.on("testing.setIPMFragment", async (message: SetFragmentMessage) => {
-    await ewe.experiments.overrideFlag(featureFlagId, message.fragmentType === FragmentType.future);
-  });
 }

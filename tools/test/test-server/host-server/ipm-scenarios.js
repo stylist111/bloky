@@ -45,9 +45,9 @@ export default {
       license_state_list: "premium",
     },
   ],
-  test_adblock_navigation_future: [
+  test_adblock_navigation: [
     {
-      ipm_id: "test_adblock_navigation_future",
+      ipm_id: "test_adblock_navigation",
       command_name: "create_on_page_dialog",
       timing: "after_navigation",
       version: 8,
@@ -65,9 +65,9 @@ export default {
       display_duration: 1,
     },
   ],
-  test_adblock_exclusion_future: [
+  test_adblock_exclusion: [
     {
-      ipm_id: "test_adblock_exclusion_future",
+      ipm_id: "test_adblock_exclusion",
       command_name: "create_on_page_dialog",
       timing: "after_navigation",
       version: 8,
@@ -85,9 +85,9 @@ export default {
       display_duration: 1,
     },
   ],
-  test_adblock_cookie_future: [
+  test_adblock_cookie: [
     {
-      ipm_id: "test_adblock_cookie_future",
+      ipm_id: "test_adblock_cookie",
       command_name: "create_on_page_dialog",
       timing: "cookie_banner",
       version: 8,
@@ -100,55 +100,6 @@ export default {
           button_label: "CTA cookie",
         },
       },
-      license_state_list: "free",
-      button_target: "/premium",
-      display_duration: 1,
-      priority: 100,
-    },
-  ],
-  test_adblock_navigation_legacy: [
-    {
-      ipm_id: "test_adblock_navigation_legacy",
-      command_name: "create_on_page_dialog",
-      timing: "after_navigation",
-      version: 7,
-      domain_list: "google.com,wikipedia.org,example.com",
-      sub_title: "OPD navigation title",
-      lower_body: "ipmID: test_adblock_navigation",
-      upper_body: "This is a test OPD based on navigation",
-      button_label: "CTA navigation",
-      license_state_list: "free",
-      button_target: "/premium",
-      display_duration: 1,
-    },
-  ],
-  test_adblock_exclusion_legacy: [
-    {
-      ipm_id: "test_adblock_exclusion_legacy",
-      command_name: "create_on_page_dialog",
-      timing: "after_navigation",
-      version: 7,
-      domain_list: "~example.com",
-      sub_title: "OPD exclusion title",
-      lower_body: "ipmID: test_adblock_exclusion",
-      upper_body: "This is a test OPD based on exclusion",
-      button_label: "CTA exclusion",
-      license_state_list: "free",
-      button_target: "/premium",
-      display_duration: 1,
-    },
-  ],
-  test_adblock_cookie_legacy: [
-    {
-      ipm_id: "test_adblock_cookie_legacy",
-      command_name: "create_on_page_dialog",
-      timing: "cookie_banner",
-      version: 7,
-      domain_list: "dw.com,welt.de,example.com",
-      sub_title: "OPD cookie title",
-      lower_body: "ipmID: test_adblock_cookie",
-      upper_body: "This is a test cookie baner OPD",
-      button_label: "CTA cookie",
       license_state_list: "free",
       button_target: "/premium",
       display_duration: 1,
@@ -173,17 +124,7 @@ export default {
       priority: 3,
     },
   ],
-  test_adblock_premium_legacy: [
-    {
-      ipm_id: "test_adblock_premium",
-      command_name: "create_tab",
-      version: 6,
-      url: "/update?ipmId=test_adblock_premium",
-      method: "default",
-      license_state_list: "free",
-    },
-  ],
-  test_adblock_premium_future: [
+  test_adblock_premium: [
     {
       ipm_id: "test_adblock_premium",
       cohort: "test-free-users",
@@ -201,7 +142,7 @@ export default {
       version: 2,
     },
   ],
-  test_adblock_translations_future: [
+  test_adblock_translations: [
     {
       ipm_id: "test_adblock_translations",
       command_name: "create_on_page_dialog",
@@ -279,17 +220,7 @@ export default {
       priority: 3,
     },
   ],
-  test_adblockplus_premium_legacy: [
-    {
-      ipm_id: "test_adblockplus_premium",
-      command_name: "create_tab",
-      version: 6,
-      url: "/update?ipmId=test_adblockplus_premium",
-      method: "default",
-      license_state_list: "free",
-    },
-  ],
-  test_adblockplus_premium_future: [
+  test_adblockplus_premium: [
     {
       ipm_id: "test_adblockplus_premium",
       cohort: "test-free-users",
@@ -307,9 +238,9 @@ export default {
       version: 2,
     },
   ],
-  test_adblockplus_navigation_future: [
+  test_adblockplus_navigation: [
     {
-      ipm_id: "test_adblockplus_navigation_future",
+      ipm_id: "test_adblockplus_navigation",
       command_name: "create_on_page_dialog",
       timing: "after_navigation",
       version: 8,
@@ -327,9 +258,9 @@ export default {
       display_duration: 1,
     },
   ],
-  test_adblockplus_exclusion_future: [
+  test_adblockplus_exclusion: [
     {
-      ipm_id: "test_adblockplus_exclusion_future",
+      ipm_id: "test_adblockplus_exclusion",
       command_name: "create_on_page_dialog",
       timing: "after_navigation",
       version: 8,
@@ -347,9 +278,9 @@ export default {
       display_duration: 1,
     },
   ],
-  test_adblockplus_cookie_future: [
+  test_adblockplus_cookie: [
     {
-      ipm_id: "test_adblockplus_cookie_future",
+      ipm_id: "test_adblockplus_cookie",
       command_name: "create_on_page_dialog",
       timing: "cookie_banner",
       version: 8,
@@ -368,56 +299,7 @@ export default {
       priority: 100,
     },
   ],
-  test_adblockplus_navigation_legacy: [
-    {
-      ipm_id: "test_adblockplus_navigation_legacy",
-      command_name: "create_on_page_dialog",
-      timing: "after_navigation",
-      version: 7,
-      domain_list: "google.com,example.net,example.com",
-      sub_title: "OPD navigation title",
-      lower_body: "ipmID: test_adblockplus_navigation",
-      upper_body: "This is a test OPD based on navigation",
-      button_label: "CTA navigation",
-      license_state_list: "free",
-      button_target: "/update?ipmId=test_adblockplus_navigation",
-      display_duration: 1,
-    },
-  ],
-  test_adblockplus_exclusion_legacy: [
-    {
-      ipm_id: "test_adblockplus_exclusion_legacy",
-      command_name: "create_on_page_dialog",
-      timing: "after_navigation",
-      version: 7,
-      domain_list: "~example.org",
-      sub_title: "OPD exclusion title",
-      lower_body: "ipmID: test_adblockplus_exclusion",
-      upper_body: "This is a test OPD based on exclusion",
-      button_label: "CTA exclusion",
-      license_state_list: "free",
-      button_target: "/update",
-      display_duration: 1,
-    },
-  ],
-  test_adblockplus_cookie_legacy: [
-    {
-      ipm_id: "test_adblockplus_cookie_legacy",
-      command_name: "create_on_page_dialog",
-      timing: "cookie_banner",
-      version: 7,
-      domain_list: "dw.com,welt.de,example.org",
-      sub_title: "OPD cookie title",
-      lower_body: "ipmID: test_adblockplus_cookie",
-      upper_body: "This is a test cookie baner OPD",
-      button_label: "CTA cookie",
-      license_state_list: "free",
-      button_target: "/update",
-      display_duration: 1,
-      priority: 100,
-    },
-  ],
-  test_adblockplus_translations_future: [
+  test_adblockplus_translations: [
     {
       ipm_id: "test_adblockplus_translations",
       command_name: "create_on_page_dialog",

@@ -29,8 +29,6 @@ import {
   setRemoteConfigIpmCommands,
   getIPMCommands,
   setIPMCooldowns,
-  resetIPMFragment,
-  setIPMFragment,
   clearDismissedIpmIds,
   getPendingLoggerCdpEventStats,
 } from "@eyeo/test-utils/extension";
@@ -51,7 +49,7 @@ import {
 import { initOptionsGeneralTab } from "../../utils/page.js";
 import { expectedIPMCommands } from "../../utils/ipms.js";
 
-export default (fragmentType) => {
+export default () => {
   before(async function () {
     await setIPMCooldowns(initOptionsGeneralTab);
 
@@ -59,8 +57,6 @@ export default (fragmentType) => {
     // so that newtabs can be triggered. This setting is otherwise set to true
     // to prevent real newtab IPMs from opening and interfering with the tests.
     await updateSettings(initOptionsGeneralTab, "suppress_update_page", false);
-
-    await setIPMFragment(getOptionsHandle, fragmentType);
   });
 
   beforeEach(async function () {
@@ -72,63 +68,7 @@ export default (fragmentType) => {
   after(async function () {
     await initOptionsGeneralTab(getOptionsHandle());
     await updateSettings(initOptionsGeneralTab, "suppress_update_page", true);
-    await resetIPMFragment(getOptionsHandle);
     await resetRemoteConfig(initOptionsGeneralTab);
-  });
-
-  it("checks command versions and ping alarm", async function () {
-    // IPMs are not supported in Firefox
-    if (browserDetails.browserName === "firefox") {
-      this.skip();
-    }
-
-    // Pings only exist in the legacy fragment
-    if (fragmentType === "future") {
-      this.skip();
-    }
-
-    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_versions");
-    const payload = await syncRemoteConfig(initOptionsGeneralTab);
-    const { capabilities } = payload.ipm;
-    let { pingAlarm } = await driver.executeAsyncScript(async (callback) => {
-      pingAlarm = await browser.alarms.get("pingalarm");
-      callback({ pingAlarm });
-    });
-
-    expect(pingAlarm.scheduledTime).toBeGreaterThan(Date.now());
-    expect(capabilities).toEqual([
-      { name: "multi_ipm_response", version: 1 },
-      { name: "create_on_page_dialog", version: 7 },
-      { name: "create_tab", version: 6 },
-      { name: "delete_commands", version: 2 },
-    ]);
-  });
-
-  it("dismisses a command (using delete_commands command)", async function () {
-    // IPMs are not supported in Firefox
-    if (browserDetails.browserName === "firefox") {
-      this.skip();
-    }
-
-    // The delete_commands command is not needed in the future fragment
-    if (fragmentType === "future") {
-      this.skip();
-    }
-
-    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_versions");
-    await syncRemoteConfig(initOptionsGeneralTab);
-
-    let ipmCommands = await getIPMCommands(initOptionsGeneralTab);
-    expect(ipmCommands).toEqual(expectedIPMCommands.versions[fragmentType]);
-
-    await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_delete");
-    await syncRemoteConfig(initOptionsGeneralTab);
-
-    ipmCommands = await getIPMCommands(initOptionsGeneralTab);
-    expect(ipmCommands).toEqual({});
-
-    await openNewTab(localTestPageUrl);
-    await findUrl(updateUrlVersions, { exists: false });
   });
 
   it("dismisses a command (if no longer present in remote config)", async function () {
@@ -137,16 +77,11 @@ export default (fragmentType) => {
       this.skip();
     }
 
-    // This behavior only exists in the future fragment
-    if (fragmentType === "legacy") {
-      this.skip();
-    }
-
     await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_adblock_versions");
     await syncRemoteConfig(initOptionsGeneralTab);
 
     let ipmCommands = await getIPMCommands(initOptionsGeneralTab);
-    expect(ipmCommands).toEqual(expectedIPMCommands.versions[fragmentType]);
+    expect(ipmCommands).toEqual(expectedIPMCommands.versions);
 
     await setRemoteConfigIpmCommands(initOptionsGeneralTab, "test_none");
     await syncRemoteConfig(initOptionsGeneralTab);
@@ -168,7 +103,7 @@ export default (fragmentType) => {
     await syncRemoteConfig(initOptionsGeneralTab);
 
     const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
-    // For future fragment, the command is not stored due to invalid commands
+    // The command is not stored due to invalid commands
     // causing the entire remote config to be invalid
     expect(ipmCommands).toEqual({});
 
@@ -186,11 +121,7 @@ export default (fragmentType) => {
     await syncRemoteConfig(initOptionsGeneralTab);
 
     const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
-    if (fragmentType === "legacy") {
-      expect(ipmCommands).toEqual({});
-    } else {
-      expect(ipmCommands).toEqual(expectedIPMCommands.error_unknown_command[fragmentType]);
-    }
+    expect(ipmCommands).toEqual(expectedIPMCommands.error_unknown_command);
 
     await openNewTab(localTestPageUrl);
     await findUrl(updateUrlVersions, { exists: false });
@@ -222,7 +153,7 @@ export default (fragmentType) => {
     await syncRemoteConfig(initOptionsGeneralTab);
 
     const ipmCommands = await getIPMCommands(initOptionsGeneralTab);
-    // For future fragment, the command is not stored due to missing parameters
+    // The command is not stored due to missing parameters
     // causing the entire remote config to be invalid
     expect(ipmCommands).toEqual({});
 
@@ -233,11 +164,6 @@ export default (fragmentType) => {
   it("executes only commands with matching cohorts", async function () {
     // IPMs are not supported in Firefox
     if (browserDetails.browserName === "firefox") {
-      this.skip();
-    }
-
-    // This behavior only exists in the future fragment
-    if (fragmentType === "legacy") {
       this.skip();
     }
 
@@ -264,7 +190,7 @@ export default (fragmentType) => {
     await syncRemoteConfig(initOptionsGeneralTab);
 
     let ipmCommands = await getIPMCommands(initOptionsGeneralTab);
-    expect(ipmCommands).toEqual(expectedIPMCommands.cohort[fragmentType]);
+    expect(ipmCommands).toEqual(expectedIPMCommands.cohort);
 
     await openNewTab(localTestPageUrl);
     await findUrl(updateUrlCohort, { exists: false });
@@ -273,7 +199,7 @@ export default (fragmentType) => {
     await syncRemoteConfig(initOptionsGeneralTab);
 
     ipmCommands = await getIPMCommands(initOptionsGeneralTab);
-    expect(ipmCommands).toEqual(expectedIPMCommands.cohort[fragmentType]);
+    expect(ipmCommands).toEqual(expectedIPMCommands.cohort);
 
     await openNewTab(localTestPageUrl);
     await findUrl(updateUrlCohort, { exists: true });
@@ -282,11 +208,6 @@ export default (fragmentType) => {
   it("with multiple ipm configs, executes only commands with matching extension cohorts", async function () {
     // IPMs are not supported in Firefox
     if (browserDetails.browserName === "firefox") {
-      this.skip();
-    }
-
-    // This behavior only exists in the future fragment
-    if (fragmentType === "legacy") {
       this.skip();
     }
 

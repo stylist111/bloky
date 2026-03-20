@@ -38,8 +38,3 @@ export interface FutureFragmentOverrides extends AbstractOverrides {
   doesLicenseStateMatch: (behavior: LicenseStateBehavior) => Promise<boolean>;
   isValidLicenseStateList: (candidate: unknown) => boolean;
 }
-
-/**
- * Overrides for legacy fragment for compatibility with future fragment
- */
-export interface LegacyFragmentOverrides extends AbstractOverrides {}

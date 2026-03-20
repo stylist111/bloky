@@ -23,11 +23,10 @@ import * as info from "info";
 
 import { Prefs } from "~/alias/prefs";
 import { getUserId } from "~/id/background";
-import { License } from "~/picreplacement/check";
 import * as utils from "~/utilities/background";
 import { port } from "../../../adblockplusui/adblockpluschrome/lib/messaging/port";
 import { getBlockCount } from "./block-count";
-import { type FutureFragment, type LegacyFragment } from "./fragment-provider.types";
+import { type FutureFragment } from "./fragment-provider.types";
 
 /**
  * The information the future IPM fragment needs to start up.
@@ -84,45 +83,3 @@ export async function getFutureStartInfo(): Promise<FutureFragment.StartInfo> {
     },
   };
 }
-
-/**
- * The information the legacy IPM fragments needs to start up.
- */
-export const legacyStartInfo: LegacyFragment.StartInfo = {
-  prefs: Prefs,
-  logger: utils,
-  licensing: {
-    async isLicenseValid() {
-      await License.ready();
-      return await License.isActiveLicense();
-    },
-  },
-  info: {
-    async getId() {
-      return await getUserId();
-    },
-    getAppName() {
-      return info.baseName;
-    },
-    getAppVersion() {
-      return info.addonVersion;
-    },
-    getBrowserName() {
-      return info.application;
-    },
-    getBrowserVersion() {
-      return info.applicationVersion;
-    },
-  },
-  getBlockCount,
-  async isOptedOut() {
-    await Prefs.untilLoaded;
-    return Prefs.get("data_collection_opt_out") === true;
-  },
-  addMessageListener(name, listener) {
-    port.on(name, listener);
-  },
-  removeMessageListener(name, listener) {
-    port.off(name, listener);
-  },
-};

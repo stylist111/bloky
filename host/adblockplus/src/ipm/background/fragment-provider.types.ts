@@ -16,13 +16,8 @@
  */
 
 import type * as FutureFragment from "@eyeo-fragments/in-product-messaging/background";
-import type * as LegacyFragment from "@eyeo-fragments/ipm-legacy/background";
 
-import { type Message } from "~/core/messaging/shared";
-import {
-  type FutureFragmentOverrides,
-  type LegacyFragmentOverrides
-} from "./fragment-overrides.types";
+import { type FutureFragmentOverrides } from "./fragment-overrides.types";
 
 // re-export common types
 export type {
@@ -42,32 +37,16 @@ export {
 } from "@eyeo-fragments/in-product-messaging/background";
 
 // export differing types
-export { type FutureFragment, type LegacyFragment };
+export { type FutureFragment };
 
 /**
  * A type alias for the fragments
  */
-export type Fragment =
-  | (typeof LegacyFragment & LegacyFragmentOverrides)
-  | (typeof FutureFragment & FutureFragmentOverrides);
+export type Fragment = typeof FutureFragment & FutureFragmentOverrides;
 
 /**
  * An enum for the fragment types we have
  */
 export enum FragmentType {
-  legacy = "legacy",
   future = "future"
 }
-
-/**
- * Message object for "testing.setIPMFragment" type
- */
-export interface SetIPMFragmentMessage extends Message {
-  type: typeof featureFlagId;
-  fragmentType: FragmentType;
-}
-
-/**
- * IPM fragment feature flag ID
- */
-export const featureFlagId = "ipm-use-future-fragment";

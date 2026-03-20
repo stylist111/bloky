@@ -85,13 +85,11 @@ export default () => {
       describe("Premium user with account", getPremiumWithAccount);
     });
 
-    for (const fragmentType of ["future"]) {
-      describe(`IPM (${fragmentType})`, function () {
-        describe("Campaigns - General", () => ipmCampaigns(fragmentType));
-        describe("Campaigns - OPD", () => opdCampaigns(fragmentType));
-        describe("Campaigns - Newtab", () => newtabCampaigns(fragmentType));
-      });
-    }
+    describe(`In-product messaging`, function () {
+      describe("Campaigns - General", ipmCampaigns);
+      describe("Campaigns - OPD", opdCampaigns);
+      describe("Campaigns - Newtab", newtabCampaigns);
+    });
 
     describe("Integrated update campaign", updateCampaign);
 
