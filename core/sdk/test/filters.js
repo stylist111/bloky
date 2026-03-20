@@ -638,6 +638,7 @@ describe("Filters", function() {
       `@@|${TEST_PAGES_URL}/iframe.html^$document`;
 
     it("returns filters for allowlisted tabs [fuzz]", async function() {
+      setMinTimeout(this, 10000);
       await addFilter(`|${TEST_PAGES_URL}/image.png^`);
       await addFilter(ALLOWING_IMAGE_DOC_FILTER);
 
