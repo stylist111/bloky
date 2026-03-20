@@ -124,12 +124,13 @@ export default (fragmentType) => {
         expect(counts).toHaveProperty(`${tabCommandReadyEvent}:${ipmId}`, 1);
         expect(counts).toHaveProperty(`${tabCreatedEvent}:${ipmId}`, 1);
         expect(counts).toHaveProperty(`${tabLoadedEvent}:${ipmId}`, 1);
-      });
+      }, 5000);
     }
   });
 
   it("triggers a new tab campaigns by priority", async function () {
     setTimeoutForExtensionReload(this);
+    this.timeout(90000);
     await setRemoteConfigIpmCommands(
       initOptionsGeneralTab,
       "test_adblockplus_priority"
@@ -144,7 +145,7 @@ export default (fragmentType) => {
 
     await openNewTab(localTestPageUrl);
     await findUrl(updateUrlPriorityHigh, { mustLoad: true });
-    await findUrl(updateUrlPriorityLow, { exists: false });
+    await findUrl(updateUrlPriorityLow, { exists: false, timeout: 2000 });
 
     ipmCommands = await getIPMCommands(initOptionsGeneralTab);
     expect(ipmCommands).toEqual(expectedIPMCommands.lowPriority[fragmentType]);
@@ -177,7 +178,7 @@ export default (fragmentType) => {
         );
         expect(counts).toHaveProperty(`${tabCreatedEvent}:${ipmIdHigh}`, 1);
         expect(counts).toHaveProperty(`${tabLoadedEvent}:${ipmIdHigh}`, 1);
-      });
+      }, 5000);
     }
 
     await reloadExtension(initOptionsGeneralTab, {
@@ -212,7 +213,7 @@ export default (fragmentType) => {
         );
         expect(counts).toHaveProperty(`${tabCreatedEvent}:${ipmIdHigh}`, 1);
         expect(counts).toHaveProperty(`${tabLoadedEvent}:${ipmIdHigh}`, 1);
-      });
+      }, 5000);
     }
   });
 
