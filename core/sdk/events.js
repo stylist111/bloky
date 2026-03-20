@@ -230,6 +230,11 @@ export default {
       }
     }
   },
+  adblockplus_ui: {
+    issue_report_submitted: {
+      description: "Issue report was submitted"
+    }
+  },
   smart_allowlisting: {
     allowlisting_expired: {
       description: "An allowlisting filter expired automatically",

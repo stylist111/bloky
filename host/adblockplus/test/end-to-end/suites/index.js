@@ -85,7 +85,7 @@ export default () => {
       describe("Premium user with account", getPremiumWithAccount);
     });
 
-    for (const fragmentType of ["legacy", "future"]) {
+    for (const fragmentType of ["future", "legacy"]) {
       describe(`IPM (${fragmentType})`, function () {
         describe("Campaigns - General", () => ipmCampaigns(fragmentType));
         describe("Campaigns - OPD", () => opdCampaigns(fragmentType));

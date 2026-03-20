@@ -15,6 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import * as ewe from "@eyeo/webext-ad-filtering-solution/ui";
 import { getUUID } from "~/id/shared";
 import { convertDoclinks } from "../../common.mjs";
 import { $, asIndentedString } from "../../dom.mjs";
@@ -27,6 +28,8 @@ import {
 import stepsManager from "./steps-manager.mjs";
 
 import "../../../src/issue-reporter/ui/issue-reporter.css";
+
+const serverLogger = new ewe.telemetry.ServerLogger("adblockplus_ui");
 
 const optionalPermissions = {
   permissions: ["contentSettings", "management"]
@@ -103,6 +106,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       cancelButton.disabled = true;
       cancelButton.hidden = true;
       sendReport(reportWithScreenshot(...results));
+      serverLogger.behavior("issue_report_submitted");
       sendButton.textContent = browser.i18n.getMessage(
         "issueReporter_closeButton_label"
       );

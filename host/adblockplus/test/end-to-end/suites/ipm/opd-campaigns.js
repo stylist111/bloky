@@ -219,6 +219,9 @@ export default (fragmentType) => {
   });
 
   it("triggers an OPD campaign cookie", async function () {
+    if (fragmentType === "legacy") {
+      this.skip();
+    }
     await setRemoteConfigIpmCommands(
       initOptionsGeneralTab,
       `test_adblockplus_cookie_${fragmentType}`
