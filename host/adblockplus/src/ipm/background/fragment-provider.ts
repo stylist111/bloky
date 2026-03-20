@@ -36,7 +36,7 @@ import { getFutureStartInfo, legacyStartInfo } from "./start-info";
 /**
  * The currently used fragment type
  */
-let selectedFragmentType: FragmentType = FragmentType.legacy;
+let selectedFragmentType: FragmentType = FragmentType.future;
 
 /**
  * Returns the fragment type, as indicated by the feature flag
