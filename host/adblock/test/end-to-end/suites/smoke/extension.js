@@ -65,6 +65,16 @@ export default () => {
       [browserVersion] = navigatorText.match(/(?<=rv:)(\d|\.)+/);
     }
 
+    const params = new URLSearchParams(new URL(url).search);
+    const actualParams = Object.fromEntries(params);
+
+    // Firefox users are opted out of data collection, so no
+    // parameters are included in the install URL.
+    if (browserDetails.browserName === "firefox") {
+      expect(actualParams).toEqual({});
+      return;
+    }
+
     const base = {
       lg: expect.stringMatching(/^[a-z]+-/),
       av: appVersion,
@@ -85,19 +95,10 @@ export default () => {
         ap: "edg",
         p: "chromium",
       },
-      firefox: {
-        ...base,
-        an: "adblockfirefox",
-        ap: "firefox",
-        p: "gecko",
-      },
     }[browserDetails.browserName];
     if (!expectedParams) {
       throw new Error(`Browser name not recognized: ${browserDetails.browserName}`);
     }
-
-    const params = new URLSearchParams(new URL(url).search);
-    const actualParams = Object.fromEntries(params);
 
     expect(actualParams).toEqual(expectedParams);
   });

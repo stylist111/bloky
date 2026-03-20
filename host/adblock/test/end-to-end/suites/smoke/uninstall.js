@@ -28,8 +28,9 @@ export default () => {
     let expectedParams;
 
     if (browserDetails.browserName === "firefox") {
+      // Firefox users are opted out of data collection, so only a
+      // single-use rotating client ID is included in the uninstall URL.
       expectedParams = {
-        av: extension.version,
         rcid: expect.stringMatching(/^[a-f0-9-]{36}$/), // single-use rotating client ID (UUID v4)
       };
     } else {

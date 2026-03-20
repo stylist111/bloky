@@ -1,5 +1,8 @@
 # Unreleased
 
+- Excluded all parameters from install URL and uninstall URL when the user is opted out of
+  data collection.
+
 # 6.37.1 - 2026-03-17
 
 This release contains bugfixes and under-the-hood changes.

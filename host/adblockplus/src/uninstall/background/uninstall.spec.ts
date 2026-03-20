@@ -44,15 +44,7 @@ const mockParams = new Map<string, string>([
   ["s", "0"],
   ["wafc", "0"]
 ]);
-const parametersIncludedIfOptedOut = [
-  "locale",
-  "an",
-  "ap",
-  "apv",
-  "av",
-  "p",
-  "pv"
-];
+const parametersIncludedIfOptedOut = ["locale"];
 
 const mockUrl = "https://www.example.com/uninstall?locale=en";
 

@@ -74,6 +74,7 @@ export async function setUninstallURL() {
             params.set("t", installedDuration);
           }
 
+          params.set("av", info.addonVersion);
           params.set("bc", Prefs.blocked_total);
           params.set("er", await ewe.remoteConfig.getRevisionId());
           params.set("ev", await ewe.experiments.getEncodedExperiments());
@@ -95,9 +96,6 @@ export async function setUninstallURL() {
           // linked to other user data.
           params.set("rcid", uuidv4());
         }
-
-        params.set("av", info.addonVersion);
-
         browser.runtime.setUninstallURL(`${UNINSTALL_BASE_URL}?${params}`);
       };
 

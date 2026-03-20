@@ -52,6 +52,14 @@ function openPage(path, queryParams) {
  * Opens the '/installed' page in a new tab.
  */
 async function openInstalledPage() {
+  // Prefs is already loaded by the caller (start -> onInstalled listener)
+  const isOptedOut = Prefs.get("data_collection_opt_out");
+
+  if (isOptedOut) {
+    openPage(pagePath.installed);
+    return;
+  }
+
   const userID = await TELEMETRY.untilLoaded();
   openPage(pagePath.installed, {
     u: userID,

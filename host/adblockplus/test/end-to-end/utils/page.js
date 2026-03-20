@@ -54,56 +54,65 @@ export async function checkInstallUninstallUrl({ url, appVersion, uninstall }) {
     apv: platformVersion // application platform version (=browser version)
   };
 
+  // Firefox users are opted-out of user data gathering.
+  // When opted out, no extension info or computed params are included.
+  if (browserName === "firefox") {
+    const params = new URLSearchParams(new URL(url).search);
+    const actualParams = Object.fromEntries(params);
+    if (uninstall) {
+      // Uninstall URL only contains the doc link params
+      expect(actualParams).toEqual({ link: "uninstalled", lang: "en-US" });
+    } else {
+      // Install URL has null values for non-language params when opted out
+      expect(actualParams).toEqual({
+        an: "null",
+        av: "null",
+        ap: "null",
+        apv: "null",
+        p: "null",
+        pv: "null"
+      });
+    }
+    return;
+  }
+
   if (uninstall) {
     const todaysDate = moment().utc().format("YYYYMMDD");
 
     base = {
       ...base,
       link: "uninstalled",
-      lang: "en-US"
+      lang: "en-US",
+      c: "0", // corrupted - should be 0
+      s: expect.stringMatching(/(0|1|2|3)/), // default subscriptions enabled
+      wafc: "0", // always 0 as we don't do that anymore
+      ndc: "0",
+      ps: expect.stringMatching(/(0|1)/), // premium subscription
+      er: expect.stringMatching(/^([a-zA-Z0-9+/,_=]{8}|null)$/), // experiments revision ID. Example: ietbCO3H
+      ev: expect.stringMatching(/^[a-zA-Z0-9+/]+=*/), // experiments variants. Example: AQ%3D%3
+      ca: expect.stringMatching(/^[a-zA-Z0-9+/]+=*/), // cohort assignments. Example: AQ%3D%3
+      fv: expect.stringMatching(new RegExp(`(0|${todaysDate})`)) // filter version. Example: 20241216
     };
-
-    // Firefox uses are opted-out of user data gathering.
-    if (browserName !== "firefox") {
-      base = {
-        ...base,
-        c: "0", // corrupted - should be 0
-        s: expect.stringMatching(/(0|1|2|3)/), // default subscriptions enabled
-        wafc: "0", // always 0 as we don't do that anymore
-        ndc: "0",
-        ps: expect.stringMatching(/(0|1)/), // premium subscription
-        er: expect.stringMatching(/^([a-zA-Z0-9+/,_=]{8}|null)$/), // experiments revision ID. Example: ietbCO3H
-        ev: expect.stringMatching(/^[a-zA-Z0-9+/]+=*/), // experiments variants. Example: AQ%3D%3
-        ca: expect.stringMatching(/^[a-zA-Z0-9+/]+=*/), // cohort assignments. Example: AQ%3D%3
-        fv: expect.stringMatching(new RegExp(`(0|${todaysDate})`)) // filter version. Example: 20241216
-      };
-    }
   }
 
-  const expectedParams = {
+  const browserInfoParams = {
     chromium: {
-      ...base,
       an: "adblockpluschrome", // application name
       ap: "chrome", // application
       p: "chromium" // platform
     },
     edge: {
-      ...base,
       an: "adblockpluschrome",
       ap: "edge",
       p: "chromium"
-    },
-    firefox: {
-      ...base,
-      an: "adblockplusfirefox",
-      ap: "firefox",
-      p: "gecko"
     }
   }[browserName];
 
-  if (!expectedParams) {
+  if (!browserInfoParams) {
     throw new Error(`Unexpected browser name: ${browserName}`);
   }
+
+  const expectedParams = { ...base, ...browserInfoParams };
 
   const params = new URLSearchParams(new URL(url).search);
   const actualParams = Object.fromEntries(params);

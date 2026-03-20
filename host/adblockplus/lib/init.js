@@ -129,10 +129,14 @@ async function openFirstRunPage(shouldShowWarning = false, forceLocal = false) {
 
   if (!showLocal) {
     url = Prefs.remote_first_run_page_url;
+    const isOptedOut = Prefs.get("data_collection_opt_out");
+
     for (const [key, getValue] of urlPlaceholders) {
-      const value = typeof getValue === "function" ? getValue() : null;
+      // Language placeholder needed for the website to show the page in the correct language
+      const value = key === "LANG" || !isOptedOut ? getValue() : null;
       url = url.replace(`%${key}%`, encodeURIComponent(value));
     }
+
     waitForRemotePage = listenForRemotePage((tabId) => tabId === firstRunTabId);
   }
 
